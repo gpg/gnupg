@@ -50,7 +50,7 @@
 #include "gc-opt-flags.h"
 #include "exechelp.h"
 
-enum cmd_and_opt_values 
+enum cmd_and_opt_values
 { aNull = 0,
   oCsh		  = 'c',
   oQuiet	  = 'q',
@@ -115,8 +115,8 @@ static ARGPARSE_OPTS opts[] = {
 
   { aGPGConfList, "gpgconf-list", 256, "@" },
   { aGPGConfTest, "gpgconf-test", 256, "@" },
-  { aUseStandardSocketP, "use-standard-socket-p", 256, "@" }, 
-  
+  { aUseStandardSocketP, "use-standard-socket-p", 256, "@" },
+
   { 301, NULL, 0, N_("@Options:\n ") },
 
   { oServer,   "server",     0, N_("run in server mode (foreground)") },
@@ -145,7 +145,7 @@ static ARGPARSE_OPTS opts[] = {
   { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
 
   { oBatch,      "batch",       0, "@" },
-  { oHomedir,    "homedir",     2, "@"},   
+  { oHomedir,    "homedir",     2, "@"},
 
   { oDisplay,    "display",     2, "@" },
   { oTTYname,    "ttyname",     2, "@" },
@@ -187,8 +187,8 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_CACHE_TTL_SSH (30*60)  /* 30 minutes */
 #define MAX_CACHE_TTL         (120*60) /* 2 hours */
 #define MAX_CACHE_TTL_SSH     (120*60) /* 2 hours */
-#define MIN_PASSPHRASE_LEN    (8)      
-#define MIN_PASSPHRASE_NONALPHA (1)      
+#define MIN_PASSPHRASE_LEN    (8)
+#define MIN_PASSPHRASE_NONALPHA (1)
 #define MAX_PASSPHRASE_DAYS   (0)
 
 /* The timer tick used for housekeeping stuff.  For Windows we use a
@@ -257,11 +257,11 @@ static pid_t parent_pid = (pid_t)(-1);
 
 
 /*
-   Local prototypes. 
+   Local prototypes.
  */
 
 static char *create_socket_name (char *standard_name, char *template);
-static gnupg_fd_t create_server_socket (char *name, int is_ssh, 
+static gnupg_fd_t create_server_socket (char *name, int is_ssh,
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
@@ -293,7 +293,7 @@ static unsigned long pth_thread_id (void)
 
 
 /*
-   Functions. 
+   Functions.
  */
 
 static char *
@@ -301,7 +301,7 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
 {
   const char *s;
   char *result;
-  
+
   if (maybe_setuid)
     {
       gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
@@ -343,7 +343,7 @@ my_strusage (int level)
     case 41: p =  _("Syntax: gpg-agent [options] [command [args]]\n"
                     "Secret key management for GnuPG\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -380,7 +380,7 @@ set_debug (void)
       /* Unless the "guru" string has been used we don't want to allow
          hashing debugging.  The rationale is that people tend to
          select the highest debug value and would then clutter their
-         disk with debug files which may reveal confidential data.  */ 
+         disk with debug files which may reveal confidential data.  */
       if (numok)
         opt.debug &= ~(DBG_HASHING_VALUE);
     }
@@ -404,16 +404,16 @@ set_debug (void)
 
   if (opt.debug)
     log_info ("enabled debug flags:%s%s%s%s%s%s%s%s\n",
-              (opt.debug & DBG_COMMAND_VALUE)? " command":"",    
-              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",    
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",    
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"", 
-              (opt.debug & DBG_CACHE_VALUE  )? " cache":"", 
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"", 
-              (opt.debug & DBG_HASHING_VALUE)? " hashing":"", 
+              (opt.debug & DBG_COMMAND_VALUE)? " command":"",
+              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
+              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
+              (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
+              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
+              (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
               (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
 }
- 
+
 
 /* Helper for cleanup to remove one socket with NAME.  */
 static void
@@ -433,7 +433,7 @@ remove_socket (char *name)
 	}
       *name = 0;
     }
-}  
+}
 
 static void
 cleanup (void)
@@ -501,7 +501,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       break;
 
     case oNoGrab: opt.no_grab = 1; break;
-      
+
     case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
     case oPinentryTouchFile: opt.pinentry_touch_file = pargs->r.ret_str; break;
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
@@ -511,19 +511,19 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDefCacheTTLSSH: opt.def_cache_ttl_ssh = pargs->r.ret_ulong; break;
     case oMaxCacheTTL: opt.max_cache_ttl = pargs->r.ret_ulong; break;
     case oMaxCacheTTLSSH: opt.max_cache_ttl_ssh = pargs->r.ret_ulong; break;
-      
-    case oEnforcePassphraseConstraints: 
+
+    case oEnforcePassphraseConstraints:
       opt.enforce_passphrase_constraints=1;
       break;
     case oMinPassphraseLen: opt.min_passphrase_len = pargs->r.ret_ulong; break;
-    case oMinPassphraseNonalpha: 
+    case oMinPassphraseNonalpha:
       opt.min_passphrase_nonalpha = pargs->r.ret_ulong;
       break;
     case oCheckPassphrasePattern:
       opt.check_passphrase_pattern = pargs->r.ret_str;
       break;
     case oMaxPassphraseDays:
-      opt.max_passphrase_days = pargs->r.ret_ulong; 
+      opt.max_passphrase_days = pargs->r.ret_ulong;
       break;
     case oEnablePassphraseHistory:
       opt.enable_passhrase_history = 1;
@@ -585,7 +585,7 @@ main (int argc, char **argv )
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
-  log_set_prefix ("gpg-agent", JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID); 
+  log_set_prefix ("gpg-agent", JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -631,7 +631,7 @@ main (int argc, char **argv )
   opt.use_standard_socket = 1;  /* Under Windows we always use a standard
                                    socket.  */
 #endif
-  
+
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
@@ -642,7 +642,7 @@ main (int argc, char **argv )
   {
     const char *s;
     int idx;
-    static const char *names[] = 
+    static const char *names[] =
       { "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL };
 
     err = 0;
@@ -664,10 +664,10 @@ main (int argc, char **argv )
     if (err)
       log_fatal ("error recording startup environment: %s\n",
                  gpg_strerror (err));
-    
+
     /* Fixme: Better use the locale function here.  */
     opt.startup_lc_ctype = getenv ("LC_CTYPE");
-    if (opt.startup_lc_ctype) 
+    if (opt.startup_lc_ctype)
       opt.startup_lc_ctype = xstrdup (opt.startup_lc_ctype);
     opt.startup_lc_messages = getenv ("LC_MESSAGES");
     if (opt.startup_lc_messages)
@@ -700,13 +700,13 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0);
   maybe_setuid = 0;
 
-  /* 
-     Now we are now working under our real uid 
+  /*
+     Now we are now working under our real uid
   */
 
   if (default_config)
     configname = make_filename (opt.homedir, "gpg-agent.conf", NULL );
-  
+
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
@@ -737,7 +737,7 @@ main (int argc, char **argv )
                          configname, strerror(errno) );
               exit(2);
 	    }
-          xfree (configname); 
+          xfree (configname);
           configname = NULL;
 	}
       if (parse_debug && configname )
@@ -791,7 +791,7 @@ main (int argc, char **argv )
 
         case oFakedSystemTime:
           {
-            time_t faked_time = isotime2epoch (pargs.r.ret_str); 
+            time_t faked_time = isotime2epoch (pargs.r.ret_str);
             if (faked_time == (time_t)(-1))
               faked_time = (time_t)strtoul (pargs.r.ret_str, NULL, 10);
             gnupg_set_time (faked_time, 0);
@@ -825,7 +825,7 @@ main (int argc, char **argv )
       configname = NULL;
       goto next_pass;
     }
-    
+
   xfree (configname);
   configname = NULL;
   if (log_get_errorcount(0))
@@ -846,7 +846,7 @@ main (int argc, char **argv )
 #endif
 
   set_debug ();
-  
+
   if (atexit (cleanup))
     {
       log_error ("atexit failed\n");
@@ -857,7 +857,7 @@ main (int argc, char **argv )
   initialize_module_call_pinentry ();
   initialize_module_call_scd ();
   initialize_module_trustlist ();
-  
+
   /* Try to create missing directories. */
   create_directories ();
 
@@ -868,7 +868,7 @@ main (int argc, char **argv )
       gnupg_sleep (debug_wait);
       log_debug ("... okay\n");
     }
-  
+
   if (gpgconf_list == 3)
     agent_exit (!opt.use_standard_socket);
   if (gpgconf_list == 2)
@@ -903,21 +903,21 @@ main (int argc, char **argv )
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL );
       printf ("max-cache-ttl-ssh:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MAX_CACHE_TTL_SSH );
-      printf ("enforce-passphrase-constraints:%lu:\n", 
+      printf ("enforce-passphrase-constraints:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("min-passphrase-len:%lu:%d:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, MIN_PASSPHRASE_LEN );
       printf ("min-passphrase-nonalpha:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, 
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
               MIN_PASSPHRASE_NONALPHA);
       printf ("check-passphrase-pattern:%lu:\n",
               GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME);
       printf ("max-passphrase-days:%lu:%d:\n",
-              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME, 
+              GC_OPT_FLAG_DEFAULT|GC_OPT_FLAG_RUNTIME,
               MAX_PASSPHRASE_DAYS);
-      printf ("enable-passphrase-history:%lu:\n", 
+      printf ("enable-passphrase-history:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      printf ("no-grab:%lu:\n", 
+      printf ("no-grab:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("ignore-cache-for-signing:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
@@ -934,11 +934,11 @@ main (int argc, char **argv )
      don't clobber a logfile but print it directly to stderr. */
   if (!pipe_server && !is_daemon)
     {
-      log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX); 
+      log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX);
       check_for_running_agent (0, 0);
       agent_exit (0);
     }
-  
+
 #ifdef ENABLE_NLS
   /* gpg-agent usually does not output any messages because it runs in
      the background.  For log files it is acceptable to have messages
@@ -970,7 +970,7 @@ main (int argc, char **argv )
 
 
   if (pipe_server)
-    { 
+    {
       /* This is the simple pipe based server */
       ctrl_t ctrl;
 
@@ -1015,10 +1015,10 @@ main (int argc, char **argv )
 
 
       /* Create the sockets.  */
-      socket_name = create_socket_name 
+      socket_name = create_socket_name
         ("S.gpg-agent", "/tmp/gpg-XXXXXX/S.gpg-agent");
       if (opt.ssh_support)
-	socket_name_ssh = create_socket_name 
+	socket_name_ssh = create_socket_name
           ("S.gpg-agent.ssh", "/tmp/gpg-XXXXXX/S.gpg-agent.ssh");
 
       fd = create_server_socket (socket_name, 0, &socket_nonce);
@@ -1039,12 +1039,12 @@ main (int argc, char **argv )
       printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
-      if (pid == (pid_t)-1) 
+      if (pid == (pid_t)-1)
         {
           log_fatal ("fork failed: %s\n", strerror (errno) );
           exit (1);
         }
-      else if (pid) 
+      else if (pid)
         { /* We are the parent */
           char *infostr, *infostr_ssh_sock, *infostr_ssh_pid;
 
@@ -1060,10 +1060,12 @@ main (int argc, char **argv )
              with the signal mask the signal mask might not be correct
              right now and thus we restore it.  That is not strictly
              necessary but some programs falsely assume a cleared
-             signal mask.  */
-          if ( !pth_kill () )
+             signal mask.  es_pth_kill is a wrapper around pth_kill to
+             take care not to use any Pth functions in the estream
+             code after Pth has been killed.  */
+          if ( !es_pth_kill () )
             log_error ("pth_kill failed in forked process\n");
-            
+
 #ifdef HAVE_SIGPROCMASK
           if (startup_signal_mask_valid)
             {
@@ -1073,7 +1075,7 @@ main (int argc, char **argv )
             }
           else
             log_info ("no saved signal mask\n");
-#endif /*HAVE_SIGPROCMASK*/          
+#endif /*HAVE_SIGPROCMASK*/
 
           /* Create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
@@ -1109,7 +1111,7 @@ main (int argc, char **argv )
           if (env_file_name)
             {
               FILE *fp;
-              
+
               fp = fopen (env_file_name, "w");
               if (!fp)
                 log_error (_("error creating `%s': %s\n"),
@@ -1130,7 +1132,7 @@ main (int argc, char **argv )
             }
 
 
-          if (argc) 
+          if (argc)
             { /* Run the program given on the commandline.  */
               if (putenv (infostr))
                 {
@@ -1191,29 +1193,29 @@ main (int argc, char **argv )
 		      printf ("%s; export SSH_AGENT_PID;\n", infostr_ssh_pid);
 		    }
                 }
-              xfree (infostr); 
+              xfree (infostr);
 	      if (opt.ssh_support)
 		{
 		  xfree (infostr_ssh_sock);
 		  xfree (infostr_ssh_pid);
 		}
-              exit (0); 
+              exit (0);
             }
           /*NOTREACHED*/
         } /* End parent */
 
-      /* 
+      /*
          This is the child
        */
 
       /* Detach from tty and put process into a new session */
       if (!nodetach )
-        { 
+        {
           int i;
           unsigned int oldflags;
 
           /* Close stdin, stdout and stderr unless it is the log stream */
-          for (i=0; i <= 2; i++) 
+          for (i=0; i <= 2; i++)
             {
               if (!log_test_fd (i) && i != fd )
                 {
@@ -1247,7 +1249,7 @@ main (int argc, char **argv )
 
       {
         struct sigaction sa;
-        
+
         sa.sa_handler = SIG_IGN;
         sigemptyset (&sa.sa_mask);
         sa.sa_flags = 0;
@@ -1259,7 +1261,7 @@ main (int argc, char **argv )
       handle_connections (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD);
       assuan_sock_close (fd);
     }
-  
+
   return 0;
 }
 
@@ -1295,11 +1297,11 @@ agent_init_default_ctrl (ctrl_t ctrl)
   session_env_setenv (ctrl->session_env, "TERM", default_ttytype);
   session_env_setenv (ctrl->session_env, "XAUTHORITY", default_xauthority);
   session_env_setenv (ctrl->session_env, "PINENTRY_USER_DATA", NULL);
-  
+
   if (ctrl->lc_ctype)
     xfree (ctrl->lc_ctype);
   ctrl->lc_ctype = default_lc_ctype? xtrystrdup (default_lc_ctype) : NULL;
-  
+
   if (ctrl->lc_messages)
     xfree (ctrl->lc_messages);
   ctrl->lc_messages = default_lc_messages? xtrystrdup (default_lc_messages)
@@ -1322,7 +1324,7 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
 
 /* Reread parts of the configuration.  Note, that this function is
    obviously not thread-safe and should only be called from the PTH
-   signal handler. 
+   signal handler.
 
    Fixme: Due to the way the argument parsing works, we create a
    memory leak here for all string type arguments.  There is currently
@@ -1412,7 +1414,7 @@ get_agent_scd_notify_event (void)
         log_error ("can't create scd notify event: %s\n", w32_strerror (-1) );
       else if (!DuplicateHandle (GetCurrentProcess(), h,
                                  GetCurrentProcess(), &h2,
-                                 EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0)) 
+                                 EVENT_MODIFY_STATE|SYNCHRONIZE, TRUE, 0))
         {
           log_error ("setting syncronize for scd notify event failed: %s\n",
                      w32_strerror (-1) );
@@ -1497,7 +1499,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
       agent_exit (2);
     }
 
-  serv_addr = xmalloc (sizeof (*serv_addr)); 
+  serv_addr = xmalloc (sizeof (*serv_addr));
   memset (serv_addr, 0, sizeof *serv_addr);
   serv_addr->sun_family = AF_UNIX;
   if (strlen (name) + 1 >= sizeof (serv_addr->sun_path))
@@ -1529,7 +1531,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
       remove (name);
       rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
-  if (rc != -1 
+  if (rc != -1
       && (rc=assuan_sock_get_nonce ((struct sockaddr*)serv_addr, len, nonce)))
     log_error (_("error getting nonce for the socket\n"));
   if (rc == -1)
@@ -1537,9 +1539,9 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
       /* We use gpg_strerror here because it allows us to get strings
          for some W32 socket error codes.  */
       log_error (_("error binding socket to `%s': %s\n"),
-		 serv_addr->sun_path, 
+		 serv_addr->sun_path,
                  gpg_strerror (gpg_error_from_errno (errno)));
-      
+
       assuan_sock_close (fd);
       if (opt.use_standard_socket)
         *name = 0; /* Inhibit removal of the socket by cleanup(). */
@@ -1552,7 +1554,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
       assuan_sock_close (fd);
       agent_exit (2);
     }
-          
+
   if (opt.verbose)
     log_info (_("listening on socket `%s'\n"), serv_addr->sun_path);
 
@@ -1626,7 +1628,7 @@ create_directories (void)
                 log_error (_("can't create directory `%s': %s\n"),
                            home, strerror (errno) );
 #endif
-              else 
+              else
                 {
                   if (!opt.quiet)
                     log_info (_("directory `%s' created\n"), home);
@@ -1681,7 +1683,7 @@ handle_tick (void)
         }
     }
 #endif /*HAVE_W32_SYSTEM*/
-  
+
   /* Code to be run every minute.  */
   if (last_minute + 60 <= time (NULL))
     {
@@ -1724,14 +1726,14 @@ handle_signal (int signo)
     case SIGHUP:
       agent_sighup_action ();
       break;
-      
+
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
       agent_query_dump_state ();
       agent_scd_dump_state ();
       break;
-      
+
     case SIGUSR2:
       agent_sigusr2_action ();
       break;
@@ -1751,7 +1753,7 @@ handle_signal (int signo)
           agent_exit (0);
 	}
       break;
-        
+
     case SIGINT:
       log_info ("SIGINT received - immediate shutdown\n");
       log_info( "%s %s stopped\n", strusage(11), strusage(13));
@@ -1767,12 +1769,12 @@ handle_signal (int signo)
 
 /* Check the nonce on a new connection.  This is a NOP unless we we
    are using our Unix domain socket emulation under Windows.  */
-static int 
+static int
 check_nonce (ctrl_t ctrl, assuan_sock_nonce_t *nonce)
 {
   if (assuan_sock_check_nonce (ctrl->thread_startup.fd, nonce))
     {
-      log_info (_("error reading nonce on fd %d: %s\n"), 
+      log_info (_("error reading nonce on fd %d: %s\n"),
                 FD2INT(ctrl->thread_startup.fd), strerror (errno));
       assuan_sock_close (ctrl->thread_startup.fd);
       xfree (ctrl);
@@ -1794,14 +1796,14 @@ start_connection_thread (void *arg)
 
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
-    log_info (_("handler 0x%lx for fd %d started\n"), 
+    log_info (_("handler 0x%lx for fd %d started\n"),
               pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
   if (opt.verbose)
-    log_info (_("handler 0x%lx for fd %d terminated\n"), 
+    log_info (_("handler 0x%lx for fd %d terminated\n"),
               pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
-  
+
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
   return NULL;
@@ -1826,7 +1828,7 @@ start_connection_thread_ssh (void *arg)
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
               pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
-  
+
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
   return NULL;
@@ -1872,7 +1874,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
         sa.sa_handler = SIG_IGN;
         sa.sa_flags = 0;
         sigaction (mysigs[i], &sa, NULL);
-        
+
         sigaddset (&sigs, mysigs[i]);
       }
   }
@@ -2020,7 +2022,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
               xfree (ctrl);
               assuan_sock_close (fd);
             }
-          else 
+          else
             {
               char threadname[50];
 
@@ -2040,7 +2042,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           fd = GNUPG_INVALID_FD;
 	}
 
-      if (!shutdown_pending && listen_fd_ssh != GNUPG_INVALID_FD 
+      if (!shutdown_pending && listen_fd_ssh != GNUPG_INVALID_FD
           && FD_ISSET ( FD2INT (listen_fd_ssh), &read_fdset))
 	{
           ctrl_t ctrl;
@@ -2133,7 +2135,7 @@ check_own_socket_thread (void *arg)
       log_error ("can't connect my own socket: %s\n", gpg_strerror (rc));
       goto leave;
     }
- 
+
   init_membuf (&mb, 100);
   rc = assuan_transact (ctx, "GETINFO pid", check_own_socket_pid_cb, &mb,
                         NULL, NULL, NULL, NULL);
@@ -2141,7 +2143,7 @@ check_own_socket_thread (void *arg)
   buffer = get_membuf (&mb, NULL);
   if (rc || !buffer)
     {
-      log_error ("sending command \"%s\" to my own socket failed: %s\n", 
+      log_error ("sending command \"%s\" to my own socket failed: %s\n",
                  "GETINFO pid", gpg_strerror (rc));
       rc = 1;
     }
@@ -2152,7 +2154,7 @@ check_own_socket_thread (void *arg)
     }
   else if (opt.verbose > 1)
     log_error ("socket is still served by this server\n");
-    
+
   xfree (buffer);
 
  leave:

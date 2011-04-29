@@ -231,6 +231,8 @@ typedef struct es_cookie_io_functions
 
 int es_init (void);
 
+int es_pth_kill (void);
+
 estream_t es_fopen (const char *ES__RESTRICT path,
 		    const char *ES__RESTRICT mode);
 estream_t es_mopen (unsigned char *ES__RESTRICT data,

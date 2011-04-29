@@ -150,20 +150,10 @@ typedef void (*func_free_t) (void *mem);
 /* Locking.  */
 
 #ifdef HAVE_PTH
-
 typedef pth_mutex_t estream_mutex_t;
-# define ESTREAM_MUTEX_INITIALIZER PTH_MUTEX_INIT
-# define ESTREAM_MUTEX_LOCK(mutex)        \
-  pth_mutex_acquire (&(mutex), 0, NULL)
-# define ESTREAM_MUTEX_UNLOCK(mutex)      \
-  pth_mutex_release (&(mutex))
-# define ESTREAM_MUTEX_TRYLOCK(mutex)     \
-  ((pth_mutex_acquire (&(mutex), 1, NULL) == TRUE) ? 0 : -1)
-# define ESTREAM_MUTEX_INITIALIZE(mutex)  \
-  pth_mutex_init    (&(mutex))
-#else
-
+#else /*!HAVE_PTH*/
 typedef void *estream_mutex_t;
+#endif /*!HAVE_PTH*/
 
 static inline void
 dummy_mutex_call_void (estream_mutex_t mutex)
@@ -178,19 +168,42 @@ dummy_mutex_call_int (estream_mutex_t mutex)
   return 0;
 }
 
+
+#ifdef HAVE_PTH
+
+static int estream_pth_killed;
+
+# define ESTREAM_MUTEX_INITIALIZER PTH_MUTEX_INIT
+# define ESTREAM_MUTEX_LOCK(mutex)                              \
+  (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
+   : pth_mutex_acquire (&(mutex), 0, NULL))
+# define ESTREAM_MUTEX_UNLOCK(mutex)                            \
+  (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
+   : pth_mutex_release (&(mutex)))
+# define ESTREAM_MUTEX_TRYLOCK(mutex)                                   \
+  (estream_pth_killed ? dummy_mutex_call_int ((mutex))                  \
+   : ((pth_mutex_acquire (&(mutex), 1, NULL) == TRUE)? 0:-1))
+# define ESTREAM_MUTEX_INITIALIZE(mutex)                        \
+  (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
+   : pth_mutex_init (&(mutex)))
+
+#else /*!HAVE_PTH*/
+
 # define ESTREAM_MUTEX_INITIALIZER NULL
 # define ESTREAM_MUTEX_LOCK(mutex) dummy_mutex_call_void ((mutex))
 # define ESTREAM_MUTEX_UNLOCK(mutex) dummy_mutex_call_void ((mutex))
 # define ESTREAM_MUTEX_TRYLOCK(mutex) dummy_mutex_call_int ((mutex))
 # define ESTREAM_MUTEX_INITIALIZE(mutex) dummy_mutex_call_void ((mutex))
-#endif
+
+#endif /*!HAVE_PTH*/
 
 /* Primitive system I/O.  */
 
 #ifdef HAVE_PTH
 # define ESTREAM_SYS_READ  es_pth_read
 # define ESTREAM_SYS_WRITE es_pth_write
-# define ESTREAM_SYS_YIELD() pth_yield (NULL)
+# define ESTREAM_SYS_YIELD() \
+  do { if (!estream_pth_killed) pth_yield (NULL); } while (0)
 #else
 # define ESTREAM_SYS_READ  read
 # define ESTREAM_SYS_WRITE write
@@ -361,7 +374,7 @@ static void
 es_list_remove (estream_t stream, int with_locked_list)
 {
   estream_list_t list_obj;
-  
+
   if (!with_locked_list)
     ESTREAM_LIST_LOCK;
   for (list_obj = estream_list; list_obj; list_obj = list_obj->cdr)
@@ -411,27 +424,37 @@ es_list_iterate (estream_iterator_t iterator)
 static int
 es_pth_read (int fd, void *buffer, size_t size)
 {
+  if (estream_pth_killed)
+    return read (fd, buffer, size);
+  else
+    {
 # ifdef HAVE_W32_SYSTEM
-  int rc = pth_read (fd, buffer, size);
-  if (rc == -1 && errno == EINVAL)
-    rc = read (fd, buffer, size);
-  return rc;
+      int rc = pth_read (fd, buffer, size);
+      if (rc == -1 && errno == EINVAL)
+        rc = read (fd, buffer, size);
+      return rc;
 # else /*!HAVE_W32_SYSTEM*/
-  return pth_read (fd, buffer, size);
+      return pth_read (fd, buffer, size);
 # endif /* !HAVE_W32_SYSTEM*/
+    }
 }
 
 static int
 es_pth_write (int fd, const void *buffer, size_t size)
 {
+  if (estream_pth_killed)
+    return write (fd, buffer, size);
+  else
+    {
 # ifdef HAVE_W32_SYSTEM
-  int rc = pth_write (fd, buffer, size);
-  if (rc == -1 && errno == EINVAL)
-    rc = write (fd, buffer, size);
-  return rc;
+      int rc = pth_write (fd, buffer, size);
+      if (rc == -1 && errno == EINVAL)
+        rc = write (fd, buffer, size);
+      return rc;
 # else /*!HAVE_W32_SYSTEM*/
-  return pth_write (fd, buffer, size);
+      return pth_write (fd, buffer, size);
 # endif /* !HAVE_W32_SYSTEM*/
+    }
 }
 #endif /*HAVE_PTH*/
 
@@ -442,6 +465,26 @@ es_deinit (void)
 {
   /* Flush all streams. */
   es_fflush (NULL);
+}
+
+
+/* A replacement for pth_kill.  The reason we need this is that after
+   a pth_kill all our pth functions may not be used anymore.  Thus
+   applications using estream and pth need to use this function
+   instead of a plain pth_kill.  */
+int
+es_pth_kill (void)
+{
+#ifdef HAVE_PTH
+  int rc;
+
+  rc = pth_kill ();
+  if (rc)
+    estream_pth_killed = 1;
+  return rc;
+#else /*!HAVE_PTH*/
+  return 0;
+#endif /*!HAVE_PTH*/
 }
 
 
@@ -457,14 +500,19 @@ es_init_do (void)
   if (!initialized)
     {
 #ifdef HAVE_PTH
-      if (!pth_init () && errno != EPERM )
-        return -1;
-      if (pth_mutex_init (&estream_list_lock))
+      if (estream_pth_killed)
         initialized = 1;
+      else
+        {
+          if (!pth_init () && errno != EPERM )
+            return -1;
+          if (pth_mutex_init (&estream_list_lock))
+            initialized = 1;
+        }
 #else
       initialized = 1;
 #endif
-      atexit (es_deinit);  
+      atexit (es_deinit);
     }
   return 0;
 }
@@ -557,7 +605,7 @@ es_func_mem_read (void *cookie, void *buffer, size_t size)
       memcpy (buffer, mem_cookie->memory + mem_cookie->offset, size);
       mem_cookie->offset += size;
     }
-  
+
   ret = size;
   return ret;
 }
@@ -582,7 +630,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
 
   assert (mem_cookie->memory_size >= mem_cookie->offset);
   nleft = mem_cookie->memory_size - mem_cookie->offset;
-  
+
   /* If we are not allowed to grow limit the size to the left space.  */
   if (!mem_cookie->flags.grow && size > nleft)
     size = nleft;
@@ -623,20 +671,20 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
           _set_errno (ENOSPC);
           return -1;
         }
-      
+
       newbuf = mem_cookie->func_realloc (mem_cookie->memory, newsize);
       if (!newbuf)
         return -1;
-      
+
       mem_cookie->memory = newbuf;
       mem_cookie->memory_size = newsize;
 
       assert (mem_cookie->memory_size >= mem_cookie->offset);
       nleft = mem_cookie->memory_size - mem_cookie->offset;
-      
+
       assert (size <= nleft);
     }
-      
+
   memcpy (mem_cookie->memory + mem_cookie->offset, buffer, size);
   if (mem_cookie->offset + size > mem_cookie->data_len)
     mem_cookie->data_len = mem_cookie->offset + size;
@@ -698,7 +746,7 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
           _set_errno (ENOSPC);
           return -1;
         }
-      
+
       newbuf = mem_cookie->func_realloc (mem_cookie->memory, newsize);
       if (!newbuf)
         return -1;
@@ -780,7 +828,7 @@ es_func_fd_create (void **cookie, int fd, unsigned int modeflags, int no_close)
       *cookie = fd_cookie;
       err = 0;
     }
-  
+
   return err;
 }
 
@@ -791,7 +839,7 @@ es_func_fd_read (void *cookie, void *buffer, size_t size)
 {
   estream_cookie_fd_t file_cookie = cookie;
   ssize_t bytes_read;
-  
+
   if (IS_INVALID_FD (file_cookie->fd))
     {
       ESTREAM_SYS_YIELD ();
@@ -799,7 +847,7 @@ es_func_fd_read (void *cookie, void *buffer, size_t size)
     }
   else
     {
-      do 
+      do
         bytes_read = ESTREAM_SYS_READ (file_cookie->fd, buffer, size);
       while (bytes_read == -1 && errno == EINTR);
     }
@@ -901,7 +949,7 @@ typedef struct estream_cookie_fp
 
 /* Create function for fd objects.  */
 static int
-es_func_fp_create (void **cookie, FILE *fp, 
+es_func_fp_create (void **cookie, FILE *fp,
                    unsigned int modeflags, int no_close)
 {
   estream_cookie_fp_t fp_cookie;
@@ -924,7 +972,7 @@ es_func_fp_create (void **cookie, FILE *fp,
       *cookie = fp_cookie;
       err = 0;
     }
-  
+
   return err;
 }
 
@@ -948,7 +996,7 @@ es_func_fp_read (void *cookie, void *buffer, size_t size)
 /* Write function for FILE* objects.  */
 static ssize_t
 es_func_fp_write (void *cookie, const void *buffer, size_t size)
-			   
+
 {
   estream_cookie_fp_t file_cookie = cookie;
   size_t bytes_written;
@@ -973,7 +1021,7 @@ es_func_fp_seek (void *cookie, off_t *offset, int whence)
   if (!file_cookie->fp)
     {
       _set_errno (ESPIPE);
-      return -1; 
+      return -1;
     }
 
   if ( fseek (file_cookie->fp, (long int)*offset, whence) )
@@ -1114,7 +1162,7 @@ es_convert_mode (const char *mode, unsigned int *modeflags)
           oflags |= O_EXCL;
           break;
         default: /* Ignore unknown flags.  */
-          break; 
+          break;
         }
     }
 
@@ -1195,10 +1243,10 @@ es_flush (estream_t stream)
 	 they were asked to write, we have to check for
 	 "(stream->data_offset - data_flushed) > 0" instead of
 	 "stream->data_offset - data_flushed".  */
-      
+
       data_flushed = 0;
       err = 0;
-      
+
       while ((((ssize_t) (stream->data_offset - data_flushed)) > 0) && (! err))
 	{
 	  ret = (*func_write) (stream->intern->cookie,
@@ -1232,7 +1280,7 @@ es_flush (estream_t stream)
     err = 0;
 
  out:
-    
+
   if (err)
     stream->intern->indicators.err = 1;
 
@@ -1518,7 +1566,7 @@ es_readn (estream_t ES__RESTRICT stream,
       if (err)
 	goto out;
       stream->flags.writing = 0;
-    }  
+    }
 
   /* Read unread data first.  */
   while ((bytes_to_read - data_read_unread) && stream->unread_data_len)
@@ -1615,7 +1663,7 @@ es_seek (estream_t ES__RESTRICT stream, off_t offset, int whence,
       off = off - stream->data_len + stream->data_offset;
       off -= stream->unread_data_len;
     }
-  
+
   ret = (*func_seek) (stream->intern->cookie, &off, whence);
   if (ret == -1)
     {
@@ -1633,7 +1681,7 @@ es_seek (estream_t ES__RESTRICT stream, off_t offset, int whence,
   stream->intern->offset = off;
 
  out:
-  
+
   if (err)
     stream->intern->indicators.err = 1;
 
@@ -1657,11 +1705,11 @@ es_write_nbf (estream_t ES__RESTRICT stream,
     {
       err = EOPNOTSUPP;
       goto out;
-    }  
+    }
 
   data_written = 0;
   err = 0;
-  
+
   while (bytes_to_write - data_written)
     {
       ret = (*func_write) (stream->intern->cookie,
@@ -1709,12 +1757,12 @@ es_write_fbf (estream_t ES__RESTRICT stream,
       if (! err)
 	{
 	  /* Flushing resulted in empty container.  */
-	  
+
 	  data_to_write = bytes_to_write - data_written;
 	  space_available = stream->buffer_size - stream->data_offset;
 	  if (data_to_write > space_available)
 	    data_to_write = space_available;
-	      
+
 	  memcpy (stream->buffer + stream->data_offset,
 		  buffer + data_written, data_to_write);
 	  stream->data_offset += data_to_write;
@@ -1775,7 +1823,7 @@ es_writen (estream_t ES__RESTRICT stream,
 
   data_written = 0;
   err = 0;
-  
+
   if (!stream->flags.writing)
     {
       /* Switching to writing mode -> discard input data and seek to
@@ -1810,7 +1858,7 @@ es_writen (estream_t ES__RESTRICT stream,
     }
 
  out:
-    
+
   if (bytes_written)
     *bytes_written = data_written;
   if (data_written)
@@ -1834,7 +1882,7 @@ es_peek (estream_t ES__RESTRICT stream, unsigned char **ES__RESTRICT data,
       if (err)
 	goto out;
       stream->flags.writing = 0;
-    }  
+    }
 
   if (stream->data_offset == stream->data_len)
     {
@@ -1843,7 +1891,7 @@ es_peek (estream_t ES__RESTRICT stream, unsigned char **ES__RESTRICT data,
       if (err)
 	goto out;
     }
-  
+
   if (data)
     *data = stream->buffer + stream->data_offset;
   if (data_len)
@@ -1898,7 +1946,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 
   err = es_func_mem_create (&line_stream_cookie, NULL, 0, 0,
                             BUFFER_BLOCK_SIZE, 1,
-                            mem_realloc, mem_free, 
+                            mem_realloc, mem_free,
                             O_RDWR,
                             0);
   if (err)
@@ -1953,7 +2001,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
     goto out;
 
   /* Complete line has been written to line_stream.  */
-  
+
   if ((max_length > 1) && (! line_size))
     {
       stream->intern->indicators.eof = 1;
@@ -2049,7 +2097,7 @@ static int
 es_get_indicator (estream_t stream, int ind_err, int ind_eof)
 {
   int ret = 0;
-  
+
   if (ind_err)
     ret = stream->intern->indicators.err;
   else if (ind_eof)
@@ -2076,7 +2124,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
     es_empty (stream);
 
   es_set_indicators (stream, -1, 0);
-  
+
   /* Free old buffer in case that was allocated by this function.  */
   if (stream->intern->deallocate_buffer)
     {
@@ -2090,7 +2138,7 @@ es_set_buffering (estream_t ES__RESTRICT stream,
   else
     {
       void *buffer_new;
-      
+
       if (buffer)
 	buffer_new = buffer;
       else
@@ -2183,7 +2231,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
-  
+
   err = es_func_file_create (&cookie, &fd, path, modeflags);
   if (err)
     goto out;
@@ -2197,7 +2245,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
     fname_set_internal (stream, path, 1);
 
  out:
-  
+
   if (err && create_called)
     (*estream_functions_fd.func_close) (cookie);
 
@@ -2220,17 +2268,17 @@ es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
   cookie = 0;
   stream = NULL;
   create_called = 0;
-  
+
   err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
 
   err = es_func_mem_create (&cookie, data, data_n, data_len,
-			    BUFFER_BLOCK_SIZE, grow, 
+			    BUFFER_BLOCK_SIZE, grow,
 			    func_realloc, func_free, modeflags, 0);
   if (err)
     goto out;
-  
+
   create_called = 1;
   err = es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0);
 
@@ -2256,13 +2304,13 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
     return NULL;
   modeflags |= O_RDWR;
 
-  
+
   if (es_func_mem_create (&cookie, NULL, 0, 0,
                           BUFFER_BLOCK_SIZE, 1,
                           mem_realloc, mem_free, modeflags,
                           memlimit))
     return NULL;
-  
+
   if (es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0))
     (*estream_functions_mem.func_close) (cookie);
 
@@ -2282,7 +2330,7 @@ es_fopencookie (void *ES__RESTRICT cookie,
 
   stream = NULL;
   modeflags = 0;
-  
+
   err = es_convert_mode (mode, &modeflags);
   if (err)
     goto out;
@@ -2366,7 +2414,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   err = es_func_fp_create (&cookie, fp, modeflags, no_close);
   if (err)
     goto out;
-  
+
   create_called = 1;
   err = es_create (&stream, cookie, fp? fileno (fp):-1, estream_functions_fp,
                    modeflags, with_locked_list);
@@ -2379,7 +2427,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   return stream;
 }
 
-  
+
 /* Create an estream from the stdio stream FP.  This mechanism is
    useful in case the stdio streams have special properties and may
    not be mixed with fd based functions.  This is for example the case
@@ -2445,7 +2493,7 @@ _es_get_std_stream (int fd)
         stream = do_fdopen (custom_std_fds[1], "a", 1, 1);
       else if (custom_std_fds_valid[2])
         stream = do_fdopen (custom_std_fds[2], "a", 1, 1);
-      
+
       if (!stream)
         {
           /* Second try is to use the standard C streams.  */
@@ -2456,8 +2504,8 @@ _es_get_std_stream (int fd)
           else
             stream = do_fpopen (stderr, "a", 1, 1);
         }
-      
-      if (!stream) 
+
+      if (!stream)
         {
           /* Last try: Create a bit bucket.  */
           stream = do_fpopen (NULL, fd? "a":"r", 0, 1);
@@ -2473,7 +2521,7 @@ _es_get_std_stream (int fd)
       stream->intern->stdstream_fd = fd;
       if (fd == 2)
         es_set_buffering (stream, NULL, _IOLBF, 0);
-      fname_set_internal (stream, 
+      fname_set_internal (stream,
                           fd == 0? "[stdin]" :
                           fd == 1? "[stdout]" : "[stderr]", 0);
     }
@@ -2497,7 +2545,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 
       cookie = NULL;
       create_called = 0;
-      
+
       ESTREAM_LOCK (stream);
 
       es_deinitialize (stream);
@@ -2505,7 +2553,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       err = es_convert_mode (mode, &modeflags);
       if (err)
 	goto leave;
-      
+
       err = es_func_file_create (&cookie, &fd, path, modeflags);
       if (err)
 	goto leave;
@@ -2519,7 +2567,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	{
 	  if (create_called)
 	    es_func_fd_destroy (cookie);
-      
+
 	  es_destroy (stream, 0);
 	  stream = NULL;
 	}
@@ -2654,7 +2702,7 @@ static int
 do_fflush (estream_t stream)
 {
   int err;
-  
+
   if (stream->flags.writing)
     err = es_flush (stream);
   else
@@ -2671,7 +2719,7 @@ int
 es_fflush (estream_t stream)
 {
   int err;
-  
+
   if (stream)
     {
       ESTREAM_LOCK (stream);
@@ -2702,7 +2750,7 @@ int
 es_fseeko (estream_t stream, off_t offset, int whence)
 {
   int err;
-  
+
   ESTREAM_LOCK (stream);
   err = es_seek (stream, offset, whence, NULL);
   ESTREAM_UNLOCK (stream);
@@ -2715,7 +2763,7 @@ long int
 es_ftell (estream_t stream)
 {
   long int ret;
-  
+
   ESTREAM_LOCK (stream);
   ret = es_offset_calculate (stream);
   ESTREAM_UNLOCK (stream);
@@ -2776,7 +2824,7 @@ int
 es_fgetc (estream_t stream)
 {
   int ret;
-  
+
   ESTREAM_LOCK (stream);
   ret = es_getc_unlocked (stream);
   ESTREAM_UNLOCK (stream);
@@ -2789,7 +2837,7 @@ int
 es_fputc (int c, estream_t stream)
 {
   int ret;
-  
+
   ESTREAM_LOCK (stream);
   ret = es_putc_unlocked (c, stream);
   ESTREAM_UNLOCK (stream);
@@ -2901,10 +2949,10 @@ es_fgets (char *ES__RESTRICT buffer, int length, estream_t ES__RESTRICT stream)
 {
   unsigned char *s = (unsigned char*)buffer;
   int c;
-   
+
   if (!length)
     return NULL;
-     
+
   c = EOF;
   ESTREAM_LOCK (stream);
   while (length > 1 && (c = es_getc_unlocked (stream)) != EOF && c != '\n')
@@ -2968,7 +3016,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
   if (*n)
     {
       /* Caller wants us to use his buffer.  */
-      
+
       if (*n < (line_n + 1))
 	{
 	  /* Provided buffer is too small -> resize.  */
@@ -3012,7 +3060,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
    considered a byte stream ending in a LF.
 
    If MAX_LENGTH is not NULL, it shall point to a value with the
-   maximum allowed allocation.  
+   maximum allowed allocation.
 
    Returns the length of the line. EOF is indicated by a line of
    length zero. A truncated line is indicated my setting the value at
@@ -3036,7 +3084,7 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
    released using es_free.
  */
 ssize_t
-es_read_line (estream_t stream, 
+es_read_line (estream_t stream,
               char **addr_of_buffer, size_t *length_of_buffer,
               size_t *max_length)
 {
@@ -3048,7 +3096,7 @@ es_read_line (estream_t stream,
   char *p;
 
   if (!buffer)
-    { 
+    {
       /* No buffer given - allocate a new one. */
       length = 256;
       buffer = mem_alloc (length);
@@ -3077,9 +3125,9 @@ es_read_line (estream_t stream,
   while  ((c = es_getc_unlocked (stream)) != EOF)
     {
       if (nbytes == length)
-        { 
+        {
           /* Enlarge the buffer. */
-          if (maxlen && length > maxlen) 
+          if (maxlen && length > maxlen)
             {
               /* We are beyond our limit: Skip the rest of the line. */
               while (c != '\n' && (c=es_getc_unlocked (stream)) != EOF)
@@ -3096,7 +3144,7 @@ es_read_line (estream_t stream,
           if (!*addr_of_buffer)
             {
               int save_errno = errno;
-              mem_free (buffer); 
+              mem_free (buffer);
               *length_of_buffer = 0;
               if (max_length)
                 *max_length = 0;
@@ -3106,7 +3154,7 @@ es_read_line (estream_t stream,
             }
           buffer = *addr_of_buffer;
           *length_of_buffer = length;
-          length -= 3; 
+          length -= 3;
           p = buffer + nbytes;
 	}
       *p++ = c;
@@ -3144,7 +3192,7 @@ es_vfprintf (estream_t ES__RESTRICT stream, const char *ES__RESTRICT format,
 	     va_list ap)
 {
   int ret;
-  
+
   ESTREAM_LOCK (stream);
   ret = es_print (stream, format, ap);
   ESTREAM_UNLOCK (stream);
@@ -3158,7 +3206,7 @@ es_fprintf_unlocked (estream_t ES__RESTRICT stream,
                      const char *ES__RESTRICT format, ...)
 {
   int ret;
-  
+
   va_list ap;
   va_start (ap, format);
   ret = es_print (stream, format, ap);
@@ -3173,7 +3221,7 @@ es_fprintf (estream_t ES__RESTRICT stream,
 	    const char *ES__RESTRICT format, ...)
 {
   int ret;
-  
+
   va_list ap;
   va_start (ap, format);
   ESTREAM_LOCK (stream);
@@ -3210,7 +3258,7 @@ es_asprintf (const char *ES__RESTRICT format, ...)
    should use es_free to release the buffer.  This function actually
    belongs into estream-printf but we put it here as a convenience
    and because es_free is required anyway.  */
-char * 
+char *
 es_vasprintf (const char *ES__RESTRICT format, va_list ap)
 {
   int rc;
@@ -3241,7 +3289,7 @@ tmpfd (void)
   int pid = GetCurrentProcessId ();
   unsigned int value;
   int i;
-  
+
   n = GetTempPath (MAX_PATH+1, buffer);
   if (!n || n > MAX_PATH || mystrlen (buffer) > MAX_PATH)
     {
@@ -3307,7 +3355,7 @@ tmpfd (void)
 
   fp = NULL;
   fd = -1;
-  
+
   fp = tmpfile ();
   if (! fp)
     goto out;
@@ -3338,7 +3386,7 @@ es_tmpfile (void)
   stream = NULL;
   modeflags = O_RDWR | O_TRUNC | O_CREAT;
   cookie = NULL;
-  
+
   fd = tmpfd ();
   if (fd == -1)
     {
@@ -3363,7 +3411,7 @@ es_tmpfile (void)
 	close (fd);
       stream = NULL;
     }
-  
+
   return stream;
 }
 
@@ -3373,7 +3421,7 @@ es_setvbuf (estream_t ES__RESTRICT stream,
 	    char *ES__RESTRICT buf, int type, size_t size)
 {
   int err;
-  
+
   if ((type == _IOFBF || type == _IOLBF || type == _IONBF)
       && (!buf || size || type == _IONBF))
     {
@@ -3412,7 +3460,7 @@ void *
 es_opaque_get (estream_t stream)
 {
   void *opaque;
-  
+
   ESTREAM_LOCK (stream);
   es_opaque_ctrl (stream, NULL, &opaque);
   ESTREAM_UNLOCK (stream);
@@ -3487,10 +3535,10 @@ es_fname_get (estream_t stream)
    Returns 0 on success or -1 on error.  If BYTES_WRITTEN is not NULL
    the number of bytes actually written are stored at this
    address.  */
-int 
+int
 es_write_sanitized (estream_t ES__RESTRICT stream,
                     const void * ES__RESTRICT buffer, size_t length,
-                    const char * delimiters, 
+                    const char * delimiters,
                     size_t * ES__RESTRICT bytes_written)
 {
   const unsigned char *p = buffer;
@@ -3500,9 +3548,9 @@ es_write_sanitized (estream_t ES__RESTRICT stream,
   ESTREAM_LOCK (stream);
   for (; length; length--, p++, count++)
     {
-      if (*p < 0x20 
+      if (*p < 0x20
           || *p == 0x7f
-          || (delimiters 
+          || (delimiters
               && (strchr (delimiters, *p) || *p == '\\')))
         {
           es_putc_unlocked ('\\', stream);
@@ -3604,19 +3652,19 @@ es_write_hexstring (estream_t ES__RESTRICT stream,
 #ifdef GNUPG_MAJOR_VERSION
 /* Special estream function to print an UTF8 string in the native
    encoding.  The interface is the same as es_write_sanitized, however
-   only one delimiter may be supported. 
+   only one delimiter may be supported.
 
    THIS IS NOT A STANDARD ESTREAM FUNCTION AND ONLY USED BY GNUPG!. */
 int
 es_write_sanitized_utf8_buffer (estream_t stream,
-                                const void *buffer, size_t length, 
+                                const void *buffer, size_t length,
                                 const char *delimiters, size_t *bytes_written)
 {
   const char *p = buffer;
   size_t i;
 
   /* We can handle plain ascii simpler, so check for it first. */
-  for (i=0; i < length; i++ ) 
+  for (i=0; i < length; i++ )
     {
       if ( (p[i] & 0x80) )
         break;
