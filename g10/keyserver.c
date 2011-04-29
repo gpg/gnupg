@@ -1236,8 +1236,8 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	}
     }
 
-  if(rc==-1)
-    rc=0;
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+    rc = 0;
 
  leave:
   if(rc)

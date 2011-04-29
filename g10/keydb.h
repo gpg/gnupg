@@ -132,25 +132,24 @@ union pref_hint
   Flag 1 == force
   Flag 2 == default
 */
-int keydb_add_resource (const char *url, int flags);
+gpg_error_t keydb_add_resource (const char *url, int flags);
 KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
-int keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
-int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
-int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
-int keydb_delete_keyblock (KEYDB_HANDLE hd);
-int keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
+gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
+gpg_error_t keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
+gpg_error_t keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
+gpg_error_t keydb_delete_keyblock (KEYDB_HANDLE hd);
+gpg_error_t keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
 void keydb_rebuild_caches (int noisy);
-int keydb_search_reset (KEYDB_HANDLE hd);
+gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
 #define keydb_search(a,b,c) keydb_search2((a),(b),(c),NULL)
-int keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
-		   size_t ndesc, size_t *descindex);
-int keydb_search_first (KEYDB_HANDLE hd);
-int keydb_search_next (KEYDB_HANDLE hd);
-int keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
-int keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
-
+gpg_error_t keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
+                           size_t ndesc, size_t *descindex);
+gpg_error_t keydb_search_first (KEYDB_HANDLE hd);
+gpg_error_t keydb_search_next (KEYDB_HANDLE hd);
+gpg_error_t keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
+gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
 
 /*-- pkclist.c --*/
 void show_revocation_reason( PKT_public_key *pk, int mode );

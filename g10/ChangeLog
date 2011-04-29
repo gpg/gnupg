@@ -1,3 +1,16 @@
+2011-04-29  Werner Koch  <wk@g10code.com>
+
+	* keydb.c (keydb_get_keyblock, keydb_add_resource): Use gpg_error.
+	(keydb_get_keyblock): Return VALUE_NOT_FOUND instead of -1.
+	(keydb_update_keyblock, keydb_insert_keyblock)
+	(keydb_delete_keyblock): Ditto.
+	(keydb_locate_writable): Ditto.
+	(keydb_search_reset): Ditto.
+	(keydb_search2): Return GPG_ERR_NOT_FOUND instead of -1.  Change
+	all callers.
+	(keydb_search_first, keydb_search_next, keydb_search_kid)
+	(keydb_search_fpr): Ditto.
+
 2011-04-28  Werner Koch  <wk@g10code.com>
 
 	* ecdh.c (pk_ecdh_encrypt_with_shared_point): Remove memory leak

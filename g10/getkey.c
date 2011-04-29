@@ -431,7 +431,7 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
 
   hd = keydb_new ();
   rc = keydb_search_kid (hd, keyid);
-  if (rc == -1)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
       keydb_release (hd);
       return G10ERR_NO_PUBKEY;
@@ -992,7 +992,7 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
 
   hd = keydb_new ();
   rc = keydb_search_fpr (hd, fprbuf);
-  if (rc == -1)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
       keydb_release (hd);
       return G10ERR_NO_PUBKEY;
@@ -2488,7 +2488,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
     }
 
 found:
-  if (rc && rc != -1)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search failed: %s\n", g10_errstr (rc));
 
   if (!rc)
@@ -2496,9 +2496,9 @@ found:
       *ret_keyblock = ctx->keyblock; /* Return the keyblock.  */
       ctx->keyblock = NULL;
     }
-  else if (rc == -1 && no_suitable_key)
+  else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && no_suitable_key)
     rc = want_secret? G10ERR_UNU_SECKEY : G10ERR_UNU_PUBKEY;
-  else if (rc == -1)
+  else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = want_secret? G10ERR_NO_SECKEY : G10ERR_NO_PUBKEY;
 
   release_kbnode (ctx->keyblock);
