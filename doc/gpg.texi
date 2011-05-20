@@ -2510,7 +2510,7 @@ timestamp issues on subkeys.
 @item --ignore-valid-from
 GnuPG normally does not select and use subkeys created in the future.
 This option allows the use of such keys and thus exhibits the
-pre-1.0.7 behaviour. You should not use this option unless you there
+pre-1.0.7 behaviour. You should not use this option unless there
 is some clock problem. See also @option{--ignore-time-conflict} for timestamp
 issues with signatures.
 

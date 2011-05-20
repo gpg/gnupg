@@ -24,23 +24,8 @@
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
 /* Add error codes available only in newer versions of libgpg-error.  */
-#ifndef GPG_ERR_MISSING_KEY
-#define GPG_ERR_MISSING_KEY 181
-#endif
-#ifndef GPG_ERR_LIMIT_REACHED
-#define GPG_ERR_LIMIT_REACHED 183
-#endif
-#ifndef GPG_ERR_NOT_INITIALIZED
-#define GPG_ERR_NOT_INITIALIZED 184
-#endif
-#ifndef GPG_ERR_MISSING_ISSUER_CERT
-#define GPG_ERR_MISSING_ISSUER_CERT 185
-#endif
 #ifndef GPG_ERR_NO_KEYSERVER
 #define GPG_ERR_NO_KEYSERVER 186
-#endif
-#ifndef GPG_ERR_FULLY_CANCELED
-#define GPG_ERR_FULLY_CANCELED 198
 #endif
 #ifndef GPG_ERR_INV_CURVE
 #define GPG_ERR_INV_CURVE 187

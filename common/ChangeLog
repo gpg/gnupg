@@ -1,3 +1,7 @@
+2011-05-20  Werner Koch  <wk@g10code.com>
+
+	* util.h: Remove some error code substitutes.
+
 2011-04-25  Werner Koch  <wk@g10code.com>
 
 	* userids.c (classify_user_id): Add arg OPENPGP_HACK to fix
