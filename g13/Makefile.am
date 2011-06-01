@@ -42,4 +42,4 @@ g13_SOURCES = \
 
 g13_LDADD = $(libcommonpth) ../gl/libgnu.a \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
-	$(GPG_ERROR_LIBS) $(LIBINTL)
+	$(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
