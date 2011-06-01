@@ -1,3 +1,8 @@
+2011-06-01  Marcus Brinkmann  <mb@g10code.com>
+
+	* Makefile.am (dirmngr_ldap_CFLAGS): Add $(LIBGCRYPT_CFLAGS),
+	which is needed by common/util.h.
+
 2011-04-25  Werner Koch  <wk@g10code.com>
 
 	* ks-engine-hkp.c (ks_hkp_search): Mark classify_user_id for use
