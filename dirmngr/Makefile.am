@@ -69,7 +69,7 @@ dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
 if USE_LDAPWRAPPER
 dirmngr_ldap_SOURCES = dirmngr_ldap.c $(ldap_url)
-dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS)
+dirmngr_ldap_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 dirmngr_ldap_LDFLAGS =
 dirmngr_ldap_LDADD = $(libcommon) no-libgcrypt.o ../gl/libgnu.a $(DNSLIBS) \
 		     $(GPG_ERROR_LIBS) $(LDAPLIBS) $(LIBINTL) $(LIBICONV)
