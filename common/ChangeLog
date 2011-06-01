@@ -1,3 +1,7 @@
+2011-06-01  Marcus Brinkmann  <mb@g10code.com>
+
+	* util.h: Undef snprintf before redefining it.
+
 2011-05-20  Werner Koch  <wk@g10code.com>
 
 	* util.h: Remove some error code substitutes.

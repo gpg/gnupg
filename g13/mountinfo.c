@@ -193,6 +193,6 @@ mountinfo_dump_all (void)
   for (idx=0, m = mounttable; idx < mounttable_size; idx++, m++)
     if (m->in_use)
       log_info ("mtab[%d] %s on %s type %d rid %u%s\n",
-                idx, m->container, m->mountpoint, m->conttype, m->rid,
+                (int)idx, m->container, m->mountpoint, m->conttype, m->rid,
                 m->flags.remove?" [remove]":"");
 }

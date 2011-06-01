@@ -62,6 +62,7 @@
 
 /* Due to a bug in mingw32's snprintf related to the 'l' modifier and
    for increased portability we use our snprintf on all systems. */
+#undef snprintf
 #define snprintf estream_snprintf
 
 

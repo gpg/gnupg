@@ -164,7 +164,7 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
 
   if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
     {
-      size_t nbits;
+      unsigned int nbits;
       const void *p;
 
       p = gcry_mpi_get_opaque (a, &nbits);

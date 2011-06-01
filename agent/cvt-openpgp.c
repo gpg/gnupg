@@ -1062,7 +1062,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       void *format_args_buf_ptr[1];
       int   format_args_buf_int[1];
       void *format_args[10+2];
-      size_t n;
+      unsigned int n;
       gcry_sexp_t tmpkey, tmpsexp = NULL;
 
       snprintf (countbuf, sizeof countbuf, "%lu", s2k_count);

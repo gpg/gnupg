@@ -1153,7 +1153,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   int nskey;
   membuf_t mbuf;
   int i, j;
-  size_t n;
+  unsigned int n;
   void *format_args_buf_ptr[PUBKEY_MAX_NSKEY];
   int   format_args_buf_int[PUBKEY_MAX_NSKEY];
   void *format_args[2*PUBKEY_MAX_NSKEY];

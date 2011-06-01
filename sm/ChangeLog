@@ -1,3 +1,7 @@
+2011-06-01  Marcus Brinkmann  <mb@g10code.com>
+
+	* certreqgen.c (proc_parameters): Initialize RC.
+
 2011-04-25  Werner Koch  <wk@g10code.com>
 
 	* certlist.c (gpgsm_add_to_certlist): Mark classify_user_id for

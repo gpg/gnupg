@@ -120,7 +120,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
       if (DBG_CIPHER)
         log_debug ("encode_session_key: "
                    "[%d] %02x  %02x %02x ...  %02x %02x %02x\n",
-                   nframe, frame[0], frame[1], frame[2],
+                   (int) nframe, frame[0], frame[1], frame[2],
                    frame[nframe-3], frame[nframe-2], frame[nframe-1]);
 
       if (gcry_mpi_scan (&a, GCRYMPI_FMT_USG, frame, nframe, &nframe))

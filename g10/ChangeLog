@@ -1,3 +1,12 @@
+2011-06-01  Marcus Brinkmann  <mb@g10code.com>
+
+	* parse-packet.c (parse_pubkeyenc): Change type of N to size_t.
+	(parse_key): Likewise.
+	* seskey.c (encode_session_key): Convert nframe to int for
+	debugging.
+	* build-packet.c (gpg_mpi_write): Change type of N to unsigned int.
+	* import.c (transfer_secret_keys): Likewise.
+
 2011-04-29  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (keydb_get_keyblock, keydb_add_resource): Use gpg_error.

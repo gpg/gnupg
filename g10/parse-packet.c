@@ -962,7 +962,6 @@ static int
 parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 		 PACKET * packet)
 {
-  unsigned int n;
   int rc = 0;
   int i, ndata;
   PKT_pubkey_enc *k;
@@ -1009,12 +1008,13 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
         {
           if (k->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
             {
-              rc = read_size_body (inp, pktlen, &n, k->data+i);
+              size_t n;
+	      rc = read_size_body (inp, pktlen, &n, k->data+i);
               pktlen -= n;
             }
           else
             {
-              n = pktlen;
+	      int n = pktlen;
               k->data[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
               if (!k->data[i])
@@ -1890,7 +1890,6 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 {
   gpg_error_t err = 0;
   int i, version, algorithm;
-  unsigned n;
   unsigned long timestamp, expiredate, max_expiredate;
   int npkey, nskey;
   int is_v4 = 0;
@@ -2003,12 +2002,13 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           if ((algorithm == PUBKEY_ALGO_ECDSA
                || algorithm == PUBKEY_ALGO_ECDH) && (i==0 || i == 2))
             {
-              err = read_size_body (inp, pktlen, &n, pk->pkey+i);
+              size_t n;
+	      err = read_size_body (inp, pktlen, &n, pk->pkey+i);
               pktlen -= n;
             }
           else
             {
-              n = pktlen;
+              unsigned int n = pktlen;
               pk->pkey[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
               if (!pk->pkey[i])
@@ -2255,7 +2255,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		}
 	      else
 		{
-		  n = pktlen;
+		  unsigned int n = pktlen;
 		  pk->pkey[i] = mpi_read (inp, &n, 0);
 		  pktlen -= n;
 		  if (list_mode)
