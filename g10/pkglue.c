@@ -40,7 +40,7 @@ mpi_from_sexp (gcry_sexp_t sexp, const char * item)
 
   list = gcry_sexp_find_token (sexp, item, 0);
   assert (list);
-  data = gcry_sexp_nth_mpi (list, 1, 0);
+  data = gcry_sexp_nth_mpi (list, 1, GCRYMPI_FMT_USG);
   assert (data);
   gcry_sexp_release (list);
   return data;

@@ -1,3 +1,10 @@
+2011-06-13  Werner Koch  <wk@g10code.com>
+
+	* pkglue.c (mpi_from_sexp): Use GCRYMPI_FMT_USG to avoid problems
+	with leading zeroed.  The latest Libgcrypt does this now
+	correctly.  Given that the default of gcry_sexp_nth_mpi would use
+	a signed MPI, which is not implemented, the assertion would fail.
+
 2011-06-01  Marcus Brinkmann  <mb@g10code.com>
 
 	* parse-packet.c (parse_pubkeyenc): Change type of N to size_t.
