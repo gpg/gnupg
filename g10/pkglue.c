@@ -34,10 +34,10 @@ mpi_from_sexp (gcry_sexp_t sexp, const char * item)
 {
   gcry_sexp_t list;
   gcry_mpi_t data;
-  
+
   list = gcry_sexp_find_token (sexp, item, 0);
   assert (list);
-  data = gcry_sexp_nth_mpi (list, 1, 0);
+  data = gcry_sexp_nth_mpi (list, 1, GCRYMPI_FMT_USG);
   assert (data);
   gcry_sexp_release (list);
   return data;
@@ -293,7 +293,7 @@ pk_decrypt (int algo, gcry_mpi_t * result, gcry_mpi_t * data,
   if (rc)
     return rc;
 
-  *result = gcry_sexp_nth_mpi (s_plain, 0, 0);
+  *result = gcry_sexp_nth_mpi (s_plain, 0, GCRYMPI_FMT_USG);
   gcry_sexp_release (s_plain);
   if (!*result)
     return -1;			/* oops */
