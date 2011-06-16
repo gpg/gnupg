@@ -1,3 +1,11 @@
+2011-06-16  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (ask_card_keysize): Bump key size limit to 4096.
+	* call-agent.c (scd_genkey_parm_s): New.
+	(agent_scd_genkey): Use new struct.
+	(scd_genkey_cb): Implement chunked mode for KEY-DATA.
+	(scd_genkey_cb_append_savedbytes): New.
+
 2011-06-13  Werner Koch  <wk@g10code.com>
 
 	* pkglue.c (mpi_from_sexp): Use GCRYMPI_FMT_USG to avoid problems

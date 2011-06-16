@@ -756,20 +756,29 @@ static void
 send_key_data (ctrl_t ctrl, const char *name,
                const unsigned char *a, size_t alen)
 {
-  char *buf;
+  char *buffer, *buf;
+  size_t buflen;
 
-  buf = bin2hex (a, alen, NULL);
-  if (!buf)
+  buffer = buf = bin2hex (a, alen, NULL);
+  if (!buffer)
     {
       log_error ("memory allocation error in send_key_data\n");
       return;
     }
+  buflen = strlen (buffer);
 
+  /* 768 is the hexified size for the modulus of an 3072 bit key.  We
+     use extra chunks to transmit larger data (i.e for 4096 bit).  */
+  for ( ;buflen > 768; buflen -= 768, buf += 768)
+    send_status_info (ctrl, "KEY-DATA",
+                      "-", 1,
+                      buf, 768,
+                      NULL, 0);
   send_status_info (ctrl, "KEY-DATA",
                     name, (size_t)strlen(name),
-                    buf, (size_t)strlen (buf),
+                    buf, buflen,
                     NULL, 0);
-  xfree (buf);
+  xfree (buffer);
 }
 
 
@@ -2365,7 +2374,7 @@ change_keyattr (app_t app, int keyno, unsigned int nbits,
 
   assert (keyno >=0 && keyno <= 2);
 
-  if (nbits > 3072)
+  if (nbits > 4096)
     return gpg_error (GPG_ERR_TOO_LARGE);
 
   /* Read the current attributes into a buffer.  */
@@ -2823,7 +2832,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
      already lead to a 527 byte long status line and thus a 4096 bit
      key would exceed the Assuan line length limit.  */
   keybits = app->app_local->keyattr[keyno].n_bits;
-  if (keybits > 3072)
+  if (keybits > 4096)
     return gpg_error (GPG_ERR_TOO_LARGE);
 
   /* Prepare for key generation by verifying the Admin PIN.  */
@@ -3377,6 +3386,8 @@ do_decipher (app_t app, const char *keyidstr,
         fixuplen = 256 - indatalen;
       else if (indatalen >= (384-16) && indatalen < 384) /* 3072 bit key.  */
         fixuplen = 384 - indatalen;
+      else if (indatalen >= (512-16) && indatalen < 512) /* 4096 bit key.  */
+        fixuplen = 512 - indatalen;
       else
         fixuplen = 0;
 

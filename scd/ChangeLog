@@ -1,3 +1,9 @@
+2011-06-16  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (send_key_data): Implemented chunked mode.
+	(change_keyattr): Increase limit to 4096.
+	(do_decipher): Adjust padding for 4096 bit keys.
+
 2011-02-23  Werner Koch  <wk@g10code.com>
 
 	* apdu.c (apdu_open_reader): Lock in to CCID if used once.

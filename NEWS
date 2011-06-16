@@ -1,7 +1,9 @@
 Noteworthy changes in version 2.1.0beta3
 -----------------------------------------------------
 
- * Fixed regression in GPG'S secret key export function.
+ * Fixed regression in GPG's secret key export function.
+
+ * Allow generation of card keys up to 4096 bit.
 
 
 Noteworthy changes in version 2.1.0beta2 (2011-03-08)
