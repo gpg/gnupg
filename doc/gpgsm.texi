@@ -833,7 +833,7 @@ This file is a collection of common certificates used to populated a
 newly created @file{pubring.kbx}.  An administrator may replace this
 file with a custom one.  The format is a concatenation of PEM encoded
 X.509 certificates.  This global file is installed in the data directory
-(e.g. @file{/usr/share/gnupg/qualified.txt}).
+(e.g. @file{/usr/share/gnupg/com-certs.pem}).
 
 @end table
 
