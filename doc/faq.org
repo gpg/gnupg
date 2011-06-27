@@ -64,7 +64,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     display in some browsers for the web page version of this file, and
     have been split into two or more lines. For these commands please
     remember to enter the entire command-string on one line or the
-    command will error, or at minimum not give the desired results. 
+    command will error, or at minimum not give the desired results.
 
     Please keep in mind that this FAQ contains information that may not
     apply to your particular version, as new features and bug fixes are
@@ -95,7 +95,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
 ** Is GnuPG compatible with PGP?
    :PROPERTIES:
    :CUSTOM_ID: is-gnupg-compatible-with-pgp
-   :END:      
+   :END:
 
     In general, yes. GnuPG and newer PGP releases should be implementing
     the OpenPGP standard. But there are some interoperability problems.
@@ -165,7 +165,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     version as it includes additional features, functions and security
     fixes that may not have existed in prior versions.
 
-* Installation 
+* Installation
 
 ** Which OSes does GnuPG run on?
    :PROPERTIES:
@@ -435,7 +435,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    :CUSTOM_ID: get-rid-of-the-version-and-comment-headers-in-armored-messages
    :END:
 
-    Use 
+    Use
 
     : --no-version --comment ''
 
@@ -454,7 +454,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    =--charset=. It is important that your active character set matches
    the one displayed --- if not, restrict yourself to plain 7 bit
    ASCII and no mapping has to be done.
-    
+
 ** How can I get list of key IDs used to encrypt a message?
    :PROPERTIES:
    :CUSTOM_ID: how-can-i-get-list-of-key-ids-used-to-encrypt-a-message
@@ -489,7 +489,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    automated environment is:
 
    On a secure machine:
-   
+
    1. If you want to do automatic signing, create a signing subkey for
       your key.  Use the interactive key editing menu by issueing the
       command
@@ -499,7 +499,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    1. Make sure that you use a passphrase (needed by the current
       implementation).
 
-   1. 
+   1.
       :  gpg --export-secret-subkeys --no-comment foo >secring.auto
 
    1. Copy secring.auto and the public keyring to a test directory.
@@ -839,7 +839,6 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     : $ gpg --s2k-cipher-algo 3des --compress-algo 1 --rfc1991 \
     :       --export-secret-keys <KeyID>
 
-
 ** GnuPG no longer installs a ~/.gnupg/options file. Is it missing?
    :PROPERTIES:
    :CUSTOM_ID: gnupg-no-longer-installs-a-options-file-is-it-missing
@@ -910,6 +909,22 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
 
     Thanks to David Shaw for this information!
 
+** What are DH/DSS keys?
+   :PROPERTIES:
+   :CUSTOM_ID: what-are-dh-dss-keys
+   :END:
+
+   PGP uses a different name for the former default encryption
+   algorithm Elgamal: They name it DH, which usually stands for the
+   Diffie-Hellman key exchange algorithm.  It has been said that this
+   had historic patent and business reasons.  It is however exactly
+   the same thing as the Elgamal algorithm.
+
+   They also use the acronym DSS (Digital Signature Standard) instead
+   of the DSA (Digital Signature Algorithm).  The difference is that
+   DSS requires the use of certain hash algorithms; however OpenPGP
+   allows the use of more than those hash algorithms, thus GPG usually
+   uses the term DSA.
 
 * Problems and Error Messages
 
@@ -957,7 +972,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    : $ chmod u+s /path/to/gpg
 
    or
-    
+
    : $ chmod 4755 /path/to/gpg
 
    Some refrain from using setuid(root) unless absolutely required for
@@ -1042,7 +1057,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
 
     If you use GnuPG to process those messages, the extra dashes
     are removed. Good mail clients remove those extra dashes when
-    displaying such a message.      
+    displaying such a message.
 
 ** What is the thing with "can't handle multiple signatures"?
    :PROPERTIES:
