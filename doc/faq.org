@@ -8,7 +8,7 @@
 #+OPTIONS:   H:3 num:nil toc:t \n:nil @:t ::t |:t ^:{} -:t f:t *:t TeX:t LaTeX:t skip:nil d:(HIDE) tags:not-in-toc
 #+LINK: gnupgweb http://www.gnupg.org/
 #+LINK: roundup https://bugs.g10code.com/gnupg/issue
-###+STYLE: <link rel="stylesheet" type="text/css" href="http://www.gnupg.org/share/site.css" />
+#+STYLE: <link rel="stylesheet" type="text/css" href="http://www.gnupg.org/share/site.css" />
 
 # FIXME: This FAQ needs a heavy cleanup.  For now I only switched to
 #        org-mode format for easier maintenance.
@@ -1140,7 +1140,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     the list of reported bugs on the documentation page). If you're
     not sure about it being a bug, you can send mail to the
     gnupg-devel list. Otherwise, use the bug tracking system
-    [[http://busg.gnupg.org][bugs.gnupg.org]].
+    [[http://bugs.gnupg.org][bugs.gnupg.org]].
 
 ** Why doesn't GnuPG support X.509 certificates?
    :PROPERTIES:
