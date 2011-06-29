@@ -1354,6 +1354,14 @@ This option sets the cache TTL for new entries created by GENKEY and
 PASSWD commands when using the @option{--preset} option.  It it is not
 used a default value is used.
 
+@item s2k-count
+Instead of using the standard S2K counted (which is computed on the
+fly), the given S2K count is used for new keys or when changing the
+passphrase of a key.  Values below 65536 are considered to be 0.  This
+option is valid for the entire session or until reset to 0.  This
+option is useful if the key is later used on boxes which are either
+much slower or faster than the actual box.
+
 @end table
 
 
