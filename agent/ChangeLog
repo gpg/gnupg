@@ -1,3 +1,11 @@
+2011-06-28  Ben Kibbey <bjk@luxsci.net>
+
+	* command.c (option_handler): Add option s2k-count.
+	* agent.h (server_control_s): Add member s2k_count.
+	* genkey.c (store_key): Add parameter s2k_count.
+	* protect.c (agent_protect): Add parameter s2k_count.
+	* protect.c (do_encryption): Add parameter s2k_count.
+
 2011-06-01  Marcus Brinkmann  <mb@g10code.com>
 
 	* cvt-openpgp.c (convert_to_openpgp): Change type of N to unsigned

@@ -333,7 +333,7 @@ read_and_protect (const char *fname)
     return;
 
   pw = get_passphrase (1);
-  rc = agent_protect (key, pw, &result, &resultlen);
+  rc = agent_protect (key, pw, &result, &resultlen, 0);
   release_passphrase (pw);
   xfree (key);
   if (rc)

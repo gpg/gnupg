@@ -174,7 +174,7 @@ test_agent_protect (void)
     {
       ret = agent_protect ((const unsigned char*)specs[i].key,
                            specs[i].passphrase,
-			   &specs[i].result, &specs[i].resultlen);
+			   &specs[i].result, &specs[i].resultlen, 0);
       if (gpg_err_code (ret) != specs[i].ret_expected)
 	{
 	  printf ("agent_protect() returned `%i/%s'; expected `%i/%s'\n",

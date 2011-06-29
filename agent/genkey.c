@@ -31,7 +31,8 @@
 #include "sysutils.h"
 
 static int
-store_key (gcry_sexp_t private, const char *passphrase, int force)
+store_key (gcry_sexp_t private, const char *passphrase, int force,
+	unsigned long s2k_count)
 {
   int rc;
   unsigned char *buf;
@@ -56,7 +57,7 @@ store_key (gcry_sexp_t private, const char *passphrase, int force)
     {
       unsigned char *p;
 
-      rc = agent_protect (buf, passphrase, &p, &len);
+      rc = agent_protect (buf, passphrase, &p, &len, s2k_count);
       if (rc)
         {
           xfree (buf);
@@ -420,7 +421,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
   /* store the secret key */
   if (DBG_CRYPTO)
     log_debug ("storing private key\n");
-  rc = store_key (s_private, passphrase, 0);
+  rc = store_key (s_private, passphrase, 0, ctrl->s2k_count);
   if (!rc)
     {
       if (!cache_nonce)
@@ -492,7 +493,8 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
   if (passphrase_addr && *passphrase_addr)
     {
       /* Take an empty string as request not to protect the key.  */
-      err = store_key (s_skey, **passphrase_addr? *passphrase_addr:NULL, 1);
+      err = store_key (s_skey, **passphrase_addr? *passphrase_addr:NULL, 1,
+	      ctrl->s2k_count);
     }
   else
     {
@@ -507,7 +509,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
                                       _("Please enter the new passphrase"),
                                       &pass);
       if (!err)
-        err = store_key (s_skey, pass, 1);
+        err = store_key (s_skey, pass, 1, ctrl->s2k_count);
       if (!err && passphrase_addr)
         *passphrase_addr = pass;
       else

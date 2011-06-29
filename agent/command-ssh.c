@@ -2341,7 +2341,7 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
   gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, buffer_new, buffer_new_n);
   /* FIXME: guarantee?  */
 
-  err = agent_protect (buffer_new, passphrase, buffer, buffer_n);
+  err = agent_protect (buffer_new, passphrase, buffer, buffer_n, 0);
 
  out:
 

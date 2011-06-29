@@ -309,7 +309,8 @@ calculate_mic (const unsigned char *plainkey, unsigned char *sha1hash)
 static int
 do_encryption (const unsigned char *protbegin, size_t protlen,
                const char *passphrase,  const unsigned char *sha1hash,
-               unsigned char **result, size_t *resultlen)
+               unsigned char **result, size_t *resultlen,
+	       unsigned long s2k_count)
 {
   gcry_cipher_hd_t hd;
   const char *modestr = "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc";
@@ -368,7 +369,8 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
         {
           rc = hash_passphrase (passphrase, GCRY_MD_SHA1,
                                 3, iv+2*blklen,
-                                get_standard_s2k_count (), key, keylen);
+				s2k_count ? s2k_count : get_standard_s2k_count(),
+				key, keylen);
           if (!rc)
             rc = gcry_cipher_setkey (hd, key, keylen);
           xfree (key);
@@ -411,7 +413,8 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
   {
     char countbuf[35];
 
-    snprintf (countbuf, sizeof countbuf, "%lu", get_standard_s2k_count ());
+    snprintf (countbuf, sizeof countbuf, "%lu",
+	    s2k_count ? s2k_count : get_standard_s2k_count ());
     p = xtryasprintf
       ("(9:protected%d:%s((4:sha18:%n_8bytes_%u:%s)%d:%n%*s)%d:%n%*s)",
        (int)strlen (modestr), modestr,
@@ -443,7 +446,8 @@ do_encryption (const unsigned char *protbegin, size_t protlen,
    a valid S-Exp here. */
 int
 agent_protect (const unsigned char *plainkey, const char *passphrase,
-               unsigned char **result, size_t *resultlen)
+               unsigned char **result, size_t *resultlen,
+	       unsigned long s2k_count)
 {
   int rc;
   const unsigned char *s;
@@ -544,7 +548,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 
   rc = do_encryption (prot_begin, prot_end - prot_begin + 1,
                       passphrase,  hashvalue,
-                      &protected, &protectedlen);
+                      &protected, &protectedlen, s2k_count);
   if (rc)
     return rc;
 

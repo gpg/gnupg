@@ -1866,7 +1866,8 @@ cmd_import_key (assuan_context_t ctx, char *line)
 
   if (passphrase)
     {
-      err = agent_protect (key, passphrase, &finalkey, &finalkeylen);
+      err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
+	      ctrl->s2k_count);
       if (!err)
         err = agent_write_private_key (grip, finalkey, finalkeylen, 0);
     }
@@ -2473,6 +2474,14 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "cache-ttl-opt-preset"))
     {
       ctrl->cache_ttl_opt_preset = *value? atoi (value) : 0;
+    }
+  else if (!strcmp (key, "s2k-count"))
+    {
+      ctrl->s2k_count = *value? strtoul(value, NULL, 10) : 0;
+      if (ctrl->s2k_count && ctrl->s2k_count < 65536) {
+	  ctrl->s2k_count = 0;
+	  err = gpg_error (GPG_ERR_INV_VALUE);
+      }
     }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
