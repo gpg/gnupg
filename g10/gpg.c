@@ -279,7 +279,7 @@ enum cmd_and_opt_values
     oS2KDigest,
     oS2KCipher,
     oS2KCount,
-    oSimpleSKChecksum,                          
+    oSimpleSKChecksum,
     oDisplayCharset,
     oNotDashEscaped,
     oEscapeFrom,
@@ -308,7 +308,7 @@ enum cmd_and_opt_values
     oNoAllowNonSelfsignedUID,
     oAllowFreeformUID,
     oNoAllowFreeformUID,
-    oAllowSecretKeyImport,                      
+    oAllowSecretKeyImport,
     oEnableSpecialFilenames,
     oNoLiteral,
     oSetFilesize,
@@ -992,7 +992,7 @@ open_info_file (const char *fname, int for_write)
      sensitive information may be retrieved by means of error
      messages.  */
   return -1;
-#else 
+#else
   int fd;
 
 /*   if (is_secured_filename (fname)) */
@@ -1015,7 +1015,7 @@ open_info_file (const char *fname, int for_write)
   if ( fd == -1)
     log_error ( for_write? _("can't create `%s': %s\n")
                          : _("can't open `%s': %s\n"), fname, strerror(errno));
-  
+
   return fd;
 #endif
 }
@@ -1678,7 +1678,7 @@ parse_trust_model(const char *model)
 /* Must be called before we open any files. */
 static void
 reopen_std(void)
-{  
+{
 #if defined(HAVE_STAT) && !defined(HAVE_W32_SYSTEM)
   struct stat statbuf;
   int did_stdin=0,did_stdout=0,did_stderr=0;
@@ -1775,7 +1775,7 @@ get_default_configname (void)
       if (configname)
 	{
 	  char *tok;
-	  
+
 	  xfree (configname);
 	  configname = NULL;
 
@@ -1786,13 +1786,13 @@ get_default_configname (void)
 	  else
 	    break;
 	}
-      
+
       configname = make_filename (opt.homedir, name, NULL);
     }
   while (access (configname, R_OK));
 
   xfree(name);
-  
+
   if (! configname)
     configname = make_filename (opt.homedir, "gpg" EXTSEP_S "conf", NULL);
   if (! access (configname, R_OK))
@@ -1930,9 +1930,9 @@ main (int argc, char **argv )
 #elif defined(__APPLE__)
     opt.pcsc_driver = "/System/Library/Frameworks/PCSC.framework/PCSC";
 #elif defined(__GLIBC__)
-    opt.pcsc_driver = "libpcsclite.so.1"; 
+    opt.pcsc_driver = "libpcsclite.so.1";
 #else
-    opt.pcsc_driver = "libpcsclite.so"; 
+    opt.pcsc_driver = "libpcsclite.so";
 #endif
     opt.disable_keypad = 1;  /* No keypad support; use gpg2 instead.  */
 #endif /*ENABLE_CARD_SUPPORT*/
@@ -2079,19 +2079,19 @@ main (int argc, char **argv )
       {
 	switch( pargs.r_opt )
 	  {
-	  case aCheckKeys: 
+	  case aCheckKeys:
 	  case aListConfig:
           case aGPGConfList:
           case aGPGConfTest:
 	  case aListPackets:
-	  case aImport: 
-	  case aFastImport: 
-	  case aSendKeys: 
-	  case aRecvKeys: 
+	  case aImport:
+	  case aFastImport:
+	  case aSendKeys:
+	  case aRecvKeys:
 	  case aSearchKeys:
 	  case aRefreshKeys:
 	  case aFetchKeys:
-	  case aExport: 
+	  case aExport:
             set_cmd (&cmd, pargs.r_opt);
             break;
 	  case aListKeys: set_cmd( &cmd, aListKeys); break;
@@ -2104,7 +2104,7 @@ main (int argc, char **argv )
 	    break;
 	  case aDeleteSecretAndPublicKeys:
             set_cmd( &cmd, aDeleteSecretAndPublicKeys);
-            greeting=1; 
+            greeting=1;
             break;
 	  case aDeleteKeys: set_cmd( &cmd, aDeleteKeys); greeting=1; break;
 
@@ -2205,7 +2205,7 @@ main (int argc, char **argv )
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
           case oDebugLevel: break; /* Not supported.  */
-          case oDebugCCIDDriver: 
+          case oDebugCCIDDriver:
 #if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB)
             ccid_set_debug_level (ccid_set_debug_level (1)+1);
 #endif
@@ -2549,7 +2549,7 @@ main (int argc, char **argv )
 	  case oCommandFile:
             opt.command_fd = open_info_file (pargs.r.ret_str, 0);
             break;
-	  case oCipherAlgo: 
+	  case oCipherAlgo:
             def_cipher_string = xstrdup(pargs.r.ret_str);
             break;
 	  case oDigestAlgo:
@@ -2855,8 +2855,8 @@ main (int argc, char **argv )
             opt.exit_on_status_write_error = 1;
             break;
 
-	  case oLimitCardInsertTries: 
-            opt.limit_card_insert_tries = pargs.r.ret_int; 
+	  case oLimitCardInsertTries:
+            opt.limit_card_insert_tries = pargs.r.ret_int;
             break;
 
 	  case oRequireCrossCert: opt.flags.require_cross_cert=1; break;
@@ -2967,7 +2967,7 @@ main (int argc, char **argv )
 		        "--no-literal" );
     }
 
-#ifndef ENABLE_AGENT_SUPPORT   
+#ifndef ENABLE_AGENT_SUPPORT
     if (opt.use_agent) {
       log_info(_("NOTE: %s is not available in this version\n"),
                "--use-agent");
@@ -3088,7 +3088,9 @@ main (int argc, char **argv )
 	if(opt.def_cipher_algo==0 &&
 	   (ascii_strcasecmp(def_cipher_string,"idea")==0
 	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
-	  idea_cipher_warn(1);
+          {
+            idea_cipher_warn(1);
+          }
 	xfree(def_cipher_string); def_cipher_string = NULL;
 	if( check_cipher_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));
@@ -3305,13 +3307,13 @@ main (int argc, char **argv )
        case of "-kvv userid keyring".  Also avoid adding the secret
        keyring for a couple of commands to avoid unneeded access in
        case the secrings are stored on a floppy.
-       
+
        We always need to add the keyrings if we are running under
        SELinux, this is so that the rings are added to the list of
        secured files. */
-    if( ALWAYS_ADD_KEYRINGS 
+    if( ALWAYS_ADD_KEYRINGS
         || (cmd != aDeArmor && cmd != aEnArmor
-            && !(cmd == aKMode && argc == 2 )) ) 
+            && !(cmd == aKMode && argc == 2 )) )
       {
         if (ALWAYS_ADD_KEYRINGS
             || (cmd != aCheckKeys && cmd != aListSigs && cmd != aListKeys
@@ -3358,11 +3360,11 @@ main (int argc, char **argv )
 
     switch (cmd)
       {
-      case aStore: 
-      case aSym:  
-      case aSign: 
-      case aSignSym: 
-      case aClearsign: 
+      case aStore:
+      case aSym:
+      case aSign:
+      case aSignSym:
+      case aClearsign:
         if (!opt.quiet && any_explicit_recipient)
           log_info (_("WARNING: recipients (-r) given "
                       "without using public key encryption\n"));
@@ -3522,7 +3524,7 @@ main (int argc, char **argv )
 	      log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
 	  }
 	break;
-            
+
       case aSignKey:
 	if( argc != 1 )
 	  wrong_args(_("--sign-key user-id"));
@@ -3901,7 +3903,7 @@ main (int argc, char **argv )
 	    wrong_args("--import-ownertrust [file]");
 	import_ownertrust( argc? *argv:NULL );
 	break;
-      
+
       case aPipeMode:
         if ( argc )
             wrong_args ("--pipemode");
@@ -4106,12 +4108,12 @@ print_hashline( MD_HANDLE md, int algo, const char *fname )
 {
     int i, n;
     const byte *p;
-    
+
     if ( fname ) {
         for (p = fname; *p; p++ ) {
             if ( *p <= 32 || *p > 127 || *p == ':' || *p == '%' )
                 printf("%%%02X", *p );
-            else 
+            else
                 putchar( *p );
         }
     }
@@ -4119,7 +4121,7 @@ print_hashline( MD_HANDLE md, int algo, const char *fname )
     printf("%d:", algo );
     p = md_read( md, algo );
     n = md_digest_length(algo);
-    for(i=0; i < n ; i++, p++ ) 
+    for(i=0; i < n ; i++, p++ )
         printf("%02X", *p );
     putchar(':');
     putchar('\n');
@@ -4177,7 +4179,7 @@ print_mds( const char *fname, int algo )
     else {
 	md_final(md);
         if ( opt.with_colons ) {
-            if ( algo ) 
+            if ( algo )
                 print_hashline( md, algo, fname );
             else {
                 print_hashline( md, DIGEST_ALGO_MD5, fname );
@@ -4274,7 +4276,7 @@ add_policy_url( const char *string, int which )
     sl=add_to_strlist( &opt.sig_policy_url, string );
 
   if(critical)
-    sl->flags |= 1;    
+    sl->flags |= 1;
 }
 
 static void
@@ -4307,5 +4309,5 @@ add_keyserver_url( const char *string, int which )
     sl=add_to_strlist( &opt.sig_keyserver_url, string );
 
   if(critical)
-    sl->flags |= 1;    
+    sl->flags |= 1;
 }

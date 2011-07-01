@@ -35,7 +35,7 @@
 
 #ifdef HAVE_UNSIGNED_TIME_T
 # define INVALID_TIME_CHECK(a) ((a) == (time_t)(-1))
-#else 
+#else
   /* Error or 32 bit time_t and value after 2038-01-19.  */
 # define INVALID_TIME_CHECK(a) ((a) < 0)
 #endif
@@ -51,6 +51,8 @@ pubkey_letter( int algo )
       case PUBKEY_ALGO_ELGAMAL_E: return 'g';
       case PUBKEY_ALGO_ELGAMAL: return 'G' ;
       case PUBKEY_ALGO_DSA:	return 'D' ;
+      case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
+      case PUBKEY_ALGO_ECDH:	return 'e' ;	/* ECC DH (encrypt only) */
       default: return '?';
     }
 }
@@ -100,7 +102,7 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
       u16 days=0;
       if(pk->expiredate)
 	days=(u16)((pk->expiredate - pk->timestamp) / 86400L);
- 
+
       md_putc( md, days >> 8 );
       md_putc( md, days );
     }
@@ -175,7 +177,7 @@ keystrlen(void)
 
 const char *
 keystr(u32 *keyid)
-{  
+{
   static char keyid_str[19];
 
   switch(opt.keyid_format)
