@@ -1,3 +1,7 @@
+2011-07-01  Werner Koch  <wk@g10code.com>
+
+	* cipher.h (PUBKEY_ALGO_ECDH, PUBKEY_ALGO_ECDSA): New.
+
 2009-08-20  Daiki Ueno  <ueno@unixuser.org>  (wk)
 
 	* cipher.h (struct DEK): Add field S2K_CACHEID.
@@ -215,7 +219,7 @@
 
 	* KEYSERVER_SCHEME_NOT_FOUND should be 127 to match the POSIX
 	system() (via /bin/sh) way of signaling this.
-	
+
 	* Added G10ERR_KEYSERVER
 
 2001-12-27  Werner Koch  <wk@gnupg.org>
@@ -245,7 +249,7 @@
 
 2001-08-24  Werner Koch  <wk@gnupg.org>
 
-	* cipher.h (md_write): Made buf arg const. 
+	* cipher.h (md_write): Made buf arg const.
 
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
@@ -255,7 +259,7 @@
 	never use __attribute__.
 	* cipher.h, iobuf.h, memory.h, mpi.h [__riscos__]: extern hack.
 	* i18n.h [__riscos__]: Use another include file
-	
+
 2001-05-30  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.h (tty_printf): Add missing parenthesis for non gcc.
@@ -431,5 +435,3 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

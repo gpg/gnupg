@@ -1,3 +1,7 @@
+2011-07-01  Werner Koch  <wk@g10code.com>
+
+	* keyid.c (pubkey_letter): Add letters e and E.
+
 2011-06-13  Werner Koch  <wk@g10code.com>
 
 	* pkglue.c (mpi_from_sexp, pk_decrypt): Use GCRYMPI_FMT_USG for

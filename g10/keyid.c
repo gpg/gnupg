@@ -45,6 +45,8 @@ pubkey_letter( int algo )
       case PUBKEY_ALGO_ELGAMAL_E: return 'g';
       case PUBKEY_ALGO_ELGAMAL: return 'G' ;
       case PUBKEY_ALGO_DSA:	return 'D' ;
+      case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
+      case PUBKEY_ALGO_ECDH:	return 'e' ;	/* ECC DH (encrypt only) */
       default: return '?';
     }
 }
@@ -102,7 +104,7 @@ hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
       u16 days=0;
       if(pk->expiredate)
 	days=(u16)((pk->expiredate - pk->timestamp) / 86400L);
- 
+
       gcry_md_putc ( md, days >> 8 );
       gcry_md_putc ( md, days );
     }
@@ -170,7 +172,7 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
     BUG ();
   if (nbytes < 8) /* oops */
     ki[0] = ki[1] = 0;
-  else 
+  else
     {
       p = buffer + nbytes - 8;
       ki[0] = (p[0] << 24) | (p[1] <<16) | (p[2] << 8) | p[3];
@@ -206,7 +208,7 @@ keystrlen(void)
 
 const char *
 keystr(u32 *keyid)
-{  
+{
   static char keyid_str[19];
 
   switch(opt.keyid_format)
@@ -452,13 +454,13 @@ namehash_from_uid(PKT_user_id *uid)
   if (!uid->namehash)
     {
       uid->namehash = xmalloc (20);
-      
+
       if(uid->attrib_data)
 	rmd160_hash_buffer (uid->namehash, uid->attrib_data, uid->attrib_len);
       else
 	rmd160_hash_buffer (uid->namehash, uid->name, uid->len);
     }
-  
+
   return uid->namehash;
 }
 
@@ -636,7 +638,7 @@ const char *
 colon_datestr_from_sig (PKT_signature *sig)
 {
   static char buf[20];
-  
+
   snprintf (buf, sizeof buf, "%lu", (ulong)sig->timestamp);
   return buf;
 }
@@ -667,21 +669,21 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
   const byte *dp;
   size_t len, nbytes;
   int i;
-  
+
   if ( pk->version < 4 )
     {
       if ( is_RSA(pk->pubkey_algo) )
         {
           /* RSA in version 3 packets is special. */
           gcry_md_hd_t md;
-          
+
           if (gcry_md_open (&md, DIGEST_ALGO_MD5, 0))
             BUG ();
-          if ( pubkey_get_npkey (pk->pubkey_algo) > 1 ) 
+          if ( pubkey_get_npkey (pk->pubkey_algo) > 1 )
             {
               for (i=0; i < 2; i++)
                 {
-                  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, 
+                  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0,
                                       &nbytes, pk->pkey[i]))
                     BUG ();
                   /* fixme: Better allocate BUF on the stack */
@@ -708,10 +710,10 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
           memset (array,0,16);
         }
     }
-  else 
+  else
     {
       gcry_md_hd_t md;
-      
+
       md = do_fingerprint_md(pk);
       dp = gcry_md_read( md, 0 );
       len = gcry_md_get_algo_dlen (gcry_md_get_algo (md));
@@ -723,7 +725,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
       pk->keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
       gcry_md_close( md);
     }
-  
+
   *ret_len = len;
   return array;
 }
@@ -735,21 +737,21 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
   const char *dp;
   size_t len, nbytes;
   int i;
-  
+
   if (sk->version < 4)
     {
       if ( is_RSA(sk->pubkey_algo) )
         {
           /* RSA in version 3 packets is special. */
           gcry_md_hd_t md;
-          
+
           if (gcry_md_open (&md, DIGEST_ALGO_MD5, 0))
             BUG ();
           if (pubkey_get_npkey( sk->pubkey_algo ) > 1)
             {
               for (i=0; i < 2; i++)
                 {
-                  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0, 
+                  if (gcry_mpi_print (GCRYMPI_FMT_USG, NULL, 0,
                                       &nbytes, sk->skey[i]))
                     BUG ();
                   /* fixme: Better allocate BUF on the stack */
@@ -779,7 +781,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
   else
     {
       gcry_md_hd_t md;
-      
+
       md = do_fingerprint_md_sk(sk);
       if (md)
         {
@@ -799,7 +801,7 @@ fingerprint_from_sk( PKT_secret_key *sk, byte *array, size_t *ret_len )
           memset (array, 0, len);
         }
     }
-  
+
   *ret_len = len;
   return array;
 }
@@ -816,7 +818,7 @@ serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
   size_t fprlen;
   char *buffer, *p;
   int i;
-  
+
   fingerprint_from_sk (sk, fpr, &fprlen);
   buffer = p = xmalloc (snlen*2 + 1 + fprlen*2 + 1);
   for (i=0; i < snlen; i++, p+=2)
@@ -827,4 +829,3 @@ serialno_and_fpr_from_sk (const unsigned char *sn, size_t snlen,
   *p = 0;
   return buffer;
 }
-

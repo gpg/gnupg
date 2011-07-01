@@ -1,4 +1,4 @@
-/* cipher.h - Definitions for OpenPGP 
+/* cipher.h - Definitions for OpenPGP
  * Copyright (C) 1998, 1999, 2000, 2001, 2006,
  *               2007  Free Software Foundation, Inc.
  *
@@ -24,8 +24,8 @@
 
 /* Macros for compatibility with older libgcrypt versions. */
 #ifndef GCRY_PK_USAGE_CERT
-# define GCRY_PK_USAGE_CERT 4 
-# define GCRY_PK_USAGE_AUTH 8  
+# define GCRY_PK_USAGE_CERT 4
+# define GCRY_PK_USAGE_AUTH 8
 # define GCRY_PK_USAGE_UNKN 128
 #endif
 
@@ -51,11 +51,13 @@
 #define CIPHER_ALGO_CAMELLIA256     13
 #define CIPHER_ALGO_DUMMY          110    /* No encryption at all. */
 
-#define PUBKEY_ALGO_RSA          /*  1 */ GCRY_PK_RSA  
-#define PUBKEY_ALGO_RSA_E        /*  2 */ GCRY_PK_RSA_E /* RSA encrypt only. */ 
+#define PUBKEY_ALGO_RSA          /*  1 */ GCRY_PK_RSA
+#define PUBKEY_ALGO_RSA_E        /*  2 */ GCRY_PK_RSA_E /* RSA encrypt only. */
 #define PUBKEY_ALGO_RSA_S        /*  3 */ GCRY_PK_RSA_S /* RSA sign only.    */
 #define PUBKEY_ALGO_ELGAMAL_E    /* 16 */ GCRY_PK_ELG_E /* Elgamal encr only */
-#define PUBKEY_ALGO_DSA          /* 17 */ GCRY_PK_DSA                          
+#define PUBKEY_ALGO_DSA          /* 17 */ GCRY_PK_DSA
+#define PUBKEY_ALGO_ECDH            18
+#define PUBKEY_ALGO_ECDSA           19
 #define PUBKEY_ALGO_ELGAMAL      /* 20 */ GCRY_PK_ELG   /* Elgamal encr+sign */
 
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */
@@ -86,7 +88,7 @@
 #define is_DSA(a)     ((a)==PUBKEY_ALGO_DSA)
 
 /* The data encryption key object. */
-typedef struct 
+typedef struct
 {
   int algo;
   int keylen;
