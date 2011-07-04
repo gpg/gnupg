@@ -1,3 +1,8 @@
+2011-07-04  Werner Koch  <wk@g10code.com>
+
+	* longlong.h: [__arm__]: Do no use asm if thumb code generation is
+	enabled.  Fixes bug#1202.
+
 2010-10-28  Werner Koch  <wk@g10code.com>
 
 	* longlong.h: Revert last two changes and replace by code from
@@ -206,7 +211,7 @@
 2002-08-02  Timo Schulz  <ts@winpt.org>
 
 	* mpicoder.c: Add a '\n' to all log_bug functions.
-	
+
 2002-08-01  Werner Koch  <wk@gnupg.org>
 
 	* config.links: Added case for sparc64-netbsd. Suggested by
@@ -239,7 +244,7 @@
 	* i386/mpih-add1.S, i386/mpih-sub1.S, i386/mpih-rshift.S,
 	i386/mpih-lshift.S: Minor syntax changes suggested by Mark Pettit
 	after comparing the files with those for GMP 4.
-	
+
 2001-11-08  Werner Koch  <wk@gnupg.org>
 
 	* config.links (mpi_sflags): Add extra rule for sparc64-sun-solaris2.
@@ -290,7 +295,7 @@
 	* mpi.h: Removed the inclusion of mpi-asm-defs.h because this
 	makes some trouble when doing a VPATH build.  configure now
 	takes care of it.
-	
+
 2000-10-12  Werner Koch  <wk@gnupg.org>
 
 	* generic/mpi-asm-defs.h: New.
@@ -551,5 +556,3 @@ Mon Feb 16 13:00:27 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

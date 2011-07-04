@@ -2,7 +2,7 @@
    Note: I added some stuff for use with gnupg
 
 Copyright (C) 1991, 1992, 1993, 1994, 1996, 1998,
-              2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+              2000, 2001, 2002, 2003, 2011 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
@@ -180,7 +180,7 @@ extern UDItype __udiv_qrnnd ();
 /***************************************
  **************  ARM  ******************
  ***************************************/
-#if defined (__arm__) && W_TYPE_SIZE == 32
+#if defined (__arm__) && W_TYPE_SIZE == 32 && !defined (__thumb__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("adds %1, %4, %5\n"                                          \
 	   "adc  %0, %2, %3"                                            \
