@@ -1,6 +1,10 @@
 Noteworthy changes in version 2.0.18 (unreleased)
 -------------------------------------------------
 
+ * Allow generation of card keys up to 4096 bit.
+
+ * Bug fix for newer versions of Libgcrypt.
+
 
 Noteworthy changes in version 2.0.17 (2011-01-13)
 -------------------------------------------------

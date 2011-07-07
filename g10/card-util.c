@@ -1284,7 +1284,7 @@ static unsigned int
 ask_card_keysize (int keyno, unsigned int nbits)
 {
   unsigned int min_nbits = 1024;
-  unsigned int max_nbits = 3072; /* GnuPG limit due to Assuan.  */
+  unsigned int max_nbits = 4096;
   char *prompt, *answer;
   unsigned int req_nbits;
 
