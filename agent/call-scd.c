@@ -1175,6 +1175,19 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
                         pass_data_thru, assuan_context,
                         inq_needpin, &inqparm,
                         pass_status_thru, assuan_context);
+  if (gpg_err_code(rc) == GPG_ERR_ASS_CANCELED)
+    {
+      rc = assuan_write_line(ctrl->scd_local->ctx, "CAN");
+      if (!rc) {
+	char *line;
+	size_t len;
+
+	rc = assuan_read_line(ctrl->scd_local->ctx, &line, &len);
+	if (!rc)
+	  rc = gpg_error(GPG_ERR_ASS_CANCELED);
+      }
+    }
+
   assuan_set_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS, saveflag);
   if (rc)
     {

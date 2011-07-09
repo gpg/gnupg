@@ -1,3 +1,8 @@
+2011-07-09  Ben Kibbey <bjk@luxsci.net>
+
+	* call-scd.c (agent_card_scd): Send the CANCEL command back to SCD
+	when the SCD command is cancelled from the client.
+
 2011-07-22  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (ssh_receive_key): Do not init comment to an empty
