@@ -2152,7 +2152,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		  ski->s2k.count = iobuf_get (inp);
 		  pktlen--;
 		  if (list_mode)
-		    es_fprintf (listfp, "\tprotect count: %lu\n",
+		    es_fprintf (listfp, "\tprotect count: %lu (%lu)\n",
+                                (ulong)S2K_DECODE_COUNT ((ulong)ski->s2k.count),
                                 (ulong) ski->s2k.count);
 		}
 	      else if (ski->s2k.mode == 1002)
