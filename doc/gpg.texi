@@ -1429,7 +1429,8 @@ required if @code{local} is also used.
 Select how to display key IDs. "short" is the traditional 8-character
 key ID. "long" is the more accurate (but less convenient)
 16-character key ID. Add an "0x" to either to include an "0x" at the
-beginning of the key ID, as in 0x99242560.
+beginning of the key ID, as in 0x99242560.  Note that this option is
+ignored if the option --with-colons is used.
 
 @item --keyserver @code{name}
 Use @code{name} as your keyserver. This is the server that
