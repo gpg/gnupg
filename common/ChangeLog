@@ -1,5 +1,12 @@
 2011-08-04  Werner Koch  <wk@g10code.com>
 
+	* ssh-utils.c, ssh-utils.h: New.
+	* t-ssh-utils.c: New.
+	* Makefile.am (t_ssh_utils_LDADD): New.
+	(module_tests): Add t-ssh-utils.c
+
+2011-08-04  Werner Koch  <wk@g10code.com>
+
 	* pka.c (get_pka_info): Remove set but unused variables ARCOUNT
 	and NSCOUNT.
 	* estream.c (es_fwrite, es_fread): Remove set but unused variable
