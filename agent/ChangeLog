@@ -1,5 +1,20 @@
 2011-08-04  Werner Koch  <wk@g10code.com>
 
+	* command-ssh.c (ssh_identity_register): Display the ssh
+	fingerprint in the prompt.
+	(add_control_entry): Add arg FMTFPR and use it as comment in
+	sshcontrol.
+	(confirm_flag_from_sshcontrol): New.
+	(data_sign): Ask for confirmaton if requested.
+	(search_control_file): Add new arg R_CONFIRM and enhance parser.
+	* findkey.c (agent_raw_key_from_file): New.
+	(modify_description): Add format letter %F.
+
+	* findkey.c (agent_key_from_file): Simplify comment extraction by
+	using gcry_sexp_nth_string.
+
+2011-08-04  Werner Koch  <wk@g10code.com>
+
 	* genkey.c (check_passphrase_pattern): Use gpg_strerror.
 
 	* command-ssh.c (ssh_receive_mpint_list): Remove set but unused

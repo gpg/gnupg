@@ -1,6 +1,6 @@
 /* findkey.c - Locate the secret key
- * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2007  Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+ *               2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,13 +33,14 @@
 
 #include "agent.h"
 #include "i18n.h"
+#include "../common/ssh-utils.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
 
 /* Helper to pass data to the check callback of the unprotect function. */
-struct try_unprotect_arg_s 
+struct try_unprotect_arg_s
 {
   ctrl_t ctrl;
   const unsigned char *protected_key;
@@ -60,7 +61,7 @@ agent_write_private_key (const unsigned char *grip,
   FILE *fp;
   char hexgrip[40+4+1];
   int fd;
-  
+
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
@@ -80,9 +81,9 @@ agent_write_private_key (const unsigned char *grip,
      then use fdopen to obtain a stream. */
   fd = open (fname, force? (O_CREAT | O_TRUNC | O_WRONLY | O_BINARY)
                          : (O_CREAT | O_EXCL | O_WRONLY | O_BINARY),
-             S_IRUSR | S_IWUSR 
+             S_IRUSR | S_IWUSR
 #ifndef HAVE_W32_SYSTEM
-                 | S_IRGRP 
+                 | S_IRGRP
 #endif
                  );
   if (fd < 0)
@@ -91,15 +92,15 @@ agent_write_private_key (const unsigned char *grip,
     {
       fp = fdopen (fd, "wb");
       if (!fp)
-        { 
+        {
           int save_e = errno;
           close (fd);
           errno = save_e;
         }
     }
 
-  if (!fp) 
-    { 
+  if (!fp)
+    {
       gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
       log_error ("can't create `%s': %s\n", fname, strerror (errno));
       xfree (fname);
@@ -168,7 +169,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
       if (strcmp (now, tmptime) > 0 )
         {
           /* Passphrase "expired".  */
-          desc = xtryasprintf 
+          desc = xtryasprintf
             (_("This passphrase has not been changed%%0A"
                "since %.4s-%.2s-%.2s.  Please change it now."),
              protected_at, protected_at+4, protected_at+6);
@@ -209,12 +210,14 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 
    %% - Replaced by a single %
    %c - Replaced by the content of COMMENT.
+   %F - Replaced by an ssh style fingerprint computed from KEY.
 
    The functions returns 0 on success or an error code.  On success a
    newly allocated string is stored at the address of RESULT.
  */
 static gpg_error_t
-modify_description (const char *in, const char *comment, char **result)
+modify_description (const char *in, const char *comment, const gcry_sexp_t key,
+                    char **result)
 {
   size_t comment_length;
   size_t in_len;
@@ -222,6 +225,7 @@ modify_description (const char *in, const char *comment, char **result)
   char *out;
   size_t i;
   int special, pass;
+  char *ssh_fpr = NULL;
 
   comment_length = strlen (comment);
   in_len  = strlen (in);
@@ -257,6 +261,18 @@ modify_description (const char *in, const char *comment, char **result)
                     out_len += comment_length;
                   break;
 
+                case 'F': /* SSH style fingerprint.  */
+                  if (!ssh_fpr && key)
+                    ssh_get_fingerprint_string (key, &ssh_fpr);
+                  if (ssh_fpr)
+                    {
+                      if (out)
+                        out = stpcpy (out, ssh_fpr);
+                      else
+                        out_len += strlen (ssh_fpr);
+                    }
+                  break;
+
                 default: /* Invalid special sequences are kept as they are. */
                   if (out)
                     {
@@ -278,21 +294,25 @@ modify_description (const char *in, const char *comment, char **result)
                 out_len++;
             }
         }
-      
+
       if (!pass)
         {
           *result = out = xtrymalloc (out_len + 1);
           if (!out)
-            return gpg_error_from_syserror ();
+            {
+              xfree (ssh_fpr);
+              return gpg_error_from_syserror ();
+            }
         }
     }
 
   *out = 0;
   assert (*result + out_len == out);
+  xfree (ssh_fpr);
   return 0;
 }
 
-  
+
 
 /* Unprotect the canconical encoded S-expression key in KEYBUF.  GRIP
    should be the hex encoded keygrip of that key to be used with the
@@ -301,7 +321,7 @@ modify_description (const char *in, const char *comment, char **result)
    function is used to lookup the default ttl. */
 static int
 unprotect (ctrl_t ctrl, const char *desc_text,
-           unsigned char **keybuf, const unsigned char *grip, 
+           unsigned char **keybuf, const unsigned char *grip,
            cache_mode_t cache_mode, lookup_ttl_t lookup_ttl)
 {
   struct pin_entry_info_s *pi;
@@ -310,7 +330,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
   unsigned char *result;
   size_t resultlen;
   char hexgrip[40+1];
-  
+
   bin2hex (grip, 20, hexgrip);
 
   /* First try to get it from the cache - if there is none or we can't
@@ -319,7 +339,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
     {
       void *cache_marker;
       const char *pw;
-      
+
     retry:
       pw = agent_get_cache (hexgrip, cache_mode, &cache_marker);
       if (pw)
@@ -352,7 +372,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
             {
               /* We need to give the other thread a chance to actually put
                  it into the cache. */
-              pth_sleep (1); 
+              pth_sleep (1);
               goto retry;
             }
           /* Timeout - better call pinentry now the plain way. */
@@ -381,7 +401,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
         {
           size_t canlen, erroff;
           gcry_sexp_t s_skey;
-          
+
           assert (arg.unprotected_key);
           canlen = gcry_sexp_canon_len (arg.unprotected_key, 0, NULL, NULL);
           rc = gcry_sexp_sscan (&s_skey, &erroff,
@@ -399,7 +419,7 @@ unprotect (ctrl_t ctrl, const char *desc_text,
           gcry_sexp_release (s_skey);
           if (rc)
             {
-              log_error ("changing the passphrase failed: %s\n", 
+              log_error ("changing the passphrase failed: %s\n",
                          gpg_strerror (rc));
               wipememory (arg.unprotected_key, canlen);
               xfree (arg.unprotected_key);
@@ -407,8 +427,8 @@ unprotect (ctrl_t ctrl, const char *desc_text,
               return rc;
             }
         }
-      else 
-        agent_put_cache (hexgrip, cache_mode, pi->pin, 
+      else
+        agent_put_cache (hexgrip, cache_mode, pi->pin,
                          lookup_ttl? lookup_ttl (hexgrip) : 0);
       xfree (*keybuf);
       *keybuf = arg.unprotected_key;
@@ -432,7 +452,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   size_t buflen, erroff;
   gcry_sexp_t s_skey;
   char hexgrip[40+4+1];
-  
+
   *result = NULL;
 
   bin2hex (grip, 20, hexgrip);
@@ -448,7 +468,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
       xfree (fname);
       return rc;
     }
-  
+
   if (fstat (fileno(fp), &st))
     {
       rc = gpg_error_from_syserror ();
@@ -507,7 +527,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
   int got_shadow_info = 0;
-  
+
   *result = NULL;
   if (shadow_info)
     *shadow_info = NULL;
@@ -529,45 +549,26 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
       {
-	gcry_sexp_t comment_sexp;
-	size_t comment_length;
 	char *desc_text_final;
-	const char *comment = NULL;
+	char *comment = NULL;
 
         /* Note, that we will take the comment as a C string for
            display purposes; i.e. all stuff beyond a Nul character is
            ignored.  */
-	comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
-	if (comment_sexp)
-	  comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
-	if (!comment)
-	  {
-	    comment = "";
-	    comment_length = 0;
-	  }
+        {
+          gcry_sexp_t comment_sexp;
+
+          comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+          if (comment_sexp)
+            comment = gcry_sexp_nth_string (comment_sexp, 1);
+          gcry_sexp_release (comment_sexp);
+        }
 
         desc_text_final = NULL;
 	if (desc_text)
-	  {
-            if (comment[comment_length])
-              {
-                /* Not a C-string; create one.  We might here allocate
-                   more than actually displayed but well, that
-                   shouldn't be a problem.  */
-                char *tmp = xtrymalloc (comment_length+1);
-                if (!tmp)
-                  rc = gpg_error_from_syserror ();
-                else
-                  {
-                    memcpy (tmp, comment, comment_length);
-                    tmp[comment_length] = 0;
-                    rc = modify_description (desc_text, tmp, &desc_text_final);
-                    xfree (tmp);
-                  }
-              }
-            else
-              rc = modify_description (desc_text, comment, &desc_text_final);
-	  }
+          rc = modify_description (desc_text, comment? comment:"", s_skey,
+                                   &desc_text_final);
+        gcry_free (comment);
 
 	if (!rc)
 	  {
@@ -577,8 +578,7 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
 	      log_error ("failed to unprotect the secret key: %s\n",
 			 gpg_strerror (rc));
 	  }
-        
-	gcry_sexp_release (comment_sexp);
+
 	xfree (desc_text_final);
       }
       break;
@@ -638,13 +638,34 @@ agent_key_from_file (ctrl_t ctrl, const char *desc_text,
 }
 
 
+/* Return the key for the keygrip GRIP.  The result is stored at
+   RESULT.  This function extracts the key from the private key
+   database and returns it as an S-expression object as it is.  On
+   failure an error code is returned and NULL stored at RESULT. */
+gpg_error_t
+agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
+                         gcry_sexp_t *result)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_skey;
+
+  (void)ctrl;
+
+  *result = NULL;
+
+  err = read_key_file (grip, &s_skey);
+  if (!err)
+    *result = s_skey;
+  return err;
+}
+
 
 /* Return the public key for the keygrip GRIP.  The result is stored
    at RESULT.  This function extracts the public key from the private
    key database.  On failure an error code is returned and NULL stored
    at RESULT. */
 gpg_error_t
-agent_public_key_from_file (ctrl_t ctrl, 
+agent_public_key_from_file (ctrl_t ctrl,
                             const unsigned char *grip,
                             gcry_sexp_t *result)
 {
@@ -723,7 +744,7 @@ agent_public_key_from_file (ctrl_t ctrl,
       return rc;
     }
 
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       l2 = gcry_sexp_find_token (list, s, 1);
       if (!l2)
@@ -790,7 +811,7 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   argidx = 0;
   p = stpcpy (stpcpy (format, "(public-key("), algoname);
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       *p++ = '(';
       *p++ = *s;
@@ -817,7 +838,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   *p = 0;
   assert (argidx < DIM (args));
   args[argidx] = NULL;
-    
+
   rc = gcry_sexp_build_array (&list, NULL, format, args);
   xfree (format);
   for (i=0; array[i]; i++)
@@ -841,7 +862,7 @@ agent_key_available (const unsigned char *grip)
   int result;
   char *fname;
   char hexgrip[40+4+1];
-  
+
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
@@ -867,7 +888,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   int keytype;
 
   (void)ctrl;
-  
+
   if (r_keytype)
     *r_keytype = PRIVATE_KEY_UNKNOWN;
   if (r_shadow_info)
@@ -875,7 +896,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 
   {
     gcry_sexp_t sexp;
-    
+
     err = read_key_file (grip, &sexp);
     if (err)
       {
@@ -889,12 +910,12 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
     if (err)
       return err;
   }
-  
+
   keytype = agent_private_key_type (buf);
   switch (keytype)
     {
     case PRIVATE_KEY_CLEAR:
-      break; 
+      break;
     case PRIVATE_KEY_PROTECTED:
       /* If we ever require it we could retrieve the comment fields
          from such a key. */

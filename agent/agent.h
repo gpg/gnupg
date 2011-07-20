@@ -117,7 +117,7 @@ struct
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_ASSUAN_VALUE 1024   
+#define DBG_ASSUAN_VALUE 1024
 
 #define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -130,14 +130,14 @@ struct server_local_s;
 struct scd_local_s;
 
 /* Collection of data per session (aka connection). */
-struct server_control_s 
+struct server_control_s
 {
   /* Private data used to fire up the connection thread.  We use this
      structure do avoid an extra allocation for just a few bytes. */
   struct {
     gnupg_fd_t fd;
   } thread_startup;
-  
+
   /* Private data of the server (command.c). */
   struct server_local_s *server_local;
 
@@ -164,7 +164,7 @@ struct server_control_s
 };
 
 
-struct pin_entry_info_s 
+struct pin_entry_info_s
 {
   int min_digits; /* min. number of digits required or 0 for freeform entry */
   int max_digits; /* max. number of allowed digits allowed*/
@@ -179,7 +179,7 @@ struct pin_entry_info_s
 };
 
 
-enum 
+enum
   {
     PRIVATE_KEY_UNKNOWN = 0,
     PRIVATE_KEY_CLEAR = 1,
@@ -189,7 +189,7 @@ enum
 
 
 /* Values for the cache_mode arguments. */
-typedef enum 
+typedef enum
   {
     CACHE_MODE_IGNORE = 0, /* Special mode to bypass the cache. */
     CACHE_MODE_ANY,        /* Any mode except ignore matches. */
@@ -227,14 +227,16 @@ void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 /*-- findkey.c --*/
 int agent_write_private_key (const unsigned char *grip,
                              const void *buffer, size_t length, int force);
-gpg_error_t agent_key_from_file (ctrl_t ctrl, 
+gpg_error_t agent_key_from_file (ctrl_t ctrl,
                                  const char *desc_text,
                                  const unsigned char *grip,
                                  unsigned char **shadow_info,
                                  cache_mode_t cache_mode,
                                  lookup_ttl_t lookup_ttl,
                                  gcry_sexp_t *result);
-gpg_error_t agent_public_key_from_file (ctrl_t ctrl, 
+gpg_error_t agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
+                                     gcry_sexp_t *result);
+gpg_error_t agent_public_key_from_file (ctrl_t ctrl,
                                         const unsigned char *grip,
                                         gcry_sexp_t *result);
 int agent_key_available (const unsigned char *grip);
@@ -285,7 +287,7 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
 
 /*-- genkey.c --*/
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
-int agent_genkey (ctrl_t ctrl, 
+int agent_genkey (ctrl_t ctrl,
                   const char *keyparam, size_t keyparmlen, membuf_t *outbuf);
 int agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey);
 
@@ -294,7 +296,7 @@ unsigned long get_standard_s2k_count (void);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen);
 int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
-                     gnupg_isotime_t protected_at, 
+                     gnupg_isotime_t protected_at,
                      unsigned char **result, size_t *resultlen);
 int agent_private_key_type (const unsigned char *privatekey);
 unsigned char *make_shadow_info (const char *serialno, const char *idstring);
@@ -303,7 +305,7 @@ int agent_shadow_key (const unsigned char *pubkey,
                       unsigned char **result);
 int agent_get_shadow_info (const unsigned char *shadowkey,
                            unsigned char const **shadow_info);
-gpg_error_t parse_shadow_info (const unsigned char *shadow_info, 
+gpg_error_t parse_shadow_info (const unsigned char *shadow_info,
                                char **r_hexsn, char **r_idstr);
 
 
@@ -317,7 +319,7 @@ void agent_reload_trustlist (void);
 
 
 /*-- divert-scd.c --*/
-int divert_pksign (ctrl_t ctrl, 
+int divert_pksign (ctrl_t ctrl,
                    const unsigned char *digest, size_t digestlen, int algo,
                    const unsigned char *shadow_info, unsigned char **r_sig);
 int divert_pkdecrypt (ctrl_t ctrl,

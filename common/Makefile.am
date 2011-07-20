@@ -123,21 +123,8 @@ endif
 #
 # Module tests
 #
-<<<<<<< HEAD
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil t-exechelp \
-	       t-session-env
-=======
-t_jnlib_src = t-support.c t-support.h
-jnlib_tests = t-stringhelp t-timestuff
-if HAVE_W32_SYSTEM
-jnlib_tests += t-w32-reg
-endif
-module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
-	       t-session-env t-openpgp-oid t-ssh-utils
-if !HAVE_W32CE_SYSTEM
-module_tests += t-exechelp
-endif
->>>>>>> New functions to compute an ssh style fingerprint.
+	       t-session-env t-ssh-utils
 module_maint_tests = t-helpfile t-b64
 
 t_common_ldadd = libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
@@ -152,9 +139,4 @@ t_sexputil_LDADD = $(t_common_ldadd)
 t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
-<<<<<<< HEAD
-
-=======
-t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
->>>>>>> New functions to compute an ssh style fingerprint.

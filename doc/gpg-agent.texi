@@ -640,6 +640,12 @@ digits, optionally followed by the caching TTL in seconds and another
 optional field for arbitrary flags.  A non-zero TTL overrides the global
 default as set by @option{--default-cache-ttl-ssh}.
 
+The only flag support is @code{confirm}.  If this flag is found for a
+key, each use of the key will pop up a pinentry to confirm the use of
+that key.  The flag is automatically set if a new key was loaded into
+@code{gpg-agent} using the option @option{-c} of the @code{ssh-add}
+command.
+
 The keygrip may be prefixed with a @code{!} to disable an entry entry.
     
 The following example lists exactly one key.  Note that keys available
@@ -647,8 +653,9 @@ through a OpenPGP smartcard in the active smartcard reader are
 implicitly added to this list; i.e. there is no need to list them.
   
   @example
-  # Key added on 2005-02-25 15:08:29
-  5A6592BF45DC73BD876874A28FD4639282E29B52 0
+  # Key added on: 2011-07-20 20:38:46
+  # Fingerprint:  5e:8d:c4:ad:e7:af:6e:27:8a:d6:13:e4:79:ad:0b:81
+  34B62F25E277CF13D3C6BCEBFD3F85D08F0A864B 0 confirm
   @end example
 
 @item private-keys-v1.d/

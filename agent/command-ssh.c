@@ -34,6 +34,8 @@
 
 #include "estream.h"
 #include "i18n.h"
+#include "../common/ssh-utils.h"
+
 
 
 
@@ -711,18 +713,25 @@ open_control_file (FILE **r_fp, int append)
 /* Search the file at stream FP from the beginning until a matching
    HEXGRIP is found; return success in this case and store true at
    DISABLED if the found key has been disabled.  If R_TTL is not NULL
-   a specified TTL for that key is stored there. */
+   a specified TTL for that key is stored there.  If R_CONFIRM is not
+   NULL it is set to 1 if the key has the confirm flag set. */
 static gpg_error_t
 search_control_file (FILE *fp, const char *hexgrip,
-                     int *r_disabled, int *r_ttl)
+                     int *r_disabled, int *r_ttl, int *r_confirm)
 {
-  int c, i;
+  int c, i, n;
   char *p, *pend, line[256];
   long ttl;
+  int lnr = 0;
+  const char fname[] = "sshcontrol";
 
   assert (strlen (hexgrip) == 40 );
 
-  rewind (fp);
+  if (r_confirm)
+    *r_confirm = 0;
+
+  fseek (fp, 0, SEEK_SET);
+  clearerr (fp);
   *r_disabled = 0;
  next_line:
   do
@@ -733,6 +742,7 @@ search_control_file (FILE *fp, const char *hexgrip,
             return gpg_error (GPG_ERR_EOF);
           return gpg_error (gpg_err_code_from_errno (errno));
         }
+      lnr++;
 
       if (!*line || line[strlen(line)-1] != '\n')
         {
@@ -762,7 +772,7 @@ search_control_file (FILE *fp, const char *hexgrip,
       goto next_line;
   if (i != 40 || !(spacep (p) || *p == '\n'))
     {
-      log_error ("invalid formatted line in ssh control file\n");
+      log_error ("invalid formatted line in `%s', line %d\n", fname, lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 
@@ -770,13 +780,37 @@ search_control_file (FILE *fp, const char *hexgrip,
   p = pend;
   if (!(spacep (p) || *p == '\n') || ttl < -1)
     {
-      log_error ("invalid TTL value in ssh control file; assuming 0\n");
+      log_error ("invalid TTL value in `%s', line %d; assuming 0\n",
+                 fname, lnr);
       ttl = 0;
     }
   if (r_ttl)
     *r_ttl = ttl;
 
-  /* Here is the place to parse flags if we need them.  */
+  /* Now check for key-value pairs of the form NAME[=VALUE]. */
+  while (*p)
+    {
+      for (; spacep (p) && *p != '\n'; p++)
+        ;
+      if (!*p || *p == '\n')
+        break;
+      n = strcspn (p, "= \t\n");
+      if (p[n] == '=')
+        {
+          log_error ("assigning a value to a flag is not yet supported; "
+                     "in `%s', line %d; flag ignored\n", fname, lnr);
+          p++;
+        }
+      else if (n == 7 && !memcmp (p, "confirm", 7))
+        {
+          if (r_confirm)
+            *r_confirm = 1;
+        }
+      else
+        log_error ("invalid flag `%.*s' in `%s', line %d; ignored\n",
+                   n, p, fname, lnr);
+      p += n;
+    }
 
   return 0; /* Okay:  found it.  */
 }
@@ -785,11 +819,12 @@ search_control_file (FILE *fp, const char *hexgrip,
 
 /* Add an entry to the control file to mark the key with the keygrip
    HEXGRIP as usable for SSH; i.e. it will be returned when ssh asks
-   for it.  This function is in general used to add a key received
-   through the ssh-add function.  We can assume that the user wants to
-   allow ssh using this key. */
+   for it.  FMTFPR is the fingerprint string.  This function is in
+   general used to add a key received through the ssh-add function.
+   We can assume that the user wants to allow ssh using this key. */
 static gpg_error_t
-add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
+add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
+                   int ttl, int confirm)
 {
   gpg_error_t err;
   FILE *fp;
@@ -801,7 +836,7 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
   if (err)
     return err;
 
-  err = search_control_file (fp, hexgrip, &disabled, NULL);
+  err = search_control_file (fp, hexgrip, &disabled, NULL, NULL);
   if (err && gpg_err_code(err) == GPG_ERR_EOF)
     {
       struct tm *tp;
@@ -810,10 +845,12 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
       /* Not yet in the file - add it. Because the file has been
          opened in append mode, we simply need to write to it.  */
       tp = localtime (&atime);
-      fprintf (fp, "# Key added on %04d-%02d-%02d %02d:%02d:%02d\n%s %d\n",
+      fprintf (fp, ("# Key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
+                    "# Fingerprint:  %s\n"
+                    "%s %d%s\n"),
                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                tp->tm_hour, tp->tm_min, tp->tm_sec,
-               hexgrip, ttl);
+               fmtfpr, hexgrip, ttl, confirm? " confirm":"");
 
     }
   fclose (fp);
@@ -834,13 +871,37 @@ ttl_from_sshcontrol (const char *hexgrip)
   if (open_control_file (&fp, 0))
     return 0; /* Error: Use the global default TTL.  */
 
-  if (search_control_file (fp, hexgrip, &disabled, &ttl)
+  if (search_control_file (fp, hexgrip, &disabled, &ttl, NULL)
       || disabled)
     ttl = 0;  /* Use the global default if not found or disabled.  */
 
   fclose (fp);
 
   return ttl;
+}
+
+
+/* Scan the sshcontrol file and return the confirm flag.  */
+static int
+confirm_flag_from_sshcontrol (const char *hexgrip)
+{
+  FILE *fp;
+  int disabled, confirm;
+
+  if (!hexgrip || strlen (hexgrip) != 40)
+    return 1;  /* Wrong input: Better ask for confirmation.  */
+
+  if (open_control_file (&fp, 0))
+    return 1; /* Error: Better ask for confirmation.  */
+
+  if (search_control_file (fp, hexgrip, &disabled, NULL, &confirm)
+      || disabled)
+    confirm = 0;  /* If not found or disabled, there is no reason to
+                     ask for confirmation.  */
+
+  fclose (fp);
+
+  return confirm;
 }
 
 
@@ -1583,6 +1644,7 @@ ssh_key_grip (gcry_sexp_t key, unsigned char *buffer)
   return 0;
 }
 
+
 /* Converts the secret key KEY_SECRET into a public key, storing it in
    KEY_PUBLIC.  SPEC is the according key specification.  Returns zero
    on success or an error code.  */
@@ -1904,7 +1966,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           hexgrip[40] = 0;
           if ( strlen (hexgrip) != 40 )
             continue;
-          if (search_control_file (ctrl_fp, hexgrip, &disabled, NULL)
+          if (search_control_file (ctrl_fp, hexgrip, &disabled, NULL, NULL)
               || disabled)
             continue;
 
@@ -2039,14 +2101,60 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
   const char *elems;
   size_t elems_n;
   gcry_mpi_t *mpis = NULL;
+  char hexgrip[40+1];
 
   *sig = NULL;
   *sig_n = 0;
 
+  /* Quick check to see whether we have a valid keygrip and convert it
+     to hex.  */
+  if (!ctrl->have_keygrip)
+    {
+      err = gpg_error (GPG_ERR_NO_SECKEY);
+      goto out;
+    }
+  bin2hex (ctrl->keygrip, 20, hexgrip);
+
+  /* Ask for confirmation if needed.  */
+  if (confirm_flag_from_sshcontrol (hexgrip))
+    {
+      gcry_sexp_t key;
+      char *fpr, *prompt;
+      char *comment = NULL;
+
+      err = agent_raw_key_from_file (ctrl, ctrl->keygrip, &key);
+      if (err)
+        goto out;
+      err = ssh_get_fingerprint_string (key, &fpr);
+      if (!err)
+        {
+          gcry_sexp_t tmpsxp = gcry_sexp_find_token (key, "comment", 0);
+          if (tmpsxp)
+            comment = gcry_sexp_nth_string (tmpsxp, 1);
+          gcry_sexp_release (tmpsxp);
+        }
+      gcry_sexp_release (key);
+      if (err)
+        goto out;
+      prompt = xtryasprintf (_("An ssh process requested the use of key%%0A"
+                               "  %s%%0A"
+                               "  (%s)%%0A"
+                               "Do you want to allow this?"),
+                             fpr, comment? comment:"");
+      xfree (fpr);
+      gcry_free (comment);
+      err = agent_get_confirmation (ctrl, prompt, _("Allow"), _("Deny"), 0);
+      xfree (prompt);
+      if (err)
+        goto out;
+    }
+
+  /* Create signature.  */
   ctrl->use_auth_call = 1;
   err = agent_pksign_do (ctrl,
                          _("Please enter the passphrase "
-                           "for the ssh key%0A  %c"), &signature_sexp,
+                           "for the ssh key%%0A  %F%%0A  (%c)"),
+                         &signature_sexp,
                          CACHE_MODE_SSH, ttl_from_sshcontrol);
   ctrl->use_auth_call = 0;
   if (err)
@@ -2365,7 +2473,7 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
    our key storage, don't do anything.  When entering a new key also
    add an entry to the sshcontrol file.  */
 static gpg_error_t
-ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
+ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl, int confirm)
 {
   gpg_error_t err;
   unsigned char key_grip_raw[20];
@@ -2375,6 +2483,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   char *description = NULL;
   const char *description2 = _("Please re-enter this passphrase");
   char *comment = NULL;
+  char *key_fpr = NULL;
   const char *initial_errtext = NULL;
   unsigned int i;
   struct pin_entry_info_s *pi = NULL, *pi2;
@@ -2388,6 +2497,9 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if ( !agent_key_available (key_grip_raw) )
     goto out; /* Yes, key is available.  */
 
+  err = ssh_get_fingerprint_string (key, &key_fpr);
+  if (err)
+    goto out;
 
   err = ssh_key_extract_comment (key, &comment);
   if (err)
@@ -2397,8 +2509,9 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
                  _("Please enter a passphrase to protect"
                    " the received secret key%%0A"
                    "   %s%%0A"
+                   "   %s%%0A"
                    "within gpg-agent's key storage"),
-                 comment ? comment : "?") < 0)
+                 key_fpr, comment ? comment : "") < 0)
     {
       err = gpg_error_from_syserror ();
       goto out;
@@ -2455,7 +2568,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
     goto out;
 
   /* And add an entry to the sshcontrol file.  */
-  err = add_control_entry (ctrl, key_grip, ttl);
+  err = add_control_entry (ctrl, key_grip, key_fpr, ttl, confirm);
 
 
  out:
@@ -2464,6 +2577,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   xfree (pi);
   xfree (buffer);
   xfree (comment);
+  xfree (key_fpr);
   xfree (description);
 
   return err;
@@ -2548,9 +2662,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   if (err)
     goto out;
 
-  /* FIXME: are constraints used correctly?  */
-
-  err = ssh_identity_register (ctrl, key, ttl);
+  err = ssh_identity_register (ctrl, key, ttl, confirm);
 
  out:
 
