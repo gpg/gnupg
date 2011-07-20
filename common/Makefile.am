@@ -91,6 +91,7 @@ common_sources = \
 	session-env.c session-env.h \
 	userids.c userids.h \
 	openpgp-oid.c \
+	ssh-utils.c ssh-utils.h \
 	helpfile.c
 
 # To make the code easier to read we have split home some code into
@@ -161,7 +162,7 @@ if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
-	       t-session-env t-openpgp-oid
+	       t-session-env t-openpgp-oid t-ssh-utils
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -194,3 +195,4 @@ t_b64_LDADD = $(t_common_ldadd)
 t_exechelp_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
+t_ssh_utils_LDADD = $(t_common_ldadd)

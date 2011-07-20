@@ -1,3 +1,10 @@
+2011-07-20  Werner Koch  <wk@g10code.com>
+
+	* ssh-utils.c, ssh-utils.h: New.
+	* t-ssh-utils.c: New.
+	* Makefile.am (t_ssh_utils_LDADD): New.
+	(module_tests): Add t-ssh-utils.c
+
 2011-06-01  Marcus Brinkmann  <mb@g10code.com>
 
 	* util.h: Undef snprintf before redefining it.
