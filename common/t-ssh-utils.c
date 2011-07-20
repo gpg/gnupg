@@ -27,13 +27,6 @@
 #include "util.h"
 #include "ssh-utils.h"
 
-#define pass()  do { ; } while(0)
-#define fail(a,e)                                                       \
-  do { fprintf (stderr, "%s:%d: test %d failed (%s)\n",                 \
-                __FILE__,__LINE__, (a), gpg_strerror (e));              \
-    exit (1);                                                           \
-  } while(0)
-
 
 static struct { const char *key; const char *fpr; } sample_keys[] = {
   { "(protected-private-key "

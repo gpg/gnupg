@@ -1,6 +1,6 @@
 /* findkey.c - Locate the secret key
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
- *               2010 Free Software Foundation, Inc.
+ *               2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +33,7 @@
 
 #include "agent.h"
 #include "i18n.h"
+#include "../common/ssh-utils.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -185,12 +186,14 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 
    %% - Replaced by a single %
    %c - Replaced by the content of COMMENT.
+   %F - Replaced by an ssh style fingerprint computed from KEY.
 
    The functions returns 0 on success or an error code.  On success a
    newly allocated string is stored at the address of RESULT.
  */
 static gpg_error_t
-modify_description (const char *in, const char *comment, char **result)
+modify_description (const char *in, const char *comment, const gcry_sexp_t key,
+                    char **result)
 {
   size_t comment_length;
   size_t in_len;
@@ -198,6 +201,7 @@ modify_description (const char *in, const char *comment, char **result)
   char *out;
   size_t i;
   int special, pass;
+  char *ssh_fpr = NULL;
 
   comment_length = strlen (comment);
   in_len  = strlen (in);
@@ -233,6 +237,18 @@ modify_description (const char *in, const char *comment, char **result)
                     out_len += comment_length;
                   break;
 
+                case 'F': /* SSH style fingerprint.  */
+                  if (!ssh_fpr && key)
+                    ssh_get_fingerprint_string (key, &ssh_fpr);
+                  if (ssh_fpr)
+                    {
+                      if (out)
+                        out = stpcpy (out, ssh_fpr);
+                      else
+                        out_len += strlen (ssh_fpr);
+                    }
+                  break;
+
                 default: /* Invalid special sequences are kept as they are. */
                   if (out)
                     {
@@ -259,12 +275,16 @@ modify_description (const char *in, const char *comment, char **result)
         {
           *result = out = xtrymalloc (out_len + 1);
           if (!out)
-            return gpg_error_from_syserror ();
+            {
+              xfree (ssh_fpr);
+              return gpg_error_from_syserror ();
+            }
         }
     }
 
   *out = 0;
   assert (*result + out_len == out);
+  xfree (ssh_fpr);
   return 0;
 }
 
@@ -564,45 +584,26 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
       break; /* no unprotection needed */
     case PRIVATE_KEY_PROTECTED:
       {
-	gcry_sexp_t comment_sexp;
-	size_t comment_length;
 	char *desc_text_final;
-	const char *comment = NULL;
+	char *comment = NULL;
 
         /* Note, that we will take the comment as a C string for
            display purposes; i.e. all stuff beyond a Nul character is
            ignored.  */
-	comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
-	if (comment_sexp)
-	  comment = gcry_sexp_nth_data (comment_sexp, 1, &comment_length);
-	if (!comment)
-	  {
-	    comment = "";
-	    comment_length = 0;
-	  }
+        {
+          gcry_sexp_t comment_sexp;
+
+          comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+          if (comment_sexp)
+            comment = gcry_sexp_nth_string (comment_sexp, 1);
+          gcry_sexp_release (comment_sexp);
+        }
 
         desc_text_final = NULL;
 	if (desc_text)
-	  {
-            if (comment[comment_length])
-              {
-                /* Not a C-string; create one.  We might here allocate
-                   more than actually displayed but well, that
-                   shouldn't be a problem.  */
-                char *tmp = xtrymalloc (comment_length+1);
-                if (!tmp)
-                  rc = gpg_error_from_syserror ();
-                else
-                  {
-                    memcpy (tmp, comment, comment_length);
-                    tmp[comment_length] = 0;
-                    rc = modify_description (desc_text, tmp, &desc_text_final);
-                    xfree (tmp);
-                  }
-              }
-            else
-              rc = modify_description (desc_text, comment, &desc_text_final);
-	  }
+          rc = modify_description (desc_text, comment? comment:"", s_skey,
+                                   &desc_text_final);
+        gcry_free (comment);
 
 	if (!rc)
 	  {
@@ -613,7 +614,6 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 			 gpg_strerror (rc));
 	  }
 
-	gcry_sexp_release (comment_sexp);
 	xfree (desc_text_final);
       }
       break;
@@ -791,6 +791,28 @@ agent_is_dsa_key (gcry_sexp_t s_key)
     return 0;
 }
 
+
+
+/* Return the key for the keygrip GRIP.  The result is stored at
+   RESULT.  This function extracts the key from the private key
+   database and returns it as an S-expression object as it is.  On
+   failure an error code is returned and NULL stored at RESULT. */
+gpg_error_t
+agent_raw_key_from_file (ctrl_t ctrl, const unsigned char *grip,
+                         gcry_sexp_t *result)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_skey;
+
+  (void)ctrl;
+
+  *result = NULL;
+
+  err = read_key_file (grip, &s_skey);
+  if (!err)
+    *result = s_skey;
+  return err;
+}
 
 
 /* Return the public key for the keygrip GRIP.  The result is stored
