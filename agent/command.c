@@ -38,6 +38,7 @@
 #include <assuan.h>
 #include "i18n.h"
 #include "cvt-openpgp.h"
+#include "../common/ssh-utils.h"
 
 
 /* Maximum allowed size of the inquired ciphertext.  */
@@ -935,7 +936,7 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--list] [--data] <keygrip>\n"
+  "KEYINFO [--list] [--data] [--ssh-fpr] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
@@ -943,7 +944,7 @@ static const char hlp_keyinfo[] =
   "available keys are returned.  The information is returned as a\n"
   "status line unless --data was specified, with this format:\n"
   "\n"
-  "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached> <protection>\n"
+  "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached> <protection> <fpr>\n"
   "\n"
   "KEYGRIP is the keygrip.\n"
   "\n"
@@ -967,13 +968,18 @@ static const char hlp_keyinfo[] =
   "    'C' - The key is not protected,\n"
   "    '-' - Unknown protection.\n"
   "\n"
+  "FPR returns the formatted ssh-style fingerprint of the key.  It is only\n"
+  "    print if the option --ssh-fpr has been used. '-' is printed if the\n"
+  "    fingerprint is not available.\n"
+  "\n"
   "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
-                int data)
+                int data, int with_ssh_fpr)
 {
   gpg_error_t err;
   char hexgrip[40+1];
+  char *fpr = NULL;
   int keytype;
   unsigned char *shadow_info = NULL;
   char *serialno = NULL;
@@ -1002,6 +1008,18 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
       break;
     }
 
+  /* Compute the ssh fingerprint if requested.  */
+  if (with_ssh_fpr)
+    {
+      gcry_sexp_t key;
+
+      if (!agent_raw_key_from_file (ctrl, grip, &key))
+        {
+          ssh_get_fingerprint_string (key, &fpr);
+          gcry_sexp_release (key);
+        }
+    }
+
   /* Here we have a little race by doing the cache check separately
      from the retrieval function.  Given that the cache flag is only a
      hint, it should not really matter.  */
@@ -1024,15 +1042,17 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                               idstr? idstr : "-",
                               cached,
 			      protectionstr,
+                              fpr? fpr : "-",
                               NULL);
   else
     {
       char *string;
 
-      string = xtryasprintf ("%s %s %s %s %s %s\n",
+      string = xtryasprintf ("%s %s %s %s %s %s %s\n",
                              hexgrip, keytypestr,
                              serialno? serialno : "-",
-                             idstr? idstr : "-", cached, protectionstr);
+                             idstr? idstr : "-", cached, protectionstr,
+                             fpr? fpr : "-");
       if (!string)
         err = gpg_error_from_syserror ();
       else
@@ -1041,6 +1061,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
     }
 
  leave:
+  xfree (fpr);
   xfree (shadow_info);
   xfree (serialno);
   xfree (idstr);
@@ -1056,10 +1077,11 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   unsigned char grip[20];
   DIR *dir = NULL;
   int list_mode;
-  int opt_data;
+  int opt_data, opt_ssh_fpr;
 
   list_mode = has_option (line, "--list");
   opt_data = has_option (line, "--data");
+  opt_ssh_fpr = has_option (line, "--ssh-fpr");
   line = skip_options (line);
 
   if (list_mode)
@@ -1094,7 +1116,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
           if ( hex2bin (hexgrip, grip, 20) < 0 )
             continue; /* Bad hex string.  */
 
-          err = do_one_keyinfo (ctrl, grip, ctx, opt_data);
+          err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr);
           if (err)
             goto leave;
         }
@@ -1105,7 +1127,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
       err = parse_keygrip (ctx, line, grip);
       if (err)
         goto leave;
-      err = do_one_keyinfo (ctrl, grip, ctx, opt_data);
+      err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr);
     }
 
  leave:
