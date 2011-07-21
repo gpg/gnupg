@@ -1,3 +1,9 @@
+2011-07-21  Werner Koch  <wk@g10code.com>
+
+	* call-dirmngr.c (get_cached_cert, get_cached_cert_data_cb): New.
+	(gpgsm_dirmngr_isvalid): Try to get the only-valid-if-cert-valid
+	certificate from the dirmngr first.
+
 2011-06-01  Marcus Brinkmann  <mb@g10code.com>
 
 	* certreqgen.c (proc_parameters): Initialize RC.

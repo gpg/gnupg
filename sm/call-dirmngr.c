@@ -82,6 +82,13 @@ struct run_command_parm_s {
 };
 
 
+
+static gpg_error_t get_cached_cert (assuan_context_t ctx,
+                                    const unsigned char *fpr,
+                                    ksba_cert_t *r_cert);
+
+
+
 /* A simple implementation of a dynamic buffer.  Use init_membuf() to
    create a buffer, put_membuf to append bytes and get_membuf to
    release and return the buffer.  Allocation errors are detected but
@@ -523,25 +530,29 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
         }
       else
         {
-          KEYDB_HANDLE kh;
           ksba_cert_t rspcert = NULL;
 
-          /* Fixme: First try to get the certificate from the
-             dirmngr's cache - it should be there. */
-          kh = keydb_new (0);
-          if (!kh)
-            rc = gpg_error (GPG_ERR_ENOMEM);
-          if (!rc)
-            rc = keydb_search_fpr (kh, stparm.fpr);
-          if (!rc)
-            rc = keydb_get_cert (kh, &rspcert);
-          if (rc)
+          if (get_cached_cert (dirmngr_ctx, stparm.fpr, &rspcert))
             {
-              log_error ("unable to find the certificate used "
-                         "by the dirmngr: %s\n", gpg_strerror (rc));
-              rc = gpg_error (GPG_ERR_INV_CRL);
+              /* Ooops: Something went wrong getting the certificate
+                 from the dirmngr.  Try our own cert store now.  */
+              KEYDB_HANDLE kh;
+
+              kh = keydb_new (0);
+              if (!kh)
+                rc = gpg_error (GPG_ERR_ENOMEM);
+              if (!rc)
+                rc = keydb_search_fpr (kh, stparm.fpr);
+              if (!rc)
+                rc = keydb_get_cert (kh, &rspcert);
+              if (rc)
+                {
+                  log_error ("unable to find the certificate used "
+                             "by the dirmngr: %s\n", gpg_strerror (rc));
+                  rc = gpg_error (GPG_ERR_INV_CRL);
+                }
+              keydb_release (kh);
             }
-          keydb_release (kh);
 
           if (!rc)
             {
@@ -777,6 +788,71 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
   if (rc)
       return rc;
   return parm.error;
+}
+
+
+
+static gpg_error_t
+get_cached_cert_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  struct membuf *mb = opaque;
+
+  if (buffer)
+    put_membuf (mb, buffer, length);
+  return 0;
+}
+
+/* Return a certificate from the Directory Manager's cache.  This
+   function only returns one certificate which must be specified using
+   the fingerprint FPR and will be stored at R_CERT.  On error NULL is
+   stored at R_CERT and an error code returned.  Note that the caller
+   must provide the locked dirmngr context CTX. */
+static gpg_error_t
+get_cached_cert (assuan_context_t ctx,
+                 const unsigned char *fpr, ksba_cert_t *r_cert)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  char hexfpr[2*20+1];
+  struct membuf mb;
+  char *buf;
+  size_t buflen;
+  ksba_cert_t cert;
+
+  *r_cert = NULL;
+
+  bin2hex (fpr, 20, hexfpr);
+  snprintf (line, DIM(line)-1, "LOOKUP --signle --cache-only 0x%s", hexfpr);
+
+  init_membuf (&mb, 4096);
+  err = assuan_transact (ctx, line, get_cached_cert_data_cb, &mb,
+                         NULL, NULL, NULL, NULL);
+  buf = get_membuf (&mb, &buflen);
+  if (err)
+    {
+      xfree (buf);
+      return err;
+    }
+  if (!buf)
+    return gpg_error (GPG_ERR_ENOMEM);
+
+  err = ksba_cert_new (&cert);
+  if (err)
+    {
+      xfree (buf);
+      return err;
+    }
+  err = ksba_cert_init_from_mem (cert, buf, buflen);
+  xfree (buf);
+  if (err)
+    {
+      log_error ("failed to parse a certificate: %s\n", gpg_strerror (err));
+      ksba_cert_release (cert);
+      return err;
+    }
+
+  *r_cert = cert;
+  return 0;
 }
 
 
