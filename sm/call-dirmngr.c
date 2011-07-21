@@ -1,4 +1,4 @@
-/* call-dirmngr.c - communication with the dromngr 
+/* call-dirmngr.c - communication with the dromngr
  * Copyright (C) 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 #include <ctype.h>
@@ -82,6 +82,13 @@ struct run_command_parm_s {
 };
 
 
+
+static gpg_error_t get_cached_cert (assuan_context_t ctx,
+                                    const unsigned char *fpr,
+                                    ksba_cert_t *r_cert);
+
+
+
 /* A simple implementation of a dynamic buffer.  Use init_membuf() to
    create a buffer, put_membuf to append bytes and get_membuf to
    release and return the buffer.  Allocation errors are detected but
@@ -108,7 +115,7 @@ put_membuf (struct membuf *mb, const void *buf, size_t len)
   if (mb->len + len >= mb->size)
     {
       char *p;
-      
+
       mb->size += len + 1024;
       p = xtryrealloc (mb->buf, mb->size);
       if (!p)
@@ -169,7 +176,7 @@ prepare_dirmngr (ctrl_t ctrl, assuan_context_t ctx, gpg_error_t err)
       char *user = server->user ? server->user : "";
       char *pass = server->pass ? server->pass : "";
       char *base = server->base ? server->base : "";
-      
+
       snprintf (line, DIM (line) - 1, "LDAPSERVER %s:%i:%s:%s:%s",
 		server->host, server->port, user, pass, base);
       line[DIM (line) - 1] = 0;
@@ -244,7 +251,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
       if (opt.verbose)
         log_info (_("no running dirmngr - starting `%s'\n"),
                   opt.dirmngr_program);
-      
+
       if (fflush (NULL))
         {
           gpg_error_t tmperr = gpg_error (gpg_err_code_from_errno (errno));
@@ -345,7 +352,7 @@ start_dirmngr (ctrl_t ctrl)
      an error in prepare_dirmngr?  */
   if (!dirmngr_ctx)
     dirmngr_ctx_locked = 0;
-  return err;  
+  return err;
 }
 
 
@@ -441,7 +448,7 @@ inq_certificate (void *opaque, const char *line)
       for (s=line, n=0; n < 40; s++, n++)
         fpr[n] = (*s >= 'a')? (*s & 0xdf): *s;
       fpr[n] = 0;
-      
+
       if (!gpgsm_agent_istrusted (parm->ctrl, NULL, fpr, &rootca_flags))
         rc = assuan_send_data (parm->ctx, "1", 1);
       else
@@ -469,7 +476,7 @@ inq_certificate (void *opaque, const char *line)
                  "is not yet implemented\n");
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
-  else 
+  else
     { /* Send the given certificate. */
       int err;
       ksba_cert_t cert;
@@ -493,7 +500,7 @@ inq_certificate (void *opaque, const char *line)
     }
 
   xfree (ski);
-  return rc; 
+  return rc;
 }
 
 
@@ -617,7 +624,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                          NULL, NULL, NULL, NULL, NULL, NULL);
       did_options = 1;
     }
-  snprintf (line, DIM(line)-1, "ISVALID%s %s", 
+  snprintf (line, DIM(line)-1, "ISVALID%s %s",
             use_ocsp == 2? " --only-ocsp --force-default-responder":"",
             certid);
   line[DIM(line)-1] = 0;
@@ -640,25 +647,29 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
         }
       else
         {
-          KEYDB_HANDLE kh;
           ksba_cert_t rspcert = NULL;
 
-          /* Fixme: First try to get the certificate from the
-             dirmngr's cache - it should be there. */
-          kh = keydb_new (0);
-          if (!kh)
-            rc = gpg_error (GPG_ERR_ENOMEM);
-          if (!rc)
-            rc = keydb_search_fpr (kh, stparm.fpr);
-          if (!rc)
-            rc = keydb_get_cert (kh, &rspcert);
-          if (rc)
+          if (get_cached_cert (dirmngr_ctx, stparm.fpr, &rspcert))
             {
-              log_error ("unable to find the certificate used "
-                         "by the dirmngr: %s\n", gpg_strerror (rc));
-              rc = gpg_error (GPG_ERR_INV_CRL);
+              /* Ooops: Something went wrong getting the certificate
+                 from the dirmngr.  Try our own cert store now.  */
+              KEYDB_HANDLE kh;
+
+              kh = keydb_new (0);
+              if (!kh)
+                rc = gpg_error (GPG_ERR_ENOMEM);
+              if (!rc)
+                rc = keydb_search_fpr (kh, stparm.fpr);
+              if (!rc)
+                rc = keydb_get_cert (kh, &rspcert);
+              if (rc)
+                {
+                  log_error ("unable to find the certificate used "
+                             "by the dirmngr: %s\n", gpg_strerror (rc));
+                  rc = gpg_error (GPG_ERR_INV_CRL);
+                }
+              keydb_release (kh);
             }
-          keydb_release (kh);
 
           if (!rc)
             {
@@ -669,7 +680,7 @@ gpgsm_dirmngr_isvalid (ctrl_t ctrl,
                 {
                   /* Note the no_dirmngr flag: This avoids checking
                      this certificate over and over again. */
-                  rc = gpgsm_validate_chain (ctrl, rspcert, "", NULL, 0, NULL, 
+                  rc = gpgsm_validate_chain (ctrl, rspcert, "", NULL, 0, NULL,
                                              VALIDATE_FLAG_NO_DIRMNGR, NULL);
                   if (rc)
                     {
@@ -791,7 +802,7 @@ pattern_from_strlist (strlist_t names)
     *pattern = 0; /* is empty */
   else
     p[-1] = '\0'; /* remove trailing blank */
-  
+
   return pattern;
 }
 
@@ -828,10 +839,10 @@ lookup_status_cb (void *opaque, const char *line)
    the callback CB which will be passed cert by cert.  Note that CTRL
    is optional.  With CACHE_ONLY the dirmngr will search only its own
    key cache. */
-int 
+int
 gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
                       void (*cb)(void*, ksba_cert_t), void *cb_value)
-{ 
+{
   int rc;
   char *pattern;
   char line[ASSUAN_LINELENGTH];
@@ -870,7 +881,7 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
 
       return out_of_core ();
     }
-  snprintf (line, DIM(line)-1, "LOOKUP%s %s", 
+  snprintf (line, DIM(line)-1, "LOOKUP%s %s",
             cache_only? " --cache-only":"", pattern);
   line[DIM(line)-1] = 0;
   xfree (pattern);
@@ -894,6 +905,71 @@ gpgsm_dirmngr_lookup (ctrl_t ctrl, strlist_t names, int cache_only,
   if (rc)
       return rc;
   return parm.error;
+}
+
+
+
+static gpg_error_t
+get_cached_cert_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  struct membuf *mb = opaque;
+
+  if (buffer)
+    put_membuf (mb, buffer, length);
+  return 0;
+}
+
+/* Return a certificate from the Directory Manager's cache.  This
+   function only returns one certificate which must be specified using
+   the fingerprint FPR and will be stored at R_CERT.  On error NULL is
+   stored at R_CERT and an error code returned.  Note that the caller
+   must provide the locked dirmngr context CTX. */
+static gpg_error_t
+get_cached_cert (assuan_context_t ctx,
+                 const unsigned char *fpr, ksba_cert_t *r_cert)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  char hexfpr[2*20+1];
+  struct membuf mb;
+  char *buf;
+  size_t buflen;
+  ksba_cert_t cert;
+
+  *r_cert = NULL;
+
+  bin2hex (fpr, 20, hexfpr);
+  snprintf (line, DIM(line)-1, "LOOKUP --single --cache-only 0x%s", hexfpr);
+
+  init_membuf (&mb, 4096);
+  err = assuan_transact (ctx, line, get_cached_cert_data_cb, &mb,
+                         NULL, NULL, NULL, NULL);
+  buf = get_membuf (&mb, &buflen);
+  if (err)
+    {
+      xfree (buf);
+      return err;
+    }
+  if (!buf)
+    return gpg_error (GPG_ERR_ENOMEM);
+
+  err = ksba_cert_new (&cert);
+  if (err)
+    {
+      xfree (buf);
+      return err;
+    }
+  err = ksba_cert_init_from_mem (cert, buf, buflen);
+  xfree (buf);
+  if (err)
+    {
+      log_error ("failed to parse a certificate: %s\n", gpg_strerror (err));
+      ksba_cert_release (cert);
+      return err;
+    }
+
+  *r_cert = cert;
+  return 0;
 }
 
 
@@ -959,7 +1035,7 @@ run_command_inq_cb (void *opaque, const char *line)
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
-  return rc; 
+  return rc;
 }
 
 static gpg_error_t
@@ -994,7 +1070,7 @@ run_command_status_cb (void *opaque, const char *line)
 int
 gpgsm_dirmngr_run_command (ctrl_t ctrl, const char *command,
                            int argc, char **argv)
-{ 
+{
   int rc;
   int i;
   const char *s;
