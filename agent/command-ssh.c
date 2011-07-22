@@ -1409,17 +1409,12 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
                  int read_comment, ssh_key_type_spec_t *key_spec)
 {
   gpg_error_t err;
-  char *key_type;
-  char *comment;
-  gcry_sexp_t key;
+  char *key_type = NULL;
+  char *comment = NULL;
+  gcry_sexp_t key = NULL;
   ssh_key_type_spec_t spec;
-  gcry_mpi_t *mpi_list;
+  gcry_mpi_t *mpi_list = NULL;
   const char *elems;
-
-  mpi_list = NULL;
-  key_type = NULL;
-  comment = "";
-  key = NULL;
 
   err = stream_read_cstring (stream, &key_type);
   if (err)
@@ -1452,7 +1447,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
 	goto out;
     }
 
-  err = sexp_key_construct (&key, spec, secret, mpi_list, comment);
+  err = sexp_key_construct (&key, spec, secret, mpi_list, comment? comment:"");
   if (err)
     goto out;
 
@@ -1464,8 +1459,7 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
 
   mpint_list_free (mpi_list);
   xfree (key_type);
-  if (read_comment)
-    xfree (comment);
+  xfree (comment);
 
   return err;
 }

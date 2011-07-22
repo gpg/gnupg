@@ -1,3 +1,8 @@
+2011-07-22  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (ssh_receive_key): Do not init comment to an empty
+	static string; in the error case it would be freed.
+
 2011-07-20  Werner Koch  <wk@g10code.com>
 
 	* command.c (do_one_keyinfo, cmd_keyinfo): Support option --ssh-fpr.
