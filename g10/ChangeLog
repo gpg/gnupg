@@ -1,3 +1,8 @@
+2011-07-22  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_key): Print the decoded iteration count.
+	Fixes bug#1355.
+
 2011-04-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* photoid.c (generate_photo_id): Check for the JPEG magic numbers
