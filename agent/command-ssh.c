@@ -69,7 +69,7 @@ static const char sshcontrolblurb[] =
 "# in the SSH protocol.  The ssh-add tool may add new entries to this\n"
 "# file to enable them; you may also add them manually.  Comment\n"
 "# lines, like this one, as well as empty lines are ignored.  Lines do\n"
-"# have a certain length limit but this is not serious limitation as\n" 
+"# have a certain length limit but this is not serious limitation as\n"
 "# the format of the entries is fixed and checked by gpg-agent. A\n"
 "# non-comment line starts with optional white spaces, followed by the\n"
 "# keygrip of the key given as 40 hex digits, optionally followed by a\n"
@@ -193,7 +193,7 @@ static gpg_error_t ssh_signature_encoder_dsa (estream_t signature_blob,
 
 
 /* Global variables.  */
-   
+
 
 /* Associating request types with the corresponding request
    handlers.  */
@@ -235,7 +235,7 @@ static ssh_key_type_spec_t ssh_key_types[] =
 
 
 /*
-   General utility functions. 
+   General utility functions.
  */
 
 /* A secure realloc, i.e. it makes sure to allocate secure memory if A
@@ -246,7 +246,7 @@ static void *
 realloc_secure (void *a, size_t n)
 {
   void *p;
-  
+
   if (a)
     p = gcry_realloc (a, n);
   else
@@ -276,8 +276,8 @@ make_cstring (const char *data, size_t data_n)
 
 
 
-/* 
-   Primitive I/O functions.  
+/*
+   Primitive I/O functions.
  */
 
 
@@ -467,7 +467,7 @@ stream_read_cstring (estream_t stream, char **string)
   err = stream_read_string (stream, 0, &buffer, NULL);
   if (err)
     goto out;
-  
+
   *string = (char *) buffer;
 
  out:
@@ -504,7 +504,7 @@ stream_write_cstring (estream_t stream, const char *string)
 			     (const unsigned char *) string, strlen (string));
 
   return err;
-}			  
+}
 
 /* Read an MPI from STREAM, store it in MPINT.  Depending on SECURE
    use secure memory.  */
@@ -615,7 +615,7 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
 
   buffer_new = NULL;
   err = 0;
-  
+
   stream = es_fopen (filename, "r");
   if (! stream)
     {
@@ -681,7 +681,7 @@ open_control_file (FILE **r_fp, int append)
     {
       /* Fixme: "x" is a GNU extension.  We might want to use the es_
          functions here.  */
-      fp = fopen (fname, "wx");  
+      fp = fopen (fname, "wx");
       if (!fp)
         {
           err = gpg_error (gpg_err_code_from_errno (errno));
@@ -701,8 +701,8 @@ open_control_file (FILE **r_fp, int append)
       xfree (fname);
       return err;
     }
-  
-  *r_fp = fp;  
+
+  *r_fp = fp;
 
   return 0;
 }
@@ -713,7 +713,7 @@ open_control_file (FILE **r_fp, int append)
    DISABLED if the found key has been disabled.  If R_TTL is not NULL
    a specified TTL for that key is stored there. */
 static gpg_error_t
-search_control_file (FILE *fp, const char *hexgrip, 
+search_control_file (FILE *fp, const char *hexgrip,
                      int *r_disabled, int *r_ttl)
 {
   int c, i;
@@ -733,7 +733,7 @@ search_control_file (FILE *fp, const char *hexgrip,
             return gpg_error (GPG_ERR_EOF);
           return gpg_error (gpg_err_code_from_errno (errno));
         }
-      
+
       if (!*line || line[strlen(line)-1] != '\n')
         {
           /* Eat until end of line */
@@ -742,13 +742,13 @@ search_control_file (FILE *fp, const char *hexgrip,
           return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                                  : GPG_ERR_INCOMPLETE_LINE);
         }
-      
+
       /* Allow for empty lines and spaces */
       for (p=line; spacep (p); p++)
         ;
     }
   while (!*p || *p == '\n' || *p == '#');
-  
+
   *r_disabled = 0;
   if (*p == '!')
     {
@@ -776,7 +776,7 @@ search_control_file (FILE *fp, const char *hexgrip,
   if (r_ttl)
     *r_ttl = ttl;
 
-  /* Here is the place to parse flags if we need them.  */  
+  /* Here is the place to parse flags if we need them.  */
 
   return 0; /* Okay:  found it.  */
 }
@@ -814,7 +814,7 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, int ttl)
                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                tp->tm_hour, tp->tm_min, tp->tm_sec,
                hexgrip, ttl);
-               
+
     }
   fclose (fp);
   return 0;
@@ -838,7 +838,7 @@ ttl_from_sshcontrol (const char *hexgrip)
       || disabled)
     ttl = 0;  /* Use the global default if not found or disabled.  */
 
-  fclose (fp); 
+  fclose (fp);
 
   return ttl;
 }
@@ -849,7 +849,7 @@ ttl_from_sshcontrol (const char *hexgrip)
 
 /*
 
-  MPI lists. 
+  MPI lists.
 
  */
 
@@ -886,7 +886,7 @@ ssh_receive_mpint_list (estream_t stream, int secret,
 
   mpis = NULL;
   err = 0;
-  
+
   if (secret)
     elems = key_spec.elems_key_secret;
   else
@@ -1008,7 +1008,7 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
 	  err = gpg_error (GPG_ERR_INTERNAL); /* FIXME?  */
 	  break;
 	}
-      
+
       memset (buffer + (i * SSH_DSA_SIGNATURE_PADDING), 0,
 	      SSH_DSA_SIGNATURE_PADDING - data_n);
       memcpy (buffer + (i * SSH_DSA_SIGNATURE_PADDING)
@@ -1029,8 +1029,8 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
   return err;
 }
 
-/* 
-   S-Expressions. 
+/*
+   S-Expressions.
  */
 
 
@@ -1252,7 +1252,7 @@ sexp_key_extract (gcry_sexp_t sexp,
   gcry_sexp_release (value_list);
   gcry_sexp_release (value_pair);
   gcry_sexp_release (comment_list);
-  
+
   if (err)
     {
       xfree (comment_new);
@@ -1262,7 +1262,7 @@ sexp_key_extract (gcry_sexp_t sexp,
   return err;
 }
 
-/* Extract the car from SEXP, and create a newly created C-string 
+/* Extract the car from SEXP, and create a newly created C-string
    which is to be stored in IDENTIFIER.  */
 static gpg_error_t
 sexp_extract_identifier (gcry_sexp_t sexp, char **identifier)
@@ -1275,7 +1275,7 @@ sexp_extract_identifier (gcry_sexp_t sexp, char **identifier)
 
   identifier_new = NULL;
   err = 0;
-  
+
   sublist = gcry_sexp_nth (sexp, 1);
   if (! sublist)
     {
@@ -1329,7 +1329,7 @@ ssh_key_type_lookup (const char *ssh_name, const char *name,
     if ((ssh_name && (! strcmp (ssh_name, ssh_key_types[i].ssh_identifier)))
 	|| (name && (! strcmp (name, ssh_key_types[i].identifier))))
       break;
-  
+
   if (i == DIM (ssh_key_types))
     err = gpg_error (GPG_ERR_NOT_FOUND);
   else
@@ -1351,18 +1351,14 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
                  int read_comment, ssh_key_type_spec_t *key_spec)
 {
   gpg_error_t err;
-  char *key_type;
-  char *comment;
-  gcry_sexp_t key;
+  char *key_type = NULL;
+  char *comment = NULL;
+  gcry_sexp_t key = NULL;
   ssh_key_type_spec_t spec;
-  gcry_mpi_t *mpi_list;
+  gcry_mpi_t *mpi_list = NULL;
   const char *elems;
 
-  mpi_list = NULL;
-  key_type = NULL;
-  comment = "";
-  key = NULL;
-  	
+
   err = stream_read_cstring (stream, &key_type);
   if (err)
     goto out;
@@ -1394,20 +1390,19 @@ ssh_receive_key (estream_t stream, gcry_sexp_t *key_new, int secret,
 	goto out;
     }
 
-  err = sexp_key_construct (&key, spec, secret, mpi_list, comment);
+  err = sexp_key_construct (&key, spec, secret, mpi_list, comment? comment:"");
   if (err)
     goto out;
 
   if (key_spec)
     *key_spec = spec;
   *key_new = key;
-  
+
  out:
 
   mpint_list_free (mpi_list);
   xfree (key_type);
-  if (read_comment)
-    xfree (comment);
+  xfree (comment);
 
   return err;
 }
@@ -1454,7 +1449,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
       err = gpg_error_from_syserror ();
       goto out;
     }
-  
+
   err = es_fseek (stream, 0, SEEK_SET);
   if (err)
     goto out;
@@ -1482,7 +1477,7 @@ ssh_convert_key_to_blob (unsigned char **blob, size_t *blob_size,
 
   return err;
 }
-			      
+
 
 /* Write the public key KEY_PUBLIC to STREAM in SSH key format.  If
    OVERRIDE_COMMENT is not NULL, it will be used instead of the
@@ -1520,14 +1515,14 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key_public,
                                  spec.ssh_identifier, mpi_list);
   if (err)
     goto out;
-  
+
   err = stream_write_string (stream, blob, blob_n);
   if (err)
     goto out;
 
   err = stream_write_cstring (stream,
                               override_comment? override_comment : comment);
-  
+
  out:
 
   mpint_list_free (mpi_list);
@@ -1550,7 +1545,7 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
   gpg_error_t err;
 
   err = 0;
-  
+
   blob_stream = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
   if (! blob_stream)
     {
@@ -1714,7 +1709,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
       /* (Shadow)-key is not available in our key storage.  */
       unsigned char *shadow_info;
       unsigned char *tmp;
-      
+
       shadow_info = make_shadow_info (serialno, authkeyid);
       if (!shadow_info)
         {
@@ -1849,7 +1844,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
       goto out;
     }
   key_directory_n = strlen (key_directory);
-  
+
   key_path = xtrymalloc (key_directory_n + 46);
   if (! key_path)
     {
@@ -1881,7 +1876,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
       xfree (cardsn);
       if (err)
         goto out;
-      
+
       key_counter++;
     }
 
@@ -1921,7 +1916,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           err = file_to_buffer (key_path, &buffer, &buffer_n);
           if (err)
             goto out;
-	      
+
           err = gcry_sexp_sscan (&key_secret, NULL, (char*)buffer, buffer_n);
           if (err)
             goto out;
@@ -1946,7 +1941,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
           gcry_sexp_release (key_secret);
           key_secret = NULL;
-	      
+
           err = ssh_send_key_public (key_blobs, key_public, NULL);
           if (err)
             goto out;
@@ -1957,7 +1952,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           key_counter++;
         }
     }
-  
+
   ret = es_fseek (key_blobs, 0, SEEK_SET);
   if (ret)
     {
@@ -2151,15 +2146,15 @@ data_sign (ctrl_t ctrl, ssh_signature_encoder_t sig_encoder,
     {
       err = gpg_error_from_syserror ();
       goto out;
-    }    
+    }
 
   err = stream_read_data (stream, sig_blob, sig_blob_n);
   if (err)
     goto out;
-  
+
   *sig = sig_blob;
   *sig_n = sig_blob_n;
-  
+
  out:
 
   if (err)
@@ -2201,7 +2196,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   key = NULL;
 
   /* Receive key.  */
-  
+
   err = stream_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
     goto out;
@@ -2246,7 +2241,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
   memcpy (ctrl->keygrip, key_grip, 20);
 
   err = data_sign (ctrl, spec.signature_encoder, &sig, &sig_n);
-  
+
  out:
 
   /* Done.  */
@@ -2266,7 +2261,7 @@ ssh_handler_sign_request (ctrl_t ctrl, estream_t request, estream_t response)
       if (ret_err)
 	goto leave;
     }
-  
+
  leave:
 
   gcry_sexp_release (key);
@@ -2295,7 +2290,7 @@ ssh_key_extract_comment (gcry_sexp_t key, char **comment)
       err = gpg_error (GPG_ERR_INV_SEXP);
       goto out;
     }
-  
+
   data = gcry_sexp_nth_data (comment_list, 1, &data_n);
   if (! data)
     {
@@ -2339,7 +2334,7 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
       err = gpg_error_from_syserror ();
       goto out;
     }
-  
+
   gcry_sexp_sprint (key, GCRYSEXP_FMT_CANON, buffer_new, buffer_new_n);
   /* FIXME: guarantee?  */
 
@@ -2395,7 +2390,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   if ( !agent_key_available (key_grip_raw) )
     goto out; /* Yes, key is available.  */
 
-  
+
   err = ssh_key_extract_comment (key, &comment);
   if (err)
     goto out;
@@ -2471,7 +2466,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl)
   xfree (pi);
   xfree (buffer);
   xfree (comment);
-  xfree (description); 
+  xfree (description);
 
   return err;
 }
@@ -2510,7 +2505,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   unsigned char b;
   int confirm;
   int ttl;
-  
+
   confirm = 0;
   key = NULL;
   ttl = 0;
@@ -2588,7 +2583,7 @@ ssh_handler_remove_identity (ctrl_t ctrl,
 
   key_blob = NULL;
   key = NULL;
-  
+
   err = stream_read_string (request, 0, &key_blob, &key_blob_size);
   if (err)
     goto out;
@@ -2596,7 +2591,7 @@ ssh_handler_remove_identity (ctrl_t ctrl,
   err = ssh_read_key_public_from_blob (key_blob, key_blob_size, &key, NULL);
   if (err)
     goto out;
-  
+
   err = ssh_identity_drop (key);
 
  out:
@@ -2622,7 +2617,7 @@ ssh_identities_remove_all (void)
 
   /* FIXME: shall we remove _all_ cache entries or only those
      registered through the ssh emulation?  */
-  
+
   return err;
 }
 
@@ -2636,7 +2631,7 @@ ssh_handler_remove_all_identities (ctrl_t ctrl,
 
   (void)ctrl;
   (void)request;
-  
+
   err = ssh_identities_remove_all ();
 
   if (! err)
@@ -2681,7 +2676,7 @@ ssh_handler_lock (ctrl_t ctrl, estream_t request, estream_t response)
 
   (void)ctrl;
   (void)request;
-  
+
   err = ssh_lock ();
 
   if (! err)
@@ -2698,7 +2693,7 @@ ssh_handler_unlock (ctrl_t ctrl, estream_t request, estream_t response)
 {
   gpg_error_t ret_err;
   gpg_error_t err;
-  
+
   (void)ctrl;
   (void)request;
 
@@ -2763,7 +2758,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   /* Create memory streams for request/response data.  The entire
      request will be stored in secure memory, since it might contain
      secret key material.  The response does not have to be stored in
-     secure memory, since we never give out secret keys. 
+     secure memory, since we never give out secret keys.
 
      Note: we only have little secure memory, but there is NO
      possibility of DoS here; only trusted clients are allowed to
@@ -2914,7 +2909,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
      the current TTY setting, we resort here to use those from startup
      or those explictly set.  */
   {
-    static const char *names[] = 
+    static const char *names[] =
       {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
     int idx;
     const char *value;
@@ -2923,7 +2918,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
       if (!session_env_getenv (ctrl->session_env, names[idx])
           && (value = session_env_getenv (opt.startup_env, names[idx])))
         err = session_env_setenv (ctrl->session_env, names[idx], value);
-    
+
     if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
       if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
         err = gpg_error_from_syserror ();
@@ -2934,7 +2929,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
 
     if (err)
       {
-        log_error ("error setting default session environment: %s\n", 
+        log_error ("error setting default session environment: %s\n",
                    gpg_strerror (err));
         goto out;
       }
