@@ -1,3 +1,8 @@
+2011-07-22  Werner Koch  <wk@g10code.com>
+
+	* parse-packet.c (parse_key): Print the decoded iteration count.
+	Fixes bug#1355.
+
 2011-07-01  Werner Koch  <wk@g10code.com>
 
 	* keyid.c (pubkey_letter): Add letters e and E.
