@@ -92,6 +92,7 @@ struct inq_needpin_s
   void *getpin_cb_arg;
   assuan_context_t passthru;  /* If not NULL, pass unknown inquiries
                                  up to the caller.  */
+  int any_inq_seen;
 };
 
 
@@ -726,6 +727,7 @@ inq_needpin (void *opaque, const char *line)
   size_t pinlen;
   int rc;
 
+  parm->any_inq_seen = 1;
   if (!strncmp (line, "NEEDPIN", 7) && (line[7] == ' ' || !line[7]))
     {
       line += 7;
@@ -857,6 +859,7 @@ agent_card_pksign (ctrl_t ctrl,
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = 0;
+  inqparm.any_inq_seen = 0;
   if (ctrl->use_auth_call)
     snprintf (line, sizeof line, "PKAUTH %s", keyid);
   else
@@ -935,6 +938,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = 0;
+  inqparm.any_inq_seen = 0;
   snprintf (line, DIM(line)-1, "PKDECRYPT %s", keyid);
   line[DIM(line)-1] = 0;
   rc = assuan_transact (ctrl->scd_local->ctx, line,
@@ -1169,14 +1173,20 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
   inqparm.getpin_cb = getpin_cb;
   inqparm.getpin_cb_arg = getpin_cb_arg;
   inqparm.passthru = assuan_context;
+  inqparm.any_inq_seen = 0;
   saveflag = assuan_get_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS);
   assuan_set_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS, 1);
   rc = assuan_transact (ctrl->scd_local->ctx, cmdline,
                         pass_data_thru, assuan_context,
                         inq_needpin, &inqparm,
                         pass_status_thru, assuan_context);
-  if (gpg_err_code(rc) == GPG_ERR_ASS_CANCELED)
+  if (inqparm.any_inq_seen && gpg_err_code(rc) == GPG_ERR_ASS_CANCELED)
     {
+      /* The inquire callback was called and transact returned a
+         cancel error.  We assume that the inquired process sent a
+         CANCEL.  The passthrough code is not able to pass on the
+         CANCEL and thus scdaemon would stuck on this.  As a
+         workaround we send a CANCEL now.  */
       rc = assuan_write_line(ctrl->scd_local->ctx, "CAN");
       if (!rc) {
 	char *line;

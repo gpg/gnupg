@@ -1,3 +1,10 @@
+2011-07-27  Werner Koch  <wk@g10code.com>
+
+	* call-scd.c (struct inq_needpin_s): Add field ANY_INQ_SEEN.
+	(inq_needpin): Set it.
+	(agent_card_scd): Send the cancel only if an inquire was actually
+	used.
+
 2011-07-09  Ben Kibbey <bjk@luxsci.net>
 
 	* call-scd.c (agent_card_scd): Send the CANCEL command back to SCD
