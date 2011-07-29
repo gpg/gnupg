@@ -1,3 +1,7 @@
+2011-07-29  Werner Koch  <wk@g10code.com>
+
+	* tdbio.c (open_db): Do not print read-only warning in quiet mode.
+
 2011-07-18  Werner Koch  <wk@g10code.com>
 
 	* parse-packet.c (parse_key): Print the decoded iteration count.
