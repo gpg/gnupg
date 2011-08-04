@@ -1,3 +1,8 @@
+2011-08-04  Werner Koch  <wk@g10code.com>
+
+	* readline.m4, libcurl.m4: Fix use of AC_LANG_PROGRAM.
+	* libcurl.m4: s/ifelse/m4_if/.
+
 2009-09-03  Werner Koch  <wk@g10code.com>
 
 	* estream.m4: Update for libestream.
@@ -82,7 +87,7 @@
 
 2006-07-27  Werner Koch  <wk@g10code.com>
 
-	* autobuild.m4: New. 
+	* autobuild.m4: New.
 
 2006-06-30  Werner Koch  <wk@g10code.com>
 

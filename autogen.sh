@@ -1,5 +1,5 @@
 #! /bin/sh
-# Run this to generate all the initial makefiles, etc. 
+# Run this to generate all the initial makefiles, etc.
 #
 # Copyright (C) 2003 g10 Code GmbH
 #
@@ -59,7 +59,7 @@ if test "$1" = "--build-w32"; then
 
     [ -z "$w32root" ] && w32root="$HOME/w32root"
     echo "Using $w32root as standard install directory" >&2
-    
+
     # Locate the cross compiler
     crossbindir=
     for host in i586-mingw32msvc i386-mingw32msvc mingw32; do
@@ -72,11 +72,11 @@ if test "$1" = "--build-w32"; then
     if [ -z "$crossbindir" ]; then
         echo "Cross compiler kit not installed" >&2
         echo "Under Debian GNU/Linux, you may install it using" >&2
-        echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2 
+        echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2
         echo "Stop." >&2
         exit 1
     fi
-   
+
     if [ -f "$tsdir/config.log" ]; then
         if ! head $tsdir/config.log | grep "$host" >/dev/null; then
             echo "Please run a 'make distclean' first" >&2
@@ -114,7 +114,7 @@ if test "$1" = "--build-amd64"; then
 
     [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
     echo "Using $amd64root as standard install directory" >&2
-    
+
     # Locate the cross compiler
     crossbindir=
     for host in x86_64-linux-gnu amd64-linux-gnu; do
@@ -129,7 +129,7 @@ if test "$1" = "--build-amd64"; then
         echo "Stop." >&2
         exit 1
     fi
-   
+
     if [ -f "$tsdir/config.log" ]; then
         if ! head $tsdir/config.log | grep "$host" >/dev/null; then
             echo "Please run a 'make distclean' first" >&2
@@ -152,19 +152,19 @@ fi
 
 
 # Grep the required versions from configure.ac
-autoconf_vers=`sed -n '/^AC_PREREQ(/ { 
+autoconf_vers=`sed -n '/^AC_PREREQ(/ {
 s/^.*(\(.*\))/\1/p
 q
 }' ${configure_ac}`
 autoconf_vers_num=`echo "$autoconf_vers" | cvtver`
 
-automake_vers=`sed -n '/^min_automake_version=/ { 
+automake_vers=`sed -n '/^min_automake_version=/ {
 s/^.*="\(.*\)"/\1/p
 q
 }' ${configure_ac}`
 automake_vers_num=`echo "$automake_vers" | cvtver`
 
-gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ { 
+gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ {
 s/^.*\[\(.*\)])/\1/p
 q
 }' ${configure_ac}`
@@ -191,9 +191,9 @@ fi
 if test "$DIE" = "yes"; then
     cat <<EOF
 
-Note that you may use alternative versions of the tools by setting 
+Note that you may use alternative versions of the tools by setting
 the corresponding environment variables; see README.CVS for details.
-                   
+
 EOF
     exit 1
 fi
@@ -231,6 +231,6 @@ $AUTOMAKE --gnu;
 echo "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 
-echo "You may now run: 
-  ./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto && make
+echo "You may now run:
+  ./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto --enable-gpgtar && make
 "

@@ -1,3 +1,7 @@
+2011-08-04  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Fix usage of AC_LANG_PROGRAM.
+
 2011-02-04  Werner Koch  <wk@g10code.com>
 
 	* autogen.sh: Ensure that the git pre-commit hoom has been
