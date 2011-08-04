@@ -60,7 +60,7 @@ signature_check (PKT_signature *sig, gcry_md_hd_t digest)
 }
 
 int
-signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate, 
+signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
     PKT_public_key *pk = xmalloc_clear( sizeof *pk );
@@ -130,8 +130,8 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	 * and the timestamp, but the drawback of this is, that it is
 	 * not possible to sign more than one identical document within
 	 * one second.	Some remote batch processing applications might
-	 * like this feature here.  
-         * 
+	 * like this feature here.
+         *
          * Note that before 2.0.10, we used RIPE-MD160 for the hash
          * and accidently didn't include the timestamp and algorithm
          * information in the hash.  Given that this feature is not
@@ -265,7 +265,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
 {
     gcry_mpi_t result = NULL;
     int rc = 0;
-    struct cmp_help_context_s ctx;
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
@@ -318,8 +317,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
     result = encode_md_value( pk, NULL, digest, sig->digest_algo );
     if (!result)
         return G10ERR_GENERAL;
-    ctx.sig = sig;
-    ctx.md = digest;
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     gcry_mpi_release (result);
 
@@ -434,13 +431,13 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
       for(i=0;i<pk->numrevkeys;i++)
 	{
           u32 keyid[2];
-    
+
           keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
-    
+
           if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
 	    {
               gcry_md_hd_t md;
-    
+
               if (gcry_md_open (&md, sig->digest_algo, 0))
                 BUG ();
               hash_public_key(md,pk);
@@ -454,7 +451,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
   busy=0;
 
   return rc;
-} 
+}
 
 /* Backsigs (0x19) have the same format as binding sigs (0x18), but
    this function is simpler than check_key_signature in a few ways.
@@ -539,8 +536,8 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
        cache refresh detects and clears these cases. */
     if ( !opt.no_sig_cache ) {
         if (sig->flags.checked) { /*cached status available*/
-	    if( is_selfsig ) {	
-		u32 keyid[2];	
+	    if( is_selfsig ) {
+		u32 keyid[2];
 
 		keyid_from_pk( pk, keyid );
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
@@ -560,7 +557,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	return rc;
 
     if( sig->sig_class == 0x20 ) { /* key revocation */
-        u32 keyid[2];	
+        u32 keyid[2];
 	keyid_from_pk( pk, keyid );
 
 	/* is it a designated revoker? */

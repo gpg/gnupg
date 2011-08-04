@@ -72,14 +72,17 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #ifdef HAVE_PTY_H
-#include <pty.h>
+# include <pty.h>
+#endif
+#ifdef HAVE_UTMP_H
+# include <utmp.h>
 #endif
 #include <ctype.h>
 #ifdef HAVE_LOCALE_H
-#include <locale.h>
+# include <locale.h>
 #endif
 #ifdef HAVE_LANGINFO_CODESET
-#include <langinfo.h>
+# include <langinfo.h>
 #endif
 #include <gpg-error.h>
 
@@ -152,9 +155,9 @@ static ARGPARSE_OPTS opts[] =
 
     { oDecrypt, "decrypt", 0, N_("decryption modus") },
     { oEncrypt, "encrypt", 0, N_("encryption modus") },
-    
+
     { 302, NULL, 0, N_("@\nOptions:\n ") },
-    
+
     { oClass, "class", 2, N_("tool class (confucius)") },
     { oProgram, "program", 2, N_("program filename") },
 
@@ -167,7 +170,7 @@ static ARGPARSE_OPTS opts[] =
 
     /* Hidden options.  */
     { oNoVerbose, "no-verbose",  0, "@" },
-    { oHomedir, "homedir", 2, "@" },   
+    { oHomedir, "homedir", 2, "@" },
     { oNoOptions, "no-options", 0, "@" },/* shortcut for --options /dev/null */
 
     {0}
@@ -253,10 +256,10 @@ remove_file (char *name, int shred)
       if (pid == 0)
 	{
 	  /* Child.  */
-	  
+
 	  /* -f forces file to be writable, and -u unlinks it afterwards.  */
 	  char *args[] = { SHRED, "-uf", name, NULL };
-	  
+
 	  execv (SHRED, args);
 	  _exit (127);
 	}
@@ -268,11 +271,11 @@ remove_file (char *name, int shred)
       else
 	{
 	  /* Parent.  */
-	  
+
 	  if (TEMP_FAILURE_RETRY (waitpid (pid, &status, 0)) != pid)
 	    status = -1;
 	}
-      
+
       if (!WIFEXITED (status))
 	{
 	  log_error (_("%s on %s aborted with status %i\n"),
@@ -427,7 +430,7 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
 
   if (canceled)
     *canceled = 0;
-  
+
   orig_codeset = i18n_switchto_utf8 ();
   pw = simple_pwquery (cacheid,
                        again ? _("does not match - try again"):NULL,
@@ -445,7 +448,7 @@ confucius_get_pass (const char *cacheid, int again, int *canceled)
 	  log_info (_("cancelled\n"));
 	  if (canceled)
 	    *canceled = 1;
-	}      
+	}
     }
 
   return pw;
@@ -554,7 +557,7 @@ confucius_process (int mode, char *infile, char *outfile,
       free (args);
       return 1;
     }
-  else if (pid == 0) 
+  else if (pid == 0)
     {
       /* Child.  */
 
@@ -627,7 +630,7 @@ confucius_process (int mode, char *infile, char *outfile,
 		  close (cstderr[0]);
 		  return 1;
 		}
-	      else  
+	      else
 		{
 		  char *newline;
 
@@ -853,7 +856,7 @@ confucius_main (int mode, int argc, char *argv[])
       rmdir (tmpdir);
       return res;
     }
-  
+
   remove_file (outfile, mode == oDecrypt);
   if (infile_from_stdin)
     remove_file (infile, mode == oEncrypt);
@@ -873,7 +876,7 @@ main (int argc, char **argv)
   char **orig_argv;
   FILE *configfp = NULL;
   char *configname = NULL;
-  unsigned configlineno; 
+  unsigned configlineno;
   int mode = 0;
   int res;
   char *logfile = NULL;
@@ -910,7 +913,7 @@ main (int argc, char **argv)
 
   if (default_config)
     configname = make_filename (opt.homedir, "symcryptrun.conf", NULL );
-  
+
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
@@ -929,7 +932,7 @@ main (int argc, char **argv)
                          configname, strerror(errno) );
               exit(1);
 	    }
-          xfree (configname); 
+          xfree (configname);
           configname = NULL;
 	}
       default_config = 0;
@@ -946,7 +949,7 @@ main (int argc, char **argv)
 	case oQuiet:     opt.quiet = 1; break;
         case oVerbose:   opt.verbose++; break;
         case oNoVerbose: opt.verbose = 0; break;
-	  
+
 	case oClass:	opt.class = pargs.r.ret_str; break;
 	case oProgram:	opt.program = pargs.r.ret_str; break;
 	case oKeyfile:	opt.keyfile = pargs.r.ret_str; break;

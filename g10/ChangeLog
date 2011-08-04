@@ -1,3 +1,11 @@
+2011-08-04  Werner Koch  <wk@g10code.com>
+
+	* keyedit.c (show_key_with_all_names): Remove set but unused var
+	PK_VERION.
+	* sig-check.c (do_check): Remove set but unused var CTX.
+
+	* build-packet.c (do_user_id): Return RC.
+
 2011-07-29  Werner Koch  <wk@g10code.com>
 
 	* tdbio.c (open_db): Do not print read-only warning in quiet mode.

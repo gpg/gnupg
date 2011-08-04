@@ -214,11 +214,11 @@ calc_packet_length( PACKET *pkt )
 static void
 write_fake_data (IOBUF out, gcry_mpi_t a)
 {
-  if (a) 
+  if (a)
     {
       unsigned int n;
       void *p;
-      
+
       p = gcry_mpi_get_opaque ( a, &n );
       iobuf_write (out, p, (n+7)/8 );
     }
@@ -239,7 +239,7 @@ do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
         write_header2( out, ctb, uid->len, 2 );
 	rc = iobuf_write( out, uid->name, uid->len );
       }
-    return 0;
+    return rc;
 }
 
 static int
@@ -248,13 +248,13 @@ do_public_key( IOBUF out, int ctb, PKT_public_key *pk )
   int rc = 0;
   int n, i;
   IOBUF a = iobuf_temp();
-  
+
   if ( !pk->version )
     iobuf_put( a, 3 );
   else
     iobuf_put( a, pk->version );
   write_32(a, pk->timestamp );
-  if ( pk->version < 4 ) 
+  if ( pk->version < 4 )
     {
       u16 ndays;
       if ( pk->expiredate )
@@ -305,18 +305,18 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
         ndays = 0;
       write_16(a, ndays);
     }
-  
+
   iobuf_put (a, sk->pubkey_algo );
-  
+
   /* Get number of secret and public parameters.  They are held in one
      array first the public ones, then the secret ones.  */
   nskey = pubkey_get_nskey ( sk->pubkey_algo );
   npkey = pubkey_get_npkey ( sk->pubkey_algo );
-  
+
   /* If we don't have any public parameters - which is the case if we
      don't know the algorithm used - the parameters are stored as one
      blob in a faked (opaque) MPI. */
-  if ( !npkey ) 
+  if ( !npkey )
     {
       write_fake_data( a, sk->skey[0] );
       goto leave;
@@ -327,11 +327,11 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
   for (i=0; i < npkey; i++ )
     if ((rc = mpi_write (a, sk->skey[i])))
       goto leave;
-  
+
   /* Build the header for protected (encrypted) secret parameters.  */
-  if ( sk->is_protected ) 
+  if ( sk->is_protected )
     {
-      if ( is_RSA(sk->pubkey_algo) 
+      if ( is_RSA(sk->pubkey_algo)
            && sk->version < 4
            && !sk->protect.s2k.mode )
         {
@@ -351,12 +351,12 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
                  private/experimental extension (this is not specified
                  in rfc2440 but the same scheme is used for all other
                  algorithm identifiers) */
-              iobuf_put(a, 101 ); 
+              iobuf_put(a, 101 );
               iobuf_put(a, sk->protect.s2k.hash_algo );
               iobuf_write(a, "GNU", 3 );
               iobuf_put(a, sk->protect.s2k.mode - 1000 );
 	    }
-          else 
+          else
             {
               iobuf_put(a, sk->protect.s2k.mode );
               iobuf_put(a, sk->protect.s2k.hash_algo );
@@ -366,10 +366,10 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
             iobuf_write (a, sk->protect.s2k.salt, 8 );
 
           if ( sk->protect.s2k.mode == 3 )
-            iobuf_put (a, sk->protect.s2k.count ); 
+            iobuf_put (a, sk->protect.s2k.count );
 
           /* For our special modes 1001, 1002 we do not need an IV. */
-          if ( sk->protect.s2k.mode != 1001 
+          if ( sk->protect.s2k.mode != 1001
                && sk->protect.s2k.mode != 1002 )
             iobuf_write (a, sk->protect.iv, sk->protect.ivlen );
 	}
@@ -378,10 +378,10 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
     iobuf_put (a, 0 );
 
   if ( sk->protect.s2k.mode == 1001 )
-    ; /* GnuPG extension - don't write a secret key at all. */ 
+    ; /* GnuPG extension - don't write a secret key at all. */
   else if ( sk->protect.s2k.mode == 1002 )
-    { 
-      /* GnuPG extension - divert to OpenPGP smartcard. */ 
+    {
+      /* GnuPG extension - divert to OpenPGP smartcard. */
       iobuf_put(a, sk->protect.ivlen ); /* Length of the serial number
                                            or 0 for no serial
                                            number. */
@@ -393,19 +393,19 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
       /* The secret key is protected - write it out as it is.  */
       byte *p;
       unsigned int ndatabits;
-      
+
       assert (gcry_mpi_get_flag (sk->skey[npkey], GCRYMPI_FLAG_OPAQUE));
       p = gcry_mpi_get_opaque (sk->skey[npkey], &ndatabits );
       iobuf_write (a, p, (ndatabits+7)/8 );
     }
-  else if ( sk->is_protected ) 
+  else if ( sk->is_protected )
     {
       /* The secret key is protected the old v4 way. */
-      for ( ; i < nskey; i++ ) 
+      for ( ; i < nskey; i++ )
         {
           byte *p;
           unsigned int ndatabits;
-          
+
           assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (sk->skey[i], &ndatabits);
           iobuf_write (a, p, (ndatabits+7)/8);
@@ -473,9 +473,9 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   int rc = 0;
   int n, i;
   IOBUF a = iobuf_temp();
-  
+
   write_version( a, ctb );
-  if ( enc->throw_keyid ) 
+  if ( enc->throw_keyid )
     {
       write_32(a, 0 );  /* Don't tell Eve who can decrypt the message.  */
       write_32(a, 0 );
@@ -529,7 +529,7 @@ do_plaintext( IOBUF out, int ctb, PKT_plaintext *pt )
     for(i=0; i < pt->namelen; i++ )
 	iobuf_put(out, pt->name[i] );
     rc = write_32(out, pt->timestamp );
-    if (rc) 
+    if (rc)
       return rc;
 
     n = 0;
@@ -645,7 +645,7 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 	}
 	if( buflen < n )
 	    break;
-        
+
 	type = *buffer & 0x7f;
 	if( type == reqtype ) {
 	    buffer++;
@@ -679,7 +679,7 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
  * Note: All pointers into sig->[un]hashed (e.g. returned by
  * parse_sig_subpkt) are not valid after a call to this function.  The
  * data to put into the subpaket should be in a buffer with a length
- * of buflen. 
+ * of buflen.
  */
 void
 build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
@@ -782,7 +782,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
       case SIGSUBPKT_SIGNATURE:
         hashed = 0;
         break;
-      default: 
+      default:
         hashed = 1;
         break;
       }
@@ -833,7 +833,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	memcpy (p, buffer, buflen);
     }
 
-    if (hashed) 
+    if (hashed)
 	sig->hashed = newarea;
     else
 	sig->unhashed = newarea;
@@ -1119,7 +1119,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
   if ( sig->version < 4 )
     iobuf_put (a, 5 ); /* Constant */
   iobuf_put (a, sig->sig_class );
-  if ( sig->version < 4 ) 
+  if ( sig->version < 4 )
     {
       write_32(a, sig->timestamp );
       write_32(a, sig->keyid[0] );
@@ -1127,7 +1127,7 @@ do_signature( IOBUF out, int ctb, PKT_signature *sig )
     }
   iobuf_put(a, sig->pubkey_algo );
   iobuf_put(a, sig->digest_algo );
-  if ( sig->version >= 4 ) 
+  if ( sig->version >= 4 )
     {
       size_t nn;
       /* Timestamp and keyid must have been packed into the subpackets

@@ -1,5 +1,5 @@
 /* scdaemon.c  -  The GnuPG Smartcard Daemon
- * Copyright (C) 2001, 2002, 2004, 2005, 
+ * Copyright (C) 2001, 2002, 2004, 2005,
  *               2007, 2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -53,13 +53,13 @@
 #include "mkdtemp.h"
 #include "gc-opt-flags.h"
 
-enum cmd_and_opt_values 
+enum cmd_and_opt_values
 { aNull = 0,
   oCsh		  = 'c',
   oQuiet	  = 'q',
   oSh		  = 's',
   oVerbose	  = 'v',
-  
+
   oNoVerbose = 500,
   aGPGConfList,
   aGPGConfTest,
@@ -99,11 +99,11 @@ enum cmd_and_opt_values
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
-  
+
   ARGPARSE_group (301, N_("@Options:\n ")),
 
   ARGPARSE_s_n (oServer,"server", N_("run in server mode (foreground)")),
-  ARGPARSE_s_n (oMultiServer, "multi-server", 
+  ARGPARSE_s_n (oMultiServer, "multi-server",
                 N_("run in multi server mode (foreground)")),
   ARGPARSE_s_n (oDaemon, "daemon", N_("run in daemon mode (background)")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
@@ -122,11 +122,11 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
-  ARGPARSE_s_s (oReaderPort, "reader-port", 
+  ARGPARSE_s_s (oReaderPort, "reader-port",
                 N_("|N|connect to reader at port N")),
-  ARGPARSE_s_s (octapiDriver, "ctapi-driver", 
+  ARGPARSE_s_s (octapiDriver, "ctapi-driver",
                 N_("|NAME|use NAME as ct-API driver")),
-  ARGPARSE_s_s (opcscDriver, "pcsc-driver", 
+  ARGPARSE_s_s (opcscDriver, "pcsc-driver",
                 N_("|NAME|use NAME as PC/SC driver")),
   ARGPARSE_s_n (oDisableCCID, "disable-ccid",
 #ifdef HAVE_LIBUSB
@@ -135,15 +135,15 @@ static ARGPARSE_OPTS opts[] = {
                                     "@"
 #endif
                 /* end --disable-ccid */),
-  ARGPARSE_s_u (oCardTimeout, "card-timeout", 
+  ARGPARSE_s_u (oCardTimeout, "card-timeout",
                 N_("|N|disconnect the card after N seconds of inactivity")),
-  ARGPARSE_s_n (oDisableKeypad, "disable-keypad", 
+  ARGPARSE_s_n (oDisableKeypad, "disable-keypad",
                 N_("do not use a reader's keypad")),
   ARGPARSE_s_n (oAllowAdmin, "allow-admin", "@"),
-  ARGPARSE_s_n (oDenyAdmin, "deny-admin", 
+  ARGPARSE_s_n (oDenyAdmin, "deny-admin",
                 N_("deny the use of admin card commands")),
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
-  
+
   ARGPARSE_end ()
 };
 
@@ -218,7 +218,7 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
 {
   const char *s;
   char *result;
-  
+
   if (maybe_setuid)
     {
       gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
@@ -261,7 +261,7 @@ my_strusage (int level)
     case 41: p =  _("Syntax: scdaemon [options] [command [args]]\n"
                     "Smartcard daemon for GnuPG\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -309,7 +309,7 @@ set_debug (const char *level)
       /* Unless the "guru" string has been used we don't want to allow
          hashing debugging.  The rationale is that people tend to
          select the highest debug value and would then clutter their
-         disk with debug files which may reveal confidential data.  */ 
+         disk with debug files which may reveal confidential data.  */
       if (numok)
         opt.debug &= ~(DBG_HASHING_VALUE);
     }
@@ -333,17 +333,17 @@ set_debug (const char *level)
 
   if (opt.debug)
     log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s\n",
-              (opt.debug & DBG_COMMAND_VALUE)? " command":"",    
-              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",    
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",    
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"", 
-              (opt.debug & DBG_CACHE_VALUE  )? " cache":"", 
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"", 
-              (opt.debug & DBG_HASHING_VALUE)? " hashing":"", 
+              (opt.debug & DBG_COMMAND_VALUE)? " command":"",
+              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
+              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
+              (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
+              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
+              (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
               (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
               (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"");
 }
- 
+
 
 
 static void
@@ -373,7 +373,6 @@ main (int argc, char **argv )
   ARGPARSE_ARGS pargs;
   int orig_argc;
   gpg_error_t err;
-  int may_coredump;
   char **orig_argv;
   FILE *configfp = NULL;
   char *configname = NULL;
@@ -395,13 +394,13 @@ main (int argc, char **argv )
   int allow_coredump = 0;
   int standard_socket = 0;
   struct assuan_malloc_hooks malloc_hooks;
-  
+
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
-  log_set_prefix ("scdaemon", 1|4); 
+  log_set_prefix ("scdaemon", 1|4);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -440,11 +439,11 @@ main (int argc, char **argv )
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
-  may_coredump = disable_core_dumps ();
+  disable_core_dumps ();
 
   /* Set default options. */
   opt.allow_admin = 1;
-  opt.pcsc_driver = DEFAULT_PCSC_DRIVER; 
+  opt.pcsc_driver = DEFAULT_PCSC_DRIVER;
 
 #ifdef HAVE_W32_SYSTEM
   standard_socket = 1;  /* Under Windows we always use a standard
@@ -455,7 +454,7 @@ main (int argc, char **argv )
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
     csh_style = 1;
-  
+
   opt.homedir = default_homedir ();
 
   /* Check whether we have a config file on the commandline */
@@ -484,15 +483,15 @@ main (int argc, char **argv )
   gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
   maybe_setuid = 0;
 
-  /* 
-     Now we are working under our real uid 
+  /*
+     Now we are working under our real uid
   */
 
 
   if (default_config)
     configname = make_filename (opt.homedir, "scdaemon.conf", NULL );
 
-  
+
   argc = orig_argc;
   argv = orig_argv;
   pargs.argc = &argc;
@@ -517,7 +516,7 @@ main (int argc, char **argv )
                          configname, strerror(errno) );
               exit(2);
 	    }
-          xfree (configname); 
+          xfree (configname);
           configname = NULL;
 	}
       if (parse_debug && configname )
@@ -543,13 +542,13 @@ main (int argc, char **argv )
           enable_core_dumps ();
           allow_coredump = 1;
           break;
-        case oDebugCCIDDriver: 
+        case oDebugCCIDDriver:
 #ifdef HAVE_LIBUSB
           ccid_set_debug_level (ccid_set_debug_level (-1)+1);
 #endif /*HAVE_LIBUSB*/
           break;
         case oDebugDisableTicker: ticker_disabled = 1; break;
-        case oDebugLogTid: 
+        case oDebugLogTid:
           log_set_get_tid_callback (tid_log_callback);
           break;
 
@@ -585,15 +584,15 @@ main (int argc, char **argv )
         case oAllowAdmin: /* Dummy because allow is now the default.  */
           break;
         case oDenyAdmin: opt.allow_admin = 0; break;
-          
+
         case oCardTimeout: opt.card_timeout = pargs.r.ret_ulong; break;
 
         case oDisableApplication:
-          add_to_strlist (&opt.disabled_applications, pargs.r.ret_str); 
+          add_to_strlist (&opt.disabled_applications, pargs.r.ret_str);
           break;
 
-        default: 
-          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR; 
+        default:
+          pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
           break;
 	}
     }
@@ -623,7 +622,7 @@ main (int argc, char **argv )
   log_info ("NOTE: this is a development version!\n");
 #endif
 
- 
+
   if (atexit (cleanup))
     {
       log_error ("atexit failed\n");
@@ -691,9 +690,9 @@ main (int argc, char **argv )
       gnupg_sleep (debug_wait);
       log_debug ("... okay\n");
     }
-  
+
   if (pipe_server)
-    { 
+    {
       /* This is the simple pipe based server */
       ctrl_t ctrl;
       pth_attr_t tattr;
@@ -702,7 +701,7 @@ main (int argc, char **argv )
 #ifndef HAVE_W32_SYSTEM
       {
         struct sigaction sa;
-        
+
         sa.sa_handler = SIG_IGN;
         sigemptyset (&sa.sa_mask);
         sa.sa_flags = 0;
@@ -730,7 +729,7 @@ main (int argc, char **argv )
           socket_name = create_socket_name (standard_socket,
                                             "S.scdaemon",
                                             "/tmp/gpg-XXXXXX/S.scdaemon");
-          
+
           fd = FD2INT(create_server_socket (standard_socket,
                                             socket_name, &socket_nonce));
         }
@@ -787,17 +786,17 @@ main (int argc, char **argv )
       fflush (NULL);
 #ifndef HAVE_W32_SYSTEM
       pid = fork ();
-      if (pid == (pid_t)-1) 
+      if (pid == (pid_t)-1)
         {
           log_fatal ("fork failed: %s\n", strerror (errno) );
           exit (1);
         }
-      else if (pid) 
+      else if (pid)
         { /* we are the parent */
           char *infostr;
-          
+
           close (fd);
-          
+
           /* create the info string: <name>:<pid>:<protocol_version> */
           if (estream_asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
 				socket_name, (ulong) pid) < 0)
@@ -808,7 +807,7 @@ main (int argc, char **argv )
             }
           *socket_name = 0; /* don't let cleanup() remove the socket -
                                the child should do this from now on */
-          if (argc) 
+          if (argc)
             { /* run the program given on the commandline */
               if (putenv (infostr))
                 {
@@ -836,18 +835,18 @@ main (int argc, char **argv )
                   printf ( "%s; export SCDAEMON_INFO;\n", infostr);
                 }
               xfree (infostr);
-              exit (0); 
+              exit (0);
             }
           /* NOTREACHED */
         } /* end parent */
-      
+
       /* This is the child. */
 
       /* Detach from tty and put process into a new session. */
       if (!nodetach )
-        {  
+        {
           /* Close stdin, stdout and stderr unless it is the log stream. */
-          for (i=0; i <= 2; i++) 
+          for (i=0; i <= 2; i++)
             {
               if ( log_test_fd (i) && i != fd)
                 close (i);
@@ -862,7 +861,7 @@ main (int argc, char **argv )
 
       {
         struct sigaction sa;
-        
+
         sa.sa_handler = SIG_IGN;
         sigemptyset (&sa.sa_mask);
         sa.sa_flags = 0;
@@ -881,7 +880,7 @@ main (int argc, char **argv )
 
       close (fd);
     }
-  
+
   return 0;
 }
 
@@ -944,7 +943,7 @@ handle_signal (int signo)
                 "re-reading configuration and resetting cards\n");
 /*       reread_configuration (); */
       break;
-      
+
     case SIGUSR1:
       log_info ("SIGUSR1 received - printing internal information:\n");
       pth_ctrl (PTH_CTRL_DUMPSTATE, log_get_stream ());
@@ -970,7 +969,7 @@ handle_signal (int signo)
           scd_exit (0);
 	}
       break;
-        
+
     case SIGINT:
       log_info ("SIGINT received - immediate shutdown\n");
       log_info( "%s %s stopped\n", strusage(11), strusage(13));
@@ -1059,7 +1058,7 @@ create_server_socket (int is_standard_name, const char *name,
       scd_exit (2);
     }
 
-  serv_addr = xmalloc (sizeof (*serv_addr)); 
+  serv_addr = xmalloc (sizeof (*serv_addr));
   memset (serv_addr, 0, sizeof *serv_addr);
   serv_addr->sun_family = AF_UNIX;
   assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
@@ -1072,7 +1071,7 @@ create_server_socket (int is_standard_name, const char *name,
       remove (name);
       rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
     }
-  if (rc != -1 
+  if (rc != -1
       && (rc=assuan_sock_get_nonce ((struct sockaddr*)serv_addr, len, nonce)))
     log_error (_("error getting nonce for the socket\n"));
  if (rc == -1)
@@ -1091,7 +1090,7 @@ create_server_socket (int is_standard_name, const char *name,
       assuan_sock_close (fd);
       scd_exit (2);
     }
-          
+
   if (opt.verbose)
     log_info (_("listening on socket `%s'\n"), serv_addr->sun_path);
 
@@ -1109,7 +1108,7 @@ start_connection_thread (void *arg)
   if (ctrl->thread_startup.fd != GNUPG_INVALID_FD
       && assuan_sock_check_nonce (ctrl->thread_startup.fd, &socket_nonce))
     {
-      log_info (_("error reading nonce on fd %d: %s\n"), 
+      log_info (_("error reading nonce on fd %d: %s\n"),
                 FD2INT(ctrl->thread_startup.fd), strerror (errno));
       assuan_sock_close (ctrl->thread_startup.fd);
       xfree (ctrl);
@@ -1187,7 +1186,7 @@ handle_connections (int listen_fd)
   for (;;)
     {
       sigset_t oldsigs;
-      
+
       if (shutdown_pending)
         {
           if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)

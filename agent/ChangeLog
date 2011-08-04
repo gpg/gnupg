@@ -1,3 +1,12 @@
+2011-08-04  Werner Koch  <wk@g10code.com>
+
+	* genkey.c (check_passphrase_pattern): Use gpg_strerror.
+
+	* command-ssh.c (ssh_receive_mpint_list): Remove set but unused
+	var ELEMS_PUBLIC_N.
+
+	* gpg-agent.c (main): Remove set but unused var MAY_COREDUMP.
+
 2011-07-22  Werner Koch  <wk@g10code.com>
 
 	* command-ssh.c (ssh_receive_key): Do not init comment to an empty

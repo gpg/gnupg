@@ -2905,12 +2905,11 @@ es_fread (void *ES__RESTRICT ptr, size_t size, size_t nitems,
 	  estream_t ES__RESTRICT stream)
 {
   size_t ret, bytes;
-  int err;
 
   if (size * nitems)
     {
       ESTREAM_LOCK (stream);
-      err = es_readn (stream, ptr, size * nitems, &bytes);
+      es_readn (stream, ptr, size * nitems, &bytes);
       ESTREAM_UNLOCK (stream);
 
       ret = bytes / size;
@@ -2927,12 +2926,11 @@ es_fwrite (const void *ES__RESTRICT ptr, size_t size, size_t nitems,
 	   estream_t ES__RESTRICT stream)
 {
   size_t ret, bytes;
-  int err;
 
   if (size * nitems)
     {
       ESTREAM_LOCK (stream);
-      err = es_writen (stream, ptr, size * nitems, &bytes);
+      es_writen (stream, ptr, size * nitems, &bytes);
       ESTREAM_UNLOCK (stream);
 
       ret = bytes / size;

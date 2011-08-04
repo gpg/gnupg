@@ -1,3 +1,10 @@
+2011-08-04  Werner Koch  <wk@g10code.com>
+
+	* pka.c (get_pka_info): Remove set but unused variables ARCOUNT
+	and NSCOUNT.
+	* estream.c (es_fwrite, es_fread): Remove set but unused variable
+	ERR.
+
 2011-04-29  Werner Koch  <wk@g10code.com>
 
 	* estream.c (es_pth_kill): New.
