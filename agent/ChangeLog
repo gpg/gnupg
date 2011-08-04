@@ -1,5 +1,8 @@
 2011-08-04  Werner Koch  <wk@g10code.com>
 
+	* command.c (cmd_keyinfo, do_one_keyinfo): Support options --data
+	and --ssh-fpr.
+
 	* command-ssh.c (ssh_identity_register): Display the ssh
 	fingerprint in the prompt.
 	(add_control_entry): Add arg FMTFPR and use it as comment in

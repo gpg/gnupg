@@ -31,6 +31,7 @@ agent/gpg-agent
 agent/gpg-preset-passphrase
 agent/gpg-protect-tool
 agent/t-protect
+agent/t-ssh-utils
 common/libcommon.a
 common/libcommonpth.a
 common/libgpgrl.a

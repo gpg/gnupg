@@ -5,7 +5,8 @@ Noteworthy changes in version 2.0.18 (unreleased)
 
  * Bug fix for newer versions of Libgcrypt.
 
- * Support the SSH confirm flag.
+ * Support the SSH confirm flag and show SSH fingerprint in ssh
+   related pinentries.
 
  * Improved dirmngr/gpgsm interaction for OCSP.
 
