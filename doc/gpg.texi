@@ -32,7 +32,7 @@ gpg
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
+.RI [ options ]
 .I command
 .RI [ args ]
 @end ifset
@@ -57,7 +57,7 @@ gpg2
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
+.RI [ options ]
 .I command
 .RI [ args ]
 @end ifset
@@ -98,16 +98,16 @@ page and at @inforef{Top,GnuPG 1,gpg}.
 @mancont
 
 @menu
-* GPG Commands::        List of all commands.
-* GPG Options::         List of all options.
-* GPG Configuration::   Configuration files.
-* GPG Examples::        Some usage examples.
+* GPG Commands::            List of all commands.
+* GPG Options::             List of all options.
+* GPG Configuration::       Configuration files.
+* GPG Examples::            Some usage examples.
 
 Developer information:
-@c * Unattended Usage::      Using @command{gpg} from other programs.
-@c * GPG Protocol::        The protocol the server mode uses.
+* Unattended Usage of GPG:: Using @command{gpg} from other programs.
 @end menu
 
+@c * GPG Protocol::        The protocol the server mode uses.
 
 
 @c *******************************************
@@ -303,7 +303,7 @@ secret key is not usable (for example, if it was created via
 @opindex list-sigs
 Same as @option{--list-keys}, but the signatures are listed too.
 @ifclear gpgone
-This command has the same effect as 
+This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-list}.
 @end ifclear
 
@@ -326,7 +326,7 @@ Same as @option{--list-sigs}, but the signatures are verified.  Note
 that for performance reasons the revocation status of a signing key is
 not shown.
 @ifclear gpgone
-This command has the same effect as 
+This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-check}.
 @end ifclear
 
@@ -1429,7 +1429,8 @@ required if @code{local} is also used.
 Select how to display key IDs. "short" is the traditional 8-character
 key ID. "long" is the more accurate (but less convenient)
 16-character key ID. Add an "0x" to either to include an "0x" at the
-beginning of the key ID, as in 0x99242560.
+beginning of the key ID, as in 0x99242560.  Note that this option is
+ignored if the option --with-colons is used.
 
 @item --keyserver @code{name}
 Use @code{name} as your keyserver. This is the server that
@@ -2204,7 +2205,7 @@ a numeric value or by a keyword:
 @item none
 No debugging at all.  A value of less than 1 may be used instead of
 the keyword.
-@item basic  
+@item basic
 Some basic debug messages.  A value between 1 and 2 may be used
 instead of the keyword.
 @item advanced
@@ -2510,7 +2511,7 @@ timestamp issues on subkeys.
 @item --ignore-valid-from
 GnuPG normally does not select and use subkeys created in the future.
 This option allows the use of such keys and thus exhibits the
-pre-1.0.7 behaviour. You should not use this option unless you there
+pre-1.0.7 behaviour. You should not use this option unless there
 is some clock problem. See also @option{--ignore-time-conflict} for timestamp
 issues with signatures.
 
@@ -2613,7 +2614,7 @@ Allow processing of multiple OpenPGP messages contained in a single file
 or stream.  Some programs that call GPG are not prepared to deal with
 multiple messages being processed together, so this option defaults to
 no.  Note that versions of GPG prior to 1.4.7 always allowed multiple
-messages.  
+messages.
 
 Warning: Do not use this option unless you need it as a temporary
 workaround!
@@ -2833,7 +2834,7 @@ translation is loaded from
 @code{@var{gpgdir}/gnupg.nls/@var{langid}.mo}.  Here @var{gpgdir} is the
 directory out of which the gpg binary has been loaded.  If it can't be
 loaded the Registry is tried and as last resort the native Windows
-locale system is used.  
+locale system is used.
 
 @end table
 
@@ -2964,11 +2965,264 @@ Before you report a bug you should first search the mailing list
 archives for similar problems and second check whether such a bug has
 already been reported to our bug tracker at http://bugs.gnupg.org .
 
+@c *******************************************
+@c ***************              **************
+@c ***************  UNATTENDED  **************
+@c ***************              **************
+@c *******************************************
+@manpause
+@node Unattended Usage of GPG
+@section Unattended Usage
+
+@command{gpg} is often used as a backend engine by other software.  To help
+with this a machine interface has been defined to have an unambiguous
+way to do this.  The options @option{--status-fd} and @option{--batch}
+are almost always required for this.
+
+@menu
+* Unattended GPG key generation::  Unattended key generation
+@end menu
+
+
+@node Unattended GPG key generation,,,Unattended Usage of GPG
+@section Unattended key generation
+
+The command @option{--gen-key} may be used along with the option
+@option{--batch} for unattended key generation.  The parameters are
+either read from stdin or given as a file on the command line.
+The format of the parameter file is as follows:
+
+@itemize @bullet
+@item Text only, line length is limited to about 1000 characters.
+@item UTF-8 encoding must be used to specify non-ASCII characters.
+@item Empty lines are ignored.
+@item Leading and trailing while space is ignored.
+@item A hash sign as the first non white space character indicates
+a comment line.
+@item Control statements are indicated by a leading percent sign, the
+arguments are separated by white space from the keyword.
+@item Parameters are specified by a keyword, followed by a colon.  Arguments
+are separated by white space.
+@item
+The first parameter must be @samp{Key-Type}; control statements may be
+placed anywhere.
+@item
+The order of the parameters does not matter except for @samp{Key-Type}
+which must be the first parameter.  The parameters are only used for
+the generated keyblock (primary and subkeys); parameters from previous
+sets are not used.  Some syntactically checks may be performed.
+@item
+Key generation takes place when either the end of the parameter file
+is reached, the next @samp{Key-Type} parameter is encountered or at the
+control statement @samp{%commit} is encountered.
+@end itemize
+
+@noindent
+Control statements:
+
+@table @asis
+
+@item %echo @var{text}
+Print @var{text} as diagnostic.
+
+@item %dry-run
+Suppress actual key generation (useful for syntax checking).
+
+@item %commit
+Perform the key generation.  Note that an implicit commit is done at
+the next @asis{Key-Type} parameter.
+
+@item %pubring @var{filename}
+@itemx %secring @var{filename}
+Do not write the key to the default or commandline given keyring but
+to @var{filename}.  This must be given before the first commit to take
+place, duplicate specification of the same filename is ignored, the
+last filename before a commit is used.  The filename is used until a
+new filename is used (at commit points) and all keys are written to
+that file. If a new filename is given, this file is created (and
+overwrites an existing one).  For gnuPG versions prior to 2.1, both
+control statements must be given. For GnuPG 2.1 and later
+@samp{%secring} is a no-op.
+
+@item %ask-passphrase
+@itemx %no-ask-passphrase
+Enable (or disable) a mode where the command @option{passphrase} is
+ignored and instead the usual passphrase dialog is used.  This does
+not make sense for batch key generation; however the unattended key
+generation feature is also used by GUIs and this feature relinquishes
+the GUI from implementing its own passphrase entry code.  These are
+global control statements and affect all future key genrations.
+
+@item %no-protection
+Since GnuPG version 2.1 it is not anymore possible to specify a
+passphrase for unattended key generation.  The passphrase command is
+simply ignored and @samp{%ask-passpharse} is thus implicitly enabled.
+Using this option allows the creation of keys without any passphrase
+protection.  This option is mainly intended for regression tests.
+
+@item %transient-key
+If given the keys are created using a faster and a somewhat less
+secure random number generator.  This option may be used for keys
+which are only used for a short time and do not require full
+cryptographic strength.  It takes only effect if used together with
+the control statement @samp{%no-protection}.
+
+@end table
+
+@noindent
+General Parameters:
+
+@table @asis
+
+@item Key-Type: @var{algo}
+Starts a new parameter block by giving the type of the primary
+key. The algorithm must be capable of signing.  This is a required
+parameter.  @var{algo} may either be an OpenPGP algorithm number or a
+string with the algorithm name.  The special value @samp{default} may
+be used for @var{algo} to create the default key type; in this case a
+@samp{Key-Usage} shall not be given and @samp{default} also be used
+for @samp{Subkey-Type}.
+
+@item Key-Length: @var{nbits}
+The requested length of the generated key in bits.  The default is
+returned by running the command @samp{gpg2 --gpgconf-list}.
+
+@item Key-Grip: @var{hexstring}
+This is optional and used to generate a CSR or certificatet for an
+already existing key.  Key-Length will be ignored when given.
+
+@item Key-Usage: @var{usage-list}
+Space or comma delimited list of key usages.  Allowed values are
+@samp{encrypt}, @samp{sign}, and @samp{auth}.  This is used to
+generate the key flags.  Please make sure that the algorithm is
+capable of this usage.  Note that OpenPGP requires that all primary
+keys are capable of certification, so no matter what usage is given
+here, the @samp{cert} flag will be on.  If no @samp{Key-Usage} is
+specified and the @samp{Key-Type} is not @samp{default}, all allowed
+usages for that particular algorithm are used; if it is not given but
+@samp{default} is used the usage will be @samp{sign}.
+
+@item Subkey-Type: @var{algo}
+This generates a secondary key (subkey).  Currently only one subkey
+can be handled.  See also @samp{Key-Type} above.
+
+@item Subkey-Length: @var{nbits}
+Length of the secondary key (subkey) in bits.  The default is returned
+by running the command @samp{gpg2 --gpgconf-list}".
+
+@item Subkey-Usage: @var{usage-list}
+Key usage lists for a subkey; similar to @samp{Key-Usage}.
+
+@item Passphrase: @var{string}
+If you want to specify a passphrase for the secret key,
+enter it here.	Default is not to use any passphrase.
+
+@item Name-Real: @var{name}
+@itemx Name-Comment: @var{comment}
+@itemx Name-Email: @var{email}
+The three parts of a user name.  Remember to use UTF-8 encoding here.
+If you don't give any of them, no user ID is created.
+
+@item Expire-Date: @var{iso-date}|(@var{number}[d|w|m|y])
+Set the expiration date for the key (and the subkey).  It may either
+be entered in ISO date format (2000-08-15) or as number of days,
+weeks, month or years.  The special notation "seconds=N" is also
+allowed to directly give an Epoch value. Without a letter days are
+assumed.  Note that there is no check done on the overflow of the type
+used by OpenPGP for timestamps.  Thus you better make sure that the
+given value make sense.  Although OpenPGP works with time intervals,
+GnuPG uses an absolute value internally and thus the last year we can
+represent is 2105.
+
+@item  Ceation-Date: @var{iso-date}
+Set the creation date of the key as stored in the key information and
+which is also part of the fingerprint calculation.  Either a date like
+"1986-04-26" or a full timestamp like "19860426T042640" may be used.
+The time is considered to be UTC.  If it is not given the current time
+is used.
+
+@item Preferences: @var{string}
+Set the cipher, hash, and compression preference values for this key.
+This expects the same type of string as the sub-command @samp{setpref}
+in the @option{--edit-key} menu.
+
+@item  Revoker: @var{algo}:@var{fpr} [sensitive]
+Add a designated revoker to the generated key.  Algo is the public key
+algorithm of the designated revoker (i.e. RSA=1, DSA=17, etc.)
+@var{fpr} is the fingerprint of the designated revoker.  The optional
+@samp{sensitive} flag marks the designated revoker as sensitive
+information.  Only v4 keys may be designated revokers.
+
+@item Keyserver: @var{string}
+This is an optional parameter that specifies the preferred keyserver
+URL for the key.
+
+@item Handle: @var{string}
+This is an optional parameter only used with the status lines
+KEY_CREATED and KEY_NOT_CREATED.  @var{string} may be up to 100
+characters and should not contain spaces.  It is useful for batch key
+generation to associate a key parameter block with a status line.
+
+@end table
+
+@noindent
+Here is an example on how to create a key:
+@smallexample
+$ cat >foo <<EOF
+     %echo Generating a basic OpenPGP key
+     Key-Type: DSA
+     Key-Length: 1024
+     Subkey-Type: ELG-E
+     Subkey-Length: 1024
+     Name-Real: Joe Tester
+     Name-Comment: with stupid passphrase
+     Name-Email: joe@@foo.bar
+     Expire-Date: 0
+     Passphrase: abc
+     %pubring foo.pub
+     %secring foo.sec
+     # Do a commit here, so that we can later print "done" :-)
+     %commit
+     %echo done
+EOF
+$ gpg2 --batch --gen-key foo
+ [...]
+$ gpg2 --no-default-keyring --secret-keyring ./foo.sec \
+       --keyring ./foo.pub --list-secret-keys
+/home/wk/work/gnupg-stable/scratch/foo.sec
+------------------------------------------
+sec  1024D/915A878D 2000-03-09 Joe Tester (with stupid passphrase) <joe@@foo.bar>
+ssb  1024g/8F70E2C0 2000-03-09
+@end smallexample
+
+
+@noindent
+If you want to create a key with the default algorithms you would use
+these parameters:
+@smallexample
+     %echo Generating a default key
+     Key-Type: default
+     Subkey-Type: default
+     Name-Real: Joe Tester
+     Name-Comment: with stupid passphrase
+     Name-Email: joe@@foo.bar
+     Expire-Date: 0
+     Passphrase: abc
+     %pubring foo.pub
+     %secring foo.sec
+     # Do a commit here, so that we can later print "done" :-)
+     %commit
+     %echo done
+@end smallexample
+
+
+
+
 @mansect see also
 @ifset isman
-@command{gpgv}(1), 
+@command{gpgv}(1),
 @ifclear gpgone
-@command{gpgsm}(1), 
+@command{gpgsm}(1),
 @command{gpg-agent}(1)
 @end ifclear
 @end ifset

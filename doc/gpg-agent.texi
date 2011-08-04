@@ -2,7 +2,7 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
-@c Note that we use this texinfo file for all versions of GnuPG: 
+@c Note that we use this texinfo file for all versions of GnuPG:
 @c 2.0 and 2.1.  The macro "gpgtwoone" controls parts which are only
 @c valid for GnuPG 2.1 and later.
 
@@ -26,23 +26,23 @@
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
+.RI [ options ]
 .br
 .B  gpg-agent
 .RB [ \-\-homedir
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
-.B  \-\-server 
+.RI [ options ]
+.B  \-\-server
 .br
 .B  gpg-agent
 .RB [ \-\-homedir
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
-.B  \-\-daemon 
+.RI [ options ]
+.B  \-\-daemon
 .RI [ command_line ]
 @end ifset
 
@@ -106,7 +106,7 @@ fi
 It reads the data out of the file and exports the variables.  If you
 don't use Secure Shell, you don't need the last two export statements.
 @end ifclear
- 
+
 @noindent
 You should always add the following lines to your @code{.bashrc} or
 whatever initialization file is used for all shell invocations:
@@ -235,7 +235,7 @@ a numeric value or a keyword:
 @item none
 No debugging at all.  A value of less than 1 may be used instead of
 the keyword.
-@item basic  
+@item basic
 Some basic debug messages.  A value between 1 and 2 may be used
 instead of the keyword.
 @item advanced
@@ -263,8 +263,8 @@ usual C-Syntax. The currently defined bits are:
 @table @code
 @item 0  (1)
 X.509 or OpenPGP protocol related data
-@item 1  (2)  
-values of big number integers 
+@item 1  (2)
+values of big number integers
 @item 2  (4)
 low level crypto operations
 @item 5  (32)
@@ -348,6 +348,14 @@ Allow clients to mark keys as trusted, i.e. put them into the
 @file{trustlist.txt} file.  This is by default not allowed to make it
 harder for users to inadvertently accept Root-CA keys.
 
+@ifset gpgtwoone
+@anchor{option --allow-loopback-pinentry}
+@item --allow-loopback-pinentry
+@opindex allow-loopback-pinentry
+Allow clients to use the loopback pinentry features; see the option
+@option{pinentry-mode} for details.
+@end ifset
+
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
 This option will let @command{gpg-agent} bypass the passphrase cache for all
@@ -398,7 +406,7 @@ to 1.
 Check the passphrase against the pattern given in @var{file}.  When
 entering a new passphrase matching one of these pattern a warning will
 be displayed. @var{file} should be an absolute filename.  The default is
-not to use any pattern file. 
+not to use any pattern file.
 
 Security note: It is known that checking a passphrase against a list of
 pattern or even against a complete dictionary is not very effective to
@@ -408,7 +416,7 @@ behavior and optionally to run a passphrase cracker regularly on all
 users passphrases to catch the very simple ones.
 
 @item --max-passphrase-days @var{n}
-@opindex max-passphrase-days 
+@opindex max-passphrase-days
 Ask the user to change the passphrase if @var{n} days have passed since
 the last change.  With @option{--enforce-passphrase-constraints} set the
 user may not bypass this check.
@@ -477,10 +485,10 @@ option has been enabled.
 @itemx --lc-ctype @var{string}
 @itemx --lc-messages @var{string}
 @itemx --xauthority @var{string}
-@opindex display 
-@opindex ttyname 
-@opindex ttytype 
-@opindex lc-ctype 
+@opindex display
+@opindex ttyname
+@opindex ttytype
+@opindex lc-ctype
 @opindex lc-messages
 @opindex xauthority
 These options are used with the server mode to pass localization
@@ -563,7 +571,7 @@ agent. By default they may all be found in the current home directory
   two dashes may not be entered and the option may not be abbreviated.
   This file is also read after a @code{SIGHUP} however only a few
   options will actually have an effect.  This default name may be
-  changed on the command line (@pxref{option --options}).  
+  changed on the command line (@pxref{option --options}).
   You should backup this file.
 
 @item trustlist.txt
@@ -576,21 +584,21 @@ agent. By default they may all be found in the current home directory
   allows to cut and paste the fingerprint from a key listing output.  If
   the line is prefixed with a @code{!} the key is explicitly marked as
   not trusted.
-  
+
   Here is an example where two keys are marked as ultimately trusted
   and one as not trusted:
-  
+
   @example
   # CN=Wurzel ZS 3,O=Intevation GmbH,C=DE
   A6935DD34EF3087973C706FC311AA2CCF733765B S
-  
+
   # CN=PCA-1-Verwaltung-02/O=PKI-1-Verwaltung/C=DE
-  DC:BD:69:25:48:BD:BB:7E:31:6E:BB:80:D3:00:80:35:D4:F8:A6:CD S 
+  DC:BD:69:25:48:BD:BB:7E:31:6E:BB:80:D3:00:80:35:D4:F8:A6:CD S
 
   # CN=Root-CA/O=Schlapphuete/L=Pullach/C=DE
   !14:56:98:D3:FE:9C:CA:5A:31:6E:BC:81:D3:11:4E:00:90:A3:44:C2 S
   @end example
-  
+
 Before entering a key into this file, you need to ensure its
 authenticity.  How to do this depends on your organisation; your
 administrator might have already entered those keys which are deemed
@@ -625,7 +633,7 @@ fails, try again using the chain validation model.
 
 @end table
 
-  
+
 @item sshcontrol
 @cindex sshcontrol
 This file is used when support for the secure shell agent protocol has
@@ -647,11 +655,11 @@ that key.  The flag is automatically set if a new key was loaded into
 command.
 
 The keygrip may be prefixed with a @code{!} to disable an entry entry.
-    
+
 The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
 implicitly added to this list; i.e. there is no need to list them.
-  
+
   @example
   # Key added on: 2011-07-20 20:38:46
   # Fingerprint:  5e:8d:c4:ad:e7:af:6e:27:8a:d6:13:e4:79:ad:0b:81
@@ -682,7 +690,7 @@ a small helper script is provided to create these files (@pxref{addgnupghome}).
 @node Agent Signals
 @section Use of some signals.
 A running @command{gpg-agent} may be controlled by signals, i.e. using
-the @command{kill} command to send a signal to the process. 
+the @command{kill} command to send a signal to the process.
 
 Here is a list of supported signals:
 
@@ -721,7 +729,7 @@ This signal is used for internal purposes.
 
 @end table
 
-@c 
+@c
 @c  Examples
 @c
 @mansect examples
@@ -764,7 +772,7 @@ and add something like (for Bourne shells)
 @noindent
 to your shell initialization file (e.g. @file{~/.bashrc}).
 
-@c 
+@c
 @c  Assuan Protocol
 @c
 @manpause
@@ -807,6 +815,7 @@ secret keys.
 * Agent UPDATESTARTUPTTY:: Change the Standard Display
 * Agent GETEVENTCOUNTER:: Get the Event Counters
 * Agent GETINFO::         Return information about the process
+* Agent OPTION::          Set options for the session
 @end menu
 
 @node Agent PKDECRYPT
@@ -838,13 +847,13 @@ text.
     C: D xxxx)
     C: END
 @end example
-    
+
 Please note that the server may send status info lines while reading the
 data lines from the client.  The data send is a SPKI like S-Exp with
 this structure:
 
 @example
-     (enc-val   
+     (enc-val
        (<algo>
          (<param_name1> <mpi>)
  	   ...
@@ -857,20 +866,20 @@ the parameters depend on the algorithm.  The agent does return an error
 if there is an inconsistency.
 
 If the decryption was successful the decrypted data is returned by
-means of "D" lines. 
+means of "D" lines.
 
 Here is an example session:
 
 @example
    C: PKDECRYPT
    S: INQUIRE CIPHERTEXT
-   C: D (enc-val elg (a 349324324) 
+   C: D (enc-val elg (a 349324324)
    C: D    (b 3F444677CA)))
    C: END
    S: # session key follows
    S: D (value 1234567890ABCDEF0)
    S: OK descryption successful
-@end example         
+@end example
 
 
 @node Agent PKSIGN
@@ -918,8 +927,8 @@ different algorithms.  The agent does then some checks, asks for the
 passphrase and as a result the server returns the signature as an SPKI
 like S-expression in "D" lines:
 
-@example  
-     (sig-val   
+@example
+     (sig-val
        (<algo>
          (<param_name1> <mpi>)
  	   ...
@@ -967,7 +976,7 @@ option allows to choose the storage location.  To get the secret key out
 of the PSE, a special export tool has to be used.
 
 @example
-   GENKEY 
+   GENKEY
 @end example
 
 Invokes the key generation process and the server will then inquire
@@ -1102,13 +1111,13 @@ Known sequences with the pattern @@foo@@ are replaced according to this
 table:
 
 @table @code
-@item @@FPR16@@ 
+@item @@FPR16@@
 Format the fingerprint according to gpg rules for a v3 keys.
-@item @@FPR20@@ 
+@item @@FPR20@@
 Format the fingerprint according to gpg rules for a v4 keys.
 @item @@FPR@@
 Choose an appropriate format to format the fingerprint.
-@item @@@@ 
+@item @@@@
 Replaced by a single @code{@@}
 @end table
 
@@ -1130,7 +1139,7 @@ arguments the agent returns a cached passphrase or an error.  By
 convention either the hexified fingerprint of the key shall be used for
 @var{cache_id} or an arbitrary string prefixed with the name of the
 calling application and a colon: Like @code{gpg:somestring}.
-  
+
 @var{error_message} is either a single @code{X} for no error message or
 a string to be shown as an error message like (e.g. "invalid
 passphrase").  Blanks must be percent escaped or replaced by @code{+}'.
@@ -1154,7 +1163,7 @@ has been found in the cache.
 
 If the option @option{--no-ask} is used and the passphrase is not in the
 cache the user will not be asked to enter a passphrase but the error
-code @code{GPG_ERR_NO_DATA} is returned.  
+code @code{GPG_ERR_NO_DATA} is returned.
 
 If the option @option{--qualitybar} is used and a minimum passphrase
 length has been configured, a visual indication of the entered
@@ -1286,11 +1295,95 @@ Return the name of the socket used for SSH connections.  If SSH support
 has not been enabled the error @code{GPG_ERR_NO_DATA} will be returned.
 @end table
 
+@node Agent OPTION
+@subsection Set options for the session
+
+Here is a list of session options which are not yet described with
+other commands.  The general syntax for an Assuan option is:
+
+@smallexample
+OPTION  @var{key}=@var{value}
+@end smallexample
+
+@noindent
+Supported @var{key}s are:
+
+@table @code
+@item agent-awareness
+This may be used to tell gpg-agent of which gpg-agent version the
+client is aware of.  gpg-agent uses this information to enable
+features which might break older clients.
+
+@item putenv
+Change the session's environment to be used for the
+Pinentry.  Valid values are:
+
+  @table @code
+  @item @var{name}
+  Delete envvar @var{name}
+  @item @var{name}=
+  Set envvar @var{name} to the empty string
+  @item @var{name}=@var{value}
+  Set envvar @var{name} to the string @var{value}.
+  @end table
+
+@item use-cache-for-signing
+See Assuan command @code{PKSIGN}.
+
+@item allow-pinentry-notify
+This does not need any value.  It is used to enable the
+PINENTRY_LAUNCHED inquiry.
+
+@ifset gpgtwoone
+@item pinentry-mode
+This option is used to change the operation mode of the pinentry.  The
+following values are defined:
+
+  @table @code
+  @item ask
+  This is the default mode which pops up a pinentry as needed.
+
+  @item cancel
+  Instead of popping up a pinentry, return the error code
+  @code{GPG_ERR_CANCELED}.
+
+  @item error
+  Instead of popping up a pinentry, return the error code
+  @code{GPG_ERR_NO_PIN_ENTRY}.
+
+  @item loopback
+  Use a loopback pinentry.  This fakes a pinentry by using inquiries
+  back to the caller to ask for a passphrase.  This option may only be
+  set if the agent has been configured for that.
+  Use the @xref{option --allow-loopback-pinentry}.
+
+  @end table
+@end ifset
+
+@ifset gpgtwoone
+@item cache-ttl-opt-preset
+This option sets the cache TTL for new entries created by GENKEY and
+PASSWD commands when using the @option{--preset} option.  It it is not
+used a default value is used.
+@end ifset
+
+@ifset gpgtwoone
+@item s2k-count
+Instead of using the standard S2K counted (which is computed on the
+fly), the given S2K count is used for new keys or when changing the
+passphrase of a key.  Values below 65536 are considered to be 0.  This
+option is valid for the entire session or until reset to 0.  This
+option is useful if the key is later used on boxes which are either
+much slower or faster than the actual box.
+@end ifset
+
+@end table
+
 
 @mansect see also
 @ifset isman
-@command{gpg2}(1), 
-@command{gpgsm}(1), 
+@command{gpg2}(1),
+@command{gpgsm}(1),
 @command{gpg-connect-agent}(1),
 @command{scdaemon}(1)
 @end ifset

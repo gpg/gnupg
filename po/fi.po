@@ -139,19 +139,31 @@ msgstr "avainlohkojen poisto epäonnistui: %s\n"
 msgid "error writing key: %s\n"
 msgstr "virhe kirjoitettaessa avainrenkaaseen \"%s\": %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Ole hyvä ja syötä salasana, tämän on salainen lause \n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "muuta salasanaa"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
+msgstr "Ole hyvä ja syötä salasana, tämän on salainen lause \n"
 
 msgid "does not match - try again"
 msgstr ""

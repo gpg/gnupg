@@ -122,8 +122,20 @@ msgstr "грамадскі ключ ня знойдзены"
 msgid "error writing key: %s\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
 "Увядзіце новы пароль для гэтага сакрэтнага ключа.\n"
 "\n"
@@ -132,11 +144,13 @@ msgstr ""
 msgid "Please re-enter this passphrase"
 msgstr "Увядзіце пароль\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
 msgstr ""
+"Увядзіце новы пароль для гэтага сакрэтнага ключа.\n"
+"\n"
 
 msgid "does not match - try again"
 msgstr ""

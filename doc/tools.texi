@@ -61,7 +61,7 @@ watchgnupg --force ~/.gnupg/S.log
 
 @noindent
 This starts it on the current terminal for listening on the socket
-@file{~/.gnupg/S.log}.  
+@file{~/.gnupg/S.log}.
 
 @mansect options
 @noindent
@@ -69,7 +69,7 @@ This starts it on the current terminal for listening on the socket
 
 @table @gnupgtabopt
 
-@item --force 
+@item --force
 @opindex force
 Delete an already existing socket file.
 
@@ -129,9 +129,9 @@ name for remote debugging.
 
 @mansect see also
 @ifset isman
-@command{gpg}(1), 
-@command{gpgsm}(1), 
-@command{gpg-agent}(1), 
+@command{gpg}(1),
+@command{gpgsm}(1),
+@command{gpg-agent}(1),
 @command{scdaemon}(1)
 @end ifset
 @include see-also-note.texi
@@ -150,7 +150,7 @@ name for remote debugging.
 @node addgnupghome
 @section Create .gnupg home directories.
 @ifset manverb
-.B addgnupghome 
+.B addgnupghome
 \- Create .gnupg home directories
 @end ifset
 
@@ -197,7 +197,7 @@ addgnupghome account1 account2 ... accountn
 .br
 .B gpgconf
 .RI [ options ]
-.B \-\-list-options 
+.B \-\-list-options
 .I component
 .br
 .B gpgconf
@@ -301,9 +301,16 @@ is given, check that file instead.
 
 @item --reload [@var{component}]
 @opindex reload
-Reload all or the given component. This is basically the sam as sending
+Reload all or the given component. This is basically the same as sending
 a SIGHUP to the component.  Components which don't support reloading are
 ignored.
+
+@item --kill [@var{component}]
+@opindex kill
+Kill the given component.  Components which support killing are
+gpg-agent and scdaemon.  Components which don't support reloading are
+ignored.  Note that as of now reload and kill have the same effect for
+scdaemon.
 
 @end table
 
@@ -570,7 +577,7 @@ configuration file.  It is @emph{percent-escaped}.
 
 @item line
 If an error occurred in the configuration file, this field has the line
-number of the failing statement in the configuration file.  
+number of the failing statement in the configuration file.
 It is an @emph{unsigned number}.
 
 @item error
@@ -867,7 +874,7 @@ effect.
 @subsection Listing global options
 
 Sometimes it is useful for applications to look at the global options
-file @file{gpgconf.conf}. 
+file @file{gpgconf.conf}.
 The colon separated listing format is record oriented and uses the first
 field to identify the record type:
 
@@ -936,9 +943,9 @@ no feature to change the global option file through @command{gpgconf}.
 
 @mansect see also
 @ifset isman
-@command{gpg}(1), 
-@command{gpgsm}(1), 
-@command{gpg-agent}(1), 
+@command{gpg}(1),
+@command{gpgsm}(1),
+@command{gpg-agent}(1),
 @command{scdaemon}(1),
 @command{dirmngr}(1)
 @end ifset
@@ -989,7 +996,7 @@ applygnupgdefaults
 @ifset manverb
 .B gpgsm-gencert.sh
 \- Generate an X.509 certificate request
-@end ifset 
+@end ifset
 
 @mansect synopsis
 @ifset manverb
@@ -1008,8 +1015,8 @@ which will be printed to stdout.
 
 @mansect see also
 @ifset isman
-@command{gpgsm}(1), 
-@command{gpg-agent}(1), 
+@command{gpgsm}(1),
+@command{gpg-agent}(1),
 @command{scdaemon}(1)
 @end ifset
 @include see-also-note.texi
@@ -1096,7 +1103,7 @@ The following additional options may be used:
 @item -v
 @itemx --verbose
 @opindex verbose
-Output additional information while running.  
+Output additional information while running.
 
 @item -P @var{string}
 @itemx --passphrase @var{string}
@@ -1108,9 +1115,9 @@ for other users.
 
 @mansect see also
 @ifset isman
-@command{gpg}(1), 
-@command{gpgsm}(1), 
-@command{gpg-agent}(1), 
+@command{gpg}(1),
+@command{gpgsm}(1),
+@command{gpg-agent}(1),
 @command{scdaemon}(1)
 @end ifset
 @include see-also-note.texi
@@ -1169,7 +1176,7 @@ The following options may be used:
 @item -v
 @itemx --verbose
 @opindex verbose
-Output additional information while running.  
+Output additional information while running.
 
 @item -q
 @item --quiet
@@ -1186,7 +1193,7 @@ Specify the agent program to be started if none is running.
 
 @item -S
 @itemx --raw-socket @var{name}
-@opindex S        
+@opindex S
 @opindex raw-socket
 Connect to socket @var{name} assuming this is an Assuan style server.
 Do not run any special initializations or environment checks.  This may
@@ -1209,7 +1216,7 @@ connects to the assuan server in extended mode to allow descriptor
 passing.  This option makes it use the old mode.
 
 @item --run @var{file}
-@opindex run 
+@opindex run
 Run the commands from @var{file} at startup and then continue with the
 regular input method.  Note, that commands given on the command line are
 executed after this file.
@@ -1251,7 +1258,7 @@ Variables are referenced by prefixing the name with a dollar sign and
 optionally include the name in curly braces.  The rules for a valid name
 are identically to those of the standard bourne shell.  This is not yet
 enforced but may be in the future.  When used with curly braces no
-leading or trailing white space is allowed. 
+leading or trailing white space is allowed.
 
 If a variable is not found, it is searched in the environment and if
 found copied to the table of variables.
@@ -1264,7 +1271,7 @@ following functions are available:
 @item get
 Return a value described by the argument.  Available arguments are:
 
-@table @code    
+@table @code
 @item cwd
 The current working directory.
 @item homedir
@@ -1431,7 +1438,7 @@ Print a list of available control commands.
 
 @ifset isman
 @mansect see also
-@command{gpg-agent}(1), 
+@command{gpg-agent}(1),
 @command{scdaemon}(1)
 @include see-also-note.texi
 @end ifset
@@ -1452,8 +1459,8 @@ Print a list of available control commands.
 @mansect synopsis
 @ifset manverb
 .B  dirmngr-client
-.RI [ options ]  
-.RI [ certfile | pattern ]  
+.RI [ options ]
+.RI [ certfile | pattern ]
 @end ifset
 
 @mansect description
@@ -1478,7 +1485,7 @@ dirmngr-client <@var{acert}
 @end example
 
 Where @var{acert} is one DER encoded (binary) X.509 certificates to be
-tested. 
+tested.
 @ifclear isman
 The return value of this command is
 @end ifclear
@@ -1489,7 +1496,7 @@ The return value of this command is
 @end ifset
 @table @code
 
-@item 0 
+@item 0
 The certificate under question is valid; i.e. there is a valid CRL
 available and it is not listed tehre or teh OCSP request returned that
 that certificate is valid.
@@ -1673,7 +1680,7 @@ configured with @samp{--enable-symcryptrun} at build time.
 @command{symcryptrun} is invoked this way:
 
 @example
-symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE 
+symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE
    [--decrypt | --encrypt] [inputfile]
 @end example
 @mancont
@@ -1685,12 +1692,12 @@ For decryption vice versa.
 @var{CLASS} describes the calling conventions of the external tool.
 Currently it must be given as @samp{confucius}.  @var{PROGRAM} is
 the full filename of that external tool.
- 
+
 For the class @samp{confucius} the option @option{--keyfile} is
 required; @var{keyfile} is the name of a file containing the secret key,
 which may be protected by a passphrase.  For detailed calling
 conventions, see the source code.
- 
+
 @noindent
 Note, that @command{gpg-agent} must be running before starting
 @command{symcryptrun}.
@@ -1702,7 +1709,7 @@ The following additional options may be used:
 @item -v
 @itemx --verbose
 @opindex verbose
-Output additional information while running.  
+Output additional information while running.
 
 @item -q
 @item --quiet
@@ -1724,22 +1731,22 @@ information to STDERR.
 The possible exit status codes of @command{symcryptrun} are:
 
 @table @code
-@item 0 
+@item 0
         Success.
-@item 1 
+@item 1
         Some error occured.
-@item 2 
+@item 2
         No valid passphrase was provided.
-@item 3 
+@item 3
         The operation was canceled by the user.
 
 @end table
 
 @mansect see also
 @ifset isman
-@command{gpg}(1), 
-@command{gpgsm}(1), 
-@command{gpg-agent}(1), 
+@command{gpg}(1),
+@command{gpgsm}(1),
+@command{gpg-agent}(1),
 @end ifset
 @include see-also-note.texi
 
@@ -1747,8 +1754,8 @@ The possible exit status codes of @command{symcryptrun} are:
 @c
 @c  GPG-ZIP
 @c
-@c The original manpage on which this section is based was written 
-@c by Colin Tuckley  <colin@tuckley.org> and Daniel Leidert 
+@c The original manpage on which this section is based was written
+@c by Colin Tuckley  <colin@tuckley.org> and Daniel Leidert
 @c <daniel.leidert@wgdd.de> for the Debian distribution (but may be used by
 @c others).
 @manpage gpg-zip.1
@@ -1880,8 +1887,7 @@ gpg-zip --list-archive test1
 
 @mansect see also
 @ifset isman
-@command{gpg}(1), 
-@command{tar}(1), 
+@command{gpg}(1),
+@command{tar}(1),
 @end ifset
 @include see-also-note.texi
-

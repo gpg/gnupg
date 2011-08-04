@@ -1,14 +1,14 @@
-Noteworthy changes in version 2.0.18 (unreleased)
+Noteworthy changes in version 2.0.18 (2011-08-04)
 -------------------------------------------------
-
- * Allow generation of card keys up to 4096 bit.
 
  * Bug fix for newer versions of Libgcrypt.
 
- * Support the SSH confirm flag and show SSH fingerprint in ssh
+ * Support the SSH confirm flag and show SSH fingerprints in ssh
    related pinentries.
 
  * Improved dirmngr/gpgsm interaction for OCSP.
+
+ * Allow generation of card keys up to 4096 bit.
 
 
 Noteworthy changes in version 2.0.17 (2011-01-13)

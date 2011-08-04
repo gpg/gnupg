@@ -124,16 +124,28 @@ msgid "error writing key: %s\n"
 msgstr "anahtarı yazarken hata: %s\n"
 
 #, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Lütfen SSH anahtarı %0A  %c için anahtar parolasını giriniz"
 
 msgid "Please re-enter this passphrase"
 msgstr "Lütfen bu anahtar parolasını tekrar girin"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "gpg-agent'in anahtar deposuna korumak için alınan gizli anahtar %%0A  %s%%0A "
 "için lütfen anahtar parolası giriniz"

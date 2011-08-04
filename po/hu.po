@@ -123,19 +123,31 @@ msgstr "A kulcsblokk törlése sikertelen: %s.\n"
 msgid "error writing key: %s\n"
 msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "jelszóváltoztatás"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
+msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
 
 msgid "does not match - try again"
 msgstr ""

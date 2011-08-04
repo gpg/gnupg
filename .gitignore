@@ -27,6 +27,7 @@ po/en@boldquot.po
 po/en@quot.insert-header
 po/en@quot.po
 po/stamp-po
+po/remove-potcdate.sed
 agent/gpg-agent
 agent/gpg-preset-passphrase
 agent/gpg-protect-tool
@@ -45,6 +46,7 @@ common/t-percent
 common/t-session-env
 common/t-sexputil
 common/t-sysutils
+common/t-ssh-utils
 doc/addgnupghome.8
 doc/applygnupgdefaults.8
 doc/faq.html
@@ -104,6 +106,11 @@ tests/openpgp/pubring.gpg
 tests/openpgp/pubring.pkr
 tests/openpgp/secring.gpg
 tests/openpgp/secring.skr
+tests/openpgp/*.log
+tests/openpgp/trustdb.gpg
+tests/openpgp/z
+tests/openpgp/gpg.conf
+tests/openpgp/random_seed
 tests/pkits/ReadMe.txt
 tests/pkits/certpairs/
 tests/pkits/certs/

@@ -127,18 +127,34 @@ msgid "error writing key: %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
 #, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
 msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
+msgstr ""
+"Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
+"\n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "ændr kodesætningen"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
 msgstr ""
+"Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
+"\n"
 
 msgid "does not match - try again"
 msgstr ""

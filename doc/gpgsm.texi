@@ -21,7 +21,7 @@
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
+.RI [ options ]
 .I command
 .RI [ args ]
 @end ifset
@@ -124,7 +124,7 @@ in the keybox or those set with the @option{--local-user} option.
 @opindex verify
 Check a signature file for validity.  Depending on the arguments a
 detached signature may also be checked.
- 
+
 @item --server
 @opindex server
 Run in server mode and wait for commands on the @code{stdin}.
@@ -150,7 +150,7 @@ Certain maintenance operations are done by an external program call
 @command{gpg-protect-tool}; this is usually not installed in a directory
 listed in the PATH variable.  This command provides a simple wrapper to
 access this tool.  @var{arguments} are passed verbatim to this command;
-use @samp{--help} to get a list of supported operations. 
+use @samp{--help} to get a list of supported operations.
 
 
 @end table
@@ -165,13 +165,23 @@ use @samp{--help} to get a list of supported operations.
 @table @gnupgtabopt
 @item --gen-key
 @opindex gen-key
-This command allows the creation of a certificate signing request.  It
-is commonly used along with the @option{--output} option to save the
-created CSR into a file.  If used with the @option{--batch} a parameter
-file is used to create the CSR.
+@ifclear gpgtwoone
+-This command allows the creation of a certificate signing request.  It
+-is commonly used along with the @option{--output} option to save the
+-created CSR into a file.  If used with the @option{--batch} a parameter
+-file is used to create the CSR.
+@end ifclear
+@ifset gpgtwoone
+This command allows the creation of a certificate signing request or a
+self-signed certificate.  It is commonly used along with the
+@option{--output} option to save the created CSR or certificate into a
+file.  If used with the @option{--batch} a parameter file is used to
+create the CSR or certificate and it is further possible to create
+non-self-signed certificates.
+@end ifset
 
 @item --list-keys
-@itemx -k 
+@itemx -k
 @opindex list-keys
 List all available certificates stored in the local key database.
 Note that the displayed data might be reformatted for better human
@@ -186,7 +196,7 @@ is available.
 @item --list-external-keys @var{pattern}
 @opindex list-keys
 List certificates matching @var{pattern} using an external server.  This
-utilizes the @code{dirmngr} service.  
+utilizes the @code{dirmngr} service.
 
 @item --list-chain
 @opindex list-chain
@@ -289,7 +299,7 @@ smartcard is not yet supported.
 @command{GPGSM} features a bunch of options to control the exact behaviour
 and to change the default configuration.
 
-@menu 
+@menu
 * Configuration Options::   How to change the configuration.
 * Certificate Options::     Certificate related options.
 * Input and Output::        Input and Output.
@@ -337,7 +347,7 @@ Specify an agent program to be used for secret key operations.  The
 default value is the @file{/usr/local/bin/gpg-agent}.  This is only used
 as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
 set or a running agent can't be connected.
-  
+
 @item --dirmngr-program @var{file}
 @opindex dirmnr-program
 Specify a dirmngr program to be used for @acronym{CRL} checks.  The
@@ -412,7 +422,7 @@ the loading for short time intervals (e.g. 30 minutes). This option
 is useful to make sure that a fresh CRL is available for certificates
 hold in the keybox.  The suggested way of doing this is by using it
 along with the option @option{--with-validation} for a key listing
-command.  This option should not be used in a configuration file. 
+command.  This option should not be used in a configuration file.
 
 @item  --enable-ocsp
 @itemx --disable-ocsp
@@ -422,7 +432,7 @@ Be default @acronym{OCSP} checks are disabled.  The enable option may
 be used to enable OCSP checks via Dirmngr.  If @acronym{CRL} checks
 are also enabled, CRLs will be used as a fallback if for some reason an
 OCSP request won't succeed.  Note, that you have to allow OCSP
-requests in Dirmngr's configuration too (option 
+requests in Dirmngr's configuration too (option
 @option{--allow-ocsp} and configure dirmngr properly.  If you don't do
 so you will get the error code @samp{Not supported}.
 
@@ -470,9 +480,9 @@ for a reason.
 @itemx -a
 @opindex armor
 @opindex -a
-Create PEM encoded output.  Default is binary output. 
+Create PEM encoded output.  Default is binary output.
 
-@item --base64 
+@item --base64
 @opindex base64
 Create Base-64 encoded output; i.e. PEM without the header lines.
 
@@ -542,7 +552,7 @@ secret key.
 @opindex with-validation
 When doing a key listing, do a full validation check for each key and
 print the result.  This is usually a slow operation because it
-requires a CRL lookup and other operations. 
+requires a CRL lookup and other operations.
 
 When used along with --import, a validation of the certificate to
 import is done and only imported if it succeeds the test.  Note that
@@ -580,7 +590,7 @@ Use the cipher algorithm with the ASN.1 object identifier @var{oid} for
 encryption.  For convenience the strings @code{3DES}, @code{AES} and
 @code{AES256} may be used instead of their OIDs.  The default is
 @code{3DES} (1.2.840.113549.3.7).
-  
+
 @item --digest-algo @code{name}
 Use @code{name} as the message digest algorithm.  Usually this
 algorithm is deduced from the respective signing certificate.  This
@@ -635,7 +645,7 @@ a numeric value or by a keyword:
 @item none
 No debugging at all.  A value of less than 1 may be used instead of
 the keyword.
-@item basic  
+@item basic
 Some basic debug messages.  A value between 1 and 2 may be used
 instead of the keyword.
 @item advanced
@@ -664,8 +674,8 @@ and may be given in usual C-Syntax. The currently defined bits are:
 @table @code
 @item 0  (1)
 X.509 or OpenPGP protocol related data
-@item 1  (2)  
-values of big number integers 
+@item 1  (2)
+values of big number integers
 @item 2  (4)
 low level crypto operations
 @item 5  (32)
@@ -771,7 +781,7 @@ like this:
 @c man:.RS
 @example
 # Allowed policies
-2.289.9.9  
+2.289.9.9
 @end example
 @c man:.RE
 
@@ -813,7 +823,7 @@ certificates, appropriate notices will be shown to indicate this fact.
 
 @item help.txt
 @cindex help.txt
-This is plain text file with a few help entries used with 
+This is plain text file with a few help entries used with
 @command{pinentry} as well as a large list of help items for
 @command{gpg} and @command{gpgsm}.  The standard file has English help
 texts; to install localized versions use filenames like @file{help.LL.txt}
@@ -831,7 +841,7 @@ This file is a collection of common certificates used to populated a
 newly created @file{pubring.kbx}.  An administrator may replace this
 file with a custom one.  The format is a concatenation of PEM encoded
 X.509 certificates.  This global file is installed in the data directory
-(e.g. @file{/usr/share/gnupg/qualified.txt}).
+(e.g. @file{/usr/share/gnupg/com-certs.pem}).
 
 @end table
 
@@ -886,14 +896,12 @@ $ gpgsm -er goo@@bar.net <plaintext >ciphertext
 @end example
 
 
-@c man end
-
-
 @c *******************************************
 @c ***************              **************
 @c ***************  UNATTENDED  **************
 @c ***************              **************
 @c *******************************************
+@manpause
 @node Unattended Usage
 @section Unattended Usage
 
@@ -905,6 +913,7 @@ but may also be used in the standard operation mode by using the
 
 @menu
 * Automated signature checking::  Automated signature checking.
+* CSR and certificate creation::  CSR and certificate creation.
 @end menu
 
 @node Automated signature checking,,,Unattended Usage
@@ -925,7 +934,7 @@ signature of a message itself as expired.  It is a sound practise to
 consider such a signature still as valid but additional information
 should be displayed.  Depending on the subcase @command{gpgsm} will issue
 these status codes:
-  @table @asis 
+  @table @asis
   @item signature valid and nothing did expire
   @code{GOODSIG}, @code{VALIDSIG}, @code{TRUST_FULLY}
   @item signature valid but at least one certificate has expired
@@ -951,13 +960,162 @@ this is a missing certificate.
 
 @end table
 
+@node CSR and certificate creation,,,Unattended Usage
+@section CSR and certificate creation
+
+@ifclear gpgtwoone
+@strong{Please notice}: The immediate creation of certificates is only
+supported by GnuPG version 2.1 or later.  With a 2.0 version you may
+only create a CSR.
+@end ifclear
+
+The command @option{--gen-key} may be used along with the option
+@option{--batch} to either create a certificate signing request (CSR)
+or an X.509 certificate. The is controlled by a parameter file; the
+format of this file is as follows:
+
+@itemize @bullet
+@item Text only, line length is limited to about 1000 characters.
+@item UTF-8 encoding must be used to specify non-ASCII characters.
+@item Empty lines are ignored.
+@item Leading and trailing while space is ignored.
+@item A hash sign as the first non white space character indicates
+a comment line.
+@item Control statements are indicated by a leading percent sign, the
+arguments are separated by white space from the keyword.
+@item Parameters are specified by a keyword, followed by a colon.  Arguments
+are separated by white space.
+@item The first parameter must be @samp{Key-Type}, control statements
+may be placed anywhere.
+@item
+The order of the parameters does not matter except for @samp{Key-Type}
+which must be the first parameter.  The parameters are only used for
+the generated CSR/certificate; parameters from previous sets are not
+used.  Some syntactically checks may be performed.
+@item
+Key generation takes place when either the end of the parameter file
+is reached, the next @samp{Key-Type} parameter is encountered or at the
+control statement @samp{%commit} is encountered.
+@end itemize
+
+@noindent
+Control statements:
+
+@table @asis
+
+@item %echo @var{text}
+Print @var{text} as diagnostic.
+
+@item %dry-run
+Suppress actual key generation (useful for syntax checking).
+
+@item %commit
+Perform the key generation.  Note that an implicit commit is done at
+the next @asis{Key-Type} parameter.
+
+@c  %certfile <filename>
+@c      [Not yet implemented!]
+@c	Do not write the certificate to the keyDB but to <filename>.
+@c      This must be given before the first
+@c	commit to take place, duplicate specification of the same filename
+@c	is ignored, the last filename before a commit is used.
+@c	The filename is used until a new filename is used (at commit points)
+@c	and all keys are written to that file.	If a new filename is given,
+@c	this file is created (and overwrites an existing one).
+@c	Both control statements must be given.
+@end table
+
+@noindent
+General Parameters:
+
+@table @asis
+
+@item Key-Type: @var{algo}
+Starts a new parameter block by giving the type of the primary
+key. The algorithm must be capable of signing.  This is a required
+parameter.  The only supported value for @var{algo} is @samp{rsa}.
+
+@item Key-Length: @var{nbits}
+The requested length of a generated key in bits.  Defaults to 2048.
+
+@item Key-Grip: @var{hexstring}
+This is optional and used to generate a CSR or certificatet for an
+already existing key.  Key-Length will be ignored when given.
+
+@item Key-Usage: @var{usage-list}
+Space or comma delimited list of key usage, allowed values are
+@samp{encrypt} and @samp{sign}.  This is used to generate the keyUsage
+extension.  Please make sure that the algorithm is capable of this
+usage.  Default is to allow encrypt and sign.
+
+@item Name-DN: @var{subject-name}
+This is the Distinguished Name (DN) of the subject in RFC-2253 format.
+
+@item Name-Email: @var{string}
+This is an email address for the altSubjectName.  This parameter is
+optional but may occur several times to add several email addresses to
+a certificate.
+
+@item Name-DNS: @var{string}
+The is an DNS name for the altSubjectName.  This parameter is optional
+but may occur several times to add several DNS names to a certificate.
+
+@item Name-URI: @var{string}
+This is an URI for the altSubjectName.  This parameter is optional but
+may occur several times to add several URIs to a certificate.
+@end table
+
+@noindent
+Additional parameters used to create a certificate (in contrast to a
+certificate signing request):
+
+@table @asis
+
+@item Serial: @var{sn}
+If this parameter is given an X.509 certificate will be generated.
+@var{sn} is expected to be a hex string representing an unsigned
+integer of arbitary length.  The special value @samp{random} can be
+used to create a 64 bit random serial number.
+
+@item Issuer-DN: @var{issuer-name}
+This is the DN name of the issuer in rfc2253 format.  If it is not set
+it will default to the subject DN and a special GnuPG extension will
+be included in the certificate to mark it as a standalone certificate.
+
+@item Creation-Date: @var{iso-date}
+@itemx Not-Before: @var{iso-date}
+Set the notBefore date of the certificate.  Either a date like
+@samp{1986-04-26} or @samp{1986-04-26 12:00} or a standard ISO
+timestamp like @samp{19860426T042640} may be used.  The time is
+considered to be UTC.  If it is not given the current date is used.
+
+@item Expire-Date: @var{iso-date}
+@itemx Not-After: @var{iso-date}
+Set the notAfter date of the certificate.  Either a date like
+@samp{2063-04-05} or @samp{2063-04-05 17:00} or a standard ISO
+timestamp like @samp{20630405T170000} may be used.  The time is
+considered to be UTC.  If it is not given a default value in the not
+too far future is used.
+
+@item Signing-Key: @var{keygrip}
+This gives the keygrip of the key used to sign the certificate.  If it
+is not given a self-signed certificate will be created.  For
+compatibility with future versions, it is suggested to prefix the
+keygrip with a @samp{&}.
+
+@item Hash-Algo: @var{hash-algo}
+Use @var{hash-algo} for this CSR or certificate.  The supported hash
+algorithms are: @samp{sha1}, @samp{sha256}, @samp{sha384} and
+@samp{sha512}; they may also be specified with uppercase letters.  The
+default is @samp{sha1}.
+
+@end table
 
 @c *******************************************
 @c ***************           *****************
 @c ***************  ASSSUAN  *****************
 @c ***************           *****************
 @c *******************************************
-@manpause
 @node GPGSM Protocol
 @section The Protocol the Server Mode Uses.
 
@@ -1037,11 +1195,11 @@ should consider this session failed.
 The option armor encodes the output in @acronym{PEM} format, the
 @code{--base64} option applies just a base 64 encoding.  No option
 creates binary output (@acronym{BER}).
-  
+
 The actual encryption is done using the command
 
 @example
-  ENCRYPT 
+  ENCRYPT
 @end example
 
 It takes the plaintext from the @code{INPUT} command, writes to the
@@ -1097,7 +1255,7 @@ Write the output to file descriptor @var{m}.  If a detached signature is
 requested, only the signature is written.
 
 @example
-  SIGN [--detached] 
+  SIGN [--detached]
 @end example
 
 Sign the data set with the INPUT command and write it to the sink set by
@@ -1149,7 +1307,7 @@ token is used to store the key.  Configuration options to
 @command{GPGSM} can be used to restrict the use of this command.
 
 @example
-  GENKEY 
+  GENKEY
 @end example
 
 @command{GPGSM} checks whether this command is allowed and then does an
@@ -1161,7 +1319,7 @@ key parameters in the native format:
     C: D foo:fgfgfg
     C: D bar
     C: END
-@end example    
+@end example
 
 Please note that the server may send Status info lines while reading the
 data lines from the client.  After this the key generation takes place
@@ -1197,7 +1355,7 @@ The list commands  commands are affected by the option
 
 where mode may be:
 @table @code
-@item 0 
+@item 0
 Use default (which is usually the same as 1).
 @item 1
 List only the internal keys.
@@ -1208,7 +1366,7 @@ List internal and external keys.
 @end table
 
 Note that options are valid for the entire session.
-    
+
 
 @node GPGSM EXPORT
 @subsection Export certificates
@@ -1294,7 +1452,7 @@ The leading two dashes usually used with @var{opt} shall not be given.
 
 @mansect see also
 @ifset isman
-@command{gpg2}(1), 
+@command{gpg2}(1),
 @command{gpg-agent}(1)
 @end ifset
 @include see-also-note.texi

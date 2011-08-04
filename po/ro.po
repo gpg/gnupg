@@ -129,8 +129,20 @@ msgstr "citirea cheii publice a eºuat: %s\n"
 msgid "error writing key: %s\n"
 msgstr "eroare la scrierea inelului de chei `%s': %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
@@ -138,11 +150,12 @@ msgstr ""
 msgid "Please re-enter this passphrase"
 msgstr "schimbã fraza-parolã"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
 msgstr ""
+"Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
 msgid "does not match - try again"
 msgstr ""

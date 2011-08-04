@@ -123,19 +123,31 @@ msgstr "fallou o borrado do bloque de chaves: %s\n"
 msgid "error writing key: %s\n"
 msgstr "erro escribindo no chaveiro `%s': %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "cambia-lo contrasinal"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
+msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
 msgid "does not match - try again"
 msgstr ""
