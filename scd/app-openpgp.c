@@ -3367,17 +3367,19 @@ do_decipher (app_t app, const char *keyidstr,
   rc = verify_chv2 (app, pincb, pincb_arg);
   if (!rc)
     {
-      size_t fixuplen;
+      int fixuplen;
       unsigned char *fixbuf = NULL;
       int padind = 0;
 
       /* We might encounter a couple of leading zeroes in the
-         cryptogram.  Due to internal use of MPIs thease leading
-         zeroes are stripped.  However the OpenPGP card expects
-         exactly 128 bytes for the cryptogram (for a 1k key).  Thus we
-         need to fix it up.  We do this for up to 16 leading zero
-         bytes; a cryptogram with more than this is with a very high
-         probability anyway broken.  */
+         cryptogram.  Due to internal use of MPIs these leading zeroes
+         are stripped.  However the OpenPGP card expects exactly 128
+         bytes for the cryptogram (for a 1k key).  Thus we need to fix
+         it up.  We do this for up to 16 leading zero bytes; a
+         cryptogram with more than this is with a very high
+         probability anyway broken.  If a signed conversion was used
+         we may also encounter one leading zero followed by the correct
+         length.  We fix that as well.  */
       if (indatalen >= (128-16) && indatalen < 128)      /* 1024 bit key.  */
         fixuplen = 128 - indatalen;
       else if (indatalen >= (192-16) && indatalen < 192) /* 1536 bit key.  */
@@ -3388,10 +3390,16 @@ do_decipher (app_t app, const char *keyidstr,
         fixuplen = 384 - indatalen;
       else if (indatalen >= (512-16) && indatalen < 512) /* 4096 bit key.  */
         fixuplen = 512 - indatalen;
+      else if (!*(const char *)indata && (indatalen == 129
+                                          || indatalen == 193
+                                          || indatalen == 257
+                                          || indatalen == 385
+                                          || indatalen == 513))
+        fixuplen = -1;
       else
         fixuplen = 0;
 
-      if (fixuplen)
+      if (fixuplen > 0)
         {
           /* While we have to prepend stuff anyway, we can also
              include the padding byte here so that iso1816_decipher
@@ -3407,6 +3415,11 @@ do_decipher (app_t app, const char *keyidstr,
           indata = fixbuf;
           indatalen = fixuplen + indatalen;
           padind = -1; /* Already padded.  */
+        }
+      else if (fixuplen < 0)
+        {
+          /* We use the extra leading zero as the padding byte.  */
+          padind = -1;
         }
 
       if (app->app_local->cardcap.ext_lc_le && indatalen > 254 )

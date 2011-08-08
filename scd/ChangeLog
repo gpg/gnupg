@@ -1,3 +1,8 @@
+2011-08-08  Werner Koch  <wk@g10code.com>
+
+	* app-openpgp.c (do_decipher): Take care of accidentally passed
+	signed integer data with a leading 0.
+
 2011-06-16  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (send_key_data): Implemented chunked mode.
