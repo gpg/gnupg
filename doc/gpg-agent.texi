@@ -348,11 +348,13 @@ Allow clients to mark keys as trusted, i.e. put them into the
 @file{trustlist.txt} file.  This is by default not allowed to make it
 harder for users to inadvertently accept Root-CA keys.
 
+@ifset gpgtwoone
 @anchor{option --allow-loopback-pinentry}
 @item --allow-loopback-pinentry
 @opindex allow-loopback-pinentry
 Allow clients to use the loopback pinentry features; see the option
 @option{pinentry-mode} for details.
+@end ifset
 
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
@@ -1332,6 +1334,7 @@ See Assuan command @code{PKSIGN}.
 This does not need any value.  It is used to enable the
 PINENTRY_LAUNCHED inquiry.
 
+@ifset gpgtwoone
 @item pinentry-mode
 This option is used to change the operation mode of the pinentry.  The
 following values are defined:
@@ -1355,12 +1358,16 @@ following values are defined:
   Use the @xref{option --allow-loopback-pinentry}.
 
   @end table
+@end ifset
 
+@ifset gpgtwoone
 @item cache-ttl-opt-preset
 This option sets the cache TTL for new entries created by GENKEY and
 PASSWD commands when using the @option{--preset} option.  It it is not
 used a default value is used.
+@end ifset
 
+@ifset gpgtwoone
 @item s2k-count
 Instead of using the standard S2K counted (which is computed on the
 fly), the given S2K count is used for new keys or when changing the
@@ -1368,6 +1375,7 @@ passphrase of a key.  Values below 65536 are considered to be 0.  This
 option is valid for the entire session or until reset to 0.  This
 option is useful if the key is later used on boxes which are either
 much slower or faster than the actual box.
+@end ifset
 
 @end table
 

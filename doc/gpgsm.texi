@@ -165,12 +165,20 @@ use @samp{--help} to get a list of supported operations.
 @table @gnupgtabopt
 @item --gen-key
 @opindex gen-key
+@ifclear gpgtwoone
+-This command allows the creation of a certificate signing request.  It
+-is commonly used along with the @option{--output} option to save the
+-created CSR into a file.  If used with the @option{--batch} a parameter
+-file is used to create the CSR.
+@end ifclear
+@ifset gpgtwoone
 This command allows the creation of a certificate signing request or a
 self-signed certificate.  It is commonly used along with the
 @option{--output} option to save the created CSR or certificate into a
 file.  If used with the @option{--batch} a parameter file is used to
 create the CSR or certificate and it is further possible to create
 non-self-signed certificates.
+@end ifset
 
 @item --list-keys
 @itemx -k
@@ -955,10 +963,16 @@ this is a missing certificate.
 @node CSR and certificate creation,,,Unattended Usage
 @section CSR and certificate creation
 
+@ifclear gpgtwoone
+@strong{Please notice}: The immediate creation of certificates is only
+supported by GnuPG version 2.1 or later.  With a 2.0 version you may
+only create a CSR.
+@end ifclear
+
 The command @option{--gen-key} may be used along with the option
-@option{--batch} to either create a certificate signing request (CSR) or an
-X.509 certificate.  The is controlled by a parameter file; the format
-of this file is as follows:
+@option{--batch} to either create a certificate signing request (CSR)
+or an X.509 certificate. The is controlled by a parameter file; the
+format of this file is as follows:
 
 @itemize @bullet
 @item Text only, line length is limited to about 1000 characters.

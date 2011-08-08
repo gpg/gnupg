@@ -46,6 +46,7 @@ common/t-sexputil
 common/t-sysutils
 common/t-stringhelp
 common/t-timestuff
+common/t-ssh-utils
 doc/addgnupghome.8
 doc/applygnupgdefaults.8
 doc/faq.html
@@ -129,6 +130,9 @@ tests/private-keys-v1.d/
 tests/pubring.kbx
 tests/testdir.stamp
 tests/trustlist.txt
+tests/openpgp/*.log
+tests/openpgp/trustdb.gpg
+tests/openpgp/z
 tools/clean-sat
 tools/gpg-check-pattern
 tools/gpg-connect-agent
