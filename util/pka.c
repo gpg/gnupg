@@ -51,7 +51,7 @@
 /* Parse the TXT resource record. Format is:
 
    v=pka1;fpr=a4d94e92b0986ab5ee9dcd755de249965b0358a2;uri=string
-   
+
    For simplicity white spaces are not allowed.  Because we expect to
    use a new RRTYPE for this in the future we define the TXT really
    strict for simplicity: No white spaces, case sensitivity of the
@@ -74,7 +74,7 @@ parse_txt_record (char *buffer, unsigned char *fpr)
   *pend++ = 0;
   if (strcmp (p, "v=pka1"))
     return -1; /* Wrong or missing version. */
-  
+
   p = pend;
   pend = strchr (p, ';');
   if (pend)
@@ -86,11 +86,11 @@ parse_txt_record (char *buffer, unsigned char *fpr)
     fpr[i] = xtoi_2 (p);
   if (i != 20)
     return -1; /* Fingerprint consists not of exactly 40 hexbytes. */
-    
+
   p = pend;
   if (!p || !*p)
     {
-      *buffer = 0;  
+      *buffer = 0;
       return 0; /* Success (no URI given). */
     }
   if (strncmp (p, "uri=", 4))
@@ -116,7 +116,11 @@ parse_txt_record (char *buffer, unsigned char *fpr)
 char *
 get_pka_info (const char *address, unsigned char *fpr)
 {
-  unsigned char answer[PACKETSZ];
+  union
+    {
+      signed char p[PACKETSZ];
+      HEADER h;
+    } answer;
   int anslen;
   int qdcount, ancount, nscount, arcount;
   int rc;
@@ -133,11 +137,11 @@ get_pka_info (const char *address, unsigned char *fpr)
   memcpy (name, address, domain - address);
   strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
 
-  anslen = res_query (name, C_IN, T_TXT, answer, PACKETSZ);
+  anslen = res_query (name, C_IN, T_TXT, answer.p, PACKETSZ);
   xfree (name);
   if (anslen < sizeof(HEADER))
     return NULL; /* DNS resolver returned a too short answer. */
-  if ( (rc=((HEADER*)answer)->rcode) != NOERROR )
+  if ( (rc=answer.h.rcode) != NOERROR )
     return NULL; /* DNS resolver returned an error. */
 
   /* We assume that PACKETSZ is large enough and don't do dynmically
@@ -145,23 +149,23 @@ get_pka_info (const char *address, unsigned char *fpr)
   if (anslen > PACKETSZ)
     return NULL; /* DNS resolver returned a too long answer */
 
-  qdcount = ntohs (((HEADER*)answer)->qdcount);
-  ancount = ntohs (((HEADER*)answer)->ancount);
-  nscount = ntohs (((HEADER*)answer)->nscount);
-  arcount = ntohs (((HEADER*)answer)->arcount);
+  qdcount = ntohs (answer.h.qdcount);
+  ancount = ntohs (answer.h.ancount);
+  nscount = ntohs (answer.h.nscount);
+  arcount = ntohs (answer.h.arcount);
 
   if (!ancount)
     return NULL; /* Got no answer. */
 
-  p = answer + sizeof (HEADER);
-  pend = answer + anslen; /* Actually points directly behind the buffer. */
+  p = answer.p + sizeof (HEADER);
+  pend = answer.p + anslen; /* Actually points directly behind the buffer. */
 
   while (qdcount-- && p < pend)
     {
       rc = dn_skipname (p, pend);
       if (rc == -1)
         return NULL;
-      p += rc + QFIXEDSZ; 
+      p += rc + QFIXEDSZ;
     }
 
   if (ancount > 1)

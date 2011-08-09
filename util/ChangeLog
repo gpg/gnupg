@@ -1,3 +1,9 @@
+2011-08-09  Werner Koch  <wk@g10code.com>
+
+	* pka.c (get_pka_info): Turn ANSWER into a union to avoid aliasing
+	problems with modern compilers.  See bug#1307.  Reported by Steve
+	Grubb.
+
 2010-10-27  Werner Koch  <wk@g10code.com>
 
 	* miscutil.c (INVALID_TIME_CHECK): New.
@@ -449,7 +455,7 @@
 
 	* simple-gettext.c (set_gettext_file): Use MO files depending on
 	the installation directory.  Add new arg REGKEY.
-	
+
 2005-01-18  Werner Koch  <wk@g10code.com>
 
 	* argparse.c (default_strusage): Changed default copyright year to
@@ -461,7 +467,7 @@
 2005-01-11  Werner Koch  <wk@g10code.com>
 
 	* strgutil.c (set_native_charset) [W32]: Use the alias table from
-	libiconv 1.9.2. 
+	libiconv 1.9.2.
 
 2005-01-13  David Shaw  <dshaw@jabberwocky.com>
 
@@ -518,12 +524,12 @@
 	header.  Noted by Jason Harris.
 
 2004-11-03  Timo Schulz  <twoaday@g10code.com>
-	
+
 	* strgutil.c (w32_strerror): New.
 	* ttyio.c (init_ttyfp, tty_printf, do_get): Use it here.
 	* iobuf.c (fd_cache_open, file_filter): Likewise.
 	(iobuf_seek, translate_file_handle): Likewise.
-	
+
 2004-11-02  Werner Koch  <wk@g10code.com>
 
 	* strgutil.c (load_libiconv): Use log_info to avoid failures when
@@ -559,7 +565,7 @@
 2004-10-21  Werner Koch  <wk@g10code.com>
 
 	* vasprintf.c: Removed. It was used only at one place and I don't
-	want to get into build problems in 1.4. 
+	want to get into build problems in 1.4.
 
 2004-10-18  David Shaw  <dshaw@jabberwocky.com>
 
@@ -748,7 +754,7 @@
 2003-09-28  Timo Schulz  <twoaday@freakmail.de>
 
 	* strgutil.c [WIN32] (asprintf): New.
-	
+
 2003-09-28  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.c (tty_fprintf): New.
@@ -757,14 +763,14 @@
 
 	* http.c [WIN32]: Define MB_CUR_MAX.
 	(connect_server): use unsigned long since W32 does not have in_addr_t.
-	
+
 2003-08-28  David Shaw  <dshaw@jabberwocky.com>
 
 	* dotlock.c, http.c, iobuf.c, simple-gettext.c, srv.c, srv.h,
 	strgutil.c, ttyio.c, w32reg.c: s/__MINGW32__/_WIN32/ to help
 	building on native Windows compilers.  Requested by Brian Gladman.
 	From Werner on stable branch.
-	
+
 	* http.c (connect_server): Oops - forgot to freeaddrinfo().
 
 2003-08-24  David Shaw  <dshaw@jabberwocky.com>
@@ -1001,7 +1007,7 @@
 
 	* fileutil.c (is_file_compressed): Corrected the magic values
 	for bzip2 and gzip. Noted by David.
-	
+
 2002-05-22  Werner Koch  <wk@gnupg.org>
 
 	* fileutil.c (compare_filenames): Replaced stricmp by strcasecmp.
@@ -1033,10 +1039,10 @@
 	enclose the string, and do not occur within the string.  This
 	makes specifying a program under Win32 easier when you need quotes
 	around part of a string, but not around the whole string.
-	
+
 2002-05-02  Werner Koch  <wk@gnupg.org>
 
-	* memory.c (alloc): Malloc at least 1 byte.  Noted by Winona Brown. 
+	* memory.c (alloc): Malloc at least 1 byte.  Noted by Winona Brown.
 
 2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
@@ -1068,7 +1074,7 @@
 2002-02-28  Timo Schulz  <ts@winpt.org>
 
 	* http.c (write_server): Convert integer to a HANDLE for W32.
-	
+
 2002-01-27  David Shaw  <dshaw@jabberwocky.com>
 
 	* iobuf.c (iobuf_fdopen, iobuf_sockopen): Do not cache fdopened
@@ -1136,7 +1142,7 @@
 
 2001-09-17  Werner Koch  <wk@gnupg.org>
 
-	* miscutil.c (print_string): Use explicit ranges and not iscntrl().  
+	* miscutil.c (print_string): Use explicit ranges and not iscntrl().
 	(make_printable_string): Ditto.
 
 2001-09-07  Werner Koch  <wk@gnupg.org>
@@ -1159,17 +1165,17 @@
 	* secmem.c [__riscos__]: Disabled secure memory stuff.
 	* dotlock.c, ttyio.c [__riscos__]: Adapted for RISC OS
 	* fileutil.c, iobuf.c: Adapted for RISC OS;  mainly replaced
-	hardcoded path separators with EXTSEP_S like macros. 
+	hardcoded path separators with EXTSEP_S like macros.
 	* http.c (send_request): Use macros for the env-var name.
 	* logger.c [__riscos__]: Do an fflush at the end of each log
-	function. 
+	function.
  	* memory.c [__riscos__]: Minor patches
 	* riscos.c (set_filetype): New.
 
 	* secmem.c (lock_pool): Under HPUX mlock is broken but we might
 	have plock, so we use this to lock the entire process.  By Albert
 	Chin.
-	
+
 2001-07-03  Werner Koch  <wk@gnupg.org>
 
 	* strgutil.c (utf8_to_native): Fixed printing of invalid utf-8
@@ -1189,11 +1195,11 @@
 
 	* strgutil.c (vasprintf) [__MINGW32__]: New. Taken from libiberty.
 	* ttyio.c (tty_printf) [__MINGW32__]:  Replaced the sprintf with
-	the new vasprintf. 
+	the new vasprintf.
 
 2001-06-05  Werner Koch  <wk@gnupg.org>
 
-	* dotlock.c (make_dotlock): Typo fixes. 
+	* dotlock.c (make_dotlock): Typo fixes.
 
 2001-05-25  Werner Koch  <wk@gnupg.org>
 
@@ -1252,7 +1258,7 @@
 	everywhere in this file.
 	(iobuf_translate_file_handle): Always use the osfhandle stuff here
 	because callers don't know the implementation details of iobuf and
-	they expect that the handles are translated. 
+	they expect that the handles are translated.
 
 2001-03-29  Werner Koch  <wk@gnupg.org>
 
@@ -1288,7 +1294,7 @@
 	* argparse.c (default_strusage): Changed year of printed copyright
 	to 2001.
 
-	* iobuf.c (fd_cache_invalidate, fd_cache_close, fd_cache_open): New. 
+	* iobuf.c (fd_cache_invalidate, fd_cache_close, fd_cache_open): New.
 	(direct_open): Invalidate the fd_cache for read access.
 	(file_filter): Cache the close here.
 	(iobuf_open): Use new my_fopen_ro macro to try the cache first.
@@ -1330,7 +1336,7 @@
         the right thing in an implementation-independent way.
         (fopen, fstat): Remove macros.
 
-        * iobuf.c (iobuf_set_limit, iobuf_tell, iobuf_seek): 
+        * iobuf.c (iobuf_set_limit, iobuf_tell, iobuf_seek):
         Use off_t, not ulong, for file offsets.
         (<limits.h>): Include if needed.
         (LONG_MAX, LONG_MIN): Define a substitute if needed.

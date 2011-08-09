@@ -175,10 +175,9 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
         rc = import( inp, "[stream]", stats, fpr, fpr_len, options);
     }
     else {
-        if( !fnames && !nnames )
-	    nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
+        int once = (!fnames && !nnames);
 
-	for(i=0; i < nnames; i++ ) {
+	for(i=0; once || i < nnames; once=0, i++ ) {
 	    const char *fname = fnames? fnames[i] : NULL;
 	    IOBUF inp2 = iobuf_open(fname);
 	    if( !fname )
@@ -201,8 +200,6 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 		  log_error("import from `%s' failed: %s\n", fname,
 			    g10_errstr(rc) );
 	      }
-	    if( !fname )
-	        break;
 	}
     }
     if (!stats_handle) {
@@ -256,7 +253,7 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
 	    rc = import_one( fname, keyblock, stats, fpr, fpr_len, options, 0);
-	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
+	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
                 rc = import_secret_one( fname, keyblock, stats, options );
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
@@ -615,7 +612,7 @@ check_prefs(KBNODE keyblock)
   KBNODE node;
   PKT_public_key *pk;
   int problem=0;
-  
+
   merge_keys_and_selfsig(keyblock);
   pk=keyblock->pkt->pkt.public_key;
 
@@ -759,7 +756,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
 	return 0;
       }
-    
+
     if (opt.interactive) {
         if(is_status_enabled())
 	  print_import_check (pk, uidnode->pkt->pkt.user_id);
@@ -896,7 +893,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
             size_t an;
 
             fingerprint_from_pk (pk_orig, afp, &an);
-            while (an < MAX_FINGERPRINT_LEN) 
+            while (an < MAX_FINGERPRINT_LEN)
                 afp[an++] = 0;
             rc = keydb_search_fpr (hd, afp);
         }
@@ -920,7 +917,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
         n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
         if (n_sigs_cleaned)
           commit_kbnode (&keyblock_orig);
-            
+
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
@@ -990,13 +987,13 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    stats->n_sigs_cleaned +=n_sigs_cleaned;
 	    stats->n_uids_cleaned +=n_uids_cleaned;
 
-            if (is_status_enabled ()) 
+            if (is_status_enabled ())
                  print_import_ok (pk, NULL,
                                   ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
 	else
 	  {
-	    if (is_status_enabled ()) 
+	    if (is_status_enabled ())
 	      print_import_ok (pk, NULL, 0);
 
 	    if( !opt.quiet )
@@ -1127,7 +1124,7 @@ sec_to_pub_keyblock(KBNODE sec_keyblock)
  * with the trust calculation.
  */
 static int
-import_secret_one( const char *fname, KBNODE keyblock, 
+import_secret_one( const char *fname, KBNODE keyblock,
                    struct stats_s *stats, unsigned int options)
 {
     PKT_secret_key *sk;
@@ -1179,8 +1176,8 @@ import_secret_one( const char *fname, KBNODE keyblock,
         log_error (_("importing secret keys not allowed\n"));
         return 0;
       }
-#endif 
-    
+#endif
+
     clear_kbnode_flags( keyblock );
 
     /* do we have this key already in one of our secrings ? */
@@ -1206,7 +1203,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	if( !opt.quiet )
 	  log_info( _("key %s: secret key imported\n"), keystr_from_sk(sk));
 	stats->secret_imported++;
-        if (is_status_enabled ()) 
+        if (is_status_enabled ())
 	  print_import_ok (NULL, sk, 1|16);
 
 	if(options&IMPORT_SK2PK)
@@ -1237,7 +1234,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	log_error( _("key %s: already in secret keyring\n"),
 		   keystr_from_sk(sk));
 	stats->secret_dups++;
-        if (is_status_enabled ()) 
+        if (is_status_enabled ())
 	  print_import_ok (NULL, sk, 16);
 
 	/* TODO: if we ever do merge secret keys, make sure to handle
@@ -1291,9 +1288,9 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     {
         byte afp[MAX_FINGERPRINT_LEN];
         size_t an;
-        
+
         fingerprint_from_pk (pk, afp, &an);
-        while (an < MAX_FINGERPRINT_LEN) 
+        while (an < MAX_FINGERPRINT_LEN)
             afp[an++] = 0;
         rc = keydb_search_fpr (hd, afp);
     }
@@ -2274,35 +2271,35 @@ pub_to_sec_keyblock (KBNODE pub_keyblock)
 	  PACKET *pkt = xmalloc_clear (sizeof *pkt);
 	  PKT_secret_key *sk = xmalloc_clear (sizeof *sk);
           int i, n;
-          
+
           if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY)
 	    pkt->pkttype = PKT_SECRET_KEY;
 	  else
 	    pkt->pkttype = PKT_SECRET_SUBKEY;
-          
+
 	  pkt->pkt.secret_key = sk;
 
           copy_public_parts_to_secret_key ( pk, sk );
 	  sk->version     = pk->version;
 	  sk->timestamp   = pk->timestamp;
-        
+
           n = pubkey_get_npkey (pk->pubkey_algo);
           if (!n)
             n = 1; /* Unknown number of parameters, however the data
                       is stored in the first mpi. */
           for (i=0; i < n; i++ )
             sk->skey[i] = mpi_copy (pk->pkey[i]);
-  
+
           sk->is_protected = 1;
           sk->protect.s2k.mode = 1001;
-  
+
   	  secnode = new_kbnode (pkt);
         }
       else
 	{
 	  secnode = clone_kbnode (pubnode);
 	}
-      
+
       if(!sec_keyblock)
 	sec_keyblock = secnode;
       else
@@ -2316,12 +2313,12 @@ pub_to_sec_keyblock (KBNODE pub_keyblock)
 /* Walk over the secret keyring SEC_KEYBLOCK and update any simple
    stub keys with the serial number SNNUM of the card if one of the
    fingerprints FPR1, FPR2 or FPR3 match.  Print a note if the key is
-   a duplicate (may happen in case of backed uped keys). 
-   
+   a duplicate (may happen in case of backed uped keys).
+
    Returns: True if anything changed.
 */
 static int
-update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock, 
+update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock,
                                    const unsigned char *fpr1,
                                    const unsigned char *fpr2,
                                    const unsigned char *fpr3,
@@ -2341,7 +2338,7 @@ update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock,
           && node->pkt->pkttype != PKT_SECRET_SUBKEY)
         continue;
       sk = node->pkt->pkt.secret_key;
-      
+
       fingerprint_from_sk (sk, array, &n);
       if (n != 20)
         continue; /* Can't be a card key.  */
@@ -2391,7 +2388,7 @@ update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock,
    exists, add appropriate subkey stubs and update the secring.
    Return 0 if the key could be created. */
 int
-auto_create_card_key_stub ( const char *serialnostr, 
+auto_create_card_key_stub ( const char *serialnostr,
                             const unsigned char *fpr1,
                             const unsigned char *fpr2,
                             const unsigned char *fpr3)
@@ -2402,7 +2399,7 @@ auto_create_card_key_stub ( const char *serialnostr,
   int rc;
 
   /* We only want to do this for an OpenPGP card.  */
-  if (!serialnostr || strncmp (serialnostr, "D27600012401", 12) 
+  if (!serialnostr || strncmp (serialnostr, "D27600012401", 12)
       || strlen (serialnostr) != 32 )
     return G10ERR_GENERAL;
 
@@ -2413,7 +2410,7 @@ auto_create_card_key_stub ( const char *serialnostr,
     ;
   else
     return G10ERR_GENERAL;
- 
+
   hd = keydb_new (1);
 
   /* Now check whether there is a secret keyring.  */
@@ -2439,7 +2436,7 @@ auto_create_card_key_stub ( const char *serialnostr,
       else
         {
           merge_keys_and_selfsig (sec_keyblock);
-          
+
           /* FIXME: We need to add new subkeys first.  */
           if (update_sec_keyblock_with_cardinfo (sec_keyblock,
                                                  fpr1, fpr2, fpr3,
@@ -2473,7 +2470,7 @@ auto_create_card_key_stub ( const char *serialnostr,
                        keydb_get_resource_name (hd), g10_errstr(rc) );
         }
     }
-    
+
   release_kbnode (sec_keyblock);
   release_kbnode (pub_keyblock);
   keydb_release (hd);
