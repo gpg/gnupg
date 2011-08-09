@@ -30,18 +30,18 @@ AC_DEFUN([GNUPG_CHECK_READLINE],
 
         AC_MSG_CHECKING([whether readline via \"$_combo\" is present and sane])
 
-        AC_LINK_IFELSE(AC_LANG_PROGRAM([
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <stdio.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-],[
+]],[[
 rl_completion_func_t *completer;
 add_history("foobar");
 rl_catch_signals=0;
 rl_inhibit_completion=0;
 rl_attempted_completion_function=NULL;
 rl_completion_matches(NULL,NULL);
-]),_found_readline=yes,_found_readline=no)
+]])],_found_readline=yes,_found_readline=no)
 
         AC_MSG_RESULT([$_found_readline])
 

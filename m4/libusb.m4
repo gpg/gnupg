@@ -43,9 +43,9 @@ AC_DEFUN([GNUPG_CHECK_LIBUSB],
 
      AC_MSG_CHECKING([whether libusb is present and sane])
 
-     AC_LINK_IFELSE(AC_LANG_PROGRAM([#include <usb.h>],[
+     AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <usb.h>]],[[
 usb_bulk_write(NULL,0,NULL,0,0);
-]),_found_libusb=yes,_found_libusb=no)
+]])],_found_libusb=yes,_found_libusb=no)
 
      AC_MSG_RESULT([$_found_libusb])
 

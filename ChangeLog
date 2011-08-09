@@ -1,3 +1,7 @@
+2011-08-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Fix usage of AC_LANG_PROGRAM.
+
 2010-12-28  Werner Koch  <wk@g10code.com>
 
 	* configure.ac (git_revision): Add new m4 macro.
@@ -197,7 +201,7 @@
 
 	* configure.ac (AC_CONFIG_COMMANDS): Removed creation of
 	g10defs.h.
-	(AH_BOTTOM): Moved stuff from g10defs.h to config.h. 
+	(AH_BOTTOM): Moved stuff from g10defs.h to config.h.
 
 2006-12-07  David Shaw  <dshaw@jabberwocky.com>
 
@@ -235,7 +239,7 @@
 	* acinclude.m4 (GNUPG_SYS_SYMBOL_UNDERSCORE): Add case for mingw32
 	and allow setting the variable on the command line.  Fixes bug 518.
 	Also use HOST instead of TARGET.
-	
+
 	* README: Add information about the forthcoming GnuPG 2.0.
 
 	* configure.ac (AB_INIT): New.
@@ -524,7 +528,7 @@
 
 2005-03-11  Werner Koch  <wk@g10code.com>
 
-	* configure.ac: New option --enable-noexecstack. 
+	* configure.ac: New option --enable-noexecstack.
 
 2005-02-16  Werner Koch  <wk@g10code.com>
 
@@ -633,7 +637,7 @@
 2004-12-14  Werner Koch  <wk@g10code.com>
 
 	Released 1.3.93.
-	
+
 	* Makefile.am (AUTOMAKE_OPTIONS): Add filename-length-max=99.
 
 2004-11-06  David Shaw  <dshaw@jabberwocky.com>
@@ -869,7 +873,7 @@
 	(EXTRA_DIST): Add scripts/config.rpath.
 	* configure.ac (AC_CONFIG_FILES): Add po/Makefile.in,
 	(AL_LINGUAS): Removed.
-	
+
 2003-10-24  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac (DLLIBS): Work properly on platforms where dlopen
@@ -877,7 +881,7 @@
 
 2003-10-24  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac (DLLIBS): Fixed last change. 
+	* configure.ac (DLLIBS): Fixed last change.
 
 2003-10-23  Werner Koch  <wk@gnupg.org>
 
@@ -903,7 +907,7 @@
 
 2003-10-01  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac (AH_BOTTOM): Define GNUPG_MAJOR_VERSION. 
+	* configure.ac (AH_BOTTOM): Define GNUPG_MAJOR_VERSION.
 	(ENABLE_CARD_SUPPORT): Define as automake conditional.
 
 2003-09-30  David Shaw  <dshaw@jabberwocky.com>
@@ -1157,7 +1161,7 @@
 2002-10-18  Werner Koch  <wk@gnupg.org>
 
 	Released 1.3.0.
-	
+
 	* configure.ac: Changed version number comments.
 	(ALL_LINGUAS): Removed all except for de.  During development it
 	might not be a good idea to keep all of them - they get outdated
@@ -1320,7 +1324,7 @@
 
 	* configure.ac: Replace the 'c:/' variables with 'c:\' due
 	to the fact we already use '\' in the remaining code.
-	
+
 2002-07-08  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add --with-mailprog to override the use of
@@ -1351,7 +1355,7 @@
 	* configure.ac: Set version number to 1.1.91.
 
         Released 1.1.90.
-	
+
 	* INSTALL: Replaced by generic install file.
 	* README: Marked as development version and moved most stuff of
 	the old INSTALL file to here.
@@ -1382,7 +1386,7 @@
 	Also, check for the Mozilla LDAP library if the OpenLDAP library
 	check fails.  Put -lsocket and -lnsl in NETLIBS rather than LIBS
 	so not all programs are forced to link to them.
-	
+
 2002-06-05  David Shaw  <dshaw@jabberwocky.com>
 
 	* configure.ac: Add a switch for the experimental external HKP
@@ -1467,7 +1471,7 @@
 2001-12-22  Werner Koch  <wk@gnupg.org>
 
         Released 1.0.6c snapshot.
-	
+
 	* configure.ac (AH_BOTTOM): Moved EXEC_TEMPFILE_ONLY to here.
 
 	* acconfig.h:  Removed, it should no longer be used.
@@ -1508,7 +1512,7 @@
 
 2001-10-22  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac: Fixed for automake 1.5 
+	* configure.ac: Fixed for automake 1.5
 
 2001-10-17  Werner Koch  <wk@gnupg.org>
 
@@ -1545,7 +1549,7 @@
 2001-08-22  Werner Koch  <wk@gnupg.org>
 
 	* configure.ac (gethrtime): Enhanced the test by running a test
-	program. 
+	program.
 	* INSTALL: Removed the note about Solaris problems because the
 	above test should catch this.
 
@@ -1561,11 +1565,11 @@
 	* configure.ac: Set some compiler flags for dec-osf and hpux. By
 	Tim Mooney.
 
-	* configure.ac: Create g10defs.h with EXTSEP_S et al. 
+	* configure.ac: Create g10defs.h with EXTSEP_S et al.
 
 2001-08-03  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac (VERSION,PACKAGE): Fixed quoting. 
+	* configure.ac (VERSION,PACKAGE): Fixed quoting.
 
 2001-07-26  Werner Koch  <wk@gnupg.org>
 
@@ -1585,7 +1589,7 @@
 	* Makefile.am (DISTCLEANFILES): gettext is better now; no more
 	need to remove the libintl.h symlink.
         (dist-hook): Create VERSION file.
-	
+
 2001-06-08  Werner Koch  <wk@gnupg.org>
 
 	* configure.in (DYNLINK_MOD_CFLAGS): Use -shared with dec-osf.
@@ -1618,7 +1622,7 @@
 	anyway.
 
 	* configure.in: Use it here.
-	
+
 	* configure.in (ALL_LINGUAS): Add Estonian translation by Toomas Soome.
 	(use_m_debug): Removed --enable-m-debug because it does not work
 	anymore.
@@ -1639,7 +1643,7 @@
 
 2001-03-12  Werner Koch  <wk@gnupg.org>
 
-	* INSTALL: Add a note to VPATH builds. 
+	* INSTALL: Add a note to VPATH builds.
 
 2001-03-08  Werner Koch  <wk@gnupg.org>
 
@@ -1659,7 +1663,7 @@
 
         Actually Paul's patches are dated 2000-20-17; I applied them today
 	and merged some ChangeLog entries (wk@gnupg.org).
-	
+
         * configure.in (AC_SYS_LARGEFILE): Add.
         (try_large_file): Remove.  All uses removed.
         (AC_CHECK_FUNCS): Remove fopen64 and fstat64.
