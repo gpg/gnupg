@@ -2505,10 +2505,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "s2k-count"))
     {
       ctrl->s2k_count = *value? strtoul(value, NULL, 10) : 0;
-      if (ctrl->s2k_count && ctrl->s2k_count < 65536) {
+      if (ctrl->s2k_count && ctrl->s2k_count < 65536)
+        {
 	  ctrl->s2k_count = 0;
-	  err = gpg_error (GPG_ERR_INV_VALUE);
-      }
+        }
     }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
