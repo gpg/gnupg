@@ -1,5 +1,11 @@
 2011-08-09  Werner Koch  <wk@g10code.com>
 
+	* keyedit.c (show_key_with_all_names): Remove unused var.
+
+	* apdu.c (open_pcsc_reader_direct): Remove unused var.
+
+	* sig-check.c (do_check): Remove unused var.
+
 	* keygen.c (ask_user_id): Fix loop break condition. See bug#1307.
 
 	* import.c (import_keys_internal): Make breaking the loop more

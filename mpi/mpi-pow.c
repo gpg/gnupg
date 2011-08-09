@@ -42,7 +42,7 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
 {
     mpi_ptr_t  rp, ep, mp, bp;
     mpi_size_t esize, msize, bsize, rsize;
-    int        esign, msign, bsign, rsign;
+    int               msign, bsign, rsign;
     int        esec,  msec,  bsec,  rsec;
     mpi_size_t size;
     int mod_shift_cnt;
@@ -57,7 +57,6 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
     esize = exponent->nlimbs;
     msize = mod->nlimbs;
     size = 2 * msize;
-    esign = exponent->sign;
     msign = mod->sign;
 
     esec = mpi_is_secure(exponent);
@@ -136,7 +135,7 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
 	    MPN_COPY(bp, rp, bsize);
 	}
 	if( rp == ep ) {
-	    /* RES and EXPONENT are identical.  
+	    /* RES and EXPONENT are identical.
                Allocate temp. space for EXPONENT.  */
 	    ep = ep_marker = mpi_alloc_limb_space( esize, esec );
 	    MPN_COPY(ep, rp, esize);

@@ -34,8 +34,8 @@ typedef struct ext_list {
 
 static EXTLIST extensions;
 
-/* This is actually not used anymore but we keep a list of already 
- * set extensions modules here.   
+/* This is actually not used anymore but we keep a list of already
+ * set extensions modules here.
  *
  * Here is the ancient comment:
  * Register an extension module.  The last registered module will
@@ -53,7 +53,7 @@ static EXTLIST extensions;
 void
 register_cipher_extension( const char *mainpgm, const char *fname )
 {
-    EXTLIST r, el, intex;
+    EXTLIST r, el;
     char *p, *pe;
 
     if( *fname != DIRSEP_C ) { /* do tilde expansion etc */
@@ -76,7 +76,6 @@ register_cipher_extension( const char *mainpgm, const char *fname )
 	*p = *pe = 0;
 
     /* check that it is not already registered */
-    intex = NULL;
     for(r = extensions; r; r = r->next ) {
 	if( !compare_filenames(r->name, el->name) ) {
 	    log_info("extension `%s' already registered\n", el->name );

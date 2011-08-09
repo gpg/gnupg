@@ -122,7 +122,7 @@ get_pka_info (const char *address, unsigned char *fpr)
       HEADER h;
     } answer;
   int anslen;
-  int qdcount, ancount, nscount, arcount;
+  int qdcount, ancount;
   int rc;
   unsigned char *p, *pend;
   const char *domain;
@@ -151,8 +151,6 @@ get_pka_info (const char *address, unsigned char *fpr)
 
   qdcount = ntohs (answer.h.qdcount);
   ancount = ntohs (answer.h.ancount);
-  nscount = ntohs (answer.h.nscount);
-  arcount = ntohs (answer.h.arcount);
 
   if (!ancount)
     return NULL; /* Got no answer. */

@@ -54,7 +54,7 @@ signature_check( PKT_signature *sig, MD_HANDLE digest )
 }
 
 int
-signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate, 
+signature_check2( PKT_signature *sig, MD_HANDLE digest, u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
 {
     PKT_public_key *pk = xmalloc_clear( sizeof *pk );
@@ -239,7 +239,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 {
     MPI result = NULL;
     int rc=0;
-    struct cmp_help_context_s ctx;
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
@@ -291,8 +290,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
     result = encode_md_value( pk, NULL, digest, sig->digest_algo );
     if (!result)
         return G10ERR_GENERAL;
-    ctx.sig = sig;
-    ctx.md = digest;
     rc = pubkey_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     mpi_free( result );
 
@@ -326,7 +323,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
        warning during signature checking.  Note that while validating
        a key we might have already checked MD5 key signatures.  */
     if (sig->digest_algo == DIGEST_ALGO_MD5)
-      md5_digest_warn (0);  
+      md5_digest_warn (0);
 
     if( !rc && sig->flags.unknown_critical )
       {
@@ -438,13 +435,13 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
       for(i=0;i<pk->numrevkeys;i++)
 	{
           u32 keyid[2];
-    
+
           keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
-    
+
           if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
 	    {
               MD_HANDLE md;
-    
+
               md=md_open(sig->digest_algo,0);
               hash_public_key(md,pk);
               rc=signature_check(sig,md);
@@ -457,7 +454,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
   busy=0;
 
   return rc;
-} 
+}
 
 /* Backsigs (0x19) have the same format as binding sigs (0x18), but
    this function is simpler than check_key_signature in a few ways.
@@ -538,8 +535,8 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
        cache refresh detects and clears these cases. */
     if ( !opt.no_sig_cache ) {
         if (sig->flags.checked) { /*cached status available*/
-	    if( is_selfsig ) {	
-		u32 keyid[2];	
+	    if( is_selfsig ) {
+		u32 keyid[2];
 
 		keyid_from_pk( pk, keyid );
 		if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
@@ -559,7 +556,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	return rc;
 
     if( sig->sig_class == 0x20 ) { /* key revocation */
-        u32 keyid[2];	
+        u32 keyid[2];
 	keyid_from_pk( pk, keyid );
 
 	/* is it a designated revoker? */

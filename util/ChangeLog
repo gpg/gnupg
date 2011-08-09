@@ -3,6 +3,7 @@
 	* pka.c (get_pka_info): Turn ANSWER into a union to avoid aliasing
 	problems with modern compilers.  See bug#1307.  Reported by Steve
 	Grubb.
+	(get_pka_info): Remove unused vars.
 
 2010-10-27  Werner Koch  <wk@g10code.com>
 

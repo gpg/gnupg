@@ -1,3 +1,11 @@
+2011-08-09  Werner Koch  <wk@g10code.com>
+
+	* rijndael.c (u32_a_t): New.
+	(do_encrypt_aligned, do_decrypt): Use the new type to avoid
+	problems with strict aliasing rules.
+
+	* dynload.c (register_cipher_extension): Remove unused var.
+
 2010-10-18  Werner Koch  <wk@g10code.com>
 
 	* rndw32.c (slow_gatherer_windowsNT): Add GNUPG_RNDW32_NOPERF envvar.
@@ -153,7 +161,7 @@
 2005-03-23  Werner Koch  <wk@g10code.com>
 
 	* rndw32.c (rndw32_gather_random_fast): While adding data use the
-	size of the object and not the one of its address.  Bug reported by 
+	size of the object and not the one of its address.  Bug reported by
 	Sascha Kiefer.
 
 2005-03-07  Werner Koch  <wk@g10code.com>
@@ -170,7 +178,7 @@
 
         * idea-stub.c (dlopen, dlsym): Use w32_strerror instead of
         just showing the error number.
-	
+
 2004-10-14  Werner Koch  <wk@g10code.com>
 
 	* rndunix.c (start_gatherer) [ENABLE_SELINUX_HACKS]: Don't allow
@@ -418,7 +426,7 @@
 
 	* blowfish.h, cast5.h, des.h: Removed after moving all prototypes to
 	* algorithms.h: here. Changed all sources to use this one.
-	
+
 2002-08-03  Stefan Bellon  <sbellon@sbellon.de>
 
 	* idea-stub.c (idea_get_info): RISC OS' Norcroft C needs a cast.
@@ -433,7 +441,7 @@
 2002-08-02  Werner Koch  <wk@gnupg.org>
 
         The big extension removal.
-	
+
 	* Makefile.am: Removed all extension stuff.
 	* dynload.c: Removed everything except for
 	register_cipher_extension.
@@ -453,7 +461,7 @@
 	(load_digest_module): Simplified by removing all the dynload code.
 	* algorithms.h: New.
 	* md5.c (md5_get_info): Made global.  Removed all dynload stuff.
-	* rmd160.c (rmd160_get_info): Likewise. 
+	* rmd160.c (rmd160_get_info): Likewise.
 	* sha1.c (sha1_get_info): Likewise.
 	* tiger.c (tiger_get_info): Likewise. Return NULL if we can't use
 	this module.
@@ -572,7 +580,7 @@
 	RISC OS.  Nearly all of these patches are identified by the
 	__riscos__ macro.
 	* blowfish.c, twofish.c: Added pragmas for use with a Norcraft
-	compiler. 
+	compiler.
 	* dynload.c, md5.c, rmd160.c, sha1.c: Minor patches for RISC OS.
 	* rndriscos.c: New.
 	* rnd-internal.h: Added prototype.
@@ -595,7 +603,7 @@
 
 	* rndlinux.c (gather_random): casted a size_t arg to int so that
 	the format string is correct.  Casting is okay here and avoids
-	translation changes. 
+	translation changes.
 
 2001-06-12  Werner Koch  <wk@gnupg.org>
 
@@ -635,7 +643,7 @@
 	* md5.c, sha1.c, rmd160.c, tiger.c (burn_stack): Likewise.
 	* random.c (burn_stack): New.
 	(mix_pool): Use it here to burn the stack of the mixblock function.
-	
+
 2001-04-02  Werner Koch  <wk@gnupg.org>
 
 	* primegen.c (generate_elg_prime): I was not initialized for mode

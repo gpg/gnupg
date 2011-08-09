@@ -36,7 +36,7 @@
 #include "filter.h"
 
 
-#define CONTROL_PACKET_SPACE 30 
+#define CONTROL_PACKET_SPACE 30
 #define FAKED_LITERAL_PACKET_SPACE (9+2+2)
 
 
@@ -73,7 +73,7 @@ make_control ( byte *buf, int code, int operation )
     buf[n++] = 0xff; /* new format, type 63, 1 length byte */
     n++;   /* length will fixed below */
     memcpy(buf+n, sesmark, sesmarklen ); n+= sesmarklen;
-    buf[n++] = CTRLPKT_PIPEMODE;    
+    buf[n++] = CTRLPKT_PIPEMODE;
     buf[n++] = code;
     buf[n++] = operation;
     buf[1] = n-2;
@@ -85,7 +85,7 @@ make_control ( byte *buf, int code, int operation )
 static int
 pipemode_filter( void *opaque, int control,
 	         IOBUF a, byte *buf, size_t *ret_len)
-{ 
+{
     size_t size = *ret_len;
     struct pipemode_context_s *stx = opaque;
     int rc=0;
@@ -104,11 +104,11 @@ pipemode_filter( void *opaque, int control,
             buf[n++] = 0;
             buf[n++] = 0;
         }
-            
+
 
         while ( n < size ) {
             /* FIXME: we have to make sure that we have a large enough
-             * buffer for a control packet even after we already read 
+             * buffer for a control packet even after we already read
              * something. The easest way to do this is probably by ungetting
              * the control sequence and returning the buffer we have
              * already assembled */
@@ -123,7 +123,7 @@ pipemode_filter( void *opaque, int control,
             }
             if ( esc ) {
                 switch (c) {
-                  case '@':  
+                  case '@':
                     if ( stx->state == STX_text ) {
                         buf[n++] = c;
                         break;
@@ -181,7 +181,7 @@ pipemode_filter( void *opaque, int control,
                     goto leave;
 
                   case 't': /* plaintext text follows */
-                    if ( stx->state == STX_detached_signature_wait_text ) 
+                    if ( stx->state == STX_detached_signature_wait_text )
                         stx->state = STX_detached_signature;
                     if ( stx->state == STX_detached_signature ) {
                         if ( stx->operation != 'B' ) {
@@ -215,7 +215,7 @@ pipemode_filter( void *opaque, int control,
                     break;
 
                   case '.': /* ready */
-                    if ( stx->state == STX_signed_data ) { 
+                    if ( stx->state == STX_signed_data ) {
                         if (stx->block_mode) {
                             buf[0] = (n-2) >> 8;
                             buf[1] = (n-2);
@@ -236,7 +236,7 @@ pipemode_filter( void *opaque, int control,
                     stx->state = STX_wait_init;
                     goto leave;
 
-                 default:      
+                 default:
                     log_error ("invalid escape sequence 0x%02x in stream\n",
                                c);
                     stx->stop = 1;
@@ -244,7 +244,7 @@ pipemode_filter( void *opaque, int control,
                 }
                 esc = 0;
             }
-            else if (c == '@') 
+            else if (c == '@')
                 esc = 1;
             else if (stx->unarmor_ctx) {
           do_unarmor: /* used to handle a @@ */
@@ -254,7 +254,7 @@ pipemode_filter( void *opaque, int control,
                 else if ( c < 0 ) {
                     /* end of armor or error - we don't care becuase
                       the armor can be modified anyway.  The unarmored
-                      stuff should stand for itself. */ 
+                      stuff should stand for itself. */
                     unarmor_pump_release (stx->unarmor_ctx);
                     stx->unarmor_ctx = NULL;
                     stx->state = STX_detached_signature_wait_text;
@@ -263,10 +263,10 @@ pipemode_filter( void *opaque, int control,
             else if (stx->state == STX_detached_signature_wait_text)
                 ; /* just wait */
             else
-                buf[n++] = c; 
+                buf[n++] = c;
         }
 
-      leave:      
+      leave:
         if ( !n ) {
             stx->stop = 1;
             rc = -1; /* eof */
@@ -293,7 +293,6 @@ run_in_pipemode(void)
     IOBUF fp;
     armor_filter_context_t afx;
     struct pipemode_context_s stx;
-    int rc;
 
     memset( &afx, 0, sizeof afx);
     memset( &stx, 0, sizeof stx);
@@ -303,10 +302,10 @@ run_in_pipemode(void)
 
     do {
         write_status (STATUS_BEGIN_STREAM);
-        rc = proc_packets( NULL, fp );
+        proc_packets( NULL, fp );
         write_status (STATUS_END_STREAM);
     } while ( !stx.stop );
-  
+
 }
 
 

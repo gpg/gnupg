@@ -200,7 +200,7 @@ mpi_read_from_buffer(byte *buffer, unsigned int *ret_nread, int secure)
 int
 mpi_fromstr(MPI val, const char *str)
 {
-    int hexmode=0, sign=0, prepend_zero=0, i, j, c, c1, c2;
+    int sign=0, prepend_zero=0, i, j, c, c1, c2;
     unsigned nbits, nbytes, nlimbs;
     mpi_limb_t a;
 
@@ -209,7 +209,7 @@ mpi_fromstr(MPI val, const char *str)
 	str++;
     }
     if( *str == '0' && str[1] == 'x' )
-	hexmode = 1;
+      ;
     else
 	return 1; /* other bases are not yet supported */
     str += 2;

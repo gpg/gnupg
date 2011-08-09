@@ -498,7 +498,6 @@ srv_replace(const char *srvtag)
 {
 #ifdef USE_DNS_SRV
   struct srventry *srvlist=NULL;
-  int srvcount;
 
   if(!srvtag)
     return;
@@ -511,7 +510,7 @@ srv_replace(const char *srvtag)
       strcat(srvname,srvtag);
       strcat(srvname,"._tcp.");
       strcat(srvname,opt->host);
-      srvcount=getsrv(srvname,&srvlist);
+      getsrv(srvname,&srvlist);
     }
 
   if(srvlist)
@@ -538,7 +537,7 @@ srv_replace(const char *srvtag)
 }
 #endif
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");

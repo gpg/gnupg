@@ -1,3 +1,9 @@
+2011-08-09  Werner Koch  <wk@g10code.com>
+
+	* mpicoder.c (mpi_fromstr): Remove unused var.
+
+	* mpi-pow.c (mpi_powm): Remove unused var.
+
 2011-07-04  Werner Koch  <wk@g10code.com>
 
 	* longlong.h: [__arm__]: Do no use asm if thumb code generation is
