@@ -1,3 +1,7 @@
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Fix new autoconf warnings.
+
 2011-05-20  Werner Koch  <wk@g10code.com>
 
 	* configure.ac: Require libgpg-error 1.10.

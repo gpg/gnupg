@@ -31,10 +31,10 @@ m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
           | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
 m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-AC_INIT([gnupg],
-        [my_version[]m4_if(my_issvn,[yes],
-        [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])],
-        [http://bugs.gnupg.org])
+m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
+          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
+
+AC_INIT([gnupg],[my_full_version], [http://bugs.gnupg.org])
 # Set development_version to yes if the minor number is odd or you
 # feel that the default check for a development version is not
 # sufficient.
@@ -940,10 +940,10 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
     # it does not support v6.
 
     AC_MSG_CHECKING([whether the resolver is usable])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <sys/types.h>
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
-#include <resolv.h>],
+#include <resolv.h>]],
 [[unsigned char answer[PACKETSZ];
   res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);
   dn_skipname(0,0);
@@ -957,11 +957,11 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes \
     if test x"$have_resolver" != xyes ; then
        AC_MSG_CHECKING(
              [whether I can make the resolver usable with BIND_8_COMPAT])
-       AC_LINK_IFELSE([AC_LANG_PROGRAM([#define BIND_8_COMPAT
+       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#define BIND_8_COMPAT
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
-#include <resolv.h>],
+#include <resolv.h>]],
 [[unsigned char answer[PACKETSZ];
   res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);
   dn_skipname(0,0); dn_expand(0,0,0,0,0);
@@ -1213,8 +1213,8 @@ GNUPG_TIME_T_UNSIGNED
 # Ensure that we have UINT64_C before we bother to check for uint64_t
 # Fixme: really needed in gnupg?  I think it is only useful in libcgrypt.
 AC_CACHE_CHECK([for UINT64_C],[gnupg_cv_uint64_c_works],
-   AC_COMPILE_IFELSE(AC_LANG_PROGRAM([#include <inttypes.h>
-       uint64_t foo=UINT64_C(42);]),
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <inttypes.h>]],
+       [[uint64_t foo=UINT64_C(42);]])],
      gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
 if test "$gnupg_cv_uint64_c_works" = "yes" ; then
    AC_CHECK_SIZEOF(uint64_t)
@@ -1450,7 +1450,7 @@ if test "$GCC" = yes; then
         AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
         _gcc_cflags_save=$CFLAGS
         CFLAGS="-Wno-missing-field-initializers"
-        AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_wopt=yes,_gcc_wopt=no)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
         CFLAGS=$_gcc_cflags_save;
         if test x"$_gcc_wopt" = xyes ; then
@@ -1459,7 +1459,7 @@ if test "$GCC" = yes; then
         AC_MSG_CHECKING([if gcc supports -Wdeclaration-after-statement])
         _gcc_cflags_save=$CFLAGS
         CFLAGS="-Wdeclaration-after-statement"
-        AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_wopt=yes,_gcc_wopt=no)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
         CFLAGS=$_gcc_cflags_save;
         if test x"$_gcc_wopt" = xyes ; then
@@ -1472,7 +1472,7 @@ if test "$GCC" = yes; then
     AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
     _gcc_cflags_save=$CFLAGS
     CFLAGS="-Wno-pointer-sign"
-    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_psign=yes,_gcc_psign=no)
     AC_MSG_RESULT($_gcc_psign)
     CFLAGS=$_gcc_cflags_save;
     if test x"$_gcc_psign" = xyes ; then
@@ -1482,7 +1482,7 @@ if test "$GCC" = yes; then
     AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
     _gcc_cflags_save=$CFLAGS
     CFLAGS="-Wpointer-arith"
-    AC_COMPILE_IFELSE(AC_LANG_PROGRAM([]),_gcc_psign=yes,_gcc_psign=no)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_psign=yes,_gcc_psign=no)
     AC_MSG_RESULT($_gcc_psign)
     CFLAGS=$_gcc_cflags_save;
     if test x"$_gcc_psign" = xyes ; then
