@@ -1,3 +1,8 @@
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* command.c (cmd_killscd): Use the new assuan force close flag
+	if available.
+
 2011-08-08  Werner Koch  <wk@g10code.com>
 
 	* app-openpgp.c (do_decipher): Take care of accidentally passed

@@ -7,6 +7,8 @@ Noteworthy changes in version 2.1.0beta3
 
  * Support the SSH confirm flag.
 
+ * The Assuan commands KILLAGENT and KILLSCD are working again.
+
 
 Noteworthy changes in version 2.1.0beta2 (2011-03-08)
 -----------------------------------------------------

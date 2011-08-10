@@ -1862,7 +1862,15 @@ cmd_killscd (assuan_context_t ctx, char *line)
   (void)line;
 
   ctrl->server_local->stopme = 1;
+#ifdef ASSUAN_FORCE_CLOSE
+  assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+  return 0;
+#else
+  /* Actually returning an EOF does not anymore work with modern
+     Libassuan versions.  However we keep that non working code until
+     we make a Libassuan with the force close flag a requirement.  */
   return gpg_error (GPG_ERR_EOF);
+#endif
 }
 
 

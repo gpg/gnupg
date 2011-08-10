@@ -2259,7 +2259,12 @@ cmd_killagent (assuan_context_t ctx, char *line)
     return set_error (GPG_ERR_NOT_SUPPORTED, "no --use-standard-socket");
 
   ctrl->server_local->stopme = 1;
+#ifdef ASSUAN_FORCE_CLOSE
+  assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
+  return 0;
+#else
   return gpg_error (GPG_ERR_EOF);
+#endif
 }
 
 
