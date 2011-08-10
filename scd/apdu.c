@@ -1602,7 +1602,7 @@ open_pcsc_reader_wrapped (const char *portstr)
   unsigned char msgbuf[9];
   int err;
   unsigned int dummy_status;
-  int sw = SW_HOST_CARD_IO_ERROR;
+
   /* Note that we use the constant and not the fucntion because this
      code won't be be used under Windows.  */
   const char *wrapperpgm = GNUPG_LIBEXECDIR "/gnupg-pcsc-wrapper";
@@ -1746,7 +1746,6 @@ open_pcsc_reader_wrapped (const char *portstr)
   if (err)
     {
       log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));
-      sw = pcsc_error_to_sw (err);
       goto command_failed;
     }
 

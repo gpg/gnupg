@@ -106,7 +106,7 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
   if (!infp)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("error creating temporary file: %s\n"), strerror (errno));
+      log_error (_("error creating temporary file: %s\n"), gpg_strerror (err));
       return 1; /* Error - assume password should not be used.  */
     }
 
@@ -114,7 +114,7 @@ check_passphrase_pattern (ctrl_t ctrl, const char *pw)
     {
       err = gpg_error_from_syserror ();
       log_error (_("error writing to temporary file: %s\n"),
-                 strerror (errno));
+                 gpg_strerror (err));
       fclose (infp);
       return 1; /* Error - assume password should not be used.  */
     }

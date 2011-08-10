@@ -568,7 +568,6 @@ main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
-  int may_coredump;
   char **orig_argv;
   FILE *configfp = NULL;
   char *configname = NULL;
@@ -642,7 +641,7 @@ main (int argc, char **argv )
   setup_libgcrypt_logging ();
   gcry_control (GCRYCTL_USE_SECURE_RNDPOOL);
 
-  may_coredump = disable_core_dumps ();
+  disable_core_dumps ();
 
   /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */

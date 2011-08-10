@@ -1,3 +1,11 @@
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* genkey.c (check_passphrase_pattern): Use gpg_strerror instead of
+	strerror.
+	* command-ssh.c (ssh_receive_mpint_list): Remove unused var
+	ELEMS_PUBLIC_N.
+	* gpg-agent.c (main): Remove unused var MAY_COREDUMP.
+
 2011-08-09  Ben Kibbey <bjk@luxsci.net>
 
 	* command.c (option_handler): Have option s2k-count match the

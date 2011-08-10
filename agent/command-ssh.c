@@ -933,7 +933,6 @@ static gpg_error_t
 ssh_receive_mpint_list (estream_t stream, int secret,
 			ssh_key_type_spec_t key_spec, gcry_mpi_t **mpi_list)
 {
-  unsigned int elems_public_n;
   const char *elems_public;
   unsigned int elems_n;
   const char *elems;
@@ -952,7 +951,6 @@ ssh_receive_mpint_list (estream_t stream, int secret,
   elems_n = strlen (elems);
 
   elems_public = key_spec.elems_key_public;
-  elems_public_n = strlen (elems_public);
 
   mpis = xtrycalloc (elems_n + 1, sizeof *mpis );
   if (!mpis)

@@ -76,7 +76,6 @@ test_close_all_fds (void)
   int max_fd = get_max_fds ();
   int *array;
   int fd;
-  int dummy_fd;
   int initial_count, count, n;
 #if 0
   char buffer[100];
@@ -93,10 +92,10 @@ test_close_all_fds (void)
   free (array);
 
   /* Some dups to get more file descriptors and close one. */
-  dummy_fd = dup (1);
-  dummy_fd = dup (1);
+  dup (1);
+  dup (1);
   fd = dup (1);
-  dummy_fd = dup (1);
+  dup (1);
   close (fd);
 
   array = xget_all_open_fds ();
@@ -137,14 +136,14 @@ test_close_all_fds (void)
       int except[] = { 20, 23, 24, -1 };
 
       for (n=initial_count; n < 31; n++)
-        dummy_fd = dup (1);
+        dup (1);
       array = xget_all_open_fds ();
       if (verbose)
         print_open_fds (array);
       free (array);
       for (n=0; n < 5; n++)
         {
-          dummy_fd = dup (1);
+          dup (1);
           array = xget_all_open_fds ();
           if (verbose)
             print_open_fds (array);

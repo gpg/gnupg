@@ -862,7 +862,6 @@ main ( int argc, char **argv)
   ARGPARSE_ARGS pargs;
   int orig_argc;
   char **orig_argv;
-  const char *fname;
   /*  char *username;*/
   int may_coredump;
   strlist_t sl, remusr= NULL, locusr=NULL;
@@ -1634,8 +1633,6 @@ main ( int argc, char **argv)
 
   if (log_get_errorcount(0))
     gpgsm_exit(1); /* Must stop for invalid recipients. */
-
-  fname = argc? *argv : NULL;
 
   /* Dispatch command.  */
   switch (cmd)

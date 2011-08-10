@@ -1,3 +1,9 @@
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* keydb.c (keydb_add_resource): Remove unsued var CREATED_FNAME.
+
+	* gpgsm.c (main): Remove unused var FNAME.
+
 2011-07-21  Werner Koch  <wk@g10code.com>
 
 	* call-dirmngr.c (get_cached_cert, get_cached_cert_data_cb): New.

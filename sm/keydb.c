@@ -82,7 +82,6 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
   int rc = 0;
   FILE *fp;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
-  const char *created_fname = NULL;
 
   if (auto_created)
     *auto_created = 0;
@@ -194,7 +193,6 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 
           if (!opt.quiet)
             log_info (_("keybox `%s' created\n"), filename);
-          created_fname = filename;
           if (auto_created)
             *auto_created = 1;
 	}

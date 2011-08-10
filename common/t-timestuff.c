@@ -81,10 +81,9 @@ test_timegm (void)
 
   };
   int tidx;
-  time_t now, atime, counter;
+  time_t now, atime;
   struct tm tbuf, tbuf2, *tp;
 
-  counter = 0;
   for (tidx=0; tidx < DIM (tvalues); tidx++)
     {
       if (tvalues[tidx].year == -1)

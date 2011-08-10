@@ -170,7 +170,6 @@ parse_key (const unsigned char *data, size_t datalen,
   const unsigned char *data_start = data;
   int i, version, algorithm;
   size_t n;
-  unsigned long timestamp, expiredate;
   int npkey;
   unsigned char hashbuffer[768];
   const unsigned char *mpi_n = NULL;
@@ -184,21 +183,15 @@ parse_key (const unsigned char *data, size_t datalen,
   if (version < 2 || version > 4 )
     return gpg_error (GPG_ERR_INV_PACKET); /* Invalid version. */
 
-  timestamp = ((data[0]<<24)|(data[1]<<16)|(data[2]<<8)|(data[3]));
+  /*timestamp = ((data[0]<<24)|(data[1]<<16)|(data[2]<<8)|(data[3]));*/
   data +=4; datalen -=4;
 
   if (version < 4)
     {
-      unsigned short ndays;
-
       if (datalen < 2)
         return gpg_error (GPG_ERR_INV_PACKET);
-      ndays = ((data[0]<<8)|(data[1]));
       data +=2; datalen -= 2;
-      expiredate = ndays? (timestamp + ndays * 86400L) : 0;
     }
-  else
-    expiredate = 0; /* This is stored in the self-signature. */
 
   if (!datalen)
     return gpg_error (GPG_ERR_INV_PACKET);

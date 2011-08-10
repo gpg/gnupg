@@ -263,7 +263,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
 {
     gcry_mpi_t result = NULL;
     int rc = 0;
-    struct cmp_help_context_s ctx;
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
@@ -316,8 +315,6 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
     result = encode_md_value (pk, digest, sig->digest_algo );
     if (!result)
         return G10ERR_GENERAL;
-    ctx.sig = sig;
-    ctx.md = digest;
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     gcry_mpi_release (result);
 

@@ -1596,7 +1596,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
 	 public key block, and below we will output another one for
 	 the secret keys.  FIXME?  */
       import_one (ctrl, fname, pub_keyblock, stats,
-		  NULL, NULL, opt.import_options, 1);
+		  NULL, NULL, options, 1);
 
       /* Fixme: We should check for an invalid keyblock and
 	 cancel the secret key import in this case.  */

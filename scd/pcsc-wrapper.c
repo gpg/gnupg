@@ -384,7 +384,7 @@ handle_open (unsigned char *argbuf, size_t arglen)
   long err;
   const char * portstr;
   char *list = NULL;
-  unsigned long nreader, listlen, atrlen;
+  unsigned long nreader, atrlen;
   char *p;
   unsigned long card_state, card_protocol;
   unsigned char atr[33];
@@ -431,7 +431,6 @@ handle_open (unsigned char *argbuf, size_t arglen)
       return;
     }
 
-  listlen = nreader;
   p = list;
   while (nreader)
     {

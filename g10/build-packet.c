@@ -242,19 +242,19 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
 static int
 do_user_id( IOBUF out, int ctb, PKT_user_id *uid )
 {
-    int rc;
+  int rc;
 
-    if( uid->attrib_data )
-      {
-	write_header(out, ctb, uid->attrib_len);
-	rc = iobuf_write( out, uid->attrib_data, uid->attrib_len );
-      }
-    else
-      {
-        write_header2( out, ctb, uid->len, 2 );
-	rc = iobuf_write( out, uid->name, uid->len );
-      }
-    return 0;
+  if (uid->attrib_data)
+    {
+      write_header(out, ctb, uid->attrib_len);
+      rc = iobuf_write( out, uid->attrib_data, uid->attrib_len );
+    }
+  else
+    {
+      write_header2( out, ctb, uid->len, 2 );
+      rc = iobuf_write( out, uid->name, uid->len );
+    }
+  return rc;
 }
 
 

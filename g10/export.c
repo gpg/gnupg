@@ -377,7 +377,6 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   u32  s2k_count = 0;
   size_t npkey, nskey;
   gcry_mpi_t skey[10];  /* We support up to 9 parameters.  */
-  u16 desired_csum;
   int skeyidx = 0;
   struct seckey_info *ski;
 
@@ -509,20 +508,21 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   skey[skeyidx++] = NULL;
 
   gcry_sexp_release (list);
-  list = gcry_sexp_find_token (top_list, "csum", 0);
-  if (list)
-    {
-      string = gcry_sexp_nth_string (list, 1);
-      if (!string)
-        goto bad_seckey;
-      desired_csum = strtoul (string, NULL, 10);
-      xfree (string);
-    }
-  else
-    desired_csum = 0;
 
+  /* We have no need for the CSUM valuel thus we don't parse it.  */
+  /* list = gcry_sexp_find_token (top_list, "csum", 0); */
+  /* if (list) */
+  /*   { */
+  /*     string = gcry_sexp_nth_string (list, 1); */
+  /*     if (!string) */
+  /*       goto bad_seckey; */
+  /*     desired_csum = strtoul (string, NULL, 10); */
+  /*     xfree (string); */
+  /*   } */
+  /* else */
+  /*   desired_csum = 0; */
+  /* gcry_sexp_release (list); list = NULL; */
 
-  gcry_sexp_release (list); list = NULL;
   gcry_sexp_release (top_list); top_list = NULL;
 
   /* log_debug ("XXX is_v4=%d\n", is_v4); */

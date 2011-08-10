@@ -1,3 +1,14 @@
+2011-08-10  Werner Koch  <wk@g10code.com>
+
+	* export.c (transfer_format_to_openpgp): Don't parse unneeded CSUM.
+
+	* import.c (import_secret_one): Use arg OPTIONS instead of global
+	import options var.
+
+	* sig-check.c (do_check): Remove unused var CTX.
+
+	* build-packet.c (do_user_id): Return value.
+
 2011-07-29  Werner Koch  <wk@g10code.com>
 
 	* tdbio.c (open_db): Do not print read-only warning in quiet mode.

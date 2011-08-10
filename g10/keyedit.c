@@ -2683,7 +2683,6 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
   KBNODE node;
   int i;
   int do_warn = 0;
-  byte pk_version = 0;
   PKT_public_key *primary = NULL;
 
   if (opt.with_colons)
@@ -2719,7 +2718,6 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 		  do_warn = 1;
 		}
 
-	      pk_version = pk->version;
 	      primary = pk;
 	    }
 

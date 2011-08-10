@@ -175,7 +175,7 @@ get_pka_info (const char *address, unsigned char *fpr)
 #else /*!USE_ADNS*/
   unsigned char answer[PACKETSZ];
   int anslen;
-  int qdcount, ancount, nscount, arcount;
+  int qdcount, ancount;
   int rc;
   unsigned char *p, *pend;
   const char *domain;
@@ -212,8 +212,6 @@ get_pka_info (const char *address, unsigned char *fpr)
 
   qdcount = ntohs (header.qdcount);
   ancount = ntohs (header.ancount);
-  nscount = ntohs (header.nscount);
-  arcount = ntohs (header.arcount);
 
   if (!ancount)
     return NULL; /* Got no answer. */
