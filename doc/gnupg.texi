@@ -5,12 +5,12 @@
 @settitle Using the GNU Privacy Guard
 
 @c A couple of macros with no effect on texinfo
-@c but used by the yat2m processor. 
+@c but used by the yat2m processor.
 @macro manpage {a}
 @end macro
 @macro mansect {a}
 @end macro
-@macro manpause 
+@macro manpause
 @end macro
 @macro mancont
 @end macro
@@ -110,12 +110,12 @@ section entitled ``Copying''.
 @end ifnothtml
 
 @ifhtml
-@center @image{gnupg-logo,6cm,,The GnuPG Logo}
+@center @image{gnupg-logo-tr,6cm,,The GnuPG Logo}
 @end ifhtml
 
 @ifnottex
 @node Top
-@top 
+@top
 @insertcopying
 
 This manual documents how to use the GNU Privacy Guard system as well as
@@ -207,14 +207,14 @@ the administration and the architecture.
 
 @c @node History
 @c @unnumbered History
-@c 
-@c Here are the notices from the old dirmngr manual: 
+@c
+@c Here are the notices from the old dirmngr manual:
 @c
 @c @itemize
 @c @item Using DirMngr, 2002, Steffen Hansen, Klar"alvdalens Datakonsult AB.
 @c @item Using DirMngr, 2004, 2005, 2006, 2008 Werner Koch, g10 Code GmbH.
 @c @end itemize
-@c 
+@c
 
 
 @bye

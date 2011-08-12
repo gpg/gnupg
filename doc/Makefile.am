@@ -29,7 +29,7 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
             help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
 
 EXTRA_DIST = samplekeys.asc \
-	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png \
+	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png\
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
              FAQ gnupg7.texi \
@@ -129,7 +129,7 @@ gnupg.texi : $(gnupg_TEXINFOS)
 online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
-	cp $(srcdir)/gnupg-logo.png gnupg.html/; \
+	cp $(srcdir)/gnupg-logo-tr.png gnupg.html/; \
         user=werner ; dashdevel="" ; \
         if echo "@PACKAGE_VERSION@" | grep -- "-git" >/dev/null; then \
 	  dashdevel="-devel" ; \

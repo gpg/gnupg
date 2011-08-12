@@ -1,3 +1,9 @@
+2011-08-12  Werner Koch  <wk@g10code.com>
+
+	* texi.css: Override some elements.
+	* gnupg-log-tr.png: New.
+	* gnupg.texi:  Use transparent logo.
+
 2011-03-01  Werner Koch  <wk@g10code.com>
 
 	* gpgsm.texi (CSR and certificate creation): New.
