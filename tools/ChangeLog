@@ -1,3 +1,8 @@
+2011-08-26  Werner Koch  <wk@g10code.com>
+
+	* gpgconf-comp.c (gc_component): Mark for translation.  Suggested
+	by Yuri Chornoivan.
+
 2011-03-08  Werner Koch  <wk@g10code.com>
 
 	* symcryptrun.c [HAVE_UTMP_H]: Include utmp.h.
