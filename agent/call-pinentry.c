@@ -746,8 +746,29 @@ agent_askpin (ctrl_t ctrl,
     {
       if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
         return gpg_error (GPG_ERR_CANCELED);
-      /*FIXME:  Implement loopback mode.  */
-      return gpg_error (GPG_ERR_NO_PIN_ENTRY);
+      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+        {
+	  unsigned char *passphrase;
+	  size_t size;
+
+	  *pininfo->pin = 0; /* Reset the PIN. */
+	  rc = pinentry_loopback(ctrl, "PASSPHRASE", &passphrase, &size,
+		  pininfo->max_length);
+	  if (rc)
+	    return rc;
+
+	  memcpy(&pininfo->pin, passphrase, size);
+	  xfree(passphrase);
+	  pininfo->pin[size] = 0;
+	  if (pininfo->check_cb)
+	    {
+	      /* More checks by utilizing the optional callback. */
+	      pininfo->cb_errtext = NULL;
+	      rc = pininfo->check_cb (pininfo);
+	    }
+	  return rc;
+	}
+      return gpg_error(GPG_ERR_NO_PIN_ENTRY);
     }
 
   if (!pininfo || pininfo->max_length < 1)
@@ -908,6 +929,22 @@ agent_get_passphrase (ctrl_t ctrl,
       if (ctrl->pinentry_mode == PINENTRY_MODE_CANCEL)
         return gpg_error (GPG_ERR_CANCELED);
 
+      if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+        {
+	  size_t size;
+	  size_t len = ASSUAN_LINELENGTH/2;
+	  unsigned char *buffer = gcry_malloc_secure (len);
+
+	  rc = pinentry_loopback(ctrl, "PASSPHRASE", &buffer, &size, len);
+	  if (rc)
+	    xfree(buffer);
+	  else
+	    {
+	      buffer[size] = 0;
+	      *retpass = buffer;
+	    }
+	  return rc;
+        }
       return gpg_error (GPG_ERR_NO_PIN_ENTRY);
     }
 

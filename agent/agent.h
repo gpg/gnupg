@@ -252,6 +252,9 @@ gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
+gpg_error_t pinentry_loopback(ctrl_t, const char *keyword,
+	                      unsigned char **buffer, size_t *size,
+			      size_t max_length);
 
 /*-- command-ssh.c --*/
 void start_command_handler_ssh (ctrl_t, gnupg_fd_t);

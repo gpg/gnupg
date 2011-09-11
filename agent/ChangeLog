@@ -1,3 +1,12 @@
+2011-09-10  Ben Kibbey <bjk@luxsci.net>
+
+	* agent.h (pinentry_loopback): New prototype.
+	* command.c (pinentry_loopback): New function to inquire a passphrase
+	from the client. For use with pinentry-mode=loopback.
+	* call-pinentry.c (agent_askpin): Handle PINENTRY_MODE_LOOPBACK.
+	* call-pinentry.c (agent_get_passphrase): Ditto.
+	* genkey.c (agent_ask_new_passphrase): Ditto.
+
 2011-08-10  Werner Koch  <wk@g10code.com>
 
 	* genkey.c (check_passphrase_pattern): Use gpg_strerror instead of

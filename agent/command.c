@@ -2731,3 +2731,18 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 }
+
+
+gpg_error_t
+pinentry_loopback(ctrl_t ctrl, const char *keyword,
+                  unsigned char **buffer, size_t *size,
+                  size_t max_length)
+{
+  gpg_error_t rc;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  assuan_begin_confidential (ctx);
+  rc = assuan_inquire (ctx, keyword, buffer, size, max_length);
+  assuan_end_confidential (ctx);
+  return rc;
+}
