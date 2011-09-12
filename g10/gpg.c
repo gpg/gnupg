@@ -39,6 +39,9 @@
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
+#ifdef __VMS
+# include "vms.h"
+#endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
 #include "packet.h"
@@ -1871,6 +1874,15 @@ main (int argc, char **argv )
 #ifdef __riscos__
     opt.lock_once = 1;
 #endif /* __riscos__ */
+
+#ifdef __VMS
+    /* On VMS, set the default value of the "--[no-]batch" flag
+     * according to the actual process mode.  The user can override
+     * this with an explicit command-line "--[no-]batch" option.  This
+     * avoids that the process stops while trying to initialize the
+     * tty in batch mode.  */
+    opt.batch = batch_mode_vms();
+#endif
 
     reopen_std();
     trap_unaligned();

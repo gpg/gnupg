@@ -1,3 +1,9 @@
+2011-09-12  Werner Koch  <wk@g10code.com>
+
+	* gpg.c [__VMS]: Include vms.h.
+	(main) [__VMS]: Init batch mode according to actual process mode.
+	Suggested by Steven M. Schweda.
+
 2011-08-09  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (show_key_with_all_names): Remove unused var.

@@ -185,7 +185,10 @@ init_ttyfp(void)
 #else
     ttyfp = batchmode? stderr : fopen( tty_get_ttyname (), "r+");
     if( !ttyfp ) {
-	log_error("cannot open `%s': %s\n",
+        ttyfp = stderr;  /* Use stderr as fallback for log_error.  */
+        initialized = 1; /* Make sure log_error won't try to init
+                            the tty again.  */
+	log_error("cannot open tty `%s': %s\n",
                   tty_get_ttyname (), strerror(errno) );
 	exit(2);
     }
@@ -258,7 +261,7 @@ tty_printf( const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
 #ifdef _WIN32
-    {   
+    {
         char *buf;
         int n;
 	DWORD nwritten;
@@ -267,7 +270,7 @@ tty_printf( const char *fmt, ... )
 	if (!buf)
           log_bug("xtryvasprintf() failed\n");
         n = strlen (buf);
-        
+
 	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
 	    log_fatal ("WriteConsole failed: %s", w32_strerror (0));
 	if( n != nwritten )
@@ -306,7 +309,7 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
 #ifdef _WIN32
-    {   
+    {
         char *buf;
         int n;
 	DWORD nwritten;
@@ -315,7 +318,7 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
 	if (!buf)
           log_bug ("xtryvasprintf() failed\n");
         n = strlen (buf);
-        
+
 	if (!WriteConsoleA (con.out, buf, n, &nwritten, NULL))
 	    log_fatal ("WriteConsole failed: %s", w32_strerror (0));
 	if (n != nwritten)

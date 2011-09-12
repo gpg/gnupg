@@ -1,3 +1,8 @@
+2011-09-12  Werner Koch  <wk@g10code.com>
+
+	* ttyio.c (init_ttyfp): Avoid endless loop due to a failed opening
+	of the tty.  Suggested by Steven M. Schweda.
+
 2011-08-09  Werner Koch  <wk@g10code.com>
 
 	* pka.c (get_pka_info): Turn ANSWER into a union to avoid aliasing
