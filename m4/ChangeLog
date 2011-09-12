@@ -1,3 +1,8 @@
+2011-09-12  Werner Koch  <wk@g10code.com>
+
+	* libcurl.m4: Fix lost hash sign introduced by previous change.
+	Reported by John Marshall.
+
 2011-08-04  Werner Koch  <wk@g10code.com>
 
 	* readline.m4, libcurl.m4: Fix use of AC_LANG_PROGRAM.
