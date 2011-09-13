@@ -311,9 +311,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 	unsigned char *buffer;
 
 	err = pinentry_loopback(ctrl, "NEW_PASSPHRASE", &buffer, &size, len);
-	if (err)
-	  xfree(buffer);
-	else
+	if (!err)
 	  {
 	    buffer[size] = 0;
 	    *r_passphrase = buffer;
