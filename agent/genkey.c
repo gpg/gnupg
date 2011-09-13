@@ -313,8 +313,13 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 	err = pinentry_loopback(ctrl, "NEW_PASSPHRASE", &buffer, &size, len);
 	if (!err)
 	  {
-	    buffer[size] = 0;
-	    *r_passphrase = buffer;
+	    if (size)
+	      {
+		buffer[size] = 0;
+		*r_passphrase = buffer;
+	      }
+	    else
+	        *r_passphrase = NULL;
 	  }
 	return err;
     }

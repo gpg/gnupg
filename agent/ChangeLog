@@ -1,3 +1,8 @@
+2011-09-12  Ben Kibbey <bjk@luxsci.net>
+
+	* genkey.c (agent_ask_new_passphrase): Allow for an empty passphrase
+	(no protection) in PINENTRY_MODE_LOOPBACK.
+
 2011-09-10  Ben Kibbey <bjk@luxsci.net>
 
 	* agent.h (pinentry_loopback): New prototype.
