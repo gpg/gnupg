@@ -263,7 +263,10 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	SK_LIST list;
 
 	if (pk2)
-	  free_public_key (pk2);
+	  {
+	    free_public_key (pk2);
+	    pk2 = NULL;
+	  }
 
 	if(sk_list)
 	  {
