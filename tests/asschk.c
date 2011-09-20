@@ -514,7 +514,10 @@ set_type_var (const char *name, const char *value, VARTYPE type)
       variable_list = var;
     }
   else
-    free (var->value);
+    {
+      free (var->value);
+      var->value = NULL;
+    }
 
   if (var->type == VARTYPE_FD && var->value)
     {
