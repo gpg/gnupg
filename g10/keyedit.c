@@ -2253,8 +2253,7 @@ keyedit_passwd (ctrl_t ctrl, const char *username)
 
 leave:
   release_kbnode (keyblock);
-  if (pk)
-    free_public_key (pk);
+  free_public_key (pk);
   if (err)
     {
       log_info ("error changing the passphrase for `%s': %s\n",
@@ -3327,9 +3326,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
     {
       char *answer;
 
-      if (revoker_pk)
-	free_public_key (revoker_pk);
-
+      free_public_key (revoker_pk);
       revoker_pk = xmalloc_clear (sizeof (*revoker_pk));
 
       tty_printf ("\n");
@@ -3453,8 +3450,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 fail:
   if (sig)
     free_seckey_enc (sig);
-  if (revoker_pk)
-    free_public_key (revoker_pk);
+  free_public_key (revoker_pk);
 
   return 0;
 }

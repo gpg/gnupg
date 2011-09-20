@@ -235,8 +235,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
   memset (fpr, 0, MAX_FINGERPRINT_LEN );
   if( keyid && get_pubkey( pk, keyid ) )
     {
-      if (pk)
-        free_public_key( pk );
+      free_public_key (pk);
       pk = NULL; /* oops: no key for some reason */
     }
 
@@ -344,8 +343,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
       write_status_errcode ("get_passphrase", rc);
     }
 
-  if (pk)
-    free_public_key( pk );
+  free_public_key (pk);
   if (rc)
     {
       xfree (pw);
@@ -531,8 +529,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 	}
 
       tty_printf("\n");
-      if (pk)
-        free_public_key( pk );
+      free_public_key (pk);
     }
 
   if ( next_pw )

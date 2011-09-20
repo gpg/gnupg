@@ -51,8 +51,7 @@ release_sk_list (SK_LIST sk_list)
   for (; sk_list; sk_list = sk_rover)
     {
       sk_rover = sk_list->next;
-      if (sk_list->pk)
-        free_public_key (sk_list->pk);
+      free_public_key (sk_list->pk);
       xfree (sk_list);
     }
 }

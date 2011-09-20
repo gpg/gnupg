@@ -1,3 +1,14 @@
+2011-09-20  Werner Koch  <wk@g10code.com>
+
+	* free-packet.c (free_public_key): Allow a NULL argument.
+	* keyedit.c (keyedit_passwd): No more need to check that PK is NULL.
+	(menu_addrevoker): Ditto.
+	* passphrase.c (passphrase_get, passphrase_to_dek_ext): Ditto.
+	* skclist.c (release_sk_list): Ditto.
+	* revoke.c (gen_desig_revoke): Ditto.
+	* pubkey-enc.c (get_session_key): Ditto.
+	* pkclist.c (build_pk_list): Ditto.
+
 2011-09-20  Jim Meyering  <meyering@redhat.com>
 
 	avoid use of freed pointer

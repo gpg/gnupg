@@ -97,8 +97,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
 
       for (;;)
         {
-          if (sk)
-            free_public_key (sk);
+          free_public_key (sk);
           sk = xmalloc_clear (sizeof *sk);
           rc = enum_secret_keys (&enum_context, sk);
           if (rc)
@@ -127,8 +126,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
     }
 
 leave:
-  if (sk)
-    free_public_key (sk);
+  free_public_key (sk);
   return rc;
 }
 

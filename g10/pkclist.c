@@ -1064,8 +1064,7 @@ build_pk_list (ctrl_t ctrl,
             continue;
 
           /* Get and check key for the current name. */
-          if (pk)
-            free_public_key (pk);
+          free_public_key (pk);
           pk = xmalloc_clear( sizeof *pk );
           pk->req_usage = use;
           rc = get_pubkey_byname (ctrl, NULL, pk, answer, NULL, NULL, 0, 0 );
@@ -1078,7 +1077,8 @@ build_pk_list (ctrl_t ctrl,
                   /* No validation for a default recipient. */
                   if (!key_present_in_pk_list(pk_list, pk))
                     {
-                      free_public_key (pk); pk = NULL;
+                      free_public_key (pk);
+                      pk = NULL;
                       log_info (_("skipped: public key "
                                   "already set as default recipient\n") );
                     }
@@ -1108,7 +1108,8 @@ build_pk_list (ctrl_t ctrl,
                        * present in the list */
                       if (!key_present_in_pk_list(pk_list, pk))
                         {
-                          free_public_key(pk); pk = NULL;
+                          free_public_key (pk);
+                          pk = NULL;
                           log_info(_("skipped: public key already set\n") );
                         }
                       else

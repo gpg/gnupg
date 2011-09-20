@@ -120,11 +120,16 @@ release_public_key_parts (PKT_public_key *pk)
 }
 
 
+/* Free an allocated public key structure including all parts.
+   Passing NULL is allowed.  */
 void
 free_public_key (PKT_public_key *pk)
 {
-  release_public_key_parts (pk);
-  xfree(pk);
+  if (pk)
+    {
+      release_public_key_parts (pk);
+      xfree(pk);
+    }
 }
 
 

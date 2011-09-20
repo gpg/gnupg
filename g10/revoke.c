@@ -262,11 +262,8 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
       {
 	SK_LIST list;
 
-	if (pk2)
-	  {
-	    free_public_key (pk2);
-	    pk2 = NULL;
-	  }
+        free_public_key (pk2);
+        pk2 = NULL;
 
 	if(sk_list)
 	  {
@@ -417,10 +414,8 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
       log_error(_("no revocation keys found for \"%s\"\n"),uname);
 
   leave:
-    if( pk )
-	free_public_key( pk );
-    if (pk2)
-	free_public_key (pk2);
+    free_public_key (pk);
+    free_public_key (pk2);
     if( sig )
 	free_seckey_enc( sig );
 
