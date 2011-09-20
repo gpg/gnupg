@@ -1,3 +1,12 @@
+2011-09-20  Werner Koch  <wk@g10code.com>
+
+	* sign.c (sign_file, clearsign_file, sign_symencrypt_file):
+	s/gcry_md_start_debug/gcry_md_debug/ in preparation for Libgcrypt
+	1.6.
+	* mainproc.c (proc_plaintext, proc_tree): Ditto.
+	* decrypt-data.c (decrypt_data): Ditto.
+	* cipher.c (write_header): Ditto.
+
 2011-08-10  Werner Koch  <wk@g10code.com>
 
 	* export.c (transfer_format_to_openpgp): Don't parse unneeded CSUM.

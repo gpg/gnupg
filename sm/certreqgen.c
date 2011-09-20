@@ -720,7 +720,7 @@ create_request (ctrl_t ctrl,
       goto leave;
     }
   if (DBG_HASHING)
-    gcry_md_start_debug (md, "cr.cri");
+    gcry_md_debug (md, "cr.cri");
 
   ksba_certreq_set_hash_function (cr, HASH_FNC, md);
   ksba_certreq_set_writer (cr, writer);

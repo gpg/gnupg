@@ -540,7 +540,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       goto leave;
     }
   if (DBG_HASHING)
-    gcry_md_start_debug (data_md, "sign.data");
+    gcry_md_debug (data_md, "sign.data");
 
   for (i=0; (algoid=ksba_cms_get_digest_algo_list (cms, i)); i++)
     {
@@ -674,7 +674,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
               goto leave;
             }
           if (DBG_HASHING)
-            gcry_md_start_debug (md, "sign.attr");
+            gcry_md_debug (md, "sign.attr");
           ksba_cms_set_hash_function (cms, HASH_FNC, md);
           for (cl=signerlist,signer=0; cl; cl = cl->next, signer++)
             {

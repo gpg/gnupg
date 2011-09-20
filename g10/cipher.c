@@ -61,7 +61,7 @@ write_header( cipher_filter_context_t *cfx, IOBUF a )
 	ed.mdc_method = DIGEST_ALGO_SHA1;
 	gcry_md_open (&cfx->mdc_hash, DIGEST_ALGO_SHA1, 0);
 	if ( DBG_HASHING )
-	    gcry_md_start_debug (cfx->mdc_hash, "creatmdc");
+	    gcry_md_debug (cfx->mdc_hash, "creatmdc");
     }
 
     {

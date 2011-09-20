@@ -1,3 +1,11 @@
+2011-09-20  Werner Koch  <wk@g10code.com>
+
+	* verify.c (gpgsm_verify): s/gcry_md_start_debug/gcry_md_debug/
+	in preparation for Libgcrypt 1.6.
+	* sign.c (gpgsm_sign): Ditto.
+	* certreqgen.c (create_request): Ditto.
+	* certcheck.c (gpgsm_check_cert_sig): Ditto.
+
 2011-08-10  Werner Koch  <wk@g10code.com>
 
 	* keydb.c (keydb_add_resource): Remove unsued var CREATED_FNAME.

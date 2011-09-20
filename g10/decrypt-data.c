@@ -121,7 +121,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       if (gcry_md_open (&dfx->mdc_hash, ed->mdc_method, 0 ))
         BUG ();
       if ( DBG_HASHING )
-        gcry_md_start_debug (dfx->mdc_hash, "checkmdc");
+        gcry_md_debug (dfx->mdc_hash, "checkmdc");
     }
 
   rc = openpgp_cipher_open (&dfx->cipher_hd, dek->algo,

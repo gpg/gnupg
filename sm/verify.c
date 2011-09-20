@@ -161,7 +161,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       goto leave;
     }
   if (DBG_HASHING)
-    gcry_md_start_debug (data_md, "vrfy.data");
+    gcry_md_debug (data_md, "vrfy.data");
 
   audit_log (ctrl->audit, AUDIT_SETUP_READY);
 
@@ -497,7 +497,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               goto next_signer;
             }
           if (DBG_HASHING)
-            gcry_md_start_debug (md, "vrfy.attr");
+            gcry_md_debug (md, "vrfy.attr");
 
           ksba_cms_set_hash_function (cms, HASH_FNC, md);
           rc = ksba_cms_hash_signed_attrs (cms, signer);

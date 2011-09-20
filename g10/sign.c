@@ -877,7 +877,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
     if ( gcry_md_open (&mfx.md, 0, 0) )
       BUG ();
     if (DBG_HASHING)
-      gcry_md_start_debug (mfx.md, "sign");
+      gcry_md_debug (mfx.md, "sign");
 
     /* If we're encrypting and signing, it is reasonable to pick the
        hash algorithm to use out of the recipient key prefs.  This is
@@ -1231,7 +1231,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
       gcry_md_enable (textmd, hash_for(sk_rover->pk));
 
     if ( DBG_HASHING )
-      gcry_md_start_debug ( textmd, "clearsign" );
+      gcry_md_debug ( textmd, "clearsign" );
 
     copy_clearsig_text( out, inp, textmd, !opt.not_dash_escaped,
 			opt.escape_from, (old_style && only_md5) );
@@ -1356,7 +1356,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     if ( gcry_md_open (&mfx.md, 0, 0) )
       BUG ();
     if ( DBG_HASHING )
-      gcry_md_start_debug (mfx.md, "symc-sign");
+      gcry_md_debug (mfx.md, "symc-sign");
 
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
       gcry_md_enable (mfx.md, hash_for (sk_rover->pk));

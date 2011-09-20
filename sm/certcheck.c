@@ -251,7 +251,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       return rc;
     }
   if (DBG_HASHING)
-    gcry_md_start_debug (md, "hash.cert");
+    gcry_md_debug (md, "hash.cert");
 
   rc = ksba_cert_hash (cert, 1, HASH_FNC, md);
   if (rc)

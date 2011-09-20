@@ -709,9 +709,9 @@ proc_plaintext( CTX c, PACKET *pkt )
         BUG ();
     }
     if ( DBG_HASHING ) {
-	gcry_md_start_debug ( c->mfx.md, "verify" );
+	gcry_md_debug ( c->mfx.md, "verify" );
 	if ( c->mfx.md2  )
-	    gcry_md_start_debug ( c->mfx.md2, "verify2" );
+	    gcry_md_debug ( c->mfx.md2, "verify2" );
     }
 
     rc=0;
@@ -2164,9 +2164,9 @@ proc_tree( CTX c, KBNODE node )
 		    /*	c->mfx.md2? 0 :(sig->sig_class == 0x01) */
 #endif
             if ( DBG_HASHING ) {
-                gcry_md_start_debug( c->mfx.md, "verify" );
+                gcry_md_debug( c->mfx.md, "verify" );
                 if ( c->mfx.md2  )
-                    gcry_md_start_debug( c->mfx.md2, "verify2" );
+                    gcry_md_debug( c->mfx.md2, "verify2" );
             }
 	    if( c->sigs_only ) {
                 if (c->signed_data.used && c->signed_data.data_fd != -1)
