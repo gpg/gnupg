@@ -1,8 +1,8 @@
 /* dotlock.c - dotfile locking
  * Copyright (C) 1998, 2000, 2001, 2003, 2004,
- *               2005, 2006, 2008, 2010 Free Software Foundation, Inc.
+ *               2005, 2006, 2008, 2010,2011 Free Software Foundation, Inc.
  *
- * This file is part of JNLIB.
+ * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
  * JNLIB is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -70,15 +70,16 @@ struct dotlock_handle
 
 #ifdef HAVE_DOSISH_SYSTEM
   HANDLE lockhd;       /* The W32 handle of the lock file.      */
-#else
+#else /*!HAVE_DOSISH_SYSTEM */
   char *tname;         /* Name of the lockfile template.        */
   size_t nodename_off; /* Offset in TNAME of the nodename part. */
   size_t nodename_len; /* Length of the nodename part.          */
-#endif /* HAVE_DOSISH_SYSTEM */
+#endif /*!HAVE_DOSISH_SYSTEM */
 };
 
 
-/* A list of of all lock handles. */
+/* A list of of all lock handles.  The volatile attribute might help
+   if used in an atexit handler.  */
 static volatile dotlock_t all_lockfiles;
 
 /* If this has the value true all locking is disabled.  */
@@ -175,15 +176,6 @@ create_dotlock (const char *file_to_lock)
   else
     nodename = utsbuf.nodename;
 
-#ifdef __riscos__
-  {
-    char *iter = (char *) nodename;
-    for (; iter[0]; iter++)
-      if (iter[0] == '.')
-        iter[0] = '/';
-  }
-#endif /* __riscos__ */
-
   if ( !(dirpart = strrchr (file_to_lock, DIRSEP_C)) )
     {
       dirpart = EXTSEP_S;
@@ -211,17 +203,10 @@ create_dotlock (const char *file_to_lock)
     }
   h->nodename_len = strlen (nodename);
 
-#ifndef __riscos__
   snprintf (h->tname, tnamelen, "%.*s/.#lk%p.", dirpartlen, dirpart, h );
   h->nodename_off = strlen (h->tname);
   snprintf (h->tname+h->nodename_off, tnamelen - h->nodename_off,
            "%s.%d", nodename, (int)getpid ());
-#else /* __riscos__ */
-  snprintf (h->tname, tnamelen, "%.*s.lk%p/", dirpartlen, dirpart, h );
-  h->nodename_off = strlen (h->tname);
-  snprintf (h->tname+h->nodename_off, tnamelen - h->modename_off,
-            "%s/%d", nodename, (int)getpid () );
-#endif /* __riscos__ */
 
   do
     {
@@ -416,16 +401,13 @@ make_dotlock (dotlock_t h, long timeout)
 
   if ( h->locked )
     {
-#ifndef __riscos__
       log_debug ("Oops, `%s' is already locked\n", h->lockname);
-#endif /* !__riscos__ */
       return 0;
     }
 
   for (;;)
     {
 #ifndef HAVE_DOSISH_SYSTEM
-# ifndef __riscos__
       if ( !link(h->tname, h->lockname) )
         {
           /* fixme: better use stat to check the link count */
@@ -437,18 +419,6 @@ make_dotlock (dotlock_t h, long timeout)
           log_error ( "lock not made: link() failed: %s\n", strerror(errno) );
           return -1;
 	}
-# else /* __riscos__ */
-      if ( !renamefile(h->tname, h->lockname) )
-        {
-          h->locked = 1;
-          return 0; /* okay */
-        }
-      if ( errno != EEXIST )
-        {
-          log_error( "lock not made: rename() failed: %s\n", strerror(errno) );
-          return -1;
-        }
-# endif /* __riscos__ */
 
       if ( (pid = read_lockfile (h, &same_node)) == -1 )
         {
@@ -468,16 +438,9 @@ make_dotlock (dotlock_t h, long timeout)
 	}
       else if ( same_node && kill (pid, 0) && errno == ESRCH )
         {
-# ifndef __riscos__
           log_info (_("removing stale lockfile (created by %d)\n"), pid );
           unlink (h->lockname);
           continue;
-# else /* __riscos__ */
-          /* Under RISCOS we are *pretty* sure that the other task
-             is dead and therefore we remove the stale lock file. */
-          maybe_dead = _(" - probably dead - removing lock");
-          unlink(h->lockname);
-# endif /* __riscos__ */
 	}
 
       if ( timeout == -1 )
@@ -584,7 +547,6 @@ release_dotlock (dotlock_t h)
       return -1;
     }
 
-#ifndef __riscos__
   if ( unlink( h->lockname ) )
     {
       log_error ("release_dotlock: error removing lockfile `%s'\n",
@@ -593,14 +555,6 @@ release_dotlock (dotlock_t h)
     }
   /* Fixme: As an extra check we could check whether the link count is
      now really at 1. */
-#else /* __riscos__ */
-  if ( renamefile (h->lockname, h->tname) )
-    {
-      log_error ("release_dotlock: error renaming lockfile `%s' to `%s'\n",
-                 h->lockname, h->tname);
-      return -1;
-    }
-#endif /* __riscos__ */
 
 #endif /* !HAVE_DOSISH_SYSTEM */
   h->locked = 0;
@@ -678,12 +632,7 @@ read_lockfile (dotlock_t h, int *same_node )
 
   if (buffer[10] != '\n'
       || (buffer[10] = 0, pid = atoi (buffer)) == -1
-#ifndef __riscos__
-      || !pid
-#else /* __riscos__ */
-      || (!pid && riscos_getpid())
-#endif /* __riscos__ */
-      )
+      || !pid )
     {
       log_error ("invalid pid %d in lockfile `%s'", pid, h->lockname );
       if (buffer != buffer_space)
