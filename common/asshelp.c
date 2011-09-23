@@ -287,14 +287,14 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
   if (!fname)
     return gpg_error_from_syserror ();
 
-  *lock = create_dotlock (fname);
+  *lock = dotlock_create (fname);
   xfree (fname);
   if (!*lock)
     return gpg_error_from_syserror ();
 
   /* FIXME: We should use a timeout of 5000 here - however
      make_dotlock does not yet support values other than -1 and 0.  */
-  if (make_dotlock (*lock, -1))
+  if (dotlock_take (*lock, -1))
     return gpg_error_from_syserror ();
 
   return 0;
@@ -315,7 +315,7 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
       CloseHandle (*lock);
 #else /*!HAVE_W32_SYSTEM*/
       (void)name;
-      destroy_dotlock (*lock);
+      dotlock_destroy (*lock);
 #endif /*!HAVE_W32_SYSTEM*/
       *lock = NULL;
     }

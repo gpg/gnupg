@@ -1969,7 +1969,7 @@ main (int argc, char **argv)
 
     gnupg_init_signals (0, emergency_cleanup);
 
-    create_dotlock(NULL); /* Register locking cleanup. */
+    dotlock_create (NULL); /* Register lock file cleanup. */
 
     opt.session_env = session_env_new ();
     if (!opt.session_env)
@@ -2651,7 +2651,7 @@ main (int argc, char **argv)
 	  case oNoEscapeFrom: opt.escape_from = 0; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oLockNever:
-            disable_dotlock ();
+            dotlock_disable ();
             break;
 	  case oLockMultiple:
 #ifndef __riscos__

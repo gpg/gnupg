@@ -214,12 +214,12 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
               all_resources[used_resources].secret = secret;
 
               all_resources[used_resources].lockhandle
-                = create_dotlock (filename);
+                = dotlock_create (filename);
               if (!all_resources[used_resources].lockhandle)
                 log_fatal ( _("can't create lock for `%s'\n"), filename);
 
               /* Do a compress run if needed and the file is not locked. */
-              if (!make_dotlock (all_resources[used_resources].lockhandle, 0))
+              if (!dotlock_take (all_resources[used_resources].lockhandle, 0))
                 {
                   KEYBOX_HANDLE kbxhd = keybox_new (token, secret);
 
@@ -228,7 +228,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
                       keybox_compress (kbxhd);
                       keybox_release (kbxhd);
                     }
-                  release_dotlock (all_resources[used_resources].lockhandle);
+                  dotlock_release (all_resources[used_resources].lockhandle);
                 }
 
               used_resources++;
@@ -421,7 +421,7 @@ lock_all (KEYDB_HANDLE hd)
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           if (hd->active[i].lockhandle)
-            rc = make_dotlock (hd->active[i].lockhandle, -1);
+            rc = dotlock_take (hd->active[i].lockhandle, -1);
           break;
         }
       if (rc)
@@ -439,7 +439,7 @@ lock_all (KEYDB_HANDLE hd)
                 break;
               case KEYDB_RESOURCE_TYPE_KEYBOX:
                 if (hd->active[i].lockhandle)
-                  release_dotlock (hd->active[i].lockhandle);
+                  dotlock_release (hd->active[i].lockhandle);
                 break;
               }
           }
@@ -469,7 +469,7 @@ unlock_all (KEYDB_HANDLE hd)
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           if (hd->active[i].lockhandle)
-            release_dotlock (hd->active[i].lockhandle);
+            dotlock_release (hd->active[i].lockhandle);
           break;
         }
     }

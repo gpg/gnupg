@@ -163,7 +163,7 @@ main( int argc, char **argv )
 
   tty_no_terminal(1);
   tty_batchmode(1);
-  disable_dotlock();
+  dotlock_disable ();
 
   pargs.argc = &argc;
   pargs.argv = &argv;
@@ -502,25 +502,25 @@ agent_scd_getattr (const char *name, struct agent_card_info_s *info)
 
 /* We do not do any locking, so use these stubs here */
 void
-disable_dotlock (void)
+dotlock_disable (void)
 {
 }
 
 dotlock_t
-create_dotlock (const char *file_to_lock)
+dotlock_create (const char *file_to_lock)
 {
   (void)file_to_lock;
   return NULL;
 }
 
 void
-destroy_dotlock (dotlock_t h)
+dotlock_destroy (dotlock_t h)
 {
   (void)h;
 }
 
 int
-make_dotlock (dotlock_t h, long timeout)
+dotlock_take (dotlock_t h, long timeout)
 {
   (void)h;
   (void)timeout;
@@ -528,14 +528,14 @@ make_dotlock (dotlock_t h, long timeout)
 }
 
 int
-release_dotlock (dotlock_t h)
+dotlock_release (dotlock_t h)
 {
   (void)h;
   return 0;
 }
 
 void
-remove_lockfiles (void)
+dotlock_remove_lockfiles (void)
 {
 }
 

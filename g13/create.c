@@ -246,10 +246,10 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
   /* Take a lock and proceed with the creation.  If there is a lock we
      immediately return an error because for creation it does not make
      sense to wait.  */
-  lock = create_dotlock (filename);
+  lock = dotlock_create (filename);
   if (!lock)
     return gpg_error_from_syserror ();
-  if (make_dotlock (lock, 0))
+  if (dotlock_take (lock, 0))
     {
       err = gpg_error_from_syserror ();
       goto leave;
@@ -319,7 +319,7 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
   xfree (detachedname);
   xfree (enckeyblob);
   xfree (keyblob);
-  destroy_dotlock (lock);
+  dotlock_destroy (lock);
 
   return err;
 }

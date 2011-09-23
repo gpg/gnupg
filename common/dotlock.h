@@ -1,7 +1,7 @@
-/* dotlock.h
- *	Copyright (C) 2000, 2001, 2006 Free Software Foundation, Inc.
+/* dotlock.h - dotfile locking
+ *	Copyright (C) 2000, 2001, 2006, 2011 Free Software Foundation, Inc.
  *
- * This file is part of JNLIB.
+ * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
  * JNLIB is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -23,11 +23,11 @@
 struct dotlock_handle;
 typedef struct dotlock_handle *dotlock_t;
 
-void disable_dotlock (void);
-dotlock_t create_dotlock (const char *file_to_lock);
-void destroy_dotlock ( dotlock_t h );
-int make_dotlock (dotlock_t h, long timeout);
-int release_dotlock (dotlock_t h);
+void dotlock_disable (void);
+dotlock_t dotlock_create (const char *file_to_lock);
+void dotlock_destroy ( dotlock_t h );
+int dotlock_take (dotlock_t h, long timeout);
+int dotlock_release (dotlock_t h);
 void dotlock_remove_lockfiles (void);
 
 #endif /*LIBJNLIB_DOTLOCK_H*/

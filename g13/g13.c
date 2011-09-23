@@ -383,7 +383,7 @@ main ( int argc, char **argv)
 
   gnupg_init_signals (0, emergency_cleanup);
 
-  create_dotlock (NULL); /* Register locking cleanup.  */
+  dotlock_create (NULL); /* Register locking cleanup.  */
 
   opt.session_env = session_env_new ();
   if (!opt.session_env)

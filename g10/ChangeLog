@@ -1,3 +1,12 @@
+2011-09-23  Werner Koch  <wk@g10code.com>
+
+	* gpgv.c (disable_dotlock): Rename to dotlock_disable.
+	(create_dotlock): Rename to dotlock_create.
+	(destroy_dotlock): Rename to dotlock_destroy.
+	(make_dotlock): Rename to dotlock_take.
+	(release_dotlock): Rename to dotlock_release.
+	(lockfiles_remove): Rename to dotlock_remove_lockfiles.
+
 2011-09-20  Werner Koch  <wk@g10code.com>
 
 	* free-packet.c (free_public_key): Allow a NULL argument.
