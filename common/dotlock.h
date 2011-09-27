@@ -1,5 +1,5 @@
-/* dotlock.h - dotfile locking
- *	Copyright (C) 2000, 2001, 2006, 2011 Free Software Foundation, Inc.
+/* dotlock.h - dotfile locking declarations
+ * Copyright (C) 2000, 2001, 2006, 2011 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -19,6 +19,8 @@
 
 #ifndef LIBJNLIB_DOTLOCK_H
 #define LIBJNLIB_DOTLOCK_H
+
+/* See dotlock.c for a description.  */
 
 struct dotlock_handle;
 typedef struct dotlock_handle *dotlock_t;

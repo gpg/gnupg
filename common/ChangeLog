@@ -1,3 +1,11 @@
+2011-09-27  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c (dotlock_take_unix): Check only the link count and not
+	the error return from link.
+	(use_hardlinks_p): New.
+	(dotlock_create_unix): Test for hardlinks.
+	(dotlock_take_unix): Implement O_EXCL locking.
+
 2011-09-23  Werner Koch  <wk@g10code.com>
 
 	* dotlock.c: Factor Unix and W32 specific code out into specific
