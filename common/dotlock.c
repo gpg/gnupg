@@ -87,8 +87,10 @@
 
    This function will wait until the lock is acquired.  If an
    unexpected error occurs if will return non-zero and set ERRNO.  If
-   you pass (0) instead of (-1) the function does not wait if the file
-   is already locked but returns -1 and sets ERRNO to EACCES.
+   you pass (0) instead of (-1) the function does not wait in case the
+   file is already locked but returns -1 and sets ERRNO to EACCES.
+   Any other positive value for the second parameter is considered a
+   timeout valuie in milliseconds.
 
    To release the lock you call:
 
@@ -805,15 +807,20 @@ dotlock_destroy (dotlock_t h)
 
 
 #ifdef HAVE_POSIX_SYSTEM
-/* Unix specific code of make_dotlock.  Returns 0 on success, -1 on
-   error and 1 to try again.  */
+/* Unix specific code of make_dotlock.  Returns 0 on success and -1 on
+   error.  */
 static int
-dotlock_take_unix (dotlock_t h, long timeout, int *backoff)
+dotlock_take_unix (dotlock_t h, long timeout)
 {
-  int  pid;
+  int wtime = 0;
+  int sumtime = 0;
+  int pid;
+  int lastpid = -1;
+  int ownerchanged;
   const char *maybe_dead="";
   int same_node;
 
+ again:
   if (h->use_o_excl)
     {
       /* No hardlink support - use open(O_EXCL).  */
@@ -889,7 +896,7 @@ dotlock_take_unix (dotlock_t h, long timeout, int *backoff)
           return -1;
         }
       my_info_0 ("lockfile disappeared\n");
-      return 1; /* Try again.  */
+      goto again;
     }
   else if ( pid == getpid() && same_node )
     {
@@ -904,24 +911,49 @@ dotlock_take_unix (dotlock_t h, long timeout, int *backoff)
          of the stale file tries to lock right at the same time as we.  */
       my_info_1 (_("removing stale lockfile (created by %d)\n"), pid);
       unlink (h->lockname);
-      return 1; /* Try again.  */
+      goto again;
     }
 
-  if ( timeout == -1 )
+  if (lastpid == -1)
+    lastpid = pid;
+  ownerchanged = (pid != lastpid);
+
+  if (timeout)
     {
-      /* Wait until lock has been released. */
       struct timeval tv;
 
-      my_info_3 (_("waiting for lock (held by %d%s) %s...\n"),
-                 pid, maybe_dead, maybe_deadlock(h)? _("(deadlock?) "):"");
+      /* Wait until lock has been released.  We use increasing retry
+         intervals of 50ms, 100ms, 200ms, 400ms, 800ms, 2s, 4s and 8s
+         but reset it if the lock owner meanwhile changed.  */
+      if (!wtime || ownerchanged)
+        wtime = 50;
+      else if (wtime < 800)
+        wtime *= 2;
+      else if (wtime == 800)
+        wtime = 2000;
+      else if (wtime < 8000)
+        wtime *= 2;
 
-      /* We can't use sleep, cause signals may be blocked. */
-      tv.tv_sec = 1 + *backoff;
-      tv.tv_usec = 0;
+      if (timeout > 0)
+        {
+          if (wtime > timeout)
+            wtime = timeout;
+          timeout -= wtime;
+        }
+
+      sumtime += wtime;
+      if (sumtime >= 1500)
+        {
+          sumtime = 0;
+          my_info_3 (_("waiting for lock (held by %d%s) %s...\n"),
+                     pid, maybe_dead, maybe_deadlock(h)? _("(deadlock?) "):"");
+        }
+
+
+      tv.tv_sec = wtime / 1000;
+      tv.tv_usec = (wtime % 1000) * 1000;
       select (0, NULL, NULL, NULL, &tv);
-      if ( *backoff < 10 )
-        ++*backoff;
-      return 1; /* Try again.  */
+      goto again;
     }
 
   jnlib_set_errno (EACCES);
@@ -931,14 +963,16 @@ dotlock_take_unix (dotlock_t h, long timeout, int *backoff)
 
 
 #ifdef HAVE_DOSISH_SYSTEM
-/* Windows specific code of make_dotlock.  Returns 0 on success, -1 on
-   error and 1 to try again.  */
+/* Windows specific code of make_dotlock.  Returns 0 on success and -1 on
+   error.  */
 static int
-dotlock_take_w32 (dotlock_t h, long timeout, int *backoff)
+dotlock_take_w32 (dotlock_t h, long timeout)
 {
+  int wtime = 0;
   int w32err;
   OVERLAPPED ovl;
 
+ again:
   /* Lock one byte at offset 0.  The offset is given by OVL.  */
   memset (&ovl, 0, sizeof ovl);
   if (LockFileEx (h->lockhd, (LOCKFILE_EXCLUSIVE_LOCK
@@ -956,14 +990,31 @@ dotlock_take_w32 (dotlock_t h, long timeout, int *backoff)
       return -1;
     }
 
-  if ( timeout == -1 )
+  if (timeout)
     {
-      /* Wait until lock has been released. */
-      my_info_1 (_("waiting for lock %s...\n"), h->lockname);
-      Sleep ((1 + *backoff)*1000);
-      if ( *backoff < 10 )
-        ++*backoff;
-      return 1; /* Try again.  */
+      /* Wait until lock has been released.  We use retry intervals of
+         50ms, 100ms, 200ms, 400ms, 800ms, 2s, 4s and 8s.  */
+      if (!wtime)
+        wtime = 50;
+      else if (wtime < 800)
+        wtime *= 2;
+      else if (wtime == 800)
+        wtime = 2000;
+      else if (wtime < 8000)
+        wtime *= 2;
+
+      if (timeout > 0)
+        {
+          if (wtime > timeout)
+            wtime = timeout;
+          timeout -= wtime;
+        }
+
+      if (wtime >= 800)
+        my_info_1 (_("waiting for lock %s...\n"), h->lockname);
+
+      Sleep (wtime);
+      goto again;
     }
 
   return -1;
@@ -973,12 +1024,10 @@ dotlock_take_w32 (dotlock_t h, long timeout, int *backoff)
 
 /* Take a lock on H.  A value of 0 for TIMEOUT returns immediately if
    the lock can't be taked, -1 waits forever (hopefully not), other
-   values are reserved (planned to be timeouts in milliseconds).
-   Returns: 0 on success  */
+   values wait for TIMEOUT milliseconds.  Returns: 0 on success  */
 int
 dotlock_take (dotlock_t h, long timeout)
 {
-  int backoff = 0;
   int ret;
 
   if ( h->disable )
@@ -990,15 +1039,11 @@ dotlock_take (dotlock_t h, long timeout)
       return 0;
     }
 
-  do
-    {
 #ifdef HAVE_DOSISH_SYSTEM
-      ret = dotlock_take_w32 (h, timeout, &backoff);
+  ret = dotlock_take_w32 (h, timeout);
 #else /*!HAVE_DOSISH_SYSTEM*/
-      ret = dotlock_take_unix (h, timeout, &backoff);
+  ret = dotlock_take_unix (h, timeout);
 #endif /*!HAVE_DOSISH_SYSTEM*/
-    }
-  while (ret == 1);
 
   return ret;
 }
