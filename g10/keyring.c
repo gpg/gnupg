@@ -306,7 +306,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             if (!keyring_is_writable(kr))
                 continue;
             if (!kr->lockhd) {
-                kr->lockhd = dotlock_create( kr->fname );
+                kr->lockhd = dotlock_create (kr->fname, 0);
                 if (!kr->lockhd) {
                     log_info ("can't allocate lock for `%s'\n", kr->fname );
                     rc = G10ERR_GENERAL;

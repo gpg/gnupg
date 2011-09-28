@@ -544,7 +544,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    db_name = fname;
 #ifdef __riscos__
 	    if( !lockhandle )
-		lockhandle = dotlock_create (db_name);
+              lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
 		log_fatal( _("can't create lock for `%s'\n"), db_name );
             if( dotlock_make (lockhandle, -1) )
@@ -567,7 +567,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 
 #ifndef __riscos__
 	    if( !lockhandle )
-		lockhandle = dotlock_create (db_name);
+              lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
 		log_fatal( _("can't create lock for `%s'\n"), db_name );
 #endif /* !__riscos__ */
@@ -608,7 +608,7 @@ open_db()
   assert( db_fd == -1 );
 
   if (!lockhandle )
-    lockhandle = dotlock_create (db_name);
+    lockhandle = dotlock_create (db_name, 0);
   if (!lockhandle )
     log_fatal( _("can't create lock for `%s'\n"), db_name );
 #ifdef __riscos__

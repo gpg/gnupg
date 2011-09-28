@@ -90,7 +90,7 @@ lock_and_unlock (const char *fname)
 {
   dotlock_t h;
 
-  h = dotlock_create (fname);
+  h = dotlock_create (fname, 0);
   if (!h)
     die ("error creating lock file for `%s': %s", fname, strerror (errno));
   inf ("lock created");
@@ -129,7 +129,7 @@ main (int argc, char **argv)
     sigaction (SIGINT, &nact, NULL);
   }
 
-  dotlock_create (NULL);  /* Initialize (optional).  */
+  dotlock_create (NULL, 0);  /* Initialize (optional).  */
 
   lock_and_unlock (fname);
 

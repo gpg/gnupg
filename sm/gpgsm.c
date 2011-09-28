@@ -928,7 +928,7 @@ main ( int argc, char **argv)
 
   gnupg_init_signals (0, emergency_cleanup);
 
-  dotlock_create (NULL); /* Register lockfile cleanup.  */
+  dotlock_create (NULL, 0); /* Register lockfile cleanup.  */
 
   opt.session_env = session_env_new ();
   if (!opt.session_env)

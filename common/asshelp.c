@@ -287,7 +287,7 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
   if (!fname)
     return gpg_error_from_syserror ();
 
-  *lock = dotlock_create (fname);
+  *lock = dotlock_create (fname, 0);
   xfree (fname);
   if (!*lock)
     return gpg_error_from_syserror ();

@@ -136,7 +136,7 @@ maybe_create_keyring (char *filename, int force)
   /* To avoid races with other instances of gpg trying to create or
      update the keyring (it is removed during an update for a short
      time), we do the next stuff in a locked state. */
-  lockhd = dotlock_create (filename);
+  lockhd = dotlock_create (filename, 0);
   if (!lockhd)
     {
       /* A reason for this to fail is that the directory is not

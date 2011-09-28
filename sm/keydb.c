@@ -214,7 +214,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
               all_resources[used_resources].secret = secret;
 
               all_resources[used_resources].lockhandle
-                = dotlock_create (filename);
+                = dotlock_create (filename, 0);
               if (!all_resources[used_resources].lockhandle)
                 log_fatal ( _("can't create lock for `%s'\n"), filename);
 

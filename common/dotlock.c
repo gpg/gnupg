@@ -53,7 +53,7 @@
    At program initialization time, the module should be explicitly
    initialized:
 
-      dotlock_create (NULL);
+      dotlock_create (NULL, 0);
 
    This installs an atexit handler and may also initialize mutex etc.
    It is optional for non-threaded applications.  Only the first call
@@ -64,7 +64,7 @@
 
      dotlock_t h
 
-     h = dotlock_create (fname);
+     h = dotlock_create (fname, 0);
      if (!h)
        error ("error creating lock file: %s\n", strerror (errno));
 
@@ -656,17 +656,19 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
 #ifdef HAVE_W32CE_SYSTEM
     wchar_t *wname = utf8_to_wchar (h->lockname);
 
-    h->lockhd = INVALID_HANDLE_VALUE;
     if (wname)
       h->lockhd = CreateFile (wname,
+                              GENERIC_READ|GENERIC_WRITE,
+                              FILE_SHARE_READ|FILE_SHARE_WRITE,
+                              NULL, OPEN_ALWAYS, 0, NULL);
+    else
+      h->lockhd = INVALID_HANDLE_VALUE;
+    jnlib_free (wname);
 #else
     h->lockhd = CreateFile (h->lockname,
-#endif
                             GENERIC_READ|GENERIC_WRITE,
                             FILE_SHARE_READ|FILE_SHARE_WRITE,
                             NULL, OPEN_ALWAYS, 0, NULL);
-#ifdef HAVE_W32CE_SYSTEM
-    jnlib_free (wname);
 #endif
   }
   if (h->lockhd == INVALID_HANDLE_VALUE)
@@ -696,12 +698,15 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
    POSIX systems a temporary file ".#lk.<hostname>.pid[.threadid] is
    used.
 
+   FLAGS must be 0.
+
    The function returns an new handle which needs to be released using
    destroy_dotlock but gets also released at the termination of the
    process.  On error NULL is returned.
  */
+
 dotlock_t
-dotlock_create (const char *file_to_lock)
+dotlock_create (const char *file_to_lock, unsigned int flags)
 {
   static int initialized;
   dotlock_t h;
@@ -714,6 +719,12 @@ dotlock_create (const char *file_to_lock)
 
   if ( !file_to_lock )
     return NULL;  /* Only initialization was requested.  */
+
+  if (flags)
+    {
+      jnlib_set_errno (EINVAL);
+      return NULL;
+    }
 
   h = jnlib_calloc (1, sizeof *h);
   if (!h)

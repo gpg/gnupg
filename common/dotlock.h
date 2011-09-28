@@ -26,8 +26,8 @@ struct dotlock_handle;
 typedef struct dotlock_handle *dotlock_t;
 
 void dotlock_disable (void);
-dotlock_t dotlock_create (const char *file_to_lock);
-void dotlock_destroy ( dotlock_t h );
+dotlock_t dotlock_create (const char *file_to_lock, unsigned int flags);
+void dotlock_destroy (dotlock_t h);
 int dotlock_take (dotlock_t h, long timeout);
 int dotlock_release (dotlock_t h);
 void dotlock_remove_lockfiles (void);

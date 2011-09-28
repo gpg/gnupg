@@ -2,6 +2,7 @@
 
 	* dotlock.c (dotlock_take, dotlock_take_unix, dotlock_take_w32):
 	Implement arbitrary timeout values.
+	(dotlock_create): Add arg FLAGS for future extensions.
 
 2011-09-27  Werner Koch  <wk@g10code.com>
 

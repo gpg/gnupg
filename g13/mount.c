@@ -273,7 +273,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
     }
 
   /* Try to take a lock.  */
-  lock = dotlock_create (filename);
+  lock = dotlock_create (filename, 0);
   if (!lock)
     {
       xfree (mountpoint_buffer);

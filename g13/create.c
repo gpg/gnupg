@@ -246,7 +246,7 @@ g13_create_container (ctrl_t ctrl, const char *filename, strlist_t keys)
   /* Take a lock and proceed with the creation.  If there is a lock we
      immediately return an error because for creation it does not make
      sense to wait.  */
-  lock = dotlock_create (filename);
+  lock = dotlock_create (filename, 0);
   if (!lock)
     return gpg_error_from_syserror ();
   if (dotlock_take (lock, 0))

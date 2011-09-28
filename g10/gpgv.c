@@ -507,9 +507,10 @@ dotlock_disable (void)
 }
 
 dotlock_t
-dotlock_create (const char *file_to_lock)
+dotlock_create (const char *file_to_lock, unsigned int flags)
 {
   (void)file_to_lock;
+  (void)flags;
   return NULL;
 }
 
