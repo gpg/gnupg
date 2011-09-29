@@ -185,7 +185,9 @@ new_data (const char *string, struct secret_data_s **r_data)
   d_enc->totallen = total;
   res = npth_mutex_lock (&encryption_lock);
   if (res)
-    log_fatal ("failed to acquire cache encryption mutex: %s\n", strerror (res));
+    log_fatal ("failed to acquire cache encryption mutex: %s\n",
+               strerror (res));
+
   err = gcry_cipher_encrypt (encryption_handle, d_enc->data, total,
                              d->data, total - 8);
   xfree (d);

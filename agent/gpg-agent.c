@@ -1778,7 +1778,8 @@ start_connection_thread (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n", (unsigned long) npth_self());
+      log_error ("handler 0x%lx nonce check FAILED\n",
+                 (unsigned long) npth_self());
       return NULL;
     }
 
