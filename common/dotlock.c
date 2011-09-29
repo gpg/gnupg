@@ -57,7 +57,8 @@
 
    This installs an atexit handler and may also initialize mutex etc.
    It is optional for non-threaded applications.  Only the first call
-   has an effect.
+   has an effect.  This needs to be done before any extra threads are
+   started.
 
    To create a lock file (which  prepares it but does not take the
    lock) you do:
@@ -71,12 +72,14 @@
    It is important to handle the error.  For example on a read-only
    file system a lock can't be created (but is usually not needed).
    FNAME is the file you want to lock; the actual lockfile is that
-   name with the suffix ".lock" appended.  This call creates a unique
-   file temporary file (".#lk*") in the same directory as FNAME and
-   returns a handle for further operations.  The module keeps track of
-   theses unique files so that they will be unlinked using the atexit
-   handler.  If you don't need the lock file anymore, you may also
-   explicitly remove it with a call to:
+   name with the suffix ".lock" appended.  On success a handle to be
+   used with the other functions is returned or NULL on error.  Note
+   that the handle shall only be used by one thread at a time.  This
+   function creates a unique file temporary file (".#lk*") in the same
+   directory as FNAME and returns a handle for further operations.
+   The module keeps track of theses unique files so that they will be
+   unlinked using the atexit handler.  If you don't need the lock file
+   anymore, you may also explicitly remove it with a call to:
 
      dotlock_destroy (h);
 
@@ -124,6 +127,8 @@
    to pass -DHAVE_CONFIG_H to the compiler.  Macros used by this
    module are:
 
+     DOTLOCK_USE_PTHREAD  - Define if POSIX threads are in use.
+
      DOTLOCK_GLIB_LOGGING - Define this to use Glib logging functions.
 
      GNUPG_MAJOR_VERSION - Defined when used by GnuPG.
@@ -148,6 +153,12 @@
    important that 64 bit versions of stat are used; most programming
    environments do this these days, just in case you want to compile
    it on the command line, remember to pass -D_FILE_OFFSET_BITS=64
+
+
+   Bugs:
+   =====
+
+   On Windows this module is not yet thread-safe.
 
 
    Miscellaneous notes:
@@ -227,6 +238,9 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
+#ifdef DOTLOCK_USE_PTHREAD
+# include <pthread.h>
+#endif
 
 #ifdef DOTLOCK_GLIB_LOGGING
 # include <glib.h>
@@ -285,6 +299,7 @@
 # define my_error_1(a,b)    log_error ((a), (b))
 # define my_error_2(a,b,c)  log_error ((a), (b), (c))
 # define my_debug_1(a,b)    log_debug ((a), (b))
+# define my_fatal_0(a)      log_fatal ((a))
 #elif defined (DOTLOCK_GLIB_LOGGING)
 # define my_info_0(a)       g_message ((a))
 # define my_info_1(a,b)     g_message ((a), (b))
@@ -294,6 +309,7 @@
 # define my_error_1(a,b)    g_warning ((a), (b))
 # define my_error_2(a,b,c   g_warning ((a), (b), (c))
 # define my_debug_1(a,b)    g_debug ((a), (b))
+# define my_fatal_0(a)      g_error ((a))
 #else
 # define my_info_0(a)       fprintf (stderr, (a))
 # define my_info_1(a,b)     fprintf (stderr, (a), (b))
@@ -303,6 +319,8 @@
 # define my_error_1(a,b)    fprintf (stderr, (a), (b))
 # define my_error_2(a,b,c)  fprintf (stderr, (a), (b), (c))
 # define my_debug_1(a,b)    fprintf (stderr, (a), (b))
+# define my_fatal_0(a)      do { fprintf (stderr,(a)); fflush (stderr); \
+                                 abort (); } while (0)
 #endif
 
 
@@ -331,9 +349,25 @@ struct dotlock_handle
 /* A list of of all lock handles.  The volatile attribute might help
    if used in an atexit handler.  */
 static volatile dotlock_t all_lockfiles;
+#ifdef DOTLOCK_USE_PTHREAD
+static pthread_mutex_t all_lockfiles_mutex = PTHREAD_MUTEX_INITIALIZER;
+# define LOCK_all_lockfiles() do {                               \
+        if (pthread_mutex_lock (&all_lockfiles_mutex))           \
+          my_fatal_0 ("locking all_lockfiles_mutex failed\n");   \
+      } while (0)
+# define UNLOCK_all_lockfiles() do {                             \
+        if (pthread_mutex_unlock (&all_lockfiles_mutex))         \
+          my_fatal_0 ("unlocking all_lockfiles_mutex failed\n"); \
+      } while (0)
+#else  /*!DOTLOCK_USE_PTHREAD*/
+# define LOCK_all_lockfiles()   do { } while (0)
+# define UNLOCK_all_lockfiles() do { } while (0)
+#endif /*!DOTLOCK_USE_PTHREAD*/
 
 /* If this has the value true all locking is disabled.  */
 static int never_lock;
+
+
 
 
 
@@ -352,13 +386,19 @@ static int
 maybe_deadlock (dotlock_t h)
 {
   dotlock_t r;
+  int res = 0;
 
-  for ( r=all_lockfiles; r; r = r->next )
+  LOCK_all_lockfiles ();
+  for (r=all_lockfiles; r; r = r->next)
     {
       if ( r != h && r->locked )
-        return 1;
+        {
+          res = 1;
+          break;
+        }
     }
-  return 0;
+  UNLOCK_all_lockfiles ();
+  return res;
 }
 #endif /*HAVE_POSIX_SYSTEM*/
 
@@ -528,9 +568,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       dirpart = file_to_lock;
     }
 
-#ifdef _REENTRANT
-    /* fixme: aquire mutex on all_lockfiles */
-#endif
+  LOCK_all_lockfiles ();
   h->next = all_lockfiles;
   all_lockfiles = h;
 
@@ -539,6 +577,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   if (!h->tname)
     {
       all_lockfiles = h->next;
+      UNLOCK_all_lockfiles ();
       jnlib_free (h);
       return NULL;
     }
@@ -560,6 +599,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   if ( fd == -1 )
     {
       all_lockfiles = h->next;
+      UNLOCK_all_lockfiles ();
       my_error_2 (_("failed to create temporary file `%s': %s\n"),
                   h->tname, strerror(errno));
       jnlib_free (h->tname);
@@ -590,19 +630,18 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       goto write_failed;
     }
 
-# ifdef _REENTRANT
-  /* release mutex */
-# endif
   h->lockname = jnlib_malloc (strlen (file_to_lock) + 6 );
   if (!h->lockname)
     {
       all_lockfiles = h->next;
+      UNLOCK_all_lockfiles ();
       unlink (h->tname);
       jnlib_free (h->tname);
       jnlib_free (h);
       return NULL;
     }
   strcpy (stpcpy (h->lockname, file_to_lock), EXTSEP_S "lock");
+  UNLOCK_all_lockfiles ();
   if (h->use_o_excl)
     my_debug_1 ("locking for `%s' done via O_EXCL\n", h->lockname);
 
@@ -610,9 +649,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
 
  write_failed:
   all_lockfiles = h->next;
-# ifdef _REENTRANT
-  /* fixme: release mutex */
-# endif
+  UNLOCK_all_lockfiles ();
   my_error_2 (_("error writing to `%s': %s\n"), h->tname, strerror (errno));
   close (fd);
   unlink (h->tname);
@@ -632,6 +669,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
 static dotlock_t
 dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
 {
+  LOCK_all_lockfiles ();
   h->next = all_lockfiles;
   all_lockfiles = h;
 
@@ -639,6 +677,7 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
   if (!h->lockname)
     {
       all_lockfiles = h->next;
+      UNLOCK_all_lockfiles ();
       jnlib_free (h);
       return NULL;
     }
@@ -673,8 +712,9 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
   }
   if (h->lockhd == INVALID_HANDLE_VALUE)
     {
-      my_error_2 (_("can't create `%s': %s\n"), h->lockname, w32_strerror (-1));
       all_lockfiles = h->next;
+      UNLOCK_all_lockfiles ();
+      my_error_2 (_("can't create `%s': %s\n"), h->lockname, w32_strerror (-1));
       jnlib_free (h->lockname);
       jnlib_free (h);
       return NULL;
@@ -733,11 +773,10 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
   if (never_lock)
     {
       h->disable = 1;
-#ifdef _REENTRANT
-      /* fixme: aquire mutex on all_lockfiles */
-#endif
+      LOCK_all_lockfiles ();
       h->next = all_lockfiles;
       all_lockfiles = h;
+      UNLOCK_all_lockfiles ();
       return h;
     }
 
@@ -791,6 +830,7 @@ dotlock_destroy (dotlock_t h)
     return;
 
   /* First remove the handle from our global list of all locks. */
+  LOCK_all_lockfiles ();
   for (hprev=NULL, htmp=all_lockfiles; htmp; hprev=htmp, htmp=htmp->next)
     if (htmp == h)
       {
@@ -801,6 +841,7 @@ dotlock_destroy (dotlock_t h)
         h->next = NULL;
         break;
       }
+  UNLOCK_all_lockfiles ();
 
   /* Then destroy the lock. */
   if (!h->disable)
@@ -1123,7 +1164,10 @@ dotlock_release (dotlock_t h)
      any locks left.  It might happen that another atexit handler
      tries to release the lock while the atexit handler of this module
      already ran and thus H is undefined.  */
-  if (!all_lockfiles)
+  LOCK_all_lockfiles ();
+  ret = !all_lockfiles;
+  UNLOCK_all_lockfiles ();
+  if (ret)
     return 0;
 
   if ( h->disable )
@@ -1148,7 +1192,7 @@ dotlock_release (dotlock_t h)
 
 
 
-/* Remove all lockfiles.  This is usually called by the atexit handler
+/* Remove all lockfiles.  This is called by the atexit handler
    installed by this module but may also be called by other
    termination handlers.  */
 void
@@ -1156,8 +1200,13 @@ dotlock_remove_lockfiles (void)
 {
   dotlock_t h, h2;
 
+  /* First set the lockfiles list to NULL so that for example
+     dotlock_release is ware that this fucntion is currently
+     running.  */
+  LOCK_all_lockfiles ();
   h = all_lockfiles;
   all_lockfiles = NULL;
+  UNLOCK_all_lockfiles ();
 
   while ( h )
     {
