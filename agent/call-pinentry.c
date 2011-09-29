@@ -32,7 +32,7 @@
 # include <sys/types.h>
 # include <signal.h>
 #endif
-#include <pth.h>
+#include <npth.h>
 
 #include "agent.h"
 #include <assuan.h>
@@ -62,10 +62,10 @@ static assuan_context_t entry_ctx;
 static ctrl_t entry_owner;
 
 /* A mutex used to serialize access to the pinentry. */
-static pth_mutex_t entry_lock;
+static npth_mutex_t entry_lock;
 
 /* The thread ID of the popup working thread. */
-static pth_t  popup_tid;
+static npth_t  popup_tid;
 
 /* A flag used in communication between the popup working thread and
    its stop function. */
@@ -95,28 +95,11 @@ initialize_module_call_pinentry (void)
 
   if (!initialized)
     {
-      if (pth_mutex_init (&entry_lock))
+      if (npth_mutex_init (&entry_lock, NULL))
         initialized = 1;
     }
 }
 
-
-
-static void
-dump_mutex_state (pth_mutex_t *m)
-{
-#ifdef _W32_PTH_H
-  (void)m;
-  log_printf ("unknown under W32");
-#else
-  if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
-    log_printf ("not_initialized");
-  else if (!(m->mx_state & PTH_MUTEX_LOCKED))
-    log_printf ("not_locked");
-  else
-    log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
-#endif
-}
 
 
 /* This function may be called to print infromation pertaining to the
@@ -124,10 +107,7 @@ dump_mutex_state (pth_mutex_t *m)
 void
 agent_query_dump_state (void)
 {
-  log_info ("agent_query_dump_state: entry_lock=");
-  dump_mutex_state (&entry_lock);
-  log_printf ("\n");
-  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld popup_tid=%p\n",
+  log_info ("agent_query_dump_state: entry_ctx=%p pid=%ld popup_tid=%lx\n",
             entry_ctx, (long)assuan_get_pid (entry_ctx), popup_tid);
 }
 
@@ -151,13 +131,15 @@ static int
 unlock_pinentry (int rc)
 {
   assuan_context_t ctx = entry_ctx;
+  int err;
 
   entry_ctx = NULL;
-  if (!pth_mutex_release (&entry_lock))
+  err = npth_mutex_unlock (&entry_lock);
+  if (err)
     {
-      log_error ("failed to release the entry lock\n");
+      log_error ("failed to release the entry lock: %s\n", strerror (err));
       if (!rc)
-        rc = gpg_error (GPG_ERR_INTERNAL);
+        rc = gpg_error_from_errno (err);
     }
   assuan_release (ctx);
   return rc;
@@ -222,30 +204,31 @@ getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
 static int
 start_pinentry (ctrl_t ctrl)
 {
-  int rc;
+  int rc = 0;
   const char *pgmname;
   assuan_context_t ctx;
   const char *argv[5];
   int no_close_list[3];
   int i;
-  pth_event_t evt;
   const char *tmpstr;
   unsigned long pinentry_pid;
   const char *value;
+  struct timespec abstime;
+  int err;
 
-  evt = pth_event (PTH_EVENT_TIME, pth_timeout (LOCK_TIMEOUT, 0));
-  if (!pth_mutex_acquire (&entry_lock, 0, evt))
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += LOCK_TIMEOUT;
+  err = npth_mutex_timedlock (&entry_lock, &abstime);
+  if (err)
     {
-      if (pth_event_occurred (evt))
-        rc = gpg_error (GPG_ERR_TIMEOUT);
+      if (err == ETIMEDOUT)
+	rc = gpg_error (GPG_ERR_TIMEOUT);
       else
-        rc = gpg_error (GPG_ERR_INTERNAL);
-      pth_event_free (evt, PTH_FREE_THIS);
+	rc = gpg_error_from_errno (rc);
       log_error (_("failed to acquire the pinentry lock: %s\n"),
                  gpg_strerror (rc));
       return rc;
     }
-  pth_event_free (evt, PTH_FREE_THIS);
 
   entry_owner = ctrl;
 
@@ -484,33 +467,37 @@ start_pinentry (ctrl_t ctrl)
 int
 pinentry_active_p (ctrl_t ctrl, int waitseconds)
 {
+  int err;
   (void)ctrl;
 
   if (waitseconds > 0)
     {
-      pth_event_t evt;
+      struct timespec abstime;
       int rc;
 
-      evt = pth_event (PTH_EVENT_TIME, pth_timeout (waitseconds, 0));
-      if (!pth_mutex_acquire (&entry_lock, 0, evt))
+      npth_clock_gettime (&abstime);
+      abstime.tv_sec += waitseconds;
+      err = npth_mutex_timedlock (&entry_lock, &abstime);
+      if (err)
         {
-          if (pth_event_occurred (evt))
+          if (err == ETIMEDOUT)
             rc = gpg_error (GPG_ERR_TIMEOUT);
           else
             rc = gpg_error (GPG_ERR_INTERNAL);
-          pth_event_free (evt, PTH_FREE_THIS);
           return rc;
         }
-      pth_event_free (evt, PTH_FREE_THIS);
     }
   else
     {
-      if (!pth_mutex_acquire (&entry_lock, 1, NULL))
+      err = npth_mutex_trylock (&entry_lock);
+      if (err)
         return gpg_error (GPG_ERR_LOCKED);
     }
 
-  if (!pth_mutex_release (&entry_lock))
-    log_error ("failed to release the entry lock at %d\n", __LINE__);
+  err = npth_mutex_unlock (&entry_lock);
+  if (err)
+    log_error ("failed to release the entry lock at %d: %s\n", __LINE__,
+	       strerror (errno));
   return 0;
 }
 
@@ -1185,7 +1172,8 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
-  pth_attr_t tattr;
+  npth_attr_t tattr;
+  int err;
 
   if (ctrl->pinentry_mode != PINENTRY_MODE_ASK)
     return gpg_error (GPG_ERR_CANCELED);
@@ -1212,22 +1200,22 @@ agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
         return unlock_pinentry (rc);
     }
 
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "popup-message");
+  err = npth_attr_init (&tattr);
+  if (err)
+    return unlock_pinentry (gpg_error_from_errno (err));
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
 
   popup_finished = 0;
-  popup_tid = pth_spawn (tattr, popup_message_thread, NULL);
-  if (!popup_tid)
+  err = npth_create (&popup_tid, &tattr, popup_message_thread, NULL);
+  npth_attr_destroy (&tattr);
+  if (err)
     {
-      rc = gpg_error_from_syserror ();
+      rc = gpg_error_from_errno (err);
       log_error ("error spawning popup message handler: %s\n",
-                 strerror (errno) );
-      pth_attr_destroy (tattr);
+                 strerror (err) );
       return unlock_pinentry (rc);
     }
-  pth_attr_destroy (tattr);
+  npth_setname_np (popup_tid, "popup-message");
 
   return 0;
 }
@@ -1278,11 +1266,13 @@ agent_popup_message_stop (ctrl_t ctrl)
 #endif
 
   /* Now wait for the thread to terminate. */
-  rc = pth_join (popup_tid, NULL);
+  rc = npth_join (popup_tid, NULL);
   if (!rc)
     log_debug ("agent_popup_message_stop: pth_join failed: %s\n",
                strerror (errno));
-  popup_tid = NULL;
+  /* Thread IDs are opaque, but we try our best here by resetting it
+     to the same content that a static global variable has.  */
+  memset (&popup_tid, '\0', sizeof (popup_tid));
   entry_owner = NULL;
 
   /* Now we can close the connection. */

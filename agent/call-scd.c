@@ -33,7 +33,7 @@
 #ifndef HAVE_W32_SYSTEM
 #include <sys/wait.h>
 #endif
-#include <pth.h>
+#include <npth.h>
 
 #include "agent.h"
 #include <assuan.h>
@@ -101,7 +101,7 @@ struct inq_needpin_s
 static struct scd_local_s *scd_local_list;
 
 /* A Mutex used inside the start_scd function. */
-static pth_mutex_t start_scd_lock;
+static npth_mutex_t start_scd_lock;
 
 /* A malloced string with the name of the socket to be used for
    additional connections.  May be NULL if not provided by
@@ -128,36 +128,21 @@ static gpg_error_t membuf_data_cb (void *opaque,
 
 /* This function must be called once to initialize this module.  This
    has to be done before a second thread is spawned.  We can't do the
-   static initialization because Pth emulation code might not be able
+   static initialization because NPth emulation code might not be able
    to do a static init; in particular, it is not possible for W32. */
 void
 initialize_module_call_scd (void)
 {
   static int initialized;
+  int err;
 
   if (!initialized)
     {
-      if (!pth_mutex_init (&start_scd_lock))
-        log_fatal ("error initializing mutex: %s\n", strerror (errno));
+      err = npth_mutex_init (&start_scd_lock, NULL);
+      if (err)
+	log_fatal ("error initializing mutex: %s\n", strerror (err));
       initialized = 1;
     }
-}
-
-
-static void
-dump_mutex_state (pth_mutex_t *m)
-{
-#ifdef _W32_PTH_H
-  (void)m;
-  log_printf ("unknown under W32");
-#else
-  if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
-    log_printf ("not_initialized");
-  else if (!(m->mx_state & PTH_MUTEX_LOCKED))
-    log_printf ("not_locked");
-  else
-    log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
-#endif
 }
 
 
@@ -166,9 +151,6 @@ dump_mutex_state (pth_mutex_t *m)
 void
 agent_scd_dump_state (void)
 {
-  log_info ("agent_scd_dump_state: scd_lock=");
-  dump_mutex_state (&start_scd_lock);
-  log_printf ("\n");
   log_info ("agent_scd_dump_state: primary_scd_ctx=%p pid=%ld reusable=%d\n",
             primary_scd_ctx,
             (long)assuan_get_pid (primary_scd_ctx),
@@ -261,10 +243,11 @@ start_scd (ctrl_t ctrl)
 
 
   /* We need to protect the following code. */
-  if (!pth_mutex_acquire (&start_scd_lock, 0, NULL))
+  rc = npth_mutex_lock (&start_scd_lock);
+  if (rc)
     {
       log_error ("failed to acquire the start_scd lock: %s\n",
-                 strerror (errno));
+                 strerror (rc));
       return gpg_error (GPG_ERR_INTERNAL);
     }
 
@@ -428,8 +411,9 @@ start_scd (ctrl_t ctrl)
     {
       ctrl->scd_local->ctx = ctx;
     }
-  if (!pth_mutex_release (&start_scd_lock))
-    log_error ("failed to release the start_scd lock: %s\n", strerror (errno));
+  rc = npth_mutex_unlock (&start_scd_lock);
+  if (rc)
+    log_error ("failed to release the start_scd lock: %s\n", strerror (rc));
   return err;
 }
 
@@ -448,35 +432,36 @@ agent_scd_check_running (void)
 void
 agent_scd_check_aliveness (void)
 {
-  pth_event_t evt;
   pid_t pid;
 #ifdef HAVE_W32_SYSTEM
   DWORD rc;
 #else
   int rc;
 #endif
+  struct timespec abstime;
+  int err;
 
   if (!primary_scd_ctx)
     return; /* No scdaemon running. */
 
   /* This is not a critical function so we use a short timeout while
      acquiring the lock.  */
-  evt = pth_event (PTH_EVENT_TIME, pth_timeout (1, 0));
-  if (!pth_mutex_acquire (&start_scd_lock, 0, evt))
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += 1;
+  err = npth_mutex_timedlock (&start_scd_lock, &abstime);
+  if (err)
     {
-      if (pth_event_occurred (evt))
+      if (err == ETIMEDOUT)
         {
           if (opt.verbose > 1)
             log_info ("failed to acquire the start_scd lock while"
-                      " doing an aliveness check: %s\n", "timeout");
+                      " doing an aliveness check: %s\n", strerror (err));
         }
       else
         log_error ("failed to acquire the start_scd lock while"
-                   " doing an aliveness check: %s\n", strerror (errno));
-      pth_event_free (evt, PTH_FREE_THIS);
+                   " doing an aliveness check: %s\n", strerror (err));
       return;
     }
-  pth_event_free (evt, PTH_FREE_THIS);
 
   if (primary_scd_ctx)
     {
@@ -521,9 +506,10 @@ agent_scd_check_aliveness (void)
         }
     }
 
-  if (!pth_mutex_release (&start_scd_lock))
+  err = npth_mutex_unlock (&start_scd_lock);
+  if (err)
     log_error ("failed to release the start_scd lock while"
-               " doing the aliveness check: %s\n", strerror (errno));
+               " doing the aliveness check: %s\n", strerror (err));
 }
 
 

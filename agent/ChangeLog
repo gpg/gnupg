@@ -1,3 +1,8 @@
+2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
+
+	* cache.c, call-pinentry.c, call-scd.c, findkey.c, gpg-agent.c,
+	trustlist.c: Port to NPth.
+
 2011-09-12  Ben Kibbey <bjk@luxsci.net>
 
 	* genkey.c (agent_ask_new_passphrase): Allow for an empty passphrase

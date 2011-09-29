@@ -85,13 +85,13 @@
 # include <gpg-error.h> /* ERRNO replacement.  */
 #endif
 
-#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-# undef HAVE_PTH
-# undef USE_GNU_PTH
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+# undef HAVE_NPTH
+# undef USE_NPTH
 #endif
 
-#ifdef HAVE_PTH
-# include <pth.h>
+#ifdef HAVE_NPTH
+# include <npth.h>
 #endif
 
 /* This is for the special hack to use estream.c in GnuPG.  */
@@ -159,7 +159,7 @@ typedef void (*func_free_t) (void *mem);
 
 /* Locking.  */
 
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
 
 typedef pth_mutex_t estream_mutex_t;
 # define ESTREAM_MUTEX_INITIALIZER PTH_MUTEX_INIT
@@ -197,7 +197,7 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 
 /* Primitive system I/O.  */
 
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
 # define ESTREAM_SYS_READ  do_pth_read
 # define ESTREAM_SYS_WRITE do_pth_write
 # define ESTREAM_SYS_YIELD() pth_yield (NULL)
@@ -438,7 +438,7 @@ do_list_remove (estream_t stream, int with_locked_list)
  * write, assuming that we do I/O on a plain file where the operation
  * can't block.
  */
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
 static int
 do_pth_read (int fd, void *buffer, size_t size)
 {
@@ -464,7 +464,7 @@ do_pth_write (int fd, const void *buffer, size_t size)
   return pth_write (fd, buffer, size);
 # endif /* !HAVE_W32_SYSTEM*/
 }
-#endif /*HAVE_PTH*/
+#endif /*HAVE_NPTH*/
 
 
 
@@ -495,7 +495,7 @@ do_init (void)
 
   if (!initialized)
     {
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
       if (!pth_init () && errno != EPERM )
         return -1;
       if (pth_mutex_init (&estream_list_lock))
@@ -983,7 +983,7 @@ es_func_w32_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
           /* Note: Our pth_read actually uses HANDLE! */
           bytes_read = pth_read ((int)w32_cookie->hd, buffer, size);
 #else
@@ -1028,7 +1028,7 @@ es_func_w32_write (void *cookie, const void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
           /* Note: Our pth_write actually uses HANDLE! */
           bytes_written = pth_write ((int)w32_cookie->hd, buffer, size);
 #else

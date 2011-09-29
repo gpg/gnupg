@@ -106,22 +106,22 @@ else
 common_sources += exechelp-posix.c
 endif
 
-# Sources only useful without PTH.
-without_pth_sources = \
+# Sources only useful without NPTH.
+without_npth_sources = \
         get-passphrase.c get-passphrase.h
 
 
-libcommon_a_SOURCES = $(jnlib_sources) $(common_sources) $(without_pth_sources)
+libcommon_a_SOURCES = $(jnlib_sources) $(common_sources) $(without_npth_sources)
 if USE_DNS_SRV
 libcommon_a_SOURCES += srv.c
 endif
-libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_GNU_PTH=1
+libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_NPTH=1
 
 libcommonpth_a_SOURCES = $(jnlib_sources) $(common_sources)
 if USE_DNS_SRV
 libcommonpth_a_SOURCES += srv.c
 endif
-libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
+libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 
 if !HAVE_W32CE_SYSTEM
 libsimple_pwquery_a_SOURCES = \

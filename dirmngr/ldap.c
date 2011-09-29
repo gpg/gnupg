@@ -28,7 +28,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "dirmngr.h"
 #include "exechelp.h"

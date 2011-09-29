@@ -1,3 +1,8 @@
+2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
+
+	* Makefile.am, certcache.c, crlfetch.c, dirmngr.c, ldap-wrapper.c:
+	Port to NPth.
+
 2011-06-01  Marcus Brinkmann  <mb@g10code.com>
 
 	* Makefile.am (dirmngr_ldap_CFLAGS): Add $(LIBGCRYPT_CFLAGS),

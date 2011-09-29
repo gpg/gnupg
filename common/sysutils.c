@@ -20,9 +20,9 @@
 
 #include <config.h>
 
-#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-# undef HAVE_PTH
-# undef USE_GNU_PTH
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+# undef HAVE_NPTH
+# undef USE_NPTH
 #endif
 
 #include <stdio.h>
@@ -46,8 +46,8 @@
 # define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
 # include <windows.h>
 #endif
-#ifdef HAVE_PTH
-# include <pth.h>
+#ifdef HAVE_NPTH
+# include <npth.h>
 #endif
 #include <fcntl.h>
 
@@ -259,7 +259,7 @@ check_permissions(const char *path,int extension,int checkonly)
 void
 gnupg_sleep (unsigned int seconds)
 {
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
   /* With Pth we force a regular sleep for seconds == 0 so that also
      the process will give up its timeslot.  */
   if (!seconds)

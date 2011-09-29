@@ -19,7 +19,7 @@
  */
 
 /* NOTE: This module is also used by other software, thus the use of
-   the macro USE_GNU_PTH is mandatory.  For GnuPG this macro is
+   the macro USE_NPTH is mandatory.  For GnuPG this macro is
    guaranteed to be defined true. */
 
 #include <config.h>
@@ -29,10 +29,10 @@
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
 # include <unistd.h>
 # include <fcntl.h>
-# include <pth.h>
+# include <npth.h>
 #endif
 
 
@@ -66,7 +66,7 @@
 
 /* Due to conflicting use of threading libraries we usually can't link
    against libpcsclite.   Instead we use a wrapper program.  */
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
 #if !defined(HAVE_W32_SYSTEM) && !defined(__CYGWIN__)
 #define NEED_PCSC_WRAPPER 1
 #endif
@@ -139,9 +139,9 @@ struct reader_table_s {
                               not yet been read; i.e. the card is not
                               ready for use. */
   unsigned int change_counter;
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
   int lock_initialized;
-  pth_mutex_t lock;
+  npth_mutex_t lock;
 #endif
 };
 typedef struct reader_table_s *reader_table_t;
@@ -329,6 +329,7 @@ static int
 new_reader_slot (void)
 {
   int i, reader = -1;
+  int err;
 
   for (i=0; i < MAX_READER; i++)
     {
@@ -340,17 +341,18 @@ new_reader_slot (void)
       log_error ("new_reader_slot: out of slots\n");
       return -1;
     }
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
   if (!reader_table[reader].lock_initialized)
     {
-      if (!pth_mutex_init (&reader_table[reader].lock))
+      err = npth_mutex_init (&reader_table[reader].lock, NULL);
+      if (err)
         {
-          log_error ("error initializing mutex: %s\n", strerror (errno));
+          log_error ("error initializing mutex: %s\n", strerror (err));
           return -1;
         }
       reader_table[reader].lock_initialized = 1;
     }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
   reader_table[reader].connect_card = NULL;
   reader_table[reader].disconnect_card = NULL;
   reader_table[reader].close_reader = NULL;
@@ -666,8 +668,8 @@ writen (int fd, const void *buf, size_t nbytes)
 
   while (nleft > 0)
     {
-#ifdef USE_GNU_PTH
-      nwritten = pth_write (fd, buf, nleft);
+#ifdef USE_NPTH
+      nwritten = npth_write (fd, buf, nleft);
 #else
       nwritten = write (fd, buf, nleft);
 #endif
@@ -692,11 +694,11 @@ readn (int fd, void *buf, size_t buflen, size_t *nread)
 
   while (nleft > 0)
     {
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
 # ifdef HAVE_W32_SYSTEM
-#  error Cannot use pth_read here because it expects a system HANDLE.
+#  error Cannot use npth_read here because it expects a system HANDLE.
 # endif
-      n = pth_read (fd, buf, nleft);
+      n = npth_read (fd, buf, nleft);
 #else
       n = read (fd, buf, nleft);
 #endif
@@ -1698,8 +1700,8 @@ open_pcsc_reader_wrapped (const char *portstr)
   slotp->pcsc.rsp_fd = rp[0];
 
   /* Wait for the intermediate child to terminate. */
-#ifdef USE_GNU_PTH
-#define WAIT pth_waitpid
+#ifdef USE_NPTH
+#define WAIT npth_waitpid
 #else
 #define WAIT waitpid
 #endif
@@ -2305,38 +2307,47 @@ open_rapdu_reader (int portno,
 static int
 lock_slot (int slot)
 {
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&reader_table[slot].lock, 0, NULL))
+#ifdef USE_NPTH
+  int err;
+
+  err = npth_mutex_lock (&reader_table[slot].lock);
+  if (err)
     {
-      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
+      log_error ("failed to acquire apdu lock: %s\n", strerror (err));
       return SW_HOST_LOCKING_FAILED;
     }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
   return 0;
 }
 
 static int
 trylock_slot (int slot)
 {
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&reader_table[slot].lock, TRUE, NULL))
+#ifdef USE_NPTH
+  int err;
+
+  err = npth_mutex_trylock (&reader_table[slot].lock);
+  if (err == EBUSY)
+    return SW_HOST_BUSY;
+  else if (err)
     {
-      if (errno == EBUSY)
-        return SW_HOST_BUSY;
-      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
+      log_error ("failed to acquire apdu lock: %s\n", strerror (err));
       return SW_HOST_LOCKING_FAILED;
     }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
   return 0;
 }
 
 static void
 unlock_slot (int slot)
 {
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_release (&reader_table[slot].lock))
+#ifdef USE_NPTH
+  int err;
+
+  err = npth_mutex_unlock (&reader_table[slot].lock);
+  if (err)
     log_error ("failed to release apdu lock: %s\n", strerror (errno));
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
 }
 
 

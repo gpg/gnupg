@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "dirmngr.h"
 #include "misc.h"
@@ -80,10 +80,10 @@ static cert_item_t cert_cache[256];
 
 /* This is the global cache_lock variable. In general looking is not
    needed but it would take extra efforts to make sure that no
-   indirect use of pth functions is done, so we simply lock it always.
-   Note: We can't use static initialization, as that is not available
-   through w32-pth.  */
-static pth_rwlock_t cert_cache_lock;
+   indirect use of npth functions is done, so we simply lock it
+   always.  Note: We can't use static initialization, as that is not
+   available through w32-pth.  */
+static npth_rwlock_t cert_cache_lock;
 
 /* Flag to track whether the cache has been initialized.  */
 static int initialization_done;
@@ -99,33 +99,45 @@ static unsigned int total_extra_certificates;
 static void
 init_cache_lock (void)
 {
-  if (!pth_rwlock_init (&cert_cache_lock))
+  int err;
+
+  err = npth_rwlock_init (&cert_cache_lock, NULL);
+  if (err)
     log_fatal (_("can't initialize certificate cache lock: %s\n"),
-	       strerror (errno));
+	       strerror (err));
 }
 
 static void
 acquire_cache_read_lock (void)
 {
-  if (!pth_rwlock_acquire (&cert_cache_lock, PTH_RWLOCK_RD, FALSE, NULL))
+  int err;
+
+  err = npth_rwlock_rdlock (&cert_cache_lock);
+  if (err)
     log_fatal (_("can't acquire read lock on the certificate cache: %s\n"),
-               strerror (errno));
+               strerror (err));
 }
 
 static void
 acquire_cache_write_lock (void)
 {
-  if (!pth_rwlock_acquire (&cert_cache_lock, PTH_RWLOCK_RW, FALSE, NULL))
+  int err;
+
+  err = npth_rwlock_wrlock (&cert_cache_lock);
+  if (err)
     log_fatal (_("can't acquire write lock on the certificate cache: %s\n"),
-               strerror (errno));
+               strerror (err));
 }
 
 static void
 release_cache_lock (void)
 {
-  if (!pth_rwlock_release (&cert_cache_lock))
+  int err;
+
+  err = npth_rwlock_unlock (&cert_cache_lock);
+  if (err)
     log_fatal (_("can't release lock on the certificate cache: %s\n"),
-               strerror (errno));
+               strerror (err));
 }
 
 
