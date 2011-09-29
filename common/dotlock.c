@@ -100,8 +100,10 @@
      if (dotlock_release (h))
        error ("error releasing lock: %s\n", strerror (errno));
 
-   or, if the lock file is not anymore needed, you may call
-   dotlock_destroy.
+   or, if the lock file is not anymore needed, you may just call
+   dotlock_destroy.  However dotlock_release does some extra checks
+   before releasing the lock and prints diagnostics to help detecting
+   bugs.
 
    If you want to explicitly destroy all lock files you may call
 
@@ -113,6 +115,15 @@
      disable_locking ()
 
    before any locks are created.
+
+   There are two convenience functions to store an integer (e.g. a
+   file descriptor) value with the handle:
+
+     void dotlock_set_fd (dotlock_t h, int fd);
+     int  dotlock_get_fd (dotlock_t h);
+
+   If nothing has been stored dotlock_get_fd returns -1.
+
 
 
    How to build:
@@ -335,6 +346,8 @@ struct dotlock_handle
   unsigned int locked:1;     /* Lock status.                          */
   unsigned int disable:1;    /* If true, locking is disabled.         */
   unsigned int use_o_excl:1; /* Use open (O_EXCL) for locking.        */
+
+  int extra_fd;              /* A place for the caller to store an FD.  */
 
 #ifdef HAVE_DOSISH_SYSTEM
   HANDLE lockhd;       /* The W32 handle of the lock file.      */
@@ -769,6 +782,7 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
   h = jnlib_calloc (1, sizeof *h);
   if (!h)
     return NULL;
+  h->extra_fd = -1;
 
   if (never_lock)
     {
@@ -785,6 +799,24 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
 #else /*!HAVE_DOSISH_SYSTEM */
   return dotlock_create_unix (h, file_to_lock);
 #endif /*!HAVE_DOSISH_SYSTEM*/
+}
+
+
+
+/* Convenience function to store a file descriptor (or any any other
+   integer value) in the context of handle H.  */
+void
+dotlock_set_fd (dotlock_t h, int fd)
+{
+  h->extra_fd = fd;
+}
+
+/* Convenience function to retrieve a file descriptor (or any any other
+   integer value) stored in the context of handle H.  */
+int
+dotlock_get_fd (dotlock_t h)
+{
+  return h->extra_fd;
 }
 
 

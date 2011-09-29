@@ -4,6 +4,7 @@
 	[DOTLOCK_USE_PTHREAD] (all_lockfiles_mutex): New.
 	(LOCK_all_lockfiles, UNLOCK_all_lockfiles): New.  Use them to
 	protect access to all_lockfiles.
+	(dotlock_set_fd, dotlock_get_fd): New.
 
 2011-09-28  Werner Koch  <wk@g10code.com>
 
