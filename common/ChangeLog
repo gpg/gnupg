@@ -1,5 +1,8 @@
 2011-09-30  Werner Koch  <wk@g10code.com>
 
+	Change the license of all JNLIB parts from LPGLv3+ to to LGPLv3+
+	or GPLv2+.
+
 	* dotlock.h (DOTLOCK_EXT_SYM_PREFIX): New macro.
 
 2011-09-29  Werner Koch  <wk@g10code.com>
