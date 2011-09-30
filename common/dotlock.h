@@ -22,6 +22,31 @@
 
 /* See dotlock.c for a description.  */
 
+#ifdef DOTLOCK_EXT_SYM_PREFIX
+# ifndef _DOTLOCK_PREFIX
+#  define _DOTLOCK_PREFIX1(x,y)  x ## y
+#  define _DOTLOCK_PREFIX2(x,y) _DOTLOCK_PREFIX1(x,y)
+#  define _DOTLOCK_PREFIX(x)    _DOTLOCK_PREFIX2(DOTLOCK_EXT_SYM_PREFIX,x)
+# endif /*_DOTLOCK_PREFIX*/
+# define dotlock_disable          _DOTLOCK_PREFIX(dotlock_disable)
+# define dotlock_create           _DOTLOCK_PREFIX(dotlock_create)
+# define dotlock_set_fd           _DOTLOCK_PREFIX(dotlock_set_fd)
+# define dotlock_get_fd           _DOTLOCK_PREFIX(dotlock_get_fd)
+# define dotlock_destroy          _DOTLOCK_PREFIX(dotlock_destroy)
+# define dotlock_take             _DOTLOCK_PREFIX(dotlock_take)
+# define dotlock_release          _DOTLOCK_PREFIX(dotlock_release)
+# define dotlock_remove_lockfiles _DOTLOCK_PREFIX(dotlock_remove_lockfiles)
+#endif /*DOTLOCK_EXT_SYM_PREFIX*/
+
+#ifdef __cplusplus
+extern "C"
+{
+#if 0
+}
+#endif
+#endif
+
+
 struct dotlock_handle;
 typedef struct dotlock_handle *dotlock_t;
 
@@ -34,4 +59,7 @@ int dotlock_take (dotlock_t h, long timeout);
 int dotlock_release (dotlock_t h);
 void dotlock_remove_lockfiles (void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /*LIBJNLIB_DOTLOCK_H*/

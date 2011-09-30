@@ -142,19 +142,24 @@
 
      DOTLOCK_GLIB_LOGGING - Define this to use Glib logging functions.
 
+     DOTLOCK_EXT_SYM_PREFIX - Prefix all external symbols with the
+                              string to which this macro evaluates.
+
      GNUPG_MAJOR_VERSION - Defined when used by GnuPG.
 
-     HAVE_DOSISH_SYSTEM   - Defined for Windows etc.  Will be
-                            automatically defined if a the target is
-                            Windows.
-     HAVE_POSIX_SYSTEM    - Internally defined to !HAVE_DOSISH_SYSTEM.
+     HAVE_DOSISH_SYSTEM  - Defined for Windows etc.  Will be
+                           automatically defined if a the target is
+                           Windows.
 
-     HAVE_SIGNAL_H        - Should be defined on Posix systems.  If config.h
-                            is not used defaults to defined.
+     HAVE_POSIX_SYSTEM   - Internally defined to !HAVE_DOSISH_SYSTEM.
+
+     HAVE_SIGNAL_H       - Should be defined on Posix systems.  If config.h
+                           is not used defaults to defined.
 
      DIRSEP_C            - Separation character for file name parts.
                            Usually not redefined.
-     EXTSEP_S "."        - Separation string for file name suffixes.
+
+     EXTSEP_S            - Separation string for file name suffixes.
                            Usually not redefined.
 
      HAVE_W32CE_SYSTEM   - Currently only used by GnuPG.
@@ -318,7 +323,7 @@
 # define my_info_3(a,b,c,d) g_message ((a), (b), (c), (d))
 # define my_error_0(a)      g_warning ((a))
 # define my_error_1(a,b)    g_warning ((a), (b))
-# define my_error_2(a,b,c   g_warning ((a), (b), (c))
+# define my_error_2(a,b,c)  g_warning ((a), (b), (c))
 # define my_debug_1(a,b)    g_debug ((a), (b))
 # define my_fatal_0(a)      g_error ((a))
 #else
