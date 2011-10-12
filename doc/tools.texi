@@ -1193,7 +1193,6 @@ Specify the agent program to be started if none is running.
 
 @item -S
 @itemx --raw-socket @var{name}
-@opindex S
 @opindex raw-socket
 Connect to socket @var{name} assuming this is an Assuan style server.
 Do not run any special initializations or environment checks.  This may
