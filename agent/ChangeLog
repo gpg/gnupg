@@ -1,5 +1,7 @@
 2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
 
+	* cache.c (new_data): Fix error check.
+
 	* cache.c, call-pinentry.c, call-scd.c, findkey.c, gpg-agent.c,
 	trustlist.c: Port to NPth.
 
