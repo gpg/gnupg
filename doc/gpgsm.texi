@@ -479,7 +479,6 @@ for a reason.
 @item --armor
 @itemx -a
 @opindex armor
-@opindex -a
 Create PEM encoded output.  Default is binary output.
 
 @item --base64
@@ -523,7 +522,6 @@ set; however @option{--default-key} always overrides this.
 @item --local-user @var{user_id}
 @item -u @var{user_id}
 @opindex local-user
-@opindex -u
 Set the user(s) to be used for signing.  The default is the first
 secret key found in the database.
 

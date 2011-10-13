@@ -273,14 +273,14 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
     }
 
   /* Try to take a lock.  */
-  lock = create_dotlock (filename);
+  lock = dotlock_create (filename, 0);
   if (!lock)
     {
       xfree (mountpoint_buffer);
       return gpg_error_from_syserror ();
     }
 
-  if (make_dotlock (lock, 0))
+  if (dotlock_take (lock, 0))
     {
       err = gpg_error_from_syserror ();
       goto leave;
@@ -359,7 +359,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
   destroy_tupledesc (tuples);
   xfree (keyblob);
   xfree (enckeyblob);
-  destroy_dotlock (lock);
+  dotlock_destroy (lock);
   xfree (mountpoint_buffer);
   return err;
 }

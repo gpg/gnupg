@@ -257,7 +257,7 @@ put_record_into_cache( ulong recno, const char *data )
 	if( !n )
 	    n = 1;
 	if( !is_locked ) {
-	    if( make_dotlock( lockhandle, -1 ) )
+	    if( dotlock_take( lockhandle, -1 ) )
 		log_fatal("can't acquire lock - giving up\n");
 	    else
 		is_locked = 1;
@@ -276,7 +276,7 @@ put_record_into_cache( ulong recno, const char *data )
 	    }
 	}
 	if( !opt.lock_once ) {
-	    if( !release_dotlock( lockhandle ) )
+	    if( !dotlock_release( lockhandle ) )
 		is_locked = 0;
 	}
 	assert( unused );
@@ -318,7 +318,7 @@ tdbio_sync()
 	return 0;
 
     if( !is_locked ) {
-	if( make_dotlock( lockhandle, -1 ) )
+	if( dotlock_take( lockhandle, -1 ) )
 	    log_fatal("can't acquire lock - giving up\n");
 	else
 	    is_locked = 1;
@@ -333,7 +333,7 @@ tdbio_sync()
     }
     cache_is_dirty = 0;
     if( did_lock && !opt.lock_once ) {
-	if( !release_dotlock( lockhandle ) )
+	if( !dotlock_release (lockhandle) )
 	    is_locked = 0;
     }
 
@@ -373,7 +373,7 @@ tdbio_end_transaction()
     if( !in_transaction )
 	log_bug("tdbio: no active transaction\n");
     if( !is_locked ) {
-	if( make_dotlock( lockhandle, -1 ) )
+	if( dotlock_take( lockhandle, -1 ) )
 	    log_fatal("can't acquire lock - giving up\n");
 	else
 	    is_locked = 1;
@@ -383,7 +383,7 @@ tdbio_end_transaction()
     rc = tdbio_sync();
     unblock_all_signals();
     if( !opt.lock_once ) {
-	if( !release_dotlock( lockhandle ) )
+	if( !dotlock_release (lockhandle) )
 	    is_locked = 0;
     }
     return rc;
@@ -423,7 +423,7 @@ static void
 cleanup(void)
 {
     if( is_locked ) {
-	if( !release_dotlock(lockhandle) )
+	if( !dotlock_release (lockhandle) )
 	    is_locked = 0;
     }
 }
@@ -544,10 +544,10 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    db_name = fname;
 #ifdef __riscos__
 	    if( !lockhandle )
-		lockhandle = create_dotlock( db_name );
+              lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
 		log_fatal( _("can't create lock for `%s'\n"), db_name );
-            if( make_dotlock( lockhandle, -1 ) )
+            if( dotlock_make (lockhandle, -1) )
                 log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
 	    oldmask=umask(077);
@@ -567,7 +567,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 
 #ifndef __riscos__
 	    if( !lockhandle )
-		lockhandle = create_dotlock( db_name );
+              lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
 		log_fatal( _("can't create lock for `%s'\n"), db_name );
 #endif /* !__riscos__ */
@@ -608,11 +608,11 @@ open_db()
   assert( db_fd == -1 );
 
   if (!lockhandle )
-    lockhandle = create_dotlock( db_name );
+    lockhandle = dotlock_create (db_name, 0);
   if (!lockhandle )
     log_fatal( _("can't create lock for `%s'\n"), db_name );
 #ifdef __riscos__
-  if (make_dotlock( lockhandle, -1 ) )
+  if (dotlock_take (lockhandle, -1) )
     log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
 #ifdef HAVE_W32CE_SYSTEM

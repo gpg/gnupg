@@ -3,6 +3,49 @@
 	* estream.c, exechelp-posix.c, exechelp-w32.c, exechelp-w32ce.c,
 	http.c, init.c, sysutils.c: Port to NPth.
 
+2011-09-30  Werner Koch  <wk@g10code.com>
+
+	Change the license of all JNLIB parts from LPGLv3+ to to LGPLv3+
+	or GPLv2+.
+
+	* dotlock.h (DOTLOCK_EXT_SYM_PREFIX): New macro.
+
+2011-09-29  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c (DOTLOCK_USE_PTHREAD): New macro.
+	[DOTLOCK_USE_PTHREAD] (all_lockfiles_mutex): New.
+	(LOCK_all_lockfiles, UNLOCK_all_lockfiles): New.  Use them to
+	protect access to all_lockfiles.
+	(dotlock_set_fd, dotlock_get_fd): New.
+
+2011-09-28  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c (dotlock_take, dotlock_take_unix, dotlock_take_w32):
+	Implement arbitrary timeout values.
+	(dotlock_create): Add arg FLAGS for future extensions.
+
+2011-09-27  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c (dotlock_take_unix): Check only the link count and not
+	the error return from link.
+	(use_hardlinks_p): New.
+	(dotlock_create_unix): Test for hardlinks.
+	(dotlock_take_unix): Implement O_EXCL locking.
+
+2011-09-23  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c: Factor Unix and W32 specific code out into specific
+	functions.  Define HAVE_POSIX_SYSTEM.  Rearrange some functions.
+	(disable_dotlock): Rename to dotlock_disable.
+	(create_dotlock): Rename to dotlock_create.
+	(destroy_dotlock): Rename to dotlock_destroy.
+	(make_dotlock): Rename to dotlock_take.
+	(release_dotlock): Rename to dotlock_release.
+
+2011-09-22  Werner Koch  <wk@g10code.com>
+
+	* dotlock.c: Remove support for RISCOS.
+
 2011-08-10  Werner Koch  <wk@g10code.com>
 
 	* t-exechelp.c (test_close_all_fds): Don't use the DUMMY_FD var.
@@ -2399,7 +2442,7 @@
 
 
  Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-	   2009, 2010 Free Software Foundation, Inc.
+	   2009, 2010, 2011 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

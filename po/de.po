@@ -128,16 +128,28 @@ msgid "error writing key: %s\n"
 msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
 
 #, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Bitte geben Sie die Passphrase für den SSH-Schlüssel %0A  %c ein."
 
 msgid "Please re-enter this passphrase"
 msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
+"s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen Schlüssel%%"
 "0A   %s%%0A im Schlüsselspeicher des gpg-agenten zu schützen."
@@ -1034,9 +1046,6 @@ msgstr "Fehler beim Schreiben von %s: %s\n"
 msgid "removing stale lockfile (created by %d)\n"
 msgstr "eine übriggebliebene Sperrdatei wird entfernt (erzeugt von %d)\n"
 
-msgid " - probably dead - removing lock"
-msgstr " - existiert wahrscheinlich nicht mehr - entferne Sperre"
-
 #, c-format
 msgid "waiting for lock (held by %d%s) %s...\n"
 msgstr "warte auf die Freigabe der Sperre (gehalten von %d%s) %s...\n"
@@ -1427,6 +1436,10 @@ msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? (j/N) "
 
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Dies ist ein privater Schlüssel! - Wirklich löschen? (j/N) "
+
+#, fuzzy
+msgid "deleting secret key not implemented\n"
+msgstr "Exportieren geheimer Schlüssel ist nicht erlaubt\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -2520,10 +2533,6 @@ msgstr ""
 
 msgid "importing secret keys not allowed\n"
 msgstr "Importieren geheimer Schlüssel ist nicht erlaubt\n"
-
-#, c-format
-msgid "key %s: secret key part already available\n"
-msgstr "Schlüssel %s: Die geheimen Teile sind bereits vorhanden\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -7666,6 +7675,25 @@ msgstr "Liste der LDAP Server"
 msgid "Configuration for OCSP"
 msgstr "Konfiguration zu OCSP"
 
+msgid "GPG for OpenPGP"
+msgstr ""
+
+msgid "GPG Agent"
+msgstr ""
+
+msgid "Smartcard Daemon"
+msgstr ""
+
+msgid "GPG for S/MIME"
+msgstr ""
+
+msgid "Directory Manager"
+msgstr ""
+
+#, fuzzy
+msgid "PIN and Passphrase Entry"
+msgstr "Falsche Passphrase!"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Die externe Überprüfung der Komponente %s war nicht erfolgreich"
@@ -7877,6 +7905,12 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid " - probably dead - removing lock"
+#~ msgstr " - existiert wahrscheinlich nicht mehr - entferne Sperre"
+
+#~ msgid "key %s: secret key part already available\n"
+#~ msgstr "Schlüssel %s: Die geheimen Teile sind bereits vorhanden\n"
 
 #~ msgid "self-signed certificate"
 #~ msgstr "eigenbeglaubigtes Zertifikat"

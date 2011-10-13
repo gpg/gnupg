@@ -1,3 +1,9 @@
+2011-10-12  Werner Koch  <wk@g10code.com>
+
+	* gpg.texi: Add a bunch of opindex items.
+
+	* yat2m.c (parse_file): Add hack to allow table indentation.
+
 2011-08-12  Werner Koch  <wk@g10code.com>
 
 	* texi.css: Override some elements.
