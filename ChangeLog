@@ -1,5 +1,8 @@
 2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
 
+	* configure.ac: Fix npth version check.
+	* m4/npth.m4: Fix version check.
+
 	* configure.ac: Don't check for PTH but for NPTH.
 	(AH_BOTTOM): Remove PTH_SYSCALL_SOFT.
 	(have_pth): Rename to ...
