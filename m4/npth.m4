@@ -23,11 +23,9 @@ AC_DEFUN([_AM_PATH_NPTH_CONFIG],
     npth_version=`$NPTH_CONFIG --version`
   fi
   npth_version_major=`echo $npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
   npth_version_minor=`echo $npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
-  npth_version_micro=`echo $npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
 ])
 
 dnl AM_PATH_NPTH([MINIMUM-VERSION,
@@ -36,7 +34,7 @@ dnl Test for libnpth and define NPTH_CFLAGS and NPTH_LIBS.
 dnl
 AC_DEFUN([AM_PATH_NPTH],
 [ AC_REQUIRE([_AM_PATH_NPTH_CONFIG])dnl
-  tmp=ifelse([$1], ,1:0.0.1,$1)
+  tmp=ifelse([$1], ,1:0.0,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
      req_npth_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
      min_npth_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
@@ -49,23 +47,16 @@ AC_DEFUN([AM_PATH_NPTH],
   ok=no
   if test "$NPTH_CONFIG" != "no" ; then
     req_major=`echo $min_npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
     req_minor=`echo $min_npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
-    req_micro=`echo $min_npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+
     if test "$npth_version_major" -gt "$req_major"; then
         ok=yes
     else
         if test "$npth_version_major" -eq "$req_major"; then
-            if test "$npth_version_minor" -gt "$req_minor"; then
+            if test "$npth_version_minor" -ge "$req_minor"; then
                ok=yes
-            else
-               if test "$npth_version_minor" -eq "$req_minor"; then
-                   if test "$npth_version_micro" -ge "$req_micro"; then
-                     ok=yes
-                   fi
-               fi
             fi
         fi
     fi
