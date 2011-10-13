@@ -1778,19 +1778,19 @@ start_connection_thread (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n", npth_self());
+      log_error ("handler 0x%lx nonce check FAILED\n", (unsigned long) npth_self());
       return NULL;
     }
 
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"),
-              npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d terminated\n"),
-              npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1810,12 +1810,12 @@ start_connection_thread_ssh (void *arg)
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
-              npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler_ssh (ctrl, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
-              npth_self(), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);

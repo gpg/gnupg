@@ -1,5 +1,9 @@
 2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
 
+	* gpg-agent.c (start_connection_thread)
+	(start_connection_thread_ssh): Cast npth_self result to unsigned
+	long for safety.
+
 	* cache.c (new_data): Fix error check.
 
 	* cache.c, call-pinentry.c, call-scd.c, findkey.c, gpg-agent.c,
