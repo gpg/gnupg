@@ -14,6 +14,11 @@
 	accept --with-libgpg-error-prefix as well as --with-gpg-error-prefix
 	* m4/gpg-error.m4: Update from git master.
 
+2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
+
+	* configure.ac: Fix npth version check.
+	* m4/npth.m4: Fix version check.
+
 2011-09-26  Marcus Brinkmann  <marcus@g10code.com>
 
 	* configure.ac: Don't check for PTH but for NPTH.
