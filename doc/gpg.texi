@@ -3202,7 +3202,7 @@ place, duplicate specification of the same filename is ignored, the
 last filename before a commit is used.  The filename is used until a
 new filename is used (at commit points) and all keys are written to
 that file. If a new filename is given, this file is created (and
-overwrites an existing one).  For gnuPG versions prior to 2.1, both
+overwrites an existing one).  For GnuPG versions prior to 2.1, both
 control statements must be given. For GnuPG 2.1 and later
 @samp{%secring} is a no-op.
 
@@ -3250,7 +3250,7 @@ The requested length of the generated key in bits.  The default is
 returned by running the command @samp{gpg2 --gpgconf-list}.
 
 @item Key-Grip: @var{hexstring}
-This is optional and used to generate a CSR or certificatet for an
+This is optional and used to generate a CSR or certificate for an
 already existing key.  Key-Length will be ignored when given.
 
 @item Key-Usage: @var{usage-list}
