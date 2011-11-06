@@ -1356,7 +1356,7 @@ do_change_keysize (int keyno, unsigned int nbits)
 
 
 static void
-generate_card_keys (void)
+generate_card_keys (ctrl_t ctrl)
 {
   struct agent_card_info_s info;
   int forced_chv1;
@@ -1435,7 +1435,7 @@ generate_card_keys (void)
          the serialnumber and thus it won't harm.  */
     }
 
-  generate_keypair (NULL, info.serialno, want_backup);
+  generate_keypair (ctrl, NULL, info.serialno, want_backup);
 
  leave:
   agent_release_card_info (&info);
@@ -1986,7 +1986,7 @@ card_edit (ctrl_t ctrl, strlist_t commands)
           break;
 
         case cmdGENERATE:
-          generate_card_keys ();
+          generate_card_keys (ctrl);
           break;
 
         case cmdPASSWD:

@@ -3709,12 +3709,12 @@ main (int argc, char **argv)
 	if( opt.batch ) {
 	    if( argc > 1 )
 		wrong_args("--gen-key [parameterfile]");
-	    generate_keypair (argc? *argv : NULL, NULL, 0);
+	    generate_keypair (ctrl, argc? *argv : NULL, NULL, 0);
 	}
 	else {
 	    if( argc )
 		wrong_args("--gen-key");
-	    generate_keypair (NULL, NULL, 0);
+	    generate_keypair (ctrl, NULL, NULL, 0);
 	}
 	break;
 

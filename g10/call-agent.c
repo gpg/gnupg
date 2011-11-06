@@ -1,6 +1,6 @@
 /* call-agent.c - Divert GPG operations to the agent.
  * Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008, 2009,
- *               2010 Free Software Foundation, Inc.
+ *               2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1506,55 +1506,52 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
 }
 
 
-
 
-/* FIXME: Call the agent to read the public key part for a given keygrip.  If
+/* Call the agent to read the public key part for a given keygrip.  If
    FROMCARD is true, the key is directly read from the current
    smartcard. In this case HEXKEYGRIP should be the keyID
    (e.g. OPENPGP.3). */
-/* int */
-/* agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip, */
-/*                ksba_sexp_t *r_pubkey) */
-/* { */
-/*   int rc; */
-/*   membuf_t data; */
-/*   size_t len; */
-/*   unsigned char *buf; */
-/*   char line[ASSUAN_LINELENGTH]; */
+gpg_error_t
+agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
+               unsigned char **r_pubkey)
+{
+  gpg_error_t err;
+  membuf_t data;
+  size_t len;
+  unsigned char *buf;
+  char line[ASSUAN_LINELENGTH];
 
-/*   *r_pubkey = NULL; */
-/*   rc = start_agent (ctrl); */
-/*   if (rc) */
-/*     return rc; */
+  *r_pubkey = NULL;
+  err = start_agent (ctrl, 0);
+  if (err)
+    return err;
 
-/*   rc = assuan_transact (agent_ctx, "RESET",NULL, NULL, NULL, NULL, NULL, NULL); */
-/*   if (rc) */
-/*     return rc; */
+  err = assuan_transact (agent_ctx, "RESET",NULL, NULL, NULL, NULL, NULL, NULL);
+  if (err)
+    return err;
 
-/*   snprintf (line, DIM(line)-1, "%sREADKEY %s", */
-/*             fromcard? "SCD ":"", hexkeygrip); */
-/*   line[DIM(line)-1] = 0; */
+  snprintf (line, DIM(line)-1, "%sREADKEY %s", fromcard? "SCD ":"", hexkeygrip);
 
-/*   init_membuf (&data, 1024); */
-/*   rc = assuan_transact (agent_ctx, line, */
-/*                         membuf_data_cb, &data,  */
-/*                         default_inq_cb, ctrl, NULL, NULL); */
-/*   if (rc) */
-/*     { */
-/*       xfree (get_membuf (&data, &len)); */
-/*       return rc; */
-/*     } */
-/*   buf = get_membuf (&data, &len); */
-/*   if (!buf) */
-/*     return gpg_error (GPG_ERR_ENOMEM); */
-/*   if (!gcry_sexp_canon_len (buf, len, NULL, NULL)) */
-/*     { */
-/*       xfree (buf); */
-/*       return gpg_error (GPG_ERR_INV_SEXP); */
-/*     } */
-/*   *r_pubkey = buf; */
-/*   return 0; */
-/* } */
+  init_membuf (&data, 1024);
+  err = assuan_transact (agent_ctx, line,
+                         membuf_data_cb, &data,
+                         default_inq_cb, NULL, NULL, NULL);
+  if (err)
+    {
+      xfree (get_membuf (&data, &len));
+      return err;
+    }
+  buf = get_membuf (&data, &len);
+  if (!buf)
+    return gpg_error_from_syserror ();
+  if (!gcry_sexp_canon_len (buf, len, NULL, NULL))
+    {
+      xfree (buf);
+      return gpg_error (GPG_ERR_INV_SEXP);
+    }
+  *r_pubkey = buf;
+  return 0;
+}
 
 
 

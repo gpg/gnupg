@@ -240,8 +240,8 @@ const char *gpg_curve_to_oid (const char *name, unsigned int *r_nbits);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
-void generate_keypair (const char *fname, const char *card_serialno,
-                       int card_backup_key);
+void generate_keypair (ctrl_t ctrl, const char *fname,
+                       const char *card_serialno, int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
 int keygen_add_key_expire( PKT_signature *sig, void *opaque );
@@ -253,7 +253,7 @@ int keygen_add_revkey(PKT_signature *sig, void *opaque);
 gpg_error_t make_backsig (PKT_signature *sig, PKT_public_key *pk,
                           PKT_public_key *sub_pk, PKT_public_key *sub_psk,
                           u32 timestamp, const char *cache_nonce);
-gpg_error_t generate_subkeypair (kbnode_t pub_keyblock);
+gpg_error_t generate_subkeypair (ctrl_t ctrl, kbnode_t pub_keyblock);
 #ifdef ENABLE_CARD_SUPPORT
 gpg_error_t generate_card_subkeypair (kbnode_t pub_keyblock,
                                       int keyno, const char *serialno);
