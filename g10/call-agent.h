@@ -148,6 +148,10 @@ gpg_error_t agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
                           const char *keyparms, int no_protection,
                           gcry_sexp_t *r_pubkey);
 
+/* Read a public key.  */
+gpg_error_t agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
+                           unsigned char **r_pubkey);
+
 /* Create a signature.  */
 gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
                           const char *hexkeygrip, const char *desc,

@@ -1794,7 +1794,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdADDKEY:
-	  if (!generate_subkeypair (keyblock))
+	  if (!generate_subkeypair (ctrl, keyblock))
 	    {
 	      redisplay = 1;
 	      modified = 1;

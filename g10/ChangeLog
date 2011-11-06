@@ -1,3 +1,15 @@
+2011-11-06  Werner Koch  <wk@g10code.com>
+
+	* card-util.c (generate_card_keys): Add arg CTRL.
+
+	* call-agent.c (agent_readkey): New.
+	* keygen.c (do_create_from_keygrip): New.
+	(ask_algo): Add arg R_KEYGRIP and a prompt to enter it.
+	(generate_subkeypair): Call do_create_from_keygrip if required.
+	(generate_subkeypair): Add arg CTRL.  Change caller.
+	(ask_algo): Add arg CTRL.
+	(generate_keypair): Ditto.
+
 2011-09-23  Werner Koch  <wk@g10code.com>
 
 	* gpgv.c (disable_dotlock): Rename to dotlock_disable.

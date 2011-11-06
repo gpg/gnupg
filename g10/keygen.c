@@ -1254,6 +1254,91 @@ key_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp,
 }
 
 
+/* Create a keyblock using the given KEYGRIP.  ALGO is the OpenPGP
+   algorithm of that keygrip.  */
+static int
+do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
+                        kbnode_t pub_root, u32 timestamp, u32 expireval,
+                        int is_subkey)
+{
+  int err;
+  PACKET *pkt;
+  PKT_public_key *pk;
+  gcry_sexp_t s_key;
+  const char *algoelem;
+
+  if (hexkeygrip[0] == '&')
+    hexkeygrip++;
+
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:       algoelem = "ne"; break;
+    case PUBKEY_ALGO_DSA:       algoelem = "pqgy"; break;
+    case PUBKEY_ALGO_ELGAMAL_E: algoelem = "pgy"; break;
+    case PUBKEY_ALGO_ECDH:
+    case PUBKEY_ALGO_ECDSA:     algoelem = ""; break;
+    default: return gpg_error (GPG_ERR_INTERNAL);
+    }
+
+
+  /* Ask the agent for the public key matching HEXKEYGRIP.  */
+  {
+    unsigned char *public;
+
+    err = agent_readkey (ctrl, 0, hexkeygrip, &public);
+    if (err)
+      return err;
+    err = gcry_sexp_sscan (&s_key, NULL,
+                           public, gcry_sexp_canon_len (public, 0, NULL, NULL));
+    xfree (public);
+    if (err)
+      return err;
+  }
+
+  /* Build a public key packet.  */
+  pk = xtrycalloc (1, sizeof *pk);
+  if (!pk)
+    {
+      err = gpg_error_from_syserror ();
+      gcry_sexp_release (s_key);
+      return err;
+    }
+
+  pk->timestamp = timestamp;
+  pk->version = 4;
+  if (expireval)
+    pk->expiredate = pk->timestamp + expireval;
+  pk->pubkey_algo = algo;
+
+  if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+    err = ecckey_from_sexp (pk->pkey, s_key, algo);
+  else
+    err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
+  if (err)
+    {
+      log_error ("key_from_sexp failed: %s\n", gpg_strerror (err) );
+      gcry_sexp_release (s_key);
+      free_public_key (pk);
+      return err;
+    }
+  gcry_sexp_release (s_key);
+
+  pkt = xtrycalloc (1, sizeof *pkt);
+  if (!pkt)
+    {
+      err = gpg_error_from_syserror ();
+      free_public_key (pk);
+      return err;
+    }
+
+  pkt->pkttype = is_subkey ? PKT_PUBLIC_SUBKEY : PKT_PUBLIC_KEY;
+  pkt->pkt.public_key = pk;
+  add_kbnode (pub_root, new_kbnode (pkt));
+
+  return 0;
+}
+
+
 /* Common code for the key generation fucntion gen_xxx.  */
 static int
 common_gen (const char *keyparms, int algo, const char *algoelem,
@@ -1691,14 +1776,53 @@ ask_key_flags(int algo,int subkey)
 }
 
 
+/* Check whether we have a key for the key with HEXGRIP.  Returns 0 if
+   there is no such key or the OpenPGP algo number for the key.  */
+static int
+check_keygrip (ctrl_t ctrl, const char *hexgrip)
+{
+  gpg_error_t err;
+  unsigned char *public;
+  size_t publiclen;
+  int algo;
+
+  if (hexgrip[0] == '&')
+    hexgrip++;
+
+  err = agent_readkey (ctrl, 0, hexgrip, &public);
+  if (err)
+    return 0;
+  publiclen = gcry_sexp_canon_len (public, 0, NULL, NULL);
+
+  get_pk_algo_from_canon_sexp (public, publiclen, &algo);
+  xfree (public);
+
+  switch (algo)
+    {
+    case GCRY_PK_RSA:   return PUBKEY_ALGO_RSA;
+    case GCRY_PK_DSA:   return PUBKEY_ALGO_DSA;
+    case GCRY_PK_ELG_E: return PUBKEY_ALGO_ELGAMAL_E;
+    case GCRY_PK_ECDH:  return PUBKEY_ALGO_ECDH;
+    case GCRY_PK_ECDSA: return PUBKEY_ALGO_ECDSA;
+    default: return 0;
+    }
+}
+
+
+
 /* Ask for an algorithm.  The function returns the algorithm id to
  * create. If ADDMODE is false the function won't show an option to
  * create the primary and subkey combined and won't set R_USAGE
  * either.  If a combined algorithm has been selected, the subkey
- * algorithm is stored at R_SUBKEY_ALGO.  */
+ * algorithm is stored at R_SUBKEY_ALGO.  If R_KEYGRIP is given, the
+ * user has the choice to enter the keygrip of an existing key.  That
+ * keygrip is then stored at this address.  The caller needs to free
+ * it. */
 static int
-ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
+ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
+          char **r_keygrip)
 {
+  char *keygrip = NULL;
   char *answer;
   int algo;
   int dummy_algo;
@@ -1736,6 +1860,9 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
   if (opt.expert && addmode)
     tty_printf (_("  (%d) ECDH (encrypt only)\n"), 12 );
 
+  if (opt.expert && r_keygrip)
+    tty_printf (_("  (%d) Existing key\n"), 13 );
+
   for (;;)
     {
       *r_usage = 0;
@@ -1744,6 +1871,7 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
       cpr_kill_prompt ();
       algo = *answer? atoi (answer) : 1;
       xfree(answer);
+      answer = NULL;
       if (algo == 1 && !addmode)
         {
           algo = PUBKEY_ALGO_RSA;
@@ -1816,10 +1944,42 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
           *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
+      else if (algo == 13 && opt.expert && r_keygrip)
+        {
+          for (;;)
+            {
+              xfree (answer);
+              answer = tty_get (_("Enter the keygrip: "));
+              tty_kill_prompt ();
+              trim_spaces (answer);
+              if (!*answer)
+                {
+                  xfree (answer);
+                  answer = NULL;
+                  continue;
+                }
+
+              if (strlen (answer) != 40 &&
+                       !(answer[0] == '&' && strlen (answer+1) == 40))
+                tty_printf
+                  (_("Not a valid keygrip (expecting 40 hex digits)\n"));
+              else if (!(algo = check_keygrip (ctrl, answer)) )
+                tty_printf (_("No key with this keygrip\n"));
+              else
+                break; /* Okay.  */
+            }
+          xfree (keygrip);
+          keygrip = answer;
+          answer = NULL;
+          *r_usage = ask_key_flags (algo, addmode);
+          break;
+	}
       else
         tty_printf (_("Invalid selection.\n"));
     }
 
+  if (r_keygrip)
+    *r_keygrip = keygrip;
   return algo;
 }
 
@@ -3099,7 +3259,7 @@ read_parameter_file( const char *fname )
  * imported to the card and a backup file created by gpg-agent.
  */
 void
-generate_keypair (const char *fname, const char *card_serialno,
+generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
                   int card_backup_key)
 {
   unsigned int nbits;
@@ -3180,7 +3340,11 @@ generate_keypair (const char *fname, const char *card_serialno,
     {
       int subkey_algo;
 
-      algo = ask_algo (0, &subkey_algo, &use);
+      /* Fixme: To support creating a primary key by keygrip we better
+         also define the keyword for the parameter file.  Note that
+         the subkey case will never be asserted if a keygrip has been
+         given.  */
+      algo = ask_algo (ctrl, 0, &subkey_algo, &use, NULL);
       if (subkey_algo)
         {
           /* Create primary and subkey at once.  */
@@ -3653,7 +3817,7 @@ do_generate_keypair (struct para_data_s *para,
 /* Add a new subkey to an existing key.  Returns 0 if a new key has
    been generated and put into the keyblocks.  */
 gpg_error_t
-generate_subkeypair (KBNODE keyblock)
+generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
 {
   gpg_error_t err = 0;
   kbnode_t node;
@@ -3712,9 +3876,11 @@ generate_subkeypair (KBNODE keyblock)
   if (serialno)
     tty_printf (_("Secret parts of primary key are stored on-card.\n"));
 
-  algo = ask_algo (1, NULL, &use);
+  xfree (hexgrip);
+  hexgrip = NULL;
+  algo = ask_algo (ctrl, 1, NULL, &use, &hexgrip);
   assert (algo);
-  nbits = ask_keysize (algo, 0);
+  nbits = hexgrip? 0 : ask_keysize (algo, 0);
   expire = ask_expire_interval (0, NULL);
   if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
                                                _("Really create? (y/N) ")))
@@ -3723,7 +3889,11 @@ generate_subkeypair (KBNODE keyblock)
       goto leave;
     }
 
-  err = do_create (algo, nbits, keyblock, cur_time, expire, 1, 0, NULL);
+  if (hexgrip)
+    err = do_create_from_keygrip (ctrl, algo, hexgrip,
+                                  keyblock, cur_time, expire, 1);
+  else
+    err = do_create (algo, nbits, keyblock, cur_time, expire, 1, 0, NULL);
   if (err)
     goto leave;
 
