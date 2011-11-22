@@ -110,13 +110,15 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
           if (!(sk->pubkey_usage & PUBKEY_USAGE_ENC))
             continue;
           keyid_from_pk (sk, keyid);
-          log_info (_("anonymous recipient; trying secret key %s ...\n"),
-                    keystr (keyid));
+          if (!opt.quiet)
+            log_info (_("anonymous recipient; trying secret key %s ...\n"),
+                      keystr (keyid));
 
           rc = get_it (k, dek, sk, keyid);
           if (!rc)
             {
-              log_info (_("okay, we are the anonymous recipient.\n"));
+              if (!opt.quiet)
+                log_info (_("okay, we are the anonymous recipient.\n"));
               break;
             }
           else if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
