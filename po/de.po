@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-03-08 12:47+0100\n"
+"PO-Revision-Date: 2011-11-24 14:15+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -131,28 +131,28 @@ msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
-msgstr ""
+msgstr "Ein SSH Processs möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  (%s)%%0AErlauben Sie dies?"
 
 msgid "Allow"
-msgstr ""
+msgstr "Erlauben"
 
 msgid "Deny"
-msgstr ""
+msgstr "Verweigern"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
-msgstr "Bitte geben Sie die Passphrase für den SSH-Schlüssel %0A  %c ein."
+msgstr "Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  (%c)%%0Aein."
 
 msgid "Please re-enter this passphrase"
 msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
 "s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen Schlüssel%%"
-"0A   %s%%0A im Schlüsselspeicher des gpg-agenten zu schützen."
+"Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen\n"
+"Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu schützen."
 
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
@@ -1437,9 +1437,8 @@ msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? (j/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Dies ist ein privater Schlüssel! - Wirklich löschen? (j/N) "
 
-#, fuzzy
 msgid "deleting secret key not implemented\n"
-msgstr "Exportieren geheimer Schlüssel ist nicht erlaubt\n"
+msgstr "Löschen des geheimen Schlüssel ist nicht implementiert\n"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -3593,6 +3592,19 @@ msgstr "  (%d) ECDSA (Leistungsfähigkeit selber einstellbar)\n"
 #, c-format
 msgid "  (%d) ECDH (encrypt only)\n"
 msgstr "  (%d) ECDH (nur verschlüsseln)\n"
+
+#, c-format
+msgid "  (%d) Existing key\n"
+msgstr "   (%d) Vorhandener Schlüssel\n"
+
+msgid "Enter the keygrip: "
+msgstr "Geben Sie den \"Keygrip\" ein: "
+
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr "Kein gültiger \"Keygrip\" (40 Hex-Ziffern werden erwartet)\n"
+
+msgid "No key with this keygrip\n"
+msgstr "Kein Schlüssel mit diesem \"Keygrip\"\n"
 
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
@@ -5882,15 +5894,6 @@ msgstr "   (%d) Vorhandener Schlüssel\n"
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Vorhandener Schlüssel auf der Karte\n"
 
-msgid "Enter the keygrip: "
-msgstr "Geben Sie den \"Keygrip\" ein: "
-
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr "Kein gültiger \"Keygrip\" (40 Hex-Ziffern werden erwartet)\n"
-
-msgid "No key with this keygrip\n"
-msgstr "Kein Schlüssel mit diesem \"Keygrip\"\n"
-
 #, c-format
 msgid "error reading the card: %s\n"
 msgstr "Fehler beim Lesen von der Karte: %s\n"
@@ -7676,23 +7679,22 @@ msgid "Configuration for OCSP"
 msgstr "Konfiguration zu OCSP"
 
 msgid "GPG for OpenPGP"
-msgstr ""
+msgstr "GPG für OpenPGP"
 
 msgid "GPG Agent"
-msgstr ""
+msgstr "GPG Agent"
 
 msgid "Smartcard Daemon"
-msgstr ""
+msgstr "Smartcard Daemon"
 
 msgid "GPG for S/MIME"
-msgstr ""
+msgstr "GPG für S/MIME"
 
 msgid "Directory Manager"
-msgstr ""
+msgstr "Directory Manager"
 
-#, fuzzy
 msgid "PIN and Passphrase Entry"
-msgstr "Falsche Passphrase!"
+msgstr "Falsche PIN oder Passphrase!"
 
 #, c-format
 msgid "External verification of component %s failed"
