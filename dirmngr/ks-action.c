@@ -87,7 +87,7 @@ ks_action_help (ctrl_t ctrl, const char *url)
 
   if (!parsed_uri)
     ks_print_help (ctrl,
-                   "(Use the schema followed by a colon for specific help.)");
+                   "(Use an URL for engine specific help.)");
   else
     http_release_parsed_uri (parsed_uri);
   return err;

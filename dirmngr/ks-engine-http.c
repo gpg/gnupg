@@ -43,7 +43,7 @@ ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
 
   if (!uri)
     err = ks_print_help (ctrl, "  http");
-  else if (uri->is_http)
+  else if (uri->is_http && strcmp (uri->scheme, "hkp"))
     err = ks_print_help (ctrl, data);
   else
     err = 0;
