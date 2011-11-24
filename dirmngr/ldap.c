@@ -666,7 +666,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
   char *p, *pend;
   int n;
   int okay = 0;
-  int is_cms = 0;
+  /* int is_cms = 0; */
 
   *value = NULL;
   *valuelen = 0;
@@ -758,7 +758,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
             {
               p = context->tmpbuf;
               p[n] = 0; /*(we allocated one extra byte for this.)*/
-              is_cms = 0;
+              /* fixme: is_cms = 0; */
               if ( (pend = strchr (p, ';')) )
                 *pend = 0; /* Strip off the extension. */
               if (!ascii_strcasecmp (p, USERCERTIFICATE))

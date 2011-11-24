@@ -209,7 +209,7 @@ map_host (const char *name)
       int refidx;
 
       reftblsize = 100;
-      reftbl = xmalloc (reftblsize * sizeof *reftbl);
+      reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
       if (!reftbl)
         return NULL;
       refidx = 0;
@@ -280,7 +280,7 @@ map_host (const char *name)
                       else
                         {
                           if (ai->ai_family == AF_INET)
-                        hosttable[tmpidx]->v4 = 1;
+                            hosttable[tmpidx]->v4 = 1;
                           if (ai->ai_family == AF_INET6)
                             hosttable[tmpidx]->v6 = 1;
 
@@ -409,7 +409,7 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 
   if (!uri)
     err = ks_print_help (ctrl, "  hkp");
-  else if (uri->is_http)
+  else if (uri->is_http && !strcmp (uri->scheme, "hkp"))
     err = ks_print_help (ctrl, data);
   else
     err = 0;
@@ -472,7 +472,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   char *request_buffer = NULL;
 
   *r_fp = NULL;
-  return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
  once_more:
   err = http_open (&http,
                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,

@@ -681,11 +681,10 @@ get_cert_bysubject (const char *subject_dn, unsigned int seq)
 static enum pattern_class
 classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
 {
-  enum pattern_class result = PATTERN_UNKNOWN;
+  enum pattern_class result;
   const char *s;
   int hexprefix = 0;
   int hexlength;
-  int mode = 0;
 
   *r_offset = *r_sn_offset = 0;
 
@@ -718,7 +717,7 @@ classify_pattern (const char *pattern, size_t *r_offset, size_t *r_sn_offset)
       break;
 
     case '*':  /* Case insensitive substring search.  */
-      mode = PATTERN_SUBSTR;
+      result = PATTERN_SUBSTR;
       s++;
       break;
 
