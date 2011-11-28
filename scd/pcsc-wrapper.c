@@ -178,6 +178,13 @@ long (* pcsc_transmit) (unsigned long card,
                         unsigned long *recv_len);
 long (* pcsc_set_timeout) (unsigned long context,
                            unsigned long timeout);
+long (* pcsc_control) (unsigned long card,
+                       unsigned long control_code,
+                       const void *send_buffer,
+                       unsigned long send_len,
+                       void *recv_buffer,
+                       unsigned long recv_len,
+                       unsigned long *bytes_returned);
 
 
 
@@ -335,6 +342,7 @@ load_pcsc_driver (const char *libname)
   pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
   pcsc_transmit          = dlsym (handle, "SCardTransmit");
   pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
+  pcsc_control           = dlsym (handle, "SCardControl");
 
   if (!pcsc_establish_context
       || !pcsc_release_context
@@ -347,13 +355,14 @@ load_pcsc_driver (const char *libname)
       || !pcsc_begin_transaction
       || !pcsc_end_transaction
       || !pcsc_transmit
+      || !pcsc_control
       /* || !pcsc_set_timeout */)
     {
       /* Note that set_timeout is currently not used and also not
          available under Windows. */
       fprintf (stderr,
                "apdu_open_reader: invalid PC/SC driver "
-               "(%d%d%d%d%d%d%d%d%d%d%d%d)\n",
+               "(%d%d%d%d%d%d%d%d%d%d%d%d%d)\n",
                !!pcsc_establish_context,
                !!pcsc_release_context,
                !!pcsc_list_readers,
@@ -365,7 +374,8 @@ load_pcsc_driver (const char *libname)
                !!pcsc_begin_transaction,
                !!pcsc_end_transaction,
                !!pcsc_transmit,
-               !!pcsc_set_timeout );
+               !!pcsc_set_timeout,
+               !!pcsc_control );
       dlclose (handle);
       exit (1);
     }
@@ -720,6 +730,38 @@ handle_transmit (unsigned char *argbuf, size_t arglen)
 }
 
 
+/* Handle a control request.  The argument is expected to be a buffer
+   which contains CONTROL_CODE (4-byte) and INPUT_BYTES.
+ */
+static void
+handle_control (unsigned char *argbuf, size_t arglen)
+{
+  long err;
+  unsigned long ioctl_code;
+  unsigned long recv_len = 1024;
+  unsigned char buffer[1024];
+
+  if (arglen < 4)
+    bad_request ("CONTROL");
+
+  ioctl_code = (argbuf[0] << 24) | (argbuf[1] << 16) | (argbuf[2] << 8) | argbuf[3];
+  argbuf += 4;
+  arglen -= 4;
+
+  recv_len = sizeof (buffer);
+  err = pcsc_control (pcsc_card, ioctl_code, argbuf, arglen,
+                      buffer, recv_len, &recv_len);
+  if (err)
+    {
+      if (verbose)
+        fprintf (stderr, PGM": pcsc_control failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      request_failed (err);
+      return;
+    }
+  request_succeeded (buffer, recv_len);
+}
+
 
 static void
 print_version (int with_help)
@@ -829,6 +871,10 @@ main (int argc, char **argv)
 
         case 5:
           handle_reset (argbuffer, arglen);
+          break;
+
+        case 6:
+          handle_control (argbuffer, arglen);
           break;
 
         default:
