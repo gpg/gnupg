@@ -115,8 +115,9 @@ static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
                                   struct keyserver_spec *keyserver);
 
 
-/* Reasonable guess */
-#define DEFAULT_MAX_CERT_SIZE 16384
+/* Reasonable guess.  The commonly used test key simon.josefsson.org
+   is larger than 32k, thus we need at least this value. */
+#define DEFAULT_MAX_CERT_SIZE 65536
 
 static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
 

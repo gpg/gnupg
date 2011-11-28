@@ -1,5 +1,7 @@
 2011-11-28  Werner Koch  <wk@g10code.com>
 
+	* t-dns-cert.c (main): Increase MAX_SIZE to 64k.
+
 	* dns-cert.c (get_dns_cert): Factor test code out to ...
 	* t-dns-cert.c: new file.
 

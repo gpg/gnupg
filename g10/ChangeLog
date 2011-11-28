@@ -1,3 +1,7 @@
+2011-11-28  Werner Koch  <wk@g10code.com>
+
+	* keyserver.c (DEFAULT_MAX_CERT_SIZE): Increase from 16k to 64k.
+
 2011-11-22  Werner Koch  <wk@g10code.com>
 
 	* pubkey-enc.c (get_session_key): Don't print anonymous recipient
