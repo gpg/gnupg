@@ -1550,7 +1550,7 @@ verify_a_chv (app_t app,
                     gpg_strerror (rc));
           return rc;
         }
-      rc = iso7816_verify_kp (app->slot, 0x80+chvno, "", 0, &pininfo);
+      rc = iso7816_verify_kp (app->slot, 0x80+chvno, &pininfo);
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
 
@@ -1730,7 +1730,7 @@ verify_chv3 (app_t app,
                         gpg_strerror (rc));
               return rc;
             }
-          rc = iso7816_verify_kp (app->slot, 0x83, "", 0, &pininfo);
+          rc = iso7816_verify_kp (app->slot, 0x83, &pininfo);
           /* Dismiss the prompt. */
           pincb (pincb_arg, NULL, NULL);
         }
