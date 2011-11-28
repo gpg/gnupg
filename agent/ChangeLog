@@ -1,3 +1,10 @@
+2011-11-28  Werner Koch  <wk@g10code.com>
+
+	* command-ssh.c (card_key_available): Change wording of no key
+	diagnostic.
+	(ssh_handler_request_identities): Do not call card_key_available
+	if the scdaemon is disabled.
+
 2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
 
 	* gpg-agent.c (start_connection_thread)

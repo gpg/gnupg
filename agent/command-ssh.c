@@ -1710,7 +1710,7 @@ card_key_available (ctrl_t ctrl, gcry_sexp_t *r_pk, char **cardsn)
     }
   if (err)
     {
-      log_error (_("error getting default authentication keyID of card: %s\n"),
+      log_error (_("no authentication key for ssh on card: %s\n"),
                  gpg_strerror (err));
       xfree (serialno);
       return err;
@@ -1924,7 +1924,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
      reader - this should be allowed even without being listed in
      sshcontrol. */
 
-  if (!card_key_available (ctrl, &key_public, &cardsn))
+  if (!opt.disable_scdaemon
+      && !card_key_available (ctrl, &key_public, &cardsn))
     {
       err = ssh_send_key_public (key_blobs, key_public, cardsn);
       gcry_sexp_release (key_public);
