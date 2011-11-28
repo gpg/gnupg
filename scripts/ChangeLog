@@ -1,3 +1,8 @@
+2011-11-28  Werner Koch  <wk@g10code.com>,
+	    Jim Meyering  <jim@meyering.net>
+
+	* build-all.sh: New.
+
 2011-08-10  Werner Koch  <wk@g10code.com>
 
 	* config.guess, config.sub: Update to version 2011-06-03.
