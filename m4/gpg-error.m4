@@ -15,10 +15,20 @@ dnl Test for libgpg-error and define GPG_ERROR_CFLAGS and GPG_ERROR_LIBS
 dnl
 AC_DEFUN([AM_PATH_GPG_ERROR],
 [ AC_REQUIRE([AC_CANONICAL_HOST])
-  AC_ARG_WITH(gpg-error-prefix,
-            AC_HELP_STRING([--with-gpg-error-prefix=PFX],
+  dnl --with-libgpg-error-prefix=PFX is the preferred name for this option,
+  dnl since that is consistent with how our three siblings use the directory/
+  dnl package name in --with-$dir_name-prefix=PFX.
+  AC_ARG_WITH(libgpg-error-prefix,
+            AC_HELP_STRING([--with-libgpg-error-prefix=PFX],
                            [prefix where GPG Error is installed (optional)]),
      gpg_error_config_prefix="$withval", gpg_error_config_prefix="")
+
+  dnl Accept --with-gpg-error-prefix and make it work the same as
+  dnl --with-libgpg-error-prefix above, for backwards compatibility,
+  dnl but do not document this old, inconsistently-named option.
+  AC_ARG_WITH(gpg-error-prefix,,
+     gpg_error_config_prefix="$withval", gpg_error_config_prefix="")
+
   if test x$gpg_error_config_prefix != x ; then
      if test x${GPG_ERROR_CONFIG+set} != xset ; then
         GPG_ERROR_CONFIG=$gpg_error_config_prefix/bin/gpg-error-config
