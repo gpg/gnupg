@@ -55,7 +55,7 @@ main (int argc, char **argv)
 
   printf ("CERT lookup on `%s'\n", name);
 
-  rc = get_dns_cert (name, 16384, &iobuf, &fpr, &fpr_len, &url);
+  rc = get_dns_cert (name, 65536, &iobuf, &fpr, &fpr_len, &url);
   if (rc == -1)
     fputs ("lookup result: error\n", stdout);
   else if (!rc)
