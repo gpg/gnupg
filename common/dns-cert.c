@@ -56,8 +56,8 @@
    found with a supported type; it is expected that only one CERT
    record is used. */
 int
-get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
-              unsigned char **fpr, size_t *fpr_len, char **url)
+get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
+              unsigned char **fpr, size_t * fpr_len, char **url)
 {
 #ifdef USE_DNS_CERT
 #ifdef USE_ADNS
@@ -92,7 +92,7 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
       return 0;
     }
 
-  for (rc = 0, count=0; !rc && count < answer->nrrs; count++)
+  for (rc = 0, count = 0; !rc && count < answer->nrrs; count++)
     {
       int datalen = answer->rrs.byteblock[count].len;
       const unsigned char *data = answer->rrs.byteblock[count].data;
@@ -100,7 +100,7 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
       if (datalen < 5)
         continue;  /* Truncated CERT record - skip.  */
 
-      ctype = ((data[0]<<8)|data[1]);
+      ctype = ((data[0] << 8) | data[1]);
       /* (key tag and algorithm fields are not required.) */
       data += 5;
       datalen -= 5;
@@ -109,11 +109,11 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
         {
           /* CERT type is PGP.  Gpg checks for a minimum length of 11,
              thus we do the same.  */
-          *iobuf = iobuf_temp_with_content ((char*)data, datalen);
+          *iobuf = iobuf_temp_with_content ((char *)data, datalen);
           rc = 1;
         }
       else if (ctype == 6 && datalen && datalen < 1023
-               && datalen >= data[0]+1 && fpr && fpr_len && url)
+               && datalen >= data[0] + 1 && fpr && fpr_len && url)
         {
           /* CERT type is IPGP.  We made sure tha the data is
              plausible and that the caller requested the
@@ -122,16 +122,16 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
           if (*fpr_len)
             {
               *fpr = xmalloc (*fpr_len);
-              memcpy (*fpr, data+1, *fpr_len);
+              memcpy (*fpr, data + 1, *fpr_len);
             }
           else
             *fpr = NULL;
 
           if (datalen > *fpr_len + 1)
             {
-              *url = xmalloc (datalen - (*fpr_len+1) + 1);
-              memcpy (*url, data + (*fpr_len+1), datalen - (*fpr_len+1));
-              (*url)[datalen - (*fpr_len+1)] = '\0';
+              *url = xmalloc (datalen - (*fpr_len + 1) + 1);
+              memcpy (*url, data + (*fpr_len + 1), datalen - (*fpr_len + 1));
+              (*url)[datalen - (*fpr_len + 1)] = '\0';
             }
           else
             *url = NULL;
@@ -147,137 +147,138 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
 #else /*!USE_ADNS*/
 
   unsigned char *answer;
-  int r,ret=-1;
+  int ret = -1;
+  int r;
   u16 count;
 
-  if(fpr)
-    *fpr=NULL;
+  if (fpr)
+    *fpr = NULL;
 
-  if(url)
-    *url=NULL;
+  if (url)
+    *url = NULL;
 
-  answer=xmalloc(max_size);
+  answer = xmalloc (max_size);
 
-  r=res_query(name,C_IN,T_CERT,answer,max_size);
+  r = res_query (name, C_IN, T_CERT, answer, max_size);
   /* Not too big, not too small, no errors and at least 1 answer. */
-  if(r>=sizeof(HEADER) && r<=max_size
-     && (((HEADER *)answer)->rcode)==NOERROR
-     && (count=ntohs(((HEADER *)answer)->ancount)))
+  if (r >= sizeof (HEADER) && r <= max_size
+      && (((HEADER *) answer)->rcode) == NOERROR
+      && (count = ntohs (((HEADER *) answer)->ancount)))
     {
       int rc;
-      unsigned char *pt,*emsg;
+      unsigned char *pt, *emsg;
 
-      emsg=&answer[r];
+      emsg = &answer[r];
 
-      pt=&answer[sizeof(HEADER)];
+      pt = &answer[sizeof (HEADER)];
 
       /* Skip over the query */
 
-      rc=dn_skipname(pt,emsg);
-      if(rc==-1)
-	goto fail;
+      rc = dn_skipname (pt, emsg);
+      if (rc == -1)
+        goto fail;
 
-      pt+=rc+QFIXEDSZ;
+      pt += rc + QFIXEDSZ;
 
       /* There are several possible response types for a CERT request.
-	 We're interested in the PGP (a key) and IPGP (a URI) types.
-	 Skip all others.  TODO: A key is better than a URI since
-	 we've gone through all this bother to fetch it, so favor that
-	 if we have both PGP and IPGP? */
+         We're interested in the PGP (a key) and IPGP (a URI) types.
+         Skip all others.  TODO: A key is better than a URI since
+         we've gone through all this bother to fetch it, so favor that
+         if we have both PGP and IPGP? */
 
-      while(count-->0 && pt<emsg)
-	{
-	  u16 type,class,dlen,ctype;
+      while (count-- > 0 && pt < emsg)
+        {
+          u16 type, class, dlen, ctype;
 
-	  rc=dn_skipname(pt,emsg); /* the name we just queried for */
-	  if(rc==-1)
-	    break;
+          rc = dn_skipname (pt, emsg);  /* the name we just queried for */
+          if (rc == -1)
+            break;
 
-	  pt+=rc;
+          pt += rc;
 
-	  /* Truncated message? 15 bytes takes us to the point where
-	     we start looking at the ctype. */
-	  if((emsg-pt)<15)
-	    break;
+          /* Truncated message? 15 bytes takes us to the point where
+             we start looking at the ctype. */
+          if ((emsg - pt) < 15)
+            break;
 
-	  type=*pt++ << 8;
-	  type|=*pt++;
+          type = *pt++ << 8;
+          type |= *pt++;
 
-	  class=*pt++ << 8;
-	  class|=*pt++;
-	  /* We asked for IN and got something else !? */
-	  if(class!=C_IN)
-	    break;
+          class = *pt++ << 8;
+          class |= *pt++;
+          /* We asked for IN and got something else !? */
+          if (class != C_IN)
+            break;
 
-	  /* ttl */
-	  pt+=4;
+          /* ttl */
+          pt += 4;
 
-	  /* data length */
-	  dlen=*pt++ << 8;
-	  dlen|=*pt++;
+          /* data length */
+          dlen = *pt++ << 8;
+          dlen |= *pt++;
 
-	  /* We asked for CERT and got something else - might be a
-	     CNAME, so loop around again. */
-	  if(type!=T_CERT)
-	    {
-	      pt+=dlen;
-	      continue;
-	    }
+          /* We asked for CERT and got something else - might be a
+             CNAME, so loop around again. */
+          if (type != T_CERT)
+            {
+              pt += dlen;
+              continue;
+            }
 
-	  /* The CERT type */
-	  ctype=*pt++ << 8;
-	  ctype|=*pt++;
+          /* The CERT type */
+          ctype = *pt++ << 8;
+          ctype |= *pt++;
 
-	  /* Skip the CERT key tag and algo which we don't need. */
-	  pt+=3;
+          /* Skip the CERT key tag and algo which we don't need. */
+          pt += 3;
 
-	  dlen-=5;
+          dlen -= 5;
 
-	  /* 15 bytes takes us to here */
+          /* 15 bytes takes us to here */
 
-	  if(ctype==3 && iobuf && dlen)
-	    {
-	      /* PGP type */
-	      *iobuf=iobuf_temp_with_content((char *)pt,dlen);
-	      ret=1;
-	      break;
-	    }
-	  else if(ctype==6 && dlen && dlen<1023 && dlen>=pt[0]+1
-		  && fpr && fpr_len && url)
-	    {
-	      /* IPGP type */
-	      *fpr_len=pt[0];
+          if (ctype == 3 && iobuf && dlen)
+            {
+              /* PGP type */
+              *iobuf = iobuf_temp_with_content ((char *) pt, dlen);
+              ret = 1;
+              break;
+            }
+          else if (ctype == 6 && dlen && dlen < 1023 && dlen >= pt[0] + 1
+                   && fpr && fpr_len && url)
+            {
+              /* IPGP type */
+              *fpr_len = pt[0];
 
-	      if(*fpr_len)
-		{
-		  *fpr=xmalloc(*fpr_len);
-		  memcpy(*fpr,&pt[1],*fpr_len);
-		}
-	      else
-		*fpr=NULL;
+              if (*fpr_len)
+                {
+                  *fpr = xmalloc (*fpr_len);
+                  memcpy (*fpr, &pt[1], *fpr_len);
+                }
+              else
+                *fpr = NULL;
 
-	      if(dlen>*fpr_len+1)
-		{
-		  *url=xmalloc(dlen-(*fpr_len+1)+1);
-		  memcpy(*url,&pt[*fpr_len+1],dlen-(*fpr_len+1));
-		  (*url)[dlen-(*fpr_len+1)]='\0';
-		}
-	      else
-		*url=NULL;
+              if (dlen > *fpr_len + 1)
+                {
+                  *url = xmalloc (dlen - (*fpr_len + 1) + 1);
+                  memcpy (*url, &pt[*fpr_len + 1], dlen - (*fpr_len + 1));
+                  (*url)[dlen - (*fpr_len + 1)] = '\0';
+                }
+              else
+                *url = NULL;
 
-	      ret=2;
-	      break;
-	    }
+              ret = 2;
+              break;
+            }
 
-	  /* Neither type matches, so go around to the next answer. */
-	  pt+=dlen;
-	}
+          /* Neither type matches, so go around to the next answer. */
+          pt += dlen;
+        }
     }
 
  fail:
-  xfree(answer);
+  xfree (answer);
   return ret;
-#endif /*!USE_ADNS*/
+#endif /*!USE_ADNS */
 #else /* !USE_DNS_CERT */
   (void)name;
   (void)max_size;
