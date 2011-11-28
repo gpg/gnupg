@@ -1,3 +1,38 @@
+2011-11-28  Niibe Yutaka  <gniibe@fsij.org>
+
+	* iso7816.h (iso7816_verify_kp): Remove arguments of CHV and CHVLEN.
+
+	* iso7816.c (iso7816_verify_kp): Call apdu_keypad_verify. Only
+	handle thecase with PININFO.
+	(iso7816_verify): Call apdu_send_simple.
+
+	* app-openpgp.c (verify_a_chv, verify_chv3): Follow the change of
+	iso7816_verify_kp.
+
+	* app-nks.c (verify_pin): Likewise.
+
+	* app-dinsig.c (verify_pin): Likewise.
+
+	* apdu.c: Include "iso7816.h".
+	(struct reader_table_s): New memeber function keypad_verify.
+	Add fields verify_ioctl and modify_ioctl in pcsc.
+	(CM_IOCTL_GET_FEATURE_REQUEST, FEATURE_VERIFY_PIN_DIRECT)
+	(FEATURE_MODIFY_PIN_DIRECT): New.
+	(pcsc_control): New.
+	(control_pcsc_direct, control_pcsc_wrapped, control_pcsc)
+	(check_pcsc_keypad, pcsc_keypad_verify): New.
+	(ccid_keypad_verify, apdu_keypad_verify): New.
+	(new_reader_slot): Initialize with check_pcsc_keypad,
+	pcsc_keypad_verify, verify_ioctl and modify_ioctl.
+	(open_ct_reader): Initialize keypad_verify with NULL.
+	(open_ccid_reader): Initialize keypad_verify.
+	(open_rapdu_reader): Initialize keypad_verify with NULL.
+	(apdu_open_reader): Initialize pcsc_control.
+
+	* pcsc-wrapper.c (load_pcsc_driver): Initialize pcsc_control.
+	(handle_control): New.
+	(main): Handle the case 6 of handle_control.
+
 2011-08-10  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_killscd): Use the new assuan force close flag

@@ -281,22 +281,16 @@ iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
 
 
 /* Perform a VERIFY command on SLOT using the card holder verification
-   vector CHVNO with a CHV of lenght CHVLEN.  With PININFO non-NULL
-   the keypad of the reader will be used.  Returns 0 on success. */
+   vector CHVNO.  With PININFO non-NULL the keypad of the reader will
+   be used.  Returns 0 on success. */
 gpg_error_t
-iso7816_verify_kp (int slot, int chvno, const char *chv, size_t chvlen,
-                   iso7816_pininfo_t *pininfo)
+iso7816_verify_kp (int slot, int chvno, iso7816_pininfo_t *pininfo)
 {
   int sw;
 
-  if (pininfo && pininfo->mode)
-    sw = apdu_send_simple_kp (slot, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv,
-                              pininfo->mode,
-                              pininfo->minlen,
-                              pininfo->maxlen,
-                              pininfo->padlen);
-  else
-    sw = apdu_send_simple (slot, 0, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
+  sw = apdu_keypad_verify (slot, 0x00, CMD_VERIFY, 0, chvno,
+                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                           pininfo->padlen);
   return map_sw (sw);
 }
 
@@ -305,7 +299,10 @@ iso7816_verify_kp (int slot, int chvno, const char *chv, size_t chvlen,
 gpg_error_t
 iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 {
-  return iso7816_verify_kp (slot, chvno, chv, chvlen, NULL);
+  int sw;
+
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_VERIFY, 0, chvno, chvlen, chv);
+  return map_sw (sw);
 }
 
 /* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder

@@ -62,6 +62,7 @@
 
 #include "apdu.h"
 #include "ccid-driver.h"
+#include "iso7816.h"
 
 
 /* Due to conflicting use of threading libraries we usually can't link
@@ -110,6 +111,7 @@ struct reader_table_s {
   int (*check_keypad)(int, int, int, int, int, int);
   void (*dump_status_reader)(int);
   int (*set_progress_cb)(int, gcry_handler_progress_t, void*);
+  int (*keypad_verify)(int, int, int, int, int, struct pininfo_s *);
 
   struct {
     ccid_driver_t handle;
@@ -118,6 +120,8 @@ struct reader_table_s {
     unsigned long context;
     unsigned long card;
     unsigned long protocol;
+    unsigned long verify_ioctl;
+    unsigned long modify_ioctl;
 #ifdef NEED_PCSC_WRAPPER
     int req_fd;
     int rsp_fd;
@@ -236,6 +240,11 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
 #define PCSC_W_REMOVED_CARD            0x80100069
 
+#define CM_IOCTL_GET_FEATURE_REQUEST (0x42000000 + 3400)
+#define FEATURE_VERIFY_PIN_DIRECT        0x06
+#define FEATURE_MODIFY_PIN_DIRECT        0x07
+
+
 /* The PC/SC error is defined as a long as per specs.  Due to left
    shifts bit 31 will get sign extended.  We use this mask to fix
    it. */
@@ -304,6 +313,13 @@ long (* DLSTDCALL pcsc_transmit) (unsigned long card,
                                   unsigned long *recv_len);
 long (* DLSTDCALL pcsc_set_timeout) (unsigned long context,
                                      unsigned long timeout);
+long (* DLSTDCALL pcsc_control) (unsigned long card,
+                                 unsigned long control_code,
+                                 const void *send_buffer,
+                                 unsigned long send_len,
+                                 void *recv_buffer,
+                                 unsigned long recv_len,
+                                 unsigned long *bytes_returned);
 
 /* Flag set if PC/SC returned the no-service error.  */
 static int pcsc_no_service;
@@ -315,6 +331,10 @@ static int reset_pcsc_reader (int slot);
 static int apdu_get_status_internal (int slot, int hang, int no_atr_reset,
                                      unsigned int *status,
                                      unsigned int *changed);
+static int check_pcsc_keypad (int slot, int command, int pin_mode,
+                              int pinlen_min, int pinlen_max, int pin_padlen);
+static int pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
+                               struct pininfo_s *pininfo);
 
 
 
@@ -358,9 +378,10 @@ new_reader_slot (void)
   reader_table[reader].reset_reader = NULL;
   reader_table[reader].get_status_reader = NULL;
   reader_table[reader].send_apdu_reader = NULL;
-  reader_table[reader].check_keypad = NULL;
+  reader_table[reader].check_keypad = check_pcsc_keypad;
   reader_table[reader].dump_status_reader = NULL;
   reader_table[reader].set_progress_cb = NULL;
+  reader_table[reader].keypad_verify = pcsc_keypad_verify;
 
   reader_table[reader].used = 1;
   reader_table[reader].any_status = 0;
@@ -371,6 +392,8 @@ new_reader_slot (void)
   reader_table[reader].pcsc.rsp_fd = -1;
   reader_table[reader].pcsc.pid = (pid_t)(-1);
 #endif
+  reader_table[reader].pcsc.verify_ioctl = 0;
+  reader_table[reader].pcsc.modify_ioctl = 0;
 
   return reader;
 }
@@ -645,6 +668,7 @@ open_ct_reader (int port)
   reader_table[reader].send_apdu_reader = ct_send_apdu;
   reader_table[reader].check_keypad = NULL;
   reader_table[reader].dump_status_reader = ct_dump_reader_status;
+  reader_table[reader].keypad_verify = NULL;
 
   dump_reader_status (reader);
   return reader;
@@ -1166,6 +1190,150 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
   return pcsc_send_apdu_wrapped (slot, apdu, apdulen, buffer, buflen, pininfo);
 #else
   return pcsc_send_apdu_direct (slot, apdu, apdulen, buffer, buflen, pininfo);
+#endif
+}
+
+
+#ifndef NEED_PCSC_WRAPPER
+static int
+control_pcsc_direct (int slot, unsigned long ioctl_code,
+                     const unsigned char *cntlbuf, size_t len,
+                     unsigned char *buffer, size_t *buflen)
+{
+  long err;
+
+  err = pcsc_control (reader_table[slot].pcsc.card, ioctl_code,
+                      cntlbuf, len, buffer, *buflen, buflen);
+  if (err)
+    {
+      log_error ("pcsc_control failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return pcsc_error_to_sw (err);
+    }
+
+  return 0;
+}
+#endif /*!NEED_PCSC_WRAPPER*/
+
+
+#ifdef NEED_PCSC_WRAPPER
+static int
+control_pcsc_wrapped (int slot, unsigned long ioctl_code,
+                      const unsigned char *cntlbuf, size_t len,
+                      unsigned char *buffer, size_t *buflen)
+{
+  long err = PCSC_E_NOT_TRANSACTED;
+  reader_table_t slotp;
+  unsigned char msgbuf[9];
+  int i, n;
+  size_t full_len;
+
+  slotp = reader_table + slot;
+
+  msgbuf[0] = 0x06; /* CONTROL command. */
+  msgbuf[1] = ((len + 4) >> 24);
+  msgbuf[2] = ((len + 4) >> 16);
+  msgbuf[3] = ((len + 4) >>  8);
+  msgbuf[4] = ((len + 4)      );
+  msgbuf[5] = (ioctl_code >> 24);
+  msgbuf[6] = (ioctl_code >> 16);
+  msgbuf[7] = (ioctl_code >>  8);
+  msgbuf[8] = (ioctl_code      );
+  if ( writen (slotp->pcsc.req_fd, msgbuf, 9)
+       || writen (slotp->pcsc.req_fd, cntlbuf, len))
+    {
+      log_error ("error sending PC/SC CONTROL request: %s\n",
+                 strerror (errno));
+      goto command_failed;
+    }
+
+  /* Read the response. */
+  if ((i=readn (slotp->pcsc.rsp_fd, msgbuf, 9, &len)) || len != 9)
+    {
+      log_error ("error receiving PC/SC CONTROL response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  if (msgbuf[0] != 0x81 || len < 4)
+    {
+      log_error ("invalid response header from PC/SC received\n");
+      goto command_failed;
+    }
+  len -= 4; /* Already read the error code. */
+  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
+                       | (msgbuf[7] << 8 ) | msgbuf[8]);
+  if (err)
+    {
+      log_error ("pcsc_control failed: %s (0x%lx)\n",
+                 pcsc_error_string (err), err);
+      return pcsc_error_to_sw (err);
+    }
+
+  full_len = len;
+
+  n = *buflen < len ? *buflen : len;
+  if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
+    {
+      log_error ("error receiving PC/SC CONTROL response: %s\n",
+                 i? strerror (errno) : "premature EOF");
+      goto command_failed;
+    }
+  *buflen = n;
+
+  full_len -= len;
+  if (full_len)
+    {
+      log_error ("pcsc_send_apdu: provided buffer too short - truncated\n");
+      err = PCSC_E_INVALID_VALUE;
+    }
+  /* We need to read any rest of the response, to keep the
+     protocol running.  */
+  while (full_len)
+    {
+      unsigned char dummybuf[128];
+
+      n = full_len < DIM (dummybuf) ? full_len : DIM (dummybuf);
+      if ((i=readn (slotp->pcsc.rsp_fd, dummybuf, n, &len)) || len != n)
+        {
+          log_error ("error receiving PC/SC CONTROL response: %s\n",
+                     i? strerror (errno) : "premature EOF");
+          goto command_failed;
+        }
+      full_len -= n;
+    }
+
+  if (!err)
+    return 0;
+
+ command_failed:
+  close (slotp->pcsc.req_fd);
+  close (slotp->pcsc.rsp_fd);
+  slotp->pcsc.req_fd = -1;
+  slotp->pcsc.rsp_fd = -1;
+  kill (slotp->pcsc.pid, SIGTERM);
+  slotp->pcsc.pid = (pid_t)(-1);
+  slotp->used = 0;
+  return pcsc_error_to_sw (err);
+}
+#endif /*NEED_PCSC_WRAPPER*/
+
+
+
+/* Do some control with the value of IOCTL_CODE to the card inserted
+   to SLOT.  Input buffer is specified by CNTLBUF of length LEN.
+   Output buffer is specified by BUFFER of length *BUFLEN, and the
+   actual output size will be stored at BUFLEN.  Returns: A status word.
+   This routine is used for PIN pad input support.  */
+static int
+control_pcsc (int slot, unsigned long ioctl_code,
+              const unsigned char *cntlbuf, size_t len,
+              unsigned char *buffer, size_t *buflen)
+{
+#ifdef NEED_PCSC_WRAPPER
+  return control_pcsc_wrapped (slot, ioctl_code, cntlbuf, len, buffer, buflen);
+#else
+  return control_pcsc_direct (slot, ioctl_code, cntlbuf, len, buffer, buflen);
 #endif
 }
 
@@ -1808,6 +1976,138 @@ open_pcsc_reader (const char *portstr)
 }
 
 
+/* Check whether the reader supports the ISO command code COMMAND
+   on the keypad.  Return 0 on success.  */
+static int
+check_pcsc_keypad (int slot, int command, int pin_mode,
+                   int pinlen_min, int pinlen_max, int pin_padlen)
+{
+  unsigned char buf[256];
+  size_t len = 256;
+  int sw;
+
+  (void)pin_mode;
+  (void)pinlen_min;
+  (void)pinlen_max;
+  (void)pin_padlen;
+
+ check_again:
+  if (command == ISO7816_VERIFY)
+    {
+      if (reader_table[slot].pcsc.verify_ioctl == (unsigned long)-1)
+        return SW_NOT_SUPPORTED;
+      else if (reader_table[slot].pcsc.verify_ioctl != 0)
+        return 0;                       /* Success */
+    }
+  else if (command == ISO7816_CHANGE_REFERENCE_DATA)
+    {
+      if (reader_table[slot].pcsc.modify_ioctl == (unsigned long)-1)
+        return SW_NOT_SUPPORTED;
+      else if (reader_table[slot].pcsc.modify_ioctl != 0)
+        return 0;                       /* Success */
+    }
+  else
+    return SW_NOT_SUPPORTED;
+
+  reader_table[slot].pcsc.verify_ioctl = (unsigned long)-1;
+  reader_table[slot].pcsc.modify_ioctl = (unsigned long)-1;
+
+  sw = control_pcsc (slot, CM_IOCTL_GET_FEATURE_REQUEST, NULL, 0, buf, &len);
+  if (sw)
+    return SW_NOT_SUPPORTED;
+  else
+    {
+      unsigned char *p = buf;
+
+      while (p < buf + len)
+        {
+          unsigned char code = *p++;
+
+          p++;                  /* Skip length */
+          if (code == FEATURE_VERIFY_PIN_DIRECT)
+            reader_table[slot].pcsc.verify_ioctl
+              = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+          else if (code == FEATURE_MODIFY_PIN_DIRECT)
+            reader_table[slot].pcsc.modify_ioctl
+              = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+          p += 4;
+        }
+    }
+
+  goto check_again;
+}
+
+
+#define PIN_VERIFY_STRUCTURE_SIZE 23
+static int
+pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
+                    struct pininfo_s *pininfo)
+{
+  int sw;
+  unsigned char *pin_verify;
+  unsigned long len = PIN_VERIFY_STRUCTURE_SIZE;
+  unsigned char result[2];
+  size_t resultlen = 2;
+
+  if (!reader_table[slot].atrlen
+      && (sw = reset_pcsc_reader (slot)))
+    return sw;
+
+  if (pininfo->mode != 1)
+    return SW_NOT_SUPPORTED;
+
+  if (pininfo->padlen != 0)
+    return SW_NOT_SUPPORTED;
+
+  if (!pininfo->minlen)
+    pininfo->minlen = 1;
+  if (!pininfo->maxlen)
+    pininfo->maxlen = 25;
+
+  /* Note that the 25 is the maximum value the SPR532 allows.  */
+  if (pininfo->minlen < 1 || pininfo->minlen > 25
+      || pininfo->maxlen < 1 || pininfo->maxlen > 25
+      || pininfo->minlen > pininfo->maxlen)
+    return SW_HOST_INV_VALUE;
+
+  pin_verify = xtrymalloc (len);
+  if (!pin_verify)
+    return SW_HOST_OUT_OF_CORE;
+
+  pin_verify[0] = 0x00; /* bTimerOut */
+  pin_verify[1] = 0x00; /* bTimerOut2 */
+  pin_verify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
+  pin_verify[3] = 0x00; /* bmPINBlockString */
+  pin_verify[4] = 0x00; /* bmPINLengthFormat */
+  pin_verify[5] = pininfo->maxlen; /* wPINMaxExtraDigit */
+  pin_verify[6] = pininfo->minlen; /* wPINMaxExtraDigit */
+  pin_verify[7] = 0x02; /* bEntryValidationCondition: Validation key pressed */
+  if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
+    pin_verify[7] |= 0x01; /* Max size reached.  */
+  pin_verify[8] = 0xff; /* bNumberMessage: Default */
+  pin_verify[9] =  0x09; /* wLangId: 0x0409: US English */
+  pin_verify[10] = 0x04; /* wLangId: 0x0409: US English */
+  pin_verify[11] = 0x00; /* bMsgIndex */
+  pin_verify[12] = 0x00; /* bTeoPrologue[0] */
+  pin_verify[13] = 0x00; /* bTeoPrologue[1] */
+  pin_verify[14] = 0x00; /* bTeoPrologue[2] */
+  pin_verify[15] = 0x04; /* ulDataLength */
+  pin_verify[16] = 0x00; /* ulDataLength */
+  pin_verify[17] = 0x00; /* ulDataLength */
+  pin_verify[18] = 0x00; /* ulDataLength */
+  pin_verify[19] = class; /* abData[0] */
+  pin_verify[20] = ins; /* abData[1] */
+  pin_verify[21] = p0; /* abData[2] */
+  pin_verify[22] = p1; /* abData[3] */
+
+  sw = control_pcsc (slot, reader_table[slot].pcsc.verify_ioctl,
+                     pin_verify, len, result, &resultlen);
+  xfree (pin_verify);
+  if (sw || resultlen < 2)
+    return sw? sw : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+  sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  return sw;
+}
 
 #ifdef HAVE_LIBUSB
 /*
@@ -1945,6 +2245,35 @@ check_ccid_keypad (int slot, int command, int pin_mode,
 }
 
 
+static int
+ccid_keypad_verify (int slot, int class, int ins, int p0, int p1,
+                    struct pininfo_s *pininfo)
+{
+  unsigned char apdu[4];
+  int err, sw;
+  unsigned char result[2];
+  size_t resultlen = 2;
+
+  apdu[0] = class;
+  apdu[1] = ins;
+  apdu[2] = p0;
+  apdu[3] = p1;
+  err = ccid_transceive_secure (reader_table[slot].ccid.handle,
+                                apdu, sizeof apdu,
+                                pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                                pininfo->padlen,
+                                result, 2, &resultlen);
+  if (err)
+    return err;
+
+  if (resultlen < 2)
+    return SW_HOST_INCOMPLETE_CARD_RESPONSE;
+
+  sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  return sw;
+}
+
+
 /* Open the reader and try to read an ATR.  */
 static int
 open_ccid_reader (const char *portstr)
@@ -1989,6 +2318,7 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].check_keypad = check_ccid_keypad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
   reader_table[slot].set_progress_cb = set_progress_cb_ccid_reader;
+  reader_table[slot].keypad_verify = ccid_keypad_verify;
   /* Our CCID reader code does not support T=0 at all, thus reset the
      flag.  */
   reader_table[slot].is_t0 = 0;
@@ -2281,6 +2611,7 @@ open_rapdu_reader (int portno,
   reader_table[slot].send_apdu_reader = my_rapdu_send_apdu;
   reader_table[slot].check_keypad = NULL;
   reader_table[slot].dump_status_reader = NULL;
+  reader_table[slot].keypad_verify = NULL;
 
   dump_reader_status (slot);
   rapdu_msg_release (msg);
@@ -2461,6 +2792,7 @@ apdu_open_reader (const char *portstr, int *r_no_service)
       pcsc_end_transaction   = dlsym (handle, "SCardEndTransaction");
       pcsc_transmit          = dlsym (handle, "SCardTransmit");
       pcsc_set_timeout       = dlsym (handle, "SCardSetTimeout");
+      pcsc_control           = dlsym (handle, "SCardControl");
 
       if (!pcsc_establish_context
           || !pcsc_release_context
@@ -2473,12 +2805,13 @@ apdu_open_reader (const char *portstr, int *r_no_service)
           || !pcsc_begin_transaction
           || !pcsc_end_transaction
           || !pcsc_transmit
+          || !pcsc_control
           /* || !pcsc_set_timeout */)
         {
           /* Note that set_timeout is currently not used and also not
              available under Windows. */
           log_error ("apdu_open_reader: invalid PC/SC driver "
-                     "(%d%d%d%d%d%d%d%d%d%d%d%d)\n",
+                     "(%d%d%d%d%d%d%d%d%d%d%d%d%d)\n",
                      !!pcsc_establish_context,
                      !!pcsc_release_context,
                      !!pcsc_list_readers,
@@ -2490,7 +2823,8 @@ apdu_open_reader (const char *portstr, int *r_no_service)
                      !!pcsc_begin_transaction,
                      !!pcsc_end_transaction,
                      !!pcsc_transmit,
-                     !!pcsc_set_timeout );
+                     !!pcsc_set_timeout,
+                     !!pcsc_control );
           dlclose (handle);
           return -1;
         }
@@ -2889,6 +3223,28 @@ apdu_check_keypad (int slot, int command, int pin_mode,
     return reader_table[slot].check_keypad (slot, command,
                                             pin_mode, pinlen_min, pinlen_max,
                                             pin_padlen);
+  else
+    return SW_HOST_NOT_SUPPORTED;
+}
+
+
+int
+apdu_keypad_verify (int slot, int class, int ins, int p0, int p1, int pin_mode,
+                    int pinlen_min, int pinlen_max, int pin_padlen)
+{
+  struct pininfo_s pininfo;
+
+  pininfo.mode = pin_mode;
+  pininfo.minlen = pinlen_min;
+  pininfo.maxlen = pinlen_max;
+  pininfo.padlen = pin_padlen;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if (reader_table[slot].keypad_verify)
+    return reader_table[slot].keypad_verify (slot, class, ins, p0, p1,
+                                             &pininfo);
   else
     return SW_HOST_NOT_SUPPORTED;
 }

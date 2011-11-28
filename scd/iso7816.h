@@ -63,9 +63,7 @@ gpg_error_t iso7816_check_keypad (int slot, int command,
                                   iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_verify (int slot,
                             int chvno, const char *chv, size_t chvlen);
-gpg_error_t iso7816_verify_kp (int slot,
-                               int chvno, const char *chv, size_t chvlen,
-                               iso7816_pininfo_t *pininfo);
+gpg_error_t iso7816_verify_kp (int slot, int chvno, iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_change_reference_data (int slot, int chvno,
                                const char *oldchv, size_t oldchvlen,
                                const char *newchv, size_t newchvlen);

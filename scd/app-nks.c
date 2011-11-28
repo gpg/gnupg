@@ -803,7 +803,7 @@ verify_pin (app_t app, int pwid, const char *desc,
           return rc;
         }
 
-      rc = iso7816_verify_kp (app->slot, pwid, "", 0, &pininfo);
+      rc = iso7816_verify_kp (app->slot, pwid, &pininfo);
       pincb (pincb_arg, NULL, NULL);  /* Dismiss the prompt. */
     }
   else

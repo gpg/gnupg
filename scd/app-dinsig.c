@@ -304,7 +304,7 @@ verify_pin (app_t app,
                     gpg_strerror (rc));
           return rc;
         }
-      rc = iso7816_verify_kp (app->slot, 0x81, "", 0, &pininfo);
+      rc = iso7816_verify_kp (app->slot, 0x81, &pininfo);
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
     }
