@@ -46,13 +46,13 @@
 #define T_CERT 37
 #endif
 
-/* ADNS has no support for CERT yes. */
+/* ADNS has no support for CERT yet. */
 #define my_adns_r_cert 37
 
 
 
 /* Returns -1 on error, 0 for no answer, 1 for PGP provided and 2 for
-   IPGP provided.  Note that this fucntion retruns the first CERT
+   IPGP provided.  Note that this function retruns the first CERT
    found with a supported type; it is expected that only one CERT
    record is used. */
 int
@@ -289,61 +289,3 @@ get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
   return -1;
 #endif
 }
-
-
-
-/* Test with simon.josefsson.org */
-
-#ifdef TEST
-int
-main(int argc,char *argv[])
-{
-  unsigned char *fpr;
-  size_t fpr_len;
-  char *url;
-  int rc;
-  IOBUF iobuf;
-
-  if(argc!=2)
-    {
-      printf("cert-test [name]\n");
-      return 1;
-    }
-
-  printf("CERT lookup on %s\n",argv[1]);
-
-  rc=get_dns_cert (argv[1],16384,&iobuf,&fpr,&fpr_len,&url);
-  if(rc==-1)
-    printf("error\n");
-  else if(rc==0)
-    printf("no answer\n");
-  else if(rc==1)
-    {
-      printf("key found: %d bytes\n",(int)iobuf_get_temp_length(iobuf));
-      iobuf_close(iobuf);
-    }
-  else if(rc==2)
-    {
-      if(fpr)
-	{
-	  size_t i;
-	  printf("Fingerprint found (%d bytes): ",(int)fpr_len);
-	  for(i=0;i<fpr_len;i++)
-	    printf("%02X",fpr[i]);
-	  printf("\n");
-	}
-      else
-	printf("No fingerprint found\n");
-
-      if(url)
-	printf("URL found: %s\n",url);
-      else
-	printf("No URL found\n");
-
-      xfree(fpr);
-      xfree(url);
-    }
-
-  return 0;
-}
-#endif /* TEST */

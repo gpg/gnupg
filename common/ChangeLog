@@ -1,3 +1,8 @@
+2011-11-28  Werner Koch  <wk@g10code.com>
+
+	* dns-cert.c (get_dns_cert): Factor test code out to ...
+	* t-dns-cert.c: new file.
+
 2011-10-24  Werner Koch  <wk@g10code.com>
 
 	* dotlock.h, dotlock.c: Add alternative to allow distribution of
