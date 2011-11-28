@@ -19,7 +19,7 @@
 #ifndef GNUPG_COMMON_DNS_CERT_H
 #define GNUPG_COMMON_DNS_CERT_H
 
-int get_dns_cert (const char *name, size_t max_size, IOBUF *iobuf,
+int get_dns_cert (const char *name, size_t max_size, iobuf_t *iobuf,
                   unsigned char **fpr, size_t *fpr_len, char **url);
 
 
