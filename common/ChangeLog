@@ -1,3 +1,7 @@
+2011-11-29  Werner Koch  <wk@g10code.com>
+
+	* dns-cert.c: Use new CERTTYPE_ constants for better readability.
+
 2011-11-28  Werner Koch  <wk@g10code.com>
 
 	* t-dns-cert.c (main): Increase MAX_SIZE to 64k.

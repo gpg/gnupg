@@ -1,4 +1,4 @@
-/* dns-cert.c - DNS CERT code
+/* dns-cert.c - DNS CERT code (rfc-4398)
  * Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
@@ -50,9 +50,21 @@
 #define my_adns_r_cert 37
 
 
+/* Certificate types according to RFC-4398.  */
+#define CERTTYPE_PKIX      1 /* X.509 as per PKIX. */
+#define CERTTYPE_SPKI      2 /* SPKI certificate.  */
+#define CERTTYPE_PGP       3 /* OpenPGP packet.  */
+#define CERTTYPE_IPKIX     4 /* The URL of an X.509 data object. */
+#define CERTTYPE_ISPKI     5 /* The URL of an SPKI certificate.  */
+#define CERTTYPE_IPGP      6 /* The fingerprint and URL of an OpenPGP packet.*/
+#define CERTTYPE_ACPKIX    7 /* Attribute Certificate.  */
+#define CERTTYPE_IACPKIX   8 /* The URL of an Attribute Certificate.  */
+#define CERTTYPE_URI     253 /* URI private.  */
+#define CERTTYPE_OID     254 /* OID private.  */
+
 
 /* Returns -1 on error, 0 for no answer, 1 for PGP provided and 2 for
-   IPGP provided.  Note that this function retruns the first CERT
+   IPGP provided.  Note that this function returns the first CERT
    found with a supported type; it is expected that only one CERT
    record is used. */
 int
@@ -105,18 +117,18 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
       data += 5;
       datalen -= 5;
 
-      if (ctype == 3 && datalen >= 11)
+      if (ctype == CERTTYPE_PGP && datalen >= 11)
         {
           /* CERT type is PGP.  Gpg checks for a minimum length of 11,
              thus we do the same.  */
           *iobuf = iobuf_temp_with_content ((char *)data, datalen);
           rc = 1;
         }
-      else if (ctype == 6 && datalen && datalen < 1023
+      else if (ctype == CERTTYPE_IPGP && datalen && datalen < 1023
                && datalen >= data[0] + 1 && fpr && fpr_len && url)
         {
-          /* CERT type is IPGP.  We made sure tha the data is
-             plausible and that the caller requested the
+          /* CERT type is IPGP.  We made sure that the data is
+             plausible and that the caller requested this
              information.  */
           *fpr_len = data[0];
           if (*fpr_len)
@@ -236,14 +248,15 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
 
           /* 15 bytes takes us to here */
 
-          if (ctype == 3 && iobuf && dlen)
+          if (ctype == CERTTYPE_PGP && iobuf && dlen)
             {
               /* PGP type */
               *iobuf = iobuf_temp_with_content ((char *) pt, dlen);
               ret = 1;
               break;
             }
-          else if (ctype == 6 && dlen && dlen < 1023 && dlen >= pt[0] + 1
+          else if (ctype == CERTTYPE_IPGP
+                   && dlen && dlen < 1023 && dlen >= pt[0] + 1
                    && fpr && fpr_len && url)
             {
               /* IPGP type */
