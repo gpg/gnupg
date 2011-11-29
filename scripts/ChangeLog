@@ -1,3 +1,7 @@
+2011-11-29  Werner Koch  <wk@g10code.com>
+
+	* build-all.sh: Make sure HOME has no unsafe characters.
+
 2011-11-28  Werner Koch  <wk@g10code.com>,
 	    Jim Meyering  <jim@meyering.net>
 

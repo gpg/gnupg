@@ -17,6 +17,23 @@
 p=$HOME/tmp/gpg-tmp
 parts="libgpg-error libassuan libksba libgcrypt gnupg"
 die=no
+here="`pwd`"
+
+# Reject unsafe characters in $PWD and $HOME.  We consider spaces as
+# unsafe because it is too easy to get scripts wrong in this regard.
+am_lf='
+'
+case $here in
+  *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
+    echo "unsafe working directory: \`$here'"; die=yes;;
+esac
+case $HOME in
+  *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
+    echo "unsafe home directory: \`$HOME'"; die=yes;;
+esac
+test $die = yes && exit 1
+
+# Check that all components are available
 for i in $parts; do
   if test -d $i ; then
     :
@@ -35,7 +52,6 @@ done
 
 export PATH=$p/bin:$PATH
 export LD_LIBRARY_PATH=$p/lib
-here="$(pwd)"
 
 prev=
 cfg="configure --enable-maintainer-mode --prefix=$p"
