@@ -306,16 +306,29 @@ iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 }
 
 /* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
+   verification vector CHVNO.  With PININFO non-NULL the keypad of the
+   reader will be used.  */
+gpg_error_t
+iso7816_change_reference_data_kp (int slot, int chvno,
+                                  iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  sw = apdu_keypad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA, 0, chvno,
+                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                           pininfo->padlen);
+  return map_sw (sw);
+}
+
+/* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
    verification vector CHVNO.  If the OLDCHV is NULL (and OLDCHVLEN
    0), a "change reference data" is done, otherwise an "exchange
    reference data".  The new reference data is expected in NEWCHV of
-   length NEWCHVLEN.  With PININFO non-NULL the keypad of the reader
-   will be used.  */
+   length NEWCHVLEN.  */
 gpg_error_t
-iso7816_change_reference_data_kp (int slot, int chvno,
-                                  const char *oldchv, size_t oldchvlen,
-                                  const char *newchv, size_t newchvlen,
-                                  iso7816_pininfo_t *pininfo)
+iso7816_change_reference_data (int slot, int chvno,
+                               const char *oldchv, size_t oldchvlen,
+                               const char *newchv, size_t newchvlen)
 {
   int sw;
   char *buf;
@@ -332,33 +345,11 @@ iso7816_change_reference_data_kp (int slot, int chvno,
     memcpy (buf, oldchv, oldchvlen);
   memcpy (buf+oldchvlen, newchv, newchvlen);
 
-  if (pininfo && pininfo->mode)
-    sw = apdu_send_simple_kp (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
-                           oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf,
-                           pininfo->mode,
-                           pininfo->minlen,
-                           pininfo->maxlen,
-                           pininfo->padlen);
-  else
-    sw = apdu_send_simple (slot, 0, 0x00, CMD_CHANGE_REFERENCE_DATA,
-                           oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_CHANGE_REFERENCE_DATA,
+                         oldchvlen? 0 : 1, chvno, oldchvlen+newchvlen, buf);
   xfree (buf);
   return map_sw (sw);
 
-}
-
-/* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
-   verification vector CHVNO.  If the OLDCHV is NULL (and OLDCHVLEN
-   0), a "change reference data" is done, otherwise an "exchange
-   reference data".  The new reference data is expected in NEWCHV of
-   length NEWCHVLEN.  */
-gpg_error_t
-iso7816_change_reference_data (int slot, int chvno,
-                               const char *oldchv, size_t oldchvlen,
-                               const char *newchv, size_t newchvlen)
-{
-  return iso7816_change_reference_data_kp (slot, chvno, oldchv, oldchvlen,
-                                           newchv, newchvlen, NULL);
 }
 
 

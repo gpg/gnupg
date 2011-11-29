@@ -1,3 +1,23 @@
+2011-11-29  Niibe Yutaka  <gniibe@fsij.org>
+
+	* iso7816.h (iso7816_change_reference_data_kp): Remove arguments
+	of OLDCHV, OLDCHVLEN, NEWCHV, and NEWCHVLEN.
+
+	* iso7816.c (iso7816_change_reference_data_kp): Call
+	apdu_keypad_modify.
+	(iso7816_change_reference_data): Don't call
+	iso7816_change_reference_data_kp.
+
+	* apdu.h (apdu_keypad_modify): New.
+
+	* apdu.c (pcsc_keypad_modify, apdu_keypad_modify): New.
+	(struct reader_table_s): New memeber function keypad_modify.
+	(new_reader_slot, open_ct_reader, open_ccid_reader)
+	(open_rapdu_reader): Initialize keypad_modify.
+
+	* app-openpgp.c (do_change_pin): Handle keypad and call
+	iso7816_change_reference_data_kp if it is the case.
+
 2011-11-28  Niibe Yutaka  <gniibe@fsij.org>
 
 	* iso7816.h (iso7816_verify_kp): Remove arguments of CHV and CHVLEN.

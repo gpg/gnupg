@@ -112,6 +112,7 @@ struct reader_table_s {
   void (*dump_status_reader)(int);
   int (*set_progress_cb)(int, gcry_handler_progress_t, void*);
   int (*keypad_verify)(int, int, int, int, int, struct pininfo_s *);
+  int (*keypad_modify)(int, int, int, int, int, struct pininfo_s *);
 
   struct {
     ccid_driver_t handle;
@@ -335,6 +336,8 @@ static int check_pcsc_keypad (int slot, int command, int pin_mode,
                               int pinlen_min, int pinlen_max, int pin_padlen);
 static int pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
                                struct pininfo_s *pininfo);
+static int pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
+                               struct pininfo_s *pininfo);
 
 
 
@@ -384,6 +387,7 @@ new_reader_slot (void)
   reader_table[reader].dump_status_reader = NULL;
   reader_table[reader].set_progress_cb = NULL;
   reader_table[reader].keypad_verify = pcsc_keypad_verify;
+  reader_table[reader].keypad_modify = pcsc_keypad_modify;
 
   reader_table[reader].used = 1;
   reader_table[reader].any_status = 0;
@@ -671,6 +675,7 @@ open_ct_reader (int port)
   reader_table[reader].check_keypad = NULL;
   reader_table[reader].dump_status_reader = ct_dump_reader_status;
   reader_table[reader].keypad_verify = NULL;
+  reader_table[reader].keypad_modify = NULL;
 
   dump_reader_status (reader);
   return reader;
@@ -2110,6 +2115,88 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
   return sw;
 }
+
+
+#define PIN_MODIFY_STRUCTURE_SIZE 28
+static int
+pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
+                    struct pininfo_s *pininfo)
+{
+  int sw;
+  unsigned char *pin_modify;
+  unsigned long len = PIN_MODIFY_STRUCTURE_SIZE;
+  unsigned char result[2];
+  size_t resultlen = 2;
+
+  if (!reader_table[slot].atrlen
+      && (sw = reset_pcsc_reader (slot)))
+    return sw;
+
+  if (pininfo->mode != 1)
+    return SW_NOT_SUPPORTED;
+
+  if (pininfo->padlen != 0)
+    return SW_NOT_SUPPORTED;
+
+  if (!pininfo->minlen)
+    pininfo->minlen = 1;
+  if (!pininfo->maxlen)
+    pininfo->maxlen = 25;
+
+  /* Note that the 25 is the maximum value the SPR532 allows.  */
+  if (pininfo->minlen < 1 || pininfo->minlen > 25
+      || pininfo->maxlen < 1 || pininfo->maxlen > 25
+      || pininfo->minlen > pininfo->maxlen)
+    return SW_HOST_INV_VALUE;
+
+  pin_modify = xtrymalloc (len);
+  if (!pin_modify)
+    return SW_HOST_OUT_OF_CORE;
+
+  pin_modify[0] = 0x00; /* bTimerOut */
+  pin_modify[1] = 0x00; /* bTimerOut2 */
+  pin_modify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
+  pin_modify[3] = 0x00; /* bmPINBlockString */
+  pin_modify[4] = 0x00; /* bmPINLengthFormat */
+  pin_modify[5] = 0x00; /* bInsertionOffsetOld */
+  pin_modify[6] = 0x00; /* bInsertionOffsetNew */
+  pin_modify[7] = pininfo->maxlen; /* wPINMaxExtraDigit */
+  pin_modify[8] = pininfo->minlen; /* wPINMaxExtraDigit */
+  pin_modify[9] = 0x03;  /* bConfirmPIN
+                          *    0x00: new PIN once
+                          *    0x01: new PIN twice (confirmation)
+                          *    0x02: old PIN and new PIN once
+                          *    0x03: old PIN and new PIN twice (confirmation)
+                          */
+  pin_modify[10] = 0x02; /* bEntryValidationCondition: Validation key pressed */
+  if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
+    pin_modify[10] |= 0x01; /* Max size reached.  */
+  pin_modify[11] = 0xff; /* bNumberMessage: Default */
+  pin_modify[12] =  0x09; /* wLangId: 0x0409: US English */
+  pin_modify[13] = 0x04; /* wLangId: 0x0409: US English */
+  pin_modify[14] = 0x00; /* bMsgIndex1 */
+  pin_modify[15] = 0x00; /* bMsgIndex2 */
+  pin_modify[16] = 0x00; /* bMsgIndex3 */
+  pin_modify[17] = 0x00; /* bTeoPrologue[0] */
+  pin_modify[18] = 0x00; /* bTeoPrologue[1] */
+  pin_modify[19] = 0x00; /* bTeoPrologue[2] */
+  pin_modify[20] = 0x04; /* ulDataLength */
+  pin_modify[21] = 0x00; /* ulDataLength */
+  pin_modify[22] = 0x00; /* ulDataLength */
+  pin_modify[23] = 0x00; /* ulDataLength */
+  pin_modify[24] = class; /* abData[0] */
+  pin_modify[25] = ins; /* abData[1] */
+  pin_modify[26] = p0; /* abData[2] */
+  pin_modify[27] = p1; /* abData[3] */
+
+  sw = control_pcsc (slot, reader_table[slot].pcsc.modify_ioctl,
+                     pin_modify, len, result, &resultlen);
+  xfree (pin_modify);
+  if (sw || resultlen < 2)
+    return sw? sw : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+  sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  return sw;
+}
 
 #ifdef HAVE_LIBUSB
 /*
@@ -2321,6 +2408,7 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
   reader_table[slot].set_progress_cb = set_progress_cb_ccid_reader;
   reader_table[slot].keypad_verify = ccid_keypad_verify;
+  reader_table[slot].keypad_modify = NULL;
   /* Our CCID reader code does not support T=0 at all, thus reset the
      flag.  */
   reader_table[slot].is_t0 = 0;
@@ -2614,6 +2702,7 @@ open_rapdu_reader (int portno,
   reader_table[slot].check_keypad = NULL;
   reader_table[slot].dump_status_reader = NULL;
   reader_table[slot].keypad_verify = NULL;
+  reader_table[slot].keypad_modify = NULL;
 
   dump_reader_status (slot);
   rapdu_msg_release (msg);
@@ -3255,6 +3344,28 @@ apdu_keypad_verify (int slot, int class, int ins, int p0, int p1, int pin_mode,
 
   if (reader_table[slot].keypad_verify)
     return reader_table[slot].keypad_verify (slot, class, ins, p0, p1,
+                                             &pininfo);
+  else
+    return SW_HOST_NOT_SUPPORTED;
+}
+
+
+int
+apdu_keypad_modify (int slot, int class, int ins, int p0, int p1, int pin_mode,
+                    int pinlen_min, int pinlen_max, int pin_padlen)
+{
+  struct pininfo_s pininfo;
+
+  pininfo.mode = pin_mode;
+  pininfo.minlen = pinlen_min;
+  pininfo.maxlen = pinlen_max;
+  pininfo.padlen = pin_padlen;
+
+  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
+    return SW_HOST_NO_DRIVER;
+
+  if (reader_table[slot].keypad_modify)
+    return reader_table[slot].keypad_modify (slot, class, ins, p0, p1,
                                              &pininfo);
   else
     return SW_HOST_NOT_SUPPORTED;
