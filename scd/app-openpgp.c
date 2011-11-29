@@ -1915,6 +1915,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   char *pinvalue = NULL;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
+  int with_resetcode = 0;
   iso7816_pininfo_t pininfo;
   int use_keypad = 0;
   int minlen = 6;
@@ -2024,6 +2025,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           size_t valuelen;
           int remaining;
 
+          with_resetcode = 1;
           minlen = 8;
           relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
           if (!relptr || valuelen < 7)
@@ -2044,14 +2046,14 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
           rc = pincb (pincb_arg,
                       _("||Please enter the Reset Code for the card"),
-                      &resetcode);
+                      use_keypad ? NULL : &resetcode);
           if (rc)
             {
               log_info (_("PIN callback returned error: %s\n"),
                         gpg_strerror (rc));
               goto leave;
             }
-          if (strlen (resetcode) < minlen)
+          if (!use_keypad && strlen (resetcode) < minlen)
             {
               log_info (_("Reset Code is too short; minimum length is %d\n"),
                         minlen);
@@ -2088,40 +2090,65 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     }
 
 
-  if (resetcode)
+  if (with_resetcode)
     {
-      char *buffer;
-
-      buffer = xtrymalloc (strlen (resetcode) + strlen (pinvalue) + 1);
-      if (!buffer)
-        rc = gpg_error_from_syserror ();
+      if (use_keypad)
+        {
+          rc = iso7816_reset_retry_counter_with_rc_kp (app->slot, 0x81,
+                                                       &pininfo);
+          pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
+        }
       else
         {
-          strcpy (stpcpy (buffer, resetcode), pinvalue);
-          rc = iso7816_reset_retry_counter_with_rc (app->slot, 0x81,
-                                                    buffer, strlen (buffer));
-          wipememory (buffer, strlen (buffer));
-          xfree (buffer);
+          char *buffer;
+
+          buffer = xtrymalloc (strlen (resetcode) + strlen (pinvalue) + 1);
+          if (!buffer)
+            rc = gpg_error_from_syserror ();
+          else
+            {
+              strcpy (stpcpy (buffer, resetcode), pinvalue);
+              rc = iso7816_reset_retry_counter_with_rc (app->slot, 0x81,
+                                                        buffer, strlen (buffer));
+              wipememory (buffer, strlen (buffer));
+              xfree (buffer);
+            }
         }
     }
   else if (set_resetcode)
     {
-      if (strlen (pinvalue) < 8)
+      if (use_keypad)
         {
-          log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
-          rc = gpg_error (GPG_ERR_BAD_PIN);
+          rc = pincb (pincb_arg,  _("|RN|New Reset Code"), NULL);
+          rc = iso7816_put_data_kp (app->slot, 0xD3, &pininfo);
+          pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
       else
-        rc = iso7816_put_data (app->slot, 0, 0xD3,
-                               pinvalue, strlen (pinvalue));
+        if (strlen (pinvalue) < 8)
+          {
+            log_error (_("Reset Code is too short; minimum length is %d\n"), 8);
+            rc = gpg_error (GPG_ERR_BAD_PIN);
+          }
+        else
+          rc = iso7816_put_data (app->slot, 0, 0xD3,
+                                 pinvalue, strlen (pinvalue));
     }
   else if (reset_mode)
     {
-      rc = iso7816_reset_retry_counter (app->slot, 0x81,
-                                        pinvalue, strlen (pinvalue));
-      if (!rc && !app->app_local->extcap.is_v2)
-        rc = iso7816_reset_retry_counter (app->slot, 0x82,
-                                          pinvalue, strlen (pinvalue));
+      if (use_keypad)
+        {
+          rc = pincb (pincb_arg, _("|N|New PIN"), NULL);
+          rc = iso7816_reset_retry_counter_kp (app->slot, 0x81, &pininfo);
+          pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
+        }
+      else
+        {
+          rc = iso7816_reset_retry_counter (app->slot, 0x81,
+                                            pinvalue, strlen (pinvalue));
+          if (!rc && !app->app_local->extcap.is_v2)
+            rc = iso7816_reset_retry_counter (app->slot, 0x82,
+                                              pinvalue, strlen (pinvalue));
+        }
     }
   else if (!app->app_local->extcap.is_v2)
     {
@@ -2149,8 +2176,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         {
           rc = iso7816_change_reference_data_kp (app->slot, 0x80 + chvno,
                                                  &pininfo);
-          /* Dismiss the prompt. */
-          pincb (pincb_arg, NULL, NULL);
+          pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
       else
         rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,

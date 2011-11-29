@@ -1,5 +1,27 @@
 2011-11-29  Niibe Yutaka  <gniibe@fsij.org>
 
+	PC/SC pininput support for passphrase modification (2/2)
+	* apdu.h (apdu_send_simple_kp): Remove.
+
+	* apdu.c (pcsc_keypad_modify): Add bConfirmPIN handling.
+	(apdu_send_simple_kp): Remove.
+
+	* iso7816.h (iso7816_reset_retry_counter_kp): Remove arguments
+	of NEWCHV, and NEWCHVLEN.
+	(iso7816_reset_retry_counter_with_rc_kp, iso7816_put_data_kp): New.
+
+	* iso7816.c (iso7816_reset_retry_counter_with_rc_kp): New.
+	(iso7816_reset_retry_counter_kp): Call apdu_keypad_modify.  Only
+	handle the case with PININFO.
+	(iso7816_reset_retry_counter): Don't call
+	iso7816_reset_retry_counter_kp.
+	(iso7816_put_data_kp): New.
+
+	* app-openpgp.c (do_change_pin): Add with_resetcode.
+	Handle keypad for unblocking pass phrase with resetcode,
+	setting up of resetcode, and unblocking by admin.
+
+	PC/SC pininput support for passphrase modification (1/2)
 	* iso7816.h (iso7816_change_reference_data_kp): Remove arguments
 	of OLDCHV, OLDCHVLEN, NEWCHV, and NEWCHVLEN.
 
@@ -23,7 +45,7 @@
 	* iso7816.h (iso7816_verify_kp): Remove arguments of CHV and CHVLEN.
 
 	* iso7816.c (iso7816_verify_kp): Call apdu_keypad_verify. Only
-	handle thecase with PININFO.
+	handle the case with PININFO.
 	(iso7816_verify): Call apdu_send_simple.
 
 	* app-openpgp.c (verify_a_chv, verify_chv3): Follow the change of

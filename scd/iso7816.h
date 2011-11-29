@@ -72,14 +72,15 @@ gpg_error_t iso7816_change_reference_data_kp (int slot, int chvno,
 gpg_error_t iso7816_reset_retry_counter (int slot, int chvno,
                                          const char *newchv, size_t newchvlen);
 gpg_error_t iso7816_reset_retry_counter_kp (int slot, int chvno,
-                                            const char *newchv,
-                                            size_t newchvlen,
                                             iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_reset_retry_counter_with_rc (int slot, int chvno,
                                                  const char *data,
                                                  size_t datalen);
+gpg_error_t iso7816_reset_retry_counter_with_rc_kp (int slot, int chvno,
+                                                    iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_get_data (int slot, int extended_mode, int tag,
                               unsigned char **result, size_t *resultlen);
+gpg_error_t iso7816_put_data_kp (int slot, int tag, iso7816_pininfo_t *pininfo);
 gpg_error_t iso7816_put_data (int slot, int extended_mode, int tag,
                               const void *data, size_t datalen);
 gpg_error_t iso7816_put_data_odd (int slot, int extended_mode, int tag,

@@ -354,26 +354,14 @@ iso7816_change_reference_data (int slot, int chvno,
 
 
 gpg_error_t
-iso7816_reset_retry_counter_kp (int slot, int chvno,
-                                const char *newchv, size_t newchvlen,
-                                iso7816_pininfo_t *pininfo)
+iso7816_reset_retry_counter_with_rc_kp (int slot, int chvno,
+                                        iso7816_pininfo_t *pininfo)
 {
   int sw;
 
-  if (!newchv || !newchvlen )
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  /* FIXME:  The keypad mode has not yet been tested.  */
-  if (pininfo && pininfo->mode)
-    sw = apdu_send_simple_kp (slot, 0x00, CMD_RESET_RETRY_COUNTER,
-                           2, chvno, newchvlen, newchv,
-                           pininfo->mode,
-                           pininfo->minlen,
-                           pininfo->maxlen,
+  sw = apdu_keypad_modify (slot, 0x00, CMD_RESET_RETRY_COUNTER, 0, chvno,
+                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
                            pininfo->padlen);
-  else
-    sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
-                           2, chvno, newchvlen, newchv);
   return map_sw (sw);
 }
 
@@ -394,10 +382,27 @@ iso7816_reset_retry_counter_with_rc (int slot, int chvno,
 
 
 gpg_error_t
+iso7816_reset_retry_counter_kp (int slot, int chvno,
+                                iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  sw = apdu_keypad_modify (slot, 0x00, CMD_RESET_RETRY_COUNTER, 2, chvno,
+                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                           pininfo->padlen);
+  return map_sw (sw);
+}
+
+
+gpg_error_t
 iso7816_reset_retry_counter (int slot, int chvno,
                              const char *newchv, size_t newchvlen)
 {
-  return iso7816_reset_retry_counter_kp (slot, chvno, newchv, newchvlen, NULL);
+  int sw;
+
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
+                         2, chvno, newchvlen, newchv);
+  return map_sw (sw);
 }
 
 
@@ -437,6 +442,19 @@ iso7816_get_data (int slot, int extended_mode, int tag,
     }
 
   return 0;
+}
+
+
+gpg_error_t
+iso7816_put_data_kp  (int slot, int tag, iso7816_pininfo_t *pininfo)
+{
+  int sw;
+
+  sw = apdu_keypad_modify (slot, 0x00, CMD_PUT_DATA,
+                           ((tag >> 8) & 0xff), (tag & 0xff),
+                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
+                           pininfo->padlen);
+  return map_sw (sw);
 }
 
 
