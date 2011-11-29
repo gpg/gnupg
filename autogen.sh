@@ -47,6 +47,26 @@ if test x"$1" = x"--force"; then
   shift
 fi
 
+# Reject unsafe characters in $HOME, $tsdir and cwd.  We consider spaces
+# as unsafe because it is too easy to get scripts wrong in this regard.
+am_lf='
+'
+case `pwd` in
+  *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
+    echo "unsafe working directory name"; DIE=yes;;
+esac
+case $tsdir in
+  *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
+    echo "unsafe source directory: \`$tsdir'"; DIE=yes;;
+esac
+case $HOME in
+  *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
+    echo "unsafe home directory: \`$HOME'"; DIE=yes;;
+esac
+if test "$DIE" = "yes"; then
+  exit 1
+fi
+
 # Begin list of optional variables sourced from ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
