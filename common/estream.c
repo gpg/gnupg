@@ -539,7 +539,9 @@ typedef struct estream_cookie_mem
    supplied buffer with the initial conetnt of the memory buffer.  If
    DATA is NULL, DATA_N and DATA_LEN need to be 0 as well.  If DATA is
    not NULL, DATA_N gives the allocated size of DATA and DATA_LEN the
-   used length in DATA.  */
+   used length in DATA.  If this fucntion succeeds DATA is now owned
+   by this function.  If GROW is false FUNC_REALLOC is not
+   required. */
 static int
 func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
                  unsigned char *ES__RESTRICT data, size_t data_n,
@@ -553,6 +555,11 @@ func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
   int err;
 
   if (!data && (data_n || data_len))
+    {
+      _set_errno (EINVAL);
+      return -1;
+    }
+  if (grow && func_free && !func_realloc)
     {
       _set_errno (EINVAL);
       return -1;
@@ -571,7 +578,8 @@ func_mem_create (void *ES__RESTRICT *ES__RESTRICT cookie,
       mem_cookie->data_len = data_len;
       mem_cookie->block_size = block_size;
       mem_cookie->flags.grow = !!grow;
-      mem_cookie->func_realloc = func_realloc ? func_realloc : mem_realloc;
+      mem_cookie->func_realloc
+        = grow? (func_realloc ? func_realloc : mem_realloc) : NULL;
       mem_cookie->func_free = func_free ? func_free : mem_free;
       *cookie = mem_cookie;
       err = 0;
@@ -622,7 +630,8 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
   assert (mem_cookie->memory_size >= mem_cookie->offset);
   nleft = mem_cookie->memory_size - mem_cookie->offset;
 
-  /* If we are not allowed to grow limit the size to the left space.  */
+  /* If we are not allowed to grow the buffer, limit the size to the
+     left space.  */
   if (!mem_cookie->flags.grow && size > nleft)
     size = nleft;
 
@@ -663,6 +672,7 @@ es_func_mem_write (void *cookie, const void *buffer, size_t size)
           return -1;
         }
 
+      assert (mem_cookie->func_realloc);
       newbuf = mem_cookie->func_realloc (mem_cookie->memory, newsize);
       if (!newbuf)
         return -1;
@@ -738,6 +748,7 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
           return -1;
         }
 
+      assert (mem_cookie->func_realloc);
       newbuf = mem_cookie->func_realloc (mem_cookie->memory, newsize);
       if (!newbuf)
         return -1;
@@ -2580,22 +2591,32 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
 
 
 
+/* Create a new estream object in memory.  If DATA is not NULL this
+   buffer will be used as the memory buffer; thus after this functions
+   returns with the success the the memory at DATA belongs to the new
+   estream.  The allocated length of DATA is given by DATA_LEN and its
+   used length by DATA_N.  Usually this is malloced buffer; if a
+   static buffer is provided, the caller must pass false for GROW and
+   provide a dummy function for FUNC_FREE.  FUNC_FREE and FUNC_REALLOC
+   allow the caller to provide custom functions for realloc and free
+   to be used by the new estream object.  Note that the realloc
+   function is also used for initial allocation.  If DATA is NULL a
+   buffer is internally allocated; either using internal function or
+   those provide by the caller.  It is an error to provide a realloc
+   function but no free function.  Providing only a free function is
+   allowed as long as GROW is false.  */
 estream_t
 es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
 	  unsigned int grow,
 	  func_realloc_t func_realloc, func_free_t func_free,
 	  const char *ES__RESTRICT mode)
 {
+  int create_called = 0;
+  estream_t stream = NULL;
+  void *cookie = NULL;
   unsigned int modeflags;
-  int create_called;
-  estream_t stream;
-  void *cookie;
   int err;
   es_syshd_t syshd;
-
-  cookie = 0;
-  stream = NULL;
-  create_called = 0;
 
   err = parse_mode (mode, &modeflags, NULL);
   if (err)

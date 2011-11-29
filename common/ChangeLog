@@ -1,5 +1,9 @@
 2011-11-29  Werner Koch  <wk@g10code.com>
 
+	* estream.c (func_mem_create): Don't set FUNC_REALLOC if GROW is
+	not set.  Require FUNC_REALLOC if DATA is NULL and FUNC_FREE is
+	given.
+
 	* dns-cert.c: Use new CERTTYPE_ constants for better readability.
 
 2011-11-28  Werner Koch  <wk@g10code.com>
