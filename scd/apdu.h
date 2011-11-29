@@ -117,6 +117,9 @@ int apdu_check_keypad (int slot, int command, int pin_mode,
 int apdu_keypad_verify (int slot, int class, int ins, int p0, int p1,
                         int pin_mode, int pinlen_min, int pinlen_max,
                         int pin_padlen);
+int apdu_keypad_modify (int slot, int class, int ins, int p0, int p1,
+                        int pin_mode, int pinlen_min, int pinlen_max,
+                        int pin_padlen);
 int apdu_send_simple (int slot, int extended_mode,
                       int class, int ins, int p0, int p1,
                       int lc, const char *data);
