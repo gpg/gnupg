@@ -2127,6 +2127,32 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   unsigned long len = PIN_MODIFY_STRUCTURE_SIZE;
   unsigned char result[2];
   size_t resultlen = 2;
+  unsigned char confirm_pin;
+
+  /* bConfirmPIN
+   *    0x00: new PIN once
+   *    0x01: new PIN twice (confirmation)
+   *    0x02: old PIN and new PIN once
+   *    0x03: old PIN and new PIN twice (confirmation)
+   */
+  switch (ins)
+    {
+    case ISO7816_CHANGE_REFERENCE_DATA:
+      confirm_pin = 0x03;
+      break;
+    case 0xDA:                  /* PUT_DATA */
+      confirm_pin = 0x01;
+      break;
+    case ISO7816_RESET_RETRY_COUNTER:
+      if (p0 == 0)
+        confirm_pin = 0x03;
+      else
+        confirm_pin = 0x01;
+      break;
+    default:
+      confirm_pin = 0x00;
+      break;
+    }
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
@@ -2162,12 +2188,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[6] = 0x00; /* bInsertionOffsetNew */
   pin_modify[7] = pininfo->maxlen; /* wPINMaxExtraDigit */
   pin_modify[8] = pininfo->minlen; /* wPINMaxExtraDigit */
-  pin_modify[9] = 0x03;  /* bConfirmPIN
-                          *    0x00: new PIN once
-                          *    0x01: new PIN twice (confirmation)
-                          *    0x02: old PIN and new PIN once
-                          *    0x03: old PIN and new PIN twice (confirmation)
-                          */
+  pin_modify[9] = confirm_pin;
   pin_modify[10] = 0x02; /* bEntryValidationCondition: Validation key pressed */
   if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     pin_modify[10] |= 0x01; /* Max size reached.  */
@@ -3802,24 +3823,6 @@ apdu_send_simple (int slot, int extended_mode,
 {
   return send_le (slot, class, ins, p0, p1, lc, data, -1, NULL, NULL, NULL,
                   extended_mode);
-}
-
-
-/* Same as apdu_send_simple but uses the keypad of the reader. */
-int
-apdu_send_simple_kp (int slot, int class, int ins, int p0, int p1,
-                     int lc, const char *data,
-                     int pin_mode,
-                     int pinlen_min, int pinlen_max, int pin_padlen)
-{
-  struct pininfo_s pininfo;
-
-  pininfo.mode = pin_mode;
-  pininfo.minlen = pinlen_min;
-  pininfo.maxlen = pinlen_max;
-  pininfo.padlen = pin_padlen;
-  return send_le (slot, class, ins, p0, p1, lc, data, -1,
-                  NULL, NULL, &pininfo, 0);
 }
 
 
