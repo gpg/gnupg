@@ -1912,11 +1912,17 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   int chvno = atoi (chvnostr);
   char *resetcode = NULL;
   char *oldpinvalue = NULL;
-  char *pinvalue;
+  char *pinvalue = NULL;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
+  iso7816_pininfo_t pininfo;
+  int use_keypad = 0;
+  int minlen = 6;
 
   (void)ctrl;
+  memset (&pininfo, 0, sizeof pininfo);
+  pininfo.mode = 1;
+  pininfo.minlen = minlen;
 
   if (reset_mode && chvno == 3)
     {
@@ -1960,6 +1966,11 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     {
       /* Version 2 cards.  */
 
+      if (!opt.disable_keypad
+          && !iso7816_check_keypad (app->slot,
+                                    ISO7816_CHANGE_REFERENCE_DATA, &pininfo))
+        use_keypad = 1;
+
       if (reset_mode)
         {
           /* To reset a PIN the Admin PIN is required. */
@@ -1973,12 +1984,12 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         }
       else if (chvno == 1 || chvno == 3)
         {
-          int minlen = (chvno ==3)? 8 : 6;
           char *promptbuf = NULL;
           const char *prompt;
 
           if (chvno == 3)
             {
+              minlen = 8;
               rc = build_enter_admin_pin_prompt (app, &promptbuf);
               if (rc)
                 goto leave;
@@ -1986,7 +1997,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
             }
           else
             prompt = _("||Please enter the PIN");
-          rc = pincb (pincb_arg, prompt, &oldpinvalue);
+          rc = pincb (pincb_arg, prompt, use_keypad ? NULL : &oldpinvalue);
           xfree (promptbuf);
           promptbuf = NULL;
           if (rc)
@@ -1996,7 +2007,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               goto leave;
             }
 
-          if (strlen (oldpinvalue) < minlen)
+          if (!use_keypad && strlen (oldpinvalue) < minlen)
             {
               log_info (_("PIN for CHV%d is too short;"
                           " minimum length is %d\n"), chvno, minlen);
@@ -2012,8 +2023,8 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           unsigned char *value;
           size_t valuelen;
           int remaining;
-          int minlen = 8;
 
+          minlen = 8;
           relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
           if (!relptr || valuelen < 7)
             {
@@ -2060,17 +2071,20 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   else
     app->did_chv1 = app->did_chv2 = 0;
 
-  /* TRANSLATORS: Do not translate the "|*|" prefixes but
-     keep it at the start of the string.  We need this elsewhere
-     to get some infos on the string. */
-  rc = pincb (pincb_arg, 
-              set_resetcode? _("|RN|New Reset Code") :
-              chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"), 
-              &pinvalue); 
-  if (rc)
+  if (!use_keypad)
     {
-      log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
-      goto leave;
+      /* TRANSLATORS: Do not translate the "|*|" prefixes but
+         keep it at the start of the string.  We need this elsewhere
+         to get some infos on the string. */
+      rc = pincb (pincb_arg,
+                  set_resetcode? _("|RN|New Reset Code") :
+                  chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"),
+                  &pinvalue);
+      if (rc)
+        {
+          log_error (_("error getting new PIN: %s\n"), gpg_strerror (rc));
+          goto leave;
+        }
     }
 
 
@@ -2130,10 +2144,18 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     {
       /* Version 2 cards.  */
       assert (chvno == 1 || chvno == 3);
-      
-      rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
-                                          oldpinvalue, strlen (oldpinvalue),
-                                          pinvalue, strlen (pinvalue));
+
+      if (use_keypad)
+        {
+          rc = iso7816_change_reference_data_kp (app->slot, 0x80 + chvno,
+                                                 &pininfo);
+          /* Dismiss the prompt. */
+          pincb (pincb_arg, NULL, NULL);
+        }
+      else
+        rc = iso7816_change_reference_data (app->slot, 0x80 + chvno,
+                                            oldpinvalue, strlen (oldpinvalue),
+                                            pinvalue, strlen (pinvalue));
     }
 
   if (pinvalue)
