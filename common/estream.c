@@ -2606,7 +2606,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
    function but no free function.  Providing only a free function is
    allowed as long as GROW is false.  */
 estream_t
-es_mopen (unsigned char *ES__RESTRICT data, size_t data_n, size_t data_len,
+es_mopen (void *ES__RESTRICT data, size_t data_n, size_t data_len,
 	  unsigned int grow,
 	  func_realloc_t func_realloc, func_free_t func_free,
 	  const char *ES__RESTRICT mode)
@@ -2657,7 +2657,6 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
     return NULL;
   modeflags |= O_RDWR;
 
-
   if (func_mem_create (&cookie, NULL, 0, 0,
                        BUFFER_BLOCK_SIZE, 1,
                        mem_realloc, mem_free, modeflags,
@@ -2668,6 +2667,40 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
   if (es_create (&stream, cookie, &syshd, estream_functions_mem, modeflags, 0))
     (*estream_functions_mem.func_close) (cookie);
 
+  return stream;
+}
+
+
+
+/* This is the same as es_fopenmem but intializes the memory with a
+   copy of (DATA,DATALEN).  The stream is initally set to the
+   beginning.  If MEMLIMIT is not 0 but shorter than DATALEN it
+   DATALEN will be used as the value for MEMLIMIT.  */
+estream_t
+es_fopenmem_init (size_t memlimit, const char *ES__RESTRICT mode,
+                  const void *data, size_t datalen)
+{
+  estream_t stream;
+
+  if (memlimit && memlimit < datalen)
+    memlimit = datalen;
+
+  stream = es_fopenmem (memlimit, mode);
+  if (stream && data && datalen)
+    {
+      if (es_writen (stream, data, datalen, NULL))
+        {
+          int saveerrno = errno;
+          es_fclose (stream);
+          stream = NULL;
+          _set_errno (saveerrno);
+        }
+      else
+        {
+          es_seek (stream, 0L, SEEK_SET, NULL);
+          es_set_indicators (stream, 0, 0);
+        }
+    }
   return stream;
 }
 
