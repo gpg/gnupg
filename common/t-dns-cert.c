@@ -23,18 +23,17 @@
 #include <assert.h>
 
 #include "util.h"
-#include "iobuf.h"
 #include "dns-cert.h"
 
 
 int
 main (int argc, char **argv)
 {
+  gpg_error_t err;
   unsigned char *fpr;
   size_t fpr_len;
   char *url;
-  int rc;
-  iobuf_t iobuf;
+  estream_t key;
   char const *name;
 
   if (argc)
@@ -55,18 +54,19 @@ main (int argc, char **argv)
 
   printf ("CERT lookup on `%s'\n", name);
 
-  rc = get_dns_cert (name, 65536, &iobuf, &fpr, &fpr_len, &url);
-  if (rc == -1)
-    fputs ("lookup result: error\n", stdout);
-  else if (!rc)
-    fputs ("lookup result: no answer\n", stdout);
-  else if (rc == 1)
+  err = get_dns_cert (name, &key, &fpr, &fpr_len, &url);
+  if (err)
+    printf ("get_dns_cert failed: %s <%s>\n",
+            gpg_strerror (err), gpg_strsource (err));
+  else if (key)
     {
-      printf ("lookup result: %d bytes\n",
-              (int)iobuf_get_temp_length(iobuf));
-      iobuf_close (iobuf);
+      int count = 0;
+
+      while (es_getc (key) != EOF)
+        count++;
+      printf ("Key found (%d bytes)\n", count);
     }
-  else if (rc == 2)
+  else
     {
       if (fpr)
 	{
@@ -85,9 +85,11 @@ main (int argc, char **argv)
       else
 	printf ("No URL found\n");
 
-      xfree (fpr);
-      xfree (url);
     }
+
+  es_fclose (key);
+  xfree (fpr);
+  xfree (url);
 
   return 0;
 }

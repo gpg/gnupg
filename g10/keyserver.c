@@ -1691,9 +1691,10 @@ int
 keyserver_import_cert (ctrl_t ctrl,
                        const char *name,unsigned char **fpr,size_t *fpr_len)
 {
+  gpg_error_t err;
   char *domain,*look,*url;
-  IOBUF key;
-  int type,rc=G10ERR_GENERAL;
+  estream_t key;
+
 
   look=xstrdup(name);
 
@@ -1701,30 +1702,25 @@ keyserver_import_cert (ctrl_t ctrl,
   if(domain)
     *domain='.';
 
-  type=get_dns_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
-  if (!type || type == -1)
-    {
-      /* There might be an error in res_query which leads to an error
-         return (-1) in the case that nothing was found.  Thus we take
-         all errors as key not found.  */
-      rc = G10ERR_NO_PUBKEY;
-    }
-  else if (type==1)
+  err = get_dns_cert (look, &key, fpr, fpr_len, &url);
+  if (err)
+    ;
+  else if (key)
     {
       int armor_status=opt.no_armor;
 
       /* CERTs are always in binary format */
       opt.no_armor=1;
 
-      /* FIXME: Pass CTRL.  */
-      rc = import_keys_stream (NULL, key, NULL, fpr, fpr_len,
-                               opt.keyserver_options.import_options);
+      err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
+                                  opt.keyserver_options.import_options);
 
       opt.no_armor=armor_status;
 
-      iobuf_close(key);
+      es_fclose (key);
+      key = NULL;
     }
-  else if(type==2 && *fpr)
+  else if (*fpr)
     {
       /* We only consider the IPGP type if a fingerprint was provided.
 	 This lets us select the right key regardless of what a URL
@@ -1736,7 +1732,7 @@ keyserver_import_cert (ctrl_t ctrl,
 	  spec=parse_keyserver_uri(url,1,NULL,0);
 	  if(spec)
 	    {
-	      rc = keyserver_import_fprint (ctrl, *fpr,*fpr_len,spec);
+	      err = keyserver_import_fprint (ctrl, *fpr,*fpr_len,spec);
 	      free_keyserver_spec(spec);
 	    }
 	}
@@ -1745,7 +1741,7 @@ keyserver_import_cert (ctrl_t ctrl,
 	  /* If only a fingerprint is provided, try and fetch it from
 	     our --keyserver */
 
-	  rc = keyserver_import_fprint (ctrl, *fpr,*fpr_len,opt.keyserver);
+	  err = keyserver_import_fprint (ctrl, *fpr,*fpr_len,opt.keyserver);
 	}
       else
 	log_info(_("no keyserver known (use option --keyserver)\n"));
@@ -1754,12 +1750,12 @@ keyserver_import_cert (ctrl_t ctrl,
 	 found, but no keyserver" " known (use option
 	 --keyserver)\n" ? */
 
-      xfree(url);
     }
 
+  xfree(url);
   xfree(look);
 
-  return rc;
+  return err;
 }
 
 /* Import key pointed to by a PKA record. Return the requested

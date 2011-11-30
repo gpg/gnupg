@@ -1584,9 +1584,12 @@ are available for all keyserver types, some common options are:
   Set the proxy to use for HTTP and HKP keyservers.  This overrides the
   "http_proxy" environment variable, if any.
 
+
+@ifclear gpgtwoone
   @item max-cert-size
   When retrieving a key via DNS CERT, only accept keys up to this size.
   Defaults to 16384 bytes.
+@end ifclear
 
   @item debug
   Turn on debug output in the keyserver helper program.  Note that the
