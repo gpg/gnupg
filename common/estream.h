@@ -76,6 +76,7 @@
 #define es_fopen              _ESTREAM_PREFIX(es_fopen)
 #define es_mopen              _ESTREAM_PREFIX(es_mopen)
 #define es_fopenmem           _ESTREAM_PREFIX(es_fopenmem)
+#define es_fopenmem_init      _ESTREAM_PREFIX(es_fopenmem_init)
 #define es_fdopen             _ESTREAM_PREFIX(es_fdopen)
 #define es_fdopen_nc          _ESTREAM_PREFIX(es_fdopen_nc)
 #define es_sysopen            _ESTREAM_PREFIX(es_sysopen)
@@ -262,13 +263,15 @@ int es_init (void);
 
 estream_t es_fopen (const char *ES__RESTRICT path,
 		    const char *ES__RESTRICT mode);
-estream_t es_mopen (unsigned char *ES__RESTRICT data,
+estream_t es_mopen (void *ES__RESTRICT data,
 		    size_t data_n, size_t data_len,
 		    unsigned int grow,
 		    void *(*func_realloc) (void *mem, size_t size),
 		    void (*func_free) (void *mem),
 		    const char *ES__RESTRICT mode);
 estream_t es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode);
+estream_t es_fopenmem_init (size_t memlimit, const char *ES__RESTRICT mode,
+                            const void *data, size_t datalen);
 estream_t es_fdopen (int filedes, const char *mode);
 estream_t es_fdopen_nc (int filedes, const char *mode);
 estream_t es_sysopen (es_syshd_t *syshd, const char *mode);
