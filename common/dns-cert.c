@@ -37,7 +37,6 @@
 #endif
 
 #include "util.h"
-#include "iobuf.h"
 #include "dns-cert.h"
 
 /* Not every installation has gotten around to supporting CERTs
@@ -63,48 +62,58 @@
 #define CERTTYPE_OID     254 /* OID private.  */
 
 
-/* Returns -1 on error, 0 for no answer, 1 for PGP provided and 2 for
-   IPGP provided.  Note that this function returns the first CERT
-   found with a supported type; it is expected that only one CERT
-   record is used. */
-int
-get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
-              unsigned char **fpr, size_t * fpr_len, char **url)
+/* Returns 0 on success or an error code.  If a PGP CERT record was
+   found, a new estream with that key will be returned at R_KEY and
+   the other return parameters are set to NULL/0.  If an IPGP CERT
+   record was found the fingerprint is stored as an allocated block at
+   R_FPR and its length at R_FPRLEN; an URL is is allocated as a
+   string and returned at R_URL.  Note that this function returns the
+   first CERT found with a supported type; it is expected that only
+   one CERT record is used. */
+gpg_error_t
+_get_dns_cert (const char *name, estream_t *r_key,
+               unsigned char **r_fpr, size_t *r_fprlen, char **r_url,
+               gpg_err_source_t errsource)
 {
 #ifdef USE_DNS_CERT
 #ifdef USE_ADNS
+  gpg_error_t err;
   adns_state state;
   adns_answer *answer = NULL;
-  int rc;
   unsigned int ctype;
   int count;
 
-  rc = adns_init (&state, adns_if_noerrprint, NULL);
-  if (rc)
+  *r_key = NULL;
+  *r_fpr = NULL;
+  *r_fprlen = 0;
+  *r_url = NULL;
+
+  if (adns_init (&state, adns_if_noerrprint, NULL))
     {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
       log_error ("error initializing adns: %s\n", strerror (errno));
-      return -1;
+      return err;
     }
 
-  rc = adns_synchronous (state, name, (adns_r_unknown | my_adns_r_cert),
-                         adns_qf_quoteok_query, &answer);
-  if (rc)
+  if (adns_synchronous (state, name, (adns_r_unknown | my_adns_r_cert),
+                        adns_qf_quoteok_query, &answer))
     {
+      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
       /* log_error ("DNS query failed: %s\n", strerror (errno)); */
       adns_finish (state);
-      return -1;
+      return err;
     }
   if (answer->status != adns_s_ok)
     {
       /* log_error ("DNS query returned an error: %s (%s)\n", */
       /*            adns_strerror (answer->status), */
       /*            adns_errabbrev (answer->status)); */
-      adns_free (answer);
-      adns_finish (state);
-      return 0;
+      err = gpg_err_make (errsource, GPG_ERR_NOT_FOUND);
+      goto leave;
     }
 
-  for (rc = 0, count = 0; !rc && count < answer->nrrs; count++)
+  err = gpg_err_make (errsource, GPG_ERR_NOT_FOUND);
+  for (count = 0; count < answer->nrrs; count++)
     {
       int datalen = answer->rrs.byteblock[count].len;
       const unsigned char *data = answer->rrs.byteblock[count].data;
@@ -121,8 +130,12 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
         {
           /* CERT type is PGP.  Gpg checks for a minimum length of 11,
              thus we do the same.  */
-          *iobuf = iobuf_temp_with_content ((char *)data, datalen);
-          rc = 1;
+          *r_key = es_fopenmem_init (0, "rwb", data, datalen);
+          if (!*r_key)
+            err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          else
+            err = 0;
+          goto leave;
         }
       else if (ctype == CERTTYPE_IPGP && datalen && datalen < 1023
                && datalen >= data[0] + 1 && fpr && fpr_len && url)
@@ -130,50 +143,68 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
           /* CERT type is IPGP.  We made sure that the data is
              plausible and that the caller requested this
              information.  */
-          *fpr_len = data[0];
-          if (*fpr_len)
+          *r_fprlen = data[0];
+          if (*r_fprlen)
             {
-              *fpr = xmalloc (*fpr_len);
-              memcpy (*fpr, data + 1, *fpr_len);
+              *r_fpr = xtrymalloc (*r_fprlen);
+              if (!*r_fpr)
+                {
+                  err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+                  goto leave;
+                }
+              memcpy (*r_fpr, data + 1, *r_fprlen);
             }
           else
-            *fpr = NULL;
+            *r_fpr = NULL;
 
-          if (datalen > *fpr_len + 1)
+          if (datalen > *r_fprlen + 1)
             {
-              *url = xmalloc (datalen - (*fpr_len + 1) + 1);
-              memcpy (*url, data + (*fpr_len + 1), datalen - (*fpr_len + 1));
-              (*url)[datalen - (*fpr_len + 1)] = '\0';
+              *url = xtrymalloc (datalen - (*r_fprlen + 1) + 1);
+              if (!*r_url)
+                {
+                  err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+                  xfree (*r_fpr);
+                  *r_fpr = NULL;
+                  goto leave;
+                }
+              memcpy (*url, data + (*r_fprlen + 1), datalen - (*r_fprlen + 1));
+              (*url)[datalen - (*r_fprlen + 1)] = '\0';
             }
           else
-            *url = NULL;
+            *r_url = NULL;
 
-          rc = 2;
+          err = 0;
+          goto leave;
         }
     }
 
+ leave:
   adns_free (answer);
   adns_finish (state);
-  return rc;
+  return err;
 
 #else /*!USE_ADNS*/
 
+  gpg_error_t err;
   unsigned char *answer;
-  int ret = -1;
   int r;
   u16 count;
 
-  if (fpr)
-    *fpr = NULL;
+  *r_key = NULL;
+  *r_fpr = NULL;
+  *r_fprlen = 0;
+  *r_url = NULL;
 
-  if (url)
-    *url = NULL;
+  /* Allocate a 64k buffer which is the limit for an DNS response.  */
+  answer = xtrymalloc (65536);
+  if (!answer)
+    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
 
-  answer = xmalloc (max_size);
+  err = gpg_err_make (errsource, GPG_ERR_NOT_FOUND);
 
-  r = res_query (name, C_IN, T_CERT, answer, max_size);
+  r = res_query (name, C_IN, T_CERT, answer, 65536);
   /* Not too big, not too small, no errors and at least 1 answer. */
-  if (r >= sizeof (HEADER) && r <= max_size
+  if (r >= sizeof (HEADER) && r <= 65536
       && (((HEADER *) answer)->rcode) == NOERROR
       && (count = ntohs (((HEADER *) answer)->ancount)))
     {
@@ -188,8 +219,10 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
 
       rc = dn_skipname (pt, emsg);
       if (rc == -1)
-        goto fail;
-
+        {
+          err = gpg_err_make (errsource, GPG_ERR_INV_OBJ);
+          goto leave;
+        }
       pt += rc + QFIXEDSZ;
 
       /* There are several possible response types for a CERT request.
@@ -204,7 +237,10 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
 
           rc = dn_skipname (pt, emsg);  /* the name we just queried for */
           if (rc == -1)
-            break;
+            {
+              err = gpg_err_make (errsource, GPG_ERR_INV_OBJ);
+              goto leave;
+            }
 
           pt += rc;
 
@@ -248,39 +284,54 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
 
           /* 15 bytes takes us to here */
 
-          if (ctype == CERTTYPE_PGP && iobuf && dlen)
+          if (ctype == CERTTYPE_PGP && dlen)
             {
               /* PGP type */
-              *iobuf = iobuf_temp_with_content ((char *) pt, dlen);
-              ret = 1;
-              break;
+              *r_key = es_fopenmem_init (0, "rwb", pt, dlen);
+              if (!*r_key)
+                err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+              else
+                err = 0;
+              goto leave;
             }
           else if (ctype == CERTTYPE_IPGP
-                   && dlen && dlen < 1023 && dlen >= pt[0] + 1
-                   && fpr && fpr_len && url)
+                   && dlen && dlen < 1023 && dlen >= pt[0] + 1)
             {
               /* IPGP type */
-              *fpr_len = pt[0];
-
-              if (*fpr_len)
+              *r_fprlen = pt[0];
+              if (*r_fprlen)
                 {
-                  *fpr = xmalloc (*fpr_len);
-                  memcpy (*fpr, &pt[1], *fpr_len);
+                  *r_fpr = xtrymalloc (*r_fprlen);
+                  if (!*r_fpr)
+                    {
+                      err = gpg_err_make (errsource,
+                                          gpg_err_code_from_syserror ());
+                      goto leave;
+                    }
+                  memcpy (*r_fpr, &pt[1], *r_fprlen);
                 }
               else
-                *fpr = NULL;
+                *r_fpr = NULL;
 
-              if (dlen > *fpr_len + 1)
+              if (dlen > *r_fprlen + 1)
                 {
-                  *url = xmalloc (dlen - (*fpr_len + 1) + 1);
-                  memcpy (*url, &pt[*fpr_len + 1], dlen - (*fpr_len + 1));
-                  (*url)[dlen - (*fpr_len + 1)] = '\0';
+                  *r_url = xtrymalloc (dlen - (*r_fprlen + 1) + 1);
+                  if (!*r_fpr)
+                    {
+                      err = gpg_err_make (errsource,
+                                          gpg_err_code_from_syserror ());
+                      xfree (*r_fpr);
+                      *r_fpr = NULL;
+                      goto leave;
+                    }
+                  memcpy (*r_url, &pt[*r_fprlen + 1], dlen - (*r_fprlen + 1));
+                  (*r_url)[dlen - (*r_fprlen + 1)] = '\0';
                 }
               else
-                *url = NULL;
+                *r_url = NULL;
 
-              ret = 2;
-              break;
+              err = 0;
+              goto leave;
             }
 
           /* Neither type matches, so go around to the next answer. */
@@ -288,18 +339,18 @@ get_dns_cert (const char *name, size_t max_size, IOBUF * iobuf,
         }
     }
 
- fail:
+ leave:
   xfree (answer);
-  return ret;
+  return err;
+
 #endif /*!USE_ADNS */
 #else /* !USE_DNS_CERT */
   (void)name;
-  (void)max_size;
-  (void)iobuf;
-  (void)fpr;
-  (void)fpr_len;
-  (void)url;
+  (void)r_key;
+  (void)r_fpr;
+  (void)r_fprlen;
+  (void)r_url;
 
-  return -1;
+  return gpg_err_make (errsource, GPG_ERR_NOT_SUPPORTED);
 #endif
 }

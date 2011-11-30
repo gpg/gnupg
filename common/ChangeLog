@@ -1,3 +1,18 @@
+2011-11-30  Werner Koch  <wk@gnupg.org>
+
+        Rewrite dns-cert.c to not use the gpg-only iobuf stuff.
+        * dns-cert.c: Remove iobuf.h.
+        (get_dns_cert): Rename to _get_dns_cert.  Remove MAX_SIZE arg.
+	Change iobuf arg to a estream-t.  Rewrite function to make use of
+	estream instead of iobuf.  Require all parameters.  Return an
+	gpg_error_t error instead of the type.  Add arg ERRSOURCE.
+        * dns-cert.h (get_dns_cert): New macro to pass the error source to
+	_gpg_dns_cert.
+        * t-dns-cert.c (main): Adjust for changes in get_dns_cert.
+
+        * estream.c (es_fopenmem_init): New.
+	* estream.h (es_fopenmem_init): New.
+
 2011-11-29  Werner Koch  <wk@g10code.com>
 
 	* estream.c (func_mem_create): Don't set FUNC_REALLOC if GROW is

@@ -1,3 +1,8 @@
+2011-11-30  Werner Koch  <wk@g10code.com>
+
+        * keyserver.c (keyserver_import_cert): Adjust for changed
+	get_dns_cert.
+
 2011-11-28  Werner Koch  <wk@g10code.com>
 
 	* keyserver.c (DEFAULT_MAX_CERT_SIZE): Increase from 16k to 64k.
