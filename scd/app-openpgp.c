@@ -1983,7 +1983,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           if (chvno == 2)
             set_resetcode = 1;
         }
-      else if (chvno == 1 || chvno == 3)
+      else if (!use_keypad && (chvno == 1 || chvno == 3))
         {
           char *promptbuf = NULL;
           const char *prompt;
@@ -1998,7 +1998,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
             }
           else
             prompt = _("||Please enter the PIN");
-          rc = pincb (pincb_arg, prompt, use_keypad ? NULL : &oldpinvalue);
+          rc = pincb (pincb_arg, prompt, &oldpinvalue);
           xfree (promptbuf);
           promptbuf = NULL;
           if (rc)
@@ -2008,7 +2008,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               goto leave;
             }
 
-          if (!use_keypad && strlen (oldpinvalue) < minlen)
+          if (strlen (oldpinvalue) < minlen)
             {
               log_info (_("PIN for CHV%d is too short;"
                           " minimum length is %d\n"), chvno, minlen);
@@ -2044,21 +2044,24 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
               goto leave;
             }
 
-          rc = pincb (pincb_arg,
-                      _("||Please enter the Reset Code for the card"),
-                      use_keypad ? NULL : &resetcode);
-          if (rc)
+          if (!use_keypad)
             {
-              log_info (_("PIN callback returned error: %s\n"),
-                        gpg_strerror (rc));
-              goto leave;
-            }
-          if (!use_keypad && strlen (resetcode) < minlen)
-            {
-              log_info (_("Reset Code is too short; minimum length is %d\n"),
-                        minlen);
-              rc = gpg_error (GPG_ERR_BAD_PIN);
-              goto leave;
+              rc = pincb (pincb_arg,
+                          _("||Please enter the Reset Code for the card"),
+                          &resetcode);
+              if (rc)
+                {
+                  log_info (_("PIN callback returned error: %s\n"),
+                            gpg_strerror (rc));
+                  goto leave;
+                }
+              if (strlen (resetcode) < minlen)
+                {
+                  log_info (_("Reset Code is too short; minimum length is %d\n"),
+                            minlen);
+                  rc = gpg_error (GPG_ERR_BAD_PIN);
+                  goto leave;
+                }
             }
         }
       else
@@ -2094,6 +2097,15 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     {
       if (use_keypad)
         {
+          rc = pincb (pincb_arg,
+                      _("||Please enter the Reset Code for the card and New PIN"),
+                      NULL);
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              goto leave;
+            }
           rc = iso7816_reset_retry_counter_with_rc_kp (app->slot, 0x81,
                                                        &pininfo);
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
@@ -2120,6 +2132,12 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       if (use_keypad)
         {
           rc = pincb (pincb_arg,  _("|RN|New Reset Code"), NULL);
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              goto leave;
+            }
           rc = iso7816_put_data_kp (app->slot, 0xD3, &pininfo);
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
@@ -2138,6 +2156,12 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       if (use_keypad)
         {
           rc = pincb (pincb_arg, _("|N|New PIN"), NULL);
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              goto leave;
+            }
           rc = iso7816_reset_retry_counter_kp (app->slot, 0x81, &pininfo);
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
         }
@@ -2174,6 +2198,16 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
       if (use_keypad)
         {
+          rc = pincb (pincb_arg,
+                      chvno == 3 ?
+                      _("||Please enter the Admin PIN and New Admin PIN") :
+                      _("||Please enter the PIN and New PIN"), NULL);
+          if (rc)
+            {
+              log_info (_("PIN callback returned error: %s\n"),
+                        gpg_strerror (rc));
+              goto leave;
+            }
           rc = iso7816_change_reference_data_kp (app->slot, 0x80 + chvno,
                                                  &pininfo);
           pincb (pincb_arg, NULL, NULL); /* Dismiss the prompt. */
