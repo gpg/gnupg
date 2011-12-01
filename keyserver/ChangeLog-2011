@@ -1,3 +1,10 @@
+2011-12-01  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-01-20  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_hkp.c (get_name): Remove test for KS_GETNAME.  It is
@@ -92,7 +99,7 @@
 	* curl-shim.c (curl_easy_init) [HAVE_W32_SYSTEM]: Call it.
 	* gpgkeys_finger.c: s/_WIN32/HAVE_W32_SYSTEM/.
 	(init_sockets): Remove.
-	(connect_server) [HAVE_W32_SYSTEM]: Call new function.  
+	(connect_server) [HAVE_W32_SYSTEM]: Call new function.
 
 2008-04-14  David Shaw  <dshaw@jabberwocky.com>
 
@@ -105,7 +112,7 @@
 2008-04-07  Werner Koch  <wk@g10code.com>
 
 	* gpgkeys_kdns.c: New.
-	* Makefile.am: Support kdns. 
+	* Makefile.am: Support kdns.
 
 	* no-libgcrypt.c (gcry_strdup): Fix.  It was not used.
 
@@ -117,7 +124,7 @@
 2007-10-25  David Shaw  <dshaw@jabberwocky.com>  (wk)
 
 	From 1.4 (July):
-	
+
 	* gpgkeys_ldap.c (main): Fix bug in setting up whether to verify
 	peer SSL cert.  This used to work with older OpenLDAP, but is now
 	more strictly handled.
@@ -229,7 +236,7 @@
 	to OpenSSL.  This is considered a bug fix and forgives all
 	possible violations, pertaining to this issue, possibly occured in
 	the past.
-	
+
 	* no-libgcrypt.c: Changed license to a simple all permissive one.
 
 	* Makefile.am (gpg2keys_ldap_LDADD): For license reasons do not
@@ -245,7 +252,7 @@
 	mismatch.
 
 2006-09-19  Werner Koch  <wk@g10code.com>
-	
+
 	* no-libgcrypt.c: New. Taken from ../tools.
 	* Makefile.am: Add no-libgcrypt to all sources.
 
@@ -714,7 +721,7 @@
 
 2004-10-28  Werner Koch  <wk@g10code.com>
 
-	* Makefile.am (other_libs): 
+	* Makefile.am (other_libs):
 
 2004-10-18  David Shaw  <dshaw@jabberwocky.com>
 
@@ -1346,3 +1353,7 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Local Variables:
+buffer-read-only: t
+End:

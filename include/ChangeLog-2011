@@ -1,3 +1,10 @@
+2011-12-01  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-02-01  Werner Koch  <wk@g10code.com>
 
 	* cipher.h (PUBKEY_MAX_NPKEY, PUBKEY_MAX_NSKEY): Bump up to
@@ -442,3 +449,7 @@ Tue Mar  3 15:11:21 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Local Variables:
+buffer-read-only: t
+End:

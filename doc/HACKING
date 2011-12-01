@@ -3,7 +3,30 @@
 		   (Some notes on GNUPG internals.)
 
 
-		   ===> Under construction <=======
+* No more ChangeLog files
+
+Do not modify any of the ChangeLog files in GnuPG.  Starting on
+December 1st, 2011 we put change information only in the GIT commit
+log, and generate a top-level ChangeLog file from logs at "make dist"
+time.  As such, there are strict requirements on the form of the
+commit log messages.  The old ChangeLog files have all be renamed to
+ChangeLog-2011
+
+
+* Commit log requirements
+
+Your commit log should always start with a one-line summary, the second
+line should be blank, and the remaining lines are usually ChangeLog-style
+entries for all affected files.  However, it's fine -- even recommended --
+to write a few lines of prose describing the change, when the summary
+and ChangeLog entries don't give enough of the big picture.  Omit the
+leading TABs that you're used to seeing in a "real" ChangeLog file, but
+keep the maximum line length at 72 or smaller, so that the generated
+ChangeLog lines, each with its leading TAB, will not exceed 80 columns.
+
+
+
+===> What follows is probably out of date <===
 
 
 RFCs
@@ -63,7 +86,7 @@ g10/keydb.h
 g10/keyid.c	Helper functions to get the keyid, fingerprint etc.
 
 
-g10/trustdb.c    
+g10/trustdb.c
 g10/trustdb.h
 g10/tdbdump.c
                Management of the trustdb.gpg
@@ -74,7 +97,7 @@ g10/delkey.c   Delete a key
 g10/kbnode.c   Helper for the KBNODE linked list
 g10/main.h     Prototypes and some constants
 g10/mainproc.c Message processing
-g10/armor.c    Ascii armor filter 
+g10/armor.c    Ascii armor filter
 g10/mdfilter.c Filter to calculate hashs
 g10/textfilter.c Filter to handle CR/LF and trailing white space
 g10/cipher.c   En-/Decryption filter
@@ -88,7 +111,7 @@ g10/hkp.h      Keyserver access
 g10/hkp.c
 g10/packet.h   Defintion of OpenPGP structures.
 g10/passphrase.c  Passphrase handling code
-g10/pubkey-enc.c  
+g10/pubkey-enc.c
 g10/seckey-cert.c
 g10/seskey.c
 g10/import.c

@@ -18,6 +18,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = ChangeLog-2011
+
 bin_PROGRAMS = g13
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common

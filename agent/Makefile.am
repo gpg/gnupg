@@ -25,7 +25,8 @@ libexec_PROGRAMS += gpg-preset-passphrase
 endif
 noinst_PROGRAMS = $(TESTS)
 
-# EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc
+EXTRA_DIST = ChangeLog-2011
+
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 

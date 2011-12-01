@@ -37,7 +37,7 @@ TESTS_ENVIRONMENT = GNUPGHOME=`/bin/pwd` GPG_AGENT_INFO= LC_ALL=C \
 
 testscripts = sm-sign+verify sm-verify
 
-EXTRA_DIST = runtest inittests $(testscripts) \
+EXTRA_DIST = runtest inittests $(testscripts) ChangeLog-2011 \
 	     text-1.txt text-2.txt text-3.txt \
 	     text-1.osig.pem text-1.dsig.pem text-1.osig-bad.pem \
 	     text-2.osig.pem text-2.osig-bad.pem \

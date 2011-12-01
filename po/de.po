@@ -111,8 +111,8 @@ msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
 msgid "detected card with S/N: %s\n"
 msgstr "Erkannte Karte hat die Seriennummer: %s\n"
 
-#, c-format
-msgid "error getting default authentication keyID of card: %s\n"
+#, fuzzy, c-format
+msgid "no authentication key for ssh on card: %s\n"
 msgstr "Fehler beim Holen der Authentisierungsschlüssel-ID der Karte: %s\n"
 
 #, c-format
@@ -131,7 +131,9 @@ msgstr "Fehler beim Schreiben des Schlüssels: %s\n"
 msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
-msgstr "Ein SSH Processs möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  (%s)%%0AErlauben Sie dies?"
+msgstr ""
+"Ein SSH Processs möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  (%s)%%"
+"0AErlauben Sie dies?"
 
 msgid "Allow"
 msgstr "Erlauben"
@@ -141,7 +143,9 @@ msgstr "Verweigern"
 
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
-msgstr "Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  (%c)%%0Aein."
+msgstr ""
+"Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  (%c)%%"
+"0Aein."
 
 msgid "Please re-enter this passphrase"
 msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
@@ -152,7 +156,8 @@ msgid ""
 "s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen\n"
-"Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu schützen."
+"Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
+"schützen."
 
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
@@ -5428,6 +5433,18 @@ msgstr "|AN|Neue Admin-PIN"
 
 msgid "|N|New PIN"
 msgstr "|N|Neue PIN"
+
+#, fuzzy
+msgid "||Please enter the Reset Code for the card and New PIN"
+msgstr "Bitte geben Sie den Rückstellcode für diese Karte ein"
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "|A|Bitte die Admin-PIN eingeben."
+
+#, fuzzy
+msgid "||Please enter the PIN and New PIN"
+msgstr "||Bitte die PIN eingeben"
 
 msgid "error reading application data\n"
 msgstr "Fehler beim Lesen der Anwendungsdaten\n"

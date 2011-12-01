@@ -1,3 +1,10 @@
+2011-12-01  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-05-12  Marcus Brinkmann  <marcus@g10code.com>
 
 	* cs.po: Merge in dirmngr cs.po.  Hope I got that right.
@@ -184,7 +191,7 @@
 	package name mangling breaks make distcheck as it tries to rebuild
 	the po file with the "correct" name.  The upshot is never to use
 	GNU in you po directory.
- 
+
 	* de.po: Fix a few fuzzy entries and translate new strings.
 
 2007-07-04  Werner Koch  <wk@g10code.com>
@@ -308,7 +315,6 @@
 	* POTFILES.in: New.
 	* de.po: New.
 
-	
  Copyright 2002, 2003, 2004, 2005, 2009 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
@@ -318,5 +324,7 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-		
 
+Local Variables:
+buffer-read-only: t
+End:
