@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = options.skel
+EXTRA_DIST = options.skel ChangeLog-2011
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
               -I$(top_srcdir)/include -I$(top_srcdir)/intl

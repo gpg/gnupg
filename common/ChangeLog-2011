@@ -1,3 +1,10 @@
+2011-12-01  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-11-30  Werner Koch  <wk@gnupg.org>
 
         Rewrite dns-cert.c to not use the gpg-only iobuf stuff.
@@ -2481,3 +2488,7 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+Local Variables:
+buffer-read-only: t
+End:

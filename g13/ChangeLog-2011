@@ -1,0 +1,14 @@
+2011-12-01  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
+2009-11-04  Werner Koch  <wk@g10code.com>
+
+	Under initial development - no need for a ChangeLog.
+
+Local Variables:
+buffer-read-only: t
+End:

@@ -17,6 +17,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
+EXTRA_DIST = ChangeLog-2011
 
 bin_PROGRAMS = gpgsm
 

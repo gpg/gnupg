@@ -34,7 +34,7 @@ EXTRA_DIST = samplekeys.asc \
              gnupg-card-architecture.pdf \
              FAQ gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi texi.css  yat2m.c
+	     gpgv.texi texi.css yat2m.c ChangeLog-2011
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf

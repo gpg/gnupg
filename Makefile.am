@@ -20,9 +20,12 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
-DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto
+DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-gpgtar
 
-EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT
+EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT \
+	     ChangeLog-2011 po/ChangeLog-2011 scripts/ChangeLog-2011 \
+	     scripts/gitlog-to-changelog \
+	     scripts/git-log-fix scripts/git-log-footer
 DISTCLEANFILES = g10defs.h
 
 if BUILD_GPGSM
@@ -90,7 +93,7 @@ SUBDIRS = m4 gl include common ${kbx} \
 dist_doc_DATA = README
 
 
-dist-hook:
+dist-hook: gen-ChangeLog
 	echo "$(VERSION)" > $(distdir)/VERSION
 
 if HAVE_W32_SYSTEM
@@ -105,6 +108,21 @@ install-data-hook:
               "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES/gnupg2.mo" ; \
 	done
 endif
+
+
+gen_start_date = 2011-12-01T06:00:00
+.PHONY: gen-ChangeLog
+gen-ChangeLog:
+	if test -d $(top_srcdir)/.git; then				\
+	  (cd $(top_srcdir) &&                      			\
+	    ./scripts/gitlog-to-changelog				\
+	    --amend=scripts/git-log-fix	 				\
+	    --since=$(gen_start_date) ) > $(distdir)/cl-t;		\
+          cat $(top_srcdir)/scripts/git-log-footer >> $(distdir)/cl-t;  \
+	  rm -f $(distdir)/ChangeLog;					\
+	  mv $(distdir)/cl-t $(distdir)/ChangeLog;			\
+	fi
+
 
 stowinstall:
 	$(MAKE) $(AM_MAKEFLAGS) install prefix=/usr/local/stow/gnupg

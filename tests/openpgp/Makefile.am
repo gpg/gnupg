@@ -67,7 +67,7 @@ sample_keys = samplekeys/ecc-sample-1-pub.asc \
               samplekeys/ecc-sample-2-sec.asc \
               samplekeys/ecc-sample-3-sec.asc
 
-EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) \
+EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)
 
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
