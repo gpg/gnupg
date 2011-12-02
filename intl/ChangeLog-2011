@@ -1,0 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
+2006-11-27  GNU  <bug-gnu-gettext@gnu.org>
+
+	* Version 0.16.1 released.

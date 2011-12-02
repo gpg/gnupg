@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2010-09-28  Werner Koch  <wk@g10code.com>
 
 	* ttyio.h (ttyfp_is, init_ttyfp) [__VMS]: New.
@@ -167,7 +174,7 @@
 
         * errors.h: Add w32_strerror prototype.
 	* dynload.h: Use w32_strerror.
-	
+
 2004-10-27  Werner Koch  <wk@g10code.com>
 
 	* dynload.h: Always use it for _WIN32.
@@ -250,7 +257,7 @@
 2003-10-04  Timo Schulz  <twoaday@freakmail.de>
 
 	* dynload [WIN32] (dlclose): Do not use CloseHandle but FreeLibrary.
-	
+
 2003-09-29  Werner Koch  <wk@gnupg.org>
 
 	* cipher.h (PUBKEY_USAGE_AUTH): New.
@@ -259,7 +266,7 @@
 
 	* util.h [WIN32]: Prototype for asprintf.
 	* dynload.h [WIN32]: Define RTLD_LAZY.
-	
+
 2003-09-28  Werner Koch  <wk@gnupg.org>
 
 	* util.h: Add the atoi_* and xtoi_* suite of macros from 1.9.
@@ -446,7 +453,7 @@
 
 	* KEYSERVER_SCHEME_NOT_FOUND should be 127 to match the POSIX
 	system() (via /bin/sh) way of signaling this.
-	
+
 	* Added G10ERR_KEYSERVER
 
 2001-12-27  Werner Koch  <wk@gnupg.org>
@@ -476,7 +483,7 @@
 
 2001-08-24  Werner Koch  <wk@gnupg.org>
 
-	* cipher.h (md_write): Made buf arg const. 
+	* cipher.h (md_write): Made buf arg const.
 
 2001-08-20  Werner Koch  <wk@gnupg.org>
 
@@ -486,7 +493,7 @@
 	never use __attribute__.
 	* cipher.h, iobuf.h, memory.h, mpi.h [__riscos__]: extern hack.
 	* i18n.h [__riscos__]: Use another include file
-	
+
 2001-05-30  Werner Koch  <wk@gnupg.org>
 
 	* ttyio.h (tty_printf): Add missing parenthesis for non gcc.

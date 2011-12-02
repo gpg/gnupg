@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2002-12-04  Werner Koch  <wk@gnupg.org>
 
 	* inittests (gpgsm.conf): Fake system time.
@@ -39,7 +46,7 @@
 
 	* Makefile.am: Fixes for make dist.
 	* samplekets/Makefile.am: New.
-	
+
 2002-08-08  Werner Koch  <wk@gnupg.org>
 
 	* asschk.c: Added some new features.
@@ -54,7 +61,7 @@
 
 	* Makefile.am, asschk.c: New.
 
-	
+
  Copyright 2002 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
@@ -64,5 +71,3 @@
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-	
-

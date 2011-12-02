@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-02-23  Werner Koch  <wk@g10code.com>
 
 	* gpg-zip.1: Update by taking a built copy from master.
@@ -942,7 +949,7 @@
 2002-01-25  Timo Schulz  <ts@winpt.org>
 
 	* README.W32: Modify the filename because now the .exe extension
- 	is automatically added to the binary.
+	is automatically added to the binary.
 
 2002-01-14  Werner Koch  <wk@gnupg.org>
 

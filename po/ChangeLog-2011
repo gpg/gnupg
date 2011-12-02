@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2010-10-18  Jedi Lin  <Jedi@Jedi.org>  (wk)
 
 	* zh_TW.po: Update [not in 1.4.11]
@@ -253,7 +260,7 @@
 	one removed one printf specifier.
 
 	Fixed fuzzy entries due to the change of (y/N) to (Y/n) in most files.
-	
+
 2002-04-25  gettextize  <bug-gnu-utils@gnu.org>
 
 	* Makefile.in.in: Upgrade to gettext-0.10.40.
@@ -276,7 +283,7 @@
 
 2002-04-09  Werner Koch  <wk@gnupg.org>
 
-	* pt_BR.po: Updated the info entry 
+	* pt_BR.po: Updated the info entry
 
 	* es.po: Fixed a c-format problem; for unknown reasons msgfmt -c
 	can't cope with swapped arguments.
@@ -294,7 +301,7 @@
 	* cs.po: New.  Fixed for format string mismatches.
 
 	* el.po, gl.po: New from TP.
-	
+
 2002-04-06  Werner Koch  <wk@gnupg.org>
 
 	* fr.po: Updated.
@@ -344,7 +351,7 @@
 
 2001-05-28  Werner Koch  <wk@gnupg.org>
 
-	* ru.po: Removed - too many format string bugs. 
+	* ru.po: Removed - too many format string bugs.
 
 2001-05-27  gettextize  <bug-gnu-utils@gnu.org>
 
@@ -354,7 +361,7 @@
 
 2001-05-27  Werner Koch  <wk@gnupg.org>
 
-	* tr.po: New copy from the TP Robot. 
+	* tr.po: New copy from the TP Robot.
 	* da.po, de.po, eo.po, es_ES.po, et.po, id.po, ja.po, nl.po,
         pt_BR.po, sv.po: Fixes to format string errors by Kurt Garloff.
 	It is not cleare whether they are all correct but at least they
@@ -362,7 +369,7 @@
 	* ru.po: Fixed the header entry.
 
 	Fixed some fuzzy entries in all files.
-	
+
 2001-05-06  Werner Koch  <wk@gnupg.org>
 
 	* id.po: Updated
@@ -397,11 +404,11 @@
 
 2001-04-06  Werner Koch  <wk@gnupg.org>
 
-	* tr.po: New. 
+	* tr.po: New.
 
 2001-03-18  Werner Koch  <wk@gnupg.org>
 
-	* de.po, de.glo: Updated. 
+	* de.po, de.glo: Updated.
 
 2001-02-22  Werner Koch  <wk@gnupg.org>
 
@@ -730,5 +737,3 @@ Fri Mar 13 09:43:19 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

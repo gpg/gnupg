@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2001-09-10 Gilbert Fernandes <gilbertf@posse-press.com>
 
 	* Traduction en français des documents doc/*
@@ -13,5 +20,3 @@ se trouve conservée dans le document.
 This file is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

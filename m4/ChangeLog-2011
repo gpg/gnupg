@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-08-09  Werner Koch  <wk@g10code.com>
 
 	* libcurl.m4: s/ifelse/m4_if/.
@@ -253,4 +260,3 @@
 	* uintmax_t.m4: New file, from gettext-0.12.1.
 	* ulonglong.m4: New file, from gettext-0.12.1.
 	* Makefile.am: New file.
-

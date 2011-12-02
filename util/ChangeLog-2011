@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-09-12  Werner Koch  <wk@g10code.com>
 
 	* ttyio.c (init_ttyfp): Avoid endless loop due to a failed opening
@@ -18,7 +25,7 @@
 2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
 
 	Changes to help the VMS port. See
-    	http://antinode.info/dec/sw/gnupg.html .
+	http://antinode.info/dec/sw/gnupg.html .
 
 	* cert.c [__VMS]: Include cert_vms.h.
 	* ttyio.c [__VMS]: Include vms.h.
@@ -1052,7 +1059,7 @@
 
 2002-04-23  David Shaw  <dshaw@jabberwocky.com>
 
- 	* miscutil.c: New function answer_is_yes_no_default() to give a
+	* miscutil.c: New function answer_is_yes_no_default() to give a
 	default answer.
 
 2002-04-22  Stefan Bellon  <sbellon@sbellon.de>
@@ -1175,7 +1182,7 @@
 	* http.c (send_request): Use macros for the env-var name.
 	* logger.c [__riscos__]: Do an fflush at the end of each log
 	function.
- 	* memory.c [__riscos__]: Minor patches
+	* memory.c [__riscos__]: Minor patches
 	* riscos.c (set_filetype): New.
 
 	* secmem.c (lock_pool): Under HPUX mlock is broken but we might
@@ -1924,5 +1931,3 @@ Fri Feb 13 15:14:13 1998  Werner Koch  (wk@isil.d.shuttle.de)
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-

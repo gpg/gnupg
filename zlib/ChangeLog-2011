@@ -1,6 +1,13 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2002-03-12  Werner Koch  <wk@gnupg.org>
 
-	Merged changes from zlib 1.1.4. 
+	Merged changes from zlib 1.1.4.
 
 Sat Feb 13 12:04:43 CET 1999  Werner Koch  <wk@isil.d.shuttle.de>
 
@@ -501,5 +508,3 @@ Changes in 0.3:
 - use Z_FINISH instead of deflateEnd to finish compression.
 - added Z_HUFFMAN_ONLY
 - added gzerror()
-
-

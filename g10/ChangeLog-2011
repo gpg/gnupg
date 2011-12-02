@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-09-12  Werner Koch  <wk@g10code.com>
 
 	* gpg.c [__VMS]: Include vms.h.
@@ -6521,7 +6528,7 @@
 	* tdbio.c (MY_O_BINARY): Need binary mode with Cygwin.  From
 	Werner on stable branch.
 
-       	* g10.c, gpgv.c (main) [__CYGWIN32__]: Don't get the homedir from
+	* g10.c, gpgv.c (main) [__CYGWIN32__]: Don't get the homedir from
 	the registry.  From Werner on stable branch.
 
 	* keyedit.c (show_key_with_all_names_colon): Make --with-colons
@@ -9982,7 +9989,7 @@
 	(pk_from_block): Removed the namehash arg and changed all callers.
 	(merge_selfsigs): Copy prefs to all keys.
 	* trustdb.c (get_pref_data): Removed.
- 	(is_algo_in_prefs): Removed.
+	(is_algo_in_prefs): Removed.
 	(make_pref_record): Deleted and removed all class.
 	* pkclist.c (select_algo_from_prefs): Adjusted for the new
 	preference implementation.

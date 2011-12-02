@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-08-09  Werner Koch  <wk@g10code.com>
 
 	* rijndael.c (u32_a_t): New.
@@ -13,7 +20,7 @@
 2010-09-28  Steven M. Schweda  <sms@antinode.info>  (wk)
 
 	Changes to help the VMS port. See
-    	http://antinode.info/dec/sw/gnupg.html .
+	http://antinode.info/dec/sw/gnupg.html .
 
 	* random.c [__VMS]: Include rmsdef.h and vms.h.
 	(LOCK_SEED_FILE) [__VMS]: Set to 0.
@@ -337,7 +344,7 @@
 
 2002-11-06  David Shaw  <dshaw@jabberwocky.com>
 
- 	* rndw32.c [__CYGWIN32__]: Don't include winioctl.h - it is not
+	* rndw32.c [__CYGWIN32__]: Don't include winioctl.h - it is not
 	required anymore. (From Werner)
 
 	* random.c (read_seed_file,update_random_seed_file): Use binary

@@ -1,9 +1,0 @@
-Tue Sep  7 16:18:03 1999  Werner Koch  (wk@gnupg.org)
-
-	* Makefile.am: Ugly workarounds to do a VPATH build.
-
-Fri Sep  3 13:24:45 1999  Werner Koch  (wk@gnupg.org)
-
-	* Makefile.am: New
-
-
