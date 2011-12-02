@@ -507,7 +507,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
     }
   skey[skeyidx++] = NULL;
 
-  gcry_sexp_release (list);
+  gcry_sexp_release (list); list = NULL;
 
   /* We have no need for the CSUM valuel thus we don't parse it.  */
   /* list = gcry_sexp_find_token (top_list, "csum", 0); */
