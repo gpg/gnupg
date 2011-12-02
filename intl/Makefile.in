@@ -376,7 +376,6 @@ install-data: all
 	if test "$(PACKAGE)" = "gettext-tools"; then \
 	  $(mkdir_p) $(DESTDIR)$(gettextsrcdir); \
 	  $(INSTALL_DATA) VERSION $(DESTDIR)$(gettextsrcdir)/VERSION; \
-	  $(INSTALL_DATA) ChangeLog.inst $(DESTDIR)$(gettextsrcdir)/ChangeLog; \
 	  dists="COPYING.LIB-2.0 COPYING.LIB-2.1 $(DISTFILES.common)"; \
 	  for file in $$dists; do \
 	    $(INSTALL_DATA) $(srcdir)/$$file \
@@ -545,7 +544,7 @@ dist distdir: Makefile
 	    additional="$(DISTFILES.normal)"; \
 	  fi; \
 	  $(MAKE) $(DISTFILES.common) $(DISTFILES.generated) $$additional; \
-	  for file in ChangeLog $(DISTFILES.common) $(DISTFILES.generated) $$additional; do \
+	  for file in $(DISTFILES.common) $(DISTFILES.generated) $$additional; do \
 	    if test -f $$file; then dir=.; else dir=$(srcdir); fi; \
 	    cp -p $$dir/$$file $(distdir) || test $$file = Makefile.in || exit 1; \
 	  done; \

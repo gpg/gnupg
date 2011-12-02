@@ -3,7 +3,7 @@
 # For conditions of distribution and use, see copyright notice in zlib.h
 # This is used if a systems lacks support of zlib
 
-EXTRA_DIST = README algorithm.doc ChangeLog
+EXTRA_DIST = README algorithm.doc ChangeLog-2011
 
 # I found no other easy way to use this only if zlib is neede
 # doing this with SUBDIR = @xxx@  in the top Makefile.am does not
