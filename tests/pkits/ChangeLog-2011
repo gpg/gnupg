@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2009-03-03  Werner Koch  <wk@g10code.com>
 
 	* inittests (clean_files): Use /bin/pwd here as well.
@@ -11,11 +18,11 @@
 
 2008-02-19  Werner Koch  <wk@g10code.com>
 
-	* inittests: Unpack test data onlyu if available. 
+	* inittests: Unpack test data onlyu if available.
 	* common.sh: Skip tests if PKITS test data is not available.
 	* Makefile.am: Do not distribute test data.  This allows to
 	include the test suite in the distribution.
-	
+
 	* signature-verification: New.
 	* validity-periods: New.
 	* verifying-name-chaining: New.

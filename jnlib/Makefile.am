@@ -1,26 +1,26 @@
 # Makefile for the JNLIB part of GnuPG
 # Copyright (C) 1999, 2000, 2001, 2004,
 #               2006 Feee Software Soundation, Inc.
-# 
+#
 # This file is part of JNLIB.
-# 
+#
 # JNLIB is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as
 # published by the Free Software Foundation; either version 3 of
 # the License, or (at your option) any later version.
-# 
+#
 # JNLIB is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = README
+EXTRA_DIST = README ChangeLog-2011
 noinst_PROGRAMS = $(module_tests)
 TESTS = $(module_tests)
 
@@ -49,7 +49,7 @@ endif
 
 
 # For GnuPG we don't need the xmalloc stuff.
-#       xmalloc.c xmalloc.h       
+#       xmalloc.c xmalloc.h
 
 
 #
@@ -62,7 +62,7 @@ endif
 #
 module_tests = t-stringhelp
 
-t_jnlib_src = t-support.c t-support.h 
+t_jnlib_src = t-support.c t-support.h
 t_jnlib_ldadd = libjnlib.a $(LIBINTL) $(LIBICONV)
 
 t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)

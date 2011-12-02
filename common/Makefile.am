@@ -19,7 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk \
-             audit-events.h status-codes.h
+             audit-events.h status-codes.h ChangeLog-2011
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libsimple-pwquery.a libgpgrl.a
 noinst_PROGRAMS = $(module_tests) $(module_maint_tests)

@@ -199,7 +199,7 @@ EOF
 fi
 
 
-# Check the git setup.
+# Update the git setup.
 if [ -d .git ]; then
   if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
     cat <<EOF >&2
@@ -218,6 +218,13 @@ EOF
     echo "*** Adding GIT filter.cleanpo.clean configuration." >&2
     git config --add filter.cleanpo.clean \
         "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'"
+  fi
+  if [ -f scripts/git-hooks/commit-msg -a ! -f .git/hooks/commit-msg ] ; then
+    cat <<EOF >&2
+*** Activating commit log message check hook. ***
+EOF
+      cp -av scripts/git-hooks/commit-msg .git/hooks/commit-msg
+      chmod -c +x  .git/hooks/commit-msg
   fi
 fi
 

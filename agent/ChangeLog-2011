@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-08-04  Werner Koch  <wk@g10code.com>
 
 	* command.c (cmd_keyinfo, do_one_keyinfo): Support options --data
@@ -1038,7 +1045,7 @@
 
 2006-09-14  Werner Koch  <wk@g10code.com>
 
- 	Replaced all call gpg_error_from_errno(errno) by
+	Replaced all call gpg_error_from_errno(errno) by
 	gpg_error_from_syserror().
 
 	* call-pinentry.c (start_pinentry): Replaced pipe_connect2 by

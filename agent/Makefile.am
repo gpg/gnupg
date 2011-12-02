@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -22,6 +22,7 @@ libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
 noinst_PROGRAMS = $(TESTS)
 
 # EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc
+EXTRA_DIST = ChangeLog-2011
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
@@ -72,7 +73,7 @@ gpg_agent_DEPENDENCIES = $(gpg_agent_res_deps)
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
 	protect.c \
-	minip12.c minip12.h 
+	minip12.c minip12.h
 
 gpg_protect_tool_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS)
 gpg_protect_tool_LDADD = $(common_libs) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
@@ -101,7 +102,7 @@ TESTS = t-protect
 t_common_ldadd = $(common_libs) \
                  $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
 
-t_protect_SOURCES = t-protect.c protect.c 
+t_protect_SOURCES = t-protect.c protect.c
 t_protect_LDADD = $(t_common_ldadd)
 
 

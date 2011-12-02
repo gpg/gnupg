@@ -1,3 +1,10 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
 2011-08-04  Werner Koch  <wk@g10code.com>
 
 	* keyedit.c (show_key_with_all_names): Remove set but unused var
@@ -1377,7 +1384,7 @@
 	* status.h (STATUS_ERROR): New status code.
 	* status.c (get_status_string): Ditto.
 	* mainproc.c (proc_plaintext): Emit it if multiple messages are
- 	detected. Error out if more than one plaintext packet is
+	detected. Error out if more than one plaintext packet is
         encountered.
 	* mainproc.c (literals_seen): New.
 
@@ -1714,7 +1721,7 @@
 
 2006-09-14  Werner Koch  <wk@g10code.com>
 
- 	Replaced all call gpg_error_from_errno(errno) by
+	Replaced all call gpg_error_from_errno(errno) by
 	gpg_error_from_syserror().
 
 2006-09-13  Werner Koch  <wk@g10code.com>
@@ -3783,7 +3790,7 @@
 	* tdbio.c (MY_O_BINARY): Need binary mode with Cygwin.  From
 	Werner on stable branch.
 
-       	* g10.c, gpgv.c (main) [__CYGWIN32__]: Don't get the homedir from
+	* g10.c, gpgv.c (main) [__CYGWIN32__]: Don't get the homedir from
 	the registry.  From Werner on stable branch.
 
 	* keyedit.c (show_key_with_all_names_colon): Make --with-colons
@@ -7244,7 +7251,7 @@
 	(pk_from_block): Removed the namehash arg and changed all callers.
 	(merge_selfsigs): Copy prefs to all keys.
 	* trustdb.c (get_pref_data): Removed.
- 	(is_algo_in_prefs): Removed.
+	(is_algo_in_prefs): Removed.
 	(make_pref_record): Deleted and removed all class.
 	* pkclist.c (select_algo_from_prefs): Adjusted for the new
 	preference implementation.

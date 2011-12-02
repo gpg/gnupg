@@ -1,4 +1,4 @@
-# Keybox Makefile 
+# Keybox Makefile
 # Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -21,7 +21,7 @@
 localedir = $(datadir)/locale
 INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
-EXTRA_DIST = mkerrors
+EXTRA_DIST = mkerrors ChangeLog-2011
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl \
 	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
@@ -37,7 +37,7 @@ common_sources = \
 	keybox-search.c \
 	keybox-update.c \
 	keybox-openpgp.c \
-	keybox-dump.c 
+	keybox-dump.c
 
 
 libkeybox_a_SOURCES = $(common_sources)
@@ -50,4 +50,4 @@ kbxutil_LDADD   = ../common/libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a \
                   $(KSBA_LIBS) $(LIBGCRYPT_LIBS) \
                   $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)
 
-$(PROGRAMS) : ../common/libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a 
+$(PROGRAMS) : ../common/libcommon.a ../jnlib/libjnlib.a ../gl/libgnu.a

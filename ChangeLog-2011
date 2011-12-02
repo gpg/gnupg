@@ -1,0 +1,1207 @@
+2011-12-02  Werner Koch  <wk@g10code.com>
+
+	NB: ChangeLog files are no longer manually maintained.  Starting
+	on December 1st, 2011 we put change information only in the GIT
+	commit log, and generate a top-level ChangeLog file from logs at
+	"make dist".  See doc/HACKING for details.
+
+2011-08-04  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.18.
+
+	* configure.ac: Fix usage of AC_LANG_PROGRAM.
+	(AC_CHECK_HEADERS): Check for utmp.h.
+
+2011-02-04  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Ensure that the git pre-commit hoom has been
+	enabled.  Add a cleanpo filter if not yet set.
+
+2011-01-13  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.17.
+
+2011-01-11  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --enable-gpgtar.
+	(AC_CHECK_FUNCS): Add stat.
+
+	* autogen.sh <w32>: Remove superfluous --without-included-gettext.
+
+2011-01-10  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Support a git_revision string.
+
+2010-07-19  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.16.
+
+	* configure.ac: Require libgpg-error 1.7 and libksba 1.0.7 to
+	force building with more recent versions.
+
+2010-05-04  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add option --enable-standard-socket.
+
+2010-03-09  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.15.
+
+	* configure.ac: Add option --disable-ccid-driver.
+
+2010-02-18  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.15rc1.
+
+	* configure.ac: Remove double check for libassuan.
+
+2010-02-11  Marcus Brinkmann  <marcus@g10code.de>
+
+	From trunk 2009-10-16:
+
+	* configure.ac: Check for libassuan instead of libassuan-pth.
+
+2009-10-12  Werner Koch  <wk@g10code.com>
+
+	From trunk 2009-09-23:
+
+	* configure.ac (NEED_LIBASSUAN_API, NEED_LIBASSUAN_VERSION):
+	Update to new API (2, 1.1.0).
+
+2009-12-21  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.14.
+
+2009-12-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (USE_DNS_CERT): Support via ADNS.
+
+2009-12-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Check for ADNS before checking for the BIND
+	resolver.
+	(USE_ADNS): Fallback macro for PKA and CERT lookups.
+
+2009-09-04  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.13.
+
+2009-06-29  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Take care of --without-adns.  Suggested by
+	Arfrever Frehtes Taifersar Arahesis.
+
+2009-06-17  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.12.
+
+2009-06-05  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Remove Camellia restriction.
+
+2009-04-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for fsync.
+
+2009-03-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for getrlimit.
+
+2009-03-03  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.11.
+
+2009-01-12  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.10.
+
+2008-12-09  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.10rc1.
+
+2008-10-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use more warning options with modern GCCs.
+
+2008-09-29  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libgcrypt 1.4.
+
+2008-08-27  David Shaw  <dshaw@jabberwocky.com>
+
+	* configure.ac: Use printf for the most portable SVN version
+	detection.
+
+	* configure.ac: Darwin's /bin/sh has a builtin echo that doesn't
+	understand '-n'.  Use tr to trim the carriage return instead.
+
+2008-04-23  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Call gl_HEADER_SYS_SOCKET and gl_TYPE_SOCKLEN_T.
+
+2008-04-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (ADNSLIBS): Test for adns.
+	(GPGKEYS_KDNS): New.
+
+2008-04-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require curl 7.10 (Oct 1 2002) or later as we use
+	curl_version_info().
+	(AC_INIT): Fix quoting.
+
+2008-03-27  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dist_doc_DATA): New. Install README.
+
+2008-03-26  Werner Koch  <wk@g10code.com>
+
+	Release 2.0.9.
+
+2008-02-19  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Remove --with-pkits-tests.
+
+2008-02-15  Werner Koch  <wk@g10code.com>
+
+	* gl/allocsa.h, gl/m4/allocsa.m4: Replace HAVE_LONG_LONG by
+	HAVE_LONG_LONG_INT.
+
+2008-02-15  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.17.
+
+2007-12-20  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.8.
+
+2007-12-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add treatment for HAVE_LDAP_START_TLS_SA.
+
+2007-12-14  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.8rc1.
+
+2007-12-12  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (USE_CAMELLIA): Define by new option --enable-camellia.
+
+2007-12-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add test gt_LC_MESSAGES..
+
+2007-10-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require assuan 1.0.4.
+
+2007-09-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (GNUPG_LIBASSUAN_VERSION): New.
+
+2007-09-10  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.7.
+
+2007-08-27  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Remove remaining support for internal regex.
+	Define DISABLE_REGEX automake conditional.  Add option
+	--with-regex.
+	* autogen.sh [--build-w32]: Remove --disable-regex.  Use --with-regex.
+
+2007-08-16  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.6.
+
+2007-08-08  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use AC_CANONICAL_HOST and not AC_CANONICAL_TARGET.
+
+2007-07-09  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AM_ICONV): Check for it even when building without
+	NLS.
+
+2007-07-05  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.5.
+
+	* configure.ac: Require libassuan 1.0.2.
+
+2007-07-05  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Invoke AM_LANGINFO_CODESET.
+
+2007-07-04  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Add no-dist-gzip.
+
+	Switched entire package to GPLv3+.
+
+	* configure.ac: Require libksba 1.0.2.
+
+	* COPYING:  Updated to GPLv3.
+	* COPYING.LIB: New as jnlib/ uses this license.
+
+	* gl/: Switched to GPLv3+.
+
+	* intl/ Removed.
+	* configure.ac (AM_GNU_GETTEXT): Add external flag.
+	(AM_ICONV): New.
+
+2007-07-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [W32]: Use ws2_32 instead of wsock32.
+
+2007-06-25  Werner Koch  <wk@g10code.com>
+
+	* gl/mkdtemp.c (gen_tempname) [MKDIR_TAKES_ONE_ARG]: Avoid
+	compiler warning by using the proper config macro.
+
+2007-06-15  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Call AM_PO_SUBDIRS.
+	(W32SOCKLIBS): New.
+
+	* autogen.sh: Use = and not == in test to be POSIXly correct.
+	<build-w32>: Disable use of regex.
+
+2007-06-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [AH_BOTTOM]: Remove the hardwired names of modules.
+
+2007-06-12  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [AH_BOTTOM]: Define HTTP_NO_WSASTARTUP.
+
+2007-06-11  Werner Koch  <wk@g10code.com>
+
+	* am/cmacros.am (libcommonstd, libcommonpth, libcommonstd_ldadd)
+	(libcommonpth_ldadd): Add macros.
+
+2007-06-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add a few notices message so make browsing of the
+	log file easier.
+	(CC_FOR_BUILD): New.
+
+2007-05-30  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [W32]: Do not create a symlink to w32-pth.h.
+	Require the installation of the w32pth package.
+
+2007-05-29  Werner Koch  <wk@g10code.com>
+
+	* gl/: Updated to a newer version.
+
+2007-05-24  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use -Wpointer-arith is possible.
+
+2007-05-15  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Renamed the estream macros. Remove -Wformat-nonliteral.
+
+	* configure.ac: Call ESTREAM_INIT and define the memory
+	allocators for estream_asprintf.
+	(gl_MODULES): Remove vasprintf.
+
+2007-05-09  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.4.
+
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libgcrypt 1.2.2 to avoid compiler warnings.
+
+2007-05-07  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.16.1.
+
+2007-05-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Bail out if no C-89 compiler has been found.
+
+2007-05-04  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Add --enable-mailto
+
+	* configure.ac: Require automake 1.10
+	(AC_CONFIG_FILES): Rename gpgkeys_ to gpg2keys_.
+	(AM_PROG_CC_C_O): New.
+
+2007-03-08  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.3.
+
+	* autogen.sh: Add option --force.
+
+2007-01-31  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.2.
+
+2006-11-30  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Save original LIBS when testing for dlopen.
+
+2006-11-28  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.1.
+
+2006-11-23  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.1rc1.
+
+2006-11-21  Werner Koch  <wk@g10code.com>
+
+	* configure.ac [AH_BOTTOM]: Disable PTH soft mapping.
+	(AC_CHECK_SIZEOF): Check for time_t.
+	(BUILD_INCLUDED_LIBINTL): Remove AM_PO_SUBDIRS as it is not
+	required for C.
+
+2006-11-15  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Add convenience option --build-amd64.
+
+2006-11-14  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_ASSUAN_SET_IO_MONITOR): Test for it.
+
+2006-11-11  Werner Koch  <wk@g10code.com>
+
+	Released 2.0.0.
+
+2006-11-06  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.95.
+
+2006-11-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for pty.h.  From Gentoo.
+
+2006-10-24  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.94.
+
+2006-10-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (stowinstall): Add convenience target.
+
+2006-10-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: svn revison magic fixes for old bashs.  Suggested
+	by Alain Guibert.
+
+2006-10-18  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.93.
+
+2006-10-17  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh <--build-w32>: Test also for a host "mingw32".
+
+	* configure.ac: Removed W32LIBS. Use NETLIBS instead.
+
+2006-10-11  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.92.
+
+	* configure.ac: Require libassuan 0.9.3.
+
+2006-10-09  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4: Moved pth check to m4/gnupg-pth.m4.
+
+2006-10-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Also check for libassuan's pth version.
+
+2006-10-04  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.91.
+
+	* configure.ac: Require libassuan 0.9.1 which fixes a problem with
+	gpgsm.
+
+2006-09-27  Werner Koch  <wk@g10code.com>
+
+	* gl/strsep.h, gl/strsep.c, gl/m4/strsep.m4: Removed.
+	* gl/strpbrk.h, gl/strpbrk.c, gl/m4/strpbrk.m4: Removed.
+	* gl/Makefile.am: Removed module strsep and strpbrk.
+	* configure.ac: Check for strsep in the context of jnlib.  Remove
+	check from gl_MODULES. Moved check for timegm into the jnlib context.
+
+2006-09-27  Marcus Brinkmann  <marcus@g10code.de>
+
+	* Makefile.am: Fix cut & paste error.
+
+2006-09-25  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.90.
+
+2006-09-22  Werner Koch  <wk@g10code.com>
+
+	* AUTHORS: Add information about used licenses.
+
+2006-09-20  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (dist-hook): Removed distfiles cruft.
+	(SUBDIRS): Added include
+
+2006-09-18  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.23.
+
+	* configure.ac (--enable-agent-only): Donot build tools and doc
+	(--disable-tools,--disable-doc): New.
+	* Makefile.am (SUBDIRS): Allow to conditional build tools and doc.
+
+2006-09-14  Werner Koch  <wk@g10code.com>
+
+	Replaced all call gpg_error_from_errno(errno) by
+	gpg_error_from_syserror().
+
+	* configure.ac: Build gpg by default.
+	(GNUPG_SYS_SO_PEERCRED): Removed.
+
+2006-09-13  Werner Koch  <wk@g10code.com>
+
+	* autogen.sh: Better detection of the cross compiler kit.
+
+2006-09-06  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: New automake conditional RUN_GPG_TESTS.
+
+2006-09-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Define _ASSUAN_ONLY_GPG_ERRORS.  Require Assuan
+	0.9 and libgpg-error 1.4
+
+2006-08-31  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libksba 1.0 and added API check for it.
+	(GPG_ERR_LOCKED): Removed DECL check as we require 1.2 anyway.
+	(have_libusb): New to give a feedback about CCID support
+
+2006-08-21  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Removed docbook tests.
+	(AC_CONFIG_FILES): Added gpgkeys_test and gpgkeys_mailto.
+
+	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): Enable gpg.
+
+2006-08-17  Werner Koch  <wk@g10code.com>
+
+	* THANKS: Merged with the 1.4 one.
+
+2006-08-16  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Removed test for capabilities and mlock.
+
+2006-08-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (keyserver): Enable building of keyserver helpers.
+
+	* configure.ac: Merged with the current configure from 1.4.5.
+	Require libgpg-error 1.2 and libksba 0.9.16.
+
+2006-07-29  Marcus Brinkmann  <marcus@g10code.de>
+
+	* README: Spelling fixes.
+
+2006-07-27  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.22.
+
+	* configure.ac: Call AB_INIT.
+
+2006-07-03  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test for ksba_dn_teststr.
+
+2006-06-30  Werner Koch  <wk@g10code.com>
+
+	* keyserver/: New.  Taken from 1.4.4
+	* Makefile.am (SUBDIRS): Include keyserver/.
+	* configure.ac: Include keyserver/.
+	(FAKE_CURL, GPGKEYS_CURL): New.
+
+2006-06-20  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.21.
+
+2006-06-08  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (PTH_LIBS): Add --all to pth-config invocation.
+
+2006-05-24  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: New option --disable-optimization taked from 1.4.3.
+
+2006-05-23  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (ZLIBS): New for zlib link commands. Add bzip2
+	support.
+
+2006-05-22  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (EXEEXT): New.
+
+2006-04-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (PK_UID_CACHE_SIZE): New.
+
+2006-04-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Use new method to include the SVN revison.  Now it
+	is the actual global revision number.
+
+2005-12-20  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.20.
+
+2005-11-28  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Append the revision to the version string.
+
+2005-11-13  Werner Koch  <wk@g10code.com>
+
+	* am/cmacros.am (-DGNUPG_SYSCONFDIR): Define it.
+
+2005-11-11  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (NEED_KSBA_VERSION: Require 0.9.13.
+
+2005-09-12  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.19.
+
+2005-08-01  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.18.
+
+	* configure.ac: Require libksba 0.9.12 to match new features in gpgsm.
+
+2005-06-20  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.17.
+
+2005-06-02  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (HAVE_PTH): Define as alias for USE_GNU_PTH.  It is
+	used by common/estream.c.
+
+2005-06-01  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (gl_INIT): Add gnulib stuff.
+	(fseeko, ftello, ttyname, isascii): Replaced the AC_REPLACE_FUNCS
+	by a simple check.
+	(putc_unlocked): Removed check.  Not used.
+	(strsep, mkdtemp, asprintf): Replaced checks by gnulib checks.
+	(xsize): Added will probably come handy soon.
+	(CFLAGS): Use -Wformat-security instead of
+	-Wformat-nonliteral. Add --Wno-format-y2k.
+	* gl/, gl/m4/: New.
+
+2005-05-15  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Remove option --disable-threads; require the use
+	of GNU Pth.
+
+2005-04-27  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Removed OpenSC detection and options.
+	* acinclude.m4: Ditto.
+
+2005-04-21  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.16.
+
+	* configure.ac: Do not build gpg by default.
+
+2005-04-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Test whether GPG_ERR_LOCKED is declared and
+	provide a replacement if not.
+
+2005-04-15  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require libksba 0.9.11.
+
+2005-04-15  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for /usr/bin/shred and define SHRED.
+
+	* configure.ac: Add --enable-symcryptrun, disabled by default.
+	Define automake variable BUILD_SYMCRYPTRUN.
+	Check for openpty -lutil, define LIBUTIL_LIBS.
+
+2005-03-03  Werner Koch  <wk@g10code.com>
+
+	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): Accidently used
+	--ldflags instead of --cflags. Reported by Kazu Yamamoto.
+
+2005-02-03  Werner Koch  <wk@g10code.com>
+
+	* AUTHORS: Copied from 1.4 and edited to refelct the changes in
+	1.9.
+
+2005-01-17  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Make --without-included-regex work as expected.
+	Fixed FTP location info for some libraries.
+
+2005-01-13  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.15.
+
+	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): Link a simple test
+	program to see whether the installation is sane.
+
+2005-01-07  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Require gpg-error 1.0.
+
+2005-01-04  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Remove hack not to build gpg2 for W32.
+	* autogen.sh <build-w32>: Pass option --disable-gpg instead.
+
+2004-12-22  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.14.
+
+2004-12-20  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Add PATHSEP_C and PATHSEP_S. For W32 let all
+	directories default to c:/gnupg.  Require libassuan 0.6.9.
+
+2004-12-18  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (AH_BOTTOM): Define EXEEXT_S.
+
+	* autogen.sh: Updated --build-w32 feature.
+
+2004-12-15  Werner Koch  <wk@g10code.com>
+
+	* Makefile.am (SUBDIRS) [W32]: Do not build in tests/.
+
+	* acinclude.m4: Add proper macro name quoting for use with
+	automake 1.9.
+
+	* configure.ac: Add replacement check for ttyname.
+	Removed support for a included zlib.
+
+2004-12-06  Werner Koch  <wk@g10code.com>
+
+	* configure.ac (have_w32_system): New.  Disable Pth checks for W32.
+	Link jnlib/w32-pth.h to pth.h.
+
+2004-12-03  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.13.
+
+2004-11-26  Werner Koch  <wk@g10code.com>
+
+	* configure.ac: Replace strsep.  Replaced use of "target" by
+	"host".
+
+2004-10-22  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.12.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Set option to create bzip2 tarball.
+
+2004-10-01  Werner Koch  <wk@g10code.com>
+
+	Released 1.9.11.
+
+2004-09-30  Werner Koch  <wk@g10code.com>
+
+	* README: Minor updates.
+
+2004-09-30  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.14.1.
+
+2004-08-16  Werner Koch  <wk@g10code.de>
+
+	* configure.ac: Build Makefile for tests/pkits.  New option
+	--with-pkits-tests.
+
+2004-08-05  Werner Koch  <wk@g10code.de>
+
+	* configure.ac: Changed tests for libusb to also suuport the
+	stable version 0.1.x.
+
+2004-07-22  Werner Koch  <wk@g10code.de>
+
+	Released 1.9.10.
+
+	* configure.ac: Define AM conditional HAVE_OPENSC.
+
+2004-07-21  Werner Koch  <wk@g10code.de>
+
+	* configure.ac: Don't set DIE to no after it might has been set to
+	yes.
+
+2004-07-20  Werner Koch  <wk@g10code.de>
+
+	* Makefile.am (sm): Build kbx only if gpgsm is to be build.
+
+2004-07-20  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: New option --enable-agent-only.
+
+2004-06-08  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.9.
+
+2004-06-06  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Require libksba 0.9.7.
+
+2004-04-29  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.8.
+
+2004-04-20  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Remove the fopencookie test.  We don't need the
+	dummy function because we conditionally use fopencookie,
+	fpencookie or a replacement at place.
+
+2004-04-02  Thomas Schwinge  <schwinge@nic-nac-project.de>
+
+	* autogen.sh: Added ACLOCAL_FLAGS.
+
+2004-04-06  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.7.
+
+	* configure.ac: Require libgcrypt 1.1.94.
+	Introduce PACKAGE_GT and set it to gnupg2.
+
+2004-03-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Define SAFE_VERSION_DASH and SAFE_VERSION_DOT.
+
+2004-03-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (NEED_GPG_ERROR_VERSION): Set to 0.7.
+
+2004-03-06  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.6.
+
+	* configure.ac: Check the Libgcrypt API.
+
+2004-02-25  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: New option --disable-threads to inhibit
+	unintentional builds without Pth.
+
+2004-02-21  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.5.
+
+2004-02-20  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed URLs in the notice messages.
+
+2004-02-18  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Removed macros to detect gpg-error, libgcrypt,
+	libassuan and ksba as they are now distributed in m4/.
+
+2004-02-13  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Require libksba 0.9.4 and libgcrypt 1.1.92.
+
+2004-02-12  Werner Koch  <wk@gnupg.org>
+
+	* autogen.sh: Removed cruft from debugging.
+
+	* am/cmacros.am: New.
+
+2004-02-11  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Removed the need for g10defs.h.  Reworked the
+	--with-foo-pgm stuff.
+
+	* autogen.sh (check_version): Removed bashism and simplified.
+	* acinclude.m4 (AM_PATH_OPENSC): Kludge to avoid error output for
+	a bad opensc-config.
+
+2004-01-30  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.4.
+
+	* configure.ac: Require libksba 0.9.3 due to another bug fix there.
+
+2004-01-29  Werner Koch  <wk@gnupg.org>
+
+	* README: Updated.
+
+	* configure.ac: Require libksba 0.9.2 due to bug fixes.
+
+2004-01-24  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Now requires libassuan 0.6.3.
+
+2003-12-23  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.3.
+
+	* README-alpha: Removed.
+	* configure.ac, Makefile.am: Add the tests and tools directories.
+
+2003-12-19  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Now require libgcrypt 1.1.91 to help testing the
+	latest libgcrypt changes.  Requires libksab 0.9.1.
+
+2003-12-17  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Requires now libassuan 0.6.2.
+	(CFLAGS): Add --Wformat-noliteral in gcc mode.
+
+2003-12-16  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for funopen and fopencookie as part of the
+	jnlib checks.
+
+2003-12-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Add a min_automake_version.
+	* README.CVS: New.
+	* autogen.sh: Revamped except for the --build-w32 hack.
+	* Makefile.am: Add README.CVS
+
+2003-11-17  Werner Koch  <wk@gnupg.org>
+
+	Release 1.9.2.
+
+	* configure.ac: Requires now libassuan 0.6.1.
+
+2003-10-31  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (NEED_KSBA_VERSION): Set to 0.9.0 due the changed
+	time interface.
+
+2003-10-21  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (PRINTABLE_OS_NAME): Remove special case for The
+	Hurd; Robert Millan reported that the uname test is now
+	sufficient.
+
+2003-10-01  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (AH_BOTTOM): Define GNUPG_MAJOR_VERSION.
+
+2003-09-23  Werner Koch  <wk@gnupg.org>
+
+	Merged most of David Shaw's changes in 1.3 since 2003-06-03.
+
+	* configure.ac: Drop all TIGER/192 support.
+	(uint64_t): Check for UINT64_C to go along with uint64_t.
+	(getaddrinfo): Check for it.
+	(sigset_t): Check for sigset_t and struct sigaction.  This is for
+	Forte c89 on Solaris which seems to define only the function call
+	half of the two pairs by default.
+	(W32LIBS): Include wsock32 in W32LIBS.  This is different from
+	NETLIBS so we don't need to force other platforms to pull in the
+	netlibs when they aren't actually needed.
+
+2003-09-06  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.1.
+
+	* configure.ac: Require newer versions of some libraries.
+
+2003-09-02  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (HAVE_LIBUSB): Added a simple test for libusb.
+
+2003-08-19  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (AM_PATH_GPG_ERROR): Add missing comma in
+	invocation.
+
+2003-08-06  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for libgpg-error.  Print infos about missing
+	libraries more nicely.
+	* acinclude.m4 (AM_PATH_GPG_ERROR): Added.
+
+2003-08-05  Werner Koch  <wk@gnupg.org>
+
+	Released 1.9.0.
+
+	* configure.ac (GNUPG_DEFAULT_HONMEDIR): Changed back to ~/.gnupg.
+
+2003-07-31  Werner Koch  <wk@gnupg.org>
+
+	* Makefile.am (DISTCLEANFILES): Add g10defs.h
+
+2003-06-18  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (GNUPG_DEFAULT_HOMEDIR): Changed temporary to
+	.gnupg2 to avoid accidential use with production keys.
+
+2003-06-11  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Merged all stuff from current 1.3 version in.
+	* acinclude.m4: Merged required macros from current 1.2 version in.
+
+2003-06-04  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac, Makefile.am: Enable building of gpg.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Build a limited version of scdaemon if libopensc
+	is not available.
+
+	* configure.ac (ALL_LINUGAS): Removed.
+
+	* Makefile.am (ACLOCAL_AMFLAGS): New.
+	* configure.ac (AM_GNU_GETTEXT_VERSION): New.  Set to 0.11.5.
+
+2003-04-29  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Add m4.
+	(ACLOCAL_AMFLAGS): New variable.
+	(EXTRA_DIST): Add scripts/config.rpath.
+	* configure.ac (AC_CONFIG_FILES): Add m4/Makefile.
+
+2003-04-29  Werner Koch  <wk@gnupg.org>
+
+	* assuan/ : Removed.  We now use libassuan.
+	* Makefile.am (SUBDIRS): Removed assuan
+
+	* configure.ac: Check for libassuan.
+
+2003-01-09  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (GNUPG_PROTECT_TOOL): New option --with-protect-tool.
+	(NEED_KSBA_VERSION): Does now require 0.4.6.
+
+	* README: Noted where to find gpg-protect-tool.
+
+2002-10-31  Neal H. Walfield  <neal@g10code.de>
+
+	* configure.ac: Check for flockfile and funlockfile.  Check for
+	isascii and putc_unlocked replacing them if not found.
+
+	* configure.ac (PTH_LIBS): If pth is found, add the output of
+	`$PTH_CONFIG --ldflags`, not just `$PTH_CONFIG --libs`.
+
+2002-10-19  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Bumped version number to 1.9.0-cvs.
+
+        NewPG (Aegypten project) to GnuPG merge.
+
+2002-09-20  Werner Koch  <wk@gnupg.org>
+
+	Released 0.9.2.
+
+2002-09-05  Neal H. Walfield  <neal@g10code.de>
+
+	* configure.ac: Check for makeinfo.
+
+2002-09-03  Neal H. Walfield  <neal@g10code.de>
+
+	* autogen.sh (have_version): New function.  Generalize and
+	simplify logic for finding and determining the versions of GNU
+	programs.  Use it.
+
+2002-08-23  Werner Koch  <wk@gnupg.org>
+
+	Released 0.9.1.
+
+	* acinclude.m4 (AM_PATH_LIBGCRYPT): Updated from Libgcrypt.
+	(AM_PATH_OPENSC): Strip non-digits from the micro version.
+
+2002-08-21  Werner Koch  <wk@gnupg.org>
+
+	Released 0.9.0.
+
+	* configure.ac: Changed the default homedir to .gnupg.
+	* README-alpha: Removed.
+
+2002-08-19  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Removed -lpcsclite from KSBA_LIBS; copy+paste bug.
+
+2002-08-13  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (AM_PATH_OPENSC, AM_PATH_KSBA): New.
+	* configure.ac: Use them.
+
+2002-08-10  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.10.
+
+	* configure.ac (NEED_LIBKSBA_VERSION): Require 0.4.4. Add support
+	for gettext.
+
+2002-07-22  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for ftello and provide a replacement.
+
+2002-07-01  Werner Koch  <wk@gnupg.org>
+
+        Released 0.3.9.
+
+	* README: Short note on how to export in pkcs-12 format.
+
+2002-06-29  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Define --with options to set the default location
+	of the agent, scdaemon, pinentry and dirmngr.
+
+2002-06-27  Werner Koch  <wk@gnupg.org>
+
+	* README: Short blurb on how to import a PKCS-12 file.
+
+	* configure.ac (AH_BOTTOM): New to define some constants.
+
+2002-06-25  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.8.
+
+	* configure.ac (NEED_LIBGCRYPT_VERSION): Set to 1.1.8.
+
+2002-06-12  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (NEED_LIBKSBA_VERSION): We need 0.4.3 now.
+
+2002-06-04  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.7.
+
+2002-05-21  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: We now require libgcrypt 1.1.7 and libksba 0.4.2.
+
+2002-05-14  Werner Koch  <wk@gnupg.org>
+
+	* doc/: New
+	* configure.ac, Makefile.am:  Added doc/
+
+2002-05-03  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.6.
+
+2002-04-25  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for setlocale.
+
+2002-04-24  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac: Check for locale.h.
+
+2002-04-15  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.5.
+
+	* NEWS: Started to describe release notes.
+
+	* configure.ac (NEED_LIBKSBA_VERSION, NEED_LIBGCRYPT_VERSION): Defined
+
+2002-04-01  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.4.
+
+2002-03-18  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.3.
+
+2002-03-08  Werner Koch  <wk@gnupg.org>
+
+	* README: Add some explanation on how to specify a user ID.
+
+2002-03-06  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.2.
+
+2002-03-04  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.1.
+
+	* README: Explained some options and files.
+
+2002-02-14  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Fixed status messages related to presence of Pth.
+
+2002-02-13  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4 (GNUPG_SYS_SO_PEERCRED): New.
+	* configure.ac: use it.
+
+2002-02-12  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Check for PTH.  Provide replacement fucntions for
+	apsrintf and fopencookie.
+
+	* acinclude.m4 (GNUPG_PTH_VERSION_CHECK): New.
+
+2002-02-07  Werner Koch  <wk@gnupg.org>
+
+	Released 0.3.0.
+
+	* configure.ac: Require libgcrypt 1.1.6.
+
+2002-02-01  Marcus Brinkmann  <marcus@g10code.de>
+
+	* configure.ac (KSBA_CONFIG): Remove superfluous x in front of
+	variable.
+
+2002-01-26  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac: Add options to disable the build of some programs
+	and print a configure status at the end.
+	* acinclude.m4 (GNUPG_BUILD_PROGRAM): New.
+
+	* scd/ : New.  Added to Makefile and configure.
+	* configure.ac: Check for libopensc
+	* Makefile.am: Build scd only when libopensc is available
+
+2002-01-23  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (mkdtemp): See whether we have to provide a
+	replacement.
+
+2001-12-18  Werner Koch  <wk@gnupg.org>
+
+	Released 0.0.0.
+
+2001-12-17  Werner Koch  <wk@gnupg.org>
+
+	* acinclude.m4: Add AM_PATH_LIBGCRYPT macro.
+	* configure.ac: and use it here. Figure out the location of libksba
+
+2001-12-15  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (missing_dir): Bail out if asprintf and fopencookie
+	are not available.
+
+2001-12-04  Werner Koch  <wk@gnupg.org>
+
+	* configure.ac (HAVE_JNLIB_LOGGING): always define it.
+
+
+ Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+	   2010 Free Software Foundation, Inc.
+
+ This file is free software; as a special exception the author gives
+ unlimited permission to copy and/or distribute it, with or without
+ modifications, as long as this notice is preserved.
+
+ This file is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

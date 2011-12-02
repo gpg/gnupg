@@ -7,27 +7,27 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = options.skel
+EXTRA_DIST = options.skel ChangeLog-2011
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
-              -I$(top_srcdir)/include -I$(top_srcdir)/intl 
+              -I$(top_srcdir)/include -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a 
+needed_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a
 
 bin_PROGRAMS = gpg2 gpgv2
 noinst_PROGRAMS = $(module_tests)
@@ -69,7 +69,7 @@ common_source =  \
 	      plaintext.c	\
 	      sig-check.c	\
 	      keylist.c 	\
-	      pkglue.c pkglue.h 
+	      pkglue.c pkglue.h
 
 gpg2_SOURCES  = gpg.c		\
 	      server.c          \
@@ -107,7 +107,7 @@ gpg2_SOURCES  = gpg.c		\
 
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
-	      verify.c          
+	      verify.c
 
 #gpgd_SOURCES = gpgd.c \
 #	       ks-proto.h \
@@ -124,7 +124,7 @@ gpg2_LDADD =  $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV)
 
-t_common_ldadd = 
+t_common_ldadd =
 module_tests = t-rmd160
 t_rmd160_SOURCES = t-rmd160.c rmd160.c
 t_rmd160_LDADD = $(t_common_ldadd)
@@ -138,4 +138,4 @@ install-data-local:
 				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
 
 uninstall-local:
-	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel        
+	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel

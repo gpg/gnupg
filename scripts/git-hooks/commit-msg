@@ -1,0 +1,127 @@
+eval '(exit $?0)' && eval 'exec perl -w "$0" ${1+"$@"}'
+  & eval 'exec perl -w "$0" $argv:q'
+    if 0;
+
+# An hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, copy it to "~/.git/hooks/commit-msg".
+#
+# This script is based on the one from GNU coreutils.
+
+use strict;
+use warnings;
+(my $ME = $0) =~ s|.*/||;
+
+my $editor = $ENV{EDITOR} || 'vi';
+$ENV{PATH} = '/bin:/usr/bin';
+
+# Rewrite the $LOG_FILE (old contents in @$LINE_REF) with an additional
+# commented diagnostic "# $ERR" line at the top.
+sub rewrite($$$)
+{
+  my ($log_file, $err, $line_ref) = @_;
+  local *LOG;
+  open LOG, '>', $log_file
+    or die "$ME: $log_file: failed to open for writing: $!";
+  print LOG "# $err";
+  print LOG @$line_ref;
+  close LOG
+    or die "$ME: $log_file: failed to rewrite: $!\n";
+}
+
+sub re_edit($)
+{
+  my ($log_file) = @_;
+
+  warn "Interrupt (Ctrl-C) to abort...\n";
+
+  system 'sh', '-c', "$editor $log_file";
+  ($? & 127) || ($? >> 8)
+    and die "$ME: $log_file: the editor ($editor) failed, aborting\n";
+}
+
+# Given a $LOG_FILE name and a \@LINE buffer,
+# read the contents of the file into the buffer and analyze it.
+# If the log message passes muster, return the empty string.
+# If not, return a diagnostic.
+sub check_msg($$)
+{
+  my ($log_file, $line_ref) = @_;
+
+  local *LOG;
+  open LOG, '<', $log_file
+    or return "failed to open for reading: $!";
+  @$line_ref = <LOG>;
+  close LOG;
+
+  my @line = @$line_ref;
+  chomp @line;
+
+  # Don't filter out blank or comment lines; git does that already,
+  # and if we were to ignore them here, it could lead to committing
+  # with lines that start with "#" in the log.
+
+  # Filter out leading blank and comment lines.
+  # while (@line && $line[0] =~ /^(?:#.*|[ \t]*)$/) { shift @line; }
+
+  # Filter out blank and comment lines at EOF.
+  # while (@line && $line[$#line] =~ /^(?:#.*|[ \t]*)$/) { pop @line; }
+
+  @line == 0
+    and return 'no log message';
+
+  # The first line should not be too short
+  8 < length $line[0] || return 'summary line too short';
+
+  # The first line should not start with an asterisk or a hash sign.
+  # An asterisk might indicate that a change entry was started right
+  # at the first line.
+  $line[0] =~ /^[*#]/ && return "summary line starts with an * or #";
+
+  # Second line should be blank or not present.
+  2 <= @line && length $line[1]
+    and return 'second line must be empty';
+
+  # Limit line length to allow for the ChangeLog's leading TAB.
+  foreach my $line (@line)
+    {
+      72 < length $line && $line =~ /^[^#]/
+        and return 'line longer than 72 characters';
+    }
+
+  return '';
+}
+
+{
+  @ARGV == 1
+    or die;
+
+  my $log_file = $ARGV[0];
+
+  while (1)
+    {
+      my @line;
+      my $err = check_msg $log_file, \@line;
+      $err eq ''
+        and last;
+      $err = "$ME: $err\n";
+      warn $err;
+      exit 1;
+
+      # Insert the diagnostic as a comment on the first line of $log_file.
+      #rewrite $log_file, $err, \@line;
+      #re_edit $log_file;
+      #
+      ## Stop if our parent is killed.
+      #getppid() == 1
+      #  and last;
+    }
+}
+
+# Local Variables:
+# mode: perl
+# End:
