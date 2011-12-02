@@ -2028,7 +2028,7 @@ check_pcsc_keypad (int slot, int command, int pin_mode,
 }
 
 
-#define PIN_VERIFY_STRUCTURE_SIZE 23
+#define PIN_VERIFY_STRUCTURE_SIZE 24
 static int
 pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
                     struct pininfo_s *pininfo)
@@ -2081,7 +2081,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[12] = 0x00; /* bTeoPrologue[0] */
   pin_verify[13] = 0x00; /* bTeoPrologue[1] */
   pin_verify[14] = 0x00; /* bTeoPrologue[2] */
-  pin_verify[15] = 0x04; /* ulDataLength */
+  pin_verify[15] = 0x05; /* ulDataLength */
   pin_verify[16] = 0x00; /* ulDataLength */
   pin_verify[17] = 0x00; /* ulDataLength */
   pin_verify[18] = 0x00; /* ulDataLength */
@@ -2089,6 +2089,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[20] = ins; /* abData[1] */
   pin_verify[21] = p0; /* abData[2] */
   pin_verify[22] = p1; /* abData[3] */
+  pin_verify[23] = 0x00; /* abData[4] */
 
   sw = control_pcsc (slot, reader_table[slot].pcsc.verify_ioctl,
                      pin_verify, len, result, &resultlen);
@@ -2100,7 +2101,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
 }
 
 
-#define PIN_MODIFY_STRUCTURE_SIZE 28
+#define PIN_MODIFY_STRUCTURE_SIZE 29
 static int
 pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
                     struct pininfo_s *pininfo)
@@ -2145,12 +2146,13 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[6] = 0x00; /* bInsertionOffsetNew */
   pin_modify[7] = pininfo->maxlen; /* wPINMaxExtraDigit */
   pin_modify[8] = pininfo->minlen; /* wPINMaxExtraDigit */
-  pin_modify[9] = 0x03;  /* bConfirmPIN
-                          *    0x00: new PIN once
-                          *    0x01: new PIN twice (confirmation)
-                          *    0x02: old PIN and new PIN once
-                          *    0x03: old PIN and new PIN twice (confirmation)
-                          */
+  pin_modify[9] = (p0 == 0 ? 0x03 : 0x01);
+                  /* bConfirmPIN
+                   *    0x00: new PIN once
+                   *    0x01: new PIN twice (confirmation)
+                   *    0x02: old PIN and new PIN once
+                   *    0x03: old PIN and new PIN twice (confirmation)
+                   */
   pin_modify[10] = 0x02; /* bEntryValidationCondition: Validation key pressed */
   if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     pin_modify[10] |= 0x01; /* Max size reached.  */
@@ -2163,7 +2165,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[17] = 0x00; /* bTeoPrologue[0] */
   pin_modify[18] = 0x00; /* bTeoPrologue[1] */
   pin_modify[19] = 0x00; /* bTeoPrologue[2] */
-  pin_modify[20] = 0x04; /* ulDataLength */
+  pin_modify[20] = 0x05; /* ulDataLength */
   pin_modify[21] = 0x00; /* ulDataLength */
   pin_modify[22] = 0x00; /* ulDataLength */
   pin_modify[23] = 0x00; /* ulDataLength */
@@ -2171,6 +2173,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[25] = ins; /* abData[1] */
   pin_modify[26] = p0; /* abData[2] */
   pin_modify[27] = p1; /* abData[3] */
+  pin_modify[28] = 0x00; /* abData[4] */
 
   sw = control_pcsc (slot, reader_table[slot].pcsc.modify_ioctl,
                      pin_modify, len, result, &resultlen);

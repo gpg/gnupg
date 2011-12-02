@@ -307,16 +307,18 @@ iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 
 /* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
    verification vector CHVNO.  With PININFO non-NULL the keypad of the
-   reader will be used.  */
+   reader will be used.  If IS_EXCHANGE is 0, a "change reference
+   data" is done, otherwise an "exchange reference data".  */
 gpg_error_t
-iso7816_change_reference_data_kp (int slot, int chvno,
+iso7816_change_reference_data_kp (int slot, int chvno, int is_exchange,
                                   iso7816_pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_keypad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA, 0, chvno,
-                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
-                           pininfo->padlen);
+  sw = apdu_keypad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
+			   is_exchange ? 1 : 0,
+			   chvno, pininfo->mode, pininfo->minlen,
+			   pininfo->maxlen, pininfo->padlen);
   return map_sw (sw);
 }
 
@@ -350,31 +352,6 @@ iso7816_change_reference_data (int slot, int chvno,
   xfree (buf);
   return map_sw (sw);
 
-}
-
-
-gpg_error_t
-iso7816_reset_retry_counter_kp (int slot, int chvno,
-                                const char *newchv, size_t newchvlen,
-                                iso7816_pininfo_t *pininfo)
-{
-  int sw;
-
-  if (!newchv || !newchvlen )
-    return gpg_error (GPG_ERR_INV_VALUE);
-
-  /* FIXME:  The keypad mode has not yet been tested.  */
-  if (pininfo && pininfo->mode)
-    sw = apdu_send_simple_kp (slot, 0x00, CMD_RESET_RETRY_COUNTER,
-                           2, chvno, newchvlen, newchv,
-                           pininfo->mode,
-                           pininfo->minlen,
-                           pininfo->maxlen,
-                           pininfo->padlen);
-  else
-    sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
-                           2, chvno, newchvlen, newchv);
-  return map_sw (sw);
 }
 
 
