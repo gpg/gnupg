@@ -213,6 +213,15 @@ enum {
   VENDOR_FSIJ	= 0x234B
 };
 
+/* Some product ids.  */
+#define SCM_SCR331      0xe001
+#define SCM_SCR331DI    0x5111
+#define SCM_SCR335      0x5115
+#define SCM_SCR3320     0x5117
+#define SCM_SPR532      0xe003
+#define CHERRY_ST2000   0x003e
+
+
 /* A list and a table with special transport descriptions. */
 enum {
   TRANSPORT_USB    = 0, /* Standard USB transport. */
@@ -954,11 +963,11 @@ parse_ccid_descriptor (ccid_driver_t handle,
   */
   if (handle->id_vendor == VENDOR_SCM
       && handle->max_ifsd > 48
-      && (  (handle->id_product == 0xe001 && handle->bcd_device < 0x0516)
-          ||(handle->id_product == 0x5111 && handle->bcd_device < 0x0620)
-          ||(handle->id_product == 0x5115 && handle->bcd_device < 0x0514)
-          ||(handle->id_product == 0xe003 && handle->bcd_device < 0x0504)
-          ||(handle->id_product == 0x5117 && handle->bcd_device < 0x0522)
+      && (  (handle->id_product == SCM_SCR331   && handle->bcd_device < 0x0516)
+          ||(handle->id_product == SCM_SCR331DI && handle->bcd_device < 0x0620)
+          ||(handle->id_product == SCM_SCR335   && handle->bcd_device < 0x0514)
+          ||(handle->id_product == SCM_SPR532   && handle->bcd_device < 0x0504)
+          ||(handle->id_product == SCM_SCR3320  && handle->bcd_device < 0x0522)
           ))
     {
       DEBUGOUT ("enabling workaround for buggy SCM readers\n");
@@ -1138,16 +1147,20 @@ scan_or_find_usb_device (int scan_mode,
             {
               ifcdesc = (interface->altsetting + set_no);
               /* The second condition is for older SCM SPR 532 who did
-                 not know about the assigned CCID class.  Instead of
-                 trying to interpret the strings we simply check the
-                 product ID. */
+                 not know about the assigned CCID class.  The third
+                 condition does the same for a Cherry SmartTerminal
+                 ST-2000.  Instead of trying to interpret the strings
+                 we simply check the product ID. */
               if (ifcdesc && ifcdesc->extra
                   && ((ifcdesc->bInterfaceClass == 11
                        && ifcdesc->bInterfaceSubClass == 0
                        && ifcdesc->bInterfaceProtocol == 0)
                       || (ifcdesc->bInterfaceClass == 255
                           && dev->descriptor.idVendor == VENDOR_SCM
-                          && dev->descriptor.idProduct == 0xe003)))
+                          && dev->descriptor.idProduct == SCM_SPR532)
+                      || (ifcdesc->bInterfaceClass == 255
+                          && dev->descriptor.idVendor == VENDOR_CHERRY
+                          && dev->descriptor.idProduct == CHERRY_ST2000)))
                 {
                   idev = usb_open (dev);
                   if (!idev)
@@ -3083,7 +3096,8 @@ ccid_transceive_secure (ccid_driver_t handle,
          Lc byte to the APDU.  It seems that it will be replaced with
          the actual length instead of being appended before the APDU
          is send to the card. */
-      cherry_mode = 1;
+      if (handle->id_product != CHERRY_ST2000)
+        cherry_mode = 1;
       break;
     default:
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
