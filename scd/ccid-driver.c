@@ -3102,7 +3102,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (apdu_buflen >= 4 && apdu_buf[1] == 0x20 && (handle->has_pinpad & 1))
     ;
   else if (apdu_buflen >= 4 && apdu_buf[1] == 0x24 && (handle->has_pinpad & 2))
-    return CCID_DRIVER_ERR_NOT_SUPPORTED; /* Not yet by our code. */
+    ;
   else
     return CCID_DRIVER_ERR_NO_KEYPAD;
 
@@ -3165,7 +3165,8 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[7] = 0; /* bBWI */
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
-  msg[10] = 0; /* Perform PIN verification. */
+  msg[10] = apdu_buf[1] == 0x20 ? 0 : 1;
+               /* Perform PIN verification or PIN modification. */
   msg[11] = 0; /* Timeout in seconds. */
   msg[12] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
   if (handle->id_vendor == VENDOR_SCM)
@@ -3184,28 +3185,61 @@ ccid_transceive_secure (ccid_driver_t handle,
                          Units are bytes, position is 0. */
     }
 
-  /* The following is a little endian word. */
-  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
-  msg[16] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+  msglen = 15;
+  if (apdu_buf[1] == 0x24)
+    {
+      msg[msglen++] = 0;    /* bInsertionOffsetOld */
+      msg[msglen++] = 0;    /* bInsertionOffsetNew */
+    }
 
-  msg[17] = 0x02; /* bEntryValidationCondition:
-                     Validation key pressed */
+  /* The following is a little endian word. */
+  msg[msglen++] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[msglen++] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+
+  if (apdu_buf[1] == 0x24)
+    msg[msglen++] = apdu_buf[2] == 0 ? 0x03 : 0x01;
+              /* bConfirmPIN
+               *    0x00: new PIN once
+               *    0x01: new PIN twice (confirmation)
+               *    0x02: old PIN and new PIN once
+               *    0x03: old PIN and new PIN twice (confirmation)
+               */
+
+  msg[msglen] = 0x02; /* bEntryValidationCondition:
+                         Validation key pressed */
   if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
-    msg[17] |= 0x01; /* Max size reached.  */
-  msg[18] = 0xff; /* bNumberMessage: Default. */
-  msg[19] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
-  msg[20] = 0x04; /* wLangId-High. */
-  msg[21] = 0;    /* bMsgIndex. */
+    msg[msglen] |= 0x01; /* Max size reached.  */
+  msglen++;
+
+  if (apdu_buf[1] == 0x20)
+    msg[msglen++] = 0xff; /* bNumberMessage: Default. */
+  else
+    msg[msglen++] = apdu_buf[2] == 0 ? 0x03 : 0x01; /* bNumberMessage. */
+
+  msg[msglen++] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
+  msg[msglen++] = 0x04; /* wLangId-High. */
+
+  if (apdu_buf[1] == 0x20)
+    msg[msglen++] = 0;    /* bMsgIndex. */
+  else
+    {
+      msg[msglen++] = 1;    /* bMsgIndex1. */
+      if (apdu_buf[2] == 0)
+        {
+          msg[msglen++] = 2;    /* bMsgIndex2. */
+          msg[msglen++] = 3;    /* bMsgIndex3. */
+        }
+    }
+
   /* bTeoProlog follows: */
-  msg[22] = handle->nonnull_nad? ((1 << 4) | 0): 0;
-  msg[23] = ((handle->t1_ns & 1) << 6); /* I-block */
-  msg[24] = 0; /* The apdulen will be filled in by the reader.  */
+  msg[msglen++] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+  msg[msglen++] = ((handle->t1_ns & 1) << 6); /* I-block */
+  msg[msglen++] = 0; /* The apdulen will be filled in by the reader.  */
   /* APDU follows:  */
-  msg[25] = apdu_buf[0]; /* CLA */
-  msg[26] = apdu_buf[1]; /* INS */
-  msg[27] = apdu_buf[2]; /* P1 */
-  msg[28] = apdu_buf[3]; /* P2 */
-  msglen = 29;
+  msg[msglen++] = apdu_buf[0]; /* CLA */
+  msg[msglen++] = apdu_buf[1]; /* INS */
+  msg[msglen++] = apdu_buf[2]; /* P1 */
+  msg[msglen++] = apdu_buf[3]; /* P2 */
   if (cherry_mode)
     msg[msglen++] = 0;
   /* An EDC is not required. */
