@@ -2739,7 +2739,6 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   assuan_set_pointer (ctx, ctrl);
   ctrl->server_local = xcalloc (1, sizeof *ctrl->server_local);
   ctrl->server_local->assuan_ctx = ctx;
-  ctrl->server_local->message_fd = -1;
   ctrl->server_local->use_cache_for_signing = 1;
   ctrl->digest.raw_value = 0;
 
