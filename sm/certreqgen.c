@@ -85,6 +85,7 @@ enum para_name
     pNOTAFTER,
     pSIGNINGKEY,
     pHASHALGO,
+    pAUTHKEYID,
     pSUBJKEYID,
     pEXTENSION
   };
@@ -107,6 +108,7 @@ struct reqgen_ctrl_s
 };
 
 
+static const char oidstr_authorityKeyIdentifier[] = "2.5.29.35";
 static const char oidstr_subjectKeyIdentifier[] = "2.5.29.14";
 static const char oidstr_keyUsage[] = "2.5.29.15";
 static const char oidstr_basicConstraints[] = "2.5.29.19";
@@ -247,6 +249,7 @@ read_parameters (ctrl_t ctrl, estream_t fp, estream_t out_fp)
     { "Not-After",      pNOTAFTER },
     { "Signing-Key",    pSIGNINGKEY },
     { "Hash-Algo",      pHASHALGO },
+    { "Authority-Key-Id", pAUTHKEYID },
     { "Subject-Key-Id", pSUBJKEYID },
     { "Extension",      pEXTENSION, 1 },
     { NULL, 0 }
@@ -617,6 +620,21 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
         return gpg_error (GPG_ERR_INV_PARAMETER);
       }
   }
+
+  /* Check the optional AuthorityKeyId.  */
+  string = get_parameter_value (para, pAUTHKEYID, 0);
+  if (string)
+    {
+      for (s=string, i=0; hexdigitp (s); s++, i++)
+        ;
+      if (*s || (i&1))
+        {
+          r = get_parameter (para, pAUTHKEYID, 0);
+          log_error (_("line %d: invalid authority-key-id\n"), r->lnr);
+          xfree (cardkeyid);
+          return gpg_error (GPG_ERR_INV_PARAMETER);
+        }
+    }
 
   /* Check the optional SubjectKeyId.  */
   string = get_parameter_value (para, pSUBJKEYID, 0);
@@ -1095,6 +1113,44 @@ create_request (ctrl_t ctrl,
           }
       }
 
+      /* Insert the AuthorityKeyId.  */
+      string = get_parameter_value (para, pAUTHKEYID, 0);
+      if (string)
+        {
+          char *hexbuf;
+
+          /* Allocate a buffer for in-place conversion.  We also add 4
+             extra bytes space for the tags and lengths fields.  */
+          hexbuf = xtrymalloc (4 + strlen (string) + 1);
+          if (!hexbuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          strcpy (hexbuf+4, string);
+          for (p=hexbuf+4, len=0; p[0] && p[1]; p += 2)
+            ((unsigned char*)hexbuf)[4+len++] = xtoi_2 (p);
+          if (len > 125)
+            {
+              err = gpg_error (GPG_ERR_TOO_LARGE);
+              xfree (hexbuf);
+              goto leave;
+            }
+          hexbuf[0] = 0x30;  /* Tag for a Sequence.  */
+          hexbuf[1] = len+2;
+          hexbuf[2] = 0x80;  /* Context tag for an implicit Octet string.  */
+          hexbuf[3] = len;
+          err = ksba_certreq_add_extension (cr, oidstr_authorityKeyIdentifier,
+                                            0,
+                                            hexbuf, 4+len);
+          xfree (hexbuf);
+          if (err)
+            {
+              log_error ("error setting the authority-key-id: %s\n",
+                         gpg_strerror (err));
+              goto leave;
+            }
+        }
 
       /* Insert the SubjectKeyId.  */
       string = get_parameter_value (para, pSUBJKEYID, 0);
