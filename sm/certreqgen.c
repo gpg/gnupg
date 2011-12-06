@@ -889,7 +889,7 @@ create_request (ctrl_t ctrl,
           *p++ = '0';
           strcpy (p, string);
           for (p=hexbuf, len=0; p[0] && p[1]; p += 2)
-            ((unsigned char*)hexbuf)[len++] = xtoi_2 (s);
+            ((unsigned char*)hexbuf)[len++] = xtoi_2 (p);
           /* Now build the S-expression.  */
           snprintf (numbuf, DIM(numbuf), "%u:", (unsigned int)len);
           buf = p = xtrymalloc (1 + strlen (numbuf) + len + 1 + 1);
