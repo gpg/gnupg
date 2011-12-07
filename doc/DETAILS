@@ -58,6 +58,10 @@ record; gpg2 does this by default and the option is a dummy.
 		u = The key is ultimately valid.  This often means
 		    that the secret key is available, but any key may
 		    be marked as ultimately valid.
+                w = The key has a well known private part.
+                s = The key has special validity.  This means that it
+                    might be self-signed and expected to be used in
+                    the STEED sytem.
 
             If the validity information is given for a UID or UAT
             record, it describes the validity calculated based on this
@@ -347,6 +351,7 @@ more arguments in future versions.
            "pgp"   for the standard PGP WoT.
 	   "shell" for the standard X.509 model.
 	   "chain" for the chain model.
+           "steed" for the STEED model.
 
         Note that we use the term "TRUST_" in the status names for
         historic reasons; we now speak of validity.

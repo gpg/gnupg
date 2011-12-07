@@ -277,7 +277,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "validation-model"))
     {
       int i = gpgsm_parse_validation_model (value);
-      if ( i >= 0 && i <= 1 )
+      if ( i >= 0 && i <= 2 )
         ctrl->validation_model = i;
       else
         err = gpg_error (GPG_ERR_ASS_PARAMETER);

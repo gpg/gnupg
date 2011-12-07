@@ -624,6 +624,8 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
       }
 
       gpgsm_status (ctrl, STATUS_TRUST_FULLY,
+                    (verifyflags & VALIDATE_FLAG_STEED)?
+                    "0 steed":
                     (verifyflags & VALIDATE_FLAG_CHAIN_MODEL)?
                     "0 chain": "0 shell");
 

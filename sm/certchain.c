@@ -1,6 +1,6 @@
 /* certchain.c - certificate chain validation
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2006, 2007, 2008 Free Software Foundation, Inc.
+ *               2006, 2007, 2008, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1193,6 +1193,7 @@ ask_marktrusted (ctrl_t ctrl, ksba_cert_t cert, int listmode)
 
    VALIDATE_FLAG_NO_DIRMNGR  - Do not do any dirmngr isvalid checks.
    VALIDATE_FLAG_CHAIN_MODEL - Check according to chain model.
+   VALIDATE_FLAG_STEED       - Check according to the STEED model.
 */
 static int
 do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
@@ -1305,13 +1306,21 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
              We used to do this only later but changed it to call the
              check right here so that we can access special flags
              associated with that specific root certificate.  */
-          istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert, NULL,
-                                                rootca_flags);
+          if (gpgsm_cert_has_well_known_private_key (subject_cert))
+            {
+              memset (rootca_flags, 0, sizeof *rootca_flags);
+              istrusted_rc = ((flags & VALIDATE_FLAG_STEED)
+                              ? 0 : gpg_error (GPG_ERR_NOT_TRUSTED));
+            }
+          else
+            istrusted_rc = gpgsm_agent_istrusted (ctrl, subject_cert, NULL,
+                                                  rootca_flags);
           audit_log_cert (ctrl->audit, AUDIT_ROOT_TRUSTED,
                           subject_cert, istrusted_rc);
           /* If the chain model extended attribute is used, make sure
              that our chain model flag is set. */
-          if (has_validation_model_chain (subject_cert, listmode, listfp))
+          if (!(flags & VALIDATE_FLAG_STEED)
+              && has_validation_model_chain (subject_cert, listmode, listfp))
             rootca_flags->chain_model = 1;
         }
 
@@ -1383,7 +1392,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           /* Set the flag for qualified signatures.  This flag is
              deduced from a list of root certificates allowed for
              qualified signatures. */
-          if (is_qualified == -1)
+          if (is_qualified == -1 && !(flags & VALIDATE_FLAG_STEED))
             {
               gpg_error_t err;
               size_t buflen;
@@ -1437,8 +1446,11 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                  expired it does not make much sense to ask the user
                  whether we wants to trust the root certificate.  We
                  should do this only if the certificate under question
-                 will then be usable.  */
+                 will then be usable.  If the certificate has a well
+                 known private key asking the user does not make any
+                 sense.  */
               if ( !any_expired
+                   && !gpgsm_cert_has_well_known_private_key (subject_cert)
                    && (!listmode || !already_asked_marktrusted (subject_cert))
                    && ask_marktrusted (ctrl, subject_cert, listmode) )
                 rc = 0;
@@ -1455,6 +1467,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           /* Check for revocations etc. */
           if ((flags & VALIDATE_FLAG_NO_DIRMNGR))
             ;
+          else if ((flags & VALIDATE_FLAG_STEED))
+            ; /* Fixme: check revocations via DNS.  */
           else if (opt.no_trusted_cert_crl_check || rootca_flags->relax)
             ;
           else
@@ -1586,8 +1600,16 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                performance reasons. */
             if (is_root)
               {
-                istrusted_rc = gpgsm_agent_istrusted (ctrl, issuer_cert, NULL,
-                                                      rootca_flags);
+                if (gpgsm_cert_has_well_known_private_key (issuer_cert))
+                  {
+                    memset (rootca_flags, 0, sizeof *rootca_flags);
+                    istrusted_rc = ((flags & VALIDATE_FLAG_STEED)
+                                    ? 0 : gpg_error (GPG_ERR_NOT_TRUSTED));
+                  }
+                else
+                  istrusted_rc = gpgsm_agent_istrusted
+                    (ctrl, issuer_cert, NULL, rootca_flags);
+
                 if (!istrusted_rc && rootca_flags->relax)
                   {
                     /* Ignore the error due to the relax flag.  */
@@ -1627,6 +1649,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
          be fixed. */
       if ((flags & VALIDATE_FLAG_NO_DIRMNGR))
         rc = 0;
+      else if ((flags & VALIDATE_FLAG_STEED))
+        rc = 0; /* Fixme: XXX */
       else if (is_root && (opt.no_trusted_cert_crl_check
                            || (!istrusted_rc && rootca_flags->relax)))
         rc = 0;
@@ -1722,7 +1746,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
      capability of the certificate under question, store the result as
      user data in all certificates of the chain.  We do this even if the
      validation itself failed.  */
-  if (is_qualified != -1)
+  if (is_qualified != -1 && !(flags & VALIDATE_FLAG_STEED))
     {
       gpg_error_t err;
       chain_item_t ci;
@@ -1780,8 +1804,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
    do_validate_chain.  This function is a wrapper to handle a root
    certificate with the chain_model flag set.  If RETFLAGS is not
    NULL, flags indicating now the verification was done are stored
-   there.  The only defined flag for RETFLAGS is
-   VALIDATE_FLAG_CHAIN_MODEL.
+   there.  The only defined vits for RETFLAGS are
+   VALIDATE_FLAG_CHAIN_MODEL and VALIDATE_FLAG_STEED.
 
    If you are verifying a signature you should set CHECKTIME to the
    creation time of the signature.  If your are verifying a
@@ -1801,16 +1825,27 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
   if (!retflags)
     retflags = &dummy_retflags;
 
+  /* If the session requested a certain validation mode make sure the
+     corresponding flags are set.  */
   if (ctrl->validation_model == 1)
     flags |= VALIDATE_FLAG_CHAIN_MODEL;
+  else if (ctrl->validation_model == 2)
+    flags |= VALIDATE_FLAG_STEED;
 
+  /* If the chain model was forced, set this immediately into
+     RETFLAGS.  */
   *retflags = (flags & VALIDATE_FLAG_CHAIN_MODEL);
+
   memset (&rootca_flags, 0, sizeof rootca_flags);
 
   rc = do_validate_chain (ctrl, cert, checktime,
                           r_exptime, listmode, listfp, flags,
                           &rootca_flags);
-  if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
+  if (!rc && (flags & VALIDATE_FLAG_STEED))
+    {
+      *retflags |= VALIDATE_FLAG_STEED;
+    }
+  else if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
       && !(flags & VALIDATE_FLAG_CHAIN_MODEL)
       && (rootca_flags.valid && rootca_flags.chain_model))
     {
@@ -1824,6 +1859,8 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
 
   if (opt.verbose)
     do_list (0, listmode, listfp, _("validation model used: %s"),
+             (*retflags & VALIDATE_FLAG_STEED)?
+             "steed" :
              (*retflags & VALIDATE_FLAG_CHAIN_MODEL)?
              _("chain"):_("shell"));
 

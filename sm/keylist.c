@@ -1,6 +1,6 @@
 /* keylist.c - Print certificates in various formats.
- * Copyright (C) 1998, 1999, 2000, 2001, 2003,
- *               2004, 2005, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2008, 2009,
+ *               2010, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -421,7 +421,12 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
           && *not_after && strcmp (current_time, not_after) > 0 )
         *truststring = 'e';
       else if (valerr)
-        *truststring = 'i';
+        {
+          if (gpgsm_cert_has_well_known_private_key (cert))
+            *truststring = 'w';  /* Well, this is dummy CA.  */
+          else
+            *truststring = 'i';
+        }
       else if (ctrl->with_validation && !is_root)
         *truststring = 'f';
     }
@@ -433,12 +438,17 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
     {
       struct rootca_flags_s dummy_flags;
 
-      rc = gpgsm_agent_istrusted (ctrl, cert, NULL, &dummy_flags);
-      if (!rc)
-        *truststring = 'u';  /* Yes, we trust this one (ultimately). */
-      else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
-        *truststring = 'n';  /* No, we do not trust this one. */
-      /* (in case of an error we can't tell anything.) */
+      if (gpgsm_cert_has_well_known_private_key (cert))
+        *truststring = 'w';  /* Well, this is dummy CA.  */
+      else
+        {
+          rc = gpgsm_agent_istrusted (ctrl, cert, NULL, &dummy_flags);
+          if (!rc)
+            *truststring = 'u';  /* Yes, we trust this one (ultimately). */
+          else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
+            *truststring = 'n';  /* No, we do not trust this one. */
+          /* (in case of an error we can't tell anything.) */
+        }
     }
 
   if (*truststring)

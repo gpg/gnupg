@@ -451,10 +451,11 @@ address and the time when you verified the signature.
 @item --validation-model @var{name}
 @opindex validation-model
 This option changes the default validation model.  The only possible
-values are "shell" (which is the default) and "chain" which forces the
-use of the chain model.  The chain model is also used if an option in
-the @file{trustlist.txt} or an attribute of the certificate requests it.
-However the standard model (shell) is in that case always tried first.
+values are "shell" (which is the default), "chain" which forces the
+use of the chain model and "steed" for a new simplified model.  The
+chain model is also used if an option in the @file{trustlist.txt} or
+an attribute of the certificate requests it.  However the standard
+model (shell) is in that case always tried first.
 
 @item --ignore-cert-extension @var{oid}
 @opindex ignore-cert-extension
