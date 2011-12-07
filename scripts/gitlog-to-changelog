@@ -281,6 +281,15 @@ sub parse_amend_file($)
       @line = grep !/^Signed-off-by: .*>$/, @line;
       @line = grep !/^Co-authored-by: /, @line;
 
+      # Remove everything after a line with 2 dashes at the beginning.
+      my @tmpline;
+      foreach (@line)
+	{
+	  last if /^--\s*$/;
+          push @tmpline,$_;
+        }
+      @line = @tmpline;
+
       # Remove leading and trailing blank lines.
       if (@line)
         {
