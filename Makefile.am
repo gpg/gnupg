@@ -116,7 +116,7 @@ gen-ChangeLog:
 	if test -d $(top_srcdir)/.git; then				\
 	  (cd $(top_srcdir) &&                      			\
 	    ./scripts/gitlog-to-changelog				\
-	    --append-dot						\
+	    --append-dot --tear-off					\
 	    --amend=scripts/git-log-fix	 				\
 	    --since=$(gen_start_date) ) > $(distdir)/cl-t;		\
           cat $(top_srcdir)/scripts/git-log-footer >> $(distdir)/cl-t;  \
