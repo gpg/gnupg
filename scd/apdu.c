@@ -3051,11 +3051,14 @@ apdu_enum_reader (int slot, int *used)
 
 
 /* Connect a card.  This is used to power up the card and make sure
-   that an ATR is available.  */
+   that an ATR is available.  Depending on the reader backend it may
+   return an error for an inactive card or if no card is
+   available.  */
 int
 apdu_connect (int slot)
 {
   int sw;
+  unsigned int status;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -3080,7 +3083,15 @@ apdu_connect (int slot)
      scdaemon is fired up and apdu_get_status has not yet been called.
      Without that we would force a reset of the card with the next
      call to apdu_get_status.  */
-  apdu_get_status_internal (slot, 1, 1, NULL, NULL);
+  apdu_get_status_internal (slot, 1, 1, &status, NULL);
+  if (sw)
+    ;
+  else if (!(status & APDU_CARD_PRESENT))
+    sw = SW_HOST_NO_CARD;
+  else if (((status & APDU_CARD_PRESENT) && !(status & APDU_CARD_ACTIVE))
+           || !reader_table[slot].atrlen)
+    sw = SW_HOST_CARD_INACTIVE;
+
 
   return sw;
 }
