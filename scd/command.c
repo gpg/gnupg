@@ -60,6 +60,7 @@
           int _r = (r);                                     \
           if (gpg_err_code (_r) == GPG_ERR_CARD_NOT_PRESENT \
               || gpg_err_code (_r) == GPG_ERR_CARD_REMOVED  \
+              || gpg_err_code (_r) == GPG_ERR_CARD_RESET    \
               || gpg_err_code (_r) == GPG_ERR_ENODEV )      \
             update_card_removed ((c)->reader_slot, 1);      \
        } while (0)
@@ -420,9 +421,8 @@ get_reader_slot (void)
   return 0;
 }
 
-/* If the card has not yet been opened, do it.  Note that this
-   function returns an Assuan error, so don't map the error a second
-   time.  */
+
+/* If the card has not yet been opened, do it.  */
 static gpg_error_t
 open_card (ctrl_t ctrl, const char *apptype)
 {
@@ -477,6 +477,8 @@ open_card (ctrl_t ctrl, const char *apptype)
         {
           if (sw == SW_HOST_NO_CARD)
             err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+          else if (sw == SW_HOST_CARD_INACTIVE)
+            err = gpg_error (GPG_ERR_CARD_RESET);
           else
             err = gpg_error (GPG_ERR_CARD);
 	}
