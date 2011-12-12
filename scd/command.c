@@ -518,8 +518,10 @@ cmd_serialno (assuan_context_t ctx, char *line)
   char *serial_and_stamp;
   char *serial;
   time_t stamp;
+  int retries = 0;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
+ retry:
   if (!reader_disabled && ctrl->server_local->card_removed)
     {
       if ( IS_LOCKED (ctrl) )
@@ -528,7 +530,12 @@ cmd_serialno (assuan_context_t ctx, char *line)
     }
 
   if ((rc = open_card (ctrl, *line? line:NULL)))
-    return rc;
+    {
+      /* In case of an inactive card, retry once.  */
+      if (gpg_err_code (rc) == GPG_ERR_CARD_RESET && retries++ < 1)
+        goto retry;
+      return rc;
+    }
 
   rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
   if (rc)
