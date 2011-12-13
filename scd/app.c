@@ -213,10 +213,11 @@ application_notify_card_reset (int slot)
    used to request a specific application and the connection has
    already done a select_application. */
 gpg_error_t
-check_application_conflict (ctrl_t ctrl, const char *name)
+check_application_conflict (ctrl_t ctrl, int slot, const char *name)
 {
-  int slot = ctrl->reader_slot;
   app_t app;
+
+  (void)ctrl;
 
   if (slot < 0 || slot >= DIM (lock_table))
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -224,7 +225,7 @@ check_application_conflict (ctrl_t ctrl, const char *name)
   app = lock_table[slot].initialized ? lock_table[slot].app : NULL;
   if (app && app->apptype && name)
     if ( ascii_strcasecmp (app->apptype, name))
-        return gpg_error (GPG_ERR_CONFLICT);
+      return gpg_error (GPG_ERR_CONFLICT);
   return 0;
 }
 

@@ -913,7 +913,7 @@ scd_exit (int rc)
 static void
 scd_init_default_ctrl (ctrl_t ctrl)
 {
-  ctrl->reader_slot = -1;
+  (void)ctrl;
 }
 
 static void
