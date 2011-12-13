@@ -72,6 +72,7 @@ enum cmd_and_opt_values
   oDebugAllowCoreDump,
   oDebugCCIDDriver,
   oDebugLogTid,
+  oDebugAssuanLogCats,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -121,6 +122,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
   ARGPARSE_s_n (oDebugDisableTicker, "debug-disable-ticker", "@"),
   ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
+  ARGPARSE_p_u (oDebugAssuanLogCats, "debug-assuan-log-cats", "@"),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
   ARGPARSE_s_s (oReaderPort, "reader-port",
@@ -552,6 +554,9 @@ main (int argc, char **argv )
         case oDebugDisableTicker: ticker_disabled = 1; break;
         case oDebugLogTid:
           log_set_pid_suffix_cb (tid_log_callback);
+          break;
+        case oDebugAssuanLogCats:
+          set_libassuan_log_cats (pargs.r.ret_ulong);
           break;
 
         case oOptions:

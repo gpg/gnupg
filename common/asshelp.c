@@ -97,6 +97,19 @@ setup_libassuan_logging (unsigned int *debug_var_address)
   assuan_set_log_cb (my_libassuan_log_handler, debug_var_address);
 }
 
+/* Change the Libassuan log categories to those given by NEWCATS.
+   NEWCATS is 0 the default category of ASSUAN_LOG_CONTROL is
+   selected.  Note, that setup_libassuan_logging overrides the values
+   given here.  */
+void
+set_libassuan_log_cats (unsigned int newcats)
+{
+  if (newcats)
+    log_cats = newcats;
+  else /* Default to log the control channel.  */
+    log_cats = (1 << (ASSUAN_LOG_CONTROL - 1));
+}
+
 
 
 static gpg_error_t
