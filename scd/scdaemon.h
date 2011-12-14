@@ -72,8 +72,9 @@ struct
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_ASSUAN_VALUE 1024
+#define DBG_ASSUAN_VALUE  1024
 #define DBG_CARD_IO_VALUE 2048
+#define DBG_READER_VALUE  4096  /* Trace reader related functions.  */
 
 #define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
@@ -82,6 +83,7 @@ struct
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
+#define DBG_READER  (opt.debug & DBG_READER_VALUE)
 
 struct server_local_s;
 struct app_ctx_s;

@@ -2772,6 +2772,9 @@ apdu_open_reader (const char *portstr, int *r_no_service)
   static int pcsc_api_loaded, ct_api_loaded;
   int slot;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_open_reader: portstr=%s\n", portstr);
+
   if (r_no_service)
     *r_no_service = 0;
 
@@ -2786,6 +2789,8 @@ apdu_open_reader (const char *portstr, int *r_no_service)
       if (slot != -1)
         {
           once_available = 1;
+          if (DBG_READER)
+            log_debug ("leave: apdu_open_reader => slot=%d [ccid]\n", slot);
           return slot; /* got one */
         }
 
@@ -2796,14 +2801,22 @@ apdu_open_reader (const char *portstr, int *r_no_service)
          and over again.  To reset this flag "gpgconf --kill scdaemon"
          can be used.  */
       if (once_available)
-        return -1;
+        {
+          if (DBG_READER)
+            log_debug ("leave: apdu_open_reader => slot=-1 (once_avail)\n");
+          return -1;
+        }
 
       /* If a CCID reader specification has been given, the user does
          not want a fallback to other drivers. */
       if (portstr)
         for (s=portstr, i=0; *s; s++)
           if (*s == ':' && (++i == 3))
-            return -1;
+            {
+              if (DBG_READER)
+                log_debug ("leave: apdu_open_reader => slot=-1 (no ccid)\n");
+              return -1;
+            }
     }
 
 #endif /* HAVE_LIBUSB */
@@ -2928,6 +2941,8 @@ apdu_open_reader (const char *portstr, int *r_no_service)
   if (slot == -1 && r_no_service && pcsc_no_service)
     *r_no_service = 1;
 
+  if (DBG_READER)
+    log_debug ("leave: apdu_open_reader => slot=%d [pc/sc]\n", slot);
   return slot;
 }
 
@@ -2982,13 +2997,31 @@ apdu_close_reader (int slot)
 {
   int sw;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_close_reader: slot=%d\n", slot);
+
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return SW_HOST_NO_DRIVER;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_close_reader => SW_HOST_NO_DRIVER\n");
+      return SW_HOST_NO_DRIVER;
+    }
   sw = apdu_disconnect (slot);
   if (sw)
-    return sw;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_close_reader => 0x%x (apdu_disconnect)\n", sw);
+      return sw;
+    }
   if (reader_table[slot].close_reader)
-    return reader_table[slot].close_reader (slot);
+    {
+      sw = reader_table[slot].close_reader (slot);
+      if (DBG_READER)
+        log_debug ("leave: apdu_close_reader => 0x%x (close_reader)\n", sw);
+      return sw;
+    }
+  if (DBG_READER)
+    log_debug ("leave: apdu_close_reader => SW_HOST_NOT_SUPPORTED\n");
   return SW_HOST_NOT_SUPPORTED;
 }
 
@@ -3027,13 +3060,32 @@ apdu_shutdown_reader (int slot)
 {
   int sw;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_shutdown_reader: slot=%d\n", slot);
+
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return SW_HOST_NO_DRIVER;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_shutdown_reader => SW_HOST_NO_DRIVER\n");
+      return SW_HOST_NO_DRIVER;
+    }
   sw = apdu_disconnect (slot);
   if (sw)
-    return sw;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_shutdown_reader => 0x%x (apdu_disconnect)\n",
+                   sw);
+      return sw;
+    }
   if (reader_table[slot].shutdown_reader)
-    return reader_table[slot].shutdown_reader (slot);
+    {
+      sw = reader_table[slot].shutdown_reader (slot);
+      if (DBG_READER)
+        log_debug ("leave: apdu_shutdown_reader => 0x%x (close_reader)\n", sw);
+      return sw;
+    }
+  if (DBG_READER)
+    log_debug ("leave: apdu_shutdown_reader => SW_HOST_NOT_SUPPORTED\n");
   return SW_HOST_NOT_SUPPORTED;
 }
 
@@ -3060,8 +3112,15 @@ apdu_connect (int slot)
   int sw;
   unsigned int status;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_connect: slot=%d\n", slot);
+
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return SW_HOST_NO_DRIVER;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_connect => SW_HOST_NO_DRIVER\n");
+      return SW_HOST_NO_DRIVER;
+    }
 
   /* Only if the access method provides a connect function we use it.
      If not, we expect that the card has been implicitly connected by
@@ -3092,6 +3151,8 @@ apdu_connect (int slot)
            || !reader_table[slot].atrlen)
     sw = SW_HOST_CARD_INACTIVE;
 
+  if (DBG_READER)
+    log_debug ("leave: apdu_connect => sw=0x%x\n", sw);
 
   return sw;
 }
@@ -3102,8 +3163,15 @@ apdu_disconnect (int slot)
 {
   int sw;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_disconnect: slot=%d\n", slot);
+
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return SW_HOST_NO_DRIVER;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_disconnect => SW_HOST_NO_DRIVER\n");
+      return SW_HOST_NO_DRIVER;
+    }
 
   if (reader_table[slot].disconnect_card)
     {
@@ -3116,6 +3184,9 @@ apdu_disconnect (int slot)
     }
   else
     sw = 0;
+
+  if (DBG_READER)
+    log_debug ("leave: apdu_disconnect => sw=0x%x\n", sw);
   return sw;
 }
 
@@ -3151,11 +3222,22 @@ apdu_reset (int slot)
 {
   int sw;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_reset: slot=%d\n", slot);
+
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return SW_HOST_NO_DRIVER;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_reset => SW_HOST_NO_DRIVER\n");
+      return SW_HOST_NO_DRIVER;
+    }
 
   if ((sw = lock_slot (slot)))
-    return sw;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_reset => sw=0x%x (lock_slot)\n", sw);
+      return sw;
+    }
 
   reader_table[slot].last_status = 0;
   if (reader_table[slot].reset_reader)
@@ -3171,73 +3253,47 @@ apdu_reset (int slot)
     }
 
   unlock_slot (slot);
+  if (DBG_READER)
+    log_debug ("leave: apdu_reset => sw=0x%x\n", sw);
   return sw;
 }
 
 
-/* Activate a card if it has not yet been done.  This is a kind of
-   reset-if-required.  It is useful to test for presence of a card
-   before issuing a bunch of apdu commands.  It does not wait on a
-   locked card. */
-int
-apdu_activate (int slot)
-{
-  int sw;
-  unsigned int s;
-
-  if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return SW_HOST_NO_DRIVER;
-
-  if ((sw = trylock_slot (slot)))
-    return sw;
-
-  if (reader_table[slot].get_status_reader)
-    sw = reader_table[slot].get_status_reader (slot, &s);
-
-  if (!sw)
-    {
-      if (!(s & 2))  /* Card not present.  */
-        sw = SW_HOST_NO_CARD;
-      else if ( ((s & 2) && !(s & 4))
-                || !reader_table[slot].atrlen )
-        {
-          /* We don't have an ATR or a card is present though inactive:
-             do a reset now. */
-          if (reader_table[slot].reset_reader)
-            {
-              reader_table[slot].last_status = 0;
-              sw = reader_table[slot].reset_reader (slot);
-              if (!sw)
-                {
-                  /* If we got to here we know that a card is present
-                     and usable.  Thus remember this.  */
-                  reader_table[slot].last_status = (APDU_CARD_USABLE
-                                                    | APDU_CARD_PRESENT
-                                                    | APDU_CARD_ACTIVE);
-                }
-            }
-        }
-    }
-
-  unlock_slot (slot);
-  return sw;
-}
-
-
+/* Return the ATR or NULL if none is available.  On success the length
+   of the ATR is stored at ATRLEN.  The caller must free the returned
+   value.  */
 unsigned char *
 apdu_get_atr (int slot, size_t *atrlen)
 {
   unsigned char *buf;
 
+  if (DBG_READER)
+    log_debug ("enter: apdu_get_atr: slot=%d\n", slot);
+
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
-    return NULL;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_get_atr => NULL (bad slot)\n");
+      return NULL;
+    }
   if (!reader_table[slot].atrlen)
-    return NULL;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_get_atr => NULL (no ATR)\n");
+      return NULL;
+    }
+
   buf = xtrymalloc (reader_table[slot].atrlen);
   if (!buf)
-    return NULL;
+    {
+      if (DBG_READER)
+        log_debug ("leave: apdu_get_atr => NULL (out of core)\n");
+      return NULL;
+    }
   memcpy (buf, reader_table[slot].atr, reader_table[slot].atrlen);
   *atrlen = reader_table[slot].atrlen;
+  if (DBG_READER)
+    log_debug ("leave: apdu_get_atr => atrlen=%zu\n", *atrlen);
   return buf;
 }
 
@@ -3308,7 +3364,26 @@ int
 apdu_get_status (int slot, int hang,
                  unsigned int *status, unsigned int *changed)
 {
-  return apdu_get_status_internal (slot, hang, 0, status, changed);
+  int sw;
+
+  if (DBG_READER)
+    log_debug ("enter: apdu_get_status: slot=%d hang=%d\n", slot, hang);
+  sw = apdu_get_status_internal (slot, hang, 0, status, changed);
+  if (DBG_READER)
+    {
+      if (status && changed)
+        log_debug ("leave: apdu_get_status => sw=0x%x status=%u changecnt=%u\n",
+                   sw, *status, *changed);
+      else if (status)
+        log_debug ("leave: apdu_get_status => sw=0x%x status=%u\n",
+                   sw, *status);
+      else if (changed)
+        log_debug ("leave: apdu_get_status => sw=0x%x changed=%u\n",
+                   sw, *changed);
+      else
+        log_debug ("leave: apdu_get_status => sw=0x%x\n", sw);
+    }
+  return sw;
 }
 
 
