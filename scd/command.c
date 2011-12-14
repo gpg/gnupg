@@ -180,25 +180,6 @@ initialize_module_command (void)
 }
 
 
-/* Update the CARD_REMOVED element of all sessions using the virtual
-   reader given by VRDR to VALUE.  */
-static void
-update_card_removed (int vrdr, int value)
-{
-  struct server_local_s *sl;
-
-  for (sl=session_list; sl; sl = sl->next_session)
-    if (sl->ctrl_backlink
-        && sl->ctrl_backlink->server_local->vreader_idx == vrdr)
-      {
-        sl->card_removed = value;
-      }
-  /* Let the card application layer know about the removal.  */
-  if (value)
-    application_notify_card_reset (vrdr);
-}
-
-
 /* Helper to return the slot number for a given virtual reader index
    VRDR.  In case on an error -1 is returned.  */
 static int
@@ -209,6 +190,28 @@ vreader_slot (int vrdr)
   if (!vreader_table [vrdr].valid)
     return -1;
   return vreader_table[vrdr].slot;
+}
+
+
+/* Update the CARD_REMOVED element of all sessions using the virtual
+   reader given by VRDR to VALUE.  */
+static void
+update_card_removed (int vrdr, int value)
+{
+  struct server_local_s *sl;
+
+  if (vrdr == -1)
+    return;
+
+  for (sl=session_list; sl; sl = sl->next_session)
+    if (sl->ctrl_backlink
+        && sl->ctrl_backlink->server_local->vreader_idx == vrdr)
+      {
+        sl->card_removed = value;
+      }
+  /* Let the card application layer know about the removal.  */
+  if (value)
+    application_notify_card_reset (vreader_slot (vrdr));
 }
 
 
@@ -298,6 +301,7 @@ static void
 do_reset (ctrl_t ctrl, int send_reset)
 {
   int vrdr = ctrl->server_local->vreader_idx;
+  int slot;
 
   if (!(vrdr == -1 || (vrdr >= 0 && vrdr < DIM(vreader_table))))
     BUG ();
@@ -324,13 +328,22 @@ do_reset (ctrl_t ctrl, int send_reset)
 
   /* If we want a real reset for the card, send the reset APDU and
      tell the application layer about it.  */
-  if (vrdr != -1 && send_reset && !IS_LOCKED (ctrl) )
+  slot = vreader_slot (vrdr);
+  if (slot != -1 && send_reset && !IS_LOCKED (ctrl) )
     {
-      if (apdu_reset (vreader_table[vrdr].slot))
+      application_notify_card_reset (slot);
+      switch (apdu_reset (slot))
         {
-          vreader_table[vrdr].valid = 0;
+        case 0:
+          break;
+        case SW_HOST_NO_CARD:
+        case SW_HOST_CARD_INACTIVE:
+          break;
+        default:
+	  apdu_close_reader (slot);
+          vreader_table[vrdr].slot = slot = -1;
+          break;
         }
-      application_notify_card_reset (vrdr);
     }
 
   /* If we hold a lock, unlock now. */
@@ -1696,11 +1709,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 	    BUG ();
 
 	  vr = &vreader_table[vrdr];
-
-	  if (!vr->valid)
-	    BUG ();
-
-	  if (vr->any && (vr->status & 1))
+	  if (vr->valid && vr->any && (vr->status & 1))
 	    flag = 'u';
 	}
       rc = assuan_send_data (ctx, &flag, 1);
@@ -2248,9 +2257,9 @@ update_reader_status_file (int set_card_removed_flag)
       if (sw_apdu == SW_HOST_NO_READER)
         {
           /* Most likely the _reader_ has been unplugged.  */
+          application_notify_card_reset (vr->slot);
 	  apdu_close_reader (vr->slot);
           vr->slot = -1;
-	  vr->valid = 0;
           status = 0;
           changed = vr->changed;
         }
