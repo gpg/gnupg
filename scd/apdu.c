@@ -463,8 +463,11 @@ apdu_strerror (int rc)
     case SW_FILE_NOT_FOUND : return "file not found";
     case SW_RECORD_NOT_FOUND:return "record not found";
     case SW_REF_NOT_FOUND  : return "reference not found";
-    case SW_BAD_LC         : return "bad Lc";
-    case SW_BAD_P0_P1      : return "bad P0 or P1";
+    case SW_NOT_ENOUGH_MEMORY: return "not enough memory space in the file";
+    case SW_INCONSISTENT_LC: return "Lc inconsistent with TLV structure.";
+    case SW_INCORRECT_P0_P1: return "incorrect parameters P0,P1";
+    case SW_BAD_LC         : return "Lc inconsistent with P0,P1";
+    case SW_BAD_P0_P1      : return "bad P0,P1";
     case SW_INS_NOT_SUP    : return "instruction not supported";
     case SW_CLA_NOT_SUP    : return "class not supported";
     case SW_SUCCESS        : return "success";

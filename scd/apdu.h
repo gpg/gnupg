@@ -41,6 +41,9 @@ enum {
   SW_NOT_SUPPORTED  = 0x6a81,
   SW_FILE_NOT_FOUND = 0x6a82,
   SW_RECORD_NOT_FOUND = 0x6a83,
+  SW_NOT_ENOUGH_MEMORY= 0x6a84, /* Not enough memory space in the file.  */
+  SW_INCONSISTENT_LC  = 0x6a85, /* Lc inconsistent with TLV structure.  */
+  SW_INCORRECT_P0_P1  = 0x6a86,
   SW_BAD_LC         = 0x6a87, /* Lc does not match command or p1/p2.  */
   SW_REF_NOT_FOUND  = 0x6a88,
   SW_BAD_P0_P1      = 0x6b00,
