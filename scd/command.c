@@ -181,6 +181,9 @@ update_card_removed (int slot, int value)
 {
   struct server_local_s *sl;
 
+  if (slot == -1)
+    return;
+
   for (sl=session_list; sl; sl = sl->next_session)
     if (sl->ctrl_backlink
         && sl->ctrl_backlink->reader_slot == slot)
@@ -308,11 +311,19 @@ do_reset (ctrl_t ctrl, int send_reset)
      tell the application layer about it.  */
   if (slot != -1 && send_reset && !IS_LOCKED (ctrl) )
     {
-      if (apdu_reset (slot)) 
-        {
-          slot_table[slot].valid = 0;
-        }
       application_notify_card_reset (slot);
+      switch (apdu_reset (slot))
+	{
+	case 0:
+	  break;
+	case SW_HOST_NO_CARD:
+	case SW_HOST_CARD_INACTIVE:
+	  break;
+	default:
+	  apdu_close_reader (slot);
+	  slot_table[slot].slot = slot = -1;
+	  break;
+	}
     }
 
   /* If we hold a lock, unlock now. */
@@ -1671,10 +1682,7 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
 	  ss = &slot_table[slot];
 
-	  if (!ss->valid)
-	    BUG ();
-
-	  if (ss->any && (ss->status & 1))
+	  if (ss->valid && ss->any && (ss->status & 1))
 	    flag = 'u';
 	}
       rc = assuan_send_data (ctx, &flag, 1);
@@ -2213,6 +2221,7 @@ update_reader_status_file (int set_card_removed_flag)
       if (sw_apdu == SW_HOST_NO_READER)
         {
           /* Most likely the _reader_ has been unplugged.  */
+	  application_notify_card_reset (ss->slot);
 	  apdu_close_reader (ss->slot);
 	  ss->valid = 0;
           status = 0;
