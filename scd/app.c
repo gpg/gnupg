@@ -242,10 +242,13 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   app_t app = NULL;
   unsigned char *result = NULL;
   size_t resultlen;
+  int want_undefined;
 
   (void)ctrl;
 
   *r_app = NULL;
+
+  want_undefined = (name && !strcmp (name, "undefined"));
 
   err = lock_reader (slot, ctrl);
   if (err)
@@ -326,45 +329,49 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   /* Fixme: We should now first check whether a card is at all
      present. */
 
-  /* Try to read the GDO file first to get a default serial number. */
-  err = iso7816_select_file (slot, 0x3F00, 1, NULL, NULL);
-  if (!err)
-    err = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
-  if (!err)
-     err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
-  if (!err)
+  /* Try to read the GDO file first to get a default serial number.
+     We skip this if the undefined application has been requested. */
+  if (!want_undefined)
     {
-      size_t n;
-      const unsigned char *p;
-
-      p = find_tlv_unchecked (result, resultlen, 0x5A, &n);
-      if (p)
-        resultlen -= (p-result);
-      if (p && n > resultlen && n == 0x0d && resultlen+1 == n)
+      err = iso7816_select_file (slot, 0x3F00, 1, NULL, NULL);
+      if (!err)
+        err = iso7816_select_file (slot, 0x2F02, 0, NULL, NULL);
+      if (!err)
+        err = iso7816_read_binary (slot, 0, 0, &result, &resultlen);
+      if (!err)
         {
-          /* The object it does not fit into the buffer.  This is an
-             invalid encoding (or the buffer is too short.  However, I
-             have some test cards with such an invalid encoding and
-             therefore I use this ugly workaround to return something
-             I can further experiment with. */
-          log_info ("enabling BMI testcard workaround\n");
-          n--;
-        }
+          size_t n;
+          const unsigned char *p;
 
-      if (p && n <= resultlen)
-        {
-          /* The GDO file is pretty short, thus we simply reuse it for
-             storing the serial number. */
-          memmove (result, p, n);
-          app->serialno = result;
-          app->serialnolen = n;
-          err = app_munge_serialno (app);
-          if (err)
-            goto leave;
+          p = find_tlv_unchecked (result, resultlen, 0x5A, &n);
+          if (p)
+            resultlen -= (p-result);
+          if (p && n > resultlen && n == 0x0d && resultlen+1 == n)
+            {
+              /* The object it does not fit into the buffer.  This is an
+                 invalid encoding (or the buffer is too short.  However, I
+                 have some test cards with such an invalid encoding and
+                 therefore I use this ugly workaround to return something
+                 I can further experiment with. */
+              log_info ("enabling BMI testcard workaround\n");
+              n--;
+            }
+
+          if (p && n <= resultlen)
+            {
+              /* The GDO file is pretty short, thus we simply reuse it for
+                 storing the serial number. */
+              memmove (result, p, n);
+              app->serialno = result;
+              app->serialnolen = n;
+              err = app_munge_serialno (app);
+              if (err)
+                goto leave;
+            }
+          else
+            xfree (result);
+          result = NULL;
         }
-      else
-        xfree (result);
-      result = NULL;
     }
 
   /* For certain error codes, there is no need to try more.  */
@@ -373,7 +380,15 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     goto leave;
 
   /* Figure out the application to use.  */
-  err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (want_undefined)
+    {
+      /* We switch to the "undefined" application only if explicitly
+         requested.  */
+      app->apptype = "UNDEFINED";
+      err = 0;
+    }
+  else
+    err = gpg_error (GPG_ERR_NOT_FOUND);
 
   if (err && is_app_allowed ("openpgp")
           && (!name || !strcmp (name, "openpgp")))
@@ -387,14 +402,6 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   if (err && is_app_allowed ("geldkarte")
       && (!name || !strcmp (name, "geldkarte")))
     err = app_select_geldkarte (app);
-  if (err && is_app_allowed ("undefined")
-      && (name && !strcmp (name, "undefined")))
-    {
-      /* We switch to the "undefined" application only if explicitly
-         requested.  */
-      app->apptype = "UNDEFINED";
-      err = 0;
-    }
   if (err && name)
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
