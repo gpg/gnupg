@@ -181,6 +181,8 @@ write hashed data to files named @code{dbgmd-000*}
 trace Assuan protocol.  See also option @option{--debug-assuan-log-cats}.
 @item 11 (2048)
 trace APDU I/O to the card.  This may reveal sensitive data.
+@item 12 (4096)
+trace some card reader related function calls.
 @end table
 
 @item --debug-all
@@ -327,6 +329,7 @@ stripping off the two leading dashes.
 * DINSIG Card::           The DINSIG card application
 * PKCS#15 Card::          The PKCS#15 card application
 * Geldkarte Card::        The Geldkarte application
+* Undefined Card::        The Undefined stub application
 @end menu
 
 @node OpenPGP Card
@@ -366,6 +369,14 @@ This is common framework for smart card applications.  It is used by
 This is a simple application to display information of a German
 Geldkarte.  The Geldkarte is a small amount debit card application which
 comes with almost all German banking cards.
+
+@node Undefined Card
+@subsection The Undefined card application ``undefined''
+
+This is a stub application to allow the use of the APDU command even
+if no supported application is found on the card.  This application is
+not used automatically but must be explicitly requested using the
+SERIALNO command.
 
 
 @c *******************************************

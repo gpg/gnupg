@@ -387,6 +387,14 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   if (err && is_app_allowed ("geldkarte")
       && (!name || !strcmp (name, "geldkarte")))
     err = app_select_geldkarte (app);
+  if (err && is_app_allowed ("undefined")
+      && (name && !strcmp (name, "undefined")))
+    {
+      /* We switch to the "undefined" application only if explicitly
+         requested.  */
+      app->apptype = "UNDEFINED";
+      err = 0;
+    }
   if (err && name)
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
@@ -422,6 +430,8 @@ get_supported_applications (void)
     "p15",
     "dinsig",
     "geldkarte",
+    /* Note: "undefined" is not listed here because it needs special
+       treatment by the client.  */
     NULL
   };
   int idx;
