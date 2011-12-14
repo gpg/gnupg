@@ -9,6 +9,19 @@ Noteworthy changes in version 2.1.0beta3
 
  * The Assuan commands KILLAGENT and KILLSCD are working again.
 
+ * SCdaemon does not anymore block after changing a card (regression
+   fix).
+
+ * gpg-connect-agent does now proberly display the help output for
+   "SCD HELP" commands.
+
+ * New GPGSM validation model "steed".
+
+ * Improved certificate creation in GPGSM.
+
+ * New option for GPG_AGENT to select a passphrase mode.  The loopback
+   mode may be used to bypass Pinentry.
+
 
 Noteworthy changes in version 2.1.0beta2 (2011-03-08)
 -----------------------------------------------------

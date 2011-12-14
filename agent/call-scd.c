@@ -1,5 +1,6 @@
 /* call-scd.c - fork of the scdaemon to do SC operations
- * Copyright (C) 2001, 2002, 2005, 2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2005, 2007, 2010,
+ *               2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1129,16 +1130,28 @@ pass_status_thru (void *opaque, const char *line)
   char keyword[200];
   int i;
 
-  for (i=0; *line && !spacep (line) && i < DIM(keyword)-1; line++, i++)
-    keyword[i] = *line;
-  keyword[i] = 0;
-  /* truncate any remaining keyword stuff. */
-  for (; *line && !spacep (line); line++)
-    ;
-  while (spacep (line))
-    line++;
+  if (line[0] == '#' && (!line[1] || spacep (line+1)))
+    {
+      /* We are called in convey comments mode.  Now, if we see a
+         comment marker as keyword we forward the line verbatim to the
+         the caller.  This way the comment lines from scdaemon won't
+         appear as status lines with keyword '#'.  */
+      assuan_write_line (ctx, line);
+    }
+  else
+    {
+      for (i=0; *line && !spacep (line) && i < DIM(keyword)-1; line++, i++)
+        keyword[i] = *line;
+      keyword[i] = 0;
 
-  assuan_write_status (ctx, keyword, line);
+      /* Truncate any remaining keyword stuff.  */
+      for (; *line && !spacep (line); line++)
+        ;
+      while (spacep (line))
+        line++;
+
+      assuan_write_status (ctx, keyword, line);
+    }
   return 0;
 }
 

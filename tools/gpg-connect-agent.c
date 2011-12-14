@@ -67,25 +67,25 @@ enum cmd_and_opt_values
 /* The list of commands and options. */
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
-    
+
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet, "quiet",     N_("quiet")),
   ARGPARSE_s_n (oHex,   "hex",       N_("print data out hex encoded")),
   ARGPARSE_s_n (oDecode,"decode",    N_("decode received data lines")),
-  ARGPARSE_s_s (oRawSocket, "raw-socket", 
+  ARGPARSE_s_s (oRawSocket, "raw-socket",
                 N_("|NAME|connect to Assuan socket NAME")),
-  ARGPARSE_s_s (oTcpSocket, "tcp-socket", 
+  ARGPARSE_s_s (oTcpSocket, "tcp-socket",
                 N_("|ADDR|connect to Assuan server at ADDR")),
-  ARGPARSE_s_n (oExec, "exec", 
+  ARGPARSE_s_n (oExec, "exec",
                 N_("run the Assuan server given on the command line")),
   ARGPARSE_s_n (oNoExtConnect, "no-ext-connect",
                 N_("do not use extended connect mode")),
-  ARGPARSE_s_s (oRun,  "run", 
+  ARGPARSE_s_s (oRun,  "run",
                 N_("|FILE|run commands from FILE on startup")),
-  ARGPARSE_s_n (oSubst, "subst",     N_("run /subst on startup")), 
+  ARGPARSE_s_n (oSubst, "subst",     N_("run /subst on startup")),
 
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@" ),   
+  ARGPARSE_s_s (oHomedir, "homedir", "@" ),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
 
   ARGPARSE_end ()
@@ -216,7 +216,7 @@ gnu_getcwd (void)
 #ifdef HAVE_W32CE_SYSTEM
       strcpy (buffer, "/");
       return buffer;
-#else      
+#else
       if (getcwd (buffer, size) == buffer)
         return buffer;
       xfree (buffer);
@@ -246,22 +246,22 @@ unescape_string (const char *string)
         {
           switch (*s)
             {
-            case 'b':  
-            case 't':  
-            case 'v':  
-            case 'n':  
-            case 'f':  
-            case 'r':  
-            case '"':  
-            case '\'': 
+            case 'b':
+            case 't':
+            case 'v':
+            case 'n':
+            case 'f':
+            case 'r':
+            case '"':
+            case '\'':
             case '\\': n++; break;
-            case 'x': 
+            case 'x':
               if (s[1] && s[2] && hexdigitp (s+1) && hexdigitp (s+2))
                 n++;
               break;
 
             default:
-              if (s[1] && s[2] 
+              if (s[1] && s[2]
                   && octdigitp (s) && octdigitp (s+1) && octdigitp (s+2))
                 n++;
               break;
@@ -272,7 +272,7 @@ unescape_string (const char *string)
         esc = 1;
       else
         n++;
-    } 
+    }
 
   buffer = xmalloc (n+1);
   d = (unsigned char*)buffer;
@@ -291,7 +291,7 @@ unescape_string (const char *string)
             case '"':  *d++ = '\"'; break;
             case '\'': *d++ = '\''; break;
             case '\\': *d++ = '\\'; break;
-            case 'x': 
+            case 'x':
               if (s[1] && s[2] && hexdigitp (s+1) && hexdigitp (s+2))
                 {
                   s++;
@@ -301,7 +301,7 @@ unescape_string (const char *string)
               break;
 
             default:
-              if (s[1] && s[2] 
+              if (s[1] && s[2]
                   && octdigitp (s) && octdigitp (s+1) && octdigitp (s+2))
                 {
                   *d++ = (atoi_1 (s)*64) + (atoi_1 (s+1)*8) + atoi_1 (s+2);
@@ -315,7 +315,7 @@ unescape_string (const char *string)
         esc = 1;
       else
         *d++ = *s;
-    } 
+    }
   *d = 0;
   return buffer;
 }
@@ -334,7 +334,7 @@ unpercent_string (const char *string, int with_plus)
   for (s=(const unsigned char *)string; *s; s++)
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           n++;
           s++;
@@ -350,7 +350,7 @@ unpercent_string (const char *string, int with_plus)
   for (s=(const unsigned char *)string; *s; s++)
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           *p++ = xtoi_2 (s);
           s++;
@@ -387,7 +387,7 @@ set_var (const char *name, const char *value)
   xfree (var->value);
   var->value = value? xstrdup (value) : NULL;
   return var->value;
-}    
+}
 
 
 static void
@@ -455,12 +455,12 @@ arithmetic_op (int operator, const char *operands)
         case '+': result += value; break;
         case '-': result -= value; break;
         case '*': result *= value; break;
-        case '/': 
+        case '/':
           if (!value)
             return NULL;
           result /= value;
           break;
-        case '%': 
+        case '%':
           if (!value)
             return NULL;
           result %= value;
@@ -480,10 +480,10 @@ arithmetic_op (int operator, const char *operands)
 
 
 /* Extended version of get_var.  This returns a malloced string and
-   understand the function syntax: "func args". 
+   understand the function syntax: "func args".
 
    Defined functions are
-   
+
      get - Return a value described by the next argument:
            cwd        - The current working directory.
            homedir    - The gnupg homedir.
@@ -525,7 +525,7 @@ arithmetic_op (int operator, const char *operands)
 
 
    Example: get_var_ext ("get sysconfdir") -> "/etc/gnupg"
-    
+
   */
 static char *
 get_var_ext (const char *name)
@@ -630,7 +630,7 @@ get_var_ext (const char *name)
     {
       s++;
       intvalue = (int)strtol (s, NULL, 0);
-      result = xasprintf ("%s <%s>", 
+      result = xasprintf ("%s <%s>",
                           gpg_strerror (intvalue), gpg_strsource (intvalue));
     }
   else if ( (s - name) == 1 && strchr ("+-*/%!|&", *name))
@@ -642,7 +642,7 @@ get_var_ext (const char *name)
       log_error ("unknown variable function `%.*s'\n", (int)(s-name), name);
       result = NULL;
     }
-    
+
   xfree (free_me);
   recursion_count--;
   return result;
@@ -667,7 +667,7 @@ substitute_line (char *buffer)
       p = strchr (line, '$');
       if (!p)
         return result; /* No more variables.  */
-      
+
       if (p[1] == '$') /* Escaped dollar sign. */
         {
           memmove (p, p+1, strlen (p+1)+1);
@@ -751,7 +751,7 @@ static char *
 substitute_line_copy (const char *buffer)
 {
   char *result, *p;
-  
+
   p = xstrdup (buffer?buffer:"");
   result = substitute_line (p);
   if (!result)
@@ -777,7 +777,7 @@ assign_variable (char *line, int syslet)
     p++;
 
   if (!*p)
-    set_var (name, NULL); /* Remove variable.  */ 
+    set_var (name, NULL); /* Remove variable.  */
   else if (syslet)
     {
       free_me = opt.enable_varsubst? substitute_line_copy (p) : NULL;
@@ -791,7 +791,7 @@ assign_variable (char *line, int syslet)
       xfree (tmp);
       xfree (free_me);
     }
-  else 
+  else
     {
       tmp = opt.enable_varsubst? substitute_line_copy (p) : NULL;
       if (tmp)
@@ -857,11 +857,11 @@ show_definq (void)
 
   for (d=definq_list; d; d = d->next)
     if (d->name)
-      printf ("%-20s %c %s\n", 
+      printf ("%-20s %c %s\n",
               d->name, d->is_var? 'v' : d->is_prog? 'p':'f', d->file);
   for (d=definq_list; d; d = d->next)
     if (!d->name)
-      printf ("%-20s %c %s\n", "*", 
+      printf ("%-20s %c %s\n", "*",
               d->is_var? 'v': d->is_prog? 'p':'f', d->file);
 }
 
@@ -871,14 +871,14 @@ static void
 clear_definq (void)
 {
   while (definq_list)
-    { 
+    {
       definq_t tmp = definq_list->next;
       xfree (definq_list->name);
       xfree (definq_list);
       definq_list = tmp;
     }
   definq_list_tail = &definq_list;
-}      
+}
 
 
 static void
@@ -1005,7 +1005,7 @@ do_open (char *line)
         HANDLE prochandle, handle, newhandle;
 
         handle = (void*)_get_osfhandle (fd);
-     
+
         prochandle = OpenProcess (PROCESS_DUP_HANDLE, FALSE, server_pid);
         if (!prochandle)
           {
@@ -1030,7 +1030,7 @@ do_open (char *line)
         log_info ("file `%s' opened in \"%s\" mode, fd=%d  (libc=%d)\n",
                    name, mode, (int)open_fd_table[fd].handle, fd);
       set_int_var (varname, (int)open_fd_table[fd].handle);
-#else  
+#else
       if (opt.verbose)
         log_info ("file `%s' opened in \"%s\" mode, fd=%d\n",
                    name, mode, fd);
@@ -1117,14 +1117,14 @@ do_serverpid (assuan_context_t ctx)
   int rc;
   membuf_t mb;
   char *buffer;
-  
+
   init_membuf (&mb, 100);
   rc = assuan_transact (ctx, "GETINFO pid", getinfo_pid_cb, &mb,
                         NULL, NULL, NULL, NULL);
   put_membuf (&mb, "", 1);
   buffer = get_membuf (&mb, NULL);
   if (rc || !buffer)
-    log_error ("command \"%s\" failed: %s\n", 
+    log_error ("command \"%s\" failed: %s\n",
                "GETINFO pid", gpg_strerror (rc));
   else
     {
@@ -1133,6 +1133,22 @@ do_serverpid (assuan_context_t ctx)
         log_info ("server's PID is %lu\n", (unsigned long)server_pid);
     }
   xfree (buffer);
+}
+
+
+/* Return true if the command is either "HELP" or "SCD HELP".  */
+static int
+help_cmd_p (const char *line)
+{
+  if (!ascii_strncasecmp (line, "SCD", 3)
+      && (spacep (line+3) || !line[3]))
+    {
+      for (line += 3; spacep (line); line++)
+        ;
+    }
+
+  return (!ascii_strncasecmp (line, "HELP", 4)
+          && (spacep (line+4) || !line[4]));
 }
 
 
@@ -1156,7 +1172,7 @@ main (int argc, char **argv)
     loopline_t head;
     loopline_t *tail;
     loopline_t current;
-    unsigned int nestlevel; 
+    unsigned int nestlevel;
     int oneshot;
     char *condition;
   } loopstack[20];
@@ -1197,7 +1213,7 @@ main (int argc, char **argv)
         case oExec:      opt.exec = 1; break;
         case oNoExtConnect: opt.connect_flags &= ~(1); break;
         case oRun:       opt_run = pargs.r.ret_str; break;
-        case oSubst: 
+        case oSubst:
           opt.enable_varsubst = 1;
           opt.trim_leading_spaces = 1;
           break;
@@ -1339,7 +1355,7 @@ main (int argc, char **argv)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
     }
 
- 
+
   for (loopidx=0; loopidx < DIM (loopstack); loopidx++)
     loopstack[loopidx].collecting = 0;
   loopidx = -1;
@@ -1396,7 +1412,7 @@ main (int argc, char **argv)
               linesize = 0;
               keep_line = 1;
             }
-          n = read_line (script_fp? script_fp:stdin, 
+          n = read_line (script_fp? script_fp:stdin,
                          &line, &linesize, &maxlength);
         }
       if (n < 0)
@@ -1422,7 +1438,7 @@ main (int argc, char **argv)
                 log_info ("end of script\n");
               continue;
             }
-          break; 
+          break;
         }
       if (!maxlength)
         {
@@ -1433,11 +1449,11 @@ main (int argc, char **argv)
         log_info (_("line shortened due to embedded Nul character\n"));
       if (line[n-1] == '\n')
         line[n-1] = 0;
-      
+
       if (opt.trim_leading_spaces)
         {
           const char *s = line;
-          
+
           while (spacep (s))
             s++;
           if (s != line)
@@ -1463,7 +1479,7 @@ main (int argc, char **argv)
             loopstack[loopidx+1].nestlevel--;
           else if (!strncmp (line, "/while", 6) && (!line[6]||spacep(line+6)))
             loopstack[loopidx+1].nestlevel++;
-          
+
           if (loopstack[loopidx+1].nestlevel)
             continue;
           /* We reached the corresponding /end.  */
@@ -1546,7 +1562,7 @@ main (int argc, char **argv)
                 {
                   current_datasink = fopen (fname, "wb");
                   if (!current_datasink)
-                    log_error ("can't open `%s': %s\n", 
+                    log_error ("can't open `%s': %s\n",
                                fname, strerror (errno));
                 }
               xfree (tmpline);
@@ -1783,7 +1799,7 @@ main (int argc, char **argv)
 "/cleardef              Delete all definitions.\n"
 "/sendfd FILE MODE      Open FILE and pass descriptor to server.\n"
 "/recvfd                Receive FD from server and print.\n"
-"/open VAR FILE MODE    Open FILE and assign the file descriptor to VAR.\n" 
+"/open VAR FILE MODE    Open FILE and assign the file descriptor to VAR.\n"
 "/close FD              Close file with descriptor FD.\n"
 "/showopen              Show descriptors of all open files.\n"
 "/serverpid             Retrieve the pid of the server.\n"
@@ -1799,7 +1815,7 @@ main (int argc, char **argv)
             }
           else
             log_error (_("unknown command `%s'\n"), cmd );
-      
+
           continue;
         }
 
@@ -1822,9 +1838,7 @@ main (int argc, char **argv)
       if (*line == '#' || !*line)
         continue; /* Don't expect a response for a comment line. */
 
-      rc = read_and_print_response (ctx, (!ascii_strncasecmp (line, "HELP", 4)
-                                          && (spacep (line+4) || !line[4])),
-                                    &cmderr);
+      rc = read_and_print_response (ctx, help_cmd_p (line), &cmderr);
       if (rc)
         log_info (_("receiving line failed: %s\n"), gpg_strerror (rc) );
       if ((rc || cmderr) && script_fp)
@@ -1833,7 +1847,7 @@ main (int argc, char **argv)
           fclose (script_fp);
           script_fp = NULL;
         }
-          
+
 
       /* FIXME: If the last command was BYE or the server died for
 	 some other reason, we won't notice until we get the next
@@ -1844,8 +1858,8 @@ main (int argc, char **argv)
 
   if (opt.verbose)
     log_info ("closing connection to agent\n");
-  
-  return 0; 
+
+  return 0;
 }
 
 
@@ -1911,7 +1925,7 @@ handle_inquire (assuan_context_t ctx, char *line)
             log_error ("error executing `%s': %s\n",
                        d->file, strerror (errno));
           else if (opt.verbose)
-            log_error ("handling inquiry `%s' by running `%s'\n", 
+            log_error ("handling inquiry `%s' by running `%s'\n",
                        name, d->file);
         }
       else
@@ -1974,7 +1988,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
   *r_goterr = 0;
   for (;;)
     {
-      do 
+      do
         {
           rc = assuan_read_line (ctx, &line, &linelen);
           if (rc)
@@ -1985,7 +1999,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
               fwrite (line, linelen, 1, stdout);
               putchar ('\n');
             }
-        }    
+        }
       while (*line == '#' || !linelen);
 
       if (linelen >= 1
@@ -1999,7 +2013,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
               for (j=2, s=(unsigned char*)line+2; j < linelen; j++, s++ )
                 {
                   if (*s == '%' && j+2 < linelen)
-                    { 
+                    {
                       s++; j++;
                       c = xtoi_2 ( s );
                       s++; j++;
@@ -2054,7 +2068,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                       need_d = 0;
                     }
                   if (*s == '%' && j+2 < linelen)
-                    { 
+                    {
                       s++; j++;
                       c = xtoi_2 ( s );
                       s++; j++;
@@ -2073,7 +2087,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
               putchar ('\n');
             }
         }
-      else 
+      else
         {
           if (need_lf)
             {
@@ -2083,7 +2097,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
             }
 
           if (linelen >= 1
-              && line[0] == 'S' 
+              && line[0] == 'S'
               && (line[1] == '\0' || line[1] == ' '))
             {
               if (!current_datasink || current_datasink != stdout)
@@ -2091,7 +2105,7 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                   fwrite (line, linelen, 1, stdout);
                   putchar ('\n');
                 }
-            }  
+            }
           else if (linelen >= 2
                    && line[0] == 'O' && line[1] == 'K'
                    && (line[2] == '\0' || line[2] == ' '))
@@ -2121,11 +2135,11 @@ read_and_print_response (assuan_context_t ctx, int withhash, int *r_goterr)
                 }
               *r_goterr = 1;
               return 0;
-            }  
+            }
           else if (linelen >= 7
                    && line[0] == 'I' && line[1] == 'N' && line[2] == 'Q'
                    && line[3] == 'U' && line[4] == 'I' && line[5] == 'R'
-                   && line[6] == 'E' 
+                   && line[6] == 'E'
                    && (line[7] == '\0' || line[7] == ' '))
             {
               if (!current_datasink || current_datasink != stdout)
