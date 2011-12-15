@@ -35,10 +35,12 @@
 #include <ksba.h>
 #include "app-common.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
+#include "atr.h"
 #include "exechelp.h"
 #ifdef HAVE_LIBUSB
 #include "ccid-driver.h"
 #endif
+
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -1795,7 +1797,7 @@ cmd_disconnect (assuan_context_t ctx, char *line)
 
 
 static const char hlp_apdu[] =
-  "APDU [--atr] [--more] [--exlen[=N]] [hexstring]\n"
+  "APDU [--[dump-]atr] [--more] [--exlen[=N]] [hexstring]\n"
   "\n"
   "Send an APDU to the current reader.  This command bypasses the high\n"
   "level functions and sends the data directly to the card.  HEXSTRING\n"
@@ -1826,7 +1828,10 @@ cmd_apdu (assuan_context_t ctx, char *line)
   size_t exlen;
   int slot;
 
-  with_atr = has_option (line, "--atr");
+  if (has_option (line, "--dump-atr"))
+    with_atr = 2;
+  else
+    with_atr = has_option (line, "--atr");
   handle_more = has_option (line, "--more");
 
   if ((s=has_option_name (line, "--exlen")))
@@ -1861,9 +1866,32 @@ cmd_apdu (assuan_context_t ctx, char *line)
           rc = gpg_error (GPG_ERR_INV_CARD);
           goto leave;
         }
-      bin2hex (atr, atrlen, hexbuf);
+      if (with_atr == 2)
+        {
+          char *string, *p, *pend;
+
+          string = atr_dump (atr, atrlen);
+          if (string)
+            {
+              for (rc=0, p=string; !rc && (pend = strchr (p, '\n')); p = pend+1)
+                {
+                  rc = assuan_send_data (ctx, p, pend - p + 1);
+                  if (!rc)
+                    rc = assuan_send_data (ctx, NULL, 0);
+                }
+              if (!rc && *p)
+                rc = assuan_send_data (ctx, p, strlen (p));
+              es_free (string);
+              if (rc)
+                goto leave;
+            }
+        }
+      else
+        {
+          bin2hex (atr, atrlen, hexbuf);
+          send_status_info (ctrl, "CARD-ATR", hexbuf, strlen (hexbuf), NULL, 0);
+        }
       xfree (atr);
-      send_status_info (ctrl, "CARD-ATR", hexbuf, strlen (hexbuf), NULL, 0);
     }
 
   apdu = hex_to_buffer (line, &apdulen);
