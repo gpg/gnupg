@@ -1273,8 +1273,7 @@ agent_popup_message_stop (ctrl_t ctrl)
         assuan_set_flag (entry_ctx, ASSUAN_NO_WAITPID, 1);
     }
   else if (pid > 0)
-    kill (pid, SIGKILL);  /* Need to use SIGKILL due to bad
-                             interaction of SIGINT with Pth. */
+    kill (pid, SIGINT);
 #endif
 
   /* Now wait for the thread to terminate. */
