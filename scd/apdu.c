@@ -3150,8 +3150,7 @@ apdu_connect (int slot)
     ;
   else if (!(status & APDU_CARD_PRESENT))
     sw = SW_HOST_NO_CARD;
-  else if (((status & APDU_CARD_PRESENT) && !(status & APDU_CARD_ACTIVE))
-           || !reader_table[slot].atrlen)
+  else if ((status & APDU_CARD_PRESENT) && !(status & APDU_CARD_ACTIVE))
     sw = SW_HOST_CARD_INACTIVE;
 
   if (DBG_READER)
