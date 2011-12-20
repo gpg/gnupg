@@ -2053,7 +2053,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
 {
   int sw;
   unsigned char *pin_verify;
-  unsigned long len = PIN_VERIFY_STRUCTURE_SIZE;
+  int len = PIN_VERIFY_STRUCTURE_SIZE;
   unsigned char result[2];
   size_t resultlen = 2;
 
@@ -2109,12 +2109,21 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[22] = p1; /* abData[3] */
   pin_verify[23] = 0x00; /* abData[4] */
 
+  if (DBG_CARD_IO)
+    log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
+	       class, ins, p0, p1, len, pininfo->maxlen);
+
   sw = control_pcsc (slot, reader_table[slot].pcsc.verify_ioctl,
                      pin_verify, len, result, &resultlen);
   xfree (pin_verify);
   if (sw || resultlen < 2)
-    return sw? sw : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+    {
+      log_error ("control_pcsc failed: %d\n", sw);
+      return sw? sw: SW_HOST_INCOMPLETE_CARD_RESPONSE;
+    }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  if (DBG_CARD_IO)
+    log_debug (" response: sw=%04X  datalen=%d\n", sw, (unsigned int)resultlen);
   return sw;
 }
 
@@ -2126,7 +2135,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
 {
   int sw;
   unsigned char *pin_modify;
-  unsigned long len = PIN_MODIFY_STRUCTURE_SIZE;
+  int len = PIN_MODIFY_STRUCTURE_SIZE;
   unsigned char result[2];
   size_t resultlen = 2;
 
@@ -2193,12 +2202,21 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[27] = p1; /* abData[3] */
   pin_modify[28] = 0x00; /* abData[4] */
 
+  if (DBG_CARD_IO)
+    log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
+	       class, ins, p0, p1, len, (int)pininfo->maxlen);
+
   sw = control_pcsc (slot, reader_table[slot].pcsc.modify_ioctl,
                      pin_modify, len, result, &resultlen);
   xfree (pin_modify);
   if (sw || resultlen < 2)
-    return sw? sw : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+    {
+      log_error ("control_pcsc failed: %d\n", sw);
+      return sw? sw : SW_HOST_INCOMPLETE_CARD_RESPONSE;
+    }
   sw = (result[resultlen-2] << 8) | result[resultlen-1];
+  if (DBG_CARD_IO)
+    log_debug (" response: sw=%04X  datalen=%d\n", sw, (unsigned int)resultlen);
   return sw;
 }
 
