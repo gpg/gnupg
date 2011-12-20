@@ -45,15 +45,6 @@
 #define MAX_OPEN_FDS 20
 #endif
 
-/* This Assuan flag is only available since libassuan 2.0.2.  Because
-   comments lines are comments anyway we can use a replacement which
-   might not do anything.  assuan_{g,s}et_flag don't return an error
-   thus there won't be any ABI problem.  */
-#ifndef ASSUAN_CONVEY_COMMENTS
-#define ASSUAN_CONVEY_COMMENTS 4
-#endif
-
-
 /* Definition of module local data of the CTRL structure.  */
 struct scd_local_s
 {
