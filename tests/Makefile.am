@@ -41,6 +41,8 @@ EXTRA_DIST = runtest inittests $(testscripts) ChangeLog-2011 \
 	     text-1.txt text-2.txt text-3.txt \
 	     text-1.osig.pem text-1.dsig.pem text-1.osig-bad.pem \
 	     text-2.osig.pem text-2.osig-bad.pem \
+	     samplekeys/steed-self-signing-nonthority.pem \
+	     samplekeys/68A638998DFABAC510EA645CE34F9686B2EDF7EA.key \
              samplekeys/32100C27173EF6E9C4E9A25D3D69F86D37A4F939.key \
              samplekeys/cert_g10code_pete1.pem \
              samplekeys/cert_g10code_test1.pem \
