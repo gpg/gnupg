@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.1.0beta3
+Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------
 
  * Fixed regression in GPG's secret key export function.
@@ -15,7 +15,7 @@ Noteworthy changes in version 2.1.0beta3
  * gpg-connect-agent does now proberly display the help output for
    "SCD HELP" commands.
 
- * New GPGSM validation model "steed".
+ * Preliminary support for the GPGSM validation model "steed".
 
  * Improved certificate creation in GPGSM.
 
