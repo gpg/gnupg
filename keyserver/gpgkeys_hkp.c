@@ -241,9 +241,10 @@ static int
 get_key(char *getkey)
 {
   CURLcode res;
-  char request[MAX_URL+60];
+  char request[MAX_URL+92];
   char *offset;
   struct curl_writer_ctx ctx;
+  size_t keylen;
 
   memset(&ctx,0,sizeof(ctx));
 
@@ -269,14 +270,19 @@ get_key(char *getkey)
   strcat(request,port);
   strcat(request,opt->path);
   /* request is MAX_URL+55 bytes long - MAX_URL covers the whole URL,
-     including any supplied path.  The 60 overcovers this /pks/... etc
-     string plus the 8 bytes of key id */
+     including any supplied path.  The 92 overcovers this /pks/... etc
+     string plus the 8, 16, or 40 bytes of key id/fingerprint */
   append_path(request,"/pks/lookup?op=get&options=mr&search=0x");
 
-  /* fingerprint or long key id.  Take the last 8 characters and treat
-     it like a short key id */
-  if(strlen(getkey)>8)
-    offset=&getkey[strlen(getkey)-8];
+  /* send only fingerprint, long key id, or short keyid.  see:
+     https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-3.1.1.1 */
+  keylen = strlen(getkey);
+  if(keylen >= 40)
+    offset=&getkey[keylen-40];
+  else if(keylen >= 16)
+    offset=&getkey[keylen-16];
+  else if(keylen >= 8)
+    offset=&getkey[keylen-8];
   else
     offset=getkey;
 
