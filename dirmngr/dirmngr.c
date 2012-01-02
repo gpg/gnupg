@@ -280,11 +280,17 @@ static void handle_connections (assuan_fd_t listen_fd);
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_PTH_IMPL;
 
+#if GCRY_THREAD_OPTION_VERSION == 0
+#define FIX_GCRY_PTH_INIT 1
+#endif
+
+#ifdef FIX_GCRY_PTH_INIT
 GCRY_THREAD_OPTION_PTH_IMPL;
 static int fixed_gcry_pth_init (void)
 {
   return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
 }
+#endif
 
 #ifndef PTH_HAVE_PTH_THREAD_ID
 static unsigned long pth_thread_id (void)
@@ -618,6 +624,7 @@ main (int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
+#ifdef USE_GCRY_THREAD_CBS
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init.  */
   gcry_threads_pth.init = fixed_gcry_pth_init;
@@ -627,6 +634,7 @@ main (int argc, char **argv)
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (rc));
     }
+#endif
   gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
 
  /* Check that the libraries are suitable.  Do it here because
