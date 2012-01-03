@@ -55,7 +55,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "dirmngr.h"
 #include "exechelp.h"
@@ -82,7 +82,7 @@
 
 #define INACTIVITY_TIMEOUT (opt.ldaptimeout + 60*5)  /* seconds */
 
-
+#define TIMERTICK_INTERVAL 2
 
 /* To keep track of the LDAP wrapper state we use this structure.  */
 struct wrapper_context_s
@@ -96,7 +96,6 @@ struct wrapper_context_s
   gpg_error_t fd_error; /* Set to the gpg_error of the last read error
                            if any.  */
   int log_fd;   /* Connected with stderr of the ldap wrapper.  */
-  pth_event_t log_ev;
   ctrl_t ctrl;  /* Connection data. */
   int ready;    /* Internally used to mark to be removed contexts. */
   ksba_reader_t reader; /* The ksba reader object or NULL. */
@@ -117,8 +116,8 @@ static struct wrapper_context_s *wrapper_list;
 static int shutting_down;
 
 /* Close the pth file descriptor FD and set it to -1.  */
-#define SAFE_PTH_CLOSE(fd) \
-  do { int _fd = fd; if (_fd != -1) { pth_close (_fd); fd = -1;} } while (0)
+#define SAFE_CLOSE(fd) \
+  do { int _fd = fd; if (_fd != -1) { close (_fd); fd = -1;} } while (0)
 
 
 
@@ -152,10 +151,8 @@ destroy_wrapper (struct wrapper_context_s *ctx)
       gnupg_release_process (ctx->pid);
     }
   ksba_reader_release (ctx->reader);
-  SAFE_PTH_CLOSE (ctx->fd);
-  SAFE_PTH_CLOSE (ctx->log_fd);
-  if (ctx->log_ev)
-    pth_event_free (ctx->log_ev, PTH_FREE_THIS);
+  SAFE_CLOSE (ctx->fd);
+  SAFE_CLOSE (ctx->log_fd);
   xfree (ctx->line);
   xfree (ctx);
 }
@@ -228,9 +225,9 @@ read_log_data (struct wrapper_context_s *ctx)
   int n;
   char line[256];
 
-  /* We must use the pth_read function for pipes, always.  */
+  /* We must use the npth_read function for pipes, always.  */
   do
-    n = pth_read (ctx->log_fd, line, sizeof line - 1);
+    n = npth_read (ctx->log_fd, line, sizeof line - 1);
   while (n < 0 && errno == EINTR);
 
   if (n <= 0) /* EOF or error. */
@@ -239,9 +236,7 @@ read_log_data (struct wrapper_context_s *ctx)
         log_error (_("error reading log from ldap wrapper %d: %s\n"),
                    ctx->pid, strerror (errno));
       print_log_line (ctx, NULL);
-      SAFE_PTH_CLOSE (ctx->log_fd);
-      pth_event_free (ctx->log_ev, PTH_FREE_THIS);
-      ctx->log_ev = NULL;
+      SAFE_CLOSE (ctx->log_fd);
       return 1;
     }
 
@@ -261,58 +256,72 @@ ldap_wrapper_thread (void *dummy)
   int nfds;
   struct wrapper_context_s *ctx;
   struct wrapper_context_s *ctx_prev;
-  time_t current_time;
+  struct timespec abstime;
+  struct timespec curtime;
+  struct timespec timeout;
+  int saved_errno;
+  fd_set fdset, read_fdset;
+  int ret;
+  time_t exptime;
 
   (void)dummy;
 
+  FD_ZERO (&fdset);
+  nfds = -1;
+  for (ctx = wrapper_list; ctx; ctx = ctx->next)
+    {
+      if (ctx->log_fd != -1)
+	{
+	  FD_SET (ctx->log_fd, &fdset);
+	  if (ctx->log_fd > nfds)
+	    nfds = ctx->log_fd;
+	}
+    }
+  nfds++;
+
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += TIMERTICK_INTERVAL;
+
   for (;;)
     {
-      pth_event_t timeout_ev;
       int any_action = 0;
-      pth_time_t nexttick;
 
-      /* We timeout the pth_wait every 2 seconds.  To help with power
-         saving we syncronize the timeouts to the next full second.  */
-      nexttick = pth_timeout (2, 0);
-      if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
-        {
-          nexttick.tv_sec++;
-          nexttick.tv_usec = 0;
-        }
-      timeout_ev = pth_event (PTH_EVENT_TIME, nexttick);
-      if (! timeout_ev)
+      /* POSIX says that fd_set should be implemented as a structure,
+         thus a simple assignment is fine to copy the entire set.  */
+      read_fdset = fdset;
+
+      npth_clock_gettime (&curtime);
+      if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
-          log_error (_("pth_event failed: %s\n"), strerror (errno));
-          pth_sleep (10);
-	  continue;
+	  /* Inactivity is checked below.  Nothing else to do.  */
+	  // handle_tick ();
+	  npth_clock_gettime (&abstime);
+	  abstime.tv_sec += TIMERTICK_INTERVAL;
+	}
+      npth_timersub (&abstime, &curtime, &timeout);
+
+      /* FIXME: For Windows, we have to use a reader thread on the
+	 pipe that signals an event (and a npth_select_ev variant).  */
+      ret = npth_pselect (nfds + 1, &read_fdset, NULL, NULL, &timeout, NULL);
+      saved_errno = errno;
+
+      if (ret == -1 && saved_errno != EINTR)
+	{
+          log_error (_("npth_select failed: %s - waiting 1s\n"),
+                     strerror (saved_errno));
+          npth_sleep (1);
+          continue;
 	}
 
-      for (ctx = wrapper_list; ctx; ctx = ctx->next)
-        {
-          if (ctx->log_fd != -1)
-            {
-	      pth_event_isolate (ctx->log_ev);
-	      pth_event_concat (timeout_ev, ctx->log_ev, NULL);
-            }
-        }
+      if (ret <= 0)
+	/* Interrupt or timeout.  Will be handled when calculating the
+	   next timeout.  */
+	continue;
 
-      /* Note that the read FDs are actually handles.  Thus, we can
-	 not use pth_select, but have to use pth_wait.  */
-      nfds = pth_wait (timeout_ev);
-      if (nfds < 0)
-        {
-          pth_event_free (timeout_ev, PTH_FREE_THIS);
-          log_error (_("pth_wait failed: %s\n"), strerror (errno));
-          pth_sleep (10);
-	  continue;
-        }
-      if (pth_event_status (timeout_ev) == PTH_STATUS_OCCURRED)
-	nfds--;
-      pth_event_free (timeout_ev, PTH_FREE_THIS);
-
-      current_time = time (NULL);
-      if (current_time > INACTIVITY_TIMEOUT)
-        current_time -= INACTIVITY_TIMEOUT;
+      /* All timestamps before exptime should be considered expired.  */
+      exptime = time (NULL);
+      if (exptime > INACTIVITY_TIMEOUT)
+        exptime -= INACTIVITY_TIMEOUT;
 
       /* Note that there is no need to lock the list because we always
          add entries at the head (with a pending event status) and
@@ -322,8 +331,7 @@ ldap_wrapper_thread (void *dummy)
       for (ctx = wrapper_list; ctx; ctx = ctx->next)
         {
           /* Check whether there is any logging to be done. */
-          if (nfds && ctx->log_fd != -1
-	      && pth_event_status (ctx->log_ev) == PTH_STATUS_OCCURRED)
+          if (nfds && ctx->log_fd != -1 && FD_ISSET (ctx->log_fd, &read_fdset))
             {
               if (read_log_data (ctx))
                 any_action = 1;
@@ -368,7 +376,7 @@ ldap_wrapper_thread (void *dummy)
 
           /* Check whether we should terminate the process. */
           if (ctx->pid != (pid_t)(-1)
-              && ctx->stamp != (time_t)(-1) && ctx->stamp < current_time)
+              && ctx->stamp != (time_t)(-1) && ctx->stamp < exptime)
             {
               gnupg_kill_process (ctx->pid);
               ctx->stamp = (time_t)(-1);
@@ -376,7 +384,7 @@ ldap_wrapper_thread (void *dummy)
                         (int)ctx->pid);
               /* We need to close the log fd because the cleanup loop
                  waits for it.  */
-              SAFE_PTH_CLOSE (ctx->log_fd);
+              SAFE_CLOSE (ctx->log_fd);
               any_action = 1;
             }
         }
@@ -426,24 +434,26 @@ void
 ldap_wrapper_launch_thread (void)
 {
   static int done;
-  pth_attr_t tattr;
+  npth_attr_t tattr;
+  npth_t thread;
+  int err;
 
   if (done)
     return;
   done = 1;
 
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "ldap-reaper");
+  npth_attr_init (&tattr);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
-  if (!pth_spawn (tattr, ldap_wrapper_thread, NULL))
+  err = npth_create (&thread, &tattr, ldap_wrapper_thread, NULL);
+  if (err)
     {
       log_error (_("error spawning ldap wrapper reaper thread: %s\n"),
-                 strerror (errno) );
+                 strerror (err) );
       dirmngr_exit (1);
     }
-  pth_attr_destroy (tattr);
+  npth_setname_np (thread, "ldap-reaper");
+  npth_attr_destroy (&tattr);
 }
 
 
@@ -456,8 +466,9 @@ void
 ldap_wrapper_wait_connections ()
 {
   shutting_down = 1;
+  /* FIXME: This is a busy wait.  */
   while (wrapper_list)
-    pth_yield (NULL);
+    npth_yield ();
 }
 
 
@@ -482,7 +493,7 @@ ldap_wrapper_release_context (ksba_reader_t reader)
                     ctx->ctrl, ctx->ctrl? ctx->ctrl->refcount:0);
 
         ctx->reader = NULL;
-        SAFE_PTH_CLOSE (ctx->fd);
+        SAFE_CLOSE (ctx->fd);
         if (ctx->ctrl)
           {
             ctx->ctrl->refcount--;
@@ -515,6 +526,7 @@ ldap_wrapper_connection_cleanup (ctrl_t ctrl)
       }
 }
 
+
 /* This is the callback used by the ldap wrapper to feed the ksba
    reader with the wrappers stdout.  See the description of
    ksba_reader_set_cb for details.  */
@@ -523,6 +535,13 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
 {
   struct wrapper_context_s *ctx = cb_value;
   size_t nleft = count;
+  int nfds;
+  struct timespec abstime;
+  struct timespec curtime;
+  struct timespec timeout;
+  int saved_errno;
+  fd_set fdset, read_fdset;
+  int ret;
 
   /* FIXME: We might want to add some internal buffering because the
      ksba code does not do any buffering for itself (because a ksba
@@ -542,57 +561,73 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
       return -1;
     }
 
+  FD_ZERO (&fdset);
+  FD_SET (ctx->fd, &fdset);
+  nfds = ctx->fd + 1;
+
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += TIMERTICK_INTERVAL;
+
   while (nleft > 0)
     {
       int n;
-      pth_event_t evt;
       gpg_error_t err;
 
-      evt = pth_event (PTH_EVENT_TIME, pth_timeout (1, 0));
-      n = pth_read_ev (ctx->fd, buffer, nleft, evt);
-      if (n < 0 && evt && pth_event_occurred (evt))
-        {
-          n = 0;
-          err = dirmngr_tick (ctx->ctrl);
+      npth_clock_gettime (&curtime);
+      if (!(npth_timercmp (&curtime, &abstime, <)))
+	{
+	  err = dirmngr_tick (ctx->ctrl);
           if (err)
             {
               ctx->fd_error = err;
-              SAFE_PTH_CLOSE (ctx->fd);
-              if (evt)
-                pth_event_free (evt, PTH_FREE_THIS);
+              SAFE_CLOSE (ctx->fd);
               return -1;
             }
+	  npth_clock_gettime (&abstime);
+	  abstime.tv_sec += TIMERTICK_INTERVAL;
+	}
+      npth_timersub (&abstime, &curtime, &timeout);
 
+      read_fdset = fdset;
+      ret = npth_pselect (nfds, &read_fdset, NULL, NULL, &timeout, NULL);
+      saved_errno = errno;
+
+      if (ret == -1 && saved_errno != EINTR)
+	{
+          ctx->fd_error = gpg_error_from_errno (errno);
+          SAFE_CLOSE (ctx->fd);
+          return -1;
         }
-      else if (n < 0)
+      if (ret <= 0)
+	/* Timeout.  Will be handled when calculating the next timeout.  */
+	continue;
+
+      /* This should not block now that select returned with a file
+	 descriptor.  So it shouldn't be necessary to use npth_read
+	 (and it is slightly dangerous in the sense that a concurrent
+	 thread might (accidentially?) change the status of ctx->fd
+	 before we read.  FIXME: Set ctx->fd to nonblocking?  */
+      n = read (ctx->fd, buffer, nleft);
+      if (n < 0)
         {
           ctx->fd_error = gpg_error_from_errno (errno);
-          SAFE_PTH_CLOSE (ctx->fd);
-          if (evt)
-            pth_event_free (evt, PTH_FREE_THIS);
+          SAFE_CLOSE (ctx->fd);
           return -1;
         }
       else if (!n)
         {
           if (nleft == count)
-            {
-              if (evt)
-                pth_event_free (evt, PTH_FREE_THIS);
-              return -1; /* EOF. */
-            }
+	    return -1; /* EOF. */
           break;
         }
       nleft -= n;
       buffer += n;
-      if (evt)
-        pth_event_free (evt, PTH_FREE_THIS);
       if (n > 0 && ctx->stamp != (time_t)(-1))
         ctx->stamp = time (NULL);
     }
   *nread = count - nleft;
 
   return 0;
-
 }
 
 /* Fork and exec the LDAP wrapper and returns a new libksba reader
@@ -702,12 +737,6 @@ ldap_wrapper (ctrl_t ctrl, ksba_reader_t *reader, const char *argv[])
   ctx->printable_pid = (int) pid;
   ctx->fd = outpipe[0];
   ctx->log_fd = errpipe[0];
-  ctx->log_ev = pth_event (PTH_EVENT_FD | PTH_UNTIL_FD_READABLE, ctx->log_fd);
-  if (! ctx->log_ev)
-    {
-      xfree (ctx);
-      return gpg_error_from_syserror ();
-    }
   ctx->ctrl = ctrl;
   ctrl->refcount++;
   ctx->stamp = time (NULL);

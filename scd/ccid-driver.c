@@ -85,9 +85,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>
-#ifdef HAVE_PTH
-# include <pth.h>
-#endif /*HAVE_PTH*/
+#ifdef HAVE_NPTH
+# include <npth.h>
+#endif /*HAVE_NPTH*/
 
 #include <usb.h>
 
@@ -328,7 +328,7 @@ set_msg_len (unsigned char *msg, unsigned int length)
 static void
 my_sleep (int seconds)
 {
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
   /* With Pth we also call the standard sleep(0) so that the process
      may give up its timeslot.  */
   if (!seconds)

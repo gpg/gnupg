@@ -35,13 +35,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-#undef HAVE_PTH
-#undef USE_GNU_PTH
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+#undef HAVE_NPTH
+#undef USE_NPTH
 #endif
 
-#ifdef USE_GNU_PTH
-#include <pth.h>
+#ifdef USE_NPTH
+#include <npth.h>
 #endif
 #include <sys/wait.h>
 
@@ -388,11 +388,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     }
 
 
-#ifdef USE_GNU_PTH
-  *pid = pth_fork? pth_fork () : fork ();
-#else
   *pid = fork ();
-#endif
   if (*pid == (pid_t)(-1))
     {
       err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
@@ -454,11 +450,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
 {
   gpg_error_t err;
 
-#ifdef USE_GNU_PTH
-  *pid = pth_fork? pth_fork () : fork ();
-#else
   *pid = fork ();
-#endif
   if (*pid == (pid_t)(-1))
     {
       err = gpg_error_from_syserror ();
@@ -491,16 +483,12 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
   if (pid == (pid_t)(-1))
     return gpg_error (GPG_ERR_INV_VALUE);
 
-#ifdef USE_GNU_PTH
-  if (pth_waitpid)
-    i = pth_waitpid (pid, &status, hang? 0:WNOHANG);
-  else
+#ifdef USE_NPTH
+  i = npth_waitpid (pid, &status, hang? 0:WNOHANG);
+#else
+  while ((i=waitpid (pid, &status, hang? 0:WNOHANG)) == (pid_t)(-1)
+	 && errno == EINTR);
 #endif
-    {
-      while ((i=waitpid (pid, &status, hang? 0:WNOHANG)) == (pid_t)(-1)
-             && errno == EINTR)
-        ;
-    }
 
   if (i == (pid_t)(-1))
     {
@@ -569,11 +557,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   if (access (pgmname, X_OK))
     return gpg_error_from_syserror ();
 
-#ifdef USE_GNU_PTH
-  pid = pth_fork? pth_fork () : fork ();
-#else
   pid = fork ();
-#endif
   if (pid == (pid_t)(-1))
     {
       log_error (_("error forking process: %s\n"), strerror (errno));

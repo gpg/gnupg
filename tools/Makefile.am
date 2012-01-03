@@ -94,7 +94,7 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 # common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
-                $(LIBINTL) $(GPG_ERROR_LIBS) $(PTH_LIBS) $(NETLIBS) \
+                $(LIBINTL) $(GPG_ERROR_LIBS) $(NPTH_LIBS) $(NETLIBS) \
 	        $(LIBICONV) $(W32SOCKLIBS)
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
 
@@ -112,7 +112,7 @@ watchgnupg_LDADD = $(NETLIBS)
 gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
 # FIXME: remove PTH_LIBS (why do we need them at all?)
 gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
-	                  $(LIBASSUAN_LIBS) $(PTH_LIBS) $(GPG_ERROR_LIBS) \
+	                  $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
                           $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 
 if !HAVE_W32CE_SYSTEM

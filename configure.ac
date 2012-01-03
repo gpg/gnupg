@@ -51,6 +51,9 @@ NEED_LIBASSUAN_VERSION=2.0.3
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.2.0
 
+NEED_NPTH_API=1
+NEED_NPTH_VERSION=0.0
+
 
 PACKAGE=$PACKAGE_NAME
 PACKAGE_GT=${PACKAGE_NAME}2
@@ -70,7 +73,7 @@ have_gpg_error=no
 have_libgcrypt=no
 have_libassuan=no
 have_ksba=no
-have_pth=no
+have_npth=no
 have_libusb=no
 have_adns=no
 
@@ -505,10 +508,6 @@ AH_BOTTOM([
 /* We always include support for the OpenPGP card.  */
 #define ENABLE_CARD_SUPPORT 1
 
-/* We explicitly need to disable PTH's soft mapping as Debian
-   currently enables it by default for no reason. */
-#define PTH_SYSCALL_SOFT 0
-
 /* We want to use the libgcrypt provided memory allocation for
    asprintf.  */
 #define _ESTREAM_PRINTF_REALLOC       gcry_realloc
@@ -821,22 +820,18 @@ AC_DEFINE_UNQUOTED(SHRED,
 # Check whether the GNU Pth library is available
 # Note, that we include a Pth emulation for W32.
 #
-if test "$have_w32_system" = yes; then
-  GNUPG_PATH_PTH([2.0.4])
-else
-  GNUPG_PATH_PTH
-fi
-if test "$have_pth" = "yes"; then
-  AC_DEFINE(USE_GNU_PTH, 1,
-              [Defined if the GNU Portable Thread Library should be used])
+AM_PATH_NPTH("$NEED_NPTH_API:$NEED_NPTH_VERSION",have_npth=yes,have_npth=no)
+if test "$have_npth" = "yes"; then
+  AC_DEFINE(USE_NPTH, 1,
+              [Defined if the New Portable Thread Library should be used])
 else
   AC_MSG_WARN([[
 ***
 *** To support concurrent access to the gpg-agent and the SCdaemon
-*** we need the support of the GNU Portable Threads Library.
-*** Download it from ftp://ftp.gnu.org/gnu/pth/
+*** we need the support of the New Portable Threads Library.
+*** Download it from FIXME
 *** On a Debian GNU/Linux system you might want to try
-***   apt-get install libpth-dev
+***   apt-get install libnpth-dev
 ***]])
 fi
 
@@ -1500,7 +1495,7 @@ if test "$have_adns" = "yes"; then
 fi
 
 
-missing_pth=no
+missing_npth=no
 if test $have_ksba = no; then
   build_gpgsm=no
   build_scdaemon=no
@@ -1508,19 +1503,19 @@ fi
 
 build_agent_threaded=""
 if test "$build_agent" = "yes"; then
-  if test $have_pth = no; then
+  if test $have_npth = no; then
      build_agent_threaded="(not multi-threaded)"
-     missing_pth=yes
+     missing_npth=yes
   fi
 fi
 
 build_scdaemon_extra=""
 if test "$build_scdaemon" = "yes"; then
   tmp=""
-  if test $have_pth = no; then
+  if test $have_npth = no; then
      build_scdaemon_extra="not multi-threaded"
      tmp=", "
-     missing_pth=yes
+     missing_npth=yes
   fi
   if test $have_libusb = no; then
      build_scdaemon_extra="${tmp}without internal CCID driver"
@@ -1652,18 +1647,18 @@ if test "$gnupg_have_ldap" = "no"; then
 ***]])
    fi
 fi
-if test "$missing_pth" = "yes"; then
+if test "$missing_npth" = "yes"; then
     AC_MSG_NOTICE([[
 ***
 *** It is now required to build with support for the
-*** GNU Portable Threads Library (Pth). Please install this
+*** New Portable Threads Library (NPth). Please install this
 *** library first.  The library is for example available at
-***   ftp://ftp.gnu.org/gnu/pth/
+***   FIXME
 *** On a Debian GNU/Linux system you can install it using
-***   apt-get install libpth-dev
-*** To build GnuPG for Windows you need to use the W32PTH
+***   apt-get install libnpth-dev
+*** To build GnuPG for Windows you need to use the W32NPTH
 *** package; available at:
-***   ftp://ftp.g10code.com/g10code/w32pth/
+***   ftp://ftp.g10code.com/g10code/w32npth/
 ***]])
    die=yes
 fi

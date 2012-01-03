@@ -38,7 +38,7 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
-#include <pth.h>
+#include <npth.h>
 
 #define JNLIB_NEED_LOG_LOGV
 #define JNLIB_NEED_AFLOCAL
@@ -268,6 +268,9 @@ static char *current_logfile;
    watched. */
 static pid_t parent_pid = (pid_t)(-1);
 
+/* Number of active connections.  */
+static int active_connections;
+
 
 /*
    Local prototypes.
@@ -287,29 +290,7 @@ static void check_own_socket (void);
 static int check_for_running_agent (int silent, int mode);
 
 /* Pth wrapper function definitions. */
-ASSUAN_SYSTEM_PTH_IMPL;
-
-#if defined(GCRY_THREAD_OPTION_VERSION) && (GCRY_THREAD_OPTION_VERSION == 0)
-#define USE_GCRY_THREAD_CBS 1
-#endif
-
-#ifdef USE_GCRY_THREAD_CBS
-GCRY_THREAD_OPTION_PTH_IMPL;
-
-static int fixed_gcry_pth_init (void)
-{
-  return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
-}
-#endif
-
-
-#ifndef PTH_HAVE_PTH_THREAD_ID
-static unsigned long pth_thread_id (void)
-{
-  return (unsigned long)pth_self ();
-}
-#endif
-
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 
 /*
@@ -624,19 +605,7 @@ main (int argc, char **argv )
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-
-#ifdef USE_GCRY_THREAD_CBS
-  /* Libgcrypt requires us to register the threading model first.
-     Note that this will also do the pth_init. */
-  gcry_threads_pth.init = fixed_gcry_pth_init;
-  err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
-  if (err)
-    {
-      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
-                 gpg_strerror (err));
-    }
-#endif
-
+  npth_init ();
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library. */
@@ -651,7 +620,7 @@ main (int argc, char **argv )
   malloc_hooks.free = gcry_free;
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug);
 
@@ -1091,19 +1060,9 @@ main (int argc, char **argv )
           /* Close the socket FD. */
           close (fd);
 
-          /* Note that we used a standard fork so that Pth runs in
-             both the parent and the child.  The pth_fork would
-             terminate Pth in the child but that is not the way we
-             want it.  Thus we use a plain fork and terminate Pth here
-             in the parent.  The pth_kill may or may not work reliable
-             but it should not harm to call it.  Because Pth fiddles
-             with the signal mask the signal mask might not be correct
-             right now and thus we restore it.  That is not strictly
-             necessary but some programs falsely assume a cleared
-             signal mask.  */
-#warning need to do something about pth_kill - see bug#1320
-          if ( !pth_kill () )
-            log_error ("pth_kill failed in forked process\n");
+          /* The signal mask might not be correct right now and thus
+             we restore it.  That is not strictly necessary but some
+             programs falsely assume a cleared signal mask.  */
 
 #ifdef HAVE_SIGPROCMASK
           if (startup_signal_mask_valid)
@@ -1432,9 +1391,9 @@ get_agent_ssh_socket_name (void)
 void *
 get_agent_scd_notify_event (void)
 {
-  static HANDLE the_event;
+  static HANDLE the_event = INVALID_HANDLE_VALUE;
 
-  if (!the_event)
+  if (the_event == INVALID_HANDLE_VALUE)
     {
       HANDLE h, h2;
       SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
@@ -1758,6 +1717,7 @@ agent_sigusr2_action (void)
 }
 
 
+#ifndef HAVE_W32_SYSTEM
 /* The signal handler for this program.  It is expected to be run in
    its own trhead and not in the context of a signal handler.  */
 static void
@@ -1765,7 +1725,6 @@ handle_signal (int signo)
 {
   switch (signo)
     {
-#ifndef HAVE_W32_SYSTEM
     case SIGHUP:
       agent_sighup_action ();
       break;
@@ -1787,8 +1746,8 @@ handle_signal (int signo)
       if (!shutdown_pending)
         log_info ("SIGTERM received - shutting down ...\n");
       else
-        log_info ("SIGTERM received - still %ld running threads\n",
-                  pth_ctrl( PTH_CTRL_GETTHREADS ));
+        log_info ("SIGTERM received - still %i open connections\n",
+		  active_connections);
       shutdown_pending++;
       if (shutdown_pending > 2)
         {
@@ -1805,12 +1764,12 @@ handle_signal (int signo)
       cleanup ();
       agent_exit (0);
       break;
-#endif
+
     default:
       log_info ("signal %d received - no action defined\n", signo);
     }
 }
-
+#endif
 
 /* Check the nonce on a new connection.  This is a NOP unless we we
    are using our Unix domain socket emulation under Windows.  */
@@ -1838,19 +1797,20 @@ start_connection_thread (void *arg)
 
   if (check_nonce (ctrl, &socket_nonce))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n", pth_thread_id ());
+      log_error ("handler 0x%lx nonce check FAILED\n",
+                 (unsigned long) npth_self());
       return NULL;
     }
 
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"),
-              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler (ctrl, GNUPG_INVALID_FD, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d terminated\n"),
-              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1870,12 +1830,12 @@ start_connection_thread_ssh (void *arg)
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d started\n"),
-              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   start_command_handler_ssh (ctrl, ctrl->thread_startup.fd);
   if (opt.verbose)
     log_info (_("ssh handler 0x%lx for fd %d terminated\n"),
-              pth_thread_id (), FD2INT(ctrl->thread_startup.fd));
+              (unsigned long) npth_self(), FD2INT(ctrl->thread_startup.fd));
 
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
@@ -1888,59 +1848,46 @@ start_connection_thread_ssh (void *arg)
 static void
 handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 {
-  pth_attr_t tattr;
-  pth_event_t ev, time_ev;
-  sigset_t sigs;
-  int signo;
+  npth_attr_t tattr;
   struct sockaddr_un paddr;
   socklen_t plen;
   fd_set fdset, read_fdset;
   int ret;
   gnupg_fd_t fd;
   int nfd;
+  int saved_errno;
+  struct timespec abstime;
+  struct timespec curtime;
+  struct timespec timeout;
+#ifdef HAVE_W32_SYSTEM
+  HANDLE events[2];
+  int events_set;
+#else
+  int signo;
+#endif
 
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
+  ret = npth_attr_init(&tattr);
+  if (ret)
+    log_fatal ("error allocating thread attributes: %s\n",
+	       gpg_strerror (ret));
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
-#ifndef HAVE_W32_SYSTEM /* fixme */
-  /* Make sure that the signals we are going to handle are not blocked
-     and create an event object for them.  We also set the default
-     action to ignore because we use an Pth event to get notified
-     about signals.  This avoids that the default action is taken in
-     case soemthing goes wrong within Pth.  The problem might also be
-     a Pth bug.  */
-  sigemptyset (&sigs );
-  {
-    static const int mysigs[] = { SIGHUP, SIGUSR1, SIGUSR2, SIGINT, SIGTERM };
-    struct sigaction sa;
-    int i;
-
-    for (i=0; i < DIM (mysigs); i++)
-      {
-        sigemptyset (&sa.sa_mask);
-        sa.sa_handler = SIG_IGN;
-        sa.sa_flags = 0;
-        sigaction (mysigs[i], &sa, NULL);
-
-        sigaddset (&sigs, mysigs[i]);
-      }
-  }
-
-  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+#ifndef HAVE_W32_SYSTEM
+  npth_sigev_init ();
+  npth_sigev_add (SIGHUP);
+  npth_sigev_add (SIGUSR1);
+  npth_sigev_add (SIGUSR2);
+  npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGTERM);
+  npth_sigev_fini ();
 #else
 # ifdef HAVE_W32CE_SYSTEM
   /* Use a dummy event. */
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 # else
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_HANDLE, get_agent_scd_notify_event ());
-  signo = 0;
+  events[0] = get_agent_scd_notify_event ();
+  events[1] = INVALID_HANDLE_VALUE;
 # endif
 #endif
-  time_ev = NULL;
 
   /* Set a flag to tell call-scd.c that it may enable event
      notifications.  */
@@ -1956,15 +1903,15 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
         nfd = FD2INT (listen_fd_ssh);
     }
 
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += TIMERTICK_INTERVAL;
+
   for (;;)
     {
-      /* Make sure that our signals are not blocked.  */
-      pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
-
       /* Shutdown test.  */
       if (shutdown_pending)
         {
-          if (pth_ctrl (PTH_CTRL_GETTHREADS) == 1)
+          if (active_connections == 0)
             break; /* ready */
 
           /* Do not accept new connections but keep on running the
@@ -1972,88 +1919,55 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           FD_ZERO (&fdset);
 	}
 
-      /* Create a timeout event if needed.  To help with power saving
-         we syncronize the ticks to the next full second.  */
-      if (!time_ev)
-        {
-          pth_time_t nexttick;
-
-          nexttick = pth_timeout (TIMERTICK_INTERVAL, 0);
-          if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
-            {
-              nexttick.tv_sec++;
-              nexttick.tv_usec = 0;
-            }
-          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
-        }
-
       /* POSIX says that fd_set should be implemented as a structure,
          thus a simple assignment is fine to copy the entire set.  */
       read_fdset = fdset;
 
-      if (time_ev)
-        pth_event_concat (ev, time_ev, NULL);
-
-      ret = pth_select_ev (nfd+1, &read_fdset, NULL, NULL, NULL, ev);
-      if (time_ev)
-        pth_event_isolate (time_ev);
-
-      if (ret == -1)
+      npth_clock_gettime (&curtime);
+      if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
-          if (pth_event_occurred (ev)
-              || (time_ev && pth_event_occurred (time_ev)))
-            {
-              if (pth_event_occurred (ev))
-                {
-#if defined(HAVE_W32_SYSTEM) && defined(PTH_EVENT_HANDLE)
-                  agent_sigusr2_action ();
+	  /* Timeout.  */
+	  handle_tick ();
+	  npth_clock_gettime (&abstime);
+	  abstime.tv_sec += TIMERTICK_INTERVAL;
+	}
+      npth_timersub (&abstime, &curtime, &timeout);
+
+#ifndef HAVE_W32_SYSTEM
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
+      saved_errno = errno;
+
+      while (npth_sigev_get_pending(&signo))
+	handle_signal (signo);
 #else
-                  handle_signal (signo);
+      events_set = 0;
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, events, &events_set);
+      saved_errno = errno;
+
+      /* This is valid even if npth_eselect returns an error.  */
+      if (events_set & 1)
+	agent_sigusr2_action ();
 #endif
-                }
-              if (time_ev && pth_event_occurred (time_ev))
-                {
-                  pth_event_free (time_ev, PTH_FREE_ALL);
-                  time_ev = NULL;
-                  handle_tick ();
-                }
-              continue;
-            }
-          log_error (_("pth_select failed: %s - waiting 1s\n"),
-                     strerror (errno));
-          pth_sleep (1);
+
+      if (ret == -1 && saved_errno != EINTR)
+	{
+          log_error (_("npth_pselect failed: %s - waiting 1s\n"),
+                     strerror (saved_errno));
+          npth_sleep (1);
           continue;
 	}
-
-      if (pth_event_occurred (ev))
-        {
-#if defined(HAVE_W32_SYSTEM) && defined(PTH_EVENT_HANDLE)
-          agent_sigusr2_action ();
-#else
-          handle_signal (signo);
-#endif
-        }
-
-      if (time_ev && pth_event_occurred (time_ev))
-        {
-          pth_event_free (time_ev, PTH_FREE_ALL);
-          time_ev = NULL;
-          handle_tick ();
-        }
-
-
-      /* We now might create new threads and because we don't want any
-         signals (as we are handling them here) to be delivered to a
-         new thread.  Thus we need to block those signals. */
-      pth_sigmask (SIG_BLOCK, &sigs, NULL);
+      if (ret <= 0)
+	/* Interrupt or timeout.  Will be handled when calculating the
+	   next timeout.  */
+	continue;
 
       if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
           ctrl_t ctrl;
 
           plen = sizeof paddr;
-	  fd = INT2FD (pth_accept (FD2INT(listen_fd),
-                                   (struct sockaddr *)&paddr, &plen));
+	  fd = INT2FD (npth_accept (FD2INT(listen_fd),
+				    (struct sockaddr *)&paddr, &plen));
 	  if (fd == GNUPG_INVALID_FD)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
@@ -2073,20 +1987,18 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             }
           else
             {
-              char threadname[50];
+	      npth_t thread;
 
-              snprintf (threadname, sizeof threadname-1,
-                        "conn fd=%d (gpg)", FD2INT(fd));
-              threadname[sizeof threadname -1] = 0;
-              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
               ctrl->thread_startup.fd = fd;
-              if (!pth_spawn (tattr, start_connection_thread, ctrl))
+	      ret = npth_create (&thread, &tattr, start_connection_thread, ctrl);
+              if (ret)
                 {
                   log_error ("error spawning connection handler: %s\n",
-                             strerror (errno) );
+			     strerror (ret));
                   assuan_sock_close (fd);
                   xfree (ctrl);
                 }
+
             }
           fd = GNUPG_INVALID_FD;
 	}
@@ -2097,8 +2009,8 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           ctrl_t ctrl;
 
           plen = sizeof paddr;
-	  fd = INT2FD(pth_accept (FD2INT(listen_fd_ssh),
-                                  (struct sockaddr *)&paddr, &plen));
+	  fd = INT2FD(npth_accept (FD2INT(listen_fd_ssh),
+				   (struct sockaddr *)&paddr, &plen));
 	  if (fd == GNUPG_INVALID_FD)
 	    {
 	      log_error ("accept failed for ssh: %s\n", strerror (errno));
@@ -2118,18 +2030,15 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             }
           else
             {
-              char threadname[50];
+	      npth_t thread;
 
               agent_init_default_ctrl (ctrl);
-              snprintf (threadname, sizeof threadname-1,
-                        "conn fd=%d (ssh)", FD2INT(fd));
-              threadname[sizeof threadname -1] = 0;
-              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
               ctrl->thread_startup.fd = fd;
-              if (!pth_spawn (tattr, start_connection_thread_ssh, ctrl) )
+              ret = npth_create (&thread, &tattr, start_connection_thread_ssh, ctrl);
+	      if (ret)
                 {
                   log_error ("error spawning ssh connection handler: %s\n",
-                             strerror (errno) );
+			     strerror (ret));
                   assuan_sock_close (fd);
                   xfree (ctrl);
                 }
@@ -2138,11 +2047,9 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 	}
     }
 
-  pth_event_free (ev, PTH_FREE_ALL);
-  if (time_ev)
-    pth_event_free (time_ev, PTH_FREE_ALL);
   cleanup ();
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
+  npth_attr_destroy (&tattr);
 }
 
 
@@ -2234,7 +2141,9 @@ static void
 check_own_socket (void)
 {
   char *sockname;
-  pth_attr_t tattr;
+  npth_t thread;
+  npth_attr_t tattr;
+  int err;
 
   if (!opt.use_standard_socket)
     return; /* This check makes only sense in standard socket mode.  */
@@ -2246,15 +2155,14 @@ check_own_socket (void)
   if (!sockname)
     return; /* Out of memory.  */
 
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 256*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "check-own-socket");
-
-  if (!pth_spawn (tattr, check_own_socket_thread, sockname))
-      log_error ("error spawning check_own_socket_thread: %s\n",
-                 strerror (errno) );
-  pth_attr_destroy (tattr);
+  err = npth_attr_init (&tattr);
+  if (err)
+    return;
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
+  err = npth_create (&thread, &tattr, check_own_socket_thread, sockname);
+  if (err)
+    log_error ("error spawning check_own_socket_thread: %s\n", strerror (err));
+  npth_attr_destroy (&tattr);
 }
 
 
