@@ -281,10 +281,10 @@ static void handle_connections (assuan_fd_t listen_fd);
 ASSUAN_SYSTEM_PTH_IMPL;
 
 #if GCRY_THREAD_OPTION_VERSION == 0
-#define FIX_GCRY_PTH_INIT 1
+#define USE_GCRY_THREAD_CBS 1
 #endif
 
-#ifdef FIX_GCRY_PTH_INIT
+#ifdef USE_GCRY_THREAD_CBS
 GCRY_THREAD_OPTION_PTH_IMPL;
 static int fixed_gcry_pth_init (void)
 {
