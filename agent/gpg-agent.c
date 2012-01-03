@@ -1197,11 +1197,11 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  es_printf ("setenv %s\n", infostr);
+                  es_printf ("setenv %s;\n", infostr);
 		  if (opt.ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
-		      es_printf ("setenv %s\n", infostr_ssh_sock);
+		      es_printf ("setenv %s;\n", infostr_ssh_sock);
 		    }
                 }
               else
