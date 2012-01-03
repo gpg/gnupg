@@ -72,9 +72,9 @@ gpg_agent_res_deps =
 #endif
 
 
-gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
+gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 gpg_agent_LDADD = $(commonpth_libs) \
-                $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
+                $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
 gpg_agent_LDFLAGS = $(extra_bin_ldflags) $(gpg_agent_res_ldflags)
 gpg_agent_DEPENDENCIES = $(gpg_agent_res_deps)

@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "scdaemon.h"
 #include "app-common.h"
@@ -37,7 +37,7 @@
 static struct
 {
   int initialized;
-  pth_mutex_t lock;
+  npth_mutex_t lock;
   app_t app;        /* Application context in use or NULL. */
   app_t last_app;   /* Last application object used as this slot or NULL. */
 } lock_table[10];
@@ -72,30 +72,30 @@ print_progress_line (void *opaque, const char *what, int pc, int cur, int tot)
 static gpg_error_t
 lock_reader (int slot, ctrl_t ctrl)
 {
-  gpg_error_t err;
+  int res;
 
   if (slot < 0 || slot >= DIM (lock_table))
     return gpg_error (slot<0? GPG_ERR_INV_VALUE : GPG_ERR_RESOURCE_LIMIT);
 
   if (!lock_table[slot].initialized)
     {
-      if (!pth_mutex_init (&lock_table[slot].lock))
+      res = npth_mutex_init (&lock_table[slot].lock, NULL);
+      if (res)
         {
-          err = gpg_error_from_syserror ();
-          log_error ("error initializing mutex: %s\n", strerror (errno));
-          return err;
+          log_error ("error initializing mutex: %s\n", strerror (res));
+          return gpg_error_from_errno (res);
         }
       lock_table[slot].initialized = 1;
       lock_table[slot].app = NULL;
       lock_table[slot].last_app = NULL;
     }
 
-  if (!pth_mutex_acquire (&lock_table[slot].lock, 0, NULL))
+  res = npth_mutex_lock (&lock_table[slot].lock);
+  if (res)
     {
-      err = gpg_error_from_syserror ();
       log_error ("failed to acquire APP lock for slot %d: %s\n",
-                 slot, strerror (errno));
-      return err;
+                 slot, strerror (res));
+      return gpg_error_from_errno (res);
     }
 
   apdu_set_progress_cb (slot, print_progress_line, ctrl);
@@ -107,32 +107,18 @@ lock_reader (int slot, ctrl_t ctrl)
 static void
 unlock_reader (int slot)
 {
+  int res;
+
   if (slot < 0 || slot >= DIM (lock_table)
       || !lock_table[slot].initialized)
     log_bug ("unlock_reader called for invalid slot %d\n", slot);
 
   apdu_set_progress_cb (slot, NULL, NULL);
 
-  if (!pth_mutex_release (&lock_table[slot].lock))
+  res = npth_mutex_unlock (&lock_table[slot].lock);
+  if (res)
     log_error ("failed to release APP lock for slot %d: %s\n",
-               slot, strerror (errno));
-}
-
-
-static void
-dump_mutex_state (pth_mutex_t *m)
-{
-#ifdef _W32_PTH_H
-  (void)m;
-  log_printf ("unknown under W32");
-#else
-  if (!(m->mx_state & PTH_MUTEX_INITIALIZED))
-    log_printf ("not_initialized");
-  else if (!(m->mx_state & PTH_MUTEX_LOCKED))
-    log_printf ("not_locked");
-  else
-    log_printf ("locked tid=0x%lx count=%lu", (long)m->mx_owner, m->mx_count);
-#endif
+               slot, strerror (res));
 }
 
 
@@ -146,8 +132,7 @@ app_dump_state (void)
   for (slot=0; slot < DIM (lock_table); slot++)
     if (lock_table[slot].initialized)
       {
-        log_info ("app_dump_state: slot=%d lock=", slot);
-        dump_mutex_state (&lock_table[slot].lock);
+        log_info ("app_dump_state: slot=%d", slot);
         if (lock_table[slot].app)
           {
             log_printf (" app=%p", lock_table[slot].app);

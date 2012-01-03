@@ -40,7 +40,7 @@
 #ifdef HAVE_SIGNAL_H
 # include <signal.h>
 #endif
-#include <pth.h>
+#include <npth.h>
 
 
 #define JNLIB_NEED_LOG_LOGV
@@ -254,7 +254,7 @@ static int active_connections;
 
 /* This union is used to avoid compiler warnings in case a pointer is
    64 bit and an int 32 bit.  We store an integer in a pointer and get
-   it back later (pth_key_getdata et al.).  */
+   it back later (npth_getspecific et al.).  */
 union int_and_ptr_u
 {
   int  aint;
@@ -277,27 +277,8 @@ static ldap_server_t parse_ldapserver_file (const char* filename);
 static fingerprint_list_t parse_ocsp_signer (const char *string);
 static void handle_connections (assuan_fd_t listen_fd);
 
-/* Pth wrapper function definitions. */
-ASSUAN_SYSTEM_PTH_IMPL;
-
-#if GCRY_THREAD_OPTION_VERSION == 0
-#define USE_GCRY_THREAD_CBS 1
-#endif
-
-#ifdef USE_GCRY_THREAD_CBS
-GCRY_THREAD_OPTION_PTH_IMPL;
-static int fixed_gcry_pth_init (void)
-{
-  return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
-}
-#endif
-
-#ifndef PTH_HAVE_PTH_THREAD_ID
-static unsigned long pth_thread_id (void)
-{
-  return (unsigned long)pth_self ();
-}
-#endif
+/* NPth wrapper function definitions. */
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 static const char *
 my_strusage( int level )
@@ -557,7 +538,7 @@ pid_suffix_callback (unsigned long *r_suffix)
 {
   union int_and_ptr_u value;
 
-  value.aptr = pth_key_getdata (my_tlskey_current_fd);
+  value.aptr = npth_getspecific (my_tlskey_current_fd);
   *r_suffix = value.aint;
   return (*r_suffix != -1);  /* Use decimal representation.  */
 }
@@ -624,17 +605,8 @@ main (int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-#ifdef USE_GCRY_THREAD_CBS
-  /* Libgcrypt requires us to register the threading model first.
-     Note that this will also do the pth_init.  */
-  gcry_threads_pth.init = fixed_gcry_pth_init;
-  rc = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
-  if (rc)
-    {
-      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
-                 gpg_strerror (rc));
-    }
-#endif
+  npth_init ();
+
   gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
 
  /* Check that the libraries are suitable.  Do it here because
@@ -658,7 +630,7 @@ main (int argc, char **argv)
   assuan_set_malloc_hooks (&malloc_hooks);
   assuan_set_assuan_log_prefix (log_get_prefix (NULL));
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   assuan_sock_init ();
   setup_libassuan_logging (&opt.debug);
 
@@ -671,12 +643,12 @@ main (int argc, char **argv)
 
   opt.homedir = default_homedir ();
 
-  /* Now with Pth running we can set the logging callback.  Our
-     windows implementation does not yet feature the Pth TLS
+  /* Now with NPth running we can set the logging callback.  Our
+     windows implementation does not yet feature the NPth TLS
      functions.  */
 #ifndef HAVE_W32_SYSTEM
-  if (pth_key_create (&my_tlskey_current_fd, NULL))
-    if (pth_key_setdata (my_tlskey_current_fd, NULL))
+  if (npth_key_create (&my_tlskey_current_fd, NULL) == 0)
+    if (npth_setspecific (my_tlskey_current_fd, NULL) == 0)
       log_set_pid_suffix_cb (pid_suffix_callback);
 #endif /*!HAVE_W32_SYSTEM*/
 
@@ -1036,7 +1008,7 @@ main (int argc, char **argv)
       pid = getpid ();
       es_printf ("set DIRMNGR_INFO=%s;%lu;1\n", socket_name, (ulong) pid);
 #else
-      pid = pth_fork ();
+      pid = fork();
       if (pid == (pid_t)-1)
         {
           log_fatal (_("error forking process: %s\n"), strerror (errno));
@@ -1562,7 +1534,7 @@ parse_ocsp_signer (const char *string)
 
 
 /* Reread parts of the configuration.  Note, that this function is
-   obviously not thread-safe and should only be called from the PTH
+   obviously not thread-safe and should only be called from the NPTH
    signal handler.
 
    Fixme: Due to the way the argument parsing works, we create a
@@ -1723,12 +1695,12 @@ start_connection_thread (void *arg)
 
   if (check_nonce (fd, &socket_nonce))
     {
-      log_error ("handler 0x%lx nonce check FAILED\n", pth_thread_id ());
+      log_error ("handler nonce check FAILED\n");
       return NULL;
     }
 
 #ifndef HAVE_W32_SYSTEM
-  pth_key_setdata (my_tlskey_current_fd, argval.aptr);
+  npth_setspecific (my_tlskey_current_fd, argval.aptr);
 #endif
 
   active_connections++;
@@ -1743,7 +1715,7 @@ start_connection_thread (void *arg)
 
 #ifndef HAVE_W32_SYSTEM
   argval.afd = ASSUAN_INVALID_FD;
-  pth_key_setdata (my_tlskey_current_fd, argval.aptr);
+  npth_setspecific (my_tlskey_current_fd, argval.aptr);
 #endif
 
   return NULL;
@@ -1754,53 +1726,30 @@ start_connection_thread (void *arg)
 static void
 handle_connections (assuan_fd_t listen_fd)
 {
-  pth_attr_t tattr;
-  pth_event_t ev, time_ev;
-  sigset_t sigs;
+  npth_attr_t tattr;
   int signo;
   struct sockaddr_un paddr;
   socklen_t plen = sizeof( paddr );
   gnupg_fd_t fd;
   int nfd, ret;
   fd_set fdset, read_fdset;
+  struct timespec abstime;
+  struct timespec curtime;
+  struct timespec timeout;
+  int saved_errno;
 
-  tattr = pth_attr_new();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 1024*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "dirmngr");
+  npth_attr_init (&tattr);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
 #ifndef HAVE_W32_SYSTEM /* FIXME */
-  /* Make sure that the signals we are going to handle are not blocked
-     and create an event object for them.  We also set the default
-     action to ignore because we use an Pth event to get notified
-     about signals.  This avoids that the default action is taken in
-     case soemthing goes wrong within Pth.  The problem might also be
-     a Pth bug.  */
-  sigemptyset (&sigs );
-  {
-    static const int mysigs[] = { SIGHUP, SIGUSR1, SIGUSR2, SIGINT, SIGTERM };
-    struct sigaction sa;
-    int i;
-
-    for (i=0; i < DIM (mysigs); i++)
-      {
-        sigemptyset (&sa.sa_mask);
-        sa.sa_handler = SIG_IGN;
-        sa.sa_flags = 0;
-        sigaction (mysigs[i], &sa, NULL);
-
-        sigaddset (&sigs, mysigs[i]);
-      }
-  }
-
-  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
-#else
-  /* Use a dummy event.  */
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
+  npth_sigev_init ();
+  npth_sigev_add (SIGHUP);
+  npth_sigev_add (SIGUSR1);
+  npth_sigev_add (SIGUSR2);
+  npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGTERM);
+  npth_sigev_fini ();
 #endif
-  time_ev = NULL;
 
   /* Setup the fdset.  It has only one member.  This is because we use
      pth_select instead of pth_accept to properly sync timeouts with
@@ -1809,12 +1758,12 @@ handle_connections (assuan_fd_t listen_fd)
   FD_SET (FD2INT (listen_fd), &fdset);
   nfd = FD2INT (listen_fd);
 
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += TIMERTICK_INTERVAL;
+
   /* Main loop.  */
   for (;;)
     {
-      /* Make sure that our signals are not blocked.  */
-      pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
-
       /* Shutdown test.  */
       if (shutdown_pending)
         {
@@ -1826,76 +1775,48 @@ handle_connections (assuan_fd_t listen_fd)
           FD_ZERO (&fdset);
 	}
 
-      /* Create a timeout event if needed.  To help with power saving
-         we syncronize the ticks to the next full second.  */
-      if (!time_ev)
-        {
-          pth_time_t nexttick;
-
-          nexttick = pth_timeout (TIMERTICK_INTERVAL, 0);
-          if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
-            {
-              nexttick.tv_sec++;
-              nexttick.tv_usec = 0;
-            }
-          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
-        }
-
       /* Take a copy of the fdset.  */
       read_fdset = fdset;
 
-      if (time_ev)
-        pth_event_concat (ev, time_ev, NULL);
+      npth_clock_gettime (&curtime);
+      if (!(npth_timercmp (&curtime, &abstime, <)))
+	{
+	  /* Timeout.  */
+	  handle_tick ();
+	  npth_clock_gettime (&abstime);
+	  abstime.tv_sec += TIMERTICK_INTERVAL;
+	}
+      npth_timersub (&abstime, &curtime, &timeout);
 
-      ret = pth_select_ev (nfd+1, &read_fdset, NULL, NULL, NULL, ev);
+#ifndef HAVE_W32_SYSTEM
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
+      saved_errno = errno;
 
-      if (time_ev)
-        pth_event_isolate (time_ev);
+      while (npth_sigev_get_pending(&signo))
+	handle_signal (signo);
+#else
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, NULL, NULL);
+      saved_errno = errno;
+#endif
 
-      if (ret == -1)
-        {
-          if (pth_event_occurred (ev)
-              || (time_ev && pth_event_occurred (time_ev)) )
-            {
-              if (pth_event_occurred (ev))
-                handle_signal (signo);
-              if (time_ev && pth_event_occurred (time_ev))
-                {
-                  pth_event_free (time_ev, PTH_FREE_ALL);
-                  time_ev = NULL;
-                  handle_tick ();
-                }
-              continue;
-	    }
-          log_error (_("pth_select failed: %s - waiting 1s\n"),
-                     strerror (errno));
-          pth_sleep (1);
+      if (ret == -1 && saved_errno != EINTR)
+	{
+          log_error (_("npth_pselect failed: %s - waiting 1s\n"),
+                     strerror (saved_errno));
+          npth_sleep (1);
           continue;
 	}
 
-      if (pth_event_occurred (ev))
-        {
-          handle_signal (signo);
-        }
-
-      if (time_ev && pth_event_occurred (time_ev))
-        {
-          pth_event_free (time_ev, PTH_FREE_ALL);
-          time_ev = NULL;
-          handle_tick ();
-        }
-
-
-      /* We now might create a new thread and because we don't want
-         any signals (as we are handling them here) to be delivered to
-         a new thread we need to block those signals. */
-      pth_sigmask (SIG_BLOCK, &sigs, NULL);
+      if (ret <= 0)
+	/* Interrupt or timeout.  Will be handled when calculating the
+	   next timeout.  */
+	continue;
 
       if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
 	{
           plen = sizeof paddr;
-	  fd = INT2FD (pth_accept (FD2INT(listen_fd),
-                                   (struct sockaddr *)&paddr, &plen));
+	  fd = INT2FD (npth_accept (FD2INT(listen_fd),
+				    (struct sockaddr *)&paddr, &plen));
 	  if (fd == GNUPG_INVALID_FD)
 	    {
 	      log_error ("accept failed: %s\n", strerror (errno));
@@ -1904,27 +1825,27 @@ handle_connections (assuan_fd_t listen_fd)
             {
               char threadname[50];
               union int_and_ptr_u argval;
+	      npth_t thread;
 
               argval.afd = fd;
               snprintf (threadname, sizeof threadname-1,
                         "conn fd=%d", FD2INT(fd));
               threadname[sizeof threadname -1] = 0;
-              pth_attr_set (tattr, PTH_ATTR_NAME, threadname);
-              if (!pth_spawn (tattr, start_connection_thread, argval.aptr))
+
+              ret = npth_create (&thread, &tattr, start_connection_thread, argval.aptr);
+	      if (ret)
                 {
                   log_error ("error spawning connection handler: %s\n",
-                             strerror (errno) );
+                             strerror (ret) );
                   assuan_sock_close (fd);
                 }
+	      npth_setname_np (thread, threadname);
             }
           fd = GNUPG_INVALID_FD;
 	}
     }
 
-  pth_event_free (ev, PTH_FREE_ALL);
-  if (time_ev)
-    pth_event_free (time_ev, PTH_FREE_ALL);
-  pth_attr_destroy (tattr);
+  npth_attr_destroy (&tattr);
   cleanup ();
   log_info ("%s %s stopped\n", strusage(11), strusage(13));
 }

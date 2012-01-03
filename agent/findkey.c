@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <assert.h>
-#include <pth.h> /* (we use pth_sleep) */
+#include <npth.h> /* (we use pth_sleep) */
 
 #include "agent.h"
 #include "i18n.h"
@@ -382,7 +382,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
             {
               /* We need to give the other thread a chance to actually put
                  it into the cache. */
-              pth_sleep (1);
+              npth_sleep (1);
               goto retry;
             }
           /* Timeout - better call pinentry now the plain way. */

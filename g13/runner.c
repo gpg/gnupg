@@ -24,7 +24,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "g13.h"
 #include "i18n.h"
@@ -40,7 +40,7 @@ struct runner_s
   unsigned int identifier; /* The runner identifier.  */
 
   int spawned;  /* True if runner_spawn has been called.  */
-  pth_t threadid; /* The TID of the runner thread.  */
+  npth_t thread; /* The TID of the runner thread.  */
   runner_t next_running; /* Builds a list of all running threads.  */
   int canceled;     /* Set if a cancel has already been send once.  */
 
@@ -85,7 +85,7 @@ writen (int fd, const void *buf, size_t nbytes)
 
   while (nleft > 0)
     {
-      nwritten = pth_write (fd, buf, nleft);
+      nwritten = npth_write (fd, buf, nleft);
       if (nwritten < 0)
         {
           if (errno == EINTR)
@@ -408,8 +408,9 @@ gpg_error_t
 runner_spawn (runner_t runner)
 {
   gpg_error_t err;
-  pth_attr_t tattr;
-  pth_t tid;
+  npth_attr_t tattr;
+  npth_t thread;
+  int ret;
 
   if (check_already_spawned (runner, "runner_spawn"))
     return gpg_error (GPG_ERR_BUG);
@@ -433,26 +434,26 @@ runner_spawn (runner_t runner)
       runner->in_fd = -1;  /* Now owned by status_fp.  */
     }
 
-  tattr = pth_attr_new ();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 0);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 128*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, runner->name);
+  npth_attr_init (&tattr);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
-  tid = pth_spawn (tattr, runner_thread, runner);
-  if (!tid)
+  ret = npth_create (&thread, &tattr, runner_thread, runner);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("error spawning runner thread: %s\n", gpg_strerror (err));
       return err;
     }
+  npth_setname_np (thread, runner->name);
+
   /* The scheduler has not yet kicked in, thus we can safely set the
      spawned flag and the tid.  */
   runner->spawned = 1;
-  runner->threadid = tid;
+  runner->thread = thread;
   runner->next_running = running_threads;
   running_threads = runner;
 
-  pth_attr_destroy (tattr);
+  npth_attr_destroy (&tattr);
 
   /* The runner thread is now runnable.  */
 
