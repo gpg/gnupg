@@ -24,7 +24,7 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "agent.h"
 
@@ -33,7 +33,7 @@
 
 /* A mutex used to protect the encryption.  This is required because
    we use one context to do all encryption and decryption.  */
-static pth_mutex_t encryption_lock;
+static npth_mutex_t encryption_lock;
 /* The encryption context.  This is the only place where the
    encryption key for all cached entries is available.  It would be nice
    to keep this (or just the key) in some hardware device, for example
@@ -71,11 +71,12 @@ static ITEM thecache;
 void
 initialize_module_cache (void)
 {
-  if (!pth_mutex_init (&encryption_lock))
-    {
-      gpg_error_t err = gpg_error_from_syserror ();
-      log_fatal ("error initializing cache module: %s\n", gpg_strerror (err));
-    }
+  int err;
+
+  err = npth_mutex_init (&encryption_lock, NULL);
+
+  if (err)
+    log_fatal ("error initializing cache module: %s\n", strerror (err));
 }
 
 
@@ -98,12 +99,14 @@ init_encryption (void)
 {
   gpg_error_t err;
   void *key;
+  int res;
 
   if (encryption_handle)
     return 0; /* Shortcut - Already initialized.  */
 
-  if (!pth_mutex_acquire (&encryption_lock, 0, NULL))
-    log_fatal ("failed to acquire cache encryption mutex\n");
+  res = npth_mutex_lock (&encryption_lock);
+  if (res)
+    log_fatal ("failed to acquire cache encryption mutex: %s\n", strerror (res));
 
   err = gcry_cipher_open (&encryption_handle, GCRY_CIPHER_AES128,
                           GCRY_CIPHER_MODE_AESWRAP, GCRY_CIPHER_SECURE);
@@ -127,8 +130,9 @@ init_encryption (void)
     log_error ("error initializing cache encryption context: %s\n",
                gpg_strerror (err));
 
-  if (!pth_mutex_release (&encryption_lock))
-    log_fatal ("failed to release cache encryption mutex\n");
+  res = npth_mutex_unlock (&encryption_lock);
+  if (res)
+    log_fatal ("failed to release cache encryption mutex: %s\n", strerror (res));
 
   return err? gpg_error (GPG_ERR_NOT_INITIALIZED) : 0;
 }
@@ -148,6 +152,7 @@ new_data (const char *string, struct secret_data_s **r_data)
   struct secret_data_s *d, *d_enc;
   size_t length;
   int total;
+  int res;
 
   *r_data = NULL;
 
@@ -178,13 +183,17 @@ new_data (const char *string, struct secret_data_s **r_data)
     }
 
   d_enc->totallen = total;
-  if (!pth_mutex_acquire (&encryption_lock, 0, NULL))
-    log_fatal ("failed to acquire cache encryption mutex\n");
+  res = npth_mutex_lock (&encryption_lock);
+  if (res)
+    log_fatal ("failed to acquire cache encryption mutex: %s\n",
+               strerror (res));
+
   err = gcry_cipher_encrypt (encryption_handle, d_enc->data, total,
                              d->data, total - 8);
   xfree (d);
-  if (!pth_mutex_release (&encryption_lock))
-    log_fatal ("failed to release cache encryption mutex\n");
+  res = npth_mutex_unlock (&encryption_lock);
+  if (res)
+    log_fatal ("failed to release cache encryption mutex: %s\n", strerror (res));
   if (err)
     {
       xfree (d_enc);
@@ -378,6 +387,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
   gpg_error_t err;
   ITEM r;
   char *value = NULL;
+  int res;
 
   if (cache_mode == CACHE_MODE_IGNORE)
     return NULL;
@@ -405,13 +415,17 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
             err = gpg_error_from_syserror ();
           else
             {
-              if (!pth_mutex_acquire (&encryption_lock, 0, NULL))
-                log_fatal ("failed to acquire cache encryption mutex\n");
+              res = npth_mutex_lock (&encryption_lock);
+              if (res)
+                log_fatal ("failed to acquire cache encryption mutex: %s\n",
+			   strerror (res));
               err = gcry_cipher_decrypt (encryption_handle,
                                          value, r->pw->totallen - 8,
                                          r->pw->data, r->pw->totallen);
-              if (!pth_mutex_release (&encryption_lock))
-                log_fatal ("failed to release cache encryption mutex\n");
+              res = npth_mutex_unlock (&encryption_lock);
+              if (res)
+                log_fatal ("failed to release cache encryption mutex: %s\n",
+			   strerror (res));
             }
           if (err)
             {

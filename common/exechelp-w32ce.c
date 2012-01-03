@@ -35,13 +35,13 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-#undef HAVE_PTH
-#undef USE_GNU_PTH
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+#undef HAVE_NPTH
+#undef USE_NPTH
 #endif
 
-#ifdef USE_GNU_PTH
-#include <pth.h>
+#ifdef USE_NPTH
+#include <npth.h>
 #endif
 
 #ifdef HAVE_STAT
@@ -73,7 +73,7 @@
 #define handle_to_pid(a) ((int)(a))
 
 
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
 /* The data passed to the feeder_thread.  */
 struct feeder_thread_parms
 {
@@ -171,9 +171,9 @@ leave:
   xfree (parm);
   return NULL;
 }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
 
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
 static void
 feeder_onclose_notification (estream_t stream, void *opaque)
 {
@@ -182,7 +182,7 @@ feeder_onclose_notification (estream_t stream, void *opaque)
   log_debug ("feeder(%p): received onclose note\n", parm->hd);
   parm->stream_valid = 0;
 }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
 
 /* Fire up a thread to copy data between STREAM and a pipe's
    descriptor FD.  With DIRECTION set to true the copy takes place
@@ -191,7 +191,7 @@ feeder_onclose_notification (estream_t stream, void *opaque)
 static gpg_error_t
 start_feeder (estream_t stream, HANDLE hd, int direction)
 {
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
   gpg_error_t err;
   struct feeder_thread_parms *parm;
   pth_attr_t tattr;

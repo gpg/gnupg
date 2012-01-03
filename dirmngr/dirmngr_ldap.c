@@ -33,7 +33,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #ifndef USE_LDAPWRAPPER
-# include <pth.h>
+# include <npth.h>
 #endif
 
 #ifdef HAVE_W32_SYSTEM

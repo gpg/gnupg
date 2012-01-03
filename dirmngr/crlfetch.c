@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "crlfetch.h"
 #include "dirmngr.h"
@@ -72,7 +72,7 @@ register_file_reader (ksba_reader_t reader, struct reader_cb_context_s *cb_ctx)
             return;
           }
       log_info (_("reader to file mapping table full - waiting\n"));
-      pth_sleep (2);
+      npth_sleep (2);
     }
 }
 

@@ -19,16 +19,16 @@
 
 #include <config.h>
 
-#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-#undef HAVE_PTH
-#undef USE_GNU_PTH
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+#undef HAVE_NPTH
+#undef USE_NPTH
 #endif
 
 #ifdef HAVE_W32_SYSTEM
 #include <windows.h>
 #endif
-#ifdef HAVE_PTH
-#include <pth.h>
+#ifdef HAVE_NPTH
+#include <npth.h>
 #endif
 #ifdef HAVE_W32CE_SYSTEM
 # include <assuan.h> /* For _assuan_w32ce_finish_pipe. */
@@ -87,7 +87,7 @@ init_common_subsystems (int *argcp, char ***argvp)
      places.  If we are building with PTH we let pth_init do it.  We
      can't do much on error so we ignore them.  An error would anyway
      later pop up if one of the socket functions is used. */
-# ifdef HAVE_PTH
+# ifdef HAVE_NPTH
   pth_init ();
 # else
   {
@@ -95,7 +95,7 @@ init_common_subsystems (int *argcp, char ***argvp)
 
     WSAStartup (0x202, &wsadat);
   }
-# endif /*!HAVE_PTH*/
+# endif /*!HAVE_NPTH*/
 #endif
 
 #ifdef HAVE_W32CE_SYSTEM

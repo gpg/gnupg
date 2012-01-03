@@ -25,7 +25,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "g13.h"
 
@@ -188,7 +188,7 @@ static unsigned int debug_value;
 static int shutdown_pending;
 
 /* The thread id of the idle task.  */
-static pth_t idle_task_tid;
+static npth_t idle_task_thread;
 
 
 
@@ -199,26 +199,11 @@ static void emergency_cleanup (void);
 static void start_idle_task (void);
 static void join_idle_task (void);
 
+
+/* Begin NPth wrapper functions. */
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 
-/* Begin Pth wrapper functions. */
-ASSUAN_SYSTEM_PTH_IMPL;
-
-#if GCRY_THREAD_OPTION_VERSION == 0
-#define USE_GCRY_THREAD_CBS 1
-#endif
-
-#ifdef USE_GCRY_THREAD_CBS
-GCRY_THREAD_OPTION_PTH_IMPL;
-static int fixed_gcry_pth_init (void)
-{
-  return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
-}
-#endif
-
-/* End Pth wrapper functions. */
-
-
 static const char *
 my_strusage( int level )
 {
@@ -336,7 +321,7 @@ main ( int argc, char **argv)
   ARGPARSE_ARGS pargs;
   int orig_argc;
   char **orig_argv;
-  gpg_error_t err;
+  gpg_error_t err = 0;
   const char *fname;
   int may_coredump;
   FILE *configfp = NULL;
@@ -368,18 +353,7 @@ main ( int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
-
-#ifdef USE_GCRY_THREAD_CBS
-  /* Libgcrypt requires us to register the threading model first.
-     Note that this will also do the pth_init. */
-  gcry_threads_pth.init = fixed_gcry_pth_init;
-  err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
-  if (err)
-    {
-      log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
-                 gpg_strerror (err));
-    }
-#endif
+  npth_init ();
 
   /* Check that the Libgcrypt is suitable.  */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
@@ -444,7 +418,7 @@ main ( int argc, char **argv)
 
   /* Prepare libassuan.  */
   assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_PTH);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
   setup_libassuan_logging (&opt.debug);
 
   /* Setup a default control structure for command line mode.  */
@@ -795,7 +769,7 @@ g13_init_default_ctrl (struct server_control_s *ctrl)
 
 
 /* This function is called for each signal we catch.  It is run in the
-   main context or the one of a Pth thread and thus it is not
+   main context or the one of a NPth thread and thus it is not
    restricted in what it may do.  */
 static void
 handle_signal (int signo)
@@ -862,29 +836,30 @@ handle_tick (void)
 static void *
 idle_task (void *dummy_arg)
 {
-  sigset_t sigs;       /* The set of signals we want to catch.  */
-  pth_event_t ev;      /* The main event to catch signals.  */
-  pth_event_t time_ev; /* The time event.  */
   int signo;           /* The number of a raised signal is stored here.  */
+  int saved_errno;
+  struct timespec abstime;
+  struct timespec curtime;
+  struct timespec timeout;
+  int ret;
 
   (void)dummy_arg;
 
   /* Create the event to catch the signals. */
 #ifndef HAVE_W32_SYSTEM
-  sigemptyset (&sigs );
-  sigaddset (&sigs, SIGHUP);
-  sigaddset (&sigs, SIGUSR1);
-  sigaddset (&sigs, SIGUSR2);
-  sigaddset (&sigs, SIGINT);
-  sigaddset (&sigs, SIGTERM);
-  pth_sigmask (SIG_UNBLOCK, &sigs, NULL);
+  npth_sigev_init ();
+  npth_sigev_add (SIGHUP);
+  npth_sigev_add (SIGUSR1);
+  npth_sigev_add (SIGUSR2);
+  npth_sigev_add (SIGINT);
+  npth_sigev_add (SIGTERM);
+  npth_sigev_fini ();
 #else
   sigs = 0;
 #endif
-  ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 
-  /* The time event neds to computed n tghe fly.  */
-  time_ev = NULL;
+  npth_clock_gettime (&abstime);
+  abstime.tv_sec += TIMERTICK_INTERVAL_SEC;
 
   for (;;)
     {
@@ -897,41 +872,40 @@ idle_task (void *dummy_arg)
             break; /* ready */
 	}
 
-      /* Create a timeout event if needed.  To help with power saving
-         we syncronize the ticks to the next full second.  */
-      if (!time_ev)
-        {
-          pth_time_t nexttick;
+      npth_clock_gettime (&curtime);
+      if (!(npth_timercmp (&curtime, &abstime, <)))
+	{
+	  /* Timeout.  */
+	  handle_tick ();
+	  npth_clock_gettime (&abstime);
+	  abstime.tv_sec += TIMERTICK_INTERVAL_SEC;
+	}
+      npth_timersub (&abstime, &curtime, &timeout);
 
-          nexttick = pth_timeout (TIMERTICK_INTERVAL_SEC, 0);
-          if (nexttick.tv_usec > 10)  /* Use a 10 usec threshhold.  */
-            {
-              nexttick.tv_sec++;
-              nexttick.tv_usec = 0;
-            }
-          time_ev = pth_event (PTH_EVENT_TIME, nexttick);
-        }
+      ret = npth_pselect (0, NULL, NULL, NULL, &timeout, npth_sigev_sigmask());
+      saved_errno = errno;
 
-      pth_event_concat (ev, time_ev, NULL);
-      pth_wait (ev);
-      pth_event_isolate (time_ev);
+#ifndef HAVE_W32_SYSTEM
+      while (npth_sigev_get_pending(&signo))
+	handle_signal (signo);
+#endif
 
-      if (pth_event_occurred (ev))
-        {
-          handle_signal (signo);
-        }
+      if (ret == -1 && saved_errno != EINTR)
+	{
+          log_error (_("npth_pselect failed: %s - waiting 1s\n"),
+                     strerror (saved_errno));
+          npth_sleep (1);
+          continue;
+	}
 
-      if (time_ev && pth_event_occurred (time_ev))
-        {
-          pth_event_free (time_ev, PTH_FREE_ALL);
-          time_ev = NULL;
-          handle_tick ();
-        }
+      if (ret <= 0)
+	/* Interrupt or timeout.  Will be handled when calculating the
+	   next timeout.  */
+	continue;
+
+      /* Here one would add processing of file descriptors.  */
     }
 
-  pth_event_free (ev, PTH_FREE_ALL);
-  if (time_ev)
-    pth_event_free (time_ev, PTH_FREE_ALL);
   log_info (_("%s %s stopped\n"), strusage(11), strusage(13));
   return NULL;
 }
@@ -941,23 +915,34 @@ idle_task (void *dummy_arg)
 static void
 start_idle_task (void)
 {
-  pth_attr_t tattr;
-  pth_t tid;
+  npth_attr_t tattr;
+  npth_t thread;
+  sigset_t sigs;       /* The set of signals we want to catch.  */
+  int err;
 
-  tattr = pth_attr_new ();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "idle-task");
+  /* These signals should always go to the idle task, so they need to
+     be blocked everywhere else.  We assume start_idle_task is called
+     from the main thread before any other threads are created.  */
+  sigemptyset (&sigs);
+  sigaddset (&sigs, SIGHUP);
+  sigaddset (&sigs, SIGUSR1);
+  sigaddset (&sigs, SIGUSR2);
+  sigaddset (&sigs, SIGINT);
+  sigaddset (&sigs, SIGTERM);
+  npth_sigmask (SIG_BLOCK, &sigs, NULL);
 
-  tid = pth_spawn (tattr, idle_task, NULL);
-  if (!tid)
+  npth_attr_init (&tattr);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
+
+  err = npth_create (&thread, &tattr, idle_task, NULL);
+  if (err)
     {
-      log_fatal ("error starting idle task: %s\n",
-                 gpg_strerror (gpg_error_from_syserror ()));
+      log_fatal ("error starting idle task: %s\n", strerror (err));
       return; /*NOTREACHED*/
     }
-  idle_task_tid = tid;
-  pth_attr_destroy (tattr);
+  npth_setname_np (thread, "idle-task");
+  idle_task_thread = thread;
+  npth_attr_destroy (&tattr);
 }
 
 
@@ -965,10 +950,15 @@ start_idle_task (void)
 static void
 join_idle_task (void)
 {
-  if (idle_task_tid)
+  int err;
+
+  /* FIXME: This assumes that a valid pthread_t is non-null.  That is
+     not guaranteed.  */
+  if (idle_task_thread)
     {
-      if (!pth_join (idle_task_tid, NULL))
+      err = npth_join (idle_task_thread, NULL);
+      if (err)
         log_error ("waiting for idle task thread failed: %s\n",
-                   gpg_strerror (gpg_error_from_syserror ()));
+                   strerror (err));
     }
 }

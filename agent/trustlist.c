@@ -26,7 +26,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "agent.h"
 #include <assuan.h> /* fixme: need a way to avoid assuan calls here */
@@ -53,7 +53,7 @@ typedef struct trustitem_s trustitem_t;
 static trustitem_t *trusttable;
 static size_t trusttablesize;
 /* A mutex used to protect the table. */
-static pth_mutex_t trusttable_lock;
+static npth_mutex_t trusttable_lock;
 
 
 
@@ -81,11 +81,13 @@ void
 initialize_module_trustlist (void)
 {
   static int initialized;
+  int err;
 
   if (!initialized)
     {
-      if (!pth_mutex_init (&trusttable_lock))
-        log_fatal ("error initializing mutex: %s\n", strerror (errno));
+      err = npth_mutex_init (&trusttable_lock, NULL);
+      if (err)
+        log_fatal ("error initializing mutex: %s\n", strerror (err));
       initialized = 1;
     }
 }
@@ -96,15 +98,21 @@ initialize_module_trustlist (void)
 static void
 lock_trusttable (void)
 {
-  if (!pth_mutex_acquire (&trusttable_lock, 0, NULL))
-    log_fatal ("failed to acquire mutex in %s\n", __FILE__);
+  int err;
+
+  err = npth_mutex_lock (&trusttable_lock);
+  if (err)
+    log_fatal ("failed to acquire mutex in %s: %s\n", __FILE__, strerror (err));
 }
 
 static void
 unlock_trusttable (void)
 {
-  if (!pth_mutex_release (&trusttable_lock))
-    log_fatal ("failed to release mutex in %s\n", __FILE__);
+  int err;
+
+  err = npth_mutex_unlock (&trusttable_lock);
+  if (err)
+    log_fatal ("failed to release mutex in %s: %s\n", __FILE__, strerror (err));
 }
 
 
