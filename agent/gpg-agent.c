@@ -299,6 +299,9 @@ ASSUAN_SYSTEM_NPTH_IMPL;
    Functions.
  */
 
+/* Allocate a string describing a library version by calling a GETFNC.
+   This function is expected to be called only once.  GETFNC is
+   expected to have a semantic like gcry_check_version ().  */
 static char *
 make_libversion (const char *libname, const char *(*getfnc)(const char*))
 {
@@ -316,7 +319,9 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
   return result;
 }
 
-
+/* Return strings describing this program.  The case values are
+   described in common/argparse.c:strusage.  The values here override
+   the default values given by strusage.  */
 static const char *
 my_strusage (int level)
 {
@@ -438,6 +443,9 @@ remove_socket (char *name)
     }
 }
 
+
+/* Cleanup code for this program.  This is either called has an atexit
+   handler or directly.  */
 static void
 cleanup (void)
 {
@@ -1150,11 +1158,11 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  es_printf ("setenv %s\n", infostr);
+                  es_printf ("setenv %s;\n", infostr);
 		  if (opt.ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
-		      es_printf ("setenv %s\n", infostr_ssh_sock);
+		      es_printf ("setenv %s;\n", infostr_ssh_sock);
 		    }
                 }
               else
@@ -1238,6 +1246,8 @@ main (int argc, char **argv )
 }
 
 
+/* Exit entry point.  This function should be called instead of a
+   plain exit.  */
 void
 agent_exit (int rc)
 {
@@ -1264,6 +1274,11 @@ agent_exit (int rc)
 }
 
 
+/* Each thread has its own local variables conveyed by a control
+   structure usually identified by an argument named CTRL.  This
+   function is called immediately after allocating the control
+   structure.  Its purpose is to setup the default values for that
+   structure.  */
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
 {
@@ -1289,6 +1304,8 @@ agent_init_default_ctrl (ctrl_t ctrl)
 }
 
 
+/* Release all resources allocated by default in the control
+   structure.  This is the counterpart to agent_init_default_ctrl.  */
 static void
 agent_deinit_default_ctrl (ctrl_t ctrl)
 {
@@ -1690,6 +1707,7 @@ agent_sighup_action (void)
 }
 
 
+/* A helper function to handle SIGUSR2.  */
 static void
 agent_sigusr2_action (void)
 {
@@ -1700,6 +1718,8 @@ agent_sigusr2_action (void)
 }
 
 
+/* The signal handler for this program.  It is expected to be run in
+   its own trhead and not in the context of a signal handler.  */
 static void
 handle_signal (int signo)
 {

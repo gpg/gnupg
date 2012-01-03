@@ -50,31 +50,57 @@
 /* The size of the import/export KEK key (in bytes).  */
 #define KEYWRAP_KEYSIZE (128/8)
 
+/* A shortcut to call assuan_set_error using an gpg_err_code_t and a
+   text string.  */
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
-
+/* Check that the maximum digest length we support has at least the
+   length of the keygrip.  */
 #if MAX_DIGEST_LEN < 20
 #error MAX_DIGEST_LEN shorter than keygrip
 #endif
 
-/* Data used to associate an Assuan context with local server data */
+/* Data used to associate an Assuan context with local server data.
+   This is this modules local part of the server_control_s struct.  */
 struct server_local_s
 {
+  /* Our Assuan context.  */
   assuan_context_t assuan_ctx;
-  int message_fd;
+
+  /* If this flag is true, the passphrase cache is used for signing
+     operations.  It defaults to true but may be set on a per
+     connection base.  The global option opt.ignore_cache_for_signing
+     takes precedence over this flag.  */
   int use_cache_for_signing;
-  char *keydesc;  /* Allocated description for the next key
-                     operation. */
-  int pause_io_logging; /* Used to suppress I/O logging during a command */
-  int stopme;    /* If set to true the agent will be terminated after
-                    the end of this session.  */
-  int allow_pinentry_notify; /* Set if pinentry notifications should
-                                be done. */
-  void *import_key;  /* Malloced KEK for the import_key command.  */
-  void *export_key;  /* Malloced KEK for the export_key command.  */
-  int allow_fully_canceled; /* Client is aware of GPG_ERR_FULLY_CANCELED.  */
-  char *last_cache_nonce;   /* Last CACHE_NOCNE sent as status (malloced).  */
-  char *last_passwd_nonce;  /* Last PASSWD_NOCNE sent as status (malloced). */
+
+  /* An allocated description for the next key operation.  This is
+     used if a pinnetry needs to be popped up.  */
+  char *keydesc;
+
+  /* Flags to suppress I/O logging during a command.  */
+  int pause_io_logging;
+
+  /* If this flags is set to true the agent will be terminated after
+     the end of the current session.  */
+  int stopme;
+
+  /* Flag indicating whether pinentry notifications shall be done. */
+  int allow_pinentry_notify;
+
+  /* Malloced KEK (Key-Encryption-Key) for the import_key command.  */
+  void *import_key;
+
+  /* Malloced KEK for the export_key command.  */
+  void *export_key;
+
+  /* Client is aware of the error code GPG_ERR_FULLY_CANCELED.  */
+  int allow_fully_canceled;
+
+  /* Last CACHE_NONCE sent as status (malloced).  */
+  char *last_cache_nonce;
+
+  /* Last PASSWD_NONCE sent as status (malloced). */
+  char *last_passwd_nonce;
 };
 
 
@@ -156,6 +182,8 @@ write_and_clear_outbuf (assuan_context_t ctx, membuf_t *mb)
 }
 
 
+/* Clear the nonces used to enable the passphrase cache for certain
+   multi-command command sequences.  */
 static void
 clear_nonce_cache (ctrl_t ctrl)
 {
@@ -176,6 +204,9 @@ clear_nonce_cache (ctrl_t ctrl)
 }
 
 
+/* This function is called by Libassuan whenever thee client sends a
+   reset.  It has been registered similar to the other Assuan
+   commands.  */
 static gpg_error_t
 reset_notify (assuan_context_t ctx, char *line)
 {
@@ -196,8 +227,13 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
-/* Skip over options.
-   Blanks after the options are also removed. */
+/* Skip over options in LINE.
+
+   Blanks after the options are also removed.  Options are indicated
+   by two leading dashes followed by a string consisting of non-space
+   characters.  The special option "--" indicates an explicit end of
+   options; all what follows will not be considered an option.  The
+   first no-option string also indicates the end of option parsing. */
 static char *
 skip_options (const char *line)
 {
@@ -213,7 +249,11 @@ skip_options (const char *line)
   return (char*)line;
 }
 
-/* Check whether the option NAME appears in LINE */
+
+/* Check whether the option NAME appears in LINE.  An example for a
+   line with options is:
+     --algo=42 --data foo bar
+   This function would then only return true if NAME is "data".  */
 static int
 has_option (const char *line, const char *name)
 {
@@ -225,6 +265,7 @@ has_option (const char *line, const char *name)
     return 0;
   return (s && (s == line || spacep (s-1)) && (!s[n] || spacep (s+n)));
 }
+
 
 /* Same as has_option but does only test for the name of the option
    and ignores an argument, i.e. with NAME being "--hash" it would
@@ -242,8 +283,9 @@ has_option_name (const char *line, const char *name)
           && (!s[n] || spacep (s+n) || s[n] == '='));
 }
 
+
 /* Return a pointer to the argument of the option with NAME.  If such
-   an option is not given, it returns NULL. */
+   an option is not given, NULL is retruned. */
 static char *
 option_value (const char *line, const char *name)
 {
@@ -265,7 +307,7 @@ option_value (const char *line, const char *name)
 }
 
 
-/* Replace all '+' by a blank. */
+/* Replace all '+' by a blank in the string S. */
 static void
 plus_to_blank (char *s)
 {
@@ -296,8 +338,9 @@ parse_hexstring (assuan_context_t ctx, const char *string, size_t *len)
   return 0;
 }
 
+
 /* Parse the keygrip in STRING into the provided buffer BUF.  BUF must
-   provide space for 20 bytes. BUF is not changed if the function
+   provide space for 20 bytes.  BUF is not changed if the function
    returns an error. */
 static int
 parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
@@ -319,7 +362,11 @@ parse_keygrip (assuan_context_t ctx, const char *string, unsigned char *buf)
 }
 
 
-/* Write an assuan status line. */
+/* Write an Assuan status line.  KEYWORD is the first item on the
+   status line.  The following arguments are all separated by a space
+   in the output.  The last argument must be a NULL.  Linefeeds and
+   carriage returns characters (which are not allowed in an Assuan
+   status line) are silently quoted in C-style.  */
 gpg_error_t
 agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 {
@@ -462,6 +509,7 @@ bump_key_eventcounter (void)
   eventcounter.key++;
   eventcounter.any++;
 }
+
 
 /* This function should be called for all card reader status
    changes.  This function is assured not to do any context
@@ -1069,6 +1117,8 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 }
 
 
+/* Entry int for the command KEYINFO.  This function handles the
+   command option processing.  For details see hlp_keyinfo above.  */
 static gpg_error_t
 cmd_keyinfo (assuan_context_t ctx, char *line)
 {
@@ -1140,6 +1190,7 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
 
 
 
+/* Helper for cmd_get_passphrase.  */
 static int
 send_back_passphrase (assuan_context_t ctx, int via_data, const char *pw)
 {
@@ -2259,12 +2310,8 @@ cmd_killagent (assuan_context_t ctx, char *line)
     return set_error (GPG_ERR_NOT_SUPPORTED, "no --use-standard-socket");
 
   ctrl->server_local->stopme = 1;
-#ifdef ASSUAN_FORCE_CLOSE
   assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
   return 0;
-#else
-  return gpg_error (GPG_ERR_EOF);
-#endif
 }
 
 
@@ -2415,6 +2462,8 @@ cmd_getinfo (assuan_context_t ctx, char *line)
 
 
 
+/* This function is called by Libassuan to parse the OPTION command.
+   It has been registered similar to the other Assuan commands.  */
 static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
@@ -2574,7 +2623,8 @@ command_has_option (const char *cmd, const char *cmdopt)
 }
 
 
-/* Tell the assuan library about our commands */
+/* Tell Libassuan about our commands.  Also register the other Assuan
+   handlers. */
 static int
 register_commands (assuan_context_t ctx)
 {
@@ -2685,7 +2735,6 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   assuan_set_pointer (ctx, ctrl);
   ctrl->server_local = xcalloc (1, sizeof *ctrl->server_local);
   ctrl->server_local->assuan_ctx = ctx;
-  ctrl->server_local->message_fd = -1;
   ctrl->server_local->use_cache_for_signing = 1;
   ctrl->digest.raw_value = 0;
 
@@ -2733,6 +2782,8 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
 }
 
 
+/* Helper for the pinentry loopback mode.  It merely passes the
+   parameters on to the client.  */
 gpg_error_t
 pinentry_loopback(ctrl_t ctrl, const char *keyword,
                   unsigned char **buffer, size_t *size,

@@ -353,6 +353,8 @@ main ( int argc, char **argv)
   i18n_init ();
   init_common_subsystems (&argc, &argv);
 
+  npth_init ();
+
   /* Check that the Libgcrypt is suitable.  */
   if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
     log_fatal (_("%s is too old (need %s, have %s)\n"), "libgcrypt",
@@ -658,6 +660,7 @@ main ( int argc, char **argv)
 #endif /*0*/
 
   /* Dispatch command.  */
+  err = 0;
   switch (cmd)
     {
     case aGPGConfList:

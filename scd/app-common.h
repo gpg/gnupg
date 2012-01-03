@@ -143,7 +143,8 @@ size_t app_help_read_length_of_cert (int slot, int fid, size_t *r_certoff);
 /*-- app.c --*/
 void app_dump_state (void);
 void application_notify_card_reset (int slot);
-gpg_error_t check_application_conflict (ctrl_t ctrl, const char *name);
+gpg_error_t check_application_conflict (ctrl_t ctrl, int slot,
+                                        const char *name);
 gpg_error_t select_application (ctrl_t ctrl, int slot, const char *name,
                                 app_t *r_app);
 char *get_supported_applications (void);

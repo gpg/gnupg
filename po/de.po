@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-11-24 14:15+0100\n"
+"PO-Revision-Date: 2011-12-20 15:52+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -111,9 +111,9 @@ msgstr "Fehler beim Holen der Karten-Seriennummer: %s\n"
 msgid "detected card with S/N: %s\n"
 msgstr "Erkannte Karte hat die Seriennummer: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "no authentication key for ssh on card: %s\n"
-msgstr "Fehler beim Holen der Authentisierungsschlüssel-ID der Karte: %s\n"
+msgstr "Auf der Karte ist kein Authentisierungsschlüssel für SSH: %s\n"
 
 #, c-format
 msgid "no suitable card key found: %s\n"
@@ -5434,17 +5434,11 @@ msgstr "|AN|Neue Admin-PIN"
 msgid "|N|New PIN"
 msgstr "|N|Neue PIN"
 
-#, fuzzy
-msgid "||Please enter the Reset Code for the card and New PIN"
-msgstr "Bitte geben Sie den Rückstellcode für diese Karte ein"
-
-#, fuzzy
 msgid "||Please enter the Admin PIN and New Admin PIN"
-msgstr "|A|Bitte die Admin-PIN eingeben."
+msgstr "|A|Bitte die Admin-PIN sowie die neue Admin-PIN eingeben."
 
-#, fuzzy
 msgid "||Please enter the PIN and New PIN"
-msgstr "||Bitte die PIN eingeben"
+msgstr "||Bitte die PIN sowie die neue PIN eingeben"
 
 msgid "error reading application data\n"
 msgstr "Fehler beim Lesen der Anwendungsdaten\n"
@@ -5879,6 +5873,18 @@ msgstr ""
 #, c-format
 msgid "line %d: invalid hash algorithm given\n"
 msgstr "Zeile %d: Ungültiges Hashverfahren\n"
+
+#, c-format
+msgid "line %d: invalid authority-key-id\n"
+msgstr "Zeile %d: Ungültige Authentisierungsschlüssel-ID\n"
+
+#, c-format
+msgid "line %d: invalid subject-key-id\n"
+msgstr "Zeile %d: ungültige \"Subject-Key-Id\"\n"
+
+#, c-format
+msgid "line %d: invalid extension syntax\n"
+msgstr "Zeile %d: Ungültiger Syntax der Extension\n"
 
 #, c-format
 msgid "line %d: error reading key `%s' from card: %s\n"
@@ -7924,6 +7930,10 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#, fuzzy
+#~ msgid "||Please enter the Reset Code for the card and New PIN"
+#~ msgstr "Bitte geben Sie den Rückstellcode für diese Karte ein"
 
 #~ msgid " - probably dead - removing lock"
 #~ msgstr " - existiert wahrscheinlich nicht mehr - entferne Sperre"

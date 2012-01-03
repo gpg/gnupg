@@ -1,6 +1,6 @@
 This is a collection of keys we use with the regression tests.
 
-opensc-tests.p12   PKCS#12 key and certificates taken from OpenSC. 
+opensc-tests.p12   PKCS#12 key and certificates taken from OpenSC.
 		   Passphrase is "password"
 
 ov-user.p12        Private tests keys from www.openvalidation.org.
@@ -17,5 +17,8 @@ gte.pem            GTE CyberTrust Global Root
 
 cert-with-117-akas.pem  A certificate with 117 subjectAltNames.
 
+steed-self-signing-nonthority.pem
+                   The STEED Self-Signing Nonthority.
+68A638998DFABAC510EA645CE34F9686B2EDF7EA.key
+                   The private Key of The STEED Self-Signing Nonthority.
 
-		  

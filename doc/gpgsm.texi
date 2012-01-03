@@ -451,10 +451,11 @@ address and the time when you verified the signature.
 @item --validation-model @var{name}
 @opindex validation-model
 This option changes the default validation model.  The only possible
-values are "shell" (which is the default) and "chain" which forces the
-use of the chain model.  The chain model is also used if an option in
-the @file{trustlist.txt} or an attribute of the certificate requests it.
-However the standard model (shell) is in that case always tried first.
+values are "shell" (which is the default), "chain" which forces the
+use of the chain model and "steed" for a new simplified model.  The
+chain model is also used if an option in the @file{trustlist.txt} or
+an attribute of the certificate requests it.  However the standard
+model (shell) is in that case always tried first.
 
 @item --ignore-cert-extension @var{oid}
 @opindex ignore-cert-extension
@@ -1042,9 +1043,9 @@ already existing key.  Key-Length will be ignored when given.
 
 @item Key-Usage: @var{usage-list}
 Space or comma delimited list of key usage, allowed values are
-@samp{encrypt} and @samp{sign}.  This is used to generate the keyUsage
-extension.  Please make sure that the algorithm is capable of this
-usage.  Default is to allow encrypt and sign.
+@samp{encrypt}, @samp{sign} and @samp{cert}.  This is used to generate
+the keyUsage extension.  Please make sure that the algorithm is
+capable of this usage.  Default is to allow encrypt and sign.
 
 @item Name-DN: @var{subject-name}
 This is the Distinguished Name (DN) of the subject in RFC-2253 format.

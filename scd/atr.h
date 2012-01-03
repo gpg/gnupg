@@ -20,7 +20,7 @@
 #ifndef ATR_H
 #define ATR_H
 
-int atr_dump (int slot, FILE *fp);
+char *atr_dump (const void *buffer, size_t buflen);
 
 
 

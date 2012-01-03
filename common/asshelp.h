@@ -26,6 +26,7 @@
 #include "session-env.h"
 
 void setup_libassuan_logging (unsigned int *debug_var_address);
+void set_libassuan_log_cats (unsigned int newcats);
 
 
 gpg_error_t

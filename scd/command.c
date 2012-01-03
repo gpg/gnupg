@@ -1,6 +1,6 @@
 /* command.c - SCdaemon command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2007, 2008, 2009  Free Software Foundation, Inc.
+ *               2007, 2008, 2009, 2011  Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -35,10 +35,12 @@
 #include <ksba.h>
 #include "app-common.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
+#include "atr.h"
 #include "exechelp.h"
 #ifdef HAVE_LIBUSB
 #include "ccid-driver.h"
 #endif
+
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -60,33 +62,39 @@
           int _r = (r);                                     \
           if (gpg_err_code (_r) == GPG_ERR_CARD_NOT_PRESENT \
               || gpg_err_code (_r) == GPG_ERR_CARD_REMOVED  \
+              || gpg_err_code (_r) == GPG_ERR_CARD_RESET    \
               || gpg_err_code (_r) == GPG_ERR_ENODEV )      \
-            update_card_removed ((c)->reader_slot, 1);      \
+            update_card_removed ((c)->server_local->vreader_idx, 1);      \
        } while (0)
 
-#define IS_LOCKED(c)                                                     \
-     (locked_session && locked_session != (c)->server_local              \
-      && (c)->reader_slot != -1 && locked_session->ctrl_backlink         \
-      && (c)->reader_slot == locked_session->ctrl_backlink->reader_slot)
+#define IS_LOCKED(c)                                                    \
+  (locked_session                                                       \
+   && locked_session != (c)->server_local                               \
+   && (c)->server_local->vreader_idx != -1                              \
+   && locked_session->ctrl_backlink                                     \
+   && ((c)->server_local->vreader_idx                                   \
+       == locked_session->ctrl_backlink->server_local->vreader_idx))
 
 
 /* Flag indicating that the reader has been disabled.  */
 static int reader_disabled;
 
 
-/* This structure is used to keep track of open readers (slots). */
-struct slot_status_s
+/* This structure is used to keep track of user readers.  To
+   eventually accommodate this structure for RFID cards, where more
+   than one card is used per reader, we name it virtual reader.  */
+struct vreader_s
 {
   int valid;  /* True if the other objects are valid. */
-  int slot;   /* Slot number of the reader or -1 if not open. */
+  int slot;   /* APDU slot number of the reader or -1 if not open. */
 
   int reset_failed; /* A reset failed. */
 
   int any;    /* Flag indicating whether any status check has been
                  done.  This is set once to indicate that the status
                  tracking for the slot has been initialized.  */
-  unsigned int status;  /* Last status of the slot. */
-  unsigned int changed; /* Last change counter of the slot. */
+  unsigned int status;  /* Last status of the reader. */
+  unsigned int changed; /* Last change counter of the reader. */
 };
 
 
@@ -113,6 +121,9 @@ struct server_local_s
   int event_signal;             /* Or 0 if not used. */
 #endif
 
+  /* Index into the vreader table (command.c) or -1 if not open. */
+  int vreader_idx;
+
   /* True if the card has been removed and a reset is required to
      continue operation. */
   int card_removed;
@@ -131,10 +142,8 @@ struct server_local_s
 };
 
 
-/* The table with information on all used slots.  FIXME: This is a
-   different slot number than the one used by the APDU layer, and
-   should be renamed.  */
-static struct slot_status_s slot_table[10];
+/* The table with information on all used virtual readers.  */
+static struct vreader_s vreader_table[10];
 
 
 /* To keep track of all running sessions, we link all active server
@@ -175,24 +184,39 @@ initialize_module_command (void)
 }
 
 
-/* Update the CARD_REMOVED element of all sessions using the reader
-   given by SLOT to VALUE.  */
+/* Helper to return the slot number for a given virtual reader index
+   VRDR.  In case on an error -1 is returned.  */
+static int
+vreader_slot (int vrdr)
+{
+  if (vrdr == -1 || !(vrdr >= 0 && vrdr < DIM(vreader_table)))
+    return -1;
+  if (!vreader_table [vrdr].valid)
+    return -1;
+  return vreader_table[vrdr].slot;
+}
+
+
+/* Update the CARD_REMOVED element of all sessions using the virtual
+   reader given by VRDR to VALUE.  */
 static void
-update_card_removed (int slot, int value)
+update_card_removed (int vrdr, int value)
 {
   struct server_local_s *sl;
 
+  if (vrdr == -1)
+    return;
+
   for (sl=session_list; sl; sl = sl->next_session)
     if (sl->ctrl_backlink
-        && sl->ctrl_backlink->reader_slot == slot)
+        && sl->ctrl_backlink->server_local->vreader_idx == vrdr)
       {
         sl->card_removed = value;
       }
   /* Let the card application layer know about the removal.  */
   if (value)
-    application_notify_card_reset (slot);
+    application_notify_card_reset (vreader_slot (vrdr));
 }
-
 
 
 /* Check whether the option NAME appears in LINE.  Returns 1 or 0. */
@@ -280,10 +304,10 @@ hex_to_buffer (const char *string, size_t *r_length)
 static void
 do_reset (ctrl_t ctrl, int send_reset)
 {
-  int slot = ctrl->reader_slot;
-  int err;
+  int vrdr = ctrl->server_local->vreader_idx;
+  int slot;
 
-  if (!(slot == -1 || (slot >= 0 && slot < DIM(slot_table))))
+  if (!(vrdr == -1 || (vrdr >= 0 && vrdr < DIM(vreader_table))))
     BUG ();
 
   /* If there is an active application, release it.  Tell all other
@@ -299,7 +323,7 @@ do_reset (ctrl_t ctrl, int send_reset)
 
           for (sl=session_list; sl; sl = sl->next_session)
             if (sl->ctrl_backlink
-                && sl->ctrl_backlink->reader_slot == slot)
+                && sl->ctrl_backlink->server_local->vreader_idx == vrdr)
               {
                 sl->app_ctx_marked_for_release = 1;
               }
@@ -308,13 +332,22 @@ do_reset (ctrl_t ctrl, int send_reset)
 
   /* If we want a real reset for the card, send the reset APDU and
      tell the application layer about it.  */
+  slot = vreader_slot (vrdr);
   if (slot != -1 && send_reset && !IS_LOCKED (ctrl) )
     {
-      if (apdu_reset (slot))
-        {
-          slot_table[slot].valid = 0;
-        }
       application_notify_card_reset (slot);
+      switch (apdu_reset (slot))
+        {
+        case 0:
+          break;
+        case SW_HOST_NO_CARD:
+        case SW_HOST_CARD_INACTIVE:
+          break;
+        default:
+	  apdu_close_reader (slot);
+          vreader_table[vrdr].slot = slot = -1;
+          break;
+        }
     }
 
   /* If we hold a lock, unlock now. */
@@ -327,25 +360,24 @@ do_reset (ctrl_t ctrl, int send_reset)
   /* Reset the card removed flag for the current reader.  We need to
      take the lock here so that the ticker thread won't concurrently
      try to update the file.  Calling update_reader_status_file is
-     required to get hold of the new status of the card in the slot
+     required to get hold of the new status of the card in the vreader
      table.  */
   err = npth_mutex_lock (&status_file_update_lock);
   if (err)
     {
-      log_error ("failed to acquire status_fle_update lock: %s\n",
-		 strerror (err));
-      ctrl->reader_slot = -1;
+      log_error ("failed to acquire status_file_update lock\n");
+      ctrl->server_local->vreader_idx = -1;
       return;
     }
   update_reader_status_file (0);  /* Update slot status table.  */
-  update_card_removed (slot, 0);  /* Clear card_removed flag.  */
+  update_card_removed (vrdr, 0);  /* Clear card_removed flag.  */
   err = npth_mutex_unlock (&status_file_update_lock);
   if (err)
     log_error ("failed to release status_file_update lock: %s\n",
 	       strerror (err));
 
   /* Do this last, so that the update_card_removed above does its job.  */
-  ctrl->reader_slot = -1;
+  ctrl->server_local->vreader_idx = -1;
 }
 
 
@@ -385,35 +417,38 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 }
 
 
-/* Return the slot of the current reader or open the reader if no
-   other sessions are using a reader.  Note, that we currently support
+/* Return the index of the current reader or open the reader if no
+   other sessions are using that reader.  If it is not possible to
+   open the reader -1 is returned.  Note, that we currently support
    only one reader but most of the code (except for this function)
    should be able to cope with several readers.  */
 static int
-get_reader_slot (void)
+get_current_reader (void)
 {
-  struct slot_status_s *ss;
+  struct vreader_s *vr;
 
-  ss = &slot_table[0]; /* One reader for now. */
+  /* We only support one reader for now.  */
+  vr = &vreader_table[0];
 
-  /* Initialize the item if needed. */
-  if (!ss->valid)
+  /* Initialize the vreader item if not yet done. */
+  if (!vr->valid)
     {
-      ss->slot = -1;
-      ss->valid = 1;
+      vr->slot = -1;
+      vr->valid = 1;
     }
 
   /* Try to open the reader. */
-  if (ss->slot == -1)
+  if (vr->slot == -1)
     {
       int no_service_flag;
-      ss->slot = apdu_open_reader (opt.reader_port, &no_service_flag);
+
+      vr->slot = apdu_open_reader (opt.reader_port, &no_service_flag);
 
       /* If we still don't have a slot, we have no readers.
 	 Invalidate for now until a reader is attached. */
-      if(ss->slot == -1)
+      if (vr->slot == -1)
 	{
-	  ss->valid = 0;
+	  vr->valid = 0;
 	}
 
       if (no_service_flag)
@@ -423,18 +458,17 @@ get_reader_slot (void)
         }
     }
 
-  /* Return the slot_table index.  */
-  return 0;
+  /* Return the vreader index or -1.  */
+  return vr->valid ? 0 : -1;
 }
 
-/* If the card has not yet been opened, do it.  Note that this
-   function returns an Assuan error, so don't map the error a second
-   time.  */
+
+/* If the card has not yet been opened, do it.  */
 static gpg_error_t
 open_card (ctrl_t ctrl, const char *apptype)
 {
   gpg_error_t err;
-  int slot;
+  int vrdr;
 
   if (reader_disabled)
     return gpg_error (GPG_ERR_NOT_OPERATIONAL);
@@ -462,21 +496,25 @@ open_card (ctrl_t ctrl, const char *apptype)
      need to check that the client didn't requested a specific
      application different from the one in use before we continue. */
   if (ctrl->app_ctx)
-    return check_application_conflict (ctrl, apptype);
+    {
+      return check_application_conflict
+        (ctrl, vreader_slot (ctrl->server_local->vreader_idx), apptype);
+    }
 
-  /* Setup the slot and select the application.  */
-  if (ctrl->reader_slot != -1)
-    slot = ctrl->reader_slot;
+  /* Setup the vreader and select the application.  */
+  if (ctrl->server_local->vreader_idx != -1)
+    vrdr = ctrl->server_local->vreader_idx;
   else
-    slot = get_reader_slot ();
-  ctrl->reader_slot = slot;
-  if (slot == -1)
+    vrdr = get_current_reader ();
+  ctrl->server_local->vreader_idx = vrdr;
+  if (vrdr == -1)
     err = gpg_error (reader_disabled? GPG_ERR_NOT_OPERATIONAL: GPG_ERR_CARD);
   else
     {
       /* Fixme: We should move the apdu_connect call to
          select_application.  */
       int sw;
+      int slot = vreader_slot (vrdr);
 
       ctrl->server_local->disconnect_allowed = 0;
       sw = apdu_connect (slot);
@@ -484,6 +522,8 @@ open_card (ctrl_t ctrl, const char *apptype)
         {
           if (sw == SW_HOST_NO_CARD)
             err = gpg_error (GPG_ERR_CARD_NOT_PRESENT);
+          else if (sw == SW_HOST_CARD_INACTIVE)
+            err = gpg_error (GPG_ERR_CARD_RESET);
           else
             err = gpg_error (GPG_ERR_CARD);
 	}
@@ -523,8 +563,10 @@ cmd_serialno (assuan_context_t ctx, char *line)
   char *serial_and_stamp;
   char *serial;
   time_t stamp;
+  int retries = 0;
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
+ retry:
   if (!reader_disabled && ctrl->server_local->card_removed)
     {
       if ( IS_LOCKED (ctrl) )
@@ -533,7 +575,12 @@ cmd_serialno (assuan_context_t ctx, char *line)
     }
 
   if ((rc = open_card (ctrl, *line? line:NULL)))
-    return rc;
+    {
+      /* In case of an inactive card, retry once.  */
+      if (gpg_err_code (rc) == GPG_ERR_CARD_RESET && retries++ < 1)
+        goto retry;
+      return rc;
+    }
 
   rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
   if (rc)
@@ -1613,8 +1660,8 @@ static const char hlp_getinfo[] =
   "\n"
   "socket_name - Return the name of the socket.\n"
   "\n"
-  "status - Return the status of the current slot (in the future, may\n"
-  "also return the status of all slots).  The status is a list of\n"
+  "status - Return the status of the current reader (in the future, may\n"
+  "also return the status of all readers).  The status is a list of\n"
   "one-character flags.  The following flags are currently defined:\n"
   "  'u'  Usable card present.  This is the normal state during operation.\n"
   "  'r'  Card removed.  A reset is necessary.\n"
@@ -1658,22 +1705,18 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "status"))
     {
       ctrl_t ctrl = assuan_get_pointer (ctx);
-      int slot = ctrl->reader_slot;
+      int vrdr = ctrl->server_local->vreader_idx;
       char flag = 'r';
 
-      if (!ctrl->server_local->card_removed && slot != -1)
+      if (!ctrl->server_local->card_removed && vrdr != -1)
 	{
-	  struct slot_status_s *ss;
+	  struct vreader_s *vr;
 
-	  if (!(slot >= 0 && slot < DIM(slot_table)))
+	  if (!(vrdr >= 0 && vrdr < DIM(vreader_table)))
 	    BUG ();
 
-	  ss = &slot_table[slot];
-
-	  if (!ss->valid)
-	    BUG ();
-
-	  if (ss->any && (ss->status & 1))
+	  vr = &vreader_table[vrdr];
+	  if (vr->valid && vr->any && (vr->status & 1))
 	    flag = 'u';
 	}
       rc = assuan_send_data (ctx, &flag, 1);
@@ -1759,7 +1802,7 @@ cmd_disconnect (assuan_context_t ctx, char *line)
 
 
 static const char hlp_apdu[] =
-  "APDU [--atr] [--more] [--exlen[=N]] [hexstring]\n"
+  "APDU [--[dump-]atr] [--more] [--exlen[=N]] [hexstring]\n"
   "\n"
   "Send an APDU to the current reader.  This command bypasses the high\n"
   "level functions and sends the data directly to the card.  HEXSTRING\n"
@@ -1788,8 +1831,12 @@ cmd_apdu (assuan_context_t ctx, char *line)
   int handle_more;
   const char *s;
   size_t exlen;
+  int slot;
 
-  with_atr = has_option (line, "--atr");
+  if (has_option (line, "--dump-atr"))
+    with_atr = 2;
+  else
+    with_atr = has_option (line, "--atr");
   handle_more = has_option (line, "--more");
 
   if ((s=has_option_name (line, "--exlen")))
@@ -1810,21 +1857,46 @@ cmd_apdu (assuan_context_t ctx, char *line)
   if ((rc = open_card (ctrl, NULL)))
     return rc;
 
+  slot = vreader_slot (ctrl->server_local->vreader_idx);
+
   if (with_atr)
     {
       unsigned char *atr;
       size_t atrlen;
       char hexbuf[400];
 
-      atr = apdu_get_atr (ctrl->reader_slot, &atrlen);
+      atr = apdu_get_atr (slot, &atrlen);
       if (!atr || atrlen > sizeof hexbuf - 2 )
         {
           rc = gpg_error (GPG_ERR_INV_CARD);
           goto leave;
         }
-      bin2hex (atr, atrlen, hexbuf);
+      if (with_atr == 2)
+        {
+          char *string, *p, *pend;
+
+          string = atr_dump (atr, atrlen);
+          if (string)
+            {
+              for (rc=0, p=string; !rc && (pend = strchr (p, '\n')); p = pend+1)
+                {
+                  rc = assuan_send_data (ctx, p, pend - p + 1);
+                  if (!rc)
+                    rc = assuan_send_data (ctx, NULL, 0);
+                }
+              if (!rc && *p)
+                rc = assuan_send_data (ctx, p, strlen (p));
+              es_free (string);
+              if (rc)
+                goto leave;
+            }
+        }
+      else
+        {
+          bin2hex (atr, atrlen, hexbuf);
+          send_status_info (ctrl, "CARD-ATR", hexbuf, strlen (hexbuf), NULL, 0);
+        }
       xfree (atr);
-      send_status_info (ctrl, "CARD-ATR", hexbuf, strlen (hexbuf), NULL, 0);
     }
 
   apdu = hex_to_buffer (line, &apdulen);
@@ -1838,7 +1910,7 @@ cmd_apdu (assuan_context_t ctx, char *line)
       unsigned char *result = NULL;
       size_t resultlen;
 
-      rc = apdu_send_direct (ctrl->reader_slot, exlen,
+      rc = apdu_send_direct (slot, exlen,
                              apdu, apdulen, handle_more,
                              &result, &resultlen);
       if (rc)
@@ -1869,15 +1941,8 @@ cmd_killscd (assuan_context_t ctx, char *line)
   (void)line;
 
   ctrl->server_local->stopme = 1;
-#ifdef ASSUAN_FORCE_CLOSE
   assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
   return 0;
-#else
-  /* Actually returning an EOF does not anymore work with modern
-     Libassuan versions.  However we keep that non working code until
-     we make a Libassuan with the force close flag a requirement.  */
-  return gpg_error (GPG_ERR_EOF);
-#endif
 }
 
 
@@ -1988,12 +2053,13 @@ scd_command_handler (ctrl_t ctrl, int fd)
   session_list = ctrl->server_local;
   ctrl->server_local->ctrl_backlink = ctrl;
   ctrl->server_local->assuan_ctx = ctx;
+  ctrl->server_local->vreader_idx = -1;
 
   /* We open the reader right at startup so that the ticker is able to
      update the status file. */
-  if (ctrl->reader_slot == -1)
+  if (ctrl->server_local->vreader_idx == -1)
     {
-      ctrl->reader_slot = get_reader_slot ();
+      ctrl->server_local->vreader_idx = get_current_reader ();
     }
 
   /* Command processing loop. */
@@ -2195,32 +2261,33 @@ update_reader_status_file (int set_card_removed_flag)
   int idx;
   unsigned int status, changed;
 
-  /* Make sure that the reader has been opened.  Like get_reader_slot,
+  /* Make sure that a reader has been opened.  Like get_current_reader,
      this part of the code assumes that there is only one reader.  */
-  if (!slot_table[0].valid)
-    (void)get_reader_slot ();
+  if (!vreader_table[0].valid)
+    (void)get_current_reader ();
 
   /* Note, that we only try to get the status, because it does not
      make sense to wait here for a operation to complete.  If we are
      busy working with a card, delays in the status file update should
      be acceptable. */
-  for (idx=0; idx < DIM(slot_table); idx++)
+  for (idx=0; idx < DIM(vreader_table); idx++)
     {
-      struct slot_status_s *ss = slot_table + idx;
+      struct vreader_s *vr = vreader_table + idx;
       struct server_local_s *sl;
       int sw_apdu;
 
-      if (!ss->valid || ss->slot == -1)
+      if (!vr->valid || vr->slot == -1)
         continue; /* Not valid or reader not yet open. */
 
-      sw_apdu = apdu_get_status (ss->slot, 0, &status, &changed);
+      sw_apdu = apdu_get_status (vr->slot, 0, &status, &changed);
       if (sw_apdu == SW_HOST_NO_READER)
         {
           /* Most likely the _reader_ has been unplugged.  */
-	  apdu_close_reader(ss->slot);
-	  ss->valid = 0;
+          application_notify_card_reset (vr->slot);
+	  apdu_close_reader (vr->slot);
+          vr->slot = -1;
           status = 0;
-          changed = ss->changed;
+          changed = vr->changed;
         }
       else if (sw_apdu)
         {
@@ -2228,21 +2295,21 @@ update_reader_status_file (int set_card_removed_flag)
           continue;
         }
 
-      if (!ss->any || ss->status != status || ss->changed != changed )
+      if (!vr->any || vr->status != status || vr->changed != changed )
         {
           char *fname;
           char templ[50];
           FILE *fp;
 
-          log_info ("updating slot %d status: 0x%04X->0x%04X (%u->%u)\n",
-                    ss->slot, ss->status, status, ss->changed, changed);
-          ss->status = status;
-          ss->changed = changed;
+          log_info ("updating reader %d (%d) status: 0x%04X->0x%04X (%u->%u)\n",
+                    idx, vr->slot, vr->status, status, vr->changed, changed);
+          vr->status = status;
+          vr->changed = changed;
 
-	  /* FIXME: Should this be IDX instead of ss->slot?  This
+	  /* FIXME: Should this be IDX instead of vr->slot?  This
 	     depends on how client sessions will associate the reader
 	     status with their session.  */
-          snprintf (templ, sizeof templ, "reader_%d.status", ss->slot);
+          snprintf (templ, sizeof templ, "reader_%d.status", vr->slot);
           fname = make_filename (opt.homedir, templ, NULL );
           fp = fopen (fname, "w");
           if (fp)
@@ -2270,8 +2337,8 @@ update_reader_status_file (int set_card_removed_flag)
                 envs[0] = envstr;
                 envs[1] = NULL;
 
-                sprintf (numbuf1, "%d", ss->slot);
-                sprintf (numbuf2, "0x%04X", ss->status);
+                sprintf (numbuf1, "%d", vr->slot);
+                sprintf (numbuf2, "0x%04X", vr->status);
                 sprintf (numbuf3, "0x%04X", status);
                 args[0] = "--reader-port";
                 args[1] = numbuf1;
@@ -2299,10 +2366,10 @@ update_reader_status_file (int set_card_removed_flag)
           /* Set the card removed flag for all current sessions.  We
              will set this on any card change because a reset or
              SERIALNO request must be done in any case.  */
-          if (ss->any && set_card_removed_flag)
+          if (vr->any && set_card_removed_flag)
             update_card_removed (idx, 1);
 
-          ss->any = 1;
+          vr->any = 1;
 
           /* Send a signal to all clients who applied for it.  */
           send_client_notifications ();
@@ -2318,8 +2385,9 @@ update_reader_status_file (int set_card_removed_flag)
             {
               /* FIXME: Use a real timeout.  */
               /* At least one connection and all allow a disconnect.  */
-              log_info ("disconnecting card in slot %d\n", ss->slot);
-              apdu_disconnect (ss->slot);
+              log_info ("disconnecting card in reader %d (%d)\n",
+                        idx, vr->slot);
+              apdu_disconnect (vr->slot);
             }
         }
 

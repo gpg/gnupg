@@ -5,10 +5,6 @@
 	commit log, and generate a top-level ChangeLog file from logs at
 	"make dist".  See doc/HACKING for details.
 
-2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
-
-	* Makefile.am: Port to NPth.
-
 2011-08-26  Werner Koch  <wk@g10code.com>
 
 	* gpgconf-comp.c (gc_component): Mark for translation.  Suggested

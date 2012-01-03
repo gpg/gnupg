@@ -15,21 +15,6 @@
 	* certcache.c (classify_pattern): Remove unused variable and make
 	explicit substring search work.
 
-2011-11-24  Werner Koch  <wk@g10code.com>
-
-	* ks-engine-http.c (ks_http_help): Do not print help for hkp.
-	* ks-engine-hkp.c (ks_hkp_help): Print help only for hkp.
-	(send_request): Remove test code.
-	(map_host): Use xtrymalloc.
-
-	* certcache.c (classify_pattern): Remove unused variable and make
-	explicit substring search work.
-
-2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
-
-	* Makefile.am, certcache.c, crlfetch.c, dirmngr.c, ldap-wrapper.c:
-	Port to NPth.
-
 2011-06-01  Marcus Brinkmann  <mb@g10code.com>
 
 	* Makefile.am (dirmngr_ldap_CFLAGS): Add $(LIBGCRYPT_CFLAGS),

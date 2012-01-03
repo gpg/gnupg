@@ -1167,13 +1167,8 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
    :CUSTOM_ID: i-get-sed-errors-when-running-configure-on-mac-os-x
    :END:
 
-    This will be fixed after GnuPG has been upgraded to autoconf-2.50.
-    Until then, find the line setting CDPATH in the configure script
-    and place an:
-
-    : unset CDPATH
-
-    statement below it.
+    This problem has been fixed for all modern GnuPG versions.
+    (By using an autoconf 2.50 generated configure script).
 
 ** Why does GnuPG 1.0.6 bail out on keyrings used with 1.0.7?
    :PROPERTIES:
@@ -1468,6 +1463,41 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
 
     Note that the invocation of sort is also required to wait for the
     of the listing before before starting the import.
+
+
+* Bug reporting and hacking
+  :PROPERTIES:
+  :CUSTOM_ID: bugreports-et-al
+  :END:
+
+** Copyright asssignments
+  :PROPERTIES:
+  :CUSTOM_ID: copyright-assigments
+  :END:
+
+** U.S. export restrictions
+  :PROPERTIES:
+  :CUSTOM_ID: us-export-restrictions
+  :END:
+
+GnuPG has originally been developed in Germany because we have been
+able to do that without being affected by the US export restrictions.
+We had to reject any contributions from US citizens or from people
+living the the US.  That changed by end of 2000 when the export
+restrictions were basically dropped for all kind of freely available
+software.  However there are still some requirements in the US.
+Quoting David Shaw: mail
+#+begin_quote
+For each release of GPG that I contributed to, I sent an email
+containing a pointer to the new source code to the Commerce
+Department.  The rules changed slightly in 2004, so that you could
+send a single email and then be done until the information in that
+email changed, so I just sent "www.gnupg.org" and haven't bothered
+with the email since.
+#+end_quote
+
+The rules: http://www.bis.doc.gov/encryption/pubavailencsourcecodenofify.html
+The 2004 rule change: http://edocket.access.gpo.gov/2004/04-26992.htm
 
 
 * Acknowledgements

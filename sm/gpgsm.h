@@ -195,7 +195,9 @@ struct server_control_s
                          certificates up the chain (0 = none, 1 = only
                          signer) */
   int use_ocsp;       /* Set to true if OCSP should be used. */
-  int validation_model; /* Set to 1 for the chain model.  */
+  int validation_model; /* 0 := standard model (shell),
+                           1 := chain model,
+                           2 := STEED model. */
 };
 
 
@@ -307,7 +309,7 @@ int gpgsm_create_cms_signature (ctrl_t ctrl,
 /* Flags used with  gpgsm_validate_chain.  */
 #define VALIDATE_FLAG_NO_DIRMNGR  1
 #define VALIDATE_FLAG_CHAIN_MODEL 2
-
+#define VALIDATE_FLAG_STEED       4
 
 int gpgsm_walk_cert_chain (ctrl_t ctrl,
                            ksba_cert_t start, ksba_cert_t *r_next);
@@ -326,6 +328,7 @@ int gpgsm_cert_use_verify_p (ksba_cert_t cert);
 int gpgsm_cert_use_decrypt_p (ksba_cert_t cert);
 int gpgsm_cert_use_cert_p (ksba_cert_t cert);
 int gpgsm_cert_use_ocsp_p (ksba_cert_t cert);
+int gpgsm_cert_has_well_known_private_key (ksba_cert_t cert);
 int gpgsm_certs_identical_p (ksba_cert_t cert_a, ksba_cert_t cert_b);
 int gpgsm_add_cert_to_certlist (ctrl_t ctrl, ksba_cert_t cert,
                                 certlist_t *listaddr, int is_encrypt_to);

@@ -33,6 +33,22 @@
      %commit
      %echo done
      EOF
+
+   This parameter file was used to create the STEED CA:
+     Key-Type: RSA
+     Key-Length: 1024
+     Key-Grip: 68A638998DFABAC510EA645CE34F9686B2EDF7EA
+     Key-Usage: cert
+     Serial: 1
+     Name-DN: CN=The STEED Self-Signing Nonthority
+     Not-Before: 2011-11-11
+     Not-After: 2106-02-06
+     Subject-Key-Id: 68A638998DFABAC510EA645CE34F9686B2EDF7EA
+     Extension: 2.5.29.19 c 30060101ff020101
+     Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff
+     Signing-Key: 68A638998DFABAC510EA645CE34F9686B2EDF7EA
+     %commit
+
 */
 
 
@@ -68,7 +84,10 @@ enum para_name
     pNOTBEFORE,
     pNOTAFTER,
     pSIGNINGKEY,
-    pHASHALGO
+    pHASHALGO,
+    pAUTHKEYID,
+    pSUBJKEYID,
+    pEXTENSION
   };
 
 struct para_data_s
@@ -89,6 +108,8 @@ struct reqgen_ctrl_s
 };
 
 
+static const char oidstr_authorityKeyIdentifier[] = "2.5.29.35";
+static const char oidstr_subjectKeyIdentifier[] = "2.5.29.14";
 static const char oidstr_keyUsage[] = "2.5.29.15";
 static const char oidstr_basicConstraints[] = "2.5.29.19";
 static const char oidstr_standaloneCertificate[] = "1.3.6.1.4.1.11591.2.2.1";
@@ -170,8 +191,11 @@ parse_parameter_usage (struct para_data_s *para, enum para_name key)
         ;
       else if ( !ascii_strcasecmp (p, "sign") )
         use |= GCRY_PK_USAGE_SIGN;
-      else if ( !ascii_strcasecmp (p, "encrypt") )
+      else if ( !ascii_strcasecmp (p, "encrypt")
+                || !ascii_strcasecmp (p, "encr") )
         use |= GCRY_PK_USAGE_ENCR;
+      else if ( !ascii_strcasecmp (p, "cert") )
+        use |= GCRY_PK_USAGE_CERT;
       else
         {
           log_error ("line %d: invalid usage list\n", r->lnr);
@@ -225,6 +249,9 @@ read_parameters (ctrl_t ctrl, estream_t fp, estream_t out_fp)
     { "Not-After",      pNOTAFTER },
     { "Signing-Key",    pSIGNINGKEY },
     { "Hash-Algo",      pHASHALGO },
+    { "Authority-Key-Id", pAUTHKEYID },
+    { "Subject-Key-Id", pSUBJKEYID },
+    { "Extension",      pEXTENSION, 1 },
     { NULL, 0 }
   };
   char line[1024], *p;
@@ -594,6 +621,74 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
       }
   }
 
+  /* Check the optional AuthorityKeyId.  */
+  string = get_parameter_value (para, pAUTHKEYID, 0);
+  if (string)
+    {
+      for (s=string, i=0; hexdigitp (s); s++, i++)
+        ;
+      if (*s || (i&1))
+        {
+          r = get_parameter (para, pAUTHKEYID, 0);
+          log_error (_("line %d: invalid authority-key-id\n"), r->lnr);
+          xfree (cardkeyid);
+          return gpg_error (GPG_ERR_INV_PARAMETER);
+        }
+    }
+
+  /* Check the optional SubjectKeyId.  */
+  string = get_parameter_value (para, pSUBJKEYID, 0);
+  if (string)
+    {
+      for (s=string, i=0; hexdigitp (s); s++, i++)
+        ;
+      if (*s || (i&1))
+        {
+          r = get_parameter (para, pSUBJKEYID, 0);
+          log_error (_("line %d: invalid subject-key-id\n"), r->lnr);
+          xfree (cardkeyid);
+          return gpg_error (GPG_ERR_INV_PARAMETER);
+        }
+    }
+
+  /* Check the optional extensions. */
+  for (seq=0; (string=get_parameter_value (para, pEXTENSION, seq)); seq++)
+    {
+      int okay = 0;
+
+      s = strpbrk (string, " \t:");
+      if (s)
+        {
+          s++;
+          while (spacep (s))
+            s++;
+          if (*s && strchr ("nNcC", *s))
+            {
+              s++;
+              while (spacep (s))
+                s++;
+              if (*s == ':')
+                s++;
+              if (*s)
+                {
+                  while (spacep (s))
+                    s++;
+                  for (i=0; hexdigitp (s); s++, i++)
+                    ;
+                  if (!((*s && *s != ':') || !i || (i&1)))
+                    okay = 1;
+                }
+            }
+        }
+      if (!okay)
+        {
+          r = get_parameter (para, pEXTENSION, seq);
+          log_error (_("line %d: invalid extension syntax\n"), r->lnr);
+          xfree (cardkeyid);
+          return gpg_error (GPG_ERR_INV_PARAMETER);
+        }
+    }
+
   /* Create or retrieve the public key.  */
   if (cardkeyid) /* Take the key from the current smart card. */
     {
@@ -838,6 +933,14 @@ create_request (ctrl_t ctrl,
       err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
                                         "\x03\x02\x04\x30", 4);
     }
+  else if (use == GCRY_PK_USAGE_CERT)
+    {
+      /* For certify only we encode the bits:
+         KSBA_KEYUSAGE_KEY_CERT_SIGN
+         KSBA_KEYUSAGE_CRL_SIGN */
+      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
+                                        "\x03\x02\x01\x06", 4);
+    }
   else
     err = 0; /* Both or none given: don't request one. */
   if (err)
@@ -889,7 +992,7 @@ create_request (ctrl_t ctrl,
           *p++ = '0';
           strcpy (p, string);
           for (p=hexbuf, len=0; p[0] && p[1]; p += 2)
-            ((unsigned char*)hexbuf)[len++] = xtoi_2 (s);
+            ((unsigned char*)hexbuf)[len++] = xtoi_2 (p);
           /* Now build the S-expression.  */
           snprintf (numbuf, DIM(numbuf), "%u:", (unsigned int)len);
           buf = p = xtrymalloc (1 + strlen (numbuf) + len + 1 + 1);
@@ -1009,6 +1112,139 @@ create_request (ctrl_t ctrl,
             goto leave;
           }
       }
+
+      /* Insert the AuthorityKeyId.  */
+      string = get_parameter_value (para, pAUTHKEYID, 0);
+      if (string)
+        {
+          char *hexbuf;
+
+          /* Allocate a buffer for in-place conversion.  We also add 4
+             extra bytes space for the tags and lengths fields.  */
+          hexbuf = xtrymalloc (4 + strlen (string) + 1);
+          if (!hexbuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          strcpy (hexbuf+4, string);
+          for (p=hexbuf+4, len=0; p[0] && p[1]; p += 2)
+            ((unsigned char*)hexbuf)[4+len++] = xtoi_2 (p);
+          if (len > 125)
+            {
+              err = gpg_error (GPG_ERR_TOO_LARGE);
+              xfree (hexbuf);
+              goto leave;
+            }
+          hexbuf[0] = 0x30;  /* Tag for a Sequence.  */
+          hexbuf[1] = len+2;
+          hexbuf[2] = 0x80;  /* Context tag for an implicit Octet string.  */
+          hexbuf[3] = len;
+          err = ksba_certreq_add_extension (cr, oidstr_authorityKeyIdentifier,
+                                            0,
+                                            hexbuf, 4+len);
+          xfree (hexbuf);
+          if (err)
+            {
+              log_error ("error setting the authority-key-id: %s\n",
+                         gpg_strerror (err));
+              goto leave;
+            }
+        }
+
+      /* Insert the SubjectKeyId.  */
+      string = get_parameter_value (para, pSUBJKEYID, 0);
+      if (string)
+        {
+          char *hexbuf;
+
+          /* Allocate a buffer for in-place conversion.  We also add 2
+             extra bytes space for the tag and length field.  */
+          hexbuf = xtrymalloc (2 + strlen (string) + 1);
+          if (!hexbuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          strcpy (hexbuf+2, string);
+          for (p=hexbuf+2, len=0; p[0] && p[1]; p += 2)
+            ((unsigned char*)hexbuf)[2+len++] = xtoi_2 (p);
+          if (len > 127)
+            {
+              err = gpg_error (GPG_ERR_TOO_LARGE);
+              xfree (hexbuf);
+              goto leave;
+            }
+          hexbuf[0] = 0x04;  /* Tag for an Octet string.  */
+          hexbuf[1] = len;
+          err = ksba_certreq_add_extension (cr, oidstr_subjectKeyIdentifier, 0,
+                                            hexbuf, 2+len);
+          xfree (hexbuf);
+          if (err)
+            {
+              log_error ("error setting the subject-key-id: %s\n",
+                         gpg_strerror (err));
+              goto leave;
+            }
+        }
+
+      /* Insert additional extensions.  */
+      for (seq=0; (string = get_parameter_value (para, pEXTENSION, seq)); seq++)
+        {
+          char *hexbuf;
+          char *oidstr;
+          int crit = 0;
+
+          s = strpbrk (string, " \t:");
+          if (!s)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              goto leave;
+            }
+
+          oidstr = xtrymalloc (s - string + 1);
+          if (!oidstr)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          memcpy (oidstr, string, (s-string));
+          oidstr[(s-string)] = 0;
+
+          s++;
+          while (spacep (s))
+            s++;
+          if (!*s)
+            {
+              err = gpg_error (GPG_ERR_INTERNAL);
+              xfree (oidstr);
+              goto leave;
+            }
+
+          if (strchr ("cC", *s))
+            crit = 1;
+          s++;
+          while (spacep (s))
+            s++;
+          if (*s == ':')
+            s++;
+          while (spacep (s))
+            s++;
+
+          hexbuf = xtrystrdup (s);
+          if (!hexbuf)
+            {
+              err = gpg_error_from_syserror ();
+              xfree (oidstr);
+              goto leave;
+            }
+          for (p=hexbuf, len=0; p[0] && p[1]; p += 2)
+            ((unsigned char*)hexbuf)[len++] = xtoi_2 (p);
+          err = ksba_certreq_add_extension (cr, oidstr, crit,
+                                            hexbuf, len);
+          xfree (oidstr);
+          xfree (hexbuf);
+        }
     }
   else
     sigkey = public;

@@ -2004,6 +2004,8 @@ gpgsm_parse_validation_model (const char *model)
     return 0;
   else if ( !ascii_strcasecmp (model, "chain") )
     return 1;
+  else if ( !ascii_strcasecmp (model, "steed") )
+    return 2;
   else
     return -1;
 }

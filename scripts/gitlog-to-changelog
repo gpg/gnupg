@@ -64,6 +64,7 @@ OPTIONS:
                   makes a change to SHA1's commit log text or metadata.
    --append-dot append a dot to the first line of each commit message if
                   there is no other punctuation or blank at the end.
+   --tear-off   tear off all commit log lines after a '--' line.
    --since=DATE convert only the logs since DATE;
                   the default is to convert all log entries.
    --format=FMT set format string for commit subject and body;
@@ -175,6 +176,7 @@ sub parse_amend_file($)
   my $format_string = '%s%n%b%n';
   my $amend_file;
   my $append_dot = 0;
+  my $tear_off = 0;
   GetOptions
     (
      help => sub { usage 0 },
@@ -183,6 +185,7 @@ sub parse_amend_file($)
      'format=s' => \$format_string,
      'amend=s' => \$amend_file,
      'append-dot' => \$append_dot,
+     'tear-off' => \$tear_off,
     ) or usage 1;
 
 
@@ -280,6 +283,18 @@ sub parse_amend_file($)
       # Omit "Co-authored-by..." and "Signed-off-by..." lines.
       @line = grep !/^Signed-off-by: .*>$/, @line;
       @line = grep !/^Co-authored-by: /, @line;
+
+      # Remove everything after a line with 2 dashes at the beginning.
+      if ($tear_off)
+        {
+           my @tmpline;
+           foreach (@line)
+             {
+	       last if /^--\s*$/;
+               push @tmpline,$_;
+             }
+           @line = @tmpline;
+        }
 
       # Remove leading and trailing blank lines.
       if (@line)

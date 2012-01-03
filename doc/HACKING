@@ -23,7 +23,8 @@ and ChangeLog entries don't give enough of the big picture.  Omit the
 leading TABs that you're used to seeing in a "real" ChangeLog file, but
 keep the maximum line length at 72 or smaller, so that the generated
 ChangeLog lines, each with its leading TAB, will not exceed 80 columns.
-
+If you want to add text which shall not be copied to the ChangeLog,
+separate it by a line consisting of two dashes at the begin of a line.
 
 
 ===> What follows is probably out of date <===
@@ -39,15 +40,17 @@ RFCs
 
 1750  Randomness Recommendations for Security.
 
-1991  PGP Message Exchange Formats.
-
-2015  MIME Security with Pretty Good Privacy (PGP).
+1991  PGP Message Exchange Formats (obsolete)
 
 2144  The CAST-128 Encryption Algorithm.
 
 2279  UTF-8, a transformation format of ISO 10646.
 
-2440  OpenPGP.
+2440  OpenPGP (obsolete).
+
+3156  MIME Security with Pretty Good Privacy (PGP).
+
+4880  Current OpenPGP specification.
 
 
 

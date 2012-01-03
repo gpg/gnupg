@@ -583,7 +583,8 @@ use_hardlinks_p (const char *tname)
   strcpy (lname, tname);
   strcat (lname, "x");
 
-  link (tname, lname);
+  /* We ignore the return value of link() because it is unreliable.  */
+  (void) link (tname, lname);
 
   if (stat (tname, &sb))
     res = -1;  /* Ooops.  */
@@ -1004,7 +1005,8 @@ dotlock_take_unix (dotlock_t h, long timeout)
     {
       struct stat sb;
 
-      link (h->tname, h->lockname);
+      /* We ignore the return value of link() because it is unreliable.  */
+      (void) link (h->tname, h->lockname);
 
       if (stat (h->tname, &sb))
         {

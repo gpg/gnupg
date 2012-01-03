@@ -74,6 +74,7 @@ enum cmd_and_opt_values
   oDebugAllowCoreDump,
   oDebugCCIDDriver,
   oDebugLogTid,
+  oDebugAssuanLogCats,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -123,6 +124,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDebugCCIDDriver, "debug-ccid-driver", "@"),
   ARGPARSE_s_n (oDebugDisableTicker, "debug-disable-ticker", "@"),
   ARGPARSE_s_n (oDebugLogTid, "debug-log-tid", "@"),
+  ARGPARSE_p_u (oDebugAssuanLogCats, "debug-assuan-log-cats", "@"),
   ARGPARSE_s_n (oNoDetach, "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_s (oLogFile,  "log-file", N_("|FILE|write a log to FILE")),
   ARGPARSE_s_s (oReaderPort, "reader-port",
@@ -542,6 +544,9 @@ main (int argc, char **argv )
         case oDebugLogTid:
           log_set_pid_suffix_cb (tid_log_callback);
           break;
+        case oDebugAssuanLogCats:
+          set_libassuan_log_cats (pargs.r.ret_ulong);
+          break;
 
         case oOptions:
           /* config files may not be nested (silently ignore them) */
@@ -826,7 +831,7 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  es_printf ( "setenv %s\n", infostr);
+                  es_printf ( "setenv %s;\n", infostr);
                 }
               else
                 {
@@ -909,7 +914,7 @@ scd_exit (int rc)
 static void
 scd_init_default_ctrl (ctrl_t ctrl)
 {
-  ctrl->reader_slot = -1;
+  (void)ctrl;
 }
 
 static void

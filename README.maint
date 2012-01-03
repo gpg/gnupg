@@ -27,8 +27,8 @@ Release process:
   * Run "make -C po update-po".
   * Write NEWS entries and set the release date in NEWS.
   * In configure.ac set "my_issvn" to "no".
-  * Put a "Release <version>" line into the top level ChangeLog.
   * Commit all changes to GIT and push them.
+  * Do a commit with a "Release <version>" line.
   * Run "./autogen.sh --force"
     (--force is required for the svn magic in configure.ac and a good
     idea in any case)

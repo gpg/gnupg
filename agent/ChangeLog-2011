@@ -12,17 +12,6 @@
 	(ssh_handler_request_identities): Do not call card_key_available
 	if the scdaemon is disabled.
 
-2011-10-13  Marcus Brinkmann  <marcus@g10code.com>
-
-	* gpg-agent.c (start_connection_thread)
-	(start_connection_thread_ssh): Cast npth_self result to unsigned
-	long for safety.
-
-	* cache.c (new_data): Fix error check.
-
-	* cache.c, call-pinentry.c, call-scd.c, findkey.c, gpg-agent.c,
-	trustlist.c: Port to NPth.
-
 2011-09-12  Ben Kibbey <bjk@luxsci.net>
 
 	* genkey.c (agent_ask_new_passphrase): Allow for an empty passphrase

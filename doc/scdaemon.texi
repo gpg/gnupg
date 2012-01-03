@@ -21,16 +21,16 @@
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
-.B  \-\-server 
+.RI [ options ]
+.B  \-\-server
 .br
 .B  scdaemon
 .RB [ \-\-homedir
 .IR dir ]
 .RB [ \-\-options
 .IR file ]
-.RI [ options ]  
-.B  \-\-daemon 
+.RI [ options ]
+.B  \-\-daemon
 .RI [ command_line ]
 @end ifset
 
@@ -130,7 +130,7 @@ a numeric value or a keyword:
 @item none
 No debugging at all.  A value of less than 1 may be used instead of
 the keyword.
-@item basic  
+@item basic
 Some basic debug messages.  A value between 1 and 2 may be used
 instead of the keyword.
 @item advanced
@@ -165,8 +165,8 @@ usual C-Syntax. The currently defined bits are:
 @table @code
 @item 0  (1)
 command I/O
-@item 1  (2)  
-values of big number integers 
+@item 1  (2)
+values of big number integers
 @item 2  (4)
 low level crypto operations
 @item 5  (32)
@@ -178,9 +178,11 @@ show memory statistics.
 @item 9  (512)
 write hashed data to files named @code{dbgmd-000*}
 @item 10 (1024)
-trace Assuan protocol
+trace Assuan protocol.  See also option @option{--debug-assuan-log-cats}.
 @item 11 (2048)
 trace APDU I/O to the card.  This may reveal sensitive data.
+@item 12 (4096)
+trace some card reader related function calls.
 @end table
 
 @item --debug-all
@@ -215,6 +217,15 @@ dump.  This options enables it and also changes the working directory to
 @opindex debug-log-tid
 This option appends a thread ID to the PID in the log output.
 
+@item --debug-assuan-log-cats @var{cats}
+@opindex debug-assuan-log-cats
+Changes the active Libassuan logging categories to @var{cats}.  The
+value for @var{cats} is an unsigned integer given in usual C-Syntax.
+A value of of 0 switches to a default category.  If this option is not
+used the categories are taken from the environment variable
+@samp{ASSUAN_DEBUG}.  Note that this option has only an effect if the
+Assuan debug flag has also been with the option @option{--debug}.  For
+a list of categories see the Libassuan manual.
 
 @item --no-detach
 @opindex no-detach
@@ -240,7 +251,7 @@ Use @var{library} to access the smartcard reader.  The current default
 is @file{libtowitoko.so}.  Note that the use of this interface is
 deprecated; it may be removed in future releases.
 
-@item --disable-ccid 
+@item --disable-ccid
 @opindex disable-ccid
 Disable the integrated support for CCID compliant readers.  This
 allows to fall back to one of the other drivers even if the internal
@@ -318,6 +329,7 @@ stripping off the two leading dashes.
 * DINSIG Card::           The DINSIG card application
 * PKCS#15 Card::          The PKCS#15 card application
 * Geldkarte Card::        The Geldkarte application
+* Undefined Card::        The Undefined stub application
 @end menu
 
 @node OpenPGP Card
@@ -325,7 +337,7 @@ stripping off the two leading dashes.
 
 This application is currently only used by @command{gpg} but may in
 future also be useful with @command{gpgsm}.  Version 1 and version 2 of
-the card is supported. 
+the card is supported.
 
 The specifications for these cards are available at
 @uref{http://g10code.com/docs/openpgp-card-1.0.pdf} and
@@ -357,6 +369,14 @@ This is common framework for smart card applications.  It is used by
 This is a simple application to display information of a German
 Geldkarte.  The Geldkarte is a small amount debit card application which
 comes with almost all German banking cards.
+
+@node Undefined Card
+@subsection The Undefined card application ``undefined''
+
+This is a stub application to allow the use of the APDU command even
+if no supported application is found on the card.  This application is
+not used automatically but must be explicitly requested using the
+SERIALNO command.
 
 
 @c *******************************************
@@ -395,7 +415,7 @@ about reader status changes.  Its use is now deprecated in favor of
 @end table
 
 
-@c 
+@c
 @c  Examples
 @c
 @mansect examples
@@ -410,7 +430,7 @@ $ scdaemon --server -v
 
 @c man end
 
-@c 
+@c
 @c  Assuan Protocol
 @c
 @manpause
@@ -447,7 +467,7 @@ synchronizing access to a token between sessions.
 * Scdaemon APDU::         Send a verbatim APDU to the card
 @end menu
 
-@node Scdaemon SERIALNO 
+@node Scdaemon SERIALNO
 @subsection Return the serial number
 
 This command should be used to check for the presence of a card.  It is
@@ -470,7 +490,7 @@ Return the serial number of the card using a status response like:
 @end example
 
 The trailing 0 should be ignored for now, it is reserved for a future
-extension.  The serial number is the hex encoded value identified by 
+extension.  The serial number is the hex encoded value identified by
 the @code{0x5A} tag in the GDO file (FIX=0x2F02).
 
 
@@ -522,7 +542,7 @@ READKEY @var{hexified_certid}
 @end example
 
 Return the public key for the given cert or key ID as an standard
-S-Expression. 
+S-Expression.
 
 
 
@@ -619,7 +639,7 @@ TO BE WRITTEN.
 @example
    PASSWD [--reset] [--nullpin] @var{chvno}
 @end example
-  
+
 Change the PIN or reset the retry counter of the card holder
 verification vector number @var{chvno}.  The option @option{--nullpin}
 is used to initialize the PIN of TCOS cards (6 byte NullPIN only).
@@ -663,11 +683,11 @@ and only if the retry counter is still at 3.
 
 Restart the current connection; this is a kind of warm reset.  It
 deletes the context used by this connection but does not actually
-reset the card. 
+reset the card.
 
 This is used by gpg-agent to reuse a primary pipe connection and
 may be used by clients to backup from a conflict in the serial
-command; i.e. to select another application. 
+command; i.e. to select another application.
 
 
 
@@ -704,7 +724,7 @@ length up to N bytes.  If N is not given a default value is used
 @mansect see also
 @ifset isman
 @command{gpg-agent}(1),
-@command{gpgsm}(1), 
+@command{gpgsm}(1),
 @command{gpg2}(1)
 @end ifset
 @include see-also-note.texi

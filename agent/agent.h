@@ -73,17 +73,20 @@ struct
   /* True if we handle sigusr2.  */
   int sigusr2_enabled;
 
-  /* Environment setting gathered at program start or changed using the
+  /* Environment settings gathered at program start or changed using the
      Assuan command UPDATESTARTUPTTY. */
   session_env_t startup_env;
   char *startup_lc_ctype;
   char *startup_lc_messages;
 
-  const char *pinentry_program; /* Filename of the program to start as
-                                   pinentry.  */
-  const char *scdaemon_program; /* Filename of the program to handle
-                                   smartcard tasks.  */
+  /* Filename of the program to start as pinentry.  */
+  const char *pinentry_program;
+
+  /* Filename of the program to handle smartcard tasks.  */
+  const char *scdaemon_program;
+
   int disable_scdaemon;         /* Never use the SCdaemon. */
+
   int no_grab;         /* Don't let the pinentry grab the keyboard */
 
   /* The name of the file pinentry shall tocuh before exiting.  If
@@ -98,31 +101,51 @@ struct
 
   /* Flag disallowing bypassing of the warning.  */
   int enforce_passphrase_constraints;
+
   /* The require minmum length of a passphrase. */
   unsigned int min_passphrase_len;
+
   /* The minimum number of non-alpha characters in a passphrase.  */
   unsigned int min_passphrase_nonalpha;
+
   /* File name with a patternfile or NULL if not enabled.  */
   const char *check_passphrase_pattern;
+
   /* If not 0 the user is asked to change his passphrase after these
      number of days.  */
   unsigned int max_passphrase_days;
+
   /* If set, a passphrase history will be written and checked at each
      passphrase change.  */
   int enable_passhrase_history;
 
   int running_detached; /* We are running detached from the tty. */
 
+  /* If this global option is true, the passphrase cache is ignored
+     for signing operations.  */
   int ignore_cache_for_signing;
+
+  /* If this global option is true, the user is allowed to
+     interactively mark certificate in trustlist.txt as trusted. */
   int allow_mark_trusted;
+
+  /* If this global option is true, the Assuan command
+     PRESET_PASSPHRASE is allowed.  */
   int allow_preset_passphrase;
+
+  /* If this global option is true, the Assuan option
+     pinentry-mode=loopback is allowed.  */
   int allow_loopback_pinentry;
+
   int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
   int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
-  int ssh_support;   /* Enable ssh-agent emulation.  */
+
+  /* This global option enables the ssh-agent subsystem.  */
+  int ssh_support;
 } opt;
 
 
+/* Bit values for the --debug option.  */
 #define DBG_COMMAND_VALUE 1	/* debug commands i/o */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
 #define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
@@ -130,8 +153,9 @@ struct
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_ASSUAN_VALUE 1024
+#define DBG_ASSUAN_VALUE 1024   /* Enable Assuan debugging.  */
 
+/* Test macros for the debug option.  */
 #define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
@@ -139,14 +163,18 @@ struct
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
 #define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
 
+/* Forward reference for local definitions in command.c.  */
 struct server_local_s;
+
+/* Forward reference for local definitions in call-scd.c.  */
 struct scd_local_s;
 
 /* Collection of data per session (aka connection). */
 struct server_control_s
 {
   /* Private data used to fire up the connection thread.  We use this
-     structure do avoid an extra allocation for just a few bytes. */
+     structure do avoid an extra allocation for only a few bytes while
+     spawning a new connection thread.  */
   struct {
     gnupg_fd_t fd;
   } thread_startup;
@@ -157,6 +185,7 @@ struct server_control_s
   /* Private data of the SCdaemon (call-scd.c). */
   struct scd_local_s *scd_local;
 
+  /* Environment settings for the connection.  */
   session_env_t session_env;
   char *lc_ctype;
   char *lc_messages;
@@ -177,37 +206,47 @@ struct server_control_s
   unsigned char keygrip[20];
   int have_keygrip;
 
-  int use_auth_call; /* Hack to send the PKAUTH command instead of the
-                        PKSIGN command to the scdaemon.  */
-  int in_passwd;     /* Hack to inhibit enforced passphrase change
-                        during an explicit passwd command.  */
+  /* A flag to enable a hack to send the PKAUTH command instead of the
+     PKSIGN command to the scdaemon.  */
+  int use_auth_call;
 
-  unsigned long s2k_count; /* Other than the calibrated count. */
+  /* A flag to inhibit enforced passphrase change during an explicit
+     passwd command.  */
+  int in_passwd;
+
+  /* The current S2K which might be different from the calibrated
+     count. */
+  unsigned long s2k_count;
 };
 
 
+/* Information pertaining to pinentry requests.  */
 struct pin_entry_info_s
 {
   int min_digits; /* min. number of digits required or 0 for freeform entry */
   int max_digits; /* max. number of allowed digits allowed*/
-  int max_tries;
-  int failed_tries;
+  int max_tries;  /* max. number of allowed tries.  */
+  int failed_tries; /* Number of tries so far failed.  */
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int (*check_cb)(struct pin_entry_info_s *); /* CB used to check the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
   const char *cb_errtext; /* used by the cb to display a specific error */
-  size_t max_length;      /* allocated length of the buffer */
-  char pin[1];
+  size_t max_length;   /* Allocated length of the buffer PIN. */
+  char pin[1];         /* The buffer to hold the PIN or passphrase.
+                          It's actual allocated length is given by
+                          MAX_LENGTH (above).  */
 };
 
 
+/* Types of the private keys.  */
 enum
   {
-    PRIVATE_KEY_UNKNOWN = 0,
-    PRIVATE_KEY_CLEAR = 1,
-    PRIVATE_KEY_PROTECTED = 2,
-    PRIVATE_KEY_SHADOWED = 3,
-    PROTECTED_SHARED_SECRET = 4
+    PRIVATE_KEY_UNKNOWN = 0,      /* Type of key is not known.  */
+    PRIVATE_KEY_CLEAR = 1,        /* The key is not protected.  */
+    PRIVATE_KEY_PROTECTED = 2,    /* The key is protected.  */
+    PRIVATE_KEY_SHADOWED = 3,     /* The key is a stub for a smartcard
+                                     based key.  */
+    PROTECTED_SHARED_SECRET = 4   /* RFU.  */
   };
 
 

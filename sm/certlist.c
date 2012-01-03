@@ -1,6 +1,6 @@
 /* certlist.c - build list of certificates
  * Copyright (C) 2001, 2003, 2004, 2005, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -207,6 +207,21 @@ int
 gpgsm_cert_use_ocsp_p (ksba_cert_t cert)
 {
   return cert_usage_p (cert, 5);
+}
+
+
+/* Return true if CERT has the well known private key extension.  */
+int
+gpgsm_cert_has_well_known_private_key (ksba_cert_t cert)
+{
+  int idx;
+  const char *oid;
+
+  for (idx=0; !ksba_cert_get_extension (cert, idx,
+                                        &oid, NULL, NULL, NULL);idx++)
+    if (!strcmp (oid, "1.3.6.1.4.1.11591.2.2.2") )
+      return 1; /* Yes.  */
+  return 0; /* No.  */
 }
 
 
