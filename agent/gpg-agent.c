@@ -1175,13 +1175,13 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  printf ("setenv %s\n", infostr);
+                  printf ("setenv %s;\n", infostr);
 		  if (opt.ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
-		      printf ("setenv %s\n", infostr_ssh_sock);
+		      printf ("setenv %s;\n", infostr_ssh_sock);
 		      *strchr (infostr_ssh_pid, '=') = ' ';
-		      printf ("setenv %s\n", infostr_ssh_pid);
+		      printf ("setenv %s;\n", infostr_ssh_pid);
 		    }
                 }
               else

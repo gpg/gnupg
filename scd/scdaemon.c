@@ -828,7 +828,7 @@ main (int argc, char **argv )
               if (csh_style)
                 {
                   *strchr (infostr, '=') = ' ';
-                  printf ( "setenv %s\n", infostr);
+                  printf ( "setenv %s;\n", infostr);
                 }
               else
                 {
