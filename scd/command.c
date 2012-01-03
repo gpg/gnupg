@@ -26,8 +26,8 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <signal.h>
-#ifdef USE_GNU_PTH
-# include <pth.h>
+#ifdef USE_NPTH
+# include <npth.h>
 #endif
 
 #include "scdaemon.h"
@@ -156,7 +156,7 @@ static struct server_local_s *locked_session;
 
 /* While doing a reset we need to make sure that the ticker does not
    call scd_update_reader_status_file while we are using it. */
-static pth_mutex_t status_file_update_lock;
+static npth_mutex_t status_file_update_lock;
 
 
 /*-- Local prototypes --*/
@@ -173,10 +173,12 @@ void
 initialize_module_command (void)
 {
   static int initialized;
+  int err;
 
   if (!initialized)
     {
-      if (pth_mutex_init (&status_file_update_lock))
+      err = npth_mutex_init (&status_file_update_lock, NULL);
+      if (!err)
         initialized = 1;
     }
 }
@@ -304,6 +306,7 @@ do_reset (ctrl_t ctrl, int send_reset)
 {
   int vrdr = ctrl->server_local->vreader_idx;
   int slot;
+  int err;
 
   if (!(vrdr == -1 || (vrdr >= 0 && vrdr < DIM(vreader_table))))
     BUG ();
@@ -360,7 +363,8 @@ do_reset (ctrl_t ctrl, int send_reset)
      try to update the file.  Calling update_reader_status_file is
      required to get hold of the new status of the card in the vreader
      table.  */
-  if (!pth_mutex_acquire (&status_file_update_lock, 0, NULL))
+  err = npth_mutex_lock (&status_file_update_lock);
+  if (err)
     {
       log_error ("failed to acquire status_file_update lock\n");
       ctrl->server_local->vreader_idx = -1;
@@ -368,8 +372,10 @@ do_reset (ctrl_t ctrl, int send_reset)
     }
   update_reader_status_file (0);  /* Update slot status table.  */
   update_card_removed (vrdr, 0);  /* Clear card_removed flag.  */
-  if (!pth_mutex_release (&status_file_update_lock))
-    log_error ("failed to release status_file_update lock\n");
+  err = npth_mutex_unlock (&status_file_update_lock);
+  if (err)
+    log_error ("failed to release status_file_update lock: %s\n",
+	       strerror (err));
 
   /* Do this last, so that the update_card_removed above does its job.  */
   ctrl->server_local->vreader_idx = -1;
@@ -1597,18 +1603,18 @@ cmd_lock (assuan_context_t ctx, char *line)
   else
     locked_session = ctrl->server_local;
 
-#ifdef USE_GNU_PTH
+#ifdef USE_NPTH
   if (rc && has_option (line, "--wait"))
     {
       rc = 0;
-      pth_sleep (1); /* Better implement an event mechanism. However,
-                        for card operations this should be
-                        sufficient. */
+      npth_sleep (1); /* Better implement an event mechanism. However,
+			 for card operations this should be
+			 sufficient. */
       /* FIXME: Need to check that the connection is still alive.
          This can be done by issuing status messages. */
       goto retry;
     }
-#endif /*USE_GNU_PTH*/
+#endif /*USE_NPTH*/
 
   if (rc)
     log_error ("cmd_lock failed: %s\n", gpg_strerror (rc));
@@ -2395,9 +2401,13 @@ update_reader_status_file (int set_card_removed_flag)
 void
 scd_update_reader_status_file (void)
 {
-  if (!pth_mutex_acquire (&status_file_update_lock, 1, NULL))
+  int err;
+  err = npth_mutex_lock (&status_file_update_lock);
+  if (err)
     return; /* locked - give up. */
   update_reader_status_file (1);
-  if (!pth_mutex_release (&status_file_update_lock))
-    log_error ("failed to release status_file_update lock\n");
+  err = npth_mutex_unlock (&status_file_update_lock);
+  if (err)
+    log_error ("failed to release status_file_update lock: %s\n",
+	       strerror (err));
 }

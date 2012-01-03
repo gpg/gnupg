@@ -24,7 +24,7 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
-#include <pth.h>
+#include <npth.h>
 
 #include "g13.h"
 #include <assuan.h>
@@ -163,7 +163,7 @@ struct writer_thread_parms
 
 /* The thread started by start_writer.  */
 static void *
-writer_thread (void *arg)
+writer_thread_main (void *arg)
 {
   struct writer_thread_parms *parm = arg;
   const char *buffer = parm->data;
@@ -173,7 +173,7 @@ writer_thread (void *arg)
     {
       ssize_t nwritten;
 
-      nwritten = pth_write (parm->fd, buffer, length < 4096? length:4096);
+      nwritten = npth_write (parm->fd, buffer, length < 4096? length:4096);
       if (nwritten < 0)
         {
           if (errno == EINTR)
@@ -199,14 +199,15 @@ writer_thread (void *arg)
    finished.  */
 static gpg_error_t
 start_writer (int fd, const void *data, size_t datalen,
-              pth_t *r_tid, gpg_error_t *err_addr)
+              npth_t *r_thread, gpg_error_t *err_addr)
 {
   gpg_error_t err;
   struct writer_thread_parms *parm;
-  pth_attr_t tattr;
-  pth_t tid;
+  npth_attr_t tattr;
+  npth_t thread;
+  int ret;
 
-  *r_tid = NULL;
+  memset (r_thread, '\0', sizeof (*r_thread));
   *err_addr = 0;
 
   parm = xtrymalloc (sizeof *parm);
@@ -217,23 +218,22 @@ start_writer (int fd, const void *data, size_t datalen,
   parm->datalen = datalen;
   parm->err_addr = err_addr;
 
-  tattr = pth_attr_new ();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "fd-writer");
+  npth_attr_init (&tattr);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
 
-  tid = pth_spawn (tattr, writer_thread, parm);
-  if (!tid)
+  ret = npth_create (&thread, &tattr, writer_thread_main, parm);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("error spawning writer thread: %s\n", gpg_strerror (err));
     }
   else
     {
+      npth_setname_np (thread, "fd-writer");
       err = 0;
-      *r_tid = tid;
+      *r_thread = thread;
     }
-  pth_attr_destroy (tattr);
+  npth_attr_destroy (&tattr);
 
   return err;
 }
@@ -251,13 +251,13 @@ struct reader_thread_parms
 
 /* The thread started by start_reader.  */
 static void *
-reader_thread (void *arg)
+reader_thread_main (void *arg)
 {
   struct reader_thread_parms *parm = arg;
   char buffer[4096];
   int nread;
 
-  while ( (nread = pth_read (parm->fd, buffer, sizeof buffer)) )
+  while ( (nread = npth_read (parm->fd, buffer, sizeof buffer)) )
     {
       if (nread < 0)
         {
@@ -282,14 +282,15 @@ reader_thread (void *arg)
    is stored at R_TID.  After the thread has finished an error from
    the thread will be stored at ERR_ADDR.  */
 static gpg_error_t
-start_reader (int fd, membuf_t *mb, pth_t *r_tid, gpg_error_t *err_addr)
+start_reader (int fd, membuf_t *mb, npth_t *r_thread, gpg_error_t *err_addr)
 {
   gpg_error_t err;
   struct reader_thread_parms *parm;
-  pth_attr_t tattr;
-  pth_t tid;
+  npth_attr_t tattr;
+  npth_t thread;
+  int ret;
 
-  *r_tid = NULL;
+  memset (r_thread, '\0', sizeof (*r_thread));
   *err_addr = 0;
 
   parm = xtrymalloc (sizeof *parm);
@@ -299,23 +300,22 @@ start_reader (int fd, membuf_t *mb, pth_t *r_tid, gpg_error_t *err_addr)
   parm->mb = mb;
   parm->err_addr = err_addr;
 
-  tattr = pth_attr_new ();
-  pth_attr_set (tattr, PTH_ATTR_JOINABLE, 1);
-  pth_attr_set (tattr, PTH_ATTR_STACK_SIZE, 64*1024);
-  pth_attr_set (tattr, PTH_ATTR_NAME, "fd-reader");
+  npth_attr_init (&tattr);
+  npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
 
-  tid = pth_spawn (tattr, reader_thread, parm);
-  if (!tid)
+  ret = npth_create (&thread, &tattr, reader_thread_main, parm);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("error spawning reader thread: %s\n", gpg_strerror (err));
     }
   else
     {
+      npth_setname_np (thread, "fd-reader");
       err = 0;
-      *r_tid = tid;
+      *r_thread = thread;
     }
-  pth_attr_destroy (tattr);
+  npth_attr_destroy (&tattr);
 
   return err;
 }
@@ -335,12 +335,13 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
   assuan_context_t ctx;
   int outbound_fds[2] = { -1, -1 };
   int inbound_fds[2]  = { -1, -1 };
-  pth_t writer_tid = NULL;
-  pth_t reader_tid = NULL;
+  npth_t writer_thread;
+  npth_t reader_thread;
   gpg_error_t writer_err, reader_err;
   membuf_t reader_mb;
   char line[ASSUAN_LINELENGTH];
   strlist_t sl;
+  int ret;
 
   *r_ciph = NULL;
   *r_ciphlen = 0;
@@ -367,7 +368,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
 
   /* Start a writer thread to feed the INPUT command of the server.  */
   err = start_writer (outbound_fds[1], plain, plainlen,
-                      &writer_tid, &writer_err);
+                      &writer_thread, &writer_err);
   if (err)
     return err;
   outbound_fds[1] = -1;  /* The thread owns the FD now.  */
@@ -375,7 +376,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
   err = start_reader (inbound_fds[0], &reader_mb,
-                      &reader_tid, &reader_err);
+                      &reader_thread, &reader_err);
   if (err)
     return err;
   outbound_fds[0] = -1;  /* The thread owns the FD now.  */
@@ -402,13 +403,15 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
     }
 
   /* Wait for reader and return the data.  */
-  if (!pth_join (reader_tid, NULL))
+  ret = npth_join (reader_thread, NULL);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("waiting for reader thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
-  reader_tid = NULL;
+  /* FIXME: Not really valid, as npth_t is an opaque type.  */
+  memset (&reader_thread, '\0', sizeof (reader_thread));
   if (reader_err)
     {
       err = reader_err;
@@ -417,13 +420,14 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
     }
 
   /* Wait for the writer to catch  a writer error.  */
-  if (!pth_join (writer_tid, NULL))
+  ret = npth_join (writer_thread, NULL);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("waiting for writer thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
-  writer_tid = NULL;
+  memset (&writer_thread, '\0', sizeof (writer_thread));
   if (writer_err)
     {
       err = writer_err;
@@ -442,16 +446,11 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
     }
 
  leave:
-  if (reader_tid)
-    {
-      pth_cancel (reader_tid);
-      pth_join (reader_tid, NULL);
-    }
-  if (writer_tid)
-    {
-      pth_cancel (writer_tid);
-      pth_join (writer_tid, NULL);
-    }
+  /* FIXME: Not valid, as npth_t is an opaque type.  */
+  if (reader_thread)
+    npth_detach (reader_thread);
+  if (writer_thread)
+    npth_detach (writer_thread);
   if (outbound_fds[0] != -1)
     close (outbound_fds[0]);
   if (outbound_fds[1] != -1)
@@ -479,10 +478,11 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
   assuan_context_t ctx;
   int outbound_fds[2] = { -1, -1 };
   int inbound_fds[2]  = { -1, -1 };
-  pth_t writer_tid = NULL;
-  pth_t reader_tid = NULL;
+  npth_t writer_thread;
+  npth_t reader_thread;
   gpg_error_t writer_err, reader_err;
   membuf_t reader_mb;
+  int ret;
 
   *r_plain = NULL;
   *r_plainlen = 0;
@@ -509,7 +509,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
 
   /* Start a writer thread to feed the INPUT command of the server.  */
   err = start_writer (outbound_fds[1], ciph, ciphlen,
-                      &writer_tid, &writer_err);
+                      &writer_thread, &writer_err);
   if (err)
     return err;
   outbound_fds[1] = -1;  /* The thread owns the FD now.  */
@@ -517,7 +517,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
   err = start_reader (inbound_fds[0], &reader_mb,
-                      &reader_tid, &reader_err);
+                      &reader_thread, &reader_err);
   if (err)
     return err;
   outbound_fds[0] = -1;  /* The thread owns the FD now.  */
@@ -532,13 +532,14 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
     }
 
   /* Wait for reader and return the data.  */
-  if (!pth_join (reader_tid, NULL))
+  ret = npth_join (reader_thread, NULL);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("waiting for reader thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
-  reader_tid = NULL;
+  memset (&reader_thread, '\0', sizeof (reader_thread));
   if (reader_err)
     {
       err = reader_err;
@@ -547,13 +548,14 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
     }
 
   /* Wait for the writer to catch a writer error.  */
-  if (!pth_join (writer_tid, NULL))
+  ret = npth_join (writer_thread, NULL);
+  if (ret)
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error_from_errno (ret);
       log_error ("waiting for writer thread failed: %s\n", gpg_strerror (err));
       goto leave;
     }
-  writer_tid = NULL;
+  memset (&writer_thread, '\0', sizeof (writer_thread));
   if (writer_err)
     {
       err = writer_err;
@@ -572,16 +574,10 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
     }
 
  leave:
-  if (reader_tid)
-    {
-      pth_cancel (reader_tid);
-      pth_join (reader_tid, NULL);
-    }
-  if (writer_tid)
-    {
-      pth_cancel (writer_tid);
-      pth_join (writer_tid, NULL);
-    }
+  if (reader_thread)
+    npth_detach (reader_thread);
+  if (writer_thread)
+    npth_detach (writer_thread);
   if (outbound_fds[0] != -1)
     close (outbound_fds[0]);
   if (outbound_fds[1] != -1)

@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <time.h>
-#include <pth.h>
+#include <npth.h>
 #include <assert.h>
 
 #include "dirmngr.h"

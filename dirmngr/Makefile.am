@@ -32,7 +32,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) \
-            $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
+            $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(NPTH_CFLAGS)
 
 BUILT_SOURCES = no-libgcrypt.c
 
@@ -61,7 +61,7 @@ endif
 
 
 dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
-	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(PTH_LIBS) $(LIBINTL) $(LIBICONV)
+	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) $(LIBINTL) $(LIBICONV)
 if !USE_LDAPWRAPPER
 dirmngr_LDADD += $(LDAPLIBS)
 endif

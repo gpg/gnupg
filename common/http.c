@@ -59,13 +59,13 @@
 # include <netdb.h>
 #endif /*!HAVE_W32_SYSTEM*/
 
-#ifdef WITHOUT_GNU_PTH /* Give the Makefile a chance to build without Pth.  */
-# undef HAVE_PTH
-# undef USE_GNU_PTH
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+# undef HAVE_NPTH
+# undef USE_NPTH
 #endif
 
-#ifdef HAVE_PTH
-# include <pth.h>
+#ifdef HAVE_NPTH
+# include <npth.h>
 #endif
 
 
@@ -105,7 +105,7 @@ struct srventry
 #endif/*!USE_DNS_SRV*/
 
 
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
 # define my_select(a,b,c,d,e)  pth_select ((a), (b), (c), (d), (e))
 # define my_connect(a,b,c)     pth_connect ((a), (b), (c))
 # define my_accept(a,b,c)      pth_accept ((a), (b), (c))
@@ -1887,15 +1887,15 @@ write_server (int sock, const char *data, size_t length)
   nleft = length;
   while (nleft > 0)
     {
-#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_PTH)
+#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_NPTH)
       nwritten = send (sock, data, nleft, 0);
       if ( nwritten == SOCKET_ERROR )
         {
           log_info ("network write failed: ec=%d\n", (int)WSAGetLastError ());
           return gpg_error (GPG_ERR_NETWORK);
         }
-#else /*!HAVE_W32_SYSTEM || HAVE_PTH*/
-# ifdef HAVE_PTH
+#else /*!HAVE_W32_SYSTEM || HAVE_NPTH*/
+# ifdef HAVE_NPTH
       nwritten = pth_write (sock, data, nleft);
 # else
       nwritten = write (sock, data, nleft);
@@ -1916,7 +1916,7 @@ write_server (int sock, const char *data, size_t length)
 	  log_info ("network write failed: %s\n", strerror (errno));
 	  return gpg_error_from_syserror ();
 	}
-#endif /*!HAVE_W32_SYSTEM || HAVE_PTH*/
+#endif /*!HAVE_W32_SYSTEM || HAVE_NPTH*/
       nleft -= nwritten;
       data += nwritten;
     }
@@ -1971,7 +1971,7 @@ cookie_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_PTH
+#ifdef HAVE_NPTH
           nread = pth_read (c->sock->fd, buffer, size);
 #elif defined(HAVE_W32_SYSTEM)
           /* Under Windows we need to use recv for a socket.  */
