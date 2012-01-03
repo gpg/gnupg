@@ -583,21 +583,17 @@ use_hardlinks_p (const char *tname)
   strcpy (lname, tname);
   strcat (lname, "x");
 
-  res = link (tname, lname);
-  if (res < 0)
-    res = -1;
+  /* We ignore the return value of link() because it is unreliable.  */
+  (void) link (tname, lname);
+
+  if (stat (tname, &sb))
+    res = -1;  /* Ooops.  */
+  else if (sb.st_nlink == nlink + 1)
+    res = 0;   /* Yeah, hardlinks are supported.  */
   else
-    {
-      if (stat (tname, &sb))
-	res = -1;  /* Ooops.  */
-      else if (sb.st_nlink == nlink + 1)
-	res = 0;   /* Yeah, hardlinks are supported.  */
-      else
-	res = 1;   /* No hardlink support.  */
+    res = 1;   /* No hardlink support.  */
 
-      unlink (lname);
-    }
-
+  unlink (lname);
   jnlib_free (lname);
   return res;
 }
@@ -953,7 +949,6 @@ dotlock_destroy (dotlock_t h)
 static int
 dotlock_take_unix (dotlock_t h, long timeout)
 {
-  int res;
   int wtime = 0;
   int sumtime = 0;
   int pid;
@@ -1010,13 +1005,8 @@ dotlock_take_unix (dotlock_t h, long timeout)
     {
       struct stat sb;
 
-      res = link (h->tname, h->lockname);
-      if (res < 0)
-	{
-          my_error_1 ("lock not made: Oops: link of tmp file failed: %s\n",
-                      strerror (errno));
-	  return -1;
-	}
+      /* We ignore the return value of link() because it is unreliable.  */
+      (void) link (h->tname, h->lockname);
 
       if (stat (h->tname, &sb))
         {
