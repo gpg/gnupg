@@ -816,7 +816,7 @@ get_cached_cert (assuan_context_t ctx,
   char hexfpr[2*20+1];
   struct membuf mb;
   char *buf;
-  size_t buflen;
+  size_t buflen = 0;
   ksba_cert_t cert;
 
   *r_cert = NULL;
