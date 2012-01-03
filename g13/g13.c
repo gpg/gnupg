@@ -686,6 +686,7 @@ main ( int argc, char **argv)
 #endif /*0*/
 
   /* Dispatch command.  */
+  err = 0;
   switch (cmd)
     {
     case aGPGConfList:

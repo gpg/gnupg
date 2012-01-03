@@ -382,7 +382,9 @@ main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
+#ifdef USE_GCRY_THREAD_CBS
   gpg_error_t err;
+#endif
   char **orig_argv;
   FILE *configfp = NULL;
   char *configname = NULL;
