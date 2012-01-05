@@ -210,7 +210,8 @@ enum {
   VENDOR_OMNIKEY= 0x076b,
   VENDOR_GEMPC  = 0x08e6,
   VENDOR_KAAN   = 0x0d46,
-  VENDOR_FSIJ	= 0x234B
+  VENDOR_FSIJ   = 0x234b,
+  VENDOR_VASCO  = 0x1a44
 };
 
 /* Some product ids.  */
@@ -220,7 +221,7 @@ enum {
 #define SCM_SCR3320     0x5117
 #define SCM_SPR532      0xe003
 #define CHERRY_ST2000   0x003e
-
+#define VASCO_920       0x0920
 
 /* A list and a table with special transport descriptions. */
 enum {
@@ -3130,6 +3131,9 @@ ccid_transceive_secure (ccid_driver_t handle,
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
     case VENDOR_FSIJ: /* Tested with the gnuk code (2011-01-05).  */
+      break;
+    case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
+      pinlen_max = 15;
       break;
     case VENDOR_CHERRY:
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
