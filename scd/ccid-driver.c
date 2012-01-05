@@ -3214,7 +3214,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (apdu_buf[1] == 0x20)
     msg[msglen++] = 0xff; /* bNumberMessage: Default. */
   else
-    msg[msglen++] = apdu_buf[2] == 0 ? 0x03 : 0x01; /* bNumberMessage. */
+    msg[msglen++] = 0x03; /* bNumberMessage. */
 
   msg[msglen++] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
   msg[msglen++] = 0x04; /* wLangId-High. */
@@ -3223,12 +3223,9 @@ ccid_transceive_secure (ccid_driver_t handle,
     msg[msglen++] = 0;    /* bMsgIndex. */
   else
     {
-      msg[msglen++] = 1;    /* bMsgIndex1. */
-      if (apdu_buf[2] == 0)
-        {
-          msg[msglen++] = 2;    /* bMsgIndex2. */
-          msg[msglen++] = 3;    /* bMsgIndex3. */
-        }
+      msg[msglen++] = 0;    /* bMsgIndex1. */
+      msg[msglen++] = 1;    /* bMsgIndex2. */
+      msg[msglen++] = 2;    /* bMsgIndex3. */
     }
 
   /* bTeoProlog follows: */
