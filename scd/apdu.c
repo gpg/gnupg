@@ -2339,8 +2339,8 @@ check_ccid_keypad (int slot, int command, int pin_mode,
 
 
 static int
-ccid_keypad_verify (int slot, int class, int ins, int p0, int p1,
-                    struct pininfo_s *pininfo)
+ccid_keypad_operation (int slot, int class, int ins, int p0, int p1,
+		       struct pininfo_s *pininfo)
 {
   unsigned char apdu[4];
   int err, sw;
@@ -2411,8 +2411,8 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].check_keypad = check_ccid_keypad;
   reader_table[slot].dump_status_reader = dump_ccid_reader_status;
   reader_table[slot].set_progress_cb = set_progress_cb_ccid_reader;
-  reader_table[slot].keypad_verify = ccid_keypad_verify;
-  reader_table[slot].keypad_modify = NULL;
+  reader_table[slot].keypad_verify = ccid_keypad_operation;
+  reader_table[slot].keypad_modify = ccid_keypad_operation;
   /* Our CCID reader code does not support T=0 at all, thus reset the
      flag.  */
   reader_table[slot].is_t0 = 0;
