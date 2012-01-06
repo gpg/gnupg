@@ -308,6 +308,46 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
               if (i == 20)
                 mode = KEYDB_SEARCH_MODE_FPR20;
             }
+          if (!mode)
+            {
+              /* Still not found.  Now check for a space separated
+                 OpenPGP v4 fingerprint like:
+                   8061 5870 F5BA D690 3336  86D0 F2AD 85AC 1E42 B367
+               */
+              hexlength = strspn (s, " 0123456789abcdefABCDEF");
+              if (s[hexlength] && s[hexlength] != ' ')
+                hexlength = 0; /* Followed by non-space.  */
+              while (hexlength && s[hexlength-1] == ' ')
+                hexlength--;   /* Trim trailing spaces.  */
+              if (hexlength == 50 && (!s[hexlength] || s[hexlength] == ' '))
+                {
+                  int i, c;
+
+                  for (i=0; i < 20; i++)
+                    {
+                      if (i && !(i % 2))
+                        {
+                          if (*s != ' ')
+                            break;
+                          s++;
+                          if (i == 10)
+                            {
+                              if (*s != ' ')
+                                break;
+                              s++;
+                            }
+                        }
+
+                      c = hextobyte(s);
+                      if (c == -1)
+                        break;
+                      desc->u.fpr[i] = c;
+                      s += 2;
+                    }
+                  if (i == 20)
+                    mode = KEYDB_SEARCH_MODE_FPR20;
+                }
+            }
           if (!mode) /* Default to substring search.  */
             {
               desc->exact = 0;
