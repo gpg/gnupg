@@ -313,13 +313,16 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
               /* Still not found.  Now check for a space separated
                  OpenPGP v4 fingerprint like:
                    8061 5870 F5BA D690 3336  86D0 F2AD 85AC 1E42 B367
+                 or
+                   8061 5870 F5BA D690 3336 86D0 F2AD 85AC 1E42 B367
                */
               hexlength = strspn (s, " 0123456789abcdefABCDEF");
               if (s[hexlength] && s[hexlength] != ' ')
                 hexlength = 0; /* Followed by non-space.  */
               while (hexlength && s[hexlength-1] == ' ')
                 hexlength--;   /* Trim trailing spaces.  */
-              if (hexlength == 50 && (!s[hexlength] || s[hexlength] == ' '))
+              if ((hexlength == 49 || hexlength == 50)
+                  && (!s[hexlength] || s[hexlength] == ' '))
                 {
                   int i, c;
 
@@ -330,12 +333,12 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
                           if (*s != ' ')
                             break;
                           s++;
-                          if (i == 10)
-                            {
-                              if (*s != ' ')
-                                break;
-                              s++;
-                            }
+                          /* Skip the double space in the middle but
+                             don't require it to help copying
+                             fingerprints from sources which fold
+                             multiple space to one.  */
+                          if (i == 10 && *s == ' ')
+                            s++;
                         }
 
                       c = hextobyte(s);
