@@ -210,7 +210,8 @@ enum {
   VENDOR_OMNIKEY= 0x076b,
   VENDOR_GEMPC  = 0x08e6,
   VENDOR_KAAN   = 0x0d46,
-  VENDOR_FSIJ	= 0x234B
+  VENDOR_FSIJ   = 0x234b,
+  VENDOR_VASCO  = 0x1a44
 };
 
 /* Some product ids.  */
@@ -220,7 +221,7 @@ enum {
 #define SCM_SCR3320     0x5117
 #define SCM_SPR532      0xe003
 #define CHERRY_ST2000   0x003e
-
+#define VASCO_920       0x0920
 
 /* A list and a table with special transport descriptions. */
 enum {
@@ -2590,8 +2591,8 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
 
   /* The maximum length for a short APDU T=1 block is 261.  For an
      extended APDU T=1 block the maximum length 65544; however
-     extended APDU exchange level is not yet supported.  */
-  if (apdulen > 261)
+     extended APDU exchange level is not fully supported yet.  */
+  if (apdulen > 289)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
   msg[0] = PC_to_RDR_XfrBlock;
@@ -2614,8 +2615,51 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   if (rc)
     return rc;
 
-  apdu = msg + 10;
-  apdulen = msglen - 10;
+  if (msg[9] == 1)
+    {
+      size_t total_msglen = msglen;
+
+      while (1)
+        {
+          unsigned char status;
+
+          msg = recv_buffer + total_msglen;
+
+          msg[0] = PC_to_RDR_XfrBlock;
+          msg[5] = 0; /* slot */
+          msg[6] = seqno = handle->seqno++;
+          msg[7] = bwi; /* bBWI */
+          msg[8] = 0x10;                /* Request next data block */
+          msg[9] = 0;
+          set_msg_len (msg, 0);
+          msglen = 10;
+
+          rc = bulk_out (handle, msg, msglen, 0);
+          if (rc)
+            return rc;
+
+          rc = bulk_in (handle, msg, sizeof recv_buffer - total_msglen, &msglen,
+                        RDR_to_PC_DataBlock, seqno, 5000, 0);
+          if (rc)
+            return rc;
+          status = msg[9];
+          memmove (msg, msg+10, msglen - 10);
+          total_msglen += msglen - 10;
+          if (total_msglen >= sizeof recv_buffer)
+            return CCID_DRIVER_ERR_OUT_OF_CORE;
+
+          if (status == 0x02)
+            break;
+        }
+
+      apdu = recv_buffer + 10;
+      apdulen = total_msglen - 10;
+    }
+  else
+    {
+      apdu = msg + 10;
+      apdulen = msglen - 10;
+    }
 
   if (resp)
     {
@@ -3059,7 +3103,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (apdu_buflen >= 4 && apdu_buf[1] == 0x20 && (handle->has_pinpad & 1))
     ;
   else if (apdu_buflen >= 4 && apdu_buf[1] == 0x24 && (handle->has_pinpad & 2))
-    return CCID_DRIVER_ERR_NOT_SUPPORTED; /* Not yet by our code. */
+    ;
   else
     return CCID_DRIVER_ERR_NO_KEYPAD;
 
@@ -3087,6 +3131,9 @@ ccid_transceive_secure (ccid_driver_t handle,
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
     case VENDOR_FSIJ: /* Tested with the gnuk code (2011-01-05).  */
+      break;
+    case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
+      pinlen_max = 15;
       break;
     case VENDOR_CHERRY:
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
@@ -3122,7 +3169,8 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[7] = 0; /* bBWI */
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
-  msg[10] = 0; /* Perform PIN verification. */
+  msg[10] = apdu_buf[1] == 0x20 ? 0 : 1;
+               /* Perform PIN verification or PIN modification. */
   msg[11] = 0; /* Timeout in seconds. */
   msg[12] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
   if (handle->id_vendor == VENDOR_SCM)
@@ -3141,28 +3189,58 @@ ccid_transceive_secure (ccid_driver_t handle,
                          Units are bytes, position is 0. */
     }
 
-  /* The following is a little endian word. */
-  msg[15] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
-  msg[16] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+  msglen = 15;
+  if (apdu_buf[1] == 0x24)
+    {
+      msg[msglen++] = 0;    /* bInsertionOffsetOld */
+      msg[msglen++] = 0;    /* bInsertionOffsetNew */
+    }
 
-  msg[17] = 0x02; /* bEntryValidationCondition:
-                     Validation key pressed */
+  /* The following is a little endian word. */
+  msg[msglen++] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[msglen++] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+
+  if (apdu_buf[1] == 0x24)
+    msg[msglen++] = apdu_buf[2] == 0 ? 0x03 : 0x01;
+              /* bConfirmPIN
+               *    0x00: new PIN once
+               *    0x01: new PIN twice (confirmation)
+               *    0x02: old PIN and new PIN once
+               *    0x03: old PIN and new PIN twice (confirmation)
+               */
+
+  msg[msglen] = 0x02; /* bEntryValidationCondition:
+                         Validation key pressed */
   if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
-    msg[17] |= 0x01; /* Max size reached.  */
-  msg[18] = 0xff; /* bNumberMessage: Default. */
-  msg[19] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
-  msg[20] = 0x04; /* wLangId-High. */
-  msg[21] = 0;    /* bMsgIndex. */
+    msg[msglen] |= 0x01; /* Max size reached.  */
+  msglen++;
+
+  if (apdu_buf[1] == 0x20)
+    msg[msglen++] = 0xff; /* bNumberMessage: Default. */
+  else
+    msg[msglen++] = 0x03; /* bNumberMessage. */
+
+  msg[msglen++] = 0x09; /* wLangId-Low:  English FIXME: use the first entry. */
+  msg[msglen++] = 0x04; /* wLangId-High. */
+
+  if (apdu_buf[1] == 0x20)
+    msg[msglen++] = 0;    /* bMsgIndex. */
+  else
+    {
+      msg[msglen++] = 0;    /* bMsgIndex1. */
+      msg[msglen++] = 1;    /* bMsgIndex2. */
+      msg[msglen++] = 2;    /* bMsgIndex3. */
+    }
+
   /* bTeoProlog follows: */
-  msg[22] = handle->nonnull_nad? ((1 << 4) | 0): 0;
-  msg[23] = ((handle->t1_ns & 1) << 6); /* I-block */
-  msg[24] = 0; /* The apdulen will be filled in by the reader.  */
+  msg[msglen++] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+  msg[msglen++] = ((handle->t1_ns & 1) << 6); /* I-block */
+  msg[msglen++] = 0; /* The apdulen will be filled in by the reader.  */
   /* APDU follows:  */
-  msg[25] = apdu_buf[0]; /* CLA */
-  msg[26] = apdu_buf[1]; /* INS */
-  msg[27] = apdu_buf[2]; /* P1 */
-  msg[28] = apdu_buf[3]; /* P2 */
-  msglen = 29;
+  msg[msglen++] = apdu_buf[0]; /* CLA */
+  msg[msglen++] = apdu_buf[1]; /* INS */
+  msg[msglen++] = apdu_buf[2]; /* P1 */
+  msg[msglen++] = apdu_buf[3]; /* P2 */
   if (cherry_mode)
     msg[msglen++] = 0;
   /* An EDC is not required. */
