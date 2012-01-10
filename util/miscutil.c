@@ -33,7 +33,7 @@
 
 #ifdef HAVE_UNSIGNED_TIME_T
 # define INVALID_TIME_CHECK(a) ((a) == (time_t)(-1))
-#else 
+#else
   /* Error or 32 bit time_t and value after 2038-01-19.  */
 # define INVALID_TIME_CHECK(a) ((a) < 0)
 #endif
@@ -146,7 +146,7 @@ isotimestamp (u32 stamp)
     static char buffer[25+5];
     struct tm *tp;
     time_t atime = stamp;
-    
+
     if (INVALID_TIME_CHECK (atime)) {
         strcpy (buffer, "????" "-??" "-??" " " "??" ":" "??" ":" "??");
     }
@@ -232,17 +232,24 @@ asctimestamp( u32 stamp )
     tp = localtime( &atime );
 #ifdef HAVE_STRFTIME
 #if defined(HAVE_NL_LANGINFO)
+# if GNUPG_GCC_VERSION >= 40600
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
       mem2str( fmt, nl_langinfo(D_T_FMT), DIM(fmt)-3 );
       if( strstr( fmt, "%Z" ) == NULL )
 	strcat( fmt, " %Z");
       strftime( buffer, DIM(buffer)-1, fmt, tp );
+# if GNUPG_GCC_VERSION >= 40600
+#  pragma GCC diagnostic pop
+# endif
 #else
       /* fixme: we should check whether the locale appends a " %Z"
        * These locales from glibc don't put the " %Z":
        * fi_FI hr_HR ja_JP lt_LT lv_LV POSIX ru_RU ru_SU sv_FI sv_SE zh_CN
        */
-      strftime( buffer, DIM(buffer)-1, 
-#ifdef HAVE_W32_SYSTEM                
+      strftime( buffer, DIM(buffer)-1,
+#ifdef HAVE_W32_SYSTEM
                 "%c"
 #else
                 "%c %Z"
@@ -264,7 +271,7 @@ void
 print_string2( FILE *fp, const byte *p, size_t n, int delim, int delim2 )
 {
     for( ; n; n--, p++ )
-	if (*p < 0x20 
+	if (*p < 0x20
             || *p == 0x7f
 	    || *p == delim || *p == delim2
 	    || ((delim || delim2) && *p=='\\'))
@@ -456,7 +463,7 @@ answer_is_yes_no_quit( const char *s )
 }
 
 /*
-   Return 1 for okay, 0 for for cancel or DEF_ANSWER for default. 
+   Return 1 for okay, 0 for for cancel or DEF_ANSWER for default.
  */
 int
 answer_is_okay_cancel (const char *s, int def_answer)
@@ -467,7 +474,7 @@ answer_is_okay_cancel (const char *s, int def_answer)
   const char *long_cancel = _("cancel|cancel");
   const char *short_okay = _("oO");
   const char *short_cancel = _("cC");
-  
+
   /* Note: We have to use the locale dependent strcasecmp */
   if ( match_multistr(long_okay,s) )
     return 1;

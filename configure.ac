@@ -446,6 +446,13 @@ is intended for making fat binary builds on OS X. */
 # define EXEC_TEMPFILE_ONLY
 #endif
 
+/* A macro to help checking the GCC version.  */
+#ifdef __GNUC__
+# define GNUPG_GCC_VERSION (__GNUC__ * 10000       \
+                            + __GNUC_MINOR__ * 100 \
+                            + __GNUC_PATCHLEVEL__)
+#endif /*__GNUC__*/
+
 /* Please note that the string version must not contain more
    than one character because the using code assumes strlen()==1 */
 #ifdef HAVE_DOSISH_SYSTEM

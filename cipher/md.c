@@ -65,7 +65,7 @@ new_list_item (int algo,
   r->name = (*get_info)( algo, &r->contextsize,
                          &r->asnoid, &r->asnlen, &r->mdlen,
                          &r->init, &r->write, &r->final, &r->read );
-  if (!r->name ) 
+  if (!r->name )
     {
       xfree(r);
       r = NULL;
@@ -82,7 +82,7 @@ new_list_item (int algo,
 
 /*
   Load all available hash algorithms and return true.  Subsequent
-  calls will return 0.  
+  calls will return 0.
  */
 static int
 load_digest_module (void)
@@ -96,26 +96,26 @@ load_digest_module (void)
   /* We load them in reverse order so that the most
      frequently used are the first in the list. */
 #ifdef USE_SHA512
-  if (!new_list_item (DIGEST_ALGO_SHA512, sha512_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_SHA512, sha512_get_info))
     BUG ();
-  if (!new_list_item (DIGEST_ALGO_SHA384, sha384_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_SHA384, sha384_get_info))
     BUG ();
 #endif
 #ifdef USE_SHA256
-  if (!new_list_item (DIGEST_ALGO_SHA256, sha256_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_SHA256, sha256_get_info))
     BUG ();
-  if (!new_list_item (DIGEST_ALGO_SHA224, sha224_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_SHA224, sha224_get_info))
     BUG ();
 #endif
-  if (!new_list_item (DIGEST_ALGO_MD5, md5_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_MD5, md5_get_info))
     BUG ();
-  if (!new_list_item (DIGEST_ALGO_RMD160, rmd160_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_RMD160, rmd160_get_info))
     BUG ();
-  if (!new_list_item (DIGEST_ALGO_SHA1, sha1_get_info)) 
+  if (!new_list_item (DIGEST_ALGO_SHA1, sha1_get_info))
     BUG ();
 
   return 1;
-}      
+}
 
 
 /****************
@@ -317,7 +317,7 @@ md_write( MD_HANDLE a, const byte *inbuf, size_t inlen)
     }
     for(r=a->list; r; r = r->next ) {
 	(*r->write)( &r->context.c, a->buffer, a->bufcount );
-        /* Fixme: all ->write fnc should take a const byte* */ 
+        /* Fixme: all ->write fnc should take a const byte* */
 	(*r->write)( &r->context.c, (byte*)inbuf, inlen );
     }
     a->bufcount = 0;
@@ -508,6 +508,7 @@ md_start_debug( MD_HANDLE md, const char *suffix )
 	log_debug("md debug: can't open %s\n", buf );
 }
 
+
 void
 md_stop_debug( MD_HANDLE md )
 {
@@ -519,6 +520,9 @@ md_stop_debug( MD_HANDLE md )
     }
 #ifdef HAVE_U64_TYPEDEF
     {  /* a kludge to pull in the __muldi3 for Solaris */
+#if GNUPG_GCC_VERSION >= 40600
+# pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
        volatile u32 a = (u32)(ulong)md;
        volatile u64 b = 42;
        volatile u64 c;
