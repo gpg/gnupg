@@ -1,5 +1,5 @@
 /* ks-engine-hkp.c - HKP keyserver engine
- * Copyright (C) 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2011, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -761,7 +761,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  char kidbuf[8+1];
+  char kidbuf[40+1];
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
@@ -778,18 +778,20 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   switch (desc.mode)
     {
     case KEYDB_SEARCH_MODE_SHORT_KID:
-    case KEYDB_SEARCH_MODE_LONG_KID:
       snprintf (kidbuf, sizeof kidbuf, "%08lX", (ulong)desc.u.kid[1]);
+      break;
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      snprintf (kidbuf, sizeof kidbuf, "%08lX%08lX",
+		(ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       break;
     case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
-      /* This is a v4 fingerprint.  Take the last 8 hex digits from
-         the fingerprint which is the expected short keyid.  */
-      bin2hex (desc.u.fpr+16, 4, kidbuf);
+      /* This is a v4 fingerprint. */
+      bin2hex (desc.u.fpr, 20, kidbuf);
       break;
 
     case KEYDB_SEARCH_MODE_FPR16:
-      log_error ("HKP keyserver do not support v3 fingerprints\n");
+      log_error ("HKP keyservers do not support v3 fingerprints\n");
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
