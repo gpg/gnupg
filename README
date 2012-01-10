@@ -1,11 +1,11 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-                            Version 1.4.11
+                            Version 1.4.12
 
-	 Copyright 1998, 1999, 2000, 2001, 2002, 2003, 
+	 Copyright 1998, 1999, 2000, 2001, 2002, 2003,
                    2004, 2005, 2006, 2007, 2008, 2009,
-                   2010  Free Software Foundation, Inc.
+                   2010, 2012  Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -142,7 +142,7 @@
 	http://www.gnupg.org/documentation/howtos.html
 
     A man page with a description of all commands and options gets installed
-    along with the program. 
+    along with the program.
 
 
     Introduction
@@ -467,13 +467,13 @@
     detailed information about the errors.
 
 
-    Configure options 
+    Configure options
     -----------------
 
-    Here is a list of configure options which are sometime useful 
+    Here is a list of configure options which are sometime useful
     for installation.
 
-    --enable-static-rnd=<name> 
+    --enable-static-rnd=<name>
                      Force the use of the random byte gathering
 		     module <name>.  Default is either to use /dev/random
 		     or the auto mode.  Value for name:
@@ -485,9 +485,9 @@
 		     linux - Use the module which accesses /dev/random.
 			     This is the first choice and the default one
 			     for GNU/Linux or *BSD.
-                      auto - Compile linux, egd and unix in and 
+                      auto - Compile linux, egd and unix in and
                              automagically select at runtime.
-  
+
      --with-egd-socket=<name>
                      This is only used when EGD is used as random
                      gatherer. GnuPG uses by default "~/.gnupg/entropy"
@@ -497,13 +497,13 @@
                      "~/" uses the socket in the home directory of the user
                      and one starting with a "=" uses a socket in the
                      GnuPG home directory which is "~/.gnupg" by default.
- 
+
      --without-readline
                      Do not include support for the readline library
                      even if it is available.  The default is to check
                      whether the readline library is a available and
                      use it to allow fancy command line editing.
-  
+
      --with-included-zlib
                      Forces usage of the local zlib sources. Default is
 		     to use the (shared) library of the system.
@@ -530,15 +530,15 @@
                      (e.g. SunOS 5.7 on UltraSparc-2) and might give
                      you a bus error.
 
-     --disable-dynload 
+     --disable-dynload
                     If you have problems with dynamic loading, this
                     option disables all dynamic loading stuff.  Note
                     that the use of dynamic linking is very limited.
 
      --disable-asm
-                    Do not use assembler modules.  It is not possible 
+                    Do not use assembler modules.  It is not possible
                     to use this on some CPU types.
-                    
+
      --disable-exec
                     Disable all remote program execution.  This
 		    disables photo ID viewing as well as all keyserver
@@ -595,14 +595,14 @@
 		    --disable-cast5, --disable-blowfish,
 		    --disable-aes, --disable-twofish,
 		    --disable-sha256, --disable-sha512,
-		    --without-bzip2, --disable-exec, 
+		    --without-bzip2, --disable-exec,
                     --disable-card-support and
 		    --disable-agent-support.
                     Configure command lines are read from left to
 		    right, so if you want to have an "almost minimal"
 		    configuration, you can do (for example)
 		    "--enable-minimal --enable-rsa" to have RSA added
-		    to the minimal build.  Adding the option 
+		    to the minimal build.  Adding the option
                     --disable-nls may be useful too.
 
      --enable-key-cache=SIZE
@@ -623,7 +623,7 @@
 
      --enable-selinux-support
                     This prevents access to certain files and won't
-                    allow import or export of secret keys. 
+                    allow import or export of secret keys.
 
      --enable-noexecstack
                     Pass option --noexecstack to as.  Autdetect wether
@@ -719,7 +719,7 @@
 
     Random devices are available in Linux, FreeBSD and OpenBSD.
     Operating systems without a random devices must use another
-    entropy collector. 
+    entropy collector.
 
     This collector works by running a lot of commands that yield more
     or less unpredictable output and feds this as entropy into the

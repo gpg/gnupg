@@ -1,6 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2010, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -917,10 +917,10 @@ default_strusage( int level )
         break;
       case 11: p = "foo"; break;
       case 13: p = "0.0"; break;
-      case 14: p = "Copyright (C) 2010 Free Software Foundation, Inc."; break;
+      case 14: p = "Copyright (C) 2012 Free Software Foundation, Inc."; break;
       case 15: p =
 "This is free software: you are free to change and redistribute it.\n"
-"There is NO WARRANTY, to the extent permitted by law.\n"; 
+"There is NO WARRANTY, to the extent permitted by law.\n";
         break;
       case 16:	p =
 "This is free software; you can redistribute it and/or modify\n"
