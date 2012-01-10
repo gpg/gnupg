@@ -76,7 +76,7 @@ static void unlock_all (KEYDB_HANDLE hd);
 static int
 maybe_create_keyring (char *filename, int force)
 {
-  DOTLOCK lockhd = NULL;
+  dotlock_t lockhd = NULL;
   IOBUF iobuf;
   int rc;
   mode_t oldmask;
@@ -120,7 +120,7 @@ maybe_create_keyring (char *filename, int force)
   /* To avoid races with other instances of gpg trying to create or
      update the keyring (it is removed during an update for a short
      time), we do the next stuff in a locked state. */
-  lockhd = create_dotlock (filename);
+  lockhd = dotlock_create (filename, 0);
   if (!lockhd)
     {
       /* A reason for this to fail is that the directory is not
@@ -136,7 +136,7 @@ maybe_create_keyring (char *filename, int force)
         return G10ERR_GENERAL;
     }
 
-  if ( make_dotlock (lockhd, -1) )
+  if ( dotlock_take (lockhd, -1) )
     {
       /* This is something bad.  Probably a stale lockfile.  */
       log_info ("can't lock `%s'\n", filename );
@@ -180,8 +180,8 @@ maybe_create_keyring (char *filename, int force)
  leave:
   if (lockhd)
     {
-      release_dotlock (lockhd);
-      destroy_dotlock (lockhd);
+      dotlock_release (lockhd);
+      dotlock_destroy (lockhd);
     }
   return rc;
 }

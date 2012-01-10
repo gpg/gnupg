@@ -148,7 +148,7 @@ main( int argc, char **argv )
 
     tty_no_terminal(1);
     tty_batchmode(1);
-    disable_dotlock();
+    dotlock_disable ();
 
     set_native_charset (NULL); /* Try to auto set the character set */
 
@@ -430,9 +430,10 @@ void rl_free_line_state (void) {}
 #endif
 
 /* We do not do any locking, so use these stubs here */
-void disable_dotlock(void) {}
-DOTLOCK create_dotlock( const char *file_to_lock ) { return NULL; }
-void destroy_dotlock (DOTLOCK h) {}
-int make_dotlock( DOTLOCK h, long timeout ) { return 0;}
-int release_dotlock( DOTLOCK h ) {return 0;}
-void remove_lockfiles(void) {}
+void dotlock_disable(void) {}
+dotlock_t dotlock_create (const char *file_to_lock, unsigned int flags)
+{ return NULL; }
+void dotlock_destroy (dotlock_t h) {}
+int dotlock_take (dotlock_t h, long timeout) { return 0;}
+int dotlock_release (dotlock_t h) {return 0;}
+void dotlock_remove_lockfiles (void) {}

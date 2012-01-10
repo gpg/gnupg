@@ -86,7 +86,7 @@ struct cmp_xdir_struct {
 
 
 static char *db_name;
-static DOTLOCK lockhandle;
+static dotlock_t lockhandle;
 static int is_locked;
 static int  db_fd = -1;
 static int in_transaction;
@@ -248,7 +248,7 @@ put_record_into_cache( ulong recno, const char *data )
 	if( !n )
 	    n = 1;
 	if( !is_locked ) {
-	    if( make_dotlock( lockhandle, -1 ) )
+	    if (dotlock_take (lockhandle, -1))
 		log_fatal("can't acquire lock - giving up\n");
 	    else
 		is_locked = 1;
@@ -267,7 +267,7 @@ put_record_into_cache( ulong recno, const char *data )
 	    }
 	}
 	if( !opt.lock_once ) {
-	    if( !release_dotlock( lockhandle ) )
+	    if (!dotlock_release (lockhandle))
 		is_locked = 0;
 	}
 	assert( unused );
@@ -309,7 +309,7 @@ tdbio_sync()
 	return 0;
 
     if( !is_locked ) {
-	if( make_dotlock( lockhandle, -1 ) )
+	if (dotlock_take (lockhandle, -1))
 	    log_fatal("can't acquire lock - giving up\n");
 	else
 	    is_locked = 1;
@@ -324,7 +324,7 @@ tdbio_sync()
     }
     cache_is_dirty = 0;
     if( did_lock && !opt.lock_once ) {
-	if( !release_dotlock( lockhandle ) )
+	if (!dotlock_release (lockhandle))
 	    is_locked = 0;
     }
 
@@ -364,7 +364,7 @@ tdbio_end_transaction()
     if( !in_transaction )
 	log_bug("tdbio: no active transaction\n");
     if( !is_locked ) {
-	if( make_dotlock( lockhandle, -1 ) )
+	if (dotlock_take (lockhandle, -1))
 	    log_fatal("can't acquire lock - giving up\n");
 	else
 	    is_locked = 1;
@@ -374,7 +374,7 @@ tdbio_end_transaction()
     rc = tdbio_sync();
     unblock_all_signals();
     if( !opt.lock_once ) {
-	if( !release_dotlock( lockhandle ) )
+	if (!dotlock_release (lockhandle))
 	    is_locked = 0;
     }
     return rc;
@@ -414,7 +414,7 @@ static void
 cleanup(void)
 {
     if( is_locked ) {
-	if( !release_dotlock(lockhandle) )
+	if (!dotlock_release (lockhandle))
 	    is_locked = 0;
     }
 }
@@ -447,7 +447,7 @@ create_version_record (void)
 {
   TRUSTREC rec;
   int rc;
-  
+
   memset( &rec, 0, sizeof rec );
   rec.r.ver.version     = 3;
   rec.r.ver.created     = make_timestamp();
@@ -517,10 +517,10 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    db_name = fname;
 #ifdef __riscos__
 	    if( !lockhandle )
-		lockhandle = create_dotlock( db_name );
+                lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
 		log_fatal( _("can't create lock for `%s'\n"), db_name );
-            if( make_dotlock( lockhandle, -1 ) )
+            if (dotlock_take (lockhandle, -1))
                 log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
 	    oldmask=umask(077);
@@ -540,7 +540,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
 
 #ifndef __riscos__
 	    if( !lockhandle )
-		lockhandle = create_dotlock( db_name );
+                lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
 		log_fatal( _("can't create lock for `%s'\n"), db_name );
 #endif /* !__riscos__ */
@@ -583,11 +583,11 @@ open_db()
   assert( db_fd == -1 );
 
   if (!lockhandle )
-    lockhandle = create_dotlock( db_name );
+    lockhandle = dotlock_create (db_name, 0);
   if (!lockhandle )
     log_fatal( _("can't create lock for `%s'\n"), db_name );
 #ifdef __riscos__
-  if (make_dotlock( lockhandle, -1 ) )
+  if (dotlock_take (lockhandle, -1))
     log_fatal( _("can't lock `%s'\n"), db_name );
 #endif /* __riscos__ */
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
@@ -613,7 +613,7 @@ open_db()
     {
       migrate_from_v2 ();
     }
-  
+
   /* read the version record */
   if (tdbio_read_record (0, &rec, RECTYPE_VER ) )
     log_fatal( _("%s: invalid trustdb\n"), db_name );
@@ -690,7 +690,7 @@ tdbio_read_model(void)
 {
   TRUSTREC vr;
   int rc;
- 
+
   rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
   if( rc )
     log_fatal( _("%s: error reading version record: %s\n"),
@@ -1008,7 +1008,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
  */
 static int
 lookup_hashtable( ulong table, const byte *key, size_t keylen,
-		  int (*cmpfnc)(const void*, const TRUSTREC *), 
+		  int (*cmpfnc)(const void*, const TRUSTREC *),
                   const void *cmpdata, TRUSTREC *rec )
 {
     int rc;
@@ -1534,12 +1534,12 @@ migrate_from_v2 ()
   /* We have some restrictions here.  We can't use the version record
    * and we can't use any of the old hashtables because we dropped the
    * code.  So we first collect all ownertrusts and then use a second
-   * pass fo find the associated keys.  We have to do this all without using 
+   * pass fo find the associated keys.  We have to do this all without using
    * the regular record read functions.
    */
 
   /* get all the ownertrusts */
-  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
+  if (lseek (db_fd, 0, SEEK_SET ) == -1 )
       log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
   for (recno=0;;recno++)
     {
@@ -1553,7 +1553,7 @@ migrate_from_v2 ()
 
       if (*oldbuf != 2)
         continue;
-      
+
       /* v2 dir record */
       if (ottable_used == ottable_size)
         {
@@ -1570,7 +1570,7 @@ migrate_from_v2 ()
   log_info ("found %d ownertrust records\n", ottable_used);
 
   /* Read again and find the fingerprints */
-  if (lseek (db_fd, 0, SEEK_SET ) == -1 ) 
+  if (lseek (db_fd, 0, SEEK_SET ) == -1 )
       log_fatal ("migrate_from_v2: lseek failed: %s\n", strerror (errno));
   for (recno=0;;recno++)
     {
@@ -1582,7 +1582,7 @@ migrate_from_v2 ()
       if (n != 40)
         log_fatal ("migrate_from_v2: read error or short read\n");
 
-      if (*oldbuf != 3) 
+      if (*oldbuf != 3)
         continue;
 
       /* v2 key record */
@@ -1603,7 +1603,7 @@ migrate_from_v2 ()
   if (create_version_record ())
     log_fatal ("failed to recreate version record of `%s'\n", db_name);
 
-  /* access the hash table, so it is store just after the version record, 
+  /* access the hash table, so it is store just after the version record,
    * this is not needed put a dump is more pretty */
   get_trusthashrec ();
 
@@ -1613,7 +1613,7 @@ migrate_from_v2 ()
     {
       if (!ottable[i].okay)
         continue;
-      
+
       memset (&rec, 0, sizeof rec);
       rec.recnum = tdbio_new_recnum ();
       rec.rectype = RECTYPE_TRUST;

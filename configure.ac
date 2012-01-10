@@ -933,7 +933,8 @@ AM_CONDITIONAL(ENABLE_AGENT_SUPPORT, test "$agent_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h getopt.h pwd.h])
+AC_CHECK_HEADERS([unistd.h langinfo.h termio.h locale.h getopt.h pwd.h \
+                  signal.h])
 
 # Note that we do not check for iconv here because this is done anyway
 # by the gettext checks and thus it allows us to disable the use of

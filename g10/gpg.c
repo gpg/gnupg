@@ -1895,7 +1895,7 @@ main (int argc, char **argv )
     secure_randoxmalloc(); /* put random number into secure memory */
     may_coredump = disable_core_dumps();
     init_signals();
-    create_dotlock(NULL); /* register locking cleanup */
+    dotlock_create (NULL, 0); /* Register locking cleanup.  */
     i18n_init();
     opt.command_fd = -1; /* no command fd */
     opt.compress_level = -1; /* defaults to standard compress level */
@@ -2607,7 +2607,7 @@ main (int argc, char **argv )
 	  case oNoEscapeFrom: opt.escape_from = 0; break;
 	  case oLockOnce: opt.lock_once = 1; break;
 	  case oLockNever:
-            disable_dotlock ();
+            dotlock_disable ();
             random_disable_locking ();
             break;
 	  case oLockMultiple:
