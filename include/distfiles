@@ -16,3 +16,4 @@ assuan.h
 compat.h
 srv.h
 estream-printf.h
+dotlock.h
