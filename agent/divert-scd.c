@@ -166,6 +166,8 @@ encode_md_for_card (const unsigned char *digest, size_t digestlen, int algo,
       'A' = The PIN is an Admin PIN, SO-PIN or alike.
       'P' = The PIN is a PUK (Personal Unblocking Key).
       'R' = The PIN is a Reset Code.
+      'I' = Ignore using the default prompt and use 'info' as the entire
+            prompt. Cannot be used with other flags.
 
    Example:
 
@@ -185,6 +187,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   int newpin = 0;
   int resetcode = 0;
   int is_puk = 0;
+  int ignore = 0;
   const char *again_text = NULL;
   const char *prompt = "PIN";
 
@@ -212,12 +215,17 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
               prompt = _("Reset Code");
               resetcode = 1;
             }
+	  else if (*s == 'I')
+	    ignore = 1;
         }
       info = ends+1;
       any_flags = 1;
     }
   else if (info && *info == '|')
     log_debug ("pin_cb called without proper PIN info hack\n");
+
+  if (ignore)
+    any_flags = 0;
 
   /* If BUF has been passed as NULL, we are in keypad mode: The
      callback opens the popup and immediatley returns. */
@@ -305,8 +313,8 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
     }
   else
     {
-      char *desc;
-      if ( asprintf (&desc,
+      char *desc = NULL;
+      if (!ignore && asprintf (&desc,
                      _("Please enter the PIN%s%s%s to unlock the card"),
                      info? " (`":"",
                      info? info:"",

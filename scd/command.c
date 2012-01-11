@@ -139,6 +139,13 @@ struct server_local_s
      this session.  */
   int stopme;
 
+  /* User-defined pinentry prompt strings. Needed both here and in the app
+   * since they may be set by the user before an app is selected with
+   * select_application().  They are copied to the app when
+   * select_application() succeeds and further modifications done in the app.
+   * */
+  char *pin_prompt;
+  char *pin_admin_prompt;
 };
 
 
@@ -387,6 +394,39 @@ reset_notify (assuan_context_t ctx, char *line)
   return 0;
 }
 
+static gpg_error_t
+set_pinentry_prompt(struct server_local_s *srv, int which, const char *prompt)
+{
+  gpg_error_t rc = 0;
+  char **p = NULL;
+
+  switch (which)
+    {
+      case PIN_SIGN_PROMPT:
+	p = &srv->pin_prompt;
+	break;
+      case PIN_ADMIN_PROMPT:
+	p = &srv->pin_admin_prompt;
+	break;
+      default:
+	  break;
+    }
+
+  if (p)
+    {
+      xfree (*p);
+      *p = NULL;
+
+      if (prompt && *prompt != '-' && *(prompt+1) != 0)
+	{
+	  *p = xtrystrdup (prompt);
+	  if (!*p)
+	    rc = gpg_error_from_syserror ();
+	}
+    }
+
+  return rc;
+}
 
 static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
@@ -406,6 +446,22 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
       ctrl->server_local->event_signal = i;
 #endif
+    }
+  /* A user-defined prompt to show in a pinentry overriding the default. See
+   * app.c:expand_pin_prompt() for details. */
+  else if (!strcmp (key, "pin-prompt"))
+    {
+      if (ctrl->app_ctx)
+	return app_set_pin_prompt (ctrl->app_ctx, PIN_SIGN_PROMPT, value);
+      else
+	return set_pinentry_prompt (ctrl->server_local, PIN_SIGN_PROMPT, value);
+    }
+  else if (!strcmp (key, "pin-admin-prompt"))
+    {
+      if (ctrl->app_ctx)
+	return app_set_pin_prompt (ctrl->app_ctx, PIN_ADMIN_PROMPT, value);
+      else
+	return set_pinentry_prompt (ctrl->server_local, PIN_ADMIN_PROMPT, value);
     }
 
  return 0;
@@ -523,7 +579,17 @@ open_card (ctrl_t ctrl, const char *apptype)
             err = gpg_error (GPG_ERR_CARD);
 	}
       else
-        err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
+	{
+	  err = select_application (ctrl, slot, apptype, &ctrl->app_ctx);
+	  if (!err)
+	    {
+	      err = app_set_pin_prompt(ctrl->app_ctx, PIN_SIGN_PROMPT,
+		  ctrl->server_local->pin_prompt);
+	      if (!err)
+		err = app_set_pin_prompt(ctrl->app_ctx, PIN_ADMIN_PROMPT,
+		    ctrl->server_local->pin_admin_prompt);
+	    }
+	}
     }
 
   TEST_CARD_REMOVAL (ctrl, err);
@@ -2097,6 +2163,8 @@ scd_command_handler (ctrl_t ctrl, int fd)
       sl->next_session = ctrl->server_local->next_session;
     }
   stopme = ctrl->server_local->stopme || reader_disabled;
+  xfree (ctrl->server_local->pin_prompt);
+  xfree (ctrl->server_local->pin_admin_prompt);
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 

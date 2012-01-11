@@ -922,6 +922,131 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
   return err;
 }
 
+/* For use with user-defined pinentry prompts that are set with the OPTION
+ * command. This function is called from an application before a pinentry is
+ * invoked. It replaces special escape strings in the user-defined 'prompt'
+ * with a single (for now) value set by the calling function. What data type
+ * the vararg value is depends on the 'which' parameter and is set in the
+ * calling function.
+ *
+ * The 'prepend' parameter are any pinentry flags to be prepended to the
+ * expanded prompt. These flags, if any, are not set by the user-defined
+ * prompt but the calling function. In most cases it will be NULL or "|I|".
+ *
+ * The following expandos are recognized:
+ *
+ * expando | which            | description
+ * ----------------------------------------
+ *           PIN_PROMPT_NONE    NOP. The user-defined prompt is returned along
+ *                              with any 'prepend' parameter.
+ * |S|       PIN_SIGN_PROMPT    signature count (unsigned long)
+ * |A|       PIN_ADMIN_PROMPT   remaining attempts (int)
+ *
+ * The following example shows the default pinentry prompt when no
+ * user-defined prompt is set:
+ *
+ * "Please enter the PIN%%0A[sigs done: |S|]"
+ *
+ * Here, |S| is expanded to the number of signatures created so far.
+ */
+char *
+expand_pin_prompt(const char *prompt, const char *prepend, int which, ...)
+{
+  va_list ap;
+  size_t len, n;
+  char *buf;
+  unsigned long luval;
+  int intval;
+  char valuebuf[50] = {0};
+  char *p, *token = NULL, *tokenp;
+
+  if (!prompt)
+    return NULL;
+
+  len = strlen (prompt);
+  len += prepend ? strlen (prepend) : 0;
+  va_start (ap, which);
+
+  switch (which)
+    {
+      /* Signature count. */
+      case PIN_SIGN_PROMPT:
+	luval = va_arg (ap, unsigned long);
+	snprintf (valuebuf, sizeof (valuebuf), "%lu", luval);
+	token = "|S|";
+	break;
+      /* Pin tries remaining. */
+      case PIN_ADMIN_PROMPT:
+	intval = va_arg (ap, int);
+	snprintf (valuebuf, sizeof (valuebuf), "%i", intval);
+	token = "|A|";
+	break;
+      default:
+	break;
+    }
+
+  va_end (ap);
+
+  if (!token)
+    {
+      if (prepend)
+	{
+	  len = strlen (prepend)+strlen (prompt)+1;
+	  p = xtrymalloc (len);
+	  if (!p)
+	    return NULL;
+
+	  snprintf (p, len, "%s%s", prepend, prompt);
+	  return p;
+	}
+
+      return xtrystrdup (prompt);
+    }
+
+  len += strlen (valuebuf)+1;
+  buf = xtrymalloc (len);
+  if (!buf)
+    return NULL;
+
+  buf[0] = 0;
+  if (prepend)
+    strcpy (buf, prepend);
+
+  strcat (buf, prompt);
+
+  if (prepend)
+    p = buf+strlen (prepend);
+  else
+    p = buf;
+
+  tokenp = strstr (p, token);
+  if (!tokenp)
+    return buf;
+
+  p = tokenp+strlen (token);
+  len -= strlen (token)+1;
+  memmove(&buf[len-strlen (p)], p, strlen (p));
+
+  for (n = 0; valuebuf[n]; n++)
+    *tokenp++ = valuebuf[n];
+
+  buf[len] = 0;
+  return buf;
+}
+
+/* Set the prompt shown in the pinentry dialog. If not set then a default will
+ * be used. */
+gpg_error_t
+app_set_pin_prompt(app_t app, int which, const char *prompt)
+{
+  if (!app)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (!app->fnc.set_pin_prompt)
+    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+
+  return app->fnc.set_pin_prompt (app, which, prompt);
+}
 
 /* Perform a GET CHALLENGE operation.  This fucntion is special as it
    directly accesses the card without any application specific

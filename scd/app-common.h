@@ -34,6 +34,12 @@
 #define APP_CHANGE_FLAG_RESET    1
 #define APP_CHANGE_FLAG_NULLPIN  2
 
+/* For user defined pinentry prompts. */
+enum {
+    PIN_PROMPT_NONE = -1,
+    PIN_SIGN_PROMPT,
+    PIN_ADMIN_PROMPT,
+};
 
 struct app_local_s;  /* Defined by all app-*.c.  */
 
@@ -119,6 +125,7 @@ struct app_ctx_s {
     gpg_error_t (*check_pin) (app_t app, const char *keyidstr,
                       gpg_error_t (*pincb)(void*, const char *, char **),
                       void *pincb_arg);
+    gpg_error_t (*set_pin_prompt)(app_t app, int which, const char *prompt);
   } fnc;
 
 };
@@ -192,6 +199,7 @@ gpg_error_t app_genkey (app_t app, ctrl_t ctrl,
                         time_t createtime,
                         gpg_error_t (*pincb)(void*, const char *, char **),
                         void *pincb_arg);
+gpg_error_t app_set_pin_prompt (app_t app, int which, const char *prompt);
 gpg_error_t app_get_challenge (app_t app, size_t nbytes,
                                unsigned char *buffer);
 gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
@@ -201,6 +209,8 @@ gpg_error_t app_change_pin (app_t app, ctrl_t ctrl,
 gpg_error_t app_check_pin (app_t app, const char *keyidstr,
                    gpg_error_t (*pincb)(void*, const char *, char **),
                    void *pincb_arg);
+char *expand_pin_prompt(const char *prompt, const char *prepend, int which,
+		   ...);
 
 
 /*-- app-openpgp.c --*/

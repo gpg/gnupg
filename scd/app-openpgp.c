@@ -198,6 +198,8 @@ struct app_local_s {
     rsa_key_format_t format;
   } keyattr[3];
 
+  char *pin_prompt;          /* As set with set_pin_prompt() or a default. */
+  char *pin_admin_prompt;
 };
 
 
@@ -242,6 +244,8 @@ do_deinit (app_t app)
           xfree (app->app_local->pk[i].key);
           app->app_local->pk[i].read_done = 0;
         }
+      xfree (app->app_local->pin_prompt);
+      xfree (app->app_local->pin_admin_prompt);
       xfree (app->app_local);
       app->app_local = NULL;
     }
@@ -1520,19 +1524,41 @@ verify_a_chv (app_t app,
 
   if (chvno == 1)
     {
+      if (app->app_local->pin_prompt)
+	{
+	  prompt_buffer = expand_pin_prompt (app->app_local->pin_prompt, "|I|",
+	      PIN_SIGN_PROMPT, sigcount);
+	  if (!prompt_buffer)
+	    return gpg_error_from_syserror ();
+	}
+      else
+      {
 #define PROMPTSTRING  _("||Please enter the PIN%%0A[sigs done: %lu]")
-      size_t promptsize = strlen (PROMPTSTRING) + 50;
+	size_t promptsize;
 
-      prompt_buffer = xtrymalloc (promptsize);
-      if (!prompt_buffer)
-        return gpg_error_from_syserror ();
-      snprintf (prompt_buffer, promptsize-1, PROMPTSTRING, sigcount);
-      prompt = prompt_buffer;
+	promptsize = strlen (PROMPTSTRING) + 50;
+	prompt_buffer = xtrymalloc (promptsize);
+	if (!prompt_buffer)
+	  return gpg_error_from_syserror ();
+	snprintf (prompt_buffer, promptsize-1, PROMPTSTRING, sigcount);
 #undef PROMPTSTRING
+      }
+
+      prompt = prompt_buffer;
     }
   else
-    prompt = _("||Please enter the PIN");
-
+    {
+      if (app->app_local->pin_prompt)
+	{
+	  prompt_buffer = expand_pin_prompt (app->app_local->pin_prompt, "|I|",
+	      PIN_PROMPT_NONE, NULL);
+	  if (!prompt_buffer)
+	    return gpg_error_from_syserror ();
+	  prompt = prompt_buffer;
+	}
+      else
+	prompt = _("||Please enter the PIN");
+    }
 
   if (!opt.disable_keypad
       && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
@@ -1673,11 +1699,21 @@ build_enter_admin_pin_prompt (app_t app, char **r_prompt)
     {
       /* TRANSLATORS: Do not translate the "|A|" prefix but keep it at
          the start of the string.  Use %%0A to force a linefeed.  */
-      prompt = xtryasprintf (_("|A|Please enter the Admin PIN%%0A"
-                               "[remaining attempts: %d]"), remaining);
+      if (app->app_local->pin_admin_prompt)
+	prompt = expand_pin_prompt (app->app_local->pin_admin_prompt, "|I|",
+	    PIN_ADMIN_PROMPT, remaining);
+      else
+	prompt = xtryasprintf (_("|A|Please enter the Admin PIN%%0A"
+	      "[remaining attempts: %d]"), remaining);
     }
   else
-    prompt = xtrystrdup (_("|A|Please enter the Admin PIN"));
+    {
+      if (app->app_local->pin_admin_prompt)
+	prompt = expand_pin_prompt (app->app_local->pin_admin_prompt, "|I|",
+	    PIN_PROMPT_NONE, NULL);
+      else
+	prompt = xtrystrdup (_("|A|Please enter the Admin PIN"));
+    }
 
   if (!prompt)
     return gpg_error_from_syserror ();
@@ -1999,7 +2035,21 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
                   prompt = promptbuf;
                 }
               else
-                prompt = _("||Please enter the PIN");
+		{
+		  if (app->app_local->pin_prompt)
+		  {
+		    promptbuf = expand_pin_prompt (app->app_local->pin_prompt,
+			"|I|", PIN_PROMPT_NONE, NULL);
+		    if (!promptbuf)
+		      {
+			rc = gpg_error_from_syserror ();
+			goto leave;
+		      }
+		    prompt = promptbuf;
+		  }
+		  else
+		    prompt = _("||Please enter the PIN");
+		}
               rc = pincb (pincb_arg, prompt, &oldpinvalue);
               xfree (promptbuf);
               promptbuf = NULL;
@@ -3707,6 +3757,40 @@ parse_algorithm_attribute (app_t app, int keyno)
   xfree (relptr);
 }
 
+gpg_error_t
+do_set_pin_prompt(app_t app, int which, const char *prompt)
+{
+  gpg_error_t rc = 0;
+  char **p = NULL;
+
+  switch (which)
+    {
+      case PIN_SIGN_PROMPT:
+	p = &app->app_local->pin_prompt;
+	break;
+      case PIN_ADMIN_PROMPT:
+	p = &app->app_local->pin_admin_prompt;
+	break;
+      default:
+	  break;
+    }
+
+  if (p)
+    {
+      xfree (*p);
+      *p = NULL;
+
+      if (prompt && *prompt != '-' && *(prompt+1) != 0)
+	{
+	  *p = xtrystrdup (prompt);
+	  if (!*p)
+	    rc = gpg_error_from_syserror ();
+	}
+    }
+
+  return rc;
+}
+
 /* Select the OpenPGP application on the card in SLOT.  This function
    must be used before any other OpenPGP application functions. */
 gpg_error_t
@@ -3850,6 +3934,7 @@ app_select_openpgp (app_t app)
       app->fnc.decipher = do_decipher;
       app->fnc.change_pin = do_change_pin;
       app->fnc.check_pin = do_check_pin;
+      app->fnc.set_pin_prompt = do_set_pin_prompt;
    }
 
 leave:
