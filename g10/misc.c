@@ -1377,6 +1377,8 @@ pubkey_get_npkey (int algo)
   /* All other algorithms match those of Libgcrypt.  */
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (is_RSA (algo))
+    algo = GCRY_PK_RSA;
 
   if (gcry_pk_algo_info (algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
     n = 0;
@@ -1399,6 +1401,8 @@ pubkey_get_nskey (int algo)
   /* All other algorithms match those of Libgcrypt.  */
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (is_RSA (algo))
+    algo = GCRY_PK_RSA;
 
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
     n = 0;
@@ -1419,6 +1423,8 @@ pubkey_get_nsig (int algo)
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (is_RSA (algo))
+    algo = GCRY_PK_RSA;
 
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
     n = 0;
@@ -1440,6 +1446,8 @@ pubkey_get_nenc (int algo)
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (is_RSA (algo))
+    algo = GCRY_PK_RSA;
 
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
     n = 0;
