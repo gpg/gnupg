@@ -61,8 +61,9 @@ get_entropy_count( int fd )
 #endif
 #endif
 
-/****************
- * Used to open the /dev/random devices (Linux, xBSD, Solaris (if it exists), ...)
+/*
+ * Used to open the /dev/random devices (Linux, xBSD, Solaris (if it
+ * exists), ...)
  */
 static int
 open_device( const char *name, int minor )
@@ -82,7 +83,7 @@ open_device( const char *name, int minor )
 }
 
 
-/****************
+/*
  * Note:  Using a level of 0 should never block and better add nothing
  * to the pool.  This is easy to accomplish with /dev/urandom.
  */
@@ -103,8 +104,8 @@ rndlinux_gather_random( void (*add)(const void*, size_t, int), int requester,
 	fd = fd_random;
     }
     else {
-	/* this will also be used for elve 0 but by using /dev/urandom
-	 * we can be sure that oit will never block. */
+	/* This will also be used for level 0.  By using /dev/urandom
+	 * we can be sure that it will never block. */
 	if( fd_urandom == -1 )
 	    fd_urandom = open_device( NAME_OF_DEV_URANDOM, 9 );
 	fd = fd_urandom;
