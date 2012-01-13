@@ -94,9 +94,8 @@ if test "$1" = "--build-w32"; then
     fi
     [ $DIE = yes ] && exit 1
 
-    $tsdir/configure ${conf_CC} --build=${build} --host=${host} \
-                --with-bzip2=${w32root} \
-                ${disable_foo_tests}  $*
+    $tsdir/configure ${conf_CC} --build=${build} --host=${host}
+                     ${disable_foo_tests}  $*
     exit $?
 fi
 

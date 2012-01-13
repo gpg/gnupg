@@ -30,7 +30,14 @@ else
 checks = checks
 endif
 
-SUBDIRS = m4 intl zlib util mpi cipher tools g10 keyserver po doc ${checks}
+if HAVE_W32_SYSTEM
+bzlib = bzlib
+else
+bzlib =
+endif
+
+SUBDIRS = m4 intl zlib ${bzlib} util mpi cipher tools \
+          g10 keyserver po doc ${checks}
 
 EXTRA_DIST = scripts/config.rpath PROJECTS BUGS config.h.in	\
              autogen.sh ChangeLog-2011 po/ChangeLog-2011	\
