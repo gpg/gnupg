@@ -30,7 +30,7 @@
 #include "cipher.h"
 #include "options.h"
 #include "i18n.h"
-
+#include "status.h"
 
 static int mdc_decode_filter( void *opaque, int control, IOBUF a,
 					      byte *buf, size_t *ret_len);
@@ -91,6 +91,15 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	    log_info(_("encrypted with unknown algorithm %d\n"), dek->algo );
         dek->algo_info_printed = 1;
     }
+
+
+    {
+        char buf[20];
+
+        snprintf (buf, sizeof buf, "%d %d", ed->mdc_method, dek->algo);
+        write_status_text (STATUS_DECRYPTION_INFO, buf);
+    }
+
     if( (rc=check_cipher_algo(dek->algo)) )
 	goto leave;
     blocksize = cipher_get_blocksize(dek->algo);
@@ -120,7 +129,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
       {
 	log_error("key setup failed: %s\n", g10_errstr(rc) );
 	goto leave;
-      
+
       }
     if (!ed->buf) {
         log_error(_("problem handling encrypted packet\n"));
@@ -199,7 +208,7 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	/*log_hexdump("MDC calculated:",md_read( dfx->mdc_hash, 0), datalen);*/
 	/*log_hexdump("MDC message   :", dfx->defer, 20);*/
     }
-    
+
 
   leave:
     release_dfx_context (dfx);

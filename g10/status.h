@@ -120,6 +120,8 @@
 
 #define STATUS_ERROR  85
 
+#define STATUS_DECRYPTION_INFO  86
+
 
 /*-- status.c --*/
 void set_status_fd ( int fd );
