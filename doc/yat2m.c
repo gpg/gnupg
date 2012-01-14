@@ -1203,10 +1203,10 @@ top_parse_file (const char *fname, FILE *fp)
                                  if not in a section.  */
   while (macrolist)
     {
-      macro_t m = macrolist->next;
-      free (m->value);
-      free (m);
-      macrolist = m;
+      macro_t next = macrolist->next;
+      free (macrolist->value);
+      free (macrolist);
+      macrolist = next;
     }
 
   parse_file (fname, fp, &section_name, 0);
