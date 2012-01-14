@@ -809,6 +809,28 @@ hash_algo_option (int algo)
 }
 
 
+static gpg_error_t cancel_inquire(ctrl_t ctrl, gpg_error_t rc)
+{
+  gpg_error_t oldrc = rc;
+
+  /* The inquire callback was called and transact returned a
+     cancel error.  We assume that the inquired process sent a
+     CANCEL.  The passthrough code is not able to pass on the
+     CANCEL and thus scdaemon would stuck on this.  As a
+     workaround we send a CANCEL now.  */
+  rc = assuan_write_line (ctrl->scd_local->ctx, "CAN");
+  if (!rc) {
+    char *line;
+    size_t len;
+
+    rc = assuan_read_line (ctrl->scd_local->ctx, &line, &len);
+    if (!rc)
+      rc = oldrc;
+  }
+
+  return rc;
+}
+
 /* Create a signature using the current card.  MDALGO is either 0 or
    gives the digest algorithm.  */
 int
@@ -861,6 +883,9 @@ agent_card_pksign (ctrl_t ctrl,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
+  if (inqparm.any_inq_seen && gpg_err_code(rc) == GPG_ERR_CANCELED)
+    rc = cancel_inquire (ctrl, rc);
+
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -937,6 +962,9 @@ agent_card_pkdecrypt (ctrl_t ctrl,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
+  if (inqparm.any_inq_seen && gpg_err_code(rc) == GPG_ERR_CANCELED)
+    rc = cancel_inquire (ctrl, rc);
+
   if (rc)
     {
       xfree (get_membuf (&data, &len));
@@ -1185,22 +1213,7 @@ agent_card_scd (ctrl_t ctrl, const char *cmdline,
                         inq_needpin, &inqparm,
                         pass_status_thru, assuan_context);
   if (inqparm.any_inq_seen && gpg_err_code(rc) == GPG_ERR_ASS_CANCELED)
-    {
-      /* The inquire callback was called and transact returned a
-         cancel error.  We assume that the inquired process sent a
-         CANCEL.  The passthrough code is not able to pass on the
-         CANCEL and thus scdaemon would stuck on this.  As a
-         workaround we send a CANCEL now.  */
-      rc = assuan_write_line(ctrl->scd_local->ctx, "CAN");
-      if (!rc) {
-	char *line;
-	size_t len;
-
-	rc = assuan_read_line(ctrl->scd_local->ctx, &line, &len);
-	if (!rc)
-	  rc = gpg_error(GPG_ERR_ASS_CANCELED);
-      }
-    }
+    rc = cancel_inquire (ctrl, rc);
 
   assuan_set_flag (ctrl->scd_local->ctx, ASSUAN_CONVEY_COMMENTS, saveflag);
   if (rc)
