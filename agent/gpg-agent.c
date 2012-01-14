@@ -817,6 +817,7 @@ main (int argc, char **argv )
         case oTTYtype: default_ttytype = xstrdup (pargs.r.ret_str); break;
         case oLCctype: default_lc_ctype = xstrdup (pargs.r.ret_str); break;
         case oLCmessages: default_lc_messages = xstrdup (pargs.r.ret_str);
+          break;
         case oXauthority: default_xauthority = xstrdup (pargs.r.ret_str);
           break;
 
