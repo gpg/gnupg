@@ -809,7 +809,8 @@ hash_algo_option (int algo)
 }
 
 
-static gpg_error_t cancel_inquire(ctrl_t ctrl, gpg_error_t rc)
+static gpg_error_t
+cancel_inquire (ctrl_t ctrl, gpg_error_t rc)
 {
   gpg_error_t oldrc = rc;
 
