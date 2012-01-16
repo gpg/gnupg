@@ -594,6 +594,14 @@ case "${host}" in
         agent_support=no
 	use_simple_gettext=yes
 	have_w32_system=yes
+        # gcc 4.6 uses by default -fomit-frame-pointer.  This
+        # conflicts with mingw runtime's setjmp/longjmp usage.  The
+        # actual bug we notice is a segv related to the dlopened
+        # iconv.dll: After returning from set_native_charset the stack
+        # frame is corrupt.
+        if test -n "$GCC" ; then
+            CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+        fi
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
