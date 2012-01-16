@@ -68,12 +68,12 @@ Var STARTMENU_FOLDER
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
 ; Remember the installer language
-!define MUI_LANGDLL_REGISTRY_ROOT "HKCU" 
-!define MUI_LANGDLL_REGISTRY_KEY "Software\GNU\GnuPG" 
+!define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\GNU\GnuPG"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
 ; -----
-; Pages      
+; Pages
 ; -----
 
 !define MUI_WELCOMEPAGE_TEXT "$(T_About)"
@@ -96,10 +96,10 @@ Page custom CustomPageOptions
 
 !insertmacro MUI_PAGE_DIRECTORY
 
-!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU" 
-!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\GNU\GnuPG" 
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\GNU\GnuPG"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
-  
+
 !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
 
 !insertmacro MUI_PAGE_INSTFILES
@@ -110,7 +110,7 @@ Page custom CustomPageOptions
 !define MUI_FINISHPAGE_LINK_LOCATION "http://www.gnupg.org/"
 !insertmacro MUI_PAGE_FINISH
 
-  
+
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
 
@@ -128,7 +128,7 @@ Page custom CustomPageOptions
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
-ReserveFile "opt.ini" 
+ReserveFile "opt.ini"
 ReserveFile "COPYING.txt"
 ReserveFile "README-W32.txt"
 #ReserveFile "${NSISDIR}/Plugins/System.dll"
@@ -220,7 +220,6 @@ Section "Documentation" SecDoc
   File "gpg.man"
   File "gpgv.man"
   File "NEWS.txt"
-  File "FAQ.txt"
 
 !ifdef WITH_WINPT
   File "NEWS.winpt.txt"
@@ -228,8 +227,7 @@ Section "Documentation" SecDoc
 
 !ifdef WITH_PATCHES
   SetOutPath "$INSTDIR\Src"
-  File '*.diff'
-  File '*.tar.gz'
+  File 'patches.diff'
 !endif
 
 SectionEnd ; Section Documentation
@@ -285,7 +283,7 @@ Section "-Finish"
   ;; Create Menu entries
   ;;---------------------
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
-    
+
   CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
 
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG README.lnk" \
@@ -295,25 +293,25 @@ Section "-Finish"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG NEWS.lnk" \
                  "$INSTDIR\Doc\NEWS.txt"
 
-  SectionGetFlags ${SecDoc} $R0 
-  IntOp $R0 $R0 & ${SF_SELECTED} 
-  IntCmp $R0 ${SF_SELECTED} 0 +2 
+  SectionGetFlags ${SecDoc} $R0
+  IntOp $R0 $R0 & ${SF_SELECTED}
+  IntCmp $R0 ${SF_SELECTED} 0 +2
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\GnuPG Manual Page.lnk" \
                  "$INSTDIR\Doc\gpg.man"
 
 
 !ifdef WITH_WINPT
-  SectionGetFlags ${SecWinPT} $R0 
-  IntOp $R0 $R0 & ${SF_SELECTED} 
-  IntCmp $R0 ${SF_SELECTED} 0 no_winpt_menu 
+  SectionGetFlags ${SecWinPT} $R0
+  IntOp $R0 $R0 & ${SF_SELECTED}
+  IntCmp $R0 ${SF_SELECTED} 0 no_winpt_menu
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\winpt.lnk" \
                  "$INSTDIR\winpt.exe"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\WinPT README.lnk" \
                  "$INSTDIR\Doc\README.winpt.txt"
 
-  SectionGetFlags ${SecDoc} $R0 
-  IntOp $R0 $R0 & ${SF_SELECTED} 
-  IntCmp $R0 ${SF_SELECTED} 0 +2 
+  SectionGetFlags ${SecDoc} $R0
+  IntOp $R0 $R0 & ${SF_SELECTED}
+  IntCmp $R0 ${SF_SELECTED} 0 +2
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\WinPT NEWS.lnk" \
                  "$INSTDIR\Doc\NEWS.winpt.txt"
 
@@ -330,17 +328,17 @@ Section "-Finish"
   ;;-----------------
   ;; Set the language
   ;;-----------------
-  SectionGetFlags ${SecNLS} $R0 
-  IntOp $R0 $R0 & ${SF_SELECTED} 
+  SectionGetFlags ${SecNLS} $R0
+  IntOp $R0 $R0 & ${SF_SELECTED}
   IntCmp $R0 ${SF_SELECTED} 0 lang_none
-  
+
   !insertmacro MUI_INSTALLOPTIONS_READ $R0 "opt.ini" "Field 1" "ListItems"
   DetailPrint "Available languages: $R0"
   !insertmacro MUI_INSTALLOPTIONS_READ $R1 "opt.ini" "Field 1" "State"
   DetailPrint "Selected language: $R1"
 
   StrCmp $R1 "" lang_none +1
-  ${StrStr} $R2 $R0 $R1 
+  ${StrStr} $R2 $R0 $R1
   StrCmp $R2 "" lang_none +1
   ${StrTok} $R3 $R2 " " "0" "1"
   goto lang_set_finish
@@ -463,13 +461,13 @@ Function .onInit
 
   !insertmacro MUI_INSTALLOPTIONS_EXTRACT "opt.ini"
 
-FunctionEnd 
+FunctionEnd
 
 
-Function un.onInit 
+Function un.onInit
 
   !insertmacro MUI_UNGETLANGUAGE
-  
+
 FunctionEnd
 
 
@@ -490,19 +488,19 @@ Function PrintNonAdminWarning
 FunctionEnd
 
 
-Function CustomPageOptions  
-  SectionGetFlags ${SecNLS} $R0 
-  IntOp $R0 $R0 & ${SF_SELECTED} 
-  IntCmp $R0 ${SF_SELECTED} show 
- 
-  Abort 
- 
- show: 
+Function CustomPageOptions
+  SectionGetFlags ${SecNLS} $R0
+  IntOp $R0 $R0 & ${SF_SELECTED}
+  IntCmp $R0 ${SF_SELECTED} show
+
+  Abort
+
+ show:
   !insertmacro MUI_HEADER_TEXT "$(T_InstallOptions)" "$(T_SelectLanguage)"
   !insertmacro MUI_INSTALLOPTIONS_READ $R0 "opt.ini" "Field 1" "ListItems"
-  ReadRegStr $R1 HKCU "Software\GNU\GnuPG" "Lang" 
+  ReadRegStr $R1 HKCU "Software\GNU\GnuPG" "Lang"
   StrCmp $R1 "" use_default +1
-  ${StrStr} $R2 $R0 "$R1 - " 
+  ${StrStr} $R2 $R0 "$R1 - "
   StrCmp $R2 "" +1 set_lang
  use_default:
   StrCpy $R2 "$(T_langid) - $(T_langname)"

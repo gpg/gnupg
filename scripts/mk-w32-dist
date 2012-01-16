@@ -1,6 +1,7 @@
 #!/bin/sh
 #
-# Copyright (C) 2000, 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002, 2004, 2005,
+#               2012 Free Software Foundation, Inc.
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -11,30 +12,9 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 set -e
-cd dist-w32
 
-tmp="`echo $0 | sed 's,.*gnupg-\([^/]*\)/.*,\1,'`"
-
-topdir=
-bindir=..
-
-if [ -f "../gnupg-$tmp/README" ]; then
-    srcdir="../gnupg-$tmp"
-    bindir="../gnupg-$tmp"
-    topdir=".."
-elif [ -f ../README ]; then
-    srcdir=..
-elif [ -f ../../README ]; then
-    srcdir=../..
-    bindir=..
-elif [ -f ../../gnupg-stable/README ]; then
-    srcdir=../../gnupg-stable
-elif [ -f ../../../gnupg-stable/README ]; then
-    srcdir=../../../gnupg-stable
-else
-    echo "cannot figure out the source dir" >&2
-    exit 1
-fi
+PGM="mk-w32-dist"
+[ -z "$w32root" ] && w32root="$HOME/w32root"
 
 # Windows uses an internal build number.  We use the last day of the
 # year concatenated with the hour. for it.  If it happens that a new
@@ -43,23 +23,111 @@ fi
 # of days.
 if [ "$1" = "--build-number" -a -n "$2" ]; then
    build_number="$2"
-   shift 
+   shift
    shift
 else
    build_number=$(date -u '+%j%H' | sed 's/^0*\(.*\)/\1/')
 fi
 
+if [ "$1" = "--iconv-dir" -a -n "$2" ]; then
+   iconvdir="$2"
+   shift
+   shift
+else
+   iconvdir="${w32root}/share/gnupg-1-extra/iconv"
+fi
 
-if i586-mingw32msvc-strip --version >/dev/null 2>&1 ; then
+if [ $# -lt 1 -o $# -gt 2 -o "$1" = "--help" ]; then
+   echo "usage: $PGM [options] TARBALL [PATCHFILE]" >&2
+   echo "       Options:" >&2
+   echo "         --build-number N    Windows build number" >&2
+   echo "         --iconv-dir DIR     Directory with inconv files" >&2
+   exit 1
+fi
+
+
+if [ ! -d "$iconvdir" ]; then
+   echo "$PGM: iconv directory does not exists (use option --iconv-dir)" >&2
+   exit 1
+fi
+( set +e
+  cd "${iconvdir}"
+  cat <<EOF | sha1sum -c >/dev/null
+44f7289042b71631acac29b2f143330d2da2479e  COPYING.LIB
+3f4262714a3b508cf20428f046d511f7bfb9fd89  README.iconv
+a21c860b81ed158e91b2b921b752f48fda6d6f1e  iconv.dll
+EOF
+  if [ $? != 0 ]; then
+    echo "$PGM: iconv files are not available or not correct" >&2
+    exit 1
+  fi
+  set -e
+)
+
+here="$(pwd)"
+builddir=w32-build-root
+tarball="$1"
+patchfile="$2"
+
+if [ ! -f "$tarball" -o "$(echo "$tarball" | head -c 1)" != "/" ]; then
+    echo "$PGM: tarball does not exist or has no absolute name" >&2
+    exit 1
+fi
+
+if [ -n "$patchfile" -a ! -f "$patchfile" ]; then
+    echo "$PGM: patchfile does not exist" >&2
+    exit 1
+fi
+
+if ! makensis -version >/dev/null 2>&1 ; then
+    echo "$PGM: error: makensis is not installed" >&2
+    exit 1
+fi
+
+
+if i686-w64-mingw32-strip --version >/dev/null 2>&1 ; then
+   STRIP=i686-w64-mingw32-strip
+elif i586-mingw32msvc-strip --version >/dev/null 2>&1 ; then
    STRIP=i586-mingw32msvc-strip
 else
-   STRIP="mingw32 strip"
+   echo "$PGM: error: strip tool not found" >&2
+   exit 1
 fi
 
-# If we don't have an installer we don't need to prepare for it.
-if ! makensis -version >/dev/null 2>&1 ; then
-    topdir=
+echo "tarball: $tarball" >&2
+version="$(echo "$tarball" | sed 's,.*/gnupg-\(.*\)\.tar\.gz$,\1,')"
+prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 }')
+prod_version="${prod_version}.${build_number}"
+echo "version: $version ($prod_version)" >&2
+
+[ -n "$patchfile" ] && echo "patchfile: $patchfile" >&2
+echo "workdir: $builddir" >&2
+
+echo "preparing work directory ..." >&2
+[ -d "$builddir" ] && rm -rf "$builddir"
+mkdir "$builddir"
+cd "$builddir"
+mkdir dist-w32
+
+echo "unpacking tarball ..." >&2
+tar xzf "$tarball"
+cd gnupg-"$version"
+
+if [ -n "$patchfile" ]; then
+  echo "applying patchfile ..." >&2
+  patch -p1 -t < "$patchfile"
 fi
+
+echo "running configure ..." >&2
+./autogen.sh --build-w32 --silent
+
+echo "running make ..." >&2
+make -s
+
+
+cd ../dist-w32
+srcdir="../gnupg-$version"
+bindir="../gnupg-$version"
 
 
 # A function to return a plain ASCII (or Latin-1) encoded description
@@ -103,30 +171,18 @@ get_langname () {
     echo "$r"
 }
 
-
-# Figure out the version
-version=$(sed -n 's/^#[ ]*define[ ][ ]*VERSION[ ][ ]*\"\([0-9.a-z-]*\)\"/\1/p' $bindir/config.h)
-prod_version=$(echo "$version"|awk -F'[^0-9]' '{print $1 "." $2 "." $3 }')
-prod_version="${prod_version}.${build_number}"
-echo "building version $version ($prod_version)"
-
-rm * >/dev/null 2>/dev/null || true
-
+echo "copying files ..." >&2
 cp ${bindir}/g10/gpg.exe gpg.exe
 $STRIP gpg.exe
 cp ${bindir}/g10/gpgv.exe gpgv.exe
 $STRIP gpgv.exe
-for name in hkp curl ldap finger; do 
+for name in hkp curl ldap finger; do
   cp ${bindir}/keyserver/gpgkeys_$name.exe gpgkeys_$name.exe
   $STRIP gpgkeys_$name.exe
 done
 cp ${bindir}/tools/gpgsplit.exe gpgsplit.exe
 $STRIP gpgsplit.exe
 
-for i in FAQ; do
-  cp ${bindir}/doc/$i $i.txt
-  todos $i.txt
-done
 man -Tlatin1 -l ${srcdir}/doc/gpg.1 | sed `printf "s/_\b//g;s/\b.//g"`  >gpg.man
 todos gpg.man
 man -Tlatin1 -l ${srcdir}/doc/gpgv.1 | sed `printf "s/_\b//g;s/\b.//g"`  >gpgv.man
@@ -141,15 +197,16 @@ done
 cp ${srcdir}/doc/README.W32 README-W32.txt
 todos README-W32.txt
 
-patches_defs=
-for i in `find "$topdir/patches" -type f \( -name '*.diff' -o -name '*.tar.gz' \)`; do
-  cp $i .
+if [ -n "$patchfile" ]; then
+  echo "copying patch file ..." >&2
+  cp $patchfile patches.diff
   patches_defs="-DWITH_PATCHES"
-done
+fi
 
 
+echo "converting MO files ..." >&2
 # We must distribute the MO files in UTF-8, the conversion is done by
-# gpg at runtime.  To include English at the right position in the list we 
+# gpg at runtime.  To include English at the right position in the list we
 # need a special case.
 langlist=""
 langdesclist=""
@@ -158,15 +215,15 @@ for i in `(ls ${srcdir}/po/*.po; echo ${srcdir}/po/en.po) | sort`; do
    if [ $lang != "en" ]; then
        grep -s $lang ${srcdir}/po/LINGUAS >/dev/null || continue
        [ -f$lang.mo -a $lang.mo -nt $i ] && continue
-    
+
        fromset=`sed -n '/^"Content-Type:/ s/.*charset=\([a-zA-Z0-9_-]*\).*/\1/p' $i`
-       case "$fromset" in 
-         utf8|utf-8|UTF8|UTF-8) 
-           echo "$lang: keeping $fromset" >&2 
+       case "$fromset" in
+         utf8|utf-8|UTF8|UTF-8)
+           echo "$lang: keeping $fromset" >&2
            msgfmt --output-file=$lang.mo $i
            ;;
          *)
-           echo "$lang: converting from $fromset to utf-8" >&2 
+           echo "$lang: converting from $fromset to utf-8" >&2
            iconv --silent --from-code=$fromset --to-code=utf-8 < $i | \
              sed "/^\"Content-Type:/ s/charset=[a-zA-Z0-9_-]*/charset=utf-8/"|\
              msgfmt --output-file=$lang.mo -
@@ -195,107 +252,26 @@ ListItems="$langdesclist"
 EOF
 
 
-# If we have a topdir, assume the full build environment and 
-# prepare the installer
-if [ -n "$topdir" ]; then
-  winpt_defs=
-  src_defs=
-  buildinfo="`date -u '+%Y-%m-%d %H:%M UTC'`"
+src_defs=
+buildinfo="`date -u '+%Y-%m-%d %H:%M UTC'`"
 
-  # iconv.dll is a hard requirement
-  if [ ! -f "$topdir/iconv/iconv.dll" ]; then
-    echo "iconv.dll not available" >&2
-    exit 1
-  fi
-  ln "$topdir/iconv/iconv.dll" iconv.dll
-  for i in COPYING.LIB README.iconv; do
-     cp ${topdir}/iconv/$i $i.txt
-     todos $i.txt
-  done
-  
-  # WinPT is optional
-  if [ -f "$topdir/winpt/WinPT.exe" ]; then
-     ln "$topdir/winpt/WinPT.exe"      WinPT.exe
-     ln "$topdir/winpt/PTD.dll"        PTD.dll
-     cp "$topdir/winpt/README-0.9.txt" README.winpt.txt
-     cp "$topdir/winpt/NEWS-0.9.txt"   NEWS.winpt.txt
-     cp "$topdir/winpt/keyserver.conf" keyserver.conf
-     winpt_defs="-DWITH_WINPT"
-  fi
+echo "copying iconv ..." >&2
+cp "${iconvdir}/iconv.dll" iconv.dll
+for i in COPYING.LIB README.iconv; do
+   cp ${iconvdir}/$i $i.txt
+   todos $i.txt
+done
 
-  # See whether we should include the source and figure out the
-  # version numbers of the source files.
-  if [ -d "$topdir/tarballs" ]; then
-    have_gnupg_src=no
-    have_libiconv_src=no
-    have_winpt_src=no
-    for i in `find "$topdir/tarballs" -type f -name '*.tar.gz'`; do
-       fname=$(basename "$i" .gz)
-       zcat "$i" > "$fname"
-       case "$fname" in
-           gnupg-*)
-               tmp=$(echo "$fname" | \
-                     sed -n 's/^[^-]*-\([0-9.a-z-]*\)\.tar$/\1/p')
-               echo "gnupg source version is $tmp" >&2
-               if [ "$version" != "$tmp" ]; then
-                   echo "gnupg source version does not match" >&2
-                   exit 1
-               fi
-               have_gnupg_src=yes
-               ;;
-           libiconv-*)
-               tmp=$(echo "$fname" | \
-                     sed -n 's/^[^-]*-\([0-9.a-z-]*\)\.tar$/\1/p')
-               echo "libiconv source version is $tmp" >&2
-               src_defs="$src_defs -DLIBICONV_VERSION=$tmp"
-               have_libiconv_src=yes
-               ;;
-           winpt-*)
-               tmp=$(echo "$fname" | \
-                     sed -n 's/^[^-]*-\([0-9.a-z-]*\)\.tar$/\1/p')
-               echo "winpt source version is $tmp" >&2
-               src_defs="$src_defs -DWINPT_VERSION=$tmp"
-               have_winpt_src=yes
-               ;;
-               
-           *) 
-               echo "WARNING: unknown source file $fname ignored" >&2
-               ;;
-       esac
-    done
-    if [ -n "$src_defs" ]; then
-        if [ $have_gnupg_src = "no" ]; then
-            echo "gnupg source missing" >&2
-            exit 1
-        fi
-        if [ $have_libiconv_src = "no" ]; then
-            echo "libiconv source missing" >&2
-            exit 1
-        fi
-        if [ -n "$winpt_defs" ]; then
-            if [ $have_winpt_src = "no" ]; then
-                echo "winpt source missing" >&2
-                exit 1
-            fi
-        fi
-
-        src_defs="$src_defs -DWITH_SOURCE"
-    fi
-
-  fi
-
-  # Now run the installer
-  echo "invoking installer as:"
-  echo makensis -v0  -nocd -DVERSION="${version}" \
-           -DPROD_VERSION="${prod_version}" \
-           -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
-           ${patches_defs} ${srcdir}/scripts/w32installer.nsi
-  BUILDINFO=$buildinfo makensis -v0 -nocd -DVERSION="${version}" \
-           -DPROD_VERSION="${prod_version}" \
-           -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
-           ${patches_defs} ${srcdir}/scripts/w32installer.nsi
-  echo "Installer created" >&2
-else
-  zip -9 "gnupg-w32cli-${version}.zip" *
-  echo "ZIP archive created" >&2
-fi
+# Now run the installer
+echo "invoking installer as:"
+echo makensis -v0  -nocd -DVERSION="${version}" \
+         -DPROD_VERSION="${prod_version}" \
+         -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
+         ${patches_defs} ${srcdir}/scripts/w32installer.nsi
+BUILDINFO=$buildinfo makensis -v0 -nocd -DVERSION="${version}" \
+         -DPROD_VERSION="${prod_version}" \
+         -DGNUPG_SRCDIR="${srcdir}" ${winpt_defs} ${src_defs} \
+         ${patches_defs} ${srcdir}/scripts/w32installer.nsi
+mv gnupg-w32cli-${version}.exe "${here}"/
+cd "${here}"
+echo "gnupg-w32cli-${version}.exe ready." >&2

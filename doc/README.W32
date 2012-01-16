@@ -101,21 +101,29 @@ directory with the changes relative to the generic version.
 
 The source is distributed as a BZIP2 or GZIP compressed tar archive.
 See the instructions in file README on how to check the integrity of
-that file.  Wir a properly setup build environment, you unpack the
+that file.  With a properly setup build environment, you unpack the
 tarball change to the created directory and run
 
  $ ./autogen.sh --build-w32
  $ make
  $ cp g10/gpg*.exe  /some_windows_drive/
 
-Building a version with the installer is a bit more complex and
-basically works by creating a top directory, unpacking in that top
-directory, switching to the gnupg-1.x.y directory, running
-"./autogen.sh --build-w32" and "make", switching back to the top
-directory, running a "mkdir dist-w32; mkdir iconv", copying the
-required iconv files (iconv.dll, README.iconv, COPYING.LIB) into the
-iconv directory, running gnupg-1.x.y/scripts/mk-w32-dist and voila,
-the installer package will be available in the dist-w32 directory.
+Building a version with the installer requires an install NSIS tool
+and a directory with the iconv files.  The script mk-w32-dist does the
+entire build from the tarball and checks most prerequisites; example:
+
+ $ scripts/mk-w32-dist $(pwd)/gnupg-1.4.3.tar.gz
+
+If you installed the iconv files in a non-standard place you may use
+
+ $ scripts/mk-w32-dist --iconv-dir /foo/bar/ $(pwd)/gnupg-1.4.3.tar.gz
+
+If you need to patch the standard tarball, you can supply a patch file:
+
+ $ scripts/mk-w32-dist $(pwd)/gnupg-1.4.3.tar.gz  mypatches
+
+That patch file will then be part of the installer.
+
 
 
 Copying:
@@ -123,8 +131,9 @@ Copying:
 
 GnuPG is
 
-  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 
-            2005, 2006, 2007 Free Software Foundation, Inc.
+  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+            2005, 2006, 2007, 2008, 2009,
+            2010, 2012  Free Software Foundation, Inc.
 
   GnuPG is free software; you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by
@@ -145,7 +154,7 @@ information and bug reporting addresses pertaining to GnuPG.
 
 For copying conditions of the GNU LIBICONV library see the file
 README.iconv.
-  
+
 The installer software used to create the official binary packages for
 W32 is NSIS (http://nsis.sourceforge.net/):
 
