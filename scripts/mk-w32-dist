@@ -69,10 +69,11 @@ builddir=w32-build-root
 tarball="$1"
 patchfile="$2"
 
-if [ ! -f "$tarball" -o "$(echo "$tarball" | head -c 1)" != "/" ]; then
-    echo "$PGM: tarball does not exist or has no absolute name" >&2
+if [ ! -f "$tarball" ]; then
+    echo "$PGM: tarball does not exist" >&2
     exit 1
 fi
+[ "$(echo "$tarball" | head -c 1)" != "/" ] && tarball="$(pwd)/$tarball"
 
 if [ -n "$patchfile" -a ! -f "$patchfile" ]; then
     echo "$PGM: patchfile does not exist" >&2
