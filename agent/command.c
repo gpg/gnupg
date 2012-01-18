@@ -2791,6 +2791,12 @@ pinentry_loopback(ctrl_t ctrl, const char *keyword,
 {
   gpg_error_t rc;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+  char buf[50];
+
+  snprintf (buf, sizeof (buf), "%u", max_length);
+  rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+  if (rc)
+    return rc;
 
   assuan_begin_confidential (ctx);
   rc = assuan_inquire (ctx, keyword, buffer, size, max_length);
