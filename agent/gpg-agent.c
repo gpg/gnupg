@@ -1391,9 +1391,9 @@ get_agent_ssh_socket_name (void)
 void *
 get_agent_scd_notify_event (void)
 {
-  static HANDLE the_event;
+  static HANDLE the_event = INVALID_HANDLE_VALUE;
 
-  if (!the_event)
+  if (the_event == INVALID_HANDLE_VALUE)
     {
       HANDLE h, h2;
       SECURITY_ATTRIBUTES sa = { sizeof (SECURITY_ATTRIBUTES), NULL, TRUE};
@@ -1717,6 +1717,7 @@ agent_sigusr2_action (void)
 }
 
 
+#ifndef HAVE_W32_SYSTEM
 /* The signal handler for this program.  It is expected to be run in
    its own trhead and not in the context of a signal handler.  */
 static void
@@ -1769,7 +1770,7 @@ handle_signal (int signo)
       log_info ("signal %d received - no action defined\n", signo);
     }
 }
-
+#endif
 
 /* Check the nonce on a new connection.  This is a NOP unless we we
    are using our Unix domain socket emulation under Windows.  */
@@ -1849,7 +1850,6 @@ static void
 handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 {
   npth_attr_t tattr;
-  int signo;
   struct sockaddr_un paddr;
   socklen_t plen;
   fd_set fdset, read_fdset;
@@ -1860,6 +1860,10 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   struct timespec abstime;
   struct timespec curtime;
   struct timespec timeout;
+#ifdef HAVE_W32_SYSTEM
+  HANDLE events[2];
+  int events_set;
+#endif
 
   ret = npth_attr_init(&tattr);
   /* FIXME: Check error.  */
@@ -1879,9 +1883,8 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   sigs = 0;
   ev = pth_event (PTH_EVENT_SIGS, &sigs, &signo);
 # else
-  sigs = 0;
-  ev = pth_event (PTH_EVENT_HANDLE, get_agent_scd_notify_event ());
-  signo = 0;
+  events[0] = get_agent_scd_notify_event ();
+  events[1] = INVALID_HANDLE_VALUE;
 # endif
 #endif
 
@@ -1929,16 +1932,19 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 	}
       npth_timersub (&abstime, &curtime, &timeout);
 
+#ifndef HAVE_W32_SYSTEM
       ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
       saved_errno = errno;
 
-#ifndef HAVE_W32_SYSTEM
       while (npth_sigev_get_pending(&signo))
 	handle_signal (signo);
-#endif
+#else
+      events_set = 0;
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, events, &events_set);
+      saved_errno = errno;
 
-#if defined(HAVE_W32_SYSTEM) && defined(PTH_EVENT_HANDLE)
-      if (pth_event_occurred (ev))
+      /* This is valid even if npth_eselect returns an error.  */
+      if (events_set & 1)
 	agent_sigusr2_action ();
 #endif
 
@@ -2023,7 +2029,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
             }
           else
             {
-	      pthread_t thread;
+	      npth_t thread;
 
               agent_init_default_ctrl (ctrl);
               ctrl->thread_startup.fd = fd;

@@ -1749,9 +1749,6 @@ handle_connections (assuan_fd_t listen_fd)
   npth_sigev_add (SIGINT);
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
-#else
-  /* Use a dummy event.  */
-  sigs = 0;
 #endif
 
   /* Setup the fdset.  It has only one member.  This is because we use
@@ -1791,12 +1788,15 @@ handle_connections (assuan_fd_t listen_fd)
 	}
       npth_timersub (&abstime, &curtime, &timeout);
 
+#ifndef HAVE_W32_SYSTEM
       ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
       saved_errno = errno;
 
-#ifndef HAVE_W32_SYSTEM
       while (npth_sigev_get_pending(&signo))
 	handle_signal (signo);
+#else
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, NULL, NULL);
+      saved_errno = errno;
 #endif
 
       if (ret == -1 && saved_errno != EINTR)
