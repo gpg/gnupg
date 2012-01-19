@@ -854,8 +854,6 @@ idle_task (void *dummy_arg)
   npth_sigev_add (SIGINT);
   npth_sigev_add (SIGTERM);
   npth_sigev_fini ();
-#else
-  sigs = 0;
 #endif
 
   npth_clock_gettime (&abstime);
@@ -882,12 +880,15 @@ idle_task (void *dummy_arg)
 	}
       npth_timersub (&abstime, &curtime, &timeout);
 
+#ifndef HAVE_W32_SYSTEM
       ret = npth_pselect (0, NULL, NULL, NULL, &timeout, npth_sigev_sigmask());
       saved_errno = errno;
 
-#ifndef HAVE_W32_SYSTEM
       while (npth_sigev_get_pending(&signo))
 	handle_signal (signo);
+#else
+      ret = npth_eselect (0, NULL, NULL, NULL, &timeout, NULL, NULL);
+      saved_errno = errno;
 #endif
 
       if (ret == -1 && saved_errno != EINTR)
@@ -920,6 +921,7 @@ start_idle_task (void)
   sigset_t sigs;       /* The set of signals we want to catch.  */
   int err;
 
+#ifndef HAVE_W32_SYSTEM
   /* These signals should always go to the idle task, so they need to
      be blocked everywhere else.  We assume start_idle_task is called
      from the main thread before any other threads are created.  */
@@ -930,6 +932,7 @@ start_idle_task (void)
   sigaddset (&sigs, SIGINT);
   sigaddset (&sigs, SIGTERM);
   npth_sigmask (SIG_BLOCK, &sigs, NULL);
+#endif
 
   npth_attr_init (&tattr);
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_JOINABLE);
