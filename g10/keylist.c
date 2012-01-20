@@ -1,6 +1,6 @@
 /* keylist.c - print keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -65,11 +65,11 @@ public_key_list( strlist_t list, int locate_mode )
 {
   if (opt.with_colons)
     {
-      byte trust_model,marginals,completes,cert_depth;
+      byte trust_model,marginals,completes,cert_depth,min_cert_level;
       ulong created,nextcheck;
 
       read_trust_options(&trust_model,&created,&nextcheck,
-			 &marginals,&completes,&cert_depth);
+			 &marginals,&completes,&cert_depth,&min_cert_level);
 
       printf("tru:");
 
@@ -85,6 +85,8 @@ public_key_list( strlist_t list, int locate_mode )
 	    printf("c");
 	  if(cert_depth!=opt.max_cert_depth)
 	    printf("d");
+	  if(min_cert_level!=opt.min_cert_level)
+	    printf("l");
 	}
 
       printf(":%d:%lu:%lu",trust_model,created,nextcheck);

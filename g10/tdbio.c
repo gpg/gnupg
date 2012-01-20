@@ -1,5 +1,5 @@
-/* tdbio.c - trust databse I/O operations
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+/* tdbio.c - trust database I/O operations
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -438,6 +438,7 @@ tdbio_update_version_record (void)
       rec.r.ver.completes   = opt.completes_needed;
       rec.r.ver.cert_depth  = opt.max_cert_depth;
       rec.r.ver.trust_model = opt.trust_model;
+      rec.r.ver.min_cert_level = opt.min_cert_level;
       rc=tdbio_write_record(&rec);
     }
 
@@ -460,6 +461,7 @@ create_version_record (void)
     rec.r.ver.trust_model = opt.trust_model;
   else
     rec.r.ver.trust_model = TM_PGP;
+  rec.r.ver.min_cert_level = opt.min_cert_level;
   rec.rectype = RECTYPE_VER;
   rec.recnum = 0;
   rc = tdbio_write_record( &rec );
@@ -681,7 +683,8 @@ tdbio_db_matches_options()
       yes_no = vr.r.ver.marginals == opt.marginals_needed
 	&& vr.r.ver.completes == opt.completes_needed
 	&& vr.r.ver.cert_depth == opt.max_cert_depth
-	&& vr.r.ver.trust_model == opt.trust_model;
+	&& vr.r.ver.trust_model == opt.trust_model
+	&& vr.r.ver.min_cert_level == opt.min_cert_level;
     }
 
   return yes_no;
@@ -1111,13 +1114,14 @@ tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
       case 0: fprintf(fp, "blank\n");
 	break;
       case RECTYPE_VER: fprintf(fp,
-	    "version, td=%lu, f=%lu, m/c/d=%d/%d/%d tm=%d nc=%lu (%s)\n",
+	    "version, td=%lu, f=%lu, m/c/d=%d/%d/%d tm=%d mcl=%d nc=%lu (%s)\n",
                                    rec->r.ver.trusthashtbl,
 				   rec->r.ver.firstfree,
 				   rec->r.ver.marginals,
 				   rec->r.ver.completes,
 				   rec->r.ver.cert_depth,
 				   rec->r.ver.trust_model,
+				   rec->r.ver.min_cert_level,
                                    rec->r.ver.nextcheck,
 				   strtimestamp(rec->r.ver.nextcheck)
                                  );
@@ -1213,7 +1217,8 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
 	rec->r.ver.completes = *p++;
 	rec->r.ver.cert_depth = *p++;
 	rec->r.ver.trust_model = *p++;
-	p += 3;
+	rec->r.ver.min_cert_level = *p++;
+	p += 2;
 	rec->r.ver.created  = buftoulong(p); p += 4;
 	rec->r.ver.nextcheck = buftoulong(p); p += 4;
 	p += 4;
@@ -1300,7 +1305,8 @@ tdbio_write_record( TRUSTREC *rec )
 	*p++ = rec->r.ver.completes;
 	*p++ = rec->r.ver.cert_depth;
 	*p++ = rec->r.ver.trust_model;
-	p += 3;
+	*p++ = rec->r.ver.min_cert_level;
+	p += 2;
 	ulongtobuf(p, rec->r.ver.created); p += 4;
 	ulongtobuf(p, rec->r.ver.nextcheck); p += 4;
 	p += 4;
