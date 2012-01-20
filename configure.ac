@@ -511,8 +511,7 @@ AH_BOTTOM([
 
 /* We want to use the libgcrypt provided memory allocation for
    asprintf.  */
-#define _ESTREAM_PRINTF_MALLOC        gcry_malloc
-#define _ESTREAM_PRINTF_FREE          gcry_free
+#define _ESTREAM_PRINTF_REALLOC       gcry_realloc
 #define _ESTREAM_PRINTF_EXTRA_INCLUDE "../common/util.h"
 
 /* Under Windows we use the gettext code from libgpg-error.  */

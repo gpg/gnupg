@@ -1,5 +1,5 @@
 /* estream-printf.c - Versatile mostly C-99 compliant printf formatting
- * Copyright (C) 2007, 2008, 2009, 2010 g10 Code GmbH
+ * Copyright (C) 2007, 2008, 2009, 2010, 2012 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -109,16 +109,11 @@
 /* #define DEBUG 1 */
 
 
-/* Allow redefinition of asprintf used malloc functions.  */
-#if defined(_ESTREAM_PRINTF_MALLOC)
-#define my_printf_malloc(a) _ESTREAM_PRINTF_MALLOC((a))
+/* Allow redefinition of asprintf used realloc function.  */
+#if defined(_ESTREAM_PRINTF_REALLOC)
+#define my_printf_realloc(a,b) _ESTREAM_PRINTF_REALLOC((a),(b))
 #else
-#define my_printf_malloc(a) malloc((a))
-#endif
-#if defined(_ESTREAM_PRINTF_FREE)
-#define my_printf_free(a)   _ESTREAM_PRINTF_FREE((a))
-#else
-#define my_printf_free(a)   free((a))
+#define my_printf_realloc(a,b) fixed_realloc((a),(b))
 #endif
 
 /* A wrapper to set ERRNO.  */
@@ -308,6 +303,26 @@ struct valueitem_s
   value_t value; /* The value.  */
 };
 typedef struct valueitem_s *valueitem_t;
+
+
+/* Not all systems have a C-90 compliant realloc.  To cope with this
+   we use this simple wrapper. */
+#ifndef _ESTREAM_PRINTF_REALLOC
+static void *
+fixed_realloc (void *a, size_t n)
+{
+  if (!a)
+    return malloc (n);
+
+  if (!n)
+    {
+      free (a);
+      return NULL;
+    }
+
+  return realloc (a, n);
+}
+#endif /*!_ESTREAM_PRINTF_REALLOC*/
 
 
 #ifdef DEBUG
@@ -1762,7 +1777,7 @@ dynamic_buffer_out (void *outfncarg, const char *buf, size_t buflen)
       char *p;
 
       parm->alloced += buflen + 512;
-      p = realloc (parm->buffer, parm->alloced);
+      p = my_printf_realloc (parm->buffer, parm->alloced);
       if (!p)
         {
           parm->error_flag = errno ? errno : ENOMEM;
@@ -1792,7 +1807,7 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
   parm.error_flag = 0;
   parm.alloced = 512;
   parm.used = 0;
-  parm.buffer = my_printf_malloc (parm.alloced);
+  parm.buffer = my_printf_realloc (NULL, parm.alloced);
   if (!parm.buffer)
     {
       *bufp = NULL;
@@ -1811,7 +1826,8 @@ estream_vasprintf (char **bufp, const char *format, va_list arg_ptr)
   if (rc == -1)
     {
       memset (parm.buffer, 0, parm.used);
-      my_printf_free (parm.buffer);
+      if (parm.buffer)
+        my_printf_realloc (parm.buffer, 0);
       *bufp = NULL;
       return -1;
     }

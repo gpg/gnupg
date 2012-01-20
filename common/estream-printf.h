@@ -1,5 +1,5 @@
 /* estream-printf.h - Versatile mostly C-99 compliant printf formatting.
- * Copyright (C) 2007, 2010 g10 Code GmbH
+ * Copyright (C) 2007, 2010, 2012 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -66,12 +66,13 @@
    For the implementation of the code (estream-printf.c) the following
    macros may be used to tune the implementation for certain systems:
 
-     #define _ESTREAM_PRINTF_MALLOC foo_malloc
-     #define _ESTREAM_PRINTF_FREE   foo_free
+     #define _ESTREAM_PRINTF_REALLOC foo_realloc
 
-       Make estream_asprintf and estream_vasprintf use foo_malloc and
-       foo_free instead of the standard malloc and free functions to
-       allocate the memory returned to the caller.
+       Make estream_asprintf and estream_vasprintf use foo_realloc
+       instead of the standard realloc to allocate memory returned to
+       the caller.  Note that foo_realloc needs to be C-90 compliant:
+       foo_realloc (NULL,n) is the same as a call to malloc(n) and
+       foo_realloc (a, 0) is the same as a call to free (a).
 
      #define  _ESTREAM_PRINTF_EXTRA_INCLUDE "foo.h"
 
