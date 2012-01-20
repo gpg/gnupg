@@ -1,6 +1,6 @@
 /* trustdb.h - Trust database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
- *               2005 Free Software Foundation, Inc.
+ *               2005, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -71,7 +71,8 @@ void enum_cert_paths_print( void **context, FILE *fp,
 					   int refresh, ulong selected_lid );
 
 void read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
-			byte *marginals,byte *completes,byte *cert_depth);
+			byte *marginals,byte *completes,byte *cert_depth,
+			byte *min_cert_level);
 
 unsigned int get_ownertrust (PKT_public_key *pk);
 unsigned int get_min_ownertrust (PKT_public_key *pk);

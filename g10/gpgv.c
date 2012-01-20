@@ -1,6 +1,6 @@
 /* gpgv.c - The GnuPG signature verify utility
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005, 2006,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -214,7 +214,8 @@ check_signatures_trust( PKT_signature *sig )
 
 void
 read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
-		   byte *marginals,byte *completes,byte *cert_depth) {}
+		   byte *marginals,byte *completes,byte *cert_depth,
+		   byte *min_cert_level) {}
 
 /* Stub:
  * We don't have the trustdb , so we have to provide some stub functions
