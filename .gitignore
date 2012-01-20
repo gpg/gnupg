@@ -141,3 +141,5 @@ tools/mk-tdata
 tools/symcryptrun
 tools/watchgnupg
 tools/gpgtar
+/doc/gnupg1.info
+/po/gnupg.pot
