@@ -31,6 +31,10 @@
 #include "util.h"
 #include "i18n.h"
 
+#ifndef HAVE_TIMEGM
+time_t timegm (struct tm *tm);
+#endif
+
 #ifdef HAVE_UNSIGNED_TIME_T
 # define INVALID_TIME_CHECK(a) ((a) == (time_t)(-1))
 #else

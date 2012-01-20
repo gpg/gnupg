@@ -57,10 +57,7 @@ struct trust_record {
 	    byte  min_cert_level;
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong nextcheck; /* timestamp of next scheduled check */
-	    ulong reserved;  
-	    ulong reserved2;
 	    ulong firstfree;
-	    ulong reserved3;
             ulong trusthashtbl;
 	} ver;
 	struct {	    /* free record */
@@ -82,7 +79,7 @@ struct trust_record {
       } trust;
       struct {
         byte namehash[20];
-        ulong next;  
+        ulong next;
         byte validity;
 	byte full_count;
 	byte marginal_count;

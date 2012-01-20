@@ -56,7 +56,7 @@ if test "$1" = "--build-w32"; then
 
     # Locate the cross compiler
     crossbindir=
-    for host in i586-mingw32msvc i386-mingw32msvc; do
+    for host in i686-w64-mingw32 i586-mingw32msvc i386-mingw32msvc; do
         if ${host}-gcc --version >/dev/null 2>&1 ; then
             crossbindir=/usr/${host}/bin
             conf_CC="CC=${host}-gcc"
@@ -95,8 +95,7 @@ if test "$1" = "--build-w32"; then
     [ $DIE = yes ] && exit 1
 
     $tsdir/configure ${conf_CC} --build=${build} --host=${host} \
-                --with-bzip2=${w32root} \
-                ${disable_foo_tests}  $*
+                     ${disable_foo_tests}  $*
     exit $?
 fi
 

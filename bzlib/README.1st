@@ -1,0 +1,9 @@
+This is a stripped down version of bzip2 - version 1.0.6.
+
+It does not include any drivers but merely builds the libbz2.a
+library.  The source has been taken from www.bzip.org on 2010-09-23
+and stripped down by g10 Code GmbH for use with Gpg4win and to be
+included into the GnupG 1.4.12 source.
+
+The only changed files are Makefile and bzlib.h (disabled Windows
+specific code).

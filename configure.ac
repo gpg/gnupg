@@ -594,6 +594,14 @@ case "${host}" in
         agent_support=no
 	use_simple_gettext=yes
 	have_w32_system=yes
+        # gcc 4.6 uses by default -fomit-frame-pointer.  This
+        # conflicts with mingw runtime's setjmp/longjmp usage.  The
+        # actual bug we notice is a segv related to the dlopened
+        # iconv.dll: After returning from set_native_charset the stack
+        # frame is corrupt.
+        if test -n "$GCC" ; then
+            CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+        fi
         ;;
     i?86-emx-os2 | i?86-*-os2*emx )
         # OS/2 with the EMX environment
@@ -1321,7 +1329,16 @@ fi
 
 AM_CONDITIONAL(ENABLE_LOCAL_ZLIB, test "$use_local_zlib" = yes)
 
-if test "$use_bzip2" = yes ; then
+
+# Under W32 we force the use ofthe included bzip2 code.
+if test x"$have_w32_system" = xyes ; then
+    have_bz2=yes
+    AC_DEFINE(HAVE_BZIP2,1,
+              [Defined if the bz2 compression library is available])
+    AC_CONFIG_LINKS(bzlib.h:bzlib/bzlib.h)
+    ZLIBS="$ZLIBS ../bzlib/libbz2.a"
+else
+ if test "$use_bzip2" = yes ; then
   _cppflags="${CPPFLAGS}"
   _ldflags="${LDFLAGS}"
   AC_ARG_WITH(bzip2,
@@ -1343,12 +1360,12 @@ if test "$use_bzip2" = yes ; then
   	  [
 	  have_bz2=yes
 	  ZLIBS="$ZLIBS -lbz2"
-	  AC_DEFINE(HAVE_BZIP2,1,
-		  [Defined if the bz2 compression library is available])
+	  AC_DEFINE(HAVE_BZIP2,1)
 	  ],
 	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
 	  CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags},[#include <stdio.h>])
   fi
+ fi
 fi
 
 AM_CONDITIONAL(ENABLE_BZIP2_SUPPORT,test x"$have_bz2" = "xyes")
@@ -1470,6 +1487,7 @@ doc/Makefile
 tools/Makefile
 tools/gpg-zip
 zlib/Makefile
+bzlib/Makefile
 checks/Makefile
 ])
 AC_OUTPUT

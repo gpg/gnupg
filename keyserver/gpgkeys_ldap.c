@@ -66,6 +66,20 @@
 #include "util.h"
 #endif
 
+#if HAVE_W32_SYSTEM
+# if !defined(__MINGW64_VERSION_MAJOR) || !defined(__MINGW32_MAJOR_VERSION)
+   /* This is mingw32 with bogus ldap definitions; i.e. Unix style
+      LDAP definitions.  */
+#  define my_ldap_start_tls_s(a,b,c) ldap_start_tls_sA ((a),(b),(c))
+# else
+   /* Standard Microsoft or mingw64.  */
+#  define my_ldap_start_tls_s(a,b,c) ldap_start_tls_sA ((a),NULL, NULL,(b),(c))
+# endif
+#else /*!W32*/
+# define my_ldap_start_tls_s(a,b,c) ldap_start_tls_s ((a),(b),(c))
+#endif /*!W32*/
+
+
 extern char *optarg;
 extern int optind;
 
@@ -460,7 +474,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  case 'R':
 	    revoked=1;
 	    break;
-	    
+
 	  case 'd':
 	  case 'D':
 	    disabled=1;
@@ -1043,7 +1057,7 @@ get_key(char *getkey)
   else
     {
       /* short key id */
-    
+
       sprintf(search,"(pgpkeyid=%.8s)",getkey);
     }
 
@@ -1773,12 +1787,12 @@ find_basekeyspacedn(void)
 	}
 
       ldap_msgfree(si_res);
-    }   
+    }
 
   return LDAP_SUCCESS;
 }
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -2195,7 +2209,7 @@ main(int argc,char *argv[])
 #endif
 
 	  if(err==LDAP_SUCCESS)
-	    err=ldap_start_tls_s(ldap,NULL,NULL);
+	    err = my_ldap_start_tls_s (ldap, NULL, NULL);
 
 	  if(err!=LDAP_SUCCESS)
 	    {
