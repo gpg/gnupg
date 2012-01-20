@@ -1,6 +1,6 @@
 /* trustdb.c
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008 Free Software Foundation, Inc.
+ *               2008, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -658,7 +658,8 @@ trustdb_check_or_update(void)
 
 void
 read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
-		   byte *marginals,byte *completes,byte *cert_depth)
+		   byte *marginals,byte *completes,byte *cert_depth,
+		   byte *min_cert_level)
 {
   TRUSTREC opts;
 
@@ -678,6 +679,8 @@ read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
     *completes=opts.r.ver.completes;
   if(cert_depth)
     *cert_depth=opts.r.ver.cert_depth;
+  if(min_cert_level)
+    *min_cert_level=opts.r.ver.min_cert_level;
 }
 
 /***********************************************
@@ -1042,7 +1045,8 @@ check_trustdb_stale(void)
 
       did_nextcheck = 1;
       scheduled = tdbio_read_nextcheck ();
-      if (scheduled && scheduled <= make_timestamp ())
+      if ((scheduled && scheduled <= make_timestamp ())
+	  || pending_check_trustdb)
         {
           if (opt.no_auto_check_trustdb)
             {

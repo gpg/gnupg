@@ -1,5 +1,5 @@
 /* tdbio.h - Trust database I/O functions
- * Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+ * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -54,6 +54,7 @@ struct trust_record {
 	    byte  completes;
 	    byte  cert_depth;
 	    byte  trust_model;
+	    byte  min_cert_level;
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong nextcheck; /* timestamp of next scheduled check */
 	    ulong reserved;

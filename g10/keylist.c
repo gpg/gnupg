@@ -1,6 +1,6 @@
 /* keylist.c - Print information about OpenPGP keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2008, 2010 Free Software Foundation, Inc.
+ *               2008, 2010, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -67,10 +67,10 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
   if (opt.with_colons)
     {
       byte trust_model, marginals, completes, cert_depth;
-      ulong created, nextcheck;
+      ulong created, nextcheck, min_cert_level;
 
       read_trust_options (&trust_model, &created, &nextcheck,
-			  &marginals, &completes, &cert_depth);
+			  &marginals, &completes, &cert_depth, &min_cert_level);
 
       es_fprintf (es_stdout, "tru:");
 
@@ -86,6 +86,8 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 	    es_fprintf (es_stdout, "c");
 	  if (cert_depth != opt.max_cert_depth)
 	    es_fprintf (es_stdout, "d");
+	  if (min_cert_level != opt.min_cert_level)
+	    es_fprintf (es_stdout, "l");
 	}
 
       es_fprintf (es_stdout, ":%d:%lu:%lu", trust_model, created, nextcheck);
