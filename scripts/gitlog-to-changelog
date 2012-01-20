@@ -3,7 +3,7 @@ eval '(exit $?0)' && eval 'exec perl -wS "$0" ${1+"$@"}'
     if 0;
 # Convert git log output to ChangeLog format.
 
-my $VERSION = '2011-11-02 07:53'; # UTC
+my $VERSION = '2012-01-20 10:14'; # UTC
 # The definition above must lie within the first 8 lines in order
 # for the Emacs time-stamp write hook (at end) to update it.
 # If you change this file with Emacs, please let the write hook
@@ -201,6 +201,7 @@ sub parse_amend_file($)
 
   my $prev_date_line = '';
   my @prev_coauthors = ();
+
   while (1)
     {
       defined (my $in = <PIPE>)
@@ -213,6 +214,10 @@ sub parse_amend_file($)
       my $n_read = read PIPE, $log, $log_nbytes;
       $n_read == $log_nbytes
         or die "$ME:$.: unexpected EOF\n";
+
+      # Skip log entries with the default merge commit message.
+      $log =~ /^.*\n\nMerge branch '.*\n\s*/
+        and goto SKIPCOMMIT;
 
       # Extract leading hash.
       my ($sha, $rest) = split ':', $log, 2;
@@ -313,6 +318,7 @@ sub parse_amend_file($)
           print "\n", join ("\n", @line), "\n";
         }
 
+    SKIPCOMMIT:
       defined ($in = <PIPE>)
         or last;
       $in ne "\n"
