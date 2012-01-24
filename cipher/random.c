@@ -514,8 +514,8 @@ read_seed_file(void)
     /* And read a few bytes from our entropy source.  By using
      * a level of 0 this will not block and might not return anything
      * with some entropy drivers, however the rndlinux driver will use
-     * /dev/urandom and return some stuff - Do not read to much as we
-     * want to be friendly to the scare system entropy resource. */
+     * /dev/urandom and return some stuff - Do not read too much as we
+     * want to be friendly to the scarce system entropy resource. */
     read_random_source( 0, 16, 0 );
 
     allow_seed_file_update = 1;

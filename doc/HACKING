@@ -47,9 +47,8 @@ by sending a mail with subject "subscribe" to
 
 
 You must run scripts/autogen.sh before doing the ./configure,
-as this creates some needed while which are not in the repository.
-autogen.sh should check that you have all required tools
-installed.
+as this creates some needed files not include in the repository.
+autogen.sh should check that you have all required tools installed.
 
 
 RSYNC access
