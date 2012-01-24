@@ -1865,7 +1865,9 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 #endif
 
   ret = npth_attr_init(&tattr);
-  /* FIXME: Check error.  */
+  if (ret)
+    log_fatal ("error allocating thread attributes: %s\n",
+	       gpg_strerror (ret));
   npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
 
 #ifndef HAVE_W32_SYSTEM

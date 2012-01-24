@@ -58,13 +58,13 @@
 #include "i18n.h"
 #include "util.h"
 
-/* With the ldap wrapper, there is no need for the pth_enter and leave
+/* With the ldap wrapper, there is no need for the npth_unprotect and leave
    functions; thus we redefine them to nops.  If we are not using the
    ldap wrapper process we need to include the prototype for our
    module's main function.  */
 #ifdef USE_LDAPWRAPPER
-static void pth_enter (void) { }
-static void pth_leave (void) { }
+static void npth_unprotect (void) { }
+static void npth_protect (void) { }
 #else
 # include "./ldap-wrapper.h"
 #endif
@@ -392,9 +392,9 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
   LDAPMessage *item;
   int any = 0;
 
-  for (pth_enter (), item = ldap_first_entry (ld, msg), pth_leave ();
+  for (npth_unprotect (), item = ldap_first_entry (ld, msg), npth_protect ();
        item;
-       pth_enter (), item = ldap_next_entry (ld, item), pth_leave ())
+       npth_unprotect (), item = ldap_next_entry (ld, item), npth_protect ())
     {
       BerElement *berctx;
       char *attr;
@@ -414,11 +414,11 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
         }
 
 
-      for (pth_enter (), attr = my_ldap_first_attribute (ld, item, &berctx),
-             pth_leave ();
+      for (npth_unprotect (), attr = my_ldap_first_attribute (ld, item, &berctx),
+             npth_protect ();
            attr;
-           pth_enter (), attr = my_ldap_next_attribute (ld, item, berctx),
-             pth_leave ())
+           npth_unprotect (), attr = my_ldap_next_attribute (ld, item, berctx),
+             npth_protect ())
         {
           struct berval **values;
           int idx;
@@ -455,9 +455,9 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
                 }
             }
 
-          pth_enter ();
+          npth_unprotect ();
           values = my_ldap_get_values_len (ld, item, attr);
-          pth_leave ();
+          npth_protect ();
 
           if (!values)
             {
@@ -618,19 +618,19 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 
 
   set_timeout (myopt);
-  pth_enter ();
+  npth_unprotect ();
   ld = my_ldap_init (host, port);
-  pth_leave ();
+  npth_protect ();
   if (!ld)
     {
       log_error (_("LDAP init to `%s:%d' failed: %s\n"),
                  host, port, strerror (errno));
       return -1;
     }
-  pth_enter ();
+  npth_unprotect ();
   /* Fixme:  Can we use MYOPT->user or is it shared with other theeads?.  */
   ret = my_ldap_simple_bind_s (ld, myopt->user, myopt->pass);
-  pth_leave ();
+  npth_protect ();
   if (ret)
     {
       log_error (_("binding to `%s:%d' failed: %s\n"),
@@ -640,13 +640,13 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
     }
 
   set_timeout (myopt);
-  pth_enter ();
+  npth_unprotect ();
   rc = my_ldap_search_st (ld, dn, ludp->lud_scope, filter,
                           myopt->multi && !myopt->attr && ludp->lud_attrs?
                           ludp->lud_attrs:attrs,
                           0,
                           &myopt->timeout, &msg);
-  pth_leave ();
+  npth_protect ();
   if (rc == LDAP_SIZELIMIT_EXCEEDED && myopt->multi)
     {
       if (es_fwrite ("E\0\0\0\x09truncated", 14, 1, myopt->outstream) != 1)
