@@ -427,7 +427,7 @@ set_pinentry_prompt(ctrl_t ctrl, int which, const char *prompt)
     }
 
   if (!rc && ctrl->app_ctx)
-    rc = app_set_pin_prompt (ctrl->app_ctx, PIN_SIGN_PROMPT, prompt);
+    rc = app_set_pin_prompt (ctrl->app_ctx, which, prompt);
 
   return rc;
 }
