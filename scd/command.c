@@ -142,7 +142,7 @@ struct server_local_s
   /* User-defined pinentry prompt strings. Needed both here and in the app
    * since they may be set by the user before an app is selected with
    * select_application().  They are copied to the app when
-   * select_application() succeeds and further modifications done in the app.
+   * select_application() succeeds.
    * */
   char *pin_prompt;
   char *pin_admin_prompt;
@@ -1838,6 +1838,11 @@ cmd_restart (assuan_context_t ctx, char *line)
       locked_session = NULL;
       log_info ("implicitly unlocking due to RESTART\n");
     }
+
+  xfree (ctrl->server_local->pin_prompt);
+  xfree (ctrl->server_local->pin_admin_prompt);
+  ctrl->server_local->pin_prompt = NULL;
+  ctrl->server_local->pin_admin_prompt = NULL;
   return 0;
 }
 
