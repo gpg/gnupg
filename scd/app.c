@@ -1043,7 +1043,10 @@ app_set_pin_prompt(app_t app, int which, const char *prompt)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (!app->fnc.set_pin_prompt)
-    return gpg_error (GPG_ERR_UNSUPPORTED_OPERATION);
+    {
+      log_info ("no pinentry prompt callback for app has been set");
+      return 0;
+    }
 
   return app->fnc.set_pin_prompt (app, which, prompt);
 }
