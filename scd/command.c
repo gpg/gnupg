@@ -395,9 +395,10 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 static gpg_error_t
-set_pinentry_prompt(struct server_local_s *srv, int which, const char *prompt)
+set_pinentry_prompt(ctrl_t ctrl, int which, const char *prompt)
 {
   gpg_error_t rc = 0;
+  struct server_local_s *srv = ctrl->server_local;
   char **p = NULL;
 
   switch (which)
@@ -417,13 +418,16 @@ set_pinentry_prompt(struct server_local_s *srv, int which, const char *prompt)
       xfree (*p);
       *p = NULL;
 
-      if (prompt && *prompt != '-' && *(prompt+1) != 0)
+      if (prompt && *prompt)
 	{
 	  *p = xtrystrdup (prompt);
 	  if (!*p)
 	    rc = gpg_error_from_syserror ();
 	}
     }
+
+  if (!rc && ctrl->app_ctx)
+    rc = app_set_pin_prompt (ctrl->app_ctx, PIN_SIGN_PROMPT, prompt);
 
   return rc;
 }
@@ -451,17 +455,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
    * app.c:expand_pin_prompt() for details. */
   else if (!strcmp (key, "pin-prompt"))
     {
-      if (ctrl->app_ctx)
-	return app_set_pin_prompt (ctrl->app_ctx, PIN_SIGN_PROMPT, value);
-      else
-	return set_pinentry_prompt (ctrl->server_local, PIN_SIGN_PROMPT, value);
+      return set_pinentry_prompt (ctrl, PIN_SIGN_PROMPT, value);
     }
   else if (!strcmp (key, "pin-admin-prompt"))
     {
-      if (ctrl->app_ctx)
-	return app_set_pin_prompt (ctrl->app_ctx, PIN_ADMIN_PROMPT, value);
-      else
-	return set_pinentry_prompt (ctrl->server_local, PIN_ADMIN_PROMPT, value);
+      return set_pinentry_prompt (ctrl, PIN_ADMIN_PROMPT, value);
     }
 
  return 0;

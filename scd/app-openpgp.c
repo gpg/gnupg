@@ -3765,14 +3765,14 @@ do_set_pin_prompt(app_t app, int which, const char *prompt)
 
   switch (which)
     {
-      case PIN_SIGN_PROMPT:
-	p = &app->app_local->pin_prompt;
+    case PIN_SIGN_PROMPT:
+      p = &app->app_local->pin_prompt;
+      break;
+    case PIN_ADMIN_PROMPT:
+      p = &app->app_local->pin_admin_prompt;
+      break;
+    default:
 	break;
-      case PIN_ADMIN_PROMPT:
-	p = &app->app_local->pin_admin_prompt;
-	break;
-      default:
-	  break;
     }
 
   if (p)
@@ -3780,7 +3780,7 @@ do_set_pin_prompt(app_t app, int which, const char *prompt)
       xfree (*p);
       *p = NULL;
 
-      if (prompt && *prompt != '-' && *(prompt+1) != 0)
+      if (prompt && *prompt)
 	{
 	  *p = xtrystrdup (prompt);
 	  if (!*p)

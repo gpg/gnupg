@@ -969,20 +969,20 @@ expand_pin_prompt(const char *prompt, const char *prepend, int which, ...)
 
   switch (which)
     {
-      /* Signature count. */
-      case PIN_SIGN_PROMPT:
-	luval = va_arg (ap, unsigned long);
-	snprintf (valuebuf, sizeof (valuebuf), "%lu", luval);
-	token = "|S|";
-	break;
-      /* Pin tries remaining. */
-      case PIN_ADMIN_PROMPT:
-	intval = va_arg (ap, int);
-	snprintf (valuebuf, sizeof (valuebuf), "%i", intval);
-	token = "|A|";
-	break;
-      default:
-	break;
+    /* Signature count. */
+    case PIN_SIGN_PROMPT:
+      luval = va_arg (ap, unsigned long);
+      snprintf (valuebuf, sizeof (valuebuf), "%lu", luval);
+      token = "|S|";
+      break;
+    /* Pin tries remaining. */
+    case PIN_ADMIN_PROMPT:
+      intval = va_arg (ap, int);
+      snprintf (valuebuf, sizeof (valuebuf), "%i", intval);
+      token = "|A|";
+      break;
+    default:
+      break;
     }
 
   va_end (ap);
