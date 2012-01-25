@@ -870,7 +870,8 @@ agent_card_pksign (ctrl_t ctrl,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
-  if (inqparm.any_inq_seen && gpg_err_code(rc) == GPG_ERR_CANCELED)
+  if (inqparm.any_inq_seen && (gpg_err_code(rc) == GPG_ERR_CANCELED ||
+	gpg_err_code(rc) == GPG_ERR_ASS_CANCELED))
     rc = cancel_inquire (ctrl, rc);
 
   if (rc)
@@ -949,7 +950,8 @@ agent_card_pkdecrypt (ctrl_t ctrl,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
                         NULL, NULL);
-  if (inqparm.any_inq_seen && gpg_err_code(rc) == GPG_ERR_CANCELED)
+  if (inqparm.any_inq_seen && (gpg_err_code(rc) == GPG_ERR_CANCELED ||
+	gpg_err_code(rc) == GPG_ERR_ASS_CANCELED))
     rc = cancel_inquire (ctrl, rc);
 
   if (rc)
