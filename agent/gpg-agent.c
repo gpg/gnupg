@@ -1934,7 +1934,8 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
       npth_timersub (&abstime, &curtime, &timeout);
 
 #ifndef HAVE_W32_SYSTEM
-      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
+      ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+                          npth_sigev_sigmask ());
       saved_errno = errno;
 
       {
@@ -1944,7 +1945,8 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
       }
 #else
       events_set = 0;
-      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, events, &events_set);
+      ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
+                          events, &events_set);
       saved_errno = errno;
 
       /* This is valid even if npth_eselect returns an error.  */
@@ -1993,7 +1995,8 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 	      npth_t thread;
 
               ctrl->thread_startup.fd = fd;
-	      ret = npth_create (&thread, &tattr, start_connection_thread, ctrl);
+	      ret = npth_create (&thread, &tattr,
+                                 start_connection_thread, ctrl);
               if (ret)
                 {
                   log_error ("error spawning connection handler: %s\n",
@@ -2037,7 +2040,8 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 
               agent_init_default_ctrl (ctrl);
               ctrl->thread_startup.fd = fd;
-              ret = npth_create (&thread, &tattr, start_connection_thread_ssh, ctrl);
+              ret = npth_create (&thread, &tattr,
+                                 start_connection_thread_ssh, ctrl);
 	      if (ret)
                 {
                   log_error ("error spawning ssh connection handler: %s\n",
