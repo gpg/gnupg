@@ -817,21 +817,18 @@ AC_DEFINE_UNQUOTED(SHRED,
 
 
 #
-# Check whether the GNU Pth library is available
-# Note, that we include a Pth emulation for W32.
+# Check whether the nPth library is available
 #
 AM_PATH_NPTH("$NEED_NPTH_API:$NEED_NPTH_VERSION",have_npth=yes,have_npth=no)
 if test "$have_npth" = "yes"; then
+  # We define this macro because some code parts require it.
   AC_DEFINE(USE_NPTH, 1,
-              [Defined if the New Portable Thread Library should be used])
+              [Defined if the New Portable Thread Library is available])
 else
   AC_MSG_WARN([[
 ***
-*** To support concurrent access to the gpg-agent and the SCdaemon
+*** To support concurrent access for example in gpg-agent and the SCdaemon
 *** we need the support of the New Portable Threads Library.
-*** Download it from FIXME
-*** On a Debian GNU/Linux system you might want to try
-***   apt-get install libnpth-dev
 ***]])
 fi
 
@@ -1495,31 +1492,15 @@ if test "$have_adns" = "yes"; then
 fi
 
 
-missing_npth=no
 if test $have_ksba = no; then
   build_gpgsm=no
   build_scdaemon=no
 fi
 
-build_agent_threaded=""
-if test "$build_agent" = "yes"; then
-  if test $have_npth = no; then
-     build_agent_threaded="(not multi-threaded)"
-     missing_npth=yes
-  fi
-fi
-
 build_scdaemon_extra=""
 if test "$build_scdaemon" = "yes"; then
-  tmp=""
-  if test $have_npth = no; then
-     build_scdaemon_extra="not multi-threaded"
-     tmp=", "
-     missing_npth=yes
-  fi
   if test $have_libusb = no; then
      build_scdaemon_extra="${tmp}without internal CCID driver"
-     tmp=", "
   fi
   if test -n "$build_scdaemon_extra"; then
      build_scdaemon_extra="(${build_scdaemon_extra})"
@@ -1647,18 +1628,15 @@ if test "$gnupg_have_ldap" = "no"; then
 ***]])
    fi
 fi
-if test "$missing_npth" = "yes"; then
+if test "$have_npth" = "no"; then
     AC_MSG_NOTICE([[
 ***
 *** It is now required to build with support for the
 *** New Portable Threads Library (NPth). Please install this
 *** library first.  The library is for example available at
-***   FIXME
+***   ftp://ftp.gnupg.org/gcrypt/npth/
 *** On a Debian GNU/Linux system you can install it using
 ***   apt-get install libnpth-dev
-*** To build GnuPG for Windows you need to use the W32NPTH
-*** package; available at:
-***   ftp://ftp.g10code.com/g10code/w32npth/
 ***]])
    die=yes
 fi
@@ -1708,7 +1686,7 @@ echo "
 
         OpenPGP:   $build_gpg
         S/MIME:    $build_gpgsm
-        Agent:     $build_agent $build_agent_threaded
+        Agent:     $build_agent
         Smartcard: $build_scdaemon $build_scdaemon_extra
         G13:       $build_g13
         Dirmngr:   $build_dirmngr

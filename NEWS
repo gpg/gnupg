@@ -4,6 +4,8 @@ Noteworthy changes in version 2.1.0beta4 (unreleased)
  * GPG now accepts a space separated fingerprint as a user ID.  This
    allows to copy and paste the fingerprint from the key listing.
 
+ * The GNU Pth library has been replaced by the new nPth library.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------
