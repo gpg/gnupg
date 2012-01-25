@@ -1938,8 +1938,11 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
       ret = npth_pselect (nfd+1, &read_fdset, NULL, NULL, &timeout, npth_sigev_sigmask());
       saved_errno = errno;
 
-      while (npth_sigev_get_pending(&signo))
-	handle_signal (signo);
+      {
+        int signo;
+        while (npth_sigev_get_pending (&signo))
+          handle_signal (signo);
+      }
 #else
       events_set = 0;
       ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout, events, &events_set);
