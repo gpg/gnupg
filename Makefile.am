@@ -22,6 +22,8 @@ ACLOCAL_AMFLAGS = -I m4 -I gl/m4
 AUTOMAKE_OPTIONS = dist-bzip2 no-dist-gzip
 DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-gpgtar
 
+GITLOG_TO_CHANGELOG=gitlog-to-changelog
+
 EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT \
 	     ChangeLog-2011 po/ChangeLog-2011 scripts/ChangeLog-2011 \
 	     scripts/gitlog-to-changelog \
@@ -115,8 +117,7 @@ gen_start_date = 2011-12-01T06:00:00
 gen-ChangeLog:
 	if test -d $(top_srcdir)/.git; then				\
 	  (cd $(top_srcdir) &&                      			\
-	    ./scripts/gitlog-to-changelog				\
-	    --append-dot --tear-off					\
+	    $(GITLOG_TO_CHANGELOG) --append-dot --tear-off		\
 	    --amend=scripts/git-log-fix	 				\
 	    --since=$(gen_start_date) ) > $(distdir)/cl-t;		\
           cat $(top_srcdir)/scripts/git-log-footer >> $(distdir)/cl-t;  \
