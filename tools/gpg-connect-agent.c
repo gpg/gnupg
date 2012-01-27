@@ -1747,7 +1747,14 @@ main (int argc, char **argv)
                     }
                   tmpline = substitute_line (tmpcond);
                   value = tmpline? tmpline : tmpcond;
-                  condition = strtol (value, NULL, 0);
+                  /* "true" or "yes" are commonly used to mean TRUE;
+                     all other strings will evaluate to FALSE due to
+                     the strtoul.  */
+                  if (!ascii_strcasecmp (value, "true")
+                      || !ascii_strcasecmp (value, "yes"))
+                    condition = 1;
+                  else
+                    condition = strtol (value, NULL, 0);
                   xfree (tmpline);
                   xfree (tmpcond);
 
