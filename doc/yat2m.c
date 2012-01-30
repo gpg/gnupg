@@ -1,6 +1,6 @@
 /* yat2m.c - Yet Another Texi 2 Man converter
  *	Copyright (C) 2005 g10 Code GmbH
- *      Copyright (C) 2006 2006 Free Software Foundation, Inc.
+ *      Copyright (C) 2006, 2008, 2011 Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@
       @end macro
       @macro mansect {a}
       @end macro
-      @macro manpause 
+      @macro manpause
       @end macro
       @macro mancont
       @end macro
-      
+
     They are used by yat2m to select parts of the Texinfo which should
     go into the man page. These macros need to be used without leading
     left space. Processing starts after a "manpage" macro has been
@@ -72,7 +72,21 @@
     extracted from one file, either using the --store or the --select
     option.
 
+    If you want to indent tables in the source use this style:
 
+      @table foo
+        @item
+        @item
+        @table
+          @item
+        @end
+      @end
+
+    Don't change the indentation within a table and keep the same
+    number of white space at the start of the line.  yat2m simply
+    detects the number of white spaces in front of an @item and remove
+    this number of spaces from all following lines until a new @item
+    is found or there are less spaces than for the last @item.
 */
 
 #include <stdio.h>
@@ -87,7 +101,7 @@
 
 
 #define PGM "yat2m"
-#define VERSION "0.5"
+#define VERSION "1.0"
 
 /* The maximum length of a line including the linefeed and one extra
    character. */
@@ -97,8 +111,8 @@
 static int verbose;
 static int quiet;
 static int debug;
-static const char *opt_source; 
-static const char *opt_release; 
+static const char *opt_source;
+static const char *opt_release;
 static const char *opt_select;
 static const char *opt_include;
 static int opt_store;
@@ -148,22 +162,22 @@ struct section_buffer_s
 typedef struct section_buffer_s *section_buffer_t;
 
 /* Variable to keep info about the current page together.  */
-static struct 
+static struct
 {
   /* Filename of the current page or NULL if no page is active.  Malloced. */
   char *name;
 
   /* Number of allocated elements in SECTIONS below.  */
-  size_t n_sections;       
+  size_t n_sections;
   /* Array with the data of the sections.  */
-  section_buffer_t sections; 
+  section_buffer_t sections;
 
 } thepage;
 
 
 /* The list of standard section names.  COMMANDS and ASSUAN are GnuPG
    specific. */
-static const char * const standard_sections[] = 
+static const char * const standard_sections[] =
   { "NAME",  "SYNOPSIS",  "DESCRIPTION",
     "RETURN VALUE", "EXIT STATUS", "ERROR HANDLING", "ERRORS",
     "COMMANDS", "OPTIONS", "USAGE", "EXAMPLES", "FILES",
@@ -286,7 +300,7 @@ isodatestring (void)
   static char buffer[11+5];
   struct tm *tp;
   time_t atime = time (NULL);
-  
+
   if (atime < 0)
     strcpy (buffer, "????" "-??" "-??");
   else
@@ -307,7 +321,7 @@ static section_buffer_t
 get_section_buffer (const char *name)
 {
   int i;
-  section_buffer_t sect; 
+  section_buffer_t sect;
 
   /* If there is no section we put everything into the required NAME
      section.  Given that this is the first one listed it is likely
@@ -414,6 +428,8 @@ write_th (FILE *fp)
 {
   char *name, *p;
 
+  fputs (".\\\" Created from Texinfo source by yat2m " VERSION "\n", fp);
+
   name = ascii_strupr (xstrdup (thepage.name));
   p = strrchr (name, '.');
   if (!p || !p[1])
@@ -449,9 +465,9 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "code",    0, "\\fB", "\\fR" },
     { "sc",      0, "\\fB", "\\fR" },
     { "var",     0, "\\fI", "\\fR" },
-    { "samp",    0, "\\(aq", "\\(aq'"  },
-    { "file",    0, "`\\fI","\\fR'" }, 
-    { "env",     0, "`\\fI","\\fR'" }, 
+    { "samp",    0, "\\(aq", "\\(aq"  },
+    { "file",    0, "\\(oq\\fI","\\fR\\(cq" },
+    { "env",     0, "\\(oq\\fI","\\fR\\(cq" },
     { "acronym", 0 },
     { "dfn",     0 },
     { "option",  0, "\\fB", "\\fR"   },
@@ -465,7 +481,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "uref",    0, "(\\fB", "\\fR)" },
     { "footnote",0, " ([", "])" },
     { "emph",    0, "\\fI", "\\fR" },
-    { "w",       1 },                                 
+    { "w",       1 },
     { "c",       5 },
     { "opindex", 1 },
     { "cpindex", 1 },
@@ -477,8 +493,8 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "chapheading", 0},
     { "item",    2, ".TP\n.B " },
     { "itemx",   2, ".TP\n.B " },
-    { "table",   3 }, 
-    { "itemize",   3 }, 
+    { "table",   3 },
+    { "itemize",   3 },
     { "bullet",  0, "* " },
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
@@ -502,7 +518,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
         {
         case 1: /* Throw away the entire line.  */
           s = memchr (rest, '\n', len);
-          return s? (s-rest)+1 : len;  
+          return s? (s-rest)+1 : len;
         case 2: /* Handle @item.  */
           break;
         case 3: /* Handle table.  */
@@ -510,7 +526,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
             fputs (".RS\n", fp);
           /* Now throw away the entire line. */
           s = memchr (rest, '\n', len);
-          return s? (s-rest)+1 : len;  
+          return s? (s-rest)+1 : len;
           break;
         case 4: /* Handle end.  */
           for (s=rest, n=len; n && (*s == ' ' || *s == '\t'); s++, n--)
@@ -538,7 +554,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
             }
           /* Now throw away the entire line. */
           s = memchr (rest, '\n', len);
-          return s? (s-rest)+1 : len;  
+          return s? (s-rest)+1 : len;
         case 5: /* Handle special comments. */
           for (s=rest, n=len; n && (*s == ' ' || *s == '\t'); s++, n--)
             ;
@@ -550,7 +566,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
             }
           /* Now throw away the entire line. */
           s = memchr (rest, '\n', len);
-          return s? (s-rest)+1 : len;  
+          return s? (s-rest)+1 : len;
         case 6:
           *eol_action = 1;
           break;
@@ -625,17 +641,17 @@ proc_texi_buffer (FILE *fp, const char *line, size_t len,
             {
               switch (*s)
                 {
-                case '@': case '{': case '}': 
-                  putc (*s, fp); in_cmd = 0; 
+                case '@': case '{': case '}':
+                  putc (*s, fp); in_cmd = 0;
                   break;
                 case ':': /* Not ending a sentence flag.  */
                   in_cmd = 0;
                   break;
                 case '.': case '!': case '?': /* Ending a sentence. */
-                  putc (*s, fp); in_cmd = 0; 
+                  putc (*s, fp); in_cmd = 0;
                   break;
                 case ' ': case '\t': case '\n': /* Non collapsing spaces.  */
-                  putc (*s, fp); in_cmd = 0; 
+                  putc (*s, fp); in_cmd = 0;
                   break;
                 default:
                   cmdidx = 0;
@@ -653,7 +669,7 @@ proc_texi_buffer (FILE *fp, const char *line, size_t len,
               s--; len++;
               in_cmd = 0;
             }
-          else if (cmdidx < sizeof cmdbuf -1)  
+          else if (cmdidx < sizeof cmdbuf -1)
             cmdbuf[cmdidx++] = *s;
           else
             {
@@ -732,7 +748,7 @@ write_content (FILE *fp, line_buffer_t lines)
 /*           fputs ("---\n", fp); */
           parse_texi_line (fp, line->line, &table_level);
         }
-    }  
+    }
 }
 
 
@@ -821,7 +837,7 @@ finish_page (void)
                   write_content (fp, sect->lines);
                 }
             }
-          
+
         }
     }
 
@@ -854,10 +870,11 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
   int in_gpgone = 0;          /* Keep track of "@ifset gpgone" parts.  */
   int not_in_gpgone = 0;      /* Keep track of "@ifclear gpgone" parts.  */
   int not_in_man = 0;         /* Keep track of "@ifclear isman" parts.  */
+  int item_indent = 0;        /* How far is the current @item indented.  */
 
   /* Helper to define a macro. */
-  char *macroname = NULL;     
-  char *macrovalue = NULL; 
+  char *macroname = NULL;
+  char *macrovalue = NULL;
   size_t macrovaluesize = 0;
   size_t macrovalueused = 0;
 
@@ -876,6 +893,24 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
           break;
         }
       line[--n] = 0;
+
+      /* Kludge to allow indentation of tables.  */
+      for (p=line; *p == ' ' || *p == '\t'; p++)
+        ;
+      if (*p)
+        {
+          if (*p == '@' && !strncmp (p+1, "item", 4))
+            item_indent = p - line;  /* Set a new indent level.  */
+          else if (p - line < item_indent)
+            item_indent = 0;         /* Switch off indention.  */
+
+          if (item_indent)
+            {
+              memmove (line, line+item_indent, n - item_indent + 1);
+              n -= item_indent;
+            }
+        }
+
 
       if (*line == '@')
         {
@@ -901,7 +936,7 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
                 macrovalue[--macrovalueused] = 0; /* Kill the last LF. */
               macrovalue[macrovalueused] = 0;     /* Terminate macro. */
               macrovalue = xrealloc (macrovalue, macrovalueused+1);
-              
+
               for (m= macrolist; m; m = m->next)
                 if (!strcmp (m->name, macroname))
                   break;
@@ -1168,10 +1203,10 @@ top_parse_file (const char *fname, FILE *fp)
                                  if not in a section.  */
   while (macrolist)
     {
-      macro_t m = macrolist->next;
-      free (m->value);
-      free (m);
-      macrolist = m;
+      macro_t next = macrolist->next;
+      free (macrolist->value);
+      free (macrolist);
+      macrolist = next;
     }
 
   parse_file (fname, fp, &section_name, 0);
@@ -1180,7 +1215,7 @@ top_parse_file (const char *fname, FILE *fp)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
@@ -1273,7 +1308,7 @@ main (int argc, char **argv)
               opt_select = strrchr (*argv, '/');
               if (opt_select)
                 opt_select++;
-              else 
+              else
                 opt_select = *argv;
               argc--; argv++;
             }
@@ -1297,8 +1332,8 @@ main (int argc, char **argv)
               argc--; argv++;
             }
         }
-    }          
- 
+    }
+
   if (argc > 1)
     die ("usage: " PGM " [OPTION] [FILE] (try --help for more information)\n");
 

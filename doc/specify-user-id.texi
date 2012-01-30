@@ -6,7 +6,7 @@ are only valid for @command{gpg} others are only good for
 
 @itemize @bullet
 
-@item By key Id. 
+@item By key Id.
 This format is deduced from the length of the string and its content or
 @code{0x} prefix. The key Id of an X.509 certificate are the low 64 bits
 of its SHA-1 fingerprint.  The use of key Ids is just a shortcut, for
@@ -59,16 +59,17 @@ avoids any ambiguities in case that there are duplicated key IDs.
 @end cartouche
 
 @noindent
-(@command{gpgsm} also accepts colons between each pair of hexadecimal
+@command{gpgsm} also accepts colons between each pair of hexadecimal
 digits because this is the de-facto standard on how to present X.509
-fingerprints.)
+fingerprints.  @command{gpg} also allows the use of the space
+separated SHA-1 fingerprint as printed by the key listing commands.
 
 @item By exact match on OpenPGP user ID.
 This is denoted by a leading equal sign. It does not make sense for
 X.509 certificates.
 
 @cartouche
-@example 
+@example
 =Heinrich Heine <heinrichh@@uni-duesseldorf.de>
 @end example
 @end cartouche
