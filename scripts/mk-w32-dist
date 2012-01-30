@@ -164,6 +164,7 @@ get_langname () {
         sk)    r="Slovensky"; ;;
         sv)    r="Svenska"; ;;
         tr)    r="Türkçe"; ;;
+        uk)    r="Ukrainian"; ;;
         zh_CN) r="Chinese (simplified)"; ;;
         zh_TW) r="Chinese (traditional)"; ;;
 
