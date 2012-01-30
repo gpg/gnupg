@@ -1,9 +1,26 @@
-Noteworthy changes in version 1.4.12 (unreleased)
+Noteworthy changes in version 1.4.12 (2012-01-30)
 -------------------------------------------------
 
     * GPG now accepts a space separated fingerprint as a user ID.
       This allows to copy and paste the fingerprint from the key
       listing.
+
+    * Removed support for the original HKP keyserver which is not
+      anymore used by any site.
+
+    * Rebuild the trustdb after changing the option --min-cert-level.
+
+    * Improved JPEG detection.
+
+    * Included more VMS patches
+
+    * Made it easier to create an installer for Windows.
+
+    * Supports the 32 bit variant of the mingw-w64 toolchain.
+
+    * Made file locking more portable.
+
+    * Minor bug fixes.
 
 
 Noteworthy changes in version 1.4.11 (2010-10-18)

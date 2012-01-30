@@ -626,7 +626,7 @@
                     allow import or export of secret keys.
 
      --enable-noexecstack
-                    Pass option --noexecstack to as.  Autdetect wether
+                    Pass option --noexecstack to as.  Autodetect wether
                     the tool chain actually support this.
 
      --disable-gnupg-iconv
@@ -764,18 +764,21 @@
     Apple like curl, zip, and BZ2) are universal.
 
 
-    GnuPG 1.4 and GnuPG 2.0
+    GnuPG 1.4 and GnuPG 2.x
     -----------------------
 
-    GnuPG 2.0 is a newer version of GnuPG with additional support for
+    GnuPG 2.x is a newer version of GnuPG with additional support for
     S/MIME.  It has a different design philosophy that splits
     functionality up into several modules.  Both versions may be
-    installed simultaneously without any conflict (gpg is called gpg2
-    in GnuPG 2).  In fact, the gpg version from GnuPG 1.4 is able to
-    make use of the gpg-agent as included in GnuPG 2 and allows for
-    seamless passphrase caching.  The advantage of GnupG 1.4 is its
-    smaller size and no dependency on other modules at run and build
-    time.
+    installed simultaneously without any conflict (gpg is usually
+    installed under the name gpg2 in GnuPG-2).  In fact, the GPG
+    version from GnuPG 1.4 is able to make use of the gpg-agent as
+    included in GnuPG-2 and allows for seamless passphrase caching.
+    The advantage of GnuPG 1.4 is its somewhat smaller size and no
+    dependency on other modules at run and build time.  The drawback
+    of 1.4 is its much older code base and that only minimal
+    maintainance is done.  It is highly suggested to switch to 2.x
+    unless your system is not supported by 2.x
 
 
     How to Get More Information
@@ -819,9 +822,9 @@
     Please direct questions about GnuPG to the users mailing list or
     one of the pgp newsgroups; please do not direct questions to one
     of the authors directly as we are busy working on improvements and
-    bug fixes.  The English and German mailing lists are watched by
-    the authors and we try to answer questions when time allows us to
-    do so.
+    bug fixes.  The English and German GnupG mailing lists are watched
+    by the authors and we try to answer questions when time allows us
+    to do so.
 
     Commercial grade support for GnuPG is available; please see
     http://www.gnupg.org/service.html .
