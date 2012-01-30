@@ -24,6 +24,8 @@ ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-mailto
 AUTOMAKE_OPTIONS = dist-bzip2 filename-length-max=99
 
+GITLOG_TO_CHANGELOG=gitlog-to-changelog
+
 if CROSS_COMPILING
 checks =
 else
@@ -80,10 +82,10 @@ dist-hook: gen-ChangeLog
 gen_start_date = 2011-12-01T06:00:00
 .PHONY: gen-ChangeLog
 gen-ChangeLog:
+	set -x; 							\
 	if test -d $(top_srcdir)/.git; then				\
 	  (cd $(top_srcdir) &&                      			\
-	    ./scripts/gitlog-to-changelog				\
-	    --append-dot --tear-off					\
+	    $(GITLOG_TO_CHANGELOG) --append-dot --tear-off		\
 	    --amend=scripts/git-log-fix	 				\
 	    --since=$(gen_start_date) ) > $(distdir)/cl-t;		\
           cat $(top_srcdir)/scripts/git-log-footer >> $(distdir)/cl-t;  \
