@@ -40,7 +40,7 @@
 #define MYVERSION_LINE PGM " (GnuPG) " VERSION
 #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
 #else
-#define MYVERSION_LINE PGM 
+#define MYVERSION_LINE PGM
 #define BUGREPORT_LINE ""
 #endif
 #if !defined(SUN_LEN) || !defined(PF_LOCAL) || !defined(AF_LOCAL)
@@ -109,7 +109,7 @@ xrealloc (void *old, size_t n)
     die ("out of core");
   return p;
 }
-    
+
 
 struct client_s {
   struct client_s *next;
@@ -117,7 +117,7 @@ struct client_s {
   size_t size;  /* Allocated size of buffer. */
   size_t len;   /* Current length of buffer. */
   unsigned char *buffer; /* Buffer to with data already read. */
-  
+
 };
 typedef struct client_s *client_t;
 
@@ -128,7 +128,7 @@ print_fd_and_time (int fd)
 {
   struct tm *tp;
   time_t atime = time (NULL);
-  
+
   tp = localtime (&atime);
   printf ("%3d - %04d-%02d-%02d %02d:%02d:%02d ",
           fd,
@@ -150,7 +150,7 @@ print_line (client_t c, const char *line)
       if (c->buffer && c->len)
         {
           print_fd_and_time (c->fd);
-          fwrite (c->buffer, c->len, 1, stdout); 
+          fwrite (c->buffer, c->len, 1, stdout);
           putc ('\n', stdout);
           c->len = 0;
         }
@@ -162,10 +162,10 @@ print_line (client_t c, const char *line)
       print_fd_and_time (c->fd);
       if (c->buffer && c->len)
         {
-          fwrite (c->buffer, c->len, 1, stdout); 
+          fwrite (c->buffer, c->len, 1, stdout);
           c->len = 0;
         }
-      fwrite (line, s - line + 1, 1, stdout); 
+      fwrite (line, s - line + 1, 1, stdout);
       line = s + 1;
     }
   n = strlen (line);
@@ -188,12 +188,12 @@ static void
 print_version (int with_help)
 {
   fputs (MYVERSION_LINE "\n"
-         "Copyright (C) 2004 Free Software Foundation, Inc.\n"
+         "Copyright (C) 2012 Free Software Foundation, Inc.\n"
          "This program comes with ABSOLUTELY NO WARRANTY.\n"
          "This is free software, and you are welcome to redistribute it\n"
          "under certain conditions. See the file COPYING for details.\n",
          stdout);
-        
+
   if (with_help)
     fputs ("\n"
           "Usage: " PGM " [OPTIONS] SOCKETNAME\n"
@@ -204,11 +204,11 @@ print_version (int with_help)
           "  --version   print version of the program and exit\n"
           "  --help      display this help and exit\n"
           BUGREPORT_LINE, stdout );
-  
+
   exit (0);
 }
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
@@ -219,7 +219,7 @@ main (int argc, char **argv)
   int server;
   int flags;
   client_t client_list = NULL;
- 
+
   if (argc)
     {
       argc--; argv++;
@@ -246,8 +246,8 @@ main (int argc, char **argv)
           force = 1;
           argc--; argv++;
         }
-    }          
- 
+    }
+
   if (argc != 1)
     {
       fprintf (stderr, "usage: " PGM " socketname\n");
@@ -272,7 +272,7 @@ main (int argc, char **argv)
     die ("fcntl (F_GETFL) failed: %s\n", strerror (errno));
   if ( fcntl (server, F_SETFL, (flags | O_NONBLOCK)) == -1)
     die ("fcntl (F_SETFL) failed: %s\n", strerror (errno));
-  
+
 
   memset (&srvr_addr, 0, sizeof srvr_addr);
   srvr_addr.sun_family = AF_LOCAL;
@@ -280,10 +280,10 @@ main (int argc, char **argv)
   srvr_addr.sun_path[sizeof (srvr_addr.sun_path) - 1] = 0;
   addrlen = SUN_LEN (&srvr_addr);
 
-  
+
  again:
   if (bind (server, (struct sockaddr *) &srvr_addr, addrlen))
-    { 
+    {
       if (errno == EADDRINUSE && force)
         {
           force = 0;
@@ -320,7 +320,7 @@ main (int argc, char **argv)
         continue;  /* Ignore any errors. */
 
       if (FD_ISSET (server, &rfds)) /* New connection. */
-        { 
+        {
           struct sockaddr_un clnt_addr;
           int fd;
 
@@ -335,7 +335,7 @@ main (int argc, char **argv)
               close (fd);
               printf ("[connection request denied: too many connections]\n");
             }
-          else 
+          else
             {
               for (client = client_list; client && client->fd != -1;
                    client = client->next)
@@ -355,7 +355,7 @@ main (int argc, char **argv)
           {
             char line[256];
             int n;
-            
+
             n = read (client->fd, line, sizeof line - 1);
             if (n < 0)
               {
@@ -366,7 +366,7 @@ main (int argc, char **argv)
                 close (client->fd);
                 client->fd = -1;
               }
-            else if (!n) 
+            else if (!n)
               {
                 print_line (client, NULL); /* flush */
                 close (client->fd);

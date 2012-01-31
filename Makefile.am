@@ -1,5 +1,5 @@
-# Makefile.am - main makefile for NewPG/GnuPG
-#     	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+# Makefile.am - Top level makefile for GnuPG
+#     	Copyright (C) 2001, 2004, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
