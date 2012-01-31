@@ -1180,7 +1180,7 @@ pr_pointer (estream_printf_out_t outfnc, void *outfncarg,
             argspec_t arg, value_t value, size_t *nbytes)
 {
   int rc;
-#ifdef HAVE_LONG_LONG_INT
+#if defined(HAVE_LONG_LONG_INT) && (SIZEOF_UNSIGNED_LONG < SIZEOF_VOID_P)
   unsigned long long aulong;
 #else
   unsigned long aulong;
