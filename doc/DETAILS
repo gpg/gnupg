@@ -57,7 +57,7 @@ record; gpg2 does this by default and the option is a dummy.
 		f = The key is fully valid
 		u = The key is ultimately valid.  This often means
 		    that the secret key is available, but any key may
-		    be marked as ultimately valid. 
+		    be marked as ultimately valid.
 
             If the validity information is given for a UID or UAT
             record, it describes the validity calculated based on this
@@ -97,7 +97,7 @@ record; gpg2 does this by default and the option is a dummy.
 	    This is a single letter, but be prepared that additional
 	    information may follow in some future versions.  For trust
 	    signatures with a regular expression, this is the regular
-	    expression value, quoted as in field 10. 
+	    expression value, quoted as in field 10.
 
 10. Field:  User-ID.  The value is quoted like a C string to avoid
 	    control characters (the colon is quoted "\x3a").
@@ -134,7 +134,7 @@ record; gpg2 does this by default and the option is a dummy.
             this is the same string as the fingerprint. The advantage
             of using this value is that it is guaranteed to have been
             been build by the same lookup algorithm as gpgsm uses.
-            For "uid" records this lists the preferences in the same 
+            For "uid" records this lists the preferences in the same
             way the gpg's --edit-key menu does.
 	    For "sig" records, this is the fingerprint of the key that
 	    issued the signature.  Note that this is only filled in if
@@ -190,7 +190,7 @@ Example for a "tru" trust base record:
     (gpg's option --marginals-needed)
  7: Number of completely trusted users to introduce a new key signer.
     (gpg's option --completes-needed)
- 8: Maximum depth of a certification chain.  
+ 8: Maximum depth of a certification chain.
     *gpg's option --max-cert-depth)
 
 The "spk" signature subpacket records have the fields:
@@ -236,7 +236,7 @@ more arguments in future versions.
 	keyid if it is available.  This is the case with CMS and might
 	eventually also be available for OpenPGP.
 
-    EXPKEYSIG  <long_keyid_or_fpr> <username> 
+    EXPKEYSIG  <long_keyid_or_fpr> <username>
         The signature with the keyid is good, but the signature was
 	made by an expired key. The username is the primary one
 	encoded in UTF-8 and %XX escaped.  The fingerprint may be used
@@ -328,13 +328,13 @@ more arguments in future versions.
 
     UNEXPECTED <what>
         Unexpected data has been encountered
-            0 - not further specified               1       
-  
+            0 - not further specified               1
+
 
     TRUST_UNDEFINED <error token>
     TRUST_NEVER     <error token>
     TRUST_MARGINAL  [0  [<validation_model>]]
-    TRUST_FULLY     [0  [<validation_model>]] 
+    TRUST_FULLY     [0  [<validation_model>]]
     TRUST_ULTIMATE  [0  [<validation_model>]]
 	For good signatures one of these status lines are emitted to
 	indicate the validity of the key used to create the signature.
@@ -355,7 +355,7 @@ more arguments in future versions.
     PKA_TRUST_BAD  <mailbox>
         Depending on the outcome of the PKA check one of the above
         status codes is emitted in addition to a TRUST_* status.
-        Without PKA info available or 
+        Without PKA info available or
 
     SIGEXPIRED
 	This is deprecated in favor of KEYEXPIRED.
@@ -452,7 +452,7 @@ more arguments in future versions.
           1 := Entirely new key.
           2 := New user IDs
           4 := New signatures
-          8 := New subkeys 
+          8 := New subkeys
          16 := Contains private key.
         The flags may be ORed.
 
@@ -474,7 +474,7 @@ more arguments in future versions.
 	operation:
 	    1 - verify
             2 - encrypt
-            3 - decrypt        
+            3 - decrypt
 
     FILE_DONE
 	Marks the end of a file processing which has been started
@@ -505,7 +505,7 @@ more arguments in future versions.
 	"char" is the character displayed with no --status-fd enabled, with
 	the linefeed replaced by an 'X'.  "cur" is the current amount
 	done and "total" is amount to be done; a "total" of 0 indicates that
-	the total amount is not known.	The condition 
+	the total amount is not known.	The condition
            TOATL && CUR == TOTAL
         may be used to detect the end of an operation.
         Well known values for WHAT:
@@ -524,7 +524,7 @@ more arguments in future versions.
              "learncard"  Send by the agent and gpgsm while learing
 	                  the data of a smartcard.
              "card_busy"  A smartcard is still working
-        
+
     SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
 	A signature has been created using these parameters.
 	    type:  'D' = detached
@@ -536,7 +536,7 @@ more arguments in future versions.
         Note, that TIMESTAMP may either be a number with seconds since
         epoch or an ISO 8601 string which can be detected by the
         presence of the letter 'T' inside.
-        
+
     KEY_CREATED <type> <fingerprint> [<handle>]
         A key has been created
             type: 'B' = primary and subkey
@@ -557,13 +557,13 @@ more arguments in future versions.
 	is used.  The format is suitable to be passed to the option
 	--override-session-key
 
-    NOTATION_NAME <name> 
+    NOTATION_NAME <name>
     NOTATION_DATA <string>
         name and string are %XX escaped; the data may be split
         among several NOTATION_DATA lines.
 
     USERID_HINT <long main keyid> <string>
-        Give a hint about the user ID for a certain keyID. 
+        Give a hint about the user ID for a certain keyID.
 
     POLICY_URL <string>
         string is %XX escaped
@@ -587,7 +587,7 @@ more arguments in future versions.
           8 := "Policy mismatch"
           9 := "Not a secret key"
 	 10 := "Key not trusted"
-         11 := "Missing certificate" 
+         11 := "Missing certificate"
          12 := "Missing issuer certificate"
 
         Note that for historical reasons the INV_RECP status is also
@@ -621,9 +621,9 @@ more arguments in future versions.
 
     SUCCESS [<location>]
         Postive confirimation that an operation succeeded.  <location>
-        is optional but if given should not contain spaces. 
+        is optional but if given should not contain spaces.
         Used only with a few commands.
-            
+
 
     ATTRIBUTE <fpr> <octets> <type> <index> <count>
 	      <timestamp> <expiredate> <flags>
@@ -650,7 +650,7 @@ more arguments in future versions.
            3 = Card with serialnumber detected
            4 = No card available.
            5 = No card reader available
-           6 = No card support available                      
+           6 = No card support available
 
     PLAINTEXT <format> <timestamp> <filename>
         This indicates the format of the plaintext that is about to be
@@ -694,6 +694,12 @@ more arguments in future versions.
         mountpoint for the current operation (e.g. g13 --mount).  This
         may either be the specified mountpoint or one randomly choosen
         by g13.
+
+    DECRYPTION_INFO <mdc_method> <sym_algo>
+        Print information about the symmetric encryption algorithm and
+        the MDC method.  This will be emitted even if the decryption
+        fails.
+
 
 
 Format of the "--attribute-fd" output
@@ -827,7 +833,7 @@ The format of this file is as follows:
         relinquishes the GUI from implementing its own passphrase
         entry code.  This is a global option.
     %no-ask-passphrase
-        Disable the ask-passphrase mode.        
+        Disable the ask-passphrase mode.
     %no-protection
         With GnuPG 2.1 it is not anymore possible to specify a
         passphrase for unattended key generation.  The passphrase
@@ -898,7 +904,7 @@ The format of this file is as follows:
         information and which is also part of the fingerprint
         calculation.  Either a date like "1986-04-26" or a full
         timestamp like "19860426T042640" may be used.  The time is
-        considered to be UTC.  If it is not given the current time 
+        considered to be UTC.  If it is not given the current time
         is used.
      Preferences: <string>
         Set the cipher, hash, and compression preference values for
@@ -1207,7 +1213,7 @@ Other Notes
 OIDs below the GnuPG arc:
 =========================
 
- 1.3.6.1.4.1.11591.2          GnuPG 
+ 1.3.6.1.4.1.11591.2          GnuPG
  1.3.6.1.4.1.11591.2.1          notation
  1.3.6.1.4.1.11591.2.1.1          pkaAddress
  1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
