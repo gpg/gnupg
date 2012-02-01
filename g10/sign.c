@@ -1,6 +1,6 @@
 /* sign.c - sign data
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2010 Free Software Foundation, Inc.
+ *               2007, 2010, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -1489,7 +1489,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       void *opaque )
 {
     PKT_signature *sig;
-    int rc=0;
+    int rc=0, digest_algo;
     MD_HANDLE md;
 
     if ((!orig_sig || !pk || !sk)
@@ -1497,7 +1497,12 @@ update_keysig_packet( PKT_signature **ret_sig,
 	|| (orig_sig->sig_class == 0x18 && !subpk))
       return G10ERR_GENERAL;
 
-    md = md_open( orig_sig->digest_algo, 0 );
+    if ( opt.cert_digest_algo )
+      digest_algo = opt.cert_digest_algo;
+    else
+      digest_algo = orig_sig->digest_algo;
+
+    md = md_open( digest_algo, 0 );
 
     /* hash the public key certificate and the user id */
     hash_public_key( md, pk );
