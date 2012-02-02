@@ -1696,7 +1696,13 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
     {
       /* Note that the passphrase will be truncated at any null byte and the
        * limit is 480 characters. */
-      rc = assuan_inquire (ctx, "PASSPHRASE", &passphrase, &len, 480);
+      char buf[50];
+      size_t maxlen = 480;
+
+      snprintf (buf, sizeof (buf), "%u", maxlen);
+      rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+      if (!rc)
+	rc = assuan_inquire (ctx, "PASSPHRASE", &passphrase, &len, maxlen);
     }
   else
     rc = set_error (GPG_ERR_NOT_IMPLEMENTED, "passphrase is required");
