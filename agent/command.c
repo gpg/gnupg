@@ -855,12 +855,16 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
+  char buf[50];
 
   (void)line;
 
   /* First inquire the data to decrypt */
-  rc = assuan_inquire (ctx, "CIPHERTEXT",
-                       &value, &valuelen, MAXLEN_CIPHERTEXT);
+  snprintf (buf, sizeof (buf), "%u", MAXLEN_CIPHERTEXT);
+  rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+  if (!rc)
+    rc = assuan_inquire (ctx, "CIPHERTEXT",
+			&value, &valuelen, MAXLEN_CIPHERTEXT);
   if (rc)
     return rc;
 
@@ -908,6 +912,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
   char *cache_nonce = NULL;
   int opt_preset;
   char *p;
+  char buf[50];
 
   opt_preset = has_option (line, "--preset");
   no_protection = has_option (line, "--no-protection");
@@ -921,7 +926,10 @@ cmd_genkey (assuan_context_t ctx, char *line)
     cache_nonce = xtrystrdup (line);
 
   /* First inquire the parameters */
-  rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
+  snprintf (buf, sizeof (buf), "%u", MAXLEN_KEYPARAM);
+  rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+  if (!rc)
+    rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
   if (rc)
     return rc;
 
