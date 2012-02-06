@@ -490,6 +490,13 @@ AH_BOTTOM([
 # endif
 #endif
 
+/* Hacks required for Android.  */
+#ifdef __ANDROID__
+  /* ttyname is a stub in BIONIC, printing a FIXME warning.  */
+# define ttyname broken_native_ttyname
+# undef HAVE_TTYNAME
+#endif /*__ANDROID__*/
+
 
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
