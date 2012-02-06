@@ -39,6 +39,7 @@
 #include "i18n.h"
 #include "cvt-openpgp.h"
 #include "../common/ssh-utils.h"
+#include "../common/asshelp.h"
 
 
 /* Maximum allowed size of the inquired ciphertext.  */
@@ -855,13 +856,11 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
-  char buf[50];
 
   (void)line;
 
   /* First inquire the data to decrypt */
-  snprintf (buf, sizeof (buf), "%u", MAXLEN_CIPHERTEXT);
-  rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+  rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_CIPHERTEXT);
   if (!rc)
     rc = assuan_inquire (ctx, "CIPHERTEXT",
 			&value, &valuelen, MAXLEN_CIPHERTEXT);
@@ -912,7 +911,6 @@ cmd_genkey (assuan_context_t ctx, char *line)
   char *cache_nonce = NULL;
   int opt_preset;
   char *p;
-  char buf[50];
 
   opt_preset = has_option (line, "--preset");
   no_protection = has_option (line, "--no-protection");
@@ -926,8 +924,7 @@ cmd_genkey (assuan_context_t ctx, char *line)
     cache_nonce = xtrystrdup (line);
 
   /* First inquire the parameters */
-  snprintf (buf, sizeof (buf), "%u", MAXLEN_KEYPARAM);
-  rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+  rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", MAXLEN_KEYPARAM);
   if (!rc)
     rc = assuan_inquire (ctx, "KEYPARAM", &value, &valuelen, MAXLEN_KEYPARAM);
   if (rc)
@@ -1704,11 +1701,9 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
     {
       /* Note that the passphrase will be truncated at any null byte and the
        * limit is 480 characters. */
-      char buf[50];
       size_t maxlen = 480;
 
-      snprintf (buf, sizeof (buf), "%u", maxlen);
-      rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+      rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", maxlen);
       if (!rc)
 	rc = assuan_inquire (ctx, "PASSPHRASE", &passphrase, &len, maxlen);
     }
@@ -2805,10 +2800,8 @@ pinentry_loopback(ctrl_t ctrl, const char *keyword,
 {
   gpg_error_t rc;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
-  char buf[50];
 
-  snprintf (buf, sizeof (buf), "%u", max_length);
-  rc = assuan_write_status (ctx, "INQUIRE_MAXLEN", buf);
+  rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", max_length);
   if (rc)
     return rc;
 
