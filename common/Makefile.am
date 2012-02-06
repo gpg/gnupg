@@ -79,7 +79,7 @@ common_sources = \
 	membuf.c membuf.h \
 	iobuf.c iobuf.h \
 	ttyio.c ttyio.h \
-	asshelp.c asshelp.h \
+	asshelp.c asshelp2.c asshelp.h \
 	exechelp.h \
 	signal.c \
 	audit.c audit.h \

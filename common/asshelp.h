@@ -25,6 +25,8 @@
 
 #include "session-env.h"
 
+/*-- asshelp.c --*/
+
 void setup_libassuan_logging (unsigned int *debug_var_address);
 void set_libassuan_log_cats (unsigned int newcats);
 
@@ -61,6 +63,15 @@ start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg);
 
+
+/*-- asshelp2.c --*/
+
+/* Helper function to print an assuan status line using a printf
+   format string.  */
+gpg_error_t print_assuan_status (assuan_context_t ctx,
+                                 const char *keyword,
+                                 const char *format,
+                                 ...) JNLIB_GCC_A_PRINTF(3,4);
 
 
 #endif /*GNUPG_COMMON_ASSHELP_H*/
