@@ -26,6 +26,8 @@
 #include "gpgconf.h"
 #include "i18n.h"
 #include "sysutils.h"
+#include "../common/init.h"
+
 
 /* Constants to identify the commands and options. */
 enum cmd_and_opt_values

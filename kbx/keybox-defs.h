@@ -21,9 +21,12 @@
 #define KEYBOX_DEFS_H 1
 
 #ifdef GPG_ERR_SOURCE_DEFAULT
-#error GPG_ERR_SOURCE_DEFAULT already defined
+# if GPG_ERR_SOURCE_DEFAULT != GPG_ERR_SOURCE_KEYBOX
+#  error GPG_ERR_SOURCE_DEFAULT already defined
+# endif
+#else
+# define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_KEYBOX
 #endif
-#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_KEYBOX
 #include <gpg-error.h>
 #define map_assuan_err(a) \
         map_assuan_err_with_source (GPG_ERR_SOURCE_DEFAULT, (a))

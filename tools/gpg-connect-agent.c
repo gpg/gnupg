@@ -37,6 +37,7 @@
 #ifdef HAVE_W32_SYSTEM
 #  include "../common/exechelp.h"
 #endif
+#include "../common/init.h"
 
 
 #define CONTROL_D ('D' - 'A' + 1)

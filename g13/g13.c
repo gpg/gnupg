@@ -36,6 +36,7 @@
 #include "sysutils.h"
 #include "gc-opt-flags.h"
 #include "asshelp.h"
+#include "../common/init.h"
 #include "keyblob.h"
 #include "server.h"
 #include "runner.h"

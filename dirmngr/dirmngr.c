@@ -56,6 +56,7 @@
 #include "ldapserver.h"
 #include "asshelp.h"
 #include "ldap-wrapper.h"
+#include "../common/init.h"
 
 /* The plain Windows version uses the windows service system.  For
    example to start the service you may use "sc start dirmngr".

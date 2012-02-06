@@ -37,6 +37,7 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "../common/openpgpdefs.h"
+#include "../common/init.h"
 
 #include "gpgtar.h"
 
@@ -71,7 +72,7 @@ enum cmd_and_opt_values
 /* The list of commands and options. */
 static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, N_("@Commands:\n ")),
-    
+
   ARGPARSE_c (aEncrypt,   "encrypt", N_("create an archive")),
   ARGPARSE_c (aDecrypt,   "decrypt", N_("extract an archive")),
   ARGPARSE_c (aSign,      "sign",    N_("create a signed archive")),
@@ -146,7 +147,7 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
     cmd = aSignEncrypt;
   else if (cmd == aEncrypt && new_cmd == aSign)
     cmd = aSignEncrypt;
-  else 
+  else
     {
       log_error (_("conflicting commands\n"));
       exit (2);
@@ -194,7 +195,7 @@ main (int argc, char **argv)
         case oNoVerbose: opt.verbose = 0; break;
         case oFilesFrom: files_from = pargs.r.ret_str; break;
         case oNull: null_names = 1; break;
-          
+
 	case aList:
         case aDecrypt:
         case aEncrypt:
@@ -217,7 +218,7 @@ main (int argc, char **argv)
         default: pargs.err = 2; break;
 	}
     }
-  
+
   if ((files_from && !null_names) || (!files_from && null_names))
     log_error ("--files-from and --null may only be used in conjunction\n");
   if (files_from && strcmp (files_from, "-"))
@@ -324,7 +325,7 @@ write_record (estream_t stream, const void *record)
     }
   else
     err = 0;
-  
+
   return err;
 }
 
@@ -341,9 +342,9 @@ openpgp_message_p (estream_t fp)
   if (ctb != EOF)
     {
       if (es_ungetc (ctb, fp))
-        log_fatal ("error ungetting first byte: %s\n", 
+        log_fatal ("error ungetting first byte: %s\n",
                    gpg_strerror (gpg_error_from_syserror ()));
-      
+
       if ((ctb & 0x80))
         {
           switch ((ctb & 0x40) ? (ctb & 0x3f) : ((ctb>>2)&0xf))

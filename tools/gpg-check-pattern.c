@@ -45,9 +45,10 @@
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"
+#include "../common/init.h"
 
 
-enum cmd_and_opt_values 
+enum cmd_and_opt_values
 { aNull = 0,
   oVerbose	  = 'v',
   oArmor          = 'a',
@@ -66,12 +67,12 @@ enum cmd_and_opt_values
 
 /* The list of commands and options.  */
 static ARGPARSE_OPTS opts[] = {
-    
+
   { 301, NULL, 0, N_("@Options:\n ") },
 
   { oVerbose, "verbose",   0, "verbose" },
 
-  { oHomedir, "homedir", 2, "@" }, 
+  { oHomedir, "homedir", 2, "@" },
   { oCheck,   "check", 0,  "run only a syntax check on the patternfile" },
   { oNull,    "null", 0,   "input is expected to be null delimited" },
 
@@ -80,7 +81,7 @@ static ARGPARSE_OPTS opts[] = {
 
 
 /* Global options are accessed through the usual OPT structure. */
-static struct 
+static struct
 {
   int verbose;
   const char *homedir;
@@ -99,7 +100,7 @@ enum {
 /* An object to decibe an item of our pattern table. */
 struct pattern_s
 {
-  int type;  
+  int type;
   unsigned int lineno;     /* Line number of the pattern file.  */
   union {
     struct {
@@ -111,7 +112,7 @@ struct pattern_s
          we need for PAT_STRING and we expect only a few regex in a
          patternfile.  It would be a waste of core to have so many
          unused stuff in the table.  */
-      regex_t *regex;      
+      regex_t *regex;
     } r; /*PAT_REGEX*/
   } u;
 };
@@ -141,14 +142,14 @@ my_strusage (int level)
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
     case 1:
-    case 40: 
+    case 40:
       p =  _("Usage: gpg-check-pattern [options] patternfile (-h for help)\n");
       break;
-    case 41: 
+    case 41:
       p =  _("Syntax: gpg-check-pattern [options] patternfile\n"
              "Check a passphrase given on stdin against the patternfile\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -165,7 +166,7 @@ main (int argc, char **argv )
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  log_set_prefix ("gpg-check-pattern", 1); 
+  log_set_prefix ("gpg-check-pattern", 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -194,13 +195,13 @@ main (int argc, char **argv )
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
         case oCheck: opt.checkonly = 1; break;
         case oNull: opt.null = 1; break;
-          
+
         default : pargs.err = 2; break;
 	}
     }
   if (log_get_errorcount(0))
     exit (2);
-  
+
   if (argc != 1)
     usage (1);
 
@@ -239,7 +240,7 @@ read_file (const char *fname, size_t *r_length)
   FILE *fp;
   char *buf;
   size_t buflen;
-  
+
   if (!strcmp (fname, "-"))
     {
       size_t nread, bufsize = 0;
@@ -251,7 +252,7 @@ read_file (const char *fname, size_t *r_length)
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
-      do 
+      do
         {
           bufsize += NCHUNK;
           if (!buf)
@@ -282,14 +283,14 @@ read_file (const char *fname, size_t *r_length)
           log_error ("can't open `%s': %s\n", fname, strerror (errno));
           return NULL;
         }
-  
+
       if (fstat (fileno(fp), &st))
         {
           log_error ("can't stat `%s': %s\n", fname, strerror (errno));
           fclose (fp);
           return NULL;
         }
-      
+
       buflen = st.st_size;
       buf = xmalloc (buflen+1);
       if (fread (buf, buflen, 1, fp) != 1)
@@ -331,7 +332,7 @@ parse_pattern_file (char *data, size_t datalen)
   pattern_t *array;
   size_t arraysize, arrayidx;
   unsigned int lineno = 0;
-  
+
   /* Estimate the number of entries by counting the non-comment lines.  */
   arraysize = 0;
   p = data;
@@ -456,7 +457,7 @@ process (FILE *fp, pattern_t *patarray)
   int c;
   unsigned long lineno = 0;
   pattern_t *pat;
-  
+
   idx = 0;
   c = 0;
   while (idx < sizeof buffer -1 && c != EOF )

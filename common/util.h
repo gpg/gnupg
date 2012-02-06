@@ -63,7 +63,6 @@
 #include "../common/utf8conv.h"
 #include "../common/dynload.h"
 
-#include "init.h"
 #include "gettime.h"
 
 /* Redefine asprintf by our estream version which uses our own memory
@@ -112,6 +111,12 @@ typedef char **rl_completion_func_t (const char *, int, int);
 /* For compatibility with gpg 1.4 we also define these: */
 #define xmalloc_clear(a) gcry_xcalloc (1, (a))
 #define xmalloc_secure_clear(a) gcry_xcalloc_secure (1, (a))
+
+/* The default error source of the application.  This is different
+   from GPG_ERR_SOURCE_DEFAULT in that it does not depend on the
+   source file and thus is usable in code shared by applications.
+   Defined by init.c.  */
+extern gpg_err_source_t default_errsource;
 
 /* Convenience function to return a gpg-error code for memory
    allocation failures.  This function makes sure that an error will

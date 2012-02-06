@@ -37,6 +37,12 @@
 #include "util.h"
 
 
+/* The default error source of the application.  This is different
+   from GPG_ERR_SOURCE_DEFAULT in that it does not depend on the
+   source file and thus is usable in code shared by applications.  */
+gpg_err_source_t default_errsource;
+
+
 #ifdef HAVE_W32CE_SYSTEM
 static void parse_std_file_handles (int *argcp, char ***argvp);
 static void
@@ -74,10 +80,16 @@ writestring_via_estream (int mode, const char *string)
    required for logging is ready.  ARGCP and ARGVP are the addresses
    of the parameters given to main.  This function may modify them.
 
+   This function should be called only via the macro
+   init_common_subsystems.
+
    CAUTION: This might be called while running suid(root).  */
 void
-init_common_subsystems (int *argcp, char ***argvp)
+_init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
 {
+  /* Store the error source in a gloabl variable. */
+  default_errsource = errsource;
+
   /* Try to auto set the character set.  */
   set_native_charset (NULL);
 

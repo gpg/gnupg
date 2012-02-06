@@ -38,6 +38,8 @@
 #include "sysutils.h"
 #include "gc-opt-flags.h"
 #include "asshelp.h"
+#include "../common/init.h"
+
 
 #ifndef O_BINARY
 #define O_BINARY 0

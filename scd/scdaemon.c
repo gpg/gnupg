@@ -53,6 +53,8 @@
 #include "mkdtemp.h"
 #include "gc-opt-flags.h"
 #include "asshelp.h"
+#include "../common/init.h"
+
 
 enum cmd_and_opt_values
 { aNull = 0,

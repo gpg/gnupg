@@ -57,6 +57,7 @@
 
 #include "i18n.h"
 #include "util.h"
+#include "../common/init.h"
 
 /* With the ldap wrapper, there is no need for the npth_unprotect and leave
    functions; thus we redefine them to nops.  If we are not using the

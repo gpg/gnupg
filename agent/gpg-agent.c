@@ -52,6 +52,8 @@
 #include "exechelp.h"
 #include "asshelp.h"
 #include "../include/cipher.h"	/* for PUBKEY_ALGO_ECDSA, PUBKEY_ALGO_ECDH */
+#include "../common/init.h"
+
 
 enum cmd_and_opt_values
 { aNull = 0,

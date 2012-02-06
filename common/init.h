@@ -1,5 +1,5 @@
 /* init.h - Definitions for init fucntions.
- *	Copyright (C) 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2007, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -20,7 +20,15 @@
 #ifndef GNUPG_COMMON_INIT_H
 #define GNUPG_COMMON_INIT_H
 
-void init_common_subsystems (int *argcp, char ***argvp);
+#ifndef GPG_ERR_SOURCE_DEFAULT
+# error GPG_ERR_SOURCE_DEFAULT is not defined
+#elseif GPG_ERR_SOURCE_DEFAULT == GPG_ERR_SOURCE_UNKNOWN
+# error GPG_ERR_SOURCE_DEFAULT has default value
+#endif
 
+void _init_common_subsystems (gpg_err_source_t errsource,
+                              int *argcp, char ***argvp);
+#define init_common_subsystems(a,b)                             \
+  _init_common_subsystems (GPG_ERR_SOURCE_DEFAULT, (a), (b))
 
 #endif /*GNUPG_COMMON_INIT_H*/

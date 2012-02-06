@@ -49,6 +49,7 @@
 #include "sysutils.h"
 #include "status.h"
 #include "call-agent.h"
+#include "../common/init.h"
 
 
 enum cmd_and_opt_values {

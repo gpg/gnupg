@@ -55,6 +55,7 @@
 #include "gc-opt-flags.h"
 #include "asshelp.h"
 #include "call-dirmngr.h"
+#include "../common/init.h"
 
 #if defined(HAVE_DOSISH_SYSTEM) || defined(__CYGWIN__)
 #define MY_O_BINARY  O_BINARY

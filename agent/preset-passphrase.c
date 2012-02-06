@@ -46,6 +46,7 @@
 #include "simple-pwquery.h"
 #include "i18n.h"
 #include "sysutils.h"
+#include "../common/init.h"
 
 
 enum cmd_and_opt_values

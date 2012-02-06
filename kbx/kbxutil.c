@@ -34,10 +34,10 @@
 #include "../common/stringhelp.h"
 #include "../common/utf8conv.h"
 #include "i18n.h"
-#include "init.h"
 #include "keybox-defs.h"
-
+#include "../common/init.h"
 #include <gcrypt.h>
+
 
 enum cmd_and_opt_values {
   aNull = 0,
