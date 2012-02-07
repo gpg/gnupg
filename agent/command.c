@@ -413,6 +413,22 @@ agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 }
 
 
+/* This function is similar to print_assuan_status but takes a CTRL
+   arg instead of an assuan context as first argument.  */
+gpg_error_t
+agent_print_status (ctrl_t ctrl, const char *keyword, const char *format, ...)
+{
+  gpg_error_t err;
+  va_list arg_ptr;
+  assuan_context_t ctx = ctrl->server_local->assuan_ctx;
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
+}
+
+
 /* Helper to notify the client about a launched Pinentry.  Because
    that might disturb some older clients, this is only done if enabled
    via an option.  Returns an gpg error code. */

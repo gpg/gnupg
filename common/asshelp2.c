@@ -30,20 +30,34 @@
 /* Helper function to print an assuan status line using a printf
    format string.  */
 gpg_error_t
-print_assuan_status (assuan_context_t ctx,
-                     const char *keyword,
-                     const char *format, ...)
+vprint_assuan_status (assuan_context_t ctx,
+                      const char *keyword,
+                      const char *format, va_list arg_ptr)
 {
-  va_list arg_ptr;
   int rc;
   char *buf;
 
-  va_start (arg_ptr, format);
   rc = estream_vasprintf (&buf, format, arg_ptr);
-  va_end (arg_ptr);
   if (rc < 0)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   rc = assuan_write_status (ctx, keyword, buf);
   xfree (buf);
   return rc;
+}
+
+
+/* Helper function to print an assuan status line using a printf
+   format string.  */
+gpg_error_t
+print_assuan_status (assuan_context_t ctx,
+                     const char *keyword,
+                     const char *format, ...)
+{
+  va_list arg_ptr;
+  gpg_error_t err;
+
+  va_start (arg_ptr, format);
+  err = vprint_assuan_status (ctx, keyword, format, arg_ptr);
+  va_end (arg_ptr);
+  return err;
 }

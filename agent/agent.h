@@ -288,6 +288,9 @@ int map_pk_openpgp_to_gcry (int openpgp_algo);
 gpg_error_t agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid);
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...)
      GNUPG_GCC_A_SENTINEL(0);
+gpg_error_t agent_print_status (ctrl_t ctrl, const char *keyword,
+                                const char *format, ...)
+     JNLIB_GCC_A_PRINTF(3,4);
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
