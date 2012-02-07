@@ -394,7 +394,7 @@ int agent_shadow_key (const unsigned char *pubkey,
 int agent_get_shadow_info (const unsigned char *shadowkey,
                            unsigned char const **shadow_info);
 gpg_error_t parse_shadow_info (const unsigned char *shadow_info,
-                               char **r_hexsn, char **r_idstr);
+                               char **r_hexsn, char **r_idstr, int *r_pinlen);
 gpg_error_t s2k_hash_passphrase (const char *passphrase, int hashalgo,
                                  int s2kmode,
                                  const unsigned char *s2ksalt,

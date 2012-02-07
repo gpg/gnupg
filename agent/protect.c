@@ -1272,7 +1272,7 @@ agent_get_shadow_info (const unsigned char *shadowkey,
    required, NULL may be passed for them.  */
 gpg_error_t
 parse_shadow_info (const unsigned char *shadow_info,
-                   char **r_hexsn, char **r_idstr)
+                   char **r_hexsn, char **r_idstr, int *r_pinlen)
 {
   const unsigned char *s;
   size_t n;
@@ -1281,6 +1281,8 @@ parse_shadow_info (const unsigned char *shadow_info,
     *r_hexsn = NULL;
   if (r_idstr)
     *r_idstr = NULL;
+  if (r_pinlen)
+    *r_pinlen = 0;
 
   s = shadow_info;
   if (*s != '(')
@@ -1323,6 +1325,35 @@ parse_shadow_info (const unsigned char *shadow_info,
         }
       memcpy (*r_idstr, s, n);
       (*r_idstr)[n] = 0;
+    }
+
+  /* Parse the optional PINLEN.  */
+  n = snext (&s);
+  if (!n)
+    return 0;
+
+  if (r_pinlen)
+    {
+      char *tmpstr = xtrymalloc (n+1);
+      if (!tmpstr)
+        {
+          if (r_hexsn)
+            {
+              xfree (*r_hexsn);
+              *r_hexsn = NULL;
+            }
+          if (r_idstr)
+            {
+              xfree (*r_idstr);
+              *r_idstr = NULL;
+            }
+          return gpg_error_from_syserror ();
+        }
+      memcpy (tmpstr, s, n);
+      tmpstr[n] = 0;
+
+      *r_pinlen = (int)strtol (tmpstr, NULL, 10);
+      xfree (tmpstr);
     }
 
   return 0;

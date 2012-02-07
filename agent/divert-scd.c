@@ -44,7 +44,7 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
 
   *r_kid = NULL;
 
-  rc = parse_shadow_info (shadow_info, &want_sn, &want_kid);
+  rc = parse_shadow_info (shadow_info, &want_sn, &want_kid, NULL);
   if (rc)
     return rc;
 

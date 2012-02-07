@@ -1090,7 +1090,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 
   if (shadow_info)
     {
-      err = parse_shadow_info (shadow_info, &serialno, &idstr);
+      err = parse_shadow_info (shadow_info, &serialno, &idstr, NULL);
       if (err)
         goto leave;
     }

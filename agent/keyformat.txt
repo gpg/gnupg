@@ -155,7 +155,12 @@ to keys stored on a token:
 The currently used protocol is "ti-v1" (token info version 1).  The
 second list with the information has this layout:
 
-(card_serial_number id_string_of_key)
+(card_serial_number id_string_of_key fixed_pin_length)
+
+FIXED_PIN_LENGTH is optional.  It can be used to store the length of
+the PIN; a value of 0 indicates that this information is not
+available.  The rationale for this field is that some pinpad equipped
+readers don't allow passing a variable length PIN.
 
 More items may be added to the list.
 
