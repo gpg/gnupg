@@ -6,6 +6,9 @@ Noteworthy changes in version 2.1.0beta4 (unreleased)
 
  * The GNU Pth library has been replaced by the new nPth library.
 
+ * Removed support for the original HKP keyserver which is not anymore
+   used by any site.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------
