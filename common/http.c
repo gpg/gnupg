@@ -155,8 +155,7 @@ static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
 static gpg_error_t send_request (http_t hd, const char *auth,const char *proxy,
-				 const char *srvtag,strlist_t headers,
-                                 gpg_err_source_t errsource);
+				 const char *srvtag,strlist_t headers);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
@@ -428,10 +427,9 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
    pointer for completing the the request and to wait for the
    response.  */
 gpg_error_t
-_http_open (http_t *r_hd, http_req_t reqtype, const char *url,
-            const char *auth, unsigned int flags, const char *proxy,
-            void *tls_context, const char *srvtag, strlist_t headers,
-            gpg_err_source_t errsource)
+http_open (http_t *r_hd, http_req_t reqtype, const char *url,
+           const char *auth, unsigned int flags, const char *proxy,
+           void *tls_context, const char *srvtag, strlist_t headers)
 {
   gpg_error_t err;
   http_t hd;
@@ -439,7 +437,7 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   *r_hd = NULL;
 
   if (!(reqtype == HTTP_REQ_GET || reqtype == HTTP_REQ_POST))
-    return gpg_err_make (errsource, GPG_ERR_INV_ARG);
+    return gpg_err_make (default_errsource, GPG_ERR_INV_ARG);
 
   /* Create the handle. */
   hd = xtrycalloc (1, sizeof *hd);
@@ -449,9 +447,9 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd->flags = flags;
   hd->tls_context = tls_context;
 
-  err = _http_parse_uri (&hd->uri, url, 0, errsource);
+  err = http_parse_uri (&hd->uri, url, 0);
   if (!err)
-    err = send_request (hd, auth, proxy, srvtag, headers, errsource);
+    err = send_request (hd, auth, proxy, srvtag, headers);
 
   if (err)
     {
@@ -472,9 +470,8 @@ _http_open (http_t *r_hd, http_req_t reqtype, const char *url,
    this http abstraction layer.  This has the advantage of providing
    service tags and an estream interface.  */
 gpg_error_t
-_http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
-                   unsigned int flags, const char *srvtag,
-                   gpg_err_source_t errsource)
+http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
+                  unsigned int flags, const char *srvtag)
 {
   gpg_error_t err = 0;
   int sock;
@@ -495,15 +492,16 @@ _http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   sock = connect_server (server, port, hd->flags, srvtag, &hnf);
   if (sock == -1)
     {
-      err = gpg_err_make (errsource, (hnf? GPG_ERR_UNKNOWN_HOST
-                                      :gpg_err_code_from_syserror ()));
+      err = gpg_err_make (default_errsource,
+                          (hnf? GPG_ERR_UNKNOWN_HOST
+                              : gpg_err_code_from_syserror ()));
       xfree (hd);
       return err;
     }
   hd->sock = my_socket_new (sock);
   if (!hd->sock)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       xfree (hd);
       return err;
     }
@@ -512,14 +510,14 @@ _http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   cookie = xtrycalloc (1, sizeof *cookie);
   if (!cookie)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       goto leave;
     }
   cookie->sock = my_socket_ref (hd->sock);
   hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
   if (!hd->fp_write)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       my_socket_unref (cookie->sock);
       xfree (cookie);
       goto leave;
@@ -529,14 +527,14 @@ _http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   cookie = xtrycalloc (1, sizeof *cookie);
   if (!cookie)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       goto leave;
     }
   cookie->sock = my_socket_ref (hd->sock);
   hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
   if (!hd->fp_read)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       my_socket_unref (cookie->sock);
       xfree (cookie);
       goto leave;
@@ -582,7 +580,7 @@ http_start_data (http_t hd)
 
 
 gpg_error_t
-_http_wait_response (http_t hd, gpg_err_source_t errsource)
+http_wait_response (http_t hd)
 {
   gpg_error_t err;
   cookie_t cookie;
@@ -594,7 +592,7 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
      object keeps the actual system socket open.  */
   cookie = hd->write_cookie;
   if (!cookie)
-    return gpg_err_make (errsource, GPG_ERR_INTERNAL);
+    return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
 
   es_fclose (hd->fp_write);
   hd->fp_write = NULL;
@@ -611,7 +609,7 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
   /* Create a new cookie and a stream for reading.  */
   cookie = xtrycalloc (1, sizeof *cookie);
   if (!cookie)
-    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   cookie->sock = my_socket_ref (hd->sock);
   if (hd->uri->use_tls)
     cookie->tls_session = hd->tls_context;
@@ -620,7 +618,7 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
   hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
   if (!hd->fp_read)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       my_socket_unref (cookie->sock);
       xfree (cookie);
       hd->read_cookie = NULL;
@@ -641,19 +639,18 @@ _http_wait_response (http_t hd, gpg_err_source_t errsource)
    be used as an HTTP proxy and any enabled $http_proxy gets
    ignored. */
 gpg_error_t
-_http_open_document (http_t *r_hd, const char *document,
-                     const char *auth, unsigned int flags, const char *proxy,
-                     void *tls_context, const char *srvtag, strlist_t headers,
-                     gpg_err_source_t errsource)
+http_open_document (http_t *r_hd, const char *document,
+                    const char *auth, unsigned int flags, const char *proxy,
+                    void *tls_context, const char *srvtag, strlist_t headers)
 {
   gpg_error_t err;
 
-  err = _http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
-                    proxy, tls_context, srvtag, headers, errsource);
+  err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
+                   proxy, tls_context, srvtag, headers);
   if (err)
     return err;
 
-  err = _http_wait_response (*r_hd, errsource);
+  err = http_wait_response (*r_hd);
   if (err)
     http_close (*r_hd, 0);
 
@@ -719,14 +716,14 @@ http_get_status_code (http_t hd)
  * the URL in the same way it would do for an HTTP style URI.
  */
 gpg_error_t
-_http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
-                 int no_scheme_check, gpg_err_source_t errsource)
+http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
+                int no_scheme_check)
 {
   gpg_err_code_t ec;
 
   *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
   if (!*ret_uri)
-    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   strcpy ((*ret_uri)->buffer, uri);
   ec = do_parse_uri (*ret_uri, 0, no_scheme_check);
   if (ec)
@@ -734,7 +731,7 @@ _http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
       xfree (*ret_uri);
       *ret_uri = NULL;
     }
-  return gpg_err_make (errsource, ec);
+  return gpg_err_make (default_errsource, ec);
 }
 
 void
@@ -1075,8 +1072,7 @@ parse_tuple (char *string)
  */
 static gpg_error_t
 send_request (http_t hd, const char *auth,
-	      const char *proxy, const char *srvtag, strlist_t headers,
-              gpg_err_source_t errsource)
+	      const char *proxy, const char *srvtag, strlist_t headers)
 {
   gnutls_session_t tls_session;
   gpg_error_t err;
@@ -1093,7 +1089,7 @@ send_request (http_t hd, const char *auth,
   if (hd->uri->use_tls && !tls_session)
     {
       log_error ("TLS requested but no GNUTLS context provided\n");
-      return gpg_err_make (errsource, GPG_ERR_INTERNAL);
+      return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
     }
 
   server = *hd->uri->host ? hd->uri->host : "localhost";
@@ -1110,12 +1106,12 @@ send_request (http_t hd, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = _http_parse_uri (&uri, http_proxy, 0, errsource);
+      err = http_parse_uri (&uri, http_proxy, 0);
       if (err)
 	{
 	  log_error ("invalid HTTP proxy (%s): %s\n",
 		     http_proxy, gpg_strerror (err));
-	  return gpg_err_make (errsource, GPG_ERR_CONFIGURATION);
+	  return gpg_err_make (default_errsource, GPG_ERR_CONFIGURATION);
 	}
 
       if (uri->auth)
@@ -1126,7 +1122,8 @@ send_request (http_t hd, const char *auth,
                                             uri->auth, strlen(uri->auth));
           if (!proxy_authstr)
             {
-              err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+              err = gpg_err_make (default_errsource,
+                                  gpg_err_code_from_syserror ());
               http_release_parsed_uri (uri);
               return err;
             }
@@ -1148,14 +1145,15 @@ send_request (http_t hd, const char *auth,
   if (sock == -1)
     {
       xfree (proxy_authstr);
-      return gpg_err_make (errsource, (hnf? GPG_ERR_UNKNOWN_HOST
-                                       : gpg_err_code_from_syserror ()));
+      return gpg_err_make (default_errsource,
+                           (hnf? GPG_ERR_UNKNOWN_HOST
+                               : gpg_err_code_from_syserror ()));
     }
   hd->sock = my_socket_new (sock);
   if (!hd->sock)
     {
       xfree (proxy_authstr);
-      return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
     }
 
 
@@ -1177,7 +1175,7 @@ send_request (http_t hd, const char *auth,
         {
           log_info ("TLS handshake failed: %s\n", gnutls_strerror (rc));
           xfree (proxy_authstr);
-          return gpg_err_make (errsource, GPG_ERR_NETWORK);
+          return gpg_err_make (default_errsource, GPG_ERR_NETWORK);
         }
 
       if (tls_callback)
@@ -1204,7 +1202,7 @@ send_request (http_t hd, const char *auth,
           if (!myauth)
             {
               xfree (proxy_authstr);
-              return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+              return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
             }
           remove_escapes (myauth);
         }
@@ -1222,13 +1220,14 @@ send_request (http_t hd, const char *auth,
       if (!authstr)
         {
           xfree (proxy_authstr);
-          return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          return gpg_err_make (default_errsource,
+                               gpg_err_code_from_syserror ());
         }
     }
 
   p = build_rel_path (hd->uri);
   if (!p)
-    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 
   if (http_proxy && *http_proxy)
     {
@@ -1261,7 +1260,7 @@ send_request (http_t hd, const char *auth,
   xfree (p);
   if (!request)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       xfree (authstr);
       xfree (proxy_authstr);
       return err;
@@ -1276,7 +1275,7 @@ send_request (http_t hd, const char *auth,
     cookie = xtrycalloc (1, sizeof *cookie);
     if (!cookie)
       {
-        err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
         goto leave;
       }
     cookie->sock = my_socket_ref (hd->sock);
@@ -1287,13 +1286,13 @@ send_request (http_t hd, const char *auth,
     hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
     if (!hd->fp_write)
       {
-        err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
         my_socket_unref (cookie->sock);
         xfree (cookie);
         hd->write_cookie = NULL;
       }
     else if (es_fputs (request, hd->fp_write) || es_fflush (hd->fp_write))
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
     else
       err = 0;
 
@@ -1304,7 +1303,8 @@ send_request (http_t hd, const char *auth,
           if ((es_fputs (headers->d, hd->fp_write) || es_fflush (hd->fp_write))
               || (es_fputs("\r\n",hd->fp_write) || es_fflush(hd->fp_write)))
             {
-              err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+              err = gpg_err_make (default_errsource,
+                                  gpg_err_code_from_syserror ());
               break;
             }
         }

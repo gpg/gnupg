@@ -80,14 +80,10 @@ const unsigned char *find_tlv_unchecked (const unsigned char *buffer,
 /* ASN.1 BER parser: Parse BUFFER of length SIZE and return the tag
    and the length part from the TLV triplet.  Update BUFFER and SIZE
    on success. */
-gpg_error_t _parse_ber_header (unsigned char const **buffer, size_t *size,
+gpg_error_t parse_ber_header (unsigned char const **buffer, size_t *size,
                                int *r_class, int *r_tag,
                                int *r_constructed,
-                               int *r_ndef, size_t *r_length, size_t *r_nhdr,
-                               gpg_err_source_t errsource);
-#define parse_ber_header(a,b,c,d,e,f,g,h) \
-        _parse_ber_header ((a),(b),(c),(d),(e),(f),(g),(h),\
-                           GPG_ERR_SOURCE_DEFAULT)
+                              int *r_ndef, size_t *r_length, size_t *r_nhdr);
 
 
 /* Return the next token of an canonical encoded S-expression.  BUF
@@ -102,11 +98,8 @@ gpg_error_t _parse_ber_header (unsigned char const **buffer, size_t *size,
    reflect on return the actual depth of the tree. To detect the end
    of the S-expression it is advisable to check DEPTH after a
    successful return. */
-gpg_error_t _parse_sexp (unsigned char const **buf, size_t *buflen,
-                         int *depth, unsigned char const **tok, size_t *toklen,
-                         gpg_err_source_t errsource);
-#define parse_sexp(a,b,c,d,e) \
-        _parse_sexp ((a),(b),(c),(d),(e), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t parse_sexp (unsigned char const **buf, size_t *buflen,
+                        int *depth, unsigned char const **tok, size_t *toklen);
 
 
 

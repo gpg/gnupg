@@ -34,6 +34,7 @@ typedef int gpg_error_t;
 #include <gpg-error.h>
 #endif
 
+#include "util.h"
 #include "tlv.h"
 
 static const unsigned char *
@@ -151,11 +152,10 @@ find_tlv_unchecked (const unsigned char *buffer, size_t length,
    and the length part from the TLV triplet.  Update BUFFER and SIZE
    on success. */
 gpg_error_t
-_parse_ber_header (unsigned char const **buffer, size_t *size,
-                   int *r_class, int *r_tag,
-                   int *r_constructed, int *r_ndef,
-                   size_t *r_length, size_t *r_nhdr,
-                   gpg_err_source_t errsource)
+parse_ber_header (unsigned char const **buffer, size_t *size,
+                  int *r_class, int *r_tag,
+                  int *r_constructed, int *r_ndef,
+                  size_t *r_length, size_t *r_nhdr)
 {
   int c;
   unsigned long tag;
@@ -168,7 +168,7 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
 
   /* Get the tag. */
   if (!length)
-    return gpg_err_make (errsource, GPG_ERR_EOF);
+    return gpg_err_make (default_errsource, GPG_ERR_EOF);
   c = *buf++; length--; ++*r_nhdr;
 
   *r_class = (c & 0xc0) >> 6;
@@ -182,7 +182,7 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
         {
           tag <<= 7;
           if (!length)
-            return gpg_err_make (errsource, GPG_ERR_EOF);
+            return gpg_err_make (default_errsource, GPG_ERR_EOF);
           c = *buf++; length--; ++*r_nhdr;
           tag |= c & 0x7f;
 
@@ -193,7 +193,7 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
 
   /* Get the length. */
   if (!length)
-    return gpg_err_make (errsource, GPG_ERR_EOF);
+    return gpg_err_make (default_errsource, GPG_ERR_EOF);
   c = *buf++; length--; ++*r_nhdr;
 
   if ( !(c & 0x80) )
@@ -201,20 +201,20 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
   else if (c == 0x80)
     *r_ndef = 1;
   else if (c == 0xff)
-    return gpg_err_make (errsource, GPG_ERR_BAD_BER);
+    return gpg_err_make (default_errsource, GPG_ERR_BAD_BER);
   else
     {
       unsigned long len = 0;
       int count = c & 0x7f;
 
       if (count > sizeof (len) || count > sizeof (size_t))
-        return gpg_err_make (errsource, GPG_ERR_BAD_BER);
+        return gpg_err_make (default_errsource, GPG_ERR_BAD_BER);
 
       for (; count; count--)
         {
           len <<= 8;
           if (!length)
-            return gpg_err_make (errsource, GPG_ERR_EOF);
+            return gpg_err_make (default_errsource, GPG_ERR_EOF);
           c = *buf++; length--; ++*r_nhdr;
           len |= c & 0xff;
         }
@@ -255,9 +255,8 @@ _parse_ber_header (unsigned char const **buffer, size_t *size,
      handle_error ();
  */
 gpg_error_t
-_parse_sexp (unsigned char const **buf, size_t *buflen,
-             int *depth, unsigned char const **tok, size_t *toklen,
-             gpg_err_source_t errsource)
+parse_sexp (unsigned char const **buf, size_t *buflen,
+            int *depth, unsigned char const **tok, size_t *toklen)
 {
   const unsigned char *s;
   size_t n, vlen;
@@ -267,7 +266,7 @@ _parse_sexp (unsigned char const **buf, size_t *buflen,
   *tok = NULL;
   *toklen = 0;
   if (!n)
-    return *depth ? gpg_err_make (errsource, GPG_ERR_INV_SEXP) : 0;
+    return *depth ? gpg_err_make (default_errsource, GPG_ERR_INV_SEXP) : 0;
   if (*s == '(')
     {
       s++; n--;
@@ -279,7 +278,7 @@ _parse_sexp (unsigned char const **buf, size_t *buflen,
   if (*s == ')')
     {
       if (!*depth)
-        return gpg_err_make (errsource, GPG_ERR_INV_SEXP);
+        return gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
       *toklen = 1;
       s++; n--;
       (*depth)--;
@@ -290,10 +289,10 @@ _parse_sexp (unsigned char const **buf, size_t *buflen,
   for (vlen=0; n && *s && *s != ':' && (*s >= '0' && *s <= '9'); s++, n--)
     vlen = vlen*10 + (*s - '0');
   if (!n || *s != ':')
-    return gpg_err_make (errsource, GPG_ERR_INV_SEXP);
+    return gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
   s++; n--;
   if (vlen > n)
-    return gpg_err_make (errsource, GPG_ERR_INV_SEXP);
+    return gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
   *tok = s;
   *toklen = vlen;
   s += vlen;

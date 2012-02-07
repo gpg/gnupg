@@ -21,16 +21,9 @@
 #define GNUPG_COMMON_SSH_UTILS_H
 
 
-gpg_error_t _ssh_get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
-                                  gpg_err_source_t errsource);
-#define ssh_get_fingerprint(a,b,c)                              \
-  _ssh_get_fingerprint ((a), (b), (c), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t ssh_get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len);
 
-gpg_error_t _ssh_get_fingerprint_string (gcry_sexp_t key, char **r_fprstr,
-                                         gpg_err_source_t errsource);
-#define ssh_get_fingerprint_string(a,b)                         \
-  _ssh_get_fingerprint_string ((a), (b), GPG_ERR_SOURCE_DEFAULT)
-
+gpg_error_t ssh_get_fingerprint_string (gcry_sexp_t key, char **r_fprstr);
 
 
 #endif /*GNUPG_COMMON_SSH_UTILS_H*/

@@ -71,9 +71,8 @@
    first CERT found with a supported type; it is expected that only
    one CERT record is used. */
 gpg_error_t
-_get_dns_cert (const char *name, estream_t *r_key,
-               unsigned char **r_fpr, size_t *r_fprlen, char **r_url,
-               gpg_err_source_t errsource)
+get_dns_cert (const char *name, estream_t *r_key,
+              unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
 {
 #ifdef USE_DNS_CERT
 #ifdef USE_ADNS
@@ -90,7 +89,7 @@ _get_dns_cert (const char *name, estream_t *r_key,
 
   if (adns_init (&state, adns_if_noerrprint, NULL))
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       log_error ("error initializing adns: %s\n", strerror (errno));
       return err;
     }
@@ -98,7 +97,7 @@ _get_dns_cert (const char *name, estream_t *r_key,
   if (adns_synchronous (state, name, (adns_r_unknown | my_adns_r_cert),
                         adns_qf_quoteok_query, &answer))
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       /* log_error ("DNS query failed: %s\n", strerror (errno)); */
       adns_finish (state);
       return err;
@@ -108,11 +107,11 @@ _get_dns_cert (const char *name, estream_t *r_key,
       /* log_error ("DNS query returned an error: %s (%s)\n", */
       /*            adns_strerror (answer->status), */
       /*            adns_errabbrev (answer->status)); */
-      err = gpg_err_make (errsource, GPG_ERR_NOT_FOUND);
+      err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
       goto leave;
     }
 
-  err = gpg_err_make (errsource, GPG_ERR_NOT_FOUND);
+  err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
   for (count = 0; count < answer->nrrs; count++)
     {
       int datalen = answer->rrs.byteblock[count].len;
@@ -132,7 +131,8 @@ _get_dns_cert (const char *name, estream_t *r_key,
              thus we do the same.  */
           *r_key = es_fopenmem_init (0, "rwb", data, datalen);
           if (!*r_key)
-            err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+            err = gpg_err_make (default_errsource,
+                                gpg_err_code_from_syserror ());
           else
             err = 0;
           goto leave;
@@ -149,7 +149,8 @@ _get_dns_cert (const char *name, estream_t *r_key,
               *r_fpr = xtrymalloc (*r_fprlen);
               if (!*r_fpr)
                 {
-                  err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+                  err = gpg_err_make (default_errsource,
+                                      gpg_err_code_from_syserror ());
                   goto leave;
                 }
               memcpy (*r_fpr, data + 1, *r_fprlen);
@@ -162,7 +163,8 @@ _get_dns_cert (const char *name, estream_t *r_key,
               *url = xtrymalloc (datalen - (*r_fprlen + 1) + 1);
               if (!*r_url)
                 {
-                  err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+                  err = gpg_err_make (default_errsource,
+                                      gpg_err_code_from_syserror ());
                   xfree (*r_fpr);
                   *r_fpr = NULL;
                   goto leave;
@@ -198,9 +200,9 @@ _get_dns_cert (const char *name, estream_t *r_key,
   /* Allocate a 64k buffer which is the limit for an DNS response.  */
   answer = xtrymalloc (65536);
   if (!answer)
-    return gpg_err_make (errsource, gpg_err_code_from_syserror ());
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 
-  err = gpg_err_make (errsource, GPG_ERR_NOT_FOUND);
+  err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
 
   r = res_query (name, C_IN, T_CERT, answer, 65536);
   /* Not too big, not too small, no errors and at least 1 answer. */
@@ -220,7 +222,7 @@ _get_dns_cert (const char *name, estream_t *r_key,
       rc = dn_skipname (pt, emsg);
       if (rc == -1)
         {
-          err = gpg_err_make (errsource, GPG_ERR_INV_OBJ);
+          err = gpg_err_make (default_errsource, GPG_ERR_INV_OBJ);
           goto leave;
         }
       pt += rc + QFIXEDSZ;
@@ -238,7 +240,7 @@ _get_dns_cert (const char *name, estream_t *r_key,
           rc = dn_skipname (pt, emsg);  /* the name we just queried for */
           if (rc == -1)
             {
-              err = gpg_err_make (errsource, GPG_ERR_INV_OBJ);
+              err = gpg_err_make (default_errsource, GPG_ERR_INV_OBJ);
               goto leave;
             }
 
@@ -289,7 +291,8 @@ _get_dns_cert (const char *name, estream_t *r_key,
               /* PGP type */
               *r_key = es_fopenmem_init (0, "rwb", pt, dlen);
               if (!*r_key)
-                err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+                err = gpg_err_make (default_errsource,
+                                    gpg_err_code_from_syserror ());
               else
                 err = 0;
               goto leave;
@@ -304,7 +307,7 @@ _get_dns_cert (const char *name, estream_t *r_key,
                   *r_fpr = xtrymalloc (*r_fprlen);
                   if (!*r_fpr)
                     {
-                      err = gpg_err_make (errsource,
+                      err = gpg_err_make (default_errsource,
                                           gpg_err_code_from_syserror ());
                       goto leave;
                     }
@@ -318,7 +321,7 @@ _get_dns_cert (const char *name, estream_t *r_key,
                   *r_url = xtrymalloc (dlen - (*r_fprlen + 1) + 1);
                   if (!*r_fpr)
                     {
-                      err = gpg_err_make (errsource,
+                      err = gpg_err_make (default_errsource,
                                           gpg_err_code_from_syserror ());
                       xfree (*r_fpr);
                       *r_fpr = NULL;
@@ -351,6 +354,6 @@ _get_dns_cert (const char *name, estream_t *r_key,
   (void)r_fprlen;
   (void)r_url;
 
-  return gpg_err_make (errsource, GPG_ERR_NOT_SUPPORTED);
+  return gpg_err_make (default_errsource, GPG_ERR_NOT_SUPPORTED);
 #endif
 }

@@ -31,11 +31,9 @@
 /* Return the Secure Shell type fingerprint for KEY.  The length of
    the fingerprint is returned at R_LEN and the fingerprint itself at
    R_FPR.  In case of a error code is returned and NULL stored at
-   R_FPR.  This function is usually called via the ssh_get_fingerprint
-   macro which makes sure to use the correct value for ERRSOURCE. */
+   R_FPR.  */
 static gpg_error_t
-get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
-                 gpg_err_source_t errsource, int as_string)
+get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
 {
   gpg_error_t err;
   gcry_sexp_t list = NULL;
@@ -59,7 +57,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
     list = gcry_sexp_find_token (key, "shadowed-private-key", 0);
   if (!list)
     {
-      err = gpg_err_make (errsource, GPG_ERR_UNKNOWN_SEXP);
+      err = gpg_err_make (default_errsource, GPG_ERR_UNKNOWN_SEXP);
       goto leave;
     }
 
@@ -71,7 +69,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
   name = gcry_sexp_nth_string (list, 0);
   if (!name)
     {
-      err = gpg_err_make (errsource, GPG_ERR_INV_SEXP);
+      err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
       goto leave;
     }
 
@@ -91,7 +89,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
       break;
     default:
       elems = "";
-      err = gpg_err_make (errsource, GPG_ERR_PUBKEY_ALGO);
+      err = gpg_err_make (default_errsource, GPG_ERR_PUBKEY_ALGO);
       break;
     }
   if (err)
@@ -106,7 +104,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
       l2 = gcry_sexp_find_token (list, s, 1);
       if (!l2)
         {
-          err = gpg_err_make (errsource, GPG_ERR_INV_SEXP);
+          err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
           goto leave;
         }
       a = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
@@ -114,7 +112,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
       l2 = NULL;
       if (!a)
         {
-          err = gpg_err_make (errsource, GPG_ERR_INV_SEXP);
+          err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
           goto leave;
         }
 
@@ -129,7 +127,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
   *r_fpr = gcry_malloc (as_string? 61:20);
   if (!*r_fpr)
     {
-      err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       goto leave;
     }
 
@@ -157,31 +155,25 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
 /* Return the Secure Shell type fingerprint for KEY.  The length of
    the fingerprint is returned at R_LEN and the fingerprint itself at
    R_FPR.  In case of an error an error code is returned and NULL
-   stored at R_FPR.  This function is usually called via the
-   ssh_get_fingerprint macro which makes sure to use the correct value
-   for ERRSOURCE. */
+   stored at R_FPR.  */
 gpg_error_t
-_ssh_get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
-                      gpg_err_source_t errsource)
+ssh_get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len)
 {
-  return get_fingerprint (key, r_fpr, r_len, errsource, 0);
+  return get_fingerprint (key, r_fpr, r_len, 0);
 }
 
 
 /* Return the Secure Shell type fingerprint for KEY as a string.  The
    fingerprint is mallcoed and stored at R_FPRSTR.  In case of an
-   error an error code is returned and NULL stored at R_FPRSTR.  This
-   function is usually called via the ssh_get_fingerprint_string macro
-   which makes sure to use the correct value for ERRSOURCE. */
+   error an error code is returned and NULL stored at R_FPRSTR.  */
 gpg_error_t
-_ssh_get_fingerprint_string (gcry_sexp_t key, char **r_fprstr,
-                             gpg_err_source_t errsource)
+ssh_get_fingerprint_string (gcry_sexp_t key, char **r_fprstr)
 {
   gpg_error_t err;
   size_t dummy;
   void *string;
 
-  err = get_fingerprint (key, &string, &dummy, errsource, 1);
+  err = get_fingerprint (key, &string, &dummy, 1);
   *r_fprstr = string;
   return err;
 }

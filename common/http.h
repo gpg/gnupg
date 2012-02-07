@@ -74,51 +74,38 @@ typedef struct http_context_s *http_t;
 
 void http_register_tls_callback (gpg_error_t (*cb) (http_t, void *, int));
 
-gpg_error_t _http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
-                             int no_scheme_check, gpg_err_source_t errsource);
-#define http_parse_uri(a,b,c)                                    \
-  _http_parse_uri ((a), (b), (c), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
+                            int no_scheme_check);
 
 void http_release_parsed_uri (parsed_uri_t uri);
 
-gpg_error_t _http_raw_connect (http_t *r_hd,
-                               const char *server, unsigned short port,
-                               unsigned int flags, const char *srvtag,
-                               gpg_err_source_t errsource);
-#define http_raw_connect(a,b,c,d,e) \
-  _http_raw_connect ((a),(b),(c),(d),(e), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t http_raw_connect (http_t *r_hd,
+                              const char *server, unsigned short port,
+                              unsigned int flags, const char *srvtag);
 
-gpg_error_t _http_open (http_t *r_hd, http_req_t reqtype,
-                        const char *url,
-                        const char *auth,
-                        unsigned int flags,
-                        const char *proxy,
-                        void *tls_context,
-                        const char *srvtag,
-                        strlist_t headers,
-                        gpg_err_source_t errsource);
-#define http_open(a,b,c,d,e,f,g,h,i) \
-  _http_open ((a),(b),(c),(d),(e),(f),(g),(h),(i), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
+                       const char *url,
+                       const char *auth,
+                       unsigned int flags,
+                       const char *proxy,
+                       void *tls_context,
+                       const char *srvtag,
+                       strlist_t headers);
 
 void http_start_data (http_t hd);
 
-gpg_error_t _http_wait_response (http_t hd, gpg_err_source_t errsource);
-#define http_wait_response(a) \
-  _http_wait_response ((a), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t http_wait_response (http_t hd);
 
 void http_close (http_t hd, int keep_read_stream);
 
-gpg_error_t _http_open_document (http_t *r_hd,
-                                 const char *document,
-                                 const char *auth,
-                                 unsigned int flags,
-                                 const char *proxy,
-                                 void *tls_context,
-                                 const char *srvtag,
-                                 strlist_t headers,
-                                 gpg_err_source_t errsource);
-#define http_open_document(a,b,c,d,e,f,g,h) \
-  _http_open_document ((a),(b),(c),(d),(e),(f),(g),(h), GPG_ERR_SOURCE_DEFAULT)
+gpg_error_t http_open_document (http_t *r_hd,
+                                const char *document,
+                                const char *auth,
+                                unsigned int flags,
+                                const char *proxy,
+                                void *tls_context,
+                                const char *srvtag,
+                                strlist_t headers);
 
 estream_t http_get_read_ptr (http_t hd);
 estream_t http_get_write_ptr (http_t hd);
