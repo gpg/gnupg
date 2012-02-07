@@ -40,7 +40,7 @@
 #ifdef HAVE_LIBUSB
 #include "ccid-driver.h"
 #endif
-
+#include "asshelp.h"
 
 /* Maximum length allowed as a PIN; used for INQUIRE NEEDPIN */
 #define MAXLEN_PIN 100
@@ -561,7 +561,6 @@ cmd_serialno (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
-  char *serial_and_stamp;
   char *serial;
   time_t stamp;
   int retries = 0;
@@ -587,15 +586,10 @@ cmd_serialno (assuan_context_t ctx, char *line)
   if (rc)
     return rc;
 
-  rc = estream_asprintf (&serial_and_stamp, "%s %lu",
-                         serial, (unsigned long)stamp);
+  rc = print_assuan_status (ctx, "SERIALNO", "%s %lu",
+                            serial, (unsigned long)stamp);
   xfree (serial);
-  if (rc < 0)
-    return out_of_core ();
-  rc = 0;
-  assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
-  xfree (serial_and_stamp);
-  return 0;
+  return rc;
 }
 
 
@@ -684,32 +678,32 @@ cmd_learn (assuan_context_t ctx, char *line)
      knows about this card */
   if (!only_keypairinfo)
     {
-      char *serial_and_stamp;
       char *serial;
       time_t stamp;
 
       rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
       if (rc)
         return rc;
-      rc = estream_asprintf (&serial_and_stamp, "%s %lu",
-                             serial, (unsigned long)stamp);
-      xfree (serial);
+
+      rc = print_assuan_status (ctx, "SERIALNO", "%s %lu",
+                                serial, (unsigned long)stamp);
       if (rc < 0)
-        return out_of_core ();
-      rc = 0;
-      assuan_write_status (ctx, "SERIALNO", serial_and_stamp);
+        {
+          xfree (serial);
+          return out_of_core ();
+        }
 
       if (!has_option (line, "--force"))
         {
           char *command;
 
-          rc = estream_asprintf (&command, "KNOWNCARDP %s", serial_and_stamp);
+          rc = estream_asprintf (&command, "KNOWNCARDP %s %lu",
+                                 serial, (unsigned long)stamp);
           if (rc < 0)
             {
-              xfree (serial_and_stamp);
+              xfree (serial);
               return out_of_core ();
             }
-          rc = 0;
           rc = assuan_inquire (ctx, command, NULL, NULL, 0);
           xfree (command);
           if (rc)
@@ -717,12 +711,12 @@ cmd_learn (assuan_context_t ctx, char *line)
               if (gpg_err_code (rc) != GPG_ERR_ASS_CANCELED)
                 log_error ("inquire KNOWNCARDP failed: %s\n",
                            gpg_strerror (rc));
-              xfree (serial_and_stamp);
+              xfree (serial);
               return rc;
             }
           /* Not canceled, so we have to proceeed.  */
         }
-      xfree (serial_and_stamp);
+      xfree (serial);
     }
 
   /* Let the application print out its collection of useful status

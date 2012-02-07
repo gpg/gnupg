@@ -499,21 +499,13 @@ static gpg_error_t
 cmd_geteventcounter (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  char any_counter[25];
-  char key_counter[25];
-  char card_counter[25];
 
   (void)line;
 
-  snprintf (any_counter, sizeof any_counter, "%u", eventcounter.any);
-  snprintf (key_counter, sizeof key_counter, "%u", eventcounter.key);
-  snprintf (card_counter, sizeof card_counter, "%u", eventcounter.card);
-
-  return agent_write_status (ctrl, "EVENTCOUNTER",
-                             any_counter,
-                             key_counter,
-                             card_counter,
-                             NULL);
+  return agent_print_status (ctrl, "EVENTCOUNTER", "%u %u %u",
+                             eventcounter.any,
+                             eventcounter.key,
+                             eventcounter.card);
 }
 
 
