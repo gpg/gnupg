@@ -1009,7 +1009,14 @@ AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 #
 if test "$try_ks_ldap" = yes || test "$build_dirmngr" = "yes" ; then
    GNUPG_CHECK_LDAP($NETLIBS)
+   AC_CHECK_LIB(lber, ber_free,
+                [ LBER_LIBS="$LBER_LIBS -llber"
+                  AC_DEFINE(HAVE_LBER,1,
+                           [defined if liblber is available])
+                  have_lber=yes
+               ])
 fi
+AC_SUBST(LBER_LIBS)
 
 #
 # Check for curl.  We fake the curl API if libcurl isn't installed.
