@@ -468,7 +468,7 @@ ldap_wrapper_wait_connections ()
   shutting_down = 1;
   /* FIXME: This is a busy wait.  */
   while (wrapper_list)
-    npth_yield ();
+    npth_usleep (200);
 }
 
 
