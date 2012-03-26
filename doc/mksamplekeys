@@ -1,0 +1,11 @@
+#/bin/sh
+# Generate a samplekeys.asc
+
+keys='1E42B367 99242560 87978569
+      4F25E3B6 5B0358A2 57548DCD B2D7795E 1CE0C630'
+
+for i in $keys; do
+  gpg --list-keys $i | awk ' { print "  " $0 }'
+done
+echo
+gpg --export-options export-minimal --export -a $keys

@@ -28,7 +28,7 @@ helpfiles = help.txt help.be.txt help.ca.txt help.cs.txt		\
             help.pt_BR.txt help.ro.txt help.ru.txt help.sk.txt		\
             help.sv.txt help.tr.txt help.zh_CN.txt help.zh_TW.txt
 
-EXTRA_DIST = samplekeys.asc \
+EXTRA_DIST = samplekeys.asc mksamplekeys \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png\
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
