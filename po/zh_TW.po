@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.17-git56b2bc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-01-12 09:34+0800\n"
-"Last-Translator: Jedi <Jedi@Jedi.org>\n"
+"PO-Revision-Date: 2011-08-05 01:24+0800\n"
+"Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -130,25 +130,27 @@ msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
 msgstr ""
+"有某個 ssh 程序提出使用金鑰 %%0A  %s%%0A  (%s)%%0A 之請求, 請問是否允許?"
 
 msgid "Allow"
-msgstr ""
+msgstr "允許"
 
 msgid "Deny"
-msgstr ""
+msgstr "拒絕"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
-msgstr "請輸入此 ssh 金鑰的密語%0A  %c"
+msgstr "請輸入此 ssh 金鑰的密語 %%0A  %F%%0A  (%c)"
 
 msgid "Please re-enter this passphrase"
 msgstr "請再次輸入密語"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
 "s%%0Awithin gpg-agent's key storage"
-msgstr "請輸入密語以保護收到的私鑰%%0A   %s%%0A於 gpg-agent 的金鑰存放處"
+msgstr ""
+"請輸入密語以保護收到的私鑰 %%0A   %s%%0A   %s%%0A 於 gpg-agent 的金鑰存放處"
 
 msgid "does not match - try again"
 msgstr "前後不一致 - 請再試一次"
