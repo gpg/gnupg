@@ -2018,7 +2018,7 @@ main (int argc, char **argv)
     orig_argv = argv;
     pargs.argc = &argc;
     pargs.argv = &argv;
-    pargs.flags= 1|(1<<6);  /* do not remove the args, ignore version */
+    pargs.flags= (ARGPARSE_FLAG_KEEP | ARGPARSE_FLAG_NOVERSION);
     while( arg_parse( &pargs, opts) ) {
 	if( pargs.r_opt == oDebug || pargs.r_opt == oDebugAll )
 	    parse_debug++;
@@ -2094,7 +2094,7 @@ main (int argc, char **argv)
     argv = orig_argv;
     pargs.argc = &argc;
     pargs.argv = &argv;
-    pargs.flags=  1;  /* do not remove the args */
+    pargs.flags= ARGPARSE_FLAG_KEEP;
 
     /* By this point we have a homedir, and cannot change it. */
     check_permissions(opt.homedir,0);
@@ -3091,6 +3091,16 @@ main (int argc, char **argv)
         gnupg_get_isotime (tbuf);
         dump_isotime (tbuf);
         log_printf ("\n");
+      }
+
+    /* Print a warning if an argument looks like an option.  */
+    if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+      {
+        int i;
+
+        for (i=0; i < argc; i++)
+          if (argv[i][0] == '-' && argv[i][1] == '-')
+            log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
       }
 
 

@@ -1226,6 +1226,18 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
+
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+    }
+
+
   use_tty = (gnupg_isatty (fileno (stdin)) && gnupg_isatty (fileno (stdout)));
 
   if (opt.exec)

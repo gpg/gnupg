@@ -195,6 +195,16 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+    }
+
   fname = argc ? *argv : NULL;
 
   switch (cmd)

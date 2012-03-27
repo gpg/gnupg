@@ -1473,6 +1473,16 @@ main ( int argc, char **argv)
       log_printf ("\n");
     }
 
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+    }
+
 /*FIXME    if (opt.batch) */
 /*      tty_batchmode (1); */
 

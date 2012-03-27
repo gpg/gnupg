@@ -82,6 +82,8 @@ typedef struct
 #define ARGPARSE_FLAG_ONEDASH   32   /* Allow long options with one dash.    */
 #define ARGPARSE_FLAG_NOVERSION 64   /* No output for "--version".           */
 
+#define ARGPARSE_FLAG_STOP_SEEN 256  /* Set to true if a "--" has been seen. */
+
 /* Flags for each option (ARGPARSE_OPTS).  The type code may be
    ORed with the OPT flags.  */
 #define ARGPARSE_TYPE_NONE        0  /* Does not take an argument.        */

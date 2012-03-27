@@ -229,7 +229,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
       arg->err = 0;
       arg->flags |= 1<<15; /* Mark as initialized.  */
       if ( *arg->argc < 0 )
-        jnlib_log_bug ("invalid argument for arg_parsee\n");
+        jnlib_log_bug ("invalid argument for arg_parse\n");
     }
 
 
@@ -671,6 +671,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
         {
           /* Stop option processing.  */
           arg->internal.stopped = 1;
+          arg->flags |= ARGPARSE_FLAG_STOP_SEEN;
           argc--; argv++; idx++;
           goto next_one;
 	}

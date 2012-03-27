@@ -599,6 +599,17 @@ main ( int argc, char **argv)
   if (may_coredump && !opt.quiet)
     log_info (_("WARNING: program may create a core file!\n"));
 
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+    }
+
+
   if (logfile)
     {
       log_set_file (logfile);

@@ -847,6 +847,16 @@ main (int argc, char **argv)
   log_info ("NOTE: this is a development version!\n");
 #endif
 
+  /* Print a warning if an argument looks like an option.  */
+  if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
+    {
+      int i;
+
+      for (i=0; i < argc; i++)
+        if (argv[i][0] == '-' && argv[i][1] == '-')
+          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+    }
+
   if (!access ("/etc/dirmngr", F_OK) && !strncmp (opt.homedir, "/etc/", 5))
     log_info
       ("NOTE: DirMngr is now a proper part of GnuPG.  The configuration and"
