@@ -73,22 +73,20 @@ test_timegm (void)
     { -2,  0x7fffffff },
     /* Note: Because we use mktime below we can only start with the
        day after Epoch.  */
-    { 1970, 1, 2, 0, 0 , 1},
-    { 1970, 1, 2, 0, 0 , 2},
-    { 1970, 1, 2, 12, 0 , 0},
-    { 1970, 1, 2, 23, 59 , 59},
-    { 1999, 12, 31, 23, 59 , 59},
-    { 2000, 1, 1, 0, 0, 0},
-    { 2000, 1, 1, 0, 0, 1},
-    { 2010, 12, 31, 23, 59 , 59},
-    { 2010, 1, 1, 0, 0, 0},
-    { 2010, 1, 1, 0, 0, 1},
-    /* The date below is about the last time mktime works in CET on
-       Windows XP; this is a somewhat strange because 32 bit Unices
-       will happily work along for another month until they reach the
-       end of all ticks on 20380119T031408 (unless Uli takes
-       compassion on us and changes time_t to a u64).  */
-    { 2037, 12, 18, 23, 59, 59}
+    { 1970, 0, 2, 0, 0 , 1},
+    { 1970, 0, 2, 0, 0 , 2},
+    { 1970, 0, 2, 12, 0 , 0},
+    { 1970, 0, 2, 23, 59 , 59},
+    { 1999, 11, 31, 23, 59 , 59},
+    { 2000, 0, 1, 0, 0, 0},
+    { 2000, 0, 1, 0, 0, 1},
+    { 2010, 11, 31, 23, 59 , 59},
+    { 2010, 0, 1, 0, 0, 0},
+    { 2010, 0, 1, 0, 0, 1},
+    /* On GNU based 32 bit systems the end of all ticks will be on
+       20380119T031408 (unless Uli takes compassion on us and changes
+       time_t to a u64).  We check that the previous day is okay.  */
+    { 2038, 0, 18, 23, 59, 59}
 
   };
   int tidx;
