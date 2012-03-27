@@ -125,6 +125,16 @@ $(myman_pages) gnupg.7 : yat2m-stamp
 gnupg.texi : $(gnupg_TEXINFOS)
 	touch $(srcdir)/gnupg.texi
 
+# Copy shared files from the master branch.  We keep the texinfo files
+# all in master so that we need to modify only one source.  Macros are
+# used to customize them for a specific version.
+update-source:
+	@set -e; cd $(srcdir); \
+	 for i in $(gnupg_TEXINFOS) yat2m.c ; do \
+	   echo "updating from master:doc/$$i" >&2 ; \
+	   git show master:doc/$$i >$$i ; \
+	 done
+
 online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
