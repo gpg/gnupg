@@ -5,7 +5,7 @@ Mail-Followup-To: gnupg-users@gnupg.org
 Hello!
 
 We are pleased to announce the availability of a new stable GnuPG-2
-release:  Version 2.0.18.
+release:  Version 2.0.19.
 
 The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
 and data storage.  It can be used to encrypt data, create digital
@@ -14,7 +14,7 @@ framework for public key cryptography.  It includes an advanced key
 management facility and is compliant with the OpenPGP and S/MIME
 standards.
 
-GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.11) in
+GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.12) in
 that it splits up functionality into several modules.  However, both
 versions may be installed alongside without any conflict.  In fact,
 the gpg version from GnuPG-1 is able to make use of the gpg-agent as
@@ -29,17 +29,24 @@ GnuPG is distributed under the terms of the GNU General Public License
 also available for other Unices, Microsoft Windows and Mac OS X.
 
 
-What's New
-===========
+What's New in 2.0.19
+====================
 
- * Bug fix for newer versions of Libgcrypt.
+ * GPG now accepts a space separated fingerprint as a user ID.  This
+   allows to copy and paste the fingerprint from the key listing.
 
- * Support the SSH confirm flag and show SSH fingerprints in ssh
-   related pinentries.
+ * GPG now uses the longest key ID available.  Removed support for the
+   original HKP keyserver which is not anymore used by any site.
 
- * Improved dirmngr/gpgsm interaction for OCSP.
+ * Rebuild the trustdb after changing the option --min-cert-level.
 
- * Allow generation of card keys up to 4096 bit.
+ * Ukrainian translation.
+
+ * Honor option --cert-digest-algo when creating a cert.
+
+ * Emit a DECRYPTION_INFO status line.
+
+ * Improved detection of JPEG files.
 
 
 Getting the Software
@@ -48,7 +55,7 @@ Getting the Software
 Please follow the instructions found at http://www.gnupg.org/download/
 or read on:
 
-GnuPG 2.0.18 may be downloaded from one of the GnuPG mirror sites or
+GnuPG 2.0.19 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
 can be found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG
 is not available at ftp.gnu.org.
@@ -56,14 +63,14 @@ is not available at ftp.gnu.org.
 On the FTP server and its mirrors you should find the following files
 in the gnupg/ directory:
 
-  gnupg-2.0.18.tar.bz2 (3922k)
-  gnupg-2.0.18.tar.bz2.sig
+  gnupg-2.0.19.tar.bz2 (4089k)
+  gnupg-2.0.19.tar.bz2.sig
 
       GnuPG source compressed using BZIP2 and OpenPGP signature.
 
-  gnupg-2.0.17-2.0.18.diff.bz2 (188k)
+  gnupg-2.0.18-2.0.19.diff.bz2 (305k)
 
-      A patch file to upgrade a 2.0.17 GnuPG source tree.  This patch
+      A patch file to upgrade a 2.0.18 GnuPG source tree.  This patch
       does not include updates of the language files.
 
 Note, that we don't distribute gzip compressed tarballs for GnuPG-2.
@@ -78,9 +85,9 @@ the following ways:
 
  * If you already have a trusted version of GnuPG installed, you
    can simply check the supplied signature.  For example to check the
-   signature of the file gnupg-2.0.18.tar.bz2 you would use this command:
+   signature of the file gnupg-2.0.19.tar.bz2 you would use this command:
 
-     gpg --verify gnupg-2.0.18.tar.bz2.sig
+     gpg --verify gnupg-2.0.19.tar.bz2.sig
 
    This checks whether the signature file matches the source file.
    You should see a message indicating that the signature is good and
@@ -103,21 +110,21 @@ the following ways:
 
  * If you are not able to use an old version of GnuPG, you have to verify
    the SHA-1 checksum.  Assuming you downloaded the file
-   gnupg-2.0.18.tar.bz2, you would run the sha1sum command like this:
+   gnupg-2.0.19.tar.bz2, you would run the sha1sum command like this:
 
-     sha1sum gnupg-2.0.17.tar.bz2
+     sha1sum gnupg-2.0.19.tar.bz2
 
    and check that the output matches the first line from the
    following list:
 
-5ec2f718760cc3121970a140aeea004b64545c46  gnupg-2.0.18.tar.bz2
-998cde3e4383bea771930e9f4934494fa09ed669  gnupg-2.0.17-2.0.18.diff.bz2
+190c09e6688f688fb0a5cf884d01e240d957ac1f  gnupg-2.0.19.tar.bz2
+d5e5643dc5ecb4e5296f1a9500f850cfbfd0f8ff  gnupg-2.0.18-2.0.19.diff.bz2
 
 
 Documentation
 =============
 
-The gnupg.info file has the complete user manual of the system.
+The file gnupg.info has the complete user manual of the system.
 Separate man pages are included as well; however they have not all the
 details available in the manual.  It is also possible to read the
 complete manual online in HTML format at
@@ -134,12 +141,10 @@ list archives or ask on the gnupg-users mailing lists for advise on
 how to solve problems.  Many of the new features are around for
 several years and thus enough public knowledge is already available.
 
-Almost all mail clients support GnuPG-2.  Kmail might be the most
-prominent user of all GnuPG-2 features.  In fact it has been developed
-in cooperation with the Kmail folks.  Mutt users may want to use the
-configure option "--enable-gpgme" during build time and put a
-"set use_crypt_gpgme" in ~/.muttrc to enable S/MIME support along with
-the reworked OpenPGP support.
+Almost all mail clients support GnuPG-2.  Mutt users may want to use
+the configure option "--enable-gpgme" during build time and put a "set
+use_crypt_gpgme" in ~/.muttrc to enable S/MIME support along with the
+reworked OpenPGP support.
 
 
 Support
