@@ -19,34 +19,59 @@ Release process:
 ================
 
   * Make sure that all new PO files are checked in.
+
   * Decide whether you want to update the automake standard files
     (Mainly config.guess and config.sub).
-  * [1.4 only] Update gpg.texi and gpgv.texi from the trunk:
-       make -C doc update-source-from-gnupg-2
-  * [1.4 and 2.0] Copy needed texinfo files from trunk.
-  * Run "make -C po update-po".
+
+  * [1.4 only] Update gpg.texi and gpgv.texi from master:
+      make -C doc update-source-from-gnupg-2
+
+  * [1.4 and 2.0] Copy needed texinfo files from master:
+      make -C doc update-source
+
+  * Run:
+      make -C po update-po
+
   * Write NEWS entries and set the release date in NEWS.
-  * In configure.ac set "my_issvn" to "no".
-  * Commit all changes to GIT and push them.
-  * Do a commit with a "Release <version>" line.
+
+  * In configure.ac set "my_isgit" to "no".
+
+  * Commit all changes to GIT with a message of "Release n.m.o."
+
   * Run "./autogen.sh --force"
     (--force is required for the svn magic in configure.ac and a good
     idea in any case)
+
   * Run "configure --enable-maintainer-mode".
+
   * Run "make distcheck".
+
   * Build and test the new tarball (best on a different machine).
+
   * Build and test the W32 version.
+
   * [2.x only] Using the final test build run a "make -C doc online".
+
   * Sign the tarball
+
   * Get the previous tarball and run "mkdiff gnupg".
     You might need to set a different signature key than mine.  mkdiff
     has an option for this.
-  * If you are satisfied with the result commit a tag for the release.
+
+  * If you are satisfied with the result commit a tag for the release
+    and push the changes.
+
   * Copy the files to the FTP server
+
   * Update the webpages - at least the file swdb.wml needs an update.
+
   * Add a new headline to NEWS.
-  * Bump "my_version" up and set "my_issvn" back to "yes" in configure.ac
-  * Write an announcement.  Update https://savannah.gnu.org/projects/gnupg .
+
+  * Bump "my_version" up and set "my_isgit" back to "yes" in configure.ac
+
+  * Write an announcement.
+
+  * Update https://savannah.gnu.org/projects/gnupg .
 
 
 
