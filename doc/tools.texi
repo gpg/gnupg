@@ -1193,7 +1193,6 @@ Specify the agent program to be started if none is running.
 
 @item -S
 @itemx --raw-socket @var{name}
-@opindex S
 @opindex raw-socket
 Connect to socket @var{name} assuming this is an Assuan style server.
 Do not run any special initializations or environment checks.  This may
@@ -1408,11 +1407,11 @@ input lines which makes scripts easier to read.
 
 @item /while @var{condition}
 @itemx /end
-These commands provide a way for executing loops.  All lines between the
-@code{while} and the corresponding @code{end} are executed as long as
-the evaluation of @var{condition} yields a non-zero value.  The
-evaluation is done by passing @var{condition} to the @code{strtol}
-function.  Example:
+These commands provide a way for executing loops.  All lines between
+the @code{while} and the corresponding @code{end} are executed as long
+as the evaluation of @var{condition} yields a non-zero value or is the
+string @code{true} or @code{yes}.  The evaluation is done by passing
+@var{condition} to the @code{strtol} function.  Example:
 
 @smallexample
   /subst
@@ -1423,6 +1422,13 @@ function.  Example:
   /end
 @end smallexample
 
+@item /if @var{condition}
+@itemx /end
+These commands provide a way for conditional execution.  All lines between
+the @code{if} and the corresponding @code{end} are executed only if
+the evaluation of @var{condition} yields a non-zero value or is the
+string @code{true} or @code{yes}.  The evaluation is done by passing
+@var{condition} to the @code{strtol} function.
 
 @item /run @var{file}
 Run commands from @var{file}.

@@ -204,7 +204,6 @@ below the home directory of the user.
 
 @item -v
 @item --verbose
-@opindex v
 @opindex verbose
 Outputs additional information while running.
 You can increase the verbosity by giving several
@@ -212,7 +211,6 @@ verbose commands to @command{gpgsm}, such as @samp{-vv}.
 
 @item -q
 @item --quiet
-@opindex q
 @opindex quiet
 Try to be as quiet as possible.
 
@@ -300,9 +298,7 @@ debugging.
 @itemx --sh
 @itemx -c
 @itemx --csh
-@opindex s
 @opindex sh
-@opindex c
 @opindex csh
 Format the info output in daemon mode for use with the standard Bourne
 shell or the C-shell respectively.  The default is to guess it based on
@@ -1369,7 +1365,7 @@ used a default value is used.
 
 @ifset gpgtwoone
 @item s2k-count
-Instead of using the standard S2K counted (which is computed on the
+Instead of using the standard S2K count (which is computed on the
 fly), the given S2K count is used for new keys or when changing the
 passphrase of a key.  Values below 65536 are considered to be 0.  This
 option is valid for the entire session or until reset to 0.  This
