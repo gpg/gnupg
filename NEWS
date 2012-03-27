@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.19 (unreleased)
+Noteworthy changes in version 2.0.19 (2012-03-27)
 -------------------------------------------------
 
  * GPG now accepts a space separated fingerprint as a user ID.  This
