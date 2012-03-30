@@ -11,7 +11,7 @@ dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 # GNUPG_PTH_VERSION_CHECK(REQUIRED)
-# 
+#
 # If the version is sufficient, HAVE_PTH will be set to yes.
 #
 # Taken and modified from the m4 macros which come with Pth.
@@ -69,7 +69,7 @@ AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
        AC_MSG_RESULT($gnupg_cv_pth_is_sane)
     else
        AC_MSG_RESULT(no)
-    fi    
+    fi
   ])
 
 
@@ -82,7 +82,7 @@ AC_DEFUN([GNUPG_PTH_VERSION_CHECK],
 AC_DEFUN([GNUPG_PATH_PTH],
 [ AC_ARG_WITH(pth-prefix,
              AC_HELP_STRING([--with-pth-prefix=PFX],
-                           [prefix where GNU Pth is installed (optional)]),
+                           [prefix where GNU Pth is installed]),
      pth_config_prefix="$withval", pth_config_prefix="")
   if test x$pth_config_prefix != x ; then
      PTH_CONFIG="$pth_config_prefix/bin/pth-config"
@@ -91,7 +91,7 @@ AC_DEFUN([GNUPG_PATH_PTH],
   tmp=ifelse([$1], ,1.3.7,$1)
   if test "$PTH_CONFIG" != "no"; then
     GNUPG_PTH_VERSION_CHECK($tmp)
-    if test $have_pth = yes; then      
+    if test $have_pth = yes; then
        PTH_CFLAGS=`$PTH_CONFIG --cflags`
        PTH_LIBS=`$PTH_CONFIG --ldflags`
        PTH_LIBS="$PTH_LIBS `$PTH_CONFIG --libs --all`"
