@@ -176,7 +176,7 @@ static int estream_pth_killed;
 # define ESTREAM_MUTEX_INITIALIZER PTH_MUTEX_INIT
 # define ESTREAM_MUTEX_LOCK(mutex)                              \
   (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
-   : pth_mutex_acquire (&(mutex), 0, NULL))
+   : (void)pth_mutex_acquire (&(mutex), 0, NULL))
 # define ESTREAM_MUTEX_UNLOCK(mutex)                            \
   (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
    : pth_mutex_release (&(mutex)))
