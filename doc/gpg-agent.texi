@@ -804,6 +804,7 @@ secret keys.
 * Agent EXPORT::          Exporting a Secret Key
 * Agent ISTRUSTED::       Importing a Root Certificate
 * Agent GET_PASSPHRASE::  Ask for a passphrase
+* Agent CLEAR_PASSPHRASE:: Expire a cached passphrase
 * Agent GET_CONFIRMATION:: Ask for confirmation
 * Agent HAVEKEY::         Check whether a key is available
 * Agent LEARN::           Register a smartcard
@@ -1171,6 +1172,28 @@ passphrase quality is shown.
 
 may be used to invalidate the cache entry for a passphrase.  The
 function returns with OK even when there is no cached passphrase.
+
+
+
+@node Agent CLEAR_PASSPHRASE
+@subsection Remove a cached passphrase
+
+Use this command to remove a cached passphrase.
+
+@example
+@ifset gpgtwoone
+  CLEAR_PASSPHRASE [--mode=normal] <cache_id>
+@end ifset
+@ifclear gpgtwoone
+  CLEAR_PASSPHRASE <cache_id>
+@end ifclear
+@end example
+
+@ifset gpgtwoone
+The @option{--mode=normal} option can be used to clear a @var{cache_id} that
+was set by gpg-agent.
+@end ifset
+
 
 
 @node Agent GET_CONFIRMATION
