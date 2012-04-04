@@ -805,6 +805,9 @@ secret keys.
 * Agent ISTRUSTED::       Importing a Root Certificate
 * Agent GET_PASSPHRASE::  Ask for a passphrase
 * Agent CLEAR_PASSPHRASE:: Expire a cached passphrase
+@ifset gpgtwoone
+* Agent PRESET_PASSPHRASE:: Set a passphrase for a keygrip
+@end ifset
 * Agent GET_CONFIRMATION:: Ask for confirmation
 * Agent HAVEKEY::         Check whether a key is available
 * Agent LEARN::           Register a smartcard
@@ -1193,6 +1196,30 @@ Use this command to remove a cached passphrase.
 The @option{--mode=normal} option can be used to clear a @var{cache_id} that
 was set by gpg-agent.
 @end ifset
+
+
+
+@ifset gpgtwoone
+@node Agent PRESET_PASSPHRASE
+@subsection Set a passphrase for a keygrip
+
+This command adds a passphrase to the cache for the specified @var{keygrip}.
+
+@example
+  PRESET_PASSPHRASE [--inquire] <string_or_keygrip> <timeout> [<hexstring>]
+@end example
+
+The passphrase is a hexidecimal string when specified. When not specified, the
+passphrase will be retrieved from the pinentry module unless the
+@option{--inquire} option was specified in which case the passphrase will be
+retrieved from the client.
+
+The @var{timeout} parameter keeps the passphrase cached for the specified
+number of seconds. A value of @code{-1} means infinate while @code{0} means
+the default (currently only a timeout of -1 is allowed, which means to never
+expire it).
+@end ifset
+
 
 
 
