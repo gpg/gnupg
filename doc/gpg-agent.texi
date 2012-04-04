@@ -976,7 +976,12 @@ option allows to choose the storage location.  To get the secret key out
 of the PSE, a special export tool has to be used.
 
 @example
+@ifset gpgtwoone
+   GENKEY [--no-protection] [--preset] [<cache_nonce>]
+@end ifset
+@ifclear gpgtwoone
    GENKEY
+@end ifclear
 @end example
 
 Invokes the key generation process and the server will then inquire
@@ -1020,6 +1025,13 @@ Here is an example session:
    S: D   (rsa (n 326487324683264) (e 10001)))
    S  OK key created
 @end example
+
+@ifset gpgtwoone
+The @option{--no-protection} option may be used to prevent prompting for a
+passphrase to protect the secret key while leaving the secret key unprotected.
+The @option{--preset} option may be used to add the passphrase to the cache
+using the default cache parameters.
+@end ifset
 
 @node Agent IMPORT
 @subsection Importing a Secret Key
