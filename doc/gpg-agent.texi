@@ -1287,11 +1287,21 @@ option given the certificates are send back.
 @subsection Change a Passphrase
 
 @example
+@ifset gpgtwoone
+  PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] @var{keygrip}
+@end ifset
+@ifclear gpgtwoone
   PASSWD @var{keygrip}
+@end ifclear
 @end example
 
 This command is used to interactively change the passphrase of the key
 identified by the hex string @var{keygrip}.
+
+@ifset gpgtwoone
+The @option{--preset} option may be used to add the new passphrase to the
+cache using the default cache parameters.
+@end ifset
 
 
 @node Agent UPDATESTARTUPTTY
