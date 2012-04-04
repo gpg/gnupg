@@ -796,6 +796,14 @@ certificate is that it will be possible to use the same keypair for
 different protocols, thereby saving space on the token used to keep the
 secret keys.
 
+@ifset gpgtwoone
+The @command{gpg-agent} may send status messages during a command or when
+returning from a command to inform a client about the progress or result of an
+operation.  For example, the @var{INQUIRE_MAXLEN} status message may be sent
+during a server inquire to inform the client of the maximum usable length of
+the inquired data (which should not be exceeded).
+@end ifset
+
 @menu
 * Agent PKDECRYPT::       Decrypting a session key
 * Agent PKSIGN::          Signing a Hash
