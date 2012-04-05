@@ -12,7 +12,7 @@
 
 #info Checking conventional encryption
 for ciph in `all_cipher_algos`; do
-  echo_n "$ciph "
+  progress "$ciph"
   for i in 0 1 2 3 9 10 11 19 20 21 22 23 39 40 41 8192 32000 ; do
     # *BSD's dd can't cope with a count of 0
     if test "$i" = "0"; then
@@ -27,4 +27,5 @@ for ciph in `all_cipher_algos`; do
     cmp z y || error "$ciph/$i: mismatch"
   done
 done
-echo_n "| "
+
+progress_end
