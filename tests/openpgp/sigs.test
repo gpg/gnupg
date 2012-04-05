@@ -17,7 +17,7 @@ for i in $plain_files $data_files; do
 done
 
 for da in `all_hash_algos` ; do
-    echo_n "$da "
+    progress "$da"
 
     # RSA key, so any hash is okay
     if have_pubkey_algo "RSA"; then
@@ -42,4 +42,5 @@ for da in `all_hash_algos` ; do
         done
     fi
 done
-echo_n "| "
+
+progress_end

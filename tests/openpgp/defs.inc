@@ -42,18 +42,28 @@ LC_MESSAGES=
 # Internal use.
 defs_stop_on_error=no
 defs_error_seen=no
+defs_progress_active=no
 
 #--------------------------------
 #------ utility functions -------
 #--------------------------------
 
+progress_cancel () {
+    if [ x$defs_progress_active = xyes ]; then
+        echo
+        defs_progress_active=no
+    fi
+}
+
 fatal () {
+    progress_cancel
     echo "$pgmname: fatal:" $* >&2
     echo "$pgmname: fatal:" $* >&5
     exit 1;
 }
 
 error () {
+    progress_cancel
     echo "$pgmname:" $* >&2
     defs_error_seen=yes
     echo "$pgmname:" $* >&5
@@ -77,6 +87,7 @@ resume_error () {
 }
 
 info () {
+    progress_cancel
     echo "$pgmname:" $* >&2
     if [ -n "${verbose+set}" ]; then
       echo "$pgmname:" $* >&5
@@ -86,7 +97,6 @@ info () {
 linefeed () {
     echo >&2
 }
-
 
 echo_n_init=no
 echo_n () {
@@ -108,6 +118,23 @@ echo_n () {
   fi
   echo $echo_n_n "${1}$echo_n_c"
 }
+
+
+progress_end () {
+    if [ x$defs_progress_active = xyes ]; then
+        echo "<"
+        defs_progress_active=no
+    fi
+}
+
+progress () {
+    if [ x$defs_progress_active != xyes ]; then
+        echo_n "    > "
+        defs_progress_active=yes
+    fi
+    echo_n "$* "
+}
+
 
 
 #cleanup () {

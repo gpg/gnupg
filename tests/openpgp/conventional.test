@@ -18,7 +18,7 @@ for i in plain-2 data-32000 ; do
 done
 
 for a in `all_cipher_algos`; do
-    echo_n "$a "
+    progress "$a"
     for i in plain-1 data-80000 ; do
       echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
 					  --cipher-algo $a -c -o x --yes $i
@@ -26,4 +26,5 @@ for a in `all_cipher_algos`; do
       cmp $i y || error "$i: ($a) mismatch"
     done
 done
-echo_n "| "
+
+progress_end
