@@ -1016,7 +1016,8 @@ pcsc_get_status_wrapped (int slot, unsigned int *status)
   close (slotp->pcsc.rsp_fd);
   slotp->pcsc.req_fd = -1;
   slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
+  if (slotp->pcsc.pid != -1)
+    kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
   return sw;
@@ -1180,7 +1181,8 @@ pcsc_send_apdu_wrapped (int slot, unsigned char *apdu, size_t apdulen,
   close (slotp->pcsc.rsp_fd);
   slotp->pcsc.req_fd = -1;
   slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
+  if (slotp->pcsc.pid != -1)
+    kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
   return sw;
@@ -1321,7 +1323,8 @@ control_pcsc_wrapped (int slot, unsigned long ioctl_code,
   close (slotp->pcsc.rsp_fd);
   slotp->pcsc.req_fd = -1;
   slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
+  if (slotp->pcsc.pid != -1)
+    kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
   return pcsc_error_to_sw (err);
@@ -1422,7 +1425,8 @@ close_pcsc_reader_wrapped (int slot)
   close (slotp->pcsc.rsp_fd);
   slotp->pcsc.req_fd = -1;
   slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
+  if (slotp->pcsc.pid != -1)
+    kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
   return 0;
@@ -1640,7 +1644,8 @@ reset_pcsc_reader_wrapped (int slot)
   close (slotp->pcsc.rsp_fd);
   slotp->pcsc.req_fd = -1;
   slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
+  if (slotp->pcsc.pid != -1)
+    kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
   return sw;
@@ -1965,7 +1970,8 @@ open_pcsc_reader_wrapped (const char *portstr)
   close (slotp->pcsc.rsp_fd);
   slotp->pcsc.req_fd = -1;
   slotp->pcsc.rsp_fd = -1;
-  kill (slotp->pcsc.pid, SIGTERM);
+  if (slotp->pcsc.pid != -1)
+    kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
   /* There is no way to return SW. */
