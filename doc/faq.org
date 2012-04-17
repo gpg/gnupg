@@ -1357,7 +1357,7 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
     You can get a list of the assigned trust values (how much you trust
     the owner to correctly sign another person's key) with:
 
-    : $ gpg --list-ownertrust
+    : $ gpg --export-ownertrust
 
     The first field is the fingerprint of the primary key, the second
     field is the assigned value:
