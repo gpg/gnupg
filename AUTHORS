@@ -152,10 +152,13 @@ Copyright
 =========
 
 GnuPG is distributed under the GNU General Public License, version 3
-or later.  A few files are under the Lesser General Public License, a
-few other files carry the all permissive license note as found at the
-bottom of this file.  Certain files in keyserver/ allow one specific
-exception:
+or later.
+
+Note that some files are under a combination of the GNU Lesser General
+Public License, version 3 and the GNU General Public License, version
+2.  A few other files carry the all permissive license note as found
+at the bottom of this file.  Certain files in keyserver/ allow one
+specific exception:
 
   In addition, as a special exception, the Free Software Foundation
   gives permission to link the code of the keyserver helper tools:

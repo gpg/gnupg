@@ -3,12 +3,22 @@
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either
  *
- * GnuPG is distributed in the hope that it will be useful,
+ *   - the GNU Lesser General Public License as published by the Free
+ *     Software Foundation; either version 3 of the License, or (at
+ *     your option) any later version.
+ *
+ * or
+ *
+ *   - the GNU General Public License as published by the Free
+ *     Software Foundation; either version 2 of the License, or (at
+ *     your option) any later version.
+ *
+ * or both in parallel, as here.
+ *
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -38,7 +48,7 @@ send_pinentry_environment (assuan_context_t ctx,
                            const char *opt_lc_messages,
                            session_env_t session_env);
 
-/* This fucntion is used by the call-agent.c modules to fire up a new
+/* This function is used by the call-agent.c modules to fire up a new
    agent.  */
 gpg_error_t
 start_new_gpg_agent (assuan_context_t *r_ctx,
