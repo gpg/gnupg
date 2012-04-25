@@ -587,8 +587,14 @@ open_dir (crl_cache_t *r_cache)
                 case 2: entry->issuer_hash = p; break;
                 case 3: entry->issuer = unpercent_string (p); break;
                 case 4: entry->url = unpercent_string (p); break;
-                case 5: strncpy (entry->this_update, p, 15); break;
-                case 6: strncpy (entry->next_update, p, 15); break;
+                case 5:
+		  strncpy (entry->this_update, p, 15);
+		  entry->this_update[15] = 0;
+		  break;
+                case 6:
+		  strncpy (entry->next_update, p, 15);
+		  entry->next_update[15] = 0;
+		  break;
                 case 7: entry->dbfile_hash = p; break;
                 case 8: if (*p) entry->crl_number = p; break;
                 case 9:
