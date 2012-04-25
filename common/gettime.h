@@ -1,5 +1,5 @@
 /* gettime.h - Wrapper for time functions
- * Copyright (C) 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2010, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,8 +24,8 @@
 #include <gpg-error.h> /* We need gpg_error_t. */
 
 
-/* A type to hold the ISO time.  Note that this this is the same as
-   the the KSBA type ksba_isotime_t. */
+/* A type to hold the ISO time.  Note that this is the same as
+   the KSBA type ksba_isotime_t. */
 typedef char gnupg_isotime_t[16];
 
 time_t gnupg_get_time (void);
