@@ -339,12 +339,12 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   /* DNS names.  */
   tty_printf (_("Enter DNS names"));
   tty_printf (_(" (optional; end with an empty line):\n"));
-  ask_mb_lines (&mb_email, "Name-DNS: ");
+  ask_mb_lines (&mb_dns, "Name-DNS: ");
 
   /* URIs.  */
   tty_printf (_("Enter URIs"));
   tty_printf (_(" (optional; end with an empty line):\n"));
-  ask_mb_lines (&mb_email, "Name-URI: ");
+  ask_mb_lines (&mb_uri, "Name-URI: ");
 
 
   /* Want a self-signed certificate?  */
