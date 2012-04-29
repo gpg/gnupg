@@ -127,8 +127,8 @@ read_passphrase_from_fd( int fd )
 {
   int i, len;
   char *pw;
-  
-  if ( opt.use_agent ) 
+
+  if ( opt.use_agent )
     { /* Not used but we have to do a dummy read, so that it won't end
          up at the begin of the message if the quite usual trick to
          prepend the passphtrase to the message is used. */
@@ -137,14 +137,14 @@ read_passphrase_from_fd( int fd )
       while (!(read (fd, buf, 1) != 1 || *buf == '\n' ))
         ;
       *buf = 0;
-      return; 
+      return;
     }
 
-  if (!opt.batch )
+  if (!opt.batch && !opt.quiet)
 	tty_printf("Reading passphrase from file descriptor %d ...", fd );
-  for (pw = NULL, i = len = 100; ; i++ ) 
+  for (pw = NULL, i = len = 100; ; i++ )
     {
-      if (i >= len-1 ) 
+      if (i >= len-1 )
         {
           char *pw2 = pw;
           len += 100;
@@ -176,8 +176,8 @@ static int
 agent_send_option (assuan_context_t ctx, const char *name, const char *value)
 {
   char *line;
-  int rc; 
-  
+  int rc;
+
   if (!value || !*value)
     return 0; /* Avoid sending empty option values. */
 
@@ -189,7 +189,7 @@ agent_send_option (assuan_context_t ctx, const char *name, const char *value)
 }
 
 /* Send all required options to the gpg-agent.  */
-static int 
+static int
 agent_send_all_options (assuan_context_t ctx)
 {
   char *dft_display = NULL;
@@ -299,7 +299,7 @@ agent_open (int try, const char *orig_codeset)
   else
     {
       infostr = getenv ( "GPG_AGENT_INFO" );
-      if (!infostr || !*infostr) 
+      if (!infostr || !*infostr)
         {
           if (!try)
             {
@@ -314,7 +314,7 @@ agent_open (int try, const char *orig_codeset)
         }
       infostr = xstrdup ( infostr );
     }
-  
+
   if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
     {
       if (!try)
@@ -349,7 +349,7 @@ agent_open (int try, const char *orig_codeset)
       xfree (infostr);
       return NULL;
     }
-     
+
   rc = assuan_socket_connect (&ctx, infostr, pid);
   if (rc)
     {
@@ -359,7 +359,7 @@ agent_open (int try, const char *orig_codeset)
           if (orig_codeset)
             bind_textdomain_codeset (PACKAGE, orig_codeset);
 #endif /*ENABLE_NLS*/
-          log_info ( _("can't connect to `%s': %s\n"), 
+          log_info ( _("can't connect to `%s': %s\n"),
                       infostr, assuan_strerror (rc));
           opt.use_agent = 0;
         }
@@ -436,7 +436,7 @@ struct agent_okay_cb_s {
    status line without leading white spaces. */
 static assuan_error_t
 agent_okay_cb (void *opaque, const char *line)
-{ 
+{
   struct agent_okay_cb_s *parm = opaque;
   int i;
 
@@ -446,10 +446,10 @@ agent_okay_cb (void *opaque, const char *line)
      memory function code to allow wiping arbitrary stuff on memory
      failure. */
   parm->pw = xmalloc_secure (strlen (line)/2+2);
-  
+
   for (i=0; hexdigitp (line) && hexdigitp (line+1); line += 2)
     parm->pw[i++] = xtoi_2 (line);
-  parm->pw[i] = 0; 
+  parm->pw[i] = 0;
   return 0;
 }
 #endif /*ENABLE_AGENT_SUPPORT*/
@@ -494,10 +494,10 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
   if( keyid && get_pubkey( pk, keyid ) )
     {
       if (pk)
-        free_public_key( pk );      
+        free_public_key( pk );
       pk = NULL; /* oops: no key for some reason */
     }
-  
+
 #ifdef ENABLE_NLS
   /* The Assuan agent protocol requires us to transmit utf-8 strings */
   orig_codeset = bind_textdomain_codeset (PACKAGE, NULL);
@@ -509,36 +509,36 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
     { /* We only switch when we are able to restore the codeset later. */
       orig_codeset = xstrdup (orig_codeset);
       if (!bind_textdomain_codeset (PACKAGE, "utf-8"))
-        orig_codeset = NULL; 
+        orig_codeset = NULL;
     }
 #endif
 
-  if ( !(ctx = agent_open (0, orig_codeset)) ) 
+  if ( !(ctx = agent_open (0, orig_codeset)) )
     goto failure;
 
   if (custom_description)
     atext = native_to_utf8 (custom_description);
   else if ( !mode && pk && keyid )
-    { 
+    {
       char *uid;
       size_t uidlen;
       const char *algo_name = pubkey_algo_to_string ( pk->pubkey_algo );
       const char *timestr;
       char *maink;
-      
+
       if ( !algo_name )
         algo_name = "?";
 
 #define KEYIDSTRING _(" (main key ID %s)")
 
       maink = xmalloc ( strlen (KEYIDSTRING) + keystrlen() + 20 );
-      if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
+      if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
           && keyid[1] != keyid[3] )
         sprintf( maink, KEYIDSTRING, keystr(&keyid[2]) );
       else
         *maink = 0;
-      
-      uid = get_user_id ( keyid, &uidlen ); 
+
+      uid = get_user_id ( keyid, &uidlen );
       timestr = strtimestamp (pk->timestamp);
 
 #undef KEYIDSTRING
@@ -548,7 +548,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
 		       "\"%.*s\"\n" \
 		       "%u-bit %s key, ID %s, created %s%s\n" )
 
-      atext = xmalloc ( 100 + strlen (PROMPTSTRING)  
+      atext = xmalloc ( 100 + strlen (PROMPTSTRING)
                         + uidlen + 15 + strlen(algo_name) + keystrlen()
                         + strlen (timestr) + strlen (maink) );
       sprintf (atext, PROMPTSTRING,
@@ -560,21 +560,21 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
 
 #undef PROMPTSTRING
 
-      { 
+      {
         size_t dummy;
         fingerprint_from_pk( pk, fpr, &dummy );
         have_fpr = 1;
       }
-      
+
     }
-  else if (mode == 2 ) 
+  else if (mode == 2 )
     atext = xstrdup ( _("Repeat passphrase\n") );
   else
     atext = xstrdup ( _("Enter passphrase\n") );
-                
-  { 
+
+  {
       char *line, *p;
-      int i, rc; 
+      int i, rc;
       struct agent_okay_cb_s okay_cb_parm;
 
       if (!tryagain_text)
@@ -584,7 +584,7 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
 
       /* We allocate 23 times the needed space for thye texts so that
          there is enough space for escaping. */
-      line = xmalloc (15 + 46 
+      line = xmalloc (15 + 46
                       + 3*strlen (atext)
                       + 3*strlen (custom_prompt? custom_prompt:"")
                       + (cacheid? (3*strlen (cacheid)): 0)
@@ -650,14 +650,14 @@ agent_get_passphrase ( u32 *keyid, int mode, const char *cacheid,
           if (canceled)
             *canceled = 1;
         }
-      else 
+      else
         {
           log_error (_("problem with the agent - disabling agent use\n"));
           opt.use_agent = 0;
         }
   }
-      
-        
+
+
  failure:
 #ifdef ENABLE_NLS
   if (orig_codeset)
@@ -689,14 +689,14 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
   assuan_context_t ctx = NULL;
   PKT_public_key *pk;
   byte fpr[MAX_FINGERPRINT_LEN];
-  
+
 #if MAX_FINGERPRINT_LEN < 20
 #error agent needs a 20 byte fingerprint
 #endif
-    
+
   if (!opt.use_agent)
     return;
-  
+
   if (!cacheid)
     {
       pk = xcalloc (1, sizeof *pk);
@@ -705,7 +705,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
         {
           goto failure; /* oops: no key for some reason */
         }
-  
+
       {
         size_t dummy;
         fingerprint_from_pk( pk, fpr, &dummy );
@@ -713,13 +713,13 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
     }
   else
     pk = NULL;
-    
-  if ( !(ctx = agent_open (0, NULL)) ) 
+
+  if ( !(ctx = agent_open (0, NULL)) )
     goto failure;
 
-  { 
+  {
       char *line, *p;
-      int i, rc; 
+      int i, rc;
 
       if (cacheid)
         {
@@ -746,7 +746,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
           opt.use_agent = 0;
         }
     }
-        
+
  failure:
   agent_close (ctx);
   if (pk)
@@ -766,7 +766,7 @@ ask_passphrase (const char *description,
                 const char *cacheid, int *canceled)
 {
   char *pw = NULL;
-  
+
   if (canceled)
     *canceled = 0;
 
@@ -781,9 +781,9 @@ ask_passphrase (const char *description,
       else
         tty_printf ("\n%s\n",description);
     }
-               
+
  agent_died:
-  if ( opt.use_agent ) 
+  if ( opt.use_agent )
     {
       pw = agent_get_passphrase (NULL, 0, cacheid,
                                  tryagain_text, description, prompt,
@@ -795,7 +795,7 @@ ask_passphrase (const char *description,
           pw = NULL;
         }
     }
-  else if (fd_passwd) 
+  else if (fd_passwd)
     {
       pw = xmalloc_secure (strlen(fd_passwd)+1);
       strcpy (pw, fd_passwd);
@@ -824,7 +824,7 @@ ask_passphrase (const char *description,
  * KEYID and PUBKEY_ALGO to prompt the user.
 
    MODE 0:  Allow cached passphrase
-        1:  Ignore cached passphrase 
+        1:  Ignore cached passphrase
         2:  Ditto, but change the text to "repeat entry"
 */
 DEK *
@@ -840,7 +840,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
       *canceled = 0;
 
     if( !s2k ) {
-        /* This is used for the old rfc1991 mode 
+        /* This is used for the old rfc1991 mode
          * Note: This must match the code in encode.c with opt.rfc1991 set */
 	s2k = &help_s2k;
 	s2k->mode = 0;
@@ -851,7 +851,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
        information are request, we print them now. */
     if( !next_pw && is_status_enabled() ) {
 	char buf[50];
- 
+
 	if( keyid ) {
             u32 used_kid[2];
             char *us;
@@ -873,7 +873,7 @@ passphrase_to_dek( u32 *keyid, int pubkey_algo,
                      (ulong)keyid[0], (ulong)keyid[1],
                      (ulong)used_kid[0], (ulong)used_kid[1],
                      pubkey_algo );
-                     
+
 	    write_status_text( STATUS_NEED_PASSPHRASE, buf );
 	}
 	else {
