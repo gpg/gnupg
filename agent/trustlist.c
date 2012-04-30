@@ -1,5 +1,6 @@
 /* trustlist.c - Maintain the list of trusted keys
- * Copyright (C) 2002, 2004, 2006, 2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2004, 2006, 2007, 2009,
+ *               2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -56,7 +57,6 @@ static size_t trusttablesize;
 static npth_mutex_t trusttable_lock;
 
 
-
 static const char headerblurb[] =
 "# This is the list of trusted keys.  Comment lines, like this one, as\n"
 "# well as empty lines are ignored.  Lines have a length limit but this\n"
@@ -87,7 +87,7 @@ initialize_module_trustlist (void)
     {
       err = npth_mutex_init (&trusttable_lock, NULL);
       if (err)
-        log_fatal ("error initializing mutex: %s\n", strerror (err));
+        log_fatal ("failed to init mutex in %s: %s\n", __FILE__,strerror (err));
       initialized = 1;
     }
 }
@@ -105,6 +105,7 @@ lock_trusttable (void)
     log_fatal ("failed to acquire mutex in %s: %s\n", __FILE__, strerror (err));
 }
 
+
 static void
 unlock_trusttable (void)
 {
@@ -115,6 +116,16 @@ unlock_trusttable (void)
     log_fatal ("failed to release mutex in %s: %s\n", __FILE__, strerror (err));
 }
 
+
+/* Clear the trusttable.  The caller needs to make sure that the
+   trusttable is locked.  */
+static inline void
+clear_trusttable (void)
+{
+  xfree (trusttable);
+  trusttable = NULL;
+  trusttablesize = 0;
+}
 
 
 static gpg_error_t
@@ -315,7 +326,8 @@ read_one_trustfile (const char *fname, int allow_include,
 }
 
 
-/* Read the trust files and update the global table on success.  */
+/* Read the trust files and update the global table on success.  The
+   trusttable is assumed to be locked. */
 static gpg_error_t
 read_trustfiles (void)
 {
@@ -356,11 +368,7 @@ read_trustfiles (void)
       if (gpg_err_code (err) == GPG_ERR_ENOENT)
         {
           /* Take a missing trustlist as an empty one.  */
-          lock_trusttable ();
-          xfree (trusttable);
-          trusttable = NULL;
-          trusttablesize = 0;
-          unlock_trusttable ();
+          clear_trusttable ();
           err = 0;
         }
       return err;
@@ -375,22 +383,23 @@ read_trustfiles (void)
       return err;
     }
 
-  lock_trusttable ();
+  /* Replace the trusttable.  */
   xfree (trusttable);
   trusttable = ti;
   trusttablesize = tableidx;
-  unlock_trusttable ();
   return 0;
 }
 
 
-
 /* Check whether the given fpr is in our trustdb.  We expect FPR to be
-   an all uppercase hexstring of 40 characters. */
-gpg_error_t
-agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
+   an all uppercase hexstring of 40 characters.  If ALREADY_LOCKED is
+   true the function assumes that the trusttable is already locked. */
+static gpg_error_t
+istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
+                    int already_locked)
 {
   gpg_error_t err;
+  int locked = already_locked;
   trustitem_t *ti;
   size_t len;
   unsigned char fprbin[20];
@@ -399,7 +408,16 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
     *r_disabled = 0;
 
   if ( hexcolon2bin (fpr, fprbin, 20) < 0 )
-    return gpg_error (GPG_ERR_INV_VALUE);
+    {
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+
+  if (!already_locked)
+    {
+      lock_trusttable ();
+      locked = 1;
+    }
 
   if (!trusttable)
     {
@@ -407,7 +425,7 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
       if (err)
         {
           log_error (_("error reading list of trusted root certificates\n"));
-          return err;
+          goto leave;
         }
     }
 
@@ -419,26 +437,43 @@ agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
             if (ti->flags.disabled && r_disabled)
               *r_disabled = 1;
 
-            if (ti->flags.relax)
+            /* Print status messages only if we have not been called
+               in a locked state.  */
+            if (already_locked)
+              ;
+            else if (ti->flags.relax)
               {
-                err = agent_write_status (ctrl,
-                                          "TRUSTLISTFLAG", "relax",
-                                          NULL);
-                if (err)
-                  return err;
+                unlock_trusttable ();
+                locked = 0;
+                err = agent_write_status (ctrl, "TRUSTLISTFLAG", "relax", NULL);
               }
             else if (ti->flags.cm)
               {
-                err = agent_write_status (ctrl,
-                                          "TRUSTLISTFLAG", "cm",
-                                          NULL);
-                if (err)
-                  return err;
+                unlock_trusttable ();
+                locked = 0;
+                err = agent_write_status (ctrl, "TRUSTLISTFLAG", "cm", NULL);
               }
-            return ti->flags.disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0;
+
+            if (!err)
+              err = ti->flags.disabled? gpg_error (GPG_ERR_NOT_TRUSTED) : 0;
+            goto leave;
           }
     }
-  return gpg_error (GPG_ERR_NOT_TRUSTED);
+  err = gpg_error (GPG_ERR_NOT_TRUSTED);
+
+ leave:
+  if (locked && !already_locked)
+    unlock_trusttable ();
+  return err;
+}
+
+
+/* Check whether the given fpr is in our trustdb.  We expect FPR to be
+   an all uppercase hexstring of 40 characters.  */
+gpg_error_t
+agent_istrusted (ctrl_t ctrl, const char *fpr, int *r_disabled)
+{
+  return istrusted_internal (ctrl, fpr, r_disabled, 0);
 }
 
 
@@ -451,11 +486,13 @@ agent_listtrusted (void *assuan_context)
   gpg_error_t err;
   size_t len;
 
+  lock_trusttable ();
   if (!trusttable)
     {
       err = read_trustfiles ();
       if (err)
         {
+          unlock_trusttable ();
           log_error (_("error reading list of trusted root certificates\n"));
           return err;
         }
@@ -463,9 +500,6 @@ agent_listtrusted (void *assuan_context)
 
   if (trusttable)
     {
-      /* We need to lock the table because the scheduler may interrupt
-         assuan_send_data and an other thread may then re-read the table. */
-      lock_trusttable ();
       for (ti=trusttable, len = trusttablesize; len; ti++, len--)
         {
           if (ti->flags.disabled)
@@ -478,9 +512,9 @@ agent_listtrusted (void *assuan_context)
           assuan_send_data (assuan_context, key, 43);
           assuan_send_data (assuan_context, NULL, 0); /* flush */
         }
-      unlock_trusttable ();
     }
 
+  unlock_trusttable ();
   return 0;
 }
 
@@ -553,10 +587,10 @@ reformat_name (const char *name, const char *replstring)
 
 /* Insert the given fpr into our trustdb.  We expect FPR to be an all
    uppercase hexstring of 40 characters. FLAG is either 'P' or 'C'.
-   This function does first check whether that key has already been put
-   into the trustdb and returns success in this case.  Before a FPR
-   actually gets inserted, the user is asked by means of the Pinentry
-   whether this is actual want he wants to do.  */
+   This function does first check whether that key has already been
+   put into the trustdb and returns success in this case.  Before a
+   FPR actually gets inserted, the user is asked by means of the
+   Pinentry whether this is actual what he wants to do.  */
 gpg_error_t
 agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
 {
@@ -690,8 +724,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   /* Now check again to avoid duplicates.  We take the lock to make
      sure that nobody else plays with our file and force a reread.  */
   lock_trusttable ();
-  agent_reload_trustlist ();
-  if (!agent_istrusted (ctrl, fpr, &is_disabled) || is_disabled)
+  clear_trusttable ();
+  if (!istrusted_internal (ctrl, fpr, &is_disabled, 1) || is_disabled)
     {
       unlock_trusttable ();
       xfree (fprformatted);
@@ -747,11 +781,13 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   if (es_fclose (fp))
     err = gpg_error_from_syserror ();
 
-  agent_reload_trustlist ();
+  clear_trusttable ();
   xfree (fname);
   unlock_trusttable ();
   xfree (fprformatted);
   xfree (nameformatted);
+  if (!err)
+    bump_key_eventcounter ();
   return err;
 }
 
@@ -764,9 +800,7 @@ agent_reload_trustlist (void)
   /* All we need to do is to delete the trusttable.  At the next
      access it will get re-read. */
   lock_trusttable ();
-  xfree (trusttable);
-  trusttable = NULL;
-  trusttablesize = 0;
+  clear_trusttable ();
   unlock_trusttable ();
   bump_key_eventcounter ();
 }
