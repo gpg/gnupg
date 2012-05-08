@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-12-20 15:52+0100\n"
+"PO-Revision-Date: 2012-05-08 15:17+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -401,6 +401,10 @@ msgid "reading options from `%s'\n"
 msgstr "Optionen werden aus '%s' gelesen\n"
 
 #, c-format
+msgid "NOTE: `%s' is not considered an option\n"
+msgstr "Hinweis: `%s' wird nicht als Option betrachtet\n"
+
+#, c-format
 msgid "error creating `%s': %s\n"
 msgstr "Fehler beim Erstellen von `%s': %s\n"
 
@@ -470,8 +474,8 @@ msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "SSH-Handhabungsroutine 0x%lx für fd %d beendet\n"
 
 #, c-format
-msgid "pth_select failed: %s - waiting 1s\n"
-msgstr "pth_select()-Aufruf fehlgeschlagen: %s - warte 1s\n"
+msgid "npth_pselect failed: %s - waiting 1s\n"
+msgstr "npth_select()-Aufruf fehlgeschlagen: %s - warte 1s\n"
 
 #, c-format
 msgid "%s %s stopped\n"
@@ -7262,12 +7266,8 @@ msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "Fehler beim Lesen des Logs vom LDAP Wrapper %d: %s\n"
 
 #, c-format
-msgid "pth_event failed: %s\n"
-msgstr "pth_event() fehlgeschlagen: %s\n"
-
-#, c-format
-msgid "pth_wait failed: %s\n"
-msgstr "pth_wait() fehlgeschlagen: %s\n"
+msgid "npth_select failed: %s - waiting 1s\n"
+msgstr "npth_select()-Aufruf fehlgeschlagen: %s - warte 1s\n"
 
 #, c-format
 msgid "ldap wrapper %d ready"
@@ -7930,6 +7930,12 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "pth_event failed: %s\n"
+#~ msgstr "pth_event() fehlgeschlagen: %s\n"
+
+#~ msgid "pth_wait failed: %s\n"
+#~ msgstr "pth_wait() fehlgeschlagen: %s\n"
 
 #, fuzzy
 #~ msgid "||Please enter the Reset Code for the card and New PIN"
