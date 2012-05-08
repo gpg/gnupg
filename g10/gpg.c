@@ -3149,7 +3149,6 @@ main (int argc, char **argv)
 	      {
 		log_info(_("encrypting a message in --pgp2 mode requires "
 			   "the IDEA cipher\n"));
-		idea_cipher_warn(1);
 		unusable=1;
 	      }
 	    else if(cmd==aSym)
@@ -3208,10 +3207,6 @@ main (int argc, char **argv)
 
     if( def_cipher_string ) {
 	opt.def_cipher_algo = string_to_cipher_algo (def_cipher_string);
-	if(opt.def_cipher_algo==0 &&
-	   (ascii_strcasecmp(def_cipher_string,"idea")==0
-	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
-	  idea_cipher_warn(1);
 	xfree(def_cipher_string); def_cipher_string = NULL;
 	if ( openpgp_cipher_test_algo (opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));

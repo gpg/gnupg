@@ -62,11 +62,6 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d%s is not supported\n"),
 			sk->protect.algo,sk->protect.algo==1?" (IDEA)":"" );
-	    if (sk->protect.algo==CIPHER_ALGO_IDEA)
-              {
-                write_status (STATUS_RSA_OR_IDEA);
-                idea_cipher_warn (0);
-              }
 	    return G10ERR_CIPHER_ALGO;
 	}
 	if(gcry_md_test_algo (sk->protect.s2k.hash_algo))

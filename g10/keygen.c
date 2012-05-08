@@ -349,7 +349,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	       break PGP2, but that is difficult with the current
 	       code, and not really worth checking as a non-RSA <=2048
 	       bit key wouldn't be usable by PGP2 anyway. -dms */
-	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
+	    if (PGP2 && !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
 	      strcat(dummy_string,"S1 ");
 
 
@@ -442,12 +442,6 @@ keygen_set_std_prefs (const char *string,int personal)
 	    else
 	      {
 		log_info (_("invalid item `%s' in preference string\n"),tok);
-
-		/* Complain if IDEA is not available. */
-		if(ascii_strcasecmp(tok,"s1")==0
-		   || ascii_strcasecmp(tok,"idea")==0)
-		  idea_cipher_warn(1);
-
 		rc=-1;
 	      }
 	  }

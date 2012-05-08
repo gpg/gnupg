@@ -250,12 +250,6 @@ symkey_decrypt_seskey( DEK *dek, byte *seskey, size_t slen )
   if(dek->keylen > DIM(dek->key))
     BUG ();
 
-  /* This is not completely accurate, since a bad passphrase may have
-     resulted in a garbage algorithm byte, but it's close enough since
-     a bogus byte here will fail later. */
-  if(dek->algo==CIPHER_ALGO_IDEA)
-    idea_cipher_warn(0);
-
   memcpy(dek->key, seskey + 1, dek->keylen);
 
   /*log_hexdump( "thekey", dek->key, dek->keylen );*/
@@ -541,7 +535,6 @@ proc_encrypted( CTX c, PACKET *pkt )
 		algo = opt.def_cipher_algo;
 		if (!algo)
 		  algo = opt.s2k_cipher_algo;
-		idea_cipher_warn(1);
 		log_info (_("IDEA cipher unavailable, "
 			    "optimistically attempting to use %s instead\n"),
 			  openpgp_cipher_algo_name (algo));

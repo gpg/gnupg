@@ -1434,12 +1434,6 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
           log_error (_("key %s: error sending to agent: %s\n"),
                      keystr_from_pk_with_sub (main_pk, pk),
                      gpg_strerror (err));
-          if (ski->algo == GCRY_CIPHER_IDEA
-              && gpg_err_code (err) == GPG_ERR_CIPHER_ALGO)
-            {
-              write_status (STATUS_RSA_OR_IDEA);
-              idea_cipher_warn (0);
-            }
           if (gpg_err_code (err) == GPG_ERR_CANCELED
               || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
             break; /* Don't try the other subkeys.  */

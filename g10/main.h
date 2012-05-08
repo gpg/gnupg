@@ -105,12 +105,6 @@ int openpgp_md_test_algo( int algo );
 const char *openpgp_pk_algo_name (int algo);
 const char *openpgp_md_algo_name (int algo);
 
-#ifdef USE_IDEA
-void idea_cipher_warn( int show );
-#else
-#define idea_cipher_warn(a)  do { } while (0)
-#endif
-
 struct expando_args
 {
   PKT_public_key *pk;

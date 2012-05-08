@@ -381,11 +381,9 @@ more arguments in future versions.
 	The ASCII armor is corrupted.  No arguments yet.
 
     RSA_OR_IDEA
-	The IDEA algorithms has been used in the data.  A
-	program might want to fallback to another program to handle
-	the data if GnuPG failed.  This status message used to be emitted
-        also for RSA but this has been dropped after the RSA patent expired.
-        However we can't change the name of the message.
+	Obsolete.  This status message used to be emitted for requests
+        to use the IDEA or RSA algorithms.  It has been dropped from
+        GnuPG 2.1 after the respective patents expired.
 
     SHM_INFO
     SHM_GET

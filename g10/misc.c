@@ -546,24 +546,6 @@ openpgp_md_algo_name (int algo)
 }
 
 
-#ifdef USE_IDEA
-/* Special warning for the IDEA cipher */
-void
-idea_cipher_warn(int show)
-{
-  static int warned=0;
-
-  if(!warned || show)
-    {
-      log_info(_("the IDEA cipher plugin is not present\n"));
-      log_info(_("please see %s for more information\n"),
-               "http://www.gnupg.org/faq/why-not-idea.html");
-      warned=1;
-    }
-}
-#endif
-
-
 static unsigned long
 get_signature_count (PKT_public_key *pk)
 {
