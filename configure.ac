@@ -1,6 +1,6 @@
 # configure.ac - for GnuPG 2.1
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-#               2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+#               2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -1506,11 +1506,6 @@ if test "$have_adns" = "yes"; then
 fi
 
 
-if test $have_ksba = no; then
-  build_gpgsm=no
-  build_scdaemon=no
-fi
-
 build_scdaemon_extra=""
 if test "$build_scdaemon" = "yes"; then
   if test $have_libusb = no; then
@@ -1592,18 +1587,9 @@ if test "$have_libgcrypt" = "no"; then
 ***
 *** You need libgcrypt to build this program.
 **  This library is for example available at
-***   ftp://ftp.gnupg.org/gcrypt/alpha/libgcrypt/
-*** (at least version $NEED_LIBGCRYPT_VERSION using API $NEED_LIBGCRYPT_API is required.)
+***   ftp://ftp.gnupg.org/gcrypt/libgcrypt/
+*** (at least version $NEED_LIBGCRYPT_VERSION (API $NEED_LIBGCRYPT_API) is required.)
 ***]])
-dnl elif test "$gnupg_cv_gcry_kdf_derive" = no; then
-dnl    die=yes
-dnl    AC_MSG_NOTICE([[
-dnl ***
-dnl *** Libgcrypt 1.5.0 has not yet been released and thus the API
-dnl *** is a bit in a flux.  Your version misses the function
-dnl ***        gcry_kdf_derive
-dnl *** You need to install a newer Libgcrypt version.
-dnl #***]])
 fi
 if test "$have_libassuan" = "no"; then
    die=yes
@@ -1616,6 +1602,7 @@ if test "$have_libassuan" = "no"; then
 ***]])
 fi
 if test "$have_ksba" = "no"; then
+    die=yes
     AC_MSG_NOTICE([[
 ***
 *** You need libksba to build this program.
@@ -1643,16 +1630,17 @@ if test "$gnupg_have_ldap" = "no"; then
    fi
 fi
 if test "$have_npth" = "no"; then
+    die=yes
     AC_MSG_NOTICE([[
 ***
 *** It is now required to build with support for the
-*** New Portable Threads Library (NPth). Please install this
+*** New Portable Threads Library (nPth). Please install this
 *** library first.  The library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/npth/
+*** (at least version $NEED_NPTH_VERSION (API $NEED_NPTH_API) is requi
 *** On a Debian GNU/Linux system you can install it using
 ***   apt-get install libnpth-dev
 ***]])
-   die=yes
 fi
 
 if test "$die" = "yes"; then
