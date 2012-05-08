@@ -27,7 +27,7 @@ TESTS = $(module_tests)
 
 BUILT_SOURCES = audit-events.h status-codes.h
 
-CLEANFILES = audit-events.h status-codes.h
+MAINTAINERCLEANFILES = audit-events.h status-codes.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
 
