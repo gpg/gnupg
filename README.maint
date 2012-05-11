@@ -34,12 +34,14 @@ Release process:
 
   * Write NEWS entries and set the release date in NEWS.
 
-  * In configure.ac set "my_isgit" to "no".
+  * [1.4 and 2.0] In configure.ac set "my_isgit" to "no".
 
   * Commit all changes to GIT with a message of "Release n.m.o."
 
+  * Tag the revision with the string "gnupg-x.y.z".
+
   * Run "./autogen.sh --force"
-    (--force is required for the svn magic in configure.ac and a good
+    (--force is required for the git magic in configure.ac and a good
     idea in any case)
 
   * Run "configure --enable-maintainer-mode".
@@ -58,8 +60,7 @@ Release process:
     You might need to set a different signature key than mine.  mkdiff
     has an option for this.
 
-  * If you are satisfied with the result commit a tag for the release
-    and push the changes.
+  * Push the git changes and the tag.
 
   * Copy the files to the FTP server
 

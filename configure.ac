@@ -21,24 +21,27 @@
 AC_PREREQ(2.61)
 min_automake_version="1.10"
 
-# Remember to change the version number immediately *after* a release.
-# Set my_issvn to "yes" for non-released code.  Remember to run an
-# "svn up" and "autogen.sh" right before creating a distribution.
-m4_define([my_version], [2.1.0])
-m4_define([my_issvn], [yes])
+# To build a release you need to create a tag with the version number
+# (git tag -s gnupg-2.n.m) and run "./autogen.sh --force".  Please
+# bump the version number immediately *after* the release and do
+# another commit and push so that the git magic is able to work.
+m4_define([mym4_version], [2.1.0])
 
-m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
-          | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
-m4_define([git_revision], m4_esyscmd([git branch -v 2>/dev/null \
+# Below is m4 magic to extract and compute the git revision number,
+# the decimalized short revision number, a beta version string and a
+# flag indicating a development version (mym4_isgit).  Note that the
+# m4 processing is done by autoconf and not during the configure run.
+m4_define([mym4_revision], m4_esyscmd([git branch -v 2>/dev/null \
           | awk '/^\* / {printf "%s",$3}']))
-m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
-          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
+m4_define([mym4_revision_dec],
+          m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
+m4_define([mym4_betastring],
+          m4_esyscmd_s([git describe --match 'gnupg-2.[0-9].*[0-9]' --long|\
+                        awk -F- '$3!=0{print"-beta"$3}']))
+m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
+m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
-AC_INIT([gnupg],[my_full_version], [http://bugs.gnupg.org])
-# Set development_version to yes if the minor number is odd or you
-# feel that the default check for a development version is not
-# sufficient.
-development_version=no
+AC_INIT([gnupg],[mym4_full_version], [http://bugs.gnupg.org])
 
 NEED_GPG_ERROR_VERSION=1.10
 
@@ -52,9 +55,10 @@ NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.2.0
 
 NEED_NPTH_API=1
-NEED_NPTH_VERSION=0.0
+NEED_NPTH_VERSION=0.91
 
 
+development_version=mym4_isgit
 PACKAGE=$PACKAGE_NAME
 PACKAGE_GT=${PACKAGE_NAME}2
 VERSION=$PACKAGE_VERSION
@@ -1387,19 +1391,7 @@ AC_SUBST(ZLIBS)
 # Check for readline support
 GNUPG_CHECK_READLINE
 
-#
-# Allow users to append something to the version string without
-# flagging it as development version.  The user version parts is
-# considered everything after a dash.
-#
-if test "$development_version" != yes; then
-  changequote(,)dnl
-  tmp_pat='[a-zA-Z]'
-  changequote([,])dnl
-  if echo "$VERSION" | sed 's/-.*//' | grep "$tmp_pat" >/dev/null ; then
-    development_version=yes
-  fi
-fi
+
 if test "$development_version" = yes; then
     AC_DEFINE(IS_DEVELOPMENT_VERSION,1,
             [Defined if this is not a regular release])
@@ -1637,9 +1629,7 @@ if test "$have_npth" = "no"; then
 *** New Portable Threads Library (nPth). Please install this
 *** library first.  The library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/npth/
-*** (at least version $NEED_NPTH_VERSION (API $NEED_NPTH_API) is requi
-*** On a Debian GNU/Linux system you can install it using
-***   apt-get install libnpth-dev
+*** (at least version $NEED_NPTH_VERSION (API $NEED_NPTH_API) is required).
 ***]])
 fi
 
@@ -1684,6 +1674,7 @@ AC_OUTPUT
 echo "
         GnuPG v${VERSION} has been configured as follows:
 
+        Revision:  mym4_revision  (mym4_revision_dec)
         Platform:  $PRINTABLE_OS_NAME ($host)
 
         OpenPGP:   $build_gpg
