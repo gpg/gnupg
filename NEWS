@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.0.20 (unreleased)
 -------------------------------------------------
 
+ * The hash algorithm is now printed for sig records in key listings.
+
 
 Noteworthy changes in version 2.0.19 (2012-03-27)
 -------------------------------------------------

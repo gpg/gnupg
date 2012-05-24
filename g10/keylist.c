@@ -1382,23 +1382,19 @@ list_keyblock_colon( KBNODE keyblock, int secret, int fpr )
               print_string( stdout, p, n, ':' );
               xfree(p);
             }
-          printf (":%02x%c:", sig->sig_class,sig->flags.exportable?'x':'l');
-        
+          printf (":%02x%c::", sig->sig_class,sig->flags.exportable?'x':'l');
+
           if (opt.no_sig_cache && opt.check_sigs && fprokay)
             {
-              putchar (':');
-            
               for (i=0; i < fplen ; i++ )
                 printf ("%02X", fparray[i] );
-            
-              putchar (':');
             }
 
-          printf ("\n");
-        
+          printf (":::%d:\n", sig->digest_algo);
+
           if (opt.show_subpackets)
             print_subpackets_colon (sig);
-          
+
           /* fixme: check or list other sigs here */
         }
     }
