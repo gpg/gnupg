@@ -150,7 +150,7 @@ mk_notation_policy_etc( PKT_signature *sig,
 
 
 /*
- * Helper to hash a user ID packet.  
+ * Helper to hash a user ID packet.
  */
 static void
 hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
@@ -188,7 +188,7 @@ hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 static void
 hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 {
-    if (sig->version >= 4) 
+    if (sig->version >= 4)
         gcry_md_putc (md, sig->version);
     gcry_md_putc (md, sig->sig_class);
     if (sig->version < 4) {
@@ -201,7 +201,7 @@ hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
     else {
         byte buf[6];
         size_t n;
-        
+
         gcry_md_putc (md, sig->pubkey_algo);
         gcry_md_putc (md, sig->digest_algo);
         if (sig->hashed) {
@@ -257,13 +257,13 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
     sig->digest_algo = digest_algo;
     sig->digest_start[0] = dp[0];
     sig->digest_start[1] = dp[1];
-    if (sk->is_protected && sk->protect.s2k.mode == 1002) 
-      { 
+    if (sk->is_protected && sk->protect.s2k.mode == 1002)
+      {
 #ifdef ENABLE_CARD_SUPPORT
         unsigned char *rbuf;
         size_t rbuflen;
         char *snbuf;
-        
+
         snbuf = serialno_and_fpr_from_sk (sk->protect.iv,
                                           sk->protect.ivlen, sk);
         rc = agent_scd_pksign (snbuf, digest_algo,
@@ -282,7 +282,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /* ENABLE_CARD_SUPPORT */
       }
-    else 
+    else
       {
         frame = encode_md_value( NULL, sk, md, digest_algo );
         if (!frame)
@@ -495,7 +495,7 @@ print_status_sig_created ( PKT_secret_key *sk, PKT_signature *sig, int what )
  * Loop over the secret certificates in SK_LIST and build the one pass
  * signature packets.  OpenPGP says that the data should be bracket by
  * the onepass-sig and signature-packet; so we build these onepass
- * packet here in reverse order 
+ * packet here in reverse order
  */
 static int
 write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
@@ -511,7 +511,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         PKT_onepass_sig *ops;
         PACKET pkt;
         int i, rc;
-        
+
         for (i=0, sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next ) {
             if (++i == skcount)
                 break;
@@ -524,7 +524,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         ops->pubkey_algo = sk->pubkey_algo;
         keyid_from_sk (sk, ops->keyid);
         ops->last = (skcount == 1);
-        
+
         init_packet(&pkt);
         pkt.pkttype = PKT_ONEPASS_SIG;
         pkt.pkt.onepass_sig = ops;
@@ -612,7 +612,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         wipememory(copy_buffer,4096); /* burn buffer */
     }
     /* fixme: it seems that we never freed pt/pkt */
-    
+
     return rc;
 }
 
@@ -777,7 +777,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
           inp = NULL;
           errno = EPERM;
         }
-      if( !inp ) 
+      if( !inp )
         {
           rc = gpg_error_from_syserror ();
           log_error (_("can't open `%s': %s\n"), fname? fname: "[stdin]",
@@ -817,7 +817,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
     if ( gcry_md_open (&mfx.md, 0, 0) )
       BUG ();
     if (DBG_HASHING)
-      gcry_md_start_debug (mfx.md, "sign");
+      gcry_md_debug (mfx.md, "sign");
 
     /* If we're encrypting and signing, it is reasonable to pick the
        hash algorithm to use out of the recepient key prefs.  This is
@@ -928,7 +928,7 @@ sign_file( strlist_t filenames, int detached, strlist_t locusr,
 	       there is an assumed preference for uncompressed data.
 	       Still, if it did fail, we'll also end up with the
 	       default. */
- 
+
 	    if((compr_algo=
 		select_algo_from_prefs(pk_list,PREFTYPE_ZIP,-1,NULL))==-1)
 	      compr_algo=default_compress_algo();
@@ -1091,7 +1091,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"), 
+	log_error (_("can't open `%s': %s\n"),
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
@@ -1102,7 +1102,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
             outfile = NULL;
             errno = EPERM;
         }
-        else 
+        else
             out = iobuf_create( outfile );
 	if( !out )
 	  {
@@ -1166,7 +1166,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 	gcry_md_enable (textmd, hash_for(sk));
     }
     if ( DBG_HASHING )
-      gcry_md_start_debug ( textmd, "clearsign" );
+      gcry_md_debug ( textmd, "clearsign" );
 
     copy_clearsig_text( out, inp, textmd, !opt.not_dash_escaped,
 			opt.escape_from, (old_style && only_md5) );
@@ -1190,7 +1190,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     gcry_md_close ( textmd );
     release_sk_list( sk_list );
     release_progress_context (pfx);
-    release_armor_context (afx); 
+    release_armor_context (afx);
     return rc;
 }
 
@@ -1234,7 +1234,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
       }
 
     rc = build_sk_list (locusr, &sk_list, 1, PUBKEY_USAGE_SIG);
-    if (rc) 
+    if (rc)
 	goto leave;
 
     /* prepare iobufs */
@@ -1247,7 +1247,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"), 
+	log_error (_("can't open `%s': %s\n"),
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
@@ -1288,7 +1288,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     if ( gcry_md_open (&mfx.md, 0, 0) )
       BUG ();
     if ( DBG_HASHING )
-      gcry_md_start_debug (mfx.md, "symc-sign");
+      gcry_md_debug (mfx.md, "symc-sign");
 
     for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next) {
 	PKT_secret_key *sk = sk_rover->sk;
@@ -1338,7 +1338,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     rc = write_plaintext_packet (out, inp, fname, opt.textmode ? 't':'b');
     if (rc)
 	goto leave;
-    
+
     /* Write the signatures */
     /*(current filters: zip - encrypt - armor)*/
     rc = write_signature_packets (sk_list, out, mfx.md,
@@ -1497,7 +1497,7 @@ int
 update_keysig_packet( PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
-                      PKT_user_id *uid, 
+                      PKT_user_id *uid,
                       PKT_public_key *subpk,
                       PKT_secret_key *sk,
                       int (*mksubpkt)(PKT_signature *, void *),
@@ -1530,7 +1530,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
- 
+
     /* We need to create a new timestamp so that new sig expiration
        calculations are done correctly... */
     sig->timestamp=make_timestamp();

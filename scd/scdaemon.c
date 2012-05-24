@@ -206,11 +206,12 @@ static void handle_connections (int listen_fd);
 ASSUAN_SYSTEM_PTH_IMPL;
 
 GCRY_THREAD_OPTION_PTH_IMPL;
+#if GCRY_THREAD_OPTION_VERSION < 1
 static int fixed_gcry_pth_init (void)
 {
   return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
 }
-
+#endif
 
 
 static char *
@@ -409,7 +410,9 @@ main (int argc, char **argv )
 
   /* Libgcrypt requires us to register the threading model first.
      Note that this will also do the pth_init. */
+#if GCRY_THREAD_OPTION_VERSION < 1
   gcry_threads_pth.init = fixed_gcry_pth_init;
+#endif
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {

@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <assert.h>
 
@@ -106,7 +106,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
         {
 	  log_error (_("a %u bit hash is not valid for a %u bit %s key\n"),
                      (unsigned int)nframe*8,
-                     gcry_pk_get_nbits (pkey), 
+                     gcry_pk_get_nbits (pkey),
                      gcry_pk_algo_name (pkalgo));
           /* FIXME: we need to check the requirements for ECDSA.  */
           if (nframe < 20 || pkalgo == GCRY_PK_DSA  )
@@ -139,16 +139,16 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
           log_error ("no object identifier for algo %d\n", algo);
           return gpg_error (GPG_ERR_INTERNAL);
         }
-      
+
       len = gcry_md_get_algo_dlen (algo);
-      
+
       if ( len + asnlen + 4  > nframe )
         {
           log_error ("can't encode a %d bit MD into a %d bits frame\n",
                      (int)(len*8), (int)nbits);
           return gpg_error (GPG_ERR_INTERNAL);
         }
-      
+
       /* We encode the MD in this way:
        *
        *	   0  A PAD(n bytes)   0  ASN(asnlen bytes)  MD(len bytes)
@@ -177,7 +177,7 @@ do_encode_md (gcry_md_hd_t md, int algo, int pkalgo, unsigned int nbits,
         log_printf (" %02X", frame[j]);
       log_printf ("\n");
     }
-      
+
   gcry_mpi_scan (r_val, GCRYMPI_FMT_USG, frame, n, &nframe);
   xfree (frame);
   return 0;
@@ -251,7 +251,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
       return rc;
     }
   if (DBG_HASHING)
-    gcry_md_start_debug (md, "hash.cert");
+    gcry_md_debug (md, "hash.cert");
 
   rc = ksba_cert_hash (cert, 1, HASH_FNC, md);
   if (rc)
@@ -324,7 +324,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
     BUG ();
   gcry_mpi_release (frame);
 
-  
+
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
       log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
@@ -400,7 +400,7 @@ gpgsm_check_cms_signature (ksba_cert_t cert, ksba_const_sexp_t sigval,
   if ( gcry_sexp_build (&s_hash, NULL, "%m", frame) )
     BUG ();
   gcry_mpi_release (frame);
-  
+
   rc = gcry_pk_verify (s_sig, s_hash, s_pkey);
   if (DBG_X509)
       log_debug ("gcry_pk_verify: %s\n", gpg_strerror (rc));
@@ -427,7 +427,7 @@ gpgsm_create_cms_signature (ctrl_t ctrl, ksba_cert_t cert,
 
   desc = gpgsm_format_keydesc (cert);
 
-  rc = gpgsm_agent_pksign (ctrl, grip, desc, gcry_md_read(md, mdalgo), 
+  rc = gpgsm_agent_pksign (ctrl, grip, desc, gcry_md_read(md, mdalgo),
                            gcry_md_get_algo_dlen (mdalgo), mdalgo,
                            r_sigval, &siglen);
   xfree (desc);
