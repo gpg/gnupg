@@ -1398,20 +1398,16 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	      es_write_sanitized (es_stdout, p, n, ":", NULL);
 	      xfree (p);
 	    }
-	  es_fprintf (es_stdout, ":%02x%c:", sig->sig_class,
+	  es_fprintf (es_stdout, ":%02x%c::", sig->sig_class,
 		  sig->flags.exportable ? 'x' : 'l');
 
 	  if (opt.no_sig_cache && opt.check_sigs && fprokay)
 	    {
-	      es_putc (':', es_stdout);
-
 	      for (i = 0; i < fplen; i++)
 		es_fprintf (es_stdout, "%02X", fparray[i]);
-
-	      es_putc (':', es_stdout);
 	    }
 
-	  es_fprintf (es_stdout, "\n");
+	  es_fprintf (es_stdout, ":::%d:\n", sig->digest_algo);
 
 	  if (opt.show_subpackets)
 	    print_subpackets_colon (sig);

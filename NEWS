@@ -9,6 +9,8 @@ Noteworthy changes in version 2.1.0beta4 (unreleased)
  * Removed support for the original HKP keyserver which is not anymore
    used by any site.
 
+ * The hash algorithm is now printed for sig records in key listings.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------

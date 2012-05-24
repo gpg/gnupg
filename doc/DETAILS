@@ -3,8 +3,8 @@ Format of colon listings
 ========================
 First an example:
 
-$ gpg --fixed-list-mode --with-colons --list-keys \
-   --with-fingerprint --with-fingerprint wk@gnupg.org
+$ gpg --with-colons --list-keys \
+      --with-fingerprint --with-fingerprint wk@gnupg.org
 
 pub:f:1024:17:6C7EE1B8621CC013:899817715:1055898235::m:::scESC:
 fpr:::::::::ECAF7590EB3443B5C7CF3ACB6C7EE1B8621CC013:
@@ -151,6 +151,10 @@ record; gpg2 does this by default and the option is a dummy.
 15. Field   Used in sec/sbb to print the serial number of a token
             (internal protect mode 1002) or a '#' if that key is a
             simple stub (internal protect mode 1001)
+16. Field:  For sig records, this is the used hash algorithm:
+                2 = SHA-1
+                8 = SHA-256
+	    (for other id's see include/cipher.h)
 
 All dates are displayed in the format yyyy-mm-dd unless you use the
 option --fixed-list-mode in which case they are displayed as seconds
