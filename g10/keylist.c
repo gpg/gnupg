@@ -66,8 +66,8 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 {
   if (opt.with_colons)
     {
-      byte trust_model, marginals, completes, cert_depth;
-      ulong created, nextcheck, min_cert_level;
+      byte trust_model, marginals, completes, cert_depth, min_cert_level;
+      ulong created, nextcheck;
 
       read_trust_options (&trust_model, &created, &nextcheck,
 			  &marginals, &completes, &cert_depth, &min_cert_level);
