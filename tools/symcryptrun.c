@@ -99,10 +99,10 @@
 
 /* From simple-gettext.c.  */
 
-/* We assume to have `unsigned long int' value with at least 32 bits.  */
+/* We assume to have 'unsigned long int' value with at least 32 bits.  */
 #define HASHWORDBITS 32
 
-/* The so called `hashpjw' function by P.J. Weinberger
+/* The so called 'hashpjw' function by P.J. Weinberger
    [see Aho/Sethi/Ullman, COMPILERS: Principles, Techniques and Tools,
    1986, 1987 Bell Telephone Laboratories, Inc.]  */
 
@@ -228,7 +228,7 @@ my_strusage (int level)
 /* This is in the GNU C library in unistd.h.  */
 
 #ifndef TEMP_FAILURE_RETRY
-/* Evaluate EXPRESSION, and repeat as long as it returns -1 with `errno'
+/* Evaluate EXPRESSION, and repeat as long as it returns -1 with 'errno'
    set to EINTR.  */
 
 # define TEMP_FAILURE_RETRY(expression) \
@@ -318,7 +318,7 @@ confucius_mktmpdir (void)
     name = xstrconcat (p, "/", "gpg-XXXXXX", NULL);
   if (!name || !mkdtemp (name))
     {
-      log_error (_("can't create temporary directory `%s': %s\n"),
+      log_error (_("can't create temporary directory '%s': %s\n"),
                  name?name:"", strerror (errno));
       return NULL;
     }
@@ -935,7 +935,7 @@ main (int argc, char **argv)
         {
           if (!default_config)
             {
-              log_error (_("option file `%s': %s\n"),
+              log_error (_("option file '%s': %s\n"),
                          configname, strerror(errno) );
               exit(1);
 	    }

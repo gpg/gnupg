@@ -150,7 +150,7 @@ main(int argc,char *argv[])
 	output=fopen(optarg,"wb");
 	if(output==NULL)
 	  {
-	    fprintf(console,"gpgkeys: Cannot open output file `%s': %s\n",
+	    fprintf(console,"gpgkeys: Cannot open output file '%s': %s\n",
 		    optarg,strerror(errno));
 	    return KEYSERVER_INTERNAL_ERROR;
 	  }
@@ -163,7 +163,7 @@ main(int argc,char *argv[])
       input=fopen(argv[optind],"r");
       if(input==NULL)
 	{
-	  fprintf(console,"gpgkeys: Cannot open input file `%s': %s\n",
+	  fprintf(console,"gpgkeys: Cannot open input file '%s': %s\n",
 		  argv[optind],strerror(errno));
 	  return KEYSERVER_INTERNAL_ERROR;
 	}
@@ -281,7 +281,7 @@ main(int argc,char *argv[])
 
   if(curldata->protocols[i]==NULL)
     {
-      fprintf(console,"gpgkeys: protocol `%s' not supported\n",opt->scheme);
+      fprintf(console,"gpgkeys: protocol '%s' not supported\n",opt->scheme);
       ret=KEYSERVER_SCHEME_NOT_FOUND;
       goto fail;
     }

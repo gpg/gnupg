@@ -63,7 +63,7 @@ read_list (char *key, char *country, int *lnr)
       if (!listfp && errno != ENOENT)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't open `%s': %s\n"), listname, gpg_strerror (err));
+          log_error (_("can't open '%s': %s\n"), listname, gpg_strerror (err));
           return err;
         }
     }
@@ -102,7 +102,7 @@ read_list (char *key, char *country, int *lnr)
   key[j] = 0;
   if (j != 40 || !(spacep (p+i) || p[i] == '\n'))
     {
-      log_error (_("invalid formatted fingerprint in `%s', line %d\n"),
+      log_error (_("invalid formatted fingerprint in '%s', line %d\n"),
                  listname, *lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
@@ -120,7 +120,7 @@ read_list (char *key, char *country, int *lnr)
     }
   else
     {
-      log_error (_("invalid country code in `%s', line %d\n"), listname, *lnr);
+      log_error (_("invalid country code in '%s', line %d\n"), listname, *lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 

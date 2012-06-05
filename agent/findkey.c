@@ -68,7 +68,7 @@ agent_write_private_key (const unsigned char *grip,
 
   if (!force && !access (fname, F_OK))
     {
-      log_error ("secret key file `%s' already exists\n", fname);
+      log_error ("secret key file '%s' already exists\n", fname);
       xfree (fname);
       return gpg_error (GPG_ERR_EEXIST);
     }
@@ -77,7 +77,7 @@ agent_write_private_key (const unsigned char *grip,
   if (!fp)
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("can't create `%s': %s\n", fname, gpg_strerror (tmperr));
+      log_error ("can't create '%s': %s\n", fname, gpg_strerror (tmperr));
       xfree (fname);
       return tmperr;
     }
@@ -85,7 +85,7 @@ agent_write_private_key (const unsigned char *grip,
   if (es_fwrite (buffer, length, 1, fp) != 1)
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("error writing `%s': %s\n", fname, gpg_strerror (tmperr));
+      log_error ("error writing '%s': %s\n", fname, gpg_strerror (tmperr));
       es_fclose (fp);
       gnupg_remove (fname);
       xfree (fname);
@@ -94,7 +94,7 @@ agent_write_private_key (const unsigned char *grip,
   if (es_fclose (fp))
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
-      log_error ("error closing `%s': %s\n", fname, gpg_strerror (tmperr));
+      log_error ("error closing '%s': %s\n", fname, gpg_strerror (tmperr));
       gnupg_remove (fname);
       xfree (fname);
       return tmperr;
@@ -478,7 +478,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
     {
       rc = gpg_error_from_syserror ();
       if (gpg_err_code (rc) != GPG_ERR_ENOENT)
-        log_error ("can't open `%s': %s\n", fname, strerror (errno));
+        log_error ("can't open '%s': %s\n", fname, strerror (errno));
       xfree (fname);
       return rc;
     }
@@ -486,7 +486,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (fstat (es_fileno (fp), &st))
     {
       rc = gpg_error_from_syserror ();
-      log_error ("can't stat `%s': %s\n", fname, strerror (errno));
+      log_error ("can't stat '%s': %s\n", fname, strerror (errno));
       xfree (fname);
       es_fclose (fp);
       return rc;
@@ -497,7 +497,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (!buf)
     {
       rc = gpg_error_from_syserror ();
-      log_error ("error allocating %zu bytes for `%s': %s\n",
+      log_error ("error allocating %zu bytes for '%s': %s\n",
                  buflen, fname, strerror (errno));
       xfree (fname);
       es_fclose (fp);
@@ -509,7 +509,7 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
   if (es_fread (buf, buflen, 1, fp) != 1)
     {
       rc = gpg_error_from_syserror ();
-      log_error ("error reading %zu bytes from `%s': %s\n",
+      log_error ("error reading %zu bytes from '%s': %s\n",
                  buflen, fname, strerror (errno));
       xfree (fname);
       es_fclose (fp);

@@ -194,7 +194,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
               algo = gcry_md_map_name (algoid);
               if (!algo)
                 {
-                  log_error ("unknown hash algorithm `%s'\n",
+                  log_error ("unknown hash algorithm '%s'\n",
                              algoid? algoid:"?");
                   if (algoid
                       && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
@@ -308,7 +308,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
 
       if (DBG_X509)
         {
-          log_debug ("signer %d - issuer: `%s'\n",
+          log_debug ("signer %d - issuer: '%s'\n",
                      signer, issuer? issuer:"[NONE]");
           log_debug ("signer %d - serial: ", signer);
           gpgsm_dump_serial (serial);

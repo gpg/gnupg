@@ -923,8 +923,8 @@ strsep (char **stringp, const char *delim)
     return NULL;
 
   /* A frequent case is when the delimiter string contains only one
-     character.  Here we don't need to call the expensive `strpbrk'
-     function and instead work using `strchr'.  */
+     character.  Here we don't need to call the expensive 'strpbrk'
+     function and instead work using 'strchr'.  */
   if (delim[0] == '\0' || delim[1] == '\0')
     {
       char ch = delim[0];

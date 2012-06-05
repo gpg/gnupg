@@ -144,7 +144,7 @@ maybe_create_keyring (char *filename, int force)
          sense if this is the case. An empty non-writable directory
          with no keyring is not really useful at all. */
       if (opt.verbose)
-        log_info ("can't allocate lock for `%s'\n", filename );
+        log_info ("can't allocate lock for '%s'\n", filename );
 
       if (!force)
         return gpg_error (GPG_ERR_ENOENT);
@@ -155,7 +155,7 @@ maybe_create_keyring (char *filename, int force)
   if ( dotlock_take (lockhd, -1) )
     {
       /* This is something bad.  Probably a stale lockfile.  */
-      log_info ("can't lock `%s'\n", filename );
+      log_info ("can't lock '%s'\n", filename );
       rc = G10ERR_GENERAL;
       goto leave;
     }
@@ -180,13 +180,13 @@ maybe_create_keyring (char *filename, int force)
   if (!iobuf)
     {
       rc = gpg_error_from_syserror ();
-      log_error ( _("error creating keyring `%s': %s\n"),
+      log_error ( _("error creating keyring '%s': %s\n"),
                   filename, strerror(errno));
       goto leave;
     }
 
   if (!opt.quiet)
-    log_info (_("keyring `%s' created\n"), filename);
+    log_info (_("keyring '%s' created\n"), filename);
 
   iobuf_close (iobuf);
   /* Must invalidate that ugly cache */
@@ -243,7 +243,7 @@ keydb_add_resource (const char *url, int flags)
 #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
       else if (strchr (resname, ':'))
         {
-          log_error ("invalid key resource URL `%s'\n", url );
+          log_error ("invalid key resource URL '%s'\n", url );
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
         }
@@ -292,7 +292,7 @@ keydb_add_resource (const char *url, int flags)
   switch (rt)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      log_error ("unknown type of key resource `%s'\n", url );
+      log_error ("unknown type of key resource '%s'\n", url );
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
 
@@ -326,7 +326,7 @@ keydb_add_resource (const char *url, int flags)
       break;
 
       default:
-	log_error ("resource type of `%s' not supported\n", url);
+	log_error ("resource type of '%s' not supported\n", url);
 	rc = gpg_error (GPG_ERR_GENERAL);
 	goto leave;
     }
@@ -335,7 +335,7 @@ keydb_add_resource (const char *url, int flags)
 
  leave:
   if (rc)
-    log_error (_("keyblock resource `%s': %s\n"), filename, gpg_strerror (rc));
+    log_error (_("keyblock resource '%s': %s\n"), filename, gpg_strerror (rc));
   else
     any_public = 1;
   xfree (filename);

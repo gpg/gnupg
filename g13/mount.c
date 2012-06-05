@@ -55,24 +55,24 @@ parse_header (const char *filename,
   if (packet[0] != (0xc0|61) || len < 26
       || memcmp (packet+6, "GnuPG/G13", 10))
     {
-      log_error ("file `%s' is not valid container\n", filename);
+      log_error ("file '%s' is not valid container\n", filename);
       return gpg_error (GPG_ERR_INV_OBJ);
     }
   if (packet[16] != 1)
     {
-      log_error ("unknown version %u of container `%s'\n",
+      log_error ("unknown version %u of container '%s'\n",
                  (unsigned int)packet[16], filename);
       return gpg_error (GPG_ERR_INV_OBJ);
     }
   if (packet[17] || packet[18]
       || packet[26] || packet[27] || packet[28] || packet[29]
       || packet[30] || packet[31])
-    log_info ("WARNING: unknown meta information in `%s'\n", filename);
+    log_info ("WARNING: unknown meta information in '%s'\n", filename);
   if (packet[19])
-    log_info ("WARNING: OS flag is not supported in `%s'\n", filename);
+    log_info ("WARNING: OS flag is not supported in '%s'\n", filename);
   if (packet[24] != 1 || packet[25] != 0)
     {
-      log_error ("meta data copies in `%s' are not supported\n", filename);
+      log_error ("meta data copies in '%s' are not supported\n", filename);
       return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
 
@@ -82,7 +82,7 @@ parse_header (const char *filename,
   /* Do a basic sanity check on the length.  */
   if (len < 32 || len > 1024*1024)
     {
-      log_error ("bad length given in container `%s'\n", filename);
+      log_error ("bad length given in container '%s'\n", filename);
       return gpg_error (GPG_ERR_INV_OBJ);
     }
 
@@ -107,7 +107,7 @@ read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error reading `%s': %s\n", filename, gpg_strerror (err));
+      log_error ("error reading '%s': %s\n", filename, gpg_strerror (err));
       return err;
     }
 
@@ -115,7 +115,7 @@ read_keyblob_prefix (const char *filename, estream_t *r_fp, size_t *r_headerlen)
   if (es_fread (packet, 32, 1, fp) != 1)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error reading the header of `%s': %s\n",
+      log_error ("error reading the header of '%s': %s\n",
                  filename, gpg_strerror (err));
       es_fclose (fp);
       return err;
@@ -150,7 +150,7 @@ read_keyblob (const char *filename,
     goto leave;
 
   if (opt.verbose)
-    log_info ("header length of `%s' is %zu\n", filename, headerlen);
+    log_info ("header length of '%s' is %zu\n", filename, headerlen);
 
   /* Read everything including the padding.  We should eventually do a
      regular OpenPGP parsing to detect the padding packet and pass
@@ -173,7 +173,7 @@ read_keyblob (const char *filename,
   if (es_fread (msg, msglen, 1, fp) != 1)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error reading keyblob of `%s': %s\n",
+      log_error ("error reading keyblob of '%s': %s\n",
                  filename, gpg_strerror (err));
       goto leave;
     }
@@ -264,7 +264,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       if (!mkdtemp (mountpoint_buffer))
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't create directory `%s': %s\n"),
+          log_error (_("can't create directory '%s': %s\n"),
                      "/tmp/g13-XXXXXX", gpg_strerror (err));
           xfree (mountpoint_buffer);
           return err;

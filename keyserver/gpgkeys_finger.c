@@ -79,19 +79,19 @@ connect_server (const char *server, unsigned short port)
 
   /* Win32 gethostbyname doesn't handle IP addresses internally, so we
      try inet_addr first on that platform only. */
-  if ((l = inet_addr (server)) != INADDR_NONE) 
+  if ((l = inet_addr (server)) != INADDR_NONE)
     memcpy (&addr.sin_addr, &l, sizeof l);
-  else if ((hp = gethostbyname (server))) 
+  else if ((hp = gethostbyname (server)))
     {
       if (hp->h_addrtype != AF_INET)
         {
-          fprintf (console, "gpgkeys: unknown address family for `%s'\n",
+          fprintf (console, "gpgkeys: unknown address family for '%s'\n",
                    server);
           return -1;
         }
       if (hp->h_length != 4)
         {
-          fprintf (console, "gpgkeys: illegal address length for `%s'\n",
+          fprintf (console, "gpgkeys: illegal address length for '%s'\n",
                    server);
           return -1;
         }
@@ -99,7 +99,7 @@ connect_server (const char *server, unsigned short port)
     }
   else
     {
-      fprintf (console, "gpgkeys: host `%s' not found: ec=%d\n",
+      fprintf (console, "gpgkeys: host '%s' not found: ec=%d\n",
                server, (int)WSAGetLastError ());
       return -1;
     }
@@ -107,14 +107,14 @@ connect_server (const char *server, unsigned short port)
   sock = socket (AF_INET, SOCK_STREAM, 0);
   if (sock == INVALID_SOCKET)
     {
-      fprintf (console, "gpgkeys: error creating socket: ec=%d\n", 
+      fprintf (console, "gpgkeys: error creating socket: ec=%d\n",
                (int)WSAGetLastError ());
       return -1;
     }
 
   if (connect (sock, (struct sockaddr *)&addr, sizeof addr))
     {
-      fprintf (console, "gpgkeys: error connecting `%s': ec=%d\n", 
+      fprintf (console, "gpgkeys: error connecting '%s': ec=%d\n",
                server, (int)WSAGetLastError ());
       sock_close (sock);
       return -1;
@@ -130,30 +130,30 @@ connect_server (const char *server, unsigned short port)
   host = gethostbyname ((char*)server);
   if (!host)
     {
-      fprintf (console, "gpgkeys: host `%s' not found: %s\n",
+      fprintf (console, "gpgkeys: host '%s' not found: %s\n",
                server, strerror (errno));
       return -1;
     }
-  
+
   addr.sin_addr = *(struct in_addr*)host->h_addr;
 
   sock = socket (AF_INET, SOCK_STREAM, 0);
   if (sock == -1)
     {
-      fprintf (console, "gpgkeys: error creating socket: %s\n", 
+      fprintf (console, "gpgkeys: error creating socket: %s\n",
                strerror (errno));
       return -1;
     }
-  
+
   if (connect (sock, (struct sockaddr *)&addr, sizeof addr) == -1)
     {
-      fprintf (console, "gpgkeys: error connecting `%s': %s\n", 
+      fprintf (console, "gpgkeys: error connecting '%s': %s\n",
                server, strerror (errno));
       close (sock);
       return -1;
     }
 #endif
-    
+
   return sock;
 }
 
@@ -163,11 +163,11 @@ write_server (int sock, const char *data, size_t length)
   int nleft;
 
   nleft = length;
-  while (nleft > 0) 
+  while (nleft > 0)
     {
       int nwritten;
-      
-#ifdef HAVE_W32_SYSTEM  
+
+#ifdef HAVE_W32_SYSTEM
       nwritten = send (sock, data, nleft, 0);
       if ( nwritten == SOCKET_ERROR )
         {
@@ -184,7 +184,7 @@ write_server (int sock, const char *data, size_t length)
           if (errno == EAGAIN)
             {
               struct timeval tv;
-              
+
               tv.tv_sec =  0;
               tv.tv_usec = 50000;
               select(0, NULL, NULL, NULL, &tv);
@@ -197,7 +197,7 @@ write_server (int sock, const char *data, size_t length)
       nleft -=nwritten;
       data += nwritten;
     }
-  
+
   return 0;
 }
 
@@ -227,7 +227,7 @@ send_request (const char *request, int *r_sock)
       return KEYSERVER_GENERAL_ERROR;
     }
   *server++ = 0;
-  
+
   sock = connect_server (server, 79);
   if (sock == -1)
     {
@@ -272,7 +272,7 @@ get_key (char *getkey)
       sock_close (sock);
       return KEYSERVER_OK;
     }
-  
+
   /* Hmmm, we use iobuf here only to cope with Windows socket
      peculiarities (we can't used fdopen).  */
   fp_read = iobuf_sockopen (sock , "r");
@@ -286,7 +286,7 @@ get_key (char *getkey)
   while ( iobuf_read_line ( fp_read, &line, &buflen, &maxlen))
     {
       maxlen=1024;
-      
+
       if(gotit)
         {
 	  print_nocr(output, (const char*)line);
@@ -299,7 +299,7 @@ get_key (char *getkey)
           gotit=1;
         }
     }
-  
+
   if(gotit)
     fprintf (output,"KEY 0x%s END\n", getkey);
   else
@@ -316,7 +316,7 @@ get_key (char *getkey)
 }
 
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -362,7 +362,7 @@ main(int argc,char *argv[])
 	output=fopen(optarg,"w");
 	if(output==NULL)
 	  {
-	    fprintf(console,"gpgkeys: Cannot open output file `%s': %s\n",
+	    fprintf(console,"gpgkeys: Cannot open output file '%s': %s\n",
 		    optarg,strerror(errno));
 	    return KEYSERVER_INTERNAL_ERROR;
 	  }
@@ -375,7 +375,7 @@ main(int argc,char *argv[])
       input=fopen(argv[optind],"r");
       if(input==NULL)
 	{
-	  fprintf(console,"gpgkeys: Cannot open input file `%s': %s\n",
+	  fprintf(console,"gpgkeys: Cannot open input file '%s': %s\n",
 		  argv[optind],strerror(errno));
 	  return KEYSERVER_INTERNAL_ERROR;
 	}

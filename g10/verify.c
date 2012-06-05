@@ -95,7 +95,7 @@ verify_signatures (ctrl_t ctrl, int nfiles, char **files )
       }
     if( !fp ) {
         rc = gpg_error_from_syserror ();
-	log_error(_("can't open `%s': %s\n"),
+	log_error(_("can't open '%s': %s\n"),
                   print_fname_stdin(sigfile), gpg_strerror (rc));
         goto leave;
     }
@@ -158,7 +158,7 @@ verify_one_file (ctrl_t ctrl, const char *name )
       }
     if( !fp ) {
         rc = gpg_error_from_syserror ();
-	log_error(_("can't open `%s': %s\n"),
+	log_error(_("can't open '%s': %s\n"),
                   print_fname_stdin(name), strerror (errno));
 	print_file_status( STATUS_FILE_ERROR, name, 1 );
         goto leave;

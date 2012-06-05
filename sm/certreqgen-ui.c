@@ -309,7 +309,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
       else if ( (err = ksba_dn_teststr (answer, 0, &erroff, &errlen)) )
         {
           if (gpg_err_code (err) == GPG_ERR_UNKNOWN_NAME)
-            tty_printf (_("Invalid subject name label `%.*s'\n"),
+            tty_printf (_("Invalid subject name label '%.*s'\n"),
                         (int)errlen, answer+erroff);
           else
             {
@@ -318,7 +318,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
                  adjust it do the length of your translation.  The
                  second string is merely passed to atoi so you can
                  drop everything after the number.  */
-              tty_printf (_("Invalid subject name `%s'\n"), answer);
+              tty_printf (_("Invalid subject name '%s'\n"), answer);
               tty_printf ("%*s^\n",
                           atoi (_("22 translator: see "
                                   "certreg-ui.c:gpgsm_gencertreq_tty"))

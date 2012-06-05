@@ -191,7 +191,7 @@ make_canonical (const char *fname, const char *buf, size_t buflen)
   rc = gcry_sexp_sscan (&sexp, &erroff, buf, buflen);
   if (rc)
     {
-      log_error ("invalid S-Expression in `%s' (off=%u): %s\n",
+      log_error ("invalid S-Expression in '%s' (off=%u): %s\n",
                  fname, (unsigned int)erroff, gpg_strerror (rc));
       return NULL;
     }
@@ -258,7 +258,7 @@ read_file (const char *fname, size_t *r_length)
           nread = fread (buf+buflen, 1, NCHUNK, fp);
           if (nread < NCHUNK && ferror (fp))
             {
-              log_error ("error reading `[stdin]': %s\n", strerror (errno));
+              log_error ("error reading '[stdin]': %s\n", strerror (errno));
               xfree (buf);
               return NULL;
             }
@@ -275,13 +275,13 @@ read_file (const char *fname, size_t *r_length)
       fp = fopen (fname, "rb");
       if (!fp)
         {
-          log_error ("can't open `%s': %s\n", fname, strerror (errno));
+          log_error ("can't open '%s': %s\n", fname, strerror (errno));
           return NULL;
         }
 
       if (fstat (fileno(fp), &st))
         {
-          log_error ("can't stat `%s': %s\n", fname, strerror (errno));
+          log_error ("can't stat '%s': %s\n", fname, strerror (errno));
           fclose (fp);
           return NULL;
         }
@@ -290,7 +290,7 @@ read_file (const char *fname, size_t *r_length)
       buf = xmalloc (buflen+1);
       if (fread (buf, buflen, 1, fp) != 1)
         {
-          log_error ("error reading `%s': %s\n", fname, strerror (errno));
+          log_error ("error reading '%s': %s\n", fname, strerror (errno));
           fclose (fp);
           xfree (buf);
           return NULL;

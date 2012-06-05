@@ -1538,7 +1538,7 @@ parse_response (http_t hd)
 	return GPG_ERR_EOF;
 
       if ((hd->flags & HTTP_FLAG_LOG_RESP))
-        log_info ("RESP: `%.*s'\n",
+        log_info ("RESP: '%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
     }
   while (!*line);
@@ -1584,7 +1584,7 @@ parse_response (http_t hd)
       if ((*line == '\r' && line[1] == '\n') || *line == '\n')
 	*line = 0;
       if ((hd->flags & HTTP_FLAG_LOG_RESP))
-        log_info ("RESP: `%.*s'\n",
+        log_info ("RESP: '%.*s'\n",
                   (int)strlen(line)-(*line&&line[1]?2:0),line);
       if (*line)
         {
@@ -1834,7 +1834,7 @@ connect_server (const char *server, unsigned short port,
       addr.sin_family = host->h_addrtype;
       if (addr.sin_family != AF_INET)
 	{
-	  log_error ("unknown address family for `%s'\n",
+	  log_error ("unknown address family for '%s'\n",
                      serverlist[srv].target);
           xfree (serverlist);
 	  return -1;
@@ -1842,7 +1842,7 @@ connect_server (const char *server, unsigned short port,
       addr.sin_port = htons (serverlist[srv].port);
       if (host->h_length != 4)
         {
-          log_error ("illegal address length for `%s'\n",
+          log_error ("illegal address length for '%s'\n",
                      serverlist[srv].target);
           xfree (serverlist);
           return -1;
@@ -1868,12 +1868,12 @@ connect_server (const char *server, unsigned short port,
   if (!connected)
     {
 #ifdef HAVE_W32_SYSTEM
-      log_error ("can't connect to `%s': %s%sec=%d\n",
+      log_error ("can't connect to '%s': %s%sec=%d\n",
                    server,
                    hostfound? "":_("host not found"),
                    hostfound? "":" - ", (int)WSAGetLastError());
 #else
-      log_error ("can't connect to `%s': %s\n",
+      log_error ("can't connect to '%s': %s\n",
                  server,
                  hostfound? strerror (last_errno):"host not found");
 #endif
@@ -2166,7 +2166,7 @@ main (int argc, char **argv)
   rc = http_parse_uri (&uri, *argv, 1);
   if (rc)
     {
-      log_error ("`%s': %s\n", *argv, gpg_strerror (rc));
+      log_error ("'%s': %s\n", *argv, gpg_strerror (rc));
       return 1;
     }
 
@@ -2208,7 +2208,7 @@ main (int argc, char **argv)
   rc = http_open_document (&hd, *argv, NULL, 0, NULL, tls_session, NULL, NULL);
   if (rc)
     {
-      log_error ("can't get `%s': %s\n", *argv, gpg_strerror (rc));
+      log_error ("can't get '%s': %s\n", *argv, gpg_strerror (rc));
       return 1;
     }
   log_info ("open_http_document succeeded; status=%u\n",
@@ -2223,7 +2223,7 @@ main (int argc, char **argv)
       break;
     case 301:
     case 302:
-      printf ("Redirected to `%s'\n", http_get_header (hd, "Location"));
+      printf ("Redirected to '%s'\n", http_get_header (hd, "Location"));
       break;
     }
   http_close (hd, 0);

@@ -67,7 +67,7 @@ test_isotime2epoch (void)
         {
           fail (idx);
           if (verbose)
-            fprintf (stderr, "string `%s' exp: %ld got: %ld\n",
+            fprintf (stderr, "string '%s' exp: %ld got: %ld\n",
                      array[idx].string, (long)array[idx].expected,
                      (long)val);
         }
@@ -77,7 +77,7 @@ test_isotime2epoch (void)
           if (strlen (tbuf) != 15)
             {
               if (verbose)
-                fprintf (stderr, "string `%s', time-t %ld, revert: `%s'\n",
+                fprintf (stderr, "string '%s', time-t %ld, revert: '%s'\n",
                          array[idx].string, (long)val, tbuf);
               fail (idx);
             }
@@ -153,21 +153,21 @@ test_string2isotime (void)
         {
           fail (idx);
           if (verbose)
-            fprintf (stderr, "string `%s' expected: %d, got: %d\n",
+            fprintf (stderr, "string '%s' expected: %d, got: %d\n",
                      array[idx].string, (int)array[idx].result, (int)result);
         }
       else if (result && strlen (tbuf) != 15)
         {
           fail (idx);
           if (verbose)
-            fprintf (stderr, "string `%s' invalid isotime returned\n",
+            fprintf (stderr, "string '%s' invalid isotime returned\n",
                      array[idx].string);
         }
       else if (result && strcmp (array[idx].expected, tbuf))
         {
           fail (idx);
           if (verbose)
-            fprintf (stderr, "string `%s' bad isotime '%s' returned\n",
+            fprintf (stderr, "string '%s' bad isotime '%s' returned\n",
                      array[idx].string, tbuf);
         }
     }

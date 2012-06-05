@@ -340,7 +340,7 @@ inq_certificate (void *opaque, const char *line)
     }
   else
     {
-      log_error ("unsupported inquiry `%s'\n", line);
+      log_error ("unsupported inquiry '%s'\n", line);
       return gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 
@@ -914,7 +914,7 @@ run_command_inq_cb (void *opaque, const char *line)
     }
   else
     {
-      log_error ("unsupported inquiry `%s'\n", line);
+      log_error ("unsupported inquiry '%s'\n", line);
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 

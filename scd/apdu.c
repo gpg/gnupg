@@ -1729,7 +1729,7 @@ open_pcsc_reader_direct (const char *portstr)
       if (!*p && !p[1])
         break;
       if (*p)
-        log_info ("detected reader `%s'\n", p);
+        log_info ("detected reader '%s'\n", p);
       if (nreader < (strlen (p)+1))
         {
           log_error ("invalid response from pcsc_list_readers\n");
@@ -1792,7 +1792,7 @@ open_pcsc_reader_wrapped (const char *portstr)
 
   if (access (wrapperpgm, X_OK))
     {
-      log_error ("can't run PC/SC access module `%s': %s\n",
+      log_error ("can't run PC/SC access module '%s': %s\n",
                  wrapperpgm, strerror (errno));
       return -1;
     }
@@ -1856,7 +1856,7 @@ open_pcsc_reader_wrapped (const char *portstr)
       /* Send stderr to the bit bucket. */
       fd = open ("/dev/null", O_WRONLY);
       if (fd == -1)
-        log_fatal ("can't open `/dev/null': %s", strerror (errno));
+        log_fatal ("can't open '/dev/null': %s", strerror (errno));
       if (fd != 2 && dup2 (fd, 2) == -1)
         log_fatal ("dup2 stderr failed: %s\n", strerror (errno));
 
@@ -2900,7 +2900,7 @@ apdu_open_reader (const char *portstr, int *r_no_service)
       handle = dlopen (opt.pcsc_driver, RTLD_LAZY);
       if (!handle)
         {
-          log_error ("apdu_open_reader: failed to open driver `%s': %s\n",
+          log_error ("apdu_open_reader: failed to open driver '%s': %s\n",
                      opt.pcsc_driver, dlerror ());
           return -1;
         }

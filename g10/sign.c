@@ -614,7 +614,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
 
         if( !(tmpsize = iobuf_get_filelength(inp, &overflow))
             && !overflow && opt.verbose)
-	  log_info (_("WARNING: `%s' is an empty file\n"), fname);
+	  log_info (_("WARNING: '%s' is an empty file\n"), fname);
 
         /* We can't encode the length of very large files because
            OpenPGP uses only 32 bit for file sizes.  So if the size of
@@ -839,7 +839,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
       if( !inp )
         {
           rc = gpg_error_from_syserror ();
-          log_error (_("can't open `%s': %s\n"), fname? fname: "[stdin]",
+          log_error (_("can't open '%s': %s\n"), fname? fname: "[stdin]",
                      strerror(errno) );
           goto leave;
 	}
@@ -857,11 +857,11 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	if( !out )
 	  {
             rc = gpg_error_from_syserror ();
-	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
+	    log_error(_("can't create '%s': %s\n"), outfile, strerror(errno) );
 	    goto leave;
 	  }
 	else if( opt.verbose )
-	    log_info(_("writing to `%s'\n"), outfile );
+	    log_info(_("writing to '%s'\n"), outfile );
     }
     else if( (rc = open_outfile (GNUPG_INVALID_FD, fname,
                                  opt.armor? 1: detached? 2:0, &out )))
@@ -1039,13 +1039,13 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 		if( !inp )
 		  {
                     rc = gpg_error_from_syserror ();
-		    log_error(_("can't open `%s': %s\n"),
+		    log_error(_("can't open '%s': %s\n"),
 			      sl->d,strerror(errno));
 		    goto leave;
 		  }
                 handle_progress (pfx, inp, sl->d);
 		if( opt.verbose )
-		    fprintf(stderr, " `%s'", sl->d );
+		    fprintf(stderr, " '%s'", sl->d );
 		if(opt.textmode)
 		  {
 		    memset( &tfx, 0, sizeof tfx);
@@ -1157,7 +1157,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"),
+	log_error (_("can't open '%s': %s\n"),
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }
@@ -1173,11 +1173,11 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 	if( !out )
 	  {
             rc = gpg_error_from_syserror ();
-	    log_error(_("can't create `%s': %s\n"), outfile, strerror(errno) );
+	    log_error(_("can't create '%s': %s\n"), outfile, strerror(errno) );
 	    goto leave;
 	  }
 	else if( opt.verbose )
-	    log_info(_("writing to `%s'\n"), outfile );
+	    log_info(_("writing to '%s'\n"), outfile );
     }
     else if( (rc = open_outfile (GNUPG_INVALID_FD, fname, 1, &out )) )
 	goto leave;
@@ -1315,7 +1315,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
       }
     if( !inp ) {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't open `%s': %s\n"),
+	log_error (_("can't open '%s': %s\n"),
                    fname? fname: "[stdin]", strerror(errno) );
 	goto leave;
     }

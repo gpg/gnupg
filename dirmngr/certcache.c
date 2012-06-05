@@ -349,7 +349,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
   if (!dir)
     {
       if (opt.system_daemon)
-        log_info (_("can't access directory `%s': %s\n"),
+        log_info (_("can't access directory '%s': %s\n"),
                   dirname, strerror (errno));
       return 0; /* We do not consider this a severe error.  */
     }
@@ -368,7 +368,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
       fp = es_fopen (fname, "rb");
       if (!fp)
         {
-          log_error (_("can't open `%s': %s\n"),
+          log_error (_("can't open '%s': %s\n"),
                      fname, strerror (errno));
           continue;
         }
@@ -387,7 +387,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
       es_fclose (fp);
       if (err)
         {
-          log_error (_("can't parse certificate `%s': %s\n"),
+          log_error (_("can't parse certificate '%s': %s\n"),
                      fname, gpg_strerror (err));
           ksba_cert_release (cert);
           continue;
@@ -395,13 +395,13 @@ load_certs_from_dir (const char *dirname, int are_trusted)
 
       err = put_cert (cert, 1, are_trusted, NULL);
       if (gpg_err_code (err) == GPG_ERR_DUP_VALUE)
-        log_info (_("certificate `%s' already cached\n"), fname);
+        log_info (_("certificate '%s' already cached\n"), fname);
       else if (!err)
         {
           if (are_trusted)
-            log_info (_("trusted certificate `%s' loaded\n"), fname);
+            log_info (_("trusted certificate '%s' loaded\n"), fname);
           else
-            log_info (_("certificate `%s' loaded\n"), fname);
+            log_info (_("certificate '%s' loaded\n"), fname);
           if (opt.verbose)
             {
               p = get_fingerprint_hexstring_colon (cert);
@@ -413,7 +413,7 @@ load_certs_from_dir (const char *dirname, int are_trusted)
             }
         }
       else
-        log_error (_("error loading certificate `%s': %s\n"),
+        log_error (_("error loading certificate '%s': %s\n"),
                      fname, gpg_strerror (err));
       ksba_cert_release (cert);
     }
@@ -593,7 +593,7 @@ get_cert_byhexfpr (const char *string)
     }
   if (i!=20 || *s)
     {
-      log_error (_("invalid SHA1 fingerprint string `%s'\n"), string);
+      log_error (_("invalid SHA1 fingerprint string '%s'\n"), string);
       return NULL;
     }
 

@@ -794,7 +794,7 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
 #endif
   if (!fp)
     {
-      tty_printf (_("can't open `%s': %s\n"), fname, strerror (errno));
+      tty_printf (_("can't open '%s': %s\n"), fname, strerror (errno));
       return -1;
     }
 
@@ -813,7 +813,7 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
   es_fclose (fp);
   if (n < 0)
     {
-      tty_printf (_("error reading `%s': %s\n"), fname, strerror (errno));
+      tty_printf (_("error reading '%s': %s\n"), fname, strerror (errno));
       xfree (data);
       return -1;
     }
@@ -840,13 +840,13 @@ put_data_to_file (const char *fname, const void *buffer, size_t length)
 #endif
   if (!fp)
     {
-      tty_printf (_("can't create `%s': %s\n"), fname, strerror (errno));
+      tty_printf (_("can't create '%s': %s\n"), fname, strerror (errno));
       return -1;
     }
 
   if (length && es_fwrite (buffer, length, 1, fp) != 1)
     {
-      tty_printf (_("error writing `%s': %s\n"), fname, strerror (errno));
+      tty_printf (_("error writing '%s': %s\n"), fname, strerror (errno));
       es_fclose (fp);
       return -1;
     }
@@ -1403,7 +1403,7 @@ generate_card_keys (ctrl_t ctrl)
     {
       tty_printf ("\n");
       tty_printf (_("Please note that the factory settings of the PINs are\n"
-                    "   PIN = `%s'     Admin PIN = `%s'\n"
+                    "   PIN = '%s'     Admin PIN = '%s'\n"
                     "You should change them using the command --change-pin\n"),
                   "123456", "12345678");
       tty_printf ("\n");

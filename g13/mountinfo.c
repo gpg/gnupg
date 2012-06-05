@@ -136,7 +136,7 @@ mountinfo_del_mount (const char *container, const char *mountpoint,
                not have completed yet.  We should add the mountpoints
                to an idle queue and retry a remove.  */
             if (rmdir (m->mountpoint))
-              log_error ("error removing mount point `%s': %s\n",
+              log_error ("error removing mount point '%s': %s\n",
                          m->mountpoint,
                          gpg_strerror (gpg_error_from_syserror ()));
           }

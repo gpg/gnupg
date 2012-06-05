@@ -130,7 +130,7 @@ get_outfp (estream_t *fp)
         {
           *fp = es_fopen (opt.outfile, "w");
           if (!*fp)
-            gc_error (1, errno, "can not open `%s'", opt.outfile);
+            gc_error (1, errno, "can not open '%s'", opt.outfile);
         }
       else
         *fp = es_stdout;
@@ -202,7 +202,7 @@ main (int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
   fname = argc ? *argv : NULL;
@@ -383,7 +383,7 @@ main (int argc, char **argv)
 
   if (outfp != es_stdout)
     if (es_fclose (outfp))
-      gc_error (1, errno, "error closing `%s'", opt.outfile);
+      gc_error (1, errno, "error closing '%s'", opt.outfile);
 
   return 0;
 }

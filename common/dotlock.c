@@ -52,7 +52,7 @@
  *    products derived from this software without specific prior
  *    written permission.
  *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
@@ -497,7 +497,7 @@ read_lockfile (dotlock_t h, int *same_node )
   if ( (fd = open (h->lockname, O_RDONLY)) == -1 )
     {
       int e = errno;
-      my_info_2 ("error opening lockfile `%s': %s\n",
+      my_info_2 ("error opening lockfile '%s': %s\n",
                  h->lockname, strerror(errno) );
       if (buffer != buffer_space)
         jnlib_free (buffer);
@@ -514,7 +514,7 @@ read_lockfile (dotlock_t h, int *same_node )
         continue;
       if (res < 0)
         {
-          my_info_1 ("error reading lockfile `%s'\n", h->lockname );
+          my_info_1 ("error reading lockfile '%s'\n", h->lockname );
           close (fd);
           if (buffer != buffer_space)
             jnlib_free (buffer);
@@ -529,7 +529,7 @@ read_lockfile (dotlock_t h, int *same_node )
 
   if (nread < 11)
     {
-      my_info_1 ("invalid size of lockfile `%s'\n", h->lockname);
+      my_info_1 ("invalid size of lockfile '%s'\n", h->lockname);
       if (buffer != buffer_space)
         jnlib_free (buffer);
       jnlib_set_errno (0); /* Better don't return an inappropriate ERRNO. */
@@ -540,7 +540,7 @@ read_lockfile (dotlock_t h, int *same_node )
       || (buffer[10] = 0, pid = atoi (buffer)) == -1
       || !pid )
     {
-      my_error_2 ("invalid pid %d in lockfile `%s'\n", pid, h->lockname);
+      my_error_2 ("invalid pid %d in lockfile '%s'\n", pid, h->lockname);
       if (buffer != buffer_space)
         jnlib_free (buffer);
       jnlib_set_errno (0);
@@ -666,7 +666,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
     {
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
-      my_error_2 (_("failed to create temporary file `%s': %s\n"),
+      my_error_2 (_("failed to create temporary file '%s': %s\n"),
                   h->tname, strerror(errno));
       jnlib_free (h->tname);
       jnlib_free (h);
@@ -691,7 +691,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       h->use_o_excl = 1;
       break;
     default:
-      my_error_2 ("can't check whether hardlinks are supported for `%s': %s\n",
+      my_error_2 ("can't check whether hardlinks are supported for '%s': %s\n",
                   h->tname, strerror(errno));
       goto write_failed;
     }
@@ -709,14 +709,14 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   strcpy (stpcpy (h->lockname, file_to_lock), EXTSEP_S "lock");
   UNLOCK_all_lockfiles ();
   if (h->use_o_excl)
-    my_debug_1 ("locking for `%s' done via O_EXCL\n", h->lockname);
+    my_debug_1 ("locking for '%s' done via O_EXCL\n", h->lockname);
 
   return h;
 
  write_failed:
   all_lockfiles = h->next;
   UNLOCK_all_lockfiles ();
-  my_error_2 (_("error writing to `%s': %s\n"), h->tname, strerror (errno));
+  my_error_2 (_("error writing to '%s': %s\n"), h->tname, strerror (errno));
   close (fd);
   unlink (h->tname);
   jnlib_free (h->tname);
@@ -780,7 +780,7 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
     {
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
-      my_error_2 (_("can't create `%s': %s\n"), h->lockname, w32_strerror (-1));
+      my_error_2 (_("can't create '%s': %s\n"), h->lockname, w32_strerror (-1));
       jnlib_free (h->lockname);
       jnlib_free (h);
       return NULL;
@@ -975,7 +975,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
         ; /* Lock held by another process.  */
       else if (fd == -1)
         {
-          my_error_2 ("lock not made: open(O_EXCL) of `%s' failed: %s\n",
+          my_error_2 ("lock not made: open(O_EXCL) of '%s' failed: %s\n",
                       h->lockname, strerror (errno));
           return -1;
         }
@@ -994,7 +994,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
               return 0;
             }
           /* Write error.  */
-          my_error_2 ("lock not made: writing to `%s' failed: %s\n",
+          my_error_2 ("lock not made: writing to '%s' failed: %s\n",
                       h->lockname, strerror (errno));
           close (fd);
           unlink (h->lockname);
@@ -1123,7 +1123,7 @@ dotlock_take_w32 (dotlock_t h, long timeout)
   w32err = GetLastError ();
   if (w32err != ERROR_LOCK_VIOLATION)
     {
-      my_error_2 (_("lock `%s' not made: %s\n"),
+      my_error_2 (_("lock '%s' not made: %s\n"),
                   h->lockname, w32_strerror (w32err));
       return -1;
     }
@@ -1173,7 +1173,7 @@ dotlock_take (dotlock_t h, long timeout)
 
   if ( h->locked )
     {
-      my_debug_1 ("Oops, `%s' is already locked\n", h->lockname);
+      my_debug_1 ("Oops, '%s' is already locked\n", h->lockname);
       return 0;
     }
 
@@ -1209,7 +1209,7 @@ dotlock_release_unix (dotlock_t h)
 
   if ( unlink( h->lockname ) )
     {
-      my_error_1 ("release_dotlock: error removing lockfile `%s'\n",
+      my_error_1 ("release_dotlock: error removing lockfile '%s'\n",
                   h->lockname);
       return -1;
     }
@@ -1230,7 +1230,7 @@ dotlock_release_w32 (dotlock_t h)
   memset (&ovl, 0, sizeof ovl);
   if (!UnlockFileEx (h->lockhd, 0, 1, 0, &ovl))
     {
-      my_error_2 ("release_dotlock: error removing lockfile `%s': %s\n",
+      my_error_2 ("release_dotlock: error removing lockfile '%s': %s\n",
                   h->lockname, w32_strerror (-1));
       return -1;
     }
@@ -1261,7 +1261,7 @@ dotlock_release (dotlock_t h)
 
   if ( !h->locked )
     {
-      my_debug_1 ("Oops, `%s' is not locked\n", h->lockname);
+      my_debug_1 ("Oops, '%s' is not locked\n", h->lockname);
       return 0;
     }
 

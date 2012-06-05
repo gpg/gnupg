@@ -107,9 +107,9 @@ register_secured_file (const char *fname)
 
   /* Note that we stop immediatley if something goes wrong here. */
   if (stat (fname, &buf))
-    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname,
+    log_fatal (_("fstat of '%s' failed in %s: %s\n"), fname,
                "register_secured_file", strerror (errno));
-/*   log_debug ("registering `%s' i=%lu.%lu\n", fname, */
+/*   log_debug ("registering '%s' i=%lu.%lu\n", fname, */
 /*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
   for (sf=secured_files; sf; sf = sf->next)
     {
@@ -137,11 +137,11 @@ unregister_secured_file (const char *fname)
 
   if (stat (fname, &buf))
     {
-      log_error (_("fstat of `%s' failed in %s: %s\n"), fname,
+      log_error (_("fstat of '%s' failed in %s: %s\n"), fname,
                  "unregister_secured_file", strerror (errno));
       return;
     }
-/*   log_debug ("unregistering `%s' i=%lu.%lu\n", fname,  */
+/*   log_debug ("unregistering '%s' i=%lu.%lu\n", fname,  */
 /*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
   for (sfprev=NULL,sf=secured_files; sf; sfprev=sf, sf = sf->next)
     {
@@ -213,7 +213,7 @@ is_secured_filename (const char *fname)
     {
       if (errno == ENOENT || errno == EPERM || errno == EACCES)
         return 0;
-      log_error (_("fstat of `%s' failed in %s: %s\n"), fname,
+      log_error (_("fstat of '%s' failed in %s: %s\n"), fname,
                  "is_secured_filename", strerror (errno));
       return 1;
     }
@@ -1215,7 +1215,7 @@ parse_options(char *str,unsigned int *options,
 		      if(ascii_strncasecmp(opts[j].name,tok,toklen)==0)
 			{
 			  if(noisy)
-			    log_info(_("ambiguous option `%s'\n"),otok);
+			    log_info(_("ambiguous option '%s'\n"),otok);
 			  return 0;
 			}
 		    }
@@ -1240,7 +1240,7 @@ parse_options(char *str,unsigned int *options,
       if(!opts[i].name)
 	{
 	  if(noisy)
-	    log_info(_("unknown option `%s'\n"),otok);
+	    log_info(_("unknown option '%s'\n"),otok);
 	  return 0;
 	}
     }

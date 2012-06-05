@@ -617,7 +617,7 @@ decrypt_block (const void *ciphertext, unsigned char *plaintext, size_t length,
             }
           *outptr = 0;
           jnlib_iconv_close (cd);
-          log_info ("decryption failed; trying charset `%s'\n",
+          log_info ("decryption failed; trying charset '%s'\n",
                     charsets[charsetidx]);
         }
       memcpy (plaintext, ciphertext, length);
@@ -2401,7 +2401,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
       if (cd == (jnlib_iconv_t)(-1))
         {
           log_error ("can't convert passphrase to"
-                     " requested charset `%s': %s\n",
+                     " requested charset '%s': %s\n",
                      charset, strerror (errno));
           gcry_free (pwbuf);
           goto failure;
@@ -2415,7 +2415,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
                       &outptr, &outbytes) == (size_t)-1)
         {
           log_error ("error converting passphrase to"
-                     " requested charset `%s': %s\n",
+                     " requested charset '%s': %s\n",
                      charset, strerror (errno));
           gcry_free (pwbuf);
           jnlib_iconv_close (cd);
@@ -2532,13 +2532,13 @@ main (int argc, char **argv)
   fp = fopen (argv[1], "rb");
   if (!fp)
     {
-      fprintf (stderr, "can't open `%s': %s\n", argv[1], strerror (errno));
+      fprintf (stderr, "can't open '%s': %s\n", argv[1], strerror (errno));
       return 1;
     }
 
   if (fstat (fileno(fp), &st))
     {
-      fprintf (stderr, "can't stat `%s': %s\n", argv[1], strerror (errno));
+      fprintf (stderr, "can't stat '%s': %s\n", argv[1], strerror (errno));
       return 1;
     }
 
@@ -2546,7 +2546,7 @@ main (int argc, char **argv)
   buf = gcry_malloc (buflen+1);
   if (!buf || fread (buf, buflen, 1, fp) != 1)
     {
-      fprintf (stderr, "error reading `%s': %s\n", argv[1], strerror (errno));
+      fprintf (stderr, "error reading '%s': %s\n", argv[1], strerror (errno));
       return 1;
     }
   fclose (fp);

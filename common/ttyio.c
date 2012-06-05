@@ -189,7 +189,7 @@ init_ttyfp(void)
 #else
     ttyfp = batchmode? stderr : fopen (tty_get_ttyname (), "r+");
     if( !ttyfp ) {
-	log_error("cannot open `%s': %s\n", tty_get_ttyname (),
+	log_error("cannot open '%s': %s\n", tty_get_ttyname (),
                   strerror(errno) );
 	exit(2);
     }

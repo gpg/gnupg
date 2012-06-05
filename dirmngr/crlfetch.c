@@ -242,7 +242,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
           {
             const char *s = http_get_header (hd, "Location");
 
-            log_info (_("URL `%s' redirected to `%s' (%u)\n"),
+            log_info (_("URL '%s' redirected to '%s' (%u)\n"),
                       url, s?s:"[none]", http_get_status_code (hd));
             if (s && *s && redirects_left-- )
               {
@@ -267,12 +267,12 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
           break;
 
         case 99999: /* Made up status code for error reporting.  */
-          log_error (_("error retrieving `%s': %s\n"),
+          log_error (_("error retrieving '%s': %s\n"),
                      url, gpg_strerror (err));
           break;
 
         default:
-          log_error (_("error retrieving `%s': http status %u\n"),
+          log_error (_("error retrieving '%s': http status %u\n"),
                      url, http_get_status_code (hd));
           err = gpg_error (GPG_ERR_NO_DATA);
           http_close (hd, 0);

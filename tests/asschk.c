@@ -443,7 +443,7 @@ start_server (const char *pgmname)
         {
 	  int fd = open ("/dev/null", O_WRONLY);
 	  if (fd == -1)
-	    die_1 ("can't open `/dev/null': %s", strerror (errno));
+	    die_1 ("can't open '/dev/null': %s", strerror (errno));
           if (dup2 (fd, STDERR_FILENO) == -1)
             die_1 ("dup2 failed in child: %s", strerror (errno));
 	  close (fd);
@@ -452,7 +452,7 @@ start_server (const char *pgmname)
       close (wp[1]);
       close (rp[0]);
       execl (pgmname, arg0, "--server", NULL);
-      die_2 ("exec failed for `%s': %s", pgmname, strerror (errno));
+      die_2 ("exec failed for '%s': %s", pgmname, strerror (errno));
     }
   close (wp[0]);
   close (rp[1]);
@@ -479,7 +479,7 @@ unset_var (const char *name)
     ;
   if (!var)
     return;
-/*    fprintf (stderr, "unsetting `%s'\n", name); */
+/*    fprintf (stderr, "unsetting '%s'\n", name); */
 
   if (var->type == VARTYPE_FD && var->value)
     {
@@ -689,7 +689,7 @@ cmd_send (const char *assign_to, char *arg)
 {
   (void)assign_to;
   if (opt_verbose)
-    fprintf (stderr, "sending `%s'\n", arg);
+    fprintf (stderr, "sending '%s'\n", arg);
   write_assuan (server_send_fd, arg);
 }
 
@@ -723,13 +723,13 @@ cmd_expect_ok (const char *assign_to, char *arg)
     {
       char *p = read_assuan (server_recv_fd);
       if (opt_verbose > 1)
-        fprintf (stderr, "got line `%s'\n", recv_line);
+        fprintf (stderr, "got line '%s'\n", recv_line);
       if (recv_type == LINE_STAT)
         handle_status_line (p);
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_OK)
-    die_1 ("expected OK but got `%s'", recv_line);
+    die_1 ("expected OK but got '%s'", recv_line);
 }
 
 static void
@@ -744,13 +744,13 @@ cmd_expect_err (const char *assign_to, char *arg)
     {
       char *p = read_assuan (server_recv_fd);
       if (opt_verbose > 1)
-        fprintf (stderr, "got line `%s'\n", recv_line);
+        fprintf (stderr, "got line '%s'\n", recv_line);
       if (recv_type == LINE_STAT)
         handle_status_line (p);
     }
   while (recv_type != LINE_OK && recv_type != LINE_ERR);
   if (recv_type != LINE_ERR)
-    die_1 ("expected ERR but got `%s'", recv_line);
+    die_1 ("expected ERR but got '%s'", recv_line);
 }
 
 static void
@@ -783,7 +783,7 @@ cmd_openfile (const char *assign_to, char *arg)
     fd = open (arg, O_RDONLY);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
-    die_2 ("error opening `%s': %s", arg, strerror (errno));
+    die_2 ("error opening '%s': %s", arg, strerror (errno));
 
   sprintf (numbuf, "%d", fd);
   set_type_var (assign_to, numbuf, VARTYPE_FD);
@@ -799,7 +799,7 @@ cmd_createfile (const char *assign_to, char *arg)
     fd = open (arg, O_WRONLY|O_CREAT|O_TRUNC, 0666);
   while (fd == -1 && errno == EINTR);
   if (fd == -1)
-    die_2 ("error creating `%s': %s", arg, strerror (errno));
+    die_2 ("error creating '%s': %s", arg, strerror (errno));
 
   sprintf (numbuf, "%d", fd);
   set_type_var (assign_to, numbuf, VARTYPE_FD);
@@ -869,13 +869,13 @@ cmd_cmpfiles (const char *assign_to, char *arg)
   fp1 = fopen (arg, "rb");
   if (!fp1)
     {
-      err ("can't open `%s': %s", arg, strerror (errno));
+      err ("can't open '%s': %s", arg, strerror (errno));
       return;
     }
   fp2 = fopen (second, "rb");
   if (!fp2)
     {
-      err ("can't open `%s': %s", second, strerror (errno));
+      err ("can't open '%s': %s", second, strerror (errno));
       fclose (fp1);
       return;
     }
@@ -1009,7 +1009,7 @@ interpreter (char *line)
   if (!cmdtbl[i].name)
     {
       if (!assign_to)
-        die_1 ("invalid statement `%s'\n", stmt);
+        die_1 ("invalid statement '%s'\n", stmt);
       if (save_p)
         *save_p = save_c;
       set_var (assign_to, stmt);

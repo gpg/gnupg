@@ -1012,7 +1012,7 @@ set_debug (const char *level)
     }
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), level);
+      log_error (_("invalid debug-level '%s' given\n"), level);
       g10_exit (2);
     }
 
@@ -1127,8 +1127,8 @@ open_info_file (const char *fname, int for_write, int binary)
       while (fd == -1 && errno == EINTR);
 /*     } */
   if ( fd == -1)
-    log_error ( for_write? _("can't create `%s': %s\n")
-                         : _("can't open `%s': %s\n"), fname, strerror(errno));
+    log_error ( for_write? _("can't create '%s': %s\n")
+                         : _("can't open '%s': %s\n"), fname, strerror(errno));
 
   return fd;
 #endif
@@ -1181,7 +1181,7 @@ add_group(char *string)
   name=strsep(&string,"=");
   if(string==NULL)
     {
-      log_error(_("no = sign found in group definition `%s'\n"),name);
+      log_error(_("no = sign found in group definition '%s'\n"),name);
       return;
     }
 
@@ -1379,49 +1379,49 @@ check_permissions (const char *path, int item)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe ownership on"
-		       " homedir `%s'\n"),tmppath);
+		       " homedir '%s'\n"),tmppath);
 	  else if(item==1)
 	    log_info(_("WARNING: unsafe ownership on"
-		       " configuration file `%s'\n"),tmppath);
+		       " configuration file '%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe ownership on"
-		       " extension `%s'\n"),tmppath);
+		       " extension '%s'\n"),tmppath);
 	}
       if(perm)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe permissions on"
-		       " homedir `%s'\n"),tmppath);
+		       " homedir '%s'\n"),tmppath);
 	  else if(item==1)
 	    log_info(_("WARNING: unsafe permissions on"
-		       " configuration file `%s'\n"),tmppath);
+		       " configuration file '%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe permissions on"
-		       " extension `%s'\n"),tmppath);
+		       " extension '%s'\n"),tmppath);
 	}
       if(enc_dir_own)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe enclosing directory ownership on"
-		       " homedir `%s'\n"),tmppath);
+		       " homedir '%s'\n"),tmppath);
 	  else if(item==1)
 	    log_info(_("WARNING: unsafe enclosing directory ownership on"
-		       " configuration file `%s'\n"),tmppath);
+		       " configuration file '%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe enclosing directory ownership on"
-		       " extension `%s'\n"),tmppath);
+		       " extension '%s'\n"),tmppath);
 	}
       if(enc_dir_perm)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe enclosing directory permissions on"
-		       " homedir `%s'\n"),tmppath);
+		       " homedir '%s'\n"),tmppath);
 	  else if(item==1)
 	    log_info(_("WARNING: unsafe enclosing directory permissions on"
-		       " configuration file `%s'\n"),tmppath);
+		       " configuration file '%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe enclosing directory permissions on"
-		       " extension `%s'\n"),tmppath);
+		       " extension '%s'\n"),tmppath);
 	}
     }
 
@@ -1603,7 +1603,7 @@ list_config(char *items)
 	break;
 
       if(!any)
-	log_error(_("unknown configuration item `%s'\n"),name);
+	log_error(_("unknown configuration item '%s'\n"),name);
     }
 }
 
@@ -1805,7 +1805,7 @@ parse_trust_model(const char *model)
   else if(ascii_strcasecmp(model,"auto")==0)
     opt.trust_model=TM_AUTO;
   else
-    log_error("unknown trust model `%s'\n",model);
+    log_error("unknown trust model '%s'\n",model);
 }
 
 
@@ -1865,7 +1865,7 @@ get_default_configname (void)
       /* Print a warning when both config files are present.  */
       char *p = make_filename (opt.homedir, "options", NULL);
       if (! access (p, R_OK))
-	log_info (_("NOTE: old default options file `%s' ignored\n"), p);
+	log_info (_("NOTE: old default options file '%s' ignored\n"), p);
       xfree (p);
     }
   else
@@ -2123,18 +2123,18 @@ main (int argc, char **argv)
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
-		    log_info(_("NOTE: no default option file `%s'\n"),
+		    log_info(_("NOTE: no default option file '%s'\n"),
 							    configname );
 	    }
 	    else {
-		log_error(_("option file `%s': %s\n"),
+		log_error(_("option file '%s': %s\n"),
 				    configname, strerror(errno) );
 		g10_exit(2);
 	    }
 	    xfree(configname); configname = NULL;
 	}
 	if( parse_debug && configname )
-	    log_info(_("reading options from `%s'\n"), configname );
+	    log_info(_("reading options from '%s'\n"), configname );
 	default_config = 0;
     }
 
@@ -2366,7 +2366,7 @@ main (int argc, char **argv)
 	    opt.force_ownertrust=string_to_trust_value(pargs.r.ret_str);
 	    if(opt.force_ownertrust==-1)
 	      {
-		log_error("invalid ownertrust `%s'\n",pargs.r.ret_str);
+		log_error("invalid ownertrust '%s'\n",pargs.r.ret_str);
 		opt.force_ownertrust=0;
 	      }
 	    break;
@@ -2550,7 +2550,7 @@ main (int argc, char **argv)
 	    if(*pargs.r.ret_str!='\0')
 	      {
 		if(parse_expire_string(pargs.r.ret_str)==(u32)-1)
-		  log_error(_("`%s' is not a valid signature expiration\n"),
+		  log_error(_("'%s' is not a valid signature expiration\n"),
 			    pargs.r.ret_str);
 		else
 		  opt.def_sig_expire=pargs.r.ret_str;
@@ -2562,7 +2562,7 @@ main (int argc, char **argv)
 	    if(*pargs.r.ret_str!='\0')
 	      {
 		if(parse_expire_string(pargs.r.ret_str)==(u32)-1)
-		  log_error(_("`%s' is not a valid signature expiration\n"),
+		  log_error(_("'%s' is not a valid signature expiration\n"),
 			    pargs.r.ret_str);
 		else
 		  opt.def_cert_expire=pargs.r.ret_str;
@@ -2644,7 +2644,7 @@ main (int argc, char **argv)
 	  case oNoMDCWarn: opt.no_mdc_warn=1; break;
           case oDisplayCharset:
 	    if( set_native_charset( pargs.r.ret_str ) )
-		log_error(_("`%s' is not a valid character set\n"),
+		log_error(_("'%s' is not a valid character set\n"),
 			  pargs.r.ret_str);
 	    break;
 	  case oNotDashEscaped: opt.not_dash_escaped = 1; break;
@@ -2927,7 +2927,7 @@ main (int argc, char **argv)
 	    else if(ascii_strcasecmp(pargs.r.ret_str,"0xlong")==0)
 	      opt.keyid_format=KF_0xLONG;
 	    else
-	      log_error("unknown keyid-format `%s'\n",pargs.r.ret_str);
+	      log_error("unknown keyid-format '%s'\n",pargs.r.ret_str);
 	    break;
 
           case oExitOnStatusWriteError:
@@ -3053,7 +3053,7 @@ main (int argc, char **argv)
       }
 
     if (opt.verbose > 2)
-        log_info ("using character set `%s'\n", get_native_charset ());
+        log_info ("using character set '%s'\n", get_native_charset ());
 
     if( may_coredump && !opt.quiet )
 	log_info(_("WARNING: program may create a core file!\n"));
@@ -3100,7 +3100,7 @@ main (int argc, char **argv)
 
         for (i=0; i < argc; i++)
           if (argv[i][0] == '-' && argv[i][1] == '-')
-            log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+            log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
       }
 
 
@@ -3356,17 +3356,17 @@ main (int argc, char **argv)
 	    switch(badtype)
 	      {
 	      case PREFTYPE_SYM:
-		log_info(_("you may not use cipher algorithm `%s'"
+		log_info(_("you may not use cipher algorithm '%s'"
 			   " while in %s mode\n"),
 			 badalg,compliance_option_string());
 		break;
 	      case PREFTYPE_HASH:
-		log_info(_("you may not use digest algorithm `%s'"
+		log_info(_("you may not use digest algorithm '%s'"
 			   " while in %s mode\n"),
 			 badalg,compliance_option_string());
 		break;
 	      case PREFTYPE_ZIP:
-		log_info(_("you may not use compression algorithm `%s'"
+		log_info(_("you may not use compression algorithm '%s'"
 			   " while in %s mode\n"),
 			 badalg,compliance_option_string());
 		break;
@@ -3473,14 +3473,14 @@ main (int argc, char **argv)
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encrypt_store(fname)) )
-	    log_error ("storing `%s' failed: %s\n",
+	    log_error ("storing '%s' failed: %s\n",
                        print_fname_stdin(fname),g10_errstr(rc) );
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encrypt_symmetric(fname)) )
-            log_error (_("symmetric encryption of `%s' failed: %s\n"),
+            log_error (_("symmetric encryption of '%s' failed: %s\n"),
                         print_fname_stdin(fname),g10_errstr(rc) );
 	break;
 
@@ -3925,7 +3925,7 @@ main (int argc, char **argv)
 	    int algo = all_algos? 0 : gcry_md_map_name (*argv);
 
 	    if( !algo && !all_algos )
-		log_error(_("invalid hash algorithm `%s'\n"), *argv );
+		log_error(_("invalid hash algorithm '%s'\n"), *argv );
 	    else {
 		argc--; argv++;
 		if( !argc )
@@ -4056,7 +4056,7 @@ main (int argc, char **argv)
             gpg_err_set_errno (EPERM);
           }
 	if( !a )
-	    log_error(_("can't open `%s'\n"), print_fname_stdin(fname));
+	    log_error(_("can't open '%s'\n"), print_fname_stdin(fname));
 	else {
 
 	    if( !opt.no_armor ) {

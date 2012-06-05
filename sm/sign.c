@@ -547,7 +547,7 @@ gpgsm_sign (ctrl_t ctrl, certlist_t signerlist,
       algo = gcry_md_map_name (algoid);
       if (!algo)
         {
-          log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
+          log_error ("unknown hash algorithm '%s'\n", algoid? algoid:"?");
           rc = gpg_error (GPG_ERR_BUG);
           goto leave;
         }

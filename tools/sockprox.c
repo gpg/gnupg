@@ -271,9 +271,9 @@ io_loop (FILE *client, FILE *server, FILE *protocol)
 
 
 
-/* Set the `O_NONBLOCK' flag of DESC if VALUE is nonzero,
+/* Set the 'O_NONBLOCK' flag of DESC if VALUE is nonzero,
    or clear the flag if VALUE is 0.
-   Return 0 on success, or -1 on error with `errno' set. */
+   Return 0 on success, or -1 on error with 'errno' set. */
 
 int
 set_nonblock_flag (int desc, int value)

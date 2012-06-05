@@ -678,7 +678,7 @@ set_debug (void)
     }
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), debug_level);
+      log_error (_("invalid debug-level '%s' given\n"), debug_level);
       gpgsm_exit (2);
     }
 
@@ -743,12 +743,12 @@ do_add_recipient (ctrl_t ctrl, const char *name,
     {
       if (recp_required)
         {
-          log_error ("can't encrypt to `%s': %s\n", name, gpg_strerror (rc));
+          log_error ("can't encrypt to '%s': %s\n", name, gpg_strerror (rc));
           gpgsm_status2 (ctrl, STATUS_INV_RECP,
                          get_inv_recpsgnr_code (rc), name, NULL);
         }
       else
-        log_info (_("NOTE: won't be able to encrypt to `%s': %s\n"),
+        log_info (_("NOTE: won't be able to encrypt to '%s': %s\n"),
                   name, gpg_strerror (rc));
     }
 }
@@ -759,7 +759,7 @@ parse_validation_model (const char *model)
 {
   int i = gpgsm_parse_validation_model (model);
   if (i == -1)
-    log_error (_("unknown validation model `%s'\n"), model);
+    log_error (_("unknown validation model '%s'\n"), model);
   else
     default_validation_model = i;
 }
@@ -1017,18 +1017,18 @@ main ( int argc, char **argv)
         if (default_config)
           {
             if (parse_debug)
-              log_info (_("NOTE: no default option file `%s'\n"), configname);
+              log_info (_("NOTE: no default option file '%s'\n"), configname);
           }
         else
           {
-            log_error (_("option file `%s': %s\n"), configname, strerror(errno));
+            log_error (_("option file '%s': %s\n"), configname, strerror(errno));
             gpgsm_exit(2);
           }
         xfree(configname);
         configname = NULL;
       }
     if (parse_debug && configname)
-      log_info (_("reading options from `%s'\n"), configname);
+      log_info (_("reading options from '%s'\n"), configname);
     default_config = 0;
   }
 
@@ -1480,7 +1480,7 @@ main ( int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
 /*FIXME    if (opt.batch) */
@@ -1577,7 +1577,7 @@ main ( int argc, char **argv)
           filelist[1] = NULL;
           if (!access (filelist[0], F_OK))
             {
-              log_info (_("importing common certificates `%s'\n"),
+              log_info (_("importing common certificates '%s'\n"),
                         filelist[0]);
               gpgsm_import_files (&ctrl, 1, filelist, open_read);
             }
@@ -1618,7 +1618,7 @@ main ( int argc, char **argv)
           int rc = gpgsm_add_to_certlist (&ctrl, sl->d, 1, &signerlist, 0);
           if (rc)
             {
-              log_error (_("can't sign using `%s': %s\n"),
+              log_error (_("can't sign using '%s': %s\n"),
                          sl->d, gpg_strerror (rc));
               gpgsm_status2 (&ctrl, STATUS_INV_SGNR,
                              get_inv_recpsgnr_code (rc), sl->d, NULL);
@@ -2062,7 +2062,7 @@ open_read (const char *filename)
   fd = open (filename, O_RDONLY | O_BINARY);
   if (fd == -1)
     {
-      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      log_error (_("can't open '%s': %s\n"), filename, strerror (errno));
       gpgsm_exit (2);
     }
   return fd;
@@ -2092,7 +2092,7 @@ open_es_fread (const char *filename, const char *mode)
   fp = es_fopen (filename, mode);
   if (!fp)
     {
-      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      log_error (_("can't open '%s': %s\n"), filename, strerror (errno));
       gpgsm_exit (2);
     }
   return fp;
@@ -2130,7 +2130,7 @@ open_es_fwrite (const char *filename)
   fp = es_fopen (filename, "wb");
   if (!fp)
     {
-      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      log_error (_("can't open '%s': %s\n"), filename, strerror (errno));
       gpgsm_exit (2);
     }
   return fp;
@@ -2158,7 +2158,7 @@ run_protect_tool (int argc, char **argv)
     av[i] = *argv;
   av[i] = NULL;
   execv (pgm, av);
-  log_error ("error executing `%s': %s\n", pgm, strerror (errno));
+  log_error ("error executing '%s': %s\n", pgm, strerror (errno));
 #endif /*HAVE_W32_SYSTEM*/
   gpgsm_exit (2);
 }

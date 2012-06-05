@@ -237,7 +237,7 @@ gpgsm_check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   algo = gcry_md_map_name ( (algoid=ksba_cert_get_digest_algo (cert)));
   if (!algo)
     {
-      log_error ("unknown hash algorithm `%s'\n", algoid? algoid:"?");
+      log_error ("unknown hash algorithm '%s'\n", algoid? algoid:"?");
       if (algoid
           && (  !strcmp (algoid, "1.2.840.113549.1.1.2")
                 ||!strcmp (algoid, "1.2.840.113549.2.2")))

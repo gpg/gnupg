@@ -375,7 +375,7 @@ runner_thread (void *arg)
       gnupg_release_process (runner->pid);
       runner->pid = (pid_t)(-1);
       if (err)
-        log_error ("running `%s' failed (exitcode=%d): %s\n",
+        log_error ("running '%s' failed (exitcode=%d): %s\n",
                    runner->name, exitcode, gpg_strerror (err));
       log_debug ("runner thread waiting finished\n");
     }

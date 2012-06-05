@@ -92,7 +92,7 @@ lock_and_unlock (const char *fname)
 
   h = dotlock_create (fname, 0);
   if (!h)
-    die ("error creating lock file for `%s': %s", fname, strerror (errno));
+    die ("error creating lock file for '%s': %s", fname, strerror (errno));
   inf ("lock created");
 
   while (!ctrl_c_pending)

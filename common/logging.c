@@ -339,7 +339,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
             {
               if (!cookie->quiet && !running_detached
                   && isatty (es_fileno (es_stderr)))
-                es_fprintf (es_stderr, "can't connect to `%s': %s\n",
+                es_fprintf (es_stderr, "can't connect to '%s': %s\n",
                             cookie->name, strerror(errno));
               sock_close (cookie->fd);
               cookie->fd = -1;
@@ -389,7 +389,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       && isatty (es_fileno (es_stderr)))
     {
       if (*cookie->name)
-        es_fprintf (es_stderr, "error writing to `%s': %s\n",
+        es_fprintf (es_stderr, "error writing to '%s': %s\n",
                     cookie->name, strerror(errno));
       else
         es_fprintf (es_stderr, "error writing to file descriptor %d: %s\n",

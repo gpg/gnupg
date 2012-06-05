@@ -87,7 +87,7 @@ get_key (adns_state adns_ctx, char *address)
   domain = strrchr (address, '@');
   if (!domain || domain == address || !domain[1])
     {
-      fprintf (console, PGM": invalid mail address `%s'\n", address);
+      fprintf (console, PGM": invalid mail address '%s'\n", address);
       ret = KEYSERVER_GENERAL_ERROR;
       goto leave;
     }
@@ -105,7 +105,7 @@ get_key (adns_state adns_ctx, char *address)
 
   fprintf (output,"NAME %s BEGIN\n", address);
   if (opt->verbose > 2)
-    fprintf(console, PGM": looking up `%s'\n", name);
+    fprintf(console, PGM": looking up '%s'\n", name);
 
   if ( adns_synchronous (adns_ctx, name, (adns_r_unknown | my_adns_r_cert),
                          adns_qf_quoteok_query|(kdns_usevc?adns_qf_usevc:0),
@@ -254,7 +254,7 @@ main (int argc, char *argv[])
           output = fopen (optarg,"w");
           if (!output)
             {
-              fprintf (console, PGM": cannot open output file `%s': %s\n",
+              fprintf (console, PGM": cannot open output file '%s': %s\n",
                        optarg, strerror(errno) );
               return KEYSERVER_INTERNAL_ERROR;
             }
@@ -272,7 +272,7 @@ main (int argc, char *argv[])
       input = fopen (argv[optind], "r");
       if (!input)
 	{
-	  fprintf (console, PGM": cannot open input file `%s': %s\n",
+	  fprintf (console, PGM": cannot open input file '%s': %s\n",
                    argv[optind], strerror(errno) );
 	  return KEYSERVER_INTERNAL_ERROR;
 	}

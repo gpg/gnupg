@@ -291,7 +291,7 @@ dump_cert (const char *text, ksba_cert_t cert)
   char *p;
   ksba_isotime_t t;
 
-  log_debug ("BEGIN Certificate `%s':\n", text? text:"");
+  log_debug ("BEGIN Certificate '%s':\n", text? text:"");
   if (cert)
     {
       sexp = ksba_cert_get_serial (cert);

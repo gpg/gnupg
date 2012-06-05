@@ -363,7 +363,7 @@ set_debug (void)
     }
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), debug_level);
+      log_error (_("invalid debug-level '%s' given\n"), debug_level);
       log_info (_("valid debug levels are: %s\n"),
                 "none, basic, advanced, expert, guru");
       opt.debug = 0; /* Reset debugging, so that prior debug
@@ -736,12 +736,12 @@ main (int argc, char **argv)
           if (default_config)
             {
               if( parse_debug )
-                log_info (_("NOTE: no default option file `%s'\n"),
+                log_info (_("NOTE: no default option file '%s'\n"),
                           configname );
 	    }
           else
             {
-              log_error (_("option file `%s': %s\n"),
+              log_error (_("option file '%s': %s\n"),
                          configname, strerror(errno) );
               exit(2);
 	    }
@@ -749,7 +749,7 @@ main (int argc, char **argv)
           configname = NULL;
 	}
       if (parse_debug && configname )
-        log_info (_("reading options from `%s'\n"), configname );
+        log_info (_("reading options from '%s'\n"), configname );
       default_config = 0;
     }
 
@@ -854,7 +854,7 @@ main (int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
   if (!access ("/etc/dirmngr", F_OK) && !strncmp (opt.homedir, "/etc/", 5))
@@ -862,7 +862,7 @@ main (int argc, char **argv)
       ("NOTE: DirMngr is now a proper part of GnuPG.  The configuration and"
        " other directory names changed.  Please check that no other version"
        " of dirmngr is still installed.  To disable this warning, remove the"
-       " directory `/etc/dirmngr'.\n");
+       " directory '/etc/dirmngr'.\n");
 
   if (gnupg_faked_time_p ())
     {
@@ -993,7 +993,7 @@ main (int argc, char **argv)
 	log_error (_("error getting nonce for the socket\n"));
       if (rc == -1)
         {
-          log_error (_("error binding socket to `%s': %s\n"),
+          log_error (_("error binding socket to '%s': %s\n"),
                      serv_addr.sun_path, gpg_strerror (gpg_error_from_errno (errno)));
           assuan_sock_close (fd);
           dirmngr_exit (1);
@@ -1008,7 +1008,7 @@ main (int argc, char **argv)
         }
 
       if (opt.verbose)
-        log_info (_("listening on socket `%s'\n"), socket_name );
+        log_info (_("listening on socket '%s'\n"), socket_name );
 
       es_fflush (NULL);
 
@@ -1159,13 +1159,13 @@ main (int argc, char **argv)
       crl_cache_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
       if (rc)
-        log_error (_("fetching CRL from `%s' failed: %s\n"),
+        log_error (_("fetching CRL from '%s' failed: %s\n"),
                      argv[0], gpg_strerror (rc));
       else
         {
           rc = crl_cache_insert (&ctrlbuf, argv[0], reader);
           if (rc)
-            log_error (_("processing CRL from `%s' failed: %s\n"),
+            log_error (_("processing CRL from '%s' failed: %s\n"),
                        argv[0], gpg_strerror (rc));
           crl_close_reader (reader);
         }
@@ -1369,7 +1369,7 @@ parse_ldapserver_file (const char* filename)
   fp = es_fopen (filename, "r");
   if (!fp)
     {
-      log_error (_("error opening `%s': %s\n"), filename, strerror (errno));
+      log_error (_("error opening '%s': %s\n"), filename, strerror (errno));
       return NULL;
     }
 
@@ -1407,7 +1407,7 @@ parse_ldapserver_file (const char* filename)
     }
 
   if (es_ferror (fp))
-    log_error (_("error reading `%s': %s\n"), filename, strerror (errno));
+    log_error (_("error reading '%s': %s\n"), filename, strerror (errno));
   es_fclose (fp);
 
   return serverstart;
@@ -1461,7 +1461,7 @@ parse_ocsp_signer (const char *string)
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("can't open `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
       xfree (fname);
       return NULL;
     }
@@ -1567,7 +1567,7 @@ reread_configuration (void)
   fp = fopen (opt.config_filename, "r");
   if (!fp)
     {
-      log_error (_("option file `%s': %s\n"),
+      log_error (_("option file '%s': %s\n"),
                  opt.config_filename, strerror(errno) );
       return;
     }

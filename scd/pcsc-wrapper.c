@@ -191,7 +191,7 @@ long (* pcsc_control) (unsigned long card,
 static void
 bad_request (const char *type)
 {
-  fprintf (stderr, PGM ": bad `%s' request\n", type);
+  fprintf (stderr, PGM ": bad '%s' request\n", type);
   exit (1);
 }
 
@@ -325,7 +325,7 @@ load_pcsc_driver (const char *libname)
   handle = dlopen (libname, RTLD_LAZY);
   if (!handle)
     {
-      fprintf (stderr, PGM ": failed to open driver `%s': %s",
+      fprintf (stderr, PGM ": failed to open driver '%s': %s",
                libname, dlerror ());
       exit (1);
     }
@@ -446,7 +446,7 @@ handle_open (unsigned char *argbuf, size_t arglen)
     {
       if (!*p && !p[1])
         break;
-      fprintf (stderr, PGM": detected reader `%s'\n", p);
+      fprintf (stderr, PGM": detected reader '%s'\n", p);
       if (nreader < (strlen (p)+1))
         {
           fprintf (stderr, PGM": invalid response from pcsc_list_readers\n");

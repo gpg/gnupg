@@ -1183,13 +1183,13 @@ cmd_loadcrl (assuan_context_t ctx, char *line)
 
       err = crl_fetch (ctrl, line, &reader);
       if (err)
-        log_error (_("fetching CRL from `%s' failed: %s\n"),
+        log_error (_("fetching CRL from '%s' failed: %s\n"),
                    line, gpg_strerror (err));
       else
         {
           err = crl_cache_insert (ctrl, line, reader);
           if (err)
-            log_error (_("processing CRL from `%s' failed: %s\n"),
+            log_error (_("processing CRL from '%s' failed: %s\n"),
                        line, gpg_strerror (err));
           crl_close_reader (reader);
         }

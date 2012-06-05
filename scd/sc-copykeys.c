@@ -183,14 +183,14 @@ read_file (const char *fname, size_t *r_length)
   fp = fname? fopen (fname, "rb") : stdin;
   if (!fp)
     {
-      log_error ("can't open `%s': %s\n",
+      log_error ("can't open '%s': %s\n",
                  fname? fname: "[stdin]", strerror (errno));
       return NULL;
     }
 
   if (fstat (fileno(fp), &st))
     {
-      log_error ("can't stat `%s': %s\n",
+      log_error ("can't stat '%s': %s\n",
                  fname? fname: "[stdin]", strerror (errno));
       if (fname)
         fclose (fp);
@@ -201,7 +201,7 @@ read_file (const char *fname, size_t *r_length)
   buf = xmalloc (buflen+1);
   if (fread (buf, buflen, 1, fp) != 1)
     {
-      log_error ("error reading `%s': %s\n",
+      log_error ("error reading '%s': %s\n",
                  fname? fname: "[stdin]", strerror (errno));
       if (fname)
         fclose (fp);

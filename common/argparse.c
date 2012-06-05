@@ -1269,7 +1269,7 @@ main(int argc, char **argv)
 
     while( arg_parse ( &pargs, opts) ) {
 	switch( pargs.r_opt ) {
-	  case -1 : printf( "arg=`%s'\n", pargs.r.ret_str); break;
+	  case -1 : printf( "arg='%s'\n", pargs.r.ret_str); break;
 	  case 'v': opt.verbose++; break;
 	  case 'e': opt.echo++; break;
 	  case 'd': opt.debug++; break;
@@ -1288,9 +1288,9 @@ main(int argc, char **argv)
     if( opt.debug )
 	printf("  debug=%d\n", opt.debug );
     if( opt.outfile )
-	printf("  outfile=`%s'\n", opt.outfile );
+	printf("  outfile='%s'\n", opt.outfile );
     if( opt.crf )
-	printf("  crffile=`%s'\n", opt.crf );
+	printf("  crffile='%s'\n", opt.crf );
     if( opt.myopt )
 	printf("  myopt=%d\n", opt.myopt );
     if( opt.a_long_one )

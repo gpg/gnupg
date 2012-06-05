@@ -272,7 +272,7 @@ set_one_pref (int val, int type, const char *item, byte *buf, int *nbuf)
     for (i=0; i < *nbuf; i++ )
       if (buf[i] == val)
 	{
-	  log_info (_("preference `%s' duplicated\n"), item);
+	  log_info (_("preference '%s' duplicated\n"), item);
 	  return -1;
         }
 
@@ -441,7 +441,7 @@ keygen_set_std_prefs (const char *string,int personal)
 	      modify=0;
 	    else
 	      {
-		log_info (_("invalid item `%s' in preference string\n"),tok);
+		log_info (_("invalid item '%s' in preference string\n"),tok);
 		rc=-1;
 	      }
 	  }
@@ -2387,7 +2387,7 @@ ask_user_id (int mode, KBNODE keyblock)
 	/* print a note in case that UTF8 mapping has to be done */
 	for(p=uid; *p; p++ ) {
 	    if( *p & 0x80 ) {
-		tty_printf(_("You are using the `%s' character set.\n"),
+		tty_printf(_("You are using the '%s' character set.\n"),
 			   get_native_charset() );
 		break;
 	    }
@@ -3091,7 +3091,7 @@ read_parameter_file( const char *fname )
         gpg_err_set_errno (EPERM);
       }
     if (!fp) {
-      log_error (_("can't open `%s': %s\n"), fname, strerror(errno) );
+      log_error (_("can't open '%s': %s\n"), fname, strerror(errno) );
       return;
     }
     iobuf_ioctl (fp, IOBUF_IOCTL_NO_CACHE, 1, NULL);
@@ -3156,7 +3156,7 @@ read_parameter_file( const char *fname )
               /* Ignore this command.  */
 	    }
 	    else
-		log_info("skipping control `%s' (%s)\n", keyword, value );
+		log_info("skipping control '%s' (%s)\n", keyword, value );
 
 
 	    continue;
@@ -3584,7 +3584,7 @@ do_generate_keypair (struct para_data_s *para,
             outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
           if (!outctrl->pub.stream)
             {
-              log_error(_("can't create `%s': %s\n"), outctrl->pub.newfname,
+              log_error(_("can't create '%s': %s\n"), outctrl->pub.newfname,
                         strerror(errno) );
               return;
             }
@@ -3596,7 +3596,7 @@ do_generate_keypair (struct para_data_s *para,
         }
       assert( outctrl->pub.stream );
       if (opt.verbose)
-        log_info (_("writing public key to `%s'\n"), outctrl->pub.fname );
+        log_info (_("writing public key to '%s'\n"), outctrl->pub.fname );
     }
 
 
@@ -3732,7 +3732,7 @@ do_generate_keypair (struct para_data_s *para,
 
       if (!err && opt.verbose)
         {
-          log_info (_("writing public key to `%s'\n"),
+          log_info (_("writing public key to '%s'\n"),
                     keydb_get_resource_name (pub_hd));
         }
 
@@ -3740,7 +3740,7 @@ do_generate_keypair (struct para_data_s *para,
         {
           err = keydb_insert_keyblock (pub_hd, pub_root);
           if (err)
-            log_error (_("error writing public keyring `%s': %s\n"),
+            log_error (_("error writing public keyring '%s': %s\n"),
                        keydb_get_resource_name (pub_hd), g10_errstr(err));
         }
 
@@ -4200,7 +4200,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
     if (!fp)
       {
         rc = gpg_error_from_syserror ();
-	log_error (_("can't create backup file `%s': %s\n"),
+	log_error (_("can't create backup file '%s': %s\n"),
                    fname, strerror(errno) );
         xfree (fname);
         free_secret_key (sk_unprotected);
@@ -4226,7 +4226,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
 
         iobuf_close (fp);
         iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
-        log_info (_("NOTE: backup of card key saved to `%s'\n"), fname);
+        log_info (_("NOTE: backup of card key saved to '%s'\n"), fname);
 
         fingerprint_from_sk (sk, array, &n);
         p = fprbuf = xmalloc (MAX_FINGERPRINT_LEN*2 + 1 + 1);

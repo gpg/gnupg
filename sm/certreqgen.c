@@ -305,7 +305,7 @@ read_parameters (ctrl_t ctrl, estream_t fp, estream_t out_fp)
               para = NULL;
 	    }
           else
-            log_info ("skipping control `%s' (%s)\n", keyword, value);
+            log_info ("skipping control '%s' (%s)\n", keyword, value);
 
           continue;
 	}
@@ -502,10 +502,10 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
     {
       r = get_parameter (para, pNAMEDN, 0);
       if (gpg_err_code (err) == GPG_ERR_UNKNOWN_NAME)
-        log_error (_("line %d: invalid subject name label `%.*s'\n"),
+        log_error (_("line %d: invalid subject name label '%.*s'\n"),
                    r->lnr, (int)errlen, s+erroff);
       else
-        log_error (_("line %d: invalid subject name `%s' at pos %d\n"),
+        log_error (_("line %d: invalid subject name '%s' at pos %d\n"),
                    r->lnr, s, (int)erroff);
 
       xfree (cardkeyid);
@@ -557,10 +557,10 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
         {
           r = get_parameter (para, pISSUERDN, 0);
           if (gpg_err_code (err) == GPG_ERR_UNKNOWN_NAME)
-            log_error (_("line %d: invalid issuer name label `%.*s'\n"),
+            log_error (_("line %d: invalid issuer name label '%.*s'\n"),
                        r->lnr, (int)errlen, string+erroff);
           else
-            log_error (_("line %d: invalid issuer name `%s' at pos %d\n"),
+            log_error (_("line %d: invalid issuer name '%s' at pos %d\n"),
                        r->lnr, string, (int)erroff);
           xfree (cardkeyid);
           return gpg_error (GPG_ERR_INV_PARAMETER);
@@ -596,7 +596,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
       if (rc)
         {
           r = get_parameter (para, pKEYTYPE, 0);
-          log_error (_("line %d: error getting signing key by keygrip `%s'"
+          log_error (_("line %d: error getting signing key by keygrip '%s'"
                        ": %s\n"), r->lnr, s, gpg_strerror (rc));
           xfree (cardkeyid);
           return rc;
@@ -696,7 +696,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
       if (rc)
         {
           r = get_parameter (para, pKEYTYPE, 0);
-          log_error (_("line %d: error reading key `%s' from card: %s\n"),
+          log_error (_("line %d: error reading key '%s' from card: %s\n"),
                      r->lnr, cardkeyid, gpg_strerror (rc));
           xfree (sigkey);
           xfree (cardkeyid);
@@ -709,7 +709,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
       if (rc)
         {
           r = get_parameter (para, pKEYTYPE, 0);
-          log_error (_("line %d: error getting key by keygrip `%s': %s\n"),
+          log_error (_("line %d: error getting key by keygrip '%s': %s\n"),
                      r->lnr, s, gpg_strerror (rc));
           xfree (sigkey);
           xfree (cardkeyid);

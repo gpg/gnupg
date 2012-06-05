@@ -53,12 +53,12 @@ main (int argc, char **argv)
   if (!result)
     {
       fprintf (stderr,
-               "Error: nothing found for `%s'\n", argc?argv[0]:"(null)");
+               "Error: nothing found for '%s'\n", argc?argv[0]:"(null)");
       errcount++;
     }
   else
     {
-      printf ("key `%s' result=`%s'\n", argc?argv[0]:"(null)", result);
+      printf ("key '%s' result='%s'\n", argc?argv[0]:"(null)", result);
       xfree (result);
     }
 

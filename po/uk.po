@@ -97,11 +97,11 @@ msgstr ""
 "підтримки ключів ssh, що складаються з понад %d бітів, не передбачено\n"
 
 #, c-format
-msgid "can't create `%s': %s\n"
+msgid "can't create '%s': %s\n"
 msgstr "не вдалося створити «%s»: %s\n"
 
 #, c-format
-msgid "can't open `%s': %s\n"
+msgid "can't open '%s': %s\n"
 msgstr "не вдалося відкрити «%s»: %s\n"
 
 #, c-format
@@ -377,7 +377,7 @@ msgstr ""
 "Керування закритими ключами у GnuPG\n"
 
 #, c-format
-msgid "invalid debug-level `%s' given\n"
+msgid "invalid debug-level '%s' given\n"
 msgstr "вказано некоректне значення рівня діагностики «%s»\n"
 
 #, c-format
@@ -385,23 +385,23 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s є занадто застарілою (потрібно %s, маємо %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file `%s'\n"
+msgid "NOTE: no default option file '%s'\n"
 msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
 
 #, c-format
-msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
 msgstr "файл параметрів «%s»: %s\n"
 
 #, c-format
-msgid "reading options from `%s'\n"
+msgid "reading options from '%s'\n"
 msgstr "прочитати параметри з «%s»\n"
 
 #, c-format
-msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
 msgstr "помилка створення «%s»: %s.\n"
 
 #, c-format
-msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
 msgstr "не вдалося створити каталог «%s»: %s\n"
 
 msgid "name of socket too long\n"
@@ -412,7 +412,7 @@ msgid "can't create socket: %s\n"
 msgstr "не вдалося створити сокет: %s\n"
 
 #, c-format
-msgid "socket name `%s' is too long\n"
+msgid "socket name '%s' is too long\n"
 msgstr "назва сокета «%s» є надто довгою\n"
 
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -422,7 +422,7 @@ msgid "error getting nonce for the socket\n"
 msgstr "помилка під час спроби отримання поточного стану сокета\n"
 
 #, c-format
-msgid "error binding socket to `%s': %s\n"
+msgid "error binding socket to '%s': %s\n"
 msgstr "помилка під час спроби прив’язування сокета до «%s»: %s\n"
 
 #, c-format
@@ -430,19 +430,19 @@ msgid "listen() failed: %s\n"
 msgstr "помилка listen(): %s\n"
 
 #, c-format
-msgid "listening on socket `%s'\n"
+msgid "listening on socket '%s'\n"
 msgstr "очікування даних на сокеті «%s»\n"
 
 #, c-format
-msgid "directory `%s' created\n"
+msgid "directory '%s' created\n"
 msgstr "створено каталог «%s»\n"
 
 #, c-format
-msgid "stat() failed for `%s': %s\n"
+msgid "stat() failed for '%s': %s\n"
 msgstr "помилка stat() щодо «%s»: %s\n"
 
 #, c-format
-msgid "can't use `%s' as home directory\n"
+msgid "can't use '%s' as home directory\n"
 msgstr "не можна використовувати як домашній каталог «%s»\n"
 
 #, c-format
@@ -552,31 +552,31 @@ msgid "error while asking for the passphrase: %s\n"
 msgstr "помилка під час спроби запиту пароля: %s\n"
 
 #, c-format
-msgid "error opening `%s': %s\n"
+msgid "error opening '%s': %s\n"
 msgstr "помилка під час відкриття «%s»: %s\n"
 
 #, c-format
-msgid "file `%s', line %d: %s\n"
+msgid "file '%s', line %d: %s\n"
 msgstr "файл «%s», рядок %d: %s\n"
 
 #, c-format
-msgid "statement \"%s\" ignored in `%s', line %d\n"
+msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "проігноровано інструкцію «%s» у «%s», рядок %d\n"
 
 #, c-format
-msgid "system trustlist `%s' not available\n"
+msgid "system trustlist '%s' not available\n"
 msgstr "список довіри системи «%s» недоступний\n"
 
 #, c-format
-msgid "bad fingerprint in `%s', line %d\n"
+msgid "bad fingerprint in '%s', line %d\n"
 msgstr "помилковий відбиток у «%s», рядок %d\n"
 
 #, c-format
-msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid keyflag in '%s', line %d\n"
 msgstr "некоректна позначка ключа у «%s», рядок %d\n"
 
 #, c-format
-msgid "error reading `%s', line %d: %s\n"
+msgid "error reading '%s', line %d: %s\n"
 msgstr "помилка під час читання «%s», рядок %d: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
@@ -692,16 +692,16 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "не вдалося дочекатися завершення процесу %d: %s\n"
 
 #, c-format
-msgid "error running `%s': probably not installed\n"
+msgid "error running '%s': probably not installed\n"
 msgstr ""
 "помилка під час спроби виконання «%s»: ймовірно, програму не встановлено\n"
 
 #, c-format
-msgid "error running `%s': exit status %d\n"
+msgid "error running '%s': exit status %d\n"
 msgstr "помилка під час спроби виконання «%s»: стан виходу %d\n"
 
 #, c-format
-msgid "error running `%s': terminated\n"
+msgid "error running '%s': terminated\n"
 msgstr "помилка під час спроби виконання «%s»: виконання перервано\n"
 
 #, c-format
@@ -719,7 +719,7 @@ msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent недоступний у цьому сеансі\n"
 
 #, c-format
-msgid "can't connect to `%s': %s\n"
+msgid "can't connect to '%s': %s\n"
 msgstr "не вдалося встановити з’єднання з «%s»: %s\n"
 
 msgid "communication problem with gpg-agent\n"
@@ -791,7 +791,7 @@ msgid "out of core while allocating %lu bytes"
 msgstr "вихід за межі області під час спроби отримання %lu байтів"
 
 #, c-format
-msgid "no running gpg-agent - starting `%s'\n"
+msgid "no running gpg-agent - starting '%s'\n"
 msgstr "не запущено gpg-agent — запускаємо «%s»\n"
 
 #, c-format
@@ -806,7 +806,7 @@ msgstr ""
 "не вдалося встановити з’єднання з агентом, використовуємо резервний варіант\n"
 
 #, c-format
-msgid "no running Dirmngr - starting `%s'\n"
+msgid "no running Dirmngr - starting '%s'\n"
 msgstr "Dirmngr не запущено — запускаємо «%s»\n"
 
 #, c-format
@@ -950,7 +950,7 @@ msgid "Dirmngr usable"
 msgstr "Dirmngr придатна до використання"
 
 #, c-format
-msgid "No help available for `%s'."
+msgid "No help available for '%s'."
 msgstr "Довідки щодо «%s» не виявлено."
 
 msgid "ignoring garbage line"
@@ -1015,7 +1015,7 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "ви виявили ваду… (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
+msgid "error loading '%s': %s\n"
 msgstr "помилка під час спроби завантаження «%s»: %s\n"
 
 #, c-format
@@ -1023,7 +1023,7 @@ msgid "please see %s for more information\n"
 msgstr "будь ласка, ознайомтеся з %s, щоб дізнатися більше\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' not available\n"
+msgid "conversion from '%s' to '%s' not available\n"
 msgstr "перетворення з «%s» у «%s» недоступне\n"
 
 #, c-format
@@ -1031,15 +1031,15 @@ msgid "iconv_open failed: %s\n"
 msgstr "помилка iconv_open: %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "conversion from '%s' to '%s' failed: %s\n"
 msgstr "помилка перетворення з «%s» у «%s»: %s\n"
 
 #, c-format
-msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary file '%s': %s\n"
 msgstr "не вдалося створити тимчасовий файл «%s»: %s\n"
 
 #, c-format
-msgid "error writing to `%s': %s\n"
+msgid "error writing to '%s': %s\n"
 msgstr "помилка під час спроби запису до «%s»: %s\n"
 
 #, c-format
@@ -1057,7 +1057,7 @@ msgid "(deadlock?) "
 msgstr "(застаріле блокування?) "
 
 #, c-format
-msgid "lock `%s' not made: %s\n"
+msgid "lock '%s' not made: %s\n"
 msgstr "блокування «%s» не виконано: %s\n"
 
 #, c-format
@@ -1217,11 +1217,11 @@ msgid "error allocating enough memory: %s\n"
 msgstr "помилка під час спроби розподілу пам’яті: %s\n"
 
 #, c-format
-msgid "error reading `%s': %s\n"
+msgid "error reading '%s': %s\n"
 msgstr "помилка під час спроби читання «%s»: %s\n"
 
 #, c-format
-msgid "error writing `%s': %s\n"
+msgid "error writing '%s': %s\n"
 msgstr "помилка під час спроби читання «%s»: %s\n"
 
 msgid "Login data (account name): "
@@ -1415,7 +1415,7 @@ msgid "--output doesn't work for this command\n"
 msgstr "--output не працює з цією командою\n"
 
 #, c-format
-msgid "can't open `%s'\n"
+msgid "can't open '%s'\n"
 msgstr "не вдалося відкрити «%s»\n"
 
 #, c-format
@@ -1468,11 +1468,11 @@ msgid "using cipher %s\n"
 msgstr "використано шифр %s\n"
 
 #, c-format
-msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
 msgstr "«%s» вже стиснено\n"
 
 #, c-format
-msgid "WARNING: `%s' is an empty file\n"
+msgid "WARNING: '%s' is an empty file\n"
 msgstr "УВАГА: файл «%s» є порожнім\n"
 
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
@@ -1481,7 +1481,7 @@ msgstr ""
 "pgp2\n"
 
 #, c-format
-msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
 msgstr "читання з «%s»\n"
 
 msgid ""
@@ -1550,11 +1550,11 @@ msgstr ""
 "зовнішніх програм\n"
 
 #, c-format
-msgid "unable to execute program `%s': %s\n"
+msgid "unable to execute program '%s': %s\n"
 msgstr "не вдалося виконати програму «%s»: %s\n"
 
 #, c-format
-msgid "unable to execute shell `%s': %s\n"
+msgid "unable to execute shell '%s': %s\n"
 msgstr "не вдалося виконати оболонку «%s»: %s\n"
 
 #, c-format
@@ -1572,11 +1572,11 @@ msgid "unable to read external program response: %s\n"
 msgstr "не вдалося прочитати відповідь зовнішньої програми: %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "УВАГА: не вдалося вилучити тимчасовий файл (%s) «%s»: %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove temp directory `%s': %s\n"
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "УВАГА: не вдалося вилучити тимчасовий каталог «%s»: %s\n"
 
 msgid "export signatures that are marked as local-only"
@@ -1624,11 +1624,11 @@ msgid "[User ID not found]"
 msgstr "[Ідентифікатор не знайдено]"
 
 #, c-format
-msgid "automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved '%s' via %s\n"
 msgstr "автоматично отримано «%s» за допомогою %s\n"
 
 #, c-format
-msgid "error retrieving `%s' via %s: %s\n"
+msgid "error retrieving '%s' via %s: %s\n"
 msgstr "помилка під час спроби отримання «%s» за допомогою %s: %s\n"
 
 msgid "No fingerprint"
@@ -1839,37 +1839,37 @@ msgid "conflicting commands\n"
 msgstr "несумісні команди\n"
 
 #, c-format
-msgid "no = sign found in group definition `%s'\n"
+msgid "no = sign found in group definition '%s'\n"
 msgstr "у визначенні групи «%s» немає знаку «=»\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on homedir `%s'\n"
+msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr "УВАГА: визначення власника домашнього каталогу «%s» не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on configuration file `%s'\n"
+msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr "УВАГА: визначення власника у файлі налаштувань «%s» не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
+msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr "УВАГА: визначення власника додатка «%s» не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on homedir `%s'\n"
+msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr ""
 "УВАГА: визначення прав доступу до домашнього каталогу «%s» не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on configuration file `%s'\n"
+msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr ""
 "УВАГА: визначення прав доступу до файла налаштувань «%s» не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
+msgid "WARNING: unsafe permissions on extension '%s'\n"
 msgstr "УВАГА: визначення прав доступу до додатка «%s» не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr ""
 "УВАГА: визначення власника підлеглого каталогу домашнього каталогу «%s» не є "
 "безпечним\n"
@@ -1882,13 +1882,13 @@ msgstr ""
 "налаштувань «%s», не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr ""
 "УВАГА: визначення власника підлеглого каталогу у додатку «%s» не є "
 "безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr ""
 "УВАГА: визначення прав доступу до підлеглого каталогу домашнього каталогу "
 "«%s» не є безпечним\n"
@@ -1901,13 +1901,13 @@ msgstr ""
 "налаштувань «%s», не є безпечним\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr ""
 "УВАГА: визначення прав доступу до підлеглого каталогу у додатку «%s» не є "
 "безпечним\n"
 
 #, c-format
-msgid "unknown configuration item `%s'\n"
+msgid "unknown configuration item '%s'\n"
 msgstr "невідомий пункт налаштувань «%s»\n"
 
 msgid "display photo IDs during key listings"
@@ -1946,7 +1946,7 @@ msgid "show expiration dates during signature listings"
 msgstr "показувати дати завершення строків дії у списку підписів"
 
 #, c-format
-msgid "NOTE: old default options file `%s' ignored\n"
+msgid "NOTE: old default options file '%s' ignored\n"
 msgstr "ЗАУВАЖЕННЯ: застарілий файл типових параметрів «%s» проігноровано\n"
 
 #, c-format
@@ -1958,11 +1958,11 @@ msgid "NOTE: %s is not for normal use!\n"
 msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
 
 #, c-format
-msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid signature expiration\n"
 msgstr "«%s» не є коректним записом завершення строку дії підпису\n"
 
 #, c-format
-msgid "`%s' is not a valid character set\n"
+msgid "'%s' is not a valid character set\n"
 msgstr "«%s» не є коректним набором символів\n"
 
 msgid "could not parse keyserver URL\n"
@@ -2142,17 +2142,17 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s ще не може працювати разом з %s\n"
 
 #, c-format
-msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgstr "не можна використовувати алгоритм шифрування «%s» у режимі %s\n"
 
 #, c-format
-msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgstr ""
 "не можна використовувати алгоритм створення контрольних сум «%s» у режимі "
 "%s\n"
 
 #, c-format
-msgid "you may not use compression algorithm `%s' while in %s mode\n"
+msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgstr "не можна використовувати алгоритм стискання «%s» у режимі %s\n"
 
 #, c-format
@@ -2171,7 +2171,7 @@ msgid "--symmetric [filename]"
 msgstr "--symmetric [назва файла]"
 
 #, c-format
-msgid "symmetric encryption of `%s' failed: %s\n"
+msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "помилка під час спроби симетричного шифрування «%s»: %s\n"
 
 msgid "--encrypt [filename]"
@@ -2260,7 +2260,7 @@ msgid "enarmoring failed: %s\n"
 msgstr "помилка перетворення у формат ASCII: %s\n"
 
 #, c-format
-msgid "invalid hash algorithm `%s'\n"
+msgid "invalid hash algorithm '%s'\n"
 msgstr "некоректний алгоритм хешування «%s»\n"
 
 msgid "[filename]"
@@ -2301,7 +2301,7 @@ msgid "No help available"
 msgstr "Довідки не передбачено"
 
 #, c-format
-msgid "No help available for `%s'"
+msgid "No help available for '%s'"
 msgstr "Довідки щодо %s не виявлено"
 
 msgid "import signatures that are marked as local-only"
@@ -2455,11 +2455,11 @@ msgid "no writable keyring found: %s\n"
 msgstr "не виявлено придатного до запису сховища ключів: %s\n"
 
 #, c-format
-msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
 msgstr "записуємо до «%s»\n"
 
 #, c-format
-msgid "error writing keyring `%s': %s\n"
+msgid "error writing keyring '%s': %s\n"
 msgstr "помилка під час спроби запису сховища ключів «%s»: %s\n"
 
 #, c-format
@@ -2650,15 +2650,15 @@ msgid "key %s: direct key signature added\n"
 msgstr "ключ %s: додано безпосередній підпис ключа\n"
 
 #, c-format
-msgid "error creating keyring `%s': %s\n"
+msgid "error creating keyring '%s': %s\n"
 msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
 
 #, c-format
-msgid "keyring `%s' created\n"
+msgid "keyring '%s' created\n"
 msgstr "створено сховище ключів «%s»\n"
 
 #, c-format
-msgid "keyblock resource `%s': %s\n"
+msgid "keyblock resource '%s': %s\n"
 msgstr "ресурс блоку ключів «%s»: %s\n"
 
 #, c-format
@@ -2851,7 +2851,7 @@ msgstr "   (2) Мною виконано часткову перевірку.%s\
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Мною виконано ретельну перевірку.%s\n"
 
-msgid "Your selection? (enter `?' for more information): "
+msgid "Your selection? (enter '?' for more information): "
 msgstr "Ваш вибір? (введіть «?», щоб дізнатися більше): "
 
 #, c-format
@@ -3056,7 +3056,7 @@ msgid "Hint: Select the user IDs to sign\n"
 msgstr "Підказка: виберіть ідентифікатори користувача для підписування\n"
 
 #, c-format
-msgid "Unknown signature type `%s'\n"
+msgid "Unknown signature type '%s'\n"
 msgstr "Невідомий тип підпису «%s»\n"
 
 #, c-format
@@ -3087,11 +3087,11 @@ msgid "Command expects a filename argument\n"
 msgstr "Для команди слід вказати аргумент з назвою файла\n"
 
 #, c-format
-msgid "Can't open `%s': %s\n"
+msgid "Can't open '%s': %s\n"
 msgstr "Не вдалося відкрити «%s»: %s\n"
 
 #, c-format
-msgid "Error reading backup key from `%s': %s\n"
+msgid "Error reading backup key from '%s': %s\n"
 msgstr "Помилка читання резервного ключа з «%s»: %s\n"
 
 msgid "You must select at least one key.\n"
@@ -3450,7 +3450,7 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Показ фотоідентифікатора %s розміру %ld для ключа %s (uid %d)\n"
 
 #, c-format
-msgid "preference `%s' duplicated\n"
+msgid "preference '%s' duplicated\n"
 msgstr "запис переваги «%s» продубльовано\n"
 
 msgid "too many cipher preferences\n"
@@ -3463,7 +3463,7 @@ msgid "too many compression preferences\n"
 msgstr "занадто багато записів переваг стискання\n"
 
 #, c-format
-msgid "invalid item `%s' in preference string\n"
+msgid "invalid item '%s' in preference string\n"
 msgstr "некоректний запис «%s» у рядку переваг\n"
 
 msgid "writing direct signature\n"
@@ -3728,7 +3728,7 @@ msgid "Invalid character in comment\n"
 msgstr "Некоректний символ у коментарі\n"
 
 #, c-format
-msgid "You are using the `%s' character set.\n"
+msgid "You are using the '%s' character set.\n"
 msgstr "Вами використано таблицю символів «%s».\n"
 
 #, c-format
@@ -3820,7 +3820,7 @@ msgid "Key generation canceled.\n"
 msgstr "Створення ключа скасовано.\n"
 
 #, c-format
-msgid "writing public key to `%s'\n"
+msgid "writing public key to '%s'\n"
 msgstr "записуємо відкритий ключ до «%s»\n"
 
 #, c-format
@@ -3828,7 +3828,7 @@ msgid "no writable public keyring found: %s\n"
 msgstr "не знайдено придатного до запису сховища відкритих ключів: %s\n"
 
 #, c-format
-msgid "error writing public keyring `%s': %s\n"
+msgid "error writing public keyring '%s': %s\n"
 msgstr "помилка під час спроби запису до сховища відкритих ключів «%s»: %s\n"
 
 msgid "public and secret key created and signed.\n"
@@ -3876,11 +3876,11 @@ msgid "storing key onto card failed: %s\n"
 msgstr "спроба зберігання ключа на картці зазнала невдачі: %s\n"
 
 #, c-format
-msgid "can't create backup file `%s': %s\n"
+msgid "can't create backup file '%s': %s\n"
 msgstr "не вдалося створити файл резервної копії «%s»: %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to `%s'\n"
+msgid "NOTE: backup of card key saved to '%s'\n"
 msgstr "ЗАУВАЖЕННЯ: резервну копію ключа на картці збережено до «%s»\n"
 
 msgid "never     "
@@ -3925,11 +3925,11 @@ msgid "      Card serial no. ="
 msgstr "Серійний номер картки ="
 
 #, c-format
-msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "спроба перейменування «%s» на «%s» зазнала невдачі: %s\n"
 
 #, c-format
-msgid "caching keyring `%s'\n"
+msgid "caching keyring '%s'\n"
 msgstr "кешування сховища ключів «%s»\n"
 
 #, c-format
@@ -3969,7 +3969,7 @@ msgstr ""
 "брати до уваги запис PKA, встановлений у ключі під час отримання ключів"
 
 #, c-format
-msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr ""
 "УВАГА: параметр сервера ключів «%s» не використовується на цій платформі\n"
 
@@ -4031,7 +4031,7 @@ msgid "sending key %s to %s\n"
 msgstr "надсилаємо ключ %s на %s\n"
 
 #, c-format
-msgid "requesting key from `%s'\n"
+msgid "requesting key from '%s'\n"
 msgstr "надсилаємо запит щодо ключа з «%s»\n"
 
 #, c-format
@@ -4209,7 +4209,7 @@ msgid "invalid root packet detected in proc_tree()\n"
 msgstr "виявлено некоректний кореневий пакет у proc_tree()\n"
 
 #, c-format
-msgid "fstat of `%s' failed in %s: %s\n"
+msgid "fstat of '%s' failed in %s: %s\n"
 msgstr "помилка fstat щодо «%s» у %s: %s\n"
 
 #, c-format
@@ -4279,11 +4279,11 @@ msgid "this message may not be usable by %s\n"
 msgstr "використання цього повідомлення щодо %s може бути неможливим\n"
 
 #, c-format
-msgid "ambiguous option `%s'\n"
+msgid "ambiguous option '%s'\n"
 msgstr "неоднозначний параметр «%s»\n"
 
 #, c-format
-msgid "unknown option `%s'\n"
+msgid "unknown option '%s'\n"
 msgstr "невідомий параметр «%s»\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
@@ -4291,7 +4291,7 @@ msgstr ""
 "Відкритий ключ ECDSA має зберігатися у кодуванні SEC кратному 8-бітовому\n"
 
 #, c-format
-msgid "File `%s' exists. "
+msgid "File '%s' exists. "
 msgstr "Файл «%s» існує. "
 
 msgid "Overwrite? (y/N) "
@@ -4308,15 +4308,15 @@ msgid "writing to stdout\n"
 msgstr "записуємо до stdout\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "припускаємо підписані дані у «%s»\n"
 
 #, c-format
-msgid "new configuration file `%s' created\n"
+msgid "new configuration file '%s' created\n"
 msgstr "створено новий файл налаштувань «%s»\n"
 
 #, c-format
-msgid "WARNING: options in `%s' are not yet active during this run\n"
+msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr "УВАГА: параметри у «%s» ще не є активними під час цього запуску\n"
 
 #, c-format
@@ -4417,7 +4417,7 @@ msgid "Enter JPEG filename for photo ID: "
 msgstr "Вкажіть назву файла JPEG для фотоідентифікатора: "
 
 #, c-format
-msgid "unable to open JPEG file `%s': %s\n"
+msgid "unable to open JPEG file '%s': %s\n"
 msgstr "не вдалося відкрити файл JPEG «%s»: %s\n"
 
 #, c-format
@@ -4428,7 +4428,7 @@ msgid "Are you sure you want to use it? (y/N) "
 msgstr "Вам справді хочеться ним скористатися? (y/N або т/Н) "
 
 #, c-format
-msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not a JPEG file\n"
 msgstr "«%s» не є файлом JPEG\n"
 
 msgid "Is this photo correct (y/N/q)? "
@@ -4566,11 +4566,11 @@ msgid "Note: This key has been disabled.\n"
 msgstr "Зауваження: цей ключ було вимкнено.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is `%s'\n"
+msgid "Note: Verified signer's address is '%s'\n"
 msgstr "Зауваження: перевіреною адресою автора підпису є «%s»\n"
 
 #, c-format
-msgid "Note: Signer's address `%s' does not match DNS entry\n"
+msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "Зауваження: адреса автора підпису «%s» не збігається з записом DNS\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
@@ -4673,7 +4673,7 @@ msgid "no signed data\n"
 msgstr "немає підписаних даних\n"
 
 #, c-format
-msgid "can't open signed data `%s'\n"
+msgid "can't open signed data '%s'\n"
 msgstr "не вдалося відкрити підписані дані «%s»\n"
 
 #, c-format
@@ -4943,7 +4943,7 @@ msgstr ""
 "# (Скористайтеся «gpg --import-ownertrust» для їхнього відновлення)\n"
 
 #, c-format
-msgid "error in `%s': %s\n"
+msgid "error in '%s': %s\n"
 msgstr "помилка у «%s»: %s\n"
 
 msgid "line too long"
@@ -4959,11 +4959,11 @@ msgid "ownertrust value missing"
 msgstr "пропущено значення довіри до власника"
 
 #, c-format
-msgid "error finding trust record in `%s': %s\n"
+msgid "error finding trust record in '%s': %s\n"
 msgstr "не вдалося знайти запис довіри у «%s»: %s\n"
 
 #, c-format
-msgid "read error in `%s': %s\n"
+msgid "read error in '%s': %s\n"
 msgstr "помилка читання у «%s»: %s\n"
 
 #, c-format
@@ -4982,7 +4982,7 @@ msgid "trustdb transaction too large\n"
 msgstr "занадто велика операція trustdb\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
+msgid "can't access '%s': %s\n"
 msgstr "немає доступу до «%s»: %s\n"
 
 #, c-format
@@ -4990,11 +4990,11 @@ msgid "%s: directory does not exist!\n"
 msgstr "%s: каталогу не існує!\n"
 
 #, c-format
-msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
 msgstr "не вдалося створити блокування для «%s»\n"
 
 #, c-format
-msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
 msgstr "не вдалося заблокувати «%s»\n"
 
 #, c-format
@@ -5081,7 +5081,7 @@ msgid "input line longer than %d characters\n"
 msgstr "рядок вхідних даних довший за %d символів\n"
 
 #, c-format
-msgid "`%s' is not a valid long keyID\n"
+msgid "'%s' is not a valid long keyID\n"
 msgstr "«%s» не є коректним довгим ідентифікатором ключа\n"
 
 #, c-format
@@ -5172,11 +5172,11 @@ msgid "next trustdb check due at %s\n"
 msgstr "наступну перевірку trustdb призначено на %s\n"
 
 #, c-format
-msgid "no need for a trustdb check with `%s' trust model\n"
+msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr "потреби у перевірці trustdb на основі моделі довіри «%s» немає\n"
 
 #, c-format
-msgid "no need for a trustdb update with `%s' trust model\n"
+msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "потреби у оновленні trustdb на основі моделі довіри «%s» немає\n"
 
 #, c-format
@@ -5509,7 +5509,7 @@ msgstr ""
 "Синтаксис: scdaemon [параметри] [команди [аргументи]]\n"
 "Фонова служба карток пам’яті для GnuPG\n"
 
-msgid "please use the option `--daemon' to run the program in the background\n"
+msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 "будь ласка, скористайтеся параметром «--daemon» для запуску програми у "
 "фоновому режимі\n"
@@ -5551,7 +5551,7 @@ msgid "critical marked policy without configured policies"
 msgstr "правила, позначені як критичні, без налаштування"
 
 #, c-format
-msgid "failed to open `%s': %s\n"
+msgid "failed to open '%s': %s\n"
 msgstr "не вдалося відкрити «%s»: %s\n"
 
 msgid "note: non-critical certificate policy not allowed"
@@ -5782,11 +5782,11 @@ msgid "line %d: no subject name given\n"
 msgstr "рядок %d: не вказано назви призначення\n"
 
 #, c-format
-msgid "line %d: invalid subject name label `%.*s'\n"
+msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr "рядок %d: некоректна мітка назви призначення «%.*s»\n"
 
 #, c-format
-msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid subject name '%s' at pos %d\n"
 msgstr "рядок %d: некоректна назва призначення «%s» на позиції %d\n"
 
 #, c-format
@@ -5798,11 +5798,11 @@ msgid "line %d: invalid serial number\n"
 msgstr "рядок %d: некоректний серійний номер\n"
 
 #, c-format
-msgid "line %d: invalid issuer name label `%.*s'\n"
+msgid "line %d: invalid issuer name label '%.*s'\n"
 msgstr "рядок %d: некоректна мітка назви видавця «%.*s»\n"
 
 #, c-format
-msgid "line %d: invalid issuer name `%s' at pos %d\n"
+msgid "line %d: invalid issuer name '%s' at pos %d\n"
 msgstr "рядок %d: некоректна назва видавця «%s» на позиції %d\n"
 
 #, c-format
@@ -5810,7 +5810,7 @@ msgid "line %d: invalid date given\n"
 msgstr "рядок %d: вказано некоректну дату\n"
 
 #, c-format
-msgid "line %d: error getting signing key by keygrip `%s': %s\n"
+msgid "line %d: error getting signing key by keygrip '%s': %s\n"
 msgstr ""
 "рядок %d: помилка під час спроби отримання ключа підписування за допомогою "
 "keygrip «%s»: %s\n"
@@ -5820,11 +5820,11 @@ msgid "line %d: invalid hash algorithm given\n"
 msgstr "рядок %d: вказано некоректний алгоритм хешування\n"
 
 #, c-format
-msgid "line %d: error reading key `%s' from card: %s\n"
+msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "рядок %d: помилка читання ключа «%s» з картки: %s\n"
 
 #, c-format
-msgid "line %d: error getting key by keygrip `%s': %s\n"
+msgid "line %d: error getting key by keygrip '%s': %s\n"
 msgstr ""
 "рядок %d: помилка під час отримання ключа за допомогою keygrip «%s»: %s\n"
 
@@ -5894,7 +5894,7 @@ msgid "No subject name given\n"
 msgstr "Не вказано назви призначення\n"
 
 #, c-format
-msgid "Invalid subject name label `%.*s'\n"
+msgid "Invalid subject name label '%.*s'\n"
 msgstr "Некоректна мітка назви призначення «%.*s»\n"
 
 #. TRANSLATORS: The 22 in the second string is the
@@ -5903,7 +5903,7 @@ msgstr "Некоректна мітка назви призначення «%.*s
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #, c-format
-msgid "Invalid subject name `%s'\n"
+msgid "Invalid subject name '%s'\n"
 msgstr "Некор. назва призн. «%s»\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
@@ -5957,7 +5957,7 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(здається, це не зашифроване повідомлення)\n"
 
 #, c-format
-msgid "certificate `%s' not found: %s\n"
+msgid "certificate '%s' not found: %s\n"
 msgstr "сертифіката «%s» не знайдено: %s\n"
 
 #, c-format
@@ -5965,11 +5965,11 @@ msgid "error locking keybox: %s\n"
 msgstr "помилка під час блокування сховища ключів: %s\n"
 
 #, c-format
-msgid "duplicated certificate `%s' deleted\n"
+msgid "duplicated certificate '%s' deleted\n"
 msgstr "вилучено дублікат сертифіката «%s»\n"
 
 #, c-format
-msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' deleted\n"
 msgstr "сертифікат «%s» вилучено\n"
 
 #, c-format
@@ -6083,11 +6083,11 @@ msgid "usage: gpgsm [options] "
 msgstr "використання: gpgsm [параметри] "
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "ЗАУВАЖЕННЯ: не вдасться зашифрувати до «%s»: %s\n"
 
 #, c-format
-msgid "unknown validation model `%s'\n"
+msgid "unknown validation model '%s'\n"
 msgstr "невідома модель перевірки «%s»\n"
 
 #, c-format
@@ -6106,11 +6106,11 @@ msgid "could not parse keyserver\n"
 msgstr "не вдалося обробити сервер ключів\n"
 
 #, c-format
-msgid "importing common certificates `%s'\n"
+msgid "importing common certificates '%s'\n"
 msgstr "імпортуємо загальні сертифікати «%s»\n"
 
 #, c-format
-msgid "can't sign using `%s': %s\n"
+msgid "can't sign using '%s': %s\n"
 msgstr "підписування за допомогою «%s» неможливе: %s\n"
 
 msgid "invalid command (there is no implicit command)\n"
@@ -6142,14 +6142,14 @@ msgid "error reading input: %s\n"
 msgstr "помилка під час спроби читання вхідних даних: %s\n"
 
 #, c-format
-msgid "error creating keybox `%s': %s\n"
+msgid "error creating keybox '%s': %s\n"
 msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
 
 msgid "you may want to start the gpg-agent first\n"
 msgstr "вам варто спочатку запустити gpg-agent\n"
 
 #, c-format
-msgid "keybox `%s' created\n"
+msgid "keybox '%s' created\n"
 msgstr "створено сховище ключів «%s»\n"
 
 msgid "failed to get the fingerprint\n"
@@ -6183,11 +6183,11 @@ msgstr ""
 "GPG_TTY не встановлено — можливе використання підробного типового значення\n"
 
 #, c-format
-msgid "invalid formatted fingerprint in `%s', line %d\n"
+msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "некоректне форматування відбитка у «%s», рядок %d\n"
 
 #, c-format
-msgid "invalid country code in `%s', line %d\n"
+msgid "invalid country code in '%s', line %d\n"
 msgstr "некоректний код країни у «%s», рядок %d\n"
 
 #, c-format
@@ -6282,23 +6282,23 @@ msgid "dropping %u certificates from the cache\n"
 msgstr "викидання %u сертифікатів з кешу\n"
 
 #, c-format
-msgid "can't access directory `%s': %s\n"
+msgid "can't access directory '%s': %s\n"
 msgstr "не вдалося отримати доступ до каталогу «%s»: %s\n"
 
 #, c-format
-msgid "can't parse certificate `%s': %s\n"
+msgid "can't parse certificate '%s': %s\n"
 msgstr "не вдалося обробити сертифікат «%s»: %s\n"
 
 #, c-format
-msgid "certificate `%s' already cached\n"
+msgid "certificate '%s' already cached\n"
 msgstr "сертифікат «%s» вже кешовано\n"
 
 #, c-format
-msgid "trusted certificate `%s' loaded\n"
+msgid "trusted certificate '%s' loaded\n"
 msgstr "надійний сертифікат «%s» завантажено\n"
 
 #, c-format
-msgid "certificate `%s' loaded\n"
+msgid "certificate '%s' loaded\n"
 msgstr "сертифікат «%s» завантажено\n"
 
 #, c-format
@@ -6312,7 +6312,7 @@ msgid "  subject ="
 msgstr "  призначення ="
 
 #, c-format
-msgid "error loading certificate `%s': %s\n"
+msgid "error loading certificate '%s': %s\n"
 msgstr "помилка під час спроби завантаження сертифіката «%s»: %s\n"
 
 #, c-format
@@ -6334,7 +6334,7 @@ msgid "error caching certificate: %s\n"
 msgstr "помилка під час спроби кешування сертифіката: %s\n"
 
 #, c-format
-msgid "invalid SHA1 fingerprint string `%s'\n"
+msgid "invalid SHA1 fingerprint string '%s'\n"
 msgstr "некоректний рядок відбитка SHA1 «%s»\n"
 
 #, c-format
@@ -6353,27 +6353,27 @@ msgid "error getting authorityKeyIdentifier: %s\n"
 msgstr "помилка під час спроби отримання authorityKeyIdentifier: %s\n"
 
 #, c-format
-msgid "creating directory `%s'\n"
+msgid "creating directory '%s'\n"
 msgstr "створення каталогу «%s»\n"
 
 #, c-format
-msgid "error creating directory `%s': %s\n"
+msgid "error creating directory '%s': %s\n"
 msgstr "помилка під час спроби створення каталогу «%s»: %s\n"
 
 #, c-format
-msgid "ignoring database dir `%s'\n"
+msgid "ignoring database dir '%s'\n"
 msgstr "ігноруємо каталог бази даних «%s»\n"
 
 #, c-format
-msgid "error reading directory `%s': %s\n"
+msgid "error reading directory '%s': %s\n"
 msgstr "помилка під час спроби читання каталогу «%s»: %s\n"
 
 #, c-format
-msgid "removing cache file `%s'\n"
+msgid "removing cache file '%s'\n"
 msgstr "вилучаємо файл кешу «%s»\n"
 
 #, c-format
-msgid "not removing file `%s'\n"
+msgid "not removing file '%s'\n"
 msgstr "не вилучаємо файл «%s»\n"
 
 #, c-format
@@ -6381,31 +6381,31 @@ msgid "error closing cache file: %s\n"
 msgstr "помилка під час спроби закриття файла кешу: %s\n"
 
 #, c-format
-msgid "failed to open cache dir file `%s': %s\n"
+msgid "failed to open cache dir file '%s': %s\n"
 msgstr "не вдалося відкрити файл каталогу кешу «%s»: %s\n"
 
 #, c-format
-msgid "error creating new cache dir file `%s': %s\n"
+msgid "error creating new cache dir file '%s': %s\n"
 msgstr "помилка під час спроби створення нового файла каталогу кешу «%s»: %s\n"
 
 #, c-format
-msgid "error writing new cache dir file `%s': %s\n"
+msgid "error writing new cache dir file '%s': %s\n"
 msgstr "помилка під час спроби запису нового файла каталогу кешу «%s»: %s\n"
 
 #, c-format
-msgid "error closing new cache dir file `%s': %s\n"
+msgid "error closing new cache dir file '%s': %s\n"
 msgstr "помилка під час спроби закриття нового файла каталогу кешу «%s»: %s\n"
 
 #, c-format
-msgid "new cache dir file `%s' created\n"
+msgid "new cache dir file '%s' created\n"
 msgstr "створено новий файл каталогу кешу «%s»\n"
 
 #, c-format
-msgid "failed to re-open cache dir file `%s': %s\n"
+msgid "failed to re-open cache dir file '%s': %s\n"
 msgstr "не вдалося повторно відкрити файл каталогу кешу «%s»: %s\n"
 
 #, c-format
-msgid "first record of `%s' is not the version\n"
+msgid "first record of '%s' is not the version\n"
 msgstr "першим записом «%s» не є версія\n"
 
 msgid "old version of cache directory - cleaning up\n"
@@ -6415,35 +6415,35 @@ msgid "old version of cache directory - giving up\n"
 msgstr "застаріла версія каталогу кешу — пропускаємо\n"
 
 #, c-format
-msgid "extra field detected in crl record of `%s' line %u\n"
+msgid "extra field detected in crl record of '%s' line %u\n"
 msgstr "виявлено зайве поле у записі CRL «%s», рядок %u\n"
 
 #, c-format
-msgid "invalid line detected in `%s' line %u\n"
+msgid "invalid line detected in '%s' line %u\n"
 msgstr "виявлено некоректний рядок у «%s», рядок %u\n"
 
 #, c-format
-msgid "duplicate entry detected in `%s' line %u\n"
+msgid "duplicate entry detected in '%s' line %u\n"
 msgstr "виявлено дублікат запису у «%s», рядок %u\n"
 
 #, c-format
-msgid "unsupported record type in `%s' line %u skipped\n"
+msgid "unsupported record type in '%s' line %u skipped\n"
 msgstr "непідтримуваний тип запису у «%s», рядок %u пропущено\n"
 
 #, c-format
-msgid "invalid issuer hash in `%s' line %u\n"
+msgid "invalid issuer hash in '%s' line %u\n"
 msgstr "некоректний хеш видавця у «%s», рядок %u\n"
 
 #, c-format
-msgid "no issuer DN in `%s' line %u\n"
+msgid "no issuer DN in '%s' line %u\n"
 msgstr "немає DN видавця «%s», рядок %u\n"
 
 #, c-format
-msgid "invalid timestamp in `%s' line %u\n"
+msgid "invalid timestamp in '%s' line %u\n"
 msgstr "некоректна позначка часу у «%s», рядок %u\n"
 
 #, c-format
-msgid "WARNING: invalid cache file hash in `%s' line %u\n"
+msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "УВАГА: некоректний хеш файла кешу у «%s», рядок %u\n"
 
 msgid "detected errors in cache dir file\n"
@@ -6453,19 +6453,19 @@ msgid "please check the reason and manually delete that file\n"
 msgstr "будь ласка, перевірте причину і вилучіть цей файл вручну\n"
 
 #, c-format
-msgid "failed to create temporary cache dir file `%s': %s\n"
+msgid "failed to create temporary cache dir file '%s': %s\n"
 msgstr "не вдалося створити тимчасовий файл каталогу кешу «%s»: %s\n"
 
 #, c-format
-msgid "error closing `%s': %s\n"
+msgid "error closing '%s': %s\n"
 msgstr "помилка під час спроби закрити «%s»: %s\n"
 
 #, c-format
-msgid "error renaming `%s' to `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
 msgstr "помилка під час спроби перейменування «%s» на «%s»: %s\n"
 
 #, c-format
-msgid "can't hash `%s': %s\n"
+msgid "can't hash '%s': %s\n"
 msgstr "не вдалося хешувати «%s»: %s\n"
 
 #, c-format
@@ -6473,26 +6473,26 @@ msgid "error setting up MD5 hash context: %s\n"
 msgstr "помилка під час спроби встановлення контексту хешування MD5: %s\n"
 
 #, c-format
-msgid "error hashing `%s': %s\n"
+msgid "error hashing '%s': %s\n"
 msgstr "помилка під час спроби хешування «%s»: %s\n"
 
 #, c-format
-msgid "invalid formatted checksum for `%s'\n"
+msgid "invalid formatted checksum for '%s'\n"
 msgstr "некоректне форматування контрольної суми для «%s»\n"
 
 msgid "too many open cache files; can't open anymore\n"
 msgstr "забагато відкритих файлів кешу; більше файлів відкрити не можна\n"
 
 #, c-format
-msgid "opening cache file `%s'\n"
+msgid "opening cache file '%s'\n"
 msgstr "відкриваємо файл кешу «%s»\n"
 
 #, c-format
-msgid "error opening cache file `%s': %s\n"
+msgid "error opening cache file '%s': %s\n"
 msgstr "помилка під час спроби відкриття файла кешу «%s»: %s\n"
 
 #, c-format
-msgid "error initializing cache file `%s' for reading: %s\n"
+msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr "помилка під час спроби ініціалізації файла кешу «%s» для читання: %s\n"
 
 msgid "calling unlock_db_file on a closed file\n"
@@ -6559,7 +6559,7 @@ msgid "error getting data from cache file: %s\n"
 msgstr "помилка під час спроби отримання даних з файла кешу: %s\n"
 
 #, c-format
-msgid "unknown hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
 msgstr "невідомий алгоритм хешування «%s»\n"
 
 #, c-format
@@ -6626,17 +6626,17 @@ msgid "ksba_crl_set_reader failed: %s\n"
 msgstr "помилка ksba_crl_set_reader: %s\n"
 
 #, c-format
-msgid "removed stale temporary cache file `%s'\n"
+msgid "removed stale temporary cache file '%s'\n"
 msgstr "вилучено застарілий тимчасовий файл кешу «%s»\n"
 
 #, c-format
-msgid "problem removing stale temporary cache file `%s': %s\n"
+msgid "problem removing stale temporary cache file '%s': %s\n"
 msgstr ""
 "помилка під час спроби вилучення застарілого тимчасового файла кешу «%s»: "
 "%s\n"
 
 #, c-format
-msgid "error creating temporary cache file `%s': %s\n"
+msgid "error creating temporary cache file '%s': %s\n"
 msgstr "помилка під час спроби створення тимчасового файла кешу «%s»: %s\n"
 
 #, c-format
@@ -6644,12 +6644,12 @@ msgid "crl_parse_insert failed: %s\n"
 msgstr "помилка crl_parse_insert: %s\n"
 
 #, c-format
-msgid "error finishing temporary cache file `%s': %s\n"
+msgid "error finishing temporary cache file '%s': %s\n"
 msgstr ""
 "помилка під час спроби завершення запису тимчасового файла кешу «%s»: %s\n"
 
 #, c-format
-msgid "error closing temporary cache file `%s': %s\n"
+msgid "error closing temporary cache file '%s': %s\n"
 msgstr "помилка під час спроби закриття тимчасового файла кешу «%s»: %s\n"
 
 #, c-format
@@ -6671,11 +6671,11 @@ msgid "error reading CRL extensions: %s\n"
 msgstr "помилка під час читання додатків CRL: %s\n"
 
 #, c-format
-msgid "creating cache file `%s'\n"
+msgid "creating cache file '%s'\n"
 msgstr "створюємо файл кешу «%s»\n"
 
 #, c-format
-msgid "problem renaming `%s' to `%s': %s\n"
+msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "проблема під час перейменування «%s» на «%s»: %s\n"
 
 msgid ""
@@ -6751,18 +6751,18 @@ msgid "error initializing reader object: %s\n"
 msgstr "помилка під час спроби ініціалізації об’єкта читання: %s\n"
 
 #, c-format
-msgid "URL `%s' redirected to `%s' (%u)\n"
+msgid "URL '%s' redirected to '%s' (%u)\n"
 msgstr "Адресу «%s» переспрямовано до «%s» (%u)\n"
 
 msgid "too many redirections\n"
 msgstr "занадто багато переспрямувань\n"
 
 #, c-format
-msgid "error retrieving `%s': %s\n"
+msgid "error retrieving '%s': %s\n"
 msgstr "помилка отримання «%s»: %s\n"
 
 #, c-format
-msgid "error retrieving `%s': http status %u\n"
+msgid "error retrieving '%s': http status %u\n"
 msgstr "помилка отримання «%s»: стан http %u\n"
 
 #, c-format
@@ -6823,7 +6823,7 @@ msgid "error reading certificate from stdin: %s\n"
 msgstr "помилка під час спроби читання сертифіката з stdin: %s\n"
 
 #, c-format
-msgid "error reading certificate from `%s': %s\n"
+msgid "error reading certificate from '%s': %s\n"
 msgstr "помилка під час спроби читання сертифіката з «%s»: %s\n"
 
 msgid "certificate too large to make any sense\n"
@@ -6834,7 +6834,7 @@ msgid "lookup failed: %s\n"
 msgstr "помилка пошуку: %s\n"
 
 #, c-format
-msgid "loading CRL `%s' failed: %s\n"
+msgid "loading CRL '%s' failed: %s\n"
 msgstr "спроба завантаження CRL «%s» завершилася невдало: %s\n"
 
 msgid "a dirmngr daemon is up and running\n"
@@ -6855,7 +6855,7 @@ msgid "certificate check failed: %s\n"
 msgstr "помилка під час перевірки сертифіката: %s\n"
 
 #, c-format
-msgid "got status: `%s'\n"
+msgid "got status: '%s'\n"
 msgstr "отримано стан: «%s»\n"
 
 #, c-format
@@ -6889,14 +6889,14 @@ msgid "can't connect to the dirmngr: %s\n"
 msgstr "не вдалося встановити з’єднання з dirmngr: %s\n"
 
 #, c-format
-msgid "unsupported inquiry `%s'\n"
+msgid "unsupported inquiry '%s'\n"
 msgstr "непідтримуваний запит «%s»\n"
 
 msgid "absolute file name expected\n"
 msgstr "мало бути вказано абсолютний шлях до файла\n"
 
 #, c-format
-msgid "looking up `%s'\n"
+msgid "looking up '%s'\n"
 msgstr "пошук «%s»\n"
 
 msgid "run as windows service (background)"
@@ -7001,11 +7001,11 @@ msgid "colons are not allowed in the socket name\n"
 msgstr "не можна використовувати двокрапки у назві сокета\n"
 
 #, c-format
-msgid "fetching CRL from `%s' failed: %s\n"
+msgid "fetching CRL from '%s' failed: %s\n"
 msgstr "помилка під час спроби отримання CRL з «%s»: %s\n"
 
 #, c-format
-msgid "processing CRL from `%s' failed: %s\n"
+msgid "processing CRL from '%s' failed: %s\n"
 msgstr "помилка під час обробки CRL з «%s»: %s\n"
 
 #, c-format
@@ -7096,7 +7096,7 @@ msgid "invalid port number %d\n"
 msgstr "некоректний номер порту %d\n"
 
 #, c-format
-msgid "scanning result for attribute `%s'\n"
+msgid "scanning result for attribute '%s'\n"
 msgstr "сканування результату для атрибуту «%s»\n"
 
 #, c-format
@@ -7104,31 +7104,31 @@ msgid "error writing to stdout: %s\n"
 msgstr "помилка під час спроби запису до stdout: %s\n"
 
 #, c-format
-msgid "          available attribute `%s'\n"
+msgid "          available attribute '%s'\n"
 msgstr "          доступний атрибут «%s»\n"
 
 #, c-format
-msgid "attribute `%s' not found\n"
+msgid "attribute '%s' not found\n"
 msgstr "атрибут «%s» не знайдено\n"
 
 #, c-format
-msgid "found attribute `%s'\n"
+msgid "found attribute '%s'\n"
 msgstr "знайдено атрибут «%s»\n"
 
 #, c-format
-msgid "processing url `%s'\n"
+msgid "processing url '%s'\n"
 msgstr "обробка адреси «%s»\n"
 
 #, c-format
-msgid "          user `%s'\n"
+msgid "          user '%s'\n"
 msgstr "          користувач «%s»\n"
 
 #, c-format
-msgid "          pass `%s'\n"
+msgid "          pass '%s'\n"
 msgstr "          прохід «%s»\n"
 
 #, c-format
-msgid "          host `%s'\n"
+msgid "          host '%s'\n"
 msgstr "          вузол «%s»\n"
 
 #, c-format
@@ -7136,46 +7136,46 @@ msgid "          port %d\n"
 msgstr "          порт %d\n"
 
 #, c-format
-msgid "            DN `%s'\n"
+msgid "            DN '%s'\n"
 msgstr "            DN «%s»\n"
 
 #, c-format
-msgid "        filter `%s'\n"
+msgid "        filter '%s'\n"
 msgstr "        фільтр «%s»\n"
 
 #, c-format
-msgid "          attr `%s'\n"
+msgid "          attr '%s'\n"
 msgstr "          атрибут «%s»\n"
 
 #, c-format
-msgid "no host name in `%s'\n"
+msgid "no host name in '%s'\n"
 msgstr "у «%s» немає назви вузла\n"
 
 #, c-format
-msgid "no attribute given for query `%s'\n"
+msgid "no attribute given for query '%s'\n"
 msgstr "не вказано атрибута для запису «%s»\n"
 
 msgid "WARNING: using first attribute only\n"
 msgstr "УВАГА: використано буде лише перший атрибут\n"
 
 #, c-format
-msgid "LDAP init to `%s:%d' failed: %s\n"
+msgid "LDAP init to '%s:%d' failed: %s\n"
 msgstr "помилка ініціалізації LDAP «%s:%d»: %s\n"
 
 #, c-format
-msgid "binding to `%s:%d' failed: %s\n"
+msgid "binding to '%s:%d' failed: %s\n"
 msgstr "спроба прив’язування до «%s:%d» зазнала невдачі: %s\n"
 
 #, c-format
-msgid "searching `%s' failed: %s\n"
+msgid "searching '%s' failed: %s\n"
 msgstr "помилка під час спроби пошуку «%s»: %s\n"
 
 #, c-format
-msgid "`%s' is not an LDAP URL\n"
+msgid "'%s' is not an LDAP URL\n"
 msgstr "«%s» не є адресою LDAP\n"
 
 #, c-format
-msgid "`%s' is an invalid LDAP URL\n"
+msgid "'%s' is an invalid LDAP URL\n"
 msgstr "«%s» є некоректною адресою LDAP\n"
 
 #, c-format
@@ -7232,7 +7232,7 @@ msgid "invalid char 0x%02x in host name - not added\n"
 msgstr "некоректний символ 0x%02x у назві вузла — не додано\n"
 
 #, c-format
-msgid "adding `%s:%d' to the ldap server list\n"
+msgid "adding '%s:%d' to the ldap server list\n"
 msgstr "додавання «%s:%d» до списку сервера LDAP\n"
 
 #, c-format
@@ -7240,7 +7240,7 @@ msgid "malloc failed: %s\n"
 msgstr "помилка malloc: %s\n"
 
 #, c-format
-msgid "start_cert_fetch: invalid pattern `%s'\n"
+msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr "start_cert_fetch: некоректний шаблон «%s»\n"
 
 msgid "ldap_search hit the size limit of the server\n"
@@ -7280,27 +7280,27 @@ msgid "error building OCSP request: %s\n"
 msgstr "помилка під час спроби побудови запиту за OCSP: %s\n"
 
 #, c-format
-msgid "error connecting to `%s': %s\n"
+msgid "error connecting to '%s': %s\n"
 msgstr "помилка під час спроби встановлення з’єднання з «%s»: %s\n"
 
 #, c-format
-msgid "error reading HTTP response for `%s': %s\n"
+msgid "error reading HTTP response for '%s': %s\n"
 msgstr "помилка під час спроби читання відповіді за HTTP для «%s»: %s\n"
 
 #, c-format
-msgid "error accessing `%s': http status %u\n"
+msgid "error accessing '%s': http status %u\n"
 msgstr "помилка під час спроби доступу до «%s»: стан http %u\n"
 
 #, c-format
-msgid "error parsing OCSP response for `%s': %s\n"
+msgid "error parsing OCSP response for '%s': %s\n"
 msgstr "помилка під час обробки відповіді за OCSP для «%s»: %s\n"
 
 #, c-format
-msgid "OCSP responder at `%s' status: %s\n"
+msgid "OCSP responder at '%s' status: %s\n"
 msgstr "Відповідач OCSP перебуває у стані «%s»: %s\n"
 
 #, c-format
-msgid "hashing the OCSP response for `%s' failed: %s\n"
+msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "спроба хешування відповіді OCSP для «%s» зазнала невдачі: %s\n"
 
 msgid "not signed by a default OCSP signer's certificate"
@@ -7345,11 +7345,11 @@ msgid "no default OCSP signer defined\n"
 msgstr "не визначено типового підписувача за OCSP\n"
 
 #, c-format
-msgid "using default OCSP responder `%s'\n"
+msgid "using default OCSP responder '%s'\n"
 msgstr "використовуємо типовий відповідач за OCSP «%s»\n"
 
 #, c-format
-msgid "using OCSP responder `%s'\n"
+msgid "using OCSP responder '%s'\n"
 msgstr "використовуємо відповідач за OCSP «%s»\n"
 
 #, c-format
@@ -7524,7 +7524,7 @@ msgid "line shortened due to embedded Nul character\n"
 msgstr "рядок скорочено через вбудований символ Nul\n"
 
 #, c-format
-msgid "unknown command `%s'\n"
+msgid "unknown command '%s'\n"
 msgstr "невідома команда «%s»\n"
 
 #, c-format
@@ -7764,7 +7764,7 @@ msgid "%s on %s failed with status %i\n"
 msgstr "невдала спроба виконання %s для %s зі станом %i\n"
 
 #, c-format
-msgid "can't create temporary directory `%s': %s\n"
+msgid "can't create temporary directory '%s': %s\n"
 msgstr "не вдалося створити тимчасовий каталог «%s»: %s\n"
 
 #, c-format

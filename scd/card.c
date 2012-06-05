@@ -142,7 +142,7 @@ card_open (CARD *rcard)
       goto leave;
     }
   if (opt.verbose)
-    log_info ("connected to card in reader %d using driver `%s'\n",
+    log_info ("connected to card in reader %d using driver '%s'\n",
               card->reader, card->scard->driver->name);
 
   rc = sc_lock (card->scard);

@@ -114,7 +114,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
         }
       if(!file)
 	{
-	  log_error(_("unable to open JPEG file `%s': %s\n"),
+	  log_error(_("unable to open JPEG file '%s': %s\n"),
 		    filename,strerror(errno));
 	  xfree(filename);
 	  filename=NULL;
@@ -143,7 +143,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
       /* Is it a JPEG? */
       if(photo[0]!=0xFF || photo[1]!=0xD8)
 	{
-	  log_error(_("`%s' is not a JPEG file\n"),filename);
+	  log_error(_("'%s' is not a JPEG file\n"),filename);
 	  xfree(photo);
 	  photo=NULL;
 	  xfree(filename);

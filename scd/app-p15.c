@@ -3258,7 +3258,7 @@ read_home_df (int slot, int *r_belpic)
         {
           pp = find_tlv (p, n, 0x50, &nn);
           if (pp) /* fixme: Filter log value? */
-            log_info ("pkcs#15 application label from EF(DIR) is `%.*s'\n",
+            log_info ("pkcs#15 application label from EF(DIR) is '%.*s'\n",
                       (int)nn, pp);
           pp = find_tlv (p, n, 0x51, &nn);
           if (pp && nn == 4 && *pp == 0x3f && !pp[1])

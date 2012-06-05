@@ -342,7 +342,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
   if (!fp)
     {
       if (opt.verbose || errno != ENOENT)
-        log_info (_("failed to open `%s': %s\n"),
+        log_info (_("failed to open '%s': %s\n"),
                   opt.policy_file, strerror (errno));
       xfree (policies);
       /* With no critical policies this is only a warning */

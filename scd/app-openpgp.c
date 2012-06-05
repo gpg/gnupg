@@ -502,17 +502,17 @@ dump_all_do (int slot)
       if (gpg_err_code (rc) == GPG_ERR_NO_OBJ)
         ;
       else if (rc)
-        log_info ("DO `%s' not available: %s\n",
+        log_info ("DO '%s' not available: %s\n",
                   data_objects[i].desc, gpg_strerror (rc));
       else
         {
           if (data_objects[i].binary)
             {
-              log_info ("DO `%s': ", data_objects[i].desc);
+              log_info ("DO '%s': ", data_objects[i].desc);
               log_printhex ("", buffer, buflen);
             }
           else
-            log_info ("DO `%s': `%.*s'\n",
+            log_info ("DO '%s': '%.*s'\n",
                       data_objects[i].desc,
                       (int)buflen, buffer); /* FIXME: sanitize */
 
@@ -535,14 +535,14 @@ dump_all_do (int slot)
                     {
                       if (data_objects[j].binary)
                         {
-                          log_info ("DO `%s': ", data_objects[j].desc);
+                          log_info ("DO '%s': ", data_objects[j].desc);
                           if (valuelen > 200)
                             log_info ("[%u]\n", (unsigned int)valuelen);
                           else
                             log_printhex ("", value, valuelen);
                         }
                       else
-                        log_info ("DO `%s': `%.*s'\n",
+                        log_info ("DO '%s': '%.*s'\n",
                                   data_objects[j].desc,
                                   (int)valuelen, value); /* FIXME: sanitize */
                     }
@@ -1847,7 +1847,7 @@ do_setattr (app_t app, const char *name,
     exmode = 0;
   rc = iso7816_put_data (app->slot, exmode, table[idx].tag, value, valuelen);
   if (rc)
-    log_error ("failed to set `%s': %s\n", table[idx].name, gpg_strerror (rc));
+    log_error ("failed to set '%s': %s\n", table[idx].name, gpg_strerror (rc));
 
   if (table[idx].special == 1)
     app->force_chv1 = (valuelen && *value == 0);

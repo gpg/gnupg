@@ -308,7 +308,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             if (!kr->lockhd) {
                 kr->lockhd = dotlock_create (kr->fname, 0);
                 if (!kr->lockhd) {
-                    log_info ("can't allocate lock for `%s'\n", kr->fname );
+                    log_info ("can't allocate lock for '%s'\n", kr->fname );
                     rc = G10ERR_GENERAL;
                 }
             }
@@ -323,7 +323,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             if (kr->is_locked)
                 ;
             else if (dotlock_take (kr->lockhd, -1) ) {
-                log_info ("can't lock `%s'\n", kr->fname );
+                log_info ("can't lock '%s'\n", kr->fname );
                 rc = G10ERR_GENERAL;
             }
             else
@@ -338,7 +338,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
             if (!kr->is_locked)
                 ;
             else if (dotlock_release (kr->lockhd))
-                log_info ("can't unlock `%s'\n", kr->fname );
+                log_info ("can't unlock '%s'\n", kr->fname );
             else
                 kr->is_locked = 0;
         }
@@ -376,12 +376,12 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     a = iobuf_open (hd->found.kr->fname);
     if (!a)
       {
-	log_error(_("can't open `%s'\n"), hd->found.kr->fname);
+	log_error(_("can't open '%s'\n"), hd->found.kr->fname);
 	return G10ERR_KEYRING_OPEN;
       }
 
     if (iobuf_seek (a, hd->found.offset) ) {
-        log_error ("can't seek `%s'\n", hd->found.kr->fname);
+        log_error ("can't seek '%s'\n", hd->found.kr->fname);
 	iobuf_close(a);
 	return G10ERR_KEYRING_OPEN;
     }
@@ -687,7 +687,7 @@ prepare_search (KEYRING_HANDLE hd)
     if (!hd->current.iobuf)
       {
         hd->current.error = gpg_error_from_syserror ();
-        log_error(_("can't open `%s'\n"), hd->current.kr->fname );
+        log_error(_("can't open '%s'\n"), hd->current.kr->fname );
         return hd->current.error;
       }
 
@@ -1210,7 +1210,7 @@ create_tmp_file (const char *template,
     if (!*r_fp)
       {
         int rc = gpg_error_from_syserror ();
-	log_error(_("can't create `%s': %s\n"), tmpfname, strerror(errno) );
+	log_error(_("can't create '%s': %s\n"), tmpfname, strerror(errno) );
         xfree (tmpfname);
         xfree (bakfname);
 	return rc;
@@ -1243,7 +1243,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
   if (rename (fname, bakfname) )
     {
       rc = gpg_error_from_syserror ();
-      log_error ("renaming `%s' to `%s' failed: %s\n",
+      log_error ("renaming '%s' to '%s' failed: %s\n",
                  fname, bakfname, strerror(errno) );
       return rc;
     }
@@ -1255,7 +1255,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
   if (rename (tmpfname, fname) )
     {
       rc = gpg_error_from_syserror ();
-      log_error (_("renaming `%s' to `%s' failed: %s\n"),
+      log_error (_("renaming '%s' to '%s' failed: %s\n"),
                  tmpfname, fname, strerror(errno) );
       register_secured_file (fname);
       goto fail;
@@ -1272,7 +1272,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname, const char *fname)
     if (!stat (bakfname, &statbuf) && !chmod (fname, statbuf.st_mode))
       ;
     else
-      log_error ("WARNING: unable to restore permissions to `%s': %s",
+      log_error ("WARNING: unable to restore permissions to '%s': %s",
                  fname, strerror(errno));
   }
 #endif
@@ -1363,7 +1363,7 @@ keyring_rebuild_cache (void *token,int noisy)
               if (iobuf_close (tmpfp))
                 {
                   rc = gpg_error_from_syserror ();
-                  log_error ("error closing `%s': %s\n",
+                  log_error ("error closing '%s': %s\n",
                              tmpfilename, strerror (errno));
                   goto leave;
                 }
@@ -1379,7 +1379,7 @@ keyring_rebuild_cache (void *token,int noisy)
             goto leave;
           lastresname = resname;
           if (noisy && !opt.quiet)
-            log_info (_("caching keyring `%s'\n"), resname);
+            log_info (_("caching keyring '%s'\n"), resname);
           rc = create_tmp_file (resname, &bakfilename, &tmpfilename, &tmpfp);
           if (rc)
             goto leave;
@@ -1401,7 +1401,7 @@ keyring_rebuild_cache (void *token,int noisy)
                      keyblock->pkt->pkttype, noisy? " - deleted":"");
           if (noisy)
             continue;
-          log_info ("Hint: backup your keys and try running `%s'\n",
+          log_info ("Hint: backup your keys and try running '%s'\n",
                     "gpg --rebuild-keydb-caches");
           rc = gpg_error (GPG_ERR_INV_KEYRING);
           goto leave;
@@ -1456,7 +1456,7 @@ keyring_rebuild_cache (void *token,int noisy)
       if (iobuf_close (tmpfp))
         {
           rc = gpg_error_from_syserror ();
-          log_error ("error closing `%s': %s\n",
+          log_error ("error closing '%s': %s\n",
                      tmpfilename, strerror (errno));
           goto leave;
         }
@@ -1518,7 +1518,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	if( !newfp )
 	  {
             rc = gpg_error_from_syserror ();
-	    log_error (_("can't create `%s': %s\n"), fname, strerror(errno));
+	    log_error (_("can't create '%s': %s\n"), fname, strerror(errno));
 	    return rc;
 	  }
 	if( !opt.quiet )
@@ -1544,7 +1544,7 @@ do_copy (int mode, const char *fname, KBNODE root,
     if( !fp )
       {
         rc = gpg_error_from_syserror ();
-	log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	log_error(_("can't open '%s': %s\n"), fname, strerror(errno) );
 	goto leave;
       }
 
@@ -1559,7 +1559,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	/* copy everything to the new file */
 	rc = copy_all_packets (fp, newfp);
 	if( rc != -1 ) {
-	    log_error("%s: copy to `%s' failed: %s\n",
+	    log_error("%s: copy to '%s' failed: %s\n",
 		      fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
@@ -1572,7 +1572,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	/* copy first part to the new file */
 	rc = copy_some_packets( fp, newfp, start_offset );
 	if( rc ) { /* should never get EOF here */
-	    log_error ("%s: copy to `%s' failed: %s\n",
+	    log_error ("%s: copy to '%s' failed: %s\n",
                        fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
@@ -1603,7 +1603,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	/* copy the rest */
 	rc = copy_all_packets( fp, newfp );
 	if( rc != -1 ) {
-	    log_error("%s: copy to `%s' failed: %s\n",
+	    log_error("%s: copy to '%s' failed: %s\n",
 		      fname, tmpfname, g10_errstr(rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);

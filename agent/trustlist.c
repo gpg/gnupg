@@ -151,7 +151,7 @@ read_one_trustfile (const char *fname, int allow_include,
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("error opening `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("error opening '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
 
@@ -167,7 +167,7 @@ read_one_trustfile (const char *fname, int allow_include,
             ;
           err = gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                            : GPG_ERR_INCOMPLETE_LINE);
-          log_error (_("file `%s', line %d: %s\n"),
+          log_error (_("file '%s', line %d: %s\n"),
                      fname, lnr, gpg_strerror (err));
           continue;
         }
@@ -189,7 +189,7 @@ read_one_trustfile (const char *fname, int allow_include,
 
           if (!allow_include)
             {
-              log_error (_("statement \"%s\" ignored in `%s', line %d\n"),
+              log_error (_("statement \"%s\" ignored in '%s', line %d\n"),
                          "include-default", fname, lnr);
               continue;
             }
@@ -197,13 +197,13 @@ read_one_trustfile (const char *fname, int allow_include,
 
           etcname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
           if ( !strcmp (etcname, fname) ) /* Same file. */
-            log_info (_("statement \"%s\" ignored in `%s', line %d\n"),
+            log_info (_("statement \"%s\" ignored in '%s', line %d\n"),
                       "include-default", fname, lnr);
           else if ( access (etcname, F_OK) && errno == ENOENT )
             {
               /* A non existent system trustlist is not an error.
                  Just print a note. */
-              log_info (_("system trustlist `%s' not available\n"), etcname);
+              log_info (_("system trustlist '%s' not available\n"), etcname);
             }
           else
             {
@@ -247,7 +247,7 @@ read_one_trustfile (const char *fname, int allow_include,
       n = hexcolon2bin (p, ti->fpr, 20);
       if (n < 0)
         {
-          log_error (_("bad fingerprint in `%s', line %d\n"), fname, lnr);
+          log_error (_("bad fingerprint in '%s', line %d\n"), fname, lnr);
           err = gpg_error (GPG_ERR_BAD_DATA);
           continue;
         }
@@ -272,14 +272,14 @@ read_one_trustfile (const char *fname, int allow_include,
         }
       else
         {
-          log_error (_("invalid keyflag in `%s', line %d\n"), fname, lnr);
+          log_error (_("invalid keyflag in '%s', line %d\n"), fname, lnr);
           err = gpg_error (GPG_ERR_BAD_DATA);
           continue;
         }
       p++;
       if ( *p && !spacep (p) )
         {
-          log_error (_("invalid keyflag in `%s', line %d\n"), fname, lnr);
+          log_error (_("invalid keyflag in '%s', line %d\n"), fname, lnr);
           err = gpg_error (GPG_ERR_BAD_DATA);
           continue;
         }
@@ -295,7 +295,7 @@ read_one_trustfile (const char *fname, int allow_include,
           if (p[n] == '=')
             {
               log_error ("assigning a value to a flag is not yet supported; "
-                         "in `%s', line %d\n", fname, lnr);
+                         "in '%s', line %d\n", fname, lnr);
               err = gpg_error (GPG_ERR_BAD_DATA);
               p++;
             }
@@ -304,7 +304,7 @@ read_one_trustfile (const char *fname, int allow_include,
           else if (n == 2 && !memcmp (p, "cm", 2))
             ti->flags.cm = 1;
           else
-            log_error ("flag `%.*s' in `%s', line %d ignored\n",
+            log_error ("flag '%.*s' in '%s', line %d ignored\n",
                        n, p, fname, lnr);
           p += n;
         }
@@ -313,7 +313,7 @@ read_one_trustfile (const char *fname, int allow_include,
   if ( !err && !es_feof (fp) )
     {
       err = gpg_error_from_syserror ();
-      log_error (_("error reading `%s', line %d: %s\n"),
+      log_error (_("error reading '%s', line %d: %s\n"),
                  fname, lnr, gpg_strerror (err));
     }
 
@@ -352,7 +352,7 @@ read_trustfiles (void)
       else
         {
           err = gpg_error_from_syserror ();
-          log_error (_("error opening `%s': %s\n"), fname, gpg_strerror (err));
+          log_error (_("error opening '%s': %s\n"), fname, gpg_strerror (err));
         }
       xfree (fname);
       fname = make_filename (gnupg_sysconfdir (), "trustlist.txt", NULL);
@@ -740,7 +740,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       if (!fp)
         {
           err = gpg_error_from_syserror ();
-          log_error ("can't create `%s': %s\n", fname, gpg_strerror (err));
+          log_error ("can't create '%s': %s\n", fname, gpg_strerror (err));
           xfree (fname);
           unlock_trusttable ();
           xfree (fprformatted);
@@ -754,7 +754,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("can't open `%s': %s\n", fname, gpg_strerror (err));
+      log_error ("can't open '%s': %s\n", fname, gpg_strerror (err));
       xfree (fname);
       unlock_trusttable ();
       xfree (fprformatted);

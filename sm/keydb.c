@@ -100,7 +100,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
       else if (strchr (resname, ':'))
         {
-          log_error ("invalid key resource URL `%s'\n", url );
+          log_error ("invalid key resource URL '%s'\n", url );
           rc = gpg_error (GPG_ERR_GENERAL);
           goto leave;
 	}
@@ -147,7 +147,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
   switch (rt)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      log_error ("unknown type of key resource `%s'\n", url );
+      log_error ("unknown type of key resource '%s'\n", url );
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
 
@@ -184,7 +184,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
           if (!fp)
             {
               rc = gpg_error (gpg_err_code_from_errno (errno));
-              log_error (_("error creating keybox `%s': %s\n"),
+              log_error (_("error creating keybox '%s': %s\n"),
                          filename, strerror(errno));
               if (errno == ENOENT)
                 log_info (_("you may want to start the gpg-agent first\n"));
@@ -192,7 +192,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 	    }
 
           if (!opt.quiet)
-            log_info (_("keybox `%s' created\n"), filename);
+            log_info (_("keybox '%s' created\n"), filename);
           if (auto_created)
             *auto_created = 1;
 	}
@@ -216,7 +216,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
               all_resources[used_resources].lockhandle
                 = dotlock_create (filename, 0);
               if (!all_resources[used_resources].lockhandle)
-                log_fatal ( _("can't create lock for `%s'\n"), filename);
+                log_fatal ( _("can't create lock for '%s'\n"), filename);
 
               /* Do a compress run if needed and the file is not locked. */
               if (!dotlock_take (all_resources[used_resources].lockhandle, 0))
@@ -238,7 +238,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 
 	break;
     default:
-      log_error ("resource type of `%s' not supported\n", url);
+      log_error ("resource type of '%s' not supported\n", url);
       rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
     }
@@ -247,7 +247,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
 
  leave:
   if (rc)
-    log_error ("keyblock resource `%s': %s\n", filename, gpg_strerror(rc));
+    log_error ("keyblock resource '%s': %s\n", filename, gpg_strerror(rc));
   else if (secret)
     any_secret = 1;
   else
@@ -1206,7 +1206,7 @@ keydb_clear_some_cert_flags (ctrl_t ctrl, strlist_t names)
           rc = classify_user_id (sl->d, desc+ndesc, 0);
           if (rc)
             {
-              log_error ("key `%s' not found: %s\n",
+              log_error ("key '%s' not found: %s\n",
                          sl->d, gpg_strerror (rc));
               rc = 0;
             }

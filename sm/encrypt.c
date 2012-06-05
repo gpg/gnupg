@@ -74,7 +74,7 @@ init_dek (DEK dek)
   mode = gcry_cipher_mode_from_oid (dek->algoid);
   if (!dek->algo || !mode)
     {
-      log_error ("unsupported algorithm `%s'\n", dek->algoid);
+      log_error ("unsupported algorithm '%s'\n", dek->algoid);
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
 
@@ -85,7 +85,7 @@ init_dek (DEK dek)
     {
     case GCRY_CIPHER_DES:
     case GCRY_CIPHER_RFC2268_40:
-      log_error ("cipher algorithm `%s' not allowed: too weak\n",
+      log_error ("cipher algorithm '%s' not allowed: too weak\n",
                  gnupg_cipher_algo_name (dek->algo));
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     default:
@@ -103,7 +103,7 @@ init_dek (DEK dek)
   /* Make sure we don't use weak keys. */
   if (dek->keylen < 100/8)
     {
-      log_error ("key length of `%s' too small\n", dek->algoid);
+      log_error ("key length of '%s' too small\n", dek->algoid);
       return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
     }
 

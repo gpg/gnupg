@@ -258,7 +258,7 @@ read_file (const char *fname, size_t *r_length)
           nread = fread (buf+buflen, 1, NCHUNK, fp);
           if (nread < NCHUNK && ferror (fp))
             {
-              log_error ("error reading `[stdin]': %s\n", strerror (errno));
+              log_error ("error reading '[stdin]': %s\n", strerror (errno));
               xfree (buf);
               return NULL;
             }
@@ -275,13 +275,13 @@ read_file (const char *fname, size_t *r_length)
       fp = fopen (fname, "rb");
       if (!fp)
         {
-          log_error ("can't open `%s': %s\n", fname, strerror (errno));
+          log_error ("can't open '%s': %s\n", fname, strerror (errno));
           return NULL;
         }
 
       if (fstat (fileno(fp), &st))
         {
-          log_error ("can't stat `%s': %s\n", fname, strerror (errno));
+          log_error ("can't stat '%s': %s\n", fname, strerror (errno));
           fclose (fp);
           return NULL;
         }
@@ -292,7 +292,7 @@ read_file (const char *fname, size_t *r_length)
         log_fatal ("can't allocate buffer: %s\n", strerror (errno));
       if (fread (buf, buflen, 1, fp) != 1)
         {
-          log_error ("error reading `%s': %s\n", fname, strerror (errno));
+          log_error ("error reading '%s': %s\n", fname, strerror (errno));
           fclose (fp);
           xfree (buf);
           return NULL;

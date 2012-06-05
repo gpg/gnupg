@@ -80,11 +80,11 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "未支援大於 %d 位元的 ssh 金鑰\n"
 
 #, c-format
-msgid "can't create `%s': %s\n"
+msgid "can't create '%s': %s\n"
 msgstr "無法建立 `%s': %s\n"
 
 #, c-format
-msgid "can't open `%s': %s\n"
+msgid "can't open '%s': %s\n"
 msgstr "無法開啟 `%s': %s\n"
 
 #, c-format
@@ -335,7 +335,7 @@ msgstr ""
 "GnuPG 私鑰管理\n"
 
 #, c-format
-msgid "invalid debug-level `%s' given\n"
+msgid "invalid debug-level '%s' given\n"
 msgstr "給定的除錯等級 `%s' 無效\n"
 
 #, c-format
@@ -343,23 +343,23 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s 太舊了 (需要 %s, 但是祇有 %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file `%s'\n"
+msgid "NOTE: no default option file '%s'\n"
 msgstr "請注意: 沒有預設選項檔 `%s'\n"
 
 #, c-format
-msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
 msgstr "選項檔 `%s': %s\n"
 
 #, c-format
-msgid "reading options from `%s'\n"
+msgid "reading options from '%s'\n"
 msgstr "從 `%s' 讀取選項中\n"
 
 #, c-format
-msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
 msgstr "建立 `%s' 時出錯: %s\n"
 
 #, c-format
-msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
 msgstr "無法建立目錄 `%s': %s\n"
 
 msgid "name of socket too long\n"
@@ -370,7 +370,7 @@ msgid "can't create socket: %s\n"
 msgstr "無法建立 socket: %s\n"
 
 #, c-format
-msgid "socket name `%s' is too long\n"
+msgid "socket name '%s' is too long\n"
 msgstr "socket 名稱 `%s' 太長\n"
 
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -380,7 +380,7 @@ msgid "error getting nonce for the socket\n"
 msgstr "為 socket 取得 nonce 時出錯\n"
 
 #, c-format
-msgid "error binding socket to `%s': %s\n"
+msgid "error binding socket to '%s': %s\n"
 msgstr "綁定 socket 至 `%s' 時出錯: %s\n"
 
 #, c-format
@@ -388,19 +388,19 @@ msgid "listen() failed: %s\n"
 msgstr "listen() 失敗: %s\n"
 
 #, c-format
-msgid "listening on socket `%s'\n"
+msgid "listening on socket '%s'\n"
 msgstr "正在候聽 socket `%s'\n"
 
 #, c-format
-msgid "directory `%s' created\n"
+msgid "directory '%s' created\n"
 msgstr "`%s' 目錄已建立\n"
 
 #, c-format
-msgid "stat() failed for `%s': %s\n"
+msgid "stat() failed for '%s': %s\n"
 msgstr "stat() 失敗於 `%s': %s\n"
 
 #, c-format
-msgid "can't use `%s' as home directory\n"
+msgid "can't use '%s' as home directory\n"
 msgstr "無法使用 `%s' 做為家目錄\n"
 
 #, c-format
@@ -506,31 +506,31 @@ msgid "error while asking for the passphrase: %s\n"
 msgstr "詢問密語時出錯: %s\n"
 
 #, c-format
-msgid "error opening `%s': %s\n"
+msgid "error opening '%s': %s\n"
 msgstr "開啟 `%s' 時出錯: %s\n"
 
 #, c-format
-msgid "file `%s', line %d: %s\n"
+msgid "file '%s', line %d: %s\n"
 msgstr "檔案 `%s', 第 %d 列: %s\n"
 
 #, c-format
-msgid "statement \"%s\" ignored in `%s', line %d\n"
+msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "命令 \"%s\" 忽略於 `%s', 第 %d 列\n"
 
 #, c-format
-msgid "system trustlist `%s' not available\n"
+msgid "system trustlist '%s' not available\n"
 msgstr "沒有系統信任清單 `%s' 可用\n"
 
 #, c-format
-msgid "bad fingerprint in `%s', line %d\n"
+msgid "bad fingerprint in '%s', line %d\n"
 msgstr "不良的指紋於 `%s', 第 %d 列\n"
 
 #, c-format
-msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid keyflag in '%s', line %d\n"
 msgstr "無效的金鑰旗標於 `%s', 第 %d 列\n"
 
 #, c-format
-msgid "error reading `%s', line %d: %s\n"
+msgid "error reading '%s', line %d: %s\n"
 msgstr "讀取 `%s' 時出錯, 第 %d 列: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
@@ -616,15 +616,15 @@ msgid "error getting exit code of process %d: %s\n"
 msgstr "取得 %d 執行程序結束碼時出錯: %s\n"
 
 #, c-format
-msgid "error running `%s': exit status %d\n"
+msgid "error running '%s': exit status %d\n"
 msgstr "執行 `%s' 時出錯: 結束狀態 %d\n"
 
 #, c-format
-msgid "error running `%s': probably not installed\n"
+msgid "error running '%s': probably not installed\n"
 msgstr "執行 `%s' 時出錯: 可能尚未安裝\n"
 
 #, c-format
-msgid "error running `%s': terminated\n"
+msgid "error running '%s': terminated\n"
 msgstr "執行 `%s' 時出錯: 已終止\n"
 
 #, c-format
@@ -638,7 +638,7 @@ msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent 在此階段無法使用\n"
 
 #, c-format
-msgid "can't connect to `%s': %s\n"
+msgid "can't connect to '%s': %s\n"
 msgstr "無法連接至 `%s': %s\n"
 
 msgid "communication problem with gpg-agent\n"
@@ -822,7 +822,7 @@ msgid "Dirmngr usable"
 msgstr "Dirmngr 可以使用"
 
 #, c-format
-msgid "No help available for `%s'."
+msgid "No help available for '%s'."
 msgstr "`%s' 沒有可用的說明."
 
 msgid "ignoring garbage line"
@@ -979,11 +979,11 @@ msgid "error allocating enough memory: %s\n"
 msgstr "配置足夠的記憶體時出錯: %s\n"
 
 #, c-format
-msgid "error reading `%s': %s\n"
+msgid "error reading '%s': %s\n"
 msgstr "讀取 `%s' 時出錯: %s\n"
 
 #, c-format
-msgid "error writing `%s': %s\n"
+msgid "error writing '%s': %s\n"
 msgstr "寫入 `%s' 時出錯: %s\n"
 
 msgid "Login data (account name): "
@@ -1187,7 +1187,7 @@ msgid "--output doesn't work for this command\n"
 msgstr "--output 在這個指令中沒有作用\n"
 
 #, c-format
-msgid "can't open `%s'\n"
+msgid "can't open '%s'\n"
 msgstr "無法開啟 `%s'\n"
 
 #, c-format
@@ -1236,18 +1236,18 @@ msgid "using cipher %s\n"
 msgstr "正在使用 %s 編密法\n"
 
 #, c-format
-msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
 msgstr "`%s' 已經被壓縮了\n"
 
 #, c-format
-msgid "WARNING: `%s' is an empty file\n"
+msgid "WARNING: '%s' is an empty file\n"
 msgstr "警告: `%s' 是個空檔案\n"
 
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
 msgstr "在 --pgp2 模式中, 你祇能以 2048 位元以下的 RSA 金鑰加密\n"
 
 #, c-format
-msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
 msgstr "正在從 `%s' 讀取中\n"
 
 msgid ""
@@ -1303,11 +1303,11 @@ msgid "this platform requires temporary files when calling external programs\n"
 msgstr "在這個作業平台上叫用外部程式時需要暫存檔\n"
 
 #, c-format
-msgid "unable to execute program `%s': %s\n"
+msgid "unable to execute program '%s': %s\n"
 msgstr "無法執行程式 `%s': %s\n"
 
 #, c-format
-msgid "unable to execute shell `%s': %s\n"
+msgid "unable to execute shell '%s': %s\n"
 msgstr "無法執行 shell `%s': %s\n"
 
 #, c-format
@@ -1325,11 +1325,11 @@ msgid "unable to read external program response: %s\n"
 msgstr "無法讀取外部程式回應: %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "警告: 無法移除暫存檔 (%s) `%s': %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove temp directory `%s': %s\n"
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "警告: 無法移除暫存目錄 `%s': %s\n"
 
 msgid "export signatures that are marked as local-only"
@@ -1390,11 +1390,11 @@ msgid "[User ID not found]"
 msgstr "[找不到使用者 ID]"
 
 #, c-format
-msgid "automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved '%s' via %s\n"
 msgstr "已自動取回 `%s' (經由 %s )\n"
 
 #, c-format
-msgid "error retrieving `%s' via %s: %s\n"
+msgid "error retrieving '%s' via %s: %s\n"
 msgstr "取得 `%s' 於 %s 時出錯: %s\n"
 
 msgid "No fingerprint"
@@ -1600,35 +1600,35 @@ msgid "conflicting commands\n"
 msgstr "指令彼此矛盾\n"
 
 #, c-format
-msgid "no = sign found in group definition `%s'\n"
+msgid "no = sign found in group definition '%s'\n"
 msgstr "在群組定義 `%s' 裡找不到 = 記號\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on homedir `%s'\n"
+msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr "警告: 家目錄 `%s' 的所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on configuration file `%s'\n"
+msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr "警告: 組態檔案 `%s' 的所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
+msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr "警告: 延伸模組 `%s' 的所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on homedir `%s'\n"
+msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr "警告: 家目錄 `%s' 的權限並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on configuration file `%s'\n"
+msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr "警告: 組態檔案 `%s' 的權限並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
+msgid "WARNING: unsafe permissions on extension '%s'\n"
 msgstr "警告: 延伸模組 `%s' 的權限並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄所有權並不安全\n"
 
 #, c-format
@@ -1637,11 +1637,11 @@ msgid ""
 msgstr "警告: 組態檔案 `%s' 的封入目錄所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr "警告: 延伸模組 `%s' 的封入目錄所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄權限並不安全\n"
 
 #, c-format
@@ -1650,11 +1650,11 @@ msgid ""
 msgstr "警告: 組態檔案 `%s' 的封入目錄權限並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr "警告: 延伸模組 `%s' 的封入目錄權限並不安全\n"
 
 #, c-format
-msgid "unknown configuration item `%s'\n"
+msgid "unknown configuration item '%s'\n"
 msgstr "未知的組態項目 `%s'\n"
 
 msgid "display photo IDs during key listings"
@@ -1691,7 +1691,7 @@ msgid "show expiration dates during signature listings"
 msgstr "列出簽章時顯示有效期限"
 
 #, c-format
-msgid "NOTE: old default options file `%s' ignored\n"
+msgid "NOTE: old default options file '%s' ignored\n"
 msgstr "請注意: 已忽略舊有的預設選項檔 `%s'\n"
 
 #, c-format
@@ -1703,11 +1703,11 @@ msgid "NOTE: %s is not for normal use!\n"
 msgstr "請注意: 一般情況下不會用到 %s!\n"
 
 #, c-format
-msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid signature expiration\n"
 msgstr "`%s' 不是個有效的簽章使用期限\n"
 
 #, c-format
-msgid "`%s' is not a valid character set\n"
+msgid "'%s' is not a valid character set\n"
 msgstr "`%s' 不是個有效的字元集\n"
 
 msgid "could not parse keyserver URL\n"
@@ -1873,15 +1873,15 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s 還沒辦法跟 %s 一起運作\n"
 
 #, c-format
-msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgstr "你不該將 `%s' 編密演算法用於 %s 模式中\n"
 
 #, c-format
-msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgstr "你不該將 `%s' 摘要演算法用於 %s 模式中\n"
 
 #, c-format
-msgid "you may not use compression algorithm `%s' while in %s mode\n"
+msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgstr "你不該將 `%s' 壓縮演算法用於 %s 模式中\n"
 
 #, c-format
@@ -1898,7 +1898,7 @@ msgid "--symmetric [filename]"
 msgstr "--symmetric [檔名]"
 
 #, c-format
-msgid "symmetric encryption of `%s' failed: %s\n"
+msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "`%s' 對稱式加密失敗: %s\n"
 
 msgid "--encrypt [filename]"
@@ -1977,7 +1977,7 @@ msgid "enarmoring failed: %s\n"
 msgstr "進行封裝失敗: %s\n"
 
 #, c-format
-msgid "invalid hash algorithm `%s'\n"
+msgid "invalid hash algorithm '%s'\n"
 msgstr "無效的 `%s' 雜湊演算法\n"
 
 msgid "[filename]"
@@ -2018,7 +2018,7 @@ msgid "No help available"
 msgstr "沒有可用的說明"
 
 #, c-format
-msgid "No help available for `%s'"
+msgid "No help available for '%s'"
 msgstr "`%s' 沒有可用的說明"
 
 msgid "import signatures that are marked as local-only"
@@ -2170,11 +2170,11 @@ msgid "no writable keyring found: %s\n"
 msgstr "找不到可寫入的鑰匙圈: %s\n"
 
 #, c-format
-msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
 msgstr "寫入 `%s' 中\n"
 
 #, c-format
-msgid "error writing keyring `%s': %s\n"
+msgid "error writing keyring '%s': %s\n"
 msgstr "寫入鑰匙圈 `%s' 時出錯: %s\n"
 
 #, c-format
@@ -2374,15 +2374,15 @@ msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "請注意: 子鑰在線上且已存放於卡片上了\n"
 
 #, c-format
-msgid "error creating keyring `%s': %s\n"
+msgid "error creating keyring '%s': %s\n"
 msgstr "建立 `%s' 鑰匙圈時出錯: %s\n"
 
 #, c-format
-msgid "keyring `%s' created\n"
+msgid "keyring '%s' created\n"
 msgstr "`%s' 鑰匙圈已建立\n"
 
 #, c-format
-msgid "keyblock resource `%s': %s\n"
+msgid "keyblock resource '%s': %s\n"
 msgstr "`%s' 金鑰區塊資源: %s\n"
 
 #, c-format
@@ -2567,7 +2567,7 @@ msgstr "   (2) 我隨意檢查過了.%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) 我非常小心地檢查過了.%s\n"
 
-msgid "Your selection? (enter `?' for more information): "
+msgid "Your selection? (enter '?' for more information): "
 msgstr "你的選擇是? (輸入 `?' 以取得更多資訊): "
 
 #, c-format
@@ -2798,7 +2798,7 @@ msgid "Hint: Select the user IDs to sign\n"
 msgstr "提示: 選擇使用者 ID 來加以簽署\n"
 
 #, c-format
-msgid "Unknown signature type `%s'\n"
+msgid "Unknown signature type '%s'\n"
 msgstr "未知的 `%s' 簽章種類\n"
 
 #, c-format
@@ -2829,11 +2829,11 @@ msgid "Command expects a filename argument\n"
 msgstr "這項指令要拿一個檔名來當作引數\n"
 
 #, c-format
-msgid "Can't open `%s': %s\n"
+msgid "Can't open '%s': %s\n"
 msgstr "無法開啟 `%s': %s\n"
 
 #, c-format
-msgid "Error reading backup key from `%s': %s\n"
+msgid "Error reading backup key from '%s': %s\n"
 msgstr "從 `%s' 讀取備份金鑰時出錯: %s\n"
 
 msgid "You must select at least one key.\n"
@@ -3192,7 +3192,7 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "正在顯示 %s 照片 ID, 其尺寸為 %ld, 屬於金鑰 %s (uid %d) 的照片\n"
 
 #, c-format
-msgid "preference `%s' duplicated\n"
+msgid "preference '%s' duplicated\n"
 msgstr "偏好設定 `%s' 重複了\n"
 
 msgid "too many cipher preferences\n"
@@ -3205,7 +3205,7 @@ msgid "too many compression preferences\n"
 msgstr "壓縮偏好過多\n"
 
 #, c-format
-msgid "invalid item `%s' in preference string\n"
+msgid "invalid item '%s' in preference string\n"
 msgstr "偏好字串中含有無效的 `%s' 項目\n"
 
 msgid "writing direct signature\n"
@@ -3444,7 +3444,7 @@ msgid "Invalid character in comment\n"
 msgstr "註釋含有無效的字符\n"
 
 #, c-format
-msgid "You are using the `%s' character set.\n"
+msgid "You are using the '%s' character set.\n"
 msgstr "你正在使用 `%s' 字元集.\n"
 
 #, c-format
@@ -3527,15 +3527,15 @@ msgid "Key generation canceled.\n"
 msgstr "金鑰產生已取消.\n"
 
 #, c-format
-msgid "writing public key to `%s'\n"
+msgid "writing public key to '%s'\n"
 msgstr "正在寫入公鑰至 `%s'\n"
 
 #, c-format
-msgid "writing secret key stub to `%s'\n"
+msgid "writing secret key stub to '%s'\n"
 msgstr "正在寫入私鑰 stub 至 `%s'\n"
 
 #, c-format
-msgid "writing secret key to `%s'\n"
+msgid "writing secret key to '%s'\n"
 msgstr "正在寫入私鑰至 `%s'\n"
 
 #, c-format
@@ -3547,11 +3547,11 @@ msgid "no writable secret keyring found: %s\n"
 msgstr "找不到可寫入的私鑰鑰匙圈: %s\n"
 
 #, c-format
-msgid "error writing public keyring `%s': %s\n"
+msgid "error writing public keyring '%s': %s\n"
 msgstr "寫入公鑰鑰匙圈 `%s' 時出錯: %s\n"
 
 #, c-format
-msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing secret keyring '%s': %s\n"
 msgstr "寫入私鑰鑰匙圈 `%s' 時出錯: %s\n"
 
 msgid "public and secret key created and signed.\n"
@@ -3589,11 +3589,11 @@ msgid "storing key onto card failed: %s\n"
 msgstr "儲存金鑰到卡片上時失敗: %s\n"
 
 #, c-format
-msgid "can't create backup file `%s': %s\n"
+msgid "can't create backup file '%s': %s\n"
 msgstr "無法建立備份檔案 `%s': %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to `%s'\n"
+msgid "NOTE: backup of card key saved to '%s'\n"
 msgstr "請注意: 卡片金鑰的備份已儲存至 `%s'\n"
 
 msgid "never     "
@@ -3639,7 +3639,7 @@ msgid "      Card serial no. ="
 msgstr "      卡片序號 ="
 
 #, c-format
-msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "把 `%s' 重新新命成 `%s' 時失敗: %s\n"
 
 msgid "WARNING: 2 files with confidential information exists.\n"
@@ -3657,7 +3657,7 @@ msgid "Please fix this possible security flaw\n"
 msgstr "請修補這個可能的安全漏洞\n"
 
 #, c-format
-msgid "caching keyring `%s'\n"
+msgid "caching keyring '%s'\n"
 msgstr "快取鑰匙圈 `%s' 中\n"
 
 #, c-format
@@ -3694,7 +3694,7 @@ msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "取回金鑰時尊重金鑰所設定的 PKA 記錄"
 
 #, c-format
-msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr "警告: 金鑰伺服器選項 `%s' 並未用於此平台\n"
 
 msgid "disabled"
@@ -3763,11 +3763,11 @@ msgid "external keyserver calls are not supported in this build\n"
 msgstr "本版並不支援外部金鑰伺服器叫用\n"
 
 #, c-format
-msgid "no handler for keyserver scheme `%s'\n"
+msgid "no handler for keyserver scheme '%s'\n"
 msgstr "沒有 `%s' 金鑰伺服器架構的經手程式\n"
 
 #, c-format
-msgid "action `%s' not supported with keyserver scheme `%s'\n"
+msgid "action '%s' not supported with keyserver scheme '%s'\n"
 msgstr "`%s' 動作在 `%s' 金鑰伺服器架構中未支援\n"
 
 #, c-format
@@ -3974,7 +3974,7 @@ msgid "invalid root packet detected in proc_tree()\n"
 msgstr "在 proc_tree() 中偵測到無效的 root 封包\n"
 
 #, c-format
-msgid "fstat of `%s' failed in %s: %s\n"
+msgid "fstat of '%s' failed in %s: %s\n"
 msgstr "`%s' 的 fstat 失敗於 %s: %s\n"
 
 #, c-format
@@ -4043,15 +4043,15 @@ msgid "this message may not be usable by %s\n"
 msgstr "這個訊息對 %s 來說無法使用\n"
 
 #, c-format
-msgid "ambiguous option `%s'\n"
+msgid "ambiguous option '%s'\n"
 msgstr "不明確的 `%s' 選項\n"
 
 #, c-format
-msgid "unknown option `%s'\n"
+msgid "unknown option '%s'\n"
 msgstr "未知的 `%s' 選項\n"
 
 #, c-format
-msgid "File `%s' exists. "
+msgid "File '%s' exists. "
 msgstr "檔案 `%s' 已存在. "
 
 msgid "Overwrite? (y/N) "
@@ -4068,15 +4068,15 @@ msgid "writing to stdout\n"
 msgstr "寫到標準輸出中\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "假設被簽署的資料在 `%s'\n"
 
 #, c-format
-msgid "new configuration file `%s' created\n"
+msgid "new configuration file '%s' created\n"
 msgstr "新的設定檔 `%s' 被建立了\n"
 
 #, c-format
-msgid "WARNING: options in `%s' are not yet active during this run\n"
+msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr "警告: 在 `%s' 裡的選項於這次執行期間並沒有被啟用\n"
 
 #, c-format
@@ -4150,7 +4150,7 @@ msgid "Enter JPEG filename for photo ID: "
 msgstr "輸入要當作照片 ID 的 JPEG 檔名: "
 
 #, c-format
-msgid "unable to open JPEG file `%s': %s\n"
+msgid "unable to open JPEG file '%s': %s\n"
 msgstr "無法開啟 JPEG 圖檔 `%s': %s\n"
 
 #, c-format
@@ -4161,7 +4161,7 @@ msgid "Are you sure you want to use it? (y/N) "
 msgstr "你確定要用它嗎? (y/N) "
 
 #, c-format
-msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not a JPEG file\n"
 msgstr "`%s' 不是一個 JPEG 圖檔\n"
 
 msgid "Is this photo correct (y/N/q)? "
@@ -4292,11 +4292,11 @@ msgid "Note: This key has been disabled.\n"
 msgstr "請注意: 這把金鑰已停用.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is `%s'\n"
+msgid "Note: Verified signer's address is '%s'\n"
 msgstr "請注意: 已驗證的簽署者地址為 `%s'\n"
 
 #, c-format
-msgid "Note: Signer's address `%s' does not match DNS entry\n"
+msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "請注意: 簽署者地址 `%s' 與 DNS 項目並不吻合\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
@@ -4396,7 +4396,7 @@ msgid "no signed data\n"
 msgstr "沒有被簽署過的資料\n"
 
 #, c-format
-msgid "can't open signed data `%s'\n"
+msgid "can't open signed data '%s'\n"
 msgstr "無法開啟被簽署過的資料 `%s'\n"
 
 #, c-format
@@ -4682,7 +4682,7 @@ msgstr ""
 "# (請用 \"gpg --import-ownertrust\" 來取回它們)\n"
 
 #, c-format
-msgid "error in `%s': %s\n"
+msgid "error in '%s': %s\n"
 msgstr "在 `%s' 中出錯: %s\n"
 
 msgid "line too long"
@@ -4698,11 +4698,11 @@ msgid "ownertrust value missing"
 msgstr "主觀信任值缺漏"
 
 #, c-format
-msgid "error finding trust record in `%s': %s\n"
+msgid "error finding trust record in '%s': %s\n"
 msgstr "在 `%s' 中尋找信任記錄時出錯: %s\n"
 
 #, c-format
-msgid "read error in `%s': %s\n"
+msgid "read error in '%s': %s\n"
 msgstr "讀取 `%s' 錯誤: %s\n"
 
 #, c-format
@@ -4721,7 +4721,7 @@ msgid "trustdb transaction too large\n"
 msgstr "信任資料庫更動量過大\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
+msgid "can't access '%s': %s\n"
 msgstr "無法存取 `%s': %s\n"
 
 #, c-format
@@ -4729,11 +4729,11 @@ msgid "%s: directory does not exist!\n"
 msgstr "%s: 目錄不存在!\n"
 
 #, c-format
-msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
 msgstr "無法為 `%s' 建立鎖定\n"
 
 #, c-format
-msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
 msgstr "無法鎖定 `%s'\n"
 
 #, c-format
@@ -4820,7 +4820,7 @@ msgid "input line longer than %d characters\n"
 msgstr "輸入列比 %d 字符還長\n"
 
 #, c-format
-msgid "`%s' is not a valid long keyID\n"
+msgid "'%s' is not a valid long keyID\n"
 msgstr "`%s' 不是一個有效的長式金鑰 ID\n"
 
 #, c-format
@@ -4908,11 +4908,11 @@ msgid "next trustdb check due at %s\n"
 msgstr "下次信任資料庫檢查將於 %s 進行\n"
 
 #, c-format
-msgid "no need for a trustdb check with `%s' trust model\n"
+msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr "在 `%s' 信任模型中並不需要檢查信任資料庫\n"
 
 #, c-format
-msgid "no need for a trustdb update with `%s' trust model\n"
+msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "在 `%s' 信任模型中並不需要更新信任資料庫\n"
 
 #, c-format
@@ -5022,11 +5022,11 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "你找到一個瑕疵了 ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
+msgid "error loading '%s': %s\n"
 msgstr "載入 `%s' 時出錯: %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' not available\n"
+msgid "conversion from '%s' to '%s' not available\n"
 msgstr "沒有從 `%s' 到 `%s' 之間的轉換可用\n"
 
 #, c-format
@@ -5034,15 +5034,15 @@ msgid "iconv_open failed: %s\n"
 msgstr "iconv_open 失敗: %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "conversion from '%s' to '%s' failed: %s\n"
 msgstr "從 `%s' 轉換成 `%s' 失敗: %s\n"
 
 #, c-format
-msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary file '%s': %s\n"
 msgstr "無法建立暫存檔 `%s': %s\n"
 
 #, c-format
-msgid "error writing to `%s': %s\n"
+msgid "error writing to '%s': %s\n"
 msgstr "寫入 %s 時出錯: %s\n"
 
 #, c-format
@@ -5060,7 +5060,7 @@ msgid "(deadlock?) "
 msgstr "(死結嗎?) "
 
 #, c-format
-msgid "lock `%s' not made: %s\n"
+msgid "lock '%s' not made: %s\n"
 msgstr "未鎖定 `%s': %s\n"
 
 #, c-format
@@ -5323,7 +5323,7 @@ msgstr ""
 "語法: scdaemon [選項] [指令 [引數]]\n"
 "GnuPg 智慧卡服務\n"
 
-msgid "please use the option `--daemon' to run the program in the background\n"
+msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr "請使用 `--daemon' 選項來將此程式執行於背景\n"
 
 #, c-format
@@ -5343,7 +5343,7 @@ msgid "failed to proxy %s inquiry to client\n"
 msgstr "以 %s 代理伺服器查詢用戶端時失敗\n"
 
 #, c-format
-msgid "no running dirmngr - starting `%s'\n"
+msgid "no running dirmngr - starting '%s'\n"
 msgstr "沒有執行中的 dirmngr - 正在啟動 `%s'\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
@@ -5377,7 +5377,7 @@ msgid "critical marked policy without configured policies"
 msgstr "關鍵已標記原則沒有已組態的原則"
 
 #, c-format
-msgid "failed to open `%s': %s\n"
+msgid "failed to open '%s': %s\n"
 msgstr "開啟 `%s' 失敗: %s\n"
 
 msgid "note: non-critical certificate policy not allowed"
@@ -5608,11 +5608,11 @@ msgid "line %d: no subject name given\n"
 msgstr "第 %d 列: 沒有給定的物件名稱\n"
 
 #, c-format
-msgid "line %d: invalid subject name label `%.*s'\n"
+msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr "第 %d 列: 無效的物件名稱標籤 `%.*s'\n"
 
 #, c-format
-msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid subject name '%s' at pos %d\n"
 msgstr "第 %d 列: 無效的物件名稱 `%s'  於 pos %d\n"
 
 #, c-format
@@ -5620,11 +5620,11 @@ msgid "line %d: not a valid email address\n"
 msgstr "第 %d 列: 不是有效的電子郵件地址\n"
 
 #, c-format
-msgid "line %d: error reading key `%s' from card: %s\n"
+msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "第 %d 列: 從卡片讀取金鑰 `%s' 時出錯: %s\n"
 
 #, c-format
-msgid "line %d: error getting key by keygrip `%s': %s\n"
+msgid "line %d: error getting key by keygrip '%s': %s\n"
 msgstr "第 %d 列: 以金鑰鑰柄 `%s' 取得金鑰時出錯: %s\n"
 
 #, c-format
@@ -5694,7 +5694,7 @@ msgid "No subject name given\n"
 msgstr "沒有給定的物件名稱\n"
 
 #, c-format
-msgid "Invalid subject name label `%.*s'\n"
+msgid "Invalid subject name label '%.*s'\n"
 msgstr "無效的物件名稱標籤 `%.*s'\n"
 
 #. TRANSLATORS: The 22 in the second string is the
@@ -5703,7 +5703,7 @@ msgstr "無效的物件名稱標籤 `%.*s'\n"
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #, c-format
-msgid "Invalid subject name `%s'\n"
+msgid "Invalid subject name '%s'\n"
 msgstr "無效的物件名稱 `%s'\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
@@ -5743,7 +5743,7 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(這看起來不像是個加密過的訊息)\n"
 
 #, c-format
-msgid "certificate `%s' not found: %s\n"
+msgid "certificate '%s' not found: %s\n"
 msgstr "找不到憑證 `%s': %s\n"
 
 #, c-format
@@ -5751,11 +5751,11 @@ msgid "error locking keybox: %s\n"
 msgstr "鎖住金鑰鑰匙盒時出錯: %s\n"
 
 #, c-format
-msgid "duplicated certificate `%s' deleted\n"
+msgid "duplicated certificate '%s' deleted\n"
 msgstr "重複的 `%s' 憑證已刪除\n"
 
 #, c-format
-msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' deleted\n"
 msgstr "憑證 `%s' 已刪除\n"
 
 #, c-format
@@ -5871,11 +5871,11 @@ msgid "usage: gpgsm [options] "
 msgstr "用法: gpgsm [選項] "
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "請注意: 將無法加密為 `%s': %s\n"
 
 #, c-format
-msgid "unknown validation model `%s'\n"
+msgid "unknown validation model '%s'\n"
 msgstr "未知的驗證模型 `%s'\n"
 
 #, c-format
@@ -5897,11 +5897,11 @@ msgid "WARNING: running with faked system time: "
 msgstr "警告: 正在偽造的系統時間中執行: "
 
 #, c-format
-msgid "importing common certificates `%s'\n"
+msgid "importing common certificates '%s'\n"
 msgstr "正在匯入通用憑證 `%s'\n"
 
 #, c-format
-msgid "can't sign using `%s': %s\n"
+msgid "can't sign using '%s': %s\n"
 msgstr "無法用 `%s' 來簽署: %s\n"
 
 msgid "invalid command (there is no implicit command)\n"
@@ -5933,14 +5933,14 @@ msgid "error reading input: %s\n"
 msgstr "讀取輸入時出錯: %s\n"
 
 #, c-format
-msgid "error creating keybox `%s': %s\n"
+msgid "error creating keybox '%s': %s\n"
 msgstr "建立金鑰鑰匙盒 `%s' 時出錯: %s\n"
 
 msgid "you may want to start the gpg-agent first\n"
 msgstr "你可能會先想啟動 gpg-agent\n"
 
 #, c-format
-msgid "keybox `%s' created\n"
+msgid "keybox '%s' created\n"
 msgstr "`%s' 鑰匙盒已建立\n"
 
 msgid "failed to get the fingerprint\n"
@@ -5973,11 +5973,11 @@ msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr "尚未設定 GPG_TTY - 使用可能是偽造的預設值\n"
 
 #, c-format
-msgid "invalid formatted fingerprint in `%s', line %d\n"
+msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "無效的格式化指紋於 `%s', 第 %d 列\n"
 
 #, c-format
-msgid "invalid country code in `%s', line %d\n"
+msgid "invalid country code in '%s', line %d\n"
 msgstr "無效的國家代碼於 `%s', 第 %d 列\n"
 
 #, c-format
@@ -6098,7 +6098,7 @@ msgid "line shortened due to embedded Nul character\n"
 msgstr "列因嵌入的 Nul 字符而縮短了\n"
 
 #, c-format
-msgid "unknown command `%s'\n"
+msgid "unknown command '%s'\n"
 msgstr "未知的指令 `%s'\n"
 
 #, c-format
@@ -6319,7 +6319,7 @@ msgid "%s on %s failed with status %i\n"
 msgstr "%s 於 %s 以 %i 狀態失敗了\n"
 
 #, c-format
-msgid "can't create temporary directory `%s': %s\n"
+msgid "can't create temporary directory '%s': %s\n"
 msgstr "無法建立暫存目錄 `%s': %s\n"
 
 #, c-format

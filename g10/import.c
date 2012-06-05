@@ -194,7 +194,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
                 gpg_err_set_errno (EPERM);
               }
 	    if( !inp2 )
-	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
+	        log_error(_("can't open '%s': %s\n"), fname, strerror(errno) );
 	    else
 	      {
 	        rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options);
@@ -203,7 +203,7 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
                 iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
                              0, (char*)fname);
 	        if( rc )
-		  log_error("import from `%s' failed: %s\n", fname,
+		  log_error("import from '%s' failed: %s\n", fname,
 			    g10_errstr(rc) );
 	      }
 	    if( !fname )
@@ -314,7 +314,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
     if( rc == -1 )
 	rc = 0;
     else if( rc && rc != G10ERR_INV_KEYRING )
-	log_error( _("error reading `%s': %s\n"), fname, g10_errstr(rc));
+	log_error( _("error reading '%s': %s\n"), fname, g10_errstr(rc));
 
     return rc;
 }
@@ -880,11 +880,11 @@ import_one (ctrl_t ctrl,
 	    return G10ERR_GENERAL;
 	}
 	if( opt.verbose > 1 )
-	    log_info (_("writing to `%s'\n"), keydb_get_resource_name (hd) );
+	    log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
 
 	rc = keydb_insert_keyblock (hd, keyblock );
         if (rc)
-	   log_error (_("error writing keyring `%s': %s\n"),
+	   log_error (_("error writing keyring '%s': %s\n"),
 		       keydb_get_resource_name (hd), g10_errstr(rc));
 	else
 	  {
@@ -984,7 +984,7 @@ import_one (ctrl_t ctrl,
 	    /* keyblock_orig has been updated; write */
 	    rc = keydb_update_keyblock (hd, keyblock_orig);
             if (rc)
-		log_error (_("error writing keyring `%s': %s\n"),
+		log_error (_("error writing keyring '%s': %s\n"),
 			     keydb_get_resource_name (hd), g10_errstr(rc) );
 	    else if(non_self)
 	      revalidation_mark ();
@@ -1726,7 +1726,7 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     /* and write the keyblock back */
     rc = keydb_update_keyblock (hd, keyblock );
     if (rc)
-	log_error (_("error writing keyring `%s': %s\n"),
+	log_error (_("error writing keyring '%s': %s\n"),
                    keydb_get_resource_name (hd), g10_errstr(rc) );
     keydb_release (hd); hd = NULL;
     /* we are ready */

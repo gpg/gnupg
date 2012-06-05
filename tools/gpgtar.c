@@ -234,7 +234,7 @@ main (int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
   switch (cmd)
@@ -304,10 +304,10 @@ read_record (estream_t stream, void *record)
     {
       err = gpg_error_from_syserror ();
       if (es_ferror (stream))
-        log_error ("error reading `%s': %s\n",
+        log_error ("error reading '%s': %s\n",
                    es_fname_get (stream), gpg_strerror (err));
       else
-        log_error ("error reading `%s': premature EOF "
+        log_error ("error reading '%s': premature EOF "
                    "(size of last record: %zu)\n",
                    es_fname_get (stream), nread);
     }
@@ -330,7 +330,7 @@ write_record (estream_t stream, const void *record)
   if (nwritten != RECORDSIZE)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error writing `%s': %s\n",
+      log_error ("error writing '%s': %s\n",
                  es_fname_get (stream), gpg_strerror (err));
     }
   else

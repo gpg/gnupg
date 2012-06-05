@@ -312,9 +312,9 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
       char *desc;
       if ( asprintf (&desc,
                      _("Please enter the PIN%s%s%s to unlock the card"),
-                     info? " (`":"",
+                     info? " (":"",
                      info? info:"",
-                     info? "')":"") < 0)
+                     info? ")":"") < 0)
         desc = NULL;
       rc = agent_askpin (ctrl, desc?desc:info, prompt, NULL, pi);
       xfree (desc);

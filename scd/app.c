@@ -137,13 +137,13 @@ app_dump_state (void)
           {
             log_printf (" app=%p", lock_table[slot].app);
             if (lock_table[slot].app->apptype)
-              log_printf (" type=`%s'", lock_table[slot].app->apptype);
+              log_printf (" type='%s'", lock_table[slot].app->apptype);
           }
         if (lock_table[slot].last_app)
           {
             log_printf (" lastapp=%p", lock_table[slot].last_app);
             if (lock_table[slot].last_app->apptype)
-              log_printf (" type=`%s'", lock_table[slot].last_app->apptype);
+              log_printf (" type='%s'", lock_table[slot].last_app->apptype);
           }
         log_printf ("\n");
       }
@@ -246,7 +246,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
       {
         unlock_reader (slot);
         if (app->apptype)
-          log_info ("application `%s' in use by reader %d - can't switch\n",
+          log_info ("application '%s' in use by reader %d - can't switch\n",
                     app->apptype, slot);
         return gpg_error (GPG_ERR_CONFLICT);
       }
@@ -255,7 +255,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   if (app && app->no_reuse)
     {
       unlock_reader (slot);
-      log_info ("lingering application `%s' in use by reader %d"
+      log_info ("lingering application '%s' in use by reader %d"
                 " - can't switch\n",
                 app->apptype? app->apptype:"?", slot);
       return gpg_error (GPG_ERR_CONFLICT);
@@ -394,7 +394,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
   if (err)
     {
       if (name)
-        log_info ("can't select application `%s': %s\n",
+        log_info ("can't select application '%s': %s\n",
                   name, gpg_strerror (err));
       else
         log_info ("no supported card application found: %s\n",

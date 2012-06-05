@@ -211,11 +211,11 @@ create_directory_if_needed (const char *name)
   dir = opendir (fname);
   if (!dir)
     {
-      log_info (_("creating directory `%s'\n"), fname);
+      log_info (_("creating directory '%s'\n"), fname);
       if (mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR) )
         {
           int save_errno = errno;
-          log_error (_("error creating directory `%s': %s\n"),
+          log_error (_("error creating directory '%s': %s\n"),
                      fname, strerror (errno));
           xfree (fname);
           gpg_err_set_errno (save_errno);
@@ -243,7 +243,7 @@ cleanup_cache_dir (int force)
     { /* Very minor sanity checks. */
       if (!strcmp (dname, "~/") || !strcmp (dname, "/" ))
         {
-          log_error (_("ignoring database dir `%s'\n"), dname);
+          log_error (_("ignoring database dir '%s'\n"), dname);
           xfree (dname);
           return -1;
         }
@@ -252,7 +252,7 @@ cleanup_cache_dir (int force)
   dir = opendir (dname);
   if (!dir)
     {
-      log_error (_("error reading directory `%s': %s\n"),
+      log_error (_("error reading directory '%s': %s\n"),
                  dname, strerror (errno));
       xfree (dname);
       return -1;
@@ -273,16 +273,16 @@ cleanup_cache_dir (int force)
 
           if (okay)
             {
-              log_info (_("removing cache file `%s'\n"), cdbname);
+              log_info (_("removing cache file '%s'\n"), cdbname);
               if (gnupg_remove (cdbname))
                 {
-                  log_error ("failed to remove `%s': %s\n",
+                  log_error ("failed to remove '%s': %s\n",
                              cdbname, strerror (errno));
                   problem = -1;
                 }
             }
           else
-            log_info (_("not removing file `%s'\n"), cdbname);
+            log_info (_("not removing file '%s'\n"), cdbname);
           xfree (cdbname);
         }
     }
@@ -409,7 +409,7 @@ open_dir_file (const char *fname)
   fp = es_fopen (fname, "r");
   if (!fp)
     {
-      log_error (_("failed to open cache dir file `%s': %s\n"),
+      log_error (_("failed to open cache dir file '%s': %s\n"),
                  fname, strerror (errno));
 
       /* Make sure that the directory exists, try to create if otherwise. */
@@ -419,31 +419,31 @@ open_dir_file (const char *fname)
       fp = es_fopen (fname, "w");
       if (!fp)
         {
-          log_error (_("error creating new cache dir file `%s': %s\n"),
+          log_error (_("error creating new cache dir file '%s': %s\n"),
                      fname, strerror (errno));
           return NULL;
         }
       es_fprintf (fp, "v:%d:\n", DBDIRVERSION);
       if (es_ferror (fp))
         {
-          log_error (_("error writing new cache dir file `%s': %s\n"),
+          log_error (_("error writing new cache dir file '%s': %s\n"),
                      fname, strerror (errno));
           es_fclose (fp);
           return NULL;
         }
       if (es_fclose (fp))
         {
-          log_error (_("error closing new cache dir file `%s': %s\n"),
+          log_error (_("error closing new cache dir file '%s': %s\n"),
                      fname, strerror (errno));
           return NULL;
         }
 
-      log_info (_("new cache dir file `%s' created\n"), fname);
+      log_info (_("new cache dir file '%s' created\n"), fname);
 
       fp = es_fopen (fname, "r");
       if (!fp)
         {
-          log_error (_("failed to re-open cache dir file `%s': %s\n"),
+          log_error (_("failed to re-open cache dir file '%s': %s\n"),
                      fname, strerror (errno));
           return NULL;
         }
@@ -471,7 +471,7 @@ check_dir_version (estream_t *fpadr, const char *fname,
         break;
       else if (*line != '#')
         {
-          log_error (_("first record of `%s' is not the version\n"), fname);
+          log_error (_("first record of '%s' is not the version\n"), fname);
           xfree (line);
           return gpg_error (GPG_ERR_CONFIGURATION);
         }
@@ -612,14 +612,14 @@ open_dir (crl_cache_t *r_cache)
                 default:
                   if (*p)
                     log_info (_("extra field detected in crl record of "
-                                "`%s' line %u\n"), fname, lineno);
+                                "'%s' line %u\n"), fname, lineno);
                   break;
                 }
             }
 
           if (!entry->issuer_hash)
             {
-              log_info (_("invalid line detected in `%s' line %u\n"),
+              log_info (_("invalid line detected in '%s' line %u\n"),
                         fname, lineno);
               xfree (entry);
               entry = NULL;
@@ -628,7 +628,7 @@ open_dir (crl_cache_t *r_cache)
             {
               /* Fixme: The duplicate checking used is not very
                  effective for large numbers of issuers. */
-              log_info (_("duplicate entry detected in `%s' line %u\n"),
+              log_info (_("duplicate entry detected in '%s' line %u\n"),
                         fname, lineno);
               xfree (entry);
               entry = NULL;
@@ -643,7 +643,7 @@ open_dir (crl_cache_t *r_cache)
       else if (*line == '#')
         ;
       else
-        log_info (_("unsupported record type in `%s' line %u skipped\n"),
+        log_info (_("unsupported record type in '%s' line %u skipped\n"),
                   fname, lineno);
 
       if (line)
@@ -652,12 +652,12 @@ open_dir (crl_cache_t *r_cache)
   if (lineerr)
     {
       err = lineerr;
-      log_error (_("error reading `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
   if (es_ferror (fp))
     {
-      log_error (_("error reading `%s': %s\n"), fname, strerror (errno));
+      log_error (_("error reading '%s': %s\n"), fname, strerror (errno));
       err = gpg_error (GPG_ERR_CONFIGURATION);
       goto leave;
     }
@@ -669,26 +669,26 @@ open_dir (crl_cache_t *r_cache)
       if (strlen (entry->issuer_hash) != 40)
         {
           anyerr++;
-          log_error (_("invalid issuer hash in `%s' line %u\n"),
+          log_error (_("invalid issuer hash in '%s' line %u\n"),
                      fname, entry->lineno);
         }
       else if ( !*entry->issuer )
         {
           anyerr++;
-          log_error (_("no issuer DN in `%s' line %u\n"),
+          log_error (_("no issuer DN in '%s' line %u\n"),
                      fname, entry->lineno);
         }
       else if ( check_isotime (entry->this_update)
                 || check_isotime (entry->next_update))
         {
           anyerr++;
-          log_error (_("invalid timestamp in `%s' line %u\n"),
+          log_error (_("invalid timestamp in '%s' line %u\n"),
                      fname, entry->lineno);
         }
 
       /* Checks not leading to an immediate fail. */
       if (strlen (entry->dbfile_hash) != 32)
-        log_info (_("WARNING: invalid cache file hash in `%s' line %u\n"),
+        log_info (_("WARNING: invalid cache file hash in '%s' line %u\n"),
                   fname, entry->lineno);
     }
 
@@ -791,7 +791,7 @@ update_dir (crl_cache_t cache)
   if (!fp)
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("failed to open cache dir file `%s': %s\n"),
+      log_error (_("failed to open cache dir file '%s': %s\n"),
                  fname, strerror (errno));
       goto leave;
     }
@@ -823,7 +823,7 @@ update_dir (crl_cache_t cache)
     if (!tmpbuf)
       {
         err = gpg_error_from_errno (errno);
-        log_error (_("failed to create temporary cache dir file `%s': %s\n"),
+        log_error (_("failed to create temporary cache dir file '%s': %s\n"),
                    tmpfname, strerror (errno));
         goto leave;
       }
@@ -837,7 +837,7 @@ update_dir (crl_cache_t cache)
   if (!fpout)
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("failed to create temporary cache dir file `%s': %s\n"),
+      log_error (_("failed to create temporary cache dir file '%s': %s\n"),
                  tmpfname, strerror (errno));
       goto leave;
     }
@@ -911,18 +911,18 @@ update_dir (crl_cache_t cache)
   if (lineerr)
     {
       err = lineerr;
-      log_error (_("error reading `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("error reading '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
   if (es_ferror (fp))
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error reading `%s': %s\n"), fname, strerror (errno));
+      log_error (_("error reading '%s': %s\n"), fname, strerror (errno));
     }
   if (es_ferror (fpout))
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error writing `%s': %s\n"), tmpfname, strerror (errno));
+      log_error (_("error writing '%s': %s\n"), tmpfname, strerror (errno));
     }
   if (err)
     goto leave;
@@ -933,7 +933,7 @@ update_dir (crl_cache_t cache)
   if (es_fclose (fpout))
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error closing `%s': %s\n"), tmpfname, strerror (errno));
+      log_error (_("error closing '%s': %s\n"), tmpfname, strerror (errno));
       goto leave;
     }
   fpout = NULL;
@@ -945,7 +945,7 @@ update_dir (crl_cache_t cache)
   if (rename (tmpfname, fname))
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error renaming `%s' to `%s': %s\n"),
+      log_error (_("error renaming '%s' to '%s': %s\n"),
                  tmpfname, fname, strerror (errno));
       goto leave;
     }
@@ -999,7 +999,7 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
   fp = buffer? es_fopen (fname, "rb") : NULL;
   if (!fp)
     {
-      log_error (_("can't hash `%s': %s\n"), fname, strerror (errno));
+      log_error (_("can't hash '%s': %s\n"), fname, strerror (errno));
       xfree (buffer);
       return -1;
     }
@@ -1023,7 +1023,7 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
       n = es_fread (buffer, 1, 65536, fp);
       if (n < 65536 && es_ferror (fp))
         {
-          log_error (_("error hashing `%s': %s\n"), fname, strerror (errno));
+          log_error (_("error hashing '%s': %s\n"), fname, strerror (errno));
           xfree (buffer);
           es_fclose (fp);
           gcry_md_close (md5);
@@ -1051,7 +1051,7 @@ check_dbfile (const char *fname, const char *md5hexvalue)
 
   if (strlen (md5hexvalue) != 32)
     {
-      log_error (_("invalid formatted checksum for `%s'\n"), fname);
+      log_error (_("invalid formatted checksum for '%s'\n"), fname);
       return -1;
     }
   unhexify (buffer1, md5hexvalue);
@@ -1122,7 +1122,7 @@ lock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
 
   fname = make_db_file_name (entry->issuer_hash);
   if (opt.verbose)
-    log_info (_("opening cache file `%s'\n"), fname );
+    log_info (_("opening cache file '%s'\n"), fname );
 
   if (!entry->dbfile_checked)
     {
@@ -1141,7 +1141,7 @@ lock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
   fd = open (fname, O_RDONLY);
   if (fd == -1)
     {
-      log_error (_("error opening cache file `%s': %s\n"),
+      log_error (_("error opening cache file '%s': %s\n"),
                  fname, strerror (errno));
       xfree (entry->cdb);
       entry->cdb = NULL;
@@ -1150,7 +1150,7 @@ lock_db_file (crl_cache_t cache, crl_cache_entry_t entry)
     }
   if (cdb_init (entry->cdb, fd))
     {
-      log_error (_("error initializing cache file `%s' for reading: %s\n"),
+      log_error (_("error initializing cache file '%s' for reading: %s\n"),
                  fname, strerror (errno));
       xfree (entry->cdb);
       entry->cdb = NULL;
@@ -1536,7 +1536,7 @@ start_sig_check (ksba_crl_t crl, gcry_md_hd_t *md, int *algo)
   *algo = gcry_md_map_name (algoid);
   if (!*algo)
     {
-      log_error (_("unknown hash algorithm `%s'\n"), algoid? algoid:"?");
+      log_error (_("unknown hash algorithm '%s'\n"), algoid? algoid:"?");
       return gpg_error (GPG_ERR_DIGEST_ALGO);
     }
 
@@ -2035,11 +2035,11 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
     fname = make_filename (opt.homedir_cache, DBDIR_D, tmpfname, NULL);
     xfree (tmpfname);
     if (!gnupg_remove (fname))
-      log_info (_("removed stale temporary cache file `%s'\n"), fname);
+      log_info (_("removed stale temporary cache file '%s'\n"), fname);
     else if (errno != ENOENT)
       {
         err = gpg_error_from_syserror ();
-        log_error (_("problem removing stale temporary cache file `%s': %s\n"),
+        log_error (_("problem removing stale temporary cache file '%s': %s\n"),
                    fname, gpg_strerror (err));
         goto leave;
       }
@@ -2049,7 +2049,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   if (fd_cdb == -1)
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error creating temporary cache file `%s': %s\n"),
+      log_error (_("error creating temporary cache file '%s': %s\n"),
                  fname, strerror (errno));
       goto leave;
     }
@@ -2069,14 +2069,14 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   if (cdb_make_finish (&cdb))
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error finishing temporary cache file `%s': %s\n"),
+      log_error (_("error finishing temporary cache file '%s': %s\n"),
                  fname, strerror (errno));
       goto leave;
     }
   if (close (fd_cdb))
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("error closing temporary cache file `%s': %s\n"),
+      log_error (_("error closing temporary cache file '%s': %s\n"),
                  fname, strerror (errno));
       goto leave;
     }
@@ -2182,7 +2182,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   /* Rename the temporary DB to the real name. */
   newfname = make_db_file_name (entry->issuer_hash);
   if (opt.verbose)
-    log_info (_("creating cache file `%s'\n"), newfname);
+    log_info (_("creating cache file '%s'\n"), newfname);
 
   /* Just in case close unused matching files.  Actually we need this
      only under Windows but saving file descriptors is never bad.  */
@@ -2214,7 +2214,7 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
   if (rename (fname, newfname))
     {
       err = gpg_error_from_syserror ();
-      log_error (_("problem renaming `%s' to `%s': %s\n"),
+      log_error (_("problem renaming '%s' to '%s': %s\n"),
                  fname, newfname, gpg_strerror (err));
       goto leave;
     }
@@ -2408,7 +2408,7 @@ crl_cache_load (ctrl_t ctrl, const char *filename)
   if (!fp)
     {
       err = gpg_error_from_errno (errno);
-      log_error (_("can't open `%s': %s\n"), filename, strerror (errno));
+      log_error (_("can't open '%s': %s\n"), filename, strerror (errno));
       return err;
     }
 
@@ -2488,7 +2488,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
           any_dist_point = 1;
 
           if (opt.verbose)
-            log_info ("fetching CRL from `%s'\n", distpoint_uri);
+            log_info ("fetching CRL from '%s'\n", distpoint_uri);
           err = crl_fetch (ctrl, distpoint_uri, &reader);
           if (err)
             {

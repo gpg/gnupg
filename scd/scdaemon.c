@@ -316,7 +316,7 @@ set_debug (const char *level)
     }
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), level);
+      log_error (_("invalid debug-level '%s' given\n"), level);
       scd_exit(2);
     }
 
@@ -500,12 +500,12 @@ main (int argc, char **argv )
           if (default_config)
             {
               if( parse_debug )
-                log_info (_("NOTE: no default option file `%s'\n"),
+                log_info (_("NOTE: no default option file '%s'\n"),
                           configname );
 	    }
           else
             {
-              log_error (_("option file `%s': %s\n"),
+              log_error (_("option file '%s': %s\n"),
                          configname, strerror(errno) );
               exit(2);
 	    }
@@ -513,7 +513,7 @@ main (int argc, char **argv )
           configname = NULL;
 	}
       if (parse_debug && configname )
-        log_info (_("reading options from `%s'\n"), configname );
+        log_info (_("reading options from '%s'\n"), configname );
       default_config = 0;
     }
 
@@ -625,7 +625,7 @@ main (int argc, char **argv )
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
   if (atexit (cleanup))
@@ -720,9 +720,9 @@ main (int argc, char **argv )
       if (allow_coredump)
         {
           if (chdir("/tmp"))
-            log_debug ("chdir to `/tmp' failed: %s\n", strerror (errno));
+            log_debug ("chdir to '/tmp' failed: %s\n", strerror (errno));
           else
-            log_debug ("changed working directory to `/tmp'\n");
+            log_debug ("changed working directory to '/tmp'\n");
         }
 
       /* In multi server mode we need to listen on an additional
@@ -775,7 +775,7 @@ main (int argc, char **argv )
     }
   else if (!is_daemon)
     {
-      log_info (_("please use the option `--daemon'"
+      log_info (_("please use the option '--daemon'"
                   " to run the program in the background\n"));
     }
   else
@@ -1043,7 +1043,7 @@ create_socket_name (int use_standard_socket,
       *p = 0;
       if (!mkdtemp (name))
 	{
-	  log_error (_("can't create directory `%s': %s\n"),
+	  log_error (_("can't create directory '%s': %s\n"),
 		     name, strerror (errno));
 	  scd_exit (2);
 	}
@@ -1052,7 +1052,7 @@ create_socket_name (int use_standard_socket,
 
   if (strchr (name, PATHSEP_C))
     {
-      log_error (("`%s' are not allowed in the socket name\n"), PATHSEP_S);
+      log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
       scd_exit (2);
     }
   if (strlen (name) + 1 >= DIMof (struct sockaddr_un, sun_path) )
@@ -1102,7 +1102,7 @@ create_server_socket (int is_standard_name, const char *name,
     log_error (_("error getting nonce for the socket\n"));
  if (rc == -1)
     {
-      log_error (_("error binding socket to `%s': %s\n"),
+      log_error (_("error binding socket to '%s': %s\n"),
 		 serv_addr->sun_path,
                  gpg_strerror (gpg_error_from_syserror ()));
       assuan_sock_close (fd);
@@ -1118,7 +1118,7 @@ create_server_socket (int is_standard_name, const char *name,
     }
 
   if (opt.verbose)
-    log_info (_("listening on socket `%s'\n"), serv_addr->sun_path);
+    log_info (_("listening on socket '%s'\n"), serv_addr->sun_path);
 
   return fd;
 }

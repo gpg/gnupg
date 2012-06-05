@@ -580,7 +580,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    sprintf ( buf, "%d:", c->dek->algo );
 	    for(i=0; i < c->dek->keylen; i++ )
 	      sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
-	    log_info( "session key: `%s'\n", buf );
+	    log_info( "session key: '%s'\n", buf );
 	    write_status_text ( STATUS_SESSION_KEY, buf );
 	  }
     }

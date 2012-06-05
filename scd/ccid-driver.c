@@ -40,7 +40,7 @@
  *    products derived from this software without specific prior
  *    written permission.
  *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
@@ -51,8 +51,6 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * $Date$
  */
 
 
@@ -1401,7 +1399,7 @@ scan_or_find_devices (int readerno, const char *readerid,
         }
       else if (fd == -1)
         {
-          DEBUGOUT_2 ("failed to open `%s': %s\n",
+          DEBUGOUT_2 ("failed to open '%s': %s\n",
                      transports[i].name, strerror (errno));
           continue;
         }

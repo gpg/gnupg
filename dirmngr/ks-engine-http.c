@@ -88,7 +88,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   if (err)
     {
       /* Fixme: After a redirection we show the old host name.  */
-      log_error (_("error connecting to `%s': %s\n"),
+      log_error (_("error connecting to '%s': %s\n"),
                  url, gpg_strerror (err));
       goto leave;
     }
@@ -98,7 +98,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   err = http_wait_response (http);
   if (err)
     {
-      log_error (_("error reading HTTP response for `%s': %s\n"),
+      log_error (_("error reading HTTP response for '%s': %s\n"),
                  url, gpg_strerror (err));
       goto leave;
     }
@@ -114,7 +114,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
       {
         const char *s = http_get_header (http, "Location");
 
-        log_info (_("URL `%s' redirected to `%s' (%u)\n"),
+        log_info (_("URL '%s' redirected to '%s' (%u)\n"),
                   url, s?s:"[none]", http_get_status_code (http));
         if (s && *s && redirects_left-- )
           {
@@ -136,7 +136,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
       goto leave;
 
     default:
-      log_error (_("error accessing `%s': http status %u\n"),
+      log_error (_("error accessing '%s': http status %u\n"),
                  url, http_get_status_code (http));
       err = gpg_error (GPG_ERR_NO_DATA);
       goto leave;

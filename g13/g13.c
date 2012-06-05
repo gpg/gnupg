@@ -273,7 +273,7 @@ set_debug (void)
     }
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), debug_level);
+      log_error (_("invalid debug-level '%s' given\n"), debug_level);
       g13_exit(2);
     }
 
@@ -448,11 +448,11 @@ main ( int argc, char **argv)
           if (default_config)
             {
               if (parse_debug)
-                log_info (_("NOTE: no default option file `%s'\n"), configname);
+                log_info (_("NOTE: no default option file '%s'\n"), configname);
             }
           else
             {
-              log_error (_("option file `%s': %s\n"),
+              log_error (_("option file '%s': %s\n"),
                          configname, strerror(errno));
               g13_exit(2);
             }
@@ -460,7 +460,7 @@ main ( int argc, char **argv)
           configname = NULL;
         }
       if (parse_debug && configname)
-        log_info (_("reading options from `%s'\n"), configname);
+        log_info (_("reading options from '%s'\n"), configname);
       default_config = 0;
     }
 
@@ -606,7 +606,7 @@ main ( int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
 
@@ -728,7 +728,7 @@ main ( int argc, char **argv)
         start_idle_task ();
         err = g13_mount_container (&ctrl, argv[0], argc == 2?argv[1]:NULL);
         if (err)
-          log_error ("error mounting container `%s': %s <%s>\n",
+          log_error ("error mounting container '%s': %s <%s>\n",
                      *argv, gpg_strerror (err), gpg_strsource (err));
       }
       break;

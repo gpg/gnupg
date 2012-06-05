@@ -135,7 +135,7 @@ write_keyblob (const char *filename,
   if (!fp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error creating new container `%s': %s\n",
+      log_error ("error creating new container '%s': %s\n",
                  filename, gpg_strerror (err));
       return err;
     }
@@ -197,7 +197,7 @@ write_keyblob (const char *filename,
   if (es_fclose (fp))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error closing `%s': %s\n",
+      log_error ("error closing '%s': %s\n",
                  filename, gpg_strerror (err));
       remove (filename);
       return err;
@@ -208,7 +208,7 @@ write_keyblob (const char *filename,
 
  writeerr:
   err = gpg_error_from_syserror ();
-  log_error ("error writing header to `%s': %s\n",
+  log_error ("error writing header to '%s': %s\n",
              filename, gpg_strerror (err));
   es_fclose (fp);
   remove (filename);

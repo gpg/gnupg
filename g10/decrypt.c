@@ -64,7 +64,7 @@ decrypt_message (ctrl_t ctrl, const char *filename)
   if ( !fp )
     {
       rc = gpg_error_from_syserror ();
-      log_error (_("can't open `%s': %s\n"), print_fname_stdin(filename),
+      log_error (_("can't open '%s': %s\n"), print_fname_stdin(filename),
                  gpg_strerror (rc));
       release_progress_context (pfx);
       return rc;
@@ -126,7 +126,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
 
       err = gpg_error_from_syserror ();
       snprintf (xname, sizeof xname, "[fd %d]", input_fd);
-      log_error (_("can't open `%s': %s\n"), xname, gpg_strerror (err));
+      log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
       release_progress_context (pfx);
       return err;
     }
@@ -143,7 +143,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
 
       err = gpg_error_from_syserror ();
       snprintf (xname, sizeof xname, "[fd %d]", output_fd);
-      log_error (_("can't open `%s': %s\n"), xname, gpg_strerror (err));
+      log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (err));
       iobuf_close (fp);
       release_progress_context (pfx);
       return err;
@@ -237,7 +237,7 @@ decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
         }
       if (!fp)
         {
-          log_error(_("can't open `%s'\n"), print_fname_stdin(filename));
+          log_error(_("can't open '%s'\n"), print_fname_stdin(filename));
           goto next_file;
         }
 

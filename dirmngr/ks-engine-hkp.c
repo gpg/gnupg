@@ -242,11 +242,11 @@ map_host (const char *name)
               if ((ec=getnameinfo (ai->ai_addr, ai->ai_addrlen,
                                    tmphost, sizeof tmphost,
                                    NULL, 0, NI_NAMEREQD)))
-                log_info ("getnameinfo failed while checking `%s': %s\n",
+                log_info ("getnameinfo failed while checking '%s': %s\n",
                           name, gai_strerror (ec));
               else if (refidx+1 >= reftblsize)
                 {
-                  log_error ("getnameinfo returned for `%s': `%s'"
+                  log_error ("getnameinfo returned for '%s': '%s'"
                             " [index table full - ignored]\n", name, tmphost);
                 }
               else
@@ -254,7 +254,7 @@ map_host (const char *name)
 
                   if ((tmpidx = find_hostinfo (tmphost)) != -1)
                     {
-                      log_info ("getnameinfo returned for `%s': `%s'"
+                      log_info ("getnameinfo returned for '%s': '%s'"
                                 " [already known]\n", name, tmphost);
                       if (ai->ai_family == AF_INET)
                         hosttable[tmpidx]->v4 = 1;
@@ -269,12 +269,12 @@ map_host (const char *name)
                     }
                   else
                     {
-                      log_info ("getnameinfo returned for `%s': `%s'\n",
+                      log_info ("getnameinfo returned for '%s': '%s'\n",
                                 name, tmphost);
                       /* Create a new entry.  */
                       tmpidx = create_new_hostinfo (tmphost);
                       if (tmpidx == -1)
-                        log_error ("map_host for `%s' problem: %s - `%s'"
+                        log_error ("map_host for '%s' problem: %s - '%s'"
                                    " [ignored]\n",
                                    name, strerror (errno), tmphost);
                       else
@@ -326,7 +326,7 @@ map_host (const char *name)
           hi->poolidx = select_random_host (hi->pool);
           if (hi->poolidx == -1)
             {
-              log_error ("no alive host found in pool `%s'\n", name);
+              log_error ("no alive host found in pool '%s'\n", name);
               return NULL;
             }
         }
@@ -338,7 +338,7 @@ map_host (const char *name)
 
   if (hi->dead)
     {
-      log_error ("host `%s' marked as dead\n", hi->name);
+      log_error ("host '%s' marked as dead\n", hi->name);
       return NULL;
     }
 
@@ -360,7 +360,7 @@ mark_host_dead (const char *name)
   if (idx == -1)
     return;
   hi = hosttable[idx];
-  log_info ("marking host `%s' as dead%s\n", hi->name, hi->dead? " (again)":"");
+  log_info ("marking host '%s' as dead%s\n", hi->name, hi->dead? " (again)":"");
   hi->dead = 1;
 }
 
@@ -502,7 +502,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   if (err)
     {
       /* Fixme: After a redirection we show the old host name.  */
-      log_error (_("error connecting to `%s': %s\n"),
+      log_error (_("error connecting to '%s': %s\n"),
                  hostportstr, gpg_strerror (err));
       goto leave;
     }
@@ -512,7 +512,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   err = http_wait_response (http);
   if (err)
     {
-      log_error (_("error reading HTTP response for `%s': %s\n"),
+      log_error (_("error reading HTTP response for '%s': %s\n"),
                  hostportstr, gpg_strerror (err));
       goto leave;
     }
@@ -528,7 +528,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       {
         const char *s = http_get_header (http, "Location");
 
-        log_info (_("URL `%s' redirected to `%s' (%u)\n"),
+        log_info (_("URL '%s' redirected to '%s' (%u)\n"),
                   request, s?s:"[none]", http_get_status_code (http));
         if (s && *s && redirects_left-- )
           {
@@ -550,7 +550,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       goto leave;
 
     default:
-      log_error (_("error accessing `%s': http status %u\n"),
+      log_error (_("error accessing '%s': http status %u\n"),
                  request, http_get_status_code (http));
       err = gpg_error (GPG_ERR_NO_DATA);
       goto leave;

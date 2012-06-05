@@ -98,11 +98,11 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "no pueden usarse claves ssh de más de %d bits\n"
 
 #, c-format
-msgid "can't create `%s': %s\n"
+msgid "can't create '%s': %s\n"
 msgstr "no se puede crear %s: %s\n"
 
 #, c-format
-msgid "can't open `%s': %s\n"
+msgid "can't open '%s': %s\n"
 msgstr "no se puede abrir `%s': %s\n"
 
 #, c-format
@@ -370,7 +370,7 @@ msgstr ""
 "Manejo de claves privadas por GnuPG\n"
 
 #, c-format
-msgid "invalid debug-level `%s' given\n"
+msgid "invalid debug-level '%s' given\n"
 msgstr "el nivel de depuración `%s` no es válido\n"
 
 #, c-format
@@ -378,23 +378,23 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s es demasiado antiguo (necesita %s, tiene %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file `%s'\n"
+msgid "NOTE: no default option file '%s'\n"
 msgstr "NOTA: no existe el fichero de opciones predefinido `%s'\n"
 
 #, c-format
-msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
 msgstr "fichero de opciones `%s': %s\n"
 
 #, c-format
-msgid "reading options from `%s'\n"
+msgid "reading options from '%s'\n"
 msgstr "leyendo opciones desde `%s'\n"
 
 #, c-format
-msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
 msgstr "error creando `%s': %s\n"
 
 #, c-format
-msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
 msgstr "no se puede crear el directorio `%s': %s\n"
 
 msgid "name of socket too long\n"
@@ -405,7 +405,7 @@ msgid "can't create socket: %s\n"
 msgstr "no se puede crear el socket: %s\n"
 
 #, c-format
-msgid "socket name `%s' is too long\n"
+msgid "socket name '%s' is too long\n"
 msgstr "el nombre de socket `%s' es demasiado largo\n"
 
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -415,7 +415,7 @@ msgid "error getting nonce for the socket\n"
 msgstr "error obteniendo valor único para el socket\n"
 
 #, c-format
-msgid "error binding socket to `%s': %s\n"
+msgid "error binding socket to '%s': %s\n"
 msgstr "error enlazando el socket con `%s': %s\n"
 
 #, c-format
@@ -423,19 +423,19 @@ msgid "listen() failed: %s\n"
 msgstr "listen() falló: %s\n"
 
 #, c-format
-msgid "listening on socket `%s'\n"
+msgid "listening on socket '%s'\n"
 msgstr "escuchando el socket `%s'\n"
 
 #, c-format
-msgid "directory `%s' created\n"
+msgid "directory '%s' created\n"
 msgstr "directorio `%s' creado\n"
 
 #, c-format
-msgid "stat() failed for `%s': %s\n"
+msgid "stat() failed for '%s': %s\n"
 msgstr "stat() falló para `%s': %s\n"
 
 #, c-format
-msgid "can't use `%s' as home directory\n"
+msgid "can't use '%s' as home directory\n"
 msgstr "no puede usar `%s' como directorio personal\n"
 
 #, c-format
@@ -556,31 +556,31 @@ msgid "error while asking for the passphrase: %s\n"
 msgstr "error pidiendo la frase contraseña: %s\n"
 
 #, c-format
-msgid "error opening `%s': %s\n"
+msgid "error opening '%s': %s\n"
 msgstr "error abriendo `%s': %s\n"
 
 #, c-format
-msgid "file `%s', line %d: %s\n"
+msgid "file '%s', line %d: %s\n"
 msgstr "fichero `%s', línea %d: %s\n"
 
 #, c-format
-msgid "statement \"%s\" ignored in `%s', line %d\n"
+msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "declaración \"%s\" ignorada en `%s', línea %d\n"
 
 #, c-format
-msgid "system trustlist `%s' not available\n"
+msgid "system trustlist '%s' not available\n"
 msgstr "la lista de confianza `%s' del sistema no está disponible\n"
 
 #, c-format
-msgid "bad fingerprint in `%s', line %d\n"
+msgid "bad fingerprint in '%s', line %d\n"
 msgstr "huella digital incorrecta en `%s', línea %d\n"
 
 #, c-format
-msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid keyflag in '%s', line %d\n"
 msgstr "opción de clave inválida en `%s', línea %d\n"
 
 #, c-format
-msgid "error reading `%s', line %d: %s\n"
+msgid "error reading '%s', line %d: %s\n"
 msgstr "error leyendo `%s', línea %d: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
@@ -673,15 +673,15 @@ msgid "error getting exit code of process %d: %s\n"
 msgstr "error obteniendo código de finalización del proceso: %d %s\n"
 
 #, c-format
-msgid "error running `%s': exit status %d\n"
+msgid "error running '%s': exit status %d\n"
 msgstr "error ejecutando `%s': código de finalización %d\n"
 
 #, c-format
-msgid "error running `%s': probably not installed\n"
+msgid "error running '%s': probably not installed\n"
 msgstr "error ejecutando `%s': probablemente no está instalado\n"
 
 #, c-format
-msgid "error running `%s': terminated\n"
+msgid "error running '%s': terminated\n"
 msgstr "error ejecutando `%s': terminado\n"
 
 #, c-format
@@ -695,7 +695,7 @@ msgid "gpg-agent is not available in this session\n"
 msgstr "el agente gpg no esta disponible en esta sesión\n"
 
 #, c-format
-msgid "can't connect to `%s': %s\n"
+msgid "can't connect to '%s': %s\n"
 msgstr "no se puede conectar con `%s': %s\n"
 
 msgid "communication problem with gpg-agent\n"
@@ -880,7 +880,7 @@ msgid "Dirmngr usable"
 msgstr "Dirmngr utilizable"
 
 #, c-format
-msgid "No help available for `%s'."
+msgid "No help available for '%s'."
 msgstr "No hay ayuda disponible para `%s'."
 
 msgid "ignoring garbage line"
@@ -1041,11 +1041,11 @@ msgid "error allocating enough memory: %s\n"
 msgstr "error reservando memoria: %s\n"
 
 #, c-format
-msgid "error reading `%s': %s\n"
+msgid "error reading '%s': %s\n"
 msgstr "error leyendo `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error writing `%s': %s\n"
+msgid "error writing '%s': %s\n"
 msgstr "error escribiendo en `%s': %s\n"
 
 msgid "Login data (account name): "
@@ -1251,7 +1251,7 @@ msgid "--output doesn't work for this command\n"
 msgstr "--output no funciona con esta orden\n"
 
 #, c-format
-msgid "can't open `%s'\n"
+msgid "can't open '%s'\n"
 msgstr "no se puede abrir `%s'\n"
 
 #, c-format
@@ -1300,18 +1300,18 @@ msgid "using cipher %s\n"
 msgstr "usando cifrado %s\n"
 
 #, c-format
-msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
 msgstr "`%s' ya está comprimido\n"
 
 #, c-format
-msgid "WARNING: `%s' is an empty file\n"
+msgid "WARNING: '%s' is an empty file\n"
 msgstr "ATENCIÓN `%s' es un fichero vacío\n"
 
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
 msgstr "solo puede cifrar a claves RSA de 2048 bits o menos en modo --pgp2\n"
 
 #, c-format
-msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
 msgstr "leyendo desde `%s'\n"
 
 msgid ""
@@ -1379,11 +1379,11 @@ msgstr ""
 "externos\n"
 
 #, c-format
-msgid "unable to execute program `%s': %s\n"
+msgid "unable to execute program '%s': %s\n"
 msgstr "no se puede ejecutar el programa `%s': %s\n"
 
 #, c-format
-msgid "unable to execute shell `%s': %s\n"
+msgid "unable to execute shell '%s': %s\n"
 msgstr "no se puede ejecutar el intérprete de órdenes `%s': %s\n"
 
 #, c-format
@@ -1401,11 +1401,11 @@ msgid "unable to read external program response: %s\n"
 msgstr "no se puede leer la respuesta del programa externo: %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "AVISO: no se puede borrar fichero temporal (%s) `%s': %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove temp directory `%s': %s\n"
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "AVISO: no se puede borrar el fichero temporal `%s': %s\n"
 
 msgid "export signatures that are marked as local-only"
@@ -1465,11 +1465,11 @@ msgid "[User ID not found]"
 msgstr "[ID de usuario no encontrado]"
 
 #, c-format
-msgid "automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved '%s' via %s\n"
 msgstr "recuperado automáticamente `%s' vía %s\n"
 
 #, c-format
-msgid "error retrieving `%s' via %s: %s\n"
+msgid "error retrieving '%s' via %s: %s\n"
 msgstr "error recuperando `%s' vía %s: %s\n"
 
 msgid "No fingerprint"
@@ -1679,35 +1679,35 @@ msgid "conflicting commands\n"
 msgstr "órdenes incompatibles\n"
 
 #, c-format
-msgid "no = sign found in group definition `%s'\n"
+msgid "no = sign found in group definition '%s'\n"
 msgstr "no se encontró el signo = en la definición de grupo `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on homedir `%s'\n"
+msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr "AVISO: propiedad insegura del directorio personal `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on configuration file `%s'\n"
+msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr "AVISO: propiedad insegura del fichero de configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
+msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr "AVISO: propiedad insegura de la extensión `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on homedir `%s'\n"
+msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr "AVISO: permisos inseguros del directorio personal `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on configuration file `%s'\n"
+msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr "AVISO: permisos inseguros del fichero de configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
+msgid "WARNING: unsafe permissions on extension '%s'\n"
 msgstr "AVISO: permisos inseguros de la extensión `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr "AVISO: propiedad insegura del directorio contenedor de `%s'\n"
 
 #, c-format
@@ -1718,12 +1718,12 @@ msgstr ""
 "configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr ""
 "AVISO: propiedad insegura del directorio contenedor de la extensión `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr "AVISO: permisos inseguros del directorio contenedor de `%s'\n"
 
 #, c-format
@@ -1734,12 +1734,12 @@ msgstr ""
 "configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr ""
 "AVISO: permisos inseguros del directorio contenedor de la extensión `%s'\n"
 
 #, c-format
-msgid "unknown configuration item `%s'\n"
+msgid "unknown configuration item '%s'\n"
 msgstr "artículo de configuración desconocido `%s'\n"
 
 msgid "display photo IDs during key listings"
@@ -1776,7 +1776,7 @@ msgid "show expiration dates during signature listings"
 msgstr "mostrar fechas de caducidad al listar firmas"
 
 #, c-format
-msgid "NOTE: old default options file `%s' ignored\n"
+msgid "NOTE: old default options file '%s' ignored\n"
 msgstr "NOTA: se ignora el antiguo fichero de opciones predefinidas `%s'\n"
 
 #, c-format
@@ -1788,11 +1788,11 @@ msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: ¡%s no es para uso normal!\n"
 
 #, c-format
-msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid signature expiration\n"
 msgstr "`%s' no es una fecha de caducidad válida\n"
 
 #, c-format
-msgid "`%s' is not a valid character set\n"
+msgid "'%s' is not a valid character set\n"
 msgstr "`%s' no es un juego de caracteres válido\n"
 
 msgid "could not parse keyserver URL\n"
@@ -1958,15 +1958,15 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s aún no funciona con %s\n"
 
 #, c-format
-msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgstr "no puede usar el cifrado `%s' en modo %s\n"
 
 #, c-format
-msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgstr "no puede usar el resumen `%s' en modo %s\n"
 
 #, c-format
-msgid "you may not use compression algorithm `%s' while in %s mode\n"
+msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgstr "no puede usar la compresión `%s' en modo %s\n"
 
 #, c-format
@@ -1983,7 +1983,7 @@ msgid "--symmetric [filename]"
 msgstr "--symmetric [nombre_fichero]"
 
 #, c-format
-msgid "symmetric encryption of `%s' failed: %s\n"
+msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "el cifrado simétrico de `%s' falló: %s\n"
 
 msgid "--encrypt [filename]"
@@ -2062,7 +2062,7 @@ msgid "enarmoring failed: %s\n"
 msgstr "creación de armadura fallida: %s\n"
 
 #, c-format
-msgid "invalid hash algorithm `%s'\n"
+msgid "invalid hash algorithm '%s'\n"
 msgstr "algoritmo de distribución inválido `%s'\n"
 
 msgid "[filename]"
@@ -2112,7 +2112,7 @@ msgid "No help available"
 msgstr "Ayuda no disponible"
 
 #, c-format
-msgid "No help available for `%s'"
+msgid "No help available for '%s'"
 msgstr "No hay ayuda disponible para `%s'"
 
 msgid "import signatures that are marked as local-only"
@@ -2269,11 +2269,11 @@ msgid "no writable keyring found: %s\n"
 msgstr "anillo de claves no escribible encontrado: %s\n"
 
 #, c-format
-msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
 msgstr "escribiendo en `%s'\n"
 
 #, c-format
-msgid "error writing keyring `%s': %s\n"
+msgid "error writing keyring '%s': %s\n"
 msgstr "error escribiendo anillo `%s': %s\n"
 
 #, c-format
@@ -2473,15 +2473,15 @@ msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "NOTA: clave secundaria en línea y almacenada en la tarjeta\n"
 
 #, c-format
-msgid "error creating keyring `%s': %s\n"
+msgid "error creating keyring '%s': %s\n"
 msgstr "error escribiendo anillo `%s': %s\n"
 
 #, c-format
-msgid "keyring `%s' created\n"
+msgid "keyring '%s' created\n"
 msgstr "anillo `%s' creado\n"
 
 #, c-format
-msgid "keyblock resource `%s': %s\n"
+msgid "keyblock resource '%s': %s\n"
 msgstr "recurso de bloque de claves: `%s': %s\n"
 
 #, c-format
@@ -2671,7 +2671,7 @@ msgstr "   (2) He hecho una comprobación informal.%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Lo he comprobado meticulosamente.%s\n"
 
-msgid "Your selection? (enter `?' for more information): "
+msgid "Your selection? (enter '?' for more information): "
 msgstr "¿Su elección? (escriba '?' si desea más información): "
 
 #, c-format
@@ -2904,7 +2904,7 @@ msgid "Hint: Select the user IDs to sign\n"
 msgstr "Sugerencia: seleccione los identificadores de usuario que firmar\n"
 
 #, c-format
-msgid "Unknown signature type `%s'\n"
+msgid "Unknown signature type '%s'\n"
 msgstr "Clase de firma desconocida `%s'\n"
 
 #, c-format
@@ -2936,11 +2936,11 @@ msgid "Command expects a filename argument\n"
 msgstr "La orden espera un nombre de fichero como argumento\n"
 
 #, c-format
-msgid "Can't open `%s': %s\n"
+msgid "Can't open '%s': %s\n"
 msgstr "No se puede abrir `%s': %s\n"
 
 #, c-format
-msgid "Error reading backup key from `%s': %s\n"
+msgid "Error reading backup key from '%s': %s\n"
 msgstr "Error leyendo clave de respaldo desde `%s': %s\n"
 
 msgid "You must select at least one key.\n"
@@ -3299,7 +3299,7 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Mostrando ID fotográfico %s de tamaño %ld para la clave %s (uid %d)\n"
 
 #, c-format
-msgid "preference `%s' duplicated\n"
+msgid "preference '%s' duplicated\n"
 msgstr "preferencia `%s' duplicada\n"
 
 msgid "too many cipher preferences\n"
@@ -3312,7 +3312,7 @@ msgid "too many compression preferences\n"
 msgstr "demasiadas preferencias de compresión\n"
 
 #, c-format
-msgid "invalid item `%s' in preference string\n"
+msgid "invalid item '%s' in preference string\n"
 msgstr "caracter inválido `%s' en cadena de preferencias\n"
 
 msgid "writing direct signature\n"
@@ -3554,7 +3554,7 @@ msgid "Invalid character in comment\n"
 msgstr "Caracter inválido en el comentario\n"
 
 #, c-format
-msgid "You are using the `%s' character set.\n"
+msgid "You are using the '%s' character set.\n"
 msgstr "Está usando el juego de caracteres `%s'.\n"
 
 #, c-format
@@ -3643,15 +3643,15 @@ msgid "Key generation canceled.\n"
 msgstr "Creación de claves cancelada.\n"
 
 #, c-format
-msgid "writing public key to `%s'\n"
+msgid "writing public key to '%s'\n"
 msgstr "escribiendo clave pública en `%s'\n"
 
 #, c-format
-msgid "writing secret key stub to `%s'\n"
+msgid "writing secret key stub to '%s'\n"
 msgstr "escribiendo apuntador de la clave privada en `%s'\n"
 
 #, c-format
-msgid "writing secret key to `%s'\n"
+msgid "writing secret key to '%s'\n"
 msgstr "escribiendo clave privada en `%s'\n"
 
 #, c-format
@@ -3663,11 +3663,11 @@ msgid "no writable secret keyring found: %s\n"
 msgstr "anillo privado de claves no escribible encontrado: %s\n"
 
 #, c-format
-msgid "error writing public keyring `%s': %s\n"
+msgid "error writing public keyring '%s': %s\n"
 msgstr "error escribiendo anillo público `%s': %s\n"
 
 #, c-format
-msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing secret keyring '%s': %s\n"
 msgstr "error escribiendo anillo privado `%s': %s\n"
 
 msgid "public and secret key created and signed.\n"
@@ -3709,11 +3709,11 @@ msgid "storing key onto card failed: %s\n"
 msgstr "almacenado de clave en la tarjeta fallido: %s\n"
 
 #, c-format
-msgid "can't create backup file `%s': %s\n"
+msgid "can't create backup file '%s': %s\n"
 msgstr "no se puede crear fichero de respaldo `%s': %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to `%s'\n"
+msgid "NOTE: backup of card key saved to '%s'\n"
 msgstr "NOTA: copia de seguridad de la clave guardada en `%s'\n"
 
 msgid "never     "
@@ -3758,7 +3758,7 @@ msgid "      Card serial no. ="
 msgstr "      Número de serie de la tarjeta ="
 
 #, c-format
-msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "renombrando `%s' en `%s' fallo: %s\n"
 
 msgid "WARNING: 2 files with confidential information exists.\n"
@@ -3776,7 +3776,7 @@ msgid "Please fix this possible security flaw\n"
 msgstr "Por favor arregle este posible fallo de seguridad\n"
 
 #, c-format
-msgid "caching keyring `%s'\n"
+msgid "caching keyring '%s'\n"
 msgstr "memorizando anillo `%s'\n"
 
 #, c-format
@@ -3815,7 +3815,7 @@ msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "usar el registro PKA presente en una clave al recuperar claves"
 
 #, c-format
-msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr ""
 "AVISO: las opciones de servidor de claves `%s' no se usan en esta "
 "plataforma\n"
@@ -3889,11 +3889,11 @@ msgstr ""
 "como está compilado el programa\n"
 
 #, c-format
-msgid "no handler for keyserver scheme `%s'\n"
+msgid "no handler for keyserver scheme '%s'\n"
 msgstr "no hay un manejador para ese esquema de servidor de claves `%s'\n"
 
 #, c-format
-msgid "action `%s' not supported with keyserver scheme `%s'\n"
+msgid "action '%s' not supported with keyserver scheme '%s'\n"
 msgstr ""
 "la acción `%s' no es posible con este esquema de servidor de claves `%s'\n"
 
@@ -4102,7 +4102,7 @@ msgid "invalid root packet detected in proc_tree()\n"
 msgstr "paquete raíz inválido detectado en proc_tree()\n"
 
 #, c-format
-msgid "fstat of `%s' failed in %s: %s\n"
+msgid "fstat of '%s' failed in %s: %s\n"
 msgstr "fstat de `%s' falló en %s: %s\n"
 
 #, c-format
@@ -4171,15 +4171,15 @@ msgid "this message may not be usable by %s\n"
 msgstr "este mensaje podría no ser utilizable por %s\n"
 
 #, c-format
-msgid "ambiguous option `%s'\n"
+msgid "ambiguous option '%s'\n"
 msgstr "opción ambigua `%s'\n"
 
 #, c-format
-msgid "unknown option `%s'\n"
+msgid "unknown option '%s'\n"
 msgstr "opción desconocida `%s'\n"
 
 #, c-format
-msgid "File `%s' exists. "
+msgid "File '%s' exists. "
 msgstr "El fichero `%s' ya existe. "
 
 msgid "Overwrite? (y/N) "
@@ -4196,15 +4196,15 @@ msgid "writing to stdout\n"
 msgstr "escribiendo en stdout\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "asumiendo que hay datos firmados en `%s'\n"
 
 #, c-format
-msgid "new configuration file `%s' created\n"
+msgid "new configuration file '%s' created\n"
 msgstr "creado un nuevo fichero de configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: options in `%s' are not yet active during this run\n"
+msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr "AVISO: las opciones en `%s' no están aún activas en esta ejecución\n"
 
 #, c-format
@@ -4280,7 +4280,7 @@ msgid "Enter JPEG filename for photo ID: "
 msgstr "Introduzca nombre del fichero JPEG para ID fotográfico: "
 
 #, c-format
-msgid "unable to open JPEG file `%s': %s\n"
+msgid "unable to open JPEG file '%s': %s\n"
 msgstr "Imposible abrir fichero JPEG `%s': %s\n"
 
 #, c-format
@@ -4291,7 +4291,7 @@ msgid "Are you sure you want to use it? (y/N) "
 msgstr "¿Seguro que quiere usarlo? (s/N) "
 
 #, c-format
-msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not a JPEG file\n"
 msgstr "`%s' no es un fichero JPEG\n"
 
 msgid "Is this photo correct (y/N/q)? "
@@ -4429,11 +4429,11 @@ msgid "Note: This key has been disabled.\n"
 msgstr "Nota: Esta clave está deshabilitada.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is `%s'\n"
+msgid "Note: Verified signer's address is '%s'\n"
 msgstr "Nota: la dirección del firmante verificado es `%s'\n"
 
 #, c-format
-msgid "Note: Signer's address `%s' does not match DNS entry\n"
+msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "Nota: la dirección del firmante `%s' no coincide con la entrada DNS\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
@@ -4536,7 +4536,7 @@ msgid "no signed data\n"
 msgstr "no hay datos firmados\n"
 
 #, c-format
-msgid "can't open signed data `%s'\n"
+msgid "can't open signed data '%s'\n"
 msgstr "imposible abrir datos firmados `%s'\n"
 
 #, c-format
@@ -4843,7 +4843,7 @@ msgstr ""
 "# (Use \"gpg --import-ownertrust\" para restablecerlos)\n"
 
 #, c-format
-msgid "error in `%s': %s\n"
+msgid "error in '%s': %s\n"
 msgstr "error en `%s': %s\n"
 
 msgid "line too long"
@@ -4859,11 +4859,11 @@ msgid "ownertrust value missing"
 msgstr "falta el valor de confianza"
 
 #, c-format
-msgid "error finding trust record in `%s': %s\n"
+msgid "error finding trust record in '%s': %s\n"
 msgstr "error econtrando registro de confianza en `%s': %s\n"
 
 #, c-format
-msgid "read error in `%s': %s\n"
+msgid "read error in '%s': %s\n"
 msgstr "error de lectura `%s': %s\n"
 
 #, c-format
@@ -4883,7 +4883,7 @@ msgid "trustdb transaction too large\n"
 msgstr "transacción en la base de datos de confianza demasiado grande\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
+msgid "can't access '%s': %s\n"
 msgstr "no se puede acceder a `%s': %s\n"
 
 #, c-format
@@ -4891,11 +4891,11 @@ msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡el directorio no existe!\n"
 
 #, c-format
-msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
 msgstr "no se puede crear el bloqueo para `%s'\n"
 
 #, c-format
-msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
 msgstr "no se puede bloquear `%s'\n"
 
 #, c-format
@@ -4982,7 +4982,7 @@ msgid "input line longer than %d characters\n"
 msgstr "línea de longitud superior a %d caracteres\n"
 
 #, c-format
-msgid "`%s' is not a valid long keyID\n"
+msgid "'%s' is not a valid long keyID\n"
 msgstr "'%s' no es un identificador largo de clave válido\n"
 
 #, c-format
@@ -5070,13 +5070,13 @@ msgid "next trustdb check due at %s\n"
 msgstr "siguiente comprobación de base de datos de confianza el: %s\n"
 
 #, c-format
-msgid "no need for a trustdb check with `%s' trust model\n"
+msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr ""
 "no es necesaria una comprobación de la base de datos de confianza\n"
 "con el modelo de confianza `%s'\n"
 
 #, c-format
-msgid "no need for a trustdb update with `%s' trust model\n"
+msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr ""
 "no es necesario comprobar la base de datos de confianza\n"
 "con el modelo `%s'\n"
@@ -5194,11 +5194,11 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "ha encontrado un error... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
+msgid "error loading '%s': %s\n"
 msgstr "error cargando `%s': %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' not available\n"
+msgid "conversion from '%s' to '%s' not available\n"
 msgstr "la conversión de `%s' en `%s' no está disponible\n"
 
 #, c-format
@@ -5206,15 +5206,15 @@ msgid "iconv_open failed: %s\n"
 msgstr "iconv_open falló: %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "conversion from '%s' to '%s' failed: %s\n"
 msgstr "la conversión de `%s' en `%s' falló: %s\n"
 
 #, c-format
-msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary file '%s': %s\n"
 msgstr "no se puede crear el fichero temporal `%s': %s\n"
 
 #, c-format
-msgid "error writing to `%s': %s\n"
+msgid "error writing to '%s': %s\n"
 msgstr "error escribiendo en `%s': %s\n"
 
 #, c-format
@@ -5232,7 +5232,7 @@ msgid "(deadlock?) "
 msgstr "(¿bloqueo mutuo?)"
 
 #, c-format
-msgid "lock `%s' not made: %s\n"
+msgid "lock '%s' not made: %s\n"
 msgstr "bloqueo `%s' no hecho: %s\n"
 
 #, c-format
@@ -5506,7 +5506,7 @@ msgstr ""
 "Sintaxis: scdaemon [opciones] [orden [args]]\n"
 "Demonio de la tarjeta inteligente para GnuPG\n"
 
-msgid "please use the option `--daemon' to run the program in the background\n"
+msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr "use la opción `--daemon' para ejectuar el programa en segundo plano\n"
 
 #, c-format
@@ -5526,7 +5526,7 @@ msgid "failed to proxy %s inquiry to client\n"
 msgstr "fallo al hacer la petición proxy %s al cliente\n"
 
 #, c-format
-msgid "no running dirmngr - starting `%s'\n"
+msgid "no running dirmngr - starting '%s'\n"
 msgstr "no hay dirmngr en ejecución - iniciando `%s'\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
@@ -5560,7 +5560,7 @@ msgid "critical marked policy without configured policies"
 msgstr "política marcada como crítica sin políticas configuradas"
 
 #, c-format
-msgid "failed to open `%s': %s\n"
+msgid "failed to open '%s': %s\n"
 msgstr "fallo abriendo `%s': %s\n"
 
 msgid "note: non-critical certificate policy not allowed"
@@ -5793,11 +5793,11 @@ msgid "line %d: no subject name given\n"
 msgstr "línea %d: falta nombre de entidad\n"
 
 #, c-format
-msgid "line %d: invalid subject name label `%.*s'\n"
+msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr "línea %d: etiqueta con nombre de entidad inválida `%.*s'\n"
 
 #, c-format
-msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid subject name '%s' at pos %d\n"
 msgstr "línea %d: nombre de entidad inválida `%s' posición %d\n"
 
 #, c-format
@@ -5805,11 +5805,11 @@ msgid "line %d: not a valid email address\n"
 msgstr "línea %d: no es una dirección de email válida\n"
 
 #, c-format
-msgid "line %d: error reading key `%s' from card: %s\n"
+msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "línea %d: error leyendo clave `%s' de la tarjeta: %s\n"
 
 #, c-format
-msgid "line %d: error getting key by keygrip `%s': %s\n"
+msgid "line %d: error getting key by keygrip '%s': %s\n"
 msgstr "línea %d: error obteniendo clave con keygrip `%s': %s\n"
 
 #, c-format
@@ -5881,7 +5881,7 @@ msgid "No subject name given\n"
 msgstr "No se dió nombre de entidad\n"
 
 #, c-format
-msgid "Invalid subject name label `%.*s'\n"
+msgid "Invalid subject name label '%.*s'\n"
 msgstr "Etiqueta de nombre de entidad inválida `%.*s'\n"
 
 #. TRANSLATORS: The 22 in the second string is the
@@ -5890,7 +5890,7 @@ msgstr "Etiqueta de nombre de entidad inválida `%.*s'\n"
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #, c-format
-msgid "Invalid subject name `%s'\n"
+msgid "Invalid subject name '%s'\n"
 msgstr "Nombre de entidad inválido `%s'\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
@@ -5930,7 +5930,7 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(no parece un mensaje cifrado)\n"
 
 #, c-format
-msgid "certificate `%s' not found: %s\n"
+msgid "certificate '%s' not found: %s\n"
 msgstr "certificado `%s' no encontrado: %s\n"
 
 #, c-format
@@ -5938,11 +5938,11 @@ msgid "error locking keybox: %s\n"
 msgstr "error bloqueando keybox: %s\n"
 
 #, c-format
-msgid "duplicated certificate `%s' deleted\n"
+msgid "duplicated certificate '%s' deleted\n"
 msgstr "certificado duplicado `%s' borrado\n"
 
 #, c-format
-msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' deleted\n"
 msgstr "certificado `%s' borrado\n"
 
 #, c-format
@@ -6064,11 +6064,11 @@ msgid "usage: gpgsm [options] "
 msgstr "uso: gpgsm [opciones] "
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "NOTA: no se podrá cifrar a `%s': %s\n"
 
 #, c-format
-msgid "unknown validation model `%s'\n"
+msgid "unknown validation model '%s'\n"
 msgstr "modelo de validación desconocido `%s'\n"
 
 #, c-format
@@ -6090,11 +6090,11 @@ msgid "WARNING: running with faked system time: "
 msgstr "AVISO: ejecutándose con hora del sistema falsificada"
 
 #, c-format
-msgid "importing common certificates `%s'\n"
+msgid "importing common certificates '%s'\n"
 msgstr "importando certificados comunes `%s'\n"
 
 #, c-format
-msgid "can't sign using `%s': %s\n"
+msgid "can't sign using '%s': %s\n"
 msgstr "no puedo firmar usando `%s': %s\n"
 
 msgid "invalid command (there is no implicit command)\n"
@@ -6126,14 +6126,14 @@ msgid "error reading input: %s\n"
 msgstr "error leyendo entrada: %s\n"
 
 #, c-format
-msgid "error creating keybox `%s': %s\n"
+msgid "error creating keybox '%s': %s\n"
 msgstr "error creando caja de claves `%s': %s\n"
 
 msgid "you may want to start the gpg-agent first\n"
 msgstr "puede que quiera ejecutar gpg-agent antes\n"
 
 #, c-format
-msgid "keybox `%s' created\n"
+msgid "keybox '%s' created\n"
 msgstr "caja de claves `%s' creada\n"
 
 msgid "failed to get the fingerprint\n"
@@ -6166,11 +6166,11 @@ msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr "GPG_TTY no tiene valor - usando valor por defecto quizá absurdo\n"
 
 #, c-format
-msgid "invalid formatted fingerprint in `%s', line %d\n"
+msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "formato inválido de huella dactilar en `%s', línea %d\n"
 
 #, c-format
-msgid "invalid country code in `%s', line %d\n"
+msgid "invalid country code in '%s', line %d\n"
 msgstr "código de país inválido en `%s', línea %d\n"
 
 #, c-format
@@ -6293,7 +6293,7 @@ msgid "line shortened due to embedded Nul character\n"
 msgstr "línea acortada por culpa del caracter Nul incluído\n"
 
 #, c-format
-msgid "unknown command `%s'\n"
+msgid "unknown command '%s'\n"
 msgstr "orden desconocida `%s'\n"
 
 #, c-format
@@ -6518,7 +6518,7 @@ msgid "%s on %s failed with status %i\n"
 msgstr "%s en %s falló con estado %i\n"
 
 #, c-format
-msgid "can't create temporary directory `%s': %s\n"
+msgid "can't create temporary directory '%s': %s\n"
 msgstr "no se puede crear el directorio temporal `%s': %s\n"
 
 #, c-format

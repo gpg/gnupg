@@ -193,7 +193,7 @@ make_tempdir(struct exec_info *info)
 #endif
 
   if(mkdtemp(info->tempdir)==NULL)
-    log_error(_("can't create directory `%s': %s\n"),
+    log_error(_("can't create directory '%s': %s\n"),
 	      info->tempdir,strerror(errno));
   else
     {
@@ -421,10 +421,10 @@ exec_write(struct exec_info **info,const char *program,
 	  /* If we get this far the exec failed.  Clean up and return. */
 
 	  if(args_in==NULL)
-	    log_error(_("unable to execute program `%s': %s\n"),
+	    log_error(_("unable to execute program '%s': %s\n"),
 		      program,strerror(errno));
 	  else
-	    log_error(_("unable to execute shell `%s': %s\n"),
+	    log_error(_("unable to execute shell '%s': %s\n"),
 		      shell,strerror(errno));
 
 	  /* This mimics the POSIX sh behavior - 127 means "not found"
@@ -465,7 +465,7 @@ exec_write(struct exec_info **info,const char *program,
 #endif /* !EXEC_TEMPFILE_ONLY */
 
   if(DBG_EXTPROG)
-    log_debug("using temp file `%s'\n",(*info)->tempfile_in);
+    log_debug("using temp file '%s'\n",(*info)->tempfile_in);
 
   /* It's not fork/exec/pipe, so create a temp file */
   if( is_secured_filename ((*info)->tempfile_in) )
@@ -478,7 +478,7 @@ exec_write(struct exec_info **info,const char *program,
   if((*info)->tochild==NULL)
     {
       ret = gpg_error_from_syserror ();
-      log_error(_("can't create `%s': %s\n"),
+      log_error(_("can't create '%s': %s\n"),
 		(*info)->tempfile_in,strerror(errno));
       goto fail;
     }
@@ -604,19 +604,19 @@ exec_finish(struct exec_info *info)
       if(info->tempfile_in)
 	{
 	  if(unlink(info->tempfile_in)==-1)
-	    log_info(_("WARNING: unable to remove tempfile (%s) `%s': %s\n"),
+	    log_info(_("WARNING: unable to remove tempfile (%s) '%s': %s\n"),
 		     "in",info->tempfile_in,strerror(errno));
 	}
 
       if(info->tempfile_out)
 	{
 	  if(unlink(info->tempfile_out)==-1)
-	    log_info(_("WARNING: unable to remove tempfile (%s) `%s': %s\n"),
+	    log_info(_("WARNING: unable to remove tempfile (%s) '%s': %s\n"),
 		     "out",info->tempfile_out,strerror(errno));
 	}
 
       if(rmdir(info->tempdir)==-1)
-	log_info(_("WARNING: unable to remove temp directory `%s': %s\n"),
+	log_info(_("WARNING: unable to remove temp directory '%s': %s\n"),
 		 info->tempdir,strerror(errno));
     }
 

@@ -2350,7 +2350,7 @@ update_reader_status_file (int set_card_removed_flag)
                 fname = make_filename (opt.homedir, "scd-event", NULL);
                 err = gnupg_spawn_process_detached (fname, args, envs);
                 if (err && gpg_err_code (err) != GPG_ERR_ENOENT)
-                  log_error ("failed to run event handler `%s': %s\n",
+                  log_error ("failed to run event handler '%s': %s\n",
                              fname, gpg_strerror (err));
                 xfree (fname);
                 xfree (envstr);

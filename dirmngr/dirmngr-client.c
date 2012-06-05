@@ -272,7 +272,7 @@ main (int argc, char **argv )
     {
       err = read_certificate (*argv, &certbuf, &certbuflen);
       if (err)
-        log_error (_("error reading certificate from `%s': %s\n"),
+        log_error (_("error reading certificate from '%s': %s\n"),
                    *argv, gpg_strerror (err));
     }
   else
@@ -327,7 +327,7 @@ main (int argc, char **argv )
           err = do_loadcrl (ctx, *argv);
           if (err)
             {
-              log_error (_("loading CRL `%s' failed: %s\n"),
+              log_error (_("loading CRL '%s' failed: %s\n"),
                          *argv, gpg_strerror (err));
               last_err = err;
             }
@@ -408,7 +408,7 @@ status_cb (void *opaque, const char *line)
   (void)opaque;
 
   if (opt.verbose > 2)
-    log_info (_("got status: `%s'\n"), line);
+    log_info (_("got status: '%s'\n"), line);
   return 0;
 }
 
@@ -791,7 +791,7 @@ inq_cert (void *opaque, const char *line)
     }
   else
     {
-      log_info (_("unsupported inquiry `%s'\n"), line);
+      log_info (_("unsupported inquiry '%s'\n"), line);
       err = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
       /* Note that this error will let assuan_transact terminate
          immediately instead of return the error to the caller.  It is
@@ -884,7 +884,7 @@ do_loadcrl (assuan_context_t ctx, const char *filename)
       fname = canonicalize_file_name (filename);
       if (!fname)
         {
-          log_error ("error canonicalizing `%s': %s\n",
+          log_error ("error canonicalizing '%s': %s\n",
                      filename, strerror (errno));
           return gpg_error (GPG_ERR_GENERAL);
         }
@@ -938,7 +938,7 @@ do_lookup (assuan_context_t ctx, const char *pattern)
   struct b64state state;
 
   if (opt.verbose)
-    log_info (_("looking up `%s'\n"), pattern);
+    log_info (_("looking up '%s'\n"), pattern);
 
   err = b64enc_start (&state, stdout, NULL);
   if (err)

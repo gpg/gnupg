@@ -79,7 +79,7 @@ display_online_help( const char *keyword )
     }
   else
     {
-      tty_printf (_("No help available for `%s'"), keyword );
+      tty_printf (_("No help available for '%s'"), keyword );
     }
   if (need_final_lf)
     tty_printf("\n");

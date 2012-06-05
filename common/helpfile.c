@@ -54,7 +54,7 @@ findkey_fname (const char *key, const char *fname)
       if (errno != ENOENT)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't open `%s': %s\n"), fname, gpg_strerror (err));
+          log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
         }
       return NULL;
     }
@@ -70,7 +70,7 @@ findkey_fname (const char *key, const char *fname)
             ;
           err = gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                            : GPG_ERR_INCOMPLETE_LINE);
-          log_error (_("file `%s', line %d: %s\n"),
+          log_error (_("file '%s', line %d: %s\n"),
                      fname, lnr, gpg_strerror (err));
         }
       else
@@ -86,7 +86,7 @@ findkey_fname (const char *key, const char *fname)
             continue;
           if (*line != '.' || spacep(line+1))
             {
-              log_info (_("file `%s', line %d: %s\n"),
+              log_info (_("file '%s', line %d: %s\n"),
                         fname, lnr, _("ignoring garbage line"));
               continue;
             }
@@ -133,7 +133,7 @@ findkey_fname (const char *key, const char *fname)
   if ( !err && ferror (fp) )
     {
       err = gpg_error_from_syserror ();
-      log_error (_("error reading `%s', line %d: %s\n"),
+      log_error (_("error reading '%s', line %d: %s\n"),
                  fname, lnr, gpg_strerror (err));
     }
 

@@ -91,7 +91,7 @@ add_server_to_servers (const char *host, int port)
         return;
       }
 
-  log_info (_("adding `%s:%d' to the ldap server list\n"), host, port);
+  log_info (_("adding '%s:%d' to the ldap server list\n"), host, port);
   server = xtrycalloc (1, sizeof *s);
   if (!server)
     log_error (_("malloc failed: %s\n"), strerror (errno));
@@ -599,7 +599,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       sl = parse_one_pattern (patterns->d);
       if (!sl)
         {
-          log_error (_("start_cert_fetch: invalid pattern `%s'\n"),
+          log_error (_("start_cert_fetch: invalid pattern '%s'\n"),
                      patterns->d);
           /* fixme: cleanup argv.  */
           return gpg_error (GPG_ERR_INV_USER_ID);
@@ -764,28 +764,28 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
               if (!ascii_strcasecmp (p, USERCERTIFICATE))
                 {
                   if (DBG_LOOKUP)
-                    log_debug ("fetch_next_cert_ldap: got attribute `%s'\n",
+                    log_debug ("fetch_next_cert_ldap: got attribute '%s'\n",
                                USERCERTIFICATE);
                   okay = 1;
                 }
               else if (!ascii_strcasecmp (p, CACERTIFICATE))
                 {
                   if (DBG_LOOKUP)
-                    log_debug ("fetch_next_cert_ldap: got attribute `%s'\n",
+                    log_debug ("fetch_next_cert_ldap: got attribute '%s'\n",
                                CACERTIFICATE);
                   okay = 1;
                 }
               else if (!ascii_strcasecmp (p, X509CACERT))
                 {
                   if (DBG_LOOKUP)
-                    log_debug ("fetch_next_cert_ldap: got attribute `%s'\n",
+                    log_debug ("fetch_next_cert_ldap: got attribute '%s'\n",
                                CACERTIFICATE);
                   okay = 1;
                 }
 /*               else if (!ascii_strcasecmp (p, USERSMIMECERTIFICATE)) */
 /*                 { */
 /*                   if (DBG_LOOKUP) */
-/*                     log_debug ("fetch_next_cert_ldap: got attribute `%s'\n", */
+/*                     log_debug ("fetch_next_cert_ldap: got attribute '%s'\n", */
 /*                                USERSMIMECERTIFICATE); */
 /*                   okay = 1; */
 /*                   is_cms = 1; */
@@ -793,7 +793,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
               else
                 {
                   if (DBG_LOOKUP)
-                    log_debug ("fetch_next_cert_ldap: got attribute `%s'"
+                    log_debug ("fetch_next_cert_ldap: got attribute '%s'"
                                " -  ignored\n", p);
                   okay = 0;
                 }

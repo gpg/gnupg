@@ -7,7 +7,7 @@
  * inclusion into Dirmngr.  By Werner Koch <wk@gnupg.org> 2003-12-12.
  */
 
-/* A cdb database is a single file used to map `keys' to `values',
+/* A cdb database is a single file used to map 'keys' to 'values',
    having records of (key,value) pairs.  File consists of 3 parts: toc
    (table of contents), data and index (hash tables).
 

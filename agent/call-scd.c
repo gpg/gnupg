@@ -148,7 +148,7 @@ agent_scd_dump_state (void)
             (long)assuan_get_pid (primary_scd_ctx),
             primary_scd_ctx_reusable);
   if (socket_name)
-    log_info ("agent_scd_dump_state: socket=`%s'\n", socket_name);
+    log_info ("agent_scd_dump_state: socket='%s'\n", socket_name);
 }
 
 
@@ -268,7 +268,7 @@ start_scd (ctrl_t ctrl)
       rc = assuan_socket_connect (ctx, socket_name, 0, 0);
       if (rc)
         {
-          log_error ("can't connect to socket `%s': %s\n",
+          log_error ("can't connect to socket '%s': %s\n",
                      socket_name, gpg_strerror (rc));
           err = gpg_error (GPG_ERR_NO_SCDAEMON);
           goto leave;
@@ -366,7 +366,7 @@ start_scd (ctrl_t ctrl)
             memcpy (socket_name, databuf, datalen);
             socket_name[datalen] = 0;
             if (DBG_ASSUAN)
-              log_debug ("additional connections at `%s'\n", socket_name);
+              log_debug ("additional connections at '%s'\n", socket_name);
           }
       }
     xfree (databuf);
@@ -763,12 +763,12 @@ inq_needpin (void *opaque, const char *line)
           xfree (value);
         }
       else
-        log_error ("error forwarding inquiry `%s': %s\n",
+        log_error ("error forwarding inquiry '%s': %s\n",
                    line, gpg_strerror (rc));
     }
   else
     {
-      log_error ("unsupported inquiry `%s'\n", line);
+      log_error ("unsupported inquiry '%s'\n", line);
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 

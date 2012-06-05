@@ -932,7 +932,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		{
 		  answer = cpr_get ("sign_uid.class",
                                     _("Your selection? "
-                                      "(enter `?' for more information): "));
+                                      "(enter '?' for more information): "));
 		  if (answer[0] == '\0')
 		    class = 0x10 + opt.def_cert_level;	/* Default */
 		  else if (ascii_strcasecmp (answer, "0") == 0)
@@ -1633,9 +1633,9 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
 	  tty_printf ("\n");
 	  tty_printf
-            (_("* The `sign' command may be prefixed with an `l' for local "
+            (_("* The 'sign' command may be prefixed with an 'l' for local "
                "signatures (lsign),\n"
-               "  a `t' for trust signatures (tsign), an `nr' for "
+               "  a 't' for trust signatures (tsign), an 'nr' for "
                "non-revocable signatures\n"
                "  (nrsign), or any combination thereof (ltsign, "
                "tnrsign, etc.).\n"));
@@ -1717,7 +1717,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    if (!parse_sign_type
 		(answer, &localsig, &nonrevokesig, &trustsig))
 	      {
-		tty_printf (_("Unknown signature type `%s'\n"), answer);
+		tty_printf (_("Unknown signature type '%s'\n"), answer);
 		break;
 	      }
 
@@ -1879,7 +1879,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      }
 	    if (!a)
 	      {
-		tty_printf (_("Can't open `%s': %s\n"),
+		tty_printf (_("Can't open '%s': %s\n"),
 			    fname, strerror (errno));
 		break;
 	      }
@@ -1895,7 +1895,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      err = G10ERR_NO_SECKEY;
 	    if (err)
 	      {
-		tty_printf (_("Error reading backup key from `%s': %s\n"),
+		tty_printf (_("Error reading backup key from '%s': %s\n"),
 			    fname, g10_errstr (err));
 		free_packet (pkt);
 		xfree (pkt);
@@ -2256,7 +2256,7 @@ leave:
   free_public_key (pk);
   if (err)
     {
-      log_info ("error changing the passphrase for `%s': %s\n",
+      log_info ("error changing the passphrase for '%s': %s\n",
 		username, gpg_strerror (err));
       write_status_error ("keyedit.passwd", err);
     }

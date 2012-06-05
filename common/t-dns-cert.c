@@ -52,7 +52,7 @@ main (int argc, char **argv)
       return 1;
     }
 
-  printf ("CERT lookup on `%s'\n", name);
+  printf ("CERT lookup on '%s'\n", name);
 
   err = get_dns_cert (name, &key, &fpr, &fpr_len, &url);
   if (err)

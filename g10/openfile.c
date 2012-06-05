@@ -82,7 +82,7 @@ overwrite_filep( const char *fname )
   if (opt.answer_no || opt.batch)
     return 0;  /* Do not overwrite.  */
 
-  tty_printf (_("File `%s' exists. "), fname);
+  tty_printf (_("File '%s' exists. "), fname);
   if (cpr_enabled ())
     tty_printf ("\n");
   if (cpr_get_answer_is_yes ("openfile.overwrite.okay",
@@ -194,12 +194,12 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
         {
           rc = gpg_error_from_syserror ();
           snprintf (xname, sizeof xname, "[fd %d]", inp_fd);
-          log_error (_("can't open `%s': %s\n"), xname, gpg_strerror (rc));
+          log_error (_("can't open '%s': %s\n"), xname, gpg_strerror (rc));
         }
       else if (opt.verbose)
         {
           snprintf (xname, sizeof xname, "[fd %d]", inp_fd);
-          log_info (_("writing to `%s'\n"), xname);
+          log_info (_("writing to '%s'\n"), xname);
         }
     }
   else if (iobuf_is_pipe_filename (iname) && !opt.outfile)
@@ -208,7 +208,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
       if ( !*a )
         {
           rc = gpg_error_from_syserror ();
-          log_error (_("can't open `%s': %s\n"), "[stdout]", strerror(errno) );
+          log_error (_("can't open '%s': %s\n"), "[stdout]", strerror(errno) );
         }
       else if ( opt.verbose )
         log_info (_("writing to stdout\n"));
@@ -287,10 +287,10 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
           if (!*a)
             {
               rc = gpg_error_from_syserror ();
-              log_error(_("can't create `%s': %s\n"), name, strerror(errno) );
+              log_error(_("can't create '%s': %s\n"), name, strerror(errno) );
             }
           else if( opt.verbose )
-            log_info (_("writing to `%s'\n"), name );
+            log_info (_("writing to '%s'\n"), name );
         }
       xfree(buf);
     }
@@ -328,7 +328,7 @@ open_sigfile( const char *iname, progress_filter_context_t *pfx )
                 gpg_err_set_errno (EPERM);
               }
 	    if( a && opt.verbose )
-		log_info(_("assuming signed data in `%s'\n"), buf );
+		log_info(_("assuming signed data in '%s'\n"), buf );
 	    if (a && pfx)
 	      handle_progress (pfx, a, buf);
             xfree(buf);
@@ -365,7 +365,7 @@ copy_options_file( const char *destdir )
         gpg_err_set_errno (EPERM);
       }
     if( !src ) {
-	log_info (_("can't open `%s': %s\n"), fname, strerror(errno) );
+	log_info (_("can't open '%s': %s\n"), fname, strerror(errno) );
 	xfree(fname);
 	return;
     }
@@ -380,7 +380,7 @@ copy_options_file( const char *destdir )
       dst = fopen( fname, "w" );
     umask(oldmask);
     if( !dst ) {
-	log_info (_("can't create `%s': %s\n"), fname, strerror(errno) );
+	log_info (_("can't create '%s': %s\n"), fname, strerror(errno) );
 	fclose( src );
 	xfree(fname);
 	return;
@@ -407,9 +407,9 @@ copy_options_file( const char *destdir )
     }
     fclose( dst );
     fclose( src );
-    log_info(_("new configuration file `%s' created\n"), fname );
+    log_info(_("new configuration file '%s' created\n"), fname );
     if (any_option)
-        log_info (_("WARNING: options in `%s'"
+        log_info (_("WARNING: options in '%s'"
                     " are not yet active during this run\n"),
                   fname);
     xfree(fname);
@@ -441,10 +441,10 @@ try_make_homedir (const char *fname)
       )
     {
       if (gnupg_mkdir (fname, "-rwx"))
-        log_fatal ( _("can't create directory `%s': %s\n"),
+        log_fatal ( _("can't create directory '%s': %s\n"),
                     fname, strerror(errno) );
       else if (!opt.quiet )
-        log_info ( _("directory `%s' created\n"), fname );
+        log_info ( _("directory '%s' created\n"), fname );
       copy_options_file( fname );
     }
 }

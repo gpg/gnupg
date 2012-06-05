@@ -586,7 +586,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       curveoidstr = gpg_curve_to_oid (curvename, NULL);
       if (!curveoidstr)
         {
-          log_error ("no OID known for curve `%s'\n", curvename);
+          log_error ("no OID known for curve '%s'\n", curvename);
           err = gpg_error (GPG_ERR_UNKNOWN_NAME);
           goto leave;
         }

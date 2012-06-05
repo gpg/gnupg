@@ -101,11 +101,11 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ssh-nycklar större än %d bitar stöds inte\n"
 
 #, c-format
-msgid "can't create `%s': %s\n"
+msgid "can't create '%s': %s\n"
 msgstr "kan inte skapa \"%s\": %s\n"
 
 #, c-format
-msgid "can't open `%s': %s\n"
+msgid "can't open '%s': %s\n"
 msgstr "kan inte öppna \"%s\": %s\n"
 
 #, c-format
@@ -368,7 +368,7 @@ msgstr ""
 "Hantering av hemliga nycklar för GnuPG\n"
 
 #, c-format
-msgid "invalid debug-level `%s' given\n"
+msgid "invalid debug-level '%s' given\n"
 msgstr "ogiltig debug-level \"%s\" angiven\n"
 
 #, c-format
@@ -376,23 +376,23 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s är för gammal (behöver %s, har %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file `%s'\n"
+msgid "NOTE: no default option file '%s'\n"
 msgstr "OBS: inställningsfilen \"%s\" saknas\n"
 
 #, c-format
-msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
 msgstr "inställningsfil \"%s\": %s\n"
 
 #, c-format
-msgid "reading options from `%s'\n"
+msgid "reading options from '%s'\n"
 msgstr "läser inställningar från \"%s\"\n"
 
 #, c-format
-msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
 msgstr "Fel när \"%s\" skapades: %s\n"
 
 #, c-format
-msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
 msgstr "%s: kan inte skapa katalog: %s\n"
 
 msgid "name of socket too long\n"
@@ -403,7 +403,7 @@ msgid "can't create socket: %s\n"
 msgstr "kan inte skapa uttag: %s\n"
 
 #, c-format
-msgid "socket name `%s' is too long\n"
+msgid "socket name '%s' is too long\n"
 msgstr "namnet på uttaget \"%s\" är för långt\n"
 
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -414,7 +414,7 @@ msgid "error getting nonce for the socket\n"
 msgstr "fel vid hämtning av nonce för uttaget\n"
 
 #, c-format
-msgid "error binding socket to `%s': %s\n"
+msgid "error binding socket to '%s': %s\n"
 msgstr "fel när \"%s\" bands till uttag: %s\n"
 
 #, c-format
@@ -422,19 +422,19 @@ msgid "listen() failed: %s\n"
 msgstr "listen() misslyckades: %s\n"
 
 #, c-format
-msgid "listening on socket `%s'\n"
+msgid "listening on socket '%s'\n"
 msgstr "lyssnar på uttaget \"%s\"\n"
 
 #, c-format
-msgid "directory `%s' created\n"
+msgid "directory '%s' created\n"
 msgstr "katalogen \"%s\" skapades\n"
 
 #, c-format
-msgid "stat() failed for `%s': %s\n"
+msgid "stat() failed for '%s': %s\n"
 msgstr "stat() misslyckades för \"%s\": %s\n"
 
 #, c-format
-msgid "can't use `%s' as home directory\n"
+msgid "can't use '%s' as home directory\n"
 msgstr "kan inte använda \"%s\" som hemkatalog\n"
 
 #, c-format
@@ -544,31 +544,31 @@ msgid "error while asking for the passphrase: %s\n"
 msgstr "fel vid fråga efter lösenfrasen: %s\n"
 
 #, c-format
-msgid "error opening `%s': %s\n"
+msgid "error opening '%s': %s\n"
 msgstr "fel vid öppnandet av \"%s\": %s\n"
 
 #, c-format
-msgid "file `%s', line %d: %s\n"
+msgid "file '%s', line %d: %s\n"
 msgstr "fil \"%s\", rad %d: %s\n"
 
 #, c-format
-msgid "statement \"%s\" ignored in `%s', line %d\n"
+msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "uttrycket \"%s\" ignorerat i \"%s\", rad %d\n"
 
 #, c-format
-msgid "system trustlist `%s' not available\n"
+msgid "system trustlist '%s' not available\n"
 msgstr "systemets tillitslista \"%s\" är inte tillgänglig\n"
 
 #, c-format
-msgid "bad fingerprint in `%s', line %d\n"
+msgid "bad fingerprint in '%s', line %d\n"
 msgstr "felaktigt fingeravtryck i \"%s\", rad %d\n"
 
 #, c-format
-msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid keyflag in '%s', line %d\n"
 msgstr "ogiltig nyckelflagga i \"%s\", rad %d\n"
 
 #, c-format
-msgid "error reading `%s', line %d: %s\n"
+msgid "error reading '%s', line %d: %s\n"
 msgstr "fel vid läsning av \"%s\", rad %d: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
@@ -663,15 +663,15 @@ msgid "error getting exit code of process %d: %s\n"
 msgstr "fel vid hämtning av avslutskod för processen %d: %s\n"
 
 #, c-format
-msgid "error running `%s': exit status %d\n"
+msgid "error running '%s': exit status %d\n"
 msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
 
 #, c-format
-msgid "error running `%s': probably not installed\n"
+msgid "error running '%s': probably not installed\n"
 msgstr "fel vid körning av \"%s\": antagligen inte installerat\n"
 
 #, c-format
-msgid "error running `%s': terminated\n"
+msgid "error running '%s': terminated\n"
 msgstr "fel vid körning av \"%s\": avslutades\n"
 
 #, c-format
@@ -685,7 +685,7 @@ msgid "gpg-agent is not available in this session\n"
 msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
 
 #, c-format
-msgid "can't connect to `%s': %s\n"
+msgid "can't connect to '%s': %s\n"
 msgstr "kan inte ansluta till \"%s\": %s\n"
 
 msgid "communication problem with gpg-agent\n"
@@ -871,7 +871,7 @@ msgid "Dirmngr usable"
 msgstr "Dirmngr användbar"
 
 #, c-format
-msgid "No help available for `%s'."
+msgid "No help available for '%s'."
 msgstr "Det finns ingen hjälp tillgänglig för \"%s\"."
 
 msgid "ignoring garbage line"
@@ -1039,11 +1039,11 @@ msgid "error allocating enough memory: %s\n"
 msgstr "fel vid allokering av tillräckligt mycket minne: %s\n"
 
 #, c-format
-msgid "error reading `%s': %s\n"
+msgid "error reading '%s': %s\n"
 msgstr "fel vid läsning av \"%s\": %s\n"
 
 #, fuzzy, c-format
-msgid "error writing `%s': %s\n"
+msgid "error writing '%s': %s\n"
 msgstr "fel vid skrivning till \"%s\": %s\n"
 
 msgid "Login data (account name): "
@@ -1250,7 +1250,7 @@ msgstr "--output kan inte användas för detta kommando\n"
 
 # se förra kommentaren
 #, c-format
-msgid "can't open `%s'\n"
+msgid "can't open '%s'\n"
 msgstr "kan inte öppna \"%s\"\n"
 
 #, c-format
@@ -1299,11 +1299,11 @@ msgid "using cipher %s\n"
 msgstr "använder %s-chiffer\n"
 
 #, c-format
-msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
 msgstr "\"%s\" är redan komprimerad\n"
 
 #, c-format
-msgid "WARNING: `%s' is an empty file\n"
+msgid "WARNING: '%s' is an empty file\n"
 msgstr "VARNING: \"%s\" är en tom fil\n"
 
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
@@ -1312,7 +1312,7 @@ msgstr ""
 "pgp2-läge\n"
 
 #, c-format
-msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
 msgstr "läser från \"%s\"\n"
 
 msgid ""
@@ -1379,11 +1379,11 @@ msgid "this platform requires temporary files when calling external programs\n"
 msgstr "denna plattform kräver temporärfiler vid anrop till externa program\n"
 
 #, c-format
-msgid "unable to execute program `%s': %s\n"
+msgid "unable to execute program '%s': %s\n"
 msgstr "kunde inte köra programmet \"%s\": %s\n"
 
 #, c-format
-msgid "unable to execute shell `%s': %s\n"
+msgid "unable to execute shell '%s': %s\n"
 msgstr "kunde inte köra skalet \"%s\": %s\n"
 
 #, c-format
@@ -1401,11 +1401,11 @@ msgid "unable to read external program response: %s\n"
 msgstr "kan inte läsa svaret från det externa programmet: %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "VARNING: kan inte ta bort tempfil (%s) \"%s\": %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove temp directory `%s': %s\n"
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "VARNING: kunde inte ta bort temp-katalogen \"%s\": %s\n"
 
 msgid "export signatures that are marked as local-only"
@@ -1465,11 +1465,11 @@ msgid "[User ID not found]"
 msgstr "[Användaridentiteten hittades inte]"
 
 #, c-format
-msgid "automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved '%s' via %s\n"
 msgstr "hämtade \"%s\" automatiskt via %s\n"
 
 #, c-format
-msgid "error retrieving `%s' via %s: %s\n"
+msgid "error retrieving '%s' via %s: %s\n"
 msgstr "fel vid hämtning av \"%s\" via %s: %s\n"
 
 msgid "No fingerprint"
@@ -1687,36 +1687,36 @@ msgstr "motstridiga kommandon\n"
 
 # Vad betyder detta?
 #, c-format
-msgid "no = sign found in group definition `%s'\n"
+msgid "no = sign found in group definition '%s'\n"
 msgstr "no = signatur hittad i gruppdefinitionen \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on homedir `%s'\n"
+msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr "VARNING: osäkert ägarskap på hemkatalogen \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on configuration file `%s'\n"
+msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr "VARNING: osäkert ägarskap på konfigurationsfilen \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
+msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr "VARNING: osäkert ägarskap på tillägget \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on homedir `%s'\n"
+msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr "VARNING: osäkra rättigheter på hemkatalogen \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on configuration file `%s'\n"
+msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr "VARNING: osäkra rättigheter på konfigurationsfilen \"%s\"\n"
 
 # Extension är vad? FIXME
 #, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
+msgid "WARNING: unsafe permissions on extension '%s'\n"
 msgstr "VARNING: osäkra rättigheter på tillägget \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr ""
 "VARNING: osäkert ägarskap på inneslutande katalog för hemkatalogen \"%s\"\n"
 
@@ -1728,12 +1728,12 @@ msgstr ""
 "s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr ""
 "VARNING: osäkert ägarskap på inneslutande katalog för tillägget \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr ""
 "VARNING: osäkra rättigheter på inneslutande katalog för hemkatalogen \"%s\"\n"
 
@@ -1745,12 +1745,12 @@ msgstr ""
 "\"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr ""
 "VARNING: osäkra rättigheter på inneslutande katalog för tillägget \"%s\"\n"
 
 #, c-format
-msgid "unknown configuration item `%s'\n"
+msgid "unknown configuration item '%s'\n"
 msgstr "okänd konfigurationspost \"%s\"\n"
 
 msgid "display photo IDs during key listings"
@@ -1787,7 +1787,7 @@ msgid "show expiration dates during signature listings"
 msgstr "visa utgångsdatum under signaturlistningar"
 
 #, c-format
-msgid "NOTE: old default options file `%s' ignored\n"
+msgid "NOTE: old default options file '%s' ignored\n"
 msgstr "OBS: den gamla inställningsfilen \"%s\" används inte\n"
 
 #, c-format
@@ -1799,11 +1799,11 @@ msgid "NOTE: %s is not for normal use!\n"
 msgstr "OBS: %s är inte för normal användning!\n"
 
 #, c-format
-msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid signature expiration\n"
 msgstr "\"%s\" är inte ett giltigt utgångsdatum för en signatur\n"
 
 #, c-format
-msgid "`%s' is not a valid character set\n"
+msgid "'%s' is not a valid character set\n"
 msgstr "\"%s\" är ingen giltig teckentabell\n"
 
 msgid "could not parse keyserver URL\n"
@@ -1981,16 +1981,16 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s fungerar ännu inte med  %s\n"
 
 #, c-format
-msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgstr "du får inte använda chifferalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, c-format
-msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgstr ""
 "du får inte använda sammandragsalgoritmen \"%s\" när du är i %s-läget\n"
 
 #, c-format
-msgid "you may not use compression algorithm `%s' while in %s mode\n"
+msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgstr ""
 "du får inte använda komprimeringsalgoritmen \"%s\" när du är i %s-läget\n"
 
@@ -2009,7 +2009,7 @@ msgid "--symmetric [filename]"
 msgstr "--symmetric [filnamn]"
 
 #, c-format
-msgid "symmetric encryption of `%s' failed: %s\n"
+msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "symmetrisk kryptering av \"%s\" misslyckades: %s\n"
 
 msgid "--encrypt [filename]"
@@ -2089,7 +2089,7 @@ msgid "enarmoring failed: %s\n"
 msgstr "misslyckades med att skapa ASCII-skal: %s\n"
 
 #, c-format
-msgid "invalid hash algorithm `%s'\n"
+msgid "invalid hash algorithm '%s'\n"
 msgstr "ogiltig kontrollsummealgoritm \"%s\"\n"
 
 msgid "[filename]"
@@ -2135,7 +2135,7 @@ msgid "No help available"
 msgstr "Det finns ingen hjälp tillgänglig"
 
 #, c-format
-msgid "No help available for `%s'"
+msgid "No help available for '%s'"
 msgstr "Det finns ingen hjälp tillgänglig för \"%s\""
 
 msgid "import signatures that are marked as local-only"
@@ -2294,11 +2294,11 @@ msgid "no writable keyring found: %s\n"
 msgstr "hittade ingen nyckelring som gick att skriva till: %s\n"
 
 #, c-format
-msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
 msgstr "skriver till \"%s\"\n"
 
 #, c-format
-msgid "error writing keyring `%s': %s\n"
+msgid "error writing keyring '%s': %s\n"
 msgstr "fel vid skrivning av nyckelringen \"%s\": %s\n"
 
 # fixme: I appended the %s -wk
@@ -2502,15 +2502,15 @@ msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "OBSERVERA: sekundärnyckeln är ansluten och lagrad på kort\n"
 
 #, c-format
-msgid "error creating keyring `%s': %s\n"
+msgid "error creating keyring '%s': %s\n"
 msgstr "fel när nyckelringen \"%s\" skapades: %s\n"
 
 #, c-format
-msgid "keyring `%s' created\n"
+msgid "keyring '%s' created\n"
 msgstr "%s: nyckelring skapad\n"
 
 #, c-format
-msgid "keyblock resource `%s': %s\n"
+msgid "keyblock resource '%s': %s\n"
 msgstr "nyckelblockresurs \"%s\": %s\n"
 
 #, c-format
@@ -2702,7 +2702,7 @@ msgstr "   (2) Jag har gjort viss kontroll.%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Jag har gjort en noggrann kontroll.%s\n"
 
-msgid "Your selection? (enter `?' for more information): "
+msgid "Your selection? (enter '?' for more information): "
 msgstr "Ditt val? (skriv \"?\" för mer information): "
 
 #, c-format
@@ -2944,7 +2944,7 @@ msgid "Hint: Select the user IDs to sign\n"
 msgstr "Tips: Välj de användaridentiteter som du vill signera\n"
 
 #, c-format
-msgid "Unknown signature type `%s'\n"
+msgid "Unknown signature type '%s'\n"
 msgstr "Okänd signaturtyp \"%s\"\n"
 
 #, c-format
@@ -2975,11 +2975,11 @@ msgid "Command expects a filename argument\n"
 msgstr "Kommandot förväntar ett filnamnsargument\n"
 
 #, c-format
-msgid "Can't open `%s': %s\n"
+msgid "Can't open '%s': %s\n"
 msgstr "Kan inte öppna \"%s\": %s\n"
 
 #, c-format
-msgid "Error reading backup key from `%s': %s\n"
+msgid "Error reading backup key from '%s': %s\n"
 msgstr "Fel vid läsning av säkerhetskopierad nyckel från \"%s\": %s\n"
 
 msgid "You must select at least one key.\n"
@@ -3350,7 +3350,7 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Visar %s foto-id med storleken %ld för nyckeln %s (uid %d)\n"
 
 #, c-format
-msgid "preference `%s' duplicated\n"
+msgid "preference '%s' duplicated\n"
 msgstr "inställningen \"%s\" förekommer flera gånger\n"
 
 msgid "too many cipher preferences\n"
@@ -3363,7 +3363,7 @@ msgid "too many compression preferences\n"
 msgstr "för många komprimeringsinställningar\n"
 
 #, c-format
-msgid "invalid item `%s' in preference string\n"
+msgid "invalid item '%s' in preference string\n"
 msgstr "ogiltig post \"%s\" i inställningssträngen\n"
 
 msgid "writing direct signature\n"
@@ -3614,7 +3614,7 @@ msgid "Invalid character in comment\n"
 msgstr "Ogiltigt tecken i kommentaren\n"
 
 #, c-format
-msgid "You are using the `%s' character set.\n"
+msgid "You are using the '%s' character set.\n"
 msgstr "Du använder teckentabellen \"%s\"\n"
 
 #, c-format
@@ -3702,15 +3702,15 @@ msgid "Key generation canceled.\n"
 msgstr "Skapandet av nycklar avbröts.\n"
 
 #, c-format
-msgid "writing public key to `%s'\n"
+msgid "writing public key to '%s'\n"
 msgstr "skriver den publika nyckeln till \"%s\"\n"
 
 #, c-format
-msgid "writing secret key stub to `%s'\n"
+msgid "writing secret key stub to '%s'\n"
 msgstr "skriver hemliga nyckelstumpen till \"%s\"\n"
 
 #, c-format
-msgid "writing secret key to `%s'\n"
+msgid "writing secret key to '%s'\n"
 msgstr "skriver hemlig nyckel till \"%s\"\n"
 
 #, c-format
@@ -3722,11 +3722,11 @@ msgid "no writable secret keyring found: %s\n"
 msgstr "ingen skrivbar hemlig nyckelring hittades: %s\n"
 
 #, c-format
-msgid "error writing public keyring `%s': %s\n"
+msgid "error writing public keyring '%s': %s\n"
 msgstr "fel vid skrivning av publika nyckelringen \"%s\": %s\n"
 
 #, c-format
-msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing secret keyring '%s': %s\n"
 msgstr "fel vid skrivning av hemliga nyckelringen \"%s\": %s\n"
 
 msgid "public and secret key created and signed.\n"
@@ -3771,11 +3771,11 @@ msgid "storing key onto card failed: %s\n"
 msgstr "misslyckades med att lagra nyckeln på kortet: %s\n"
 
 #, c-format
-msgid "can't create backup file `%s': %s\n"
+msgid "can't create backup file '%s': %s\n"
 msgstr "kan inte skapa säkerhetskopian \"%s\": %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to `%s'\n"
+msgid "NOTE: backup of card key saved to '%s'\n"
 msgstr "OBSERVERA: säkerhetskopia av kortnyckeln sparades i \"%s\"\n"
 
 msgid "never     "
@@ -3820,7 +3820,7 @@ msgid "      Card serial no. ="
 msgstr "       Kortets serienr ="
 
 #, c-format
-msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "namnbyte från \"%s\" till \"%s\" misslyckades: %s\n"
 
 # Enligt Werner uppstår detta om något går snett när den hemliga nyckeln uppdateras.
@@ -3839,7 +3839,7 @@ msgid "Please fix this possible security flaw\n"
 msgstr "Lös detta potentiella säkerhetsproblem\n"
 
 #, c-format
-msgid "caching keyring `%s'\n"
+msgid "caching keyring '%s'\n"
 msgstr "mellanlagrar nyckelringen \"%s\"\n"
 
 #, c-format
@@ -3877,7 +3877,7 @@ msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "respektera PKA-posten inställd på en nyckel när nycklar hämtas"
 
 #, c-format
-msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr ""
 "VARNING: nyckelserverflaggan \"%s\" används inte på den här plattformen\n"
 
@@ -3947,11 +3947,11 @@ msgid "external keyserver calls are not supported in this build\n"
 msgstr "externa anrop till nyckelserver stöds inte i detta bygge\n"
 
 #, c-format
-msgid "no handler for keyserver scheme `%s'\n"
+msgid "no handler for keyserver scheme '%s'\n"
 msgstr "ingen hanterare för nyckelserverschemat \"%s\"\n"
 
 #, c-format
-msgid "action `%s' not supported with keyserver scheme `%s'\n"
+msgid "action '%s' not supported with keyserver scheme '%s'\n"
 msgstr "åtgärden \"%s\" stöds inte med nyckelserverschemat \"%s\"\n"
 
 #, c-format
@@ -4170,7 +4170,7 @@ msgid "invalid root packet detected in proc_tree()\n"
 msgstr "ogiltigt rotpaket hittades i proc_tree()\n"
 
 #, c-format
-msgid "fstat of `%s' failed in %s: %s\n"
+msgid "fstat of '%s' failed in %s: %s\n"
 msgstr "fstat för \"%s\" misslyckades i %s: %s\n"
 
 #, c-format
@@ -4239,15 +4239,15 @@ msgid "this message may not be usable by %s\n"
 msgstr "detta meddelande kanske inte kan användas av %s\n"
 
 #, c-format
-msgid "ambiguous option `%s'\n"
+msgid "ambiguous option '%s'\n"
 msgstr "tvetydlig flagga \"%s\"\n"
 
 #, c-format
-msgid "unknown option `%s'\n"
+msgid "unknown option '%s'\n"
 msgstr "okänd flagga \"%s\"\n"
 
 #, c-format
-msgid "File `%s' exists. "
+msgid "File '%s' exists. "
 msgstr "Filen \"%s\" finns. "
 
 msgid "Overwrite? (y/N) "
@@ -4264,15 +4264,15 @@ msgid "writing to stdout\n"
 msgstr "skriver till standard ut\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "antar att signerad data finns i filen \"%s\"\n"
 
 #, c-format
-msgid "new configuration file `%s' created\n"
+msgid "new configuration file '%s' created\n"
 msgstr "ny konfigurationsfil \"%s\" skapad\n"
 
 #, c-format
-msgid "WARNING: options in `%s' are not yet active during this run\n"
+msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr ""
 "VARNING: inställningar i \"%s\" är ännu inte aktiva under denna körning\n"
 
@@ -4348,7 +4348,7 @@ msgid "Enter JPEG filename for photo ID: "
 msgstr "Skriv JPEG-filnamnet för foto-id: "
 
 #, c-format
-msgid "unable to open JPEG file `%s': %s\n"
+msgid "unable to open JPEG file '%s': %s\n"
 msgstr "kunde inte öppna JPEG-filen \"%s\": %s\n"
 
 #, c-format
@@ -4360,7 +4360,7 @@ msgid "Are you sure you want to use it? (y/N) "
 msgstr "Vill du verkligen använda den? (j/N)? "
 
 #, c-format
-msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not a JPEG file\n"
 msgstr "\"%s\" är inte en JPEG-fil\n"
 
 msgid "Is this photo correct (y/N/q)? "
@@ -4497,11 +4497,11 @@ msgid "Note: This key has been disabled.\n"
 msgstr "Obs: Denna nyckel har stängts av.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is `%s'\n"
+msgid "Note: Verified signer's address is '%s'\n"
 msgstr "Observera: Validerad adress för signeraren är \"%s\"\n"
 
 #, c-format
-msgid "Note: Signer's address `%s' does not match DNS entry\n"
+msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "Observera: Signerarens adress \"%s\" matchar inte DNS-objektet\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
@@ -4610,7 +4610,7 @@ msgstr "ingen signerad data\n"
 
 # se förra kommentaren
 #, c-format
-msgid "can't open signed data `%s'\n"
+msgid "can't open signed data '%s'\n"
 msgstr "kan inte öppna signerat data \"%s\"\n"
 
 # se förra kommentaren
@@ -4936,7 +4936,7 @@ msgstr ""
 "# (Använd \"gpg --import-ownertrust\" för att återställa dem)\n"
 
 #, c-format
-msgid "error in `%s': %s\n"
+msgid "error in '%s': %s\n"
 msgstr "fel i \"%s\": %s\n"
 
 msgid "line too long"
@@ -4952,11 +4952,11 @@ msgid "ownertrust value missing"
 msgstr "värde för ägartillit saknas"
 
 #, c-format
-msgid "error finding trust record in `%s': %s\n"
+msgid "error finding trust record in '%s': %s\n"
 msgstr "fel vid sökning av tillitsvärde i \"%s\": %s\n"
 
 #, c-format
-msgid "read error in `%s': %s\n"
+msgid "read error in '%s': %s\n"
 msgstr "läsfel i \"%s\":  %s\n"
 
 #, c-format
@@ -4975,7 +4975,7 @@ msgid "trustdb transaction too large\n"
 msgstr "tillitsdatabastransaktion för stor\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
+msgid "can't access '%s': %s\n"
 msgstr "kan inte komma åt \"%s\": %s\n"
 
 #, c-format
@@ -4983,12 +4983,12 @@ msgid "%s: directory does not exist!\n"
 msgstr "%s: katalogen finns inte!\n"
 
 #, c-format
-msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
 msgstr "kan inte skapa lås för \"%s\"\n"
 
 # se förra kommentaren
 #, c-format
-msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
 msgstr "kan inte låsa \"%s\"\n"
 
 #, c-format
@@ -5075,7 +5075,7 @@ msgid "input line longer than %d characters\n"
 msgstr "indataraden är längre än %d tecken\n"
 
 #, c-format
-msgid "`%s' is not a valid long keyID\n"
+msgid "'%s' is not a valid long keyID\n"
 msgstr "\"%s\" är inget giltigt långt nyckel-id\n"
 
 # trusted??
@@ -5177,12 +5177,12 @@ msgid "next trustdb check due at %s\n"
 msgstr "nästa kontroll av tillitsdatabasen kommer att äga rum %s\n"
 
 #, c-format
-msgid "no need for a trustdb check with `%s' trust model\n"
+msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr ""
 "det behövs ingen kontroll av tillitsdatabasen med tillitsmodellen \"%s\"\n"
 
 #, c-format
-msgid "no need for a trustdb update with `%s' trust model\n"
+msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr ""
 "det behövs ingen uppdatering av tillitsdatabasen med tillitsmodellen \"%s\"\n"
 
@@ -5300,11 +5300,11 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "du har hittat ett fel i programmet ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
+msgid "error loading '%s': %s\n"
 msgstr "fel vid inläsning av \"%s\": %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' not available\n"
+msgid "conversion from '%s' to '%s' not available\n"
 msgstr "konvertering från \"%s\" till \"%s\" är inte tillgänglig\n"
 
 #, c-format
@@ -5312,15 +5312,15 @@ msgid "iconv_open failed: %s\n"
 msgstr "iconv_open misslyckades: %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "conversion from '%s' to '%s' failed: %s\n"
 msgstr "konvertering från \"%s\" till \"%s\" misslyckades: %s\n"
 
 #, c-format
-msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary file '%s': %s\n"
 msgstr "misslyckades med att skapa temporärfilen \"%s\": %s\n"
 
 #, c-format
-msgid "error writing to `%s': %s\n"
+msgid "error writing to '%s': %s\n"
 msgstr "fel vid skrivning till \"%s\": %s\n"
 
 #, c-format
@@ -5338,7 +5338,7 @@ msgid "(deadlock?) "
 msgstr "(dödläge?) "
 
 #, c-format
-msgid "lock `%s' not made: %s\n"
+msgid "lock '%s' not made: %s\n"
 msgstr "låset \"%s\" gjordes inte: %s\n"
 
 #, c-format
@@ -5616,7 +5616,7 @@ msgstr ""
 "Syntax: scdaemon [flaggor] [kommando [argument]]\n"
 "Smartkortsdemon för GnuPG\n"
 
-msgid "please use the option `--daemon' to run the program in the background\n"
+msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr "använd flaggan \"--daemon\" för att köra programmet i bakgrunden\n"
 
 #, c-format
@@ -5637,7 +5637,7 @@ msgid "failed to proxy %s inquiry to client\n"
 msgstr "misslyckades med att förmedla %s-begäran till klient\n"
 
 #, c-format
-msgid "no running dirmngr - starting `%s'\n"
+msgid "no running dirmngr - starting '%s'\n"
 msgstr "ingen körande dirmngr - startar \"%s\"\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
@@ -5671,7 +5671,7 @@ msgid "critical marked policy without configured policies"
 msgstr "kritisk markerad policy utan konfigurerade policier"
 
 #, c-format
-msgid "failed to open `%s': %s\n"
+msgid "failed to open '%s': %s\n"
 msgstr "misslyckades med att öppna \"%s\": %s\n"
 
 msgid "note: non-critical certificate policy not allowed"
@@ -5904,11 +5904,11 @@ msgid "line %d: no subject name given\n"
 msgstr "rad %d: inget ämnesnamn angivit\n"
 
 #, c-format
-msgid "line %d: invalid subject name label `%.*s'\n"
+msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr "rad %d: ogiltig ämnesnamnsetikett \"%.*s\"\n"
 
 #, c-format
-msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid subject name '%s' at pos %d\n"
 msgstr "rad %d: ogiltigt ämnesnamn \"%s\" på position %d\n"
 
 #, c-format
@@ -5916,13 +5916,13 @@ msgid "line %d: not a valid email address\n"
 msgstr "rad %d: inte en giltig e-postadress\n"
 
 #, c-format
-msgid "line %d: error reading key `%s' from card: %s\n"
+msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "rad %d: fel vid läsning av nyckeln \"%s\" från kortet: %s\n"
 
 # keygrip (i.e. a hash over the public key
 # parameters) formatted as a hex string.
 #, c-format
-msgid "line %d: error getting key by keygrip `%s': %s\n"
+msgid "line %d: error getting key by keygrip '%s': %s\n"
 msgstr "rad %d: fel vid hämtning av nyckelhashen \"%s\": %s\n"
 
 #, c-format
@@ -5992,7 +5992,7 @@ msgid "No subject name given\n"
 msgstr "Inget ämnesnamn angivet\n"
 
 #, c-format
-msgid "Invalid subject name label `%.*s'\n"
+msgid "Invalid subject name label '%.*s'\n"
 msgstr "Ogiltig ämnesnamnsetikett \"%.*s\"\n"
 
 #. TRANSLATORS: The 22 in the second string is the
@@ -6001,7 +6001,7 @@ msgstr "Ogiltig ämnesnamnsetikett \"%.*s\"\n"
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #, c-format
-msgid "Invalid subject name `%s'\n"
+msgid "Invalid subject name '%s'\n"
 msgstr "Ogiltigt ämnesnamn \"%s\"\n"
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
@@ -6043,7 +6043,7 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(det här verkar inte vara ett krypterat meddelande)\n"
 
 #, c-format
-msgid "certificate `%s' not found: %s\n"
+msgid "certificate '%s' not found: %s\n"
 msgstr "certifikatet \"%s\" hittades inte: %s\n"
 
 #, c-format
@@ -6051,11 +6051,11 @@ msgid "error locking keybox: %s\n"
 msgstr "fel vid låsning av nyckelskåp: %s\n"
 
 #, c-format
-msgid "duplicated certificate `%s' deleted\n"
+msgid "duplicated certificate '%s' deleted\n"
 msgstr "dubblett av certifikatet \"%s\" borttaget\n"
 
 #, c-format
-msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' deleted\n"
 msgstr "certifikatet \"%s\" togs bort\n"
 
 #, c-format
@@ -6174,11 +6174,11 @@ msgid "usage: gpgsm [options] "
 msgstr "användning: gpgsm [flaggor] "
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "OBSERVERA: kommer inte att kunna kryptera till \"%s\": %s\n"
 
 #, c-format
-msgid "unknown validation model `%s'\n"
+msgid "unknown validation model '%s'\n"
 msgstr "okänd valideringsmodell \"%s\"\n"
 
 #, c-format
@@ -6200,11 +6200,11 @@ msgid "WARNING: running with faked system time: "
 msgstr "VARNING: kör med falsk systemtid: "
 
 #, c-format
-msgid "importing common certificates `%s'\n"
+msgid "importing common certificates '%s'\n"
 msgstr "importerar vanliga certifikat \"%s\"\n"
 
 #, c-format
-msgid "can't sign using `%s': %s\n"
+msgid "can't sign using '%s': %s\n"
 msgstr "kan inte signera med \"%s\": %s\n"
 
 msgid "invalid command (there is no implicit command)\n"
@@ -6236,14 +6236,14 @@ msgid "error reading input: %s\n"
 msgstr "fel vid läsning av indata: %s\n"
 
 #, c-format
-msgid "error creating keybox `%s': %s\n"
+msgid "error creating keybox '%s': %s\n"
 msgstr "fel när nyckelskåpet \"%s\" skapades: %s\n"
 
 msgid "you may want to start the gpg-agent first\n"
 msgstr "du kanske vill starta gpg-agent först\n"
 
 #, c-format
-msgid "keybox `%s' created\n"
+msgid "keybox '%s' created\n"
 msgstr "nyckelskåpet \"%s\" skapat\n"
 
 msgid "failed to get the fingerprint\n"
@@ -6277,11 +6277,11 @@ msgstr ""
 "GPG_TTY har inte ställts in - använder kanske felaktigt standardvärde\n"
 
 #, c-format
-msgid "invalid formatted fingerprint in `%s', line %d\n"
+msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "ogiltigt formaterat fingeravtryck i \"%s\", rad %d\n"
 
 #, c-format
-msgid "invalid country code in `%s', line %d\n"
+msgid "invalid country code in '%s', line %d\n"
 msgstr "ogiltig landskod i \"%s\", rad %d\n"
 
 #, c-format
@@ -6407,7 +6407,7 @@ msgid "line shortened due to embedded Nul character\n"
 msgstr "rad nerkortad på grund av inbäddat Nul-tecken\n"
 
 #, c-format
-msgid "unknown command `%s'\n"
+msgid "unknown command '%s'\n"
 msgstr "okänt kommando \"%s\"\n"
 
 #, c-format
@@ -6628,7 +6628,7 @@ msgid "%s on %s failed with status %i\n"
 msgstr "%s på %s misslyckades med status %i\n"
 
 #, c-format
-msgid "can't create temporary directory `%s': %s\n"
+msgid "can't create temporary directory '%s': %s\n"
 msgstr "kan inte skapa temporärkatalogen \"%s\": %s\n"
 
 #, c-format

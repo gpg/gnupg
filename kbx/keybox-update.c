@@ -159,7 +159,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 /*      { */
 /*        if (chmod (tmpfname, S_IRUSR | S_IWUSR) )  */
 /*          { */
-/*            log_debug ("chmod of `%s' failed: %s\n", */
+/*            log_debug ("chmod of '%s' failed: %s\n", */
 /*                       tmpfname, strerror(errno) ); */
 /*            return KEYBOX_Write_File; */
 /*  	} */

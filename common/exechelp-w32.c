@@ -285,7 +285,7 @@ w32_open_null (int for_write)
                        FILE_SHARE_READ | FILE_SHARE_WRITE,
                        NULL, OPEN_EXISTING, 0, NULL);
   if (hfile == INVALID_HANDLE_VALUE)
-    log_debug ("can't open `nul': %s\n", w32_strerror (-1));
+    log_debug ("can't open 'nul': %s\n", w32_strerror (-1));
   return hfile;
 }
 
@@ -494,7 +494,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
               | ((flags & 128)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED);
-/*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
+/*   log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */
@@ -609,7 +609,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   si.hStdOutput = outfd == -1? stdhd[1] : (void*)_get_osfhandle (outfd);
   si.hStdError  = errfd == -1? stdhd[2] : (void*)_get_osfhandle (errfd);
 
-/*   log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline); */
+/*   log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */
                       &sec_attr,     /* Process security attributes.  */
@@ -691,7 +691,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
         }
       else if (exc)
         {
-          log_error (_("error running `%s': exit status %d\n"),
+          log_error (_("error running '%s': exit status %d\n"),
                      pgmname, (int)exc );
           if (r_exitcode)
             *r_exitcode = (int)exc;
@@ -783,7 +783,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_NEW_PROCESS_GROUP
               | DETACHED_PROCESS);
-/*   log_debug ("CreateProcess(detached), path=`%s' cmdline=`%s'\n", */
+/*   log_debug ("CreateProcess(detached), path='%s' cmdline='%s'\n", */
 /*              pgmname, cmdline); */
   if (!CreateProcess (pgmname,       /* Program to start.  */
                       cmdline,       /* Command line arguments.  */

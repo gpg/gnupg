@@ -253,7 +253,7 @@ do_exec (const char *pgmname, const char *argv[],
         {
           fds[i] = open ("/dev/null", i? O_WRONLY : O_RDONLY);
           if (fds[i] == -1)
-            log_fatal ("failed to open `%s': %s\n",
+            log_fatal ("failed to open '%s': %s\n",
                        "/dev/null", strerror (errno));
         }
     }
@@ -512,13 +512,13 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
     }
   else if (WIFEXITED (status) && WEXITSTATUS (status) == 127)
     {
-      log_error (_("error running `%s': probably not installed\n"), pgmname);
+      log_error (_("error running '%s': probably not installed\n"), pgmname);
       ec = GPG_ERR_CONFIGURATION;
     }
   else if (WIFEXITED (status) && WEXITSTATUS (status))
     {
       if (!r_exitcode)
-        log_error (_("error running `%s': exit status %d\n"), pgmname,
+        log_error (_("error running '%s': exit status %d\n"), pgmname,
                    WEXITSTATUS (status));
       else
         *r_exitcode = WEXITSTATUS (status);
@@ -526,7 +526,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *r_exitcode)
     }
   else if (!WIFEXITED (status))
     {
-      log_error (_("error running `%s': terminated\n"), pgmname);
+      log_error (_("error running '%s': terminated\n"), pgmname);
       ec = GPG_ERR_GENERAL;
     }
   else

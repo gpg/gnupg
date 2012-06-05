@@ -315,7 +315,7 @@ start_pinentry (ctrl_t ctrl)
 			    ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
-      log_error ("can't connect to the PIN entry module `%s': %s\n",
+      log_error ("can't connect to the PIN entry module '%s': %s\n",
                  opt.pinentry_program, gpg_strerror (rc));
       assuan_release (ctx);
       return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
@@ -622,7 +622,7 @@ inq_quality (void *opaque, const char *line)
     }
   else
     {
-      log_error ("unsupported inquiry `%s' from pinentry\n", line);
+      log_error ("unsupported inquiry '%s' from pinentry\n", line);
       rc = gpg_error (GPG_ERR_ASS_UNKNOWN_INQUIRE);
     }
 

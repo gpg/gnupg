@@ -1216,7 +1216,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
             es_fprintf (out, " i=%d", ctx->log[idx].intvalue);
           if (ctx->log[idx].string)
             {
-              es_fputs (" s=`", out);
+              es_fputs (" s='", out);
               writeout (ctx, ctx->log[idx].string);
               es_fputs ("'", out);
             }
@@ -1224,7 +1224,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
             es_fprintf (out, " has_cert");
           if (ctx->log[idx].have_err)
             {
-              es_fputs (" err=`", out);
+              es_fputs (" err='", out);
               writeout (ctx, gpg_strerror (ctx->log[idx].err));
               es_fputs ("'", out);
             }
@@ -1304,7 +1304,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
           xfree (text);
         }
       else
-        writeout_para (ctx, _("No help available for `%s'."), helptag->name);
+        writeout_para (ctx, _("No help available for '%s'."), helptag->name);
       if (use_html && ctx->helptags->next)
         es_fputs ("</li>\n", ctx->outstream);
       if (helptag->next)

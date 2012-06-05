@@ -544,11 +544,11 @@ write_part (FILE *fpin, unsigned long pktlen,
   else
     {
       if (opt_verbose)
-        log_info ("writing `%s'\n", outname);
+        log_info ("writing '%s'\n", outname);
       fpout = fopen (outname, "wb");
       if (!fpout) 
         {
-          log_error ("error creating `%s': %s\n", outname, strerror(errno));
+          log_error ("error creating '%s': %s\n", outname, strerror(errno));
           /* stop right now, otherwise we would mess up the sequence
              of the part numbers */
           g10_exit (1);
@@ -747,11 +747,11 @@ write_part (FILE *fpin, unsigned long pktlen,
   
  ready:
   if ( !opt_no_split && fclose (fpout) )
-    log_error ("error closing `%s': %s\n", outname, strerror (errno));
+    log_error ("error closing '%s': %s\n", outname, strerror (errno));
   return 0;
   
  write_error:    
-  log_error ("error writing `%s': %s\n", outname, strerror (errno));
+  log_error ("error writing '%s': %s\n", outname, strerror (errno));
   if (!opt_no_split)
     fclose (fpout);
   return 2;
@@ -864,7 +864,7 @@ split_packets (const char *fname)
     }
   else if ( !(fp = fopen (fname,"rb")) ) 
     {
-      log_error ("can't open `%s': %s\n", fname, strerror (errno));
+      log_error ("can't open '%s': %s\n", fname, strerror (errno));
       return;
     }
   
@@ -873,9 +873,9 @@ split_packets (const char *fname)
   if ( rc > 0 )
     ; /* error already handled */
   else if ( ferror (fp) )
-    log_error ("error reading `%s': %s\n", fname, strerror (errno));
+    log_error ("error reading '%s': %s\n", fname, strerror (errno));
   else
-    log_error ("premature EOF while reading `%s'\n", fname );
+    log_error ("premature EOF while reading '%s'\n", fname );
   
   if ( fp != stdin )
     fclose (fp);

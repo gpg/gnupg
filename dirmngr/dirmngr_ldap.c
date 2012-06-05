@@ -401,7 +401,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
       char *attr;
 
       if (myopt->verbose > 1)
-        log_info (_("scanning result for attribute `%s'\n"),
+        log_info (_("scanning result for attribute '%s'\n"),
                   want_attr? want_attr : "[all]");
 
       if (myopt->multi)
@@ -425,7 +425,7 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
           int idx;
 
           if (myopt->verbose > 1)
-            log_info (_("          available attribute `%s'\n"), attr);
+            log_info (_("          available attribute '%s'\n"), attr);
 
           set_timeout (myopt);
 
@@ -463,14 +463,14 @@ print_ldap_entries (my_opt_t myopt, LDAP *ld, LDAPMessage *msg, char *want_attr)
           if (!values)
             {
               if (myopt->verbose)
-                log_info (_("attribute `%s' not found\n"), attr);
+                log_info (_("attribute '%s' not found\n"), attr);
               my_ldap_free_attr (attr);
               continue;
             }
 
           if (myopt->verbose)
             {
-              log_info (_("found attribute `%s'\n"), attr);
+              log_info (_("found attribute '%s'\n"), attr);
               if (myopt->verbose > 1)
                 for (idx=0; values[idx]; idx++)
                   log_info ("         length[%d]=%d\n",
@@ -579,37 +579,37 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
 
   if (myopt->verbose)
     {
-      log_info (_("processing url `%s'\n"), url);
+      log_info (_("processing url '%s'\n"), url);
       if (myopt->user)
-        log_info (_("          user `%s'\n"), myopt->user);
+        log_info (_("          user '%s'\n"), myopt->user);
       if (myopt->pass)
-        log_info (_("          pass `%s'\n"), *myopt->pass?"*****":"");
+        log_info (_("          pass '%s'\n"), *myopt->pass?"*****":"");
       if (host)
-        log_info (_("          host `%s'\n"), host);
+        log_info (_("          host '%s'\n"), host);
       log_info (_("          port %d\n"), port);
       if (dn)
-        log_info (_("            DN `%s'\n"), dn);
+        log_info (_("            DN '%s'\n"), dn);
       if (filter)
-        log_info (_("        filter `%s'\n"), filter);
+        log_info (_("        filter '%s'\n"), filter);
       if (myopt->multi && !myopt->attr && ludp->lud_attrs)
         {
           int i;
           for (i=0; ludp->lud_attrs[i]; i++)
-            log_info (_("          attr `%s'\n"), ludp->lud_attrs[i]);
+            log_info (_("          attr '%s'\n"), ludp->lud_attrs[i]);
         }
       else if (attr)
-        log_info (_("          attr `%s'\n"), attr);
+        log_info (_("          attr '%s'\n"), attr);
     }
 
 
   if (!host || !*host)
     {
-      log_error (_("no host name in `%s'\n"), url);
+      log_error (_("no host name in '%s'\n"), url);
       return -1;
     }
   if (!myopt->multi && !attr)
     {
-      log_error (_("no attribute given for query `%s'\n"), url);
+      log_error (_("no attribute given for query '%s'\n"), url);
       return -1;
     }
 
@@ -624,7 +624,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   npth_protect ();
   if (!ld)
     {
-      log_error (_("LDAP init to `%s:%d' failed: %s\n"),
+      log_error (_("LDAP init to '%s:%d' failed: %s\n"),
                  host, port, strerror (errno));
       return -1;
     }
@@ -634,7 +634,7 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   npth_protect ();
   if (ret)
     {
-      log_error (_("binding to `%s:%d' failed: %s\n"),
+      log_error (_("binding to '%s:%d' failed: %s\n"),
                  host, port, strerror (errno));
       ldap_unbind (ld);
       return -1;
@@ -659,9 +659,9 @@ fetch_ldap (my_opt_t myopt, const char *url, const LDAPURLDesc *ludp)
   else if (rc)
     {
 #ifdef HAVE_W32CE_SYSTEM
-      log_error ("searching `%s' failed: %d\n", url, rc);
+      log_error ("searching '%s' failed: %d\n", url, rc);
 #else
-      log_error (_("searching `%s' failed: %s\n"),
+      log_error (_("searching '%s' failed: %s\n"),
                  url, ldap_err2string (rc));
 #endif
       if (rc != LDAP_NO_SUCH_OBJECT)
@@ -693,13 +693,13 @@ process_url (my_opt_t myopt, const char *url)
 
   if (!ldap_is_ldap_url (url))
     {
-      log_error (_("`%s' is not an LDAP URL\n"), url);
+      log_error (_("'%s' is not an LDAP URL\n"), url);
       return -1;
     }
 
   if (ldap_url_parse (url, &ludp))
     {
-      log_error (_("`%s' is an invalid LDAP URL\n"), url);
+      log_error (_("'%s' is an invalid LDAP URL\n"), url);
       return -1;
     }
 

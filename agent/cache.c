@@ -218,7 +218,7 @@ housekeeping (void)
       if (r->pw && r->ttl >= 0 && r->accessed + r->ttl < current)
         {
           if (DBG_CACHE)
-            log_debug ("  expired `%s' (%ds after last access)\n",
+            log_debug ("  expired '%s' (%ds after last access)\n",
                        r->key, r->ttl);
           release_data (r->pw);
           r->pw = NULL;
@@ -240,7 +240,7 @@ housekeeping (void)
       if (r->pw && r->created + maxttl < current)
         {
           if (DBG_CACHE)
-            log_debug ("  expired `%s' (%lus after creation)\n",
+            log_debug ("  expired '%s' (%lus after creation)\n",
                        r->key, opt.max_cache_ttl);
           release_data (r->pw);
           r->pw = NULL;
@@ -256,7 +256,7 @@ housekeeping (void)
         {
           ITEM r2 = r->next;
           if (DBG_CACHE)
-            log_debug ("  removed `%s' (mode %d) (slot not used for 30m)\n",
+            log_debug ("  removed '%s' (mode %d) (slot not used for 30m)\n",
                        r->key, r->cache_mode);
           xfree (r);
           if (!rprev)
@@ -287,7 +287,7 @@ agent_flush_cache (void)
       if (r->pw)
         {
           if (DBG_CACHE)
-            log_debug ("  flushing `%s'\n", r->key);
+            log_debug ("  flushing '%s'\n", r->key);
           release_data (r->pw);
           r->pw = NULL;
           r->accessed = 0;
@@ -311,7 +311,7 @@ agent_put_cache (const char *key, cache_mode_t cache_mode,
   ITEM r;
 
   if (DBG_CACHE)
-    log_debug ("agent_put_cache `%s' (mode %d) requested ttl=%d\n",
+    log_debug ("agent_put_cache '%s' (mode %d) requested ttl=%d\n",
                key, cache_mode, ttl);
   housekeeping ();
 
@@ -393,7 +393,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
     return NULL;
 
   if (DBG_CACHE)
-    log_debug ("agent_get_cache `%s' (mode %d) ...\n", key, cache_mode);
+    log_debug ("agent_get_cache '%s' (mode %d) ...\n", key, cache_mode);
   housekeeping ();
 
   for (r=thecache; r; r = r->next)
@@ -431,7 +431,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
             {
               xfree (value);
               value = NULL;
-              log_error ("retrieving cache entry `%s' failed: %s\n",
+              log_error ("retrieving cache entry '%s' failed: %s\n",
                          key, gpg_strerror (err));
             }
           return value;

@@ -369,7 +369,7 @@ main (int argc, char **argv)
       if (server_un == -1)
         die ("socket(PF_LOCAL) failed: %s\n", strerror (errno));
       if (verbose)
-        fprintf (stderr, "listening on socket `%s'\n", *argv);
+        fprintf (stderr, "listening on socket '%s'\n", *argv);
     }
   else
     server_un = -1;
@@ -428,7 +428,7 @@ main (int argc, char **argv)
           goto again;
         }
       else
-        die ("bind to `%s' failed: %s\n", *argv, strerror (errno));
+        die ("bind to '%s' failed: %s\n", *argv, strerror (errno));
     }
 
   if (server_in != -1 && listen (server_in, 5))

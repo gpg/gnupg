@@ -325,7 +325,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
           if (!algo || !mode)
             {
               rc = gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-              log_error ("unsupported algorithm `%s'\n", algoid? algoid:"?");
+              log_error ("unsupported algorithm '%s'\n", algoid? algoid:"?");
               if (algoid && !strcmp (algoid, "1.2.840.113549.3.2"))
                 log_info (_("(this is the RC2 algorithm)\n"));
               else if (!algoid)
@@ -386,7 +386,7 @@ gpgsm_decrypt (ctrl_t ctrl, int in_fd, estream_t out_fp)
                 {
                   ksba_cert_t cert = NULL;
 
-                  log_debug ("recp %d - issuer: `%s'\n",
+                  log_debug ("recp %d - issuer: '%s'\n",
                              recp, issuer? issuer:"[NONE]");
                   log_debug ("recp %d - serial: ", recp);
                   gpgsm_dump_serial (serial);

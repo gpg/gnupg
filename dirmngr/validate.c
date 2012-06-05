@@ -879,7 +879,7 @@ check_cert_sig (ksba_cert_t issuer_cert, ksba_cert_t cert)
   algo = gcry_md_map_name (algoid);
   if (!algo)
     {
-      log_error (_("unknown hash algorithm `%s'\n"), algoid? algoid:"?");
+      log_error (_("unknown hash algorithm '%s'\n"), algoid? algoid:"?");
       return gpg_error (GPG_ERR_GENERAL);
     }
   s = gcry_md_algo_name (algo);

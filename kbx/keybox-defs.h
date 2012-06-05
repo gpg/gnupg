@@ -223,19 +223,19 @@ void  _keybox_free (void *p);
 
 #define return_if_fail(expr) do {                        \
     if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion `%s' failed\n", \
+        fprintf (stderr, "%s:%d: assertion '%s' failed\n", \
                  __FILE__, __LINE__, #expr );            \
         return;	                                         \
     } } while (0)
 #define return_null_if_fail(expr) do {                   \
     if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion `%s' failed\n", \
+        fprintf (stderr, "%s:%d: assertion '%s' failed\n", \
                  __FILE__, __LINE__, #expr );            \
         return NULL;	                                 \
     } } while (0)
 #define return_val_if_fail(expr,val) do {                \
     if (!(expr)) {                                       \
-        fprintf (stderr, "%s:%d: assertion `%s' failed\n", \
+        fprintf (stderr, "%s:%d: assertion '%s' failed\n", \
                  __FILE__, __LINE__, #expr );            \
         return (val);	                                 \
     } } while (0)

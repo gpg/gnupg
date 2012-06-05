@@ -170,7 +170,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
                    opt.http_proxy, NULL, NULL, NULL);
   if (err)
     {
-      log_error (_("error connecting to `%s': %s\n"), url, gpg_strerror (err));
+      log_error (_("error connecting to '%s': %s\n"), url, gpg_strerror (err));
       xfree (free_this);
       return err;
     }
@@ -183,7 +183,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
   if (es_fwrite (request, requestlen, 1, http_get_write_ptr (http)) != 1)
     {
       err = gpg_error_from_errno (errno);
-      log_error ("error sending request to `%s': %s\n", url, strerror (errno));
+      log_error ("error sending request to '%s': %s\n", url, strerror (errno));
       http_close (http, 0);
       xfree (request);
       xfree (free_this);
@@ -196,7 +196,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
   if (err || http_get_status_code (http) != 200)
     {
       if (err)
-        log_error (_("error reading HTTP response for `%s': %s\n"),
+        log_error (_("error reading HTTP response for '%s': %s\n"),
                    url, gpg_strerror (err));
       else
         {
@@ -207,7 +207,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
               {
                 const char *s = http_get_header (http, "Location");
 
-                log_info (_("URL `%s' redirected to `%s' (%u)\n"),
+                log_info (_("URL '%s' redirected to '%s' (%u)\n"),
                           url, s?s:"[none]", http_get_status_code (http));
                 if (s && *s && redirects_left-- )
                   {
@@ -229,7 +229,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
               break;
 
             default:
-              log_error (_("error accessing `%s': http status %u\n"),
+              log_error (_("error accessing '%s': http status %u\n"),
                          url, http_get_status_code (http));
               err = gpg_error (GPG_ERR_NO_DATA);
               break;
@@ -244,7 +244,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
   http_close (http, 0);
   if (err)
     {
-      log_error (_("error reading HTTP response for `%s': %s\n"),
+      log_error (_("error reading HTTP response for '%s': %s\n"),
                  url, gpg_strerror (err));
       xfree (free_this);
       return err;
@@ -254,7 +254,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
                                   &response_status);
   if (err)
     {
-      log_error (_("error parsing OCSP response for `%s': %s\n"),
+      log_error (_("error parsing OCSP response for '%s': %s\n"),
                  url, gpg_strerror (err));
       xfree (response);
       xfree (free_this);
@@ -277,17 +277,17 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
   if (response_status == KSBA_OCSP_RSPSTATUS_SUCCESS)
     {
       if (opt.verbose)
-        log_info (_("OCSP responder at `%s' status: %s\n"), url, t);
+        log_info (_("OCSP responder at '%s' status: %s\n"), url, t);
 
       err = ksba_ocsp_hash_response (ocsp, response, responselen,
                                      HASH_FNC, md);
       if (err)
-        log_error (_("hashing the OCSP response for `%s' failed: %s\n"),
+        log_error (_("hashing the OCSP response for '%s' failed: %s\n"),
                    url, gpg_strerror (err));
     }
   else
     {
-      log_error (_("OCSP responder at `%s' status: %s\n"), url, t);
+      log_error (_("OCSP responder at '%s' status: %s\n"), url, t);
       err = gpg_error (GPG_ERR_GENERAL);
     }
 
@@ -481,7 +481,7 @@ check_signature (ctrl_t ctrl,
         {
           log_error ("responder certificate ");
           if (name)
-            log_printf ("`/%s' ", name);
+            log_printf ("'/%s' ", name);
           if (keyid)
             {
               log_printf ("{");
@@ -627,12 +627,12 @@ ocsp_isvalid (ctrl_t ctrl, ksba_cert_t cert, const char *cert_fpr,
       url = opt.ocsp_responder;
       default_signer = opt.ocsp_signer;
       if (opt.verbose)
-        log_info (_("using default OCSP responder `%s'\n"), url);
+        log_info (_("using default OCSP responder '%s'\n"), url);
     }
   else
     {
       if (opt.verbose)
-        log_info (_("using OCSP responder `%s'\n"), url);
+        log_info (_("using OCSP responder '%s'\n"), url);
     }
 
   /* Ask the OCSP responder. */

@@ -76,11 +76,11 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "не поддерживаются ssh ключи превышающие %d бит\n"
 
 #, c-format
-msgid "can't create `%s': %s\n"
+msgid "can't create '%s': %s\n"
 msgstr "не могу создать `%s': %s\n"
 
 #, c-format
-msgid "can't open `%s': %s\n"
+msgid "can't open '%s': %s\n"
 msgstr "не могу открыть `%s': %s\n"
 
 #, c-format
@@ -343,7 +343,7 @@ msgstr ""
 "Управление закрытыми ключами для GnuPG\n"
 
 #, c-format
-msgid "invalid debug-level `%s' given\n"
+msgid "invalid debug-level '%s' given\n"
 msgstr "запрошен недупустимый уровень отладки `%s'\n"
 
 #, c-format
@@ -351,23 +351,23 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s слишком устарело (требуется %s, имеется %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file `%s'\n"
+msgid "NOTE: no default option file '%s'\n"
 msgstr "ЗАМЕЧАНИЕ: файл конфигурации `%s' не обнаружен\n"
 
 #, c-format
-msgid "option file `%s': %s\n"
+msgid "option file '%s': %s\n"
 msgstr "файл конфигурации `%s': %s\n"
 
 #, c-format
-msgid "reading options from `%s'\n"
+msgid "reading options from '%s'\n"
 msgstr "параметры конфигурации из файла `%s'\n"
 
 #, c-format
-msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
 msgstr "ошибка создания `%s': %s\n"
 
 #, c-format
-msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
 msgstr "не могу создать каталог `%s': %s\n"
 
 msgid "name of socket too long\n"
@@ -378,7 +378,7 @@ msgid "can't create socket: %s\n"
 msgstr "не могу создать сокет: %s\n"
 
 #, c-format
-msgid "socket name `%s' is too long\n"
+msgid "socket name '%s' is too long\n"
 msgstr "имя сокета `%s' слишком длинное\n"
 
 msgid "a gpg-agent is already running - not starting a new one\n"
@@ -388,7 +388,7 @@ msgid "error getting nonce for the socket\n"
 msgstr ""
 
 #, c-format
-msgid "error binding socket to `%s': %s\n"
+msgid "error binding socket to '%s': %s\n"
 msgstr "ошибка связывния сокета с `%s': %s\n"
 
 #, c-format
@@ -396,19 +396,19 @@ msgid "listen() failed: %s\n"
 msgstr ""
 
 #, c-format
-msgid "listening on socket `%s'\n"
+msgid "listening on socket '%s'\n"
 msgstr "слушаем сокет `%s'\n"
 
 #, c-format
-msgid "directory `%s' created\n"
+msgid "directory '%s' created\n"
 msgstr "создан каталог `%s'\n"
 
 #, c-format
-msgid "stat() failed for `%s': %s\n"
+msgid "stat() failed for '%s': %s\n"
 msgstr ""
 
 #, c-format
-msgid "can't use `%s' as home directory\n"
+msgid "can't use '%s' as home directory\n"
 msgstr "невозможно использовать `%s' как домашний каталог\n"
 
 #, c-format
@@ -515,31 +515,31 @@ msgid "error while asking for the passphrase: %s\n"
 msgstr "ошибка запроса ввода фразы-пароля: %s\n"
 
 #, c-format
-msgid "error opening `%s': %s\n"
+msgid "error opening '%s': %s\n"
 msgstr "ошибка открытия `%s': %s\n"
 
 #, c-format
-msgid "file `%s', line %d: %s\n"
+msgid "file '%s', line %d: %s\n"
 msgstr "файл `%s', строка %d: %s\n"
 
 #, c-format
-msgid "statement \"%s\" ignored in `%s', line %d\n"
+msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr ""
 
 #, c-format
-msgid "system trustlist `%s' not available\n"
+msgid "system trustlist '%s' not available\n"
 msgstr "системный список доверий `%s' не доступен\n"
 
 #, c-format
-msgid "bad fingerprint in `%s', line %d\n"
+msgid "bad fingerprint in '%s', line %d\n"
 msgstr "недопустимый отпечаток в `%s', строка %d\n"
 
 #, c-format
-msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid keyflag in '%s', line %d\n"
 msgstr ""
 
 #, c-format
-msgid "error reading `%s', line %d: %s\n"
+msgid "error reading '%s', line %d: %s\n"
 msgstr "ошибка чтения `%s', строка %d: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
@@ -632,15 +632,15 @@ msgid "error getting exit code of process %d: %s\n"
 msgstr "ошибка получения кода возврата процесса %d: %s\n"
 
 #, c-format
-msgid "error running `%s': exit status %d\n"
+msgid "error running '%s': exit status %d\n"
 msgstr "ошибка чтения `%s': статус завершения %d\n"
 
 #, c-format
-msgid "error running `%s': probably not installed\n"
+msgid "error running '%s': probably not installed\n"
 msgstr "ошибка запуска `%s': позможно не установлен\n"
 
 #, c-format
-msgid "error running `%s': terminated\n"
+msgid "error running '%s': terminated\n"
 msgstr "ошибка чтения `%s': прервано\n"
 
 #, c-format
@@ -654,7 +654,7 @@ msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent недоступен в данной сессии\n"
 
 #, c-format
-msgid "can't connect to `%s': %s\n"
+msgid "can't connect to '%s': %s\n"
 msgstr "не могу подключиться к `%s': %s\n"
 
 msgid "communication problem with gpg-agent\n"
@@ -839,7 +839,7 @@ msgid "Dirmngr usable"
 msgstr "Dirmgr доступен"
 
 #, c-format
-msgid "No help available for `%s'."
+msgid "No help available for '%s'."
 msgstr "Нет справки для `%s'."
 
 msgid "ignoring garbage line"
@@ -1000,11 +1000,11 @@ msgid "error allocating enough memory: %s\n"
 msgstr "ошибка распределения памяти: %s\n"
 
 #, c-format
-msgid "error reading `%s': %s\n"
+msgid "error reading '%s': %s\n"
 msgstr "ошибка чтения `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error writing `%s': %s\n"
+msgid "error writing '%s': %s\n"
 msgstr "ошибка записи в `%s': %s\n"
 
 msgid "Login data (account name): "
@@ -1208,7 +1208,7 @@ msgid "--output doesn't work for this command\n"
 msgstr "--output не работает для данной команды\n"
 
 #, c-format
-msgid "can't open `%s'\n"
+msgid "can't open '%s'\n"
 msgstr "не могу открыть `%s'\n"
 
 #, c-format
@@ -1259,18 +1259,18 @@ msgid "using cipher %s\n"
 msgstr "использутся алгоритм шифрования %s\n"
 
 #, c-format
-msgid "`%s' already compressed\n"
+msgid "'%s' already compressed\n"
 msgstr "`%s' уже сжат\n"
 
 #, c-format
-msgid "WARNING: `%s' is an empty file\n"
+msgid "WARNING: '%s' is an empty file\n"
 msgstr "ВНИМАНИЕ: `%s' пустой файл\n"
 
 msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
 msgstr "в режиме --pgp2 ключ RSA для ширования должен быть не более 2048 бит\n"
 
 #, c-format
-msgid "reading from `%s'\n"
+msgid "reading from '%s'\n"
 msgstr "читаю из `%s'\n"
 
 msgid ""
@@ -1330,11 +1330,11 @@ msgstr ""
 "внешних программ\n"
 
 #, c-format
-msgid "unable to execute program `%s': %s\n"
+msgid "unable to execute program '%s': %s\n"
 msgstr "не могу запустить программу `%s': %s\n"
 
 #, c-format
-msgid "unable to execute shell `%s': %s\n"
+msgid "unable to execute shell '%s': %s\n"
 msgstr "не могу запустить оболочку `%s': %s\n"
 
 #, c-format
@@ -1352,11 +1352,11 @@ msgid "unable to read external program response: %s\n"
 msgstr "не могу прочитать ответ внешней программы: %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "ВНИМАНИЕ: не могу удалить временный файл (%s) `%s': %s\n"
 
 #, c-format
-msgid "WARNING: unable to remove temp directory `%s': %s\n"
+msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "ВНИМАНИЕ: не могу удалить временный каталог `%s': %s\n"
 
 msgid "export signatures that are marked as local-only"
@@ -1416,11 +1416,11 @@ msgid "[User ID not found]"
 msgstr "[User ID не найден]"
 
 #, c-format
-msgid "automatically retrieved `%s' via %s\n"
+msgid "automatically retrieved '%s' via %s\n"
 msgstr "автоматически полученный `%s' via %s\n"
 
 #, c-format
-msgid "error retrieving `%s' via %s: %s\n"
+msgid "error retrieving '%s' via %s: %s\n"
 msgstr "ошибка получения `%s' через %s: %s\n"
 
 msgid "No fingerprint"
@@ -1628,35 +1628,35 @@ msgid "conflicting commands\n"
 msgstr "несовместимые команды\n"
 
 #, c-format
-msgid "no = sign found in group definition `%s'\n"
+msgid "no = sign found in group definition '%s'\n"
 msgstr "отсутствует знак = в определении группы `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on homedir `%s'\n"
+msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr "ВНИМАНИЕ: небезопасный владелец домашнего каталога `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on configuration file `%s'\n"
+msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr "ВНИМАНИЕ: небезопасный владелец файла конфигурации `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
+msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr "ВНИМАНИЕ: небезопасный владелец файла модуля расширения `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on homedir `%s'\n"
+msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr "ВНИМАНИЕ: небезопасные права доступа у домашнего каталога `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on configuration file `%s'\n"
+msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr "ВНИМАНИЕ: небезопасные права доступа у файла конфигурации `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
+msgid "WARNING: unsafe permissions on extension '%s'\n"
 msgstr "ВНИМАНИЕ: небезопасные права доступа у файла модуля расширения `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr ""
 "ВНИМАНИЕ: небезопасный владелец каталога содержащего домашний каталог `%s'\n"
 
@@ -1667,12 +1667,12 @@ msgstr ""
 "ВНИМАНИЕ: небезопасный владелец каталога содержащего файл конфигурации `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr ""
 "ВНИМАНИЕ: небезопасный владелец каталога содержащего модуль расширения `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr ""
 "ВНИМАНИЕ: небезопасные права доступа у каталога содержащего домашний каталог "
 "`%s'\n"
@@ -1685,13 +1685,13 @@ msgstr ""
 "конфигурации `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr ""
 "ВНИМАНИЕ: небезопасные права доступа у каталогу содержащего файл модуля "
 "расширения `%s'\n"
 
 #, c-format
-msgid "unknown configuration item `%s'\n"
+msgid "unknown configuration item '%s'\n"
 msgstr "неизвестный параметр в файле конфигурации `%s'\n"
 
 msgid "display photo IDs during key listings"
@@ -1729,7 +1729,7 @@ msgid "show expiration dates during signature listings"
 msgstr "печатать даты истечения при распечатке подписей"
 
 #, c-format
-msgid "NOTE: old default options file `%s' ignored\n"
+msgid "NOTE: old default options file '%s' ignored\n"
 msgstr "ЗАМЕЧАНИЕ: старый файл конфигурации по умолчанию `%s' проигнорирован\n"
 
 #, c-format
@@ -1741,11 +1741,11 @@ msgid "NOTE: %s is not for normal use!\n"
 msgstr "ЗАМЕЧАНИЕ: %s не предназначен для обычного применения!\n"
 
 #, c-format
-msgid "`%s' is not a valid signature expiration\n"
+msgid "'%s' is not a valid signature expiration\n"
 msgstr "`%s' недопустимый срок действия подписи\n"
 
 #, c-format
-msgid "`%s' is not a valid character set\n"
+msgid "'%s' is not a valid character set\n"
 msgstr "`%s' недопустимая таблица символов\n"
 
 msgid "could not parse keyserver URL\n"
@@ -1912,15 +1912,15 @@ msgid "%s does not yet work with %s\n"
 msgstr "%s пока не работает совместно с %s\n"
 
 #, c-format
-msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgstr "нельзя использовать шифрование `%s' в режиме %s\n"
 
 #, c-format
-msgid "you may not use digest algorithm `%s' while in %s mode\n"
+msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgstr "нельзя использовать хэш-функцию `%s' в режиме %s\n"
 
 #, c-format
-msgid "you may not use compression algorithm `%s' while in %s mode\n"
+msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgstr "нельзя использовать сжатие `%s' в режиме %s\n"
 
 #, c-format
@@ -1939,7 +1939,7 @@ msgid "--symmetric [filename]"
 msgstr "--symmetric [файл]"
 
 #, c-format
-msgid "symmetric encryption of `%s' failed: %s\n"
+msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "симметричное шифрование `%s' не удалось: %s\n"
 
 msgid "--encrypt [filename]"
@@ -2019,7 +2019,7 @@ msgid "enarmoring failed: %s\n"
 msgstr "ошибка преобразования в ASCII формат: %s\n"
 
 #, c-format
-msgid "invalid hash algorithm `%s'\n"
+msgid "invalid hash algorithm '%s'\n"
 msgstr "недопустимая хэш-функция `%s'\n"
 
 msgid "[filename]"
@@ -2061,7 +2061,7 @@ msgid "No help available"
 msgstr "Нет доступной справки"
 
 #, c-format
-msgid "No help available for `%s'"
+msgid "No help available for '%s'"
 msgstr "Нет справки для `%s'"
 
 msgid "import signatures that are marked as local-only"
@@ -2220,11 +2220,11 @@ msgid "no writable keyring found: %s\n"
 msgstr "нет доступной для записи таблицы ключей: %s\n"
 
 #, c-format
-msgid "writing to `%s'\n"
+msgid "writing to '%s'\n"
 msgstr "сохраняю в `%s'\n"
 
 #, c-format
-msgid "error writing keyring `%s': %s\n"
+msgid "error writing keyring '%s': %s\n"
 msgstr "ошибка записи таблицы ключей `%s': %s\n"
 
 #, c-format
@@ -2421,15 +2421,15 @@ msgid "NOTE: secondary key is online and stored on card\n"
 msgstr "ПРЕДУПРЕЖДАЮ: вторичный ключ готов и сохранен в карте\n"
 
 #, c-format
-msgid "error creating keyring `%s': %s\n"
+msgid "error creating keyring '%s': %s\n"
 msgstr "ошибка создания таблицы ключей `%s': %s\n"
 
 #, c-format
-msgid "keyring `%s' created\n"
+msgid "keyring '%s' created\n"
 msgstr "создана таблица ключей `%s'\n"
 
 #, c-format
-msgid "keyblock resource `%s': %s\n"
+msgid "keyblock resource '%s': %s\n"
 msgstr ""
 
 #, c-format
@@ -2619,7 +2619,7 @@ msgstr "   (2) Я проверил частично.%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Я проверил очень тщательно.%s\n"
 
-msgid "Your selection? (enter `?' for more information): "
+msgid "Your selection? (enter '?' for more information): "
 msgstr "Ваше решение? (введите '?' для получения информации)"
 
 #, c-format
@@ -2851,7 +2851,7 @@ msgid "Hint: Select the user IDs to sign\n"
 msgstr "Совет: Выберите User ID для подписания\n"
 
 #, c-format
-msgid "Unknown signature type `%s'\n"
+msgid "Unknown signature type '%s'\n"
 msgstr "Неизвестный тип подписи `%s'\n"
 
 #, c-format
@@ -2882,11 +2882,11 @@ msgid "Command expects a filename argument\n"
 msgstr "Команда ожидает аргумент: имя файла\n"
 
 #, c-format
-msgid "Can't open `%s': %s\n"
+msgid "Can't open '%s': %s\n"
 msgstr "Не могу открыть `%s': %s\n"
 
 #, c-format
-msgid "Error reading backup key from `%s': %s\n"
+msgid "Error reading backup key from '%s': %s\n"
 msgstr "Ошибка чтения резервного ключа с `%s': %s\n"
 
 msgid "You must select at least one key.\n"
@@ -3242,7 +3242,7 @@ msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Показ %s фото ID размера %ld для ключа %s (uid %d)\n"
 
 #, c-format
-msgid "preference `%s' duplicated\n"
+msgid "preference '%s' duplicated\n"
 msgstr "предпочтение `%s' дублируется\n"
 
 msgid "too many cipher preferences\n"
@@ -3255,7 +3255,7 @@ msgid "too many compression preferences\n"
 msgstr "слишком много предпочтений для методов сжатия\n"
 
 #, c-format
-msgid "invalid item `%s' in preference string\n"
+msgid "invalid item '%s' in preference string\n"
 msgstr "недопустимое вхождение `%s' в строке предпочтений\n"
 
 msgid "writing direct signature\n"
@@ -3496,7 +3496,7 @@ msgid "Invalid character in comment\n"
 msgstr "Недопустимый символ в комментарии\n"
 
 #, c-format
-msgid "You are using the `%s' character set.\n"
+msgid "You are using the '%s' character set.\n"
 msgstr "Используемая таблица символов: `%s'.\n"
 
 #, c-format
@@ -3583,15 +3583,15 @@ msgid "Key generation canceled.\n"
 msgstr "Создание ключа прервано.\n"
 
 #, c-format
-msgid "writing public key to `%s'\n"
+msgid "writing public key to '%s'\n"
 msgstr "сохранение открытого ключа в `%s'\n"
 
 #, c-format
-msgid "writing secret key stub to `%s'\n"
+msgid "writing secret key stub to '%s'\n"
 msgstr "сохранение заглушки секретного ключа в `%s'\n"
 
 #, c-format
-msgid "writing secret key to `%s'\n"
+msgid "writing secret key to '%s'\n"
 msgstr "сохранение секретного ключа в `%s'\n"
 
 #, c-format
@@ -3603,11 +3603,11 @@ msgid "no writable secret keyring found: %s\n"
 msgstr "нет доступной для записи таблицы закрытых ключей: %s\n"
 
 #, c-format
-msgid "error writing public keyring `%s': %s\n"
+msgid "error writing public keyring '%s': %s\n"
 msgstr "ошибка записи таблицы открытых ключей `%s': %s\n"
 
 #, c-format
-msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing secret keyring '%s': %s\n"
 msgstr "ошибка записи таблицы секретных ключей `%s': %s\n"
 
 msgid "public and secret key created and signed.\n"
@@ -3647,11 +3647,11 @@ msgid "storing key onto card failed: %s\n"
 msgstr "сбой сохранения ключа на карту: %s\n"
 
 #, c-format
-msgid "can't create backup file `%s': %s\n"
+msgid "can't create backup file '%s': %s\n"
 msgstr "не могу создать резервную копию, файл `%s': %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to `%s'\n"
+msgid "NOTE: backup of card key saved to '%s'\n"
 msgstr "ЗАМЕЧАНИЕ: архивная копия ключа карты сохранена в `%s'\n"
 
 msgid "never     "
@@ -3696,7 +3696,7 @@ msgid "      Card serial no. ="
 msgstr ""
 
 #, c-format
-msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "при переименовании `%s' в `%s' произошел сбой: %s\n"
 
 msgid "WARNING: 2 files with confidential information exists.\n"
@@ -3714,7 +3714,7 @@ msgid "Please fix this possible security flaw\n"
 msgstr "Исправьте эту прореху безопасности\n"
 
 #, c-format
-msgid "caching keyring `%s'\n"
+msgid "caching keyring '%s'\n"
 msgstr "кеширую связки ключей `%s'\n"
 
 #, c-format
@@ -3751,7 +3751,7 @@ msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 
 #, c-format
-msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr ""
 "ВНИМАНИЕ: параметр сервера ключей `%s' не используется на данной платформе\n"
 
@@ -3821,11 +3821,11 @@ msgid "external keyserver calls are not supported in this build\n"
 msgstr "данная сборка не поддерживает внешние вызовы для сервера ключей.\n"
 
 #, c-format
-msgid "no handler for keyserver scheme `%s'\n"
+msgid "no handler for keyserver scheme '%s'\n"
 msgstr "нет обработчика для схемы сервера ключей `%s'\n"
 
 #, c-format
-msgid "action `%s' not supported with keyserver scheme `%s'\n"
+msgid "action '%s' not supported with keyserver scheme '%s'\n"
 msgstr "действие `%s' не поддерживается схемой сервера ключей `%s'\n"
 
 #, c-format
@@ -4033,7 +4033,7 @@ msgid "invalid root packet detected in proc_tree()\n"
 msgstr ""
 
 #, c-format
-msgid "fstat of `%s' failed in %s: %s\n"
+msgid "fstat of '%s' failed in %s: %s\n"
 msgstr ""
 
 #, c-format
@@ -4108,15 +4108,15 @@ msgid "this message may not be usable by %s\n"
 msgstr "данное сообщение может быть не пригодно для %s\n"
 
 #, c-format
-msgid "ambiguous option `%s'\n"
+msgid "ambiguous option '%s'\n"
 msgstr "двусмысленный параметр `%s'\n"
 
 #, c-format
-msgid "unknown option `%s'\n"
+msgid "unknown option '%s'\n"
 msgstr "неизвестный параметр `%s'\n"
 
 #, c-format
-msgid "File `%s' exists. "
+msgid "File '%s' exists. "
 msgstr "Файл `%s' существует. "
 
 msgid "Overwrite? (y/N) "
@@ -4133,15 +4133,15 @@ msgid "writing to stdout\n"
 msgstr "Вывод в stdout\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "принятие подписанных данных в `%s'\n"
 
 #, c-format
-msgid "new configuration file `%s' created\n"
+msgid "new configuration file '%s' created\n"
 msgstr "создан новый файл настроек `%s'\n"
 
 #, c-format
-msgid "WARNING: options in `%s' are not yet active during this run\n"
+msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr "ВНИМАНИЕ: параметры в `%s' еще не активны при этом запуске\n"
 
 #, c-format
@@ -4216,7 +4216,7 @@ msgid "Enter JPEG filename for photo ID: "
 msgstr "Введите имя JPEG файла для Фото ID: "
 
 #, c-format
-msgid "unable to open JPEG file `%s': %s\n"
+msgid "unable to open JPEG file '%s': %s\n"
 msgstr "Не могу открыть JPEG файл `%s': %s\n"
 
 #, c-format
@@ -4227,7 +4227,7 @@ msgid "Are you sure you want to use it? (y/N) "
 msgstr "Действительно хотите использовать его? (y/N)"
 
 #, c-format
-msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not a JPEG file\n"
 msgstr "`%s' - не JPEG файл\n"
 
 msgid "Is this photo correct (y/N/q)? "
@@ -4365,11 +4365,11 @@ msgid "Note: This key has been disabled.\n"
 msgstr "Замечание: Данный ключ отключен.\n"
 
 #, c-format
-msgid "Note: Verified signer's address is `%s'\n"
+msgid "Note: Verified signer's address is '%s'\n"
 msgstr "ЗАМЕЧАНИЕ: Проверенный адрес подписавшего `%s'\n"
 
 #, c-format
-msgid "Note: Signer's address `%s' does not match DNS entry\n"
+msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "ЗАМЕЧАНИЕ: Адрес подписавшего `%s' не соответствует формату DNS\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
@@ -4470,7 +4470,7 @@ msgid "no signed data\n"
 msgstr "не подписанные данные\n"
 
 #, c-format
-msgid "can't open signed data `%s'\n"
+msgid "can't open signed data '%s'\n"
 msgstr "не могу открыть подписанные данные `%s'\n"
 
 #, c-format
@@ -4775,7 +4775,7 @@ msgstr ""
 "# (Используйте \"gpg --import-ownertrust\" для их восстановления)\n"
 
 #, c-format
-msgid "error in `%s': %s\n"
+msgid "error in '%s': %s\n"
 msgstr "ошибка в `%s': %s\n"
 
 msgid "line too long"
@@ -4791,11 +4791,11 @@ msgid "ownertrust value missing"
 msgstr "пропущено значение степени доверия владельцу"
 
 #, c-format
-msgid "error finding trust record in `%s': %s\n"
+msgid "error finding trust record in '%s': %s\n"
 msgstr "ошибка при поиске записи о доверии в `%s': %s\n"
 
 #, c-format
-msgid "read error in `%s': %s\n"
+msgid "read error in '%s': %s\n"
 msgstr "ошибка чтения в `%s': %s\n"
 
 #, c-format
@@ -4814,7 +4814,7 @@ msgid "trustdb transaction too large\n"
 msgstr "trustdb транзакция слишком длинная\n"
 
 #, c-format
-msgid "can't access `%s': %s\n"
+msgid "can't access '%s': %s\n"
 msgstr "нет доступа к `%s': %s\n"
 
 #, c-format
@@ -4822,11 +4822,11 @@ msgid "%s: directory does not exist!\n"
 msgstr "%s: каталог не существует!\n"
 
 #, c-format
-msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
 msgstr "невозможно создать блокировку для `%s'\n"
 
 #, c-format
-msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
 msgstr "невозможно заблокировать `%s'\n"
 
 #, c-format
@@ -4913,7 +4913,7 @@ msgid "input line longer than %d characters\n"
 msgstr "введенная строка превышает %d символов\n"
 
 #, c-format
-msgid "`%s' is not a valid long keyID\n"
+msgid "'%s' is not a valid long keyID\n"
 msgstr "`%s' не является допустимым длинным ID ключа\n"
 
 #, c-format
@@ -5002,11 +5002,11 @@ msgid "next trustdb check due at %s\n"
 msgstr "срок следующей проверки таблицы доверий %s\n"
 
 #, c-format
-msgid "no need for a trustdb check with `%s' trust model\n"
+msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr "нет необходимости проверять таблицу доверий при `%s' модели доверий\n"
 
 #, c-format
-msgid "no need for a trustdb update with `%s' trust model\n"
+msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "нет необходимости обновлять таблицу доверий при '%s' модели доверий\n"
 
 #, c-format
@@ -5120,11 +5120,11 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "Вы нашли ошибку ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
+msgid "error loading '%s': %s\n"
 msgstr "ошибка загрузки `%s': %s\n"
 
 #, c-format
-msgid "conversion from `%s' to `%s' not available\n"
+msgid "conversion from '%s' to '%s' not available\n"
 msgstr "преобразование из `%s' в `%s' недоступно\n"
 
 #, c-format
@@ -5132,15 +5132,15 @@ msgid "iconv_open failed: %s\n"
 msgstr ""
 
 #, c-format
-msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "conversion from '%s' to '%s' failed: %s\n"
 msgstr "сбой преобразования `%s' в `%s': %s\n"
 
 #, c-format
-msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary file '%s': %s\n"
 msgstr "невозможно создание временного файла `%s': %s\n"
 
 #, c-format
-msgid "error writing to `%s': %s\n"
+msgid "error writing to '%s': %s\n"
 msgstr "ошибка записи в `%s': %s\n"
 
 #, c-format
@@ -5158,7 +5158,7 @@ msgid "(deadlock?) "
 msgstr ""
 
 #, c-format
-msgid "lock `%s' not made: %s\n"
+msgid "lock '%s' not made: %s\n"
 msgstr ""
 
 #, c-format
@@ -5429,7 +5429,7 @@ msgstr ""
 "Синтаксис: scdaemon [параметры] [команда [аргументы]]\n"
 "Демон смарткарт для GnuPG\n"
 
-msgid "please use the option `--daemon' to run the program in the background\n"
+msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 "Используйте параметр `--daemon' для запуска приложения в фоновом режиме\n"
 
@@ -5450,7 +5450,7 @@ msgid "failed to proxy %s inquiry to client\n"
 msgstr ""
 
 #, c-format
-msgid "no running dirmngr - starting `%s'\n"
+msgid "no running dirmngr - starting '%s'\n"
 msgstr "нет запущеного dirmngr - запуск `%s'\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
@@ -5484,7 +5484,7 @@ msgid "critical marked policy without configured policies"
 msgstr "помеченная критичной политика без настроенных политик"
 
 #, c-format
-msgid "failed to open `%s': %s\n"
+msgid "failed to open '%s': %s\n"
 msgstr "не могу открыть `%s': %s\n"
 
 msgid "note: non-critical certificate policy not allowed"
@@ -5716,11 +5716,11 @@ msgid "line %d: no subject name given\n"
 msgstr ""
 
 #, c-format
-msgid "line %d: invalid subject name label `%.*s'\n"
+msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr ""
 
 #, c-format
-msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid subject name '%s' at pos %d\n"
 msgstr ""
 
 #, c-format
@@ -5728,11 +5728,11 @@ msgid "line %d: not a valid email address\n"
 msgstr "строка %d: нет допустимого e-mail адреса\n"
 
 #, c-format
-msgid "line %d: error reading key `%s' from card: %s\n"
+msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "строка %d: ошибка получения ключа `%s' из карты %s\n"
 
 #, c-format
-msgid "line %d: error getting key by keygrip `%s': %s\n"
+msgid "line %d: error getting key by keygrip '%s': %s\n"
 msgstr "строка %d: ошибка получения keygrip ключа `%s': %s\n"
 
 #, c-format
@@ -5802,7 +5802,7 @@ msgid "No subject name given\n"
 msgstr ""
 
 #, c-format
-msgid "Invalid subject name label `%.*s'\n"
+msgid "Invalid subject name label '%.*s'\n"
 msgstr ""
 
 #. TRANSLATORS: The 22 in the second string is the
@@ -5811,7 +5811,7 @@ msgstr ""
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
 #, c-format
-msgid "Invalid subject name `%s'\n"
+msgid "Invalid subject name '%s'\n"
 msgstr ""
 
 msgid "22 translator: see certreg-ui.c:gpgsm_gencertreq_tty"
@@ -5852,7 +5852,7 @@ msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(это не похоже не зашифрованное сообщение)\n"
 
 #, c-format
-msgid "certificate `%s' not found: %s\n"
+msgid "certificate '%s' not found: %s\n"
 msgstr "сертификат `%s' не найден: %s\n"
 
 #, c-format
@@ -5860,11 +5860,11 @@ msgid "error locking keybox: %s\n"
 msgstr "ошибка блокировки keybox: %s\n"
 
 #, c-format
-msgid "duplicated certificate `%s' deleted\n"
+msgid "duplicated certificate '%s' deleted\n"
 msgstr "дупликат сертификата `%s' удален\n"
 
 #, c-format
-msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' deleted\n"
 msgstr "сертификат `%s' удален\n"
 
 #, c-format
@@ -5981,11 +5981,11 @@ msgid "usage: gpgsm [options] "
 msgstr "использование: gpgsm [параметры] "
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "Замечание: не могу зашифровать для `%s': %s\n"
 
 #, c-format
-msgid "unknown validation model `%s'\n"
+msgid "unknown validation model '%s'\n"
 msgstr ""
 
 #, c-format
@@ -6007,11 +6007,11 @@ msgid "WARNING: running with faked system time: "
 msgstr "ВНИМАНИЕ: выполняемся с подделанным системным временем: "
 
 #, c-format
-msgid "importing common certificates `%s'\n"
+msgid "importing common certificates '%s'\n"
 msgstr ""
 
 #, c-format
-msgid "can't sign using `%s': %s\n"
+msgid "can't sign using '%s': %s\n"
 msgstr "невозможно подписать используя `%s': %s\n"
 
 msgid "invalid command (there is no implicit command)\n"
@@ -6043,14 +6043,14 @@ msgid "error reading input: %s\n"
 msgstr "ошибка чтения ввода: %s\n"
 
 #, c-format
-msgid "error creating keybox `%s': %s\n"
+msgid "error creating keybox '%s': %s\n"
 msgstr "ошибка создания keybox `%s': %s\n"
 
 msgid "you may want to start the gpg-agent first\n"
 msgstr "возможно следует запустить gpg-agent сперва\n"
 
 #, c-format
-msgid "keybox `%s' created\n"
+msgid "keybox '%s' created\n"
 msgstr "создан keybox `%s'\n"
 
 msgid "failed to get the fingerprint\n"
@@ -6084,11 +6084,11 @@ msgstr ""
 "GPG_TTY не установлено - возможно использование подделанного  умолчания\n"
 
 #, c-format
-msgid "invalid formatted fingerprint in `%s', line %d\n"
+msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "неверное сформатированный отпечаток в `%s', строка %d\n"
 
 #, c-format
-msgid "invalid country code in `%s', line %d\n"
+msgid "invalid country code in '%s', line %d\n"
 msgstr "недопустисый код страны в `%s', строка %d\n"
 
 #, c-format
@@ -6205,7 +6205,7 @@ msgid "line shortened due to embedded Nul character\n"
 msgstr ""
 
 #, c-format
-msgid "unknown command `%s'\n"
+msgid "unknown command '%s'\n"
 msgstr "неизвестная команда `%s'\n"
 
 #, c-format
@@ -6426,7 +6426,7 @@ msgid "%s on %s failed with status %i\n"
 msgstr "сбой %s над %s, статус %i\n"
 
 #, c-format
-msgid "can't create temporary directory `%s': %s\n"
+msgid "can't create temporary directory '%s': %s\n"
 msgstr "невозможно создание временного каталога `%s': %s\n"
 
 #, c-format

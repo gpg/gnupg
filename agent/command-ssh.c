@@ -684,7 +684,7 @@ open_control_file (FILE **r_fp, int append)
       if (!stream)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't create `%s': %s\n"), fname, gpg_strerror (err));
+          log_error (_("can't create '%s': %s\n"), fname, gpg_strerror (err));
           xfree (fname);
           return err;
         }
@@ -696,7 +696,7 @@ open_control_file (FILE **r_fp, int append)
   if (!fp)
     {
       err = gpg_error (gpg_err_code_from_errno (errno));
-      log_error (_("can't open `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
       xfree (fname);
       return err;
     }
@@ -769,7 +769,7 @@ search_control_file (FILE *fp, const char *hexgrip,
       goto next_line;
   if (i != 40 || !(spacep (p) || *p == '\n'))
     {
-      log_error ("invalid formatted line in `%s', line %d\n", fname, lnr);
+      log_error ("invalid formatted line in '%s', line %d\n", fname, lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 
@@ -777,7 +777,7 @@ search_control_file (FILE *fp, const char *hexgrip,
   p = pend;
   if (!(spacep (p) || *p == '\n') || ttl < -1)
     {
-      log_error ("invalid TTL value in `%s', line %d; assuming 0\n",
+      log_error ("invalid TTL value in '%s', line %d; assuming 0\n",
                  fname, lnr);
       ttl = 0;
     }
@@ -795,7 +795,7 @@ search_control_file (FILE *fp, const char *hexgrip,
       if (p[n] == '=')
         {
           log_error ("assigning a value to a flag is not yet supported; "
-                     "in `%s', line %d; flag ignored\n", fname, lnr);
+                     "in '%s', line %d; flag ignored\n", fname, lnr);
           p++;
         }
       else if (n == 7 && !memcmp (p, "confirm", 7))
@@ -804,7 +804,7 @@ search_control_file (FILE *fp, const char *hexgrip,
             *r_confirm = 1;
         }
       else
-        log_error ("invalid flag `%.*s' in `%s', line %d; ignored\n",
+        log_error ("invalid flag '%.*s' in '%s', line %d; ignored\n",
                    n, p, fname, lnr);
       p += n;
     }

@@ -275,7 +275,7 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
           break;
         }
       if (opt.verbose || !*action)
-        log_info ("error reading certificate `%s': %s%s\n",
+        log_info ("error reading certificate '%s': %s%s\n",
                   id? id:"?", gpg_strerror (rc), action);
 
       return *action? 0 : rc;

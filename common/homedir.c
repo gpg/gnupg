@@ -237,7 +237,7 @@ w32_rootdir (void)
         }
       if (!p)
         {
-          log_debug ("bad filename `%s' returned for this process\n", dir);
+          log_debug ("bad filename '%s' returned for this process\n", dir);
           *dir = 0;
         }
     }

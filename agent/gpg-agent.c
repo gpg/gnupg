@@ -394,7 +394,7 @@ set_debug (void)
     }
   else
     {
-      log_error (_("invalid debug-level `%s' given\n"), debug_level);
+      log_error (_("invalid debug-level '%s' given\n"), debug_level);
       opt.debug = 0; /* Reset debugging, so that prior debug
                         statements won't have an undesired effect. */
     }
@@ -727,7 +727,7 @@ main (int argc, char **argv )
           if (default_config)
             {
               if( parse_debug )
-                log_info (_("NOTE: no default option file `%s'\n"),
+                log_info (_("NOTE: no default option file '%s'\n"),
                           configname );
               /* Save the default conf file name so that
                  reread_configuration is able to test whether the
@@ -738,7 +738,7 @@ main (int argc, char **argv )
 	    }
           else
             {
-              log_error (_("option file `%s': %s\n"),
+              log_error (_("option file '%s': %s\n"),
                          configname, strerror(errno) );
               exit(2);
 	    }
@@ -746,7 +746,7 @@ main (int argc, char **argv )
           configname = NULL;
 	}
       if (parse_debug && configname )
-        log_info (_("reading options from `%s'\n"), configname );
+        log_info (_("reading options from '%s'\n"), configname );
       default_config = 0;
     }
 
@@ -858,7 +858,7 @@ main (int argc, char **argv )
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
 #ifdef ENABLE_NLS
@@ -1117,7 +1117,7 @@ main (int argc, char **argv )
 
               fp = es_fopen (env_file_name, "w,mode=-rw");
               if (!fp)
-                log_error (_("error creating `%s': %s\n"),
+                log_error (_("error creating '%s': %s\n"),
                              env_file_name, strerror (errno));
               else
                 {
@@ -1213,7 +1213,7 @@ main (int argc, char **argv )
                   if ( ! close (i)
                        && open ("/dev/null", i? O_WRONLY : O_RDONLY) == -1)
                     {
-                      log_error ("failed to open `%s': %s\n",
+                      log_error ("failed to open '%s': %s\n",
                                  "/dev/null", strerror (errno));
                       cleanup ();
                       exit (1);
@@ -1352,7 +1352,7 @@ reread_configuration (void)
   fp = fopen (config_filename, "r");
   if (!fp)
     {
-      log_info (_("option file `%s': %s\n"),
+      log_info (_("option file '%s': %s\n"),
                 config_filename, strerror(errno) );
       return;
     }
@@ -1472,7 +1472,7 @@ create_socket_name (char *standard_name, char *template)
       *p = 0;
       if (!mkdtemp (name))
 	{
-	  log_error (_("can't create directory `%s': %s\n"),
+	  log_error (_("can't create directory '%s': %s\n"),
 		     name, strerror (errno));
 	  agent_exit (2);
 	}
@@ -1481,7 +1481,7 @@ create_socket_name (char *standard_name, char *template)
 
   if (strchr (name, PATHSEP_C))
     {
-      log_error (("`%s' are not allowed in the socket name\n"), PATHSEP_S);
+      log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
       agent_exit (2);
     }
   if (strlen (name) + 1 >= DIMof (struct sockaddr_un, sun_path) )
@@ -1518,7 +1518,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
   serv_addr->sun_family = AF_UNIX;
   if (strlen (name) + 1 >= sizeof (serv_addr->sun_path))
     {
-      log_error (_("socket name `%s' is too long\n"), name);
+      log_error (_("socket name '%s' is too long\n"), name);
       agent_exit (2);
     }
   strcpy (serv_addr->sun_path, name);
@@ -1562,7 +1562,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
     {
       /* We use gpg_strerror here because it allows us to get strings
          for some W32 socket error codes.  */
-      log_error (_("error binding socket to `%s': %s\n"),
+      log_error (_("error binding socket to '%s': %s\n"),
 		 serv_addr->sun_path,
                  gpg_strerror (gpg_error_from_errno (errno)));
 
@@ -1580,7 +1580,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
     }
 
   if (opt.verbose)
-    log_info (_("listening on socket `%s'\n"), serv_addr->sun_path);
+    log_info (_("listening on socket '%s'\n"), serv_addr->sun_path);
 
   return fd;
 }
@@ -1599,10 +1599,10 @@ create_private_keys_directory (const char *home)
   if (stat (fname, &statbuf) && errno == ENOENT)
     {
       if (gnupg_mkdir (fname, "-rwx"))
-        log_error (_("can't create directory `%s': %s\n"),
+        log_error (_("can't create directory '%s': %s\n"),
                    fname, strerror (errno) );
       else if (!opt.quiet)
-        log_info (_("directory `%s' created\n"), fname);
+        log_info (_("directory '%s' created\n"), fname);
     }
   xfree (fname);
 }
@@ -1638,22 +1638,22 @@ create_directories (void)
                )
             {
               if (gnupg_mkdir (home, "-rwx"))
-                log_error (_("can't create directory `%s': %s\n"),
+                log_error (_("can't create directory '%s': %s\n"),
                            home, strerror (errno) );
               else
                 {
                   if (!opt.quiet)
-                    log_info (_("directory `%s' created\n"), home);
+                    log_info (_("directory '%s' created\n"), home);
                   create_private_keys_directory (home);
                 }
             }
         }
       else
-        log_error (_("stat() failed for `%s': %s\n"), home, strerror (errno));
+        log_error (_("stat() failed for '%s': %s\n"), home, strerror (errno));
     }
   else if ( !S_ISDIR(statbuf.st_mode))
     {
-      log_error (_("can't use `%s' as home directory\n"), home);
+      log_error (_("can't use '%s' as home directory\n"), home);
     }
   else /* exists and is a directory. */
     {

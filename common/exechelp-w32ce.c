@@ -636,7 +636,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       return err;
     }
 
-  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline);
   if (!create_process (pgmname, cmdline, &pi))
     {
       log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
@@ -698,7 +698,7 @@ gnupg_spawn_process_fd (const char *pgmname, const char *argv[],
   if (err)
     return err;
 
-  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline);
   if (!create_process (pgmname, cmdline, &pi))
     {
       log_error ("CreateProcess(fd) failed: %s\n", w32_strerror (-1));
@@ -762,7 +762,7 @@ gnupg_wait_process (const char *pgmname, pid_t pid, int hang, int *exitcode)
           }
       else if (exc)
         {
-          log_error (_("error running `%s': exit status %d\n"),
+          log_error (_("error running '%s': exit status %d\n"),
                        pgmname, (int)exc );
           if (exitcode)
             *exitcode = (int)exc;
@@ -822,7 +822,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
     return err;
 
   /* Note: There is no detached flag under CE.  */
-  log_debug ("CreateProcess, path=`%s' cmdline=`%s'\n", pgmname, cmdline);
+  log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline);
   if (!create_process (pgmname, cmdline, &pi))
     {
       log_error ("CreateProcess(detached) failed: %s\n", w32_strerror (-1));

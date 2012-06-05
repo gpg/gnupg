@@ -208,7 +208,7 @@ send_key(int *r_eof)
   append_path(request,"/pks/add");
 
   if(opt->verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is '%s'\n",request);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_POST,1L);
@@ -289,7 +289,7 @@ get_key(char *getkey)
   strcat(request,offset);
 
   if(opt->verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is '%s'\n",request);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
@@ -358,7 +358,7 @@ get_name(const char *getkey)
   fprintf(output,"NAME %s BEGIN\n",getkey);
 
   if(opt->verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is '%s'\n",request);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_writer);
@@ -446,7 +446,7 @@ search_key(const char *searchkey)
   fprintf(output,"SEARCH %s BEGIN\n",searchkey);
 
   if(opt->verbose>2)
-    fprintf(console,"gpgkeys: HTTP URL is `%s'\n",request);
+    fprintf(console,"gpgkeys: HTTP URL is '%s'\n",request);
 
   curl_easy_setopt(curl,CURLOPT_URL,request);
   curl_easy_setopt(curl,CURLOPT_WRITEFUNCTION,curl_mrindex_writer);
@@ -596,7 +596,7 @@ main(int argc,char *argv[])
 	output=fopen(optarg,"w");
 	if(output==NULL)
 	  {
-	    fprintf(console,"gpgkeys: Cannot open output file `%s': %s\n",
+	    fprintf(console,"gpgkeys: Cannot open output file '%s': %s\n",
 		    optarg,strerror(errno));
 	    return KEYSERVER_INTERNAL_ERROR;
 	  }
@@ -609,7 +609,7 @@ main(int argc,char *argv[])
       input=fopen(argv[optind],"r");
       if(input==NULL)
 	{
-	  fprintf(console,"gpgkeys: Cannot open input file `%s': %s\n",
+	  fprintf(console,"gpgkeys: Cannot open input file '%s': %s\n",
 		  argv[optind],strerror(errno));
 	  return KEYSERVER_INTERNAL_ERROR;
 	}

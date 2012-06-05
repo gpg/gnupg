@@ -56,7 +56,7 @@ extract_regular (estream_t stream, const char *dirname,
   if (!outfp)
     {
       err = gpg_error_from_syserror ();
-      log_error ("error creating `%s': %s\n", fname, gpg_strerror (err));
+      log_error ("error creating '%s': %s\n", fname, gpg_strerror (err));
       goto leave;
     }
 
@@ -71,7 +71,7 @@ extract_regular (estream_t stream, const char *dirname,
       if (nwritten != nbytes)
         {
           err = gpg_error_from_syserror ();
-          log_error ("error writing `%s': %s\n", fname, gpg_strerror (err));
+          log_error ("error writing '%s': %s\n", fname, gpg_strerror (err));
           goto leave;
         }
     }
@@ -79,12 +79,12 @@ extract_regular (estream_t stream, const char *dirname,
 
  leave:
   if (!err && opt.verbose)
-    log_info ("extracted `%s'\n", fname);
+    log_info ("extracted '%s'\n", fname);
   es_fclose (outfp);
   if (err && fname && outfp)
     {
       if (gnupg_remove (fname))
-        log_error ("error removing incomplete file `%s': %s\n",
+        log_error ("error removing incomplete file '%s': %s\n",
                    fname, gpg_strerror (gpg_error_from_syserror ()));
     }
   xfree (fname);
@@ -137,13 +137,13 @@ extract_directory (const char *dirname, tar_header_t hdr)
             err = 0;
         }
       if (err)
-        log_error ("error creating directory `%s': %s\n",
+        log_error ("error creating directory '%s': %s\n",
                    fname, gpg_strerror (err));
     }
 
  leave:
   if (!err && opt.verbose)
-    log_info ("created   `%s/'\n", fname);
+    log_info ("created   '%s/'\n", fname);
   xfree (fname);
   return err;
 }
@@ -159,7 +159,7 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
 #ifdef HAVE_DOSISH_SYSTEM
   if (strchr (hdr->name, '\\'))
     {
-      log_error ("filename `%s' contains a backslash - "
+      log_error ("filename '%s' contains a backslash - "
                  "can't extract on this system\n", hdr->name);
       return gpg_error (GPG_ERR_INV_NAME);
     }
@@ -171,7 +171,7 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
       || !strncmp (hdr->name, "../", 3)
       || (n >= 3 && !strcmp (hdr->name+n-3, "/.." )))
     {
-      log_error ("filename `%s' as suspicious parts - not extracting\n",
+      log_error ("filename '%s' as suspicious parts - not extracting\n",
                  hdr->name);
       return gpg_error (GPG_ERR_INV_NAME);
     }
@@ -184,7 +184,7 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
     {
       char record[RECORDSIZE];
 
-      log_info ("unsupported file type %d for `%s' - skipped\n",
+      log_info ("unsupported file type %d for '%s' - skipped\n",
                 (int)hdr->typeflag, hdr->name);
       for (err = 0, n=0; !err && n < hdr->nrecords; n++)
         err = read_record (stream, record);
@@ -278,7 +278,7 @@ gpgtar_extract (const char *filename)
       if (!stream)
         {
           err = gpg_error_from_syserror ();
-          log_error ("error opening `%s': %s\n", filename, gpg_strerror (err));
+          log_error ("error opening '%s': %s\n", filename, gpg_strerror (err));
           return;
         }
     }
@@ -316,7 +316,7 @@ gpgtar_extract (const char *filename)
     }
 
   if (opt.verbose)
-    log_info ("extracting to `%s/'\n", dirname);
+    log_info ("extracting to '%s/'\n", dirname);
 
   for (;;)
     {

@@ -199,7 +199,7 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
       /* Send stdout to the bit bucket. */
       fd = open ("/dev/null", O_WRONLY);
       if (fd == -1)
-        die ("can't open `/dev/null': %s", strerror (errno));
+        die ("can't open '/dev/null': %s", strerror (errno));
       if (fd != 1)
 	{
           if (dup2 (fd, 1) == -1)
@@ -517,7 +517,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                   strcpy (stpcpy (stpcpy (buf, s1), "/"), s2);
                   assert (info->signing_protocol);
                   if (strcmp (buf, info->signing_protocol))
-                    err ("invalid %s structure; expected `%s', found `%s'",
+                    err ("invalid %s structure; expected '%s', found '%s'",
                          info->is_smime? "S/MIME":"PGP/MIME",
                          info->signing_protocol, buf);
                   else
@@ -654,7 +654,7 @@ parse_message (FILE *fp)
           /* Delay hashing of the CR/LF because the last line ending
              belongs to the next boundary. */
           if (debug)
-            printf ("# hashing %s`%s'\n", info.hashing==2?"CR,LF+":"", line);
+            printf ("# hashing %s'%s'\n", info.hashing==2?"CR,LF+":"", line);
           if (opt_crypto)
             {
               if (info.hashing == 2)
@@ -791,7 +791,7 @@ main (int argc, char **argv)
     {
       FILE *fp = fopen (*argv, "rb");
       if (!fp)
-        die ("can't open `%s': %s", *argv, strerror (errno));
+        die ("can't open '%s': %s", *argv, strerror (errno));
       parse_message (fp);
       fclose (fp);
     }

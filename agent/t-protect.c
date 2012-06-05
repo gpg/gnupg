@@ -107,7 +107,7 @@ test_agent_protect (void)
       "\xA4\x44\x3B\xA5\x3A\x52\xFC\xA8\x17\x3D\xE6\xE8\x5B\x42\xF9\x78\x3D\x4A\x78\x17"
       "\xD0\x68\x0B\x29\x29\x00"
     };
-  /* This RSA key is the `e' value.  */
+  /* This RSA key is the 'e' value.  */
   struct key_spec key_rsa_bogus_1 =
     {
       "\x28\x31\x31\x3A\x70\x72\x69\x76\x61\x74\x65\x2D\x6B\x65\x79\x28\x33\x3A\x72\x73"
@@ -177,7 +177,7 @@ test_agent_protect (void)
 			   &specs[i].result, &specs[i].resultlen, 0);
       if (gpg_err_code (ret) != specs[i].ret_expected)
 	{
-	  printf ("agent_protect() returned `%i/%s'; expected `%i/%s'\n",
+	  printf ("agent_protect() returned '%i/%s'; expected '%i/%s'\n",
 		  ret, gpg_strerror (ret),
 		  specs[i].ret_expected, gpg_strerror (specs[i].ret_expected));
 	  abort ();

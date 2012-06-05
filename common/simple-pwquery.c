@@ -392,7 +392,7 @@ agent_open (int *rfd)
   if (rc == -1)
     {
 #ifdef SPWQ_USE_LOGGING
-      log_error ( _("can't connect to `%s': %s\n"), infostr, strerror (errno));
+      log_error ( _("can't connect to '%s': %s\n"), infostr, strerror (errno));
 #endif
       close (fd );
       return SPWQ_IO_ERROR;

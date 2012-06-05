@@ -318,7 +318,7 @@ default_inq_cb (void *opaque, const char *line)
       /* We do not pass errors to avoid breaking other code.  */
     }
   else
-    log_debug ("ignoring gpg-agent inquiry `%s'\n", line);
+    log_debug ("ignoring gpg-agent inquiry '%s'\n", line);
 
   return 0;
 }

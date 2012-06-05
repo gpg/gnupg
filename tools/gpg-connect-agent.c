@@ -470,7 +470,7 @@ arithmetic_op (int operator, const char *operands)
         case '|': result = result || value; break;
         case '&': result = result && value; break;
         default:
-          log_error ("unknown arithmetic operator `%c'\n", operator);
+          log_error ("unknown arithmetic operator '%c'\n", operator);
           return NULL;
         }
     }
@@ -581,7 +581,7 @@ get_var_ext (const char *name)
         result = xasprintf ("%d", (int)server_pid);
       else
         {
-          log_error ("invalid argument `%s' for variable function `get'\n", s);
+          log_error ("invalid argument '%s' for variable function 'get'\n", s);
           log_info  ("valid are: cwd, "
                      "{home,bin,lib,libexec,data}dir, serverpid\n");
           result = NULL;
@@ -640,7 +640,7 @@ get_var_ext (const char *name)
     }
   else
     {
-      log_error ("unknown variable function `%.*s'\n", (int)(s-name), name);
+      log_error ("unknown variable function '%.*s'\n", (int)(s-name), name);
       result = NULL;
     }
 
@@ -914,14 +914,14 @@ do_sendfd (assuan_context_t ctx, char *line)
   fp = fopen (name, mode);
   if (!fp)
     {
-      log_error ("can't open `%s' in \"%s\" mode: %s\n",
+      log_error ("can't open '%s' in \"%s\" mode: %s\n",
                  name, mode, strerror (errno));
       return;
     }
   fd = fileno (fp);
 
   if (opt.verbose)
-    log_error ("file `%s' opened in \"%s\" mode, fd=%d\n",
+    log_error ("file '%s' opened in \"%s\" mode, fd=%d\n",
                name, mode, fd);
 
   rc = assuan_sendfd (ctx, INT2FD (fd) );
@@ -990,7 +990,7 @@ do_open (char *line)
   fp = fopen (name, mode);
   if (!fp)
     {
-      log_error ("can't open `%s' in \"%s\" mode: %s\n",
+      log_error ("can't open '%s' in \"%s\" mode: %s\n",
                  name, mode, strerror (errno));
       return;
     }
@@ -1028,12 +1028,12 @@ do_open (char *line)
         open_fd_table[fd].handle = newhandle;
       }
       if (opt.verbose)
-        log_info ("file `%s' opened in \"%s\" mode, fd=%d  (libc=%d)\n",
+        log_info ("file '%s' opened in \"%s\" mode, fd=%d  (libc=%d)\n",
                    name, mode, (int)open_fd_table[fd].handle, fd);
       set_int_var (varname, (int)open_fd_table[fd].handle);
 #else
       if (opt.verbose)
-        log_info ("file `%s' opened in \"%s\" mode, fd=%d\n",
+        log_info ("file '%s' opened in \"%s\" mode, fd=%d\n",
                    name, mode, fd);
       set_int_var (varname, fd);
 #endif
@@ -1234,7 +1234,7 @@ main (int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: `%s' is not considered an option\n"), argv[i]);
+          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
 
@@ -1273,7 +1273,7 @@ main (int argc, char **argv)
 
   if (opt_run && !(script_fp = fopen (opt_run, "r")))
     {
-      log_error ("cannot open run file `%s': %s\n",
+      log_error ("cannot open run file '%s': %s\n",
                  opt_run, strerror (errno));
       exit (1);
     }
@@ -1305,7 +1305,7 @@ main (int argc, char **argv)
         }
 
       if (opt.verbose)
-        log_info ("server `%s' started\n", *argv);
+        log_info ("server '%s' started\n", *argv);
 
     }
   else if (opt.raw_socket)
@@ -1322,13 +1322,13 @@ main (int argc, char **argv)
 	 (opt.connect_flags & 1) ? ASSUAN_SOCKET_CONNECT_FDPASSING : 0);
       if (rc)
         {
-          log_error ("can't connect to socket `%s': %s\n",
+          log_error ("can't connect to socket '%s': %s\n",
                      opt.raw_socket, gpg_strerror (rc));
           exit (1);
         }
 
       if (opt.verbose)
-        log_info ("connection to socket `%s' established\n", opt.raw_socket);
+        log_info ("connection to socket '%s' established\n", opt.raw_socket);
     }
   else if (opt.tcp_socket)
     {
@@ -1346,13 +1346,13 @@ main (int argc, char **argv)
       rc = assuan_socket_connect (ctx, opt.tcp_socket, 0, 0);
       if (rc)
         {
-          log_error ("can't connect to server `%s': %s\n",
+          log_error ("can't connect to server '%s': %s\n",
                      opt.tcp_socket, gpg_strerror (rc));
           exit (1);
         }
 
       if (opt.verbose)
-        log_info ("connection to socket `%s' established\n", url);
+        log_info ("connection to socket '%s' established\n", url);
 
       xfree (url);
     }
@@ -1575,7 +1575,7 @@ main (int argc, char **argv)
                 {
                   current_datasink = fopen (fname, "wb");
                   if (!current_datasink)
-                    log_error ("can't open `%s': %s\n",
+                    log_error ("can't open '%s': %s\n",
                                fname, strerror (errno));
                 }
               xfree (tmpline);
@@ -1695,11 +1695,11 @@ main (int argc, char **argv)
                 }
               else if (!(script_fp = fopen (p, "r")))
                 {
-                  log_error ("cannot open run file `%s': %s\n",
+                  log_error ("cannot open run file '%s': %s\n",
                              p, strerror (errno));
                 }
               else if (opt.verbose)
-                log_info ("running commands from `%s'\n", p);
+                log_info ("running commands from '%s'\n", p);
             }
           else if (!strcmp (cmd, "while"))
             {
@@ -1834,7 +1834,7 @@ main (int argc, char **argv)
 "/help                  Print this help.");
             }
           else
-            log_error (_("unknown command `%s'\n"), cmd );
+            log_error (_("unknown command '%s'\n"), cmd );
 
           continue;
         }
@@ -1920,7 +1920,7 @@ handle_inquire (assuan_context_t ctx, char *line)
   if (!d)
     {
       if (opt.verbose)
-        log_info ("no handler for inquiry `%s' found\n", name);
+        log_info ("no handler for inquiry '%s' found\n", name);
       return 0;
     }
 
@@ -1942,19 +1942,19 @@ handle_inquire (assuan_context_t ctx, char *line)
           fp = popen (d->file, "r");
 #endif
           if (!fp)
-            log_error ("error executing `%s': %s\n",
+            log_error ("error executing '%s': %s\n",
                        d->file, strerror (errno));
           else if (opt.verbose)
-            log_error ("handling inquiry `%s' by running `%s'\n",
+            log_error ("handling inquiry '%s' by running '%s'\n",
                        name, d->file);
         }
       else
         {
           fp = fopen (d->file, "rb");
           if (!fp)
-            log_error ("error opening `%s': %s\n", d->file, strerror (errno));
+            log_error ("error opening '%s': %s\n", d->file, strerror (errno));
           else if (opt.verbose)
-            log_error ("handling inquiry `%s' by returning content of `%s'\n",
+            log_error ("handling inquiry '%s' by returning content of '%s'\n",
                        name, d->file);
         }
       if (!fp)
@@ -1970,7 +1970,7 @@ handle_inquire (assuan_context_t ctx, char *line)
             }
         }
       if (ferror (fp))
-        log_error ("error reading from `%s': %s\n", d->file, strerror (errno));
+        log_error ("error reading from '%s': %s\n", d->file, strerror (errno));
     }
 
   rc = assuan_send_data (ctx, NULL, 0);
@@ -1983,7 +1983,7 @@ handle_inquire (assuan_context_t ctx, char *line)
     {
 #ifndef HAVE_W32CE_SYSTEM
       if (pclose (fp))
-        log_error ("error running `%s': %s\n", d->file, strerror (errno));
+        log_error ("error running '%s': %s\n", d->file, strerror (errno));
 #endif
     }
   else

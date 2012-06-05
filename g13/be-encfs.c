@@ -82,7 +82,7 @@ run_umount_helper (const char *mountpoint)
 
   err = gnupg_spawn_process_detached (pgmname, args, NULL);
   if (err)
-    log_error ("failed to run `%s': %s\n",
+    log_error ("failed to run '%s': %s\n",
                pgmname, gpg_strerror (err));
 }
 
@@ -100,7 +100,7 @@ handle_status_line (runner_t runner, const char *line,
     {
       for (line +=8; *line && spacep (line); line++)
         ;
-      log_info ("got status `%s'\n", line);
+      log_info ("got status '%s'\n", line);
       if (!strcmp (line, "fuse_main_start"))
         {
           /* Send a special error code back to let the caller know
@@ -114,7 +114,7 @@ handle_status_line (runner_t runner, const char *line,
     {
       for (line +=8; *line && spacep (line); line++)
         ;
-      log_info ("got prompt `%s'\n", line);
+      log_info ("got prompt '%s'\n", line);
       if (!strcmp (line, "create_root_dir"))
         err = send_cmd (runner, cmd == ENCFS_CMD_CREATE? "y":"n");
       else if (!strcmp (line, "create_mount_point"))
@@ -270,7 +270,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
                                 outbound[0], -1, inbound[1], &pid);
   if (err)
     {
-      log_error ("error spawning `%s': %s\n", pgmname, gpg_strerror (err));
+      log_error ("error spawning '%s': %s\n", pgmname, gpg_strerror (err));
       goto leave;
     }
   close (outbound[0]); outbound[0] = -1;
@@ -291,7 +291,7 @@ run_encfs_tool (ctrl_t ctrl, enum encfs_cmds cmd,
     goto leave;
 
   *r_id = runner_get_rid (runner);
-  log_info ("running `%s' in the background\n", pgmname);
+  log_info ("running '%s' in the background\n", pgmname);
 
  leave:
   if (inbound[0] != -1)
@@ -418,7 +418,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
   if (!mkdtemp (mountpoint))
     {
       err = gpg_error_from_syserror ();
-      log_error (_("can't create directory `%s': %s\n"),
+      log_error (_("can't create directory '%s': %s\n"),
                  "/tmp/.#g13_XXXXXX", gpg_strerror (err));
       goto leave;
     }
@@ -428,7 +428,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
 
   /* In any case remove the temporary mount point.  */
   if (rmdir (mountpoint))
-    log_error ("error removing temporary mount point `%s': %s\n",
+    log_error ("error removing temporary mount point '%s': %s\n",
                mountpoint, gpg_strerror (gpg_error_from_syserror ()));
 
 

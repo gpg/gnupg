@@ -77,12 +77,12 @@ fillup_entry_w32 (tar_header_t hdr)
       *p = '/';
   if (!wfname)
     {
-      log_error ("error utf8-ing `%s': %s\n", hdr->name, w32_strerror (-1));
+      log_error ("error utf8-ing '%s': %s\n", hdr->name, w32_strerror (-1));
       return gpg_error_from_syserror ();
     }
   if (!GetFileAttributesExW (wfname, GetFileExInfoStandard, &fad))
     {
-      log_error ("error stat-ing `%s': %s\n", hdr->name, w32_strerror (-1));
+      log_error ("error stat-ing '%s': %s\n", hdr->name, w32_strerror (-1));
       xfree (wfname);
       return gpg_error_from_syserror ();
     }
@@ -108,9 +108,9 @@ fillup_entry_w32 (tar_header_t hdr)
   if ((attr & FILE_ATTRIBUTE_READONLY))
     hdr->mode &= ~0200;  /* Clear the user write bit.  */
   if ((attr & FILE_ATTRIBUTE_HIDDEN))
-    hdr->mode &= ~0707;  /* Clear all user and other bits.  */ 
+    hdr->mode &= ~0707;  /* Clear all user and other bits.  */
   if ((attr & FILE_ATTRIBUTE_SYSTEM))
-    hdr->mode |= 0004;   /* Make it readable by other.  */ 
+    hdr->mode |= 0004;   /* Make it readable by other.  */
 
   /* Only set the size for a regular file.  */
   if (hdr->typeflag == TF_REGULAR)
@@ -130,7 +130,7 @@ fillup_entry_w32 (tar_header_t hdr)
 #endif /*HAVE_W32_SYSTEM*/
 
 
-/* Given a fresh header obje`<ct HDR with only the name field set, try
+/* Given a fresh header object HDR with only the name field set, try
    to gather all available info.  This is the POSIX version.  */
 #ifndef HAVE_W32_SYSTEM
 static gpg_error_t
@@ -142,10 +142,10 @@ fillup_entry_posix (tar_header_t hdr)
   if (lstat (hdr->name, &sbuf))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error stat-ing `%s': %s\n", hdr->name, gpg_strerror (err));
+      log_error ("error stat-ing '%s': %s\n", hdr->name, gpg_strerror (err));
       return err;
     }
-  
+
   if (S_ISREG (sbuf.st_mode))
     hdr->typeflag = TF_REGULAR;
   else if (S_ISDIR (sbuf.st_mode))
@@ -158,7 +158,7 @@ fillup_entry_posix (tar_header_t hdr)
     hdr->typeflag = TF_FIFO;
   else if (S_ISLNK (sbuf.st_mode))
     hdr->typeflag = TF_SYMLINK;
-  else 
+  else
     hdr->typeflag = TF_NOTSUP;
 
   /* FIXME: Save DEV and INO? */
@@ -205,7 +205,7 @@ fillup_entry_posix (tar_header_t hdr)
     hdr->size = sbuf.st_size;
 
   hdr->mtime = sbuf.st_mtime;
-  
+
   return 0;
 }
 #endif /*!HAVE_W32_SYSTEM*/
@@ -303,7 +303,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     if (!wfname)
       {
         err = gpg_error_from_syserror ();
-        log_error (_("error reading directory `%s': %s\n"),
+        log_error (_("error reading directory '%s': %s\n"),
                    dname, gpg_strerror (err));
         goto leave;
       }
@@ -311,7 +311,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     if (hd == INVALID_HANDLE_VALUE)
       {
         err = gpg_error_from_syserror ();
-        log_error (_("error reading directory `%s': %s\n"),
+        log_error (_("error reading directory '%s': %s\n"),
                    dname, w32_strerror (-1));
         xfree (wfname);
         goto leave;
@@ -319,7 +319,7 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     xfree (wfname);
   }
 
-  do 
+  do
     {
       char *fname = wchar_to_utf8 (fi.cFileName);
       if (!fname)
@@ -346,11 +346,11 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
     err = 0;
   else
     {
-      err = gpg_error_from_syserror (); 
-      log_error (_("error reading directory `%s': %s\n"),
+      err = gpg_error_from_syserror ();
+      log_error (_("error reading directory '%s': %s\n"),
                  dname, w32_strerror (-1));
     }
-  
+
  leave:
   if (hd != INVALID_HANDLE_VALUE)
     FindClose (hd);
@@ -366,16 +366,16 @@ scan_directory (const char *dname, scanctrl_t scanctrl)
   if (!dir)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("error reading directory `%s': %s\n"),
+      log_error (_("error reading directory '%s': %s\n"),
                  dname, gpg_strerror (err));
       return err;
     }
-  
+
   while ((de = readdir (dir)))
     {
       if (!strcmp (de->d_name, "." ) || !strcmp (de->d_name, ".."))
         continue; /* Skip self and parent dir entry.  */
-      
+
       err = add_entry (dname, de->d_name, scanctrl);
       if (err)
         goto leave;
@@ -410,10 +410,10 @@ scan_recursive (const char *dname, scanctrl_t scanctrl)
     if (hdr->typeflag == TF_DIRECTORY)
       {
         if (opt.verbose > 1)
-          log_info ("scanning directory `%s'\n", hdr->name);
+          log_info ("scanning directory '%s'\n", hdr->name);
         scan_recursive (hdr->name, scanctrl);
       }
-  
+
   scanctrl->nestlevel--;
   return err;
 }
@@ -434,7 +434,7 @@ pattern_valid_p (const char *pattern)
        || (*pattern >= 'A' && *pattern <= 'Z'))
       && pattern[1] == ':')
     return 0; /* Drive letter are not allowed either.  */
-#endif /*HAVE_DRIVE_LETTERS*/ 
+#endif /*HAVE_DRIVE_LETTERS*/
 
   return 1; /* Okay.  */
 }
@@ -505,14 +505,14 @@ store_uname (char *buffer, size_t length, unsigned long uid)
   if (!initialized || uid != lastuid)
     {
 #ifdef HAVE_W32_SYSTEM
-      mem2str (lastuname, uid? "user":"root", sizeof lastuname); 
+      mem2str (lastuname, uid? "user":"root", sizeof lastuname);
 #else
       struct passwd *pw = getpwuid (uid);
 
       lastuid = uid;
       initialized = 1;
       if (pw)
-        mem2str (lastuname, pw->pw_name, sizeof lastuname); 
+        mem2str (lastuname, pw->pw_name, sizeof lastuname);
       else
         {
           log_info ("failed to get name for uid %lu\n", uid);
@@ -534,14 +534,14 @@ store_gname (char *buffer, size_t length, unsigned long gid)
   if (!initialized || gid != lastgid)
     {
 #ifdef HAVE_W32_SYSTEM
-      mem2str (lastgname, gid? "users":"root", sizeof lastgname); 
+      mem2str (lastgname, gid? "users":"root", sizeof lastgname);
 #else
       struct group *gr = getgrgid (gid);
 
       lastgid = gid;
       initialized = 1;
       if (gr)
-        mem2str (lastgname, gr->gr_name, sizeof lastgname); 
+        mem2str (lastgname, gr->gr_name, sizeof lastgname);
       else
         {
           log_info ("failed to get name for gid %lu\n", gid);
@@ -568,7 +568,7 @@ build_header (void *record, tar_header_t hdr)
   namelen = strlen (hdr->name);
   if (namelen < sizeof raw->name)
     memcpy (raw->name, hdr->name, namelen);
-  else 
+  else
     {
       n = (namelen < sizeof raw->prefix)? namelen : sizeof raw->prefix;
       for (n--; n ; n--)
@@ -584,12 +584,12 @@ build_header (void *record, tar_header_t hdr)
       else
         {
           err = gpg_error (GPG_ERR_TOO_LARGE);
-          log_error ("error storing file `%s': %s\n", 
+          log_error ("error storing file '%s': %s\n",
                      hdr->name, gpg_strerror (err));
           return err;
         }
     }
-  
+
   store_xoctal (raw->mode,  sizeof raw->mode,  hdr->mode);
   store_xoctal (raw->uid,   sizeof raw->uid,   hdr->uid);
   store_xoctal (raw->gid,   sizeof raw->gid,   hdr->gid);
@@ -624,7 +624,7 @@ build_header (void *record, tar_header_t hdr)
       if (nread < 0)
         {
           err = gpg_error_from_syserror ();
-          log_error ("error reading symlink `%s': %s\n", 
+          log_error ("error reading symlink '%s': %s\n",
                      hdr->name, gpg_strerror (err));
           return err;
         }
@@ -659,7 +659,7 @@ write_file (estream_t stream, tar_header_t hdr)
     {
       if (gpg_err_code (err) == GPG_ERR_NOT_SUPPORTED)
         {
-          log_info ("skipping unsupported file `%s'\n", hdr->name);
+          log_info ("skipping unsupported file '%s'\n", hdr->name);
           err = 0;
         }
       return err;
@@ -671,7 +671,7 @@ write_file (estream_t stream, tar_header_t hdr)
       if (!infp)
         {
           err = gpg_error_from_syserror ();
-          log_error ("can't open `%s': %s - skipped\n",
+          log_error ("can't open '%s': %s - skipped\n",
                      hdr->name, gpg_strerror (err));
           return err;
         }
@@ -696,7 +696,7 @@ write_file (estream_t stream, tar_header_t hdr)
           if (nread != nbytes)
             {
               err = gpg_error_from_syserror ();
-              log_error ("error reading file `%s': %s%s\n",
+              log_error ("error reading file '%s': %s%s\n",
                          hdr->name, gpg_strerror (err),
                          any? " (file shrunk?)":"");
               goto leave;
@@ -708,15 +708,15 @@ write_file (estream_t stream, tar_header_t hdr)
         }
       nread = es_fread (record, 1, 1, infp);
       if (nread)
-        log_info ("note: file `%s' has grown\n", hdr->name);
+        log_info ("note: file '%s' has grown\n", hdr->name);
     }
 
  leave:
   if (err)
     es_fclose (infp);
   else if ((err = es_fclose (infp)))
-    log_error ("error closing file `%s': %s\n", hdr->name, gpg_strerror (err));
-      
+    log_error ("error closing file '%s': %s\n", hdr->name, gpg_strerror (err));
+
   return err;
 }
 
@@ -767,7 +767,7 @@ gpgtar_create (char **inpattern)
           if (!pattern)
             break; /* End of array.  */
           inpattern++;
-          
+
           if (!*pattern)
             continue;
 
@@ -778,7 +778,7 @@ gpgtar_create (char **inpattern)
           int c;
           char namebuf[4096];
           size_t n = 0;
-          
+
           for (;;)
             {
               if ((c = es_getc (es_stdin)) == EOF)
@@ -786,7 +786,7 @@ gpgtar_create (char **inpattern)
                   if (es_ferror (es_stdin))
                     {
                       err = gpg_error_from_syserror ();
-                      log_error ("error reading `%s': %s\n",
+                      log_error ("error reading '%s': %s\n",
                                  "[stdin]", strerror (errno));
                       goto leave;
                     }
@@ -799,7 +799,7 @@ gpgtar_create (char **inpattern)
                   if (!skip_this)
                     {
                       skip_this = 1;
-                      log_error ("error reading `%s': %s\n",
+                      log_error ("error reading '%s': %s\n",
                                  "[stdin]", "filename too long");
                     }
                 }
@@ -811,7 +811,7 @@ gpgtar_create (char **inpattern)
                   break;
                 }
             }
-          
+
           if (skip_this || n < 2)
             continue;
 
@@ -829,11 +829,11 @@ gpgtar_create (char **inpattern)
           *p = '/';
 
       if (opt.verbose > 1)
-        log_info ("scanning `%s'\n", pat);
+        log_info ("scanning '%s'\n", pat);
 
       start_tail = scanctrl->flist_tail;
       if (skip_this || !pattern_valid_p (pat))
-        log_error ("skipping invalid name `%s'\n", pat);
+        log_error ("skipping invalid name '%s'\n", pat);
       else if (!add_entry (pat, NULL, scanctrl)
                && *start_tail && ((*start_tail)->typeflag & TF_DIRECTORY))
         scan_recursive (pat, scanctrl);
@@ -850,7 +850,7 @@ gpgtar_create (char **inpattern)
       if (!outstream)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't create `%s': %s\n"),
+          log_error (_("can't create '%s': %s\n"),
                      opt.outfile, gpg_strerror (err));
           goto leave;
         }
@@ -882,7 +882,7 @@ gpgtar_create (char **inpattern)
     }
   if (err)
     {
-      log_error ("creating tarball `%s' failed: %s\n",
+      log_error ("creating tarball '%s' failed: %s\n",
                  es_fname_get (outstream), gpg_strerror (err));
       if (outstream && outstream != es_stdout)
         es_fclose (outstream);

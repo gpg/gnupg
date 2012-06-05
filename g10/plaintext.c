@@ -157,7 +157,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   if (opt.outfp && is_secured_file (es_fileno (opt.outfp)))
     {
       err = gpg_error (GPG_ERR_EPERM);
-      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
   else if (fp || nooutput)
@@ -166,13 +166,13 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
     {
       gpg_err_set_errno (EPERM);
       err = gpg_error_from_syserror ();
-      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
   else if (!(fp = es_fopen (fname, "wb")))
     {
       err = gpg_error_from_syserror ();
-      log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
+      log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
       goto leave;
     }
 #else /* __riscos__ */
@@ -195,7 +195,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       fp = fopen (fname, "wb");
       if (!fp)
 	{
-	  log_error (_("error creating `%s': %s\n"), fname, gpg_strerror (err));
+	  log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
 	  err = G10ERR_CREATE_FILE;
 	  if (errno == 106)
 	    log_info ("Do output file and input file have the same name?\n");
@@ -245,7 +245,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		{
 		  if (opt.max_output && (++count) > opt.max_output)
 		    {
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
 		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      goto leave;
@@ -256,7 +256,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 			err = gpg_error_from_syserror ();
 		      else
 			err = gpg_error (GPG_ERR_EOF);
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, gpg_strerror (err));
 		      goto leave;
 		    }
@@ -284,7 +284,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		{
 		  if (opt.max_output && (count += len) > opt.max_output)
 		    {
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
 		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      xfree (buffer);
@@ -293,7 +293,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		  else if (es_fwrite (buffer, 1, len, fp) != len)
 		    {
 		      err = gpg_error_from_syserror ();
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, gpg_strerror (err));
 		      xfree (buffer);
 		      goto leave;
@@ -320,7 +320,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		{
 		  if (opt.max_output && (++count) > opt.max_output)
 		    {
-		      log_error ("Error writing to `%s': %s\n",
+		      log_error ("Error writing to '%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
 		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      goto leave;
@@ -331,7 +331,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 			err = gpg_error_from_syserror ();
 		      else
 			err = gpg_error (GPG_ERR_EOF);
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, gpg_strerror (err));
 		      goto leave;
 		    }
@@ -369,7 +369,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		{
 		  if (opt.max_output && (count += len) > opt.max_output)
 		    {
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, "exceeded --max-output limit\n");
 		      err = gpg_error (GPG_ERR_TOO_LARGE);
 		      xfree (buffer);
@@ -378,7 +378,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 		  else if (es_fwrite (buffer, 1, len, fp) != len)
 		    {
 		      err = gpg_error_from_syserror ();
-		      log_error ("error writing to `%s': %s\n",
+		      log_error ("error writing to '%s': %s\n",
 				 fname, gpg_strerror (err));
 		      xfree (buffer);
 		      goto leave;
@@ -399,7 +399,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	    {
 	      if (opt.max_output && (++count) > opt.max_output)
 		{
-		  log_error ("error writing to `%s': %s\n",
+		  log_error ("error writing to '%s': %s\n",
 			     fname, "exceeded --max-output limit\n");
 		  err = gpg_error (GPG_ERR_TOO_LARGE);
 		  goto leave;
@@ -407,7 +407,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	      else if (es_putc (c, fp) == EOF)
 		{
 		  err = gpg_error_from_syserror ();
-		  log_error ("error writing to `%s': %s\n",
+		  log_error ("error writing to '%s': %s\n",
 			     fname, gpg_strerror (err));
 		  goto leave;
 		}
@@ -452,7 +452,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
   if (fp && fp != es_stdout && fp != opt.outfp && es_fclose (fp))
     {
       err = gpg_error_from_syserror ();
-      log_error ("error closing `%s': %s\n", fname, gpg_strerror (err));
+      log_error ("error closing '%s': %s\n", fname, gpg_strerror (err));
       fp = NULL;
       goto leave;
     }
@@ -469,7 +469,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
          values is a good idea in any case.  */
       if (!err)
         err = gpg_error_from_syserror ();
-      log_error ("error flushing `%s': %s\n", "[stdout]",
+      log_error ("error flushing '%s': %s\n", "[stdout]",
                  gpg_strerror (err));
     }
 
@@ -581,7 +581,7 @@ ask_for_detached_datafile (gcry_md_hd_t md, gcry_md_hd_t md2,
 	  else if (!fp)
 	    {
 	      rc = gpg_error_from_syserror ();
-	      log_error (_("can't open `%s': %s\n"), answer,
+	      log_error (_("can't open '%s': %s\n"), answer,
 			 strerror (errno));
 	      goto leave;
 	    }
@@ -650,7 +650,7 @@ hash_datafiles (gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
       if (!fp)
 	{
 	  int rc = gpg_error_from_syserror ();
-	  log_error (_("can't open signed data `%s'\n"),
+	  log_error (_("can't open signed data '%s'\n"),
 		     print_fname_stdin (sl->d));
 	  release_progress_context (pfx);
 	  return rc;

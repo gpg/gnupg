@@ -1155,7 +1155,7 @@ show_param (rfc822parse_field_t ctx, const char *name)
     return;
   s = rfc822parse_query_parameter (ctx, name, 0);
   if (s)
-    printf ("***   %s: `%s'\n", name, s);
+    printf ("***   %s: '%s'\n", name, s);
 }
 
 
@@ -1202,7 +1202,7 @@ msg_cb (void *dummy_arg, rfc822parse_event_t event, rfc822parse_t msg)
           const char *s1, *s2;
           s1 = rfc822parse_query_media_type (ctx, &s2);
           if (s1)
-            printf ("***   media: `%s/%s'\n", s1, s2);
+            printf ("***   media: '%s/%s'\n", s1, s2);
           else
             printf ("***   media: [not found]\n");
           show_param (ctx, "boundary");

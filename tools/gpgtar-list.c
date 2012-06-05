@@ -282,7 +282,7 @@ gpgtar_list (const char *filename)
       if (!stream)
         {
           err = gpg_error_from_syserror ();
-          log_error ("error opening `%s': %s\n", filename, gpg_strerror (err));
+          log_error ("error opening '%s': %s\n", filename, gpg_strerror (err));
           return;
         }
     }

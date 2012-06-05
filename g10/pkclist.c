@@ -414,7 +414,7 @@ do_we_trust( PKT_public_key *pk, unsigned int trustlevel )
   if( opt.trust_model==TM_ALWAYS )
     {
       if( opt.verbose )
-	log_info("No trust check due to `--trust-model always' option\n");
+	log_info("No trust check due to '--trust-model always' option\n");
       return 1;
     }
 
@@ -572,14 +572,14 @@ check_signatures_trust( PKT_signature *sig )
         {
           okay = 1;
           write_status_text (STATUS_PKA_TRUST_GOOD, sig->pka_info->email);
-          log_info (_("Note: Verified signer's address is `%s'\n"),
+          log_info (_("Note: Verified signer's address is '%s'\n"),
                     sig->pka_info->email);
         }
       else
         {
           okay = 0;
           write_status_text (STATUS_PKA_TRUST_BAD, sig->pka_info->email);
-          log_info (_("Note: Signer's address `%s' "
+          log_info (_("Note: Signer's address '%s' "
                       "does not match DNS entry\n"), sig->pka_info->email);
         }
 

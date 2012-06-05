@@ -181,7 +181,7 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
           rc = classify_user_id (sl->d, desc+ndesc, 0);
           if (rc)
             {
-              log_error ("key `%s' not found: %s\n",
+              log_error ("key '%s' not found: %s\n",
                          sl->d, gpg_strerror (rc));
               rc = 0;
             }
@@ -351,7 +351,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
   err = classify_user_id (name, desc, 0);
   if (err)
     {
-      log_error ("key `%s' not found: %s\n",
+      log_error ("key '%s' not found: %s\n",
                  name, gpg_strerror (err));
       goto leave;
     }
@@ -388,7 +388,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
         err = 0;
       if (err)
         {
-          log_error ("key `%s' not found: %s\n",
+          log_error ("key '%s' not found: %s\n",
                      name, gpg_strerror (err));
           goto leave;
         }
@@ -399,7 +399,7 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
     {
       /* Note, that the !keygrip case indicates a bad certificate. */
       err = gpg_error (GPG_ERR_NO_SECKEY);
-      log_error ("can't export key `%s': %s\n", name, gpg_strerror (err));
+      log_error ("can't export key '%s': %s\n", name, gpg_strerror (err));
       goto leave;
     }
 

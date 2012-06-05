@@ -471,7 +471,7 @@ open_file (const char **filename, FILE *outfp)
   if (!fp)
     {
       int save_errno = errno;
-      fprintf (outfp, "can't open `%s': %s\n", *filename, strerror(errno));
+      fprintf (outfp, "can't open '%s': %s\n", *filename, strerror(errno));
       gpg_err_set_errno (save_errno);
     }
   return fp;
@@ -511,7 +511,7 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
   if (rc == -1)
     rc = 0;
   if (rc)
-    fprintf (outfp, "error reading `%s': %s\n", filename, gpg_strerror (rc));
+    fprintf (outfp, "error reading '%s': %s\n", filename, gpg_strerror (rc));
 
   if (fp != stdin)
     fclose (fp);
@@ -592,7 +592,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
   if (!dupitems)
     {
       gpg_error_t tmperr = gpg_error_from_syserror ();
-      fprintf (outfp, "error allocating array for `%s': %s\n",
+      fprintf (outfp, "error allocating array for '%s': %s\n",
                filename, strerror(errno));
       return tmperr;
     }
@@ -603,7 +603,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
       unsigned char digest[20];
 
       if (hash_blob_rawdata (blob, digest))
-        fprintf (outfp, "error in blob %ld of `%s'\n", recno, filename);
+        fprintf (outfp, "error in blob %ld of '%s'\n", recno, filename);
       else if (memcmp (digest, zerodigest, 20))
         {
           if (dupitems_count >= dupitems_size)
@@ -615,7 +615,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
               if (!tmp)
                 {
                   gpg_error_t tmperr = gpg_error_from_syserror ();
-                  fprintf (outfp, "error reallocating array for `%s': %s\n",
+                  fprintf (outfp, "error reallocating array for '%s': %s\n",
                            filename, strerror(errno));
                   free (dupitems);
                   return tmperr;
@@ -632,7 +632,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
   if (rc == -1)
     rc = 0;
   if (rc)
-    fprintf (outfp, "error reading `%s': %s\n", filename, gpg_strerror (rc));
+    fprintf (outfp, "error reading '%s': %s\n", filename, gpg_strerror (rc));
   if (fp != stdin)
     fclose (fp);
 
@@ -691,7 +691,7 @@ _keybox_dump_cut_records (const char *filename, unsigned long from,
   if (rc == -1)
     rc = 0;
   if (rc)
-    fprintf (stderr, "error reading `%s': %s\n", filename, gpg_strerror (rc));
+    fprintf (stderr, "error reading '%s': %s\n", filename, gpg_strerror (rc));
  leave:
   if (fp != stdin)
     fclose (fp);

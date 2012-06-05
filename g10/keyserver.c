@@ -173,7 +173,7 @@ parse_keyserver_options(char *options)
 #ifdef EXEC_TEMPFILE_ONLY
       if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
 	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
-	log_info(_("WARNING: keyserver option `%s' is not used"
+	log_info(_("WARNING: keyserver option '%s' is not used"
 		   " on this platform\n"),tok);
 #else
       if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
@@ -1417,13 +1417,13 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
   /* switch(ret) */
   /*   { */
   /*   case KEYSERVER_SCHEME_NOT_FOUND: */
-  /*     log_error(_("no handler for keyserver scheme `%s'\n"), */
+  /*     log_error(_("no handler for keyserver scheme '%s'\n"), */
   /*   	    opt.keyserver->scheme); */
   /*     break; */
 
   /*   case KEYSERVER_NOT_SUPPORTED: */
-  /*     log_error(_("action `%s' not supported with keyserver " */
-  /*   	      "scheme `%s'\n"), "search", opt.keyserver->scheme); */
+  /*     log_error(_("action '%s' not supported with keyserver " */
+  /*   	      "scheme '%s'\n"), "search", opt.keyserver->scheme); */
   /*     break; */
 
   /*   case KEYSERVER_TIMEOUT: */
@@ -1655,7 +1655,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
   for (sl=urilist; sl; sl=sl->next)
     {
       if (!opt.quiet)
-        log_info (_("requesting key from `%s'\n"), sl->d);
+        log_info (_("requesting key from '%s'\n"), sl->d);
 
       err = gpg_dirmngr_ks_fetch (ctrl, sl->d, &datastream);
       if (!err)

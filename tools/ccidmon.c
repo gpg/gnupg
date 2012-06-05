@@ -641,7 +641,7 @@ parse_line (char *line, unsigned int lineno)
   char *event_type, *address, *data, *status, *datatag;
 
   if (debug)
-    printf ("line[%u] =`%s'\n", lineno, line);
+    printf ("line[%u] ='%s'\n", lineno, line);
 
   p = strtok (line, " ");
   if (!p)
@@ -700,7 +700,7 @@ parse_line_sniffusb (char *line, unsigned int lineno)
   char *p;
 
   if (debug)
-    printf ("line[%u] =`%s'\n", lineno, line);
+    printf ("line[%u] ='%s'\n", lineno, line);
 
   p = strtok (line, " \t");
   if (!p)

@@ -1064,7 +1064,7 @@ gpg_agent_runtime_change (int killflag)
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
-    gc_error (0, 0, "error running `%s%s': %s",
+    gc_error (0, 0, "error running '%s%s': %s",
               pgmname, " reloadagent", gpg_strerror (err));
   gnupg_release_process (pid);
 }
@@ -1097,7 +1097,7 @@ scdaemon_runtime_change (int killflag)
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
-    gc_error (0, 0, "error running `%s%s': %s",
+    gc_error (0, 0, "error running '%s%s': %s",
               pgmname, " scd killscd", gpg_strerror (err));
   gnupg_release_process (pid);
 }
@@ -1862,7 +1862,7 @@ retrieve_options_from_program (gc_component_t component, gc_backend_t backend)
                              NULL, &outfp, NULL, &pid);
   if (err)
     {
-      gc_error (1, 0, "could not gather active options from `%s': %s",
+      gc_error (1, 0, "could not gather active options from '%s': %s",
                 pgmname, gpg_strerror (err));
     }
 
@@ -3403,7 +3403,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
          when running in syntax check mode.  */
       if (errno != ENOENT || !update)
         {
-          gc_error (0, errno, "can not open global config file `%s'", fname);
+          gc_error (0, errno, "can not open global config file '%s'", fname);
           result = -1;
         }
       xfree (fname);
@@ -3437,7 +3437,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
             ;
           if (!*p)
             {
-              gc_error (0, 0, "missing rule at `%s', line %d", fname, lineno);
+              gc_error (0, 0, "missing rule at '%s', line %d", fname, lineno);
               result = -1;
               continue;
             }
@@ -3446,7 +3446,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         }
       else if (!in_rule)
         {
-          gc_error (0, 0, "continuation but no rule at `%s', line %d",
+          gc_error (0, 0, "continuation but no rule at '%s', line %d",
                     fname, lineno);
           result = -1;
           continue;
@@ -3466,7 +3466,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         ;
       if (p == component)
         {
-          gc_error (0, 0, "missing component at `%s', line %d",
+          gc_error (0, 0, "missing component at '%s', line %d",
                     fname, lineno);
           result = -1;
           continue;
@@ -3477,7 +3477,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
       component_id = gc_component_find (component);
       if (component_id < 0)
         {
-          gc_error (0, 0, "unknown component at `%s', line %d",
+          gc_error (0, 0, "unknown component at '%s', line %d",
                     fname, lineno);
           result = -1;
         }
@@ -3489,7 +3489,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         ;
       if (p == option)
         {
-          gc_error (0, 0, "missing option at `%s', line %d",
+          gc_error (0, 0, "missing option at '%s', line %d",
                     fname, lineno);
           result = -1;
           continue;
@@ -3501,7 +3501,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
           option_info = find_option (component_id, option, GC_BACKEND_ANY);
           if (!option_info)
             {
-              gc_error (0, 0, "unknown option at `%s', line %d",
+              gc_error (0, 0, "unknown option at '%s', line %d",
                         fname, lineno);
               result = -1;
             }
@@ -3517,7 +3517,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
           p = strchr (flags, ']');
           if (!p)
             {
-              gc_error (0, 0, "syntax error in rule at `%s', line %d",
+              gc_error (0, 0, "syntax error in rule at '%s', line %d",
                         fname, lineno);
               result = -1;
               continue;
@@ -3554,7 +3554,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
           if (*value)
             {
               gc_error (0, 0, "flag \"default\" may not be combined "
-                        "with a value at `%s', line %d",
+                        "with a value at '%s', line %d",
                         fname, lineno);
               result = -1;
             }
@@ -3565,7 +3565,7 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
         ;
       else
         {
-          gc_error (0, 0, "unknown flag at `%s', line %d",
+          gc_error (0, 0, "unknown flag at '%s', line %d",
                     fname, lineno);
           result = -1;
         }
@@ -3641,11 +3641,11 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
   if (length < 0 || ferror (config))
     {
-      gc_error (0, errno, "error reading from `%s'", fname);
+      gc_error (0, errno, "error reading from '%s'", fname);
       result = -1;
     }
   if (fclose (config))
-    gc_error (0, errno, "error closing `%s'", fname);
+    gc_error (0, errno, "error closing '%s'", fname);
 
   xfree (line);
 

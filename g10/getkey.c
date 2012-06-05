@@ -872,12 +872,12 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	  if (!rc)
 	    {
 	      /* Key found.  */
-	      log_info (_("automatically retrieved `%s' via %s\n"),
+	      log_info (_("automatically retrieved '%s' via %s\n"),
 			name, mechanism);
 	      break;
 	    }
 	  if (rc != G10ERR_NO_PUBKEY || opt.verbose || no_fingerprint)
-	    log_info (_("error retrieving `%s' via %s: %s\n"),
+	    log_info (_("error retrieving '%s' via %s: %s\n"),
 		      name, mechanism,
 		      no_fingerprint ? _("No fingerprint") : g10_errstr (rc));
 	}

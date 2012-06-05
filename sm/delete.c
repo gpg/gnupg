@@ -48,7 +48,7 @@ delete_one (ctrl_t ctrl, const char *username)
   rc = classify_user_id (username, &desc, 0);
   if (rc)
     {
-      log_error (_("certificate `%s' not found: %s\n"),
+      log_error (_("certificate '%s' not found: %s\n"),
                  username, gpg_strerror (rc));
       gpgsm_status2 (ctrl, STATUS_DELETE_PROBLEM, "1", NULL);
       goto leave;
@@ -109,7 +109,7 @@ delete_one (ctrl_t ctrl, const char *username)
     {
       if (rc == -1)
         rc = gpg_error (GPG_ERR_NO_PUBKEY);
-      log_error (_("certificate `%s' not found: %s\n"),
+      log_error (_("certificate '%s' not found: %s\n"),
                  username, gpg_strerror (rc));
       gpgsm_status2 (ctrl, STATUS_DELETE_PROBLEM, "3", NULL);
       goto leave;
@@ -140,9 +140,9 @@ delete_one (ctrl_t ctrl, const char *username)
       if (opt.verbose)
         {
           if (duplicates)
-            log_info (_("duplicated certificate `%s' deleted\n"), username);
+            log_info (_("duplicated certificate '%s' deleted\n"), username);
           else
-            log_info (_("certificate `%s' deleted\n"), username);
+            log_info (_("certificate '%s' deleted\n"), username);
         }
     }
   while (duplicates--);

@@ -220,7 +220,7 @@ register_trusted_key( const char *string )
   err = classify_user_id (string, &desc, 1);
   if (err || desc.mode != KEYDB_SEARCH_MODE_LONG_KID )
     {
-      log_error(_("`%s' is not a valid long keyID\n"), string );
+      log_error(_("'%s' is not a valid long keyID\n"), string );
       return;
     }
 
@@ -606,7 +606,7 @@ check_trustdb ()
       validate_keys (0);
     }
   else
-    log_info (_("no need for a trustdb check with `%s' trust model\n"),
+    log_info (_("no need for a trustdb check with '%s' trust model\n"),
 	      trust_model_string());
 }
 
@@ -621,7 +621,7 @@ update_trustdb()
   if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
     validate_keys (1);
   else
-    log_info (_("no need for a trustdb update with `%s' trust model\n"),
+    log_info (_("no need for a trustdb update with '%s' trust model\n"),
 	      trust_model_string());
 }
 
@@ -1885,7 +1885,7 @@ check_regexp(const char *expr,const char *string)
 #endif
 
   if(DBG_TRUST)
-    log_debug("regexp `%s' (`%s') on `%s': %s\n",
+    log_debug("regexp '%s' ('%s') on '%s': %s\n",
 	      regexp,expr,string,ret==0?"YES":"NO");
 
   xfree(regexp);
@@ -2374,7 +2374,7 @@ validate_keys (int interactive)
 	    {
 	      if(DBG_TRUST)
 		log_debug("key %08lX%08lX:"
-			  " overriding ownertrust `%s' with `%s'\n",
+			  " overriding ownertrust '%s' with '%s'\n",
 			  (ulong)k->kid[0],(ulong)k->kid[1],
 			  trust_value_to_string(k->ownertrust),
 			  trust_value_to_string(min));

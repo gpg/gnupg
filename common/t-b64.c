@@ -77,7 +77,7 @@ test_b64enc_file (const char *fname)
   fp = fname ? fopen (fname, "r") : stdin;
   if (!fp)
     {
-      fprintf (stderr, "%s:%d: can't open `%s': %s\n",
+      fprintf (stderr, "%s:%d: can't open '%s': %s\n",
                __FILE__, __LINE__, fname? fname:"[stdin]", strerror (errno));
       fail (0);
     }
@@ -113,7 +113,7 @@ test_b64dec_file (const char *fname)
   fp = fname ? fopen (fname, "r") : stdin;
   if (!fp)
     {
-      fprintf (stderr, "%s:%d: can't open `%s': %s\n",
+      fprintf (stderr, "%s:%d: can't open '%s': %s\n",
                __FILE__, __LINE__, fname? fname:"[stdin]", strerror (errno));
       fail (0);
     }

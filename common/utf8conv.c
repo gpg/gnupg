@@ -97,7 +97,7 @@ load_libiconv (void)
         }
       if (!handle || !iconv_close)
         {
-          log_info (_("error loading `%s': %s\n"),
+          log_info (_("error loading '%s': %s\n"),
                      "iconv.dll",  dlerror ());
           log_info (_("please see %s for more information\n"),
                     "http://www.gnupg.org/download/iconv.html");
@@ -136,7 +136,7 @@ handle_iconv_error (const char *to, const char *from, int use_fallback)
         }
 
       if (!x)
-        log_info (_("conversion from `%s' to `%s' not available\n"),
+        log_info (_("conversion from '%s' to '%s' not available\n"),
                   from, to);
     }
   else
@@ -403,7 +403,7 @@ native_to_utf8 (const char *orig_string)
           static int shown;
 
           if (!shown)
-            log_info (_("conversion from `%s' to `%s' failed: %s\n"),
+            log_info (_("conversion from '%s' to '%s' failed: %s\n"),
                       active_charset_name, "utf-8", strerror (errno));
           shown = 1;
           /* We don't do any conversion at all but use the strings as is. */
@@ -669,7 +669,7 @@ do_utf8_to_native (const char *string, size_t length, int delim,
               static int shown;
 
               if (!shown)
-                log_info (_("conversion from `%s' to `%s' failed: %s\n"),
+                log_info (_("conversion from '%s' to '%s' failed: %s\n"),
                           "utf-8", active_charset_name, strerror (errno));
               shown = 1;
               /* Didn't worked out.  Try again but without iconv.  */

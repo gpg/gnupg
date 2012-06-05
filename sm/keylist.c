@@ -1359,7 +1359,7 @@ list_internal_keys (ctrl_t ctrl, strlist_t names, estream_t fp,
           rc = classify_user_id (sl->d, desc+ndesc, 0);
           if (rc)
             {
-              log_error ("key `%s' not found: %s\n",
+              log_error ("key '%s' not found: %s\n",
                          sl->d, gpg_strerror (rc));
               rc = 0;
             }

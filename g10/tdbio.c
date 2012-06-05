@@ -511,7 +511,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
         gpg_err_set_errno (EIO);
 #endif /*HAVE_W32CE_SYSTEM*/
 	if( errno != ENOENT ) {
-	    log_error( _("can't access `%s': %s\n"), fname, strerror(errno) );
+	    log_error( _("can't access '%s': %s\n"), fname, strerror(errno) );
 	    xfree(fname);
 	    return G10ERR_TRUSTDB;
 	}
@@ -548,9 +548,9 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    if( !lockhandle )
               lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
-		log_fatal( _("can't create lock for `%s'\n"), db_name );
+		log_fatal( _("can't create lock for '%s'\n"), db_name );
             if( dotlock_make (lockhandle, -1) )
-                log_fatal( _("can't lock `%s'\n"), db_name );
+                log_fatal( _("can't lock '%s'\n"), db_name );
 #endif /* __riscos__ */
 	    oldmask=umask(077);
             if (is_secured_filename (fname)) {
@@ -561,17 +561,17 @@ tdbio_set_dbname( const char *new_dbname, int create )
                 fp =fopen( fname, "wb" );
 	    umask(oldmask);
 	    if( !fp )
-		log_fatal( _("can't create `%s': %s\n"), fname, strerror(errno) );
+		log_fatal( _("can't create '%s': %s\n"), fname, strerror(errno) );
 	    fclose(fp);
 	    db_fd = open( db_name, O_RDWR | MY_O_BINARY );
 	    if( db_fd == -1 )
-		log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
+		log_fatal( _("can't open '%s': %s\n"), db_name, strerror(errno) );
 
 #ifndef __riscos__
 	    if( !lockhandle )
               lockhandle = dotlock_create (db_name, 0);
 	    if( !lockhandle )
-		log_fatal( _("can't create lock for `%s'\n"), db_name );
+		log_fatal( _("can't create lock for '%s'\n"), db_name );
 #endif /* !__riscos__ */
 
             rc = create_version_record ();
@@ -612,10 +612,10 @@ open_db()
   if (!lockhandle )
     lockhandle = dotlock_create (db_name, 0);
   if (!lockhandle )
-    log_fatal( _("can't create lock for `%s'\n"), db_name );
+    log_fatal( _("can't create lock for '%s'\n"), db_name );
 #ifdef __riscos__
   if (dotlock_take (lockhandle, -1) )
-    log_fatal( _("can't lock `%s'\n"), db_name );
+    log_fatal( _("can't lock '%s'\n"), db_name );
 #endif /* __riscos__ */
 #ifdef HAVE_W32CE_SYSTEM
   {
@@ -629,7 +629,7 @@ open_db()
         xfree (wname);
       }
     if (db_fd == -1)
-      log_fatal ("can't open `%s': %d, %d\n", db_name,
+      log_fatal ("can't open '%s': %d, %d\n", db_name,
                  (int)prevrc, (int)GetLastError ());
   }
 #else /*!HAVE_W32CE_SYSTEM*/
@@ -646,7 +646,7 @@ open_db()
           log_info (_("NOTE: trustdb not writable\n"));
   }
   if ( db_fd == -1 )
-    log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
+    log_fatal( _("can't open '%s': %s\n"), db_name, strerror(errno) );
 #endif /*!HAVE_W32CE_SYSTEM*/
   register_secured_file (db_name);
 

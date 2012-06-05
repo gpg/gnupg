@@ -64,7 +64,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
     opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
 
   if (opt.verbose)
-    log_info (_("no running gpg - starting `%s'\n"), opt.gpg_program);
+    log_info (_("no running gpg - starting '%s'\n"), opt.gpg_program);
 
   /* Compute argv[0].  */
   if ( !(pgmname = strrchr (opt.gpg_program, '/')))

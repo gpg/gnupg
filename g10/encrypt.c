@@ -195,7 +195,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if (!inp)
     {
       rc = gpg_error_from_syserror ();
-      log_error(_("can't open `%s': %s\n"), filename? filename: "[stdin]",
+      log_error(_("can't open '%s': %s\n"), filename? filename: "[stdin]",
                 strerror(errno) );
       release_progress_context (pfx);
       return rc;
@@ -260,7 +260,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       && is_file_compressed(filename, &rc))
     {
       if (opt.verbose)
-        log_info(_("`%s' already compressed\n"), filename);
+        log_info(_("'%s' already compressed\n"), filename);
       do_compress = 0;
     }
 
@@ -317,7 +317,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
 
       if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
            && !overflow && opt.verbose)
-        log_info(_("WARNING: `%s' is an empty file\n"), filename );
+        log_info(_("WARNING: '%s' is an empty file\n"), filename );
       /* We can't encode the length of very large files because
          OpenPGP uses only 32 bit for file sizes.  So if the the
          size of a file is larger than 2^32 minus some bytes for
@@ -544,13 +544,13 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
         strcpy (xname, "[stdin]");
       else
         *xname = 0;
-      log_error (_("can't open `%s': %s\n"),
+      log_error (_("can't open '%s': %s\n"),
                  *xname? xname : filename, gpg_strerror (rc) );
       goto leave;
     }
 
   if (opt.verbose)
-    log_info (_("reading from `%s'\n"), iobuf_get_fname_nonnull (inp));
+    log_info (_("reading from '%s'\n"), iobuf_get_fname_nonnull (inp));
 
   handle_progress (pfx, inp, filename);
 
@@ -624,7 +624,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (do_compress && cfx.dek->use_mdc && is_file_compressed(filename, &rc2))
     {
       if (opt.verbose)
-        log_info(_("`%s' already compressed\n"), filename);
+        log_info(_("'%s' already compressed\n"), filename);
       do_compress = 0;
     }
   if (rc2)
@@ -659,7 +659,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
 
       if ( !(tmpsize = iobuf_get_filelength(inp, &overflow))
            && !overflow && opt.verbose)
-        log_info(_("WARNING: `%s' is an empty file\n"), filename );
+        log_info(_("WARNING: '%s' is an empty file\n"), filename );
       /* We can't encode the length of very large files because
          OpenPGP uses only 32 bit for file sizes.  So if the the size
          of a file is larger than 2^32 minus some bytes for packet
@@ -965,7 +965,7 @@ encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
           print_file_status(STATUS_FILE_START, line, 2);
           rc = encrypt_crypt (ctrl, -1, line, remusr, 0, NULL, -1);
           if (rc)
-            log_error ("encryption of `%s' failed: %s\n",
+            log_error ("encryption of '%s' failed: %s\n",
                        print_fname_stdin(line), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
         }
@@ -976,7 +976,7 @@ encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
         {
           print_file_status(STATUS_FILE_START, *files, 2);
           if ( (rc = encrypt_crypt (ctrl, -1, *files, remusr, 0, NULL, -1)) )
-            log_error("encryption of `%s' failed: %s\n",
+            log_error("encryption of '%s' failed: %s\n",
                       print_fname_stdin(*files), g10_errstr(rc) );
           write_status( STATUS_FILE_DONE );
           files++;

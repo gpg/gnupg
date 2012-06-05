@@ -398,7 +398,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
 
           if (verbose)
-            log_info (_("no running gpg-agent - starting `%s'\n"),
+            log_info (_("no running gpg-agent - starting '%s'\n"),
                       agent_program);
 
           if (status_cb)
@@ -420,12 +420,12 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
           argv[1] = NULL;
           err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
           if (err)
-            log_debug ("starting `%s' for testing failed: %s\n",
+            log_debug ("starting '%s' for testing failed: %s\n",
                        agent_program, gpg_strerror (err));
           else if ((err = gnupg_wait_process (agent_program, pid, 1, &excode)))
             {
               if (excode == -1)
-                log_debug ("running `%s' for testing failed (wait): %s\n",
+                log_debug ("running '%s' for testing failed (wait): %s\n",
                            agent_program, gpg_strerror (err));
             }
           gnupg_release_process (pid);
@@ -447,7 +447,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                 {
                   err = gnupg_spawn_process_detached (agent_program, argv,NULL);
                   if (err)
-                    log_error ("failed to start agent `%s': %s\n",
+                    log_error ("failed to start agent '%s': %s\n",
                                agent_program, gpg_strerror (err));
                   else
                     {
@@ -616,7 +616,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
 
       if (verbose)
-        log_info (_("no running Dirmngr - starting `%s'\n"),
+        log_info (_("no running Dirmngr - starting '%s'\n"),
                   dirmngr_program);
 
       if (status_cb)
@@ -641,7 +641,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         {
           err = gnupg_spawn_process_detached (dirmngr_program, argv,NULL);
           if (err)
-            log_error ("failed to start the dirmngr `%s': %s\n",
+            log_error ("failed to start the dirmngr '%s': %s\n",
                        dirmngr_program, gpg_strerror (err));
           else
             {
@@ -681,7 +681,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
 
   if (err)
     {
-      log_error ("connecting dirmngr at `%s' failed: %s\n",
+      log_error ("connecting dirmngr at '%s' failed: %s\n",
                  sockname, gpg_strerror (err));
       assuan_release (ctx);
       return gpg_err_make (errsource, GPG_ERR_NO_DIRMNGR);
