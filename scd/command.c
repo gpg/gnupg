@@ -414,18 +414,19 @@ get_reader_slot (void)
       int no_service_flag;
       ss->slot = apdu_open_reader (opt.reader_port, &no_service_flag);
 
-      /* If we still don't have a slot, we have no readers.
-	 Invalidate for now until a reader is attached. */
-      if(ss->slot == -1)
-	{
-	  ss->valid = 0;
-	}
-
       if (no_service_flag)
         {
           log_info ("no card services - disabling scdaemon\n");
           reader_disabled = 1;
         }
+
+      /* If we still don't have a slot, we have no readers.
+	 Invalidate for now until a reader is attached. */
+      if(ss->slot == -1)
+	{
+	  ss->valid = 0;
+	  return -1;
+	}
     }
 
   /* Return the slot_table index.  */
