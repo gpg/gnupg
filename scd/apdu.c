@@ -1728,7 +1728,8 @@ open_pcsc_reader_wrapped (const char *portstr)
                        | (msgbuf[7] << 8 ) | msgbuf[8]);
   if (err)
     {
-      log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));
+      log_error ("PC/SC OPEN failed: %s (0x%08x)\n",
+		 pcsc_error_string (err), err);
       /*sw = pcsc_error_to_sw (err);*/
       goto command_failed;
     }
