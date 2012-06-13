@@ -1,3 +1,10 @@
 # This file is expected to be used via gitlog-to-changelog's --amend=FILE
 # option.  It specifies what changes to make to each given SHA1's commit
 # log and metadata, using Perl-eval'able expressions.
+
+08178d1e130a856622c0b938a34eb109bde79262
+s/Conflicts:/--/
+
+dafa7aa621dfe36c5c6cf462d3ec0d6c614ab105
+# Fix old cherry-picked message.
+s/(fix wLangId in.*)/\1\n--/
