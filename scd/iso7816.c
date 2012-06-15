@@ -374,7 +374,11 @@ gpg_error_t
 iso7816_reset_retry_counter (int slot, int chvno,
                              const char *newchv, size_t newchvlen)
 {
-  return iso7816_reset_retry_counter_kp (slot, chvno, newchv, newchvlen, NULL);
+  int sw;
+
+  sw = apdu_send_simple (slot, 0, 0x00, CMD_RESET_RETRY_COUNTER,
+                         2, chvno, newchvlen, newchv);
+  return map_sw (sw);
 }
 
 
