@@ -328,6 +328,44 @@ static int pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
  */
 
 
+static int
+lock_slot (int slot)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&reader_table[slot].lock, 0, NULL))
+    {
+      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
+      return SW_HOST_LOCKING_FAILED;
+    }
+#endif /*USE_GNU_PTH*/
+  return 0;
+}
+
+static int
+trylock_slot (int slot)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_acquire (&reader_table[slot].lock, TRUE, NULL))
+    {
+      if (errno == EBUSY)
+        return SW_HOST_BUSY;
+      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
+      return SW_HOST_LOCKING_FAILED;
+    }
+#endif /*USE_GNU_PTH*/
+  return 0;
+}
+
+static void
+unlock_slot (int slot)
+{
+#ifdef USE_GNU_PTH
+  if (!pth_mutex_release (&reader_table[slot].lock))
+    log_error ("failed to release apdu lock: %s\n", strerror (errno));
+#endif /*USE_GNU_PTH*/
+}
+
+
 /* Find an unused reader slot for PORTSTR and put it into the reader
    table.  Return -1 on error or the index into the reader table. */
 static int
@@ -2726,44 +2764,6 @@ open_rapdu_reader (int portno,
 /*
        Driver Access
  */
-
-
-static int
-lock_slot (int slot)
-{
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&reader_table[slot].lock, 0, NULL))
-    {
-      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
-      return SW_HOST_LOCKING_FAILED;
-    }
-#endif /*USE_GNU_PTH*/
-  return 0;
-}
-
-static int
-trylock_slot (int slot)
-{
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_acquire (&reader_table[slot].lock, TRUE, NULL))
-    {
-      if (errno == EBUSY)
-        return SW_HOST_BUSY;
-      log_error ("failed to acquire apdu lock: %s\n", strerror (errno));
-      return SW_HOST_LOCKING_FAILED;
-    }
-#endif /*USE_GNU_PTH*/
-  return 0;
-}
-
-static void
-unlock_slot (int slot)
-{
-#ifdef USE_GNU_PTH
-  if (!pth_mutex_release (&reader_table[slot].lock))
-    log_error ("failed to release apdu lock: %s\n", strerror (errno));
-#endif /*USE_GNU_PTH*/
-}
 
 
 /* Open the reader and return an internal slot number or -1 on
