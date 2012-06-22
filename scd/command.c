@@ -321,7 +321,7 @@ do_reset (ctrl_t ctrl, int send_reset)
 	  break;
 	default:
 	  apdu_close_reader (slot);
-	  slot = slot_table[slot].slot = -1;
+	  slot_table[slot].slot = -1;
 	  break;
 	}
     }
