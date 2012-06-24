@@ -841,6 +841,7 @@ pcsc_error_to_sw (long ec)
     case PCSC_E_CANCELLED:           rc = SW_HOST_ABORTED; break;
     case PCSC_E_NO_MEMORY:           rc = SW_HOST_OUT_OF_CORE; break;
     case PCSC_E_TIMEOUT:             rc = SW_HOST_CARD_IO_ERROR; break;
+    case PCSC_E_UNKNOWN_READER:      rc = SW_HOST_NO_READER; break;
     case PCSC_E_SHARING_VIOLATION:   rc = SW_HOST_LOCKING_FAILED; break;
     case PCSC_E_NO_SMARTCARD:        rc = SW_HOST_NO_CARD; break;
     case PCSC_W_REMOVED_CARD:        rc = SW_HOST_NO_CARD; break;
