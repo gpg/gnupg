@@ -57,6 +57,8 @@ struct stats_s {
     ulong not_imported;
     ulong n_sigs_cleaned;
     ulong n_uids_cleaned;
+    ulong skipped_v3_keys;
+    ulong skipped_v3_subkeys;
 };
 
 
@@ -77,6 +79,7 @@ static int chk_self_sigs( const char *fname, KBNODE keyblock,
 			  PKT_public_key *pk, u32 *keyid, int *non_self );
 static int delete_inv_parts( const char *fname, KBNODE keyblock,
 			     u32 *keyid, unsigned int options );
+static int delete_v3_subkeys (kbnode_t keyblock);
 static int merge_blocks( const char *fname, KBNODE keyblock_orig,
 			 KBNODE keyblock, u32 *keyid,
 			 int *n_uids, int *n_sigs, int *n_subk );
@@ -330,6 +333,9 @@ import_print_stats (void *hd)
 	if( stats->skipped_new_keys )
 	    log_info(_("      skipped new keys: %lu\n"),
 						stats->skipped_new_keys );
+	if( stats->skipped_v3_keys )
+	    log_info(_("       skipped v3 keys: %lu\n"),
+                     stats->skipped_v3_keys);
 	if( stats->no_user_id )
 	    log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
 	if( stats->imported || stats->imported_rsa ) {
@@ -344,6 +350,9 @@ import_print_stats (void *hd)
 	    log_info(_("          new user IDs: %lu\n"), stats->n_uids );
 	if( stats->n_subk )
 	    log_info(_("           new subkeys: %lu\n"), stats->n_subk );
+	if( stats->skipped_v3_subkeys)
+	    log_info(_("    skipped v3 subkeys: %lu\n"),
+                     stats->skipped_v3_subkeys);
 	if( stats->n_sigs )
 	    log_info(_("        new signatures: %lu\n"), stats->n_sigs );
 	if( stats->n_revoc )
@@ -363,8 +372,10 @@ import_print_stats (void *hd)
     }
 
     if( is_status_enabled() ) {
-	char buf[14*20];
-	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+	char buf[16*20];
+	snprintf (buf, sizeof buf,
+                  "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu"
+                  " %lu %lu",
 		stats->count,
 		stats->no_user_id,
 		stats->imported,
@@ -378,7 +389,9 @@ import_print_stats (void *hd)
 		stats->secret_imported,
 		stats->secret_dups,
 		stats->skipped_new_keys,
-                stats->not_imported );
+                stats->not_imported,
+                stats->skipped_v3_keys,
+                stats->skipped_v3_subkeys);
 	write_status_text( STATUS_IMPORT_RES, buf );
     }
 }
@@ -771,6 +784,7 @@ import_one (ctrl_t ctrl,
     int mod_key = 0;
     int same_key = 0;
     int non_self = 0;
+    int count;
 
     /* get the key and print some info about it */
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -795,6 +809,18 @@ import_one (ctrl_t ctrl,
 	log_printf ("\n");
       }
 
+    /* We don't allow to import v3 keys unless the --allow-v3-keys
+       option is active.  Note that this checks only the primary key.
+       v3 subkeys will be removed later.  */
+    if (pk->version <= 3 && !opt.allow_v3_keys)
+      {
+	if (opt.verbose)
+	  log_info (_("key %s: v3 keys are not allowed - skipped\n"),
+                    keystr (keyid));
+	stats->skipped_new_keys++;
+	stats->skipped_v3_keys++;
+        return 0;
+      }
 
     if( !uidnode )
       {
@@ -854,6 +880,14 @@ import_one (ctrl_t ctrl,
 	stats->no_user_id++;
 	return 0;
     }
+
+    if (!opt.allow_v3_keys && (count = delete_v3_subkeys (keyblock)))
+      {
+        stats->skipped_v3_subkeys += count;
+        if (!opt.quiet)
+          log_info (_("key %s: removed v3 subkeys: %d\n"),
+                    keystr (keyid), count);
+      }
 
     /* do we have this key already in one of our pubrings ? */
     pk_orig = xmalloc_clear( sizeof *pk_orig );
@@ -2091,6 +2125,37 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
      * for deletion and so keyblock cannot change */
     commit_kbnode( &keyblock );
     return nvalid;
+}
+
+
+/* Remove all v3 public subkeys from KEYBLOCK.  Returns the number of
+ * removed subkeys.  */
+static int
+delete_v3_subkeys (kbnode_t keyblock)
+{
+  kbnode_t node;
+  int count = 0;
+
+  for (node = keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          && node->pkt->pkt.public_key->version == 3)
+        {
+          delete_kbnode (node);
+          while (node->next && node->next->pkt->pkttype == PKT_SIGNATURE)
+            {
+              delete_kbnode (node->next);
+              node = node->next;
+            }
+          count++;
+        }
+    }
+
+  /* Because KEYBLOCK is the primary public key, it is never marked
+   * for deletion and thus commit_keyblock won't change KEYBLOCK. */
+  if (count)
+    commit_kbnode (&keyblock);
+  return count;
 }
 
 

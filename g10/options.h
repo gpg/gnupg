@@ -170,6 +170,7 @@ struct
   strlist_t sig_subpackets;
   int allow_non_selfsigned_uid;
   int allow_freeform_uid;
+  int allow_v3_keys;            /* Allow the use of v3 keys.  */
   int no_literal;
   ulong set_filesize;
   int fast_list_mode;

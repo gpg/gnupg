@@ -2637,6 +2637,20 @@ Disable all checks on the form of the user ID while generating a new
 one. This option should only be used in very special environments as
 it does not ensure the de-facto standard format of user IDs.
 
+@ifset gpgtwoone
+@item --allow-v3-keys
+@itemx --no-allow-v3-keys
+@opindex allow-v3-keys
+Allow the use of deprecated v3 keys with @command{gpg}.  The default
+is not to allow their use.
+
+Since version 2.1 GnuPG does not anymore allow the import or use of v3
+keys.  Those keys have been generated in the past by PGP 2 and exhibit
+a couple of flaws.  For example they rely on the broken MD5 algorithm.
+OpenPGP has long deprecated their use (cf. RFC-4880, section 5.5.2).
+This option may be used to exceptionally allow their use.
+@end ifset
+
 @item --ignore-time-conflict
 @opindex ignore-time-conflict
 GnuPG normally checks that the timestamps associated with keys and

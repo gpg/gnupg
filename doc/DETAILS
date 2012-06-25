@@ -459,7 +459,7 @@ more arguments in future versions.
 
     IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
 	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported>
-        <sec_dups> <skipped_new_keys> <not_imported>
+        <sec_dups> <skipped_new_keys> <not_imported> <n_v3> <n_v3_subkeys>
 	Final statistics on import process (this is one long line)
 
     FILE_START <what> <filename>

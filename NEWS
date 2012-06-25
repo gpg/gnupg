@@ -11,6 +11,10 @@ Noteworthy changes in version 2.1.0beta4 (unreleased)
 
  * The hash algorithm is now printed for sig records in key listings.
 
+ * GPG does not anymore allow the use of the long deprecated v3 keys
+   (PGP 2 keys).  The new option --allow-v3-keys can be used to
+   exceptionally allow them.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------

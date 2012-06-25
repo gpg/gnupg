@@ -305,6 +305,8 @@ enum cmd_and_opt_values
     oNoAllowNonSelfsignedUID,
     oAllowFreeformUID,
     oNoAllowFreeformUID,
+    oAllowV3Keys,
+    oNoAllowV3Keys,
     oAllowSecretKeyImport,
     oEnableSpecialFilenames,
     oNoLiteral,
@@ -682,6 +684,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAllowNonSelfsignedUID, "no-allow-non-selfsigned-uid", "@"),
   ARGPARSE_s_n (oAllowFreeformUID,      "allow-freeform-uid", "@"),
   ARGPARSE_s_n (oNoAllowFreeformUID, "no-allow-freeform-uid", "@"),
+  ARGPARSE_s_n (oAllowFreeformUID,      "allow-freeform-uid", "@"),
+  ARGPARSE_s_n (oAllowV3Keys, "allow-v3-keys", "@"),
+  ARGPARSE_s_n (oNoAllowV3Keys, "no-allow-v3-keys", "@"),
   ARGPARSE_s_n (oNoLiteral, "no-literal", "@"),
   ARGPARSE_p_u (oSetFilesize, "set-filesize", "@"),
   ARGPARSE_s_n (oHonorHttpProxy, "honor-http-proxy", "@"),
@@ -2805,6 +2810,8 @@ main (int argc, char **argv)
 	  case oNoAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid=0; break;
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;
 	  case oNoAllowFreeformUID: opt.allow_freeform_uid = 0; break;
+	  case oAllowV3Keys:   opt.allow_v3_keys = 1; break;
+	  case oNoAllowV3Keys: opt.allow_v3_keys = 0; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
 	  case oHonorHttpProxy:
@@ -3184,6 +3191,7 @@ main (int argc, char **argv)
 	    xfree(s2k_digest_string);
 	    s2k_digest_string = xstrdup("md5");
 	    opt.compress_algo = COMPRESS_ALGO_ZIP;
+            opt.allow_v3_keys = 1;
 	  }
       }
     else if(PGP6)

@@ -2318,6 +2318,12 @@ finish_lookup (GETKEY_CTX ctx)
 	  if (DBG_CACHE)
 	    log_debug ("\tchecking subkey %08lX\n",
 		       (ulong) keyid_from_pk (pk, NULL));
+          if (pk->version <= 3 && !opt.allow_v3_keys)
+	    {
+	      if (DBG_CACHE)
+		log_debug ("\tv3 subkey not allowed\n");
+	      continue;
+	    }
 	  if (!pk->flags.valid)
 	    {
 	      if (DBG_CACHE)
@@ -2373,7 +2379,12 @@ finish_lookup (GETKEY_CTX ctx)
       if (DBG_CACHE && !foundk && !req_prim)
 	log_debug ("\tno suitable subkeys found - trying primary\n");
       pk = keyblock->pkt->pkt.public_key;
-      if (!pk->flags.valid)
+      if (pk->version <= 3 && !opt.allow_v3_keys)
+        {
+          if (DBG_CACHE)
+            log_debug ("\tv3 primary key not allowed\n");
+        }
+      else if (!pk->flags.valid)
 	{
 	  if (DBG_CACHE)
 	    log_debug ("\tprimary key not valid\n");
