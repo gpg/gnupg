@@ -3129,6 +3129,7 @@ ccid_transceive_secure (ccid_driver_t handle,
     {
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
+    case VENDOR_FSIJ: /* Tested with Gnuk (0.21). */
       break;
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
       pinlen_max = 15;
