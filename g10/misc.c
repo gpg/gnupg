@@ -799,7 +799,7 @@ compress_algo_to_string(int algo)
 int
 string_to_compress_algo(const char *string)
 {
-  /* NOTE TO TRANSLATOR: See doc/TRANSLATE about this string. */
+  /* TRANSLATORS: See doc/TRANSLATE about this string. */
   if(match_multistr(_("uncompressed|none"),string))
     return 0;
   else if(ascii_strcasecmp(string,"uncompressed")==0)
