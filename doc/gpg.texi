@@ -388,7 +388,7 @@ safeguard against accidental deletion of multiple keys.
 
 @item --delete-secret-key @code{name}
 @opindex delete-secret-key
-Remove key from the secret and public keyring. In batch mode the key
+Remove key from the secret keyring. In batch mode the key
 must be specified by fingerprint.
 
 @item --delete-secret-and-public-key @code{name}
