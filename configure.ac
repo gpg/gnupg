@@ -494,13 +494,6 @@ AH_BOTTOM([
 # endif
 #endif
 
-/* Hacks required for Android.  */
-#ifdef __ANDROID__
-  /* ttyname is a stub in BIONIC, printing a FIXME warning.  */
-# define ttyname broken_native_ttyname
-# undef HAVE_TTYNAME
-#endif /*__ANDROID__*/
-
 
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
@@ -585,6 +578,8 @@ try_gettext=yes
 have_dosish_system=no
 have_w32_system=no
 have_w32ce_system=no
+have_android_system=no
+run_tests=yes
 use_simple_gettext=no
 use_ldapwrapper=yes
 mmap_needed=yes
@@ -601,6 +596,7 @@ case "${host}" in
         disable_keyserver_path=yes
         have_dosish_system=yes
         have_w32_system=yes
+        run_tests=no
         use_ldapwrapper=no  # Fixme: Do this only for CE.
         case "${host}" in
           *-mingw32ce*)
@@ -660,6 +656,10 @@ case "${host}" in
         ;;
     m68k-atari-mint)
         ;;
+    *-linux-androideabi)
+        have_android_system=yes
+        run_tests=no
+        ;;
     *)
        ;;
 esac
@@ -683,6 +683,16 @@ if test "$have_w32_system" = yes; then
 fi
 AM_CONDITIONAL(HAVE_W32_SYSTEM, test "$have_w32_system" = yes)
 AM_CONDITIONAL(HAVE_W32CE_SYSTEM, test "$have_w32ce_system" = yes)
+
+if test "$have_android_system" = yes; then
+   AC_DEFINE(HAVE_ANDROID_SYSTEM,1, [Defined if we build for an Android system])
+fi
+AM_CONDITIONAL(HAVE_ANDROID_SYSTEM, test "$have_android_system" = yes)
+
+if test "$run_tests" = yes; then
+   AC_DEFINE(RUN_TESTS,1, [Defined if we should run the tests])
+fi
+AM_CONDITIONAL(RUN_TESTS, test "$run_tests" = yes)
 
 if test "$use_ldapwrapper" = yes; then
    AC_DEFINE(USE_LDAPWRAPPER,1, [Build dirmngr with LDAP wrapper process])

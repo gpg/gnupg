@@ -82,10 +82,10 @@ else
 doc =
 endif
 
-if HAVE_W32_SYSTEM
-tests =
-else
+if RUN_TESTS
 tests = tests
+else
+tests =
 endif
 
 SUBDIRS = m4 gl include common ${kbx} \
