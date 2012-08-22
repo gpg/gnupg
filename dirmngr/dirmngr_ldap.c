@@ -203,8 +203,8 @@ my_strusage (int level)
       break;
     case 41: p =
           _("Syntax: dirmngr_ldap [options] [URL]\n"
-            "Internal LDAP helper for Dirmngr.\n"
-            "Interface and options may change without notice.\n");
+            "Internal LDAP helper for Dirmngr\n"
+            "Interface and options may change without notice\n");
       break;
 
     default: p = NULL;

@@ -139,7 +139,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
     {
       if ((use & (KSBA_KEYUSAGE_KEY_CERT_SIGN)))
         return 0;
-      log_info (_("certificate should have not "
+      log_info (_("certificate should not have "
                   "been used for certification\n"));
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
@@ -151,7 +151,7 @@ cert_usage_p (ksba_cert_t cert, int mode)
               || (use & (KSBA_KEYUSAGE_KEY_CERT_SIGN
                          |KSBA_KEYUSAGE_CRL_SIGN))))
         return 0;
-      log_info (_("certificate should have not "
+      log_info (_("certificate should not have "
                   "been used for OCSP response signing\n"));
       return gpg_error (GPG_ERR_WRONG_KEY_USAGE);
     }
@@ -162,8 +162,8 @@ cert_usage_p (ksba_cert_t cert, int mode)
       )
     return 0;
 
-  log_info (mode==3? _("certificate should have not been used for encryption\n"):
-            mode==2? _("certificate should have not been used for signing\n"):
+  log_info (mode==3? _("certificate should not have been used for encryption\n"):
+            mode==2? _("certificate should not have been used for signing\n"):
             mode==1? _("certificate is not usable for encryption\n"):
                      _("certificate is not usable for signing\n"));
   return gpg_error (GPG_ERR_WRONG_KEY_USAGE);

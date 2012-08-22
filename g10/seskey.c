@@ -310,7 +310,7 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
       if (mdlen < qbits/8)
 	{
 	  log_error (_("%s key %s requires a %zu bit or larger hash "
-                       "(hash is %s\n"),
+                       "(hash is %s)\n"),
                      gcry_pk_algo_name (pkalgo),
                      keystr_from_pk(pk), qbits,
                      gcry_md_algo_name (hash_algo));

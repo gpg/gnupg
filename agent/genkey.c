@@ -404,7 +404,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
   else
     rc = agent_ask_new_passphrase (ctrl,
                                    _("Please enter the passphrase to%0A"
-                                     "to protect your new key"),
+                                     "protect your new key"),
                                    &passphrase);
   if (rc)
     return rc;

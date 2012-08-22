@@ -535,8 +535,8 @@ my_strusage( int level )
       break;
     case 41:
       p = _("Syntax: gpgsm [options] [files]\n"
-            "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-            "default operation depends on the input data\n");
+            "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+            "Default operation depends on the input data\n");
       break;
 
     case 20:

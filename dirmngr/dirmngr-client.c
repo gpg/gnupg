@@ -76,7 +76,7 @@ static ARGPARSE_OPTS opts[] = {
   { oUrl,      "url",       0, N_("expect an URL for --lookup")},
   { oLoadCRL,  "load-crl",  0, N_("load a CRL into the dirmngr")},
   { oSquidMode,"squid-mode",0, N_("special mode for use by Squid")},
-  { oPEM,      "pem",       0, N_("certificates are expected in PEM format")},
+  { oPEM,      "pem",       0, N_("expect certificates in PEM format")},
   { oForceDefaultResponder, "force-default-responder", 0,
     N_("force the use of the default OCSP responder")},
   { 0, NULL, 0, NULL }

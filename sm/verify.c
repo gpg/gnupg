@@ -111,7 +111,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
   kh = keydb_new (0);
   if (!kh)
     {
-      log_error (_("failed to allocated keyDB handle\n"));
+      log_error (_("failed to allocate keyDB handle\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }

@@ -2301,7 +2301,7 @@ list_one_crl_entry (crl_cache_t cache, crl_cache_entry_t e, estream_t fp)
     return gpg_error (GPG_ERR_GENERAL);
 
   if (!e->dbfile_checked)
-    es_fprintf (fp, _(" ERROR: This cached CRL may has been tampered with!\n"));
+    es_fprintf (fp, _(" ERROR: This cached CRL may have been tampered with!\n"));
 
   es_putc ('\n', fp);
 
