@@ -770,7 +770,7 @@ agent_askpin (ctrl_t ctrl,
 
       if (errtext)
         { 
-          /* TRANLATORS: The string is appended to an error message in
+          /* TRANSLATORS: The string is appended to an error message in
              the pinentry.  The %s is the actual error message, the
              two %d give the current and maximum number of tries. */
           snprintf (line, DIM(line)-1, _("SETERROR %s (try %d of %d)"),

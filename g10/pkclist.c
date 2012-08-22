@@ -191,7 +191,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
   for(;;) {
     /* A string with valid answers.
 
-       Note to translators: These are the allowed answers in lower and
+       TRANSLATORS: These are the allowed answers in lower and
        uppercase.  Below you will find the matching strings which
        should be translated accordingly and the letter changed to
        match the one in the answer string.

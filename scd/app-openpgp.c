@@ -2081,8 +2081,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       /* TRANSLATORS: Do not translate the "|*|" prefixes but
          keep it at the start of the string.  We need this elsewhere
          to get some infos on the string. */
-      rc = pincb (pincb_arg,
-                  set_resetcode? _("|RN|New Reset Code") :
+      rc = pincb (pincb_arg, set_resetcode? _("|RN|New Reset Code") :
                   chvno == 3? _("|AN|New Admin PIN") : _("|N|New PIN"),
                   &pinvalue);
       if (rc)
