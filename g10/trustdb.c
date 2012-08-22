@@ -507,7 +507,11 @@ trust_letter (unsigned int value)
     }
 }
 
-/* NOTE TO TRANSLATOR: these strings are similar to those in
+const char *
+uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
+{
+  if(!key && !uid)
+/* TRANSLATORS: these strings are similar to those in
    trust_value_to_string(), but are a fixed length.  This is needed to
    make attractive information listings where columns line up
    properly.  The value "10" should be the length of the strings you
@@ -515,10 +519,6 @@ trust_letter (unsigned int value)
    It gets passed to atoi() so everything after the number is
    essentially a comment and need not be translated.  Either key and
    uid are both NULL, or neither are NULL. */
-const char *
-uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
-{
-  if(!key && !uid)
     return _("10 translator see trustdb.c:uid_trust_string_fixed");
   else if(uid->is_revoked || (key && key->flags.revoked))
     return                         _("[ revoked]");
