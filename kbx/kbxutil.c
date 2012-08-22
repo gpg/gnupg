@@ -118,7 +118,7 @@ my_strusage( int level )
 	break;
       case 41:	p =
 	    _("Syntax: kbxutil [options] [files]\n"
-	      "list, export, import Keybox data\n");
+	      "List, export, import Keybox data\n");
 	break;
 
 

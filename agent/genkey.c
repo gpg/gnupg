@@ -306,7 +306,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
   /* Get the passphrase now, cause key generation may take a while. */
   {
     const char *text1 = _("Please enter the passphrase to%0A"
-                               "to protect your new key");
+                               "protect your new key");
     const char *text2 = _("Please re-enter this passphrase");
     const char *initial_errtext = NULL;
 

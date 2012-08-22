@@ -756,7 +756,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
   *r_next = NULL;
   if (!kh)
     {
-      log_error (_("failed to allocated keyDB handle\n"));
+      log_error (_("failed to allocate keyDB handle\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
@@ -1249,7 +1249,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
   kh = keydb_new (0);
   if (!kh)
     {
-      log_error (_("failed to allocated keyDB handle\n"));
+      log_error (_("failed to allocate keyDB handle\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
@@ -1853,7 +1853,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
   kh = keydb_new (0);
   if (!kh)
     {
-      log_error (_("failed to allocated keyDB handle\n"));
+      log_error (_("failed to allocate keyDB handle\n"));
       rc = gpg_error (GPG_ERR_GENERAL);
       goto leave;
     }
