@@ -131,7 +131,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 )},
 
 { "keygen.sub.okay", N_(
@@ -226,7 +226,7 @@ static struct helptexts { const char *key; const char *help; } helptexts[] = {
 
 { "passphrase.enter", N_(
  ""
-"Please enter the passhrase; this is a secret sentence \n"
+"Please enter the passphrase; this is a secret sentence \n"
 )},
 
 

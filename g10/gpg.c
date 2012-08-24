@@ -792,8 +792,8 @@ strusage( int level )
 	break;
       case 41:	p =
 	    _("Syntax: gpg [options] [files]\n"
-	      "sign, check, encrypt or decrypt\n"
-	      "default operation depends on the input data\n");
+	      "Sign, check, encrypt or decrypt\n"
+	      "Default operation depends on the input data\n");
 	break;
 
       case 31: p = "\nHome: "; break;
