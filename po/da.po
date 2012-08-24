@@ -187,6 +187,9 @@ msgstr "rev- forkert nøgletilbagekald\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1057,10 +1060,15 @@ msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
 # Skal alt dette oversættes eller er det flagene?
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntaks: gpg [flag] [filer]\n"
 "sign, check, encrypt eller decrypt\n"
@@ -1650,7 +1658,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
@@ -1739,7 +1747,7 @@ msgid ""
 "self-signatures will be advanced by one second.\n"
 msgstr ""
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr ""
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -3815,6 +3823,7 @@ msgstr "ADVARSEL: '%s' er en tom fil\n"
 msgid "Uncompressed"
 msgstr "ikke bearbejdet"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "ikke bearbejdet"
@@ -4002,6 +4011,16 @@ msgstr "rev- forkert nøgletilbagekald\n"
 msgid "revocation comment: "
 msgstr ""
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr ""
 
@@ -4672,6 +4691,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
@@ -4998,8 +5025,11 @@ msgstr "c"
 msgid "WARNING: using insecure memory!\n"
 msgstr "Advarsel: benytter ubeskyttet hukommelse!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr ""
+#, fuzzy
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
+msgstr "rev- forkert nøgletilbagekald\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "operation er ikke mulig uden beskyttet hukommelse indlæst\n"

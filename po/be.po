@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2003-10-30 16:35+0200\n"
+"PO-Revision-Date: 2012-08-24 17:19+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nab@mail.by>\n"
 "Language-Team: Belarusian <i18n@mova.org>\n"
 "MIME-Version: 1.0\n"
@@ -175,6 +175,9 @@ msgstr "Калі ласка, абярыце від ключа, які Вам п�
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1026,8 +1029,8 @@ msgstr "Выкарыстаньне: gpg [выбары] [файлы] (-h для �
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Сынтаксіс: gpg [выбары] [файлы]\n"
 "sign, check, encrypt ці decrypt\n"
@@ -1595,7 +1598,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 
 msgid "Answer \"yes\" (or just \"y\") if it is okay to generate the sub key."
@@ -1684,8 +1687,14 @@ msgid ""
 "self-signatures will be advanced by one second.\n"
 msgstr ""
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+#, fuzzy
+#| msgid ""
+#| "Enter the new passphrase for this secret key.\n"
+#| "\n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr ""
+"Увядзіце новы пароль для гэтага сакрэтнага ключа.\n"
+"\n"
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
 msgstr ""
@@ -3685,6 +3694,7 @@ msgstr ""
 msgid "Uncompressed"
 msgstr ""
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr ""
 
@@ -3867,6 +3877,16 @@ msgstr ""
 msgid "revocation comment: "
 msgstr ""
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr ""
 
@@ -4512,6 +4532,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
@@ -4833,9 +4861,12 @@ msgstr ""
 msgid "WARNING: using insecure memory!\n"
 msgstr "УВАГА! Выкарыстоўваецца небясьпечная памяць!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
 msgstr ""
-"па больш падрабязныя зьвесткі шукайце на http://www.gnupg.org/faq.html\n"
+"па больш падрабязныя зьвесткі шукайце на http://www.gnupg.org/documentation/"
+"faqs.html\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "дзеяньне немагчымае без распачатае бясьпечнае памяці\n"

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2002-09-13 18:26+0100\n"
+"PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
 "MIME-Version: 1.0\n"
@@ -187,6 +187,9 @@ msgstr "motivo da revocação: "
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1072,8 +1075,8 @@ msgstr "Uso: gpg [opções] [ficheiros] (-h para ajuda)"
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sintaxe: gpg [opções] [ficheiros]\n"
 "assina, verifica, cifra ou decifra\n"
@@ -1679,7 +1682,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 "N  para mudar o nome.\n"
 "C  para mudar o comentário.\n"
@@ -1822,7 +1825,7 @@ msgstr ""
 "O 'timestamp' de todas as auto-assinaturas afectuadas será avançado\n"
 "em um segundo.\n"
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr "Por favor digite a frase secreta \n"
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -4007,6 +4010,7 @@ msgstr "AVISO: \"%s\" é uma opção depreciada\n"
 msgid "Uncompressed"
 msgstr "não processado"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "não processado"
@@ -4196,6 +4200,16 @@ msgstr "motivo da revocação: "
 msgid "revocation comment: "
 msgstr "comentário da revocação: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4899,6 +4913,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
@@ -5228,8 +5250,12 @@ msgstr "c"
 msgid "WARNING: using insecure memory!\n"
 msgstr "AVISO: a utilizar memória insegura!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "por favor veja http://www.gnupg.org/faq.html para mais informações\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
+msgstr ""
+"por favor veja http://www.gnupg.org/documentation/faqs.html para mais "
+"informações\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "a operação não é possível sem memória segura inicializada\n"

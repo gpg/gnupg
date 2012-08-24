@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.0.6d\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2002-04-14 14:33+0100\n"
+"PO-Revision-Date: 2012-08-24 17:22+0200\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -185,6 +185,9 @@ msgstr "Kialo por revoko: "
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1062,8 +1065,8 @@ msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sintakso: gpg [opcioj] [dosieroj]\n"
 "subskribi, kontroli, æifri aý malæifri\n"
@@ -1665,7 +1668,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 "N  por þanøi la nomon.\n"
 "K  por þanøi la komenton.\n"
@@ -1809,7 +1812,7 @@ msgstr ""
 "al la aktuala listo de preferoj. La dato de æiuj trafitaj\n"
 "mem-subskriboj estos antaýenigitaj je unu sekundo.\n"
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -4000,6 +4003,7 @@ msgstr "AVERTO: '%s' estas malplena dosiero\n"
 msgid "Uncompressed"
 msgstr "ne traktita"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 #, fuzzy
 msgid "uncompressed|none"
 msgstr "ne traktita"
@@ -4189,6 +4193,16 @@ msgstr "Kialo por revoko: "
 msgid "revocation comment: "
 msgstr "Komento pri revoko: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMfFsS"
 
@@ -4886,6 +4900,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
@@ -5214,8 +5236,12 @@ msgstr "k"
 msgid "WARNING: using insecure memory!\n"
 msgstr "Averto: uzas malsekuran memoron!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "bonvolu vidi http://www.gnupg.org/faq.html por pliaj informoj\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
+msgstr ""
+"bonvolu vidi http://www.gnupg.org/documentation/faqs.html por pliaj "
+"informoj\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "operacio ne eblas sen sekura memoro kun komenca valoro\n"

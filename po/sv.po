@@ -24,7 +24,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2008-07-20 14:34+0100\n"
+"PO-Revision-Date: 2012-08-24 17:17+0200\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -208,6 +208,9 @@ msgstr "Välj anledning till varför nyckeln spärras:\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "PIN-kod för CHV%d är för kort; minimumlängd är %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1065,8 +1068,8 @@ msgstr "Användning: gpg [flaggor] [filer] (-h för hjälp)"
 # Om inget kommando anges (decrypt/encrypt etc) väljs åtgärd efter indata.
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntax: gpg [flaggor] [filer]\n"
 "signera, kontrollera, kryptera eller dekryptera\n"
@@ -1685,7 +1688,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 "N  för att ändra namnet.\n"
 "C  för att ändra kommentaren.\n"
@@ -1844,7 +1847,7 @@ msgstr ""
 "påverkade\n"
 "självsignaturer kommer att flyttas fram en sekund.\n"
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr "Ange en lösenfras. Detta är en hemlig mening\n"
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -3971,6 +3974,7 @@ msgstr "VARNING: \"%s\" är ett föråldrat kommando - använd det inte\n"
 msgid "Uncompressed"
 msgstr "Okomprimerad"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "okomprimerad|ingen"
 
@@ -4161,6 +4165,16 @@ msgid "revocation comment: "
 msgstr "spärrkommentar: "
 
 # ej kristallklart vad förkortningarna står för
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImHhAsS"
 
@@ -4885,6 +4899,14 @@ msgstr "använder tillitsmodellen %s\n"
 #    It gets passed to atoi() so everything after the number is
 #    essentially a comment and need not be translated.  Either key and
 #    uid are both NULL, or neither are NULL. */
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "15"
 
@@ -5216,8 +5238,10 @@ msgstr "aAsS"
 msgid "WARNING: using insecure memory!\n"
 msgstr "VARNING: använder osäkert minne!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "se http://www.gnupg.org/faq.html för mer information\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
+msgstr "se http://www.gnupg.org/documentation/faqs.html för mer information\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "åtgärden är inte möjlig utan initierat säkert minne\n"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2011-08-28 10:36+0300\n"
+"PO-Revision-Date: 2012-08-24 17:18+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "MIME-Version: 1.0\n"
@@ -195,6 +195,9 @@ msgstr "||Вкажіть код скидання коду картки"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "Занадто короткий код скидання; мінімальна довжина — %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|RN|Новий код скидання"
 
@@ -1055,8 +1058,8 @@ msgstr "Використання: gpg [параметри] [файли] (-h — 
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Синтаксис: gpg [параметри] [файли]\n"
 "Підписування, перевірка підписів, шифрування або розшифрування\n"
@@ -1682,7 +1685,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 "N  — змінити ім’я.\n"
 "C  — змінити коментар.\n"
@@ -1828,7 +1831,7 @@ msgstr ""
 "на поточний список переваг. Часову позначку всіх змінених самопідписів\n"
 "буде посунуто на одну секунду вперед.\n"
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr "Вкажіть пароль. Паролем має бути невідома стороннім група символів \n"
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -3943,6 +3946,7 @@ msgstr "УВАГА: «%s» вважається застарілою коман�
 msgid "Uncompressed"
 msgstr "Нестиснений"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "uncompressed|немає"
 
@@ -4131,6 +4135,16 @@ msgstr "причина відкликання: "
 msgid "revocation comment: "
 msgstr "коментар щодо відкликання: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4829,6 +4843,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "використовуємо модель довіри %s\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
 
@@ -5149,9 +5171,12 @@ msgstr "cCсС"
 msgid "WARNING: using insecure memory!\n"
 msgstr "УВАГА: використовуємо незахищену область пам’яті!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
 msgstr ""
-"докладніші дані можна знайти на сторінці http://www.gnupg.org/faq.html\n"
+"докладніші дані можна знайти на сторінці http://www.gnupg.org/documentation/"
+"faqs.html\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "дію не можна виконувати без ініціалізації захищеної області пам’яті\n"

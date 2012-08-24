@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.7\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2007-11-26 13:41+0800\n"
+"PO-Revision-Date: 2012-08-24 17:18+0200\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists."
 "sourceforge.net >\n"
@@ -193,6 +193,9 @@ msgstr "请选择吊销的原因：\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "CHV%d 的 PIN 太短；最小长度为 %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1022,8 +1025,8 @@ msgstr "用法： gpg [选项] [文件] (用 -h 求助)"
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "语法：gpg [选项] [文件名]\n"
 "签名、检查、加密或解密\n"
@@ -1602,7 +1605,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 "N  修改姓名。\n"
 "C  修改注释。\n"
@@ -1731,7 +1734,7 @@ msgstr ""
 "用现有的首选项更新所有(或选定的)用户标识的首选项。所有受影响的自身签\n"
 "字的时间戳都会增加一秒钟。\n"
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr "请输入密码：这是一个秘密的句子 \n"
 
 msgid "Please repeat the last passphrase, so you are sure what you typed in."
@@ -3776,6 +3779,7 @@ msgstr "警告：“%s”命令已不建议使用——不要使用它\n"
 msgid "Uncompressed"
 msgstr "不压缩"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "未压缩|无"
 
@@ -3959,6 +3963,16 @@ msgid "revocation comment: "
 msgstr "吊销注释："
 
 #  a string with valid answers
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4614,6 +4628,14 @@ msgstr "无法使用未知的信任模型(%d)――假定使用 %s 信任模型\
 msgid "using %s trust model\n"
 msgstr "使用 %s 信任模型\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
 
@@ -4933,8 +4955,11 @@ msgstr "cC"
 msgid "WARNING: using insecure memory!\n"
 msgstr "警告：正在使用不安全的内存！\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "请访问 http://www.gnupg.org/faq.html 以获得更详细的信息\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
+msgstr ""
+"请访问 http://www.gnupg.org/documentation/faqs.html 以获得更详细的信息\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "安全内存未初始化，不能进行操作\n"

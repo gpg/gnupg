@@ -29,7 +29,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.6\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2007-03-05 10:27+0100\n"
+"PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: Ivar Snaaijer\n"
 "Language-Team: none\n"
 "MIME-Version: 1.0\n"
@@ -216,6 +216,9 @@ msgstr "Please select the reason for the revocation:\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "PIN voor CHV%d is te kort; deze moet minimaal %d lang zijn\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -1070,8 +1073,8 @@ msgstr "Gebruik: gpg [opties] [bestanden] (-h voor hulp)"
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Gebruik: gpg [opties] [bestanden]\n"
 "onderteken, controleer, versleutel of decodeer\n"
@@ -1698,7 +1701,7 @@ msgid ""
 "C  to change the comment.\n"
 "E  to change the email address.\n"
 "O  to continue with key generation.\n"
-"Q  to to quit the key generation."
+"Q  to quit the key generation."
 msgstr ""
 "N  verander de naam.\n"
 "C  verander het commentaar.\n"
@@ -1845,7 +1848,7 @@ msgstr ""
 "met de opgegeven eigenschappen. De tijd indicatie van alle betrokken\n"
 "ondertekeningen zal met een seconde worden opgehoogd.\n"
 
-msgid "Please enter the passhrase; this is a secret sentence \n"
+msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr ""
 "Geef een geheime zin (passphrase); deze zin gebruikt U om de sleutel\n"
 "te beschermen\n"
@@ -3996,6 +3999,7 @@ msgstr "Waarschuwing: “%s” is een afgeraden comando - gebruik het niet\n"
 msgid "Uncompressed"
 msgstr "Ongecomprimeerd"
 
+#. TRANSLATORS: See doc/TRANSLATE about this string.
 msgid "uncompressed|none"
 msgstr "ongecomprimeerd|geen"
 
@@ -4187,6 +4191,16 @@ msgstr "reden van opheffen: "
 msgid "revocation comment: "
 msgstr "opmerking bij opheffen: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4872,6 +4886,14 @@ msgstr "unable to use unknown trust model (%d) - assuming %s trust model\n"
 msgid "using %s trust model\n"
 msgstr "using %s trust model\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
 
@@ -5191,8 +5213,12 @@ msgstr "cC"
 msgid "WARNING: using insecure memory!\n"
 msgstr "WARNING: using insecure memory!\n"
 
-msgid "please see http://www.gnupg.org/faq.html for more information\n"
-msgstr "please see http://www.gnupg.org/faq.html for more information\n"
+msgid ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
+msgstr ""
+"please see http://www.gnupg.org/documentation/faqs.html for more "
+"information\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "operation is not possible without initialized secure memory\n"
