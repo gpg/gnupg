@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-05-08 15:17+0200\n"
+"PO-Revision-Date: 2012-08-24 10:19+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -66,6 +66,9 @@ msgstr ""
 "Bitte geben Sie Ihre Passphrase ein, so daß der geheime Schlüssel benutzt "
 "werden kann."
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (Versuch %d von %d)"
@@ -283,7 +286,7 @@ msgid "Yes, protection is not needed"
 msgstr "Ja, ein Schutz ist nicht notwendig"
 
 #, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Bitte geben Sie die Passphrase ein,%0Aum Ihren Schlüssel zu schützen."
 
 msgid "Please enter the new passphrase"
@@ -1813,8 +1816,8 @@ msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
 
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Aufruf: gpg [Optionen] [Dateien]\n"
 "Signieren, prüfen, verschlüsseln, entschlüsseln.\n"
@@ -1882,7 +1885,9 @@ msgstr ""
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
-msgstr "WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses der Konfigurationsdatei '%s'\n"
+msgstr ""
+"WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses der "
+"Konfigurationsdatei '%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
@@ -1898,7 +1903,9 @@ msgstr ""
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
-msgstr "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses der Konfigurationsdatei '%s'\n"
+msgstr ""
+"WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses der "
+"Konfigurationsdatei '%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
@@ -3045,8 +3052,10 @@ msgid ""
 "  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
-"* Dem 'sign'-Befehl darf ein 'l' für nicht exportfähige Signaturen vorangestellt werden (\"lsign\"),\n"
-"  ein 't' für 'Trust'-Signatur (\"tsign\"), ein 'nr' für unwiderrufbare Signaturen\n"
+"* Dem 'sign'-Befehl darf ein 'l' für nicht exportfähige Signaturen "
+"vorangestellt werden (\"lsign\"),\n"
+"  ein 't' für 'Trust'-Signatur (\"tsign\"), ein 'nr' für unwiderrufbare "
+"Signaturen\n"
 " (\"nrsign\"), oder jede Kombination davon (\"ltsign\", \"tnrsign\", etc.).\n"
 
 msgid "Key is revoked."
@@ -4476,6 +4485,16 @@ msgstr "Grund für Widerruf: "
 msgid "revocation comment: "
 msgstr "Widerruf-Bemerkung: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4830,7 +4849,7 @@ msgid "%s key %s uses an unsafe (%zu bit) hash\n"
 msgstr "%s-Schlüssel %s verwendet ein unsicheres (%zu-Bit) Hashverfahren\n"
 
 #, c-format
-msgid "%s key %s requires a %zu bit or larger hash (hash is %s\n"
+msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 "%s-Schlüssel %s benötigt einen mindestens %zu Bit langen Hash (Hash ist %s)\n"
 
@@ -5160,6 +5179,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "verwende Vertrauensmodell %s\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "10"
 
@@ -5282,7 +5309,7 @@ msgstr "Aufruf: kbxutil [Optionen] [Dateien] (-h für Hilfe)"
 
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
+"List, export, import Keybox data\n"
 msgstr ""
 "Syntax: kbxutil [Optionen] [Dateien]\n"
 "Anlisten exportieren und Importieren von KeyBox Dateien\n"
@@ -5420,6 +5447,9 @@ msgstr "Bitte geben Sie den Rückstellcode für diese Karte ein"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "Der Rückstellcode ist zu kurz; die Mindestlänge beträgt %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|RN|Neuer Rückstellcode"
 
@@ -5616,8 +5646,8 @@ msgstr "Anzahl der übereinstimmenden Zertifikate: %d\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "Schlüsselsuche im Cache des Dirmngr schlug fehl: %s\n"
 
-msgid "failed to allocated keyDB handle\n"
-msgstr "Ein keyDB Handle konnte nicht bereitgestellt werden\n"
+msgid "failed to allocate keyDB handle\n"
+msgstr "Kann keinen KeyDB Handler bereitstellen\n"
 
 msgid "certificate has been revoked"
 msgstr "Das Zertifikat wurde widerrufen"
@@ -5800,18 +5830,18 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "Fehler beim Holen der Schlüsselbenutzungsinformationen: %s\n"
 
-msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr "Das Zertifikat hätte nicht zum Zertifizieren benutzt werden sollen\n"
 
-msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 "Das Zertifikat hätte nicht zum Signieren von OCSP Antworten benutzt werden "
 "sollen\n"
 
-msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr "Das Zertifikat hätte nicht zum Verschlüsseln benutzt werden sollen\n"
 
-msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr "Das Zertifikat hätte nicht zum Signieren benutzt werden sollen\n"
 
 msgid "certificate is not usable for encryption\n"
@@ -6118,8 +6148,8 @@ msgstr "Aufruf: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
 
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntax: gpgsm [Optionen] [Dateien]\n"
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME Protokoll\n"
@@ -6170,9 +6200,6 @@ msgstr "Fehler beim Speichern des Zertifikats\n"
 
 msgid "basic certificate checks failed - not imported\n"
 msgstr "Grundlegende Zertifikatprüfungen fehlgeschlagen - nicht importiert\n"
-
-msgid "failed to allocate keyDB handle\n"
-msgstr "Kann keinen KeyDB Handler bereitstellen\n"
 
 #, c-format
 msgid "error getting stored flags: %s\n"
@@ -6769,7 +6796,7 @@ msgstr ""
 msgid " ERROR: The CRL will not be used\n"
 msgstr " FEHLER: Die CRL wird nicht benutzt\n"
 
-msgid " ERROR: This cached CRL may has been tampered with!\n"
+msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr ""
 " FEHLER: Diese zwischengespeicherte CRL ist möglicherweise abgeändert "
 "worden!\n"
@@ -6864,7 +6891,7 @@ msgstr "CRL in den Dirmngr laden"
 msgid "special mode for use by Squid"
 msgstr "Sondermodus für Squid"
 
-msgid "certificates are expected in PEM format"
+msgid "expect certificates in PEM format"
 msgstr "Zertifikate werden im PEM Format erwartet"
 
 msgid "force the use of the default OCSP responder"
@@ -7150,8 +7177,8 @@ msgstr "Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
 
 msgid ""
 "Syntax: dirmngr_ldap [options] [URL]\n"
-"Internal LDAP helper for Dirmngr.\n"
-"Interface and options may change without notice.\n"
+"Internal LDAP helper for Dirmngr\n"
+"Interface and options may change without notice\n"
 msgstr ""
 "Gebrauch: dirmngr_ldap [Optionen] [URL] (-h für Hilfe)\n"
 "Internes LDAP-Hilfsprogramm für Dirmngr.\n"
@@ -7526,7 +7553,7 @@ msgstr "Der Zertifikatkette ist gültig\n"
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
 msgstr "DSA benötigt eine 160 Bit Hashmethode\n"
 
-msgid "certificate should have not been used for CRL signing\n"
+msgid "certificate should not have been used for CRL signing\n"
 msgstr ""
 "Das Zertifikat hätte nicht zum Signieren einer CRL benutzt werden sollen\n"
 
@@ -7921,6 +7948,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "Ein keyDB Handle konnte nicht bereitgestellt werden\n"
 
 #~ msgid "the IDEA cipher plugin is not present\n"
 #~ msgstr "das IDEA-Verschlüsselungs-Plugin ist nicht vorhanden\n"
