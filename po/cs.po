@@ -82,6 +82,9 @@ msgid ""
 msgstr ""
 "Prosím, zadejte vaše heslo, aby pro tuto relaci mohl být odemknut tajný klíč"
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (pokus %d z %d)"
@@ -294,8 +297,9 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Ano, ochrana není třeba"
 
-#, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#, fuzzy, c-format
+#| msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Prosím, pro ochranu svého nového klíče%0A zadejte heslo"
 
 msgid "Please enter the new passphrase"
@@ -1678,10 +1682,15 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Použití: gpg [možnosti] [soubory] (-h pro pomoc)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntaxe: gpg [možnosti] [soubory]\n"
 "podepsat, ověřit, šifrovat nebo dešifrovat\n"
@@ -4369,6 +4378,16 @@ msgstr "důvod pro revokaci: "
 msgid "revocation comment: "
 msgstr "revokační poznámka: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMuUsS"
 
@@ -5068,6 +5087,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "použití modelu důvěry %s\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 "14 fixní délka na kterou se překládá see trustdb.c:uid_trust_string_fixed"
@@ -5287,9 +5314,13 @@ msgstr "zapnout úplné ladění"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Použití: kbxutil [VOLBY] [SOUBORY] (-h pro nápovědu)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: kbxutil [options] [files]\n"
+#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
+"List, export, import Keybox data\n"
 msgstr ""
 "Syntaxe: kbxutil [VOLBY] [SOUBORY]\n"
 "vypisuje, exportuje, importuje schránku na klíče (keybox)\n"
@@ -5425,6 +5456,9 @@ msgstr "||Prosím, zadejte resetační kód karty"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "Resetační kód je příliš krátký; minimální délka je %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|RN|Nový resetační kód"
 
@@ -5433,6 +5467,16 @@ msgstr "|AN|Nový PIN správce"
 
 msgid "|N|New PIN"
 msgstr "|N|Nový PIN"
+
+#, fuzzy
+#| msgid "|A|Please enter the Admin PIN"
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "|A|Prosím, zadejte PIN správce"
+
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please enter the PIN and New PIN"
+msgstr "||Prosím vložte PIN"
 
 msgid "error reading application data\n"
 msgstr "chyba při čtení aplikačních dat\n"
@@ -5626,7 +5670,7 @@ msgstr "počet odpovídajících certifikátů: %d\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "hledání klíče pouze ve vyrovnávací paměti dirmngr neuspělo: %s\n"
 
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "alokace popisovače keyDB se nezdařila\n"
 
 msgid "certificate has been revoked"
@@ -5800,16 +5844,24 @@ msgstr "žádný způsob užití neuveden – předpokládám všechna užití\
 msgid "error getting key usage information: %s\n"
 msgstr "chyba při získání informací o způsobu užití klíče: %s\n"
 
-msgid "certificate should have not been used for certification\n"
+#, fuzzy
+#| msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr "certifikát neměl být použit pro certifikování\n"
 
-msgid "certificate should have not been used for OCSP response signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "certifikát neměl být použit pro podepsání OCSP odpovědi\n"
 
-msgid "certificate should have not been used for encryption\n"
+#, fuzzy
+#| msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr "certifikát neměl použit pro šifrování\n"
 
-msgid "certificate should have not been used for signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr "certifikát neměl být použit pro podepisování\n"
 
 msgid "certificate is not usable for encryption\n"
@@ -6077,10 +6129,15 @@ msgstr "|NÁZEV|použít hashovací algoritmus NÁZEV"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Použití: gpgsm [VOLBY] [SOUBORY] (-h pro nápovědu)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgsm [options] [files]\n"
+#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntaxe: gpgsm [VOLBY] [SOUBORY]\n"
 "podepisuje, ověřuje, šifruje nebo dešifruje pomocí protokolu S/MIME\n"
@@ -6135,9 +6192,6 @@ msgstr "chyba při ukládání certifikátu\n"
 
 msgid "basic certificate checks failed - not imported\n"
 msgstr "základní kontrola certifikátu selhala – neimportováno\n"
-
-msgid "failed to allocate keyDB handle\n"
-msgstr "alokace popisovače keyDB se nezdařila\n"
 
 #, c-format
 msgid "error getting stored flags: %s\n"
@@ -6638,6 +6692,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [VOLBY] SOUBOR_SE_VZOREM\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "alokace popisovače keyDB se nezdařila\n"
 
 #~ msgid "Command> "
 #~ msgstr "Příkaz> "

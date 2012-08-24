@@ -62,6 +62,9 @@ msgid ""
 msgstr ""
 "Proszê wprowadziæ swoje has³o, ¿eby odblokowaæ klucz tajny dla tej sesji"
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (próba %d z %d)"
@@ -272,8 +275,9 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Tak, ochrona nie jest potrzebna"
 
-#, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#, fuzzy, c-format
+#| msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Proszê wprowadziæ has³o do%0Azabezpieczenia swojego nowego klucza"
 
 msgid "Please enter the new passphrase"
@@ -1660,10 +1664,15 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Wywo³anie: gpg [opcje] [pliki] (-h podaje pomoc)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sk³adnia: gpg [opcje] [pliki]\n"
 "podpisywanie, sprawdzanie podpisów, szyfrowanie, deszyfrowanie\n"
@@ -4389,6 +4398,16 @@ msgstr "powód uniewa¿nienia: "
 msgid "revocation comment: "
 msgstr "komentarz do uniewa¿nienia: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMwWpP"
 
@@ -5096,6 +5115,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "u¿ycie modelu zaufania %s\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "17"
 
@@ -5315,9 +5342,13 @@ msgstr "w³±czenie pe³nej diagnostyki"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Wywo³anie: kbxutil [opcje] [pliki] (-h podaje pomoc)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: kbxutil [options] [files]\n"
+#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
+"List, export, import Keybox data\n"
 msgstr ""
 "Sk³adnia: kbxutil [opcje] [pliki]\n"
 "wypisywanie, eksport, import danych Keybox\n"
@@ -5453,6 +5484,9 @@ msgstr "||Proszê wprowadziæ kod resetuj±cy dla karty"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "Kod resetuj±cy zbyt krótki; minimalna d³ugo¶æ to %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|RN|Nowy kod resetuj±cy"
 
@@ -5461,6 +5495,16 @@ msgstr "|AN|Nowy PIN administracyjny"
 
 msgid "|N|New PIN"
 msgstr "|N|Nowy PIN"
+
+#, fuzzy
+#| msgid "|A|Please enter the Admin PIN"
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "|A|Proszê wprowadziæ PIN administracyjny"
+
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please enter the PIN and New PIN"
+msgstr "||Proszê wpisaæ PIN"
 
 msgid "error reading application data\n"
 msgstr "b³±d podczas odczytu danych aplikacji\n"
@@ -5656,7 +5700,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr ""
 "wyszukiwanie klucza tylko w pamiêci podrêcznej dirmngr nie powiod³o siê: %s\n"
 
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "nie uda³o siê przydzieliæ uchwytu keyDB\n"
 
 msgid "certificate has been revoked"
@@ -5830,16 +5874,24 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "b³±d podczas pobierania informacji o wykorzystaniu klucza: %s\n"
 
-msgid "certificate should have not been used for certification\n"
+#, fuzzy
+#| msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do po¶wiadczania\n"
 
-msgid "certificate should have not been used for OCSP response signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do podpisywania odpowiedzi OCSP\n"
 
-msgid "certificate should have not been used for encryption\n"
+#, fuzzy
+#| msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do szyfrowania\n"
 
-msgid "certificate should have not been used for signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do podpisywania\n"
 
 msgid "certificate is not usable for encryption\n"
@@ -6108,10 +6160,15 @@ msgstr "|NAZWA|u¿ycie tego algorytmu skrótu wiadomo¶ci"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Wywo³anie: gpgsm [opcje] [pliki] (-h podaje pomoc)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgsm [options] [files]\n"
+#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sk³adnia: gpgsm [opcje] [pliki]\n"
 "podpisywanie, sprawdzanie podpisów, szyfrowanie, deszyfrowanie z u¿yciem S/"
@@ -6168,9 +6225,6 @@ msgstr "b³±d zapisywania certyfikatu\n"
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 "podstawowe sprawdzenia certyikatu nie powiod³y siê - nie zaimportowany\n"
-
-msgid "failed to allocate keyDB handle\n"
-msgstr "nie uda³o siê przydzieliæ uchwytu keyDB\n"
 
 #, c-format
 msgid "error getting stored flags: %s\n"
@@ -6674,3 +6728,6 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "nie uda³o siê przydzieliæ uchwytu keyDB\n"

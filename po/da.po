@@ -61,6 +61,9 @@ msgid ""
 "this session"
 msgstr ""
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -271,7 +274,7 @@ msgid "Yes, protection is not needed"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
 "Du skal bruge en kodesætning til at beskytte din hemmelige nøgle.\n"
 "\n"
@@ -1717,10 +1720,15 @@ msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
 # Skal alt dette oversættes eller er det flagene?
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntaks: gpg [flag] [filer]\n"
 "sign, check, encrypt eller decrypt\n"
@@ -4422,6 +4430,16 @@ msgstr "rev- forkert nøgletilbagekald\n"
 msgid "revocation comment: "
 msgstr ""
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr ""
 
@@ -5104,6 +5122,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
@@ -5329,10 +5355,11 @@ msgstr "slå fuld fejltjekning til"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
+#, fuzzy
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
-msgstr ""
+"List, export, import Keybox data\n"
+msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5462,6 +5489,9 @@ msgstr "rev- forkert nøgletilbagekald\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -5470,6 +5500,14 @@ msgstr ""
 
 msgid "|N|New PIN"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "ændr kodesætningen"
+
+#, fuzzy
+msgid "||Please enter the PIN and New PIN"
+msgstr "ændr kodesætningen"
 
 #, fuzzy
 msgid "error reading application data\n"
@@ -5678,7 +5716,7 @@ msgstr "fjernelse af beskyttelse fejlede: %s\n"
 
 # er det klogt at oversætte TrustDB?
 #, fuzzy
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
 #, fuzzy
@@ -5867,16 +5905,16 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "fejl ved skrivning af nøglering `%s': %s\n"
 
-msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr ""
 
-msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
-msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
-msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr ""
 
 msgid "certificate is not usable for encryption\n"
@@ -6163,8 +6201,8 @@ msgstr "Brug: gpg [flag] [filer] (-h for hjælp)"
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntaks: gpg [flag] [filer]\n"
 "sign, check, encrypt eller decrypt\n"
@@ -6222,11 +6260,6 @@ msgstr "Godt certifikat"
 
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
-
-# er det klogt at oversætte TrustDB?
-#, fuzzy
-msgid "failed to allocate keyDB handle\n"
-msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
 #, fuzzy, c-format
 msgid "error getting stored flags: %s\n"
@@ -6731,6 +6764,11 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+# er det klogt at oversætte TrustDB?
+#, fuzzy
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "kunne ikke initialisere TillidsDB: %s\n"
 
 #~ msgid "Please report bugs to <gnupg-bugs@gnu.org>.\n"
 #~ msgstr "Rapportér venligst fejl til <gnupg-bugs@gnu.org>.\n"

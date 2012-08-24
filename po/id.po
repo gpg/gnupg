@@ -61,6 +61,9 @@ msgid ""
 "this session"
 msgstr "Silakan masukkan passphrase; ini kalimat rahasia\n"
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr ""
@@ -267,7 +270,7 @@ msgid "Yes, protection is not needed"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
 "Anda perlu sebuah passphrase untuk melindungi kunci rahasia anda.\n"
 "\n"
@@ -1738,10 +1741,15 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sintaks: gpg [pilihan] [file]\n"
 "tandai, cek, enkripsi atau dekripsi\n"
@@ -4526,6 +4534,16 @@ msgstr "Alasan pembatalan:"
 msgid "revocation comment: "
 msgstr "Komentar pembatalan:"
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -5241,6 +5259,14 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr ""
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr ""
 
@@ -5470,10 +5496,11 @@ msgstr ""
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 
+#, fuzzy
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
-msgstr ""
+"List, export, import Keybox data\n"
+msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5602,6 +5629,9 @@ msgstr "Silakan pilih alasan untuk pembatalan:\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -5610,6 +5640,14 @@ msgstr ""
 
 msgid "|N|New PIN"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "ubah passphrase"
+
+#, fuzzy
+msgid "||Please enter the PIN and New PIN"
+msgstr "ubah passphrase"
 
 #, fuzzy
 msgid "error reading application data\n"
@@ -5816,7 +5854,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "gagal menghapus keyblok: %s\n"
 
 #, fuzzy
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
 #, fuzzy
@@ -6005,16 +6043,16 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
-msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr ""
 
-msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
-msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
-msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr ""
 
 msgid "certificate is not usable for encryption\n"
@@ -6305,8 +6343,8 @@ msgstr "Pemakaian: gpg [pilihan] [file] (-h untuk bantuan)"
 #, fuzzy
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sintaks: gpg [pilihan] [file]\n"
 "tandai, cek, enkripsi atau dekripsi\n"
@@ -6364,10 +6402,6 @@ msgstr "buat sertifikat revokasi"
 
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
-
-#, fuzzy
-msgid "failed to allocate keyDB handle\n"
-msgstr "gagal inisialisasi TrustDB: %s\n"
 
 #, fuzzy, c-format
 msgid "error getting stored flags: %s\n"
@@ -6874,6 +6908,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "gagal inisialisasi TrustDB: %s\n"
 
 #~ msgid "Command> "
 #~ msgstr "Perintah> "

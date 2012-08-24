@@ -82,6 +82,9 @@ msgid ""
 msgstr ""
 "Ange din lösenfras så att den hemliga nyckeln kan låsas upp för denna session"
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (försök %d av %d)"
@@ -290,8 +293,9 @@ msgid "Yes, protection is not needed"
 msgstr "Ja, skydd behövs inte"
 
 # fel kapitalisering i originalet?
-#, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#, fuzzy, c-format
+#| msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Ange lösenfrasen för%0Aför att skydda din nya nyckel"
 
 msgid "Please enter the new passphrase"
@@ -1703,10 +1707,15 @@ msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Användning: gpg [flaggor] [filer] (-h för hjälp)"
 
 # Om inget kommando anges (decrypt/encrypt etc) väljs åtgärd efter indata.
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntax: gpg [flaggor] [filer]\n"
 "signera, kontrollera, kryptera eller dekryptera\n"
@@ -4450,6 +4459,16 @@ msgid "revocation comment: "
 msgstr "spärrningskommentar: "
 
 # ej kristallklart vad förkortningarna står för
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImHhAsS"
 
@@ -5186,6 +5205,14 @@ msgstr "använder tillitsmodellen %s\n"
 #    It gets passed to atoi() so everything after the number is
 #    essentially a comment and need not be translated.  Either key and
 #    uid are both NULL, or neither are NULL. */
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "15"
 
@@ -5408,9 +5435,13 @@ msgstr "aktivera fullständigt felsökningsläge"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Användning: kbxutil [flaggor] [filer] (-h för hjälp)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: kbxutil [options] [files]\n"
+#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
+"List, export, import Keybox data\n"
 msgstr ""
 "Syntax: kbxutil [flaggor] [filer]\n"
 "lista, exportera, importera nyckelskåpsdata\n"
@@ -5542,6 +5573,9 @@ msgstr "||Ange nollställningskoden för kortet"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "Nollställningskoden är för kort; minimumlängd är %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|RN|Ny nollställningskod"
 
@@ -5550,6 +5584,16 @@ msgstr "|AN|Ny Admin PIN-kod"
 
 msgid "|N|New PIN"
 msgstr "|N|Ny PIN-kod"
+
+#, fuzzy
+#| msgid "|A|Please enter the Admin PIN"
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "|A|Ange administratörens PIN-kod"
+
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please enter the PIN and New PIN"
+msgstr "||Ange PIN-koden"
 
 msgid "error reading application data\n"
 msgstr "fel vid läsning av programdata\n"
@@ -5745,7 +5789,7 @@ msgstr "antal matchande certifikat: %d\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "uppslag av endast-mellanlagrad dirmngr-nyckel misslyckades: %s\n"
 
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "misslyckades med att allokera keyDB-hanterare\n"
 
 msgid "certificate has been revoked"
@@ -5920,16 +5964,24 @@ msgstr "ingen nyckelanvändning angiven - antar alla användningsområden\n"
 msgid "error getting key usage information: %s\n"
 msgstr "fel vid hämtning av nyckelanvändningsinformation: %s\n"
 
-msgid "certificate should have not been used for certification\n"
+#, fuzzy
+#| msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr "certifikatet skulle inte använts för certifiering\n"
 
-msgid "certificate should have not been used for OCSP response signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "certifikatet skulle inte använts för signering av OCSP-svar\n"
 
-msgid "certificate should have not been used for encryption\n"
+#, fuzzy
+#| msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr "certifikatet skulle inte använts för kryptering\n"
 
-msgid "certificate should have not been used for signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr "certifikatet skulle inte använts för signering\n"
 
 msgid "certificate is not usable for encryption\n"
@@ -6201,10 +6253,15 @@ msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Användning: gpgsm [flaggor] [filer] (-h för hjälp)"
 
 # Om inget kommando anges (decrypt/encrypt etc) väljs åtgärd efter indata.
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgsm [options] [files]\n"
+#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Syntax: gpgsm [flaggor] [filer]\n"
 "signera, kontrollera, kryptera eller dekryptera med S/MIME-protokollet\n"
@@ -6259,9 +6316,6 @@ msgstr "fel vid lagring av certifikat\n"
 
 msgid "basic certificate checks failed - not imported\n"
 msgstr "enkla certifikatkontroller misslyckades - importeras inte\n"
-
-msgid "failed to allocate keyDB handle\n"
-msgstr "misslyckades med att allokera keyDB-hanterare\n"
 
 #, c-format
 msgid "error getting stored flags: %s\n"
@@ -6765,6 +6819,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "misslyckades med att allokera keyDB-hanterare\n"
 
 #~ msgid "Command> "
 #~ msgstr "Kommando> "

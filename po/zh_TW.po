@@ -64,6 +64,9 @@ msgid ""
 "this session"
 msgstr "請輸入你的密語以便在此階段作業中解開私鑰"
 
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "設定錯誤 %s (第 %d 次嘗試, 最多 %d 次)"
@@ -259,8 +262,9 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "是, 不需要任何保護"
 
-#, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#, fuzzy, c-format
+#| msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "請輸入密語至%0A以保護你的新金鑰"
 
 msgid "Please enter the new passphrase"
@@ -1621,10 +1625,15 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "用法: gpg [選項] [檔案] (或用 -h 求助)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "語法: gpg [選項] [檔案]\n"
 "簽署, 檢查, 加密或解密\n"
@@ -4255,6 +4264,16 @@ msgid "revocation comment: "
 msgstr "撤銷註釋: "
 
 #  a string with valid answers
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4923,6 +4942,14 @@ msgstr "無法使用未知的信任模型 (%d) - 現在採用 %s 信任模型\n"
 msgid "using %s trust model\n"
 msgstr "正在使用 %s 信任模型\n"
 
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
 msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 msgstr "10 譯者請參見 trustdb.c:uid_trust_string_fixed"
 
@@ -5138,9 +5165,13 @@ msgstr "啟用完整除錯"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "用法: kbxutil [選項] [檔案] (或用 -h 求助)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: kbxutil [options] [files]\n"
+#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
+"List, export, import Keybox data\n"
 msgstr ""
 "語法: kbxutil [選項] [檔案]\n"
 "列出, 匯出, 匯入金鑰鑰匙盒資料\n"
@@ -5265,6 +5296,9 @@ msgstr "||請輸入卡片的重設碼"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "重設碼太短; 長度最少要有 %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|RN|新增重設碼"
 
@@ -5273,6 +5307,16 @@ msgstr "|AN|新增管理者個人識別碼 (PIN)"
 
 msgid "|N|New PIN"
 msgstr "|N|新增個人識別碼 (PIN)"
+
+#, fuzzy
+#| msgid "|A|Please enter the Admin PIN"
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "|A|請輸入管理者 PIN"
+
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please enter the PIN and New PIN"
+msgstr "||請輸入個人識別碼 (PIN)"
 
 msgid "error reading application data\n"
 msgstr "讀取應用程式資料時出錯\n"
@@ -5465,7 +5509,7 @@ msgstr "吻合的憑證數量: %d\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "尋找限於 dirmngr 快取的金鑰時失敗: %s\n"
 
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "配置 keyDB handle 失敗\n"
 
 msgid "certificate has been revoked"
@@ -5638,16 +5682,24 @@ msgstr "沒有指定的金鑰用途 - 假設為所有的用途\n"
 msgid "error getting key usage information: %s\n"
 msgstr "取得金鑰用途資訊時出錯: %s\n"
 
-msgid "certificate should have not been used for certification\n"
+#, fuzzy
+#| msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr "憑證應該還未被用於憑證\n"
 
-msgid "certificate should have not been used for OCSP response signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "憑證應該還未被用於 OCSP 回應簽署\n"
 
-msgid "certificate should have not been used for encryption\n"
+#, fuzzy
+#| msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr "憑證應該還未被用於加密\n"
 
-msgid "certificate should have not been used for signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr "憑證應該還未被用於簽署\n"
 
 msgid "certificate is not usable for encryption\n"
@@ -5913,10 +5965,15 @@ msgstr "|名稱|使用「名稱」訊息摘要演算法"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "用法: gpgsm [選項] [檔案] (或用 -h 求助)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgsm [options] [files]\n"
+#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
+#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "語法: gpgsm [選項] [檔案]\n"
 "用 S/MIME 協定來簽署, 檢查, 加密或解密\n"
@@ -5971,9 +6028,6 @@ msgstr "存放憑證時出錯\n"
 
 msgid "basic certificate checks failed - not imported\n"
 msgstr "基本的憑證檢查失敗了 - 未匯入\n"
-
-msgid "failed to allocate keyDB handle\n"
-msgstr "配置 keyDB handle 失敗\n"
 
 #, c-format
 msgid "error getting stored flags: %s\n"
@@ -6469,6 +6523,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "配置 keyDB handle 失敗\n"
 
 #~ msgid "Command> "
 #~ msgstr "指令> "
