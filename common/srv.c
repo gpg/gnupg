@@ -326,6 +326,6 @@ main(int argc,char *argv[])
 
 /*
 Local Variables:
-compile-command: "cc -DTEST -I.. -I../include -Wall -g -o srv srv.c -lresolv  ../tools/no-libgcrypt.o  ../jnlib/libjnlib.a"
+compile-command: "cc -DTEST -I.. -I../include -Wall -g -o srv srv.c -lresolv  ../tools/no-libgcrypt.o  ../common/libcommon.a"
 End:
 */

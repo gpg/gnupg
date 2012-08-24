@@ -22,7 +22,7 @@
 
 
 /* Replace libgcrypt's malloc functions which are used by
-   ../jnlib/libjnlib.a .  ../common/util.h defines macros to map them
+   ../common/libcommon.a .  ../common/util.h defines macros to map them
    to xmalloc etc. */
 static void
 out_of_memory (void)

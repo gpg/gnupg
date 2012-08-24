@@ -47,7 +47,7 @@
 #endif
 #if !defined(SUN_LEN) || !defined(PF_LOCAL) || !defined(AF_LOCAL)
 #define JNLIB_NEED_AFLOCAL
-#include "../jnlib/mischelp.h"
+#include "../common/mischelp.h"
 #endif
 
 

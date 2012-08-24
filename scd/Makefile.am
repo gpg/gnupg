@@ -61,7 +61,7 @@ scdaemon_LDADD = $(libcommonpth) ../gl/libgnu.a \
 #	app.c app-common.h app-help.c $(card_apps)
 #
 #sc_copykeys_LDADD = \
-#	../jnlib/libjnlib.a ../common/libcommon.a \
+#	../common/libcommon.a \
 #	../common/libsimple-pwquery.a \
 #	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 #	 $(LIBUSB_LIBS) \
