@@ -146,3 +146,4 @@ tools/symcryptrun
 tools/watchgnupg
 tools/gpgtar
 g13/g13
+/po/gnupg.pot
