@@ -1514,6 +1514,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
+    sig->digest_algo = digest_algo;
 
     /* We need to create a new timestamp so that new sig expiration
        calculations are done correctly... */
