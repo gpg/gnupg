@@ -101,9 +101,14 @@ typedef unsigned long u32;
 # undef u64	    /* maybe there is a macro with this name */
 # if SIZEOF_UINT64_T == 8
 typedef uint64_t u64;
+# ifdef UINT64_C
 #  define U64_C(c) (UINT64_C(c))
-#  define HAVE_U64_TYPEDEF
-# elif SIZEOF_UNSIGNED_INT == 8
+# else
+   /* make a best guess, could happen with UNIX98 <inttypes.h> */
+#  define U64_C(c) (c)
+# endif
+# define HAVE_U64_TYPEDEF
+#elif SIZEOF_UNSIGNED_INT == 8
 typedef unsigned int u64;
 #  define U64_C(c) (c ## U)
 #  define HAVE_U64_TYPEDEF
