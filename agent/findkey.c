@@ -824,15 +824,15 @@ agent_public_key_from_file (ctrl_t ctrl,
     {
       p = stpcpy (p, "(uri %b)");
       assert (argidx+1 < DIM (args));
-      args[argidx++] = (void *)uri_length;
-      args[argidx++] = (void *)uri;
+      args[argidx++] = (void *)&uri_length;
+      args[argidx++] = (void *)&uri;
     }
   if (comment)
     {
       p = stpcpy (p, "(comment %b)");
       assert (argidx+1 < DIM (args));
-      args[argidx++] = (void *)comment_length;
-      args[argidx++] = (void*)comment;
+      args[argidx++] = (void *)&comment_length;
+      args[argidx++] = (void*)&comment;
     }
   *p++ = ')';
   *p = 0;
