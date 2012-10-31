@@ -239,6 +239,7 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_E_SYSTEM_CANCELLED        0x80100012
 #define PCSC_E_NOT_TRANSACTED          0x80100016
 #define PCSC_E_READER_UNAVAILABLE      0x80100017
+#define PCSC_E_NO_SERVICE              0x8010001D
 #define PCSC_W_REMOVED_CARD            0x80100069
 
 #define CM_IOCTL_GET_FEATURE_REQUEST (0x42000000 + 3400)
@@ -1692,7 +1693,7 @@ open_pcsc_reader_direct (const char *portstr)
       log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       reader_table[slot].used = 0;
-      if (err == 0x8010001d)
+      if (err == PCSC_E_NO_SERVICE)
         pcsc_no_service = 1;
       return -1;
     }
@@ -1795,6 +1796,7 @@ open_pcsc_reader_wrapped (const char *portstr)
     {
       log_error ("can't run PC/SC access module '%s': %s\n",
                  wrapperpgm, strerror (errno));
+      pcsc_no_service = 1;
       return -1;
     }
 
@@ -1891,6 +1893,8 @@ open_pcsc_reader_wrapped (const char *portstr)
     ;
 #undef WAIT
 
+  pcsc_no_service = 1;
+
   /* Now send the open request. */
   msgbuf[0] = 0x01; /* OPEN command. */
   len = portstr? strlen (portstr):0;
@@ -1923,10 +1927,15 @@ open_pcsc_reader_wrapped (const char *portstr)
     {
       log_error ("PC/SC returned a too large ATR (len=%lx)\n",
                  (unsigned long)len);
+      pcsc_no_service = 0;
       goto command_failed;
     }
   err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
                        | (msgbuf[7] << 8 ) | msgbuf[8]);
+
+  if (err != PCSC_E_NO_SERVICE)
+    pcsc_no_service = 0;
+
   if (err)
     {
       log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));
