@@ -158,6 +158,8 @@ struct app_local_s {
 
   unsigned char status_indicator; /* The card status indicator.  */
 
+  unsigned int manufacturer:16;   /* Manufacturer ID from the s/n.  */
+
   /* Keep track of the ISO card capabilities.  */
   struct
   {
@@ -3462,6 +3464,12 @@ do_decipher (app_t app, const char *keyidstr,
                              indata, indatalen, le_value, padind,
                              outdata, outdatalen);
       xfree (fixbuf);
+
+      if (gpg_err_code (rc) == GPG_ERR_CARD /* actual SW is 0x640a */
+          && app->app_local->manufacturer == 5
+          && app->card_version == 0x0200)
+        log_info ("NOTE: Cards with manufacturer id 5 and s/n <= 346 (0x15a)"
+                  " do not work with encryption keys > 2048 bits\n");
     }
 
   return rc;
@@ -3748,6 +3756,8 @@ app_select_openpgp (app_t app)
           rc = gpg_error (gpg_err_code_from_errno (errno));
           goto leave;
         }
+
+      app->app_local->manufacturer = manufacturer;
 
       if (app->card_version >= 0x0200)
         app->app_local->extcap.is_v2 = 1;

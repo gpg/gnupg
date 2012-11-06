@@ -1034,7 +1034,7 @@ agent_scd_pksign (const char *serialno, int hashalgo,
 
 
 /* Decrypt INDATA of length INDATALEN using the card identified by
-   SERIALNO.  Return the plaintext in a nwly allocated buffer stored
+   SERIALNO.  Return the plaintext in a newly allocated buffer stored
    at the address of R_BUF.
 
    Note, we currently support only RSA or more exactly algorithms
@@ -1058,20 +1058,26 @@ agent_scd_pkdecrypt (const char *serialno,
     return rc;
 
   /* FIXME: use secure memory where appropriate */
-  if (indatalen*2 + 50 > DIM(line))
-    return gpg_error (GPG_ERR_GENERAL);
 
   rc = select_openpgp (serialno);
   if (rc)
     return rc;
 
-  sprintf (line, "SCD SETDATA ");
-  p = line + strlen (line);
-  for (i=0; i < indatalen ; i++, p += 2 )
-    sprintf (p, "%02X", indata[i]);
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
+  for (len = 0; len < indatalen;)
+    {
+      p = stpcpy (line, "SCD SETDATA ");
+      if (len)
+        p = stpcpy (p, "--append ");
+      for (i=0; len < indatalen && (i*2 < DIM(line)-50); i++, len++)
+        {
+          sprintf (p, "%02X", indata[len]);
+          p += 2;
+        }
+      rc = assuan_transact (agent_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
     return rc;
+    }
 
   init_membuf (&data, 1024);
   snprintf (line, DIM(line)-1, "SCD PKDECRYPT %s", serialno);
