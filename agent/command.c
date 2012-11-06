@@ -158,7 +158,7 @@ clear_outbuf (membuf_t *mb)
   p = get_membuf (mb, &n);
   if (p)
     {
-      memset (p, 0, n);
+      wipememory (p, n);
       xfree (p);
     }
 }
