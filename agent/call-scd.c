@@ -926,17 +926,22 @@ agent_card_pkdecrypt (ctrl_t ctrl,
     return rc;
 
   /* FIXME: use secure memory where appropriate */
-  if (indatalen*2 + 50 > DIM(line))
-    return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
 
-  sprintf (line, "SETDATA ");
-  p = line + strlen (line);
-  for (i=0; i < indatalen ; i++, p += 2 )
-    sprintf (p, "%02X", indata[i]);
-  rc = assuan_transact (ctrl->scd_local->ctx, line,
-                        NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return unlock_scd (ctrl, rc);
+  for (len = 0; len < indatalen;)
+    {
+      p = stpcpy (line, "SETDATA ");
+      if (len)
+        p = stpcpy (p, "--append ");
+      for (i=0; len < indatalen && (i*2 < DIM(line)-50); i++, len++)
+        {
+          sprintf (p, "%02X", indata[len]);
+          p += 2;
+        }
+      rc = assuan_transact (ctrl->scd_local->ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        return unlock_scd (ctrl, rc);
+    }
 
   init_membuf (&data, 1024);
   inqparm.ctx = ctrl->scd_local->ctx;

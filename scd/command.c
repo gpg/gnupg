@@ -48,6 +48,9 @@
 /* Maximum allowed size of key data as used in inquiries. */
 #define MAXLEN_KEYDATA 4096
 
+/* Maximum allowed total data size for SETDATA.  */
+#define MAXLEN_SETDATA 4096
+
 /* Maximum allowed size of certificate data as used in inquiries. */
 #define MAXLEN_CERTDATA 16384
 
@@ -848,16 +851,23 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_setdata[] =
-  "SETDATA <hexstring> \n"
+  "SETDATA [--append] <hexstring>\n"
   "\n"
-  "The client should use this command to tell us the data he want to sign.";
+  "The client should use this command to tell us the data he want to sign.\n"
+  "With the option --append, the data is appended to the data set by a\n"
+  "previous SETDATA command.";
 static gpg_error_t
 cmd_setdata (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int n;
+  int append;
+  int n, i, off;
   char *p;
   unsigned char *buf;
+
+  append = (ctrl->in_data.value && has_option (line, "--append"));
+
+  line = skip_options (line);
 
   if (locked_session && locked_session != ctrl->server_local)
     return gpg_error (GPG_ERR_LOCKED);
@@ -872,15 +882,31 @@ cmd_setdata (assuan_context_t ctx, char *line)
   if ((n&1))
     return set_error (GPG_ERR_ASS_PARAMETER, "odd number of digits");
   n /= 2;
-  buf = xtrymalloc (n);
+  if (append)
+    {
+      if (ctrl->in_data.valuelen + n > MAXLEN_SETDATA)
+        return set_error (GPG_ERR_TOO_LARGE,
+                          "limit on total size of data reached");
+      buf = xtrymalloc (ctrl->in_data.valuelen + n);
+    }
+  else
+    buf = xtrymalloc (n);
   if (!buf)
     return out_of_core ();
 
+  if (append)
+    {
+      memcpy (buf, ctrl->in_data.value, ctrl->in_data.valuelen);
+      off = ctrl->in_data.valuelen;
+    }
+  else
+    off = 0;
+  for (p=line, i=0; i < n; p += 2, i++)
+    buf[off+i] = xtoi_2 (p);
+
   xfree (ctrl->in_data.value);
   ctrl->in_data.value = buf;
-  ctrl->in_data.valuelen = n;
-  for (p=line, n=0; n < ctrl->in_data.valuelen; p += 2, n++)
-    buf[n] = xtoi_2 (p);
+  ctrl->in_data.valuelen = off+n;
   return 0;
 }
 
