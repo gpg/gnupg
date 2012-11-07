@@ -155,7 +155,7 @@ getfnc_gather_random (void))(void (*)(const void*, size_t, int), int,
 {
 #ifdef USE_ALL_RANDOM_MODULES
   static int (*fnc)(void (*)(const void*, size_t, int), int, size_t, int);
-  
+
   if (fnc)
     return fnc;
 # ifdef USE_RNDLINUX
@@ -231,7 +231,7 @@ static void
 burn_stack (int bytes)
 {
     char buf[128];
-    
+
     wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
@@ -293,7 +293,7 @@ random_is_faked()
 }
 
 /* Disable locking of seed files. */
-void 
+void
 random_disable_locking ()
 {
   no_seed_file_locking = 1;
@@ -401,7 +401,7 @@ lock_seed_file (int fd, const char *fname, int for_write)
 
   if (no_seed_file_locking)
     return 0;
-  
+
   /* We take a lock on the entire file. */
   memset (&lck, 0, sizeof lck);
   lck.l_type = for_write? F_WRLCK : F_RDLCK;
@@ -417,7 +417,7 @@ lock_seed_file (int fd, const char *fname, int for_write)
 
       if (backoff > 2) /* Show the first message after ~3.75 seconds. */
         log_info( _("waiting for lock on `%s'...\n"), fname);
-      
+
       tv.tv_sec = backoff;
       tv.tv_usec = 250000;
       select (0, NULL, NULL, NULL, &tv);
@@ -569,10 +569,10 @@ update_random_seed_file()
                         seed_file_name, strerror (errno));
               return;
             }
-          
+
           if (backoff > 2) /* Show the first message after ~3.75 seconds. */
             log_info( _("waiting for lock on `%s'...\n"), seed_file_name);
-          
+
           wait_vms( backoff+ 0.25);
           if (backoff < 10)
             backoff++ ;
@@ -766,7 +766,7 @@ fast_random_poll()
     /* fall back to the generic function */
 #if defined(HAVE_GETHRTIME) && !defined(HAVE_BROKEN_GETHRTIME)
     {	hrtime_t tv;
-        /* On some Solaris and HPUX system gethrtime raises an SIGILL, but we 
+        /* On some Solaris and HPUX system gethrtime raises an SIGILL, but we
          * checked this with configure */
 	tv = gethrtime();
 	add_randomness( &tv, sizeof(tv), 1 );
@@ -801,11 +801,11 @@ fast_random_poll()
     {	struct rusage buf;
         /* QNX/Neutrino does return ENOSYS - so we just ignore it and
          * add whatever is in buf.  In a chroot environment it might not
-         * work at all (i.e. because /proc/ is not accessible), so we better 
+         * work at all (i.e. because /proc/ is not accessible), so we better
          * ignore all error codes and hope for the best
          */
         getrusage( RUSAGE_SELF, &buf );
-        
+
 	add_randomness( &buf, sizeof buf, 1 );
 	wipememory( &buf, sizeof buf );
     }
