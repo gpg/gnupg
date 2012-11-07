@@ -489,11 +489,35 @@ read_seed_file(void)
 	close(fd);
 	return 0;
     }
+
     do {
 	n = read( fd, buffer, POOLSIZE );
     } while( n == -1 && errno == EINTR );
-    if( n != POOLSIZE ) {
+    /* The N==0, ENOENT, and N!=POOLSIZE cases may happen if another
+       process is updating the file.  For consistency we use the same
+       recovery strategy as with the pre-read checks.  */
+    if (!n) {
+        log_info(_("note: random_seed file is empty\n") );
+        allow_seed_file_update = 1;
+        close(fd);
+        return 0;
+    }
+    else if( n == -1 && errno == ENOENT) {
+        /* On a Unix system that should never happen.  However, I can
+           imagine this error code on non-inode based systems.  */
+	log_info(_("can't read `%s': %s\n"), seed_file_name, strerror(errno));
+        allow_seed_file_update = 1;
+	close(fd);
+	return 0;
+    }
+    else if( n == -1 ) {
+        /* A real read error.  */
 	log_fatal(_("can't read `%s': %s\n"), seed_file_name,strerror(errno) );
+	close(fd);
+	return 0;
+    }
+    else if ( n != POOLSIZE ) {
+        log_info(_("WARNING: invalid size of random_seed file - not used\n") );
 	close(fd);
 	return 0;
     }
