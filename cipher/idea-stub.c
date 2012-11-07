@@ -25,9 +25,9 @@
    problem with this, please see http://www.noepatents.org.
 
    However for research purposes and in certain situations it might be
-   useful to use this algorithm anyway.  
+   useful to use this algorithm anyway.
 
-   We provide this stub which will dynload a idea module and is only 
+   We provide this stub which will dynload a idea module and is only
    used if the configure run did't found statically linked file.
    See http://www.gnupg.org/why-not-dea.html for details.
 */
@@ -55,12 +55,12 @@
 #define USE_DYNAMIC_LINKING 1
 
 static int last_error = 0;
-    
+
 void*
 dlopen (const char *pathname, int mode)
 {
   void *h = LoadLibrary (pathname);
-  if (!h) 
+  if (!h)
     {
       log_error ("LoadLibrary failed: %s\n", w32_strerror (errno));
       last_error = 1;
@@ -130,14 +130,16 @@ load_module (const char *name)
       goto failure;
     }
 
+  dlerror ();  /* Clear old errors or initialize dlerror.  */
+
   sym = dlsym (handle, "idea_get_info");
   if (dlerror ())
     sym = dlsym (handle, "_idea_get_info");
-  if ((err=dlerror())) 
+  if ((err=dlerror()))
     goto failure;
 
   return (INFO_FNC)sym;
-  
+
  failure:
   log_info ("invalid module `%s': %s\n", name?name:"???", err?err:"???");
   if (handle)
