@@ -1,8 +1,11 @@
-# definitions for the check scripts
+# definitions for the check scripts                    -*- sh -*-
 
 #--------------------------------
 #------ constants ---------------
 #--------------------------------
+
+# First the Makefile generated constants
+. ./defs-config.inc || exit 3
 
 # Note that usrpass1 is also used in Makefile.am
 usrname1="one"
@@ -50,7 +53,7 @@ error () {
     defs_error_seen=yes
     echo "$pgmname:" $* >&5
     if [ x$defs_stop_on_error != xyes ]; then
-      exit 1 
+      exit 1
     fi
 }
 
@@ -115,7 +118,7 @@ echo_n () {
 
 # Special function for zOS.
 my_chtag () {
-  #FIXME: Is there an envvar to test for the OS or do we 
+  #FIXME: Is there an envvar to test for the OS or do we
   #       need to resort to a configure test
   #if test "$FOO" = "bar"; then
   #   chtag -tc ISO8859-1 $1

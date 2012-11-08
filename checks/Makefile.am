@@ -6,12 +6,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 # Process this file with automake to create Makefile.in
@@ -39,22 +39,29 @@ DATA_FILES = data-500 data-9000 data-32000 data-80000 plain-large
 
 EXTRA_DIST = defs.inc $(TESTS) $(TEST_FILES) \
 	     mkdemodirs signdemokey
-CLEANFILES = prepared.stamp x y yy z out err  $(DATA_FILES) \
+CLEANFILES = defs-config.inc x y yy z out err  $(DATA_FILES) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
 	     *.test.log gpg_dearmor gpg.conf \
 	     pubring.gpg secring.gpg pubring.pkr secring.skr
 DISTCLEANFILES = pubring.gpg~ random_seed
 
 
-all-local: prepared.stamp
+all-local: defs-config.inc
 
 distclean-local:
 	$(srcdir)/mkdemodirs --clean
 
-prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
+defs-config.inc: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 		./pubring.pkr ./secring.skr ./gpg_dearmor $(DATA_FILES)
-	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc	 
-	 echo timestamp >./prepared.stamp
+	 $(GPG_IMPORT) $(srcdir)/pubdemo.asc
+	 echo '# Do not edit - created by the Makefile.      -*- sh -*-' \
+               > defs-config.inc
+if ENABLE_SELINUX_HACKS
+	 echo enable_selinux_hacks=yes >> defs-config.inc
+else
+	 echo enable_selinux_hacks=no >> defs-config.inc
+endif
+
 
 ./gpg_dearmor:
 	echo '#!/bin/sh' >./gpg_dearmor

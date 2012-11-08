@@ -920,6 +920,7 @@ fi
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 AM_CONDITIONAL(ENABLE_AGENT_SUPPORT, test "$agent_support" = yes)
+AM_CONDITIONAL(ENABLE_SELINUX_HACKS, test "$selinux_support" = yes)
 
 dnl Checks for header files.
 AC_HEADER_STDC
