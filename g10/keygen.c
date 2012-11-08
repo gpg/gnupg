@@ -3711,10 +3711,25 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   PKT_public_key *pk;
   size_t n;
   int i;
+  unsigned int nbits;
 
   sk_unprotected = NULL;
   sk_protected = NULL;
-  rc = generate_raw_key (algo, 1024, timestamp,
+
+  /* Get the size of the key directly from the card.  */
+  {
+    struct agent_card_info_s info;
+
+    memset (&info, 0, sizeof info);
+    if (!agent_scd_getattr ("KEY-ATTR", &info)
+        && info.key_attr[1].algo)
+      nbits = info.key_attr[1].nbits;
+    else
+      nbits = 1024; /* All pre-v2.0 cards.  */
+    agent_release_card_info (&info);
+  }
+
+  rc = generate_raw_key (algo, nbits, timestamp,
                          &sk_unprotected, &sk_protected);
   if (rc)
     return rc;
