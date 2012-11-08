@@ -115,7 +115,7 @@ record.
             available. The advantage of using this value is that it is
             guaranteed to have been been build by the same lookup
             algorithm as gpgsm uses.
-            For "uid" recods this lists the preferences n the sameway the 
+            For "uid" recods this lists the preferences n the sameway the
             -edit menu does.
 	    For "sig" records, this is the fingerprint of the key that
 	    issued the signature.  Note that this is only filled in if
@@ -280,8 +280,8 @@ more arguments in future versions.
 
     UNEXPECTED <what>
         Unexpected data has been encountered
-            0 - not further specified               1       
-  
+            0 - not further specified               1
+
 
     TRUST_UNDEFINED <error token>
     TRUST_NEVER  <error token>
@@ -296,7 +296,7 @@ more arguments in future versions.
     PKA_TRUST_BAD  <mailbox>
         Depending on the outcome of the PKA check one of the above
         status codes is emitted in addition to a TRUST_* status.
-        Without PKA info available or 
+        Without PKA info available or
 
     SIGEXPIRED
 	This is deprecated in favor of KEYEXPIRED.
@@ -316,11 +316,9 @@ more arguments in future versions.
 	The ASCII armor is corrupted.  No arguments yet.
 
     RSA_OR_IDEA
-	The IDEA algorithms has been used in the data.  A
-	program might want to fallback to another program to handle
-	the data if GnuPG failed.  This status message used to be emitted
-        also for RSA but this has been dropped after the RSA patent expired.
-        However we can't change the name of the message.
+	Obsolete.  This status message used to be emitted for requests
+        to use the IDEA or RSA algorithms.  It has been dropped from
+        GnuPG 1.4 after the respective patents expired.
 
     SHM_INFO
     SHM_GET
@@ -389,7 +387,7 @@ more arguments in future versions.
           1 := Entirely new key.
           2 := New user IDs
           4 := New signatures
-          8 := New subkeys 
+          8 := New subkeys
          16 := Contains private key.
         The flags may be ORed.
 
@@ -410,7 +408,7 @@ more arguments in future versions.
 	operation:
 	    1 - verify
             2 - encrypt
-            3 - decrypt        
+            3 - decrypt
 
     FILE_DONE
 	Marks the end of a file processing which has been started
@@ -457,7 +455,7 @@ more arguments in future versions.
              "starting_agent" - A gpg-agent was started because it is not
                           running as a daemon.
 
-        
+
     SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
 	A signature has been created using these parameters.
 	    type:  'D' = detached
@@ -469,7 +467,7 @@ more arguments in future versions.
         Note, that TIMESTAMP may either be a number with seconds since
         epoch or an ISO 8601 string which can be detected by the
         presence of the letter 'T' inside.
-        
+
     KEY_CREATED <type> <fingerprint> [<handle>]
         A key has been created
             type: 'B' = primary and subkey
@@ -490,13 +488,13 @@ more arguments in future versions.
 	is used.  The format is suitable to be passed to the option
 	--override-session-key
 
-    NOTATION_NAME <name> 
+    NOTATION_NAME <name>
     NOTATION_DATA <string>
         name and string are %XX escaped; the data may be splitted
         among several notation_data lines.
 
     USERID_HINT <long main keyid> <string>
-        Give a hint about the user ID for a certain keyID. 
+        Give a hint about the user ID for a certain keyID.
 
     POLICY_URL <string>
         string is %XX escaped
@@ -533,7 +531,7 @@ more arguments in future versions.
         The output was truncated to MAXNO items.  This status code is issued
         for certain external requests
 
-    ERROR <error location> <error code> 
+    ERROR <error location> <error code>
 
         This is a generic error status message, it might be followed
         by error location specific data. <error token> and
@@ -1144,12 +1142,12 @@ Here is the format we use for detached signatures:
 "@B"  - Detached signature follows.
         This emits a control packet (1,'B')
 <detached_signature>
-"@t"  - Signed text follows. 
+"@t"  - Signed text follows.
         This emits the control packet (2, 'B')
 <signed_text>
 "@."  - End of operation. The final control packet forces signature
         verification
-"@>"  - End of stream   
+"@>"  - End of stream
 
 
 

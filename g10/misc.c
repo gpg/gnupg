@@ -39,7 +39,7 @@
 #ifdef _WIN32
 #include <time.h>
 #include <process.h>
-#include <windows.h> 
+#include <windows.h>
 #include <shlobj.h>
 #ifndef CSIDL_APPDATA
 #define CSIDL_APPDATA 0x001a
@@ -71,7 +71,7 @@
 #ifdef ENABLE_SELINUX_HACKS
 /* A object and a global variable to keep track of files marked as
    secured. */
-struct secured_file_item 
+struct secured_file_item
 {
   struct secured_file_item *next;
   ino_t ino;
@@ -141,7 +141,7 @@ register_secured_file (const char *fname)
 
   /* Note that we stop immediatley if something goes wrong here. */
   if (stat (fname, &buf))
-    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname, 
+    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname,
                "register_secured_file", strerror (errno));
 /*   log_debug ("registering `%s' i=%lu.%lu\n", fname, */
 /*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
@@ -191,8 +191,8 @@ unregister_secured_file (const char *fname)
 }
 
 /* Return true if FD is corresponds to a secured file.  Using -1 for
-   FS is allowed and will return false. */ 
-int 
+   FS is allowed and will return false. */
+int
 is_secured_file (int fd)
 {
 #ifdef ENABLE_SELINUX_HACKS
@@ -206,7 +206,7 @@ is_secured_file (int fd)
      secure if something went wrong. */
   if (fstat (fd, &buf))
     {
-      log_error (_("fstat(%d) failed in %s: %s\n"), fd, 
+      log_error (_("fstat(%d) failed in %s: %s\n"), fd,
                  "is_secured_file", strerror (errno));
       return 1;
     }
@@ -224,8 +224,8 @@ is_secured_file (int fd)
 /* Return true if FNAME is corresponds to a secured file.  Using NULL,
    "" or "-" for FS is allowed and will return false. This function is
    used before creating a file, thus it won't fail if the file does
-   not exist. */ 
-int 
+   not exist. */
+int
 is_secured_filename (const char *fname)
 {
 #ifdef ENABLE_SELINUX_HACKS
@@ -233,7 +233,7 @@ is_secured_filename (const char *fname)
   struct secured_file_item *sf;
 
   if (iobuf_is_pipe_filename (fname) || !*fname)
-    return 0; 
+    return 0;
 
   /* Note that we print out a error here and claim that a file is
      secure if something went wrong. */
@@ -369,10 +369,10 @@ get_session_marker( size_t *rlen )
         ulong a, b;
 
         initialized = 1;
-        /* also this marker is guessable it is not easy to use this 
+        /* also this marker is guessable it is not easy to use this
          * for a faked control packet because an attacker does not
-         * have enough control about the time the verification does 
-         * take place.  Of course, we can add just more random but 
+         * have enough control about the time the verification does
+         * take place.  Of course, we can add just more random but
          * than we need the random generator even for verification
          * tasks - which does not make sense. */
         a = aa ^ (ulong)getpid();
@@ -407,13 +407,13 @@ openpgp_pk_test_algo( int algo, unsigned int usage_flags )
     return check_pubkey_algo2( algo, usage_flags );
 }
 
-int 
+int
 openpgp_pk_algo_usage ( int algo )
 {
-    int use = 0; 
-    
+    int use = 0;
+
     /* they are hardwired in gpg 1.0 */
-    switch ( algo ) {    
+    switch ( algo ) {
       case PUBKEY_ALGO_RSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH;
           break;
@@ -426,14 +426,14 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_ELGAMAL:
           /* Allow encryption with type 20 keys if RFC-2440 compliance
              has been selected.  Signing is broken thus we won't allow
-             this.  */  
+             this.  */
           if (RFC2440)
             use = PUBKEY_USAGE_ENC;
           break;
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;
-      case PUBKEY_ALGO_DSA:  
+      case PUBKEY_ALGO_DSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
       default:
@@ -449,23 +449,6 @@ openpgp_md_test_algo( int algo )
         return G10ERR_DIGEST_ALGO;
     return check_digest_algo(algo);
 }
-
-#ifdef USE_IDEA
-/* Special warning for the IDEA cipher */
-void
-idea_cipher_warn(int show)
-{
-  static int warned=0;
-
-  if(!warned || show)
-    {
-      log_info(_("the IDEA cipher plugin is not present\n"));
-      log_info(_("please see %s for more information\n"),
-               "http://www.gnupg.org/faq/why-not-idea.html");
-      warned=1;
-    }
-}
-#endif
 
 /* Print a warning if the md5 digest algorithm has been used.  This
    warning is printed only once unless SHOW is used. */
@@ -500,7 +483,7 @@ not_in_gpg1_notice (void)
 }
 
 
-static unsigned long 
+static unsigned long
 get_signature_count(PKT_secret_key *sk)
 {
 #ifdef ENABLE_CARD_SUPPORT
@@ -509,7 +492,7 @@ get_signature_count(PKT_secret_key *sk)
       struct agent_card_info_s info;
       if(agent_scd_getattr("SIG-COUNTER",&info)==0)
 	return info.sig_counter;
-    }  
+    }
 #endif
 
   /* How to do this without a card? */
@@ -600,7 +583,7 @@ pct_expando(const char *string,struct expando_args *args)
 		  sprintf(&ret[idx],"%lu",get_signature_count(args->sk));
 		  idx+=strlen(&ret[idx]);
 		  done=1;
-		}	      
+		}
 	      break;
 
 	    case 'p': /* primary pk fingerprint of a sk */
@@ -669,7 +652,7 @@ pct_expando(const char *string,struct expando_args *args)
 		  case 't': /* e.g. "jpg" */
 		    str=image_type_to_string(args->imagetype,0);
 		    break;
-		  
+
 		  case 'T': /* e.g. "image/jpeg" */
 		    str=image_type_to_string(args->imagetype,2);
 		    break;
@@ -1148,7 +1131,7 @@ unescape_percent_string (const unsigned char *s)
   while (*s)
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           *d = xtoi_2 (s);
           if (!*d)
@@ -1164,7 +1147,7 @@ unescape_percent_string (const unsigned char *s)
       else
         *d++ = *s++;
     }
-  *d = 0; 
+  *d = 0;
   return buffer;
 }
 
@@ -1186,7 +1169,7 @@ has_invalid_email_chars (const char *s)
   const char *valid_chars=
     "01234567890_-.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  for ( ; *s; s++ ) 
+  for ( ; *s; s++ )
     {
       if ( *s & 0x80 )
         continue; /* We only care about ASCII.  */
@@ -1271,7 +1254,7 @@ default_homedir (void)
   if (!dir || !*dir)
     {
       char path[MAX_PATH];
-      
+
       /* It might be better to use LOCAL_APPDATA because this is
          defined as "non roaming" and thus more likely to be kept
          locally.  For private keys this is desired.  However, given
@@ -1279,13 +1262,13 @@ default_homedir (void)
          using a system roaming serives might be better than to let
          them do it manually.  A security conscious user will anyway
          use the registry entry to have better control.  */
-      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE, 
-                               NULL, 0, path) >= 0) 
+      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
+                               NULL, 0, path) >= 0)
         {
           char *tmp = xmalloc (strlen (path) + 6 +1);
           strcpy (stpcpy (tmp, path), "\\gnupg");
           dir = tmp;
-          
+
           /* Try to create the directory if it does not yet
              exists.  */
           if (access (dir, F_OK))
@@ -1325,7 +1308,7 @@ get_libexecdir (void)
       else
         {
           log_debug ("bad filename `%s' returned for this process\n", dir);
-          *dir = 0; 
+          *dir = 0;
         }
     }
 

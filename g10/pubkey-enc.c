@@ -49,7 +49,7 @@ is_algo_in_prefs ( KBNODE keyblock, preftype_t type, int algo )
         if (k->pkt->pkttype == PKT_USER_ID) {
             PKT_user_id *uid = k->pkt->pkt.user_id;
             prefitem_t *prefs = uid->prefs;
-            
+
             if (uid->created && prefs &&
 		!uid->is_revoked && !uid->is_expired ) {
                 for (; prefs->type; prefs++ )
@@ -152,7 +152,7 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
   byte *frame = NULL;
   unsigned n, nframe;
   u16 csum, csum2;
-  
+
   int card = 0;
 
   if (sk->is_protected && sk->protect.s2k.mode == 1002)
@@ -234,15 +234,11 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 
     dek->keylen = nframe - (n+1) - 2;
     dek->algo = frame[n++];
-    if( dek->algo ==  CIPHER_ALGO_IDEA )
-	write_status(STATUS_RSA_OR_IDEA);
     rc = check_cipher_algo( dek->algo );
     if( rc ) {
 	if( !opt.quiet && rc == G10ERR_CIPHER_ALGO ) {
 	    log_info(_("cipher algorithm %d%s is unknown or disabled\n"),
                      dek->algo, dek->algo == CIPHER_ALGO_IDEA? " (IDEA)":"");
-	    if(dek->algo==CIPHER_ALGO_IDEA)
-	      idea_cipher_warn(0);
 	}
 	dek->algo = 0;
 	goto leave;
@@ -281,9 +277,9 @@ get_it( PKT_pubkey_enc *enc, DEK *dek, PKT_secret_key *sk, u32 *keyid )
 		     " preferences\n"),cipher_algo_to_string(dek->algo));
         if (!rc) {
             KBNODE k;
-            
+
             for (k=pkb; k; k = k->next) {
-                if (k->pkt->pkttype == PKT_PUBLIC_KEY 
+                if (k->pkt->pkttype == PKT_PUBLIC_KEY
                     || k->pkt->pkttype == PKT_PUBLIC_SUBKEY){
                     u32 aki[2];
         	    keyid_from_pk(k->pkt->pkt.public_key, aki);

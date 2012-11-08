@@ -1,3 +1,11 @@
+Noteworthy changes in version 1.4.13 (unreleased)
+-------------------------------------------------
+
+    * Add support for the old cipher algorithm IDEA.
+
+    * Minor bug fixes.
+
+
 Noteworthy changes in version 1.4.12 (2012-01-30)
 -------------------------------------------------
 

@@ -1134,8 +1134,6 @@ rm_group(char *name)
    directory is group or other writable or not owned by us.  Disable
    exec in this case.
 
-   2) Extensions.  Same as #1.
-
    Returns true if the item is unsafe. */
 static int
 check_permissions(const char *path,int item)
@@ -1152,16 +1150,7 @@ check_permissions(const char *path,int item)
 
   assert(item==0 || item==1 || item==2);
 
-  /* extensions may attach a path */
-  if(item==2 && path[0]!=DIRSEP_C)
-    {
-      if(strchr(path,DIRSEP_C))
-	tmppath=make_filename(path,NULL);
-      else
-	tmppath=make_filename(GNUPG_LIBDIR,path,NULL);
-    }
-  else
-    tmppath=xstrdup(path);
+  tmppath=xstrdup(path);
 
   /* If the item is located in the homedir, but isn't the homedir,
      don't continue if we already checked the homedir itself.  This is
@@ -1218,9 +1207,9 @@ check_permissions(const char *path,int item)
 	  homedir_cache=ret;
 	}
     }
-  else if(item==1 || item==2)
+  else if(item==1)
     {
-      /* The options or extension file.  Okay unless it or its
+      /* The options file.  Okay unless it or its
 	 containing directory is group or other writable or not owned
 	 by us or root. */
 
@@ -1271,48 +1260,36 @@ check_permissions(const char *path,int item)
 	  if(item==0)
 	    log_info(_("WARNING: unsafe ownership on"
 		       " homedir `%s'\n"),tmppath);
-	  else if(item==1)
-	    log_info(_("WARNING: unsafe ownership on"
-		       " configuration file `%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe ownership on"
-		       " extension `%s'\n"),tmppath);
+		       " configuration file `%s'\n"),tmppath);
 	}
       if(perm)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe permissions on"
 		       " homedir `%s'\n"),tmppath);
-	  else if(item==1)
-	    log_info(_("WARNING: unsafe permissions on"
-		       " configuration file `%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe permissions on"
-		       " extension `%s'\n"),tmppath);
+		       " configuration file `%s'\n"),tmppath);
 	}
       if(enc_dir_own)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe enclosing directory ownership on"
 		       " homedir `%s'\n"),tmppath);
-	  else if(item==1)
-	    log_info(_("WARNING: unsafe enclosing directory ownership on"
-		       " configuration file `%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe enclosing directory ownership on"
-		       " extension `%s'\n"),tmppath);
+		       " configuration file `%s'\n"),tmppath);
 	}
       if(enc_dir_perm)
 	{
 	  if(item==0)
 	    log_info(_("WARNING: unsafe enclosing directory permissions on"
 		       " homedir `%s'\n"),tmppath);
-	  else if(item==1)
-	    log_info(_("WARNING: unsafe enclosing directory permissions on"
-		       " configuration file `%s'\n"),tmppath);
 	  else
 	    log_info(_("WARNING: unsafe enclosing directory permissions on"
-		       " extension `%s'\n"),tmppath);
+		       " configuration file `%s'\n"),tmppath);
 	}
     }
 
@@ -2318,19 +2295,7 @@ main (int argc, char **argv )
 	      }
 	    break;
 	  case oLoadExtension:
-#ifndef __riscos__
-#if defined(USE_DYNAMIC_LINKING) || defined(_WIN32)
-	    if(check_permissions(pargs.r.ret_str,2))
-	      log_info(_("cipher extension `%s' not loaded due to"
-			 " unsafe permissions\n"),pargs.r.ret_str);
-	    else
-	      register_cipher_extension(orig_argc? *orig_argv:NULL,
-					pargs.r.ret_str);
-#endif
-#else /* __riscos__ */
-            riscos_not_implemented("load-extension");
-#endif /* __riscos__ */
-	    break;
+            break;  /* This is a dummy option since 1.4.13.  */
 	  case oRFC1991:
 	    opt.compliance = CO_RFC1991;
 	    opt.force_v4_certs = 0;
@@ -3037,7 +3002,6 @@ main (int argc, char **argv )
 	      {
 		log_info(_("encrypting a message in --pgp2 mode requires "
 			   "the IDEA cipher\n"));
-		idea_cipher_warn(1);
 		unusable=1;
 	      }
 	    else if(cmd==aSym)
@@ -3097,12 +3061,6 @@ main (int argc, char **argv )
      * may try to load an module */
     if( def_cipher_string ) {
 	opt.def_cipher_algo = string_to_cipher_algo(def_cipher_string);
-	if(opt.def_cipher_algo==0 &&
-	   (ascii_strcasecmp(def_cipher_string,"idea")==0
-	    || ascii_strcasecmp(def_cipher_string,"s1")==0))
-          {
-            idea_cipher_warn(1);
-          }
 	xfree(def_cipher_string); def_cipher_string = NULL;
 	if( check_cipher_algo(opt.def_cipher_algo) )
 	    log_error(_("selected cipher algorithm is invalid\n"));

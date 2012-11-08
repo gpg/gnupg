@@ -58,11 +58,6 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	if( check_cipher_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d%s is not supported\n"),
 			sk->protect.algo,sk->protect.algo==1?" (IDEA)":"" );
-	    if (sk->protect.algo==CIPHER_ALGO_IDEA)
-              {
-                write_status (STATUS_RSA_OR_IDEA);
-                idea_cipher_warn (0);
-              }
 	    return G10ERR_CIPHER_ALGO;
 	}
 	if(check_digest_algo(sk->protect.s2k.hash_algo))
@@ -110,7 +105,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                    attack */
                 sk->csum = 0;
                 csum = 1;
-                if( ndata < 20 ) 
+                if( ndata < 20 )
                     log_error("not enough bytes for SHA-1 checksum\n");
                 else {
                     MD_HANDLE h = md_open (DIGEST_ALGO_SHA1, 1);
@@ -359,10 +354,10 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += narr[j];
 		    xfree(bufarr[j]);
 		}
-                
+
                 if (opt.simple_sk_checksum) {
                     log_info (_("generating the deprecated 16-bit checksum"
-                              " for secret key protection\n")); 
+                              " for secret key protection\n"));
                     csum = checksum( data, ndata-2);
                     sk->csum = csum;
                     *p++ =	csum >> 8;
@@ -410,7 +405,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
                     data[1] = nbits;
 		    cipher_encrypt (cipher_hd, data+2, buffer, nbytes);
 		    xfree( buffer );
-                    
+
                     mpi_free (sk->skey[i]);
                     sk->skey[i] = mpi_set_opaque (NULL, data, nbytes+2);
 		}

@@ -332,14 +332,15 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if(!check_cipher_algo(CIPHER_ALGO_CAST5))
 	      strcat(dummy_string,"S3 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
-	    /* If we have it, IDEA goes *after* 3DES so it won't be
+	    /* If we have it and we are in PGP2 mode,
+               IDEA goes *after* 3DES so it won't be
 	       used unless we're encrypting along with a V3 key.
 	       Ideally, we would only put the S1 preference in if the
 	       key was RSA and <=2048 bits, as that is what won't
 	       break PGP2, but that is difficult with the current
 	       code, and not really worth checking as a non-RSA <=2048
 	       bit key wouldn't be usable by PGP2 anyway. -dms */
-	    if(!check_cipher_algo(CIPHER_ALGO_IDEA))
+	    if(PGP2 && !check_cipher_algo(CIPHER_ALGO_IDEA))
 	      strcat(dummy_string,"S1 ");
 
 
@@ -415,12 +416,6 @@ keygen_set_std_prefs (const char *string,int personal)
 	    else
 	      {
 		log_info (_("invalid item `%s' in preference string\n"),tok);
-
-		/* Complain if IDEA is not available. */
-		if(ascii_strcasecmp(tok,"s1")==0
-		   || ascii_strcasecmp(tok,"idea")==0)
-		  idea_cipher_warn(1);
-
 		rc=-1;
 	      }
 	  }

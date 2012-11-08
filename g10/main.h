@@ -85,12 +85,6 @@ int openpgp_pk_test_algo( int algo, unsigned int usage_flags );
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
 
-#ifdef USE_IDEA
-void idea_cipher_warn( int show );
-#else
-#define idea_cipher_warn(a)
-#endif
-
 void md5_digest_warn (int show);
 
 void not_in_gpg1_notice (void);
@@ -224,7 +218,7 @@ void import_print_stats (void *hd);
 
 int collapse_uids( KBNODE *keyblock );
 
-int auto_create_card_key_stub ( const char *serialnostr, 
+int auto_create_card_key_stub ( const char *serialnostr,
                                 const unsigned char *fpr1,
                                 const unsigned char *fpr2,
                                 const unsigned char *fpr3);

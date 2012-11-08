@@ -91,7 +91,6 @@ get_status_string ( int no )
     case STATUS_BADSIG : s = "BADSIG"; break;
     case STATUS_ERRSIG : s = "ERRSIG"; break;
     case STATUS_BADARMOR : s = "BADARMOR"; break;
-    case STATUS_RSA_OR_IDEA : s= "RSA_OR_IDEA"; break;
     case STATUS_TRUST_UNDEFINED: s = "TRUST_UNDEFINED"; break;
     case STATUS_TRUST_NEVER	 : s = "TRUST_NEVER"; break;
     case STATUS_TRUST_MARGINAL : s = "TRUST_MARGINAL"; break;

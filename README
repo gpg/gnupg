@@ -1,11 +1,11 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-                            Version 1.4.12
+                            Version 1.4.13
 
 	 Copyright 1998, 1999, 2000, 2001, 2002, 2003,
                    2004, 2005, 2006, 2007, 2008, 2009,
-                   2010, 2012  Free Software Foundation, Inc.
+                   2010, 2012, 2013  Free Software Foundation, Inc.
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -31,13 +31,14 @@
     list of systems which are known to work.
 
     GnuPG is distributed under the terms of the GNU General Public
-    License.  See the file COPYING for copyright and warranty
-    information.
+    License.  See the files AUTHORS and COPYING for copyright and
+    warranty information.
 
-    Because GnuPG does not use use any patented algorithms it is not
-    by default fully compatible with PGP 2.x, which uses the patented
-    IDEA algorithm.  See http://www.gnupg.org/why-not-idea.html for
-    more information on this subject.
+    Because GnuPG does not use any patented algorithms it used not to
+    be fully compatible with PGP 2.  Now, that the patent on the IDEA
+    cipher algorithm has expired, we support that algorithm and thus
+    provide full compatibility with PGP 2.  This allows the decryption
+    of data once encrypted using PGP 2.
 
     The default public key algorithm is RSA, but DSA and Elgamal are
     also supported.  Symmetric algorithms available are AES (with 128,
@@ -57,7 +58,7 @@
        this.  Don't skip it - this is an important step!
 
     2) Unpack the tarball.  With GNU tar you can do it this way:
-       "tar xzvf gnupg-x.y.z.tar.gz".  If got a bzip2 compressed
+       "tar xzvf gnupg-x.y.z.tar.gz".  If you got a bzip2 compressed
        tarball you need to use: "tar xjvf gnupg-x.y.z.tar.bz2".
 
     3) "cd gnupg-x.y.z"
@@ -70,11 +71,11 @@
 
     7) You end up with a "gpg" binary in /usr/local/bin.
 
-    8) To avoid swapping out of sensitive data, you can install "gpg"
-       setuid root.  If you don't do so, you may want to add the
-       option "no-secmem-warning" to ~/.gnupg/gpg.conf.  Note that on
-       modern GNU/Linux systems swapping protection does not anymore
-       require GPG to be installed setuid root.
+    8) To avoid swapping out of sensitive data, you may need to
+       install "gpg" setuid root.  If you don't do so, you may want to
+       add the option "no-secmem-warning" to ~/.gnupg/gpg.conf.  Note
+       that on modern GNU/Linux systems swapping protection does not
+       anymore require GPG to be installed setuid root.
 
 
     How to Verify the Source
@@ -93,7 +94,8 @@
        is indeed a signature of gnupg-x.y.z.tar.gz.  The key currently
        used to create this signature is:
 
-       "pub  1024R/1CE0C630 2006-01-01 Werner Koch (dist sig) <dd9jn@gnu.org>"
+       "pub   2048R/4F25E3B6 2011-01-12 [expires: 2019-12-31]
+       "uid                  Werner Koch (dist sig)
 
        If you do not have this key, you can get it from the source in
        the file doc/samplekeys.asc (use "gpg --import  doc/samplekeys.asc"
@@ -101,7 +103,7 @@
        make sure that this is really the key and not a faked one. You
        can do this by comparing the output of:
 
-        $ gpg --fingerprint 0x1CE0C630
+        $ gpg --fingerprint 0x4F25E3B6
 
        with the fingerprint published elsewhere.
 
@@ -317,17 +319,20 @@
     claims to own it.
 
     There are 2 steps to validate a key:
+
 	1. First check that there is a complete chain
 	   of signed keys from the public key you want to use
 	   and your key and verify each signature.
 	2. Make sure that you have full trust in the certificates
 	   of all the introduces between the public key holder and
 	   you.
+
     Step 2 is the more complicated part because there is no easy way
     for a computer to decide who is trustworthy and who is not.  GnuPG
     leaves this decision to you and will ask you for a trust value
     (here also referenced as the owner-trust of a key) for every key
     needed to check the chain of certificates.	You may choose from:
+
       a) "I don't know" - then it is not possible to use any
 	 of the chains of certificates, in which this key is used
 	 as an introducer, to validate the target key.	Use this if
@@ -347,6 +352,7 @@
 	 normally needs only one chain of signatures to validate
 	 a target key okay. (But this may be adjusted with the help
 	 of some options).
+
     This information is confidential because it gives your personal
     opinion on the trustworthiness of someone else.  Therefore this data
     is not stored in the keyring but in the "trustdb"
@@ -428,14 +434,6 @@
     * By an email address:
 
 	"<heinrichh@uni-duesseldorf.de>"
-
-    * By word match
-
-	"+Heinrich Heine duesseldorf"
-
-      All words must match exactly (not case sensitive) and appear in
-      any order in the user ID.  Words are any sequences of letters,
-      digits, the underscore and characters with bit 7 set.
 
     * Or by the usual substring:
 
@@ -822,7 +820,7 @@
     Please direct questions about GnuPG to the users mailing list or
     one of the pgp newsgroups; please do not direct questions to one
     of the authors directly as we are busy working on improvements and
-    bug fixes.  The English and German GnupG mailing lists are watched
+    bug fixes.  The English and German GnuPG mailing lists are watched
     by the authors and we try to answer questions when time allows us
     to do so.
 

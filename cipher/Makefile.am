@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 ## Process this file with automake to produce Makefile.in
@@ -37,6 +37,7 @@ libcipher_a_SOURCES = cipher.c	\
 		 cast5.c	\
 		 rijndael.c     \
 		 camellia.c camellia.h camellia-glue.c \
+		 idea.c		\
 		 elgamal.c	\
 		 elgamal.h	\
 		 rsa.c rsa.h    \
@@ -73,7 +74,3 @@ endif
 if USE_SHA512
 libcipher_a_SOURCES+=sha512.c
 endif
-
-EXTRA_libcipher_a_SOURCES=idea-stub.c
-libcipher_a_DEPENDENCIES=@IDEA_O@
-libcipher_a_LIBADD=@IDEA_O@

@@ -30,7 +30,8 @@
 
 #define STATUS_BADARMOR  7
 
-#define STATUS_RSA_OR_IDEA 8
+/* Not anymore used: STATUS_RSA_OR_IDEA 8  */
+
 #define STATUS_KEYEXPIRED  9
 #define STATUS_KEYREVOKED  10
 

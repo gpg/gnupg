@@ -10,14 +10,14 @@ Texts. A copy of the license is included in the file COPYING.
 %%name: GnuPG
 
 %%short-description: Complete implementation of the OpenPGP Internet standard.
- 
+
 %%full-description: A complete and free replacement for PGP. The
 program does not use any patented algorithms, and can be used as a
 filter program. Can handle all OpenPGP messages and messages generated
-by PGP 5.0 and newer unless they use the IDEA algorithm.
+by PGP 5.0 and later.
 
 Supports ElGamal (signature and encrytion), DSA, AES, 3DES, Blowfish,
-Twofish, CAST5, MD5, SHA-1, RIPE-MD-160 and TIGER, and has language
+Twofish, CAST5, IDEA, MD5, SHA-1, RIPE-MD-160, and has language
 support for sixteen different languages.
 
 It is believed to be fully OpenPGP (as defined in RFC2440) conform,
@@ -34,9 +34,9 @@ useful extra features like anonymous message recipients.
 
 %%updated: 1 Jun 2001
 
-%%keywords: PGP, security, decryption, encryption, digital signatures 
+%%keywords: PGP, security, decryption, encryption, digital signatures
 
-%%programs: 
+%%programs:
 
 %%GNU: yes
 
@@ -51,7 +51,7 @@ http://www.dewinter.com/gnupg_howto/english/; French HOWTO available
 from http://www.gnupg.org/howtos/fr/; German HOWTO available from
 http://www.gnupg.org/howtos/de/; Spanish HOWTO available from
 http://www.dewinter.com/gnupg_howto/spanish.
- 
+
 %%developers: Matthew Skala, Michael Roth, Niklas Hernaeus, Remi
 Guyomarch, Werner Koch <wk@gnupg.org>.
 
@@ -89,7 +89,7 @@ Guyomarch, Werner Koch <wk@gnupg.org>.
 
 %%help-list: gnupg-users@gnupg.org
 
-%%help-news: 
+%%help-news:
 
 %%dev-list: gnupg-devel@gnupg.org
 

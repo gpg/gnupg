@@ -203,24 +203,6 @@ AC_ARG_ENABLE(idea,
 AC_MSG_RESULT($use_idea)
 if test x"$use_idea" = xyes ; then
    AC_DEFINE(USE_IDEA,1,[Define to include the IDEA cipher])
-
-# We don't need idea but some people claim that they need it for
-# research etc., so we allow to place an idea source code into the
-# cipher directory and statically link it if available, otherwise we
-# link to a stub.  We don't use AC_CHECK_FILE to avoid caching.
-
-   AC_MSG_CHECKING([for idea cipher module])
-   tmp=""
-   if test -f $srcdir/cipher/idea.c; then
-      IDEA_O=idea.o
-      tmp=idea
-   else
-      IDEA_O=idea-stub.o
-      tmp=no
-      try_extensions=yes
-   fi
-   AC_SUBST(IDEA_O)
-   AC_MSG_RESULT($tmp)
 fi
 
 AC_MSG_CHECKING([whether to enable the CAST5 cipher])
