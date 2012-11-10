@@ -52,7 +52,7 @@ record; gpg2 does this by default and the option is a dummy.
 		q = Undefined validity
 	            '-' and 'q' may safely be treated as the same
 		    value for most purposes
-		n = The key is valid
+		n = The key is not valid
 		m = The key is marginal valid.
 		f = The key is fully valid
 		u = The key is ultimately valid.  This often means
