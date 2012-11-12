@@ -38,7 +38,7 @@
 #include <langinfo.h>
 #endif
 #include <errno.h>
-#ifndef HAVE_W32_SYSTEM
+#if !defined HAVE_W32_SYSTEM && !defined HAVE_ANDROID_SYSTEM
 # include <iconv.h>
 #endif
 
@@ -56,9 +56,48 @@ static int no_translation;     /* Set to true if we let simply pass through. */
 static int use_iconv;          /* iconv comversion fucntions required. */
 
 
+#ifdef HAVE_ANDROID_SYSTEM
+/* Fake stuff to get things building.  */
+typedef void *iconv_t;
+#define ICONV_CONST
+
+static iconv_t
+iconv_open (const char *tocode, const char *fromcode)
+{
+  (void)tocode;
+  (void)fromcode;
+  return (iconv_t)(-1);
+}
+
+static size_t
+iconv (iconv_t cd, char **inbuf, size_t *inbytesleft,
+       char **outbuf, size_t *outbytesleft)
+{
+  (void)cd;
+  (void)inbuf;
+  (void)inbytesleft;
+  (void)outbuf;
+  (void)outbytesleft;
+  return (size_t)(0);
+}
+
+static int
+iconv_close (iconv_t cd)
+{
+  (void)cd;
+  return 0;
+}
+
+
+static int
+load_libiconv (void)
+{
+  return -1;
+}
+
+#elif defined HAVE_W32_SYSTEM
 /* Under W32 we dlopen the iconv dll and don't require any iconv
    related headers at all.  However we need to define some stuff.  */
-#ifdef HAVE_W32_SYSTEM
 typedef void *iconv_t;
 #ifndef ICONV_CONST
 #define ICONV_CONST
@@ -170,7 +209,9 @@ set_native_charset (const char *newset)
 
   if (!newset)
     {
-#ifdef HAVE_W32_SYSTEM
+#ifdef HAVE_ANDROID_SYSTEM
+      newset = "utf-8";
+#elif defined HAVE_W32_SYSTEM
       static char codepage[30];
       unsigned int cpno;
       const char *aliases;
@@ -218,7 +259,7 @@ set_native_charset (const char *newset)
             }
         }
 
-#else /*!HAVE_W32_SYSTEM*/
+#else /*!HAVE_W32_SYSTEM && !HAVE_ANDROID_SYSTEM*/
 
 #ifdef HAVE_LANGINFO_CODESET
       newset = nl_langinfo (CODESET);
@@ -252,7 +293,7 @@ set_native_charset (const char *newset)
         }
       newset = codepage;
 #endif /*!HAVE_LANGINFO_CODESET*/
-#endif /*!HAVE_W32_SYSTEM*/
+#endif /*!HAVE_W32_SYSTEM && !HAVE_ANDROID_SYSTEM*/
     }
 
   full_newset = newset;
@@ -291,10 +332,10 @@ set_native_charset (const char *newset)
     {
       iconv_t cd;
 
-#ifdef HAVE_W32_SYSTEM
+#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
       if (load_libiconv ())
         return -1;
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
 
       cd = iconv_open (full_newset, "utf-8");
       if (cd == (iconv_t)-1)
@@ -717,10 +758,10 @@ utf8_to_native (const char *string, size_t length, int delim)
 jnlib_iconv_t
 jnlib_iconv_open (const char *tocode, const char *fromcode)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
   if (load_libiconv ())
     return (jnlib_iconv_t)(-1);
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
 
   return (jnlib_iconv_t)iconv_open (tocode, fromcode);
 }
@@ -734,10 +775,10 @@ jnlib_iconv (jnlib_iconv_t cd,
              char **outbuf, size_t *outbytesleft)
 {
 
-#ifdef HAVE_W32_SYSTEM
+#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
   if (load_libiconv ())
     return 0;
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
 
   return iconv ((iconv_t)cd, (char**)inbuf, inbytesleft, outbuf, outbytesleft);
 }
@@ -747,10 +788,10 @@ jnlib_iconv (jnlib_iconv_t cd,
 int
 jnlib_iconv_close (jnlib_iconv_t cd)
 {
-#ifdef HAVE_W32_SYSTEM
+#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
   if (load_libiconv ())
     return 0;
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
 
   return iconv_close ((iconv_t)cd);
 }
@@ -826,4 +867,4 @@ utf8_to_wchar (const char *string)
     }
   return result;
 }
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
