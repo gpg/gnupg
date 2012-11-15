@@ -204,8 +204,9 @@ get_manufacturer (unsigned int no)
     case 0x0001: return "PPC Card Systems";
     case 0x0002: return "Prism";
     case 0x0003: return "OpenFortress";
-    case 0x0004: return "Wewid AB";
+    case 0x0004: return "Wewid";
     case 0x0005: return "ZeitControl";
+    case 0x0006: return "Yubico";
 
     case 0x002A: return "Magrathea";
 
