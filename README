@@ -4,7 +4,7 @@
 
    Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004,
              2005, 2006, 2007, 2008, 2009, 2010, 2011,
-             2012 Free Software Foundation, Inc.
+             2012, 2013 Free Software Foundation, Inc.
 
 
 INTRODUCTION
@@ -66,6 +66,16 @@ In case of problem please ask on gnupg-users@gnupg.org for advise.
 
 Note that the PKITS tests are always skipped unless you copy the PKITS
 test data file into the tests/pkits directory.
+
+
+INCOMPATIBLE CHANGES
+====================
+
+- With 2.0.20 the scdaemon option 'disable-keypad' has been renamed to
+  'disable-pinpad'.  If you are using this option in scdaemon.conf you
+  should rename it there.  In case you are using this option to work
+  around a problem with your card reader, you may want to test whether
+  this version of GnuPG works better with your reader.
 
 
 DOCUMENTATION

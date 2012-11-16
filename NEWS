@@ -3,16 +3,31 @@ Noteworthy changes in version 2.0.20 (unreleased)
 
  * The hash algorithm is now printed for sig records in key listings.
 
+ * Decryption using smartcards keys > 3072 bit does not work.
+
+ * New meta option ignore-invalid-option to allow using the same
+   option file by other GnuPG versions.
+
+ * [gpg] Skip invalid keyblock packets during import to avoid a DoS.
+
+ * [gpg] Correctly handle ports from DNS SRV records.
+
+ * [gpg-agent] Avoid tty corruption when killing pinentry.
+
+ * [scdaemon] Rename option --disable-keypad to --disable-pinpad.
+
+ * [scdaemon] Better support for CCID readers.  Now, the internal CCID
+   driver supports readers without the auto configuration feature.
+
  * [scdaemon] Add pinpad input for PC/SC, if your reader has pinpad
    and it supports variable length PIN input, and you specify
    --enable-pinpad-varlen option.
 
  * [scdaemon] New option --enable-pinpad-varlen.
 
- * [scdaemon] Rename option --disable-pinpad (was: --disable-keypad).
+ * [scdaemon] Install into libexecdir to avoid accidental execution
+   from the command line.
 
- * [scdaemon] Better support fo CCID readers.  Now, internal CCID
-   driver supports readers with no auto configuration feature.
 
 
 Noteworthy changes in version 2.0.19 (2012-03-27)
