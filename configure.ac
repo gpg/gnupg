@@ -31,8 +31,8 @@ m4_define([mym4_version], [2.1.0])
 # the decimalized short revision number, a beta version string and a
 # flag indicating a development version (mym4_isgit).  Note that the
 # m4 processing is done by autoconf and not during the configure run.
-m4_define([mym4_revision], m4_esyscmd([git branch -v 2>/dev/null \
-          | awk '/^\* / {printf "%s",$3}']))
+m4_define([mym4_revision],
+          m4_esyscmd([git rev-parse --short HEAD | tr -d '\n\r']))
 m4_define([mym4_revision_dec],
           m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
 m4_define([mym4_betastring],
