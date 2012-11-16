@@ -2,9 +2,9 @@
 # option.  It specifies what changes to make to each given SHA1's commit
 # log and metadata, using Perl-eval'able expressions.
 
-08178d1e130a856622c0b938a34eb109bde79262
+8dff0096132fff70a5ee29a50222aebcd9b41ec7
 s/Conflicts:/--/
 
-dafa7aa621dfe36c5c6cf462d3ec0d6c614ab105
+d9d98c510b936d48755f8c01165d7efa32502d24
 # Fix old cherry-picked message.
 s/(fix wLangId in.*)/\1\n--/
