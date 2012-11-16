@@ -421,10 +421,10 @@ match_dsa_hash (unsigned int qbytes)
 /*
   First try --digest-algo.  If that isn't set, see if the recipient
   has a preferred algorithm (which is also filtered through
-  --preferred-digest-prefs).  If we're making a signature without a
+  --personal-digest-prefs).  If we're making a signature without a
   particular recipient (i.e. signing, rather than signing+encrypting)
-  then take the first algorithm in --preferred-digest-prefs that is
-  usable for the pubkey algorithm.  If --preferred-digest-prefs isn't
+  then take the first algorithm in --personal-digest-prefs that is
+  usable for the pubkey algorithm.  If --personal-digest-prefs isn't
   set, then take the OpenPGP default (i.e. SHA-1).
 
   Note that Ed25519+EdDSA takes an input of arbitrary length and thus
