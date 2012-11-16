@@ -209,7 +209,7 @@ if [ -d .git ]; then
     To deactivate this pre-commit hook again move .git/hooks/pre-commit
     and .git/hooks/pre-commit.sample out of the way.
 EOF
-      cp -av .git/hooks/pre-commit.sample .git/hooks/pre-commit
+      cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
       chmod -c +x  .git/hooks/pre-commit
   fi
   tmp=$(git config --get filter.cleanpo.clean)
@@ -223,7 +223,7 @@ EOF
     cat <<EOF >&2
 *** Activating commit log message check hook. ***
 EOF
-      cp -av scripts/git-hooks/commit-msg .git/hooks/commit-msg
+      cp scripts/git-hooks/commit-msg .git/hooks/commit-msg
       chmod -c +x  .git/hooks/commit-msg
   fi
 fi
