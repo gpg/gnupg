@@ -222,7 +222,7 @@ agent_send_all_options (int fd)
     }
 
   dft_ttyname = getenv ("GPG_TTY");
-#ifndef HAVE_W32_SYSTEM
+#if !defined(HAVE_W32_SYSTEM) && !defined(HAVE_BROKEN_TTYNAME)
   if ((!dft_ttyname || !*dft_ttyname) && ttyname (0))
     dft_ttyname = ttyname (0);
 #endif

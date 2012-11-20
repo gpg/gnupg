@@ -57,7 +57,7 @@ setup_pinentry_env (void)
     {
       log_error (_("GPG_TTY has not been set - "
                    "using maybe bogus default\n"));
-      lc = ttyname (0);
+      lc = gnupg_ttyname (0);
       if (!lc)
         lc = "/dev/tty";
       gnupg_setenv ("GPG_TTY", lc, 1);

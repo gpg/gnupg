@@ -338,8 +338,11 @@ session_env_getenv_or_default (session_env_t se, const char *name,
 
   /* Get the default value with an additional fallback for GPG_TTY.  */
   defvalue = getenv (name);
-  if ((!defvalue || !*defvalue) && !strcmp (name, "GPG_TTY") && ttyname (0))
-    defvalue = ttyname (0);
+  if ((!defvalue || !*defvalue) && !strcmp (name, "GPG_TTY")
+      && gnupg_ttyname (0))
+    {
+      defvalue = gnupg_ttyname (0);
+    }
   if (defvalue)
     {
       /* Record the default value for later use so that we are safe

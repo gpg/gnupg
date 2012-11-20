@@ -291,15 +291,21 @@ int gnupg_compare_version (const char *a, const char *b);
 
 
 /*-- Simple replacement functions. */
-#ifndef HAVE_TTYNAME
+
+/* We use the gnupg_ttyname macro to be safe not to run into conflicts
+   which an extisting but broken ttyname.  */
+#if !defined(HAVE_TTYNAME) || defined(HAVE_BROKEN_TTYNAME)
+# define gnupg_ttyname(n) _gnupg_ttyname ((n))
 /* Systems without ttyname (W32) will merely return NULL. */
 static inline char *
-ttyname (int fd)
+_gnupg_ttyname (int fd)
 {
   (void)fd;
   return NULL;
 }
-#endif /* !HAVE_TTYNAME */
+#else /*HAVE_TTYNAME*/
+# define gnupg_ttyname(n) ttyname ((n))
+#endif /*HAVE_TTYNAME */
 
 #ifdef HAVE_W32CE_SYSTEM
 #define getpid() GetCurrentProcessId ()

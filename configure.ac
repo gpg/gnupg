@@ -1247,6 +1247,12 @@ AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
 AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
 
+if test "$have_android_system" = yes; then
+   # On Android ttyname is a stub but prints an error message.
+   AC_DEFINE(HAVE_BROKEN_TTYNAME,1,
+             [Defined if ttyname does not work properly])
+fi
+
 AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 
 # Dirmngr requires mmap on Unix systems.
