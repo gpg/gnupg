@@ -2226,11 +2226,6 @@ update_reader_status_file (int set_card_removed_flag)
   int idx;
   unsigned int status, changed;
 
-  /* Make sure that the reader has been opened.  Like get_reader_slot,
-     this part of the code assumes that there is only one reader.  */
-  if (!slot_table[0].valid)
-    (void)get_reader_slot ();
-
   /* Note, that we only try to get the status, because it does not
      make sense to wait here for a operation to complete.  If we are
      busy working with a card, delays in the status file update should
