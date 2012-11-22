@@ -1177,6 +1177,8 @@ AC_DECL_SYS_SIGLIST
 gl_HEADER_SYS_SOCKET
 gl_TYPE_SOCKLEN_T
 
+AC_SEARCH_LIBS([inet_addr], [nsl])
+
 AC_ARG_ENABLE(endian-check,
               AC_HELP_STRING([--disable-endian-check],
 	      [disable the endian check and trust the OS provided macros]),
