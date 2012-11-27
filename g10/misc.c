@@ -40,7 +40,7 @@
 #ifdef HAVE_W32_SYSTEM
 #include <time.h>
 #include <process.h>
-#include <windows.h> 
+#include <windows.h>
 #include <shlobj.h>
 #ifndef CSIDL_APPDATA
 #define CSIDL_APPDATA 0x001a
@@ -81,7 +81,7 @@ string_count_chr (const char *string, int c)
 #ifdef ENABLE_SELINUX_HACKS
 /* A object and a global variable to keep track of files marked as
    secured. */
-struct secured_file_item 
+struct secured_file_item
 {
   struct secured_file_item *next;
   ino_t ino;
@@ -106,7 +106,7 @@ register_secured_file (const char *fname)
 
   /* Note that we stop immediatley if something goes wrong here. */
   if (stat (fname, &buf))
-    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname, 
+    log_fatal (_("fstat of `%s' failed in %s: %s\n"), fname,
                "register_secured_file", strerror (errno));
 /*   log_debug ("registering `%s' i=%lu.%lu\n", fname, */
 /*              (unsigned long)buf.st_dev, (unsigned long)buf.st_ino); */
@@ -160,8 +160,8 @@ unregister_secured_file (const char *fname)
 }
 
 /* Return true if FD is corresponds to a secured file.  Using -1 for
-   FS is allowed and will return false. */ 
-int 
+   FS is allowed and will return false. */
+int
 is_secured_file (int fd)
 {
 #ifdef ENABLE_SELINUX_HACKS
@@ -175,7 +175,7 @@ is_secured_file (int fd)
      secure if something went wrong. */
   if (fstat (fd, &buf))
     {
-      log_error (_("fstat(%d) failed in %s: %s\n"), fd, 
+      log_error (_("fstat(%d) failed in %s: %s\n"), fd,
                  "is_secured_file", strerror (errno));
       return 1;
     }
@@ -195,8 +195,8 @@ is_secured_file (int fd)
 /* Return true if FNAME is corresponds to a secured file.  Using NULL,
    "" or "-" for FS is allowed and will return false. This function is
    used before creating a file, thus it won't fail if the file does
-   not exist. */ 
-int 
+   not exist. */
+int
 is_secured_filename (const char *fname)
 {
 #ifdef ENABLE_SELINUX_HACKS
@@ -204,7 +204,7 @@ is_secured_filename (const char *fname)
   struct secured_file_item *sf;
 
   if (iobuf_is_pipe_filename (fname) || !*fname)
-    return 0; 
+    return 0;
 
   /* Note that we print out a error here and claim that a file is
      secure if something went wrong. */
@@ -345,9 +345,9 @@ map_cipher_openpgp_to_gcry (int algo)
 {
   switch (algo)
     {
-    case CIPHER_ALGO_CAMELLIA128: return 310; 
-    case CIPHER_ALGO_CAMELLIA192: return 311; 
-    case CIPHER_ALGO_CAMELLIA256: return 312; 
+    case CIPHER_ALGO_CAMELLIA128: return 310;
+    case CIPHER_ALGO_CAMELLIA192: return 311;
+    case CIPHER_ALGO_CAMELLIA256: return 312;
     default: return algo;
     }
 }
@@ -367,7 +367,7 @@ map_cipher_gcry_to_openpgp (int algo)
 
 
 /* Return the block length of an OpenPGP cipher algorithm.  */
-int 
+int
 openpgp_cipher_blocklen (int algo)
 {
   /* We use the numbers from OpenPGP to be sure that we get the right
@@ -407,10 +407,25 @@ openpgp_cipher_test_algo( int algo )
    string representation of the algorithm name.  For unknown algorithm
    IDs this function returns "?".  */
 const char *
-openpgp_cipher_algo_name (int algo) 
+openpgp_cipher_algo_name (int algo)
 {
   return gcry_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
 }
+
+
+/* Map OpenPGP public key algorithm numbers to those used by
+   Libgcrypt.  */
+int
+map_pk_openpgp_to_gcry (int algo)
+{
+  switch (algo)
+    {
+    case PUBKEY_ALGO_ECDSA: return 301 /*GCRY_PK_ECDSA*/;
+    case PUBKEY_ALGO_ECDH:  return 302 /*GCRY_PK_ECDH*/;
+    default: return algo;
+    }
+}
+
 
 int
 openpgp_pk_test_algo( int algo )
@@ -418,7 +433,7 @@ openpgp_pk_test_algo( int algo )
   /* Dont't allow type 20 keys unless in rfc2440 mode.  */
   if (!RFC2440 && algo == 20)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
-    
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
 
@@ -445,13 +460,13 @@ openpgp_pk_test_algo2( int algo, unsigned int use )
   return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
 
-int 
+int
 openpgp_pk_algo_usage ( int algo )
 {
-    int use = 0; 
-    
+    int use = 0;
+
     /* They are hardwired in gpg 1.0. */
-    switch ( algo ) {    
+    switch ( algo ) {
       case PUBKEY_ALGO_RSA:
           use = (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG
                  | PUBKEY_USAGE_ENC | PUBKEY_USAGE_AUTH);
@@ -469,7 +484,7 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_ELGAMAL_E:
           use = PUBKEY_USAGE_ENC;
           break;
-      case PUBKEY_ALGO_DSA:  
+      case PUBKEY_ALGO_DSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
       default:
@@ -509,7 +524,7 @@ idea_cipher_warn(int show)
 #endif
 
 
-static unsigned long 
+static unsigned long
 get_signature_count (PKT_secret_key *sk)
 {
 #ifdef ENABLE_CARD_SUPPORT
@@ -518,7 +533,7 @@ get_signature_count (PKT_secret_key *sk)
       struct agent_card_info_s info;
       if(agent_scd_getattr("SIG-COUNTER",&info)==0)
 	return info.sig_counter;
-    }  
+    }
 #endif
 
   /* How to do this without a card? */
@@ -609,7 +624,7 @@ pct_expando(const char *string,struct expando_args *args)
 		  sprintf(&ret[idx],"%lu",get_signature_count(args->sk));
 		  idx+=strlen(&ret[idx]);
 		  done=1;
-		}	      
+		}
 	      break;
 
 	    case 'p': /* primary pk fingerprint of a sk */
@@ -678,7 +693,7 @@ pct_expando(const char *string,struct expando_args *args)
 		  case 't': /* e.g. "jpg" */
 		    str=image_type_to_string(args->imagetype,0);
 		    break;
-		  
+
 		  case 'T': /* e.g. "image/jpeg" */
 		    str=image_type_to_string(args->imagetype,2);
 		    break;
@@ -777,7 +792,7 @@ deprecated_command (const char *name)
 
 
 void
-obsolete_option (const char *configname, unsigned int configlineno, 
+obsolete_option (const char *configname, unsigned int configlineno,
                  const char *name)
 {
   if(configname)
@@ -793,9 +808,9 @@ obsolete_option (const char *configname, unsigned int configlineno,
  * Wrapper around gcry_cipher_map_name to provide a fallback using the
  * "Sn" syntax as used by the preference strings.
  */
-int 
-string_to_cipher_algo (const char *string) 
-{ 
+int
+string_to_cipher_algo (const char *string)
+{
   int val;
 
   val = map_cipher_gcry_to_openpgp (gcry_cipher_map_name (string));
@@ -816,9 +831,9 @@ string_to_cipher_algo (const char *string)
  * Wrapper around gcry_md_map_name to provide a fallback using the
  * "Hn" syntax as used by the preference strings.
  */
-int 
-string_to_digest_algo (const char *string) 
-{ 
+int
+string_to_digest_algo (const char *string)
+{
   int val;
 
   val = gcry_md_map_name (string);
@@ -1223,7 +1238,7 @@ has_invalid_email_chars (const char *s)
   const char *valid_chars=
     "01234567890_-.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  for ( ; *s; s++ ) 
+  for ( ; *s; s++ )
     {
       if ( (*s & 0x80) )
         continue; /* We only care about ASCII.  */
@@ -1344,7 +1359,7 @@ int
 pubkey_get_nenc( int algo )
 {
   size_t n;
-  
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
   if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))

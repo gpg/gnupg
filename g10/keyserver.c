@@ -483,9 +483,10 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->type)
     {
-      const char *str = gcry_pk_algo_name (keyrec->type);
+      const char *str;
 
-      if(str)
+      str = gcry_pk_algo_name (map_pk_openpgp_to_gcry (keyrec->type));
+      if(str && strcmp (str, "?"))
 	printf("%s ",str);
       else
 	printf("unknown ");
@@ -662,7 +663,7 @@ parse_keyrec(char *keystring)
 	  case 'R':
 	    work->flags|=1;
 	    break;
-	    
+
 	  case 'd':
 	  case 'D':
 	    work->flags|=2;
@@ -867,7 +868,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
 
               if (opt.with_colons && opt.batch)
                 break;
-                
+
 	      for(;;)
 		{
 		  if(show_prompt(desc,i,validcount?count:0,localstr))
@@ -921,7 +922,7 @@ keyserver_search_prompt(IOBUF buffer,const char *searchstr)
   /* Leave this commented out or now, and perhaps for a very long
      time.  All HKPish servers return HTML error messages for
      no-key-found. */
-  /* 
+  /*
      if(!started)
      log_info(_("keyserver does not support searching\n"));
      else
@@ -974,7 +975,7 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
-static int 
+static int
 keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
 		struct keyserver_spec *keyserver)
@@ -1014,7 +1015,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
      the program of this process lives.  Fortunately Windows provides
      a way to retrieve this and our gnupg_libexecdir function has been
      modified to return just this.  Setting the exec-path is not
-     anymore required.  
+     anymore required.
        set_exec_path(libexecdir);
  */
 #else
@@ -1044,7 +1045,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
      fetcher that can speak that protocol (this is a problem for
      LDAP). */
 
-  strcat(command,GPGKEYS_PREFIX); 
+  strcat(command,GPGKEYS_PREFIX);
   strcat(command,scheme);
 
   /* This "_uri" thing is in case we need to call a direct handler
@@ -1074,7 +1075,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	{
 	  command=xrealloc(command,strlen(command)+
 			    strlen(KEYSERVER_ARGS_NOKEEP)+1);
-	  strcat(command,KEYSERVER_ARGS_NOKEEP);  
+	  strcat(command,KEYSERVER_ARGS_NOKEEP);
 	}
 
       ret=exec_write(&spawn,NULL,command,NULL,0,0);
@@ -1525,7 +1526,7 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
   return ret;
 }
 
-static int 
+static int
 keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	       int count,unsigned char **fpr,size_t *fpr_len,
 	       struct keyserver_spec *keyserver)
@@ -1595,7 +1596,7 @@ keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 #endif /* ! DISABLE_KEYSERVER_HELPERS*/
 }
 
-int 
+int
 keyserver_export(strlist_t users)
 {
   strlist_t sl=NULL;
@@ -1627,7 +1628,7 @@ keyserver_export(strlist_t users)
   return rc;
 }
 
-int 
+int
 keyserver_import(strlist_t users)
 {
   KEYDB_SEARCH_DESC *desc;
@@ -1687,7 +1688,7 @@ keyserver_import_fprint(const byte *fprint,size_t fprint_len,
   return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
-int 
+int
 keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
 {
   KEYDB_SEARCH_DESC desc;
@@ -1702,7 +1703,7 @@ keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
 }
 
 /* code mostly stolen from do_export_stream */
-static int 
+static int
 keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
   int rc=0,ndesc,num=100;
@@ -1725,10 +1726,10 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
     }
   else
     {
-      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++) 
+      for (ndesc=0, sl=users; sl; sl = sl->next, ndesc++)
 	;
       desc = xmalloc ( ndesc * sizeof *desc);
-        
+
       for (ndesc=0, sl=users; sl; sl = sl->next)
 	{
 	  if(classify_user_id (sl->d, desc+ndesc))
@@ -1741,7 +1742,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   while (!(rc = keydb_search (kdbhd, desc, ndesc)))
     {
-      if (!users) 
+      if (!users)
 	desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
 
       /* read the keyblock */
@@ -1844,7 +1845,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   if(rc==-1)
     rc=0;
-  
+
  leave:
   if(rc)
     xfree(*klist);
@@ -2176,7 +2177,7 @@ keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
 	  snprintf(port,7,":%u",srvlist[i].port);
 	  strcat(keyserver->host,port);
 	}
-	
+
       strcat(keyserver->host," ");
     }
 
@@ -2192,7 +2193,7 @@ keyserver_import_ldap(const char *name,unsigned char **fpr,size_t *fpr_len)
   strcat(keyserver->host,domain);
 
   append_to_strlist(&list,name);
-    
+
   rc=keyserver_work(KS_GETNAME,list,NULL,0,fpr,fpr_len,keyserver);
 
   free_strlist(list);

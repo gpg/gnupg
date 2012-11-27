@@ -89,6 +89,7 @@ int map_cipher_openpgp_to_gcry (int algo);
 int openpgp_cipher_blocklen (int algo);
 int openpgp_cipher_test_algo( int algo );
 const char *openpgp_cipher_algo_name (int algo);
+int map_pk_openpgp_to_gcry (int algo);
 int openpgp_pk_test_algo( int algo );
 int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
@@ -113,7 +114,7 @@ char *pct_expando(const char *string,struct expando_args *args);
 void deprecated_warning(const char *configname,unsigned int configlineno,
 			const char *option,const char *repl1,const char *repl2);
 void deprecated_command (const char *name);
-void obsolete_option (const char *configname, unsigned int configlineno, 
+void obsolete_option (const char *configname, unsigned int configlineno,
                       const char *name);
 
 int string_to_cipher_algo (const char *string);
@@ -266,7 +267,7 @@ void import_print_stats (void *hd);
 
 int collapse_uids( KBNODE *keyblock );
 
-int auto_create_card_key_stub ( const char *serialnostr, 
+int auto_create_card_key_stub ( const char *serialnostr,
                                 const unsigned char *fpr1,
                                 const unsigned char *fpr2,
                                 const unsigned char *fpr3);
