@@ -506,9 +506,11 @@ print_keyrec(int number,struct keyrec *keyrec)
 
   if(keyrec->type)
     {
-      const char *str = gcry_pk_algo_name (keyrec->type);
+      const char *str;
 
-      if(str)
+      str = gcry_pk_algo_name (map_pk_openpgp_to_gcry (keyrec->type));
+
+      if (str && strcmp (str, "?"))
 	es_printf ("%s ",str);
       else
 	es_printf ("unknown ");
