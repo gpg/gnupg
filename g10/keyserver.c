@@ -1,6 +1,6 @@
 /* keyserver.c - generic keyserver code
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -492,21 +492,27 @@ print_keyrec(int number,struct keyrec *keyrec)
       break;
 
       /* However, if it gave us a long keyid, we can honor
-	 --keyid-format */
+	 --keyid-format via keystr(). */
     case KEYDB_SEARCH_MODE_LONG_KID:
       printf("key %s",keystr(keyrec->desc.u.kid));
       break;
 
+      /* If it gave us a PGP 2.x fingerprint, not much we can do
+	 beyond displaying it. */
     case KEYDB_SEARCH_MODE_FPR16:
       printf("key ");
       for(i=0;i<16;i++)
 	printf("%02X",keyrec->desc.u.fpr[i]);
       break;
 
+      /* If we get a modern fingerprint, we have the most
+	 flexibility. */
     case KEYDB_SEARCH_MODE_FPR20:
-      printf("key ");
-      for(i=0;i<20;i++)
-	printf("%02X",keyrec->desc.u.fpr[i]);
+      {
+	u32 kid[2];
+	keyid_from_fingerprint(keyrec->desc.u.fpr,20,kid);
+	printf("key %s",keystr(kid));
+      }
       break;
 
     default:
