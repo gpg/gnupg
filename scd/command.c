@@ -79,10 +79,6 @@
        == locked_session->ctrl_backlink->server_local->vreader_idx))
 
 
-/* Flag indicating that the reader has been disabled.  */
-static int reader_disabled;
-
-
 /* This structure is used to keep track of user readers.  To
    eventually accommodate this structure for RFID cards, where more
    than one card is used per reader, we name it virtual reader.  */
@@ -444,9 +440,7 @@ get_current_reader (void)
   /* Try to open the reader. */
   if (vr->slot == -1)
     {
-      int no_service_flag;
-
-      vr->slot = apdu_open_reader (opt.reader_port, &no_service_flag);
+      vr->slot = apdu_open_reader (opt.reader_port);
 
       /* If we still don't have a slot, we have no readers.
 	 Invalidate for now until a reader is attached. */
@@ -454,12 +448,6 @@ get_current_reader (void)
 	{
 	  vr->valid = 0;
 	}
-
-      if (no_service_flag)
-        {
-          log_info ("no card services - disabling scdaemon\n");
-          reader_disabled = 1;
-        }
     }
 
   /* Return the vreader index or -1.  */
@@ -473,9 +461,6 @@ open_card (ctrl_t ctrl, const char *apptype)
 {
   gpg_error_t err;
   int vrdr;
-
-  if (reader_disabled)
-    return gpg_error (GPG_ERR_NOT_OPERATIONAL);
 
   /* If we ever got a card not present error code, return that.  Only
      the SERIALNO command and a reset are able to clear from that
@@ -512,7 +497,7 @@ open_card (ctrl_t ctrl, const char *apptype)
     vrdr = get_current_reader ();
   ctrl->server_local->vreader_idx = vrdr;
   if (vrdr == -1)
-    err = gpg_error (reader_disabled? GPG_ERR_NOT_OPERATIONAL: GPG_ERR_CARD);
+    err = gpg_error (GPG_ERR_CARD);
   else
     {
       /* Fixme: We should move the apdu_connect call to
@@ -570,7 +555,7 @@ cmd_serialno (assuan_context_t ctx, char *line)
 
   /* Clear the remove flag so that the open_card is able to reread it.  */
  retry:
-  if (!reader_disabled && ctrl->server_local->card_removed)
+  if (ctrl->server_local->card_removed)
     {
       if ( IS_LOCKED (ctrl) )
         return gpg_error (GPG_ERR_LOCKED);
@@ -2122,7 +2107,7 @@ scd_command_handler (ctrl_t ctrl, int fd)
           BUG ();
       sl->next_session = ctrl->server_local->next_session;
     }
-  stopme = ctrl->server_local->stopme || reader_disabled;
+  stopme = ctrl->server_local->stopme;
   xfree (ctrl->server_local);
   ctrl->server_local = NULL;
 

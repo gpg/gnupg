@@ -84,7 +84,7 @@ enum {
 
 
 /* Note, that apdu_open_reader returns no status word but -1 on error. */
-int apdu_open_reader (const char *portstr, int *r_no_service);
+int apdu_open_reader (const char *portstr);
 int apdu_open_remote_reader (const char *portstr,
                              const unsigned char *cookie, size_t length,
                              int (*readfnc) (void *opaque,

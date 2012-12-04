@@ -323,9 +323,6 @@ long (* DLSTDCALL pcsc_control) (unsigned long card,
                                  unsigned long recv_len,
                                  unsigned long *bytes_returned);
 
-/* Flag set if PC/SC returned the no-service error.  */
-static int pcsc_no_service;
-
 
 /*  Prototypes.  */
 static int pcsc_get_status (int slot, unsigned int *status);
@@ -1693,11 +1690,8 @@ open_pcsc_reader_direct (const char *portstr)
       log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       reader_table[slot].used = 0;
-      if (err == PCSC_E_NO_SERVICE)
-        pcsc_no_service = 1;
       return -1;
     }
-  pcsc_no_service = 0;
 
   err = pcsc_list_readers (reader_table[slot].pcsc.context,
                            NULL, NULL, &nreader);
@@ -1796,7 +1790,6 @@ open_pcsc_reader_wrapped (const char *portstr)
     {
       log_error ("can't run PC/SC access module '%s': %s\n",
                  wrapperpgm, strerror (errno));
-      pcsc_no_service = 1;
       return -1;
     }
 
@@ -1893,8 +1886,6 @@ open_pcsc_reader_wrapped (const char *portstr)
     ;
 #undef WAIT
 
-  pcsc_no_service = 1;
-
   /* Now send the open request. */
   msgbuf[0] = 0x01; /* OPEN command. */
   len = portstr? strlen (portstr):0;
@@ -1927,14 +1918,10 @@ open_pcsc_reader_wrapped (const char *portstr)
     {
       log_error ("PC/SC returned a too large ATR (len=%lx)\n",
                  (unsigned long)len);
-      pcsc_no_service = 0;
       goto command_failed;
     }
   err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
                        | (msgbuf[7] << 8 ) | msgbuf[8]);
-
-  if (err != PCSC_E_NO_SERVICE)
-    pcsc_no_service = 0;
 
   if (err)
     {
@@ -2817,16 +2804,13 @@ unlock_slot (int slot)
    error. If PORTSTR is NULL we default to a suitable port (for ctAPI:
    the first USB reader.  For PC/SC the first listed reader). */
 int
-apdu_open_reader (const char *portstr, int *r_no_service)
+apdu_open_reader (const char *portstr)
 {
   static int pcsc_api_loaded, ct_api_loaded;
   int slot;
 
   if (DBG_READER)
     log_debug ("enter: apdu_open_reader: portstr=%s\n", portstr);
-
-  if (r_no_service)
-    *r_no_service = 0;
 
 #ifdef HAVE_LIBUSB
   if (!opt.disable_ccid)
@@ -2988,8 +2972,6 @@ apdu_open_reader (const char *portstr, int *r_no_service)
     }
 
   slot = open_pcsc_reader (portstr);
-  if (slot == -1 && r_no_service && pcsc_no_service)
-    *r_no_service = 1;
 
   if (DBG_READER)
     log_debug ("leave: apdu_open_reader => slot=%d [pc/sc]\n", slot);
