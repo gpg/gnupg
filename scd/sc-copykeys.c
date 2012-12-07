@@ -139,7 +139,7 @@ main (int argc, char **argv )
   if (argc != 1)
     usage (1);
 
-  slot = apdu_open_reader (reader_port, NULL);
+  slot = apdu_open_reader (reader_port);
   if (slot == -1)
     exit (1);
   if (apdu_connect (slot))
