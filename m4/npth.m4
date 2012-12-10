@@ -34,12 +34,12 @@ dnl Test for libnpth and define NPTH_CFLAGS and NPTH_LIBS.
 dnl
 AC_DEFUN([AM_PATH_NPTH],
 [ AC_REQUIRE([_AM_PATH_NPTH_CONFIG])dnl
-  tmp=ifelse([$1], ,1:0.0,$1)
+  tmp=ifelse([$1], ,1:0.91,$1)
   if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
      req_npth_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
      min_npth_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
   else
-     req_npth_api=0
+     req_npth_api=1
      min_npth_version="$tmp"
   fi
 
@@ -47,19 +47,27 @@ AC_DEFUN([AM_PATH_NPTH],
   ok=no
   if test "$NPTH_CONFIG" != "no" ; then
     req_major=`echo $min_npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
     req_minor=`echo $min_npth_version | \
-               sed 's/\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
-
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
     if test "$npth_version_major" -gt "$req_major"; then
         ok=yes
     else
         if test "$npth_version_major" -eq "$req_major"; then
-            if test "$npth_version_minor" -ge "$req_minor"; then
+            if test "$npth_version_minor" -gt "$req_minor"; then
                ok=yes
+            else
+               if test "$npth_version_minor" -eq "$req_minor"; then
+                  ok=yes
+               fi
             fi
         fi
     fi
+  fi
+  if test $ok = yes; then
+    AC_MSG_RESULT([yes ($npth_version)])
+  else
+    AC_MSG_RESULT(no)
   fi
   if test $ok = yes; then
      # If we have a recent NPTH, we should also check that the
@@ -67,8 +75,12 @@ AC_DEFUN([AM_PATH_NPTH],
      if test "$req_npth_api" -gt 0 ; then
         tmp=`$NPTH_CONFIG --api-version 2>/dev/null || echo 0`
         if test "$tmp" -gt 0 ; then
-           if test "$req_npth_api" -ne "$tmp" ; then
+           AC_MSG_CHECKING([NPTH API version])
+           if test "$req_npth_api" -eq "$tmp" ; then
+             AC_MSG_RESULT([okay])
+           else
              ok=no
+             AC_MSG_RESULT([does not match. want=$req_npth_api got=$tmp])
            fi
         fi
      fi
@@ -76,12 +88,23 @@ AC_DEFUN([AM_PATH_NPTH],
   if test $ok = yes; then
     NPTH_CFLAGS=`$NPTH_CONFIG --cflags`
     NPTH_LIBS=`$NPTH_CONFIG --libs`
-    AC_MSG_RESULT(yes)
     ifelse([$2], , :, [$2])
+    npth_config_host=`$NPTH_CONFIG --host 2>/dev/null || echo none`
+    if test x"$npth_config_host" != xnone ; then
+      if test x"$npth_config_host" != x"$host" ; then
+        AC_MSG_WARN([[
+***
+*** The config script $NPTH_CONFIG was
+*** built for $npth_config_host and thus may not match the
+*** used host $host.
+*** You may want to use the configure option --with-npth-prefix
+*** to specify a matching config script.
+***]])
+      fi
+    fi
   else
     NPTH_CFLAGS=""
     NPTH_LIBS=""
-    AC_MSG_RESULT(no)
     ifelse([$3], , :, [$3])
   fi
   AC_SUBST(NPTH_CFLAGS)
