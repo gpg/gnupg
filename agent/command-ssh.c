@@ -27,7 +27,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <assert.h>
 
 #include "agent.h"
@@ -169,6 +168,14 @@ struct control_file_s
 {
   char *fname;  /* Name of the file.  */
   FILE *fp;     /* This is never NULL. */
+  int lnr;      /* The current line number.  */
+  struct {
+    int valid;           /* True if the data of this structure is valid.  */
+    int disabled;        /* The item is disabled.  */
+    int ttl;             /* The TTL of the item.   */
+    int confirm;         /* The confirm flag is set.  */
+    char hexgrip[40+1];  /* The hexgrip of the item (uppercase).  */
+  } item;
 };
 typedef struct control_file_s *control_file_t;
 
@@ -742,6 +749,15 @@ open_control_file (control_file_t *r_cf, int append)
 
 
 static void
+rewind_control_file (control_file_t cf)
+{
+  fseek (cf->fp, 0, SEEK_SET);
+  cf->lnr = 0;
+  clearerr (cf->fp);
+}
+
+
+static void
 close_control_file (control_file_t cf)
 {
   if (!cf)
@@ -752,29 +768,19 @@ close_control_file (control_file_t cf)
 }
 
 
-/* Search the control file CF from the beginning until a matching
-   HEXGRIP is found; return success in this case and store true at
-   DISABLED if the found key has been disabled.  If R_TTL is not NULL
-   a specified TTL for that key is stored there.  If R_CONFIRM is not
-   NULL it is set to 1 if the key has the confirm flag set. */
+
+/* Read the next line from the control file and store the data in CF.
+   Returns 0 on success, GPG_ERR_EOF on EOF, or other error codes. */
 static gpg_error_t
-search_control_file (control_file_t cf, const char *hexgrip,
-                     int *r_disabled, int *r_ttl, int *r_confirm)
+read_control_file_item (control_file_t cf)
 {
   int c, i, n;
   char *p, *pend, line[256];
-  long ttl;
-  int lnr = 0;
+  long ttl = 0;
 
-  assert (strlen (hexgrip) == 40 );
-
-  if (r_confirm)
-    *r_confirm = 0;
-
-  fseek (cf->fp, 0, SEEK_SET);
+  cf->item.valid = 0;
   clearerr (cf->fp);
-  *r_disabled = 0;
- next_line:
+
   do
     {
       if (!fgets (line, DIM(line)-1, cf->fp) )
@@ -783,7 +789,7 @@ search_control_file (control_file_t cf, const char *hexgrip,
             return gpg_error (GPG_ERR_EOF);
           return gpg_error_from_syserror ();
         }
-      lnr++;
+      cf->lnr++;
 
       if (!*line || line[strlen(line)-1] != '\n')
         {
@@ -800,35 +806,34 @@ search_control_file (control_file_t cf, const char *hexgrip,
     }
   while (!*p || *p == '\n' || *p == '#');
 
-  *r_disabled = 0;
+  cf->item.disabled = 0;
   if (*p == '!')
     {
-      *r_disabled = 1;
+      cf->item.disabled = 1;
       for (p++; spacep (p); p++)
         ;
     }
 
   for (i=0; hexdigitp (p) && i < 40; p++, i++)
-    if (hexgrip[i] != (*p >= 'a'? (*p & 0xdf): *p))
-      goto next_line;
+    cf->item.hexgrip[i] = (*p >= 'a'? (*p & 0xdf): *p);
+  cf->item.hexgrip[i] = 0;
   if (i != 40 || !(spacep (p) || *p == '\n'))
     {
-      log_error ("invalid formatted line in `%s', line %d\n", cf->fname, lnr);
+      log_error ("%s:%d: invalid formatted line\n", cf->fname, cf->lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 
   ttl = strtol (p, &pend, 10);
   p = pend;
-  if (!(spacep (p) || *p == '\n') || ttl < -1)
+  if (!(spacep (p) || *p == '\n') || (int)ttl < -1)
     {
-      log_error ("invalid TTL value in `%s', line %d; assuming 0\n",
-                 cf->fname, lnr);
-      ttl = 0;
+      log_error ("%s:%d: invalid TTL value; assuming 0\n", cf->fname, cf->lnr);
+      cf->item.ttl = 0;
     }
-  if (r_ttl)
-    *r_ttl = ttl;
+  cf->item.ttl = ttl;
 
   /* Now check for key-value pairs of the form NAME[=VALUE]. */
+  cf->item.confirm = 0;
   while (*p)
     {
       for (; spacep (p) && *p != '\n'; p++)
@@ -838,22 +843,68 @@ search_control_file (control_file_t cf, const char *hexgrip,
       n = strcspn (p, "= \t\n");
       if (p[n] == '=')
         {
-          log_error ("assigning a value to a flag is not yet supported; "
-                     "in `%s', line %d; flag ignored\n", cf->fname, lnr);
+          log_error ("%s:%d: assigning a value to a flag is not yet supported; "
+                     "flag ignored\n", cf->fname, cf->lnr);
           p++;
         }
       else if (n == 7 && !memcmp (p, "confirm", 7))
         {
-          if (r_confirm)
-            *r_confirm = 1;
+          cf->item.confirm = 1;
         }
       else
-        log_error ("invalid flag `%.*s' in `%s', line %d; ignored\n",
-                   n, p, cf->fname, lnr);
+        log_error ("%s:%d: invalid flag '%.*s'; ignored\n",
+                   cf->fname, cf->lnr, n, p);
       p += n;
     }
 
-  return 0; /* Okay:  found it.  */
+  /* log_debug ("%s:%d: grip=%s ttl=%d%s%s\n", */
+  /*            cf->fname, cf->lnr, */
+  /*            cf->item.hexgrip, cf->item.ttl, */
+  /*            cf->item.disabled? " disabled":"", */
+  /*            cf->item.confirm? " confirm":""); */
+
+  cf->item.valid = 1;
+  return 0; /* Okay: valid entry found.  */
+}
+
+
+
+/* Search the control file CF from the beginning until a matching
+   HEXGRIP is found; return success in this case and store true at
+   DISABLED if the found key has been disabled.  If R_TTL is not NULL
+   a specified TTL for that key is stored there.  If R_CONFIRM is not
+   NULL it is set to 1 if the key has the confirm flag set. */
+static gpg_error_t
+search_control_file (control_file_t cf, const char *hexgrip,
+                     int *r_disabled, int *r_ttl, int *r_confirm)
+{
+  gpg_error_t err;
+
+  assert (strlen (hexgrip) == 40 );
+
+  *r_disabled = 0;
+  if (r_ttl)
+    *r_ttl = 0;
+  if (r_confirm)
+    *r_confirm = 0;
+
+  rewind_control_file (cf);
+  while (!(err=read_control_file_item (cf)))
+    {
+      if (!cf->item.valid)
+        continue; /* Should not happen.  */
+      if (!strcmp (hexgrip, cf->item.hexgrip))
+        break;
+    }
+  if (!err)
+    {
+      *r_disabled = cf->item.disabled;
+      if (r_ttl)
+        *r_ttl = cf->item.ttl;
+      if (r_confirm)
+        *r_confirm = cf->item.confirm;
+    }
+  return err;
 }
 
 
@@ -1898,19 +1949,13 @@ static gpg_error_t
 ssh_handler_request_identities (ctrl_t ctrl,
                                 estream_t request, estream_t response)
 {
-  char *key_type;
   ssh_key_type_spec_t spec;
-  struct dirent *dir_entry;
-  char *key_directory;
-  size_t key_directory_n;
-  char *key_path;
-  unsigned char *buffer;
-  size_t buffer_n;
+  char *key_fname = NULL;
+  char *fnameptr;
   u32 key_counter;
   estream_t key_blobs;
   gcry_sexp_t key_secret;
   gcry_sexp_t key_public;
-  DIR *dir;
   gpg_error_t err;
   int ret;
   control_file_t cf = NULL;
@@ -1921,14 +1966,9 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
   /* Prepare buffer stream.  */
 
-  key_directory = NULL;
   key_secret = NULL;
   key_public = NULL;
-  key_type = NULL;
-  key_path = NULL;
   key_counter = 0;
-  buffer = NULL;
-  dir = NULL;
   err = 0;
 
   key_blobs = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
@@ -1937,34 +1977,6 @@ ssh_handler_request_identities (ctrl_t ctrl,
       err = gpg_error_from_syserror ();
       goto out;
     }
-
-  /* Open key directory.  */
-  key_directory = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
-  if (! key_directory)
-    {
-      err = gpg_err_code_from_errno (errno);
-      goto out;
-    }
-  key_directory_n = strlen (key_directory);
-
-  key_path = xtrymalloc (key_directory_n + 46);
-  if (! key_path)
-    {
-      err = gpg_err_code_from_errno (errno);
-      goto out;
-    }
-
-  sprintf (key_path, "%s/", key_directory);
-  sprintf (key_path + key_directory_n + 41, ".key");
-
-  dir = opendir (key_directory);
-  if (! dir)
-    {
-      err = gpg_err_code_from_errno (errno);
-      goto out;
-    }
-
-
 
   /* First check whether a key is currently available in the card
      reader - this should be allowed even without being listed in
@@ -1984,77 +1996,93 @@ ssh_handler_request_identities (ctrl_t ctrl,
     }
 
 
-  /* Then look at all the registered an allowed keys. */
+  /* Prepare buffer for key name construction.  */
+  {
+    char *dname;
 
+    dname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
+    if (!dname)
+      {
+        err = gpg_err_code_from_syserror ();
+        goto out;
+      }
 
-  /* Fixme: We should better iterate over the control file and check
-     whether the key file is there.  This is better in respect to
-     performance if there are a lot of keys in our key storage. */
-  /* FIXME: make sure that buffer gets deallocated properly.  */
+    key_fname = xtrymalloc (strlen (dname) + 1 + 40 + 4 + 1);
+    if (!key_fname)
+      {
+        err = gpg_err_code_from_syserror ();
+        xfree (dname);
+        goto out;
+      }
+    fnameptr = stpcpy (stpcpy (key_fname, dname), "/");
+    xfree (dname);
+  }
+
+  /* Then look at all the registered and non-disabled keys. */
   err = open_control_file (&cf, 0);
   if (err)
     goto out;
 
-  while ( (dir_entry = readdir (dir)) )
+  while (!read_control_file_item (cf))
     {
-      if ((strlen (dir_entry->d_name) == 44)
-          && (! strncmp (dir_entry->d_name + 40, ".key", 4)))
-        {
-          char hexgrip[41];
-          int disabled;
+      if (!cf->item.valid)
+        continue; /* Should not happen.  */
+      if (cf->item.disabled)
+        continue;
+      assert (strlen (cf->item.hexgrip) == 40);
 
-          /* We do only want to return keys listed in our control
-             file. */
-          strncpy (hexgrip, dir_entry->d_name, 40);
-          hexgrip[40] = 0;
-          if ( strlen (hexgrip) != 40 )
+      stpcpy (stpcpy (fnameptr, cf->item.hexgrip), ".key");
+
+      /* Read file content.  */
+      {
+        unsigned char *buffer;
+        size_t buffer_n;
+
+        err = file_to_buffer (key_fname, &buffer, &buffer_n);
+        if (err)
+          {
+            log_error ("%s:%d: key '%s' skipped: %s\n",
+                       cf->fname, cf->lnr, cf->item.hexgrip,
+                       gpg_strerror (err));
             continue;
-          if (search_control_file (cf, hexgrip, &disabled, NULL, NULL)
-              || disabled)
-            continue;
+          }
 
-          strncpy (key_path + key_directory_n + 1, dir_entry->d_name, 40);
+        err = gcry_sexp_sscan (&key_secret, NULL, (char*)buffer, buffer_n);
+        xfree (buffer);
+        if (err)
+          goto out;
+      }
 
-          /* Read file content.  */
-          err = file_to_buffer (key_path, &buffer, &buffer_n);
-          if (err)
-            goto out;
+      {
+        char *key_type = NULL;
 
-          err = gcry_sexp_sscan (&key_secret, NULL, (char*)buffer, buffer_n);
-          if (err)
-            goto out;
+        err = sexp_extract_identifier (key_secret, &key_type);
+        if (err)
+          goto out;
 
-          xfree (buffer);
-          buffer = NULL;
+        err = ssh_key_type_lookup (NULL, key_type, &spec);
+        xfree (key_type);
+        if (err)
+          goto out;
+      }
 
-          err = sexp_extract_identifier (key_secret, &key_type);
-          if (err)
-            goto out;
+      err = key_secret_to_public (&key_public, spec, key_secret);
+      if (err)
+        goto out;
 
-          err = ssh_key_type_lookup (NULL, key_type, &spec);
-          if (err)
-            goto out;
+      gcry_sexp_release (key_secret);
+      key_secret = NULL;
 
-          xfree (key_type);
-          key_type = NULL;
+      err = ssh_send_key_public (key_blobs, key_public, NULL);
+      if (err)
+        goto out;
 
-          err = key_secret_to_public (&key_public, spec, key_secret);
-          if (err)
-            goto out;
+      gcry_sexp_release (key_public);
+      key_public = NULL;
 
-          gcry_sexp_release (key_secret);
-          key_secret = NULL;
-
-          err = ssh_send_key_public (key_blobs, key_public, NULL);
-          if (err)
-            goto out;
-
-          gcry_sexp_release (key_public);
-          key_public = NULL;
-
-          key_counter++;
-        }
+      key_counter++;
     }
+  err = 0;
 
   ret = es_fseek (key_blobs, 0, SEEK_SET);
   if (ret)
@@ -2064,43 +2092,27 @@ ssh_handler_request_identities (ctrl_t ctrl,
     }
 
  out:
-
   /* Send response.  */
 
   gcry_sexp_release (key_secret);
   gcry_sexp_release (key_public);
 
-  if (! err)
+  if (!err)
     {
       ret_err = stream_write_byte (response, SSH_RESPONSE_IDENTITIES_ANSWER);
-      if (ret_err)
-	goto leave;
-      ret_err = stream_write_uint32 (response, key_counter);
-      if (ret_err)
-	goto leave;
-      ret_err = stream_copy (response, key_blobs);
-      if (ret_err)
-	goto leave;
+      if (!ret_err)
+        ret_err = stream_write_uint32 (response, key_counter);
+      if (!ret_err)
+        ret_err = stream_copy (response, key_blobs);
     }
   else
     {
       ret_err = stream_write_byte (response, SSH_RESPONSE_FAILURE);
-      goto leave;
-    };
+    }
 
- leave:
-
-  if (key_blobs)
-    es_fclose (key_blobs);
-  if (dir)
-    closedir (dir);
-
+  es_fclose (key_blobs);
   close_control_file (cf);
-
-  xfree (key_directory);
-  xfree (key_path);
-  xfree (buffer);
-  xfree (key_type);
+  xfree (key_fname);
 
   return ret_err;
 }
