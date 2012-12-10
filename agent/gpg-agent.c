@@ -1067,7 +1067,7 @@ main (int argc, char **argv )
         }
       else if (pid)
         { /* We are the parent */
-          char *infostr, *infostr_ssh_sock;
+          char *infostr, *infostr_ssh_sock, *infostr_ssh_valid;
 
           /* Close the socket FD. */
           close (fd);
@@ -1099,6 +1099,13 @@ main (int argc, char **argv )
 	    {
 	      if (asprintf (&infostr_ssh_sock, "SSH_AUTH_SOCK=%s",
 			    socket_name_ssh) < 0)
+		{
+		  log_error ("out of core\n");
+		  kill (pid, SIGTERM);
+		  exit (1);
+		}
+	      if (asprintf (&infostr_ssh_valid, "gnupg_SSH_AUTH_SOCK_by=%lu",
+			    (unsigned long)getpid()) < 0)
 		{
 		  log_error ("out of core\n");
 		  kill (pid, SIGTERM);
@@ -1142,7 +1149,8 @@ main (int argc, char **argv )
                   kill (pid, SIGTERM );
                   exit (1);
                 }
-              if (opt.ssh_support && putenv (infostr_ssh_sock))
+              if (opt.ssh_support && (putenv (infostr_ssh_sock)
+                                      || putenv (infostr_ssh_valid)))
                 {
                   log_error ("failed to set environment: %s\n",
                              strerror (errno) );
@@ -1189,6 +1197,7 @@ main (int argc, char **argv )
 	      if (opt.ssh_support)
 		{
 		  xfree (infostr_ssh_sock);
+		  xfree (infostr_ssh_valid);
 		}
               exit (0);
             }
