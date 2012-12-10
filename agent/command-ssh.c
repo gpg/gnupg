@@ -1,5 +1,5 @@
 /* command-ssh.c - gpg-agent's ssh-agent emulation layer
- * Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2006, 2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -63,6 +63,8 @@
 #define SSH_DSA_SIGNATURE_ELEMS    2
 #define SPEC_FLAG_USE_PKCS1V2 (1 << 0)
 
+/* The name of the control file.  */
+#define SSH_CONTROL_FILE_NAME "sshcontrol"
 
 /* The blurb we put into the header of a newly created control file.  */
 static const char sshcontrolblurb[] =
@@ -77,7 +79,6 @@ static const char sshcontrolblurb[] =
 "# the caching TTL in seconds and another optional field for arbitrary\n"
 "# flags.   Prepend the keygrip with an '!' mark to disable it.\n"
 "\n";
-
 
 
 /* Macros.  */
@@ -160,6 +161,16 @@ typedef struct ssh_key_type_spec
   /* Misc flags.  */
   unsigned int flags;
 } ssh_key_type_spec_t;
+
+
+/* An object used to access the sshcontrol file.  */
+struct control_file_s
+{
+  char *fname;  /* Name of the file.  */
+  FILE *fp;     /* This is never NULL. */
+};
+typedef struct control_file_s *control_file_t;
+
 
 
 /* Prototypes.  */
@@ -659,92 +670,124 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
 
 
 
-/* Open the ssh control file and create it if not available. With
+/* Open the ssh control file and create it if not available.  With
    APPEND passed as true the file will be opened in append mode,
-   otherwise in read only mode.  On success a file pointer is stored
-   at the address of R_FP. */
+   otherwise in read only mode.  On success 0 is returned and a new
+   control file object stored at R_CF.  On error an error code is
+   returned and NULL is stored at R_CF.  */
 static gpg_error_t
-open_control_file (FILE **r_fp, int append)
+open_control_file (control_file_t *r_cf, int append)
 {
   gpg_error_t err;
-  char *fname;
-  FILE *fp;
+  control_file_t cf;
+
+  cf = xtrycalloc (1, sizeof *cf);
+  if (!cf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
 
   /* Note: As soon as we start to use non blocking functions here
      (i.e. where Pth might switch threads) we need to employ a
      mutex.  */
-  *r_fp = NULL;
-  fname = make_filename (opt.homedir, "sshcontrol", NULL);
+  cf->fname = make_filename_try (opt.homedir, SSH_CONTROL_FILE_NAME, NULL);
+  if (!cf->fname)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
   /* FIXME: With "a+" we are not able to check whether this will will
      be created and thus the blurb needs to be written first.  */
-  fp = fopen (fname, append? "a+":"r");
-  if (!fp && errno == ENOENT)
+  cf->fp = fopen (cf->fname, append? "a+":"r");
+  if (!cf->fp && errno == ENOENT)
     {
-      estream_t stream = es_fopen (fname, "wx,mode=-rw-r");
+      estream_t stream = es_fopen (cf->fname, "wx,mode=-rw-r");
       if (!stream)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't create '%s': %s\n"), fname, gpg_strerror (err));
-          xfree (fname);
-          return err;
+          log_error (_("can't create `%s': %s\n"),
+                     cf->fname, gpg_strerror (err));
+          goto leave;
         }
       es_fputs (sshcontrolblurb, stream);
       es_fclose (stream);
-      fp = fopen (fname, append? "a+":"r");
+      cf->fp = fopen (cf->fname, append? "a+":"r");
     }
 
-  if (!fp)
+  if (!cf->fp)
     {
-      err = gpg_error (gpg_err_code_from_errno (errno));
-      log_error (_("can't open '%s': %s\n"), fname, gpg_strerror (err));
-      xfree (fname);
-      return err;
+      err = gpg_error_from_syserror ();
+      log_error (_("can't open `%s': %s\n"),
+                 cf->fname, gpg_strerror (err));
+      goto leave;
     }
 
-  *r_fp = fp;
+  err = 0;
 
-  return 0;
+ leave:
+  if (err && cf)
+    {
+      if (cf->fp)
+        fclose (cf->fp);
+      xfree (cf->fname);
+      xfree (cf);
+    }
+  else
+    *r_cf = cf;
+
+  return err;
 }
 
 
-/* Search the file at stream FP from the beginning until a matching
+static void
+close_control_file (control_file_t cf)
+{
+  if (!cf)
+    return;
+  fclose (cf->fp);
+  xfree (cf->fname);
+  xfree (cf);
+}
+
+
+/* Search the control file CF from the beginning until a matching
    HEXGRIP is found; return success in this case and store true at
    DISABLED if the found key has been disabled.  If R_TTL is not NULL
    a specified TTL for that key is stored there.  If R_CONFIRM is not
    NULL it is set to 1 if the key has the confirm flag set. */
 static gpg_error_t
-search_control_file (FILE *fp, const char *hexgrip,
+search_control_file (control_file_t cf, const char *hexgrip,
                      int *r_disabled, int *r_ttl, int *r_confirm)
 {
   int c, i, n;
   char *p, *pend, line[256];
   long ttl;
   int lnr = 0;
-  const char fname[] = "sshcontrol";
 
   assert (strlen (hexgrip) == 40 );
 
   if (r_confirm)
     *r_confirm = 0;
 
-  fseek (fp, 0, SEEK_SET);
-  clearerr (fp);
+  fseek (cf->fp, 0, SEEK_SET);
+  clearerr (cf->fp);
   *r_disabled = 0;
  next_line:
   do
     {
-      if (!fgets (line, DIM(line)-1, fp) )
+      if (!fgets (line, DIM(line)-1, cf->fp) )
         {
-          if (feof (fp))
+          if (feof (cf->fp))
             return gpg_error (GPG_ERR_EOF);
-          return gpg_error (gpg_err_code_from_errno (errno));
+          return gpg_error_from_syserror ();
         }
       lnr++;
 
       if (!*line || line[strlen(line)-1] != '\n')
         {
           /* Eat until end of line */
-          while ( (c=getc (fp)) != EOF && c != '\n')
+          while ( (c=getc (cf->fp)) != EOF && c != '\n')
             ;
           return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                                  : GPG_ERR_INCOMPLETE_LINE);
@@ -769,7 +812,7 @@ search_control_file (FILE *fp, const char *hexgrip,
       goto next_line;
   if (i != 40 || !(spacep (p) || *p == '\n'))
     {
-      log_error ("invalid formatted line in '%s', line %d\n", fname, lnr);
+      log_error ("invalid formatted line in `%s', line %d\n", cf->fname, lnr);
       return gpg_error (GPG_ERR_BAD_DATA);
     }
 
@@ -777,8 +820,8 @@ search_control_file (FILE *fp, const char *hexgrip,
   p = pend;
   if (!(spacep (p) || *p == '\n') || ttl < -1)
     {
-      log_error ("invalid TTL value in '%s', line %d; assuming 0\n",
-                 fname, lnr);
+      log_error ("invalid TTL value in `%s', line %d; assuming 0\n",
+                 cf->fname, lnr);
       ttl = 0;
     }
   if (r_ttl)
@@ -795,7 +838,7 @@ search_control_file (FILE *fp, const char *hexgrip,
       if (p[n] == '=')
         {
           log_error ("assigning a value to a flag is not yet supported; "
-                     "in '%s', line %d; flag ignored\n", fname, lnr);
+                     "in `%s', line %d; flag ignored\n", cf->fname, lnr);
           p++;
         }
       else if (n == 7 && !memcmp (p, "confirm", 7))
@@ -804,8 +847,8 @@ search_control_file (FILE *fp, const char *hexgrip,
             *r_confirm = 1;
         }
       else
-        log_error ("invalid flag '%.*s' in '%s', line %d; ignored\n",
-                   n, p, fname, lnr);
+        log_error ("invalid flag `%.*s' in `%s', line %d; ignored\n",
+                   n, p, cf->fname, lnr);
       p += n;
     }
 
@@ -824,16 +867,16 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
                    int ttl, int confirm)
 {
   gpg_error_t err;
-  FILE *fp;
+  control_file_t cf;
   int disabled;
 
   (void)ctrl;
 
-  err = open_control_file (&fp, 1);
+  err = open_control_file (&cf, 1);
   if (err)
     return err;
 
-  err = search_control_file (fp, hexgrip, &disabled, NULL, NULL);
+  err = search_control_file (cf, hexgrip, &disabled, NULL, NULL);
   if (err && gpg_err_code(err) == GPG_ERR_EOF)
     {
       struct tm *tp;
@@ -842,15 +885,16 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
       /* Not yet in the file - add it. Because the file has been
          opened in append mode, we simply need to write to it.  */
       tp = localtime (&atime);
-      fprintf (fp, ("# Key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
-                    "# Fingerprint:  %s\n"
-                    "%s %d%s\n"),
+      fprintf (cf->fp,
+               ("# Key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
+                "# Fingerprint:  %s\n"
+                "%s %d%s\n"),
                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                tp->tm_hour, tp->tm_min, tp->tm_sec,
                fmtfpr, hexgrip, ttl, confirm? " confirm":"");
 
     }
-  fclose (fp);
+  close_control_file (cf);
   return 0;
 }
 
@@ -859,20 +903,20 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
 static int
 ttl_from_sshcontrol (const char *hexgrip)
 {
-  FILE *fp;
+  control_file_t cf;
   int disabled, ttl;
 
   if (!hexgrip || strlen (hexgrip) != 40)
     return 0;  /* Wrong input: Use global default.  */
 
-  if (open_control_file (&fp, 0))
+  if (open_control_file (&cf, 0))
     return 0; /* Error: Use the global default TTL.  */
 
-  if (search_control_file (fp, hexgrip, &disabled, &ttl, NULL)
+  if (search_control_file (cf, hexgrip, &disabled, &ttl, NULL)
       || disabled)
     ttl = 0;  /* Use the global default if not found or disabled.  */
 
-  fclose (fp);
+  close_control_file (cf);
 
   return ttl;
 }
@@ -882,21 +926,21 @@ ttl_from_sshcontrol (const char *hexgrip)
 static int
 confirm_flag_from_sshcontrol (const char *hexgrip)
 {
-  FILE *fp;
+  control_file_t cf;
   int disabled, confirm;
 
   if (!hexgrip || strlen (hexgrip) != 40)
     return 1;  /* Wrong input: Better ask for confirmation.  */
 
-  if (open_control_file (&fp, 0))
+  if (open_control_file (&cf, 0))
     return 1; /* Error: Better ask for confirmation.  */
 
-  if (search_control_file (fp, hexgrip, &disabled, NULL, &confirm)
+  if (search_control_file (cf, hexgrip, &disabled, NULL, &confirm)
       || disabled)
     confirm = 0;  /* If not found or disabled, there is no reason to
                      ask for confirmation.  */
 
-  fclose (fp);
+  close_control_file (cf);
 
   return confirm;
 }
@@ -1867,7 +1911,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   DIR *dir;
   gpg_error_t err;
   int ret;
-  FILE *ctrl_fp = NULL;
+  control_file_t cf = NULL;
   char *cardsn;
   gpg_error_t ret_err;
 
@@ -1942,10 +1986,10 @@ ssh_handler_request_identities (ctrl_t ctrl,
 
 
   /* Fixme: We should better iterate over the control file and check
-     whether the key file is there.  This is better in resepct to
-     performance if tehre are a lot of key sin our key storage. */
+     whether the key file is there.  This is better in respect to
+     performance if there are a lot of keys in our key storage. */
   /* FIXME: make sure that buffer gets deallocated properly.  */
-  err = open_control_file (&ctrl_fp, 0);
+  err = open_control_file (&cf, 0);
   if (err)
     goto out;
 
@@ -1963,7 +2007,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
           hexgrip[40] = 0;
           if ( strlen (hexgrip) != 40 )
             continue;
-          if (search_control_file (ctrl_fp, hexgrip, &disabled, NULL, NULL)
+          if (search_control_file (cf, hexgrip, &disabled, NULL, NULL)
               || disabled)
             continue;
 
@@ -2049,8 +2093,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   if (dir)
     closedir (dir);
 
-  if (ctrl_fp)
-    fclose (ctrl_fp);
+  close_control_file (cf);
 
   xfree (key_directory);
   xfree (key_path);
