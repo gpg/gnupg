@@ -1189,65 +1189,51 @@ ssh_signature_encoder_dsa (estream_t signature_blob, gcry_mpi_t *mpis)
    by the KEY_SPEC, SECRET, MPIS and COMMENT, which is to be stored in
    *SEXP.  Returns usual error code.  */
 static gpg_error_t
-sexp_key_construct (gcry_sexp_t *sexp,
+sexp_key_construct (gcry_sexp_t *r_sexp,
 		    ssh_key_type_spec_t key_spec, int secret,
 		    gcry_mpi_t *mpis, const char *comment)
 {
   const char *key_identifier[] = { "public-key", "private-key" };
-  gcry_sexp_t sexp_new;
-  char *sexp_template;
-  size_t sexp_template_n;
   gpg_error_t err;
+  gcry_sexp_t sexp_new = NULL;
+  char *formatbuf = NULL;
+  void **arg_list = NULL;
+  int arg_idx;
+  estream_t format;
   const char *elems;
   size_t elems_n;
-  unsigned int i;
-  unsigned int j;
-  void **arg_list;
+  unsigned int i, j;
 
-  err = 0;
-  sexp_new = NULL;
-  arg_list = NULL;
   if (secret)
     elems = key_spec.elems_sexp_order;
   else
     elems = key_spec.elems_key_public;
   elems_n = strlen (elems);
 
-  /*
-    Calculate size for sexp_template_n:
-
-    "(%s(%s<mpis>)(comment%s))" -> 20 + sizeof (<mpis>).
-
-    mpi: (X%m) -> 5.
-
-  */
-  sexp_template_n = 20 + (elems_n * 5);
-  sexp_template = xtrymalloc (sexp_template_n);
-  if (! sexp_template)
+  format = es_fopenmem (0, "a+b");
+  if (!format)
     {
       err = gpg_error_from_syserror ();
       goto out;
     }
 
-  /* Key identifier, algorithm identifier, mpis, comment.  */
-  arg_list = xtrymalloc (sizeof (*arg_list) * (2 + elems_n + 1));
-  if (! arg_list)
+  /* Key identifier, algorithm identifier, mpis, comment, and a NULL
+     as a safeguard. */
+  arg_list = xtrymalloc (sizeof (*arg_list) * (2 + elems_n + 1 + 1));
+  if (!arg_list)
     {
       err = gpg_error_from_syserror ();
       goto out;
     }
+  arg_idx = 0;
 
-  i = 0;
-  arg_list[i++] = &key_identifier[secret];
-  arg_list[i++] = &key_spec.identifier;
+  es_fputs ("(%s(%s", format);
+  arg_list[arg_idx++] = &key_identifier[secret];
+  arg_list[arg_idx++] = &key_spec.identifier;
 
-  *sexp_template = 0;
-  sexp_template_n = 0;
-  sexp_template_n = sprintf (sexp_template + sexp_template_n, "(%%s(%%s");
   for (i = 0; i < elems_n; i++)
     {
-      sexp_template_n += sprintf (sexp_template + sexp_template_n, "(%c%%m)",
-				  elems[i]);
+      es_fprintf (format, "(%c%%m)", elems[i]);
       if (secret)
 	{
 	  for (j = 0; j < elems_n; j++)
@@ -1256,26 +1242,41 @@ sexp_key_construct (gcry_sexp_t *sexp,
 	}
       else
 	j = i;
-      arg_list[i + 2] = &mpis[j];
+      arg_list[arg_idx++] = &mpis[j];
     }
-  sexp_template_n += sprintf (sexp_template + sexp_template_n,
-			      ")(comment%%s))");
+  es_fputs (")(comment%s))", format);
+  arg_list[arg_idx++] = &comment;
+  arg_list[arg_idx] = NULL;
 
-  arg_list[i + 2] = &comment;
+  es_putc (0, format);
+  if (es_ferror (format))
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
+  if (es_fclose_snatch (format, &formatbuf, NULL))
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
+  format = NULL;
 
-  err = gcry_sexp_build_array (&sexp_new, NULL, sexp_template, arg_list);
+  log_debug ("sexp formatbuf='%s' nargs=%d\n", formatbuf, arg_idx);
+  err = gcry_sexp_build_array (&sexp_new, NULL, formatbuf, arg_list);
   if (err)
     goto out;
 
-  *sexp = sexp_new;
+  *r_sexp = sexp_new;
+  err = 0;
 
  out:
-
+  es_fclose (format);
   xfree (arg_list);
-  xfree (sexp_template);
+  xfree (formatbuf);
 
   return err;
 }
+
 
 /* This functions breaks up the key contained in the S-Expression SEXP
    according to KEY_SPEC.  The MPIs are bundled in a newly create
