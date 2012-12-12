@@ -137,7 +137,24 @@ test_agent_protect (void)
       "\x9B\x7B\xE8\xDD\x1F\x87\x4E\x79\x7B\x50\x12\xA7\xB4\x8B\x52\x38\xEC\x7C\xBB\xB9"
       "\x55\x87\x11\x1C\x74\xE7\x7F\xA0\xBA\xE3\x34\x5D\x61\xBF\x29\x29\x29\x00"
     };
-      
+
+  struct key_spec key_ecdsa_valid =
+    {
+      "\x28\x31\x31\x3A\x70\x72\x69\x76\x61\x74\x65\x2D\x6B\x65\x79\x28"
+      "\x35\x3A\x65\x63\x64\x73\x61\x28\x35\x3A\x63\x75\x72\x76\x65\x31"
+      "\x30\x3A\x4E\x49\x53\x54\x20\x50\x2D\x32\x35\x36\x29\x28\x31\x3A"
+      "\x71\x36\x35\x3A\x04\x64\x5A\x12\x6F\x86\x7C\x43\x87\x2B\x7C\xAF"
+      "\x77\xFE\xD8\x22\x31\xEA\xE6\x89\x9F\xAA\xEA\x63\x26\xBC\x49\xED"
+      "\x85\xC6\xD2\xC9\x8B\x38\xD2\x78\x75\xE6\x1C\x27\x57\x01\xC5\xA1"
+      "\xE3\xF9\x1F\xBE\xCF\xC1\x72\x73\xFE\xA4\x58\xB6\x6A\x92\x7D\x33"
+      "\x1D\x02\xC9\xCB\x12\x29\x28\x31\x3A\x64\x33\x33\x3A\x00\x81\x2D"
+      "\x69\x9A\x5F\x5B\x6F\x2C\x99\x61\x36\x15\x6B\x44\xD8\x06\xC1\x54"
+      "\xC1\x4C\xFB\x70\x6A\xB6\x64\x81\x78\xF3\x94\x2F\x30\x5D\x29\x29"
+      "\x28\x37\x3A\x63\x6F\x6D\x6D\x65\x6E\x74\x32\x32\x3A\x2F\x68\x6F"
+      "\x6D\x65\x2F\x77\x6B\x2F\x2E\x73\x73\x68\x2F\x69\x64\x5F\x65\x63"
+      "\x64\x73\x61\x29\x29"
+    };
+
   struct
   {
     const char *key;
@@ -167,6 +184,9 @@ test_agent_protect (void)
       { key_rsa_bogus_1.string,
 	"passphrase", 0, 0, NULL, 0, GPG_ERR_INV_SEXP, NULL, 0 },
 
+      { key_ecdsa_valid.string,
+	"passphrase", 0, 0, NULL, 0, 0, NULL, 0 },
+
       /* FIXME: add more test data.  */
     };
 
@@ -177,12 +197,12 @@ test_agent_protect (void)
 			   &specs[i].result, &specs[i].resultlen);
       if (gpg_err_code (ret) != specs[i].ret_expected)
 	{
-	  printf ("agent_protect() returned `%i/%s'; expected `%i/%s'\n",
-		  ret, gpg_strerror (ret),
+	  printf ("agent_protect(%d) returned '%i/%s'; expected '%i/%s'\n",
+		  i, ret, gpg_strerror (ret),
 		  specs[i].ret_expected, gpg_strerror (specs[i].ret_expected));
 	  abort ();
 	}
-      
+
       if (specs[i].no_result_expected)
 	{
 	  assert (! specs[i].result);
@@ -234,14 +254,14 @@ static void
 test_make_shadow_info (void)
 {
 #if 0
-  static struct 
+  static struct
   {
-    const char *snstr; 
+    const char *snstr;
     const char *idstr;
     const char *expected;
   } data[] = {
     { "", "", NULL },
-    
+
   };
   int i;
   unsigned char *result;
@@ -298,7 +318,7 @@ main (int argc, char **argv)
   (void)argv;
 
   gcry_control (GCRYCTL_DISABLE_SECMEM);
-  
+
   test_agent_protect ();
   test_agent_unprotect ();
   test_agent_private_key_type ();
