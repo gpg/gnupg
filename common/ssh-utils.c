@@ -97,6 +97,34 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
       elems = "pqgy";
       gcry_md_write (md, "\0\0\0\x07ssh-dss", 11);
       break;
+    case GCRY_PK_ECDSA:
+      /* We only support the 3 standard curves for now.  It is just a
+         quick hack.  */
+      elems = "q";
+      gcry_md_write (md, "\0\0\0\x13" "ecdsa-sha2-nistp", 20);
+      l2 = gcry_sexp_find_token (list, "curve", 0);
+      if (!l2)
+        elems = "";
+      else
+        {
+          gcry_free (name);
+          name = gcry_sexp_nth_string (l2, 1);
+          gcry_sexp_release (l2);
+          l2 = NULL;
+          if (!name)
+            elems = "";
+          else if (!strcmp (name, "NIST P-256") || !strcmp (name, "nistp256"))
+            gcry_md_write (md, "256\0\0\0\x08nistp256", 15);
+          else if (!strcmp (name, "NIST P-384") || !strcmp (name, "nistp384"))
+            gcry_md_write (md, "384\0\0\0\x08nistp521", 15);
+          else if (!strcmp (name, "NIST P-521") || !strcmp (name, "nistp521"))
+            gcry_md_write (md, "521\0\0\0\x08nistp521", 15);
+          else
+            elems = "";
+        }
+      if (!*elems)
+        err = gpg_err_make (default_errsource, GPG_ERR_UNKNOWN_CURVE);
+      break;
     default:
       elems = "";
       err = gpg_err_make (default_errsource, GPG_ERR_PUBKEY_ALGO);

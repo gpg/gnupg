@@ -51,13 +51,14 @@ static struct {
   const char *algo;
   const char *parmlist;
   int prot_from, prot_to;
+  int ecc_hack;
 } protect_info[] = {
   { "rsa",  "nedpqu", 2, 5 },
   { "dsa",  "pqgyx", 4, 4 },
   { "elg",  "pgyx", 3, 3 },
-  { "ecdsa","pabgnqd", 6, 6 },
-  { "ecdh", "pabgnqd", 6, 6 },
-  { "ecc",  "pabgnqd", 6, 6 },
+  { "ecdsa","pabgnqd", 6, 6, 1 },
+  { "ecdh", "pabgnqd", 6, 6, 1 },
+  { "ecc",  "pabgnqd", 6, 6, 1 },
   { NULL }
 };
 
@@ -450,6 +451,8 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
 	       unsigned long s2k_count)
 {
   int rc;
+  const char *parmlist;
+  int prot_from_idx, prot_to_idx;
   const unsigned char *s;
   const unsigned char *hash_begin, *hash_end;
   const unsigned char *prot_begin, *prot_end, *real_end;
@@ -494,10 +497,13 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 
+  parmlist      = protect_info[infidx].parmlist;
+  prot_from_idx = protect_info[infidx].prot_from;
+  prot_to_idx   = protect_info[infidx].prot_to;
   prot_begin = prot_end = NULL;
-  for (i=0; (c=protect_info[infidx].parmlist[i]); i++)
+  for (i=0; (c=parmlist[i]); i++)
     {
-      if (i == protect_info[infidx].prot_from)
+      if (i == prot_from_idx)
         prot_begin = s;
       if (*s != '(')
         return gpg_error (GPG_ERR_INV_SEXP);
@@ -507,7 +513,20 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
       if (!n)
         return gpg_error (GPG_ERR_INV_SEXP);
       if (n != 1 || c != *s)
-        return gpg_error (GPG_ERR_INV_SEXP);
+        {
+          if (n == 5 && !memcmp (s, "curve", 5)
+              && !i && protect_info[infidx].ecc_hack)
+            {
+              /* This is a private ECC key but the first parameter is
+                 the name of the curve.  We change the parameter list
+                 here to the one we expect in this case.  */
+              parmlist = "?qd";
+              prot_from_idx = 2;
+              prot_to_idx = 2;
+            }
+          else
+            return gpg_error (GPG_ERR_INV_SEXP);
+        }
       s += n;
       n = snext (&s);
       if (!n)
@@ -516,7 +535,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
       if (*s != ')')
         return gpg_error (GPG_ERR_INV_SEXP);
       depth--;
-      if (i == protect_info[infidx].prot_to)
+      if (i == prot_to_idx)
         prot_end = s;
       s++;
     }
@@ -532,7 +551,6 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
     return rc;
   assert (!depth);
   real_end = s-1;
-
 
   /* Hash the stuff.  Because the timestamp_exp won't get protected,
      we can't simply hash a continuous buffer but need to use several
