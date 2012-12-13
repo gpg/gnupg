@@ -688,9 +688,9 @@ store_fpr (app_t app, int keynumber, u32 timestamp,
   xfree (buffer);
 
   tag = (card_version > 0x0007? 0xC7 : 0xC6) + keynumber;
-  flush_cache_item (app, tag);
+  flush_cache_item (app, 0xC5);
   tag2 = 0xCE + keynumber;
-  flush_cache_item (app, tag2);
+  flush_cache_item (app, 0xCD);
 
   rc = iso7816_put_data (app->slot, 0, tag, fpr, 20);
   if (rc)
