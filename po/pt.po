@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1120,19 +1121,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1145,20 +1138,12 @@ msgid ""
 msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1221,12 +1206,6 @@ msgstr "a ler opções de `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s não é para uso normal!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"a extensão de cifra \"%s\" não foi carregada devido às suas permissões "
-"inseguras\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -2229,8 +2208,8 @@ msgstr "chave %08lX: detectado ID de utilizador duplicado - fundido\n"
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
-"AVISO: a chave %08lX pode estar revocada: a transferir a chave de revocação %"
-"08lX\n"
+"AVISO: a chave %08lX pode estar revocada: a transferir a chave de revocação "
+"%08lX\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
@@ -3973,18 +3952,15 @@ msgstr "algoritmo de criptografia não implementado"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "assinatura %s de: \"%s\"\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "o 'plugin' com a cifra IDEA não está presente\n"
-
-#, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = mostrar mais informações\n"
-
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "forçar o algoritmo de 'digest' %s (%d) viola as preferências do "
 "destinatário\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = mostrar mais informações\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5263,6 +5239,31 @@ msgstr "a operação não é possível sem memória segura inicializada\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(você pode ter usado o programa errado para esta tarefa)\n"
 
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "AVISO: permissões pouco seguras em %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "a extensão de cifra \"%s\" não foi carregada devido às suas permissões "
+#~ "inseguras\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "o 'plugin' com a cifra IDEA não está presente\n"
+
 #~ msgid "Command> "
 #~ msgstr "Comando> "
 
@@ -5976,8 +5977,8 @@ msgstr "(você pode ter usado o programa errado para esta tarefa)\n"
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "a verificar à profundidade %d assinado=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%"
-#~ "d\n"
+#~ "a verificar à profundidade %d assinado=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/"
+#~ "%d\n"
 
 #~ msgid ""
 #~ "Select the algorithm to use.\n"

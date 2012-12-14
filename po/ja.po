@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
+"Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=EUC-JP\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1083,20 +1084,12 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "警告: 構成ファイル「%s」の安全でない所有者\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "警告: 拡張「%s」の安全でない所有者\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "警告: homedir 「%s」の安全でない許可\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "警告: 構成ファイル「%s」の安全でない許可\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "警告: 拡張「%s」の安全でない許可\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1108,10 +1101,6 @@ msgid ""
 msgstr "警告: 構成ファイル「%s」の安全でない上位ディレクトリー所有者\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "警告: 拡張「%s」の安全でない上位ディレクトリー所有者\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "警告: homedir 「%s」の安全でない上位ディレクトリー許可\n"
 
@@ -1119,10 +1108,6 @@ msgstr "警告: homedir 「%s」の安全でない上位ディレクトリー許可\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "警告: 構成ファイル「%s」の安全でない上位ディレクトリー許可\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr "警告: 拡張「%s」の安全でない上位ディレクトリー許可\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1184,10 +1169,6 @@ msgstr "「%s」からオプションを読み出します\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "注意: 普通%sは使いません!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "安全でない許可のため、暗号法拡張「%s」をロードしません\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3833,16 +3814,13 @@ msgstr "未実装の暗号アルゴリズムです"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s署名、要約アルゴリズム %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "IDEA暗号法のプラグインがありません\n"
+#, fuzzy, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "警告: 要約アルゴリズム %s (%d) の強制が、受取人の選好と対立します\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr "詳細はhttp://www.gnupg.org/faq.htmlをご覧ください\n"
-
-#, fuzzy, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "警告: 要約アルゴリズム %s (%d) の強制が、受取人の選好と対立します\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5068,6 +5046,24 @@ msgstr "初期化済みの安全なメモリーがない場合には操作できません\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(この目的には誤ったプログラムを使ったのでしょう)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "警告: 拡張「%s」の安全でない所有者\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "警告: 拡張「%s」の安全でない許可\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "警告: 拡張「%s」の安全でない上位ディレクトリー所有者\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "警告: 拡張「%s」の安全でない上位ディレクトリー許可\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr "安全でない許可のため、暗号法拡張「%s」をロードしません\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "IDEA暗号法のプラグインがありません\n"
 
 #~ msgid "Command> "
 #~ msgstr "コマンド> "

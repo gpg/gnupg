@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:09+0200\n"
 "Last-Translator: Marco d'Itri <md@linux.it>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
+"Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1129,19 +1130,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "ATTENZIONE: il proprietario \"%s\" di %s è insicuro\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "ATTENZIONE: il proprietario \"%s\" di %s è insicuro\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
 
 #, fuzzy, c-format
@@ -1154,20 +1147,12 @@ msgid ""
 msgstr "ATTENZIONE: il proprietario \"%s\" di %s è insicuro\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "ATTENZIONE: il proprietario \"%s\" di %s è insicuro\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
 
 #, fuzzy, c-format
@@ -1231,12 +1216,6 @@ msgstr "lettura delle opzioni da `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: %s normalmente non deve essere usato!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"l'estensione crittografica \"%s\" non è stata caricata a causa dei\n"
-"permessi insicuri.\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3998,17 +3977,14 @@ msgstr "algoritmo di cifratura non implementato"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "Firma %s, algoritmo di digest %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "il plugin per il cifrario IDEA non è presente\n"
-
-#, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = mostrami ulteriori informazioni\n"
-
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "forzare l'algoritmo di digest %s (%d) viola le preferenze del destinatario\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = mostrami ulteriori informazioni\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5308,6 +5284,31 @@ msgstr "l'operazione non è possibile senza memoria sicura inizializzata\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(potresti avere usato il programma sbagliato per questa funzione)\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "ATTENZIONE: il proprietario \"%s\" di %s è insicuro\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "ATTENZIONE: il proprietario \"%s\" di %s è insicuro\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "ATTENZIONE: i permessi \"%s\" di %s sono insicuri\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "l'estensione crittografica \"%s\" non è stata caricata a causa dei\n"
+#~ "permessi insicuri.\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "il plugin per il cifrario IDEA non è presente\n"
 
 #~ msgid "Command> "
 #~ msgstr "Comando> "

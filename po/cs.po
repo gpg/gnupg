@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:20+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1090,11 +1091,6 @@ msgstr ""
 "VAROVÁNÍ: vlastnictví konfiguraèního souboru není nastaveno bezpeènì `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr ""
-"VAROVÁNÍ: vlastnictví roz¹iøujícího modulu není nastaveno bezpeènì `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr ""
 "VAROVÁNÍ: pøístupová práva pro domovský adresáøe nejsou bezpeèná `%s'\n"
@@ -1103,10 +1099,6 @@ msgstr ""
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr ""
 "VAROVÁNÍ: pøístupová práva pro konfiguraèní soubor nejsou bezpeèná `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "VAROVÁNÍ: pøístupová práva roz¹iøujícímu modulu nejsou bezpeèná `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1122,12 +1114,6 @@ msgstr ""
 "nebezpeènì `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"VAROVÁNÍ: vlastnictví adresáøe s roz¹iøujícím modulem není nastaveno "
-"nebezpeènì `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "VAROVÁNÍ: pøístupová práva k adresáøi s domovským adresáøem nejsou nastavena "
@@ -1138,12 +1124,6 @@ msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr ""
 "VAROVÁNÍ: pøístupová práva k adersáøi s konfiguraèním souborem nejsou "
-"nastavena bezpeènì `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"VAROVÁNÍ: pøístupová práva k adresáøi s roz¹iøujícím modulem nejsou "
 "nastavena bezpeènì `%s'\n"
 
 # c-format
@@ -1207,12 +1187,6 @@ msgstr "ètu mo¾nosti z `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "POZNÁMKA: %s není pro normální pou¾ití!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"¹ifra `%s' nebyla nahrána, proto¾e pøístupová práva nejsou nastavena "
-"bezpeènì\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3873,16 +3847,13 @@ msgstr "VAROVÁNÍ: pou¾ívám experimentální ¹ifrovací algoritmus %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "VAROVÁNÍ: pou¾ívám experimentální hashovací algoritmus %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "IDEA modul pro GnuPG nenalezen\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "VAROVÁNÍ: vy¾ádaný algoritmus %s není doporuèen\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr "Více informací naleznete na adrese http://www.gnupg.cz/faq.html\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "VAROVÁNÍ: vy¾ádaný algoritmus %s není doporuèen\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4884,8 +4855,8 @@ msgstr "po¾adováno %d èásteèné dùvìry a %d úplné dùvìry, model %s\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"hloubka: %d  platných: %3d  podepsaných: %3d  dùvìra: %d-, %dq, %dn, %dm, %"
-"df, %du\n"
+"hloubka: %d  platných: %3d  podepsaných: %3d  dùvìra: %d-, %dq, %dn, %dm, "
+"%df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5134,6 +5105,32 @@ msgstr "provést operaci není mo¾né bez inicializované bezpeèné pamìti\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(pravdìpodobnì jste pro tento úkol pou¾ili nesprávný program)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "VAROVÁNÍ: vlastnictví roz¹iøujícího modulu není nastaveno bezpeènì `%s'\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "VAROVÁNÍ: pøístupová práva roz¹iøujícímu modulu nejsou bezpeèná `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "VAROVÁNÍ: vlastnictví adresáøe s roz¹iøujícím modulem není nastaveno "
+#~ "nebezpeènì `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "VAROVÁNÍ: pøístupová práva k adresáøi s roz¹iøujícím modulem nejsou "
+#~ "nastavena bezpeènì `%s'\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "¹ifra `%s' nebyla nahrána, proto¾e pøístupová práva nejsou nastavena "
+#~ "bezpeènì\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "IDEA modul pro GnuPG nenalezen\n"
 
 #~ msgid "Command> "
 #~ msgstr "Pøíkaz> "

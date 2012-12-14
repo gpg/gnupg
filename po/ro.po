@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:15+0200\n"
 "Last-Translator: Laurențiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1090,10 +1091,6 @@ msgstr ""
 "AVERTISMENT: proprietate nesigură (unsafe) pentru fișier configurare `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "AVERTISMENT: proprietate nesigură (unsafe) pentru extensia `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr ""
 "AVERTISMENT: permisiuni nesigure (unsafe) pentru directorul home `%s'\n"
@@ -1102,10 +1099,6 @@ msgstr ""
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr ""
 "AVERTISMENT: permisiuni nesigure (unsafe) pentru fișier configurare `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "AVERTISMENT: permisiuni nesigure (unsafe) pentru extensia `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1121,12 +1114,6 @@ msgstr ""
 "configurare `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"AVERTISMENT: proprietate director incluziuni nesigur (unsafe) pentru "
-"extensia `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "AVERTISMENT: permisiuni director incluziuni nesigure (unsafe) pentru "
@@ -1138,12 +1125,6 @@ msgid ""
 msgstr ""
 "AVERTISMENT: permisiuni director incluziuni nesigure (unsafe) pentru fișier "
 "configurare `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"AVERTISMENT: permisiuni director incluziuni nesigure (unsafe) pentru "
-"extensia `%s'\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1202,12 +1183,6 @@ msgstr "citesc opțiuni din `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTĂ: %s nu este pentru o folosire normală!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"extensie cifru `%s' nu a fost încărcat din cauza permisiunilor nesigure "
-"(unsafe)\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3628,8 +3603,8 @@ msgstr "nici o acțiune pentru serverul de chei!\n"
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
-"AVERTISMENT: manipulator server de chei dintr-o versiune diferită de GnuPG (%"
-"s)\n"
+"AVERTISMENT: manipulator server de chei dintr-o versiune diferită de GnuPG "
+"(%s)\n"
 
 msgid "keyserver did not send VERSION\n"
 msgstr "serverul de chei nu a trimis VERSION (versiune)\n"
@@ -3878,16 +3853,13 @@ msgstr "AVERTISMENT: folosesc algoritmul de cifrare experimental %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "AVERTISMENT: folosesc algoritmul rezumat experimental %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "plugin-ul pentru cifrare IDEA nu este prezent\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "AVERTISMENT: algoritmul rezumat %s este prea vechi (deprecated)\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "vă rugăm vedeți %s pentru informații suplimentare\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "AVERTISMENT: algoritmul rezumat %s este prea vechi (deprecated)\n"
 
 #, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5151,6 +5123,30 @@ msgstr ""
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(ați folosit probabil un program nepotrivit pentru această sarcină)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "AVERTISMENT: proprietate nesigură (unsafe) pentru extensia `%s'\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "AVERTISMENT: permisiuni nesigure (unsafe) pentru extensia `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "AVERTISMENT: proprietate director incluziuni nesigur (unsafe) pentru "
+#~ "extensia `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "AVERTISMENT: permisiuni director incluziuni nesigure (unsafe) pentru "
+#~ "extensia `%s'\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "extensie cifru `%s' nu a fost încărcat din cauza permisiunilor nesigure "
+#~ "(unsafe)\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "plugin-ul pentru cifrare IDEA nu este prezent\n"
 
 #~ msgid "Command> "
 #~ msgstr "Comandă> "

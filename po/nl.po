@@ -32,6 +32,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: Ivar Snaaijer\n"
 "Language-Team: none\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1120,10 +1121,6 @@ msgstr ""
 "Waarschuwing: onveilige eigendomsinstellingen van configuratie bestand ‘%s’\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "Waarschuwing: onveilige eigendomsinstellingen van uitbreiding ‘%s’\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr ""
 "Waarschuwing: onveilige beveiligingsinstellingen van thuisdirectory ‘%s’\n"
@@ -1131,13 +1128,8 @@ msgstr ""
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr ""
-"Waarschuwing: onveilige beveiligingsinstellingen van configuratie bestand ‘%"
-"s’\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr ""
-"Waarschuwing: onveilige beveiligingsinstellingen van uitbreiding ‘%s’\n"
+"Waarschuwing: onveilige beveiligingsinstellingen van configuratie bestand "
+"‘%s’\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1148,19 +1140,14 @@ msgstr ""
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr ""
-"Waarschuwing: onveilige map eigendomsinstellingen van configuratie bestand ‘%"
-"s’\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"Waarschuwing: onveilige map eigendomsinstellingen van uitbreiding ‘%s’\n"
+"Waarschuwing: onveilige map eigendomsinstellingen van configuratie bestand "
+"‘%s’\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
-"Waarschuwing: onveilige map beveiligingsinstellingen van thuisdirectory ‘%"
-"s’\n"
+"Waarschuwing: onveilige map beveiligingsinstellingen van thuisdirectory "
+"‘%s’\n"
 
 #, c-format
 msgid ""
@@ -1168,11 +1155,6 @@ msgid ""
 msgstr ""
 "Waarschuwing: onveilige map beveiligingsinstellingen van configuratie "
 "bestand ‘%s’\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"Waarschuwing: onveilige map beveiligingsinstellingen van uitbreiding ‘%s’\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1230,12 +1212,6 @@ msgstr "lezen van opties uit ‘%s’\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "Noot: %s is niet voor normaal gebruik!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"versleutelalgoritme uitbreiding ‘%s’ is niet geladen door onveilige\n"
-"instellingen\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -1573,8 +1549,8 @@ msgstr "geen geheime sub-sleutel voor publieke sub-sleutel %s - overgeslagen\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr ""
-"er wordt gebruik gemaakt van sub-sleutel %s in plaats an primaire sleutel %"
-"s\n"
+"er wordt gebruik gemaakt van sub-sleutel %s in plaats an primaire sleutel "
+"%s\n"
 
 #, c-format
 msgid "key %s: secret key without public key - skipped\n"
@@ -2178,8 +2154,8 @@ msgstr "sleutel %s: geen Gebruikers ID voor ondertekening\n"
 #, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"sleutel %s: niet ondersteund publieke sleutel algoritme bij Gebruiker ID “%"
-"s”\n"
+"sleutel %s: niet ondersteund publieke sleutel algoritme bij Gebruiker ID "
+"“%s”\n"
 
 #, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -2254,8 +2230,8 @@ msgstr "sleutel %s: dubbele Gebruikers ID gevonden - samengevoegd\n"
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
-"Waarschuwing: sleutel %s kan ingetrokken zijn: ophalen intrekkingssleutel %"
-"s\n"
+"Waarschuwing: sleutel %s kan ingetrokken zijn: ophalen intrekkingssleutel "
+"%s\n"
 
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
@@ -3949,8 +3925,8 @@ msgstr "fstat(%d) mislukt in %s: %s\n"
 #, c-format
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr ""
-"Waarschuwing: U gebruikt een expirimenteel algoritme voor publieke sleutel %"
-"s\n"
+"Waarschuwing: U gebruikt een expirimenteel algoritme voor publieke sleutel "
+"%s\n"
 
 #, fuzzy
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
@@ -3965,16 +3941,13 @@ msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr ""
 "Waarschuwing: U gebruikt een expirimenteel samenvattings algoritme %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "het IDEA versleutelalgoritme is niet beschikbaar\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "Waarschuwing: samenvattings algoritme %s wordt afgeraden\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "lees %s voor meer informatie\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "Waarschuwing: samenvattings algoritme %s wordt afgeraden\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5225,6 +5198,31 @@ msgstr "operation is not possible without initialized secure memory\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(you may have used the wrong program for this task)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "Waarschuwing: onveilige eigendomsinstellingen van uitbreiding ‘%s’\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "Waarschuwing: onveilige beveiligingsinstellingen van uitbreiding ‘%s’\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "Waarschuwing: onveilige map eigendomsinstellingen van uitbreiding ‘%s’\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "Waarschuwing: onveilige map beveiligingsinstellingen van uitbreiding "
+#~ "‘%s’\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "versleutelalgoritme uitbreiding ‘%s’ is niet geladen door onveilige\n"
+#~ "instellingen\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "het IDEA versleutelalgoritme is niet beschikbaar\n"
 
 #~ msgid "Command> "
 #~ msgstr "Commando> "

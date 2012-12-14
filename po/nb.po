@@ -13,6 +13,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:11+0200\n"
 "Last-Translator: Trond Endrestøl <Trond.Endrestol@fagskolen.gjovik.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
+"Language: nb\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -614,7 +615,8 @@ msgstr "hemmelig nøkkel er ikke tilgjengelig"
 
 msgid "Please insert the card and hit return or enter 'c' to cancel: "
 msgstr ""
-"Vennligst sett inn kortet og trykk på enter eller tast inn «c» for å avbryte: "
+"Vennligst sett inn kortet og trykk på enter eller tast inn «c» for å "
+"avbryte: "
 
 #, fuzzy, c-format
 msgid "selecting openpgp failed: %s\n"
@@ -1080,10 +1082,6 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "ADVARSEL: utrygt eierskap på konfigurasjonsfilen «%s»\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "ADVARSEL: utrygt eierskap på utvidelsen «%s»\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "ADVARSEL: utrygge rettigheter på hjemmekatalogen «%s»\n"
 
@@ -1092,31 +1090,23 @@ msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "ADVARSEL: utrygge rettigheter på konfigurasjonsfilen «%s»\n"
 
 #, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "ADVARSEL: utrygge rettigheter på utvidelsen «%s»\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgstr ""
-"ADVARSEL: utrygt eierskap på katalogene på nivåene over hjemmekatalogen «%s»\n"
+"ADVARSEL: utrygt eierskap på katalogene på nivåene over hjemmekatalogen "
+"«%s»\n"
 
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr ""
-"ADVARSEL: utrygt eierskap på katalogene på nivåene over konfigurasjonsfilen «%"
-"s»\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"ADVARSEL: utrygt eierskap på katalogene på nivåene over utvidelsen «%s»\n"
+"ADVARSEL: utrygt eierskap på katalogene på nivåene over konfigurasjonsfilen "
+"«%s»\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
-"ADVARSEL: utrygge rettigheter på katalogene på nivåene over hjemmekatalogen «%"
-"s»\n"
+"ADVARSEL: utrygge rettigheter på katalogene på nivåene over hjemmekatalogen "
+"«%s»\n"
 
 #, c-format
 msgid ""
@@ -1124,11 +1114,6 @@ msgid ""
 msgstr ""
 "ADVARSEL: utrygge rettigheter på katalogene på nivåene over "
 "konfigurasjonsfilen «%s»\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"ADVARSEL: utrygge rettigheter på katalogene på nivåene over utvidelsen «%s»\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1186,10 +1171,6 @@ msgstr "leser valg fra «%s»\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "MERK: %s er ikke for vanlig bruk!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "cipherutvidelse «%s» ble ikke lastet på grunn av utrygge rettigheter\n"
 
 # Tenk litt på denne du, Trond.
 #, c-format
@@ -3727,16 +3708,13 @@ msgstr "ADVARSEL: bruker eksperimentell cipheralgoritme %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "ADVARSEL: bruker eksperimentell digest-algoritme %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr ""
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "ADVARSEL: digestalgoritmen «%s» er avlegs\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "vennligst se %s for mer informasjon\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "ADVARSEL: digestalgoritmen «%s» er avlegs\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4953,6 +4931,25 @@ msgstr "operasjonen er ikke mulig uten initialisert sikkert minne\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(du kan ha brukt feil program for denne oppgaven)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "ADVARSEL: utrygt eierskap på utvidelsen «%s»\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "ADVARSEL: utrygge rettigheter på utvidelsen «%s»\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "ADVARSEL: utrygt eierskap på katalogene på nivåene over utvidelsen «%s»\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "ADVARSEL: utrygge rettigheter på katalogene på nivåene over utvidelsen "
+#~ "«%s»\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "cipherutvidelse «%s» ble ikke lastet på grunn av utrygge rettigheter\n"
 
 #~ msgid "Command> "
 #~ msgstr "Kommando> "

@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:23+0200\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@trasno.net>\n"
 "Language-Team: Galician <gpul-traduccion@ceu.fi.udc.es>\n"
+"Language: gl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1128,19 +1129,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "AVISO: propiedade insegura en %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "AVISO: propiedade insegura en %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "AVISO: permisos inseguros en %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "AVISO: permisos inseguros en %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "AVISO: permisos inseguros en %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1153,20 +1146,12 @@ msgid ""
 msgstr "AVISO: propiedade do directorio contedor insegura en %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "AVISO: propiedade do directorio contedor insegura en %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "AVISO: permisos do directorio contedor inseguros en %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "AVISO: permisos do directorio contedor inseguros en %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "AVISO: permisos do directorio contedor inseguros en %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1229,11 +1214,6 @@ msgstr "lendo as opcións de `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: ¡%s non é para uso normal!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"non se cargou a extensión de cifrado \"%s\" debido a permisos inseguros\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -2240,8 +2220,8 @@ msgstr "chave %08lX: ID de usuario duplicado detectado - mesturado\n"
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
-"AVISO: a chave %08lX pode estar revocada: obtendo a chave de revocación %"
-"08lX\n"
+"AVISO: a chave %08lX pode estar revocada: obtendo a chave de revocación "
+"%08lX\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
@@ -3993,17 +3973,14 @@ msgstr "algoritmo de cifrado non implementado"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "Sinatura %s, algoritmo de resumo %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "o plugin de cifra IDEA non está presente\n"
-
-#, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = amosar máis información\n"
-
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "forza-lo algoritmo de resumo %s (%d) viola as preferencias do destinatario\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = amosar máis información\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5289,6 +5266,30 @@ msgstr "a operación non é posible sen memoria inicializada como segura\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(pode que usara o programa equivocado para esta tarefa)\n"
 
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "AVISO: propiedade insegura en %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "AVISO: permisos inseguros en %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "AVISO: propiedade do directorio contedor insegura en %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "AVISO: permisos do directorio contedor inseguros en %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "non se cargou a extensión de cifrado \"%s\" debido a permisos inseguros\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "o plugin de cifra IDEA non está presente\n"
+
 #~ msgid "Command> "
 #~ msgstr "Comando> "
 
@@ -6019,8 +6020,8 @@ msgstr "(pode que usara o programa equivocado para esta tarefa)\n"
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "comprobando con profundidade %d asinadas=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%"
-#~ "d/%d\n"
+#~ "comprobando con profundidade %d asinadas=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/"
+#~ "%d/%d\n"
 
 #~ msgid ""
 #~ "Select the algorithm to use.\n"

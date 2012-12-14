@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:22+0200\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
+"Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-3\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1111,19 +1112,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1136,20 +1129,12 @@ msgid ""
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1212,10 +1197,6 @@ msgstr "legas opciojn el '%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTO: %s ne estas por normala uzado!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3968,16 +3949,13 @@ msgstr "nerealigita æifrad-metodo"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s-subskribo de: %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "la aldona¼o por la æifro IDEA en æeestas\n"
+#, fuzzy, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr " i = bonvolu montri pli da informoj\n"
-
-#, fuzzy, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5249,6 +5227,25 @@ msgstr "operacio ne eblas sen sekura memoro kun komenca valoro\n"
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(eble vi uzis la maløustan programon por æi tiu tasko)\n"
 
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "la aldona¼o por la æifro IDEA en æeestas\n"
+
 #~ msgid "Command> "
 #~ msgstr "Komando> "
 
@@ -5933,8 +5930,8 @@ msgstr "(eble vi uzis la maløustan programon por æi tiu tasko)\n"
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "kontrolas æe profundo %d subskribita=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%"
-#~ "d\n"
+#~ "kontrolas æe profundo %d subskribita=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/"
+#~ "%d\n"
 
 #~ msgid ""
 #~ "Select the algorithm to use.\n"

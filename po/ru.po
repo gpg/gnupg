@@ -11,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:16+0200\n"
 "Last-Translator: Maxim Britov <maxbritov@tut.by>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1080,20 +1081,12 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "ВНИМАНИЕ: небезопасный владелец файла конфигурации `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "ВНИМАНИЕ: небезопасный владелец файла модуля расширения `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "ВНИМАНИЕ: небезопасные права доступа к домашнему каталогу `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "ВНИМАНИЕ: небезопасные права доступа к файлу конфигурации `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "ВНИМАНИЕ: небезопасные права доступа к файлу модуля расширения `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1107,11 +1100,6 @@ msgstr ""
 "ВНИМАНИЕ: небезопасный владелец каталога содержащего файл конфигурации `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"ВНИМАНИЕ: небезопасный владелец каталога содержащего модуль расширения `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "ВНИМАНИЕ: небезопасные права доступа к каталогу содержащему домашний каталог "
@@ -1123,12 +1111,6 @@ msgid ""
 msgstr ""
 "ВНИМАНИЕ: небезопасные права доступа к каталогу содержащему файл "
 "конфигурации `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"ВНИМАНИЕ: небезопасные права доступа к каталогу содержащему файл модуля "
-"расширения `%s'\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1190,11 +1172,6 @@ msgstr "параметры конфигурации взяты из файла `
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "ЗАМЕЧАНИЕ: %s не предназначен для нормального применения!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"расширение шифра `%s' не загружено вследствие небезопасных прав доступа\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3846,23 +3823,20 @@ msgstr "ВНИМАНИЕ: хеш-функция %s считается устар
 #, c-format
 msgid "WARNING: using experimental cipher algorithm %s\n"
 msgstr ""
-"ВНИМАНИЕ: используется экспериментальный алгоритм симметричного шифрования %"
-"s\n"
+"ВНИМАНИЕ: используется экспериментальный алгоритм симметричного шифрования "
+"%s\n"
 
 #, c-format
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "ВНИМАНИЕ: используется экспериментальная хеш-функция %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "модуль поддержки шифра IDEA не обнаружен\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "ВНИМАНИЕ: хеш-функция %s считается устаревшей\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr "Для дополнительной информации см. http://www.gnupg.org/faq.html\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "ВНИМАНИЕ: хеш-функция %s считается устаревшей\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5123,6 +5097,30 @@ msgid "(you may have used the wrong program for this task)\n"
 msgstr ""
 "(возможно, Вы используете неподходящее программное обеспечение\n"
 "для данной задачи)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "ВНИМАНИЕ: небезопасный владелец файла модуля расширения `%s'\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "ВНИМАНИЕ: небезопасные права доступа к файлу модуля расширения `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "ВНИМАНИЕ: небезопасный владелец каталога содержащего модуль расширения `"
+#~ "%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "ВНИМАНИЕ: небезопасные права доступа к каталогу содержащему файл модуля "
+#~ "расширения `%s'\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "расширение шифра `%s' не загружено вследствие небезопасных прав доступа\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "модуль поддержки шифра IDEA не обнаружен\n"
 
 #~ msgid "Command> "
 #~ msgstr "Команда> "

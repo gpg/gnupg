@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:21+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-7\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1127,19 +1128,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησία στο %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησία στο %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες στο %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες στο %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες στο %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1154,21 +1147,12 @@ msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησίαεσώκλειστου φακέλου στο %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησίαεσώκλειστου φακέλου στο %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1231,12 +1215,6 @@ msgstr "ανάγνωση επιλογών από `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το %s δεν είναι για κανονική χρήση!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"η επέκταση του κρυπταλγόριθμου \"%s\" δεν φορτώθηκε επειδή υπάρχουν\n"
-"ανασφαλείς άδειες\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -2177,8 +2155,8 @@ msgstr "κλειδί %08lX: δεν υπάρχει user ID για την υπογραφή\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού στο user id \"%"
-"s\"\n"
+"κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού στο user id "
+"\"%s\"\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
@@ -2253,8 +2231,8 @@ msgstr "κλειδί %08lX: εντοπίστηκε διπλό user ID - ενώθηκαν\n"
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
-"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: κλειδί %08lX μπορεί να ανακληθεί: λήψη κλειδιού ανάκλησης %"
-"08lX\n"
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: κλειδί %08lX μπορεί να ανακληθεί: λήψη κλειδιού ανάκλησης "
+"%08lX\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
@@ -4009,18 +3987,15 @@ msgstr "μη υλοποιημένος αλγόριθμος κρυπτογράφησης"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "το βύσμα του κρυπταλγόριθμου IDEA δεν υπάρχει\n"
-
-#, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = απεικόνιση περισσότερων πληροφοριών\n"
-
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "ο εξαναγκασμός του αλγόριθμου περίληψης %s (%d) παραβιάζει τις\n"
 "προεπιλογές του παραλήπτη\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = απεικόνιση περισσότερων πληροφοριών\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5312,6 +5287,33 @@ msgstr "η λειτουργία δεν είναι δυνατή χωρίς αρχικοποιημένη ασφαλή μνήμη\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(ίσως χρησιμοποιήσατε λάθος πρόγραμμα για αυτή την εργασία)\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησία στο %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες στο %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησίαεσώκλειστου φακέλου στο %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "η επέκταση του κρυπταλγόριθμου \"%s\" δεν φορτώθηκε επειδή υπάρχουν\n"
+#~ "ανασφαλείς άδειες\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "το βύσμα του κρυπταλγόριθμου IDEA δεν υπάρχει\n"
 
 #~ msgid "Command> "
 #~ msgstr "Εντολή> "

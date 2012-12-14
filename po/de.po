@@ -11,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 16:58+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -742,8 +743,8 @@ msgstr ""
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
-"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %"
-"s (%d) verletzt die Empfängervoreinstellungen\n"
+"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
+"%s (%d) verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
 msgid ""
@@ -1101,20 +1102,12 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "WARNUNG: Unsicheres Besitzverhältnis der Konfigurationsdatei `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "WARNUNG: Unsicheres Besitzverhältnis auf die Erweiterung `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "WARNUNG: Unsichere Zugriffsrechte des Home-Verzeichnis `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "WARNUNG: Unsichere Zugriffsrechte der Konfigurationsdatei `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "WARNUNG: Unsichere Zugriffsrechte auf die Erweiterung `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1130,11 +1123,6 @@ msgstr ""
 "Konfigurationsdatei `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses des Home-"
@@ -1146,12 +1134,6 @@ msgid ""
 msgstr ""
 "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses der "
 "Konfigurationsdatei `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses auf "
-"Erweiterung `%s'\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1209,12 +1191,6 @@ msgstr "Optionen werden aus '%s' gelesen\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"Verschlüsselungserweiterung `%s' wurde wegen unsicherer Zugriffsrechte nicht "
-"geladen\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3936,16 +3912,13 @@ msgstr "WARNING: Verwendung des experimentellen Verschlüsselungsverfahren %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "WARNUNG: Verwendung des experimentellen Hashverfahrens %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "das IDEA-Verschlüsselungs-Plugin ist nicht vorhanden\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "WARNUNG: Die Verwendung des Hashverfahrens %s ist nicht ratsam\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "Siehe %s für weitere Infos\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "WARNUNG: Die Verwendung des Hashverfahrens %s ist nicht ratsam\n"
 
 #, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4987,8 +4960,8 @@ msgstr "%d marginal-needed, %d complete-needed, %s Vertrauensmodell\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"Tiefe: %d  gültig: %3d  unterschrieben: %3d  Vertrauen: %d-, %dq, %dn, %dm, %"
-"df, %du\n"
+"Tiefe: %d  gültig: %3d  unterschrieben: %3d  Vertrauen: %d-, %dq, %dn, %dm, "
+"%df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5240,6 +5213,29 @@ msgid "(you may have used the wrong program for this task)\n"
 msgstr ""
 "(möglicherweise haben Sie das falsche Programm für diese Aufgabe benutzt)\n"
 
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "WARNUNG: Unsicheres Besitzverhältnis auf die Erweiterung `%s'\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "WARNUNG: Unsichere Zugriffsrechte auf die Erweiterung `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "WARNUNG: Unsicheres Besitzverhältnis des umgebenden Verzeichnisses `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "WARNUNG: Unsichere Zugriffsrechte des umgebenden Verzeichnisses auf "
+#~ "Erweiterung `%s'\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "Verschlüsselungserweiterung `%s' wurde wegen unsicherer Zugriffsrechte "
+#~ "nicht geladen\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "das IDEA-Verschlüsselungs-Plugin ist nicht vorhanden\n"
+
 #~ msgid "Command> "
 #~ msgstr "Befehl> "
 
@@ -5326,8 +5322,8 @@ msgstr ""
 #~ msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
 #~ msgid ""
-#~ "Please enter a passphrase to protect the received secret key%%0A   %s%%"
-#~ "0Awithin gpg-agent's key storage"
+#~ "Please enter a passphrase to protect the received secret key%%0A   %s%"
+#~ "%0Awithin gpg-agent's key storage"
 #~ msgstr ""
 #~ "Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen Schlüssel"
 #~ "%%0A   %s%%0A im Schlüsselspeicher des gpg-agenten zu schützen"
@@ -5399,8 +5395,8 @@ msgstr ""
 #~ "erlaubt."
 
 #~ msgid ""
-#~ "You have not entered a passphrase - this is in general a bad idea!%"
-#~ "0APlease confirm that you do not want to have any protection on your key."
+#~ "You have not entered a passphrase - this is in general a bad idea!"
+#~ "%0APlease confirm that you do not want to have any protection on your key."
 #~ msgstr ""
 #~ "Sie möchten keine Passphrase - Dies ist *nicht* zu empfehlen!%0ABitte\n"
 #~ "bestätigen Sie, daß sie auf jeden Schutz Ihres privaten Schlüssels\n"
@@ -5634,8 +5630,8 @@ msgstr ""
 #~ "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 #~ "fingerprint:%%0A  %s"
 #~ msgstr ""
-#~ "Bitte prüfen Sie, daß das Zertifikat mit dem Namen:%%0A  \"%s\"%%"
-#~ "0Afolgenden Fingerabdruck hat:%%0A  %s"
+#~ "Bitte prüfen Sie, daß das Zertifikat mit dem Namen:%%0A  \"%s\"%"
+#~ "%0Afolgenden Fingerabdruck hat:%%0A  %s"
 
 #~ msgid "Correct"
 #~ msgstr "Korrekt"
@@ -5644,8 +5640,9 @@ msgstr ""
 #~ "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 #~ "certificates?"
 #~ msgstr ""
-#~ "Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%"
-#~ "0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\""
+#~ "Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%"
+#~ "%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja"
+#~ "\""
 
 #~ msgid "Yes"
 #~ msgstr "Ja"
@@ -5854,8 +5851,8 @@ msgstr ""
 
 #~ msgid "libgcrypt is too old (need %s, have %s)\n"
 #~ msgstr ""
-#~ "Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist %"
-#~ "s)\n"
+#~ "Die Bibliothek \"libgcrypt\" is zu alt (benötigt wird %s, vorhanden ist "
+#~ "%s)\n"
 
 #~ msgid ""
 #~ "WARNING: key %s contains preferences for unavailable\n"

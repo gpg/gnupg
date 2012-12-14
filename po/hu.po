@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:24+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
+"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1114,19 +1115,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "FIGYELEM: Nem biztonságos tulajdonos: %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "FIGYELEM: Nem biztonságos tulajdonos: %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1139,20 +1132,12 @@ msgid ""
 msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1215,10 +1200,6 @@ msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "MEGJEGYZÉS: %s nem normál használatra van!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "A \"%s\" rejtjelezõ bõvítést rossz engedélyek miatt töltöm be.\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3965,18 +3946,15 @@ msgstr "nem megvalósított rejtjelezõ algoritmus"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "Az IDEA rejtjelezõ bõvítés nincs jelen!\n"
-
-#, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = további információkat kérek\n"
-
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "%s (%d) kivonatoló algoritmus használatának erõltetése ellentétes\n"
 "a címzett preferenciáival.\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = további információkat kérek\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5260,6 +5238,29 @@ msgstr "A mûvelet nem lehetséges biztonságos memória nélkül.\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(Lehet, hogy nem a megfelelõ programot használja a feladatra.)\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "FIGYELEM: Nem biztonságos tulajdonos: %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "FIGYELEM: nem biztonságos engedélyek: %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr "A \"%s\" rejtjelezõ bõvítést rossz engedélyek miatt töltöm be.\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "Az IDEA rejtjelezõ bõvítés nincs jelen!\n"
 
 #~ msgid "Command> "
 #~ msgstr "Parancs> "

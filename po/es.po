@@ -13,6 +13,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:22+0200\n"
 "Last-Translator: Jaime Suárez <jsuarez@ono.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1104,20 +1105,12 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "AVISO: propiedad insegura del fichero de configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "AVISO: propiedad insegura de la extensión `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "AVISO: permisos inseguros del directorio personal `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "AVISO: permisos inseguros del fichero de configuración `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "AVISO: permisos inseguros de la extensión `%s'\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1131,11 +1124,6 @@ msgstr ""
 "configuración `%s'\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"AVISO: propiedad insegura del directorio contenedor de la extensión `%s'\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "AVISO: permisos inseguros del directorio contenedor de `%s'\n"
 
@@ -1145,11 +1133,6 @@ msgid ""
 msgstr ""
 "AVISO: permisos inseguros del directorio contenedor del fichero de\n"
 "configuración `%s'\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"AVISO: permisos inseguros del directorio contenedor de la extensión `%s'\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1211,10 +1194,6 @@ msgstr "leyendo opciones desde `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTA: ¡%s no es para uso normal!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "no se carga el cifrado de ampliación `%s' por permisos inseguros\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3872,16 +3851,13 @@ msgstr "AVISO: usando algoritmo de cifrado experimental %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "AVISO: usando algoritmo de resumen experimental %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "el plugin para el cifrado IDEA no está presente\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "AVISO: el algoritmo de resumen %s es una opción desaconsejada\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr " i = por favor muéstreme más información\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "AVISO: el algoritmo de resumen %s es una opción desaconsejada\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4890,8 +4866,8 @@ msgstr ""
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"nivel: %d  validez: %3d  firmada: %3d  confianza: %d-, %dq, %dn, %dm, %df, %"
-"du\n"
+"nivel: %d  validez: %3d  firmada: %3d  confianza: %d-, %dq, %dn, %dm, %df, "
+"%du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5168,6 +5144,26 @@ msgstr "operación imposible sin memoria segura inicializada\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(es posible que haya usado el programa incorrecto para esta tarea)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "AVISO: propiedad insegura de la extensión `%s'\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "AVISO: permisos inseguros de la extensión `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "AVISO: propiedad insegura del directorio contenedor de la extensión `%s'\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "AVISO: permisos inseguros del directorio contenedor de la extensión `%s'\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr "no se carga el cifrado de ampliación `%s' por permisos inseguros\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "el plugin para el cifrado IDEA no está presente\n"
 
 #~ msgid "Command> "
 #~ msgstr "Orden> "
@@ -5768,8 +5764,8 @@ msgstr "(es posible que haya usado el programa incorrecto para esta tarea)\n"
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "comprobando en profundidad %d firmado=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%"
-#~ "d\n"
+#~ "comprobando en profundidad %d firmado=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/"
+#~ "%d\n"
 
 #~ msgid "%s: can't create directory: %s\n"
 #~ msgstr "%s: no se puede crear el directorio: %s\n"

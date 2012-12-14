@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:22+0200\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
+"Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-15\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -1116,19 +1117,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "HOIATUS: ebaturvaline omanik %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "HOIATUS: ebaturvaline omanik %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "HOIATUS: ebaturvalised õigused %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "HOIATUS: ebaturvalised õigused %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "HOIATUS: ebaturvalised õigused %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1141,20 +1134,12 @@ msgid ""
 msgstr "HOIATUS: ebaturvaline kataloogi omanik %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "HOIATUS: ebaturvaline kataloogi omanik %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "Hoiatus: ebaturvalised kataloogi õigused %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "Hoiatus: ebaturvalised kataloogi õigused %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "Hoiatus: ebaturvalised kataloogi õigused %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1217,10 +1202,6 @@ msgstr "loen võtmeid failist `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "MÄRKUS: %s ei ole tavapäraseks kasutamiseks!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "ebaturvaliste õiguste tõttu ei laetud ¨ifri laiendust \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3938,17 +3919,14 @@ msgstr "realiseerimata ¨ifri algoritm"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "IDEA ¨ifri lisandprogrammi pole\n"
-
-#, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = esita palun täiendavat infot\n"
-
 #, fuzzy, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "sõnumilühendi algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = esita palun täiendavat infot\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4547,8 +4525,8 @@ msgstr "loodi nõrk võti - proovin uuesti\n"
 #, c-format
 msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
-"sümmeetrilises ¨ifris ei õnnestu vältida nõrga võtme kasutamist; proovisin %"
-"d korda!\n"
+"sümmeetrilises ¨ifris ei õnnestu vältida nõrga võtme kasutamist; proovisin "
+"%d korda!\n"
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr ""
@@ -5216,6 +5194,29 @@ msgstr "initsialiseerimata turvalise mäluta ei ole operatsioon võimalik\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(te kasutasite vahest selle töö jaoks valet programmi)\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "HOIATUS: ebaturvaline omanik %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "HOIATUS: ebaturvalised õigused %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "HOIATUS: ebaturvaline kataloogi omanik %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "Hoiatus: ebaturvalised kataloogi õigused %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr "ebaturvaliste õiguste tõttu ei laetud ¨ifri laiendust \"%s\"\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "IDEA ¨ifri lisandprogrammi pole\n"
 
 #~ msgid "Command> "
 #~ msgstr "Käsklus> "
@@ -5931,8 +5932,8 @@ msgstr "(te kasutasite vahest selle töö jaoks valet programmi)\n"
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "kontrollin sügavusel %d allkirjastatud=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%"
-#~ "d\n"
+#~ "kontrollin sügavusel %d allkirjastatud=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/"
+#~ "%d\n"
 
 #~ msgid ""
 #~ "Select the algorithm to use.\n"

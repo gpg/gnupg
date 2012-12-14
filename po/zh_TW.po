@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:19+0200\n"
 "Last-Translator: Jedi <JediLin@Gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1065,20 +1066,12 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "警告: 延伸模組 `%s' 的所有權並不安全\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的權限並不安全\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的權限並不安全\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "警告: 延伸模組 `%s' 的權限並不安全\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1090,10 +1083,6 @@ msgid ""
 msgstr "警告: 組態檔案 `%s' 的封入目錄所有權並不安全\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "警告: 延伸模組 `%s' 的封入目錄所有權並不安全\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "警告: 家目錄 `%s' 的封入目錄權限並不安全\n"
 
@@ -1101,10 +1090,6 @@ msgstr "警告: 家目錄 `%s' 的封入目錄權限並不安全\n"
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
 msgstr "警告: 組態檔案 `%s' 的封入目錄權限並不安全\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr "警告: 延伸模組 `%s' 的封入目錄權限並不安全\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1162,10 +1147,6 @@ msgstr "從 `%s' 讀取選項中\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "請注意: 一般情況下不會用到 %s!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "編密法延伸模組 `%s' 因為權限不安全而未載入\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3755,16 +3736,13 @@ msgstr "警告: 正在使用實驗性的 %s 編密演算法\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "警告: 正在使用實驗性的 %s 摘要演算法\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "IDEA 編密法外掛模組不存在\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "警告: 已不建議使用 %s 摘要演算法\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "請參考 %s 上進一步的資訊\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "警告: 已不建議使用 %s 摘要演算法\n"
 
 #, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4978,6 +4956,24 @@ msgstr "尚未啟用安全的記憶體時, 不可能進行操作\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(也許你選錯程式來做這件事了)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "警告: 延伸模組 `%s' 的所有權並不安全\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "警告: 延伸模組 `%s' 的權限並不安全\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "警告: 延伸模組 `%s' 的封入目錄所有權並不安全\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "警告: 延伸模組 `%s' 的封入目錄權限並不安全\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr "編密法延伸模組 `%s' 因為權限不安全而未載入\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "IDEA 編密法外掛模組不存在\n"
 
 #~ msgid "Command> "
 #~ msgstr "指令> "

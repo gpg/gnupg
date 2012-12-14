@@ -27,6 +27,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:17+0200\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1114,21 +1115,12 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "VARNING: osäkert ägarskap på konfigurationsfilen \"%s\"\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "VARNING: osäkert ägarskap på tillägget \"%s\"\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "VARNING: osäkra rättigheter på hemkatalogen \"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr "VARNING: osäkra rättigheter på konfigurationsfilen \"%s\"\n"
-
-# Extension är vad? FIXME
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr "VARNING: osäkra rättigheter på tillägget \"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1139,13 +1131,8 @@ msgstr ""
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr ""
-"VARNING: osäkert ägarskap på inneslutande katalog för konfigurationsfilen \"%"
-"s\"\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"VARNING: osäkert ägarskap på inneslutande katalog för tillägget \"%s\"\n"
+"VARNING: osäkert ägarskap på inneslutande katalog för konfigurationsfilen "
+"\"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
@@ -1158,11 +1145,6 @@ msgid ""
 msgstr ""
 "VARNING: osäkra rättigheter på inneslutande katalog för konfigurationsfilen "
 "\"%s\"\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"VARNING: osäkra rättigheter på inneslutande katalog för tillägget \"%s\"\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1220,11 +1202,6 @@ msgstr "läser inställningar från \"%s\"\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "OBS: %s är inte för normal användning!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"chiffertillägget \"%s\" lästes inte in på grund av osäkra rättigheter\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3940,16 +3917,13 @@ msgstr "VARNING: använder experimentella chifferalgoritmen %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "VARNING: använder experimentella sammandragsalgoritmen %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "insticksmodul för IDEA-kryptering är inte installerat\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "VARNING: sammandragsalgoritmen %s är föråldrad\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "se %s för mer information\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "VARNING: sammandragsalgoritmen %s är föråldrad\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5248,6 +5222,28 @@ msgstr "åtgärden är inte möjlig utan initierat säkert minne\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(du kanske använder fel program för den här uppgiften)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "VARNING: osäkert ägarskap på tillägget \"%s\"\n"
+
+# Extension är vad? FIXME
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "VARNING: osäkra rättigheter på tillägget \"%s\"\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "VARNING: osäkert ägarskap på inneslutande katalog för tillägget \"%s\"\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "VARNING: osäkra rättigheter på inneslutande katalog för tillägget \"%s\"\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "chiffertillägget \"%s\" lästes inte in på grund av osäkra rättigheter\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "insticksmodul för IDEA-kryptering är inte installerat\n"
 
 #~ msgid "Command> "
 #~ msgstr "Kommando> "

@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:24+0200\n"
 "Last-Translator: Tedi Heriyanto <tedi_h@gmx.net>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
+"Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1118,19 +1119,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr "Peringatan: kepemilikan tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr "Peringatan: kepemilikan tidak aman pada %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1143,20 +1136,12 @@ msgid ""
 msgstr "Peringatan: kepemilikan direktori tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr "Peringatan: kepemilikan direktori tidak aman pada %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr "Peringatan: permisi direktori tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr "Peringatan: permisi direktori tidak aman pada %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr "Peringatan: permisi direktori tidak aman pada %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1219,10 +1204,6 @@ msgstr "membaca pilihan dari `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "CATATAN: %s tidak untuk pemakaian normal!\n"
-
-#, fuzzy, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr "ekstensi cipher \"%s\" tidak dimuat karena permisi tidak aman\n"
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3973,16 +3954,13 @@ msgstr "algoritma cipher belum diimplementasikan"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s signature, algoritma digest %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "plugin cipher IDEA tidak tersedia\n"
+#, fuzzy, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "memaksa algoritma digest %s (%d) melanggar preferensi penerima\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr " i = beri saya informasi lebih banyak lagi\n"
-
-#, fuzzy, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "memaksa algoritma digest %s (%d) melanggar preferensi penerima\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -5259,6 +5237,29 @@ msgstr "operasi tidak mungkin tanpa menginisialisasi memori yang aman\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(anda mungkin menggunakan program yang salah untuk tugas ini)\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr "Peringatan: kepemilikan tidak aman pada %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr "Peringatan: permisi tidak aman pada %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr "Peringatan: kepemilikan direktori tidak aman pada %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr "Peringatan: permisi direktori tidak aman pada %s \"%s\"\n"
+
+#, fuzzy
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr "ekstensi cipher \"%s\" tidak dimuat karena permisi tidak aman\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "plugin cipher IDEA tidak tersedia\n"
 
 #~ msgid "Command> "
 #~ msgstr "Perintah> "

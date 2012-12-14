@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1085,11 +1086,6 @@ msgstr ""
 "OSTRZE¯ENIE: niebezpieczne prawa w³asno¶ci do pliku konfiguracji ,,%s''.\n"
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr ""
-"OSTRZE¯ENIE: niebezpieczne prawa w³asno¶ci do modu³u rozszerzenia ,,%s''.\n"
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do katalogu domowego ,,%s''\n"
 
@@ -1097,11 +1093,6 @@ msgstr "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do katalogu domowego ,,%s''\n"
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgstr ""
 "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do pliku konfiguracji ,,%s''.\n"
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
-msgstr ""
-"OSTRZE¯ENIE: niebezpieczne prawa dostêpu do modu³u rozszerzenia ,,%s''.\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
@@ -1117,12 +1108,6 @@ msgstr ""
 "             zawieraj±cego plik konfiguracji ,,%s''\n"
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-"OSTRZE¯ENIE: niebezpieczne prawa w³asno¶ci do katalogu zawieraj±cego\n"
-"             modu³ rozszerzenia ,,%s''\n"
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do katalogu nadrzêdnego do\n"
@@ -1134,12 +1119,6 @@ msgid ""
 msgstr ""
 "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do katalogu\n"
 "             zawieraj±cego plik konfiguracji ,,%s''\n"
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
-msgstr ""
-"OSTRZE¯ENIE: niebezpieczne prawa dostêpu do katalogu zawieraj±cego\n"
-"             modu³ rozszerzenia ,,%s''\n"
 
 #, c-format
 msgid "unknown configuration item `%s'\n"
@@ -1197,11 +1176,6 @@ msgstr "odczyt opcji z ,,%s''\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "UWAGA: %s nie jest do normalnego u¿ytku!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
-"modu³ szyfru ,,%s'' nie za³adowany z powodu niebezpiecznych praw dostêpu\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3611,8 +3585,8 @@ msgstr "brak polecenia dla serwera kluczy!\n"
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
-"OSTRZE¯ENIE: program obs³ugi serwera kluczy pochodzi z innej wersji GnuPG (%"
-"s)\n"
+"OSTRZE¯ENIE: program obs³ugi serwera kluczy pochodzi z innej wersji GnuPG "
+"(%s)\n"
 
 msgid "keyserver did not send VERSION\n"
 msgstr "serwer kluczy nie wys³a³ VERSION\n"
@@ -3862,16 +3836,13 @@ msgstr "OSTRZE¯ENIE: u¿ywany jest eksperymentalny algorytm szyfruj±cy %s\n"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "OSTRZE¯ENIE: u¿ywany jest eksperymentalny algorytm skrótu %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "modu³ szyfru IDEA nie jest dostêpny\n"
+#, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "OSTRZE¯ENIE: algorytm skrótu %s jest przestarza³y\n"
 
 #, c-format
 msgid "please see %s for more information\n"
 msgstr "wiêcej informacji mo¿na znale¼æ w %s\n"
-
-#, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "OSTRZE¯ENIE: algorytm skrótu %s jest przestarza³y\n"
 
 #, c-format
 msgid "NOTE: This feature is not available in %s\n"
@@ -4877,8 +4848,8 @@ msgstr "potrzeba %d marginalny(ch), %d zupe³ny(ch), model zaufania %s\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"g³êboko¶æ: %d wa¿nych: %3d podpisanych %3d zaufanych %d-, %dq, %dn, %dm, %"
-"df, %du\n"
+"g³êboko¶æ: %d wa¿nych: %3d podpisanych %3d zaufanych %d-, %dq, %dn, %dm, "
+"%df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5126,6 +5097,32 @@ msgstr "bez zabezpieczenia pamiêci nie mo¿na wykonaæ tej operacji\n"
 
 msgid "(you may have used the wrong program for this task)\n"
 msgstr "(prawdopodobnie u¿ywany program jest niew³a¶ciwy dlatego zadania)\n"
+
+#~ msgid "WARNING: unsafe ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "OSTRZE¯ENIE: niebezpieczne prawa w³asno¶ci do modu³u rozszerzenia ,,"
+#~ "%s''.\n"
+
+#~ msgid "WARNING: unsafe permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do modu³u rozszerzenia ,,%s''.\n"
+
+#~ msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#~ msgstr ""
+#~ "OSTRZE¯ENIE: niebezpieczne prawa w³asno¶ci do katalogu zawieraj±cego\n"
+#~ "             modu³ rozszerzenia ,,%s''\n"
+
+#~ msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#~ msgstr ""
+#~ "OSTRZE¯ENIE: niebezpieczne prawa dostêpu do katalogu zawieraj±cego\n"
+#~ "             modu³ rozszerzenia ,,%s''\n"
+
+#~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
+#~ msgstr ""
+#~ "modu³ szyfru ,,%s'' nie za³adowany z powodu niebezpiecznych praw dostêpu\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "modu³ szyfru IDEA nie jest dostêpny\n"
 
 #~ msgid "Command> "
 #~ msgstr "Polecenie> "

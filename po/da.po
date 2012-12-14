@@ -11,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2003-12-03 16:11+0100\n"
 "Last-Translator: Birger Langkjer <birger.langkjer@image.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
+"Language: da\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1113,19 +1114,11 @@ msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgstr ""
 
 #, c-format
-msgid "WARNING: unsafe ownership on extension `%s'\n"
-msgstr ""
-
-#, c-format
 msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgstr ""
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file `%s'\n"
-msgstr ""
-
-#, c-format
-msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgstr ""
 
 #, c-format
@@ -1138,20 +1131,12 @@ msgid ""
 msgstr ""
 
 #, c-format
-msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
-msgstr ""
-
-#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
 
 #, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
-msgstr ""
-
-#, c-format
-msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -1212,10 +1197,6 @@ msgstr "læser indstillinger fra `%s'\n"
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
 msgstr "NOTITS: %s er ikke til normal brug!\n"
-
-#, c-format
-msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "`%s' is not a valid signature expiration\n"
@@ -3788,16 +3769,13 @@ msgstr "uimplementeret cifferalgoritme"
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr "%s signatur fra: %s\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "WARNING: digest algorithm %s is deprecated\n"
+msgstr "ADVARSEL: '%s' er en tom fil\n"
 
 #, fuzzy, c-format
 msgid "please see %s for more information\n"
 msgstr "rev- forkert nøgletilbagekald\n"
-
-#, fuzzy, c-format
-msgid "WARNING: digest algorithm %s is deprecated\n"
-msgstr "ADVARSEL: '%s' er en tom fil\n"
 
 #, fuzzy, c-format
 msgid "NOTE: This feature is not available in %s\n"
