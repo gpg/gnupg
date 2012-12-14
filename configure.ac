@@ -851,6 +851,10 @@ AC_SUBST(MPI_OPT_FLAGS)
 
 dnl Checks for libraries.
 
+
+# This is "GNU gnupg" - The project-id script from gettext
+#                       needs to find this string.  Without
+#                       it "make distcheck" may fail.
 AM_PO_SUBDIRS
 AM_GNU_GETTEXT_VERSION([0.18.1])
 if test "$try_gettext" = yes; then
