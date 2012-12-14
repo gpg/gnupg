@@ -1,5 +1,5 @@
 /* Handle aliases for locale names.
-   Copyright (C) 1995-1999, 2000-2001, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999, 2000-2001, 2003, 2005-2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -349,12 +349,14 @@ read_alias_file (const char *fname, int fname_len)
 		      string_space_max = new_size;
 		    }
 
-		  map[nmap].alias = memcpy (&string_space[string_space_act],
-					    alias, alias_len);
+		  map[nmap].alias =
+		    (const char *) memcpy (&string_space[string_space_act],
+					   alias, alias_len);
 		  string_space_act += alias_len;
 
-		  map[nmap].value = memcpy (&string_space[string_space_act],
-					    value, value_len);
+		  map[nmap].value =
+		    (const char *) memcpy (&string_space[string_space_act],
+					   value, value_len);
 		  string_space_act += value_len;
 
 		  ++nmap;

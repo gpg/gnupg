@@ -1,6 +1,6 @@
 %{
 /* Expression parsing for plural form selection.
-   Copyright (C) 2000-2001, 2003, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000-2001, 2003, 2005-2006 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@cygnus.com>, 2000.
 
    This program is free software; you can redistribute it and/or modify it
@@ -50,7 +50,7 @@
 
 %union {
   unsigned long int num;
-  enum operator op;
+  enum expression_operator op;
   struct expression *exp;
 }
 
@@ -62,7 +62,8 @@ static void yyerror (const char *str);
 /* Allocation of expressions.  */
 
 static struct expression *
-new_exp (int nargs, enum operator op, struct expression * const *args)
+new_exp (int nargs, enum expression_operator op,
+	 struct expression * const *args)
 {
   int i;
   struct expression *newp;
@@ -91,13 +92,13 @@ new_exp (int nargs, enum operator op, struct expression * const *args)
 }
 
 static inline struct expression *
-new_exp_0 (enum operator op)
+new_exp_0 (enum expression_operator op)
 {
   return new_exp (0, op, NULL);
 }
 
 static inline struct expression *
-new_exp_1 (enum operator op, struct expression *right)
+new_exp_1 (enum expression_operator op, struct expression *right)
 {
   struct expression *args[1];
 
@@ -106,7 +107,8 @@ new_exp_1 (enum operator op, struct expression *right)
 }
 
 static struct expression *
-new_exp_2 (enum operator op, struct expression *left, struct expression *right)
+new_exp_2 (enum expression_operator op, struct expression *left,
+	   struct expression *right)
 {
   struct expression *args[2];
 
@@ -116,7 +118,7 @@ new_exp_2 (enum operator op, struct expression *left, struct expression *right)
 }
 
 static inline struct expression *
-new_exp_3 (enum operator op, struct expression *bexp,
+new_exp_3 (enum expression_operator op, struct expression *bexp,
 	   struct expression *tbranch, struct expression *fbranch)
 {
   struct expression *args[3];

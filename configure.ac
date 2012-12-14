@@ -852,7 +852,7 @@ AC_SUBST(MPI_OPT_FLAGS)
 dnl Checks for libraries.
 
 AM_PO_SUBDIRS
-AM_GNU_GETTEXT_VERSION([0.16.1])
+AM_GNU_GETTEXT_VERSION([0.18.1])
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
   # gettext requires some extra checks.  These really should be part of

@@ -1,5 +1,5 @@
 /* Load needed message catalogs.
-   Copyright (C) 1995-1999, 2000-2005 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999, 2000-2008 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -976,6 +976,7 @@ _nl_load_domain (struct loaded_l10nfile *domain_file,
 		  ((char *) data
 		   + W (domain->must_swap, data->sysdep_segments_offset));
 		sysdep_segment_values =
+		  (const char **)
 		  alloca (n_sysdep_segments * sizeof (const char *));
 		for (i = 0; i < n_sysdep_segments; i++)
 		  {
@@ -1258,8 +1259,7 @@ _nl_load_domain (struct loaded_l10nfile *domain_file,
       /* This is an invalid revision.  */
     invalid:
       /* This is an invalid .mo file.  */
-      if (domain->malloced)
-	free (domain->malloced);
+      free (domain->malloced);
 #ifdef HAVE_MMAP
       if (use_mmap)
 	munmap ((caddr_t) data, size);
@@ -1274,6 +1274,7 @@ _nl_load_domain (struct loaded_l10nfile *domain_file,
   /* No caches of converted translations so far.  */
   domain->conversions = NULL;
   domain->nconversions = 0;
+  gl_rwlock_init (domain->conversions_lock);
 
   /* Get the header entry and look for a plural specification.  */
 #ifdef IN_LIBGLOCALE
@@ -1303,7 +1304,7 @@ _nl_unload_domain (struct loaded_domain *domain)
   size_t i;
 
   if (domain->plural != &__gettext_germanic_plural)
-    __gettext_free_exp (domain->plural);
+    __gettext_free_exp ((struct expression *) domain->plural);
 
   for (i = 0; i < domain->nconversions; i++)
     {
@@ -1315,11 +1316,10 @@ _nl_unload_domain (struct loaded_domain *domain)
       if (convd->conv != (__gconv_t) -1)
 	__gconv_close (convd->conv);
     }
-  if (domain->conversions != NULL)
-    free (domain->conversions);
+  free (domain->conversions);
+  __libc_rwlock_fini (domain->conversions_lock);
 
-  if (domain->malloced)
-    free (domain->malloced);
+  free (domain->malloced);
 
 # ifdef _POSIX_MAPPED_FILES
   if (domain->use_mmap)

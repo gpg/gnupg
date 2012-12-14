@@ -1,5 +1,6 @@
 /* Implementation of the bindtextdomain(3) function
-   Copyright (C) 1995-1998, 2000-2003, 2005-2006 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2003, 2005-2006, 2008 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -41,29 +42,12 @@
 # include "lock.h"
 #endif
 
-/* The internal variables in the standalone libintl.a must have different
-   names than the internal variables in GNU libc, otherwise programs
-   using libintl.a cannot be linked statically.  */
-#if !defined _LIBC
-# define _nl_default_dirname libintl_nl_default_dirname
-# define _nl_domain_bindings libintl_nl_domain_bindings
-#endif
-
 /* Some compilers, like SunOS4 cc, don't have offsetof in <stddef.h>.  */
 #ifndef offsetof
 # define offsetof(type,ident) ((size_t)&(((type*)0)->ident))
 #endif
 
 /* @@ end of prolog @@ */
-
-/* Contains the default location of the message catalogs.  */
-extern const char _nl_default_dirname[];
-#ifdef _LIBC
-libc_hidden_proto (_nl_default_dirname)
-#endif
-
-/* List with bindings of specific domains.  */
-extern struct binding *_nl_domain_bindings;
 
 /* Lock variable to protect the global data in the gettext implementation.  */
 gl_rwlock_define (extern, _nl_state_lock attribute_hidden)
@@ -195,8 +179,7 @@ set_binding_values (const char *domainname,
 
 		  if (__builtin_expect (result != NULL, 1))
 		    {
-		      if (binding->codeset != NULL)
-			free (binding->codeset);
+		      free (binding->codeset);
 
 		      binding->codeset = result;
 		      modified = 1;
