@@ -40,6 +40,7 @@
 #include "../common/iobuf.h"
 #include "util.h"
 #include "packet.h"
+#include "membuf.h"
 #include "main.h"
 #include "options.h"
 #include "keydb.h"
@@ -895,57 +896,53 @@ my_strusage( int level )
 
 
 static char *
-build_list( const char *text, char letter,
-	    const char * (*mapf)(int), int (*chkf)(int) )
+build_list (const char *text, char letter,
+	    const char * (*mapf)(int), int (*chkf)(int))
 {
-    int i;
-    const char *s;
-    size_t n=strlen(text)+2;
-    char *list, *p, *line=NULL;
+  membuf_t mb;
+  int indent;
+  int i, j, len;
+  const char *s;
+  char *string;
 
-    if (maybe_setuid)
-      gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
+  if (maybe_setuid)
+    gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
 
-    for(i=0; i <= 110; i++ )
-	if( !chkf(i) && (s=mapf(i)) )
-	    n += strlen(s) + 7 + 2;
-    list = xmalloc( 21 + n ); *list = 0;
-    for(p=NULL, i=0; i <= 110; i++ ) {
-	if( !chkf(i) && (s=mapf(i)) ) {
-	    if( !p ) {
-		p = stpcpy( list, text );
-		line=p;
+  indent = utf8_charcount (text);
+  len = 0;
+  init_membuf (&mb, 512);
+
+  for (i=0; i <= 110; i++ )
+    {
+      if (!chkf (i) && (s = mapf (i)))
+        {
+          if (mb.len - len > 60)
+            {
+              put_membuf_str (&mb, ",\n");
+              len = mb.len;
+              for (j=0; j < indent; j++)
+                put_membuf_str (&mb, " ");
 	    }
-	    else
-		p = stpcpy( p, ", ");
+          else if (mb.len)
+            put_membuf_str (&mb, ", ");
+          else
+            put_membuf_str (&mb, text);
 
-	    if(strlen(line)>60) {
-	      int spaces=strlen(text);
-
-	      list=xrealloc(list,n+spaces+1);
-	      /* realloc could move the block, so find the end again */
-	      p=list;
-	      while(*p)
-		p++;
-
-	      p=stpcpy(p, "\n");
-	      line=p;
-	      for(;spaces;spaces--)
-		p=stpcpy(p, " ");
-	    }
-
-	    p = stpcpy(p, s );
-	    if(opt.verbose && letter)
-	      {
-		char num[8];
-		sprintf(num," (%c%d)",letter,i);
-		p = stpcpy(p,num);
-	      }
+          put_membuf_str (&mb, s);
+          if (opt.verbose && letter)
+            {
+              char num[20];
+              snprintf (num, sizeof num, " (%c%d)", letter, i);
+              put_membuf_str (&mb, num);
+            }
 	}
     }
-    if( p )
-	p = stpcpy(p, "\n" );
-    return list;
+  if (mb.len)
+    put_membuf_str (&mb, "\n");
+  put_membuf (&mb, "", 1);
+
+  string = get_membuf (&mb, NULL);
+  return xrealloc (string, strlen (string)+1);
 }
 
 
