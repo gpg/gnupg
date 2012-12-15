@@ -1,6 +1,6 @@
 /* http.h  -  HTTP protocol handler
  * Copyright (C) 1999, 2000, 2001, 2003,
- *               2006 Free Software Foundation, Inc.
+ *               2006, 2012 Free Software Foundation, Inc.
  *     
  * This file is part of GnuPG.
  *
@@ -76,13 +76,20 @@ gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri);
 
 void http_release_parsed_uri (parsed_uri_t uri);
 
+struct http_srv
+{
+  const char *srvtag;
+  char *used_server;
+  unsigned short used_port;
+};
+
 gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        const char *url,
                        const char *auth,
                        unsigned int flags,
                        const char *proxy,
                        void *tls_context,
-		       const char *srvtag,
+		       struct http_srv *srv,
 		       strlist_t headers);
 
 void http_start_data (http_t hd);
@@ -97,7 +104,7 @@ gpg_error_t http_open_document (http_t *r_hd,
                                 unsigned int flags,
                                 const char *proxy,
                                 void *tls_context,
-				const char *srvtag,
+				struct http_srv *srv,
 				strlist_t headers);
 
 #ifdef HTTP_USE_ESTREAM

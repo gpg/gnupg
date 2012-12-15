@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -129,12 +129,12 @@ static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
 static gpg_error_t send_request (http_t hd, const char *auth,const char *proxy,
-				 const char *srvtag,strlist_t headers);
+				 struct http_srv *srv,strlist_t headers);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
 static int connect_server (const char *server, unsigned short port,
-                           unsigned int flags, const char *srvtag);
+                           unsigned int flags, struct http_srv *srv);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
 #ifdef HTTP_USE_ESTREAM
@@ -317,7 +317,7 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 gpg_error_t
 http_open (http_t *r_hd, http_req_t reqtype, const char *url, 
            const char *auth, unsigned int flags, const char *proxy,
-           void *tls_context, const char *srvtag,strlist_t headers)
+           void *tls_context, struct http_srv *srv, strlist_t headers)
 {
   gpg_error_t err;
   http_t hd;
@@ -338,7 +338,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   err = http_parse_uri (&hd->uri, url);
   if (!err)
-    err = send_request (hd, auth, proxy, srvtag, headers);
+    err = send_request (hd, auth, proxy, srv, headers);
   
   if (err)
     {
@@ -457,12 +457,13 @@ http_wait_response (http_t hd)
 gpg_error_t
 http_open_document (http_t *r_hd, const char *document, 
                     const char *auth, unsigned int flags, const char *proxy,
-                    void *tls_context, const char *srvtag,strlist_t headers)
+                    void *tls_context, struct http_srv *srv,
+		    strlist_t headers)
 {
   gpg_error_t err;
 
   err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
-                   proxy, tls_context, srvtag, headers);
+                   proxy, tls_context, srv, headers);
   if (err)
     return err;
 
@@ -836,7 +837,7 @@ parse_tuple (char *string)
  */
 static gpg_error_t
 send_request (http_t hd, const char *auth,
-	      const char *proxy,const char *srvtag,strlist_t headers)
+	      const char *proxy, struct http_srv *srv, strlist_t headers)
 {
   gnutls_session_t tls_session;
   gpg_error_t err;
@@ -894,13 +895,13 @@ send_request (http_t hd, const char *auth,
 
       hd->sock = connect_server (*uri->host ? uri->host : "localhost",
 				 uri->port ? uri->port : 80,
-                                 hd->flags, srvtag);
+                                 hd->flags, srv);
       save_errno = errno;
       http_release_parsed_uri (uri);
     }
   else
     {
-      hd->sock = connect_server (server, port, hd->flags, srvtag);
+      hd->sock = connect_server (server, port, hd->flags, srv);
       save_errno = errno;
     }
 
@@ -1540,12 +1541,12 @@ start_server ()
    error.  ERRNO is set on error. */
 static int
 connect_server (const char *server, unsigned short port,
-                unsigned int flags, const char *srvtag)
+                unsigned int flags, struct http_srv *srv)
 {
   int sock = -1;
   int srvcount = 0;
   int hostfound = 0;
-  int srv, connected;
+  int srvindex, connected, chosen=-1;
   int last_errno = 0;
   struct srventry *serverlist = NULL;
 
@@ -1587,14 +1588,14 @@ connect_server (const char *server, unsigned short port,
 
 #ifdef USE_DNS_SRV
   /* Do the SRV thing */
-  if (srvtag)
+  if (srv && srv->srvtag)
     {
       /* We're using SRV, so append the tags. */
-      if (1+strlen (srvtag) + 6 + strlen (server) + 1 <= MAXDNAME)
+      if (1+strlen (srv->srvtag) + 6 + strlen (server) + 1 <= MAXDNAME)
 	{
 	  char srvname[MAXDNAME];
 
-	  stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
+	  stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srv->srvtag),
                            "._tcp."), server);
 	  srvcount = getsrv (srvname, &serverlist);
 	}
@@ -1616,15 +1617,15 @@ connect_server (const char *server, unsigned short port,
 
 #ifdef HAVE_GETADDRINFO
   connected = 0;
-  for (srv=0; srv < srvcount && !connected; srv++)
+  for (srvindex=0; srvindex < srvcount && !connected; srvindex++)
     {
       struct addrinfo hints, *res, *ai;
       char portstr[35];
 
-      sprintf (portstr, "%hu", port);
+      sprintf (portstr, "%hu", serverlist[srvindex].port);
       memset (&hints, 0, sizeof (hints));
       hints.ai_socktype = SOCK_STREAM;
-      if (getaddrinfo (serverlist[srv].target, portstr, &hints, &res))
+      if (getaddrinfo (serverlist[srvindex].target, portstr, &hints, &res))
         continue; /* Not found - try next one. */
       hostfound = 1;
 
@@ -1646,13 +1647,16 @@ connect_server (const char *server, unsigned short port,
           if (connect (sock, ai->ai_addr, ai->ai_addrlen))
             last_errno = errno;
           else
-            connected = 1;
+            {
+	      connected = 1;
+	      chosen = srvindex;
+	    }
         }
       freeaddrinfo (res);
     }
 #else /* !HAVE_GETADDRINFO */
   connected = 0;
-  for (srv=0; srv < srvcount && !connected; srv++)
+  for (srvindex=0; srvindex < srvcount && !connected; srvindex++)
     {
       int i;
       struct hostent *host = NULL;
@@ -1661,7 +1665,7 @@ connect_server (const char *server, unsigned short port,
       /* Note: This code is not thread-safe.  */
 
       memset (&addr, 0, sizeof (addr));
-      host = gethostbyname (serverlist[srv].target);
+      host = gethostbyname (serverlist[srvindex].target);
       if (!host)
         continue;
       hostfound = 1;
@@ -1680,15 +1684,15 @@ connect_server (const char *server, unsigned short port,
       if (addr.sin_family != AF_INET)
 	{
 	  log_error ("unknown address family for `%s'\n",
-                     serverlist[srv].target);
+                     serverlist[srvindex].target);
           xfree (serverlist);
 	  return -1;
 	}
-      addr.sin_port = htons (serverlist[srv].port);
+      addr.sin_port = htons (serverlist[srvindex].port);
       if (host->h_length != 4)
         {
           log_error ("illegal address length for `%s'\n",
-                     serverlist[srv].target);
+                     serverlist[srvindex].target);
           xfree (serverlist);
           return -1;
         }
@@ -1702,11 +1706,18 @@ connect_server (const char *server, unsigned short port,
           else
             {
               connected = 1;
+	      chosen = srvindex;
               break;
             }
         }
     }
 #endif /* !HAVE_GETADDRINFO */
+
+  if(chosen>-1 && srv)
+    {
+      srv->used_server = xstrdup (serverlist[chosen].target);
+      srv->used_port = serverlist[chosen].port;
+    }
 
   xfree (serverlist);
 
