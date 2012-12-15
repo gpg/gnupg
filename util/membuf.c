@@ -52,13 +52,20 @@ put_membuf (membuf_t *mb, const void *buf, size_t len)
   if (mb->len + len >= mb->size)
     {
       char *p;
-      
+
       mb->size += len + 1024;
       p = xrealloc (mb->buf, mb->size);
       mb->buf = p;
     }
   memcpy (mb->buf + mb->len, buf, len);
   mb->len += len;
+}
+
+
+void
+put_membuf_str (membuf_t *mb, const char *buf)
+{
+  put_membuf (mb, buf, strlen (buf));
 }
 
 
@@ -75,7 +82,8 @@ get_membuf (membuf_t *mb, size_t *len)
     }
 
   p = mb->buf;
-  *len = mb->len;
+  if (len)
+    *len = mb->len;
   mb->buf = NULL;
   mb->out_of_core = ENOMEM; /* hack to make sure it won't get reused. */
   return p;
