@@ -1009,7 +1009,7 @@ send_request (http_t hd, const char *auth,
     {
       char portstr[35];
         
-      if (port == 80)
+      if (port == 80 || (srv && srv->used_server))
         *portstr = 0;
       else
         sprintf (portstr, ":%u", port);
@@ -1544,7 +1544,7 @@ connect_server (const char *server, unsigned short port,
                 unsigned int flags, struct http_srv *srv)
 {
   int sock = -1;
-  int srvcount = 0;
+  int srvcount = 0, fakesrv = 0;
   int hostfound = 0;
   int srvindex, connected, chosen=-1;
   int last_errno = 0;
@@ -1613,6 +1613,7 @@ connect_server (const char *server, unsigned short port,
       strncpy (serverlist->target, server, MAXDNAME);
       serverlist->target[MAXDNAME-1] = '\0';
       srvcount = 1;
+      fakesrv = 1;
     }
 
 #ifdef HAVE_GETADDRINFO
@@ -1713,7 +1714,7 @@ connect_server (const char *server, unsigned short port,
     }
 #endif /* !HAVE_GETADDRINFO */
 
-  if(chosen>-1 && srv)
+  if(!fakesrv && chosen>-1 && srv)
     {
       srv->used_server = xstrdup (serverlist[chosen].target);
       srv->used_port = serverlist[chosen].port;
