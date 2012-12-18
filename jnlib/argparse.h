@@ -49,6 +49,7 @@ typedef struct
     const char *last;
     void *aliases;
     const void *cur_alias;
+    void *iio_list;
   } internal;	    /* Private - do not change. */
 } ARGPARSE_ARGS;
 
