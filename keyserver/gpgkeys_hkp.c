@@ -40,6 +40,19 @@
 #endif
 #ifdef HAVE_LIBCURL
 #include <curl/curl.h>
+/* This #define rigamarole is to enable a hack to fake DNS SRV using
+   libcurl.  It only works if we have getaddrinfo(), inet_ntop(), and
+   a modern enough version of libcurl (7.21.3) so we can use
+   CURLOPT_RESOLVE to feed the resolver from the outside to force
+   libcurl to pass the right SNI. */
+#if defined(HAVE_GETADDRINFO) && defined(HAVE_INET_NTOP) && LIBCURL_VERNUM >= 0x071503
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#else
+#undef USE_DNS_SRV
+#endif
 #else
 #include "curl-shim.h"
 #endif
@@ -499,17 +512,27 @@ fail_all(struct keylist *keylist,int err)
       }
 }
 
-#ifdef HAVE_LIBCURL
+#if defined(HAVE_LIBCURL) && defined(USE_DNS_SRV)
 /* If there is a SRV record, take the highest ranked possibility.
-   This is a hack, as we don't proceed downwards. */
+   This is a hack, as we don't proceed downwards if we can't
+   connect(), but only if we can't getaddinfo().  All this should
+   ideally be replaced by actual SRV support in libcurl someday! */
+
+#define HOST_HEADER "Host:"
+
 static void
-srv_replace(const char *srvtag)
+srv_replace(const char *srvtag,
+	    struct curl_slist **headers,struct curl_slist **resolve)
 {
-#ifdef USE_DNS_SRV
   struct srventry *srvlist=NULL;
-  int srvcount;
+  int srvcount, srvindex;
+  char *portstr;
 
   if(!srvtag)
+    return;
+
+  portstr=malloc (MAX_PORT);
+  if(!portstr)
     return;
 
   if(1+strlen(srvtag)+6+strlen(opt->host)+1<=MAXDNAME)
@@ -523,27 +546,74 @@ srv_replace(const char *srvtag)
       srvcount=getsrv(srvname,&srvlist);
     }
 
-  if(srvlist)
+  for(srvindex=0 ; srvindex<srvcount && portstr ; srvindex++)
     {
-      char *newname,*newport;
+      struct addrinfo hints, *res;
 
-      newname=strdup(srvlist->target);
-      newport=malloc(MAX_PORT);
-      if(newname && newport)
+      sprintf (portstr, "%hu", srvlist[srvindex].port);
+      memset (&hints, 0, sizeof (hints));
+      hints.ai_socktype = SOCK_STREAM;
+
+      if (getaddrinfo (srvlist[srvindex].target, portstr, &hints, &res) == 0)
 	{
-	  free(opt->host);
-	  free(opt->port);
-	  opt->host=newname;
-	  snprintf(newport,MAX_PORT,"%u",srvlist->port);
-	  opt->port=newport;
+	  /* Very safe */
+	  char ipaddr[INET_ADDRSTRLEN+INET6_ADDRSTRLEN];
+
+	  if((res->ai_family==AF_INET
+	      && inet_ntop (res->ai_family,
+			    &((struct sockaddr_in *)res->ai_addr)->sin_addr,
+			    ipaddr,sizeof(ipaddr)))
+	     || (res->ai_family==AF_INET6
+		 && inet_ntop (res->ai_family,
+			       &((struct sockaddr_in6 *)res->ai_addr)->sin6_addr,
+			       ipaddr,sizeof(ipaddr))))
+	    {
+	      char *entry,*host;
+
+	      entry=malloc (strlen(opt->host)+1
+			    +strlen(portstr)+1+strlen(ipaddr)+1);
+
+	      host=malloc (strlen(HOST_HEADER)+1+strlen(opt->host)+1);
+
+	      if(entry && host)
+		{
+		  sprintf (entry, "%s:%s:%s", opt->host, portstr, ipaddr);
+		  sprintf (host, "%s %s", HOST_HEADER, opt->host);
+
+		  *resolve=curl_slist_append (*resolve,entry);
+		  *headers=curl_slist_append (*headers,host);
+
+		  if(*resolve && *headers)
+		    {
+		      if(curl_easy_setopt (curl,
+					   CURLOPT_RESOLVE,*resolve)==CURLE_OK)
+			{
+			  if(opt->debug)
+			    fprintf (console, "gpgkeys: Faking %s SRV from"
+				     " %s to %s:%u\n",
+				     srvtag, opt->host,
+				     srvlist[srvindex].target,
+				     srvlist[srvindex].port);
+
+			  free (opt->port);
+			  opt->port=portstr;
+			  portstr=NULL;
+			}
+		    }
+		}
+
+	      free (entry);
+	      free (host);
+	    }
+
+	  freeaddrinfo (res);
 	}
       else
-	{
-	  free(newname);
-	  free(newport);
-	}
+	continue; /* Not found */
     }
-#endif
+
+  free (srvlist);
+  free (portstr);
 }
 #endif
 
@@ -564,7 +634,7 @@ main(int argc,char *argv[])
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
   char *proxy=NULL;
-  struct curl_slist *headers=NULL;
+  struct curl_slist *headers=NULL,*resolve=NULL;
 
   console=stderr;
 
@@ -726,6 +796,13 @@ main(int argc,char *argv[])
       goto fail;
     }
 
+  if(opt->debug)
+    {
+      fprintf(console,"gpgkeys: curl version = %s\n",curl_version());
+      curl_easy_setopt(curl,CURLOPT_STDERR,console);
+      curl_easy_setopt(curl,CURLOPT_VERBOSE,1L);
+    }
+
   /* Only use SRV if the user does not provide a :port.  The semantics
      of a specified port and SRV do not play well together. */
   if(!opt->port && try_srv)
@@ -744,8 +821,12 @@ main(int argc,char *argv[])
 	 This isn't as good as true SRV support, as we do not try all
 	 possible targets at one particular level and work our way
 	 down the list, but it's better than nothing. */      
-      srv_replace(srvtag);
+#ifdef USE_DNS_SRV
+      srv_replace(srvtag,&headers,&resolve);
 #else
+      fprintf(console,"gpgkeys: try-dns-srv was requested, but not SRV capable\n");
+#endif
+#else /* !HAVE_LIBCURL */
       /* We're using our internal curl shim, so we can use its (true)
 	 SRV support.  Obviously, CURLOPT_SRVTAG_GPG_HACK isn't a real
 	 libcurl option.  It's specific to our shim. */
@@ -762,13 +843,6 @@ main(int argc,char *argv[])
 
   if(opt->auth)
     curl_easy_setopt(curl,CURLOPT_USERPWD,opt->auth);
-
-  if(opt->debug)
-    {
-      fprintf(console,"gpgkeys: curl version = %s\n",curl_version());
-      curl_easy_setopt(curl,CURLOPT_STDERR,console);
-      curl_easy_setopt(curl,CURLOPT_VERBOSE,1L);
-    }
 
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,(long)opt->flags.check_cert);
   curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
@@ -971,6 +1045,7 @@ main(int argc,char *argv[])
   free_ks_options(opt);
 
   curl_slist_free_all(headers);
+  curl_slist_free_all(resolve);
 
   if(curl)
     curl_easy_cleanup(curl);
