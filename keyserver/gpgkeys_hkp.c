@@ -629,12 +629,19 @@ show_help (FILE *fp)
 int
 main(int argc,char *argv[])
 {
-  int arg,ret=KEYSERVER_INTERNAL_ERROR,try_srv=1;
+  int arg,ret=KEYSERVER_INTERNAL_ERROR;
   char line[MAX_LINE];
   int failed=0;
   struct keylist *keylist=NULL,*keyptr=NULL;
   char *proxy=NULL;
   struct curl_slist *headers=NULL,*resolve=NULL;
+
+  /* Only default this to on if we have SRV support */
+#ifdef USE_DNS_SRV
+  int try_srv = 1;
+#else
+  int try_srv = 0;
+#endif
 
   console=stderr;
 
