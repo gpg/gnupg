@@ -1,6 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2006
- *               2007, 2008  Free Software Foundation, Inc.
+ *               2007, 2008, 2012  Free Software Foundation, Inc.
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -155,6 +155,16 @@ struct alias_def_s {
     const char *value; /* ptr into name */
 };
 
+
+/* Object to store the names for the --ignore-invalid-option option.
+   This is a simple linked list.  */
+typedef struct iio_item_def_s *IIO_ITEM_DEF;
+struct iio_item_def_s
+{
+  IIO_ITEM_DEF next;
+  char name[1];      /* String with the long option name.  */
+};
+
 static const char *(*strusage_handler)( int ) = NULL;
 static int (*custom_outfnc) (int, const char *);
 
@@ -226,6 +236,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
       arg->internal.stopped = 0;
       arg->internal.aliases = NULL;
       arg->internal.cur_alias = NULL;
+      arg->internal.iio_list = NULL;
       arg->err = 0;
       arg->flags |= 1<<15; /* Mark as initialized.  */
       if ( *arg->argc < 0 )
@@ -308,6 +319,111 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
 #endif
 }
 
+
+/* Return true if KEYWORD is in the ignore-invalid-option list.  */
+static int
+ignore_invalid_option_p (ARGPARSE_ARGS *arg, const char *keyword)
+{
+  IIO_ITEM_DEF item = arg->internal.iio_list;
+
+  for (; item; item = item->next)
+    if (!strcmp (item->name, keyword))
+      return 1;
+  return 0;
+}
+
+
+/* Add the keywords up to the next LF to the list of to be ignored
+   options.  After returning FP will either be at EOF or the next
+   character read wll be the first of a new line.  The function
+   returns 0 on success or true on malloc failure.  */
+static int
+ignore_invalid_option_add (ARGPARSE_ARGS *arg, FILE *fp)
+{
+  IIO_ITEM_DEF item;
+  int c;
+  char name[100];
+  int namelen = 0;
+  int ready = 0;
+  enum { skipWS, collectNAME, skipNAME, addNAME} state = skipWS;
+
+  while (!ready)
+    {
+      c = getc (fp);
+      if (c == '\n')
+        ready = 1;
+      else if (c == EOF)
+        {
+          c = '\n';
+          ready = 1;
+        }
+    again:
+      switch (state)
+        {
+        case skipWS:
+          if (!isascii (c) || !isspace(c))
+            {
+              namelen = 0;
+              state = collectNAME;
+              goto again;
+            }
+          break;
+
+        case collectNAME:
+          if (isspace (c))
+            {
+              state = addNAME;
+              goto again;
+            }
+          else if (namelen < DIM(name)-1)
+            name[namelen++] = c;
+          else /* Too long.  */
+            state = skipNAME;
+          break;
+
+        case skipNAME:
+          if (isspace (c))
+            {
+              state = skipWS;
+              goto again;
+            }
+          break;
+
+        case addNAME:
+          name[namelen] = 0;
+          if (!ignore_invalid_option_p (arg, name))
+            {
+              item = jnlib_malloc (sizeof *item + namelen);
+              if (!item)
+                return 1;
+              strcpy (item->name, name);
+              item->next = (IIO_ITEM_DEF)arg->internal.iio_list;
+              arg->internal.iio_list = item;
+            }
+          state = skipWS;
+          goto again;
+        }
+    }
+  return 0;
+}
+
+
+/* Clear the entire ignore-invalid-option list.  */
+static void
+ignore_invalid_option_clear (ARGPARSE_ARGS *arg)
+{
+  IIO_ITEM_DEF item, tmpitem;
+
+  for (item = arg->internal.iio_list; item; item = tmpitem)
+    {
+      tmpitem = item->next;
+      jnlib_free (item);
+    }
+  arg->internal.iio_list = NULL;
+}
+
+
+
 /****************
  * Get options from a file.
  * Lines starting with '#' are comment lines.
@@ -317,6 +433,10 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
  * are not valid here.
  * The special keyword "alias" may be used to store alias definitions,
  * which are later expanded like long options.
+ * The option
+ *   ignore-invalid-option OPTIONNAMEs
+ * is recognized and updates a list of option which should be ignored if they
+ * are not defined.
  * Caller must free returned strings.
  * If called with FP set to NULL command line args are parse instead.
  *
@@ -363,9 +483,23 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
               idx = i;
               arg->r_opt = opts[idx].short_opt;
               if (!opts[idx].short_opt )
-                arg->r_opt = ((opts[idx].flags & ARGPARSE_OPT_COMMAND)
-                              ? ARGPARSE_INVALID_COMMAND
-                              : ARGPARSE_INVALID_OPTION);
+                {
+                  if (!strcmp (keyword, "ignore-invalid-option"))
+                    {
+                      /* No argument - ignore this meta option.  */
+                      state = i = 0;
+                      continue;
+                    }
+                  else if (ignore_invalid_option_p (arg, keyword))
+                    {
+                      /* This invalid option is in the iio list.  */
+                      state = i = 0;
+                      continue;
+                    }
+                  arg->r_opt = ((opts[idx].flags & ARGPARSE_OPT_COMMAND)
+                                ? ARGPARSE_INVALID_COMMAND
+                                : ARGPARSE_INVALID_OPTION);
+                }
               else if (!(opts[idx].flags & 7))
                 arg->r_type = 0; /* Does not take an arg. */
               else if ((opts[idx].flags & 8) )
@@ -453,6 +587,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
             }
           else if (c == EOF)
             {
+              ignore_invalid_option_clear (arg);
               if (ferror (fp))
                 arg->r_opt = ARGPARSE_READ_ERROR;
               else
@@ -486,6 +621,18 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                   in_alias = 1;
                   state = 3;
                 }
+              else if (!strcmp (keyword, "ignore-invalid-option"))
+                {
+                  if (ignore_invalid_option_add (arg, fp))
+                    {
+                      arg->r_opt = ARGPARSE_OUT_OF_CORE;
+                      break;
+                    }
+                  state = i = 0;
+                  ++*lineno;
+                }
+              else if (ignore_invalid_option_p (arg, keyword))
+                state = 1; /* Process like a comment.  */
               else
                 {
                   arg->r_opt = ((opts[idx].flags & ARGPARSE_OPT_COMMAND)
@@ -615,7 +762,7 @@ find_long_option( ARGPARSE_ARGS *arg,
 	    return i;
 	}
     }
-    return -1;
+    return -1;  /* Not found.  */
 }
 
 int
@@ -1204,7 +1351,7 @@ strusage( int level )
       break;
     case 11: p = "foo"; break;
     case 13: p = "0.0"; break;
-    case 14: p = "Copyright (C) 2011 Free Software Foundation, Inc."; break;
+    case 14: p = "Copyright (C) 2012 Free Software Foundation, Inc."; break;
     case 15: p =
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n";
