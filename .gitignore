@@ -72,3 +72,8 @@ tools/shmtest
 mpi/libmpi.a
 util/libcompat.a
 util/libutil.a
+/common/audit-events.h
+/common/status-codes.h
+/doc/gnupg.info
+/doc/gnupg.info-1
+/doc/gnupg.info-2
