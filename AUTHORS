@@ -134,6 +134,9 @@ Yutaka Niibe   Assigns Past and Future Changes
 Other authors
 =============
 
+The need for copyright disclaimers for translations has been waived in
+December 2012.
+
 The files common/libestream.[ch] are maintained as a separate project
 by g10 Code GmbH.  These files, as used here, are considered part of
 GnuPG.
@@ -176,8 +179,9 @@ name gpg2keys_*.
 
 =========
 
- Copyright 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-           2006, 2007, 2008, 2010, 2011 Free Software Foundation, Inc.
+ Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+           2006, 2007, 2008, 2009, 2010, 2011,
+           2012 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
