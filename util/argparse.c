@@ -133,6 +133,15 @@ struct alias_def_s {
     const char *value; /* ptr into name */
 };
 
+/* Object to store the names for the --ignore-invalid-option option.
+   This is a simple linked list.  */
+typedef struct iio_item_def_s *IIO_ITEM_DEF;
+struct iio_item_def_s
+{
+  IIO_ITEM_DEF next;
+  char name[1];      /* String with the long option name.  */
+};
+
 static int  set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s);
 static void show_help(ARGPARSE_OPTS *opts, unsigned flags);
 static void show_version(void);
@@ -147,6 +156,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 	arg->internal.stopped = 0;
 	arg->internal.aliases = NULL;
 	arg->internal.cur_alias = NULL;
+	arg->internal.iio_list = NULL;
 	arg->err = 0;
 	arg->flags |= 1<<15; /* mark initialized */
 	if( *arg->argc < 0 )
@@ -219,6 +229,105 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
 #endif
 }
 
+
+/* Return true if KEYWORD is in the ignore-invalid-option list.  */
+static int
+ignore_invalid_option_p (ARGPARSE_ARGS *arg, const char *keyword)
+{
+  IIO_ITEM_DEF item = arg->internal.iio_list;
+
+  for (; item; item = item->next)
+    if (!strcmp (item->name, keyword))
+      return 1;
+  return 0;
+}
+
+
+/* Add the keywords up to the next LF to the list of to be ignored
+   options.  After returning FP will either be at EOF or the next
+   character read wll be the first of a new line.  */
+static void
+ignore_invalid_option_add (ARGPARSE_ARGS *arg, FILE *fp)
+{
+  IIO_ITEM_DEF item;
+  int c;
+  char name[100];
+  int namelen = 0;
+  int ready = 0;
+  enum { skipWS, collectNAME, skipNAME, addNAME} state = skipWS;
+
+  while (!ready)
+    {
+      c = getc (fp);
+      if (c == '\n')
+        ready = 1;
+      else if (c == EOF)
+        {
+          c = '\n';
+          ready = 1;
+        }
+    again:
+      switch (state)
+        {
+        case skipWS:
+          if (!isascii (c) || !isspace(c))
+            {
+              namelen = 0;
+              state = collectNAME;
+              goto again;
+            }
+          break;
+
+        case collectNAME:
+          if (isspace (c))
+            {
+              state = addNAME;
+              goto again;
+            }
+          else if (namelen < DIM(name)-1)
+            name[namelen++] = c;
+          else /* Too long.  */
+            state = skipNAME;
+          break;
+
+        case skipNAME:
+          if (isspace (c))
+            {
+              state = skipWS;
+              goto again;
+            }
+          break;
+
+        case addNAME:
+          name[namelen] = 0;
+          if (!ignore_invalid_option_p (arg, name))
+            {
+              item = xmalloc (sizeof *item + namelen);
+              strcpy (item->name, name);
+              item->next = (IIO_ITEM_DEF)arg->internal.iio_list;
+              arg->internal.iio_list = item;
+            }
+          state = skipWS;
+          goto again;
+        }
+    }
+}
+
+
+/* Clear the entire ignore-invalid-option list.  */
+static void
+ignore_invalid_option_clear (ARGPARSE_ARGS *arg)
+{
+  IIO_ITEM_DEF item, tmpitem;
+
+  for (item = arg->internal.iio_list; item; item = tmpitem)
+    {
+      tmpitem = item->next;
+      xfree (item);
+    }
+  arg->internal.iio_list = NULL;
+}
+
 /****************
  * Get options from a file.
  * Lines starting with '#' are comment lines.
@@ -271,14 +380,26 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		arg->r_opt = opts[idx].short_opt;
 		if( inverse ) /* this does not have an effect, hmmm */
 		    arg->r_opt = -arg->r_opt;
-		if( !opts[idx].short_opt )   /* unknown command/option */
+		if( !opts[idx].short_opt ) { /* unknown command/option */
+                    if (!strcmp (keyword, "ignore-invalid-option")) {
+                        /* No argument - ignore this meta option.  */
+                        state = i = 0;
+                        continue;
+                    }
+                    else if (ignore_invalid_option_p (arg, keyword)) {
+                        /* This invalid option is in the iio list.  */
+                        state = i = 0;
+                        continue;
+                    }
 		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
+                }
 		else if( !(opts[idx].flags & 7) ) /* does not take an arg */
 		    arg->r_type = 0;	       /* okay */
 		else if( (opts[idx].flags & 8) )  /* argument is optional */
                     arg->r_type = 0;	       /* okay */
 		else			       /* required argument */
 		    arg->r_opt = -3;	       /* error */
+
 		break;
 	    }
 	    else if( state == 3 ) {	       /* no argument found */
@@ -347,6 +468,7 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		break;
 	    }
 	    else if( c == EOF ) {
+                ignore_invalid_option_clear (arg);
 		if( ferror(fp) )
 		    arg->r_opt = -5;   /* read error */
 		else
@@ -376,6 +498,13 @@ optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
 		    in_alias = 1;
 		    state = 3;
 		}
+                else if (!strcmp (keyword, "ignore-invalid-option")) {
+                    ignore_invalid_option_add (arg, fp);
+                    state = i = 0;
+                    ++*lineno;
+                }
+                else if (ignore_invalid_option_p (arg, keyword))
+                    state = 1; /* Process like a comment.  */
 		else {
 		    arg->r_opt = (opts[idx].flags & 256)? -7:-2;
 		    state = -1;        /* skip rest of line and leave */
