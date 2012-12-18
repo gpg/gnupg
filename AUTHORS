@@ -1,4 +1,5 @@
 Program: GnuPG
+Version: 1.4
 Maintainer:  Werner Koch <wk@gnupg.org>
 Bug reports: http://bugs.gnupg.org
 Security related bug reports: <security@gnupg.org>
@@ -121,6 +122,9 @@ Yuri Chornoivan, yurchor at ukr dot net: Translations [uk]
 Other authors
 =============
 
+The need for copyright disclaimers for translations has been waived in
+December 2012.
+
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.
 
@@ -151,7 +155,7 @@ details.
 
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-           2008, 2009, 2010, 2012 Free Software Foundation, Inc.
+           2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
