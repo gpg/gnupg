@@ -1576,7 +1576,8 @@ update_keysig_packet( PKT_signature **ret_sig,
                       void *opaque)
 {
     PKT_signature *sig;
-    int rc=0, digest_algo;
+    int rc = 0;
+    int digest_algo;
     gcry_md_hd_t md;
 
     if ((!orig_sig || !pk || !pksk)
@@ -1589,7 +1590,7 @@ update_keysig_packet( PKT_signature **ret_sig,
     else
       digest_algo = orig_sig->digest_algo;
 
-    if ( gcry_md_open (&md, orig_sig->digest_algo, 0 ) )
+    if ( gcry_md_open (&md, digest_algo, 0 ) )
       BUG ();
 
     /* Hash the public key certificate and the user id. */
