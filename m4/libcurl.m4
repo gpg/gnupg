@@ -66,6 +66,11 @@ AC_DEFUN([LIBCURL_CHECK_CONFIG],
 
      _libcurl_version_parse="eval $AWK '{split(\$NF,A,\".\"); X=256*256*A[[1]]+256*A[[2]]+A[[3]]; print X;}'"
 
+     # More recent versions of curl-config have a direct --vernum
+     # option, but we'd like this code to work with older versions as
+     # well, so just convert --version.
+     _libcurl_vernum_parse="eval $AWK '{printf \"0x%06X\",\$NF}'"
+
      _libcurl_try_link=yes
 
      if test -d "$_libcurl_with" ; then
@@ -206,6 +211,10 @@ x=CURLOPT_VERBOSE;
            AC_SUBST(LIBCURL_CPPFLAGS)
            AC_SUBST(LIBCURL)
 
+	   _libcurl_vernum=`echo $_libcurl_version | $_libcurl_vernum_parse`
+
+	   AC_DEFINE_UNQUOTED(LIBCURL_VERNUM,$_libcurl_vernum,[The version of the libcurl library in packed hex form])
+
            for _libcurl_feature in $_libcurl_features ; do
 	      AC_DEFINE_UNQUOTED(AS_TR_CPP(libcurl_feature_$_libcurl_feature),[1])
 	      eval AS_TR_SH(libcurl_feature_$_libcurl_feature)=yes
@@ -246,6 +255,7 @@ x=CURLOPT_VERBOSE;
      unset _libcurl_protocol
      unset _libcurl_protocols
      unset _libcurl_version
+     unset _libcurl_vernum
      unset _libcurl_ldflags
   fi
 
