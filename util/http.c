@@ -94,7 +94,7 @@ init_sockets (void)
         return;
 
     if( WSAStartup( 0x0101, &wsdata ) ) {
-        log_error ("error initializing socket library: ec=%d\n", 
+        log_error ("error initializing socket library: ec=%d\n",
                     (int)WSAGetLastError () );
         return;
     }
@@ -205,7 +205,7 @@ http_wait_response( HTTP_HD hd, unsigned int *ret_status )
     http_start_data( hd ); /* make sure that we are in the data */
 
 #if 0
-    hd->sock = dup( hd->sock ); 
+    hd->sock = dup( hd->sock );
     if( hd->sock == -1 )
 	return G10ERR_GENERAL;
 #endif
@@ -843,9 +843,9 @@ connect_server( const char *server, ushort port, unsigned int flags,
 	  return -1;
 	}
 
-      addr.sin_family=AF_INET; 
+      addr.sin_family=AF_INET;
       addr.sin_port=htons(port);
-      memcpy(&addr.sin_addr,&inaddr,sizeof(inaddr));      
+      memcpy(&addr.sin_addr,&inaddr,sizeof(inaddr));
 
       if(connect(sock,(struct sockaddr *)&addr,sizeof(addr))==0)
 	return sock;
@@ -1025,7 +1025,7 @@ write_server( int sock, const char *data, size_t length )
 
     nleft = length;
     while( nleft > 0 ) {
-#ifdef _WIN32  
+#ifdef _WIN32
         int nwritten;
 
         nwritten = send (sock, data, nleft, 0);

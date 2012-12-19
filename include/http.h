@@ -53,7 +53,7 @@ typedef enum {
 
 /* put flag values into an enum, so that gdb can display them */
 enum
-  { 
+  {
     HTTP_FLAG_NO_SHUTDOWN = 1
   };
 
