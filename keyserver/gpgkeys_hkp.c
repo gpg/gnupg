@@ -36,29 +36,30 @@
 #include <errno.h>
 #include <unistd.h>
 #ifdef HAVE_GETOPT_H
-#include <getopt.h>
+# include <getopt.h>
 #endif
 #ifdef HAVE_LIBCURL
-#include <curl/curl.h>
+# include <curl/curl.h>
 /* This #define rigamarole is to enable a hack to fake DNS SRV using
    libcurl.  It only works if we have getaddrinfo(), inet_ntop(), and
    a modern enough version of libcurl (7.21.3) so we can use
    CURLOPT_RESOLVE to feed the resolver from the outside to force
    libcurl to pass the right SNI. */
-#if defined(HAVE_GETADDRINFO) && defined(HAVE_INET_NTOP) && LIBCURL_VERNUM >= 0x071503
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <arpa/inet.h>
+# if (defined(HAVE_GETADDRINFO) && defined(HAVE_INET_NTOP) \
+      && LIBCURL_VERNUM >= 0x071503)
+#  include <sys/types.h>
+#  include <sys/socket.h>
+#  include <netdb.h>
+#  include <arpa/inet.h>
+# else
+#  undef USE_DNS_SRV
+# endif
 #else
-#undef USE_DNS_SRV
-#endif
-#else
-#include "curl-shim.h"
+#  include "curl-shim.h"
 #endif
 #include "util.h"
 #ifdef USE_DNS_SRV
-#include "srv.h"
+# include "srv.h"
 #endif
 #include "keyserver.h"
 #include "ksutil.h"
@@ -73,9 +74,10 @@ static char errorbuffer[CURL_ERROR_SIZE];
 static char *proto,*port;
 
 static size_t
-curl_mrindex_writer(const void *ptr,size_t size,size_t nmemb,void *stream)
+curl_mrindex_writer (const void *ptr,size_t size,size_t nmemb,void *stream)
 {
-  static int checked=0,swallow=0;
+  static int checked = 0;
+  static int swallow = 0;
 
   if(!checked)
     {
@@ -367,7 +369,7 @@ get_name(const char *getkey)
       ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
-  
+
   fprintf(output,"NAME %s BEGIN\n",getkey);
 
   if(opt->verbose>2)
@@ -617,7 +619,7 @@ srv_replace(const char *srvtag,
 }
 #endif
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -827,7 +829,7 @@ main(int argc,char *argv[])
       /* We're using libcurl, so fake SRV support via our wrapper.
 	 This isn't as good as true SRV support, as we do not try all
 	 possible targets at one particular level and work our way
-	 down the list, but it's better than nothing. */      
+	 down the list, but it's better than nothing. */
 #ifdef USE_DNS_SRV
       srv_replace(srvtag,&headers,&resolve);
 #else
