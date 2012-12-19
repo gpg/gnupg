@@ -1,6 +1,6 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -690,6 +690,7 @@ main(int argc,char *argv[])
       goto fail;
     }
 
+  /* Defaults */
   if(ascii_strcasecmp(opt->scheme,"hkps")==0)
     {
       proto="https";
@@ -722,11 +723,9 @@ main(int argc,char *argv[])
       goto fail;
     }
 
-  /* If the user gives a :port, then disable SRV.  The semantics of a
-     specified port and SRV do not play well together. */
-  if(opt->port)
-    port=opt->port;
-  else if(try_srv)
+  /* Only use SRV if the user does not provide a :port.  The semantics
+     of a specified port and SRV do not play well together. */
+  if(!opt->port && try_srv)
     {
       char *srvtag;
 
@@ -750,6 +749,11 @@ main(int argc,char *argv[])
       curl_easy_setopt(curl,CURLOPT_SRVTAG_GPG_HACK,srvtag);
 #endif
     }
+
+  /* If the user provided a port (or it came in via SRV, above),
+     replace the default. */
+  if(opt->port)
+    port=opt->port;
 
   curl_easy_setopt(curl,CURLOPT_ERRORBUFFER,errorbuffer);
 

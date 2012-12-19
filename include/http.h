@@ -1,6 +1,6 @@
 /* http.h  -  HTTP protocol handler
  * Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -73,14 +73,21 @@ struct http_context {
 };
 typedef struct http_context *HTTP_HD;
 
+struct http_srv
+{
+  const char *srvtag;
+  char *used_server;
+  unsigned short used_port;
+};
+
 int http_open( HTTP_HD hd, HTTP_REQ_TYPE reqtype, const char *url,
 	       char *auth, unsigned int flags, const char *proxy,
-	       const char *srvtag, STRLIST headers );
+	       struct http_srv *srv, STRLIST headers );
 void http_start_data( HTTP_HD hd );
 int  http_wait_response( HTTP_HD hd, unsigned int *ret_status );
 void http_close( HTTP_HD hd );
 int http_open_document( HTTP_HD hd, const char *document, char *auth,
 			unsigned int flags, const char *proxy,
-			const char *srvtag, STRLIST headers );
+			struct http_srv *srv, STRLIST headers );
 
 #endif /*G10_HTTP_H*/
