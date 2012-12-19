@@ -1470,10 +1470,18 @@ update this FAQ in the next month.  See the section "Changes" for recent updates
   :CUSTOM_ID: bugreports-et-al
   :END:
 
-** Copyright asssignments
+** Copyright assignments
   :PROPERTIES:
-  :CUSTOM_ID: copyright-assigments
+  :CUSTOM_ID: copyright-assignments
   :END:
+
+Like most core GNU projects, GnuPG requires the signing of a copyright
+assignment to the FSF.  Without such an assignment we may only accept
+trivial patches.  As a rule of thumb the sum of all changed lines by
+one contributor may not exceed about 15 lines.  Exceptions are typo
+corrections and translations.  See
+http://www.gnu.org/prep/maintain/html_node/Copyright-Papers.html for
+details.
 
 ** U.S. export restrictions
   :PROPERTIES:
