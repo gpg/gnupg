@@ -842,8 +842,9 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
               if (key_present_in_pk_list(pk_list, pk) == 0)
                 {
                   free_public_key (pk); pk = NULL;
-                  log_info (_("%s: skipped: public key already present\n"),
-                            rov->d);
+                  if (!opt.quiet)
+                    log_info (_("%s: skipped: public key already present\n"),
+                              rov->d);
                 }
               else
                 {
@@ -1122,8 +1123,9 @@ build_pk_list( strlist_t rcpts, PK_LIST *ret_pk_list, unsigned int use )
                   if (!key_present_in_pk_list(pk_list, pk))
                     {
                       free_public_key(pk); pk = NULL;
-                      log_info(_("%s: skipped: public key already present\n"),
-                               remusr->d);
+                      if (!opt.quiet)
+                        log_info(_("%s: skipped: public key already present\n"),
+                                 remusr->d);
                     }
                   else
                     {
