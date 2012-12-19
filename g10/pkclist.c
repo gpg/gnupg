@@ -837,7 +837,8 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
      list.  */
   if (!key_present_in_pk_list (*pk_list_addr, pk))
     {
-      log_info (_("%s: skipped: public key already present\n"), name);
+      if (!opt.quiet)
+        log_info (_("%s: skipped: public key already present\n"), name);
       free_public_key (pk);
     }
   else
@@ -945,8 +946,9 @@ build_pk_list (ctrl_t ctrl,
               if (key_present_in_pk_list(pk_list, pk) == 0)
                 {
                   free_public_key (pk); pk = NULL;
-                  log_info (_("%s: skipped: public key already present\n"),
-                            rov->d);
+                  if (!opt.quiet)
+                    log_info (_("%s: skipped: public key already present\n"),
+                              rov->d);
                 }
               else
                 {
