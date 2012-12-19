@@ -925,7 +925,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
 
 #else /* !HAVE_GETADDRINFO */
 
-  for(srvindex=0; srvindex < srvcount; srv++)
+  for(srvindex=0; srvindex < srvcount; srvindex++)
     {
       int i=0;
       struct hostent *host=NULL;
