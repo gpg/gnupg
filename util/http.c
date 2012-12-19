@@ -599,16 +599,18 @@ send_request( HTTP_HD hd, const char *auth, const char *proxy,
 	       authstr?authstr:"",proxy_authstr?proxy_authstr:"" );
     else
       {
-	char portstr[15];
+	char portstr[35];
 
-	if(port!=80)
+	if(port == 80 || (srv && srv->used_server))
+	  *portstr = 0;
+	else
 	  sprintf(portstr,":%u",port);
 
 	sprintf( request, "%s %s%s HTTP/1.0\r\nHost: %s%s\r\n%s",
 		 hd->req_type == HTTP_REQ_GET ? "GET" :
 		 hd->req_type == HTTP_REQ_HEAD? "HEAD":
 		 hd->req_type == HTTP_REQ_POST? "POST": "OOPS",
-		 *p == '/'? "":"/", p, server, (port!=80)?portstr:"",
+		 *p == '/'? "":"/", p, server, portstr,
 		 authstr?authstr:"");
       }
 
@@ -822,6 +824,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
   int connected = 0;
   int hostfound = 0;
   int chosen = -1;
+  int fakesrv = 0;
   struct srventry *srvlist = NULL;
   int srvindex;
 
@@ -885,7 +888,8 @@ connect_server( const char *server, ushort port, unsigned int flags,
       srvlist->port=port;
       strncpy(srvlist->target,server,MAXDNAME);
       srvlist->target[MAXDNAME-1]='\0';
-      srvcount=1;
+      srvcount = 1;
+      fakesrv = 1;
     }
 
 #ifdef HAVE_GETADDRINFO
@@ -986,7 +990,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
     }
 #endif /* !HAVE_GETADDRINFO */
 
-  if(chosen > -1 && srv)
+  if(!fakesrv && chosen > -1 && srv)
     {
       srv->used_server = strdup (srvlist[chosen].target);
       srv->used_port = srvlist[chosen].port;
