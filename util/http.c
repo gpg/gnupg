@@ -817,8 +817,13 @@ static int
 connect_server( const char *server, ushort port, unsigned int flags,
 		struct http_srv *srv )
 {
-  int sock=-1, srvindex, srvcount=0, connected=0, hostfound=0, chosen=-1;
-  struct srventry *srvlist=NULL;
+  int sock = -1;
+  int srvcount = 0;
+  int connected = 0;
+  int hostfound = 0;
+  int chosen = -1;
+  struct srventry *srvlist = NULL;
+  int srvindex;
 
 #ifdef _WIN32
   unsigned long inaddr;
@@ -981,7 +986,7 @@ connect_server( const char *server, ushort port, unsigned int flags,
     }
 #endif /* !HAVE_GETADDRINFO */
 
-  if(chosen>-1 && srv)
+  if(chosen > -1 && srv)
     {
       srv->used_server = strdup (srvlist[chosen].target);
       srv->used_port = srvlist[chosen].port;
