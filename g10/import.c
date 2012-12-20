@@ -384,6 +384,27 @@ import_print_stats (void *hd)
 }
 
 
+/* Return true if PKTTYPE is valid in a keyblock.  */
+static int
+valid_keyblock_packet (int pkttype)
+{
+  switch (pkttype)
+    {
+    case PKT_PUBLIC_KEY:
+    case PKT_PUBLIC_SUBKEY:
+    case PKT_SECRET_KEY:
+    case PKT_SECRET_SUBKEY:
+    case PKT_SIGNATURE:
+    case PKT_USER_ID:
+    case PKT_ATTRIBUTE:
+    case PKT_RING_TRUST:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+
 /****************
  * Read the next keyblock from stream A.
  * PENDING_PKT should be initialzed to NULL
@@ -461,7 +482,7 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	    }
 	    in_cert = 1;
 	  default:
-	    if( in_cert ) {
+	    if (in_cert && valid_keyblock_packet (pkt->pkttype)) {
 		if( !root )
 		    root = new_kbnode( pkt );
 		else
