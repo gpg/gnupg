@@ -544,6 +544,8 @@ srv_replace(const char *srvtag,
       strcat(srvname,opt->host);
       srvcount=getsrv(srvname,&srvlist);
     }
+  else
+    srvcount = 0;
 
   for(srvindex=0 ; srvindex<srvcount && portstr ; srvindex++)
     {
