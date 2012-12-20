@@ -414,7 +414,7 @@ static void
 start_page (char *name)
 {
   if (verbose)
-    inf ("starting page `%s'", name);
+    inf ("starting page '%s'", name);
   assert (!thepage.name);
   thepage.name = xstrdup (name);
   thepage.n_sections = 0;
@@ -434,7 +434,7 @@ write_th (FILE *fp)
   p = strrchr (name, '.');
   if (!p || !p[1])
     {
-      err ("no section name in man page `%s'", thepage.name);
+      err ("no section name in man page '%s'", thepage.name);
       free (name);
       return -1;
     }
@@ -591,7 +591,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
           ignore_args = 1; /* Parameterized macros are not yet supported. */
         }
       else
-        inf ("texinfo command `%s' not supported (%.*s)", command,
+        inf ("texinfo command '%s' not supported (%.*s)", command,
              ((s = memchr (rest, '\n', len)), (s? (s-rest) : len)), rest);
     }
 
@@ -605,7 +605,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
           i--;
       if (i)
         {
-          err ("closing brace for command `%s' not found", command);
+          err ("closing brace for command '%s' not found", command);
           return len;
         }
       if (n > 2 && !ignore_args)
@@ -780,13 +780,13 @@ finish_page (void)
     return; /* No page active.  */
 
   if (verbose)
-    inf ("finishing page `%s'", thepage.name);
+    inf ("finishing page '%s'", thepage.name);
 
   if (opt_select)
     {
       if (!strcmp (opt_select, thepage.name))
         {
-          inf ("selected `%s'", thepage.name );
+          inf ("selected '%s'", thepage.name );
           fp = stdout;
         }
       else
@@ -798,10 +798,10 @@ finish_page (void)
     }
   else if (opt_store)
     {
-      inf ("writing `%s'", thepage.name );
+      inf ("writing '%s'", thepage.name );
       fp = fopen ( thepage.name, "w" );
       if (!fp)
-        die ("failed to create `%s': %s\n", thepage.name, strerror (errno));
+        die ("failed to create '%s': %s\n", thepage.name, strerror (errno));
     }
   else
     fp = stdout;
@@ -1162,7 +1162,7 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
                 }
 
               if (!incfp)
-                err ("can't open include file `%s':%s",
+                err ("can't open include file '%s':%s",
                      incname, strerror (errno));
               else
                 {

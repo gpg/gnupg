@@ -388,7 +388,7 @@ safeguard against accidental deletion of multiple keys.
 
 @item --delete-secret-key @code{name}
 @opindex delete-secret-key
-Remove key from the secret and public keyring. In batch mode the key
+Remove key from the secret keyring. In batch mode the key
 must be specified by fingerprint.
 
 @item --delete-secret-and-public-key @code{name}
@@ -1363,7 +1363,7 @@ useful for a "persona" verification, where you sign the key of a
 pseudonymous user.
 
 2 means you did casual verification of the key. For example, this
-could mean that you verified that the key fingerprint and checked the
+could mean that you verified the key fingerprint and checked the
 user ID on the key against a photo ID.
 
 3 means you did extensive verification of the key. For example, this
