@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.11\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2012-08-24 17:19+0200\n"
-"Last-Translator: Jedi <JediLin@Gmail.com>\n"
+"PO-Revision-Date: 2012-12-20 18:33+0100\n"
+"Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -312,7 +312,7 @@ msgid "premature eof (in CRC)\n"
 msgstr "檔案未預期的結束 (CRC 的部分未結束)\n"
 
 msgid "malformed CRC\n"
-msgstr "CRC 被變造過\n"
+msgstr "格式不對的 CRC\n"
 
 #, c-format
 msgid "CRC error; %06lX - %06lX\n"
@@ -3831,7 +3831,7 @@ msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent 在此階段無法使用\n"
 
 msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "被變造的 GPG_AGENT_INFO 環境變數\n"
+msgstr "格式不對的 GPG_AGENT_INFO 環境變數\n"
 
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -4832,7 +4832,7 @@ msgid "bad certificate"
 msgstr "損壞的憑證"
 
 msgid "malformed user id"
-msgstr "變造過的使用者 ID"
+msgstr "格式不對的使用者 ID"
 
 msgid "file close error"
 msgstr "檔案關閉錯誤"
