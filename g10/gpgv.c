@@ -196,11 +196,12 @@ main( int argc, char **argv )
   if (opt.verbose > 1)
     set_packet_list_mode(1);
 
-  /* Note: We open all keyrings in read-only mode (flag value: 8).  */
+  /* Note: We open all keyrings in read-only mode.  */
   if (!nrings)  /* No keyring given: use default one. */
-    keydb_add_resource ("trustedkeys" EXTSEP_S "gpg", 8);
+    keydb_add_resource ("trustedkeys" EXTSEP_S "gpg",
+                        KEYDB_RESOURCE_FLAG_READONLY);
   for (sl = nrings; sl; sl = sl->next)
-    keydb_add_resource (sl->d, 8);
+    keydb_add_resource (sl->d, KEYDB_RESOURCE_FLAG_READONLY);
 
   FREE_STRLIST (nrings);
 

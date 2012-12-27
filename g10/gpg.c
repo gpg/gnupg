@@ -2249,8 +2249,8 @@ main (int argc, char **argv)
 	  case oAnswerNo: opt.answer_no = 1; break;
 	  case oKeyring: append_to_strlist( &nrings, pargs.r.ret_str); break;
 	  case oPrimaryKeyring:
-	    sl=append_to_strlist( &nrings, pargs.r.ret_str);
-	    sl->flags=2;
+	    sl = append_to_strlist (&nrings, pargs.r.ret_str);
+	    sl->flags = KEYDB_RESOURCE_FLAG_PRIMARY;
 	    break;
 	  case oShowKeyring:
 	    deprecated_warning(configname,configlineno,"--show-keyring",
@@ -3398,11 +3398,7 @@ main (int argc, char **argv)
     if( opt.verbose > 1 )
 	set_packet_list_mode(1);
 
-    /* Add the keyrings, but not for some special commands.  Also
-       avoid adding the secret keyring for a couple of commands to
-       avoid unneeded access in case the secrings are stored on a
-       floppy.
-
+    /* Add the keyrings, but not for some special commands.
        We always need to add the keyrings if we are running under
        SELinux, this is so that the rings are added to the list of
        secured files. */
@@ -3410,7 +3406,8 @@ main (int argc, char **argv)
         || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest) )
       {
 	if (!nrings || default_keyring)  /* Add default ring. */
-	    keydb_add_resource ("pubring" EXTSEP_S "gpg", 4);
+	    keydb_add_resource ("pubring" EXTSEP_S "gpg",
+                                KEYDB_RESOURCE_FLAG_DEFAULT);
 	for (sl = nrings; sl; sl = sl->next )
           keydb_add_resource (sl->d, sl->flags);
       }

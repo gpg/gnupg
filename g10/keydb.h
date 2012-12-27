@@ -128,11 +128,12 @@ union pref_hint
 
 /*-- keydb.c --*/
 
-/*
-  Flag 1 == force
-  Flag 2 == default
-*/
-gpg_error_t keydb_add_resource (const char *url, int flags);
+#define KEYDB_RESOURCE_FLAG_PRIMARY  2  /* The primary resource.  */
+#define KEYDB_RESOURCE_FLAG_DEFAULT  4  /* The default one.  */
+#define KEYDB_RESOURCE_FLAG_READONLY 8  /* Open in read only mode.  */
+
+gpg_error_t keydb_add_resource (const char *url, unsigned int flags);
+
 KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);

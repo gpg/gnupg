@@ -200,3 +200,20 @@ _keybox_close_file (KEYBOX_HANDLE hd)
       }
   assert (!hd->fp);
 }
+
+
+/*
+ * Lock the keybox at handle HD, or unlock if YES is false.  Note that
+ * we currently ignore the handle and lock all registered keyboxes.
+ */
+int
+keybox_lock (KEYBOX_HANDLE hd, int yes)
+{
+  /* FIXME: We need to implement it before we can use it with gpg.
+     gpgsm does the locking in its local keydb.c driver; this should
+     be changed as well.  */
+
+  (void)hd;
+  (void)yes;
+  return 0;
+}

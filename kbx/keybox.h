@@ -71,6 +71,12 @@ void keybox_release (KEYBOX_HANDLE hd);
 const char *keybox_get_resource_name (KEYBOX_HANDLE hd);
 int keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes);
 
+int keybox_lock (KEYBOX_HANDLE hd, int yes);
+
+/*-- keybox-file.c --*/
+/* Fixme: This function does not belong here: Provide a better
+   interface to create a new keybox file.  */
+int _keybox_write_header_blob (FILE *fp);
 
 /*-- keybox-search.c --*/
 #ifdef KEYBOX_WITH_X509
@@ -98,7 +104,6 @@ int keybox_compress (KEYBOX_HANDLE hd);
 /*--  --*/
 
 #if 0
-int keybox_lock (KEYBOX_HANDLE hd, int yes);
 int keybox_get_keyblock (KEYBOX_HANDLE hd, KBNODE *ret_kb);
 int keybox_locate_writable (KEYBOX_HANDLE hd);
 int keybox_search_reset (KEYBOX_HANDLE hd);

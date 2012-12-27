@@ -34,6 +34,7 @@
 #include "main.h" /*try_make_homedir ()*/
 #include "packet.h"
 #include "keyring.h"
+#include "../kbx/keybox.h"
 #include "keydb.h"
 #include "i18n.h"
 
@@ -42,7 +43,8 @@ static int active_handles;
 typedef enum
   {
     KEYDB_RESOURCE_TYPE_NONE = 0,
-    KEYDB_RESOURCE_TYPE_KEYRING
+    KEYDB_RESOURCE_TYPE_KEYRING,
+    KEYDB_RESOURCE_TYPE_KEYBOX
   } KeydbResourceType;
 #define MAX_KEYDB_RESOURCES 40
 
@@ -51,6 +53,7 @@ struct resource_item
   KeydbResourceType type;
   union {
     KEYRING_HANDLE kr;
+    KEYBOX_HANDLE kb;
   } u;
   void *token;
 };
@@ -73,12 +76,12 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
-/* Handle the creation of a keyring if it does not yet exist.  Take
-   into acount that other processes might have the keyring already
-   locked.  This lock check does not work if the directory itself is
-   not yet available. */
+/* Handle the creation of a keyring or a keybox if it does not yet
+   exist.  Take into acount that other processes might have the
+   keyring/keybox already locked.  This lock check does not work if
+   the directory itself is not yet available. */
 static int
-maybe_create_keyring (char *filename, int force)
+maybe_create_keyring_or_box (char *filename, int is_box, int force)
 {
   dotlock_t lockhd = NULL;
   IOBUF iobuf;
@@ -139,29 +142,31 @@ maybe_create_keyring (char *filename, int force)
   lockhd = dotlock_create (filename, 0);
   if (!lockhd)
     {
+      rc = gpg_error_from_syserror ();
       /* A reason for this to fail is that the directory is not
          writable. However, this whole locking stuff does not make
          sense if this is the case. An empty non-writable directory
          with no keyring is not really useful at all. */
       if (opt.verbose)
-        log_info ("can't allocate lock for '%s'\n", filename );
+        log_info ("can't allocate lock for '%s': %s\n",
+                  filename, gpg_strerror (rc));
 
       if (!force)
         return gpg_error (GPG_ERR_ENOENT);
       else
-        return gpg_error (GPG_ERR_GENERAL);
+        return rc;
     }
 
   if ( dotlock_take (lockhd, -1) )
     {
+      rc = gpg_error_from_syserror ();
       /* This is something bad.  Probably a stale lockfile.  */
-      log_info ("can't lock '%s'\n", filename );
-      rc = G10ERR_GENERAL;
+      log_info ("can't lock '%s': %s\n", filename, gpg_strerror (rc));
       goto leave;
     }
 
   /* Now the real test while we are locked. */
-  if (!access(filename, F_OK))
+  if (!access (filename, F_OK))
     {
       rc = 0;  /* Okay, we may access the file now.  */
       goto leave;
@@ -180,17 +185,51 @@ maybe_create_keyring (char *filename, int force)
   if (!iobuf)
     {
       rc = gpg_error_from_syserror ();
-      log_error ( _("error creating keyring '%s': %s\n"),
-                  filename, strerror(errno));
+      if (is_box)
+        log_error (_("error creating keybox '%s': %s\n"),
+                   filename, gpg_strerror (rc));
+      else
+        log_error (_("error creating keyring '%s': %s\n"),
+                   filename, gpg_strerror (rc));
       goto leave;
     }
-
-  if (!opt.quiet)
-    log_info (_("keyring '%s' created\n"), filename);
 
   iobuf_close (iobuf);
   /* Must invalidate that ugly cache */
   iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, filename);
+
+  /* Make sure that at least one record is in a new keybox file, so
+     that the detection magic will work the next time it is used.  */
+  if (is_box)
+    {
+      FILE *fp = fopen (filename, "w");
+      if (!fp)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          rc = _keybox_write_header_blob (fp);
+          fclose (fp);
+        }
+      if (rc)
+        {
+          if (is_box)
+            log_error (_("error creating keybox '%s': %s\n"),
+                       filename, gpg_strerror (rc));
+          else
+            log_error (_("error creating keyring '%s': %s\n"),
+                       filename, gpg_strerror (rc));
+          goto leave;
+        }
+    }
+
+  if (!opt.quiet)
+    {
+      if (is_box)
+        log_info (_("keybox '%s' created\n"), filename);
+      else
+        log_info (_("keyring '%s' created\n"), filename);
+    }
+
   rc = 0;
 
  leave:
@@ -204,51 +243,49 @@ maybe_create_keyring (char *filename, int force)
 
 
 /*
- * Register a resource (which currently may only be a keyring file).
- * The first keyring which is added by this function is
- * created if it does not exist.
- * Note: this function may be called before secure memory is
- * available.
- * Flag 1   - Force.
- * Flag 2   - Mark resource as primary.
- * Flag 4   - This is a default resources.
- * Flag 8   - Open as read-only.
+ * Register a resource (keyring or aeybox).  The first keyring or
+ * keybox which is added by this function is created if it does not
+ * exist.  FLAGS are a combination of the KEYDB_RESOURCE_FLAG_
+ * constants as defined in keydb.h.
  */
 gpg_error_t
-keydb_add_resource (const char *url, int flags)
+keydb_add_resource (const char *url, unsigned int flags)
 {
-  static int any_public;
+  static int any_registered;
   const char *resname = url;
   char *filename = NULL;
-  int force = (flags&1);
-  int read_only = !!(flags&8);
+  int create;
+  int read_only = !!(flags&KEYDB_RESOURCE_FLAG_READONLY);
   int rc = 0;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
   void *token;
 
-  if (read_only)
-    force = 0;
+  /* Create the resource if it is the first registered one.  */
+  create = (!read_only && !any_registered);
 
   /* Do we have an URL?
-   *	gnupg-ring:filename  := this is a plain keyring
+   *	gnupg-ring:filename  := this is a plain keyring.
+   *	gnupg-kbx:filename   := this is a keybox file.
    *	filename := See what is is, but create as plain keyring.
    */
-  if (strlen (resname) > 11)
+  if (strlen (resname) > 11 && !strncmp( resname, "gnupg-ring:", 11) )
     {
-      if (!strncmp( resname, "gnupg-ring:", 11) )
-        {
-          rt = KEYDB_RESOURCE_TYPE_KEYRING;
-          resname += 11;
-	}
-#if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
-      else if (strchr (resname, ':'))
-        {
-          log_error ("invalid key resource URL '%s'\n", url );
-          rc = gpg_error (GPG_ERR_GENERAL);
-          goto leave;
-        }
-#endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
+      rt = KEYDB_RESOURCE_TYPE_KEYRING;
+      resname += 11;
     }
+  else if (strlen (resname) > 10 && !strncmp (resname, "gnupg-kbx:", 10) )
+    {
+      rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+      resname += 10;
+    }
+#if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
+  else if (strchr (resname, ':'))
+    {
+      log_error ("invalid key resource URL '%s'\n", url );
+      rc = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+#endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
 
   if (*resname != DIRSEP_C )
     {
@@ -261,9 +298,6 @@ keydb_add_resource (const char *url, int flags)
   else
     filename = xstrdup (resname);
 
-  if (!force && !read_only)
-    force = !any_public;
-
   /* See whether we can determine the filetype.  */
   if (rt == KEYDB_RESOURCE_TYPE_NONE)
     {
@@ -273,20 +307,25 @@ keydb_add_resource (const char *url, int flags)
         {
           u32 magic;
 
-          if (fread( &magic, 4, 1, fp) == 1 )
+          if (fread (&magic, 4, 1, fp) == 1 )
             {
               if (magic == 0x13579ace || magic == 0xce9a5713)
                 ; /* GDBM magic - not anymore supported. */
+              else if (fread (&magic, 4, 1, fp) == 1
+                       && !memcmp (&magic, "\x01", 1)
+                       && fread (&magic, 4, 1, fp) == 1
+                       && !memcmp (&magic, "KBXf", 4))
+                rt = KEYDB_RESOURCE_TYPE_KEYBOX;
               else
                 rt = KEYDB_RESOURCE_TYPE_KEYRING;
 	    }
           else /* Maybe empty: assume keyring. */
             rt = KEYDB_RESOURCE_TYPE_KEYRING;
 
-          fclose( fp );
+          fclose (fp);
 	}
-      else /* No file yet: create keyring.  */
-        rt = KEYDB_RESOURCE_TYPE_KEYRING;
+      else /* No file yet: create keybox. */
+        rt = KEYDB_RESOURCE_TYPE_KEYBOX;
     }
 
   switch (rt)
@@ -297,7 +336,7 @@ keydb_add_resource (const char *url, int flags)
       goto leave;
 
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = maybe_create_keyring (filename, force);
+      rc = maybe_create_keyring_or_box (filename, create, 0);
       if (rc)
         goto leave;
 
@@ -307,7 +346,7 @@ keydb_add_resource (const char *url, int flags)
             rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
           else
             {
-              if (flags&2)
+              if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
                 primary_keyring = token;
               all_resources[used_resources].type = rt;
               all_resources[used_resources].u.kr = NULL; /* Not used here */
@@ -320,9 +359,46 @@ keydb_add_resource (const char *url, int flags)
           /* This keyring was already registered, so ignore it.
              However, we can still mark it as primary even if it was
              already registered.  */
-          if (flags&2)
+          if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY))
             primary_keyring = token;
         }
+      break;
+
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      {
+        rc = maybe_create_keyring_or_box (filename, create, 1);
+        if (rc)
+          goto leave;
+
+        /* FIXME: How do we register a read-only keybox?  */
+        token = keybox_register_file (filename, 0);
+        if (token)
+          {
+            if (used_resources >= MAX_KEYDB_RESOURCES)
+              rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
+            else
+              {
+                /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
+                /*   primary_keyring = token; */
+                all_resources[used_resources].type = rt;
+                all_resources[used_resources].u.kb = NULL; /* Not used here */
+                all_resources[used_resources].token = token;
+
+                /* FIXME: Do a compress run if needed and no other
+                   user is currently using the keybox. */
+
+                used_resources++;
+              }
+          }
+        else
+          {
+            /* Already registered.  We will mark it as the primary key
+               if requested.  */
+            /* FIXME: How to do that?  Change the keybox interface?  */
+            /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
+            /*   primary_keyring = token; */
+          }
+      }
       break;
 
       default:
@@ -331,13 +407,13 @@ keydb_add_resource (const char *url, int flags)
 	goto leave;
     }
 
-    /* fixme: check directory permissions and print a warning */
+  /* fixme: check directory permissions and print a warning */
 
  leave:
   if (rc)
     log_error (_("keyblock resource '%s': %s\n"), filename, gpg_strerror (rc));
   else
-    any_public = 1;
+    any_registered = 1;
   xfree (filename);
   return rc;
 }
@@ -371,6 +447,17 @@ keydb_new (void)
           }
           j++;
           break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          hd->active[j].type   = all_resources[i].type;
+          hd->active[j].token  = all_resources[i].token;
+          hd->active[j].u.kb   = keybox_new (all_resources[i].token, 0);
+          if (!hd->active[j].u.kb)
+            {
+              xfree (hd);
+              return NULL; /* fixme: release all previously allocated handles*/
+            }
+          j++;
+          break;
         }
     }
   hd->used = j;
@@ -398,6 +485,9 @@ keydb_release (KEYDB_HANDLE hd)
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
           keyring_release (hd->active[i].u.kr);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          keybox_release (hd->active[i].u.kb);
           break;
         }
     }
@@ -438,6 +528,9 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
     case KEYDB_RESOURCE_TYPE_KEYRING:
       s = keyring_get_resource_name (hd->active[idx].u.kr);
       break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      s = keybox_get_resource_name (hd->active[idx].u.kb);
+      break;
     }
 
   return s? s: "";
@@ -450,6 +543,13 @@ lock_all (KEYDB_HANDLE hd)
 {
   int i, rc = 0;
 
+  /* Fixme: This locking scheme may lead to a deadlock if the resources
+     are not added in the same order by all processes.  We are
+     currently only allowing one resource so it is not a problem.
+     [Oops: Who claimed the latter]
+
+     To fix this we need to use a lock file to protect lock_all.  */
+
   for (i=0; !rc && i < hd->used; i++)
     {
       switch (hd->active[i].type)
@@ -459,12 +559,15 @@ lock_all (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_KEYRING:
           rc = keyring_lock (hd->active[i].u.kr, 1);
           break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          rc = keybox_lock (hd->active[i].u.kb, 1);
+          break;
         }
     }
 
   if (rc)
     {
-      /* Revert the already set locks.  */
+      /* Revert the already taken locks.  */
       for (i--; i >= 0; i--)
         {
           switch (hd->active[i].type)
@@ -473,6 +576,9 @@ lock_all (KEYDB_HANDLE hd)
               break;
             case KEYDB_RESOURCE_TYPE_KEYRING:
               keyring_lock (hd->active[i].u.kr, 0);
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYBOX:
+              rc = keybox_lock (hd->active[i].u.kb, 0);
               break;
             }
         }
@@ -500,6 +606,9 @@ unlock_all (KEYDB_HANDLE hd)
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
           keyring_lock (hd->active[i].u.kr, 0);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          keybox_lock (hd->active[i].u.kb, 0);
           break;
         }
     }
@@ -532,6 +641,11 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     case KEYDB_RESOURCE_TYPE_KEYRING:
       err = keyring_get_keyblock (hd->active[hd->found].u.kr, ret_kb);
       break;
+    /* case KEYDB_RESOURCE_TYPE_KEYBOX: */
+    /*   err = keybox_get_keyblock (hd->active[hd->found].u.kb, ret_kb); */
+    /*   if (!err) */
+    /*     err = parse_keyblock (image, imagelen) */
+    /*   break; */
     }
 
   return err;
@@ -566,6 +680,12 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
     case KEYDB_RESOURCE_TYPE_KEYRING:
       rc = keyring_update_keyblock (hd->active[hd->found].u.kr, kb);
       break;
+    /* case KEYDB_RESOURCE_TYPE_KEYRING: */
+    /*   rc = build_keyblock (kb, &image, &imagelen); */
+    /*   if (!rc) */
+    /*     rc = keybox_update_keyblock (hd->active[hd->found].u.kb, */
+    /*                                  image, imagelen); */
+    /*   break; */
     }
 
   unlock_all (hd);
@@ -607,6 +727,11 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
     case KEYDB_RESOURCE_TYPE_KEYRING:
       rc = keyring_insert_keyblock (hd->active[idx].u.kr, kb);
       break;
+    /* case KEYDB_RESOURCE_TYPE_KEYBOX: */
+    /*   rc = build_keyblock (kb, &image, &imagelen); */
+    /*   if (!rc) */
+    /*     rc = keybox_insert_keyblock (hd->active[idx].u.kb, image, imagelen); */
+    /*   break; */
     }
 
   unlock_all (hd);
@@ -642,6 +767,9 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
       break;
     case KEYDB_RESOURCE_TYPE_KEYRING:
       rc = keyring_delete_keyblock (hd->active[hd->found].u.kr);
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      rc = keybox_delete (hd->active[hd->found].u.kb);
       break;
     }
 
@@ -698,6 +826,10 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
           if (keyring_is_writable (hd->active[hd->current].token))
+            return 0; /* found (hd->current is set to it) */
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          if (keybox_is_writable (hd->active[hd->current].token))
             return 0; /* found (hd->current is set to it) */
           break;
         }
@@ -758,6 +890,9 @@ keydb_search_reset (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_KEYRING:
           rc = keyring_search_reset (hd->active[i].u.kr);
           break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          rc = keybox_search_reset (hd->active[i].u.kb);
+          break;
         }
     }
   return rc;
@@ -791,6 +926,9 @@ keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         case KEYDB_RESOURCE_TYPE_KEYRING:
           rc = keyring_search (hd->active[hd->current].u.kr, desc,
                                ndesc, descindex);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          rc = keybox_search (hd->active[hd->current].u.kb, desc, ndesc);
           break;
         }
       if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
