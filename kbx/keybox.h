@@ -29,14 +29,8 @@ extern "C" {
 #include "../common/iobuf.h"
 #include "keybox-search-desc.h"
 
-#define KEYBOX_WITH_OPENPGP 1
 #define KEYBOX_WITH_X509 1
 
-
-#ifdef KEYBOX_WITH_OPENPGP
-#  undef KEYBOX_WITH_OPENPGP
-/*#include <lib-to-handle-gpg-data-structs.h>*/
-#endif
 
 #ifdef KEYBOX_WITH_X509
 # include <ksba.h>
