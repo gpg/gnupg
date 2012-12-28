@@ -1,5 +1,5 @@
 /* keybox-update.c - keybox update operations
- *	Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "keybox-defs.h"
 #include "../common/sysutils.h"
@@ -367,6 +368,62 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   xfree(bakfname);
   xfree(tmpfname);
   return rc;
+}
+
+
+/* Insert the OpenPGP keyblock {IMAGE,IMAGELEN} into HD.  */
+gpg_error_t
+keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
+{
+  gpg_error_t err;
+  const char *fname;
+  KEYBOXBLOB blob;
+  size_t nparsed;
+  struct _keybox_openpgp_info info;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_HANDLE);
+  if (!hd->kb)
+    return gpg_error (GPG_ERR_INV_HANDLE);
+  fname = hd->kb->fname;
+  if (!fname)
+    return gpg_error (GPG_ERR_INV_HANDLE);
+
+
+  /* Close this one otherwise we will mess up the position for a next
+     search.  Fixme: it would be better to adjust the position after
+     the write operation.  */
+  _keybox_close_file (hd);
+
+  err = _keybox_parse_openpgp (image, imagelen, &nparsed, &info);
+  if (err)
+    return err;
+  assert (nparsed <= imagelen);
+  err = _keybox_create_openpgp_blob (&blob, &info, image, imagelen,
+                                     hd->ephemeral);
+  _keybox_destroy_openpgp_info (&info);
+  if (!err)
+    {
+      err = blob_filecopy (1, fname, blob, hd->secret, 0);
+      _keybox_release_blob (blob);
+      /*    if (!rc && !hd->secret && kb_offtbl) */
+      /*      { */
+      /*        update_offset_hash_table_from_kb (kb_offtbl, kb, 0); */
+      /*      } */
+    }
+  return err;
+}
+
+
+/* Update the current key at HD with the given OpenPGP keyblock in
+   {IMAGE,IMAGELEN}.  */
+gpg_error_t
+keybox_update_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
+{
+  (void)hd;
+  (void)image;
+  (void)imagelen;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
 

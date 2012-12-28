@@ -1,5 +1,5 @@
 /* keybox-search.c - Search operations
- * Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -958,6 +958,40 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
    Functions to return a certificate or a keyblock.  To be used after
    a successful search operation.
 */
+
+
+/* Return the last found keyblock.  Returns 0 on success and stores a
+   new iobuf at R_IOBUF in that case.  */
+gpg_error_t
+keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf)
+{
+  const unsigned char *buffer;
+  size_t length;
+  size_t image_off, image_len;
+
+  *r_iobuf = NULL;
+
+  if (!hd)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+
+  if (blob_get_type (hd->found.blob) != BLOBTYPE_PGP)
+    return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+
+  buffer = _keybox_get_blob_image (hd->found.blob, &length);
+  if (length < 40)
+    return gpg_error (GPG_ERR_TOO_SHORT);
+  image_off = get32 (buffer+8);
+  image_len = get32 (buffer+12);
+  if (image_off+image_len > length)
+    return gpg_error (GPG_ERR_TOO_SHORT);
+
+  *r_iobuf = iobuf_temp_with_content (buffer+image_off, image_len);
+  return 0;
+}
+
+
 #ifdef KEYBOX_WITH_X509
 /*
   Return the last found cert.  Caller must free it.

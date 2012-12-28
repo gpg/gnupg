@@ -616,6 +616,97 @@ unlock_all (KEYDB_HANDLE hd)
 }
 
 
+static gpg_error_t
+parse_keyblock_image (iobuf_t iobuf, kbnode_t *r_keyblock)
+{
+  gpg_error_t err;
+  PACKET *pkt;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
+  int in_cert, save_mode;
+
+  *r_keyblock = NULL;
+
+  pkt = xtrymalloc (sizeof *pkt);
+  if (!pkt)
+    return gpg_error_from_syserror ();
+  init_packet (pkt);
+  save_mode = set_packet_list_mode (0);
+  in_cert = 0;
+  while ((err = parse_packet (iobuf, pkt)) != -1)
+    {
+      if (gpg_err_code (err) == GPG_ERR_UNKNOWN_PACKET)
+        {
+          free_packet (pkt);
+          init_packet (pkt);
+          continue;
+	}
+      if (err)
+        {
+          log_error ("parse_keyblock_image: read error: %s\n",
+                     gpg_strerror (err));
+          err = gpg_error (GPG_ERR_INV_KEYRING);
+          break;
+        }
+      if (pkt->pkttype == PKT_COMPRESSED)
+        {
+          log_error ("skipped compressed packet in keybox blob\n");
+          free_packet(pkt);
+          init_packet(pkt);
+          continue;
+        }
+      if (pkt->pkttype == PKT_RING_TRUST)
+        {
+          log_info ("skipped ring trust packet in keybox blob\n");
+          free_packet(pkt);
+          init_packet(pkt);
+          continue;
+        }
+
+      if (!in_cert && pkt->pkttype != PKT_PUBLIC_KEY)
+        {
+          log_error ("error: first packet in a keybox blob is not a "
+                     "public key packet\n");
+          err = gpg_error (GPG_ERR_INV_KEYRING);
+          break;
+        }
+      if (in_cert && (pkt->pkttype == PKT_PUBLIC_KEY
+                      || pkt->pkttype == PKT_SECRET_KEY))
+        {
+          log_error ("error: multiple keyblocks in a keybox blob\n");
+          err = gpg_error (GPG_ERR_INV_KEYRING);
+          break;
+        }
+      in_cert = 1;
+
+      node = new_kbnode (pkt);
+      if (!keyblock)
+        keyblock = node;
+      else
+        add_kbnode (keyblock, node);
+      pkt = xtrymalloc (sizeof *pkt);
+      if (!pkt)
+        {
+          err = gpg_error_from_syserror ();
+          break;
+        }
+      init_packet (pkt);
+    }
+  set_packet_list_mode (save_mode);
+
+  if (err == -1 && keyblock)
+    err = 0; /* Got the entire keyblock.  */
+
+  if (err)
+    release_kbnode (keyblock);
+  else
+    *r_keyblock = keyblock;
+  free_packet (pkt);
+  xfree (pkt);
+  return err;
+}
+
+
 /*
  * Return the last found keyring.  Caller must free it.
  * The returned keyblock has the kbode flag bit 0 set for the node with
@@ -626,6 +717,8 @@ gpg_error_t
 keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 {
   gpg_error_t err = 0;
+
+  *ret_kb = NULL;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -641,15 +734,65 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     case KEYDB_RESOURCE_TYPE_KEYRING:
       err = keyring_get_keyblock (hd->active[hd->found].u.kr, ret_kb);
       break;
-    /* case KEYDB_RESOURCE_TYPE_KEYBOX: */
-    /*   err = keybox_get_keyblock (hd->active[hd->found].u.kb, ret_kb); */
-    /*   if (!err) */
-    /*     err = parse_keyblock (image, imagelen) */
-    /*   break; */
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      {
+        iobuf_t iobuf;
+
+        err = keybox_get_keyblock (hd->active[hd->found].u.kb, &iobuf);
+        if (!err)
+          {
+            err = parse_keyblock_image (iobuf, ret_kb);
+            iobuf_close (iobuf);
+          }
+      }
+      break;
     }
 
   return err;
 }
+
+
+/* Build a keyblock image from KEYBLOCK.  Returns 0 on success and
+   only then stores a new iobuf object at R_IOBUF.  */
+static gpg_error_t
+build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf)
+{
+  gpg_error_t err;
+  iobuf_t iobuf;
+  kbnode_t kbctx, node;
+
+  *r_iobuf = NULL;
+
+  iobuf = iobuf_temp ();
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+    {
+      /* Make sure to use only packets valid on a keyblock.  */
+      switch (node->pkt->pkttype)
+        {
+        case PKT_PUBLIC_KEY:
+        case PKT_PUBLIC_SUBKEY:
+        case PKT_SIGNATURE:
+        case PKT_USER_ID:
+        case PKT_ATTRIBUTE:
+          /* Note that we don't want the ring trust packets.  They are
+             not useful. */
+          break;
+        default:
+          continue;
+        }
+
+      err = build_packet (iobuf, node->pkt);
+      if (err)
+        {
+          iobuf_close (iobuf);
+          return err;
+        }
+    }
+
+  *r_iobuf = iobuf;
+  return 0;
+}
+
 
 /*
  * Update the current keyblock with the keyblock KB
@@ -699,7 +842,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 gpg_error_t
 keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
-  int rc;
+  gpg_error_t err;
   int idx;
 
   if (!hd)
@@ -715,27 +858,39 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   else
     return gpg_error (GPG_ERR_GENERAL);
 
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
+  err = lock_all (hd);
+  if (err)
+    return err;
 
   switch (hd->active[idx].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
+      err = gpg_error (GPG_ERR_GENERAL); /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = keyring_insert_keyblock (hd->active[idx].u.kr, kb);
+      err = keyring_insert_keyblock (hd->active[idx].u.kr, kb);
       break;
-    /* case KEYDB_RESOURCE_TYPE_KEYBOX: */
-    /*   rc = build_keyblock (kb, &image, &imagelen); */
-    /*   if (!rc) */
-    /*     rc = keybox_insert_keyblock (hd->active[idx].u.kb, image, imagelen); */
-    /*   break; */
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      { /* We need to turn our kbnode_t list of packets into a proper
+           keyblock first.  This is required by the OpenPGP key parser
+           included in the keybox code.  Eventually we can change this
+           kludge to have the caller pass the image.  */
+        iobuf_t iobuf;
+
+        err = build_keyblock_image (kb, &iobuf);
+        if (!err)
+          {
+            err = keybox_insert_keyblock (hd->active[idx].u.kb,
+                                          iobuf_get_temp_buffer (iobuf),
+                                          iobuf_get_temp_length (iobuf));
+            iobuf_close (iobuf);
+          }
+      }
+      break;
     }
 
   unlock_all (hd);
-  return rc;
+  return err;
 }
 
 

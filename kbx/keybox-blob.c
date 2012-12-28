@@ -47,7 +47,7 @@ X.509 specific are noted like [X.509: xxx]
  byte Blob type (2) [X509: 3]
  byte version number of this blob type (1)
  u16  Blob flags
-	bit 0 = contains secret key material
+	bit 0 = contains secret key material (not used)
         bit 1 = ephemeral blob (e.g. used while quering external resources)
 
  u32  offset to the OpenPGP keyblock or X509 DER encoded certificate
@@ -119,9 +119,6 @@ X.509 specific are noted like [X.509: xxx]
 #include "keybox-defs.h"
 #include <gcrypt.h>
 
-#ifdef KEYBOX_WITH_OPENPGP
-/* include stuff to parse the packets */
-#endif
 #ifdef KEYBOX_WITH_X509
 #include <ksba.h>
 #endif
@@ -156,6 +153,7 @@ struct keyboxblob_key {
   u16    flags;
 };
 struct keyboxblob_uid {
+  u32    off;
   ulong  off_addr;
   char   *name;     /* used only with x509 */
   u32    len;
@@ -311,33 +309,24 @@ add_fixup (KEYBOXBLOB blob, u32 off, u32 val)
 
 
 
-#ifdef KEYBOX_WITH_OPENPGP
 /*
   OpenPGP specific stuff
 */
 
 
-/*
-  We must store the keyid at some place because we can't calculate the
-  offset yet. This is only used for v3 keyIDs.  Function returns an
-  index value for later fixup or -1 for out of core. The value must be
-  a non-zero value */
+/* We must store the keyid at some place because we can't calculate
+   the offset yet. This is only used for v3 keyIDs.  Function returns
+   an index value for later fixup or -1 for out of core.  The value
+   must be a non-zero value. */
 static int
-pgp_temp_store_kid (KEYBOXBLOB blob, PKT_public_key *pk)
+pgp_temp_store_kid (KEYBOXBLOB blob, struct _keybox_openpgp_key_info *kinfo)
 {
   struct keyid_list *k, *r;
 
   k = xtrymalloc (sizeof *k);
   if (!k)
     return -1;
-  k->kid[0] = pk->keyid[0] >> 24 ;
-  k->kid[1] = pk->keyid[0] >> 16 ;
-  k->kid[2] = pk->keyid[0] >>  8 ;
-  k->kid[3] = pk->keyid[0]	   ;
-  k->kid[4] = pk->keyid[0] >> 24 ;
-  k->kid[5] = pk->keyid[0] >> 16 ;
-  k->kid[6] = pk->keyid[0] >>  8 ;
-  k->kid[7] = pk->keyid[0]	   ;
+  memcpy (k->kid, kinfo->keyid, 8);
   k->seqno = 0;
   k->next = blob->temp_kids;
   blob->temp_kids = k;
@@ -347,124 +336,108 @@ pgp_temp_store_kid (KEYBOXBLOB blob, PKT_public_key *pk)
   return k->seqno;
 }
 
-static int
-pgp_create_key_part (KEYBOXBLOB blob, KBNODE keyblock)
+
+/* Helper for pgp_create_key_part.  */
+static gpg_error_t
+pgp_create_key_part_single (KEYBOXBLOB blob, int n,
+                            struct _keybox_openpgp_key_info *kinfo)
 {
-  KBNODE node;
   size_t fprlen;
-  int n;
+  int off;
 
-  for (n=0, node = keyblock; node; node = node->next)
+  fprlen = kinfo->fprlen;
+  if (fprlen > 20)
+    fprlen = 20;
+  memcpy (blob->keys[n].fpr, kinfo->fpr, fprlen);
+  if (fprlen != 20) /* v3 fpr - shift right and fill with zeroes. */
     {
-      if ( node->pkt->pkttype == PKT_PUBLIC_KEY
-           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
-        {
-          PKT_public_key *pk = node->pkt->pkt.public_key;
-          char tmp[20];
-
-          fingerprint_from_pk (pk, tmp , &fprlen);
-          memcpy (blob->keys[n].fpr, tmp, 20);
-          if ( fprlen != 20 ) /*v3 fpr - shift right and fill with zeroes*/
-            {
-              assert (fprlen == 16);
-              memmove (blob->keys[n].fpr+4, blob->keys[n].fpr, 16);
-              memset (blob->keys[n].fpr, 0, 4);
-              blob->keys[n].off_kid = pgp_temp_store_kid (blob, pk);
-	    }
-          else
-            {
-              blob->keys[n].off_kid = 0; /* will be fixed up later */
-	    }
-          blob->keys[n].flags = 0;
-          n++;
-	}
-      else if ( node->pkt->pkttype == PKT_SECRET_KEY
-		  || node->pkt->pkttype == PKT_SECRET_SUBKEY )
-        {
-          never_reached (); /* actually not yet implemented */
-	}
+      memmove (blob->keys[n].fpr + 20 - fprlen, blob->keys[n].fpr, fprlen);
+      memset (blob->keys[n].fpr, 0, 20 - fprlen);
+      off = pgp_temp_store_kid (blob, kinfo);
+      if (off == -1)
+        return gpg_error_from_syserror ();
+      blob->keys[n].off_kid = off;
     }
+  else
+    blob->keys[n].off_kid = 0; /* Will be fixed up later */
+  blob->keys[n].flags = 0;
+  return 0;
+}
+
+
+static gpg_error_t
+pgp_create_key_part (KEYBOXBLOB blob, keybox_openpgp_info_t info)
+{
+  gpg_error_t err;
+  int n = 0;
+  struct _keybox_openpgp_key_info *kinfo;
+
+  err = pgp_create_key_part_single (blob, n++, &info->primary);
+  if (err)
+    return err;
+  if (info->nsubkeys)
+    for (kinfo = &info->subkeys; kinfo; kinfo = kinfo->next)
+      if ((err=pgp_create_key_part_single (blob, n++, kinfo)))
+        return err;
+
   assert (n == blob->nkeys);
   return 0;
 }
 
-static int
-pgp_create_uid_part (KEYBOXBLOB blob, KBNODE keyblock)
+
+static void
+pgp_create_uid_part (KEYBOXBLOB blob, keybox_openpgp_info_t info)
 {
-  KBNODE node;
-  int n;
+  int n = 0;
+  struct _keybox_openpgp_uid_info *u;
 
-  for (n=0, node = keyblock; node; node = node->next)
+  if (info->nuids)
     {
-      if (node->pkt->pkttype == PKT_USER_ID)
+      for (u = &info->uids; u; u = u->next)
         {
-          PKT_user_id *u = node->pkt->pkt.user_id;
-
+          blob->uids[n].off = u->off;
           blob->uids[n].len = u->len;
           blob->uids[n].flags = 0;
           blob->uids[n].validity = 0;
           n++;
-	}
+        }
     }
+
   assert (n == blob->nuids);
-  return 0;
 }
 
-static int
-pgp_create_sig_part (KEYBOXBLOB blob, KBNODE keyblock)
+
+static void
+pgp_create_sig_part (KEYBOXBLOB blob)
 {
-  KBNODE node;
   int n;
 
-  for (n=0, node = keyblock; node; node = node->next)
+  for (n=0; n < blob->nsigs; n++)
     {
-      if (node->pkt->pkttype == PKT_SIGNATURE)
-        {
-          PKT_signature *sig = node->pkt->pkt.signature;
-
-          blob->sigs[n] = 0;	/* FIXME: check the signature here */
-          n++;
-	}
+      blob->sigs[n] = 0;  /* FIXME: check the signature here */
     }
-  assert( n == blob->nsigs );
-  return 0;
 }
 
+
 static int
-pgp_create_blob_keyblock (KEYBOXBLOB blob, KBNODE keyblock)
+pgp_create_blob_keyblock (KEYBOXBLOB blob,
+                          const unsigned char *image, size_t imagelen)
 {
   struct membuf *a = blob->buf;
-  KBNODE node;
-  int rc;
   int n;
   u32 kbstart = a->len;
 
-  add_fixup (blob, kbstart);
+  add_fixup (blob, 8, kbstart);
 
-  for (n = 0, node = keyblock; node; node = node->next)
-    {
-      rc = build_packet ( a, node->pkt );
-      if ( rc ) {
-        gpg_log_error ("build_packet(%d) for keyboxblob failed: %s\n",
-                      node->pkt->pkttype, gpg_errstr(rc) );
-        return GPGERR_WRITE_FILE;
-      }
-      if ( node->pkt->pkttype == PKT_USER_ID )
-        {
-          PKT_user_id *u = node->pkt->pkt.user_id;
-          /* build_packet has set the offset of the name into u ;
-           * now we can do the fixup */
-          add_fixup (blob, blob->uids[n].off_addr, u->stored_at);
-          n++;
-	}
-    }
-  assert (n == blob->nuids);
+  for (n = 0; n < blob->nuids; n++)
+    add_fixup (blob, blob->uids[n].off_addr, kbstart + blob->uids[n].off);
 
-  add_fixup (blob, a->len - kbstart);
+  put_membuf (a, image, imagelen);
+
+  add_fixup (blob, 12, a->len - kbstart);
   return 0;
 }
 
-#endif /*KEYBOX_WITH_OPENPGP*/
 
 
 #ifdef KEYBOX_WITH_X509
@@ -686,87 +659,78 @@ create_blob_finish (KEYBOXBLOB blob)
 }
 
 
-#ifdef KEYBOX_WITH_OPENPGP
-
-int
-_keybox_create_pgp_blob (KEYBOXBLOB *r_blob, KBNODE keyblock, int as_ephemeral)
+gpg_error_t
+_keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
+                             keybox_openpgp_info_t info,
+                             const unsigned char *image,
+                             size_t imagelen,
+                             int as_ephemeral)
 {
-  int rc = 0;
-  KBNODE node;
+  gpg_error_t err;
   KEYBOXBLOB blob;
 
   *r_blob = NULL;
+
+  if (!info->nuids || !info->nsigs)
+    return gpg_error (GPG_ERR_BAD_PUBKEY);
+
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
     return gpg_error_from_syserror ();
 
-  /* fixme: Do some sanity checks on the keyblock */
-
-  /* count userids and keys so that we can allocate the arrays */
-  for (node = keyblock; node; node = node->next)
-    {
-      switch (node->pkt->pkttype)
-        {
-        case PKT_PUBLIC_KEY:
-        case PKT_SECRET_KEY:
-        case PKT_PUBLIC_SUBKEY:
-        case PKT_SECRET_SUBKEY: blob->nkeys++; break;
-        case PKT_USER_ID:  blob->nuids++; break;
-        case PKT_SIGNATURE: blob->nsigs++; break;
-        default: break;
-	}
-    }
-
+  blob->nkeys = 1 + info->nsubkeys;
   blob->keys = xtrycalloc (blob->nkeys, sizeof *blob->keys );
-  blob->uids = xtrycalloc (blob->nuids, sizeof *blob->uids );
-  blob->sigs = xtrycalloc (blob->nsigs, sizeof *blob->sigs );
-  if (!blob->keys || !blob->uids || !blob->sigs)
+  if (!blob->keys)
     {
-      rc = gpg_error (GPG_ERR_ENOMEM);
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  blob->nuids = info->nuids;
+  blob->uids = xtrycalloc (blob->nuids, sizeof *blob->uids );
+  if (!blob->uids)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  blob->nsigs = info->nsigs;
+  blob->sigs = xtrycalloc (blob->nsigs, sizeof *blob->sigs );
+  if (!blob->sigs)
+    {
+      err = gpg_error_from_syserror ();
       goto leave;
     }
 
-  rc = pgp_create_key_part ( blob, keyblock );
-  if (rc)
+  err = pgp_create_key_part (blob, info);
+  if (err)
     goto leave;
-  rc = pgp_create_uid_part ( blob, keyblock );
-  if (rc)
-    goto leave;
-  rc = pgp_create_sig_part ( blob, keyblock );
-  if (rc)
-    goto leave;
+  pgp_create_uid_part (blob, info);
+  pgp_create_sig_part (blob);
 
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
-  rc = create_blob_header (blob, BLOBTYPE_OPENPGP, as_ephemeral);
-  if (rc)
+  err = create_blob_header (blob, BLOBTYPE_PGP, as_ephemeral);
+  if (err)
     goto leave;
-  rc = pgp_create_blob_keyblock (blob, keyblock);
-  if (rc)
+  err = pgp_create_blob_keyblock (blob, image, imagelen);
+  if (err)
     goto leave;
-  rc = create_blob_trailer (blob);
-  if (rc)
+  err = create_blob_trailer (blob);
+  if (err)
     goto leave;
-  rc = create_blob_finish ( blob );
-  if (rc)
+  err = create_blob_finish (blob);
+  if (err)
     goto leave;
-
 
  leave:
   release_kid_list (blob->temp_kids);
   blob->temp_kids = NULL;
-  if (rc)
-    {
-      keybox_release_blob (blob);
-      *r_blob = NULL;
-    }
+  if (err)
+    _keybox_release_blob (blob);
   else
-    {
-      *r_blob = blob;
-    }
-  return rc;
+    *r_blob = blob;
+  return err;
 }
-#endif /*KEYBOX_WITH_OPENPGP*/
+
 
 #ifdef KEYBOX_WITH_X509
 

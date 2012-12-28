@@ -371,13 +371,14 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
 
 
 static void
-import_openpgp (const char *filename)
+import_openpgp (const char *filename, int dryrun)
 {
   gpg_error_t err;
   char *buffer;
   size_t buflen, nparsed;
   unsigned char *p;
   struct _keybox_openpgp_info info;
+  KEYBOXBLOB blob;
 
   buffer = read_file (filename, &buflen);
   if (!buffer)
@@ -406,7 +407,30 @@ import_openpgp (const char *filename)
         }
       else
         {
-          dump_openpgp_key (&info, p);
+          if (dryrun)
+            dump_openpgp_key (&info, p);
+          else
+            {
+              err = _keybox_create_openpgp_blob (&blob, &info, p, nparsed, 0);
+              if (err)
+                {
+                  fflush (stdout);
+                  log_error ("%s: failed to create OpenPGP keyblock: %s\n",
+                             filename, gpg_strerror (err));
+                }
+              else
+                {
+                  err = _keybox_write_blob (blob, stdout);
+                  _keybox_release_blob (blob);
+                  if (err)
+                    {
+                      fflush (stdout);
+                      log_error ("%s: failed to write OpenPGP keyblock: %s\n",
+                                 filename, gpg_strerror (err));
+                    }
+                }
+            }
+
           _keybox_destroy_openpgp_info (&info);
         }
       p += nparsed;
@@ -424,6 +448,7 @@ main( int argc, char **argv )
   ARGPARSE_ARGS pargs;
   enum cmd_and_opt_values cmd = 0;
   unsigned long from = 0, to = ULONG_MAX;
+  int dry_run = 0;
 
   set_strusage( my_strusage );
   gcry_control (GCRYCTL_DISABLE_SECMEM);
@@ -481,6 +506,8 @@ main( int argc, char **argv )
         case oFrom: from = pargs.r.ret_ulong; break;
         case oTo: to = pargs.r.ret_ulong; break;
 
+        case oDryRun: dry_run = 1; break;
+
         default:
           pargs.err = 2;
           break;
@@ -537,11 +564,11 @@ main( int argc, char **argv )
   else if (cmd == aImportOpenPGP)
     {
       if (!argc)
-        import_openpgp ("-");
+        import_openpgp ("-", dry_run);
       else
         {
           for (; argc; argc--, argv++)
-            import_openpgp (*argv);
+            import_openpgp (*argv, dry_run);
         }
     }
 #if 0

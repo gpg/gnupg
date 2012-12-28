@@ -156,9 +156,11 @@ void _keybox_close_file (KEYBOX_HANDLE hd);
 
 
 /*-- keybox-blob.c --*/
-#ifdef KEYBOX_WITH_OPENPGP
-  /* fixme */
-#endif /*KEYBOX_WITH_OPENPGP*/
+gpg_error_t _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
+                                         keybox_openpgp_info_t info,
+                                         const unsigned char *image,
+                                         size_t imagelen,
+                                         int as_ephemeral);
 #ifdef KEYBOX_WITH_X509
 int _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
                               unsigned char *sha1_digest, int as_ephemeral);

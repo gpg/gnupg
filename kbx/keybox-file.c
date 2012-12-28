@@ -74,7 +74,7 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     }
 
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
-  if (imagelen > 500000) /* Sanity check. */
+  if (imagelen > 1000000) /* Sanity check. */
     return gpg_error (GPG_ERR_TOO_LARGE);
 
   if (imagelen < 5)

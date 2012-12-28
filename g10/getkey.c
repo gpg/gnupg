@@ -444,8 +444,9 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
       return G10ERR_NO_PUBKEY;
     }
 
-  assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
-	  || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY);
+  assert (keyblock && keyblock->pkt
+          && (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
+              || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY));
 
   keyid_from_pk (keyblock->pkt->pkt.public_key, pkid);
   if (keyid[0] == pkid[0] && keyid[1] == pkid[1])
