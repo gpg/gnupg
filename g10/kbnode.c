@@ -31,35 +31,58 @@
 
 #define USE_UNUSED_NODES 1
 
+static int cleanup_registered;
 static KBNODE unused_nodes;
 
-static KBNODE
-alloc_node(void)
+#if USE_UNUSED_NODES
+static void
+release_unused_nodes (void)
 {
-    KBNODE n;
+  while (unused_nodes)
+    {
+      kbnode_t next = unused_nodes->next;
+      xfree (unused_nodes);
+      unused_nodes = next;
+    }
+}
+#endif /*USE_UNUSED_NODES*/
 
-    n = unused_nodes;
-    if( n )
-	unused_nodes = n->next;
-    else
-	n = xmalloc( sizeof *n );
-    n->next = NULL;
-    n->pkt = NULL;
-    n->flag = 0;
-    n->private_flag=0;
-    n->recno = 0;
-    return n;
+
+static kbnode_t
+alloc_node (void)
+{
+  kbnode_t n;
+
+  n = unused_nodes;
+  if (n)
+    unused_nodes = n->next;
+  else
+    {
+      if (!cleanup_registered)
+        {
+          cleanup_registered = 1;
+          register_mem_cleanup_func (release_unused_nodes);
+        }
+      n = xmalloc (sizeof *n);
+    }
+  n->next = NULL;
+  n->pkt = NULL;
+  n->flag = 0;
+  n->private_flag=0;
+  n->recno = 0;
+  return n;
 }
 
 static void
 free_node( KBNODE n )
 {
-    if( n ) {
+  if (n)
+    {
 #if USE_UNUSED_NODES
-	n->next = unused_nodes;
-	unused_nodes = n;
+      n->next = unused_nodes;
+      unused_nodes = n;
 #else
-	xfree( n );
+      xfree (n);
 #endif
     }
 }

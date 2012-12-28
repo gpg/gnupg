@@ -36,6 +36,8 @@
 # error GPG_ERR_SOURCE_DEFAULT has default value
 #endif
 
+void register_mem_cleanup_func (void (*func)(void));
+
 void _init_common_subsystems (gpg_err_source_t errsource,
                               int *argcp, char ***argvp);
 #define init_common_subsystems(a,b)                             \

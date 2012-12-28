@@ -46,6 +46,21 @@
 
 #include "util.h"
 
+/* This object is used to register memory cleanup functions.
+   Technically they are not needed but they can avoid frequent
+   questions about un-released memory.  Note that we use the system
+   malloc and not any wrappers.  */
+struct mem_cleanup_item_s;
+typedef struct mem_cleanup_item_s *mem_cleanup_item_t;
+
+struct mem_cleanup_item_s
+{
+  mem_cleanup_item_t next;
+  void (*func) (void);
+};
+
+static mem_cleanup_item_t mem_cleanup_list;
+
 
 /* The default error source of the application.  This is different
    from GPG_ERR_SOURCE_DEFAULT in that it does not depend on the
@@ -63,6 +78,36 @@ sleep_on_exit (void)
   Sleep (400);
 }
 #endif /*HAVE_W32CE_SYSTEM*/
+
+
+static void
+run_mem_cleanup (void)
+{
+  mem_cleanup_item_t next;
+
+  while (mem_cleanup_list)
+    {
+      next = mem_cleanup_list->next;
+      mem_cleanup_list->func ();
+      free (mem_cleanup_list);
+      mem_cleanup_list = next;
+    }
+}
+
+
+void
+register_mem_cleanup_func (void (*func)(void))
+{
+  mem_cleanup_item_t item;
+
+  item = malloc (sizeof *item);
+  if (item)
+    {
+      item->func = func;
+      item->next = mem_cleanup_list;
+      mem_cleanup_list = item;
+    }
+}
 
 
 /* If STRING is not NULL write string to es_stdout or es_stderr.  MODE
@@ -99,6 +144,8 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
 {
   /* Store the error source in a gloabl variable. */
   default_errsource = errsource;
+
+  atexit (run_mem_cleanup);
 
   /* Try to auto set the character set.  */
   set_native_charset (NULL);
