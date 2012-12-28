@@ -324,9 +324,9 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
         else if (sflags < 0x10000000)
           fprintf (fp, "[bad flag %0lx]", sflags);
         else if (sflags == 0xffffffff)
-          fputs ("0", fp );
+          fputs ("[good - does not expire]", fp );
         else
-          fputs ("a time"/*strtimestamp( sflags )*/, fp );
+          fprintf (fp, "[good - expires at %lu]", sflags);
         putc ('\n', fp );
       }
     if (in_range)
