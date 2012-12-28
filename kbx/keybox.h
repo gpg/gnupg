@@ -54,7 +54,8 @@ typedef enum
     KEYBOX_FLAG_UID,        /* The user ID flags; requires an uid index. */
     KEYBOX_FLAG_UID_VALIDITY,/* The validity of a specific uid, requires
                                an uid index. */
-    KEYBOX_FLAG_CREATED_AT  /* The date the block was created. */
+    KEYBOX_FLAG_CREATED_AT, /* The date the block was created. */
+    KEYBOX_FLAG_SIG_INFO,   /* The signature info block.  */
   } keybox_flag_t;
 
 /* Flag values used with KEYBOX_FLAG_BLOB.  */
@@ -80,7 +81,8 @@ int keybox_lock (KEYBOX_HANDLE hd, int yes);
 int _keybox_write_header_blob (FILE *fp);
 
 /*-- keybox-search.c --*/
-gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf);
+gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd,
+                                 iobuf_t *r_iobuf, u32 **sigstatus);
 #ifdef KEYBOX_WITH_X509
 int keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *ret_cert);
 #endif /*KEYBOX_WITH_X509*/
@@ -92,7 +94,8 @@ int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc);
 
 /*-- keybox-update.c --*/
 gpg_error_t keybox_insert_keyblock (KEYBOX_HANDLE hd,
-                                    const void *image, size_t imagelen);
+                                    const void *image, size_t imagelen,
+                                    u32 *sigstatus);
 gpg_error_t keybox_update_keyblock (KEYBOX_HANDLE hd,
                                     const void *image, size_t imagelen);
 

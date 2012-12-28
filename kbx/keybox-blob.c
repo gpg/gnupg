@@ -408,13 +408,13 @@ pgp_create_uid_part (KEYBOXBLOB blob, keybox_openpgp_info_t info)
 
 
 static void
-pgp_create_sig_part (KEYBOXBLOB blob)
+pgp_create_sig_part (KEYBOXBLOB blob, u32 *sigstatus)
 {
   int n;
 
   for (n=0; n < blob->nsigs; n++)
     {
-      blob->sigs[n] = 0;  /* FIXME: check the signature here */
+      blob->sigs[n] = sigstatus? sigstatus[n+1] : 0;
     }
 }
 
@@ -658,12 +658,14 @@ create_blob_finish (KEYBOXBLOB blob)
   return 0;
 }
 
+
 
 gpg_error_t
 _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
                              keybox_openpgp_info_t info,
                              const unsigned char *image,
                              size_t imagelen,
+                             u32 *sigstatus,
                              int as_ephemeral)
 {
   gpg_error_t err;
@@ -673,6 +675,11 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 
   if (!info->nuids || !info->nsigs)
     return gpg_error (GPG_ERR_BAD_PUBKEY);
+
+  /* If we have a signature status vector, check that the number of
+     elements matches the actual number of signatures.  */
+  if (sigstatus && sigstatus[0] != info->nsigs)
+    return gpg_error (GPG_ERR_INTERNAL);
 
   blob = xtrycalloc (1, sizeof *blob);
   if (!blob)
@@ -704,7 +711,7 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
   if (err)
     goto leave;
   pgp_create_uid_part (blob, info);
-  pgp_create_sig_part (blob);
+  pgp_create_sig_part (blob, sigstatus);
 
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;

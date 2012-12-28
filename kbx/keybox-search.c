@@ -102,7 +102,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
   size_t nkeys, keyinfolen;
   size_t nuids, uidinfolen;
   size_t nserial;
-  size_t nsigs, siginfolen;
+  size_t nsigs, siginfolen, siginfooff;
 
   switch (what)
     {
@@ -116,6 +116,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
     case KEYBOX_FLAG_OWNERTRUST:
     case KEYBOX_FLAG_VALIDITY:
     case KEYBOX_FLAG_CREATED_AT:
+    case KEYBOX_FLAG_SIG_INFO:
       if (length < 20)
         return GPG_ERR_INV_OBJ;
       /* Key info. */
@@ -140,6 +141,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
       if (pos+4 > length)
         return GPG_ERR_INV_OBJ ; /* Out of bounds. */
       /* Signature info. */
+      siginfooff = pos;
       nsigs = get16 (buffer + pos); pos += 2;
       siginfolen = get16 (buffer + pos); pos += 2;
       if (siginfolen < 4 )
@@ -157,6 +159,10 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
         case KEYBOX_FLAG_CREATED_AT:
           *flag_size = 4;
           *flag_off += 1+2+4+4+4;
+          break;
+        case KEYBOX_FLAG_SIG_INFO:
+          *flag_size = siginfolen * nsigs;
+          *flag_off = siginfooff;
           break;
         default:
           break;
@@ -961,15 +967,20 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 
 
 /* Return the last found keyblock.  Returns 0 on success and stores a
-   new iobuf at R_IOBUF in that case.  */
+   new iobuf at R_IOBUF and a signature status vector at R_SIGSTATUS
+   in that case.  */
 gpg_error_t
-keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf)
+keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf, u32 **r_sigstatus)
 {
-  const unsigned char *buffer;
+  gpg_error_t err;
+  const unsigned char *buffer, *p;
   size_t length;
   size_t image_off, image_len;
+  size_t siginfo_off, siginfo_len;
+  u32 *sigstatus, n, n_sigs, sigilen;
 
   *r_iobuf = NULL;
+  *r_sigstatus = NULL;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -987,6 +998,21 @@ keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf)
   if (image_off+image_len > length)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
+  err = _keybox_get_flag_location (buffer, length, KEYBOX_FLAG_SIG_INFO,
+                                   &siginfo_off, &siginfo_len);
+  if (err)
+    return err;
+  n_sigs  = get16 (buffer + siginfo_off);
+  sigilen = get16 (buffer + siginfo_off + 2);
+  p = buffer + siginfo_off + 4;
+  sigstatus = xtrymalloc ((1+n_sigs) * sizeof *sigstatus);
+  if (!sigstatus)
+    return gpg_error_from_syserror ();
+  sigstatus[0] = n_sigs;
+  for (n=1; n <= n_sigs; n++, p += sigilen)
+    sigstatus[n] = get32 (p);
+
+  *r_sigstatus = sigstatus;
   *r_iobuf = iobuf_temp_with_content (buffer+image_off, image_len);
   return 0;
 }

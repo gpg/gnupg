@@ -371,9 +371,12 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 }
 
 
-/* Insert the OpenPGP keyblock {IMAGE,IMAGELEN} into HD.  */
+/* Insert the OpenPGP keyblock {IMAGE,IMAGELEN} into HD.  SIGSTATUS is
+   a vector describing the status of the signatures; its first element
+   gives the number of following elements.  */
 gpg_error_t
-keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
+keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen,
+                        u32 *sigstatus)
 {
   gpg_error_t err;
   const char *fname;
@@ -400,7 +403,7 @@ keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
     return err;
   assert (nparsed <= imagelen);
   err = _keybox_create_openpgp_blob (&blob, &info, image, imagelen,
-                                     hd->ephemeral);
+                                     sigstatus, hd->ephemeral);
   _keybox_destroy_openpgp_info (&info);
   if (!err)
     {

@@ -617,13 +617,14 @@ unlock_all (KEYDB_HANDLE hd)
 
 
 static gpg_error_t
-parse_keyblock_image (iobuf_t iobuf, kbnode_t *r_keyblock)
+parse_keyblock_image (iobuf_t iobuf, const u32 *sigstatus, kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   PACKET *pkt;
   kbnode_t keyblock = NULL;
-  kbnode_t node;
+  kbnode_t node, *tail;
   int in_cert, save_mode;
+  u32 n_sigs;
 
   *r_keyblock = NULL;
 
@@ -633,6 +634,8 @@ parse_keyblock_image (iobuf_t iobuf, kbnode_t *r_keyblock)
   init_packet (pkt);
   save_mode = set_packet_list_mode (0);
   in_cert = 0;
+  n_sigs = 0;
+  tail = NULL;
   while ((err = parse_packet (iobuf, pkt)) != -1)
     {
       if (gpg_err_code (err) == GPG_ERR_UNKNOWN_PACKET)
@@ -665,25 +668,57 @@ parse_keyblock_image (iobuf_t iobuf, kbnode_t *r_keyblock)
 
       if (!in_cert && pkt->pkttype != PKT_PUBLIC_KEY)
         {
-          log_error ("error: first packet in a keybox blob is not a "
-                     "public key packet\n");
+          log_error ("parse_keyblock_image: first packet in a keybox blob "
+                     "is not a public key packet\n");
           err = gpg_error (GPG_ERR_INV_KEYRING);
           break;
         }
       if (in_cert && (pkt->pkttype == PKT_PUBLIC_KEY
                       || pkt->pkttype == PKT_SECRET_KEY))
         {
-          log_error ("error: multiple keyblocks in a keybox blob\n");
+          log_error ("parse_keyblock_image: "
+                     "multiple keyblocks in a keybox blob\n");
           err = gpg_error (GPG_ERR_INV_KEYRING);
           break;
         }
       in_cert = 1;
 
+      if (pkt->pkttype == PKT_SIGNATURE && sigstatus)
+        {
+          PKT_signature *sig = pkt->pkt.signature;
+
+          n_sigs++;
+          if (n_sigs > sigstatus[0])
+            {
+              log_error ("parse_keyblock_image: "
+                         "more signatures than found in the meta data\n");
+              err = gpg_error (GPG_ERR_INV_KEYRING);
+              break;
+
+            }
+          if (sigstatus[n_sigs])
+            {
+              sig->flags.checked = 1;
+              if (sigstatus[n_sigs] == 1 )
+                ; /* missing key */
+              else if (sigstatus[n_sigs] == 2 )
+                ; /* bad signature */
+              else if (sigstatus[n_sigs] < 0x10000000)
+                ; /* bad flag */
+              else
+                {
+                  sig->flags.valid = 1;
+                  /* Fixme: Shall we set the expired flag here?  */
+                }
+            }
+        }
+
       node = new_kbnode (pkt);
       if (!keyblock)
         keyblock = node;
       else
-        add_kbnode (keyblock, node);
+        *tail = node;
+      tail = &node->next;
       pkt = xtrymalloc (sizeof *pkt);
       if (!pkt)
         {
@@ -696,6 +731,12 @@ parse_keyblock_image (iobuf_t iobuf, kbnode_t *r_keyblock)
 
   if (err == -1 && keyblock)
     err = 0; /* Got the entire keyblock.  */
+
+  if (!err && sigstatus && n_sigs != sigstatus[0])
+    {
+      log_error ("parse_keyblock_image: signature count does not match\n");
+      err = gpg_error (GPG_ERR_INV_KEYRING);
+    }
 
   if (err)
     release_kbnode (keyblock);
@@ -737,11 +778,14 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       {
         iobuf_t iobuf;
+        u32 *sigstatus;
 
-        err = keybox_get_keyblock (hd->active[hd->found].u.kb, &iobuf);
+        err = keybox_get_keyblock (hd->active[hd->found].u.kb,
+                                   &iobuf, &sigstatus);
         if (!err)
           {
-            err = parse_keyblock_image (iobuf, ret_kb);
+            err = parse_keyblock_image (iobuf, sigstatus, ret_kb);
+            xfree (sigstatus);
             iobuf_close (iobuf);
           }
       }
@@ -753,18 +797,33 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 
 
 /* Build a keyblock image from KEYBLOCK.  Returns 0 on success and
-   only then stores a new iobuf object at R_IOBUF.  */
+   only then stores a new iobuf object at R_IOBUF and a signature
+   status vecotor at R_SIGSTATUS.  */
 static gpg_error_t
-build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf)
+build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
 {
   gpg_error_t err;
   iobuf_t iobuf;
   kbnode_t kbctx, node;
+  u32 n_sigs;
+  u32 *sigstatus;
 
   *r_iobuf = NULL;
+  *r_sigstatus = NULL;
+
+  /* Allocate a vector for the signature cache.  This is an array of
+     u32 values with the first value giving the number of elements to
+     follow and each element descriping the cache status of the
+     signature.  */
+  for (kbctx = NULL, n_sigs = 0; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    if (node->pkt->pkttype == PKT_SIGNATURE)
+      n_sigs++;
+  sigstatus = xtrycalloc (1+n_sigs, sizeof *sigstatus);
+  if (!sigstatus)
+    return gpg_error_from_syserror ();
 
   iobuf = iobuf_temp ();
-  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+  for (kbctx = NULL, n_sigs = 0; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
       /* Make sure to use only packets valid on a keyblock.  */
       switch (node->pkt->pkttype)
@@ -787,9 +846,34 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf)
           iobuf_close (iobuf);
           return err;
         }
+
+      /* Build signature status vector.  */
+      if (node->pkt->pkttype == PKT_SIGNATURE)
+        {
+          PKT_signature *sig = node->pkt->pkt.signature;
+
+          n_sigs++;
+          /* Fixme: Detect tye "missing key" status.  */
+          if (sig->flags.checked)
+            {
+              if (sig->flags.valid)
+                {
+                  if (!sig->expiredate)
+                    sigstatus[n_sigs] = 0xffffffff;
+                  else if (sig->expiredate < 0x1000000)
+                    sigstatus[n_sigs] = 0x10000000;
+                  else
+                    sigstatus[n_sigs] = sig->expiredate;
+                }
+              else
+                sigstatus[n_sigs] = 0x00000002; /* Bad signature.  */
+            }
+        }
     }
+  sigstatus[0] = n_sigs;
 
   *r_iobuf = iobuf;
+  *r_sigstatus = sigstatus;
   return 0;
 }
 
@@ -876,13 +960,16 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
            included in the keybox code.  Eventually we can change this
            kludge to have the caller pass the image.  */
         iobuf_t iobuf;
+        u32 *sigstatus;
 
-        err = build_keyblock_image (kb, &iobuf);
+        err = build_keyblock_image (kb, &iobuf, &sigstatus);
         if (!err)
           {
             err = keybox_insert_keyblock (hd->active[idx].u.kb,
                                           iobuf_get_temp_buffer (iobuf),
-                                          iobuf_get_temp_length (iobuf));
+                                          iobuf_get_temp_length (iobuf),
+                                          sigstatus);
+            xfree (sigstatus);
             iobuf_close (iobuf);
           }
       }
