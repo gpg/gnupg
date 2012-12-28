@@ -332,7 +332,8 @@ dump_fpr (const unsigned char *buffer, size_t len)
 static void
 dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
 {
-  printf ("pub %02X%02X%02X%02X",
+  printf ("pub %2d %02X%02X%02X%02X",
+          info->primary.algo,
           info->primary.keyid[4], info->primary.keyid[5],
           info->primary.keyid[6], info->primary.keyid[7] );
   dump_fpr (info->primary.fpr, info->primary.fprlen);
@@ -344,7 +345,8 @@ dump_openpgp_key (keybox_openpgp_info_t info, const unsigned char *image)
       k = &info->subkeys;
       do
         {
-          printf ("sub %02X%02X%02X%02X",
+          printf ("sub %2d %02X%02X%02X%02X",
+                  k->algo,
                   k->keyid[4], k->keyid[5],
                   k->keyid[6], k->keyid[7] );
           dump_fpr (k->fpr, k->fprlen);

@@ -223,6 +223,8 @@ parse_key (const unsigned char *data, size_t datalen,
       return gpg_error (GPG_ERR_UNKNOWN_ALGORITHM);
     }
 
+  ki->algo = algorithm;
+
   for (i=0; i < npkey; i++ )
     {
       unsigned int nbits, nbytes;

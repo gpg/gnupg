@@ -111,6 +111,7 @@ struct keybox_handle {
 struct _keybox_openpgp_key_info
 {
   struct _keybox_openpgp_key_info *next;
+  int algo;
   unsigned char keyid[8];
   int fprlen;  /* Either 16 or 20 */
   unsigned char fpr[20];

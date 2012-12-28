@@ -291,27 +291,50 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   fprintf (fp, "Sig-Info-Length: %lu\n", siginfolen );
   /* fixme: check bounds  */
   p += 4;
-  for (n=0; n < nsigs; n++, p += siginfolen)
-    {
-      ulong sflags;
+  {
+    int in_range = 0;
+    ulong first = 0;
 
-      sflags = get32 (p);
-      fprintf (fp, "Sig-Expire[%lu]: ", n );
-      if (!sflags)
-        fputs ("[not checked]", fp);
-      else if (sflags == 1 )
-        fputs ("[missing key]", fp);
-      else if (sflags == 2 )
-        fputs ("[bad signature]", fp);
-      else if (sflags < 0x10000000)
-        fprintf (fp, "[bad flag %0lx]", sflags);
-      else if (sflags == 0xffffffff)
-        fputs ("0", fp );
-      else
-        fputs ("a time"/*strtimestamp( sflags )*/, fp );
-      putc ('\n', fp );
-    }
+    for (n=0; n < nsigs; n++, p += siginfolen)
+      {
+        ulong sflags;
 
+        sflags = get32 (p);
+        if (!in_range && !sflags)
+          {
+            in_range = 1;
+            first = n;
+            continue;
+          }
+        if (in_range && !sflags)
+          continue;
+        if (in_range)
+          {
+            fprintf (fp, "Sig-Expire[%lu-%lu]: [not checked]\n", first, n-1);
+            in_range = 0;
+          }
+
+        fprintf (fp, "Sig-Expire[%lu]: ", n );
+        if (!sflags)
+          fputs ("[not checked]", fp);
+        else if (sflags == 1 )
+          fputs ("[missing key]", fp);
+        else if (sflags == 2 )
+          fputs ("[bad signature]", fp);
+        else if (sflags < 0x10000000)
+          fprintf (fp, "[bad flag %0lx]", sflags);
+        else if (sflags == 0xffffffff)
+          fputs ("0", fp );
+        else
+          fputs ("a time"/*strtimestamp( sflags )*/, fp );
+        putc ('\n', fp );
+      }
+    if (in_range)
+      {
+        fprintf (fp, "Sig-Expire[%lu-%lu]: [not checked]\n", first, n-1);
+        in_range = 0;
+      }
+  }
   fprintf (fp, "Ownertrust: %d\n", p[0] );
   fprintf (fp, "All-Validity: %d\n", p[1] );
   p += 4;
