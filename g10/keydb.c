@@ -1,6 +1,6 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2008, 2009 Free Software Foundation, Inc.
+ *               2008, 2009, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -41,7 +41,8 @@ static int active_handles;
 
 typedef enum {
     KEYDB_RESOURCE_TYPE_NONE = 0,
-    KEYDB_RESOURCE_TYPE_KEYRING
+    KEYDB_RESOURCE_TYPE_KEYRING,
+    KEYDB_RESOURCE_TYPE_KEYBOX
 } KeydbResourceType;
 #define MAX_KEYDB_RESOURCES 40
 
@@ -236,6 +237,11 @@ keydb_add_resource (const char *url, int flags, int secret)
 	    rt = KEYDB_RESOURCE_TYPE_KEYRING;
 	    resname += 11;
 	}
+        else if (strlen (resname) > 10 && !strncmp (resname, "gnupg-kbx:", 10) )
+          {
+            rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+            resname += 10;
+          }
 #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
 	else if (strchr (resname, ':')) {
 	    log_error ("invalid key resource URL `%s'\n", url );
@@ -267,6 +273,11 @@ keydb_add_resource (const char *url, int flags, int secret)
 	    if (fread( &magic, 4, 1, fp) == 1 ) {
 		if (magic == 0x13579ace || magic == 0xce9a5713)
 		    ; /* GDBM magic - no more support */
+                else if (fread (&magic, 4, 1, fp) == 1
+                         && !memcmp (&magic, "\x01", 1)
+                         && fread (&magic, 4, 1, fp) == 1
+                         && !memcmp (&magic, "KBXf", 4))
+                    rt = KEYDB_RESOURCE_TYPE_KEYBOX;
 		else
 		    rt = KEYDB_RESOURCE_TYPE_KEYRING;
 	    }
@@ -314,6 +325,10 @@ keydb_add_resource (const char *url, int flags, int secret)
 	  }
 	break;
 
+      case KEYDB_RESOURCE_TYPE_KEYBOX:
+	rc = G10ERR_UNSUPPORTED;
+	goto leave;
+
       default:
 	log_error ("resource type of `%s' not supported\n", url);
 	rc = G10ERR_GENERAL;
@@ -335,6 +350,9 @@ keydb_add_resource (const char *url, int flags, int secret)
         else
           log_error (_("keyblock resource `%s': %s\n"),
                      filename, g10_errstr(rc));
+        if (rt == KEYDB_RESOURCE_TYPE_KEYBOX)
+          log_error ("Note: This version of GPG does not support"
+                     " the Keybox format\n");
       }
     else if (secret)
 	any_secret = 1;
@@ -364,6 +382,7 @@ keydb_new (int secret)
       switch (all_resources[i].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
+        case KEYDB_RESOURCE_TYPE_KEYBOX: /* ignore */
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
           hd->active[j].type   = all_resources[i].type;
@@ -398,6 +417,7 @@ keydb_release (KEYDB_HANDLE hd)
     for (i=0; i < hd->used; i++) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
+          case KEYDB_RESOURCE_TYPE_KEYBOX:
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
             keyring_release (hd->active[i].u.kr);
@@ -435,6 +455,7 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
 
     switch (hd->active[idx].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
+      case KEYDB_RESOURCE_TYPE_KEYBOX:
         s = NULL;
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
@@ -455,6 +476,7 @@ lock_all (KEYDB_HANDLE hd)
     for (i=0; !rc && i < hd->used; i++) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
+          case KEYDB_RESOURCE_TYPE_KEYBOX:
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
             rc = keyring_lock (hd->active[i].u.kr, 1);
@@ -467,6 +489,7 @@ lock_all (KEYDB_HANDLE hd)
         for (i--; i >= 0; i--) {
             switch (hd->active[i].type) {
               case KEYDB_RESOURCE_TYPE_NONE:
+              case KEYDB_RESOURCE_TYPE_KEYBOX:
                 break;
               case KEYDB_RESOURCE_TYPE_KEYRING:
                 keyring_lock (hd->active[i].u.kr, 0);
@@ -491,6 +514,7 @@ unlock_all (KEYDB_HANDLE hd)
     for (i=hd->used-1; i >= 0; i--) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
+          case KEYDB_RESOURCE_TYPE_KEYBOX:
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
             keyring_lock (hd->active[i].u.kr, 0);
@@ -520,6 +544,7 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
+      case KEYDB_RESOURCE_TYPE_KEYBOX:
         rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
@@ -553,6 +578,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
+      case KEYDB_RESOURCE_TYPE_KEYBOX:
         rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
@@ -593,6 +619,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 
     switch (hd->active[idx].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
+      case KEYDB_RESOURCE_TYPE_KEYBOX:
         rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
@@ -628,6 +655,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 
     switch (hd->active[hd->found].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
+      case KEYDB_RESOURCE_TYPE_KEYBOX:
         rc = G10ERR_GENERAL; /* oops */
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
@@ -683,6 +711,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
       switch (hd->active[hd->current].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE:
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
           BUG();
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
@@ -712,6 +741,7 @@ keydb_rebuild_caches (int noisy)
       switch (all_resources[i].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE: /* ignore */
+        case KEYDB_RESOURCE_TYPE_KEYBOX: /* ignore */
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
           rc = keyring_rebuild_cache (all_resources[i].token,noisy);
@@ -742,6 +772,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
     for (i=0; !rc && i < hd->used; i++) {
         switch (hd->active[i].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
+          case KEYDB_RESOURCE_TYPE_KEYBOX:
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
             rc = keyring_search_reset (hd->active[i].u.kr);
@@ -768,6 +799,7 @@ keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     while (rc == -1 && hd->current >= 0 && hd->current < hd->used) {
         switch (hd->active[hd->current].type) {
           case KEYDB_RESOURCE_TYPE_NONE:
+          case KEYDB_RESOURCE_TYPE_KEYBOX:
             BUG(); /* we should never see it here */
             break;
           case KEYDB_RESOURCE_TYPE_KEYRING:
