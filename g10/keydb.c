@@ -1,5 +1,5 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002, 2003, 2004, 2005, 
+ * Copyright (C) 2001, 2002, 2003, 2004, 2005,
  *               2008, 2009 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -34,7 +34,7 @@
 #include "main.h" /*try_make_homedir ()*/
 #include "packet.h"
 #include "keyring.h"
-#include "keydb.h" 
+#include "keydb.h"
 #include "i18n.h"
 
 static int active_handles;
@@ -91,7 +91,7 @@ maybe_create_keyring (char *filename, int force)
 
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
-  if (!force) 
+  if (!force)
     return gpg_error (GPG_ERR_ENOENT);
 
   /* First of all we try to create the home directory.  Note, that we
@@ -114,9 +114,9 @@ maybe_create_keyring (char *filename, int force)
   save_slash = *last_slash_in_filename;
   *last_slash_in_filename = 0;
   if (access(filename, F_OK))
-    { 
+    {
       static int tried;
-      
+
       if (!tried)
         {
           tried = 1;
@@ -144,8 +144,8 @@ maybe_create_keyring (char *filename, int force)
       if (opt.verbose)
         log_info ("can't allocate lock for `%s'\n", filename );
 
-      if (!force) 
-        return gpg_error (GPG_ERR_ENOENT); 
+      if (!force)
+        return gpg_error (GPG_ERR_ENOENT);
       else
         return gpg_error (GPG_ERR_GENERAL);
     }
@@ -175,7 +175,7 @@ maybe_create_keyring (char *filename, int force)
   else
     iobuf = iobuf_create (filename);
   umask (oldmask);
-  if (!iobuf) 
+  if (!iobuf)
     {
       rc = gpg_error_from_syserror ();
       log_error ( _("error creating keyring `%s': %s\n"),
@@ -293,7 +293,7 @@ keydb_add_resource (const char *url, int flags, int secret)
 	  {
 	    if (used_resources >= MAX_KEYDB_RESOURCES)
 	      rc = G10ERR_RESOURCE_LIMIT;
-	    else 
+	    else
 	      {
 		if(flags&2)
 		  primary_keyring=token;
@@ -352,10 +352,10 @@ keydb_new (int secret)
 {
   KEYDB_HANDLE hd;
   int i, j;
-  
+
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
-  
+
   assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
     {
@@ -379,12 +379,12 @@ keydb_new (int secret)
         }
     }
   hd->used = j;
-  
+
   active_handles++;
   return hd;
 }
 
-void 
+void
 keydb_release (KEYDB_HANDLE hd)
 {
     int i;
@@ -423,19 +423,19 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
     int idx;
     const char *s = NULL;
 
-    if (!hd) 
+    if (!hd)
         return NULL;
 
-    if ( hd->found >= 0 && hd->found < hd->used) 
+    if ( hd->found >= 0 && hd->found < hd->used)
         idx = hd->found;
-    else if ( hd->current >= 0 && hd->current < hd->used) 
+    else if ( hd->current >= 0 && hd->current < hd->used)
         idx = hd->current;
     else
         idx = 0;
 
     switch (hd->active[idx].type) {
       case KEYDB_RESOURCE_TYPE_NONE:
-        s = NULL; 
+        s = NULL;
         break;
       case KEYDB_RESOURCE_TYPE_KEYRING:
         s = keyring_get_resource_name (hd->active[idx].u.kr);
@@ -447,7 +447,7 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
 
 
 
-static int 
+static int
 lock_all (KEYDB_HANDLE hd)
 {
     int i, rc = 0;
@@ -504,7 +504,7 @@ unlock_all (KEYDB_HANDLE hd)
 /*
  * Return the last found keyring.  Caller must free it.
  * The returned keyblock has the kbode flag bit 0 set for the node with
- * the public key used to locate the keyblock or flag bit 1 set for 
+ * the public key used to locate the keyblock or flag bit 1 set for
  * the user ID node.
  */
 int
@@ -515,7 +515,7 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    if ( hd->found < 0 || hd->found >= hd->used) 
+    if ( hd->found < 0 || hd->found >= hd->used)
         return -1; /* nothing found */
 
     switch (hd->active[hd->found].type) {
@@ -530,7 +530,7 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
     return rc;
 }
 
-/* 
+/*
  * update the current keyblock with KB
  */
 int
@@ -541,7 +541,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    if ( hd->found < 0 || hd->found >= hd->used) 
+    if ( hd->found < 0 || hd->found >= hd->used)
         return -1; /* nothing found */
 
     if( opt.dry_run )
@@ -565,8 +565,8 @@ keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 }
 
 
-/* 
- * Insert a new KB into one of the resources. 
+/*
+ * Insert a new KB into one of the resources.
  */
 int
 keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
@@ -574,15 +574,15 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
     int rc = -1;
     int idx;
 
-    if (!hd) 
+    if (!hd)
         return G10ERR_INV_ARG;
 
     if( opt.dry_run )
 	return 0;
 
-    if ( hd->found >= 0 && hd->found < hd->used) 
+    if ( hd->found >= 0 && hd->found < hd->used)
         idx = hd->found;
-    else if ( hd->current >= 0 && hd->current < hd->used) 
+    else if ( hd->current >= 0 && hd->current < hd->used)
         idx = hd->current;
     else
         return G10ERR_GENERAL;
@@ -605,7 +605,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb)
 }
 
 
-/* 
+/*
  * The current keyblock will be deleted.
  */
 int
@@ -616,7 +616,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    if ( hd->found < 0 || hd->found >= hd->used) 
+    if ( hd->found < 0 || hd->found >= hd->used)
         return -1; /* nothing found */
 
     if( opt.dry_run )
@@ -643,7 +643,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 /*
  * Locate the default writable key resource, so that the next
  * operation (which is only relevant for inserts) will be done on this
- * resource.  
+ * resource.
  */
 int
 keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
@@ -654,7 +654,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 
   if (!hd)
     return G10ERR_INV_ARG;
-  
+
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
     return rc;
@@ -678,9 +678,9 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
 	return rc;
     }
 
-  for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++) 
+  for ( ; hd->current >= 0 && hd->current < hd->used; hd->current++)
     {
-      switch (hd->active[hd->current].type) 
+      switch (hd->active[hd->current].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE:
           BUG();
@@ -691,7 +691,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
           break;
         }
     }
-  
+
   return -1;
 }
 
@@ -702,7 +702,7 @@ void
 keydb_rebuild_caches (int noisy)
 {
   int i, rc;
-  
+
   for (i=0; i < used_resources; i++)
     {
       if (all_resources[i].secret)
@@ -725,10 +725,10 @@ keydb_rebuild_caches (int noisy)
 
 
 
-/* 
+/*
  * Start the next search on this handle right at the beginning
  */
-int 
+int
 keydb_search_reset (KEYDB_HANDLE hd)
 {
     int i, rc = 0;
@@ -736,7 +736,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
     if (!hd)
         return G10ERR_INV_ARG;
 
-    hd->current = 0; 
+    hd->current = 0;
     hd->found = -1;
     /* and reset all resources */
     for (i=0; !rc && i < hd->used; i++) {
@@ -748,15 +748,15 @@ keydb_search_reset (KEYDB_HANDLE hd)
             break;
         }
     }
-    return rc; 
+    return rc;
 }
 
 
-/* 
+/*
  * Search through all keydb resources, starting at the current position,
  * for a keyblock which contains one of the keys described in the DESC array.
  */
-int 
+int
 keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 	       size_t ndesc, size_t *descindex)
 {
@@ -776,12 +776,12 @@ keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
             break;
         }
         if (rc == -1) /* EOF -> switch to next resource */
-            hd->current++; 
+            hd->current++;
         else if (!rc)
             hd->found = hd->current;
     }
 
-    return rc; 
+    return rc;
 }
 
 int

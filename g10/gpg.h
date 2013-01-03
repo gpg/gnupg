@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef GNUPG_G10_GPG_H
-#define GNUPG_G10_GPG_H 
+#define GNUPG_G10_GPG_H
 
 /* Note, that this file should be the first one after the system
    header files.  This is required to set the error source to the
@@ -41,8 +41,8 @@
 #define MAX_FINGERPRINT_LEN 20
 
 
-/* 
-   Forward declarations. 
+/*
+   Forward declarations.
  */
 
 /* Object used to keep state locally to server.c . */
@@ -67,7 +67,7 @@ struct server_control_s
 
 
 
-/* 
+/*
      Compatibility stuff to be faded out over time.
  */
 
@@ -78,45 +78,45 @@ struct server_control_s
 /* Mapping of the old error codes to the gpg-error ones.  Fixme: This
    is just a temporary solution: We need to do all these gpg_error()
    calls in the code.  */
-#define G10ERR_BAD_KEY         GPG_ERR_BAD_KEY          
-#define G10ERR_BAD_PASS        GPG_ERR_BAD_PASS         
-#define G10ERR_BAD_PUBKEY      GPG_ERR_BAD_PUBKEY       
+#define G10ERR_BAD_KEY         GPG_ERR_BAD_KEY
+#define G10ERR_BAD_PASS        GPG_ERR_BAD_PASS
+#define G10ERR_BAD_PUBKEY      GPG_ERR_BAD_PUBKEY
 #define G10ERR_BAD_SIGN        GPG_ERR_BAD_SIGNATURE
-#define G10ERR_BAD_URI         GPG_ERR_BAD_URI          
-#define G10ERR_CHECKSUM        GPG_ERR_CHECKSUM         
-#define G10ERR_CIPHER_ALGO     GPG_ERR_CIPHER_ALGO      
-#define G10ERR_CLOSE_FILE      GPG_ERR_CLOSE_FILE       
-#define G10ERR_COMPR_ALGO      GPG_ERR_COMPR_ALGO       
-#define G10ERR_CREATE_FILE     GPG_ERR_CREATE_FILE      
-#define G10ERR_DIGEST_ALGO     GPG_ERR_DIGEST_ALGO      
+#define G10ERR_BAD_URI         GPG_ERR_BAD_URI
+#define G10ERR_CHECKSUM        GPG_ERR_CHECKSUM
+#define G10ERR_CIPHER_ALGO     GPG_ERR_CIPHER_ALGO
+#define G10ERR_CLOSE_FILE      GPG_ERR_CLOSE_FILE
+#define G10ERR_COMPR_ALGO      GPG_ERR_COMPR_ALGO
+#define G10ERR_CREATE_FILE     GPG_ERR_CREATE_FILE
+#define G10ERR_DIGEST_ALGO     GPG_ERR_DIGEST_ALGO
 #define G10ERR_FILE_EXISTS     GPG_ERR_EEXIST
-#define G10ERR_GENERAL         GPG_ERR_GENERAL          
-#define G10ERR_INV_ARG         GPG_ERR_INV_ARG          
-#define G10ERR_INV_KEYRING     GPG_ERR_INV_KEYRING      
-#define G10ERR_INV_USER_ID     GPG_ERR_INV_USER_ID      
-#define G10ERR_INVALID_ARMOR   GPG_ERR_INV_ARMOR    
-#define G10ERR_INVALID_PACKET  GPG_ERR_INV_PACKET   
-#define G10ERR_KEYRING_OPEN    GPG_ERR_KEYRING_OPEN     
-#define G10ERR_KEYSERVER       GPG_ERR_KEYSERVER        
-#define G10ERR_NO_DATA         GPG_ERR_NO_DATA          
-#define G10ERR_NO_PUBKEY       GPG_ERR_NO_PUBKEY        
-#define G10ERR_NO_SECKEY       GPG_ERR_NO_SECKEY        
-#define G10ERR_NO_USER_ID      GPG_ERR_NO_USER_ID       
-#define G10ERR_NOT_PROCESSED   GPG_ERR_NOT_PROCESSED    
-#define G10ERR_OPEN_FILE       GPG_ERR_OPEN_FILE        
-#define G10ERR_PASSPHRASE      GPG_ERR_PASSPHRASE       
-#define G10ERR_PUBKEY_ALGO     GPG_ERR_PUBKEY_ALGO      
-#define G10ERR_READ_FILE       GPG_ERR_READ_FILE        
-#define G10ERR_RENAME_FILE     GPG_ERR_RENAME_FILE      
-#define G10ERR_RESOURCE_LIMIT  GPG_ERR_RESOURCE_LIMIT   
-#define G10ERR_SIG_CLASS       GPG_ERR_SIG_CLASS        
-#define G10ERR_TIME_CONFLICT   GPG_ERR_TIME_CONFLICT    
-#define G10ERR_TRUSTDB         GPG_ERR_TRUSTDB          
-#define G10ERR_UNEXPECTED      GPG_ERR_UNEXPECTED       
-#define G10ERR_UNKNOWN_PACKET  GPG_ERR_UNKNOWN_PACKET   
-#define G10ERR_UNSUPPORTED     GPG_ERR_UNSUPPORTED      
-#define G10ERR_UNU_PUBKEY      GPG_ERR_UNUSABLE_PUBKEY       
-#define G10ERR_UNU_SECKEY      GPG_ERR_UNUSABLE_SECKEY       
-#define G10ERR_WRONG_SECKEY    GPG_ERR_WRONG_SECKEY        
+#define G10ERR_GENERAL         GPG_ERR_GENERAL
+#define G10ERR_INV_ARG         GPG_ERR_INV_ARG
+#define G10ERR_INV_KEYRING     GPG_ERR_INV_KEYRING
+#define G10ERR_INV_USER_ID     GPG_ERR_INV_USER_ID
+#define G10ERR_INVALID_ARMOR   GPG_ERR_INV_ARMOR
+#define G10ERR_INVALID_PACKET  GPG_ERR_INV_PACKET
+#define G10ERR_KEYRING_OPEN    GPG_ERR_KEYRING_OPEN
+#define G10ERR_KEYSERVER       GPG_ERR_KEYSERVER
+#define G10ERR_NO_DATA         GPG_ERR_NO_DATA
+#define G10ERR_NO_PUBKEY       GPG_ERR_NO_PUBKEY
+#define G10ERR_NO_SECKEY       GPG_ERR_NO_SECKEY
+#define G10ERR_NO_USER_ID      GPG_ERR_NO_USER_ID
+#define G10ERR_NOT_PROCESSED   GPG_ERR_NOT_PROCESSED
+#define G10ERR_OPEN_FILE       GPG_ERR_OPEN_FILE
+#define G10ERR_PASSPHRASE      GPG_ERR_PASSPHRASE
+#define G10ERR_PUBKEY_ALGO     GPG_ERR_PUBKEY_ALGO
+#define G10ERR_READ_FILE       GPG_ERR_READ_FILE
+#define G10ERR_RENAME_FILE     GPG_ERR_RENAME_FILE
+#define G10ERR_RESOURCE_LIMIT  GPG_ERR_RESOURCE_LIMIT
+#define G10ERR_SIG_CLASS       GPG_ERR_SIG_CLASS
+#define G10ERR_TIME_CONFLICT   GPG_ERR_TIME_CONFLICT
+#define G10ERR_TRUSTDB         GPG_ERR_TRUSTDB
+#define G10ERR_UNEXPECTED      GPG_ERR_UNEXPECTED
+#define G10ERR_UNKNOWN_PACKET  GPG_ERR_UNKNOWN_PACKET
+#define G10ERR_UNSUPPORTED     GPG_ERR_UNSUPPORTED
+#define G10ERR_UNU_PUBKEY      GPG_ERR_UNUSABLE_PUBKEY
+#define G10ERR_UNU_SECKEY      GPG_ERR_UNUSABLE_SECKEY
+#define G10ERR_WRONG_SECKEY    GPG_ERR_WRONG_SECKEY
 
 #endif /*GNUPG_G10_GPG_H*/
