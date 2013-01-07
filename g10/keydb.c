@@ -1156,6 +1156,9 @@ keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  if (DBG_CLOCK)
+    log_clock ("keydb_search enter");
+
   rc = -1;
   while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
          && hd->current >= 0 && hd->current < hd->used)
@@ -1182,6 +1185,8 @@ keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         hd->found = hd->current;
     }
 
+  if (DBG_CLOCK)
+    log_clock ("keydb_search leave");
   return ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
           ? gpg_error (GPG_ERR_NOT_FOUND)
           : rc);

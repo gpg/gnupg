@@ -1029,7 +1029,7 @@ set_debug (const char *level)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
               (opt.debug & DBG_PACKET_VALUE )? " packet":"",
               (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
               (opt.debug & DBG_CIPHER_VALUE )? " cipher":"",
@@ -1042,7 +1042,8 @@ set_debug (const char *level)
               (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
               (opt.debug & DBG_EXTPROG_VALUE)? " extprog":"",
               (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
-              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
+              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
+              (opt.debug & DBG_CLOCK_VALUE  )? " clock":"");
 }
 
 
@@ -3114,6 +3115,8 @@ main (int argc, char **argv)
       }
 
     set_debug (debug_level);
+    if (DBG_CLOCK)
+      log_clock ("start");
 
     /* Do these after the switch(), so they can override settings. */
     if(PGP2)
@@ -4097,6 +4100,8 @@ void
 g10_exit( int rc )
 {
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
+  if (DBG_CLOCK)
+    log_clock ("stop");
   if ( (opt.debug & DBG_MEMSTAT_VALUE) )
     {
       gcry_control (GCRYCTL_DUMP_MEMORY_STATS);

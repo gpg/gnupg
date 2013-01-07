@@ -857,6 +857,33 @@ log_printhex (const char *text, const void *buffer, size_t length)
 }
 
 
+void
+log_clock (const char *string)
+{
+#if 0
+  static unsigned long long initial;
+  struct timespec tv;
+  unsigned long long now;
+
+  if (clock_gettime (CLOCK_REALTIME, &tv))
+    {
+      log_debug ("error getting the realtime clock value\n");
+      return;
+    }
+  now = tv.tv_sec * 1000000000ull;
+  now += tv.tv_nsec;
+
+  if (!initial)
+    initial = now;
+
+  log_debug ("[%llu] %s", now - initial, string);
+#else
+  /* You need to link with -ltr to enable the above code.  */
+  log_debug ("[not enabled in the source] %s", string);
+#endif
+}
+
+
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 void
 bug_at( const char *file, int line, const char *func )
