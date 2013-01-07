@@ -1,5 +1,6 @@
 /* keybox-search.c - Search operations
- * Copyright (C) 2001, 2002, 2003, 2004, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2002, 2003, 2004, 2012,
+ *               2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -233,6 +234,9 @@ blob_cmp_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 }
 
 
+/* Returns 0 if not found or the number of the key which was found.
+   For X.509 this is always 1, for OpenPGP this is 1 for the primary
+   key and 2 and more for the subkeys.  */
 static int
 blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
 {
@@ -259,7 +263,7 @@ blob_cmp_fpr (KEYBOXBLOB blob, const unsigned char *fpr)
     {
       off = pos + idx*keyinfolen;
       if (!memcmp (buffer + off, fpr, 20))
-        return 1; /* found */
+        return idx+1; /* found */
     }
   return 0; /* not found */
 }
@@ -291,7 +295,7 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
     {
       off = pos + idx*keyinfolen;
       if (!memcmp (buffer + off + fproff, fpr, fprlen))
-        return 1; /* found */
+        return idx+1; /* found */
     }
   return 0; /* not found */
 }
@@ -352,15 +356,14 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
           if (substr)
             {
               if (ascii_memcasemem (buffer+off, len, name, namelen))
-                return 1; /* found */
+                return idx+1; /* found */
             }
           else
             {
               if (len == namelen && !memcmp (buffer+off, name, len))
-                return 1; /* found */
+                return idx+1; /* found */
             }
         }
-      return 0; /* not found */
     }
   else
     {
@@ -376,13 +379,16 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
 
       if (substr)
         {
-          return !!ascii_memcasemem (buffer+off, len, name, namelen);
+          if (ascii_memcasemem (buffer+off, len, name, namelen))
+            return idx+1; /* found */
         }
       else
         {
-          return len == namelen && !memcmp (buffer+off, name, len);
+          if (len == namelen && !memcmp (buffer+off, name, len))
+            return idx+1; /* found */
         }
     }
+  return 0; /* not found */
 }
 
 
@@ -458,12 +464,12 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
       if (substr)
         {
           if (ascii_memcasemem (buffer+off+1, len, name, namelen))
-            return 1; /* found */
+            return idx+1; /* found */
         }
       else
         {
           if (len == namelen && !ascii_memcasecmp (buffer+off+1, name, len))
-            return 1; /* found */
+            return idx+1; /* found */
         }
     }
   return 0; /* not found */
@@ -734,6 +740,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   int need_words, any_skip;
   KEYBOXBLOB blob = NULL;
   struct sn_array_s *sn_array = NULL;
+  int pk_no, uid_no;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -850,6 +857,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
     }
 
 
+  pk_no = uid_no = 0;
   for (;;)
     {
       unsigned int blobflags;
@@ -875,19 +883,23 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               never_reached ();
               break;
             case KEYDB_SEARCH_MODE_EXACT:
-              if (has_username (blob, desc[n].u.name, 0))
+              uid_no = has_username (blob, desc[n].u.name, 0);
+              if (uid_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAIL:
-              if (has_mail (blob, desc[n].u.name, 0))
+              uid_no = has_mail (blob, desc[n].u.name, 0);
+              if (uid_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAILSUB:
-              if (has_mail (blob, desc[n].u.name, 1))
+              uid_no = has_mail (blob, desc[n].u.name, 1);
+              if (uid_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SUBSTR:
-              if (has_username (blob, desc[n].u.name, 1))
+              uid_no =  has_username (blob, desc[n].u.name, 1);
+              if (uid_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAILEND:
@@ -914,16 +926,19 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SHORT_KID:
-              if (has_short_kid (blob, desc[n].u.kid[1]))
+              pk_no = has_short_kid (blob, desc[n].u.kid[1]);
+              if (pk_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_LONG_KID:
-              if (has_long_kid (blob, desc[n].u.kid[0], desc[n].u.kid[1]))
+              pk_no = has_long_kid (blob, desc[n].u.kid[0], desc[n].u.kid[1]);
+              if (pk_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_FPR:
             case KEYDB_SEARCH_MODE_FPR20:
-              if (has_fingerprint (blob, desc[n].u.fpr))
+              pk_no = has_fingerprint (blob, desc[n].u.fpr);
+              if (pk_no)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_KEYGRIP:
@@ -956,6 +971,8 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
   if (!rc)
     {
       hd->found.blob = blob;
+      hd->found.pk_no = pk_no;
+      hd->found.uid_no = uid_no;
     }
   else if (rc == -1)
     {
@@ -985,9 +1002,12 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 
 /* Return the last found keyblock.  Returns 0 on success and stores a
    new iobuf at R_IOBUF and a signature status vector at R_SIGSTATUS
-   in that case.  */
+   in that case.  R_UID_NO and R_PK_NO are used to retun the number of
+   the key or user id which was matched the search criteria; if not
+   known they are set to 0. */
 gpg_error_t
-keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf, u32 **r_sigstatus)
+keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
+                     int *r_pk_no, int *r_uid_no, u32 **r_sigstatus)
 {
   gpg_error_t err;
   const unsigned char *buffer, *p;
@@ -1029,6 +1049,8 @@ keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf, u32 **r_sigstatus)
   for (n=1; n <= n_sigs; n++, p += sigilen)
     sigstatus[n] = get32 (p);
 
+  *r_pk_no  = hd->found.pk_no;
+  *r_uid_no = hd->found.uid_no;
   *r_sigstatus = sigstatus;
   *r_iobuf = iobuf_temp_with_content (buffer+image_off, image_len);
   return 0;

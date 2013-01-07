@@ -81,8 +81,8 @@ int keybox_lock (KEYBOX_HANDLE hd, int yes);
 int _keybox_write_header_blob (FILE *fp);
 
 /*-- keybox-search.c --*/
-gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd,
-                                 iobuf_t *r_iobuf, u32 **sigstatus);
+gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
+                                 int *r_uid_no, int *r_pk_no, u32 **sigstatus);
 #ifdef KEYBOX_WITH_X509
 int keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *ret_cert);
 #endif /*KEYBOX_WITH_X509*/
@@ -114,7 +114,6 @@ int keybox_compress (KEYBOX_HANDLE hd);
 /*--  --*/
 
 #if 0
-int keybox_get_keyblock (KEYBOX_HANDLE hd, KBNODE *ret_kb);
 int keybox_locate_writable (KEYBOX_HANDLE hd);
 int keybox_search_reset (KEYBOX_HANDLE hd);
 int keybox_search (KEYBOX_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);

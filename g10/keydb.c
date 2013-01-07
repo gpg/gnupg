@@ -1,6 +1,6 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2008, 2009, 2011 Free Software Foundation, Inc.
+ *               2008, 2009, 2011, 2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -617,7 +617,8 @@ unlock_all (KEYDB_HANDLE hd)
 
 
 static gpg_error_t
-parse_keyblock_image (iobuf_t iobuf, const u32 *sigstatus, kbnode_t *r_keyblock)
+parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
+                      const u32 *sigstatus, kbnode_t *r_keyblock)
 {
   gpg_error_t err;
   PACKET *pkt;
@@ -625,6 +626,7 @@ parse_keyblock_image (iobuf_t iobuf, const u32 *sigstatus, kbnode_t *r_keyblock)
   kbnode_t node, *tail;
   int in_cert, save_mode;
   u32 n_sigs;
+  int pk_count, uid_count;
 
   *r_keyblock = NULL;
 
@@ -636,6 +638,7 @@ parse_keyblock_image (iobuf_t iobuf, const u32 *sigstatus, kbnode_t *r_keyblock)
   in_cert = 0;
   n_sigs = 0;
   tail = NULL;
+  pk_count = uid_count = 0;
   while ((err = parse_packet (iobuf, pkt)) != -1)
     {
       if (gpg_err_code (err) == GPG_ERR_UNKNOWN_PACKET)
@@ -714,6 +717,26 @@ parse_keyblock_image (iobuf_t iobuf, const u32 *sigstatus, kbnode_t *r_keyblock)
         }
 
       node = new_kbnode (pkt);
+
+      switch (pkt->pkttype)
+        {
+        case PKT_PUBLIC_KEY:
+        case PKT_PUBLIC_SUBKEY:
+        case PKT_SECRET_KEY:
+        case PKT_SECRET_SUBKEY:
+          if (++pk_count == pk_no)
+            node->flag |= 1;
+          break;
+
+        case PKT_USER_ID:
+          if (++uid_count == uid_no)
+            node->flag |= 2;
+          break;
+
+        default:
+          break;
+        }
+
       if (!keyblock)
         keyblock = node;
       else
@@ -779,12 +802,14 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
       {
         iobuf_t iobuf;
         u32 *sigstatus;
+        int pk_no, uid_no;
 
         err = keybox_get_keyblock (hd->active[hd->found].u.kb,
-                                   &iobuf, &sigstatus);
+                                   &iobuf, &pk_no, &uid_no, &sigstatus);
         if (!err)
           {
-            err = parse_keyblock_image (iobuf, sigstatus, ret_kb);
+            err = parse_keyblock_image (iobuf, pk_no, uid_no, sigstatus,
+                                        ret_kb);
             xfree (sigstatus);
             iobuf_close (iobuf);
           }
