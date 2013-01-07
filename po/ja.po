@@ -1,5 +1,5 @@
 # Japanese messages for GnuPG
-# Copyright (C) 1999, 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2002, 2003, 2004, 2013 Free Software Foundation, Inc.
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # This file is distributed under the same license as the GnuPG package.
@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-12-30 00:20+0900\n"
+"PO-Revision-Date: 2013-01-07 10:40+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -2439,11 +2439,11 @@ msgstr "鍵%s: 重複したユーザIDの検出 - マージ\n"
 
 #, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
-msgstr "*警告*: 鍵%sは失効されたようです: 失効鍵%sの引き出し\n"
+msgstr "*警告*: 鍵%sは失効可能です: 失効鍵%sを取ってきます\n"
 
 #, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
-msgstr "*警告*: 鍵%sは失効されたようです: 失効鍵%sは不在。\n"
+msgstr "*警告*: 鍵%sは失効可能です: 失効鍵%sが存在しません。\n"
 
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
@@ -2878,8 +2878,7 @@ msgid ""
 msgstr ""
 "* `sign' コマンドは `l' で始まると、ローカルの署名で (lsign)、\n"
 "  `t' で始まると信用署名 (tsign)、`nr' で始まると失効不可署名\n"
-"  (nrsign)、もしくはこれらの組み合わせ (ltsign, tnrsign, などなど)となりま"
-"す。\n"
+"  (nrsign)、もしくはこれらの組み合わせ (ltsign, tnrsign, など)となります。\n"
 
 msgid "Key is revoked."
 msgstr "鍵は、失効されています。"
@@ -3007,7 +3006,7 @@ msgstr "%s で %s 鍵によってこの鍵は、失効されました: %s\n"
 
 #, c-format
 msgid "This key may be revoked by %s key %s"
-msgstr "この鍵は、%s鍵%sによって失効されたようです"
+msgstr "この鍵は、%s鍵%sによって失効可能です"
 
 msgid "(sensitive)"
 msgstr "(機密指定)"
