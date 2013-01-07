@@ -128,7 +128,7 @@ void
 cache_public_key (PKT_public_key * pk)
 {
 #if MAX_PK_CACHE_ENTRIES
-  pk_cache_entry_t ce;
+  pk_cache_entry_t ce, ce2;
   u32 keyid[2];
 
   if (pk_cache_disabled)
@@ -158,11 +158,25 @@ cache_public_key (PKT_public_key * pk)
 
   if (pk_cache_entries >= MAX_PK_CACHE_ENTRIES)
     {
-      /* fixme: Use another algorithm to free some cache slots.  */
-      pk_cache_disabled = 1;
-      if (opt.verbose > 1)
-	log_info (_("too many entries in pk cache - disabled\n"));
-      return;
+      int n;
+
+      /* Remove the last 50% of the entries.  */
+      for (ce = pk_cache, n = 0; ce && n < pk_cache_entries/2; n++)
+        ce = ce->next;
+      if (ce != pk_cache && ce->next)
+        {
+          ce2 = ce->next;
+          ce->next = NULL;
+          ce = ce2;
+          for (; ce; ce = ce2)
+            {
+              ce2 = ce->next;
+              free_public_key (ce->pk);
+              xfree (ce);
+              pk_cache_entries--;
+            }
+        }
+      assert (pk_cache_entries < MAX_PK_CACHE_ENTRIES);
     }
   pk_cache_entries++;
   ce = xmalloc (sizeof *ce);
