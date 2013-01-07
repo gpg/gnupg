@@ -3288,7 +3288,7 @@ ccid_transceive (ccid_driver_t handle,
           The APDU should me made up of 4 bytes without Lc.
 
    PINLEN_MIN and PINLEN_MAX define the limits for the pin length. 0
-   may be used t enable reasonable defaults.  PIN_PADLEN should be 0.
+   may be used t enable reasonable defaults.
 
    When called with RESP and NRESP set to NULL, the function will
    merely check whether the reader supports the secure command for the
@@ -3297,7 +3297,6 @@ int
 ccid_transceive_secure (ccid_driver_t handle,
                         const unsigned char *apdu_buf, size_t apdu_buflen,
                         int pin_mode, int pinlen_min, int pinlen_max,
-                        int pin_padlen,
                         unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
@@ -3324,9 +3323,6 @@ ccid_transceive_secure (ccid_driver_t handle,
     return CCID_DRIVER_ERR_NO_KEYPAD;
 
   if (pin_mode != 1)
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
-
-  if (pin_padlen != 0)
     return CCID_DRIVER_ERR_NOT_SUPPORTED;
 
   if (!pinlen_min)
