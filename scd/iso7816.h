@@ -37,8 +37,6 @@ struct iso7816_pininfo_s
   int mode;    /* A mode of 0 means: Do not use the keypad. */
   int minlen;
   int maxlen;
-  int padlen;
-  int padchar;
 };
 typedef struct iso7816_pininfo_s iso7816_pininfo_t;
 

@@ -93,8 +93,8 @@ int ccid_transceive (ccid_driver_t handle,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_secure (ccid_driver_t handle,
                      const unsigned char *apdu, size_t apdulen,
-                     int pin_mode, 
-                     int pinlen_min, int pinlen_max, int pin_padlen, 
+                     int pin_mode,
+                     int pinlen_min, int pinlen_max,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_escape (ccid_driver_t handle,
                             const unsigned char *data, size_t datalen,

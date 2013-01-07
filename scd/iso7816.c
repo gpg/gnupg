@@ -273,9 +273,8 @@ iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_check_keypad (slot, command, 
-                          pininfo->mode, pininfo->minlen, pininfo->maxlen,
-                          pininfo->padlen);
+  sw = apdu_check_keypad (slot, command,
+                          pininfo->mode, pininfo->minlen, pininfo->maxlen);
   return iso7816_map_sw (sw);
 }
 
@@ -289,8 +288,7 @@ iso7816_verify_kp (int slot, int chvno, iso7816_pininfo_t *pininfo)
   int sw;
 
   sw = apdu_keypad_verify (slot, 0x00, CMD_VERIFY, 0, chvno,
-                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
-                           pininfo->padlen);
+                           pininfo->mode, pininfo->minlen, pininfo->maxlen);
   return map_sw (sw);
 }
 
@@ -318,7 +316,7 @@ iso7816_change_reference_data_kp (int slot, int chvno, int is_exchange,
   sw = apdu_keypad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
 			   is_exchange ? 1 : 0,
 			   chvno, pininfo->mode, pininfo->minlen,
-			   pininfo->maxlen, pininfo->padlen);
+			   pininfo->maxlen);
   return map_sw (sw);
 }
 

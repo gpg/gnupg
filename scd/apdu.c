@@ -82,15 +82,7 @@
 #define DLSTDCALL
 #endif
 
-
-/* Helper to pass parameters related to keypad based operations. */
-struct pininfo_s
-{
-  int mode;
-  int minlen;
-  int maxlen;
-  int padlen;
-};
+#define pininfo_s iso7816_pininfo_s
 
 /* A structure to collect information pertaining to one reader
    slot. */
@@ -107,7 +99,7 @@ struct reader_table_s {
   int (*get_status_reader)(int, unsigned int *);
   int (*send_apdu_reader)(int,unsigned char *,size_t,
                           unsigned char *, size_t *, struct pininfo_s *);
-  int (*check_keypad)(int, int, int, int, int, int);
+  int (*check_keypad)(int, int, int, int, int);
   void (*dump_status_reader)(int);
   int (*set_progress_cb)(int, gcry_handler_progress_t, void*);
   int (*keypad_verify)(int, int, int, int, int, struct pininfo_s *);
@@ -313,7 +305,7 @@ static int apdu_get_status_internal (int slot, int hang, int no_atr_reset,
                                      unsigned int *status,
                                      unsigned int *changed);
 static int check_pcsc_keypad (int slot, int command, int pin_mode,
-                              int pinlen_min, int pinlen_max, int pin_padlen);
+                              int pinlen_min, int pinlen_max);
 static int pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
                                struct pininfo_s *pininfo);
 static int pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
@@ -2023,7 +2015,7 @@ open_pcsc_reader (const char *portstr)
    on the keypad.  Return 0 on success.  */
 static int
 check_pcsc_keypad (int slot, int command, int pin_mode,
-                   int pinlen_min, int pinlen_max, int pin_padlen)
+                   int pinlen_min, int pinlen_max)
 {
   unsigned char buf[256];
   size_t len = 256;
@@ -2032,7 +2024,6 @@ check_pcsc_keypad (int slot, int command, int pin_mode,
   (void)pin_mode;
   (void)pinlen_min;
   (void)pinlen_max;
-  (void)pin_padlen;
 
  check_again:
   if (command == ISO7816_VERIFY)
@@ -2097,9 +2088,6 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
     return sw;
 
   if (pininfo->mode != 1)
-    return SW_NOT_SUPPORTED;
-
-  if (pininfo->padlen != 0)
     return SW_NOT_SUPPORTED;
 
   if (!pininfo->minlen)
@@ -2179,9 +2167,6 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
     return sw;
 
   if (pininfo->mode != 1)
-    return SW_NOT_SUPPORTED;
-
-  if (pininfo->padlen != 0)
     return SW_NOT_SUPPORTED;
 
   if (!pininfo->minlen)
@@ -2360,7 +2345,6 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
                                   pininfo->mode,
                                   pininfo->minlen,
                                   pininfo->maxlen,
-                                  pininfo->padlen,
                                   buffer, maxbuflen, buflen);
   else
     err = ccid_transceive (reader_table[slot].ccid.handle,
@@ -2379,14 +2363,14 @@ send_apdu_ccid (int slot, unsigned char *apdu, size_t apdulen,
    parameters, see ccid-driver.c */
 static int
 check_ccid_keypad (int slot, int command, int pin_mode,
-                   int pinlen_min, int pinlen_max, int pin_padlen)
+                   int pinlen_min, int pinlen_max)
 {
   unsigned char apdu[] = { 0, 0, 0, 0x81 };
 
   apdu[1] = command;
   return ccid_transceive_secure (reader_table[slot].ccid.handle,
                                  apdu, sizeof apdu,
-                                 pin_mode, pinlen_min, pinlen_max, pin_padlen,
+                                 pin_mode, pinlen_min, pinlen_max,
                                  NULL, 0, NULL);
 }
 
@@ -2407,7 +2391,6 @@ ccid_keypad_operation (int slot, int class, int ins, int p0, int p1,
   err = ccid_transceive_secure (reader_table[slot].ccid.handle,
                                 apdu, sizeof apdu,
                                 pininfo->mode, pininfo->minlen, pininfo->maxlen,
-                                pininfo->padlen,
                                 result, 2, &resultlen);
   if (err)
     return err;
@@ -3318,7 +3301,7 @@ apdu_get_status (int slot, int hang,
    parameters, see ccid-driver.c */
 int
 apdu_check_keypad (int slot, int command, int pin_mode,
-                   int pinlen_min, int pinlen_max, int pin_padlen)
+                   int pinlen_min, int pinlen_max)
 {
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -3331,8 +3314,7 @@ apdu_check_keypad (int slot, int command, int pin_mode,
         return sw;
 
       sw = reader_table[slot].check_keypad (slot, command,
-                                            pin_mode, pinlen_min, pinlen_max,
-                                            pin_padlen);
+                                            pin_mode, pinlen_min, pinlen_max);
       unlock_slot (slot);
       return sw;
     }
@@ -3343,14 +3325,13 @@ apdu_check_keypad (int slot, int command, int pin_mode,
 
 int
 apdu_keypad_verify (int slot, int class, int ins, int p0, int p1, int pin_mode,
-                    int pinlen_min, int pinlen_max, int pin_padlen)
+                    int pinlen_min, int pinlen_max)
 {
   struct pininfo_s pininfo;
 
   pininfo.mode = pin_mode;
   pininfo.minlen = pinlen_min;
   pininfo.maxlen = pinlen_max;
-  pininfo.padlen = pin_padlen;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -3374,14 +3355,13 @@ apdu_keypad_verify (int slot, int class, int ins, int p0, int p1, int pin_mode,
 
 int
 apdu_keypad_modify (int slot, int class, int ins, int p0, int p1, int pin_mode,
-                    int pinlen_min, int pinlen_max, int pin_padlen)
+                    int pinlen_min, int pinlen_max)
 {
   struct pininfo_s pininfo;
 
   pininfo.mode = pin_mode;
   pininfo.minlen = pinlen_min;
   pininfo.maxlen = pinlen_max;
-  pininfo.padlen = pin_padlen;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
