@@ -299,7 +299,7 @@ blob_cmp_fpr_part (KEYBOXBLOB blob, const unsigned char *fpr,
 
 static int
 blob_cmp_name (KEYBOXBLOB blob, int idx,
-               const char *name, size_t namelen, int substr)
+               const char *name, size_t namelen, int substr, int x509)
 {
   const unsigned char *buffer;
   size_t length;
@@ -336,10 +336,9 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
     return 0; /* out of bounds */
 
   if (idx < 0)
-    { /* compare all names starting with that (negated) index */
-      idx = -idx;
-
-      for ( ;idx < nuids; idx++)
+    { /* Compare all names.  Note that for X.509 we start with index 1
+         so to skip the issuer at index 0.  */
+      for (idx = !!x509; idx < nuids; idx++)
         {
           size_t mypos = pos;
 
@@ -387,10 +386,12 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
 }
 
 
-/* compare all email addresses of the subject.  With SUBSTR given as
-   True a substring search is done in the mail address */
+/* Compare all email addresses of the subject.  With SUBSTR given as
+   True a substring search is done in the mail address.  If X509
+   states whether thr search is done on an X.509 blob.  */
 static int
-blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
+blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
+               int x509)
 {
   const unsigned char *buffer;
   size_t length;
@@ -431,7 +432,9 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
   if (namelen < 1)
     return 0;
 
-  for (idx=1 ;idx < nuids; idx++)
+  /* Note that for X.509 we start at index 1 becuase index 0 is used
+     for the issuer name.  */
+  for (idx=!!x509 ;idx < nuids; idx++)
     {
       size_t mypos = pos;
 
@@ -440,6 +443,12 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr)
       len = get32 (buffer+mypos+4);
       if (off+len > length)
         return 0; /* error: better stop here out of bounds */
+      if (!x509)
+        {
+          /* For OpenPGP we need to forward to the mailbox part.  */
+          for ( ;len && buffer[off] != '<'; len--, off++)
+            ;
+        }
       if (len < 2 || buffer[off] != '<')
         continue; /* empty name or trailing 0 not stored */
       len--; /* one back */
@@ -589,7 +598,7 @@ has_issuer (KEYBOXBLOB blob, const char *name)
     return 0;
 
   namelen = strlen (name);
-  return blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0);
+  return blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0, 1);
 }
 
 static inline int
@@ -607,7 +616,7 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name,
   namelen = strlen (name);
 
   return (blob_cmp_sn (blob, sn, snlen)
-          && blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0));
+          && blob_cmp_name (blob, 0 /* issuer */, name, namelen, 0, 1));
 }
 
 static inline int
@@ -631,22 +640,25 @@ has_subject (KEYBOXBLOB blob, const char *name)
     return 0;
 
   namelen = strlen (name);
-  return blob_cmp_name (blob, 1 /* subject */, name, namelen, 0);
+  return blob_cmp_name (blob, 1 /* subject */, name, namelen, 0, 1);
 }
 
+
 static inline int
-has_subject_or_alt (KEYBOXBLOB blob, const char *name, int substr)
+has_username (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
+  int btype;
 
   return_val_if_fail (name, 0);
 
-  if (blob_get_type (blob) != BLOBTYPE_X509)
+  btype = blob_get_type (blob);
+  if (btype != BLOBTYPE_PGP && btype != BLOBTYPE_X509)
     return 0;
 
   namelen = strlen (name);
-  return blob_cmp_name (blob, -1 /* all subject names*/, name,
-                        namelen, substr);
+  return blob_cmp_name (blob, -1 /* all subject/user names */, name,
+                        namelen, substr, (btype == BLOBTYPE_X509));
 }
 
 
@@ -654,16 +666,21 @@ static inline int
 has_mail (KEYBOXBLOB blob, const char *name, int substr)
 {
   size_t namelen;
+  int btype;
 
   return_val_if_fail (name, 0);
 
-  if (blob_get_type (blob) != BLOBTYPE_X509)
+  btype = blob_get_type (blob);
+  if (btype != BLOBTYPE_PGP && btype != BLOBTYPE_X509)
     return 0;
+
+  if (btype == BLOBTYPE_PGP && *name == '<')
+    name++; /* Hack to remove the leading '<' for gpg.  */
 
   namelen = strlen (name);
   if (namelen && name[namelen-1] == '>')
     namelen--;
-  return blob_cmp_mail (blob, name, namelen, substr);
+  return blob_cmp_mail (blob, name, namelen, substr, (btype == BLOBTYPE_X509));
 }
 
 
@@ -858,7 +875,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
               never_reached ();
               break;
             case KEYDB_SEARCH_MODE_EXACT:
-              if (has_subject_or_alt (blob, desc[n].u.name, 0))
+              if (has_username (blob, desc[n].u.name, 0))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAIL:
@@ -870,7 +887,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_SUBSTR:
-              if (has_subject_or_alt (blob, desc[n].u.name, 1))
+              if (has_username (blob, desc[n].u.name, 1))
                 goto found;
               break;
             case KEYDB_SEARCH_MODE_MAILEND:
