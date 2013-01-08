@@ -17,93 +17,119 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+* The keybox data format
 
-/* The keybox data formats
+   The KeyBox uses an augmented OpenPGP/X.509 key format.  This makes
+   random access to a keyblock/certificate easier and also gives the
+   opportunity to store additional information (e.g. the fingerprint)
+   along with the key.  All integers are stored in network byte order,
+   offsets are counted from the beginning of the Blob.
 
-The KeyBox uses an augmented OpenPGP/X.509 key format.  This makes
-random access to a keyblock/certificate easier and also gives the
-opportunity to store additional information (e.g. the fingerprint)
-along with the key.  All integers are stored in network byte order,
-offsets are counted from the beginning of the Blob.
+** Overview of blob types
 
-The first record of a plain KBX file has a special format:
+   | Byte 4 | Blob type    |
+   |--------+--------------|
+   |      0 | Empty blob   |
+   |      1 | First blob   |
+   |      2 | OpenPGP blob |
+   |      3 | X.509 blob   |
 
- u32  length of the first record
- byte Blob type (1)
- byte version number (1)
- byte reserved
- byte reserved
- u32  magic 'KBXf'
- u32  reserved
- u32  file_created_at
- u32  last_maintenance_run
- u32  reserved
- u32  reserved
+** The First blob
 
-The OpenPGP and X.509 blob are very similiar, things which are
-X.509 specific are noted like [X.509: xxx]
+   The first blob of a plain KBX file has a special format:
 
- u32  length of this blob (including these 4 bytes)
- byte Blob type (2) [X509: 3]
- byte version number of this blob type (1)
- u16  Blob flags
-	bit 0 = contains secret key material (not used)
-        bit 1 = ephemeral blob (e.g. used while quering external resources)
+   - u32  Length of this blob
+   - byte Blob type (1)
+   - byte Version number (1)
+   - byte RFU
+   - byte RFU
+   - b4   Magic 'KBXf'
+   - u32  RFU
+   - u32  file_created_at
+   - u32  last_maintenance_run
+   - u32  RFU
+   - u32  RFU
 
- u32  offset to the OpenPGP keyblock or X509 DER encoded certificate
- u32  and its length
- u16  number of keys (at least 1!) [X509: always 1]
- u16  size of additional key information
- n times:
-   b20	The keys fingerprint
-	(fingerprints are always 20 bytes, MD5 left padded with zeroes)
-   u32	offset to the n-th key's keyID (a keyID is always 8 byte)
-        or 0 if not known which is the case only for X509.
-   u16	special key flags
-	 bit 0 = qualified signature (not yet implemented}
-   u16	reserved
- u16  size of serialnumber(may be zero)
-   n  u16 (see above) bytes of serial number
- u16  number of user IDs
- u16  size of additional user ID information
- n times:
-   u32	offset to the n-th user ID
-   u32	length of this user ID.
-   u16	special user ID flags.
-	 bit 0 =
-   byte validity
-   byte reserved
-   [For X509, the first user ID is the Issuer, the second the Subject
-   and the others are subjectAltNames]
- u16  number of signatures
- u16  size of signature information (4)
-   u32	expiration time of signature with some special values:
-	0x00000000 = not checked
-	0x00000001 = missing key
-	0x00000002 = bad signature
-	0x10000000 = valid and expires at some date in 1978.
-	0xffffffff = valid and does not expire
- u8	assigned ownertrust [X509: not used]
- u8	all_validity
-           OpenPGP:  see ../g10/trustdb/TRUST_* [not yet used]
-           X509: Bit 4 set := key has been revoked.  Note that this value
-                              matches TRUST_FLAG_REVOKED
- u16	reserved
- u32	recheck_after
- u32	Newest timestamp in the keyblock (useful for KS syncronsiation?)
- u32	Blob created at
- u32	size of reserved space (not including this field)
-      reserved space
+** The OpenPGP and X.509 blobs
 
-    Here we might want to put other data
+   The OpenPGP and X.509 blobs are very similiar, things which are
+   X.509 specific are noted like [X.509: xxx]
 
-    Here comes the keyblock
+   - u32  Length of this blob (including these 4 bytes)
+   - byte Blob type
+           2 = OpenPGP
+           3 = X509
+   - byte Version number of this blob type
+           1 = The only defined value
+   - u16  Blob flags
+          bit 0 = contains secret key material (not used)
+          bit 1 = ephemeral blob (e.g. used while quering external resources)
+   - u32  Offset to the OpenPGP keyblock or the X.509 DER encoded
+          certificate
+   - u32  The length of the keyblock or certificate
+   - u16  [NKEYS] Number of keys (at least 1!) [X509: always 1]
+   - u16  Size of the key information structure (at least 28).
+   - NKEYS times:
+      - b20  The fingerprint of the key.
+             Fingerprints are always 20 bytes, MD5 left padded with zeroes.
+      - u32  Offset to the n-th key's keyID (a keyID is always 8 byte)
+             or 0 if not known which is the case only for X.509.
+      - u16  Key flags
+             bit 0 = qualified signature (not yet implemented}
+      - u16  RFU
+      - bN   Optional filler up to the specified length of this
+             structure.
+   - u16  Size of the serial number (may be zero)
+      -  bN  The serial number. N as giiven above.
+   - u16  Number of user IDs
+   - u16  [NUIDS] Size of user ID information structure
+   - NUIDS times:
 
-    maybe we put a signature here later.
+      For X509, the first user ID is the Issuer, the second the
+      Subject and the others are subjectAltNames.  For OpenPGP we only
+      store the information from UserID packets here.
 
- b16	MD5 checksum  (useful for KS syncronisation), we might also want to use
-    a mac here.
- b4    reserved
+      - u32  Blob offset to the n-th user ID
+      - u32  Length of this user ID.
+      - u16  User ID flags.
+             (not yet used)
+      - byte Validity
+      - byte RFU
+
+   - u16  [NSIGS] Number of signatures
+   - u16  Size of signature information (4)
+   - NSIGS times:
+      - u32  Expiration time of signature with some special values:
+             - 0x00000000 = not checked
+             - 0x00000001 = missing key
+             - 0x00000002 = bad signature
+             - 0x10000000 = valid and expires at some date in 1978.
+             - 0xffffffff = valid and does not expire
+   - u8	Assigned ownertrust [X509: not used]
+   - u8	All_Validity
+        OpenPGP: See ../g10/trustdb/TRUST_* [not yet used]
+        X509: Bit 4 set := key has been revoked.
+                           Note that this value matches TRUST_FLAG_REVOKED
+   - u16  RFU
+   - u32  Recheck_after
+   - u32  Latest timestamp in the keyblock (useful for KS syncronsiation?)
+   - u32  Blob created at
+   - u32  [NRES] Size of reserved space (not including this field)
+   - bN   Reserved space of size NRES for future use.
+   - bN   Arbitrary space for example used to store data which is not
+          part of the keyblock or certificate.  For example the v3 key
+          IDs go here.
+   - bN   Space for the keyblock or certifciate.
+   - bN   RFU
+   - b20  SHA-1 checksum (useful for KS syncronisation?)
+          Note, that KBX versions before GnuPG 2.1 used an MD5
+          checksum.  However it was only created but never checked.
+          Thus we do not expect problems if we switch to SHA-1.  If
+          the checksum fails and the first 4 bytes are zero, we can
+          try again with MD5.  SHA-1 has the advantage that it is
+          faster on CPUs with dedicated SHA-1 support.
+
 
 */
 
