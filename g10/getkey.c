@@ -2465,7 +2465,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
   int no_suitable_key = 0;
 
   rc = 0;
-  while (!(rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems)))
+  while (!(rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems, NULL)))
     {
       /* If we are searching for the first key we have to make sure
          that the next iteration does not do an implicit reset.
@@ -2890,7 +2890,7 @@ have_secret_key_with_kid (u32 *keyid)
   desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
   desc.u.kid[0] = keyid[0];
   desc.u.kid[1] = keyid[1];
-  while (!result && !(err = keydb_search (kdbhd, &desc, 1)))
+  while (!result && !(err = keydb_search (kdbhd, &desc, 1, NULL)))
     {
       desc.mode = KEYDB_SEARCH_MODE_NEXT;
       err = keydb_get_keyblock (kdbhd, &keyblock);

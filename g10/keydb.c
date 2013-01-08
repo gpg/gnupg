@@ -1173,8 +1173,8 @@ keydb_search_reset (KEYDB_HANDLE hd)
  * keyring was found.
  */
 gpg_error_t
-keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
-	       size_t ndesc, size_t *descindex)
+keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
+              size_t ndesc, size_t *descindex)
 {
   gpg_error_t rc;
 
@@ -1225,7 +1225,7 @@ keydb_search_first (KEYDB_HANDLE hd)
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (hd, &desc, 1, NULL);
 }
 
 gpg_error_t
@@ -1235,7 +1235,7 @@ keydb_search_next (KEYDB_HANDLE hd)
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_NEXT;
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (hd, &desc, 1, NULL);
 }
 
 gpg_error_t
@@ -1247,7 +1247,7 @@ keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
   desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
   desc.u.kid[0] = kid[0];
   desc.u.kid[1] = kid[1];
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (hd, &desc, 1, NULL);
 }
 
 gpg_error_t
@@ -1258,5 +1258,5 @@ keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FPR;
   memcpy (desc.u.fpr, fpr, MAX_FINGERPRINT_LEN);
-  return keydb_search (hd, &desc, 1);
+  return keydb_search (hd, &desc, 1, NULL);
 }

@@ -222,7 +222,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
     kdbhd = keydb_new ();
     rc = classify_user_id (uname, &desc, 1);
     if (!rc)
-      rc = keydb_search (kdbhd, &desc, 1);
+      rc = keydb_search (kdbhd, &desc, 1, NULL);
     if (rc) {
 	log_error (_("key \"%s\" not found: %s\n"),uname, g10_errstr (rc));
 	goto leave;
@@ -463,7 +463,7 @@ gen_revoke (const char *uname)
   kdbhd = keydb_new ();
   rc = classify_user_id (uname, &desc, 1);
   if (!rc)
-    rc = keydb_search (kdbhd, &desc, 1);
+    rc = keydb_search (kdbhd, &desc, 1, NULL);
   if (rc)
     {
       log_error (_("secret key \"%s\" not found: %s\n"),

@@ -144,9 +144,8 @@ gpg_error_t keydb_delete_keyblock (KEYDB_HANDLE hd);
 gpg_error_t keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
 void keydb_rebuild_caches (int noisy);
 gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
-#define keydb_search(a,b,c) keydb_search2((a),(b),(c),NULL)
-gpg_error_t keydb_search2 (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
-                           size_t ndesc, size_t *descindex);
+gpg_error_t keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
+                          size_t ndesc, size_t *descindex);
 gpg_error_t keydb_search_first (KEYDB_HANDLE hd);
 gpg_error_t keydb_search_next (KEYDB_HANDLE hd);
 gpg_error_t keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);

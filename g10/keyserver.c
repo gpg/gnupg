@@ -1142,7 +1142,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	}
     }
 
-  while (!(rc = keydb_search (kdbhd, desc, ndesc)))
+  while (!(rc = keydb_search (kdbhd, desc, ndesc, NULL)))
     {
       if (!users)
 	desc[0].mode = KEYDB_SEARCH_MODE_NEXT;

@@ -68,7 +68,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
                   || desc.mode == KEYDB_SEARCH_MODE_FPR16
                   || desc.mode == KEYDB_SEARCH_MODE_FPR20);
     if (!rc)
-      rc = keydb_search (hd, &desc, 1);
+      rc = keydb_search (hd, &desc, 1, NULL);
     if (rc) {
 	log_error (_("key \"%s\" not found: %s\n"), username, g10_errstr (rc));
 	write_status_text( STATUS_DELETE_PROBLEM, "1" );

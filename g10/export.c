@@ -803,7 +803,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       kek = NULL;
     }
 
-  while (!(err = keydb_search2 (kdbhd, desc, ndesc, &descindex)))
+  while (!(err = keydb_search (kdbhd, desc, ndesc, &descindex)))
     {
       int skip_until_subkey = 0;
       u32 keyid[2];
