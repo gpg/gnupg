@@ -264,6 +264,9 @@ struct ccid_driver_s
   unsigned char apdu_level:2;     /* Reader supports short APDU level
                                      exchange.  With a value of 2 short
                                      and extended level is supported.*/
+  unsigned int auto_voltage:1;
+  unsigned int auto_param:1;
+  unsigned int auto_pps:1;
   unsigned int auto_ifsd:1;
   unsigned int powered_off:1;
   unsigned int has_pinpad:2;
@@ -758,7 +761,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
 {
   unsigned int i;
   unsigned int us;
-  int have_t1 = 0, have_tpdu=0, have_auto_conf = 0;
+  int have_t1 = 0, have_tpdu=0;
 
 
   handle->nonnull_nad = 0;
@@ -767,6 +770,9 @@ parse_ccid_descriptor (ccid_driver_t handle,
   handle->ifsd = 0;
   handle->has_pinpad = 0;
   handle->apdu_level = 0;
+  handle->auto_voltage = 0;
+  handle->auto_param = 0;
+  handle->auto_pps = 0;
   DEBUGOUT_3 ("idVendor: %04X  idProduct: %04X  bcdDevice: %04X\n",
               handle->id_vendor, handle->id_product, handle->bcd_device);
   if (buflen < 54 || buf[0] < 54)
@@ -842,22 +848,31 @@ parse_ccid_descriptor (ccid_driver_t handle,
   DEBUGOUT_1 ("  dwFeatures       %08X\n", us);
   if ((us & 0x0002))
     {
-      DEBUGOUT ("    Auto configuration based on ATR\n");
-      have_auto_conf = 1;
+      DEBUGOUT ("    Auto configuration based on ATR (assumes auto voltage)\n");
+      handle->auto_voltage = 1;
     }
   if ((us & 0x0004))
     DEBUGOUT ("    Auto activation on insert\n");
   if ((us & 0x0008))
-    DEBUGOUT ("    Auto voltage selection\n");
+    {
+      DEBUGOUT ("    Auto voltage selection\n");
+      handle->auto_voltage = 1;
+    }
   if ((us & 0x0010))
     DEBUGOUT ("    Auto clock change\n");
   if ((us & 0x0020))
     DEBUGOUT ("    Auto baud rate change\n");
   if ((us & 0x0040))
-    DEBUGOUT ("    Auto parameter negotiation made by CCID\n");
+    {
+      DEBUGOUT ("    Auto parameter negotiation made by CCID\n");
+      handle->auto_param = 1;
+    }
   else if ((us & 0x0080))
-    DEBUGOUT ("    Auto PPS made by CCID\n");
-  else if ((us & (0x0040 | 0x0080)))
+    {
+      DEBUGOUT ("    Auto PPS made by CCID\n");
+      handle->auto_pps = 1;
+    }
+  if ((us & (0x0040 | 0x0080)) == (0x0040 | 0x0080))
     DEBUGOUT ("    WARNING: conflicting negotiation features\n");
 
   if ((us & 0x0100))
@@ -935,11 +950,10 @@ parse_ccid_descriptor (ccid_driver_t handle,
       DEBUGOUT_LF ();
     }
 
-  if (!have_t1 || !(have_tpdu  || handle->apdu_level) || !have_auto_conf)
+  if (!have_t1 || !(have_tpdu  || handle->apdu_level))
     {
       DEBUGOUT ("this drivers requires that the reader supports T=1, "
-                "TPDU or APDU level exchange and auto configuration - "
-                "this is not available\n");
+                "TPDU or APDU level exchange - this is not available\n");
       return -1;
     }
 
@@ -2338,6 +2352,151 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
 }
 
 
+/* Parse ATR string (of ATRLEN) and update parameters at PARAM.
+   Calling this routine, it should prepare default values at PARAM
+   beforehand.  This routine assumes that card is accessed by T=1
+   protocol.  It doesn't analyze historical bytes at all.
+
+   Returns < 0 value on error:
+     -1 for parse error or integrity check error
+     -2 for card doesn't support T=1 protocol
+     -3 for parameters are nod explicitly defined by ATR
+     -4 for this driver doesn't support CRC
+
+   Returns >= 0 on success:
+      0 for card is negotiable mode
+      1 for card is specific mode (and not negotiable)
+ */
+static int
+update_param_by_atr (unsigned char *param, unsigned char *atr, size_t atrlen)
+{
+  int i = -1;
+  int t, y, chk;
+  int historical_bytes_num, negotiable = 1;
+
+#define NEXTBYTE() do { i++; if (atrlen <= i) return -1; } while (0)
+
+  NEXTBYTE ();
+
+  if (atr[i] == 0x3F)
+    param[1] |= 0x02;		/* Convention is inverse.  */
+  NEXTBYTE ();
+
+  y = (atr[i] >> 4);
+  historical_bytes_num = atr[i] & 0x0f;
+  NEXTBYTE ();
+
+  if ((y & 1))
+    {
+      param[0] = atr[i];	/* TA1 - Fi & Di */
+      NEXTBYTE ();
+    }
+
+  if ((y & 2))
+    NEXTBYTE ();		/* TB1 - ignore */
+
+  if ((y & 4))
+    {
+      param[2] = atr[i];	/* TC1 - Guard Time */
+      NEXTBYTE ();
+    }
+
+  if ((y & 8))
+    {
+      y = (atr[i] >> 4);	/* TD1 */
+      t = atr[i] & 0x0f;
+      NEXTBYTE ();
+
+      if ((y & 1))
+	{			/* TA2 - PPS mode */
+	  if ((atr[i] & 0x0f) != 1)
+	    return -2;		/* Wrong card protocol (!= 1).  */
+
+	  if ((atr[i] & 0x10) != 0x10)
+	    return -3; /* Transmission parameters are implicitly defined. */
+
+	  negotiable = 0;	/* TA2 means specific mode.  */
+	  NEXTBYTE ();
+	}
+
+      if ((y & 2))
+	NEXTBYTE ();		/* TB2 - ignore */
+
+      if ((y & 4))
+	NEXTBYTE ();		/* TC2 - ignore */
+
+      if ((y & 8))
+	{
+	  y = (atr[i] >> 4);	/* TD2 */
+	  t = atr[i] & 0x0f;
+	  NEXTBYTE ();
+	}
+      else
+	y = 0;
+
+      while (y)
+	{
+	  if ((y & 1))
+	    {			/* TAx */
+	      if (t == 1)
+		param[5] = atr[i]; /* IFSC */
+	      else if (t == 15)
+		/* XXX: check voltage? */
+		param[4] = (atr[i] >> 6); /* ClockStop */
+
+	      NEXTBYTE ();
+	    }
+
+	  if ((y & 2))
+	    {
+	      if (t == 1)
+		param[3] = atr[i]; /* TBx - BWI & CWI */
+	      NEXTBYTE ();
+	    }
+
+	  if ((y & 4))
+	    {
+	      if (t == 1)
+		param[1] |= (atr[i] & 0x01); /* TCx - LRC/CRC */
+	      NEXTBYTE ();
+
+	      if (param[1] & 0x01)
+		return -4;	/* CRC not supported yet.  */
+	    }
+
+	  if ((y & 8))
+	    {
+	      y = (atr[i] >> 4); /* TDx */
+	      t = atr[i] & 0x0f;
+	      NEXTBYTE ();
+	    }
+	  else
+	    y = 0;
+	}
+    }
+
+  i += historical_bytes_num - 1;
+  NEXTBYTE ();
+  if (atrlen != i+1)
+    return -1;
+
+#undef NEXTBYTE
+
+  chk = 0;
+  do
+    {
+      chk ^= atr[i];
+      i--;
+    }
+  while (i > 0);
+
+  if (chk != 0)
+    return -1;
+
+  return negotiable;
+}
+
+
 /* Return the ATR of the card.  This is not a cached value and thus an
    actual reset is done.  */
 int
@@ -2354,6 +2513,15 @@ ccid_get_atr (ccid_driver_t handle,
   unsigned int edc;
   int tried_iso = 0;
   int got_param;
+  unsigned char param[7] = { /* For Protocol T=1 */
+    0x11, /* bmFindexDindex */
+    0x10, /* bmTCCKST1 */
+    0x00, /* bGuardTimeT1 */
+    0x4d, /* bmWaitingIntegersT1 */
+    0x00, /* bClockStop */
+    0x20, /* bIFSC */
+    0x00  /* bNadValue */
+  };
 
   /* First check whether a card is available.  */
   rc = ccid_slot_status (handle, &statusbits);
@@ -2368,7 +2536,8 @@ ccid_get_atr (ccid_driver_t handle,
   msg[0] = PC_to_RDR_IccPowerOn;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
-  msg[7] = 0; /* power select (0=auto, 1=5V, 2=3V, 3=1.8V) */
+  /* power select (0=auto, 1=5V, 2=3V, 3=1.8V) */
+  msg[7] = handle->auto_voltage ? 0 : 1;
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
   set_msg_len (msg, 0);
@@ -2410,23 +2579,73 @@ ccid_get_atr (ccid_driver_t handle,
       *atrlen = n;
     }
 
+  param[6] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+  rc = update_param_by_atr (param, msg+10, msglen - 10);
+  if (rc < 0)
+    {
+      DEBUGOUT_1 ("update_param_by_atr failed: %d\n", rc);
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+    }
+
   got_param = 0;
-  msg[0] = PC_to_RDR_GetParameters;
-  msg[5] = 0; /* slot */
-  msg[6] = seqno = handle->seqno++;
-  msg[7] = 0; /* RFU */
-  msg[8] = 0; /* RFU */
-  msg[9] = 0; /* RFU */
-  set_msg_len (msg, 0);
-  msglen = 10;
-  rc = bulk_out (handle, msg, msglen, 0);
-  if (!rc)
-    rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
-                  seqno, 2000, 0);
-  if (rc)
-    DEBUGOUT ("GetParameters failed\n");
-  else if (msglen == 17 && msg[9] == 1)
-    got_param = 1;
+
+  if (handle->auto_param)
+    {
+      msg[0] = PC_to_RDR_GetParameters;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = 0; /* RFU */
+      msg[8] = 0; /* RFU */
+      msg[9] = 0; /* RFU */
+      set_msg_len (msg, 0);
+      msglen = 10;
+      rc = bulk_out (handle, msg, msglen, 0);
+      if (!rc)
+	rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
+		      seqno, 2000, 0);
+      if (rc)
+	DEBUGOUT ("GetParameters failed\n");
+      else if (msglen == 17 && msg[9] == 1)
+	got_param = 1;
+    }
+  else if (handle->auto_pps)
+    ;
+  else if (rc == 1)		/* It's negotiable, send PPS.  */
+    {
+      msg[0] = PC_to_RDR_XfrBlock;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = 0;
+      msg[8] = 0;
+      msg[9] = 0;
+      msg[10] = 0xff;		/* PPSS */
+      msg[11] = 0x11;		/* PPS0: PPS1, Protocol T=1 */
+      msg[12] = param[0];	/* PPS1: Fi / Di */
+      msg[13] = 0xff ^ 0x11 ^ param[0]; /* PCK */
+      set_msg_len (msg, 4);
+      msglen = 10 + 4;
+
+      rc = bulk_out (handle, msg, msglen, 0);
+      if (rc)
+	return rc;
+
+      rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_DataBlock,
+		    seqno, 5000, 0);
+      if (rc)
+	return rc;
+
+      if (msglen != 10 + 4)
+	{
+	  DEBUGOUT_1 ("Setting PPS failed: %d\n", msglen);
+	  return CCID_DRIVER_ERR_CARD_IO_ERROR;
+	}
+
+      if (msg[10] != 0xff || msg[11] != 0x11 || msg[12] != param[0])
+	{
+	  DEBUGOUT_1 ("Setting PPS failed: 0x%02x\n", param[0]);
+	  return CCID_DRIVER_ERR_CARD_IO_ERROR;
+	}
+    }
 
   /* Setup parameters to select T=1. */
   msg[0] = PC_to_RDR_SetParameters;
@@ -2437,16 +2656,7 @@ ccid_get_atr (ccid_driver_t handle,
   msg[9] = 0; /* RFU */
 
   if (!got_param)
-    {
-      /* FIXME: Get those values from the ATR. */
-      msg[10]= 0x01; /* Fi/Di */
-      msg[11]= 0x10; /* LRC, direct convention. */
-      msg[12]= 0;    /* Extra guardtime. */
-      msg[13]= 0x41; /* BWI/CWI */
-      msg[14]= 0;    /* No clock stoppping. */
-      msg[15]= 254;  /* IFSC */
-      msg[16]= 0;    /* Does not support non default NAD values. */
-    }
+    memcpy (&msg[10], param, 7);
   set_msg_len (msg, 7);
   msglen = 10 + 7;
 
@@ -2462,6 +2672,12 @@ ccid_get_atr (ccid_driver_t handle,
     handle->ifsc = msg[15];
   else
     handle->ifsc = 128; /* Something went wrong, assume 128 bytes.  */
+
+  if (handle->nonnull_nad && msglen > 16 && msg[16] == 0)
+    {
+      DEBUGOUT ("Use Null-NAD, clearing handle->nonnull_nad.\n");
+      handle->nonnull_nad = 0;
+    }
 
   handle->t1_ns = 0;
   handle->t1_nr = 0;
