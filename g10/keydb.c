@@ -72,8 +72,40 @@ struct keydb_handle
 };
 
 
+/* This is a simple cache used to return the last result of a
+   successful long kid search.  This works only for keybox resources
+   because (due to lack of a copy_keyblock function) we need to store
+   an image of the keyblock which is fortunately instantly available
+   for keyboxes.  */
+enum keyblock_cache_states {
+  KEYBLOCK_CACHE_EMPTY,
+  KEYBLOCK_CACHE_PREPARED,
+  KEYBLOCK_CACHE_FILLED
+};
+
+struct {
+  enum keyblock_cache_states state;
+  u32 kid[2];
+  iobuf_t iobuf; /* Image of the keyblock.  */
+  u32 *sigstatus;
+  int pk_no;
+  int uid_no;
+} keyblock_cache;
+
+
 static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
+
+
+static void
+keyblock_cache_clear (void)
+{
+  keyblock_cache.state = KEYBLOCK_CACHE_EMPTY;
+  xfree (keyblock_cache.sigstatus);
+  keyblock_cache.sigstatus = NULL;
+  iobuf_close (keyblock_cache.iobuf);
+  keyblock_cache.iobuf = NULL;
+}
 
 
 /* Handle the creation of a keyring or a keybox if it does not yet
@@ -426,6 +458,9 @@ keydb_new (void)
 {
   KEYDB_HANDLE hd;
   int i, j;
+
+  if (DBG_CLOCK)
+    log_clock ("keydb_new");
 
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
@@ -787,6 +822,19 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  if (keyblock_cache.state == KEYBLOCK_CACHE_FILLED)
+    {
+      iobuf_seek (keyblock_cache.iobuf, 0);
+      err = parse_keyblock_image (keyblock_cache.iobuf,
+                                  keyblock_cache.pk_no,
+                                  keyblock_cache.uid_no,
+                                  keyblock_cache.sigstatus,
+                                  ret_kb);
+      if (err)
+        keyblock_cache_clear ();
+      return err;
+    }
+
   if (hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
 
@@ -810,12 +858,26 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
           {
             err = parse_keyblock_image (iobuf, pk_no, uid_no, sigstatus,
                                         ret_kb);
-            xfree (sigstatus);
-            iobuf_close (iobuf);
+            if (!err && keyblock_cache.state == KEYBLOCK_CACHE_PREPARED)
+              {
+                keyblock_cache.state     = KEYBLOCK_CACHE_FILLED;
+                keyblock_cache.sigstatus = sigstatus;
+                keyblock_cache.iobuf     = iobuf;
+                keyblock_cache.pk_no     = pk_no;
+                keyblock_cache.uid_no    = uid_no;
+              }
+            else
+              {
+                xfree (sigstatus);
+                iobuf_close (iobuf);
+              }
           }
       }
       break;
     }
+
+  if (keyblock_cache.state != KEYBLOCK_CACHE_FILLED)
+    keyblock_cache_clear ();
 
   return err;
 }
@@ -914,6 +976,8 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  keyblock_cache_clear ();
+
   if (hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
 
@@ -956,6 +1020,8 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
+
+  keyblock_cache_clear ();
 
   if (opt.dry_run)
     return 0;
@@ -1016,6 +1082,8 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
+
+  keyblock_cache_clear ();
 
   if (hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
@@ -1113,6 +1181,8 @@ keydb_rebuild_caches (int noisy)
 {
   int i, rc;
 
+  keyblock_cache_clear ();
+
   for (i=0; i < used_resources; i++)
     {
       if (!keyring_is_writable (all_resources[i].token))
@@ -1145,6 +1215,11 @@ keydb_search_reset (KEYDB_HANDLE hd)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  keyblock_cache_clear ();
+
+  if (DBG_CLOCK)
+    log_clock ("keydb_search_reset");
+
   hd->current = 0;
   hd->found = -1;
   /* Now reset all resources.  */
@@ -1166,6 +1241,52 @@ keydb_search_reset (KEYDB_HANDLE hd)
 }
 
 
+static void
+dump_search_desc (const char *text, KEYDB_SEARCH_DESC *desc, size_t ndesc)
+{
+  int n;
+  const char *s;
+
+  for (n=0; n < ndesc; n++)
+    {
+      switch (desc[n].mode)
+        {
+        case KEYDB_SEARCH_MODE_NONE:      s = "none";      break;
+        case KEYDB_SEARCH_MODE_EXACT:     s = "exact";     break;
+        case KEYDB_SEARCH_MODE_SUBSTR:    s = "substr";    break;
+        case KEYDB_SEARCH_MODE_MAIL:      s = "mail";      break;
+        case KEYDB_SEARCH_MODE_MAILSUB:   s = "mailsub";   break;
+        case KEYDB_SEARCH_MODE_MAILEND:   s = "mailend";   break;
+        case KEYDB_SEARCH_MODE_WORDS:     s = "words";     break;
+        case KEYDB_SEARCH_MODE_SHORT_KID: s = "short_kid"; break;
+        case KEYDB_SEARCH_MODE_LONG_KID:  s = "long_kid";  break;
+        case KEYDB_SEARCH_MODE_FPR16:     s = "fpr16";     break;
+        case KEYDB_SEARCH_MODE_FPR20:     s = "fpr20";     break;
+        case KEYDB_SEARCH_MODE_FPR:       s = "fpr";       break;
+        case KEYDB_SEARCH_MODE_ISSUER:    s = "issuer";    break;
+        case KEYDB_SEARCH_MODE_ISSUER_SN: s = "issuer_sn"; break;
+        case KEYDB_SEARCH_MODE_SN:        s = "sn";        break;
+        case KEYDB_SEARCH_MODE_SUBJECT:   s = "subject";   break;
+        case KEYDB_SEARCH_MODE_KEYGRIP:   s = "keygrip";   break;
+        case KEYDB_SEARCH_MODE_FIRST:     s = "first";     break;
+        case KEYDB_SEARCH_MODE_NEXT:      s = "next";      break;
+        default:                          s = "?";         break;
+        }
+      if (!n)
+        log_debug ("%s: mode=%s", text, s);
+      else
+        log_debug ("%*s  mode=%s", (int)strlen (text), "", s);
+      if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
+        log_printf (" %08lX%08lX", (unsigned long)desc[n].u.kid[0],
+                    (unsigned long)desc[n].u.kid[1]);
+      else if (desc[n].mode == KEYDB_SEARCH_MODE_SHORT_KID)
+        log_printf (" %08lX", (unsigned long)desc[n].u.kid[1]);
+      else if (desc[n].mode == KEYDB_SEARCH_MODE_SUBSTR)
+        log_printf (" '%s'", desc[n].u.name);
+    }
+}
+
+
 /*
  * Search through all keydb resources, starting at the current
  * position, for a keyblock which contains one of the keys described
@@ -1183,6 +1304,19 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 
   if (DBG_CLOCK)
     log_clock ("keydb_search enter");
+
+  if (DBG_CACHE)
+    dump_search_desc ("keydb_search", desc, ndesc);
+
+  if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
+      && keyblock_cache.state  == KEYBLOCK_CACHE_FILLED
+      && keyblock_cache.kid[0] == desc[0].u.kid[0]
+      && keyblock_cache.kid[1] == desc[0].u.kid[1])
+    {
+      if (DBG_CLOCK)
+        log_clock ("keydb_search leave (cached)");
+      return 0;
+    }
 
   rc = -1;
   while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
@@ -1210,11 +1344,22 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         hd->found = hd->current;
     }
 
+  rc = ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
+        ? gpg_error (GPG_ERR_NOT_FOUND)
+        : rc);
+
+  keyblock_cache_clear ();
+  if (!rc && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
+    {
+      keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
+      keyblock_cache.kid[0] = desc[0].u.kid[0];
+      keyblock_cache.kid[1] = desc[0].u.kid[1];
+    }
+
   if (DBG_CLOCK)
-    log_clock ("keydb_search leave");
-  return ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
-          ? gpg_error (GPG_ERR_NOT_FOUND)
-          : rc);
+    log_clock (rc? "keydb_search leave (not found)"
+                 : "keydb_search leave (found)");
+  return rc;
 }
 
 

@@ -2311,7 +2311,7 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	}
       clearerr (fp);
     }
-  else
+  else if (a->use != 3)  /* Not a temp stream.  */
     {
       for (; a; a = a->chain)
 	{
@@ -2338,7 +2338,8 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	}
 #endif
     }
-  a->d.len = 0;			/* discard buffer */
+  if (a->use != 3)
+    a->d.len = 0;	/* Discard the buffer  unless it is a temp stream.  */
   a->d.start = 0;
   a->nbytes = 0;
   a->nlimit = 0;

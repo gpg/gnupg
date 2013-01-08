@@ -77,6 +77,9 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
   PKT_public_key *sk = NULL;
   int rc;
 
+  if (DBG_CLOCK)
+    log_clock ("get_session_key enter");
+
   rc = openpgp_pk_test_algo2 (k->pubkey_algo, PUBKEY_USAGE_ENC);
   if (rc)
     goto leave;
@@ -129,6 +132,8 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
 
 leave:
   free_public_key (sk);
+  if (DBG_CLOCK)
+    log_clock ("get_session_key leave");
   return rc;
 }
 
@@ -148,6 +153,9 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   byte fp[MAX_FINGERPRINT_LEN];
   size_t fpn;
   const int pkalgo = map_pk_openpgp_to_gcry (sk->pubkey_algo);
+
+  if (DBG_CLOCK)
+    log_clock ("decryption start");
 
   /* Get the keygrip.  */
   err = hexkeygrip_from_pk (sk, &keygrip);
@@ -321,6 +329,8 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
       err = gpg_error (GPG_ERR_WRONG_SECKEY);
       goto leave;
     }
+  if (DBG_CLOCK)
+    log_clock ("decryption ready");
   if (DBG_CIPHER)
     log_printhex ("DEK is:", dek->key, dek->keylen);
 
