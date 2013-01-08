@@ -876,7 +876,7 @@ log_clock (const char *string)
   if (!initial)
     initial = now;
 
-  log_debug ("[%llu] %s", now - initial, string);
+  log_debug ("[%6llu] %s", (now - initial)/1000, string);
 #else
   /* You need to link with -ltr to enable the above code.  */
   log_debug ("[not enabled in the source] %s", string);
