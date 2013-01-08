@@ -261,7 +261,10 @@ put_membuf (struct membuf *mb, const void *buf, size_t len)
         }
       mb->buf = p;
     }
-  memcpy (mb->buf + mb->len, buf, len);
+  if (buf)
+    memcpy (mb->buf + mb->len, buf, len);
+  else
+    memset (mb->buf + mb->len, 0, len);
   mb->len += len;
 }
 
@@ -310,6 +313,7 @@ put32 (struct membuf *mb, u32 a )
   tmp[3] = a;
   put_membuf (mb, tmp, 4);
 }
+
 
 
 /* Store a value in the fixup list */
@@ -638,12 +642,10 @@ create_blob_finish (KEYBOXBLOB blob)
   struct membuf *a = blob->buf;
   unsigned char *p;
   unsigned char *pp;
-  int i;
   size_t n;
 
-  /* write a placeholder for the checksum */
-  for (i = 0; i < 16; i++ )
-    put32 (a, 0);  /* Hmmm: why put32() ?? */
+  /* Write a placeholder for the checksum */
+  put_membuf (a, NULL, 20);
 
   /* get the memory area */
   n = 0; /* (Just to avoid compiler warning.) */
@@ -671,8 +673,8 @@ create_blob_finish (KEYBOXBLOB blob)
       }
   }
 
-  /* calculate and store the MD5 checksum */
-  gcry_md_hash_buffer (GCRY_MD_MD5, p + n - 16, p, n - 16);
+  /* Compute and store the SHA-1 checksum. */
+  gcry_md_hash_buffer (GCRY_MD_SHA1, p + n - 20, p, n - 20);
 
   pp = xtrymalloc (n);
   if ( !pp )

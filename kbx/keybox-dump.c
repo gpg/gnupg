@@ -80,6 +80,57 @@ print_string (FILE *fp, const byte *p, size_t n, int delim)
 
 
 static int
+print_checksum (const byte *buffer, size_t length, size_t unhashed, FILE *fp)
+{
+  const byte *p;
+  int i;
+  int hashlen;
+  unsigned char digest[20];
+
+  fprintf (fp, "Checksum: ");
+  if (unhashed && unhashed < 20)
+    {
+      fputs ("[specified unhashed sized too short]\n", fp);
+      return 0;
+    }
+  if (!unhashed)
+    {
+      unhashed = 16;
+      hashlen = 16;
+    }
+  else
+    hashlen = 20;
+  if (length < 5+unhashed)
+    {
+      fputs ("[blob too short for a checksum]\n", fp);
+      return 0;
+    }
+
+  p = buffer + length - hashlen;
+  for (i=0; i < hashlen; p++, i++)
+    fprintf (fp, "%02x", *p);
+
+  if (hashlen == 16) /* Compatibility method.  */
+    {
+      gcry_md_hash_buffer (GCRY_MD_MD5, digest, buffer, length - 16);
+      if (!memcmp (buffer + length - 16, digest, 16))
+        fputs (" [valid]\n", fp);
+      else
+        fputs (" [bad]\n", fp);
+    }
+  else
+    {
+      gcry_md_hash_buffer (GCRY_MD_SHA1, digest, buffer, length - unhashed);
+      if (!memcmp (buffer + length - hashlen, digest, hashlen))
+        fputs (" [valid]\n", fp);
+      else
+        fputs (" [bad]\n", fp);
+    }
+  return 0;
+}
+
+
+static int
 dump_header_blob (const byte *buffer, size_t length, FILE *fp)
 {
   unsigned long n;
@@ -108,12 +159,13 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 {
   const byte *buffer;
   size_t length;
-  int type;
+  int type, i;
   ulong n, nkeys, keyinfolen;
   ulong nuids, uidinfolen;
   ulong nsigs, siginfolen;
   ulong rawdata_off, rawdata_len;
   ulong nserial;
+  ulong unhashed;
   const byte *p;
 
   buffer = _keybox_get_blob_image (blob, &length);
@@ -189,8 +241,12 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   fprintf( fp, "Data-Offset: %lu\n", rawdata_off );
   fprintf( fp, "Data-Length: %lu\n", rawdata_len );
   if (rawdata_off > length || rawdata_len > length
-      || rawdata_off+rawdata_off > length)
+      || rawdata_off+rawdata_len > length
+      || rawdata_len + 4 > length
+      || rawdata_off+rawdata_len + 4 > length)
     fprintf (fp, "[Error: raw data larger than blob]\n");
+  unhashed = get32 (buffer + rawdata_off + rawdata_len);
+  fprintf (fp, "Unhashed: %lu\n", unhashed);
 
   nkeys = get16 (buffer + 16);
   fprintf (fp, "Key-Count: %lu\n", nkeys );
@@ -205,7 +261,6 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   p = buffer + 20;
   for (n=0; n < nkeys; n++, p += keyinfolen)
     {
-      int i;
       ulong kidoff, kflags;
 
       fprintf (fp, "Key-Fpr[%lu]: ", n );
@@ -347,13 +402,17 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   n = get32 (p ); p += 4;
   fprintf (fp, "Reserved-Space: %lu\n", n );
 
-  /* check that the keyblock is at the correct offset and other bounds */
-  /*fprintf (fp, "Blob-Checksum: [MD5-hash]\n");*/
+  if (unhashed >= 24)
+    {
+      n = get32 ( buffer + length - unhashed);
+      fprintf (fp, "Storage-Flags: %08lx\n", n );
+    }
+  print_checksum (buffer, length, unhashed, fp);
   return 0;
 }
 
 
-/* Compute the SHA_1 checksum of teh rawdata in BLOB and aput it into
+/* Compute the SHA-1 checksum of the rawdata in BLOB and put it into
    DIGEST. */
 static int
 hash_blob_rawdata (KEYBOXBLOB blob, unsigned char *digest)
