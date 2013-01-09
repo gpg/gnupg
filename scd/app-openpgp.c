@@ -1489,7 +1489,7 @@ verify_a_chv (app_t app,
   int rc = 0;
   char *prompt_buffer = NULL;
   const char *prompt;
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
   int minlen = 6;
 
   assert (chvno == 1 || chvno == 2);
@@ -1707,7 +1707,7 @@ verify_chv3 (app_t app,
 
   if (!app->did_chv3)
     {
-      iso7816_pininfo_t pininfo;
+      pininfo_t pininfo;
       int minlen = 8;
       char *prompt;
 
@@ -1917,7 +1917,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   char *pinvalue = NULL;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
   int use_keypad = 0;
   int minlen = 6;
 
