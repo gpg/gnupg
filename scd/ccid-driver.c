@@ -3412,14 +3412,9 @@ ccid_transceive_secure (ccid_driver_t handle,
     }
   else
     {
-      if (pininfo->fixedlen == 0)
-	msg[13] = 0x00; /* bmPINBlockString:
-			   0 bits of pin length to insert.
-			   0 bytes of PIN block size.  */
-      else
-	msg[13] = pininfo->fixedlen; /* bmPINBlockString:
-					0 bits of pin length to insert.
-					PIN block size by fixedlen.  */
+      msg[13] = pininfo->fixedlen; /* bmPINBlockString:
+				      0 bits of pin length to insert.
+				      PIN block size by fixedlen.  */
       msg[14] = 0x00; /* bmPINLengthFormat:
                          Units are bytes, position is 0. */
     }
@@ -3428,10 +3423,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (apdu_buf[1] == 0x24)
     {
       msg[msglen++] = 0;    /* bInsertionOffsetOld */
-      if (pininfo->fixedlen == 0)
-	msg[msglen++] = 0;    /* bInsertionOffsetNew */
-      else
-	msg[msglen++] = pininfo->fixedlen;    /* bInsertionOffsetNew */
+      msg[msglen++] = pininfo->fixedlen;    /* bInsertionOffsetNew */
     }
 
   /* The following is a little endian word. */

@@ -2072,7 +2072,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
 {
   int sw;
   unsigned char *pin_verify;
-  int len = PIN_VERIFY_STRUCTURE_SIZE;
+  int len = PIN_VERIFY_STRUCTURE_SIZE + pininfo->fixedlen;
   unsigned char result[2];
   size_t resultlen = 2;
 
@@ -2080,7 +2080,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
       && (sw = reset_pcsc_reader (slot)))
     return sw;
 
-  if (pininfo->fixedlen != 0)
+  if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
     return SW_NOT_SUPPORTED;
 
   if (!pininfo->minlen)
@@ -2101,7 +2101,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[0] = 0x00; /* bTimerOut */
   pin_verify[1] = 0x00; /* bTimerOut2 */
   pin_verify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
-  pin_verify[3] = 0x00; /* bmPINBlockString */
+  pin_verify[3] = pininfo->fixedlen; /* bmPINBlockString */
   pin_verify[4] = 0x00; /* bmPINLengthFormat */
   pin_verify[5] = pininfo->maxlen; /* wPINMaxExtraDigit */
   pin_verify[6] = pininfo->minlen; /* wPINMaxExtraDigit */
@@ -2115,7 +2115,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[12] = 0x00; /* bTeoPrologue[0] */
   pin_verify[13] = 0x00; /* bTeoPrologue[1] */
   pin_verify[14] = 0x00; /* bTeoPrologue[2] */
-  pin_verify[15] = 0x05; /* ulDataLength */
+  pin_verify[15] = pininfo->fixedlen + 0x05; /* ulDataLength */
   pin_verify[16] = 0x00; /* ulDataLength */
   pin_verify[17] = 0x00; /* ulDataLength */
   pin_verify[18] = 0x00; /* ulDataLength */
@@ -2123,7 +2123,9 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[20] = ins; /* abData[1] */
   pin_verify[21] = p0; /* abData[2] */
   pin_verify[22] = p1; /* abData[3] */
-  pin_verify[23] = 0x00; /* abData[4] */
+  pin_verify[23] = pininfo->fixedlen; /* abData[4] */
+  if (pininfo->fixedlen)
+    memset (&pin_verify[24], 0xff, pininfo->fixedlen);
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
@@ -2151,7 +2153,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
 {
   int sw;
   unsigned char *pin_modify;
-  int len = PIN_MODIFY_STRUCTURE_SIZE;
+  int len = PIN_MODIFY_STRUCTURE_SIZE + 2 * pininfo->fixedlen;
   unsigned char result[2];
   size_t resultlen = 2;
 
@@ -2159,7 +2161,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
       && (sw = reset_pcsc_reader (slot)))
     return sw;
 
-  if (pininfo->fixedlen != 0)
+  if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
     return SW_NOT_SUPPORTED;
 
   if (!pininfo->minlen)
@@ -2180,10 +2182,10 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[0] = 0x00; /* bTimerOut */
   pin_modify[1] = 0x00; /* bTimerOut2 */
   pin_modify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
-  pin_modify[3] = 0x00; /* bmPINBlockString */
+  pin_modify[3] = pininfo->fixedlen; /* bmPINBlockString */
   pin_modify[4] = 0x00; /* bmPINLengthFormat */
   pin_modify[5] = 0x00; /* bInsertionOffsetOld */
-  pin_modify[6] = 0x00; /* bInsertionOffsetNew */
+  pin_modify[6] = pininfo->fixedlen; /* bInsertionOffsetNew */
   pin_modify[7] = pininfo->maxlen; /* wPINMaxExtraDigit */
   pin_modify[8] = pininfo->minlen; /* wPINMaxExtraDigit */
   pin_modify[9] = (p0 == 0 ? 0x03 : 0x01);
@@ -2205,7 +2207,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[17] = 0x00; /* bTeoPrologue[0] */
   pin_modify[18] = 0x00; /* bTeoPrologue[1] */
   pin_modify[19] = 0x00; /* bTeoPrologue[2] */
-  pin_modify[20] = 0x05; /* ulDataLength */
+  pin_modify[20] = 2 * pininfo->fixedlen + 0x05; /* ulDataLength */
   pin_modify[21] = 0x00; /* ulDataLength */
   pin_modify[22] = 0x00; /* ulDataLength */
   pin_modify[23] = 0x00; /* ulDataLength */
@@ -2213,7 +2215,9 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[25] = ins; /* abData[1] */
   pin_modify[26] = p0; /* abData[2] */
   pin_modify[27] = p1; /* abData[3] */
-  pin_modify[28] = 0x00; /* abData[4] */
+  pin_modify[28] = 2 * pininfo->fixedlen; /* abData[4] */
+  if (pininfo->fixedlen)
+    memset (&pin_modify[29], 0xff, 2 * pininfo->fixedlen);
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
