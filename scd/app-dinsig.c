@@ -288,7 +288,7 @@ verify_pin (app_t app,
     return 0;  /* No need to verify it again.  */
 
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = 6;
   pininfo.maxlen = 8;
 

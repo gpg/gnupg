@@ -3362,23 +3362,27 @@ ccid_transceive_secure (ccid_driver_t handle,
         cherry_mode = 1;
       break;
     case VENDOR_GEMPC:
-      enable_varlen = 0;
       if (handle->id_product == GEMPC_PINPAD)
-	break;
+	{
+	  enable_varlen = 0;
+	  pininfo->minlen = 4;
+	  pininfo->maxlen = 8;
+	  break;
+	}
       /* fall through */
     default:
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
 
   if (enable_varlen)
-    pininfo->mode = 0;
-
-  if (pininfo->mode != 0 && pininfo->mode != 1)
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+    pininfo->fixedlen = 0;
 
   if (testmode)
     return 0; /* Success */
-    
+
+  if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
+
   msg = send_buffer;
   if (handle->id_vendor == VENDOR_SCM)
     {
@@ -3408,9 +3412,14 @@ ccid_transceive_secure (ccid_driver_t handle,
     }
   else
     {
-      msg[13] = 0x00; /* bmPINBlockString:
-                         0 bits of pin length to insert. 
-                         0 bytes of PIN block size.  */
+      if (pininfo->fixedlen == 0)
+	msg[13] = 0x00; /* bmPINBlockString:
+			   0 bits of pin length to insert.
+			   0 bytes of PIN block size.  */
+      else
+	msg[13] = pininfo->fixedlen; /* bmPINBlockString:
+					0 bits of pin length to insert.
+					PIN block size by fixedlen.  */
       msg[14] = 0x00; /* bmPINLengthFormat:
                          Units are bytes, position is 0. */
     }
@@ -3419,7 +3428,10 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (apdu_buf[1] == 0x24)
     {
       msg[msglen++] = 0;    /* bInsertionOffsetOld */
-      msg[msglen++] = 0;    /* bInsertionOffsetNew */
+      if (pininfo->fixedlen == 0)
+	msg[msglen++] = 0;    /* bInsertionOffsetNew */
+      else
+	msg[msglen++] = pininfo->fixedlen;    /* bInsertionOffsetNew */
     }
 
   /* The following is a little endian word. */
@@ -3458,10 +3470,18 @@ ccid_transceive_secure (ccid_driver_t handle,
       msg[msglen++] = 2;    /* bMsgIndex3. */
     }
 
+  /* Calculate Lc.  */
+  n = pininfo->fixedlen;
+  if (apdu_buf[1] == 0x24)
+    n += pininfo->fixedlen;
+
   /* bTeoProlog follows: */
   msg[msglen++] = handle->nonnull_nad? ((1 << 4) | 0): 0;
   msg[msglen++] = ((handle->t1_ns & 1) << 6); /* I-block */
-  msg[msglen++] = 0; /* The apdulen will be filled in by the reader.  */
+  if (n)
+    msg[msglen++] = n + 5; /* apdulen should be filled for fixed length.  */
+  else
+    msg[msglen++] = 0; /* The apdulen will be filled in by the reader.  */
   /* APDU follows:  */
   msg[msglen++] = apdu_buf[0]; /* CLA */
   msg[msglen++] = apdu_buf[1]; /* INS */
@@ -3469,6 +3489,12 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[msglen++] = apdu_buf[3]; /* P2 */
   if (cherry_mode)
     msg[msglen++] = 0;
+  else if (pininfo->fixedlen != 0)
+    {
+      msg[msglen++] = n;
+      memset (&msg[msglen], 0xff, n);
+      msglen += n;
+    }
   /* An EDC is not required. */
   set_msg_len (msg, msglen - 10);
 

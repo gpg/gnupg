@@ -34,7 +34,12 @@
    ccid-driver.c for details. */
 struct pininfo_s
 {
-  int mode;    /* 0: Use variable length input.  1: Use fixed length input. */
+  int fixedlen;  /*
+		  * -1: Variable length input is not supported,
+		  *     no information of fixed length yet.
+		  *  0: Use variable length input.
+		  * >0: Fixed length of PIN.
+		  */
   int minlen;
   int maxlen;
 };

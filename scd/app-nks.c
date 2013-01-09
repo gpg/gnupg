@@ -788,7 +788,7 @@ verify_pin (app_t app, int pwid, const char *desc,
     desc = "PIN";
 
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = 6;
   pininfo.maxlen = 16;
 

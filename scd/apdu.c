@@ -2016,7 +2016,7 @@ check_pcsc_keypad (int slot, int command, pininfo_t *pininfo)
   size_t len = 256;
   int sw;
 
-  (void)pininfo;
+  (void)pininfo;      /* XXX: Identify reader and set pininfo->fixedlen.  */
 
  check_again:
   if (command == ISO7816_VERIFY)
@@ -2080,7 +2080,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
       && (sw = reset_pcsc_reader (slot)))
     return sw;
 
-  if (pininfo->mode != 1)
+  if (pininfo->fixedlen != 0)
     return SW_NOT_SUPPORTED;
 
   if (!pininfo->minlen)
@@ -2159,7 +2159,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
       && (sw = reset_pcsc_reader (slot)))
     return sw;
 
-  if (pininfo->mode != 1)
+  if (pininfo->fixedlen != 0)
     return SW_NOT_SUPPORTED;
 
   if (!pininfo->minlen)
@@ -3292,7 +3292,7 @@ apdu_check_keypad (int slot, int command, pininfo_t *pininfo)
     return SW_HOST_NO_DRIVER;
 
   if (opt.enable_keypad_varlen)
-    pininfo->mode = 0;
+    pininfo->fixedlen = 0;
 
   if (reader_table[slot].check_keypad)
     {
