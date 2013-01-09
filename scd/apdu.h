@@ -114,12 +114,11 @@ int apdu_set_progress_cb (int slot, gcry_handler_progress_t cb, void *cb_arg);
 int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang,
                      unsigned int *status, unsigned int *changed);
-int apdu_check_keypad (int slot, int command, int pin_mode,
-                       int pinlen_min, int pinlen_max);
+int apdu_check_keypad (int slot, int command, pininfo_t *pininfo);
 int apdu_keypad_verify (int slot, int class, int ins, int p0, int p1,
-                        int pin_mode, int pinlen_min, int pinlen_max);
+			pininfo_t *pininfo);
 int apdu_keypad_modify (int slot, int class, int ins, int p0, int p1,
-                        int pin_mode, int pinlen_min, int pinlen_max);
+			pininfo_t *pininfo);
 int apdu_send_simple (int slot, int extended_mode,
                       int class, int ins, int p0, int p1,
                       int lc, const char *data);

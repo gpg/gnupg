@@ -48,6 +48,7 @@
 #include "i18n.h"
 #include "sysutils.h"
 #include "app-common.h"
+#include "iso7816.h"
 #include "apdu.h"
 #include "ccid-driver.h"
 #include "mkdtemp.h"

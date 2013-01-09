@@ -282,7 +282,7 @@ verify_pin (app_t app,
 {
   const char *s;
   int rc;
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
 
   if ( app->did_chv1 && !app->force_chv1 )
     return 0;  /* No need to verify it again.  */
