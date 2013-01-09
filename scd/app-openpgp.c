@@ -1516,7 +1516,7 @@ verify_a_chv (app_t app,
     }
 
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
 
 
@@ -1712,7 +1712,7 @@ verify_chv3 (app_t app,
       char *prompt;
 
       memset (&pininfo, 0, sizeof pininfo);
-      pininfo.mode = 1;
+      pininfo.fixedlen = -1;
       pininfo.minlen = minlen;
 
       rc = build_enter_admin_pin_prompt (app, &prompt);
@@ -1923,7 +1923,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
   (void)ctrl;
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
 
   if (reset_mode && chvno == 3)
