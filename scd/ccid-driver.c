@@ -220,6 +220,7 @@ enum {
 #define SCM_SPR532      0xe003
 #define CHERRY_ST2000   0x003e
 #define VASCO_920       0x0920
+#define GEMPC_PINPAD	0x3478
 
 /* A list and a table with special transport descriptions. */
 enum {
@@ -3307,6 +3308,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   size_t dummy_nresp;
   int testmode;
   int cherry_mode = 0;
+  int enable_varlen = opt.enable_keypad_varlen;
 
   testmode = !resp && !nresp;
 
@@ -3345,11 +3347,14 @@ ccid_transceive_secure (ccid_driver_t handle,
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
     case VENDOR_FSIJ: /* Tested with the gnuk code (2011-01-05).  */
+      enable_varlen = 1;
       break;
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
+      enable_varlen = 1;
       pinlen_max = 15;
       break;
     case VENDOR_CHERRY:
+      enable_varlen = 1;
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
          character on the keyboard channel.  We use a special variant
          of PC_to_RDR_Secure which directs these characters to the
@@ -3360,6 +3365,11 @@ ccid_transceive_secure (ccid_driver_t handle,
       if (handle->id_product != CHERRY_ST2000)
         cherry_mode = 1;
       break;
+    case VENDOR_GEMPC:
+      enable_varlen = 0;
+      if (handle->id_product == GEMPC_PINPAD)
+	break;
+      /* fall through */
     default:
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
