@@ -781,7 +781,7 @@ verify_pin (app_t app, int pwid, const char *desc,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
   int rc;
 
   if (!desc)
@@ -1144,7 +1144,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   int is_sigg;
   const char *newdesc;
   int pwid;
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
 
   (void)ctrl;
 

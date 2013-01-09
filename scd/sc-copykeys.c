@@ -33,6 +33,7 @@
 
 #include "../common/ttyio.h"
 #include "../common/simple-pwquery.h"
+#include "iso7816.h"
 #include "apdu.h" /* for open_reader */
 #include "atr.h"
 #include "app-common.h"

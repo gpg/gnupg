@@ -32,13 +32,13 @@
 
 /* Information to be passed to keypad equipped readers.  See
    ccid-driver.c for details. */
-struct iso7816_pininfo_s
+struct pininfo_s
 {
-  int mode;    /* A mode of 0 means: Do not use the keypad. */
+  int mode;    /* 0: Use variable length input.  1: Use fixed length input. */
   int minlen;
   int maxlen;
 };
-typedef struct iso7816_pininfo_s iso7816_pininfo_t;
+typedef struct pininfo_s pininfo_t;
 
 
 gpg_error_t iso7816_map_sw (int sw);
@@ -58,16 +58,16 @@ gpg_error_t iso7816_apdu_direct (int slot,
                                  int handle_more,
                                  unsigned char **result, size_t *resultlen);
 gpg_error_t iso7816_check_keypad (int slot, int command,
-                                  iso7816_pininfo_t *pininfo);
+                                  pininfo_t *pininfo);
 gpg_error_t iso7816_verify (int slot,
                             int chvno, const char *chv, size_t chvlen);
-gpg_error_t iso7816_verify_kp (int slot, int chvno, iso7816_pininfo_t *pininfo);
+gpg_error_t iso7816_verify_kp (int slot, int chvno, pininfo_t *pininfo);
 gpg_error_t iso7816_change_reference_data (int slot, int chvno,
                                const char *oldchv, size_t oldchvlen,
                                const char *newchv, size_t newchvlen);
 gpg_error_t iso7816_change_reference_data_kp (int slot, int chvno,
 					      int is_exchange,
-                                              iso7816_pininfo_t *pininfo);
+                                              pininfo_t *pininfo);
 gpg_error_t iso7816_reset_retry_counter (int slot, int chvno,
                                          const char *newchv, size_t newchvlen);
 gpg_error_t iso7816_reset_retry_counter_with_rc (int slot, int chvno,

@@ -34,6 +34,7 @@
 #include <assuan.h>
 #include <ksba.h>
 #include "app-common.h"
+#include "iso7816.h"
 #include "apdu.h" /* Required for apdu_*_reader (). */
 #include "exechelp.h"
 #ifdef HAVE_LIBUSB

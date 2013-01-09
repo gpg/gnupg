@@ -91,6 +91,8 @@
 
 #include <usb.h>
 
+#include "scdaemon.h"
+#include "iso7816.h"
 #include "ccid-driver.h"
 
 #define DRVNAME "ccid-driver: "
@@ -3297,7 +3299,7 @@ ccid_transceive (ccid_driver_t handle,
 int
 ccid_transceive_secure (ccid_driver_t handle,
                         const unsigned char *apdu_buf, size_t apdu_buflen,
-                        int pin_mode, int pinlen_min, int pinlen_max,
+			pininfo_t *pininfo,
                         unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
@@ -3308,7 +3310,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   size_t dummy_nresp;
   int testmode;
   int cherry_mode = 0;
-  int enable_varlen = opt.enable_keypad_varlen;
+  int enable_varlen = 0;
 
   testmode = !resp && !nresp;
 
@@ -3322,19 +3324,16 @@ ccid_transceive_secure (ccid_driver_t handle,
     ;
   else
     return CCID_DRIVER_ERR_NO_KEYPAD;
-    
-  if (pin_mode != 1)
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
 
-  if (!pinlen_min)
-    pinlen_min = 1;
-  if (!pinlen_max)
-    pinlen_max = 25;
+  if (!pininfo->minlen)
+    pininfo->minlen = 1;
+  if (!pininfo->maxlen)
+    pininfo->maxlen = 25;
 
   /* Note that the 25 is the maximum value the SPR532 allows.  */
-  if (pinlen_min < 1 || pinlen_min > 25
-      || pinlen_max < 1 || pinlen_max > 25 
-      || pinlen_min > pinlen_max)
+  if (pininfo->minlen < 1 || pininfo->minlen > 25
+      || pininfo->maxlen < 1 || pininfo->maxlen > 25
+      || pininfo->minlen > pininfo->maxlen)
     return CCID_DRIVER_ERR_INV_VALUE;
 
   /* We have only tested a few readers so better don't risk anything
@@ -3348,7 +3347,7 @@ ccid_transceive_secure (ccid_driver_t handle,
       break;
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
       enable_varlen = 1;
-      pinlen_max = 15;
+      pininfo->maxlen = 15;
       break;
     case VENDOR_CHERRY:
       enable_varlen = 1;
@@ -3370,6 +3369,12 @@ ccid_transceive_secure (ccid_driver_t handle,
     default:
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
+
+  if (enable_varlen)
+    pininfo->mode = 0;
+
+  if (pininfo->mode != 0 && pininfo->mode != 1)
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
 
   if (testmode)
     return 0; /* Success */
@@ -3418,8 +3423,8 @@ ccid_transceive_secure (ccid_driver_t handle,
     }
 
   /* The following is a little endian word. */
-  msg[msglen++] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
-  msg[msglen++] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+  msg[msglen++] = pininfo->maxlen;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[msglen++] = pininfo->minlen;   /* wPINMaxExtraDigit-Minimum.  */
 
   if (apdu_buf[1] == 0x24)
     msg[msglen++] = apdu_buf[2] == 0 ? 0x03 : 0x01;
@@ -3432,7 +3437,7 @@ ccid_transceive_secure (ccid_driver_t handle,
 
   msg[msglen] = 0x02; /* bEntryValidationCondition:
                          Validation key pressed */
-  if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
+  if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     msg[msglen] |= 0x01; /* Max size reached.  */
   msglen++;
 

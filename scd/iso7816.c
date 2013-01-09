@@ -269,12 +269,11 @@ iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
 /* Check whether the reader supports the ISO command code COMMAND on
    the keypad.  Returns 0 on success.  */
 gpg_error_t
-iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
+iso7816_check_keypad (int slot, int command, pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_check_keypad (slot, command,
-                          pininfo->mode, pininfo->minlen, pininfo->maxlen);
+  sw = apdu_check_keypad (slot, command, pininfo);
   return iso7816_map_sw (sw);
 }
 
@@ -283,12 +282,11 @@ iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
    vector CHVNO.  With PININFO non-NULL the keypad of the reader will
    be used.  Returns 0 on success. */
 gpg_error_t
-iso7816_verify_kp (int slot, int chvno, iso7816_pininfo_t *pininfo)
+iso7816_verify_kp (int slot, int chvno, pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_keypad_verify (slot, 0x00, CMD_VERIFY, 0, chvno,
-                           pininfo->mode, pininfo->minlen, pininfo->maxlen);
+  sw = apdu_keypad_verify (slot, 0x00, CMD_VERIFY, 0, chvno, pininfo);
   return map_sw (sw);
 }
 
@@ -309,14 +307,12 @@ iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
    data" is done, otherwise an "exchange reference data".  */
 gpg_error_t
 iso7816_change_reference_data_kp (int slot, int chvno, int is_exchange,
-                                  iso7816_pininfo_t *pininfo)
+                                  pininfo_t *pininfo)
 {
   int sw;
 
   sw = apdu_keypad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
-			   is_exchange ? 1 : 0,
-			   chvno, pininfo->mode, pininfo->minlen,
-			   pininfo->maxlen);
+			   is_exchange ? 1 : 0, chvno, pininfo);
   return map_sw (sw);
 }
 
