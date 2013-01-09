@@ -57,6 +57,7 @@ struct
   const char *reader_port;  /* NULL or reder port to use. */
   int disable_ccid;    /* Disable the use of the internal CCID driver. */
   int disable_keypad;  /* Do not use a keypad. */
+  int enable_keypad_varlen;  /* Use variable length input for keypad. */
   int allow_admin;     /* Allow the use of admin commands for certain
                           cards. */
   strlist_t disabled_applications;  /* Card applications we do not
