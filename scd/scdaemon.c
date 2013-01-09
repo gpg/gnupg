@@ -91,6 +91,7 @@ enum cmd_and_opt_values
   oAllowAdmin,
   oDenyAdmin,
   oDisableApplication,
+  oEnableKeypadVarlen,
   oDebugDisableTicker
 };
 
@@ -143,6 +144,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDenyAdmin, "deny-admin",
                 N_("deny the use of admin card commands")),
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
+  ARGPARSE_s_n (oEnableKeypadVarlen, "enable-keypad-varlen",
+                N_("use variable length input for keypad")),
 
   ARGPARSE_end ()
 };
@@ -593,6 +596,8 @@ main (int argc, char **argv )
         case oDisableApplication:
           add_to_strlist (&opt.disabled_applications, pargs.r.ret_str);
           break;
+
+	case oEnableKeypadVarlen: opt.enable_keypad_varlen = 1; break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
