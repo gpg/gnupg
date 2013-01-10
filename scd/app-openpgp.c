@@ -1,6 +1,6 @@
 /* app-openpgp.c - The OpenPGP card application.
  * Copyright (C) 2003, 2004, 2005, 2007, 2008,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -190,6 +190,15 @@ struct app_local_s {
     unsigned int no_sync:1;   /* Do not sync CHV1 and CHV2 */
     unsigned int def_chv2:1;  /* Use 123456 for CHV2.  */
   } flags;
+
+  /* Keypad request specified on card.  */
+  struct
+  {
+    unsigned int specified:1;
+    unsigned int varlen:1;
+    int fixedlen_user;
+    int fixedlen_admin;
+  } keypad;
 
   struct
   {
@@ -581,16 +590,22 @@ count_bits (const unsigned char *a, size_t len)
    Everything up to a LF is considered a mailbox or account name.  If
    the first LF is followed by DC4 (0x14) control sequence are
    expected up to the next LF.  Control sequences are separated by FS
-   (0x18) and consist of key=value pairs.  There is one key defined:
+   (0x18) and consist of key=value pairs.  There are two keys defined:
 
     F=<flags>
 
-    Were FLAGS is a plain hexadecimal number representing flag values.
+    Where FLAGS is a plain hexadecimal number representing flag values.
     The lsb is here the rightmost bit.  Defined flags bits are:
 
       Bit 0 = CHV1 and CHV2 are not syncronized
       Bit 1 = CHV2 has been been set to the default PIN of "123456"
               (this implies that bit 0 is also set).
+
+    P=<keypad-request>
+
+    Where KEYPAD_REQUEST is 0 or a pair of two integers: <n>,<m>.
+    0 means use keypad with variable length input.  <n>,<m> means use
+    keypad with fixed length input.  N for user PIN, M for admin PIN.
 
 */
 static void
@@ -603,6 +618,10 @@ parse_login_data (app_t app)
   /* Set defaults.  */
   app->app_local->flags.no_sync = 0;
   app->app_local->flags.def_chv2 = 0;
+  app->app_local->keypad.specified = 0;
+  app->app_local->keypad.varlen = 0;
+  app->app_local->keypad.fixedlen_user = 6;
+  app->app_local->keypad.fixedlen_admin = 8;
 
   /* Read the DO.  */
   relptr = get_one_do (app, 0x005E, &buffer, &buflen, NULL);
@@ -628,10 +647,55 @@ parse_login_data (app_t app)
              any leading digits but bail out on invalid characters. */
           for (p=buffer+2, len = buflen-2; len && hexdigitp (p); p++, len--)
             lastdig = xtoi_1 (p);
+          buffer = p;
+          buflen = len;
           if (len && !(*p == '\n' || *p == '\x18'))
             goto next;  /* Invalid characters in field.  */
           app->app_local->flags.no_sync = !!(lastdig & 1);
           app->app_local->flags.def_chv2 = (lastdig & 3) == 3;
+        }
+      else if (buflen > 1 && *buffer == 'P' && buffer[1] == '=')
+        {
+          /* Keypad request control sequence found.  */
+          buffer += 2;
+          buflen -= 2;
+
+          if (buflen)
+            {
+              if (*buffer == '0')
+                {
+                  buffer++;
+                  buflen--;
+                  if (buflen && !(*buffer == '\n' || *buffer == '\x18'))
+                    goto next;
+                  app->app_local->keypad.specified = 1;
+                  app->app_local->keypad.varlen = 1;
+                }
+              else if (digitp (buffer))
+                {
+                  char *q;
+                  int n, m;
+
+                  n = strtol (buffer, &q, 10);
+                  if (*q++ != ',' || !digitp (q))
+                    goto next;
+                  m = strtol (q, &q, 10);
+                  buffer = q;
+                  if (buflen < ((unsigned char *)q - buffer))
+                    {
+                      buflen = 0;
+                      break;
+                    }
+                  else
+                    buflen -= ((unsigned char *)q - buffer);
+
+                  if (buflen && !(*buffer == '\n' || *buffer == '\x18'))
+                    goto next;
+                  app->app_local->keypad.specified = 1;
+                  app->app_local->keypad.fixedlen_user = n;
+                  app->app_local->keypad.fixedlen_admin = m;
+                }
+            }
         }
     next:
       for (; buflen && *buffer != '\x18'; buflen--, buffer++)
@@ -1470,6 +1534,37 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Decide if we use keypad of reader for PIN input according to the
+   user preference on the card.  Returns 0 if we use keypad, 1 otherwise.  */
+static int
+check_keypad_request (app_t app, pininfo_t *pininfo, int admin_pin)
+{
+  /* User specifies no preference on card, then, use pinentry.  */
+  if (app->app_local->keypad.specified == 0)
+    return 1;
+
+  if (app->app_local->keypad.varlen)
+    if (pininfo->fixedlen == 0)
+      return 0;
+    else
+      /* On card, user specifies varlen but reader doesn't have the feature.  */
+      return 1;
+  else
+    {
+      if (admin_pin)
+        pininfo->fixedlen = app->app_local->keypad.fixedlen_admin;
+      else
+        pininfo->fixedlen = app->app_local->keypad.fixedlen_user;
+
+      if (pininfo->fixedlen < pininfo->minlen
+          || pininfo->fixedlen > pininfo->maxlen)
+        return 1;
+
+      return 0;
+    }
+}
+
+
 /* Verify a CHV either using using the pinentry or if possibile by
    using a keypad.  PINCB and PINCB_ARG describe the usual callback
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
@@ -1537,7 +1632,8 @@ verify_a_chv (app_t app,
 
 
   if (!opt.disable_keypad
-      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo)
+      && !check_keypad_request (app, &pininfo, 0))
     {
       /* The reader supports the verify command through the keypad.
          Note that the pincb appends a text to the prompt telling the
@@ -1720,7 +1816,8 @@ verify_chv3 (app_t app,
         return rc;
 
       if (!opt.disable_keypad
-          && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+          && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo)
+          && !check_keypad_request (app, &pininfo, 1))
         {
           /* The reader supports the verify command through the keypad. */
           rc = pincb (pincb_arg, prompt, NULL);
@@ -1970,7 +2067,8 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
 
       if (!opt.disable_keypad
           && !iso7816_check_keypad (app->slot,
-                                    ISO7816_CHANGE_REFERENCE_DATA, &pininfo))
+                                    ISO7816_CHANGE_REFERENCE_DATA, &pininfo)
+          && !check_keypad_request (app, &pininfo, chvno == 3))
         use_keypad = 1;
 
       if (reset_mode)
