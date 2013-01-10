@@ -1,6 +1,6 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
  * Copyright (C) 2003, 2004, 2005, 2006, 2007
- *               2008, 2009  Free Software Foundation, Inc.
+ *               2008, 2009, 2013  Free Software Foundation, Inc.
  * Written by Werner Koch.
  *
  * This file is part of GnuPG.
@@ -209,6 +209,7 @@ enum {
   VENDOR_SCM    = 0x04e6,
   VENDOR_OMNIKEY= 0x076b,
   VENDOR_GEMPC  = 0x08e6,
+  VENDER_VEGA   = 0x0982,
   VENDOR_KAAN   = 0x0d46,
   VENDOR_FSIJ   = 0x234b,
   VENDOR_VASCO  = 0x1a44
@@ -222,7 +223,8 @@ enum {
 #define SCM_SPR532      0xe003
 #define CHERRY_ST2000   0x003e
 #define VASCO_920       0x0920
-#define GEMPC_PINPAD	0x3478
+#define GEMPC_PINPAD    0x3478
+#define VEGA_ALPHA      0x0008
 
 /* A list and a table with special transport descriptions. */
 enum {
@@ -2382,7 +2384,7 @@ update_param_by_atr (unsigned char *param, unsigned char *atr, size_t atrlen)
   NEXTBYTE ();
 
   if (atr[i] == 0x3F)
-    param[1] |= 0x02;		/* Convention is inverse.  */
+    param[1] |= 0x02;           /* Convention is inverse.  */
   NEXTBYTE ();
 
   y = (atr[i] >> 4);
@@ -2391,91 +2393,91 @@ update_param_by_atr (unsigned char *param, unsigned char *atr, size_t atrlen)
 
   if ((y & 1))
     {
-      param[0] = atr[i];	/* TA1 - Fi & Di */
+      param[0] = atr[i];        /* TA1 - Fi & Di */
       NEXTBYTE ();
     }
 
   if ((y & 2))
-    NEXTBYTE ();		/* TB1 - ignore */
+    NEXTBYTE ();                /* TB1 - ignore */
 
   if ((y & 4))
     {
-      param[2] = atr[i];	/* TC1 - Guard Time */
+      param[2] = atr[i];        /* TC1 - Guard Time */
       NEXTBYTE ();
     }
 
   if ((y & 8))
     {
-      y = (atr[i] >> 4);	/* TD1 */
+      y = (atr[i] >> 4);        /* TD1 */
       t = atr[i] & 0x0f;
       NEXTBYTE ();
 
       if ((y & 1))
-	{			/* TA2 - PPS mode */
-	  if ((atr[i] & 0x0f) != 1)
-	    return -2;		/* Wrong card protocol (!= 1).  */
+        {                       /* TA2 - PPS mode */
+          if ((atr[i] & 0x0f) != 1)
+            return -2;          /* Wrong card protocol (!= 1).  */
 
-	  if ((atr[i] & 0x10) != 0x10)
-	    return -3; /* Transmission parameters are implicitly defined. */
+          if ((atr[i] & 0x10) != 0x10)
+            return -3; /* Transmission parameters are implicitly defined. */
 
-	  negotiable = 0;	/* TA2 means specific mode.  */
-	  NEXTBYTE ();
-	}
+          negotiable = 0;       /* TA2 means specific mode.  */
+          NEXTBYTE ();
+        }
 
       if ((y & 2))
-	NEXTBYTE ();		/* TB2 - ignore */
+        NEXTBYTE ();            /* TB2 - ignore */
 
       if ((y & 4))
-	NEXTBYTE ();		/* TC2 - ignore */
+        NEXTBYTE ();            /* TC2 - ignore */
 
       if ((y & 8))
-	{
-	  y = (atr[i] >> 4);	/* TD2 */
-	  t = atr[i] & 0x0f;
-	  NEXTBYTE ();
-	}
+        {
+          y = (atr[i] >> 4);    /* TD2 */
+          t = atr[i] & 0x0f;
+          NEXTBYTE ();
+        }
       else
-	y = 0;
+        y = 0;
 
       while (y)
-	{
-	  if ((y & 1))
-	    {			/* TAx */
-	      if (t == 1)
-		param[5] = atr[i]; /* IFSC */
-	      else if (t == 15)
-		/* XXX: check voltage? */
-		param[4] = (atr[i] >> 6); /* ClockStop */
+        {
+          if ((y & 1))
+            {                   /* TAx */
+              if (t == 1)
+                param[5] = atr[i]; /* IFSC */
+              else if (t == 15)
+                /* XXX: check voltage? */
+                param[4] = (atr[i] >> 6); /* ClockStop */
 
-	      NEXTBYTE ();
-	    }
+              NEXTBYTE ();
+            }
 
-	  if ((y & 2))
-	    {
-	      if (t == 1)
-		param[3] = atr[i]; /* TBx - BWI & CWI */
-	      NEXTBYTE ();
-	    }
+          if ((y & 2))
+            {
+              if (t == 1)
+                param[3] = atr[i]; /* TBx - BWI & CWI */
+              NEXTBYTE ();
+            }
 
-	  if ((y & 4))
-	    {
-	      if (t == 1)
-		param[1] |= (atr[i] & 0x01); /* TCx - LRC/CRC */
-	      NEXTBYTE ();
+          if ((y & 4))
+            {
+              if (t == 1)
+                param[1] |= (atr[i] & 0x01); /* TCx - LRC/CRC */
+              NEXTBYTE ();
 
-	      if (param[1] & 0x01)
-		return -4;	/* CRC not supported yet.  */
-	    }
+              if (param[1] & 0x01)
+                return -4;      /* CRC not supported yet.  */
+            }
 
-	  if ((y & 8))
-	    {
-	      y = (atr[i] >> 4); /* TDx */
-	      t = atr[i] & 0x0f;
-	      NEXTBYTE ();
-	    }
-	  else
-	    y = 0;
-	}
+          if ((y & 8))
+            {
+              y = (atr[i] >> 4); /* TDx */
+              t = atr[i] & 0x0f;
+              NEXTBYTE ();
+            }
+          else
+            y = 0;
+        }
     }
 
   i += historical_bytes_num - 1;
@@ -2604,16 +2606,16 @@ ccid_get_atr (ccid_driver_t handle,
       msglen = 10;
       rc = bulk_out (handle, msg, msglen, 0);
       if (!rc)
-	rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
-		      seqno, 2000, 0);
+        rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
+                      seqno, 2000, 0);
       if (rc)
-	DEBUGOUT ("GetParameters failed\n");
+        DEBUGOUT ("GetParameters failed\n");
       else if (msglen == 17 && msg[9] == 1)
-	got_param = 1;
+        got_param = 1;
     }
   else if (handle->auto_pps)
     ;
-  else if (rc == 1)		/* It's negotiable, send PPS.  */
+  else if (rc == 1)             /* It's negotiable, send PPS.  */
     {
       msg[0] = PC_to_RDR_XfrBlock;
       msg[5] = 0; /* slot */
@@ -2621,33 +2623,33 @@ ccid_get_atr (ccid_driver_t handle,
       msg[7] = 0;
       msg[8] = 0;
       msg[9] = 0;
-      msg[10] = 0xff;		/* PPSS */
-      msg[11] = 0x11;		/* PPS0: PPS1, Protocol T=1 */
-      msg[12] = param[0];	/* PPS1: Fi / Di */
+      msg[10] = 0xff;           /* PPSS */
+      msg[11] = 0x11;           /* PPS0: PPS1, Protocol T=1 */
+      msg[12] = param[0];       /* PPS1: Fi / Di */
       msg[13] = 0xff ^ 0x11 ^ param[0]; /* PCK */
       set_msg_len (msg, 4);
       msglen = 10 + 4;
 
       rc = bulk_out (handle, msg, msglen, 0);
       if (rc)
-	return rc;
+        return rc;
 
       rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_DataBlock,
-		    seqno, 5000, 0);
+                    seqno, 5000, 0);
       if (rc)
-	return rc;
+        return rc;
 
       if (msglen != 10 + 4)
-	{
-	  DEBUGOUT_1 ("Setting PPS failed: %d\n", msglen);
-	  return CCID_DRIVER_ERR_CARD_IO_ERROR;
-	}
+        {
+          DEBUGOUT_1 ("Setting PPS failed: %d\n", msglen);
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
 
       if (msg[10] != 0xff || msg[11] != 0x11 || msg[12] != param[0])
-	{
-	  DEBUGOUT_1 ("Setting PPS failed: 0x%02x\n", param[0]);
-	  return CCID_DRIVER_ERR_CARD_IO_ERROR;
-	}
+        {
+          DEBUGOUT_1 ("Setting PPS failed: 0x%02x\n", param[0]);
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
     }
 
   /* Setup parameters to select T=1. */
@@ -3298,7 +3300,7 @@ ccid_transceive (ccid_driver_t handle,
 int
 ccid_transceive_secure (ccid_driver_t handle,
                         const unsigned char *apdu_buf, size_t apdu_buflen,
-			pininfo_t *pininfo,
+                        pininfo_t *pininfo,
                         unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
@@ -3360,16 +3362,17 @@ ccid_transceive_secure (ccid_driver_t handle,
       if (handle->id_product != CHERRY_ST2000)
         cherry_mode = 1;
       break;
-    case VENDOR_GEMPC:
-      if (handle->id_product == GEMPC_PINPAD)
-	{
-	  enable_varlen = 0;
-	  pininfo->minlen = 4;
-	  pininfo->maxlen = 8;
-	  break;
-	}
-      /* fall through */
     default:
+      if ((handle->id_vendor == VENDOR_GEMPC &&
+           handle->id_product == GEMPC_PINPAD)
+          || (handle->id_vendor == VENDOR_VEGA &&
+              handle->id_product == VEGA_ALPHA))
+        {
+          enable_varlen = 0;
+          pininfo->minlen = 4;
+          pininfo->maxlen = 8;
+          break;
+        }
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
 
@@ -3412,8 +3415,8 @@ ccid_transceive_secure (ccid_driver_t handle,
   else
     {
       msg[13] = pininfo->fixedlen; /* bmPINBlockString:
-				      0 bits of pin length to insert.
-				      PIN block size by fixedlen.  */
+                                      0 bits of pin length to insert.
+                                      PIN block size by fixedlen.  */
       msg[14] = 0x00; /* bmPINLengthFormat:
                          Units are bytes, position is 0. */
     }
@@ -3445,7 +3448,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   msglen++;
 
   if (apdu_buf[1] == 0x20)
-    msg[msglen++] = 0xff; /* bNumberMessage: Default. */
+    msg[msglen++] = 0x01; /* bNumberMessage. */
   else
     msg[msglen++] = 0x03; /* bNumberMessage. */
 
