@@ -178,7 +178,7 @@ cipher( byte *outbuf, const byte *inbuf, u16 *key )
     u16 x1, x2, x3,x4, s2, s3;
     u16 *in, *out;
     int r = IDEA_ROUNDS;
-  #define MUL(x,y) \
+#define MUL(x,y)                                    \
 	do {u16 _t16; u32 _t32; 		    \
 	    if( (_t16 = (y)) ) {		    \
 		if( (x = (x)&0xffff) ) {	    \
@@ -201,12 +201,12 @@ cipher( byte *outbuf, const byte *inbuf, u16 *key )
     x2 = *in++;
     x3 = *in++;
     x4 = *in;
-  #ifndef WORDS_BIGENDIAN
+#ifndef BIG_ENDIAN_HOST
     x1 = (x1>>8) | (x1<<8);
     x2 = (x2>>8) | (x2<<8);
     x3 = (x3>>8) | (x3<<8);
     x4 = (x4>>8) | (x4<<8);
-  #endif
+#endif
     do {
 	MUL(x1, *key++);
 	x2 += *key++;
@@ -234,18 +234,18 @@ cipher( byte *outbuf, const byte *inbuf, u16 *key )
     MUL(x4, *key);
 
     out = (u16*)outbuf;
-  #ifndef WORDS_BIGENDIAN
+#ifndef BIG_ENDIAN_HOST
     *out++ = (x1>>8) | (x1<<8);
     *out++ = (x3>>8) | (x3<<8);
     *out++ = (x2>>8) | (x2<<8);
     *out   = (x4>>8) | (x4<<8);
-  #else
+#else
     *out++ = x1;
     *out++ = x3;
     *out++ = x2;
     *out   = x4;
-  #endif
-  #undef MUL
+#endif
+#undef MUL
 }
 
 
