@@ -3429,9 +3429,18 @@ apdu_check_keypad (int slot, int command, int pin_mode,
     return SW_HOST_NO_DRIVER;
 
   if (reader_table[slot].check_keypad)
-    return reader_table[slot].check_keypad (slot, command,
+    {
+      int sw;
+
+      if ((sw = lock_slot (slot)))
+        return sw;
+
+      sw = reader_table[slot].check_keypad (slot, command,
                                             pin_mode, pinlen_min, pinlen_max,
                                             pin_padlen);
+      unlock_slot (slot);
+      return sw;
+    }
   else
     return SW_HOST_NOT_SUPPORTED;
 }
@@ -3452,8 +3461,17 @@ apdu_keypad_verify (int slot, int class, int ins, int p0, int p1, int pin_mode,
     return SW_HOST_NO_DRIVER;
 
   if (reader_table[slot].keypad_verify)
-    return reader_table[slot].keypad_verify (slot, class, ins, p0, p1,
+    {
+      int sw;
+
+      if ((sw = lock_slot (slot)))
+        return sw;
+
+      sw = reader_table[slot].keypad_verify (slot, class, ins, p0, p1,
                                              &pininfo);
+      unlock_slot (slot);
+      return sw;
+    }
   else
     return SW_HOST_NOT_SUPPORTED;
 }
@@ -3474,8 +3492,17 @@ apdu_keypad_modify (int slot, int class, int ins, int p0, int p1, int pin_mode,
     return SW_HOST_NO_DRIVER;
 
   if (reader_table[slot].keypad_modify)
-    return reader_table[slot].keypad_modify (slot, class, ins, p0, p1,
+    {
+      int sw;
+
+      if ((sw = lock_slot (slot)))
+        return sw;
+
+      sw = reader_table[slot].keypad_modify (slot, class, ins, p0, p1,
                                              &pininfo);
+      unlock_slot (slot);
+      return sw;
+    }
   else
     return SW_HOST_NOT_SUPPORTED;
 }
