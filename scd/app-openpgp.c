@@ -195,7 +195,6 @@ struct app_local_s {
   struct
   {
     unsigned int specified:1;
-    unsigned int varlen:1;
     int fixedlen_user;
     int fixedlen_admin;
   } keypad;
@@ -619,9 +618,8 @@ parse_login_data (app_t app)
   app->app_local->flags.no_sync = 0;
   app->app_local->flags.def_chv2 = 0;
   app->app_local->keypad.specified = 0;
-  app->app_local->keypad.varlen = 0;
-  app->app_local->keypad.fixedlen_user = 6;
-  app->app_local->keypad.fixedlen_admin = 8;
+  app->app_local->keypad.fixedlen_user = -1;
+  app->app_local->keypad.fixedlen_admin = -1;
 
   /* Read the DO.  */
   relptr = get_one_do (app, 0x005E, &buffer, &buflen, NULL);
@@ -668,8 +666,8 @@ parse_login_data (app_t app)
                   buflen--;
                   if (buflen && !(*buffer == '\n' || *buffer == '\x18'))
                     goto next;
+                  /* Disable use of pinpad.  */
                   app->app_local->keypad.specified = 1;
-                  app->app_local->keypad.varlen = 1;
                 }
               else if (digitp (buffer))
                 {
@@ -1534,34 +1532,36 @@ do_readcert (app_t app, const char *certid,
 }
 
 
-/* Decide if we use keypad of reader for PIN input according to the
-   user preference on the card.  Returns 0 if we use keypad, 1 otherwise.  */
+/* Decide if we use the keypad of the reader for PIN input according
+   to the user preference on the card, and the capability of the
+   reader.  This routine is only called when the reader has keypad.
+   Returns 0 if we use keypad, 1 otherwise.  */
 static int
 check_keypad_request (app_t app, pininfo_t *pininfo, int admin_pin)
 {
-  /* User specifies no preference on card, then, use pinentry.  */
-  if (app->app_local->keypad.specified == 0)
+  if (app->app_local->keypad.specified == 0) /* No preference on card.  */
+    if (pininfo->fixedlen == 0) /* Reader has varlen capability.  */
+      return 0;                 /* Then, use pinpad.  */
+    else
+      /*
+       * Reader has limited capability, and it may not match PIN of
+       * the card.
+       */
+      return 1;
+
+  if (admin_pin)
+    pininfo->fixedlen = app->app_local->keypad.fixedlen_admin;
+  else
+    pininfo->fixedlen = app->app_local->keypad.fixedlen_user;
+
+  if (pininfo->fixedlen < 0    /* User requests disable pinpad.  */
+      || pininfo->fixedlen < pininfo->minlen
+      || pininfo->fixedlen > pininfo->maxlen
+      /* Reader doesn't have the capability to input a PIN which
+       * length is FIXEDLEN.  */)
     return 1;
 
-  if (app->app_local->keypad.varlen)
-    if (pininfo->fixedlen == 0)
-      return 0;
-    else
-      /* On card, user specifies varlen but reader doesn't have the feature.  */
-      return 1;
-  else
-    {
-      if (admin_pin)
-        pininfo->fixedlen = app->app_local->keypad.fixedlen_admin;
-      else
-        pininfo->fixedlen = app->app_local->keypad.fixedlen_user;
-
-      if (pininfo->fixedlen < pininfo->minlen
-          || pininfo->fixedlen > pininfo->maxlen)
-        return 1;
-
-      return 0;
-    }
+  return 0;
 }
 
 
