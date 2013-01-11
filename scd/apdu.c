@@ -2084,7 +2084,7 @@ pcsc_keypad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[11] = 0x00; /* bMsgIndex */
   pin_verify[12] = 0x00; /* bTeoPrologue[0] */
   pin_verify[13] = 0x00; /* bTeoPrologue[1] */
-  pin_verify[14] = 0x00; /* bTeoPrologue[2] */
+  pin_verify[14] = pininfo->fixedlen + 0x05; /* bTeoPrologue[2] */
   pin_verify[15] = pininfo->fixedlen + 0x05; /* ulDataLength */
   pin_verify[16] = 0x00; /* ulDataLength */
   pin_verify[17] = 0x00; /* ulDataLength */
@@ -2178,7 +2178,7 @@ pcsc_keypad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[16] = 0x00; /* bMsgIndex3 */
   pin_modify[17] = 0x00; /* bTeoPrologue[0] */
   pin_modify[18] = 0x00; /* bTeoPrologue[1] */
-  pin_modify[19] = 0x00; /* bTeoPrologue[2] */
+  pin_modify[19] = 2 * pininfo->fixedlen + 0x05; /* bTeoPrologue[2] */
   pin_modify[20] = 2 * pininfo->fixedlen + 0x05; /* ulDataLength */
   pin_modify[21] = 0x00; /* ulDataLength */
   pin_modify[22] = 0x00; /* ulDataLength */
