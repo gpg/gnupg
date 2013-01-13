@@ -602,9 +602,9 @@ count_bits (const unsigned char *a, size_t len)
 
     P=<keypad-request>
 
-    Where KEYPAD_REQUEST is 0 or a pair of two integers: <n>,<m>.
-    0 means use keypad with variable length input.  <n>,<m> means use
-    keypad with fixed length input.  N for user PIN, M for admin PIN.
+    Where KEYPAD_REQUEST is in the format of: <n> or <n>,<m>.
+    N for user PIN, M for admin PIN.  If M is missing it means M=N.
+    0 means to force not to use keypad.
 
 */
 static void
@@ -660,24 +660,22 @@ parse_login_data (app_t app)
 
           if (buflen)
             {
-              if (*buffer == '0')
-                {
-                  buffer++;
-                  buflen--;
-                  if (buflen && !(*buffer == '\n' || *buffer == '\x18'))
-                    goto next;
-                  /* Disable use of pinpad.  */
-                  app->app_local->keypad.specified = 1;
-                }
-              else if (digitp (buffer))
+              if (digitp (buffer))
                 {
                   char *q;
                   int n, m;
 
                   n = strtol (buffer, &q, 10);
-                  if (*q++ != ',' || !digitp (q))
-                    goto next;
-                  m = strtol (q, &q, 10);
+                  if (q >= (char *)buffer + buflen
+                      || *q == '\x18' || *q == '\n')
+                    m = n;
+                  else
+                    {
+                      if (*q++ != ',' || !digitp (q))
+                        goto next;
+                      m = strtol (q, &q, 10);
+                    }
+
                   buffer = q;
                   if (buflen < ((unsigned char *)q - buffer))
                     {
@@ -1540,14 +1538,16 @@ static int
 check_keypad_request (app_t app, pininfo_t *pininfo, int admin_pin)
 {
   if (app->app_local->keypad.specified == 0) /* No preference on card.  */
-    if (pininfo->fixedlen == 0) /* Reader has varlen capability.  */
-      return 0;                 /* Then, use pinpad.  */
-    else
-      /*
-       * Reader has limited capability, and it may not match PIN of
-       * the card.
-       */
-      return 1;
+    {
+      if (pininfo->fixedlen == 0) /* Reader has varlen capability.  */
+        return 0;                 /* Then, use pinpad.  */
+      else
+        /*
+         * Reader has limited capability, and it may not match PIN of
+         * the card.
+         */
+        return 1;
+    }
 
   if (admin_pin)
     pininfo->fixedlen = app->app_local->keypad.fixedlen_admin;
