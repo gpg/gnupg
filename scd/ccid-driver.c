@@ -303,6 +303,9 @@ static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno, int timeout,
                     int no_debug);
 static int abort_cmd (ccid_driver_t handle, int seqno);
+static int send_escape_cmd (ccid_driver_t handle, const unsigned char *data,
+                            size_t datalen, unsigned char *result,
+                            size_t resultmax, size_t *resultlen);
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
@@ -1525,6 +1528,29 @@ ccid_get_reader_list (void)
 }
 
 
+/* Vendor specific custom initialization.  */
+static int
+ccid_vendor_specific_init (ccid_driver_t handle)
+{
+  if (handle->id_vendor == VENDOR_VEGA && handle->id_product == VEGA_ALPHA)
+    {
+      /*
+       * Vega alpha has a feature to show retry counter on the pinpad
+       * display.  But it assumes that the card returns the value of
+       * retry counter by VERIFY with empty data (return code of
+       * 63Cx).  Unfortunately, existing OpenPGP cards don't support
+       * VERIFY command with empty data.  This vendor specific command
+       * sequence is to disable the feature.
+       */
+      const unsigned char cmd[] = "\xb5\x01\x00\x03\x00";
+
+      return send_escape_cmd (handle, cmd, sizeof (cmd), NULL, 0, NULL);
+    }
+
+  return 0;
+}
+
+
 /* Open the reader with the internal number READERNO and return a
    pointer to be used as handle in HANDLE.  Returns 0 on success. */
 int
@@ -1632,6 +1658,8 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
           goto leave;
         }
     }
+
+  rc = ccid_vendor_specific_init (*handle);
 
  leave:
   free (ifcdesc_extra);
