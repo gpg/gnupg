@@ -1,11 +1,26 @@
-                                                              -*- text -*-
-Format of colon listings
-========================
-First an example:
+# doc/DETAILS                                                -*- org -*-
+#+TITLE: GnuPG Details
+# Globally disable superscripts and subscripts:
+#+OPTIONS: ^:{}
+#
 
+# Note: This file uses org-mode; it should be easy to read as plain
+# text but be aware of some markup peculiarities: Verbatim code is
+# enclosed in #+begin-example, #+end-example blocks or marked by a
+# colon as the first non-white-space character, words bracketed with
+# equal signs indicate a monospace font, and the usual /italics/,
+# *bold*, and _underline_ conventions are recognized.
+
+This is the DETAILS file for GnuPG which specifies some internals and
+parts of the external API for GPG and GPGSM.
+
+* Format of the colon listings
+  The format is a based on colon separated record, each recods starts
+  with a tag string and extends to the end of the line.  Here is an
+  example:
+#+begin_example
 $ gpg --with-colons --list-keys \
       --with-fingerprint --with-fingerprint wk@gnupg.org
-
 pub:f:1024:17:6C7EE1B8621CC013:899817715:1055898235::m:::scESC:
 fpr:::::::::ECAF7590EB3443B5C7CF3ACB6C7EE1B8621CC013:
 uid:f::::::::Werner Koch <wk@g10code.com>:
@@ -14,810 +29,884 @@ sub:f:1536:16:06AD222CADF6A6E1:919537416:1036177416:::::e:
 fpr:::::::::CF8BCC4B18DE08FCD8A1615906AD222CADF6A6E1:
 sub:r:1536:20:5CE086B5B5A18FF4:899817788:1025961788:::::esc:
 fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
+#+end_example
 
-The double --with-fingerprint prints the fingerprint for the subkeys
-too. --fixed-list-mode is the modern listing way printing dates in
-seconds since Epoch and does not merge the first userID with the pub
-record; gpg2 does this by default and the option is a dummy.
+The double =--with-fingerprint= prints the fingerprint for the subkeys
+too.  Old versions of gpg used a lighly different format and required
+the use of the option =--fixed-list-mode= to conform to format
+described here.
 
+** Description of the fields
+*** Field 1 - Type of record
 
- 1. Field:  Type of record
-	    pub = public key
-            crt = X.509 certificate
-            crs = X.509 certificate and private key available
-	    sub = subkey (secondary key)
-	    sec = secret key
-	    ssb = secret subkey (secondary key)
-	    uid = user id (only field 10 is used).
-	    uat = user attribute (same as user id except for field 10).
-            sig = signature
-            rev = revocation signature
-	    fpr = fingerprint: (fingerprint is in field 10)
-	    pkd = public key data (special field format, see below)
-            grp = keygrip
-            rvk = revocation key
-            tru = trust database information
-            spk = signature subpacket
+    - pub :: Public key
+    - crt :: X.509 certificate
+    - crs :: X.509 certificate and private key available
+    - sub :: Subkey (secondary key)
+    - sec :: Secret key
+    - ssb :: Secret subkey (secondary key)
+    - uid :: User id (only field 10 is used).
+    - uat :: User attribute (same as user id except for field 10).
+    - sig :: Signature
+    - rev :: Revocation signature
+    - fpr :: Fingerprint (fingerprint is in field 10)
+    - pkd :: Public key data [*]
+    - grp :: Keygrip
+    - rvk :: Revocation key
+    - tru :: Trust database information [*]
+    - spk :: Signature subpacket [*]
+    - cfg :: Configuration data [*]
 
- 2. Field:  A letter describing the calculated validity. This is a single
-	    letter, but be prepared that additional information may follow
-	    in some future versions. (not used for secret keys)
-		o = Unknown (this key is new to the system)
-                i = The key is invalid (e.g. due to a missing self-signature)
-		d = The key has been disabled
-		    (deprecated - use the 'D' in field 12 instead)
-		r = The key has been revoked
-		e = The key has expired
-		- = Unknown validity (i.e. no value assigned)
-		q = Undefined validity
-	            '-' and 'q' may safely be treated as the same
-		    value for most purposes
-		n = The key is not valid
-		m = The key is marginal valid.
-		f = The key is fully valid
-		u = The key is ultimately valid.  This often means
-		    that the secret key is available, but any key may
-		    be marked as ultimately valid.
-                w = The key has a well known private part.
-                s = The key has special validity.  This means that it
-                    might be self-signed and expected to be used in
-                    the STEED sytem.
+    Records marked with an asterisk are described at [[*Special%20field%20formats][*Special fields]].
 
-            If the validity information is given for a UID or UAT
-            record, it describes the validity calculated based on this
-            user ID.  If given for a key record it describes the best
-            validity taken from the best rated user ID.
+*** Field 2 - Validity
 
-            For X.509 certificates a 'u' is used for a trusted root
-            certificate (i.e. for the trust anchor) and an 'f' for all
-            other valid certificates.
+    This is a letter describing the computed validity of a key.
+    Currently this is a single letter, but be prepared that additional
+    information may follow in some future versions. Note that GnuPG <
+    2.1 does not set this field for secret key listings.
 
- 3. Field:  length of key in bits.
+    - o :: Unknown (this key is new to the system)
+    - i :: The key is invalid (e.g. due to a missing self-signature)
+    - d :: The key has been disabled
+	   (deprecated - use the 'D' in field 12 instead)
+    - r :: The key has been revoked
+    - e :: The key has expired
+    - - :: Unknown validity (i.e. no value assigned)
+    - q :: Undefined validity.  '-' and 'q' may safely be treated as
+           the same value for most purposes
+    - n :: The key is not valid
+    - m :: The key is marginal valid.
+    - f :: The key is fully valid
+    - u :: The key is ultimately valid.  This often means that the
+           secret key is available, but any key may be marked as
+           ultimately valid.
+    - w :: The key has a well known private part.
+    - s :: The key has special validity.  This means that it might be
+           self-signed and expected to be used in the STEED sytem.
 
- 4. Field:  Algorithm:	1 = RSA
-		       16 = Elgamal (encrypt only)
-		       17 = DSA (sometimes called DH, sign only)
-		       20 = Elgamal (sign and encrypt - don't use them!)
-	    (for other id's see include/cipher.h)
+    If the validity information is given for a UID or UAT record, it
+    describes the validity calculated based on this user ID.  If given
+    for a key record it describes the validity taken from the best
+    rated user ID.
 
- 5. Field:  KeyID
+    For X.509 certificates a 'u' is used for a trusted root
+    certificate (i.e. for the trust anchor) and an 'f' for all other
+    valid certificates.
 
- 6. Field:  Creation Date (in UTC).  For UID and UAT records, this is
-            the self-signature date.  Note that the date is usally
-            printed in seconds since epoch, however, we are migrating
-            to an ISO 8601 format (e.g. "19660205T091500").  This is
-            currently only relevant for X.509.  A simple way to detect
-            the new format is to scan for the 'T'.
+*** Field 3 - Key length
 
- 7. Field:  Key or user ID/user attribute expiration date or empty if none.
+    The length of key in bits.
 
- 8. Field:  Used for serial number in crt records (used to be the Local-ID).
-            For UID and UAT records, this is a hash of the user ID contents
-            used to represent that exact user ID.  For trust signatures,
-            this is the trust depth seperated by the trust value by a
-            space.
+*** Field 4 - Public key algorithm
 
- 9. Field:  Ownertrust (primary public keys only)
-	    This is a single letter, but be prepared that additional
-	    information may follow in some future versions.  For trust
-	    signatures with a regular expression, this is the regular
-	    expression value, quoted as in field 10.
+    The values here are those from the OpenPGP specs or if they are
+    greather than 255 the algorithm ids as used by Libgcrypt.
 
-10. Field:  User-ID.  The value is quoted like a C string to avoid
-	    control characters (the colon is quoted "\x3a").
-            For a "pub" record this field is not used on --fixed-list-mode.
-            A UAT record puts the attribute subpacket count here, a
-	    space, and then the total attribute subpacket size.
-            In gpgsm the issuer name comes here
-            An FPR record stores the fingerprint here.
-            The fingerprint of an revocation key is stored here.
+*** Field 5 - KeyID
 
-11. Field:  Signature class as per RFC-4880.  This is a 2 digit
-            hexnumber followed by either the letter 'x' for an
-            exportable signature or the letter 'l' for a local-only
-            signature.  The class byte of an revocation key is also
-            given here, 'x' and 'l' is used the same way.  IT is not
-            used for X.509.
+    This is the 64 bit keyid as specified by OpenPGP and the last 64
+    bit of the SHA-1 fingerprint of an X.509 certifciate.
 
-12. Field:  Key capabilities:
-                e = encrypt
-                s = sign
-                c = certify
-                a = authentication
-	    A key may have any combination of them in any order.  In
-	    addition to these letters, the primary key has uppercase
-	    versions of the letters to denote the _usable_
-	    capabilities of the entire key, and a potential letter 'D'
-	    to indicate a disabled key.
+*** Field 6 - Creation date
 
-13. Field:  Used in FPR records for S/MIME keys to store the
-            fingerprint of the issuer certificate.  This is useful to
-            build the certificate path based on certificates stored in
-            the local keyDB; it is only filled if the issuer
-            certificate is available. The root has been reached if
-            this is the same string as the fingerprint. The advantage
-            of using this value is that it is guaranteed to have been
-            been build by the same lookup algorithm as gpgsm uses.
-            For "uid" records this lists the preferences in the same
-            way the gpg's --edit-key menu does.
-	    For "sig" records, this is the fingerprint of the key that
-	    issued the signature.  Note that this is only filled in if
-	    the signature verified correctly.  Note also that for
-	    various technical reasons, this fingerprint is only
-	    available if --no-sig-cache is used.
+    The creation date of the key is given in UTC.  For UID and UAT
+    records, this is used for the self-signature date.  Note that the
+    date is usally printed in seconds since epoch, however, we are
+    migrating to an ISO 8601 format (e.g. "19660205T091500").  This is
+    currently only relevant for X.509.  A simple way to detect the new
+    format is to scan for the 'T'.  Note that old versions of gpg
+    without using the =--fixed-list-mode= option used a "yyyy-mm-tt"
+    format.
 
-14. Field   Flag field used in the --edit menu output:
+*** Field 7 - Expiration date
 
-15. Field   Used in sec/sbb to print the serial number of a token
-            (internal protect mode 1002) or a '#' if that key is a
-            simple stub (internal protect mode 1001)
-16. Field:  For sig records, this is the used hash algorithm:
-                2 = SHA-1
-                8 = SHA-256
-	    (for other id's see include/cipher.h)
+    Key or UID/UAT expiration date or empty if it does not expire.
 
-All dates are displayed in the format yyyy-mm-dd unless you use the
-option --fixed-list-mode in which case they are displayed as seconds
-since Epoch.  More fields may be added later, so parsers should be
-prepared for this. When parsing a number the parser should stop at the
-first non-number character so that additional information can later be
-added.
+*** Field 8 - Certificate S/N, UID hash, trust signature info
 
-If field 1 has the tag "pkd", a listing looks like this:
+    Used for serial number in crt records.  For UID and UAT records,
+    this is a hash of the user ID contents used to represent that
+    exact user ID.  For trust signatures, this is the trust depth
+    seperated by the trust value by a space.
+
+*** Field 9 -  Ownertrust
+
+    This is only used on primary keys.  This is a single letter, but
+    be prepared that additional information may follow in future
+    versions.  For trust signatures with a regular expression, this is
+    the regular expression value, quoted as in field 10.
+
+*** Field 10 - User-ID
+    The value is quoted like a C string to avoid control characters
+    (the colon is quoted =\x3a=).  For a "pub" record this field is
+    not used on --fixed-list-mode.  A UAT record puts the attribute
+    subpacket count here, a space, and then the total attribute
+    subpacket size.  In gpgsm the issuer name comes here.  A FPR
+    record stores the fingerprint here.  The fingerprint of a
+    revocation key is stored here.
+*** Field 11 - Signature class
+
+    Signature class as per RFC-4880.  This is a 2 digit hexnumber
+    followed by either the letter 'x' for an exportable signature or
+    the letter 'l' for a local-only signature.  The class byte of an
+    revocation key is also given here, 'x' and 'l' is used the same
+    way.  This field if not used for X.509.
+
+*** Field 12 - Key capabilities
+
+    The defined capabilities are:
+
+    - e :: Encrypt
+    - s :: Sign
+    - c :: Certify
+    - a :: Authentication
+
+    A key may have any combination of them in any order.  In addition
+    to these letters, the primary key has uppercase versions of the
+    letters to denote the _usable_ capabilities of the entire key, and
+    a potential letter 'D' to indicate a disabled key.
+
+*** Field 13 - Issuer certificate fingerprint or other info
+
+    Used in FPR records for S/MIME keys to store the fingerprint of
+    the issuer certificate.  This is useful to build the certificate
+    path based on certificates stored in the local key database it is
+    only filled if the issuer certificate is available. The root has
+    been reached if this is the same string as the fingerprint. The
+    advantage of using this value is that it is guaranteed to have
+    been been build by the same lookup algorithm as gpgsm uses.
+
+    For "uid" records this field lists the preferences in the same way
+    gpg's --edit-key menu does.
+
+    For "sig" records, this is the fingerprint of the key that issued
+    the signature.  Note that this is only filled in if the signature
+    verified correctly.  Note also that for various technical reasons,
+    this fingerprint is only available if --no-sig-cache is used.
+
+*** Field 14 - Flag field
+
+    Flag field used in the --edit menu output
+
+*** Field 15 - S/N of a token
+
+    Used in sec/sbb to print the serial number of a token (internal
+    protect mode 1002) or a '#' if that key is a simple stub (internal
+    protect mode 1001)
+
+*** Field 16 - Hash algorithm
+
+    For sig records, this is the used hash algorithm.  For example:
+    2 = SHA-1, 8 = SHA-256.
+
+** Special fields
+
+*** PKD - Public key data
+
+    If field 1 has the tag "pkd", a listing looks like this:
+#+begin_example
 pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     !  !   !-- the value
     !  !------ for information number of bits in the value
     !--------- index (eg. DSA goes from 0 to 3: p,q,g,y)
+#+end_example
+
+*** TRU - Trust database information
+    Example for a "tru" trust base record:
+#+begin_example
+    tru:o:0:1166697654:1:3:1:5
+#+end_example
 
+    - Field 2 :: Reason for staleness of trust.  If this field is
+                 empty, then the trustdb is not stale.  This field may
+                 have multiple flags in it:
 
-Example for a "tru" trust base record:
-
-   tru:o:0:1166697654:1:3:1:5
-
- The fields are:
-
- 2: Reason for staleness of trust.  If this field is empty, then the
-    trustdb is not stale.  This field may have multiple flags in it:
-
-    o: Trustdb is old
-    t: Trustdb was built with a different trust model than the one we
-       are using now.
-
- 3: Trust model:
-    0: Classic trust model, as used in PGP 2.x.
-    1: PGP trust model, as used in PGP 6 and later.  This is the same
-       as the classic trust model, except for the addition of trust
-       signatures.
-
-    GnuPG before version 1.4 used the classic trust model by default.
-    GnuPG 1.4 and later uses the PGP trust model by default.
-
- 4: Date trustdb was created in seconds since 1970-01-01.
- 5: Date trustdb will expire in seconds since 1970-01-01.
- 6: Number of marginally trusted users to introduce a new key signer
-    (gpg's option --marginals-needed)
- 7: Number of completely trusted users to introduce a new key signer.
-    (gpg's option --completes-needed)
- 8: Maximum depth of a certification chain.
-    *gpg's option --max-cert-depth)
-
-The "spk" signature subpacket records have the fields:
-
- 2: Subpacket number as per RFC-4880 and later.
- 3: Flags in hex.  Currently the only two bits assigned are 1, to
-    indicate that the subpacket came from the hashed part of the
-    signature, and 2, to indicate the subpacket was marked critical.
- 4: Length of the subpacket.  Note that this is the length of the
-    subpacket, and not the length of field 5 below.  Due to the need
-    for %-encoding, the length of field 5 may be up to 3x this value.
- 5: The subpacket data.  Printable ASCII is shown as ASCII, but other
-    values are rendered as %XX where XX is the hex value for the byte.
-
-
-Format of the "--status-fd" output
-==================================
-Every line is prefixed with "[GNUPG:] ", followed by a keyword with
-the type of the status line and a some arguments depending on the
-type (maybe none); an application should always be prepared to see
-more arguments in future versions.
-
-
-    NEWSIG
-        May be issued right before a signature verification starts.  This
-        is useful to define a context for parsing ERROR status
-        messages.  No arguments are currently defined.
-
-    GOODSIG  <long_keyid_or_fpr>  <username>
-	The signature with the keyid is good.  For each signature only
-        one of the codes GOODSIG, BADSIG, EXPSIG, EXPKEYSIG, REVKEYSIG
-        or ERRSIG will be emitted.  In the past they were used as a
-        marker for a new signature; new code should use the NEWSIG
-        status instead.  The username is the primary one encoded in
-        UTF-8 and %XX escaped. The fingerprint may be used instead of
-        the long keyid if it is available.  This is the case with CMS
-        and might eventually also be available for OpenPGP.
-
-    EXPSIG  <long_keyid_or_fpr>  <username>
-	The signature with the keyid is good, but the signature is
-	expired. The username is the primary one encoded in UTF-8 and
-	%XX escaped. The fingerprint may be used instead of the long
-	keyid if it is available.  This is the case with CMS and might
-	eventually also be available for OpenPGP.
-
-    EXPKEYSIG  <long_keyid_or_fpr> <username>
-        The signature with the keyid is good, but the signature was
-	made by an expired key. The username is the primary one
-	encoded in UTF-8 and %XX escaped.  The fingerprint may be used
-	instead of the long keyid if it is available.  This is the
-	case with CMS and might eventually also be available for
-	OpenPGP.
-
-    REVKEYSIG  <long_keyid_or_fpr>  <username>
-	The signature with the keyid is good, but the signature was
-	made by a revoked key. The username is the primary one encoded
-	in UTF-8 and %XX escaped. The fingerprint may be used instead
-	of the long keyid if it is available.  This is the case with
-	CMS and might eventually also be available for OpenPGP.
-
-    BADSIG  <long_keyid_or_fpr>  <username>
-	The signature with the keyid has not been verified okay.  The
-        username is the primary one encoded in UTF-8 and %XX
-        escaped. The fingerprint may be used instead of the long keyid
-        if it is available.  This is the case with CMS and might
-        eventually also be available for OpenPGP.
-
-    ERRSIG  <long_keyid_or_fpr>  <pubkey_algo> <hash_algo> \
-	    <sig_class> <timestamp> <rc>
-	It was not possible to check the signature.  This may be
-	caused by a missing public key or an unsupported algorithm.  A
-	RC of 4 indicates unknown algorithm, a 9 indicates a missing
-	public key. The other fields give more information about this
-	signature.  sig_class is a 2 byte hex-value.  The fingerprint
-	may be used instead of the long keyid if it is available.
-	This is the case with CMS and might eventually also be
-	available for OpenPGP.
-
-        Note, that TIMESTAMP may either be a number with seconds since
-        epoch or an ISO 8601 string which can be detected by the
-        presence of the letter 'T' inside.
-
-    VALIDSIG	<fingerprint in hex> <sig_creation_date> <sig-timestamp>
-		<expire-timestamp>  <sig-version> <reserved> <pubkey-algo>
-		<hash-algo> <sig-class> [ <primary-key-fpr> ]
-
-	The signature with the keyid is good. This is the same as
-	GOODSIG but has the fingerprint as the argument. Both status
-	lines are emitted for a good signature.  All arguments here
-	are on one long line.  sig-timestamp is the signature creation
-	time in seconds after the epoch. expire-timestamp is the
-	signature expiration time in seconds after the epoch (zero
-	means "does not expire"). sig-version, pubkey-algo, hash-algo,
-	and sig-class (a 2-byte hex value) are all straight from the
-	signature packet.  PRIMARY-KEY-FPR is the fingerprint of the
-	primary key or identical to the first argument.  This is
-	useful to get back to the primary key without running gpg
-	again for this purpose.
-
-        The primary-key-fpr parameter is used for OpenPGP and not
-        available for CMS signatures.  The sig-version as well as the
-        sig class is not defined for CMS and currently set to 0 and 00.
-
-        Note, that *-TIMESTAMP may either be a number with seconds
-        since epoch or an ISO 8601 string which can be detected by the
-        presence of the letter 'T' inside.
-
-    SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
-	This is emitted only for signatures of class 0 or 1 which
-	have been verified okay.  The string is a signature id
-	and may be used in applications to detect replay attacks
-	of signed messages.  Note that only DLP algorithms give
-	unique ids - others may yield duplicated ones when they
-	have been created in the same second.
-
-        Note, that SIG-TIMESTAMP may either be a number with seconds
-        since epoch or an ISO 8601 string which can be detected by the
-        presence of the letter 'T' inside.
-
-    ENC_TO  <long_keyid>  <keytype>  <keylength>
-	The message is encrypted to this LONG_KEYID.  KEYTYPE is the
-	numerical value of the public key algorithm or 0 if it is not
-	known, KEYLENGTH is the length of the key or 0 if it is not
-	known (which is currently always the case).  Gpg prints this
-	line always; Gpgsm only if it knows the certificate.
-
-    NODATA  <what>
-	No data has been found. Codes for what are:
-	    1 - No armored data.
-	    2 - Expected a packet but did not found one.
-	    3 - Invalid packet found, this may indicate a non OpenPGP
-                message.
-            4 - signature expected but not found
-	You may see more than one of these status lines.
-
-    UNEXPECTED <what>
-        Unexpected data has been encountered
-            0 - not further specified
-
-
-    TRUST_UNDEFINED <error token>
-    TRUST_NEVER     <error token>
-    TRUST_MARGINAL  [0  [<validation_model>]]
-    TRUST_FULLY     [0  [<validation_model>]]
-    TRUST_ULTIMATE  [0  [<validation_model>]]
-	For good signatures one of these status lines are emitted to
-	indicate the validity of the key used to create the signature.
-	The error token values are currently only emitted by gpgsm.
-	VALIDATION_MODEL describes the algorithm used to check the
-	validity of the key.  The defaults are the standard Web of
-	Trust model for gpg and the the standard X.509 model for
-	gpgsm.  The defined values are
-
-           "pgp"   for the standard PGP WoT.
-	   "shell" for the standard X.509 model.
-	   "chain" for the chain model.
-           "steed" for the STEED model.
-
-        Note that we use the term "TRUST_" in the status names for
-        historic reasons; we now speak of validity.
-
-    PKA_TRUST_GOOD <mailbox>
-    PKA_TRUST_BAD  <mailbox>
-        Depending on the outcome of the PKA check one of the above
-        status codes is emitted in addition to a TRUST_* status.
-        Without PKA info available or
-
-    KEYEXPIRED <expire-timestamp>
-	The key has expired.  expire-timestamp is the expiration time
-	in seconds since Epoch.  This status line is not very useful
-	because it will also be emitted for expired subkeys even if
-	this subkey is not used.  To check whether a key used to sign
-	a message has expired, the EXPKEYSIG status line is to be
-	used.
-
-        Note, that TIMESTAMP may either be a number with seconds since
-        epoch or an ISO 8601 string which can be detected by the
-        presence of the letter 'T' inside.
-
-    KEYREVOKED
-	The used key has been revoked by its owner.  No arguments yet.
-
-    BADARMOR
-	The ASCII armor is corrupted.  No arguments yet.
-
-    RSA_OR_IDEA
-	Obsolete.  This status message used to be emitted for requests
-        to use the IDEA or RSA algorithms.  It has been dropped from
-        GnuPG 2.1 after the respective patents expired.
-
-    SHM_INFO
-    SHM_GET
-    SHM_GET_BOOL
-    SHM_GET_HIDDEN
-
-    GET_BOOL
-    GET_LINE
-    GET_HIDDEN
-    GOT_IT
-
-    NEED_PASSPHRASE <long main keyid> <long keyid> <keytype> <keylength>
-	Issued whenever a passphrase is needed.
-	keytype is the numerical value of the public key algorithm
-	or 0 if this is not applicable, keylength is the length
-	of the key or 0 if it is not known (this is currently always the case).
-
-    NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
-	Issued whenever a passphrase for symmetric encryption is needed.
-
-    NEED_PASSPHRASE_PIN <card_type> <chvno> [<serialno>]
-        Issued whenever a PIN is requested to unlock a card.
-
-    MISSING_PASSPHRASE
-	No passphrase was supplied.  An application which encounters this
-	message may want to stop parsing immediately because the next message
-	will probably be a BAD_PASSPHRASE.  However, if the application
-	is a wrapper around the key edit menu functionality it might not
-	make sense to stop parsing but simply ignoring the following
-	BAD_PASSPHRASE.
-
-    BAD_PASSPHRASE <long keyid>
-	The supplied passphrase was wrong or not given.  In the latter case
-	you may have seen a MISSING_PASSPHRASE.
-
-    GOOD_PASSPHRASE
-	The supplied passphrase was good and the secret key material
-	is therefore usable.
-
-    NO_PUBKEY  <long keyid>
-    NO_SECKEY  <long keyid>
-	The key is not available
-
-    IMPORT_CHECK <long keyid> <fingerprint> <user ID>
-        This status is emitted in interactive mode right before
-        the "import.okay" prompt.
-
-    IMPORTED   <long keyid>  <username>
-	The keyid and name of the signature just imported
-
-    IMPORT_OK  <reason> [<fingerprint>]
-        The key with the primary key's FINGERPRINT has been imported.
-        Reason flags:
-          0 := Not actually changed
-          1 := Entirely new key.
-          2 := New user IDs
-          4 := New signatures
-          8 := New subkeys
-         16 := Contains private key.
-        The flags may be ORed.
-
-    IMPORT_PROBLEM <reason> [<fingerprint>]
-        Issued for each import failure.  Reason codes are:
-          0 := "No specific reason given".
-          1 := "Invalid Certificate".
-          2 := "Issuer Certificate missing".
-          3 := "Certificate Chain too long".
-          4 := "Error storing certificate".
-
-    IMPORT_RES <count> <no_user_id> <imported> <imported_rsa> <unchanged>
-	<n_uids> <n_subk> <n_sigs> <n_revoc> <sec_read> <sec_imported>
-        <sec_dups> <skipped_new_keys> <not_imported>
-	Final statistics on import process (this is one long line)
-
-    FILE_START <what> <filename>
-	Start processing a file <filename>.  <what> indicates the performed
-	operation:
-	    1 - verify
-            2 - encrypt
-            3 - decrypt
-
-    FILE_DONE
-	Marks the end of a file processing which has been started
-	by FILE_START.
-
-    BEGIN_DECRYPTION
-    END_DECRYPTION
-	Mark the start and end of the actual decryption process.  These
-	are also emitted when in --list-only mode.
-
-    DECRYPTION_INFO <mdc_method> <sym_algo>
-        Print information about the symmetric encryption algorithm and
-        the MDC method.  This will be emitted even if the decryption
-        fails.
-
-    DECRYPTION_FAILED
-	The symmetric decryption failed - one reason could be a wrong
-	passphrase for a symmetrical encrypted message.
-
-    DECRYPTION_OKAY
-	The decryption process succeeded.  This means, that either the
-	correct secret key has been used or the correct passphrase
-	for a conventional encrypted message was given.  The program
-	itself may return an errorcode because it may not be possible to
-	verify a signature for some reasons.
-
-    BEGIN_ENCRYPTION  <mdc_method> <sym_algo>
-    END_ENCRYPTION
-	Mark the start and end of the actual encryption process.
-
-    BEGIN_SIGNING
-       Mark the start of the actual signing process. This may be used
-       as an indication that all requested secret keys are ready for
-       use.
-
-    DELETE_PROBLEM reason_code
-	Deleting a key failed.	Reason codes are:
-	    1 - No such key
-	    2 - Must delete secret key first
-            3 - Ambigious specification
-
-    PROGRESS what char cur total
-	Used by the primegen and Public key functions to indicate progress.
-	"char" is the character displayed with no --status-fd enabled, with
-	the linefeed replaced by an 'X'.  "cur" is the current amount
-	done and "total" is amount to be done; a "total" of 0 indicates that
-	the total amount is not known.	The condition
-           TOATL && CUR == TOTAL
-        may be used to detect the end of an operation.
-        Well known values for WHAT:
-             "pk_dsa"   - DSA key generation
-             "pk_elg"   - Elgamal key generation
-             "primegen" - Prime generation
-             "need_entropy" - Waiting for new entropy in the RNG
-             "file:XXX" - processing file XXX
-                          (note that current gpg versions leave out the
-                           "file:" prefix).
-             "tick"     - generic tick without any special meaning - useful
-                          for letting clients know that the server is
-                          still working.
-             "starting_agent" - A gpg-agent was started because it is not
-                          running as a daemon.
-             "learncard"  Send by the agent and gpgsm while learing
-	                  the data of a smartcard.
-             "card_busy"  A smartcard is still working
-
-    SIG_CREATED <type> <pubkey algo> <hash algo> <class> <timestamp> <key fpr>
-	A signature has been created using these parameters.
-	    type:  'D' = detached
-		   'C' = cleartext
-		   'S' = standard
-		   (only the first character should be checked)
-	    class: 2 hex digits with the signature class
-
-        Note, that TIMESTAMP may either be a number with seconds since
-        epoch or an ISO 8601 string which can be detected by the
-        presence of the letter 'T' inside.
-
-    KEY_CREATED <type> <fingerprint> [<handle>]
-        A key has been created
-            type: 'B' = primary and subkey
-                  'P' = primary
-                  'S' = subkey
-        The fingerprint is one of the primary key for type B and P and
-        the one of the subkey for S.  Handle is an arbitrary
-        non-whitespace string used to match key parameters from batch
-        key creation run.
-
-    KEY_NOT_CREATED [<handle>]
-        The key from batch run has not been created due to errors.
-
-
-    SESSION_KEY  <algo>:<hexdigits>
-	The session key used to decrypt the message.  This message will
-	only be emitted when the special option --show-session-key
-	is used.  The format is suitable to be passed to the option
-	--override-session-key
-
-    NOTATION_NAME <name>
-    NOTATION_DATA <string>
-        name and string are %XX escaped; the data may be split
-        among several NOTATION_DATA lines.
-
-    USERID_HINT <long main keyid> <string>
-        Give a hint about the user ID for a certain keyID.
-
-    POLICY_URL <string>
-        string is %XX escaped
-
-    BEGIN_STREAM
-    END_STREAM
-        Issued by pipemode.
-
-    INV_RECP <reason> <requested_recipient>
-    INV_SGNR <reason> <requested_sender>
-        Issued for each unusable recipient/sender. The reasons codes
-        currently in use are:
-          0 := "No specific reason given".
-          1 := "Not Found"
-          2 := "Ambigious specification"
-          3 := "Wrong key usage"
-          4 := "Key revoked"
-          5 := "Key expired"
-          6 := "No CRL known"
-          7 := "CRL too old"
-          8 := "Policy mismatch"
-          9 := "Not a secret key"
-	 10 := "Key not trusted"
-         11 := "Missing certificate"
-         12 := "Missing issuer certificate"
-
-        Note that for historical reasons the INV_RECP status is also
-        used for gpgsm's SIGNER command where it relates to signer's
-        of course.  Newer GnuPG versions are using INV_SGNR;
-        applications should ignore the INV_RECP during the sender's
-        command processing once they have seen an INV_SGNR.  We use
-        different code so that we can distinguish them while doing an
-        encrypt+sign.
-
-
-    NO_RECP <reserved>
-    NO_SGNR <reserved>
-        Issued when no recipients/senders are usable.
-
-    ALREADY_SIGNED <long-keyid>
-        Warning: This is experimental and might be removed at any time.
-
-    TRUNCATED <maxno>
-        The output was truncated to MAXNO items.  This status code is issued
-        for certain external requests
-
-    ERROR <error location> <error code> [<more>]
-
-        This is a generic error status message, it might be followed
-        by error location specific data. <error code> and
-        <error_location> should not contain spaces.  The error code is
-        a either a string commencing with a letter or such a string
-        prefixed with a numerical error code and an underscore; e.g.:
-        "151011327_EOF".
-
-    SUCCESS [<location>]
-        Postive confirimation that an operation succeeded.  <location>
-        is optional but if given should not contain spaces.
-        Used only with a few commands.
-
-
-    ATTRIBUTE <fpr> <octets> <type> <index> <count>
-	      <timestamp> <expiredate> <flags>
-	This is one long line issued for each attribute subpacket when
-	an attribute packet is seen during key listing.  <fpr> is the
-	fingerprint of the key. <octets> is the length of the
-	attribute subpacket. <type> is the attribute type
-	(1==image). <index>/<count> indicates that this is the Nth
-	indexed subpacket of count total subpackets in this attribute
-	packet.  <timestamp> and <expiredate> are from the
-	self-signature on the attribute packet.  If the attribute
-	packet does not have a valid self-signature, then the
-	timestamp is 0.  <flags> are a bitwise OR of:
-		0x01 = this attribute packet is a primary uid
-		0x02 = this attribute packet is revoked
-		0x04 = this attribute packet is expired
-
-    CARDCTRL <what> [<serialno>]
-        This is used to control smartcard operations.
-        Defined values for WHAT are:
-           1 = Request insertion of a card.  Serialnumber may be given
-               to request a specific card.  Used by gpg 1.4 w/o scdaemon.
-           2 = Request removal of a card.  Used by gpg 1.4 w/o scdaemon.
-           3 = Card with serialnumber detected
-           4 = No card available.
-           5 = No card reader available
-           6 = No card support available
-
-    PLAINTEXT <format> <timestamp> <filename>
-        This indicates the format of the plaintext that is about to be
-        written.  The format is a 1 byte hex code that shows the
-        format of the plaintext: 62 ('b') is binary data, 74 ('t') is
-        text data with no character set specified, and 75 ('u') is
-        text data encoded in the UTF-8 character set.  The timestamp
-        is in seconds since the epoch.  If a filename is available it
-        gets printed as the third argument, percent-escaped as usual.
-
-    PLAINTEXT_LENGTH <length>
-        This indicates the length of the plaintext that is about to be
-        written.  Note that if the plaintext packet has partial length
-        encoding it is not possible to know the length ahead of time.
-        In that case, this status tag does not appear.
-
-    SIG_SUBPACKET <type> <flags> <len> <data>
-        This indicates that a signature subpacket was seen.  The
-        format is the same as the "spk" record above.
-
-    SC_OP_FAILURE [<code>]
-        An operation on a smartcard definitely failed.  Currently
-        there is no indication of the actual error code, but
-        application should be prepared to later accept more arguments.
-        Defined values for CODE are:
-           0 - unspecified error (identically to a missing CODE)
-           1 - canceled
-           2 - bad PIN
-
-    SC_OP_SUCCESS
-        A smart card operaion succeeded.  This status is only printed
-        for certain operation and is mostly useful to check whether a
-        PIN change really worked.
-
-    BACKUP_KEY_CREATED fingerprint fname
-        A backup key named FNAME has been created for the key with
-        KEYID.
-
-    MOUNTPOINT <name>
-        NAME is a percent-plus escaped filename describing the
-        mountpoint for the current operation (e.g. g13 --mount).  This
-        may either be the specified mountpoint or one randomly choosen
-        by g13.
-
-    PINENTRY_LAUNCHED <pid>
-
-        This status line is emitted by gpg to notify a client that a
-        Pinentry has been launched.  <pid> is the PID of the Pinentry.
-        It may be used to display a hint to the user but can't be used
-        to synchronize with Pinentry.  Note that there is also an
-        Assuan inquiry line with the same name used internally or, if
-        enabled, send to the client instead of this status line.  Such
-        an inquiry may be used to sync with Pinentry
-
-Status lines which are not anymore used:
-
-    SIGEXPIRED removed on 2011-02-04.
-	This is deprecated in favor of KEYEXPIRED.
-
-
-
-
-Format of the "--attribute-fd" output
-=====================================
-
-When --attribute-fd is set, during key listings (--list-keys,
---list-secret-keys) GnuPG dumps each attribute packet to the file
-descriptor specified.  --attribute-fd is intended for use with
---status-fd as part of the required information is carried on the
-ATTRIBUTE status tag (see above).
-
-The contents of the attribute data is specified by RFC 4880.  For
-convenience, here is the Photo ID format, as it is currently the only
-attribute defined:
-
-   Byte 0-1:  The length of the image header.  Due to a historical
-              accident (i.e. oops!) back in the NAI PGP days, this is
-              a little-endian number.  Currently 16 (0x10 0x00).
-
-   Byte 2:    The image header version.  Currently 0x01.
-
-   Byte 3:    Encoding format.  0x01 == JPEG.
-
-   Byte 4-15: Reserved, and currently unused.
-
-   All other data after this header is raw image (JPEG) data.
-
-
-Format of the "--list-config" output
-====================================
-
---list-config outputs information about the GnuPG configuration for
-the benefit of frontends or other programs that call GnuPG.  There are
-several list-config items, all colon delimited like the rest of the
---with-colons output.  The first field is always "cfg" to indicate
-configuration information.  The second field is one of (with
-examples):
-
-version: the third field contains the version of GnuPG.
-
-   cfg:version:1.3.5
-
-pubkey: the third field contains the public key algorithmdcaiphers
-	this version of GnuPG supports, separated by semicolons.  The
-	algorithm numbers are as specified in RFC-4880.  Note that in
-	contrast to the --status-fd interface these are _not_ the
-	Libgcrypt identifiers.
-
-   cfg:pubkey:1;2;3;16;17
-
-cipher: the third field contains the symmetric ciphers this version of
-	GnuPG supports, separated by semicolons.  The cipher numbers
-	are as specified in RFC-4880.
-
-   cfg:cipher:2;3;4;7;8;9;10
-
-digest: the third field contains the digest (hash) algorithms this
-	version of GnuPG supports, separated by semicolons.  The
-	digest numbers are as specified in RFC-4880.
-
-   cfg:digest:1;2;3;8;9;10
-
-compress: the third field contains the compression algorithms this
-	  version of GnuPG supports, separated by semicolons.  The
-	  algorithm numbers are as specified in RFC-4880.
-
-   cfg:compress:0;1;2;3
-
-group: the third field contains the name of the group, and the fourth
-       field contains the values that the group expands to, separated
-       by semicolons.
-
-For example, a group of:
-   group mynames = paige 0x12345678 joe patti
-
-would result in:
-   cfg:group:mynames:patti;joe;0x12345678;paige
-
-
-Key generation
-==============
-See the Libcrypt manual.
-
-
-Unattended key generation
-=========================
-The the manual for a description.
-
-
-Layout of the TrustDB
-=====================
-The TrustDB is built from fixed length records, where the first byte
-describes the record type.  All numeric values are stored in network
-byte order. The length of each record is 40 bytes. The first record of
-the DB is always of type 1 and this is the only record of this type.
-
-FIXME:  The layout changed, document it here.
-
+                 - o :: Trustdb is old
+                 - t :: Trustdb was built with a different trust model
+                        than the one we are using now.
+
+    - Field 3 :: Trust model
+
+                 - 0 :: Classic trust model, as used in PGP 2.x.
+                 - 1 :: PGP trust model, as used in PGP 6 and later.
+                        This is the same as the classic trust model,
+                        except for the addition of trust signatures.
+
+                 GnuPG before version 1.4 used the classic trust model
+                 by default. GnuPG 1.4 and later uses the PGP trust
+                 model by default.
+
+    - Field 4 :: Date trustdb was created in seconds since Epoch.
+    - Field 5 :: Date trustdb will expire in seconds since Epoch.
+    - Field 6 :: Number of marginally trusted users to introduce a new
+                 key signer (gpg's option --marginals-needed).
+    - Field 7 :: Number of completely trusted users to introduce a new
+                 key signer.  (gpg's option --completes-needed)
+
+    - Field 8 :: Maximum depth of a certification chain. (gpg's option
+                 --max-cert-depth)
+
+*** SPK - Signature subpacket records
+
+    - Field 2 :: Subpacket number as per RFC-4880 and later.
+    - Field 3 :: Flags in hex.  Currently the only two bits assigned
+                 are 1, to indicate that the subpacket came from the
+                 hashed part of the signature, and 2, to indicate the
+                 subpacket was marked critical.
+    - Field 4 :: Length of the subpacket.  Note that this is the
+                 length of the subpacket, and not the length of field
+                 5 below.  Due to the need for %-encoding, the length
+                 of field 5 may be up to 3x this value.
+    - Field 5 :: The subpacket data.  Printable ASCII is shown as
+                 ASCII, but other values are rendered as %XX where XX
+                 is the hex value for the byte.
+
+*** CFG - Configuration data
+
+    --list-config outputs information about the GnuPG configuration
+    for the benefit of frontends or other programs that call GnuPG.
+    There are several list-config items, all colon delimited like the
+    rest of the --with-colons output.  The first field is always "cfg"
+    to indicate configuration information.  The second field is one of
+    (with examples):
+
+    - version :: The third field contains the version of GnuPG.
+
+                 : cfg:version:1.3.5
+
+    - pubkey :: The third field contains the public key algorithms
+                this version of GnuPG supports, separated by
+                semicolons.  The algorithm numbers are as specified in
+                RFC-4880.  Note that in contrast to the --status-fd
+                interface these are _not_ the Libgcrypt identifiers.
+
+                 : cfg:pubkey:1;2;3;16;17
+
+    - cipher :: The third field contains the symmetric ciphers this
+                version of GnuPG supports, separated by semicolons.
+                The cipher numbers are as specified in RFC-4880.
+
+                 : cfg:cipher:2;3;4;7;8;9;10
+
+    - digest :: The third field contains the digest (hash) algorithms
+                this version of GnuPG supports, separated by
+                semicolons.  The digest numbers are as specified in
+                RFC-4880.
+
+                 : cfg:digest:1;2;3;8;9;10
+
+    - compress :: The third field contains the compression algorithms
+                  this version of GnuPG supports, separated by
+                  semicolons.  The algorithm numbers are as specified
+                  in RFC-4880.
+
+                 : cfg:compress:0;1;2;3
+
+    - group :: The third field contains the name of the group, and the
+               fourth field contains the values that the group expands
+               to, separated by semicolons.
+
+               For example, a group of:
+                 : group mynames = paige 0x12345678 joe patti
+               would result in:
+                 : cfg:group:mynames:patti;joe;0x12345678;paige
+
+
+* Format of the --status-fd output
+
+  Every line is prefixed with "[GNUPG:] ", followed by a keyword with
+  the type of the status line and some arguments depending on the type
+  (maybe none); an application should always be prepared to see more
+  arguments in future versions.
+
+** General status codes
+*** NEWSIG
+    May be issued right before a signature verification starts.  This
+    is useful to define a context for parsing ERROR status messages.
+    No arguments are currently defined.
+
+*** GOODSIG  <long_keyid_or_fpr>  <username>
+    The signature with the keyid is good.  For each signature only one
+    of the codes GOODSIG, BADSIG, EXPSIG, EXPKEYSIG, REVKEYSIG or
+    ERRSIG will be emitted.  In the past they were used as a marker
+    for a new signature; new code should use the NEWSIG status
+    instead.  The username is the primary one encoded in UTF-8 and %XX
+    escaped. The fingerprint may be used instead of the long keyid if
+    it is available.  This is the case with CMS and might eventually
+    also be available for OpenPGP.
+
+*** EXPSIG  <long_keyid_or_fpr>  <username>
+    The signature with the keyid is good, but the signature is
+    expired. The username is the primary one encoded in UTF-8 and %XX
+    escaped. The fingerprint may be used instead of the long keyid if
+    it is available.  This is the case with CMS and might eventually
+    also be available for OpenPGP.
+
+*** EXPKEYSIG  <long_keyid_or_fpr> <username>
+    The signature with the keyid is good, but the signature was made
+    by an expired key. The username is the primary one encoded in
+    UTF-8 and %XX escaped.  The fingerprint may be used instead of the
+    long keyid if it is available.  This is the case with CMS and
+    might eventually also be available for OpenPGP.
+
+*** REVKEYSIG  <long_keyid_or_fpr>  <username>
+    The signature with the keyid is good, but the signature was made
+    by a revoked key. The username is the primary one encoded in UTF-8
+    and %XX escaped. The fingerprint may be used instead of the long
+    keyid if it is available.  This is the case with CMS and might
+    eventually also beñ available for OpenPGP.
+
+*** BADSIG  <long_keyid_or_fpr>  <username>
+    The signature with the keyid has not been verified okay.  The
+    username is the primary one encoded in UTF-8 and %XX escaped. The
+    fingerprint may be used instead of the long keyid if it is
+    available.  This is the case with CMS and might eventually also be
+    available for OpenPGP.
+
+*** ERRSIG  <keyid>  <pkalgo> <hashalgo> <sig_class> <time> <rc>
+    It was not possible to check the signature.  This may be caused by
+    a missing public key or an unsupported algorithm.  A RC of 4
+    indicates unknown algorithm, a 9 indicates a missing public
+    key. The other fields give more information about this signature.
+    sig_class is a 2 byte hex-value.  The fingerprint may be used
+    instead of the keyid if it is available.  This is the case with
+    gpgsm and might eventually also be available for OpenPGP.
+
+    Note, that TIME may either be the number of seconds since Epoch or
+    the letter 'T'.
+    an ISO 8601 string.  The latter can be detected by the presence of
+
+*** VALIDSIG <args>
+
+    The args are:
+
+    - <fingerprint_in_hex>
+    - <sig_creation_date>
+    - <sig-timestamp>
+    - <expire-timestamp>
+    - <sig-version>
+    - <reserved>
+    - <pubkey-algo>
+    - <hash-algo>
+    - <sig-class>
+    - [ <primary-key-fpr> ]
+
+    This status indicates that the signature is good. This is the same
+    as GOODSIG but has the fingerprint as the argument. Both status
+    lines are emitted for a good signature.  All arguments here are on
+    one long line.  sig-timestamp is the signature creation time in
+    seconds after the epoch. expire-timestamp is the signature
+    expiration time in seconds after the epoch (zero means "does not
+    expire"). sig-version, pubkey-algo, hash-algo, and sig-class (a
+    2-byte hex value) are all straight from the signature packet.
+    PRIMARY-KEY-FPR is the fingerprint of the primary key or identical
+    to the first argument.  This is useful to get back to the primary
+    key without running gpg again for this purpose.
+
+    The primary-key-fpr parameter is used for OpenPGP and not
+    class is not defined for CMS and currently set to 0 and 00.
+    available for CMS signatures.  The sig-version as well as the sig
+
+    Note, that *-TIMESTAMP may either be a number of seconds since
+    Epoch or an ISO 8601 string which can be detected by the presence
+    of the letter 'T'.
+
+*** SIG_ID  <radix64_string>  <sig_creation_date>  <sig-timestamp>
+    This is emitted only for signatures of class 0 or 1 which have
+    been verified okay.  The string is a signature id and may be used
+    in applications to detect replay attacks of signed messages.  Note
+    that only DLP algorithms give unique ids - others may yield
+    duplicated ones when they have been created in the same second.
+
+    Note, that SIG-TIMESTAMP may either be a number of seconds since
+    Epoch or an ISO 8601 string which can be detected by the presence
+    of the letter 'T'.
+
+*** ENC_TO  <long_keyid>  <keytype>  <keylength>
+    The message is encrypted to this LONG_KEYID.  KEYTYPE is the
+    numerical value of the public key algorithm or 0 if it is not
+    known, KEYLENGTH is the length of the key or 0 if it is not known
+    (which is currently always the case).  Gpg prints this line
+    always; Gpgsm only if it knows the certificate.
+
+*** BEGIN_DECRYPTION
+    Mark the start of the actual decryption process.  This is also
+    emitted when in --list-only mode.
+*** END_DECRYPTION
+    Mark the end of the actual decryption process.  This are also
+    emitted when in --list-only mode.
+*** DECRYPTION_INFO <mdc_method> <sym_algo>
+    Print information about the symmetric encryption algorithm and the
+    MDC method.  This will be emitted even if the decryption fails.
+
+*** DECRYPTION_FAILED
+    The symmetric decryption failed - one reason could be a wrong
+    passphrase for a symmetrical encrypted message.
+
+*** DECRYPTION_OKAY
+    The decryption process succeeded.  This means, that either the
+    correct secret key has been used or the correct passphrase for a
+    conventional encrypted message was given.  The program itself may
+    return an errorcode because it may not be possible to verify a
+    signature for some reasons.
+
+*** SESSION_KEY <algo>:<hexdigits>
+    The session key used to decrypt the message.  This message will
+    only be emitted when the special option --show-session-key is
+    used.  The format is suitable to be passed to the option
+    --override-session-key
+
+*** BEGIN_ENCRYPTION  <mdc_method> <sym_algo>
+    Mark the start of the actual encryption process.
+
+*** END_ENCRYPTION
+    Mark the end of the actual encryption process.
+
+*** FILE_START <what> <filename>
+    Start processing a file <filename>.  <what> indicates the performed
+    operation:
+    - 1 :: verify
+    - 2 :: encrypt
+    - 3 :: decrypt
+
+*** FILE_DONE
+    Marks the end of a file processing which has been started
+    by FILE_START.
+
+*** BEGIN_SIGNING
+    Mark the start of the actual signing process. This may be used as
+    an indication that all requested secret keys are ready for use.
+
+*** ALREADY_SIGNED <long-keyid>
+    Warning: This is experimental and might be removed at any time.
+
+*** SIG_CREATED <type> <pk_algo> <hash_algo> <class> <timestamp> <keyfpr>
+    A signature has been created using these parameters.
+    Values for type <type> are:
+      - D :: detached
+      - C :: cleartext
+      - S :: standard
+    (only the first character should be checked)
+
+    <class> are 2 hex digits with the OpenPGP signature class.
+
+    Note, that TIMESTAMP may either be a number of seconds since Epoch
+    or an ISO 8601 string which can be detected by the presence of the
+    letter 'T'.
+
+*** NOTATION_
+    There are actually two related status codes to convey notation
+    data:
+
+    - NOTATION_NAME <name>
+    - NOTATION_DATA <string>
+
+    <name> and <string> are %XX escaped; the data may be split among
+    several NOTATION_DATA lines.
+
+*** POLICY_URL <string>
+    Note that URL in <string> is %XX escaped.
+
+*** PLAINTEXT <format> <timestamp> <filename>
+    This indicates the format of the plaintext that is about to be
+    written.  The format is a 1 byte hex code that shows the format of
+    the plaintext: 62 ('b') is binary data, 74 ('t') is text data with
+    no character set specified, and 75 ('u') is text data encoded in
+    the UTF-8 character set.  The timestamp is in seconds since the
+    epoch.  If a filename is available it gets printed as the third
+    argument, percent-escaped as usual.
+
+*** PLAINTEXT_LENGTH <length>
+    This indicates the length of the plaintext that is about to be
+    written.  Note that if the plaintext packet has partial length
+    encoding it is not possible to know the length ahead of time.  In
+    that case, this status tag does not appear.
+
+*** ATTRIBUTE <arguments>
+    The list or argemnts are:
+    - <fpr>
+    - <octets>
+    - <type>
+    - <index>
+    - <count>
+    - <timestamp>
+    - <expiredate>
+    - <flags>
+
+    This is one long line issued for each attribute subpacket when an
+    attribute packet is seen during key listing.  <fpr> is the
+    fingerprint of the key.  <octets> is the length of the attribute
+    subpacket.  <type> is the attribute type (e.g. 1 for an image).
+    <index> and <count> indicate that this is the N-th indexed
+    subpacket of count total subpackets in this attribute packet.
+    <timestamp> and <expiredate> are from the self-signature on the
+    attribute packet.  If the attribute packet does not have a valid
+    self-signature, then the timestamp is 0.  <flags> are a bitwise OR
+    of:
+    - 0x01 :: this attribute packet is a primary uid
+    - 0x02 :: this attribute packet is revoked
+    - 0x04 :: this attribute packet is expired
+
+*** SIG_SUBPACKET <type> <flags> <len> <data>
+    This indicates that a signature subpacket was seen.  The format is
+    the same as the "spk" record above.
+
+** Key related
+*** INV_RECP, INV_SGNR
+    The two similar status codes:
+
+    - INV_RECP <reason> <requested_recipient>
+    - INV_SGNR <reason> <requested_sender>
+
+    are issued for each unusable recipient/sender. The reasons codes
+    currently in use are:
+
+       -  0 :: No specific reason given
+       -  1 :: Not Found
+       -  2 :: Ambigious specification
+       -  3 :: Wrong key usage
+       -  4 :: Key revoked
+       -  5 :: Key expired
+       -  6 :: No CRL known
+       -  7 :: CRL too old
+       -  8 :: Policy mismatch
+       -  9 :: Not a secret key
+       - 10 :: Key not trusted
+       - 11 :: Missing certificate
+       - 12 :: Missing issuer certificate
+
+    Note that for historical reasons the INV_RECP status is also used
+    for gpgsm's SIGNER command where it relates to signer's of course.
+    Newer GnuPG versions are using INV_SGNR; applications should
+    ignore the INV_RECP during the sender's command processing once
+    they have seen an INV_SGNR.  Different codes are used so that they
+    can be distinguish while doing an encrypt+sign operation.
+*** NO_RECP <reserved>
+    Issued if no recipients are usable.
+
+*** NO_SGNR <reserved>
+    Issued if no senders are usable.
+
+*** KEYEXPIRED <expire-timestamp>
+    The key has expired.  expire-timestamp is the expiration time in
+    seconds since Epoch.  This status line is not very useful because
+    it will also be emitted for expired subkeys even if this subkey is
+    not used.  To check whether a key used to sign a message has
+    expired, the EXPKEYSIG status line is to be used.
+
+    Note, that the TIMESTAMP may either be a number of seconds since
+    Epoch or an ISO 8601 string which can be detected by the presence
+    of the letter 'T'.
+
+*** KEYREVOKED
+    The used key has been revoked by its owner.  No arguments yet.
+
+*** NO_PUBKEY  <long keyid>
+    The public key is not available
+
+*** NO_SECKEY  <long keyid>
+    The secret key is not available
+
+*** KEY_CREATED <type> <fingerprint> [<handle>]
+    A key has been created.  Values for <type> are:
+      - B :: primary and subkey
+      - P :: primary
+      - S :: subkey
+    The fingerprint is one of the primary key for type B and P and the
+    one of the subkey for S.  Handle is an arbitrary non-whitespace
+    string used to match key parameters from batch key creation run.
+
+*** KEY_NOT_CREATED [<handle>]
+    The key from batch run has not been created due to errors.
+
+*** TRUST_
+    These are several similar status codes:
+
+    - TRUST_UNDEFINED <error_token>
+    - TRUST_NEVER     <error_token>
+    - TRUST_MARGINAL  [0  [<validation_model>]]
+    - TRUST_FULLY     [0  [<validation_model>]]
+    - TRUST_ULTIMATE  [0  [<validation_model>]]
+
+    For good signatures one of these status lines are emitted to
+    indicate the validity of the key used to create the signature.
+    The error token values are currently only emitted by gpgsm.
+
+    VALIDATION_MODEL describes the algorithm used to check the
+    validity of the key.  The defaults are the standard Web of Trust
+    model for gpg and the the standard X.509 model for gpgsm.  The
+    defined values are
+
+       - pgp   :: The standard PGP WoT.
+       - shell :: The standard X.509 model.
+       - chain :: The chain model.
+       - steed :: The STEED model.
+
+    Note that the term =TRUST_= in the status names is used for
+    historic reasons; we now speak of validity.
+
+*** PKA_TRUST_
+    This is is one:
+
+    - PKA_TRUST_GOOD <mailbox>
+    - PKA_TRUST_BAD  <mailbox>
+
+    Depending on the outcome of the PKA check one of the above status
+    codes is emitted in addition to a =TRUST_*= status.
+
+** Remote control
+*** GET_BOOL, GET_LINE, GET_HIDDEN, GOT_IT
+
+    These status line are used with --command-fd for interactive
+    control of the process.
+
+*** USERID_HINT <long main keyid> <string>
+    Give a hint about the user ID for a certain keyID.
+
+*** NEED_PASSPHRASE <long main keyid> <long keyid> <keytype> <keylength>
+    Issued whenever a passphrase is needed.  KEYTYPE is the numerical
+    value of the public key algorithm or 0 if this is not applicable,
+    KEYLENGTH is the length of the key or 0 if it is not known (this
+    is currently always the case).
+
+*** NEED_PASSPHRASE_SYM <cipher_algo> <s2k_mode> <s2k_hash>
+    Issued whenever a passphrase for symmetric encryption is needed.
+
+*** NEED_PASSPHRASE_PIN <card_type> <chvno> [<serialno>]
+    Issued whenever a PIN is requested to unlock a card.
+
+*** MISSING_PASSPHRASE
+    No passphrase was supplied.  An application which encounters this
+    message may want to stop parsing immediately because the next
+    message will probably be a BAD_PASSPHRASE.  However, if the
+    application is a wrapper around the key edit menu functionality it
+    might not make sense to stop parsing but simply ignoring the
+    following BAD_PASSPHRASE.
+
+*** BAD_PASSPHRASE <long keyid>
+    The supplied passphrase was wrong or not given.  In the latter
+    case you may have seen a MISSING_PASSPHRASE.
+
+*** GOOD_PASSPHRASE
+    The supplied passphrase was good and the secret key material
+    is therefore usable.
+
+** Import/Export
+*** IMPORT_CHECK <long keyid> <fingerprint> <user ID>
+    This status is emitted in interactive mode right before
+    the "import.okay" prompt.
+
+*** IMPORTED   <long keyid>  <username>
+    The keyid and name of the signature just imported
+
+*** IMPORT_OK  <reason> [<fingerprint>]
+    The key with the primary key's FINGERPRINT has been imported.
+    REASON flags are:
+
+    - 0 :: Not actually changed
+    - 1 :: Entirely new key.
+    - 2 :: New user IDs
+    - 4 :: New signatures
+    - 8 :: New subkeys
+    - 16 :: Contains private key.
+
+    The flags may be ORed.
+
+*** IMPORT_PROBLEM <reason> [<fingerprint>]
+    Issued for each import failure.  Reason codes are:
+
+    - 0 :: No specific reason given.
+    - 1 :: Invalid Certificate.
+    - 2 :: Issuer Certificate missing.
+    - 3 :: Certificate Chain too long.
+    - 4 :: Error storing certificate.
+
+*** IMPORT_RES <args>
+    Final statistics on import process (this is one long line). The
+    args are a list of unsigned numbers separated by white space:
+
+    - <count>
+    - <no_user_id>
+    - <imported>
+    - <imported_rsa>
+    - <unchanged>
+    - <n_uids>
+    - <n_subk>
+    - <n_sigs>
+    - <n_revoc>
+    - <sec_read>
+    - <sec_imported>
+    - <sec_dups>
+    - <skipped_new_keys>
+    - <not_imported>
+
+** Smartcard related
+*** CARDCTRL <what> [<serialno>]
+    This is used to control smartcard operations.  Defined values for
+    WHAT are:
+
+      - 1 :: Request insertion of a card.  Serialnumber may be given
+             to request a specific card.  Used by gpg 1.4 w/o
+             scdaemon
+      - 2 :: Request removal of a card.  Used by gpg 1.4 w/o scdaemon.
+      - 3 :: Card with serialnumber detected
+      - 4 :: No card available
+      - 5 :: No card reader available
+      - 6 :: No card support available
+
+*** SC_OP_FAILURE [<code>]
+    An operation on a smartcard definitely failed.  Currently there is
+    no indication of the actual error code, but application should be
+    prepared to later accept more arguments.  Defined values for
+    <code> are:
+
+      - 0 :: unspecified error (identically to a missing CODE)
+      - 1 :: canceled
+      - 2 :: bad PIN
+
+*** SC_OP_SUCCESS
+    A smart card operaion succeeded.  This status is only printed for
+    certain operation and is mostly useful to check whether a PIN
+    change really worked.
+
+** Miscellaneous status codes
+*** NODATA  <what>
+    No data has been found.  Codes for WHAT are:
+
+    - 1 :: No armored data.
+    - 2 :: Expected a packet but did not found one.
+    - 3 :: Invalid packet found, this may indicate a non OpenPGP
+           message.
+    - 4 :: Signature expected but not found
+
+    You may see more than one of these status lines.
+
+*** UNEXPECTED <what>
+    Unexpected data has been encountered.  Codes for WHAT are:
+    - 0 :: Not further specified
+
+*** TRUNCATED <maxno>
+    The output was truncated to MAXNO items.  This status code is
+    issued for certain external requests.
+
+*** ERROR <error location> <error code> [<more>]
+    This is a generic error status message, it might be followed by
+    error location specific data. <error code> and <error_location>
+    should not contain spaces.  The error code is a either a string
+    commencing with a letter or such a string prefixed with a
+    numerical error code and an underscore; e.g.: "151011327_EOF".
+
+*** SUCCESS [<location>]
+    Postive confirimation that an operation succeeded.  <location> is
+    optional but if given should not contain spaces.  Used only with a
+    few commands.
+
+*** BADARMOR
+    The ASCII armor is corrupted.  No arguments yet.
+
+*** DELETE_PROBLEM <reason_code>
+    Deleting a key failed.  Reason codes are:
+    - 1 :: No such key
+    - 2 :: Must delete secret key first
+    - 3 :: Ambigious specification
+
+*** PROGRESS <what> <char> <cur> <total>
+    Used by the primegen and Public key functions to indicate
+    progress.  <char> is the character displayed with no --status-fd
+    enabled, with the linefeed replaced by an 'X'.  <cur> is the
+    current amount done and <total> is amount to be done; a <total> of
+    0 indicates that the total amount is not known. The condition
+      :       TOTAL && CUR == TOTAL
+    may be used to detect the end of an operation.
+
+    Well known values for WHAT are:
+
+           - pk_dsa   :: DSA key generation
+           - pk_elg   :: Elgamal key generation
+           - primegen :: Prime generation
+           - need_entropy :: Waiting for new entropy in the RNG
+           - tick :: Generic tick without any special meaning - useful
+                     for letting clients know that the server is still
+                     working.
+           - starting_agent :: A gpg-agent was started because it is not
+                                running as a daemon.
+           - learncard :: Send by the agent and gpgsm while learing
+                          the data of a smartcard.
+           - card_busy :: A smartcard is still working
+
+*** BACKUP_KEY_CREATED <fingerprint> <fname>
+    A backup of a key identified by <fingerprint> has been writte to
+    the file <fname>; <fname> is percent-escaped.
+
+*** MOUNTPOINT <name>
+    <name> is a percent-plus escaped filename describing the
+    mountpoint for the current operation (e.g. used by "g13 --mount").
+    This may either be the specified mountpoint or one randomly
+    choosen by g13.
+
+*** PINENTRY_LAUNCHED <pid>
+    This status line is emitted by gpg to notify a client that a
+    Pinentry has been launched.  <pid> is the PID of the Pinentry.  It
+    may be used to display a hint to the user but can't be used to
+    synchronize with Pinentry.  Note that there is also an Assuan
+    inquiry line with the same name used internally or, if enabled,
+    send to the client instead of this status line.  Such an inquiry
+    may be used to sync with Pinentry
+
+** Obsolete status codes
+*** SIGEXPIRED
+    Removed on 2011-02-04.  This is deprecated in favor of KEYEXPIRED.
+*** RSA_OR_IDEA
+    Obsolete.  This status message used to be emitted for requests to
+    use the IDEA or RSA algorithms.  It has been dropped from GnuPG
+    2.1 after the respective patents expired.
+*** SHM_INFO, SHM_GET, SHM_GET_BOOL, SHM_GET_HIDDEN
+    These were used for the ancient shared memory based co-processing.
+*** BEGIN_STREAM, END_STREAM
+    Used to issued by the experimental pipemode.
+
+
+* Format of the --attribute-fd output
+
+  When --attribute-fd is set, during key listings (--list-keys,
+  --list-secret-keys) GnuPG dumps each attribute packet to the file
+  descriptor specified.  --attribute-fd is intended for use with
+  --status-fd as part of the required information is carried on the
+  ATTRIBUTE status tag (see above).
+
+  The contents of the attribute data is specified by RFC 4880.  For
+  convenience, here is the Photo ID format, as it is currently the
+  only attribute defined:
+
+  - Byte 0-1 :: The length of the image header.  Due to a historical
+                accident (i.e. oops!) back in the NAI PGP days, this
+                is a little-endian number.  Currently 16 (0x10 0x00).
+
+  - Byte 2 :: The image header version.  Currently 0x01.
+
+  - Byte 3 :: Encoding format.  0x01 == JPEG.
+
+  - Byte 4-15 :: Reserved, and currently unused.
+
+  All other data after this header is raw image (JPEG) data.
+
+
+* Unattended key generation
+
+   Please see the GnuPG manual for a description.
+
+
+* Layout of the TrustDB
+
+  The TrustDB is built from fixed length records, where the first byte
+  describes the record type.  All numeric values are stored in network
+  byte order. The length of each record is 40 bytes. The first record
+  of the DB is always of type 1 and this is the only record of this
+  type.
+
+  FIXME:  The layout changed, document it here.
+#+begin_example
   Record type 0:
   --------------
     Unused record, can be reused for any purpose.
@@ -1017,119 +1106,119 @@ FIXME:  The layout changed, document it here.
      1 byte  value 254
      1 byte  reserved (0)
      1 u32   next_free
+#+end_example
 
 
+* GNU extensions to the S2K algorithm
 
-GNU extensions to the S2K algorithm
-===================================
-S2K mode 101 is used to identify these extensions.
-After the hash algorithm the 3 bytes "GNU" are used to make
-clear that these are extensions for GNU, the next bytes gives the
-GNU protection mode - 1000.  Defined modes are:
-  1001 - do not store the secret part at all
-  1002 - a stub to access smartcards (not used in 1.2.x)
+  S2K mode 101 is used to identify these extensions.
+  After the hash algorithm the 3 bytes "GNU" are used to make
+  clear that these are extensions for GNU, the next bytes gives the
+  GNU protection mode - 1000.  Defined modes are:
+  - 1001 :: Do not store the secret part at all.
+  - 1002 :: A stub to access smartcards (not used in 1.2.x)
 
+* Keyserver helper message format
 
+  The keyserver may be contacted by a Unix Domain socket or via TCP.
 
-Other Notes
-===========
-    * For packet version 3 we calculate the keyids this way:
-	RSA	:= low 64 bits of n
-	ELGAMAL := build a v3 pubkey packet (with CTB 0x99) and calculate
-		   a rmd160 hash value from it. This is used as the
-		   fingerprint and the low 64 bits are the keyid.
+  The format of a request is:
+#+begin_example
+  command-tag
+  "Content-length:" digits
+  CRLF
+#+end_example
 
-    * Revocation certificates consist only of the signature packet;
-      "import" knows how to handle this.  The rationale behind it is
-      to keep them small.
+  Where command-tag is
 
-
-OIDs below the GnuPG arc:
-=========================
-
- 1.3.6.1.4.1.11591.2          GnuPG
- 1.3.6.1.4.1.11591.2.1          notation
- 1.3.6.1.4.1.11591.2.1.1          pkaAddress
- 1.3.6.1.4.1.11591.2.2          X.509 extensions
- 1.3.6.1.4.1.11591.2.2.1          standaloneCertificate
- 1.3.6.1.4.1.11591.2.2.2          wellKnownPrivateKey
- 1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
-
-
-
-Keyserver Message Format
-=========================
-
-The keyserver may be contacted by a Unix Domain socket or via TCP.
-
-The format of a request is:
-
-====
-command-tag
-"Content-length:" digits
-CRLF
-=======
-
-Where command-tag is
-
-NOOP
-GET <user-name>
-PUT
-DELETE <user-name>
-
+#+begin_example
+  NOOP
+  GET <user-name>
+  PUT
+  DELETE <user-name>
+#+end_example
 
 The format of a response is:
 
-======
-"GNUPG/1.0" status-code status-text
-"Content-length:" digits
-CRLF
-============
+#+begin_example
+  "GNUPG/1.0" status-code status-text
+  "Content-length:" digits
+  CRLF
+#+end_example
 followed by <digits> bytes of data
-
 
 Status codes are:
 
-     o	1xx: Informational - Request received, continuing process
+  - 1xx :: Informational - Request received, continuing process
 
-     o	2xx: Success - The action was successfully received, understood,
-	and accepted
+  - 2xx :: Success - The action was successfully received, understood,
+           and accepted
 
-     o	4xx: Client Error - The request contains bad syntax or cannot be
-	fulfilled
+  - 4xx :: Client Error - The request contains bad syntax or cannot be
+           fulfilled
 
-     o	5xx: Server Error - The server failed to fulfill an apparently
-	valid request
-
-
-
-Documentation on HKP (the http keyserver protocol):
-
-A minimalistic HTTP server on port 11371 recognizes a GET for /pks/lookup.
-The standard http URL encoded query parameters are this (always key=value):
-
-- op=index (like pgp -kv), op=vindex (like pgp -kvv) and op=get (like
-  pgp -kxa)
-
-- search=<stringlist>. This is a list of words that must occur in the key.
-  The words are delimited with space, points, @ and so on. The delimiters
-  are not searched for and the order of the words doesn't matter (but see
-  next option).
-
-- exact=on. This switch tells the hkp server to only report exact matching
-  keys back. In this case the order and the "delimiters" are important.
-
-- fingerprint=on. Also reports the fingerprints when used with 'index' or
-  'vindex'
-
-The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
-keys.
+  - 5xx :: Server Error - The server failed to fulfill an apparently
+           valid request
 
 
-A better way to do this would be a request like:
+* Object identifiers
 
-   /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
+  OIDs below the GnuPG arc:
 
-This can be implemented using Hurd's translator mechanism.
-However, I think the whole key server stuff has to be re-thought;
-I have some ideas and probably create a white paper.
+#+begin_example
+  1.3.6.1.4.1.11591.2          GnuPG
+  1.3.6.1.4.1.11591.2.1          notation
+  1.3.6.1.4.1.11591.2.1.1          pkaAddress
+  1.3.6.1.4.1.11591.2.2          X.509 extensions
+  1.3.6.1.4.1.11591.2.2.1          standaloneCertificate
+  1.3.6.1.4.1.11591.2.2.2          wellKnownPrivateKey
+  1.3.6.1.4.1.11591.2.12242973   invalid encoded OID
+#+end_example
+
+
+
+* Miscellaneous notes
+
+** v3 fingerprints
+   For packet version 3 we calculate the keyids this way:
+    - RSA :: Low 64 bits of n
+    - ELGAMAL :: Build a v3 pubkey packet (with CTB 0x99) and
+                 calculate a RMD160 hash value from it. This is used
+                 as the fingerprint and the low 64 bits are the keyid.
+
+** Simplified revocation certificates
+  Revocation certificates consist only of the signature packet;
+  "--import" knows how to handle this.  The rationale behind it is to
+  keep them small.
+
+** Documentation on HKP (the http keyserver protocol):
+
+   A minimalistic HTTP server on port 11371 recognizes a GET for
+   /pks/lookup.  The standard http URL encoded query parameters are
+   this (always key=value):
+
+   - op=index (like pgp -kv), op=vindex (like pgp -kvv) and op=get (like
+     pgp -kxa)
+
+   - search=<stringlist>. This is a list of words that must occur in the key.
+     The words are delimited with space, points, @ and so on. The delimiters
+     are not searched for and the order of the words doesn't matter (but see
+     next option).
+
+   - exact=on. This switch tells the hkp server to only report exact matching
+     keys back. In this case the order and the "delimiters" are important.
+
+   - fingerprint=on. Also reports the fingerprints when used with 'index' or
+     'vindex'
+
+   The keyserver also recognizes http-POSTs to /pks/add. Use this to upload
+   keys.
+
+
+   A better way to do this would be a request like:
+
+      /pks/lookup/<gnupg_formatierte_user_id>?op=<operation>
+
+   This can be implemented using Hurd's translator mechanism.
+   However, I think the whole key server stuff has to be re-thought;
+   I have some ideas and probably create a white paper.
