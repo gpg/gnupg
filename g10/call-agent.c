@@ -307,14 +307,15 @@ get_serialno_cb (void *opaque, const char *line)
 static gpg_error_t
 default_inq_cb (void *opaque, const char *line)
 {
-  (void)opaque;
+  gpg_error_t err;
+  ctrl_t ctrl = opaque;
 
   if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
     {
-      /* There is no working server mode yet thus we use
-         AllowSetForegroundWindow window right here.  We might want to
-         do this anyway in case gpg is called on the console. */
-      gnupg_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
+      err = gpg_proxy_pinentry_notify (ctrl, line);
+      if (err)
+        log_error (_("failed to proxy %s inquiry to client\n"),
+                   "PINENTRY_LAUNCHED");
       /* We do not pass errors to avoid breaking other code.  */
     }
   else

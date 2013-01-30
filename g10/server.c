@@ -50,6 +50,9 @@ struct server_local_s
   /* List of prepared recipients.  */
   pk_list_t recplist;
 
+  /* Set if pinentry notifications should be passed back to the
+     client. */
+  int allow_pinentry_notify;
 };
 
 
@@ -105,9 +108,8 @@ has_option (const char *line, const char *name)
 static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
-/*   ctrl_t ctrl = assuan_get_pointer (ctx); */
+  ctrl_t ctrl = assuan_get_pointer (ctx);
 
-  (void)ctx;
   (void)value;
 
   /* Fixme: Implement the tty and locale args. */
@@ -135,6 +137,10 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
   else if (!strcmp (key, "list-mode"))
     {
       /* This is for now a dummy option. */
+    }
+  else if (!strcmp (key, "allow-pinentry-notify"))
+    {
+      ctrl->server_local->allow_pinentry_notify = 1;
     }
   else
     return gpg_error (GPG_ERR_UNKNOWN_OPTION);
@@ -767,4 +773,30 @@ gpg_server (ctrl_t ctrl)
     }
   assuan_release (ctx);
   return rc;
+}
+
+
+/* Helper to notify the client about Pinentry events.  Because that
+   might disturb some older clients, this is only done when enabled
+   via an option.  If it is not enabled we tell Windows to allow
+   setting the foreground window right here.  Returns an gpg error
+   code. */
+gpg_error_t
+gpg_proxy_pinentry_notify (ctrl_t ctrl, const unsigned char *line)
+{
+  if (!ctrl || !ctrl->server_local
+      || !ctrl->server_local->allow_pinentry_notify)
+    {
+      gnupg_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
+      /* Client might be interested in that event - send as status line.  */
+      if (!strncmp (line, "PINENTRY_LAUNCHED", 17)
+          && (line[17]==' '||!line[17]))
+        {
+          for (line += 17; *line && spacep (line); line++)
+            ;
+          write_status_text (STATUS_PINENTRY_LAUNCHED, line);
+        }
+      return 0;
+    }
+  return assuan_inquire (ctrl->server_local->assuan_ctx, line, NULL, NULL, 0);
 }
