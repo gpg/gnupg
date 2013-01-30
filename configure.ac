@@ -1,6 +1,6 @@
 # configure.ac script for GnuPG
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-#               2008, 2009, 2010, 2012 Free Software Foundation, Inc.
+#               2008, 2009, 2010, 2012, 2013 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
 #
@@ -722,7 +722,8 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
     # define in bind 8 for some reason.
 
     if test x"$have_resolver" != xyes ; then
-       AC_MSG_CHECKING([whether I can make the resolver usable with BIND_8_COMPAT])
+       AC_MSG_CHECKING([whether I can make the resolver usable with BIND_8_COMPAT and libresolv])
+       LIBS="$LIBS -lresolv"
        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#define BIND_8_COMPAT
 #include <sys/types.h>
 #include <netinet/in.h>
