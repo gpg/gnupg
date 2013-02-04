@@ -170,6 +170,16 @@ static void
 atfork_cb (void *opaque, int where)
 {
   ctrl_t ctrl = opaque;
+#ifndef HAVE_W32_SYSTEM
+  struct sigaction sa;
+
+  /* Pop up message should be able to be killed by SIGINT.  */
+  sigemptyset (&sa.sa_mask);
+  sa.sa_handler = SIG_DFL;
+  sa.sa_flags = 0;
+  sigaction (SIGINT, &sa, NULL);
+  sigprocmask (SIG_SETMASK, &sa.sa_mask, NULL); /* Unblock all signals.  */
+#endif
 
   if (!where)
     {
@@ -1159,8 +1169,7 @@ agent_popup_message_stop (ctrl_t ctrl)
         assuan_set_flag (entry_ctx, ASSUAN_NO_WAITPID, 1);
     }
   else if (pid > 0)
-    kill (pid, SIGKILL);  /* Need to use SIGKILL due to bad
-                             interaction of SIGINT with Pth. */
+    kill (pid, SIGINT);
 #endif
 
   /* Now wait for the thread to terminate. */
