@@ -1554,7 +1554,7 @@ check_keypad_request (app_t app, pininfo_t *pininfo, int admin_pin)
   else
     pininfo->fixedlen = app->app_local->keypad.fixedlen_user;
 
-  if (pininfo->fixedlen < 0    /* User requests disable pinpad.  */
+  if (pininfo->fixedlen == 0    /* User requests disable pinpad.  */
       || pininfo->fixedlen < pininfo->minlen
       || pininfo->fixedlen > pininfo->maxlen
       /* Reader doesn't have the capability to input a PIN which
