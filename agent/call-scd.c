@@ -1050,6 +1050,64 @@ agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf)
 }
 
 
+struct writekey_parm_s
+{
+  assuan_context_t ctx;
+  int (*getpin_cb)(void *, const char *, char*, size_t);
+  void *getpin_cb_arg;
+  assuan_context_t passthru;
+  int any_inq_seen;
+  /**/
+  const unsigned char *keydata;
+  size_t keydatalen;
+};
+
+/* Handle a KEYDATA inquiry.  Note, we only send the data,
+   assuan_transact takes care of flushing and writing the end */
+static gpg_error_t
+inq_writekey_parms (void *opaque, const char *line)
+{
+  struct writekey_parm_s *parm = opaque;
+
+  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+    return assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
+  else
+    return inq_needpin (opaque, line);
+}
+
+
+int
+agent_card_writekey (ctrl_t ctrl,  int force, const char *serialno,
+                     const char *id, const char *keydata, size_t keydatalen,
+                     int (*getpin_cb)(void *, const char *, char*, size_t),
+                     void *getpin_cb_arg)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+  struct writekey_parm_s parms;
+
+  (void)serialno;
+  rc = start_scd (ctrl);
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "WRITEKEY %s%s", force ? "--force " : "", id);
+  line[DIM(line)-1] = 0;
+  parms.ctx = ctrl->scd_local->ctx;
+  parms.getpin_cb = getpin_cb;
+  parms.getpin_cb_arg = getpin_cb_arg;
+  parms.passthru = 0;
+  parms.any_inq_seen = 0;
+  parms.keydata = keydata;
+  parms.keydatalen = keydatalen;
+
+  rc = assuan_transact (ctrl->scd_local->ctx, line, NULL, NULL,
+                        inq_writekey_parms, &parms, NULL, NULL);
+  if (parms.any_inq_seen && (gpg_err_code(rc) == GPG_ERR_CANCELED ||
+                             gpg_err_code(rc) == GPG_ERR_ASS_CANCELED))
+    rc = cancel_inquire (ctrl, rc);
+  return unlock_scd (ctrl, rc);
+}
 
 /* Type used with the card_getattr_cb.  */
 struct card_getattr_parm_s {

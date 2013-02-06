@@ -442,6 +442,13 @@ divert_pkdecrypt (ctrl_t ctrl,
   return rc;
 }
 
+int
+divert_writekey (ctrl_t ctrl, int force, const char *serialno,
+                 const char *id, const char *keydata, size_t keydatalen)
+{
+  return agent_card_writekey (ctrl, force, serialno, id, keydata, keydatalen,
+                              getpin_cb, ctrl);
+}
 
 int
 divert_generic_cmd (ctrl_t ctrl, const char *cmdline, void *assuan_context)
