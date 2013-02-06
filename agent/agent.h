@@ -34,6 +34,7 @@
 #include "../common/membuf.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/session-env.h"
+#include "../common/shareddefs.h"
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -45,16 +46,6 @@
 /* Maximum length of a digest.  */
 #define MAX_DIGEST_LEN 64
 
-
-/* Values for the pinentry mode.  */
-typedef enum
-  {
-    PINENTRY_MODE_ASK = 0, /* Ask via pinentry (default).  */
-    PINENTRY_MODE_CANCEL,  /* Always return a cancel error.  */
-    PINENTRY_MODE_ERROR,   /* Return error code for no pinentry.  */
-    PINENTRY_MODE_LOOPBACK,/* Use an inquiry to get the value.    */
-  }
-pinentry_mode_t;
 
 
 /* A large struct name "opt" to keep global flags */
