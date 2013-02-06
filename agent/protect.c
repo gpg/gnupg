@@ -1075,7 +1075,11 @@ hash_passphrase (const char *passphrase, int hashalgo,
                  unsigned long s2kcount,
                  unsigned char *key, size_t keylen)
 {
-
+  /* The key derive function does not support a zero length string for
+     the passphrase in the S2K modes.  Return a better suited error
+     code than GPG_ERR_INV_DATA.  */
+  if (!passphrase || !*passphrase)
+    return gpg_error (GPG_ERR_NO_PASSPHRASE);
   return gcry_kdf_derive (passphrase, strlen (passphrase),
                           s2kmode == 3? GCRY_KDF_ITERSALTED_S2K :
                           s2kmode == 1? GCRY_KDF_SALTED_S2K :
