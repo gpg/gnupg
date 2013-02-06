@@ -1264,6 +1264,7 @@ replace_existing_key_p (struct agent_card_info_s *info, int keyno)
       if ( !cpr_get_answer_is_yes( "cardedit.genkeys.replace_key",
                                   _("Replace existing key? (y/N) ")))
         return -1;
+      return 1;
     }
   return 0;
 }
@@ -1484,7 +1485,7 @@ card_generate_subkey (KBNODE pub_keyblock)
       tty_printf(_("Invalid selection.\n"));
     }
 
-  if (replace_existing_key_p (&info, keyno))
+  if (replace_existing_key_p (&info, keyno) < 0)
     {
       err = gpg_error (GPG_ERR_CANCELED);
       goto leave;
@@ -1531,152 +1532,99 @@ card_generate_subkey (KBNODE pub_keyblock)
 int
 card_store_subkey (KBNODE node, int use)
 {
-  log_info ("FIXME: card_store_subkey has not yet been implemented\n");
-/*   struct agent_card_info_s info; */
-/*   int okay = 0; */
-/*   int rc; */
-/*   int keyno, i; */
-/*   PKT_secret_key *copied_sk = NULL; */
-/*   PKT_secret_key *sk; */
-/*   size_t n; */
-/*   const char *s; */
-/*   int allow_keyno[3]; */
-/*   unsigned int nbits; */
+  struct agent_card_info_s info;
+  int okay = 0;
+  unsigned int nbits;
+  int allow_keyno[3];
+  int  keyno;
+  PKT_public_key *pk;
+  gpg_error_t err;
+  char *hexgrip;
+  int rc;
+  gnupg_isotime_t timebuf;
 
+  assert (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
-/*   assert (node->pkt->pkttype == PKT_SECRET_KEY */
-/*           || node->pkt->pkttype == PKT_SECRET_SUBKEY); */
-/*   sk = node->pkt->pkt.secret_key; */
+  pk = node->pkt->pkt.public_key;
 
-/*   if (get_info_for_key_operation (&info)) */
-/*     return 0; */
+  if (get_info_for_key_operation (&info))
+    return 0;
 
-/*   if (!info.extcap.ki) */
-/*     { */
-/*       tty_printf ("The card does not support the import of keys\n"); */
-/*       tty_printf ("\n"); */
-/*       goto leave; */
-/*     } */
+  if (!info.extcap.ki)
+    {
+      tty_printf ("The card does not support the import of keys\n");
+      tty_printf ("\n");
+      goto leave;
+    }
 
-/*   show_card_key_info (&info); */
+  nbits = nbits_from_pk (pk);
 
-/*   nbits = nbits_from_sk (sk); */
+  if (!is_RSA (pk->pubkey_algo) || (!info.is_v2 && nbits != 1024) )
+    {
+      tty_printf ("You may only store a 1024 bit RSA key on the card\n");
+      tty_printf ("\n");
+      goto leave;
+    }
 
-/*   if (!is_RSA (sk->pubkey_algo) || (!info.is_v2 && nbits != 1024) ) */
-/*     { */
-/*       tty_printf ("You may only store a 1024 bit RSA key on the card\n"); */
-/*       tty_printf ("\n"); */
-/*       goto leave; */
-/*     } */
+  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG)));
+  allow_keyno[1] = (!use || (use & (PUBKEY_USAGE_ENC)));
+  allow_keyno[2] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)));
 
-/*   allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG))); */
-/*   allow_keyno[1] = (!use || (use & (PUBKEY_USAGE_ENC))); */
-/*   allow_keyno[2] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH))); */
+  tty_printf (_("Please select where to store the key:\n"));
 
-/*   tty_printf (_("Please select where to store the key:\n")); */
+  if (allow_keyno[0])
+    tty_printf (_("   (1) Signature key\n"));
+  if (allow_keyno[1])
+    tty_printf (_("   (2) Encryption key\n"));
+  if (allow_keyno[2])
+    tty_printf (_("   (3) Authentication key\n"));
 
-/*   if (allow_keyno[0]) */
-/*     tty_printf (_("   (1) Signature key\n")); */
-/*   if (allow_keyno[1]) */
-/*     tty_printf (_("   (2) Encryption key\n")); */
-/*   if (allow_keyno[2]) */
-/*     tty_printf (_("   (3) Authentication key\n")); */
+  for (;;)
+    {
+      char *answer = cpr_get ("cardedit.genkeys.storekeytype",
+                              _("Your selection? "));
+      cpr_kill_prompt();
+      if (*answer == CONTROL_D || !*answer)
+        {
+          xfree (answer);
+          goto leave;
+        }
+      keyno = *answer? atoi(answer): 0;
+      xfree(answer);
+      if (keyno >= 1 && keyno <= 3 && allow_keyno[keyno-1])
+        {
+          if (info.is_v2 && !info.extcap.aac
+              && info.key_attr[keyno-1].nbits != nbits)
+            {
+              tty_printf ("Key does not match the card's capability.\n");
+            }
+          else
+            break; /* Okay. */
+        }
+      else
+        tty_printf(_("Invalid selection.\n"));
+    }
 
-/*   for (;;)  */
-/*     { */
-/*       char *answer = cpr_get ("cardedit.genkeys.storekeytype", */
-/*                               _("Your selection? ")); */
-/*       cpr_kill_prompt(); */
-/*       if (*answer == CONTROL_D || !*answer) */
-/*         { */
-/*           xfree (answer); */
-/*           goto leave; */
-/*         } */
-/*       keyno = *answer? atoi(answer): 0; */
-/*       xfree(answer); */
-/*       if (keyno >= 1 && keyno <= 3 && allow_keyno[keyno-1]) */
-/*         { */
-/*           if (info.is_v2 && !info.extcap.aac  */
-/*               && info.key_attr[keyno-1].nbits != nbits) */
-/*             { */
-/*               tty_printf ("Key does not match the card's capability.\n"); */
-/*             } */
-/*           else */
-/*             break; /\* Okay. *\/ */
-/*         } */
-/*       else */
-/*         tty_printf(_("Invalid selection.\n")); */
-/*     } */
+  if ((rc = replace_existing_key_p (&info, keyno)) < 0)
+    goto leave;
 
-/*   if (replace_existing_key_p (&info, keyno)) */
-/*     goto leave; */
+  err = hexkeygrip_from_pk (pk, &hexgrip);
+  if (err)
+    goto leave;
 
-/*   /\* Unprotect key.  *\/ */
-/*   switch (is_secret_key_protected (sk) ) */
-/*     { */
-/*     case 0: /\* Not protected. *\/ */
-/*       break; */
-/*     case -1: */
-/*       log_error (_("unknown key protection algorithm\n")); */
-/*       goto leave; */
-/*     default: */
-/*       if (sk->protect.s2k.mode == 1001) */
-/*         { */
-/*           log_error (_("secret parts of key are not available\n")); */
-/*           goto leave; */
-/* 	} */
-/*       if (sk->protect.s2k.mode == 1002) */
-/*         { */
-/*           log_error (_("secret key already stored on a card\n")); */
-/*           goto leave; */
-/* 	} */
-/*       /\* We better copy the key before we unprotect it.  *\/ */
-/*       copied_sk = sk = copy_secret_key (NULL, sk); */
-/*       rc = 0/\*check_secret_key (sk, 0)*\/; */
-/*       if (rc) */
-/*         goto leave; */
-/*     } */
+  epoch2isotime (timebuf, (time_t)pk->timestamp);
+  agent_keytocard (hexgrip, keyno, rc, info.serialno, timebuf);
 
-/* #warning code save_unprotected_key_to_card */
-/*   /\* rc = save_unprotected_key_to_card (sk, keyno); *\/ */
-/*   /\* if (rc) *\/ */
-/*   /\*   { *\/ */
-/*   /\*     log_error (_("error writing key to card: %s\n"), gpg_strerror (rc)); *\/ */
-/*   /\*     goto leave; *\/ */
-/*   /\*   } *\/ */
+  if (rc)
+    log_error (_("KEYTOCARD failed: %s\n"), gpg_strerror (rc));
+  else
+    okay = 1;
+  xfree (hexgrip);
 
-/*   /\* Get back to the maybe protected original secret key.  *\/ */
-/*   if (copied_sk) */
-/*     { */
-/*       free_secret_key (copied_sk); */
-/*       copied_sk = NULL;  */
-/*     } */
-/*   sk = node->pkt->pkt.secret_key; */
-
-/*   /\* Get rid of the secret key parameters and store the serial numer. *\/ */
-/*   n = pubkey_get_nskey (sk->pubkey_algo); */
-/*   for (i=pubkey_get_npkey (sk->pubkey_algo); i < n; i++) */
-/*     { */
-/*       gcry_mpi_release (sk->skey[i]); */
-/*       sk->skey[i] = NULL; */
-/*     } */
-/*   i = pubkey_get_npkey (sk->pubkey_algo); */
-/*   sk->skey[i] = gcry_mpi_set_opaque (NULL, xstrdup ("dummydata"), 10*8); */
-/*   sk->is_protected = 1; */
-/*   sk->protect.s2k.mode = 1002; */
-/*   s = info.serialno; */
-/*   for (sk->protect.ivlen=0; sk->protect.ivlen < 16 && *s && s[1]; */
-/*        sk->protect.ivlen++, s += 2) */
-/*     sk->protect.iv[sk->protect.ivlen] = xtoi_2 (s); */
-
-/*   okay = 1; */
-
-/*  leave: */
-/*   if (copied_sk) */
-/*     free_secret_key (copied_sk); */
-/*   agent_release_card_info (&info); */
-/*   return okay; */
-  return -1;
+ leave:
+  agent_release_card_info (&info);
+  return okay;
 }
 
 

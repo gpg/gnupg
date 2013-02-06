@@ -599,6 +599,30 @@ agent_learn (struct agent_card_info_s *info)
   return rc;
 }
 
+
+int
+agent_keytocard (const char *hexgrip, int keyno, int force,
+                 const char *serialno, const char *timestamp)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  snprintf (line, DIM(line)-1, "KEYTOCARD %s%s %s OPENPGP.%d %s",
+            force?"--force ": "", hexgrip, serialno, keyno, timestamp);
+  line[DIM(line)-1] = 0;
+
+  rc = start_agent (NULL, 1);
+  if (rc)
+    return rc;
+
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb,
+                        NULL, NULL, NULL);
+  if (rc)
+    return rc;
+
+  return rc;
+}
+
 /* Call the agent to retrieve a data object.  This function returns
    the data in the same structure as used by the learn command.  It is
    allowed to update such a structure using this commmand. */
