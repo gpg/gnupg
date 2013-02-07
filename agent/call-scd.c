@@ -722,7 +722,7 @@ inq_needpin (void *opaque, const char *line)
         rc = assuan_send_data (parm->ctx, pin, pinlen);
       xfree (pin);
     }
-  else if (!strncmp (line, "POPUPKEYPADPROMPT", 17)
+  else if (!strncmp (line, "POPUPPINPADPROMPT", 17)
            && (line[17] == ' ' || !line[17]))
     {
       line += 17;
@@ -731,7 +731,7 @@ inq_needpin (void *opaque, const char *line)
 
       rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, 1);
     }
-  else if (!strncmp (line, "DISMISSKEYPADPROMPT", 19)
+  else if (!strncmp (line, "DISMISSPINPADPROMPT", 19)
            && (line[19] == ' ' || !line[19]))
     {
       rc = parm->getpin_cb (parm->getpin_cb_arg, "", NULL, 0);

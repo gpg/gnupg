@@ -223,7 +223,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
   else if (info && *info == '|')
     log_debug ("pin_cb called without proper PIN info hack\n");
 
-  /* If BUF has been passed as NULL, we are in keypad mode: The
+  /* If BUF has been passed as NULL, we are in pinpad mode: The
      callback opens the popup and immediatley returns. */
   if (!buf)
     {
@@ -239,7 +239,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
               char *desc;
 
               if ( asprintf (&desc,
-                             _("%s%%0A%%0AUse the reader's keypad for input."),
+                             _("%s%%0A%%0AUse the reader's pinpad for input."),
                              info) < 0 )
                 rc = gpg_error_from_syserror ();
               else

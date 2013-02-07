@@ -3352,7 +3352,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   else if (apdu_buflen >= 4 && apdu_buf[1] == 0x24 && (handle->has_pinpad & 2))
     ;
   else
-    return CCID_DRIVER_ERR_NO_KEYPAD;
+    return CCID_DRIVER_ERR_NO_PINPAD;
 
   if (!pininfo->minlen)
     pininfo->minlen = 1;
