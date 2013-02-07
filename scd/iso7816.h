@@ -24,13 +24,13 @@
 #include "cardglue.h"
 #endif
 
-/* Command codes used by iso7816_check_keypad. */
+/* Command codes used by iso7816_check_pinpad. */
 #define ISO7816_VERIFY                0x20
 #define ISO7816_CHANGE_REFERENCE_DATA 0x24
 #define ISO7816_RESET_RETRY_COUNTER   0x2C
 
 
-/* Information to be passed to keypad equipped readers.  See
+/* Information to be passed to pinpad equipped readers.  See
    ccid-driver.c for details. */
 struct pininfo_s
 {
@@ -62,7 +62,7 @@ gpg_error_t iso7816_apdu_direct (int slot,
                                  const void *apdudata, size_t apdudatalen, 
                                  int handle_more,
                                  unsigned char **result, size_t *resultlen);
-gpg_error_t iso7816_check_keypad (int slot, int command,
+gpg_error_t iso7816_check_pinpad (int slot, int command,
                                   pininfo_t *pininfo);
 gpg_error_t iso7816_verify (int slot,
                             int chvno, const char *chv, size_t chvlen);

@@ -72,7 +72,7 @@
 #define CCID_DRIVER_ERR_GENERAL_ERROR  0x1000b
 #define CCID_DRIVER_ERR_NO_READER      0x1000c
 #define CCID_DRIVER_ERR_ABORTED        0x1000d
-#define CCID_DRIVER_ERR_NO_KEYPAD      0x1000e
+#define CCID_DRIVER_ERR_NO_PINPAD      0x1000e
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;

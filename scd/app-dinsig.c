@@ -292,11 +292,11 @@ verify_pin (app_t app,
   pininfo.minlen = 6;
   pininfo.maxlen = 8;
 
-  if (!opt.disable_keypad
-      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+  if (!opt.disable_pinpad
+      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo) )
     {
       rc = pincb (pincb_arg,
-                  _("||Please enter your PIN at the reader's keypad"),
+                  _("||Please enter your PIN at the reader's pinpad"),
                   NULL);
       if (rc)
         {
@@ -308,7 +308,7 @@ verify_pin (app_t app,
       /* Dismiss the prompt. */
       pincb (pincb_arg, NULL, NULL);
     }
-  else  /* No Keypad.  */
+  else  /* No Pinpad.  */
     {
       char *pinvalue;
 

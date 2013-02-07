@@ -3,6 +3,17 @@ Noteworthy changes in version 2.0.20 (unreleased)
 
  * The hash algorithm is now printed for sig records in key listings.
 
+ * [scdaemon] Add pinpad input for PC/SC, if your reader has pinpad
+   and it supports variable length PIN input, and you specify
+   --enable-pinpad-varlen option.
+
+ * [scdaemon] New option --enable-pinpad-varlen.
+
+ * [scdaemon] Rename option --disable-pinpad (was: --disable-keypad).
+
+ * [scdaemon] Better support fo CCID readers.  Now, internal CCID
+   driver supports readers with no auto configuration feature.
+
 
 Noteworthy changes in version 2.0.19 (2012-03-27)
 -------------------------------------------------

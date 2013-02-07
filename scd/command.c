@@ -881,13 +881,13 @@ pin_cb (void *opaque, const char *info, char **retstr)
 
   if (!retstr)
     {
-      /* We prompt for keypad entry.  To make sure that the popup has
+      /* We prompt for pinpad entry.  To make sure that the popup has
          been show we use an inquire and not just a status message.
          We ignore any value returned.  */
       if (info)
         {
-          log_debug ("prompting for keypad entry '%s'\n", info);
-          rc = estream_asprintf (&command, "POPUPKEYPADPROMPT %s", info);
+          log_debug ("prompting for pinpad entry '%s'\n", info);
+          rc = estream_asprintf (&command, "POPUPPINPADPROMPT %s", info);
           if (rc < 0)
             return gpg_error (gpg_err_code_from_errno (errno));
           rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
@@ -895,8 +895,8 @@ pin_cb (void *opaque, const char *info, char **retstr)
         }
       else
         {
-          log_debug ("dismiss keypad entry prompt\n");
-          rc = assuan_inquire (ctx, "DISMISSKEYPADPROMPT",
+          log_debug ("dismiss pinpad entry prompt\n");
+          rc = assuan_inquire (ctx, "DISMISSPINPADPROMPT",
                                &value, &valuelen, MAXLEN_PIN);
         }
       if (!rc)

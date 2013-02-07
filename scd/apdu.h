@@ -66,7 +66,7 @@ enum {
   SW_HOST_GENERAL_ERROR = 0x1000b,
   SW_HOST_NO_READER     = 0x1000c,
   SW_HOST_ABORTED       = 0x1000d,
-  SW_HOST_NO_KEYPAD     = 0x1000e,
+  SW_HOST_NO_PINPAD     = 0x1000e,
   SW_HOST_ALREADY_CONNECTED = 0x1000f
 };
 
@@ -112,10 +112,10 @@ int apdu_activate (int slot);
 int apdu_reset (int slot);
 int apdu_get_status (int slot, int hang,
                      unsigned int *status, unsigned int *changed);
-int apdu_check_keypad (int slot, int command, pininfo_t *pininfo);
-int apdu_keypad_verify (int slot, int class, int ins, int p0, int p1,
+int apdu_check_pinpad (int slot, int command, pininfo_t *pininfo);
+int apdu_pinpad_verify (int slot, int class, int ins, int p0, int p1,
 			pininfo_t *pininfo);
-int apdu_keypad_modify (int slot, int class, int ins, int p0, int p1,
+int apdu_pinpad_modify (int slot, int class, int ins, int p0, int p1,
 			pininfo_t *pininfo);
 int apdu_send_simple (int slot, int extended_mode,
                       int class, int ins, int p0, int p1,

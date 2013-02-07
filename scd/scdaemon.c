@@ -88,11 +88,11 @@ enum cmd_and_opt_values
   opcscDriver,
   oDisableCCID,
   oDisableOpenSC,
-  oDisableKeypad,
+  oDisablePinpad,
   oAllowAdmin,
   oDenyAdmin,
   oDisableApplication,
-  oEnableKeypadVarlen,
+  oEnablePinpadVarlen,
   oDebugDisableTicker
 };
 
@@ -139,14 +139,14 @@ static ARGPARSE_OPTS opts[] = {
                 /* end --disable-ccid */),
   ARGPARSE_s_u (oCardTimeout, "card-timeout",
                 N_("|N|disconnect the card after N seconds of inactivity")),
-  ARGPARSE_s_n (oDisableKeypad, "disable-keypad",
-                N_("do not use a reader's keypad")),
+  ARGPARSE_s_n (oDisablePinpad, "disable-pinpad",
+                N_("do not use a reader's pinpad")),
   ARGPARSE_s_n (oAllowAdmin, "allow-admin", "@"),
   ARGPARSE_s_n (oDenyAdmin, "deny-admin",
                 N_("deny the use of admin card commands")),
   ARGPARSE_s_s (oDisableApplication, "disable-application", "@"),
-  ARGPARSE_s_n (oEnableKeypadVarlen, "enable-keypad-varlen",
-                N_("use variable length input for keypad")),
+  ARGPARSE_s_n (oEnablePinpadVarlen, "enable-pinpad-varlen",
+                N_("use variable length input for pinpad")),
 
   ARGPARSE_end ()
 };
@@ -586,7 +586,7 @@ main (int argc, char **argv )
         case oDisableCCID: opt.disable_ccid = 1; break;
         case oDisableOpenSC: break;
 
-        case oDisableKeypad: opt.disable_keypad = 1; break;
+        case oDisablePinpad: opt.disable_pinpad = 1; break;
 
         case oAllowAdmin: /* Dummy because allow is now the default.  */
           break;
@@ -598,7 +598,7 @@ main (int argc, char **argv )
           add_to_strlist (&opt.disabled_applications, pargs.r.ret_str);
           break;
 
-	case oEnableKeypadVarlen: opt.enable_keypad_varlen = 1; break;
+	case oEnablePinpadVarlen: opt.enable_pinpad_varlen = 1; break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
@@ -679,8 +679,9 @@ main (int argc, char **argv )
       printf ("disable-ccid:%lu:\n", GC_OPT_FLAG_NONE );
 #endif
       printf ("deny-admin:%lu:\n", GC_OPT_FLAG_NONE );
-      printf ("disable-keypad:%lu:\n", GC_OPT_FLAG_NONE );
+      printf ("disable-pinpad:%lu:\n", GC_OPT_FLAG_NONE );
       printf ("card-timeout:%lu:%d:\n", GC_OPT_FLAG_DEFAULT, 0);
+      printf ("enable-pinpad-varlen:%lu:\n", GC_OPT_FLAG_NONE );
 
       scd_exit (0);
     }
