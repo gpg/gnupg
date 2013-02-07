@@ -664,7 +664,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** USERID_HINT <long main keyid> <string>
     Give a hint about the user ID for a certain keyID.
 
-*** NEED_PASSPHRASE <long main keyid> <long keyid> <keytype> <keylength>
+*** NEED_PASSPHRASE <long keyid> <long main keyid> <keytype> <keylength>
     Issued whenever a passphrase is needed.  KEYTYPE is the numerical
     value of the public key algorithm or 0 if this is not applicable,
     KEYLENGTH is the length of the key or 0 if it is not known (this
