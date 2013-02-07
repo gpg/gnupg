@@ -242,6 +242,7 @@ struct
   } *auto_key_locate;
 
   int passphrase_repeat;
+  int pinentry_mode;
 } opt;
 
 /* CTRL is used to keep some global variables we currently can't

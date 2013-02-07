@@ -11,6 +11,8 @@ Noteworthy changes in version 2.1.0beta4 (unreleased)
 
  * The hash algorithm is now printed for sig records in key listings.
 
+ * New option --pinentry-mode for GPG.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------

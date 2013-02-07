@@ -181,6 +181,7 @@ unsigned char encode_s2k_iterations (int iterations);
 assuan_context_t agent_open (int try, const char *orig_codeset);
 void agent_close (assuan_context_t ctx);
 int  have_static_passphrase(void);
+const char *get_static_passphrase (void);
 void set_passphrase_from_string(const char *pass);
 void read_passphrase_from_fd( int fd );
 void passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo );
@@ -195,6 +196,8 @@ DEK *passphrase_to_dek( u32 *keyid, int pubkey_algo,
 void set_next_passphrase( const char *s );
 char *get_last_passphrase(void);
 void next_to_last_passphrase(void);
+
+void emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
 char *gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped);
 
