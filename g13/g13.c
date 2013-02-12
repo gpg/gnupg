@@ -323,7 +323,7 @@ main ( int argc, char **argv)
   int orig_argc;
   char **orig_argv;
   gpg_error_t err = 0;
-  const char *fname;
+  /* const char *fname; */
   int may_coredump;
   FILE *configfp = NULL;
   char *configname = NULL;
@@ -334,10 +334,10 @@ main ( int argc, char **argv)
   char *logfile = NULL;
   int greeting = 0;
   int nogreeting = 0;
-  int debug_wait = 0;
+  /* int debug_wait = 0; */
   int use_random_seed = 1;
-  int nodetach = 0;
-  int nokeysetup = 0;
+  /* int nodetach = 0; */
+  /* int nokeysetup = 0; */
   enum cmd_and_opt_values cmd = 0;
   struct server_control_s ctrl;
   strlist_t recipients = NULL;
@@ -473,13 +473,13 @@ main ( int argc, char **argv)
 	case aGPGConfTest:
           set_cmd (&cmd, pargs.r_opt);
           nogreeting = 1;
-          nokeysetup = 1;
+          /* nokeysetup = 1; */
           break;
 
         case aServer:
         case aMount:
         case aUmount:
-          nokeysetup = 1;
+          /* nokeysetup = 1; */
         case aCreate:
           set_cmd (&cmd, pargs.r_opt);
           break;
@@ -504,13 +504,13 @@ main ( int argc, char **argv)
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oNoLogFile: logfile = NULL; break;
 
-        case oNoDetach: nodetach = 1; break;
+        case oNoDetach: /*nodetach = 1; */break;
 
         case oDebug: debug_value |= pargs.r.ret_ulong; break;
         case oDebugAll: debug_value = ~0; break;
         case oDebugNone: debug_value = 0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
-        case oDebugWait: debug_wait = pargs.r.ret_int; break;
+        case oDebugWait: /*debug_wait = pargs.r.ret_int; */break;
         case oDebugAllowCoreDump:
           may_coredump = enable_core_dumps ();
           break;
@@ -653,7 +653,7 @@ main ( int argc, char **argv)
     }
 
   /* Store given filename into FNAME. */
-  fname = argc? *argv : NULL;
+  /* fname = argc? *argv : NULL; */
 
   /* Parse all given encryption keys.  This does a lookup of the keys
      and stops if any of the given keys was not found. */
