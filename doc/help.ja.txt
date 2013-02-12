@@ -1,4 +1,4 @@
-# help..txt - Japanese GnuPG online help
+# help.ja.txt - Japanese GnuPG online help
 # Copyright (C) 2007 Free Software Foundation, Inc.
 #
 # This file is part of GnuPG.
