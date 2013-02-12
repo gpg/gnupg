@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-01-07 10:40+0900\n"
+"PO-Revision-Date: 2013-02-08 15:21+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -182,8 +182,8 @@ msgid "Reset Code"
 msgstr "Reset Code"
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
-msgstr "%s%%0A%%0Aリーダーのキーパッドを入力に使ってください。"
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgstr "%s%%0A%%0Aリーダーのピンパッドを入力に使ってください。"
 
 msgid "Repeat this Reset Code"
 msgstr "このReset Codeをもう一度入力してください"
@@ -5410,8 +5410,8 @@ msgstr "管理者PINの確認はこのコマンドでは今のところ禁止さ
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "%sにアクセスできません - 無効なOpenPGPカード?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr "||PINをリーダのキーパッドで入力してください"
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "||PINをリーダのピンパッドで入力してください"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5443,11 +5443,14 @@ msgstr "内蔵CCIDドライバを使いません"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|N秒アクティブでない場合、カードへの接続を切ります"
 
-msgid "do not use a reader's keypad"
-msgstr "リーダのキーパッドを使わない"
+msgid "do not use a reader's pinpad"
+msgstr "リーダのピンパッドを使わない"
 
 msgid "deny the use of admin card commands"
 msgstr "管理カード・コマンドの使用を拒否"
+
+msgid "use variable length input for pinpad"
+msgstr "PINPADで可変長入力を使う"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "使い方: scdaemon [オプション] (ヘルプは -h)"
