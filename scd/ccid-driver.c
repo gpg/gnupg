@@ -1,6 +1,6 @@
 /* ccid-driver.c - USB ChipCardInterfaceDevices driver
  * Copyright (C) 2003, 2004, 2005, 2006, 2007
- *               2008, 2009  Free Software Foundation, Inc.
+ *               2008, 2009, 2013  Free Software Foundation, Inc.
  * Written by Werner Koch.
  *
  * This file is part of GnuPG.
@@ -89,6 +89,8 @@
 
 #include <usb.h>
 
+#include "scdaemon.h"
+#include "iso7816.h"
 #include "ccid-driver.h"
 
 #define DRVNAME "ccid-driver: "
@@ -207,6 +209,7 @@ enum {
   VENDOR_SCM    = 0x04e6,
   VENDOR_OMNIKEY= 0x076b,
   VENDOR_GEMPC  = 0x08e6,
+  VENDOR_VEGA   = 0x0982,
   VENDOR_KAAN   = 0x0d46,
   VENDOR_FSIJ   = 0x234b,
   VENDOR_VASCO  = 0x1a44
@@ -220,6 +223,8 @@ enum {
 #define SCM_SPR532      0xe003
 #define CHERRY_ST2000   0x003e
 #define VASCO_920       0x0920
+#define GEMPC_PINPAD    0x3478
+#define VEGA_ALPHA      0x0008
 
 /* A list and a table with special transport descriptions. */
 enum {
@@ -264,6 +269,9 @@ struct ccid_driver_s
   unsigned char apdu_level:2;     /* Reader supports short APDU level
                                      exchange.  With a value of 2 short
                                      and extended level is supported.*/
+  unsigned int auto_voltage:1;
+  unsigned int auto_param:1;
+  unsigned int auto_pps:1;
   unsigned int auto_ifsd:1;
   unsigned int powered_off:1;
   unsigned int has_pinpad:2;
@@ -295,6 +303,9 @@ static int bulk_in (ccid_driver_t handle, unsigned char *buffer, size_t length,
                     size_t *nread, int expected_type, int seqno, int timeout,
                     int no_debug);
 static int abort_cmd (ccid_driver_t handle, int seqno);
+static int send_escape_cmd (ccid_driver_t handle, const unsigned char *data,
+                            size_t datalen, unsigned char *result,
+                            size_t resultmax, size_t *resultlen);
 
 /* Convert a little endian stored 4 byte value into an unsigned
    integer. */
@@ -758,7 +769,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
 {
   unsigned int i;
   unsigned int us;
-  int have_t1 = 0, have_tpdu=0, have_auto_conf = 0;
+  int have_t1 = 0, have_tpdu=0;
 
 
   handle->nonnull_nad = 0;
@@ -767,6 +778,9 @@ parse_ccid_descriptor (ccid_driver_t handle,
   handle->ifsd = 0;
   handle->has_pinpad = 0;
   handle->apdu_level = 0;
+  handle->auto_voltage = 0;
+  handle->auto_param = 0;
+  handle->auto_pps = 0;
   DEBUGOUT_3 ("idVendor: %04X  idProduct: %04X  bcdDevice: %04X\n",
               handle->id_vendor, handle->id_product, handle->bcd_device);
   if (buflen < 54 || buf[0] < 54)
@@ -842,22 +856,31 @@ parse_ccid_descriptor (ccid_driver_t handle,
   DEBUGOUT_1 ("  dwFeatures       %08X\n", us);
   if ((us & 0x0002))
     {
-      DEBUGOUT ("    Auto configuration based on ATR\n");
-      have_auto_conf = 1;
+      DEBUGOUT ("    Auto configuration based on ATR (assumes auto voltage)\n");
+      handle->auto_voltage = 1;
     }
   if ((us & 0x0004))
     DEBUGOUT ("    Auto activation on insert\n");
   if ((us & 0x0008))
-    DEBUGOUT ("    Auto voltage selection\n");
+    {
+      DEBUGOUT ("    Auto voltage selection\n");
+      handle->auto_voltage = 1;
+    }
   if ((us & 0x0010))
     DEBUGOUT ("    Auto clock change\n");
   if ((us & 0x0020))
     DEBUGOUT ("    Auto baud rate change\n");
   if ((us & 0x0040))
-    DEBUGOUT ("    Auto parameter negotiation made by CCID\n");
+    {
+      DEBUGOUT ("    Auto parameter negotiation made by CCID\n");
+      handle->auto_param = 1;
+    }
   else if ((us & 0x0080))
-    DEBUGOUT ("    Auto PPS made by CCID\n");
-  else if ((us & (0x0040 | 0x0080)))
+    {
+      DEBUGOUT ("    Auto PPS made by CCID\n");
+      handle->auto_pps = 1;
+    }
+  if ((us & (0x0040 | 0x0080)) == (0x0040 | 0x0080))
     DEBUGOUT ("    WARNING: conflicting negotiation features\n");
 
   if ((us & 0x0100))
@@ -935,11 +958,10 @@ parse_ccid_descriptor (ccid_driver_t handle,
       DEBUGOUT_LF ();
     }
 
-  if (!have_t1 || !(have_tpdu  || handle->apdu_level) || !have_auto_conf)
+  if (!have_t1 || !(have_tpdu  || handle->apdu_level))
     {
       DEBUGOUT ("this drivers requires that the reader supports T=1, "
-                "TPDU or APDU level exchange and auto configuration - "
-                "this is not available\n");
+                "TPDU or APDU level exchange - this is not available\n");
       return -1;
     }
 
@@ -1506,6 +1528,29 @@ ccid_get_reader_list (void)
 }
 
 
+/* Vendor specific custom initialization.  */
+static int
+ccid_vendor_specific_init (ccid_driver_t handle)
+{
+  if (handle->id_vendor == VENDOR_VEGA && handle->id_product == VEGA_ALPHA)
+    {
+      /*
+       * Vega alpha has a feature to show retry counter on the pinpad
+       * display.  But it assumes that the card returns the value of
+       * retry counter by VERIFY with empty data (return code of
+       * 63Cx).  Unfortunately, existing OpenPGP cards don't support
+       * VERIFY command with empty data.  This vendor specific command
+       * sequence is to disable the feature.
+       */
+      const unsigned char cmd[] = "\xb5\x01\x00\x03\x00";
+
+      return send_escape_cmd (handle, cmd, sizeof (cmd), NULL, 0, NULL);
+    }
+
+  return 0;
+}
+
+
 /* Open the reader with the internal number READERNO and return a
    pointer to be used as handle in HANDLE.  Returns 0 on success. */
 int
@@ -1613,6 +1658,8 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
           goto leave;
         }
     }
+
+  rc = ccid_vendor_specific_init (*handle);
 
  leave:
   free (ifcdesc_extra);
@@ -2338,6 +2385,151 @@ ccid_slot_status (ccid_driver_t handle, int *statusbits)
 }
 
 
+/* Parse ATR string (of ATRLEN) and update parameters at PARAM.
+   Calling this routine, it should prepare default values at PARAM
+   beforehand.  This routine assumes that card is accessed by T=1
+   protocol.  It doesn't analyze historical bytes at all.
+
+   Returns < 0 value on error:
+     -1 for parse error or integrity check error
+     -2 for card doesn't support T=1 protocol
+     -3 for parameters are nod explicitly defined by ATR
+     -4 for this driver doesn't support CRC
+
+   Returns >= 0 on success:
+      0 for card is negotiable mode
+      1 for card is specific mode (and not negotiable)
+ */
+static int
+update_param_by_atr (unsigned char *param, unsigned char *atr, size_t atrlen)
+{
+  int i = -1;
+  int t, y, chk;
+  int historical_bytes_num, negotiable = 1;
+
+#define NEXTBYTE() do { i++; if (atrlen <= i) return -1; } while (0)
+
+  NEXTBYTE ();
+
+  if (atr[i] == 0x3F)
+    param[1] |= 0x02;           /* Convention is inverse.  */
+  NEXTBYTE ();
+
+  y = (atr[i] >> 4);
+  historical_bytes_num = atr[i] & 0x0f;
+  NEXTBYTE ();
+
+  if ((y & 1))
+    {
+      param[0] = atr[i];        /* TA1 - Fi & Di */
+      NEXTBYTE ();
+    }
+
+  if ((y & 2))
+    NEXTBYTE ();                /* TB1 - ignore */
+
+  if ((y & 4))
+    {
+      param[2] = atr[i];        /* TC1 - Guard Time */
+      NEXTBYTE ();
+    }
+
+  if ((y & 8))
+    {
+      y = (atr[i] >> 4);        /* TD1 */
+      t = atr[i] & 0x0f;
+      NEXTBYTE ();
+
+      if ((y & 1))
+        {                       /* TA2 - PPS mode */
+          if ((atr[i] & 0x0f) != 1)
+            return -2;          /* Wrong card protocol (!= 1).  */
+
+          if ((atr[i] & 0x10) != 0x10)
+            return -3; /* Transmission parameters are implicitly defined. */
+
+          negotiable = 0;       /* TA2 means specific mode.  */
+          NEXTBYTE ();
+        }
+
+      if ((y & 2))
+        NEXTBYTE ();            /* TB2 - ignore */
+
+      if ((y & 4))
+        NEXTBYTE ();            /* TC2 - ignore */
+
+      if ((y & 8))
+        {
+          y = (atr[i] >> 4);    /* TD2 */
+          t = atr[i] & 0x0f;
+          NEXTBYTE ();
+        }
+      else
+        y = 0;
+
+      while (y)
+        {
+          if ((y & 1))
+            {                   /* TAx */
+              if (t == 1)
+                param[5] = atr[i]; /* IFSC */
+              else if (t == 15)
+                /* XXX: check voltage? */
+                param[4] = (atr[i] >> 6); /* ClockStop */
+
+              NEXTBYTE ();
+            }
+
+          if ((y & 2))
+            {
+              if (t == 1)
+                param[3] = atr[i]; /* TBx - BWI & CWI */
+              NEXTBYTE ();
+            }
+
+          if ((y & 4))
+            {
+              if (t == 1)
+                param[1] |= (atr[i] & 0x01); /* TCx - LRC/CRC */
+              NEXTBYTE ();
+
+              if (param[1] & 0x01)
+                return -4;      /* CRC not supported yet.  */
+            }
+
+          if ((y & 8))
+            {
+              y = (atr[i] >> 4); /* TDx */
+              t = atr[i] & 0x0f;
+              NEXTBYTE ();
+            }
+          else
+            y = 0;
+        }
+    }
+
+  i += historical_bytes_num - 1;
+  NEXTBYTE ();
+  if (atrlen != i+1)
+    return -1;
+
+#undef NEXTBYTE
+
+  chk = 0;
+  do
+    {
+      chk ^= atr[i];
+      i--;
+    }
+  while (i > 0);
+
+  if (chk != 0)
+    return -1;
+
+  return negotiable;
+}
+
+
 /* Return the ATR of the card.  This is not a cached value and thus an
    actual reset is done.  */
 int
@@ -2354,6 +2546,15 @@ ccid_get_atr (ccid_driver_t handle,
   unsigned int edc;
   int tried_iso = 0;
   int got_param;
+  unsigned char param[7] = { /* For Protocol T=1 */
+    0x11, /* bmFindexDindex */
+    0x10, /* bmTCCKST1 */
+    0x00, /* bGuardTimeT1 */
+    0x4d, /* bmWaitingIntegersT1 */
+    0x00, /* bClockStop */
+    0x20, /* bIFSC */
+    0x00  /* bNadValue */
+  };
 
   /* First check whether a card is available.  */
   rc = ccid_slot_status (handle, &statusbits);
@@ -2368,7 +2569,8 @@ ccid_get_atr (ccid_driver_t handle,
   msg[0] = PC_to_RDR_IccPowerOn;
   msg[5] = 0; /* slot */
   msg[6] = seqno = handle->seqno++;
-  msg[7] = 0; /* power select (0=auto, 1=5V, 2=3V, 3=1.8V) */
+  /* power select (0=auto, 1=5V, 2=3V, 3=1.8V) */
+  msg[7] = handle->auto_voltage ? 0 : 1;
   msg[8] = 0; /* RFU */
   msg[9] = 0; /* RFU */
   set_msg_len (msg, 0);
@@ -2410,23 +2612,73 @@ ccid_get_atr (ccid_driver_t handle,
       *atrlen = n;
     }
 
+  param[6] = handle->nonnull_nad? ((1 << 4) | 0): 0;
+  rc = update_param_by_atr (param, msg+10, msglen - 10);
+  if (rc < 0)
+    {
+      DEBUGOUT_1 ("update_param_by_atr failed: %d\n", rc);
+      return CCID_DRIVER_ERR_CARD_IO_ERROR;
+    }
+
   got_param = 0;
-  msg[0] = PC_to_RDR_GetParameters;
-  msg[5] = 0; /* slot */
-  msg[6] = seqno = handle->seqno++;
-  msg[7] = 0; /* RFU */
-  msg[8] = 0; /* RFU */
-  msg[9] = 0; /* RFU */
-  set_msg_len (msg, 0);
-  msglen = 10;
-  rc = bulk_out (handle, msg, msglen, 0);
-  if (!rc)
-    rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
-                  seqno, 2000, 0);
-  if (rc)
-    DEBUGOUT ("GetParameters failed\n");
-  else if (msglen == 17 && msg[9] == 1)
-    got_param = 1;
+
+  if (handle->auto_param)
+    {
+      msg[0] = PC_to_RDR_GetParameters;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = 0; /* RFU */
+      msg[8] = 0; /* RFU */
+      msg[9] = 0; /* RFU */
+      set_msg_len (msg, 0);
+      msglen = 10;
+      rc = bulk_out (handle, msg, msglen, 0);
+      if (!rc)
+        rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_Parameters,
+                      seqno, 2000, 0);
+      if (rc)
+        DEBUGOUT ("GetParameters failed\n");
+      else if (msglen == 17 && msg[9] == 1)
+        got_param = 1;
+    }
+  else if (handle->auto_pps)
+    ;
+  else if (rc == 1)             /* It's negotiable, send PPS.  */
+    {
+      msg[0] = PC_to_RDR_XfrBlock;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = 0;
+      msg[8] = 0;
+      msg[9] = 0;
+      msg[10] = 0xff;           /* PPSS */
+      msg[11] = 0x11;           /* PPS0: PPS1, Protocol T=1 */
+      msg[12] = param[0];       /* PPS1: Fi / Di */
+      msg[13] = 0xff ^ 0x11 ^ param[0]; /* PCK */
+      set_msg_len (msg, 4);
+      msglen = 10 + 4;
+
+      rc = bulk_out (handle, msg, msglen, 0);
+      if (rc)
+        return rc;
+
+      rc = bulk_in (handle, msg, sizeof msg, &msglen, RDR_to_PC_DataBlock,
+                    seqno, 5000, 0);
+      if (rc)
+        return rc;
+
+      if (msglen != 10 + 4)
+        {
+          DEBUGOUT_1 ("Setting PPS failed: %d\n", msglen);
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+
+      if (msg[10] != 0xff || msg[11] != 0x11 || msg[12] != param[0])
+        {
+          DEBUGOUT_1 ("Setting PPS failed: 0x%02x\n", param[0]);
+          return CCID_DRIVER_ERR_CARD_IO_ERROR;
+        }
+    }
 
   /* Setup parameters to select T=1. */
   msg[0] = PC_to_RDR_SetParameters;
@@ -2437,16 +2689,7 @@ ccid_get_atr (ccid_driver_t handle,
   msg[9] = 0; /* RFU */
 
   if (!got_param)
-    {
-      /* FIXME: Get those values from the ATR. */
-      msg[10]= 0x01; /* Fi/Di */
-      msg[11]= 0x10; /* LRC, direct convention. */
-      msg[12]= 0;    /* Extra guardtime. */
-      msg[13]= 0x41; /* BWI/CWI */
-      msg[14]= 0;    /* No clock stoppping. */
-      msg[15]= 254;  /* IFSC */
-      msg[16]= 0;    /* Does not support non default NAD values. */
-    }
+    memcpy (&msg[10], param, 7);
   set_msg_len (msg, 7);
   msglen = 10 + 7;
 
@@ -2462,6 +2705,12 @@ ccid_get_atr (ccid_driver_t handle,
     handle->ifsc = msg[15];
   else
     handle->ifsc = 128; /* Something went wrong, assume 128 bytes.  */
+
+  if (handle->nonnull_nad && msglen > 16 && msg[16] == 0)
+    {
+      DEBUGOUT ("Use Null-NAD, clearing handle->nonnull_nad.\n");
+      handle->nonnull_nad = 0;
+    }
 
   handle->t1_ns = 0;
   handle->t1_nr = 0;
@@ -3071,7 +3320,7 @@ ccid_transceive (ccid_driver_t handle,
           The APDU should me made up of 4 bytes without Lc.
 
    PINLEN_MIN and PINLEN_MAX define the limits for the pin length. 0
-   may be used t enable reasonable defaults.  PIN_PADLEN should be 0.
+   may be used t enable reasonable defaults.
 
    When called with RESP and NRESP set to NULL, the function will
    merely check whether the reader supports the secure command for the
@@ -3079,8 +3328,7 @@ ccid_transceive (ccid_driver_t handle,
 int
 ccid_transceive_secure (ccid_driver_t handle,
                         const unsigned char *apdu_buf, size_t apdu_buflen,
-                        int pin_mode, int pinlen_min, int pinlen_max,
-                        int pin_padlen,
+                        pininfo_t *pininfo,
                         unsigned char *resp, size_t maxresplen, size_t *nresp)
 {
   int rc;
@@ -3091,6 +3339,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   size_t dummy_nresp;
   int testmode;
   int cherry_mode = 0;
+  int enable_varlen = 0;
 
   testmode = !resp && !nresp;
 
@@ -3103,23 +3352,17 @@ ccid_transceive_secure (ccid_driver_t handle,
   else if (apdu_buflen >= 4 && apdu_buf[1] == 0x24 && (handle->has_pinpad & 2))
     ;
   else
-    return CCID_DRIVER_ERR_NO_KEYPAD;
+    return CCID_DRIVER_ERR_NO_PINPAD;
 
-  if (pin_mode != 1)
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
-
-  if (pin_padlen != 0)
-    return CCID_DRIVER_ERR_NOT_SUPPORTED;
-
-  if (!pinlen_min)
-    pinlen_min = 1;
-  if (!pinlen_max)
-    pinlen_max = 25;
+  if (!pininfo->minlen)
+    pininfo->minlen = 1;
+  if (!pininfo->maxlen)
+    pininfo->maxlen = 25;
 
   /* Note that the 25 is the maximum value the SPR532 allows.  */
-  if (pinlen_min < 1 || pinlen_min > 25
-      || pinlen_max < 1 || pinlen_max > 25
-      || pinlen_min > pinlen_max)
+  if (pininfo->minlen < 1 || pininfo->minlen > 25
+      || pininfo->maxlen < 1 || pininfo->maxlen > 25
+      || pininfo->minlen > pininfo->maxlen)
     return CCID_DRIVER_ERR_INV_VALUE;
 
   /* We have only tested a few readers so better don't risk anything
@@ -3129,11 +3372,14 @@ ccid_transceive_secure (ccid_driver_t handle,
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
     case VENDOR_FSIJ: /* Tested with the gnuk code (2011-01-05).  */
+      enable_varlen = 1;
       break;
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
-      pinlen_max = 15;
+      enable_varlen = 1;
+      pininfo->maxlen = 15;
       break;
     case VENDOR_CHERRY:
+      enable_varlen = 1;
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
          character on the keyboard channel.  We use a special variant
          of PC_to_RDR_Secure which directs these characters to the
@@ -3145,11 +3391,27 @@ ccid_transceive_secure (ccid_driver_t handle,
         cherry_mode = 1;
       break;
     default:
+      if ((handle->id_vendor == VENDOR_GEMPC &&
+           handle->id_product == GEMPC_PINPAD)
+          || (handle->id_vendor == VENDOR_VEGA &&
+              handle->id_product == VEGA_ALPHA))
+        {
+          enable_varlen = 0;
+          pininfo->minlen = 4;
+          pininfo->maxlen = 8;
+          break;
+        }
      return CCID_DRIVER_ERR_NOT_SUPPORTED;
     }
 
+  if (enable_varlen)
+    pininfo->fixedlen = 0;
+
   if (testmode)
     return 0; /* Success */
+
+  if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
+    return CCID_DRIVER_ERR_NOT_SUPPORTED;
 
   msg = send_buffer;
   if (handle->id_vendor == VENDOR_SCM)
@@ -3180,9 +3442,9 @@ ccid_transceive_secure (ccid_driver_t handle,
     }
   else
     {
-      msg[13] = 0x00; /* bmPINBlockString:
-                         0 bits of pin length to insert.
-                         0 bytes of PIN block size.  */
+      msg[13] = pininfo->fixedlen; /* bmPINBlockString:
+                                      0 bits of pin length to insert.
+                                      PIN block size by fixedlen.  */
       msg[14] = 0x00; /* bmPINLengthFormat:
                          Units are bytes, position is 0. */
     }
@@ -3191,12 +3453,12 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (apdu_buf[1] == 0x24)
     {
       msg[msglen++] = 0;    /* bInsertionOffsetOld */
-      msg[msglen++] = 0;    /* bInsertionOffsetNew */
+      msg[msglen++] = pininfo->fixedlen;    /* bInsertionOffsetNew */
     }
 
   /* The following is a little endian word. */
-  msg[msglen++] = pinlen_max;   /* wPINMaxExtraDigit-Maximum.  */
-  msg[msglen++] = pinlen_min;   /* wPINMaxExtraDigit-Minimum.  */
+  msg[msglen++] = pininfo->maxlen;   /* wPINMaxExtraDigit-Maximum.  */
+  msg[msglen++] = pininfo->minlen;   /* wPINMaxExtraDigit-Minimum.  */
 
   if (apdu_buf[1] == 0x24)
     msg[msglen++] = apdu_buf[2] == 0 ? 0x03 : 0x01;
@@ -3209,12 +3471,12 @@ ccid_transceive_secure (ccid_driver_t handle,
 
   msg[msglen] = 0x02; /* bEntryValidationCondition:
                          Validation key pressed */
-  if (pinlen_min && pinlen_max && pinlen_min == pinlen_max)
+  if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     msg[msglen] |= 0x01; /* Max size reached.  */
   msglen++;
 
   if (apdu_buf[1] == 0x20)
-    msg[msglen++] = 0xff; /* bNumberMessage: Default. */
+    msg[msglen++] = 0x01; /* bNumberMessage. */
   else
     msg[msglen++] = 0x03; /* bNumberMessage. */
 
@@ -3230,10 +3492,18 @@ ccid_transceive_secure (ccid_driver_t handle,
       msg[msglen++] = 2;    /* bMsgIndex3. */
     }
 
+  /* Calculate Lc.  */
+  n = pininfo->fixedlen;
+  if (apdu_buf[1] == 0x24)
+    n += pininfo->fixedlen;
+
   /* bTeoProlog follows: */
   msg[msglen++] = handle->nonnull_nad? ((1 << 4) | 0): 0;
   msg[msglen++] = ((handle->t1_ns & 1) << 6); /* I-block */
-  msg[msglen++] = 0; /* The apdulen will be filled in by the reader.  */
+  if (n)
+    msg[msglen++] = n + 5; /* apdulen should be filled for fixed length.  */
+  else
+    msg[msglen++] = 0; /* The apdulen will be filled in by the reader.  */
   /* APDU follows:  */
   msg[msglen++] = apdu_buf[0]; /* CLA */
   msg[msglen++] = apdu_buf[1]; /* INS */
@@ -3241,6 +3511,12 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[msglen++] = apdu_buf[3]; /* P2 */
   if (cherry_mode)
     msg[msglen++] = 0;
+  else if (pininfo->fixedlen != 0)
+    {
+      msg[msglen++] = n;
+      memset (&msg[msglen], 0xff, n);
+      msglen += n;
+    }
   /* An EDC is not required. */
   set_msg_len (msg, msglen - 10);
 

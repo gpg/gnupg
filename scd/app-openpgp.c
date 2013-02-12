@@ -1,6 +1,6 @@
 /* app-openpgp.c - The OpenPGP card application.
  * Copyright (C) 2003, 2004, 2005, 2007, 2008,
- *               2009 Free Software Foundation, Inc.
+ *               2009, 2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -190,6 +190,14 @@ struct app_local_s {
     unsigned int no_sync:1;   /* Do not sync CHV1 and CHV2 */
     unsigned int def_chv2:1;  /* Use 123456 for CHV2.  */
   } flags;
+
+  /* Pinpad request specified on card.  */
+  struct
+  {
+    unsigned int specified:1;
+    int fixedlen_user;
+    int fixedlen_admin;
+  } pinpad;
 
   struct
   {
@@ -581,16 +589,22 @@ count_bits (const unsigned char *a, size_t len)
    Everything up to a LF is considered a mailbox or account name.  If
    the first LF is followed by DC4 (0x14) control sequence are
    expected up to the next LF.  Control sequences are separated by FS
-   (0x18) and consist of key=value pairs.  There is one key defined:
+   (0x18) and consist of key=value pairs.  There are two keys defined:
 
     F=<flags>
 
-    Were FLAGS is a plain hexadecimal number representing flag values.
+    Where FLAGS is a plain hexadecimal number representing flag values.
     The lsb is here the rightmost bit.  Defined flags bits are:
 
       Bit 0 = CHV1 and CHV2 are not syncronized
       Bit 1 = CHV2 has been been set to the default PIN of "123456"
               (this implies that bit 0 is also set).
+
+    P=<pinpad-request>
+
+    Where PINPAD_REQUEST is in the format of: <n> or <n>,<m>.
+    N for user PIN, M for admin PIN.  If M is missing it means M=N.
+    0 means to force not to use pinpad.
 
 */
 static void
@@ -603,6 +617,9 @@ parse_login_data (app_t app)
   /* Set defaults.  */
   app->app_local->flags.no_sync = 0;
   app->app_local->flags.def_chv2 = 0;
+  app->app_local->pinpad.specified = 0;
+  app->app_local->pinpad.fixedlen_user = -1;
+  app->app_local->pinpad.fixedlen_admin = -1;
 
   /* Read the DO.  */
   relptr = get_one_do (app, 0x005E, &buffer, &buflen, NULL);
@@ -628,10 +645,53 @@ parse_login_data (app_t app)
              any leading digits but bail out on invalid characters. */
           for (p=buffer+2, len = buflen-2; len && hexdigitp (p); p++, len--)
             lastdig = xtoi_1 (p);
+          buffer = p;
+          buflen = len;
           if (len && !(*p == '\n' || *p == '\x18'))
             goto next;  /* Invalid characters in field.  */
           app->app_local->flags.no_sync = !!(lastdig & 1);
           app->app_local->flags.def_chv2 = (lastdig & 3) == 3;
+        }
+      else if (buflen > 1 && *buffer == 'P' && buffer[1] == '=')
+        {
+          /* Pinpad request control sequence found.  */
+          buffer += 2;
+          buflen -= 2;
+
+          if (buflen)
+            {
+              if (digitp (buffer))
+                {
+                  char *q;
+                  int n, m;
+
+                  n = strtol (buffer, &q, 10);
+                  if (q >= (char *)buffer + buflen
+                      || *q == '\x18' || *q == '\n')
+                    m = n;
+                  else
+                    {
+                      if (*q++ != ',' || !digitp (q))
+                        goto next;
+                      m = strtol (q, &q, 10);
+                    }
+
+                  buffer = q;
+                  if (buflen < ((unsigned char *)q - buffer))
+                    {
+                      buflen = 0;
+                      break;
+                    }
+                  else
+                    buflen -= ((unsigned char *)q - buffer);
+
+                  if (buflen && !(*buffer == '\n' || *buffer == '\x18'))
+                    goto next;
+                  app->app_local->pinpad.specified = 1;
+                  app->app_local->pinpad.fixedlen_user = n;
+                  app->app_local->pinpad.fixedlen_admin = m;
+                }
+            }
         }
     next:
       for (; buflen && *buffer != '\x18'; buflen--, buffer++)
@@ -1470,15 +1530,50 @@ do_readcert (app_t app, const char *certid,
 }
 
 
+/* Decide if we use the pinpad of the reader for PIN input according
+   to the user preference on the card, and the capability of the
+   reader.  This routine is only called when the reader has pinpad.
+   Returns 0 if we use pinpad, 1 otherwise.  */
+static int
+check_pinpad_request (app_t app, pininfo_t *pininfo, int admin_pin)
+{
+  if (app->app_local->pinpad.specified == 0) /* No preference on card.  */
+    {
+      if (pininfo->fixedlen == 0) /* Reader has varlen capability.  */
+        return 0;                 /* Then, use pinpad.  */
+      else
+        /*
+         * Reader has limited capability, and it may not match PIN of
+         * the card.
+         */
+        return 1;
+    }
+
+  if (admin_pin)
+    pininfo->fixedlen = app->app_local->pinpad.fixedlen_admin;
+  else
+    pininfo->fixedlen = app->app_local->pinpad.fixedlen_user;
+
+  if (pininfo->fixedlen == 0    /* User requests disable pinpad.  */
+      || pininfo->fixedlen < pininfo->minlen
+      || pininfo->fixedlen > pininfo->maxlen
+      /* Reader doesn't have the capability to input a PIN which
+       * length is FIXEDLEN.  */)
+    return 1;
+
+  return 0;
+}
+
+
 /* Verify a CHV either using using the pinentry or if possibile by
-   using a keypad.  PINCB and PINCB_ARG describe the usual callback
+   using a pinpad.  PINCB and PINCB_ARG describe the usual callback
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
    used with CHV1.  PINVALUE is the address of a pointer which will
    receive a newly allocated block with the actual PIN (this is useful
    in case that PIN shall be used for another verify operation).  The
    caller needs to free this value.  If the function returns with
    success and NULL is stored at PINVALUE, the caller should take this
-   as an indication that the keypad has been used.
+   as an indication that the pinpad has been used.
    */
 static gpg_error_t
 verify_a_chv (app_t app,
@@ -1489,7 +1584,7 @@ verify_a_chv (app_t app,
   int rc = 0;
   char *prompt_buffer = NULL;
   const char *prompt;
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
   int minlen = 6;
 
   assert (chvno == 1 || chvno == 2);
@@ -1516,7 +1611,7 @@ verify_a_chv (app_t app,
     }
 
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
 
 
@@ -1536,12 +1631,13 @@ verify_a_chv (app_t app,
     prompt = _("||Please enter the PIN");
 
 
-  if (!opt.disable_keypad
-      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+  if (!opt.disable_pinpad
+      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo)
+      && !check_pinpad_request (app, &pininfo, 0))
     {
-      /* The reader supports the verify command through the keypad.
+      /* The reader supports the verify command through the pinpad.
          Note that the pincb appends a text to the prompt telling the
-         user to use the keypad. */
+         user to use the pinpad. */
       rc = pincb (pincb_arg, prompt, NULL);
       prompt = NULL;
       xfree (prompt_buffer);
@@ -1560,7 +1656,7 @@ verify_a_chv (app_t app,
     }
   else
     {
-      /* The reader has no keypad or we don't want to use it. */
+      /* The reader has no pinpad or we don't want to use it. */
       rc = pincb (pincb_arg, prompt, pinvalue);
       prompt = NULL;
       xfree (prompt_buffer);
@@ -1620,7 +1716,7 @@ verify_chv2 (app_t app,
       /* For convenience we verify CHV1 here too.  We do this only if
          the card is not configured to require a verification before
          each CHV1 controlled operation (force_chv1) and if we are not
-         using the keypad (PINVALUE == NULL). */
+         using the pinpad (PINVALUE == NULL). */
       rc = iso7816_verify (app->slot, 0x81, pinvalue, strlen (pinvalue));
       if (gpg_err_code (rc) == GPG_ERR_BAD_PIN)
         rc = gpg_error (GPG_ERR_PIN_NOT_SYNCED);
@@ -1707,22 +1803,23 @@ verify_chv3 (app_t app,
 
   if (!app->did_chv3)
     {
-      iso7816_pininfo_t pininfo;
+      pininfo_t pininfo;
       int minlen = 8;
       char *prompt;
 
       memset (&pininfo, 0, sizeof pininfo);
-      pininfo.mode = 1;
+      pininfo.fixedlen = -1;
       pininfo.minlen = minlen;
 
       rc = build_enter_admin_pin_prompt (app, &prompt);
       if (rc)
         return rc;
 
-      if (!opt.disable_keypad
-          && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+      if (!opt.disable_pinpad
+          && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo)
+          && !check_pinpad_request (app, &pininfo, 1))
         {
-          /* The reader supports the verify command through the keypad. */
+          /* The reader supports the verify command through the pinpad. */
           rc = pincb (pincb_arg, prompt, NULL);
           xfree (prompt);
           prompt = NULL;
@@ -1917,13 +2014,13 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   char *pinvalue = NULL;
   int reset_mode = !!(flags & APP_CHANGE_FLAG_RESET);
   int set_resetcode = 0;
-  iso7816_pininfo_t pininfo;
-  int use_keypad = 0;
+  pininfo_t pininfo;
+  int use_pinpad = 0;
   int minlen = 6;
 
   (void)ctrl;
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = minlen;
 
   if (reset_mode && chvno == 3)
@@ -1968,15 +2065,16 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
     {
       /* Version 2 cards.  */
 
-      if (!opt.disable_keypad
-          && !iso7816_check_keypad (app->slot,
-                                    ISO7816_CHANGE_REFERENCE_DATA, &pininfo))
-        use_keypad = 1;
+      if (!opt.disable_pinpad
+          && !iso7816_check_pinpad (app->slot,
+                                    ISO7816_CHANGE_REFERENCE_DATA, &pininfo)
+          && !check_pinpad_request (app, &pininfo, chvno == 3))
+        use_pinpad = 1;
 
       if (reset_mode)
         {
           /* To reset a PIN the Admin PIN is required. */
-          use_keypad = 0;
+          use_pinpad = 0;
           app->did_chv3 = 0;
           rc = verify_chv3 (app, pincb, pincb_arg);
           if (rc)
@@ -1987,7 +2085,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
         }
       else if (chvno == 1 || chvno == 3)
         {
-	  if (!use_keypad)
+	  if (!use_pinpad)
             {
               char *promptbuf = NULL;
               const char *prompt;
@@ -2030,7 +2128,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
           size_t valuelen;
           int remaining;
 
-          use_keypad = 0;
+          use_pinpad = 0;
           minlen = 8;
           relptr = get_one_do (app, 0x00C4, &value, &valuelen, NULL);
           if (!relptr || valuelen < 7)
@@ -2078,7 +2176,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
   else
     app->did_chv1 = app->did_chv2 = 0;
 
-  if (!use_keypad)
+  if (!use_pinpad)
     {
       /* TRANSLATORS: Do not translate the "|*|" prefixes but
          keep it at the start of the string.  We need this elsewhere
@@ -2151,7 +2249,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *chvnostr,
       /* Version 2 cards.  */
       assert (chvno == 1 || chvno == 3);
 
-      if (use_keypad)
+      if (use_pinpad)
         {
           rc = pincb (pincb_arg,
                       chvno == 3 ?
@@ -3226,7 +3324,7 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
          sync, thus we verify CHV2 here using the given PIN.  Cards
          with version2 to not have the need for a separate CHV2 and
          internally use just one.  Obviously we can't do that if the
-         keypad has been used. */
+         pinpad has been used. */
       if (!app->did_chv2 && pinvalue && !app->app_local->extcap.is_v2)
         {
           rc = iso7816_verify (app->slot, 0x82, pinvalue, strlen (pinvalue));

@@ -43,7 +43,7 @@
 #include "i18n.h"
 #include "status.h"
 #include "call-agent.h"
-
+#include "../common/shareddefs.h"
 
 static char *fd_passwd = NULL;
 static char *next_pw = NULL;
@@ -104,8 +104,20 @@ encode_s2k_iterations (int iterations)
 int
 have_static_passphrase()
 {
-  return !!fd_passwd && opt.batch;
+  return (!!fd_passwd
+          && (opt.batch || opt.pinentry_mode == PINENTRY_MODE_LOOPBACK));
 }
+
+/* Return a static passphrase.  The returned value is only valid as
+   long as no other passphrase related function is called.  NULL may
+   be returned if no passphrase has been set; better use
+   have_static_passphrase first.  */
+const char *
+get_static_passphrase (void)
+{
+  return fd_passwd;
+}
+
 
 /****************
  * Set the passphrase to be used for the next query and only for the next
@@ -156,7 +168,7 @@ read_passphrase_from_fd( int fd )
   int i, len;
   char *pw;
 
-  if ( !opt.batch )
+  if ( !opt.batch && opt.pinentry_mode != PINENTRY_MODE_LOOPBACK)
     { /* Not used but we have to do a dummy read, so that it won't end
          up at the begin of the message if the quite usual trick to
          prepend the passphtrase to the message is used. */
@@ -187,7 +199,7 @@ read_passphrase_from_fd( int fd )
         break;
     }
   pw[i] = 0;
-  if (!opt.batch)
+  if (!opt.batch && opt.pinentry_mode != PINENTRY_MODE_LOOPBACK)
     tty_printf("\b\b\b   \n" );
 
   xfree ( fd_passwd );
@@ -458,30 +470,9 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
       if ( keyid )
         {
-          u32 used_kid[2];
-          char *us;
-
-          if ( keyid[2] && keyid[3] )
-            {
-              used_kid[0] = keyid[2];
-              used_kid[1] = keyid[3];
-            }
-          else
-            {
-              used_kid[0] = keyid[0];
-              used_kid[1] = keyid[1];
-            }
-
-          us = get_long_user_id_string ( keyid );
-          write_status_text ( STATUS_USERID_HINT, us );
-          xfree(us);
-
-          snprintf (buf, sizeof buf -1, "%08lX%08lX %08lX%08lX %d 0",
-                    (ulong)keyid[0], (ulong)keyid[1],
-                    (ulong)used_kid[0], (ulong)used_kid[1],
-                    pubkey_algo );
-
-          write_status_text ( STATUS_NEED_PASSPHRASE, buf );
+          emit_status_need_passphrase (keyid,
+                                       keyid[2] && keyid[3]? keyid+2:NULL,
+                                       pubkey_algo);
 	}
       else
         {
@@ -611,6 +602,29 @@ passphrase_to_dek (u32 *keyid, int pubkey_algo,
   return passphrase_to_dek_ext (keyid, pubkey_algo, cipher_algo,
                                 s2k, mode, tryagain_text, NULL, NULL,
                                 canceled);
+}
+
+
+/* Emit the USERID_HINT and the NEED_PASSPHRASE status messages.
+   MAINKEYID may be NULL. */
+void
+emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo)
+{
+  char buf[50];
+  char *us;
+
+  us = get_long_user_id_string (keyid);
+  write_status_text (STATUS_USERID_HINT, us);
+  xfree (us);
+
+  snprintf (buf, sizeof buf -1, "%08lX%08lX %08lX%08lX %d 0",
+            (ulong)keyid[0],
+            (ulong)keyid[1],
+            (ulong)(mainkeyid? mainkeyid[0]:keyid[0]),
+            (ulong)(mainkeyid? mainkeyid[1]:keyid[1]),
+            pubkey_algo);
+
+  write_status_text (STATUS_NEED_PASSPHRASE, buf);
 }
 
 

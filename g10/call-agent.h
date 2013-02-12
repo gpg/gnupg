@@ -81,6 +81,10 @@ int agent_learn (struct agent_card_info_s *info);
 /* Update INFO with the attribute NAME. */
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info);
 
+/* Send the KEYTOCARD command. */
+int agent_keytocard (const char *hexgrip, int keyno, int force,
+                     const char *serialno, const char *timestamp);
+
 /* Send a SETATTR command to the SCdaemon. */
 int agent_scd_setattr (const char *name,
                        const unsigned char *value, size_t valuelen,
@@ -155,12 +159,14 @@ gpg_error_t agent_readkey (ctrl_t ctrl, int fromcard, const char *hexkeygrip,
 /* Create a signature.  */
 gpg_error_t agent_pksign (ctrl_t ctrl, const char *cache_nonce,
                           const char *hexkeygrip, const char *desc,
+                          u32 *keyid, u32 *mainkeyid, int pubkey_algo,
                           unsigned char *digest, size_t digestlen,
                           int digestalgo,
                           gcry_sexp_t *r_sigval);
 
 /* Decrypt a ciphertext.  */
 gpg_error_t agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
+                             u32 *keyid, u32 *mainkeyid, int pubkey_algo,
                              gcry_sexp_t s_ciphertext,
                              unsigned char **r_buf, size_t *r_buflen);
 

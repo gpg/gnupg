@@ -272,6 +272,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 
       desc = gpg_format_keydesc (pksk, 0, 1);
       err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc,
+                          pksk->keyid, pksk->main_keyid, pksk->pubkey_algo,
                           dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,
                           &s_sigval);
       xfree (desc);
@@ -1603,6 +1604,8 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     /* create a new signature packet */
     sig = copy_signature (NULL, orig_sig);
+
+    sig->digest_algo=digest_algo;
 
     /* We need to create a new timestamp so that new sig expiration
        calculations are done correctly... */

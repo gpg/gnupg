@@ -59,6 +59,7 @@ common_sources = \
 	util.h i18n.c i18n.h \
 	estream.c estream.h estream-printf.c estream-printf.h \
 	status.c status.h\
+	shareddefs.h \
 	openpgpdefs.h \
 	gc-opt-flags.h \
 	keyserver.h \
@@ -92,6 +93,7 @@ common_sources = \
 	userids.c userids.h \
 	openpgp-oid.c \
 	ssh-utils.c ssh-utils.h \
+	agent-opt.c \
 	helpfile.c
 
 # To make the code easier to read we have split home some code into

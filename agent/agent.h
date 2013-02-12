@@ -34,6 +34,7 @@
 #include "../common/membuf.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/session-env.h"
+#include "../common/shareddefs.h"
 
 /* To convey some special hash algorithms we use algorithm numbers
    reserved for application use. */
@@ -45,16 +46,6 @@
 /* Maximum length of a digest.  */
 #define MAX_DIGEST_LEN 64
 
-
-/* Values for the pinentry mode.  */
-typedef enum
-  {
-    PINENTRY_MODE_ASK = 0, /* Ask via pinentry (default).  */
-    PINENTRY_MODE_CANCEL,  /* Always return a cancel error.  */
-    PINENTRY_MODE_ERROR,   /* Return error code for no pinentry.  */
-    PINENTRY_MODE_LOOPBACK,/* Use an inquiry to get the value.    */
-  }
-pinentry_mode_t;
 
 
 /* A large struct name "opt" to keep global flags */
@@ -421,6 +412,8 @@ int divert_pkdecrypt (ctrl_t ctrl,
                       char **r_buf, size_t *r_len);
 int divert_generic_cmd (ctrl_t ctrl,
                         const char *cmdline, void *assuan_context);
+int divert_writekey (ctrl_t ctrl, int force, const char *serialno,
+                     const char *id, const char *keydata, size_t keydatalen);
 
 
 /*-- call-scd.c --*/
@@ -454,6 +447,11 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
 int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);
+int agent_card_writekey (ctrl_t ctrl, int force, const char *serialno,
+                         const char *id, const char *keydata,
+                         size_t keydatalen,
+                         int (*getpin_cb)(void *, const char *, char*, size_t),
+                         void *getpin_cb_arg);
 gpg_error_t agent_card_getattr (ctrl_t ctrl, const char *name, char **result);
 int agent_card_scd (ctrl_t ctrl, const char *cmdline,
                     int (*getpin_cb)(void *, const char *, char*, size_t),

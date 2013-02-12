@@ -94,7 +94,7 @@ map_sw (int sw)
     case SW_HOST_GENERAL_ERROR:  ec = GPG_ERR_GENERAL; break;
     case SW_HOST_NO_READER:      ec = GPG_ERR_ENODEV; break;
     case SW_HOST_ABORTED:        ec = GPG_ERR_CANCELED; break;
-    case SW_HOST_NO_KEYPAD:      ec = GPG_ERR_NOT_SUPPORTED; break;
+    case SW_HOST_NO_PINPAD:      ec = GPG_ERR_NOT_SUPPORTED; break;
 
     default:
       if ((sw & 0x010000))
@@ -267,30 +267,26 @@ iso7816_apdu_direct (int slot, const void *apdudata, size_t apdudatalen,
 
 
 /* Check whether the reader supports the ISO command code COMMAND on
-   the keypad.  Returns 0 on success.  */
+   the pinpad.  Returns 0 on success.  */
 gpg_error_t
-iso7816_check_keypad (int slot, int command, iso7816_pininfo_t *pininfo)
+iso7816_check_pinpad (int slot, int command, pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_check_keypad (slot, command,
-                          pininfo->mode, pininfo->minlen, pininfo->maxlen,
-                          pininfo->padlen);
+  sw = apdu_check_pinpad (slot, command, pininfo);
   return iso7816_map_sw (sw);
 }
 
 
 /* Perform a VERIFY command on SLOT using the card holder verification
-   vector CHVNO.  With PININFO non-NULL the keypad of the reader will
+   vector CHVNO.  With PININFO non-NULL the pinpad of the reader will
    be used.  Returns 0 on success. */
 gpg_error_t
-iso7816_verify_kp (int slot, int chvno, iso7816_pininfo_t *pininfo)
+iso7816_verify_kp (int slot, int chvno, pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_keypad_verify (slot, 0x00, CMD_VERIFY, 0, chvno,
-                           pininfo->mode, pininfo->minlen, pininfo->maxlen,
-                           pininfo->padlen);
+  sw = apdu_pinpad_verify (slot, 0x00, CMD_VERIFY, 0, chvno, pininfo);
   return map_sw (sw);
 }
 
@@ -306,19 +302,17 @@ iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 }
 
 /* Perform a CHANGE_REFERENCE_DATA command on SLOT for the card holder
-   verification vector CHVNO.  With PININFO non-NULL the keypad of the
+   verification vector CHVNO.  With PININFO non-NULL the pinpad of the
    reader will be used.  If IS_EXCHANGE is 0, a "change reference
    data" is done, otherwise an "exchange reference data".  */
 gpg_error_t
 iso7816_change_reference_data_kp (int slot, int chvno, int is_exchange,
-                                  iso7816_pininfo_t *pininfo)
+                                  pininfo_t *pininfo)
 {
   int sw;
 
-  sw = apdu_keypad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
-			   is_exchange ? 1 : 0,
-			   chvno, pininfo->mode, pininfo->minlen,
-			   pininfo->maxlen, pininfo->padlen);
+  sw = apdu_pinpad_modify (slot, 0x00, CMD_CHANGE_REFERENCE_DATA,
+			   is_exchange ? 1 : 0, chvno, pininfo);
   return map_sw (sw);
 }
 

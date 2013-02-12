@@ -353,6 +353,8 @@ void unblock_all_signals(void);
 
 /*-- server.c --*/
 int gpg_server (ctrl_t);
+gpg_error_t gpg_proxy_pinentry_notify (ctrl_t ctrl,
+                                       const unsigned char *line);
 
 #ifdef ENABLE_CARD_SUPPORT
 /*-- card-util.c --*/

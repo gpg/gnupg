@@ -26,8 +26,8 @@
 
 #include "scdaemon.h"
 #include "app-common.h"
-#include "apdu.h"
 #include "iso7816.h"
+#include "apdu.h"
 #include "tlv.h"
 
 /* This table is used to keep track of locks on a per reader base.

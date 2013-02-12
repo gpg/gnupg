@@ -781,19 +781,19 @@ verify_pin (app_t app, int pwid, const char *desc,
             gpg_error_t (*pincb)(void*, const char *, char **),
             void *pincb_arg)
 {
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
   int rc;
 
   if (!desc)
     desc = "PIN";
 
   memset (&pininfo, 0, sizeof pininfo);
-  pininfo.mode = 1;
+  pininfo.fixedlen = -1;
   pininfo.minlen = 6;
   pininfo.maxlen = 16;
 
-  if (!opt.disable_keypad
-      && !iso7816_check_keypad (app->slot, ISO7816_VERIFY, &pininfo) )
+  if (!opt.disable_pinpad
+      && !iso7816_check_pinpad (app->slot, ISO7816_VERIFY, &pininfo) )
     {
       rc = pincb (pincb_arg, desc, NULL);
       if (rc)
@@ -1144,7 +1144,7 @@ do_change_pin (app_t app, ctrl_t ctrl,  const char *pwidstr,
   int is_sigg;
   const char *newdesc;
   int pwid;
-  iso7816_pininfo_t pininfo;
+  pininfo_t pininfo;
 
   (void)ctrl;
 

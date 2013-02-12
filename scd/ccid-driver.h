@@ -72,7 +72,7 @@
 #define CCID_DRIVER_ERR_GENERAL_ERROR  0x1000b
 #define CCID_DRIVER_ERR_NO_READER      0x1000c
 #define CCID_DRIVER_ERR_ABORTED        0x1000d
-#define CCID_DRIVER_ERR_NO_KEYPAD      0x1000e
+#define CCID_DRIVER_ERR_NO_PINPAD      0x1000e
 
 struct ccid_driver_s;
 typedef struct ccid_driver_s *ccid_driver_t;
@@ -93,8 +93,7 @@ int ccid_transceive (ccid_driver_t handle,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_secure (ccid_driver_t handle,
                      const unsigned char *apdu, size_t apdulen,
-                     int pin_mode,
-                     int pinlen_min, int pinlen_max, int pin_padlen,
+		     pininfo_t *pininfo,
                      unsigned char *resp, size_t maxresplen, size_t *nresp);
 int ccid_transceive_escape (ccid_driver_t handle,
                             const unsigned char *data, size_t datalen,

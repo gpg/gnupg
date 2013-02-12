@@ -1519,7 +1519,7 @@ fi
 build_scdaemon_extra=""
 if test "$build_scdaemon" = "yes"; then
   if test $have_libusb = no; then
-     build_scdaemon_extra="${tmp}without internal CCID driver"
+     build_scdaemon_extra="without internal CCID driver"
   fi
   if test -n "$build_scdaemon_extra"; then
      build_scdaemon_extra="(${build_scdaemon_extra})"

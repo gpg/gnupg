@@ -1266,9 +1266,9 @@ agent_popup_message_stop (ctrl_t ctrl)
 
   /* Now wait for the thread to terminate. */
   rc = npth_join (popup_tid, NULL);
-  if (!rc)
+  if (rc)
     log_debug ("agent_popup_message_stop: pth_join failed: %s\n",
-               strerror (errno));
+               strerror (rc));
   /* Thread IDs are opaque, but we try our best here by resetting it
      to the same content that a static global variable has.  */
   memset (&popup_tid, '\0', sizeof (popup_tid));

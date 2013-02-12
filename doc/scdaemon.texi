@@ -287,10 +287,18 @@ Note that with the current version of Scdaemon the card is powered
 down immediately at the next timer tick for any value of @var{n} other
 than 0.
 
+@item --enable-pinpad-varlen
+@opindex enable-pinpad-varlen
+Please specify this option when the card reader supports variable
+length input for pinpad (default is no).  For known readers listed in
+ccid-driver, this option is not needed.  Note that if your card reader
+doesn't supports variable length input but you want to use it, you
+need to specify your pinpad request on your card.
 
-@item --disable-keypad
-@opindex disable-keypad
-Even if a card reader features a keypad, do not try to use it.
+
+@item --disable-pinpad
+@opindex disable-pinpad
+Even if a card reader features a pinpad, do not try to use it.
 
 
 @item --deny-admin

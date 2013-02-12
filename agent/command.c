@@ -2119,9 +2119,133 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
   return leave_cmd (ctx, err);
 }
+
+static const char hlp_keytocard[] =
+  "KEYTOCARD [--force] <hexstring_with_keygrip> <serialno> <id> <timestamp>\n"
+  "\n";
+static gpg_error_t
+cmd_keytocard (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  int force;
+  gpg_error_t err = 0;
+  unsigned char grip[20];
+  gcry_sexp_t s_skey = NULL;
+  gcry_sexp_t s_pkey = NULL;
+  unsigned char *keydata;
+  size_t keydatalen, timestamplen;
+  const char *serialno, *timestamp_str, *id;
+  unsigned char *shadow_info;
+  unsigned char *shdkey;
+  time_t timestamp;
 
+  force = has_option (line, "--force");
+  line = skip_options (line);
 
+  err = parse_keygrip (ctx, line, grip);
+  if (err)
+    return err;
 
+  if (agent_key_available (grip))
+    return gpg_error (GPG_ERR_NO_SECKEY);
+
+  line += 40;
+  while (*line && (*line == ' ' || *line == '\t'))
+    line++;
+  serialno = line;
+  while (*line && (*line != ' ' && *line != '\t'))
+    line++;
+  if (!*line)
+    return gpg_error (GPG_ERR_MISSING_VALUE);
+  *line = '\0';
+  line++;
+  while (*line && (*line == ' ' || *line == '\t'))
+    line++;
+  id = line;
+  while (*line && (*line != ' ' && *line != '\t'))
+    line++;
+  if (!*line)
+    return gpg_error (GPG_ERR_MISSING_VALUE);
+  *line = '\0';
+  line++;
+  while (*line && (*line == ' ' || *line == '\t'))
+    line++;
+  timestamp_str = line;
+  while (*line && (*line != ' ' && *line != '\t'))
+    line++;
+  if (*line)
+    *line = '\0';
+  timestamplen = line - timestamp_str;
+  if (timestamplen != 15)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
+                             NULL, CACHE_MODE_IGNORE, NULL, &s_skey, NULL);
+  if (err)
+    return err;
+  if (!s_skey)
+    /* Key is on a smartcard already.  */
+    return gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+
+  keydatalen =  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
+  keydata = xtrymalloc_secure (keydatalen + 30);
+  if (keydata == NULL)
+    {
+      gcry_sexp_release (s_skey);
+      return gpg_error_from_syserror ();
+    }
+
+  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
+  gcry_sexp_release (s_skey);
+  /* Add timestamp "created-at" in the private key */
+  timestamp = isotime2epoch (timestamp_str);
+  snprintf (keydata+keydatalen-1, 30, "(10:created-at10:%010lu))", timestamp);
+  keydatalen += 10 + 19 - 1;
+  err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
+  if (err)
+    {
+      xfree (keydata);
+      goto leave;
+    }
+  xfree (keydata);
+
+  err = agent_public_key_from_file (ctrl, grip, &s_pkey);
+  if (err)
+    goto leave;
+
+  shadow_info = make_shadow_info (serialno, id);
+  if (!shadow_info)
+    {
+      err = gpg_error (GPG_ERR_ENOMEM);
+      gcry_sexp_release (s_pkey);
+      goto leave;
+    }
+  keydatalen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+  keydata = xtrymalloc (keydatalen);
+  if (keydata == NULL)
+    {
+      err = gpg_error_from_syserror ();
+      gcry_sexp_release (s_pkey);
+      goto leave;
+    }
+  gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
+  gcry_sexp_release (s_pkey);
+  err = agent_shadow_key (keydata, shadow_info, &shdkey);
+  xfree (keydata);
+  xfree (shadow_info);
+  if (err)
+    {
+      log_error ("shadowing the key failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  keydatalen = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
+  err = agent_write_private_key (grip, shdkey, keydatalen, 1);
+  xfree (shdkey);
+
+ leave:
+  return leave_cmd (ctx, err);
+}
 
 static const char hlp_getval[] =
   "GETVAL <key>\n"
@@ -2548,21 +2672,13 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     ctrl->server_local->allow_pinentry_notify = 1;
   else if (!strcmp (key, "pinentry-mode"))
     {
-      if (!strcmp (value, "ask") || !strcmp (value, "default"))
-        ctrl->pinentry_mode = PINENTRY_MODE_ASK;
-      else if (!strcmp (value, "cancel"))
-        ctrl->pinentry_mode = PINENTRY_MODE_CANCEL;
-      else if (!strcmp (value, "error"))
-        ctrl->pinentry_mode = PINENTRY_MODE_ERROR;
-      else if (!strcmp (value, "loopback"))
-        {
-          if (opt.allow_loopback_pinentry)
-            ctrl->pinentry_mode = PINENTRY_MODE_LOOPBACK;
-          else
-            err = gpg_error (GPG_ERR_NOT_SUPPORTED);
-        }
-      else
+      int tmp = parse_pinentry_mode (value);
+      if (tmp == -1)
         err = gpg_error (GPG_ERR_INV_VALUE);
+      else if (tmp == PINENTRY_MODE_LOOPBACK && !opt.allow_loopback_pinentry)
+        err = gpg_error (GPG_ERR_NOT_SUPPORTED);
+      else
+        ctrl->pinentry_mode = tmp;
     }
   else if (!strcmp (key, "cache-ttl-opt-preset"))
     {
@@ -2682,6 +2798,7 @@ register_commands (assuan_context_t ctx)
     { "KILLAGENT",      cmd_killagent,  hlp_killagent },
     { "RELOADAGENT",    cmd_reloadagent,hlp_reloadagent },
     { "GETINFO",        cmd_getinfo,   hlp_getinfo },
+    { "KEYTOCARD",      cmd_keytocard, hlp_keytocard },
     { NULL }
   };
   int i, rc;
