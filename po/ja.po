@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.0.20\n"
+"Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-01-07 10:40+0900\n"
+"PO-Revision-Date: 2013-02-12 13:30+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -182,8 +182,8 @@ msgid "Reset Code"
 msgstr "Reset Code"
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
-msgstr "%s%%0A%%0Aリーダーのキーパッドを入力に使ってください。"
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
+msgstr "%s%%0A%%0Aリーダーのピンパッドを入力に使ってください。"
 
 msgid "Repeat this Reset Code"
 msgstr "このReset Codeをもう一度入力してください"
@@ -784,7 +784,7 @@ msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr "agentの起動のため、%d秒待ちます\n"
 
 msgid "connection to agent established\n"
-msgstr ""
+msgstr "エージェントへの接続が確立しました。\n"
 
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "agentに接続できません - フォールバックしてみます\n"
@@ -1134,6 +1134,13 @@ msgstr "*警告*: 無効な注釈データを発見\n"
 
 msgid "not human readable"
 msgstr "人には読めません"
+
+#, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr "プロキシ%sのクライアントへの問い合わせが失敗しました\n"
+
+msgid "Enter passphrase: "
+msgstr "パスフレーズを入力: "
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1852,8 +1859,7 @@ msgstr "*警告*: homedir '%s'の安全でない上位ディレクトリ許可\n
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
-"*警告*: コンフィグレーション・ファイル'%s'の安全でない上位ディレクトリ許"
-"可\n"
+"*警告*: コンフィグレーション・ファイル'%s'の安全でない上位ディレクトリ許可\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
@@ -1898,8 +1904,7 @@ msgstr "署名の一覧に有効期限の日付を表示する"
 
 #, c-format
 msgid "NOTE: old default options file '%s' ignored\n"
-msgstr ""
-"*注意*: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
+msgstr "*注意*: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -1912,6 +1917,10 @@ msgstr "*注意*: 普通%sは使いません!\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s'は、有効な署名表現ではありません\n"
+
+#, c-format
+msgid "invalid pinentry mode '%s'\n"
+msgstr "無効な pinentry mode '%s'です\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -2951,8 +2960,7 @@ msgid ""
 msgstr ""
 "* 'sign' コマンドは 'l' で始まると、ローカルの署名で (lsign)、\n"
 "  't' で始まると信用署名 (tsign)、'nr' で始まると失効不可署名\n"
-"  (nrsign)、もしくはこれらの組み合わせ (ltsign, tnrsign, など)となりま"
-"す。\n"
+"  (nrsign)、もしくはこれらの組み合わせ (ltsign, tnrsign, など)となります。\n"
 
 msgid "Key is revoked."
 msgstr "鍵は、失効されています。"
@@ -4262,8 +4270,7 @@ msgid ""
 "Please enter the passphrase to unlock the secret key for the OpenPGP "
 "certificate:"
 msgstr ""
-"OpenPGP証明書の秘密鍵のロックを解除するためにパスフレーズを入力してくださ"
-"い:"
+"OpenPGP証明書の秘密鍵のロックを解除するためにパスフレーズを入力してください:"
 
 msgid ""
 "Please enter the passphrase to import the secret key for the OpenPGP "
@@ -4681,7 +4688,8 @@ msgstr "%s 鍵 %s は安全でない(%zuビット)ハッシュを使用してい
 
 #, c-format
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
-msgstr "%s鍵%sは%zuビットあるいはより大きいハッシュを必要とします(今のハッシュは%s)\n"
+msgstr ""
+"%s鍵%sは%zuビットあるいはより大きいハッシュを必要とします(今のハッシュは%s)\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "*警告*: 署名のダイジェストが、メッセージと衝突します\n"
@@ -5315,8 +5323,8 @@ msgstr "管理者PINの確認はこのコマンドでは今のところ禁止さ
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "%sにアクセスできません - 無効なOpenPGPカード?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr "||PINをリーダのキーパッドで入力してください"
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "||PINをリーダのピンパッドで入力してください"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5348,11 +5356,14 @@ msgstr "内蔵CCIDドライバを使いません"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|N秒アクティブでない場合、カードへの接続を切ります"
 
-msgid "do not use a reader's keypad"
-msgstr "リーダのキーパッドを使わない"
+msgid "do not use a reader's pinpad"
+msgstr "リーダのピンパッドを使わない"
 
 msgid "deny the use of admin card commands"
 msgstr "管理カード・コマンドの使用を拒否"
+
+msgid "use variable length input for pinpad"
+msgstr "ピンパッドの可変長入力を使う"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "使い方: scdaemon [オプション] (ヘルプは -h)"
@@ -5365,7 +5376,9 @@ msgstr ""
 "GnuPGのSmartcardデーモン\n"
 
 msgid "please use the option '--daemon' to run the program in the background\n"
-msgstr "'--daemon'オプションを使って、プログラムをバックグラウンドで実行してください\n"
+msgstr ""
+"'--daemon'オプションを使って、プログラムをバックグラウンドで実行してくださ"
+"い\n"
 
 #, c-format
 msgid "handler for fd %d started\n"
@@ -5378,10 +5391,6 @@ msgstr "fd %dのハンドラが終了しました\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "無効な64進文字%02Xをスキップしました\n"
-
-#, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr "プロキシ%sのクライアントへの問い合わせが失敗しました\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -5781,7 +5790,7 @@ msgid "Create self-signed certificate? (y/N) "
 msgstr "自己署名証明書を作成しますか? (y/N) "
 
 msgid "These parameters are used:\n"
-msgstr ""
+msgstr "下記のパラメータが使われます:\n"
 
 msgid "Now creating self-signed certificate.  "
 msgstr "今、自己署名証明書を作成しています。  "
@@ -5790,10 +5799,10 @@ msgid "Now creating certificate request.  "
 msgstr "今、証明書要求を作成しています。  "
 
 msgid "This may take a while ...\n"
-msgstr ""
+msgstr "しばらくかかります...\n"
 
 msgid "Ready.\n"
-msgstr ""
+msgstr "準備完了。\n"
 
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr "準備ができました。今、この要求をあなたのCAに送るべきです。\n"
@@ -6110,11 +6119,11 @@ msgstr "証明書キャッシュのロックが初期化できません: %s\n"
 
 #, c-format
 msgid "can't acquire read lock on the certificate cache: %s\n"
-msgstr ""
+msgstr "証明書キャッシュの読み出しロックが取得できません: %s\n"
 
 #, c-format
 msgid "can't acquire write lock on the certificate cache: %s\n"
-msgstr ""
+msgstr "証明書キャッシュの書き込みロックが取得できません: %s\n"
 
 #, c-format
 msgid "can't release lock on the certificate cache: %s\n"
@@ -6149,10 +6158,10 @@ msgid "  SHA1 fingerprint = %s\n"
 msgstr "  SHA1フィンガー・プリント = %s\n"
 
 msgid "   issuer ="
-msgstr ""
+msgstr "   発行者 ="
 
 msgid "  subject ="
-msgstr ""
+msgstr "サブジェクト ="
 
 #, c-format
 msgid "error loading certificate '%s': %s\n"
@@ -6249,17 +6258,17 @@ msgstr "キャッシュ・ディレクトリ・ファイル'%s'が再オープ�
 
 #, c-format
 msgid "first record of '%s' is not the version\n"
-msgstr ""
+msgstr "最初のレコード'%s'はそのバージョンではありません。\n"
 
 msgid "old version of cache directory - cleaning up\n"
-msgstr ""
+msgstr "古いバージョンのキャッシュ・ディレクトリ - きれいにします\n"
 
 msgid "old version of cache directory - giving up\n"
-msgstr ""
+msgstr "古いバージョンのキャッシュ・ディレクトリ - あきらめます\n"
 
 #, c-format
 msgid "extra field detected in crl record of '%s' line %u\n"
-msgstr ""
+msgstr "crlレコードの'%s'に行 %u で余分なフィールドが検出されました\n"
 
 #, c-format
 msgid "invalid line detected in '%s' line %u\n"
@@ -6271,7 +6280,7 @@ msgstr "'%s' (行 %u)で重複したエントリ\n"
 
 #, c-format
 msgid "unsupported record type in '%s' line %u skipped\n"
-msgstr ""
+msgstr "サポートしていないレコード型 '%s' を行 %u でスキップしました\n"
 
 #, c-format
 msgid "invalid issuer hash in '%s' line %u\n"
@@ -6290,10 +6299,10 @@ msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "*警告*: '%s'で無効なキャッシュ・ファイル・ハッシュ(行 %u)\n"
 
 msgid "detected errors in cache dir file\n"
-msgstr ""
+msgstr "キャッシュ・ディレクトリ・ファイルの検出エラー\n"
 
 msgid "please check the reason and manually delete that file\n"
-msgstr ""
+msgstr "理由を確認し、手動でそのファイルを削除してください\n"
 
 #, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
@@ -6324,7 +6333,7 @@ msgid "invalid formatted checksum for '%s'\n"
 msgstr "'%s'に対する無効な形式のチェックサム\n"
 
 msgid "too many open cache files; can't open anymore\n"
-msgstr ""
+msgstr "キャッシュ・ファイルを多くオープンしすぎです。これ以上オープンできません\n"
 
 #, c-format
 msgid "opening cache file '%s'\n"
@@ -6336,13 +6345,13 @@ msgstr "キャッシュ・ファイル'%s'を開く際、エラー: %s\n"
 
 #, c-format
 msgid "error initializing cache file '%s' for reading: %s\n"
-msgstr ""
+msgstr "キャッシュ・ファイル '%s' の初期化エラー、読み込み: %s\n"
 
 msgid "calling unlock_db_file on a closed file\n"
-msgstr ""
+msgstr "unlock_db_file のクローズしたファイルへの呼び出し\n"
 
 msgid "calling unlock_db_file on an unlocked file\n"
-msgstr ""
+msgstr "unlock_db_fileのロックしてないファイルへの呼び出し\n"
 
 #, c-format
 msgid "failed to create a new cache object: %s\n"
@@ -6354,28 +6363,29 @@ msgstr "発行者ID%sに対してCRLはありません\n"
 
 #, c-format
 msgid "cached CRL for issuer id %s too old; update required\n"
-msgstr ""
+msgstr "キャッシュされたCRLの発行者ID %s が古すぎます。更新が必要です\n"
 
 #, c-format
 msgid ""
 "force-crl-refresh active and %d minutes passed for issuer id %s; update "
 "required\n"
 msgstr ""
+"force-crl-refreshが有効で%d分が発行者ID%sに経過しました。更新が必要です\n"
 
 #, c-format
 msgid "force-crl-refresh active for issuer id %s; update required\n"
-msgstr ""
+msgstr "force-crl-refreshが発行者ID%sに対し有効です。更新が必要です\n"
 
 #, c-format
 msgid "available CRL for issuer ID %s can't be used\n"
-msgstr ""
+msgstr "発行者ID%sに対する利用可能なCRLが使用できません\n"
 
 #, c-format
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
-msgstr ""
+msgstr "発行者ID%sに対するキャッシュされたCRLが変更されています。更新が必要です\n"
 
 msgid "WARNING: invalid cache record length for S/N "
-msgstr ""
+msgstr "**警告**: S/Nに対する無効なキャッシュ・レコード長"
 
 #, c-format
 msgid "problem reading cache record for S/N %s: %s\n"
@@ -6383,11 +6393,11 @@ msgstr "S/N %sに対するキャッシュ・レコードを読み込む際の問
 
 #, c-format
 msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
-msgstr ""
+msgstr "S/N %s は無効です。理由=%02X 日付=%.15s\n"
 
 #, c-format
 msgid "S/N %s is valid, it is not listed in the CRL\n"
-msgstr ""
+msgstr "S/N %sは有効です。CRLに載っていません\n"
 
 #, c-format
 msgid "error getting data from cache file: %s\n"
@@ -6399,10 +6409,10 @@ msgstr "不明なハッシュ・アルゴリズム'%s'\n"
 
 #, c-format
 msgid "gcry_md_open for algorithm %d failed: %s\n"
-msgstr ""
+msgstr "アルゴリズム%dのgcry_md_openが失敗: %s\n"
 
 msgid "got an invalid S-expression from libksba\n"
-msgstr ""
+msgstr "libksbaから無効なS-式を取得しました\n"
 
 #, c-format
 msgid "converting S-expression failed: %s\n"
@@ -6422,10 +6432,10 @@ msgstr "CRLの更新時刻の取得エラー: %s\n"
 
 #, c-format
 msgid "update times of this CRL: this=%s next=%s\n"
-msgstr ""
+msgstr "このCRLの更新時刻: これ=%s 次=%s\n"
 
 msgid "nextUpdate not given; assuming a validity period of one day\n"
-msgstr ""
+msgstr "nextUpdateが与えられていません。一日の有効期間を仮定します\n"
 
 #, c-format
 msgid "error getting CRL item: %s\n"
@@ -6440,7 +6450,7 @@ msgid "no CRL issuer found in CRL: %s\n"
 msgstr "CRLに発行者がありません: %s\n"
 
 msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
-msgstr ""
+msgstr "CRL発行証明書をauthorityKeyIdentifierで見つけます\n"
 
 #, c-format
 msgid "CRL signature verification failed: %s\n"
@@ -6484,15 +6494,15 @@ msgstr "一時キャッシュ・ファイル'%s'のクローズ・エラー: %s\
 
 #, c-format
 msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
-msgstr ""
+msgstr "**警告**: 新しいCRLはまだ古すぎます。%sに期限がきています - それでも読み込みます\n"
 
 #, c-format
 msgid "new CRL still too old; it expired on %s\n"
-msgstr ""
+msgstr "新しいCRLはまだ古すぎます。%sに期限がきています\n"
 
 #, c-format
 msgid "unknown critical CRL extension %s\n"
-msgstr ""
+msgstr "不明のクリティカルCRLの拡張 %s\n"
 
 #, c-format
 msgid "error reading CRL extensions: %s\n"
@@ -6510,25 +6520,28 @@ msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
 msgstr ""
+"DIRファイルの更新の失敗 - キャッシュ・エントリは次のプログラムの開始で失われます\n"
 
 #, c-format
 msgid "Begin CRL dump (retrieved via %s)\n"
-msgstr ""
+msgstr "CRLダンプの開始 (%s から取得)\n"
 
 msgid ""
 " ERROR: The CRL will not be used because it was still too old after an "
 "update!\n"
 msgstr ""
+"*エラー*: CRLは使用されません。更新後でも、古すぎるからです!\n"
 
 msgid ""
 " ERROR: The CRL will not be used due to an unknown critical extension!\n"
 msgstr ""
+"*エラー*: CRLは不明なクリティカル拡張のため使用されません!\n"
 
 msgid " ERROR: The CRL will not be used\n"
-msgstr ""
+msgstr "*エラー*: CRLは使用されません\n"
 
 msgid " ERROR: This cached CRL may have been tampered with!\n"
-msgstr ""
+msgstr "*エラー*: このキャッシュされたCRLは変更されているかもしれません!\n"
 
 msgid " WARNING: invalid cache record length\n"
 msgstr "*警告*: 無効なキャッシュ・レコード長\n"
@@ -6546,7 +6559,7 @@ msgid "error reading cache entry from db: %s\n"
 msgstr "dbからキャッシュ・エントリの読み込みエラー: %s\n"
 
 msgid "End CRL dump\n"
-msgstr ""
+msgstr "CRLダンプの終了\n"
 
 #, c-format
 msgid "crl_fetch via DP failed: %s\n"
@@ -6561,14 +6574,14 @@ msgid "crl_cache_insert via issuer failed: %s\n"
 msgstr "発行者からcrl_cache_insertが失敗しました: %s\n"
 
 msgid "reader to file mapping table full - waiting\n"
-msgstr ""
+msgstr "readerからファイル・マッピングのテーブルがいっぱいです - 待ちます\n"
 
 msgid "using \"http\" instead of \"https\"\n"
-msgstr ""
+msgstr "\"http\" を \"https\" の代わりに使います\n"
 
 #, c-format
 msgid "CRL access not possible due to disabled %s\n"
-msgstr ""
+msgstr "CRLアクセスは停止された%sのため不可能です\n"
 
 #, c-format
 msgid "error initializing reader object: %s\n"
@@ -6576,7 +6589,7 @@ msgstr "リーダ・オブジェクトの初期化エラー: %s\n"
 
 #, c-format
 msgid "URL '%s' redirected to '%s' (%u)\n"
-msgstr ""
+msgstr "URL'%s' は '%s' (%u) へリダイレクトされました\n"
 
 msgid "too many redirections\n"
 msgstr "リダイレクトが多すぎます\n"
@@ -6594,10 +6607,10 @@ msgid "certificate search not possible due to disabled %s\n"
 msgstr "禁止されているため、証明書の探索ができません: %s\n"
 
 msgid "use OCSP instead of CRLs"
-msgstr ""
+msgstr "OCSPをCRLの代わりに使います"
 
 msgid "check whether a dirmngr is running"
-msgstr ""
+msgstr "dirmngrが動いているかどうか確認します"
 
 msgid "add a certificate to the cache"
 msgstr "証明書をキャッシュに追加します"
@@ -6612,13 +6625,13 @@ msgid "lookup only locally stored certificates"
 msgstr "ローカルに保持された証明書だけを探索します"
 
 msgid "expect an URL for --lookup"
-msgstr ""
+msgstr "--lookupにはURLがきます"
 
 msgid "load a CRL into the dirmngr"
 msgstr "dirmngrにCRLをロードする"
 
 msgid "special mode for use by Squid"
-msgstr ""
+msgstr "Squidのための特別なモード"
 
 msgid "expect certificates in PEM format"
 msgstr "証明書はPEM形式を期待します"
@@ -6627,7 +6640,8 @@ msgid "force the use of the default OCSP responder"
 msgstr "デフォルトOCSP応答の使用を強制します"
 
 msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
-msgstr "使い方: dirmngr-client [オプション] [証明書ファイル|パターン] (ヘルプは -h)\n"
+msgstr ""
+"使い方: dirmngr-client [オプション] [証明書ファイル|パターン] (ヘルプは -h)\n"
 
 msgid ""
 "Syntax: dirmngr-client [options] [certfile|pattern]\n"
@@ -6635,6 +6649,10 @@ msgid ""
 "The process returns 0 if the certificate is valid, 1 if it is\n"
 "not valid and other error codes for general failures\n"
 msgstr ""
+"形式: dirmngr-client [オプション] [証明書ファイル|パターン]\n"
+"X.509証明書をCRLに対してテストする、あるいはOCSPチェックを行う\n"
+"プロセスは証明書が有効の場合、0を返し、有効でない場合、1 を返す。\n"
+"一般の失敗の場合、そのほかのエラーコードを返す\n"
 
 #, c-format
 msgid "error reading certificate from stdin: %s\n"
@@ -6645,7 +6663,7 @@ msgid "error reading certificate from '%s': %s\n"
 msgstr "'%s'から証明書の読み込みエラー: %s\n"
 
 msgid "certificate too large to make any sense\n"
-msgstr ""
+msgstr "証明書は意味のあるものとしては大きすぎます\n"
 
 #, c-format
 msgid "lookup failed: %s\n"
@@ -6656,7 +6674,7 @@ msgid "loading CRL '%s' failed: %s\n"
 msgstr "CRL'%s'の読み込みが失敗しました: %s\n"
 
 msgid "a dirmngr daemon is up and running\n"
-msgstr ""
+msgstr "dirmngr daemonが起動され動いています\n"
 
 #, c-format
 msgid "validation of certificate failed: %s\n"
@@ -6674,7 +6692,7 @@ msgstr "証明書の検査に失敗しました: %s\n"
 
 #, c-format
 msgid "got status: '%s'\n"
-msgstr ""
+msgstr "ステイタス'%s'を取得しました\n"
 
 #, c-format
 msgid "error writing base64 encoding: %s\n"
@@ -6685,7 +6703,7 @@ msgid "failed to allocate assuan context: %s\n"
 msgstr "assuanコンテクストの確保に失敗しました: %s\n"
 
 msgid "apparently no running dirmngr\n"
-msgstr ""
+msgstr "あきらかにdirmngrが動いていません\n"
 
 msgid "no running dirmngr - starting one\n"
 msgstr "dirmngrが動いていません - 開始します\n"
@@ -6709,29 +6727,29 @@ msgid "unsupported inquiry '%s'\n"
 msgstr "サポートされていない問い合わせ: '%s'\n"
 
 msgid "absolute file name expected\n"
-msgstr ""
+msgstr "絶対ファイル名がきます\n"
 
 #, c-format
 msgid "looking up '%s'\n"
-msgstr ""
+msgstr "'%s'を検索します\n"
 
 msgid "run as windows service (background)"
 msgstr "ウィンドウズ・サービスとして実行 (バックグラウンド)"
 
 msgid "list the contents of the CRL cache"
-msgstr ""
+msgstr "CRLキャッシュの内容をリストします"
 
 msgid "|FILE|load CRL from FILE into cache"
 msgstr "|FILE|FILEからCRLをキャッシュにロードする"
 
 msgid "|URL|fetch a CRL from URL"
-msgstr ""
+msgstr "|URL|URLからCRLを取得します"
 
 msgid "shutdown the dirmngr"
 msgstr "dirmngrをシャットダウンする"
 
 msgid "flush the cache"
-msgstr ""
+msgstr "キャッシュをフラッシュします"
 
 msgid "|FILE|write server mode logs to FILE"
 msgstr "|FILE|FILEにサーバ・モードのログを書き出す"
@@ -6740,40 +6758,40 @@ msgid "run without asking a user"
 msgstr "ユーザに問い合わせせずに実行"
 
 msgid "force loading of outdated CRLs"
-msgstr ""
+msgstr "期日の過ぎたCRLのロードを強制する"
 
 msgid "allow sending OCSP requests"
 msgstr "OCSP要求の送信を認める"
 
 msgid "inhibit the use of HTTP"
-msgstr ""
+msgstr "HTTPの使用を禁止する"
 
 msgid "inhibit the use of LDAP"
-msgstr ""
+msgstr "LDAPの使用を禁止する"
 
 msgid "ignore HTTP CRL distribution points"
-msgstr ""
+msgstr "HTTP CRL配布ポイントを無視する"
 
 msgid "ignore LDAP CRL distribution points"
-msgstr ""
+msgstr "LDAP CRL配布ポイントを無視する"
 
 msgid "ignore certificate contained OCSP service URLs"
-msgstr ""
+msgstr "OCSPサービスURLに入っている証明書を無視する"
 
 msgid "|URL|redirect all HTTP requests to URL"
-msgstr ""
+msgstr "|URL|すべてのHTTPリクエストをURLにリダイレクトする"
 
 msgid "|HOST|use HOST for LDAP queries"
-msgstr ""
+msgstr "|HOST|LDAPの問い合わせにHOSTを使う"
 
 msgid "do not use fallback hosts with --ldap-proxy"
-msgstr ""
+msgstr "--ldap-proxy にフォールバック・ホストを使わない"
 
 msgid "|FILE|read LDAP server list from FILE"
 msgstr "|FILE|FILEからLDAPサーバリストを読み込みます"
 
 msgid "add new servers discovered in CRL distribution points to serverlist"
-msgstr ""
+msgstr "CRL配布ポイントに発見された新しいサーバを serverlist に追加する"
 
 msgid "|N|set LDAP timeout to N seconds"
 msgstr "|N|LDAPのタイムアウトをN秒とする"
@@ -6782,10 +6800,10 @@ msgid "|URL|use OCSP responder at URL"
 msgstr "|URL|OCSP応答としてURLを使用"
 
 msgid "|FPR|OCSP response signed by FPR"
-msgstr ""
+msgstr "|FPR|FPRで署名されたOCSPレスポンス"
 
 msgid "|N|do not return more than N items in one query"
-msgstr ""
+msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 
 msgid ""
 "@\n"
@@ -6837,36 +6855,36 @@ msgstr "%s:%u: 読み込みエラー: %s\n"
 
 #, c-format
 msgid "%s:%u: garbage at end of line ignored\n"
-msgstr ""
+msgstr "%s:%u: 行末のゴミを無視\n"
 
 msgid "SIGHUP received - re-reading configuration and flushing caches\n"
-msgstr ""
+msgstr "SIGHUPを受け取り - 設定を読み直し、キャッシュをフラッシュ\n"
 
 msgid "SIGUSR2 received - no action defined\n"
-msgstr ""
+msgstr "SIGUSR2を受け取り - 動作は定義されない\n"
 
 msgid "SIGTERM received - shutting down ...\n"
-msgstr ""
+msgstr "SIGTERMを受け取り - シャットダウン...\n"
 
 #, c-format
 msgid "SIGTERM received - still %d active connections\n"
-msgstr ""
+msgstr "SIGTERMを受け取り - %d本のアクティブな接続がまだあります\n"
 
 msgid "shutdown forced\n"
 msgstr "強制的にシャットダウンする\n"
 
 msgid "SIGINT received - immediate shutdown\n"
-msgstr ""
+msgstr "SIGINTを受け取り - すぐにシャットダウン\n"
 
 #, c-format
 msgid "signal %d received - no action defined\n"
-msgstr ""
+msgstr "シグナル%dを受け取り - アクションは定義されない\n"
 
 msgid "return all values in a record oriented format"
-msgstr ""
+msgstr "レコード形式ですべての値を返す"
 
 msgid "|NAME|ignore host part and connect through NAME"
-msgstr ""
+msgstr "|NAME|host部分を無視してNAMEをとおして接続する"
 
 msgid "|NAME|connect to host NAME"
 msgstr "|NAME|ホストNAMEに接続する"
@@ -6875,22 +6893,22 @@ msgid "|N|connect to port N"
 msgstr "|N|ポートNに接続します"
 
 msgid "|NAME|use user NAME for authentication"
-msgstr ""
+msgstr "|NAME|ユーザNAMEを認証に使う"
 
 msgid "|PASS|use password PASS for authentication"
-msgstr ""
+msgstr "|PASS|パスワードPASSを認証に使う"
 
 msgid "take password from $DIRMNGR_LDAP_PASS"
-msgstr ""
+msgstr "パスワードを$DIRMNGR_LDAP_PASSから取ってくる"
 
 msgid "|STRING|query DN STRING"
-msgstr ""
+msgstr "|STRING|DN STRINGをクエリする"
 
 msgid "|STRING|use STRING as filter expression"
-msgstr ""
+msgstr "|STRING|STRINGをフィルタ式に使う"
 
 msgid "|STRING|return the attribute STRING"
-msgstr ""
+msgstr "|STRING|STRINGの属性を返す"
 
 msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
 msgstr "使い方: dirmngr_ldap [オプション] [URL] (ヘルプは -h)\n"
@@ -6900,6 +6918,9 @@ msgid ""
 "Internal LDAP helper for Dirmngr\n"
 "Interface and options may change without notice\n"
 msgstr ""
+"形式: dirmngr_ldap [オプション] [URL]\n"
+"Dirmngrの内部LDAPヘルパー\n"
+"インタフェースとオプションは事前の通知なく変更されることがあります\n"
 
 #, c-format
 msgid "invalid port number %d\n"
@@ -6907,7 +6928,7 @@ msgstr "無効なポート番号 %d\n"
 
 #, c-format
 msgid "scanning result for attribute '%s'\n"
-msgstr ""
+msgstr "属性'%s'のスキャン結果\n"
 
 #, c-format
 msgid "error writing to stdout: %s\n"
@@ -6915,7 +6936,7 @@ msgstr "stdoutへの書き込みエラー: %s\n"
 
 #, c-format
 msgid "          available attribute '%s'\n"
-msgstr ""
+msgstr "          利用可能な属性'%s'\n"
 
 #, c-format
 msgid "attribute '%s' not found\n"
@@ -6923,7 +6944,7 @@ msgstr "属性'%s'が見つかりません\n"
 
 #, c-format
 msgid "found attribute '%s'\n"
-msgstr ""
+msgstr "属性'%s'が見つかりました\n"
 
 #, c-format
 msgid "processing url '%s'\n"
@@ -6951,7 +6972,7 @@ msgstr "                DN '%s'\n"
 
 #, c-format
 msgid "        filter '%s'\n"
-msgstr ""
+msgstr "        フィルタ '%s'\n"
 
 #, c-format
 msgid "          attr '%s'\n"
@@ -6963,7 +6984,7 @@ msgstr "'%s'にホスト名がありません\n"
 
 #, c-format
 msgid "no attribute given for query '%s'\n"
-msgstr ""
+msgstr "クエリ '%s' に属性が指定されていません\n"
 
 msgid "WARNING: using first attribute only\n"
 msgstr "*警告*: 最初の属性だけを使っています\n"
@@ -6986,7 +7007,7 @@ msgstr "'%s'は、LDAP URLではありません\n"
 
 #, c-format
 msgid "'%s' is an invalid LDAP URL\n"
-msgstr ""
+msgstr "'%s' は無効なLDAP URLです\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
@@ -7006,15 +7027,15 @@ msgstr "npth_selectに失敗しました: %s - 一秒待ちます\n"
 
 #, c-format
 msgid "ldap wrapper %d ready"
-msgstr ""
+msgstr "ldap wrapper %d が準備完了"
 
 #, c-format
 msgid "ldap wrapper %d ready: timeout\n"
-msgstr ""
+msgstr "ldap wrapper %d が準備完了: タイムアウト\n"
 
 #, c-format
 msgid "ldap wrapper %d ready: exitcode=%d\n"
-msgstr ""
+msgstr "ldap wrapper %d が準備完了: exitcode=%d\n"
 
 #, c-format
 msgid "waiting for ldap wrapper %d failed: %s\n"
@@ -7022,11 +7043,11 @@ msgstr "ldap wrapper %dの待ちが失敗: %s\n"
 
 #, c-format
 msgid "ldap wrapper %d stalled - killing\n"
-msgstr ""
+msgstr "ldap wrapper %d が止まりました - killしています\n"
 
 #, c-format
 msgid "error spawning ldap wrapper reaper thread: %s\n"
-msgstr ""
+msgstr "ldap wrapperのスレッドの起動でエラー: %s\n"
 
 #, c-format
 msgid "reading from ldap wrapper %d failed: %s\n"
@@ -7034,7 +7055,7 @@ msgstr "ldap wrapper %d からの読み込みに失敗しました: %s\n"
 
 #, c-format
 msgid "invalid char 0x%02x in host name - not added\n"
-msgstr ""
+msgstr "ホスト名に無効な文字 0x%02x - 加えません\n"
 
 #, c-format
 msgid "adding '%s:%d' to the ldap server list\n"
@@ -7046,10 +7067,10 @@ msgstr "mallocが失敗しました: %s\n"
 
 #, c-format
 msgid "start_cert_fetch: invalid pattern '%s'\n"
-msgstr ""
+msgstr "start_cert_fetch: 無効なパターン '%s'\n"
 
 msgid "ldap_search hit the size limit of the server\n"
-msgstr ""
+msgstr "ldap_search がサーバのサイズ限界を越えました\n"
 
 msgid "invalid canonical S-expression found\n"
 msgstr "無効な正規S式が見つかりました\n"
@@ -7063,7 +7084,7 @@ msgid "oops: ksba_cert_hash failed: %s\n"
 msgstr "おっと: ksba_cert_hashが失敗しました: %s\n"
 
 msgid "bad URL encoding detected\n"
-msgstr ""
+msgstr "不正なURLエンコーディングが検出されました\n"
 
 #, c-format
 msgid "error reading from responder: %s\n"
@@ -7074,7 +7095,7 @@ msgid "response from server too large; limit is %d bytes\n"
 msgstr "サーバからの応答がが長すぎます (上限%dバイト)。\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
-msgstr ""
+msgstr "HTTPが停止されているためOCSPリクエストが不可能です\n"
 
 #, c-format
 msgid "error setting OCSP target: %s\n"
@@ -7102,17 +7123,17 @@ msgstr "'%s'に対するOCSP応答解析エラー: %s\n"
 
 #, c-format
 msgid "OCSP responder at '%s' status: %s\n"
-msgstr ""
+msgstr "OSCP応答が '%s' でステイタス: %s\n"
 
 #, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "'%s'に対するOCSP応答のハッシングに失敗しました: %s\n"
 
 msgid "not signed by a default OCSP signer's certificate"
-msgstr ""
+msgstr "デフォルトOCSP署名者の証明で署名されていません"
 
 msgid "only SHA-1 is supported for OCSP responses\n"
-msgstr ""
+msgstr "SHA-1だけがOCSPレスポンスとしてサポートされています\n"
 
 #, c-format
 msgid "allocating list item failed: %s\n"
@@ -7144,7 +7165,7 @@ msgid "can't get authorityInfoAccess: %s\n"
 msgstr "authorityInfoAccessを取得できません: %s\n"
 
 msgid "no default OCSP responder defined\n"
-msgstr ""
+msgstr "デフォルトOCSPレスポンダが定義されていません\n"
 
 msgid "no default OCSP signer defined\n"
 msgstr "デフォルトのOCSP署名者が定義されていません\n"
@@ -7159,7 +7180,7 @@ msgstr "OCSP応答'%s'を使います\n"
 
 #, c-format
 msgid "failed to establish a hashing context for OCSP: %s\n"
-msgstr ""
+msgstr "OCSPのハッシュ・コンテクストを確立するのに失敗しました: %s\n"
 
 #, c-format
 msgid "error getting OCSP status for target certificate: %s\n"
@@ -7167,33 +7188,33 @@ msgstr "対象の証明書のOCSPステイタスの取得エラー: %s\n"
 
 #, c-format
 msgid "certificate status is: %s  (this=%s  next=%s)\n"
-msgstr ""
+msgstr "証明書ステイタスは: %s (これ=%s 次=%s)\n"
 
 msgid "good"
-msgstr ""
+msgstr "良好"
 
 #, c-format
 msgid "certificate has been revoked at: %s due to: %s\n"
 msgstr "証明書は失効済みです: %s (理由: %s)\n"
 
 msgid "OCSP responder returned a status in the future\n"
-msgstr ""
+msgstr "OSCPレスポンダは未来のステイタスを返しました\n"
 
 msgid "OCSP responder returned a non-current status\n"
-msgstr ""
+msgstr "OSCPレスポンダは現在でないステイタスを返しました\n"
 
 msgid "OCSP responder returned an too old status\n"
-msgstr ""
+msgstr "OSCPレスポンダは古すぎるステイタスを返しました\n"
 
 #, c-format
 msgid "assuan_inquire(%s) failed: %s\n"
 msgstr "assuan_inquire(%s)が失敗しました: %s\n"
 
 msgid "ldapserver missing"
-msgstr ""
+msgstr "ldapserverがありません"
 
 msgid "serialno missing in cert ID"
-msgstr ""
+msgstr "serialnoがcert IDにありません"
 
 #, c-format
 msgid "assuan_inquire failed: %s\n"
@@ -7217,7 +7238,7 @@ msgstr "fetch_next_cert が失敗しました: %s\n"
 
 #, c-format
 msgid "max_replies %d exceeded\n"
-msgstr ""
+msgstr "max_replies %d を越えました\n"
 
 #, c-format
 msgid "can't allocate control structure: %s\n"
@@ -7233,7 +7254,7 @@ msgstr "Assuanで登録コマンドに失敗しました: %s\n"
 
 #, c-format
 msgid "Assuan accept problem: %s\n"
-msgstr ""
+msgstr "Assuan accept の問題: %s\n"
 
 #, c-format
 msgid "Assuan processing failed: %s\n"
@@ -7246,13 +7267,13 @@ msgid "CRL checking too deeply nested\n"
 msgstr "CRL検査のネストが深すぎです\n"
 
 msgid "not checking CRL for"
-msgstr ""
+msgstr "CRL を確認しません"
 
 msgid "checking CRL for"
 msgstr "CRLの検査をしています"
 
 msgid "running in compatibility mode - certificate chain not checked!\n"
-msgstr ""
+msgstr "コンパチ・モードで実行します - 証明書チェインは確認しません!\n"
 
 msgid "selfsigned certificate has a BAD signature"
 msgstr "自己署名証明書に*不正な*署名があります"
@@ -7265,7 +7286,7 @@ msgid "certificate chain is good\n"
 msgstr "証明書チェインは正しいです\n"
 
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr ""
+msgstr "DSAは160ビットののハッシュアルゴリズムの使用を必要とします\n"
 
 msgid "certificate should not have been used for CRL signing\n"
 msgstr "証明書はCRL署名のために使われるべきではありませんでした\n"
@@ -7432,19 +7453,19 @@ msgid "Configuration for OCSP"
 msgstr "OCSPのコンフィグレーション"
 
 msgid "GPG for OpenPGP"
-msgstr ""
+msgstr "OpenPGPのためのGPG"
 
 msgid "GPG Agent"
-msgstr ""
+msgstr "GPG Agent"
 
 msgid "Smartcard Daemon"
-msgstr ""
+msgstr "スマートカード・デーモン"
 
 msgid "GPG for S/MIME"
-msgstr ""
+msgstr "S/MIME のためのGPG"
 
 msgid "Directory Manager"
-msgstr ""
+msgstr "ディレクトリ・マネージャ"
 
 msgid "PIN and Passphrase Entry"
 msgstr "PINとパスフレーズの入力"
@@ -7660,202 +7681,3 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
-
-#~ msgid "can't fdopen pipe for reading: %s\n"
-#~ msgstr "パイプを読み込みのためにfdopenできません: %s\n"
-
-#~ msgid "Please select where to store the key:\n"
-#~ msgstr "鍵の保管場所を選択してください:\n"
-
-#~ msgid "unknown key protection algorithm\n"
-#~ msgstr "不明の鍵保護アルゴリズムです\n"
-
-#~ msgid "secret parts of key are not available\n"
-#~ msgstr "鍵の秘密部分が無効です\n"
-
-#~ msgid "secret key already stored on a card\n"
-#~ msgstr "秘密鍵はもうカードに保管してあります\n"
-
-#~ msgid "error writing key to card: %s\n"
-#~ msgstr "鍵のカード書き込みエラー: %s\n"
-
-#~ msgid "remove the passphrase from exported subkeys"
-#~ msgstr "エクスポートされた副鍵のパスフレーズを除去する"
-
-#~ msgid "key %s: not protected - skipped\n"
-#~ msgstr "鍵%s: 保護されていません - スキップします\n"
-
-#~ msgid "about to export an unprotected subkey\n"
-#~ msgstr "保護されていない副鍵を、エクスポートしようとしています\n"
-
-#~ msgid "failed to unprotect the subkey: %s\n"
-#~ msgstr "副鍵のロックを解除するのに失敗しました: %s\n"
-
-#~ msgid "WARNING: secret key %s does not have a simple SK checksum\n"
-#~ msgstr "*警告*: 秘密鍵%sには、単純なSKチェックサムがありません\n"
-
-#~ msgid "key %s: secret key without public key - skipped\n"
-#~ msgstr "鍵%s: 公開鍵のない秘密鍵です - スキップします\n"
-
-#~ msgid "create a public key when importing a secret key"
-#~ msgstr "秘密鍵をインポートしたときに公開鍵を作成します"
-
-#~ msgid "key %s: already in secret keyring\n"
-#~ msgstr "鍵%s: 既に秘密鍵リングにあります\n"
-
-#~ msgid "key %s: secret key not found: %s\n"
-#~ msgstr "鍵%s: 秘密鍵が見つかりません: %s\n"
-
-#~ msgid "NOTE: a key's S/N does not match the card's one\n"
-#~ msgstr "*注意*: 鍵のシリアル番号がカードのものと一致しません\n"
-
-#~ msgid "NOTE: primary key is online and stored on card\n"
-#~ msgstr "*注意*: 主鍵はもうカードに保管してあります\n"
-
-#~ msgid "NOTE: secondary key is online and stored on card\n"
-#~ msgstr "*注意*: 二次鍵はもうカードに保管してあります\n"
-
-#~ msgid "This key is not protected.\n"
-#~ msgstr "この鍵は保護されていません。\n"
-
-#~ msgid "Key is protected.\n"
-#~ msgstr "鍵は保護されています。\n"
-
-#~ msgid "Can't edit this key: %s\n"
-#~ msgstr "この鍵は編集できません: %s\n"
-
-#~ msgid ""
-#~ "Enter the new passphrase for this secret key.\n"
-#~ "\n"
-#~ msgstr ""
-#~ "この秘密鍵の新しいパスフレーズを入力してください。\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
-#~ "\n"
-#~ msgstr ""
-#~ "パスフレーズが不必要なようですが、\n"
-#~ "おそらくそれは良くない考えです!\n"
-#~ "\n"
-
-#~ msgid "Do you really want to do this? (y/N) "
-#~ msgstr "本当に実行しますか? (y/N) "
-
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "秘密鍵ブロック\"%s\"の読み込みエラー: %s\n"
-
-#~ msgid "Please remove selections from the secret keys.\n"
-#~ msgstr "秘密鍵の選択をといてください。\n"
-
-#~ msgid "No corresponding signature in secret ring\n"
-#~ msgstr "秘密鍵リングに対応する署名がありません\n"
-
-#~ msgid "writing secret key stub to `%s'\n"
-#~ msgstr "'%s'へ秘密鍵スタブを書き込みます\n"
-
-#~ msgid "writing secret key to `%s'\n"
-#~ msgstr "'%s'へ秘密鍵を書き込みます\n"
-
-#~ msgid "no writable secret keyring found: %s\n"
-#~ msgstr "書き込み可能な秘密鍵リングが見つかりません: %s\n"
-
-#~ msgid "WARNING: 2 files with confidential information exists.\n"
-#~ msgstr "*警告*: 機密情報をもったファイルが2つ存在します。\n"
-
-#~ msgid "%s is the unchanged one\n"
-#~ msgstr "%sは変更のない方です\n"
-
-#~ msgid "%s is the new one\n"
-#~ msgstr "%sは新しい方です\n"
-
-#~ msgid "Please fix this possible security flaw\n"
-#~ msgstr "この安全上の欠陥の可能性を直してください\n"
-
-#~ msgid "searching for names from %s server %s\n"
-#~ msgstr "%sからサーバ%sで名前を検索\n"
-
-#~ msgid "searching for names from %s\n"
-#~ msgstr "\"%s\"から名前を検索\n"
-
-#~ msgid "searching for \"%s\" from %s server %s\n"
-#~ msgstr "\"%s\"を%sサーバ%sから検索\n"
-
-#~ msgid "searching for \"%s\" from %s\n"
-#~ msgstr "\"%s\"をサーバ%sから検索\n"
-
-#~ msgid "no keyserver action!\n"
-#~ msgstr "鍵サーバ・アクションがありません!\n"
-
-#~ msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
-#~ msgstr "*警告*: 別のバージョンのGnuPGの鍵サーバ・ハンドラ (%s)\n"
-
-#~ msgid "keyserver did not send VERSION\n"
-#~ msgstr "鍵サーバはVERSIONを送信しませんでした\n"
-
-#~ msgid "external keyserver calls are not supported in this build\n"
-#~ msgstr "このビルドでは、外部鍵サーバの呼出しはサポートしていません\n"
-
-#~ msgid "no handler for keyserver scheme `%s'\n"
-#~ msgstr "鍵サーバ・スキーム'%s'用のハンドラがありません\n"
-
-#~ msgid "action `%s' not supported with keyserver scheme `%s'\n"
-#~ msgstr "操作'%s'は、鍵サーバ・スキーム'%s'でサポートされていません\n"
-
-#~ msgid "%s does not support handler version %d\n"
-#~ msgstr "%sはハンドラ・バージョン%dをサポートしません\n"
-
-#~ msgid "keyserver timed out\n"
-#~ msgstr "鍵サーバのタイムアウト\n"
-
-#~ msgid "keyserver internal error\n"
-#~ msgstr "鍵サーバの内部エラー\n"
-
-#~ msgid "keyserver communications error: %s\n"
-#~ msgstr "鍵サーバ通信エラー: %s\n"
-
-#~ msgid "WARNING: unable to parse URI %s\n"
-#~ msgstr "*警告*: URI %s を解析できません\n"
-
-#~ msgid "the IDEA cipher plugin is not present\n"
-#~ msgstr "IDEA暗号方式のプラグインがありません\n"
-
-#~ msgid "no corresponding public key: %s\n"
-#~ msgstr "対応する公開鍵がありません: %s\n"
-
-#~ msgid "public key does not match secret key!\n"
-#~ msgstr "公開鍵と秘密鍵が照合しません!\n"
-
-#~ msgid "unknown protection algorithm\n"
-#~ msgstr "不明の保護アルゴリズムです\n"
-
-#~ msgid "NOTE: This key is not protected!\n"
-#~ msgstr "*注意*: この鍵は保護されていません!\n"
-
-#~ msgid "protection digest %d is not supported\n"
-#~ msgstr "保護ダイジェスト%dはサポートしていません\n"
-
-#~ msgid "Invalid passphrase; please try again"
-#~ msgstr "無効なパスフレーズです。再入力してください"
-
-#~ msgid "%s ...\n"
-#~ msgstr "%s ...\n"
-
-#~ msgid "WARNING: Weak key detected - please change passphrase again.\n"
-#~ msgstr "*警告*: 弱い鍵を検出しました。パスフレーズを変更してください。\n"
-
-#~ msgid ""
-#~ "generating the deprecated 16-bit checksum for secret key protection\n"
-#~ msgstr "廃止された16ビットのチェックサムを秘密鍵の保護に生成\n"
-
-#~ msgid "DSA key %s uses an unsafe (%u bit) hash\n"
-#~ msgstr "DSA鍵 %sは安全でない(%uビット)ハッシュを用います\n"
-
-#~ msgid " - probably dead - removing lock"
-#~ msgstr " - おそらく死んでます - ロックを除去"
-
-#~ msgid "Parameters to be used for the certificate request:\n"
-#~ msgstr "証明書要求に使われるパラメータ:\n"
-
-#~ msgid "use system's dirmngr if available"
-#~ msgstr "もしあれば、システムのdirmngrを使用する"
