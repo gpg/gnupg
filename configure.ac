@@ -627,12 +627,6 @@ case "${host}" in
         try_gettext="no"
         ;;
 
-    *-*-freebsd*)
-       # FreeBSD
-       CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-       LDFLAGS="$LDFLAGS -L/usr/local/lib"
-       ;;
-
     *-*-hpux*)
         if test -z "$GCC" ; then
             CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
