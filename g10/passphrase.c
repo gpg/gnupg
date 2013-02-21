@@ -569,17 +569,21 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
     dek->keylen = 0;
   else
     {
+      gpg_error_t err;
+
       dek->keylen = openpgp_cipher_get_algo_keylen (dek->algo);
       if (!(dek->keylen > 0 && dek->keylen <= DIM(dek->key)))
         BUG ();
-      if (gcry_kdf_derive (pw, strlen (pw),
-                           s2k->mode == 3? GCRY_KDF_ITERSALTED_S2K :
-                           s2k->mode == 1? GCRY_KDF_SALTED_S2K :
-                           /* */           GCRY_KDF_SIMPLE_S2K,
-                           s2k->hash_algo, s2k->salt, 8,
-                           S2K_DECODE_COUNT(s2k->count),
-                           dek->keylen, dek->key))
+      err = gcry_kdf_derive (pw, strlen (pw),
+                             s2k->mode == 3? GCRY_KDF_ITERSALTED_S2K :
+                             s2k->mode == 1? GCRY_KDF_SALTED_S2K :
+                             /* */           GCRY_KDF_SIMPLE_S2K,
+                             s2k->hash_algo, s2k->salt, 8,
+                             S2K_DECODE_COUNT(s2k->count),
+                             dek->keylen, dek->key);
+      if (err)
         {
+          log_error ("gcry_kdf_derive failed: %s", gpg_strerror (err));
           xfree (pw);
           xfree (dek);
 	  write_status( STATUS_MISSING_PASSPHRASE );

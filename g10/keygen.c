@@ -2591,6 +2591,17 @@ generate_user_id (KBNODE keyblock)
 }
 
 
+/* Append R to the linked list PARA.  */
+static void
+append_to_parameter (struct para_data_s *para, struct para_data_s *r)
+{
+  assert (para);
+  while (para->next)
+    para = para->next;
+  para->next = r;
+}
+
+/* Release the parameter list R.  */
 static void
 release_parameter_list (struct para_data_s *r)
 {
@@ -2817,8 +2828,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       r->u.usage = (is_default
                     ? (PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG)
                     : openpgp_pk_algo_usage(algo));
-      r->next = para;
-      para = r;
+      append_to_parameter (para, r);
     }
   else if (err == -1)
     return -1;
@@ -2854,8 +2864,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	  r->u.usage = (is_default
                         ? PUBKEY_USAGE_ENC
                         : openpgp_pk_algo_usage (algo));
-	  r->next = para;
-	  para = r;
+          append_to_parameter (para, r);
 	}
       else if (err == -1)
 	return -1;
@@ -2892,8 +2901,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
 	    p = stpcpy(stpcpy(stpcpy(p," ("), s2 ),")");
 	  if( s3 )
 	    p = stpcpy(stpcpy(stpcpy(p," <"), s3 ),">");
-	  r->next = para;
-	  para = r;
+          append_to_parameter (para, r);
 	  have_user_id=1;
 	}
     }
@@ -2946,13 +2954,11 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
           r = xmalloc_clear( sizeof *r );
           r->key = pPASSPHRASE_DEK;
           r->u.dek = dek;
-          r->next = para;
-          para = r;
+          append_to_parameter (para, r);
           r = xmalloc_clear( sizeof *r );
           r->key = pPASSPHRASE_S2K;
           r->u.s2k = s2k;
-          r->next = para;
-          para = r;
+          append_to_parameter (para, r);
         }
 
       if (canceled)
@@ -2971,27 +2977,32 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
            * but because we do this always, why not here.  */
           STRING2KEY *s2k;
           DEK *dek;
+          static int count;
 
-          s2k = xmalloc_secure ( sizeof *s2k );
+          s2k = xmalloc ( sizeof *s2k );
           s2k->mode = opt.s2k_mode;
           s2k->hash_algo = S2K_DIGEST_ALGO;
           set_next_passphrase ( r->u.value );
           dek = passphrase_to_dek (NULL, 0, opt.s2k_cipher_algo, s2k, 2,
                                    NULL, NULL);
-          set_next_passphrase (NULL );
-          assert (dek);
+          if (!dek)
+            {
+              log_error ("%s:%d: error post processing the passphrase\n",
+                         fname, r->lnr );
+              xfree (s2k);
+              return -1;
+            }
+          set_next_passphrase (NULL);
           memset (r->u.value, 0, strlen(r->u.value));
 
           r = xmalloc_clear (sizeof *r);
           r->key = pPASSPHRASE_S2K;
           r->u.s2k = s2k;
-          r->next = para;
-          para = r;
+          append_to_parameter (para, r);
           r = xmalloc_clear (sizeof *r);
           r->key = pPASSPHRASE_DEK;
           r->u.dek = dek;
-          r->next = para;
-          para = r;
+          append_to_parameter (para, r);
         }
     }
 
@@ -3029,8 +3040,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       r = xmalloc_clear( sizeof *r + 20 );
       r->key = pSUBKEYEXPIRE;
       r->u.expire = seconds;
-      r->next = para;
-      para = r;
+      append_to_parameter (para, r);
     }
 
   do_generate_keypair( para, outctrl, card );
