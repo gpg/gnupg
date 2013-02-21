@@ -336,7 +336,7 @@ default_inq_cb (void *opaque, const char *line)
   gpg_error_t err = 0;
   struct default_inq_parm_s *parm = opaque;
 
-  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+  if (has_leading_keyword (line, "PINENTRY_LAUNCHED"))
     {
       err = gpg_proxy_pinentry_notify (parm->ctrl, line);
       if (err)
@@ -344,7 +344,8 @@ default_inq_cb (void *opaque, const char *line)
                    "PINENTRY_LAUNCHED");
       /* We do not pass errors to avoid breaking other code.  */
     }
-  else if (!strncmp (line, "PASSPHRASE", 10) && (line[10]==' '||!line[10])
+  else if ((has_leading_keyword (line, "PASSPHRASE")
+            || has_leading_keyword (line, "NEW_PASSPHRASE"))
            && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
     {
       if (have_static_passphrase ())
