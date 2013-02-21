@@ -74,6 +74,29 @@ change_slashes (char *name)
 
 
 /*
+ * Check whether STRINGS starts with KEYWORD.  The keyword is
+ * delimited by end of string, a space or a tab.  Returns NULL if not
+ * found or a pointer into STRING to the next non-space character
+ * after the KEYWORD (which may be end of string).
+ */
+char *
+has_leading_keyword (const char *string, const char *keyword)
+{
+  size_t n = strlen (keyword);
+
+  if (!strncmp (string, keyword, n)
+      && (!string[n] || string[n] == ' ' || string[n] == '\t'))
+    {
+      string += n;
+      while (*string == ' ' || *string == '\t')
+        string++;
+      return (char*)string;
+    }
+  return NULL;
+}
+
+
+/*
  * Look for the substring SUB in buffer and return a pointer to that
  * substring in BUFFER or NULL if not found.
  * Comparison is case-insensitive.
