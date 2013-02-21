@@ -34,6 +34,8 @@
 
 #include "types.h"
 
+char *has_leading_keyword (const char *string, const char *keyword);
+
 const char *memistr (const void *buf, size_t buflen, const char *sub);
 char *mem2str( char *, const void *, size_t);
 char *trim_spaces( char *string );
