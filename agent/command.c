@@ -2197,6 +2197,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
 
   gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
   gcry_sexp_release (s_skey);
+  keydatalen--;			/* Decrement for last '\0'.  */
   /* Add timestamp "created-at" in the private key */
   timestamp = isotime2epoch (timestamp_str);
   snprintf (keydata+keydatalen-1, 30, "(10:created-at10:%010lu))", timestamp);
