@@ -701,17 +701,15 @@ static gpg_error_t
 inq_needpin (void *opaque, const char *line)
 {
   struct inq_needpin_s *parm = opaque;
+  const char *s;
   char *pin;
   size_t pinlen;
   int rc;
 
   parm->any_inq_seen = 1;
-  if (!strncmp (line, "NEEDPIN", 7) && (line[7] == ' ' || !line[7]))
+  if ((s = has_leading_keyword (line, "NEEDPIN")))
     {
-      line += 7;
-      while (*line == ' ')
-        line++;
-
+      line = s;
       pinlen = 90;
       pin = gcry_malloc_secure (pinlen);
       if (!pin)
@@ -722,17 +720,11 @@ inq_needpin (void *opaque, const char *line)
         rc = assuan_send_data (parm->ctx, pin, pinlen);
       xfree (pin);
     }
-  else if (!strncmp (line, "POPUPPINPADPROMPT", 17)
-           && (line[17] == ' ' || !line[17]))
+  else if ((s = has_leading_keyword (line, "POPUPPINPADPROMPT")))
     {
-      line += 17;
-      while (*line == ' ')
-        line++;
-
-      rc = parm->getpin_cb (parm->getpin_cb_arg, line, NULL, 1);
+      rc = parm->getpin_cb (parm->getpin_cb_arg, s, NULL, 1);
     }
-  else if (!strncmp (line, "DISMISSPINPADPROMPT", 19)
-           && (line[19] == ' ' || !line[19]))
+  else if ((s = has_leading_keyword (line, "DISMISSPINPADPROMPT")))
     {
       rc = parm->getpin_cb (parm->getpin_cb_arg, "", NULL, 0);
     }
@@ -1069,7 +1061,7 @@ inq_writekey_parms (void *opaque, const char *line)
 {
   struct writekey_parm_s *parm = opaque;
 
-  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+  if (has_leading_keyword (line, "KEYDATA"))
     return assuan_send_data (parm->ctx, parm->keydata, parm->keydatalen);
   else
     return inq_needpin (opaque, line);

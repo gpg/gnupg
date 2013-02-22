@@ -138,7 +138,7 @@ default_inq_cb (void *opaque, const char *line)
   gpg_error_t err;
   ctrl_t ctrl = opaque;
 
-  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+  if (has_leading_keyword (line, "PINENTRY_LAUNCHED"))
     {
       err = gpgsm_proxy_pinentry_notify (ctrl, line);
       if (err)
@@ -315,7 +315,7 @@ inq_ciphertext_cb (void *opaque, const char *line)
   struct cipher_parm_s *parm = opaque;
   int rc;
 
-  if (!strncmp (line, "CIPHERTEXT", 10) && (line[10]==' '||!line[10]))
+  if (has_leading_keyword (line, "CIPHERTEXT"))
     {
       assuan_begin_confidential (parm->ctx);
       rc = assuan_send_data (parm->ctx, parm->ciphertext, parm->ciphertextlen);
@@ -437,7 +437,7 @@ inq_genkey_parms (void *opaque, const char *line)
   struct genkey_parm_s *parm = opaque;
   int rc;
 
-  if (!strncmp (line, "KEYPARAM", 8) && (line[8]==' '||!line[8]))
+  if (has_leading_keyword (line, "KEYPARAM"))
     {
       rc = assuan_send_data (parm->ctx, parm->sexp, parm->sexplen);
     }
@@ -693,14 +693,14 @@ static gpg_error_t
 istrusted_status_cb (void *opaque, const char *line)
 {
   struct rootca_flags_s *flags = opaque;
+  const char *s;
 
-  if (!strncmp (line, "TRUSTLISTFLAG", 13) && (line[13]==' ' || !line[13]))
+  if ((s = has_leading_keyword (line, "TRUSTLISTFLAG")))
     {
-      for (line += 13; *line == ' '; line++)
-        ;
-      if (!strncmp (line, "relax", 5) && (line[5] == ' ' || !line[5]))
+      line = s;
+      if (has_leading_keyword (line, "relax"))
         flags->relax = 1;
-      else if (!strncmp (line, "cm", 2) && (line[2] == ' ' || !line[2]))
+      else if (has_leading_keyword (line, "cm"))
         flags->chain_model = 1;
     }
   return 0;
@@ -824,14 +824,14 @@ static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
 {
   struct learn_parm_s *parm = opaque;
+  const char *s;
 
   /* Pass progress data to the caller.  */
-  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+  if ((s = has_leading_keyword (line, "PROGRESS")))
     {
+      line = s;
       if (parm->ctrl)
         {
-          for (line += 8; *line == ' '; line++)
-            ;
           if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
             return gpg_error (GPG_ERR_ASS_CANCELED);
         }
@@ -1017,9 +1017,9 @@ keyinfo_status_cb (void *opaque, const char *line)
   char **serialno = opaque;
   const char *s, *s2;
 
-  if (!strncmp (line, "KEYINFO ", 8) && !*serialno)
+  if ((s = has_leading_keyword (line, "KEYINFO")) && !*serialno)
     {
-      s = strchr (line+8, ' ');
+      s = strchr (s, ' ');
       if (s && s[1] == 'T' && s[2] == ' ' && s[3])
         {
           s += 3;
@@ -1172,7 +1172,7 @@ inq_import_key_parms (void *opaque, const char *line)
   struct import_key_parm_s *parm = opaque;
   gpg_error_t err;
 
-  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+  if (has_leading_keyword (line, "KEYDATA"))
     {
       assuan_begin_confidential (parm->ctx);
       err = assuan_send_data (parm->ctx, parm->key, parm->keylen);

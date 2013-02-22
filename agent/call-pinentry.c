@@ -596,18 +596,15 @@ static gpg_error_t
 inq_quality (void *opaque, const char *line)
 {
   assuan_context_t ctx = opaque;
+  const char *s;
   char *pin;
   int rc;
   int percent;
   char numbuf[20];
 
-  if (!strncmp (line, "QUALITY", 7) && (line[7] == ' ' || !line[7]))
+  if ((s = has_leading_keyword (line, "QUALITY")))
     {
-      line += 7;
-      while (*line == ' ')
-        line++;
-
-      pin = unescape_passphrase_string (line);
+      pin = unescape_passphrase_string (s);
       if (!pin)
         rc = gpg_error_from_syserror ();
       else
