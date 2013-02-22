@@ -550,7 +550,9 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
             tty_fprintf (fp, " %u%c",
                          info.key_attr[i].nbits,
                          info.key_attr[i].algo == 1? 'R':
-                         info.key_attr[i].algo == 17? 'D': '?');
+                         info.key_attr[i].algo == 17? 'D':
+                         info.key_attr[i].algo == 18? 'e':
+                         info.key_attr[i].algo == 19? 'E': '?');
           tty_fprintf (fp, "\n");
         }
       tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
@@ -1560,7 +1562,7 @@ card_store_subkey (KBNODE node, int use)
 
   nbits = nbits_from_pk (pk);
 
-  if (!is_RSA (pk->pubkey_algo) || (!info.is_v2 && nbits != 1024) )
+  if (!info.is_v2 && nbits != 1024)
     {
       tty_printf ("You may only store a 1024 bit RSA key on the card\n");
       tty_printf ("\n");

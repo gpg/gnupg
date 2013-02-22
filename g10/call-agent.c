@@ -606,6 +606,10 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.ctx = agent_ctx;
 
   snprintf (line, DIM(line)-1, "KEYTOCARD %s%s %s OPENPGP.%d %s",
             force?"--force ": "", hexgrip, serialno, keyno, timestamp);
@@ -615,8 +619,8 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
   if (rc)
     return rc;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb,
-                        NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb, &parm,
+                        NULL, NULL);
   if (rc)
     return rc;
 
