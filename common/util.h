@@ -34,16 +34,6 @@
 #include <gcrypt.h> /* We need this for the memory function protos. */
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
-/* Add error codes available only in newer versions of libgpg-error.  */
-#ifndef GPG_ERR_NO_KEYSERVER
-#define GPG_ERR_NO_KEYSERVER 186
-#endif
-#ifndef GPG_ERR_INV_CURVE
-#define GPG_ERR_INV_CURVE 187
-#endif
-#ifndef GPG_ERR_UNKNOWN_CURVE
-#define GPG_ERR_UNKNOWN_CURVE 188
-#endif
 
 
 /* Hash function used with libksba. */
