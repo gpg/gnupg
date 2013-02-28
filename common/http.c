@@ -1,6 +1,6 @@
 /* http.c  -  HTTP protocol handler
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006,
- *               2009, 2012 Free Software Foundation, Inc.
+ *               2009, 2012, 2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -417,8 +417,6 @@ http_wait_response (http_t hd)
   hd->write_cookie = NULL;
 #endif
 
-  if (!(hd->flags & HTTP_FLAG_NO_SHUTDOWN))
-    shutdown (hd->sock, 1);
   hd->in_data = 0;
 
 #ifdef HTTP_USE_ESTREAM
@@ -2039,8 +2037,7 @@ main (int argc, char **argv)
   http_release_parsed_uri (uri);
   uri = NULL;
 
-  rc = http_open_document (&hd, *argv, NULL,
-                           HTTP_FLAG_NO_SHUTDOWN | HTTP_FLAG_NEED_HEADER,
+  rc = http_open_document (&hd, *argv, NULL, HTTP_FLAG_NEED_HEADER,
                            NULL, tls_session);
   if (rc)
     {

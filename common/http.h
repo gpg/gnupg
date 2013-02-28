@@ -1,6 +1,6 @@
 /* http.h  -  HTTP protocol handler
  * Copyright (C) 1999, 2000, 2001, 2003,
- *               2006, 2012 Free Software Foundation, Inc.
+ *               2006, 2012, 2013 Free Software Foundation, Inc.
  *     
  * This file is part of GnuPG.
  *
@@ -62,9 +62,8 @@ http_req_t;
 enum
   { 
     HTTP_FLAG_TRY_PROXY = 1,
-    HTTP_FLAG_NO_SHUTDOWN = 2,
-    HTTP_FLAG_LOG_RESP = 4,
-    HTTP_FLAG_NEED_HEADER = 8
+    HTTP_FLAG_LOG_RESP = 2,
+    HTTP_FLAG_NEED_HEADER = 4
   };
 
 struct http_context_s;
