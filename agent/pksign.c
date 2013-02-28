@@ -278,24 +278,104 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   if (!s_skey)
     {
       /* Divert operation to the smartcard */
-
+      gcry_sexp_t s_pkey, l;
+      const char *name;
+      size_t len;
       unsigned char *buf = NULL;
-      size_t len = 0;
+      int is_RSA = 0;
+      int is_ECDSA = 0;
+
+      /* Check keytype by public key */
+      rc = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
+      if (rc)
+        {
+          log_error ("failed to read the public key\n");
+          goto leave;
+        }
+      l = gcry_sexp_cadr (s_pkey);
+      name = gcry_sexp_nth_data (l, 0, &len);
+      if (len == 3 && !memcmp (name, "rsa", 3))
+        is_RSA = 1;
+      else if (len == 5 && !memcmp (name, "ecdsa", 5))
+        is_ECDSA = 1;
+      gcry_sexp_release (l);
+      gcry_sexp_release (s_pkey);
 
       rc = divert_pksign (ctrl,
                           ctrl->digest.value,
                           ctrl->digest.valuelen,
                           ctrl->digest.algo,
-                          shadow_info, &buf);
+                          shadow_info, &buf, &len);
       if (rc)
         {
           log_error ("smartcard signing failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
-      len = gcry_sexp_canon_len (buf, 0, NULL, NULL);
-      assert (len);
 
-      rc = gcry_sexp_sscan (&s_sig, NULL, (char*)buf, len);
+      if (is_RSA)
+        {
+          if (*buf & 0x80)
+            {
+              len++;
+              buf = xtryrealloc (buf, len);
+              if (!buf)
+                goto leave;
+
+              memmove (buf + 1, buf, len - 1);
+              *buf = 0;
+            }
+
+          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))", len, buf);
+        }
+      else if (is_ECDSA)
+        {
+          unsigned char *r_buf_allocated = NULL;
+          unsigned char *s_buf_allocated = NULL;
+          unsigned char *r_buf, *s_buf;
+          int r_buflen, s_buflen;
+
+          r_buflen = s_buflen = len/2;
+
+          if (*buf & 0x80)
+            {
+              r_buflen++;
+              r_buf_allocated = xtrymalloc (r_buflen);
+              if (!r_buf_allocated)
+                goto leave;
+
+              r_buf = r_buf_allocated;
+              memcpy (r_buf + 1, buf, len/2);
+              *r_buf = 0;
+            }
+          else
+            r_buf = buf;
+
+          if (*(buf + len/2) & 0x80)
+            {
+              s_buflen++;
+              s_buf_allocated = xtrymalloc (s_buflen);
+              if (!s_buf_allocated)
+                {
+                  xfree (r_buf_allocated);
+                  goto leave;
+                }
+
+              s_buf = s_buf_allocated;
+              memcpy (s_buf + 1, buf + len/2, len/2);
+              *s_buf = 0;
+            }
+          else
+            s_buf = buf + len/2;
+
+          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(ecdsa(r%b)(s%b)))",
+                                r_buflen, r_buf,
+                                s_buflen, s_buf);
+          xfree (r_buf_allocated);
+          xfree (s_buf_allocated);
+        }
+      else
+        rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
       xfree (buf);
       if (rc)
 	{

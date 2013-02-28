@@ -825,10 +825,6 @@ agent_card_pksign (ctrl_t ctrl,
   char *p, line[ASSUAN_LINELENGTH];
   membuf_t data;
   struct inq_needpin_s inqparm;
-  size_t len;
-  unsigned char *sigbuf;
-  size_t sigbuflen;
-  int prepend_nul;
 
   *r_buf = NULL;
   rc = start_scd (ctrl);
@@ -868,32 +864,13 @@ agent_card_pksign (ctrl_t ctrl,
 
   if (rc)
     {
+      size_t len;
+
       xfree (get_membuf (&data, &len));
       return unlock_scd (ctrl, rc);
     }
-  sigbuf = get_membuf (&data, &sigbuflen);
 
-  /* Create an S-expression from it which is formatted like this:
-     "(7:sig-val(3:rsa(1:sSIGBUFLEN:SIGBUF)))".  We better make sure
-     that this won't be interpreted as a negative number.  */
-  prepend_nul = (sigbuflen && (*sigbuf & 0x80));
-
-  *r_buflen = 21 + 11 + prepend_nul + sigbuflen + 4;
-  p = xtrymalloc (*r_buflen);
-  *r_buf = (unsigned char*)p;
-  if (!p)
-    return unlock_scd (ctrl, out_of_core ());
-  p = stpcpy (p, "(7:sig-val(3:rsa(1:s" );
-  sprintf (p, "%u:", (unsigned int)sigbuflen + prepend_nul);
-  p += strlen (p);
-  if (prepend_nul)
-    *p++ = 0;
-  memcpy (p, sigbuf, sigbuflen);
-  p += sigbuflen;
-  strcpy (p, ")))");
-  xfree (sigbuf);
-
-  assert (gcry_sexp_canon_len (*r_buf, *r_buflen, NULL, NULL));
+  *r_buf = get_membuf (&data, r_buflen);
   return unlock_scd (ctrl, 0);
 }
 
