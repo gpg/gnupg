@@ -1,7 +1,8 @@
 /* curl-shim.c - Implement a small subset of the curl API in terms of
  * the iobuf HTTP API
  *
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2012,
+ *               2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -289,6 +290,27 @@ curl_easy_perform(CURL *curl)
     }
       
   return handle_error(curl,err,errstr);
+}
+
+CURLcode
+curl_easy_getinfo(CURL *curl, CURLINFO info, ... )
+{
+  va_list ap;
+  long *var;
+
+  va_start(ap,info);
+
+  switch(info)
+    {
+    case CURLINFO_RESPONSE_CODE:
+      var=va_arg(ap,long *);
+      *var=curl->status;
+      break;
+    default:
+      break;
+    }
+
+  return handle_error(curl,CURLE_OK,NULL);
 }
 
 /* This is not the same exact set that is allowed according to

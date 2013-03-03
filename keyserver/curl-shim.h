@@ -1,5 +1,6 @@
 /* curl-shim.h
- * Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009,
+ *               2013 Free Software Foundation, Inc.
  *
  * This file is part of GNUPG.
  *
@@ -53,6 +54,11 @@ typedef enum
     CURLOPT_SRVTAG_GPG_HACK
   } CURLoption;
 
+typedef enum
+  {
+    CURLINFO_RESPONSE_CODE
+  } CURLINFO;
+
 typedef size_t (*write_func)(char *buffer,size_t size,
 			     size_t nitems,void *outstream);
 
@@ -92,6 +98,7 @@ void curl_global_cleanup(void);
 CURL *curl_easy_init(void);
 CURLcode curl_easy_setopt(CURL *curl,CURLoption option,...);
 CURLcode curl_easy_perform(CURL *curl);
+CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ... );
 void curl_easy_cleanup(CURL *curl);
 char *curl_easy_escape(CURL *curl,char *str,int len);
 #define curl_free(x) free(x)
