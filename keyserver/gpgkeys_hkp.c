@@ -1,6 +1,6 @@
 /* gpgkeys_hkp.c - talk to an HKP keyserver
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
- *               2009, 2012 Free Software Foundation, Inc.
+ *               2009, 2012, 2013 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -312,15 +312,49 @@ get_key(char *getkey)
     }
   else
     {
+      long status = 0;
+
       curl_writer_finalize(&ctx);
-      if(!ctx.flags.done)
+
+      curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &status);
+
+      if (opt->verbose > 2)
+	fprintf (console, "gpgkeys: HTTP response code is %ld\n", status);
+
+      if (status == 200)
 	{
-	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
-	  fprintf(output,"\nKEY 0x%s FAILED %d\n",
-		  getkey,KEYSERVER_KEY_NOT_FOUND);
+	  if (!ctx.flags.done)
+	    {
+	      if (ctx.flags.begun)
+		{
+		  fprintf (console, "gpgkeys: key %s partially retrieved"
+			   " (probably corrupt)\n", getkey);
+		  fprintf (output, "\nKEY 0x%s FAILED %d\n",
+			   getkey, KEYSERVER_KEY_INCOMPLETE);
+		}
+	      else
+		{
+		  fprintf (console, "gpgkeys: key %s can't be retrieved\n",
+			   getkey);
+		  fprintf (output, "\nKEY 0x%s FAILED %d\n",
+			   getkey, KEYSERVER_GENERAL_ERROR);
+		}
+	    }
+	  else
+	    fprintf (output, "\nKEY 0x%s END\n", getkey);
+	}
+      else if (status == 404)
+	{
+	  fprintf (console, "gpgkeys: key %s not found on keyserver\n", getkey);
+	  fprintf (output, "\nKEY 0x%s FAILED %d\n",
+		  getkey, KEYSERVER_KEY_NOT_FOUND);
 	}
       else
-	fprintf(output,"\nKEY 0x%s END\n",getkey);
+	{
+	  fprintf (console, "gpgkeys: key %s can't be retrieved\n", getkey);
+	  fprintf (output, "\nKEY 0x%s FAILED %d\n",
+		  getkey, KEYSERVER_GENERAL_ERROR);
+	}
     }
 
   return KEYSERVER_OK;
@@ -383,16 +417,47 @@ get_name(const char *getkey)
     }
   else
     {
+      long status = 0;
+
       curl_writer_finalize(&ctx);
-      if(!ctx.flags.done)
+
+      curl_easy_getinfo (curl, CURLINFO_RESPONSE_CODE, &status);
+
+      if (opt->verbose > 2)
+	fprintf (console, "gpgkeys: HTTP response code is %ld\n", status);
+
+      if (status == 200)
 	{
-	  fprintf(console,"gpgkeys: key %s not found on keyserver\n",getkey);
-	  ret=KEYSERVER_KEY_NOT_FOUND;
+	  if (!ctx.flags.done)
+	    {
+	      if (ctx.flags.begun)
+		{
+		  fprintf (console, "gpgkeys: key %s partially retrieved"
+			   " (probably corrupt)\n", getkey);
+		  ret = KEYSERVER_KEY_INCOMPLETE;
+		}
+	      else
+		{
+		  fprintf (console, "gpgkeys: key %s can't be retrieved\n",
+			   getkey);
+		  ret = KEYSERVER_GENERAL_ERROR;
+		}
+	    }
+	  else
+	    {
+	      fprintf (output, "\nNAME %s END\n", getkey);
+	      ret = KEYSERVER_OK;
+	    }
+	}
+      else if (status == 404)
+	{
+	  fprintf (console, "gpgkeys: key %s not found on keyserver\n", getkey);
+	  ret = KEYSERVER_KEY_NOT_FOUND;
 	}
       else
 	{
-	  fprintf(output,"\nNAME %s END\n",getkey);
-	  ret=KEYSERVER_OK;
+	  fprintf (console, "gpgkeys: key %s can't be retrieved\n", getkey);
+	  ret = KEYSERVER_GENERAL_ERROR;
 	}
     }
 
