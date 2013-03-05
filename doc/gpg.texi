@@ -2418,7 +2418,7 @@ check. @code{value} may be any printable string; it will be encoded in
 UTF8, so you should check that your @option{--display-charset} is set
 correctly. If you prefix @code{name} with an exclamation mark (!), the
 notation data will be flagged as critical
-(rfc2440:5.2.3.15). @option{--sig-notation} sets a notation for data
+(rfc4880:5.2.3.16). @option{--sig-notation} sets a notation for data
 signatures. @option{--cert-notation} sets a notation for key signatures
 (certifications). @option{--set-notation} sets both.
 
@@ -2440,7 +2440,7 @@ meaningful when using the OpenPGP smartcard.
 @opindex sig-policy-url
 @opindex cert-policy-url
 @opindex set-policy-url
-Use @code{string} as a Policy URL for signatures (rfc2440:5.2.3.19).  If
+Use @code{string} as a Policy URL for signatures (rfc4880:5.2.3.20).  If
 you prefix it with an exclamation mark (!), the policy URL packet will
 be flagged as critical. @option{--sig-policy-url} sets a policy url for
 data signatures. @option{--cert-policy-url} sets a policy url for key
