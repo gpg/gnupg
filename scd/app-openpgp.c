@@ -3416,14 +3416,23 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       memcpy (data + sizeof b ## _prefix, indata, indatalen); \
     }
 
-  X(SHA1,   sha1,   1)
-  else X(RMD160, rmd160, 1)
-  else X(SHA224, sha224, app->app_local->extcap.is_v2)
-  else X(SHA256, sha256, app->app_local->extcap.is_v2)
-  else X(SHA384, sha384, app->app_local->extcap.is_v2)
-  else X(SHA512, sha512, app->app_local->extcap.is_v2)
+  if (use_auth
+      || app->app_local->keyattr[use_auth? 2: 0].key_type == KEY_TYPE_RSA)
+    {
+      X(SHA1,   sha1,   1)
+      else X(RMD160, rmd160, 1)
+      else X(SHA224, sha224, app->app_local->extcap.is_v2)
+      else X(SHA256, sha256, app->app_local->extcap.is_v2)
+      else X(SHA384, sha384, app->app_local->extcap.is_v2)
+      else X(SHA512, sha512, app->app_local->extcap.is_v2)
+      else
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    }
   else
-    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    {
+      datalen = indatalen;
+      memcpy (data, indata, indatalen);
+    }
 #undef X
 
   /* Redirect to the AUTH command if asked to. */
@@ -3514,6 +3523,14 @@ do_auth (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
   if (indatalen > 101) /* For a 2048 bit key. */
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECDSA
+      && (indatalen == 51 || indatalen == 67 || indatalen == 83)
+    {
+      const char *p = (const char *)indata + 19;
+      indata = p;
+      indatalen -= 19;
+    }
 
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!strcmp (keyidstr, "OPENPGP.3"))
