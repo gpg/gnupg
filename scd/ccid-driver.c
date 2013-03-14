@@ -2840,7 +2840,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
   /* The maximum length for a short APDU T=1 block is 261.  For an
      extended APDU T=1 block the maximum length 65544; however
      extended APDU exchange level is not fully supported yet.  */
-  if (apdulen > 289)
+  if (apdulen > sizeof (send_buffer) - 10)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
   
   msg[0] = PC_to_RDR_XfrBlock;
