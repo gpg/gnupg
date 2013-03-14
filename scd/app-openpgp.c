@@ -3525,7 +3525,7 @@ do_auth (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECDSA
-      && (indatalen == 51 || indatalen == 67 || indatalen == 83)
+      && (indatalen == 51 || indatalen == 67 || indatalen == 83))
     {
       const char *p = (const char *)indata + 19;
       indata = p;
