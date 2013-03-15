@@ -62,9 +62,14 @@
 
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */
 #define PUBKEY_USAGE_ENC     GCRY_PK_USAGE_ENCR  /* Good for encryption. */
-#define PUBKEY_USAGE_CERT    GCRY_PK_USAGE_CERT  /* Also good to certify keys. */
+#define PUBKEY_USAGE_CERT    GCRY_PK_USAGE_CERT  /* Also good to certify keys.*/
 #define PUBKEY_USAGE_AUTH    GCRY_PK_USAGE_AUTH  /* Good for authentication. */
 #define PUBKEY_USAGE_UNKNOWN GCRY_PK_USAGE_UNKN  /* Unknown usage flag. */
+#define PUBKEY_USAGE_NONE    256                 /* No usage given. */
+#if  (GCRY_PK_USAGE_SIGN | GCRY_PK_USAGE_ENCR | GCRY_PK_USAGE_CERT \
+      | GCRY_PK_USAGE_AUTH | GCRY_PK_USAGE_UNKN) >= 256
+# error Please choose another value for PUBKEY_USAGE_NONE
+#endif
 
 #define DIGEST_ALGO_MD5       /*  1 */ GCRY_MD_MD5
 #define DIGEST_ALGO_SHA1      /*  2 */ GCRY_MD_SHA1
