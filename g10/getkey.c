@@ -1494,13 +1494,19 @@ parse_key_usage(PKT_signature *sig)
 
       if(flags)
 	key_usage |= PUBKEY_USAGE_UNKNOWN;
+
+      if (!key_usage)
+	key_usage |= PUBKEY_USAGE_NONE;
     }
+  else if (p) /* Key flags of length zero.  */
+    key_usage |= PUBKEY_USAGE_NONE;
 
   /* We set PUBKEY_USAGE_UNKNOWN to indicate that this key has a
      capability that we do not handle.  This serves to distinguish
      between a zero key usage which we handle as the default
      capabilities for that algorithm, and a usage that we do not
-     handle. */
+     handle.  Likewise we use PUBKEY_USAGE_NONE to indicate that
+     key_flags have been given but they do not specify any usage.  */
 
   return key_usage;
 }
