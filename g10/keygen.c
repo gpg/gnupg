@@ -210,9 +210,6 @@ do_add_key_flags (PKT_signature *sig, unsigned int use)
     if (use & PUBKEY_USAGE_AUTH)
         buf[0] |= 0x20;
 
-    if (!buf[0])
-        return;
-
     build_sig_subpkt (sig, SIGSUBPKT_KEY_FLAGS, buf, 1);
 }
 
