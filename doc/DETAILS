@@ -161,6 +161,7 @@ described here.
     - s :: Sign
     - c :: Certify
     - a :: Authentication
+    - ? :: Unknown capability
 
     A key may have any combination of them in any order.  In addition
     to these letters, the primary key has uppercase versions of the
