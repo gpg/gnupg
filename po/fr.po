@@ -10,10 +10,10 @@ msgstr ""
 "PO-Revision-Date: 2012-08-21 15:44-0400\n"
 "Last-Translator: David Prévot <david@tilapin.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
-"Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Lokalize 1.4\n"
 
@@ -97,12 +97,14 @@ msgstr "Phrase de passe"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "les clefs SSH plus grandes que %d bits ne sont pas prises en charge\n"
 
-#, c-format
-msgid "can't create '%s': %s\n"
+#, fuzzy, c-format
+#| msgid "can't create '%s': %s\n"
+msgid "can't create `%s': %s\n"
 msgstr "impossible de créer « %s » : %s\n"
 
-#, c-format
-msgid "can't open '%s': %s\n"
+#, fuzzy, c-format
+#| msgid "can't open '%s': %s\n"
+msgid "can't open `%s': %s\n"
 msgstr "impossible d'ouvrir « %s » : %s\n"
 
 #, c-format
@@ -152,11 +154,11 @@ msgstr "Veuillez répéter cette phrase de passe"
 
 #, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Veuillez entrer une phrase de passe pour protéger la clef secrète%%0A   %s%%"
-"0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
+"Veuillez entrer une phrase de passe pour protéger la clef secrète%%0A   %s"
+"%%0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
 
 msgid "does not match - try again"
 msgstr "ne correspond pas — veuillez réessayer"
@@ -182,8 +184,9 @@ msgstr "CDP"
 msgid "Reset Code"
 msgstr "Code de réinitialisation"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AUtilisez le pavé numérique du lecteur en entrée."
 
 msgid "Repeat this Reset Code"
@@ -274,8 +277,8 @@ msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
-"Aucune phrase de passe n'a été entrée — c'est souvent une mauvaise idée.%"
-"0AVeuillez confirmer que vous ne voulez aucune protection pour la clef."
+"Aucune phrase de passe n'a été entrée — c'est souvent une mauvaise idée."
+"%0AVeuillez confirmer que vous ne voulez aucune protection pour la clef."
 
 msgid "Yes, protection is not needed"
 msgstr "Oui, aucune protection n'est nécessaire"
@@ -965,6 +968,10 @@ msgstr "Dirmngr utilisable"
 msgid "No help available for '%s'."
 msgstr "Pas d'aide disponible pour « %s »."
 
+#, c-format
+msgid "can't open '%s': %s\n"
+msgstr "impossible d'ouvrir « %s » : %s\n"
+
 msgid "ignoring garbage line"
 msgstr "ligne inutile ignorée"
 
@@ -1053,6 +1060,10 @@ msgstr "impossible de créer le fichier temporaire « %s » : %s\n"
 #, c-format
 msgid "error writing to '%s': %s\n"
 msgstr "erreur d'écriture sur « %s » : %s\n"
+
+#, c-format
+msgid "can't create '%s': %s\n"
+msgstr "impossible de créer « %s » : %s\n"
 
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
@@ -1155,6 +1166,13 @@ msgstr "Attention : des données de notation incorrectes ont été trouvées.\n
 
 msgid "not human readable"
 msgstr "non lisible par l'utilisateur"
+
+#, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr "échec de transfert de la demande %s au client\n"
+
+msgid "Enter passphrase: "
+msgstr "Entrez la phrase de passe : "
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1359,6 +1377,14 @@ msgstr "   (3) Clef d'authentification\n"
 msgid "Invalid selection.\n"
 msgstr "Choix incorrect.\n"
 
+msgid "Please select where to store the key:\n"
+msgstr "Veuillez sélectionner l'endroit où stocker la clef :\n"
+
+#, fuzzy, c-format
+#| msgid "read failed: %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "échec de read : %s\n"
+
 msgid "quit this menu"
 msgstr "quitter ce menu"
 
@@ -1466,7 +1492,8 @@ msgid "there is a secret key for public key \"%s\"!\n"
 msgstr "il y a une clef secrète pour la clef publique « %s ».\n"
 
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
-msgstr "utiliser d'abord l'option « --delete-secret-keys » pour la supprimer.\n"
+msgstr ""
+"utiliser d'abord l'option « --delete-secret-keys » pour la supprimer.\n"
 
 #, c-format
 msgid "error creating passphrase: %s\n"
@@ -1630,9 +1657,6 @@ msgstr " — ignoré"
 
 msgid "WARNING: nothing exported\n"
 msgstr "Attention : rien n'a été exporté\n"
-
-msgid "too many entries in pk cache - disabled\n"
-msgstr "trop d'entrées dans le cache de clefs publiques — désactivé\n"
 
 msgid "[User ID not found]"
 msgstr "[identité introuvable]"
@@ -1988,6 +2012,11 @@ msgstr "Remarque : %s n'est pas pour une utilisation normale.\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "« %s » n'est pas une date d'expiration de signature valable\n"
+
+#, fuzzy, c-format
+#| msgid "Invalid subject name '%s'\n"
+msgid "invalid pinentry mode '%s'\n"
+msgstr "Nom de sujet « %s » incorrect\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -2667,8 +2696,16 @@ msgid "key %s: direct key signature added\n"
 msgstr "clef %s : ajout de la signature directe de clef\n"
 
 #, c-format
+msgid "error creating keybox '%s': %s\n"
+msgstr "erreur de création du trousseau local « %s » : %s\n"
+
+#, c-format
 msgid "error creating keyring '%s': %s\n"
 msgstr "erreur de création du porte-clefs « %s » : %s\n"
+
+#, c-format
+msgid "keybox '%s' created\n"
+msgstr "le trousseau local « %s » a été créé\n"
 
 #, c-format
 msgid "keyring '%s' created\n"
@@ -5578,7 +5615,9 @@ msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr ""
 "impossible d'accéder à %s — la carte OpenPGP n'est peut-être pas valable\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr ""
 "||Veuillez entrer votre code personnel sur le pavé numérique du lecteur"
 
@@ -5612,11 +5651,16 @@ msgstr "ne pas utiliser le pilote CCID interne"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|déconnecter la carte après N secondes d'inactivité "
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "ne pas utiliser de pavé numérique du lecteur"
 
 msgid "deny the use of admin card commands"
 msgstr "refus d'utiliser les commandes d'administration de la carte"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Utilisation : scdaemon [options] (-h pour l'aide)"
@@ -5644,10 +5688,6 @@ msgstr "gestionnaire pour le descripteur %d terminé\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caractère %02x incorrect en radix64, ignoré\n"
-
-#, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr "échec de transfert de la demande %s au client\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6278,16 +6318,8 @@ msgstr "erreur d'importation du certificat : %s\n"
 msgid "error reading input: %s\n"
 msgstr "erreur de lecture de l'entrée : %s\n"
 
-#, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "erreur de création du trousseau local « %s » : %s\n"
-
 msgid "you may want to start the gpg-agent first\n"
 msgstr "vous pourriez d'abord démarrer l'agent GPG\n"
-
-#, c-format
-msgid "keybox '%s' created\n"
-msgstr "le trousseau local « %s » a été créé\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "impossible d'obtenir l'empreinte\n"
@@ -6696,8 +6728,8 @@ msgstr ""
 #, c-format
 msgid "problem reading cache record for S/N %s: %s\n"
 msgstr ""
-"problème de lecture d'enregistrement de cache pour le numéro de série %s : %"
-"s\n"
+"problème de lecture d'enregistrement de cache pour le numéro de série %s : "
+"%s\n"
 
 #, c-format
 msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
@@ -6745,8 +6777,8 @@ msgstr ""
 #, c-format
 msgid "update times of this CRL: this=%s next=%s\n"
 msgstr ""
-"dates de mises à jour de la liste de révocations de certificats : celle-ci=%"
-"s prochaine=%s\n"
+"dates de mises à jour de la liste de révocations de certificats : celle-ci="
+"%s prochaine=%s\n"
 
 msgid "nextUpdate not given; assuming a validity period of one day\n"
 msgstr "nextUpdate non donné ; période de validité supposée d'un jour\n"
@@ -6774,8 +6806,8 @@ msgstr ""
 #, c-format
 msgid "CRL signature verification failed: %s\n"
 msgstr ""
-"échec de vérification de signature de liste de révocations de certificats : %"
-"s\n"
+"échec de vérification de signature de liste de révocations de certificats : "
+"%s\n"
 
 #, c-format
 msgid "error checking validity of CRL issuer certificate: %s\n"
@@ -6836,8 +6868,8 @@ msgstr ""
 #, c-format
 msgid "error reading CRL extensions: %s\n"
 msgstr ""
-"erreur de lecture des extensions de liste de révocations de certificats : %"
-"s\n"
+"erreur de lecture des extensions de liste de révocations de certificats : "
+"%s\n"
 
 #, c-format
 msgid "creating cache file '%s'\n"
@@ -6857,8 +6889,8 @@ msgstr ""
 #, c-format
 msgid "Begin CRL dump (retrieved via %s)\n"
 msgstr ""
-"Démarrage du vidage de liste de révocations de certificats (récupérée par %"
-"s)\n"
+"Démarrage du vidage de liste de révocations de certificats (récupérée par "
+"%s)\n"
 
 msgid ""
 " ERROR: The CRL will not be used because it was still too old after an "
@@ -7196,7 +7228,8 @@ msgstr "les deux-points ne sont pas permis avec dans le nom de socket\n"
 #, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
 msgstr ""
-"échec de récupération de liste de révocations de certificats sur « %s » : %s\n"
+"échec de récupération de liste de révocations de certificats sur « %s » : "
+"%s\n"
 
 #, c-format
 msgid "processing CRL from '%s' failed: %s\n"
@@ -8060,14 +8093,14 @@ msgstr ""
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "trop d'entrées dans le cache de clefs publiques — désactivé\n"
+
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "impossible d'allouer la gestion de base de clefs\n"
 
 #~ msgid "can't fdopen pipe for reading: %s\n"
 #~ msgstr "impossible d'ouvrir un tube en lecture avec fdopen : %s\n"
-
-#~ msgid "Please select where to store the key:\n"
-#~ msgstr "Veuillez sélectionner l'endroit où stocker la clef :\n"
 
 #~ msgid "unknown key protection algorithm\n"
 #~ msgstr "algorithme de protection de clef inconnu\n"
@@ -8703,9 +8736,6 @@ msgstr ""
 
 #~ msgid "can't query passphrase in batch mode\n"
 #~ msgstr "impossible de demander la phrase de passe en mode automatique\n"
-
-#~ msgid "Enter passphrase: "
-#~ msgstr "Entrez la phrase de passe : "
 
 #~ msgid "Repeat passphrase: "
 #~ msgstr "Répétez la phrase de passe : "

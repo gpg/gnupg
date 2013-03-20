@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2012-08-24 10:19+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -98,12 +99,14 @@ msgstr "Passphrase"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
 
-#, c-format
-msgid "can't create '%s': %s\n"
+#, fuzzy, c-format
+#| msgid "can't create '%s': %s\n"
+msgid "can't create `%s': %s\n"
 msgstr "'%s' kann nicht erzeugt werden: %s\n"
 
-#, c-format
-msgid "can't open '%s': %s\n"
+#, fuzzy, c-format
+#| msgid "can't open '%s': %s\n"
+msgid "can't open `%s': %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
 
 #, c-format
@@ -135,8 +138,8 @@ msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
 msgstr ""
-"Ein SSH Processs möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  (%s)%%"
-"0AErlauben Sie dies?"
+"Ein SSH Processs möchte folgenden Schlüssel verwenden:%%0A  %s%%0A  "
+"(%s)%%0AErlauben Sie dies?"
 
 msgid "Allow"
 msgstr "Erlauben"
@@ -147,16 +150,16 @@ msgstr "Verweigern"
 #, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr ""
-"Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  (%c)%%"
-"0Aein."
+"Bitte geben Sie die Passphrase für den SSH-Schlüssel%%0A  %F%%0A  "
+"(%c)%%0Aein."
 
 msgid "Please re-enter this passphrase"
 msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
 #, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen\n"
 "Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
@@ -188,8 +191,9 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Rückstellcode"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AZur Eingabe die Tastatur des Kartenlesers verwenden."
 
 msgid "Repeat this Reset Code"
@@ -608,8 +612,9 @@ msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
-"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%"
-"0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\"."
+"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s"
+"\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja"
+"\"."
 
 msgid "Yes"
 msgstr "Ja"
@@ -965,6 +970,10 @@ msgstr "Dirmngr benutzbar"
 msgid "No help available for '%s'."
 msgstr "Keine Hilfe für '%s' vorhanden."
 
+#, c-format
+msgid "can't open '%s': %s\n"
+msgstr "'%s' kann nicht geöffnet werden: %s\n"
+
 msgid "ignoring garbage line"
 msgstr "Zeile mit nicht identifizierten Zeichen wird ignoriert"
 
@@ -1053,6 +1062,10 @@ msgstr "Die temporäre Datei `%s' kann nicht erstellt werden: %s\n"
 #, c-format
 msgid "error writing to '%s': %s\n"
 msgstr "Fehler beim Schreiben von %s: %s\n"
+
+#, c-format
+msgid "can't create '%s': %s\n"
+msgstr "'%s' kann nicht erzeugt werden: %s\n"
 
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
@@ -1155,6 +1168,15 @@ msgstr "WARNUNG: Ungültige \"Notation\"-Daten gefunden\n"
 
 msgid "not human readable"
 msgstr "nicht als Klartext darstellbar"
+
+#, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr "Die %s \"inquiry\" konnte nicht an den Client weitergeleitet werden\n"
+
+#, fuzzy
+#| msgid "Enter passphrase\n"
+msgid "Enter passphrase: "
+msgstr "Geben Sie die Passphrase ein\n"
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1359,6 +1381,14 @@ msgstr "   (3) Authentisierungs-Schlüssel\n"
 msgid "Invalid selection.\n"
 msgstr "Ungültige Auswahl.\n"
 
+msgid "Please select where to store the key:\n"
+msgstr "Wählen Sie den Speicherort für den Schlüssel:\n"
+
+#, fuzzy, c-format
+#| msgid "read failed: %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "Lesen schlug fehl: %s\n"
+
 msgid "quit this menu"
 msgstr "Menü verlassen"
 
@@ -1509,8 +1539,8 @@ msgstr ""
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
-"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %"
-"s (%d) verletzt die Empfängervoreinstellungen\n"
+"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
+"%s (%d) verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
 msgid ""
@@ -1629,9 +1659,6 @@ msgstr " - übersprungen"
 
 msgid "WARNING: nothing exported\n"
 msgstr "WARNUNG: Nichts exportiert\n"
-
-msgid "too many entries in pk cache - disabled\n"
-msgstr "zu viele Einträge im pk-Cache - abgeschaltet\n"
 
 msgid "[User ID not found]"
 msgstr "[User-ID nicht gefunden]"
@@ -1957,8 +1984,8 @@ msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
-"Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist %"
-"s)\n"
+"Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist "
+"%s)\n"
 
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
@@ -1967,6 +1994,11 @@ msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 #, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "`%s' ist kein gültiges Signaturablaufdatum\n"
+
+#, fuzzy, c-format
+#| msgid "Invalid subject name '%s'\n"
+msgid "invalid pinentry mode '%s'\n"
+msgstr "Ungültiger Subjekt-Name `%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -2658,8 +2690,16 @@ msgid "key %s: direct key signature added\n"
 msgstr "Schlüssel %s: \"direct-key\"-Signaturen hinzugefügt\n"
 
 #, c-format
+msgid "error creating keybox '%s': %s\n"
+msgstr "Die \"Keybox\" `%s' konnte nicht erstellt werden: %s\n"
+
+#, c-format
 msgid "error creating keyring '%s': %s\n"
 msgstr "Fehler beim Erzeugen des Schlüsselbundes `%s': %s\n"
+
+#, c-format
+msgid "keybox '%s' created\n"
+msgstr "Die \"Keybox\" `%s' wurde erstellt\n"
 
 #, c-format
 msgid "keyring '%s' created\n"
@@ -5272,8 +5312,8 @@ msgstr "%d marginal-needed, %d complete-needed, %s Vertrauensmodell\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"Tiefe: %d  gültig: %3d  signiert: %3d  Vertrauen: %d-, %dq, %dn, %dm, %df, %"
-"du\n"
+"Tiefe: %d  gültig: %3d  signiert: %3d  Vertrauen: %d-, %dq, %dn, %dm, %df, "
+"%du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5528,7 +5568,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Kann auf %s nicht zugreifen - ungültige OpenPGP-Karte?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Bitte die PIN auf der Tastatur des Kartenlesers eingeben"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5561,11 +5603,16 @@ msgstr "Den internen CCID Treiber nicht benutzen"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|Schalte die Karte nach N Sekunden Inaktivität ab"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "Die Tastatur des Kartenlesers nicht benutzen"
 
 msgid "deny the use of admin card commands"
 msgstr "Verweigere die Benutzung von \"Admin\"-Befehlen"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Aufruf: scdaemon [Optionen] (-h für Hilfe)"
@@ -5593,10 +5640,6 @@ msgstr "Handhabungsroutine für den fd %d beendet\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
-
-#, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr "Die %s \"inquiry\" konnte nicht an den Client weitergeleitet werden\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -6213,16 +6256,8 @@ msgstr "Fehler beim Importieren des Zertifikats: %s\n"
 msgid "error reading input: %s\n"
 msgstr "Fehler beim Lesen der Eingabe: %s\n"
 
-#, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "Die \"Keybox\" `%s' konnte nicht erstellt werden: %s\n"
-
 msgid "you may want to start the gpg-agent first\n"
 msgstr "Sie sollten zuerst den gpg-agent starten\n"
-
-#, c-format
-msgid "keybox '%s' created\n"
-msgstr "Die \"Keybox\" `%s' wurde erstellt\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "Kann den Fingerprint nicht ermitteln\n"
@@ -6339,8 +6374,8 @@ msgstr "Dies ist eine qualifizierte Signatur.\n"
 #, c-format
 msgid "can't initialize certificate cache lock: %s\n"
 msgstr ""
-"Sperre für den Zertifikatzwischenspeicher kann nicht initialisiert werden: %"
-"s\n"
+"Sperre für den Zertifikatzwischenspeicher kann nicht initialisiert werden: "
+"%s\n"
 
 #, c-format
 msgid "can't acquire read lock on the certificate cache: %s\n"
@@ -6350,8 +6385,8 @@ msgstr ""
 #, c-format
 msgid "can't acquire write lock on the certificate cache: %s\n"
 msgstr ""
-"Schreibsperre für den Zertifikatzwischenspeicher kann nicht gesetzt werden: %"
-"s\n"
+"Schreibsperre für den Zertifikatzwischenspeicher kann nicht gesetzt werden: "
+"%s\n"
 
 #, c-format
 msgid "can't release lock on the certificate cache: %s\n"
@@ -7949,6 +7984,9 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "zu viele Einträge im pk-Cache - abgeschaltet\n"
+
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "Ein keyDB Handle konnte nicht bereitgestellt werden\n"
 
@@ -8094,9 +8132,6 @@ msgstr ""
 
 #~ msgid "can't fdopen pipe for reading: %s\n"
 #~ msgstr "Pipe kann nicht zum Lesen \"fdopen\"t werden: %s\n"
-
-#~ msgid "Please select where to store the key:\n"
-#~ msgstr "Wählen Sie den Speicherort für den Schlüssel:\n"
 
 #~ msgid "secret key already stored on a card\n"
 #~ msgstr "Geheimer Schlüssel ist bereits auf einer Karte gespeichert\n"
