@@ -154,7 +154,5 @@ tools/mk-tdata
 tools/symcryptrun
 tools/watchgnupg
 tools/gpgtar
-
-
-x.parm
 private-keys-v1.d/
+x.parm

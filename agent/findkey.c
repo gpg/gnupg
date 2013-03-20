@@ -828,7 +828,7 @@ agent_public_key_from_file (ctrl_t ctrl,
   int i, idx;
   gcry_sexp_t s_skey;
   char algoname[6];
-  char elems[6];
+  char elems[7];
   gcry_sexp_t uri_sexp, comment_sexp;
   const char *uri, *comment;
   size_t uri_length, comment_length;

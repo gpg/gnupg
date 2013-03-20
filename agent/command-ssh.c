@@ -1247,6 +1247,8 @@ ssh_signature_encoder_ecdsa (ssh_key_type_spec_t *spec,
   gpg_error_t err;
   int i;
 
+  (void)spec;
+
   innerlen = 0;
   for (i = 0; i < DIM(data); i++)
     {

@@ -607,6 +607,10 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+  parm.ctx = agent_ctx;
 
   snprintf (line, DIM(line)-1, "KEYTOCARD %s%s %s OPENPGP.%d %s",
             force?"--force ": "", hexgrip, serialno, keyno, timestamp);
@@ -616,8 +620,8 @@ agent_keytocard (const char *hexgrip, int keyno, int force,
   if (rc)
     return rc;
 
-  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb,
-                        NULL, NULL, NULL);
+  rc = assuan_transact (agent_ctx, line, NULL, NULL, default_inq_cb, &parm,
+                        NULL, NULL);
   if (rc)
     return rc;
 
@@ -721,7 +725,7 @@ inq_writecert_parms (void *opaque, const char *line)
   int rc;
   struct writecert_parm_s *parm = opaque;
 
-  if (!strncmp (line, "CERTDATA", 8) && (line[8]==' '||!line[8]))
+  if (has_leading_keyword (line, "CERTDATA"))
     {
       rc = assuan_send_data (parm->dflt->ctx,
                              parm->certdata, parm->certdatalen);
@@ -774,7 +778,7 @@ inq_writekey_parms (void *opaque, const char *line)
   int rc;
   struct writekey_parm_s *parm = opaque;
 
-  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+  if (has_leading_keyword (line, "KEYDATA"))
     {
       rc = assuan_send_data (parm->dflt->ctx, parm->keydata, parm->keydatalen);
     }
@@ -1467,9 +1471,9 @@ keyinfo_status_cb (void *opaque, const char *line)
   char **serialno = opaque;
   const char *s, *s2;
 
-  if (!strncmp (line, "KEYINFO ", 8) && !*serialno)
+  if ((s = has_leading_keyword (line, "KEYINFO ")) && !*serialno)
     {
-      s = strchr (line+8, ' ');
+      s = strchr (s, ' ');
       if (s && s[1] == 'T' && s[2] == ' ' && s[3])
         {
           s += 3;
@@ -1571,7 +1575,7 @@ inq_genkey_parms (void *opaque, const char *line)
   struct genkey_parm_s *parm = opaque;
   gpg_error_t err;
 
-  if (!strncmp (line, "KEYPARAM", 8) && (line[8]==' '||!line[8]))
+  if (has_leading_keyword (line, "KEYPARAM"))
     {
       err = assuan_send_data (parm->dflt->ctx,
                               parm->keyparms, strlen (parm->keyparms));
@@ -1798,7 +1802,7 @@ inq_ciphertext_cb (void *opaque, const char *line)
   struct cipher_parm_s *parm = opaque;
   int rc;
 
-  if (!strncmp (line, "CIPHERTEXT", 10) && (line[10]==' '||!line[10]))
+  if (has_leading_keyword (line, "CIPHERTEXT"))
     {
       assuan_begin_confidential (parm->ctx);
       rc = assuan_send_data (parm->dflt->ctx,
@@ -1980,7 +1984,7 @@ inq_import_key_parms (void *opaque, const char *line)
   struct import_key_parm_s *parm = opaque;
   gpg_error_t err;
 
-  if (!strncmp (line, "KEYDATA", 7) && (line[7]==' '||!line[7]))
+  if (has_leading_keyword (line, "KEYDATA"))
     {
       err = assuan_send_data (parm->dflt->ctx, parm->key, parm->keylen);
     }

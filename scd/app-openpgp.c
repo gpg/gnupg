@@ -116,6 +116,16 @@ static struct {
 };
 
 
+/* Type of keys.  */
+typedef enum
+  {
+    KEY_TYPE_ECDH,
+    KEY_TYPE_ECDSA,
+    KEY_TYPE_RSA,
+  }
+key_type_t;
+
+
 /* The format of RSA private keys.  */
 typedef enum
   {
@@ -126,6 +136,15 @@ typedef enum
     RSA_CRT_N
   }
 rsa_key_format_t;
+
+
+/* Elliptic Curves.  */
+enum
+  {
+    CURVE_NIST_P256,
+    CURVE_NIST_P384,
+    CURVE_NIST_P521
+  };
 
 
 /* One cache item for DOs.  */
@@ -199,15 +218,27 @@ struct app_local_s {
     int fixedlen_admin;
   } pinpad;
 
-  struct
-  {
-    unsigned int n_bits;     /* Size of the modulus in bits.  The rest
-                                of this strucuire is only valid if
-                                this is not 0.  */
-    unsigned int e_bits;     /* Size of the public exponent in bits.  */
-    rsa_key_format_t format;
-  } keyattr[3];
-
+   struct
+   {
+    key_type_t key_type;
+    union {
+      struct {
+        unsigned int n_bits;     /* Size of the modulus in bits.  The rest
+                                    of this strucuire is only valid if
+                                    this is not 0.  */
+        unsigned int e_bits;     /* Size of the public exponent in bits.  */
+        rsa_key_format_t format;
+      } rsa;
+      struct {
+        int curve;
+      } ecdsa;
+      struct {
+        int curve;
+        int hashalgo;
+        int cipheralgo;
+      } ecdh;
+    };
+   } keyattr[3];
 };
 
 
@@ -845,18 +876,59 @@ send_key_data (ctrl_t ctrl, const char *name,
 
 
 static void
+get_ecc_key_parameters (int curve, int *r_n_bits, const char **r_curve_oid)
+{
+  if (curve == CURVE_NIST_P256)
+    {
+      *r_n_bits = 256;
+      *r_curve_oid = "1.2.840.10045.3.1.7";
+    }
+  else if (curve == CURVE_NIST_P384)
+    {
+      *r_n_bits = 384;
+      *r_curve_oid = "1.3.132.0.34";
+    }
+  else
+    {
+      *r_n_bits = 521;
+      *r_curve_oid = "1.3.132.0.35";
+    }
+}
+
+static void
 send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int number)
 {
   char buffer[200];
+  int n_bits;
+  const char *curve_oid;
 
   assert (number >=0 && number < DIM(app->app_local->keyattr));
 
-  /* We only support RSA thus the algo identifier is fixed to 1.  */
-  snprintf (buffer, sizeof buffer, "%d 1 %u %u %d",
-            number+1,
-            app->app_local->keyattr[number].n_bits,
-            app->app_local->keyattr[number].e_bits,
-            app->app_local->keyattr[number].format);
+  if (app->app_local->keyattr[number].key_type == KEY_TYPE_RSA)
+    snprintf (buffer, sizeof buffer, "%d 1 %u %u %d",
+              number+1,
+              app->app_local->keyattr[number].rsa.n_bits,
+              app->app_local->keyattr[number].rsa.e_bits,
+              app->app_local->keyattr[number].rsa.format);
+  else if (app->app_local->keyattr[number].key_type == KEY_TYPE_ECDSA)
+    {
+      get_ecc_key_parameters (app->app_local->keyattr[number].ecdsa.curve,
+                              &n_bits, &curve_oid);
+      snprintf (buffer, sizeof buffer, "%d 19 %u %s",
+                number+1, n_bits, curve_oid);
+    }
+  else if (app->app_local->keyattr[number].key_type == KEY_TYPE_ECDH)
+    {
+      get_ecc_key_parameters (app->app_local->keyattr[number].ecdh.curve,
+                              &n_bits, &curve_oid);
+      snprintf (buffer, sizeof buffer, "%d 18 %u %s %d %d",
+                number+1, n_bits, curve_oid,
+                app->app_local->keyattr[number].ecdh.hashalgo,
+                app->app_local->keyattr[number].ecdh.cipheralgo);
+    }
+  else
+    snprintf (buffer, sizeof buffer, "0 0 UNKNOWN");
+
   send_status_direct (ctrl, keyword, buffer);
 }
 
@@ -1154,6 +1226,18 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
 #endif /*GNUPG_MAJOR_VERSION > 1*/
 
 
+static const char *
+get_curve_name (int curve)
+{
+  if (curve == CURVE_NIST_P256)
+    return "NIST P-256";
+  else if (curve == CURVE_NIST_P384)
+    return "NIST P-384";
+  else
+    return "NIST P-521";
+}
+
+
 /* Get the public key for KEYNO and store it as an S-expresion with
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
@@ -1171,11 +1255,14 @@ get_public_key (app_t app, int keyno)
   gpg_error_t err = 0;
   unsigned char *buffer;
   const unsigned char *keydata, *m, *e;
-  size_t buflen, keydatalen, mlen, elen;
+  size_t buflen, keydatalen;
+  size_t mlen = 0;
+  size_t elen = 0;
   unsigned char *mbuf = NULL;
   unsigned char *ebuf = NULL;
   char *keybuf = NULL;
-  char *keybuf_p;
+  gcry_sexp_t s_pkey;
+  size_t len;
 
   if (keyno < 1 || keyno > 3)
     return gpg_error (GPG_ERR_INV_ID);
@@ -1227,51 +1314,34 @@ get_public_key (app_t app, int keyno)
           goto leave;
         }
 
-      m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
-      if (!m)
+      if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
         {
-          err = gpg_error (GPG_ERR_CARD);
-          log_error (_("response does not contain the RSA modulus\n"));
-          goto leave;
-        }
-
-
-      e = find_tlv (keydata, keydatalen, 0x0082, &elen);
-      if (!e)
-        {
-          err = gpg_error (GPG_ERR_CARD);
-          log_error (_("response does not contain the RSA public exponent\n"));
-          goto leave;
-        }
-
-      /* Prepend numbers with a 0 if needed.  */
-      if (mlen && (*m & 0x80))
-        {
-          mbuf = xtrymalloc ( mlen + 1);
-          if (!mbuf)
+          m = find_tlv (keydata, keydatalen, 0x0081, &mlen);
+          if (!m)
             {
-              err = gpg_error_from_syserror ();
+              err = gpg_error (GPG_ERR_CARD);
+              log_error (_("response does not contain the RSA modulus\n"));
               goto leave;
             }
-          *mbuf = 0;
-          memcpy (mbuf+1, m, mlen);
-          mlen++;
-          m = mbuf;
-        }
-      if (elen && (*e & 0x80))
-        {
-          ebuf = xtrymalloc ( elen + 1);
-          if (!ebuf)
+
+          e = find_tlv (keydata, keydatalen, 0x0082, &elen);
+          if (!e)
             {
-              err = gpg_error_from_syserror ();
+              err = gpg_error (GPG_ERR_CARD);
+              log_error (_("response does not contain the RSA public exponent\n"));
               goto leave;
             }
-          *ebuf = 0;
-          memcpy (ebuf+1, e, elen);
-          elen++;
-          e = ebuf;
         }
-
+      else
+        {
+          m = find_tlv (keydata, keydatalen, 0x0086, &mlen);
+          if (!m)
+            {
+              err = gpg_error (GPG_ERR_CARD);
+              log_error (_("response does not contain the EC public point\n"));
+              goto leave;
+            }
+        }
     }
   else
     {
@@ -1328,29 +1398,88 @@ get_public_key (app_t app, int keyno)
 	}
     }
 
-  /* Allocate a buffer to construct the S-expression.  */
-  /* FIXME: We should provide a generalized S-expression creation
-     mechanism. */
-  keybuf = xtrymalloc (50 + 2*35 + mlen + elen + 1);
-  if (!keybuf)
+
+  mbuf = xtrymalloc ( mlen + 1);
+  if (!mbuf)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
+  /* Prepend numbers with a 0 if needed.  */
+  if (mlen && (*m & 0x80))
+    {
+      *mbuf = 0;
+      memcpy (mbuf+1, m, mlen);
+      mlen++;
+    }
+  else
+    memcpy (mbuf, m, mlen);
 
-  sprintf (keybuf, "(10:public-key(3:rsa(1:n%u:", (unsigned int) mlen);
-  keybuf_p = keybuf + strlen (keybuf);
-  memcpy (keybuf_p, m, mlen);
-  keybuf_p += mlen;
-  sprintf (keybuf_p, ")(1:e%u:", (unsigned int)elen);
-  keybuf_p += strlen (keybuf_p);
-  memcpy (keybuf_p, e, elen);
-  keybuf_p += elen;
-  strcpy (keybuf_p, ")))");
-  keybuf_p += strlen (keybuf_p);
+  ebuf = xtrymalloc ( elen + 1);
+  if (!ebuf)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* Prepend numbers with a 0 if needed.  */
+  if (elen && (*e & 0x80))
+    {
+      *ebuf = 0;
+      memcpy (ebuf+1, e, elen);
+      elen++;
+    }
+  else
+    memcpy (ebuf, e, elen);
+
+  if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
+    {
+      err = gcry_sexp_build (&s_pkey, NULL, "(public-key(rsa(n%b)(e%b)))",
+                             mlen, mbuf, elen, ebuf);
+      if (err)
+        goto leave;
+
+      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+      keybuf = xtrymalloc (len);
+      if (!keybuf)
+        {
+          gcry_sexp_release (s_pkey);
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
+      gcry_sexp_release (s_pkey);
+    }
+  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECDSA)
+    {
+      const char *curve_name
+        = get_curve_name (app->app_local->keyattr[keyno].ecdsa.curve);
+
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecdsa(curve%s)(q%b)))",
+                             curve_name, mlen, mbuf);
+      if (err)
+        goto leave;
+
+      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+
+      keybuf = xtrymalloc (len);
+      if (!keybuf)
+        {
+          gcry_sexp_release (s_pkey);
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
+      gcry_sexp_release (s_pkey);
+    }
+  else
+    {
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+    }
 
   app->app_local->pk[keyno].key = (unsigned char*)keybuf;
-  app->app_local->pk[keyno].keylen = (keybuf_p - keybuf);
+  app->app_local->pk[keyno].keylen = len - 1; /* Decrement for trailing '\0' */
 
  leave:
   /* Set a flag to indicate that we tried to read the key.  */
@@ -2395,7 +2524,7 @@ build_privkey_template (app_t app, int keyno,
   *result = NULL;
   *resultlen = 0;
 
-  switch (app->app_local->keyattr[keyno].format)
+  switch (app->app_local->keyattr[keyno].rsa.format)
     {
     case RSA_STD:
     case RSA_STD_N:
@@ -2409,7 +2538,7 @@ build_privkey_template (app_t app, int keyno,
     }
 
   /* Get the required length for E.  */
-  rsa_e_reqlen = app->app_local->keyattr[keyno].e_bits/8;
+  rsa_e_reqlen = app->app_local->keyattr[keyno].rsa.e_bits/8;
   assert (rsa_e_len <= rsa_e_reqlen);
 
   /* Build the 7f48 cardholder private key template.  */
@@ -2425,8 +2554,8 @@ build_privkey_template (app_t app, int keyno,
   tp += add_tlv (tp, 0x93, rsa_q_len);
   datalen += rsa_q_len;
 
-  if (app->app_local->keyattr[keyno].format == RSA_STD_N
-      || app->app_local->keyattr[keyno].format == RSA_CRT_N)
+  if (app->app_local->keyattr[keyno].rsa.format == RSA_STD_N
+      || app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N)
     {
       tp += add_tlv (tp, 0x97, rsa_n_len);
       datalen += rsa_n_len;
@@ -2478,8 +2607,8 @@ build_privkey_template (app_t app, int keyno,
   memcpy (tp, rsa_q, rsa_q_len);
   tp += rsa_q_len;
 
-  if (app->app_local->keyattr[keyno].format == RSA_STD_N
-      || app->app_local->keyattr[keyno].format == RSA_CRT_N)
+  if (app->app_local->keyattr[keyno].rsa.format == RSA_STD_N
+      || app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N)
     {
       memcpy (tp, rsa_n, rsa_n_len);
       tp += rsa_n_len;
@@ -2764,7 +2893,7 @@ do_writekey (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
-  maxbits = app->app_local->keyattr[keyno].n_bits;
+  maxbits = app->app_local->keyattr[keyno].rsa.n_bits;
   nbits = rsa_n? count_bits (rsa_n, rsa_n_len) : 0;
   if (opt.verbose)
     log_info ("RSA modulus size is %u bits (%u bytes)\n",
@@ -2775,7 +2904,7 @@ do_writekey (app_t app, ctrl_t ctrl,
       /* Try to switch the key to a new length.  */
       err = change_keyattr (app, keyno, nbits, pincb, pincb_arg);
       if (!err)
-        maxbits = app->app_local->keyattr[keyno].n_bits;
+        maxbits = app->app_local->keyattr[keyno].rsa.n_bits;
     }
   if (nbits != maxbits)
     {
@@ -2785,7 +2914,7 @@ do_writekey (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
-  maxbits = app->app_local->keyattr[keyno].e_bits;
+  maxbits = app->app_local->keyattr[keyno].rsa.e_bits;
   if (maxbits > 32 && !app->app_local->extcap.is_v2)
     maxbits = 32; /* Our code for v1 does only support 32 bits.  */
   nbits = rsa_e? count_bits (rsa_e, rsa_e_len) : 0;
@@ -2797,7 +2926,7 @@ do_writekey (app_t app, ctrl_t ctrl,
       goto leave;
     }
 
-  maxbits = app->app_local->keyattr[keyno].n_bits/2;
+  maxbits = app->app_local->keyattr[keyno].rsa.n_bits/2;
   nbits = rsa_p? count_bits (rsa_p, rsa_p_len) : 0;
   if (nbits != maxbits)
     {
@@ -2966,7 +3095,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
      to put a limit on the max. allowed keysize.  2048 bit will
      already lead to a 527 byte long status line and thus a 4096 bit
      key would exceed the Assuan line length limit.  */
-  keybits = app->app_local->keyattr[keyno].n_bits;
+  keybits = app->app_local->keyattr[keyno].rsa.n_bits;
   if (keybits > 4096)
     return gpg_error (GPG_ERR_TOO_LARGE);
 
@@ -3287,14 +3416,23 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       memcpy (data + sizeof b ## _prefix, indata, indatalen); \
     }
 
-  X(SHA1,   sha1,   1)
-  else X(RMD160, rmd160, 1)
-  else X(SHA224, sha224, app->app_local->extcap.is_v2)
-  else X(SHA256, sha256, app->app_local->extcap.is_v2)
-  else X(SHA384, sha384, app->app_local->extcap.is_v2)
-  else X(SHA512, sha512, app->app_local->extcap.is_v2)
+  if (use_auth
+      || app->app_local->keyattr[use_auth? 2: 0].key_type == KEY_TYPE_RSA)
+    {
+      X(SHA1,   sha1,   1)
+      else X(RMD160, rmd160, 1)
+      else X(SHA224, sha224, app->app_local->extcap.is_v2)
+      else X(SHA256, sha256, app->app_local->extcap.is_v2)
+      else X(SHA384, sha384, app->app_local->extcap.is_v2)
+      else X(SHA512, sha512, app->app_local->extcap.is_v2)
+      else
+        return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    }
   else
-    return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
+    {
+      datalen = indatalen;
+      memcpy (data, indata, indatalen);
+    }
 #undef X
 
   /* Redirect to the AUTH command if asked to. */
@@ -3385,6 +3523,14 @@ do_auth (app_t app, const char *keyidstr,
     return gpg_error (GPG_ERR_INV_VALUE);
   if (indatalen > 101) /* For a 2048 bit key. */
     return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECDSA
+      && (indatalen == 51 || indatalen == 67 || indatalen == 83))
+    {
+      const char *p = (const char *)indata + 19;
+      indata = p;
+      indatalen -= 19;
+    }
 
   /* Check whether an OpenPGP card of any version has been requested. */
   if (!strcmp (keyidstr, "OPENPGP.3"))
@@ -3753,6 +3899,22 @@ parse_historical (struct app_local_s *apploc,
 }
 
 
+static int
+parse_ecc_curve (const unsigned char *buffer, size_t buflen)
+{
+  int curve;
+
+  if (buflen == 6 && buffer[5] == 0x22)
+    curve = CURVE_NIST_P384;
+  else if (buflen == 6 && buffer[5] == 0x23)
+    curve = CURVE_NIST_P521;
+  else
+    curve = CURVE_NIST_P256;
+
+  return curve;
+}
+
+
 /* Parse and optionally show the algorithm attributes for KEYNO.
    KEYNO must be in the range 0..2.  */
 static void
@@ -3765,7 +3927,8 @@ parse_algorithm_attribute (app_t app, int keyno)
 
   assert (keyno >=0 && keyno <= 2);
 
-  app->app_local->keyattr[keyno].n_bits = 0;
+  app->app_local->keyattr[keyno].key_type = KEY_TYPE_RSA;
+  app->app_local->keyattr[keyno].rsa.n_bits = 0;
 
   relptr = get_one_do (app, 0xC1+keyno, &buffer, &buflen, NULL);
   if (!relptr)
@@ -3784,27 +3947,41 @@ parse_algorithm_attribute (app_t app, int keyno)
     log_info ("Key-Attr-%s ..: ", desc[keyno]);
   if (*buffer == 1 && (buflen == 5 || buflen == 6))
     {
-      app->app_local->keyattr[keyno].n_bits = (buffer[1]<<8 | buffer[2]);
-      app->app_local->keyattr[keyno].e_bits = (buffer[3]<<8 | buffer[4]);
-      app->app_local->keyattr[keyno].format = 0;
+      app->app_local->keyattr[keyno].rsa.n_bits = (buffer[1]<<8 | buffer[2]);
+      app->app_local->keyattr[keyno].rsa.e_bits = (buffer[3]<<8 | buffer[4]);
+      app->app_local->keyattr[keyno].rsa.format = 0;
       if (buflen < 6)
-        app->app_local->keyattr[keyno].format = RSA_STD;
+        app->app_local->keyattr[keyno].rsa.format = RSA_STD;
       else
-        app->app_local->keyattr[keyno].format = (buffer[5] == 0? RSA_STD   :
-                                                 buffer[5] == 1? RSA_STD_N :
-                                                 buffer[5] == 2? RSA_CRT   :
-                                                 buffer[5] == 3? RSA_CRT_N :
-                                                 RSA_UNKNOWN_FMT);
+        app->app_local->keyattr[keyno].rsa.format = (buffer[5] == 0? RSA_STD   :
+                                                     buffer[5] == 1? RSA_STD_N :
+                                                     buffer[5] == 2? RSA_CRT   :
+                                                     buffer[5] == 3? RSA_CRT_N :
+                                                     RSA_UNKNOWN_FMT);
 
       if (opt.verbose)
         log_printf
           ("RSA, n=%u, e=%u, fmt=%s\n",
-           app->app_local->keyattr[keyno].n_bits,
-           app->app_local->keyattr[keyno].e_bits,
-           app->app_local->keyattr[keyno].format == RSA_STD?  "std"  :
-           app->app_local->keyattr[keyno].format == RSA_STD_N?"std+n":
-           app->app_local->keyattr[keyno].format == RSA_CRT?  "crt"  :
-           app->app_local->keyattr[keyno].format == RSA_CRT_N?"crt+n":"?");
+           app->app_local->keyattr[keyno].rsa.n_bits,
+           app->app_local->keyattr[keyno].rsa.e_bits,
+           app->app_local->keyattr[keyno].rsa.format == RSA_STD?  "std"  :
+           app->app_local->keyattr[keyno].rsa.format == RSA_STD_N?"std+n":
+           app->app_local->keyattr[keyno].rsa.format == RSA_CRT?  "crt"  :
+           app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N?"crt+n":"?");
+    }
+  else if (*buffer == 19) /* ECDSA */
+    {
+      app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECDSA;
+      app->app_local->keyattr[keyno].ecdsa.curve
+        = parse_ecc_curve (buffer + 1, buflen - 1);
+    }
+  else if (*buffer == 18 && buflen == 11) /* ECDH */
+    {
+      app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECDH;
+      app->app_local->keyattr[keyno].ecdh.curve
+        = parse_ecc_curve (buffer + 1, buflen - 1);
+      app->app_local->keyattr[keyno].ecdh.hashalgo = buffer[1];
+      app->app_local->keyattr[keyno].ecdh.cipheralgo = buffer[2];
     }
   else if (opt.verbose)
     log_printhex ("", buffer, buflen);

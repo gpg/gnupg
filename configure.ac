@@ -43,7 +43,7 @@ m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
 AC_INIT([gnupg],[mym4_full_version], [http://bugs.gnupg.org])
 
-NEED_GPG_ERROR_VERSION=1.10
+NEED_GPG_ERROR_VERSION=1.11
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.5.0

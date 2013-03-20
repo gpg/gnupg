@@ -335,7 +335,8 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 int
 divert_pksign (ctrl_t ctrl,
                const unsigned char *digest, size_t digestlen, int algo,
-               const unsigned char *shadow_info, unsigned char **r_sig)
+               const unsigned char *shadow_info, unsigned char **r_sig,
+               size_t *r_siglen)
 {
   int rc;
   char *kid;
@@ -369,7 +370,10 @@ divert_pksign (ctrl_t ctrl,
     }
 
   if (!rc)
-    *r_sig = sigval;
+    {
+      *r_sig = sigval;
+      *r_siglen = siglen;
+    }
 
   xfree (kid);
 

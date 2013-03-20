@@ -3382,7 +3382,6 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
   int in_rule = 0;
   int got_match = 0;
   int runtime[GC_BACKEND_NR];
-  int used_components[GC_COMPONENT_NR];
   int backend_id, component_id;
   char *fname;
 
@@ -3393,8 +3392,6 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
   for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
     runtime[backend_id] = 0;
-  for (component_id = 0; component_id < GC_COMPONENT_NR; component_id++)
-    used_components[component_id] = 0;
 
   config = fopen (fname, "r");
   if (!config)
@@ -3621,9 +3618,6 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
 
           if (defaults)
             {
-              assert (component_id >= 0 && component_id < GC_COMPONENT_NR);
-              used_components[component_id] = 1;
-
               /* Here we explicitly allow to update the value again.  */
               if (newflags)
                 {

@@ -627,6 +627,9 @@ print_capabilities (PKT_public_key *pk, KBNODE keyblock)
   if ((use & PUBKEY_USAGE_AUTH))
     es_putc ('a', es_stdout);
 
+  if ((use & PUBKEY_USAGE_UNKNOWN))
+    es_putc ('?', es_stdout);
+
   if (keyblock)
     {
       /* Figure out the usable capabilities.  */

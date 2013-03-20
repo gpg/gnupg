@@ -282,47 +282,40 @@ static gpg_error_t
 inq_certificate (void *opaque, const char *line)
 {
   struct inq_certificate_parm_s *parm = opaque;
+  const char *s;
   int rc;
+  size_t n;
   const unsigned char *der;
   size_t derlen;
   int issuer_mode = 0;
   ksba_sexp_t ski = NULL;
 
-  if (!strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8]))
+  if ((s = has_leading_keyword (line, "SENDCERT")))
     {
-      line += 8;
+      line = s;
     }
-  else if (!strncmp (line, "SENDCERT_SKI", 12) && (line[12]==' ' || !line[12]))
+  else if ((s = has_leading_keyword (line, "SENDCERT_SKI")))
     {
-      size_t n;
-
       /* Send a certificate where a sourceKeyIdentifier is included. */
-      line += 12;
-      while (*line == ' ')
-        line++;
+      line = s;
       ski = make_simple_sexp_from_hexstr (line, &n);
       line += n;
       while (*line == ' ')
         line++;
     }
-  else if (!strncmp (line, "SENDISSUERCERT", 14)
-           && (line[14] == ' ' || !line[14]))
+  else if ((s = has_leading_keyword (line, "SENDISSUERCERT")))
     {
-      line += 14;
+      line = s;
       issuer_mode = 1;
     }
-  else if (!strncmp (line, "ISTRUSTED", 9) && (line[9]==' ' || !line[9]))
+  else if ((s = has_leading_keyword (line, "ISTRUSTED")))
     {
       /* The server is asking us whether the certificate is a trusted
          root certificate.  */
-      const char *s;
-      size_t n;
       char fpr[41];
       struct rootca_flags_s rootca_flags;
 
-      line += 9;
-      while (*line == ' ')
-        line++;
+      line = s;
 
       for (s=line,n=0; hexdigitp (s); s++, n++)
         ;
@@ -410,22 +403,21 @@ static gpg_error_t
 isvalid_status_cb (void *opaque, const char *line)
 {
   struct isvalid_status_parm_s *parm = opaque;
+  const char *s;
 
-  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+  if ((s = has_leading_keyword (line, "PROGRESS")))
     {
       if (parm->ctrl)
         {
-          for (line += 8; *line == ' '; line++)
-            ;
+          line = s;
           if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
             return gpg_error (GPG_ERR_ASS_CANCELED);
         }
     }
-  else if (!strncmp (line, "ONLY_VALID_IF_CERT_VALID", 24)
-      && (line[24]==' ' || !line[24]))
+  else if ((s = has_leading_keyword (line, "ONLY_VALID_IF_CERT_VALID")))
     {
       parm->seen++;
-      if (!line[24] || !unhexify_fpr (line+25, parm->fpr))
+      if (!*s || !unhexify_fpr (s, parm->fpr))
         parm->seen++; /* Bumb it to indicate an error. */
     }
   return 0;
@@ -693,23 +685,22 @@ static gpg_error_t
 lookup_status_cb (void *opaque, const char *line)
 {
   struct lookup_parm_s *parm = opaque;
+  const char *s;
 
-  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+  if ((s = has_leading_keyword (line, "PROGRESS")))
     {
       if (parm->ctrl)
         {
-          for (line += 8; *line == ' '; line++)
-            ;
+          line = s;
           if (gpgsm_status (parm->ctrl, STATUS_PROGRESS, line))
             return gpg_error (GPG_ERR_ASS_CANCELED);
         }
     }
-  else if (!strncmp (line, "TRUNCATED", 9) && (line[9]==' ' || !line[9]))
+  else if ((s = has_leading_keyword (line, "TRUNCATED")))
     {
       if (parm->ctrl)
         {
-          for (line +=9; *line == ' '; line++)
-            ;
+          line = s;
           gpgsm_status (parm->ctrl, STATUS_TRUNCATED, line);
         }
     }
@@ -878,16 +869,17 @@ static gpg_error_t
 run_command_inq_cb (void *opaque, const char *line)
 {
   struct run_command_parm_s *parm = opaque;
+  const char *s;
   int rc = 0;
 
-  if ( !strncmp (line, "SENDCERT", 8) && (line[8] == ' ' || !line[8]) )
+  if ((s = has_leading_keyword (line, "SENDCERT")))
     { /* send the given certificate */
       int err;
       ksba_cert_t cert;
       const unsigned char *der;
       size_t derlen;
 
-      line += 8;
+      line = s;
       if (!*line)
         return gpg_error (GPG_ERR_ASS_PARAMETER);
 
@@ -907,9 +899,9 @@ run_command_inq_cb (void *opaque, const char *line)
           ksba_cert_release (cert);
         }
     }
-  else if ( !strncmp (line, "PRINTINFO", 9) && (line[9] == ' ' || !line[9]) )
+  else if ((s = has_leading_keyword (line, "PRINTINFO")))
     { /* Simply show the message given in the argument. */
-      line += 9;
+      line = s;
       log_info ("dirmngr: %s\n", line);
     }
   else
@@ -925,17 +917,17 @@ static gpg_error_t
 run_command_status_cb (void *opaque, const char *line)
 {
   ctrl_t ctrl = opaque;
+  const char *s;
 
   if (opt.verbose)
     {
       log_info ("dirmngr status: %s\n", line);
     }
-  if (!strncmp (line, "PROGRESS", 8) && (line[8]==' ' || !line[8]))
+  if ((s = has_leading_keyword (line, "PROGRESS")))
     {
       if (ctrl)
         {
-          for (line += 8; *line == ' '; line++)
-            ;
+          line = s;
           if (gpgsm_status (ctrl, STATUS_PROGRESS, line))
             return gpg_error (GPG_ERR_ASS_CANCELED);
         }

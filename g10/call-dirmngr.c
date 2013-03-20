@@ -515,12 +515,12 @@ ks_put_inq_cb (void *opaque, const char *line)
   struct ks_put_parm_s *parm = opaque;
   gpg_error_t err = 0;
 
-  if (!strncmp (line, "KEYBLOCK", 8) && (line[8] == ' ' || !line[8]))
+  if (has_leading_keyword (line, "KEYBLOCK"))
     {
       if (parm->data)
         err = assuan_send_data (parm->ctx, parm->data, parm->datalen);
     }
-  else if (!strncmp (line, "KEYBLOCK_INFO", 13) && (line[13]==' ' || !line[13]))
+  else if (has_leading_keyword (line, "KEYBLOCK_INFO"))
     {
       kbnode_t node;
       estream_t fp;
