@@ -3357,7 +3357,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   if (!pininfo->minlen)
     pininfo->minlen = 1;
   if (!pininfo->maxlen)
-    pininfo->maxlen = 25;
+    pininfo->maxlen = 15;
 
   /* Note that the 25 is the maximum value the SPR532 allows.  */
   if (pininfo->minlen < 1 || pininfo->minlen > 25
@@ -3371,14 +3371,15 @@ ccid_transceive_secure (ccid_driver_t handle,
     {
     case VENDOR_SCM:  /* Tested with SPR 532. */
     case VENDOR_KAAN: /* Tested with KAAN Advanced (1.02). */
-    case VENDOR_FSIJ: /* Tested with the gnuk code (2011-01-05).  */
+    case VENDOR_FSIJ: /* Tested with Gnuk (0.21). */
+      pininfo->maxlen = 25;
       enable_varlen = 1;
       break;
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
       enable_varlen = 1;
-      pininfo->maxlen = 15;
       break;
     case VENDOR_CHERRY:
+      pininfo->maxlen = 25;
       enable_varlen = 1;
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
          character on the keyboard channel.  We use a special variant

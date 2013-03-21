@@ -2056,7 +2056,7 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   if (!pininfo->minlen)
     pininfo->minlen = 1;
   if (!pininfo->maxlen)
-    pininfo->maxlen = 25;
+    pininfo->maxlen = 15;
 
   /* Note that the 25 is the maximum value the SPR532 allows.  */
   if (pininfo->minlen < 1 || pininfo->minlen > 25
@@ -2139,7 +2139,7 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   if (!pininfo->minlen)
     pininfo->minlen = 1;
   if (!pininfo->maxlen)
-    pininfo->maxlen = 25;
+    pininfo->maxlen = 15;
 
   /* Note that the 25 is the maximum value the SPR532 allows.  */
   if (pininfo->minlen < 1 || pininfo->minlen > 25
