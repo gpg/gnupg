@@ -2365,10 +2365,8 @@ update_reader_status_file (int set_card_removed_flag)
             xfree (homestr);
           }
 
-          /* Set the card removed flag for all current sessions.  We
-             will set this on any card change because a reset or
-             SERIALNO request must be done in any case.  */
-          if (vr->any && set_card_removed_flag)
+          /* Set the card removed flag for all current sessions.  */
+          if (vr->any && vr->status == 0 && set_card_removed_flag)
             update_card_removed (idx, 1);
 
           vr->any = 1;
