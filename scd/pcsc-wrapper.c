@@ -602,9 +602,11 @@ handle_status (unsigned char *argbuf, size_t arglen)
   if ( !(rdrstates[0].event_state & PCSC_STATE_UNKNOWN) )
     {
       if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
-        status |= 2;
-      if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
-        status |= 4;
+	{
+	  status |= 2;
+	  if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
+	    status |= 4;
+	}
       /* We indicate a useful card if it is not in use by another
          application.  This is because we only use exclusive access
          mode.  */

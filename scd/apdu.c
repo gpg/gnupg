@@ -914,9 +914,11 @@ pcsc_get_status_direct (int slot, unsigned int *status)
 
   *status = 0;
   if ( (rdrstates[0].event_state & PCSC_STATE_PRESENT) )
-    *status |= APDU_CARD_PRESENT;
-  if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
-    *status |= APDU_CARD_ACTIVE;
+    {
+      *status |= APDU_CARD_PRESENT;
+      if ( !(rdrstates[0].event_state & PCSC_STATE_MUTE) )
+	*status |= APDU_CARD_ACTIVE;
+    }
 #ifndef HAVE_W32_SYSTEM
   /* We indicate a useful card if it is not in use by another
      application.  This is because we only use exclusive access
