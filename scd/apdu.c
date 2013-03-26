@@ -1211,7 +1211,7 @@ pcsc_send_apdu (int slot, unsigned char *apdu, size_t apdulen,
 static int
 control_pcsc_direct (int slot, pcsc_dword_t ioctl_code,
                      const unsigned char *cntlbuf, size_t len,
-                     unsigned char *buffer, size_t *buflen)
+                     unsigned char *buffer, pcsc_dword_t *buflen)
 {
   long err;
 
@@ -1233,7 +1233,7 @@ control_pcsc_direct (int slot, pcsc_dword_t ioctl_code,
 static int
 control_pcsc_wrapped (int slot, pcsc_dword_t ioctl_code,
                       const unsigned char *cntlbuf, size_t len,
-                      unsigned char *buffer, size_t *buflen)
+                      unsigned char *buffer, pcsc_dword_t *buflen)
 {
   long err = PCSC_E_NOT_TRANSACTED;
   reader_table_t slotp;
@@ -1342,7 +1342,7 @@ control_pcsc_wrapped (int slot, pcsc_dword_t ioctl_code,
 static int
 control_pcsc (int slot, pcsc_dword_t ioctl_code,
               const unsigned char *cntlbuf, size_t len,
-              unsigned char *buffer, size_t *buflen)
+              unsigned char *buffer, pcsc_dword_t *buflen)
 {
 #ifdef NEED_PCSC_WRAPPER
   return control_pcsc_wrapped (slot, ioctl_code, cntlbuf, len, buffer, buflen);
@@ -1997,7 +1997,7 @@ static int
 check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo)
 {
   unsigned char buf[256];
-  size_t len = 256;
+  pcsc_dword_t len = 256;
   int sw;
 
   (void)pininfo;      /* XXX: Identify reader and set pininfo->fixedlen.  */
@@ -2058,7 +2058,7 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   unsigned char *pin_verify;
   int len = PIN_VERIFY_STRUCTURE_SIZE + pininfo->fixedlen;
   unsigned char result[2];
-  size_t resultlen = 2;
+  pcsc_dword_t resultlen = 2;
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
@@ -2141,7 +2141,7 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   unsigned char *pin_modify;
   int len = PIN_MODIFY_STRUCTURE_SIZE + 2 * pininfo->fixedlen;
   unsigned char result[2];
-  size_t resultlen = 2;
+  pcsc_dword_t resultlen = 2;
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
