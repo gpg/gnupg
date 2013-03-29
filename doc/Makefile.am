@@ -43,7 +43,7 @@ info_TEXINFOS = gnupg.texi
 
 dist_pkgdata_DATA = qualified.txt com-certs.pem $(helpfiles)
 
-nobase_dist_doc_DATA = FAQ DETAILS HACKING TRANSLATE OpenPGP KEYSERVER \
+nobase_dist_doc_DATA = FAQ DETAILS HACKING DCO TRANSLATE OpenPGP KEYSERVER \
                        $(examples)
 
 #dist_html_DATA =

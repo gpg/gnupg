@@ -6,8 +6,8 @@ Security related bug reports: <security@gnupg.org>
 License: GPLv3+
 
 
-Authors
-=======
+Authors with a FSF copyright assignment
+=======================================
 
 Ales Nyakhaychyk <nyakhaychyk@i1fn.linux.by> Translations [be]
 
@@ -131,11 +131,19 @@ Yutaka Niibe   Assigns Past and Future Changes
      (scd/)
 
 
+Authors with a DCO
+==================
+
+Werner Koch <wk@gnupg.org>
+2013-03-29:87620ahchj.fsf@vigenere.g10code.de:
+
+
 Other authors
 =============
 
-The need for copyright disclaimers for translations has been waived in
-December 2012.
+The need for copyright assignments to the FSF has been waived on
+2013-03-29; the need for copyright disclaimers for translations
+already in December 2012.
 
 The files common/libestream.[ch] are maintained as a separate project
 by g10 Code GmbH.  These files, as used here, are considered part of
@@ -181,7 +189,7 @@ name gpg2keys_*.
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
            2006, 2007, 2008, 2009, 2010, 2011,
-           2012 Free Software Foundation, Inc.
+           2012, 2013 Free Software Foundation, Inc.
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
