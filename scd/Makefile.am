@@ -19,9 +19,10 @@
 
 EXTRA_DIST = ChangeLog-2011
 
-bin_PROGRAMS = scdaemon
-if ! HAVE_W32_SYSTEM
-libexec_PROGRAMS = gnupg-pcsc-wrapper
+if HAVE_W32_SYSTEM
+libexec_PROGRAMS = scdaemon
+else
+libexec_PROGRAMS = scdaemon gnupg-pcsc-wrapper
 endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
