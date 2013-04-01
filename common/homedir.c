@@ -410,7 +410,7 @@ gnupg_module_name (int which)
 #ifdef GNUPG_DEFAULT_SCDAEMON
       return GNUPG_DEFAULT_SCDAEMON;
 #else 
-      X(bindir, "scdaemon");
+      X(libexecdir, "scdaemon");
 #endif
 
     case GNUPG_MODULE_NAME_DIRMNGR:

@@ -17,9 +17,10 @@
 
 ## Process this file with automake to produce Makefile.in
 
-bin_PROGRAMS = scdaemon
-if ! HAVE_W32_SYSTEM
-libexec_PROGRAMS = gnupg-pcsc-wrapper
+if HAVE_W32_SYSTEM
+libexec_PROGRAMS = scdaemon
+else
+libexec_PROGRAMS = scdaemon gnupg-pcsc-wrapper
 endif
 
 EXTRA_DIST = ChangeLog-2011
