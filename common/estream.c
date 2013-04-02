@@ -1275,6 +1275,7 @@ es_func_fp_write (void *cookie, const void *buffer, size_t size)
 #else
       bytes_written = fwrite (buffer, 1, size, file_cookie->fp);
 #endif
+      fflush (file_cookie->fp);
     }
   else
     bytes_written = size; /* Successfully written to the bit bucket.  */
