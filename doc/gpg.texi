@@ -3310,21 +3310,23 @@ If you don't give any of them, no user ID is created.
 
 @item Expire-Date: @var{iso-date}|(@var{number}[d|w|m|y])
 Set the expiration date for the key (and the subkey).  It may either
-be entered in ISO date format (2000-08-15) or as number of days,
-weeks, month or years.  The special notation "seconds=N" is also
-allowed to directly give an Epoch value. Without a letter days are
-assumed.  Note that there is no check done on the overflow of the type
-used by OpenPGP for timestamps.  Thus you better make sure that the
-given value make sense.  Although OpenPGP works with time intervals,
-GnuPG uses an absolute value internally and thus the last year we can
-represent is 2105.
+be entered in ISO date format (e.g. "20000815T145012") or as number of
+days, weeks, month or years after the creation date.  The special
+notation "seconds=N" is also allowed to specify a number of seconds
+since creation.  Without a letter days are assumed.  Note that there
+is no check done on the overflow of the type used by OpenPGP for
+timestamps.  Thus you better make sure that the given value make
+sense.  Although OpenPGP works with time intervals, GnuPG uses an
+absolute value internally and thus the last year we can represent is
+2105.
 
 @item  Ceation-Date: @var{iso-date}
 Set the creation date of the key as stored in the key information and
 which is also part of the fingerprint calculation.  Either a date like
 "1986-04-26" or a full timestamp like "19860426T042640" may be used.
-The time is considered to be UTC.  If it is not given the current time
-is used.
+The time is considered to be UTC.  The special notation "seconds=N"
+may be used to directly specify a the number of seconds since Epoch
+(Unix time).  If it is not given the current time is used.
 
 @item Preferences: @var{string}
 Set the cipher, hash, and compression preference values for this key.
