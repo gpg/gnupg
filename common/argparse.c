@@ -1,6 +1,7 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2006
  *               2007, 2008, 2012  Free Software Foundation, Inc.
+ * Copyright (C) 1997, 2013 Werner Koch
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -104,7 +105,8 @@
  *		 4 = takes ulong argument
  *     Bit 3 : argument is optional (r_type will the be set to 0)
  *     Bit 4 : allow 0x etc. prefixed values.
- *     Bit 7 : this is a command and not an option
+ *     Bit 6 : Ignore this option
+ *     Bit 7 : This is a command and not an option
  *  You stop the option processing by setting opts to NULL, the function will
  *  then return 0.
  * @Return Value
@@ -128,6 +130,7 @@
  *     { 'o', "output",    2 },
  *     { 'c', "cross-ref", 2|8 },
  *     { 'm', "my-option", 1|8 },
+ *     { 300, "ignored-long-option, ARGPARSE_OP_IGNORE},
  *     { 500, "have-no-short-option-for-this-long-option", 0 },
  *     {0} };
  *     ARGPARSE_ARGS pargs = { &argc, &argv, 0 }
@@ -482,7 +485,12 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                 }
               idx = i;
               arg->r_opt = opts[idx].short_opt;
-              if (!opts[idx].short_opt )
+              if ((opts[idx].flags & ARGPARSE_OPT_IGNORE))
+                {
+                  state = i = 0;
+                  continue;
+                }
+              else if (!opts[idx].short_opt )
                 {
                   if (!strcmp (keyword, "ignore-invalid-option"))
                     {
@@ -500,9 +508,9 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                                 ? ARGPARSE_INVALID_COMMAND
                                 : ARGPARSE_INVALID_OPTION);
                 }
-              else if (!(opts[idx].flags & 7))
+              else if (!(opts[idx].flags & ARGPARSE_TYPE_MASK))
                 arg->r_type = 0; /* Does not take an arg. */
-              else if ((opts[idx].flags & 8) )
+              else if ((opts[idx].flags & ARGPARSE_OPT_OPTIONAL) )
                 arg->r_type = 0; /* Arg is optional.  */
               else
                 arg->r_opt = ARGPARSE_MISSING_ARG;
@@ -514,9 +522,9 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
               /* No argument found.  */
               if (in_alias)
                 arg->r_opt = ARGPARSE_MISSING_ARG;
-              else if (!(opts[idx].flags & 7))
+              else if (!(opts[idx].flags & ARGPARSE_TYPE_MASK))
                 arg->r_type = 0; /* Does not take an arg. */
-              else if ((opts[idx].flags & 8))
+              else if ((opts[idx].flags & ARGPARSE_OPT_OPTIONAL))
                 arg->r_type = 0; /* No optional argument. */
               else
                 arg->r_opt = ARGPARSE_MISSING_ARG;
@@ -552,7 +560,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                         }
 		    }
 		}
-              else if (!(opts[idx].flags & 7))
+              else if (!(opts[idx].flags & ARGPARSE_TYPE_MASK))
                 arg->r_opt = ARGPARSE_UNEXPECTED_ARG;
               else
                 {
@@ -614,7 +622,11 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
               break;
           idx = i;
           arg->r_opt = opts[idx].short_opt;
-          if (!opts[idx].short_opt)
+          if ((opts[idx].flags & ARGPARSE_OPT_IGNORE))
+            {
+              state = 1; /* Process like a comment.  */
+            }
+          else if (!opts[idx].short_opt)
             {
               if (!strcmp (keyword, "alias"))
                 {
@@ -849,7 +861,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
         {
           for (i=0; opts[i].short_opt; i++ )
             {
-              if ( opts[i].long_opt )
+              if (opts[i].long_opt && !(opts[i].flags & ARGPARSE_OPT_IGNORE))
                 writestrings (0, "--", opts[i].long_opt, "\n", NULL);
 	    }
           writestrings (0, "--dump-options\n--help\n--version\n--warranty\n",
@@ -868,7 +880,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
         arg->r_opt = opts[i].short_opt;
       if ( i < 0 )
         ;
-      else if ( (opts[i].flags & 0x07) )
+      else if ( (opts[i].flags & ARGPARSE_TYPE_MASK) )
         {
           if ( argpos )
             {
@@ -952,7 +964,7 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 	    arg->internal.inarg++; /* Point to the next arg.  */
 	    arg->r.ret_str = s;
           }
-	else if ( (opts[i].flags & 7) )
+	else if ( (opts[i].flags & ARGPARSE_TYPE_MASK) )
           {
 	    if ( s[1] && !dash_kludge )
               {
@@ -1024,9 +1036,9 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 static int
 set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
 {
-  int base = (flags & 16)? 0 : 10;
+  int base = (flags & ARGPARSE_OPT_PREFIX)? 0 : 10;
 
-  switch ( (arg->r_type = (flags & 7)) )
+  switch ( (arg->r_type = (flags & ARGPARSE_TYPE_MASK)) )
     {
     case ARGPARSE_TYPE_INT:
       arg->r.ret_int = (int)strtol(s,NULL,base);
