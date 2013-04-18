@@ -139,8 +139,11 @@ static ARGPARSE_OPTS opts[] = {
                 /* end --disable-ccid */),
   ARGPARSE_s_u (oCardTimeout, "card-timeout",
                 N_("|N|disconnect the card after N seconds of inactivity")),
+
   ARGPARSE_s_n (oDisablePinpad, "disable-pinpad",
                 N_("do not use a reader's pinpad")),
+  ARGPARSE_ignore (300, "disable-keypad"),
+
   ARGPARSE_s_n (oAllowAdmin, "allow-admin", "@"),
   ARGPARSE_s_n (oDenyAdmin, "deny-admin",
                 N_("deny the use of admin card commands")),
