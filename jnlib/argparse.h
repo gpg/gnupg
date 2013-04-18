@@ -24,12 +24,12 @@
 #include "types.h"
 
 typedef struct
-{                  
+{
   int  *argc;	      /* Pointer to ARGC (value subject to change). */
   char ***argv;	      /* Pointer to ARGV (value subject to change). */
   unsigned int flags; /* Global flags.  May be set prior to calling the
                          parser.  The parser may change the value.  */
-  int err;            /* Print error description for last option. 
+  int err;            /* Print error description for last option.
                          Either 0,  ARGPARSE_PRINT_WARNING or
                          ARGPARSE_PRINT_ERROR.  */
 
@@ -79,9 +79,12 @@ typedef struct
 #define ARGPARSE_TYPE_STRING      2  /* Takes a string argument.          */
 #define ARGPARSE_TYPE_LONG        3  /* Takes a long argument.            */
 #define ARGPARSE_TYPE_ULONG       4  /* Takes an unsigned long argument.  */
-#define ARGPARSE_OPT_OPTIONAL (1<<3) /* Argument is optional.             */ 
+#define ARGPARSE_OPT_OPTIONAL (1<<3) /* Argument is optional.             */
 #define ARGPARSE_OPT_PREFIX   (1<<4) /* Allow 0x etc. prefixed values.    */
-#define ARGPARSE_OPT_COMMAND  (1<<8) /* The argument is a command.        */
+#define ARGPARSE_OPT_IGNORE   (1<<6) /* Ignore command or option.         */
+#define ARGPARSE_OPT_COMMAND  (1<<7) /* The argument is a command.        */
+
+#define ARGPARSE_TYPE_MASK  7  /* Mask for the type values (internal).  */
 
 /* A set of macros to make option definitions easier to read.  */
 #define ARGPARSE_x(s,l,t,f,d) \
@@ -148,9 +151,11 @@ typedef struct
 #define ARGPARSE_c(s,l,d) \
      { (s), (l), (ARGPARSE_TYPE_NONE | ARGPARSE_OPT_COMMAND), (d) }
 
+#define ARGPARSE_ignore(s,l) \
+     { (s), (l), (ARGPARSE_OPT_IGNORE), "@" }
 
 #define ARGPARSE_group(s,d) \
-     { (s), NULL, 0, (d) } 
+     { (s), NULL, 0, (d) }
 
 #define ARGPARSE_end()  { 0, NULL, 0, NULL }
 
