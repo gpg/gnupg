@@ -796,6 +796,14 @@ certificate is that it will be possible to use the same keypair for
 different protocols, thereby saving space on the token used to keep the
 secret keys.
 
+@ifset gpgtwoone
+The @command{gpg-agent} may send status messages during a command or when
+returning from a command to inform a client about the progress or result of an
+operation.  For example, the @var{INQUIRE_MAXLEN} status message may be sent
+during a server inquire to inform the client of the maximum usable length of
+the inquired data (which should not be exceeded).
+@end ifset
+
 @menu
 * Agent PKDECRYPT::       Decrypting a session key
 * Agent PKSIGN::          Signing a Hash
@@ -804,6 +812,10 @@ secret keys.
 * Agent EXPORT::          Exporting a Secret Key
 * Agent ISTRUSTED::       Importing a Root Certificate
 * Agent GET_PASSPHRASE::  Ask for a passphrase
+* Agent CLEAR_PASSPHRASE:: Expire a cached passphrase
+@ifset gpgtwoone
+* Agent PRESET_PASSPHRASE:: Set a passphrase for a keygrip
+@end ifset
 * Agent GET_CONFIRMATION:: Ask for confirmation
 * Agent HAVEKEY::         Check whether a key is available
 * Agent LEARN::           Register a smartcard
@@ -972,7 +984,12 @@ option allows to choose the storage location.  To get the secret key out
 of the PSE, a special export tool has to be used.
 
 @example
+@ifset gpgtwoone
+   GENKEY [--no-protection] [--preset] [<cache_nonce>]
+@end ifset
+@ifclear gpgtwoone
    GENKEY
+@end ifclear
 @end example
 
 Invokes the key generation process and the server will then inquire
@@ -1016,6 +1033,13 @@ Here is an example session:
    S: D   (rsa (n 326487324683264) (e 10001)))
    S  OK key created
 @end example
+
+@ifset gpgtwoone
+The @option{--no-protection} option may be used to prevent prompting for a
+passphrase to protect the secret key while leaving the secret key unprotected.
+The @option{--preset} option may be used to add the passphrase to the cache
+using the default cache parameters.
+@end ifset
 
 @node Agent IMPORT
 @subsection Importing a Secret Key
@@ -1173,6 +1197,52 @@ may be used to invalidate the cache entry for a passphrase.  The
 function returns with OK even when there is no cached passphrase.
 
 
+
+@node Agent CLEAR_PASSPHRASE
+@subsection Remove a cached passphrase
+
+Use this command to remove a cached passphrase.
+
+@example
+@ifset gpgtwoone
+  CLEAR_PASSPHRASE [--mode=normal] <cache_id>
+@end ifset
+@ifclear gpgtwoone
+  CLEAR_PASSPHRASE <cache_id>
+@end ifclear
+@end example
+
+@ifset gpgtwoone
+The @option{--mode=normal} option can be used to clear a @var{cache_id} that
+was set by gpg-agent.
+@end ifset
+
+
+
+@ifset gpgtwoone
+@node Agent PRESET_PASSPHRASE
+@subsection Set a passphrase for a keygrip
+
+This command adds a passphrase to the cache for the specified @var{keygrip}.
+
+@example
+  PRESET_PASSPHRASE [--inquire] <string_or_keygrip> <timeout> [<hexstring>]
+@end example
+
+The passphrase is a hexidecimal string when specified. When not specified, the
+passphrase will be retrieved from the pinentry module unless the
+@option{--inquire} option was specified in which case the passphrase will be
+retrieved from the client.
+
+The @var{timeout} parameter keeps the passphrase cached for the specified
+number of seconds. A value of @code{-1} means infinate while @code{0} means
+the default (currently only a timeout of -1 is allowed, which means to never
+expire it).
+@end ifset
+
+
+
+
 @node Agent GET_CONFIRMATION
 @subsection Ask for confirmation
 
@@ -1225,11 +1295,21 @@ option given the certificates are send back.
 @subsection Change a Passphrase
 
 @example
+@ifset gpgtwoone
+  PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] @var{keygrip}
+@end ifset
+@ifclear gpgtwoone
   PASSWD @var{keygrip}
+@end ifclear
 @end example
 
 This command is used to interactively change the passphrase of the key
 identified by the hex string @var{keygrip}.
+
+@ifset gpgtwoone
+The @option{--preset} option may be used to add the new passphrase to the
+cache using the default cache parameters.
+@end ifset
 
 
 @node Agent UPDATESTARTUPTTY

@@ -319,6 +319,7 @@ in the option file.
 
 @table @gnupgtabopt
 
+@anchor{gpgsm-option --options}
 @item --options @var{file}
 @opindex options
 Reads configuration from @var{file} instead of from the default
@@ -760,8 +761,8 @@ current home directory (@pxref{option --homedir}).
 This is the standard configuration file read by @command{gpgsm} on
 startup.  It may contain any valid long option; the leading two dashes
 may not be entered and the option may not be abbreviated.  This default
-name may be changed on the command line (@pxref{option
-  --options}).  You should backup this file.
+name may be changed on the command line (@pxref{gpgsm-option --options}).
+You should backup this file.
 
 
 @item policies.txt
