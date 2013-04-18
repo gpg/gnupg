@@ -1293,9 +1293,7 @@ encoded in the character set as specified by
 @option{--display-charset}. These options affect all following
 arguments. Both options may be used multiple times.
 
-@ifset gpgone
-@anchor{option --options}
-@end ifset
+@anchor{gpg-option --options}
 @item --options @code{file}
 @opindex options
 Read options from @code{file} and do not try to read them from the
@@ -2929,7 +2927,7 @@ current home directory (@pxref{option --homedir}).
   This is the standard configuration file read by @command{@gpgname} on
   startup.  It may contain any valid long option; the leading two dashes
   may not be entered and the option may not be abbreviated.  This default
-  name may be changed on the command line (@pxref{option --options}).
+  name may be changed on the command line (@pxref{gpg-option --options}).
   You should backup this file.
 
 @end table

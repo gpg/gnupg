@@ -88,7 +88,7 @@ yat2m: yat2m.c
 	fig2dev -L png `test -f '$<' || echo '$(srcdir)/'`$< $@
 
 .fig.jpg:
-	fig2dev -L jpg `test -f '$<' || echo '$(srcdir)/'`$< $@
+	fig2dev -L jpeg `test -f '$<' || echo '$(srcdir)/'`$< $@
 
 .fig.eps:
 	fig2dev -L eps `test -f '$<' || echo '$(srcdir)/'`$< $@
