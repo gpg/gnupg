@@ -189,10 +189,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (300, N_("@Commands:\n ")),
 
   ARGPARSE_c (aSign, "sign", N_("make a signature")),
-  ARGPARSE_c (aClearsign, "clearsign", N_("make a clear text signature") ),
+/*ARGPARSE_c (aClearsign, "clearsign", N_("make a clear text signature") ),*/
   ARGPARSE_c (aDetachedSign, "detach-sign", N_("make a detached signature")),
   ARGPARSE_c (aEncr, "encrypt", N_("encrypt data")),
-  ARGPARSE_c (aSym, "symmetric", N_("encryption only with symmetric cipher")),
+/*ARGPARSE_c (aSym, "symmetric", N_("encryption only with symmetric cipher")),*/
   ARGPARSE_c (aDecrypt, "decrypt", N_("decrypt data (default)")),
   ARGPARSE_c (aVerify, "verify",  N_("verify a signature")),
   ARGPARSE_c (aListKeys, "list-keys", N_("list keys")),
@@ -204,8 +204,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aKeygen, "gen-key", N_("generate a new key pair")),
   ARGPARSE_c (aDeleteKey, "delete-keys",
               N_("remove keys from the public keyring")),
-  ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a key server")),
-  ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a key server")),
+/*ARGPARSE_c (aSendKeys, "send-keys", N_("export keys to a key server")),*/
+/*ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a key server")),*/
   ARGPARSE_c (aImport, "import", N_("import certificates")),
   ARGPARSE_c (aExport, "export", N_("export certificates")),
   ARGPARSE_c (aExportSecretKeyP12, "export-secret-key-p12", "@"),
