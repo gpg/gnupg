@@ -212,9 +212,10 @@ enum {
   VENDOR_OMNIKEY= 0x076b,
   VENDOR_GEMPC  = 0x08e6,
   VENDOR_VEGA   = 0x0982,
+  VENDOR_REINER = 0x0c4b,
   VENDOR_KAAN   = 0x0d46,
+  VENDOR_VASCO  = 0x1a44,
   VENDOR_FSIJ   = 0x234b,
-  VENDOR_VASCO  = 0x1a44
 };
 
 /* Some product ids.  */
@@ -227,6 +228,7 @@ enum {
 #define VASCO_920       0x0920
 #define GEMPC_PINPAD    0x3478
 #define VEGA_ALPHA      0x0008
+#define CYBERJACK_GO    0x0504
 
 /* A list and a table with special transport descriptions. */
 enum {
@@ -3376,6 +3378,7 @@ ccid_transceive_secure (ccid_driver_t handle,
       pininfo->maxlen = 25;
       enable_varlen = 1;
       break;
+    case VENDOR_REINER: /* Tested with cyberJack go */
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
       enable_varlen = 1;
       break;
