@@ -21,7 +21,10 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef _WIN32 
+#ifdef _WIN32
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 # ifndef VER_PLATFORM_WIN32_WINDOWS
 #  define VER_PLATFORM_WIN32_WINDOWS 1
@@ -121,7 +124,7 @@ generate_photo_id(PKT_public_key *pk,const char *photo_name)
 	  continue;
 	}
 
-      
+
       len=iobuf_get_filelength(file, &overflow);
       if(len>6144 || overflow)
 	{

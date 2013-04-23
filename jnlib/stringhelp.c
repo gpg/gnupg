@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 #endif
 
@@ -230,7 +233,7 @@ length_sans_trailing_chars (const unsigned char *line, size_t len,
 {
   const unsigned char *p, *mark;
   size_t n;
-  
+
   for( mark=NULL, p=line, n=0; n < len; n++, p++ )
     {
       if (strchr (trimchars, *p ))
@@ -241,8 +244,8 @@ length_sans_trailing_chars (const unsigned char *line, size_t len,
       else
         mark = NULL;
     }
-  
-  if (mark) 
+
+  if (mark)
     return mark - line;
   return len;
 }
@@ -355,16 +358,16 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
 {
   const char *argv[32];
   int argc;
-  size_t n; 
+  size_t n;
   int skip = 1;
   char *home_buffer = NULL;
-  char *name, *home, *p;                           
-       
-  n = strlen (first_part) + 1;                     
+  char *name, *home, *p;
+
+  n = strlen (first_part) + 1;
   argc = 0;
-  while ( (argv[argc] = va_arg (arg_ptr, const char *)) )   
+  while ( (argv[argc] = va_arg (arg_ptr, const char *)) )
     {
-      n += strlen (argv[argc]) + 1;                        
+      n += strlen (argv[argc]) + 1;
       if (argc >= DIM (argv)-1)
         {
           if (xmode)
@@ -372,11 +375,11 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           errno = EINVAL;
           return NULL;
         }
-      argc++; 
+      argc++;
     }
   n++;
-  
-  home = NULL;                                     
+
+  home = NULL;
   if (*first_part == '~')
     {
       if (first_part[1] == '/' || !first_part[1])
@@ -386,13 +389,13 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           if (!home)
             home = home_buffer = get_pwdir (xmode, NULL);
           if (home && *home)
-            n += strlen (home);                            
+            n += strlen (home);
         }
       else
         {
           /* This is the "~username/" or "~username" case.  */
           char *user;
-    
+
           if (xmode)
             user = jnlib_xstrdup (first_part+1);
           else
@@ -405,7 +408,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           if (p)
             *p = 0;
           skip = 1 + strlen (user);
-          
+
           home = home_buffer = get_pwdir (xmode, user);
           jnlib_free (user);
           if (home)
@@ -426,7 +429,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           return NULL;
         }
     }
-  
+
   if (home)
     p = stpcpy (stpcpy (name, home), first_part + skip);
   else
@@ -481,9 +484,9 @@ int
 compare_filenames (const char *a, const char *b)
 {
 #ifdef HAVE_DRIVE_LETTERS
-  for ( ; *a && *b; a++, b++ ) 
+  for ( ; *a && *b; a++, b++ )
     {
-      if (*a != *b 
+      if (*a != *b
           && (toupper (*(const unsigned char*)a)
               != toupper (*(const unsigned char*)b) )
           && !((*a == '/' && *b == '\\') || (*a == '\\' && *b == '/')))
@@ -492,7 +495,7 @@ compare_filenames (const char *a, const char *b)
   if ((*a == '/' && *b == '\\') || (*a == '\\' && *b == '/'))
     return 0;
   else
-    return (toupper (*(const unsigned char*)a) 
+    return (toupper (*(const unsigned char*)a)
             - toupper (*(const unsigned char*)b));
 #else
     return strcmp(a,b);
@@ -531,7 +534,7 @@ hextobyte (const char *s)
 /* Print a BUFFER to stream FP while replacing all control characters
    and the characters DELIM and DELIM2 with standard C escape
    sequences.  Returns the number of characters printed. */
-size_t 
+size_t
 print_sanitized_buffer2 (FILE *fp, const void *buffer, size_t length,
                          int delim, int delim2)
 {
@@ -540,9 +543,9 @@ print_sanitized_buffer2 (FILE *fp, const void *buffer, size_t length,
 
   for (; length; length--, p++, count++)
     {
-      if (*p < 0x20 
+      if (*p < 0x20
           || *p == 0x7f
-          || *p == delim 
+          || *p == delim
           || *p == delim2
           || ((delim || delim2) && *p=='\\'))
         {
@@ -595,7 +598,7 @@ print_sanitized_buffer2 (FILE *fp, const void *buffer, size_t length,
 }
 
 /* Same as print_sanitized_buffer2 but with just one delimiter. */
-size_t 
+size_t
 print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
                         int delim)
 {
@@ -603,7 +606,7 @@ print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
 }
 
 
-size_t 
+size_t
 print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
                              size_t length, int delim)
 {
@@ -611,7 +614,7 @@ print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
   size_t i;
 
   /* We can handle plain ascii simpler, so check for it first. */
-  for (i=0; i < length; i++ ) 
+  for (i=0; i < length; i++ )
     {
       if ( (p[i] & 0x80) )
         break;
@@ -630,20 +633,20 @@ print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
 }
 
 
-size_t 
+size_t
 print_sanitized_string2 (FILE *fp, const char *string, int delim, int delim2)
 {
   return string? print_sanitized_buffer2 (fp, string, strlen (string),
                                           delim, delim2):0;
 }
 
-size_t 
+size_t
 print_sanitized_string (FILE *fp, const char *string, int delim)
 {
   return string? print_sanitized_buffer (fp, string, strlen (string), delim):0;
 }
 
-size_t 
+size_t
 print_sanitized_utf8_string (FILE *fp, const char *string, int delim)
 {
   return string? print_sanitized_utf8_buffer (fp,
@@ -663,7 +666,7 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
   char *buffer, *d;
 
   /* First count length. */
-  for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ ) 
+  for (save_n = n, save_p = p, buflen=1 ; n; n--, p++ )
     {
       if ( *p < 0x20 || *p == 0x7f || *p == delim  || (delim && *p=='\\'))
         {
@@ -735,13 +738,13 @@ const char *
 w32_strerror (int ec)
 {
   static char strerr[256];
-  
+
   if (ec == -1)
     ec = (int)GetLastError ();
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, ec,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, DIM (strerr)-1, NULL);
-  return strerr;    
+  return strerr;
 }
 #endif /*HAVE_W32_SYSTEM*/
 
@@ -762,7 +765,7 @@ ascii_islower (int c)
     return c >= 'a' && c <= 'z';
 }
 
-int 
+int
 ascii_toupper (int c)
 {
     if (c >= 'a' && c <= 'z')
@@ -770,7 +773,7 @@ ascii_toupper (int c)
     return c;
 }
 
-int 
+int
 ascii_tolower (int c)
 {
     if (c >= 'A' && c <= 'Z')
@@ -792,7 +795,7 @@ ascii_strcasecmp( const char *a, const char *b )
     return *a == *b? 0 : (ascii_toupper (*a) - ascii_toupper (*b));
 }
 
-int 
+int
 ascii_strncasecmp (const char *a, const char *b, size_t n)
 {
   const unsigned char *p1 = (const unsigned char *)a;
@@ -814,7 +817,7 @@ ascii_strncasecmp (const char *a, const char *b, size_t n)
       ++p2;
     }
   while (c1 == c2);
-  
+
   return c1 - c2;
 }
 
@@ -860,7 +863,7 @@ ascii_memcasemem (const void *haystack, size_t nhaystack,
     {
       const char *a = haystack;
       const char *b = a + nhaystack - nneedle;
-      
+
       for (; a <= b; a++)
         {
           if ( !ascii_memcasecmp (a, needle, nneedle) )

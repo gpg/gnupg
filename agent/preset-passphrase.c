@@ -38,7 +38,10 @@
 #include <fcntl.h> /* for setmode() */
 #endif
 #ifdef HAVE_W32_SYSTEM
-#include <windows.h>  /* To initialize the sockets.  fixme */
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>  /* To initialize the sockets.  fixme */
 #endif
 
 #define JNLIB_NEED_LOG_LOGV
@@ -49,14 +52,14 @@
 #include "sysutils.h"
 
 
-enum cmd_and_opt_values 
+enum cmd_and_opt_values
 { aNull = 0,
   oVerbose	  = 'v',
   oPassphrase     = 'P',
 
   oPreset         = 'c',
   oForget         = 'f',
-  
+
   oNoVerbose = 500,
 
   oHomedir,
@@ -68,7 +71,7 @@ static const char *opt_homedir;
 static const char *opt_passphrase;
 
 static ARGPARSE_OPTS opts[] = {
-  
+
   { 301, NULL, 0, N_("@Options:\n ") },
 
   { oVerbose, "verbose",   0, "verbose" },
@@ -76,7 +79,7 @@ static ARGPARSE_OPTS opts[] = {
   { oPreset,  "preset",   256, "preset passphrase"},
   { oForget,  "forget",  256, "forget passphrase"},
 
-  { oHomedir, "homedir", 2, "@" }, 
+  { oHomedir, "homedir", 2, "@" },
   {0}
 };
 
@@ -94,14 +97,14 @@ my_strusage (int level)
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
     case 1:
-    case 40: 
+    case 40:
       p =  _("Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n");
       break;
     case 41:
       p = _("Syntax: gpg-preset-passphrase [options] KEYGRIP\n"
                     "Password cache maintenance\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -112,7 +115,7 @@ my_strusage (int level)
 
 /* Include the implementation of map_spwq_error.  */
 MAP_SPWQ_ERROR_IMPL
-      
+
 
 static void
 preset_passphrase (const char *keygrip)
@@ -210,7 +213,7 @@ main (int argc, char **argv)
   const char *keygrip = NULL;
 
   set_strusage (my_strusage);
-  log_set_prefix ("gpg-preset-passphrase", 1); 
+  log_set_prefix ("gpg-preset-passphrase", 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -231,7 +234,7 @@ main (int argc, char **argv)
         case oPreset: cmd = oPreset; break;
         case oForget: cmd = oForget; break;
         case oPassphrase: opt_passphrase = pargs.r.ret_str; break;
-          
+
         default : pargs.err = 2; break;
 	}
     }

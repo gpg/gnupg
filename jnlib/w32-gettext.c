@@ -6,12 +6,12 @@
    modify it under the terms of the GNU Lesser General Public License
    as published by the Free Software Foundation; either version 2.1 of
    the License, or (at your option) any later version.
- 
+
    This program is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
- 
+
    You should have received a copy of the GNU Lesser General Public
    License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
@@ -32,6 +32,9 @@
 #include <sys/stat.h>
 #include <stdint.h>
 #include <locale.h>
+#ifdef HAVE_WINSOCK2_H
+# include <winsock2.h>
+#endif
 #include <windows.h>
 
 #ifdef JNLIB_IN_JNLIB
@@ -595,8 +598,8 @@
 #ifndef SUBLANG_UZBEK_CYRILLIC
 #define SUBLANG_UZBEK_CYRILLIC 0x02
 #endif
- 
-/* Return an XPG style locale name 
+
+/* Return an XPG style locale name
      language[_territory[.codeset]][@modifier].
    Don't even bother determining the codeset; it's not useful in this
    context, because message catalogs are not specific to a single
@@ -1034,7 +1037,7 @@ hash_string( const char *str_param )
 {
   unsigned long int hval, g;
   const char *str = str_param;
-  
+
   hval = 0;
   while (*str != '\0')
     {
@@ -1158,7 +1161,7 @@ free_domain (struct loaded_domain *domain)
   jnlib_free (domain);
 }
 
-  
+
 static struct loaded_domain *
 load_domain (const char *filename)
 {
@@ -1169,7 +1172,7 @@ load_domain (const char *filename)
   struct loaded_domain *domain = NULL;
   size_t to_read;
   char *read_ptr;
-  
+
   fp = fopen (filename, "rb");
   if (!fp)
     return NULL;
@@ -1225,7 +1228,7 @@ load_domain (const char *filename)
   domain->data = (char *) data;
   domain->data_native = (char *) data + size;
   domain->must_swap = data->magic != MAGIC;
-  
+
   /* Fill in the information about the available tables.  */
   switch (SWAPIT (domain->must_swap, data->revision))
     {
@@ -1276,7 +1279,7 @@ utf8_to_wchar (const char *string, size_t length, size_t *retlen)
     return NULL;
 
   nbytes = (size_t)(n+1) * sizeof(*result);
-  if (nbytes / sizeof(*result) != (n+1)) 
+  if (nbytes / sizeof(*result) != (n+1))
     {
       errno = ENOMEM;
       return NULL;
@@ -1465,17 +1468,17 @@ get_string (struct loaded_domain *domain, uint32_t idx,
                + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
       translen = SWAPIT(domain->must_swap, domain->trans_tab[idx].length);
     }
-  else if (!domain->mapped[idx]) 
+  else if (!domain->mapped[idx])
     {
       /* Not yet mapped.  Map from utf-8 to native encoding now.  */
       const char *p_utf8;
       size_t plen_utf8, buflen;
       char *buf;
 
-      p_utf8 = (domain->data 
+      p_utf8 = (domain->data
                 + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
       plen_utf8 = SWAPIT(domain->must_swap, domain->trans_tab[idx].length);
-      
+
       buf = utf8_to_native (p_utf8, plen_utf8, &buflen);
       if (!buf)
         {
@@ -1487,7 +1490,7 @@ get_string (struct loaded_domain *domain, uint32_t idx,
           /* Copy into the DATA_NATIVE area. */
           char *p_tmp;
 
-          p_tmp = (domain->data_native 
+          p_tmp = (domain->data_native
                    + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
           memcpy (p_tmp, buf, buflen);
           domain->mapped[idx] = buflen;
@@ -1523,7 +1526,7 @@ get_string (struct loaded_domain *domain, uint32_t idx,
         }
       jnlib_free (buf);
     }
-  else if (domain->mapped[idx] == 1) 
+  else if (domain->mapped[idx] == 1)
     {
       /* The translated string is in the overflow_space. */
       for (os=domain->overflow_space; os; os = os->next)
@@ -1540,8 +1543,8 @@ get_string (struct loaded_domain *domain, uint32_t idx,
           translen = 0;
         }
     }
-  else 
-    { 
+  else
+    {
       trans = (domain->data_native
                + SWAPIT(domain->must_swap, domain->trans_tab[idx].offset));
       translen = domain->mapped[idx];
@@ -1559,7 +1562,7 @@ do_gettext (const char *msgid, const char *msgid2, unsigned long nplural)
 {
   struct loaded_domain *domain;
   uint32_t top, bottom, nstr;
-  
+
   if (!(domain = the_domain))
     goto not_found;
 
@@ -1576,7 +1579,7 @@ do_gettext (const char *msgid, const char *msgid2, unsigned long nplural)
         {
           nstr--;
           if (nstr < domain->nstrings
-              && SWAPIT(domain->must_swap, 
+              && SWAPIT(domain->must_swap,
                         domain->orig_tab[nstr].length) >= len
               && !strcmp (msgid, (domain->data
                                   + SWAPIT(domain->must_swap,
@@ -1599,7 +1602,7 @@ do_gettext (const char *msgid, const char *msgid2, unsigned long nplural)
   while (bottom < top)
     {
       int cmp_val;
-      
+
       nstr = (bottom + top) / 2;
       cmp_val = strcmp (msgid, (domain->data
                                 + SWAPIT(domain->must_swap,
@@ -1671,10 +1674,10 @@ gettext_select_utf8 (int value)
 int
 main (int argc, char **argv)
 {
-  const char atext1[] = 
+  const char atext1[] =
     "Warning: You have entered an insecure passphrase.%%0A"
     "A passphrase should be at least %u character long.";
-  const char atext2[] = 
+  const char atext2[] =
     "Warning: You have entered an insecure passphrase.%%0A"
     "A passphrase should be at least %u characters long.";
 
@@ -1683,7 +1686,7 @@ main (int argc, char **argv)
       argc--;
       argv++;
     }
-  
+
   bindtextdomain ("gnupg2", "c:/programme/gnu/gnupg/share/locale");
 
   printf ("locale is `%s'\n", gettext_localename ());

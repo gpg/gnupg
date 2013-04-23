@@ -84,7 +84,7 @@ if test "$1" = "--build-w32"; then
         fi
     fi
 
-    ./configure --enable-maintainer-mode --prefix=${w32root}  \
+    $tsdir/configure --enable-maintainer-mode --prefix=${w32root}  \
              --host=${host} --build=${build} \
              --enable-gpgtar \
              --with-gpg-error-prefix=${w32root} \

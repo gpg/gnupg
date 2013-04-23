@@ -25,23 +25,26 @@
 #include <stdarg.h>
 #include <unistd.h>
 #ifdef HAVE_TCGETATTR
-#include <termios.h>
+# include <termios.h>
 #else
-#ifdef HAVE_TERMIO_H
-/* simulate termios with termio */
-#include <termio.h>
-#define termios termio
-#define tcsetattr ioctl
-#define TCSAFLUSH TCSETAF
-#define tcgetattr(A,B) ioctl(A,TCGETA,B)
-#define HAVE_TCGETATTR
-#endif
+# ifdef HAVE_TERMIO_H
+   /* Simulate termios with termio.  */
+#  include <termio.h>
+#  define termios termio
+#  define tcsetattr ioctl
+#  define TCSAFLUSH TCSETAF
+#  define tcgetattr(A,B) ioctl(A,TCGETA,B)
+#  define HAVE_TCGETATTR
+# endif
 #endif
 #ifdef _WIN32 /* use the odd Win32 functions */
-#include <windows.h>
-#ifdef HAVE_TCGETATTR
-#error mingw32 and termios
-#endif
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
+# ifdef HAVE_TCGETATTR
+#  error mingw32 and termios
+# endif
 #endif
 #include <errno.h>
 #include <ctype.h>
@@ -179,7 +182,7 @@ init_ttyfp(void)
     if (my_rl_init_stream)
       my_rl_init_stream (ttyfp);
 #endif
-    
+
 
 #ifdef HAVE_TCGETATTR
     atexit( cleanup );
@@ -218,7 +221,7 @@ tty_printf( const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
 #ifdef _WIN32
-    {   
+    {
         char *buf = NULL;
         int n;
 	DWORD nwritten;
@@ -226,7 +229,7 @@ tty_printf( const char *fmt, ... )
 	n = vasprintf(&buf, fmt, arg_ptr);
 	if( !buf )
 	    log_bug("vasprintf() failed\n");
-        
+
 	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
 	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
 	if( n != nwritten )
@@ -265,7 +268,7 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
 
     va_start( arg_ptr, fmt ) ;
 #ifdef _WIN32
-    {   
+    {
         char *buf = NULL;
         int n;
 	DWORD nwritten;
@@ -273,7 +276,7 @@ tty_fprintf (FILE *fp, const char *fmt, ... )
 	n = vasprintf(&buf, fmt, arg_ptr);
 	if( !buf )
 	    log_bug("vasprintf() failed\n");
-        
+
 	if( !WriteConsoleA( con.out, buf, n, &nwritten, NULL ) )
 	    log_fatal("WriteConsole failed: rc=%d", (int)GetLastError() );
 	if( n != nwritten )
@@ -531,7 +534,7 @@ tty_get( const char *prompt )
     {
       char *line;
       char *buf;
-      
+
       if (!initialized)
 	init_ttyfp();
 

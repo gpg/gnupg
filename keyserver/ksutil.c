@@ -36,7 +36,10 @@
 #include <stdlib.h>
 
 #ifdef HAVE_W32_SYSTEM
-#include <windows.h>
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
 #endif
 
 #ifdef HAVE_LIBCURL
@@ -78,7 +81,7 @@ register_timeout(void)
   sigemptyset(&act.sa_mask);
   act.sa_flags=0;
   return sigaction(SIGALRM,&act,NULL);
-#else 
+#else
   if(signal(SIGALRM,catch_alarm)==SIG_ERR)
     return -1;
   else
@@ -597,7 +600,7 @@ ks_hextobyte (const char *s)
 
 
 /* Non localized version of toupper.  */
-int 
+int
 ks_toupper (int c)
 {
   if (c >= 'a' && c <= 'z')

@@ -30,6 +30,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 #endif
 #ifdef __riscos__
@@ -43,7 +46,7 @@
 
 /*-- Begin configurable part.  --*/
 
-/* The size of the internal buffers. 
+/* The size of the internal buffers.
    NOTE: If you change this value you MUST also adjust the regression
    test "armored_key_8192" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
@@ -66,15 +69,15 @@
    implementation.  What we define here are 3 macros to make the
    appropriate calls:
 
-   my_fileno 
+   my_fileno
      Is expanded to fileno(a) if using a stdion backend and to a if we
      are using the low-level backend.
 
-   my_fopen 
+   my_fopen
      Is defined to fopen for the stdio backend and to direct_open if
      we are using the low-evel backend.
 
-   my_fopen_ro 
+   my_fopen_ro
      Is defined to fopen for the stdio backend and to fd_cache_open if
      we are using the low-evel backend.
 
@@ -117,7 +120,7 @@
 typedef struct
 {
   fp_or_fd_t fp;       /* Open file pointer or handle.  */
-  int keep_open; 
+  int keep_open;
   int no_cache;
   int eof_seen;
   int print_only_name; /* Flags indicating that fname is not a real file.  */
@@ -196,7 +199,7 @@ fd_cache_strcmp (const char *a, const char *b)
 #ifdef HAVE_DOSISH_SYSTEM
   for (; *a && *b; a++, b++)
     {
-      if (*a != *b && !((*a == '/' && *b == '\\') 
+      if (*a != *b && !((*a == '/' && *b == '\\')
                         || (*a == '\\' && *b == '/')) )
         break;
     }
@@ -353,7 +356,7 @@ direct_open (const char *fname, const char *mode)
 
 
 /*
- * Instead of closing an FD we keep it open and cache it for later reuse 
+ * Instead of closing an FD we keep it open and cache it for later reuse
  * Note that this caching strategy only works if the process does not chdir.
  */
 static void
@@ -477,13 +480,13 @@ file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
     {
       assert (size);  /* We need a buffer. */
       if (feof (f))
-	{ 
+	{
           /* On terminals you could easily read as many EOFs as you
              call fread() or fgetc() repeatly.  Every call will block
              until you press CTRL-D. So we catch this case before we
              call fread() again.  */
-	  rc = -1;		
-	  *ret_len = 0;		
+	  rc = -1;
+	  *ret_len = 0;
 	}
       else
 	{
@@ -891,7 +894,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		  /*  log_debug("partial: ctx=%p c=%02x size=%u\n", a, c, a->size); */
 		}
 	      else
-		BUG ();	
+		BUG ();
 	    }
 
 	  while (!rc && size && a->size)
@@ -1506,7 +1509,7 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
     {				/* keep system filepointer/descriptor open */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl `%s' keep=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1, 
+		   a ? a->no : -1, a ? a->subno : -1,
                    a && a->desc ? a->desc : "?",
 		   intval);
       for (; a; a = a->chain)
@@ -1543,7 +1546,7 @@ iobuf_ioctl (iobuf_t a, int cmd, int intval, void *ptrval)
     {				/* disallow/allow caching */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1, 
+		   a ? a->no : -1, a ? a->subno : -1,
                    a && a->desc? a->desc : "?",
 		   intval);
       for (; a; a = a->chain)
@@ -1663,7 +1666,7 @@ iobuf_push_filter2 (iobuf_t a,
 
   if (DBG_IOBUF)
     {
-      log_debug ("iobuf-%d.%d: push `%s'\n", a->no, a->subno, 
+      log_debug ("iobuf-%d.%d: push `%s'\n", a->no, a->subno,
                  a->desc?a->desc:"?");
       print_chain (a);
     }
@@ -2170,24 +2173,24 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
 
   if (overflow)
     *overflow = 0;
-  
-  if ( a->directfp )  
+
+  if ( a->directfp )
     {
       FILE *fp = a->directfp;
-      
+
       if ( !fstat(fileno(fp), &st) )
         return st.st_size;
       log_error("fstat() failed: %s\n", strerror(errno) );
       return 0;
     }
-  
+
   /* Hmmm: file_filter may have already been removed */
   for ( ; a; a = a->chain )
     if ( !a->chain && a->filter == file_filter )
       {
         file_filter_ctx_t *b = a->filter_ov;
         fp_or_fd_t fp = b->fp;
-        
+
 #if defined(HAVE_W32_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
         ulong size;
         static int (* __stdcall get_file_size_ex) (void *handle,
@@ -2197,7 +2200,7 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
         if (!get_file_size_ex_initialized)
           {
             void *handle;
-            
+
             handle = dlopen ("kernel32.dll", RTLD_LAZY);
             if (handle)
               {
@@ -2207,21 +2210,21 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
               }
             get_file_size_ex_initialized = 1;
           }
-        
+
         if (get_file_size_ex)
           {
             /* This is a newer system with GetFileSizeEx; we use this
                then because it seem that GetFileSize won't return a
                proper error in case a file is larger than 4GB. */
             LARGE_INTEGER exsize;
-            
+
             if (get_file_size_ex (fp, &exsize))
               {
                 if (!exsize.u.HighPart)
                   return exsize.u.LowPart;
                 if (overflow)
                   *overflow = 1;
-                return 0; 
+                return 0;
               }
           }
         else
@@ -2238,14 +2241,14 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
 #endif
         break/*the for loop*/;
       }
-  
+
     return 0;
 }
 
 
 /* Return the file descriptor of the underlying file or -1 if it is
    not available.  */
-int 
+int
 iobuf_get_fd (iobuf_t a)
 {
   if (a->directfp)
@@ -2518,7 +2521,7 @@ translate_file_handle (int fd, int for_write)
 # else
   {
     int x;
-    
+
     (void)for_write;
 
     if (fd == 0)
@@ -2551,13 +2554,13 @@ iobuf_skip_rest (iobuf_t a, unsigned long n, int partial)
     {
       for (;;)
         {
-          if (a->nofast || a->d.start >= a->d.len) 
+          if (a->nofast || a->d.start >= a->d.len)
             {
               if (iobuf_readbyte (a) == -1)
                 {
                   break;
                 }
-	    } 
+	    }
           else
             {
               unsigned long count = a->d.len - a->d.start;
@@ -2565,11 +2568,11 @@ iobuf_skip_rest (iobuf_t a, unsigned long n, int partial)
               a->d.start = a->d.len;
 	    }
 	}
-    } 
+    }
   else
     {
       unsigned long remaining = n;
-      while (remaining > 0) 
+      while (remaining > 0)
         {
           if (a->nofast || a->d.start >= a->d.len)
             {
@@ -2578,11 +2581,11 @@ iobuf_skip_rest (iobuf_t a, unsigned long n, int partial)
                   break;
 		}
               --remaining;
-	    } 
-          else 
+	    }
+          else
             {
               unsigned long count = a->d.len - a->d.start;
-              if (count > remaining) 
+              if (count > remaining)
                 {
                   count = remaining;
 		}

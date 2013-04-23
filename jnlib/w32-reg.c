@@ -25,6 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#ifdef HAVE_WINSOCK2_H
+# include <winsock2.h>
+#endif
 #include <windows.h>
 
 #include "libjnlib-config.h"
@@ -34,7 +37,7 @@ static HKEY
 get_root_key(const char *root)
 {
   HKEY root_key;
-  
+
   if (!root)
     root_key = HKEY_CURRENT_USER;
   else if (!strcmp( root, "HKEY_CLASSES_ROOT" ) )
@@ -51,7 +54,7 @@ get_root_key(const char *root)
     root_key = HKEY_CURRENT_CONFIG;
   else
     return NULL;
-  
+
   return root_key;
 }
 
@@ -65,10 +68,10 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   HKEY root_key, key_handle;
   DWORD n1, nbytes, type;
   char *result = NULL;
-  
+
   if ( !(root_key = get_root_key(root) ) )
     return NULL;
-  
+
   if ( RegOpenKeyEx( root_key, dir, 0, KEY_READ, &key_handle ) )
     {
       if (root)
@@ -94,7 +97,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   if (type == REG_EXPAND_SZ && strchr (result, '%'))
     {
       char *tmp;
-      
+
       n1 += 1000;
       tmp = jnlib_malloc (n1+1);
       if (!tmp)
@@ -111,7 +114,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
           if (nbytes && nbytes > n1)
             {
               /* Oops - truncated, better don't expand at all.  */
-              jnlib_free (tmp); 
+              jnlib_free (tmp);
               goto leave;
             }
           tmp[nbytes] = 0;
@@ -126,14 +129,14 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
           result = jnlib_malloc (strlen (tmp)+1);
           if (!result)
             result = tmp;
-            else 
+            else
               {
                 strcpy (result, tmp);
                 jnlib_free (tmp);
               }
         }
-      else 
-        {  
+      else
+        {
           /* Error - don't expand.  */
           jnlib_free (tmp);
         }
@@ -146,22 +149,22 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
 
 
 int
-write_w32_registry_string (const char *root, const char *dir, 
+write_w32_registry_string (const char *root, const char *dir,
                            const char *name, const char *value)
 {
   HKEY root_key, reg_key;
-  
+
   if ( !(root_key = get_root_key(root) ) )
     return -1;
-  
-  if ( RegOpenKeyEx( root_key, dir, 0, KEY_WRITE, &reg_key ) 
+
+  if ( RegOpenKeyEx( root_key, dir, 0, KEY_WRITE, &reg_key )
        != ERROR_SUCCESS )
     return -1;
-  
-  if ( RegSetValueEx (reg_key, name, 0, REG_SZ, (BYTE *)value, 
+
+  if ( RegSetValueEx (reg_key, name, 0, REG_SZ, (BYTE *)value,
                       strlen( value ) ) != ERROR_SUCCESS )
     {
-      if ( RegCreateKey( root_key, name, &reg_key ) != ERROR_SUCCESS ) 
+      if ( RegCreateKey( root_key, name, &reg_key ) != ERROR_SUCCESS )
         {
           RegCloseKey(reg_key);
           return -1;
@@ -173,9 +176,9 @@ write_w32_registry_string (const char *root, const char *dir,
           return -1;
         }
     }
-  
+
   RegCloseKey (reg_key);
-  
+
   return 0;
 }
 

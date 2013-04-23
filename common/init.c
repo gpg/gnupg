@@ -25,9 +25,12 @@
 #endif
 
 #ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 #include <windows.h>
 #endif
-#ifdef HAVE_PTH      
+#ifdef HAVE_PTH
 #include <pth.h>
 #endif
 
@@ -46,7 +49,7 @@ void
 init_common_subsystems (void)
 {
   /* Try to auto set the character set.  */
-  set_native_charset (NULL); 
+  set_native_charset (NULL);
 
 #ifdef HAVE_W32_SYSTEM
   /* For W32 we need to initialize the socket layer.  This is because
