@@ -3352,6 +3352,7 @@ ccid_transceive_secure (ccid_driver_t handle,
       pininfo->maxlen = 25;
       enable_varlen = 1;
       break;
+    case VENDOR_REINER:/* Tested with cyberJack go */
     case VENDOR_VASCO: /* Tested with DIGIPASS 920 */
       enable_varlen = 1;
       break;
