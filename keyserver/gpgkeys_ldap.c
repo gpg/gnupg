@@ -61,6 +61,21 @@
 #include "util.h"
 #endif
 
+
+#if HAVE_W32_SYSTEM
+# if !defined(__MINGW64_VERSION_MAJOR) || !defined(__MINGW32_MAJOR_VERSION)
+   /* This is mingw32 with bogus ldap definitions; i.e. Unix style
+      LDAP definitions.  */
+#  define my_ldap_start_tls_s(a,b,c) ldap_start_tls_sA ((a),(b),(c))
+# else
+   /* Standard Microsoft or mingw64.  */
+#  define my_ldap_start_tls_s(a,b,c) ldap_start_tls_sA ((a),NULL,NULL,(b),(c))
+# endif
+#else /*!W32*/
+# define my_ldap_start_tls_s(a,b,c) ldap_start_tls_s ((a),(b),(c))
+#endif /*!W32*/
+
+
 extern char *optarg;
 extern int optind;
 
@@ -2189,7 +2204,7 @@ main(int argc,char *argv[])
 #endif
 
 	  if(err==LDAP_SUCCESS)
-	    err=ldap_start_tls_s(ldap,NULL,NULL);
+	    err = my_ldap_start_tls_s (ldap, NULL, NULL);
 
 	  if(err!=LDAP_SUCCESS)
 	    {
