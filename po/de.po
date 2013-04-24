@@ -9,9 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-08-24 11:29+0200\n"
+"PO-Revision-Date: 2013-04-24 09:33+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
+"Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -154,8 +155,8 @@ msgstr "Bitte geben Sie die Passphrase noch einmal ein:"
 
 #, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen\n"
 "Schlüssel%%0A   %s%%0A   %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
@@ -188,7 +189,7 @@ msgid "Reset Code"
 msgstr "Rückstellcode"
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AZur Eingabe die Tastatur des Kartenlesers verwenden."
 
 msgid "Repeat this Reset Code"
@@ -603,8 +604,9 @@ msgid ""
 "Do you ultimately trust%%0A  \"%s\"%%0Ato correctly certify user "
 "certificates?"
 msgstr ""
-"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s\"%%"
-"0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja\"."
+"Wenn Sie vollständiges Vertrauen haben, daß%%0A  \"%s"
+"\"%%0ABenutzerzertifikate verläßlich zertifiziert, so antworten Sie mit \"Ja"
+"\"."
 
 msgid "Yes"
 msgstr "Ja"
@@ -1373,8 +1375,8 @@ msgstr ""
 msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
-"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren %"
-"s (%d) verletzt die Empfängervoreinstellungen\n"
+"WARNUNG: Erzwungene Verwendung des symmetrischen Verschlüsselungsverfahren "
+"%s (%d) verletzt die Empfängervoreinstellungen\n"
 
 #, c-format
 msgid ""
@@ -1842,8 +1844,8 @@ msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
-"Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist %"
-"s)\n"
+"Die Bibliothek \"libgcrypt\" ist zu alt (benötigt wird %s, vorhanden ist "
+"%s)\n"
 
 #, c-format
 msgid "NOTE: %s is not for normal use!\n"
@@ -5280,8 +5282,8 @@ msgstr "%d marginal-needed, %d complete-needed, %s Vertrauensmodell\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"Tiefe: %d  gültig: %3d  signiert: %3d  Vertrauen: %d-, %dq, %dn, %dm, %df, %"
-"du\n"
+"Tiefe: %d  gültig: %3d  signiert: %3d  Vertrauen: %d-, %dq, %dn, %dm, %df, "
+"%du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5637,7 +5639,7 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Kann auf %s nicht zugreifen - ungültige OpenPGP-Karte?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Bitte die PIN auf der Tastatur des Kartenlesers eingeben"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5670,11 +5672,14 @@ msgstr "Den internen CCID Treiber nicht benutzen"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|Schalte die Karte nach N Sekunden Inaktivität ab"
 
-msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "Die Tastatur des Kartenlesers nicht benutzen"
 
 msgid "deny the use of admin card commands"
 msgstr "Verweigere die Benutzung von \"Admin\"-Befehlen"
+
+msgid "use variable length input for pinpad"
+msgstr "Tastatur des Kartenlesers hat variierbare Längen"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Aufruf: scdaemon [Optionen] (-h für Hilfe)"
