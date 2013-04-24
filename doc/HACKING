@@ -2,6 +2,11 @@
 		   ================================
 		   (Some notes on GNUPG internals.)
 
+      ************************************************************
+      *** Please see the file HACKING in the GIT master branch ***
+      ***            for up-to-date information.               ***
+      ************************************************************
+
 
 * No more ChangeLog files
 
@@ -23,6 +28,7 @@ and ChangeLog entries don't give enough of the big picture.  Omit the
 leading TABs that you're used to seeing in a "real" ChangeLog file, but
 keep the maximum line length at 72 or smaller, so that the generated
 ChangeLog lines, each with its leading TAB, will not exceed 80 columns.
+
 
 
 
