@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.17-git56b2bc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-08-05 01:24+0800\n"
+"PO-Revision-Date: 2013-04-24 10:09+0200\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
@@ -180,8 +180,7 @@ msgstr "PIN 重設碼 (PUK)"
 msgid "Reset Code"
 msgstr "重設碼"
 
-#, fuzzy, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, c-format
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0A使用讀卡機的鍵盤來輸入."
 
@@ -264,8 +263,7 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "是, 不需要任何保護"
 
-#, fuzzy, c-format
-#| msgid "Please enter the passphrase to%0Ato protect your new key"
+#, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "請輸入密語至%0A以保護你的新金鑰"
 
@@ -462,7 +460,7 @@ msgid "no gpg-agent running in this session\n"
 msgstr "在此階段中沒有執行中的 gpg-agent\n"
 
 msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "被變造的 GPG_AGENT_INFO 環境變數\n"
+msgstr "格式不對的 GPG_AGENT_INFO 環境變數\n"
 
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -924,7 +922,7 @@ msgid "premature eof (in CRC)\n"
 msgstr "檔案未預期的結束 (CRC 的部分未結束)\n"
 
 msgid "malformed CRC\n"
-msgstr "CRC 被變造過\n"
+msgstr "格式不對的 CRC\n"
 
 #, c-format
 msgid "CRC error; %06lX - %06lX\n"
@@ -1627,11 +1625,6 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "用法: gpg [選項] [檔案] (或用 -h 求助)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
@@ -5167,10 +5160,6 @@ msgstr "啟用完整除錯"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "用法: kbxutil [選項] [檔案] (或用 -h 求助)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: kbxutil [options] [files]\n"
-#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "List, export, import Keybox data\n"
@@ -5381,8 +5370,6 @@ msgstr "目前在此指令中的管理者 PIN 驗證被禁止了\n"
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "無法存取 %s - 無效的 OpenPGP 卡片?\n"
 
-#, fuzzy
-#| msgid "||Please enter your PIN at the reader's keypad"
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||請在讀卡機鍵盤上輸入你的個人識別碼 (PIN)"
 
@@ -5416,8 +5403,6 @@ msgstr "不要使用內部的 CCID 驅動程式"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|沒有活動達 N 秒後就與卡片斷線"
 
-#, fuzzy
-#| msgid "do not use a reader's keypad"
 msgid "do not use a reader's pinpad"
 msgstr "不要使用讀卡機鍵盤"
 
@@ -5461,7 +5446,7 @@ msgid "no running dirmngr - starting `%s'\n"
 msgstr "沒有執行中的 dirmngr - 正在啟動 `%s'\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "被變造的 DIRMNGR_INFO 環境變數\n"
+msgstr "格式不對的 DIRMNGR_INFO 環境變數\n"
 
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
@@ -5691,23 +5676,15 @@ msgstr "沒有指定的金鑰用途 - 假設為所有的用途\n"
 msgid "error getting key usage information: %s\n"
 msgstr "取得金鑰用途資訊時出錯: %s\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for certification\n"
 msgid "certificate should not have been used for certification\n"
 msgstr "憑證應該還未被用於憑證\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for OCSP response signing\n"
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "憑證應該還未被用於 OCSP 回應簽署\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for encryption\n"
 msgid "certificate should not have been used for encryption\n"
 msgstr "憑證應該還未被用於加密\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for signing\n"
 msgid "certificate should not have been used for signing\n"
 msgstr "憑證應該還未被用於簽署\n"
 
@@ -5974,11 +5951,6 @@ msgstr "|名稱|使用「名稱」訊息摘要演算法"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "用法: gpgsm [選項] [檔案] (或用 -h 求助)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
