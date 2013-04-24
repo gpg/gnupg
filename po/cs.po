@@ -30,10 +30,10 @@ msgstr ""
 "PO-Revision-Date: 2011-01-11 22:55+0100\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: cs\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
 #, c-format
@@ -133,8 +133,8 @@ msgstr "nalezena karta se sériovým číslem: %s\n"
 #, c-format
 msgid "error getting default authentication keyID of card: %s\n"
 msgstr ""
-"chyba při získání identifikátoru implicitního autentizačního klíče karty: %"
-"s\n"
+"chyba při získání identifikátoru implicitního autentizačního klíče karty: "
+"%s\n"
 
 #, c-format
 msgid "no suitable card key found: %s\n"
@@ -169,11 +169,11 @@ msgstr "Prosím, vložte toto heslo znovu"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s%%"
-"0Auvnitř úložiště klíčů gpg-agenta"
+"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s"
+"%%0Auvnitř úložiště klíčů gpg-agenta"
 
 msgid "does not match - try again"
 msgstr "neshodují se – zkuste to znovu"
@@ -199,8 +199,9 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Resetační kód"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0APoužijte klávesnici čtečky."
 
 msgid "Repeat this Reset Code"
@@ -264,14 +265,14 @@ msgid_plural ""
 "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
 "contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň %"
-"u číslici nebo %%0Azvláštní znak."
+"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
+"%u číslici nebo %%0Azvláštní znak."
 msgstr[1] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň %"
-"u číslice nebo %%0Azvláštní znaky."
+"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
+"%u číslice nebo %%0Azvláštní znaky."
 msgstr[2] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň %"
-"u číslic nebo %%0Azvláštních znaků."
+"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
+"%u číslic nebo %%0Azvláštních znaků."
 
 #, c-format
 msgid ""
@@ -5180,8 +5181,8 @@ msgstr "požadováno %d částečné důvěry a %d úplné důvěry, model %s\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"hloubka: %d  platných: %3d  podepsaných: %3d  důvěra: %d-, %dq, %dn, %dm, %"
-"df, %du\n"
+"hloubka: %d  platných: %3d  podepsaných: %3d  důvěra: %d-, %dq, %dn, %dm, "
+"%df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5539,7 +5540,9 @@ msgstr "ověření PIN správce je nyní prostřednictvím tohoto příkazu zak�
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "přístup na %s se nezdařil – vadná OpenPGP karta?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Prosím, zadejte svůj PIN na klávesnici čtečky"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5572,11 +5575,16 @@ msgstr "nepoužívat vnitřní ovladač CCID"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|odpojovat se od karty po N sekundách nečinnosti"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "nepoužívat klávesnici čtečky"
 
 msgid "deny the use of admin card commands"
 msgstr "zakázat používání správcovských příkazů karty"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Použití: scdaemon [možnosti] [SOUBORY] (-h pro nápovědu)"

@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2011-08-05 01:24+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
+"Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -150,8 +151,8 @@ msgstr "請再次輸入密語"
 
 #, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "請輸入密語以保護收到的私鑰 %%0A   %s%%0A   %s%%0A 於 gpg-agent 的金鑰存放處"
 
@@ -179,8 +180,9 @@ msgstr "PIN 重設碼 (PUK)"
 msgid "Reset Code"
 msgstr "重設碼"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0A使用讀卡機的鍵盤來輸入."
 
 msgid "Repeat this Reset Code"
@@ -5379,7 +5381,9 @@ msgstr "目前在此指令中的管理者 PIN 驗證被禁止了\n"
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "無法存取 %s - 無效的 OpenPGP 卡片?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||請在讀卡機鍵盤上輸入你的個人識別碼 (PIN)"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5412,11 +5416,16 @@ msgstr "不要使用內部的 CCID 驅動程式"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|沒有活動達 N 秒後就與卡片斷線"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "不要使用讀卡機鍵盤"
 
 msgid "deny the use of admin card commands"
 msgstr "禁用管理者卡片指令"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "用法: scdaemon [選項] (或用 -h 求助)"

@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2008-12-14 23:25+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -147,8 +148,8 @@ msgstr "Lütfen bu anahtar parolasını tekrar girin"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "gpg-agent'in anahtar deposuna korumak için alınan gizli anahtar %%0A  %s%%0A "
 "için lütfen anahtar parolası giriniz"
@@ -178,7 +179,7 @@ msgid "Reset Code"
 msgstr "Sıfırlama Kodu"
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 msgid "Repeat this Reset Code"
@@ -5484,8 +5485,8 @@ msgstr ""
 #, fuzzy, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr ""
-"|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz%%0A[kalan deneme: %"
-"d]"
+"|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz%%0A[kalan deneme: "
+"%d]"
 
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
@@ -5584,7 +5585,9 @@ msgstr "Yönetici PIN'inin doğrulanması bu komut yüzünden şimdilik yasaktı
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "%s erişilebilir değil - OpenPGP kartı geçersiz olabilir mi?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Lütfen PIN'inizi okuyucunun tuştakımından giriniz"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5617,12 +5620,17 @@ msgstr "dahili CCID sürücüsü kullanılmaz"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|N saniyelik durgunluktan sonra kartı ayırır"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "bir okuyucu tuştakımı kullanılmaz"
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "yönetici kartı komutları kullanımına izin verir"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Kullanımı: scdaemon [seçenekler] (yardım için -h)"

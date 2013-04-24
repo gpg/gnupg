@@ -10,12 +10,12 @@ msgstr ""
 "PO-Revision-Date: 2011-08-28 10:55+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
+"Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: uk\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Lokalize 1.2\n"
 
 #, c-format
@@ -137,8 +137,8 @@ msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
 msgstr ""
-"Процесом ssh надіслано запит щодо використання ключа%%0A  %s%%0A  (%s)%%"
-"0AНадати доступ до цього ключа?"
+"Процесом ssh надіслано запит щодо використання ключа%%0A  %s%%0A  "
+"(%s)%%0AНадати доступ до цього ключа?"
 
 msgid "Allow"
 msgstr "Надати"
@@ -155,11 +155,11 @@ msgstr "Будь ласка, повторіть введення пароля"
 
 #, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Будь ласка, вкажіть пароль для захисту отриманого закритого ключа%%0A   %s%%"
-"0A   %s%%0Aу сховищі ключів gpg-agent"
+"Будь ласка, вкажіть пароль для захисту отриманого закритого ключа%%0A   %s"
+"%%0A   %s%%0Aу сховищі ключів gpg-agent"
 
 msgid "does not match - try again"
 msgstr "паролі не збігаються, повторіть спробу"
@@ -185,8 +185,9 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Код скидання"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AСкористайтеся додатковою клавіатурою зчитувача для введення."
 
 msgid "Repeat this Reset Code"
@@ -452,8 +453,8 @@ msgstr "не можна використовувати як домашній к�
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
 msgstr ""
-"помилка під час спроби читання поточного стану на файловому дескрипторі %d: %"
-"s\n"
+"помилка під час спроби читання поточного стану на файловому дескрипторі %d: "
+"%s\n"
 
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
@@ -1778,13 +1779,14 @@ msgstr ""
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgstr ""
-"УВАГА: визначення власника підлеглого каталогу у додатку «%s» не є безпечним\n"
+"УВАГА: визначення власника підлеглого каталогу у додатку «%s» не є "
+"безпечним\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgstr ""
-"УВАГА: визначення прав доступу до підлеглого каталогу домашнього каталогу «%"
-"s» не є безпечним\n"
+"УВАГА: визначення прав доступу до підлеглого каталогу домашнього каталогу "
+"«%s» не є безпечним\n"
 
 #, c-format
 msgid ""
@@ -2038,7 +2040,8 @@ msgstr "не можна використовувати алгоритм шифр
 #, c-format
 msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgstr ""
-"не можна використовувати алгоритм створення контрольних сум «%s» у режимі %s\n"
+"не можна використовувати алгоритм створення контрольних сум «%s» у режимі "
+"%s\n"
 
 #, c-format
 msgid "you may not use compression algorithm `%s' while in %s mode\n"
@@ -2096,8 +2099,8 @@ msgstr ""
 #, c-format
 msgid "you cannot use --symmetric --sign --encrypt while in %s mode\n"
 msgstr ""
-"не можна використовувати комбінацію --symmetric --sign --encrypt у режимі %"
-"s\n"
+"не можна використовувати комбінацію --symmetric --sign --encrypt у режимі "
+"%s\n"
 
 msgid "--sign --symmetric [filename]"
 msgstr "--sign --symmetric [назва файла]"
@@ -4051,8 +4054,8 @@ msgstr "зашифрований %s ключ сеансу\n"
 #, c-format
 msgid "passphrase generated with unknown digest algorithm %d\n"
 msgstr ""
-"пароль створено за допомогою невідомого алгоритму створення контрольних сум %"
-"d\n"
+"пароль створено за допомогою невідомого алгоритму створення контрольних сум "
+"%d\n"
 
 #, c-format
 msgid "public key is %s\n"
@@ -4064,8 +4067,8 @@ msgstr "зашифровані відкритим ключем дані: нал�
 #, c-format
 msgid "encrypted with %u-bit %s key, ID %s, created %s\n"
 msgstr ""
-"зашифровано за допомогою %u-бітового %s ключа, ідентифікатор %s, створено %"
-"s\n"
+"зашифровано за допомогою %u-бітового %s ключа, ідентифікатор %s, створено "
+"%s\n"
 
 #, c-format
 msgid "      \"%s\"\n"
@@ -4221,8 +4224,8 @@ msgstr "помилка fstat(%d) у %s: %s\n"
 #, c-format
 msgid "WARNING: using experimental public key algorithm %s\n"
 msgstr ""
-"УВАГА: використовуємо експериментальний алгоритм створення відкритого ключа %"
-"s\n"
+"УВАГА: використовуємо експериментальний алгоритм створення відкритого ключа "
+"%s\n"
 
 msgid "WARNING: Elgamal sign+encrypt keys are deprecated\n"
 msgstr ""
@@ -4235,8 +4238,8 @@ msgstr "УВАГА: використовуємо експериментальн�
 #, c-format
 msgid "WARNING: using experimental digest algorithm %s\n"
 msgstr ""
-"УВАГА: використовуємо експериментальний алгоритм обчислення контрольних сум %"
-"s\n"
+"УВАГА: використовуємо експериментальний алгоритм обчислення контрольних сум "
+"%s\n"
 
 #, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
@@ -5247,8 +5250,8 @@ msgstr "потрібно %d обмежених, потрібно %d повних
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"глибина: %d  чинність: %3d  підписано: %3d  надійність: %d-, %dq, %dn, %dm, %"
-"df, %du\n"
+"глибина: %d  чинність: %3d  підписано: %3d  надійність: %d-, %dq, %dn, %dm, "
+"%df, %du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5617,7 +5620,9 @@ msgstr "перевірку адміністративного пінкоду з�
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "не вдалося отримати доступ до %s — некоректна картка OpenPGP?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Вкажіть ваш пінкод за допомогою клавіатурної панелі зчитувача"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5650,11 +5655,16 @@ msgstr "не використовувати вбудованого драйве�
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|від’єднати бездіяльну вказану кількість секунд картку"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "не використовувати додаткову клавіатуру зчитувача"
 
 msgid "deny the use of admin card commands"
 msgstr "заборонити використання команд з адміністрування картки"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Використання: scdaemon [параметри] (-h — довідка)"

@@ -27,6 +27,7 @@ msgstr ""
 "PO-Revision-Date: 2011-01-12 14:53+0100\n"
 "Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -170,8 +171,8 @@ msgstr "Ange denna lösenfras igen"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Ange en lösenfras för att skydda den mottagna hemliga nyckeln%%0A   %s%%0Ai  "
 "gpg-agents nyckellager"
@@ -200,8 +201,9 @@ msgstr "PUK-kod"
 msgid "Reset Code"
 msgstr "Nollställ kod"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AAnvänd läsarens knappsats för inmatning."
 
 msgid "Repeat this Reset Code"
@@ -286,8 +288,8 @@ msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
-"Du har inte angivet en lösenfras - det här är oftast en dålig idé!%"
-"0ABekräfta att du inte vill ha något som helst skydd för din nyckel."
+"Du har inte angivet en lösenfras - det här är oftast en dålig idé!"
+"%0ABekräfta att du inte vill ha något som helst skydd för din nyckel."
 
 msgid "Yes, protection is not needed"
 msgstr "Ja, skydd behövs inte"
@@ -1785,8 +1787,8 @@ msgstr ""
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgstr ""
-"VARNING: osäkert ägarskap på inneslutande katalog för konfigurationsfilen \"%"
-"s\"\n"
+"VARNING: osäkert ägarskap på inneslutande katalog för konfigurationsfilen "
+"\"%s\"\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
@@ -5658,7 +5660,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "kan inte komma åt %s - ogiltigt OpenPGP-kort?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Knappa in din PIN-kod på läsarens knappsats"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5691,11 +5695,16 @@ msgstr "använd inte den interna CCID-drivrutinen"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|koppla från kortet efter N sekunder inaktivitet"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "använd inte läsarens knappsats"
 
 msgid "deny the use of admin card commands"
 msgstr "neka användning av administratörskommandon för kort"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Användning: scdaemon [flaggor] (-h för hjälp)"

@@ -30,6 +30,7 @@ msgstr ""
 "PO-Revision-Date: 2005-02-04 02:04+0100\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
+"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -171,8 +172,8 @@ msgstr "canvia la contrasenya"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr "Introduïu la contrasenya; aquesta ha de ser una frase secreta \n"
 
 msgid "does not match - try again"
@@ -201,7 +202,7 @@ msgid "Reset Code"
 msgstr ""
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -2573,8 +2574,8 @@ msgstr "clau %08lX: no hi ha ID per a la signatura\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"clau %08lX: l'algoritme de clau pública no es suporta sobre l'id d'usuari «%"
-"s»\n"
+"clau %08lX: l'algoritme de clau pública no es suporta sobre l'id d'usuari "
+"«%s»\n"
 "\n"
 
 #, fuzzy, c-format
@@ -2653,8 +2654,8 @@ msgstr "clau %08lX: s'ha detectat un ID d'usuari duplicat - es fusiona\n"
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
-"AVÍS: la clau %08lX pot estar revocada: s'adquireix la clau de revocació %"
-"08lX\n"
+"AVÍS: la clau %08lX pot estar revocada: s'adquireix la clau de revocació "
+"%08lX\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
@@ -5225,8 +5226,8 @@ msgstr "es descarta: la clau secreta ja és present\n"
 #, fuzzy
 msgid "this is a PGP generated Elgamal key which is not secure for signatures!"
 msgstr ""
-"es descarta «%s»: és una clau ElGamal generada per PGP que no és segura per a "
-"signatures!\n"
+"es descarta «%s»: és una clau ElGamal generada per PGP que no és segura per "
+"a signatures!\n"
 
 #, c-format
 msgid "trust record %lu, type %d: write failed: %s\n"
@@ -5278,8 +5279,8 @@ msgstr "reg de la base de dades de confiança %lu: ha fallat lseek: %s\n"
 #, c-format
 msgid "trustdb rec %lu: write failed (n=%d): %s\n"
 msgstr ""
-"reg de la base de dades de confiança %lu: ha fallat la escriptura (n=%d): %"
-"s\n"
+"reg de la base de dades de confiança %lu: ha fallat la escriptura (n=%d): "
+"%s\n"
 
 msgid "trustdb transaction too large\n"
 msgstr "la transacció de la base de dades de confiança és massa gran\n"
@@ -5900,8 +5901,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr ""
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
+#, fuzzy
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "canvia la contrasenya"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5938,12 +5940,15 @@ msgstr "no usa el terminal en absolut"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr ""
 
-msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr ""
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "les ordres entren en conflicte\n"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 #, fuzzy
 msgid "Usage: scdaemon [options] (-h for help)"
@@ -7207,7 +7212,8 @@ msgstr ""
 #~ "claus\n"
 #~ "tenen confiança absoluta - aquestes són normalment les claus per a les "
 #~ "que\n"
-#~ "teniu accés a la clau secreta.  Contesteu «sí» per a donar a aquesta clau\n"
+#~ "teniu accés a la clau secreta.  Contesteu «sí» per a donar a aquesta "
+#~ "clau\n"
 #~ "confiança absoluta\n"
 
 # "clau no confiable"? jm
@@ -7329,7 +7335,8 @@ msgstr ""
 #~ "«1» significa que creieu que la clau és de la persona que diu que és la\n"
 #~ "    propietària, però no heu pogut, o no heu verificat la clau de cap "
 #~ "manera.\n"
-#~ "    Açò és útil per a la verificació d'un «rol», quan signeu la clau d'un\n"
+#~ "    Açò és útil per a la verificació d'un «rol», quan signeu la clau "
+#~ "d'un\n"
 #~ "    usuari amb pseudònim.\n"
 #~ "\n"
 #~ "«2» significa que heu fet algunes comprovacions de la clau. Per exemple, "
@@ -7523,7 +7530,8 @@ msgstr ""
 #, fuzzy
 #~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 #~ msgstr ""
-#~ "la extensió de xifrat «%s» no s'ha carregat per tindre permissos insegurs\n"
+#~ "la extensió de xifrat «%s» no s'ha carregat per tindre permissos "
+#~ "insegurs\n"
 
 #~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
 #~ msgstr "DSA requereix l'ús d'un algoritme de dispersió de 160 bits\n"

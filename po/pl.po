@@ -11,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2011-01-12 08:34+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -147,11 +148,11 @@ msgstr "Proszê ponownie wprowadziæ to has³o"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Proszê wprowadziæ has³o do zabezpieczenia odebranego klucza tajnego%%0A   %s%"
-"%0A w miejscu przechowywania kluczy gpg-agenta"
+"Proszê wprowadziæ has³o do zabezpieczenia odebranego klucza tajnego%%0A   %s"
+"%%0A w miejscu przechowywania kluczy gpg-agenta"
 
 msgid "does not match - try again"
 msgstr "nie pasuj± - proszê spróbowaæ jeszcze raz"
@@ -177,8 +178,9 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Kod resetuj±cy"
 
-#, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0ADo wpisywania nale¿y u¿yæ klawiatury czytnika."
 
 msgid "Repeat this Reset Code"
@@ -3363,8 +3365,8 @@ msgstr "Podklucz %s jest ju¿ uniewa¿niony.\n"
 #, c-format
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr ""
-"Wy¶wietlanie zdjêcia w formacie %s o rozmiarze %ld bajtów dla klucza %s (id %"
-"d).\n"
+"Wy¶wietlanie zdjêcia w formacie %s o rozmiarze %ld bajtów dla klucza %s (id "
+"%d).\n"
 
 #, c-format
 msgid "preference `%s' duplicated\n"
@@ -5206,14 +5208,14 @@ msgstr "potrzeba %d marginalnych, %d pe³nych, model zaufania %s\n"
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"poziom: %d poprawnych: %3d podpisanych: %3d zaufanie: %d-,%dq,%dn,%dm,%df,%"
-"du\n"
+"poziom: %d poprawnych: %3d podpisanych: %3d zaufanie: %d-,%dq,%dn,%dm,%df,"
+"%du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr ""
-"nie mo¿na uaktualniæ rekordu wersji bazy zaufania: zapis nie powiód³ siê: %"
-"s\n"
+"nie mo¿na uaktualniæ rekordu wersji bazy zaufania: zapis nie powiód³ siê: "
+"%s\n"
 
 msgid ""
 "the signature could not be verified.\n"
@@ -5569,7 +5571,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "nie mo¿na dostaæ siê do %s - niepoprawna karta OpenPGP?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Proszê wprowadziæ PIN na klawiaturze czytnika"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5602,11 +5606,16 @@ msgstr "nie u¿ywanie wewnêtrznego sterownika CCID"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|od³±czenie karty po N sekundach nieaktywno¶ci"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "nie u¿ywanie klawiatury czytnika"
 
 msgid "deny the use of admin card commands"
 msgstr "zabronienie u¿ywania poleceñ karty administratora"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Wywo³anie: scdaemon [opcje] (-h podaje pomoc)"
@@ -6322,8 +6331,8 @@ msgstr ""
 #, c-format
 msgid "hash algorithm %d (%s) for signer %d not supported; using %s\n"
 msgstr ""
-"algorytm skrótu %d (%s) dla podpisuj±cego %d nie jest obs³ugiwany; u¿ycie %"
-"s\n"
+"algorytm skrótu %d (%s) dla podpisuj±cego %d nie jest obs³ugiwany; u¿ycie "
+"%s\n"
 
 #, c-format
 msgid "hash algorithm used for signer %d: %s (%s)\n"

@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2008-12-14 19:34+0100\n"
 "Last-Translator: Jaime Suárez <jaime.suma@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -131,8 +132,8 @@ msgstr "detectada tarjeta con S/N: %s\n"
 #, c-format
 msgid "error getting default authentication keyID of card: %s\n"
 msgstr ""
-"error obteniendo ID de la clave por defecto para autenticaren la tarjeta: %"
-"s\n"
+"error obteniendo ID de la clave por defecto para autenticaren la tarjeta: "
+"%s\n"
 
 #, c-format
 msgid "no suitable card key found: %s\n"
@@ -167,8 +168,8 @@ msgstr "Por favor vuelva a introducir frase contraseña"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Por favor introduzca una frase contraseña para proteger la clave "
 "secretarecibida%%0A  %s%%0Aen el almacen de claves del agente gpg"
@@ -204,7 +205,7 @@ msgid "Reset Code"
 msgstr "Código de Reinicio"
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 msgid "Repeat this Reset Code"
@@ -293,8 +294,8 @@ msgid ""
 "You have not entered a passphrase - this is in general a bad idea!%0APlease "
 "confirm that you do not want to have any protection on your key."
 msgstr ""
-"No ha introducido una frase contraseña -¡esto es en general una mala idea!%"
-"0Apor favor confirme que no quiere ninguna protección para su clave."
+"No ha introducido una frase contraseña -¡esto es en general una mala idea!"
+"%0Apor favor confirme que no quiere ninguna protección para su clave."
 
 msgid "Yes, protection is not needed"
 msgstr "Sí, no se necesita protección"
@@ -649,8 +650,8 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"Por favor verifique que el certificado identificado como:%%0A \"%s\"%%"
-"0Atiene la huella digital:%%0A  %s"
+"Por favor verifique que el certificado identificado como:%%0A \"%s"
+"\"%%0Atiene la huella digital:%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
 #. to be hit if the fingerprint matches the one of the CA.  The
@@ -5211,8 +5212,8 @@ msgstr ""
 msgid ""
 "depth: %d  valid: %3d  signed: %3d  trust: %d-, %dq, %dn, %dm, %df, %du\n"
 msgstr ""
-"nivel: %d  validez: %3d  firmada: %3d  confianza: %d-, %dq, %dn, %dm, %df, %"
-"du\n"
+"nivel: %d  validez: %3d  firmada: %3d  confianza: %d-, %dq, %dn, %dm, %df, "
+"%du\n"
 
 #, c-format
 msgid "unable to update trustdb version record: write failed: %s\n"
@@ -5571,7 +5572,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "no se puede acceder a %s - ¿tarjeta OpenPGP inválida?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Por favor inntroduzca su PIN en el teclado del lector"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5604,12 +5607,17 @@ msgstr "no usa el driverd del CCID interno"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|desconectar la tarjeta después de N segundos de inactividad"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "no usa el teclado del lector"
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "permitir órdenes de administrador en la tarjeta"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Uso: scdaemon [opciones] [ficheros] (-h para ayuda)"
@@ -7925,8 +7933,8 @@ msgstr ""
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "comprobando en profundidad %d firmado=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%"
-#~ "d\n"
+#~ "comprobando en profundidad %d firmado=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/"
+#~ "%d\n"
 
 #~ msgid "If you want to use this revoked key anyway, answer \"yes\"."
 #~ msgstr "Si quiere usar esta clave revocada de todos modos, conteste \"sí\"."

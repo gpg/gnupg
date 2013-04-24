@@ -12,6 +12,7 @@ msgstr ""
 "PO-Revision-Date: 2005-05-31 22:00-0500\n"
 "Last-Translator: Laurentiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -155,8 +156,8 @@ msgstr "schimbã fraza-parolã"
 
 #, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   %"
-"s%%0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
@@ -192,7 +193,7 @@ msgid "Reset Code"
 msgstr ""
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -4001,8 +4002,8 @@ msgstr "nici o acþiune pentru serverul de chei!\n"
 #, c-format
 msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
 msgstr ""
-"AVERTISMENT: manipulator server de chei dintr-o versiune diferitã de GnuPG (%"
-"s)\n"
+"AVERTISMENT: manipulator server de chei dintr-o versiune diferitã de GnuPG "
+"(%s)\n"
 
 msgid "keyserver did not send VERSION\n"
 msgstr "serverul de chei nu a trimis VERSION (versiune)\n"
@@ -5621,8 +5622,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "nu pot accesa %s - card OpenPGP invalid?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
+#, fuzzy
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "||Vã rugãm introduceþi PIN%%0A[semnãturi fãcute: %lu]"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5659,12 +5661,15 @@ msgstr "nu folosi deloc terminalul"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr ""
 
-msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr ""
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "aratã comenzi administrare"
+
+msgid "use variable length input for pinpad"
+msgstr ""
 
 #, fuzzy
 msgid "Usage: scdaemon [options] (-h for help)"
@@ -6840,10 +6845,6 @@ msgstr ""
 
 #~ msgid "Repeat passphrase\n"
 #~ msgstr "Repetaþi fraza-parolã\n"
-
-#, fuzzy
-#~ msgid "||Please enter your PIN at the reader's keypad%%0A[sigs done: %lu]"
-#~ msgstr "||Vã rugãm introduceþi PIN%%0A[semnãturi fãcute: %lu]"
 
 #~ msgid "|A|Admin PIN"
 #~ msgstr "|A|PIN Admin"
