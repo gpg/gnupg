@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2008-12-14 19:34+0100\n"
+"PO-Revision-Date: 2013-04-24 09:47+0200\n"
 "Last-Translator: Jaime Suárez <jaime.suma@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -28,13 +28,13 @@ msgstr "no pude conseguir el bloqueo de entrada de pin: %s\n"
 #. a literal one.  The actual to be translated text starts after
 #. the second vertical bar.
 msgid "|pinentry-label|_OK"
-msgstr ""
+msgstr "|entrada de pin-etiqueta|_OK"
 
 msgid "|pinentry-label|_Cancel"
-msgstr ""
+msgstr "|entrada de pin-etiqueta|_Cancelar"
 
 msgid "|pinentry-label|PIN:"
-msgstr ""
+msgstr "|entrada de pin-etiqueta|PIN:"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -160,6 +160,7 @@ msgid "Deny"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "Please enter the passphrase for the ssh key%0A  %c"
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Por favor introduzca la frase contraseña para la clave ssh%0A %c"
 
@@ -167,6 +168,9 @@ msgid "Please re-enter this passphrase"
 msgstr "Por favor vuelva a introducir frase contraseña"
 
 #, fuzzy, c-format
+#| msgid ""
+#| "Please enter a passphrase to protect the received secret key%%0A   %s"
+#| "%%0Awithin gpg-agent's key storage"
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
@@ -181,17 +185,11 @@ msgstr "no coincide - reinténtelo"
 msgid "failed to create stream from socket: %s\n"
 msgstr "fallo al crear un flujo desde el socket: %s\n"
 
-#, fuzzy
 msgid "Please insert the card with serial number"
-msgstr ""
-"Por favor retire la tarjeta actual e inserte la de número de serie:\n"
-"   %.*s\n"
+msgstr "Por favor inserte la tarjeta con número de serie"
 
-#, fuzzy
 msgid "Please remove the current card and insert the one with serial number"
-msgstr ""
-"Por favor retire la tarjeta actual e inserte la de número de serie:\n"
-"   %.*s\n"
+msgstr "Por favor retire tarjeta actual e inserte la que tiene número de serie"
 
 msgid "Admin PIN"
 msgstr "PIN del Administrador"
@@ -199,21 +197,21 @@ msgstr "PIN del Administrador"
 #. TRANSLATORS: A PUK is the Personal Unblocking Code
 #. used to unblock a PIN.
 msgid "PUK"
-msgstr ""
+msgstr "PUK"
 
 msgid "Reset Code"
 msgstr "Código de Reinicio"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "%s%%0A%%0AUse the reader's keypad for input."
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
-msgstr ""
+msgstr "%s%%0A%%0AUse el teclado del lector como entrada."
 
 msgid "Repeat this Reset Code"
 msgstr "Repita este Código de Reinicio"
 
-#, fuzzy
 msgid "Repeat this PUK"
-msgstr "Repita este PIN"
+msgstr "Repita este PUK"
 
 msgid "Repeat this PIN"
 msgstr "Repita este PIN"
@@ -221,9 +219,8 @@ msgstr "Repita este PIN"
 msgid "Reset Code not correctly repeated; try again"
 msgstr "Código de Reinicio repetido incorrectamente; inténtelo de nuevo"
 
-#, fuzzy
 msgid "PUK not correctly repeated; try again"
-msgstr "PIN repetido incorrectamente; inténtelo de nuevo"
+msgstr "PUK repetido incorrectamente; inténtelo de nuevo"
 
 msgid "PIN not correctly repeated; try again"
 msgstr "PIN repetido incorrectamente; inténtelo de nuevo"
@@ -384,9 +381,8 @@ msgstr "|FICHERO|escribir variables de entorno también en FICHERO"
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
 #. reporting address without breaking the translations.
-#, fuzzy
 msgid "Please report bugs to <@EMAIL@>.\n"
-msgstr "Por favor, informe de posibles \"bugs\" a <"
+msgstr "Por favor, informe de posibles \"bugs\" a <@EMAIL@>.\n"
 
 msgid "Usage: gpg-agent [options] (-h for help)"
 msgstr "Uso: gpg-agent [opciones] (-h para ayuda)"
@@ -660,7 +656,7 @@ msgid "Correct"
 msgstr "Correcto"
 
 msgid "Wrong"
-msgstr ""
+msgstr "Incorrecto"
 
 #, c-format
 msgid "Note: This passphrase has never been changed.%0APlease change it now."
@@ -799,7 +795,7 @@ msgstr "no hay gpg-agent en ejecución - inicando uno\n"
 
 #, c-format
 msgid "waiting %d seconds for the agent to come up\n"
-msgstr ""
+msgstr "esperando %d segundos para que el agente arranque\n"
 
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "no puedo conectar con el agente - intentando retirada\n"
@@ -807,40 +803,34 @@ msgstr "no puedo conectar con el agente - intentando retirada\n"
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
 msgid "|audit-log-result|Good"
-msgstr ""
+msgstr "|audit-log-result|Bien"
 
 msgid "|audit-log-result|Bad"
-msgstr ""
+msgstr "|audit-log-result|Mal"
 
 msgid "|audit-log-result|Not supported"
-msgstr ""
+msgstr "|audit-log-result|No disponible"
 
-#, fuzzy
 msgid "|audit-log-result|No certificate"
-msgstr "importa certificado"
+msgstr "|audit-log-result|Sin certificado"
 
-#, fuzzy
 msgid "|audit-log-result|Not enabled"
-msgstr "importa certificado"
+msgstr "|audit-log-result|No habilitado"
 
 msgid "|audit-log-result|Error"
-msgstr ""
+msgstr "|audit-log-result|Error"
 
-#, fuzzy
 msgid "|audit-log-result|Not used"
-msgstr "importa certificado"
+msgstr "|audit-log-result|No usado"
 
-#, fuzzy
 msgid "|audit-log-result|Okay"
-msgstr "importa certificado"
+msgstr "|audit-log-result|Correcto"
 
-#, fuzzy
 msgid "|audit-log-result|Skipped"
-msgstr "importa certificado"
+msgstr "|audit-log-result|Omitido"
 
-#, fuzzy
 msgid "|audit-log-result|Some"
-msgstr "importa certificado"
+msgstr "|audit-log-result|Algún"
 
 msgid "Certificate chain available"
 msgstr "Cadena de certificados disponible"
@@ -878,24 +868,23 @@ msgstr "Destinatario %d"
 msgid "Data signing succeeded"
 msgstr "Datos firmados correctamente"
 
-#, fuzzy, c-format
+#, c-format
 msgid "data hash algorithm: %s"
-msgstr "Algoritmmo de resumen erróneo: %s"
+msgstr "algoritmmo de resumen de datos: %s"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Signer %d"
-msgstr "Firma %d"
+msgstr "Firmante %d"
 
-#, fuzzy, c-format
+#, c-format
 msgid "attr hash algorithm: %s"
-msgstr "Algoritmmo de resumen erróneo: %s"
+msgstr "algoritmmo de resumen de atributos: %s"
 
 msgid "Data decryption succeeded"
 msgstr "Datos descifrados correctamente"
 
-#, fuzzy
 msgid "Encryption algorithm supported"
-msgstr "el algoritmo de protección %d%s no puede ser utilizado\n"
+msgstr "Algoritmo de cifrado disponible"
 
 msgid "Data verification succeeded"
 msgstr "Datos verificados correctamente"
@@ -903,13 +892,12 @@ msgstr "Datos verificados correctamente"
 msgid "Signature available"
 msgstr "Firma disponible"
 
-#, fuzzy
 msgid "Parsing data succeeded"
-msgstr "Firma interpretada correctamente"
+msgstr "Interpretación de datos correcta"
 
-#, fuzzy, c-format
+#, c-format
 msgid "bad data hash algorithm: %s"
-msgstr "Algoritmmo de resumen erróneo: %s"
+msgstr "algoritmo de resumen de datos erróneo: %s"
 
 #, c-format
 msgid "Signature %d"
@@ -1110,9 +1098,9 @@ msgstr "error reservando memoria: %s\n"
 msgid "error reading `%s': %s\n"
 msgstr "error leyendo `%s': %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error writing `%s': %s\n"
-msgstr "error escribiendo en `%s': %s\n"
+msgstr "error escribiendo `%s': %s\n"
 
 msgid "Login data (account name): "
 msgstr "Datos de login (nombre de la cuenta): "
@@ -1169,18 +1157,21 @@ msgid ""
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
+"NOTA: No hay garantía de que la tarjeta permita el uso del tamaño\n"
+"      requerido. Si la generación de clave fracasa, por favor compruebe\n"
+"      la documentación de su tarjeta para ver los tamaños posibles.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Signature key? (%u) "
-msgstr "¿De qué tamaño quiere la clave? (%u) "
+msgstr "¿De qué tamaño quiere la clave de Firmado? (%u) "
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Encryption key? (%u) "
-msgstr "¿De qué tamaño quiere la clave? (%u) "
+msgstr "¿De qué tamaño quiere la clave de Cifrado? (%u) "
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the Authentication key? (%u) "
-msgstr "¿De qué tamaño quiere la clave? (%u) "
+msgstr "¿De qué tamaño quiere la clave de Autenticación? (%u) "
 
 #, c-format
 msgid "rounded up to %u bits\n"
@@ -1192,19 +1183,18 @@ msgstr "los tamaños de claves %s deben estar en el rango %u-%u\n"
 
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
-msgstr ""
+msgstr "Ahora la tarjeta se reconfigurará para generar una clave de %u bits\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error changing size of key %d to %u bits: %s\n"
-msgstr "error enlazando el socket con `%s': %s\n"
+msgstr "error cambiando el tamaño de la clave %d a %u bits: %s\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "¿Hacer copia de seguridad externa a la tarjeta de clave de cifrado? (S/n)"
 
-#, fuzzy
 msgid "NOTE: keys are already stored on the card!\n"
-msgstr "clave secreta ya almacenada en una tarjeta\n"
+msgstr "NOTA: ¡claves ya almacenadas en la tarjeta!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "¿Reemplazar las claves existentes? (s/N) "
@@ -1246,9 +1236,9 @@ msgstr "las partes secretas de la clave no están disponibles\n"
 msgid "secret key already stored on a card\n"
 msgstr "clave secreta ya almacenada en una tarjeta\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error writing key to card: %s\n"
-msgstr "error escribiendo clave: %s\n"
+msgstr "error escribiendo clave en la tarjeta: %s\n"
 
 msgid "quit this menu"
 msgstr "sale de este menú"
@@ -1299,7 +1289,7 @@ msgid "unblock the PIN using a Reset Code"
 msgstr "desbloquear PIN usando Código de Reinicio"
 
 msgid "gpg/card> "
-msgstr ""
+msgstr "gpg/tarjeta> "
 
 msgid "Admin-only command\n"
 msgstr "Órdenes sólo de administrador\n"
@@ -2107,9 +2097,8 @@ msgstr "--lsign-key id-usuario"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key id-usuario [órdenes]"
 
-#, fuzzy
 msgid "--passwd <user-id>"
-msgstr "--sign-key id-usuario"
+msgstr "--passwd <id-usuario>"
 
 #, c-format
 msgid "keyserver send failed: %s\n"
@@ -2165,10 +2154,6 @@ msgstr "la URL del servidor de claves preferido no es válida\n"
 msgid "|FILE|take the keys from the keyring FILE"
 msgstr "|FICHERO|tomar las claves del anillo FILE"
 
-# o tal vez "en el sello..."
-# Creo que es mejor "con el sello de fecha", no es un conflicto
-# del sello en si mismo sino en relación con el mensaje.
-# Ok.
 msgid "make timestamp conflicts only a warning"
 msgstr "hacer que los conflictos de fecha-hora sean sólo un aviso"
 
@@ -2178,13 +2163,12 @@ msgstr "|DF|escribe información de estado en este descriptor de fichero"
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "Uso: gpgv [opciones] [ficheros] (-h para ayuda)"
 
-#, fuzzy
 msgid ""
 "Syntax: gpgv [options] [files]\n"
 "Check signatures against known trusted keys\n"
 msgstr ""
-"Sintaxis: gpg [opciones] [ficheros]\n"
-"Confrontar las firmas contra claves conocidas\n"
+"Sintaxis: gpgv [opciones] [ficheros]\n"
+"Confrontar las firmas frente a claves fiables conocidas\n"
 
 msgid "No help available"
 msgstr "Ayuda no disponible"
@@ -2467,9 +2451,9 @@ msgstr "clave %s: autofirma inválida para el id \"%s\"\n"
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "clave %s: algoritmo de clave pública no disponible\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "key %s: invalid direct key signature\n"
-msgstr "clave %s: firma directa de clave añadida\n"
+msgstr "clave %s: firma directa de clave inválida\n"
 
 #, c-format
 msgid "key %s: no subkey for key binding\n"
@@ -3007,9 +2991,8 @@ msgstr "¿Borrar realmente este identificador de usuario? (s/N) "
 
 #. TRANSLATORS: Please take care: This is about
 #. moving the key and not about removing it.
-#, fuzzy
 msgid "Really move the primary key? (y/N) "
-msgstr "¿Borrar FIXME la clave primaria? (s/N)"
+msgstr "¿Realmente cambiar de sitio la clave primaria? (s/N)"
 
 msgid "You must select exactly one key.\n"
 msgstr "Debe seleccionar exactamente una clave.\n"
@@ -3099,9 +3082,9 @@ msgstr "Notaciones: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "No hay preferencias en un identificador de usuario estilo PGP 2.x\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "The following key was revoked on %s by %s key %s\n"
-msgstr "Esta clave fue revocada en %s por %s clave %s\n"
+msgstr "La siguiente clave fue revocada en %s por %s clave %s\n"
 
 #, c-format
 msgid "This key may be revoked by %s key %s"
@@ -3338,7 +3321,7 @@ msgid "Create a revocation certificate for this signature? (y/N) "
 msgstr "¿Crear un certificado de revocación para esta clave? (s/N)"
 
 msgid "Not signed by you.\n"
-msgstr ""
+msgstr "No está firmado por usted.\n"
 
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
@@ -3462,7 +3445,7 @@ msgstr "   (%c) Conmutar la capacidad de cifrado\n"
 
 #, c-format
 msgid "   (%c) Toggle the authenticate capability\n"
-msgstr "   (%c) Conmutar la capacidad de autentificación\n"
+msgstr "   (%c) Conmutar la capacidad de autenticación\n"
 
 #, c-format
 msgid "   (%c) Finished\n"
@@ -3471,13 +3454,13 @@ msgstr "   (%c) Acabado\n"
 msgid "Please select what kind of key you want:\n"
 msgstr "Por favor seleccione tipo de clave deseado:\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) RSA and RSA (default)\n"
-msgstr "   (%d) DSA y ElGamal (por defecto)\n"
+msgstr "   (%d) RSA y RSA (por defecto)\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "   (%d) DSA and Elgamal\n"
-msgstr "   (%d) DSA y ElGamal (por defecto)\n"
+msgstr "   (%d) DSA y ElGamal\n"
 
 #, c-format
 msgid "   (%d) DSA (sign only)\n"
@@ -3507,9 +3490,9 @@ msgstr "   (%d) RSA (permite elegir capacidades)\n"
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "las claves %s pueden tener entre %u y %u bits de longitud.\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "What keysize do you want for the subkey? (%u) "
-msgstr "¿De qué tamaño quiere la clave? (%u) "
+msgstr "¿De qué tamaño quiere la subclave? (%u) "
 
 #, c-format
 msgid "What keysize do you want? (%u) "
@@ -3655,7 +3638,7 @@ msgstr ""
 "comentario\n"
 
 msgid "Such a user ID already exists on this key!\n"
-msgstr ""
+msgstr "¡Ese ID de usuario ya existe en esta clave!\n"
 
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -3687,12 +3670,12 @@ msgstr ""
 "Necesita una frase contraseña para proteger su clave secreta.\n"
 "\n"
 
-#, fuzzy
 msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr ""
-"Introduzca la frase contraseña para proteger el objeto importado en GnuPG"
+"Introduzca la frase contraseña para proteger la copia de seguridadde la "
+"clave externamente a la tarjeta."
 
 #, c-format
 msgid "%s.\n"
@@ -3828,7 +3811,7 @@ msgstr "     Huella de subclave:"
 #. TRANSLATORS: this should fit into 24 bytes to that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
-msgstr " Huella de clave primaria:"
+msgstr " Huella clave primaria:"
 
 msgid "      Subkey fingerprint:"
 msgstr "      Huella de subclave:"
@@ -4079,7 +4062,7 @@ msgstr "ATENCIÓN: ¡el mensaje cifrado ha sido manipulado!\n"
 
 #, c-format
 msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
+msgstr "borrada frase de paso en caché con ID: %s\n"
 
 #, c-format
 msgid "decryption failed: %s\n"
@@ -5061,9 +5044,8 @@ msgstr "%s: fallo en poner a cero un registro: %s\n"
 msgid "%s: failed to append a record: %s\n"
 msgstr "%s: fallo al añadir un registro: %s\n"
 
-#, fuzzy
 msgid "Error: The trustdb is corrupted.\n"
-msgstr "%s: se ha creado base de datos de confianza\n"
+msgstr "Error: base de datos de confianza corrupta.\n"
 
 #, c-format
 msgid "can't handle text lines longer than %d characters\n"
@@ -5103,9 +5085,10 @@ msgstr "registro de confianza %lu no es del tipo requerido %d\n"
 
 msgid "You may try to re-create the trustdb using the commands:\n"
 msgstr ""
+"Puede intentar recrear la base de datos de confianza usando las órdenes:\n"
 
 msgid "If that does not work, please consult the manual\n"
-msgstr ""
+msgstr "Si eso no funciona, por favor consulte el manual\n"
 
 #, c-format
 msgid "unable to use unknown trust model (%d) - assuming %s trust model\n"
@@ -5374,37 +5357,38 @@ msgstr "la función de manejo del PIN devolvió un error: %s\n"
 msgid "the NullPIN has not yet been changed\n"
 msgstr "el PIN-Nulo no ha sido cambiado\n"
 
-#, fuzzy
 msgid "|N|Please enter a new PIN for the standard keys."
-msgstr "||Por favor inntroduzca su PIN en el teclado del lector"
+msgstr "|N|Por favor introduzca un nuevo PIN para las claves estándar."
 
-#, fuzzy
 msgid "||Please enter the PIN for the standard keys."
-msgstr "|A|Introduzca PIN de Administrador en el teclado del lector"
+msgstr "||Por favor, introduzca PIN para claves estándar."
 
-#, fuzzy
 msgid "|NP|Please enter a new PIN Unblocking Code (PUK) for the standard keys."
-msgstr "||Por favor introduzca Código de Reinicio de la tarjeta"
+msgstr "|NP|Introduzca nuevo PIN Unblocking Code (PUK) para claves estándar."
 
-#, fuzzy
 msgid "|P|Please enter the PIN Unblocking Code (PUK) for the standard keys."
-msgstr "||Por favor introduzca Código de Reinicio de la tarjeta"
+msgstr ""
+"|P|Por favor introduzca PIN Unblocking Code (PUK) para claves estándar."
 
 msgid "|N|Please enter a new PIN for the key to create qualified signatures."
-msgstr ""
+msgstr "|N|Entre un nuevo PIN para la clave que crea firmas cualificadas."
 
 msgid "||Please enter the PIN for the key to create qualified signatures."
-msgstr ""
+msgstr "||Introduzca un PIN para la clave que crea firmas cualificadas."
 
 msgid ""
 "|NP|Please enter a new PIN Unblocking Code (PUK) for the key to create "
 "qualified signatures."
 msgstr ""
+"|NP|Por favor introduzca un nuevo PIN Unblocking Code (PUK) para la clave "
+"que crea firmas cualificadas."
 
 msgid ""
 "|P|Please enter the PIN Unblocking Code (PUK) for the key to create "
 "qualified signatures."
 msgstr ""
+"|NP|Por favor introduzca el PIN Unblocking Code (PUK) para la clave que crea "
+"firmas cualificadas."
 
 #, c-format
 msgid "error getting new PIN: %s\n"
@@ -5468,15 +5452,12 @@ msgstr ""
 
 #. TRANSLATORS: Do not translate the "|A|" prefix but keep it at
 #. the start of the string.  Use %%0A to force a linefeed.
-#, fuzzy, c-format
+#, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
-msgstr ""
-"|A|Introduzca PIN de Administrador en el teclado del lector%%0A[intentos "
-"restantes %d]"
+msgstr "|A|Introduzca PIN de Administrador%%0A[intentos restantes: %d]"
 
-#, fuzzy
 msgid "|A|Please enter the Admin PIN"
-msgstr "||Por favor introduzca PIN"
+msgstr "|A|Por favor introduzca PIN de Administrador"
 
 msgid "access to admin commands is not configured\n"
 msgstr "el acceso a órdenes de administrador no está configurado\n"
@@ -5501,8 +5482,9 @@ msgid "|N|New PIN"
 msgstr "|N|Nuevo PIN"
 
 #, fuzzy
+#| msgid "|A|Please enter the Admin PIN"
 msgid "||Please enter the Admin PIN and New Admin PIN"
-msgstr "||Por favor introduzca PIN"
+msgstr "|A|Por favor introduzca PIN de Administrador"
 
 #, fuzzy
 #| msgid "||Please enter the PIN"
@@ -5524,9 +5506,8 @@ msgstr "la clave existente será reemplazada\n"
 msgid "generating new key\n"
 msgstr "generando nueva clave\n"
 
-#, fuzzy
 msgid "writing new key\n"
-msgstr "generando nueva clave\n"
+msgstr "escribiendo clave nueva\n"
 
 msgid "creation timestamp missing\n"
 msgstr "falta fecha de creación\n"
@@ -5612,9 +5593,8 @@ msgstr "|N|desconectar la tarjeta después de N segundos de inactividad"
 msgid "do not use a reader's pinpad"
 msgstr "no usa el teclado del lector"
 
-#, fuzzy
 msgid "deny the use of admin card commands"
-msgstr "permitir órdenes de administrador en la tarjeta"
+msgstr "denegar órdenes de administración de la tarjeta"
 
 msgid "use variable length input for pinpad"
 msgstr ""
@@ -5966,28 +5946,25 @@ msgstr "   (%d) Clave existente\n"
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Clave existente de la tarjeta\n"
 
-#, fuzzy
 msgid "Enter the keygrip: "
-msgstr "Introduzca la notación: "
+msgstr "Introduzca keygrip: "
 
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
+msgstr "No es un keygrip válido (se esperaban 40 dígitos hex)\n"
 
-#, fuzzy
 msgid "No key with this keygrip\n"
-msgstr "No existe una subclave con índice %d\n"
+msgstr "No hay claves con ese keygrip\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "error reading the card: %s\n"
-msgstr "%s: error leyendo registro libre: %s\n"
+msgstr "error leyendo la tarjeta: %s\n"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Serial number of the card: %s\n"
-msgstr "error obteniendo el número de serie de la tarjeta: %s\n"
+msgstr "Número de serie de la tarjeta: %s\n"
 
-#, fuzzy
 msgid "Available keys:\n"
-msgstr "deshabilita clave"
+msgstr "Claves disponibles:\n"
 
 #, c-format
 msgid "Possible actions for a %s key:\n"
