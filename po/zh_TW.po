@@ -1,7 +1,7 @@
 # Traditional Chinese(zh-tw) messages for GnuPG
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # This file is distributed under the same license as the PACKAGE package.
-# Jedi Lin <Jedi@Jedi.org>, 2003~2011.
+# Jedi Lin <Jedi@Jedi.org>, 2003~2013.
 #
 # Special thanks to "Audrey Tang <audreyt@audreyt.org>".
 #
@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.17-git56b2bc2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-04-24 10:09+0200\n"
+"PO-Revision-Date: 2013-04-24 19:34+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
@@ -17,9 +17,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Basepath: gnupg-2.0.17-git56b2bc2/\n"
-"X-Poedit-Language: Chinese\n"
-"X-Poedit-Country: TAIWAN\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 1.5.5\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -5299,15 +5298,11 @@ msgstr "|AN|新增管理者個人識別碼 (PIN)"
 msgid "|N|New PIN"
 msgstr "|N|新增個人識別碼 (PIN)"
 
-#, fuzzy
-#| msgid "|A|Please enter the Admin PIN"
 msgid "||Please enter the Admin PIN and New Admin PIN"
-msgstr "|A|請輸入管理者 PIN"
+msgstr "||請輸入管理者 PIN 及新的管理者 PIN"
 
-#, fuzzy
-#| msgid "||Please enter the PIN"
 msgid "||Please enter the PIN and New PIN"
-msgstr "||請輸入個人識別碼 (PIN)"
+msgstr "||請輸入個人識別碼及新的個人識別碼 (PIN)"
 
 msgid "error reading application data\n"
 msgstr "讀取應用程式資料時出錯\n"
@@ -5410,7 +5405,7 @@ msgid "deny the use of admin card commands"
 msgstr "禁用管理者卡片指令"
 
 msgid "use variable length input for pinpad"
-msgstr ""
+msgstr "輸入 PIN 時在輸入區顯示成變動長度"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "用法: scdaemon [選項] (或用 -h 求助)"
