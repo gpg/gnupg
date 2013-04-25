@@ -186,7 +186,6 @@ msgid "Reset Code"
 msgstr "Код скидання"
 
 #, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AСкористайтеся додатковою клавіатурою зчитувача для введення."
 
@@ -285,7 +284,6 @@ msgid "Yes, protection is not needed"
 msgstr "Так, у захисті немає потреби"
 
 #, c-format
-#| msgid "Please enter the passphrase to%0Ato protect your new key"
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Вкажіть пароль до%0Aз метою захисту вашого нового ключа"
 
@@ -1694,10 +1692,6 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Використання: gpg [параметри] [файли] (-h — довідка)"
 
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
@@ -5383,9 +5377,6 @@ msgstr "увімкнути повну діагностику"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Використання: kbxutil [параметри] [файли] (-h — довідка)"
 
-#| msgid ""
-#| "Syntax: kbxutil [options] [files]\n"
-#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "List, export, import Keybox data\n"
@@ -5546,11 +5537,9 @@ msgstr "|AN|Новий адміністративний пінкод"
 msgid "|N|New PIN"
 msgstr "|N|Новий пінкод"
 
-#| msgid "|A|Please enter the Admin PIN"
 msgid "||Please enter the Admin PIN and New Admin PIN"
 msgstr "|A|Вкажіть новий адміністративний пінкод"
 
-#| msgid "||Please enter the PIN"
 msgid "||Please enter the PIN and New PIN"
 msgstr "||Вкажіть новий пінкод"
 
@@ -5616,7 +5605,6 @@ msgstr "перевірку адміністративного пінкоду з�
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "не вдалося отримати доступ до %s — некоректна картка OpenPGP?\n"
 
-#| msgid "||Please enter your PIN at the reader's keypad"
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Вкажіть ваш пінкод за допомогою клавіатурної панелі зчитувача"
 
@@ -5650,7 +5638,6 @@ msgstr "не використовувати вбудованого драйве�
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|від’єднати бездіяльну вказану кількість секунд картку"
 
-#| msgid "do not use a reader's keypad"
 msgid "do not use a reader's pinpad"
 msgstr "не використовувати додаткову клавіатуру зчитувача"
 
@@ -5931,19 +5918,15 @@ msgstr "не вказано використання ключа — припус
 msgid "error getting key usage information: %s\n"
 msgstr "помилка під час спроби отримання даних щодо використання ключа: %s\n"
 
-#| msgid "certificate should have not been used for certification\n"
 msgid "certificate should not have been used for certification\n"
 msgstr "сертифікат не мав використовуватися для сертифікації\n"
 
-#| msgid "certificate should have not been used for OCSP response signing\n"
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "сертифікат не мав використовуватися для підписування відповідей OCSP\n"
 
-#| msgid "certificate should have not been used for encryption\n"
 msgid "certificate should not have been used for encryption\n"
 msgstr "сертифікат не мав використовуватися для шифрування\n"
 
-#| msgid "certificate should have not been used for signing\n"
 msgid "certificate should not have been used for signing\n"
 msgstr "сертифікат не мав використовуватися для підписування\n"
 
@@ -6220,10 +6203,6 @@ msgstr ""
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Використання: gpgsm [параметри] [файли] (-h — довідка)"
 
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
