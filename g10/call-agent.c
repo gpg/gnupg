@@ -1075,8 +1075,8 @@ agent_scd_pkdecrypt (const char *serialno,
         }
       rc = assuan_transact (agent_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc)
-    return rc;
+      if (rc)
+        return rc;
     }
 
   init_membuf (&data, 1024);

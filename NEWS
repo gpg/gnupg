@@ -3,7 +3,7 @@ Noteworthy changes in version 2.0.20 (unreleased)
 
  * The hash algorithm is now printed for sig records in key listings.
 
- * Decryption using smartcards keys > 3072 bit does not work.
+ * Decryption using smartcards keys > 3072 bit does now work.
 
  * New meta option ignore-invalid-option to allow using the same
    option file by other GnuPG versions.
