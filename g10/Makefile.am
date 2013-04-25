@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = options.skel ChangeLog-2011
+EXTRA_DIST = options.skel ChangeLog-2011 gpg-w32info.rc
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
               -I$(top_srcdir)/include -I$(top_srcdir)/intl
@@ -42,6 +42,9 @@ else
 bzip2_source =
 endif
 
+if HAVE_W32_SYSTEM
+resource_objs += gpg-w32info.o
+endif
 
 common_source =  \
 	      gpg.h             \
@@ -128,11 +131,11 @@ LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
              $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-	     $(LIBICONV) $(extra_sys_libs)
+	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpg2_LDFLAGS = $(extra_bin_ldflags)
 gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
               $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
-	      $(LIBICONV) $(extra_sys_libs)
+	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpgv2_LDFLAGS = $(extra_bin_ldflags)
 
 t_common_ldadd =

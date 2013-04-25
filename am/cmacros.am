@@ -65,6 +65,12 @@ extra_sys_libs =
 extra_bin_ldflags =
 endif
 
+if HAVE_W32_SYSTEM
+.rc.o:
+	$(WINDRES) $(DEFAULT_INCLUDES) $(INCLUDES) "$<" "$@"
+
+endif
+resource_objs =
 
 # Convenience macros
 libcommon = ../common/libcommon.a

@@ -25,12 +25,16 @@ libexec_PROGRAMS += gpg-preset-passphrase
 endif
 noinst_PROGRAMS = $(TESTS)
 
-EXTRA_DIST = ChangeLog-2011
+EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc
 
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
+
+if HAVE_W32_SYSTEM
+resource_objs += gpg-agent-w32info.o
+endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 
@@ -59,25 +63,17 @@ else
 pwquery_libs = ../common/libsimple-pwquery.a
 endif
 
-#if HAVE_W32_SYSTEM
-#.rc.o:
-#	$(WINDRES) `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
-#	 sed -e 's/-I/--include-dir /g;s/-D/--define /g'` -i $< -o $@
-#
-#gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o -Wl,--subsystem,windows
-#gpg_agent_res_deps = gpg-agent-resource.o
-#else
-gpg_agent_res_ldflags =
-gpg_agent_res_deps =
-#endif
-
 
 gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
-	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
+	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+		$(resource_objs)
 gpg_agent_LDFLAGS = $(extra_bin_ldflags) $(gpg_agent_res_ldflags)
 gpg_agent_DEPENDENCIES = $(gpg_agent_res_deps)
+                $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
+	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+		$(resource_objs)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \

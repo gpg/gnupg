@@ -17,7 +17,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog-2011
+EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc
 
 bin_PROGRAMS = gpgsm
 
@@ -26,6 +26,9 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 include $(top_srcdir)/am/cmacros.am
 
+if HAVE_W32_SYSTEM
+resource_objs += gpgsm-w32info.o
+endif
 
 gpgsm_SOURCES = \
 	gpgsm.c	gpgsm.h \
@@ -59,7 +62,7 @@ common_libs = ../kbx/libkeybox.a $(libcommon) ../gl/libgnu.a
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
               $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) \
-	      $(LIBICONV) $(extra_sys_libs)
+	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpgsm_LDFLAGS = $(extra_bin_ldflags)
 
 # Make sure that all libs are build before we use them.  This is

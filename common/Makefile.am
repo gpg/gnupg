@@ -19,7 +19,8 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
-             audit-events.h status-codes.h README.jnlib ChangeLog.jnlib
+             audit-events.h status-codes.h README.jnlib ChangeLog.jnlib \
+             w32info-rc.h.in gnupg.ico
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
 if !HAVE_W32CE_SYSTEM

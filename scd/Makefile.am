@@ -17,7 +17,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog-2011
+EXTRA_DIST = ChangeLog-2011 scdaemon-w32info.rc
 
 if HAVE_W32_SYSTEM
 libexec_PROGRAMS = scdaemon
@@ -28,6 +28,10 @@ endif
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
+
+if HAVE_W32_SYSTEM
+resource_objs += scdaemon-w32info.o
+endif
 
 AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
 	     $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
@@ -48,7 +52,7 @@ scdaemon_SOURCES = \
 scdaemon_LDADD = $(libcommonpth) ../gl/libgnu.a \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	$(LIBUSB_LIBS) $(GPG_ERROR_LIBS) \
-        $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV)
+        $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV) $(resource_objs)
 
 # Removed for now: We need to decide whether it makes sense to
 # continue it at all, given that gpg has now all required

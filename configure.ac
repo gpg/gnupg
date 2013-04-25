@@ -1571,6 +1571,28 @@ fi
 
 
 #
+# Provide information about the build.
+#
+BUILD_REVISION="mym4_revision"
+AC_SUBST(BUILD_REVISION)
+AC_DEFINE_UNQUOTED(BUILD_REVISION, "$BUILD_REVISION",
+                   [GIT commit id revision used to build this package])
+
+changequote(,)dnl
+BUILD_FILEVERSION=`echo "$VERSION" | sed 's/\([0-9.]*\).*/\1./;s/\./,/g'`
+changequote([,])dnl
+BUILD_FILEVERSION="${BUILD_FILEVERSION}mym4_revision_dec"
+AC_SUBST(BUILD_FILEVERSION)
+
+BUILD_TIMESTAMP=`date -u +%Y-%m-%dT%H:%M+0000 2>/dev/null || date`
+AC_SUBST(BUILD_TIMESTAMP)
+AC_DEFINE_UNQUOTED(BUILD_TIMESTAMP, "$BUILD_TIMESTAMP",
+                   [The time this package was configured for a build])
+BUILD_HOSTNAME="$ac_hostname"
+AC_SUBST(BUILD_HOSTNAME)
+
+
+#
 # Print errors here so that they are visible all
 # together and the user can acquire them all together.
 #
@@ -1661,6 +1683,7 @@ po/Makefile.in
 gl/Makefile
 include/Makefile
 common/Makefile
+common/w32info-rc.h
 kbx/Makefile
 g10/Makefile
 sm/Makefile

@@ -20,11 +20,15 @@ EXTRA_DIST = \
 	Manifest watchgnupg.c \
 	addgnupghome applygnupgdefaults gpgsm-gencert.sh \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
-	ccidmon.c ChangeLog-2011
+	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc
 
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 include $(top_srcdir)/am/cmacros.am
+
+if HAVE_W32_SYSTEM
+resource_objs += gpg-connect-agent-w32info.o
+endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
@@ -113,7 +117,8 @@ gpg_connect_agent_SOURCES = gpg-connect-agent.c no-libgcrypt.c
 # FIXME: remove PTH_LIBS (why do we need them at all?)
 gpg_connect_agent_LDADD = ../common/libgpgrl.a $(common_libs) \
 	                  $(LIBASSUAN_LIBS) $(NPTH_LIBS) $(GPG_ERROR_LIBS) \
-                          $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV)
+                          $(LIBREADLINE) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+                          $(resource_objs)
 
 if !HAVE_W32CE_SYSTEM
 gpgkey2ssh_SOURCES = gpgkey2ssh.c
