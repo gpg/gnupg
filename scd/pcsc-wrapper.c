@@ -66,7 +66,7 @@
 static int verbose;
 
 #if defined(__APPLE__) || defined(_WIN32) || defined(__CYGWIN__)
-typedef unsinged int pcsc_dword_t;
+typedef unsigned int pcsc_dword_t;
 #else
 typedef unsigned long pcsc_dword_t;
 #endif
