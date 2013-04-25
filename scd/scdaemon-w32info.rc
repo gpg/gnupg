@@ -1,0 +1,50 @@
+/* scdaemon-w32info.rc                                        -*- c -*-
+ * Copyright (C) 2013 g10 Code GmbH
+ *
+ * This file is free software; as a special exception the author gives
+ * unlimited permission to copy and/or distribute it, with or without
+ * modifications, as long as this notice is preserved.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+ * implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+
+#include "afxres.h"
+#include "../common/w32info-rc.h"
+
+1 ICON "../common/gnupg.ico"
+
+1 VERSIONINFO
+  FILEVERSION    W32INFO_VI_FILEVERSION
+  PRODUCTVERSION W32INFO_VI_PRODUCTVERSION
+  FILEFLAGSMASK  0x3fL
+#ifdef _DEBUG
+  FILEFLAGS      0x01L    /* VS_FF_DEBUG (0x1)*/
+#else
+  FILEFLAGS      0x00L
+#endif
+  FILEOS         0x40004L /* VOS_NT (0x40000) | VOS__WINDOWS32 (0x4)  */
+  FILETYPE       0x1L     /* VFT_APP (0x1)  */
+  FILESUBTYPE    0x0L     /* VFT2_UNKNOWN   */
+  BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"  /* US English (0409), Unicode (04b0) */
+        BEGIN
+            VALUE "FileDescription", L"GnuPG\x2019s smartcard daemon\0"
+            VALUE "InternalName", "scdaemon\0"
+            VALUE "OriginalFilename", "scdaemon.exe\0"
+            VALUE "ProductName",    W32INFO_PRODUCTNAME
+            VALUE "ProductVersion", W32INFO_PRODUCTVERSION
+            VALUE "CompanyName", W32INFO_COMPANYNAME
+            VALUE "FileVersion", W32INFO_FILEVERSION
+            VALUE "LegalCopyright", W32INFO_LEGALCOPYRIGHT
+            VALUE "Comments",    W32INFO_COMMENTS
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+      VALUE "Translation", 0x409, 0x4b0
+    END
+  END

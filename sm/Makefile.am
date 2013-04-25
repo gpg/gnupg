@@ -20,13 +20,16 @@
 
 bin_PROGRAMS = gpgsm
 
-EXTRA_DIST = ChangeLog-2011
+EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 include $(top_srcdir)/am/cmacros.am
 
+if HAVE_W32_SYSTEM
+resource_objs += gpgsm-w32info.o
+endif
 
 gpgsm_SOURCES = \
 	gpgsm.c	gpgsm.h \
@@ -59,13 +62,9 @@ common_libs = $(libcommon) ../kbx/libkeybox.a ../jnlib/libjnlib.a \
 
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a  $(NETLIBS) \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) $(LIBICONV)
+              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) \
+	      $(LIBICONV) $(resource_objs)
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
 $(PROGRAMS): $(common_libs)
-
-
-
-
-

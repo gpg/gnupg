@@ -21,12 +21,15 @@ bin_PROGRAMS = gpg-agent
 libexec_PROGRAMS = gpg-protect-tool gpg-preset-passphrase
 noinst_PROGRAMS = $(TESTS)
 
-# EXTRA_DIST = gpg-agent.ico gpg-agent-resource.rc
-EXTRA_DIST = ChangeLog-2011
+EXTRA_DIST = ChangeLog-2011 gpg-agent-w32info.rc
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 
 include $(top_srcdir)/am/cmacros.am
+
+if HAVE_W32_SYSTEM
+resource_objs += gpg-agent-w32info.o
+endif
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
 
@@ -50,25 +53,12 @@ common_libs = $(libcommon) ../jnlib/libjnlib.a ../gl/libgnu.a
 commonpth_libs = $(libcommonpth) ../jnlib/libjnlib.a ../gl/libgnu.a
 pwquery_libs = ../common/libsimple-pwquery.a
 
-#if HAVE_W32_SYSTEM
-#.rc.o:
-#	$(WINDRES) `echo $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) | \
-#	 sed -e 's/-I/--include-dir /g;s/-D/--define /g'` -i $< -o $@
-#
-#gpg_agent_res_ldflags = -Wl,gpg-agent-resource.o -Wl,--subsystem,windows
-#gpg_agent_res_deps = gpg-agent-resource.o
-#else
-gpg_agent_res_ldflags =
-gpg_agent_res_deps =
-#endif
-
 
 gpg_agent_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 gpg_agent_LDADD = $(commonpth_libs) \
                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(PTH_LIBS) \
-	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV)
-gpg_agent_LDFLAGS = $(gpg_agent_res_ldflags)
-gpg_agent_DEPENDENCIES = $(gpg_agent_res_deps)
+	        $(GPG_ERROR_LIBS) $(LIBINTL) $(NETLIBS) $(LIBICONV) \
+		$(resource_objs)
 
 gpg_protect_tool_SOURCES = \
 	protect-tool.c \
@@ -104,7 +94,3 @@ t_common_ldadd = $(common_libs) \
 
 t_protect_SOURCES = t-protect.c protect.c
 t_protect_LDADD = $(t_common_ldadd)
-
-
-
-
