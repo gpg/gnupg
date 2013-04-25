@@ -8,3 +8,7 @@ s/Conflicts:/--/
 d9d98c510b936d48755f8c01165d7efa32502d24
 # Fix old cherry-picked message.
 s/(fix wLangId in.*)/\1\n--/
+
+049b3d9ca0285d15c00c215ac9b533c994196ca4
+# Fix wrong author
+s/Ian Abbott.*>/Werner Koch <wk\@gnupg.org>/
