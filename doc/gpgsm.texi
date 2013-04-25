@@ -916,8 +916,8 @@ but may also be used in the standard operation mode by using the
 * CSR and certificate creation::  CSR and certificate creation.
 @end menu
 
-@node Automated signature checking,,,Unattended Usage
-@section Automated signature checking
+@node Automated signature checking
+@subsection Automated signature checking
 
 It is very important to understand the semantics used with signature
 verification.  Checking a signature is not as simple as it may sound and
@@ -960,8 +960,8 @@ this is a missing certificate.
 
 @end table
 
-@node CSR and certificate creation,,,Unattended Usage
-@section CSR and certificate creation
+@node CSR and certificate creation
+@subsection CSR and certificate creation
 
 @ifclear gpgtwoone
 @strong{Please notice}: The immediate creation of certificates is only

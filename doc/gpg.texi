@@ -926,7 +926,9 @@ behaviour and to change the default configuration.
 * GPG Key related Options::     Key related options.
 * GPG Input and Output::        Input and Output.
 * OpenPGP Options::             OpenPGP protocol specific options.
+* Compliance Options::          Compliance options.
 * GPG Esoteric Options::        Doing things one usually don't want to do.
+* Deprecated Options::          Deprecated options.
 @end menu
 
 Long options can be put in an options file (default
@@ -2183,6 +2185,7 @@ meaningful if @option{--s2k-mode} is 3.
 @c ***************************
 @c ******* Compliance ********
 @c ***************************
+@node Compliance Options
 @subsection Compliance options
 
 These options control what GnuPG is compliant to. Only one of these
@@ -2845,6 +2848,7 @@ on the configuration file.
 @c *******************************
 @c ******* Deprecated ************
 @c *******************************
+@node Deprecated Options
 @subsection Deprecated options
 
 @table @gnupgtabopt
@@ -2990,9 +2994,9 @@ Operation is further controlled by a few environment variables:
 
   @item GPG_AGENT_INFO
   Used to locate the gpg-agent.
-  @ifset gpgone
+@ifset gpgone
   This is only honored when @option{--use-agent} is set.
-  @end ifset
+@end ifset
   The value consists of 3 colon delimited fields: The first is the path
   to the Unix Domain Socket, the second the PID of the gpg-agent and the
   protocol version which should be set to 1. When starting the gpg-agent
@@ -3167,8 +3171,8 @@ are almost always required for this.
 @end menu
 
 
-@node Unattended GPG key generation,,,Unattended Usage of GPG
-@section Unattended key generation
+@node Unattended GPG key generation
+@subsection Unattended key generation
 
 The command @option{--gen-key} may be used along with the option
 @option{--batch} for unattended key generation.  The parameters are
