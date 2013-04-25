@@ -1,33 +1,40 @@
-Noteworthy changes in version 2.0.20 (unreleased)
+Noteworthy changes in version 2.0.20 (2013-05-10)
 -------------------------------------------------
-
- * The hash algorithm is now printed for sig records in key listings.
 
  * Decryption using smartcards keys > 3072 bit does now work.
 
  * New meta option ignore-invalid-option to allow using the same
    option file by other GnuPG versions.
 
- * [gpg] Skip invalid keyblock packets during import to avoid a DoS.
+ * gpg: The hash algorithm is now printed for sig records in key listings.
 
- * [gpg] Correctly handle ports from DNS SRV records.
+ * gpg: Skip invalid keyblock packets during import to avoid a DoS.
 
- * [gpg-agent] Avoid tty corruption when killing pinentry.
+ * gpg: Correctly handle ports from DNS SRV records.
 
- * [scdaemon] Rename option --disable-keypad to --disable-pinpad.
+ * keyserver: Improve use of SRV records
 
- * [scdaemon] Better support for CCID readers.  Now, the internal CCID
+ * gpg-agent: Avoid tty corruption when killing pinentry.
+
+ * scdaemon: Improve detection of card insertion and removal.
+
+ * scdaemon: Rename option --disable-keypad to --disable-pinpad.
+
+ * scdaemon: Better support for CCID readers.  Now, the internal CCID
    driver supports readers without the auto configuration feature.
 
- * [scdaemon] Add pinpad input for PC/SC, if your reader has pinpad
-   and it supports variable length PIN input, and you specify
+ * scdaemon: Add pinpad input for PC/SC, if your reader has pinpad and
+   it supports variable length PIN input, and you specify
    --enable-pinpad-varlen option.
 
- * [scdaemon] New option --enable-pinpad-varlen.
+ * scdaemon: New option --enable-pinpad-varlen.
 
- * [scdaemon] Install into libexecdir to avoid accidental execution
+ * scdaemon: Install into libexecdir to avoid accidental execution
    from the command line.
 
+ * Support building using w64-mingw32.
+
+ * Assorted bug fixes.
 
 
 Noteworthy changes in version 2.0.19 (2012-03-27)

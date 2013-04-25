@@ -188,7 +188,7 @@ static void
 print_version (int with_help)
 {
   fputs (MYVERSION_LINE "\n"
-         "Copyright (C) 2012 Free Software Foundation, Inc.\n"
+         "Copyright (C) 2013 Free Software Foundation, Inc.\n"
          "This program comes with ABSOLUTELY NO WARRANTY.\n"
          "This is free software, and you are welcome to redistribute it\n"
          "under certain conditions. See the file COPYING for details.\n",
