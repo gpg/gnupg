@@ -1924,7 +1924,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
                                   &key, &passphrase);
       if (err)
         goto leave;
-      realkeylen = gcry_sexp_canon_len (key, keylen, NULL, &err);
+      realkeylen = gcry_sexp_canon_len (key, 0, NULL, &err);
       if (!realkeylen)
         goto leave; /* Invalid canonical encoded S-expression.  */
       if (passphrase)
