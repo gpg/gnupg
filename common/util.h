@@ -167,6 +167,11 @@ gpg_error_t b64dec_finish (struct b64state *state);
 
 
 /*-- sexputil.c */
+char *canon_sexp_to_string (const unsigned char *canon, size_t canonlen);
+void log_printcanon (const char *text,
+                     const unsigned char *sexp, size_t sexplen);
+void log_printsexp (const char *text, gcry_sexp_t sexp);
+
 gpg_error_t make_canon_sexp (gcry_sexp_t sexp,
                              unsigned char **r_buffer, size_t *r_buflen);
 gpg_error_t make_canon_sexp_pad (gcry_sexp_t sexp, int secure,

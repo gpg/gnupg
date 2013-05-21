@@ -1,5 +1,6 @@
 /* sexputil.c - Utility functions for S-expressions.
  * Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -44,6 +45,91 @@
 #include "util.h"
 #include "tlv.h"
 #include "sexp-parse.h"
+
+
+/* Return a malloced string with the S-expression CANON in advanced
+   format.  Returns NULL on error.  */
+static char *
+sexp_to_string (gcry_sexp_t sexp)
+{
+  size_t n;
+  char *result;
+
+  if (!sexp)
+    return NULL;
+  n = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
+  if (!n)
+    return NULL;
+  result = xtrymalloc (n);
+  if (!result)
+    return NULL;
+  n = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, result, n);
+  if (!n)
+    BUG ();
+
+  return result;
+}
+
+
+/* Return a malloced string with the S-expression CANON in advanced
+   format.  Returns NULL on error.  */
+char *
+canon_sexp_to_string (const unsigned char *canon, size_t canonlen)
+{
+  size_t n;
+  gcry_sexp_t sexp;
+  char *result;
+
+  n = gcry_sexp_canon_len (canon, canonlen, NULL, NULL);
+  if (!n)
+    return NULL;
+  if (gcry_sexp_sscan (&sexp, NULL, canon, n))
+    return NULL;
+  result = sexp_to_string (sexp);
+  gcry_sexp_release (sexp);
+  return result;
+}
+
+
+/* Print the canonical encoded S-expression in SEXP in advanced
+   format.  SEXPLEN may be passed as 0 is SEXP is known to be valid.
+   With TEXT of NULL print just the raw S-expression, with TEXT just
+   an empty string, print a trailing linefeed, otherwise print an
+   entire debug line. */
+void
+log_printcanon (const char *text, const unsigned char *sexp, size_t sexplen)
+{
+  if (text && *text)
+    log_debug ("%s ", text);
+  if (sexp)
+    {
+      char *buf = canon_sexp_to_string (sexp, sexplen);
+      log_printf ("%s", buf? buf : "[invalid S-expression]");
+      xfree (buf);
+    }
+  if (text)
+    log_printf ("\n");
+}
+
+
+/* Print the gcryp S-expression in SEXP in advanced format.  With TEXT
+   of NULL print just the raw S-expression, with TEXT just an empty
+   string, print a trailing linefeed, otherwise print an entire debug
+   line. */
+void
+log_printsexp (const char *text, gcry_sexp_t sexp)
+{
+  if (text && *text)
+    log_debug ("%s ", text);
+  if (sexp)
+    {
+      char *buf = sexp_to_string (sexp);
+      log_printf ("%s", buf? buf : "[invalid S-expression]");
+      xfree (buf);
+    }
+  if (text)
+    log_printf ("\n");
+}
 
 
 /* Helper function to create a canonical encoded S-expression from a

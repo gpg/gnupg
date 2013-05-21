@@ -857,6 +857,19 @@ log_printhex (const char *text, const void *buffer, size_t length)
 }
 
 
+/*
+void
+log_printcanon () {}
+is found in sexputils.c
+*/
+
+/*
+void
+log_printsexp () {}
+is found in sexputils.c
+*/
+
+
 void
 log_clock (const char *string)
 {
