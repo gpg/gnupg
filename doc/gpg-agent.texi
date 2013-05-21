@@ -449,6 +449,16 @@ Do not make use of the scdaemon tool.  This option has the effect of
 disabling the ability to do smartcard operations.  Note, that enabling
 this option at runtime does not kill an already forked scdaemon.
 
+@ifset gpgtwoone
+@item --disable-check-own-socket
+@opindex disable-check-own-socket
+@command{gpg-agent} employs a periodic self-test to detect a stolen
+socket.  This usually means a second instance of @command{gpg-agent}
+has taken over the socket and @command{gpg-agent} will then terminate
+itself.  This option may be used to disable this self-test for
+debugging purposes.
+@end ifset
+
 @item --use-standard-socket
 @itemx --no-use-standard-socket
 @opindex use-standard-socket
@@ -695,14 +705,16 @@ Here is a list of supported signals:
 @item SIGHUP
 @cpindex SIGHUP
 This signal flushes all cached passphrases and if the program has been
-started with a configuration file, the configuration file is read again.
-Only certain options are honored: @code{quiet}, @code{verbose},
-@code{debug}, @code{debug-all}, @code{debug-level}, @code{no-grab},
-@code{pinentry-program}, @code{default-cache-ttl}, @code{max-cache-ttl},
-@code{ignore-cache-for-signing}, @code{allow-mark-trusted} and
-@code{disable-scdaemon}.  @code{scdaemon-program} is also supported but
-due to the current implementation, which calls the scdaemon only once,
-it is not of much use unless you manually kill the scdaemon.
+started with a configuration file, the configuration file is read
+again.  Only certain options are honored: @code{quiet},
+@code{verbose}, @code{debug}, @code{debug-all}, @code{debug-level},
+@code{no-grab}, @code{pinentry-program}, @code{default-cache-ttl},
+@code{max-cache-ttl}, @code{ignore-cache-for-signing},
+@code{allow-mark-trusted}, @code{disable-scdaemon}, and
+@code{disable-check-own-socket}.  @code{scdaemon-program} is also
+supported but due to the current implementation, which calls the
+scdaemon only once, it is not of much use unless you manually kill the
+scdaemon.
 
 
 @item SIGTERM

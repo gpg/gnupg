@@ -112,6 +112,7 @@ enum cmd_and_opt_values
   oKeepDISPLAY,
   oSSHSupport,
   oDisableScdaemon,
+  oDisableCheckOwnSocket,
   oWriteEnvFile
 };
 
@@ -148,6 +149,7 @@ static ARGPARSE_OPTS opts[] = {
   { oScdaemonProgram, "scdaemon-program", 2 ,
                                N_("|PGM|use PGM as the SCdaemon program") },
   { oDisableScdaemon, "disable-scdaemon", 0, N_("do not use the SCdaemon") },
+  { oDisableCheckOwnSocket, "disable-check-own-socket", 0, "@" },
   { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
 
   { oBatch,      "batch",       0, "@" },
@@ -231,6 +233,9 @@ static int shutdown_pending;
 
 /* Counter for the currently running own socket checks.  */
 static int check_own_socket_running;
+
+/* Flags to indicate that check_own_socket shall not be called.  */
+static int disable_check_own_socket;
 
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
@@ -491,6 +496,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 0;
       opt.disable_scdaemon = 0;
+      disable_check_own_socket = 0;
       return 1;
     }
 
@@ -521,6 +527,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oPinentryTouchFile: opt.pinentry_touch_file = pargs->r.ret_str; break;
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
     case oDisableScdaemon: opt.disable_scdaemon = 1; break;
+    case oDisableCheckOwnSocket: disable_check_own_socket = 1; break;
 
     case oDefCacheTTL: opt.def_cache_ttl = pargs->r.ret_ulong; break;
     case oDefCacheTTLSSH: opt.def_cache_ttl_ssh = pargs->r.ret_ulong; break;
@@ -2173,6 +2180,9 @@ check_own_socket (void)
   npth_t thread;
   npth_attr_t tattr;
   int err;
+
+  if (disable_check_own_socket)
+    return;
 
   if (!opt.use_standard_socket)
     return; /* This check makes only sense in standard socket mode.  */
