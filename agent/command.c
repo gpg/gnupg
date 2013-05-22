@@ -1,6 +1,7 @@
 /* command.c - gpg-agent command handler
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009, 2010,
  *               2011  Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1807,18 +1808,21 @@ cmd_keywrap_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_import_key[] =
-  "IMPORT_KEY [<cache_nonce>]\n"
+  "IMPORT_KEY [--unattended] [<cache_nonce>]\n"
   "\n"
   "Import a secret key into the key store.  The key is expected to be\n"
   "encrypted using the current session's key wrapping key (cf. command\n"
   "KEYWRAP_KEY) using the AESWRAP-128 algorithm.  This function takes\n"
   "no arguments but uses the inquiry \"KEYDATA\" to ask for the actual\n"
-  "key data.  The unwrapped key must be a canonical S-expression.";
+  "key data.  The unwrapped key must be a canonical S-expression.  The\n"
+  "option --unattended tries to import the key as-is without any\n"
+  "re-encryption";
 static gpg_error_t
 cmd_import_key (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
+  int opt_unattended;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
   gcry_cipher_hd_t cipherhd = NULL;
@@ -1837,6 +1841,9 @@ cmd_import_key (assuan_context_t ctx, char *line)
       err = gpg_error (GPG_ERR_MISSING_KEY);
       goto leave;
     }
+
+  opt_unattended = has_option (line, "--unattended");
+  line = skip_options (line);
 
   p = line;
   for (p=line; *p && *p != ' ' && *p != '\t'; p++)
@@ -1921,7 +1928,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
       key = NULL;
       err = convert_from_openpgp (ctrl, openpgp_sexp, grip,
                                   ctrl->server_local->keydesc, cache_nonce,
-                                  &key, &passphrase);
+                                  &key, opt_unattended? NULL : &passphrase);
       if (err)
         goto leave;
       realkeylen = gcry_sexp_canon_len (key, 0, NULL, &err);
@@ -1929,6 +1936,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
         goto leave; /* Invalid canonical encoded S-expression.  */
       if (passphrase)
         {
+          assert (!opt_unattended);
           if (!cache_nonce)
             {
               char buf[12];
@@ -1940,6 +1948,12 @@ cmd_import_key (assuan_context_t ctx, char *line)
                                    passphrase, CACHE_TTL_NONCE))
             assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
         }
+    }
+  else if (opt_unattended)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER,
+                       "\"--unattended\" may only be used with OpenPGP keys");
+      goto leave;
     }
   else
     {
@@ -1957,7 +1971,7 @@ cmd_import_key (assuan_context_t ctx, char *line)
   if (passphrase)
     {
       err = agent_protect (key, passphrase, &finalkey, &finalkeylen,
-	      ctrl->s2k_count);
+                           ctrl->s2k_count);
       if (!err)
         err = agent_write_private_key (grip, finalkey, finalkeylen, 0);
     }

@@ -177,7 +177,7 @@ gpg_error_t agent_keywrap_key (ctrl_t ctrl, int forexport,
 /* Send a key to the agent.  */
 gpg_error_t agent_import_key (ctrl_t ctrl, const char *desc,
                               char **cache_nonce_addr,
-                              const void *key, size_t keylen);
+                              const void *key, size_t keylen, int unattended);
 
 /* Receive a key from the agent.  */
 gpg_error_t agent_export_key (ctrl_t ctrl, const char *keygrip,

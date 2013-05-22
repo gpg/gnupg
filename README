@@ -5,7 +5,8 @@
    THIS IS A DEVELOPMENT VERSION AND NOT INTENDED FOR REGULAR USE.
 
       Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-     2006, 2007, 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+                2006, 2007, 2008, 2009, 2010, 2011, 2012,
+                2013 Free Software Foundation, Inc.
 
 
 INTRODUCTION
@@ -32,21 +33,22 @@ BUILD INSTRUCTIONS
 
 GnuPG 2.1 depends on the following packages:
 
+  npth         (ftp://ftp.gnupg.org/gcrypt/npth/)
   libgpg-error (ftp://ftp.gnupg.org/gcrypt/libgpg-error/)
   libgcrypt    (ftp://ftp.gnupg.org/gcrypt/libgcrypt/)
   libksba      (ftp://ftp.gnupg.org/gcrypt/libksba/)
   libassuan    (ftp://ftp.gnupg.org/gcrypt/libassuan/)
 
-You also need the Pinentry package for most function of GnuPG; however
-it is not a build requirement.  Pinentry is available at
-ftp://ftp.gnupg.org/gcrypt/pinentry/ .
-
 You should get the latest versions of course, the GnuPG configure
 script complains if a version is not sufficient.
 
+You also need the Pinentry package for most functions of GnuPG;
+however it is not a build requirement.  Pinentry is available at
+ftp://ftp.gnupg.org/gcrypt/pinentry/ .
+
 After building and installing the above packages in the order as given
-above, you may now continue with GnuPG installation (you may also just
-try to build GnuPG to see whether your already installed versions are
+above, you may continue with GnuPG installation (you may also just try
+to build GnuPG to see whether your already installed versions are
 sufficient).
 
 As with all packages, you just have to do
@@ -62,7 +64,8 @@ S/MIME and smartcards.  Note that there is no binary gpg but a gpg2 so
 that this package won't conflict with a GnuPG 1.4 installation.  gpg2
 behaves just like gpg.
 
-In case of problem please ask on gnupg-users@gnupg.org for advise.
+In case of problem please ask on gnupg-users@gnupg.org mailing list
+for advise.
 
 Note that the PKITS tests are always skipped unless you copy the PKITS
 test data file into the tests/pkits directory.  There is no need to
@@ -79,21 +82,24 @@ to view the default directories used by GnuPG.
 MIGRATION FROM 1.4 or 2.0 to 2.1
 ================================
 
-The major change in 2.1 is that gpg-agent now takes care of the
-OpenPGP secret keys (those managed by GPG).  The former secring.gpg
-will not be used anymore.  Newly generated keys are generated and
-stored in the agent's key store (~/.gnupg/private-keys-v1.d/).  To
-migrate your existing keys to the agent you should run this command
+The major change in 2.1 is gpg-agent taking care of the OpenPGP secret
+keys (those managed by GPG).  The former file "secring.gpg" will not
+be used anymore.  Newly generated keys are stored in the agent's key
+store directory "~/.gnupg/private-keys-v1.d/".
 
-  gpg2 --import ~/.gnupg/secring.gpg
+To migrate your existing keys you need to run the command
 
-The agent will you ask for the passphrase of each key.  You may use
-the Cancel button of the Pinentry to skip importing this key.  If you
-want to stop the import process and you use one of the latest
-pinentries, you should close the pinentry window instead of hitting
-the cancel button.  Secret keys already imported are skipped by the
-import command.  It is advisable to keep the secring.gpg for use with
-older versions of GPG.
+  gpg2 --batch --import ~/.gnupg/secring.gpg
+
+Secret keys already imported are skipped by this command.  It is
+advisable to keep the secring.gpg for use with older versions of GPG.
+
+The use of "--batch" with "--import" is highly recommended.  If you do
+not use "--batch" the agent would ask for the passphrase of each key.
+In this case you may use the Cancel button of the Pinentry to skip
+importing this key.  If you want to stop the enite import process and
+you use a decent version of Pinentry, you should close the Pinentry
+window instead of hitting the Cancel button.
 
 Note that gpg-agent now uses a fixed socket by default.  All tools
 will start the gpg-agent as needed.  In general there is no more need
@@ -182,8 +188,13 @@ authors directly as we are busy working on improvements and bug fixes.
 The English and German mailing lists are watched by the authors and we
 try to answer questions when time allows us to do so.
 
-Commercial grade support for GnuPG is available; please see
-http://www.gnupg.org/service.html .
+Commercial grade support for GnuPG is available; for a listing of
+offers see http://www.gnupg.org/service.html .  The driving force
+behind the development of GnuPG is the company of its principal
+author, Werner Koch.  Maintenance and improvement of GnuPG and related
+software takes up most of their resources.  To allow him to continue
+his work he asks to either purchase a support contract, engage them
+for custom enhancements, or to donate money.  See http://g10code.com .
 
 
   This file is Free Software; as a special exception the authors gives

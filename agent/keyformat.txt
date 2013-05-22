@@ -84,56 +84,94 @@ encrypted_octet_string.  The result of the decryption process is a
 list of the secret key parameters.  The protected-at expression is
 optional; the isotimestamp is 15 bytes long (e.g. "19610711T172000").
 
-The only available protection mode for now is
+The currently defined protection modes are:
 
-  openpgp-s2k3-sha1-aes-cbc
+1. openpgp-s2k3-sha1-aes-cbc
 
-which describes an algorithm using using AES in CBC mode for
-encryption, SHA-1 for integrity protection and the String to Key
-algorithm 3 from OpenPGP (rfc2440).
+  This describes an algorithm using using AES in CBC mode for
+  encryption, SHA-1 for integrity protection and the String to Key
+  algorithm 3 from OpenPGP (rfc2440).
 
-Example:
+  Example:
 
-(protected openpgp-s2k3-sha1-aes-cbc
-  ((sha1 16byte_salt no_of_iterations) 16byte_iv)
-  encrypted_octet_string
-)
+  (protected openpgp-s2k3-sha1-aes-cbc
+    ((sha1 16byte_salt no_of_iterations) 16byte_iv)
+    encrypted_octet_string
+  )
 
-The encrypted_octet string should yield this S-Exp (in canonical
-representation) after decryption:
+  The encrypted_octet string should yield this S-Exp (in canonical
+  representation) after decryption:
 
-(
- (
-  (d #046129F..[some bytes not shown]..81#)
-  (p #00e861b..[some bytes not shown]..f1#)
-  (q #00f7a7c..[some bytes not shown]..61#)
-  (u #304559a..[some bytes not shown]..9b#)
- )
- (hash sha1 #...[hashvalue]...#)
-)
+  (
+   (
+    (d #046129F..[some bytes not shown]..81#)
+    (p #00e861b..[some bytes not shown]..f1#)
+    (q #00f7a7c..[some bytes not shown]..61#)
+    (u #304559a..[some bytes not shown]..9b#)
+   )
+   (hash sha1 #...[hashvalue]...#)
+  )
 
-For padding reasons, random bytes are appended to this list - they can
-easily be stripped by looking for the end of the list.
+  For padding reasons, random bytes are appended to this list - they can
+  easily be stripped by looking for the end of the list.
 
-The hash is calculated on the concatenation of the public key and
-secret key parameter lists: i.e it is required to hash the
-concatenation of these 6 canonical encoded lists for RSA, including
-the parenthesis, the algorithm keyword and (if used) the protected-at
-list.
+  The hash is calculated on the concatenation of the public key and
+  secret key parameter lists: i.e it is required to hash the
+  concatenation of these 6 canonical encoded lists for RSA, including
+  the parenthesis, the algorithm keyword and (if used) the protected-at
+  list.
 
-(rsa
- (n #00e0ce9..[some bytes not shown]..51#)
- (e #010001#)
- (d #046129F..[some bytes not shown]..81#)
- (p #00e861b..[some bytes not shown]..f1#)
- (q #00f7a7c..[some bytes not shown]..61#)
- (u #304559a..[some bytes not shown]..9b#)
- (protected-at "18950523T000000")
-)
+  (rsa
+   (n #00e0ce9..[some bytes not shown]..51#)
+   (e #010001#)
+   (d #046129F..[some bytes not shown]..81#)
+   (p #00e861b..[some bytes not shown]..f1#)
+   (q #00f7a7c..[some bytes not shown]..61#)
+   (u #304559a..[some bytes not shown]..9b#)
+   (protected-at "18950523T000000")
+  )
 
-After decryption the hash must be recalculated and compared against
-the stored one - If they don't match the integrity of the key is not
-given.
+  After decryption the hash must be recalculated and compared against
+  the stored one - If they don't match the integrity of the key is not
+  given.
+
+2. openpgp-native
+
+  This is a wrapper around the OpenPGP Private Key Transport format
+  which resembles the standard OpenPGP format and allows the use of an
+  existing key without re-encrypting to the default protection format.
+
+  Example:
+
+  (protected openpgp-native
+    (openpgp-private-key
+     (version V)
+     (algo PUBKEYALGO)
+     (skey _ P1 _ P2 _ P3 ... e PN)
+     (csum n)
+     (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT)))
+
+  Note that the public key paramaters in SKEY are duplicated and
+  should be identical to their copies in the standard parameter
+  elements.  Here is an example of an entire protected private key
+  using this format:
+
+  (protected-private-key
+   (rsa
+    (n #00e0ce9..[some bytes not shown]..51#)
+    (e #010001#)
+    (protected openpgp-native
+     (openpgp-private-key
+      (version 4)
+      (algo rsa)
+      (skey _ #00e0ce9..[some bytes not shown]..51#
+            _ #010001#
+            e #.........................#)
+      (protection sha1 aes #aabbccddeeff00112233445566778899#
+                  3 sha1 #2596f93e85f41e53# 3:190))))
+   (uri http://foo.bar x-foo:whatever_you_want)
+   (comment whatever))
+
 
 
 Shadowed Private Key Format
@@ -184,7 +222,7 @@ This format is used to transfer keys between gpg and gpg-agent.
   the secrect key parameters are encrypted if the "protection" list is
   given.  To make this more explicit each parameter is preceded by a
   flag "_" for cleartext or "e" for encrypted text.
-* CSUM is the depreciated 16 bit checksum as defined by OpenPGP.  This
+* CSUM is the deprecated 16 bit checksum as defined by OpenPGP.  This
   is an optional element.
 * If PROTTYPE is "sha1" the new style SHA1 checksum is used if it is "sum"
   the old 16 bit checksum (above) is used and if it is "none" no

@@ -337,3 +337,14 @@ main (int argc, char **argv)
 
   return 0;
 }
+
+/* Stub function.  */
+gpg_error_t
+convert_from_openpgp_native (gcry_sexp_t s_pgp, const char *passphrase,
+                             unsigned char **r_key)
+{
+  (void)s_pgp;
+  (void)passphrase;
+  (void)r_key;
+  return gpg_error (GPG_ERR_BUG);
+}

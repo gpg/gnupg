@@ -1,6 +1,7 @@
 /* cvt-openpgp.c - Convert an OpenPGP key to our internal format.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006, 2009,
  *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -160,6 +161,72 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
 }
 
 
+/* Convert a secret key given as algorithm id, an array of key
+   parameters, and an S-expression of the original OpenPGP transfer
+   key into our s-expression based format.  This is a variant of
+   convert_secret_key which is used for the openpgp-native protection
+   mode.  Note that PUBKEY_ALGO has an gcrypt algorithm number. */
+static gpg_error_t
+convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
+                      gcry_sexp_t transfer_key)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_skey = NULL;
+
+  *r_key = NULL;
+
+  switch (pubkey_algo)
+    {
+    case GCRY_PK_DSA:
+      err = gcry_sexp_build
+        (&s_skey, NULL,
+         "(protected-private-key(dsa(p%m)(q%m)(g%m)(y%m)"
+         "(protected openpgp-native%S)))",
+         skey[0], skey[1], skey[2], skey[3], transfer_key);
+      break;
+
+    case GCRY_PK_ELG:
+    case GCRY_PK_ELG_E:
+      err = gcry_sexp_build
+        (&s_skey, NULL,
+         "(protected-private-key(elg(p%m)(g%m)(y%m)"
+         "(protected openpgp-native%S)))",
+         skey[0], skey[1], skey[2], transfer_key);
+      break;
+
+
+    case GCRY_PK_RSA:
+    case GCRY_PK_RSA_E:
+    case GCRY_PK_RSA_S:
+      err = gcry_sexp_build
+        (&s_skey, NULL,
+         "(protected-private-key(rsa(n%m)(e%m)",
+         "(protected openpgp-native%S)))",
+         skey[0], skey[1], transfer_key );
+      break;
+
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH:
+      /* Although our code would work with "ecc" we explicitly use
+         "ecdh" or "ecdsa" to implicitly set the key capabilities.  */
+      err = gcry_sexp_build
+        (&s_skey, NULL,
+         "(protected-private-key(%s(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
+         "(protected openpgp-native%S)))",
+         pubkey_algo == GCRY_PK_ECDSA?"ecdsa":"ecdh",
+         skey[0], skey[1], skey[2], skey[3], skey[4], skey[5], transfer_key);
+      break;
+
+    default:
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      break;
+    }
+
+  if (!err)
+    *r_key = s_skey;
+  return err;
+}
+
 
 /* Hash the passphrase and set the key. */
 static gpg_error_t
@@ -202,30 +269,19 @@ checksum (const unsigned char *p, unsigned int n)
 }
 
 
-/* Note that this function modified SKEY.  SKEYSIZE is the allocated
-   size of the array including the NULL item; this is used for a
-   bounds check.  On success a converted key is stored at R_KEY.  */
+/* Helper for do_unprotect.  PUBKEY_ALOGO is the gcrypt algo number.
+   On success R_NPKEY and R_NSKEY receive the number or parameters for
+   the algorithm PUBKEY_ALGO and R_SKEYLEN the used length of
+   SKEY.  */
 static int
-do_unprotect (const char *passphrase,
-              int pkt_version, int pubkey_algo, int is_protected,
-              gcry_mpi_t *skey, size_t skeysize,
-              int protect_algo, void *protect_iv, size_t protect_ivlen,
-              int s2k_mode, int s2k_algo, byte *s2k_salt, u32 s2k_count,
-              u16 desired_csum, gcry_sexp_t *r_key)
+prepare_unprotect (int pubkey_algo, gcry_mpi_t *skey, size_t skeysize,
+                   int s2k_mode,
+                   unsigned int *r_npkey, unsigned int *r_nskey,
+                   unsigned int *r_skeylen)
 {
   gpg_error_t err;
   size_t npkey, nskey, skeylen;
-  gcry_cipher_hd_t cipher_hd = NULL;
-  u16 actual_csum;
-  size_t nbytes;
   int i;
-  gcry_mpi_t tmpmpi;
-
-  *r_key = NULL;
-
- /* Unfortunately, the OpenPGP PK algorithm numbers need to be
-    re-mapped for Libgcrypt.    */
-  pubkey_algo = map_pk_openpgp_to_gcry (pubkey_algo);
 
   /* Count the actual number of MPIs is in the array and set the
      remainder to NULL for easier processing later on.  */
@@ -263,6 +319,54 @@ do_unprotect (const char *passphrase,
     return gpg_error (GPG_ERR_MISSING_VALUE);
   if (nskey+1 >= skeysize)
     return gpg_error (GPG_ERR_BUFFER_TOO_SHORT);
+
+  /* Check that the public key parameters are all available and not
+     encrypted.  */
+  for (i=0; i < npkey; i++)
+    {
+      if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
+        return gpg_error (GPG_ERR_BAD_SECKEY);
+    }
+
+  if (r_npkey)
+    *r_npkey = npkey;
+  if (r_nskey)
+    *r_nskey = nskey;
+  if (r_skeylen)
+    *r_skeylen = skeylen;
+  return 0;
+}
+
+
+/* Note that this function modifies SKEY.  SKEYSIZE is the allocated
+   size of the array including the NULL item; this is used for a
+   bounds check.  On success a converted key is stored at R_KEY.  */
+static int
+do_unprotect (const char *passphrase,
+              int pkt_version, int pubkey_algo, int is_protected,
+              gcry_mpi_t *skey, size_t skeysize,
+              int protect_algo, void *protect_iv, size_t protect_ivlen,
+              int s2k_mode, int s2k_algo, byte *s2k_salt, u32 s2k_count,
+              u16 desired_csum, gcry_sexp_t *r_key)
+{
+  gpg_error_t err;
+  unsigned int npkey, nskey, skeylen;
+  gcry_cipher_hd_t cipher_hd = NULL;
+  u16 actual_csum;
+  size_t nbytes;
+  int i;
+  gcry_mpi_t tmpmpi;
+
+  *r_key = NULL;
+
+  /* Unfortunately, the OpenPGP PK algorithm numbers need to be
+     re-mapped for Libgcrypt.    */
+  pubkey_algo = map_pk_openpgp_to_gcry (pubkey_algo);
+
+  err = prepare_unprotect (pubkey_algo, skey, skeysize, s2k_mode,
+                           &npkey, &nskey, &skeylen);
+  if (err)
+    return err;
 
   /* Check whether SKEY is at all protected.  If it is not protected
      merely verify the checksum.  */
@@ -512,7 +616,7 @@ do_unprotect (const char *passphrase,
 }
 
 
-/* Callback function to try the unprotection from the passpharse query
+/* Callback function to try the unprotection from the passphrase query
    code.  */
 static int
 try_do_unprotect_cb (struct pin_entry_info_s *pi)
@@ -536,24 +640,19 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
 }
 
 
-/* Convert an OpenPGP transfer key into our internal format.  Before
-   asking for a passphrase we check whether the key already exists in
-   our key storage.  S_PGP is the OpenPGP key in transfer format.  If
-   CACHE_NONCE is given the passphrase will be looked up in the cache.
-   On success R_KEY will receive a canonical encoded S-expression with
-   the unprotected key in our internal format; the caller needs to
-   release that memory.  The passphrase used to decrypt the OpenPGP
-   key will be returned at R_PASSPHRASE; the caller must release this
-   passphrase.  The keygrip will be stored at the 20 byte buffer
-   pointed to by GRIP.  On error NULL is stored at all return
-   arguments.  */
-gpg_error_t
-convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
-                      unsigned char *grip, const char *prompt,
-                      const char *cache_nonce,
-                      unsigned char **r_key, char **r_passphrase)
+/* See convert_from_openpgp for the core of the description.  This
+   function adds an optional PASSPHRASE argument and uses this to
+   silently decrypt the key; CACHE_NONCE and R_PASSPHRASE must both be
+   NULL in this mode.  */
+static gpg_error_t
+convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
+                           unsigned char *grip, const char *prompt,
+                           const char *cache_nonce, const char *passphrase,
+                           unsigned char **r_key, char **r_passphrase)
 {
   gpg_error_t err;
+  int unattended;
+  int from_native;
   gcry_sexp_t top_list;
   gcry_sexp_t list = NULL;
   const char *value;
@@ -573,12 +672,13 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   gcry_mpi_t skey[10];  /* We support up to 9 parameters.  */
   u16 desired_csum;
   int skeyidx = 0;
-  gcry_sexp_t s_skey;
-  struct pin_entry_info_s *pi;
-  struct try_do_unprotect_arg_s pi_arg;
+  gcry_sexp_t s_skey = NULL;
 
   *r_key = NULL;
-  *r_passphrase = NULL;
+  if (r_passphrase)
+    *r_passphrase = NULL;
+  unattended = !r_passphrase;
+  from_native = (!cache_nonce && passphrase && !r_passphrase);
 
   top_list = gcry_sexp_find_token (s_pgp, "openpgp-private-key", 0);
   if (!top_list)
@@ -607,6 +707,7 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
     is_protected = 0;
   else
     goto bad_seckey;
+
   if (is_protected)
     {
       string = gcry_sexp_nth_string (list, 2);
@@ -755,64 +856,89 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   if (err)
     goto leave;
 
-  if (!agent_key_available (grip))
+  if (!from_native && !agent_key_available (grip))
     {
       err = gpg_error (GPG_ERR_EEXIST);
       goto leave;
     }
 
-  pi = xtrycalloc_secure (1, sizeof (*pi) + 100);
-  if (!pi)
-    return gpg_error_from_syserror ();
-  pi->max_length = 100;
-  pi->min_digits = 0;  /* We want a real passphrase.  */
-  pi->max_digits = 16;
-  pi->max_tries = 3;
-  pi->check_cb = try_do_unprotect_cb;
-  pi->check_cb_arg = &pi_arg;
-  pi_arg.is_v4 = is_v4;
-  pi_arg.is_protected = is_protected;
-  pi_arg.pubkey_algo = pubkey_algo;
-  pi_arg.protect_algo = protect_algo;
-  pi_arg.iv = iv;
-  pi_arg.ivlen = ivlen;
-  pi_arg.s2k_mode = s2k_mode;
-  pi_arg.s2k_algo = s2k_algo;
-  pi_arg.s2k_salt = s2k_salt;
-  pi_arg.s2k_count = s2k_count;
-  pi_arg.desired_csum = desired_csum;
-  pi_arg.skey = skey;
-  pi_arg.skeysize = DIM (skey);
-  pi_arg.skeyidx = skeyidx;
-  pi_arg.r_key = &s_skey;
-
-  err = gpg_error (GPG_ERR_BAD_PASSPHRASE);
-  if (cache_nonce)
+  if (unattended && !from_native)
     {
-      char *cache_value;
+      int pubkey_g_algo = map_pk_openpgp_to_gcry (pubkey_algo);
 
-      cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
-      if (cache_value)
+      err = prepare_unprotect (pubkey_g_algo, skey, DIM(skey), s2k_mode,
+                               NULL, NULL, NULL);
+      if (err)
+        goto leave;
+
+      err = convert_transfer_key (&s_skey, pubkey_g_algo, skey, s_pgp);
+      if (err)
+        goto leave;
+    }
+  else
+    {
+      struct pin_entry_info_s *pi;
+      struct try_do_unprotect_arg_s pi_arg;
+
+      pi = xtrycalloc_secure (1, sizeof (*pi) + 100);
+      if (!pi)
+        return gpg_error_from_syserror ();
+      pi->max_length = 100;
+      pi->min_digits = 0;  /* We want a real passphrase.  */
+      pi->max_digits = 16;
+      pi->max_tries = 3;
+      pi->check_cb = try_do_unprotect_cb;
+      pi->check_cb_arg = &pi_arg;
+      pi_arg.is_v4 = is_v4;
+      pi_arg.is_protected = is_protected;
+      pi_arg.pubkey_algo = pubkey_algo;
+      pi_arg.protect_algo = protect_algo;
+      pi_arg.iv = iv;
+      pi_arg.ivlen = ivlen;
+      pi_arg.s2k_mode = s2k_mode;
+      pi_arg.s2k_algo = s2k_algo;
+      pi_arg.s2k_salt = s2k_salt;
+      pi_arg.s2k_count = s2k_count;
+      pi_arg.desired_csum = desired_csum;
+      pi_arg.skey = skey;
+      pi_arg.skeysize = DIM (skey);
+      pi_arg.skeyidx = skeyidx;
+      pi_arg.r_key = &s_skey;
+
+      err = gpg_error (GPG_ERR_BAD_PASSPHRASE);
+      if (cache_nonce)
         {
-          if (strlen (cache_value) < pi->max_length)
-            strcpy (pi->pin, cache_value);
-          xfree (cache_value);
+          char *cache_value;
+
+          cache_value = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
+          if (cache_value)
+            {
+              if (strlen (cache_value) < pi->max_length)
+                strcpy (pi->pin, cache_value);
+              xfree (cache_value);
+            }
+          if (*pi->pin)
+            err = try_do_unprotect_cb (pi);
         }
-      if (*pi->pin)
-        err = try_do_unprotect_cb (pi);
+      else if (from_native)
+        {
+          if (strlen (passphrase) < pi->max_length)
+            strcpy (pi->pin, passphrase);
+          err = try_do_unprotect_cb (pi);
+        }
+      if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE && !from_native)
+        err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
+      skeyidx = pi_arg.skeyidx;
+      if (!err && r_passphrase)
+        {
+          *r_passphrase = xtrystrdup (pi->pin);
+          if (!*r_passphrase)
+            err = gpg_error_from_syserror ();
+        }
+      xfree (pi);
+      if (err)
+        goto leave;
     }
-  if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
-    err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
-  skeyidx = pi_arg.skeyidx;
-  if (!err)
-    {
-      *r_passphrase = xtrystrdup (pi->pin);
-      if (!*r_passphrase)
-        err = gpg_error_from_syserror ();
-    }
-  xfree (pi);
-  if (err)
-    goto leave;
 
   /* Save some memory and get rid of the SKEY array now.  */
   for (idx=0; idx < skeyidx; idx++)
@@ -820,16 +946,16 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   skeyidx = 0;
 
   /* Note that the padding is not required - we use it only because
-     that function allows us to created the result in secure memory.  */
+     that function allows us to create the result in secure memory.  */
   err = make_canon_sexp_pad (s_skey, 1, r_key, NULL);
-  gcry_sexp_release (s_skey);
 
  leave:
+  gcry_sexp_release (s_skey);
   gcry_sexp_release (list);
   gcry_sexp_release (top_list);
   for (idx=0; idx < skeyidx; idx++)
     gcry_mpi_release (skey[idx]);
-  if (err)
+  if (err && r_passphrase)
     {
       xfree (*r_passphrase);
       *r_passphrase = NULL;
@@ -844,6 +970,63 @@ convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
   err = gpg_error (GPG_ERR_ENOMEM);
   goto leave;
 
+}
+
+
+/* Convert an OpenPGP transfer key into our internal format.  Before
+   asking for a passphrase we check whether the key already exists in
+   our key storage.  S_PGP is the OpenPGP key in transfer format.  If
+   CACHE_NONCE is given the passphrase will be looked up in the cache.
+   On success R_KEY will receive a canonical encoded S-expression with
+   the unprotected key in our internal format; the caller needs to
+   release that memory.  The passphrase used to decrypt the OpenPGP
+   key will be returned at R_PASSPHRASE; the caller must release this
+   passphrase.  If R_PASSPHRASE is NULL the unattended conversion mode
+   will be used which uses the openpgp-native protection format for
+   the key.  The keygrip will be stored at the 20 byte buffer pointed
+   to by GRIP.  On error NULL is stored at all return arguments.  */
+gpg_error_t
+convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
+                      unsigned char *grip, const char *prompt,
+                      const char *cache_nonce,
+                      unsigned char **r_key, char **r_passphrase)
+{
+  return convert_from_openpgp_main (ctrl, s_pgp, grip, prompt,
+                                    cache_nonce, NULL,
+                                    r_key, r_passphrase);
+}
+
+/* This function is called by agent_unprotect to re-protect an
+   openpgp-native protected private-key into the standard private-key
+   protection format.  */
+gpg_error_t
+convert_from_openpgp_native (ctrl_t ctrl,
+                             gcry_sexp_t s_pgp, const char *passphrase,
+                             unsigned char **r_key)
+{
+  gpg_error_t err;
+  unsigned char grip[20];
+
+  if (!passphrase)
+    return gpg_error (GPG_ERR_INTERNAL);
+
+  err = convert_from_openpgp_main (ctrl, s_pgp, grip, NULL,
+                                   NULL, passphrase,
+                                   r_key, NULL);
+
+  /* On success try to re-write the key.  */
+  if (!err)
+    {
+      unsigned char *protectedkey = NULL;
+      size_t protectedkeylen;
+
+      if (!agent_protect (*r_key, passphrase, &protectedkey, &protectedkeylen,
+                          ctrl->s2k_count))
+        agent_write_private_key (grip, protectedkey, protectedkeylen, 1);
+      xfree (protectedkey);
+    }
+
+  return err;
 }
 
 

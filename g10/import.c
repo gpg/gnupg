@@ -1432,7 +1432,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       {
         char *desc = gpg_format_keydesc (pk, 1, 1);
         err = agent_import_key (ctrl, desc, &cache_nonce,
-                                wrappedkey, wrappedkeylen);
+                                wrappedkey, wrappedkeylen, opt.batch);
         xfree (desc);
       }
       if (!err)

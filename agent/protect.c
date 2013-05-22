@@ -1,6 +1,7 @@
 /* protect.c - Un/Protect a secret key
  * Copyright (C) 1998, 1999, 2000, 2001, 2002,
  *               2003, 2007, 2009, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -604,6 +605,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   return 0;
 }
 
+
 
 /* Do the actual decryption and check the return list for consistency.  */
 static int
@@ -832,9 +834,10 @@ merge_lists (const unsigned char *protectedkey,
 
 /* Unprotect the key encoded in canonical format.  We assume a valid
    S-Exp here.  If a protected-at item is available, its value will
-   be stored at protocted_at unless this is NULL.  */
+   be stored at protected_at unless this is NULL.  */
 int
-agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
+agent_unprotect (ctrl_t ctrl,
+                 const unsigned char *protectedkey, const char *passphrase,
                  gnupg_isotime_t protected_at,
                  unsigned char **result, size_t *resultlen)
 {
@@ -938,7 +941,30 @@ agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
   if (!smatch (&s, n, "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc"))
-    return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
+    {
+      if (smatch (&s, n, "openpgp-native"))
+        {
+          gcry_sexp_t s_prot_begin;
+
+          rc = gcry_sexp_sscan (&s_prot_begin, NULL,
+                                prot_begin,
+                                gcry_sexp_canon_len (prot_begin, 0,NULL,NULL));
+          if (rc)
+            return rc;
+
+          rc = convert_from_openpgp_native (ctrl,
+                                            s_prot_begin, passphrase, &final);
+          gcry_sexp_release (s_prot_begin);
+          if (!rc)
+            {
+              *result = final;
+              *resultlen = gcry_sexp_canon_len (final, 0, NULL, NULL);
+            }
+          return rc;
+        }
+      else
+        return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
+    }
   if (*s != '(' || s[1] != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
   s += 2;

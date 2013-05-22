@@ -374,7 +374,8 @@ unsigned char get_standard_s2k_count_rfc4880 (void);
 int agent_protect (const unsigned char *plainkey, const char *passphrase,
                    unsigned char **result, size_t *resultlen,
 		   unsigned long s2k_count);
-int agent_unprotect (const unsigned char *protectedkey, const char *passphrase,
+int agent_unprotect (ctrl_t ctrl,
+                     const unsigned char *protectedkey, const char *passphrase,
                      gnupg_isotime_t protected_at,
                      unsigned char **result, size_t *resultlen);
 int agent_private_key_type (const unsigned char *privatekey);

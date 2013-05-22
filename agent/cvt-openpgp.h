@@ -23,6 +23,10 @@ gpg_error_t convert_from_openpgp (ctrl_t ctrl, gcry_sexp_t s_pgp,
                                   unsigned char *grip, const char *prompt,
                                   const char *cache_nonce,
                                   unsigned char **r_key, char **r_passphrase);
+gpg_error_t convert_from_openpgp_native (ctrl_t ctrl,
+                                         gcry_sexp_t s_pgp,
+                                         const char *passphrase,
+                                         unsigned char **r_key);
 
 gpg_error_t convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key,
                                 const char *passphrase,

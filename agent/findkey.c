@@ -66,6 +66,9 @@ agent_write_private_key (const unsigned char *grip,
 
   fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
 
+  /* FIXME: Write to a temp file first so that write failures during
+     key updates won't lead to a key loss.  */
+
   if (!force && !access (fname, F_OK))
     {
       log_error ("secret key file '%s' already exists\n", fname);
@@ -119,7 +122,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
   assert (!arg->unprotected_key);
 
   arg->change_required = 0;
-  err = agent_unprotect (arg->protected_key, pi->pin, protected_at,
+  err = agent_unprotect (arg->ctrl, arg->protected_key, pi->pin, protected_at,
                          &arg->unprotected_key, &dummy);
   if (err)
     return err;
@@ -325,7 +328,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       pw = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
       if (pw)
         {
-          rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
+          rc = agent_unprotect (ctrl, *keybuf, pw, NULL, &result, &resultlen);
           if (!rc)
             {
               if (r_passphrase)
@@ -350,7 +353,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       pw = agent_get_cache (hexgrip, cache_mode);
       if (pw)
         {
-          rc = agent_unprotect (*keybuf, pw, NULL, &result, &resultlen);
+          rc = agent_unprotect (ctrl, *keybuf, pw, NULL, &result, &resultlen);
           if (!rc)
             {
               if (r_passphrase)

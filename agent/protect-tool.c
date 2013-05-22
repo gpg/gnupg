@@ -372,7 +372,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (key, (pw=get_passphrase (1)),
+  rc = agent_unprotect (NULL, key, (pw=get_passphrase (1)),
                         protected_at, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -727,4 +727,16 @@ release_passphrase (char *pw)
       wipememory (pw, strlen (pw));
       xfree (pw);
     }
+}
+
+
+/* Stub function.  */
+gpg_error_t
+convert_from_openpgp_native (gcry_sexp_t s_pgp, const char *passphrase,
+                             unsigned char **r_key)
+{
+  (void)s_pgp;
+  (void)passphrase;
+  (void)r_key;
+  return gpg_error (GPG_ERR_BUG);
 }
