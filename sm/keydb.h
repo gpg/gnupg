@@ -39,12 +39,6 @@ int keydb_set_ephemeral (KEYDB_HANDLE hd, int yes);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
 gpg_error_t keydb_lock (KEYDB_HANDLE hd);
 
-#if 0 /* pgp stuff */
-int keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
-int keydb_update_keyblock (KEYDB_HANDLE hd, KBNODE kb);
-int keydb_insert_keyblock (KEYDB_HANDLE hd, KBNODE kb);
-#endif
-
 gpg_error_t keydb_get_flags (KEYDB_HANDLE hd, int which, int idx,
                              unsigned int *value);
 gpg_error_t keydb_set_flags (KEYDB_HANDLE hd, int which, int idx,
