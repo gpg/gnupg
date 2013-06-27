@@ -760,7 +760,7 @@ open_control_file (control_file_t *r_cf, int append)
       if (!stream)
         {
           err = gpg_error_from_syserror ();
-          log_error (_("can't create `%s': %s\n"),
+          log_error (_("can't create '%s': %s\n"),
                      cf->fname, gpg_strerror (err));
           goto leave;
         }
@@ -772,7 +772,7 @@ open_control_file (control_file_t *r_cf, int append)
   if (!cf->fp)
     {
       err = gpg_error_from_syserror ();
-      log_error (_("can't open `%s': %s\n"),
+      log_error (_("can't open '%s': %s\n"),
                  cf->fname, gpg_strerror (err));
       goto leave;
     }
