@@ -217,8 +217,16 @@ static int estream_pth_killed;
 
 #define ES_DEFAULT_OPEN_MODE (S_IRUSR | S_IWUSR)
 
-/* An internal stream object.  */
+/* A private cookie function to implement an internal IOCTL
+   service.  */
+typedef int (*cookie_ioctl_function_t) (void *cookie, int cmd,
+                                       void *ptr, size_t *len);
+/* IOCTL commands for the private cookie function.  */
+#define COOKIE_IOCTL_SNATCH_BUFFER 1
 
+
+
+/* An internal stream object.  */
 struct estream_internal
 {
   unsigned char buffer[BUFFER_BLOCK_SIZE];
@@ -232,6 +240,7 @@ struct estream_internal
   es_cookie_read_function_t func_read;
   es_cookie_write_function_t func_write;
   es_cookie_seek_function_t func_seek;
+  cookie_ioctl_function_t func_ioctl;
   es_cookie_close_function_t func_close;
   int strategy;
   int fd;
@@ -770,6 +779,34 @@ es_func_mem_seek (void *cookie, off_t *offset, int whence)
   *offset = pos_new;
 
   return 0;
+}
+
+
+/* An IOCTL function for memory objects.  */
+static int
+es_func_mem_ioctl (void *cookie, int cmd, void *ptr, size_t *len)
+{
+  estream_cookie_mem_t mem_cookie = cookie;
+  int ret;
+
+  if (cmd == COOKIE_IOCTL_SNATCH_BUFFER)
+    {
+      /* Return the internal buffer of the stream to the caller and
+         invalidate it for the stream.  */
+      *(void**)ptr = mem_cookie->memory;
+      *len = mem_cookie->offset;
+      mem_cookie->memory = NULL;
+      mem_cookie->memory_size = 0;
+      mem_cookie->offset = 0;
+      ret = 0;
+    }
+  else
+    {
+      _set_errno (EINVAL);
+      ret = -1;
+    }
+
+  return ret;
 }
 
 
@@ -1312,6 +1349,7 @@ es_initialize (estream_t stream,
   stream->intern->func_read = functions.func_read;
   stream->intern->func_write = functions.func_write;
   stream->intern->func_seek = functions.func_seek;
+  stream->intern->func_ioctl = NULL;
   stream->intern->func_close = functions.func_close;
   stream->intern->strategy = _IOFBF;
   stream->intern->fd = fd;
@@ -2317,6 +2355,9 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
   if (es_create (&stream, cookie, -1, estream_functions_mem, modeflags, 0))
     (*estream_functions_mem.func_close) (cookie);
 
+  if (stream)
+    stream->intern->func_ioctl = es_func_mem_ioctl;
+
   return stream;
 }
 
@@ -2603,6 +2644,66 @@ es_fclose (estream_t stream)
 
   return err;
 }
+
+
+/* This is a special version of es_fclose which can be used with
+   es_fopenmem to return the memory buffer.  This is feature is useful
+   to write to a memory buffer using estream.  Note that the function
+   does not close the stream if the stream does not support snatching
+   the buffer.  On error NULL is stored at R_BUFFER.  Note that if no
+   write operation has happened, NULL may also be stored at BUFFER on
+   success.  The caller needs to release the returned memory using
+   es_free.  */
+int
+es_fclose_snatch (estream_t stream, void **r_buffer, size_t *r_buflen)
+{
+  int err;
+
+  /* Note: There is no need to lock the stream in a close call.  The
+     object will be destroyed after the close and thus any other
+     contender for the lock would work on a closed stream.  */
+
+  if (r_buffer)
+    {
+      cookie_ioctl_function_t func_ioctl = stream->intern->func_ioctl;
+      size_t buflen;
+
+      *r_buffer = NULL;
+
+      if (!func_ioctl)
+        {
+          _set_errno (EOPNOTSUPP);
+          err = -1;
+          goto leave;
+        }
+
+      if (stream->flags.writing)
+        {
+          err = es_flush (stream);
+          if (err)
+            goto leave;
+          stream->flags.writing = 0;
+        }
+
+      err = func_ioctl (stream->intern->cookie, COOKIE_IOCTL_SNATCH_BUFFER,
+                        r_buffer, &buflen);
+      if (err)
+        goto leave;
+      if (r_buflen)
+        *r_buflen = buflen;
+    }
+
+  err = es_destroy (stream, 0);
+
+ leave:
+  if (err && r_buffer)
+    {
+      mem_free (*r_buffer);
+      *r_buffer = NULL;
+    }
+  return err;
+}
+
 
 int
 es_fileno_unlocked (estream_t stream)
