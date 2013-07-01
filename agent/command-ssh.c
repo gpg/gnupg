@@ -681,18 +681,16 @@ open_control_file (FILE **r_fp, int append)
   fp = fopen (fname, append? "a+":"r");
   if (!fp && errno == ENOENT)
     {
-      /* Fixme: "x" is a GNU extension.  We might want to use the es_
-         functions here.  */
-      fp = fopen (fname, "wx");
-      if (!fp)
+      estream_t stream = es_fopen (fname, "wx,mode=-rw-r");
+      if (!stream)
         {
-          err = gpg_error (gpg_err_code_from_errno (errno));
+          err = gpg_error_from_syserror ();
           log_error (_("can't create `%s': %s\n"), fname, gpg_strerror (err));
           xfree (fname);
           return err;
         }
-      fputs (sshcontrolblurb, fp);
-      fclose (fp);
+      es_fputs (sshcontrolblurb, stream);
+      es_fclose (stream);
       fp = fopen (fname, append? "a+":"r");
     }
 
