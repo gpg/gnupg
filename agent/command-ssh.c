@@ -1926,7 +1926,8 @@ ssh_handler_request_identities (ctrl_t ctrl,
      reader - this should be allowed even without being listed in
      sshcontrol. */
 
-  if (!card_key_available (ctrl, &key_public, &cardsn))
+  if (!opt.disable_scdaemon
+      && !card_key_available (ctrl, &key_public, &cardsn))
     {
       err = ssh_send_key_public (key_blobs, key_public, cardsn);
       gcry_sexp_release (key_public);
