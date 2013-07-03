@@ -292,11 +292,11 @@ msgstr ""
 "@Opcje:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "uruchomienie w trybie serwera (pierwszoplanowo)"
-
 msgid "run in daemon mode (background)"
 msgstr "uruchomienie w trybie demona (w tle)"
+
+msgid "run in server mode (foreground)"
+msgstr "uruchomienie w trybie serwera (pierwszoplanowo)"
 
 msgid "verbose"
 msgstr "z dodatkowymi informacjami"
@@ -346,7 +346,9 @@ msgstr "|N|przedawnienie pamiêtanych PIN-ów po N sekundach"
 msgid "do not use the PIN cache when signing"
 msgstr "nie u¿ywanie pamiêci PIN-ów przy podpisywaniu"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "zezwolenie klientom na oznaczanie kluczy jako \"zaufanych\""
 
 msgid "allow presetting passphrase"

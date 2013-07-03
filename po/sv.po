@@ -311,11 +311,11 @@ msgstr ""
 "@Flaggor:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "kör i serverläge (förgrund)"
-
 msgid "run in daemon mode (background)"
 msgstr "kör i demonläge (bakgrund)"
+
+msgid "run in server mode (foreground)"
+msgstr "kör i serverläge (förgrund)"
 
 msgid "verbose"
 msgstr "utförlig"
@@ -366,7 +366,9 @@ msgid "do not use the PIN cache when signing"
 msgstr "använd inte mellanlagring av PIN-kod vid signering"
 
 # Antar att värdet inte ska översättas.
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "tillåt klienter att markera nycklar som \"trusted\""
 
 msgid "allow presetting passphrase"

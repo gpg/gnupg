@@ -312,11 +312,11 @@ msgstr ""
 "@Opciones:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "ejecutar en modo servidor (primer plano)"
-
 msgid "run in daemon mode (background)"
 msgstr "ejecutar en modo demonio (segundo plano)"
+
+msgid "run in server mode (foreground)"
+msgstr "ejecutar en modo servidor (primer plano)"
 
 msgid "verbose"
 msgstr "prolijo"
@@ -366,7 +366,9 @@ msgstr "|N|los PINs en la caché expiran en N segundos"
 msgid "do not use the PIN cache when signing"
 msgstr "no usar el caché de PINs al firmar"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "permitir que los clientes marquen claves como \"fiables\""
 
 msgid "allow presetting passphrase"

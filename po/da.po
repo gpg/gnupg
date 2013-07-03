@@ -298,11 +298,11 @@ msgstr ""
 "@Indstillinger:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "kør i servertilstand (forgrunden)"
-
 msgid "run in daemon mode (background)"
 msgstr "kør i dæmontilstand (baggrunden)"
+
+msgid "run in server mode (foreground)"
+msgstr "kør i servertilstand (forgrunden)"
 
 msgid "verbose"
 msgstr "uddybende"
@@ -352,7 +352,9 @@ msgstr "|N|udløb mellemlagrede PIN'er efter N sekunder"
 msgid "do not use the PIN cache when signing"
 msgstr "brug ikke PIN-mellemlageret når der underskrives"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "tillad klienter at markere nøgler som »trusted« (troværdige)"
 
 msgid "allow presetting passphrase"

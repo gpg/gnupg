@@ -297,11 +297,11 @@ msgstr ""
 "@Параметри:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "запустити у режимі сервера (основному)"
-
 msgid "run in daemon mode (background)"
 msgstr "запустити у режимі фонової служби (фоновий)"
+
+msgid "run in server mode (foreground)"
+msgstr "запустити у режимі сервера (основному)"
 
 msgid "verbose"
 msgstr "докладний режим"
@@ -351,7 +351,9 @@ msgstr "вважати кешовані пінкоди за вказану кі�
 msgid "do not use the PIN cache when signing"
 msgstr "не використовувати кеш пін-кодів для підписування"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "дозволити клієнтам позначати ключі як надійні"
 
 msgid "allow presetting passphrase"

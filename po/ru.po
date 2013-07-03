@@ -295,11 +295,11 @@ msgstr ""
 "@Параметры:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "запуск в режиме сервера (foreground)"
-
 msgid "run in daemon mode (background)"
 msgstr "запуск в режиме демона (background)"
+
+msgid "run in server mode (foreground)"
+msgstr "запуск в режиме сервера (foreground)"
 
 msgid "verbose"
 msgstr "подробно"
@@ -349,7 +349,9 @@ msgstr "|N|кеш PIN просрочен после N секунд"
 msgid "do not use the PIN cache when signing"
 msgstr "не использовать кеш PIN при подписывании"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "позволить клиентам помечать ключи как \"доверяемые\""
 
 msgid "allow presetting passphrase"

@@ -313,11 +313,11 @@ msgstr ""
 "@Volby:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "běžet v režimu serveru (na popředí)"
-
 msgid "run in daemon mode (background)"
 msgstr "běžen v režimu démona (na pozadí)"
+
+msgid "run in server mode (foreground)"
+msgstr "běžet v režimu serveru (na popředí)"
 
 msgid "verbose"
 msgstr "s dodatečnými informacemi"
@@ -367,7 +367,9 @@ msgstr "|N|zahodit zapamatované PINy po N sekundách"
 msgid "do not use the PIN cache when signing"
 msgstr "nepoužívat paměť PINů na podepisování"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "dovolit klientům označit klíče za „důvěryhodné“"
 
 msgid "allow presetting passphrase"

@@ -276,11 +276,11 @@ msgstr ""
 "@選項:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "以伺服器模式執行 (前景)"
-
 msgid "run in daemon mode (background)"
 msgstr "以服務模式執行 (背景)"
+
+msgid "run in server mode (foreground)"
+msgstr "以伺服器模式執行 (前景)"
 
 msgid "verbose"
 msgstr "囉唆模式"
@@ -330,7 +330,9 @@ msgstr "|N|讓快取住的個人識別碼 (PIN) 在 N 秒後到期"
 msgid "do not use the PIN cache when signing"
 msgstr "簽署時不要使用個人識別碼 (PIN) 快取"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "允許用戶端將金鑰標記為 \"已信任\""
 
 msgid "allow presetting passphrase"

@@ -282,11 +282,11 @@ msgstr ""
 "@オプション:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "サーバ・モードで実行 (フォアグラウンド)"
-
 msgid "run in daemon mode (background)"
 msgstr "デーモン・モードで実行 (バックグラウンド)"
+
+msgid "run in server mode (foreground)"
+msgstr "サーバ・モードで実行 (フォアグラウンド)"
 
 msgid "verbose"
 msgstr "冗長"
@@ -336,7 +336,9 @@ msgstr "|N|N秒後に保持したPINを無効とする"
 msgid "do not use the PIN cache when signing"
 msgstr "署名に対してPINの保持を使わない"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "クライアントが鍵に\"trusted\"マークをつけることを認める"
 
 msgid "allow presetting passphrase"

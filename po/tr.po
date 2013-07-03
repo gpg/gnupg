@@ -287,11 +287,11 @@ msgstr ""
 "@Seçenekler:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "sunucu olarak (önalanda) çalışır"
-
 msgid "run in daemon mode (background)"
 msgstr "artalan süreci olarak çalışır"
+
+msgid "run in server mode (foreground)"
+msgstr "sunucu olarak (önalanda) çalışır"
 
 msgid "verbose"
 msgstr "ayrıntılı"
@@ -341,7 +341,9 @@ msgstr "|N|arabellekteki PINler N saniyede zamanaşımına uğrar"
 msgid "do not use the PIN cache when signing"
 msgstr "imzalarken PIN arabelleği kullanılmaz"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "istemcilerin anahtarları \"güvenilir\" olarak imlemesine izin verilir"
 
 msgid "allow presetting passphrase"

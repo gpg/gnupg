@@ -299,11 +299,11 @@ msgstr ""
 "@Optionen:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "Im Server Modus ausführen"
-
 msgid "run in daemon mode (background)"
 msgstr "Im Daemon Modus ausführen"
+
+msgid "run in server mode (foreground)"
+msgstr "Im Server Modus ausführen"
 
 msgid "verbose"
 msgstr "Detaillierte Informationen"
