@@ -1,10 +1,15 @@
 Noteworthy changes in version 2.0.21 (unreleased)
 -------------------------------------------------
 
+ * gpg-agent: By default the users are now asked via the Pinentry
+   whether they trust an X.509 root key.  To prohibit interactive
+   marking of such keys, the new option --no-allow-mark-trusted may
+   be used.
+
  * The included ssh agent does now support ECDSA keys.
 
- * New option --enable-putty-support to allow gpg-agent to act as a
-   Pageant replacement including full smartcard support.
+ * The new option --enable-putty-support allows gpg-agent on Windows
+   to act as a Pageant replacement with full smartcard support.
 
 
 Noteworthy changes in version 2.0.20 (2013-05-10)
