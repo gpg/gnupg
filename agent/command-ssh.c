@@ -3362,3 +3362,149 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   if (stream_sock)
     es_fclose (stream_sock);
 }
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Serve one ssh-agent request.  This is used for the Putty support.
+   REQUEST is the the mmapped memory which may be accessed up to a
+   length of MAXREQLEN.  Returns 0 on success which also indicates
+   that a valid SSH response message is now in REQUEST.  */
+int
+serve_mmapped_ssh_request (ctrl_t ctrl,
+                           unsigned char *request, size_t maxreqlen)
+{
+  gpg_error_t err;
+  int send_err = 0;
+  int valid_response = 0;
+  ssh_request_spec_t *spec;
+  u32 msglen;
+  estream_t request_stream, response_stream;
+
+  if (setup_ssh_env (ctrl))
+    goto leave; /* Error setting up the environment.  */
+
+  if (maxreqlen < 5)
+    goto leave; /* Caller error.  */
+
+  msglen = uint32_construct (request[0], request[1], request[2], request[3]);
+  if (msglen < 1 || msglen > maxreqlen - 4)
+    {
+      log_error ("ssh message len (%u) out of range", (unsigned int)msglen);
+      goto leave;
+    }
+
+  spec = request_spec_lookup (request[4]);
+  if (!spec)
+    {
+      send_err = 1;  /* Unknown request type.  */
+      goto leave;
+    }
+
+  /* Create a stream object with the data part of the request.  */
+  if (spec->secret_input)
+    request_stream = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
+  else
+    request_stream = es_mopen (NULL, 0, 0, 1, gcry_realloc, gcry_free, "r+");
+  if (!request_stream)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* We have to disable the estream buffering, because the estream
+     core doesn't know about secure memory.  */
+  if (es_setvbuf (request_stream, NULL, _IONBF, 0))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  /* Copy the request to the stream but omit the request type.  */
+  err = stream_write_data (request_stream, request + 5, msglen - 1);
+  if (err)
+    goto leave;
+  es_rewind (request_stream);
+
+  response_stream = es_fopenmem (0, "r+b");
+  if (!response_stream)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  if (opt.verbose)
+    log_info ("ssh request handler for %s (%u) started\n",
+	       spec->identifier, spec->type);
+
+  err = (*spec->handler) (ctrl, request_stream, response_stream);
+
+  if (opt.verbose)
+    {
+      if (err)
+        log_info ("ssh request handler for %s (%u) failed: %s\n",
+                  spec->identifier, spec->type, gpg_strerror (err));
+      else
+        log_info ("ssh request handler for %s (%u) ready\n",
+                  spec->identifier, spec->type);
+    }
+
+  es_fclose (request_stream);
+  request_stream = NULL;
+
+  if (err)
+    {
+      send_err = 1;
+      goto leave;
+    }
+
+  /* Put the response back into the mmapped buffer.  */
+  {
+    void *response_data;
+    size_t response_size;
+
+    /* NB: In contrast to the request-stream, the response stream
+       includes the the message type byte.  */
+    if (es_fclose_snatch (response_stream, &response_data, &response_size))
+      {
+        log_error ("snatching ssh response failed: %s",
+                   gpg_strerror (gpg_error_from_syserror ()));
+        send_err = 1; /* Ooops.  */
+        goto leave;
+      }
+
+    if (opt.verbose > 1)
+      log_info ("sending ssh response of length %u\n",
+                (unsigned int)response_size);
+    if (response_size > maxreqlen - 4)
+      {
+        log_error ("invalid length of the ssh response: %s",
+                   gpg_strerror (GPG_ERR_INTERNAL));
+        es_free (response_data);
+        send_err = 1;
+        goto leave;
+      }
+
+    request[0] = response_size >> 24;
+    request[1] = response_size >> 16;
+    request[2] = response_size >>  8;
+    request[3] = response_size >>  0;
+    memcpy (request+4, response_data, response_size);
+    es_free (response_data);
+    valid_response = 1;
+  }
+
+ leave:
+  if (send_err)
+    {
+      request[0] = 0;
+      request[1] = 0;
+      request[2] = 0;
+      request[3] = 1;
+      request[4] = SSH_RESPONSE_FAILURE;
+      valid_response = 1;
+    }
+
+  /* Reset the SCD in case it has been used. */
+  agent_reset_scd (ctrl);
+
+  return valid_response? 0 : -1;
+}
+#endif /*HAVE_W32_SYSTEM*/

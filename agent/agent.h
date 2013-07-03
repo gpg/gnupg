@@ -220,6 +220,10 @@ gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...)
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
+#ifdef HAVE_W32_SYSTEM
+int serve_mmapped_ssh_request (ctrl_t ctrl,
+                               unsigned char *request, size_t maxreqlen);
+#endif /*HAVE_W32_SYSTEM*/
 
 /*-- command-ssh.c --*/
 void start_command_handler_ssh (ctrl_t, gnupg_fd_t);

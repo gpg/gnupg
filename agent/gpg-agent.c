@@ -1,6 +1,7 @@
 /* gpg-agent.c  -  The GnuPG Agent
  * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
  *               2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -30,7 +31,16 @@
 #include <time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+# ifndef WINVER
+#  define WINVER 0x0500  /* Same as in common/sysutils.c */
+# endif
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <aclapi.h>
+# include <sddl.h>
+#else /*!HAVE_W32_SYSTEM*/
 # include <sys/socket.h>
 # include <sys/un.h>
 #endif /*!HAVE_W32_SYSTEM*/
@@ -106,6 +116,7 @@ enum cmd_and_opt_values
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
+  oPuttySupport,
   oDisableScdaemon,
   oWriteEnvFile
 };
@@ -177,7 +188,14 @@ static ARGPARSE_OPTS opts[] = {
                              N_("allow clients to mark keys as \"trusted\"")},
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
                              N_("allow presetting passphrase")},
-  { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh-agent emulation") },
+  { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh support") },
+  { oPuttySupport, "enable-putty-support", 0,
+#ifdef HAVE_W32_SYSTEM
+      N_("enable putty support")
+#else
+      "@"
+#endif
+  },
   { oWriteEnvFile, "write-env-file", 2|8,
             N_("|FILE|write environment settings also to FILE")},
   {0}
@@ -201,6 +219,17 @@ static ARGPARSE_OPTS opts[] = {
 #define TIMERTICK_INTERVAL    (2)    /* Seconds.  */
 #endif
 
+
+#ifdef HAVE_W32_SYSTEM
+/* Flag indicating that support for Putty has been enabled.  */
+static int putty_support;
+/* A magic value used with WM_COPYDATA.  */
+#define PUTTY_IPC_MAGIC 0x804e50ba
+/* To avoid surprises we limit the size of the mapped IPC file to this
+   value.  Putty currently (0.62) uses 8k, thus 16k should be enough
+   for the foreseeable future.  */
+#define PUTTY_IPC_MAXLEN 16384
+#endif /*HAVE_W32_SYSTEM*/
 
 /* The list of open file descriptors at startup.  Note that this list
    has been allocated using the standard malloc.  */
@@ -805,6 +834,13 @@ main (int argc, char **argv )
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
 	case oSSHSupport:  opt.ssh_support = 1; break;
+        case oPuttySupport:
+#        ifdef HAVE_W32_SYSTEM
+          putty_support = 1;
+          opt.ssh_support = 1;
+#        endif
+          break;
+
         case oWriteEnvFile:
           if (pargs.r_type)
             env_file_name = pargs.r.ret_str;
@@ -928,6 +964,11 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("disable-scdaemon:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+#ifdef HAVE_W32_SYSTEM
+      printf ("enable-putty-support:%lu:\n", GC_OPT_FLAG_NONE);
+#else
+      printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
+#endif
 
       agent_exit (0);
     }
@@ -1292,6 +1333,8 @@ agent_exit (int rc)
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
 {
+  assert (ctrl->session_env);
+
   /* Note we ignore malloc errors because we can't do much about it
      and the request will fail anyway shortly after this
      initialization. */
@@ -1309,7 +1352,6 @@ agent_init_default_ctrl (ctrl_t ctrl)
     xfree (ctrl->lc_messages);
   ctrl->lc_messages = default_lc_messages? xtrystrdup (default_lc_messages)
                                     /**/ : NULL;
-
 }
 
 
@@ -1788,6 +1830,199 @@ check_nonce (ctrl_t ctrl, assuan_sock_nonce_t *nonce)
 }
 
 
+#ifdef HAVE_W32_SYSTEM
+/* The window message processing function for Putty.  Warning: This
+   code runs as a native Windows thread.  Use of our own functions
+   needs to be bracket with pth_leave/pth_enter. */
+static LRESULT CALLBACK
+putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+  int ret = 0;
+  int w32rc;
+  COPYDATASTRUCT *cds;
+  const char *mapfile;
+  HANDLE maphd;
+  PSID mysid = NULL;
+  PSID mapsid = NULL;
+  void *data = NULL;
+  PSECURITY_DESCRIPTOR psd = NULL;
+  ctrl_t ctrl = NULL;
+
+  if (msg != WM_COPYDATA)
+    {
+      /* pth_leave (); */
+      /* log_debug ("putty loop: received WM_%u\n", msg ); */
+      /* pth_enter (); */
+      return DefWindowProc (hwnd, msg, wparam, lparam);
+    }
+
+  cds = (COPYDATASTRUCT*)lparam;
+  if (cds->dwData != PUTTY_IPC_MAGIC)
+    return 0;  /* Ignore data with the wrong magic.  */
+  mapfile = cds->lpData;
+  if (!cds->cbData || mapfile[cds->cbData - 1])
+    return 0;  /* Ignore empty and non-properly terminated strings.  */
+
+  if (DBG_ASSUAN)
+    {
+      pth_leave ();
+      log_debug ("ssh map file '%s'", mapfile);
+      pth_enter ();
+    }
+
+  maphd = OpenFileMapping (FILE_MAP_ALL_ACCESS, FALSE, mapfile);
+  if (DBG_ASSUAN)
+    {
+      pth_leave ();
+      log_debug ("ssh map handle %p\n", maphd);
+      pth_enter ();
+    }
+
+  if (!maphd || maphd == INVALID_HANDLE_VALUE)
+    return 0;
+
+  pth_leave ();
+
+  mysid = w32_get_user_sid ();
+  if (!mysid)
+    {
+      log_error ("error getting my sid\n");
+      goto leave;
+    }
+
+  w32rc = GetSecurityInfo (maphd, SE_KERNEL_OBJECT,
+                           OWNER_SECURITY_INFORMATION,
+                           &mapsid, NULL, NULL, NULL,
+                           &psd);
+  if (w32rc)
+    {
+      log_error ("error getting sid of ssh map file: rc=%d", w32rc);
+      goto leave;
+    }
+
+  if (DBG_ASSUAN)
+    {
+      char *sidstr;
+
+      if (!ConvertSidToStringSid (mysid, &sidstr))
+        sidstr = NULL;
+      log_debug ("          my sid: '%s'", sidstr? sidstr: "[error]");
+      LocalFree (sidstr);
+      if (!ConvertSidToStringSid (mapsid, &sidstr))
+        sidstr = NULL;
+      log_debug ("ssh map file sid: '%s'", sidstr? sidstr: "[error]");
+      LocalFree (sidstr);
+    }
+
+  if (!EqualSid (mysid, mapsid))
+    {
+      log_error ("ssh map file has a non-matching sid\n");
+      goto leave;
+    }
+
+  data = MapViewOfFile (maphd, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+  if (DBG_ASSUAN)
+    log_debug ("ssh IPC buffer at %p\n", data);
+  if (!data)
+    goto leave;
+
+  /* log_printhex ("request:", data, 20); */
+
+  ctrl = xtrycalloc (1, sizeof *ctrl);
+  if (!ctrl)
+    {
+      log_error ("error allocating connection control data: %s\n",
+                 strerror (errno) );
+      goto leave;
+    }
+  ctrl->session_env = session_env_new ();
+  if (!ctrl->session_env)
+    {
+      log_error ("error allocating session environment block: %s\n",
+                 strerror (errno) );
+      goto leave;
+    }
+
+  agent_init_default_ctrl (ctrl);
+  if (!serve_mmapped_ssh_request (ctrl, data, PUTTY_IPC_MAXLEN))
+    ret = 1; /* Valid ssh message has been constructed.  */
+  agent_deinit_default_ctrl (ctrl);
+  /* log_printhex ("  reply:", data, 20); */
+
+ leave:
+  xfree (ctrl);
+  if (data)
+    UnmapViewOfFile (data);
+  xfree (mapsid);
+  if (psd)
+    LocalFree (psd);
+  xfree (mysid);
+  CloseHandle (maphd);
+
+  pth_enter ();
+
+  return ret;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
+#ifdef HAVE_W32_SYSTEM
+/* The thread handling Putty's IPC requests.  */
+static void *
+putty_message_thread (void *arg)
+{
+  WNDCLASS wndwclass = {0, putty_message_proc, 0, 0,
+                        NULL, NULL, NULL, NULL, NULL, "Pageant"};
+  HWND hwnd;
+  MSG msg;
+
+  (void)arg;
+
+  if (opt.verbose)
+    log_info ("putty message loop thread 0x%lx started\n", pth_thread_id ());
+
+  /* The message loop runs as thread independet from out Pth system.
+     This also meand that we need to make sure that we switch back to
+     our system before calling any no-windows function.  */
+  pth_enter ();
+
+  /* First create a window to make sure that a message queue exists
+     for this thread.  */
+  if (!RegisterClass (&wndwclass))
+    {
+      pth_leave ();
+      log_error ("error registering Pageant window class");
+      return NULL;
+    }
+  hwnd = CreateWindowEx (0, "Pageant", "Pageant", 0,
+                         0, 0, 0, 0,
+                         HWND_MESSAGE,  /* hWndParent */
+                         NULL,          /* hWndMenu   */
+                         NULL,          /* hInstance  */
+                         NULL);         /* lpParm     */
+  if (!hwnd)
+    {
+      pth_leave ();
+      log_error ("error creating Pageant window");
+      return NULL;
+    }
+
+  while (GetMessage(&msg, NULL, 0, 0))
+    {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+    }
+
+  /* Back to Pth.  */
+  pth_leave ();
+
+  if (opt.verbose)
+    log_info ("putty message loop thread 0x%lx stopped\n", pth_thread_id ());
+  return NULL;
+}
+#endif /*HAVE_W32_SYSTEM*/
+
+
 /* This is the standard connection thread's main function.  */
 static void *
 start_connection_thread (void *arg)
@@ -1896,6 +2131,21 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 # endif
 #endif
   time_ev = NULL;
+
+  /* On Windows we need to fire up a separate thread to listen for
+     requests from Putty (an SSH client), so we can replace Putty's
+     Pageant (its ssh-agent implementation). */
+#ifdef HAVE_W32_SYSTEM
+  if (putty_support)
+    {
+      pth_attr_set (tattr, PTH_ATTR_NAME, "putty message loop");
+      if (!pth_spawn (tattr, putty_message_thread, NULL))
+        {
+          log_error ("error spawning putty message loop: %s\n",
+                     strerror (errno) );
+        }
+    }
+#endif /*HAVE_W32_SYSTEM*/
 
   /* Set a flag to tell call-scd.c that it may enable event
      notifications.  */
