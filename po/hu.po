@@ -349,8 +349,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "nem támogatott"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "nem támogatott"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7462,9 +7469,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "rossz titkos kulcs használata"
-
-#~ msgid "not supported"
-#~ msgstr "nem támogatott"
 
 #~ msgid "bad key"
 #~ msgstr "rossz kulcs"

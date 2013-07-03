@@ -372,8 +372,15 @@ msgstr "permitir que los clientes marquen claves como \"fiables\""
 msgid "allow presetting passphrase"
 msgstr "permitir preestablecer frase contraseña"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "permitir emulación de ssh-agent"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "no disponible"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FICHERO|escribir variables de entorno también en FICHERO"
@@ -7331,9 +7338,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "clave secreta incorrecta"
-
-#~ msgid "not supported"
-#~ msgstr "no disponible"
 
 #~ msgid "bad key"
 #~ msgstr "clave incorrecta"

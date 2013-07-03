@@ -357,8 +357,13 @@ msgstr "дозволити клієнтам позначати ключі як �
 msgid "allow presetting passphrase"
 msgstr "дозволити попереднє встановлення пароля"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "увімкнути емуляцію ssh-агента"
+
+msgid "enable putty support"
+msgstr ""
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "записати параметри середовища і до файла"

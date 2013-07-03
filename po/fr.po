@@ -356,8 +356,15 @@ msgstr "permettre de marquer la confiance des clefs"
 msgid "allow presetting passphrase"
 msgstr "permettre de préconfigurer la phrase de passe"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "activer l'émulation de ssh-agent"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "non pris en charge"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FICHIER|écrire aussi les réglages d'env. dans FICHIER"
@@ -7338,9 +7345,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "mauvaise clef secrète utilisée"
-
-#~ msgid "not supported"
-#~ msgstr "non pris en charge"
 
 #~ msgid "bad key"
 #~ msgstr "mauvaise clef"

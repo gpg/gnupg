@@ -365,8 +365,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "virhe luotaessa salasanaa: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "ei tuettu"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "ei tuettu"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7501,9 +7508,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "käytetty salainen avain on väärä"
-
-#~ msgid "not supported"
-#~ msgstr "ei tuettu"
 
 #~ msgid "bad key"
 #~ msgstr "avain ei kelpaa"

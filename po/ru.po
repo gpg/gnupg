@@ -355,8 +355,13 @@ msgstr "позволить клиентам помечать ключи как \
 msgid "allow presetting passphrase"
 msgstr "разрешить предустановленную фразу-пароль"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "разрешить эмуляцию ssh-агента"
+
+msgid "enable putty support"
+msgstr ""
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|сохранить состояние окружения и в файл"

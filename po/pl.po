@@ -352,8 +352,13 @@ msgstr "zezwolenie klientom na oznaczanie kluczy jako \"zaufanych\""
 msgid "allow presetting passphrase"
 msgstr "zezwolenie na predefiniowane has³o"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "w³±czenie emulacji ssh-agenta"
+
+msgid "enable putty support"
+msgstr ""
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|PLIK|zapis ustawieñ ¶rodowiska tak¿e do PLIKU"

@@ -373,8 +373,15 @@ msgstr "dovolit klientům označit klíče za „důvěryhodné“"
 msgid "allow presetting passphrase"
 msgstr "umožnit přednastavení hesla"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "zapnout emulaci ssh-agenta"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "nepodporováno"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|SOUBOR|zapsat nastavení prostředí též do SOUBORU"
@@ -7219,9 +7226,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "je použit špatný tajný klíč"
-
-#~ msgid "not supported"
-#~ msgstr "nepodporováno"
 
 #~ msgid "bad key"
 #~ msgstr "špatný klíč"

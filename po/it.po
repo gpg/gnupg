@@ -349,8 +349,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "errore nella creazione della passhprase: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "non gestito"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "non gestito"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7520,9 +7527,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "è stata usata la chiave segreta sbagliata"
-
-#~ msgid "not supported"
-#~ msgstr "non gestito"
 
 #~ msgid "bad key"
 #~ msgstr "chiave sbagliata"

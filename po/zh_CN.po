@@ -361,8 +361,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "生成密码的时候发生错误：%s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "未被支持"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "未被支持"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7182,9 +7189,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "使用了错误的私钥"
-
-#~ msgid "not supported"
-#~ msgstr "未被支持"
 
 #~ msgid "bad key"
 #~ msgstr "密钥已损坏"

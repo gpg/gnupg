@@ -372,8 +372,13 @@ msgstr "tillåt klienter att markera nycklar som \"trusted\""
 msgid "allow presetting passphrase"
 msgstr "tillåt förinställning av lösenfras"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "aktivera ssh-agent-emulering"
+
+msgid "enable putty support"
+msgstr ""
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FIL|skriv även miljöinställningar till FIL"

@@ -345,7 +345,10 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "Паўтарыце пароль\n"
 
-msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
+msgstr ""
+
+msgid "enable putty support"
 msgstr ""
 
 msgid "|FILE|write environment settings also to FILE"

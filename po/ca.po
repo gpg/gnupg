@@ -375,8 +375,21 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "error en la creació de la contrasenya: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+# Gènere?  Nombre?  ivb
+# Werner FIXME: please add translator comment saying *what* is
+# uncompressed so we know the gender. jm
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "no és suportat"
+
+# Gènere?  Nombre?  ivb
+# Werner FIXME: please add translator comment saying *what* is
+# uncompressed so we know the gender. jm
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "no és suportat"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7685,12 +7698,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "s'ha utilitzat una clau secreta incorrecta"
-
-# Gènere?  Nombre?  ivb
-# Werner FIXME: please add translator comment saying *what* is
-# uncompressed so we know the gender. jm
-#~ msgid "not supported"
-#~ msgstr "no és suportat"
 
 #~ msgid "bad key"
 #~ msgstr "la clau és incorrecta"

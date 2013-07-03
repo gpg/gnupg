@@ -336,8 +336,15 @@ msgstr "允許用戶端將金鑰標記為 \"已信任\""
 msgid "allow presetting passphrase"
 msgstr "允許預先設定密語"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "啟用 ssh-agent 模擬"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "未支援"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|檔案|將環境設定也寫至「檔案」"
@@ -7005,9 +7012,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "用了錯誤的私鑰"
-
-#~ msgid "not supported"
-#~ msgstr "未支援"
 
 #~ msgid "bad key"
 #~ msgstr "損壞的金鑰"

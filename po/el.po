@@ -352,8 +352,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "δεν υποστηρίζεται"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "δεν υποστηρίζεται"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7519,9 +7526,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "χρήση λάθος μυστικού κλειδιού"
-
-#~ msgid "not supported"
-#~ msgstr "δεν υποστηρίζεται"
 
 #~ msgid "bad key"
 #~ msgstr "κακό κλειδί"

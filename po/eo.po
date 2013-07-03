@@ -352,8 +352,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "ne realigita"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "ne realigita"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7414,9 +7421,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "maløusta sekreta þlosilo uzata"
-
-#~ msgid "not supported"
-#~ msgstr "ne realigita"
 
 #~ msgid "bad key"
 #~ msgstr "malbona þlosilo"

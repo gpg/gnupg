@@ -352,8 +352,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "erro ao crea-lo contrasinal: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "non está soportado"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "non está soportado"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7525,9 +7532,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "empregouse unha chave secreta errónea"
-
-#~ msgid "not supported"
-#~ msgstr "non está soportado"
 
 #~ msgid "bad key"
 #~ msgstr "chave incorrecta"

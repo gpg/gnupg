@@ -349,8 +349,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "viga parooli loomisel: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "ei ole toetatud"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "ei ole toetatud"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7416,9 +7423,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "kasutati valet salajast võtit"
-
-#~ msgid "not supported"
-#~ msgstr "ei ole toetatud"
 
 #~ msgid "bad key"
 #~ msgstr "halb võti"

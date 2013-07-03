@@ -352,8 +352,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "chyba pri vytváraní hesla: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "nepodporované"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "nepodporované"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7481,9 +7488,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "bol pou¾itý nesprávny tajný kµúè"
-
-#~ msgid "not supported"
-#~ msgstr "nepodporované"
 
 #~ msgid "bad key"
 #~ msgstr "nesprávny kµúè"

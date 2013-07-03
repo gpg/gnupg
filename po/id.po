@@ -354,8 +354,15 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "tidak didukung"
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "tidak didukung"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -7463,9 +7470,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "digunakan kunci rahasia yang salah"
-
-#~ msgid "not supported"
-#~ msgstr "tidak didukung"
 
 #~ msgid "bad key"
 #~ msgstr "kunci yang buruk"
