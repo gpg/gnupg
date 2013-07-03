@@ -774,7 +774,8 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
     }
   else
     es_fputs (nameformatted, fp);
-  es_fprintf (fp, "\n%s%s %c\n", yes_i_trust?"":"!", fprformatted, flag);
+  es_fprintf (fp, "\n%s%s %c%s\n", yes_i_trust?"":"!", fprformatted, flag,
+              flag == 'S'? " relax":"");
   if (es_ferror (fp))
     err = gpg_error_from_syserror ();
 

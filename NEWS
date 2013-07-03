@@ -6,8 +6,14 @@ Noteworthy changes in version 2.1.0-betaN (unreleased)
 
  * The GNU Pth library has been replaced by the new nPth library.
 
- * New option --enable-putty-support to allow gpg-agent to act as a
-   Pageant replacement including full smartcard support.
+ * By default the users are now asked via the Pinentry whether they
+   trust an X.509 root key.  To prohibit interactive marking of such
+   keys, the new option --no-allow-mark-trusted may be used.
+
+ * The included ssh agent does now support ECDSA keys.
+
+ * The new option --enable-putty-support allows gpg-agent on Windows
+   to act as a Pageant replacement with full smartcard support.
 
  * Removed support for the original HKP keyserver which is not anymore
    used by any site.

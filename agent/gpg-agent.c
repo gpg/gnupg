@@ -116,6 +116,7 @@ enum cmd_and_opt_values
 
   oIgnoreCacheForSigning,
   oAllowMarkTrusted,
+  oNoAllowMarkTrusted,
   oAllowPresetPassphrase,
   oAllowLoopbackPinentry,
   oKeepTTY,
@@ -137,8 +138,8 @@ static ARGPARSE_OPTS opts[] = {
 
   { 301, NULL, 0, N_("@Options:\n ") },
 
-  { oServer,   "server",     0, N_("run in server mode (foreground)") },
   { oDaemon,   "daemon",     0, N_("run in daemon mode (background)") },
+  { oServer,   "server",     0, N_("run in server mode (foreground)") },
   { oVerbose, "verbose",     0, N_("verbose") },
   { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
   { oSh,	"sh",        0, N_("sh-style command output") },
@@ -191,8 +192,9 @@ static ARGPARSE_OPTS opts[] = {
 
   { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
                                N_("do not use the PIN cache when signing")},
-  { oAllowMarkTrusted, "allow-mark-trusted", 0,
-                             N_("allow clients to mark keys as \"trusted\"")},
+  { oNoAllowMarkTrusted, "no-allow-mark-trusted", 0,
+                            N_("disallow clients to mark keys as \"trusted\"")},
+  { oAllowMarkTrusted, "allow-mark-trusted", 0, "@"},
   { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
                              N_("allow presetting passphrase")},
   { oAllowLoopbackPinentry, "allow-loopback-pinentry", 0,
@@ -523,7 +525,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.max_passphrase_days = MAX_PASSPHRASE_DAYS;
       opt.enable_passhrase_history = 0;
       opt.ignore_cache_for_signing = 0;
-      opt.allow_mark_trusted = 0;
+      opt.allow_mark_trusted = 1;
       opt.disable_scdaemon = 0;
       disable_check_own_socket = 0;
       return 1;
@@ -583,6 +585,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oIgnoreCacheForSigning: opt.ignore_cache_for_signing = 1; break;
 
     case oAllowMarkTrusted: opt.allow_mark_trusted = 1; break;
+    case oNoAllowMarkTrusted: opt.allow_mark_trusted = 0; break;
 
     case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
 
@@ -1008,7 +1011,7 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("ignore-cache-for-signing:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
-      es_printf ("allow-mark-trusted:%lu:\n",
+      es_printf ("no-allow-mark-trusted:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("disable-scdaemon:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
