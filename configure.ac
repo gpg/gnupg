@@ -442,6 +442,9 @@ AH_BOTTOM([
 /* We don't want the old assuan codes anymore. */
 #define _ASSUAN_ONLY_GPG_ERRORS 1
 
+/* We don't need any of the old gcrypt functions.  */
+#define GCRYPT_NO_DEPRECATED 1
+
 /* We explicitly need to disable PTH's soft mapping as Debian
    currently enables it by default for no reason. */
 #define PTH_SYSCALL_SOFT 0
