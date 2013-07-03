@@ -683,7 +683,7 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
   buffer_new = NULL;
   err = 0;
 
-  stream = es_fopen (filename, "r");
+  stream = es_fopen (filename, "rb");
   if (! stream)
     {
       err = gpg_error_from_syserror ();
@@ -2200,7 +2200,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   key_counter = 0;
   err = 0;
 
-  key_blobs = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
+  key_blobs = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+b");
   if (! key_blobs)
     {
       err = gpg_error_from_syserror ();
@@ -3275,44 +3275,51 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
   return !!err;
 }
 
+
+/* Because the ssh protocol does not send us information about the the
+   current TTY setting, we use this function to use those from startup
+   or those explictly set.  */
+static gpg_error_t
+setup_ssh_env (ctrl_t ctrl)
+{
+  static const char *names[] =
+    {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
+  gpg_error_t err = 0;
+  int idx;
+  const char *value;
+
+  for (idx=0; !err && names[idx]; idx++)
+    if (!session_env_getenv (ctrl->session_env, names[idx])
+        && (value = session_env_getenv (opt.startup_env, names[idx])))
+      err = session_env_setenv (ctrl->session_env, names[idx], value);
+
+  if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
+    if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
+      err = gpg_error_from_syserror ();
+
+  if (!err && !ctrl->lc_messages && opt.startup_lc_messages)
+    if (!(ctrl->lc_messages = xtrystrdup (opt.startup_lc_messages)))
+      err = gpg_error_from_syserror ();
+
+  if (err)
+    log_error ("error setting default session environment: %s\n",
+               gpg_strerror (err));
+
+  return err;
+}
+
+
 /* Start serving client on SOCK_CLIENT.  */
 void
 start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
 {
   estream_t stream_sock = NULL;
-  gpg_error_t err = 0;
+  gpg_error_t err;
   int ret;
 
-  /* Because the ssh protocol does not send us information about the
-     the current TTY setting, we resort here to use those from startup
-     or those explictly set.  */
-  {
-    static const char *names[] =
-      {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
-    int idx;
-    const char *value;
-
-    for (idx=0; !err && names[idx]; idx++)
-      if (!session_env_getenv (ctrl->session_env, names[idx])
-          && (value = session_env_getenv (opt.startup_env, names[idx])))
-        err = session_env_setenv (ctrl->session_env, names[idx], value);
-
-    if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
-      if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
-        err = gpg_error_from_syserror ();
-
-    if (!err && !ctrl->lc_messages && opt.startup_lc_messages)
-      if (!(ctrl->lc_messages = xtrystrdup (opt.startup_lc_messages)))
-        err = gpg_error_from_syserror ();
-
-    if (err)
-      {
-        log_error ("error setting default session environment: %s\n",
-                   gpg_strerror (err));
-        goto out;
-      }
-  }
-
+  err = setup_ssh_env (ctrl);
+  if (err)
+    goto out;
 
   /* Create stream from socket.  */
   stream_sock = es_fdopen (FD2INT(sock_client), "r+");
