@@ -2362,6 +2362,38 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
 }
 
 
+/* This is the same as es_fopenmem but intializes the memory with a
+   copy of (DATA,DATALEN).  The stream is initally set to the
+   beginning.  If MEMLIMIT is not 0 but shorter than DATALEN it
+   DATALEN will be used as the value for MEMLIMIT.  */
+estream_t
+es_fopenmem_init (size_t memlimit, const char *ES__RESTRICT mode,
+                  const void *data, size_t datalen)
+{
+  estream_t stream;
+
+  if (memlimit && memlimit < datalen)
+    memlimit = datalen;
+
+  stream = es_fopenmem (memlimit, mode);
+  if (stream && data && datalen)
+    {
+      if (es_writen (stream, data, datalen, NULL))
+        {
+          int saveerrno = errno;
+          es_fclose (stream);
+          stream = NULL;
+          _set_errno (saveerrno);
+        }
+      else
+        {
+          es_seek (stream, 0L, SEEK_SET, NULL);
+          es_set_indicators (stream, 0, 0);
+        }
+    }
+  return stream;
+}
+
 
 estream_t
 es_fopencookie (void *ES__RESTRICT cookie,
