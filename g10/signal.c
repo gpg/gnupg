@@ -122,7 +122,7 @@ got_fatal_signal( int sig )
 
     /* Reset action to default action and raise signal again. */
     init_one_signal (sig, SIG_DFL, 0);
-    dotlock_remove_lockfiles ();
+    dotlock_remove_lockfiles (0);
 #ifdef __riscos__
     riscos_close_fds ();
 #endif /* __riscos__ */

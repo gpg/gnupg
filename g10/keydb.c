@@ -181,7 +181,7 @@ maybe_create_keyring (char *filename, int force)
   if (lockhd)
     {
       dotlock_release (lockhd);
-      dotlock_destroy (lockhd);
+      dotlock_destroy (lockhd, 1);
     }
   return rc;
 }

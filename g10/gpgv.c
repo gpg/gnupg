@@ -434,7 +434,7 @@ void rl_free_line_state (void) {}
 void dotlock_disable(void) {}
 dotlock_t dotlock_create (const char *file_to_lock, unsigned int flags)
 { return NULL; }
-void dotlock_destroy (dotlock_t h) {}
+void dotlock_destroy (dotlock_t h, int reclaim) {}
 int dotlock_take (dotlock_t h, long timeout) { return 0;}
 int dotlock_release (dotlock_t h) {return 0;}
-void dotlock_remove_lockfiles (void) {}
+void dotlock_remove_lockfiles (void, int reclaim) {}

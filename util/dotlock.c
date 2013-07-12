@@ -128,7 +128,7 @@
    unlinked using the atexit handler.  If you don't need the lock file
    anymore, you may also explicitly remove it with a call to:
 
-     dotlock_destroy (h);
+     dotlock_destroy (h, 1);
 
    To actually lock the file, you use:
 
@@ -823,7 +823,7 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
 
   if ( !initialized )
     {
-      atexit (dotlock_remove_lockfiles);
+      atexit (dotlock_remove_lockfiles_reclaim);
       initialized = 1;
     }
 
@@ -881,13 +881,14 @@ dotlock_get_fd (dotlock_t h)
 #ifdef HAVE_POSIX_SYSTEM
 /* Unix specific code of destroy_dotlock.  */
 static void
-dotlock_destroy_unix (dotlock_t h)
+dotlock_destroy_unix (dotlock_t h, int reclaim)
 {
   if (h->locked && h->lockname)
     unlink (h->lockname);
   if (h->tname && !h->use_o_excl)
     unlink (h->tname);
-  jnlib_free (h->tname);
+  if (reclaim)
+    jnlib_free (h->tname);
 }
 #endif /*HAVE_POSIX_SYSTEM*/
 
@@ -911,7 +912,7 @@ dotlock_destroy_w32 (dotlock_t h)
 
 /* Destroy the locck handle H and release the lock.  */
 void
-dotlock_destroy (dotlock_t h)
+dotlock_destroy (dotlock_t h, int reclaim)
 {
   dotlock_t hprev, htmp;
 
@@ -938,11 +939,13 @@ dotlock_destroy (dotlock_t h)
 #ifdef HAVE_DOSISH_SYSTEM
       dotlock_destroy_w32 (h);
 #else /* !HAVE_DOSISH_SYSTEM */
-      dotlock_destroy_unix (h);
+      dotlock_destroy_unix (h, reclaim);
 #endif /* HAVE_DOSISH_SYSTEM */
-      jnlib_free (h->lockname);
+      if (reclaim)
+	jnlib_free (h->lockname);
     }
-  jnlib_free(h);
+  if (reclaim)
+    jnlib_free (h);
 }
 
 
@@ -1284,9 +1287,14 @@ dotlock_release (dotlock_t h)
 
 /* Remove all lockfiles.  This is called by the atexit handler
    installed by this module but may also be called by other
-   termination handlers.  */
+   termination handlers.
+
+   When RECLAIM == 0, it doesn't reclaim memory allocated.
+   This is useful calling by signal handlers.
+*/
+
 void
-dotlock_remove_lockfiles (void)
+dotlock_remove_lockfiles (int reclaim)
 {
   dotlock_t h, h2;
 
@@ -1301,7 +1309,13 @@ dotlock_remove_lockfiles (void)
   while ( h )
     {
       h2 = h->next;
-      dotlock_destroy (h);
+      dotlock_destroy (h, reclaim);
       h = h2;
     }
+}
+
+void
+dotlock_remove_lockfiles_reclaim (void)
+{
+  dotlock_remove_lockfiles (1);
 }
