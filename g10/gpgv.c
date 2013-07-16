@@ -437,4 +437,4 @@ dotlock_t dotlock_create (const char *file_to_lock, unsigned int flags)
 void dotlock_destroy (dotlock_t h, int reclaim) {}
 int dotlock_take (dotlock_t h, long timeout) { return 0;}
 int dotlock_release (dotlock_t h) {return 0;}
-void dotlock_remove_lockfiles (void, int reclaim) {}
+void dotlock_remove_lockfiles (int reclaim) {}
