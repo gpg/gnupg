@@ -1,5 +1,6 @@
 /* mpi-pow.c  -  MPI functions
- *	Copyright (C) 1994, 1996, 1998, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 1994, 1996, 1998, 2000 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -209,7 +210,14 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
 		tp = rp; rp = xp; xp = tp;
 		rsize = xsize;
 
-		if( (mpi_limb_signed_t)e < 0 ) {
+                /* To mitigate the Yarom/Falkner flush+reload cache
+                 * side-channel attack on the RSA secret exponent, we
+                 * do the multiplication regardless of the value of
+                 * the high-bit of E.  But to avoid this performance
+                 * penalty we do it only if the exponent has been
+                 * stored in secure memory and we can thus assume it
+                 * is a secret exponent.  */
+                if (esec || (mpi_limb_signed_t)e < 0) {
 		    /*mpihelp_mul( xp, rp, rsize, bp, bsize );*/
 		    if( bsize < KARATSUBA_THRESHOLD ) {
 			mpihelp_mul( xp, rp, rsize, bp, bsize );
@@ -224,7 +232,8 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
 			mpihelp_divrem(xp + msize, 0, xp, xsize, mp, msize);
 			xsize = msize;
 		    }
-
+                }
+		if ((mpi_limb_signed_t)e < 0) {
 		    tp = rp; rp = xp; xp = tp;
 		    rsize = xsize;
 		}
