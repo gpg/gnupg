@@ -1,8 +1,8 @@
-Noteworthy changes in version 1.4.14 (unreleased)
+Noteworthy changes in version 1.4.14 (2013-07-25)
 -------------------------------------------------
 
     * Mitigate the Yarom/Falkner flush+reload side-channel attack on
-      RSA secret keys.
+      RSA secret keys.  See <http://eprint.iacr.org/2013/448>.
 
     * Fixed IDEA for big-endian CPUs
 
