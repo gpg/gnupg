@@ -53,6 +53,7 @@ pubkey_letter( int algo )
       case PUBKEY_ALGO_DSA:	return 'D' ;
       case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
       case PUBKEY_ALGO_ECDH:	return 'e' ;	/* ECC DH (encrypt only) */
+      case PUBKEY_ALGO_ECC:	return 'C' ;	/* ECC generic */
       default: return '?';
     }
 }

@@ -50,6 +50,7 @@
 #define PUBKEY_ALGO_ECDH      18
 #define PUBKEY_ALGO_ECDSA     19
 #define PUBKEY_ALGO_ELGAMAL   20     /* sign and encrypt elgamal */
+#define PUBKEY_ALGO_ECC       22     /* Generic ECC.  */
 
 
 #define PUBKEY_USAGE_SIG     1	    /* key is good for signatures */
