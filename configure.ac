@@ -22,24 +22,30 @@
 AC_PREREQ(2.59)
 min_automake_version="1.9.3"
 
-# Remember to change the version number immediately *after* a release.
-# Set my_issvn to "yes" for non-released code.  Remember to run an
-# "svn up" and "autogen.sh --force" right before creating a distribution.
-m4_define([my_version], [1.4.14])
-m4_define([my_issvn], [yes])
+# To build a release you need to create a tag with the version number
+# (git tag -s gnupg-1.n.m) and run "./autogen.sh --force".  Please
+# bump the version number immediately *after* the release and do
+# another commit and push so that the git magic is able to work.
+m4_define([mym4_version], [1.4.14])
 
-m4_define([svn_revision], m4_esyscmd([printf "%d" $(svn info 2>/dev/null \
-          | sed -n '/^Revision:/ s/[^0-9]//gp'|head -1)]))
-m4_define([git_revision],
+# Below is m4 magic to extract and compute the git revision number,
+# the decimalized short revision number, a beta version string and a
+# flag indicating a development version (mym4_isgit).  Note that the
+# m4 processing is done by autoconf and not during the configure run.
+m4_define([mym4_revision],
           m4_esyscmd([git rev-parse --short HEAD | tr -d '\n\r']))
-m4_define([my_full_version], [my_version[]m4_if(my_issvn,[yes],
-          [m4_if(git_revision,[],[-svn[]svn_revision],[-git[]git_revision])])])
+m4_define([mym4_revision_dec],
+          m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
+m4_define([mym4_betastring],
+          m4_esyscmd_s([git describe --match 'gnupg-1.[0-9].*[0-9]' --long|\
+                        awk -F- '$3!=0{print"-beta"$3}']))
+m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
+m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
 
-AC_INIT([gnupg],[my_full_version],[http://bugs.gnupg.org])
-# Set development_version to yes if the minor number is odd or you
-# feel that the default check for a development version is not
-# sufficient.
-development_version=no
+AC_INIT([gnupg],[mym4_full_version], [http://bugs.gnupg.org])
+
+
+development_version=mym4_isgit
 
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/gpg.c)
