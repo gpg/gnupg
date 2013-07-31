@@ -225,6 +225,7 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
 
 /* Note: This code is not well tested.  However, it is not used in
    GnuPG.  */
+#if 0
 int
 write_w32_registry_string (const char *root, const char *dir,
                            const char *name, const char *value)
@@ -319,5 +320,5 @@ write_w32_registry_string (const char *root, const char *dir,
   return 0;
 #endif /*!HAVE_W32CE_SYSTEM*/
 }
-
+#endif /*0*/
 #endif /*HAVE_W32_SYSTEM*/
