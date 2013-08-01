@@ -96,6 +96,11 @@ software is provided `'as is'' without express or implied warranty.  */
 void ldap_pvt_hex_unescape( char *s );
 
 
+#ifndef LDAP_SCOPE_DEFAULT
+# define LDAP_SCOPE_DEFAULT -1
+#endif
+
+
 
 /* $OpenLDAP: pkg/ldap/libraries/libldap/charray.c,v 1.9.2.2 2003/03/03 17:10:04 kurt Exp $ */
 /*
