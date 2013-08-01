@@ -258,7 +258,7 @@ check_portable_app (const char *dir)
     log_error ("required binary '%s' is not installed\n", fname);
   else
     {
-      strcpy (fname + strlen (fname) - 3, ".ctl");
+      strcpy (fname + strlen (fname) - 3, "ctl");
       if (!access (fname, F_OK))
         {
           /* gpgconf.ctl file found.  Record this fact.  */
