@@ -500,6 +500,9 @@ AH_BOTTOM([
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
 
+/* Tell Libgcrypt not to include deprecated definitions.  */
+#define GCRYPT_NO_DEPRECATED 1
+
 /* We use jnlib, so tell other modules about it.  */
 #define HAVE_JNLIB_LOGGING 1
 
