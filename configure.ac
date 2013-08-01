@@ -979,7 +979,11 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 # Checking for iconv
 #
+missing_iconv=no
 AM_ICONV
+if test "$am_cv_func_iconv" != yes; then
+   missing_iconv=yes
+fi
 
 
 #
@@ -1495,6 +1499,14 @@ if test "$missing_pth" = "yes"; then
 *** To build GnuPG for Windows you need to use the W32PTH
 *** package; available at:
 ***   ftp://ftp.g10code.com/g10code/w32pth/
+***]])
+   die=yes
+fi
+if test "$missing_iconv" = "yes"; then
+    AC_MSG_NOTICE([[
+***
+*** It is now required to build with support for iconv
+*** Please install a suitable iconv implementation.
 ***]])
    die=yes
 fi

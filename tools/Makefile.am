@@ -118,7 +118,8 @@ gpgtar_SOURCES = \
 	gpgtar-list.c \
 	no-libgcrypt.c
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
-gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(W32SOCKLIBS)
+gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
+               $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
 
 # Make sure that all libs are build before we use them.  This is
 # important for things like make -j2.
