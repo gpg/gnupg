@@ -11,6 +11,8 @@ Noteworthy changes in version 2.0.21 (unreleased)
  * The new option --enable-putty-support allows gpg-agent on Windows
    to act as a Pageant replacement with full smartcard support.
 
+ * Support installation as portable application under Windows.
+
 
 Noteworthy changes in version 2.0.20 (2013-05-10)
 -------------------------------------------------

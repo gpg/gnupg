@@ -1,5 +1,6 @@
 /* homedir.c - Setup the home directory.
- *	Copyright (C) 2004, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2006, 2007 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -45,6 +46,33 @@
 
 #include "util.h"
 #include "sysutils.h"
+
+
+#ifdef HAVE_W32_SYSTEM
+/* A flag used to indicate that a control file for gpgconf has been
+   detected.  Under Windows the presence of this file indicates a
+   portable installations and triggers several changes:
+
+   - The GNUGHOME directory is fixed relative to installation
+     directory.  All other means to set the home directory are
+     ignored.
+
+   - All registry variables are ignored.
+
+   This flag is not used on Unix systems.
+ */
+static int w32_portable_app;
+
+/* This flag is true if this process' binary has been installed under
+   bin and not in the root directory. */
+static int w32_bin_is_bin;
+
+/* Just a little prototype.  */
+static const char *w32_rootdir (void);
+
+#endif /*HAVE_W32_SYSTEM*/
+
+
 
 
 /* This is a helper function to load a Windows function from either of
@@ -99,28 +127,39 @@ standard_homedir (void)
 
   if (!dir)
     {
-      char path[MAX_PATH];
+      const char *rdir;
 
-      /* It might be better to use LOCAL_APPDATA because this is
-         defined as "non roaming" and thus more likely to be kept
-         locally.  For private keys this is desired.  However, given
-         that many users copy private keys anyway forth and back,
-         using a system roaming services might be better than to let
-         them do it manually.  A security conscious user will anyway
-         use the registry entry to have better control.  */
-      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
-                               NULL, 0, path) >= 0)
+      rdir = w32_rootdir ();
+      if (w32_portable_app)
         {
-          char *tmp = xmalloc (strlen (path) + 6 +1);
-          strcpy (stpcpy (tmp, path), "\\gnupg");
-          dir = tmp;
-
-          /* Try to create the directory if it does not yet exists.  */
-          if (access (dir, F_OK))
-            CreateDirectory (dir, NULL);
+          dir = xstrconcat (rdir, DIRSEP_S "home", NULL);
         }
       else
-        dir = GNUPG_DEFAULT_HOMEDIR;
+        {
+          char path[MAX_PATH];
+
+          /* It might be better to use LOCAL_APPDATA because this is
+             defined as "non roaming" and thus more likely to be kept
+             locally.  For private keys this is desired.  However,
+             given that many users copy private keys anyway forth and
+             back, using a system roaming services might be better
+             than to let them do it manually.  A security conscious
+             user will anyway use the registry entry to have better
+             control.  */
+          if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
+                                   NULL, 0, path) >= 0)
+            {
+              char *tmp = xmalloc (strlen (path) + 6 +1);
+              strcpy (stpcpy (tmp, path), "\\gnupg");
+              dir = tmp;
+
+              /* Try to create the directory if it does not yet exists.  */
+              if (access (dir, F_OK))
+                CreateDirectory (dir, NULL);
+            }
+          else
+            dir = GNUPG_DEFAULT_HOMEDIR;
+        }
     }
   return dir;
 #else/*!HAVE_W32_SYSTEM*/
@@ -134,6 +173,13 @@ const char *
 default_homedir (void)
 {
   const char *dir;
+
+#ifdef HAVE_W32_SYSTEM
+  /* For a portable application we only use the standard homedir.  */
+  w32_rootdir ();
+  if (w32_portable_app)
+    return standard_homedir ();
+#endif /*HAVE_W32_SYSTEM*/
 
   dir = getenv ("GNUPGHOME");
 #ifdef HAVE_W32_SYSTEM
@@ -172,6 +218,31 @@ default_homedir (void)
 
 
 #ifdef HAVE_W32_SYSTEM
+/* Check whether gpgconf is installed and if so read the gpgconf.ctl
+   file. */
+static void
+check_portable_app (const char *dir)
+{
+  char *fname;
+
+  fname = xstrconcat (dir, DIRSEP_S "gpgconf.exe", NULL);
+  if (access (fname, F_OK))
+    log_error ("required binary '%s' is not installed\n", fname);
+  else
+    {
+      strcpy (fname + strlen (fname) - 3, "ctl");
+      if (!access (fname, F_OK))
+        {
+          /* gpgconf.ctl file found.  Record this fact.  */
+          w32_portable_app = 1;
+
+          /* FIXME: We should read the file to detect special flags
+             and print a warning if we don't understand them.  */
+        }
+    }
+  xfree (fname);
+}
+
 static const char *
 w32_rootdir (void)
 {
@@ -190,8 +261,22 @@ w32_rootdir (void)
       got_dir = 1;
       p = strrchr (dir, DIRSEP_C);
       if (p)
-        *p = 0;
-      else
+        {
+          *p = 0;
+
+          check_portable_app (dir);
+
+          /* If we are installed below "bin" we strip that and use
+             the top directory instead.  */
+          p = strrchr (dir, DIRSEP_C);
+
+          if (p && !strcmp (p+1, "bin"))
+            {
+              *p = 0;
+              w32_bin_is_bin = 1;
+            }
+        }
+      if (!p)
         {
           log_debug ("bad filename `%s' returned for this process\n", dir);
           *dir = 0;
@@ -211,7 +296,16 @@ w32_commondir (void)
 
   if (!dir)
     {
+      const char *rdir;
       char path[MAX_PATH];
+
+      /* Make sure that w32_rootdir has been called so that we are
+         able to check the portable application flag.  The common dir
+         is identical to the rootdir.  In that case there is also no
+         need to strdup its value.  */
+      rdir = w32_rootdir ();
+      if (w32_portable_app)
+        return rdir;
 
       if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA,
                                NULL, 0, path) >= 0)
@@ -226,15 +320,13 @@ w32_commondir (void)
         {
           /* Ooops: Not defined - probably an old Windows version.
              Use the installation directory instead.  */
-          dir = xstrdup (w32_rootdir ());
+          dir = xstrdup (rdir);
         }
     }
 
   return dir;
 }
 #endif /*HAVE_W32_SYSTEM*/
-
-
 
 
 /* Return the name of the sysconfdir.  This is a static string.  This
@@ -265,7 +357,19 @@ const char *
 gnupg_bindir (void)
 {
 #ifdef HAVE_W32_SYSTEM
-  return w32_rootdir ();
+  const char *rdir;
+
+  rdir = w32_rootdir ();
+  if (w32_bin_is_bin)
+    {
+      static char *name;
+
+      if (!name)
+        name = xstrconcat (rdir, DIRSEP_S "bin", NULL);
+      return name;
+    }
+  else
+    return rdir;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_BINDIR;
 #endif /*!HAVE_W32_SYSTEM*/
@@ -278,7 +382,7 @@ const char *
 gnupg_libexecdir (void)
 {
 #ifdef HAVE_W32_SYSTEM
-  return w32_rootdir ();
+  return gnupg_bindir ();
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_LIBEXECDIR;
 #endif /*!HAVE_W32_SYSTEM*/
