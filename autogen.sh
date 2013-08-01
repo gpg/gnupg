@@ -170,7 +170,7 @@ if [ "$myhost" = "w32" ]; then
 	     --with-libassuan-prefix=${w32root} \
 	     --with-zlib=${w32root} \
 	     --with-regex=${w32root} \
-             --with-pth-prefix=${w32root} \
+             --with-npth-prefix=${w32root} \
              --with-adns=${w32root} \
              ${extraoptions} --disable-g13 "$@"
     rc=$?
