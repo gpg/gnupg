@@ -42,6 +42,7 @@
 #define JNLIB_LOG_WITH_TIME    2
 #define JNLIB_LOG_WITH_PID     4
 #define JNLIB_LOG_RUN_DETACHED 256
+#define JNLIB_LOG_NO_REGISTRY  512
 
 int  log_get_errorcount (int clear);
 void log_inc_errorcount (void);

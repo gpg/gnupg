@@ -96,6 +96,9 @@ static char prefix_buffer[80];
 static int with_time;
 static int with_prefix;
 static int with_pid;
+#ifdef HAVE_W32_SYSTEM
+static int no_registry;
+#endif
 static int (*get_pid_suffix_cb)(unsigned long *r_value);
 static int running_detached;
 static int force_prefixes;
@@ -561,6 +564,9 @@ log_set_prefix (const char *text, unsigned int flags)
   with_time = (flags & JNLIB_LOG_WITH_TIME);
   with_pid  = (flags & JNLIB_LOG_WITH_PID);
   running_detached = (flags & JNLIB_LOG_RUN_DETACHED);
+#ifdef HAVE_W32_SYSTEM
+  no_registry = (flags & JNLIB_LOG_NO_REGISTRY);
+#endif
 }
 
 
@@ -578,6 +584,10 @@ log_get_prefix (unsigned int *flags)
         *flags |= JNLIB_LOG_WITH_PID;
       if (running_detached)
         *flags |= JNLIB_LOG_RUN_DETACHED;
+#ifdef HAVE_W32_SYSTEM
+      if (no_registry)
+        *flags |= JNLIB_LOG_NO_REGISTRY;
+#endif
     }
   return prefix_buffer;
 }
@@ -624,8 +634,10 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 #ifdef HAVE_W32_SYSTEM
       char *tmp;
 
-      tmp = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
-                                            "DefaultLogFile");
+      tmp = (no_registry
+             ? NULL
+             : read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
+                                         "DefaultLogFile"));
       log_set_file (tmp && *tmp? tmp : NULL);
       jnlib_free (tmp);
 #else

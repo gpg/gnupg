@@ -1,5 +1,6 @@
 /* homedir.c - Setup the home directory.
  * Copyright (C) 2004, 2006, 2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -33,6 +34,9 @@
 #include <fcntl.h>
 
 #ifdef HAVE_W32_SYSTEM
+#include <winsock2.h>   /* Due to the stupid mingw64 requirement to
+                           include this header before windows.h which
+                           is often implicitly included.  */
 #include <shlobj.h>
 #ifndef CSIDL_APPDATA
 #define CSIDL_APPDATA 0x001a
@@ -52,6 +56,33 @@
 
 #include "util.h"
 #include "sysutils.h"
+
+#ifdef HAVE_W32_SYSTEM
+/* A flag used to indicate that a control file for gpgconf has been
+   detected.  Under Windows the presence of this file indicates a
+   portable installations and triggers several changes:
+
+   - The GNUGHOME directory is fixed relative to installation
+     directory.  All other means to set the home directory are ignore.
+
+   - All registry variables will be ignored.
+
+   This flag is not used on Unix systems.
+ */
+static int w32_portable_app;
+#endif /*HAVE_W32_SYSTEM*/
+
+#ifdef HAVE_W32_SYSTEM
+/* This flag is true if this process' binary has been installed under
+   bin and not in the root directory. */
+static int w32_bin_is_bin;
+#endif /*HAVE_W32_SYSTEM*/
+
+
+#ifdef HAVE_W32_SYSTEM
+static const char *w32_rootdir (void);
+#endif
+
 
 
 #ifdef HAVE_W32_SYSTEM
@@ -124,28 +155,39 @@ standard_homedir (void)
 
   if (!dir)
     {
-      char path[MAX_PATH];
+      const char *rdir;
 
-      /* It might be better to use LOCAL_APPDATA because this is
-         defined as "non roaming" and thus more likely to be kept
-         locally.  For private keys this is desired.  However, given
-         that many users copy private keys anyway forth and back,
-         using a system roaming services might be better than to let
-         them do it manually.  A security conscious user will anyway
-         use the registry entry to have better control.  */
-      if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
-                               NULL, 0, path) >= 0)
+      rdir = w32_rootdir ();
+      if (w32_portable_app)
         {
-          char *tmp = xmalloc (strlen (path) + 6 +1);
-          strcpy (stpcpy (tmp, path), "\\gnupg");
-          dir = tmp;
-
-          /* Try to create the directory if it does not yet exists.  */
-          if (access (dir, F_OK))
-            w32_try_mkdir (dir);
+          dir = xstrconcat (rdir, DIRSEP_S "home", NULL);
         }
       else
-        dir = GNUPG_DEFAULT_HOMEDIR;
+        {
+          char path[MAX_PATH];
+
+          /* It might be better to use LOCAL_APPDATA because this is
+             defined as "non roaming" and thus more likely to be kept
+             locally.  For private keys this is desired.  However,
+             given that many users copy private keys anyway forth and
+             back, using a system roaming services might be better
+             than to let them do it manually.  A security conscious
+             user will anyway use the registry entry to have better
+             control.  */
+          if (w32_shgetfolderpath (NULL, CSIDL_APPDATA|CSIDL_FLAG_CREATE,
+                                   NULL, 0, path) >= 0)
+            {
+              char *tmp = xmalloc (strlen (path) + 6 +1);
+              strcpy (stpcpy (tmp, path), "\\gnupg");
+              dir = tmp;
+
+              /* Try to create the directory if it does not yet exists.  */
+              if (access (dir, F_OK))
+                w32_try_mkdir (dir);
+            }
+          else
+            dir = GNUPG_DEFAULT_HOMEDIR;
+        }
     }
   return dir;
 #else/*!HAVE_W32_SYSTEM*/
@@ -159,6 +201,13 @@ const char *
 default_homedir (void)
 {
   const char *dir;
+
+#ifdef HAVE_W32_SYSTEM
+  /* For a portable application we only use the standard homedir.  */
+  w32_rootdir ();
+  if (w32_portable_app)
+    return standard_homedir ();
+#endif /*HAVE_W32_SYSTEM*/
 
   dir = getenv ("GNUPGHOME");
 #ifdef HAVE_W32_SYSTEM
@@ -197,6 +246,37 @@ default_homedir (void)
 
 
 #ifdef HAVE_W32_SYSTEM
+/* Check whether gpgconf is installed and if so read the gpgconf.ctl
+   file. */
+static void
+check_portable_app (const char *dir)
+{
+  char *fname;
+
+  fname = xstrconcat (dir, DIRSEP_S "gpgconf.exe", NULL);
+  if (access (fname, F_OK))
+    log_error ("required binary '%s' is not installed\n", fname);
+  else
+    {
+      strcpy (fname + strlen (fname) - 3, ".ctl");
+      if (!access (fname, F_OK))
+        {
+          /* gpgconf.ctl file found.  Record this fact.  */
+          w32_portable_app = 1;
+          {
+            unsigned int flags;
+            log_get_prefix (&flags);
+            log_set_prefix (NULL, (flags | JNLIB_LOG_NO_REGISTRY));
+          }
+          /* FIXME: We should read the file to detect special flags
+             and print a warning if we don't understand them  */
+        }
+    }
+  xfree (fname);
+}
+
+
+/* Determine the root directory of the gnupg installation on Windows.  */
 static const char *
 w32_rootdir (void)
 {
@@ -229,11 +309,17 @@ w32_rootdir (void)
       if (p)
         {
           *p = 0;
+
+          check_portable_app (dir);
+
           /* If we are installed below "bin" we strip that and use
              the top directory instead.  */
           p = strrchr (dir, DIRSEP_C);
           if (p && !strcmp (p+1, "bin"))
-            *p = 0;
+            {
+              *p = 0;
+              w32_bin_is_bin = 1;
+            }
         }
       if (!p)
         {
@@ -255,7 +341,16 @@ w32_commondir (void)
 
   if (!dir)
     {
+      const char *rdir;
       char path[MAX_PATH];
+
+      /* Make sure that w32_rootdir has been called so that we are
+         able to check the portable application flag.  The common dir
+         is the identical to the rootdir.  In that case there is also
+         no need to strdup its value.  */
+      rdir = w32_rootdir ();
+      if (w32_portable_app)
+        return rdir;
 
       if (w32_shgetfolderpath (NULL, CSIDL_COMMON_APPDATA,
                                NULL, 0, path) >= 0)
@@ -270,7 +365,7 @@ w32_commondir (void)
         {
           /* Ooops: Not defined - probably an old Windows version.
              Use the installation directory instead.  */
-          dir = xstrdup (w32_rootdir ());
+          dir = xstrdup (rdir);
         }
     }
 
@@ -315,7 +410,19 @@ gnupg_bindir (void)
     name = xstrconcat (w32_rootdir (), DIRSEP_S "bin", NULL);
   return name;
 #elif defined(HAVE_W32_SYSTEM)
-  return w32_rootdir ();
+  const char *rdir;
+
+  rdir = w32_rootdir ();
+  if (w32_bin_is_bin)
+    {
+      static char *name;
+
+      if (!name)
+        name = xstrconcat (rdir, DIRSEP_S "bin", NULL);
+      return name;
+    }
+  else
+    return rdir;
 #else /*!HAVE_W32_SYSTEM*/
   return GNUPG_BINDIR;
 #endif /*!HAVE_W32_SYSTEM*/
@@ -390,41 +497,54 @@ gnupg_cachedir (void)
 
   if (!dir)
     {
-      char path[MAX_PATH];
-      const char *s1[] = { "GNU", "cache", "gnupg", NULL };
-      int s1_len;
-      const char **comp;
+      const char *rdir;
 
-      s1_len = 0;
-      for (comp = s1; *comp; comp++)
-        s1_len += 1 + strlen (*comp);
-
-      if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE,
-                               NULL, 0, path) >= 0)
+      rdir = w32_rootdir ();
+      if (w32_portable_app)
         {
-          char *tmp = xmalloc (strlen (path) + s1_len + 1);
-	  char *p;
-
-	  p = stpcpy (tmp, path);
-          for (comp = s1; *comp; comp++)
-	    {
-	      p = stpcpy (p, "\\");
-	      p = stpcpy (p, *comp);
-
-	      if (access (tmp, F_OK))
-		w32_try_mkdir (tmp);
-	    }
-
-          dir = tmp;
+          dir = xstrconcat (rdir,
+                            DIRSEP_S, "var",
+                            DIRSEP_S, "cache",
+                            DIRSEP_S, "gnupg", NULL);
         }
       else
         {
-          dir = "c:\\temp\\cache\\gnupg";
+          char path[MAX_PATH];
+          const char *s1[] = { "GNU", "cache", "gnupg", NULL };
+          int s1_len;
+          const char **comp;
+
+          s1_len = 0;
+          for (comp = s1; *comp; comp++)
+            s1_len += 1 + strlen (*comp);
+
+          if (w32_shgetfolderpath (NULL, CSIDL_LOCAL_APPDATA|CSIDL_FLAG_CREATE,
+                                   NULL, 0, path) >= 0)
+            {
+              char *tmp = xmalloc (strlen (path) + s1_len + 1);
+              char *p;
+
+              p = stpcpy (tmp, path);
+              for (comp = s1; *comp; comp++)
+                {
+                  p = stpcpy (p, "\\");
+                  p = stpcpy (p, *comp);
+
+                  if (access (tmp, F_OK))
+                    w32_try_mkdir (tmp);
+                }
+
+              dir = tmp;
+            }
+          else
+            {
+              dir = "c:\\temp\\cache\\gnupg";
 #ifdef HAVE_W32CE_SYSTEM
-          dir += 2;
-	  w32_try_mkdir ("\\temp\\cache");
-	  w32_try_mkdir ("\\temp\\cache\\gnupg");
+              dir += 2;
+              w32_try_mkdir ("\\temp\\cache");
+              w32_try_mkdir ("\\temp\\cache\\gnupg");
 #endif
+            }
         }
     }
   return dir;
@@ -449,16 +569,21 @@ dirmngr_socket_name (void)
 
       s1 = default_homedir ();
 # else
-      char s1[MAX_PATH];
-      const char *s2;
+      char s1buf[MAX_PATH];
+      const char *s1, *s2;
 
-      /* We need something akin CSIDL_COMMON_PROGRAMS, but local
-	 (non-roaming).  This is becuase the file needs to be on the
-	 local machine and makes only sense on that machine.
-	 CSIDL_WINDOWS seems to be the only location which guarantees
-	 that. */
-      if (w32_shgetfolderpath (NULL, CSIDL_WINDOWS, NULL, 0, s1) < 0)
-	strcpy (s1, "C:\\WINDOWS");
+      s1 = default_homedir ();
+      if (!w32_portable_app)
+        {
+          /* We need something akin CSIDL_COMMON_PROGRAMS, but local
+             (non-roaming).  This is because the file needs to be on
+             the local machine and makes only sense on that machine.
+             CSIDL_WINDOWS seems to be the only location which
+             guarantees that. */
+          if (w32_shgetfolderpath (NULL, CSIDL_WINDOWS, NULL, 0, s1buf) < 0)
+            strcpy (s1buf, "C:\\WINDOWS");
+          s1 = s1buf;
+        }
 # endif
       s2 = DIRSEP_S "S.dirmngr";
       name = xmalloc (strlen (s1) + strlen (s2) + 1);

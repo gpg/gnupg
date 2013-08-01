@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.1.0beta4 (unreleased)
+Noteworthy changes in version 2.1.0-betaN (unreleased)
 -----------------------------------------------------
 
  * GPG now accepts a space separated fingerprint as a user ID.  This
@@ -19,6 +19,8 @@ Noteworthy changes in version 2.1.0beta4 (unreleased)
 
  * Better support fo CCID readers.  Now, internal CCID driver supports
    readers with no auto configuration feature.
+
+ * Support installation as portable application under Windows.
 
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
