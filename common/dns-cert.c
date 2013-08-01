@@ -148,7 +148,7 @@ get_dns_cert (const char *name, estream_t *r_key,
           goto leave;
         }
       else if (ctype == CERTTYPE_IPGP && datalen && datalen < 1023
-               && datalen >= data[0] + 1 && fpr && fpr_len && url)
+               && datalen >= data[0] + 1 && r_fpr && r_fprlen && r_url)
         {
           /* CERT type is IPGP.  We made sure that the data is
              plausible and that the caller requested this
@@ -170,7 +170,7 @@ get_dns_cert (const char *name, estream_t *r_key,
 
           if (datalen > *r_fprlen + 1)
             {
-              *url = xtrymalloc (datalen - (*r_fprlen + 1) + 1);
+              *r_url = xtrymalloc (datalen - (*r_fprlen + 1) + 1);
               if (!*r_url)
                 {
                   err = gpg_err_make (default_errsource,
@@ -179,8 +179,9 @@ get_dns_cert (const char *name, estream_t *r_key,
                   *r_fpr = NULL;
                   goto leave;
                 }
-              memcpy (*url, data + (*r_fprlen + 1), datalen - (*r_fprlen + 1));
-              (*url)[datalen - (*r_fprlen + 1)] = '\0';
+              memcpy (*r_url,
+                      data + (*r_fprlen + 1), datalen - (*r_fprlen + 1));
+              (*r_url)[datalen - (*r_fprlen + 1)] = '\0';
             }
           else
             *r_url = NULL;
