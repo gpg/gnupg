@@ -36,6 +36,7 @@
 
 #include "agent.h"
 
+#include "cvt-openpgp.h"
 #include "sexp-parse.h"
 
 #define PROT_CIPHER        GCRY_CIPHER_AES
