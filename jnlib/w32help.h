@@ -24,8 +24,6 @@
 /*-- w32-reg.c --*/
 char *read_w32_registry_string (const char *root,
 				const char *dir, const char *name );
-int write_w32_registry_string (const char *root, const char *dir,
-                               const char *name, const char *value);
 
 #ifdef USE_SIMPLE_GETTEXT
 char *bindtextdomain (const char *domainname, const char *dirname);

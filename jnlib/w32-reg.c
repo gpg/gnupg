@@ -148,38 +148,4 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
 }
 
 
-int
-write_w32_registry_string (const char *root, const char *dir,
-                           const char *name, const char *value)
-{
-  HKEY root_key, reg_key;
-
-  if ( !(root_key = get_root_key(root) ) )
-    return -1;
-
-  if ( RegOpenKeyEx( root_key, dir, 0, KEY_WRITE, &reg_key )
-       != ERROR_SUCCESS )
-    return -1;
-
-  if ( RegSetValueEx (reg_key, name, 0, REG_SZ, (BYTE *)value,
-                      strlen( value ) ) != ERROR_SUCCESS )
-    {
-      if ( RegCreateKey( root_key, name, &reg_key ) != ERROR_SUCCESS )
-        {
-          RegCloseKey(reg_key);
-          return -1;
-        }
-      if ( RegSetValueEx (reg_key, name, 0, REG_SZ, (BYTE *)value,
-                          strlen( value ) ) != ERROR_SUCCESS )
-        {
-          RegCloseKey(reg_key);
-          return -1;
-        }
-    }
-
-  RegCloseKey (reg_key);
-
-  return 0;
-}
-
 #endif /*HAVE_W32_SYSTEM*/
