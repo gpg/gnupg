@@ -3389,7 +3389,8 @@ main (int argc, char **argv)
     if(fname && utf8_strings)
       opt.flags.utf8_filename=1;
 
-    switch( cmd ) {
+    switch (cmd)
+      {
       case aPrimegen:
       case aPrintMD:
       case aPrintMDs:
@@ -3398,12 +3399,24 @@ main (int argc, char **argv)
       case aEnArmor:
 	break;
       case aFixTrustDB:
-      case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
-      case aListTrustDB: rc = setup_trustdb( argc? 1:0, trustdb_name ); break;
-      default: rc = setup_trustdb(1, trustdb_name ); break;
-    }
-    if( rc )
-	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
+      case aExportOwnerTrust:
+        rc = setup_trustdb (0, trustdb_name);
+        break;
+      case aListTrustDB:
+        rc = setup_trustdb (argc? 1:0, trustdb_name);
+        break;
+      case aEncr:
+      case aEncrFiles:
+        /* If we are using TM_ALWAYS, we do not need to create the
+           trustdb.  */
+        rc = setup_trustdb (opt.trust_model != TM_ALWAYS, trustdb_name);
+        break;
+      default:
+        rc = setup_trustdb (1, trustdb_name );
+        break;
+      }
+    if (rc)
+      log_error (_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
 
 
     switch (cmd)
