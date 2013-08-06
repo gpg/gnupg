@@ -101,14 +101,9 @@ require-cross-certification
 #
 # Example HKP keyservers:
 #      hkp://keys.gnupg.net
-#      hkp://subkeys.pgp.net
-#
-# Example email keyserver:
-#      mailto:pgp-public-keys@keys.pgp.net
 #
 # Example LDAP keyservers:
 #      ldap://pgp.surfnet.nl:11370
-#      ldap://keyserver.pgp.com
 #
 # Regular URL syntax applies, and you can set an alternate port
 # through the usual method:
@@ -131,8 +126,6 @@ require-cross-certification
 keyserver hkp://keys.gnupg.net
 #keyserver http://http-keys.gnupg.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
-#keyserver ldap://pgp.surfnet.nl:11370
-#keyserver ldap://keyserver.pgp.com
 
 # Common options for keyserver functions:
 #
