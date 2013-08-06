@@ -4,11 +4,11 @@
 # Options for GnuPG
 # Copyright 1998, 1999, 2000, 2001, 2002, 2003,
 #           2010 Free Software Foundation, Inc.
-# 
+#
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
 # modifications, as long as this notice is preserved.
-# 
+#
 # This file is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -101,14 +101,9 @@ require-cross-certification
 #
 # Example HKP keyservers:
 #      hkp://keys.gnupg.net
-#      hkp://subkeys.pgp.net
-#
-# Example email keyserver:
-#      mailto:pgp-public-keys@keys.pgp.net
 #
 # Example LDAP keyservers:
 #      ldap://pgp.surfnet.nl:11370
-#      ldap://keyserver.pgp.com
 #
 # Regular URL syntax applies, and you can set an alternate port
 # through the usual method:
@@ -131,8 +126,6 @@ require-cross-certification
 keyserver hkp://keys.gnupg.net
 #keyserver http://http-keys.gnupg.net
 #keyserver mailto:pgp-public-keys@keys.nl.pgp.net
-#keyserver ldap://pgp.surfnet.nl:11370
-#keyserver ldap://keyserver.pgp.com
 
 # Common options for keyserver functions:
 #
