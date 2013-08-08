@@ -998,13 +998,15 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyinfo[] =
-  "KEYINFO [--list] [--data] [--ssh-fpr] <keygrip>\n"
+  "KEYINFO [--[ssh-]list] [--data] [--ssh-fpr] [--with-ssh] <keygrip>\n"
   "\n"
   "Return information about the key specified by the KEYGRIP.  If the\n"
   "key is not available GPG_ERR_NOT_FOUND is returned.  If the option\n"
   "--list is given the keygrip is ignored and information about all\n"
-  "available keys are returned.  The information is returned as a\n"
-  "status line unless --data was specified, with this format:\n"
+  "available keys are returned.  If --ssh-list is given information\n"
+  "about all keys listed in the sshcontrol are returned.  With --with-ssh\n"
+  "information from sshcontrol is always added to the info. Unless --data\n"
+  "is given, the information is returned as a status line using the format:\n"
   "\n"
   "  KEYINFO <keygrip> <type> <serialno> <idstr> <cached> <protection> <fpr>\n"
   "\n"
@@ -1013,7 +1015,8 @@ static const char hlp_keyinfo[] =
   "TYPE is describes the type of the key:\n"
   "    'D' - Regular key stored on disk,\n"
   "    'T' - Key is stored on a smartcard (token),\n"
-  "    '-' - Unknown type.\n"
+  "    'X' - Unknown type,\n"
+  "    '-' - Key is missing.\n"
   "\n"
   "SERIALNO is an ASCII string with the serial number of the\n"
   "         smartcard.  If the serial number is not known a single\n"
@@ -1031,13 +1034,21 @@ static const char hlp_keyinfo[] =
   "    '-' - Unknown protection.\n"
   "\n"
   "FPR returns the formatted ssh-style fingerprint of the key.  It is only\n"
-  "    print if the option --ssh-fpr has been used. '-' is printed if the\n"
-  "    fingerprint is not available.\n"
+  "    printed if the option --ssh-fpr has been used.  It defaults to '-'.\n"
+  "\n"
+  "TTL is the TTL in seconds for that key or '-' if n/a.\n"
+  "\n"
+  "FLAGS is a word consisting of one-letter flags:\n"
+  "      'D' - The key has been disabled,\n"
+  "      'S' - The key is listed in sshcontrol (requires --with-ssh),\n"
+  "      'c' - Use of the key needs to be confirmed,\n"
+  "      '-' - No flags given.\n"
   "\n"
   "More information may be added in the future.";
 static gpg_error_t
 do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
-                int data, int with_ssh_fpr)
+                int data, int with_ssh_fpr, int in_ssh,
+                int ttl, int disabled, int confirm)
 {
   gpg_error_t err;
   char hexgrip[40+1];
@@ -1050,24 +1061,55 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
   const char *cached;
   const char *protectionstr;
   char *pw;
+  int missing_key = 0;
+  char ttlbuf[20];
+  char flagsbuf[5];
 
   err = agent_key_info_from_file (ctrl, grip, &keytype, &shadow_info);
   if (err)
-    goto leave;
+    {
+      if (in_ssh && gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        missing_key = 1;
+      else
+        goto leave;
+    }
 
   /* Reformat the grip so that we use uppercase as good style. */
   bin2hex (grip, 20, hexgrip);
 
-  switch (keytype)
+  if (ttl > 0)
+    snprintf (ttlbuf, sizeof ttlbuf, "%d", ttl);
+  else
+    strcpy (ttlbuf, "-");
+
+  *flagsbuf = 0;
+  if (disabled)
+    strcat (flagsbuf, "D");
+  if (in_ssh)
+    strcat (flagsbuf, "S");
+  if (confirm)
+    strcat (flagsbuf, "c");
+  if (!*flagsbuf)
+    strcpy (flagsbuf, "-");
+
+
+  if (missing_key)
     {
-    case PRIVATE_KEY_CLEAR: protectionstr = "C"; keytypestr = "D";
-      break;
-    case PRIVATE_KEY_PROTECTED: protectionstr = "P"; keytypestr = "D";
-      break;
-    case PRIVATE_KEY_SHADOWED: protectionstr = "-"; keytypestr = "T";
-      break;
-    default: protectionstr = "-"; keytypestr = "-";
-      break;
+      protectionstr = "-"; keytypestr = "-";
+    }
+  else
+    {
+      switch (keytype)
+        {
+        case PRIVATE_KEY_CLEAR: protectionstr = "C"; keytypestr = "D";
+          break;
+        case PRIVATE_KEY_PROTECTED: protectionstr = "P"; keytypestr = "D";
+          break;
+        case PRIVATE_KEY_SHADOWED: protectionstr = "-"; keytypestr = "T";
+          break;
+        default: protectionstr = "-"; keytypestr = "X";
+          break;
+        }
     }
 
   /* Compute the ssh fingerprint if requested.  */
@@ -1105,16 +1147,20 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
                               cached,
 			      protectionstr,
                               fpr? fpr : "-",
+                              ttlbuf,
+                              flagsbuf,
                               NULL);
   else
     {
       char *string;
 
-      string = xtryasprintf ("%s %s %s %s %s %s %s\n",
+      string = xtryasprintf ("%s %s %s %s %s %s %s %s %s\n",
                              hexgrip, keytypestr,
                              serialno? serialno : "-",
                              idstr? idstr : "-", cached, protectionstr,
-                             fpr? fpr : "-");
+                             fpr? fpr : "-",
+                             ttlbuf,
+                             flagsbuf);
       if (!string)
         err = gpg_error_from_syserror ();
       else
@@ -1141,18 +1187,44 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
   unsigned char grip[20];
   DIR *dir = NULL;
   int list_mode;
-  int opt_data, opt_ssh_fpr;
+  int opt_data, opt_ssh_fpr, opt_with_ssh;
+  ssh_control_file_t cf = NULL;
+  char hexgrip[41];
+  int disabled, ttl, confirm, is_ssh;
 
-  list_mode = has_option (line, "--list");
+  if (has_option (line, "--ssh-list"))
+    list_mode = 2;
+  else
+    list_mode = has_option (line, "--list");
   opt_data = has_option (line, "--data");
   opt_ssh_fpr = has_option (line, "--ssh-fpr");
+  opt_with_ssh = has_option (line, "--with-ssh");
   line = skip_options (line);
 
-  if (list_mode)
+  if (opt_with_ssh || list_mode == 2)
+    cf = ssh_open_control_file ();
+
+  if (list_mode == 2)
+    {
+      if (cf)
+        {
+          while (!ssh_read_control_file (cf, hexgrip,
+                                         &disabled, &ttl, &confirm))
+            {
+              if (hex2bin (hexgrip, grip, 20) < 0 )
+                continue; /* Bad hex string.  */
+              err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, 1,
+                                    ttl, disabled, confirm);
+              if (err)
+                goto leave;
+            }
+        }
+      err = 0;
+    }
+  else if (list_mode)
     {
       char *dirname;
       struct dirent *dir_entry;
-      char hexgrip[41];
 
       dirname = make_filename_try (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, NULL);
       if (!dirname)
@@ -1180,7 +1252,19 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
           if ( hex2bin (hexgrip, grip, 20) < 0 )
             continue; /* Bad hex string.  */
 
-          err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr);
+          disabled = ttl = confirm = is_ssh = 0;
+          if (opt_with_ssh)
+            {
+              err = ssh_search_control_file (cf, hexgrip,
+                                             &disabled, &ttl, &confirm);
+              if (!err)
+                is_ssh = 1;
+              else if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+                goto leave;
+            }
+
+          err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
+                                ttl, disabled, confirm);
           if (err)
             goto leave;
         }
@@ -1191,10 +1275,23 @@ cmd_keyinfo (assuan_context_t ctx, char *line)
       err = parse_keygrip (ctx, line, grip);
       if (err)
         goto leave;
-      err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr);
+      disabled = ttl = confirm = is_ssh = 0;
+      if (opt_with_ssh)
+        {
+          err = ssh_search_control_file (cf, line,
+                                         &disabled, &ttl, &confirm);
+          if (!err)
+            is_ssh = 1;
+          else if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+            goto leave;
+        }
+
+      err = do_one_keyinfo (ctrl, grip, ctx, opt_data, opt_ssh_fpr, is_ssh,
+                            ttl, disabled, confirm);
     }
 
  leave:
+  ssh_close_control_file (cf);
   if (dir)
     closedir (dir);
   if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)

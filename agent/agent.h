@@ -157,6 +157,10 @@ struct
 /* Forward reference for local definitions in command.c.  */
 struct server_local_s;
 
+/* Declaration of objects from command-ssh.c.  */
+struct ssh_control_file_s;
+typedef struct ssh_control_file_s *ssh_control_file_t;
+
 /* Forward reference for local definitions in call-scd.c.  */
 struct scd_local_s;
 
@@ -290,6 +294,16 @@ gpg_error_t pinentry_loopback(ctrl_t, const char *keyword,
 			      size_t max_length);
 
 /*-- command-ssh.c --*/
+ssh_control_file_t ssh_open_control_file (void);
+void ssh_close_control_file (ssh_control_file_t cf);
+gpg_error_t ssh_read_control_file (ssh_control_file_t cf,
+                                   char *r_hexgrip, int *r_disabled,
+                                   int *r_ttl, int *r_confirm);
+gpg_error_t ssh_search_control_file (ssh_control_file_t cf,
+                                     const char *hexgrip,
+                                     int *r_disabled,
+                                     int *r_ttl, int *r_confirm);
+
 void start_command_handler_ssh (ctrl_t, gnupg_fd_t);
 
 /*-- findkey.c --*/
