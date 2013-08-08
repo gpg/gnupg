@@ -1,5 +1,6 @@
 /* command-ssh.c - gpg-agent's ssh-agent emulation layer
  * Copyright (C) 2004, 2005, 2006, 2009, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -88,7 +89,7 @@ static const char sshcontrolblurb[] =
 "# the format of the entries is fixed and checked by gpg-agent. A\n"
 "# non-comment line starts with optional white spaces, followed by the\n"
 "# keygrip of the key given as 40 hex digits, optionally followed by a\n"
-"# the caching TTL in seconds and another optional field for arbitrary\n"
+"# caching TTL in seconds, and another optional field for arbitrary\n"
 "# flags.   Prepend the keygrip with an '!' mark to disable it.\n"
 "\n";
 
@@ -187,8 +188,8 @@ struct ssh_key_type_spec
 };
 
 
-/* An object used to access the sshcontrol file.  */
-struct control_file_s
+/* Definition of an object to access the sshcontrol file.  */
+struct ssh_control_file_s
 {
   char *fname;  /* Name of the file.  */
   FILE *fp;     /* This is never NULL. */
@@ -201,8 +202,6 @@ struct control_file_s
     char hexgrip[40+1];  /* The hexgrip of the item (uppercase).  */
   } item;
 };
-typedef struct control_file_s *control_file_t;
-
 
 
 /* Prototypes.  */
@@ -731,10 +730,10 @@ file_to_buffer (const char *filename, unsigned char **buffer, size_t *buffer_n)
    control file object stored at R_CF.  On error an error code is
    returned and NULL is stored at R_CF.  */
 static gpg_error_t
-open_control_file (control_file_t *r_cf, int append)
+open_control_file (ssh_control_file_t *r_cf, int append)
 {
   gpg_error_t err;
-  control_file_t cf;
+  ssh_control_file_t cf;
 
   cf = xtrycalloc (1, sizeof *cf);
   if (!cf)
@@ -796,7 +795,7 @@ open_control_file (control_file_t *r_cf, int append)
 
 
 static void
-rewind_control_file (control_file_t cf)
+rewind_control_file (ssh_control_file_t cf)
 {
   fseek (cf->fp, 0, SEEK_SET);
   cf->lnr = 0;
@@ -805,7 +804,7 @@ rewind_control_file (control_file_t cf)
 
 
 static void
-close_control_file (control_file_t cf)
+close_control_file (ssh_control_file_t cf)
 {
   if (!cf)
     return;
@@ -819,7 +818,7 @@ close_control_file (control_file_t cf)
 /* Read the next line from the control file and store the data in CF.
    Returns 0 on success, GPG_ERR_EOF on EOF, or other error codes. */
 static gpg_error_t
-read_control_file_item (control_file_t cf)
+read_control_file_item (ssh_control_file_t cf)
 {
   int c, i, n;
   char *p, *pend, line[256];
@@ -922,7 +921,7 @@ read_control_file_item (control_file_t cf)
    a specified TTL for that key is stored there.  If R_CONFIRM is not
    NULL it is set to 1 if the key has the confirm flag set. */
 static gpg_error_t
-search_control_file (control_file_t cf, const char *hexgrip,
+search_control_file (ssh_control_file_t cf, const char *hexgrip,
                      int *r_disabled, int *r_ttl, int *r_confirm)
 {
   gpg_error_t err;
@@ -966,7 +965,7 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
                    int ttl, int confirm)
 {
   gpg_error_t err;
-  control_file_t cf;
+  ssh_control_file_t cf;
   int disabled;
 
   (void)ctrl;
@@ -1002,7 +1001,7 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
 static int
 ttl_from_sshcontrol (const char *hexgrip)
 {
-  control_file_t cf;
+  ssh_control_file_t cf;
   int disabled, ttl;
 
   if (!hexgrip || strlen (hexgrip) != 40)
@@ -1025,7 +1024,7 @@ ttl_from_sshcontrol (const char *hexgrip)
 static int
 confirm_flag_from_sshcontrol (const char *hexgrip)
 {
-  control_file_t cf;
+  ssh_control_file_t cf;
   int disabled, confirm;
 
   if (!hexgrip || strlen (hexgrip) != 40)
@@ -1044,6 +1043,87 @@ confirm_flag_from_sshcontrol (const char *hexgrip)
   return confirm;
 }
 
+
+
+
+/* Open the ssh control file for reading.  This is a public version of
+   open_control_file.  The caller must use ssh_close_control_file to
+   release the retruned handle.  */
+ssh_control_file_t
+ssh_open_control_file (void)
+{
+  ssh_control_file_t cf;
+
+  /* Then look at all the registered and non-disabled keys. */
+  if (open_control_file (&cf, 0))
+    return NULL;
+  return cf;
+}
+
+/* Close an ssh control file handle.  This is the public version of
+   close_control_file.  CF may be NULL.  */
+void
+ssh_close_control_file (ssh_control_file_t cf)
+{
+  close_control_file (cf);
+}
+
+/* Read the next item from the ssh control file.  The function returns
+   0 if a item was read, GPG_ERR_EOF on eof or another error value.
+   R_HEXGRIP shall either be null or a BUFFER of at least 41 byte.
+   R_DISABLED, R_TTLm and R_CONFIRM return flags from the control
+   file; they are only set on success. */
+gpg_error_t
+ssh_read_control_file (ssh_control_file_t cf,
+                       char *r_hexgrip,
+                       int *r_disabled, int *r_ttl, int *r_confirm)
+{
+  gpg_error_t err;
+
+  do
+    err = read_control_file_item (cf);
+  while (!err && !cf->item.valid);
+  if (!err)
+    {
+      if (r_hexgrip)
+        strcpy (r_hexgrip, cf->item.hexgrip);
+      if (r_disabled)
+        *r_disabled = cf->item.disabled;
+      if (r_ttl)
+        *r_ttl = cf->item.ttl;
+      if (r_confirm)
+        *r_confirm = cf->item.confirm;
+    }
+  return err;
+}
+
+
+/* Search for a key with HEXGRIP in sshcontrol and return all
+   info.  */
+gpg_error_t
+ssh_search_control_file (ssh_control_file_t cf,
+                         const char *hexgrip,
+                         int *r_disabled, int *r_ttl, int *r_confirm)
+{
+  gpg_error_t err;
+  int i;
+  const char *s;
+  char uphexgrip[41];
+
+  /* We need to make sure that HEXGRIP is all uppercase.  The easiest
+     way to do this and also check its length is by copying to a
+     second buffer. */
+  for (i=0, s=hexgrip; i < 40; s++, i++)
+    uphexgrip[i] = *s >= 'a'? (*s & 0xdf): *s;
+  uphexgrip[i] = 0;
+  if (i != 40)
+    err = gpg_error (GPG_ERR_INV_LENGTH);
+  else
+    err = search_control_file (cf, uphexgrip, r_disabled, r_ttl, r_confirm);
+  if (gpg_err_code (err) == GPG_ERR_EOF)
+    err = gpg_error (GPG_ERR_NOT_FOUND);
+  return err;
+}
 
 
 
@@ -2187,7 +2267,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   gcry_sexp_t key_public;
   gpg_error_t err;
   int ret;
-  control_file_t cf = NULL;
+  ssh_control_file_t cf = NULL;
   char *cardsn;
   gpg_error_t ret_err;
 
