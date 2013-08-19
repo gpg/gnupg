@@ -151,11 +151,18 @@ main( int argc, char **argv )
   i18n_init();
   init_common_subsystems (&argc, &argv);
 
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
+    {
+      log_fatal ( _("%s is too old (need %s, have %s)\n"), "libgcrypt",
+                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
+    }
+  gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
+
   gnupg_init_signals (0, NULL);
 
   opt.command_fd = -1; /* no command fd */
   opt.pgp2_workarounds = 1;
-  opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
+  opt.keyserver_options.options |= KEYSERVER_AUTO_KEY_RETRIEVE;
   opt.trust_model = TM_ALWAYS;
   opt.batch = 1;
 
@@ -164,6 +171,7 @@ main( int argc, char **argv )
   tty_no_terminal(1);
   tty_batchmode(1);
   dotlock_disable ();
+  gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
 
   pargs.argc = &argc;
   pargs.argv = &argv;
