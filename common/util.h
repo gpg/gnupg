@@ -25,13 +25,6 @@
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t. */
 
-/* Add error codes available only in newer versions of libgpg-error.  */
-#ifndef GPG_ERR_NOT_ENABLED
-#define GPG_ERR_NOT_ENABLED 179
-#endif
-#ifndef GPG_ERR_MISSING_ISSUER_CERT
-#define GPG_ERR_MISSING_ISSUER_CERT 185
-#endif
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
@@ -62,10 +55,10 @@
 
 
 /* GCC attributes.  */
-#if __GNUC__ >= 4 
+#if __GNUC__ >= 4
 # define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
 #else
-# define GNUPG_GCC_A_SENTINEL(a) 
+# define GNUPG_GCC_A_SENTINEL(a)
 #endif
 
 
@@ -159,14 +152,14 @@ int answer_is_yes_no_quit (const char *s);
 int answer_is_okay_cancel (const char *s, int def_answer);
 
 /*-- xreadline.c --*/
-ssize_t read_line (FILE *fp, 
+ssize_t read_line (FILE *fp,
                    char **addr_of_buffer, size_t *length_of_buffer,
                    size_t *max_length);
 
 
 /*-- b64enc.c and b64dec.c --*/
-struct b64state 
-{ 
+struct b64state
+{
   unsigned int flags;
   int idx;
   int quad_count;
@@ -205,9 +198,9 @@ unsigned char *make_canon_sexp_from_rsa_pk (const void *m, size_t mlen,
                                             size_t *r_len);
 gpg_error_t get_rsa_pk_from_canon_sexp (const unsigned char *keydata,
                                         size_t keydatalen,
-                                        unsigned char const **r_n, 
+                                        unsigned char const **r_n,
                                         size_t *r_nlen,
-                                        unsigned char const **r_e, 
+                                        unsigned char const **r_e,
                                         size_t *r_elen);
 gpg_error_t get_pk_algo_from_canon_sexp (const unsigned char *keydata,
                                          size_t keydatalen,
@@ -246,7 +239,7 @@ const char *dirmngr_socket_name (void);
    gpgconf. */
 #define GNUPG_MODULE_NAME_AGENT        1
 #define GNUPG_MODULE_NAME_PINENTRY     2
-#define GNUPG_MODULE_NAME_SCDAEMON     3 
+#define GNUPG_MODULE_NAME_SCDAEMON     3
 #define GNUPG_MODULE_NAME_DIRMNGR      4
 #define GNUPG_MODULE_NAME_PROTECT_TOOL 5
 #define GNUPG_MODULE_NAME_CHECK_PATTERN 6
@@ -296,7 +289,7 @@ int match_multistr (const char *multistr,const char *match);
 #ifndef HAVE_TTYNAME
 /* Systems without ttyname (W32) will merely return NULL. */
 static inline char *
-ttyname (int fd) 
+ttyname (int fd)
 {
   (void)fd;
   return NULL;
