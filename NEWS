@@ -1,4 +1,4 @@
-Noteworthy changes in version 2.0.21 (unreleased)
+Noteworthy changes in version 2.0.21 (2013-08-19)
 -------------------------------------------------
 
  * gpg-agent: By default the users are now asked via the Pinentry
@@ -6,10 +6,13 @@ Noteworthy changes in version 2.0.21 (unreleased)
    marking of such keys, the new option --no-allow-mark-trusted may
    be used.
 
+ * gpg-agent: The command KEYINFO has options to add info from
+   sshcontrol.
+
  * The included ssh agent does now support ECDSA keys.
 
- * The new option --enable-putty-support allows gpg-agent on Windows
-   to act as a Pageant replacement with full smartcard support.
+ * The new option --enable-putty-support allows gpg-agent to act on
+   Windows as a Pageant replacement with full smartcard support.
 
  * Support installation as portable application under Windows.
 
