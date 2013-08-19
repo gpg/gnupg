@@ -5,7 +5,7 @@ Mail-Followup-To: gnupg-users@gnupg.org
 Hello!
 
 We are pleased to announce the availability of a new stable GnuPG-2
-release:  Version 2.0.20.
+release:  Version 2.0.21.
 
 The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
 and data storage.  It can be used to encrypt data, create digital
@@ -14,7 +14,7 @@ framework for public key cryptography.  It includes an advanced key
 management facility and is compliant with the OpenPGP and S/MIME
 standards.
 
-GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.13) in
+GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.14) in
 that it splits up functionality into several modules.  However, both
 versions may be installed alongside without any conflict.  In fact,
 the gpg version from GnuPG-1 is able to make use of the gpg-agent as
@@ -29,43 +29,23 @@ GnuPG is distributed under the terms of the GNU General Public License
 also available for other Unices, Microsoft Windows and Mac OS X.
 
 
-What's New in 2.0.20
+What's New in 2.0.21
 ====================
 
- * Decryption using smartcards keys > 3072 bit does now work.
+ * gpg-agent: By default the users are now asked via the Pinentry
+   whether they trust an X.509 root key.  To prohibit interactive
+   marking of such keys, the new option --no-allow-mark-trusted may
+   be used.
 
- * New meta option ignore-invalid-option to allow using the same
-   option file by other GnuPG versions.
+ * gpg-agent: The command KEYINFO has options to add info from
+   sshcontrol.
 
- * gpg: The hash algorithm is now printed for sig records in key listings.
+ * The included ssh agent does now support ECDSA keys.
 
- * gpg: Skip invalid keyblock packets during import to avoid a DoS.
+ * The new option --enable-putty-support allows gpg-agent to act on
+   Windows as a Pageant replacement with full smartcard support.
 
- * gpg: Correctly handle ports from DNS SRV records.
-
- * keyserver: Improve use of SRV records
-
- * gpg-agent: Avoid tty corruption when killing pinentry.
-
- * scdaemon: Improve detection of card insertion and removal.
-
- * scdaemon: Rename option --disable-keypad to --disable-pinpad.
-
- * scdaemon: Better support for CCID readers.  Now, the internal CCID
-   driver supports readers without the auto configuration feature.
-
- * scdaemon: Add pinpad input for PC/SC, if your reader has pinpad and
-   it supports variable length PIN input, and you specify
-   --enable-pinpad-varlen option.
-
- * scdaemon: New option --enable-pinpad-varlen.
-
- * scdaemon: Install into libexecdir to avoid accidental execution
-   from the command line.
-
- * Support building using w64-mingw32.
-
- * Assorted bug fixes.
+ * Support installation as portable application under Windows.
 
 
 Getting the Software
@@ -74,7 +54,7 @@ Getting the Software
 Please follow the instructions found at http://www.gnupg.org/download/
 or read on:
 
-GnuPG 2.0.20 may be downloaded from one of the GnuPG mirror sites or
+GnuPG 2.0.21 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
 can be found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG
 is not available at ftp.gnu.org.
@@ -82,14 +62,14 @@ is not available at ftp.gnu.org.
 On the FTP server and its mirrors you should find the following files
 in the gnupg/ directory:
 
-  gnupg-2.0.20.tar.bz2 (4186k)
-  gnupg-2.0.20.tar.bz2.sig
+  gnupg-2.0.21.tar.bz2 (4200k)
+  gnupg-2.0.21.tar.bz2.sig
 
       GnuPG source compressed using BZIP2 and OpenPGP signature.
 
-  gnupg-2.0.19-2.0.20.diff.bz2 (249k)
+  gnupg-2.0.20-2.0.21.diff.bz2 (39k)
 
-      A patch file to upgrade a 2.0.19 GnuPG source tree.  This patch
+      A patch file to upgrade a 2.0.20 GnuPG source tree.  This patch
       does not include updates of the language files.
 
 Note, that we don't distribute gzip compressed tarballs for GnuPG-2.
@@ -104,9 +84,9 @@ the following ways:
 
  * If you already have a trusted version of GnuPG installed, you
    can simply check the supplied signature.  For example to check the
-   signature of the file gnupg-2.0.20.tar.bz2 you would use this command:
+   signature of the file gnupg-2.0.21.tar.bz2 you would use this command:
 
-     gpg --verify gnupg-2.0.20.tar.bz2.sig
+     gpg --verify gnupg-2.0.21.tar.bz2.sig
 
    This checks whether the signature file matches the source file.
    You should see a message indicating that the signature is good and
@@ -129,15 +109,15 @@ the following ways:
 
  * If you are not able to use an old version of GnuPG, you have to verify
    the SHA-1 checksum.  Assuming you downloaded the file
-   gnupg-2.0.20.tar.bz2, you would run the sha1sum command like this:
+   gnupg-2.0.21.tar.bz2, you would run the sha1sum command like this:
 
-     sha1sum gnupg-2.0.20.tar.bz2
+     sha1sum gnupg-2.0.21.tar.bz2
 
    and check that the output matches the first line from the
    following list:
 
-7ddfefa37ee9da89a8aaa8f9059d251b4cd02562  gnupg-2.0.20.tar.bz2
-4afefda1f42c7b8065e97c6df051fab2db552642  gnupg-2.0.19-2.0.20.diff.bz2
+5ba8cce72eb4fd1a3ac1a282d25d7c7b90d3bf26  gnupg-2.0.21.tar.bz2
+cd94a6267088eeff4735641b1fc832a1e6770ba3  gnupg-2.0.20-2.0.21.diff.bz2
 
 
 Documentation
@@ -179,9 +159,9 @@ service directory at:
 
 The driving force behind the development of GnuPG is the company of
 its principal author, Werner Koch.  Maintenance and improvement of
-GnuPG and related software takes up most of their resources.  To
-allow him them continue his work he asks to either purchase a support
-contract, engage them for custom enhancements, or to donate money:
+GnuPG and related software takes up most of their resources.  To allow
+him to continue this work he kindly asks to either purchase a support
+contract, engage g10 Code for custom enhancements, or to donate money:
 
   http://g10code.com/gnupg-donation.html
 
@@ -191,7 +171,7 @@ Thanks
 
 We have to thank all the people who helped with this release, be it
 testing, coding, translating, suggesting, auditing, administering the
-servers, spreading the word or answering questions on the mailing
+servers, spreading the word, or answering questions on the mailing
 lists.
 
 
