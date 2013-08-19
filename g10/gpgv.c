@@ -142,14 +142,21 @@ main( int argc, char **argv )
   strlist_t sl;
   strlist_t nrings=NULL;
   unsigned configlineno;
-  
+
   set_strusage (my_strusage);
   log_set_prefix ("gpgv", 1);
-  
+
   /* Make sure that our subsystems are ready.  */
   i18n_init();
   init_common_subsystems ();
-  
+
+  if (!gcry_check_version (NEED_LIBGCRYPT_VERSION) )
+    {
+      log_fatal ( _("%s is too old (need %s, have %s)\n"), "libgcrypt",
+                  NEED_LIBGCRYPT_VERSION, gcry_check_version (NULL) );
+    }
+  gcry_control (GCRYCTL_DISABLE_SECMEM, 0);
+
   gnupg_init_signals (0, NULL);
 
   opt.command_fd = -1; /* no command fd */
@@ -163,7 +170,9 @@ main( int argc, char **argv )
   tty_no_terminal(1);
   tty_batchmode(1);
   disable_dotlock();
-  
+
+  gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags=  1;  /* do not remove the args */
