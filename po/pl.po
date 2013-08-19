@@ -2,13 +2,13 @@
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 
 #               2007 Free Software Foundation, Inc.
 # Janusz A. Urbanowicz <alex@bofh.net.pl>, 1999, 2000, 2001, 2002, 2003-2004
-# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2011.
+# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.0.17\n"
+"Project-Id-Version: gnupg-2.0.20\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-01-12 08:34+0100\n"
+"PO-Revision-Date: 2013-05-12 17:25+0200\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -132,27 +132,28 @@ msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
 msgstr ""
+"Proces ssh zarz±da³ u¿ycia klucza%%0a  %s%%0A  (%s)%%0ACzy zezwoliæ na to?"
 
 msgid "Allow"
-msgstr ""
+msgstr "Zgoda"
 
 msgid "Deny"
-msgstr ""
+msgstr "Odmowa"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
-msgstr "Proszê wprowadziæ has³o dla klucza ssh%0A  %c"
+msgstr "Proszê wprowadziæ has³o dla klucza ssh%%0A  %F%%0A  (%c)"
 
 msgid "Please re-enter this passphrase"
 msgstr "Proszê ponownie wprowadziæ to has³o"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "Proszê wprowadziæ has³o do zabezpieczenia odebranego klucza tajnego%%0A   %s"
-"%%0A w miejscu przechowywania kluczy gpg-agenta"
+"%%0A   %s%%0Aw miejscu przechowywania kluczy gpg-agenta"
 
 msgid "does not match - try again"
 msgstr "nie pasuj± - proszê spróbowaæ jeszcze raz"
@@ -178,8 +179,7 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Kod resetuj±cy"
 
-#, fuzzy, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, c-format
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0ADo wpisywania nale¿y u¿yæ klawiatury czytnika."
 
@@ -277,8 +277,7 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Tak, ochrona nie jest potrzebna"
 
-#, fuzzy, c-format
-#| msgid "Please enter the passphrase to%0Ato protect your new key"
+#, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Proszê wprowadziæ has³o do%0Azabezpieczenia swojego nowego klucza"
 
@@ -354,10 +353,8 @@ msgstr "zezwolenie klientom na oznaczanie kluczy jako \"zaufanych\""
 msgid "allow presetting passphrase"
 msgstr "zezwolenie na predefiniowane has³o"
 
-#, fuzzy
-#| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
-msgstr "w³±czenie emulacji ssh-agenta"
+msgstr ""
 
 msgid "enable putty support"
 msgstr ""
@@ -1673,19 +1670,14 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Wywo³anie: gpg [opcje] [pliki] (-h podaje pomoc)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
 "Sk³adnia: gpg [opcje] [pliki]\n"
-"podpisywanie, sprawdzanie podpisów, szyfrowanie, deszyfrowanie\n"
-"domy¶lnie wykonywana operacja zale¿y od danych wej¶ciowych\n"
+"Podpisywanie, sprawdzanie podpisów, szyfrowanie, rozszyfrowywanie\n"
+"Domy¶lnie wykonywana operacja zale¿y od danych wej¶ciowych\n"
 
 msgid ""
 "\n"
@@ -5297,10 +5289,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "znalaz³e¶(a¶) b³±d w programie ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "b³±d odczytu ,,%s'': %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "konwersja z ,,%s'' do ,,%s'' niedostêpna\n"
 
@@ -5351,16 +5339,12 @@ msgstr "w³±czenie pe³nej diagnostyki"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Wywo³anie: kbxutil [opcje] [pliki] (-h podaje pomoc)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: kbxutil [options] [files]\n"
-#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "List, export, import Keybox data\n"
 msgstr ""
 "Sk³adnia: kbxutil [opcje] [pliki]\n"
-"wypisywanie, eksport, import danych Keybox\n"
+"Wypisywanie, eksport, import danych Keybox\n"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5505,15 +5489,11 @@ msgstr "|AN|Nowy PIN administracyjny"
 msgid "|N|New PIN"
 msgstr "|N|Nowy PIN"
 
-#, fuzzy
-#| msgid "|A|Please enter the Admin PIN"
 msgid "||Please enter the Admin PIN and New Admin PIN"
-msgstr "|A|Proszê wprowadziæ PIN administracyjny"
+msgstr "||Proszê wprowadziæ PIN administracyjny i nowy PIN administracyjny"
 
-#, fuzzy
-#| msgid "||Please enter the PIN"
 msgid "||Please enter the PIN and New PIN"
-msgstr "||Proszê wpisaæ PIN"
+msgstr "||Proszê wprowadziæ PIN i nowy PIN"
 
 msgid "error reading application data\n"
 msgstr "b³±d podczas odczytu danych aplikacji\n"
@@ -5578,8 +5558,6 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "nie mo¿na dostaæ siê do %s - niepoprawna karta OpenPGP?\n"
 
-#, fuzzy
-#| msgid "||Please enter your PIN at the reader's keypad"
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Proszê wprowadziæ PIN na klawiaturze czytnika"
 
@@ -5613,8 +5591,6 @@ msgstr "nie u¿ywanie wewnêtrznego sterownika CCID"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|od³±czenie karty po N sekundach nieaktywno¶ci"
 
-#, fuzzy
-#| msgid "do not use a reader's keypad"
 msgid "do not use a reader's pinpad"
 msgstr "nie u¿ywanie klawiatury czytnika"
 
@@ -5622,7 +5598,7 @@ msgid "deny the use of admin card commands"
 msgstr "zabronienie u¿ywania poleceñ karty administratora"
 
 msgid "use variable length input for pinpad"
-msgstr ""
+msgstr "u¿ycie wej¶cia z klawiatury czytnika o zmiennej d³ugo¶ci"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Wywo³anie: scdaemon [opcje] (-h podaje pomoc)"
@@ -5890,23 +5866,15 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "b³±d podczas pobierania informacji o wykorzystaniu klucza: %s\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for certification\n"
 msgid "certificate should not have been used for certification\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do po¶wiadczania\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for OCSP response signing\n"
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do podpisywania odpowiedzi OCSP\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for encryption\n"
 msgid "certificate should not have been used for encryption\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do szyfrowania\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for signing\n"
 msgid "certificate should not have been used for signing\n"
 msgstr "certyfikat nie powinien byæ u¿ywany do podpisywania\n"
 
@@ -6176,20 +6144,15 @@ msgstr "|NAZWA|u¿ycie tego algorytmu skrótu wiadomo¶ci"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Wywo³anie: gpgsm [opcje] [pliki] (-h podaje pomoc)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
 "Sk³adnia: gpgsm [opcje] [pliki]\n"
-"podpisywanie, sprawdzanie podpisów, szyfrowanie, deszyfrowanie z u¿yciem S/"
-"MIME\n"
-"domy¶lnie wykonywana operacja zale¿y od danych wej¶ciowych\n"
+"Podpisywanie, sprawdzanie podpisów, szyfrowanie, rozszyfrowywanie z u¿yciem "
+"S/MIME\n"
+"Domy¶lnie wykonywana operacja zale¿y od danych wej¶ciowych\n"
 
 msgid "usage: gpgsm [options] "
 msgstr "wywo³anie: gpgsm [opcje]"
@@ -6611,7 +6574,7 @@ msgstr ""
 " "
 
 msgid "decryption modus"
-msgstr "tryb deszyfrowania"
+msgstr "tryb rozszyfrowywania"
 
 msgid "encryption modus"
 msgstr "tryb szyfrowania"
@@ -6745,5 +6708,8 @@ msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
 
-#~ msgid "failed to allocated keyDB handle\n"
-#~ msgstr "nie uda³o siê przydzieliæ uchwytu keyDB\n"
+#~ msgid "enable ssh-agent emulation"
+#~ msgstr "w³±czenie emulacji ssh-agenta"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "b³±d odczytu ,,%s'': %s\n"
