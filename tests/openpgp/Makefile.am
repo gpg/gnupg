@@ -79,7 +79,7 @@ prepared.stamp: ./pubring.gpg ./secring.gpg ./plain-1 ./plain-2 ./plain-3 \
 # start before all programs are built.
 ./gpg_dearmor: $(required_pgms)
 	echo '#!/bin/sh' >./gpg_dearmor
-	echo "../../g10/gpg2 --no-options --no-greeting \
+	echo "../../g10/gpg2 --homedir . --no-options --no-greeting \
              --no-secmem-warning --batch --dearmor" >>./gpg_dearmor
 	chmod 755 ./gpg_dearmor
 
