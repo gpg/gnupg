@@ -5253,10 +5253,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "du fandt en fejl ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "fejl ved læsning af »%s«: %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "konvertering fra »%s« til »%s« er ikke tilgængelig\n"
 
@@ -6676,6 +6672,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "fejl ved læsning af »%s«: %s\n"
 
 #~ msgid "Command> "
 #~ msgstr "Kommando> "

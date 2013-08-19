@@ -5467,10 +5467,6 @@ msgstr "neplatný parameter pre import\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "nájdená chyba v programe ... (%s:%d)\n"
 
-#, fuzzy, c-format
-msgid "error loading `%s': %s\n"
-msgstr "chyba pri èítaní `%s': %s\n"
-
 #, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr ""
@@ -6942,6 +6938,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "chyba pri èítaní `%s': %s\n"
 
 #, fuzzy
 #~ msgid "failed to allocated keyDB handle\n"

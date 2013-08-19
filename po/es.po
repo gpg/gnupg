@@ -5286,10 +5286,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "ha encontrado un error... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "error cargando `%s': %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "la conversión de `%s' en `%s' no está disponible\n"
 
@@ -6731,6 +6727,9 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "error cargando `%s': %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "fallo al colocar handle de keyDB\n"

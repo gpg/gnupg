@@ -5500,10 +5500,6 @@ msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "βρήκατε ένα bug ... (%s:%d)\n"
 
-#, fuzzy, c-format
-msgid "error loading `%s': %s\n"
-msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
 #, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr ""
@@ -6972,6 +6968,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #, fuzzy
 #~ msgid "failed to allocated keyDB handle\n"

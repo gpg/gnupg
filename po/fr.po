@@ -5401,10 +5401,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "vous avez trouvé un bogue… (%s : %d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "erreur de chargement de « %s » : %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "conversion de « %s » vers « %s » non disponible\n"
 
@@ -6860,6 +6856,9 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "erreur de chargement de « %s » : %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "impossible d'allouer la gestion de base de clefs\n"

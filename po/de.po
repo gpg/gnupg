@@ -5367,10 +5367,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "Sie haben einen Bug (Programmfehler) gefunden ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "Fehler beim Laden von `%s': %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "Umwandlung von `%s' in `%s' ist nicht verfügbar\n"
 
@@ -6811,6 +6807,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "Fehler beim Laden von `%s': %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "Ein keyDB Handle konnte nicht bereitgestellt werden\n"

@@ -5330,10 +5330,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "ви виявили ваду… (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "помилка під час спроби завантаження «%s»: %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "перетворення з «%s» у «%s» недоступне\n"
 
@@ -6775,6 +6771,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "помилка під час спроби завантаження «%s»: %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "не вдалося розмістити обробник keyDB\n"

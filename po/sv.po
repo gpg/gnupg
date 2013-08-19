@@ -5390,10 +5390,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "du har hittat ett fel i programmet ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "fel vid inläsning av \"%s\": %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "konvertering från \"%s\" till \"%s\" är inte tillgänglig\n"
 
@@ -6835,6 +6831,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "fel vid inläsning av \"%s\": %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "misslyckades med att allokera keyDB-hanterare\n"

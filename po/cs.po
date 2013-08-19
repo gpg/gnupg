@@ -5270,10 +5270,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "nalezena chyba v programu… (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "chyba při nahrávání „%s“: %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "převod z „%s“ na „%s“ není k dispozici\n"
 
@@ -6709,6 +6705,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [VOLBY] SOUBOR_SE_VZOREM\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "chyba při nahrávání „%s“: %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "alokace popisovače keyDB se nezdařila\n"

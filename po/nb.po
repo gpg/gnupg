@@ -5210,10 +5210,6 @@ msgstr "ugyldige listevalg\n"
 msgid "you found a bug ... (%s:%d)\n"
 msgstr "du fant en feil ... (%s:%d)\n"
 
-#, fuzzy, c-format
-msgid "error loading `%s': %s\n"
-msgstr "feil ved lesing av «%s»: %s\n"
-
 #, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr ""
@@ -6668,6 +6664,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "feil ved lesing av «%s»: %s\n"
 
 #, fuzzy
 #~ msgid "failed to allocated keyDB handle\n"

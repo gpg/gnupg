@@ -5114,10 +5114,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "你找到一個瑕疵了 ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading `%s': %s\n"
-msgstr "載入 `%s' 時出錯: %s\n"
-
-#, c-format
 msgid "conversion from `%s' to `%s' not available\n"
 msgstr "沒有從 `%s' 到 `%s' 之間的轉換可用\n"
 
@@ -6508,6 +6504,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "error loading `%s': %s\n"
+#~ msgstr "載入 `%s' 時出錯: %s\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "配置 keyDB handle 失敗\n"
