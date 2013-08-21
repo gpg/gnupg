@@ -290,10 +290,10 @@ than 0.
 @item --enable-pinpad-varlen
 @opindex enable-pinpad-varlen
 Please specify this option when the card reader supports variable
-length input for pinpad (default is no).  For known readers listed in
-ccid-driver, this option is not needed.  Note that if your card reader
-doesn't supports variable length input but you want to use it, you
-need to specify your pinpad request on your card.
+length input for pinpad (default is no).  For known readers (listed in
+ccid-driver.c and apdu.c), this option is not needed.  Note that if
+your card reader doesn't supports variable length input but you want
+to use it, you need to specify your pinpad request on your card.
 
 
 @item --disable-pinpad

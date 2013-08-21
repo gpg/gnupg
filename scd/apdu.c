@@ -2032,7 +2032,13 @@ check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo)
   pcsc_dword_t len = 256;
   int sw;
 
-  (void)pininfo;      /* XXX: Identify reader and set pininfo->fixedlen.  */
+  /* Hack to identify the SCM SPR532 and SPR332 readers which support
+     variable length PIN input.
+     FIXME: Figure out whether there is a feature attribute for this.
+     Alternatively use the USB ids to detect known readers.  */
+  if (reader_table[slot].rdrname
+      && strstr (reader_table[slot].rdrname, "SPRx32"))
+    pininfo->fixedlen = 0;
 
  check_again:
   if (command == ISO7816_VERIFY)
