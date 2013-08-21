@@ -134,6 +134,7 @@ struct reader_table_s {
   int last_status;
   int status;
   int is_t0;         /* True if we know that we are running T=0. */
+  int is_spr532;     /* True if we know that the reader is a SPR532.  */
   unsigned char atr[33];
   size_t atrlen;           /* A zero length indicates that the ATR has
                               not yet been read; i.e. the card is not
@@ -237,7 +238,12 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #define PCSC_E_NO_SERVICE              0x8010001D
 #define PCSC_W_REMOVED_CARD            0x80100069
 
-#define CM_IOCTL_GET_FEATURE_REQUEST (0x42000000 + 3400)
+/* Fix pcsc-lite ABI incompatibilty.  */
+#ifndef SCARD_CTL_CODE
+# define SCARD_CTL_CODE(code) (0x42000000 + (code))
+#endif
+
+#define CM_IOCTL_GET_FEATURE_REQUEST     SCARD_CTL_CODE(3400)
 #define FEATURE_VERIFY_PIN_DIRECT        0x06
 #define FEATURE_MODIFY_PIN_DIRECT        0x07
 
@@ -393,6 +399,7 @@ new_reader_slot (void)
   reader_table[reader].any_status = 0;
   reader_table[reader].last_status = 0;
   reader_table[reader].is_t0 = 1;
+  reader_table[reader].is_spr532 = 0;
 #ifdef NEED_PCSC_WRAPPER
   reader_table[reader].pcsc.req_fd = -1;
   reader_table[reader].pcsc.rsp_fd = -1;
@@ -2008,7 +2015,10 @@ check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo)
      Alternatively use the USB ids to detect known readers.  */
   if (reader_table[slot].rdrname
       && strstr (reader_table[slot].rdrname, "SPRx32"))
-    pininfo->fixedlen = 0;
+    {
+      reader_table[slot].is_spr532 = 1;
+      pininfo->fixedlen = 0;
+    }
 
  check_again:
   if (command == ISO7816_VERIFY)
@@ -2067,6 +2077,7 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   int len = PIN_VERIFY_STRUCTURE_SIZE + pininfo->fixedlen;
   unsigned char result[2];
   pcsc_dword_t resultlen = 2;
+  int no_lc;
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
@@ -2090,6 +2101,8 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   if (!pin_verify)
     return SW_HOST_OUT_OF_CORE;
 
+  no_lc = (!pininfo->fixedlen && reader_table[slot].is_spr532);
+
   pin_verify[0] = 0x00; /* bTimerOut */
   pin_verify[1] = 0x00; /* bTimerOut2 */
   pin_verify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
@@ -2106,8 +2119,8 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[11] = 0x00; /* bMsgIndex */
   pin_verify[12] = 0x00; /* bTeoPrologue[0] */
   pin_verify[13] = 0x00; /* bTeoPrologue[1] */
-  pin_verify[14] = pininfo->fixedlen + 0x05; /* bTeoPrologue[2] */
-  pin_verify[15] = pininfo->fixedlen + 0x05; /* ulDataLength */
+  pin_verify[14] = pininfo->fixedlen + 0x05 - no_lc; /* bTeoPrologue[2] */
+  pin_verify[15] = pininfo->fixedlen + 0x05 - no_lc; /* ulDataLength */
   pin_verify[16] = 0x00; /* ulDataLength */
   pin_verify[17] = 0x00; /* ulDataLength */
   pin_verify[18] = 0x00; /* ulDataLength */
@@ -2118,6 +2131,8 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[23] = pininfo->fixedlen; /* abData[4] */
   if (pininfo->fixedlen)
     memset (&pin_verify[24], 0xff, pininfo->fixedlen);
+  else if (no_lc)
+    len--;
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
@@ -2150,6 +2165,7 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   int len = PIN_MODIFY_STRUCTURE_SIZE + 2 * pininfo->fixedlen;
   unsigned char result[2];
   pcsc_dword_t resultlen = 2;
+  int no_lc;
 
   if (!reader_table[slot].atrlen
       && (sw = reset_pcsc_reader (slot)))
@@ -2173,6 +2189,8 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   if (!pin_modify)
     return SW_HOST_OUT_OF_CORE;
 
+  no_lc = (!pininfo->fixedlen && reader_table[slot].is_spr532);
+
   pin_modify[0] = 0x00; /* bTimerOut */
   pin_modify[1] = 0x00; /* bTimerOut2 */
   pin_modify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
@@ -2193,15 +2211,15 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     pin_modify[10] |= 0x01; /* Max size reached.  */
   pin_modify[11] = 0xff; /* bNumberMessage: Default */
-  pin_modify[12] =  0x09; /* wLangId: 0x0409: US English */
+  pin_modify[12] = 0x09; /* wLangId: 0x0409: US English */
   pin_modify[13] = 0x04; /* wLangId: 0x0409: US English */
   pin_modify[14] = 0x00; /* bMsgIndex1 */
   pin_modify[15] = 0x00; /* bMsgIndex2 */
   pin_modify[16] = 0x00; /* bMsgIndex3 */
   pin_modify[17] = 0x00; /* bTeoPrologue[0] */
   pin_modify[18] = 0x00; /* bTeoPrologue[1] */
-  pin_modify[19] = 2 * pininfo->fixedlen + 0x05; /* bTeoPrologue[2] */
-  pin_modify[20] = 2 * pininfo->fixedlen + 0x05; /* ulDataLength */
+  pin_modify[19] = 2 * pininfo->fixedlen + 0x05 - no_lc; /* bTeoPrologue[2] */
+  pin_modify[20] = 2 * pininfo->fixedlen + 0x05 - no_lc; /* ulDataLength */
   pin_modify[21] = 0x00; /* ulDataLength */
   pin_modify[22] = 0x00; /* ulDataLength */
   pin_modify[23] = 0x00; /* ulDataLength */
@@ -2212,6 +2230,8 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[28] = 2 * pininfo->fixedlen; /* abData[4] */
   if (pininfo->fixedlen)
     memset (&pin_modify[29], 0xff, 2 * pininfo->fixedlen);
+  else if (no_lc)
+    len--;
 
   if (DBG_CARD_IO)
     log_debug ("send secure: c=%02X i=%02X p1=%02X p2=%02X len=%d pinmax=%d\n",
