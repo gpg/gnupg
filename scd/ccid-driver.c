@@ -2673,7 +2673,7 @@ ccid_get_atr (ccid_driver_t handle,
 
       if (msglen != 10 + 4)
         {
-          DEBUGOUT_1 ("Setting PPS failed: %d\n", msglen);
+          DEBUGOUT_1 ("Setting PPS failed: %zu\n", msglen);
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
 

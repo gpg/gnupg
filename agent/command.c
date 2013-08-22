@@ -1809,7 +1809,7 @@ cmd_preset_passphrase (assuan_context_t ctx, char *line)
        * limit is 480 characters. */
       size_t maxlen = 480;
 
-      rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", maxlen);
+      rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%zu", maxlen);
       if (!rc)
 	rc = assuan_inquire (ctx, "PASSPHRASE", &passphrase, &len, maxlen);
     }
@@ -3038,7 +3038,7 @@ pinentry_loopback(ctrl_t ctrl, const char *keyword,
   gpg_error_t rc;
   assuan_context_t ctx = ctrl->server_local->assuan_ctx;
 
-  rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%u", max_length);
+  rc = print_assuan_status (ctx, "INQUIRE_MAXLEN", "%zu", max_length);
   if (rc)
     return rc;
 
