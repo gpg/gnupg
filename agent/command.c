@@ -865,6 +865,7 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   unsigned char *value;
   size_t valuelen;
   membuf_t outbuf;
+  int padding;
 
   (void)line;
 
@@ -879,12 +880,19 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
   init_membuf (&outbuf, 512);
 
   rc = agent_pkdecrypt (ctrl, ctrl->server_local->keydesc,
-                        value, valuelen, &outbuf);
+                        value, valuelen, &outbuf, &padding);
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);
   else
-    rc = write_and_clear_outbuf (ctx, &outbuf);
+    {
+      if (padding != -1)
+        rc = print_assuan_status (ctx, "PADDING", "%d", padding);
+      else
+        rc = 0;
+      if (!rc)
+        rc = write_and_clear_outbuf (ctx, &outbuf);
+    }
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
   return leave_cmd (ctx, rc);

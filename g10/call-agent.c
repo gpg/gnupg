@@ -1816,17 +1816,34 @@ inq_ciphertext_cb (void *opaque, const char *line)
 }
 
 
+/* Check whether there is any padding info from the agent.  */
+static gpg_error_t
+padding_info_cb (void *opaque, const char *line)
+{
+  int *r_padding = opaque;
+  const char *s;
+
+  if ((s=has_leading_keyword (line, "PADDING")))
+    {
+      *r_padding = atoi (s);
+    }
+
+  return 0;
+}
+
+
 /* Call the agent to do a decrypt operation using the key identified
    by the hex string KEYGRIP and the input data S_CIPHERTEXT.  On the
    success the decoded value is stored verbatim at R_BUF and its
    length at R_BUF; the callers needs to release it.  KEYID, MAINKEYID
    and PUBKEY_ALGO are used to construct additional promots or status
-   messages. */
+   messages.   The padding information is stored at R_PADDING with -1
+   for not known.  */
 gpg_error_t
 agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
                  u32 *keyid, u32 *mainkeyid, int pubkey_algo,
                  gcry_sexp_t s_ciphertext,
-                 unsigned char **r_buf, size_t *r_buflen)
+                 unsigned char **r_buf, size_t *r_buflen, int *r_padding)
 {
   gpg_error_t err;
   char line[ASSUAN_LINELENGTH];
@@ -1841,9 +1858,12 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
   dfltparm.keyinfo.mainkeyid   = mainkeyid;
   dfltparm.keyinfo.pubkey_algo = pubkey_algo;
 
-  if (!keygrip || strlen(keygrip) != 40 || !s_ciphertext || !r_buf || !r_buflen)
+  if (!keygrip || strlen(keygrip) != 40
+      || !s_ciphertext || !r_buf || !r_buflen || !r_padding)
     return gpg_error (GPG_ERR_INV_VALUE);
+
   *r_buf = NULL;
+  *r_padding = -1;
 
   err = start_agent (ctrl, 0);
   if (err)
@@ -1881,7 +1901,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       return err;
     err = assuan_transact (agent_ctx, "PKDECRYPT",
                            membuf_data_cb, &data,
-                           inq_ciphertext_cb, &parm, NULL, NULL);
+                           inq_ciphertext_cb, &parm,
+                           padding_info_cb, r_padding);
     xfree (parm.ciphertext);
   }
   if (err)

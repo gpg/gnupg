@@ -801,9 +801,12 @@ app_decipher (app_t app, const char *keyidstr,
               gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg,
               const void *indata, size_t indatalen,
-              unsigned char **outdata, size_t *outdatalen )
+              unsigned char **outdata, size_t *outdatalen,
+              unsigned int *r_info)
 {
   gpg_error_t err;
+
+  *r_info = 0;
 
   if (!app || !indata || !indatalen || !outdata || !outdatalen || !pincb)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -817,7 +820,8 @@ app_decipher (app_t app, const char *keyidstr,
   err = app->fnc.decipher (app, keyidstr,
                            pincb, pincb_arg,
                            indata, indatalen,
-                           outdata, outdatalen);
+                           outdata, outdatalen,
+                           r_info);
   unlock_reader (app->slot);
   if (opt.verbose)
     log_info ("operation decipher result: %s\n", gpg_strerror (err));

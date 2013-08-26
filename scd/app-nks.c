@@ -985,12 +985,15 @@ do_decipher (app_t app, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
-             unsigned char **outdata, size_t *outdatalen )
+             unsigned char **outdata, size_t *outdatalen,
+             unsigned int *r_info)
 {
   int rc, i;
   int is_sigg = 0;
   int fid;
   int kid;
+
+  (void)r_info;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);

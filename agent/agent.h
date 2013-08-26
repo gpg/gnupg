@@ -370,7 +370,7 @@ int agent_pksign (ctrl_t ctrl, const char *cache_nonce,
 /*-- pkdecrypt.c --*/
 int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      const unsigned char *ciphertext, size_t ciphertextlen,
-                     membuf_t *outbuf);
+                     membuf_t *outbuf, int *r_padding);
 
 /*-- genkey.c --*/
 int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
@@ -425,7 +425,7 @@ int divert_pksign (ctrl_t ctrl,
 int divert_pkdecrypt (ctrl_t ctrl,
                       const unsigned char *cipher,
                       const unsigned char *shadow_info,
-                      char **r_buf, size_t *r_len);
+                      char **r_buf, size_t *r_len, int *r_padding);
 int divert_generic_cmd (ctrl_t ctrl,
                         const char *cmdline, void *assuan_context);
 int divert_writekey (ctrl_t ctrl, int force, const char *serialno,
@@ -459,7 +459,7 @@ int agent_card_pkdecrypt (ctrl_t ctrl,
                           int (*getpin_cb)(void *, const char *, char*,size_t),
                           void *getpin_cb_arg,
                           const unsigned char *indata, size_t indatalen,
-                          char **r_buf, size_t *r_buflen);
+                          char **r_buf, size_t *r_buflen, int *r_padding);
 int agent_card_readcert (ctrl_t ctrl,
                          const char *id, char **r_buf, size_t *r_buflen);
 int agent_card_readkey (ctrl_t ctrl, const char *id, unsigned char **r_buf);

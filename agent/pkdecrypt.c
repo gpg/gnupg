@@ -32,17 +32,20 @@
 
 /* DECRYPT the stuff in ciphertext which is expected to be a S-Exp.
    Try to get the key from CTRL and write the decoded stuff back to
-   OUTFP. */
+   OUTFP.   The padding information is stored at R_PADDING with -1
+   for not known.  */
 int
 agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                  const unsigned char *ciphertext, size_t ciphertextlen,
-                 membuf_t *outbuf)
+                 membuf_t *outbuf, int *r_padding)
 {
   gcry_sexp_t s_skey = NULL, s_cipher = NULL, s_plain = NULL;
   unsigned char *shadow_info = NULL;
   int rc;
   char *buf = NULL;
   size_t len;
+
+  *r_padding = -1;
 
   if (!ctrl->have_keygrip)
     {
@@ -85,7 +88,8 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           goto leave;
         }
 
-      rc = divert_pkdecrypt (ctrl, ciphertext, shadow_info, &buf, &len );
+      rc = divert_pkdecrypt (ctrl, ciphertext, shadow_info,
+                             &buf, &len, r_padding);
       if (rc)
         {
           log_error ("smartcard decryption failed: %s\n", gpg_strerror (rc));

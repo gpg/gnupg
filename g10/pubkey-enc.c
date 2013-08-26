@@ -146,7 +146,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   unsigned int n;
   size_t nframe;
   u16 csum, csum2;
-  int card = 0;
+  int padding;
   gcry_sexp_t s_data;
   char *desc;
   char *keygrip;
@@ -203,7 +203,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   desc = gpg_format_keydesc (sk, 0, 1);
   err = agent_pkdecrypt (NULL, keygrip,
                          desc, sk->keyid, sk->main_keyid, sk->pubkey_algo,
-                         s_data, &frame, &nframe);
+                         s_data, &frame, &nframe, &padding);
   xfree (desc);
   gcry_sexp_release (s_data);
   if (err)
@@ -270,7 +270,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     }
   else
     {
-      if (!card)
+      if (padding)
         {
           if (n + 7 > nframe)
             {

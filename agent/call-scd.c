@@ -1,6 +1,7 @@
 /* call-scd.c - fork of the scdaemon to do SC operations
  * Copyright (C) 2001, 2002, 2005, 2007, 2010,
  *               2011 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -874,14 +875,36 @@ agent_card_pksign (ctrl_t ctrl,
   return unlock_scd (ctrl, 0);
 }
 
-/* Decipher INDATA using the current card. Note that the returned value is */
+
+
+
+/* Check whether there is any padding info from scdaemon.  */
+static gpg_error_t
+padding_info_cb (void *opaque, const char *line)
+{
+  int *r_padding = opaque;
+  const char *s;
+
+  if ((s=has_leading_keyword (line, "PADDING")))
+    {
+      *r_padding = atoi (s);
+    }
+
+  return 0;
+}
+
+
+/* Decipher INDATA using the current card.  Note that the returned
+   value is not an s-expression but the raw data as returned by
+   scdaemon.  The padding information is stored at R_PADDING with -1
+   for not known.  */
 int
 agent_card_pkdecrypt (ctrl_t ctrl,
                       const char *keyid,
                       int (*getpin_cb)(void *, const char *, char*, size_t),
                       void *getpin_cb_arg,
                       const unsigned char *indata, size_t indatalen,
-                      char **r_buf, size_t *r_buflen)
+                      char **r_buf, size_t *r_buflen, int *r_padding)
 {
   int rc, i;
   char *p, line[ASSUAN_LINELENGTH];
@@ -890,6 +913,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   size_t len;
 
   *r_buf = NULL;
+  *r_padding = -1; /* Unknown.  */
   rc = start_scd (ctrl);
   if (rc)
     return rc;
@@ -923,7 +947,7 @@ agent_card_pkdecrypt (ctrl_t ctrl,
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         membuf_data_cb, &data,
                         inq_needpin, &inqparm,
-                        NULL, NULL);
+                        padding_info_cb, r_padding);
   if (inqparm.any_inq_seen && (gpg_err_code(rc) == GPG_ERR_CANCELED ||
 	gpg_err_code(rc) == GPG_ERR_ASS_CANCELED))
     rc = cancel_inquire (ctrl, rc);

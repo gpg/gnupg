@@ -34,6 +34,9 @@
 #define APP_CHANGE_FLAG_RESET    1
 #define APP_CHANGE_FLAG_NULLPIN  2
 
+/* Bit flags set by the decipher function into R_INFO.  */
+#define APP_DECIPHER_INFO_NOPAD  1  /* Padding has been removed.  */
+
 
 struct app_local_s;  /* Defined by all app-*.c.  */
 
@@ -93,10 +96,11 @@ struct app_ctx_s {
                  const void *indata, size_t indatalen,
                  unsigned char **outdata, size_t *outdatalen);
     gpg_error_t (*decipher) (app_t app, const char *keyidstr,
-                     gpg_error_t (*pincb)(void*, const char *, char **),
-                     void *pincb_arg,
-                     const void *indata, size_t indatalen,
-                     unsigned char **outdata, size_t *outdatalen);
+                             gpg_error_t (*pincb)(void*, const char *, char **),
+                             void *pincb_arg,
+                             const void *indata, size_t indatalen,
+                             unsigned char **outdata, size_t *outdatalen,
+                             unsigned int *r_info);
     gpg_error_t (*writecert) (app_t app, ctrl_t ctrl,
                               const char *certid,
                               gpg_error_t (*pincb)(void*,const char *,char **),
@@ -168,15 +172,16 @@ gpg_error_t app_sign (app_t app, const char *keyidstr, int hashalgo,
               const void *indata, size_t indatalen,
               unsigned char **outdata, size_t *outdatalen );
 gpg_error_t app_auth (app_t app, const char *keyidstr,
-              gpg_error_t (*pincb)(void*, const char *, char **),
-              void *pincb_arg,
-              const void *indata, size_t indatalen,
-              unsigned char **outdata, size_t *outdatalen);
+                      gpg_error_t (*pincb)(void*, const char *, char **),
+                      void *pincb_arg,
+                      const void *indata, size_t indatalen,
+                      unsigned char **outdata, size_t *outdatalen);
 gpg_error_t app_decipher (app_t app, const char *keyidstr,
-                  gpg_error_t (*pincb)(void*, const char *, char **),
-                  void *pincb_arg,
-                  const void *indata, size_t indatalen,
-                  unsigned char **outdata, size_t *outdatalen );
+                          gpg_error_t (*pincb)(void*, const char *, char **),
+                          void *pincb_arg,
+                          const void *indata, size_t indatalen,
+                          unsigned char **outdata, size_t *outdatalen,
+                          unsigned int *r_info);
 gpg_error_t app_writecert (app_t app, ctrl_t ctrl,
                            const char *certidstr,
                            gpg_error_t (*pincb)(void*, const char *, char **),

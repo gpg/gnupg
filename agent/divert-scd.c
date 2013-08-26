@@ -383,12 +383,13 @@ divert_pksign (ctrl_t ctrl,
 
 /* Decrypt the the value given asn an S-expression in CIPHER using the
    key identified by SHADOW_INFO and return the plaintext in an
-   allocated buffer in R_BUF.  */
+   allocated buffer in R_BUF.  The padding information is stored at
+   R_PADDING with -1 for not known.  */
 int
 divert_pkdecrypt (ctrl_t ctrl,
                   const unsigned char *cipher,
                   const unsigned char *shadow_info,
-                  char **r_buf, size_t *r_len)
+                  char **r_buf, size_t *r_len, int *r_padding)
 {
   int rc;
   char *kid;
@@ -398,6 +399,8 @@ divert_pkdecrypt (ctrl_t ctrl,
   size_t ciphertextlen;
   char *plaintext;
   size_t plaintextlen;
+
+  *r_padding = -1;
 
   s = cipher;
   if (*s != '(')
@@ -436,7 +439,7 @@ divert_pkdecrypt (ctrl_t ctrl,
 
   rc = agent_card_pkdecrypt (ctrl, kid, getpin_cb, ctrl,
                              ciphertext, ciphertextlen,
-                             &plaintext, &plaintextlen);
+                             &plaintext, &plaintextlen, r_padding);
   if (!rc)
     {
       *r_buf = plaintext;

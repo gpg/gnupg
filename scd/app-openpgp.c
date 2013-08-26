@@ -3598,7 +3598,8 @@ do_decipher (app_t app, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
              void *pincb_arg,
              const void *indata, size_t indatalen,
-             unsigned char **outdata, size_t *outdatalen )
+             unsigned char **outdata, size_t *outdatalen,
+             unsigned int *r_info)
 {
   int rc;
   unsigned char tmp_sn[20]; /* actually 16 but we use it also for the fpr. */
@@ -3727,6 +3728,8 @@ do_decipher (app_t app, const char *keyidstr,
           && app->card_version == 0x0200)
         log_info ("NOTE: Cards with manufacturer id 5 and s/n <= 346 (0x15a)"
                   " do not work with encryption keys > 2048 bits\n");
+
+      *r_info |= APP_DECIPHER_INFO_NOPAD;
     }
 
   return rc;
