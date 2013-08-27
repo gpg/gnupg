@@ -1537,6 +1537,7 @@ ccid_vendor_specific_init (ccid_driver_t handle)
 {
   if (handle->id_vendor == VENDOR_VEGA && handle->id_product == VEGA_ALPHA)
     {
+      int r;
       /*
        * Vega alpha has a feature to show retry counter on the pinpad
        * display.  But it assumes that the card returns the value of
@@ -1545,9 +1546,12 @@ ccid_vendor_specific_init (ccid_driver_t handle)
        * VERIFY command with empty data.  This vendor specific command
        * sequence is to disable the feature.
        */
-      const unsigned char cmd[] = "\xb5\x01\x00\x03\x00";
+      const unsigned char cmd[] = { '\xb5', '\x01', '\x00', '\x03', '\x00' };
 
-      return send_escape_cmd (handle, cmd, sizeof (cmd), NULL, 0, NULL);
+      r = send_escape_cmd (handle, cmd, sizeof (cmd), NULL, 0, NULL);
+      if (r != 0 && r != CCID_DRIVER_ERR_CARD_INACTIVE
+          && r != CCID_DRIVER_ERR_NO_CARD)
+        return r;
     }
 
   return 0;
