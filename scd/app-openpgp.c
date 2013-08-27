@@ -660,7 +660,11 @@ parse_login_data (app_t app)
     if (*buffer == '\n')
       break;
   if (buflen < 2 || buffer[1] != '\x14')
-    return; /* No control sequences.  */
+    {
+      xfree (relptr);
+      return; /* No control sequences.  */
+    }
+
   buflen--;
   buffer++;
   do
@@ -707,14 +711,11 @@ parse_login_data (app_t app)
                       m = strtol (q, &q, 10);
                     }
 
-                  buffer = q;
                   if (buflen < ((unsigned char *)q - buffer))
-                    {
-                      buflen = 0;
-                      break;
-                    }
-                  else
-                    buflen -= ((unsigned char *)q - buffer);
+                    break;
+
+                  buflen -= ((unsigned char *)q - buffer);
+                  buffer = q;
 
                   if (buflen && !(*buffer == '\n' || *buffer == '\x18'))
                     goto next;
@@ -725,11 +726,11 @@ parse_login_data (app_t app)
             }
         }
     next:
-      for (; buflen && *buffer != '\x18'; buflen--, buffer++)
-        if (*buffer == '\n')
-          buflen = 1;
+      /* Skip to FS (0x18) or LF (\n).  */
+      for (; buflen && *buffer != '\x18' && *buffer != '\n'; buflen--)
+        buffer++;
     }
-  while (buflen);
+  while (buflen && *buffer != '\n');
 
   xfree (relptr);
 }
