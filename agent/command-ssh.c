@@ -487,7 +487,8 @@ stream_read_string (estream_t stream, unsigned int secure,
   unsigned char *buffer = NULL;
   u32 length = 0;
 
-  *string_size = 0;
+  if (string_size)
+    *string_size = 0;
 
   /* Read string length.  */
   err = stream_read_uint32 (stream, &length);
