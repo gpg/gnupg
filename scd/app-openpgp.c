@@ -2508,10 +2508,13 @@ build_privkey_template (app_t app, int keyno,
                         const unsigned char *rsa_e, size_t rsa_e_len,
                         const unsigned char *rsa_p, size_t rsa_p_len,
                         const unsigned char *rsa_q, size_t rsa_q_len,
+                        const unsigned char *rsa_u, size_t rsa_u_len,
+                        const unsigned char *rsa_dp, size_t rsa_dp_len,
+                        const unsigned char *rsa_dq, size_t rsa_dq_len,
                         unsigned char **result, size_t *resultlen)
 {
   size_t rsa_e_reqlen;
-  unsigned char privkey[7*(1+3)];
+  unsigned char privkey[7*(1+3+3)];
   size_t privkey_len;
   unsigned char exthdr[2+2+3];
   size_t exthdr_len;
@@ -2529,17 +2532,16 @@ build_privkey_template (app_t app, int keyno,
     {
     case RSA_STD:
     case RSA_STD_N:
-      break;
     case RSA_CRT:
     case RSA_CRT_N:
-      return gpg_error (GPG_ERR_NOT_SUPPORTED);
+      break;
 
     default:
       return gpg_error (GPG_ERR_INV_VALUE);
     }
 
-  /* Get the required length for E.  */
-  rsa_e_reqlen = app->app_local->keyattr[keyno].rsa.e_bits/8;
+  /* Get the required length for E. Rounded up to the nearest byte  */
+  rsa_e_reqlen = (app->app_local->keyattr[keyno].rsa.e_bits + 7) / 8;
   assert (rsa_e_len <= rsa_e_reqlen);
 
   /* Build the 7f48 cardholder private key template.  */
@@ -2554,6 +2556,17 @@ build_privkey_template (app_t app, int keyno,
 
   tp += add_tlv (tp, 0x93, rsa_q_len);
   datalen += rsa_q_len;
+
+  if (app->app_local->keyattr[keyno].rsa.format == RSA_CRT
+      || app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N)
+    {
+      tp += add_tlv (tp, 0x94, rsa_u_len);
+      datalen += rsa_u_len;
+      tp += add_tlv (tp, 0x95, rsa_dp_len);
+      datalen += rsa_dp_len;
+      tp += add_tlv (tp, 0x96, rsa_dq_len);
+      datalen += rsa_dq_len;
+    }
 
   if (app->app_local->keyattr[keyno].rsa.format == RSA_STD_N
       || app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N)
@@ -2607,6 +2620,17 @@ build_privkey_template (app_t app, int keyno,
 
   memcpy (tp, rsa_q, rsa_q_len);
   tp += rsa_q_len;
+
+  if (app->app_local->keyattr[keyno].rsa.format == RSA_CRT
+      || app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N)
+    {
+      memcpy (tp, rsa_u, rsa_u_len);
+      tp += rsa_u_len;
+      memcpy (tp, rsa_dp, rsa_dp_len);
+      tp += rsa_dp_len;
+      memcpy (tp, rsa_dq, rsa_dq_len);
+      tp += rsa_dq_len;
+    }
 
   if (app->app_local->keyattr[keyno].rsa.format == RSA_STD_N
       || app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N)
@@ -2954,16 +2978,53 @@ do_writekey (app_t app, ctrl_t ctrl,
 
   if (app->app_local->extcap.is_v2)
     {
-      /* Build the private key template as described in section 4.3.3.7 of
-         the OpenPGP card specs version 2.0.  */
+      unsigned char *rsa_u, *rsa_dp, *rsa_dq;
+      size_t rsa_u_len, rsa_dp_len, rsa_dq_len;
+      gcry_mpi_t mpi_e, mpi_p, mpi_q;
+      gcry_mpi_t mpi_u = gcry_mpi_snew (0);
+      gcry_mpi_t mpi_dp = gcry_mpi_snew (0);
+      gcry_mpi_t mpi_dq = gcry_mpi_snew (0);
+      gcry_mpi_t mpi_tmp = gcry_mpi_snew (0);
       int exmode;
 
+      /* Calculate the u, dp and dq components needed by RSA_CRT cards */
+      gcry_mpi_scan (&mpi_e, GCRYMPI_FMT_USG, rsa_e, rsa_e_len, NULL);
+      gcry_mpi_scan (&mpi_p, GCRYMPI_FMT_USG, rsa_p, rsa_p_len, NULL);
+      gcry_mpi_scan (&mpi_q, GCRYMPI_FMT_USG, rsa_q, rsa_q_len, NULL);
+
+      gcry_mpi_invm (mpi_u, mpi_q, mpi_p);
+      gcry_mpi_sub_ui (mpi_tmp, mpi_p, 1);
+      gcry_mpi_invm (mpi_dp, mpi_e, mpi_tmp);
+      gcry_mpi_sub_ui (mpi_tmp, mpi_q, 1);
+      gcry_mpi_invm (mpi_dq, mpi_e, mpi_tmp);
+
+      gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_u, &rsa_u_len, mpi_u);
+      gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_dp, &rsa_dp_len, mpi_dp);
+      gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_dq, &rsa_dq_len, mpi_dq);
+
+      gcry_mpi_release (mpi_e);
+      gcry_mpi_release (mpi_p);
+      gcry_mpi_release (mpi_q);
+      gcry_mpi_release (mpi_u);
+      gcry_mpi_release (mpi_dp);
+      gcry_mpi_release (mpi_dq);
+      gcry_mpi_release (mpi_tmp);
+
+      /* Build the private key template as described in section 4.3.3.7 of
+         the OpenPGP card specs version 2.0.  */
       err = build_privkey_template (app, keyno,
                                     rsa_n, rsa_n_len,
                                     rsa_e, rsa_e_len,
                                     rsa_p, rsa_p_len,
                                     rsa_q, rsa_q_len,
+                                    rsa_u, rsa_u_len,
+                                    rsa_dp, rsa_dp_len,
+                                    rsa_dq, rsa_dq_len,
                                     &template, &template_len);
+      xfree(rsa_u);
+      xfree(rsa_dp);
+      xfree(rsa_dq);
+
       if (err)
         goto leave;
 
