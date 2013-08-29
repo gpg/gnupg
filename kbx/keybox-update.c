@@ -31,6 +31,10 @@
 
 #define EXTSEP_S "."
 
+#define FILECOPY_INSERT 1
+#define FILECOPY_DELETE 2
+#define FILECOPY_UPDATE 3
+
 
 #if !defined(HAVE_FSEEKO) && !defined(fseeko)
 
@@ -208,9 +212,7 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 
 
 /* Perform insert/delete/update operation.
-    mode 1 = insert
- 	 2 = delete
- 	 3 = update
+   MODE is one of FILECOPY_INSERT, FILECOPY_DELETE, FILECOPY_UPDATE.
 */
 static int
 blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
@@ -229,7 +231,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
     return gpg_error_from_syserror ();
 
   fp = fopen (fname, "rb");
-  if (mode == 1 && !fp && errno == ENOENT)
+  if (mode == FILECOPY_INSERT && !fp && errno == ENOENT)
     {
       /* Insert mode but file does not exist:
          Create a new keybox file. */
@@ -271,7 +273,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
     }
 
   /* prepare for insert */
-  if (mode == 1)
+  if (mode == FILECOPY_INSERT)
     {
       /* Copy everything to the new file. */
       while ( (nread = fread (buffer, 1, DIM(buffer), fp)) > 0 )
@@ -290,7 +292,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
     }
 
   /* Prepare for delete or update. */
-  if ( mode == 2 || mode == 3 )
+  if ( mode == FILECOPY_DELETE || mode == FILECOPY_UPDATE )
     {
       off_t current = 0;
 
@@ -324,7 +326,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
     }
 
   /* Do an insert or update. */
-  if ( mode == 1 || mode == 3 )
+  if ( mode == FILECOPY_INSERT || mode == FILECOPY_UPDATE )
     {
       rc = _keybox_write_blob (blob, newfp);
       if (rc)
@@ -332,7 +334,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
     }
 
   /* Copy the rest of the packet for an delete or update. */
-  if (mode == 2 || mode == 3)
+  if (mode == FILECOPY_DELETE || mode == FILECOPY_UPDATE)
     {
       while ( (nread = fread (buffer, 1, DIM(buffer), fp)) > 0 )
         {
@@ -407,7 +409,7 @@ keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen,
   _keybox_destroy_openpgp_info (&info);
   if (!err)
     {
-      err = blob_filecopy (1, fname, blob, hd->secret, 0);
+      err = blob_filecopy (FILECOPY_INSERT, fname, blob, hd->secret, 0);
       _keybox_release_blob (blob);
       /*    if (!rc && !hd->secret && kb_offtbl) */
       /*      { */
@@ -456,7 +458,7 @@ keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
   rc = _keybox_create_x509_blob (&blob, cert, sha1_digest, hd->ephemeral);
   if (!rc)
     {
-      rc = blob_filecopy (1, fname, blob, hd->secret, 0);
+      rc = blob_filecopy (FILECOPY_INSERT, fname, blob, hd->secret, 0);
       _keybox_release_blob (blob);
       /*    if (!rc && !hd->secret && kb_offtbl) */
       /*      { */
