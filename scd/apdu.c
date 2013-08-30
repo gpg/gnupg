@@ -62,6 +62,7 @@
 
 #include "iso7816.h"
 #include "apdu.h"
+#define CCID_DRIVER_INCLUDE_USB_IDS 1
 #include "ccid-driver.h"
 
 /* Due to conflicting use of threading libraries we usually can't link
@@ -1797,7 +1798,7 @@ pcsc_vendor_specific_init (int slot)
       p += l;
     }
 
-  if (vendor == 0x0982 && product == 0x0008) /* Vega Alpha */
+  if (vendor == VENDOR_VEGA && product == VEGA_ALPHA)
     {
       /*
        * Please read the comment of ccid_vendor_specific_init in
@@ -1809,7 +1810,7 @@ pcsc_vendor_specific_init (int slot)
       if (sw)
         return SW_NOT_SUPPORTED;
     }
-  else if (vendor == 0x04e6 && product == 0xe003) /* SCM SPR532 */
+  else if (vendor == VENDOR_SCM && product == SCM_SPR532) /* SCM SPR532 */
     {
       reader_table[slot].is_spr532 = 1;
       reader_table[slot].pinpad_varlen_supported = 1;

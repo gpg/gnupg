@@ -56,6 +56,35 @@
 #ifndef CCID_DRIVER_H
 #define CCID_DRIVER_H
 
+
+#ifdef CCID_DRIVER_INCLUDE_USB_IDS
+/* We need to know the vendor to do some hacks. */
+enum {
+  VENDOR_CHERRY = 0x046a,
+  VENDOR_SCM    = 0x04e6,
+  VENDOR_OMNIKEY= 0x076b,
+  VENDOR_GEMPC  = 0x08e6,
+  VENDOR_VEGA   = 0x0982,
+  VENDOR_KAAN   = 0x0d46,
+  VENDOR_FSIJ   = 0x234b,
+  VENDOR_VASCO  = 0x1a44
+};
+
+
+/* Some product ids.  */
+#define SCM_SCR331      0xe001
+#define SCM_SCR331DI    0x5111
+#define SCM_SCR335      0x5115
+#define SCM_SCR3320     0x5117
+#define SCM_SPR532      0xe003    /* Also used succeeding model SPR332. */
+#define CHERRY_ST2000   0x003e
+#define VASCO_920       0x0920
+#define GEMPC_PINPAD    0x3478
+#define VEGA_ALPHA      0x0008
+
+#endif /*CCID_DRIVER_INCLUDE_USB_IDS*/
+
+
 /* The CID driver returns the same error codes as the status words
    used by GnuPG's apdu.h.  For ease of maintenance they should always
    match.  */
