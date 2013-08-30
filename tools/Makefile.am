@@ -145,7 +145,8 @@ gpgtar_SOURCES = \
 	no-libgcrypt.c
 gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
 #gpgtar_LDADD = $(commonpth_libs) $(PTH_LIBS) $(GPG_ERROR_LIBS)
-gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) $(NETLIBS) $(W32SOCKLIBS)
+gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
+               $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
 
 
 # Make sure that all libs are build before we use them.  This is
