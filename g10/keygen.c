@@ -1170,12 +1170,12 @@ gen_elg (int algo, unsigned int nbits,
   PKT_public_key *pk;
   gcry_sexp_t s_parms, s_key;
   gcry_sexp_t misc_key_info;
-  
+
   assert( is_ELGAMAL(algo) );
 
   if (nbits < 512)
     {
-      nbits = 1024;
+      nbits = 2048;
       log_info (_("keysize invalid; using %u bits\n"), nbits );
     }
 
@@ -1284,9 +1284,9 @@ gen_dsa (unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
   gcry_sexp_t misc_key_info;
   unsigned int qbits;
 
-  if ( nbits < 512) 
+  if ( nbits < 512)
     {
-      nbits = 1024;
+      nbits = 2048;
       log_info(_("keysize invalid; using %u bits\n"), nbits );
     }
   else if ( nbits > 3072 )
@@ -1435,12 +1435,12 @@ gen_rsa (int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
   if (!nbits)
     nbits = DEFAULT_STD_KEYSIZE;
 
-  if (nbits < 1024) 
+  if (nbits < 1024)
     {
-      nbits = 1024;
+      nbits = 2048;
       log_info (_("keysize invalid; using %u bits\n"), nbits );
     }
-  
+
   if ((nbits % 32))
     {
       nbits = ((nbits + 31) / 32) * 32;
