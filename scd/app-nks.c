@@ -1125,7 +1125,10 @@ parse_pwidstr (const char *pwidstr, int new_mode, int *r_sigg, int *r_pwid)
                   "for the key to create qualified signatures."));
     }
   else
-    desc = NULL;
+    {
+      *r_pwid = 0; /* Only to avoid gcc warning in calling function.  */
+      desc = NULL; /* Error.  */
+    }
 
   return desc;
 }
