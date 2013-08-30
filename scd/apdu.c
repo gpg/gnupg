@@ -118,6 +118,8 @@ struct reader_table_s {
     pcsc_dword_t protocol;
     pcsc_dword_t verify_ioctl;
     pcsc_dword_t modify_ioctl;
+    int pinmin;
+    int pinmax;
 #ifdef NEED_PCSC_WRAPPER
     int req_fd;
     int rsp_fd;
@@ -135,6 +137,9 @@ struct reader_table_s {
   int status;
   int is_t0;         /* True if we know that we are running T=0. */
   int is_spr532;     /* True if we know that the reader is a SPR532.  */
+  int pinpad_varlen_supported;  /* True if we know that the reader
+                                   supports variable length pinpad
+                                   input.  */
   unsigned char atr[33];
   size_t atrlen;           /* A zero length indicates that the ATR has
                               not yet been read; i.e. the card is not
@@ -244,8 +249,17 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 #endif
 
 #define CM_IOCTL_GET_FEATURE_REQUEST     SCARD_CTL_CODE(3400)
+#define CM_IOCTL_VENDOR_IFD_EXCHANGE     SCARD_CTL_CODE(1)
 #define FEATURE_VERIFY_PIN_DIRECT        0x06
 #define FEATURE_MODIFY_PIN_DIRECT        0x07
+#define FEATURE_GET_TLV_PROPERTIES       0x12
+
+#define PCSCv2_PART10_PROPERTY_bEntryValidationCondition 2
+#define PCSCv2_PART10_PROPERTY_bTimeOut2                 3
+#define PCSCv2_PART10_PROPERTY_bMinPINSize               6
+#define PCSCv2_PART10_PROPERTY_bMaxPINSize               7
+#define PCSCv2_PART10_PROPERTY_wIdVendor                11
+#define PCSCv2_PART10_PROPERTY_wIdProduct               12
 
 
 /* The PC/SC error is defined as a long as per specs.  Due to left
@@ -400,6 +414,7 @@ new_reader_slot (void)
   reader_table[reader].last_status = 0;
   reader_table[reader].is_t0 = 1;
   reader_table[reader].is_spr532 = 0;
+  reader_table[reader].pinpad_varlen_supported = 0;
 #ifdef NEED_PCSC_WRAPPER
   reader_table[reader].pcsc.req_fd = -1;
   reader_table[reader].pcsc.rsp_fd = -1;
@@ -407,6 +422,8 @@ new_reader_slot (void)
 #endif
   reader_table[reader].pcsc.verify_ioctl = 0;
   reader_table[reader].pcsc.modify_ioctl = 0;
+  reader_table[reader].pcsc.pinmin = -1;
+  reader_table[reader].pcsc.pinmax = -1;
 
   return reader;
 }
@@ -1676,6 +1693,132 @@ reset_pcsc_reader (int slot)
 }
 
 
+/* Examine reader specific parameters and initialize.  This is mostly
+   for pinpad input.  Called at opening the connection to the reader.  */
+static int
+pcsc_vendor_specific_init (int slot)
+{
+  unsigned char buf[256];
+  pcsc_dword_t len;
+  int sw;
+  int vendor = 0;
+  int product = 0;
+  pcsc_dword_t get_tlv_ioctl = (pcsc_dword_t)-1;
+  unsigned char *p;
+
+  len = sizeof (buf);
+  sw = control_pcsc (slot, CM_IOCTL_GET_FEATURE_REQUEST, NULL, 0, buf, &len);
+  if (sw)
+    {
+      log_error ("pcsc_vendor_specific_init: GET_FEATURE_REQUEST failed: %d\n",
+                 sw);
+      return SW_NOT_SUPPORTED;
+    }
+  else
+    {
+      p = buf;
+      while (p < buf + len)
+        {
+          unsigned char code = *p++;
+          int l = *p++;
+          unsigned int v = 0;
+
+          if (l == 1)
+            v = p[0];
+          else if (l == 2)
+            v = ((p[0] << 8) | p[1]);
+          else if (l == 4)
+            v = ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+
+          if (code == FEATURE_VERIFY_PIN_DIRECT)
+            reader_table[slot].pcsc.verify_ioctl = v;
+          else if (code == FEATURE_MODIFY_PIN_DIRECT)
+            reader_table[slot].pcsc.modify_ioctl = v;
+          else if (code == FEATURE_GET_TLV_PROPERTIES)
+            get_tlv_ioctl = v;
+
+          if (DBG_CARD_IO)
+            log_debug ("feature: code=%02X, len=%d, v=%02X\n", code, l, v);
+
+          p += l;
+        }
+    }
+
+  /*
+   * For system which doesn't support GET_TLV_PROPERTIES,
+   * we put some heuristics here.
+   */
+  if (reader_table[slot].rdrname
+      && strstr (reader_table[slot].rdrname, "SPRx32"))
+    {
+      reader_table[slot].is_spr532 = 1;
+      reader_table[slot].pinpad_varlen_supported = 1;
+      return 0;
+    }
+
+  if (get_tlv_ioctl == (pcsc_dword_t)-1)
+    return 0;
+
+  len = sizeof (buf);
+  sw = control_pcsc (slot, get_tlv_ioctl, NULL, 0, buf, &len);
+  if (sw)
+    {
+      log_error ("pcsc_vendor_specific_init: GET_TLV_IOCTL failed: %d\n", sw);
+      return SW_NOT_SUPPORTED;
+    }
+
+  p = buf;
+  while (p < buf + len)
+    {
+      unsigned char tag = *p++;
+      int l = *p++;
+      unsigned int v = 0;
+
+      /* Umm... here is little endian, while the encoding above is big.  */
+      if (l == 1)
+        v = p[0];
+      else if (l == 2)
+        v = ((p[1] << 8) | p[0]);
+      else if (l == 4)
+        v = ((p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0]);
+
+      if (tag == PCSCv2_PART10_PROPERTY_bMinPINSize)
+        reader_table[slot].pcsc.pinmin = v;
+      else if (tag == PCSCv2_PART10_PROPERTY_bMaxPINSize)
+        reader_table[slot].pcsc.pinmax = v;
+      else if (tag == PCSCv2_PART10_PROPERTY_wIdVendor)
+        vendor = v;
+      else if (tag == PCSCv2_PART10_PROPERTY_wIdProduct)
+        product = v;
+
+      if (DBG_CARD_IO)
+        log_debug ("TLV properties: tag=%02X, len=%d, v=%08X\n", tag, l, v);
+
+      p += l;
+    }
+
+  if (vendor == 0x0982 && product == 0x0008) /* Vega Alpha */
+    {
+      /*
+       * Please read the comment of ccid_vendor_specific_init in
+       * ccid-driver.c.
+       */
+      const unsigned char cmd[] = { '\xb5', '\x01', '\x00', '\x03', '\x00' };
+      sw = control_pcsc (slot, CM_IOCTL_VENDOR_IFD_EXCHANGE,
+                         cmd, sizeof (cmd), NULL, 0);
+      if (sw)
+        return SW_NOT_SUPPORTED;
+    }
+  else if (vendor == 0x04e6 && product == 0xe003) /* SCM SPR532 */
+    {
+      reader_table[slot].is_spr532 = 1;
+      reader_table[slot].pinpad_varlen_supported = 1;
+    }
+
+  return 0;
+}
+
+
 /* Open the PC/SC reader without using the wrapper.  Returns -1 on
    error or a slot number for the reader.  */
 #ifndef NEED_PCSC_WRAPPER
@@ -1770,6 +1913,7 @@ open_pcsc_reader_direct (const char *portstr)
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
+  pcsc_vendor_specific_init (slot);
   dump_reader_status (slot);
   return slot;
 }
@@ -1967,6 +2111,8 @@ open_pcsc_reader_wrapped (const char *portstr)
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
+  pcsc_vendor_specific_init (slot);
+
   /* Read the status so that IS_T0 will be set. */
   pcsc_get_status (slot, &dummy_status);
 
@@ -2005,67 +2151,27 @@ open_pcsc_reader (const char *portstr)
 static int
 check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo)
 {
-  unsigned char buf[256];
-  pcsc_dword_t len = 256;
-  int sw;
+  int r;
 
-  /* Hack to identify the SCM SPR532 and SPR332 readers which support
-     variable length PIN input.
-     FIXME: Figure out whether there is a feature attribute for this.
-     Alternatively use the USB ids to detect known readers.  */
-  if (reader_table[slot].rdrname
-      && strstr (reader_table[slot].rdrname, "SPRx32"))
-    {
-      reader_table[slot].is_spr532 = 1;
-      pininfo->fixedlen = 0;
-    }
+  pininfo->minlen = reader_table[slot].pcsc.pinmin;
+  pininfo->maxlen = reader_table[slot].pcsc.pinmax;
 
- check_again:
-  if (command == ISO7816_VERIFY)
-    {
-      if (reader_table[slot].pcsc.verify_ioctl == (pcsc_dword_t)-1)
-        return SW_NOT_SUPPORTED;
-      else if (reader_table[slot].pcsc.verify_ioctl != 0)
-        return 0;                       /* Success */
-    }
-  else if (command == ISO7816_CHANGE_REFERENCE_DATA)
-    {
-      if (reader_table[slot].pcsc.modify_ioctl == (pcsc_dword_t)-1)
-        return SW_NOT_SUPPORTED;
-      else if (reader_table[slot].pcsc.modify_ioctl != 0)
-        return 0;                       /* Success */
-    }
+  if ((command == ISO7816_VERIFY && reader_table[slot].pcsc.verify_ioctl != 0)
+      || (command == ISO7816_CHANGE_REFERENCE_DATA
+          && reader_table[slot].pcsc.modify_ioctl != 0))
+    r = 0;                       /* Success */
   else
-    return SW_NOT_SUPPORTED;
+    r = SW_NOT_SUPPORTED;
 
-  reader_table[slot].pcsc.verify_ioctl = (pcsc_dword_t)-1;
-  reader_table[slot].pcsc.modify_ioctl = (pcsc_dword_t)-1;
+  if (DBG_CARD_IO)
+    log_debug ("check_pcsc_pinpad: command=%02X, r=%d\n",
+               (unsigned int)command, r);
 
-  sw = control_pcsc (slot, CM_IOCTL_GET_FEATURE_REQUEST, NULL, 0, buf, &len);
-  if (sw)
-    return SW_NOT_SUPPORTED;
-  else
-    {
-      unsigned char *p = buf;
+  if (reader_table[slot].pinpad_varlen_supported)
+    pininfo->fixedlen = 0;
 
-      while (p < buf + len)
-        {
-          unsigned char code = *p++;
-
-          p++;                  /* Skip length */
-          if (code == FEATURE_VERIFY_PIN_DIRECT)
-            reader_table[slot].pcsc.verify_ioctl
-              = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-          else if (code == FEATURE_MODIFY_PIN_DIRECT)
-            reader_table[slot].pcsc.modify_ioctl
-              = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-          p += 4;
-        }
-    }
-
-  goto check_again;
+  return r;
 }
-
 
 #define PIN_VERIFY_STRUCTURE_SIZE 24
 static int
@@ -2103,8 +2209,8 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
 
   no_lc = (!pininfo->fixedlen && reader_table[slot].is_spr532);
 
-  pin_verify[0] = 0x00; /* bTimerOut */
-  pin_verify[1] = 0x00; /* bTimerOut2 */
+  pin_verify[0] = 0x00; /* bTimeOut */
+  pin_verify[1] = 0x00; /* bTimeOut2 */
   pin_verify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
   pin_verify[3] = pininfo->fixedlen; /* bmPINBlockString */
   pin_verify[4] = 0x00; /* bmPINLengthFormat */
@@ -2113,7 +2219,7 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   pin_verify[7] = 0x02; /* bEntryValidationCondition: Validation key pressed */
   if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     pin_verify[7] |= 0x01; /* Max size reached.  */
-  pin_verify[8] = 0xff; /* bNumberMessage: Default */
+  pin_verify[8] = 0x01; /* bNumberMessage: One message */
   pin_verify[9] =  0x09; /* wLangId: 0x0409: US English */
   pin_verify[10] = 0x04; /* wLangId: 0x0409: US English */
   pin_verify[11] = 0x00; /* bMsgIndex */
@@ -2191,8 +2297,8 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
 
   no_lc = (!pininfo->fixedlen && reader_table[slot].is_spr532);
 
-  pin_modify[0] = 0x00; /* bTimerOut */
-  pin_modify[1] = 0x00; /* bTimerOut2 */
+  pin_modify[0] = 0x00; /* bTimeOut */
+  pin_modify[1] = 0x00; /* bTimeOut2 */
   pin_modify[2] = 0x82; /* bmFormatString: Byte, pos=0, left, ASCII. */
   pin_modify[3] = pininfo->fixedlen; /* bmPINBlockString */
   pin_modify[4] = 0x00; /* bmPINLengthFormat */
@@ -2210,12 +2316,12 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   pin_modify[10] = 0x02; /* bEntryValidationCondition: Validation key pressed */
   if (pininfo->minlen && pininfo->maxlen && pininfo->minlen == pininfo->maxlen)
     pin_modify[10] |= 0x01; /* Max size reached.  */
-  pin_modify[11] = 0xff; /* bNumberMessage: Default */
+  pin_modify[11] = 0x03; /* bNumberMessage: Three messages */
   pin_modify[12] = 0x09; /* wLangId: 0x0409: US English */
   pin_modify[13] = 0x04; /* wLangId: 0x0409: US English */
   pin_modify[14] = 0x00; /* bMsgIndex1 */
-  pin_modify[15] = 0x00; /* bMsgIndex2 */
-  pin_modify[16] = 0x00; /* bMsgIndex3 */
+  pin_modify[15] = 0x01; /* bMsgIndex2 */
+  pin_modify[16] = 0x02; /* bMsgIndex3 */
   pin_modify[17] = 0x00; /* bTeoPrologue[0] */
   pin_modify[18] = 0x00; /* bTeoPrologue[1] */
   pin_modify[19] = 2 * pininfo->fixedlen + 0x05 - no_lc; /* bTeoPrologue[2] */
