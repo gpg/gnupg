@@ -1,11 +1,14 @@
-/* mpitest.c - test the mpi functions
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* mpicalc.c - test the mpi functions
+ * Copyright (C) 1997, 1998, 1999, 2004, 2006  Werner Koch
  *
  * This is an RPN calculator; values must be given in hex.
  * Operation is like dc(1) except that the input/output radix is
  * always 16 and you can use a '-' to prefix a negative number.
  * Addition operators: ++ and --. All operators must be delimited by a blank
  *
+ * WARNING: This is an old test utility which is not anymore
+ *          maintained as part of GnuPG.  However, Libgcrypt has a
+ *          copy of it which uses the libgcrypt functions.
  *
  * This file is part of GnuPG.
  *
