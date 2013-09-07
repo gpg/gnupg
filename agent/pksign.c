@@ -1,5 +1,6 @@
 /* pksign.c - public key signing (well, actually using a secret key)
  * Copyright (C) 2001, 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2013  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -111,6 +112,25 @@ get_dsa_qbits (gcry_sexp_t key)
 }
 
 
+/* Return an appropriate hash algorithm to be used with RFC-6979 for a
+   message digest of length MDLEN.  Although a fallback of SHA-256 is
+   used the current implementation in Libgcrypt will reject a hash
+   algorithm which does not match the length of the message.  */
+static const char *
+rfc6979_hash_algo_string (size_t mdlen)
+{
+  switch (mdlen)
+    {
+    case 20: return "sha1";
+    case 28: return "sha224";
+    case 32: return "sha256";
+    case 48: return "sha384";
+    case 64: return "sha512";
+    default: return "sha256";
+    }
+}
+
+
 /* Encode a message digest for use with an DSA algorithm. */
 static gpg_error_t
 do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
@@ -177,11 +197,20 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   if (mdlen > qbits/8)
     mdlen = qbits/8;
 
-  /* Create the S-expression.  We need to convert to an MPI first
-     because we want an unsigned integer.  Using %b directly is not
-     possible because libgcrypt assumes an mpi and uses
-     GCRYMPI_FMT_STD for parsing and thus possible yielding a negative
-     value.  */
+  /* Create the S-expression.  If we are using Libgcrypt 1.6 we make
+     use of Deterministic DSA.  Libgcrypt < 1.6 does not implement
+     RFC-6979 and also requires us to convert to an MPI because it
+     expects an unsigned integer.  Using %b directly is not possible
+     because Libgcrypt assumes an MPI and uses GCRYMPI_FMT_STD for
+     parsing and thus possible yielding a negative value.  */
+#if GCRYPT_VERSION_NUMBER >= 0x010600 /* Libgcrypt >= 1.6 */
+  {
+    err = gcry_sexp_build (&hash, NULL,
+                           "(data (flags rfc6979) (hash %s %b))",
+                           rfc6979_hash_algo_string (mdlen),
+                           (int)mdlen, md);
+  }
+#else /* Libgcrypt < 1.6 */
   {
     gcry_mpi_t mpi;
 
@@ -193,6 +222,7 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
         gcry_mpi_release (mpi);
       }
   }
+#endif /* Libgcrypt < 1.6 */
   if (!err)
     *r_hash = hash;
   return err;
