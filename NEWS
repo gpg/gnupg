@@ -24,6 +24,8 @@ Noteworthy changes in version 2.1.0-betaN (unreleased)
 
  * Fixed GPG to decrypt using an OpenPGP card.
 
+ * Fixed bug with deeply nested compressed packets.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------

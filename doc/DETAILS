@@ -786,6 +786,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** UNEXPECTED <what>
     Unexpected data has been encountered.  Codes for WHAT are:
     - 0 :: Not further specified
+    - 1 :: Corrupted message structure
 
 *** TRUNCATED <maxno>
     The output was truncated to MAXNO items.  This status code is

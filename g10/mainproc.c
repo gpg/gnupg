@@ -1,6 +1,7 @@
 /* mainproc.c - handle packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -40,6 +41,11 @@
 #include "keyserver-internal.h"
 #include "photoid.h"
 #include "pka.h"
+
+
+/* Put an upper limit on nested packets.  The 32 is an arbitrary
+   value, a much lower should actually be sufficient.  */
+#define MAX_NESTING_DEPTH 32
 
 
 struct kidlist_item {
@@ -768,7 +774,7 @@ proc_encrypt_cb (IOBUF a, void *info )
   return proc_encryption_packets (c->ctrl, info, a );
 }
 
-static void
+static int
 proc_compressed( CTX c, PACKET *pkt )
 {
     PKT_compressed *zd = pkt->pkt.compressed;
@@ -785,6 +791,7 @@ proc_compressed( CTX c, PACKET *pkt )
 	log_error("uncompressing failed: %s\n", g10_errstr(rc));
     free_packet(pkt);
     c->last_was_session_key = 0;
+    return rc;
 }
 
 /****************
@@ -1282,14 +1289,37 @@ proc_encryption_packets (ctrl_t ctrl, void *anchor, IOBUF a )
 }
 
 
-int
+static int
+check_nesting (CTX c)
+{
+  int level;
+
+  for (level = 0; c; c = c->anchor)
+    level++;
+
+  if (level > MAX_NESTING_DEPTH)
+    {
+      log_error ("input data with too deeply nested packets\n");
+      write_status_text (STATUS_UNEXPECTED, "1");
+      return G10ERR_UNEXPECTED;
+    }
+  return 0;
+}
+
+
+static int
 do_proc_packets( CTX c, IOBUF a )
 {
-    PACKET *pkt = xmalloc( sizeof *pkt );
-    int rc=0;
-    int any_data=0;
+    PACKET *pkt;
+    int rc = 0;
+    int any_data = 0;
     int newpkt;
 
+    rc = check_nesting (c);
+    if (rc)
+      return rc;
+
+    pkt = xmalloc( sizeof *pkt );
     c->iobuf = a;
     init_packet(pkt);
     while( (rc=parse_packet(a, pkt)) != -1 ) {
@@ -1310,7 +1340,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_SYMKEY_ENC:  proc_symkey_enc( c, pkt ); break;
 	      case PKT_ENCRYPTED:
 	      case PKT_ENCRYPTED_MDC: proc_encrypted( c, pkt ); break;
-	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_COMPRESSED:  rc = proc_compressed( c, pkt ); break;
 	      default: newpkt = 0; break;
 	    }
 	}
@@ -1328,7 +1358,7 @@ do_proc_packets( CTX c, IOBUF a )
 		goto leave;
 	      case PKT_SIGNATURE:   newpkt = add_signature( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
-	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_COMPRESSED:  rc = proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
               case PKT_GPG_CONTROL: newpkt = add_gpg_control(c, pkt); break;
 	      default: newpkt = 0; break;
@@ -1348,7 +1378,7 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_ENCRYPTED:
 	      case PKT_ENCRYPTED_MDC: proc_encrypted( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
-	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_COMPRESSED:  rc = proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
 	      case PKT_GPG_CONTROL: newpkt = add_gpg_control(c, pkt); break;
 	      default: newpkt = 0; break;
@@ -1373,13 +1403,17 @@ do_proc_packets( CTX c, IOBUF a )
 	      case PKT_ENCRYPTED:
 	      case PKT_ENCRYPTED_MDC: proc_encrypted( c, pkt ); break;
 	      case PKT_PLAINTEXT:   proc_plaintext( c, pkt ); break;
-	      case PKT_COMPRESSED:  proc_compressed( c, pkt ); break;
+	      case PKT_COMPRESSED:  rc = proc_compressed( c, pkt ); break;
 	      case PKT_ONEPASS_SIG: newpkt = add_onepass_sig( c, pkt ); break;
               case PKT_GPG_CONTROL: newpkt = add_gpg_control(c, pkt); break;
 	      case PKT_RING_TRUST:  newpkt = add_ring_trust( c, pkt ); break;
 	      default: newpkt = 0; break;
 	    }
 	}
+
+        if (rc)
+          goto leave;
+
         /* This is a very ugly construct and frankly, I don't remember why
          * I used it.  Adding the MDC check here is a hack.
          * The right solution is to initiate another context for encrypted
