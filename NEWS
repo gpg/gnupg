@@ -1,6 +1,9 @@
 Noteworthy changes in version 1.4.15 (unreleased)
 -------------------------------------------------
 
+    * Fixed bug with deeply nested compressed packets.
+
+
 Noteworthy changes in version 1.4.14 (2013-07-25)
 -------------------------------------------------
 
