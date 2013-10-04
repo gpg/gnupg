@@ -1533,7 +1533,11 @@ keyedit_menu( const char *username, STRLIST locusr,
     /* Get the public key */
     rc = get_pubkey_byname (NULL, username, &keyblock, &kdbhd, 1);
     if( rc )
+      {
+        log_error (_("key \"%s\" not found: %s\n"), username, g10_errstr (rc));
 	goto leave;
+      }
+
     if( fix_keyblock( keyblock ) )
 	modified++;
     if( collapse_uids( &keyblock ) )
