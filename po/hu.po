@@ -2086,14 +2086,14 @@ msgstr "%08lX kulcs: \"%s\" %d új felhasználói azonosító.\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "%08lX kulcs: \"%s\" nem változott.\n"
 
+#, fuzzy
+msgid "importing secret keys not allowed\n"
+msgstr "Írom a titkos kulcsot a %s állományba.\n"
+
 #, fuzzy, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr ""
 "%08lX kulcs: Titkos kulcs érvénytelen (%d) rejtjelezõvel - kihagytam.\n"
-
-#, fuzzy
-msgid "importing secret keys not allowed\n"
-msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

@@ -2062,12 +2062,12 @@ msgstr "ключ %s: \"%s\" %d  очищенных User ID\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "ключ %s: \"%s\" не изменен\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "импортирование секретного ключа не позволено\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "ключ %s: секретный ключ с недопустимым шифром %d - пропущен\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "импортирование секретного ключа не позволено\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

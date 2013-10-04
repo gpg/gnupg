@@ -2099,13 +2099,13 @@ msgstr "kµúè %08lX: \"%s\" %d novıch identifikátorov u¾ívateµa\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "kµúè %08lX: \"%s\" bez zmeny\n"
 
-#, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "kµúè %08lX: tajnı kµúè bez verejného kµúèa %d - preskoèené\n"
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "zapisujem tajnı kµúè do `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "kµúè %08lX: tajnı kµúè bez verejného kµúèa %d - preskoèené\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

@@ -2110,13 +2110,13 @@ msgstr "κλειδί %08lX: \"%s\" %d νέα user ID\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "κλειδί %08lX: \"%s\" αμετάβλητο\n"
 
-#, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "κλειδί %08lX: μυστικό κλειδί με άκυρο κρυπταλγ. %d - παραλείφθηκε\n"
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί με άκυρο κρυπταλγ. %d - παραλείφθηκε\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

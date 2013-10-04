@@ -1938,13 +1938,13 @@ msgstr "паказаць сьпіс ключоў і подпісаў"
 msgid "key %s: \"%s\" not changed\n"
 msgstr ""
 
-#, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr ""
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "сакрэтны ключ недаступны"
+
+#, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr ""
 
 #, c-format
 msgid "no default secret keyring: %s\n"

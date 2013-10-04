@@ -2116,12 +2116,12 @@ msgstr "nyckel %s: \"%s\" %d användaridentiteter rensade\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nyckel %s: \"%s\" inte ändrad\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "import av hemliga nycklar tillåts inte\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "nyckel %s: hemlig nyckel med ogiltigt chiffer %d - hoppade över\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "import av hemliga nycklar tillåts inte\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

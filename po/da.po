@@ -2053,12 +2053,12 @@ msgstr "nøgle %s: »%s« %d bruger-id'er renset\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nøgle %s: »%s« ikke ændret\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "import af hemmelige nøgler er ikke tilladt\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "nøgle %s: hemmelig nøgle med ugyldig chiffer %d - udeladt\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "import af hemmelige nøgler er ikke tilladt\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

@@ -2070,12 +2070,12 @@ msgstr "cheia %s: \"%s\" %d ID-uri utilizator curățate\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "cheia %s: \"%s\" nu a fost schimbată\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "importul de chei secrete nu este permis\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "cheia %s: cheie secretă cu cifru invalid %d - sărită\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "importul de chei secrete nu este permis\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

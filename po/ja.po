@@ -2040,12 +2040,12 @@ msgstr "鍵%s:“%s”新しいユーザーIDを%d個\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "鍵%s:“%s”変更なし\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "秘密鍵の読込みは禁止です\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "鍵%s: 無効な暗号法%dの秘密鍵です - とばします\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "秘密鍵の読込みは禁止です\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

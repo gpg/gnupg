@@ -2108,14 +2108,14 @@ msgstr "sleutel %s: “%s” %d gebruiker ID's opgeschoond\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "sleutel %s: “%s” niet veranderd\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "importeren van geheime sleutels is niet toegestaan\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr ""
 "sleutel %s: geheime sleutel met ongeldig versleutelalgoritme %d -\n"
 "overgeslagen\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "importeren van geheime sleutels is niet toegestaan\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

@@ -2075,12 +2075,12 @@ msgstr "klíè %s: \"%s\" %d ID u¾ivatele odstranìno\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "klíè %s: \"%s\" beze zmìn\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "import tajnıch klíèù není povolen\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klíè %s: tajnı klíè s neplatnou ¹ifrou %d - pøeskoèeno\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "import tajnıch klíèù není povolen\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"
