@@ -1506,7 +1506,10 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   /* Get the public key */
   err = get_pubkey_byname (ctrl, NULL, NULL, username, &keyblock, &kdbhd, 1, 1);
   if (err)
-    goto leave;
+    {
+      log_error (_("key \"%s\" not found: %s\n"), username, gpg_strerror (err));
+      goto leave;
+    }
   if (fix_keyblock (keyblock))
     modified++;
   if (collapse_uids (&keyblock))
