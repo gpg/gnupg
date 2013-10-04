@@ -297,7 +297,7 @@ print_pubkey_algo_note( int algo )
 	{
 	  warn=1;
 	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
-		    gcry_pk_algo_name (algo));
+		    gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo)));
 	}
     }
   else if (algo == 20)
@@ -442,7 +442,7 @@ openpgp_pk_test_algo( int algo )
 
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
-  return gcry_pk_test_algo (algo);
+  return gcry_pk_test_algo (map_pk_openpgp_to_gcry (algo));
 }
 
 int
@@ -460,7 +460,8 @@ openpgp_pk_test_algo2( int algo, unsigned int use )
   if (algo < 0 || algo > 110)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  return gcry_pk_algo_info (algo, GCRYCTL_TEST_ALGO, NULL, &use_buf);
+  return gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
+                            GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
 
 int
@@ -1324,9 +1325,16 @@ pubkey_get_npkey( int algo )
 {
   size_t n;
 
+  /* ECC is special in that domain parameters are given by an OID.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 0; /* We don't support the key format.  */
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 0; /* We don't support the key format.  */
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
+  if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
+                         GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
     n = 0;
   return n;
 }
@@ -1337,9 +1345,16 @@ pubkey_get_nskey( int algo )
 {
   size_t n;
 
+  /* ECC is special in that domain parameters are given by an OID.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 0; /* We don't support the key format.  */
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 0; /* We don't support the key format.  */
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
+  if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
+                         GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
     n = 0;
   return n;
 }
@@ -1350,9 +1365,16 @@ pubkey_get_nsig( int algo )
 {
   size_t n;
 
+  /* ECC is special.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 0;  /* We don't support the key format.  */
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 0;
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
+  if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
+                         GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
     n = 0;
   return n;
 }
@@ -1363,9 +1385,16 @@ pubkey_get_nenc( int algo )
 {
   size_t n;
 
+  /* ECC is special.  */
+  if (algo == PUBKEY_ALGO_ECDSA)
+    return 0;
+  else if (algo == PUBKEY_ALGO_ECDH)
+    return 0;  /* We don't support the key format.  */
+
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
+  if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
+                         GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
     n = 0;
   return n;
 }
