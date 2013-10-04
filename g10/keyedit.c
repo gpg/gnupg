@@ -1568,7 +1568,11 @@ keyedit_menu( const char *username, strlist_t locusr,
     /* Get the public key */
     rc = get_pubkey_byname (NULL, NULL, username, &keyblock, &kdbhd, 1, 1);
     if( rc )
+      {
+        log_error (_("key \"%s\" not found: %s\n"), username, g10_errstr (rc));
 	goto leave;
+      }
+
     if( fix_keyblock( keyblock ) )
 	modified++;
     if( collapse_uids( &keyblock ) )
