@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h> 
+#include <fcntl.h>
 #include <unistd.h>
 #ifdef HAVE_DOSISH_SYSTEM
 #include <windows.h>
@@ -41,19 +41,24 @@
 #include "util.h"
 #include "dynload.h"
 #include "iobuf.h"
- 
+
 #ifdef __VMS
 # include "vms.h"
 # define open open_vms
 #endif /* def __VMS */
 
-/* The size of the internal buffers. 
+/* The size of the internal buffers.
    NOTE: If you change this value you MUST also adjust the regression
    test "armored_key_8192" and "nopad_armored_msg" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
 
 
 #undef FILE_FILTER_USES_STDIO
+
+/* To avoid a potential DoS with compression packets we better limit
+   the number of filters in a chain.  */
+#define MAX_NESTING_FILTER 64
+
 
 #ifdef HAVE_DOSISH_SYSTEM
 #define USE_SETMODE 1
@@ -76,8 +81,8 @@ typedef struct {
  } file_filter_ctx_t ;
 #else
 #define my_fileno(a)  (a)
-#define my_fopen_ro(a,b) fd_cache_open ((a),(b)) 
-#define my_fopen(a,b) direct_open ((a),(b)) 
+#define my_fopen_ro(a,b) fd_cache_open ((a),(b))
+#define my_fopen(a,b) direct_open ((a),(b))
 #ifdef HAVE_DOSISH_SYSTEM
 typedef HANDLE FILEP_OR_FD;
 #define INVALID_FP  ((HANDLE)-1)
@@ -99,7 +104,7 @@ typedef struct {
      char fname[1]; /* name of the file */
  } file_filter_ctx_t ;
 
- struct close_cache_s { 
+ struct close_cache_s {
     struct close_cache_s *next;
     FILEP_OR_FD fp;
     char fname[1];
@@ -153,7 +158,7 @@ fd_cache_strcmp (const char *a, const char *b)
 #ifdef HAVE_DOSISH_SYSTEM
   for (; *a && *b; a++, b++)
     {
-      if (*a != *b && !((*a == '/' && *b == '\\') 
+      if (*a != *b && !((*a == '/' && *b == '\\')
                         || (*a == '\\' && *b == '/')) )
         break;
     }
@@ -295,7 +300,7 @@ direct_open (const char *fname, const char *mode)
     {
         struct stat buf;
         int rc = stat( fname, &buf );
-        
+
         /* Don't allow iobufs on directories */
         if( !rc && S_ISDIR(buf.st_mode) && !S_ISREG(buf.st_mode) )
             return __set_errno( EISDIR );
@@ -308,7 +313,7 @@ direct_open (const char *fname, const char *mode)
 
 
 /*
- * Instead of closing an FD we keep it open and cache it for later reuse 
+ * Instead of closing an FD we keep it open and cache it for later reuse
  * Note that this caching strategy only works if the process does not chdir.
  */
 static void
@@ -471,8 +476,8 @@ file_filter(void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
 	if ( a->eof_seen) {
-	    rc = -1;		
-	    *ret_len = 0;	
+	    rc = -1;
+	    *ret_len = 0;
 	}
 	else {
 #ifdef HAVE_DOSISH_SYSTEM
@@ -606,8 +611,8 @@ sock_filter (void *opaque, int control, IOBUF chain, byte *buf, size_t *ret_len)
     if( control == IOBUFCTRL_UNDERFLOW ) {
 	assert( size ); /* need a buffer */
 	if ( a->eof_seen) {
-	    rc = -1;		
-	    *ret_len = 0;	
+	    rc = -1;
+	    *ret_len = 0;
 	}
 	else {
             int nread;
@@ -1076,7 +1081,7 @@ check_special_filename ( const char *fname )
         fname += 2;
         for (i=0; digitp (fname+i); i++ )
             ;
-        if ( !fname[i] ) 
+        if ( !fname[i] )
             return atoi (fname);
     }
     return -1;
@@ -1189,7 +1194,7 @@ iobuf_sockopen ( int fd, const char *mode )
     sock_filter( scx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
 	log_debug("iobuf-%d.%d: sockopen `%s'\n", a->no, a->subno, scx->fname);
-    iobuf_ioctl (a,3,1,NULL); /* disable fd caching */ 
+    iobuf_ioctl (a,3,1,NULL); /* disable fd caching */
 #else
     a = iobuf_fdopen (fd, mode);
 #endif
@@ -1233,7 +1238,7 @@ iobuf_create( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: create `%s'\n", a->no, a->subno, 
+	log_debug("iobuf-%d.%d: create `%s'\n", a->no, a->subno,
                   a->desc?a->desc:"?" );
 
     return a;
@@ -1267,7 +1272,7 @@ iobuf_append( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: append `%s'\n", a->no, a->subno, 
+	log_debug("iobuf-%d.%d: append `%s'\n", a->no, a->subno,
                   a->desc?a->desc:"?" );
 
     return a;
@@ -1296,7 +1301,7 @@ iobuf_openrw( const char *fname )
     file_filter( fcx, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &len );
     file_filter( fcx, IOBUFCTRL_INIT, NULL, NULL, &len );
     if( DBG_IOBUF )
-	log_debug("iobuf-%d.%d: openrw `%s'\n", a->no, a->subno, 
+	log_debug("iobuf-%d.%d: openrw `%s'\n", a->no, a->subno,
                   a->desc?a->desc:"?");
 
     return a;
@@ -1309,7 +1314,7 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
     if ( cmd == 1 ) {  /* keep system filepointer/descriptor open */
         if( DBG_IOBUF )
             log_debug("iobuf-%d.%d: ioctl `%s' keep=%d\n",
-                      a? a->no:-1, a?a->subno:-1, 
+                      a? a->no:-1, a?a->subno:-1,
                       a&&a->desc?a->desc:"?", intval );
         for( ; a; a = a->chain )
             if( !a->chain && a->filter == file_filter ) {
@@ -1339,7 +1344,7 @@ iobuf_ioctl ( IOBUF a, int cmd, int intval, void *ptrval )
     else if ( cmd == 3 ) {  /* disallow/allow caching */
         if( DBG_IOBUF )
             log_debug("iobuf-%d.%d: ioctl `%s' no_cache=%d\n",
-                      a? a->no:-1, a?a->subno:-1, 
+                      a? a->no:-1, a?a->subno:-1,
                       a&&a->desc?a->desc:"?", intval );
         for( ; a; a = a->chain )
             if( !a->chain && a->filter == file_filter ) {
@@ -1403,6 +1408,12 @@ iobuf_push_filter2( IOBUF a,
 
     if( a->use == 2 && (rc=iobuf_flush(a)) )
 	return rc;
+
+    if (a->subno >= MAX_NESTING_FILTER) {
+        log_error ("i/o filter too deeply nested - corrupted data?\n");
+        return G10ERR_UNEXPECTED;
+    }
+
     /* make a copy of the current stream, so that
      * A is the new stream and B the original one.
      * The contents of the buffers are transferred to the
@@ -1449,7 +1460,7 @@ iobuf_push_filter2( IOBUF a,
     f( ov, IOBUFCTRL_DESC, NULL, (byte*)&a->desc, &dummy_len );
 
     if( DBG_IOBUF ) {
-	log_debug("iobuf-%d.%d: push `%s'\n", a->no, a->subno, 
+	log_debug("iobuf-%d.%d: push `%s'\n", a->no, a->subno,
                   a->desc?a->desc:"?" );
 	print_chain( a );
     }
@@ -1921,7 +1932,7 @@ iobuf_get_filelength (IOBUF a, int *overflow )
     if (overflow)
       *overflow = 0;
 
-    if (a->directfp) 
+    if (a->directfp)
       {
 	FILE *fp = a->directfp;
 
@@ -1949,14 +1960,14 @@ iobuf_get_filelength (IOBUF a, int *overflow )
 
 #if defined(HAVE_DOSISH_SYSTEM) && !defined(FILE_FILTER_USES_STDIO)
             ulong size;
-            static int (* __stdcall get_file_size_ex) 
+            static int (* __stdcall get_file_size_ex)
               (void *handle, LARGE_INTEGER *size);
             static int get_file_size_ex_initialized;
 
             if (!get_file_size_ex_initialized)
               {
                 void *handle;
-                
+
                 handle = dlopen ("kernel32.dll", RTLD_LAZY);
                 if (handle)
                   {
@@ -1974,14 +1985,14 @@ iobuf_get_filelength (IOBUF a, int *overflow )
                    return a proper error in case a file is larger than
                    4GB. */
                 LARGE_INTEGER size;
-                
+
                 if (get_file_size_ex (fp, &size))
                   {
                     if (!size.u.HighPart)
                       return size.u.LowPart;
                     if (overflow)
                       *overflow = 1;
-                    return 0; 
+                    return 0;
                   }
               }
             else
@@ -2007,7 +2018,7 @@ iobuf_get_filelength (IOBUF a, int *overflow )
 
 /* Return the file descriptor of the underlying file or -1 if it is
    not available.  */
-int 
+int
 iobuf_get_fd (IOBUF a)
 {
   if (a->directfp)
@@ -2260,7 +2271,7 @@ iobuf_translate_file_handle ( int fd, int for_write )
 #ifdef _WIN32
     {
         int x;
-            
+
         if  ( fd <= 2 )
             return fd; /* do not do this for error, stdin, stdout, stderr */
 
@@ -2281,17 +2292,17 @@ static int
 translate_file_handle ( int fd, int for_write )
 {
 #ifdef _WIN32
-#ifdef FILE_FILTER_USES_STDIO  
+#ifdef FILE_FILTER_USES_STDIO
     fd = iobuf_translate_file_handle (fd, for_write);
 #else
     {
         int x;
 
-        if  ( fd == 0 ) 
+        if  ( fd == 0 )
             x = (int)GetStdHandle (STD_INPUT_HANDLE);
-        else if (fd == 1)    
+        else if (fd == 1)
             x = (int)GetStdHandle (STD_OUTPUT_HANDLE);
-        else if (fd == 2)    
+        else if (fd == 2)
             x = (int)GetStdHandle (STD_ERROR_HANDLE);
         else
             x = fd;
