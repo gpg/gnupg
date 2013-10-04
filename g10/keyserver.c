@@ -1578,11 +1578,14 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
          harmless to ignore them, but ignoring them does make gpg
          complain about "no valid OpenPGP data found".  One way to do
          this could be to continue parsing this line-by-line and make
-         a temp iobuf for each key. */
+         a temp iobuf for each key.  Note that we don't allow the
+         import of secret keys from a keyserver.  Keyservers should
+         never accept or send them but we better protect against rogue
+         keyservers. */
 
       import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
-                             opt.keyserver_options.import_options);
-
+                             (opt.keyserver_options.import_options
+                              | IMPORT_NO_SECKEY));
       import_print_stats (stats_handle);
       import_release_stats_handle (stats_handle);
     }
@@ -1721,7 +1724,8 @@ keyserver_import_cert (ctrl_t ctrl,
       opt.no_armor=1;
 
       err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
-                                  opt.keyserver_options.import_options);
+                                   (opt.keyserver_options.import_options
+                                    | IMPORT_NO_SECKEY));
 
       opt.no_armor=armor_status;
 
