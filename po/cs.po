@@ -2402,12 +2402,12 @@ msgstr "klíč %s: „%s“ %d ID uživatele odstraněno\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "klíč %s: „%s“ beze změn\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "import tajných klíčů není povolen\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klíč %s: tajný klíč s neplatnou šifrou %d – přeskočeno\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "import tajných klíčů není povolen\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

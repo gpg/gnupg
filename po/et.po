@@ -2453,13 +2453,13 @@ msgstr "võti %08lX: \"%s\" %d uut kasutaja IDd\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "võti %08lX: \"%s\" ei muudetud\n"
 
-#, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "võti %08lX: salajane võti vigase ¨ifriga %d - jätsin vahele\n"
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "kirjutan salajase võtme faili `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "võti %08lX: salajane võti vigase ¨ifriga %d - jätsin vahele\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

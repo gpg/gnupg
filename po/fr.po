@@ -2428,12 +2428,12 @@ msgstr "clef %s : « %s » %d identités nettoyées\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "clef %s : « %s » n'est pas modifiée\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "impossible d'importer des clefs secrètes\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "clef %s : clef secrète avec chiffrement %d incorrect — ignorée\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "impossible d'importer des clefs secrètes\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

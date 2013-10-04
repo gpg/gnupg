@@ -2471,13 +2471,13 @@ msgstr "chave %08lX: \"%s\" %d novos IDs de usuario\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "chave %08lX: \"%s\" sen cambios\n"
 
-#, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "chave %08lX: chave secreta cunha cifra %d non válida - omitida\n"
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "gravando a chave secreta en `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "chave %08lX: chave secreta cunha cifra %d non válida - omitida\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

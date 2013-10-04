@@ -2417,12 +2417,12 @@ msgstr "ключ %s: «%s» спорожнено %d ідентифікаторі
 msgid "key %s: \"%s\" not changed\n"
 msgstr "ключ %s: «%s» не змінено\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "імпортування закритих ключів заборонено\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "ключ %s: закритий ключ з некоректним шифром %d — пропущено\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "імпортування закритих ключів заборонено\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

@@ -2407,12 +2407,12 @@ msgstr "clave %s: \"%s\" %d identificadores de usuario limpiados\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "clave %s: \"%s\" sin cambios\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "no se permite importar claves secretas\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "clave %s: clave secreta con cifrado inválido %d - omitida\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "no se permite importar claves secretas\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

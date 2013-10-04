@@ -2474,13 +2474,13 @@ msgstr "avain %08lX: \"%s\" %d uutta käyttäjätunnusta\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "avain %08lX: \"%s\" ei muutoksia\n"
 
-#, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "avain %08lX: avaimella on epäkelpo salain %d - ohitetaan\n"
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "kirjoitan salaisen avaimen kohteeseen \"%s\"\n"
+
+#, fuzzy, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "avain %08lX: avaimella on epäkelpo salain %d - ohitetaan\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

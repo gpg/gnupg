@@ -2373,12 +2373,12 @@ msgstr "klucz %s: ,,%s'' %d identyfikatorów u¿ytkownika wyczyszczonych\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "klucz %s: ,,%s'' bez zmian\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klucz %s: klucz tajny z b³êdnym szyfrem %d - pominiêty\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

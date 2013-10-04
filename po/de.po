@@ -2415,14 +2415,14 @@ msgstr "Schlüssel %s: \"%s\" %d User-IDs bereinigt\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "Schlüssel %s: \"%s\" nicht geändert\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "Importieren geheimer Schlüssel ist nicht erlaubt\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr ""
 "Schlüssel %s: geheimer Schlüssel mit ungültiger Verschlüsselung %d - "
 "übersprungen\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "Importieren geheimer Schlüssel ist nicht erlaubt\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

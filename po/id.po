@@ -2463,13 +2463,13 @@ msgstr "kunci %08lX: \"%s\" %d user ID baru\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "kunci %08lX: \"%s\" tidak berubah\n"
 
-#, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "kunci %08lX: kunci rahasia dengan cipher tidak valid %d - dilewati\n"
-
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "menulis kunci rahasia ke `%s'\n"
+
+#, fuzzy, c-format
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "kunci %08lX: kunci rahasia dengan cipher tidak valid %d - dilewati\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

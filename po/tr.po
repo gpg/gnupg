@@ -2377,12 +2377,12 @@ msgstr "anahtar %s: \"%s\" %d kullanıcı kimliği temizlendi\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "anahtar %s: \"%s\" değişmedi\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "gizli anahtarı alımına izin verilmez\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "anahtar %s: geçersiz şifreli (%d) gizli anahtar - atlandı\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "gizli anahtarı alımına izin verilmez\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

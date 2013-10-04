@@ -2308,12 +2308,12 @@ msgstr "金鑰 %s: \"%s\" 已清除 %d 個使用者 ID\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "金鑰 %s: \"%s\" 未改變\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "未允許匯入私鑰\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "金鑰 %s: 私鑰使用了無效的 %d 編密法 - 已跳過\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "未允許匯入私鑰\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

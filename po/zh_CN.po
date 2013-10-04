@@ -2388,12 +2388,12 @@ msgstr "密钥 %s：“%s”%d 个用户标识被清除\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "密钥 %s：“%s”未改变\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "不允许导入私钥\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "密钥 %s：私钥使用了无效的加密算法 %d――已跳过\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "不允许导入私钥\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"

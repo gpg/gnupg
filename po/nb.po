@@ -2397,12 +2397,12 @@ msgstr "nøkkel %s: «%s» %d nye brukerider\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nøkkel %s: «%s» ikke endret\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "import av hemmelig nøkkel er ikke tillatt\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "nøkkel %s: hemmelig nøkkel med ugyldig cipher %d - hoppet over\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "import av hemmelig nøkkel er ikke tillatt\n"
 
 #, c-format
 msgid "no default secret keyring: %s\n"
