@@ -1498,10 +1498,14 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	     It's harmless to ignore them, but ignoring them does make
 	     gpg complain about "no valid OpenPGP data found".  One
 	     way to do this could be to continue parsing this
-	     line-by-line and make a temp iobuf for each key. */
+	     line-by-line and make a temp iobuf for each key.  Note
+	     that we don't allow the import of secret keys from a
+	     keyserver.  Keyservers should never accept or send them
+	     but we better protect against rogue keyservers. */
 
-	  import_keys_stream(spawn->fromchild,stats_handle,fpr,fpr_len,
-			     opt.keyserver_options.import_options);
+	  import_keys_stream (spawn->fromchild, stats_handle, fpr, fpr_len,
+                              (opt.keyserver_options.import_options
+                               | IMPORT_NO_SECKEY));
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);
@@ -2039,8 +2043,9 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
       /* CERTs are always in binary format */
       opt.no_armor=1;
 
-      rc=import_keys_stream(key,NULL,fpr,fpr_len,
-			    opt.keyserver_options.import_options);
+      rc=import_keys_stream (key, NULL, fpr, fpr_len,
+                             (opt.keyserver_options.import_options
+                              | IMPORT_NO_SECKEY));
 
       opt.no_armor=armor_status;
 
