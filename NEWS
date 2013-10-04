@@ -1,7 +1,14 @@
-Noteworthy changes in version 1.4.15 (unreleased)
+Noteworthy changes in version 1.4.15 (2013-10-04)
 -------------------------------------------------
 
-    * Fixed bug with deeply nested compressed packets.
+    * Fixed possible infinite recursion in the compressed packet
+      parser. [CVE-2013-4402]
+
+    * Protect against rogue keyservers sending secret keys.
+
+    * Use 2048 bit also as default for batch key generation.
+
+    * Minor bug fixes.
 
 
 Noteworthy changes in version 1.4.14 (2013-07-25)
@@ -9,6 +16,7 @@ Noteworthy changes in version 1.4.14 (2013-07-25)
 
     * Mitigate the Yarom/Falkner flush+reload side-channel attack on
       RSA secret keys.  See <http://eprint.iacr.org/2013/448>.
+      [CVE-2013-4242]
 
     * Fixed IDEA for big-endian CPUs
 
