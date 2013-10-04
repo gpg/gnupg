@@ -92,12 +92,16 @@ struct mainproc_context
   DEK *dek;
   int last_was_session_key;
   KBNODE list;      /* The current list of packets. */
-  int have_data;
   IOBUF iobuf;      /* Used to get the filename etc. */
   int trustletter;  /* Temporary usage in list_node. */
   ulong symkeys;
   struct kidlist_item *pkenc_list; /* List of encryption packets. */
-  int any_sig_seen;  /* Set to true if a signature packet has been seen. */
+  struct {
+    unsigned int sig_seen:1;      /* Set to true if a signature packet
+                                     has been seen. */
+    unsigned int data:1;          /* Any data packet seen */
+    unsigned int uncompress_failed:1;
+  } any;
 };
 
 
@@ -126,7 +130,8 @@ release_list( CTX c )
     }
     c->pkenc_list = NULL;
     c->list = NULL;
-    c->have_data = 0;
+    c->any.data = 0;
+    c->any.uncompress_failed = 0;
     c->last_was_session_key = 0;
     xfree(c->dek); c->dek = NULL;
 }
@@ -204,7 +209,7 @@ add_signature( CTX c, PACKET *pkt )
 {
     KBNODE node;
 
-    c->any_sig_seen = 1;
+    c->any.sig_seen = 1;
     if( pkt->pkttype == PKT_SIGNATURE && !c->list ) {
 	/* This is the first signature for the following datafile.
 	 * GPG does not write such packets; instead it always uses
@@ -773,21 +778,34 @@ proc_encrypt_cb( IOBUF a, void *info )
 static int
 proc_compressed( CTX c, PACKET *pkt )
 {
-    PKT_compressed *zd = pkt->pkt.compressed;
-    int rc;
+  PKT_compressed *zd = pkt->pkt.compressed;
+  int rc;
 
-    /*printf("zip: compressed data packet\n");*/
-    if (c->sigs_only)
-	rc = handle_compressed( c, zd, proc_compressed_cb, c );
-    else if( c->encrypt_only )
-	rc = handle_compressed( c, zd, proc_encrypt_cb, c );
-    else
-	rc = handle_compressed( c, zd, NULL, NULL );
-    if( rc )
-	log_error("uncompressing failed: %s\n", g10_errstr(rc));
-    free_packet(pkt);
-    c->last_was_session_key = 0;
-    return rc;
+  /*printf("zip: compressed data packet\n");*/
+  if (c->sigs_only)
+    rc = handle_compressed (c, zd, proc_compressed_cb, c);
+  else if (c->encrypt_only)
+    rc = handle_compressed (c, zd, proc_encrypt_cb, c);
+  else
+    rc = handle_compressed (c, zd, NULL, NULL);
+
+  if (gpg_err_code (rc) == GPG_ERR_BAD_DATA)
+    {
+      if  (!c->any.uncompress_failed)
+        {
+          CTX cc;
+
+          for (cc=c; cc; cc = cc->anchor)
+            cc->any.uncompress_failed = 1;
+          log_error ("uncompressing failed: %s\n", g10_errstr(rc));
+        }
+      }
+  else if (rc)
+    log_error("uncompressing failed: %s\n", g10_errstr(rc));
+
+  free_packet (pkt);
+  c->last_was_session_key = 0;
+  return rc;
 }
 
 /****************
@@ -1204,7 +1222,7 @@ proc_signature_packets( void *anchor, IOBUF a,
        Using log_error is required because verify_files does not check
        error codes for each file but we want to terminate the process
        with an error. */
-    if (!rc && !c->any_sig_seen)
+    if (!rc && !c->any.sig_seen)
       {
 	write_status_text (STATUS_NODATA, "4");
         log_error (_("no signature found\n"));
@@ -1214,8 +1232,8 @@ proc_signature_packets( void *anchor, IOBUF a,
     /* Propagate the signature seen flag upward. Do this only on
        success so that we won't issue the nodata status several
        times. */
-    if (!rc && c->anchor && c->any_sig_seen)
-      c->anchor->any_sig_seen = 1;
+    if (!rc && c->anchor && c->any.sig_seen)
+      c->anchor->any.sig_seen = 1;
 
     xfree( c );
     return rc;
@@ -1241,7 +1259,7 @@ proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
      Using log_error is required because verify_files does not check
      error codes for each file but we want to terminate the process
      with an error. */
-  if (!rc && !c->any_sig_seen)
+  if (!rc && !c->any.sig_seen)
     {
       write_status_text (STATUS_NODATA, "4");
       log_error (_("no signature found\n"));
@@ -1250,8 +1268,8 @@ proc_signature_packets_by_fd (void *anchor, IOBUF a, int signed_data_fd )
 
   /* Propagate the signature seen flag upward. Do this only on success
      so that we won't issue the nodata status several times. */
-  if (!rc && c->anchor && c->any_sig_seen)
-    c->anchor->any_sig_seen = 1;
+  if (!rc && c->anchor && c->any.sig_seen)
+    c->anchor->any.sig_seen = 1;
 
   xfree ( c );
   return rc;
@@ -1277,14 +1295,14 @@ check_nesting (CTX c)
 {
   int level;
 
-  for (level = 0; c; c = c->anchor)
+  for (level=0; c; c = c->anchor)
     level++;
 
   if (level > MAX_NESTING_DEPTH)
     {
       log_error ("input data with too deeply nested packets\n");
       write_status_text (STATUS_UNEXPECTED, "1");
-      return G10ERR_UNEXPECTED;
+      return GPG_ERR_BAD_DATA;
     }
   return 0;
 }
@@ -1406,7 +1424,7 @@ do_proc_packets( CTX c, IOBUF a )
          * Hmmm: Rewrite this whole module here??
          */
 	if( pkt->pkttype != PKT_SIGNATURE && pkt->pkttype != PKT_MDC )
-	    c->have_data = pkt->pkttype == PKT_PLAINTEXT;
+            c->any.data = (pkt->pkttype == PKT_PLAINTEXT);
 
 	if( newpkt == -1 )
 	    ;
@@ -2044,7 +2062,7 @@ proc_tree( CTX c, KBNODE node )
     }
     else if( node->pkt->pkttype == PKT_ONEPASS_SIG ) {
 	/* check all signatures */
-	if( !c->have_data ) {
+	if( !c->any.data ) {
             int use_textmode = 0;
 
 	    free_md_filter_context( &c->mfx );
@@ -2097,7 +2115,7 @@ proc_tree( CTX c, KBNODE node )
              && node->pkt->pkt.gpg_control->control
                 == CTRLPKT_CLEARSIGN_START ) {
         /* clear text signed message */
-	if( !c->have_data ) {
+	if( !c->any.data ) {
             log_error("cleartext signature without data\n" );
             return;
         }
@@ -2139,7 +2157,7 @@ proc_tree( CTX c, KBNODE node )
 	if( sig->sig_class != 0x00 && sig->sig_class != 0x01 )
 	    log_info(_("standalone signature of class 0x%02x\n"),
 						    sig->sig_class);
-	else if( !c->have_data ) {
+	else if( !c->any.data ) {
 	    /* detached signature */
 	    free_md_filter_context( &c->mfx );
             if (gcry_md_open (&c->mfx.md, sig->digest_algo, 0))
