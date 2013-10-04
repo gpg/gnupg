@@ -62,10 +62,15 @@ the public keys used to make the signature are valid. There are
 no configuration files and only a few options are implemented.
 
 @code{@gpgvname} assumes that all keys in the keyring are trustworthy.
-By default it uses a keyring named @file{trustedkeys.gpg} which is
-assumed to be in the home directory as defined by GnuPG or set by an
-option or an environment variable. An option may be used to specify
-another keyring or even multiple keyrings.
+That does also mean that it does not check for expired or revoked
+keys.
+
+By default a keyring named @file{trustedkeys.gpg} is used.  This
+default keyring is assumed to be in the home directory of GnuPG,
+either the default home directory or the one set by an option or an
+environment variable.  The option @code{--keyring} may be used to
+specify a different keyring or even multiple keyrings.
+
 
 @noindent
 @mansect options
