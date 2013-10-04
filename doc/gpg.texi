@@ -252,6 +252,14 @@ signed stuff from STDIN, use @samp{-} as the second filename.  For
 security reasons a detached signature cannot read the signed material
 from STDIN without denoting it in the above way.
 
+Note: When verifying a cleartext signature, @command{gpg} verifies
+only what makes up the cleartext signed data and not any extra data
+outside of the cleartext signature or header lines following directly
+the dash marker line.  The option @code{--output} may be used to write
+out the actual signed data; but there are other pitfalls with this
+format as well.  It is suggested to avoid cleartext signatures in
+favor of detached signatures.
+
 @item --multifile
 @opindex multifile
 This modifies certain other commands to accept multiple files for
@@ -926,7 +934,9 @@ behaviour and to change the default configuration.
 * GPG Key related Options::     Key related options.
 * GPG Input and Output::        Input and Output.
 * OpenPGP Options::             OpenPGP protocol specific options.
+* Compliance Options::          Compliance options.
 * GPG Esoteric Options::        Doing things one usually don't want to do.
+* Deprecated Options::          Deprecated options.
 @end menu
 
 Long options can be put in an options file (default
@@ -1293,9 +1303,7 @@ encoded in the character set as specified by
 @option{--display-charset}. These options affect all following
 arguments. Both options may be used multiple times.
 
-@ifset gpgone
-@anchor{option --options}
-@end ifset
+@anchor{gpg-option --options}
 @item --options @code{file}
 @opindex options
 Read options from @code{file} and do not try to read them from the
@@ -2185,6 +2193,7 @@ meaningful if @option{--s2k-mode} is 3.
 @c ***************************
 @c ******* Compliance ********
 @c ***************************
+@node Compliance Options
 @subsection Compliance options
 
 These options control what GnuPG is compliant to. Only one of these
@@ -2418,7 +2427,7 @@ check. @code{value} may be any printable string; it will be encoded in
 UTF8, so you should check that your @option{--display-charset} is set
 correctly. If you prefix @code{name} with an exclamation mark (!), the
 notation data will be flagged as critical
-(rfc2440:5.2.3.15). @option{--sig-notation} sets a notation for data
+(rfc4880:5.2.3.16). @option{--sig-notation} sets a notation for data
 signatures. @option{--cert-notation} sets a notation for key signatures
 (certifications). @option{--set-notation} sets both.
 
@@ -2440,7 +2449,7 @@ meaningful when using the OpenPGP smartcard.
 @opindex sig-policy-url
 @opindex cert-policy-url
 @opindex set-policy-url
-Use @code{string} as a Policy URL for signatures (rfc2440:5.2.3.19).  If
+Use @code{string} as a Policy URL for signatures (rfc4880:5.2.3.20).  If
 you prefix it with an exclamation mark (!), the policy URL packet will
 be flagged as critical. @option{--sig-policy-url} sets a policy url for
 data signatures. @option{--cert-policy-url} sets a policy url for key
@@ -2610,6 +2619,26 @@ avoid it.
 Note that this passphrase is only used if the option @option{--batch}
 has also been given.  This is different from @command{gpg}.
 @end ifclear
+
+@ifset gpgtwoone
+@item --pinentry-mode @code{mode}
+@opindex pinentry-mode
+Set the pinentry mode to @code{mode}.  Allowed values for @code{mode}
+are:
+@table @asis
+  @item default
+  Use the default of the agent, which is @code{ask}.
+  @item ask
+  Force the use of the Pinentry.
+  @item cancel
+  Emulate use of Pinentry's cancel button.
+  @item error
+  Return a Pinentry error (``No Pinentry'').
+  @item loopback
+  Redirect Pinentry queries to the caller.  Note that in contrast to
+  Pinentry the user is not prompted again if he enters a bad password.
+@end table
+@end ifset
 
 @item --command-fd @code{n}
 @opindex command-fd
@@ -2827,6 +2856,7 @@ on the configuration file.
 @c *******************************
 @c ******* Deprecated ************
 @c *******************************
+@node Deprecated Options
 @subsection Deprecated options
 
 @table @gnupgtabopt
@@ -2909,7 +2939,7 @@ current home directory (@pxref{option --homedir}).
   This is the standard configuration file read by @command{@gpgname} on
   startup.  It may contain any valid long option; the leading two dashes
   may not be entered and the option may not be abbreviated.  This default
-  name may be changed on the command line (@pxref{option --options}).
+  name may be changed on the command line (@pxref{gpg-option --options}).
   You should backup this file.
 
 @end table
@@ -2972,9 +3002,9 @@ Operation is further controlled by a few environment variables:
 
   @item GPG_AGENT_INFO
   Used to locate the gpg-agent.
-  @ifset gpgone
+@ifset gpgone
   This is only honored when @option{--use-agent} is set.
-  @end ifset
+@end ifset
   The value consists of 3 colon delimited fields: The first is the path
   to the Unix Domain Socket, the second the PID of the gpg-agent and the
   protocol version which should be set to 1. When starting the gpg-agent
@@ -3149,8 +3179,8 @@ are almost always required for this.
 @end menu
 
 
-@node Unattended GPG key generation,,,Unattended Usage of GPG
-@section Unattended key generation
+@node Unattended GPG key generation
+@subsection Unattended key generation
 
 The command @option{--gen-key} may be used along with the option
 @option{--batch} for unattended key generation.  The parameters are
@@ -3290,21 +3320,23 @@ If you don't give any of them, no user ID is created.
 
 @item Expire-Date: @var{iso-date}|(@var{number}[d|w|m|y])
 Set the expiration date for the key (and the subkey).  It may either
-be entered in ISO date format (2000-08-15) or as number of days,
-weeks, month or years.  The special notation "seconds=N" is also
-allowed to directly give an Epoch value. Without a letter days are
-assumed.  Note that there is no check done on the overflow of the type
-used by OpenPGP for timestamps.  Thus you better make sure that the
-given value make sense.  Although OpenPGP works with time intervals,
-GnuPG uses an absolute value internally and thus the last year we can
-represent is 2105.
+be entered in ISO date format (e.g. "20000815T145012") or as number of
+days, weeks, month or years after the creation date.  The special
+notation "seconds=N" is also allowed to specify a number of seconds
+since creation.  Without a letter days are assumed.  Note that there
+is no check done on the overflow of the type used by OpenPGP for
+timestamps.  Thus you better make sure that the given value make
+sense.  Although OpenPGP works with time intervals, GnuPG uses an
+absolute value internally and thus the last year we can represent is
+2105.
 
 @item  Ceation-Date: @var{iso-date}
 Set the creation date of the key as stored in the key information and
 which is also part of the fingerprint calculation.  Either a date like
 "1986-04-26" or a full timestamp like "19860426T042640" may be used.
-The time is considered to be UTC.  If it is not given the current time
-is used.
+The time is considered to be UTC.  The special notation "seconds=N"
+may be used to directly specify a the number of seconds since Epoch
+(Unix time).  If it is not given the current time is used.
 
 @item Preferences: @var{string}
 Set the cipher, hash, and compression preference values for this key.
