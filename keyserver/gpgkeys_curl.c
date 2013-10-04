@@ -100,7 +100,7 @@ get_key(char *getkey)
   return curl_err_to_gpg_err(res);
 }
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -305,7 +305,8 @@ main(int argc,char *argv[])
     }
 
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,(long)opt->flags.check_cert);
-  curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
+  if (opt->ca_cert_file)
+    curl_easy_setopt (curl, CURLOPT_CAINFO, opt->ca_cert_file);
 
   /* Avoid caches to get the most recent copy of the key.  This is bug
      #1061.  In pre-curl versions of the code, we didn't do it.  Then
