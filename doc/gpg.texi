@@ -252,6 +252,14 @@ signed stuff from STDIN, use @samp{-} as the second filename.  For
 security reasons a detached signature cannot read the signed material
 from STDIN without denoting it in the above way.
 
+Note: When verifying a cleartext signature, @command{gpg} verifies
+only what makes up the cleartext signed data and not any extra data
+outside of the cleartext signature or header lines following directly
+the dash marker line.  The option @code{--output} may be used to write
+out the actual signed data; but there are other pitfalls with this
+format as well.  It is suggested to avoid cleartext signatures in
+favor of detached signatures.
+
 @item --multifile
 @opindex multifile
 This modifies certain other commands to accept multiple files for

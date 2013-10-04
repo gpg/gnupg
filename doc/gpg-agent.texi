@@ -897,9 +897,14 @@ Here is an example session:
    C: D    (b 3F444677CA)))
    C: END
    S: # session key follows
+   S: S PADDING 0
    S: D (value 1234567890ABCDEF0)
    S: OK descryption successful
 @end example
+
+The “PADDING” status line is only send if gpg-agent can tell what kind
+of padding is used.  As of now only the value 0 is used to indicate
+that the padding has been removed.
 
 
 @node Agent PKSIGN

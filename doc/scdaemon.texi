@@ -600,6 +600,10 @@ using the command
 
 where @var{keyid} is the hexified ID of the key to be used.
 
+If the card is ware of the apdding format a status line with padding
+information is send before the plaintext data.  The key for this
+status line is @code{PADDING} with the only defined value being 0 and
+meaning padding has been removed.
 
 @node Scdaemon GETATTR
 @subsection Read an attribute's value.
