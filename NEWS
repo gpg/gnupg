@@ -1,7 +1,14 @@
-Noteworthy changes in version 2.0.22 (unreleased)
+Noteworthy changes in version 2.0.22 (2013-10-04)
 -------------------------------------------------
 
- * Fixed bug with deeply nested compressed packets.
+ * Fixed possible infinite recursion in the compressed packet
+   parser. [CVE-2013-4402]
+
+ * Improved support for some card readers.
+
+ * Prepared building with the forthcoming Libgcrypt 1.6.
+
+ * Protect against rogue keyservers sending secret keys.
 
 
 Noteworthy changes in version 2.0.21 (2013-08-19)
