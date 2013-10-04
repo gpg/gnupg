@@ -60,6 +60,10 @@
    test "armored_key_8192" in armor.test! */
 #define IOBUF_BUFFER_SIZE  8192
 
+/* To avoid a potential DoS with compression packets we better limit
+   the number of filters in a chain.  */
+#define MAX_NESTING_FILTER 64
+
 /*-- End configurable part.  --*/
 
 
@@ -1599,6 +1603,13 @@ iobuf_push_filter2 (iobuf_t a,
 
   if (a->use == 2 && (rc = iobuf_flush (a)))
     return rc;
+
+  if (a->subno >= MAX_NESTING_FILTER)
+    {
+      log_error ("i/o filter too deeply nested - corrupted data?\n");
+      return GPG_ERR_BAD_DATA;
+    }
+
   /* make a copy of the current stream, so that
    * A is the new stream and B the original one.
    * The contents of the buffers are transferred to the
