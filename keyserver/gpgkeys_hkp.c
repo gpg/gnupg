@@ -921,7 +921,8 @@ main(int argc,char *argv[])
     curl_easy_setopt(curl,CURLOPT_USERPWD,opt->auth);
 
   curl_easy_setopt(curl,CURLOPT_SSL_VERIFYPEER,(long)opt->flags.check_cert);
-  curl_easy_setopt(curl,CURLOPT_CAINFO,opt->ca_cert_file);
+  if (opt->ca_cert_file)
+    curl_easy_setopt (curl, CURLOPT_CAINFO, opt->ca_cert_file);
 
   /* Avoid caches to get the most recent copy of the key.  This is bug
      #1061.  In pre-curl versions of the code, we didn't do it.  Then
