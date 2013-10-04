@@ -3,13 +3,14 @@
 #               2005 Free Software Foundation, Inc.
 # Magda Procházková <magda@math.muni.cz> 2001,
 # Roman Pavlik <rp@tns.cz> 2001, 2002, 2003, 2004, 2005.
-# Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011.
+# Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011, 2013.
 #
 # A "%%0A" is used by Pinentry to insert a line break. The double percent
 # sign is actually needed because it is also a printf format string. If you
 # need to insert a plain % sign, you need to encode it as "%%25".
 #
 # „armor“ překládat jako „ASCII“
+# (reader's) pinpad → klávesnice čtečky
 #
 # „keybox“ je jednotné úložiště pro X.509 a PGP certifikáty/klíče
 # <http://www.gnupg.org/documentation/manuals/gnupg/kbxutil.html>
@@ -25,9 +26,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.0.17-git56b2bc2\n"
+"Project-Id-Version: gnupg2 2.0.21\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2011-01-11 22:55+0100\n"
+"PO-Revision-Date: 2013-09-01 11:14+0200\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
 "Language: cs\n"
@@ -153,26 +154,28 @@ msgid ""
 "An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
 "allow this?"
 msgstr ""
+"Proces SSH si vyžádal použití klíče%%0A  %s%%0A  (%s)%%0APřejete si to "
+"povolit?"
 
 msgid "Allow"
-msgstr ""
+msgstr "Povolit"
 
 msgid "Deny"
-msgstr ""
+msgstr "Zakázat"
 
-#, fuzzy, c-format
+#, c-format
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
-msgstr "Prosím, vložte heslo pro SSH klíč%0A  %c"
+msgstr "Prosím, vložte heslo pro SSH klíč%%0A  %F%%0A  (%c)"
 
 msgid "Please re-enter this passphrase"
 msgstr "Prosím, vložte toto heslo znovu"
 
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s"
+"Prosím, vložte heslo, abyste ochránil(a) přijatý tajný klíč%%0A   %s%%0A   %s"
 "%%0Auvnitř úložiště klíčů gpg-agenta"
 
 msgid "does not match - try again"
@@ -199,10 +202,9 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Resetační kód"
 
-#, fuzzy, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, c-format
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
-msgstr "%s%%0A%%0APoužijte klávesnici čtečky."
+msgstr "%s%%0A%%0APro vstup použijte klávesnici čtečky."
 
 msgid "Repeat this Reset Code"
 msgstr "Zopakujte resetační kód"
@@ -298,10 +300,9 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Ano, ochrana není třeba"
 
-#, fuzzy, c-format
-#| msgid "Please enter the passphrase to%0Ato protect your new key"
+#, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
-msgstr "Prosím, pro ochranu svého nového klíče%0A zadejte heslo"
+msgstr "Pro ochranu svého nového klíče,%0Aprosím, zadejte heslo"
 
 msgid "Please enter the new passphrase"
 msgstr "Prosím, zadejte nové heslo"
@@ -314,7 +315,7 @@ msgstr ""
 " "
 
 msgid "run in daemon mode (background)"
-msgstr "běžen v režimu démona (na pozadí)"
+msgstr "běžet v režimu démona (na pozadí)"
 
 msgid "run in server mode (foreground)"
 msgstr "běžet v režimu serveru (na popředí)"
@@ -367,23 +368,17 @@ msgstr "|N|zahodit zapamatované PINy po N sekundách"
 msgid "do not use the PIN cache when signing"
 msgstr "nepoužívat paměť PINů na podepisování"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "dovolit klientům označit klíče za „důvěryhodné“"
+msgstr "nedovolit klientům označovat klíče za „důvěryhodné“"
 
 msgid "allow presetting passphrase"
 msgstr "umožnit přednastavení hesla"
 
-#, fuzzy
-#| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
-msgstr "zapnout emulaci ssh-agenta"
+msgstr "zapnout podporu pro OpenSSH"
 
-#, fuzzy
-#| msgid "not supported"
 msgid "enable putty support"
-msgstr "nepodporováno"
+msgstr "zapnout podporu pro PuTTY"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|SOUBOR|zapsat nastavení prostředí též do SOUBORU"
@@ -788,12 +783,12 @@ msgid "out of core while allocating %lu bytes"
 msgstr "při pokusu alokovat %lu bajtů došla paměť"
 
 msgid "no running gpg-agent - starting one\n"
-msgstr "gpg-agent neběží – spouštím jej\n"
+msgstr "gpg-agent neběží – spouští se\n"
 
-# TODO: Plurals
+# TODO: Plural
 #, c-format
 msgid "waiting %d seconds for the agent to come up\n"
-msgstr "čeká se na agenta %d sekund\n"
+msgstr "čeká se %d s, než se objeví agent\n"
 
 msgid "can't connect to the agent - trying fall back\n"
 msgstr "k agentu se nelze připojit – zkouším náhradní způsob\n"
@@ -1329,14 +1324,14 @@ msgstr "Toto je tajný klíč! - opravdu smazat? (a/N) "
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
-msgstr "smazání bloku klíče se nezdařilo:  %s\n"
+msgstr "smazání bloku klíče se nezdařilo: %s\n"
 
 msgid "ownertrust information cleared\n"
 msgstr "informace o důvěryhodnosti vlastníka klíče vymazány\n"
 
 #, c-format
 msgid "there is a secret key for public key \"%s\"!\n"
-msgstr "existuje tajný klíč pro tento veřejný klíč \"%s\"!\n"
+msgstr "tajný klíč pro veřejný klíč „%s“ existuje!\n"
 
 msgid "use option \"--delete-secret-keys\" to delete it first.\n"
 msgstr ""
@@ -1692,19 +1687,14 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Použití: gpg [možnosti] [soubory] (-h pro pomoc)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
 "Syntaxe: gpg [možnosti] [soubory]\n"
-"podepsat, ověřit, šifrovat nebo dešifrovat\n"
-"implicitní operace závisí na vstupních datech\n"
+"Podepisuje, ověřuje, šifruje nebo dešifruje.\n"
+"Výchozí operace závisí na vstupních datech.\n"
 
 msgid ""
 "\n"
@@ -2603,11 +2593,11 @@ msgstr ""
 
 #, c-format
 msgid "  %d = I trust marginally\n"
-msgstr " %d = Důvěřuji částečně\n"
+msgstr "  %d = Důvěřuji částečně\n"
 
 #, c-format
 msgid "  %d = I trust fully\n"
-msgstr " %d = Důvěřuji úplně\n"
+msgstr "  %d = Důvěřuji úplně\n"
 
 msgid ""
 "Please enter the depth of this trust signature.\n"
@@ -4292,7 +4282,7 @@ msgstr "problém s agentem: %s\n"
 
 #, c-format
 msgid " (main key ID %s)"
-msgstr "(hlavní ID klíče %s)"
+msgstr " (hlavní ID klíče %s)"
 
 #, c-format
 msgid ""
@@ -4775,7 +4765,7 @@ msgstr "DSA klíč %s používá nebezpečný (%ubitový) hash\n"
 
 #, c-format
 msgid "DSA key %s requires a %u bit or larger hash\n"
-msgstr "DSA klíč %s vyžaduje hash o délce %u bitů nebo více\n"
+msgstr "DSA klíč %s vyžaduje hash o délce %u nebo více bitů\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "VAROVÁNÍ: konflikt hashe podpisu ve zprávě\n"
@@ -5252,7 +5242,7 @@ msgstr "neplatný příkaz „%.50s“\n"
 
 #, c-format
 msgid "option \"%.50s\" is ambiguous\n"
-msgstr "volba „%s.50s“ není jednoznačná\n"
+msgstr "volba „%.50s“ není jednoznačná\n"
 
 #, c-format
 msgid "command \"%.50s\" is ambiguous\n"
@@ -5320,16 +5310,12 @@ msgstr "zapnout úplné ladění"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Použití: kbxutil [VOLBY] [SOUBORY] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: kbxutil [options] [files]\n"
-#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "List, export, import Keybox data\n"
 msgstr ""
 "Syntaxe: kbxutil [VOLBY] [SOUBORY]\n"
-"vypisuje, exportuje, importuje schránku na klíče (keybox)\n"
+"Vypisuje, exportuje, importuje schránku na klíče (keybox).\n"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5474,15 +5460,11 @@ msgstr "|AN|Nový PIN správce"
 msgid "|N|New PIN"
 msgstr "|N|Nový PIN"
 
-#, fuzzy
-#| msgid "|A|Please enter the Admin PIN"
 msgid "||Please enter the Admin PIN and New Admin PIN"
-msgstr "|A|Prosím, zadejte PIN správce"
+msgstr "||Prosím, zadejte PIN správce a nový PIN správce"
 
-#, fuzzy
-#| msgid "||Please enter the PIN"
 msgid "||Please enter the PIN and New PIN"
-msgstr "||Prosím vložte PIN"
+msgstr "||Prosím, zadejte PIN a nový PIN"
 
 msgid "error reading application data\n"
 msgstr "chyba při čtení aplikačních dat\n"
@@ -5545,8 +5527,6 @@ msgstr "ověření PIN správce je nyní prostřednictvím tohoto příkazu zak�
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "přístup na %s se nezdařil – vadná OpenPGP karta?\n"
 
-#, fuzzy
-#| msgid "||Please enter your PIN at the reader's keypad"
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Prosím, zadejte svůj PIN na klávesnici čtečky"
 
@@ -5580,8 +5560,6 @@ msgstr "nepoužívat vnitřní ovladač CCID"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|odpojovat se od karty po N sekundách nečinnosti"
 
-#, fuzzy
-#| msgid "do not use a reader's keypad"
 msgid "do not use a reader's pinpad"
 msgstr "nepoužívat klávesnici čtečky"
 
@@ -5589,7 +5567,7 @@ msgid "deny the use of admin card commands"
 msgstr "zakázat používání správcovských příkazů karty"
 
 msgid "use variable length input for pinpad"
-msgstr ""
+msgstr "používat vstup o proměnné délce na klávesnici čtečky"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Použití: scdaemon [možnosti] [SOUBORY] (-h pro nápovědu)"
@@ -5623,7 +5601,7 @@ msgstr "předání dotazu %s klientovi se nezdařilo\n"
 
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
-msgstr "žádný dirmngr neběží – spouštím „%s“\n"
+msgstr "žádný dirmngr neběží – spouští se „%s“\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "špatný formát proměnné prostředí DIRMNGR_INFO\n"
@@ -5857,25 +5835,17 @@ msgstr "žádný způsob užití neuveden – předpokládám všechna užití\
 msgid "error getting key usage information: %s\n"
 msgstr "chyba při získání informací o způsobu užití klíče: %s\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for certification\n"
 msgid "certificate should not have been used for certification\n"
 msgstr "certifikát neměl být použit pro certifikování\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for OCSP response signing\n"
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "certifikát neměl být použit pro podepsání OCSP odpovědi\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for encryption\n"
 msgid "certificate should not have been used for encryption\n"
 msgstr "certifikát neměl použit pro šifrování\n"
 
-#, fuzzy
-#| msgid "certificate should have not been used for signing\n"
 msgid "certificate should not have been used for signing\n"
-msgstr "certifikát neměl být použit pro podepisování\n"
+msgstr "certifikát neměl být použit pro podepsání\n"
 
 msgid "certificate is not usable for encryption\n"
 msgstr "certifikát není použitelný pro šifrování\n"
@@ -5942,7 +5912,7 @@ msgid "Enter the keygrip: "
 msgstr "Vložte keygrip: "
 
 msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr "Není platným keygripem (očekáváno 40 šestnáctkových číslic)\n"
+msgstr "Není platným keygripem (očekáváno 40 šestnáctkových číslic)\n"
 
 msgid "No key with this keygrip\n"
 msgstr "Klíč s takovým keygripem neexistuje\n"
@@ -6015,7 +5985,7 @@ msgid "Parameters to be used for the certificate request:\n"
 msgstr "Parametry, které budou použity v žádosti o certifikát:\n"
 
 msgid "Now creating certificate request.  This may take a while ...\n"
-msgstr "Nyní vytvořím žádost o certifikát. To může chvíli trvat…\n"
+msgstr "Nyní se vytváří žádost o certifikát. To může chvíli trvat…\n"
 
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr "Hotovo. Nyní byste měli tuto žádost poslat svojí CA.\n"
@@ -6089,7 +6059,7 @@ msgid "use system's dirmngr if available"
 msgstr "použít systémový dirmngr, je-li dostupný"
 
 msgid "never consult a CRL"
-msgstr "nikdy nenahlížet do  CRL"
+msgstr "nikdy nenahlížet do CRL"
 
 msgid "check validity using OCSP"
 msgstr "kontrolovat platnost pomocí OCSP"
@@ -6142,19 +6112,14 @@ msgstr "|NÁZEV|použít hashovací algoritmus NÁZEV"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Použití: gpgsm [VOLBY] [SOUBORY] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
 "Syntaxe: gpgsm [VOLBY] [SOUBORY]\n"
-"podepisuje, ověřuje, šifruje nebo dešifruje pomocí protokolu S/MIME\n"
-"implicitní operace závisí na vstupních datech\n"
+"Podepisuje, ověřuje, šifruje nebo dešifruje pomocí protokolu S/MIME.\n"
+"Výchozí operace závisí na vstupních datech.\n"
 
 msgid "usage: gpgsm [options] "
 msgstr "užití: gpgsm [VOLBY] "
@@ -6523,7 +6488,7 @@ msgid "|COMPONENT|check options"
 msgstr "|KOMPONENTA|zkontrolovat volby"
 
 msgid "apply global default values"
-msgstr "Aplikovat globální implicitní hodnoty"
+msgstr "aplikovat globální implicitní hodnoty"
 
 msgid "get the configuration directories for gpgconf"
 msgstr "získat adresáře s nastavením gpgconfu"
@@ -6706,11 +6671,1146 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [VOLBY] SOUBOR_SE_VZOREM\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
+#~ msgid "enable ssh-agent emulation"
+#~ msgstr "zapnout emulaci ssh-agenta"
+
 #~ msgid "error loading `%s': %s\n"
 #~ msgstr "chyba při nahrávání „%s“: %s\n"
 
+#~ msgid "a %zu bit hash is not valid for a %u bit %s key\n"
+#~ msgstr "%zubitový hash není platný pro %ubitový %s klíč\n"
+
+#~ msgid "public key algorithm %d (%s) is not supported\n"
+#~ msgstr "algoritmus %d (%s) veřejného klíče není podporován\n"
+
+#~ msgid "protection hash algorithm %d (%s) is not supported\n"
+#~ msgstr "ochranný algoritmus %d (%s) není podporován\n"
+
+#~ msgid "error creating a stream for a pipe: %s\n"
+#~ msgstr "chyba při vytváření proudu pro rouru: %s\n"
+
+#~ msgid "connection to agent established\n"
+#~ msgstr "spojení na agenta ustanoveno\n"
+
+#~ msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#~ msgstr "čeká se na dirmngr… (%d s)\n"
+
+#~ msgid "connection to the dirmngr established\n"
+#~ msgstr "spojení na dirmngr ustanoveno\n"
+
+#~ msgid "deleting secret key not implemented\n"
+#~ msgstr "smazání tajného klíče není implementováno\n"
+
+#~ msgid " - skipped"
+#~ msgstr " – přeskočeno"
+
+#~ msgid "key %s: secret key already exists\n"
+#~ msgstr "klíč %s: tajný klíč již existuje\n"
+
+#~ msgid "key %s: error sending to agent: %s\n"
+#~ msgstr "klíč %s: chyba při odesílání dat agentovi: %s\n"
+
+#~ msgid "key %s: error changing passphrase: %s\n"
+#~ msgstr "klíč %s: chyba při měnění hesla: %s\n"
+
+#~ msgid "   (%d) ECDSA and ECDH\n"
+#~ msgstr "   (%d) ECDSA a ECDH\n"
+
+#~ msgid "  (%d) ECDSA (sign only)\n"
+#~ msgstr "  (%d) ECDSA (pouze pro podpis)\n"
+
+#~ msgid "  (%d) ECDSA (set your own capabilities)\n"
+#~ msgstr "  (%d) ECDSA (nastavit si vlastní použití)\n"
+
+#~ msgid "  (%d) ECDH (encrypt only)\n"
+#~ msgstr "  (%d) ECDH (pouze pro šifrování)\n"
+
+#~ msgid "rounded to %u bits\n"
+#~ msgstr "zaokrouhleno na %u bitů\n"
+
+#~ msgid "requesting key from `%s'\n"
+#~ msgstr "požaduji klíč z „%s“\n"
+
+#~ msgid ""
+#~ "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
+#~ msgstr ""
+#~ "U veřejného klíče ECDSA se očekává, že v kódování SEC bude délka násobkem "
+#~ "8 bitů\n"
+
+#~ msgid ""
+#~ "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#~ "certificate:"
+#~ msgstr ""
+#~ "Prosím, zadejte heslo, abyste odemkl(a) tajný klíč příslušející OpenPGP "
+#~ "certifikátu:"
+
+#~ msgid ""
+#~ "Please enter the passphrase to import the secret key for the OpenPGP "
+#~ "certificate:"
+#~ msgstr ""
+#~ "Prosím, zadejte heslo, abyste mohl(a) importovat tajný klíč příslušející "
+#~ "OpenPGP certifikátu:"
+
+#~ msgid ""
+#~ "%s\n"
+#~ "\"%.*s\"\n"
+#~ "%u-bit %s key, ID %s,\n"
+#~ "created %s%s.\n"
+#~ msgstr ""
+#~ "%s\n"
+#~ "„%.*s“\n"
+#~ "%ubitový klíč %s, ID %s,\n"
+#~ "vytvořen %s%s.\n"
+
+#~ msgid "%s key %s uses an unsafe (%zu bit) hash\n"
+#~ msgstr "%s klíč %s používá nebezpečný (%zubitový) hash\n"
+
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "alokace popisovače keyDB se nezdařila\n"
+
+#~ msgid "line %d: invalid serial number\n"
+#~ msgstr "řádek %d: neplatné sériové číslo\n"
+
+#~ msgid "line %d: invalid issuer name label `%.*s'\n"
+#~ msgstr "řádek %d: neplatný název vydavatele „%.*s“\n"
+
+#~ msgid "line %d: invalid issuer name `%s' at pos %d\n"
+#~ msgstr "řádek %d: neplatný název vydavatele „%s“ na pozici %d\n"
+
+#~ msgid "line %d: invalid date given\n"
+#~ msgstr "řádek %d: zadáno neplatné datum\n"
+
+#~ msgid "line %d: error getting signing key by keygrip `%s': %s\n"
+#~ msgstr ""
+#~ "řádek %d: chyba při získávání podpisového klíče podle keygripu „%s“: %s\n"
+
+#~ msgid "line %d: invalid hash algorithm given\n"
+#~ msgstr "řádek %d: zadán neplatný algoritmus hashe\n"
+
+#~ msgid "Create self-signed certificate? (y/N) "
+#~ msgstr "Vytvořit sám sebou podepsaný certifikát? (a/N)"
+
+#~ msgid "These parameters are used:\n"
+#~ msgstr "Budou použity tyto parametry:\n"
+
+#~ msgid "Now creating self-signed certificate.  "
+#~ msgstr "Nyní se vytváří sám sebou podepsaný certifikát. "
+
+#~ msgid "This may take a while ...\n"
+#~ msgstr "To může chvíli trvat…\n"
+
+# Ready ve významu finished po vygenerování certifikátu
+#~ msgid "Ready.\n"
+#~ msgstr "Hotovo.\n"
+
+#~ msgid "can't initialize certificate cache lock: %s\n"
+#~ msgstr "zámek keše certifikát nelze inicializovat: %s\n"
+
+#~ msgid "can't acquire read lock on the certificate cache: %s\n"
+#~ msgstr "zámek pro čtení keše certifikátů nelze získat: %s\n"
+
+#~ msgid "can't acquire write lock on the certificate cache: %s\n"
+#~ msgstr "zámek pro zápis keše certifikátů nelze získat: %s\n"
+
+#~ msgid "can't release lock on the certificate cache: %s\n"
+#~ msgstr "zámek keše certifikátů nelze uvolnit: %s\n"
+
+# TODO: plural
+#~ msgid "dropping %u certificates from the cache\n"
+#~ msgstr "%u certifikátů bude z keše vyřazeno\n"
+
+#~ msgid "can't access directory `%s': %s\n"
+#~ msgstr "k adresáři „%s“ nelze přistoupit: %s\n"
+
+#~ msgid "can't parse certificate `%s': %s\n"
+#~ msgstr "certifikát „%s“ nelze rozebrat: %s\n"
+
+#~ msgid "certificate `%s' already cached\n"
+#~ msgstr "certifikát „%s“ je již v keši\n"
+
+#~ msgid "trusted certificate `%s' loaded\n"
+#~ msgstr "zaveden důvěryhodný certifikát „%s“\n"
+
+#~ msgid "certificate `%s' loaded\n"
+#~ msgstr "certifikát „%s“ zaveden\n"
+
+#~ msgid "  SHA1 fingerprint = %s\n"
+#~ msgstr " otisk SHA1 = %s\n"
+
+#~ msgid "   issuer ="
+#~ msgstr "vydavatel ="
+
+# XXX: align with msgid "   issuer ="
+#~ msgid "  subject ="
+#~ msgstr "  subjekt ="
+
+#~ msgid "error loading certificate `%s': %s\n"
+#~ msgstr "chyba při zavádění certifikátu „%s“: %s\n"
+
+# XXX: Align with msgid "runtime cached certificates:"
+#~ msgid "permanently loaded certificates: %u\n"
+#~ msgstr "   trvale zavedených certifikátů: %u\n"
+
+# XXX: Align with msgid "permanently loaded certificates:"
+#~ msgid "    runtime cached certificates: %u\n"
+#~ msgstr "za běhu nakešovaných certifikátů: %u\n"
+
+#~ msgid "certificate already cached\n"
+#~ msgstr "certifikát již v keši\n"
+
+#~ msgid "certificate cached\n"
+#~ msgstr "certifikát uložen do keše\n"
+
+#~ msgid "error caching certificate: %s\n"
+#~ msgstr "chyba při ukládání certifikátu do keše: %s\n"
+
+#~ msgid "invalid SHA1 fingerprint string `%s'\n"
+#~ msgstr "neplatný řetězec otisku SHA1 „%s“\n"
+
+#~ msgid "error fetching certificate by S/N: %s\n"
+#~ msgstr "chyba při stahování certifikátu určeného sériovým číslem: %s\n"
+
+#~ msgid "error fetching certificate by subject: %s\n"
+#~ msgstr "chyba při stahovaní certifikátu určeného subjektem: %s\n"
+
+#~ msgid "no issuer found in certificate\n"
+#~ msgstr "v certifikátu nebyl nalezen vydavatel\n"
+
+#~ msgid "error getting authorityKeyIdentifier: %s\n"
+#~ msgstr "chyba při zjišťování authorityKeyIdentifier: %s\n"
+
+#~ msgid "creating directory `%s'\n"
+#~ msgstr "vytváří se adresář „%s“\n"
+
+#~ msgid "error creating directory `%s': %s\n"
+#~ msgstr "chyba při zakládání adresáře „%s“: %s\n"
+
+#~ msgid "ignoring database dir `%s'\n"
+#~ msgstr "adresář databáze „%s“ nebude brán zřetel\n"
+
+#~ msgid "error reading directory `%s': %s\n"
+#~ msgstr "chyba při čtení adresáře „%s“: %s\n"
+
+#~ msgid "removing cache file `%s'\n"
+#~ msgstr "odstraňuje se soubor keše „%s“\n"
+
+#~ msgid "not removing file `%s'\n"
+#~ msgstr "soubor „%s“ nebude neodstraněn\n"
+
+#~ msgid "error closing cache file: %s\n"
+#~ msgstr "chyba při zavírání souboru keše: %s\n"
+
+#~ msgid "failed to open cache dir file `%s': %s\n"
+#~ msgstr "otevření kešového dir souboru „%s“ selhalo: %s\n"
+
+#~ msgid "error creating new cache dir file `%s': %s\n"
+#~ msgstr "chyba při vytváření nového kešového dir souboru „%s“: %s\n"
+
+#~ msgid "error writing new cache dir file `%s': %s\n"
+#~ msgstr "chyba při zápisu nového kešového dir souboru „%s: %s\n"
+
+#~ msgid "error closing new cache dir file `%s': %s\n"
+#~ msgstr "chyba při uzavírání nového kešového dir souboru „%s“: %s\n"
+
+#~ msgid "new cache dir file `%s' created\n"
+#~ msgstr "nový kešový dir soubor „%s“ vytvořen\n"
+
+#~ msgid "failed to re-open cache dir file `%s': %s\n"
+#~ msgstr "znovu otevření kešového dir souboru „%s“ selhalo: %s\n"
+
+#~ msgid "first record of `%s' is not the version\n"
+#~ msgstr "první záznam „%s“ není verze\n"
+
+#~ msgid "old version of cache directory - cleaning up\n"
+#~ msgstr "stará verze adresáře s keší – bude vyčištěna\n"
+
+#~ msgid "old version of cache directory - giving up\n"
+#~ msgstr "stará verze adresáře s keší – nelze pokračovat\n"
+
+#~ msgid "extra field detected in crl record of `%s' line %u\n"
+#~ msgstr "nalezena nadbytečná položka v záznamu CRL „%s“ na řádku %u\n"
+
+#~ msgid "invalid line detected in `%s' line %u\n"
+#~ msgstr "nalezen neplatný řádek %2$u v „%1$s\n"
+
+#~ msgid "duplicate entry detected in `%s' line %u\n"
+#~ msgstr "nalezena duplicitní položka v „%s“ na řádku %u\n"
+
+#~ msgid "unsupported record type in `%s' line %u skipped\n"
+#~ msgstr "nepodporovaný typ záznamu v „%s“ na řádku %u přeskočen\n"
+
+#~ msgid "invalid issuer hash in `%s' line %u\n"
+#~ msgstr "neplatný haš vydavatele v „%s“ na řádku %u\n"
+
+#~ msgid "no issuer DN in `%s' line %u\n"
+#~ msgstr "v „%s“ na řádku %u chybí DN vydavatele\n"
+
+#~ msgid "invalid timestamp in `%s' line %u\n"
+#~ msgstr "neplatné časové razítko v „%s“ na řádku %u\n"
+
+#~ msgid "WARNING: invalid cache file hash in `%s' line %u\n"
+#~ msgstr "POZOR: neplatný haš souboru keše v „%s“ na řádku %u\n"
+
+#~ msgid "detected errors in cache dir file\n"
+#~ msgstr "v kešovém dir souboru nalezeny chyby\n"
+
+#~ msgid "please check the reason and manually delete that file\n"
+#~ msgstr "prosím, zjistěte příčinu a soubor ručně smažte\n"
+
+#~ msgid "failed to create temporary cache dir file `%s': %s\n"
+#~ msgstr "založení dočasného kešového dir souboru „%s“ selhalo: %s\n"
+
+#~ msgid "error closing `%s': %s\n"
+#~ msgstr "chyba při uzavírání „%s“: %s\n"
+
+#~ msgid "error renaming `%s' to `%s': %s\n"
+#~ msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
+
+#~ msgid "can't hash `%s': %s\n"
+#~ msgstr "nelze vypočítat haš „%s“: %s\n"
+
+#~ msgid "error setting up MD5 hash context: %s\n"
+#~ msgstr "chyba při nastavování hašovacího kontextu MD5: %s\n"
+
+#~ msgid "error hashing `%s': %s\n"
+#~ msgstr "chyba při výpočtu haše „%s“: %s\n"
+
+#~ msgid "invalid formatted checksum for `%s'\n"
+#~ msgstr "chybně zformátovaný kontrolní součet souboru „%s“\n"
+
+#~ msgid "too many open cache files; can't open anymore\n"
+#~ msgstr "otevřeno příliš mnoho kešových souborů, další již nelze otevřít\n"
+
+#~ msgid "opening cache file `%s'\n"
+#~ msgstr "otevírá se kešový soubor „%s“\n"
+
+#~ msgid "error opening cache file `%s': %s\n"
+#~ msgstr "chyba při otevírání kešového souboru „%s“: %s\n"
+
+#~ msgid "error initializing cache file `%s' for reading: %s\n"
+#~ msgstr "chyba při inicializaci kešového souboru „%s pro čtení: %s\n"
+
+#~ msgid "calling unlock_db_file on a closed file\n"
+#~ msgstr "unlock_db_file zavoláno na zavřený soubor\n"
+
+#~ msgid "calling unlock_db_file on an unlocked file\n"
+#~ msgstr "unlock_db_file zavoláno na nezamčeném souboru\n"
+
+#~ msgid "failed to create a new cache object: %s\n"
+#~ msgstr "výroba nového objektu keše selhala: %s\n"
+
+#~ msgid "no CRL available for issuer id %s\n"
+#~ msgstr "pro vydavatele s ID %s není dostupný žádný CRL\n"
+
+#~ msgid "cached CRL for issuer id %s too old; update required\n"
+#~ msgstr ""
+#~ "nakešovaný CRL pro vydavatele s ID %s příliš starý; aktualizace "
+#~ "vyžadována\n"
+
+# TODO: plural
+#~ msgid ""
+#~ "force-crl-refresh active and %d minutes passed for issuer id %s; update "
+#~ "required\n"
+#~ msgstr ""
+#~ "force-crl-refresh je aktivováno a %d minut uplynulo vydavateli s ID %s, "
+#~ "aktualizace je požadována\n"
+
+#~ msgid "force-crl-refresh active for issuer id %s; update required\n"
+#~ msgstr ""
+#~ "force-crl-required je u vydavatele s ID %s aktivováno, aktualizace je "
+#~ "požadována\n"
+
+# CRL for issuer překládat jako CRL pro vydavatele, prože CRL může mít jiného
+# vydavatele než je vydavatel odvolaných certifikátů (tzv. indirect CRL)
+#~ msgid "available CRL for issuer ID %s can't be used\n"
+#~ msgstr "dostupný CRL pro vydavatele ID %s nemůže být použit\n"
+
+#~ msgid "cached CRL for issuer id %s tampered; we need to update\n"
+#~ msgstr ""
+#~ "nakešovaný CRL pro vydavatele ID %s je pozměněný, je třeba jej "
+#~ "aktualizovat\n"
+
+# XXX: The message is followed by the serial number
+# TODO: Use c-format
+#~ msgid "WARNING: invalid cache record length for S/N "
+#~ msgstr "POZOR: neplatná délka záznamu v keši pod sériovým číslem "
+
+#~ msgid "problem reading cache record for S/N %s: %s\n"
+#~ msgstr "problém se čtením záznamu keše pro sériové číslo %s: %s\n"
+
+#~ msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
+#~ msgstr "sériové číslo %s není platné, důvod=%02X  datum=%.15s\n"
+
+#~ msgid "S/N %s is valid, it is not listed in the CRL\n"
+#~ msgstr "sériové číslo %s je platné, není na seznamu CRL\n"
+
+#~ msgid "error getting data from cache file: %s\n"
+#~ msgstr "chyba při získávání dat ze souboru keše: %s\n"
+
+#~ msgid "unknown hash algorithm `%s'\n"
+#~ msgstr "neznámý hašovací algoritmus „%s“\n"
+
+#~ msgid "gcry_md_open for algorithm %d failed: %s\n"
+#~ msgstr "gcry_md_open selhalo na algoritmu %d: %s\n"
+
+#~ msgid "got an invalid S-expression from libksba\n"
+#~ msgstr "z libksba obdržen neplatný S-výraz\n"
+
+#~ msgid "converting S-expression failed: %s\n"
+#~ msgstr "převod S-výrazu se nezdařil: %s\n"
+
+#~ msgid "creating S-expression failed: %s\n"
+#~ msgstr "výroba S-výrazu selhala: %s\n"
+
+#~ msgid "ksba_crl_parse failed: %s\n"
+#~ msgstr "ksba_crl_parse selhal: %s\n"
+
+#~ msgid "error getting update times of CRL: %s\n"
+#~ msgstr "chyba při zjišťování časů aktualizace CRL %s\n"
+
+#~ msgid "update times of this CRL: this=%s next=%s\n"
+#~ msgstr "časy aktualizace tohoto CRL: tento=%s příští=%s\n"
+
+#~ msgid "nextUpdate not given; assuming a validity period of one day\n"
+#~ msgstr ""
+#~ "nextUpdate neuvedeno, předpokládaná perioda platnosti bude jeden den\n"
+
+#~ msgid "error getting CRL item: %s\n"
+#~ msgstr "chyba při získávání položky CRL: %s\n"
+
+#~ msgid "error inserting item into temporary cache file: %s\n"
+#~ msgstr "chyba vkládání položky do dočasného souboru keše: %s\n"
+
+#~ msgid "no CRL issuer found in CRL: %s\n"
+#~ msgstr "v CRL nebyl nalezen žádný vydavatel CRL: %s\n"
+
+#~ msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
+#~ msgstr ""
+#~ "certifikát vydavatele CRL bude hledán podle authorityKeyIdentifier\n"
+
+#~ msgid "CRL signature verification failed: %s\n"
+#~ msgstr "ověřování podpisu CRL selhalo: %s\n"
+
+#~ msgid "error checking validity of CRL issuer certificate: %s\n"
+#~ msgstr "chyba při kontrole platnosti certifikátu vydavatele CRL: %s\n"
+
+#~ msgid "ksba_crl_new failed: %s\n"
+#~ msgstr "volání ksba_crl_new selhalo: %s\n"
+
+#~ msgid "ksba_crl_set_reader failed: %s\n"
+#~ msgstr "volání ksba_crl_set_reader selhalo: %s\n"
+
+#~ msgid "removed stale temporary cache file `%s'\n"
+#~ msgstr "odstraněn zastaralý dočasný soubor keše „%s“\n"
+
+#~ msgid "problem removing stale temporary cache file `%s': %s\n"
+#~ msgstr ""
+#~ "problém s odstraňováním zastaralého dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "error creating temporary cache file `%s': %s\n"
+#~ msgstr "chyba při zakládání dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "crl_parse_insert failed: %s\n"
+#~ msgstr "volání crl_parse_insert selhalo: %s\n"
+
+#~ msgid "error finishing temporary cache file `%s': %s\n"
+#~ msgstr "chyba při dokončování dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "error closing temporary cache file `%s': %s\n"
+#~ msgstr "chyba při uzavírání dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
+#~ msgstr ""
+#~ "POZOR: nový CRL je stále příliš starý; jeho platnost vypršela %s – stejně "
+#~ "bude nahrán\n"
+
+#~ msgid "new CRL still too old; it expired on %s\n"
+#~ msgstr "nový CRL je stále příliš starý; jeho platnost vypršela %s\n"
+
+#~ msgid "unknown critical CRL extension %s\n"
+#~ msgstr "neznámé kritické rozšíření CRL %s\n"
+
+#~ msgid "error reading CRL extensions: %s\n"
+#~ msgstr "chyba při čtení rozšíření CRL: %s\n"
+
+#~ msgid "creating cache file `%s'\n"
+#~ msgstr "vytváří se soubor keše „%s“\n"
+
+#~ msgid "problem renaming `%s' to `%s': %s\n"
+#~ msgstr "problém s přejmenováním „%s“ na „%s“: %s\n"
+
+#~ msgid ""
+#~ "updating the DIR file failed - cache entry will get lost with the next "
+#~ "program start\n"
+#~ msgstr ""
+#~ "aktualizace souboru DIR selhalo – záznam keše bude při příštím startu "
+#~ "programu ztracen\n"
+
+#~ msgid "Begin CRL dump (retrieved via %s)\n"
+#~ msgstr "Zahajuje se výpis CRL (získán přes %s)\n"
+
+#~ msgid ""
+#~ " ERROR: The CRL will not be used because it was still too old after an "
+#~ "update!\n"
+#~ msgstr ""
+#~ " CHYBA: CRL nebude použit, protože i po aktualizaci byl příliš starý!\n"
+
+#~ msgid ""
+#~ " ERROR: The CRL will not be used due to an unknown critical extension!\n"
+#~ msgstr " CHYBA: CRL nebude použit kvůli neznámému kritickému rozšíření!\n"
+
+#~ msgid " ERROR: The CRL will not be used\n"
+#~ msgstr " CHYBA: CRL nebude použit\n"
+
+#~ msgid " ERROR: This cached CRL may has been tampered with!\n"
+#~ msgstr " CHYBA: Tento nakešovaný CRL byl možná pozměněn!\n"
+
+#~ msgid " WARNING: invalid cache record length\n"
+#~ msgstr " POZOR: neplatná délka záznamu keše\n"
+
+#~ msgid "problem reading cache record: %s\n"
+#~ msgstr "problém se čtením záznamu keše: %s\n"
+
+#~ msgid "problem reading cache key: %s\n"
+#~ msgstr "problém se čtením klíče keše: %s\n"
+
+#~ msgid "error reading cache entry from db: %s\n"
+#~ msgstr "chyba při čtení položky keše z databáze: %s\n"
+
+#~ msgid "End CRL dump\n"
+#~ msgstr "Konec výpisu CRL\n"
+
+#~ msgid "crl_fetch via DP failed: %s\n"
+#~ msgstr "volání crl_fetch přes DP selhalo: %s\n"
+
+#~ msgid "crl_cache_insert via DP failed: %s\n"
+#~ msgstr "volání crl_cache_insert přes DP selhalo: %s\n"
+
+#~ msgid "crl_cache_insert via issuer failed: %s\n"
+#~ msgstr "volání crl_cache_insert přes vydavatele selhalo: %s\n"
+
+#~ msgid "reader to file mapping table full - waiting\n"
+#~ msgstr "tabulka mapování čtenáře na soubor je plná – čeká se\n"
+
+#~ msgid "using \"http\" instead of \"https\"\n"
+#~ msgstr "namísto „https“ se použije „http“\n"
+
+# Poslední argument je název protokolu
+#~ msgid "CRL access not possible due to disabled %s\n"
+#~ msgstr "Přístup k CRL není možný kvůli vypnutému %s\n"
+
+#~ msgid "error initializing reader object: %s\n"
+#~ msgstr "chyba při inicializaci čtecího objektu: %s\n"
+
+#~ msgid "URL `%s' redirected to `%s' (%u)\n"
+#~ msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
+
+#~ msgid "too many redirections\n"
+#~ msgstr "příliš mnoho přesměrování\n"
+
+#~ msgid "error retrieving `%s': %s\n"
+#~ msgstr "chyba při získávání „%s“: %s\n"
+
+#~ msgid "error retrieving `%s': http status %u\n"
+#~ msgstr "chyba při získávání „%s“: status HTTP je %u\n"
+
+#~ msgid "certificate search not possible due to disabled %s\n"
+#~ msgstr "dohledání certifikátu nemožné kvůli vypnutému %s\n"
+
+#~ msgid "use OCSP instead of CRLs"
+#~ msgstr "místo CRL použije OCSP"
+
+#~ msgid "check whether a dirmngr is running"
+#~ msgstr "zjistí, jestli dirmngr běží"
+
+#~ msgid "add a certificate to the cache"
+#~ msgstr "přidá certifikát do keše"
+
+#~ msgid "validate a certificate"
+#~ msgstr "ověří platnost certifikátu"
+
+#~ msgid "lookup a certificate"
+#~ msgstr "vyhledá certifikát"
+
+#~ msgid "lookup only locally stored certificates"
+#~ msgstr "hledá pouze mezi lokálně uloženými certifikáty"
+
+#~ msgid "expect an URL for --lookup"
+#~ msgstr "u --lookup očekává URL"
+
+#~ msgid "load a CRL into the dirmngr"
+#~ msgstr "zavede CRL do dirmngr"
+
+#~ msgid "special mode for use by Squid"
+#~ msgstr "zvláštní režim pro použití se Squidem"
+
+#~ msgid "certificates are expected in PEM format"
+#~ msgstr "certifikáty budou očekávány ve formátu PEM"
+
+#~ msgid "force the use of the default OCSP responder"
+#~ msgstr "vynutí použití výchozího OCSP odpovídače"
+
+#~ msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
+#~ msgstr ""
+#~ "Použití: dirmngr-client [VOLBY] [CERT_SOUBOR|VZOR] (-h pro nápovědu)\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr-client [options] [certfile|pattern]\n"
+#~ "Test an X.509 certificate against a CRL or do an OCSP check\n"
+#~ "The process returns 0 if the certificate is valid, 1 if it is\n"
+#~ "not valid and other error codes for general failures\n"
+#~ msgstr ""
+#~ "Syntaxe: dirmngr-client [VOLBY] [CERT_SOUBOR|VZOR]\n"
+#~ "Vyzkouší X.509 certifikát proti CRL nebo OCSP.\n"
+#~ "Proces vrátí 0, pokud je certifikát platný, 1, pokud není platný nebo "
+#~ "jiný\n"
+#~ "chybový kód značící obecné selhání.\n"
+
+#~ msgid "error reading certificate from stdin: %s\n"
+#~ msgstr "chyba při čtení certifikátu ze standardního vstupu: %s\n"
+
+#~ msgid "error reading certificate from `%s': %s\n"
+#~ msgstr "chyba při čtení certifikátu ze „%s“: %s\n"
+
+#~ msgid "certificate too large to make any sense\n"
+#~ msgstr "certifikát je příliš velký, než aby dával smysl\n"
+
+#~ msgid "lookup failed: %s\n"
+#~ msgstr "hledání selhalo: %s\n"
+
+#~ msgid "loading CRL `%s' failed: %s\n"
+#~ msgstr "zavádění CRL „%s“ selhalo: %s\n"
+
+#~ msgid "a dirmngr daemon is up and running\n"
+#~ msgstr "démon dirmngr běží\n"
+
+#~ msgid "validation of certificate failed: %s\n"
+#~ msgstr "ověření platnosti certifikátu selhalo: %s\n"
+
+#~ msgid "certificate is valid\n"
+#~ msgstr "certifikát je platný\n"
+
+#~ msgid "certificate has been revoked\n"
+#~ msgstr "certifikát byl odvolán\n"
+
+#~ msgid "certificate check failed: %s\n"
+#~ msgstr "kontrola certifikátu selhala: %s\n"
+
+#~ msgid "got status: `%s'\n"
+#~ msgstr "obdržen status: „%s“\n"
+
+#~ msgid "error writing base64 encoding: %s\n"
+#~ msgstr "chyba při zápisu kódování base64: %s\n"
+
+#~ msgid "failed to allocate assuan context: %s\n"
+#~ msgstr "alokace kontextu assuan selhala: %s\n"
+
+#~ msgid "apparently no running dirmngr\n"
+#~ msgstr "dirmngr zjevně neběží\n"
+
+#~ msgid "no running dirmngr - starting one\n"
+#~ msgstr "žádný dirmngr neběží – jeden bude spuštěn\n"
+
+#~ msgid "can't connect to the dirmngr: %s\n"
+#~ msgstr "k dirmngr se nelze připojit: %s\n"
+
+#~ msgid "unsupported inquiry `%s'\n"
+#~ msgstr "nepodporovaný dotaz „%s“\n"
+
+#~ msgid "absolute file name expected\n"
+#~ msgstr "očekáván absolutní název souboru\n"
+
+#~ msgid "looking up `%s'\n"
+#~ msgstr "hledá se „%s“\n"
+
+#~ msgid "run as windows service (background)"
+#~ msgstr "poběží jako služba Windows (na pozadí)"
+
+#~ msgid "list the contents of the CRL cache"
+#~ msgstr "vypíše obsah CRL keše"
+
+#~ msgid "|FILE|load CRL from FILE into cache"
+#~ msgstr "|SOUBOR|zavede CRL ze SOUBORU do keše"
+
+#~ msgid "|URL|fetch a CRL from URL"
+#~ msgstr "|URL|stáhne CRL z URL"
+
+#~ msgid "shutdown the dirmngr"
+#~ msgstr "vypne dirmngr"
+
+#~ msgid "flush the cache"
+#~ msgstr "vyprázdní keš"
+
+#~ msgid "run without asking a user"
+#~ msgstr "běží bez dotazování se uživatele"
+
+#~ msgid "force loading of outdated CRLs"
+#~ msgstr "vynutí zavedení zastaralých CRL"
+
+#~ msgid "allow sending OCSP requests"
+#~ msgstr "povolí odesílání OCSP dotazů"
+
+#~ msgid "inhibit the use of HTTP"
+#~ msgstr "zakáže použití HTTP"
+
+#~ msgid "inhibit the use of LDAP"
+#~ msgstr "zakáže použití LDAP"
+
+#~ msgid "ignore HTTP CRL distribution points"
+#~ msgstr "ignoruje HTTP distribuční místa CRL "
+
+#~ msgid "ignore LDAP CRL distribution points"
+#~ msgstr "ignoruje LDAP distribuční místa CRL"
+
+#~ msgid "ignore certificate contained OCSP service URLs"
+#~ msgstr "ignoruje URL služby OCSP uvedené v certifikátu"
+
+#~ msgid "|URL|redirect all HTTP requests to URL"
+#~ msgstr "|URL|všechny HTTP požadavky přesměruje na URL"
+
+#~ msgid "|HOST|use HOST for LDAP queries"
+#~ msgstr "|STROJ|pro LDAP dotazy použije STROJ"
+
+#~ msgid "do not use fallback hosts with --ldap-proxy"
+#~ msgstr "nepoužije náhradní stroje s --ldap-proxy"
+
+#~ msgid "|FILE|read LDAP server list from FILE"
+#~ msgstr "|SOUBOR|načte seznam LDAP serverů ze SOUBORU"
+
+#~ msgid "add new servers discovered in CRL distribution points to serverlist"
+#~ msgstr ""
+#~ "na seznam serverů přidá nové servery nalezené v místech distribuce CRL"
+
+#~ msgid "|N|set LDAP timeout to N seconds"
+#~ msgstr "|N|nastaví časový limit pro LDAP na N sekund"
+
+#~ msgid "|URL|use OCSP responder at URL"
+#~ msgstr "|URL|použije OCSP odpovídače na URL"
+
+#~ msgid "|FPR|OCSP response signed by FPR"
+#~ msgstr "|OTISK|OCSP odpovědi podepsané podle OTISKU"
+
+#~ msgid "|N|do not return more than N items in one query"
+#~ msgstr "|N|nevrací více jak N položek na jeden dotaz"
+
+#~ msgid ""
+#~ "@\n"
+#~ "(See the \"info\" manual for a complete listing of all commands and "
+#~ "options)\n"
+#~ msgstr ""
+#~ "@\n"
+#~ "(Úplný seznam příkazů a voleb naleznete v „info“ manuálu.)\n"
+
+#~ msgid "Usage: dirmngr [options] (-h for help)"
+#~ msgstr "Použití: dirmngr [VOLBY] (-h pro nápovědu)"
+
+#~ msgid ""
+#~ "Syntax: dirmngr [options] [command [args]]\n"
+#~ "LDAP and OCSP access for GnuPG\n"
+#~ msgstr ""
+#~ "Syntaxe: dirmngr [VOLBY] [PŘÍKAZ [ARGUMENTY]]\n"
+#~ "LDAP a OCSP přístup z GnuPG\n"
+
+#~ msgid "valid debug levels are: %s\n"
+#~ msgstr "platné úrovně ladění jsou: %s\n"
+
+#~ msgid "usage: dirmngr [options] "
+#~ msgstr "použití: dirmngr [VOLBY] "
+
+#~ msgid "colons are not allowed in the socket name\n"
+#~ msgstr "dvojtečky v názvu socketu jsou nepřípustné\n"
+
+#~ msgid "fetching CRL from `%s' failed: %s\n"
+#~ msgstr "stahování CRL z „%s„ selhalo: %s\n"
+
+#~ msgid "processing CRL from `%s' failed: %s\n"
+#~ msgstr "zpracování CRL z „%s“ selhalo: %s\n"
+
+#~ msgid "%s:%u: line too long - skipped\n"
+#~ msgstr "%s:%u: řádek je příliš dlouhý – přeskočen\n"
+
+#~ msgid "%s:%u: invalid fingerprint detected\n"
+#~ msgstr "%s:%u: zjištěn neplatný otisk\n"
+
+#~ msgid "%s:%u: read error: %s\n"
+#~ msgstr "%s:%u: chyba čtení: %s\n"
+
+#~ msgid "%s:%u: garbage at end of line ignored\n"
+#~ msgstr "%s:%u: nepořádek na konci řádku ignorován\n"
+
+#~ msgid "SIGHUP received - re-reading configuration and flushing caches\n"
+#~ msgstr "přijat SIGHUP – konfigurace bude znovu načtena a keš vyprázdněna\n"
+
+#~ msgid "SIGUSR2 received - no action defined\n"
+#~ msgstr "přijat SIGUSR2 – žádná akce nedefinována\n"
+
+#~ msgid "SIGTERM received - shutting down ...\n"
+#~ msgstr "přijat SIGTERM – vypíná se…\n"
+
+# TODO: plural
+#~ msgid "SIGTERM received - still %d active connections\n"
+#~ msgstr "přijat SIGTERM – stále aktivních spojení: %d\n"
+
+#~ msgid "shutdown forced\n"
+#~ msgstr "vypnutí vynuceno\n"
+
+#~ msgid "SIGINT received - immediate shutdown\n"
+#~ msgstr "přijat SIGINT – okamžité vypnutí\n"
+
+#~ msgid "signal %d received - no action defined\n"
+#~ msgstr "přijat signál č. %d – žádná akce nedefinována\n"
+
+#~ msgid "return all values in a record oriented format"
+#~ msgstr "vrátí všechny hodnoty v záznamově orientovaném formátu"
+
+#~ msgid "|NAME|ignore host part and connect through NAME"
+#~ msgstr "|NÁZEV|ignoruje část se strojem a připojí se skrze NÁZEV"
+
+#~ msgid "|NAME|connect to host NAME"
+#~ msgstr "|NÁZEV|připojí se ke strojí NÁZEV"
+
+#~ msgid "|N|connect to port N"
+#~ msgstr "|N|připojí se na port N"
+
+#~ msgid "|NAME|use user NAME for authentication"
+#~ msgstr "|JMÉNO|pro autentizaci použije JMÉNO uživatele"
+
+#~ msgid "|PASS|use password PASS for authentication"
+#~ msgstr "|HESLO|pro autentizaci použije HESLO"
+
+#~ msgid "take password from $DIRMNGR_LDAP_PASS"
+#~ msgstr "heslo získá z $DIRMNGR_LDAP_PASS"
+
+#~ msgid "|STRING|query DN STRING"
+#~ msgstr "|ŘETĚZEC|dotáže se na DN ŘETĚZEC"
+
+#~ msgid "|STRING|use STRING as filter expression"
+#~ msgstr "|ŘETĚZEC|jako filtrující výraz použije ŘETĚZEC"
+
+#~ msgid "|STRING|return the attribute STRING"
+#~ msgstr "|ŘETĚZEC|vrátí atribut ŘETĚZEC"
+
+#~ msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+#~ msgstr "Použití: dirmngr_ldap [VOLBY] [URL] (-h pro nápovědu)\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr.\n"
+#~ "Interface and options may change without notice.\n"
+#~ msgstr ""
+#~ "Syntaxe: dirmngr_ldap [VOLBY] [URL]\n"
+#~ "Vnitřní LDAP pomůcka pro pro Dirmngr.\n"
+#~ "Rozhraní a volby se mohou bez upozornění změnit.\n"
+
+#~ msgid "invalid port number %d\n"
+#~ msgstr "neplatné číslo portu %d\n"
+
+#~ msgid "scanning result for attribute `%s'\n"
+#~ msgstr "ve výsledku se hledá atribut „%s“\n"
+
+#~ msgid "error writing to stdout: %s\n"
+#~ msgstr "chyba při zápisu na standardní výstup: %s\n"
+
+#~ msgid "          available attribute `%s'\n"
+#~ msgstr "          dostupný atribut „%s“\n"
+
+#~ msgid "attribute `%s' not found\n"
+#~ msgstr "atribut „%s“ nenalezen\n"
+
+#~ msgid "found attribute `%s'\n"
+#~ msgstr "nalezen atribut „%s“\n"
+
+#~ msgid "processing url `%s'\n"
+#~ msgstr "zpracovává se URL „%s“\n"
+
+#~ msgid "          user `%s'\n"
+#~ msgstr "          uživatel „%s“\n"
+
+#~ msgid "          pass `%s'\n"
+#~ msgstr "          heslo „%s“\n"
+
+#~ msgid "          host `%s'\n"
+#~ msgstr "          stroj „%s“\n"
+
+#~ msgid "          port %d\n"
+#~ msgstr "          port %d\n"
+
+#~ msgid "            DN `%s'\n"
+#~ msgstr "            DN „%s“\n"
+
+#~ msgid "        filter `%s'\n"
+#~ msgstr "        filtr „%s“\n"
+
+#~ msgid "          attr `%s'\n"
+#~ msgstr "          atribut „%s“\n"
+
+#~ msgid "no host name in `%s'\n"
+#~ msgstr "v „%s“ chybí název stroje\n"
+
+#~ msgid "no attribute given for query `%s'\n"
+#~ msgstr "u dotazu „%s“ nezadán žádný atribut\n"
+
+#~ msgid "WARNING: using first attribute only\n"
+#~ msgstr "POZOR: použije se pouze první atribut\n"
+
+#~ msgid "LDAP init to `%s:%d' failed: %s\n"
+#~ msgstr "Inicializace LDAP u „%s:%d“ selhala: %s\n"
+
+#~ msgid "binding to `%s:%d' failed: %s\n"
+#~ msgstr "napojení k „%s:%d“ selhalo: %s\n"
+
+#~ msgid "searching `%s' failed: %s\n"
+#~ msgstr "vyhledávání „%s“ selhalo: %s\n"
+
+#~ msgid "`%s' is not an LDAP URL\n"
+#~ msgstr "„%s“ není LDAP URL\n"
+
+#~ msgid "`%s' is an invalid LDAP URL\n"
+#~ msgstr "„%s“ není platní LDAP URL\n"
+
+#~ msgid "error allocating memory: %s\n"
+#~ msgstr "chyba při alokování paměti: %s\n"
+
+#~ msgid "error printing log line: %s\n"
+#~ msgstr "chyba při tisknutí řádku protokolu: %s\n"
+
+#~ msgid "error reading log from ldap wrapper %d: %s\n"
+#~ msgstr "chyba při čtení protokolu z ldapové obálky č. %d: %s\n"
+
+#~ msgid "pth_event failed: %s\n"
+#~ msgstr "funkce pth_event selhala: %s\n"
+
+#~ msgid "pth_wait failed: %s\n"
+#~ msgstr "funkce pth_wait selhala: %s\n"
+
+#~ msgid "ldap wrapper %d ready"
+#~ msgstr "ldapová obálka %d připravena"
+
+#~ msgid "ldap wrapper %d ready: timeout\n"
+#~ msgstr "ldapová obálka %d připravena: čas vypršel\n"
+
+#~ msgid "ldap wrapper %d ready: exitcode=%d\n"
+#~ msgstr "ldapová obálka %d připravena: návratový kód = %d\n"
+
+#~ msgid "waiting for ldap wrapper %d failed: %s\n"
+#~ msgstr "čekání na ldapovou obálku %d selhalo: %s\n"
+
+#~ msgid "ldap wrapper %d stalled - killing\n"
+#~ msgstr "ldapová obálka %d se zasekla – bude zabita\n"
+
+#~ msgid "error spawning ldap wrapper reaper thread: %s\n"
+#~ msgstr "chyba při zakládání vlákna ovládajícího obálku LDAPu: %s\n"
+
+#~ msgid "reading from ldap wrapper %d failed: %s\n"
+#~ msgstr "čtení z ldapové obálky %d selhalo: %s\n"
+
+#~ msgid "invalid char 0x%02x in host name - not added\n"
+#~ msgstr "v názvu stroje je neplatný znak 0x%02x – nepřidáno\n"
+
+#~ msgid "adding `%s:%d' to the ldap server list\n"
+#~ msgstr "na seznam LDAP serverů bude zařazen „%s:%d“\n"
+
+#~ msgid "malloc failed: %s\n"
+#~ msgstr "funkce malloc selhala: %s\n"
+
+#~ msgid "start_cert_fetch: invalid pattern `%s'\n"
+#~ msgstr "start_cert_fetch: chybný vzor „%s“\n"
+
+#~ msgid "ldap_search hit the size limit of the server\n"
+#~ msgstr "ldap_search přesáhl omezení velikosti serveru\n"
+
+#~ msgid "invalid canonical S-expression found\n"
+#~ msgstr "nalezen neplatný kanonický S-výraz\n"
+
+#~ msgid "gcry_md_open failed: %s\n"
+#~ msgstr "gcry_md_open selhalo: %s\n"
+
+#~ msgid "oops: ksba_cert_hash failed: %s\n"
+#~ msgstr "jejda: ksba_cert_hash selhalo: %s\n"
+
+#~ msgid "bad URL encoding detected\n"
+#~ msgstr "zjištěno chybné kódování URL\n"
+
+#~ msgid "error reading from responder: %s\n"
+#~ msgstr "chyba při čtení z odpovídače: %s\n"
+
+#~ msgid "response from server too large; limit is %d bytes\n"
+#~ msgstr "odpověď serveru je příliš velká, limit je %d bajtů\n"
+
+#~ msgid "OCSP request not possible due to disabled HTTP\n"
+#~ msgstr "OCSP dotaz není možný, protože HTTP je zakázáno\n"
+
+#~ msgid "error setting OCSP target: %s\n"
+#~ msgstr "chyba při nastavování cíle OCSP: %s\n"
+
+#~ msgid "error building OCSP request: %s\n"
+#~ msgstr "chyba při sestavování OCSP dotazu: %s\n"
+
+#~ msgid "error connecting to `%s': %s\n"
+#~ msgstr "chyba při připojování na „%s“: %s\n"
+
+#~ msgid "error reading HTTP response for `%s': %s\n"
+#~ msgstr "chyba při čtení HTTP odpovědi od „%s“: %s\n"
+
+#~ msgid "error accessing `%s': http status %u\n"
+#~ msgstr "chyba přístupu k „%s“: status HTTP %u\n"
+
+#~ msgid "error parsing OCSP response for `%s': %s\n"
+#~ msgstr "chyba při rozebírání OCSP odpovědi od „%s“: %s\n"
+
+#~ msgid "OCSP responder at `%s' status: %s\n"
+#~ msgstr "Stav odpovídače OCSP na „%s“: %s\n"
+
+#~ msgid "hashing the OCSP response for `%s' failed: %s\n"
+#~ msgstr "hašování OCSP odpovědi pro „%s“ selhalo: %s\n"
+
+#~ msgid "not signed by a default OCSP signer's certificate"
+#~ msgstr "nepodepsáno výchozím OCSP certifikátem podepisovatele"
+
+#~ msgid "only SHA-1 is supported for OCSP responses\n"
+#~ msgstr "v OCSP odpovědích je podporováno jen SHA-1\n"
+
+#~ msgid "allocating list item failed: %s\n"
+#~ msgstr "alokování prvku seznamu selhalo: %s\n"
+
+#~ msgid "error getting responder ID: %s\n"
+#~ msgstr "chyba při zjišťování ID odpovídače: %s\n"
+
+#~ msgid "no suitable certificate found to verify the OCSP response\n"
+#~ msgstr "žádný vhodný certifikát pro ověření OCSP odpovědi nebyl nalezen\n"
+
+#~ msgid "issuer certificate not found: %s\n"
+#~ msgstr "certifikát vydavatele nenalezen: %s\n"
+
+#~ msgid "caller did not return the target certificate\n"
+#~ msgstr "volající nevrátil cílový certifikát\n"
+
+#~ msgid "caller did not return the issuing certificate\n"
+#~ msgstr "volající nevrátil vydávající certifikát\n"
+
+#~ msgid "failed to allocate OCSP context: %s\n"
+#~ msgstr "alokace OCSP kontextu selhala: %s\n"
+
+#~ msgid "can't get authorityInfoAccess: %s\n"
+#~ msgstr "authorityInfoAccess nelze získat: %s\n"
+
+#~ msgid "no default OCSP responder defined\n"
+#~ msgstr "žádný výchozí OCSP odpovídač nedefinován\n"
+
+#~ msgid "no default OCSP signer defined\n"
+#~ msgstr "žádný výchozí OCSP podepisovatel nedefinován\n"
+
+#~ msgid "using default OCSP responder `%s'\n"
+#~ msgstr "použije se výchozí OCSP odpovídač „%s“\n"
+
+#~ msgid "using OCSP responder `%s'\n"
+#~ msgstr "použije se OCSP odpovídač „%s“\n"
+
+#~ msgid "failed to establish a hashing context for OCSP: %s\n"
+#~ msgstr "nepodařilo se ustanovit hašovací kontext OCSP: %s\n"
+
+#~ msgid "error getting OCSP status for target certificate: %s\n"
+#~ msgstr "chyba při zjišťování OCSP stavu cílového certifikátu: %s\n"
+
+#~ msgid "certificate status is: %s  (this=%s  next=%s)\n"
+#~ msgstr "stav certifikátu je: %s (nyní=%s, příště=%s)\n"
+
+# status
+#~ msgid "good"
+#~ msgstr "dobrý"
+
+#~ msgid "certificate has been revoked at: %s due to: %s\n"
+#~ msgstr "certifikát byl odvolán kdy: %s, důvod: %s\n"
+
+#~ msgid "OCSP responder returned a status in the future\n"
+#~ msgstr "OCSP odpovídač vrátil stav v budoucnosti\n"
+
+#~ msgid "OCSP responder returned a non-current status\n"
+#~ msgstr "OCSP odpovídač vrátil ne současný stav\n"
+
+#~ msgid "OCSP responder returned an too old status\n"
+#~ msgstr "OCSP odpovídač vrátil příliš starý stav\n"
+
+#~ msgid "assuan_inquire(%s) failed: %s\n"
+#~ msgstr "volání assuan_inquire(%s) selhalo: %s\n"
+
+#~ msgid "ldapserver missing"
+#~ msgstr "chybí ldapserver (LDAP server)"
+
+#~ msgid "serialno missing in cert ID"
+#~ msgstr "v ID certifikátu chybí serialno (sériové číslo)"
+
+#~ msgid "assuan_inquire failed: %s\n"
+#~ msgstr "volání assuan_inquire selhalo: %s\n"
+
+#~ msgid "fetch_cert_by_url failed: %s\n"
+#~ msgstr "volání fetch_cert_by_url selhalo: %s\n"
+
+#~ msgid "error sending data: %s\n"
+#~ msgstr "chyba při odesílání dat: %s\n"
+
+#~ msgid "start_cert_fetch failed: %s\n"
+#~ msgstr "volání start_cert_fetch selhalo: %s\n"
+
+#~ msgid "fetch_next_cert failed: %s\n"
+#~ msgstr "volání fetch_next_cert selhalo: %s\n"
+
+#~ msgid "max_replies %d exceeded\n"
+#~ msgstr "max_replies (max. odpovědí) %d překročeno\n"
+
+#~ msgid "can't allocate control structure: %s\n"
+#~ msgstr "řídící strukturu nelze alokovat: %s\n"
+
+#~ msgid "failed to initialize the server: %s\n"
+#~ msgstr "inicializace serveru selhala: %s\n"
+
+#~ msgid "failed to the register commands with Assuan: %s\n"
+#~ msgstr "registrace příkazu u Assuanu selhala: %s\n"
+
+#~ msgid "Assuan accept problem: %s\n"
+#~ msgstr "problém příjmu Assuanu: %s\n"
+
+#~ msgid "Assuan processing failed: %s\n"
+#~ msgstr "zpracování Assuanu se nezdařilo: %s\n"
+
+#~ msgid "accepting root CA not marked as a CA"
+#~ msgstr "kořenová CA, která není označena jako CA, bude přijata"
+
+#~ msgid "CRL checking too deeply nested\n"
+#~ msgstr "kontrola CRL se zanořila příliš hluboko\n"
+
+#~ msgid "not checking CRL for"
+#~ msgstr "nekontroluje se CRL pro"
+
+#~ msgid "checking CRL for"
+#~ msgstr "kontroluje se CRL pro"
+
+#~ msgid "running in compatibility mode - certificate chain not checked!\n"
+#~ msgstr "provoz v režimu kompatibility – řetěz certifikátů nezkontrolován!\n"
+
+#~ msgid "selfsigned certificate has a BAD signature"
+#~ msgstr "sám sebou podepsaný certifikát má CHYBNÝ podpis"
+
+#~ msgid "checking trustworthiness of root certificate failed: %s\n"
+#~ msgstr "kontrola důvěryhodnosti kořenového certifikátu selhala: %s\n"
+
+#~ msgid "certificate chain is good\n"
+#~ msgstr "řetěz certifikátů je v pořádku\n"
+
+#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
+#~ msgstr "DSA požaduje použití 160-ti bitového hashovacího algoritmu\n"
+
+#~ msgid "certificate should have not been used for CRL signing\n"
+#~ msgstr "certifikát by neměl být použit pro podepisování CRL\n"
+
+#~ msgid "|ADDR|connect to Assuan server at ADDR"
+#~ msgstr "|ADRESA|připojit se na socket Assuanu na ADRESE"
+
+#~ msgid "reload all or a given component"
+#~ msgstr "znovu načíst všechny nebo zadané komponenty"
+
+#~ msgid "kill a given component"
+#~ msgstr "zabít zadanou komponentu"
 
 #~ msgid "Command> "
 #~ msgstr "Příkaz> "
@@ -7067,9 +8167,6 @@ msgstr ""
 #~ msgstr ""
 #~ "šifra „%s“ nebyla nahrána, protože přístupová práva nejsou nastavena "
 #~ "bezpečně\n"
-
-#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
-#~ msgstr "DSA požaduje použití 160-ti bitového hashovacího algoritmu\n"
 
 #~ msgid ".\n"
 #~ msgstr ".\n"
