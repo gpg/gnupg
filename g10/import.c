@@ -1175,6 +1175,12 @@ import_secret_one( const char *fname, KBNODE keyblock,
       }
     stats->secret_read++;
 
+    if ((options & IMPORT_NO_SECKEY))
+      {
+        log_error (_("importing secret keys not allowed\n"));
+        return 0;
+      }
+
     if( !uidnode )
       {
 	log_error( _("key %s: no user ID\n"), keystr_from_sk(sk));
