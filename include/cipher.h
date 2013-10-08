@@ -51,14 +51,14 @@
 #define CIPHER_ALGO_CAMELLIA256     13
 #define CIPHER_ALGO_DUMMY          110    /* No encryption at all. */
 
-#define PUBKEY_ALGO_RSA          /*  1 */ GCRY_PK_RSA
-#define PUBKEY_ALGO_RSA_E        /*  2 */ GCRY_PK_RSA_E /* RSA encrypt only. */
-#define PUBKEY_ALGO_RSA_S        /*  3 */ GCRY_PK_RSA_S /* RSA sign only.    */
-#define PUBKEY_ALGO_ELGAMAL_E    /* 16 */ GCRY_PK_ELG_E /* Elgamal encr only */
-#define PUBKEY_ALGO_DSA          /* 17 */ GCRY_PK_DSA
+#define PUBKEY_ALGO_RSA              1
+#define PUBKEY_ALGO_RSA_E            2 /* RSA encrypt only. */
+#define PUBKEY_ALGO_RSA_S            3 /* RSA sign only.    */
+#define PUBKEY_ALGO_ELGAMAL_E       16 /* Elgamal encr only */
+#define PUBKEY_ALGO_DSA             17
 #define PUBKEY_ALGO_ECDH            18
 #define PUBKEY_ALGO_ECDSA           19
-#define PUBKEY_ALGO_ELGAMAL      /* 20 */ GCRY_PK_ELG   /* Elgamal encr+sign */
+#define PUBKEY_ALGO_ELGAMAL         20 /* Elgamal encr+sign */
 
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */
 #define PUBKEY_USAGE_ENC     GCRY_PK_USAGE_ENCR  /* Good for encryption. */

@@ -2810,7 +2810,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 	    if(pk->is_revoked)
 	      {
 		char *user=get_user_id_string_native(pk->revoked.keyid);
-		const char *algo = gcry_pk_algo_name (pk->revoked.algo);
+		const char *algo = openpgp_pk_algo_name (pk->revoked.algo);
 		tty_printf (_("The following key was revoked on"
                               " %s by %s key %s\n"),
 			   revokestr_from_pk(pk),algo?algo:"?",user);
@@ -2828,7 +2828,7 @@ show_key_with_all_names( KBNODE keyblock, int only_marked, int with_revoker,
 		      char *user;
 		      const char *algo;
 
-                      algo = gcry_pk_algo_name (pk->revkey[i].algid);
+                      algo = openpgp_pk_algo_name (pk->revkey[i].algid);
 		      keyid_from_fingerprint(pk->revkey[i].fpr,
 					     MAX_FINGERPRINT_LEN,r_keyid);
 

@@ -455,7 +455,7 @@ print_pkenc_list( struct kidlist_item *list, int failed )
         if ( !failed && list->reason )
             continue;
 
-        algstr = gcry_pk_algo_name ( list->pubkey_algo );
+        algstr = openpgp_pk_algo_name ( list->pubkey_algo );
         pk = xmalloc_clear( sizeof *pk );
 
 	if( !algstr )
@@ -1644,7 +1644,7 @@ check_sig_and_print( CTX c, KBNODE node )
 
   /* (Indendation below not yet changed to GNU style.) */
 
-    astr = gcry_pk_algo_name ( sig->pubkey_algo );
+    astr = openpgp_pk_algo_name ( sig->pubkey_algo );
     if(keystrlen()>8)
       {
 	log_info(_("Signature made %s\n"),asctimestamp(sig->timestamp));

@@ -485,7 +485,7 @@ print_keyrec(int number,struct keyrec *keyrec)
     {
       const char *str;
 
-      str = gcry_pk_algo_name (map_pk_openpgp_to_gcry (keyrec->type));
+      str = openpgp_pk_algo_name (keyrec->type);
       if(str && strcmp (str, "?"))
 	printf("%s ",str);
       else

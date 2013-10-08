@@ -297,7 +297,7 @@ print_pubkey_algo_note( int algo )
 	{
 	  warn=1;
 	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
-		    gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo)));
+		    openpgp_pk_algo_name (algo));
 	}
     }
   else if (algo == 20)
@@ -423,8 +423,9 @@ map_pk_openpgp_to_gcry (int algo)
 {
   switch (algo)
     {
-    case PUBKEY_ALGO_ECDSA: return 301 /*GCRY_PK_ECDSA*/;
-    case PUBKEY_ALGO_ECDH:  return 302 /*GCRY_PK_ECDH*/;
+    case PUBKEY_ALGO_ECDSA:     return 301 /*GCRY_PK_ECDSA*/;
+    case PUBKEY_ALGO_ECDH:      return 302 /*GCRY_PK_ECDH*/;
+    case PUBKEY_ALGO_ELGAMAL_E: return GCRY_PK_ELG;
     default: return algo;
     }
 }
@@ -433,11 +434,15 @@ map_pk_openpgp_to_gcry (int algo)
 int
 openpgp_pk_test_algo( int algo )
 {
+  /* ECC is not yet supported even if supported by Libgcrypt.  */
+  if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+
   /* Dont't allow type 20 keys unless in rfc2440 mode.  */
   if (!RFC2440 && algo == 20)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  if (algo == GCRY_PK_ELG_E)
+  if (algo == PUBKEY_ALGO_ELGAMAL_E)
     algo = GCRY_PK_ELG;
 
   if (algo < 0 || algo > 110)
@@ -450,11 +455,15 @@ openpgp_pk_test_algo2( int algo, unsigned int use )
 {
   size_t use_buf = use;
 
+  /* ECC is not yet supported even if supported by Libgcrypt.  */
+  if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
+
   /* Dont't allow type 20 keys unless in rfc2440 mode.  */
   if (!RFC2440 && algo == 20)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  if (algo == GCRY_PK_ELG_E)
+  if (algo == PUBKEY_ALGO_ELGAMAL_E)
     algo = GCRY_PK_ELG;
 
   if (algo < 0 || algo > 110)
@@ -491,11 +500,28 @@ openpgp_pk_algo_usage ( int algo )
       case PUBKEY_ALGO_DSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
+      case PUBKEY_ALGO_ECDH:
+          use = PUBKEY_USAGE_ENC;
+          break;
+      case PUBKEY_ALGO_ECDSA:
+          use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
+          break;
       default:
           break;
     }
     return use;
 }
+
+
+/* Map the OpenPGP cipher algorithm whose ID is contained in ALGORITHM to a
+   string representation of the algorithm name.  For unknown algorithm
+   IDs this function returns "?".  */
+const char *
+openpgp_pk_algo_name (int algo)
+{
+  return gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo));
+}
+
 
 int
 openpgp_md_test_algo( int algo )

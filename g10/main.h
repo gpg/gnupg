@@ -93,6 +93,7 @@ int map_pk_openpgp_to_gcry (int algo);
 int openpgp_pk_test_algo( int algo );
 int openpgp_pk_test_algo2 ( int algo, unsigned int use );
 int openpgp_pk_algo_usage ( int algo );
+const char *openpgp_pk_algo_name (int algo);
 int openpgp_md_test_algo( int algo );
 
 #ifdef USE_IDEA

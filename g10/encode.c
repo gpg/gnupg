@@ -83,7 +83,7 @@ encode_seskey( DEK *dek, DEK **seskey, byte *enckey )
     /* The encrypted session key is prefixed with a one-octet algorithm id.  */
     buf[0] = (*seskey)->algo;
     memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
-    
+
     /* We only pass already checked values to the following fucntion,
        thus we consider any failure as fatal.  */
     if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
@@ -117,7 +117,7 @@ use_mdc(PK_LIST pk_list,int algo)
 
   if(select_mdc_from_pklist(pk_list))
     return 1;
-  
+
   /* The keys don't support MDC, so now we do a bit of a hack - if any
      of the AESes or TWOFISH are in the prefs, we assume that the user
      can handle a MDC.  This is valid for PGP 7, which can handle MDCs
@@ -178,7 +178,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
     memset( &zfx, 0, sizeof zfx);
     memset( &tfx, 0, sizeof tfx);
     init_packet(&pkt);
-    
+
     /* prepare iobufs */
     inp = iobuf_open(filename);
     if (inp)
@@ -207,7 +207,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
        it has no S2K salt. RFC1991 always uses simple S2K. */
     if ( RFC1991 && use_seskey )
         use_seskey = 0;
-    
+
     cfx.dek = NULL;
     if( mode ) {
         int canceled;
@@ -254,7 +254,7 @@ encode_simple( const char *filename, int mode, int use_seskey )
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
-        do_compress = 0;        
+        do_compress = 0;
       }
 
     if( rc || (rc = open_outfile( filename, opt.armor? 1:0, &out )) ) {
@@ -563,7 +563,7 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
 
       cfx.dek->algo = opt.def_cipher_algo;
     }
-    
+
     cfx.dek->use_mdc=use_mdc(pk_list,cfx.dek->algo);
 
     /* Only do the is-file-already-compressed check if we are using a
@@ -575,7 +575,7 @@ encode_crypt( const char *filename, strlist_t remusr, int use_symkey )
       {
         if (opt.verbose)
           log_info(_("`%s' already compressed\n"), filename);
-        do_compress = 0;        
+        do_compress = 0;
       }
     if (rc2)
       {
@@ -846,7 +846,7 @@ write_pubkey_enc_from_list( PK_LIST pk_list, DEK *dek, IOBUF out )
 	    if( opt.verbose ) {
 		char *ustr = get_user_id_string_native (enc->keyid);
 		log_info(_("%s/%s encrypted for: \"%s\"\n"),
-                         gcry_pk_algo_name (enc->pubkey_algo),
+                         openpgp_pk_algo_name (enc->pubkey_algo),
                          openpgp_cipher_algo_name (dek->algo),
                          ustr );
 		xfree(ustr);
@@ -874,9 +874,9 @@ encode_crypt_files(int nfiles, char **files, strlist_t remusr)
   if (opt.outfile)
     {
       log_error(_("--output doesn't work for this command\n"));
-      return;        
+      return;
     }
-    
+
   if (!nfiles)
     {
       char line[2048];

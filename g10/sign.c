@@ -318,7 +318,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
 	if( opt.verbose ) {
 	    char *ustr = get_user_id_string_native (sig->keyid);
 	    log_info(_("%s/%s signature from: \"%s\"\n"),
-		     gcry_pk_algo_name (sk->pubkey_algo),
+		     openpgp_pk_algo_name (sk->pubkey_algo),
 		     gcry_md_algo_name (sig->digest_algo),
 		     ustr );
 	    xfree(ustr);

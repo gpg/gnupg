@@ -1603,7 +1603,7 @@ ask_key_flags(int algo,int subkey)
     {
       tty_printf("\n");
       tty_printf(_("Possible actions for a %s key: "),
-		 gcry_pk_algo_name (algo));
+		 openpgp_pk_algo_name (algo));
       print_key_flags(possible);
       tty_printf("\n");
       tty_printf(_("Current allowed actions: "));
@@ -1807,7 +1807,7 @@ ask_keysize (int algo, unsigned int primary_keysize)
     }
 
   tty_printf(_("%s keys may be between %u and %u bits long.\n"),
-	     gcry_pk_algo_name (algo), min, max);
+	     openpgp_pk_algo_name (algo), min, max);
 
   for(;;)
     {
@@ -1826,7 +1826,7 @@ ask_keysize (int algo, unsigned int primary_keysize)
 
       if(nbits<min || nbits>max)
 	tty_printf(_("%s keysizes must be in the range %u-%u\n"),
-		   gcry_pk_algo_name (algo), min, max);
+		   openpgp_pk_algo_name (algo), min, max);
       else
 	break;
     }

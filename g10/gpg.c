@@ -854,8 +854,8 @@ my_strusage( int level )
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
 	if (!pubkeys)
-            pubkeys = build_list (_("Pubkey: "), 0,
-                                  gcry_pk_algo_name,
+            pubkeys = build_list (_("Pubkey: "), 'P',
+                                  openpgp_pk_algo_name,
                                   openpgp_pk_test_algo );
 	p = pubkeys;
 	break;
@@ -906,6 +906,9 @@ build_list (const char *text, char letter,
 
   for (i=0; i <= 110; i++ )
     {
+      if (letter == 'P' && i == 19 )
+        continue; /* No need to print a second "ECC" string.  */
+
       if (!chkf (i) && (s = mapf (i)))
         {
           if (mb.len - len > 60)
@@ -921,7 +924,7 @@ build_list (const char *text, char letter,
             put_membuf_str (&mb, text);
 
           put_membuf_str (&mb, s);
-          if (opt.verbose && letter)
+          if (opt.verbose && letter && letter != 'P')
             {
               char num[20];
               snprintf (num, sizeof num, " (%c%d)", letter, i);

@@ -74,7 +74,7 @@ encode_s2k_iterations (int iterations)
           if (err && gpg_err_code (err) != GPG_ERR_ASS_PARAMETER)
             log_error (_("problem with the agent: %s\n"), gpg_strerror (err));
           /* Default to 65536 which we used up to 2.0.13.  */
-          return 96; 
+          return 96;
         }
       else if (mycnt >= 65011712)
         return 255; /* Largest possible value.  */
@@ -87,7 +87,7 @@ encode_s2k_iterations (int iterations)
 
   if (iterations >= 65011712)
     return 255;
-  
+
   /* Need count to be in the range 16-31 */
   for (count=iterations>>6; count>=32; count>>=1)
     c++;
@@ -96,13 +96,13 @@ encode_s2k_iterations (int iterations)
 
   if (S2K_DECODE_COUNT(result) < iterations)
     result++;
-  
+
   return result;
 }
 
 
 
-/* Hash a passphrase using the supplied s2k. 
+/* Hash a passphrase using the supplied s2k.
    Always needs: dek->algo, s2k->mode, s2k->hash_algo.  */
 static void
 hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k)
@@ -119,20 +119,20 @@ hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k)
 
   if (gcry_md_open (&md, s2k->hash_algo, 1))
     BUG ();
-  for (pass=0; used < dek->keylen ; pass++ ) 
+  for (pass=0; used < dek->keylen ; pass++ )
     {
-      if ( pass ) 
+      if ( pass )
         {
           gcry_md_reset (md);
           for (i=0; i < pass; i++ ) /* Preset the hash context.  */
             gcry_md_putc (md, 0 );
 	}
 
-      if ( s2k->mode == 1 || s2k->mode == 3 ) 
+      if ( s2k->mode == 1 || s2k->mode == 3 )
         {
           int len2 = pwlen + 8;
           ulong count = len2;
-          
+
           if ( s2k->mode == 3 )
             {
               count = S2K_DECODE_COUNT(s2k->count);
@@ -146,7 +146,7 @@ hash_passphrase ( DEK *dek, char *pw, STRING2KEY *s2k)
 
           /* A little bit complicated because we need a ulong for count. */
           while ( count > len2 )  /* maybe iterated+salted */
-            { 
+            {
               gcry_md_write ( md, s2k->salt, 8 );
               gcry_md_write ( md, pw, pwlen );
               count -= len2;
@@ -242,7 +242,7 @@ read_passphrase_from_fd( int fd )
   int i, len;
   char *pw;
 
-  if ( !opt.batch ) 
+  if ( !opt.batch )
     { /* Not used but we have to do a dummy read, so that it won't end
          up at the begin of the message if the quite usual trick to
          prepend the passphtrase to the message is used. */
@@ -251,12 +251,12 @@ read_passphrase_from_fd( int fd )
       while (!(read (fd, buf, 1) != 1 || *buf == '\n' ))
         ;
       *buf = 0;
-      return; 
+      return;
     }
 
-  for (pw = NULL, i = len = 100; ; i++ ) 
+  for (pw = NULL, i = len = 100; ; i++ )
     {
-      if (i >= len-1 ) 
+      if (i >= len-1 )
         {
           char *pw2 = pw;
           len += 100;
@@ -322,35 +322,35 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
   if( keyid && get_pubkey( pk, keyid ) )
     {
       if (pk)
-        free_public_key( pk );      
+        free_public_key( pk );
       pk = NULL; /* oops: no key for some reason */
     }
-  
+
   orig_codeset = i18n_switchto_utf8 ();
 
   if (custom_description)
     atext = native_to_utf8 (custom_description);
   else if ( !mode && pk && keyid )
-    { 
+    {
       char *uid;
       size_t uidlen;
-      const char *algo_name = gcry_pk_algo_name ( pk->pubkey_algo );
+      const char *algo_name = openpgp_pk_algo_name (pk->pubkey_algo);
       const char *timestr;
       char *maink;
-      
+
       if ( !algo_name )
         algo_name = "?";
 
 #define KEYIDSTRING _(" (main key ID %s)")
 
       maink = xmalloc ( strlen (KEYIDSTRING) + keystrlen() + 20 );
-      if( keyid[2] && keyid[3] && keyid[0] != keyid[2] 
+      if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
           && keyid[1] != keyid[3] )
         sprintf( maink, KEYIDSTRING, keystr(&keyid[2]) );
       else
         *maink = 0;
-      
-      uid = get_user_id ( keyid, &uidlen ); 
+
+      uid = get_user_id ( keyid, &uidlen );
       timestr = strtimestamp (pk->timestamp);
 
 #undef KEYIDSTRING
@@ -361,7 +361,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
 		       "%u-bit %s key, ID %s,\n" \
                        "created %s%s.\n" )
 
-      atext = xmalloc ( 100 + strlen (PROMPTSTRING)  
+      atext = xmalloc ( 100 + strlen (PROMPTSTRING)
                         + uidlen + 15 + strlen(algo_name) + keystrlen()
                         + strlen (timestr) + strlen (maink) );
       sprintf (atext, PROMPTSTRING,
@@ -373,16 +373,16 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
 
 #undef PROMPTSTRING
 
-      { 
+      {
         size_t dummy;
         fingerprint_from_pk( pk, fpr, &dummy );
         have_fpr = 1;
       }
-      
+
     }
   else
     atext = xstrdup ( _("Enter passphrase\n") );
-                
+
 
   if (!mode && cacheid)
     my_cacheid = cacheid;
@@ -398,7 +398,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
 
   rc = agent_get_passphrase (my_cacheid, tryagain_text, my_prompt, atext,
                              repeat, check, &pw);
-  
+
   xfree (my_prompt);
   xfree (atext); atext = NULL;
 
@@ -413,7 +413,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
       if (canceled)
         *canceled = 1;
     }
-  else 
+  else
     {
       log_error (_("problem with the agent: %s\n"), gpg_strerror (rc));
       /* Due to limitations in the API of the upper layers they
@@ -422,7 +422,7 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
          definitely not happen and let it continue without requiring a
          passphrase.  Given that now all the upper layers handle a
          cancel correctly, we simply set the cancel flag now for all
-         errors from the agent.  */ 
+         errors from the agent.  */
       if (canceled)
         *canceled = 1;
 
@@ -450,7 +450,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
   int rc;
 
   (void)algo;
-    
+
   if (!cacheid)
     {
       PKT_public_key *pk;
@@ -460,7 +460,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
       byte fpr[MAX_FINGERPRINT_LEN];
       char hexfprbuf[2*20+1];
       size_t dummy;
-      
+
       pk = xcalloc (1, sizeof *pk);
       if ( !keyid || get_pubkey( pk, keyid ) )
         {
@@ -488,7 +488,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
    NULL, sets it to true.
 
    MODE 0:  Allow cached passphrase
-        1:  Ignore cached passphrase 
+        1:  Ignore cached passphrase
         2:  Ditto, but create a new key
         3:  Allow cached passphrase; use the S2K salt as the cache ID
         4:  Ditto, but create a new key
@@ -496,7 +496,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
 DEK *
 passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
                        int cipher_algo, STRING2KEY *s2k, int mode,
-                       const char *tryagain_text, 
+                       const char *tryagain_text,
                        const char *custdesc, const char *custprompt,
                        int *canceled)
 {
@@ -509,11 +509,11 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
   if (!canceled)
     canceled = &dummy_canceled;
   *canceled = 0;
-  
+
   if ( !s2k )
     {
       assert (mode != 3 && mode != 4);
-      /* This is used for the old rfc1991 mode 
+      /* This is used for the old rfc1991 mode
        * Note: This must match the code in encode.c with opt.rfc1991 set */
       s2k = &help_s2k;
       s2k->mode = 0;
@@ -539,16 +539,16 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
   /* If we do not have a passphrase available in NEXT_PW and status
      information are request, we print them now. */
-  if ( !next_pw && is_status_enabled() ) 
+  if ( !next_pw && is_status_enabled() )
     {
       char buf[50];
-      
+
       if ( keyid )
         {
           u32 used_kid[2];
           char *us;
-          
-          if ( keyid[2] && keyid[3] ) 
+
+          if ( keyid[2] && keyid[3] )
             {
               used_kid[0] = keyid[2];
               used_kid[1] = keyid[3];
@@ -558,16 +558,16 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
               used_kid[0] = keyid[0];
               used_kid[1] = keyid[1];
             }
-          
+
           us = get_long_user_id_string ( keyid );
           write_status_text ( STATUS_USERID_HINT, us );
           xfree(us);
-          
+
           snprintf (buf, sizeof buf -1, "%08lX%08lX %08lX%08lX %d 0",
                     (ulong)keyid[0], (ulong)keyid[1],
                     (ulong)used_kid[0], (ulong)used_kid[1],
                     pubkey_algo );
-          
+
           write_status_text ( STATUS_NEED_PASSPHRASE, buf );
 	}
       else
@@ -586,7 +586,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
     {
       PKT_public_key *pk = xmalloc_clear( sizeof *pk );
       char *p;
-      
+
       p = get_user_id_native(keyid);
       tty_printf ("\n");
       tty_printf (_("You need a passphrase to unlock the secret key for\n"
@@ -595,8 +595,8 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 
       if ( !get_pubkey( pk, keyid ) )
         {
-          const char *s = gcry_pk_algo_name ( pk->pubkey_algo );
-          
+          const char *s = openpgp_pk_algo_name (pk->pubkey_algo);
+
           tty_printf (_("%u-bit %s key, ID %s, created %s"),
                       nbits_from_pk( pk ), s?s:"?", keystr(keyid),
                       strtimestamp(pk->timestamp) );
@@ -620,19 +620,19 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
         free_public_key( pk );
     }
 
-  if ( next_pw ) 
+  if ( next_pw )
     {
       /* Simply return the passphrase we already have in NEXT_PW. */
       pw = next_pw;
       next_pw = NULL;
     }
-  else if ( have_static_passphrase () ) 
+  else if ( have_static_passphrase () )
     {
       /* Return the passphrase we have stored in FD_PASSWD. */
       pw = xmalloc_secure ( strlen(fd_passwd)+1 );
       strcpy ( pw, fd_passwd );
     }
-  else 
+  else
     {
       if ((mode == 3 || mode == 4) && (s2k->mode == 1 || s2k->mode == 3))
 	{
@@ -653,7 +653,7 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
           return NULL;
         }
     }
-    
+
   if ( !pw || !*pw )
     write_status( STATUS_MISSING_PASSPHRASE );
 
