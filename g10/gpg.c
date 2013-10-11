@@ -3539,14 +3539,10 @@ main (int argc, char **argv)
       case aListTrustDB:
         rc = setup_trustdb (argc? 1:0, trustdb_name);
         break;
-      case aEncr:
-      case aEncrFiles:
+      default:
         /* If we are using TM_ALWAYS, we do not need to create the
            trustdb.  */
         rc = setup_trustdb (opt.trust_model != TM_ALWAYS, trustdb_name);
-        break;
-      default:
-        rc = setup_trustdb (1, trustdb_name );
         break;
       }
     if (rc)

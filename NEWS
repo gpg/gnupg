@@ -38,6 +38,10 @@ Noteworthy changes in version 2.1.0-betaN (unreleased)
  * Only the major version number is by default included in the armored
    output.
 
+ * Do not create a trustdb file if --trust-model=always is used.
+
+ * Protect against rogue keyservers sending secret keys.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------

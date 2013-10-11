@@ -49,19 +49,22 @@ typedef struct key_item **KeyHashTable; /* see new_key_hash_table() */
  * the item right after the last one has a keyblock set to NULL.
  * Maybe we can drop this thing and replace it by key_item
  */
-struct key_array {
+struct key_array
+{
   KBNODE keyblock;
 };
 
 
-/* control information for the trust DB */
-static struct {
-    int init;
-    int level;
-    char *dbname;
+/* Control information for the trust DB.  */
+static struct
+{
+  int init;
+  int level;
+  char *dbname;
+  int no_trustdb;
 } trustdb_args;
 
-/* some globals */
+/* Some globals.  */
 static struct key_item *user_utk_list; /* temp. used to store --trusted-keys */
 static struct key_item *utk_list;      /* all ultimately trusted keys */
 
@@ -417,7 +420,7 @@ how_to_fix_the_trustdb ()
 
 
 void
-init_trustdb()
+init_trustdb ()
 {
   int level = trustdb_args.level;
   const char* dbname = trustdb_args.dbname;
@@ -429,7 +432,7 @@ init_trustdb()
 
   if(level==0 || level==1)
     {
-      int rc = tdbio_set_dbname( dbname, !!level );
+      int rc = tdbio_set_dbname( dbname, !!level, &trustdb_args.no_trustdb);
       if( rc )
 	log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
     }
@@ -525,10 +528,13 @@ void
 tdb_revalidation_mark (void)
 {
   init_trustdb();
-  /* we simply set the time for the next check to 1 (far back in 1970)
-   * so that a --update-trustdb will be scheduled */
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return;
+
+  /* We simply set the time for the next check to 1 (far back in 1970)
+     so that a --update-trustdb will be scheduled.  */
   if (tdbio_write_nextcheck (1))
-      do_sync ();
+    do_sync ();
   pending_check_trustdb = 1;
 }
 
@@ -560,8 +566,10 @@ read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
   TRUSTREC opts;
 
   init_trustdb();
-
-  read_record(0,&opts,RECTYPE_VER);
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    memset (&opts, 0, sizeof opts);
+  else
+    read_record (0, &opts, RECTYPE_VER);
 
   if(trust_model)
     *trust_model=opts.r.ver.trust_model;
@@ -619,6 +627,9 @@ tdb_get_ownertrust ( PKT_public_key *pk)
   TRUSTREC rec;
   int rc;
 
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
   rc = read_trust_record (pk, &rec);
   if (rc == -1)
     return TRUST_UNKNOWN; /* no record yet */
@@ -637,6 +648,9 @@ tdb_get_min_ownertrust (PKT_public_key *pk)
 {
   TRUSTREC rec;
   int rc;
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
 
   rc = read_trust_record (pk, &rec);
   if (rc == -1)
@@ -660,6 +674,9 @@ tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
 {
   TRUSTREC rec;
   int rc;
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return;
 
   rc = read_trust_record (pk, &rec);
   if (!rc)
@@ -704,6 +721,9 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   PKT_public_key *pk;
   TRUSTREC rec;
   int rc;
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return;
 
   pk = xmalloc_clear (sizeof *pk);
   rc = get_pubkey (pk, kid);
@@ -760,6 +780,11 @@ tdb_clear_ownertrusts (PKT_public_key *pk)
 {
   TRUSTREC rec;
   int rc;
+
+  init_trustdb ();
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return 0;
 
   rc = read_trust_record (pk, &rec);
   if (!rc)
@@ -865,6 +890,9 @@ tdb_cache_disabled_value (PKT_public_key *pk)
 
   init_trustdb();
 
+  if (trustdb_args.no_trustdb)
+    return 0;  /* No trustdb => not disabled.  */
+
   rc = read_trust_record (pk, &trec);
   if (rc && rc != -1)
     {
@@ -893,6 +921,10 @@ tdb_check_trustdb_stale (void)
   static int did_nextcheck=0;
 
   init_trustdb ();
+
+  if (trustdb_args.no_trustdb)
+    return;  /* No trustdb => can't be stale.  */
+
   if (!did_nextcheck
       && (opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC))
     {
@@ -931,6 +963,14 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
   unsigned int validity;
 
   init_trustdb ();
+
+  /* If we have no trustdb (which also means it has not been created)
+     and the trust-model is always, we don't know the validity -
+     return immediately.  If we won't do that the tdbio code would try
+     to open the trustdb and run into a fatal error.  */
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
   check_trustdb_stale();
 
   if(opt.trust_model==TM_DIRECT)
