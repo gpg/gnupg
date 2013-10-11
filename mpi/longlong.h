@@ -752,7 +752,7 @@ extern USItype __udiv_qrnnd ();
     (w1) = _r >> 64;                                                    \
     (w0) = (UDItype) _r;                                                \
   } while (0)
-# elif if __GNUC__ > 2 || __GNUC_MINOR__ >= 7
+# elif __GNUC__ > 2 || __GNUC_MINOR__ >= 7
 #  define umul_ppmm(w1, w0, u, v)                                       \
      __asm__ ("dmultu %2,%3"                                            \
               : "=l" ((UDItype)(w0)),                                   \
