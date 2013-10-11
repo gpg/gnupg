@@ -3318,14 +3318,12 @@ main (int argc, char **argv )
       case aFixTrustDB:
       case aExportOwnerTrust: rc = setup_trustdb( 0, trustdb_name ); break;
       case aListTrustDB: rc = setup_trustdb( argc? 1:0, trustdb_name ); break;
-      case aEncr:
-      case aEncrFiles:
-        /* No need to create the trust model if we are using the
+      default:
+          /* No need to create the trust model if we are using the
          * always trust model.  */
         rc = setup_trustdb (opt.trust_model != TM_ALWAYS, trustdb_name);
         break;
-      default: rc = setup_trustdb(1, trustdb_name ); break;
-    }
+      }
     if( rc )
 	log_error(_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
 
