@@ -44,7 +44,7 @@
 
 /*
  * A structure to store key identification as well as some stuff needed
- * for validation 
+ * for validation
  */
 struct key_item {
   struct key_item *next;
@@ -60,7 +60,7 @@ typedef struct key_item **KeyHashTable; /* see new_key_hash_table() */
 
 /*
  * Structure to keep track of keys, this is used as an array wherre
- * the item right after the last one has a keyblock set to NULL. 
+ * the item right after the last one has a keyblock set to NULL.
  * Maybe we can drop this thing and replace it by key_item
  */
 struct key_array {
@@ -73,6 +73,7 @@ static struct {
     int init;
     int level;
     char *dbname;
+    int no_trustdb;   /* Set if a trustdb file is not available.  */
 } trustdb_args;
 
 /* some globals */
@@ -92,7 +93,7 @@ static struct key_item *
 new_key_item (void)
 {
   struct key_item *k;
-  
+
   k = xmalloc_clear (sizeof *k);
   return k;
 }
@@ -114,11 +115,11 @@ release_key_items (struct key_item *k)
  * For fast keylook up we need a hash table.  Each byte of a KeyIDs
  * should be distributed equally over the 256 possible values (except
  * for v3 keyIDs but we consider them as not important here). So we
- * can just use 10 bits to index a table of 1024 key items. 
+ * can just use 10 bits to index a table of 1024 key items.
  * Possible optimization: Don not use key_items but other hash_table when the
- * duplicates lists gets too large. 
+ * duplicates lists gets too large.
  */
-static KeyHashTable 
+static KeyHashTable
 new_key_hash_table (void)
 {
   struct key_item **tbl;
@@ -139,7 +140,7 @@ release_key_hash_table (KeyHashTable tbl)
   xfree (tbl);
 }
 
-/* 
+/*
  * Returns: True if the keyID is in the given hash table
  */
 static int
@@ -164,7 +165,7 @@ add_key_hash_table (KeyHashTable tbl, u32 *kid)
   for (k = tbl[(kid[1] & 0x03ff)]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       return; /* already in table */
-  
+
   kk = new_key_item ();
   kk->kid[0] = kid[0];
   kk->kid[1] = kid[1];
@@ -234,7 +235,7 @@ add_utk (u32 *kid)
 {
   struct key_item *k;
 
-  for (k = utk_list; k; k = k->next) 
+  for (k = utk_list; k; k = k->next)
     {
       if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
         {
@@ -269,15 +270,15 @@ verify_own_keys(void)
     return;
 
   /* scan the trustdb to find all ultimately trusted keys */
-  for (recnum=1; !tdbio_read_record (recnum, &rec, 0); recnum++ ) 
+  for (recnum=1; !tdbio_read_record (recnum, &rec, 0); recnum++ )
     {
-      if ( rec.rectype == RECTYPE_TRUST 
+      if ( rec.rectype == RECTYPE_TRUST
            && (rec.r.trust.ownertrust & TRUST_MASK) == TRUST_ULTIMATE)
         {
             byte *fpr = rec.r.trust.fingerprint;
             int fprlen;
             u32 kid[2];
-            
+
             /* Problem: We do only use fingerprints in the trustdb but
              * we need the keyID here to indetify the key; we can only
              * use that ugly hack to distinguish between 16 and 20
@@ -293,9 +294,9 @@ verify_own_keys(void)
     }
 
   /* Put any --trusted-key keys into the trustdb */
-  for (k = user_utk_list; k; k = k->next) 
+  for (k = user_utk_list; k; k = k->next)
     {
-      if ( add_utk (k->kid) ) 
+      if ( add_utk (k->kid) )
         { /* not yet in trustDB as ultimately trusted */
           PKT_public_key pk;
 
@@ -441,7 +442,7 @@ init_trustdb()
 
   if(level==0 || level==1)
     {
-      int rc = tdbio_set_dbname( dbname, !!level );
+      int rc = tdbio_set_dbname (dbname, !!level, &trustdb_args.no_trustdb);
       if( rc )
 	log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
     }
@@ -492,7 +493,7 @@ init_trustdb()
 static int
 trust_letter (unsigned int value)
 {
-  switch( (value & TRUST_MASK) ) 
+  switch( (value & TRUST_MASK) )
     {
     case TRUST_UNKNOWN:   return '-';
     case TRUST_EXPIRED:   return 'e';
@@ -541,7 +542,7 @@ uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid)
 const char *
 trust_value_to_string (unsigned int value)
 {
-  switch( (value & TRUST_MASK) ) 
+  switch( (value & TRUST_MASK) )
     {
     case TRUST_UNKNOWN:   return _("unknown");
     case TRUST_EXPIRED:   return _("expired");
@@ -610,7 +611,7 @@ check_trustdb ()
 
 
 /*
- * Recreate the WoT. 
+ * Recreate the WoT.
  */
 void
 update_trustdb()
@@ -627,6 +628,9 @@ void
 revalidation_mark (void)
 {
   init_trustdb();
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return;
+
   /* we simply set the time for the next check to 1 (far back in 1970)
    * so that a --update-trustdb will be scheduled */
   if (tdbio_write_nextcheck (1))
@@ -662,8 +666,10 @@ read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
   TRUSTREC opts;
 
   init_trustdb();
-
-  read_record(0,&opts,RECTYPE_VER);
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    memset (&opts, 0, sizeof opts);
+  else
+    read_record(0,&opts,RECTYPE_VER);
 
   if(trust_model)
     *trust_model=opts.r.ver.trust_model;
@@ -685,29 +691,29 @@ read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
  ***********  Ownertrust et al. ****************
  ***********************************************/
 
-static int 
+static int
 read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
 {
   int rc;
-  
+
   init_trustdb();
   rc = tdbio_search_trust_bypk (pk, rec);
   if (rc == -1)
     return -1; /* no record yet */
-  if (rc) 
+  if (rc)
     {
       log_error ("trustdb: searching trust record failed: %s\n",
                  g10_errstr (rc));
-      return rc; 
+      return rc;
     }
-      
+
   if (rec->rectype != RECTYPE_TRUST)
     {
       log_error ("trustdb: record %lu is not a trust record\n",
                  rec->recnum);
-      return G10ERR_TRUSTDB; 
-    }      
-  
+      return G10ERR_TRUSTDB;
+    }
+
   return 0;
 }
 
@@ -715,16 +721,19 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
  * Return the assigned ownertrust value for the given public key.
  * The key should be the primary key.
  */
-unsigned int 
+unsigned int
 get_ownertrust ( PKT_public_key *pk)
 {
   TRUSTREC rec;
   int rc;
-  
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
   rc = read_trust_record (pk, &rec);
   if (rc == -1)
     return TRUST_UNKNOWN; /* no record yet */
-  if (rc) 
+  if (rc)
     {
       tdbio_invalid ();
       return rc; /* actually never reached */
@@ -733,16 +742,19 @@ get_ownertrust ( PKT_public_key *pk)
   return rec.r.trust.ownertrust;
 }
 
-unsigned int 
+unsigned int
 get_min_ownertrust (PKT_public_key *pk)
 {
   TRUSTREC rec;
   int rc;
-  
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
   rc = read_trust_record (pk, &rec);
   if (rc == -1)
     return TRUST_UNKNOWN; /* no record yet */
-  if (rc) 
+  if (rc)
     {
       tdbio_invalid ();
       return rc; /* actually never reached */
@@ -805,7 +817,10 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
 {
   TRUSTREC rec;
   int rc;
-  
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return;
+
   rc = read_trust_record (pk, &rec);
   if (!rc)
     {
@@ -837,7 +852,7 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
       do_sync ();
       rc = 0;
     }
-  else 
+  else
     {
       tdbio_invalid ();
     }
@@ -849,6 +864,9 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   PKT_public_key *pk;
   TRUSTREC rec;
   int rc;
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return;
 
   pk = xmalloc_clear (sizeof *pk);
   rc = get_pubkey (pk, kid);
@@ -891,7 +909,7 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
       do_sync ();
       rc = 0;
     }
-  else 
+  else
     {
       tdbio_invalid ();
     }
@@ -904,7 +922,10 @@ clear_ownertrusts (PKT_public_key *pk)
 {
   TRUSTREC rec;
   int rc;
-  
+
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return 0;
+
   rc = read_trust_record (pk, &rec);
   if (!rc)
     {
@@ -932,8 +953,8 @@ clear_ownertrusts (PKT_public_key *pk)
   return 0;
 }
 
-/* 
- * Note: Caller has to do a sync 
+/*
+ * Note: Caller has to do a sync
  */
 static void
 update_validity (PKT_public_key *pk, PKT_user_id *uid,
@@ -952,7 +973,7 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
       return;
     }
   if (rc == -1) /* no record yet - create a new one */
-    { 
+    {
       size_t dummy;
 
       rc = 0;
@@ -1007,6 +1028,8 @@ cache_disabled_value(PKT_public_key *pk)
     return (pk->is_disabled==2);
 
   init_trustdb();
+  if (trustdb_args.no_trustdb)
+    return 0;  /* No trustdb => not disabled.  */
 
   rc = read_trust_record (pk, &trec);
   if (rc && rc != -1)
@@ -1016,10 +1039,10 @@ cache_disabled_value(PKT_public_key *pk)
     }
   if (rc == -1) /* no record found, so assume not disabled */
     goto leave;
- 
+
   if(trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
     disabled=1;
- 
+
   /* Cache it for later so we don't need to look at the trustdb every
      time */
   if(disabled)
@@ -1037,6 +1060,9 @@ check_trustdb_stale(void)
   static int did_nextcheck=0;
 
   init_trustdb ();
+  if (trustdb_args.no_trustdb)
+    return;  /* No trustdb => can't be stale.  */
+
   if (!did_nextcheck
       && (opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC))
     {
@@ -1047,7 +1073,7 @@ check_trustdb_stale(void)
       if ((scheduled && scheduled <= make_timestamp ())
 	  || pending_check_trustdb)
         {
-          if (opt.no_auto_check_trustdb) 
+          if (opt.no_auto_check_trustdb)
             {
               pending_check_trustdb = 1;
               log_info (_("please do a --check-trustdb\n"));
@@ -1064,7 +1090,7 @@ check_trustdb_stale(void)
 /*
  * Return the validity information for PK.  If the namehash is not
  * NULL, the validity of the corresponsing user ID is returned,
- * otherwise, a reasonable value for the entire key is returned. 
+ * otherwise, a reasonable value for the entire key is returned.
  */
 unsigned int
 get_validity (PKT_public_key *pk, PKT_user_id *uid)
@@ -1080,6 +1106,14 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
     namehash_from_uid(uid);
 
   init_trustdb ();
+
+  /* If we have no trustdb (which also means it has not been created)
+     and the trust-model is always, we don't know the validity -
+     return immediately.  If we won't do that the tdbio code would try
+     to open the trustdb and run into a fatal error.  */
+  if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
+    return TRUST_UNKNOWN;
+
   check_trustdb_stale();
 
   keyid_from_pk (pk, kid);
@@ -1093,7 +1127,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
           log_error ("error getting main key %s of subkey %s: %s\n",
                      tempkeystr, keystr(kid), g10_errstr(rc));
 	  xfree(tempkeystr);
-          validity = TRUST_UNKNOWN; 
+          validity = TRUST_UNKNOWN;
           goto leave;
 	}
     }
@@ -1116,7 +1150,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
     }
   if (rc == -1) /* no record found */
     {
-      validity = TRUST_UNKNOWN; 
+      validity = TRUST_UNKNOWN;
       goto leave;
     }
 
@@ -1149,7 +1183,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
 
       recno = vrec.r.valid.next;
     }
-  
+
   if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
     {
       validity |= TRUST_FLAG_DISABLED;
@@ -1168,7 +1202,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
    * I initially designed it that way */
   if (main_pk->has_expired || pk->has_expired)
     validity = (validity & ~TRUST_MASK) | TRUST_EXPIRED;
-  
+
   if (pending_check_trustdb)
     validity |= TRUST_FLAG_PENDING_CHECK;
 
@@ -1181,10 +1215,10 @@ int
 get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 {
   int trustlevel;
-  
+
   if (!pk)
     return '?';  /* Just in case a NULL PK is passed.  */
-  
+
   trustlevel = get_validity (pk, uid);
   if ( (trustlevel & TRUST_FLAG_REVOKED) )
     return 'r';
@@ -1311,7 +1345,7 @@ ask_ownertrust (u32 *kid,int minimum)
                  keystr(kid), g10_errstr(rc) );
       return TRUST_UNKNOWN;
     }
- 
+
   if(opt.force_ownertrust)
     {
       log_info("force trust for key %s to %s\n",
@@ -1384,7 +1418,7 @@ dump_key_array (int depth, struct key_array *keys)
             }
         }
     }
-}  
+}
 
 
 static void
@@ -1407,7 +1441,7 @@ store_validation_status (int depth, KBNODE keyblock, KeyHashTable stored)
             status = TRUST_UNDEFINED;
           else
             status = 0;
-          
+
           if (status)
             {
               update_validity (keyblock->pkt->pkt.public_key,
@@ -1422,7 +1456,7 @@ store_validation_status (int depth, KBNODE keyblock, KeyHashTable stored)
 
   if (any)
     do_sync ();
-}  
+}
 
 /*
  * check whether the signature sig is in the klist k
@@ -1454,7 +1488,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 {
   KBNODE node;
   PKT_signature *sig;
-  
+
   /* first check all signatures */
   for (node=uidnode->next; node; node = node->next)
     {
@@ -1487,7 +1521,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 	  continue;
 	}
       node->flag |= 1<<9;
-    }      
+    }
   /* reset the remaining flags */
   for (; node; node = node->next)
       node->flag &= ~(1<<8 | 1<<9 | 1<<10 | 1<<11 | 1<<12);
@@ -1535,7 +1569,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
              older: if signode was older then we don't want to take n
              as signode is nonrevocable.  If n was older then we're
              automatically fine. */
-	  
+
 	  if(((IS_UID_SIG(signode->pkt->pkt.signature) &&
 	       !signode->pkt->pkt.signature->flags.revocable &&
 	       (signode->pkt->pkt.signature->expiredate==0 ||
@@ -1551,7 +1585,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
              n was older then we don't want to take signode as n is
              nonrevocable.  If signode was older then we're
              automatically fine. */
-	  
+
 	  if((!(IS_UID_SIG(signode->pkt->pkt.signature) &&
 		!signode->pkt->pkt.signature->flags.revocable &&
 		(signode->pkt->pkt.signature->expiredate==0 ||
@@ -1582,7 +1616,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
 
       sig = signode->pkt->pkt.signature;
       if (IS_UID_SIG (sig))
-        { /* this seems to be a usable one which is not revoked. 
+        { /* this seems to be a usable one which is not revoked.
            * Just need to check whether there is an expiration time,
            * We do the expired certification after finding a suitable
            * certification, the assumption is that a signator does not
@@ -1591,7 +1625,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
            * different expiration time */
           const byte *p;
           u32 expire;
-                    
+
           p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
           expire = p? sig->timestamp + buffer_to_u32(p) : 0;
 
@@ -1678,7 +1712,7 @@ clean_sigs_from_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only)
       delete_kbnode(node);
       deleted++;
     }
-    
+
   return deleted;
 }
 
@@ -1937,7 +1971,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
             {
               if (uid->help_full_count >= opt.completes_needed
                   || uid->help_marginal_count >= opt.marginals_needed )
-                uidnode->flag |= 4; 
+                uidnode->flag |= 4;
               else if (uid->help_full_count || uid->help_marginal_count)
                 uidnode->flag |= 2;
               uidnode->flag |= 1;
@@ -1952,7 +1986,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 
           issigned = 0;
 	  get_validity_counts(pk,uid);
-          mark_usable_uid_certs (kb, uidnode, main_kid, klist, 
+          mark_usable_uid_certs (kb, uidnode, main_kid, klist,
                                  curtime, next_expire);
         }
       else if (node->pkt->pkttype == PKT_SIGNATURE
@@ -1960,15 +1994,15 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
         {
 	  /* Note that we are only seeing unrevoked sigs here */
           PKT_signature *sig = node->pkt->pkt.signature;
-          
+
           kr = is_in_klist (klist, sig);
 	  /* If the trust_regexp does not match, it's as if the sig
              did not exist.  This is safe for non-trust sigs as well
              since we don't accept a regexp on the sig unless it's a
              trust sig. */
-          if (kr && (!kr->trust_regexp 
-                     || opt.trust_model != TM_PGP 
-                     || (uidnode 
+          if (kr && (!kr->trust_regexp
+                     || opt.trust_model != TM_PGP
+                     || (uidnode
                          && check_regexp(kr->trust_regexp,
                                          uidnode->pkt->pkt.user_id->name))))
             {
@@ -2032,7 +2066,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
 
 		      pk->trust_value = sig->trust_value;
 		      pk->trust_depth = depth-1;
-                      
+
 		      /* If the trust sig contains a regexp, record it
 			 on the pk for the next round. */
 		      if (sig->trust_regexp)
@@ -2055,7 +2089,7 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
     {
       if (uid->help_full_count >= opt.completes_needed
 	  || uid->help_marginal_count >= opt.marginals_needed )
-        uidnode->flag |= 4; 
+        uidnode->flag |= 4;
       else if (uid->help_full_count || uid->help_marginal_count)
         uidnode->flag |= 2;
       uidnode->flag |= 1;
@@ -2079,7 +2113,7 @@ search_skipfnc (void *opaque, u32 *kid, PKT_user_id *dummy)
  * kllist.  The caller has to pass keydb handle so that we don't use
  * to create our own.  Returns either a key_array or NULL in case of
  * an error.  No results found are indicated by an empty array.
- * Caller hast to release the returned array.  
+ * Caller hast to release the returned array.
  */
 static struct key_array *
 validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
@@ -2090,11 +2124,11 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   size_t nkeys, maxkeys;
   int rc;
   KEYDB_SEARCH_DESC desc;
-  
+
   maxkeys = 1000;
   keys = xmalloc ((maxkeys+1) * sizeof *keys);
   nkeys = 0;
-  
+
   rc = keydb_search_reset (hd);
   if (rc)
     {
@@ -2119,21 +2153,21 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       xfree (keys);
       return NULL;
     }
-  
+
   desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
   do
     {
       PKT_public_key *pk;
-        
+
       rc = keydb_get_keyblock (hd, &keyblock);
-      if (rc) 
+      if (rc)
         {
           log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
           xfree (keys);
           return NULL;
         }
-      
-      if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY) 
+
+      if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
         {
           log_debug ("ooops: invalid pkttype %d encountered\n",
                      keyblock->pkt->pkttype);
@@ -2143,7 +2177,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
         }
 
       /* prepare the keyblock for further processing */
-      merge_keys_and_selfsig (keyblock); 
+      merge_keys_and_selfsig (keyblock);
       clear_kbnode_flags (keyblock);
       pk = keyblock->pkt->pkt.public_key;
       if (pk->has_expired || pk->is_revoked)
@@ -2180,9 +2214,9 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
 
       release_kbnode (keyblock);
       keyblock = NULL;
-    } 
+    }
   while ( !(rc = keydb_search (hd, &desc, 1)) );
-  if (rc && rc != -1) 
+  if (rc && rc != -1)
     {
       log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
       xfree (keys);
@@ -2191,7 +2225,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
 
   keys[nkeys].keyblock = NULL;
   return keys;
-} 
+}
 
 /* Caller must sync */
 static void
@@ -2201,7 +2235,7 @@ reset_trust_records(void)
   ulong recnum;
   int count = 0, nreset = 0;
 
-  for (recnum=1; !tdbio_read_record (recnum, &rec, 0); recnum++ ) 
+  for (recnum=1; !tdbio_read_record (recnum, &rec, 0); recnum++ )
     {
       if(rec.rectype==RECTYPE_TRUST)
 	{
@@ -2240,7 +2274,7 @@ reset_trust_records(void)
  * Step 2: loop max_cert_times
  * Step 3:   if OWNERTRUST of any key in klist is undefined
  *             ask user to assign ownertrust
- * Step 4:   Loop over all keys in the keyDB which are not marked seen 
+ * Step 4:   Loop over all keys in the keyDB which are not marked seen
  * Step 5:     if key is revoked or expired
  *                mark key as seen
  *                continue loop at Step 4
@@ -2252,7 +2286,7 @@ reset_trust_records(void)
  *             End Loop
  * Step 8:   Build a new klist from all fully trusted keys from step 6
  *           End Loop
- *         Ready  
+ *         Ready
  *
  */
 static int
@@ -2322,7 +2356,7 @@ validate_keys (int interactive)
       if ( pk->expiredate && pk->expiredate >= start_time
            && pk->expiredate < next_expire)
         next_expire = pk->expiredate;
-      
+
       release_kbnode (keyblock);
       do_sync ();
     }
@@ -2398,7 +2432,7 @@ validate_keys (int interactive)
       /* Find all keys which are signed by a key in kdlist */
       keys = validate_key_list (kdb, full_trust, klist,
 				start_time, &next_expire);
-      if (!keys) 
+      if (!keys)
         {
           log_error ("validate_key_list failed\n");
           rc = G10ERR_GENERAL;
@@ -2416,9 +2450,9 @@ validate_keys (int interactive)
           store_validation_status (depth, kar->keyblock, stored);
 
       log_info (_("depth: %d  valid: %3d  signed: %3d"
-                  "  trust: %d-, %dq, %dn, %dm, %df, %du\n"), 
+                  "  trust: %d-, %dq, %dn, %dm, %df, %du\n"),
                 depth, valids, key_count, ot_unknown, ot_undefined,
-                ot_never, ot_marginal, ot_full, ot_ultimate ); 
+                ot_never, ot_marginal, ot_full, ot_ultimate );
 
       /* Build a new kdlist from all fully valid keys in KEYS */
       if (klist != utk_list)
@@ -2480,10 +2514,10 @@ validate_keys (int interactive)
   if (!rc && !quit) /* mark trustDB as checked */
     {
       if (next_expire == 0xffffffff || next_expire < start_time )
-        tdbio_write_nextcheck (0); 
+        tdbio_write_nextcheck (0);
       else
         {
-          tdbio_write_nextcheck (next_expire); 
+          tdbio_write_nextcheck (next_expire);
           log_info (_("next trustdb check due at %s\n"),
                     strtimestamp (next_expire));
         }

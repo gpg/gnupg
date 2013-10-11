@@ -57,7 +57,7 @@ struct trust_record {
 	    byte  min_cert_level;
 	    ulong created;   /* timestamp of trustdb creation  */
 	    ulong nextcheck; /* timestamp of next scheduled check */
-	    ulong reserved;  
+	    ulong reserved;
 	    ulong reserved2;
 	    ulong firstfree;
 	    ulong reserved3;
@@ -82,7 +82,7 @@ struct trust_record {
       } trust;
       struct {
         byte namehash[20];
-        ulong next;  
+        ulong next;
         byte validity;
 	byte full_count;
 	byte marginal_count;
@@ -93,7 +93,7 @@ typedef struct trust_record TRUSTREC;
 
 /*-- tdbio.c --*/
 int tdbio_update_version_record(void);
-int tdbio_set_dbname( const char *new_dbname, int create );
+int tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile);
 const char *tdbio_get_dbname(void);
 void tdbio_dump_record( TRUSTREC *rec, FILE *fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );

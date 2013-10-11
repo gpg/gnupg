@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.0.23 (unreleased)
 -------------------------------------------------
 
+ * Do not create a trustdb file if --trust-model=always is used.
+
 
 Noteworthy changes in version 2.0.22 (2013-10-04)
 -------------------------------------------------

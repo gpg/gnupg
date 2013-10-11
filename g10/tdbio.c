@@ -473,7 +473,7 @@ create_version_record (void)
 
 
 int
-tdbio_set_dbname( const char *new_dbname, int create )
+tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 {
     char *fname;
     static int initialized = 0;
@@ -482,6 +482,8 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	atexit( cleanup );
 	initialized = 1;
     }
+
+    *r_nofile = 0;
 
     if(new_dbname==NULL)
       fname=make_filename(opt.homedir,"trustdb" EXTSEP_S "gpg", NULL);
@@ -501,7 +503,9 @@ tdbio_set_dbname( const char *new_dbname, int create )
 	    xfree(fname);
 	    return G10ERR_TRUSTDB;
 	}
-	if( create ) {
+	if (!create)
+          *r_nofile = 1;
+        else {
 	    FILE *fp;
 	    TRUSTREC rec;
 	    int rc;
