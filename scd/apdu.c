@@ -2227,12 +2227,6 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   if (!pininfo->maxlen)
     pininfo->maxlen = 15;
 
-  /* Note that the 25 is the maximum value the SPR532 allows.  */
-  if (pininfo->minlen < 1 || pininfo->minlen > 25
-      || pininfo->maxlen < 1 || pininfo->maxlen > 25
-      || pininfo->minlen > pininfo->maxlen)
-    return SW_HOST_INV_VALUE;
-
   pin_verify = xtrymalloc (len);
   if (!pin_verify)
     return SW_HOST_OUT_OF_CORE;
