@@ -1621,6 +1621,7 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
     int npkey, nskey;
     int is_v4=0;
     int rc=0;
+    u32 keyid[2];
 
     version = iobuf_get_noeof(inp); pktlen--;
     if( pkttype == PKT_PUBLIC_SUBKEY && version == '#' ) {
@@ -1718,7 +1719,6 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	unknown_pubkey_warning( algorithm );
     }
 
-
     if( pkttype == PKT_SECRET_KEY || pkttype == PKT_SECRET_SUBKEY ) {
 	PKT_secret_key *sk = pkt->pkt.secret_key;
 	byte temp[16];
@@ -1743,6 +1743,9 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
         if (rc) /* one of the MPIs were bad */
             goto leave;
+        if (list_mode && npkey)
+            keyid_from_sk (sk, keyid);
+
 	sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
         sk->protect.sha1chk = 0;
 	if( sk->protect.algo ) {
@@ -1973,7 +1976,14 @@ parse_key( IOBUF inp, int pkttype, unsigned long pktlen,
 	}
         if (rc)
             goto leave;
+
+        if (list_mode)
+            keyid_from_pk (pk, keyid);
     }
+
+  if (list_mode && npkey)
+      fprintf (listfp, "\tkeyid: %08lX%08lX\n",
+              (ulong) keyid[0], (ulong) keyid[1]);
 
   leave:
     iobuf_skip_rest(inp, pktlen, 0);
