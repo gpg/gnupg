@@ -34,7 +34,14 @@
 #include "longlong.h"
 #include <assert.h>
 
+/*
+ * When you need old implementation, please add compilation option
+ * -DUSE_ALGORITHM_SIMPLE_EXPONENTIATION
+ * or expose this line:
+#define USE_ALGORITHM_SIMPLE_EXPONENTIATION 1
+ */
 
+#if defined(USE_ALGORITHM_SIMPLE_EXPONENTIATION)
 /****************
  * RES = BASE ^ EXP mod MOD
  */
@@ -299,4 +306,440 @@ mpi_powm( MPI res, MPI base, MPI exponent, MPI mod)
     if( xp_marker ) mpi_free_limb_space( xp_marker );
     if( tspace )    mpi_free_limb_space( tspace );
 }
+#else /*!USE_ALGORITHM_SIMPLE_EXPONENTIATION */
+
+/**
+ * Internal function to compute
+ *
+ *    X = R * S mod M
+ *
+ * and set the size of X at the pointer XSIZE_P.
+ * Use karatsuba structure at KARACTX_P.
+ *
+ * Condition:
+ *   RSIZE >= SSIZE
+ *   Enough space for X is allocated beforehand.
+ *
+ * For generic cases, we can/should use mpi_mulm.
+ * This function is use for specific internal case.
+ */
+static void
+mul_mod (mpi_ptr_t xp, mpi_size_t *xsize_p,
+         mpi_ptr_t rp, mpi_size_t rsize,
+         mpi_ptr_t sp, mpi_size_t ssize,
+         mpi_ptr_t mp, mpi_size_t msize,
+         struct karatsuba_ctx *karactx_p)
+{
+  if( ssize < KARATSUBA_THRESHOLD )
+    mpihelp_mul ( xp, rp, rsize, sp, ssize );
+  else
+    mpihelp_mul_karatsuba_case (xp, rp, rsize, sp, ssize, karactx_p);
+
+   if (rsize + ssize > msize)
+    {
+      mpihelp_divrem (xp + msize, 0, xp, rsize + ssize, mp, msize);
+      *xsize_p = msize;
+    }
+   else
+     *xsize_p = rsize + ssize;
+}
+
+#define SIZE_B_2I3 ((1 << (5 - 1)) - 1)
+
+/****************
+ * RES = BASE ^ EXPO mod MOD
+ *
+ * To mitigate the Yarom/Falkner flush+reload cache side-channel
+ * attack on the RSA secret exponent, we don't use the square
+ * routine but multiplication.
+ *
+ * Reference:
+ *   Handbook of Applied Cryptography
+ *       Algorithm 14.83: Modified left-to-right k-ary exponentiation
+ */
+void
+mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
+{
+  /* Pointer to the limbs of the arguments, their size and signs. */
+  mpi_ptr_t  rp, ep, mp, bp;
+  mpi_size_t esize, msize, bsize, rsize;
+  int               msign, bsign, rsign;
+  /* Flags telling the secure allocation status of the arguments.  */
+  int        esec,  msec,  bsec;
+  /* Size of the result including space for temporary values.  */
+  mpi_size_t size;
+  /* Helper.  */
+  int mod_shift_cnt;
+  int negative_result;
+  mpi_ptr_t mp_marker = NULL;
+  mpi_ptr_t bp_marker = NULL;
+  mpi_ptr_t ep_marker = NULL;
+  mpi_ptr_t xp_marker = NULL;
+  mpi_ptr_t b_2i3[SIZE_B_2I3]; /* Pre-computed array: BASE^3, ^5, ^7, ... */
+  mpi_size_t b_2i3size[SIZE_B_2I3];
+  mpi_size_t W;
+  mpi_ptr_t base_u;
+  mpi_size_t base_u_size;
+
+  esize = expo->nlimbs;
+  msize = mod->nlimbs;
+  size = 2 * msize;
+  msign = mod->sign;
+
+  if (esize * BITS_PER_MPI_LIMB > 512)
+    W = 5;
+  else if (esize * BITS_PER_MPI_LIMB > 256)
+    W = 4;
+  else if (esize * BITS_PER_MPI_LIMB > 128)
+    W = 3;
+  else if (esize * BITS_PER_MPI_LIMB > 64)
+    W = 2;
+  else
+    W = 1;
+
+  esec = mpi_is_secure(expo);
+  msec = mpi_is_secure(mod);
+  bsec = mpi_is_secure(base);
+
+  rp = res->d;
+  ep = expo->d;
+
+  if (!msize)
+     msize = 1 / msize;	    /* provoke a signal */
+
+  if (!esize)
+    {
+      /* Exponent is zero, result is 1 mod MOD, i.e., 1 or 0 depending
+         on if MOD equals 1.  */
+      res->nlimbs = (msize == 1 && mod->d[0] == 1) ? 0 : 1;
+      if (res->nlimbs)
+        {
+          RESIZE_IF_NEEDED (res, 1);
+          rp = res->d;
+          rp[0] = 1;
+        }
+      res->sign = 0;
+      goto leave;
+    }
+
+  /* Normalize MOD (i.e. make its most significant bit set) as
+     required by mpn_divrem.  This will make the intermediate values
+     in the calculation slightly larger, but the correct result is
+     obtained after a final reduction using the original MOD value. */
+  mp = mp_marker = mpi_alloc_limb_space(msize, msec);
+  count_leading_zeros (mod_shift_cnt, mod->d[msize-1]);
+  if (mod_shift_cnt)
+    mpihelp_lshift (mp, mod->d, msize, mod_shift_cnt);
+  else
+    MPN_COPY( mp, mod->d, msize );
+
+  bsize = base->nlimbs;
+  bsign = base->sign;
+  if (bsize > msize)
+    {
+      /* The base is larger than the module.  Reduce it.
+
+         Allocate (BSIZE + 1) with space for remainder and quotient.
+         (The quotient is (bsize - msize + 1) limbs.)  */
+      bp = bp_marker = mpi_alloc_limb_space( bsize + 1, bsec );
+      MPN_COPY ( bp, base->d, bsize );
+      /* We don't care about the quotient, store it above the
+       * remainder, at BP + MSIZE.  */
+      mpihelp_divrem( bp + msize, 0, bp, bsize, mp, msize );
+      bsize = msize;
+      /* Canonicalize the base, since we are going to multiply with it
+         quite a few times.  */
+      MPN_NORMALIZE( bp, bsize );
+    }
+  else
+    bp = base->d;
+
+  if (!bsize)
+    {
+      res->nlimbs = 0;
+      res->sign = 0;
+      goto leave;
+    }
+
+
+  /* Make BASE, EXPO and MOD not overlap with RES.  */
+  if ( rp == bp )
+    {
+      /* RES and BASE are identical.  Allocate temp. space for BASE.  */
+      assert (!bp_marker);
+      bp = bp_marker = mpi_alloc_limb_space( bsize, bsec );
+      MPN_COPY(bp, rp, bsize);
+    }
+  if ( rp == ep )
+    {
+      /* RES and EXPO are identical.  Allocate temp. space for EXPO.  */
+      ep = ep_marker = mpi_alloc_limb_space( esize, esec );
+      MPN_COPY(ep, rp, esize);
+    }
+  if ( rp == mp )
+    {
+      /* RES and MOD are identical.  Allocate temporary space for MOD.*/
+      assert (!mp_marker);
+      mp = mp_marker = mpi_alloc_limb_space( msize, msec );
+      MPN_COPY(mp, rp, msize);
+    }
+
+  /* Copy base to the result.  */
+  if (res->alloced < size)
+    {
+      mpi_resize (res, size);
+      rp = res->d;
+    }
+
+  /* Main processing.  */
+  {
+    mpi_size_t i, j;
+    mpi_ptr_t xp;
+    mpi_size_t xsize;
+    int c;
+    mpi_limb_t e;
+    mpi_limb_t carry_limb;
+    struct karatsuba_ctx karactx;
+    mpi_ptr_t tp;
+
+    xp = xp_marker = mpi_alloc_limb_space( 2 * (msize + 1), msec );
+
+    memset( &karactx, 0, sizeof karactx );
+    negative_result = (ep[0] & 1) && bsign;
+
+    /* Precompute B_2I3[], BASE^(2 * i + 3), BASE^3, ^5, ^7, ... */
+    if (W > 1)                  /* X := BASE^2 */
+      mul_mod (xp, &xsize, bp, bsize, bp, bsize, mp, msize, &karactx);
+    for (i = 0; i < (1 << (W - 1)) - 1; i++)
+      {                         /* B_2I3[i] = BASE^(2 * i + 3) */
+        if (i == 0)
+          {
+            base_u = bp;
+            base_u_size = bsize;
+          }
+        else
+          {
+            base_u = b_2i3[i-1];
+            base_u_size = b_2i3size[i-1];
+          }
+
+        if (xsize >= base_u_size)
+          mul_mod (rp, &rsize, xp, xsize, base_u, base_u_size,
+                   mp, msize, &karactx);
+        else
+          mul_mod (rp, &rsize, base_u, base_u_size, xp, xsize,
+                   mp, msize, &karactx);
+        b_2i3[i] = mpi_alloc_limb_space (rsize, esec);
+        b_2i3size[i] = rsize;
+        MPN_COPY (b_2i3[i], rp, rsize);
+      }
+
+    i = esize - 1;
+
+    /* Main loop.
+
+       Make the result be pointed to alternately by XP and RP.  This
+       helps us avoid block copying, which would otherwise be
+       necessary with the overlap restrictions of mpihelp_divmod. With
+       50% probability the result after this loop will be in the area
+       originally pointed by RP (==RES->d), and with 50% probability
+       in the area originally pointed to by XP. */
+    rsign = 0;
+    if (W == 1)
+      {
+        rsize = bsize;
+      }
+    else
+      {
+        rsize = msize;
+        MPN_ZERO (rp, rsize);
+      }
+    MPN_COPY ( rp, bp, bsize );
+
+    e = ep[i];
+    count_leading_zeros (c, e);
+    e = (e << c) << 1;
+    c = BITS_PER_MPI_LIMB - 1 - c;
+
+    j = 0;
+
+    for (;;)
+      if (e == 0)
+        {
+          j += c;
+          i--;
+          if ( i < 0 )
+            {
+              c = 0;
+              break;
+            }
+
+          e = ep[i];
+          c = BITS_PER_MPI_LIMB;
+        }
+      else
+        {
+          int c0;
+          mpi_limb_t e0;
+
+          count_leading_zeros (c0, e);
+          e = (e << c0);
+          c -= c0;
+          j += c0;
+
+          if (c >= W)
+            {
+              e0 = (e >> (BITS_PER_MPI_LIMB - W));
+              e = (e << W);
+              c -= W;
+            }
+          else
+            {
+              i--;
+              if ( i < 0 )
+                {
+                  e = (e >> (BITS_PER_MPI_LIMB - c));
+                  break;
+                }
+
+              c0 = c;
+              e0 = (e >> (BITS_PER_MPI_LIMB - W))
+                | (ep[i] >> (BITS_PER_MPI_LIMB - W + c0));
+              e = (ep[i] << (W - c0));
+              c = BITS_PER_MPI_LIMB - W + c0;
+            }
+
+          count_trailing_zeros (c0, e0);
+          e0 = (e0 >> c0) >> 1;
+
+          for (j += W - c0; j; j--)
+            {
+              mul_mod (xp, &xsize, rp, rsize, rp, rsize, mp, msize, &karactx);
+              tp = rp; rp = xp; xp = tp;
+              rsize = xsize;
+            }
+
+          if (e0 == 0)
+            {
+              base_u = bp;
+              base_u_size = bsize;
+            }
+          else
+            {
+              base_u = b_2i3[e0 - 1];
+              base_u_size = b_2i3size[e0 -1];
+            }
+
+          mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
+                   mp, msize, &karactx);
+          tp = rp; rp = xp; xp = tp;
+          rsize = xsize;
+
+          j = c0;
+        }
+
+    if (c != 0)
+      {
+        j += c;
+        count_trailing_zeros (c, e);
+        e = (e >> c);
+        j -= c;
+      }
+
+    while (j--)
+      {
+        mul_mod (xp, &xsize, rp, rsize, rp, rsize, mp, msize, &karactx);
+        tp = rp; rp = xp; xp = tp;
+        rsize = xsize;
+      }
+
+    if (e != 0)
+      {
+        if ((e>>1) == 0)
+          {
+            base_u = bp;
+            base_u_size = bsize;
+          }
+        else
+          {
+            base_u = b_2i3[(e>>1) - 1];
+            base_u_size = b_2i3size[(e>>1) -1];
+          }
+
+        mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
+                 mp, msize, &karactx);
+        tp = rp; rp = xp; xp = tp;
+        rsize = xsize;
+
+        for (; c; c--)
+          {
+            mul_mod (xp, &xsize, rp, rsize, rp, rsize, mp, msize, &karactx);
+            tp = rp; rp = xp; xp = tp;
+            rsize = xsize;
+          }
+      }
+
+    /* We shifted MOD, the modulo reduction argument, left
+       MOD_SHIFT_CNT steps.  Adjust the result by reducing it with the
+       original MOD.
+
+       Also make sure the result is put in RES->d (where it already
+       might be, see above).  */
+    if ( mod_shift_cnt )
+      {
+        carry_limb = mpihelp_lshift( res->d, rp, rsize, mod_shift_cnt);
+        rp = res->d;
+        if ( carry_limb )
+          {
+            rp[rsize] = carry_limb;
+            rsize++;
+          }
+      }
+    else if (res->d != rp)
+      {
+        MPN_COPY (res->d, rp, rsize);
+        rp = res->d;
+      }
+
+    if ( rsize >= msize )
+      {
+        mpihelp_divrem(rp + msize, 0, rp, rsize, mp, msize);
+        rsize = msize;
+      }
+
+    /* Remove any leading zero words from the result.  */
+    if ( mod_shift_cnt )
+      mpihelp_rshift (rp, rp, rsize, mod_shift_cnt);
+    MPN_NORMALIZE (rp, rsize);
+
+    mpihelp_release_karatsuba_ctx (&karactx );
+    for (i = 0; i < (1 << (W - 1)) - 1; i++)
+      mpi_free_limb_space (b_2i3[i]);
+  }
+
+  /* Fixup for negative results.  */
+  if ( negative_result && rsize )
+    {
+      if ( mod_shift_cnt )
+        mpihelp_rshift (mp, mp, msize, mod_shift_cnt);
+      mpihelp_sub (rp, mp, msize, rp, rsize);
+      rsize = msize;
+      rsign = msign;
+      MPN_NORMALIZE(rp, rsize);
+    }
+  assert (res->d == rp);
+  res->nlimbs = rsize;
+  res->sign = rsign;
+
+ leave:
+  if (mp_marker)
+    mpi_free_limb_space (mp_marker);
+  if (bp_marker)
+    mpi_free_limb_space (bp_marker);
+  if (ep_marker)
+    mpi_free_limb_space (ep_marker);
+  if (xp_marker)
+    mpi_free_limb_space (xp_marker);
+}
+#endif /*!USE_ALGORITHM_SIMPLE_EXPONENTIATION */
 
