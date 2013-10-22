@@ -30,6 +30,35 @@ TESTS = version.test mds.test \
 	conventional.test conventional-mdc.test \
 	multisig.test verify.test armor.test
 
+# Force sequential run of tests as in the good old times
+mds.log:               version.log
+decrypt.log:           mds.log
+decrypt-dsa.log:       decrypt.log
+sigs.log:	       decrypt-dsa.log
+sigs-dsa.log:	       sigs.log
+encrypt.log:	       sigs-dsa.log
+encrypt-dsa.log:       encrypt.log
+seat.log:	       encrypt-dsa.log
+clearsig.log:	       seat.log
+encryptp.log:	       clearsig.log
+detach.log: 	       encryptp.log
+armsigs.log:	       detach.log
+armencrypt.log:	       armsigs.log
+armencryptp.log:       armencrypt.log
+signencrypt.log:       armencryptp.log
+signencrypt-dsa.log:   signencrypt.log
+armsignencrypt.log:    signencrypt-dsa.log
+armdetach.log:	       armsignencrypt.log
+armdetachm.log:	       armdetach.log
+detachm.log:	       armdetachm.log
+genkey1024.log:	       detachm.log
+conventional.log:      genkey1024.log
+conventional-mdc.log:  conventional.log
+multisig.log:	       conventional-mdc.log
+verify.log:            multisig.log
+armor.log:             verify.log
+
+
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     plain-1.asc plain-2.asc plain-3.asc plain-1-pgp.asc \
