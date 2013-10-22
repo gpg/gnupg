@@ -30,6 +30,7 @@ int  quick_random_gen( int onoff );
 int  random_is_faked(void);
 void random_disable_locking (void);
 void randomize_buffer( byte *buffer, size_t length, int level );
+void randomize_mpi (MPI mpi, size_t nbits, int level);
 byte *get_random_bits( size_t nbits, int level, int secure );
 void fast_random_poll( void );
 

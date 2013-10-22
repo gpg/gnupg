@@ -389,6 +389,7 @@ void cipher_sync( CIPHER_HANDLE c ) {}
 void random_dump_stats(void) {}
 int quick_random_gen( int onoff ) { return -1;}
 void randomize_buffer( byte *buffer, size_t length, int level ) {}
+void randomize_mpi (MPI mpi, size_t nbits, int level) {}
 int random_is_faked() { return -1;}
 byte *get_random_bits( size_t nbits, int level, int secure ) { return NULL;}
 void set_random_seed_file( const char *name ) {}

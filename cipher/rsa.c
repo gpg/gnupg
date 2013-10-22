@@ -1,5 +1,5 @@
 /* rsa.c  -  RSA function
- *	Copyright (C) 1997, 1998, 1999 by Werner Koch (dd9jn)
+ *	Copyright (C) 1997, 1998, 1999, 2013 by Werner Koch (dd9jn)
  *	Copyright (C) 2000, 2001 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -22,7 +22,7 @@
    which expires on September 20, 2000.  The patent holder placed that
    patent into the public domain on Sep 6th, 2000.
 */
- 
+
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +32,10 @@
 #include "cipher.h"
 #include "rsa.h"
 
+/* Blinding is used to mitigate side-channel attacks.  You may undef
+   this to speed up the operation in case the system is secured
+   against physical and network mounted side-channel attacks.  */
+#define USE_BLINDING 1
 
 typedef struct {
     MPI n;	    /* modulus */
@@ -103,7 +107,7 @@ generate( RSA_secret_key *sk, unsigned nbits )
 
     /* make sure that nbits is even so that we generate p, q of equal size */
     if ( (nbits&1) )
-      nbits++; 
+      nbits++;
 
     n = mpi_alloc ( mpi_nlimb_hint_from_nbits (nbits) );
 
@@ -146,7 +150,7 @@ generate( RSA_secret_key *sk, unsigned nbits )
        65537 as the new best practice.  See FIPS-186-3.
      */
     e = mpi_alloc ( mpi_nlimb_hint_from_nbits (32) );
-    mpi_set_ui( e, 65537); 
+    mpi_set_ui( e, 65537);
     while( !mpi_gcd(t1, e, phi) ) /* (while gcd is not 1) */
       mpi_add_ui( e, e, 2);
 
@@ -268,7 +272,7 @@ stronger_key_check ( RSA_secret_key *skey )
     mpi_invm(t, skey->p, skey->q );
     if ( mpi_cmp(t, skey->u ) )
         log_info ( "RSA Oops: u is wrong\n");
-   
+
     log_info ( "RSA secret key check finished\n");
 
     mpi_free (t);
@@ -286,9 +290,9 @@ stronger_key_check ( RSA_secret_key *skey )
  *
  * Or faster:
  *
- *      m1 = c ^ (d mod (p-1)) mod p 
- *      m2 = c ^ (d mod (q-1)) mod q 
- *      h = u * (m2 - m1) mod q 
+ *      m1 = c ^ (d mod (p-1)) mod p
+ *      m2 = c ^ (d mod (q-1)) mod q
+ *      h = u * (m2 - m1) mod q
  *      m = m1 + h * p
  *
  * Where m is OUTPUT, c is INPUT and d,n,p,q,u are elements of SKEY.
@@ -299,13 +303,26 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
 #if 0
     mpi_powm( output, input, skey->d, skey->n );
 #else
-    MPI m1   = mpi_alloc_secure( mpi_get_nlimbs(skey->n)+1 );
-    MPI m2   = mpi_alloc_secure( mpi_get_nlimbs(skey->n)+1 );
-    MPI h    = mpi_alloc_secure( mpi_get_nlimbs(skey->n)+1 );
+    int nlimbs = mpi_get_nlimbs (skey->n)+1;
+    MPI m1   = mpi_alloc_secure (nlimbs);
+    MPI m2   = mpi_alloc_secure (nlimbs);
+    MPI h    = mpi_alloc_secure (nlimbs);
+# ifdef USE_BLINDING
+    MPI r    = mpi_alloc_secure (nlimbs);
+    MPI bdata= mpi_alloc_secure (nlimbs);
 
+    /* Blind:  bdata = (data * r^e) mod n   */
+    randomize_mpi (r, mpi_get_nbits (skey->n), 0);
+    mpi_fdiv_r (r, r, skey->n);
+    mpi_powm (bdata, r, skey->e, skey->n);
+    mpi_mulm (bdata, bdata, input, skey->n);
+    input = bdata;
+# endif /* USE_BLINDING */
+
+    /* RSA secret operation:  */
     /* m1 = c ^ (d mod (p-1)) mod p */
     mpi_sub_ui( h, skey->p, 1  );
-    mpi_fdiv_r( h, skey->d, h );   
+    mpi_fdiv_r( h, skey->d, h );
     mpi_powm( m1, input, h, skey->p );
     /* m2 = c ^ (d mod (q-1)) mod q */
     mpi_sub_ui( h, skey->q, 1  );
@@ -313,14 +330,21 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
     mpi_powm( m2, input, h, skey->q );
     /* h = u * ( m2 - m1 ) mod q */
     mpi_sub( h, m2, m1 );
-    if ( mpi_is_neg( h ) ) 
+    if ( mpi_is_neg( h ) )
         mpi_add ( h, h, skey->q );
-    mpi_mulm( h, skey->u, h, skey->q ); 
+    mpi_mulm( h, skey->u, h, skey->q );
     /* m = m2 + h * p */
     mpi_mul ( h, h, skey->p );
     mpi_add ( output, m1, h );
-    /* ready */
-    
+
+# ifdef USE_BLINDING
+    /* Unblind: output = (output * r^(-1)) mod n  */
+    mpi_free (bdata);
+    mpi_invm (r, r, skey->n);
+    mpi_mulm (output, output, r, skey->n);
+    mpi_free (r);
+# endif /* USE_BLINDING */
+
     mpi_free ( h );
     mpi_free ( m1 );
     mpi_free ( m2 );
