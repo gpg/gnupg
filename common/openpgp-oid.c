@@ -277,7 +277,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
     oidstr = NULL;
   else if (!strcmp (name, "Ed25519"))
     {
-      oidstr = "1.3.6.1.4.1.3029.1.5.1";
+      oidstr = "1.3.6.1.4.1.11591.15.1";
       nbits = 255;
     }
   else if (!strcmp (name, "nistp256"))
@@ -294,6 +294,21 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
     {
       oidstr = "1.3.132.0.35";
       nbits = 521;
+    }
+  else if (!strcmp (name,"brainpoolP256r1"))
+    {
+      oidstr = "1.3.36.3.3.2.8.1.1.7";
+      nbits = 256;
+    }
+  else if (!strcmp (name, "brainpoolP384r1"))
+    {
+      oidstr = "1.3.36.3.3.2.8.1.1.11";
+      nbits = 384;
+    }
+  else if (!strcmp (name, "brainpoolP512r1"))
+    {
+      oidstr =  "1.3.36.3.3.2.8.1.1.13";
+      nbits = 512;
     }
   else
     oidstr = NULL;
@@ -314,15 +329,21 @@ openpgp_oid_to_curve (const char *oid)
 
   if (!oid)
     name = "";
-  else if (!strcmp (oid, "1.3.6.1.4.1.3029.1.5.1"))
+  else if (!strcmp (oid, "1.3.6.1.4.1.11591.15.1"))
     name = "Ed25519";
   else if (!strcmp (oid, "1.2.840.10045.3.1.7"))
-    name = "NIST P-256";
+    name = "nistp256";
   else if (!strcmp (oid, "1.3.132.0.34"))
-    name = "NIST P-384";
+    name = "nistp384";
   else if (!strcmp (oid, "1.3.132.0.35"))
-    name = "NIST P-521";
-  else /* FIXME: Lookup via Libgcrypt.  */
+    name = "nistp521";
+  else if (!strcmp (oid, "1.3.36.3.3.2.8.1.1.7"))
+    name = "brainpoolP256r1";
+  else if (!strcmp (oid, "1.3.36.3.3.2.8.1.1.11"))
+    name = "brainpoolP384r1";
+  else if (!strcmp (oid, "1.3.36.3.3.2.8.1.1.13"))
+    name = "brainpoolP512r1";
+  else
     name = "?";
 
   return name;
