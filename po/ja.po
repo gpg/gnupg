@@ -2643,7 +2643,7 @@ msgstr ""
 
 #, c-format
 msgid "  %d = I trust marginally\n"
-msgstr "  %d = ギリギリ信用する\n"
+msgstr "  %d = まぁまぁ信用する\n"
 
 #, c-format
 msgid "  %d = I trust fully\n"
@@ -5013,7 +5013,7 @@ msgid "[  undef ]"
 msgstr "[ 未定義 ]"
 
 msgid "[marginal]"
-msgstr "[ギリギリ]"
+msgstr "[まぁまぁ]"
 
 msgid "[  full  ]"
 msgstr "[  充分  ]"
@@ -5028,7 +5028,7 @@ msgid "never"
 msgstr "無期限"
 
 msgid "marginal"
-msgstr "ギリギリ"
+msgstr "まぁまぁ"
 
 msgid "full"
 msgstr "充分"
@@ -5074,7 +5074,7 @@ msgstr "絶対的に信用する鍵%sの公開鍵が見つかりません\n"
 
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
-msgstr "'ギリギリの信用'%d、'全面的信用'%d、%s信用モデル\n"
+msgstr "'まぁまぁの信用'%d、'全面的信用'%d、%s信用モデル\n"
 
 #, c-format
 msgid ""
