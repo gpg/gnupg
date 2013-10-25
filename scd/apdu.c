@@ -1526,6 +1526,8 @@ connect_pcsc_card (int slot)
       pcsc_dword_t readerlen, atrlen;
       long card_state, card_protocol;
 
+      pcsc_vendor_specific_init (slot);
+
       atrlen = DIM (reader_table[0].atr);
       readerlen = sizeof reader -1 ;
       err = pcsc_status (reader_table[slot].pcsc.card,
@@ -1950,7 +1952,6 @@ open_pcsc_reader_direct (const char *portstr)
   reader_table[slot].send_apdu_reader = pcsc_send_apdu;
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
-  pcsc_vendor_specific_init (slot);
   dump_reader_status (slot);
   unlock_slot (slot);
   return slot;
