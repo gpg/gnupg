@@ -227,7 +227,13 @@ static char (* DLSTDCALL CT_close) (unsigned short ctn);
 
 /* Fix pcsc-lite ABI incompatibilty.  */
 #ifndef SCARD_CTL_CODE
-# define SCARD_CTL_CODE(code) (0x42000000 + (code))
+#ifdef _WIN32
+#include <winioctl.h>
+#define SCARD_CTL_CODE(code) CTL_CODE(FILE_DEVICE_SMARTCARD, (code), \
+				      METHOD_BUFFERED, FILE_ANY_ACCESS)
+#else
+#define SCARD_CTL_CODE(code) (0x42000000 + (code))
+#endif
 #endif
 
 #define CM_IOCTL_GET_FEATURE_REQUEST     SCARD_CTL_CODE(3400)
@@ -330,6 +336,7 @@ long (* DLSTDCALL pcsc_control) (long card,
 
 
 /*  Prototypes.  */
+static int pcsc_vendor_specific_init (int slot);
 static int pcsc_get_status (int slot, unsigned int *status);
 static int reset_pcsc_reader (int slot);
 static int apdu_get_status_internal (int slot, int hang, int no_atr_reset,
