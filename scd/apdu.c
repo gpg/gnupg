@@ -2177,8 +2177,11 @@ check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo)
 {
   int r;
 
-  pininfo->minlen = reader_table[slot].pcsc.pinmin;
-  pininfo->maxlen = reader_table[slot].pcsc.pinmax;
+  if (reader_table[slot].pcsc.pinmin >= 0)
+    pininfo->minlen = reader_table[slot].pcsc.pinmin;
+
+  if (reader_table[slot].pcsc.pinmax >= 0)
+    pininfo->maxlen = reader_table[slot].pcsc.pinmax;
 
   if ((command == ISO7816_VERIFY && reader_table[slot].pcsc.verify_ioctl != 0)
       || (command == ISO7816_CHANGE_REFERENCE_DATA
@@ -2302,12 +2305,6 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
     pininfo->minlen = 1;
   if (!pininfo->maxlen)
     pininfo->maxlen = 15;
-
-  /* Note that the 25 is the maximum value the SPR532 allows.  */
-  if (pininfo->minlen < 1 || pininfo->minlen > 25
-      || pininfo->maxlen < 1 || pininfo->maxlen > 25
-      || pininfo->minlen > pininfo->maxlen)
-    return SW_HOST_INV_VALUE;
 
   pin_modify = xtrymalloc (len);
   if (!pin_modify)
