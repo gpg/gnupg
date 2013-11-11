@@ -197,32 +197,11 @@ do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
   if (mdlen > qbits/8)
     mdlen = qbits/8;
 
-  /* Create the S-expression.  If we are using Libgcrypt 1.6 we make
-     use of Deterministic DSA.  Libgcrypt < 1.6 does not implement
-     RFC-6979 and also requires us to convert to an MPI because it
-     expects an unsigned integer.  Using %b directly is not possible
-     because Libgcrypt assumes an MPI and uses GCRYMPI_FMT_STD for
-     parsing and thus possible yielding a negative value.  */
-#if GCRYPT_VERSION_NUMBER >= 0x010600 /* Libgcrypt >= 1.6 */
-  {
-    err = gcry_sexp_build (&hash, NULL,
-                           "(data (flags rfc6979) (hash %s %b))",
-                           rfc6979_hash_algo_string (mdlen),
-                           (int)mdlen, md);
-  }
-#else /* Libgcrypt < 1.6 */
-  {
-    gcry_mpi_t mpi;
-
-    err = gcry_mpi_scan (&mpi, GCRYMPI_FMT_USG, md, mdlen, NULL);
-    if (!err)
-      {
-        err = gcry_sexp_build (&hash, NULL,
-                               "(data (flags raw) (value %m))", mpi);
-        gcry_mpi_release (mpi);
-      }
-  }
-#endif /* Libgcrypt < 1.6 */
+  /* Create the S-expression.  */
+  err = gcry_sexp_build (&hash, NULL,
+                         "(data (flags rfc6979) (hash %s %b))",
+                         rfc6979_hash_algo_string (mdlen),
+                         (int)mdlen, md);
   if (!err)
     *r_hash = hash;
   return err;
