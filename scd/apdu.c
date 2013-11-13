@@ -2212,6 +2212,11 @@ check_pcsc_pinpad (int slot, int command, pininfo_t *pininfo)
   if (reader_table[slot].pcsc.pinmax >= 0)
     pininfo->maxlen = reader_table[slot].pcsc.pinmax;
 
+  if (!pininfo->minlen)
+    pininfo->minlen = 1;
+  if (!pininfo->maxlen)
+    pininfo->maxlen = 15;
+
   if ((command == ISO7816_VERIFY && reader_table[slot].pcsc.verify_ioctl != 0)
       || (command == ISO7816_CHANGE_REFERENCE_DATA
           && reader_table[slot].pcsc.modify_ioctl != 0))
@@ -2247,11 +2252,6 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
 
   if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
     return SW_NOT_SUPPORTED;
-
-  if (!pininfo->minlen)
-    pininfo->minlen = 1;
-  if (!pininfo->maxlen)
-    pininfo->maxlen = 15;
 
   pin_verify = xtrymalloc (len);
   if (!pin_verify)
@@ -2327,11 +2327,6 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
 
   if (pininfo->fixedlen < 0 || pininfo->fixedlen >= 16)
     return SW_NOT_SUPPORTED;
-
-  if (!pininfo->minlen)
-    pininfo->minlen = 1;
-  if (!pininfo->maxlen)
-    pininfo->maxlen = 15;
 
   pin_modify = xtrymalloc (len);
   if (!pin_modify)
