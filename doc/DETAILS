@@ -32,8 +32,8 @@ fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
 #+end_example
 
 The double =--with-fingerprint= prints the fingerprint for the subkeys
-too.  Old versions of gpg used a lighly different format and required
-the use of the option =--fixed-list-mode= to conform to format
+too.  Old versions of gpg used a slighrly different format and required
+the use of the option =--fixed-list-mode= to conform to the format
 described here.
 
 ** Description of the fields
@@ -200,6 +200,11 @@ described here.
 
     For sig records, this is the used hash algorithm.  For example:
     2 = SHA-1, 8 = SHA-256.
+
+*** Field 17 - Curve name
+
+    For pub, sub, sec, and sbb records this field is used for the ECC
+    curve name.
 
 ** Special fields
 

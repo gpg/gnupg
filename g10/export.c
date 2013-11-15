@@ -583,7 +583,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
         goto leave;
       curvename = gcry_pk_get_curve (s_pubkey, 0, NULL);
       gcry_sexp_release (s_pubkey);
-      curveoidstr = gpg_curve_to_oid (curvename, NULL);
+      curveoidstr = openpgp_curve_to_oid (curvename, NULL);
       if (!curveoidstr)
         {
           log_error ("no OID known for curve '%s'\n", curvename);

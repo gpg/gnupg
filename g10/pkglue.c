@@ -33,14 +33,14 @@
 /* FIXME: Better chnage the fucntion name because mpi_ is used by
    gcrypt macros.  */
 gcry_mpi_t
-mpi_from_sexp (gcry_sexp_t sexp, const char * item)
+get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)
 {
   gcry_sexp_t list;
   gcry_mpi_t data;
 
   list = gcry_sexp_find_token (sexp, item, 0);
   assert (list);
-  data = gcry_sexp_nth_mpi (list, 1, GCRYMPI_FMT_USG);
+  data = gcry_sexp_nth_mpi (list, 1, mpifmt);
   assert (data);
   gcry_sexp_release (list);
   return data;
@@ -58,6 +58,7 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
   gcry_sexp_t s_sig, s_hash, s_pkey;
   int rc;
   const int pkalgo = map_pk_openpgp_to_gcry (algo);
+  int is_ed25519 = 0;
 
   /* Make a sexp from pkey.  */
   if (pkalgo == GCRY_PK_DSA)
@@ -79,15 +80,24 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
     }
   else if (pkalgo == GCRY_PK_ECDSA) /* Same as GCRY_PK_ECDH */
     {
-      char *curve = openpgp_oid_to_str (pkey[0]);
-      if (!curve)
-        rc = gpg_error_from_syserror ();
+      is_ed25519 = openpgp_oid_is_ed25519 (pkey[0]);
+      if (is_ed25519)
+        rc = gcry_sexp_build (&s_pkey, NULL,
+                              "(public-key(ecc(curve Ed25519)"
+                              "(flags eddsa)(q%m)))",
+                              pkey[1]);
       else
         {
-          rc = gcry_sexp_build (&s_pkey, NULL,
-                                "(public-key(ecdsa(curve %s)(q%m)))",
-                                curve, pkey[1]);
-          xfree (curve);
+          char *curve = openpgp_oid_to_str (pkey[0]);
+          if (!curve)
+            rc = gpg_error_from_syserror ();
+          else
+            {
+              rc = gcry_sexp_build (&s_pkey, NULL,
+                                    "(public-key(ecdsa(curve %s)(q%m)))",
+                                    curve, pkey[1]);
+              xfree (curve);
+            }
         }
     }
   else
@@ -97,8 +107,18 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
     BUG ();  /* gcry_sexp_build should never fail.  */
 
   /* Put hash into a S-Exp s_hash. */
-  if (gcry_sexp_build (&s_hash, NULL, "%m", hash))
-    BUG (); /* gcry_sexp_build should never fail.  */
+  if (is_ed25519)
+    {
+      if (gcry_sexp_build (&s_hash, NULL,
+                           "(data(flags eddsa)(hash-algo sha512)(value %m))",
+                           hash))
+        BUG (); /* gcry_sexp_build should never fail.  */
+    }
+  else
+    {
+      if (gcry_sexp_build (&s_hash, NULL, "%m", hash))
+        BUG (); /* gcry_sexp_build should never fail.  */
+    }
 
   /* Put data into a S-Exp s_sig. */
   s_sig = NULL;
@@ -114,6 +134,9 @@ pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data, gcry_mpi_t *pkey)
     {
       if (!data[0] || !data[1])
         rc = gpg_error (GPG_ERR_BAD_MPI);
+      else if (is_ed25519)
+        rc = gcry_sexp_build (&s_sig, NULL,
+                              "(sig-val(eddsa(r%M)(s%M)))", data[0], data[1]);
       else
         rc = gcry_sexp_build (&s_sig, NULL,
                               "(sig-val(ecdsa(r%m)(s%m)))", data[0], data[1]);
@@ -223,8 +246,8 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       size_t fpn;
 
       /* Get the shared point and the ephemeral public key.  */
-      shared = mpi_from_sexp (s_ciph, "s");
-      public = mpi_from_sexp (s_ciph, "e");
+      shared = get_mpi_from_sexp (s_ciph, "s", GCRYMPI_FMT_USG);
+      public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_USG);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
       if (DBG_CIPHER)
@@ -256,9 +279,9 @@ pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
   else /* Elgamal or RSA case.  */
     { /* Fixme: Add better error handling or make gnupg use
          S-expressions directly.  */
-      resarr[0] = mpi_from_sexp (s_ciph, "a");
+      resarr[0] = get_mpi_from_sexp (s_ciph, "a", GCRYMPI_FMT_USG);
       if (algo != GCRY_PK_RSA && algo != GCRY_PK_RSA_E)
-        resarr[1] = mpi_from_sexp (s_ciph, "b");
+        resarr[1] = get_mpi_from_sexp (s_ciph, "b", GCRYMPI_FMT_USG);
     }
 
   gcry_sexp_release (s_ciph);
@@ -296,15 +319,25 @@ pk_check_secret_key (int algo, gcry_mpi_t *skey)
     }
   else if (gcry_pkalgo == GCRY_PK_ECDSA || gcry_pkalgo == GCRY_PK_ECDH)
     {
-      char *curve = openpgp_oid_to_str (skey[0]);
-      if (!curve)
-        rc = gpg_error_from_syserror ();
-      else
+      if (openpgp_oid_is_ed25519 (skey[0]))
         {
           rc = gcry_sexp_build (&s_skey, NULL,
-                                "(private-key(ecdsa(curve%s)(q%m)(d%m)))",
-                                curve, skey[1], skey[2]);
-          xfree (curve);
+                                "(private-key(ecc(curve Ed25519)"
+                                "(flags eddsa)(q%m)(d%m)))",
+                                skey[1], skey[2]);
+        }
+      else
+        {
+          char *curve = openpgp_oid_to_str (skey[0]);
+          if (!curve)
+            rc = gpg_error_from_syserror ();
+          else
+            {
+              rc = gcry_sexp_build (&s_skey, NULL,
+                                    "(private-key(ecdsa(curve%s)(q%m)(d%m)))",
+                                    curve, skey[1], skey[2]);
+              xfree (curve);
+            }
         }
     }
   else

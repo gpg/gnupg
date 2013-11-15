@@ -166,9 +166,14 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
     {
       unsigned int nbits;
       const void *p;
+      unsigned int lenhdr[2];
 
       p = gcry_mpi_get_opaque (a, &nbits);
-      rc = iobuf_write (out, p, (nbits+7)/8);
+      lenhdr[0] = nbits >> 8;
+      lenhdr[1] = nbits;
+      rc = iobuf_write (out, lenhdr, 2);
+      if (!rc)
+        rc = iobuf_write (out, p, (nbits+7)/8);
     }
   else
     {
@@ -186,6 +191,29 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
           rc = gpg_error (GPG_ERR_TOO_LARGE);
         }
     }
+
+  return rc;
+}
+
+
+/*
+ * Write an opaque MPI to the output stream without length info.
+ */
+gpg_error_t
+gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a)
+{
+  int rc;
+
+  if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    {
+      unsigned int nbits;
+      const void *p;
+
+      p = gcry_mpi_get_opaque (a, &nbits);
+      rc = iobuf_write (out, p, (nbits+7)/8);
+    }
+  else
+    rc = gpg_error (GPG_ERR_BAD_MPI);
 
   return rc;
 }
@@ -302,7 +330,11 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
   for (i=0; i < npkey; i++ )
     {
-      err = gpg_mpi_write (a, pk->pkey[i]);
+      if ((pk->pubkey_algo == PUBKEY_ALGO_ECDSA && (i == 0))
+          || (pk->pubkey_algo == PUBKEY_ALGO_ECDH) && (i == 0 || i == 2))
+        err = gpg_mpi_write_nohdr (a, pk->pkey[i]);
+      else
+        err = gpg_mpi_write (a, pk->pkey[i]);
       if (err)
         goto leave;
     }
@@ -473,7 +505,12 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
     write_fake_data( a, enc->data[0] );
 
   for (i=0; i < n && !rc ; i++ )
-    rc = gpg_mpi_write (a, enc->data[i]);
+    {
+      if (enc->pubkey_algo == PUBKEY_ALGO_ECDH && i == 1)
+        rc = gpg_mpi_write_nohdr (a, enc->data[i]);
+      else
+        rc = gpg_mpi_write (a, enc->data[i]);
+    }
 
   if (!rc)
     {

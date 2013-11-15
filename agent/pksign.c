@@ -131,6 +131,24 @@ rfc6979_hash_algo_string (size_t mdlen)
 }
 
 
+/* Encode a message digest for use with the EdDSA algorithm
+   (i.e. curve Ed25519). */
+static gpg_error_t
+do_encode_eddsa (const byte *md, size_t mdlen, gcry_sexp_t *r_hash)
+{
+  gpg_error_t err;
+  gcry_sexp_t hash;
+
+  *r_hash = NULL;
+  err = gcry_sexp_build (&hash, NULL,
+                         "(data(flags eddsa)(hash-algo sha512)(value %b))",
+                         (int)mdlen, md);
+  if (!err)
+    *r_hash = hash;
+  return err;
+}
+
+
 /* Encode a message digest for use with an DSA algorithm. */
 static gpg_error_t
 do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
@@ -400,7 +418,11 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       int dsaalgo;
 
       /* Put the hash into a sexp */
-      if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
+      if (agent_is_eddsa_key (s_skey))
+        rc = do_encode_eddsa (ctrl->digest.value,
+                              ctrl->digest.valuelen,
+                              &s_hash);
+      else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
         rc = do_encode_raw_pkcs1 (ctrl->digest.value,
                                   ctrl->digest.valuelen,
                                   gcry_pk_get_nbits (s_skey),
@@ -421,10 +443,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       if (DBG_CRYPTO)
         {
-          log_debug ("skey:\n");
-          gcry_sexp_dump (s_skey);
-          log_debug ("hash:\n");
-          gcry_sexp_dump (s_hash);
+          gcry_log_debugsxp ("skey", s_skey);
+          gcry_log_debugsxp ("hash", s_hash);
         }
 
       /* sign */
@@ -437,10 +457,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         }
 
       if (DBG_CRYPTO)
-        {
-          log_debug ("result:\n");
-          gcry_sexp_dump (s_sig);
-        }
+        gcry_log_debugsxp ("rslt", s_sig);
     }
 
  leave:

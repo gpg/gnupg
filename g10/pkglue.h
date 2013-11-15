@@ -23,7 +23,7 @@
 #include "packet.h"  /* For PKT_public_key.  */
 
 /*-- pkglue.c --*/
-gcry_mpi_t mpi_from_sexp (gcry_sexp_t sexp, const char * item);
+gcry_mpi_t get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt);
 
 int pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);

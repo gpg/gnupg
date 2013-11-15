@@ -467,6 +467,7 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   int depth = 0;
   unsigned char *p;
   gcry_md_hd_t md;
+  int have_curve = 0;
 
   /* Create an S-expression with the protected-at timestamp.  */
   memcpy (timestamp_exp, "(12:protected-at15:", 19);
@@ -499,6 +500,11 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
   if (!protect_info[infidx].algo)
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
 
+  /* The parser below is a complete mess: To make it robust for ECC
+     use we should reorder the s-expression to include only what we
+     really need and thus guarantee the right order for saving stuff.
+     This should be done before calling this function and maybe with
+     the help of the new gcry_sexp_extract_param.  */
   parmlist      = protect_info[infidx].parmlist;
   prot_from_idx = protect_info[infidx].prot_from;
   prot_to_idx   = protect_info[infidx].prot_to;
@@ -522,9 +528,18 @@ agent_protect (const unsigned char *plainkey, const char *passphrase,
               /* This is a private ECC key but the first parameter is
                  the name of the curve.  We change the parameter list
                  here to the one we expect in this case.  */
+              have_curve = 1;
               parmlist = "?qd";
               prot_from_idx = 2;
               prot_to_idx = 2;
+            }
+          else if (n == 5 && !memcmp (s, "flags", 5)
+                   && i == 1 && have_curve)
+            {
+              /* "curve" followed by "flags": Change again.  */
+              parmlist = "??qd";
+              prot_from_idx = 3;
+              prot_to_idx = 3;
             }
           else
             return gpg_error (GPG_ERR_INV_SEXP);

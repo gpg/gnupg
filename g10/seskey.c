@@ -264,7 +264,12 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 
   pkalgo = map_pk_openpgp_to_gcry (pk->pubkey_algo);
 
-  if (pkalgo == GCRY_PK_DSA || pkalgo == GCRY_PK_ECDSA)
+  if (pkalgo == GCRY_PK_ECDSA && openpgp_oid_is_ed25519 (pk->pkey[0]))
+    {
+      frame = gcry_mpi_set_opaque_copy (NULL, gcry_md_read (md, hash_algo),
+                                        8*gcry_md_get_algo_dlen (hash_algo));
+    }
+  else if (pkalgo == GCRY_PK_DSA || pkalgo == GCRY_PK_ECDSA)
     {
       /* It's a DSA signature, so find out the size of q.  */
 

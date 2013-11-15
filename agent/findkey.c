@@ -729,6 +729,11 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
       algoname = "dsa";
       elems = "pqgy";
     }
+  else if (n==3 && !memcmp (name, "ecc", 3))
+    {
+      algoname = "ecc";
+      elems = "pabgnq";
+    }
   else if (n==5 && !memcmp (name, "ecdsa", 5))
     {
       algoname = "ecdsa";
@@ -788,12 +793,36 @@ agent_is_dsa_key (gcry_sexp_t s_key)
 
   if (!strcmp (algoname, "dsa"))
     return GCRY_PK_DSA;
+  else if (!strcmp (algoname, "ecc"))
+    return GCRY_PK_ECDSA; /* FIXME: Check for the EdDSA flag.  */
   else if (!strcmp (algoname, "ecdsa"))
     return GCRY_PK_ECDSA;
   else
     return 0;
 }
 
+
+/* Return true if S_KEY is an EdDSA key as used with curve Ed25519.  */
+int
+agent_is_eddsa_key (gcry_sexp_t s_key)
+{
+  char algoname[6];
+
+  if (!s_key)
+    return 0;
+
+  if (key_parms_from_sexp (s_key, NULL, algoname, sizeof algoname, NULL, 0))
+    return 0; /* Error - assume it is not an DSA key.  */
+
+  if (!strcmp (algoname, "dsa"))
+    return GCRY_PK_DSA;
+  else if (!strcmp (algoname, "ecc"))
+    return GCRY_PK_ECDSA; /* FIXME: Check for the EdDSA flag.  */
+  else if (!strcmp (algoname, "ecdsa"))
+    return GCRY_PK_ECDSA;
+  else
+    return 0;
+}
 
 
 /* Return the key for the keygrip GRIP.  The result is stored at

@@ -140,22 +140,13 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
       nread++;
     }
 
-  if (nread >= 2 && !(buf[0] << 8 | buf[1]))
-    {
-      /* Libgcrypt < 1.5.0 accidently rejects zero-length (i.e. zero)
-         MPIs.  We fix this here.  */
-      a = gcry_mpi_new (0);
-    }
-  else
-    {
-      if (gcry_mpi_scan (&a, GCRYMPI_FMT_PGP, buf, nread, &nread))
-	a = NULL;
-    }
+  if (gcry_mpi_scan (&a, GCRYMPI_FMT_PGP, buf, nread, &nread))
+    a = NULL;
 
  leave:
   gcry_free (buf);
   if (nread > *ret_nread)
-    log_bug ("mpi larger than packet");
+    log_bug ("mpi larger than packet (%zu/%u)", nread, *ret_nread);
   else
     *ret_nread = nread;
   return a;
@@ -1999,8 +1990,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       for (i = 0; i < npkey; i++)
         {
-          if ((algorithm == PUBKEY_ALGO_ECDSA
-               || algorithm == PUBKEY_ALGO_ECDH) && (i==0 || i == 2))
+          if ((algorithm == PUBKEY_ALGO_ECDSA && (i == 0))
+              || (algorithm == PUBKEY_ALGO_ECDH) && (i == 0 || i == 2))
             {
               size_t n;
 	      err = read_size_body (inp, pktlen, &n, pk->pkey+i);
@@ -2020,6 +2011,14 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
             {
               es_fprintf (listfp, "\tpkey[%d]: ", i);
               mpi_print (listfp, pk->pkey[i], mpi_print_mode);
+              if ((algorithm == PUBKEY_ALGO_ECDSA
+                   || algorithm == PUBKEY_ALGO_ECDH) && i==0)
+                {
+                  char *curve = openpgp_oid_to_str (pk->pkey[0]);
+                  es_fprintf (listfp, " %s (%s)",
+                              openpgp_oid_to_curve (curve), curve);
+                  xfree (curve);
+                }
               es_putc ('\n', listfp);
             }
         }

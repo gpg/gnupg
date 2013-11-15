@@ -1,5 +1,6 @@
 /* openpgp-oids.c - OID helper for OpenPGP
  * Copyright (C) 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -34,6 +35,11 @@
 #include <assert.h>
 
 #include "util.h"
+
+
+/* The OID for Curve Ed25519 in OpenPGP format.  */
+static const char oid_ed25519[] =
+  { 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01 };
 
 
 /* Helper for openpgp_oid_from_str.  */
@@ -235,4 +241,89 @@ openpgp_oid_to_str (gcry_mpi_t a)
      than likely corrupt.  */
   xfree (string);
   return xtrystrdup ("1.3.6.1.4.1.11591.2.12242973");
+}
+
+
+
+/* Return true if A represents the OID for Ed25519.  */
+int
+openpgp_oid_is_ed25519 (gcry_mpi_t a)
+{
+  const unsigned char *buf;
+  unsigned int nbits;
+  size_t n;
+
+  if (!a || !gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    return 0;
+
+  buf = gcry_mpi_get_opaque (a, &nbits);
+  n = (nbits+7)/8;
+  return (n == DIM (oid_ed25519)
+          && !memcmp (buf, oid_ed25519, DIM (oid_ed25519)));
+}
+
+
+
+/* Map the Libgcrypt ECC curve NAME to an OID.  If R_NBITS is not NULL
+   store the bit size of the curve there.  Returns NULL for unknown
+   curve names.  */
+const char *
+openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
+{
+  unsigned int nbits = 0;
+  const char *oidstr;
+
+  if (!name)
+    oidstr = NULL;
+  else if (!strcmp (name, "Ed25519"))
+    {
+      oidstr = "1.3.6.1.4.1.3029.1.5.1";
+      nbits = 255;
+    }
+  else if (!strcmp (name, "nistp256"))
+    {
+      oidstr = "1.2.840.10045.3.1.7";
+      nbits = 256;
+    }
+  else if (!strcmp (name, "nistp384"))
+    {
+      oidstr = "1.3.132.0.34";
+      nbits = 384;
+    }
+  else if (!strcmp (name, "nistp521"))
+    {
+      oidstr = "1.3.132.0.35";
+      nbits = 521;
+    }
+  else
+    oidstr = NULL;
+
+  if (r_nbits)
+    *r_nbits = nbits;
+  return oidstr;
+}
+
+
+/* Map an OpenPGP OID to the Libgcrypt curve NAME.  If R_NBITS is not
+   NULL store the bit size of the curve there.  Returns "?" for
+   unknown curve names.  */
+const char *
+openpgp_oid_to_curve (const char *oid)
+{
+  const char *name;
+
+  if (!oid)
+    name = "";
+  else if (!strcmp (oid, "1.3.6.1.4.1.3029.1.5.1"))
+    name = "Ed25519";
+  else if (!strcmp (oid, "1.2.840.10045.3.1.7"))
+    name = "NIST P-256";
+  else if (!strcmp (oid, "1.3.132.0.34"))
+    name = "NIST P-384";
+  else if (!strcmp (oid, "1.3.132.0.35"))
+    name = "NIST P-521";
+  else /* FIXME: Lookup via Libgcrypt.  */
+    name = "?";
+
+  return name;
 }

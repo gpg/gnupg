@@ -60,9 +60,11 @@
 enum para_name {
   pKEYTYPE,
   pKEYLENGTH,
+  pKEYCURVE,
   pKEYUSAGE,
   pSUBKEYTYPE,
   pSUBKEYLENGTH,
+  pSUBKEYCURVE,
   pSUBKEYUSAGE,
   pAUTHKEYTYPE,
   pNAMEREAL,
@@ -1071,40 +1073,6 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
   return err;
 }
 
-/* Map the Libgcrypt ECC curve NAME to an OID.  If R_NBITS is not NULL
-   store the bit size of the curve there.  Returns NULL for unknown
-   curve names.  */
-const char *
-gpg_curve_to_oid (const char *name, unsigned int *r_nbits)
-{
-  unsigned int nbits = 0;
-  const char *oidstr;
-
-  if (!name)
-    oidstr = NULL;
-  else if (!strcmp (name, "NIST P-256"))
-    {
-      oidstr = "1.2.840.10045.3.1.7";
-      nbits = 256;
-    }
-  else if (!strcmp (name, "NIST P-384"))
-    {
-      oidstr = "1.3.132.0.34";
-      nbits = 384;
-    }
-  else if (!strcmp (name, "NIST P-521"))
-    {
-      oidstr = "1.3.132.0.35";
-      nbits = 521;
-    }
-  else
-    oidstr = NULL;
-
-  if (r_nbits)
-    *r_nbits = nbits;
-  return oidstr;
-}
-
 
 static gpg_error_t
 ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
@@ -1142,7 +1110,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
       goto leave;
     }
   gcry_sexp_release (l2);
-  oidstr = gpg_curve_to_oid (curve, &nbits);
+  oidstr = openpgp_curve_to_oid (curve, &nbits);
   if (!oidstr)
     {
       /* That can't happen because we used one of the curves
@@ -1188,7 +1156,7 @@ ecckey_from_sexp (gcry_mpi_t *array, gcry_sexp_t sexp, int algo)
           array[i] = NULL;
         }
     }
-  return 0;
+  return err;
 }
 
 
@@ -1534,31 +1502,24 @@ gen_dsa (unsigned int nbits, KBNODE pub_root,
  * Generate an ECC key
  */
 static gpg_error_t
-gen_ecc (int algo, unsigned int nbits, kbnode_t pub_root,
+gen_ecc (int algo, const char *curve, kbnode_t pub_root,
          u32 timestamp, u32 expireval, int is_subkey,
          int keygen_flags, char **cache_nonce_addr)
 {
   gpg_error_t err;
-  const char *curve;
   char *keyparms;
 
   assert (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH);
 
-  /* For now we may only use one of the 3 NIST curves.  See also
-     gpg_curve_to_oid.  */
-  if (nbits <= 256)
-    curve = "NIST P-256";
-  else if (nbits <= 384)
-    curve = "NIST P-384";
-  else
-    curve = "NIST P-521";
+  if (!curve || !*curve)
+    return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
-  keyparms = xtryasprintf ("(genkey(%s(curve %zu:%s)%s))",
-                           algo == PUBKEY_ALGO_ECDSA ? "ecdsa" : "ecdh",
+  keyparms = xtryasprintf ("(genkey(ecc(curve %zu:%s)(flags nocomp%s%s)))",
                            strlen (curve), curve,
-                           ((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
-                            && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
-                           "(transient-key)" : "" );
+                           (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+                             && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+                            " transient-key" : ""),
+                           (!strcmp (curve, "Ed25519")? " eddsa":""));
   if (!keyparms)
     err = gpg_error_from_syserror ();
   else
@@ -2082,6 +2043,98 @@ ask_keysize (int algo, unsigned int primary_keysize)
 }
 
 
+/* Ask for the key size.  ALGO is the algorithm.  If PRIMARY_KEYSIZE
+   is not 0, the function asks for the size of the encryption
+   subkey. */
+static char *
+ask_curve (void)
+{
+  struct {
+    const char *name;
+    int available;
+    int expert_only;
+    const char *pretty_name;
+  } curves[] = {
+    { "Ed25519",         0, 0, "Curve 25519" },
+    { "NIST P-256",      0, 1, },
+    { "NIST P-384",      0, 0, },
+    { "NIST P-521",      0, 1, },
+    { "brainpoolP256r1", 0, 1, "Brainpool P-256" },
+    { "brainpoolP384r1", 0, 1, "Brainpool P-384" },
+    { "brainpoolP512r1", 0, 1, "Brainpool P-512" },
+  };
+  int idx;
+  char *answer;
+  char *result = NULL;
+  gcry_sexp_t keyparms;
+
+  tty_printf (_("Please select which elliptic curve you want:\n"));
+
+  keyparms = NULL;
+  for (idx=0; idx < DIM(curves); idx++)
+    {
+      int rc;
+
+      curves[idx].available = 0;
+      if (!opt.expert && curves[idx].expert_only)
+        continue;
+
+      gcry_sexp_release (keyparms);
+      rc = gcry_sexp_build (&keyparms, NULL,
+                            "(public-key(ecc(curve %s)))", curves[idx].name);
+      if (rc)
+        continue;
+      if (!gcry_pk_get_curve (keyparms, 0, NULL))
+        continue;
+
+      curves[idx].available = 1;
+      tty_printf (_("   (%d) %s\n"), idx + 1,
+                  curves[idx].pretty_name?
+                  curves[idx].pretty_name:curves[idx].name);
+    }
+  gcry_sexp_release (keyparms);
+
+
+  for (;;)
+    {
+      answer = cpr_get ("keygen.curve", _("Your selection? "));
+      cpr_kill_prompt ();
+      idx = *answer? atoi (answer) : 1;
+      if (*answer && !idx)
+        {
+          /* See whether the user entered the name of the curve.  */
+          for (idx=0; idx < DIM(curves); idx++)
+            {
+              if (!opt.expert && curves[idx].expert_only)
+                continue;
+              if (!stricmp (curves[idx].name, answer)
+                  || (curves[idx].pretty_name
+                      && !stricmp (curves[idx].pretty_name, answer)))
+                break;
+            }
+          if (idx == DIM(curves))
+            idx = -1;
+        }
+      else
+        idx--;
+      xfree(answer);
+      answer = NULL;
+      if (idx < 0 || idx >= DIM (curves) || !curves[idx].available)
+        tty_printf (_("Invalid selection.\n"));
+      else
+        {
+          result = xstrdup (curves[idx].name);
+          break;
+        }
+    }
+
+  if (!result)
+    result = xstrdup (curves[0].name);
+
+  return result;
+}
+
+
 /****************
  * Parse an expire string and return its value in seconds.
  * Returns (u32)-1 on error.
@@ -2539,7 +2592,7 @@ do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
 /* Basic key generation.  Here we divert to the actual generation
    routines based on the requested algorithm.  */
 static int
-do_create (int algo, unsigned int nbits, KBNODE pub_root,
+do_create (int algo, unsigned int nbits, const char *curve, KBNODE pub_root,
            u32 timestamp, u32 expiredate, int is_subkey,
            int keygen_flags, char **cache_nonce_addr)
 {
@@ -2561,7 +2614,7 @@ do_create (int algo, unsigned int nbits, KBNODE pub_root,
     err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
-    err = gen_ecc (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
+    err = gen_ecc (algo, curve, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_RSA)
     err = gen_rsa (algo, nbits, pub_root, timestamp, expiredate, is_subkey,
@@ -2974,7 +3027,6 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
            * but because we do this always, why not here.  */
           STRING2KEY *s2k;
           DEK *dek;
-          static int count;
 
           s2k = xmalloc ( sizeof *s2k );
           s2k->mode = opt.s2k_mode;
@@ -3058,9 +3110,11 @@ read_parameter_file( const char *fname )
     } keywords[] = {
 	{ "Key-Type",       pKEYTYPE},
 	{ "Key-Length",     pKEYLENGTH },
+	{ "Key-Curve",      pKEYCURVE },
 	{ "Key-Usage",      pKEYUSAGE },
 	{ "Subkey-Type",    pSUBKEYTYPE },
 	{ "Subkey-Length",  pSUBKEYLENGTH },
+	{ "Subkey-Curve",   pSUBKEYCURVE },
 	{ "Subkey-Usage",   pSUBKEYUSAGE },
 	{ "Name-Real",      pNAMEREAL },
 	{ "Name-Email",     pNAMEEMAIL },
@@ -3340,6 +3394,7 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
   else
     {
       int subkey_algo;
+      char *curve = NULL;
 
       /* Fixme: To support creating a primary key by keygrip we better
          also define the keyword for the parameter file.  Note that
@@ -3355,12 +3410,24 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
           sprintf( r->u.value, "%d", algo );
           r->next = para;
           para = r;
-	  nbits = ask_keysize (algo, 0);
-	  r = xmalloc_clear( sizeof *r + 20 );
-	  r->key = pKEYLENGTH;
-	  sprintf( r->u.value, "%u", nbits);
-	  r->next = para;
-	  para = r;
+          if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+            {
+              curve = ask_curve ();
+              r = xmalloc_clear (sizeof *r + strlen (curve));
+              r->key = pKEYCURVE;
+              strcpy (r->u.value, curve);
+              r->next = para;
+              para = r;
+            }
+          else
+            {
+              nbits = ask_keysize (algo, 0);
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pKEYLENGTH;
+              sprintf( r->u.value, "%u", nbits);
+              r->next = para;
+              para = r;
+            }
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYUSAGE;
           strcpy( r->u.value, "sign" );
@@ -3400,12 +3467,27 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
           nbits = 0;
         }
 
-      nbits = ask_keysize (both? subkey_algo : algo, nbits);
-      r = xmalloc_clear( sizeof *r + 20 );
-      r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
-      sprintf( r->u.value, "%u", nbits);
-      r->next = para;
-      para = r;
+      if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+        {
+          if (!both)
+            curve = ask_curve ();
+          r = xmalloc_clear (sizeof *r + strlen (curve));
+          r->key = both? pSUBKEYCURVE : pKEYCURVE;
+          strcpy (r->u.value, curve);
+          r->next = para;
+          para = r;
+        }
+      else
+        {
+          nbits = ask_keysize (both? subkey_algo : algo, nbits);
+          r = xmalloc_clear( sizeof *r + 20 );
+          r->key = both? pSUBKEYLENGTH : pKEYLENGTH;
+          sprintf( r->u.value, "%u", nbits);
+          r->next = para;
+          para = r;
+        }
+
+      xfree (curve);
     }
 
   expire = ask_expire_interval(0,NULL);
@@ -3630,6 +3712,7 @@ do_generate_keypair (struct para_data_s *para,
   if (!card)
     err = do_create (get_parameter_algo( para, pKEYTYPE, NULL ),
                      get_parameter_uint( para, pKEYLENGTH ),
+                     get_parameter_value (para, pKEYCURVE),
                      pub_root,
                      timestamp,
                      get_parameter_u32( para, pKEYEXPIRE ), 0,
@@ -3681,6 +3764,7 @@ do_generate_keypair (struct para_data_s *para,
         {
           err = do_create (get_parameter_algo (para, pSUBKEYTYPE, NULL),
                            get_parameter_uint (para, pSUBKEYLENGTH),
+                           get_parameter_value (para, pSUBKEYCURVE),
                            pub_root,
                            timestamp,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
@@ -3827,7 +3911,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   int algo;
   unsigned int use;
   u32 expire;
-  unsigned int nbits;
+  unsigned int nbits = 0;
+  char *curve = NULL;
   u32 cur_time;
   char *hexgrip = NULL;
   char *serialno = NULL;
@@ -3881,7 +3966,14 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   hexgrip = NULL;
   algo = ask_algo (ctrl, 1, NULL, &use, &hexgrip);
   assert (algo);
-  nbits = hexgrip? 0 : ask_keysize (algo, 0);
+
+  if (hexgrip)
+    nbits = 0;
+  else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+    curve = ask_curve ();
+  else
+    nbits = ask_keysize (algo, 0);
+
   expire = ask_expire_interval (0, NULL);
   if (!cpr_enabled() && !cpr_get_answer_is_yes("keygen.sub.okay",
                                                _("Really create? (y/N) ")))
@@ -3894,7 +3986,8 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
     err = do_create_from_keygrip (ctrl, algo, hexgrip,
                                   keyblock, cur_time, expire, 1);
   else
-    err = do_create (algo, nbits, keyblock, cur_time, expire, 1, 0, NULL);
+    err = do_create (algo, nbits, curve,
+                     keyblock, cur_time, expire, 1, 0, NULL);
   if (err)
     goto leave;
 
@@ -3911,6 +4004,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   write_status_text (STATUS_KEY_CREATED, "S");
 
  leave:
+  xfree (curve);
   xfree (hexgrip);
   xfree (serialno);
   if (err)

@@ -35,7 +35,7 @@
 static void
 test_openpgp_oid_from_str (void)
 {
-  static char *sample_oids[] =
+   static char *sample_oids[] =
     {
       "0.0",
       "1.0",
@@ -134,6 +134,41 @@ test_openpgp_oid_to_str (void)
 }
 
 
+static void
+test_openpgp_oid_is_ed25519 (void)
+{
+  static struct
+  {
+    int yes;
+    const char *oidstr;
+  } samples[] = {
+    { 0, "0.0" },
+    { 0, "1.3.132.0.35" },
+    { 0, "1.3.6.1.4.1.3029.1.5.0" },
+    { 1, "1.3.6.1.4.1.3029.1.5.1" },
+    { 0, "1.3.6.1.4.1.3029.1.5.2" },
+    { 0, "1.3.6.1.4.1.3029.1.5.1.0" },
+    { 0, "1.3.6.1.4.1.3029.1.5" },
+    { 0, NULL },
+  };
+  gpg_error_t err;
+  gcry_mpi_t a;
+  int idx;
+
+  for (idx=0; samples[idx].oidstr; idx++)
+    {
+      err = openpgp_oid_from_str (samples[idx].oidstr, &a);
+      if (err)
+        fail (idx, err);
+
+      if (openpgp_oid_is_ed25519 (a) != samples[idx].yes)
+        fail (idx, 0);
+
+      gcry_mpi_release (a);
+    }
+
+}
+
 
 int
 main (int argc, char **argv)
@@ -143,6 +178,7 @@ main (int argc, char **argv)
 
   test_openpgp_oid_from_str ();
   test_openpgp_oid_to_str ();
+  test_openpgp_oid_is_ed25519 ();
 
   return 0;
 }

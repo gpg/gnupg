@@ -817,6 +817,17 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
           nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
           keystr_from_pk (pk), datestr_from_pk (pk));
 
+  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      char *curve = openpgp_oid_to_str (pk->pkey[0]);
+      const char *name = openpgp_oid_to_curve (curve);
+      if (!*name || *name == '?')
+        name = curve;
+      es_fprintf (es_stdout, " %s", name);
+      xfree (curve);
+    }
+
   if (pk->flags.revoked)
     {
       es_fprintf (es_stdout, " [");
@@ -940,6 +951,18 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
                   s2k_char,
 		  nbits_from_pk (pk2), pubkey_letter (pk2->pubkey_algo),
 		  keystr_from_pk (pk2), datestr_from_pk (pk2));
+
+          if (pk2->pubkey_algo == PUBKEY_ALGO_ECDSA
+              || pk2->pubkey_algo == PUBKEY_ALGO_ECDH)
+            {
+              char *curve = openpgp_oid_to_str (pk2->pkey[0]);
+              const char *name = openpgp_oid_to_curve (curve);
+              if (!*name || *name == '?')
+                name = curve;
+              es_fprintf (es_stdout, " %s", name);
+              xfree (curve);
+            }
+
 	  if (pk2->flags.revoked)
 	    {
 	      es_fprintf (es_stdout, " [");
@@ -1172,16 +1195,28 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   es_putc (':', es_stdout);
   es_putc (':', es_stdout);
   print_capabilities (pk, keyblock);
+  es_putc (':', es_stdout);		/* End of field 13. */
+  es_putc (':', es_stdout);		/* End of field 14. */
   if (secret)
     {
-      es_putc (':', es_stdout);		/* End of field 13. */
-      es_putc (':', es_stdout);		/* End of field 14. */
       if (stubkey)
 	es_putc ('#', es_stdout);
       else if (serialno)
-        es_fputs(serialno, es_stdout);
-      es_putc (':', es_stdout);		/* End of field 15. */
+        es_fputs (serialno, es_stdout);
     }
+  es_putc (':', es_stdout);		/* End of field 15. */
+  es_putc (':', es_stdout);		/* End of field 16. */
+  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+    {
+      char *curve = openpgp_oid_to_str (pk->pkey[0]);
+      const char *name = openpgp_oid_to_curve (curve);
+      if (!*name || *name == '?')
+        name = curve;
+      es_fputs (name, es_stdout);
+      xfree (curve);
+    }
+  es_putc (':', es_stdout);		/* End of field 17. */
   es_putc ('\n', es_stdout);
 
   print_revokers (pk);
@@ -1285,16 +1320,28 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 		  /* fixme: add LID and ownertrust here */
 	    );
 	  print_capabilities (pk2, NULL);
+          es_putc (':', es_stdout);	/* End of field 13. */
+          es_putc (':', es_stdout);	/* End of field 14. */
           if (secret)
             {
-              es_putc (':', es_stdout);	/* End of field 13. */
-              es_putc (':', es_stdout);	/* End of field 14. */
               if (stubkey)
                 es_putc ('#', es_stdout);
               else if (serialno)
                 es_fputs (serialno, es_stdout);
-              es_putc (':', es_stdout);	/* End of field 15. */
             }
+          es_putc (':', es_stdout);	/* End of field 15. */
+          es_putc (':', es_stdout);	/* End of field 16. */
+          if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+              || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+            {
+              char *curve = openpgp_oid_to_str (pk->pkey[0]);
+              const char *name = openpgp_oid_to_curve (curve);
+              if (!*name || *name == '?')
+                name = curve;
+              es_fputs (name, es_stdout);
+              xfree (curve);
+            }
+          es_putc (':', es_stdout);	/* End of field 17. */
 	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
 	    print_fingerprint (pk2, 0);

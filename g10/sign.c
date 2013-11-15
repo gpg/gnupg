@@ -281,11 +281,16 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
         ;
       else if (pksk->pubkey_algo == GCRY_PK_RSA
                || pksk->pubkey_algo == GCRY_PK_RSA_S)
-        sig->data[0] = mpi_from_sexp (s_sigval, "s");
+        sig->data[0] = get_mpi_from_sexp (s_sigval, "s", GCRYMPI_FMT_USG);
+      else if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
+        {
+          sig->data[0] = get_mpi_from_sexp (s_sigval, "r", GCRYMPI_FMT_OPAQUE);
+          sig->data[1] = get_mpi_from_sexp (s_sigval, "s", GCRYMPI_FMT_OPAQUE);
+        }
       else
         {
-          sig->data[0] = mpi_from_sexp (s_sigval, "r");
-          sig->data[1] = mpi_from_sexp (s_sigval, "s");
+          sig->data[0] = get_mpi_from_sexp (s_sigval, "r", GCRYMPI_FMT_USG);
+          sig->data[1] = get_mpi_from_sexp (s_sigval, "s", GCRYMPI_FMT_USG);
         }
 
       gcry_sexp_release (s_sigval);
@@ -422,6 +427,10 @@ match_dsa_hash (unsigned int qbytes)
   usable for the pubkey algorithm.  If --preferred-digest-prefs isn't
   set, then take the OpenPGP default (i.e. SHA-1).
 
+  Note that Ed25519+EdDSA takes an input of arbitrary length and thus
+  we don't enforce any particular algorithm like we do for standard
+  ECDSA. However, we use SHA256 as the default algorithm.
+
   Possible improvement: Use the highest-ranked usable algorithm from
   the signing key prefs either before or after using the personal
   list?
@@ -436,6 +445,14 @@ hash_for (PKT_public_key *pk)
   else if (recipient_digest_algo)
     {
       return recipient_digest_algo;
+    }
+  else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+           && openpgp_oid_is_ed25519 (pk->pkey[0]))
+    {
+      if (opt.personal_digest_prefs)
+        return opt.personal_digest_prefs[0].value;
+      else
+        return DIGEST_ALGO_SHA256;
     }
   else if (pk->pubkey_algo == PUBKEY_ALGO_DSA
            || pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
@@ -927,7 +944,8 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
 		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA
-                    || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+                    || (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                        && !openpgp_oid_is_ed25519 (sk_rover->pk->pkey[1])))
 		  {
 		    int temp_hashlen = (gcry_mpi_get_nbits
                                         (sk_rover->pk->pkey[1]));
@@ -1492,8 +1510,13 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	else if(pksk->pubkey_algo == PUBKEY_ALGO_DSA)
 	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
         else if(pksk->pubkey_algo == PUBKEY_ALGO_ECDSA )
-	  digest_algo = match_dsa_hash (ecdsa_qbits_from_Q
-                                        (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
+          {
+            if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
+              digest_algo = DIGEST_ALGO_SHA256;
+            else
+              digest_algo = match_dsa_hash
+                (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
+          }
 	else
 	  digest_algo = DIGEST_ALGO_SHA1;
       }
