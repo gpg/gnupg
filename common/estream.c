@@ -181,13 +181,13 @@ static int estream_pth_killed;
   (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
    : (void)pth_mutex_acquire (&(mutex), 0, NULL))
 # define ESTREAM_MUTEX_UNLOCK(mutex)                            \
-  (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
+  (estream_pth_killed ? dummy_mutex_call_int ((mutex))          \
    : pth_mutex_release (&(mutex)))
 # define ESTREAM_MUTEX_TRYLOCK(mutex)                                   \
   (estream_pth_killed ? dummy_mutex_call_int ((mutex))                  \
    : ((pth_mutex_acquire (&(mutex), 1, NULL) == TRUE)? 0:-1))
 # define ESTREAM_MUTEX_INITIALIZE(mutex)                        \
-  (estream_pth_killed ? dummy_mutex_call_void ((mutex))         \
+  (estream_pth_killed ? dummy_mutex_call_int ((mutex))          \
    : pth_mutex_init (&(mutex)))
 
 #else /*!HAVE_PTH*/
