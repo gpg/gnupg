@@ -1991,7 +1991,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       for (i = 0; i < npkey; i++)
         {
           if ((algorithm == PUBKEY_ALGO_ECDSA && (i == 0))
-              || (algorithm == PUBKEY_ALGO_ECDH) && (i == 0 || i == 2))
+              || ((algorithm == PUBKEY_ALGO_ECDH) && (i == 0 || i == 2)))
             {
               size_t n;
 	      err = read_size_body (inp, pktlen, &n, pk->pkey+i);

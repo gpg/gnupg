@@ -31,11 +31,3 @@ if $GPG --list-keys --with-colons $keyid \
 else
   error "$goodkey: import failed (bug 1223)"
 fi
-
-
-
-
-
-
-
-

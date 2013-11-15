@@ -26,6 +26,7 @@
 
 #include "gpg.h"
 #include "util.h"
+#include "../common/init.h"
 #include "packet.h"
 #include "keydb.h"
 
