@@ -402,7 +402,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   n = get32 (p ); p += 4;
   fprintf (fp, "Reserved-Space: %lu\n", n );
 
-  if (unhashed >= 24)
+  if (n >= 4 && unhashed >= 24)
     {
       n = get32 ( buffer + length - unhashed);
       fprintf (fp, "Storage-Flags: %08lx\n", n );
