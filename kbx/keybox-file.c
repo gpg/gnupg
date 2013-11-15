@@ -43,7 +43,7 @@ ftello (FILE *stream)
 
 
 /* Read a block at the current postion and return it in r_blob.
-   r_blob may be NULL to simply skip the current block */
+   r_blob may be NULL to simply skip the current block.  */
 int
 _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
 {
@@ -55,7 +55,8 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
 
   *skipped_deleted = 0;
  again:
-  *r_blob = NULL;
+  if (r_blob)
+    *r_blob = NULL;
   off = ftello (fp);
   if (off == (off_t)-1)
     return gpg_error_from_syserror ();

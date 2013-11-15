@@ -1,4 +1,4 @@
-/* keybox-defs.h - interal Keybox defintions
+/* keybox-defs.h - internal Keybox definitions
  *	Copyright (C) 2001, 2004 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
@@ -192,6 +192,20 @@ gpg_err_code_t _keybox_get_flag_location (const unsigned char *buffer,
                                           size_t length,
                                           int what,
                                           size_t *flag_off, size_t *flag_size);
+
+static inline int
+blob_get_type (KEYBOXBLOB blob)
+{
+  const unsigned char *buffer;
+  size_t length;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 32)
+    return -1; /* blob too short */
+
+  return buffer[4];
+}
+
 
 /*-- keybox-dump.c --*/
 int _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp);

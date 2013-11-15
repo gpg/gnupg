@@ -245,7 +245,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       || rawdata_len + 4 > length
       || rawdata_off+rawdata_len + 4 > length)
     fprintf (fp, "[Error: raw data larger than blob]\n");
-  unhashed = get32 (buffer + rawdata_off + rawdata_len);
+  unhashed = length - rawdata_off - rawdata_len;
   fprintf (fp, "Unhashed: %lu\n", unhashed);
 
   nkeys = get16 (buffer + 16);
@@ -378,7 +378,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
           fputs ("[bad signature]", fp);
         else if (sflags < 0x10000000)
           fprintf (fp, "[bad flag %0lx]", sflags);
-        else if (sflags == 0xffffffff)
+        else if (sflags == (ulong)(-1))
           fputs ("[good - does not expire]", fp );
         else
           fprintf (fp, "[good - expires at %lu]", sflags);

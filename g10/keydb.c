@@ -1,6 +1,7 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001, 2002, 2003, 2004, 2005,
  *               2008, 2009, 2011, 2013 Free Software Foundation, Inc.
+ * Coyrright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -896,18 +897,24 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
   u32 *sigstatus;
 
   *r_iobuf = NULL;
-  *r_sigstatus = NULL;
+  if (r_sigstatus)
+    *r_sigstatus = NULL;
 
   /* Allocate a vector for the signature cache.  This is an array of
      u32 values with the first value giving the number of elements to
      follow and each element descriping the cache status of the
      signature.  */
-  for (kbctx = NULL, n_sigs = 0; (node = walk_kbnode (keyblock, &kbctx, 0));)
-    if (node->pkt->pkttype == PKT_SIGNATURE)
-      n_sigs++;
-  sigstatus = xtrycalloc (1+n_sigs, sizeof *sigstatus);
-  if (!sigstatus)
-    return gpg_error_from_syserror ();
+  if (r_sigstatus)
+    {
+      for (kbctx=NULL, n_sigs=0; (node = walk_kbnode (keyblock, &kbctx, 0));)
+        if (node->pkt->pkttype == PKT_SIGNATURE)
+          n_sigs++;
+      sigstatus = xtrycalloc (1+n_sigs, sizeof *sigstatus);
+      if (!sigstatus)
+        return gpg_error_from_syserror ();
+    }
+  else
+    sigstatus = NULL;
 
   iobuf = iobuf_temp ();
   for (kbctx = NULL, n_sigs = 0; (node = walk_kbnode (keyblock, &kbctx, 0));)
@@ -940,8 +947,8 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
           PKT_signature *sig = node->pkt->pkt.signature;
 
           n_sigs++;
-          /* Fixme: Detect tye "missing key" status.  */
-          if (sig->flags.checked)
+          /* Fixme: Detect the "missing key" status.  */
+          if (sig->flags.checked && sigstatus)
             {
               if (sig->flags.valid)
                 {
@@ -957,10 +964,12 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
             }
         }
     }
-  sigstatus[0] = n_sigs;
+  if (sigstatus)
+    sigstatus[0] = n_sigs;
 
   *r_iobuf = iobuf;
-  *r_sigstatus = sigstatus;
+  if (r_sigstatus)
+    *r_sigstatus = sigstatus;
   return 0;
 }
 
@@ -971,7 +980,7 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
 gpg_error_t
 keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
-  gpg_error_t rc;
+  gpg_error_t err;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
@@ -984,28 +993,36 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   if (opt.dry_run)
     return 0;
 
-  rc = lock_all (hd);
-  if (rc)
-    return rc;
+  err = lock_all (hd);
+  if (err)
+    return err;
 
   switch (hd->active[hd->found].type)
     {
     case KEYDB_RESOURCE_TYPE_NONE:
-      rc = gpg_error (GPG_ERR_GENERAL); /* oops */
+      err = gpg_error (GPG_ERR_GENERAL); /* oops */
       break;
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = keyring_update_keyblock (hd->active[hd->found].u.kr, kb);
+      err = keyring_update_keyblock (hd->active[hd->found].u.kr, kb);
       break;
-    /* case KEYDB_RESOURCE_TYPE_KEYRING: */
-    /*   rc = build_keyblock (kb, &image, &imagelen); */
-    /*   if (!rc) */
-    /*     rc = keybox_update_keyblock (hd->active[hd->found].u.kb, */
-    /*                                  image, imagelen); */
-    /*   break; */
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      {
+        iobuf_t iobuf;
+
+        err = build_keyblock_image (kb, &iobuf, NULL);
+        if (!err)
+          {
+            err = keybox_update_keyblock (hd->active[hd->found].u.kb,
+                                          iobuf_get_temp_buffer (iobuf),
+                                          iobuf_get_temp_length (iobuf));
+            iobuf_close (iobuf);
+          }
+      }
+      break;
     }
 
   unlock_all (hd);
-  return rc;
+  return err;
 }
 
 
@@ -1196,6 +1213,9 @@ keydb_rebuild_caches (int noisy)
           if (rc)
             log_error (_("failed to rebuild keyring cache: %s\n"),
                        g10_errstr (rc));
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          /* N/A.  */
           break;
         }
     }

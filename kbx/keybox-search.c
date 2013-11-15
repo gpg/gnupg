@@ -65,19 +65,6 @@ get16 (const byte *buffer)
 
 
 
-static inline int
-blob_get_type (KEYBOXBLOB blob)
-{
-  const unsigned char *buffer;
-  size_t length;
-
-  buffer = _keybox_get_blob_image (blob, &length);
-  if (length < 32)
-    return -1; /* blob too short */
-
-  return buffer[4];
-}
-
 static inline unsigned int
 blob_get_blob_flags (KEYBOXBLOB blob)
 {

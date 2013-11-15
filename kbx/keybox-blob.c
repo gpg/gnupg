@@ -120,8 +120,9 @@
    - bN   Arbitrary space for example used to store data which is not
           part of the keyblock or certificate.  For example the v3 key
           IDs go here.
-   - bN   Space for the keyblock or certifciate.
-   - bN   RFU
+   - bN   Space for the keyblock or certificate.
+   - bN   RFU.  This is the remaining space after keyblock and before
+          the checksum.  Is is not covered by the checksum.
    - b20  SHA-1 checksum (useful for KS syncronisation?)
           Note, that KBX versions before GnuPG 2.1 used an MD5
           checksum.  However it was only created but never checked.

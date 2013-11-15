@@ -425,10 +425,47 @@ keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen,
 gpg_error_t
 keybox_update_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
 {
-  (void)hd;
-  (void)image;
-  (void)imagelen;
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+  gpg_error_t err;
+  const char *fname;
+  off_t off;
+  KEYBOXBLOB blob;
+  size_t nparsed;
+  struct _keybox_openpgp_info info;
+
+  if (!hd || !image || !imagelen)
+    return gpg_error (GPG_ERR_INV_VALUE);
+  if (!hd->found.blob)
+    return gpg_error (GPG_ERR_NOTHING_FOUND);
+  if (blob_get_type (hd->found.blob) != BLOBTYPE_PGP)
+    return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
+  fname = hd->kb->fname;
+  if (!fname)
+    return gpg_error (GPG_ERR_INV_HANDLE);
+
+  off = _keybox_get_blob_fileoffset (hd->found.blob);
+  if (off == (off_t)-1)
+    return gpg_error (GPG_ERR_GENERAL);
+
+  /* Close this the file so that we do no mess up the position for a
+     next search.  */
+  _keybox_close_file (hd);
+
+  /* Build a new blob.  */
+  err = _keybox_parse_openpgp (image, imagelen, &nparsed, &info);
+  if (err)
+    return err;
+  assert (nparsed <= imagelen);
+  err = _keybox_create_openpgp_blob (&blob, &info, image, imagelen,
+                                     NULL, hd->ephemeral);
+  _keybox_destroy_openpgp_info (&info);
+
+  /* Update the keyblock.  */
+  if (!err)
+    {
+      err = blob_filecopy (FILECOPY_UPDATE, fname, blob, hd->secret, off);
+      _keybox_release_blob (blob);
+    }
+  return err;
 }
 
 
