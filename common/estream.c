@@ -171,7 +171,8 @@ typedef pth_mutex_t estream_mutex_t;
   ((pth_mutex_acquire (&(mutex), 1, NULL) == TRUE) ? 0 : -1)
 # define ESTREAM_MUTEX_INITIALIZE(mutex)  \
   pth_mutex_init    (&(mutex))
-#else
+
+#else /*!HAVE_NPTH*/
 
 typedef void *estream_mutex_t;
 
@@ -190,10 +191,11 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 
 # define ESTREAM_MUTEX_INITIALIZER NULL
 # define ESTREAM_MUTEX_LOCK(mutex) dummy_mutex_call_void ((mutex))
-# define ESTREAM_MUTEX_UNLOCK(mutex) dummy_mutex_call_void ((mutex))
+# define ESTREAM_MUTEX_UNLOCK(mutex) dummy_mutex_call_int ((mutex))
 # define ESTREAM_MUTEX_TRYLOCK(mutex) dummy_mutex_call_int ((mutex))
-# define ESTREAM_MUTEX_INITIALIZE(mutex) dummy_mutex_call_void ((mutex))
-#endif
+# define ESTREAM_MUTEX_INITIALIZE(mutex) dummy_mutex_call_int ((mutex))
+
+#endif /*!HAVE_NPTH*/
 
 /* Primitive system I/O.  */
 
