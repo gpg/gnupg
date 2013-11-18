@@ -2088,7 +2088,7 @@ ask_curve (void)
         continue;
 
       curves[idx].available = 1;
-      tty_printf (_("   (%d) %s\n"), idx + 1,
+      tty_printf ("   (%d) %s\n", idx + 1,
                   curves[idx].pretty_name?
                   curves[idx].pretty_name:curves[idx].name);
     }
@@ -2337,9 +2337,9 @@ ask_user_id (int mode, KBNODE keyblock)
       {
         /* TRANSLATORS: This is the new string telling the user what
            gpg is now going to do (i.e. ask for the parts of the user
-           ID).  Note that if you do not tyranslated this string, a
+           ID).  Note that if you do not translate this string, a
            different string will be used used, which might still have
-           a correct transaltion.  */
+           a correct translation.  */
 	const char *s1 =
           N_("\n"
              "GnuPG needs to construct a user ID to identify your key.\n"

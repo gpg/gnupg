@@ -221,7 +221,8 @@ default_homedir (void)
             {
               char *tmp;
 
-              tmp = read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
+              tmp = read_w32_registry_string (NULL,
+                                              "Software\\GNU\\" GNUPG_NAME,
                                               "HomeDir");
               if (tmp && !*tmp)
                 {
@@ -585,7 +586,7 @@ dirmngr_socket_name (void)
           s1 = s1buf;
         }
 # endif
-      s2 = DIRSEP_S "S.dirmngr";
+      s2 = DIRSEP_S DIRMNGR_SOCK_NAME;
       name = xmalloc (strlen (s1) + strlen (s2) + 1);
       strcpy (stpcpy (name, s1), s2);
       for (p=name; *p; p++)
@@ -594,7 +595,7 @@ dirmngr_socket_name (void)
     }
   return name;
 #else /*!HAVE_W32_SYSTEM*/
-  return GNUPG_LOCALSTATEDIR "/run/" PACKAGE_NAME "/S.dirmngr";
+  return GNUPG_LOCALSTATEDIR "/run/" PACKAGE_NAME "/"DIRMNGR_SOCK_NAME;
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
@@ -639,7 +640,7 @@ gnupg_module_name (int which)
 #ifdef GNUPG_DEFAULT_DIRMNGR
       return GNUPG_DEFAULT_DIRMNGR;
 #else
-      X(bindir, "dirmngr");
+      X(bindir, DIRMNGR_NAME);
 #endif
 
     case GNUPG_MODULE_NAME_PROTECT_TOOL:

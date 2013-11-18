@@ -51,7 +51,7 @@ extract_regular (estream_t stream, const char *dirname,
     }
   else
     err = 0;
-  
+
   outfp = es_fopen (fname, "wb");
   if (!outfp)
     {
@@ -98,7 +98,7 @@ extract_directory (const char *dirname, tar_header_t hdr)
   gpg_error_t err;
   char *fname;
   size_t prefixlen;
-  
+
   prefixlen = strlen (dirname) + 1;
   fname = strconcat (dirname, "/", hdr->name, NULL);
   if (!fname)
@@ -124,7 +124,7 @@ extract_directory (const char *dirname, tar_header_t hdr)
              original error code in case of a failure.  */
           char *p;
           int rc = 0;
-          
+
           for (p = fname+prefixlen; (p = strchr (p, '/')); p++)
             {
               *p = 0;
@@ -166,8 +166,8 @@ extract (estream_t stream, const char *dirname, tar_header_t hdr)
 #endif /*HAVE_DOSISH_SYSTEM*/
 
   if (!n
-      || strstr (hdr->name, "//") 
-      || strstr (hdr->name, "/../") 
+      || strstr (hdr->name, "//")
+      || strstr (hdr->name, "/../")
       || !strncmp (hdr->name, "../", 3)
       || (n >= 3 && !strcmp (hdr->name+n-3, "/.." )))
     {
@@ -208,7 +208,7 @@ create_directory (const char *dirprefix)
 
   /* Remove common suffixes.  */
   n = strlen (dirprefix);
-  if (n > 4 && (!compare_filenames    (dirprefix + n - 4, EXTSEP_S "gpg")
+  if (n > 4 && (!compare_filenames    (dirprefix + n - 4, EXTSEP_S GPGEXT_GPG)
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "pgp")
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "asc")
                 || !compare_filenames (dirprefix + n - 4, EXTSEP_S "pem")
@@ -283,7 +283,7 @@ gpgtar_extract (const char *filename)
         }
     }
   else
-    stream = es_stdin; 
+    stream = es_stdin;
 
   if (stream == es_stdin)
     es_set_binary (es_stdin);
@@ -323,7 +323,7 @@ gpgtar_extract (const char *filename)
       header = gpgtar_read_header (stream);
       if (!header)
         goto leave;
-     
+
       if (extract (stream, dirname, header))
         goto leave;
       xfree (header);

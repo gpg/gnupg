@@ -337,7 +337,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      fputs ("gpgkeys_finger (GnuPG) " VERSION"\n", stdout);
+      fputs ("gpgkeys_finger ("GNUPG_NAME") " VERSION"\n", stdout);
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))

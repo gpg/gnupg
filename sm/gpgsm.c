@@ -524,17 +524,17 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpgsm (GnuPG)";
+    case 11: p = "@GPGSM@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
     case 1:
-    case 40: p = _("Usage: gpgsm [options] [files] (-h for help)");
+    case 40: p = _("Usage: @GPGSM@ [options] [files] (-h for help)");
       break;
     case 41:
-      p = _("Syntax: gpgsm [options] [files]\n"
+      p = _("Syntax: @GPGSM@ [options] [files]\n"
             "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
             "Default operation depends on the input data\n");
       break;

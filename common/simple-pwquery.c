@@ -329,7 +329,7 @@ agent_open (int *rfd)
   int nread;
 
   *rfd = -1;
-  infostr = getenv ( "GPG_AGENT_INFO" );
+  infostr = getenv (GPG_AGENT_INFO_NAME);
   if ( !infostr || !*infostr )
     infostr = default_gpg_agent_info;
   if ( !infostr || !*infostr )
@@ -349,7 +349,7 @@ agent_open (int *rfd)
        || (p-infostr)+1 >= sizeof client_addr.sun_path )
     {
 #ifdef SPWQ_USE_LOGGING
-      log_error ( _("malformed GPG_AGENT_INFO environment variable\n"));
+      log_error (_("malformed %s environment variable\n"), GPG_AGENT_INFO_NAME);
 #endif
       return SPWQ_NO_AGENT;
     }

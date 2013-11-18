@@ -455,7 +455,7 @@ build_attrs(LDAPMod ***modlist,char *line)
 	  case 'R':
 	    revoked=1;
 	    break;
-	    
+
 	  case 'd':
 	  case 'D':
 	    disabled=1;
@@ -1037,7 +1037,7 @@ get_key(char *getkey)
   else
     {
       /* short key id */
-    
+
       sprintf(search,"(pgpkeyid=%.8s)",getkey);
     }
 
@@ -1767,12 +1767,12 @@ find_basekeyspacedn(void)
 	}
 
       ldap_msgfree(si_res);
-    }   
+    }
 
   return LDAP_SUCCESS;
 }
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -1794,7 +1794,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      fputs ("gpgkeys_ldap (GnuPG) " VERSION"\n", stdout);
+      fputs ("gpgkeys_ldap ("GNUPG_NAME") " VERSION"\n", stdout);
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))

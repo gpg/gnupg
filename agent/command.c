@@ -2065,10 +2065,16 @@ cmd_import_key (assuan_context_t ctx, char *line)
       if (!agent_key_available (grip))
         err = gpg_error (GPG_ERR_EEXIST);
       else
-        err = agent_ask_new_passphrase
-          (ctrl, _("Please enter the passphrase to protect the "
-                   "imported object within the GnuPG system."),
-           &passphrase);
+        {
+          char *prompt = xtryasprintf
+            (_("Please enter the passphrase to protect the "
+               "imported object within the %s system."), GNUPG_NAME);
+          if (!prompt)
+            err = gpg_error_from_syserror ();
+          else
+            err = agent_ask_new_passphrase (ctrl, prompt, &passphrase);
+          xfree (prompt);
+        }
       if (err)
         goto leave;
     }

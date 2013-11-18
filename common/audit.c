@@ -1187,7 +1187,7 @@ audit_print_result (audit_ctx_t ctx, estream_t out, int use_html)
   clear_helptags (ctx);
 
   if (use_html)
-    es_fputs ("<div class=\"GnuPGAuditLog\">\n", ctx->outstream);
+    es_fputs ("<div class=\"" GNUPG_NAME "AuditLog\">\n", ctx->outstream);
 
   if (!ctx->log || !ctx->logused)
     {

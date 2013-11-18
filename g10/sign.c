@@ -1241,7 +1241,8 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 
     if( opt.not_dash_escaped )
       iobuf_writestr( out,
-		  "NotDashEscaped: You need GnuPG to verify this message" LF );
+                      "NotDashEscaped: You need "GPG_NAME
+                      " to verify this message" LF );
     iobuf_writestr(out, LF );
 
     if ( gcry_md_open (&textmd, 0, 0) )

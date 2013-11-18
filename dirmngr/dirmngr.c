@@ -287,7 +287,7 @@ my_strusage( int level )
   const char *p;
   switch ( level )
     {
-    case 11: p = "dirmngr (GnuPG)";
+    case 11: p = "@DIRMNGR@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -297,10 +297,10 @@ my_strusage( int level )
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
     case 49: p = PACKAGE_BUGREPORT; break;
     case 1:
-    case 40: p = _("Usage: dirmngr [options] (-h for help)");
+    case 40: p = _("Usage: @DIRMNGR@ [options] (-h for help)");
       break;
-    case 41: p = _("Syntax: dirmngr [options] [command [args]]\n"
-                   "LDAP and OCSP access for GnuPG\n");
+    case 41: p = _("Syntax: @DIRMNGR@ [options] [command [args]]\n"
+                   "LDAP and OCSP access for @GNUPG@\n");
       break;
 
     default: p = NULL;
@@ -387,7 +387,7 @@ set_debug (void)
 static void
 wrong_args (const char *text)
 {
-  es_fputs (_("usage: dirmngr [options] "), es_stderr);
+  es_fprintf (es_stderr, _("usage: %s [options] "), DIRMNGR_NAME);
   es_fputs (text, es_stderr);
   es_putc ('\n', es_stderr);
   dirmngr_exit (2);
@@ -600,7 +600,7 @@ main (int argc, char **argv)
 #endif /*USE_W32_SERVICE*/
 
   set_strusage (my_strusage);
-  log_set_prefix ("dirmngr", 1|4);
+  log_set_prefix (DIRMNGR_NAME, 1|4);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -719,7 +719,7 @@ main (int argc, char **argv)
     }
 
   if (default_config)
-    configname = make_filename (opt.homedir, "dirmngr.conf", NULL );
+    configname = make_filename (opt.homedir, DIRMNGR_NAME".conf", NULL );
 
   argc = orig_argc;
   argv = orig_argv;
@@ -857,12 +857,12 @@ main (int argc, char **argv)
           log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
-  if (!access ("/etc/dirmngr", F_OK) && !strncmp (opt.homedir, "/etc/", 5))
+  if (!access ("/etc/"DIRMNGR_NAME, F_OK) && !strncmp (opt.homedir, "/etc/", 5))
     log_info
-      ("NOTE: DirMngr is now a proper part of GnuPG.  The configuration and"
+      ("NOTE: DirMngr is now a proper part of %s.  The configuration and"
        " other directory names changed.  Please check that no other version"
        " of dirmngr is still installed.  To disable this warning, remove the"
-       " directory '/etc/dirmngr'.\n");
+       " directory '/etc/dirmngr'.\n", GNUPG_NAME);
 
   if (gnupg_faked_time_p ())
     {
@@ -1017,7 +1017,8 @@ main (int argc, char **argv)
          start of the dirmngr.  */
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
-      es_printf ("set DIRMNGR_INFO=%s;%lu;1\n", socket_name, (ulong) pid);
+      es_printf ("set %s=%s;%lu;1\n",
+                 DIRMNGR_INFO_NAME, socket_name, (ulong) pid);
 #else
       pid = fork();
       if (pid == (pid_t)-1)
@@ -1037,8 +1038,8 @@ main (int argc, char **argv)
           close (fd);
 
           /* Create the info string: <name>:<pid>:<protocol_version> */
-          if (asprintf (&infostr, "DIRMNGR_INFO=%s:%lu:1",
-                        socket_name, (ulong)pid ) < 0)
+          if (asprintf (&infostr, "%s=%s:%lu:1",
+                        DIRMNGR_INFO_NAME, socket_name, (ulong)pid ) < 0)
             {
               log_error (_("out of core\n"));
               kill (pid, SIGTERM);
@@ -1053,7 +1054,7 @@ main (int argc, char **argv)
             }
           else
             {
-              es_printf ( "%s; export DIRMNGR_INFO;\n", infostr);
+              es_printf ( "%s; export %s;\n", infostr, DIRMNGR_INFO_NAME);
             }
           free (infostr);
           exit (0);

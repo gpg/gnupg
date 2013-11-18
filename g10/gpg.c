@@ -819,7 +819,7 @@ my_strusage( int level )
   const char *p;
 
     switch( level ) {
-      case 11: p = "gpg (GnuPG)";
+      case 11: p = "@GPG@ (@GNUPG@)";
 	break;
       case 13: p = VERSION; break;
       case 17: p = PRINTABLE_OS_NAME; break;
@@ -845,10 +845,10 @@ my_strusage( int level )
 
       case 1:
       case 40:	p =
-	    _("Usage: gpg [options] [files] (-h for help)");
+	    _("Usage: @GPG@ [options] [files] (-h for help)");
 	break;
       case 41:	p =
-	    _("Syntax: gpg [options] [files]\n"
+	    _("Syntax: @GPG@ [options] [files]\n"
 	      "Sign, check, encrypt or decrypt\n"
 	      "Default operation depends on the input data\n");
 	break;
@@ -1833,8 +1833,8 @@ char *
 get_default_configname (void)
 {
   char *configname = NULL;
-  char *name = xstrdup ("gpg" EXTSEP_S "conf-" SAFE_VERSION);
-  char *ver = &name[strlen ("gpg" EXTSEP_S "conf-")];
+  char *name = xstrdup (GPG_NAME EXTSEP_S "conf-" SAFE_VERSION);
+  char *ver = &name[strlen (GPG_NAME EXTSEP_S "conf-")];
 
   do
     {
@@ -1860,7 +1860,7 @@ get_default_configname (void)
   xfree(name);
 
   if (! configname)
-    configname = make_filename (opt.homedir, "gpg" EXTSEP_S "conf", NULL);
+    configname = make_filename (opt.homedir, GPG_NAME EXTSEP_S "conf", NULL);
   if (! access (configname, R_OK))
     {
       /* Print a warning when both config files are present.  */
@@ -1942,12 +1942,12 @@ main (int argc, char **argv)
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
        when adding any stuff between here and the call to
        secmem_init() somewhere after the option parsing. */
-    gnupg_reopen_std ("gpg");
+    gnupg_reopen_std (GPG_NAME);
     trap_unaligned ();
     gnupg_rl_initialize ();
     set_strusage (my_strusage);
     gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-    log_set_prefix ("gpg", 1);
+    log_set_prefix (GPG_NAME, 1);
 
     /* Make sure that our subsystems are ready.  */
     i18n_init();
@@ -3418,7 +3418,7 @@ main (int argc, char **argv)
         || (cmd != aDeArmor && cmd != aEnArmor && cmd != aGPGConfTest) )
       {
 	if (!nrings || default_keyring)  /* Add default ring. */
-	    keydb_add_resource ("pubring" EXTSEP_S "gpg",
+	    keydb_add_resource ("pubring" EXTSEP_S GPGEXT_GPG,
                                 KEYDB_RESOURCE_FLAG_DEFAULT);
 	for (sl = nrings; sl; sl = sl->next )
           keydb_add_resource (sl->d, sl->flags);

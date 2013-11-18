@@ -92,6 +92,6 @@ gnupg_rl_initialize (void)
                             cleanup_after_signal,
                             readline,
                             add_history);
-  rl_readline_name = "GnuPG";
+  rl_readline_name = GNUPG_NAME;
 #endif
 }

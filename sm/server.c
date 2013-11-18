@@ -1294,7 +1294,7 @@ gpgsm_server (certlist_t default_recplist)
   if (opt.verbose || opt.debug)
     {
       char *tmp = NULL;
-      const char *s1 = getenv ("GPG_AGENT_INFO");
+      const char *s1 = getenv (GPG_AGENT_INFO_NAME);
 
       if (asprintf (&tmp,
                     "Home: %s\n"

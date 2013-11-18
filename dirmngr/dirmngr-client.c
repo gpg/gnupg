@@ -140,7 +140,7 @@ my_strusage (int level)
 
   switch(level)
     {
-    case 11: p = "dirmngr-client (GnuPG)";
+    case 11: p = "dirmngr-client (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -440,7 +440,7 @@ start_dirmngr (int only_daemon)
   assuan_context_t ctx;
   int try_default = 0;
 
-  infostr = opt.force_pipe_server? NULL : getenv ("DIRMNGR_INFO");
+  infostr = opt.force_pipe_server? NULL : getenv (DIRMNGR_INFO_NAME);
   if (only_daemon && (!infostr || !*infostr))
     {
       infostr = xstrdup (dirmngr_socket_name ());
@@ -502,7 +502,8 @@ start_dirmngr (int only_daemon)
         {
           if ( !(p = strchr (infostr, ':')) || p == infostr)
             {
-              log_error (_("malformed DIRMNGR_INFO environment variable\n"));
+              log_error (_("malformed %s environment variable\n"),
+                         DIRMNGR_INFO_NAME);
               xfree (infostr);
               if (only_daemon)
                 return NULL;

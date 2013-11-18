@@ -354,7 +354,7 @@ get_name(const char *getkey)
       ret=KEYSERVER_NO_MEMORY;
       goto fail;
     }
-  
+
   fprintf(output,"NAME %s BEGIN\n",getkey);
 
   if(opt->verbose>2)
@@ -546,7 +546,7 @@ srv_replace(const char *srvtag)
 }
 #endif
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -570,7 +570,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      printf ("gpgkeys_hkp (GnuPG) %s\n", VERSION);
+      printf ("gpgkeys_hkp (%s) %s\n", GNUPG_NAME, VERSION);
       printf ("Uses: %s\n", curl_version());
       return 0;
     }
@@ -743,7 +743,7 @@ main(int argc,char *argv[])
       /* We're using libcurl, so fake SRV support via our wrapper.
 	 This isn't as good as true SRV support, as we do not try all
 	 possible targets at one particular level and work our way
-	 down the list, but it's better than nothing. */      
+	 down the list, but it's better than nothing. */
       srv_replace(srvtag);
 #else
       /* We're using our internal curl shim, so we can use its (true)

@@ -265,9 +265,9 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
 
   *lock = CreateMutexW
     (NULL, FALSE,
-     !strcmp (name, "agent")?   L"GnuPG_spawn_agent_sentinel":
-     !strcmp (name, "dirmngr")? L"GnuPG_spawn_dirmngr_sentinel":
-     /*                    */   L"GnuPG_spawn_unknown_sentinel");
+     !strcmp (name, "agent")?   L"spawn_"GNUPG_NAME"_agent_sentinel":
+     !strcmp (name, "dirmngr")? L"spawn_"GNUPG_NAME"_dirmngr_sentinel":
+     /*                    */   L"spawn_"GNUPG_NAME"_unknown_sentinel");
   if (!*lock)
     {
       log_error ("failed to create the spawn_%s mutex: %s\n",
@@ -378,7 +378,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
     }
 
  restart:
-  infostr = force_pipe_server? NULL : getenv ("GPG_AGENT_INFO");
+  infostr = force_pipe_server? NULL : getenv (GPG_AGENT_INFO_NAME);
   if (!infostr || !*infostr)
     {
       char *sockname;
@@ -388,7 +388,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 
       /* First check whether we can connect at the standard
          socket.  */
-      sockname = make_filename (homedir, "S.gpg-agent", NULL);
+      sockname = make_filename (homedir, GPG_AGENT_SOCK_NAME, NULL);
       err = assuan_socket_connect (ctx, sockname, 0, 0);
 
       if (err)
@@ -517,7 +517,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       infostr = xstrdup (infostr);
       if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
         {
-          log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+          log_error (_("malformed %s environment variable\n"),
+                     GPG_AGENT_INFO_NAME);
           xfree (infostr);
           force_pipe_server = 1;
           goto restart;

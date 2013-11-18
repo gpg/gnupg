@@ -54,9 +54,9 @@ static void split_packets (const char *fname);
 enum cmd_and_opt_values {
   aNull = 0,
   oVerbose	  = 'v',
-  oPrefix       = 'p',                          
-  oUncompress   = 500,                      
-  oSecretToPublic,                      
+  oPrefix       = 'p',
+  oUncompress   = 500,
+  oSecretToPublic,
   oNoSplit,
 
   aTest
@@ -81,7 +81,7 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
-    case 11: p = "gpgsplit (GnuPG)";
+    case 11: p = "gpgsplit (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -95,7 +95,7 @@ my_strusage (int level)
                   "Syntax: gpgsplit [options] [files]\n"
                   "Split an OpenPGP message into packets\n";
     break;
-    
+
     default:	p = NULL;
     }
   return p;
@@ -114,7 +114,7 @@ main (int argc, char **argv)
 #endif
   log_set_prefix ("gpgsplit", JNLIB_LOG_WITH_PREFIX);
   set_strusage (my_strusage);
-  
+
   pargs.argc = &argc;
   pargs.argv = &argv;
   pargs.flags=  1;  /* do not remove the args */
@@ -130,7 +130,7 @@ main (int argc, char **argv)
         default : pargs.err = 2; break;
 	}
     }
-  
+
   if (log_get_errorcount(0))
     g10_exit (2);
 
@@ -138,12 +138,12 @@ main (int argc, char **argv)
     split_packets (NULL);
   else
     {
-      for ( ;argc; argc--, argv++) 
+      for ( ;argc; argc--, argv++)
         split_packets (*argv);
     }
-  
+
   g10_exit (0);
-  return 0; 
+  return 0;
 }
 
 
@@ -168,7 +168,7 @@ pkttype_to_string (int pkttype)
     case PKT_SECRET_KEY    : s = "secret_key"; break;
     case PKT_PUBLIC_KEY    : s = "public_key"; break;
     case PKT_SECRET_SUBKEY : s = "secret_subkey"; break;
-    case PKT_COMPRESSED    : 
+    case PKT_COMPRESSED    :
       s = opt_uncompress? "uncompressed":"compressed";
       break;
     case PKT_ENCRYPTED     : s = "encrypted"; break;
@@ -191,17 +191,17 @@ pkttype_to_string (int pkttype)
 
 /*
  * Create a new filename and a return a pointer to a statically
- * allocated buffer 
+ * allocated buffer
  */
 static char *
 create_filename (int pkttype)
 {
   static unsigned int partno = 0;
   static char *name;
-  
-  if (!name) 
+
+  if (!name)
     name = xmalloc (strlen (opt_prefix) + 100 );
-  
+
   assert (pkttype < 1000 && pkttype >= 0 );
   partno++;
   sprintf (name, "%s%06u-%03d" EXTSEP_S "%.40s",
@@ -227,7 +227,7 @@ static int
 read_u32 (FILE *fp, unsigned long *rn)
 {
   size_t tmp;
-  
+
   if (read_u16 (fp, &tmp))
     return -1;
   *rn = tmp << 16;
@@ -239,9 +239,9 @@ read_u32 (FILE *fp, unsigned long *rn)
 
 static int
 write_old_header (FILE *fp, int pkttype, unsigned int len)
-{     
+{
   int ctb = (0x80 | ((pkttype & 15)<<2));
-  
+
   if (len < 256)
     ;
   else if (len < 65536)
@@ -271,7 +271,7 @@ write_old_header (FILE *fp, int pkttype, unsigned int len)
 
 static int
 write_new_header (FILE *fp, int pkttype, unsigned int len)
-{     
+{
   if ( putc ((0xc0 | (pkttype & 0x3f)), fp) == EOF )
     return -1;
 
@@ -313,9 +313,9 @@ public_key_length (const unsigned char *buf, size_t buflen)
   int nmpis;
 
   /*   byte version number (3 or 4)
-       u32  creation time 
+       u32  creation time
        [u16  valid days (version 3 only)]
-       byte algorithm 
+       byte algorithm
        n    MPIs (n and e) */
   if (!buflen)
     return 0;
@@ -368,7 +368,7 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
   unsigned int inbufsize, outbufsize;
   int c,zinit_done, zrc, nread, count;
   size_t n;
-              
+
   memset (&zs, 0, sizeof zs);
   inbufsize = 2048;
   inbuf = xmalloc (inbufsize);
@@ -376,7 +376,7 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
   outbuf = xmalloc (outbufsize);
   zs.avail_in = 0;
   zinit_done = 0;
-              
+
   do
     {
       if (zs.avail_in < inbufsize)
@@ -387,11 +387,11 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
 	  count = inbufsize - n;
 	  for (nread=0;
 	       nread < count && (c=getc (fpin)) != EOF;
-	       nread++) 
+	       nread++)
 	    inbuf[n+nread] = c;
-                      
+
 	  n += nread;
-	  if (nread < count && algo == 1) 
+	  if (nread < count && algo == 1)
 	    {
 	      inbuf[n] = 0xFF; /* chew dummy byte */
 	      n++;
@@ -400,12 +400,12 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
 	}
       zs.next_out = (Bytef *) outbuf;
       zs.avail_out = outbufsize;
-                    
-      if (!zinit_done) 
+
+      if (!zinit_done)
 	{
 	  zrc = (algo == 1? inflateInit2 ( &zs, -13)
 		 : inflateInit ( &zs ));
-	  if (zrc != Z_OK) 
+	  if (zrc != Z_OK)
 	    {
 	      log_fatal ("zlib problem: %s\n", zs.msg? zs.msg :
 			 zrc == Z_MEM_ERROR ? "out of core" :
@@ -431,17 +431,17 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
 	      else
 		log_fatal ("zlib inflate problem: rc=%d\n", zrc );
 	    }
-	  for (n=0; n < outbufsize - zs.avail_out; n++) 
+	  for (n=0; n < outbufsize - zs.avail_out; n++)
 	    {
 	      if (putc (outbuf[n], fpout) == EOF )
 		return 1;
 	    }
 	}
-    } 
+    }
   while (zrc != Z_STREAM_END && zrc != Z_BUF_ERROR);
   {
     int i;
-    
+
     fputs ("Left over bytes:", stderr);
     for (i=0; i < zs.avail_in; i++)
       fprintf (stderr, " %02X", zs.next_in[i]);
@@ -462,7 +462,7 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
   unsigned int inbufsize, outbufsize;
   int c,zinit_done, zrc, nread, count;
   size_t n;
-              
+
   memset (&bzs, 0, sizeof bzs);
   inbufsize = 2048;
   inbuf = xmalloc (inbufsize);
@@ -470,7 +470,7 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
   outbuf = xmalloc (outbufsize);
   bzs.avail_in = 0;
   zinit_done = 0;
-              
+
   do
     {
       if (bzs.avail_in < inbufsize)
@@ -481,11 +481,11 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
 	  count = inbufsize - n;
 	  for (nread=0;
 	       nread < count && (c=getc (fpin)) != EOF;
-	       nread++) 
+	       nread++)
 	    inbuf[n+nread] = c;
-                      
+
 	  n += nread;
-	  if (nread < count && algo == 1) 
+	  if (nread < count && algo == 1)
 	    {
 	      inbuf[n] = 0xFF; /* chew dummy byte */
 	      n++;
@@ -494,11 +494,11 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
 	}
       bzs.next_out = outbuf;
       bzs.avail_out = outbufsize;
-                    
-      if (!zinit_done) 
+
+      if (!zinit_done)
 	{
 	  zrc = BZ2_bzDecompressInit(&bzs,0,0);
-	  if (zrc != BZ_OK) 
+	  if (zrc != BZ_OK)
 	    log_fatal ("bz2lib problem: %d\n",zrc);
 	  zinit_done = 1;
 	}
@@ -509,13 +509,13 @@ handle_bzip2(int algo,FILE *fpin,FILE *fpout)
 	    ; /* eof */
 	  else if (zrc != BZ_OK && zrc != BZ_PARAM_ERROR)
 	    log_fatal ("bz2lib inflate problem: %d\n", zrc );
-	  for (n=0; n < outbufsize - bzs.avail_out; n++) 
+	  for (n=0; n < outbufsize - bzs.avail_out; n++)
 	    {
 	      if (putc (outbuf[n], fpout) == EOF )
 		return 1;
 	    }
 	}
-    } 
+    }
   while (zrc != BZ_STREAM_END && zrc != BZ_PARAM_ERROR);
   BZ2_bzDecompressEnd(&bzs);
 
@@ -532,7 +532,7 @@ write_part (FILE *fpin, unsigned long pktlen,
   int c, first;
   unsigned char *p;
   const char *outname = create_filename (pkttype);
-  
+
 #if defined(__riscos__) && defined(USE_ZLIBRISCOS)
   static int initialized = 0;
 
@@ -546,7 +546,7 @@ write_part (FILE *fpin, unsigned long pktlen,
       if (opt_verbose)
         log_info ("writing '%s'\n", outname);
       fpout = fopen (outname, "wb");
-      if (!fpout) 
+      if (!fpout)
         {
           log_error ("error creating '%s': %s\n", outname, strerror(errno));
           /* stop right now, otherwise we would mess up the sequence
@@ -563,10 +563,10 @@ write_part (FILE *fpin, unsigned long pktlen,
 
       pkttype = pkttype == PKT_SECRET_KEY? PKT_PUBLIC_KEY:PKT_PUBLIC_SUBKEY;
 
-      for (i=0; i < pktlen; i++) 
+      for (i=0; i < pktlen; i++)
         {
           c = getc (fpin);
-          if (c == EOF) 
+          if (c == EOF)
             goto read_error;
           blob[i] = c;
         }
@@ -577,17 +577,17 @@ write_part (FILE *fpin, unsigned long pktlen,
           g10_exit (1);
         }
       if ( (hdr[0] & 0x40) )
-        { 
+        {
           if (write_new_header (fpout, pkttype, len))
             goto write_error;
         }
       else
-        { 
+        {
           if (write_old_header (fpout, pkttype, len))
             goto write_error;
         }
 
-      for (i=0; i < len; i++) 
+      for (i=0; i < len; i++)
         {
           if ( putc (blob[i], fpout) == EOF )
             goto write_error;
@@ -605,12 +605,12 @@ write_part (FILE *fpin, unsigned long pktlen,
             goto write_error;
         }
     }
-  
+
   first = 1;
   while (partial)
     {
       size_t partlen;
-      
+
       if (partial == 1)
         { /* openpgp */
           if (first )
@@ -619,11 +619,11 @@ write_part (FILE *fpin, unsigned long pktlen,
               assert( c >= 224 && c < 255 );
               first = 0;
             }
-          else if ((c = getc (fpin)) == EOF ) 
+          else if ((c = getc (fpin)) == EOF )
             goto read_error;
           else
             hdr[hdrlen++] = c;
-            
+
           if (c < 192)
             {
               pktlen = c;
@@ -632,7 +632,7 @@ write_part (FILE *fpin, unsigned long pktlen,
           else if (c < 224 )
             {
               pktlen = (c - 192) * 256;
-              if ((c = getc (fpin)) == EOF) 
+              if ((c = getc (fpin)) == EOF)
                 goto read_error;
               hdr[hdrlen++] = c;
               pktlen += c + 192;
@@ -656,9 +656,9 @@ write_part (FILE *fpin, unsigned long pktlen,
                     goto write_error;
                 }
               partlen = 1 << (c & 0x1f);
-              for (; partlen; partlen--) 
+              for (; partlen; partlen--)
                 {
-                  if ((c = getc (fpin)) == EOF) 
+                  if ((c = getc (fpin)) == EOF)
                     goto read_error;
                   if ( putc (c, fpout) == EOF )
                     goto write_error;
@@ -672,17 +672,17 @@ write_part (FILE *fpin, unsigned long pktlen,
             goto read_error;
           hdr[hdrlen++] = partlen >> 8;
           hdr[hdrlen++] = partlen;
-          for (p=hdr; hdrlen; p++, hdrlen--) 
+          for (p=hdr; hdrlen; p++, hdrlen--)
             {
               if ( putc (*p, fpout) == EOF )
                 goto write_error;
             }
           if (!partlen)
             partial = 0; /* end of packet */
-          for (; partlen; partlen--) 
+          for (; partlen; partlen--)
             {
               c = getc (fpin);
-              if (c == EOF) 
+              if (c == EOF)
                 goto read_error;
               if ( putc (c, fpout) == EOF )
                 goto write_error;
@@ -693,7 +693,7 @@ write_part (FILE *fpin, unsigned long pktlen,
           pktlen = 0;
           partial = 0;
           hdrlen = 0;
-          if (opt_uncompress) 
+          if (opt_uncompress)
             {
               if ((c = getc (fpin)) == EOF)
                 goto read_error;
@@ -718,7 +718,7 @@ write_part (FILE *fpin, unsigned long pktlen,
             }
           else
             {
-              while ( (c=getc (fpin)) != EOF ) 
+              while ( (c=getc (fpin)) != EOF )
                 {
                   if ( putc (c, fpout) == EOF )
                     goto write_error;
@@ -729,33 +729,33 @@ write_part (FILE *fpin, unsigned long pktlen,
 	}
     }
 
-  for (p=hdr; hdrlen; p++, hdrlen--) 
+  for (p=hdr; hdrlen; p++, hdrlen--)
     {
       if ( putc (*p, fpout) == EOF )
         goto write_error;
     }
-  
+
   /* standard packet or last segment of partial length encoded packet */
-  for (; pktlen; pktlen--) 
+  for (; pktlen; pktlen--)
     {
       c = getc (fpin);
-      if (c == EOF) 
+      if (c == EOF)
         goto read_error;
       if ( putc (c, fpout) == EOF )
         goto write_error;
     }
-  
+
  ready:
   if ( !opt_no_split && fclose (fpout) )
     log_error ("error closing '%s': %s\n", outname, strerror (errno));
   return 0;
-  
- write_error:    
+
+ write_error:
   log_error ("error writing '%s': %s\n", outname, strerror (errno));
   if (!opt_no_split)
     fclose (fpout);
   return 2;
-  
+
  read_error:
   if (!opt_no_split)
     {
@@ -776,12 +776,12 @@ do_split (FILE *fp)
   int partial = 0;
   unsigned char header[20];
   int header_idx = 0;
-  
+
   ctb = getc (fp);
   if (ctb == EOF)
     return 3; /* ready */
   header[header_idx++] = ctb;
-  
+
   if (!(ctb & 0x80))
     {
       log_error("invalid CTB %02x\n", ctb );
@@ -799,19 +799,19 @@ do_split (FILE *fp)
       else if ( c < 224 )
         {
           pktlen = (c - 192) * 256;
-          if( (c = getc (fp)) == EOF ) 
+          if( (c = getc (fp)) == EOF )
             return -1;
           header[header_idx++] = c;
           pktlen += c + 192;
 	}
-      else if ( c == 255 ) 
+      else if ( c == 255 )
         {
           if (read_u32 (fp, &pktlen))
             return -1;
           header[header_idx++] = pktlen >> 24;
           header[header_idx++] = pktlen >> 16;
           header[header_idx++] = pktlen >> 8;
-          header[header_idx++] = pktlen; 
+          header[header_idx++] = pktlen;
 	}
       else
         { /* partial body length */
@@ -822,7 +822,7 @@ do_split (FILE *fp)
   else
     {
       int lenbytes;
-      
+
       pkttype = (ctb>>2)&0xf;
       lenbytes = ((ctb&3)==3)? 0 : (1<<(ctb & 3));
       if (!lenbytes )
@@ -835,13 +835,13 @@ do_split (FILE *fp)
 	}
       else
         {
-          for ( ; lenbytes; lenbytes-- ) 
+          for ( ; lenbytes; lenbytes-- )
             {
               pktlen <<= 8;
-              if( (c = getc (fp)) == EOF ) 
+              if( (c = getc (fp)) == EOF )
                 return -1;
               header[header_idx++] = c;
-              
+
               pktlen |= c;
 	    }
 	}
@@ -856,18 +856,18 @@ split_packets (const char *fname)
 {
   FILE *fp;
   int rc;
-  
+
   if (!fname || !strcmp (fname, "-"))
     {
       fp = stdin;
       fname = "-";
     }
-  else if ( !(fp = fopen (fname,"rb")) ) 
+  else if ( !(fp = fopen (fname,"rb")) )
     {
       log_error ("can't open '%s': %s\n", fname, strerror (errno));
       return;
     }
-  
+
   while ( !(rc = do_split (fp)) )
     ;
   if ( rc > 0 )
@@ -876,7 +876,7 @@ split_packets (const char *fname)
     log_error ("error reading '%s': %s\n", fname, strerror (errno));
   else
     log_error ("premature EOF while reading '%s'\n", fname );
-  
+
   if ( fp != stdin )
     fclose (fp);
 }

@@ -460,7 +460,7 @@ set_file_fd (const char *name, int fd)
     {
       HANDLE hd;
 
-      ActivateDevice (L"Drivers\\GnuPG_Log", 0);
+      ActivateDevice (L"Drivers\\"GNUPG_NAME"_Log", 0);
       /* Ignore a filename and write the debug output to the GPG2:
          device.  */
       hd = CreateFile (L"GPG2:", GENERIC_WRITE,
@@ -636,7 +636,7 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 
       tmp = (no_registry
              ? NULL
-             : read_w32_registry_string (NULL, "Software\\GNU\\GnuPG",
+             : read_w32_registry_string (NULL, "Software\\GNU\\"GNUPG_NAME,
                                          "DefaultLogFile"));
       log_set_file (tmp && *tmp? tmp : NULL);
       jnlib_free (tmp);

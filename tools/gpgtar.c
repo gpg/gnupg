@@ -115,7 +115,7 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpgtar (GnuPG)";
+    case 11: p = "@GPGTAR@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;

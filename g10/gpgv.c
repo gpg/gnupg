@@ -108,7 +108,7 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpgv (GnuPG)";
+    case 11: p = "@GPG@v (GnuPG)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -198,7 +198,7 @@ main( int argc, char **argv )
 
   /* Note: We open all keyrings in read-only mode.  */
   if (!nrings)  /* No keyring given: use default one. */
-    keydb_add_resource ("trustedkeys" EXTSEP_S "gpg",
+    keydb_add_resource ("trustedkeys" EXTSEP_S GPGEXT_GPG,
                         KEYDB_RESOURCE_FLAG_READONLY);
   for (sl = nrings; sl; sl = sl->next)
     keydb_add_resource (sl->d, KEYDB_RESOURCE_FLAG_READONLY);

@@ -115,9 +115,9 @@ get_key (adns_state adns_ctx, char *address)
       ret = KEYSERVER_KEY_NOT_FOUND;
       goto leave;
     }
-  if (answer->status != adns_s_ok) 
+  if (answer->status != adns_s_ok)
     {
-      fprintf (console, PGM": DNS query returned: %s (%s)\n", 
+      fprintf (console, PGM": DNS query returned: %s (%s)\n",
                adns_strerror (answer->status),
                adns_errabbrev (answer->status));
       ret = KEYSERVER_KEY_NOT_FOUND;
@@ -141,7 +141,7 @@ get_key (adns_state adns_ctx, char *address)
     }
   if ( datalen < 5 )
     {
-      fprintf (console, PGM": error: truncated CERT record\n"); 
+      fprintf (console, PGM": error: truncated CERT record\n");
       ret = KEYSERVER_KEY_NOT_FOUND;
       goto leave;
     }
@@ -155,7 +155,7 @@ get_key (adns_state adns_ctx, char *address)
       if ( datalen < 11 )
         {
           /* Gpg checks for a minium length of 11, thus we do the same.  */
-          fprintf (console, PGM": error: OpenPGP data to short\n"); 
+          fprintf (console, PGM": error: OpenPGP data to short\n");
           ret = KEYSERVER_KEY_NOT_FOUND;
           goto leave;
         }
@@ -166,11 +166,11 @@ get_key (adns_state adns_ctx, char *address)
       break;
 
     default:
-      fprintf (console, PGM": CERT type %d ignored\n", (data[0] <<8|data[1])); 
+      fprintf (console, PGM": CERT type %d ignored\n", (data[0] <<8|data[1]));
       ret = KEYSERVER_KEY_NOT_FOUND;
       goto leave;
     }
-  
+
   ret = 0; /* All fine.  */
 
  leave:
@@ -178,17 +178,17 @@ get_key (adns_state adns_ctx, char *address)
     fprintf (output, "\nNAME %s FAILED %d\n", address, ret);
   else
     fprintf (output, "\nNAME %s END\n", address);
-  adns_free (answer); 
+  adns_free (answer);
   xfree (name);
   return ret;
 }
 
 
 /* Print some help.  */
-static void 
+static void
 show_help (FILE *fp)
 {
-  fputs (PGM" (GnuPG) " VERSION"\n\n", fp);
+  fputs (PGM" ("GNUPG_NAME") " VERSION"\n\n", fp);
   fputs (" -h\thelp\n"
          " -V\tversion\n"
          " -o\toutput to this file\n"
@@ -233,7 +233,7 @@ main (int argc, char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      fputs (PGM" (GnuPG) " VERSION"\n", stdout);
+      fputs (PGM" ("GNUPG_NAME") " VERSION"\n", stdout);
       return 0;
     }
   else if (argc > 1 && !strcmp (argv[1], "--help"))
@@ -283,7 +283,7 @@ main (int argc, char *argv[])
 
   if (!output)
     output = stdout;
-  
+
   opt = init_ks_options();
   if(!opt)
     return KEYSERVER_NO_MEMORY;
@@ -292,10 +292,10 @@ main (int argc, char *argv[])
   while ( fgets(line,MAX_LINE,input) )
     {
       int err;
-      
+
       if(line[0]=='\n')
 	break;
-      
+
       err = parse_ks_options (line, opt);
       if (err > 0)
 	{
@@ -326,7 +326,7 @@ main (int argc, char *argv[])
       if (p)
         {
           *p++ = 0;
-          do 
+          do
             {
               pend = strchr (p, '&');
               if (pend)
@@ -371,7 +371,7 @@ main (int argc, char *argv[])
                strerror (errno));
       goto leave;
     }
-  
+
   if (opt->action == KS_GETNAME)
     {
       while ( fgets (line,MAX_LINE,input) )
@@ -379,11 +379,11 @@ main (int argc, char *argv[])
           if (line[0]=='\n' || !line[0] )
             break;
           line[strlen(line)-1] = 0;  /* Trim the trailing LF. */
-          
+
           akey = xtrymalloc (sizeof *akey);
           if (!akey)
             {
-              fprintf (console, 
+              fprintf (console,
                        PGM": out of memory while building key list\n");
               ret = KEYSERVER_NO_MEMORY;
               goto leave;
@@ -402,7 +402,7 @@ main (int argc, char *argv[])
                "key retrieval by name\n");
       goto leave;
     }
-  
+
   /* Send the response */
   fprintf (output, "VERSION %d\n", KEYSERVER_PROTO_VERSION);
   fprintf (output, "PROGRAM %s\n\n", VERSION);
@@ -413,13 +413,13 @@ main (int argc, char *argv[])
         fprintf (console, "User:\t\t%s\n", opt->opaque);
       fprintf (console, "Command:\tGET\n");
     }
-  
+
   for (akey = keylist; akey; akey = akey->next)
     {
       set_timeout (opt->timeout);
       if ( get_key (adns_ctx, akey->str) )
         failed++;
-    }      
+    }
   if (!failed)
     ret = KEYSERVER_OK;
 

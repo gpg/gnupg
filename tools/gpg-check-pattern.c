@@ -135,7 +135,7 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
-    case 11: p = "gpg-check-pattern (GnuPG)";
+    case 11: p = "gpg-check-pattern (@GnuPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;

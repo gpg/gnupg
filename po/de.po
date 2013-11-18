@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-08-24 10:19+0200\n"
+"PO-Revision-Date: 2013-11-18 14:05+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -99,14 +99,12 @@ msgstr "Passphrase"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "SSH Schlüssel von mehr als %d Bits werden nicht unterstützt\n"
 
-#, fuzzy, c-format
-#| msgid "can't create '%s': %s\n"
-msgid "can't create `%s': %s\n"
+#, c-format
+msgid "can't create '%s': %s\n"
 msgstr "'%s' kann nicht erzeugt werden: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't open '%s': %s\n"
-msgid "can't open `%s': %s\n"
+#, c-format
+msgid "can't open '%s': %s\n"
 msgstr "'%s' kann nicht geöffnet werden: %s\n"
 
 #, c-format
@@ -191,8 +189,7 @@ msgstr "PUK"
 msgid "Reset Code"
 msgstr "Rückstellcode"
 
-#, fuzzy, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, c-format
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AZur Eingabe die Tastatur des Kartenlesers verwenden."
 
@@ -377,15 +374,15 @@ msgstr ""
 "Berichte über Programmfehler bitte in englisch an <@EMAIL@>.\n"
 "Sinn- oder Schreibfehler in den deutschen Texten bitte an <de@li.org>.\n"
 
-msgid "Usage: gpg-agent [options] (-h for help)"
-msgstr "Aufruf: gpg-agent [Optionen] (-h für Hilfe)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
+msgstr "Gebrauch: @GPG_AGENT@ [Optionen] [Kommando [Argumente]]"
 
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
-"Syntax: gpg-agent [Optionen] [Befehl [Argumente]]\n"
-"Verwaltung von geheimen Schlüsseln für GnuPG\n"
+"Syntax: @GPG_AGENT@ [Optionen] [Befehl [Argumente]]\n"
+"Verwaltung von geheimen Schlüsseln für @GNUPG@\n"
 
 #, c-format
 msgid "invalid debug-level '%s' given\n"
@@ -491,8 +488,9 @@ msgstr "%s %s angehalten\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "Der gpg-agent läuft nicht für diese Session\n"
 
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "fehlerhaft aufgebaute GPG_AGENT_INFO - Umgebungsvariable\n"
+#, c-format
+msgid "malformed %s environment variable\n"
+msgstr "Fehlerhafte %s Variable\n"
 
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -970,10 +968,6 @@ msgstr "Dirmngr benutzbar"
 msgid "No help available for '%s'."
 msgstr "Keine Hilfe für '%s' vorhanden."
 
-#, c-format
-msgid "can't open '%s': %s\n"
-msgstr "'%s' kann nicht geöffnet werden: %s\n"
-
 msgid "ignoring garbage line"
 msgstr "Zeile mit nicht identifizierten Zeichen wird ignoriert"
 
@@ -1062,10 +1056,6 @@ msgstr "Die temporäre Datei `%s' kann nicht erstellt werden: %s\n"
 #, c-format
 msgid "error writing to '%s': %s\n"
 msgstr "Fehler beim Schreiben von %s: %s\n"
-
-#, c-format
-msgid "can't create '%s': %s\n"
-msgstr "'%s' kann nicht erzeugt werden: %s\n"
 
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
@@ -1173,10 +1163,8 @@ msgstr "nicht als Klartext darstellbar"
 msgid "failed to proxy %s inquiry to client\n"
 msgstr "Die %s \"inquiry\" konnte nicht an den Client weitergeleitet werden\n"
 
-#, fuzzy
-#| msgid "Enter passphrase\n"
 msgid "Enter passphrase: "
-msgstr "Geben Sie die Passphrase ein\n"
+msgstr "Geben Sie die Passphrase ein: "
 
 #, c-format
 msgid "OpenPGP card not available: %s\n"
@@ -1384,10 +1372,9 @@ msgstr "Ungültige Auswahl.\n"
 msgid "Please select where to store the key:\n"
 msgstr "Wählen Sie den Speicherort für den Schlüssel:\n"
 
-#, fuzzy, c-format
-#| msgid "read failed: %s\n"
+#, c-format
 msgid "KEYTOCARD failed: %s\n"
-msgstr "Lesen schlug fehl: %s\n"
+msgstr "Das KEYTOCARD Kommando schlug fehl: %s\n"
 
 msgid "quit this menu"
 msgstr "Menü verlassen"
@@ -1838,15 +1825,15 @@ msgstr ""
 " --list-keys [Namen]        Schlüssel anzeigen\n"
 " --fingerprint [Namen]      \"Fingerabdrücke\" anzeigen\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
-msgstr "Aufruf: gpg [Optionen] [Dateien] (-h für Hilfe)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
+msgstr "Aufruf: @GPG@ [Optionen] [Dateien] (-h für Hilfe)"
 
 msgid ""
-"Syntax: gpg [options] [files]\n"
+"Syntax: @GPG@ [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"Aufruf: gpg [Optionen] [Dateien]\n"
+"Aufruf: @GPG@ [Optionen] [Dateien]\n"
 "Signieren, prüfen, verschlüsseln, entschlüsseln.\n"
 "Die voreingestellte Operation ist abhängig von den Eingabedaten\n"
 
@@ -1995,10 +1982,9 @@ msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "`%s' ist kein gültiges Signaturablaufdatum\n"
 
-#, fuzzy, c-format
-#| msgid "Invalid subject name '%s'\n"
+#, c-format
 msgid "invalid pinentry mode '%s'\n"
-msgstr "Ungültiger Subjekt-Name `%s'\n"
+msgstr "Ungültiger Subjekt-Name '%s'\n"
 
 #, c-format
 msgid "'%s' is not a valid character set\n"
@@ -3677,6 +3663,9 @@ msgstr "Die verlangte Schlüssellänge beträgt %u Bit\n"
 #, c-format
 msgid "rounded to %u bits\n"
 msgstr "gerundet auf %u Bit\n"
+
+msgid "Please select which elliptic curve you want:\n"
+msgstr "Bitte wählen Sie, welche elliptische Kurve Sie möchten:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -5433,6 +5422,9 @@ msgstr "Die Antwort enthält das RSA-Modulus nicht\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "Antwort enthält den öffentlichen RSA-Exponenten nicht\n"
 
+msgid "response does not contain the EC public point\n"
+msgstr "Der öffentlichen EC Punkt fehlt in der Antwort\n"
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "Die Standard PIN wird für %s benutzt\n"
@@ -5568,8 +5560,6 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Kann auf %s nicht zugreifen - ungültige OpenPGP-Karte?\n"
 
-#, fuzzy
-#| msgid "||Please enter your PIN at the reader's keypad"
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Bitte die PIN auf der Tastatur des Kartenlesers eingeben"
 
@@ -5603,8 +5593,6 @@ msgstr "Den internen CCID Treiber nicht benutzen"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|Schalte die Karte nach N Sekunden Inaktivität ab"
 
-#, fuzzy
-#| msgid "do not use a reader's keypad"
 msgid "do not use a reader's pinpad"
 msgstr "Die Tastatur des Kartenlesers nicht benutzen"
 
@@ -5612,17 +5600,17 @@ msgid "deny the use of admin card commands"
 msgstr "Verweigere die Benutzung von \"Admin\"-Befehlen"
 
 msgid "use variable length input for pinpad"
-msgstr ""
+msgstr "Variable Längeneingabe für die Kartenlesertastatur benutzen"
 
-msgid "Usage: scdaemon [options] (-h for help)"
-msgstr "Aufruf: scdaemon [Optionen] (-h für Hilfe)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
+msgstr "Gebrauch: @SCDAEMON@ [Optionen] (-h für Hilfe)"
 
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
-"Syntax: scdaemon [Optionen] [Befehl [Argumente]]\n"
-"Smartcard Daemon für GnuPG\n"
+"Syntax: @SCDAEMON@ [Optionen] [Befehl [Argumente]]\n"
+"Smartcard Daemon für @GNUPG@\n"
 
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
@@ -6186,15 +6174,15 @@ msgstr "|NAME|Verschlüsselungsverfahren NAME benutzen"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|Hashverfahren NAME benutzen"
 
-msgid "Usage: gpgsm [options] [files] (-h for help)"
-msgstr "Aufruf: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
+msgstr "Aufruf: @GPGSM@ [Optionen] [Dateien] (-h für Hilfe)"
 
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
+"Syntax: @GPGSM@ [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"Syntax: gpgsm [Optionen] [Dateien]\n"
+"Syntax: @GPGSM@ [Optionen] [Dateien]\n"
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME Protokoll\n"
 
 msgid "usage: gpgsm [options] "
@@ -7002,9 +6990,6 @@ msgstr "Offensichtlich ist kein Dirmngr vorhanden\n"
 msgid "no running dirmngr - starting one\n"
 msgstr "Dirmngr läuft nicht - ein neuer wird gestartet\n"
 
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "Fehlerhafte DIRMNGR_INFO Variable\n"
-
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "Dirmngr Protocol Version %d wird nicht unterstützt\n"
@@ -7108,22 +7093,23 @@ msgstr ""
 "(Im \"info\"-Handbuch findet sich eine vollständige Liste aller Kommandos "
 "und Optionen)\n"
 
-msgid "Usage: dirmngr [options] (-h for help)"
-msgstr "Gebrauch: dirmnr [Optionen] [Kommando [Argumente]]"
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
+msgstr "Gebrauch: @DIRMNGR@ [Optionen]"
 
 msgid ""
-"Syntax: dirmngr [options] [command [args]]\n"
-"LDAP and OCSP access for GnuPG\n"
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"LDAP and OCSP access for @GNUPG@\n"
 msgstr ""
-"Syntax: dirmngr [Optionen] [Kommando [Argumente]]\n"
-"LDAP und OCSP Zugriff für GnuPG\n"
+"Syntax: @DIRMNGR@ [Optionen] [Kommando [Argumente]]\n"
+"LDAP und OCSP Zugriff für @GNUPG@\n"
 
 #, c-format
 msgid "valid debug levels are: %s\n"
 msgstr "Gültige Debugebenen sind: %s\n"
 
-msgid "usage: dirmngr [options] "
-msgstr "Gebrauch: dirmngr [Optionen] "
+#, c-format
+msgid "usage: %s [options] "
+msgstr "Aufruf: %s [Optionen] "
 
 msgid "colons are not allowed in the socket name\n"
 msgstr "Doppelpunkte sind im Namen des Sockets nicht erlaubt\n"
@@ -7619,14 +7605,14 @@ msgstr "|DATEI|Beim Starten Kommandos aus DATEI lesen"
 msgid "run /subst on startup"
 msgstr "Nach dem Starten \"/subst\" ausführen"
 
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
-msgstr "Aufruf: gpg-connect-agent [Optionen] (-h für Hilfe)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
+msgstr "Aufruf: @GPG@-connect-agent [Optionen] (-h für Hilfe)"
 
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
-"Syntax: gpg-connect-agent [Optionen]\n"
+"Syntax: @GPG@-connect-agent [Optionen]\n"
 "Mit einem laufenden Agenten verbinden und Befehle senden\n"
 
 #, c-format
@@ -7818,15 +7804,15 @@ msgstr "Als Ausgabedatei benutzen"
 msgid "activate changes at runtime, if possible"
 msgstr "Aktiviere Änderungen zur Laufzeit; falls möglich"
 
-msgid "Usage: gpgconf [options] (-h for help)"
-msgstr "Aufruf: gpgconf [Optionen] (-h für Hilfe)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
+msgstr "Gebrauch: @GPGCONF@ [Optionen] (-h für Hilfe)"
 
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-"Syntax: gpgconf {Optionen]\n"
-"Verwalte Konfigurationsoptionen für Programme des GnuPG Systems\n"
+"Syntax: @GPGCONF@ {Optionen]\n"
+"Verwalte Konfigurationsoptionen für Programme des @GNUPG@ Systems\n"
 
 msgid "usage: gpgconf [options] "
 msgstr "Aufruf: gpgconf [Optionen] "
@@ -7983,6 +7969,40 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "Aufruf: scdaemon [Optionen] (-h für Hilfe)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "fehlerhaft aufgebaute GPG_AGENT_INFO - Umgebungsvariable\n"
+
+#~ msgid "   (%d) %s\n"
+#~ msgstr "   (%d) signieren\n"
+
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "Aufruf: gpgsm [Optionen] [Dateien] (-h für Hilfe)"
+
+#~ msgid "Usage: dirmngr [options] (-h for help)"
+#~ msgstr "Gebrauch: dirmnr [Optionen] [Kommando [Argumente]]"
+
+#~ msgid "usage: dirmngr [options] "
+#~ msgstr "Gebrauch: dirmngr [Optionen] "
+
+#~ msgid "Usage: gpgconf [options] (-h for help)"
+#~ msgstr "Aufruf: gpgconf [Optionen] (-h für Hilfe)"
+
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "Aufruf: gpg-agent [Optionen] (-h für Hilfe)"
+
+#, fuzzy
+#~| msgid "can't create '%s': %s\n"
+#~ msgid "can't create `%s': %s\n"
+#~ msgstr "'%s' kann nicht erzeugt werden: %s\n"
+
+#, fuzzy
+#~| msgid "can't open '%s': %s\n"
+#~ msgid "can't open `%s': %s\n"
+#~ msgstr "'%s' kann nicht geöffnet werden: %s\n"
 
 #~ msgid "too many entries in pk cache - disabled\n"
 #~ msgstr "zu viele Einträge im pk-Cache - abgeschaltet\n"

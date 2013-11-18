@@ -105,7 +105,7 @@ make_outfile_name( const char *iname )
 	return xstrdup("-");
 
     n = strlen(iname);
-    if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S "gpg")
+    if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S GPGEXT_GPG)
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
 		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
@@ -255,7 +255,8 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
             {
               buf = xstrconcat (iname,
                                 (mode==1 ? EXTSEP_S "asc" :
-                                 mode==2 ? EXTSEP_S "sig" : EXTSEP_S "gpg"),
+                                 mode==2 ? EXTSEP_S "sig" :
+                                 /*     */ EXTSEP_S GPGEXT_GPG),
                                 NULL);
             }
           name = buf;
@@ -369,7 +370,7 @@ copy_options_file( const char *destdir )
 	xfree(fname);
 	return;
     }
-    strcpy(stpcpy(fname, destdir), DIRSEP_S "gpg" EXTSEP_S "conf" );
+    strcpy(stpcpy(fname, destdir), DIRSEP_S GPGEXT_GPG EXTSEP_S "conf" );
     oldmask=umask(077);
     if ( is_secured_filename (fname) )
       {

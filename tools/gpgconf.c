@@ -98,18 +98,18 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpgconf (GnuPG)";
+    case 11: p = "@GPGCONF@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
     case 1:
-    case 40: p = _("Usage: gpgconf [options] (-h for help)");
+    case 40: p = _("Usage: @GPGCONF@ [options] (-h for help)");
       break;
     case 41:
-      p = _("Syntax: gpgconf [options]\n"
-            "Manage configuration options for tools of the GnuPG system\n");
+      p = _("Syntax: @GPGCONF@ [options]\n"
+            "Manage configuration options for tools of the @GNUPG@ system\n");
       break;
 
     default: p = NULL; break;
@@ -350,10 +350,11 @@ main (int argc, char **argv)
       es_fprintf (outfp, "dirmngr-socket:%s\n",
                   gc_percent_escape (dirmngr_socket_name ()));
       {
-        char *infostr = getenv ("GPG_AGENT_INFO");
+        char *infostr = getenv (GPG_AGENT_INFO_NAME);
 
         if (!infostr || !*infostr)
-          infostr = make_filename (default_homedir (), "S.gpg-agent", NULL);
+          infostr = make_filename (default_homedir (),
+                                   GPG_AGENT_SOCK_NAME, NULL);
         else
           {
             char *tmp;

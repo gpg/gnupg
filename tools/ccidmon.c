@@ -810,7 +810,7 @@ main (int argc, char **argv)
         }
       else if (!strcmp (*argv, "--version"))
         {
-          fputs (PGM " (GnuPG) " PACKAGE_VERSION "\n", stdout);
+          fputs (PGM " ("GNUPG_NAME") " PACKAGE_VERSION "\n", stdout);
           exit (0);
         }
       else if (!strcmp (*argv, "--help"))

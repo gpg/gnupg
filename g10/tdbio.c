@@ -491,7 +491,7 @@ tdbio_set_dbname( const char *new_dbname, int create )
     }
 
     if(new_dbname==NULL)
-      fname=make_filename(opt.homedir,"trustdb" EXTSEP_S "gpg", NULL);
+      fname=make_filename(opt.homedir,"trustdb" EXTSEP_S GPGEXT_GPG, NULL);
     else if (*new_dbname != DIRSEP_C )
       {
 	if (strchr(new_dbname, DIRSEP_C) )
@@ -1239,7 +1239,7 @@ tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected )
       case 0:  /* unused (free) record */
 	break;
       case RECTYPE_VER: /* version record */
-	if( memcmp(buf+1, "gpg", 3 ) ) {
+	if( memcmp(buf+1, GPGEXT_GPG, 3 ) ) {
 	    log_error( _("%s: not a trustdb file\n"), db_name );
 	    err = gpg_error (GPG_ERR_TRUSTDB);
 	}
@@ -1331,7 +1331,7 @@ tdbio_write_record( TRUSTREC *rec )
       case RECTYPE_VER: /* version record */
 	if( recnum )
 	    BUG();
-	memcpy(p-1, "gpg", 3 ); p += 2;
+	memcpy(p-1, GPGEXT_GPG, 3 ); p += 2;
 	*p++ = rec->r.ver.version;
 	*p++ = rec->r.ver.marginals;
 	*p++ = rec->r.ver.completes;

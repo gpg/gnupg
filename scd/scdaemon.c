@@ -243,7 +243,7 @@ my_strusage (int level)
 
   switch (level)
     {
-    case 11: p = "scdaemon (GnuPG)";
+    case 11: p = "@SCDAEMON@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -260,10 +260,10 @@ my_strusage (int level)
       p = ver_ksba;
       break;
     case 1:
-    case 40: p =  _("Usage: scdaemon [options] (-h for help)");
+    case 40: p =  _("Usage: @SCDAEMON@ [options] (-h for help)");
       break;
     case 41: p =  _("Syntax: scdaemon [options] [command [args]]\n"
-                    "Smartcard daemon for GnuPG\n");
+                    "Smartcard daemon for @GNUPG@\n");
     break;
 
     default: p = NULL;

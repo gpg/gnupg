@@ -39,7 +39,7 @@
 
 /* Allow for a standalone build on most systems. */
 #ifdef VERSION
-#define MYVERSION_LINE PGM " (GnuPG) " VERSION
+#define MYVERSION_LINE PGM " ("GNUPG_NAME") " VERSION
 #define BUGREPORT_LINE "\nReport bugs to <bug-gnupg@gnu.org>.\n"
 #else
 #define MYVERSION_LINE PGM " (standalone build) " __DATE__

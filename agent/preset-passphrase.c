@@ -87,7 +87,7 @@ my_strusage (int level)
   const char *p;
   switch (level)
     {
-    case 11: p = "gpg-preset-passphrase (GnuPG)";
+    case 11: p = "gpg-preset-passphrase (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -245,7 +245,7 @@ main (int argc, char **argv)
 
   /* Tell simple-pwquery about the the standard socket name.  */
   {
-    char *tmp = make_filename (opt_homedir, "S.gpg-agent", NULL);
+    char *tmp = make_filename (opt_homedir, GPG_AGENT_SOCK_NAME, NULL);
     simple_pw_set_socket (tmp);
     xfree (tmp);
   }

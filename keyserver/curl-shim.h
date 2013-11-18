@@ -82,7 +82,7 @@ typedef struct
 typedef struct
 {
   const char **protocols;
-} curl_version_info_data; 
+} curl_version_info_data;
 
 #define CURL_ERROR_SIZE 256
 #define CURL_GLOBAL_DEFAULT 0
@@ -96,7 +96,7 @@ CURLcode curl_easy_perform(CURL *curl);
 void curl_easy_cleanup(CURL *curl);
 char *curl_escape(char *str,int len);
 #define curl_free(x) free(x)
-#define curl_version() "GnuPG curl-shim"
+#define curl_version() GNUPG_NAME" curl-shim"
 curl_version_info_data *curl_version_info(int type);
 
 struct curl_slist

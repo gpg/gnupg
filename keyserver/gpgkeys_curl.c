@@ -99,7 +99,7 @@ get_key(char *getkey)
   return curl_err_to_gpg_err(res);
 }
 
-static void 
+static void
 show_help (FILE *fp)
 {
   fprintf (fp,"-h, --help\thelp\n");
@@ -124,7 +124,7 @@ main(int argc,char *argv[])
   /* Kludge to implement standard GNU options.  */
   if (argc > 1 && !strcmp (argv[1], "--version"))
     {
-      printf ("gpgkeys_curl (GnuPG) %s\n", VERSION);
+      printf ("gpgkeys_curl (%s) %s\n", GNUPG_NAME, VERSION);
       printf ("Uses: %s\n", curl_version());
       return 0;
     }

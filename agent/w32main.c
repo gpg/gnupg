@@ -233,7 +233,7 @@ handle_taskbar (void *ctx)
   nid.hWnd = glob_hwnd;
   nid.uID = 1;
   nid.hIcon = LoadIcon (glob_hinst, MAKEINTRESOURCE (1));
-  mem2str (nid.szTip, "GnuPG Agent version "PACKAGE_VERSION,
+  mem2str (nid.szTip, GPG_AGENT_NAME " version "PACKAGE_VERSION,
            sizeof nid.szTip);
   Shell_NotifyIcon (NIM_ADD, &nid);
   DestroyIcon (nid.hIcon);

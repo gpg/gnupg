@@ -335,7 +335,7 @@ my_strusage (int level)
 
   switch (level)
     {
-    case 11: p = "gpg-agent (GnuPG)";
+    case 11: p = "@GPG_AGENT@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
@@ -351,10 +351,10 @@ my_strusage (int level)
       break;
 
     case 1:
-    case 40: p =  _("Usage: gpg-agent [options] (-h for help)");
+    case 40: p =  _("Usage: @GPG_AGENT@ [options] (-h for help)");
       break;
-    case 41: p =  _("Syntax: gpg-agent [options] [command [args]]\n"
-                    "Secret key management for GnuPG\n");
+    case 41: p =  _("Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+                    "Secret key management for @GNUPG@\n");
     break;
 
     default: p = NULL;
@@ -608,7 +608,7 @@ main (int argc, char **argv )
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
-  log_set_prefix ("gpg-agent", JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID);
+  log_set_prefix (GPG_AGENT_NAME, JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -1044,10 +1044,10 @@ main (int argc, char **argv )
 
       /* Create the sockets.  */
       socket_name = create_socket_name
-        ("S.gpg-agent", "gpg-XXXXXX/S.gpg-agent");
+        (GPG_AGENT_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SOCK_NAME);
       if (opt.ssh_support)
 	socket_name_ssh = create_socket_name
-          ("S.gpg-agent.ssh", "gpg-XXXXXX/S.gpg-agent.ssh");
+          (GPG_AGENT_SSH_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SSH_SOCK_NAME);
 
       fd = create_server_socket (socket_name, 0, &socket_nonce);
       if (opt.ssh_support)
@@ -1064,7 +1064,8 @@ main (int argc, char **argv )
       fflush (NULL);
 #ifdef HAVE_W32_SYSTEM
       pid = getpid ();
-      es_printf ("set GPG_AGENT_INFO=%s;%lu;1\n", socket_name, (ulong)pid);
+      es_printf ("set %s=%s;%lu;1\n",
+                 GPG_AGENT_INFO_NAME, socket_name, (ulong)pid);
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1)
@@ -1095,8 +1096,8 @@ main (int argc, char **argv )
 #endif /*HAVE_SIGPROCMASK*/
 
           /* Create the info string: <name>:<pid>:<protocol_version> */
-          if (asprintf (&infostr, "GPG_AGENT_INFO=%s:%lu:1",
-                        socket_name, (ulong)pid ) < 0)
+          if (asprintf (&infostr, "%s=%s:%lu:1",
+                        GPG_AGENT_INFO_NAME, socket_name, (ulong)pid ) < 0)
             {
               log_error ("out of core\n");
               kill (pid, SIGTERM);
@@ -1193,7 +1194,7 @@ main (int argc, char **argv )
                 }
               else
                 {
-                  es_printf ( "%s; export GPG_AGENT_INFO;\n", infostr);
+                  es_printf ( "%s; export %s;\n", infostr, GPG_AGENT_INFO_NAME);
 		  if (opt.ssh_support)
 		    {
 		      es_printf ("%s; export SSH_AUTH_SOCK;\n",
@@ -2190,7 +2191,7 @@ check_own_socket (void)
   if (check_own_socket_running || shutdown_pending)
     return;  /* Still running or already shutting down.  */
 
-  sockname = make_filename (opt.homedir, "S.gpg-agent", NULL);
+  sockname = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
   if (!sockname)
     return; /* Out of memory.  */
 
@@ -2219,7 +2220,7 @@ check_for_running_agent (int silent, int mode)
 
   if (!mode)
     {
-      infostr = getenv ("GPG_AGENT_INFO");
+      infostr = getenv (GPG_AGENT_INFO_NAME);
       if (!infostr || !*infostr)
         {
           if (!check_for_running_agent (silent, 1))
@@ -2236,7 +2237,8 @@ check_for_running_agent (int silent, int mode)
           if (!check_for_running_agent (silent, 1))
             return 0; /* Okay, its running on the standard socket. */
           if (!silent)
-            log_error (_("malformed GPG_AGENT_INFO environment variable\n"));
+            log_error (_("malformed %s environment variable\n"),
+                       GPG_AGENT_INFO_NAME);
           return -1;
         }
 
@@ -2258,7 +2260,7 @@ check_for_running_agent (int silent, int mode)
     }
   else /* MODE != 0 */
     {
-      infostr = make_filename (opt.homedir, "S.gpg-agent", NULL);
+      infostr = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
       pid = (pid_t)(-1);
     }
 

@@ -58,7 +58,7 @@
 #if defined(HAVE_W32_SYSTEM) && !defined(HAVE_W32CE_SYSTEM)
 #define GPGNAME "gpg2"
 #else
-#define GPGNAME "gpg"
+#define GPGNAME GPG_NAME
 #endif
 
 
@@ -180,15 +180,15 @@ static struct
 } gc_backend[GC_BACKEND_NR] =
   {
     { NULL },		/* GC_BACKEND_ANY dummy entry.  */
-    { "GnuPG", GPGNAME, GNUPG_MODULE_NAME_GPG,
+    { GNUPG_NAME, GPGNAME, GNUPG_MODULE_NAME_GPG,
       NULL, "gpgconf-gpg.conf" },
-    { "GPGSM", "gpgsm", GNUPG_MODULE_NAME_GPGSM,
+    { "GPGSM", GPGSM_NAME, GNUPG_MODULE_NAME_GPGSM,
       NULL, "gpgconf-gpgsm.conf" },
-    { "GPG Agent", "gpg-agent", GNUPG_MODULE_NAME_AGENT,
+    { "GPG Agent", GPG_AGENT_NAME, GNUPG_MODULE_NAME_AGENT,
       gpg_agent_runtime_change, "gpgconf-gpg-agent.conf" },
-    { "SCDaemon", "scdaemon", GNUPG_MODULE_NAME_SCDAEMON,
+    { "SCDaemon", SCDAEMON_NAME, GNUPG_MODULE_NAME_SCDAEMON,
       scdaemon_runtime_change, "gpgconf-scdaemon.conf" },
-    { "DirMngr", "dirmngr", GNUPG_MODULE_NAME_DIRMNGR,
+    { "DirMngr", DIRMNGR_NAME, GNUPG_MODULE_NAME_DIRMNGR,
       NULL, "gpgconf-dirmngr.conf" },
     { "DirMngr LDAP Server List", NULL, 0,
       NULL, "ldapserverlist-file", "LDAP Server" },
@@ -1215,8 +1215,8 @@ my_dgettext (const char *domain, const char *msgid)
           switched_codeset = 1;
           bind_textdomain_codeset (PACKAGE_GT, "utf-8");
 
-          bindtextdomain ("dirmngr", LOCALEDIR);
-          bind_textdomain_codeset ("dirmngr", "utf-8");
+          bindtextdomain (DIRMNGR_NAME, LOCALEDIR);
+          bind_textdomain_codeset (DIRMNGR_NAME, "utf-8");
 
         }
 

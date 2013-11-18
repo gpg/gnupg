@@ -212,17 +212,17 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "g13 (GnuPG)";
+    case 11: p = "@G13@ (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <" PACKAGE_BUGREPORT ">.\n");
       break;
     case 1:
-    case 40: p = _("Usage: g13 [options] [files] (-h for help)");
+    case 40: p = _("Usage: @G13@ [options] [files] (-h for help)");
       break;
     case 41:
-      p = _("Syntax: g13 [options] [files]\n"
+      p = _("Syntax: @G13@ [options] [files]\n"
             "Create, mount or unmount an encrypted file system container\n");
       break;
 
@@ -238,7 +238,7 @@ my_strusage( int level )
 static void
 wrong_args (const char *text)
 {
-  fputs (_("usage: g13 [options] "), stderr);
+  fprintf (stderr, _("usage: %s [options] "), G13_NAME);
   fputs (text, stderr);
   putc ('\n', stderr);
   g13_exit (2);
@@ -344,11 +344,11 @@ main ( int argc, char **argv)
 
   /*mtrace();*/
 
-  gnupg_reopen_std ("g13");
+  gnupg_reopen_std (G13_NAME);
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
 
-  log_set_prefix ("g13", 1);
+  log_set_prefix (G13_NAME, 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -430,7 +430,7 @@ main ( int argc, char **argv)
 
   /* Set the default option file */
   if (default_config )
-    configname = make_filename (opt.homedir, "g13.conf", NULL);
+    configname = make_filename (opt.homedir, G13_NAME".conf", NULL);
 
   argc        = orig_argc;
   argv        = orig_argv;
@@ -577,7 +577,7 @@ main ( int argc, char **argv)
   configname = NULL;
 
   if (!opt.config_filename)
-    opt.config_filename = make_filename (opt.homedir, "g13.conf", NULL);
+    opt.config_filename = make_filename (opt.homedir, G13_NAME".conf", NULL);
 
   if (log_get_errorcount(0))
     g13_exit(2);

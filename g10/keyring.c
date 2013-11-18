@@ -1171,7 +1171,7 @@ create_tmp_file (const char *template,
    * works.  So we replace .gpg by .bak or .tmp
    */
   if (strlen (template) > 4
-      && !strcmp (template+strlen(template)-4, EXTSEP_S "gpg") )
+      && !strcmp (template+strlen(template)-4, EXTSEP_S GPGEXT_GPG) )
     {
       bakfname = xmalloc (strlen (template) + 1);
       strcpy (bakfname, template);

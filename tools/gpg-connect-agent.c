@@ -182,17 +182,17 @@ my_strusage( int level )
 
   switch (level)
     {
-    case 11: p = "gpg-connect-agent (GnuPG)";
+    case 11: p = "@GPG@-connect-agent (@GNUPG@)";
       break;
     case 13: p = VERSION; break;
     case 17: p = PRINTABLE_OS_NAME; break;
     case 19: p = _("Please report bugs to <@EMAIL@>.\n"); break;
 
     case 1:
-    case 40: p = _("Usage: gpg-connect-agent [options] (-h for help)");
+    case 40: p = _("Usage: @GPG@-connect-agent [options] (-h for help)");
       break;
     case 41:
-      p = _("Syntax: gpg-connect-agent [options]\n"
+      p = _("Syntax: @GPG@-connect-agent [options]\n"
             "Connect to a running agent and send commands\n");
       break;
     case 31: p = "\nHome: "; break;
