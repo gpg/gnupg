@@ -1908,6 +1908,7 @@ main (int argc, char **argv )
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
     opt.passwd_repeat=1;
+    opt.emit_version = 1; /* Limit to the major number.  */
 
 #ifdef ENABLE_CARD_SUPPORT
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -2245,8 +2246,8 @@ main (int argc, char **argv )
 	  case oNoVerbose: g10_opt_verbose = 0;
 			   opt.verbose = 0; opt.list_sigs=0; break;
 	  case oQuickRandom: quick_random_gen(1); break;
-	  case oEmitVersion: opt.no_version=0; break;
-	  case oNoEmitVersion: opt.no_version=1; break;
+	  case oEmitVersion: opt.emit_version++; break;
+	  case oNoEmitVersion: opt.emit_version=0; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;

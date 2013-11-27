@@ -3,6 +3,9 @@ Noteworthy changes in version 1.4.16 (unreleased)
 
  * Do not create a trustdb file if --trust-model=always is used.
 
+ * Only the major version number is by default included in the armored
+   output.
+
 
 Noteworthy changes in version 1.4.15 (2013-10-04)
 -------------------------------------------------
