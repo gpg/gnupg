@@ -2000,6 +2000,8 @@ main (int argc, char **argv)
     opt.def_cert_expire="0";
     set_homedir ( default_homedir () );
     opt.passphrase_repeat=1;
+    opt.emit_version = 1; /* Limit to the major number.  */
+
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -2300,8 +2302,8 @@ main (int argc, char **argv)
           case oQuickRandom:
             gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
             break;
-	  case oEmitVersion: opt.no_version=0; break;
-	  case oNoEmitVersion: opt.no_version=1; break;
+	  case oEmitVersion: opt.emit_version++; break;
+	  case oNoEmitVersion: opt.emit_version=0; break;
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
