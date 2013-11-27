@@ -274,7 +274,7 @@ check_secret_key( DSA_secret_key *sk )
 /****************
  * Make a DSA signature from HASH and put it into r and s.
  *
- * Without generating the k this function runs in 
+ * Without generating the k this function runs in
  * about 26ms on a 300 Mhz Mobile Pentium
  */
 
@@ -284,6 +284,8 @@ sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
     MPI k;
     MPI kinv;
     MPI tmp;
+
+    mpi_normalize (hash);
 
     /* select a random k with 0 < k < q */
     k = gen_k( skey->q );
@@ -311,7 +313,7 @@ sign(MPI r, MPI s, MPI hash, DSA_secret_key *skey )
 /****************
  * Returns true if the signature composed from R and S is valid.
  *
- * Without the checks this function runs in 
+ * Without the checks this function runs in
  * about 31ms on a 300 Mhz Mobile Pentium
  */
 static int

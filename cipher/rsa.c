@@ -308,9 +308,14 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
     MPI m2   = mpi_alloc_secure (nlimbs);
     MPI h    = mpi_alloc_secure (nlimbs);
 # ifdef USE_BLINDING
-    MPI r    = mpi_alloc_secure (nlimbs);
     MPI bdata= mpi_alloc_secure (nlimbs);
+    MPI r    = mpi_alloc_secure (nlimbs);
+# endif /* USE_BLINDING */
 
+    /* Remove superfluous leading zeroes from INPUT.  */
+    mpi_normalize (input);
+
+# ifdef USE_BLINDING
     /* Blind:  bdata = (data * r^e) mod n   */
     randomize_mpi (r, mpi_get_nbits (skey->n), 0);
     mpi_fdiv_r (r, r, skey->n);
@@ -338,8 +343,8 @@ secret(MPI output, MPI input, RSA_secret_key *skey )
     mpi_add ( output, m1, h );
 
 # ifdef USE_BLINDING
-    /* Unblind: output = (output * r^(-1)) mod n  */
     mpi_free (bdata);
+    /* Unblind: output = (output * r^(-1)) mod n  */
     mpi_invm (r, r, skey->n);
     mpi_mulm (output, output, r, skey->n);
     mpi_free (r);
@@ -419,6 +424,7 @@ int
 rsa_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
 {
     RSA_secret_key sk;
+    MPI input;
 
     if( algo != 1 && algo != 2 )
 	return G10ERR_PUBKEY_ALGO;
@@ -429,8 +435,16 @@ rsa_decrypt( int algo, MPI *result, MPI *data, MPI *skey )
     sk.p = skey[3];
     sk.q = skey[4];
     sk.u = skey[5];
-    *result = mpi_alloc_secure( mpi_get_nlimbs( sk.n ) );
-    secret( *result, data[0], &sk );
+
+    /* Better make sure that there are no superfluous leading zeroes
+       in the input and it has not been padded using multiples of N.
+       This mitigates side-channel attacks (CVE-2013-4576).  */
+    input = mpi_alloc (0);
+    mpi_normalize (data[0]);
+    mpi_fdiv_r (input, data[0], sk.n);
+    *result = mpi_alloc_secure (mpi_get_nlimbs (sk.n));
+    secret (*result, input, &sk);
+    mpi_free (input);
     return 0;
 }
 
