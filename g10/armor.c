@@ -1077,10 +1077,24 @@ armor_filter( void *opaque, int control,
 	    iobuf_writestr(a, head_strings[afx->what] );
 	    iobuf_writestr(a, "-----" );
 	    iobuf_writestr(a,afx->eol);
-	    if( !opt.no_version )
+	    if (opt.emit_version)
 	      {
-		iobuf_writestr(a, "Version: "GNUPG_NAME" v"  VERSION " ("
-			       PRINTABLE_OS_NAME ")" );
+		iobuf_writestr (a, "Version: "GNUPG_NAME" v");
+                for (s=VERSION; *s && *s != '.'; s++)
+                  iobuf_writebyte (a, *s);
+                if (opt.emit_version > 1 && *s)
+                  {
+                    iobuf_writebyte (a, *s++);
+                    for (; *s && *s != '.'; s++)
+                      iobuf_writebyte (a, *s);
+                    if (opt.emit_version > 2)
+                      {
+                        for (; *s && *s != '-' && !spacep (s); s++)
+                          iobuf_writebyte (a, *s);
+                        if (opt.emit_version > 3)
+                          iobuf_writestr (a, " (" PRINTABLE_OS_NAME ")");
+                      }
+                  }
 		iobuf_writestr(a,afx->eol);
 	      }
 
