@@ -1,5 +1,6 @@
 /* membuf.c - A simple implementation of a dynamic buffer.
  * Copyright (C) 2001, 2003, 2009, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -30,6 +31,7 @@
 #include <config.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdarg.h>
 
 #include "membuf.h"
 
@@ -119,6 +121,26 @@ void
 put_membuf_str (membuf_t *mb, const char *string)
 {
   put_membuf (mb, string, strlen (string));
+}
+
+
+void
+put_membuf_printf (membuf_t *mb, const char *format, ...)
+{
+  int rc;
+  va_list arg_ptr;
+  char *buf;
+
+  va_start (arg_ptr, format);
+  rc = estream_vasprintf (&buf, format, arg_ptr);
+  if (rc < 0)
+    mb->out_of_core = errno ? errno : ENOMEM;
+  va_end (arg_ptr);
+  if (rc >= 0)
+    {
+      put_membuf (mb, buf, strlen (buf));
+      xfree (buf);
+    }
 }
 
 
