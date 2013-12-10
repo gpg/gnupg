@@ -1,10 +1,18 @@
 Noteworthy changes in version 1.4.16 (unreleased)
 -------------------------------------------------
 
+ * Fixed the RSA Key Extraction via Low-Bandwidth Acoustic
+   Cryptanalysis attack as described by Genkin, Shamir, and Tromer.
+   See <http://www.cs.tau.ac.il/~tromer/acoustic/>.  [CVE-2013-4576]
+
+ * Put only the major version number by default into armored output.
+
  * Do not create a trustdb file if --trust-model=always is used.
 
- * Only the major version number is by default included in the armored
-   output.
+ * Print the keyid for key packets with --list-packets.
+
+ * Changed modular exponentiation algorithm to recover from a small
+   performance loss due to a change in 1.4.14.
 
 
 Noteworthy changes in version 1.4.15 (2013-10-04)
@@ -2089,6 +2097,7 @@ Noteworthy changes in version 0.2.3
 Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
               2005, 2006, 2007, 2008, 2009, 2010, 2011,
               2012 Free Software Foundation, Inc.
+Copyright (C) 2013 Werner Koch
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without

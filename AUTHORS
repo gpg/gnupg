@@ -6,8 +6,8 @@ Security related bug reports: <security@gnupg.org>
 License: GPLv3+
 
 
-Authors
-=======
+Authors with a FSF copyright assignment
+=======================================
 
 Ales Nyakhaychyk <nyakhaychyk@i1fn.linux.by> Translations [be]
 
@@ -111,19 +111,26 @@ Jaime Sua'rez <jjsuarez@iname.com> Translations [es]
 Walter Koch <koch@u32.de>  Translations [de]
 
 Werner Koch  <wk@gnupg.org>  Assigns GNU Privacy Guard and future changes.
-    (started the whole thing)
+   (started the whole thing) Assignment contract terminated on 2013-03-29.
 
 Yosiaki IIDA <iida@ring.gr.jp> Translations [ja]
 
 Yuri Chornoivan, yurchor at ukr dot net: Translations [uk]
 
 
+Authors with a DCO
+==================
+
+The list of authors who signed the Developer's Certificate of Origin
+is kept in the GIT master branch's copy of this file.
+
 
 Other authors
 =============
 
-The need for copyright disclaimers for translations has been waived in
-December 2012.
+The need for copyright assignments to the FSF has been waived on
+2013-03-29; The need for copyright disclaimers for translations has
+been waived in December 2012.
 
 This program uses the zlib compression library written by
 Jean-loup Gailly and Mark Adler.
@@ -156,6 +163,7 @@ details.
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
            2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+ Copyright 2013 Werner Koch
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without
