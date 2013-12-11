@@ -1,4 +1,4 @@
-/* status.c - Status message and command-fd interface 
+/* status.c - Status message and command-fd interface
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004, 2005, 2006 Free Software Foundation, Inc.
  *
@@ -75,13 +75,13 @@ status_currently_allowed (int no)
      prompt the user. */
   switch (no)
     {
-    case STATUS_GET_BOOL:	 
-    case STATUS_GET_LINE:	 
-    case STATUS_GET_HIDDEN:	 
-    case STATUS_GOT_IT:	 
+    case STATUS_GET_BOOL:
+    case STATUS_GET_LINE:
+    case STATUS_GET_HIDDEN:
+    case STATUS_GOT_IT:
     case STATUS_IMPORTED:
-    case STATUS_IMPORT_OK:	
-    case STATUS_IMPORT_CHECK:  
+    case STATUS_IMPORT_OK:
+    case STATUS_IMPORT_CHECK:
     case STATUS_IMPORT_RES:
       return 1; /* Yes. */
     default:
@@ -102,7 +102,7 @@ set_status_fd ( int fd )
     if ( statusfp && statusfp != stdout && statusfp != stderr )
         fclose (statusfp);
     statusfp = NULL;
-    if ( fd == -1 ) 
+    if ( fd == -1 )
         return;
 
     if( fd == 1 )
@@ -132,28 +132,50 @@ write_status ( int no )
     write_status_text( no, NULL );
 }
 
-void
-write_status_text ( int no, const char *text)
-{
-    if( !statusfp || !status_currently_allowed (no) )
-	return;  /* Not enabled or allowed. */
 
-    fputs ( "[GNUPG:] ", statusfp );
-    fputs ( get_status_string (no), statusfp );
-    if( text ) {
-        putc ( ' ', statusfp );
-        for (; *text; text++) {
-            if (*text == '\n')
-                fputs ( "\\n", statusfp );
-            else if (*text == '\r')
-                fputs ( "\\r", statusfp );
-            else 
-                putc ( *(const byte *)text,  statusfp );
+/* Write a status line with code NO followed by the string TEXT and
+   directly followed by the remaining strings up to a NULL. */
+void
+write_status_strings (int no, const char *text, ...)
+{
+  va_list arg_ptr;
+  const char *s;
+
+  if (!statusfp || !status_currently_allowed (no) )
+    return;  /* Not enabled or allowed. */
+
+  fputs ("[GNUPG:] ", statusfp);
+  fputs (get_status_string (no), statusfp);
+  if ( text )
+    {
+      putc ( ' ', statusfp);
+      va_start (arg_ptr, text);
+      s = text;
+      do
+        {
+          for (; *s; s++)
+            {
+              if (*s == '\n')
+                fputs ("\\n", statusfp);
+              else if (*s == '\r')
+                fputs ("\\r", statusfp);
+              else
+                fputc (*(const byte *)s, statusfp);
+            }
         }
+      while ((s = va_arg (arg_ptr, const char*)));
+      va_end (arg_ptr);
     }
-    putc ('\n',statusfp);
-    if ( fflush (statusfp) && opt.exit_on_status_write_error )
-      g10_exit (0);
+  putc ('\n', statusfp);
+  if (fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
+
+void
+write_status_text (int no, const char *text)
+{
+  write_status_strings (no, text, NULL);
 }
 
 
@@ -163,7 +185,7 @@ write_status_error (const char *where, int errcode)
   if (!statusfp || !status_currently_allowed (STATUS_ERROR))
     return;  /* Not enabled or allowed. */
 
-  fprintf (statusfp, "[GNUPG:] %s %s %u\n", 
+  fprintf (statusfp, "[GNUPG:] %s %s %u\n",
            get_status_string (STATUS_ERROR), where, gpg_err_code (errcode));
   if (fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
@@ -187,7 +209,7 @@ write_status_text_and_buffer ( int no, const char *string,
 
     if( !statusfp || !status_currently_allowed (no) )
 	return;  /* Not enabled or allowed. */
-    
+
     if (wrap == -1) {
         lower_limit--;
         wrap = 0;
@@ -212,8 +234,8 @@ write_status_text_and_buffer ( int no, const char *string,
             first = 0;
         }
         for (esc=0, s=buffer, n=len; n && !esc; s++, n-- ) {
-            if ( *s == '%' || *(const byte*)s <= lower_limit 
-                           || *(const byte*)s == 127 ) 
+            if ( *s == '%' || *(const byte*)s <= lower_limit
+                           || *(const byte*)s == 127 )
                 esc = 1;
             if ( wrap && ++count > wrap ) {
                 dowrap=1;
@@ -223,7 +245,7 @@ write_status_text_and_buffer ( int no, const char *string,
         if (esc) {
             s--; n++;
         }
-        if (s != buffer) 
+        if (s != buffer)
             fwrite (buffer, s-buffer, 1, statusfp );
         if ( esc ) {
             fprintf (statusfp, "%%%02X", *(const byte*)s );
@@ -257,7 +279,7 @@ write_status_begin_signing (gcry_md_hd_t md)
       char buf[100];
       size_t buflen;
       int i;
-      
+
       /* We use a hard coded list of possible algorithms.  Using other
          algorithms than specified by OpenPGP does not make sense
          anyway.  We do this out of performance reasons: Walking all
@@ -270,7 +292,7 @@ write_status_begin_signing (gcry_md_hd_t md)
         if (i < 4 || i > 7)
           if ( gcry_md_is_enabled (md, i) && buflen < DIM(buf) )
             {
-              snprintf (buf+buflen, DIM(buf) - buflen - 1, 
+              snprintf (buf+buflen, DIM(buf) - buflen - 1,
                         "%sH%d", buflen? " ":"",i);
               buflen += strlen (buf+buflen);
             }
@@ -302,7 +324,7 @@ myread(int fd, void *buf, size_t count)
             raise (SIGHUP); /* no more input data */
 #endif
         }
-    }    
+    }
     return rc;
 }
 
@@ -316,16 +338,16 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
 {
   int i, len;
   char *string;
-  
+
   if (statusfp != stdout)
     fflush (stdout);
-  
+
   write_status_text (getbool? STATUS_GET_BOOL :
                      hidden? STATUS_GET_HIDDEN : STATUS_GET_LINE, keyword);
 
-  for (string = NULL, i = len = 200; ; i++ ) 
+  for (string = NULL, i = len = 200; ; i++ )
     {
-      if (i >= len-1 ) 
+      if (i >= len-1 )
         {
           char *save = string;
           len += 100;
@@ -338,7 +360,7 @@ do_get_from_fd ( const char *keyword, int hidden, int getbool )
       /* Fixme: why not use our read_line function here? */
       if ( myread( opt.command_fd, string+i, 1) != 1 || string[i] == '\n'  )
         break;
-      else if ( string[i] == CONTROL_D ) 
+      else if ( string[i] == CONTROL_D )
         {
           /* Found ETX - Cancel the line and return a sole ETX.  */
           string[0] = CONTROL_D;

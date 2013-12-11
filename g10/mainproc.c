@@ -569,6 +569,7 @@ proc_encrypted( CTX c, PACKET *pkt )
     }
     else if( !c->dek )
 	result = G10ERR_NO_SECKEY;
+
     if( !result )
 	result = decrypt_data( c, pkt->pkt.encrypted, c->dek );
 
@@ -583,16 +584,6 @@ proc_encrypted( CTX c, PACKET *pkt )
 	    write_status( STATUS_GOODMDC );
 	else if(!opt.no_mdc_warn)
 	    log_info (_("WARNING: message was not integrity protected\n"));
-	if(opt.show_session_key)
-	  {
-	    int i;
-	    char *buf = xmalloc ( c->dek->keylen*2 + 20 );
-	    sprintf ( buf, "%d:", c->dek->algo );
-	    for(i=0; i < c->dek->keylen; i++ )
-	      sprintf(buf+strlen(buf), "%02X", c->dek->key[i] );
-	    log_info( "session key: `%s'\n", buf );
-	    write_status_text ( STATUS_SESSION_KEY, buf );
-	  }
     }
     else if( result == G10ERR_BAD_SIGN ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));

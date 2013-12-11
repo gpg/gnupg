@@ -104,6 +104,23 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
     write_status_text (STATUS_DECRYPTION_INFO, buf);
   }
 
+  if (opt.show_session_key)
+    {
+      char numbuf[25];
+      char *hexbuf;
+
+      snprintf (numbuf, sizeof numbuf, "%d:", dek->algo);
+      hexbuf = bin2hex (dek->key, dek->keylen, NULL);
+      if (!hexbuf)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
+      log_info ("session key: '%s%s'\n", numbuf, hexbuf);
+      write_status_strings (STATUS_SESSION_KEY, numbuf, hexbuf, NULL);
+      xfree (hexbuf);
+    }
+
   rc = openpgp_cipher_test_algo (dek->algo);
   if (rc)
     goto leave;
