@@ -100,6 +100,16 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
         write_status_text (STATUS_DECRYPTION_INFO, buf);
     }
 
+    if (opt.show_session_key)
+      {
+        char *buf = xmalloc (dek->keylen*2 + 20);
+        sprintf (buf, "%d:", dek->algo);
+        for (i=0; i < dek->keylen; i++ )
+          sprintf(buf+strlen(buf), "%02X", dek->key[i] );
+        log_info ("session key: `%s'\n", buf);
+        write_status_text (STATUS_SESSION_KEY, buf);
+      }
+
     if( (rc=check_cipher_algo(dek->algo)) )
 	goto leave;
     blocksize = cipher_get_blocksize(dek->algo);
