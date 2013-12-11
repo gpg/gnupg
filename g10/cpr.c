@@ -139,9 +139,14 @@ write_status ( int no )
 }
 
 
+/* Write a status line with code NO followed by the string TEXT and
+   directly followed by the remaining strings up to a NULL. */
 void
-write_status_text (int no, const char *text)
+write_status_strings (int no, const char *text, ...)
 {
+  va_list arg_ptr;
+  const char *s;
+
   if (!statusfp || !status_currently_allowed (no) )
     return;  /* Not enabled or allowed. */
 
@@ -150,21 +155,34 @@ write_status_text (int no, const char *text)
   if ( text )
     {
       es_putc ( ' ', statusfp);
-      for (; *text; text++)
+      va_start (arg_ptr, text);
+      s = text;
+      do
         {
-          if (*text == '\n')
-            es_fputs ("\\n", statusfp);
-          else if (*text == '\r')
-            es_fputs ("\\r", statusfp);
-          else
-            es_fputc ( *(const byte *)text, statusfp);
+          for (; *s; s++)
+            {
+              if (*s == '\n')
+                es_fputs ("\\n", statusfp);
+              else if (*s == '\r')
+                es_fputs ("\\r", statusfp);
+              else
+                es_fputc (*(const byte *)s, statusfp);
+            }
         }
+      while ((s = va_arg (arg_ptr, const char*)));
+      va_end (arg_ptr);
     }
   es_putc ('\n', statusfp);
   if (es_fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
 }
 
+
+void
+write_status_text (int no, const char *text)
+{
+  write_status_strings (no, text, NULL);
+}
 
 /* Wrte an ERROR status line using a full gpg-error error value.  */
 void

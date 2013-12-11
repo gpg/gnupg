@@ -459,9 +459,10 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 *** SESSION_KEY <algo>:<hexdigits>
     The session key used to decrypt the message.  This message will
-    only be emitted when the special option --show-session-key is
-    used.  The format is suitable to be passed to the option
-    --override-session-key
+    only be emitted if the option --show-session-key is used.  The
+    format is suitable to be passed as value for the option
+    --override-session-key.  It is not an indication that the
+    decryption will or has succeeded.
 
 *** BEGIN_ENCRYPTION  <mdc_method> <sym_algo>
     Mark the start of the actual encryption process.
