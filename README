@@ -783,8 +783,8 @@
     How to Get More Information
     ---------------------------
 
-    The primary WWW page is "http://www.gnupg.org"
-    The primary FTP site is "ftp://ftp.gnupg.org/gcrypt/"
+    The primary WWW page is http://www.gnupg.org
+    The primary FTP site is ftp://ftp.gnupg.org/gcrypt/
 
     See http://www.gnupg.org/download/mirrors.html for a list of
     mirrors and use them if possible.  You may also find GnuPG
@@ -830,7 +830,7 @@
 
     The driving force behind the development of GnuPG is the company
     of its principal author, Werner Koch.  Maintenance and improvement
-    of GnuPG and related software take up a most of their resources.
+    of GnuPG and related software take up most of their resources.
     To continue the work they ask to either donate money, purchase a
     support contract, or engage them for custom enhancements. See
     http://g10code.com/gnupg-donation.html
