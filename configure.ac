@@ -544,6 +544,7 @@ AM_MISSING_PROG(AUTOCONF, autoconf, $missing_dir)
 AM_MISSING_PROG(AUTOMAKE, automake, $missing_dir)
 AM_MISSING_PROG(AUTOHEADER, autoheader, $missing_dir)
 AM_MISSING_PROG(MAKEINFO, makeinfo, $missing_dir)
+AM_SILENT_RULES
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
