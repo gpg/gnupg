@@ -222,7 +222,7 @@ default_homedir (void)
               char *tmp;
 
               tmp = read_w32_registry_string (NULL,
-                                              "Software\\GNU\\" GNUPG_NAME,
+                                              GNUPG_REGISTRY_DIR,
                                               "HomeDir");
               if (tmp && !*tmp)
                 {

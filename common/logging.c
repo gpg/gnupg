@@ -636,7 +636,7 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 
       tmp = (no_registry
              ? NULL
-             : read_w32_registry_string (NULL, "Software\\GNU\\"GNUPG_NAME,
+             : read_w32_registry_string (NULL, GNUPG_REGISTRY_DIR,
                                          "DefaultLogFile"));
       log_set_file (tmp && *tmp? tmp : NULL);
       jnlib_free (tmp);
