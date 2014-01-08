@@ -129,7 +129,7 @@ if [ "$myhost" = "w32" ]; then
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
-          toolprefixes="$w32_toolprefixes i586-mingw32msvc"
+          toolprefixes="$w32_toolprefixes i686-w64-mingw32 i586-mingw32msvc"
           toolprefixes="$toolprefixes i386-mingw32msvc mingw32"
           extraoptions="--enable-gpgtar $w32_extraoptions"
           ;;
