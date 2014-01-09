@@ -1,7 +1,6 @@
 #! /bin/sh
-# Run this to generate all the initial makefiles, etc.
-#
-# Copyright (C) 2003 g10 Code GmbH
+# autogen.sh
+# Copyright (C) 2003, 2014 g10 Code GmbH
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -10,6 +9,13 @@
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# This is a generic script to create the configure script and handle cross
+# build environments.  It requires the presence of a autogen.rc file to
+# configure it for the respective package.  It is maintained as part of
+# GnuPG and source copied by other packages.
+#
+# Version: 2014-01-10
 
 configure_ac="configure.ac"
 
@@ -28,12 +34,28 @@ check_version () {
     return 1
 }
 
+fatal () {
+    echo "autogen.sh:" "$*" >&2
+    DIE=yes
+}
+
 info () {
     if [ -z "${SILENT}" ]; then
-      echo "autogen.sh:" $*
+      echo "autogen.sh:" "$*"
     fi
 }
 
+die_p () {
+  if [ "$DIE" = "yes" ]; then
+    echo "autogen.sh: Stop." >&2
+    exit 1
+  fi
+}
+
+replace_sysroot () {
+    configure_opts=$(echo $configure_opts | sed "s#@SYSROOT@#${w32root}#g")
+    extraoptions=$(echo $extraoptions | sed "s#@SYSROOT@#${w32root}#g")
+}
 
 # Allow to override the default tool names
 AUTOCONF=${AUTOCONF_PREFIX}${AUTOCONF:-autoconf}${AUTOCONF_SUFFIX}
@@ -48,14 +70,19 @@ MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 DIE=no
 FORCE=
 SILENT=
-tmp=`dirname $0`
-tsdir=`cd "$tmp"; pwd`
+tmp=$(dirname "$0")
+tsdir=$(cd "${tmp}"; pwd)
+
 if [ -n "${AUTOGEN_SH_SILENT}" ]; then
   SILENT=" --silent"
 fi
 if test x"$1" = x"--help"; then
-  echo "usage: ./autogen.sh [--force] [--build-TYPE] [ARGS]"
+  echo "usage: ./autogen.sh [--silent] [--force] [--build-TYPE] [ARGS]"
   exit 0
+fi
+if test x"$1" = x"--silent"; then
+  SILENT=" --silent"
+  shift
 fi
 if test x"$1" = x"--force"; then
   FORCE=" --force"
@@ -69,37 +96,38 @@ am_lf='
 '
 case `pwd` in
   *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
-    echo "unsafe working directory name"; DIE=yes;;
+    fatal "unsafe working directory name" ;;
 esac
 case $tsdir in
   *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
-    echo "unsafe source directory: \`$tsdir'"; DIE=yes;;
+    fatal "unsafe source directory: \`$tsdir'" ;;
 esac
 case $HOME in
   *[\;\\\"\#\$\&\'\`$am_lf\ \	]*)
-    echo "unsafe home directory: \`$HOME'"; DIE=yes;;
+    fatal "unsafe home directory: \`$HOME'" ;;
 esac
-if test "$DIE" = "yes"; then
-  exit 1
-fi
+die_p
 
-# Begin list of optional variables sourced from ~/.gnupg-autogen.rc
+
+# List of variables sourced from autogen.rc.  The strings '@SYSROOT@' in
+# these variables are replaced by the actual system root.
+configure_opts=
+extraoptions=
+# List of optional variables sourced from autogen.rc and ~/.gnupg-autogen.rc
 w32_toolprefixes=
 w32_extraoptions=
 w32ce_toolprefixes=
 w32ce_extraoptions=
+w64_toolprefixes=
+w64_extraoptions=
 amd64_toolprefixes=
 # End list of optional variables sourced from ~/.gnupg-autogen.rc
 # What follows are variables which are sourced but default to
 # environment variables or lacking them hardcoded values.
 #w32root=
 #w32ce_root=
+#w64root=
 #amd64root=
-
-if [ -f "$HOME/.gnupg-autogen.rc" ]; then
-    info "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
-    . "$HOME/.gnupg-autogen.rc"
-fi
 
 # Convenience option to use certain configure options for some hosts.
 myhost=""
@@ -107,50 +135,69 @@ myhostsub=""
 case "$1" in
     --build-w32)
         myhost="w32"
+        shift
         ;;
     --build-w32ce)
         myhost="w32"
         myhostsub="ce"
+        shift
+        ;;
+    --build-w64)
+        myhost="w32"
+        myhostsub="64"
+        shift
         ;;
     --build-amd64)
         myhost="amd64"
+        shift
         ;;
     --build*)
-        echo "**Error**: invalid build option $1" >&2
-        exit 1
+        fatal "**Error**: invalid build option $1"
+        shift
         ;;
     *)
         ;;
 esac
+die_p
 
 
-# ***** W32 build script *******
-# Used to cross-compile for Windows.
+# Source our configuration
+if [ -f "${tsdir}/autogen.rc" ]; then
+    . "${tsdir}/autogen.rc"
+fi
+
+# Source optional site specific configuration
+if [ -f "$HOME/.gnupg-autogen.rc" ]; then
+    info "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
+    . "$HOME/.gnupg-autogen.rc"
+fi
+
+# ******************
+#  W32 build script
+# ******************
 if [ "$myhost" = "w32" ]; then
-    shift
-    if [ ! -f $tsdir/scripts/config.guess ]; then
-        echo "$tsdir/scripts/config.guess not found" >&2
+    if [ ! -f "$tsdir/build-aux/config.guess" ]; then
+        fatal "$tsdir/build-aux/config.guess not found"
         exit 1
     fi
-    build=`$tsdir/scripts/config.guess`
+    build=`$tsdir/build-aux/config.guess`
 
     case $myhostsub in
         ce)
           w32root="$w32ce_root"
           [ -z "$w32root" ] && w32root="$HOME/w32ce_root"
           toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
-          extraoptions="--enable-dirmngr-auto-start --disable-scdaemon "
-          extraoptions="$extraoptions --disable-zip --enable-gpg2-is-gpg"
           extraoptions="$extraoptions $w32ce_extraoptions"
           ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
           toolprefixes="$w32_toolprefixes i686-w64-mingw32 i586-mingw32msvc"
           toolprefixes="$toolprefixes i386-mingw32msvc mingw32"
-          extraoptions="--enable-gpgtar $w32_extraoptions"
+          extraoptions="$extraoptions $w32_extraoptions"
           ;;
     esac
     info "Using $w32root as standard install directory"
+    replace_sysroot
 
     # Locate the cross compiler
     crossbindir=
@@ -162,34 +209,25 @@ if [ "$myhost" = "w32" ]; then
         fi
     done
     if [ -z "$crossbindir" ]; then
-        echo "Cross compiler kit not installed" >&2
-        if [ -z "$sub" ]; then
-          echo "Under Debian GNU/Linux, you may install it using" >&2
-          echo "  apt-get install mingw32 mingw32-runtime mingw32-binutils" >&2
+        fatal "cross compiler kit not installed"
+        if [ -z "$myhostsub" ]; then
+          info "Under Debian GNU/Linux, you may install it using"
+          info "  apt-get install mingw32 mingw32-runtime mingw32-binutils"
         fi
-        echo "Stop." >&2
-        exit 1
+        die_p
     fi
 
     if [ -f "$tsdir/config.log" ]; then
         if ! head $tsdir/config.log | grep "$host" >/dev/null; then
-            echo "Please run a 'make distclean' first" >&2
-            exit 1
+            fatal "Please run a 'make distclean' first"
+            die_p
         fi
     fi
 
     $tsdir/configure --enable-maintainer-mode ${SILENT} \
              --prefix=${w32root}  \
              --host=${host} --build=${build} \
-             --with-gpg-error-prefix=${w32root} \
-	     --with-ksba-prefix=${w32root} \
-	     --with-libgcrypt-prefix=${w32root} \
-	     --with-libassuan-prefix=${w32root} \
-	     --with-zlib=${w32root} \
-	     --with-regex=${w32root} \
-             --with-npth-prefix=${w32root} \
-             --with-adns=${w32root} \
-             ${extraoptions} --disable-g13 "$@"
+             ${configure_opts} ${extraoptions} "$@"
     rc=$?
     exit $rc
 fi
@@ -199,14 +237,15 @@ fi
 # Used to cross-compile for AMD64 (for testing)
 if [ "$myhost" = "amd64" ]; then
     shift
-    if [ ! -f $tsdir/scripts/config.guess ]; then
-        echo "$tsdir/scripts/config.guess not found" >&2
+    if [ ! -f $tsdir/build-aux/config.guess ]; then
+        echo "$tsdir/build-aux/config.guess not found" >&2
         exit 1
     fi
-    build=`$tsdir/scripts/config.guess`
+    build=`$tsdir/build-aux/config.guess`
 
     [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
     info "Using $amd64root as standard install directory"
+    replace_sysroot
 
     toolprefixes="$amd64_toolprefixes x86_64-linux-gnu amd64-linux-gnu"
 
@@ -235,12 +274,7 @@ if [ "$myhost" = "amd64" ]; then
     $tsdir/configure --enable-maintainer-mode ${SILENT} \
              --prefix=${amd64root}  \
              --host=${host} --build=${build} \
-             --with-gpg-error-prefix=${amd64root} \
-	     --with-ksba-prefix=${amd64root} \
-	     --with-libgcrypt-prefix=${amd64root} \
-	     --with-libassuan-prefix=${amd64root} \
-	     --with-zlib=/usr/x86_64-linux-gnu/usr \
-             --with-pth-prefix=/usr/x86_64-linux-gnu/usr
+             ${configure_opts} ${extraoptions} "$@"
     rc=$?
     exit $rc
 fi
@@ -260,12 +294,15 @@ q
 }' ${configure_ac}`
 automake_vers_num=`echo "$automake_vers" | cvtver`
 
-gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ {
+if [ -d "${tsdir}/po" ]; then
+  gettext_vers=`sed -n '/^AM_GNU_GETTEXT_VERSION(/ {
 s/^.*\[\(.*\)])/\1/p
 q
 }' ${configure_ac}`
-gettext_vers_num=`echo "$gettext_vers" | cvtver`
-
+  gettext_vers_num=`echo "$gettext_vers" | cvtver`
+else
+  gettext_vers="n/a"
+fi
 
 if [ -z "$autoconf_vers" -o -z "$automake_vers" -o -z "$gettext_vers" ]
 then
@@ -280,18 +317,20 @@ fi
 if check_version $AUTOMAKE $automake_vers_num $automake_vers; then
   check_version $ACLOCAL $automake_vers_num $autoconf_vers automake
 fi
-if check_version $GETTEXT $gettext_vers_num $gettext_vers; then
-  check_version $MSGMERGE $gettext_vers_num $gettext_vers gettext
+if [ "$gettext_vers" != "n/a" ]; then
+  if check_version $GETTEXT $gettext_vers_num $gettext_vers; then
+    check_version $MSGMERGE $gettext_vers_num $gettext_vers gettext
+  fi
 fi
 
-if test "$DIE" = "yes"; then
+if [ "$DIE" = "yes" ]; then
     cat <<EOF
 
 Note that you may use alternative versions of the tools by setting
-the corresponding environment variables; see README.SVN for details.
+the corresponding environment variables; see README.GIT for details.
 
 EOF
-    exit 1
+    die_p
 fi
 
 # Check the git setup.
@@ -309,24 +348,35 @@ EOF
       $CP .git/hooks/pre-commit.sample .git/hooks/pre-commit
       chmod +x  .git/hooks/pre-commit
   fi
-  tmp=$(git config --get filter.cleanpo.clean)
-  if [ "$tmp" != "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'" ]
-  then
-    info "*** Adding GIT filter.cleanpo.clean configuration."
-    git config --add filter.cleanpo.clean \
+
+  if [ "$gettext_vers" != "n/a" ]; then
+    tmp=$(git config --get filter.cleanpo.clean)
+    if [ "$tmp" != \
+          "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'" ]
+    then
+      info "*** Adding GIT filter.cleanpo.clean configuration."
+      git config --add filter.cleanpo.clean \
         "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'"
+    fi
   fi
-  if [ -f scripts/git-hooks/commit-msg -a ! -f .git/hooks/commit-msg ] ; then
+  if [ -f build-aux/git-hooks/commit-msg -a ! -f .git/hooks/commit-msg ] ; then
       [ -z "${SILENT}" ] && cat <<EOF
 *** Activating commit log message check hook. ***
 EOF
-      $CP scripts/git-hooks/commit-msg .git/hooks/commit-msg
+      $CP build-aux/git-hooks/commit-msg .git/hooks/commit-msg
       chmod +x  .git/hooks/commit-msg
   fi
 fi
 
-info "Running aclocal -I m4 -I gl/m4 ${ACLOCAL_FLAGS:+$ACLOCAL_FLAGS }..."
-$ACLOCAL -I m4 -I gl/m4 $ACLOCAL_FLAGS
+aclocal_flags="-I m4"
+if [ -n "${extra_aclocal_flags}" ]; then
+  aclocal_flags="${aclocal_flags} ${extra_aclocal_flags}"
+fi
+if [ -n "${ACLOCAL_FLAGS}" ]; then
+  aclocal_flags="${aclocal_flags} ${ACLOCAL_FLAGS}"
+fi
+info "Running $ACLOCAL ${aclocal_flags} ..."
+$ACLOCAL ${aclocal_flags}
 info "Running autoheader..."
 $AUTOHEADER
 info "Running automake --gnu ..."
@@ -334,6 +384,4 @@ $AUTOMAKE --gnu;
 info "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 
-info "You may now run:
-  ./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto --enable-gpgtar && make
-"
+info "You may now run:${am_lf}  ${final_info}"

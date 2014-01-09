@@ -1,0 +1,43 @@
+# autogen.sh configuration for GnuPG                           -*- sh -*-
+
+case "$myhost:$myhostsub" in
+  w32:ce)
+    extraoptions="--enable-dirmngr-auto-start --disable-scdaemon "
+    extraoptions="$extraoptions --disable-zip --enable-gpg2-is-gpg"
+    ;;
+  w32:)
+    extraoptions="--enable-gpgtar"
+    ;;
+esac
+
+case "$myhost" in
+  w32)
+    configure_opts="
+      --with-gpg-error-prefix=@SYSROOT@
+      --with-ksba-prefix=@SYSROOT@
+      --with-libgcrypt-prefix=@SYSROOT@
+      --with-libassuan-prefix=@SYSROOT@
+      --with-zlib=@SYSROOT@
+      --with-regex=@SYSROOT@
+      --with-npth-prefix=@SYSROOT@
+      --with-adns=@SYSROOT@
+      --disable-g13
+      "
+    ;;
+
+  amd64)
+    configure_opts="
+      --with-gpg-error-prefix=@SYSROOT@
+      --with-ksba-prefix=@SYSROOT@
+      --with-libgcrypt-prefix=@SYSROOT@
+      --with-libassuan-prefix=@SYSROOT@
+      --with-zlib=/usr/x86_64-linux-gnu/usr
+      --with-pth-prefix=/usr/x86_64-linux-gnu/usr
+     "
+    ;;
+esac
+
+
+extra_aclocal_flags="-I gl/m4"
+
+final_info="./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto --enable-gpgtar && make"

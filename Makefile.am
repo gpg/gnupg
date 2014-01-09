@@ -23,7 +23,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-gpgtar
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
-EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh
+EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc
 	     ChangeLog-2011 po/ChangeLog-2011 build-aux/ChangeLog-2011 \
 	     build-aux/gitlog-to-changelog \
 	     build-aux/git-log-fix build-aux/git-log-footer \
