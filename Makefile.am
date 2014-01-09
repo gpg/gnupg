@@ -23,11 +23,12 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-gpgtar
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
-EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT \
-	     ChangeLog-2011 po/ChangeLog-2011 scripts/ChangeLog-2011 \
-	     scripts/gitlog-to-changelog \
-	     scripts/git-log-fix scripts/git-log-footer \
-	     scripts/speedo.mk
+EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh
+	     ChangeLog-2011 po/ChangeLog-2011 build-aux/ChangeLog-2011 \
+	     build-aux/gitlog-to-changelog \
+	     build-aux/git-log-fix build-aux/git-log-footer \
+	     build-aux/speedo.mk README.GIT
+
 DISTCLEANFILES = g10defs.h
 
 if BUILD_GPGSM
@@ -101,12 +102,12 @@ dist-hook: gen-ChangeLog
 if HAVE_W32_SYSTEM
 install-data-hook:
 	set -e; \
-	for i in $$($(top_srcdir)/scripts/potomo \
+	for i in $$($(top_srcdir)/build-aux/potomo \
                      --get-linguas $(top_srcdir)/po) ; do \
            $(MKDIR_P) "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES" || true; \
            rm -f "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES/gnupg2.mo" \
                                                  2>/dev/null || true; \
-           $(top_srcdir)/scripts/potomo $(top_srcdir)/po/$$i.po \
+           $(top_srcdir)/build-aux/potomo $(top_srcdir)/po/$$i.po \
               "$(DESTDIR)$(localedir)/$$i/LC_MESSAGES/gnupg2.mo" ; \
 	done
 endif
@@ -118,9 +119,9 @@ gen-ChangeLog:
 	if test -d $(top_srcdir)/.git; then				\
 	  (cd $(top_srcdir) &&                      			\
 	    $(GITLOG_TO_CHANGELOG) --append-dot --tear-off		\
-	    --amend=scripts/git-log-fix	 				\
+	    --amend=build-aux/git-log-fix 				\
 	    --since=$(gen_start_date) ) > $(distdir)/cl-t;		\
-          cat $(top_srcdir)/scripts/git-log-footer >> $(distdir)/cl-t;  \
+          cat $(top_srcdir)/build-aux/git-log-footer >> $(distdir)/cl-t;  \
 	  rm -f $(distdir)/ChangeLog;					\
 	  mv $(distdir)/cl-t $(distdir)/ChangeLog;			\
 	fi

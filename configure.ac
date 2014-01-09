@@ -63,7 +63,7 @@ PACKAGE=$PACKAGE_NAME
 PACKAGE_GT=${PACKAGE_NAME}2
 VERSION=$PACKAGE_VERSION
 
-AC_CONFIG_AUX_DIR([scripts])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_SRCDIR([sm/gpgsm.c])
 AC_CONFIG_HEADER([config.h])
 # Note: For automake 1.13 add the option

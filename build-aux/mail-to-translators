@@ -13,12 +13,12 @@ for file in *.po; do
     if [ -z "$addr" ]; then
     addr=$(awk '/Last-Translator:/ { printf "%s", $0; exit 0}' $file | sed 's/.*\(<.*>\).*/\1/')
     fi
-    ll=$(basename $file .po)    
+    ll=$(basename $file .po)
 
     if ! msgfmt -vc $file 2>&1| egrep -q 'fuzzy|untranslated|error'; then
         echo "$file: okay" >&2
         continue;
-    fi    
+    fi
 
     if ! echo "$addr" | grep -q @ ; then
         echo "$file: no translator known" >&2
@@ -40,7 +40,7 @@ Content-Type: multipart/mixed; boundary="=-=-="
 Hi!
 
 We are preparing for a new 2.0 release of GnuPG and like you to ask to
-update your translation. 
+update your translation.
 
 Please find attached the very latest version of the PO file for your
 GnuPG translation ($file).
@@ -76,7 +76,7 @@ Content-Transfer-Encoding: base64
 
 EOF
 
-bzip2 <$file | mimencode 
+bzip2 <$file | mimencode
 
 echo ""
 echo "--=-=-=--"
@@ -84,4 +84,3 @@ echo ""
     ) | $SENDMAIL -oi "$addr"
 
 done
-
