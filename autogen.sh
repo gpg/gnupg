@@ -28,6 +28,13 @@ check_version () {
     return 1
 }
 
+info () {
+    if [ -z "${SILENT}" ]; then
+      echo "autogen.sh:" $*
+    fi
+}
+
+
 # Allow to override the default tool names
 AUTOCONF=${AUTOCONF_PREFIX}${AUTOCONF:-autoconf}${AUTOCONF_SUFFIX}
 AUTOHEADER=${AUTOCONF_PREFIX}${AUTOHEADER:-autoheader}${AUTOCONF_SUFFIX}
@@ -40,12 +47,21 @@ MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 
 DIE=no
 FORCE=
+SILENT=
 tmp=`dirname $0`
 tsdir=`cd "$tmp"; pwd`
+if [ -n "${AUTOGEN_SH_SILENT}" ]; then
+  SILENT=" --silent"
+fi
+if test x"$1" = x"--help"; then
+  echo "usage: ./autogen.sh [--force] [--build-TYPE] [ARGS]"
+  exit 0
+fi
 if test x"$1" = x"--force"; then
   FORCE=" --force"
   shift
 fi
+
 
 # Reject unsafe characters in $HOME, $tsdir and cwd.  We consider spaces
 # as unsafe because it is too easy to get scripts wrong in this regard.
@@ -81,7 +97,7 @@ amd64_toolprefixes=
 #amd64root=
 
 if [ -f "$HOME/.gnupg-autogen.rc" ]; then
-    echo "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
+    info "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
     . "$HOME/.gnupg-autogen.rc"
 fi
 
@@ -134,7 +150,7 @@ if [ "$myhost" = "w32" ]; then
           extraoptions="--enable-gpgtar $w32_extraoptions"
           ;;
     esac
-    echo "Using $w32root as standard install directory" >&2
+    info "Using $w32root as standard install directory"
 
     # Locate the cross compiler
     crossbindir=
@@ -162,7 +178,8 @@ if [ "$myhost" = "w32" ]; then
         fi
     fi
 
-    $tsdir/configure --enable-maintainer-mode --prefix=${w32root}  \
+    $tsdir/configure --enable-maintainer-mode ${SILENT} \
+             --prefix=${w32root}  \
              --host=${host} --build=${build} \
              --with-gpg-error-prefix=${w32root} \
 	     --with-ksba-prefix=${w32root} \
@@ -189,7 +206,7 @@ if [ "$myhost" = "amd64" ]; then
     build=`$tsdir/scripts/config.guess`
 
     [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
-    echo "Using $amd64root as standard install directory" >&2
+    info "Using $amd64root as standard install directory"
 
     toolprefixes="$amd64_toolprefixes x86_64-linux-gnu amd64-linux-gnu"
 
@@ -215,7 +232,8 @@ if [ "$myhost" = "amd64" ]; then
         fi
     fi
 
-    $tsdir/configure --enable-maintainer-mode --prefix=${amd64root}  \
+    $tsdir/configure --enable-maintainer-mode ${SILENT} \
+             --prefix=${amd64root}  \
              --host=${host} --build=${build} \
              --with-gpg-error-prefix=${amd64root} \
 	     --with-ksba-prefix=${amd64root} \
@@ -278,42 +296,44 @@ fi
 
 # Check the git setup.
 if [ -d .git ]; then
+  CP="cp -a"
+  [ -z "${SILENT}" ] && CP="$CP -v"
   if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
-    cat <<EOF >&2
+    [ -z "${SILENT}" ] && cat <<EOF
 *** Activating trailing whitespace git pre-commit hook. ***
     For more information see this thread:
       http://mail.gnome.org/archives/desktop-devel-list/2009-May/msg00084html
     To deactivate this pre-commit hook again move .git/hooks/pre-commit
     and .git/hooks/pre-commit.sample out of the way.
 EOF
-      cp -av .git/hooks/pre-commit.sample .git/hooks/pre-commit
+      $CP .git/hooks/pre-commit.sample .git/hooks/pre-commit
       chmod +x  .git/hooks/pre-commit
   fi
   tmp=$(git config --get filter.cleanpo.clean)
   if [ "$tmp" != "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'" ]
   then
-    echo "*** Adding GIT filter.cleanpo.clean configuration." >&2
+    info "*** Adding GIT filter.cleanpo.clean configuration."
     git config --add filter.cleanpo.clean \
         "awk '/^\"POT-Creation-Date:/&&!s{s=1;next};!/^#: /{print}'"
   fi
   if [ -f scripts/git-hooks/commit-msg -a ! -f .git/hooks/commit-msg ] ; then
-    cat <<EOF >&2
+      [ -z "${SILENT}" ] && cat <<EOF
 *** Activating commit log message check hook. ***
 EOF
-      cp -av scripts/git-hooks/commit-msg .git/hooks/commit-msg
+      $CP scripts/git-hooks/commit-msg .git/hooks/commit-msg
       chmod +x  .git/hooks/commit-msg
   fi
 fi
 
-echo "Running aclocal -I m4 -I gl/m4 ${ACLOCAL_FLAGS:+$ACLOCAL_FLAGS }..."
+info "Running aclocal -I m4 -I gl/m4 ${ACLOCAL_FLAGS:+$ACLOCAL_FLAGS }..."
 $ACLOCAL -I m4 -I gl/m4 $ACLOCAL_FLAGS
-echo "Running autoheader..."
+info "Running autoheader..."
 $AUTOHEADER
-echo "Running automake --gnu ..."
+info "Running automake --gnu ..."
 $AUTOMAKE --gnu;
-echo "Running autoconf${FORCE} ..."
+info "Running autoconf${FORCE} ..."
 $AUTOCONF${FORCE}
 
-echo "You may now run:
+info "You may now run:
   ./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto --enable-gpgtar && make
 "
