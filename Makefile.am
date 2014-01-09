@@ -26,7 +26,8 @@ GITLOG_TO_CHANGELOG=gitlog-to-changelog
 EXTRA_DIST = scripts/config.rpath scripts/potomo autogen.sh README.GIT \
 	     ChangeLog-2011 po/ChangeLog-2011 scripts/ChangeLog-2011 \
 	     scripts/gitlog-to-changelog \
-	     scripts/git-log-fix scripts/git-log-footer
+	     scripts/git-log-fix scripts/git-log-footer \
+	     scripts/speedo.mk
 DISTCLEANFILES = g10defs.h
 
 if BUILD_GPGSM

@@ -1,6 +1,0 @@
-These makefiles are used to build a simple development package of
-GnuPG related libraries for Windoze.  The ZIP archive includes only
-the binaries, import libraries and header files.  On a file server you
-should keep the original source tarballs close to the archive file and
-explain where to find the sources.  GNU make is required.
-
