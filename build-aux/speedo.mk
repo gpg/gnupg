@@ -43,13 +43,19 @@
 #
 
 
+# Set this to "git" or "release".
+WHAT=release
 
-# --------
+# Set target to "native" or "w32"
+TARGETOS=native
+
+#  Number of parallel make jobs
+MAKE_J=3
 
 # The packages that should be built.  The order is also the build order.
 speedo_spkgs = libgpg-error npth libgcrypt libassuan libksba gnupg gpgme gpa
 
-# version numbers of the released packages
+# Version numbers of the released packages
 # Fixme: Take the version numbers from gnupg-doc/web/swdb.mac
 libgpg_error_ver = 1.12
 npth_ver = 0.91
@@ -63,6 +69,9 @@ gpa_ver = 0.9.5
 # The GIT repository.  Using a local repo is much faster.
 #gitrep = git://git.gnupg.org
 gitrep = ${HOME}/s
+
+# The tarball directory
+pkgrep = ftp://ftp.gnupg.org/gcrypt
 
 
 # For each package, the following variables can be defined:
@@ -87,15 +96,6 @@ gitrep = ${HOME}/s
 # Note that you can override the defaults in this file in a local file
 # "config.mk"
 
-# Set this to "git" or "release".
-WHAT=release
-
-# Set target to "native" or "w32"
-TARGETOS=native
-
-#  Number of parallel make jobs
-MAKE_J=3
-
 ifeq ($(WHAT),git)
   speedo_pkg_libgpg_error_git = $(gitrep)/libgpg-error
   speedo_pkg_libgpg_error_gitref = master
@@ -114,7 +114,6 @@ ifeq ($(WHAT),git)
   speedo_pkg_gpa_git = $(gitrep)/gpa
   speedo_pkg_gpa_gitref = master
 else
-  pkgrep = ftp://ftp.gnupg.org/gcrypt
   speedo_pkg_libgpg_error_tar = \
 	$(pkgrep)/libgpg-error/libgpg-error-$(libgpg_error_ver).tar.bz2
   speedo_pkg_npth_tar = \
@@ -248,13 +247,13 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
 	@echo "speedo: /*"
 	@echo "speedo:  *   $(1)"
 	@echo "speedo:  */"
-	@(cd $(sdir);					\
-	 $(call SETVARS,$(1));				\
+	@(set -e; cd $(sdir);				\
+	 $(call SETVARS,$(1)); 				\
 	 if [ -n "$$$${git}" ]; then			\
 	   echo "speedo: unpacking $(1) from $$$${git}:$$$${gitref}"; \
-           git clone -q -b "$$$${gitref}" "$$$${git}" "$$$${pkg}"; \
-	   cd "$$$${pkg}" &&				\
-	   AUTOGEN_SH_SILENT=1 ./autogen.sh;		\
+           git clone -b "$$$${gitref}" "$$$${git}" "$$$${pkg}"; \
+	   cd "$$$${pkg}"; 				\
+	   AUTOGEN_SH_SILENT=1 ./autogen.sh;            \
          elif [ -n "$$$${tar}" ]; then			\
 	   echo "speedo: unpacking $(1) from $$$${tar}"; \
            case "$$$${tar}" in				\
@@ -283,8 +282,8 @@ $(stampdir)/stamp-$(1)-01-configure: $(stampdir)/stamp-$(1)-00-unpack
 	 if [ -n "$(speedo_autogen_buildopt)" ]; then   \
 	    eval AUTOGEN_SH_SILENT=1 w32root="$(idir)"  \
                  "$$$${pkgsdir}/autogen.sh"             \
-                 $(speedo_autogen_buildopt) --silent   \
-		 $$$${pkgcfg};                         \
+                 $(speedo_autogen_buildopt)             \
+		 $$$${pkgcfg};                          \
 	 else                                           \
             eval "$$$${pkgsdir}/configure" 		\
 		 --silent                 		\
@@ -318,10 +317,11 @@ $(stampdir)/stamp-final-$(1): $(stampdir)/stamp-$(1)-03-install
 clean-$(1):
 	@echo "speedo: uninstalling $(1)"
 	@($(call SETVARS,$(1));				\
-	 (cd "$$$${pkgbdir}";				\
-	  $(MAKE) --no-print-directory $$$${pkgmkargs_inst} uninstall V=0); \
-	 rm -fR "$$$${pkgsdir}" "$$$${pkgbdir}")
-	@rm -f $(stampdir)/stamp-final-$(1) $(stampdir)/stamp-$(1)-*
+	 (cd "$$$${pkgbdir}" 2>/dev/null &&		\
+	  $(MAKE) --no-print-directory                  \
+           $$$${pkgmkargs_inst} uninstall V=0 ) || true;\
+	 rm -fR "$$$${pkgsdir}" "$$$${pkgbdir}" || true)
+	-rm -f $(stampdir)/stamp-final-$(1) $(stampdir)/stamp-$(1)-*
 
 .PHONY : report-$(1)
 report-$(1):
