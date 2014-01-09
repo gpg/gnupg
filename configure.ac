@@ -797,6 +797,7 @@ AC_SUBST(LIBUSB_LIBS)
 
 #
 # Check wether it is necessary to link against libdl.
+# (For example to load libpcsclite)
 #
 gnupg_dlopen_save_libs="$LIBS"
 LIBS=""
@@ -1140,7 +1141,7 @@ fi
 # We use HAVE_LANGINFO_CODESET in a couple of places.
 AM_LANGINFO_CODESET
 
-# Checks required for our use locales
+# Checks required for our use of locales
 gt_LC_MESSAGES
 
 
@@ -1215,16 +1216,6 @@ AC_CHECK_SIZEOF(time_t,,[[
 ]])
 GNUPG_TIME_T_UNSIGNED
 
-
-# Ensure that we have UINT64_C before we bother to check for uint64_t
-# Fixme: really needed in gnupg?  I think it is only useful in libcgrypt.
-AC_CACHE_CHECK([for UINT64_C],[gnupg_cv_uint64_c_works],
-   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <inttypes.h>]],
-       [[uint64_t foo=UINT64_C(42);]])],
-     gnupg_cv_uint64_c_works=yes,gnupg_cv_uint64_c_works=no))
-if test "$gnupg_cv_uint64_c_works" = "yes" ; then
-   AC_CHECK_SIZEOF(uint64_t)
-fi
 
 if test "$ac_cv_sizeof_unsigned_short" = "0" \
    || test "$ac_cv_sizeof_unsigned_int" = "0" \

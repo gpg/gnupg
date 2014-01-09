@@ -96,20 +96,6 @@
 #  define HAVE_U32_TYPEDEF
 #endif
 
-#ifndef HAVE_U64_TYPEDEF
-#  undef u64        /* There might be a macro with this name.  */
-#  if SIZEOF_UNSIGNED_INT == 8
-     typedef unsigned int u64;
-#    define HAVE_U64_TYPEDEF
-#  elif SIZEOF_UNSIGNED_LONG == 8
-     typedef unsigned long u64;
-#    define HAVE_U64_TYPEDEF
-#  elif __GNUC__ >= 2 || defined(__SUNPRO_C)
-     typedef unsigned long long u64;
-#    define HAVE_U64_TYPEDEF
-#  endif
-#endif
-
 
 /* Some GCC attributes.  Note that we use also define some in
    mischelp.h, but this header and types.h are not always included.

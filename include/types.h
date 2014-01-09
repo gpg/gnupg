@@ -21,8 +21,7 @@
 #define G10_TYPES_H
 
 #ifdef HAVE_INTTYPES_H
-/* For uint64_t */
-#include <inttypes.h>
+# include <inttypes.h>
 #endif
 
 /* The AC_CHECK_SIZEOF() in configure fails for some machines.
@@ -93,40 +92,12 @@ typedef unsigned long u32;
 #define HAVE_U32_TYPEDEF
 #endif
 
-/****************
- * Warning: Some systems segfault when this u64 typedef and
- * the dummy code in cipher/md.c is not available.  Examples are
- * Solaris and IRIX.
- */
-#ifndef HAVE_U64_TYPEDEF
-#undef u64	    /* maybe there is a macro with this name */
-#if SIZEOF_UINT64_T == 8
-typedef uint64_t u64;
-#define U64_C(c) (UINT64_C(c))
-#define HAVE_U64_TYPEDEF
-#elif SIZEOF_UNSIGNED_INT == 8
-typedef unsigned int u64;
-#define U64_C(c) (c ## U)
-#define HAVE_U64_TYPEDEF
-#elif SIZEOF_UNSIGNED_LONG == 8
-typedef unsigned long u64;
-#define U64_C(c) (c ## UL)
-#define HAVE_U64_TYPEDEF
-#elif SIZEOF_UNSIGNED_LONG_LONG == 8
-typedef unsigned long long u64;
-#define U64_C(c) (c ## ULL)
-#define HAVE_U64_TYPEDEF
-#endif
-#endif
 
 typedef union {
     int a;
     short b;
     char c[1];
     long d;
-#ifdef HAVE_U64_TYPEDEF
-    u64 e;
-#endif
     float f;
     double g;
 } PROPERLY_ALIGNED_TYPE;
