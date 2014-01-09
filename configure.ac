@@ -1362,12 +1362,13 @@ if test "$use_zip" = yes ; then
     ])
 
   AC_CHECK_HEADER(zlib.h,
-        AC_CHECK_LIB(z, deflateInit2_,
-         ZLIBS="-lz",
-         CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
-         CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
-
-  AC_DEFINE(HAVE_ZIP,1, [Defined if ZIP and ZLIB are supported])
+     AC_CHECK_LIB(z, deflateInit2_,
+       [
+       ZLIBS="-lz"
+       AC_DEFINE(HAVE_ZIP,1, [Defined if ZIP and ZLIB are supported])
+       ],
+       CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
+       CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
 fi
 
 
