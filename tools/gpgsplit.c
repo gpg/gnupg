@@ -29,9 +29,11 @@
 #ifdef HAVE_DOSISH_SYSTEM
 # include <fcntl.h> /* for setmode() */
 #endif
-#include <zlib.h>
+#ifdef HAVE_ZIP
+# include <zlib.h>
+#endif
 #ifdef HAVE_BZIP2
-#include <bzlib.h>
+# include <bzlib.h>
 #endif /* HAVE_BZIP2 */
 #if defined(__riscos__) && defined(USE_ZLIBRISCOS)
 # include "zlib-riscos.h"
@@ -360,6 +362,7 @@ public_key_length (const unsigned char *buf, size_t buflen)
   return s - buf;
 }
 
+#ifdef HAVE_ZIP
 static int
 handle_zlib(int algo,FILE *fpin,FILE *fpout)
 {
@@ -452,6 +455,7 @@ handle_zlib(int algo,FILE *fpin,FILE *fpout)
 
   return 0;
 }
+#endif /*HAVE_ZIP*/
 
 #ifdef HAVE_BZIP2
 static int
@@ -698,11 +702,15 @@ write_part (FILE *fpin, unsigned long pktlen,
               if ((c = getc (fpin)) == EOF)
                 goto read_error;
 
-	      if(c==1 || c==2)
+	      if (0)
+                ;
+#ifdef HAVE_ZIP
+	      else if(c==1 || c==2)
 		{
 		  if(handle_zlib(c,fpin,fpout))
 		    goto write_error;
 		}
+#endif /* HAVE_ZIP */
 #ifdef HAVE_BZIP2
 	      else if(c==3)
 		{
