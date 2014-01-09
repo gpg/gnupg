@@ -53,7 +53,16 @@ TARGETOS=native
 MAKE_J=3
 
 # The packages that should be built.  The order is also the build order.
-speedo_spkgs = libgpg-error npth libgcrypt libassuan libksba gnupg gpgme gpa
+speedo_spkgs  = libgpg-error npth libgcrypt libassuan libksba gnupg gpgme
+
+ifneq ($(TARGETOS),w32)
+speedo_spkgs +=	gpa
+endif
+
+ifeq ($(TARGETOS),w32)
+speedo_spkgs += gpgex
+endif
+
 
 # Version numbers of the released packages
 # Fixme: Take the version numbers from gnupg-doc/web/swdb.mac
@@ -65,6 +74,7 @@ libksba_ver = 1.3.0
 gnupg_ver = 2.0.22
 gpgme_ver = 1.5.0
 gpa_ver = 0.9.5
+gpgex_ver = 1.0.0
 
 # The GIT repository.  Using a local repo is much faster.
 #gitrep = git://git.gnupg.org
@@ -104,7 +114,7 @@ ifeq ($(WHAT),git)
   speedo_pkg_libassuan_git = $(gitrep)/libassuan
   speedo_pkg_libassuan_gitref = master
   speedo_pkg_libgcrypt_git = $(gitrep)/libgcrypt
-  speedo_pkg_libgcrypt_gitref = master
+  speedo_pkg_libgcrypt_gitref = LIBGCRYPT-1-6-BRANCH
   speedo_pkg_libksba_git = $(gitrep)/libksba
   speedo_pkg_libksba_gitref = master
   speedo_pkg_gnupg_git = $(gitrep)/gnupg
@@ -113,6 +123,8 @@ ifeq ($(WHAT),git)
   speedo_pkg_gpgme_gitref = master
   speedo_pkg_gpa_git = $(gitrep)/gpa
   speedo_pkg_gpa_gitref = master
+  speedo_pkg_gpgex_git = $(gitrep)/gpgex
+  speedo_pkg_gpgex_gitref = master
 else
   speedo_pkg_libgpg_error_tar = \
 	$(pkgrep)/libgpg-error/libgpg-error-$(libgpg_error_ver).tar.bz2
@@ -130,9 +142,13 @@ else
 	$(pkgrep)/gpgme/gpgme-$(gpgme_ver).tar.bz2
   speedo_pkg_gpa_tar = \
 	$(pkgrep)/gpa/gpa-$(gpa_ver).tar.bz2
+  speedo_pkg_gpex_tar = \
+	$(pkgrep)/gpex/gpgex-$(gpa_ver).tar.bz2
 endif
 
-speedo_pkg_pinentry_configure = --disable-pinentry-qt4
+speedo_pkg_libgpg_error_configure = --enable-static
+
+speedo_pkg_libassuan_configure = --enable-static
 
 speedo_pkg_libgcrypt_configure = --disable-static
 
