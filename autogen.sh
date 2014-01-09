@@ -189,6 +189,12 @@ if [ "$myhost" = "w32" ]; then
           toolprefixes="$w32ce_toolprefixes arm-mingw32ce"
           extraoptions="$extraoptions $w32ce_extraoptions"
           ;;
+        64)
+          w32root="$w64root"
+          [ -z "$w32root" ] && w32root="$HOME/w64root"
+          toolprefixes="$w64_toolprefixes x86_64-w64-mingw32"
+          extraoptions="$extraoptions $w64_extraoptions"
+          ;;
         *)
           [ -z "$w32root" ] && w32root="$HOME/w32root"
           toolprefixes="$w32_toolprefixes i686-w64-mingw32 i586-mingw32msvc"
