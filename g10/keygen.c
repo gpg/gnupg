@@ -2062,6 +2062,7 @@ ask_curve (void)
     { "brainpoolP256r1", 0, 1, "Brainpool P-256" },
     { "brainpoolP384r1", 0, 1, "Brainpool P-384" },
     { "brainpoolP512r1", 0, 1, "Brainpool P-512" },
+    { "secp256k1", 0, 1 },
   };
   int idx;
   char *answer;

@@ -310,6 +310,11 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
       oidstr =  "1.3.36.3.3.2.8.1.1.13";
       nbits = 512;
     }
+  else if (!strcmp (name, "secp256k1"))
+    {
+      oidstr =  "1.3.132.0.10";
+      nbits = 256;
+    }
   else
     oidstr = NULL;
 
@@ -333,6 +338,8 @@ openpgp_oid_to_curve (const char *oid)
     name = "Ed25519";
   else if (!strcmp (oid, "1.2.840.10045.3.1.7"))
     name = "nistp256";
+  else if (!strcmp (oid, "1.3.132.0.10"))
+    name = "secp256k1";
   else if (!strcmp (oid, "1.3.132.0.34"))
     name = "nistp384";
   else if (!strcmp (oid, "1.3.132.0.35"))
