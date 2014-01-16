@@ -1045,13 +1045,14 @@ main (int argc, char **argv )
       /* Create the sockets.  */
       socket_name = create_socket_name
         (GPG_AGENT_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SOCK_NAME);
-      if (opt.ssh_support)
-	socket_name_ssh = create_socket_name
-          (GPG_AGENT_SSH_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SSH_SOCK_NAME);
 
       fd = create_server_socket (socket_name, 0, &socket_nonce);
       if (opt.ssh_support)
-	fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
+        {
+          socket_name_ssh = create_socket_name
+            (GPG_AGENT_SSH_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SSH_SOCK_NAME);
+          fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
+        }
       else
 	fd_ssh = GNUPG_INVALID_FD;
 
