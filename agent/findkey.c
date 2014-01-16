@@ -812,14 +812,10 @@ agent_is_eddsa_key (gcry_sexp_t s_key)
     return 0;
 
   if (key_parms_from_sexp (s_key, NULL, algoname, sizeof algoname, NULL, 0))
-    return 0; /* Error - assume it is not an DSA key.  */
+    return 0; /* Error - assume it is not an EdDSA key.  */
 
-  if (!strcmp (algoname, "dsa"))
-    return GCRY_PK_DSA;
-  else if (!strcmp (algoname, "ecc"))
-    return GCRY_PK_ECDSA; /* FIXME: Check for the EdDSA flag.  */
-  else if (!strcmp (algoname, "ecdsa"))
-    return GCRY_PK_ECDSA;
+  if (!strcmp (algoname, "eddsa"))
+    return 1;
   else
     return 0;
 }
