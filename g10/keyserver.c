@@ -981,10 +981,55 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
 #define KEYSERVER_ARGS_KEEP " -o \"%O\" \"%I\""
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
+
+/* Check whether a key matches the search description.  The filter
+   returns 0 if the key shall be imported.  Note that this kind of
+   filter is not related to the iobuf filters. */
 static int
-keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
-		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
-		struct keyserver_spec *keyserver)
+keyserver_retrieval_filter (PKT_public_key *pk, PKT_secret_key *sk, void *arg)
+{
+  KEYDB_SEARCH_DESC *desc = arg;
+  u32 keyid[2];
+  byte fpr[MAX_FINGERPRINT_LEN];
+  size_t fpr_len = 0;
+
+  /* Secret keys are not expected from a keyserver.  Do not import.  */
+  if (sk)
+    return G10ERR_GENERAL;
+
+  fingerprint_from_pk (pk, fpr, &fpr_len);
+  keyid_from_pk (pk, keyid);
+
+  /* Compare requested and returned fingerprints if available. */
+  if (desc->mode == KEYDB_SEARCH_MODE_FPR20)
+    {
+      if (fpr_len != 20 || memcmp (fpr, desc->u.fpr, 20))
+        return G10ERR_GENERAL;
+    }
+  else if (desc->mode == KEYDB_SEARCH_MODE_FPR16)
+    {
+      if (fpr_len != 16 || memcmp (fpr, desc->u.fpr, 16))
+        return G10ERR_GENERAL;
+    }
+  else if (desc->mode == KEYDB_SEARCH_MODE_LONG_KID)
+    {
+      if (keyid[0] != desc->u.kid[0] || keyid[1] != desc->u.kid[1])
+        return G10ERR_GENERAL;
+    }
+  else if (desc->mode == KEYDB_SEARCH_MODE_SHORT_KID)
+    {
+      if (keyid[1] != desc->u.kid[1])
+        return G10ERR_GENERAL;
+    }
+
+  return 0;
+}
+
+
+static int
+keyserver_spawn (enum ks_action action, strlist_t list, KEYDB_SEARCH_DESC *desc,
+                 int count, int *prog, unsigned char **fpr, size_t *fpr_len,
+                 struct keyserver_spec *keyserver)
 {
   int ret=0,i,gotversion=0,outofband=0;
   strlist_t temp;
@@ -1504,8 +1549,9 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 	     but we better protect against rogue keyservers. */
 
 	  import_keys_stream (spawn->fromchild, stats_handle, fpr, fpr_len,
-                              (opt.keyserver_options.import_options
-                               | IMPORT_NO_SECKEY));
+                             (opt.keyserver_options.import_options
+                              | IMPORT_NO_SECKEY),
+                              keyserver_retrieval_filter, desc);
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);
@@ -1536,12 +1582,14 @@ keyserver_spawn(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
   return ret;
 }
 
+
 static int
-keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
-	       int count,unsigned char **fpr,size_t *fpr_len,
-	       struct keyserver_spec *keyserver)
+keyserver_work (enum ks_action action, strlist_t list, KEYDB_SEARCH_DESC *desc,
+                int count, unsigned char **fpr, size_t *fpr_len,
+                struct keyserver_spec *keyserver)
 {
-  int rc=0,ret=0;
+  int rc = 0;
+  int ret = 0;
 
   if(!keyserver)
     {
@@ -1606,6 +1654,7 @@ keyserver_work(enum ks_action action,strlist_t list,KEYDB_SEARCH_DESC *desc,
 #endif /* ! DISABLE_KEYSERVER_HELPERS*/
 }
 
+
 int
 keyserver_export(strlist_t users)
 {
@@ -1637,6 +1686,7 @@ keyserver_export(strlist_t users)
 
   return rc;
 }
+
 
 int
 keyserver_import(strlist_t users)
@@ -1712,11 +1762,14 @@ keyserver_import_keyid(u32 *keyid,struct keyserver_spec *keyserver)
   return keyserver_work(KS_GET,NULL,&desc,1,NULL,NULL,keyserver);
 }
 
-/* code mostly stolen from do_export_stream */
+
+/* Code mostly stolen from do_export_stream */
 static int
 keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
-  int rc=0,ndesc,num=100;
+  int rc = 0;
+  int num = 100;
+  int ndesc;
   KBNODE keyblock=NULL,node;
   KEYDB_HANDLE kdbhd;
   KEYDB_SEARCH_DESC *desc;
@@ -2045,7 +2098,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 
       rc=import_keys_stream (key, NULL, fpr, fpr_len,
                              (opt.keyserver_options.import_options
-                              | IMPORT_NO_SECKEY));
+                              | IMPORT_NO_SECKEY), NULL, NULL);
 
       opt.no_armor=armor_status;
 

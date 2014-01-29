@@ -59,14 +59,17 @@ struct stats_s {
 
 
 static int import( IOBUF inp, const char* fname,struct stats_s *stats,
-		   unsigned char **fpr,size_t *fpr_len,unsigned int options );
+		   unsigned char **fpr,size_t *fpr_len,unsigned int options,
+		   import_filter_t filter, void *filter_arg );
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
 static int import_one(const char *fname, KBNODE keyblock,struct stats_s *stats,
 		      unsigned char **fpr,size_t *fpr_len,
-		      unsigned int options,int from_sk);
+		      unsigned int options,int from_sk,
+		      import_filter_t filter, void *filter_arg);
 static int import_secret_one( const char *fname, KBNODE keyblock,
-                              struct stats_s *stats, unsigned int options);
+                              struct stats_s *stats, unsigned int options,
+                              import_filter_t filter, void *filter_arg);
 static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
@@ -163,7 +166,8 @@ import_release_stats_handle (void *p)
 static int
 import_keys_internal( IOBUF inp, char **fnames, int nnames,
 		      void *stats_handle, unsigned char **fpr, size_t *fpr_len,
-		      unsigned int options )
+		      unsigned int options,
+		      import_filter_t filter, void *filter_arg)
 {
     int i, rc = 0;
     struct stats_s *stats = stats_handle;
@@ -172,7 +176,8 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
         stats = import_new_stats_handle ();
 
     if (inp) {
-        rc = import( inp, "[stream]", stats, fpr, fpr_len, options);
+        rc = import (inp, "[stream]", stats, fpr, fpr_len, options,
+                     filter, filter_arg);
     }
     else {
         int once = (!fnames && !nnames);
@@ -192,7 +197,8 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 	        log_error(_("can't open `%s': %s\n"), fname, strerror(errno) );
 	    else
 	      {
-	        rc = import( inp2, fname, stats, fpr, fpr_len, options );
+	        rc = import (inp2, fname, stats, fpr, fpr_len, options,
+                             NULL, NULL);
 	        iobuf_close(inp2);
                 /* Must invalidate that ugly cache to actually close it. */
                 iobuf_ioctl (NULL, 2, 0, (char*)fname);
@@ -223,24 +229,27 @@ void
 import_keys( char **fnames, int nnames,
 	     void *stats_handle, unsigned int options )
 {
-  import_keys_internal(NULL,fnames,nnames,stats_handle,NULL,NULL,options);
+  import_keys_internal (NULL, fnames, nnames, stats_handle, NULL, NULL,
+                        options, NULL, NULL);
 }
 
 int
 import_keys_stream( IOBUF inp, void *stats_handle,
-		    unsigned char **fpr, size_t *fpr_len,unsigned int options )
+		    unsigned char **fpr, size_t *fpr_len,unsigned int options,
+	            import_filter_t filter, void *filter_arg)
 {
-  return import_keys_internal(inp,NULL,0,stats_handle,fpr,fpr_len,options);
+  return import_keys_internal (inp, NULL, 0, stats_handle, fpr, fpr_len,
+                               options, filter, filter_arg);
 }
 
+
 static int
-import( IOBUF inp, const char* fname,struct stats_s *stats,
-	unsigned char **fpr,size_t *fpr_len,unsigned int options )
+import (IOBUF inp, const char* fname,struct stats_s *stats,
+	unsigned char **fpr, size_t *fpr_len, unsigned int options,
+	import_filter_t filter, void *filter_arg)
 {
     PACKET *pending_pkt = NULL;
-    KBNODE keyblock = NULL;  /* Need to initialize because gcc can't
-                                grasp the return semantics of
-                                read_block. */
+    KBNODE keyblock = NULL;
     int rc = 0;
 
     getkey_disable_caches();
@@ -256,9 +265,11 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-	    rc = import_one( fname, keyblock, stats, fpr, fpr_len, options, 0);
-	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY ) 
-                rc = import_secret_one( fname, keyblock, stats, options );
+	    rc = import_one (fname, keyblock, stats, fpr, fpr_len, options, 0,
+                             filter, filter_arg);
+        else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
+            rc = import_secret_one (fname, keyblock, stats, options,
+                                    filter, filter_arg);
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock, stats );
@@ -634,7 +645,7 @@ check_prefs(KBNODE keyblock)
   KBNODE node;
   PKT_public_key *pk;
   int problem=0;
-  
+
   merge_keys_and_selfsig(keyblock);
   pk=keyblock->pkt->pkt.public_key;
 
@@ -659,9 +670,9 @@ check_prefs(KBNODE keyblock)
 		{
 		  if (openpgp_cipher_test_algo (prefs->value))
 		    {
-		      const char *algo = 
+		      const char *algo =
                         (openpgp_cipher_test_algo (prefs->value)
-                         ? num 
+                         ? num
                          : openpgp_cipher_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
@@ -676,7 +687,7 @@ check_prefs(KBNODE keyblock)
 		    {
 		      const char *algo =
                         (gcry_md_test_algo (prefs->value)
-                         ? num 
+                         ? num
                          : gcry_md_algo_name (prefs->value));
 		      if(!problem)
 			check_prefs_warning(pk);
@@ -745,7 +756,7 @@ check_prefs(KBNODE keyblock)
 static int
 import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    unsigned char **fpr,size_t *fpr_len,unsigned int options,
-	    int from_sk )
+	    int from_sk, import_filter_t filter, void *filter_arg)
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -787,7 +798,14 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
 	return 0;
       }
-    
+
+    if (filter && filter (pk, NULL, filter_arg))
+      {
+        log_error (_("key %s: %s\n"), keystr_from_pk(pk),
+                   _("rejected by import filter"));
+        return 0;
+      }
+
     if (opt.interactive) {
         if(is_status_enabled())
 	  print_import_check (pk, uidnode->pkt->pkt.user_id);
@@ -924,7 +942,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
             size_t an;
 
             fingerprint_from_pk (pk_orig, afp, &an);
-            while (an < MAX_FINGERPRINT_LEN) 
+            while (an < MAX_FINGERPRINT_LEN)
                 afp[an++] = 0;
             rc = keydb_search_fpr (hd, afp);
         }
@@ -948,7 +966,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
         n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
         if (n_sigs_cleaned)
           commit_kbnode (&keyblock_orig);
-            
+
 	/* and try to merge the block */
 	clear_kbnode_flags( keyblock_orig );
 	clear_kbnode_flags( keyblock );
@@ -1018,14 +1036,14 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	    stats->n_sigs_cleaned +=n_sigs_cleaned;
 	    stats->n_uids_cleaned +=n_uids_cleaned;
 
-            if (is_status_enabled ()) 
+            if (is_status_enabled ())
                  print_import_ok (pk, NULL,
                                   ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
 	else
 	  {
             same_key = 1;
-            if (is_status_enabled ()) 
+            if (is_status_enabled ())
 	      print_import_ok (pk, NULL, 0);
 
 	    if( !opt.quiet )
@@ -1165,15 +1183,16 @@ sec_to_pub_keyblock(KBNODE sec_keyblock)
  * with the trust calculation.
  */
 static int
-import_secret_one( const char *fname, KBNODE keyblock, 
-                   struct stats_s *stats, unsigned int options)
+import_secret_one (const char *fname, KBNODE keyblock,
+                   struct stats_s *stats, unsigned int options,
+                   import_filter_t filter, void *filter_arg)
 {
     PKT_secret_key *sk;
     KBNODE node, uidnode;
     u32 keyid[2];
     int rc = 0;
 
-    /* get the key and print some info about it */
+    /* Get the key and print some info about it. */
     node = find_kbnode( keyblock, PKT_SECRET_KEY );
     if( !node )
 	BUG();
@@ -1181,6 +1200,12 @@ import_secret_one( const char *fname, KBNODE keyblock,
     sk = node->pkt->pkt.secret_key;
     keyid_from_sk( sk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
+
+    if (filter && filter (NULL, sk, filter_arg)) {
+        log_error (_("secret key %s: %s\n"), keystr_from_sk(sk),
+                   _("rejected by import filter"));
+        return 0;
+    }
 
     if( opt.verbose )
       {
@@ -1223,8 +1248,8 @@ import_secret_one( const char *fname, KBNODE keyblock,
         log_error (_("importing secret keys not allowed\n"));
         return 0;
       }
-#endif 
-    
+#endif
+
     clear_kbnode_flags( keyblock );
 
     /* do we have this key already in one of our secrings ? */
@@ -1250,7 +1275,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	if( !opt.quiet )
 	  log_info( _("key %s: secret key imported\n"), keystr_from_sk(sk));
 	stats->secret_imported++;
-        if (is_status_enabled ()) 
+        if (is_status_enabled ())
 	  print_import_ok (NULL, sk, 1|16);
 
 	if(options&IMPORT_SK2PK)
@@ -1260,8 +1285,9 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	    KBNODE pub_keyblock=sec_to_pub_keyblock(keyblock);
 	    if(pub_keyblock)
 	      {
-		import_one(fname,pub_keyblock,stats,
-			   NULL,NULL,opt.import_options,1);
+		import_one (fname, pub_keyblock, stats,
+                            NULL, NULL, opt.import_options, 1,
+                            NULL, NULL);
 		release_kbnode(pub_keyblock);
 	      }
 	  }
@@ -1281,7 +1307,7 @@ import_secret_one( const char *fname, KBNODE keyblock,
 	log_error( _("key %s: already in secret keyring\n"),
 		   keystr_from_sk(sk));
 	stats->secret_dups++;
-        if (is_status_enabled ()) 
+        if (is_status_enabled ())
 	  print_import_ok (NULL, sk, 16);
 
 	/* TODO: if we ever do merge secret keys, make sure to handle
@@ -1337,9 +1363,9 @@ import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
     {
         byte afp[MAX_FINGERPRINT_LEN];
         size_t an;
-        
+
         fingerprint_from_pk (pk, afp, &an);
-        while (an < MAX_FINGERPRINT_LEN) 
+        while (an < MAX_FINGERPRINT_LEN)
             afp[an++] = 0;
         rc = keydb_search_fpr (hd, afp);
     }
@@ -1435,11 +1461,11 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
   int rc;
   u32 bsdate=0,rsdate=0;
   KBNODE bsnode = NULL, rsnode = NULL;
-  
+
   (void)fname;
   (void)pk;
 
-  for (n=keyblock; (n = find_next_kbnode (n, 0)); ) 
+  for (n=keyblock; (n = find_next_kbnode (n, 0)); )
     {
       if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
@@ -1453,7 +1479,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
 
       if ( n->pkt->pkttype != PKT_SIGNATURE )
         continue;
-      
+
       sig = n->pkt->pkt.signature;
       if ( keyid[0] != sig->keyid[0] || keyid[1] != sig->keyid[1] )
         {
@@ -1465,7 +1491,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
          import a fully-cached key which speeds things up. */
       if (!opt.no_sig_cache)
         check_key_signature (keyblock, n, NULL);
-      
+
       if ( IS_UID_SIG(sig) || IS_UID_REV(sig) )
         {
           KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
@@ -1475,16 +1501,16 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
                          keystr(keyid));
               return -1;  /* The complete keyblock is invalid.  */
             }
-          
+
           /* If it hasn't been marked valid yet, keep trying.  */
-          if (!(unode->flag&1)) 
+          if (!(unode->flag&1))
             {
               rc = check_key_signature (keyblock, n, NULL);
               if ( rc )
                 {
                   if ( opt.verbose )
                     {
-                      char *p = utf8_to_native 
+                      char *p = utf8_to_native
                         (unode->pkt->pkt.user_id->name,
                          strlen (unode->pkt->pkt.user_id->name),0);
                       log_info (gpg_err_code(rc) == G10ERR_PUBKEY_ALGO ?
@@ -1513,7 +1539,7 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
               n->flag |= 4;
             }
         }
-      else if ( IS_SUBKEY_SIG (sig) ) 
+      else if ( IS_SUBKEY_SIG (sig) )
         {
           /* Note that this works based solely on the timestamps like
              the rest of gpg.  If the standard gets revocation
@@ -1542,19 +1568,19 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
               else
                 {
                   /* It's valid, so is it newer? */
-                  if (sig->timestamp >= bsdate) 
+                  if (sig->timestamp >= bsdate)
                     {
                       knode->flag |= 1;  /* The subkey is valid.  */
                       if (bsnode)
                         {
                           /* Delete the last binding sig since this
                              one is newer */
-                          bsnode->flag |= 4; 
+                          bsnode->flag |= 4;
                           if (opt.verbose)
                             log_info (_("key %s: removed multiple subkey"
                                         " binding\n"),keystr(keyid));
                         }
-                      
+
                       bsnode = n;
                       bsdate = sig->timestamp;
                     }
@@ -1599,12 +1625,12 @@ chk_self_sigs( const char *fname, KBNODE keyblock,
                         {
                           /* Delete the last revocation sig since
                              this one is newer.  */
-                          rsnode->flag |= 4; 
+                          rsnode->flag |= 4;
                           if (opt.verbose)
                             log_info (_("key %s: removed multiple subkey"
                                         " revocation\n"),keystr(keyid));
                         }
-                      
+
                       rsnode = n;
                       rsdate = sig->timestamp;
                     }
@@ -2345,35 +2371,35 @@ pub_to_sec_keyblock (KBNODE pub_keyblock)
 	  PACKET *pkt = xmalloc_clear (sizeof *pkt);
 	  PKT_secret_key *sk = xmalloc_clear (sizeof *sk);
           int i, n;
-          
+
           if (pubnode->pkt->pkttype == PKT_PUBLIC_KEY)
 	    pkt->pkttype = PKT_SECRET_KEY;
 	  else
 	    pkt->pkttype = PKT_SECRET_SUBKEY;
-          
+
 	  pkt->pkt.secret_key = sk;
 
           copy_public_parts_to_secret_key ( pk, sk );
 	  sk->version     = pk->version;
 	  sk->timestamp   = pk->timestamp;
-        
+
           n = pubkey_get_npkey (pk->pubkey_algo);
           if (!n)
             n = 1; /* Unknown number of parameters, however the data
                       is stored in the first mpi. */
           for (i=0; i < n; i++ )
             sk->skey[i] = mpi_copy (pk->pkey[i]);
-  
+
           sk->is_protected = 1;
           sk->protect.s2k.mode = 1001;
-  
+
   	  secnode = new_kbnode (pkt);
         }
       else
 	{
 	  secnode = clone_kbnode (pubnode);
 	}
-      
+
       if(!sec_keyblock)
 	sec_keyblock = secnode;
       else
@@ -2387,12 +2413,12 @@ pub_to_sec_keyblock (KBNODE pub_keyblock)
 /* Walk over the secret keyring SEC_KEYBLOCK and update any simple
    stub keys with the serial number SNNUM of the card if one of the
    fingerprints FPR1, FPR2 or FPR3 match.  Print a note if the key is
-   a duplicate (may happen in case of backed uped keys). 
-   
+   a duplicate (may happen in case of backed uped keys).
+
    Returns: True if anything changed.
 */
 static int
-update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock, 
+update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock,
                                    const unsigned char *fpr1,
                                    const unsigned char *fpr2,
                                    const unsigned char *fpr3,
@@ -2412,7 +2438,7 @@ update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock,
           && node->pkt->pkttype != PKT_SECRET_SUBKEY)
         continue;
       sk = node->pkt->pkt.secret_key;
-      
+
       fingerprint_from_sk (sk, array, &n);
       if (n != 20)
         continue; /* Can't be a card key.  */
@@ -2462,7 +2488,7 @@ update_sec_keyblock_with_cardinfo (KBNODE sec_keyblock,
    exists, add appropriate subkey stubs and update the secring.
    Return 0 if the key could be created. */
 int
-auto_create_card_key_stub ( const char *serialnostr, 
+auto_create_card_key_stub ( const char *serialnostr,
                             const unsigned char *fpr1,
                             const unsigned char *fpr2,
                             const unsigned char *fpr3)
@@ -2473,7 +2499,7 @@ auto_create_card_key_stub ( const char *serialnostr,
   int rc;
 
   /* We only want to do this for an OpenPGP card.  */
-  if (!serialnostr || strncmp (serialnostr, "D27600012401", 12) 
+  if (!serialnostr || strncmp (serialnostr, "D27600012401", 12)
       || strlen (serialnostr) != 32 )
     return G10ERR_GENERAL;
 
@@ -2484,7 +2510,7 @@ auto_create_card_key_stub ( const char *serialnostr,
     ;
   else
     return G10ERR_GENERAL;
- 
+
   hd = keydb_new (1);
 
   /* Now check whether there is a secret keyring.  */
@@ -2510,7 +2536,7 @@ auto_create_card_key_stub ( const char *serialnostr,
       else
         {
           merge_keys_and_selfsig (sec_keyblock);
-          
+
           /* FIXME: We need to add new subkeys first.  */
           if (update_sec_keyblock_with_cardinfo (sec_keyblock,
                                                  fpr1, fpr2, fpr3,
@@ -2544,7 +2570,7 @@ auto_create_card_key_stub ( const char *serialnostr,
                        keydb_get_resource_name (hd), g10_errstr(rc) );
         }
     }
-    
+
   release_kbnode (sec_keyblock);
   release_kbnode (pub_keyblock);
   keydb_release (hd);
