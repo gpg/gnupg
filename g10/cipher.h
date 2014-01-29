@@ -51,6 +51,7 @@
 #define PUBKEY_ALGO_ECDH            18
 #define PUBKEY_ALGO_ECDSA           19
 #define PUBKEY_ALGO_ELGAMAL      /* 20 */ GCRY_PK_ELG   /* Elgamal encr+sign */
+#define PUBKEY_ALGO_EDDSA          105    /* Experimental! */
 
 #define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */
 #define PUBKEY_USAGE_ENC     GCRY_PK_USAGE_ENCR  /* Good for encryption. */

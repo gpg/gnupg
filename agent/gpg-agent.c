@@ -51,7 +51,7 @@
 #include "gc-opt-flags.h"
 #include "exechelp.h"
 #include "asshelp.h"
-#include "../include/cipher.h"	/* for PUBKEY_ALGO_ECDSA, PUBKEY_ALGO_ECDH */
+#include "../g10/cipher.h"	/* for PUBKEY_ALGO_ECDSA, PUBKEY_ALGO_ECDH */
 #include "../common/init.h"
 
 

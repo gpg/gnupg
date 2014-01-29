@@ -31,7 +31,7 @@
 #ifndef GNUPG_COMMON_IOBUF_H
 #define GNUPG_COMMON_IOBUF_H
 
-#include "../include/types.h" /* fixme: should be moved elsewhere. */
+#include "../common/types.h"
 #include "../common/sysutils.h"
 #include "../common/estream.h"
 

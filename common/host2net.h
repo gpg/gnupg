@@ -1,14 +1,24 @@
-/* host2net.h - Some macros
- *	Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* host2net.h - Endian conversion macros
+ * Copyright (C) 1998, 2014  Werner Koch
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either
  *
- * GnuPG is distributed in the hope that it will be useful,
+ *   - the GNU Lesser General Public License as published by the Free
+ *     Software Foundation; either version 3 of the License, or (at
+ *     your option) any later version.
+ *
+ * or
+ *
+ *   - the GNU General Public License as published by the Free
+ *     Software Foundation; either version 2 of the License, or (at
+ *     your option) any later version.
+ *
+ * or both in parallel, as here.
+ *
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -17,8 +27,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef G10_HOST2NET_H
-#define G10_HOST2NET_H
+#ifndef GNUPG_COMMON_HOST2NET_H
+#define GNUPG_COMMON_HOST2NET_H
 
 #include "types.h"
 
@@ -39,4 +49,4 @@
 #define u32tobuf( p, a) ulongtobuf( (p), (a) )
 
 
-#endif /*G10_HOST2NET_H*/
+#endif /*GNUPG_COMMON_HOST2NET_H*/

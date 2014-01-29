@@ -48,6 +48,7 @@ endif
 
 common_source =  \
 	      gpg.h             \
+	      cipher.h          \
 	      build-packet.c	\
 	      compress.c	\
 	      $(bzip2_source)	\

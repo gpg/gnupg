@@ -1710,7 +1710,6 @@ AC_CONFIG_FILES([ m4/Makefile
 Makefile
 po/Makefile.in
 gl/Makefile
-include/Makefile
 common/Makefile
 common/w32info-rc.h
 kbx/Makefile

@@ -31,6 +31,10 @@
 #ifndef LIBJNLIB_TYPES_H
 #define LIBJNLIB_TYPES_H
 
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+
 /* The AC_CHECK_SIZEOF() in configure fails for some machines.
  * we provide some fallback values here */
 #if !SIZEOF_UNSIGNED_SHORT
@@ -50,15 +54,28 @@
 #include <sys/types.h>
 
 
+/* We use byte as an abbreviation for unsigned char.  On some
+   platforms this needs special treatment:
+
+   - RISC OS:
+     Norcroft C treats char  = unsigned char  as legal assignment
+                   but char* = unsigned char* as illegal assignment
+     and the same applies to the signed variants as well.  Thus we use
+     char which is anyway unsigned.
+
+   - Windows:
+     Windows typedefs byte in the RPC headers but we need to avoid a
+     warning about a double definition.
+ */
 #ifndef HAVE_BYTE_TYPEDEF
 #  undef byte	    /* There might be a macro with this name.  */
-/* Windows typedefs byte in the rpc headers.  Avoid warning about
-   double definition.  */
-#if !(defined(_WIN32) && defined(cbNDRContext))
-  typedef unsigned char byte;
-#endif
+#  ifdef __riscos__
+     typedef char byte;
+#  elif !(defined(_WIN32) && defined(cbNDRContext))
+     typedef unsigned char byte;
+#  endif
 #  define HAVE_BYTE_TYPEDEF
-#endif
+#endif /*!HAVE_BYTE_TYPEDEF*/
 
 #ifndef HAVE_USHORT_TYPEDEF
 #  undef ushort     /* There might be a macro with this name.  */
@@ -105,7 +122,5 @@
 #else
 # define GNUPG_GCC_A_SENTINEL(a)
 #endif
-
-
 
 #endif /*LIBJNLIB_TYPES_H*/

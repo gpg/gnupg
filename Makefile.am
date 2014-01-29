@@ -89,7 +89,7 @@ else
 tests =
 endif
 
-SUBDIRS = m4 gl include common ${kbx} \
+SUBDIRS = m4 gl common ${kbx} \
           ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
           ${tools} po ${doc} ${tests}
 

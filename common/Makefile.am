@@ -20,7 +20,7 @@
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
              audit-events.h status-codes.h README.jnlib ChangeLog.jnlib \
-             w32info-rc.h.in gnupg.ico
+	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
 if !HAVE_W32CE_SYSTEM
@@ -41,7 +41,7 @@ include $(top_srcdir)/am/cmacros.am
 
 jnlib_sources = \
 	libjnlib-config.h \
-	types.h dynload.h w32help.h \
+	types.h host2net.h dynload.h w32help.h \
 	stringhelp.c stringhelp.h \
 	strlist.c strlist.h \
 	utf8conv.c utf8conv.h \
