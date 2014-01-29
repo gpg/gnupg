@@ -207,11 +207,15 @@ MPI encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
 		     MD_HANDLE md, int hash_algo );
 
 /*-- import.c --*/
+
+typedef int (*import_filter)(PKT_public_key *pk, PKT_secret_key *sk, void *arg);
+
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
-int import_keys_stream( IOBUF inp,void *stats_hd,unsigned char **fpr,
-			size_t *fpr_len,unsigned int options );
+int import_keys_stream (IOBUF inp,void *stats_hd,unsigned char **fpr,
+                        size_t *fpr_len,unsigned int options,
+                        import_filter filter, void *filter_arg);
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);
