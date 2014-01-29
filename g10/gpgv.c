@@ -42,7 +42,6 @@
 #include "options.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "cipher.h"
 #include "filter.h"
 #include "ttyio.h"
 #include "i18n.h"

@@ -35,7 +35,6 @@
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
-#include "cipher.h" /* for progress functions */
 
 #define CONTROL_D ('D' - 'A' + 1)
 

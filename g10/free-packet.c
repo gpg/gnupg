@@ -28,7 +28,6 @@
 #include "util.h"
 #include "packet.h"
 #include "../common/iobuf.h"
-#include "cipher.h"
 #include "options.h"
 
 

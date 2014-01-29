@@ -26,7 +26,6 @@
 
 #include "gpg.h"
 #include "util.h"
-#include "cipher.h"
 #include "options.h"
 #include "main.h"
 #include "i18n.h"

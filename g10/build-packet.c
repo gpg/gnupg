@@ -30,7 +30,6 @@
 #include "packet.h"
 #include "status.h"
 #include "iobuf.h"
-#include "cipher.h"
 #include "i18n.h"
 #include "options.h"
 

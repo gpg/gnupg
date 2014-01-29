@@ -28,7 +28,6 @@
 #include "util.h"
 #include "packet.h"
 #include "keydb.h"
-#include "cipher.h"
 #include "main.h"
 #include "status.h"
 #include "i18n.h"

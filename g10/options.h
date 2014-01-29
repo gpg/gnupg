@@ -302,7 +302,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_debug_mode;
 EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 
-
+/* Compatibility flags.  */
 #define GNUPG   (opt.compliance==CO_GNUPG)
 #define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)
 #define RFC2440 (opt.compliance==CO_RFC2440)
@@ -363,5 +363,6 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<3)
 #define KEYSERVER_HONOR_KEYSERVER_URL    (1<<4)
 #define KEYSERVER_HONOR_PKA_RECORD       (1<<5)
+
 
 #endif /*G10_OPTIONS_H*/

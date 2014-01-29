@@ -22,7 +22,6 @@
 
 #include "types.h"
 #include "iobuf.h"
-#include "cipher.h"
 #include "keydb.h"
 #include "util.h"
 
@@ -43,6 +42,9 @@
 
 #define S2K_DIGEST_ALGO (opt.s2k_digest_algo?opt.s2k_digest_algo:DEFAULT_S2K_DIGEST_ALGO)
 
+
+/* Various data objects.  */
+
 typedef struct
 {
   int header_okay;
@@ -52,12 +54,14 @@ typedef struct
   cipher_filter_context_t cfx;
 } encrypt_filter_context_t;
 
+
 struct groupitem
 {
   char *name;
   strlist_t values;
   struct groupitem *next;
 };
+
 
 /*-- gpg.c --*/
 extern int g10_errors_seen;

@@ -26,7 +26,6 @@
 #include "types.h"
 #include "util.h"
 #include "packet.h"
-#include "cipher.h"
 
 /* What qualifies as a certification (rather than a signature?) */
 #define IS_CERT(s)       (IS_KEY_SIG(s) || IS_UID_SIG(s) || IS_SUBKEY_SIG(s) \

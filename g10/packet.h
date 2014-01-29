@@ -24,7 +24,7 @@
 #include "types.h"
 #include "../common/iobuf.h"
 #include "../common/strlist.h"
-#include "cipher.h"
+#include "dek.h"
 #include "filter.h"
 #include "../common/openpgpdefs.h"
 #include "../common/userids.h"
@@ -32,6 +32,31 @@
 #define DEBUG_PARSE_PACKET 1
 
 
+/* Constants to allocate static MPI arrays. */
+#define PUBKEY_MAX_NPKEY  5
+#define PUBKEY_MAX_NSKEY  7
+#define PUBKEY_MAX_NSIG   2
+#define PUBKEY_MAX_NENC   2
+
+/* Usage flags */
+#define PUBKEY_USAGE_SIG     GCRY_PK_USAGE_SIGN  /* Good for signatures. */
+#define PUBKEY_USAGE_ENC     GCRY_PK_USAGE_ENCR  /* Good for encryption. */
+#define PUBKEY_USAGE_CERT    GCRY_PK_USAGE_CERT  /* Also good to certify keys.*/
+#define PUBKEY_USAGE_AUTH    GCRY_PK_USAGE_AUTH  /* Good for authentication. */
+#define PUBKEY_USAGE_UNKNOWN GCRY_PK_USAGE_UNKN  /* Unknown usage flag. */
+#define PUBKEY_USAGE_NONE    256                 /* No usage given. */
+#if  (GCRY_PK_USAGE_SIGN | GCRY_PK_USAGE_ENCR | GCRY_PK_USAGE_CERT \
+      | GCRY_PK_USAGE_AUTH | GCRY_PK_USAGE_UNKN) >= 256
+# error Please choose another value for PUBKEY_USAGE_NONE
+#endif
+
+/* Helper macros.  */
+#define is_RSA(a)     ((a)==PUBKEY_ALGO_RSA || (a)==PUBKEY_ALGO_RSA_E \
+		       || (a)==PUBKEY_ALGO_RSA_S )
+#define is_ELGAMAL(a) ((a)==PUBKEY_ALGO_ELGAMAL_E)
+#define is_DSA(a)     ((a)==PUBKEY_ALGO_DSA)
+
+/* A pointer to the packet object.  */
 typedef struct packet_struct PACKET;
 
 /* PKT_GPG_CONTROL types */

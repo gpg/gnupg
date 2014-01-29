@@ -32,7 +32,6 @@
 #include "keydb.h"
 #include "util.h"
 #include "i18n.h"
-#include "cipher.h"
 
 
 /* Return true if Libgcrypt's RNG is in faked mode.  */

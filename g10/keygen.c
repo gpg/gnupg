@@ -33,7 +33,6 @@
 #include "util.h"
 #include "main.h"
 #include "packet.h"
-#include "cipher.h"
 #include "ttyio.h"
 #include "options.h"
 #include "keydb.h"

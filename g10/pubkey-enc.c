@@ -29,7 +29,6 @@
 #include "packet.h"
 #include "keydb.h"
 #include "trustdb.h"
-#include "cipher.h"
 #include "status.h"
 #include "options.h"
 #include "main.h"

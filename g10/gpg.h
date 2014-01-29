@@ -41,6 +41,15 @@
 #define MAX_FINGERPRINT_LEN 20
 
 
+
+/*
+    Macros formerly in cipher.h
+ */
+
+
+
+
+
 /*
    Forward declarations.
  */

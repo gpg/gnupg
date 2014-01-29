@@ -28,7 +28,6 @@
 #include "util.h"
 #include "packet.h"
 #include "iobuf.h"
-#include "cipher.h"
 #include "filter.h"
 #include "photoid.h"
 #include "options.h"

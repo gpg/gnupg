@@ -37,7 +37,6 @@
 #include "util.h"
 #include "options.h"
 #include "ttyio.h"
-#include "cipher.h"
 #include "keydb.h"
 #include "main.h"
 #include "i18n.h"

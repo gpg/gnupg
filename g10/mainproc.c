@@ -31,7 +31,6 @@
 #include "packet.h"
 #include "iobuf.h"
 #include "options.h"
-#include "cipher.h"
 #include "keydb.h"
 #include "filter.h"
 #include "main.h"
