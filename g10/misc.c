@@ -366,21 +366,9 @@ map_cipher_gcry_to_openpgp (int algo)
     }
 }
 
-/* Map OpenPGP public key algorithm numbers to those used by
-   Libgcrypt.  */
-int
-map_pk_openpgp_to_gcry (int algo)
-{
-  switch (algo)
-    {
-    case PUBKEY_ALGO_ECDSA: return GCRY_PK_ECDSA;
-    case PUBKEY_ALGO_ECDH:  return GCRY_PK_ECDH;
-    default: return algo;
-    }
-}
-
-/* Map Gcrypt public key algorithm numbers to those used by
-   OpenPGP.  */
+/* Map Gcrypt public key algorithm numbers to those used by OpenPGP.
+   FIXME: This mapping is used at only two places - we should get rid
+   of it.  */
 int
 map_pk_gcry_to_openpgp (enum gcry_pk_algos algo)
 {
@@ -439,40 +427,48 @@ openpgp_cipher_algo_name (int algo)
   return gnupg_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
 }
 
+
+/* Return 0 if ALGO is a supported OpenPGP public key algorithm.  */
 int
-openpgp_pk_test_algo( int algo )
+openpgp_pk_test_algo (pubkey_algo_t algo)
 {
-  /* Dont't allow type 20 keys unless in rfc2440 mode.  */
-  if (!RFC2440 && algo == 20)
-    return gpg_error (GPG_ERR_PUBKEY_ALGO);
-
-  if (algo == GCRY_PK_ELG_E)
-    algo = GCRY_PK_ELG;
-
-  if (algo < 0 || algo > 110)
-    return gpg_error (GPG_ERR_PUBKEY_ALGO);
-
-  return gcry_pk_test_algo (map_pk_openpgp_to_gcry (algo));
+  return openpgp_pk_test_algo2 (algo, 0);
 }
 
+
+/* Return 0 if ALGO is a supported OpenPGP public key algorithm and
+   allows the usage USE.  */
 int
-openpgp_pk_test_algo2( int algo, unsigned int use )
+openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
 {
+  enum gcry_pk_algos ga = 0;
   size_t use_buf = use;
 
-  /* Dont't allow type 20 keys unless in rfc2440 mode.  */
-  if (!RFC2440 && algo == 20)
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:       ga = GCRY_PK_RSA;   break;
+    case PUBKEY_ALGO_RSA_E:     ga = GCRY_PK_RSA_E; break;
+    case PUBKEY_ALGO_RSA_S:     ga = GCRY_PK_RSA_S; break;
+    case PUBKEY_ALGO_ELGAMAL_E: ga = GCRY_PK_ELG;   break;
+    case PUBKEY_ALGO_DSA:       ga = GCRY_PK_DSA;   break;
+
+    case PUBKEY_ALGO_ECDH:
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_EDDSA:     ga = GCRY_PK_ECC;   break;
+
+    case PUBKEY_ALGO_ELGAMAL:
+      /* Dont't allow type 20 keys unless in rfc2440 mode.  */
+      if (RFC2440)
+        ga = GCRY_PK_ELG;
+      break;
+    }
+  if (!ga)
     return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
-  if (algo == GCRY_PK_ELG_E)
-    algo = GCRY_PK_ELG;
-
-  if (algo < 0 || algo > 110)
-    return gpg_error (GPG_ERR_PUBKEY_ALGO);
-
-  return gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
-                            GCRYCTL_TEST_ALGO, NULL, &use_buf);
+  /* No check whether Libgcrypt has support for the algorithm.  */
+  return gcry_pk_algo_info (ga, GCRYCTL_TEST_ALGO, NULL, &use_buf);
 }
+
 
 int
 openpgp_pk_algo_usage ( int algo )
@@ -503,6 +499,7 @@ openpgp_pk_algo_usage ( int algo )
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
           break;
       case PUBKEY_ALGO_ECDSA:
+      case PUBKEY_ALGO_EDDSA:
           use = PUBKEY_USAGE_CERT | PUBKEY_USAGE_SIG | PUBKEY_USAGE_AUTH;
       default:
           break;
@@ -514,9 +511,21 @@ openpgp_pk_algo_usage ( int algo )
    string representation of the algorithm name.  For unknown algorithm
    IDs this function returns "?".  */
 const char *
-openpgp_pk_algo_name (int algo)
+openpgp_pk_algo_name (pubkey_algo_t algo)
 {
-  return gcry_pk_algo_name (map_pk_openpgp_to_gcry (algo));
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:     return "RSA";
+    case PUBKEY_ALGO_ELGAMAL:
+    case PUBKEY_ALGO_ELGAMAL_E: return "ELG";
+    case PUBKEY_ALGO_DSA:       return "DSA";
+    case PUBKEY_ALGO_ECDH:
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_EDDSA:     return "ECC";
+    }
+  return "?";
 }
 
 
@@ -1346,94 +1355,80 @@ path_access(const char *file,int mode)
 
 /* Return the number of public key parameters as used by OpenPGP.  */
 int
-pubkey_get_npkey (int algo)
+pubkey_get_npkey (pubkey_algo_t algo)
 {
-  size_t n;
-
-  /* ECC is special.  */
-  if (algo == PUBKEY_ALGO_ECDSA)
-    return 2;
-  else if (algo == PUBKEY_ALGO_ECDH)
-    return 3;
-
-  /* All other algorithms match those of Libgcrypt.  */
-  if (algo == GCRY_PK_ELG_E)
-    algo = GCRY_PK_ELG;
-  else if (is_RSA (algo))
-    algo = GCRY_PK_RSA;
-
-  if (gcry_pk_algo_info (algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
-    n = 0;
-  return n;
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:     return 2;
+    case PUBKEY_ALGO_ELGAMAL_E: return 3;
+    case PUBKEY_ALGO_DSA:       return 4;
+    case PUBKEY_ALGO_ECDH:      return 3;
+    case PUBKEY_ALGO_ECDSA:     return 2;
+    case PUBKEY_ALGO_ELGAMAL:   return 3;
+    case PUBKEY_ALGO_EDDSA:     return 2;
+    }
+  return 0;
 }
 
 
 /* Return the number of secret key parameters as used by OpenPGP.  */
 int
-pubkey_get_nskey (int algo)
+pubkey_get_nskey (pubkey_algo_t algo)
 {
-  size_t n;
-
-  /* ECC is special.  */
-  if (algo == PUBKEY_ALGO_ECDSA)
-    return 3;
-  else if (algo == PUBKEY_ALGO_ECDH)
-    return 4;
-
-  /* All other algorithms match those of Libgcrypt.  */
-  if (algo == GCRY_PK_ELG_E)
-    algo = GCRY_PK_ELG;
-  else if (is_RSA (algo))
-    algo = GCRY_PK_RSA;
-
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
-    n = 0;
-  return n;
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:     return 6;
+    case PUBKEY_ALGO_ELGAMAL_E: return 4;
+    case PUBKEY_ALGO_DSA:       return 5;
+    case PUBKEY_ALGO_ECDH:      return 4;
+    case PUBKEY_ALGO_ECDSA:     return 3;
+    case PUBKEY_ALGO_ELGAMAL:   return 4;
+    case PUBKEY_ALGO_EDDSA:     return 3;
+    }
+  return 0;
 }
 
 /* Temporary helper. */
 int
-pubkey_get_nsig (int algo)
+pubkey_get_nsig (pubkey_algo_t algo)
 {
-  size_t n;
-
-  /* ECC is special.  */
-  if (algo == PUBKEY_ALGO_ECDSA)
-    return 2;
-  else if (algo == PUBKEY_ALGO_ECDH)
-    return 0;
-
-  if (algo == GCRY_PK_ELG_E)
-    algo = GCRY_PK_ELG;
-  else if (is_RSA (algo))
-    algo = GCRY_PK_RSA;
-
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
-    n = 0;
-  return n;
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:     return 1;
+    case PUBKEY_ALGO_ELGAMAL_E: return 0;
+    case PUBKEY_ALGO_DSA:       return 2;
+    case PUBKEY_ALGO_ECDH:      return 0;
+    case PUBKEY_ALGO_ECDSA:     return 2;
+    case PUBKEY_ALGO_ELGAMAL:   return 2;
+    case PUBKEY_ALGO_EDDSA:     return 2;
+    }
+  return 0;
 }
 
 
 /* Temporary helper. */
 int
-pubkey_get_nenc (int algo)
+pubkey_get_nenc (pubkey_algo_t algo)
 {
-  size_t n;
-
-  /* ECC is special.  */
-  if (algo == PUBKEY_ALGO_ECDSA)
-    return 0;
-  else if (algo == PUBKEY_ALGO_ECDH)
-    return 2;
-
-  if (algo == GCRY_PK_ELG_E)
-    algo = GCRY_PK_ELG;
-  else if (is_RSA (algo))
-    algo = GCRY_PK_RSA;
-
-  if (gcry_pk_algo_info( algo, GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
-    n = 0;
-  return n;
+  switch (algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:     return 1;
+    case PUBKEY_ALGO_ELGAMAL_E: return 2;
+    case PUBKEY_ALGO_DSA:       return 0;
+    case PUBKEY_ALGO_ECDH:      return 2;
+    case PUBKEY_ALGO_ECDSA:     return 0;
+    case PUBKEY_ALGO_ELGAMAL:   return 2;
+    case PUBKEY_ALGO_EDDSA:     return 0;
+    }
+  return 0;
 }
 
 
@@ -1459,7 +1454,8 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 			      "(public-key(rsa(n%m)(e%m)))",
 				  key[0], key[1] );
     }
-    else if( algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH ) {
+    else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH
+             || algo == PUBKEY_ALGO_EDDSA) {
         char *curve = openpgp_oid_to_str (key[0]);
         if (!curve)
           rc = gpg_error_from_syserror ();

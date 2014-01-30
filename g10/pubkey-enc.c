@@ -151,7 +151,6 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
   char *keygrip;
   byte fp[MAX_FINGERPRINT_LEN];
   size_t fpn;
-  const int pkalgo = map_pk_openpgp_to_gcry (sk->pubkey_algo);
 
   if (DBG_CLOCK)
     log_clock ("decryption start");
@@ -162,7 +161,8 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     goto leave;
 
   /* Convert the data to an S-expression.  */
-  if (pkalgo == GCRY_PK_ELG || pkalgo == GCRY_PK_ELG_E)
+  if (sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL
+      || sk->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E)
     {
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);
@@ -170,7 +170,8 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(elg(a%m)(b%m)))",
                                enc->data[0], enc->data[1]);
     }
-  else if (pkalgo == GCRY_PK_RSA || pkalgo == GCRY_PK_RSA_E)
+  else if (sk->pubkey_algo == PUBKEY_ALGO_RSA
+           || sk->pubkey_algo == PUBKEY_ALGO_RSA_E)
     {
       if (!enc->data[0])
         err = gpg_error (GPG_ERR_BAD_MPI);
@@ -178,7 +179,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(rsa(a%m)))",
                                enc->data[0]);
     }
-  else if (pkalgo == GCRY_PK_ECDH)
+  else if (sk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       if (!enc->data[0] || !enc->data[1])
         err = gpg_error (GPG_ERR_BAD_MPI);

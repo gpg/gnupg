@@ -1989,9 +1989,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       for (i = 0; i < npkey; i++)
         {
-          if ((algorithm == PUBKEY_ALGO_ECDSA && (i == 0))
-              || ((algorithm == PUBKEY_ALGO_ECDH) && (i == 0 || i == 2)))
+          if (    (algorithm == PUBKEY_ALGO_ECDSA && (i == 0))
+               || (algorithm == PUBKEY_ALGO_EDDSA && (i == 0))
+               || (algorithm == PUBKEY_ALGO_ECDH  && (i == 0 || i == 2)))
             {
+              /* Read the OID (i==1) or the KDF params (i==2).  */
               size_t n;
 	      err = read_size_body (inp, pktlen, &n, pk->pkey+i);
               pktlen -= n;
@@ -2011,6 +2013,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
               es_fprintf (listfp, "\tpkey[%d]: ", i);
               mpi_print (listfp, pk->pkey[i], mpi_print_mode);
               if ((algorithm == PUBKEY_ALGO_ECDSA
+                   || algorithm == PUBKEY_ALGO_EDDSA
                    || algorithm == PUBKEY_ALGO_ECDH) && i==0)
                 {
                   char *curve = openpgp_oid_to_str (pk->pkey[0]);

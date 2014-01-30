@@ -512,17 +512,18 @@ get_rsa_pk_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
 
 
 /* Return the algo of a public RSA expressed as an canonical encoded
-   S-expression.  On error the algo is set to 0. */
+   S-expression.  The return value is a statically allocated
+   string.  On error that string is set to NULL. */
 gpg_error_t
 get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
-                             int *r_algo)
+                             const char **r_algo)
 {
   gpg_error_t err;
   const unsigned char *buf, *tok;
   size_t buflen, toklen;
   int depth;
 
-  *r_algo = 0;
+  *r_algo = NULL;
 
   buf = keydata;
   buflen = keydatalen;
@@ -541,15 +542,17 @@ get_pk_algo_from_canon_sexp (const unsigned char *keydata, size_t keydatalen,
     return gpg_error (GPG_ERR_BAD_PUBKEY);
 
   if (toklen == 3 && !memcmp ("rsa", tok, toklen))
-    *r_algo = GCRY_PK_RSA;
+    *r_algo = "rsa";
   else if (toklen == 3 && !memcmp ("dsa", tok, toklen))
-    *r_algo = GCRY_PK_DSA;
+    *r_algo = "dsa";
   else if (toklen == 3 && !memcmp ("elg", tok, toklen))
-    *r_algo = GCRY_PK_ELG;
+    *r_algo = "elg";
   else if (toklen == 5 && !memcmp ("ecdsa", tok, toklen))
-    *r_algo = GCRY_PK_ECDSA;
+    *r_algo = "ecdsa";
+  else if (toklen == 5 && !memcmp ("eddsa", tok, toklen))
+    *r_algo = "eddsa";
   else
-    return  gpg_error (GPG_ERR_PUBKEY_ALGO);
+    return gpg_error (GPG_ERR_PUBKEY_ALGO);
 
   return 0;
 }

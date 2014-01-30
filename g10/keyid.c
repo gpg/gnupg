@@ -57,6 +57,7 @@ pubkey_letter( int algo )
     case PUBKEY_ALGO_ELGAMAL_E: return 'g' ;
     case PUBKEY_ALGO_ELGAMAL:   return 'G' ;
     case PUBKEY_ALGO_DSA:	return 'D' ;
+    case PUBKEY_ALGO_EDDSA:	return 'E' ;	/* ECC EdDSA (sign only) */
     case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
     case PUBKEY_ALGO_ECDH:	return 'e' ;	/* ECC DH (encrypt only) */
     default: return '?';
@@ -733,6 +734,7 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
                              pk->pkey[0], pk->pkey[1]);
       break;
 
+    case PUBKEY_ALGO_EDDSA:
     case PUBKEY_ALGO_ECDSA:
     case PUBKEY_ALGO_ECDH:
       {

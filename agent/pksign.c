@@ -151,17 +151,14 @@ do_encode_eddsa (const byte *md, size_t mdlen, gcry_sexp_t *r_hash)
 
 /* Encode a message digest for use with an DSA algorithm. */
 static gpg_error_t
-do_encode_dsa (const byte *md, size_t mdlen, int dsaalgo, gcry_sexp_t pkey,
+do_encode_dsa (const byte *md, size_t mdlen, int pkalgo, gcry_sexp_t pkey,
                gcry_sexp_t *r_hash)
 {
   gpg_error_t err;
   gcry_sexp_t hash;
   unsigned int qbits;
-  int pkalgo;
 
   *r_hash = NULL;
-
-  pkalgo = map_pk_openpgp_to_gcry (dsaalgo);
 
   if (pkalgo == GCRY_PK_ECDSA)
     qbits = gcry_pk_get_nbits (pkey);

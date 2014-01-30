@@ -561,7 +561,9 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   /* We need to change the received parameters for ECC algorithms.
      The transfer format has all parameters but OpenPGP defines that
      only the OID of the curve is to be used.  */
-  if (pubkey_algo == PUBKEY_ALGO_ECDSA || pubkey_algo == PUBKEY_ALGO_ECDH)
+  if (pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pubkey_algo == PUBKEY_ALGO_EDDSA
+      || pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       gcry_sexp_t s_pubkey;
       const char *curvename, *curveoidstr;

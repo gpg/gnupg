@@ -389,6 +389,7 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
     else if( is_ELGAMAL(enc->pubkey_algo)
              || enc->pubkey_algo == PUBKEY_ALGO_DSA
              || enc->pubkey_algo == PUBKEY_ALGO_ECDSA
+             || enc->pubkey_algo == PUBKEY_ALGO_EDDSA
              || enc->pubkey_algo == PUBKEY_ALGO_ECDH
              || is_RSA(enc->pubkey_algo)
              || enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL) {

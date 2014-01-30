@@ -100,13 +100,12 @@ int map_cipher_openpgp_to_gcry (int algo);
 int openpgp_cipher_blocklen (int algo);
 int openpgp_cipher_test_algo( int algo );
 const char *openpgp_cipher_algo_name (int algo);
-int map_pk_openpgp_to_gcry (int algo);
 int map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
-int openpgp_pk_test_algo( int algo );
-int openpgp_pk_test_algo2 ( int algo, unsigned int use );
+int openpgp_pk_test_algo (pubkey_algo_t algo);
+int openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use);
 int openpgp_pk_algo_usage ( int algo );
 int openpgp_md_test_algo( int algo );
-const char *openpgp_pk_algo_name (int algo);
+const char *openpgp_pk_algo_name (pubkey_algo_t algo);
 const char *openpgp_md_algo_name (int algo);
 
 struct expando_args
@@ -153,10 +152,10 @@ int is_valid_mailbox (const char *name);
 const char *get_libexecdir (void);
 int path_access(const char *file,int mode);
 
-int pubkey_get_npkey( int algo );
-int pubkey_get_nskey( int algo );
-int pubkey_get_nsig( int algo );
-int pubkey_get_nenc( int algo );
+int pubkey_get_npkey (pubkey_algo_t algo);
+int pubkey_get_nskey (pubkey_algo_t algo);
+int pubkey_get_nsig (pubkey_algo_t algo);
+int pubkey_get_nenc (pubkey_algo_t algo);
 
 /* Temporary helpers. */
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );

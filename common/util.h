@@ -193,7 +193,7 @@ gpg_error_t get_rsa_pk_from_canon_sexp (const unsigned char *keydata,
                                         size_t *r_elen);
 gpg_error_t get_pk_algo_from_canon_sexp (const unsigned char *keydata,
                                          size_t keydatalen,
-                                         int *r_algo);
+                                         const char **r_algo);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);

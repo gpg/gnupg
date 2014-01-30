@@ -1235,6 +1235,7 @@ do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
     case PUBKEY_ALGO_ELGAMAL_E: algoelem = "pgy"; break;
     case PUBKEY_ALGO_ECDH:
     case PUBKEY_ALGO_ECDSA:     algoelem = ""; break;
+    case PUBKEY_ALGO_EDDSA:     algoelem = ""; break;
     default: return gpg_error (GPG_ERR_INTERNAL);
     }
 
@@ -1268,7 +1269,9 @@ do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
 
-  if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+  if (algo == PUBKEY_ALGO_ECDSA
+      || algo == PUBKEY_ALGO_EDDSA
+      || algo == PUBKEY_ALGO_ECDH )
     err = ecckey_from_sexp (pk->pkey, s_key, algo);
   else
     err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
@@ -1330,7 +1333,9 @@ common_gen (const char *keyparms, int algo, const char *algoelem,
     pk->expiredate = pk->timestamp + expireval;
   pk->pubkey_algo = algo;
 
-  if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+  if (algo == PUBKEY_ALGO_ECDSA
+      || algo == PUBKEY_ALGO_EDDSA
+      || algo == PUBKEY_ALGO_ECDH )
     err = ecckey_from_sexp (pk->pkey, s_key, algo);
   else
     err = key_from_sexp (pk->pkey, s_key, "public-key", algoelem);
@@ -1508,7 +1513,9 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   gpg_error_t err;
   char *keyparms;
 
-  assert (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH);
+  assert (algo == PUBKEY_ALGO_ECDSA
+          || algo == PUBKEY_ALGO_EDDSA
+          || algo == PUBKEY_ALGO_ECDH);
 
   if (!curve || !*curve)
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
@@ -1735,7 +1742,7 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
   gpg_error_t err;
   unsigned char *public;
   size_t publiclen;
-  int algo;
+  const char *algostr;
 
   if (hexgrip[0] == '&')
     hexgrip++;
@@ -1745,18 +1752,26 @@ check_keygrip (ctrl_t ctrl, const char *hexgrip)
     return 0;
   publiclen = gcry_sexp_canon_len (public, 0, NULL, NULL);
 
-  get_pk_algo_from_canon_sexp (public, publiclen, &algo);
+  get_pk_algo_from_canon_sexp (public, publiclen, &algostr);
   xfree (public);
 
-  switch (algo)
-    {
-    case GCRY_PK_RSA:   return PUBKEY_ALGO_RSA;
-    case GCRY_PK_DSA:   return PUBKEY_ALGO_DSA;
-    case GCRY_PK_ELG_E: return PUBKEY_ALGO_ELGAMAL_E;
-    case GCRY_PK_ECDH:  return PUBKEY_ALGO_ECDH;
-    case GCRY_PK_ECDSA: return PUBKEY_ALGO_ECDSA;
-    default: return 0;
-    }
+  /* FIXME: Mapping of ECC algorithms is probably not correct. */
+  if (!algostr)
+    return 0;
+  else if (!strcmp (algostr, "rsa"))
+    return PUBKEY_ALGO_RSA;
+  else if (!strcmp (algostr, "dsa"))
+    return PUBKEY_ALGO_DSA;
+  else if (!strcmp (algostr, "elg"))
+    return PUBKEY_ALGO_ELGAMAL_E;
+  else if (!strcmp (algostr, "ecc"))
+    return PUBKEY_ALGO_ECDH;
+  else if (!strcmp (algostr, "ecdsa"))
+    return PUBKEY_ALGO_ECDSA;
+  else if (!strcmp (algostr, "eddsa"))
+    return PUBKEY_ALGO_EDDSA;
+  else
+    return 0;
 }
 
 
@@ -1803,13 +1818,13 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
     }
 
   if (opt.expert && !addmode)
-    tty_printf (_("   (%d) ECDSA and ECDH\n"), 9 );
+    tty_printf (_("   (%d) ECC\n"), 9 );
   if (opt.expert)
-    tty_printf (_("  (%d) ECDSA (sign only)\n"), 10 );
+    tty_printf (_("  (%d) ECC (sign only)\n"), 10 );
   if (opt.expert)
-    tty_printf (_("  (%d) ECDSA (set your own capabilities)\n"), 11 );
+    tty_printf (_("  (%d) ECC (set your own capabilities)\n"), 11 );
   if (opt.expert && addmode)
-    tty_printf (_("  (%d) ECDH (encrypt only)\n"), 12 );
+    tty_printf (_("  (%d) ECC (encrypt only)\n"), 12 );
 
   if (opt.expert && r_keygrip)
     tty_printf (_("  (%d) Existing key\n"), 13 );
@@ -1978,6 +1993,12 @@ ask_keysize (int algo, unsigned int primary_keysize)
       max=521;
       break;
 
+    case PUBKEY_ALGO_EDDSA:
+      min=255;
+      def=255;
+      max=441;
+      break;
+
     case PUBKEY_ALGO_RSA:
       min=1024;
       break;
@@ -2016,6 +2037,18 @@ ask_keysize (int algo, unsigned int primary_keysize)
       nbits = ((nbits + 63) / 64) * 64;
       if (!autocomp)
         tty_printf (_("rounded up to %u bits\n"), nbits);
+    }
+  else if (algo == PUBKEY_ALGO_EDDSA)
+    {
+      if (nbits != 255 && nbits != 441)
+        {
+          if (nbits < 256)
+            nbits = 255;
+          else
+            nbits = 441;
+          if (!autocomp)
+            tty_printf (_("rounded to %u bits\n"), nbits);
+        }
     }
   else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA)
     {
@@ -2613,7 +2646,9 @@ do_create (int algo, unsigned int nbits, const char *curve, KBNODE pub_root,
   else if (algo == PUBKEY_ALGO_DSA)
     err = gen_dsa (nbits, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, cache_nonce_addr);
-  else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+  else if (algo == PUBKEY_ALGO_ECDSA
+           || algo == PUBKEY_ALGO_EDDSA
+           || algo == PUBKEY_ALGO_ECDH)
     err = gen_ecc (algo, curve, pub_root, timestamp, expiredate, is_subkey,
                    keygen_flags, cache_nonce_addr);
   else if (algo == PUBKEY_ALGO_RSA)
@@ -3410,9 +3445,12 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
           sprintf( r->u.value, "%d", algo );
           r->next = para;
           para = r;
-          if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+          if (algo == PUBKEY_ALGO_ECDSA
+              || algo == PUBKEY_ALGO_EDDSA
+              || algo == PUBKEY_ALGO_ECDH)
             {
               curve = ask_curve ();
+              nbits = 0;
               r = xmalloc_clear (sizeof *r + strlen (curve));
               r->key = pKEYCURVE;
               strcpy (r->u.value, curve);
@@ -3467,7 +3505,9 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
           nbits = 0;
         }
 
-      if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+      if (algo == PUBKEY_ALGO_ECDSA
+          || algo == PUBKEY_ALGO_EDDSA
+          || algo == PUBKEY_ALGO_ECDH)
         {
           if (!both)
             curve = ask_curve ();
@@ -3969,7 +4009,9 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
 
   if (hexgrip)
     nbits = 0;
-  else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH)
+  else if (algo == PUBKEY_ALGO_ECDSA
+           || algo == PUBKEY_ALGO_EDDSA
+           || algo == PUBKEY_ALGO_ECDH)
     curve = ask_curve ();
   else
     nbits = ask_keysize (algo, 0);

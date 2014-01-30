@@ -818,6 +818,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
           keystr_from_pk (pk), datestr_from_pk (pk));
 
   if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       char *curve = openpgp_oid_to_str (pk->pkey[0]);
@@ -953,6 +954,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 		  keystr_from_pk (pk2), datestr_from_pk (pk2));
 
           if (pk2->pubkey_algo == PUBKEY_ALGO_ECDSA
+              || pk2->pubkey_algo == PUBKEY_ALGO_EDDSA
               || pk2->pubkey_algo == PUBKEY_ALGO_ECDH)
             {
               char *curve = openpgp_oid_to_str (pk2->pkey[0]);
@@ -1207,6 +1209,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   es_putc (':', es_stdout);		/* End of field 15. */
   es_putc (':', es_stdout);		/* End of field 16. */
   if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+      || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
       || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
     {
       char *curve = openpgp_oid_to_str (pk->pkey[0]);
@@ -1332,6 +1335,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
           es_putc (':', es_stdout);	/* End of field 15. */
           es_putc (':', es_stdout);	/* End of field 16. */
           if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+              || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
               || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
             {
               char *curve = openpgp_oid_to_str (pk->pkey[0]);

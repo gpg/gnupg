@@ -446,7 +446,7 @@ hash_for (PKT_public_key *pk)
     {
       return recipient_digest_algo;
     }
-  else if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+  else if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA
            && openpgp_oid_is_ed25519 (pk->pkey[0]))
     {
       if (opt.personal_digest_prefs)
@@ -944,13 +944,13 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
 		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA
-                    || (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                    || (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_EDDSA
                         && !openpgp_oid_is_ed25519 (sk_rover->pk->pkey[1])))
 		  {
 		    int temp_hashlen = (gcry_mpi_get_nbits
                                         (sk_rover->pk->pkey[1]));
 
-		    if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+		    if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_EDDSA)
 		      temp_hashlen = ecdsa_qbits_from_Q (temp_hashlen);
 		    temp_hashlen = (temp_hashlen+7)/8;
 
@@ -1510,7 +1510,8 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	  digest_algo = DIGEST_ALGO_MD5;
 	else if(pksk->pubkey_algo == PUBKEY_ALGO_DSA)
 	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
-        else if(pksk->pubkey_algo == PUBKEY_ALGO_ECDSA )
+        else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
+                 || pksk->pubkey_algo == PUBKEY_ALGO_EDDSA)
           {
             if (openpgp_oid_is_ed25519 (pksk->pkey[0]))
               digest_algo = DIGEST_ALGO_SHA256;

@@ -1260,6 +1260,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
       init_membuf (&mbuf, 50);
       put_membuf_str (&mbuf, "(skey");
       if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
+          || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
           || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         {
           /* We need special treatment for ECC algorithms.  OpenPGP
@@ -1274,7 +1275,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
             err = gpg_error_from_syserror ();
           else
             {
-              gcry_sexp_t cparam = gcry_pk_get_param (GCRY_PK_ECDSA, curve);
+              gcry_sexp_t cparam = gcry_pk_get_param (GCRY_PK_ECC, curve);
 
               xfree (curve);
               if (!cparam)

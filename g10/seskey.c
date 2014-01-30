@@ -255,20 +255,20 @@ gcry_mpi_t
 encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 {
   gcry_mpi_t frame;
-  int pkalgo;
   size_t mdlen;
 
   assert (hash_algo);
   assert (pk);
 
-  pkalgo = map_pk_openpgp_to_gcry (pk->pubkey_algo);
-
-  if (pkalgo == GCRY_PK_ECDSA && openpgp_oid_is_ed25519 (pk->pkey[0]))
+  if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA)
     {
+      /* EdDSA signs data of arbitrary length.  Thus no special
+         treatment is required.  */
       frame = gcry_mpi_set_opaque_copy (NULL, gcry_md_read (md, hash_algo),
                                         8*gcry_md_get_algo_dlen (hash_algo));
     }
-  else if (pkalgo == GCRY_PK_DSA || pkalgo == GCRY_PK_ECDSA)
+  else if (pk->pubkey_algo == PUBKEY_ALGO_DSA
+           || pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
     {
       /* It's a DSA signature, so find out the size of q.  */
 
@@ -276,11 +276,10 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 
       /* pkey[1] is Q for ECDSA, which is an uncompressed point,
          i.e.  04 <x> <y>  */
-      if (pkalgo == GCRY_PK_ECDSA)
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
         qbits = ecdsa_qbits_from_Q (qbits);
 
       /* Make sure it is a multiple of 8 bits. */
-
       if ((qbits%8))
 	{
 	  log_error(_("DSA requires the hash length to be a"
@@ -297,7 +296,8 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
       if (qbits < 160)
 	{
 	  log_error (_("%s key %s uses an unsafe (%zu bit) hash\n"),
-                     gcry_pk_algo_name (pkalgo), keystr_from_pk (pk), qbits);
+                     openpgp_pk_algo_name (pk->pubkey_algo),
+                     keystr_from_pk (pk), qbits);
 	  return NULL;
 	}
 
@@ -305,7 +305,7 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
       /* ECDSA 521 is special has it is larger than the largest hash
          we have (SHA-512).  Thus we chnage the size for further
          processing to 512.  */
-      if (pkalgo == GCRY_PK_ECDSA && qbits > 512)
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA && qbits > 512)
         qbits = 512;
 
       /* Check if we're too short.  Too long is safe as we'll
@@ -315,8 +315,8 @@ encode_md_value (PKT_public_key *pk, gcry_md_hd_t md, int hash_algo)
 	{
 	  log_error (_("%s key %s requires a %zu bit or larger hash "
                        "(hash is %s)\n"),
-                     gcry_pk_algo_name (pkalgo),
-                     keystr_from_pk(pk), qbits,
+                     openpgp_pk_algo_name (pk->pubkey_algo),
+                     keystr_from_pk (pk), qbits,
                      gcry_md_algo_name (hash_algo));
 	  return NULL;
 	}

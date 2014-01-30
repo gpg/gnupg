@@ -25,11 +25,11 @@
 /*-- pkglue.c --*/
 gcry_mpi_t get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt);
 
-int pk_verify (int algo, gcry_mpi_t hash, gcry_mpi_t *data,
+int pk_verify (pubkey_algo_t algo, gcry_mpi_t hash, gcry_mpi_t *data,
                gcry_mpi_t *pkey);
-int pk_encrypt (int algo, gcry_mpi_t *resarr, gcry_mpi_t data,
+int pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 		PKT_public_key *pk, gcry_mpi_t *pkey);
-int pk_check_secret_key (int algo, gcry_mpi_t *skey);
+int pk_check_secret_key (pubkey_algo_t algo, gcry_mpi_t *skey);
 
 
 /*-- ecdh.c --*/
