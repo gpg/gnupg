@@ -71,9 +71,9 @@ extern int g10_errors_seen;
 #else
   void g10_exit(int rc);
 #endif
-void print_pubkey_algo_note( int algo );
-void print_cipher_algo_note( int algo );
-void print_digest_algo_note( int algo );
+void print_pubkey_algo_note (pubkey_algo_t algo);
+void print_cipher_algo_note (cipher_algo_t algo);
+void print_digest_algo_note (digest_algo_t algo);
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );
@@ -108,7 +108,8 @@ int openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use);
 int openpgp_pk_algo_usage ( int algo );
 const char *openpgp_pk_algo_name (pubkey_algo_t algo);
 
-int openpgp_md_test_algo( int algo );
+enum gcry_md_algos map_md_openpgp_to_gcry (digest_algo_t algo);
+int openpgp_md_test_algo (digest_algo_t algo);
 const char *openpgp_md_algo_name (int algo);
 
 struct expando_args

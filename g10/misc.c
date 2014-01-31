@@ -1,6 +1,7 @@
 /* misc.c - miscellaneous functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -286,7 +287,7 @@ buffer_to_u32( const byte *buffer )
 }
 
 void
-print_pubkey_algo_note( int algo )
+print_pubkey_algo_note (pubkey_algo_t algo)
 {
   if(algo >= 100 && algo <= 110)
     {
@@ -305,7 +306,7 @@ print_pubkey_algo_note( int algo )
 }
 
 void
-print_cipher_algo_note( int algo )
+print_cipher_algo_note (cipher_algo_t algo)
 {
   if(algo >= 100 && algo <= 110)
     {
@@ -320,7 +321,7 @@ print_cipher_algo_note( int algo )
 }
 
 void
-print_digest_algo_note( int algo )
+print_digest_algo_note (digest_algo_t algo)
 {
   if(algo >= 100 && algo <= 110)
     {
@@ -579,17 +580,43 @@ openpgp_pk_algo_name (pubkey_algo_t algo)
 }
 
 
-int
-openpgp_md_test_algo( int algo )
+/* Explicit mapping of OpenPGP digest algos to Libgcrypt.  */
+/* FIXME: We do not yes use it everywhere.  */
+enum gcry_md_algos
+map_md_openpgp_to_gcry (digest_algo_t algo)
 {
-  /* Note: If the list of actual supported OpenPGP algorithms changes,
-     make sure that our hard coded values at
-     print_status_begin_signing() gets updated. */
-  /* 4, 5, 6, 7 are defined by rfc2440 but will be removed from the
-     next revision of the standard.  */
-  if (algo < 0 || algo > 110 || (algo >= 4 && algo <= 7))
+  switch (algo)
+    {
+    case DIGEST_ALGO_MD5:    return GCRY_MD_MD5;
+    case DIGEST_ALGO_SHA1:   return GCRY_MD_SHA1;
+    case DIGEST_ALGO_RMD160: return GCRY_MD_RMD160;
+    case DIGEST_ALGO_SHA224: return GCRY_MD_SHA224;
+    case DIGEST_ALGO_SHA256: return GCRY_MD_SHA256;
+    case DIGEST_ALGO_SHA384: return GCRY_MD_SHA384;
+    case DIGEST_ALGO_SHA512: return GCRY_MD_SHA512;
+    }
+  return 0;
+}
+
+
+/* Return 0 if ALGO is suitable and implemented OpenPGP hash
+   algorithm.  Note: To only test for a valid OpenPGP hash algorithm,
+   it is better to use map_md_openpgp_to_gcry. */
+int
+openpgp_md_test_algo (digest_algo_t algo)
+{
+  enum gcry_md_algos ga;
+
+  ga = map_md_openpgp_to_gcry (algo);
+  switch (algo)
+    {
+    default:
+      break;
+    }
+  if (!ga)
     return gpg_error (GPG_ERR_DIGEST_ALGO);
-  return gcry_md_test_algo (algo);
+
+  return gcry_md_test_algo (ga);
 }
 
 
@@ -599,9 +626,17 @@ openpgp_md_test_algo( int algo )
 const char *
 openpgp_md_algo_name (int algo)
 {
-  if (algo < 0 || algo > 110)
-    return "?";
-  return gcry_md_algo_name (algo);
+  switch (algo)
+    {
+    case DIGEST_ALGO_MD5:    return "MD5";
+    case DIGEST_ALGO_SHA1:   return "SHA1";
+    case DIGEST_ALGO_RMD160: return "RIPEMD160";
+    case DIGEST_ALGO_SHA256: return "SHA256";
+    case DIGEST_ALGO_SHA384: return "SHA384";
+    case DIGEST_ALGO_SHA512: return "SHA512";
+    case DIGEST_ALGO_SHA224: return "SHA224";
+    }
+  return "?";
 }
 
 
@@ -920,6 +955,8 @@ string_to_digest_algo (const char *string)
 {
   int val;
 
+  /* FIXME: We should make use of our wrapper fucntion and not assume
+     that there is a 1 to 1 mapping between OpenPGP and Libgcrypt.  */
   val = gcry_md_map_name (string);
   if (!val && string && (string[0]=='H' || string[0]=='h'))
     {

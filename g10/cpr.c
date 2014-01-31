@@ -307,24 +307,19 @@ write_status_begin_signing (gcry_md_hd_t md)
     {
       char buf[100];
       size_t buflen;
-      int i;
+      int i, ga;
 
-      /* We use a hard coded list of possible algorithms.  Using other
-         algorithms than specified by OpenPGP does not make sense
-         anyway.  We do this out of performance reasons: Walking all
-         the 110 allowed Ids is not a good idea given the way the
-         check is implemented in libgcrypt.  Recall that the only use
-         of this status code is to create the micalg algorithm for
-         PGP/MIME. */
       buflen = 0;
-      for (i=1; i <= 11; i++)
-        if (i < 4 || i > 7)
-          if (gcry_md_is_enabled (md, i) && buflen < DIM(buf))
+      for (i=1; i <= 110; i++)
+        {
+          ga = map_md_openpgp_to_gcry (i);
+          if (ga && gcry_md_is_enabled (md, ga) && buflen+10 < DIM(buf))
             {
               snprintf (buf+buflen, DIM(buf) - buflen - 1,
                         "%sH%d", buflen? " ":"",i);
               buflen += strlen (buf+buflen);
             }
+        }
       write_status_text (STATUS_BEGIN_SIGNING, buf);
     }
   else
