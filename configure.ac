@@ -212,6 +212,39 @@ AC_ARG_ENABLE(selinux-support,
               selinux_support=$enableval, selinux_support=no)
 AC_MSG_RESULT($selinux_support)
 
+
+#
+# Options to disable algorithm
+#
+
+GNUPG_GPG_DISABLE_ALGO([rsa],[RSA public key])
+# Elgamal is a MUST algorithm
+# DSA is a MUST algorithm
+GNUPG_GPG_DISABLE_ALGO([ecdh],[ECDH public key])
+GNUPG_GPG_DISABLE_ALGO([ecdsa],[ECDSA public key])
+GNUPG_GPG_DISABLE_ALGO([eddsa],[EdDSA public key])
+
+GNUPG_GPG_DISABLE_ALGO([idea],[IDEA cipher])
+# 3DES is a MUST algorithm
+GNUPG_GPG_DISABLE_ALGO([cast5],[CAST5 cipher])
+GNUPG_GPG_DISABLE_ALGO([blowfish],[BLOWFISH cipher])
+GNUPG_GPG_DISABLE_ALGO([aes128],[AES128 cipher])
+GNUPG_GPG_DISABLE_ALGO([aes192],[AES192 cipher])
+GNUPG_GPG_DISABLE_ALGO([aes256],[AES256 cipher])
+GNUPG_GPG_DISABLE_ALGO([twofish],[TWOFISH cipher])
+GNUPG_GPG_DISABLE_ALGO([camellia128],[CAMELLIA128 cipher])
+GNUPG_GPG_DISABLE_ALGO([camellia192],[CAMELLIA192 cipher])
+GNUPG_GPG_DISABLE_ALGO([camellia256],[CAMELLIA256 cipher])
+
+GNUPG_GPG_DISABLE_ALGO([md5],[MD5 hash])
+# SHA1 is a MUSt algorithm
+GNUPG_GPG_DISABLE_ALGO([rmd160],[RIPE-MD160 hash])
+GNUPG_GPG_DISABLE_ALGO([sha224],[SHA-224 hash])
+GNUPG_GPG_DISABLE_ALGO([sha256],[SHA-256 hash])
+GNUPG_GPG_DISABLE_ALGO([sha384],[SHA-384 hash])
+GNUPG_GPG_DISABLE_ALGO([sha512],[SHA-512 hash])
+
+
 # Allow disabling of zip support.
 # This is in general not a good idea because according to rfc4880 OpenPGP
 # implementations SHOULD support ZLIB.

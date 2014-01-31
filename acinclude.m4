@@ -7,12 +7,12 @@ dnl GnuPG is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
 dnl the Free Software Foundation; either version 3 of the License, or
 dnl (at your option) any later version.
-dnl 
+dnl
 dnl GnuPG is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
-dnl 
+dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -38,7 +38,7 @@ AC_DEFUN([GNUPG_CHECK_TYPEDEF],
 dnl GNUPG_CHECK_GNUMAKE
 dnl
 AC_DEFUN([GNUPG_CHECK_GNUMAKE],
-  [ 
+  [
     if ${MAKE-make} --version 2>/dev/null | grep '^GNU ' >/dev/null 2>&1; then
         :
     else
@@ -59,7 +59,7 @@ AC_DEFUN([GNUPG_CHECK_FAQPROG],
     if faqprog.pl -V 2>/dev/null | grep '^faqprog.pl ' >/dev/null 2>&1; then
         working_faqprog=yes
         FAQPROG="faqprog.pl"
-    else 
+    else
 	working_faqprog=no
         FAQPROG=": "
     fi
@@ -77,7 +77,7 @@ dnl ***    ftp://ftp.gnupg.org/gcrypt/contrib/faqprog.pl )
 dnl *** No need to worry about this warning.
 dnl ***]])
 dnl     fi
-   ])       
+   ])
 
 dnl GNUPG_CHECK_DOCBOOK_TO_TEXI
 dnl
@@ -93,7 +93,7 @@ AC_DEFUN([GNUPG_CHECK_DOCBOOK_TO_TEXI],
     fi
     AC_MSG_RESULT($working_sgmltotexi)
     AM_CONDITIONAL(HAVE_DOCBOOK_TO_TEXI, test "$working_sgmltotexi" = "yes" )
-   ])       
+   ])
 
 
 
@@ -162,7 +162,7 @@ AC_DEFUN([GNUPG_CHECK_ENDIAN],
 # Add a --enable-NAME option to configure an set the
 # shell variable build_NAME either to "yes" or "no".  DEFAULT must
 # either be "yes" or "no" and decided on the default value for
-# build_NAME and whether --enable-NAME or --disable-NAME is shown with 
+# build_NAME and whether --enable-NAME or --disable-NAME is shown with
 # ./configure --help
 AC_DEFUN([GNUPG_BUILD_PROGRAM],
   [build_$1=$2
@@ -178,10 +178,27 @@ AC_DEFUN([GNUPG_BUILD_PROGRAM],
    case "$build_$1" in
          no|yes)
            ;;
-         *) 
+         *)
            AC_MSG_ERROR([only yes or no allowed for feature --enable-$1])
            ;;
    esac
+  ])
+
+
+
+# GNUPG_DISABLE_GPG_ALGO(NAME,DESCRIPTION)
+#
+# Add a --disable-gpg-NAME option and the corresponding ac_define
+# GPG_USE_<NAME>.
+AC_DEFUN([GNUPG_GPG_DISABLE_ALGO],
+  [AC_MSG_CHECKING([whether to enable the $2 for gpg])
+   AC_ARG_ENABLE([gpg-$1], AC_HELP_STRING([--disable-gpg-$1],
+                                          [disable the $2 algorithm in gpg]),
+                                          , enableval=yes)
+   AC_MSG_RESULT($enableval)
+   if test x"$enableval" = xyes ; then
+     AC_DEFINE(GPG_USE_[]m4_toupper($1), 1, [Define to support the $2])
+   fi
   ])
 
 

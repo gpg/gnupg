@@ -348,17 +348,37 @@ map_cipher_openpgp_to_gcry (cipher_algo_t algo)
   switch (algo)
     {
     case CIPHER_ALGO_NONE:        return GCRY_CIPHER_NONE;
+#ifdef GPG_USE_IDEA
     case CIPHER_ALGO_IDEA:        return GCRY_CIPHER_IDEA;
+#endif
     case CIPHER_ALGO_3DES:	  return GCRY_CIPHER_3DES;
+#ifdef GPG_USE_CAST5
     case CIPHER_ALGO_CAST5:	  return GCRY_CIPHER_CAST5;
+#endif
+#ifdef GPG_USE_BLOWFISH
     case CIPHER_ALGO_BLOWFISH:    return GCRY_CIPHER_BLOWFISH;
+#endif
+#ifdef GPG_USE_AES128
     case CIPHER_ALGO_AES:         return GCRY_CIPHER_AES;
+#endif
+#ifdef GPG_USE_AES192
     case CIPHER_ALGO_AES192:      return GCRY_CIPHER_AES192;
+#endif
+#ifdef GPG_USE_AES256
     case CIPHER_ALGO_AES256:      return GCRY_CIPHER_AES256;
+#endif
+#ifdef GPG_USE_TWOFISH
     case CIPHER_ALGO_TWOFISH:     return GCRY_CIPHER_TWOFISH;
+#endif
+#ifdef GPG_USE_CAMELLIA128
     case CIPHER_ALGO_CAMELLIA128: return GCRY_CIPHER_CAMELLIA128;
+#endif
+#ifdef GPG_USE_CAMELLIA192
     case CIPHER_ALGO_CAMELLIA192: return GCRY_CIPHER_CAMELLIA192;
+#endif
+#ifdef GPG_USE_CAMELLIA256
     case CIPHER_ALGO_CAMELLIA256: return GCRY_CIPHER_CAMELLIA256;
+#endif
     }
   return 0;
 }
@@ -437,17 +457,6 @@ openpgp_cipher_test_algo (cipher_algo_t algo)
   enum gcry_cipher_algos ga;
 
   ga = map_cipher_openpgp_to_gcry (algo);
-
-  /* Use this explicit list to disable certain algorithms. */
-  switch (algo)
-    {
-    /* case CIPHER_ALGO_IDEA:         */
-    /*   ga = 0; */
-    /*   break; */
-    default:
-      break;
-    }
-
   if (!ga)
     return gpg_error (GPG_ERR_CIPHER_ALGO);
 
@@ -497,15 +506,23 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
 
   switch (algo)
     {
+#ifdef GPG_USE_RSA
     case PUBKEY_ALGO_RSA:       ga = GCRY_PK_RSA;   break;
     case PUBKEY_ALGO_RSA_E:     ga = GCRY_PK_RSA_E; break;
     case PUBKEY_ALGO_RSA_S:     ga = GCRY_PK_RSA_S; break;
+#endif
     case PUBKEY_ALGO_ELGAMAL_E: ga = GCRY_PK_ELG;   break;
     case PUBKEY_ALGO_DSA:       ga = GCRY_PK_DSA;   break;
 
-    case PUBKEY_ALGO_ECDH:
-    case PUBKEY_ALGO_ECDSA:
+#ifdef GPG_USE_ECDH
+    case PUBKEY_ALGO_ECDH:      ga = GCRY_PK_ECC;   break;
+#endif
+#ifdef GPG_USE_ECDSA
+    case PUBKEY_ALGO_ECDSA:     ga = GCRY_PK_ECC;   break;
+#endif
+#ifdef GPG_USE_EDDSA
     case PUBKEY_ALGO_EDDSA:     ga = GCRY_PK_ECC;   break;
+#endif
 
     case PUBKEY_ALGO_ELGAMAL:
       /* Dont't allow type 20 keys unless in rfc2440 mode.  */
@@ -587,32 +604,38 @@ map_md_openpgp_to_gcry (digest_algo_t algo)
 {
   switch (algo)
     {
+#ifdef GPG_USE_MD5
     case DIGEST_ALGO_MD5:    return GCRY_MD_MD5;
+#endif
     case DIGEST_ALGO_SHA1:   return GCRY_MD_SHA1;
+#ifdef GPG_USE_RMD160
     case DIGEST_ALGO_RMD160: return GCRY_MD_RMD160;
+#endif
+#ifdef GPG_USE_SHA224
     case DIGEST_ALGO_SHA224: return GCRY_MD_SHA224;
+#endif
+#ifdef GPG_USE_SHA256
     case DIGEST_ALGO_SHA256: return GCRY_MD_SHA256;
+#endif
+#ifdef GPG_USE_SHA384
     case DIGEST_ALGO_SHA384: return GCRY_MD_SHA384;
+#endif
+#ifdef GPG_USE_512
     case DIGEST_ALGO_SHA512: return GCRY_MD_SHA512;
+#endif
     }
   return 0;
 }
 
 
 /* Return 0 if ALGO is suitable and implemented OpenPGP hash
-   algorithm.  Note: To only test for a valid OpenPGP hash algorithm,
-   it is better to use map_md_openpgp_to_gcry. */
+   algorithm.  */
 int
 openpgp_md_test_algo (digest_algo_t algo)
 {
   enum gcry_md_algos ga;
 
   ga = map_md_openpgp_to_gcry (algo);
-  switch (algo)
-    {
-    default:
-      break;
-    }
   if (!ga)
     return gpg_error (GPG_ERR_DIGEST_ALGO);
 
