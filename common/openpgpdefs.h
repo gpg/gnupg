@@ -107,9 +107,7 @@ typedef enum
     CIPHER_ALGO_TWOFISH	    = 10, /* 256 bit */
     CIPHER_ALGO_CAMELLIA128 = 11,
     CIPHER_ALGO_CAMELLIA192 = 12,
-    CIPHER_ALGO_CAMELLIA256 = 13,
-
-    CIPHER_ALGO_DUMMY      = 110 /* No encryption at all (private). */
+    CIPHER_ALGO_CAMELLIA256 = 13
   }
 cipher_algo_t;
 

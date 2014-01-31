@@ -341,35 +341,53 @@ print_digest_algo_note( int algo )
 /* Map OpenPGP algo numbers to those used by Libgcrypt.  We need to do
    this for algorithms we implemented in Libgcrypt after they become
    part of OpenPGP.  */
-int
-map_cipher_openpgp_to_gcry (int algo)
+enum gcry_cipher_algos
+map_cipher_openpgp_to_gcry (cipher_algo_t algo)
 {
   switch (algo)
     {
-    case CIPHER_ALGO_CAMELLIA128: return 310;
-    case CIPHER_ALGO_CAMELLIA192: return 311;
-    case CIPHER_ALGO_CAMELLIA256: return 312;
-    default: return algo;
+    case CIPHER_ALGO_NONE:        return GCRY_CIPHER_NONE;
+    case CIPHER_ALGO_IDEA:        return GCRY_CIPHER_IDEA;
+    case CIPHER_ALGO_3DES:	  return GCRY_CIPHER_3DES;
+    case CIPHER_ALGO_CAST5:	  return GCRY_CIPHER_CAST5;
+    case CIPHER_ALGO_BLOWFISH:    return GCRY_CIPHER_BLOWFISH;
+    case CIPHER_ALGO_AES:         return GCRY_CIPHER_AES;
+    case CIPHER_ALGO_AES192:      return GCRY_CIPHER_AES192;
+    case CIPHER_ALGO_AES256:      return GCRY_CIPHER_AES256;
+    case CIPHER_ALGO_TWOFISH:     return GCRY_CIPHER_TWOFISH;
+    case CIPHER_ALGO_CAMELLIA128: return GCRY_CIPHER_CAMELLIA128;
+    case CIPHER_ALGO_CAMELLIA192: return GCRY_CIPHER_CAMELLIA192;
+    case CIPHER_ALGO_CAMELLIA256: return GCRY_CIPHER_CAMELLIA256;
     }
+  return 0;
 }
 
-/* The inverse fucntion of above.  */
-static int
-map_cipher_gcry_to_openpgp (int algo)
+/* The inverse function of above.  */
+static cipher_algo_t
+map_cipher_gcry_to_openpgp (enum gcry_cipher_algos algo)
 {
   switch (algo)
     {
-    case 310: return CIPHER_ALGO_CAMELLIA128;
-    case 311: return CIPHER_ALGO_CAMELLIA192;
-    case 312: return CIPHER_ALGO_CAMELLIA256;
-    default: return algo;
+    case GCRY_CIPHER_NONE:        return CIPHER_ALGO_NONE;
+    case GCRY_CIPHER_IDEA:        return CIPHER_ALGO_IDEA;
+    case GCRY_CIPHER_3DES:        return CIPHER_ALGO_3DES;
+    case GCRY_CIPHER_CAST5:       return CIPHER_ALGO_CAST5;
+    case GCRY_CIPHER_BLOWFISH:    return CIPHER_ALGO_BLOWFISH;
+    case GCRY_CIPHER_AES:         return CIPHER_ALGO_AES;
+    case GCRY_CIPHER_AES192:      return CIPHER_ALGO_AES192;
+    case GCRY_CIPHER_AES256:      return CIPHER_ALGO_AES256;
+    case GCRY_CIPHER_TWOFISH:     return CIPHER_ALGO_TWOFISH;
+    case GCRY_CIPHER_CAMELLIA128: return CIPHER_ALGO_CAMELLIA128;
+    case GCRY_CIPHER_CAMELLIA192: return CIPHER_ALGO_CAMELLIA192;
+    case GCRY_CIPHER_CAMELLIA256: return CIPHER_ALGO_CAMELLIA256;
+    default: return 0;
     }
 }
 
 /* Map Gcrypt public key algorithm numbers to those used by OpenPGP.
    FIXME: This mapping is used at only two places - we should get rid
    of it.  */
-int
+pubkey_algo_t
 map_pk_gcry_to_openpgp (enum gcry_pk_algos algo)
 {
   switch (algo)
@@ -383,7 +401,7 @@ map_pk_gcry_to_openpgp (enum gcry_pk_algos algo)
 
 /* Return the block length of an OpenPGP cipher algorithm.  */
 int
-openpgp_cipher_blocklen (int algo)
+openpgp_cipher_blocklen (cipher_algo_t algo)
 {
   /* We use the numbers from OpenPGP to be sure that we get the right
      block length.  This is so that the packet parsing code works even
@@ -394,9 +412,13 @@ openpgp_cipher_blocklen (int algo)
      size. */
   switch (algo)
     {
-    case 7: case 8: case 9: /* AES */
-    case 10: /* Twofish */
-    case 11: case 12: case 13: /* Camellia */
+    case CIPHER_ALGO_AES:
+    case CIPHER_ALGO_AES192:
+    case CIPHER_ALGO_AES256:
+    case CIPHER_ALGO_TWOFISH:
+    case CIPHER_ALGO_CAMELLIA128:
+    case CIPHER_ALGO_CAMELLIA192:
+    case CIPHER_ALGO_CAMELLIA256:
       return 16;
 
     default:
@@ -409,22 +431,50 @@ openpgp_cipher_blocklen (int algo)
  * the OpenPGP contraints for the algo ID.
  */
 int
-openpgp_cipher_test_algo( int algo )
+openpgp_cipher_test_algo (cipher_algo_t algo)
 {
-  /* (5 and 6 are marked reserved by rfc4880.)  */
-  if ( algo < 0 || algo > 110 || algo == 5 || algo == 6 )
+  enum gcry_cipher_algos ga;
+
+  ga = map_cipher_openpgp_to_gcry (algo);
+
+  /* Use this explicit list to disable certain algorithms. */
+  switch (algo)
+    {
+    /* case CIPHER_ALGO_IDEA:         */
+    /*   ga = 0; */
+    /*   break; */
+    default:
+      break;
+    }
+
+  if (!ga)
     return gpg_error (GPG_ERR_CIPHER_ALGO);
 
-  return gcry_cipher_test_algo (map_cipher_openpgp_to_gcry (algo));
+  return gcry_cipher_test_algo (ga);
 }
 
 /* Map the OpenPGP cipher algorithm whose ID is contained in ALGORITHM to a
    string representation of the algorithm name.  For unknown algorithm
    IDs this function returns "?".  */
 const char *
-openpgp_cipher_algo_name (int algo)
+openpgp_cipher_algo_name (cipher_algo_t algo)
 {
-  return gnupg_cipher_algo_name (map_cipher_openpgp_to_gcry (algo));
+  switch (algo)
+    {
+    case CIPHER_ALGO_NONE:        break;
+    case CIPHER_ALGO_IDEA:        return "IDEA";
+    case CIPHER_ALGO_3DES:	  return "3DES";
+    case CIPHER_ALGO_CAST5:	  return "CAST5";
+    case CIPHER_ALGO_BLOWFISH:    return "BLOWFISH";
+    case CIPHER_ALGO_AES:         return "AES";
+    case CIPHER_ALGO_AES192:      return "AES192";
+    case CIPHER_ALGO_AES256:      return "AES256";
+    case CIPHER_ALGO_TWOFISH:     return "TWOFISH";
+    case CIPHER_ALGO_CAMELLIA128: return "CAMELLIA128";
+    case CIPHER_ALGO_CAMELLIA192: return "CAMELLIA192";
+    case CIPHER_ALGO_CAMELLIA256: return "CAMELLIA256";
+    }
+  return "?";
 }
 
 

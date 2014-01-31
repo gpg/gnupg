@@ -90,22 +90,25 @@ u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
-int map_cipher_openpgp_to_gcry (int algo);
+
+enum gcry_cipher_algos map_cipher_openpgp_to_gcry (cipher_algo_t algo);
 #define openpgp_cipher_open(_a,_b,_c,_d) \
   gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
 #define openpgp_cipher_get_algo_keylen(_a) \
   gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
 #define openpgp_cipher_get_algo_blklen(_a) \
   gcry_cipher_get_algo_blklen(map_cipher_openpgp_to_gcry((_a)))
-int openpgp_cipher_blocklen (int algo);
-int openpgp_cipher_test_algo( int algo );
-const char *openpgp_cipher_algo_name (int algo);
-int map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
+int openpgp_cipher_blocklen (cipher_algo_t algo);
+int openpgp_cipher_test_algo(cipher_algo_t algo);
+const char *openpgp_cipher_algo_name (cipher_algo_t algo);
+
+pubkey_algo_t map_pk_gcry_to_openpgp (enum gcry_pk_algos algo);
 int openpgp_pk_test_algo (pubkey_algo_t algo);
 int openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use);
 int openpgp_pk_algo_usage ( int algo );
-int openpgp_md_test_algo( int algo );
 const char *openpgp_pk_algo_name (pubkey_algo_t algo);
+
+int openpgp_md_test_algo( int algo );
 const char *openpgp_md_algo_name (int algo);
 
 struct expando_args

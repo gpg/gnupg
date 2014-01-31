@@ -183,9 +183,9 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
     }
-  if (kdf_encr_algo != GCRY_CIPHER_AES128
-      && kdf_encr_algo != GCRY_CIPHER_AES192
-      && kdf_encr_algo != GCRY_CIPHER_AES256)
+  if (kdf_encr_algo != CIPHER_ALGO_AES
+      && kdf_encr_algo != CIPHER_ALGO_AES192
+      && kdf_encr_algo != CIPHER_ALGO_AES256)
     {
       xfree (secret_x);
       return gpg_error (GPG_ERR_BAD_PUBKEY);
