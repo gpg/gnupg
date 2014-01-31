@@ -811,6 +811,43 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
 }
 
 
+static int
+build_list_pk_test_algo (int algo)
+{
+  return openpgp_pk_test_algo (algo);
+}
+
+static const char *
+build_list_pk_algo_name (int algo)
+{
+  return openpgp_pk_algo_name (algo);
+}
+
+static int
+build_list_cipher_test_algo (int algo)
+{
+  return openpgp_cipher_test_algo (algo);
+}
+
+static const char *
+build_list_cipher_algo_name (int algo)
+{
+  return openpgp_cipher_algo_name (algo);
+}
+
+static int
+build_list_md_test_algo (int algo)
+{
+  return openpgp_md_test_algo (algo);
+}
+
+static const char *
+build_list_md_algo_name (int algo)
+{
+  return openpgp_md_algo_name (algo);
+}
+
+
 static const char *
 my_strusage( int level )
 {
@@ -861,23 +898,23 @@ my_strusage( int level )
       case 33: p = _("\nSupported algorithms:\n"); break;
       case 34:
 	if (!pubkeys)
-            pubkeys = build_list (_("Pubkey: "), 0,
-                                  openpgp_pk_algo_name,
-                                  openpgp_pk_test_algo );
+            pubkeys = build_list (_("Pubkey: "), 1,
+                                  build_list_pk_algo_name,
+                                  build_list_pk_test_algo );
 	p = pubkeys;
 	break;
       case 35:
 	if( !ciphers )
 	    ciphers = build_list(_("Cipher: "), 'S',
-                                 openpgp_cipher_algo_name,
-                                 openpgp_cipher_test_algo );
+                                 build_list_cipher_algo_name,
+                                 build_list_cipher_test_algo );
 	p = ciphers;
 	break;
       case 36:
 	if( !digests )
 	    digests = build_list(_("Hash: "), 'H',
-                                 gcry_md_algo_name,
-                                 openpgp_md_test_algo );
+                                 build_list_md_algo_name,
+                                 build_list_md_test_algo );
 	p = digests;
 	break;
       case 37:
@@ -931,7 +968,10 @@ build_list (const char *text, char letter,
           if (opt.verbose && letter)
             {
               char num[20];
-              snprintf (num, sizeof num, " (%c%d)", letter, i);
+              if (letter == 1)
+                snprintf (num, sizeof num, " (%d)", i);
+              else
+                snprintf (num, sizeof num, " (%c%d)", letter, i);
               put_membuf_str (&mb, num);
             }
 	}
@@ -1533,7 +1573,16 @@ list_config(char *items)
       if(show_all || ascii_strcasecmp(name,"pubkey")==0)
 	{
 	  es_printf ("cfg:pubkey:");
-	  print_algo_numbers (openpgp_pk_test_algo);
+	  print_algo_numbers (build_list_pk_test_algo);
+	  es_printf ("\n");
+	  any=1;
+	}
+
+      if(show_all || ascii_strcasecmp(name,"pubkeyname")==0)
+	{
+	  es_printf ("cfg:pubkeyname:");
+	  print_algo_names (build_list_pk_test_algo,
+                            build_list_pk_algo_name);
 	  es_printf ("\n");
 	  any=1;
 	}
@@ -1541,7 +1590,7 @@ list_config(char *items)
       if(show_all || ascii_strcasecmp(name,"cipher")==0)
 	{
 	  es_printf ("cfg:cipher:");
-	  print_algo_numbers(openpgp_cipher_test_algo);
+	  print_algo_numbers (build_list_cipher_test_algo);
 	  es_printf ("\n");
 	  any=1;
 	}
@@ -1549,7 +1598,8 @@ list_config(char *items)
       if (show_all || !ascii_strcasecmp (name,"ciphername"))
 	{
 	  es_printf ("cfg:ciphername:");
-	  print_algo_names (openpgp_cipher_test_algo,openpgp_cipher_algo_name);
+	  print_algo_names (build_list_cipher_test_algo,
+                            build_list_cipher_algo_name);
 	  es_printf ("\n");
 	  any = 1;
 	}
@@ -1559,7 +1609,7 @@ list_config(char *items)
 	 || ascii_strcasecmp(name,"hash")==0)
 	{
 	  es_printf ("cfg:digest:");
-	  print_algo_numbers(openpgp_md_test_algo);
+	  print_algo_numbers (build_list_md_test_algo);
 	  es_printf ("\n");
 	  any=1;
 	}
@@ -1569,7 +1619,8 @@ list_config(char *items)
           || !ascii_strcasecmp(name,"hashname"))
 	{
 	  es_printf ("cfg:digestname:");
-	  print_algo_names (openpgp_md_test_algo, gcry_md_algo_name);
+	  print_algo_names (build_list_md_test_algo,
+                            build_list_md_algo_name);
 	  es_printf ("\n");
 	  any=1;
 	}
