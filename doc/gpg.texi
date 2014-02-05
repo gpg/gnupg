@@ -2053,6 +2053,15 @@ Since GnuPG 2.0.10, this mode is always used and thus this option is
 obsolete; it does not harm to use it though.
 @end ifclear
 
+@ifset gpgtwoone
+@item --legacy-list-mode
+@opindex legacy-list-mode
+Revert to the pre-2.1 public key list mode.  This only affects the
+human readable output and not the machine interface
+(i.e. @code{--with-colons}).  Note that the legacy format does not
+allow to convey suitable information for elliptic curves.
+@end ifset
+
 @item --with-fingerprint
 @opindex with-fingerprint
 Same as the command @option{--fingerprint} but changes only the format

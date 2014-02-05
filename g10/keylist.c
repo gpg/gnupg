@@ -136,13 +136,13 @@ print_seckey_info (PKT_public_key *pk)
 {
   u32 keyid[2];
   char *p;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   keyid_from_pk (pk, keyid);
   p = get_user_id_native (keyid);
 
-  tty_printf ("\nsec  %4u%c/%s %s %s\n",
-	      nbits_from_pk (pk),
-	      pubkey_letter (pk->pubkey_algo),
+  tty_printf ("\nsec  %s/%s %s %s\n",
+              pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
 	      keystr (keyid), datestr_from_pk (pk), p);
 
   xfree (p);
@@ -156,6 +156,7 @@ print_pubkey_info (estream_t fp, PKT_public_key * pk)
 {
   u32 keyid[2];
   char *p;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   keyid_from_pk (pk, keyid);
 
@@ -168,9 +169,8 @@ print_pubkey_info (estream_t fp, PKT_public_key * pk)
 
   if (fp)
     tty_printf ("\n");
-  tty_fprintf (fp, "pub  %4u%c/%s %s %s\n",
-               nbits_from_pk (pk),
-               pubkey_letter (pk->pubkey_algo),
+  tty_fprintf (fp, "pub  %s/%s %s %s\n",
+               pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                keystr (keyid), datestr_from_pk (pk), p);
   xfree (p);
 }
@@ -186,6 +186,7 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
   char *hexgrip;
   char *serialno;
   int s2k_char;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   for (node = keyblock; node; node = node->next)
     {
@@ -207,10 +208,11 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
           else
             s2k_char = '#';  /* Key not found.  */
 
-          tty_fprintf (fp, "%s%c  %4u%c/%s  ",
+          tty_fprintf (fp, "%s%c  %s/%s  ",
                        node->pkt->pkttype == PKT_PUBLIC_KEY ? "sec" : "ssb",
-                       s2k_char, nbits_from_pk (pk),
-                       pubkey_letter (pk->pubkey_algo), keystr_from_pk (pk));
+                       s2k_char,
+                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                       keystr_from_pk (pk));
           tty_fprintf (fp, _("created: %s"), datestr_from_pk (pk));
           tty_fprintf (fp, "  ");
           tty_fprintf (fp, _("expires: %s"), expirestr_from_pk (pk));
@@ -780,6 +782,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   int s2k_char;
   char *hexgrip = NULL;
   char *serialno = NULL;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -811,11 +814,12 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 
   check_trustdb_stale ();
 
-  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s",
-          secret? "sec":"pub",
-          s2k_char,
-          nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
-          keystr_from_pk (pk), datestr_from_pk (pk));
+
+  es_fprintf (es_stdout, "%s%c  %s/%s %s",
+              secret? "sec":"pub",
+              s2k_char,
+              pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+              keystr_from_pk (pk), datestr_from_pk (pk));
 
   if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
       || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
@@ -947,10 +951,10 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
           else
             s2k_char = ' ';
 
-	  es_fprintf (es_stdout, "%s%c  %4u%c/%s %s",
+	  es_fprintf (es_stdout, "%s%c  %s/%s %s",
                   secret? "ssb":"sub",
                   s2k_char,
-		  nbits_from_pk (pk2), pubkey_letter (pk2->pubkey_algo),
+                  pubkey_string (pk2, pkstrbuf, sizeof pkstrbuf),
 		  keystr_from_pk (pk2), datestr_from_pk (pk2));
 
           if (pk2->pubkey_algo == PUBKEY_ALGO_ECDSA

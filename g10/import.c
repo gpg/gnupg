@@ -792,6 +792,7 @@ import_one (ctrl_t ctrl,
     int mod_key = 0;
     int same_key = 0;
     int non_self = 0;
+    char pkstrbuf[PUBKEY_STRING_SIZE];
 
     /* get the key and print some info about it */
     node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
@@ -805,9 +806,8 @@ import_one (ctrl_t ctrl,
 
     if( opt.verbose && !opt.interactive )
       {
-	log_info( "pub  %4u%c/%s %s  ",
-		  nbits_from_pk( pk ),
-		  pubkey_letter( pk->pubkey_algo ),
+	log_info( "pub  %s/%s %s  ",
+		  pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
 		  keystr_from_pk(pk), datestr_from_pk(pk) );
 	if (uidnode)
 	  print_utf8_buffer (log_get_stream (),
@@ -1539,6 +1539,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
   int rc = 0;
   int nr_prev;
   kbnode_t pub_keyblock;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* Get the key and print some info about it */
   node = find_kbnode (keyblock, PKT_SECRET_KEY);
@@ -1552,9 +1553,8 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
 
   if (opt.verbose)
     {
-      log_info ("sec  %4u%c/%s %s   ",
-                nbits_from_pk (pk),
-                pubkey_letter (pk->pubkey_algo),
+      log_info ("sec  %s/%s %s   ",
+                pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                 keystr_from_pk (pk), datestr_from_pk (pk));
       if (uidnode)
         print_utf8_buffer (log_get_stream (), uidnode->pkt->pkt.user_id->name,

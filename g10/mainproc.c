@@ -923,6 +923,7 @@ list_node( CTX c, KBNODE node )
 {
     int any=0;
     int mainkey;
+    char pkstrbuf[PUBKEY_STRING_SIZE];
 
     if( !node )
 	;
@@ -958,9 +959,10 @@ list_node( CTX c, KBNODE node )
 	    }
 	  }
 	else
-	  printf("%s  %4u%c/%s %s%s",
-		 mainkey? "pub":"sub", nbits_from_pk( pk ),
-		 pubkey_letter( pk->pubkey_algo ), keystr_from_pk( pk ),
+	  printf("%s  %s/%s %s%s",
+		 mainkey? "pub":"sub",
+                 pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+		 keystr_from_pk( pk ),
 		 datestr_from_pk( pk ), mainkey?" ":"");
 
 	if( mainkey ) {

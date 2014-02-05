@@ -2683,6 +2683,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
   int i;
   int do_warn = 0;
   PKT_public_key *primary = NULL;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   if (opt.with_colons)
     {
@@ -2761,15 +2762,20 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	    }
 
 	  keyid_from_pk (pk, NULL);
-	  tty_printf ("%s%c %4u%c/%s  ",
+	  tty_printf ("%s%c %s/%s",
 		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
 		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
 		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
 		      (node->flag & NODFLG_SELKEY) ? '*' : ' ',
-		      nbits_from_pk (pk),
-		      pubkey_letter (pk->pubkey_algo), keystr (pk->keyid));
+                      pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+		      keystr (pk->keyid));
 
-	  tty_printf (_("created: %s"), datestr_from_pk (pk));
+          if (opt.legacy_list_mode)
+            tty_printf ("  ");
+          else
+            tty_printf ("\n     ");
+
+          tty_printf (_("created: %s"), datestr_from_pk (pk));
 	  tty_printf ("  ");
 	  if (pk->flags.revoked)
 	    tty_printf (_("revoked: %s"), revokestr_from_pk (pk));
@@ -2785,8 +2791,8 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
               && pk->seckey_info->is_protected
               && pk->seckey_info->s2k.mode == 1002)
 	    {
-	      tty_printf ("                     ");
-	      tty_printf (_("card-no: "));
+	      tty_printf ("%*s%s", opt.legacy_list_mode? 21:5, "",
+                          _("card-no: "));
 	      if (pk->seckey_info->ivlen == 16
 		  && !memcmp (pk->seckey_info->iv,
                               "\xD2\x76\x00\x01\x24\x01", 6))
@@ -2813,7 +2819,9 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	    {
 	      if (opt.trust_model != TM_ALWAYS)
 		{
-		  tty_printf ("%*s", (int) keystrlen () + 13, "");
+		  tty_printf ("%*s",
+                              opt.legacy_list_mode?
+                              ((int) keystrlen () + 13):5, "");
 		  /* Ownertrust is only meaningful for the PGP or
 		     classic trust models */
 		  if (opt.trust_model == TM_PGP
@@ -2865,6 +2873,7 @@ show_basic_key_info (KBNODE keyblock)
 {
   KBNODE node;
   int i;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* The primary key */
   for (node = keyblock; node; node = node->next)
@@ -2876,12 +2885,12 @@ show_basic_key_info (KBNODE keyblock)
 
 	  /* Note, we use the same format string as in other show
 	     functions to make the translation job easier. */
-	  tty_printf ("%s  %4u%c/%s  ",
+	  tty_printf ("%s  %s/%s  ",
 		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
 		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
 		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" :"ssb",
-		      nbits_from_pk (pk),
-		      pubkey_letter (pk->pubkey_algo), keystr_from_pk (pk));
+                      pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+		      keystr_from_pk (pk));
 	  tty_printf (_("created: %s"), datestr_from_pk (pk));
 	  tty_printf ("  ");
 	  tty_printf (_("expires: %s"), expirestr_from_pk (pk));
@@ -2915,16 +2924,17 @@ show_key_and_fingerprint (KBNODE keyblock)
 {
   KBNODE node;
   PKT_public_key *pk = NULL;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   for (node = keyblock; node; node = node->next)
     {
       if (node->pkt->pkttype == PKT_PUBLIC_KEY)
 	{
 	  pk = node->pkt->pkt.public_key;
-	  tty_printf ("pub   %4u%c/%s %s ",
-		      nbits_from_pk (pk),
-		      pubkey_letter (pk->pubkey_algo),
-		      keystr_from_pk (pk), datestr_from_pk (pk));
+	  tty_printf ("pub   %s/%s %s ",
+                      pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                      keystr_from_pk(pk),
+                      datestr_from_pk (pk));
 	}
       else if (node->pkt->pkttype == PKT_USER_ID)
 	{

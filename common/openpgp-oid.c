@@ -275,7 +275,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 
   if (!name)
     oidstr = NULL;
-  else if (!strcmp (name, "Ed25519"))
+  else if (!strcmp (name, "Ed25519") || !strcmp (name, "ed25519"))
     {
       oidstr = "1.3.6.1.4.1.11591.15.1";
       nbits = 255;
@@ -324,8 +324,7 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 }
 
 
-/* Map an OpenPGP OID to the Libgcrypt curve NAME.  If R_NBITS is not
-   NULL store the bit size of the curve there.  Returns "?" for
+/* Map an OpenPGP OID to the Libgcrypt curve NAME.  Returns "?" for
    unknown curve names.  */
 const char *
 openpgp_oid_to_curve (const char *oid)
@@ -335,7 +334,7 @@ openpgp_oid_to_curve (const char *oid)
   if (!oid)
     name = "";
   else if (!strcmp (oid, "1.3.6.1.4.1.11591.15.1"))
-    name = "Ed25519";
+    name = "ed25519";
   else if (!strcmp (oid, "1.2.840.10045.3.1.7"))
     name = "nistp256";
   else if (!strcmp (oid, "1.3.132.0.10"))

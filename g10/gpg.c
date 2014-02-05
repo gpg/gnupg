@@ -331,6 +331,7 @@ enum cmd_and_opt_values
     oTrustedKey,
     oNoExpensiveTrustChecks,
     oFixedListMode,
+    oLegacyListMode,
     oNoSigCache,
     oNoSigCreateCheck,
     oAutoCheckTrustDB,
@@ -690,6 +691,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oHonorHttpProxy, "honor-http-proxy", "@"),
   ARGPARSE_s_n (oFastListMode, "fast-list-mode", "@"),
   ARGPARSE_s_n (oFixedListMode, "fixed-list-mode", "@"),
+  ARGPARSE_s_n (oLegacyListMode, "legacy-list-mode", "@"),
   ARGPARSE_s_n (oListOnly, "list-only", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oIgnoreValidFrom,    "ignore-valid-from", "@"),
@@ -2876,6 +2878,7 @@ main (int argc, char **argv)
 		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
+          case oLegacyListMode: opt.legacy_list_mode = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;

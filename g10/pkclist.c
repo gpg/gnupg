@@ -188,6 +188,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
   int min_num;
   int did_help=defer_help;
   unsigned int minimum=get_min_ownertrust(pk);
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   switch(minimum)
     {
@@ -221,8 +222,8 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
             KBNODE keyblock, un;
 
             tty_printf(_("No trust value assigned to:\n"));
-	    tty_printf("%4u%c/%s %s\n",nbits_from_pk( pk ),
-		       pubkey_letter( pk->pubkey_algo ),
+	    tty_printf("%s/%s %s\n",
+                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                        keystr(keyid), datestr_from_pk( pk ) );
 	    p=get_user_id_native(keyid);
 	    tty_printf(_("      \"%s\"\n"),p);
@@ -893,6 +894,7 @@ build_pk_list (ctrl_t ctrl,
   int any_recipients=0;
   strlist_t rov,remusr;
   char *def_rec = NULL;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
   /* Try to expand groups if any have been defined. */
   if (opt.grouplist)
@@ -1027,11 +1029,11 @@ build_pk_list (ctrl_t ctrl,
                   u32 keyid[2];
 
                   keyid_from_pk(iter->pk,keyid);
-                  tty_printf("%4u%c/%s %s \"",
-                             nbits_from_pk(iter->pk),
-                             pubkey_letter(iter->pk->pubkey_algo),
-                             keystr(keyid),
-                             datestr_from_pk(iter->pk));
+                  tty_printf ("%s/%s %s \"",
+                              pubkey_string (iter->pk,
+                                             pkstrbuf, sizeof pkstrbuf),
+                              keystr(keyid),
+                              datestr_from_pk (iter->pk));
 
                   if (iter->pk->user_id)
                     tty_print_utf8_string(iter->pk->user_id->name,

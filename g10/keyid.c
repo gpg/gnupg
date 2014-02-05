@@ -1,6 +1,7 @@
 /* keyid.c - key ID and fingerprint handling
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
  *               2004, 2006, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -57,11 +58,79 @@ pubkey_letter( int algo )
     case PUBKEY_ALGO_ELGAMAL_E: return 'g' ;
     case PUBKEY_ALGO_ELGAMAL:   return 'G' ;
     case PUBKEY_ALGO_DSA:	return 'D' ;
-    case PUBKEY_ALGO_EDDSA:	return 'E' ;	/* ECC EdDSA (sign only) */
-    case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
     case PUBKEY_ALGO_ECDH:	return 'e' ;	/* ECC DH (encrypt only) */
+    case PUBKEY_ALGO_ECDSA:	return 'E' ;	/* ECC DSA (sign only)   */
+    case PUBKEY_ALGO_EDDSA:	return 'E' ;	/* ECC EdDSA (sign only) */
     default: return '?';
     }
+}
+
+/* Return a string describing the public key algorithm and the
+   keysize.  For elliptic curves the functions prints the name of the
+   curve because the keysize is a property of the curve.  The string
+   is copied to the supplied buffer up a length of BUFSIZE-1.
+   Examples for the output are:
+
+   "rsa2048"  - RSA with 2048 bit
+   "elg1024"  - Elgamal with 1024 bit
+   "ed25519"  - ECC using the curve Ed25519.
+   "E_1.2.3.4"  - ECC using the unsupported curve with OID "1.2.3.4".
+   "E_1.3.6.1.4.1.11591.2.12242973" ECC with a bogus OID.
+   "unknown_N"  - Unknown OpenPGP algorithm N.
+
+   If the option --legacy-list-mode is active, the output use the
+   legacy format:
+
+   "2048R" - RSA with 2048 bit
+   "1024g" - Elgamal with 1024 bit
+   "256E"  - ECDSA using a curve with 256 bit
+
+   The macro PUBKEY_STRING_SIZE may be used to allocate a buffer with
+   a suitable size.*/
+char *
+pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
+{
+  const char *prefix = NULL;
+
+  if (opt.legacy_list_mode)
+    {
+      snprintf (buffer, bufsize, "%4u%c",
+                nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo));
+      return buffer;
+    }
+
+  switch (pk->pubkey_algo)
+    {
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:	prefix = "rsa"; break;
+    case PUBKEY_ALGO_ELGAMAL_E: prefix = "elg"; break;
+    case PUBKEY_ALGO_DSA:	prefix = "dsa"; break;
+    case PUBKEY_ALGO_ELGAMAL:   prefix = "xxx"; break;
+    case PUBKEY_ALGO_ECDH:
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_EDDSA:     prefix = "";    break;
+    }
+
+  if (prefix && *prefix)
+    snprintf (buffer, bufsize, "%s%u", prefix, nbits_from_pk (pk));
+  else if (prefix)
+    {
+      char *curve = openpgp_oid_to_str (pk->pkey[0]);
+      const char *name = openpgp_oid_to_curve (curve);
+
+      if (*name && *name != '?')
+        snprintf (buffer, bufsize, "%s", name);
+      else if (curve)
+        snprintf (buffer, bufsize, "E_%s", curve);
+      else
+        snprintf (buffer, bufsize, "E_error");
+      xfree (curve);
+    }
+  else
+    snprintf (buffer, bufsize, "unknown_%u", (unsigned int)pk->pubkey_algo);
+
+  return buffer;
 }
 
 
