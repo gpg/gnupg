@@ -1798,25 +1798,35 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
   tty_printf (_("Please select what kind of key you want:\n"));
 
+#if GPG_USE_RSA
   if (!addmode)
     tty_printf (_("   (%d) RSA and RSA (default)\n"), 1 );
+#endif
+
   if (!addmode)
     tty_printf (_("   (%d) DSA and Elgamal\n"), 2 );
 
   tty_printf (_("   (%d) DSA (sign only)\n"), 3 );
+#if GPG_USE_RSA
   tty_printf (_("   (%d) RSA (sign only)\n"), 4 );
+#endif
 
   if (addmode)
     {
       tty_printf (_("   (%d) Elgamal (encrypt only)\n"), 5 );
+#if GPG_USE_RSA
       tty_printf (_("   (%d) RSA (encrypt only)\n"), 6 );
+#endif
     }
   if (opt.expert)
     {
       tty_printf (_("   (%d) DSA (set your own capabilities)\n"), 7 );
+#if GPG_USE_RSA
       tty_printf (_("   (%d) RSA (set your own capabilities)\n"), 8 );
+#endif
     }
 
+#if GPG_USE_ECDSA || GPG_USE_ECDH || GPG_USE_EDDSA
   if (opt.expert && !addmode)
     tty_printf (_("   (%d) ECC\n"), 9 );
   if (opt.expert)
@@ -1825,6 +1835,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
     tty_printf (_("  (%d) ECC (set your own capabilities)\n"), 11 );
   if (opt.expert && addmode)
     tty_printf (_("  (%d) ECC (encrypt only)\n"), 12 );
+#endif
 
   if (opt.expert && r_keygrip)
     tty_printf (_("  (%d) Existing key\n"), 13 );
@@ -2087,7 +2098,10 @@ ask_curve (void)
     int expert_only;
     const char *pretty_name;
   } curves[] = {
+#if GPG_USE_EDDSA
     { "Ed25519",         0, 0, "Curve 25519" },
+#endif
+#if GPG_USE_ECDSA || GPG_USE_ECDH
     { "NIST P-256",      0, 1, },
     { "NIST P-384",      0, 0, },
     { "NIST P-521",      0, 1, },
@@ -2095,6 +2109,7 @@ ask_curve (void)
     { "brainpoolP384r1", 0, 1, "Brainpool P-384" },
     { "brainpoolP512r1", 0, 1, "Brainpool P-512" },
     { "secp256k1", 0, 1 },
+#endif
   };
   int idx;
   char *answer;
