@@ -348,36 +348,67 @@ map_cipher_openpgp_to_gcry (cipher_algo_t algo)
   switch (algo)
     {
     case CIPHER_ALGO_NONE:        return GCRY_CIPHER_NONE;
+
 #ifdef GPG_USE_IDEA
     case CIPHER_ALGO_IDEA:        return GCRY_CIPHER_IDEA;
+#else
+    case CIPHER_ALGO_IDEA:        return 0;
 #endif
+
     case CIPHER_ALGO_3DES:	  return GCRY_CIPHER_3DES;
+
 #ifdef GPG_USE_CAST5
     case CIPHER_ALGO_CAST5:	  return GCRY_CIPHER_CAST5;
+#else
+    case CIPHER_ALGO_CAST5:	  return 0;
 #endif
+
 #ifdef GPG_USE_BLOWFISH
     case CIPHER_ALGO_BLOWFISH:    return GCRY_CIPHER_BLOWFISH;
+#else
+    case CIPHER_ALGO_BLOWFISH:    return 0;
 #endif
+
 #ifdef GPG_USE_AES128
     case CIPHER_ALGO_AES:         return GCRY_CIPHER_AES;
+#else
+    case CIPHER_ALGO_AES:         return 0;
 #endif
+
 #ifdef GPG_USE_AES192
     case CIPHER_ALGO_AES192:      return GCRY_CIPHER_AES192;
+#else
+    case CIPHER_ALGO_AES192:      return 0;
 #endif
+
 #ifdef GPG_USE_AES256
     case CIPHER_ALGO_AES256:      return GCRY_CIPHER_AES256;
+#else
+    case CIPHER_ALGO_AES256:      return 0;
 #endif
+
 #ifdef GPG_USE_TWOFISH
     case CIPHER_ALGO_TWOFISH:     return GCRY_CIPHER_TWOFISH;
+#else
+    case CIPHER_ALGO_TWOFISH:     return 0;
 #endif
+
 #ifdef GPG_USE_CAMELLIA128
     case CIPHER_ALGO_CAMELLIA128: return GCRY_CIPHER_CAMELLIA128;
+#else
+    case CIPHER_ALGO_CAMELLIA128: return 0;
 #endif
+
 #ifdef GPG_USE_CAMELLIA192
     case CIPHER_ALGO_CAMELLIA192: return GCRY_CIPHER_CAMELLIA192;
+#else
+    case CIPHER_ALGO_CAMELLIA192: return 0;
 #endif
+
 #ifdef GPG_USE_CAMELLIA256
     case CIPHER_ALGO_CAMELLIA256: return GCRY_CIPHER_CAMELLIA256;
+#else
+    case CIPHER_ALGO_CAMELLIA256: return 0;
 #endif
     }
   return 0;
@@ -510,18 +541,31 @@ openpgp_pk_test_algo2 (pubkey_algo_t algo, unsigned int use)
     case PUBKEY_ALGO_RSA:       ga = GCRY_PK_RSA;   break;
     case PUBKEY_ALGO_RSA_E:     ga = GCRY_PK_RSA_E; break;
     case PUBKEY_ALGO_RSA_S:     ga = GCRY_PK_RSA_S; break;
+#else
+    case PUBKEY_ALGO_RSA:       break;
+    case PUBKEY_ALGO_RSA_E:     break;
+    case PUBKEY_ALGO_RSA_S:     break;
 #endif
+
     case PUBKEY_ALGO_ELGAMAL_E: ga = GCRY_PK_ELG;   break;
     case PUBKEY_ALGO_DSA:       ga = GCRY_PK_DSA;   break;
 
 #ifdef GPG_USE_ECDH
     case PUBKEY_ALGO_ECDH:      ga = GCRY_PK_ECC;   break;
+#else
+    case PUBKEY_ALGO_ECDH:      break;
 #endif
+
 #ifdef GPG_USE_ECDSA
     case PUBKEY_ALGO_ECDSA:     ga = GCRY_PK_ECC;   break;
+#else
+    case PUBKEY_ALGO_ECDSA:     break;
 #endif
+
 #ifdef GPG_USE_EDDSA
     case PUBKEY_ALGO_EDDSA:     ga = GCRY_PK_ECC;   break;
+#else
+    case PUBKEY_ALGO_EDDSA:     break;
 #endif
 
     case PUBKEY_ALGO_ELGAMAL:
@@ -606,22 +650,40 @@ map_md_openpgp_to_gcry (digest_algo_t algo)
     {
 #ifdef GPG_USE_MD5
     case DIGEST_ALGO_MD5:    return GCRY_MD_MD5;
+#else
+    case DIGEST_ALGO_MD5:    return 0;
 #endif
+
     case DIGEST_ALGO_SHA1:   return GCRY_MD_SHA1;
+
 #ifdef GPG_USE_RMD160
     case DIGEST_ALGO_RMD160: return GCRY_MD_RMD160;
+#else
+    case DIGEST_ALGO_RMD160: return 0;
 #endif
+
 #ifdef GPG_USE_SHA224
     case DIGEST_ALGO_SHA224: return GCRY_MD_SHA224;
+#else
+    case DIGEST_ALGO_SHA224: return 0;
 #endif
+
 #ifdef GPG_USE_SHA256
     case DIGEST_ALGO_SHA256: return GCRY_MD_SHA256;
+#else
+    case DIGEST_ALGO_SHA256: return 0;
 #endif
+
 #ifdef GPG_USE_SHA384
     case DIGEST_ALGO_SHA384: return GCRY_MD_SHA384;
+#else
+    case DIGEST_ALGO_SHA384: return 0;
 #endif
-#ifdef GPG_USE_512
+
+#ifdef GPG_USE_SHA512
     case DIGEST_ALGO_SHA512: return GCRY_MD_SHA512;
+#else
+    case DIGEST_ALGO_SHA512: return 0;
 #endif
     }
   return 0;
