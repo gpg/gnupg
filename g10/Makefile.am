@@ -42,6 +42,12 @@ else
 bzip2_source =
 endif
 
+if ENABLE_CARD_SUPPORT
+card_source = card-util.c
+else
+card_source =
+endif
+
 if HAVE_W32_SYSTEM
 resource_objs += gpg-w32info.o
 endif
@@ -110,7 +116,7 @@ gpg2_SOURCES  = gpg.c		\
 	      call-dirmngr.c call-dirmngr.h \
 	      photoid.c photoid.h \
 	      call-agent.c call-agent.h \
-	      card-util.c \
+	      $(card_source) \
 	      exec.c exec.h
 
 gpgv2_SOURCES = gpgv.c           \

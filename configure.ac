@@ -1,6 +1,7 @@
 # configure.ac - for GnuPG 2.1
 # Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
 #               2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 2013, 2014 Werner Koch
 #
 # This file is part of GnuPG.
 #
@@ -87,6 +88,7 @@ use_zip=yes
 use_bzip2=yes
 use_exec=yes
 disable_keyserver_path=no
+card_support=yes
 use_ccid_driver=yes
 use_standard_socket=yes
 dirmngr_auto_start=no
@@ -388,6 +390,19 @@ AC_ARG_WITH(capabilities,
 [use_capabilities="$withval"],[use_capabilities=no])
 AC_MSG_RESULT($use_capabilities)
 
+#
+# Check whether to disable the card support
+AC_MSG_CHECKING([whether smartcard support is requested])
+AC_ARG_ENABLE(card-support,
+              AC_HELP_STRING([--disable-card-support],
+                             [disable smartcard support]),
+              card_support=$enableval)
+AC_MSG_RESULT($card_support)
+if test "$card_support" = yes ; then
+  AC_DEFINE(ENABLE_CARD_SUPPORT,1,[Define to include smartcard support])
+else
+  build_scdaemon=no
+fi
 
 #
 # Allow disabling of internal CCID support.
@@ -546,9 +561,6 @@ AH_BOTTOM([
    avoid the on-demand initialization which would also install an atexit
    handler.  */
 #define HTTP_NO_WSASTARTUP
-
-/* We always include support for the OpenPGP card.  */
-#define ENABLE_CARD_SUPPORT 1
 
 /* We want to use the libgcrypt provided memory allocation for
    asprintf.  */
@@ -1561,7 +1573,7 @@ if test "$build_agent_only" = "yes" ; then
 fi
 
 #
-# Set variables for use by th automake makefile.
+# Set variables for use by automake makefiles.
 #
 AM_CONDITIONAL(BUILD_GPG,         test "$build_gpg" = "yes")
 AM_CONDITIONAL(BUILD_GPGSM,       test "$build_gpgsm" = "yes")
@@ -1573,6 +1585,8 @@ AM_CONDITIONAL(BUILD_TOOLS,       test "$build_tools" = "yes")
 AM_CONDITIONAL(BUILD_DOC,         test "$build_doc" = "yes")
 AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
+
+AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
 
 AM_CONDITIONAL(RUN_GPG_TESTS,
                test x$cross_compiling = xno -a "$build_gpg" = yes )
