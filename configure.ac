@@ -87,6 +87,7 @@ have_adns=no
 use_zip=yes
 use_bzip2=yes
 use_exec=yes
+use_trust_models=yes
 disable_keyserver_path=no
 card_support=yes
 use_ccid_driver=yes
@@ -213,6 +214,18 @@ AC_ARG_ENABLE(selinux-support,
                              [enable SELinux support]),
               selinux_support=$enableval, selinux_support=no)
 AC_MSG_RESULT($selinux_support)
+
+
+AC_MSG_CHECKING([whether to enable trust models])
+AC_ARG_ENABLE(trust-models,
+              AC_HELP_STRING([--disable-trust-models],
+                             [disable all trust models except "always"]),
+              use_trust_models=$enableval)
+AC_MSG_RESULT($use_trust_models)
+if test "$use_trust_models" = no ; then
+    AC_DEFINE(NO_TRUST_MODELS, 1,
+             [Define to include only trust-model always])
+fi
 
 
 #
@@ -1615,6 +1628,7 @@ AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
+AM_CONDITIONAL(NO_TRUST_MODELS, test "$use_trust_models" = no)
 
 AM_CONDITIONAL(RUN_GPG_TESTS,
                test x$cross_compiling = xno -a "$build_gpg" = yes )

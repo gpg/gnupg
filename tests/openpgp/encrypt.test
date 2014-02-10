@@ -12,7 +12,7 @@
 
 #info Checking encryption
 for i in $plain_files $data_files ; do
-    $GPG --always-trust -e -o x --yes -r "$usrname2" $i
+    $GPG ${opt_always} -e -o x --yes -r "$usrname2" $i
     $GPG -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
@@ -21,7 +21,7 @@ echo_n "    > "
 for ca in `all_cipher_algos` ; do
     echo_n "$ca "
     for i in $plain_files $data_files ; do
-	$GPG --always-trust -e -o x --yes -r "$usrname2" --cipher-algo $ca $i
+	$GPG ${opt_always} -e -o x --yes -r "$usrname2" --cipher-algo $ca $i
 	$GPG -o y --yes x
 	cmp $i y || error "$i: mismatch"
     done

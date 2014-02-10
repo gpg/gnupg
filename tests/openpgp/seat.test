@@ -11,7 +11,7 @@
 . $srcdir/defs.inc || exit 3
 
 for i in $plain_files ; do
-    echo "$usrpass1" | $GPG --passphrase-fd 0 --always-trust -seat \
+    echo "$usrpass1" | $GPG --passphrase-fd 0 ${opt_always} -seat \
                         -r two@example.com -o x --yes $i
     $GPG -o y --yes x
     cmp $i y || error "$i: mismatch"

@@ -431,12 +431,16 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@" ),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@" ),
   ARGPARSE_c (aListPackets, "list-packets","@"),
+
+#ifndef NO_TRUST_MODELS
   ARGPARSE_c (aExportOwnerTrust, "export-ownertrust", "@"),
   ARGPARSE_c (aImportOwnerTrust, "import-ownertrust", "@"),
   ARGPARSE_c (aUpdateTrustDB,"update-trustdb",
               N_("update the trust database")),
   ARGPARSE_c (aCheckTrustDB, "check-trustdb", "@"),
   ARGPARSE_c (aFixTrustDB, "fix-trustdb", "@"),
+#endif
+
   ARGPARSE_c (aDeArmor, "dearmor", "@"),
   ARGPARSE_c (aDeArmor, "dearmour", "@"),
   ARGPARSE_c (aEnArmor, "enarmor", "@"),
@@ -603,7 +607,10 @@ static ARGPARSE_OPTS opts[] = {
 
   /* More hidden commands and options. */
   ARGPARSE_c (aPrintMDs, "print-mds", "@"), /* old */
+#ifndef NO_TRUST_MODELS
   ARGPARSE_c (aListTrustDB, "list-trustdb", "@"),
+#endif
+
   /* Not yet used:
      ARGPARSE_c (aListTrustPath, "list-trust-path", "@"), */
   ARGPARSE_c (aDeleteSecretAndPublicKeys,
@@ -619,7 +626,14 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oCommandFile, "command-file", "@"),
   ARGPARSE_s_n (oQuickRandom, "debug-quick-random", "@"),
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
+
+#ifndef NO_TRUST_MODELS
   ARGPARSE_s_s (oTrustDBName, "trustdb-name", "@"),
+  ARGPARSE_s_n (oAutoCheckTrustDB, "auto-check-trustdb", "@"),
+  ARGPARSE_s_n (oNoAutoCheckTrustDB, "no-auto-check-trustdb", "@"),
+  ARGPARSE_s_s (oForceOwnertrust, "force-ownertrust", "@"),
+#endif
+
   ARGPARSE_s_n (oNoSecmemWarn, "no-secmem-warning", "@"),
   ARGPARSE_s_n (oRequireSecmem, "require-secmem", "@"),
   ARGPARSE_s_n (oNoRequireSecmem, "no-require-secmem", "@"),
@@ -647,7 +661,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oDefCertLevel, "default-cert-check-level", "@"), /* old */
   ARGPARSE_s_n (oAlwaysTrust, "always-trust", "@"),
   ARGPARSE_s_s (oTrustModel, "trust-model", "@"),
-  ARGPARSE_s_s (oForceOwnertrust, "force-ownertrust", "@"),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oForYourEyesOnly, "for-your-eyes-only", "@"),
   ARGPARSE_s_n (oNoForYourEyesOnly, "no-for-your-eyes-only", "@"),
@@ -704,8 +717,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAutoKeyRetrieve, "no-auto-key-retrieve", "@"),
   ARGPARSE_s_n (oNoSigCache,         "no-sig-cache", "@"),
   ARGPARSE_s_n (oNoSigCreateCheck,   "no-sig-create-check", "@"),
-  ARGPARSE_s_n (oAutoCheckTrustDB, "auto-check-trustdb", "@"),
-  ARGPARSE_s_n (oNoAutoCheckTrustDB, "no-auto-check-trustdb", "@"),
   ARGPARSE_s_n (oMergeOnly,	  "merge-only", "@" ),
   ARGPARSE_s_n (oAllowSecretKeyImport, "allow-secret-key-import", "@"),
   ARGPARSE_s_n (oTryAllSecrets,  "try-all-secrets", "@"),
@@ -1844,6 +1855,8 @@ collapse_args(int argc,char *argv[])
   return str;
 }
 
+
+#ifndef NO_TRUST_MODELS
 static void
 parse_trust_model(const char *model)
 {
@@ -1860,6 +1873,7 @@ parse_trust_model(const char *model)
   else
     log_error("unknown trust model '%s'\n",model);
 }
+#endif /*NO_TRUST_MODELS*/
 
 
 /* This fucntion called to initialized a new control object.  It is
@@ -1967,7 +1981,9 @@ main (int argc, char **argv)
     int use_random_seed = 1;
     enum cmd_and_opt_values cmd = 0;
     const char *debug_level = NULL;
+#ifndef NO_TRUST_MODELS
     const char *trustdb_name = NULL;
+#endif /*!NO_TRUST_MODELS*/
     char *def_cipher_string = NULL;
     char *def_digest_string = NULL;
     char *compress_algo_string = NULL;
@@ -2056,7 +2072,11 @@ main (int argc, char **argv)
     opt.verify_options = (VERIFY_SHOW_POLICY_URLS
                           | VERIFY_SHOW_STD_NOTATIONS
                           | VERIFY_SHOW_KEYSERVER_URLS);
+#ifdef NO_TRUST_MODELS
+    opt.trust_model = TM_ALWAYS;
+#else
     opt.trust_model = TM_AUTO;
+#endif
     opt.mangle_dos_filenames = 0;
     opt.min_cert_level = 2;
     set_screen_dimensions ();
@@ -2376,7 +2396,11 @@ main (int argc, char **argv)
 	  case oCompletesNeeded: opt.completes_needed = pargs.r.ret_int; break;
 	  case oMarginalsNeeded: opt.marginals_needed = pargs.r.ret_int; break;
 	  case oMaxCertDepth: opt.max_cert_depth = pargs.r.ret_int; break;
+
+#ifndef NO_TRUST_MODELS
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
+
+#endif /*!NO_TRUST_MODELS*/
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
 	  case oDefRecipient:
             if( *pargs.r.ret_str )
@@ -2407,6 +2431,8 @@ main (int argc, char **argv)
 
 	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
+
+#ifndef NO_TRUST_MODELS
 	    /* There are many programs (like mutt) that call gpg with
 	       --always-trust so keep this option around for a long
 	       time. */
@@ -2414,6 +2440,8 @@ main (int argc, char **argv)
 	  case oTrustModel:
 	    parse_trust_model(pargs.r.ret_str);
 	    break;
+#endif /*!NO_TRUST_MODELS*/
+
 	  case oForceOwnertrust:
 	    log_info(_("NOTE: %s is not for normal use!\n"),
 		     "--force-ownertrust");
@@ -3494,6 +3522,7 @@ main (int argc, char **argv)
     ctrl = xcalloc (1, sizeof *ctrl);
     gpg_init_default_ctrl (ctrl);
 
+#ifndef NO_TRUST_MODELS
     switch (cmd)
       {
       case aPrimegen:
@@ -3522,7 +3551,7 @@ main (int argc, char **argv)
       }
     if (rc)
       log_error (_("failed to initialize the TrustDB: %s\n"), g10_errstr(rc));
-
+#endif /*!NO_TRUST_MODELS*/
 
     switch (cmd)
       {
@@ -4023,6 +4052,7 @@ main (int argc, char **argv)
 	}
 	break;
 
+#ifndef NO_TRUST_MODELS
       case aListTrustDB:
 	if( !argc )
 	    list_trustdb(NULL);
@@ -4068,6 +4098,7 @@ main (int argc, char **argv)
 	    wrong_args("--import-ownertrust [file]");
 	import_ownertrust( argc? *argv:NULL );
 	break;
+#endif /*!NO_TRUST_MODELS*/
 
       case aRebuildKeydbCaches:
         if (argc)

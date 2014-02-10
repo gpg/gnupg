@@ -12,7 +12,7 @@
 
 #info Checking signing and encryption for DSA
 for i in $plain_files $data_files ; do
-    $GPG --always-trust -se -o x --yes \
+    $GPG ${opt_always} -se -o x --yes \
 		-u "$dsa_usrname1" -r "$dsa_usrname2" $i
     $GPG -o y --yes x
     cmp $i y || error "$i: mismatch"
@@ -27,7 +27,7 @@ fi
 
 for da in $algos; do
     for i in $plain_files; do
-	$GPG --always-trust -se -o x --yes --digest-algo $da \
+	$GPG ${opt_always} -se -o x --yes --digest-algo $da \
 		    -u "$dsa_usrname1" -r "$dsa_usrname2" $i
 	$GPG -o y --yes x
 	cmp $i y || error "$i: mismatch"

@@ -64,6 +64,7 @@ static estream_t attrib_fp;
 void
 public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 {
+#ifndef NO_TRUST_MODELS
   if (opt.with_colons)
     {
       byte trust_model, marginals, completes, cert_depth, min_cert_level;
@@ -98,9 +99,9 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 
       if (trust_model == TM_PGP || trust_model == TM_CLASSIC)
 	es_fprintf (es_stdout, ":%d:%d:%d", marginals, completes, cert_depth);
-
       es_fprintf (es_stdout, "\n");
     }
+#endif /*!NO_TRUST_MODELS*/
 
   /* We need to do the stale check right here because it might need to
      update the keyring while we already have the keyring open.  This

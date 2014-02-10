@@ -176,6 +176,7 @@ show_revocation_reason( PKT_public_key *pk, int mode )
  *       0 = nothing changed
  *       1 = new ownertrust now in new_trust
  */
+#ifndef NO_TRUST_MODELS
 static int
 do_edit_ownertrust (PKT_public_key *pk, int mode,
                     unsigned *new_trust, int defer_help )
@@ -187,7 +188,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
   int show=0;
   int min_num;
   int did_help=defer_help;
-  unsigned int minimum=get_min_ownertrust(pk);
+  unsigned int minimum = tdb_get_min_ownertrust (pk);
   char pkstrbuf[PUBKEY_STRING_SIZE];
 
   switch(minimum)
@@ -365,12 +366,15 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
   xfree(p);
   return show? -2: quit? -1 : changed;
 }
+#endif /*!NO_TRUST_MODELS*/
+
 
 /*
  * Display a menu to change the ownertrust of the key PK (which should
  * be a primary key).
  * For mode values see do_edit_ownertrust ()
  */
+#ifndef NO_TRUST_MODELS
 int
 edit_ownertrust (PKT_public_key *pk, int mode )
 {
@@ -396,6 +400,7 @@ edit_ownertrust (PKT_public_key *pk, int mode )
         }
     }
 }
+#endif /*!NO_TRUST_MODELS*/
 
 
 /****************

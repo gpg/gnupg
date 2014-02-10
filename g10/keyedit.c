@@ -81,7 +81,9 @@ static int menu_revsig (KBNODE keyblock);
 static int menu_revuid (KBNODE keyblock);
 static int menu_revkey (KBNODE pub_keyblock);
 static int menu_revsubkey (KBNODE pub_keyblock);
+#ifndef NO_TRUST_MODELS
 static int enable_disable_key (KBNODE keyblock, int disable);
+#endif /*!NO_TRUST_MODELS*/
 static void menu_showphoto (KBNODE keyblock);
 
 static int update_trust = 0;
@@ -1305,7 +1307,11 @@ enum cmdids
   cmdREVSIG, cmdREVKEY, cmdREVUID, cmdDELSIG, cmdPRIMARY, cmdDEBUG,
   cmdSAVE, cmdADDUID, cmdADDPHOTO, cmdDELUID, cmdADDKEY, cmdDELKEY,
   cmdADDREVOKER, cmdTOGGLE, cmdSELKEY, cmdPASSWD, cmdTRUST, cmdPREF,
-  cmdEXPIRE, cmdBACKSIGN, cmdENABLEKEY, cmdDISABLEKEY, cmdSHOWPREF,
+  cmdEXPIRE, cmdBACKSIGN,
+#ifndef NO_TRUST_MODELS
+  cmdENABLEKEY, cmdDISABLEKEY,
+#endif /*!NO_TRUST_MODELS*/
+  cmdSHOWPREF,
   cmdSETPREF, cmdPREFKS, cmdNOTATION, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
   cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCHECKBKUPKEY,
   cmdCLEAN, cmdMINIMIZE, cmdNOP
@@ -1384,7 +1390,9 @@ static struct
   { "passwd", cmdPASSWD, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
     N_("change the passphrase")},
   { "password", cmdPASSWD, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
+#ifndef NO_TRUST_MODELS
   { "trust", cmdTRUST, KEYEDIT_NOT_SK, N_("change the ownertrust")},
+#endif /*!NO_TRUST_MODELS*/
   { "revsig", cmdREVSIG, KEYEDIT_NOT_SK,
     N_("revoke signatures on the selected user IDs")},
   { "revuid", cmdREVUID, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
@@ -1392,8 +1400,10 @@ static struct
   { "revphoto", cmdREVUID, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK, NULL},
   { "revkey", cmdREVKEY, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
     N_("revoke key or selected subkeys")},
+#ifndef NO_TRUST_MODELS
   { "enable", cmdENABLEKEY, KEYEDIT_NOT_SK, N_("enable key")},
   { "disable", cmdDISABLEKEY, KEYEDIT_NOT_SK, N_("disable key")},
+#endif /*!NO_TRUST_MODELS*/
   { "showphoto", cmdSHOWPHOTO, 0, N_("show selected photo IDs")},
   { "clean", cmdCLEAN, KEYEDIT_NOT_SK,
     N_("compact unusable user IDs and remove unusable signatures from key")},
@@ -2059,6 +2069,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  change_passphrase (ctrl, keyblock);
 	  break;
 
+#ifndef NO_TRUST_MODELS
 	case cmdTRUST:
 	  if (opt.trust_model == TM_EXTERNAL)
 	    {
@@ -2080,6 +2091,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      update_trust = 1;
 	    }
 	  break;
+#endif /*!NO_TRUST_MODELS*/
 
 	case cmdPREF:
 	  {
@@ -2158,6 +2170,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    }
 	  break;
 
+#ifndef NO_TRUST_MODELS
 	case cmdENABLEKEY:
 	case cmdDISABLEKEY:
 	  if (enable_disable_key (keyblock, cmd == cmdDISABLEKEY))
@@ -2166,6 +2179,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      modified = 1;
 	    }
 	  break;
+#endif /*!NO_TRUST_MODELS*/
 
 	case cmdSHOWPHOTO:
 	  menu_showphoto (keyblock);
@@ -4837,12 +4851,14 @@ menu_revuid (KBNODE pub_keyblock)
 		pkt->pkt.signature = sig;
 		insert_kbnode (node, new_kbnode (pkt), 0);
 
+#ifndef NO_TRUST_MODELS
 		/* If the trustdb has an entry for this key+uid then the
 		   trustdb needs an update. */
 		if (!update_trust
 		    && (get_validity (pk, uid) & TRUST_MASK) >=
 		    TRUST_UNDEFINED)
 		  update_trust = 1;
+#endif /*!NO_TRUST_MODELS*/
 
 		changed = 1;
 		node->pkt->pkt.user_id->is_revoked = 1;
@@ -4978,6 +4994,7 @@ menu_revsubkey (KBNODE pub_keyblock)
    enabling or disabling a key.  This is arguably sub-optimal as
    disabled keys are still counted in the web of trust, but perhaps
    not worth adding extra complexity to change. -ds */
+#ifndef NO_TRUST_MODELS
 static int
 enable_disable_key (KBNODE keyblock, int disable)
 {
@@ -4994,6 +5011,7 @@ enable_disable_key (KBNODE keyblock, int disable)
   update_ownertrust (pk, newtrust);
   return 0;
 }
+#endif /*!NO_TRUST_MODELS*/
 
 
 static void

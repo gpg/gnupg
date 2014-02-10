@@ -13,7 +13,7 @@
 
 #info Checking armored signing and encryption
 for i in $plain_files $data_files ; do
-    echo "$usrpass1"  | $GPG --passphrase-fd 0 --always-trust \
+    echo "$usrpass1"  | $GPG --passphrase-fd 0 ${opt_always} \
                         -sae -o x --yes -r "$usrname2" $i
     $GPG -o y --yes x
     cmp $i y || error "$i: mismatch"

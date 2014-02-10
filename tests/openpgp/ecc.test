@@ -203,7 +203,7 @@ info "Checking ECC encryption and decryption."
 for i in $plain_files $data_files ; do
   for k in $mainkeyids ; do
     info "file: $i key: $k"
-    $GPG --always-trust -e -o x --yes -r $k $i
+    $GPG ${opt_always} -e -o x --yes -r $k $i
     $GPG -o y --yes x
     cmp $i y || error "$i,$k: mismatch"
   done

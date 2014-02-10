@@ -38,30 +38,89 @@
 
 #define NAMEHASH_LEN  20
 
+
+/*
+ * A structure to store key identification as well as some stuff needed
+ * for validation
+ */
+struct key_item {
+  struct key_item *next;
+  unsigned int ownertrust,min_ownertrust;
+  byte trust_depth;
+  byte trust_value;
+  char *trust_regexp;
+  u32 kid[2];
+};
+
+
+/*
+ * Check whether the signature SIG is in the klist K.
+ */
+static inline struct key_item *
+is_in_klist (struct key_item *k, PKT_signature *sig)
+{
+  for (; k; k = k->next)
+    {
+      if (k->kid[0] == sig->keyid[0] && k->kid[1] == sig->keyid[1])
+        return k;
+    }
+  return NULL;
+}
+
+
+
+/*-- trust.c --*/
+int cache_disabled_value (PKT_public_key *pk);
+void register_trusted_keyid (u32 *keyid);
+void register_trusted_key (const char *string);
+
+const char *trust_value_to_string (unsigned int value);
+int string_to_trust_value (const char *str);
+const char *uid_trust_string_fixed (PKT_public_key *key, PKT_user_id *uid);
+
+unsigned int get_ownertrust (PKT_public_key *pk);
+void update_ownertrust (PKT_public_key *pk, unsigned int new_trust);
+int clear_ownertrusts (PKT_public_key *pk);
+
+void revalidation_mark (void);
+void check_trustdb_stale (void);
+void check_or_update_trustdb (void);
+
+unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid);
+int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
+const char *get_validity_string (PKT_public_key *pk, PKT_user_id *uid);
+
+void mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
+                            u32 *main_kid, struct key_item *klist,
+                            u32 curtime, u32 *next_expire);
+
+void clean_one_uid (kbnode_t keyblock, kbnode_t uidnode,
+                    int noisy, int self_only,
+                    int *uids_cleaned, int *sigs_cleaned);
+void clean_key (kbnode_t keyblock, int noisy, int self_only,
+                int *uids_cleaned,int *sigs_cleaned);
+
+
+
 /*-- trustdb.c --*/
-void register_trusted_keyid(u32 *keyid);
-void register_trusted_key( const char *string );
+void tdb_register_trusted_keyid (u32 *keyid);
+void tdb_register_trusted_key (const char *string);
 void check_trustdb (void);
 void update_trustdb (void);
 int setup_trustdb( int level, const char *dbname );
 void how_to_fix_the_trustdb (void);
 void init_trustdb( void );
-void check_trustdb_stale(void);
+void tdb_check_trustdb_stale (void);
 void sync_trustdb( void );
 
-const char *uid_trust_string_fixed(PKT_public_key *key,PKT_user_id *uid);
-const char *trust_value_to_string (unsigned int value);
-int string_to_trust_value (const char *str);
-
-void revalidation_mark (void);
+void tdb_revalidation_mark (void);
 int trustdb_pending_check(void);
-void trustdb_check_or_update(void);
+void tdb_check_or_update (void);
 
-int cache_disabled_value(PKT_public_key *pk);
+int tdb_cache_disabled_value (PKT_public_key *pk);
 
-unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid);
-int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
-const char *get_validity_string (PKT_public_key *pk, PKT_user_id *uid);
+unsigned int tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
+                                    PKT_public_key *main_pk);
 
 void list_trust_path( const char *username );
 int enum_cert_paths( void **context, ulong *lid,
@@ -73,18 +132,13 @@ void read_trust_options(byte *trust_model,ulong *created,ulong *nextcheck,
 			byte *marginals,byte *completes,byte *cert_depth,
 			byte *min_cert_level);
 
-unsigned int get_ownertrust (PKT_public_key *pk);
-unsigned int get_min_ownertrust (PKT_public_key *pk);
+unsigned int tdb_get_ownertrust (PKT_public_key *pk);
+unsigned int tdb_get_min_ownertrust (PKT_public_key *pk);
 int get_ownertrust_info (PKT_public_key *pk);
 const char *get_ownertrust_string (PKT_public_key *pk);
 
-void update_ownertrust (PKT_public_key *pk, unsigned int new_trust );
-int clear_ownertrusts (PKT_public_key *pk);
-
-void clean_one_uid(KBNODE keyblock,KBNODE uidnode,int noisy,int self_only,
-		   int *uids_cleaned,int *sigs_cleaned);
-void clean_key(KBNODE keyblock,int noisy,int self_only,
-	       int *uids_cleaned,int *sigs_cleaned);
+void tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust);
+int tdb_clear_ownertrusts (PKT_public_key *pk);
 
 /*-- tdbdump.c --*/
 void list_trustdb(const char *username);

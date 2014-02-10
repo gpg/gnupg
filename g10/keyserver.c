@@ -1344,7 +1344,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
   /* If the original options didn't have fast import, and the trustdb
      is dirty, rebuild. */
   if(!(opt.keyserver_options.import_options&IMPORT_FAST))
-    trustdb_check_or_update();
+    check_or_update_trustdb ();
 
   return rc;
 }
@@ -1688,7 +1688,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
   /* If the original options didn't have fast import, and the trustdb
      is dirty, rebuild. */
   if (!(opt.keyserver_options.import_options&IMPORT_FAST))
-    trustdb_check_or_update ();
+    check_or_update_trustdb ();
 
   return 0;
 }

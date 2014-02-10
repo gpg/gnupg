@@ -226,6 +226,15 @@ PINENTRY="$(cd $srcdir && /bin/pwd)/pinentry.sh"
 # Default to empty passphrase for pinentry.sh
 PINENTRY_USER_DATA=
 
+# If --check-trustdb is not an option, GPG has been build without
+# trust model support.  Thus we can't use --always-trust and some
+# other options.
+if $GPG --dump-options | grep '^--check-trustdb$' >/dev/null ; then
+  opt_always="--always-trust"
+else
+  opt_always=
+fi
+
 # Make sure we have a valid option files even with VPATH builds.
 for f in gpg.conf gpg-agent.conf ; do
   if [ -f ./$f ]; then
@@ -234,8 +243,10 @@ for f in gpg.conf gpg-agent.conf ; do
     cat $srcdir/$f.tmpl >$f
     case "$f" in
       gpg.conf)
+        [ -n "${opt_always}" ] && echo "no-auto-check-trustdb" >>"$f"
         echo "agent-program $GPG_AGENT" >>"$f"
-        ;;
+
+      ;;
       gpg-agent.conf)
         echo "pinentry-program $PINENTRY" >>"$f"
         ;;

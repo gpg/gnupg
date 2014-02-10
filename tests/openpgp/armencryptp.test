@@ -12,7 +12,7 @@
 
 #info Checking armored encryption with a pipe
 for i in $plain_files $data_files ; do
-    $GPG --always-trust -ea --yes -r "$usrname2" < $i | tee x | $GPG -o y --yes
+    $GPG ${opt_always} -ea --yes -r "$usrname2" < $i | tee x | $GPG -o y --yes
     cmp $i y || error "$i: mismatch"
     $GPG --yes < x > y
     cmp $i y || error "$i: mismatch"
