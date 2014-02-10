@@ -23,11 +23,19 @@ failed=""
 #info Checking message digests
 cat /dev/null | $GPG --with-colons --print-mds >y
 # MD5
-test_one ":1:"    "D41D8CD98F00B204E9800998ECF8427E"
+if have_hash_algo "MD5"; then
+  test_one ":1:"    "D41D8CD98F00B204E9800998ECF8427E"
+else
+  echo "Hash algorithm MD5 is not installed (not an error)"
+fi
 # SHA-1
 test_one ":2:"    "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
 # RMD160
-test_one ":3:"    "9C1185A5C5E9FC54612808977EE8F548B2258D31"
+if have_hash_algo "RIPEMD160"; then
+  test_one ":3:"    "9C1185A5C5E9FC54612808977EE8F548B2258D31"
+else
+  echo "Hash algorithm RIPEMD160 is not installed (not an error)"
+fi
 # SHA-224
 if have_hash_algo "SHA224"; then
   test_one ":11:"    "D14A028C2A3A2BC9476102BB288234C415A2B01F828EA62AC5B3E42F"
@@ -56,9 +64,13 @@ fi
 [ "$failed" != "" ] && error "$failed failed for empty string"
 
 echo_n "abcdefghijklmnopqrstuvwxyz" | $GPG --with-colons --print-mds >y
-test_one ":1:"    "C3FCD3D76192E4007DFB496CCA67E13B"
+if have_hash_algo "MD5"; then
+  test_one ":1:"    "C3FCD3D76192E4007DFB496CCA67E13B"
+fi
 test_one ":2:"    "32D10C7B8CF96570CA04CE37F2A19D84240D3A89"
-test_one ":3:"    "F71C27109C692C1B56BBDCEB5B9D2865B3708DBC"
+if have_hash_algo "RIPEMD160"; then
+  test_one ":3:"    "F71C27109C692C1B56BBDCEB5B9D2865B3708DBC"
+fi
 if have_hash_algo "SHA224"; then
   test_one ":11:"    "45A5F72C39C5CFF2522EB3429799E49E5F44B356EF926BCF390DCCC2"
 fi
