@@ -1230,8 +1230,11 @@ my_dgettext (const char *domain, const char *msgid)
       return text ? text : msgid;
     }
   else
-#endif
     return msgid;
+#else
+  (void)domain;
+  return msgid;
+#endif
 }
 
 

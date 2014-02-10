@@ -287,7 +287,12 @@ void
 show_photos(const struct user_attribute *attrs, int count,
             PKT_public_key *pk, PKT_user_id *uid)
 {
-#ifndef DISABLE_PHOTO_VIEWER
+#ifdef DISABLE_PHOTO_VIEWER
+  (void)attrs;
+  (void)count;
+  (void)pk;
+  (void)uid;
+#else /*!DISABLE_PHOTO_VIEWER*/
   int i;
   struct expando_args args;
   u32 len;
@@ -367,5 +372,5 @@ show_photos(const struct user_attribute *attrs, int count,
 
  fail:
   log_error(_("unable to display photo ID!\n"));
-#endif
+#endif /*!DISABLE_PHOTO_VIEWER*/
 }
