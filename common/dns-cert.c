@@ -360,10 +360,10 @@ get_dns_cert (const char *name, estream_t *r_key,
 #endif /*!USE_ADNS */
 #else /* !USE_DNS_CERT */
   (void)name;
-  (void)r_key;
-  (void)r_fpr;
-  (void)r_fprlen;
-  (void)r_url;
+  *r_key = NULL;
+  *r_fpr = NULL;
+  *r_fprlen = 0;
+  *r_url = NULL;
 
   return gpg_err_make (default_errsource, GPG_ERR_NOT_SUPPORTED);
 #endif
