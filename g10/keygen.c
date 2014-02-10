@@ -3377,6 +3377,10 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
   struct para_data_s *r;
   struct output_control_s outctrl;
 
+#ifndef ENABLE_CARD_SUPPORT
+  (void)card_backup_key;
+#endif
+
   memset( &outctrl, 0, sizeof( outctrl ) );
 
   if (opt.batch && card_serialno)
@@ -4265,6 +4269,12 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
 
   return 0;
 #else
+  (void)algo;
+  (void)keyno;
+  (void)is_primary;
+  (void)pub_root;
+  (void)timestamp;
+  (void)expireval;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /*!ENABLE_CARD_SUPPORT*/
 }
@@ -4276,7 +4286,8 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
                           KBNODE pub_root, u32 timestamp,
                           u32 expireval, struct para_data_s *para)
 {
-#if 0 /* FIXME: Move this to gpg-agent.  */
+#if ENABLE_CARD_SUPPORT && 0
+  /* FIXME: Move this to gpg-agent.  */
   int rc;
   const char *s;
   PACKET *pkt;
@@ -4433,6 +4444,16 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
 
   return 0;
 #else
+# if __GCC__ && ENABLE_CARD_SUPPORT
+#  warning Card support still missing
+# endif
+  (void)algo;
+  (void)keyno;
+  (void)is_primary;
+  (void)pub_root;
+  (void)timestamp;
+  (void)expireval;
+  (void)para;
   return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif /*!ENABLE_CARD_SUPPORT*/
 }
