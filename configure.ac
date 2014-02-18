@@ -1168,6 +1168,7 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 AM_ICONV
 
 
+
 #
 # Check for gettext
 #
@@ -1782,6 +1783,17 @@ if test "$have_npth" = "no"; then
 *** library first.  The library is for example available at
 ***   ftp://ftp.gnupg.org/gcrypt/npth/
 *** (at least version $NEED_NPTH_VERSION (API $NEED_NPTH_API) is required).
+***]])
+fi
+
+if test "$am_func_iconv" != yes; then
+    die=yes
+    AC_MSG_NOTICE([[
+***
+*** The system does not provide a working iconv function.  Please
+*** install a suitable library; for example GNU Libiconv which is
+*** available at:
+***   http://ftp.gnu.org/gnu/libiconv/
 ***]])
 fi
 

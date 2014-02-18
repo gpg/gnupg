@@ -38,13 +38,12 @@
 #include <langinfo.h>
 #endif
 #include <errno.h>
-#if !defined HAVE_W32_SYSTEM && !defined HAVE_ANDROID_SYSTEM
+#ifndef HAVE_ANDROID_SYSTEM
 # include <iconv.h>
 #endif
 
 #include "libjnlib-config.h"
 #include "stringhelp.h"
-#include "dynload.h"
 #include "utf8conv.h"
 
 #ifndef MB_LEN_MAX
@@ -53,7 +52,7 @@
 
 static const char *active_charset_name = "iso-8859-1";
 static int no_translation;     /* Set to true if we let simply pass through. */
-static int use_iconv;          /* iconv comversion fucntions required. */
+static int use_iconv;          /* iconv conversion functions required. */
 
 
 #ifdef HAVE_ANDROID_SYSTEM
@@ -87,70 +86,7 @@ iconv_close (iconv_t cd)
   (void)cd;
   return 0;
 }
-
-
-static int
-load_libiconv (void)
-{
-  return -1;
-}
-
-#elif defined HAVE_W32_SYSTEM
-/* Under W32 we dlopen the iconv dll and don't require any iconv
-   related headers at all.  However we need to define some stuff.  */
-typedef void *iconv_t;
-#ifndef ICONV_CONST
-#define ICONV_CONST
-#endif
-static iconv_t (* __stdcall iconv_open) (const char *tocode,
-                                         const char *fromcode);
-static size_t  (* __stdcall iconv) (iconv_t cd,
-                                    char **inbuf, size_t *inbytesleft,
-                                    char **outbuf, size_t *outbytesleft);
-static int     (* __stdcall iconv_close) (iconv_t cd);
-
-static int
-load_libiconv (void)
-{
-#ifdef HAVE_W32CE_SYSTEM
-  return -1; /* FIXME No libiconv yet - Need to investigate whether it
-                is at all required.  */
-#else
-  static int done;
-
-  if (!done)
-    {
-      void *handle;
-
-      done = 1; /* Do it right now because we might get called recursivly
-                   through gettext.  */
-
-      handle = dlopen ("iconv.dll", RTLD_LAZY);
-      if (handle)
-        {
-          iconv_open  = dlsym (handle, "libiconv_open");
-          if (iconv_open)
-            iconv = dlsym (handle, "libiconv");
-          if (iconv)
-            iconv_close = dlsym (handle, "libiconv_close");
-        }
-      if (!handle || !iconv_close)
-        {
-          log_info (_("error loading '%s': %s\n"),
-                     "iconv.dll",  dlerror ());
-          log_info (_("please see %s for more information\n"),
-                    "http://www.gnupg.org/download/iconv.html");
-          iconv_open = NULL;
-          iconv = NULL;
-          iconv_close = NULL;
-          if (handle)
-            dlclose (handle);
-        }
-    }
-  return iconv_open? 0: -1;
-#endif
-}
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*HAVE_ANDROID_SYSTEM*/
 
 
 /* Error handler for iconv failures. This is needed to not clutter the
@@ -331,11 +267,6 @@ set_native_charset (const char *newset)
   else
     {
       iconv_t cd;
-
-#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
-      if (load_libiconv ())
-        return -1;
-#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
 
       cd = iconv_open (full_newset, "utf-8");
       if (cd == (iconv_t)-1)
@@ -758,11 +689,6 @@ utf8_to_native (const char *string, size_t length, int delim)
 jnlib_iconv_t
 jnlib_iconv_open (const char *tocode, const char *fromcode)
 {
-#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
-  if (load_libiconv ())
-    return (jnlib_iconv_t)(-1);
-#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
-
   return (jnlib_iconv_t)iconv_open (tocode, fromcode);
 }
 
@@ -774,12 +700,6 @@ jnlib_iconv (jnlib_iconv_t cd,
              const char **inbuf, size_t *inbytesleft,
              char **outbuf, size_t *outbytesleft)
 {
-
-#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
-  if (load_libiconv ())
-    return 0;
-#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
-
   return iconv ((iconv_t)cd, (char**)inbuf, inbytesleft, outbuf, outbytesleft);
 }
 
@@ -788,11 +708,6 @@ jnlib_iconv (jnlib_iconv_t cd,
 int
 jnlib_iconv_close (jnlib_iconv_t cd)
 {
-#if defined HAVE_W32_SYSTEM || defined HAVE_ANDROID_SYSTEM
-  if (load_libiconv ())
-    return 0;
-#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
-
   return iconv_close ((iconv_t)cd);
 }
 
@@ -867,4 +782,4 @@ utf8_to_wchar (const char *string)
     }
   return result;
 }
-#endif /*HAVE_W32_SYSTEM || HAVE_ANDROID_SYSTEM*/
+#endif /*HAVE_W32_SYSTEM*/
