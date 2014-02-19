@@ -992,7 +992,7 @@ main (int argc, char **argv )
 
   /* Make sure that we have a default ttyname. */
   if (!default_ttyname && gnupg_ttyname (1))
-    default_ttyname = xstrdup (ttyname (1));
+    default_ttyname = xstrdup (gnupg_ttyname (1));
   if (!default_ttytype && getenv ("TERM"))
     default_ttytype = xstrdup (getenv ("TERM"));
 
