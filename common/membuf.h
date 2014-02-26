@@ -57,6 +57,7 @@ void put_membuf_str (membuf_t *mb, const char *string);
 void put_membuf_printf (membuf_t *mb, const char *format,
                         ...) JNLIB_GCC_A_PRINTF(2,3);
 void *get_membuf (membuf_t *mb, size_t *len);
+void *get_membuf_shrink (membuf_t *mb, size_t *len);
 const void *peek_membuf (membuf_t *mb, size_t *len);
 
 #endif /*GNUPG_COMMON_MEMBUF_H*/

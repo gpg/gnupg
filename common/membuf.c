@@ -170,6 +170,31 @@ get_membuf (membuf_t *mb, size_t *len)
 }
 
 
+/* Same as get_membuf but shrinks the reallocated space to the
+   required size.  */
+void *
+get_membuf_shrink (membuf_t *mb, size_t *len)
+{
+  void *p, *pp;
+  size_t dummylen;
+
+  if (!len)
+    len = &dummylen;
+
+  p = get_membuf (mb, &len);
+  if (!p)
+    return NULL;
+  if (len)
+    {
+      pp = xtryrealloc (p, len);
+      if (pp)
+        p = pp;
+    }
+
+  return p;
+}
+
+
 /* Peek at the membuf MB.  On success a pointer to the buffer is
    returned which is valid until the next operation on MB.  If LEN is
    not NULL the current LEN of the buffer is stored there.  On error
