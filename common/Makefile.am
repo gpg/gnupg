@@ -42,7 +42,7 @@ include $(top_srcdir)/am/cmacros.am
 jnlib_sources = \
 	libjnlib-config.h \
 	types.h host2net.h dynload.h w32help.h \
-	stringhelp.c stringhelp.h \
+	mapstrings.c stringhelp.c stringhelp.h \
 	strlist.c strlist.h \
 	utf8conv.c utf8conv.h \
 	argparse.c argparse.h \
@@ -165,7 +165,8 @@ if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
-	       t-session-env t-openpgp-oid t-ssh-utils t-dns-cert
+	       t-session-env t-openpgp-oid t-ssh-utils t-dns-cert \
+	       t-mapstrings
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -200,3 +201,4 @@ t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
 t_dns_cert_LDADD = $(t_common_ldadd) $(DNSLIBS)
+t_mapstrings_LDADD = $(t_common_ldadd)

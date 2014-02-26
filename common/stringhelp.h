@@ -34,6 +34,7 @@
 
 #include "types.h"
 
+/*-- stringhelp.c --*/
 char *has_leading_keyword (const char *string, const char *keyword);
 
 const char *memistr (const void *buf, size_t buflen, const char *sub);
@@ -144,6 +145,9 @@ char *strconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 /* Ditto, but die on error.  */
 char *xstrconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 
+
+/*-- mapstrings.c --*/
+const char *map_static_macro_string (const char *string);
 
 
 #endif /*LIBJNLIB_STRINGHELP_H*/
