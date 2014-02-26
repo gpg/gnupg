@@ -185,19 +185,6 @@ argparse_register_outfnc (int (*fnc)(int, const char *))
 }
 
 
-static void
-writechar (int is_error, int c)
-{
-  char tmp[2];
-
-  tmp[0] = c;
-  tmp[1] = 0;
-  if (custom_outfnc)
-    custom_outfnc (is_error? 2:1, tmp);
-  else
-    fputs (tmp, is_error? stderr : stdout);
-}
-
 /* Write STRING and all following const char * arguments either to
    stdout or, if IS_ERROR is set, to stderr.  The list of strings must
    be terminated by a NULL.  */
@@ -214,64 +201,11 @@ writestrings (int is_error, const char *string, ...)
       va_start (arg_ptr, string);
       do
         {
-          const char *s2, *s3;
-
-          /* Check whether to substitute a macro. */
-          if (s && (s2 = strchr (s, '@')) && s2[1] >= 'A' && s2[1] <= 'Z'
-              && (s3 = (strchr (s2+1, '@'))))
-            {
-              /* Might be.  */
-              static struct {
-                const char *name;
-                const char *value;
-              } macros[] = {
-#             ifdef PACKAGE_BUGREPORT
-                { "EMAIL", PACKAGE_BUGREPORT },
-#             else
-                { "EMAIL", "bug@example.org" },
-#             endif
-                { "GNUPG",     GNUPG_NAME },
-                { "GPG",       GPG_NAME },
-                { "GPGSM",     GPGSM_NAME },
-                { "GPG_AGENT", GPG_AGENT_NAME },
-                { "SCDAEMON",  SCDAEMON_NAME },
-                { "DIRMNGR",   DIRMNGR_NAME },
-                { "G13",       G13_NAME },
-                { "GPGCONF",   GPGCONF_NAME },
-                { "GPGTAR",    GPGTAR_NAME }
-              };
-              int idx;
-
-              s2++;
-              for (idx=0; idx < DIM (macros); idx++)
-                if (strlen (macros[idx].name) == (s3 - s2)
-                    && !memcmp (macros[idx].name, s2, (s3 - s2)))
-                  break;
-              s2--;
-              if (idx < DIM (macros)) /* Found.  Print and substitute.  */
-                {
-                  for (; s < s2; s++, count++)
-                    writechar (is_error, *s);
-                  count += writestrings (is_error, macros[idx].value, NULL);
-                  s3++;
-                }
-              else /* Not found.  Print macro as is. */
-                {
-                  for (; s < s3; s++, count++)
-                    writechar (is_error, *s);
-                }
-              /* Now recurse so that remaining macros are also
-                 substituted. */
-              count += writestrings (is_error, s3, NULL);
-            }
+          if (custom_outfnc)
+            custom_outfnc (is_error? 2:1, s);
           else
-            {
-              if (custom_outfnc)
-                custom_outfnc (is_error? 2:1, s);
-              else
-                fputs (s, is_error? stderr : stdout);
-              count += strlen (s);
-            }
+            fputs (s, is_error? stderr : stdout);
+          count += strlen (s);
         }
       while ((s = va_arg (arg_ptr, const char *)));
       va_end (arg_ptr);
@@ -1381,7 +1315,7 @@ strusage( int level )
   const char *p = strusage_handler? strusage_handler(level) : NULL;
 
   if ( p )
-    return p;
+    return map_static_macro_string (p);
 
   switch ( level )
     {
