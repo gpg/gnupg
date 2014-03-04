@@ -537,9 +537,9 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
 
 
 /* Return the secret key as an S-Exp in RESULT after locating it using
-   the GRIP.  Stores NULL at RESULT if the operation shall be diverted
-   to a token; in this case an allocated S-expression with the
-   shadow_info part from the file is stored at SHADOW_INFO.
+   the GRIP.  If the operation shall be diverted to a token, an
+   allocated S-expression with the shadow_info part from the file is
+   stored at SHADOW_INFO; if not NULL will be stored at SHADOW_INFO.
    CACHE_MODE defines now the cache shall be used.  DESC_TEXT may be
    set to present a custom description for the pinentry.  LOOKUP_TTL
    is an optional function to convey a TTL to the cache manager; we do
@@ -562,7 +562,6 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
   unsigned char *buf;
   size_t len, buflen, erroff;
   gcry_sexp_t s_skey;
-  int got_shadow_info = 0;
 
   *result = NULL;
   if (shadow_info)
@@ -638,7 +637,6 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
                 {
                   memcpy (*shadow_info, s, n);
                   rc = 0;
-                  got_shadow_info = 1;
                 }
             }
           if (rc)
@@ -654,7 +652,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
     }
   gcry_sexp_release (s_skey);
   s_skey = NULL;
-  if (rc || got_shadow_info)
+  if (rc)
     {
       xfree (buf);
       if (r_passphrase)

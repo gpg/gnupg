@@ -1667,7 +1667,7 @@ cmd_passwd (assuan_context_t ctx, char *line)
                              &s_skey, &passphrase);
   if (err)
     ;
-  else if (!s_skey)
+  else if (shadow_info)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
@@ -2126,6 +2126,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   int openpgp;
   char *cache_nonce;
   char *passphrase = NULL;
+  unsigned char *shadow_info = NULL;
 
   openpgp = has_option (line, "--openpgp");
   cache_nonce = option_value (line, "--cache-nonce");
@@ -2163,15 +2164,13 @@ cmd_export_key (assuan_context_t ctx, char *line)
   /* Get the key from the file.  With the openpgp flag we also ask for
      the passphrase so that we can use it to re-encrypt it.  */
   err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
-                             NULL, CACHE_MODE_IGNORE, NULL, &s_skey,
+                             &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
                              openpgp ? &passphrase : NULL);
   if (err)
     goto leave;
-  if (!s_skey)
+  if (shadow_info)
     {
-      /* Key is on a smartcard.  Actually we should not see this here
-         because we do not pass a shadow_info variable to the above
-         function, thus it will return this error directly.  */
+      /* Key is on a smartcard.  */
       err = gpg_error (GPG_ERR_UNUSABLE_SECKEY);
       goto leave;
     }
@@ -2241,6 +2240,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
   gcry_sexp_release (s_skey);
   xfree (ctrl->server_local->keydesc);
   ctrl->server_local->keydesc = NULL;
+  xfree (shadow_info);
 
   return leave_cmd (ctx, err);
 }
@@ -2260,7 +2260,7 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   unsigned char *keydata;
   size_t keydatalen, timestamplen;
   const char *serialno, *timestamp_str, *id;
-  unsigned char *shadow_info;
+  unsigned char *shadow_info = NULL;
   unsigned char *shdkey;
   time_t timestamp;
 
@@ -2305,12 +2305,20 @@ cmd_keytocard (assuan_context_t ctx, char *line)
     return gpg_error (GPG_ERR_INV_VALUE);
 
   err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
-                             NULL, CACHE_MODE_IGNORE, NULL, &s_skey, NULL);
+                             &shadow_info, CACHE_MODE_IGNORE, NULL,
+                             &s_skey, NULL);
   if (err)
-    return err;
-  if (!s_skey)
-    /* Key is on a smartcard already.  */
-    return gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+    {
+      xfree (shadow_info);
+      return err;
+    }
+  if (shadow_info)
+    {
+      /* Key is on a smartcard already.  */
+      xfree (shadow_info);
+      gcry_sexp_release (s_skey);
+      return gpg_error (GPG_ERR_UNUSABLE_SECKEY);
+    }
 
   keydatalen =  gcry_sexp_sprint (s_skey, GCRYSEXP_FMT_CANON, NULL, 0);
   keydata = xtrymalloc_secure (keydatalen + 30);

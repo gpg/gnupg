@@ -79,7 +79,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
       goto leave;
     }
 
-  if (!s_skey)
+  if (shadow_info)
     { /* divert operation to the smartcard */
 
       if (!gcry_sexp_canon_len (ciphertext, ciphertextlen, NULL, NULL))

@@ -299,31 +299,20 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       goto leave;
     }
 
-  if (!s_skey)
+  if (shadow_info)
     {
       /* Divert operation to the smartcard */
-      gcry_sexp_t s_pkey, l;
-      const char *name;
       size_t len;
       unsigned char *buf = NULL;
+      int key_type;
       int is_RSA = 0;
       int is_ECDSA = 0;
 
-      /* Check keytype by public key */
-      rc = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
-      if (rc)
-        {
-          log_error ("failed to read the public key\n");
-          goto leave;
-        }
-      l = gcry_sexp_cadr (s_pkey);
-      name = gcry_sexp_nth_data (l, 0, &len);
-      if (len == 3 && !memcmp (name, "rsa", 3))
+      key_type = agent_is_dsa_key (s_skey);
+      if (key_type == 0)
         is_RSA = 1;
-      else if (len == 5 && !memcmp (name, "ecdsa", 5))
+      else if (key_type == GCRY_PK_ECDSA)
         is_ECDSA = 1;
-      gcry_sexp_release (l);
-      gcry_sexp_release (s_pkey);
 
       rc = divert_pksign (ctrl,
                           ctrl->digest.value,
