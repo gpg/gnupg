@@ -181,12 +181,12 @@ get_membuf_shrink (membuf_t *mb, size_t *len)
   if (!len)
     len = &dummylen;
 
-  p = get_membuf (mb, &len);
+  p = get_membuf (mb, len);
   if (!p)
     return NULL;
-  if (len)
+  if (*len)
     {
-      pp = xtryrealloc (p, len);
+      pp = xtryrealloc (p, *len);
       if (pp)
         p = pp;
     }
