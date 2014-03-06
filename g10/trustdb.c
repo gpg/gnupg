@@ -927,6 +927,7 @@ clear_ownertrusts (PKT_public_key *pk)
   TRUSTREC rec;
   int rc;
 
+  init_trustdb ();
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return 0;
 
