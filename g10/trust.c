@@ -55,7 +55,7 @@ register_trusted_keyid (u32 *keyid)
 #ifdef NO_TRUST_MODELS
   (void)keyid;
 #else
-  register_trusted_keyid (keyid);
+  tdb_register_trusted_keyid (keyid);
 #endif
 }
 
@@ -66,7 +66,7 @@ register_trusted_key (const char *string)
 #ifdef NO_TRUST_MODELS
   (void)string;
 #else
-  register_trusted_key (string);
+  tdb_register_trusted_key (string);
 #endif
 }
 
@@ -247,7 +247,7 @@ update_ownertrust (PKT_public_key *pk, unsigned int new_trust)
   (void)pk;
   (void)new_trust;
 #else
-  update_ownertrust (pk, new_trust);
+  tdb_update_ownertrust (pk, new_trust);
 #endif
 }
 
