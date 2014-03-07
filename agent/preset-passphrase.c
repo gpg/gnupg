@@ -38,7 +38,10 @@
 #include <fcntl.h> /* for setmode() */
 #endif
 #ifdef HAVE_W32_SYSTEM
-#include <windows.h>  /* To initialize the sockets.  fixme */
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>  /* To initialize the sockets.  fixme */
 #endif
 
 #define JNLIB_NEED_LOG_LOGV

@@ -33,7 +33,10 @@
 #include <sys/wait.h>
 #endif
 #ifdef HAVE_DOSISH_SYSTEM
-#include <windows.h>
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
 #endif
 #include <fcntl.h>
 #include <unistd.h>

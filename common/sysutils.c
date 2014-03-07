@@ -57,6 +57,9 @@
 # if WINVER < 0x0500
 #   define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
 # endif
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 #endif
 #ifdef HAVE_NPTH

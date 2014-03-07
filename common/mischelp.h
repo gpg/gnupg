@@ -81,6 +81,9 @@ time_t timegm (struct tm *tm);
 # include <sys/socket.h>
 # include <sys/un.h>
 #else
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 #endif
 

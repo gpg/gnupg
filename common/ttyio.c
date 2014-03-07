@@ -53,6 +53,9 @@
 #endif
 #endif
 #ifdef USE_W32_CONSOLE
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 # ifdef HAVE_TCGETATTR
 #  error mingw32 and termios

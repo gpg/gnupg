@@ -31,6 +31,9 @@
 #include <sys/types.h>
 #ifdef USE_DNS_CERT
 # ifdef HAVE_W32_SYSTEM
+#  ifdef HAVE_WINSOCK2_H
+#   include <winsock2.h>
+#  endif
 #  include <windows.h>
 # else
 #  include <netinet/in.h>

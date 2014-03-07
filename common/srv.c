@@ -30,7 +30,10 @@
 #include <config.h>
 #include <sys/types.h>
 #ifdef _WIN32
-#include <windows.h>
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
 #else
 #include <netinet/in.h>
 #include <arpa/nameser.h>

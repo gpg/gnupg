@@ -41,6 +41,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
 # include <windows.h>
 #else /*!HAVE_W32_SYSTEM*/
 # include <sys/socket.h>

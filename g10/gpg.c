@@ -31,7 +31,10 @@
 #endif
 #include <fcntl.h>
 #ifdef HAVE_W32_SYSTEM
-#include <windows.h>
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
 #endif
 
 #define INCLUDED_BY_MAIN_MODULE 1
