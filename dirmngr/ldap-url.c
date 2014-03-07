@@ -91,7 +91,7 @@ software is provided `'as is'' without express or implied warranty.  */
 #define LDAP_MALLOC		malloc
 #define LDAP_REALLOC		realloc
 #define ldap_utf8_strchr	strchr
-#define ldap_utf8_strtok(n,d,s) strtok (n,d)
+#define ldap_utf8_strtok(n,d)   strtok (n,d)
 #define Debug(a,b,c,d,e)
 void ldap_pvt_hex_unescape( char *s );
 
@@ -267,7 +267,6 @@ ldap_str2charray( const char *str_in, const char *brkstr )
 {
 	char	**res;
 	char	*str, *s;
-	char	*lasts;
 	int	i;
 
 	/* protect the input string from strtok */
@@ -292,9 +291,9 @@ ldap_str2charray( const char *str_in, const char *brkstr )
 
 	i = 0;
 
-	for ( s = ldap_utf8_strtok( str, brkstr, &lasts );
+	for ( s = ldap_utf8_strtok( str, brkstr);
 		s != NULL;
-		s = ldap_utf8_strtok( NULL, brkstr, &lasts ) )
+		s = ldap_utf8_strtok( NULL, brkstr) )
 	{
 		res[i] = LDAP_STRDUP( s );
 
