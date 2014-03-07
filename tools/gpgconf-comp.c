@@ -1210,6 +1210,8 @@ my_dgettext (const char *domain, const char *msgid)
       text = (char*)gettext (msgid);
       return text ? text : msgid;
     }
+  else
+    return msgid;
 #elif defined(ENABLE_NLS)
   if (domain)
     {
