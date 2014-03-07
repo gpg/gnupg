@@ -639,6 +639,7 @@ AC_ARG_VAR(CC_FOR_BUILD,[build system C compiler])
 
 
 try_gettext=yes
+require_iconv=yes
 have_dosish_system=no
 have_w32_system=no
 have_w32ce_system=no
@@ -716,6 +717,9 @@ case "${host}" in
         ;;
     *-linux-androideabi)
         have_android_system=yes
+        # Android is fully utf-8 and we do not want to use iconv to
+        # keeps things simple
+        require_iconv=no
         run_tests=no
         ;;
     *)
@@ -1165,8 +1169,14 @@ AC_DEFINE_UNQUOTED(PRINTABLE_OS_NAME, "$PRINTABLE_OS_NAME",
 #
 # Checking for iconv
 #
-AM_ICONV
-
+if test "$require_iconv" = yes; then
+  AM_ICONV
+else
+  LIBICONV=
+  LTLIBICONV=
+  AC_SUBST(LIBICONV)
+  AC_SUBST(LTLIBICONV)
+fi
 
 
 #
@@ -1786,7 +1796,8 @@ if test "$have_npth" = "no"; then
 ***]])
 fi
 
-if test "$am_func_iconv" != yes; then
+if test "$require_iconv" = yes; then
+  if test "$am_func_iconv" != yes; then
     die=yes
     AC_MSG_NOTICE([[
 ***
@@ -1795,6 +1806,7 @@ if test "$am_func_iconv" != yes; then
 *** available at:
 ***   http://ftp.gnu.org/gnu/libiconv/
 ***]])
+  fi
 fi
 
 if test "$die" = "yes"; then
