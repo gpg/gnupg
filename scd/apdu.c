@@ -373,9 +373,56 @@ static int pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
       Helper
  */
 
+static int
+lock_slot (int slot)
+{
+#ifdef USE_NPTH
+  int err;
+
+  err = npth_mutex_lock (&reader_table[slot].lock);
+  if (err)
+    {
+      log_error ("failed to acquire apdu lock: %s\n", strerror (err));
+      return SW_HOST_LOCKING_FAILED;
+    }
+#endif /*USE_NPTH*/
+  return 0;
+}
+
+static int
+trylock_slot (int slot)
+{
+#ifdef USE_NPTH
+  int err;
+
+  err = npth_mutex_trylock (&reader_table[slot].lock);
+  if (err == EBUSY)
+    return SW_HOST_BUSY;
+  else if (err)
+    {
+      log_error ("failed to acquire apdu lock: %s\n", strerror (err));
+      return SW_HOST_LOCKING_FAILED;
+    }
+#endif /*USE_NPTH*/
+  return 0;
+}
+
+static void
+unlock_slot (int slot)
+{
+#ifdef USE_NPTH
+  int err;
+
+  err = npth_mutex_unlock (&reader_table[slot].lock);
+  if (err)
+    log_error ("failed to release apdu lock: %s\n", strerror (errno));
+#endif /*USE_NPTH*/
+}
+
 
 /* Find an unused reader slot for PORTSTR and put it into the reader
-   table.  Return -1 on error or the index into the reader table. */
+   table.  Return -1 on error or the index into the reader table.
+   Acquire slot's lock on successful return.  Caller needs to unlock it.  */
 static int
 new_reader_slot (void)
 {
@@ -404,6 +451,11 @@ new_reader_slot (void)
       reader_table[reader].lock_initialized = 1;
     }
 #endif /*USE_NPTH*/
+  if (lock_slot (reader))
+    {
+      log_error ("error locking mutex: %s\n", strerror (errno));
+      return -1;
+    }
   reader_table[reader].connect_card = NULL;
   reader_table[reader].disconnect_card = NULL;
   reader_table[reader].close_reader = NULL;
@@ -692,6 +744,7 @@ open_ct_reader (int port)
       log_error ("apdu_open_ct_reader failed on port %d: %s\n",
                  port, ct_error_string (rc));
       reader_table[reader].used = 0;
+      unlock_slot (reader);
       return -1;
     }
 
@@ -713,6 +766,7 @@ open_ct_reader (int port)
   reader_table[reader].pinpad_modify = NULL;
 
   dump_reader_status (reader);
+  unlock_slot (reader);
   return reader;
 }
 
@@ -1871,6 +1925,7 @@ open_pcsc_reader_direct (const char *portstr)
       log_error ("pcsc_establish_context failed: %s (0x%lx)\n",
                  pcsc_error_string (err), err);
       reader_table[slot].used = 0;
+      unlock_slot (slot);
       return -1;
     }
 
@@ -1884,6 +1939,7 @@ open_pcsc_reader_direct (const char *portstr)
           log_error ("error allocating memory for reader list\n");
           pcsc_release_context (reader_table[slot].pcsc.context);
           reader_table[slot].used = 0;
+	  unlock_slot (slot);
           return -1 /*SW_HOST_OUT_OF_CORE*/;
         }
       err = pcsc_list_readers (reader_table[slot].pcsc.context,
@@ -1896,6 +1952,7 @@ open_pcsc_reader_direct (const char *portstr)
       pcsc_release_context (reader_table[slot].pcsc.context);
       reader_table[slot].used = 0;
       xfree (list);
+      unlock_slot (slot);
       return -1;
     }
 
@@ -1921,6 +1978,7 @@ open_pcsc_reader_direct (const char *portstr)
       log_error ("error allocating memory for reader name\n");
       pcsc_release_context (reader_table[slot].pcsc.context);
       reader_table[slot].used = 0;
+      unlock_slot (slot);
       return -1;
     }
   strcpy (reader_table[slot].rdrname, portstr? portstr : list);
@@ -1940,6 +1998,7 @@ open_pcsc_reader_direct (const char *portstr)
   reader_table[slot].dump_status_reader = dump_pcsc_reader_status;
 
   dump_reader_status (slot);
+  unlock_slot (slot);
   return slot;
 }
 #endif /*!NEED_PCSC_WRAPPER */
@@ -1986,6 +2045,7 @@ open_pcsc_reader_wrapped (const char *portstr)
     {
       log_error ("error creating a pipe: %s\n", strerror (errno));
       slotp->used = 0;
+      unlock_slot (slot);
       return -1;
     }
   if (pipe (wp) == -1)
@@ -1994,6 +2054,7 @@ open_pcsc_reader_wrapped (const char *portstr)
       close (rp[0]);
       close (rp[1]);
       slotp->used = 0;
+      unlock_slot (slot);
       return -1;
     }
 
@@ -2006,6 +2067,7 @@ open_pcsc_reader_wrapped (const char *portstr)
       close (wp[0]);
       close (wp[1]);
       slotp->used = 0;
+      unlock_slot (slot);
       return -1;
     }
   slotp->pcsc.pid = pid;
@@ -2142,6 +2204,7 @@ open_pcsc_reader_wrapped (const char *portstr)
   pcsc_get_status (slot, &dummy_status);
 
   dump_reader_status (slot);
+  unlock_slot (slot);
   return slot;
 
  command_failed:
@@ -2153,6 +2216,7 @@ open_pcsc_reader_wrapped (const char *portstr)
     kill (slotp->pcsc.pid, SIGTERM);
   slotp->pcsc.pid = (pid_t)(-1);
   slotp->used = 0;
+  unlock_slot (slot);
   /* There is no way to return SW. */
   return -1;
 
@@ -2541,6 +2605,7 @@ open_ccid_reader (const char *portstr)
   if (err)
     {
       slotp->used = 0;
+      unlock_slot (slot);
       return -1;
     }
 
@@ -2575,6 +2640,7 @@ open_ccid_reader (const char *portstr)
   reader_table[slot].is_t0 = 0;
 
   dump_reader_status (slot);
+  unlock_slot (slot);
   return slot;
 }
 
@@ -2813,6 +2879,7 @@ open_rapdu_reader (int portno,
   if (!slotp->rapdu.handle)
     {
       slotp->used = 0;
+      unlock_slot (slot);
       return -1;
     }
 
@@ -2867,12 +2934,14 @@ open_rapdu_reader (int portno,
 
   dump_reader_status (slot);
   rapdu_msg_release (msg);
+  unlock_slot (slot);
   return slot;
 
  failure:
   rapdu_msg_release (msg);
   rapdu_release (slotp->rapdu.handle);
   slotp->used = 0;
+  unlock_slot (slot);
   return -1;
 }
 
@@ -2883,53 +2952,6 @@ open_rapdu_reader (int portno,
 /*
        Driver Access
  */
-
-
-static int
-lock_slot (int slot)
-{
-#ifdef USE_NPTH
-  int err;
-
-  err = npth_mutex_lock (&reader_table[slot].lock);
-  if (err)
-    {
-      log_error ("failed to acquire apdu lock: %s\n", strerror (err));
-      return SW_HOST_LOCKING_FAILED;
-    }
-#endif /*USE_NPTH*/
-  return 0;
-}
-
-static int
-trylock_slot (int slot)
-{
-#ifdef USE_NPTH
-  int err;
-
-  err = npth_mutex_trylock (&reader_table[slot].lock);
-  if (err == EBUSY)
-    return SW_HOST_BUSY;
-  else if (err)
-    {
-      log_error ("failed to acquire apdu lock: %s\n", strerror (err));
-      return SW_HOST_LOCKING_FAILED;
-    }
-#endif /*USE_NPTH*/
-  return 0;
-}
-
-static void
-unlock_slot (int slot)
-{
-#ifdef USE_NPTH
-  int err;
-
-  err = npth_mutex_unlock (&reader_table[slot].lock);
-  if (err)
-    log_error ("failed to release apdu lock: %s\n", strerror (errno));
-#endif /*USE_NPTH*/
-}
 
 
 /* Open the reader and return an internal slot number or -1 on
