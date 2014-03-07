@@ -54,7 +54,9 @@
 # include <sys/resource.h>
 #endif
 #ifdef HAVE_W32_SYSTEM
-# define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
+# if WINVER < 0x0500
+#   define WINVER 0x0500  /* Required for AllowSetForegroundWindow.  */
+# endif
 # include <windows.h>
 #endif
 #ifdef HAVE_NPTH
