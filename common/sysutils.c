@@ -1,6 +1,7 @@
 /* sysutils.c -  system helpers
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004,
  *               2007, 2008  Free Software Foundation, Inc.
+ * Copyright (C) 2013 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -688,3 +689,59 @@ _gnupg_getenv (const char *name)
 }
 
 #endif /*HAVE_W32CE_SYSTEM*/
+
+
+#ifdef HAVE_W32_SYSTEM
+/* Return the user's security identifier from the current process.  */
+PSID
+w32_get_user_sid (void)
+{
+  int okay = 0;
+  HANDLE proc = NULL;
+  HANDLE token = NULL;
+  TOKEN_USER *user = NULL;
+  PSID sid = NULL;
+  DWORD tokenlen, sidlen;
+
+  proc = OpenProcess (PROCESS_QUERY_INFORMATION, FALSE, GetCurrentProcessId());
+  if (!proc)
+    goto leave;
+
+  if (!OpenProcessToken (proc, TOKEN_QUERY, &token))
+    goto leave;
+
+  if (!GetTokenInformation (token, TokenUser, NULL, 0, &tokenlen)
+      && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+    goto leave;
+
+  user = xtrymalloc (tokenlen);
+  if (!user)
+    goto leave;
+
+  if (!GetTokenInformation (token, TokenUser, user, tokenlen, &tokenlen))
+    goto leave;
+  if (!IsValidSid (user->User.Sid))
+    goto leave;
+  sidlen = GetLengthSid (user->User.Sid);
+  sid = xtrymalloc (sidlen);
+  if (!sid)
+    goto leave;
+  if (!CopySid (sidlen, sid, user->User.Sid))
+    goto leave;
+  okay = 1;
+
+ leave:
+  xfree (user);
+  if (token)
+    CloseHandle (token);
+  if (proc)
+    CloseHandle (proc);
+
+  if (!okay)
+    {
+      xfree (sid);
+      sid = NULL;
+    }
+  return sid;
+}
+#endif /*HAVE_W32_SYSTEM*/

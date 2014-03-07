@@ -65,6 +65,7 @@ int  gnupg_setenv (const char *name, const char *value, int overwrite);
 int  gnupg_unsetenv (const char *name);
 
 #ifdef HAVE_W32_SYSTEM
+void *w32_get_user_sid (void);
 
 #include "../common/w32help.h"
 

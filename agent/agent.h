@@ -289,9 +289,14 @@ gpg_error_t agent_print_status (ctrl_t ctrl, const char *keyword,
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);
-gpg_error_t pinentry_loopback(ctrl_t, const char *keyword,
-	                      unsigned char **buffer, size_t *size,
-			      size_t max_length);
+gpg_error_t pinentry_loopback (ctrl_t, const char *keyword,
+	                       unsigned char **buffer, size_t *size,
+			       size_t max_length);
+
+#ifdef HAVE_W32_SYSTEM
+int serve_mmapped_ssh_request (ctrl_t ctrl,
+                               unsigned char *request, size_t maxreqlen);
+#endif /*HAVE_W32_SYSTEM*/
 
 /*-- command-ssh.c --*/
 ssh_control_file_t ssh_open_control_file (void);

@@ -6,6 +6,9 @@ Noteworthy changes in version 2.1.0-betaN (unreleased)
 
  * The GNU Pth library has been replaced by the new nPth library.
 
+ * New option --enable-putty-support to allow gpg-agent to act as a
+   Pageant replacement including full smartcard support.
+
  * Removed support for the original HKP keyserver which is not anymore
    used by any site.
 
