@@ -81,8 +81,8 @@ static void *known_values;
 
 # define KNOWN_VALUE(Str) \
   ({									      \
-    void *value = tfind (Str, &known_values, (compar_fn_t) strcmp);	      \
-    value != NULL ? *(char **) value : NULL;				      \
+    void *_v = tfind (Str, &known_values, (compar_fn_t) strcmp);	      \
+    _v != NULL ? *(char **) _v : NULL;				      \
   })
 # define STORE_VALUE(Str) \
   tsearch (Str, &known_values, (compar_fn_t) strcmp)
