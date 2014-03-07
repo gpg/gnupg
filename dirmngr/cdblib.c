@@ -115,9 +115,10 @@ cdb_init(struct cdb *cdbp, int fd)
 {
   struct stat st;
   unsigned char *mem;
-  unsigned fsize;
 #ifdef _WIN32
   HANDLE hFile, hMapping;
+#else
+  unsigned int fsize;
 #endif
 
   /* get file size */
@@ -128,7 +129,6 @@ cdb_init(struct cdb *cdbp, int fd)
     gpg_err_set_errno (EPROTO);
     return -1;
   }
-  fsize = (unsigned)(st.st_size & 0xffffffffu);
   /* memory-map file */
 #ifdef _WIN32
 # ifdef __MINGW32CE__
@@ -145,11 +145,12 @@ cdb_init(struct cdb *cdbp, int fd)
   if (!mem)
     return -1;
   cdbp->cdb_mapping = hMapping;
-#else
+#else /*!_WIN32*/
+  fsize = (unsigned int)(st.st_size & 0xffffffffu);
   mem = (unsigned char*)mmap(NULL, fsize, PROT_READ, MAP_SHARED, fd, 0);
   if (mem == MAP_FAILED)
     return -1;
-#endif /* _WIN32 */
+#endif /*!_WIN32*/
 
   cdbp->cdb_fd = fd;
   cdbp->cdb_fsize = st.st_size;

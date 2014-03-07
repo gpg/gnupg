@@ -459,7 +459,7 @@ start_dirmngr (int only_daemon)
     {
       const char *pgmname;
       const char *argv[3];
-      int no_close_list[3];
+      assuan_fd_t no_close_list[3];
       int i;
 
       if (only_daemon)
@@ -486,7 +486,7 @@ start_dirmngr (int only_daemon)
       if (log_get_fd () != -1)
         no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
       no_close_list[i++] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
-      no_close_list[i] = -1;
+      no_close_list[i] = ASSUAN_INVALID_FD;
 
       /* Connect to the agent and perform initial handshaking.  */
       rc = assuan_pipe_connect (ctx, opt.dirmngr_program, argv,

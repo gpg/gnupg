@@ -510,6 +510,10 @@ DWORD WINAPI
 w32_service_control (DWORD control, DWORD event_type, LPVOID event_data,
 		     LPVOID context)
 {
+  (void)event_type;
+  (void)event_data;
+  (void)context;
+
   /* event_type and event_data are not used here.  */
   switch (control)
     {
@@ -1016,6 +1020,9 @@ main (int argc, char **argv)
          existing scripts which might use this to detect a successful
          start of the dirmngr.  */
 #ifdef HAVE_W32_SYSTEM
+      (void)csh_style;
+      (void)nodetach;
+
       pid = getpid ();
       es_printf ("set %s=%s;%lu;1\n",
                  DIRMNGR_INFO_NAME, socket_name, (ulong) pid);
@@ -1275,6 +1282,12 @@ main (int argc, char **argv)
 
 
 #ifdef USE_W32_SERVICE
+static void WINAPI
+call_real_main (DWORD argc, LPSTR *argv)
+{
+  real_main (argc, argv);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -1295,8 +1308,7 @@ main (int argc, char *argv[])
     {
       SERVICE_TABLE_ENTRY DispatchTable [] =
 	{
-	  /* Ignore warning.  */
-	  { "DirMngr", &real_main },
+	  { "DirMngr", &call_real_main },
 	  { NULL, NULL }
 	};
 
@@ -1609,12 +1621,12 @@ dirmngr_sighup_action (void)
 
 
 /* The signal handler. */
+#ifndef HAVE_W32_SYSTEM
 static void
 handle_signal (int signo)
 {
   switch (signo)
     {
-#ifndef HAVE_W32_SYSTEM
     case SIGHUP:
       dirmngr_sighup_action ();
       break;
@@ -1649,11 +1661,12 @@ handle_signal (int signo)
       cleanup ();
       dirmngr_exit (0);
       break;
-#endif
+
     default:
       log_info (_("signal %d received - no action defined\n"), signo);
     }
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 /* This is the worker for the ticker.  It is called every few seconds
@@ -1739,7 +1752,9 @@ static void
 handle_connections (assuan_fd_t listen_fd)
 {
   npth_attr_t tattr;
+#ifndef HAVE_W32_SYSTEM
   int signo;
+#endif
   struct sockaddr_un paddr;
   socklen_t plen = sizeof( paddr );
   gnupg_fd_t fd;

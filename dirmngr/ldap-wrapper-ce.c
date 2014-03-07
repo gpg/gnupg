@@ -279,8 +279,6 @@ outstream_reader_cb (void *cb_value, char *buffer, size_t count,
                      size_t *r_nread)
 {
   struct outstream_cookie_s *cookie = cb_value;
-  char *dst;
-  const char *src;
   size_t nread = 0;
   int was_full = 0;
 
@@ -288,7 +286,6 @@ outstream_reader_cb (void *cb_value, char *buffer, size_t count,
     return gpg_error (GPG_ERR_NOT_SUPPORTED); /* Rewind is not supported.  */
 
   *r_nread = 0;
-  dst = buffer;
 
   while (BUFFER_EMPTY(cookie))
     {
@@ -302,7 +299,6 @@ outstream_reader_cb (void *cb_value, char *buffer, size_t count,
   if (BUFFER_FULL(cookie))
     was_full = 1;
 
-  src = cookie->buffer + cookie->buffer_pos;
   nread = buffer_get_data (cookie, buffer, count);
 
   if (was_full)
