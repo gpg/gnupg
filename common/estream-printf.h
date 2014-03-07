@@ -99,11 +99,15 @@
 #endif /*_ESTREAM_EXT_SYM_PREFIX*/
 
 #ifndef _ESTREAM_GCC_A_PRINTF
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-# define _ESTREAM_GCC_A_PRINTF( f, a )  __attribute__ ((format (printf,f,a)))
-#else
-# define _ESTREAM_GCC_A_PRINTF( f, a )
-#endif
+# if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4 )
+#  define _ESTREAM_GCC_A_PRINTF( f, a ) \
+                               __attribute__ ((format (__gnu_printf__,f,a)))
+# elif __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+#  define _ESTREAM_GCC_A_PRINTF( f, a ) \
+                               __attribute__ ((format (printf,f,a)))
+# else
+#  define _ESTREAM_GCC_A_PRINTF( f, a )
+# endif
 #endif /*_ESTREAM_GCC_A_PRINTF*/
 
 
