@@ -37,14 +37,15 @@
 #endif
 
 #ifdef HAVE_W32_SYSTEM
-#include <winsock2.h>
-#include <winldap.h>
-#include <fcntl.h>
-#include "ldap-url.h"
+# include <winsock2.h>
+# include <winldap.h>
+# include <winber.h>
+# include <fcntl.h>
+# include "ldap-url.h"
 #else
-/* For OpenLDAP, to enable the API that we're using. */
-#define LDAP_DEPRECATED 1
-#include <ldap.h>
+  /* For OpenLDAP, to enable the API that we're using. */
+# define LDAP_DEPRECATED 1
+# include <ldap.h>
 #endif
 
 
@@ -95,6 +96,12 @@ static void npth_protect (void) { }
 # define my_ldap_next_attribute(a,b,c)  ldap_next_attribute ((a),(b),(c))
 # define my_ldap_get_values_len(a,b,c)  ldap_get_values_len ((a),(b),(c))
 # define my_ldap_free_attr(a)           ldap_memfree ((a))
+#endif
+
+#ifdef HAVE_W32_SYSTEM
+ typedef LDAP_TIMEVAL  my_ldap_timeval_t;
+#else
+ typedef struct timeval my_ldap_timeval_t;
 #endif
 
 #define DEFAULT_LDAP_TIMEOUT 100 /* Arbitrary long timeout. */
@@ -154,7 +161,7 @@ struct my_opt_s
 {
   int quiet;
   int verbose;
-  struct timeval timeout; /* Timeout for the LDAP search functions.  */
+  my_ldap_timeval_t timeout;/* Timeout for the LDAP search functions.  */
   unsigned int alarm_timeout; /* And for the alarm based timeout.  */
   int multi;
 
