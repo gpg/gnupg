@@ -311,6 +311,7 @@
 
 #ifdef GNUPG_MAJOR_VERSION
 # include "libjnlib-config.h"
+# include "stringhelp.h"  /* For stpcpy and w32_strerror. */
 #endif
 #ifdef HAVE_W32CE_SYSTEM
 # include "utf8conv.h"  /* WindowsCE requires filename conversion.  */

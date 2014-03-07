@@ -102,6 +102,13 @@ decrypt_message (ctrl_t ctrl, const char *filename)
 gpg_error_t
 decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
 {
+#ifdef HAVE_W32_SYSTEM
+  /* No server mode yet.  */
+  (void)ctrl;
+  (void)input_fd;
+  (void)output_fd;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#else
   gpg_error_t err;
   IOBUF fp;
   armor_filter_context_t *afx = NULL;
@@ -166,6 +173,7 @@ decrypt_message_fd (ctrl_t ctrl, int input_fd, int output_fd)
   release_armor_context (afx);
   release_progress_context (pfx);
   return err;
+#endif
 }
 
 

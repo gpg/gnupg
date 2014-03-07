@@ -484,7 +484,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                  of the required features except for passphrase
                  caching etc.  */
               const char *pgmname;
-              int no_close_list[3];
+              assuan_fd_t no_close_list[3];
               int i;
 
               if ( !(pgmname = strrchr (agent_program, '/')))
@@ -500,7 +500,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               if (log_get_fd () != -1)
                 no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
               no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
-              no_close_list[i] = -1;
+              no_close_list[i] = ASSUAN_INVALID_FD;
 
               /* Connect to the agent and perform initial handshaking. */
               err = assuan_pipe_connect (ctx, agent_program, argv,

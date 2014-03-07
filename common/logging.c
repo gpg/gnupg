@@ -257,7 +257,9 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       else
         {
           char *addrstr, *p;
+#ifdef HAVE_INET_PTON
           void *addrbuf = NULL;
+#endif /*HAVE_INET_PTON*/
 
           addrstr = jnlib_malloc (strlen (name) + 1);
           if (!addrstr)
@@ -281,7 +283,9 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
                   memset (&srvr_addr_in6, 0, sizeof srvr_addr_in6);
                   srvr_addr_in6.sin6_family = af;
                   srvr_addr_in6.sin6_port = htons (port);
+#ifdef HAVE_INET_PTON
                   addrbuf = &srvr_addr_in6.sin6_addr;
+#endif /*HAVE_INET_PTON*/
                   srvr_addr = (struct sockaddr *)&srvr_addr_in6;
                   addrlen = sizeof srvr_addr_in6;
 #else
@@ -306,7 +310,9 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
                   memset (&srvr_addr_in, 0, sizeof srvr_addr_in);
                   srvr_addr_in.sin_family = af;
                   srvr_addr_in.sin_port = htons (port);
+#ifdef HAVE_INET_PTON
                   addrbuf = &srvr_addr_in.sin_addr;
+#endif /*HAVE_INET_PTON*/
                   srvr_addr = (struct sockaddr *)&srvr_addr_in;
                   addrlen = sizeof srvr_addr_in;
                 }

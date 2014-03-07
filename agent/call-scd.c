@@ -198,7 +198,7 @@ start_scd (ctrl_t ctrl)
   const char *pgmname;
   assuan_context_t ctx = NULL;
   const char *argv[3];
-  int no_close_list[3];
+  assuan_fd_t no_close_list[3];
   int i;
   int rc;
 
@@ -324,7 +324,7 @@ start_scd (ctrl_t ctrl)
         no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
       no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
     }
-  no_close_list[i] = -1;
+  no_close_list[i] = ASSUAN_INVALID_FD;
 
   /* Connect to the pinentry and perform initial handshaking.  Use
      detached flag (128) so that under W32 SCDAEMON does not show up a

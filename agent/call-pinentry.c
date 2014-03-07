@@ -208,7 +208,7 @@ start_pinentry (ctrl_t ctrl)
   const char *pgmname;
   assuan_context_t ctx;
   const char *argv[5];
-  int no_close_list[3];
+  assuan_fd_t no_close_list[3];
   int i;
   const char *tmpstr;
   unsigned long pinentry_pid;
@@ -291,7 +291,7 @@ start_pinentry (ctrl_t ctrl)
         no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
       no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
     }
-  no_close_list[i] = -1;
+  no_close_list[i] = ASSUAN_INVALID_FD;
 
   rc = assuan_new (&ctx);
   if (rc)

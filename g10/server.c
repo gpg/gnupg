@@ -403,6 +403,11 @@ static gpg_error_t
 cmd_verify (assuan_context_t ctx, char *line)
 {
   int rc;
+#ifdef HAVE_W32_SYSTEM
+  (void)ctx;
+  (void)line;
+  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#else
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gnupg_fd_t fd = assuan_get_input_fd (ctx);
   gnupg_fd_t out_fd = assuan_get_output_fd (ctx);
@@ -418,13 +423,22 @@ cmd_verify (assuan_context_t ctx, char *line)
 
   if (out_fd != GNUPG_INVALID_FD)
     {
-      out_fp = es_fdopen_nc (out_fd, "w");
+      es_syshd_t syshd;
+
+#ifdef HAVE_W32_SYSTEM
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = out_fd;
+#else
+      syshd.type = ES_SYSHD_FD;
+      syshd.u.fd = out_fd;
+#endif
+      out_fp = es_sysopen_nc (&syshd, "w");
       if (!out_fp)
         return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
     }
 
   log_debug ("WARNING: The server mode is WORK "
-             "iN PROGRESS and not ready for use\n");
+             "IN PROGRESS and not ready for use\n");
 
   rc = gpg_verify (ctrl, fd, ctrl->server_local->message_fd, out_fp);
 
@@ -432,6 +446,7 @@ cmd_verify (assuan_context_t ctx, char *line)
   close_message_fd (ctrl);
   assuan_close_input_fd (ctx);
   assuan_close_output_fd (ctx);
+#endif
 
   if (rc)
     log_error ("command '%s' failed: %s\n", "VERIFY", gpg_strerror (rc));
@@ -672,7 +687,9 @@ int
 gpg_server (ctrl_t ctrl)
 {
   int rc;
+#ifndef HAVE_W32_SYSTEM
   int filedes[2];
+#endif
   assuan_context_t ctx = NULL;
   static const char hello[] = ("GNU Privacy Guard's OpenPGP server "
                                VERSION " ready");
@@ -680,8 +697,10 @@ gpg_server (ctrl_t ctrl)
   /* We use a pipe based server so that we can work from scripts.
      assuan_init_pipe_server will automagically detect when we are
      called with a socketpair and ignore FILEDES in this case.  */
+#ifndef HAVE_W32_SYSTEM
   filedes[0] = assuan_fdopen (0);
   filedes[1] = assuan_fdopen (1);
+#endif
   rc = assuan_new (&ctx);
   if (rc)
     {
@@ -690,7 +709,11 @@ gpg_server (ctrl_t ctrl)
       goto leave;
     }
 
+#ifdef HAVE_W32_SYSTEM
+  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#else
   rc = assuan_init_pipe_server (ctx, filedes);
+#endif
   if (rc)
     {
       log_error ("failed to initialize the server: %s\n", gpg_strerror (rc));

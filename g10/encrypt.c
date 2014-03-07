@@ -524,7 +524,17 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     }
 
   /* Prepare iobufs. */
+#ifdef HAVE_W32_SYSTEM
+  if (filefd == -1)
+    inp = iobuf_open_fd_or_name (GNUPG_INVALID_FD, filename, "rb");
+  else
+    {
+      inp = NULL;
+      gpg_err_set_errno (ENOSYS);
+    }
+#else
   inp = iobuf_open_fd_or_name (filefd, filename, "rb");
+#endif
   if (inp)
     iobuf_ioctl (inp, IOBUF_IOCTL_NO_CACHE, 1, NULL);
   if (inp && is_secured_file (iobuf_get_fd (inp)))
