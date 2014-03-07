@@ -1108,6 +1108,9 @@ main (int argc, char **argv )
 
       fflush (NULL);
 #ifdef HAVE_W32_SYSTEM
+      (void)csh_style;
+      (void)nodetach;
+      (void)env_file_name;
       pid = getpid ();
       es_printf ("set %s=%s;%lu;1\n",
                  GPG_AGENT_INFO_NAME, socket_name, (ulong)pid);

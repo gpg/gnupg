@@ -1081,6 +1081,8 @@ pcsc_send_apdu_direct (int slot, unsigned char *apdu, size_t apdulen,
   struct pcsc_io_request_s send_pci;
   pcsc_dword_t recv_len;
 
+  (void)pininfo;
+
   if (!reader_table[slot].atrlen
       && (err = reset_pcsc_reader (slot)))
     return err;
@@ -1513,7 +1515,7 @@ connect_pcsc_card (int slot)
     {
       char reader[250];
       pcsc_dword_t readerlen, atrlen;
-      long card_state, card_protocol;
+      pcsc_dword_t card_state, card_protocol;
 
       pcsc_vendor_specific_init (slot);
 
@@ -1525,7 +1527,7 @@ connect_pcsc_card (int slot)
                          reader_table[slot].atr, &atrlen);
       if (err)
         log_error ("pcsc_status failed: %s (0x%lx) %lu\n",
-                   pcsc_error_string (err), err, readerlen);
+                   pcsc_error_string (err), err, (long unsigned int)readerlen);
       else
         {
           if (atrlen > DIM (reader_table[0].atr))
@@ -1853,7 +1855,7 @@ open_pcsc_reader_direct (const char *portstr)
   long err;
   int slot;
   char *list = NULL;
-  pcsc_dword_t nreader, listlen;
+  pcsc_dword_t nreader;
   char *p;
 
   slot = new_reader_slot ();
@@ -1897,7 +1899,6 @@ open_pcsc_reader_direct (const char *portstr)
       return -1;
     }
 
-  listlen = nreader;
   p = list;
   while (nreader)
     {

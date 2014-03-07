@@ -2140,7 +2140,10 @@ open_es_fwrite (const char *filename)
 static void
 run_protect_tool (int argc, char **argv)
 {
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+  (void)argc;
+  (void)argv;
+#else
   const char *pgm;
   char **av;
   int i;
@@ -2159,6 +2162,6 @@ run_protect_tool (int argc, char **argv)
   av[i] = NULL;
   execv (pgm, av);
   log_error ("error executing '%s': %s\n", pgm, strerror (errno));
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*!HAVE_W32_SYSTEM*/
   gpgsm_exit (2);
 }

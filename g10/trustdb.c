@@ -1333,6 +1333,8 @@ static int
 check_regexp(const char *expr,const char *string)
 {
 #ifdef DISABLE_REGEX
+  (void)expr;
+  (void)string;
   /* When DISABLE_REGEX is defined, assume all regexps do not
      match. */
   return 0;

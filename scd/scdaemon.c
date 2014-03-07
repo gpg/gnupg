@@ -806,7 +806,10 @@ main (int argc, char **argv )
 
 
       fflush (NULL);
-#ifndef HAVE_W32_SYSTEM
+#ifdef HAVE_W32_SYSTEM
+      (void)csh_style;
+      (void)nodetach;
+#else
       pid = fork ();
       if (pid == (pid_t)-1)
         {
@@ -958,12 +961,12 @@ scd_get_socket_name ()
 }
 
 
+#ifndef HAVE_W32_SYSTEM
 static void
 handle_signal (int signo)
 {
   switch (signo)
     {
-#ifndef HAVE_W32_SYSTEM
     case SIGHUP:
       log_info ("SIGHUP received - "
                 "re-reading configuration and resetting cards\n");
@@ -1004,12 +1007,12 @@ handle_signal (int signo)
       cleanup ();
       scd_exit (0);
       break;
-#endif /*!HAVE_W32_SYSTEM*/
 
     default:
       log_info ("signal %d received - no action defined\n", signo);
     }
 }
+#endif /*!HAVE_W32_SYSTEM*/
 
 
 static void
@@ -1182,7 +1185,6 @@ static void
 handle_connections (int listen_fd)
 {
   npth_attr_t tattr;
-  int signo;
   struct sockaddr_un paddr;
   socklen_t plen;
   fd_set fdset, read_fdset;
@@ -1193,6 +1195,9 @@ handle_connections (int listen_fd)
   struct timespec curtime;
   struct timespec timeout;
   int saved_errno;
+#ifndef HAVE_W32_SYSTEM
+  int signo;
+#endif
 
   ret = npth_attr_init(&tattr);
   /* FIXME: Check error.  */
