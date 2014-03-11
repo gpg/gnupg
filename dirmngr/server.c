@@ -1,15 +1,16 @@
-/* dirmngr.c - LDAP access
- *	Copyright (C) 2002 Klarälvdalens Datakonsult AB
- *      Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011 g10 Code GmbH
+/* server.c - LDAP and Keyserver access server
+ * Copyright (C) 2002 Klarälvdalens Datakonsult AB
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011 g10 Code GmbH
+ * Copyright (C) 2014 Werner Koch
  *
- * This file is part of DirMngr.
+ * This file is part of GnuPG.
  *
- * DirMngr is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DirMngr is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -120,6 +121,7 @@ release_ctrl_keyservers (ctrl_t ctrl)
 /* Helper to print a message while leaving a command.  */
 static gpg_error_t
 leave_cmd (assuan_context_t ctx, gpg_error_t err)
+
 {
   if (err)
     {
@@ -1374,14 +1376,15 @@ static gpg_error_t
 cmd_keyserver (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  gpg_error_t err;
-  int clear_flag, add_flag, help_flag, host_flag;
+  gpg_error_t err = 0;
+  int clear_flag, add_flag, help_flag, host_flag, resolve_flag;
   uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
                              is always initialized.  */
 
   clear_flag = has_option (line, "--clear");
   help_flag = has_option (line, "--help");
-  host_flag = has_option (line, "--print-hosttable");
+  resolve_flag = has_option (line, "--resolve");
+  host_flag = has_option (line, "--hosttable");
   line = skip_options (line);
   add_flag = !!*line;
 
@@ -1391,12 +1394,21 @@ cmd_keyserver (assuan_context_t ctx, char *line)
       goto leave;
     }
 
+  if (resolve_flag)
+    {
+      err = ks_action_resolve (ctrl);
+      if (err)
+        goto leave;
+    }
+
   if (host_flag)
     {
-      ks_hkp_print_hosttable ();
-      err = 0;
-      goto leave;
+      err = ks_hkp_print_hosttable (ctrl);
+      if (err)
+        goto leave;
     }
+  if (resolve_flag || host_flag)
+    goto leave;
 
   if (add_flag)
     {

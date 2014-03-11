@@ -1,5 +1,6 @@
 /* ks-engine-hkp.c - HKP keyserver engine
  * Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2011, 2012, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -94,6 +95,7 @@ create_new_hostinfo (const char *name)
   hi->lastfail = (time_t)(-1);
   hi->v4 = 0;
   hi->v6 = 0;
+  hi->dead = 0;
 
   /* Add it to the hosttable. */
   for (idx=0; idx < hosttable_size; idx++)
@@ -161,8 +163,8 @@ select_random_host (int *table)
   size_t tblsize;
   int pidx, idx;
 
-  /* We create a new table so that we select only from currently alive
-     hosts.  */
+  /* We create a new table so that we randomly select only from
+     currently alive hosts.  */
   for (idx=0, tblsize=0; (pidx = table[idx]) != -1; idx++)
     if (hosttable[pidx] && !hosttable[pidx]->dead)
       tblsize++;
@@ -179,7 +181,7 @@ select_random_host (int *table)
   if (tblsize == 1)  /* Save a get_uint_nonce.  */
     pidx = tbl[0];
   else
-    pidx = get_uint_nonce () % tblsize;
+    pidx = tbl[get_uint_nonce () % tblsize];
 
   xfree (tbl);
   return pidx;
@@ -190,9 +192,10 @@ select_random_host (int *table)
    allows us to manage round robin DNS names.  We use our own strategy
    to choose one of the hosts.  For example we skip those hosts which
    failed for some time and we stick to one host for a time
-   independent of DNS retry times.  */
+   independent of DNS retry times.  If FORCE_RESELECT is true a new
+   host is always selected. */
 static char *
-map_host (const char *name)
+map_host (const char *name, int force_reselect)
 {
   hostinfo_t hi;
   int idx;
@@ -241,12 +244,13 @@ map_host (const char *name)
               if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
                 continue;
 
-              log_printhex ("getaddrinfo returned", ai->ai_addr,ai->ai_addrlen);
               if ((ec=getnameinfo (ai->ai_addr, ai->ai_addrlen,
                                    tmphost, sizeof tmphost,
-                                   NULL, 0, NI_NAMEREQD)))
-                log_info ("getnameinfo failed while checking '%s': %s\n",
-                          name, gai_strerror (ec));
+                                   NULL, 0, 0)))
+                {
+                  log_info ("getnameinfo failed while checking '%s': %s\n",
+                            name, gai_strerror (ec));
+                }
               else if (refidx+1 >= reftblsize)
                 {
                   log_error ("getnameinfo returned for '%s': '%s'"
@@ -266,7 +270,7 @@ map_host (const char *name)
 
                       for (i=0; i < refidx; i++)
                         if (reftbl[i] == tmpidx)
-                      break;
+                          break;
                       if (!(i < refidx) && tmpidx != idx)
                         reftbl[refidx++] = tmpidx;
                     }
@@ -319,8 +323,10 @@ map_host (const char *name)
     {
       /* If the currently selected host is now marked dead, force a
          re-selection .  */
-      if (hi->poolidx >= 0 && hi->poolidx < hosttable_size
-          && hosttable[hi->poolidx] && hosttable[hi->poolidx]->dead)
+      if (force_reselect)
+        hi->poolidx = -1;
+      else if (hi->poolidx >= 0 && hi->poolidx < hosttable_size
+               && hosttable[hi->poolidx] && hosttable[hi->poolidx]->dead)
         hi->poolidx = -1;
 
       /* Select a host if needed.  */
@@ -369,33 +375,48 @@ mark_host_dead (const char *name)
 
 
 /* Debug function to print the entire hosttable.  */
-void
-ks_hkp_print_hosttable (void)
+gpg_error_t
+ks_hkp_print_hosttable (ctrl_t ctrl)
 {
+  gpg_error_t err;
   int idx, idx2;
   hostinfo_t hi;
+  membuf_t mb;
+  char *p;
+
+  err = ks_print_help (ctrl, "hosttable (idx, ipv4, ipv6, dead, name):");
+  if (err)
+    return err;
 
   for (idx=0; idx < hosttable_size; idx++)
     if ((hi=hosttable[idx]))
       {
-        log_info ("hosttable %3d %s %s %s %s\n",
-                  idx, hi->v4? "4":" ", hi->v6? "6":" ",
-                  hi->dead? "d":" ", hi->name);
+        err = ks_printf_help (ctrl, "%3d %s %s %s %s\n",
+                              idx, hi->v4? "4":" ", hi->v6? "6":" ",
+                              hi->dead? "d":" ", hi->name);
+        if (err)
+          return err;
         if (hi->pool)
           {
-            log_info ("          -->");
+            init_membuf (&mb, 256);
+            put_membuf_printf (&mb, "  .   -->");
             for (idx2=0; hi->pool[idx2] != -1; idx2++)
               {
-                log_printf (" %d", hi->pool[idx2]);
-                if (hi->poolidx == idx2)
-                  log_printf ("*");
+                put_membuf_printf (&mb, " %d", hi->pool[idx2]);
+                if (hi->poolidx == hi->pool[idx2])
+                  put_membuf_printf (&mb, "*");
               }
-            log_printf ("\n");
-            /* for (idx2=0; hi->pool[idx2] != -1; idx2++) */
-            /*   log_info ("              (%s)\n", */
-            /*              hosttable[hi->pool[idx2]]->name); */
+            put_membuf( &mb, "", 1);
+            p = get_membuf (&mb, NULL);
+            if (!p)
+              return gpg_error_from_syserror ();
+            err = ks_print_help (ctrl, p);
+            xfree (p);
+            if (err)
+              return err;
           }
       }
+  return 0;
 }
 
 
@@ -425,7 +446,8 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
    PORT.  Returns an allocated string or NULL on failure and sets
    ERRNO.  */
 static char *
-make_host_part (const char *scheme, const char *host, unsigned short port)
+make_host_part (const char *scheme, const char *host, unsigned short port,
+                int force_reselect)
 {
   char portstr[10];
   char *hostname;
@@ -449,13 +471,39 @@ make_host_part (const char *scheme, const char *host, unsigned short port)
       /*fixme_do_srv_lookup ()*/
     }
 
-  hostname = map_host (host);
+  hostname = map_host (host, force_reselect);
   if (!hostname)
     return NULL;
 
   hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
   xfree (hostname);
   return hostport;
+}
+
+
+/* Resolve all known keyserver names and update the hosttable.  This
+   is mainly useful for debugging because the resolving is anyway done
+   on demand.  */
+gpg_error_t
+ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
+{
+  gpg_error_t err;
+  char *hostport = NULL;
+
+  hostport = make_host_part (uri->scheme, uri->host, uri->port, 1);
+  if (!hostport)
+    {
+      err = gpg_error_from_syserror ();
+      err = ks_printf_help (ctrl, "%s://%s:%hu: resolve failed: %s",
+                            uri->scheme, uri->host, uri->port,
+                            gpg_strerror (err));
+    }
+  else
+    {
+      err = ks_printf_help (ctrl, "%s", hostport);
+      xfree (hostport);
+    }
+  return err;
 }
 
 
@@ -636,7 +684,6 @@ armor_data (char **r_string, const void *data, size_t datalen)
 }
 
 
-
 
 /* Search the keyserver identified by URI for keys matching PATTERN.
    On success R_FP has an open stream to read the data.  */
@@ -694,7 +741,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   {
     char *searchkey;
 
-    hostport = make_host_part (uri->scheme, uri->host, uri->port);
+    hostport = make_host_part (uri->scheme, uri->host, uri->port, 0);
     if (!hostport)
       {
         err = gpg_error_from_syserror ();
@@ -725,7 +772,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   if (err)
     goto leave;
 
-  /* Start reading the response.  */
+  /* Peek at the response.  */
   {
     int c = es_getc (fp);
     if (c == -1)
@@ -736,8 +783,8 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
       }
     if (c == '<')
       {
-        /* The document begins with a '<', assume it's a HTML
-           response, which we don't support.  */
+        /* The document begins with a '<': Assume a HTML response,
+           which we don't support.  */
         err = gpg_error (GPG_ERR_UNSUPPORTED_ENCODING);
         goto leave;
       }
@@ -800,7 +847,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
     }
 
   /* Build the request string.  */
-  hostport = make_host_part (uri->scheme, uri->host, uri->port);
+  hostport = make_host_part (uri->scheme, uri->host, uri->port, 0);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -892,7 +939,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   armored = NULL;
 
   /* Build the request string.  */
-  hostport = make_host_part (uri->scheme, uri->host, uri->port);
+  hostport = make_host_part (uri->scheme, uri->host, uri->port, 0);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();

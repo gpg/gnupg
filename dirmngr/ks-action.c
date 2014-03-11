@@ -1,5 +1,6 @@
 /* ks-action.c - OpenPGP keyserver actions
  * Copyright (C) 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2011, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -57,6 +58,25 @@ ks_print_help (ctrl_t ctrl, const char *text)
 }
 
 
+/* Called by the engine's help functions to print the actual help.  */
+gpg_error_t
+ks_printf_help (ctrl_t ctrl, const char *format, ...)
+{
+  va_list arg_ptr;
+  gpg_error_t err;
+  char *buf;
+
+  va_start (arg_ptr, format);
+  buf = es_vasprintf (format, arg_ptr);
+  err = buf? 0 : gpg_error_from_syserror ();
+  va_end (arg_ptr);
+  if (!err)
+    err = dirmngr_status_help (ctrl, buf);
+  es_free (buf);
+  return err;
+}
+
+
 /* Run the help command for the engine responsible for URI.  */
 gpg_error_t
 ks_action_help (ctrl_t ctrl, const char *url)
@@ -90,6 +110,32 @@ ks_action_help (ctrl_t ctrl, const char *url)
                    "(Use an URL for engine specific help.)");
   else
     http_release_parsed_uri (parsed_uri);
+  return err;
+}
+
+
+/* Resolve all host names.  This is useful for looking at the status
+   of configured keyservers.  */
+gpg_error_t
+ks_action_resolve (ctrl_t ctrl)
+{
+  gpg_error_t err = 0;
+  int any = 0;
+  uri_item_t uri;
+
+  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+    {
+      if (uri->parsed_uri->is_http)
+        {
+          any = 1;
+          err = ks_hkp_resolve (ctrl, uri->parsed_uri);
+          if (err)
+            break;
+        }
+    }
+
+  if (!any)
+    err = gpg_error (GPG_ERR_NO_KEYSERVER);
   return err;
 }
 
@@ -193,7 +239,7 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
 }
 
 
-/* Retrive keys from URL and write the result to the provided output
+/* Retrieve keys from URL and write the result to the provided output
    stream OUTFP.  */
 gpg_error_t
 ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)

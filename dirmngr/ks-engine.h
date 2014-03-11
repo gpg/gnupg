@@ -25,9 +25,12 @@
 
 /*-- ks-action.c --*/
 gpg_error_t ks_print_help (ctrl_t ctrl, const char *text);
+gpg_error_t ks_printf_help (ctrl_t ctrl, const char *format,
+                            ...) _ESTREAM_GCC_A_PRINTF(2,3);
 
 /*-- ks-engine-hkp.c --*/
-void ks_hkp_print_hosttable (void);
+gpg_error_t ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri);
+gpg_error_t ks_hkp_print_hosttable (ctrl_t ctrl);
 gpg_error_t ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
                            estream_t *r_fp);
