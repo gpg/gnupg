@@ -30,6 +30,7 @@ gpg_error_t ks_printf_help (ctrl_t ctrl, const char *format,
 
 /*-- ks-engine-hkp.c --*/
 gpg_error_t ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri);
+gpg_error_t ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive);
 gpg_error_t ks_hkp_print_hosttable (ctrl_t ctrl);
 gpg_error_t ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,

@@ -18,7 +18,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#warning fixme Windows part not yet done
 #include <config.h>
 
 #include <stdio.h>
@@ -150,6 +149,19 @@ sort_hostpool (const void *xa, const void *xb)
   assert (hosttable[b]);
 
   return ascii_strcasecmp (hosttable[a]->name, hosttable[b]->name);
+}
+
+
+/* Return true if the host with the hosttable index TBLIDX is in POOL.  */
+static int
+host_in_pool_p (int *pool, int tblidx)
+{
+  int i, pidx;
+
+  for (i=0; (pidx = pool[i]) != -1; i++)
+    if (pidx == tblidx && hosttable[pidx])
+      return 1;
+  return 0;
 }
 
 
@@ -371,6 +383,80 @@ mark_host_dead (const char *name)
   hi = hosttable[idx];
   log_info ("marking host '%s' as dead%s\n", hi->name, hi->dead? " (again)":"");
   hi->dead = 1;
+}
+
+
+/* Mark a host in the hosttable as dead or - if ALIVE is true - as
+   alive.  If the host NAME does not exist a warning status message is
+   printed.  */
+gpg_error_t
+ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
+{
+  gpg_error_t err = 0;
+  hostinfo_t hi, hi2;
+  int idx, idx2, idx3, n;
+
+  if (!name || !*name || !strcmp (name, "localhost"))
+    return 0;
+
+  idx = find_hostinfo (name);
+  if (idx == -1)
+    return gpg_error (GPG_ERR_NOT_FOUND);
+
+  hi = hosttable[idx];
+  if (alive && hi->dead)
+    {
+      hi->dead = 0;
+      err = ks_printf_help (ctrl, "marking '%s' as alive", name);
+    }
+  else if (!alive && !hi->dead)
+    {
+      hi->dead = 1;
+      err = ks_printf_help (ctrl, "marking '%s' as dead", name);
+    }
+
+  /* If the host is a pool mark all member hosts. */
+  if (!err && hi->pool)
+    {
+      for (idx2=0; !err && (n=hi->pool[idx2]) != -1; idx2++)
+        {
+          assert (n >= 0 && n < hosttable_size);
+
+          if (!alive)
+            {
+              /* Do not mark a host from a pool dead if it is also a
+                 member in another pool.  */
+              for (idx3=0; idx3 < hosttable_size; idx3++)
+                {
+                  if (hosttable[idx3] && hosttable[idx3]
+                      && hosttable[idx3]->pool
+                      && idx3 != idx
+                      && host_in_pool_p (hosttable[idx3]->pool, n))
+                    break;
+                }
+              if (idx3 < hosttable_size)
+                continue;  /* Host is also a member of another pool.  */
+            }
+
+          hi2 = hosttable[n];
+          if (!hi2)
+            ;
+          else if (alive && hi2->dead)
+            {
+              hi2->dead = 0;
+              err = ks_printf_help (ctrl, "marking '%s' as alive",
+                                    hi2->name);
+            }
+          else if (!alive && !hi2->dead)
+            {
+              hi2->dead = 1;
+              err = ks_printf_help (ctrl, "marking '%s' as dead",
+                                    hi2->name);
+            }
+        }
+    }
+
+  return err;
 }
 
 

@@ -298,6 +298,32 @@ skip_options (char *line)
 }
 
 
+/* Return an error if the assuan context does not belong to teh owner
+   of the process or to root.  On error FAILTEXT is set as Assuan
+   error string.  */
+static gpg_error_t
+check_owner_permission (assuan_context_t ctx, const char *failtext)
+{
+#ifdef HAVE_W32_SYSTEM
+  /* Under Windows the dirmngr is always run under the control of the
+     user.  */
+  (void)ctx;
+  (void)failtext;
+#else
+  gpg_err_code_t ec;
+  assuan_peercred_t cred;
+
+  ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
+  if (!ec && cred->uid && cred->uid != getuid ())
+    ec = GPG_ERR_EPERM;
+  if (ec)
+    return set_error (ec, failtext);
+#endif
+  return 0;
+}
+
+
+
 /* Common code for get_cert_local and get_issuer_cert_local. */
 static ksba_cert_t
 do_get_cert_local (ctrl_t ctrl, const char *name, const char *command)
@@ -1392,10 +1418,16 @@ cmd_validate (assuan_context_t ctx, char *line)
 
 
 static const char hlp_keyserver[] =
-  "KEYSERVER [--clear|--help] [<uri>]\n"
+  "KEYSERVER [<options>] [<uri>|<host>]\n"
+  "Options are:\n"
+  "  --help\n"
+  "  --clear      Remove all configured keyservers\n"
+  "  --resolve    Resolve HKP host names and rotate\n"
+  "  --hosttable  Print table of known hosts and pools\n"
+  "  --dead       Mark <host> as dead\n"
+  "  --alive      Mark <host> as alive\n"
   "\n"
   "If called without arguments list all configured keyserver URLs.\n"
-  "If called with option \"--clear\" remove all configured keyservers\n"
   "If called with an URI add this as keyserver.  Note that keyservers\n"
   "are configured on a per-session base.  A default keyserver may already be\n"
   "present, thus the \"--clear\" option must be used to get full control.\n"
@@ -1408,6 +1440,7 @@ cmd_keyserver (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   int clear_flag, add_flag, help_flag, host_flag, resolve_flag;
+  int dead_flag, alive_flag;
   uri_item_t item = NULL; /* gcc 4.4.5 is not able to detect that it
                              is always initialized.  */
 
@@ -1415,6 +1448,8 @@ cmd_keyserver (assuan_context_t ctx, char *line)
   help_flag = has_option (line, "--help");
   resolve_flag = has_option (line, "--resolve");
   host_flag = has_option (line, "--hosttable");
+  dead_flag = has_option (line, "--dead");
+  alive_flag = has_option (line, "--alive");
   line = skip_options (line);
   add_flag = !!*line;
 
@@ -1431,13 +1466,37 @@ cmd_keyserver (assuan_context_t ctx, char *line)
         goto leave;
     }
 
+  if (alive_flag && dead_flag)
+    {
+      err = set_error (GPG_ERR_ASS_PARAMETER, "no support for zombies");
+      goto leave;
+    }
+  if (dead_flag)
+    {
+      err = check_owner_permission (ctx, "no permission to use --dead");
+      if (err)
+        goto leave;
+    }
+  if (alive_flag || dead_flag)
+    {
+      if (!*line)
+        {
+          err = set_error (GPG_ERR_ASS_PARAMETER, "name of host missing");
+          goto leave;
+        }
+
+      err = ks_hkp_mark_host (ctrl, line, alive_flag);
+      if (err)
+        goto leave;
+    }
+
   if (host_flag)
     {
       err = ks_hkp_print_hosttable (ctrl);
       if (err)
         goto leave;
     }
-  if (resolve_flag || host_flag)
+  if (resolve_flag || host_flag || alive_flag || dead_flag)
     goto leave;
 
   if (add_flag)
@@ -1746,30 +1805,28 @@ static gpg_error_t
 cmd_killdirmngr (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
 
   (void)line;
 
   if (opt.system_daemon)
     {
       if (opt.system_service)
-        return set_error (GPG_ERR_NOT_SUPPORTED,
-                          "can't do that whilst running as system service");
-#ifndef HAVE_W32_SYSTEM
-      {
-        gpg_err_code_t ec;
-        assuan_peercred_t cred;
-
-        ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
-        if (!ec && cred->uid)
-          ec = GPG_ERR_EPERM; /* Only root may terminate.  */
-        if (ec)
-          return set_error (ec, "no permission to kill this process");
-      }
-#endif
+        err = set_error (GPG_ERR_NOT_SUPPORTED,
+                         "can't do that whilst running as system service");
+      else
+        err = check_owner_permission (ctx,
+                                      "no permission to kill this process");
     }
+  else
+    err = 0;
 
-  ctrl->server_local->stopme = 1;
-  return gpg_error (GPG_ERR_EOF);
+  if (!err)
+    {
+      ctrl->server_local->stopme = 1;
+      err = gpg_error (GPG_ERR_EOF);
+    }
+  return err;
 }
 
 
