@@ -10,6 +10,7 @@ dnl
 dnl Defines HAVE_LIBREADLINE to 1 if a working readline setup is
 dnl found, and sets @LIBREADLINE@ to the necessary libraries.
 
+
 AC_DEFUN([GNUPG_CHECK_READLINE],
 [
   AC_ARG_WITH(readline,
@@ -17,6 +18,7 @@ AC_DEFUN([GNUPG_CHECK_READLINE],
 	[look for the readline library in DIR]),
      [_do_readline=$withval],[_do_readline=yes])
 
+  gnupg_cv_have_readline=no
   if test "$_do_readline" != "no" ; then
      if test -d "$withval" ; then
         CPPFLAGS="${CPPFLAGS} -I$withval/include"
@@ -51,6 +53,7 @@ rl_completion_matches(NULL,NULL);
            AC_DEFINE(HAVE_LIBREADLINE,1,
 	      [Define to 1 if you have a fully functional readline library.])
            AC_SUBST(LIBREADLINE,$_combo)
+           gnupg_cv_have_readline=yes
            break
         fi
      done

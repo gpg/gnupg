@@ -1870,6 +1870,7 @@ echo "
 
         Use standard socket: $use_standard_socket
         Dirmngr auto start:  $dirmngr_auto_start
+        Readline support:    $gnupg_cv_have_readline
 "
 if test x"$use_regex" != xyes ; then
 echo "
