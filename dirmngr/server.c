@@ -141,14 +141,44 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
 /* A write handler used by es_fopencookie to write assuan data
    lines.  */
 static ssize_t
-data_line_cookie_write (void *cookie, const void *buffer, size_t size)
+data_line_cookie_write (void *cookie, const void *buffer_arg, size_t size)
 {
   assuan_context_t ctx = cookie;
+  const char *buffer = buffer_arg;
 
-  if (assuan_send_data (ctx, buffer, size))
+  if (opt.verbose && buffer && size)
     {
-      gpg_err_set_errno (EIO);
-      return -1;
+      /* Ease reading of output by sending a physical line at each LF.  */
+      const char *p;
+      size_t n, nbytes;
+
+      nbytes = size;
+      do
+        {
+          p = memchr (buffer, '\n', nbytes);
+          n = p ? (p - buffer) + 1 : nbytes;
+          if (assuan_send_data (ctx, buffer, n))
+            {
+              gpg_err_set_errno (EIO);
+              return -1;
+            }
+          buffer += n;
+          nbytes -= n;
+          if (nbytes && assuan_send_data (ctx, NULL, 0)) /* Flush line. */
+            {
+              gpg_err_set_errno (EIO);
+              return -1;
+            }
+        }
+      while (nbytes);
+    }
+  else
+    {
+      if (assuan_send_data (ctx, buffer, size))
+        {
+          gpg_err_set_errno (EIO);
+          return -1;
+        }
     }
 
   return size;
