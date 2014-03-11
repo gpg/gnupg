@@ -40,6 +40,12 @@
 #include "userids.h"
 #include "ks-engine.h"
 
+/* Substitute a missing Mingw macro.  */
+#ifndef EAI_OVERFLOW
+# define EAI_OVERFLOW EAI_FAIL
+#endif
+
+
 /* To match the behaviour of our old gpgkeys helper code we escape
    more characters than actually needed. */
 #define EXTRA_ESCAPE_CHARS "@!\"#$%&'()*+,-./:;<=>?[\\]^_{|}~"
@@ -200,6 +206,35 @@ select_random_host (int *table)
 }
 
 
+/* Simplified version of getnameinfo which also returns a numeric
+   hostname inside of brackets.  The caller should provide a buffer
+   for TMPHOST which is 2 bytes larger than the the largest hostname.
+   returns 0 on success or an EAI error code.  */
+static int
+my_getnameinfo (const struct sockaddr *sa, socklen_t salen,
+                char *host, size_t hostlen)
+{
+  int ec;
+
+  if (hostlen < 5)
+    return EAI_OVERFLOW;
+
+  ec = getnameinfo (sa, salen, host, hostlen, NULL, 0, NI_NAMEREQD);
+  if (!ec && *host == '[')
+    ec = EAI_FAIL;  /* A name may never start with a bracket.  */
+  else if (ec == EAI_NONAME)
+    {
+      *host = '[';
+      ec = getnameinfo (sa, salen, host + 1, hostlen - 2,
+                        NULL, 0, NI_NUMERICHOST);
+      if (!ec)
+        strcat (host, "]");
+    }
+
+  return ec;
+}
+
+
 /* Map the host name NAME to the actual to be used host name.  This
    allows us to manage round robin DNS names.  We use our own strategy
    to choose one of the hosts.  For example we skip those hosts which
@@ -256,9 +291,8 @@ map_host (const char *name, int force_reselect)
               if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
                 continue;
 
-              if ((ec=getnameinfo (ai->ai_addr, ai->ai_addrlen,
-                                   tmphost, sizeof tmphost,
-                                   NULL, 0, 0)))
+              if ((ec = my_getnameinfo (ai->ai_addr, ai->ai_addrlen,
+                                        tmphost, sizeof tmphost)))
                 {
                   log_info ("getnameinfo failed while checking '%s': %s\n",
                             name, gai_strerror (ec));
