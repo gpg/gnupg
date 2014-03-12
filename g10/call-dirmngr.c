@@ -121,7 +121,7 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
   err = start_new_dirmngr (&ctx,
                            GPG_ERR_SOURCE_DEFAULT,
                            opt.homedir,
-                           NULL,
+                           opt.dirmngr_program,
                            opt.verbose, DBG_ASSUAN,
                            NULL /*gpg_status2*/, ctrl);
   if (!err)

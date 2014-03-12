@@ -357,11 +357,6 @@ static struct
    several times.  A comma separated list of arguments is used as the
    argument value.  */
 #define GC_OPT_FLAG_LIST	(1UL << 2)
-/* The NO_CHANGE flag for an option indicates that the user should not
-   be allowed to change this option using the standard gpgconf method.
-   Frontends using gpgconf should grey out such options, so that only
-   the current value is displayed.  */
-#define GC_OPT_FLAG_NO_CHANGE   (1UL <<7)
 
 
 /* A human-readable description for each flag.  */

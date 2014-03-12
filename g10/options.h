@@ -101,6 +101,7 @@ struct
   int max_cert_depth;
   const char *homedir;
   const char *agent_program;
+  const char *dirmngr_program;
 
   /* Options to be passed to the gpg-agent */
   session_env_t session_env;

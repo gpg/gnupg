@@ -57,6 +57,7 @@
 #include "asshelp.h"
 #include "ldap-wrapper.h"
 #include "../common/init.h"
+#include "gc-opt-flags.h"
 
 /* The plain Windows version uses the windows service system.  For
    example to start the service you may use "sc start dirmngr".
@@ -709,7 +710,7 @@ main (int argc, char **argv)
     }
 
   /* If --daemon has been given on the command line but not --homedir,
-     we switch to /etc/dirmngr as default home directory.  Note, that
+     we switch to /etc/gnupg as default home directory.  Note, that
      this also overrides the GNUPGHOME environment variable.  */
   if (opt.system_daemon && !homedir_seen)
     {
@@ -910,7 +911,7 @@ main (int argc, char **argv)
 
   if (cmd == aServer)
     {
-      /* Note that this server mode is maily useful for debugging.  */
+      /* Note that this server mode is mainly useful for debugging.  */
       if (argc)
         wrong_args ("--server");
 
@@ -1192,23 +1193,6 @@ main (int argc, char **argv)
       unsigned long flags = 0;
       char *filename;
       char *filename_esc;
-
-      /* List options and default values in the GPG Conf format.  */
-
-/* The following list is taken from gnupg/tools/gpgconf-comp.c.  */
-/* Option flags.  YOU MUST NOT CHANGE THE NUMBERS OF THE EXISTING
-   FLAGS, AS THEY ARE PART OF THE EXTERNAL INTERFACE.  */
-#define GC_OPT_FLAG_NONE	0UL
-/* The DEFAULT flag for an option indicates that the option has a
-   default value.  */
-#define GC_OPT_FLAG_DEFAULT	(1UL << 4)
-/* The DEF_DESC flag for an option indicates that the option has a
-   default, which is described by the value of the default field.  */
-#define GC_OPT_FLAG_DEF_DESC	(1UL << 5)
-/* The NO_ARG_DESC flag for an option indicates that the argument has
-   a default, which is described by the value of the ARGDEF field.  */
-#define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
-#define GC_OPT_FLAG_NO_CHANGE   (1UL <<7)
 
 #ifdef HAVE_W32_SYSTEM
       /* On Windows systems, dirmngr always runs as system daemon, and

@@ -36,5 +36,11 @@
    a default, which is described by the value of the ARGDEF field.  */
 #define GC_OPT_FLAG_NO_ARG_DESC	(1UL << 6)
 
+/* The NO_CHANGE flag for an option indicates that the user should not
+   be allowed to change this option using the standard gpgconf method.
+   Frontends using gpgconf should grey out such options, so that only
+   the current value is displayed.  */
+#define GC_OPT_FLAG_NO_CHANGE   (1UL <<7)
+
 
 #endif /*GNUPG_GC_OPT_FLAGS_H*/

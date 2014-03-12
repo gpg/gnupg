@@ -346,6 +346,7 @@ enum cmd_and_opt_values
     oPersonalDigestPreferences,
     oPersonalCompressPreferences,
     oAgentProgram,
+    oDirmngrProgram,
     oDisplay,
     oTTYname,
     oTTYtype,
@@ -739,7 +740,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPersonalCipherPreferences, "personal-cipher-prefs", "@"),
   ARGPARSE_s_s (oPersonalDigestPreferences, "personal-digest-prefs", "@"),
   ARGPARSE_s_s (oPersonalCompressPreferences, "personal-compress-prefs", "@"),
+
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
   ARGPARSE_s_s (oDisplay,    "display",    "@"),
   ARGPARSE_s_s (oTTYname,    "ttyname",    "@"),
   ARGPARSE_s_s (oTTYtype,    "ttytype",    "@"),
@@ -2974,6 +2977,7 @@ main (int argc, char **argv)
 	    pers_compress_list=pargs.r.ret_str;
 	    break;
           case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+          case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str; break;
 
           case oDisplay:
             set_opt_session_env ("DISPLAY", pargs.r.ret_str);

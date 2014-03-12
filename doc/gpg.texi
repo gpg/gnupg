@@ -1696,6 +1696,25 @@ been given.  Given that this option is not anymore used by
 @command{gpg2}, it should be avoided if possible.
 @end ifset
 
+
+@ifclear gpgone
+@item --agent-program @var{file}
+@opindex agent-program
+Specify an agent program to be used for secret key operations.  The
+default value is the @file{/usr/bin/gpg-agent}.  This is only used
+as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
+set or a running agent cannot be connected.
+@end ifclear
+
+@ifset gpgtwoone
+@item --dirmngr-program @var{file}
+@opindex dirmngr-program
+Specify a dirmngr program to be used for keyserver access.  The
+default value is @file{/usr/sbin/dirmngr}.  This is only used as a
+fallback when the environment variable @code{DIRMNGR_INFO} is not set or
+a running dirmngr cannot be connected.
+@end ifset
+
 @item --lock-once
 @opindex lock-once
 Lock the databases the first time a lock is requested
