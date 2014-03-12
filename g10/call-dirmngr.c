@@ -71,10 +71,10 @@ struct ks_put_parm_s
 
 /* Data used to associate an session with dirmngr contexts.  We can't
    use a simple one to one mapping because we sometimes need two
-   connection s to the dirmngr; for example while doing a listing and
+   connections to the dirmngr; for example while doing a listing and
    being in a data callback we may want to retrieve a key.  The local
    dirmngr data takes care of this.  At the end of the session the
-   function dirmngr_deinit_session_data is called bu gpg.c to cleanup
+   function dirmngr_deinit_session_data is called by gpg.c to cleanup
    these resources.  Note that gpg.h defines a typedef dirmngr_local_t
    for this structure. */
 struct dirmngr_local_s
@@ -109,9 +109,8 @@ gpg_dirmngr_deinit_session_data (ctrl_t ctrl)
 }
 
 
-/* Try to connect to the Dirmngr via a socket or fork it off if
-   possible.  Handle the server's initial greeting and set global
-   options.  */
+/* Try to connect to the Dirmngr via a socket or spawn it if possible.
+   Handle the server's initial greeting and set global options.  */
 static gpg_error_t
 create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
 {
@@ -135,7 +134,9 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
 
       /* Set all configured keyservers.  We clear existing keyservers
          so that any keyserver configured in GPG overrides keyservers
-         possibly configured in Dirmngr. */
+         possibly still configured in Dirmngr for the session (Note
+         that the keyserver list of a session in Dirmngr survives a
+         RESET. */
       for (ksi = opt.keyserver; !err && ksi; ksi = ksi->next)
         {
           char *line;
@@ -166,8 +167,8 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
 
 
 /* Get a context for accessing dirmngr.  If no context is available a
-   new one is created and - if requred - dirmngr started.  On success
-   an assuan context is stored at R_CTX.  This Context may only be
+   new one is created and - if required - dirmngr started.  On success
+   an assuan context is stored at R_CTX.  This context may only be
    released by means of close_context.  Note that NULL is stored at
    R_CTX on error.  */
 static gpg_error_t
@@ -199,7 +200,7 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           xfree (dml);
           return err;
         }
-      /* To be on the Pth thread safe site we need to add it to a
+      /* To be on the nPth thread safe site we need to add it to a
          list; this is far easier than to have a lock for this
          function.  It should not happen anyway but the code is free
          because we need it for the is_active check above.  */

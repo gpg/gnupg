@@ -2130,7 +2130,7 @@ dirmngr_status_help (ctrl_t ctrl, const char *text)
   return err;
 }
 
-/* Send a tick progress indicator back.  Fixme: This is only does for
+/* Send a tick progress indicator back.  Fixme: This is only done for
    the currently active channel.  */
 gpg_error_t
 dirmngr_tick (ctrl_t ctrl)

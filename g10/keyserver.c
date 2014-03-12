@@ -1650,13 +1650,16 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
 }
 
 
+/* Loop over all URLs in STRLIST and fetch the key that URL.  Note
+   that the fetch operation ignores the configured key servers and
+   instead directly retrieves the keys.  */
 int
 keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
 {
   gpg_error_t err;
   strlist_t sl;
   estream_t datastream;
-  unsigned int options = opt.keyserver_options.import_options;
+  unsigned int save_options = opt.keyserver_options.import_options;
 
   /* Switch on fast-import, since fetch can handle more than one
      import and we don't want each set to rebuild the trustdb.
@@ -1686,7 +1689,7 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
       es_fclose (datastream);
     }
 
-  opt.keyserver_options.import_options = options;
+  opt.keyserver_options.import_options = save_options;
 
   /* If the original options didn't have fast import, and the trustdb
      is dirty, rebuild. */
