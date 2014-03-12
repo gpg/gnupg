@@ -600,19 +600,41 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       return err;
     }
 
-  sockname = dirmngr_socket_name ();
+  sockname = dirmngr_user_socket_name ();
+  if (sockname)
+    {
+      /* First try the local socket name and only if that fails try
+         the system socket.  */
+      err = assuan_socket_connect (ctx, sockname, 0, 0);
+      if (err)
+        sockname = dirmngr_sys_socket_name ();
+    }
+  else
+    sockname = dirmngr_sys_socket_name ();
+
   err = assuan_socket_connect (ctx, sockname, 0, 0);
+
 #ifdef USE_DIRMNGR_AUTO_START
   if (err)
     {
       lock_spawn_t lock;
-      const char *argv[2];
+      const char *argv[4];
+      int try_system_daemon = 0;
+      char *abs_homedir;
 
-      /* With no success try start a new Dirmngr.  On most systems
-         this will fail because the Dirmngr is expected to be a system
-         service.  However on Wince we don't distinguish users and
-         thus we can start it.  A future extension might be to use the
-         userv system to start the Dirmngr as a system service.  */
+      /* No connection: Try start a new Dirmngr.  On Windows this will
+         fail because the Dirmngr is expected to be a system service.
+         However on WinCE we don't distinguish users and thus we can
+         start it.  */
+
+      /* We prefer to start it as a user daemon.  */
+      sockname = dirmngr_user_socket_name ();
+      if (!sockname)
+        {
+          sockname = dirmngr_sys_socket_name ();
+          try_system_daemon = 1;
+        }
+
       if (!dirmngr_program || !*dirmngr_program)
         dirmngr_program = gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR);
 
@@ -623,6 +645,8 @@ start_new_dirmngr (assuan_context_t *r_ctx,
       if (status_cb)
         status_cb (status_cb_arg, STATUS_PROGRESS,
                    "starting_dirmngr ? 0 0", NULL);
+
+      abs_homedir = make_filename (homedir, NULL);
 
       if (fflush (NULL))
         {
@@ -635,12 +659,25 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         }
 
       argv[0] = "--daemon";
-      argv[1] = NULL;
+      if (try_system_daemon)
+        argv[1] = NULL;
+      else
+        { /* Try starting as user daemon - dirmngr does this if the
+             home directory is given on the command line.  */
+          argv[1] = "--homedir";
+          argv[2] = abs_homedir;
+          argv[3] = NULL;
+        }
+
+      /* On the use of HOMEDIR for locking: Under Windows HOMEDIR is
+         not used thus it does not matter.  Under Unix we should
+         TRY_SYSTEM_DAEMON should never be true because
+         dirmngr_user_socket_name() won't return NULL.  */
 
       if (!(err = lock_spawning (&lock, homedir, "dirmngr", verbose))
           && assuan_socket_connect (ctx, sockname, 0, 0))
         {
-          err = gnupg_spawn_process_detached (dirmngr_program, argv,NULL);
+          err = gnupg_spawn_process_detached (dirmngr_program, argv, NULL);
           if (err)
             log_error ("failed to start the dirmngr '%s': %s\n",
                        dirmngr_program, gpg_strerror (err));
@@ -671,6 +708,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         }
 
       unlock_spawning (&lock, "dirmngr");
+      xfree (abs_homedir);
     }
 #else
   (void)homedir;

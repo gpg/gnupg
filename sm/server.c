@@ -1296,6 +1296,7 @@ gpgsm_server (certlist_t default_recplist)
       char *tmp = NULL;
       const char *s1 = getenv (GPG_AGENT_INFO_NAME);
 
+      /* Fixme: Use the really used socket name.  */
       if (asprintf (&tmp,
                     "Home: %s\n"
                     "Config: %s\n"
@@ -1305,7 +1306,9 @@ gpgsm_server (certlist_t default_recplist)
                     opt.homedir,
                     opt.config_filename,
                     s1?s1:"[not set]",
-                    dirmngr_socket_name (),
+                    (dirmngr_user_socket_name ()
+                     ? dirmngr_user_socket_name ()
+                     : dirmngr_sys_socket_name ()),
                     hello) > 0)
         {
           assuan_set_hello_line (ctx, tmp);

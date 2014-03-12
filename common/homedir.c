@@ -555,9 +555,9 @@ gnupg_cachedir (void)
 }
 
 
-/* Return the default socket name used by DirMngr. */
+/* Return the system socket name used by DirMngr.  */
 const char *
-dirmngr_socket_name (void)
+dirmngr_sys_socket_name (void)
 {
 #ifdef HAVE_W32_SYSTEM
   static char *name;
@@ -599,6 +599,22 @@ dirmngr_socket_name (void)
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
+
+/* Return the user socket name used by DirMngr.  If a a user specific
+   dirmngr installation is not supported, NULL is returned.  */
+const char *
+dirmngr_user_socket_name (void)
+{
+#ifdef HAVE_W32_SYSTEM
+  return NULL;  /* We support only a system service.  */
+#else /*!HAVE_W32_SYSTEM*/
+  static char *name;
+
+  if (!name)
+    name = make_filename (default_homedir (), DIRMNGR_SOCK_NAME, NULL);
+  return name;
+#endif /*!HAVE_W32_SYSTEM*/
+}
 
 
 /* Return the file name of a helper tool.  WHICH is one of the

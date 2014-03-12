@@ -666,7 +666,6 @@ main (int argc, char **argv)
   opt.ldaptimeout = DEFAULT_LDAP_TIMEOUT;
 
   /* Other defaults.  */
-  socket_name = dirmngr_socket_name ();
 
   /* Check whether we have a config file given on the commandline */
   orig_argc = argc;
@@ -721,7 +720,12 @@ main (int argc, char **argv)
 #endif
       opt.homedir_data = gnupg_datadir ();
       opt.homedir_cache = gnupg_cachedir ();
+      socket_name = dirmngr_sys_socket_name ();
     }
+  else if (dirmngr_user_socket_name ())
+    socket_name = dirmngr_user_socket_name ();
+  else
+    socket_name = dirmngr_sys_socket_name ();
 
   if (default_config)
     configname = make_filename (opt.homedir, DIRMNGR_NAME".conf", NULL );

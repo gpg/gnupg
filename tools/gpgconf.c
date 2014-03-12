@@ -347,8 +347,20 @@ main (int argc, char **argv)
                   gc_percent_escape (gnupg_datadir ()));
       es_fprintf (outfp, "localedir:%s\n",
                   gc_percent_escape (gnupg_localedir ()));
-      es_fprintf (outfp, "dirmngr-socket:%s\n",
-                  gc_percent_escape (dirmngr_socket_name ()));
+
+      if (dirmngr_user_socket_name ())
+        {
+          es_fprintf (outfp, "dirmngr-socket:%s\n",
+                      gc_percent_escape (dirmngr_user_socket_name ()));
+          es_fprintf (outfp, "dirmngr-sys-socket:%s\n",
+                      gc_percent_escape (dirmngr_sys_socket_name ()));
+        }
+      else
+        {
+          es_fprintf (outfp, "dirmngr-socket:%s\n",
+                      gc_percent_escape (dirmngr_sys_socket_name ()));
+        }
+
       {
         char *infostr = getenv (GPG_AGENT_INFO_NAME);
 

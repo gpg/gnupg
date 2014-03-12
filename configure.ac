@@ -92,7 +92,7 @@ disable_keyserver_path=no
 card_support=yes
 use_ccid_driver=yes
 use_standard_socket=yes
-dirmngr_auto_start=no
+dirmngr_auto_start=yes
 
 try_ks_ldap=no
 
@@ -428,15 +428,10 @@ AC_ARG_ENABLE(ccid-driver,
               use_ccid_driver=$enableval)
 AC_MSG_RESULT($use_ccid_driver)
 
-#
-# Dirmngr is nowadays a system service and thus it usually does no
-# make sense to start it as needed.  However on some systems this is
-# possible; this option enable the feature.
-#
 AC_MSG_CHECKING([whether to auto start dirmngr])
 AC_ARG_ENABLE(dirmngr-auto-start,
-              AC_HELP_STRING([--enable-dirmngr-auto-start],
-                             [enable auto starting of the dirmngr]),
+              AC_HELP_STRING([--disable-dirmngr-auto-start],
+                             [disable auto starting of the dirmngr]),
               dirmngr_auto_start=$enableval)
 AC_MSG_RESULT($dirmngr_auto_start)
 if test "$dirmngr_auto_start" = yes ; then

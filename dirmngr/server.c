@@ -1781,7 +1781,10 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "socket_name"))
     {
-      const char *s = dirmngr_socket_name ();
+      const char *s = dirmngr_user_socket_name ();
+
+      if (!s)
+        s = dirmngr_sys_socket_name ();
 
       if (s)
         err = assuan_send_data (ctx, s, strlen (s));

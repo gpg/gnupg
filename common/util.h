@@ -231,7 +231,8 @@ const char *gnupg_libdir (void);
 const char *gnupg_datadir (void);
 const char *gnupg_localedir (void);
 const char *gnupg_cachedir (void);
-const char *dirmngr_socket_name (void);
+const char *dirmngr_sys_socket_name (void);
+const char *dirmngr_user_socket_name (void);
 
 /* All module names.  We also include gpg and gpgsm for the sake for
    gpgconf. */

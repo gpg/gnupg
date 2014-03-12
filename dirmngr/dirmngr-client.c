@@ -443,7 +443,10 @@ start_dirmngr (int only_daemon)
   infostr = opt.force_pipe_server? NULL : getenv (DIRMNGR_INFO_NAME);
   if (only_daemon && (!infostr || !*infostr))
     {
-      infostr = xstrdup (dirmngr_socket_name ());
+      if (dirmngr_user_socket_name ())
+        infostr = xstrdup (dirmngr_user_socket_name ());
+      else
+        infostr = xstrdup (dirmngr_sys_socket_name ());
       try_default = 1;
     }
 
