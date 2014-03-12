@@ -120,21 +120,21 @@ gpg_error_t
 ks_action_resolve (ctrl_t ctrl)
 {
   gpg_error_t err = 0;
-  int any = 0;
+  int any_server = 0;
   uri_item_t uri;
 
   for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
     {
       if (uri->parsed_uri->is_http)
         {
-          any = 1;
+          any_server = 1;
           err = ks_hkp_resolve (ctrl, uri->parsed_uri);
           if (err)
             break;
         }
     }
 
-  if (!any)
+  if (!any_server)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
   return err;
 }
@@ -146,7 +146,7 @@ gpg_error_t
 ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
 {
   gpg_error_t err = 0;
-  int any = 0;
+  int any_server = 0;
   uri_item_t uri;
   estream_t infp;
 
@@ -163,7 +163,7 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
     {
       if (uri->parsed_uri->is_http)
         {
-          any = 1;
+          any_server = 1;
           err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
           if (!err)
             {
@@ -174,7 +174,7 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
         }
     }
 
-  if (!any)
+  if (!any_server)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
   return err;
 }
@@ -187,7 +187,8 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
-  int any = 0;
+  int any_server = 0;
+  int any_data = 0;
   strlist_t sl;
   uri_item_t uri;
   estream_t infp;
@@ -205,7 +206,7 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
     {
       if (uri->parsed_uri->is_http)
         {
-          any = 1;
+          any_server = 1;
           for (sl = patterns; !err && sl; sl = sl->next)
             {
               err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
@@ -224,17 +225,21 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
                   err = copy_stream (infp, outfp);
                   /* Reading from the keyserver should never fail, thus
                      return this error.  */
+                  if (!err)
+                    any_data = 1;
                   es_fclose (infp);
                   infp = NULL;
                 }
             }
         }
+      if (any_data)
+        break; /* Stop loop after a keyserver returned something.  */
     }
 
-  if (!any)
+  if (!any_server)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
-  else if (!err && first_err)
-    err = first_err; /* fixme: Do we really want to do that?  */
+  else if (!err && first_err && !any_data)
+    err = first_err;
   return err;
 }
 
@@ -302,14 +307,14 @@ ks_action_put (ctrl_t ctrl, const void *data, size_t datalen)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
-  int any = 0;
+  int any_server = 0;
   uri_item_t uri;
 
   for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
     {
       if (uri->parsed_uri->is_http)
         {
-          any = 1;
+          any_server = 1;
           err = ks_hkp_put (ctrl, uri->parsed_uri, data, datalen);
           if (err)
             {
@@ -319,9 +324,9 @@ ks_action_put (ctrl_t ctrl, const void *data, size_t datalen)
         }
     }
 
-  if (!any)
+  if (!any_server)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
   else if (!err && first_err)
-    err = first_err; /* fixme: Do we really want to do that?  */
+    err = first_err;
   return err;
 }

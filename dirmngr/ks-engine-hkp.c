@@ -53,6 +53,9 @@
 /* How many redirections do we allow.  */
 #define MAX_REDIRECTS 2
 
+/* Number of retries done for a dead host etc.  */
+#define SEND_REQUEST_RETRIES 3
+
 /* Objects used to maintain information about hosts.  */
 struct hostinfo_s;
 typedef struct hostinfo_s *hostinfo_t;
@@ -242,7 +245,7 @@ my_getnameinfo (const struct sockaddr *sa, socklen_t salen,
    independent of DNS retry times.  If FORCE_RESELECT is true a new
    host is always selected. */
 static char *
-map_host (const char *name, int force_reselect)
+map_host (ctrl_t ctrl, const char *name, int force_reselect)
 {
   hostinfo_t hi;
   int idx;
@@ -291,6 +294,7 @@ map_host (const char *name, int force_reselect)
               if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
                 continue;
 
+              dirmngr_tick (ctrl);
               if ((ec = my_getnameinfo (ai->ai_addr, ai->ai_addrlen,
                                         tmphost, sizeof tmphost)))
                 {
@@ -401,22 +405,51 @@ map_host (const char *name, int force_reselect)
 }
 
 
-/* Mark the host NAME as dead.  */
-static void
+/* Mark the host NAME as dead.  NAME may be given as an URL.  Returns
+   true if a host was really marked as dead or was already marked dead
+   (e.g. by a concurrent session).  */
+static int
 mark_host_dead (const char *name)
 {
-  hostinfo_t hi;
-  int idx;
+  const char *host;
+  char *host_buffer = NULL;
+  parsed_uri_t parsed_uri = NULL;
+  int done = 0;
 
-  if (!name || !*name || !strcmp (name, "localhost"))
-    return;
+  if (name && *name && !http_parse_uri (&parsed_uri, name, 1))
+    {
+      if (parsed_uri->v6lit)
+        {
+          host_buffer = strconcat ("[", parsed_uri->host, "]", NULL);
+          if (!host_buffer)
+            log_error ("out of core in mark_host_dead");
+          host = host_buffer;
+        }
+      else
+        host = parsed_uri->host;
+    }
+  else
+    host = name;
 
-  idx = find_hostinfo (name);
-  if (idx == -1)
-    return;
-  hi = hosttable[idx];
-  log_info ("marking host '%s' as dead%s\n", hi->name, hi->dead? " (again)":"");
-  hi->dead = 1;
+  if (host && *host && strcmp (host, "localhost"))
+    {
+      hostinfo_t hi;
+      int idx;
+
+      idx = find_hostinfo (host);
+      if (idx != -1)
+        {
+          hi = hosttable[idx];
+          log_info ("marking host '%s' as dead%s\n",
+                    hi->name, hi->dead? " (again)":"");
+          hi->dead = 1;
+          done = 1;
+        }
+    }
+
+  http_release_parsed_uri (parsed_uri);
+  xfree (host_buffer);
+  return done;
 }
 
 
@@ -566,7 +599,8 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
    PORT.  Returns an allocated string or NULL on failure and sets
    ERRNO.  */
 static char *
-make_host_part (const char *scheme, const char *host, unsigned short port,
+make_host_part (ctrl_t ctrl,
+                const char *scheme, const char *host, unsigned short port,
                 int force_reselect)
 {
   char portstr[10];
@@ -591,7 +625,7 @@ make_host_part (const char *scheme, const char *host, unsigned short port,
       /*fixme_do_srv_lookup ()*/
     }
 
-  hostname = map_host (host, force_reselect);
+  hostname = map_host (ctrl, host, force_reselect);
   if (!hostname)
     return NULL;
 
@@ -610,7 +644,7 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
   gpg_error_t err;
   char *hostport = NULL;
 
-  hostport = make_host_part (uri->scheme, uri->host, uri->port, 1);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -746,6 +780,42 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 }
 
 
+/* Helper to evaluate the error code ERR form a send_request() call
+   with REQUEST.  The function returns true if the caller shall try
+   again.  TRIES_LEFT points to a variable to track the number of
+   retries; this function decrements it and won't return true if it is
+   down to zero. */
+static int
+handle_send_request_error (gpg_error_t err, const char *request,
+                           unsigned int *tries_left)
+{
+  int retry = 0;
+
+  switch (gpg_err_code (err))
+    {
+    case GPG_ERR_ECONNREFUSED:
+    case GPG_ERR_ENETUNREACH:
+      if (mark_host_dead (request) && *tries_left)
+        retry = 1;
+      break;
+
+    case GPG_ERR_ETIMEDOUT:
+      if (*tries_left)
+        {
+          log_info ("selecting a different host due to a timeout\n");
+          retry = 1;
+        }
+
+    default:
+      break;
+    }
+
+  if (*tries_left)
+    --*tries_left;
+
+  return retry;
+}
+
 static gpg_error_t
 armor_data (char **r_string, const void *data, size_t datalen)
 {
@@ -817,6 +887,8 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
+  int reselect;
+  unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
 
@@ -858,10 +930,14 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     }
 
   /* Build the request string.  */
+  reselect = 0;
+ again:
   {
     char *searchkey;
 
-    hostport = make_host_part (uri->scheme, uri->host, uri->port, 0);
+    xfree (hostport);
+    hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                               reselect);
     if (!hostport)
       {
         err = gpg_error_from_syserror ();
@@ -875,6 +951,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
         goto leave;
       }
 
+    xfree (request);
     request = strconcat (hostport,
                          "/pks/lookup?op=index&options=mr&search=",
                          searchkey,
@@ -889,6 +966,11 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
+  if (handle_send_request_error (err, request, &tries))
+    {
+      reselect = 1;
+      goto again;
+    }
   if (err)
     goto leave;
 
@@ -935,6 +1017,8 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
+  int reselect;
+  unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
 
@@ -966,14 +1050,18 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
       return gpg_error (GPG_ERR_INV_USER_ID);
     }
 
+  reselect = 0;
+ again:
   /* Build the request string.  */
-  hostport = make_host_part (uri->scheme, uri->host, uri->port, 0);
+  xfree (hostport);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
 
+  xfree (request);
   request = strconcat (hostport,
                        "/pks/lookup?op=get&options=mr&search=0x",
                        kidbuf,
@@ -986,6 +1074,11 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
+  if (handle_send_request_error (err, request, &tries))
+    {
+      reselect = 1;
+      goto again;
+    }
   if (err)
     goto leave;
 
@@ -1042,6 +1135,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   estream_t fp = NULL;
   struct put_post_parm_s parm;
   char *armored = NULL;
+  int reselect;
+  unsigned int tries = SEND_REQUEST_RETRIES;
 
   parm.datastring = NULL;
 
@@ -1059,13 +1154,17 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   armored = NULL;
 
   /* Build the request string.  */
-  hostport = make_host_part (uri->scheme, uri->host, uri->port, 0);
+  reselect = 0;
+ again:
+  xfree (hostport);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
 
+  xfree (request);
   request = strconcat (hostport, "/pks/add", NULL);
   if (!request)
     {
@@ -1075,6 +1174,11 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, put_post_cb, &parm, &fp);
+  if (handle_send_request_error (err, request, &tries))
+    {
+      reselect = 1;
+      goto again;
+    }
   if (err)
     goto leave;
 
