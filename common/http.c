@@ -781,6 +781,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
   uri->use_tls = 0;
   uri->is_http = 0;
   uri->opaque = 0;
+  uri->v6lit = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -841,6 +842,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
 	      *p3++ = '\0';
 	      /* worst case, uri->host should have length 0, points to \0 */
 	      uri->host = p + 1;
+              uri->v6lit = 1;
 	      p = p3;
 	    }
 	  else
