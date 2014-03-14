@@ -249,12 +249,17 @@ my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen)
    to choose one of the hosts.  For example we skip those hosts which
    failed for some time and we stick to one host for a time
    independent of DNS retry times.  If FORCE_RESELECT is true a new
-   host is always selected. */
+   host is always selected.  If R_HTTPFLAGS is not NULL if will
+   received flags which are to be passed to http_open. */
 static char *
-map_host (ctrl_t ctrl, const char *name, int force_reselect)
+map_host (ctrl_t ctrl, const char *name, int force_reselect,
+          unsigned int *r_httpflags)
 {
   hostinfo_t hi;
   int idx;
+
+  if (r_httpflags)
+    *r_httpflags = 0;
 
   /* No hostname means localhost.  */
   if (!name || !*name)
@@ -406,6 +411,18 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect)
       return NULL;
     }
 
+  if (r_httpflags)
+    {
+      /* If the hosttable does not indicate that a certain host
+         supports IPv<N>, we explicit set the corresponding http
+         flags.  The reason for this is that a host might be listed in
+         a pool as not v6 only but actually support v6 when later
+         resolved the name is resolved by our http layer.  */
+      if (!hi->v4)
+        *r_httpflags |= HTTP_FLAG_IGNORE_IPv4;
+      if (!hi->v6)
+        *r_httpflags |= HTTP_FLAG_IGNORE_IPv6;
+    }
   return xtrystrdup (hi->name);
 }
 
@@ -605,7 +622,7 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 static char *
 make_host_part (ctrl_t ctrl,
                 const char *scheme, const char *host, unsigned short port,
-                int force_reselect)
+                int force_reselect, unsigned int *r_httpflags)
 {
   char portstr[10];
   char *hostname;
@@ -629,7 +646,7 @@ make_host_part (ctrl_t ctrl,
       /*fixme_do_srv_lookup ()*/
     }
 
-  hostname = map_host (ctrl, host, force_reselect);
+  hostname = map_host (ctrl, host, force_reselect, r_httpflags);
   if (!hostname)
     return NULL;
 
@@ -648,7 +665,7 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
   gpg_error_t err;
   char *hostport = NULL;
 
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1, NULL);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -671,6 +688,7 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
    writing the post data.  */
 static gpg_error_t
 send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
+              unsigned int httpflags,
               gpg_error_t (*post_cb)(void *, http_t), void *post_cb_value,
               estream_t *r_fp)
 {
@@ -687,7 +705,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
                    request,
                    /* fixme: AUTH */ NULL,
-                   0,
+                   httpflags,
                    /* fixme: proxy*/ NULL,
                    NULL, NULL,
                    /*FIXME curl->srvtag*/NULL);
@@ -892,6 +910,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   char *request = NULL;
   estream_t fp = NULL;
   int reselect;
+  unsigned int httpflags;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -941,7 +960,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
     xfree (hostport);
     hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                               reselect);
+                               reselect, &httpflags);
     if (!hostport)
       {
         err = gpg_error_from_syserror ();
@@ -969,7 +988,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   }
 
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
+  err = send_request (ctrl, request, hostport, httpflags, NULL, NULL, &fp);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1026,6 +1045,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   char *request = NULL;
   estream_t fp = NULL;
   int reselect;
+  unsigned int httpflags;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -1062,7 +1082,8 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
  again:
   /* Build the request string.  */
   xfree (hostport);
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                             reselect, &httpflags);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -1081,7 +1102,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
     }
 
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, NULL, NULL, &fp);
+  err = send_request (ctrl, request, hostport, httpflags, NULL, NULL, &fp);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1148,6 +1169,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   struct put_post_parm_s parm;
   char *armored = NULL;
   int reselect;
+  unsigned int httpflags;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   parm.datastring = NULL;
@@ -1169,7 +1191,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   reselect = 0;
  again:
   xfree (hostport);
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
+                             reselect, &httpflags);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -1185,7 +1208,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
     }
 
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, put_post_cb, &parm, &fp);
+  err = send_request (ctrl, request, hostport, 0, put_post_cb, &parm, &fp);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;

@@ -1,6 +1,7 @@
 /* http.c  -  HTTP protocol handler
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1706,8 +1707,6 @@ connect_server (const char *server, unsigned short port,
 #ifdef HAVE_W32_SYSTEM
   unsigned long inaddr;
 #endif
-  /* Not currently using the flags */
-  (void)flags;
 
   *r_host_not_found = 0;
 #ifdef HAVE_W32_SYSTEM
@@ -1790,6 +1789,11 @@ connect_server (const char *server, unsigned short port,
 
       for (ai = res; ai && !connected; ai = ai->ai_next)
         {
+          if (ai->ai_family == AF_INET && (flags & HTTP_FLAG_IGNORE_IPv4))
+            continue;
+          if (ai->ai_family == AF_INET6 && (flags & HTTP_FLAG_IGNORE_IPv6))
+            continue;
+
           if (sock != -1)
             sock_close (sock);
           sock = socket (ai->ai_family, ai->ai_socktype, ai->ai_protocol);

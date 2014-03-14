@@ -74,10 +74,12 @@ http_req_t;
 /* We put the flag values into an enum, so that gdb can display them. */
 enum
   {
-    HTTP_FLAG_TRY_PROXY = 1,
-    HTTP_FLAG_SHUTDOWN = 2,
-    HTTP_FLAG_LOG_RESP = 8,
-    HTTP_FLAG_IGNORE_CL = 32
+    HTTP_FLAG_TRY_PROXY = 1,     /* Try to use a proxy.  */
+    HTTP_FLAG_SHUTDOWN = 2,      /* Close sending end after the request.  */
+    HTTP_FLAG_LOG_RESP = 8,      /* Log the server respone.  */
+    HTTP_FLAG_IGNORE_CL = 32,    /* Ignore content-length.  */
+    HTTP_FLAG_IGNORE_IPv4 = 64,  /* Do not use IPv4.  */
+    HTTP_FLAG_IGNORE_IPv6 = 128  /* Do not use IPv6.  */
   };
 
 struct http_context_s;
