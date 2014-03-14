@@ -1,5 +1,6 @@
 /* gpg-connect-agent.c - Tool to connect to the agent.
  * Copyright (C) 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -58,9 +59,11 @@ enum cmd_and_opt_values
     oNoVerbose	= 500,
     oHomedir,
     oAgentProgram,
+    oDirmngrProgram,
     oHex,
     oDecode,
-    oNoExtConnect
+    oNoExtConnect,
+    oDirmngr
 
   };
 
@@ -73,6 +76,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet, "quiet",     N_("quiet")),
   ARGPARSE_s_n (oHex,   "hex",       N_("print data out hex encoded")),
   ARGPARSE_s_n (oDecode,"decode",    N_("decode received data lines")),
+  ARGPARSE_s_n (oDirmngr,"dirmngr",  N_("connect to the dirmngr")),
   ARGPARSE_s_s (oRawSocket, "raw-socket",
                 N_("|NAME|connect to Assuan socket NAME")),
   ARGPARSE_s_s (oTcpSocket, "tcp-socket",
@@ -88,6 +92,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@" ),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
+  ARGPARSE_s_s (oDirmngrProgram, "dirmngr-program", "@"),
 
   ARGPARSE_end ()
 };
@@ -100,8 +105,10 @@ struct
   int quiet;		/* Be extra quiet.  */
   const char *homedir;  /* Configuration directory name */
   const char *agent_program;  /* Value of --agent-program.  */
+  const char *dirmngr_program;  /* Value of --dirmngr-program.  */
   int hex;              /* Print data lines in hex format. */
   int decode;           /* Decode received data lines.  */
+  int use_dirmngr;      /* Use the dirmngr and not gpg-agent.  */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
   const char *tcp_socket; /* Name of server to connect in tcp mode. */
   int exec;             /* Run the pgm given on the command line. */
@@ -1207,8 +1214,10 @@ main (int argc, char **argv)
         case oNoVerbose: opt.verbose = 0; break;
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
+        case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
+        case oDirmngr:   opt.use_dirmngr = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
         case oTcpSocket: opt.tcp_socket = pargs.r.ret_str; break;
         case oExec:      opt.exec = 1; break;
@@ -2202,15 +2211,22 @@ start_agent (void)
   if (!session_env)
     log_fatal ("error allocating session environment block: %s\n",
                strerror (errno));
-
-  err = start_new_gpg_agent (&ctx,
+  if (opt.use_dirmngr)
+    err = start_new_dirmngr (&ctx,
                              GPG_ERR_SOURCE_DEFAULT,
                              opt.homedir,
-                             opt.agent_program,
-                             NULL, NULL,
-                             session_env,
+                             opt.dirmngr_program,
                              !opt.quiet, 0,
                              NULL, NULL);
+  else
+    err = start_new_gpg_agent (&ctx,
+                               GPG_ERR_SOURCE_DEFAULT,
+                               opt.homedir,
+                               opt.agent_program,
+                               NULL, NULL,
+                               session_env,
+                               !opt.quiet, 0,
+                               NULL, NULL);
 
   session_env_release (session_env);
   if (err)

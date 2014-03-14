@@ -1190,6 +1190,18 @@ Try to be as quiet as possible.
 @opindex agent-program
 Specify the agent program to be started if none is running.
 
+@ifset gpgtwoone
+@item --dirmngr-program @var{file}
+@opindex dirmngr-program
+Specify the directory manager (keyserver client) program to be started
+if none is running.  This has only an effect if used together with the
+option @option{--dirmngr}.
+
+@item --dirmngr
+@opindex dirmngr
+Connect to a running directory manager (keyserver client) instead of
+to the gpg-agent.  If a dirmngr is not running, start it.
+@end ifset
 
 @item -S
 @itemx --raw-socket @var{name}
