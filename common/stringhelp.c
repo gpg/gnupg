@@ -77,7 +77,7 @@ change_slashes (char *name)
 
 
 /*
- * Check whether STRINGS starts with KEYWORD.  The keyword is
+ * Check whether STRING starts with KEYWORD.  The keyword is
  * delimited by end of string, a space or a tab.  Returns NULL if not
  * found or a pointer into STRING to the next non-space character
  * after the KEYWORD (which may be end of string).

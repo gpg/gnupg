@@ -40,6 +40,13 @@
 #include "call-dirmngr.h"
 
 
+/* Parameter structure used to gather status info.  */
+struct ks_status_parm_s
+{
+  char *source;
+};
+
+
 /* Parameter structure used with the KS_SEARCH command.  */
 struct ks_search_parm_s
 {
@@ -47,8 +54,9 @@ struct ks_search_parm_s
   membuf_t saveddata;   /* Buffer to build complete lines.  */
   char *helpbuf;        /* NULL or malloced buffer.  */
   size_t helpbufsize;   /* Allocated size of HELPBUF.  */
-  gpg_error_t (*data_cb)(void*, char*);  /* Callback.  */
+  gpg_error_t (*data_cb)(void*, int, char*);  /* Callback.  */
   void *data_cb_value;  /* First argument for DATA_CB.  */
+  struct ks_status_parm_s *stparm; /* Link to the status parameter.  */
 };
 
 
@@ -235,6 +243,29 @@ close_context (ctrl_t ctrl, assuan_context_t ctx)
 
 
 
+/* Status callback for ks_get and ks_search.  */
+static gpg_error_t
+ks_status_cb (void *opaque, const char *line)
+{
+  struct ks_status_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+  const char *s;
+
+  if ((s = has_leading_keyword (line, "SOURCE")))
+    {
+      if (!parm->source)
+        {
+          parm->source = xtrystrdup (s);
+          if (!parm->source)
+            err = gpg_error_from_syserror ();
+        }
+    }
+
+  return err;
+}
+
+
+
 /* Data callback for the KS_SEARCH command. */
 static gpg_error_t
 ks_search_data_cb (void *opaque, const void *data, size_t datalen)
@@ -247,6 +278,22 @@ ks_search_data_cb (void *opaque, const void *data, size_t datalen)
 
   if (parm->lasterr)
     return 0;
+
+  if (parm->stparm->source)
+    {
+      err = parm->data_cb (parm->data_cb_value, 1, parm->stparm->source);
+      if (err)
+        {
+          parm->lasterr = err;
+          return err;
+        }
+      /* Clear it so that we won't get back here unless the server
+         accidentally sends a second source status line.  Note that
+         will not see all accidentally sent source lines because it
+         depends on whether data lines have been send in between.  */
+      xfree (parm->stparm->source);
+      parm->stparm->source = NULL;
+    }
 
   if (!data)
     return 0;  /* Ignore END commands.  */
@@ -270,7 +317,7 @@ ks_search_data_cb (void *opaque, const void *data, size_t datalen)
           fixedbuf[linelen] = 0;
           if (linelen && fixedbuf[linelen-1] == '\r')
             fixedbuf[linelen-1] = 0;
-          err = parm->data_cb (parm->data_cb_value, fixedbuf);
+          err = parm->data_cb (parm->data_cb_value, 0, fixedbuf);
         }
       else
         {
@@ -289,7 +336,7 @@ ks_search_data_cb (void *opaque, const void *data, size_t datalen)
           parm->helpbuf[linelen] = 0;
           if (linelen && parm->helpbuf[linelen-1] == '\r')
             parm->helpbuf[linelen-1] = 0;
-          err = parm->data_cb (parm->data_cb_value, parm->helpbuf);
+          err = parm->data_cb (parm->data_cb_value, 0, parm->helpbuf);
         }
       if (err)
         parm->lasterr = err;
@@ -306,17 +353,18 @@ ks_search_data_cb (void *opaque, const void *data, size_t datalen)
 
 /* Run the KS_SEARCH command using the search string SEARCHSTR.  All
    data lines are passed to the CB function.  That function is called
-   with CB_VALUE as its first argument and the decoded data line as
-   second argument.  The callback function may modify the data line
-   and it is guaranteed that this data line is a complete line with a
-   terminating 0 character but without the linefeed.  NULL is passed
-   to the callback to indicate EOF.  */
+   with CB_VALUE as its first argument, a 0 as second argument, and
+   the decoded data line as third argument.  The callback function may
+   modify the data line and it is guaranteed that this data line is a
+   complete line with a terminating 0 character but without the
+   linefeed.  NULL is passed to the callback to indicate EOF.  */
 gpg_error_t
 gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
-                       gpg_error_t (*cb)(void*, char *), void *cb_value)
+                       gpg_error_t (*cb)(void*, int, char *), void *cb_value)
 {
   gpg_error_t err;
   assuan_context_t ctx;
+  struct ks_status_parm_s stparm;
   struct ks_search_parm_s parm;
   char line[ASSUAN_LINELENGTH];
 
@@ -336,18 +384,21 @@ gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
     xfree (escsearchstr);
   }
 
+  memset (&stparm, 0, sizeof stparm);
   memset (&parm, 0, sizeof parm);
   init_membuf (&parm.saveddata, 1024);
   parm.data_cb = cb;
   parm.data_cb_value = cb_value;
+  parm.stparm = &stparm;
 
   err = assuan_transact (ctx, line, ks_search_data_cb, &parm,
-                        NULL, NULL, NULL, NULL);
+                        NULL, NULL, ks_status_cb, &stparm);
   if (!err)
-    err = cb (cb_value, NULL);  /* Send EOF.  */
+    err = cb (cb_value, 0, NULL);  /* Send EOF.  */
 
   xfree (get_membuf (&parm.saveddata, NULL));
   xfree (parm.helpbuf);
+  xfree (stparm.source);
 
   close_context (ctrl, ctx);
   return err;
@@ -382,24 +433,32 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
    don't need to escape the patterns before sending them to the
    server.
 
+   If R_SOURCE is not NULL the source of the data is stored as a
+   malloced string there.  If a source is not known NULL is stored.
+
    If there are too many patterns the function returns an error.  That
    could be fixed by issuing several search commands or by
    implementing a different interface.  However with long keyids we
    are able to ask for (1000-10-1)/(2+8+1) = 90 keys at once.  */
 gpg_error_t
-gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
+gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
+                    estream_t *r_fp, char **r_source)
 {
   gpg_error_t err;
   assuan_context_t ctx;
+  struct ks_status_parm_s stparm;
   struct ks_get_parm_s parm;
   char *line = NULL;
   size_t linelen;
   membuf_t mb;
   int idx;
 
+  memset (&stparm, 0, sizeof stparm);
   memset (&parm, 0, sizeof parm);
 
   *r_fp = NULL;
+  if (r_source)
+    *r_source = NULL;
 
   err = open_context (ctrl, &ctx);
   if (err)
@@ -433,7 +492,7 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
       goto leave;
     }
   err = assuan_transact (ctx, line, ks_get_data_cb, &parm,
-                         NULL, NULL, NULL, NULL);
+                         NULL, NULL, ks_status_cb, &stparm);
   if (err)
     goto leave;
 
@@ -441,8 +500,15 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern, estream_t *r_fp)
   *r_fp = parm.memfp;
   parm.memfp = NULL;
 
+  if (r_source)
+    {
+      *r_source = stparm.source;
+      stparm.source = NULL;
+    }
+
  leave:
   es_fclose (parm.memfp);
+  xfree (stparm.source);
   xfree (line);
   close_context (ctrl, ctx);
   return err;

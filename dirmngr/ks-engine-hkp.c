@@ -454,8 +454,7 @@ mark_host_dead (const char *name)
 
 
 /* Mark a host in the hosttable as dead or - if ALIVE is true - as
-   alive.  If the host NAME does not exist a warning status message is
-   printed.  */
+   alive.  */
 gpg_error_t
 ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
 {
@@ -974,6 +973,10 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   if (err)
     goto leave;
 
+  err = dirmngr_status (ctrl, "SOURCE", hostport, NULL);
+  if (err)
+    goto leave;
+
   /* Peek at the response.  */
   {
     int c = es_getc (fp);
@@ -1079,6 +1082,10 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
       reselect = 1;
       goto again;
     }
+  if (err)
+    goto leave;
+
+  err = dirmngr_status (ctrl, "SOURCE", hostport, NULL);
   if (err)
     goto leave;
 

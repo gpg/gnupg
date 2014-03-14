@@ -831,16 +831,28 @@ show_prompt (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int numdesc,
 
 
 /* This is a callback used by call-dirmngr.c to process the result of
-   KS_SEARCH command.  LINE is the actual data line received with all
-   escaping removed and guaranteed to be exactly one line with
-   stripped LF; an EOF is indicated by LINE passed as NULL.  LINE may
-   be modified after return.  */
+   KS_SEARCH command.  If SPECIAL is 0, LINE is the actual data line
+   received with all escaping removed and guaranteed to be exactly one
+   line with stripped LF; an EOF is indicated by LINE passed as NULL.
+   If special is 1, the line conatins the source of the information
+   (usually an URL).  LINE may be modified after return.  */
 static gpg_error_t
-search_line_handler (void *opaque, char *line)
+search_line_handler (void *opaque, int special, char *line)
 {
   struct search_line_handler_parm_s *parm = opaque;
   gpg_error_t err = 0;
   struct keyrec *keyrec;
+
+  if (special == 1)
+    {
+      log_info ("data source: %s\n", line);
+      return 0;
+    }
+  else if (special)
+    {
+      log_debug ("unknown value %d for special search callback", special);
+      return 0;
+    }
 
   if (parm->eof_seen && line)
     {
@@ -1478,6 +1490,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   char **pattern;
   int idx, npat;
   estream_t datastream;
+  char *source = NULL;
 
   /* Create an array filled with a search pattern for each key.  The
      array is delimited by a NULL entry.  */
@@ -1561,10 +1574,13 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
     }
 
 
-  err = gpg_dirmngr_ks_get (ctrl, pattern, &datastream);
+  err = gpg_dirmngr_ks_get (ctrl, pattern, &datastream, &source);
   for (idx=0; idx < npat; idx++)
     xfree (pattern[idx]);
   xfree (pattern);
+  if (opt.verbose)
+    log_info ("data source: %s\n", source);
+
   if (!err)
     {
       void *stats_handle;
@@ -1590,7 +1606,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
       import_release_stats_handle (stats_handle);
     }
   es_fclose (datastream);
-
+  xfree (source);
 
   return err;
 }
