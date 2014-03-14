@@ -214,23 +214,29 @@ select_random_host (int *table)
    for TMPHOST which is 2 bytes larger than the the largest hostname.
    returns 0 on success or an EAI error code.  */
 static int
-my_getnameinfo (const struct sockaddr *sa, socklen_t salen,
-                char *host, size_t hostlen)
+my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen)
 {
   int ec;
+  char *p;
 
   if (hostlen < 5)
     return EAI_OVERFLOW;
 
-  ec = getnameinfo (sa, salen, host, hostlen, NULL, 0, NI_NAMEREQD);
+  ec = getnameinfo (ai->ai_addr, ai->ai_addrlen,
+                    host, hostlen, NULL, 0, NI_NAMEREQD);
   if (!ec && *host == '[')
     ec = EAI_FAIL;  /* A name may never start with a bracket.  */
   else if (ec == EAI_NONAME)
     {
-      *host = '[';
-      ec = getnameinfo (sa, salen, host + 1, hostlen - 2,
-                        NULL, 0, NI_NUMERICHOST);
-      if (!ec)
+      p = host;
+      if (ai->ai_family == AF_INET6)
+        {
+          *p++ = '[';
+          hostlen -= 2;
+        }
+      ec = getnameinfo (ai->ai_addr, ai->ai_addrlen,
+                        p, hostlen, NULL, 0, NI_NUMERICHOST);
+      if (!ec && ai->ai_family == AF_INET6)
         strcat (host, "]");
     }
 
@@ -295,8 +301,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect)
                 continue;
 
               dirmngr_tick (ctrl);
-              if ((ec = my_getnameinfo (ai->ai_addr, ai->ai_addrlen,
-                                        tmphost, sizeof tmphost)))
+              if ((ec = my_getnameinfo (ai, tmphost, sizeof tmphost)))
                 {
                   log_info ("getnameinfo failed while checking '%s': %s\n",
                             name, gai_strerror (ec));
