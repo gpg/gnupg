@@ -2244,9 +2244,10 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 available, but the MIT release is a good common baseline.
 
 This option implies @option{--rfc1991 --disable-mdc
---no-force-v4-certs --escape-from-lines --force-v3-sigs --cipher-algo
-IDEA --digest-algo MD5 --compress-algo ZIP}. It also disables
-@option{--textmode} when encrypting.
+--no-force-v4-certs --escape-from-lines --force-v3-sigs
+--allow-weak-digest-algos --cipher-algo IDEA --digest-algo
+MD5--compress-algo ZIP}. It also disables @option{--textmode} when
+encrypting.
 
 @item --pgp6
 @opindex pgp6
@@ -2701,6 +2702,13 @@ This can be useful if a message is partially corrupt, but it is
 necessary to get as much data as possible out of the corrupt message.
 However, be aware that a MDC protection failure may also mean that the
 message was tampered with intentionally by an attacker.
+
+@item --allow-weak-digest-algos
+@opindex allow-weak-digest-algos
+Signatures made with the broken MD5 algorithm are normally rejected
+with an ``invalid digest algorithm'' message.  This option allows the
+verification of signatures made with such weak algorithms.
+
 
 @item --no-default-keyring
 @opindex no-default-keyring

@@ -68,7 +68,7 @@ error () {
     defs_error_seen=yes
     echo "$pgmname:" $* >&5
     if [ x$defs_stop_on_error != xyes ]; then
-      exit 1 
+      exit 1
     fi
 }
 
@@ -189,7 +189,7 @@ pgmname=`basename $0`
 [ -z "$srcdir" ] && fatal "not called from make"
 
 # Make sure we have a valid option file even with VPATH builds.
-for f in gpg.conf ; do 
+for f in gpg.conf ; do
   if [ -f ./$f ]; then
     :
   elif [ -f $srcdir/$f.tmpl ]; then
