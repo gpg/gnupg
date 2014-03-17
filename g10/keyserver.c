@@ -1,6 +1,7 @@
 /* keyserver.c - generic keyserver code
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
  *               2009, 2011, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -110,7 +111,8 @@ static struct parse_options keyserver_opts[]=
 
 static gpg_error_t keyserver_get (ctrl_t ctrl,
                                   KEYDB_SEARCH_DESC *desc, int ndesc,
-                                  struct keyserver_spec *keyserver);
+                                  struct keyserver_spec *keyserver,
+                                  unsigned char **r_fpr, size_t *r_fprlen);
 static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
                                   struct keyserver_spec *keyserver);
 
@@ -819,7 +821,7 @@ show_prompt (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int numdesc,
           }
         for (idx = 0; idx < numidx; idx++)
           selarray[idx] = desc[numarray[idx]-1];
-        err = keyserver_get (ctrl, selarray, numidx, NULL);
+        err = keyserver_get (ctrl, selarray, numidx, NULL, NULL, NULL);
         xfree (selarray);
       }
     }
@@ -1039,6 +1041,7 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
   return rc;
 }
 
+
 int
 keyserver_import (ctrl_t ctrl, strlist_t users)
 {
@@ -1071,12 +1074,30 @@ keyserver_import (ctrl_t ctrl, strlist_t users)
     }
 
   if(count>0)
-    rc=keyserver_get (ctrl, desc, count, NULL);
+    rc=keyserver_get (ctrl, desc, count, NULL, NULL, NULL);
 
   xfree(desc);
 
   return rc;
 }
+
+
+/* Import all keys that exactly match NAME */
+int
+keyserver_import_name (ctrl_t ctrl, const char *name,
+                       unsigned char **fpr, size_t *fprlen,
+                       struct keyserver_spec *keyserver)
+{
+  KEYDB_SEARCH_DESC desc;
+
+  memset (&desc, 0, sizeof desc);
+
+  desc.mode = KEYDB_SEARCH_MODE_EXACT;
+  desc.u.name = name;
+
+  return keyserver_get (ctrl, &desc, 1, keyserver, fpr, fprlen);
+}
+
 
 int
 keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
@@ -1097,7 +1118,7 @@ keyserver_import_fprint (ctrl_t ctrl, const byte *fprint,size_t fprint_len,
 
   /* TODO: Warn here if the fingerprint we got doesn't match the one
      we asked for? */
-  return keyserver_get (ctrl, &desc, 1, keyserver);
+  return keyserver_get (ctrl, &desc, 1, keyserver, NULL, NULL);
 }
 
 int
@@ -1112,7 +1133,7 @@ keyserver_import_keyid (ctrl_t ctrl,
   desc.u.kid[0]=keyid[0];
   desc.u.kid[1]=keyid[1];
 
-  return keyserver_get (ctrl, &desc,1, keyserver);
+  return keyserver_get (ctrl, &desc,1, keyserver, NULL, NULL);
 }
 
 /* code mostly stolen from do_export_stream */
@@ -1316,7 +1337,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	      /* We use the keyserver structure we parsed out before.
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
-	      rc = keyserver_get (ctrl, &desc[i], 1, keyserver);
+	      rc = keyserver_get (ctrl, &desc[i], 1, keyserver, NULL, NULL);
 	      if(rc)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
@@ -1346,7 +1367,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 		     count,opt.keyserver->uri);
 	}
 
-      rc=keyserver_get (ctrl, desc, numdesc, NULL);
+      rc=keyserver_get (ctrl, desc, numdesc, NULL, NULL, NULL);
     }
 
   xfree(desc);
@@ -1469,21 +1490,15 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
 
 
 
-/* Called using:
-
-import_name:
-  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
-                       0, fpr, fpr_len, keyserver);
-
-import_ldap:
-  rc = keyserver_work (ctrl, KS_GETNAME, list, NULL,
-                       0, fpr, fpr_len, keyserver);
-
- */
-
+/* Retrieve a key from a keyserver.  The search pattern are in
+   (DESC,NDESC).  Allowed search modes are keyid, fingerprint, and
+   exact searches.  KEYSERVER gives an optional override keyserver. If
+   (R_FPR,R_FPRLEN) are not NULL, the may retrun the fingerprint of
+   one imported key.  */
 static gpg_error_t
 keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
-               struct keyserver_spec *keyserver)
+               struct keyserver_spec *keyserver,
+               unsigned char **r_fpr, size_t *r_fprlen)
 
 {
   gpg_error_t err = 0;
@@ -1536,10 +1551,12 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
         }
       else if(desc[idx].mode == KEYDB_SEARCH_MODE_EXACT)
         {
-          /* FIXME: We don't need this.  It is used as a dummy by
-             keyserver_fetch which passes an entire URL.  Better use a
-             separate function here. */
-          pattern[npat] = xtrystrdup ("0x0000000000000000");
+          /* The Dirmngr uses also classify_user_id to detect the type
+             of the search string.  By adding the '=' prefix we force
+             Dirmngr's KS_GET to consider this an exact search string.
+             (In gpg 1.4 and gpg 2.0 the keyserver helpers used the
+             KS_GETNAME command to indicate this.)  */
+          pattern[npat] = strconcat ("=", desc[idx].u.name, NULL);
           if (!pattern[npat])
             err = gpg_error_from_syserror ();
           else
@@ -1578,7 +1595,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   for (idx=0; idx < npat; idx++)
     xfree (pattern[idx]);
   xfree (pattern);
-  if (opt.verbose)
+  if (opt.verbose && source)
     log_info ("data source: %s\n", source);
 
   if (!err)
@@ -1599,7 +1616,8 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
          never accept or send them but we better protect against rogue
          keyservers. */
 
-      import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
+      import_keys_es_stream (ctrl, datastream, stats_handle,
+                             r_fpr, r_fprlen,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY));
       import_print_stats (stats_handle);
@@ -1824,31 +1842,18 @@ keyserver_import_pka (ctrl_t ctrl,
   return rc;
 }
 
-/* Import all keys that match name */
-int
-keyserver_import_name (ctrl_t ctrl, const char *name,
-                       unsigned char **fpr, size_t *fpr_len,
-                       struct keyserver_spec *keyserver)
-{
-  strlist_t list=NULL;
-  int rc;
-
-  append_to_strlist(&list,name);
-
-  rc = gpg_error (GPG_ERR_NOT_IMPLEMENTED);  /* FIXME */
-       /* keyserver_work (ctrl, KS_GETNAME, list, NULL, */
-       /*                 0, fpr, fpr_len, keyserver); */
-
-  free_strlist(list);
-
-  return rc;
-}
 
 /* Import a key by name using LDAP */
 int
 keyserver_import_ldap (ctrl_t ctrl,
-                       const char *name,unsigned char **fpr,size_t *fpr_len)
+                       const char *name, unsigned char **fpr, size_t *fprlen)
 {
+  (void)ctrl;
+  (void)name;
+  (void)fpr;
+  (void)fprlen;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED); /*FIXME*/
+#if 0
   char *domain;
   struct keyserver_spec *keyserver;
   strlist_t list=NULL;
@@ -1919,4 +1924,5 @@ keyserver_import_ldap (ctrl_t ctrl,
   free_keyserver_spec(keyserver);
 
   return rc;
+#endif
 }

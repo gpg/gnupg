@@ -1603,7 +1603,8 @@ static const char hlp_ks_get[] =
   "KS_GET {<pattern>}\n"
   "\n"
   "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
-  "(see command KEYSERVER).  Each pattern should be a keyid or a fingerprint";
+  "(see command KEYSERVER).  Each pattern should be a keyid, a fingerprint,\n"
+  "or an exact name indicastes by the '=' prefix.";
 static gpg_error_t
 cmd_ks_get (assuan_context_t ctx, char *line)
 {

@@ -1040,7 +1040,9 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
-  char kidbuf[40+1];
+  char kidbuf[2+40+1];
+  const char *exactname = NULL;
+  char *searchkey = NULL;
   char *hostport = NULL;
   char *request = NULL;
   estream_t fp = NULL;
@@ -1060,22 +1062,36 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   switch (desc.mode)
     {
     case KEYDB_SEARCH_MODE_SHORT_KID:
-      snprintf (kidbuf, sizeof kidbuf, "%08lX", (ulong)desc.u.kid[1]);
+      snprintf (kidbuf, sizeof kidbuf, "0x%08lX", (ulong)desc.u.kid[1]);
       break;
     case KEYDB_SEARCH_MODE_LONG_KID:
-      snprintf (kidbuf, sizeof kidbuf, "%08lX%08lX",
+      snprintf (kidbuf, sizeof kidbuf, "0x%08lX%08lX",
 		(ulong)desc.u.kid[0], (ulong)desc.u.kid[1]);
       break;
     case KEYDB_SEARCH_MODE_FPR20:
     case KEYDB_SEARCH_MODE_FPR:
       /* This is a v4 fingerprint. */
-      bin2hex (desc.u.fpr, 20, kidbuf);
+      kidbuf[0] = '0';
+      kidbuf[1] = 'x';
+      bin2hex (desc.u.fpr, 20, kidbuf+2);
+      break;
+
+    case KEYDB_SEARCH_MODE_EXACT:
+      exactname = desc.u.name;
       break;
 
     case KEYDB_SEARCH_MODE_FPR16:
       log_error ("HKP keyservers do not support v3 fingerprints\n");
     default:
       return gpg_error (GPG_ERR_INV_USER_ID);
+    }
+
+  searchkey = http_escape_string (exactname? exactname : kidbuf,
+                                  EXTRA_ESCAPE_CHARS);
+  if (!searchkey)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
     }
 
   reselect = 0;
@@ -1092,8 +1108,9 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
   xfree (request);
   request = strconcat (hostport,
-                       "/pks/lookup?op=get&options=mr&search=0x",
-                       kidbuf,
+                       "/pks/lookup?op=get&options=mr&search=",
+                       searchkey,
+                       exactname? "&exact=on":"",
                        NULL);
   if (!request)
     {
@@ -1123,6 +1140,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   es_fclose (fp);
   xfree (request);
   xfree (hostport);
+  xfree (searchkey);
   return err;
 }
 
