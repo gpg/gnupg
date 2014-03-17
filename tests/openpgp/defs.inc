@@ -245,6 +245,7 @@ for f in gpg.conf gpg-agent.conf ; do
       gpg.conf)
         [ -n "${opt_always}" ] && echo "no-auto-check-trustdb" >>"$f"
         echo "agent-program $GPG_AGENT" >>"$f"
+        echo "allow-weak-digest-algos" >>"$f"
 
       ;;
       gpg-agent.conf)

@@ -266,6 +266,22 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
 
+    if (sig->digest_algo == GCRY_MD_MD5
+        && !opt.flags.allow_weak_digest_algos)
+      {
+        static int shown;
+
+        if (!shown)
+          {
+            log_info
+              (_("Note: signatures using the %s algorithm are rejected\n"),
+               "MD5");
+            shown = 1;
+          }
+
+        return GPG_ERR_DIGEST_ALGO;
+      }
+
     /* Make sure the digest algo is enabled (in case of a detached
        signature).  */
     gcry_md_enable (digest, sig->digest_algo);
