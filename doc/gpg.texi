@@ -1482,6 +1482,10 @@ mechanisms, in the order they are to be tried:
   position of this mechanism in the list does not matter.  It is not
   required if @code{local} is also used.
 
+  @item clear
+  Clear all defined mechanisms.  This is usefule to override
+  mechanisms fiven in a config file.
+
 @end table
 
 @item --keyid-format @code{short|0xshort|long|0xlong}

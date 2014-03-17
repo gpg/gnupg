@@ -712,7 +712,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
   is_mbox = is_valid_mailbox (name);
 
-  /* Check whether we the default local search has been disabled.
+  /* Check whether the default local search has been disabled.
      This is the case if either the "nodefault" or the "local" keyword
      are in the list of auto key locate mechanisms.
 
@@ -2809,7 +2809,14 @@ parse_auto_key_locate (char *options)
 
       akl = xmalloc_clear (sizeof (*akl));
 
-      if (ascii_strcasecmp (tok, "nodefault") == 0)
+      if (ascii_strcasecmp (tok, "clear") == 0)
+	{
+          xfree (akl);
+          free_akl (opt.auto_key_locate);
+          opt.auto_key_locate = NULL;
+          continue;
+        }
+      else if (ascii_strcasecmp (tok, "nodefault") == 0)
 	akl->type = AKL_NODEFAULT;
       else if (ascii_strcasecmp (tok, "local") == 0)
 	akl->type = AKL_LOCAL;
