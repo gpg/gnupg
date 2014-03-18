@@ -430,6 +430,45 @@ strtimevalue( u32 value )
 }
 
 
+
+/* Return a malloced string with the time elapsed between NOW and
+   SINCE.  May return NULL on error. */
+char *
+elapsed_time_string (time_t since, time_t now)
+{
+  char *result;
+  double diff;
+  unsigned long value;
+  unsigned int days, hours, minutes, seconds;
+
+  if (!now)
+    now = gnupg_get_time ();
+
+  diff = difftime (now, since);
+  if (diff < 0)
+    return xtrystrdup ("time-warp");
+
+  seconds = (unsigned long)diff % 60;
+  value = (unsigned long)(diff / 60);
+  minutes = value % 60;
+  value /= 60;
+  hours = value % 24;
+  value /= 24;
+  days = value % 365;
+
+  if (days)
+    result = xtryasprintf ("%ud%uh%um%us", days, hours, minutes, seconds);
+  else if (hours)
+    result = xtryasprintf ("%uh%um%us", hours, minutes, seconds);
+  else if (minutes)
+    result = xtryasprintf ("%um%us", minutes, seconds);
+  else
+    result = xtryasprintf ("%us", seconds);
+
+  return result;
+}
+
+
 /*
  * Note: this function returns GMT
  */

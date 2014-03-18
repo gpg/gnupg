@@ -33,6 +33,8 @@ void   gnupg_get_isotime (gnupg_isotime_t timebuf);
 void   gnupg_set_time (time_t newtime, int freeze);
 int    gnupg_faked_time_p (void);
 u32    make_timestamp (void);
+char *elapsed_time_string (time_t since, time_t now);
+
 u32    scan_isodatestr (const char *string);
 int    isotime_p (const char *string);
 int    isotime_human_p (const char *string);
