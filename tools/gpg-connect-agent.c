@@ -1936,7 +1936,10 @@ handle_inquire (assuan_context_t ctx, char *line)
   if (d->is_var)
     {
       char *tmpvalue = get_var_ext (d->file);
-      rc = assuan_send_data (ctx, tmpvalue, strlen (tmpvalue));
+      if (tmpvalue)
+        rc = assuan_send_data (ctx, tmpvalue, strlen (tmpvalue));
+      else
+        rc = assuan_send_data (ctx, "", 0);
       xfree (tmpvalue);
       if (rc)
         log_error ("sending data back failed: %s\n", gpg_strerror (rc) );
