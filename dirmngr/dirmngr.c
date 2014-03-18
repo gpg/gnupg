@@ -1,23 +1,22 @@
 /* dirmngr.c - LDAP access
- *	Copyright (C) 2002 Klarälvdalens Datakonsult AB
- *      Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011 g10 Code GmbH
+ * Copyright (C) 2002 Klarälvdalens Datakonsult AB
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011 g10 Code GmbH
+ * Copyright (C) 2014 Werner Koch
  *
- * This file is part of DirMngr.
+ * This file is part of GnuPG.
  *
- * DirMngr is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DirMngr is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -243,9 +242,7 @@ static int active_connections;
 
 /* The timer tick used for housekeeping stuff.  For Windows we use a
    longer period as the SetWaitableTimer seems to signal earlier than
-   the 2 seconds.  CHECK_OWN_SOCKET_INTERVAL defines how often we
-   check our own socket in standard socket mode.  If that value is 0
-   we don't check at all.   All values are in seconds. */
+   the 2 seconds.  All values are in seconds. */
 #if defined(HAVE_W32CE_SYSTEM)
 # define TIMERTICK_INTERVAL         (60)
 #elif defined(HAVE_W32_SYSTEM)
@@ -253,6 +250,9 @@ static int active_connections;
 #else
 # define TIMERTICK_INTERVAL          (2)
 #endif
+
+#define HOUSEKEEPING_INTERVAL      (600)
+
 
 /* This union is used to avoid compiler warnings in case a pointer is
    64 bit and an int 32 bit.  We store an integer in a pointer and get
@@ -1657,14 +1657,49 @@ handle_signal (int signo)
 #endif /*!HAVE_W32_SYSTEM*/
 
 
+/* Thread to do the housekeeping.  */
+static void *
+housekeeping_thread (void *arg)
+{
+  static int sentinel;
+  time_t curtime;
+
+  (void)arg;
+
+  curtime = gnupg_get_time ();
+  if (sentinel)
+    {
+      log_info ("housekeeping is already going on\n");
+      return NULL;
+    }
+  sentinel++;
+  if (opt.verbose)
+    log_info ("starting housekeeping\n");
+
+  ks_hkp_housekeeping (curtime);
+
+  if (opt.verbose)
+    log_info ("ready with housekeeping\n");
+  sentinel--;
+  return NULL;
+
+}
+
+
 /* This is the worker for the ticker.  It is called every few seconds
    and may only do fast operations. */
 static void
 handle_tick (void)
 {
-  /* Nothing real to do right now.  Actually we need the timeout only
-     for W32 where we don't use signals and need a way for the loop to
-     check for the shutdown flag. */
+  static time_t last_housekeeping;
+  time_t curtime;
+
+  curtime = gnupg_get_time ();
+  if (!last_housekeeping)
+    last_housekeeping = curtime;
+
+  /* Under Windows we don't use signals and need a way for the loop to
+     check for the shutdown flag.  */
 #ifdef HAVE_W32_SYSTEM
   if (shutdown_pending)
     log_info (_("SIGTERM received - shutting down ...\n"));
@@ -1676,6 +1711,30 @@ handle_tick (void)
       dirmngr_exit (0);
     }
 #endif /*HAVE_W32_SYSTEM*/
+
+  /* Start a housekeeping thread every 10 minutes  */
+  if (last_housekeeping + HOUSEKEEPING_INTERVAL <= curtime
+      || last_housekeeping > curtime /*(be prepared for y2038)*/)
+    {
+      npth_t thread;
+      npth_attr_t tattr;
+      int err;
+
+      last_housekeeping = curtime;
+
+      err = npth_attr_init (&tattr);
+      if (err)
+        log_error ("error preparing housekeeping thread: %s\n", strerror (err));
+      else
+        {
+          npth_attr_setdetachstate (&tattr, NPTH_CREATE_DETACHED);
+          err = npth_create (&thread, &tattr, housekeeping_thread, NULL);
+          if (err)
+            log_error ("error spawning housekeeping thread: %s\n",
+                       strerror (err));
+          npth_attr_destroy (&tattr);
+        }
+    }
 }
 
 

@@ -46,6 +46,9 @@
 #endif
 
 
+/* Number of seconds after a host is marked as resurrected.  */
+#define RESURRECT_INTERVAL  (3600*3)  /* 3 hours */
+
 /* To match the behaviour of our old gpgkeys helper code we escape
    more characters than actually needed. */
 #define EXTRA_ESCAPE_CHARS "@!\"#$%&'()*+,-./:;<=>?[\\]^_{|}~"
@@ -70,6 +73,8 @@ struct hostinfo_s
   unsigned int v4:1; /* Host supports AF_INET.  */
   unsigned int v6:1; /* Host supports AF_INET6.  */
   unsigned int dead:1; /* Host is currently unresponsive.  */
+  time_t died_at;    /* The time the host was marked dead.  IF this is
+                        0 the host has been manually marked dead.  */
   char name[1];      /* The hostname.  */
 };
 
@@ -104,6 +109,7 @@ create_new_hostinfo (const char *name)
   hi->v4 = 0;
   hi->v6 = 0;
   hi->dead = 0;
+  hi->died_at = 0;
 
   /* Add it to the hosttable. */
   for (idx=0; idx < hosttable_size; idx++)
@@ -465,6 +471,9 @@ mark_host_dead (const char *name)
           log_info ("marking host '%s' as dead%s\n",
                     hi->name, hi->dead? " (again)":"");
           hi->dead = 1;
+          hi->died_at = gnupg_get_time ();
+          if (!hi->died_at)
+            hi->died_at = 1;
           done = 1;
         }
     }
@@ -500,6 +509,7 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
   else if (!alive && !hi->dead)
     {
       hi->dead = 1;
+      hi->died_at = 0; /* Manually set dead.  */
       err = ks_printf_help (ctrl, "marking '%s' as dead", name);
     }
 
@@ -538,6 +548,7 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
           else if (!alive && !hi2->dead)
             {
               hi2->dead = 1;
+              hi2->died_at = 0; /* Manually set dead. */
               err = ks_printf_help (ctrl, "marking '%s' as dead",
                                     hi2->name);
             }
@@ -556,18 +567,33 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
   int idx, idx2;
   hostinfo_t hi;
   membuf_t mb;
-  char *p;
+  time_t curtime;
+  char *p, *died;
+  const char *diedstr;
 
-  err = ks_print_help (ctrl, "hosttable (idx, ipv4, ipv6, dead, name):");
+  err = ks_print_help (ctrl, "hosttable (idx, ipv4, ipv6, dead, name, time):");
   if (err)
     return err;
 
+  curtime = gnupg_get_time ();
   for (idx=0; idx < hosttable_size; idx++)
     if ((hi=hosttable[idx]))
       {
-        err = ks_printf_help (ctrl, "%3d %s %s %s %s\n",
+        if (hi->dead && hi->died_at)
+          {
+            died = elapsed_time_string (hi->died_at, curtime);
+            diedstr = died? died : "error";
+          }
+        else
+          diedstr = died = NULL;
+        err = ks_printf_help (ctrl, "%3d %s %s %s %s%s%s%s\n",
                               idx, hi->v4? "4":" ", hi->v6? "6":" ",
-                              hi->dead? "d":" ", hi->name);
+                              hi->dead? "d":" ", hi->name,
+                              diedstr? "  (":"",
+                              diedstr? diedstr:"",
+                              diedstr? ")":""   );
+        xfree (died);
+
         if (err)
           return err;
         if (hi->pool)
@@ -679,6 +705,34 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
       xfree (hostport);
     }
   return err;
+}
+
+
+/* Housekeeping function called from the housekeeping thread.  It is
+   used to mark dead hosts alive so that they may be tried again after
+   some time.  */
+void
+ks_hkp_housekeeping (time_t curtime)
+{
+  int idx;
+  hostinfo_t hi;
+
+  for (idx=0; idx < hosttable_size; idx++)
+    {
+      hi = hosttable[idx];
+      if (!hi)
+        continue;
+      if (!hi->dead)
+        continue;
+      if (!hi->died_at)
+        continue; /* Do not resurrect manually shot hosts.  */
+      if (hi->died_at + RESURRECT_INTERVAL <= curtime
+          || hi->died_at > curtime)
+        {
+          hi->dead = 0;
+          log_info ("resurrected host '%s'", hi->name);
+        }
+    }
 }
 
 

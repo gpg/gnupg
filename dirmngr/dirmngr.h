@@ -1,15 +1,16 @@
 /* dirmngr.h - Common definitions for the dirmngr
- *	Copyright (C) 2002 Klarälvdalens Datakonsult AB
- *	Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2002 Klarälvdalens Datakonsult AB
+ * Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2014 Werner Koch
  *
- * This file is part of DirMngr.
+ * This file is part of GnuPG.
  *
- * DirMngr is free software; you can redistribute it and/or modify
+ * GnuPG is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
- * DirMngr is distributed in the hope that it will be useful,
+ * GnuPG is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -183,6 +184,11 @@ void dirmngr_exit( int );  /* Wrapper for exit() */
 void dirmngr_init_default_ctrl (ctrl_t ctrl);
 void dirmngr_sighup_action (void);
 
+
+/*-- Various housekeeping functions.  --*/
+void ks_hkp_housekeeping (time_t curtime);
+
+
 /*-- server.c --*/
 ldap_server_t get_ldapservers_from_ctrl (ctrl_t ctrl);
 ksba_cert_t get_cert_local (ctrl_t ctrl, const char *issuer);
@@ -194,6 +200,7 @@ void start_command_handler (gnupg_fd_t fd);
 gpg_error_t dirmngr_status (ctrl_t ctrl, const char *keyword, ...);
 gpg_error_t dirmngr_status_help (ctrl_t ctrl, const char *text);
 gpg_error_t dirmngr_tick (ctrl_t ctrl);
+
 
 
 #endif /*DIRMNGR_H*/
