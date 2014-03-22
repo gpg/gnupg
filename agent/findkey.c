@@ -688,7 +688,7 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
    string describing the names of the parameters.  ALGONAMESIZE and
    ELEMSSIZE give the allocated size of the provided buffers.  The
    buffers may be NULL if not required.  If R_LIST is not NULL the top
-   level list will be stored tehre; the caller needs to release it in
+   level list will be stored there; the caller needs to release it in
    this case.  */
 static gpg_error_t
 key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
@@ -776,27 +776,65 @@ key_parms_from_sexp (gcry_sexp_t s_key, gcry_sexp_t *r_list,
 }
 
 
+/* Return true if KEYPARMS holds an EdDSA key.  */
+static int
+is_eddsa (gcry_sexp_t keyparms)
+{
+  int result = 0;
+  gcry_sexp_t list;
+  const char *s;
+  size_t n;
+  int i;
+
+  list = gcry_sexp_find_token (keyparms, "flags", 0);
+  for (i = list ? gcry_sexp_length (list)-1 : 0; i > 0; i--)
+    {
+      s = gcry_sexp_nth_data (list, i, &n);
+      if (!s)
+        continue; /* Not a data element. */
+
+      if (n == 5 && !memcmp (s, "eddsa", 5))
+        {
+          result = 1;
+          break;
+        }
+    }
+  gcry_sexp_release (list);
+  return result;
+}
+
+
 /* Return the public key algorithm number if S_KEY is a DSA style key.
    If it is not a DSA style key, return 0.  */
 int
 agent_is_dsa_key (gcry_sexp_t s_key)
 {
+  int result;
+  gcry_sexp_t list;
   char algoname[6];
 
   if (!s_key)
     return 0;
 
-  if (key_parms_from_sexp (s_key, NULL, algoname, sizeof algoname, NULL, 0))
+  if (key_parms_from_sexp (s_key, &list, algoname, sizeof algoname, NULL, 0))
     return 0; /* Error - assume it is not an DSA key.  */
 
   if (!strcmp (algoname, "dsa"))
-    return GCRY_PK_DSA;
+    result = GCRY_PK_DSA;
   else if (!strcmp (algoname, "ecc"))
-    return GCRY_PK_ECDSA; /* FIXME: Check for the EdDSA flag.  */
+    {
+      if (is_eddsa (list))
+        result = 0;
+      else
+        result = GCRY_PK_ECDSA;
+    }
   else if (!strcmp (algoname, "ecdsa"))
-    return GCRY_PK_ECDSA;
+    result = GCRY_PK_ECDSA;
   else
-    return 0;
+    result = 0;
+
+  gcry_sexp_release (list);
+  return result;
 }
 
 
@@ -804,18 +842,25 @@ agent_is_dsa_key (gcry_sexp_t s_key)
 int
 agent_is_eddsa_key (gcry_sexp_t s_key)
 {
+  int result;
+  gcry_sexp_t list;
   char algoname[6];
 
   if (!s_key)
     return 0;
 
-  if (key_parms_from_sexp (s_key, NULL, algoname, sizeof algoname, NULL, 0))
+  if (key_parms_from_sexp (s_key, &list, algoname, sizeof algoname, NULL, 0))
     return 0; /* Error - assume it is not an EdDSA key.  */
 
-  if (!strcmp (algoname, "eddsa"))
-    return 1;
+  if (!strcmp (algoname, "ecc") && is_eddsa (list))
+    result = 1;
+  else if (!strcmp (algoname, "eddsa")) /* backward compatibility.  */
+    result = 1;
   else
-    return 0;
+    result = 0;
+
+  gcry_sexp_release (list);
+  return result;
 }
 
 

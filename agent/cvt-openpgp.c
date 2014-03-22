@@ -1030,46 +1030,6 @@ convert_from_openpgp_native (ctrl_t ctrl,
 }
 
 
-
-static gpg_error_t
-key_from_sexp (gcry_sexp_t sexp, const char *elems, gcry_mpi_t *array)
-{
-  gpg_error_t err = 0;
-  gcry_sexp_t l2;
-  int idx;
-
-  for (idx=0; *elems; elems++, idx++)
-    {
-      l2 = gcry_sexp_find_token (sexp, elems, 1);
-      if (!l2)
-        {
-          err = gpg_error (GPG_ERR_NO_OBJ); /* Required parameter not found.  */
-          goto leave;
-        }
-      array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
-      gcry_sexp_release (l2);
-      if (!array[idx])
-        {
-          err = gpg_error (GPG_ERR_INV_OBJ); /* Required parameter invalid.  */
-          goto leave;
-        }
-    }
-
- leave:
-  if (err)
-    {
-      int i;
-
-      for (i=0; i < idx; i++)
-        {
-          gcry_mpi_release (array[i]);
-          array[i] = NULL;
-        }
-    }
-  return err;
-}
-
-
 /* Given an ARRAY of mpis with the key parameters, protect the secret
    parameters in that array and replace them by one opaque encoded
    mpi.  NPKEY is the number of public key parameters and NSKEY is
@@ -1173,7 +1133,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   gpg_error_t err;
   gcry_sexp_t list, l2;
   char *name;
-  int algo;
   const char *algoname;
   const char *elems;
   int npkey, nskey;
@@ -1203,26 +1162,63 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       return gpg_error (GPG_ERR_INV_OBJ); /* Invalid structure of object. */
     }
 
-  algo = gcry_pk_map_name (name);
-  xfree (name);
-
-  switch (algo)
+  /* Map NAME to a name as used by Libgcrypt.  We do not use the
+     Libgcrypt function here because we need a lowercase name and
+     require special treatment for some algorithms.  */
+  strlwr (name);
+  if (!strcmp (name, "rsa"))
     {
-    case GCRY_PK_RSA:   algoname = "rsa";   npkey = 2; elems = "nedpqu";  break;
-    case GCRY_PK_ELG:   algoname = "elg";   npkey = 3; elems = "pgyx";    break;
-    case GCRY_PK_ELG_E: algoname = "elg";   npkey = 3; elems = "pgyx";    break;
-    case GCRY_PK_DSA:   algoname = "dsa";   npkey = 4; elems = "pqgyx";   break;
-    case GCRY_PK_ECDSA: algoname = "ecdsa"; npkey = 6; elems = "pabgnqd"; break;
-    case GCRY_PK_ECDH:  algoname = "ecdh";  npkey = 6; elems = "pabgnqd"; break;
-    default:            algoname = "";      npkey = 0; elems = NULL;      break;
+      algoname = "rsa";
+      npkey = 2;
+      elems = "nedpqu";
     }
+  else if (!strcmp (name, "elg"))
+    {
+      algoname = "elg";
+      npkey = 3;
+      elems = "pgyx";
+    }
+  else if (!strcmp (name, "dsa"))
+    {
+      algoname = "dsa";
+      npkey = 4;
+      elems = "pqgyx";
+    }
+  else if (!strcmp (name, "ecc"))
+    {
+      algoname = "?"; /* Decide later by checking the usage.  */
+      npkey = 6;
+      elems = "pabgnqd";
+    }
+  else if (!strcmp (name, "ecdsa"))
+    {
+      algoname = "ecdsa";
+      npkey = 6;
+      elems = "pabgnqd";
+    }
+  else if (!strcmp (name, "ecdh"))
+    {
+      algoname = "ecdh";
+      npkey = 6;
+      elems = "pabgnqd";
+    }
+  else
+    {
+      algoname = "";
+      npkey = 0;
+      elems = NULL;
+    }
+  xfree (name);
   assert (!elems || strlen (elems) < DIM (array) );
   nskey = elems? strlen (elems) : 0;
 
+  /* Extract the parameters and put them into an array.  */
   if (!elems)
     err = gpg_error (GPG_ERR_PUBKEY_ALGO);
   else
-    err = key_from_sexp (list, elems, array);
+    err = gcry_sexp_extract_param (list, NULL, elems,
+                                   array+0, array+1, array+2, array+3, array+4,
+                                   array+5, array+6, NULL);
   gcry_sexp_release (list);
   if (err)
     return err;

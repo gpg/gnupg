@@ -276,18 +276,35 @@ do_encode_raw_pkcs1 (const byte *md, size_t mdlen, unsigned int nbits,
    the signature S-expression.  LOOKUP is an optional function to
    provide a way for lower layers to ask for the caching TTL.  If a
    CACHE_NONCE is given that cache item is first tried to get a
-   passphrase.  */
+   passphrase.  If OVERRIDEDATA is not NULL, OVERRIDEDATALEN bytes
+   from this buffer are used instead of the data in CTRL.  The
+   override feature is required to allow the use of Ed25519 with ssh
+   because Ed25519 dies the hashing itself.  */
 int
 agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                  const char *desc_text,
 		 gcry_sexp_t *signature_sexp,
-                 cache_mode_t cache_mode, lookup_ttl_t lookup_ttl)
+                 cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
+                 const void *overridedata, size_t overridedatalen)
 {
   gcry_sexp_t s_skey = NULL, s_sig = NULL;
   unsigned char *shadow_info = NULL;
   unsigned int rc = 0;		/* FIXME: gpg-error? */
+  const unsigned char *data;
+  int datalen;
 
-  if (! ctrl->have_keygrip)
+  if (overridedata)
+    {
+      data = overridedata;
+      datalen = overridedatalen;
+    }
+  else
+    {
+      data = ctrl->digest.value;
+      datalen = ctrl->digest.valuelen;
+    }
+
+  if (!ctrl->have_keygrip)
     return gpg_error (GPG_ERR_NO_SECKEY);
 
   rc = agent_key_from_file (ctrl, cache_nonce, desc_text, ctrl->keygrip,
@@ -315,8 +332,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         is_ECDSA = 1;
 
       rc = divert_pksign (ctrl,
-                          ctrl->digest.value,
-                          ctrl->digest.valuelen,
+                          data, datalen,
                           ctrl->digest.algo,
                           shadow_info, &buf, &len);
       if (rc)
@@ -405,22 +421,18 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       /* Put the hash into a sexp */
       if (agent_is_eddsa_key (s_skey))
-        rc = do_encode_eddsa (ctrl->digest.value,
-                              ctrl->digest.valuelen,
+        rc = do_encode_eddsa (data, datalen,
                               &s_hash);
       else if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
-        rc = do_encode_raw_pkcs1 (ctrl->digest.value,
-                                  ctrl->digest.valuelen,
+        rc = do_encode_raw_pkcs1 (data, datalen,
                                   gcry_pk_get_nbits (s_skey),
                                   &s_hash);
       else if ( (dsaalgo = agent_is_dsa_key (s_skey)) )
-        rc = do_encode_dsa (ctrl->digest.value,
-                            ctrl->digest.valuelen,
+        rc = do_encode_dsa (data, datalen,
                             dsaalgo, s_skey,
                             &s_hash);
       else
-        rc = do_encode_md (ctrl->digest.value,
-                           ctrl->digest.valuelen,
+        rc = do_encode_md (data, datalen,
                            ctrl->digest.algo,
                            &s_hash,
                            ctrl->digest.raw_value);
@@ -468,7 +480,8 @@ agent_pksign (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   size_t len = 0;
   int rc = 0;
 
-  rc = agent_pksign_do (ctrl, cache_nonce, desc_text, &s_sig, cache_mode, NULL);
+  rc = agent_pksign_do (ctrl, cache_nonce, desc_text, &s_sig, cache_mode, NULL,
+                        NULL, 0);
   if (rc)
     goto leave;
 

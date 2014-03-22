@@ -2147,7 +2147,7 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
   if (!ctrl->server_local->export_key)
     {
-      err = gpg_error (GPG_ERR_MISSING_KEY);
+      err = set_error (GPG_ERR_MISSING_KEY, "did you run KEYWRAP_KEY");
       goto leave;
     }
 

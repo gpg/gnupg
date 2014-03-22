@@ -37,6 +37,33 @@
 #include "ssh-utils.h"
 
 
+/* Return true if KEYPARMS holds an EdDSA key.  */
+static int
+is_eddsa (gcry_sexp_t keyparms)
+{
+  int result = 0;
+  gcry_sexp_t list;
+  const char *s;
+  size_t n;
+  int i;
+
+  list = gcry_sexp_find_token (keyparms, "flags", 0);
+  for (i = list ? gcry_sexp_length (list)-1 : 0; i > 0; i--)
+    {
+      s = gcry_sexp_nth_data (list, i, &n);
+      if (!s)
+        continue; /* Not a data element. */
+
+      if (n == 5 && !memcmp (s, "eddsa", 5))
+        {
+          result = 1;
+          break;
+        }
+    }
+  gcry_sexp_release (list);
+  return result;
+}
+
 
 /* Return the Secure Shell type fingerprint for KEY.  The length of
    the fingerprint is returned at R_LEN and the fingerprint itself at
@@ -53,6 +80,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
   int idx;
   const char *elems;
   gcry_md_hd_t md = NULL;
+  int blobmode = 0;
 
   *r_fpr = NULL;
   *r_len = 0;
@@ -93,38 +121,52 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
       elems = "en";
       gcry_md_write (md, "\0\0\0\x07ssh-rsa", 11);
       break;
+
     case GCRY_PK_DSA:
       elems = "pqgy";
       gcry_md_write (md, "\0\0\0\x07ssh-dss", 11);
       break;
-    case GCRY_PK_ECDSA:
-      /* We only support the 3 standard curves for now.  It is just a
-         quick hack.  */
-      elems = "q";
-      gcry_md_write (md, "\0\0\0\x13" "ecdsa-sha2-nistp", 20);
-      l2 = gcry_sexp_find_token (list, "curve", 0);
-      if (!l2)
-        elems = "";
+
+    case GCRY_PK_ECC:
+      if (is_eddsa (list))
+        {
+          elems = "q";
+          blobmode = 1;
+          /* For now there is just one curve, thus no need to switch
+             on it.  */
+          gcry_md_write (md, "\0\0\0\x0b" "ssh-ed25519", 15);
+        }
       else
         {
-          gcry_free (name);
-          name = gcry_sexp_nth_string (l2, 1);
-          gcry_sexp_release (l2);
-          l2 = NULL;
-          if (!name)
+          /* We only support the 3 standard curves for now.  It is
+             just a quick hack.  */
+          elems = "q";
+          gcry_md_write (md, "\0\0\0\x13" "ecdsa-sha2-nistp", 20);
+          l2 = gcry_sexp_find_token (list, "curve", 0);
+          if (!l2)
             elems = "";
-          else if (!strcmp (name, "NIST P-256") || !strcmp (name, "nistp256"))
-            gcry_md_write (md, "256\0\0\0\x08nistp256", 15);
-          else if (!strcmp (name, "NIST P-384") || !strcmp (name, "nistp384"))
-            gcry_md_write (md, "384\0\0\0\x08nistp521", 15);
-          else if (!strcmp (name, "NIST P-521") || !strcmp (name, "nistp521"))
-            gcry_md_write (md, "521\0\0\0\x08nistp521", 15);
           else
-            elems = "";
+            {
+              gcry_free (name);
+              name = gcry_sexp_nth_string (l2, 1);
+              gcry_sexp_release (l2);
+              l2 = NULL;
+              if (!name)
+                elems = "";
+              else if (!strcmp (name, "NIST P-256")||!strcmp (name, "nistp256"))
+                gcry_md_write (md, "256\0\0\0\x08nistp256", 15);
+              else if (!strcmp (name, "NIST P-384")||!strcmp (name, "nistp384"))
+                gcry_md_write (md, "384\0\0\0\x08nistp521", 15);
+              else if (!strcmp (name, "NIST P-521")||!strcmp (name, "nistp521"))
+                gcry_md_write (md, "521\0\0\0\x08nistp521", 15);
+              else
+                elems = "";
+            }
+          if (!*elems)
+            err = gpg_err_make (default_errsource, GPG_ERR_UNKNOWN_CURVE);
         }
-      if (!*elems)
-        err = gpg_err_make (default_errsource, GPG_ERR_UNKNOWN_CURVE);
       break;
+
     default:
       elems = "";
       err = gpg_err_make (default_errsource, GPG_ERR_PUBKEY_ALGO);
@@ -133,33 +175,56 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
   if (err)
     goto leave;
 
+
   for (idx = 0, s = elems; *s; s++, idx++)
     {
-      gcry_mpi_t a;
-      unsigned char *buf;
-      size_t buflen;
-
       l2 = gcry_sexp_find_token (list, s, 1);
       if (!l2)
         {
           err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
           goto leave;
         }
-      a = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
-      gcry_sexp_release (l2);
-      l2 = NULL;
-      if (!a)
+      if (blobmode)
         {
-          err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
-          goto leave;
-        }
+          const char *blob;
+          size_t bloblen;
+          unsigned char lenbuf[4];
 
-      err = gcry_mpi_aprint (GCRYMPI_FMT_SSH, &buf, &buflen, a);
-      gcry_mpi_release (a);
-      if (err)
-        goto leave;
-      gcry_md_write (md, buf, buflen);
-      gcry_free (buf);
+          blob = gcry_sexp_nth_data (l2, 1, &bloblen);
+          if (!blob)
+            {
+              err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
+              goto leave;
+            }
+          lenbuf[0] = bloblen >> 24;
+          lenbuf[1] = bloblen >> 16;
+          lenbuf[2] = bloblen >>  8;
+          lenbuf[3] = bloblen;
+          gcry_md_write (md, lenbuf, 4);
+          gcry_md_write (md, blob, bloblen);
+        }
+      else
+        {
+          gcry_mpi_t a;
+          unsigned char *buf;
+          size_t buflen;
+
+          a = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
+          gcry_sexp_release (l2);
+          l2 = NULL;
+          if (!a)
+            {
+              err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
+              goto leave;
+            }
+
+          err = gcry_mpi_aprint (GCRYMPI_FMT_SSH, &buf, &buflen, a);
+          gcry_mpi_release (a);
+          if (err)
+            goto leave;
+          gcry_md_write (md, buf, buflen);
+          gcry_free (buf);
+        }
     }
 
   *r_fpr = gcry_malloc (as_string? 61:20);

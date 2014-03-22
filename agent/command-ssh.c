@@ -2515,7 +2515,8 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
                          _("Please enter the passphrase "
                            "for the ssh key%%0A  %F%%0A  (%c)"),
                          &signature_sexp,
-                         CACHE_MODE_SSH, ttl_from_sshcontrol);
+                         CACHE_MODE_SSH, ttl_from_sshcontrol,
+                         NULL, 0);
   ctrl->use_auth_call = 0;
   if (err)
     goto out;

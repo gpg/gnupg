@@ -368,7 +368,8 @@ char *agent_get_cache (const char *key, cache_mode_t cache_mode);
 int agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                      const char *desc_text,
 		     gcry_sexp_t *signature_sexp,
-                     cache_mode_t cache_mode, lookup_ttl_t lookup_ttl);
+                     cache_mode_t cache_mode, lookup_ttl_t lookup_ttl,
+                     const void *overridedata, size_t overridedatalen);
 int agent_pksign (ctrl_t ctrl, const char *cache_nonce,
                   const char *desc_text,
                   membuf_t *outbuf, cache_mode_t cache_mode);
