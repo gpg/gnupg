@@ -148,6 +148,9 @@ struct ssh_key_type_spec
   /* Algorithm identifier as used by OpenSSH.  */
   const char *ssh_identifier;
 
+  /* Human readable name of the algorithm.  */
+  const char *name;
+
   /* Algorithm identifier as used by GnuPG.  */
   const char *identifier;
 
@@ -271,32 +274,32 @@ static ssh_request_spec_t request_specs[] =
 static ssh_key_type_spec_t ssh_key_types[] =
   {
     {
-      "ssh-ed25519", "ecc", "qd",  "q", "rs", "qd",
+      "ssh-ed25519", "Ed25519", "ecc", "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_eddsa,
       "Ed25519", 0,               SPEC_FLAG_IS_EdDSA
     },
     {
-      "ssh-rsa", "rsa", "nedupq", "en",   "s",  "nedpqu",
+      "ssh-rsa", "RSA", "rsa", "nedupq", "en",   "s",  "nedpqu",
       ssh_key_modifier_rsa, ssh_signature_encoder_rsa,
       NULL, 0,                    SPEC_FLAG_USE_PKCS1V2
     },
     {
-      "ssh-dss", "dsa", "pqgyx",  "pqgy", "rs", "pqgyx",
+      "ssh-dss", "DSA", "dsa", "pqgyx",  "pqgy", "rs", "pqgyx",
       NULL,                 ssh_signature_encoder_dsa,
       NULL, 0, 0
     },
     {
-      "ecdsa-sha2-nistp256", "ecdsa", "qd",  "q", "rs", "qd",
+      "ecdsa-sha2-nistp256", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp256", GCRY_MD_SHA256, SPEC_FLAG_IS_ECDSA
     },
     {
-      "ecdsa-sha2-nistp384", "ecdsa", "qd",  "q", "rs", "qd",
+      "ecdsa-sha2-nistp384", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp384", GCRY_MD_SHA384, SPEC_FLAG_IS_ECDSA
     },
     {
-      "ecdsa-sha2-nistp521", "ecdsa", "qd",  "q", "rs", "qd",
+      "ecdsa-sha2-nistp521", "ECDSA", "ecdsa", "qd",  "q", "rs", "qd",
       NULL,                 ssh_signature_encoder_ecdsa,
       "nistp521", GCRY_MD_SHA512, SPEC_FLAG_IS_ECDSA
     }
@@ -1061,7 +1064,8 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
    general used to add a key received through the ssh-add function.
    We can assume that the user wants to allow ssh using this key. */
 static gpg_error_t
-add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
+add_control_entry (ctrl_t ctrl, ssh_key_type_spec_t *spec,
+                   const char *hexgrip, const char *fmtfpr,
                    int ttl, int confirm)
 {
   gpg_error_t err;
@@ -1084,9 +1088,10 @@ add_control_entry (ctrl_t ctrl, const char *hexgrip, const char *fmtfpr,
          opened in append mode, we simply need to write to it.  */
       tp = localtime (&atime);
       fprintf (cf->fp,
-               ("# Key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
-                "# Fingerprint:  %s\n"
+               ("# %s key added on: %04d-%02d-%02d %02d:%02d:%02d\n"
+                "# MD5 Fingerprint:  %s\n"
                 "%s %d%s\n"),
+               spec->name,
                1900+tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                tp->tm_hour, tp->tm_min, tp->tm_sec,
                fmtfpr, hexgrip, ttl, confirm? " confirm":"");
@@ -3064,7 +3069,8 @@ reenter_compare_cb (struct pin_entry_info_s *pi)
    our key storage, don't do anything.  When entering a new key also
    add an entry to the sshcontrol file.  */
 static gpg_error_t
-ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl, int confirm)
+ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
+                       gcry_sexp_t key, int ttl, int confirm)
 {
   gpg_error_t err;
   unsigned char key_grip_raw[20];
@@ -3158,7 +3164,7 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl, int confirm)
     goto out;
 
   /* And add an entry to the sshcontrol file.  */
-  err = add_control_entry (ctrl, key_grip, key_fpr, ttl, confirm);
+  err = add_control_entry (ctrl, spec, key_grip, key_fpr, ttl, confirm);
 
 
  out:
@@ -3202,6 +3208,7 @@ static gpg_error_t
 ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
 {
   gpg_error_t ret_err;
+  ssh_key_type_spec_t spec;
   gpg_error_t err;
   gcry_sexp_t key;
   unsigned char b;
@@ -3213,7 +3220,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   ttl = 0;
 
   /* FIXME?  */
-  err = ssh_receive_key (request, &key, 1, 1, NULL);
+  err = ssh_receive_key (request, &key, 1, 1, &spec);
   if (err)
     goto out;
 
@@ -3252,7 +3259,7 @@ ssh_handler_add_identity (ctrl_t ctrl, estream_t request, estream_t response)
   if (err)
     goto out;
 
-  err = ssh_identity_register (ctrl, key, ttl, confirm);
+  err = ssh_identity_register (ctrl, &spec, key, ttl, confirm);
 
  out:
 
