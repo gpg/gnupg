@@ -2368,13 +2368,11 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
 			       gcry_sexp_t *key_public,
 			       ssh_key_type_spec_t *key_spec)
 {
-  estream_t blob_stream;
   gpg_error_t err;
+  estream_t blob_stream;
 
-  err = 0;
-  /* FIXME: Use fopenmem_init */
-  blob_stream = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
-  if (! blob_stream)
+  blob_stream = es_fopenmem (0, "r+b");
+  if (!blob_stream)
     {
       err = gpg_error_from_syserror ();
       goto out;
@@ -2391,10 +2389,7 @@ ssh_read_key_public_from_blob (unsigned char *blob, size_t blob_size,
   err = ssh_receive_key (blob_stream, key_public, 0, 0, key_spec);
 
  out:
-
-  if (blob_stream)
-    es_fclose (blob_stream);
-
+  es_fclose (blob_stream);
   return err;
 }
 
@@ -2619,7 +2614,7 @@ ssh_handler_request_identities (ctrl_t ctrl,
   key_counter = 0;
   err = 0;
 
-  key_blobs = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+b");
+  key_blobs = es_fopenmem (0, "r+b");
   if (! key_blobs)
     {
       err = gpg_error_from_syserror ();
@@ -3447,20 +3442,15 @@ static int
 ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 {
   ssh_request_spec_t *spec;
-  estream_t response;
-  estream_t request;
+  estream_t response = NULL;
+  estream_t request = NULL;
   unsigned char request_type;
   gpg_error_t err;
-  int send_err;
+  int send_err = 0;
   int ret;
-  unsigned char *request_data;
+  unsigned char *request_data = NULL;
   u32 request_data_size;
   u32 response_size;
-
-  request_data = NULL;
-  response = NULL;
-  request = NULL;
-  send_err = 0;
 
   /* Create memory streams for request/response data.  The entire
      request will be stored in secure memory, since it might contain
@@ -3500,9 +3490,9 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
     }
 
   if (spec->secret_input)
-    request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+");
+    request = es_mopen (NULL, 0, 0, 1, realloc_secure, gcry_free, "r+b");
   else
-    request = es_mopen (NULL, 0, 0, 1, gcry_realloc, gcry_free, "r+");
+    request = es_mopen (NULL, 0, 0, 1, gcry_realloc, gcry_free, "r+b");
   if (! request)
     {
       err = gpg_error_from_syserror ();
@@ -3519,7 +3509,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
     goto out;
   es_rewind (request);
 
-  response = es_mopen (NULL, 0, 0, 1, NULL, NULL, "r+");
+  response = es_fopenmem (0, "r+b");
   if (! response)
     {
       err = gpg_error_from_syserror ();
@@ -3595,11 +3585,9 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 
  leave:
 
-  if (request)
-    es_fclose (request);
-  if (response)
-    es_fclose (response);
-  xfree (request_data);		/* FIXME?  */
+  es_fclose (request);
+  es_fclose (response);
+  xfree (request_data);
 
   return !!err;
 }
