@@ -1,6 +1,7 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
  *               2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2013, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -111,6 +112,8 @@ enum cmd_and_opt_values
     aSignSym,
     aSignKey,
     aLSignKey,
+    aQuickSignKey,
+    aQuickLSignKey,
     aListConfig,
     aGPGConfList,
     aGPGConfTest,
@@ -408,6 +411,10 @@ static ARGPARSE_OPTS opts[] = {
               N_("remove keys from the public keyring")),
   ARGPARSE_c (aDeleteSecretKeys, "delete-secret-keys",
               N_("remove keys from the secret keyring")),
+  ARGPARSE_c (aQuickSignKey,  "quick-sign-key" ,
+              N_("quickly sign a key")),
+  ARGPARSE_c (aQuickLSignKey, "quick-lsign-key",
+              N_("quickly sign a key locally")),
   ARGPARSE_c (aSignKey,  "sign-key"   ,N_("sign a key")),
   ARGPARSE_c (aLSignKey, "lsign-key"  ,N_("sign a key locally")),
   ARGPARSE_c (aEditKey,  "edit-key"   ,N_("sign or edit a key")),
@@ -2264,6 +2271,8 @@ main (int argc, char **argv)
 	  case aDeArmor:
 	  case aEnArmor:
 	  case aSign:
+	  case aQuickSignKey:
+	  case aQuickLSignKey:
 	  case aSignKey:
 	  case aLSignKey:
 	  case aStore:
@@ -3733,6 +3742,22 @@ main (int argc, char **argv)
 	    if( (rc = decrypt_message (ctrl, fname) ))
 	      log_error("decrypt_message failed: %s\n", g10_errstr(rc) );
 	  }
+	break;
+
+      case aQuickSignKey:
+      case aQuickLSignKey:
+        {
+          const char *fpr;
+
+          if (argc < 1)
+            wrong_args ("--quick-[l]sign-key fingerprint [userids]");
+          fpr = *argv++; argc--;
+          sl = NULL;
+          for( ; argc; argc--, argv++)
+	    append_to_strlist2 (&sl, *argv, utf8_strings);
+          keyedit_quick_sign (ctrl, fpr, sl, locusr, (cmd == aQuickLSignKey));
+          free_strlist (sl);
+        }
 	break;
 
       case aSignKey:

@@ -236,6 +236,8 @@ int delete_keys( strlist_t names, int secret, int allow_both );
 void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		   strlist_t commands, int quiet, int seckey_check );
 void keyedit_passwd (ctrl_t ctrl, const char *username);
+void keyedit_quick_sign (ctrl_t ctrl, const char *fpr,
+                         strlist_t uids, strlist_t locusr, int local);
 void show_basic_key_info (KBNODE keyblock);
 
 /*-- keygen.c --*/

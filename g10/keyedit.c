@@ -56,7 +56,8 @@ static void show_names (estream_t fp, KBNODE keyblock, PKT_public_key * pk,
 static void show_key_with_all_names (estream_t fp,
                                      KBNODE keyblock, int only_marked,
 				     int with_revoker, int with_fpr,
-				     int with_subkeys, int with_prefs);
+				     int with_subkeys, int with_prefs,
+                                     int nowarn);
 static void show_key_and_fingerprint (KBNODE keyblock);
 static int menu_adduid (KBNODE keyblock, int photo, const char *photo_name);
 static void menu_deluid (KBNODE pub_keyblock);
@@ -499,13 +500,16 @@ trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
 
 
 /*
- * Loop over all LOCUSR and and sign the uids after asking.
- * If no user id is marked, all user ids will be signed;
- * if some user_ids are marked those will be signed.
+ * Loop over all LOCUSR and and sign the uids after asking.  If no
+ * user id is marked, all user ids will be signed; if some user_ids
+ * are marked only those will be signed.  If QUICK is true the
+ * function won't ask the user and use sensible defaults.
  */
 static int
-sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
-	   int local, int nonrevocable, int trust, int interactive)
+sign_uids (estream_t fp,
+           kbnode_t keyblock, strlist_t locusr, int *ret_modified,
+	   int local, int nonrevocable, int trust, int interactive,
+           int quick)
 {
   int rc = 0;
   SK_LIST sk_list = NULL;
@@ -518,13 +522,15 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 
   /* Are there any non-v3 sigs on this key already? */
   if (PGP2)
-    for (node = keyblock; node; node = node->next)
-      if (node->pkt->pkttype == PKT_SIGNATURE &&
-	  node->pkt->pkt.signature->version > 3)
-	{
-	  all_v3 = 0;
-	  break;
-	}
+    {
+      for (node = keyblock; node; node = node->next)
+        if (node->pkt->pkttype == PKT_SIGNATURE &&
+            node->pkt->pkt.signature->version > 3)
+          {
+            all_v3 = 0;
+            break;
+          }
+    }
 
   /* Build a list of all signators.
    *
@@ -595,13 +601,13 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 
 		  if (uidnode->pkt->pkt.user_id->is_revoked)
 		    {
-		      tty_printf (_("User ID \"%s\" is revoked."), user);
+		      tty_fprintf (fp, _("User ID \"%s\" is revoked."), user);
 
 		      if (selfsig)
-			tty_printf ("\n");
-		      else if (opt.expert)
+			tty_fprintf (fp, "\n");
+		      else if (opt.expert && !quick)
 			{
-			  tty_printf ("\n");
+			  tty_fprintf (fp, "\n");
 			  /* No, so remove the mark and continue */
 			  if (!cpr_get_answer_is_yes ("sign_uid.revoke_okay",
 						      _("Are you sure you "
@@ -618,18 +624,18 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 			{
 			  uidnode->flag &= ~NODFLG_MARK_A;
 			  uidnode = NULL;
-			  tty_printf (_("  Unable to sign.\n"));
+			  tty_fprintf (fp, _("  Unable to sign.\n"));
 			}
 		    }
 		  else if (uidnode->pkt->pkt.user_id->is_expired)
 		    {
-		      tty_printf (_("User ID \"%s\" is expired."), user);
+		      tty_fprintf (fp, _("User ID \"%s\" is expired."), user);
 
 		      if (selfsig)
-			tty_printf ("\n");
-		      else if (opt.expert)
+			tty_fprintf (fp, "\n");
+		      else if (opt.expert && !quick)
 			{
-			  tty_printf ("\n");
+			  tty_fprintf (fp, "\n");
 			  /* No, so remove the mark and continue */
 			  if (!cpr_get_answer_is_yes ("sign_uid.expire_okay",
 						      _("Are you sure you "
@@ -646,17 +652,17 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 			{
 			  uidnode->flag &= ~NODFLG_MARK_A;
 			  uidnode = NULL;
-			  tty_printf (_("  Unable to sign.\n"));
+			  tty_fprintf (fp, _("  Unable to sign.\n"));
 			}
 		    }
 		  else if (!uidnode->pkt->pkt.user_id->created && !selfsig)
 		    {
-		      tty_printf (_("User ID \"%s\" is not self-signed."),
-				  user);
+		      tty_fprintf (fp, _("User ID \"%s\" is not self-signed."),
+                                   user);
 
-		      if (opt.expert)
+		      if (opt.expert && !quick)
 			{
-			  tty_printf ("\n");
+			  tty_fprintf (fp, "\n");
 			  /* No, so remove the mark and continue */
 			  if (!cpr_get_answer_is_yes ("sign_uid.nosig_okay",
 						      _("Are you sure you "
@@ -673,13 +679,14 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 			{
 			  uidnode->flag &= ~NODFLG_MARK_A;
 			  uidnode = NULL;
-			  tty_printf (_("  Unable to sign.\n"));
+			  tty_fprintf (fp, _("  Unable to sign.\n"));
 			}
 		    }
 
-		  if (uidnode && interactive && !yesreally)
+		  if (uidnode && interactive && !yesreally && !quick)
 		    {
-		      tty_printf (_("User ID \"%s\" is signable.  "), user);
+		      tty_fprintf (fp,
+                                   _("User ID \"%s\" is signable.  "), user);
 		      if (!cpr_get_answer_is_yes ("sign_uid.sign_okay",
 						  _("Sign it? (y/N) ")))
 			{
@@ -704,10 +711,12 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
                                          uidnode->pkt->pkt.user_id->len, 0);
 
 		  /* It's a v3 self-sig.  Make it into a v4 self-sig? */
-		  if (node->pkt->pkt.signature->version < 4 && selfsig)
+		  if (node->pkt->pkt.signature->version < 4
+                      && selfsig && !quick)
 		    {
-		      tty_printf (_("The self-signature on \"%s\"\n"
-				    "is a PGP 2.x-style signature.\n"), user);
+		      tty_fprintf (fp,
+                                   _("The self-signature on \"%s\"\n"
+                                     "is a PGP 2.x-style signature.\n"), user);
 
 		      /* Note that the regular PGP2 warning below
 		         still applies if there are no v4 sigs on
@@ -729,10 +738,10 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		  /* Is the current signature expired? */
 		  if (node->pkt->pkt.signature->flags.expired)
 		    {
-		      tty_printf (_("Your current signature on \"%s\"\n"
-				    "has expired.\n"), user);
+		      tty_fprintf (fp, _("Your current signature on \"%s\"\n"
+                                         "has expired.\n"), user);
 
-		      if (cpr_get_answer_is_yes
+		      if (quick || cpr_get_answer_is_yes
 			  ("sign_uid.replace_expired_okay",
 			   _("Do you want to issue a "
 			     "new signature to replace "
@@ -755,10 +764,12 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		    {
 		      /* It's a local sig, and we want to make a
 		         exportable sig. */
-		      tty_printf (_("Your current signature on \"%s\"\n"
-				    "is a local signature.\n"), user);
+		      tty_fprintf (fp, _("Your current signature on \"%s\"\n"
+                                         "is a local signature.\n"), user);
 
-		      if (cpr_get_answer_is_yes
+                      if (quick)
+                        ;
+		      else if (cpr_get_answer_is_yes
 			  ("sign_uid.local_promote_okay",
 			   _("Do you want to promote "
 			     "it to a full exportable " "signature? (y/N) ")))
@@ -779,14 +790,15 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		  /* Fixme: see whether there is a revocation in which
 		   * case we should allow to sign it again. */
 		  if (!node->pkt->pkt.signature->flags.exportable && local)
-		    tty_printf
-                      (_("\"%s\" was already locally signed by key %s\n"),
+		    tty_fprintf ( fp,
+                       _("\"%s\" was already locally signed by key %s\n"),
                        user, keystr_from_pk (pk));
 		  else
-		    tty_printf (_("\"%s\" was already signed by key %s\n"),
+		    tty_fprintf (fp,
+                                _("\"%s\" was already signed by key %s\n"),
 				user, keystr_from_pk (pk));
 
-		  if (opt.expert
+		  if (opt.expert && !quick
 		      && cpr_get_answer_is_yes ("sign_uid.dupe_okay",
 						_("Do you want to sign it "
 						  "again anyway? (y/N) ")))
@@ -810,15 +822,15 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
       /* Check whether any uids are left for signing.  */
       if (!count_uids_with_flag (keyblock, NODFLG_MARK_A))
 	{
-	  tty_printf (_("Nothing to sign with key %s\n"),
+	  tty_fprintf (fp, _("Nothing to sign with key %s\n"),
 		      keystr_from_pk (pk));
 	  continue;
 	}
 
       /* Ask whether we really should sign these user id(s). */
-      tty_printf ("\n");
-      show_key_with_all_names (NULL, keyblock, 1, 0, 1, 0, 0);
-      tty_printf ("\n");
+      tty_fprintf (fp, "\n");
+      show_key_with_all_names (fp, keyblock, 1, 0, 1, 0, 0, 0);
+      tty_fprintf (fp, "\n");
 
       if (primary_pk->expiredate && !selfsig)
 	{
@@ -826,11 +838,11 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 
 	  if (primary_pk->expiredate <= now)
 	    {
-	      tty_printf (_("This key has expired!"));
+	      tty_fprintf (fp, _("This key has expired!"));
 
-	      if (opt.expert)
+	      if (opt.expert && !quick)
 		{
-		  tty_printf ("  ");
+		  tty_fprintf (fp, "  ");
 		  if (!cpr_get_answer_is_yes ("sign_uid.expired_okay",
 					      _("Are you sure you still "
 						"want to sign it? (y/N) ")))
@@ -838,16 +850,16 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		}
 	      else
 		{
-		  tty_printf (_("  Unable to sign.\n"));
+		  tty_fprintf (fp, _("  Unable to sign.\n"));
 		  continue;
 		}
 	    }
 	  else
 	    {
-	      tty_printf (_("This key is due to expire on %s.\n"),
-			  expirestr_from_pk (primary_pk));
+	      tty_fprintf (fp, _("This key is due to expire on %s.\n"),
+                           expirestr_from_pk (primary_pk));
 
-	      if (opt.ask_cert_expire)
+	      if (opt.ask_cert_expire && !quick)
 		{
 		  char *answer = cpr_get ("sign_uid.expire",
 					  _("Do you want your signature to "
@@ -875,7 +887,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
          the expiration of the pk */
       if (!duration && !selfsig)
 	{
-	  if (opt.ask_cert_expire)
+	  if (opt.ask_cert_expire && !quick)
 	    duration = ask_expire_interval (1, opt.def_cert_expire);
 	  else
 	    duration = parse_expire_string (opt.def_cert_expire);
@@ -890,11 +902,11 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
       if (PGP2 && all_v3 &&
 	  (pk->version > 3 || force_v4) && primary_pk->version <= 3)
 	{
-	  tty_printf (_("You may not make an OpenPGP signature on a "
-			"PGP 2.x key while in --pgp2 mode.\n"));
-	  tty_printf (_("This would make the key unusable in PGP 2.x.\n"));
+	  tty_fprintf (fp, _("You may not make an OpenPGP signature on a "
+                             "PGP 2.x key while in --pgp2 mode.\n"));
+	  tty_fprintf (fp, _("This would make the key unusable in PGP 2.x.\n"));
 
-	  if (opt.expert)
+	  if (opt.expert && !quick)
 	    {
 	      if (!cpr_get_answer_is_yes ("sign_uid.v4_on_v3_okay",
 					  _("Are you sure you still "
@@ -911,26 +923,28 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	;
       else
 	{
-	  if (opt.batch || !opt.ask_cert_level)
+	  if (opt.batch || !opt.ask_cert_level || quick)
 	    class = 0x10 + opt.def_cert_level;
 	  else
 	    {
 	      char *answer;
 
-	      tty_printf (_("How carefully have you verified the key you are "
+	      tty_fprintf (fp,
+                           _("How carefully have you verified the key you are "
 			    "about to sign actually belongs\nto the person "
 			    "named above?  If you don't know what to "
 			    "answer, enter \"0\".\n"));
-	      tty_printf ("\n");
-	      tty_printf (_("   (0) I will not answer.%s\n"),
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp, _("   (0) I will not answer.%s\n"),
 			  opt.def_cert_level == 0 ? " (default)" : "");
-	      tty_printf (_("   (1) I have not checked at all.%s\n"),
+	      tty_fprintf (fp, _("   (1) I have not checked at all.%s\n"),
 			  opt.def_cert_level == 1 ? " (default)" : "");
-	      tty_printf (_("   (2) I have done casual checking.%s\n"),
+	      tty_fprintf (fp, _("   (2) I have done casual checking.%s\n"),
 			  opt.def_cert_level == 2 ? " (default)" : "");
-	      tty_printf (_("   (3) I have done very careful checking.%s\n"),
+	      tty_fprintf (fp,
+                           _("   (3) I have done very careful checking.%s\n"),
 			  opt.def_cert_level == 3 ? " (default)" : "");
-	      tty_printf ("\n");
+	      tty_fprintf (fp, "\n");
 
 	      while (class == 0)
 		{
@@ -948,79 +962,85 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 		  else if (ascii_strcasecmp (answer, "3") == 0)
 		    class = 0x13;	/* Positive */
 		  else
-		    tty_printf (_("Invalid selection.\n"));
+		    tty_fprintf (fp, _("Invalid selection.\n"));
 
 		  xfree (answer);
 		}
 	    }
 
-	  if (trust)
+	  if (trust && !quick)
 	    trustsig_prompt (&trust_value, &trust_depth, &trust_regexp);
 	}
 
-      p = get_user_id_native (sk_keyid);
-      tty_printf (_("Are you sure that you want to sign this key with your\n"
-		    "key \"%s\" (%s)\n"), p, keystr_from_pk (pk));
-      xfree (p);
+      if (!quick)
+        {
+          p = get_user_id_native (sk_keyid);
+          tty_fprintf (fp,
+                   _("Are you sure that you want to sign this key with your\n"
+                     "key \"%s\" (%s)\n"), p, keystr_from_pk (pk));
+          xfree (p);
+        }
 
       if (selfsig)
 	{
-	  tty_printf ("\n");
-	  tty_printf (_("This will be a self-signature.\n"));
+	  tty_fprintf (fp, "\n");
+	  tty_fprintf (fp, _("This will be a self-signature.\n"));
 
 	  if (local)
 	    {
-	      tty_printf ("\n");
-	      tty_printf (_("WARNING: the signature will not be marked "
-			    "as non-exportable.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp, _("WARNING: the signature will not be marked "
+                                 "as non-exportable.\n"));
 	    }
 
 	  if (nonrevocable)
 	    {
-	      tty_printf ("\n");
-	      tty_printf (_("WARNING: the signature will not be marked "
-			    "as non-revocable.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp, _("WARNING: the signature will not be marked "
+                                 "as non-revocable.\n"));
 	    }
 	}
       else
 	{
 	  if (local)
 	    {
-	      tty_printf ("\n");
-	      tty_printf
-                (_("The signature will be marked as non-exportable.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp,
+                 _("The signature will be marked as non-exportable.\n"));
 	    }
 
 	  if (nonrevocable)
 	    {
-	      tty_printf ("\n");
-	      tty_printf
-                (_("The signature will be marked as non-revocable.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp,
+                 _("The signature will be marked as non-revocable.\n"));
 	    }
 
 	  switch (class)
 	    {
 	    case 0x11:
-	      tty_printf ("\n");
-	      tty_printf (_("I have not checked this key at all.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp, _("I have not checked this key at all.\n"));
 	      break;
 
 	    case 0x12:
-	      tty_printf ("\n");
-	      tty_printf (_("I have checked this key casually.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp, _("I have checked this key casually.\n"));
 	      break;
 
 	    case 0x13:
-	      tty_printf ("\n");
-	      tty_printf (_("I have checked this key very carefully.\n"));
+	      tty_fprintf (fp, "\n");
+	      tty_fprintf (fp, _("I have checked this key very carefully.\n"));
 	      break;
 	    }
 	}
 
-      tty_printf ("\n");
+      tty_fprintf (fp, "\n");
 
       if (opt.batch && opt.answer_yes)
 	;
+      else if (quick)
+        ;
       else if (!cpr_get_answer_is_yes ("sign_uid.okay",
 				       _("Really sign? (y/N) ")))
 	continue;
@@ -1093,7 +1113,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 	  delete_kbnode (node);
     } /* End loop over signators.  */
 
-leave:
+ leave:
   release_sk_list (sk_list);
   return rc;
 }
@@ -1544,7 +1564,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
       if (redisplay && !quiet)
 	{
-	  show_key_with_all_names (NULL, keyblock, 0, 1, 0, 1, 0);
+	  show_key_with_all_names (NULL, keyblock, 0, 1, 0, 1, 0, 0);
 	  tty_printf ("\n");
 	  redisplay = 0;
 	}
@@ -1736,8 +1756,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		break;
 	      }
 
-	    sign_uids (keyblock, locusr, &modified,
-		       localsig, nonrevokesig, trustsig, interactive);
+	    sign_uids (NULL, keyblock, locusr, &modified,
+		       localsig, nonrevokesig, trustsig, interactive, 0);
 	  }
 	  break;
 
@@ -2083,7 +2103,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      break;
 	    }
 
-	  show_key_with_all_names (NULL, keyblock, 0, 0, 0, 1, 0);
+	  show_key_with_all_names (NULL, keyblock, 0, 0, 0, 1, 0, 0);
 	  tty_printf ("\n");
 	  if (edit_ownertrust (find_kbnode (keyblock,
 					    PKT_PUBLIC_KEY)->pkt->pkt.
@@ -2284,6 +2304,163 @@ leave:
 }
 
 
+/* Unattended key signing function.  If the key specifified by FPR is
+   availabale and FPR is the primary fingerprint all user ids of the
+   user ids of the key are signed using the default signing key.  If
+   UIDS is an empty list all usable UIDs are signed, if it is not
+   empty, only those user ids matching one of the entries of the loist
+   are signed.  With LOCAL being true kthe signatures are marked as
+   non-exportable.  */
+void
+keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
+                    strlist_t locusr, int local)
+{
+  gpg_error_t err;
+  kbnode_t keyblock = NULL;
+  KEYDB_HANDLE kdbhd = NULL;
+  int modified = 0;
+  KEYDB_SEARCH_DESC desc;
+  PKT_public_key *pk;
+  kbnode_t node;
+  strlist_t sl;
+  int any;
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale ();
+#endif
+
+  /* We require a fingerprint because only this uniquely identifies a
+     key and may thus be used to select a key for unattended key
+     signing.  */
+  if (classify_user_id (fpr, &desc, 1)
+      || !(desc.mode == KEYDB_SEARCH_MODE_FPR
+           || desc.mode == KEYDB_SEARCH_MODE_FPR16
+           || desc.mode == KEYDB_SEARCH_MODE_FPR20))
+    {
+      log_error (_("\"%s\" is not a fingerprint\n"), fpr);
+      goto leave;
+    }
+  err = get_pubkey_byname (ctrl, NULL, NULL, fpr, &keyblock, &kdbhd, 1, 1);
+  if (err)
+    {
+      log_error (_("key \"%s\" not found: %s\n"), fpr, gpg_strerror (err));
+      goto leave;
+    }
+  if (fix_keyblock (keyblock))
+    modified++;
+  if (collapse_uids (&keyblock))
+    modified++;
+  reorder_keyblock (keyblock);
+
+  /* Check that the primary fingerprint has been given. */
+  {
+    byte fprbin[MAX_FINGERPRINT_LEN];
+    size_t fprlen;
+
+    fingerprint_from_pk (keyblock->pkt->pkt.public_key, fprbin, &fprlen);
+    if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR16
+        && !memcmp (fprbin, desc.u.fpr, 16))
+      ;
+    else if (fprlen == 16 && desc.mode == KEYDB_SEARCH_MODE_FPR
+             && !memcmp (fprbin, desc.u.fpr, 16)
+             && !desc.u.fpr[16]
+             && !desc.u.fpr[17]
+             && !desc.u.fpr[18]
+             && !desc.u.fpr[19])
+      ;
+    else if (fprlen == 20 && (desc.mode == KEYDB_SEARCH_MODE_FPR20
+                              || desc.mode == KEYDB_SEARCH_MODE_FPR)
+             && !memcmp (fprbin, desc.u.fpr, 20))
+      ;
+    else
+      {
+        log_error (_("\"%s\" is not the primary fingerprint\n"), fpr);
+        goto leave;
+      }
+  }
+
+  /* If we modified the keyblock, make sure the flags are right. */
+  if (modified)
+    merge_keys_and_selfsig (keyblock);
+
+  /* Give some info in verbose.  */
+  if (opt.verbose)
+    {
+      show_key_with_all_names (es_stdout, keyblock, 0,
+                               1/*with_revoker*/, 1/*with_fingerprint*/,
+                               0, 0, 1);
+      es_fflush (es_stdout);
+    }
+
+  pk = keyblock->pkt->pkt.public_key;
+  if (pk->flags.revoked)
+    {
+      if (!opt.verbose)
+        show_key_with_all_names (es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+      log_error ("%s%s", _("Key is revoked."), _("  Unable to sign.\n"));
+      goto leave;
+    }
+
+  /* Set the flags according to the UIDS list.  Fixme: We may want to
+     use classify_user_id along with dedicated compare functions so
+     that we match the same way as in the key lookup. */
+  any = 0;
+  menu_select_uid (keyblock, 0);   /* Better clear the flags first. */
+  for (sl=uids; sl; sl = sl->next)
+    {
+      for (node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_USER_ID)
+            {
+              PKT_user_id *uid = node->pkt->pkt.user_id;
+
+              if (!uid->attrib_data
+                  && ascii_memistr (uid->name, uid->len, sl->d))
+                {
+                  node->flag |= NODFLG_SELUID;
+                  any = 1;
+                }
+            }
+        }
+    }
+
+  if (uids && !any)
+    {
+      if (!opt.verbose)
+        show_key_with_all_names (es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+      es_fflush (es_stdout);
+      log_error ("%s  %s", _("No matching user IDs."), _("Nothing to sign.\n"));
+      goto leave;
+    }
+
+  /* Sign. */
+  sign_uids (es_stdout, keyblock, locusr, &modified, local, 0, 0, 0, 1);
+  es_fflush (es_stdout);
+
+  if (modified)
+    {
+      err = keydb_update_keyblock (kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    log_info (_("Key not changed so no update needed.\n"));
+
+  if (update_trust)
+    revalidation_mark ();
+
+
+ leave:
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
+}
+
+
+
 static void
 tty_print_notations (int indent, PKT_signature * sig)
 {
@@ -2705,7 +2882,8 @@ show_names (estream_t fp,
 static void
 show_key_with_all_names (estream_t fp,
                          KBNODE keyblock, int only_marked, int with_revoker,
-			 int with_fpr, int with_subkeys, int with_prefs)
+			 int with_fpr, int with_subkeys, int with_prefs,
+                         int nowarn)
 {
   KBNODE node;
   int i;
@@ -2889,7 +3067,7 @@ show_key_with_all_names (estream_t fp,
   show_names (fp,
               keyblock, primary, only_marked ? NODFLG_MARK_A : 0, with_prefs);
 
-  if (do_warn)
+  if (do_warn && !nowarn)
     tty_fprintf (fp, _("Please note that the shown key validity"
                        " is not necessarily correct\n"
                        "unless you restart the program.\n"));
