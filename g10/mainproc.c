@@ -953,7 +953,7 @@ list_node( CTX c, KBNODE node )
 	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
 	      putchar('\n'); any=1;
 	      if( opt.fingerprint )
-		print_fingerprint (pk, 0);
+		print_fingerprint (NULL, pk, 0);
 	      printf("rtv:1:%u:\n",
 		     node->next->pkt->pkt.ring_trust->trustval );
 	    }
@@ -991,7 +991,7 @@ list_node( CTX c, KBNODE node )
 			putchar(':');
 		    putchar('\n');
 		    if( opt.fingerprint && !any )
-			print_fingerprint ( pk, 0 );
+                        print_fingerprint (NULL, pk, 0 );
 		    if( opt.with_colons
                         && node->next
 			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
@@ -1030,7 +1030,7 @@ list_node( CTX c, KBNODE node )
 	if( !any )
 	    putchar('\n');
 	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( pk, 0 );
+            print_fingerprint (NULL, pk, 0);
     }
     else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
 	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {

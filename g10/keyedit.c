@@ -1,6 +1,7 @@
 /* keyedit.c - keyedit stuff
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2013, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -50,9 +51,10 @@
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
-static void show_names (KBNODE keyblock, PKT_public_key * pk,
+static void show_names (estream_t fp, KBNODE keyblock, PKT_public_key * pk,
 			unsigned int flag, int with_prefs);
-static void show_key_with_all_names (KBNODE keyblock, int only_marked,
+static void show_key_with_all_names (estream_t fp,
+                                     KBNODE keyblock, int only_marked,
 				     int with_revoker, int with_fpr,
 				     int with_subkeys, int with_prefs);
 static void show_key_and_fingerprint (KBNODE keyblock);
@@ -252,7 +254,7 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 	{
 	  size_t n;
 	  char *p = get_user_id (sig->keyid, &n);
-	  tty_print_utf8_string2 (p, n,
+	  tty_print_utf8_string2 (NULL, p, n,
 				  opt.screen_columns - keystrlen () - 26 -
 				  ((opt.
 				    list_options & LIST_SHOW_SIG_EXPIRE) ? 11
@@ -815,7 +817,7 @@ sign_uids (KBNODE keyblock, strlist_t locusr, int *ret_modified,
 
       /* Ask whether we really should sign these user id(s). */
       tty_printf ("\n");
-      show_key_with_all_names (keyblock, 1, 0, 1, 0, 0);
+      show_key_with_all_names (NULL, keyblock, 1, 0, 1, 0, 0);
       tty_printf ("\n");
 
       if (primary_pk->expiredate && !selfsig)
@@ -1542,7 +1544,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
       if (redisplay && !quiet)
 	{
-	  show_key_with_all_names (keyblock, 0, 1, 0, 1, 0);
+	  show_key_with_all_names (NULL, keyblock, 0, 1, 0, 1, 0);
 	  tty_printf ("\n");
 	  redisplay = 0;
 	}
@@ -2081,7 +2083,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      break;
 	    }
 
-	  show_key_with_all_names (keyblock, 0, 0, 0, 1, 0);
+	  show_key_with_all_names (NULL, keyblock, 0, 0, 0, 1, 0);
 	  tty_printf ("\n");
 	  if (edit_ownertrust (find_kbnode (keyblock,
 					    PKT_PUBLIC_KEY)->pkt->pkt.
@@ -2100,7 +2102,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  {
 	    int count = count_selected_uids (keyblock);
 	    assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
-	    show_names (keyblock, keyblock->pkt->pkt.public_key,
+	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 1);
 	  }
 	  break;
@@ -2109,7 +2111,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  {
 	    int count = count_selected_uids (keyblock);
 	    assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
-	    show_names (keyblock, keyblock->pkt->pkt.public_key,
+	    show_names (NULL, keyblock, keyblock->pkt->pkt.public_key,
 			count ? NODFLG_SELUID : 0, 2);
 	  }
 	  break;
@@ -2482,12 +2484,15 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
    opt.with_colons is used.  It prints all available data in a easy to
    parse format and does not translate utf8 */
 static void
-show_key_with_all_names_colon (KBNODE keyblock)
+show_key_with_all_names_colon (estream_t fp, kbnode_t keyblock)
 {
   KBNODE node;
   int i, j, ulti_hack = 0;
   byte pk_version = 0;
   PKT_public_key *primary = NULL;
+
+  if (!fp)
+    fp = es_stdout;
 
   /* the keys */
   for (node = keyblock; node; node = node->next)
@@ -2506,46 +2511,46 @@ show_key_with_all_names_colon (KBNODE keyblock)
 
 	  keyid_from_pk (pk, keyid);
 
-	  fputs (node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub:" : "sub:",
-		 stdout);
+	  es_fputs (node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub:" : "sub:",
+                    fp);
 	  if (!pk->flags.valid)
-	    putchar ('i');
+	    es_putc ('i', fp);
 	  else if (pk->flags.revoked)
-	    putchar ('r');
+	    es_putc ('r', fp);
 	  else if (pk->has_expired)
-	    putchar ('e');
+	    es_putc ('e', fp);
 	  else if (!(opt.fast_list_mode || opt.no_expensive_trust_checks))
 	    {
 	      int trust = get_validity_info (pk, NULL);
 	      if (trust == 'u')
 		ulti_hack = 1;
-	      putchar (trust);
+	      es_putc (trust, fp);
 	    }
 
-	  printf (":%u:%d:%08lX%08lX:%lu:%lu::",
-		  nbits_from_pk (pk),
-		  pk->pubkey_algo,
-		  (ulong) keyid[0], (ulong) keyid[1],
-		  (ulong) pk->timestamp, (ulong) pk->expiredate);
+	  es_fprintf (fp, ":%u:%d:%08lX%08lX:%lu:%lu::",
+                      nbits_from_pk (pk),
+                      pk->pubkey_algo,
+                      (ulong) keyid[0], (ulong) keyid[1],
+                      (ulong) pk->timestamp, (ulong) pk->expiredate);
 	  if (node->pkt->pkttype == PKT_PUBLIC_KEY
 	      && !(opt.fast_list_mode || opt.no_expensive_trust_checks))
-	    putchar (get_ownertrust_info (pk));
-	  putchar (':');
-	  putchar (':');
-	  putchar (':');
+	    es_putc (get_ownertrust_info (pk), fp);
+	  es_putc (':', fp);
+	  es_putc (':', fp);
+	  es_putc (':', fp);
 	  /* Print capabilities.  */
 	  if ((pk->pubkey_usage & PUBKEY_USAGE_ENC))
-	    putchar ('e');
+	    es_putc ('e', fp);
 	  if ((pk->pubkey_usage & PUBKEY_USAGE_SIG))
-	    putchar ('s');
+	    es_putc ('s', fp);
 	  if ((pk->pubkey_usage & PUBKEY_USAGE_CERT))
-	    putchar ('c');
+	    es_putc ('c', fp);
 	  if ((pk->pubkey_usage & PUBKEY_USAGE_AUTH))
-	    putchar ('a');
-	  putchar ('\n');
+	    es_putc ('a', fp);
+	  es_putc ('\n', fp);
 
-	  print_fingerprint (pk, 0);
-	  print_revokers (pk);
+	  print_fingerprint (fp, pk, 0);
+	  print_revokers (fp, pk);
 	}
     }
 
@@ -2560,16 +2565,16 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	  ++i;
 
 	  if (uid->attrib_data)
-	    printf ("uat:");
+	    es_fputs ("uat:", fp);
 	  else
-	    printf ("uid:");
+	    es_fputs ("uid:", fp);
 
 	  if (uid->is_revoked)
-	    printf ("r::::::::");
+	    es_fputs ("r::::::::", fp);
 	  else if (uid->is_expired)
-	    printf ("e::::::::");
+	    es_fputs ("e::::::::", fp);
 	  else if (opt.fast_list_mode || opt.no_expensive_trust_checks)
-	    printf ("::::::::");
+	    es_fputs ("::::::::", fp);
 	  else
 	    {
 	      int uid_validity;
@@ -2578,19 +2583,19 @@ show_key_with_all_names_colon (KBNODE keyblock)
 		uid_validity = get_validity_info (primary, uid);
 	      else
 		uid_validity = 'u';
-	      printf ("%c::::::::", uid_validity);
+	      es_fprintf (fp, "%c::::::::", uid_validity);
 	    }
 
 	  if (uid->attrib_data)
-	    printf ("%u %lu", uid->numattribs, uid->attrib_len);
+	    es_fprintf (fp, "%u %lu", uid->numattribs, uid->attrib_len);
 	  else
-	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
+	    es_write_sanitized (fp, uid->name, uid->len, ":", NULL);
 
-	  putchar (':');
+	  es_putc (':', fp);
 	  /* signature class */
-	  putchar (':');
+	  es_putc (':', fp);
 	  /* capabilities */
-	  putchar (':');
+	  es_putc (':', fp);
 	  /* preferences */
 	  if (pk_version > 3 || uid->selfsigversion > 3)
 	    {
@@ -2599,38 +2604,41 @@ show_key_with_all_names_colon (KBNODE keyblock)
 	      for (j = 0; prefs && prefs[j].type; j++)
 		{
 		  if (j)
-		    putchar (' ');
-		  printf ("%c%d", prefs[j].type == PREFTYPE_SYM ? 'S' :
-			  prefs[j].type == PREFTYPE_HASH ? 'H' :
-			  prefs[j].type == PREFTYPE_ZIP ? 'Z' : '?',
-			  prefs[j].value);
+		    es_putc (' ', fp);
+		  es_fprintf (fp,
+                              "%c%d", prefs[j].type == PREFTYPE_SYM ? 'S' :
+                              prefs[j].type == PREFTYPE_HASH ? 'H' :
+                              prefs[j].type == PREFTYPE_ZIP ? 'Z' : '?',
+                              prefs[j].value);
 		}
 	      if (uid->flags.mdc)
-		printf (",mdc");
+		es_fputs (",mdc", fp);
 	      if (!uid->flags.ks_modify)
-		printf (",no-ks-modify");
+		es_fputs (",no-ks-modify", fp);
 	    }
-	  putchar (':');
+	  es_putc (':', fp);
 	  /* flags */
-	  printf ("%d,", i);
+	  es_fprintf (fp, "%d,", i);
 	  if (uid->is_primary)
-	    putchar ('p');
+	    es_putc ('p', fp);
 	  if (uid->is_revoked)
-	    putchar ('r');
+	    es_putc ('r', fp);
 	  if (uid->is_expired)
-	    putchar ('e');
+	    es_putc ('e', fp);
 	  if ((node->flag & NODFLG_SELUID))
-	    putchar ('s');
+	    es_putc ('s', fp);
 	  if ((node->flag & NODFLG_MARK_A))
-	    putchar ('m');
-	  putchar (':');
-	  putchar ('\n');
+	    es_putc ('m', fp);
+	  es_putc (':', fp);
+	  es_putc ('\n', fp);
 	}
     }
 }
 
+
 static void
-show_names (KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
+show_names (estream_t fp,
+            KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
 	    int with_prefs)
 {
   KBNODE node;
@@ -2645,18 +2653,18 @@ show_names (KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
 	  if (!flag || (flag && (node->flag & flag)))
 	    {
 	      if (!(flag & NODFLG_MARK_A) && pk)
-		tty_printf ("%s ", uid_trust_string_fixed (pk, uid));
+		tty_fprintf (fp, "%s ", uid_trust_string_fixed (pk, uid));
 
 	      if (flag & NODFLG_MARK_A)
-		tty_printf ("     ");
+		tty_fprintf (fp, "     ");
 	      else if (node->flag & NODFLG_SELUID)
-		tty_printf ("(%d)* ", i);
+		tty_fprintf (fp, "(%d)* ", i);
 	      else if (uid->is_primary)
-		tty_printf ("(%d). ", i);
+		tty_fprintf (fp, "(%d). ", i);
 	      else
-		tty_printf ("(%d)  ", i);
-	      tty_print_utf8_string (uid->name, uid->len);
-	      tty_printf ("\n");
+		tty_fprintf (fp, "(%d)  ", i);
+	      tty_print_utf8_string2 (fp, uid->name, uid->len, 0);
+	      tty_fprintf (fp, "\n");
 	      if (with_prefs && pk)
 		{
 		  if (pk->version > 3 || uid->selfsigversion > 3)
@@ -2679,8 +2687,8 @@ show_names (KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
 		      show_prefs (uid, selfsig, with_prefs == 2);
 		    }
 		  else
-		    tty_printf (_("There are no preferences on a"
-				  " PGP 2.x-style user ID.\n"));
+		    tty_fprintf (fp, _("There are no preferences on a"
+                                       " PGP 2.x-style user ID.\n"));
 		}
 	    }
 	}
@@ -2689,11 +2697,14 @@ show_names (KBNODE keyblock, PKT_public_key * pk, unsigned int flag,
 
 
 /*
- * Display the key a the user ids, if only_marked is true, do only
- * so for user ids with mark A flag set and dont display the index number
+ * Display the key a the user ids, if only_marked is true, do only so
+ * for user ids with mark A flag set and do not display the index
+ * number.  If FP is not NULL print to the given stream and not to the
+ * tty (ignored in with-colons mode).
  */
 static void
-show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
+show_key_with_all_names (estream_t fp,
+                         KBNODE keyblock, int only_marked, int with_revoker,
 			 int with_fpr, int with_subkeys, int with_prefs)
 {
   KBNODE node;
@@ -2704,7 +2715,7 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 
   if (opt.with_colons)
     {
-      show_key_with_all_names_colon (keyblock);
+      show_key_with_all_names_colon (fp, keyblock);
       return;
     }
 
@@ -2716,7 +2727,8 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	      && !is_deleted_kbnode (node)))
 	{
 	  PKT_public_key *pk = node->pkt->pkt.public_key;
-	  const char *otrust = "err", *trust = "err";
+	  const char *otrust = "err";
+	  const char *trust = "err";
 
 	  if (node->pkt->pkttype == PKT_PUBLIC_KEY)
 	    {
@@ -2741,7 +2753,8 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	  if (pk->flags.revoked)
 	    {
 	      char *user = get_user_id_string_native (pk->revoked.keyid);
-              tty_printf (_("The following key was revoked on"
+              tty_fprintf (fp,
+                           _("The following key was revoked on"
                             " %s by %s key %s\n"),
 			  revokestr_from_pk (pk),
                           gcry_pk_algo_name (pk->revoked.algo), user);
@@ -2764,22 +2777,23 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 					    MAX_FINGERPRINT_LEN, r_keyid);
 
 		    user = get_user_id_string_native (r_keyid);
-		    tty_printf (_("This key may be revoked by %s key %s"),
-				algo ? algo : "?", user);
+		    tty_fprintf (fp,
+                                 _("This key may be revoked by %s key %s"),
+                                 algo ? algo : "?", user);
 
 		    if (pk->revkey[i].class & 0x40)
 		      {
-			tty_printf (" ");
-			tty_printf (_("(sensitive)"));
+			tty_fprintf (fp, " ");
+			tty_fprintf (fp, _("(sensitive)"));
 		      }
 
-		    tty_printf ("\n");
+		    tty_fprintf (fp, "\n");
 		    xfree (user);
 		  }
 	    }
 
 	  keyid_from_pk (pk, NULL);
-	  tty_printf ("%s%c %s/%s",
+	  tty_fprintf (fp, "%s%c %s/%s",
 		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
 		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
 		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
@@ -2788,28 +2802,28 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 		      keystr (pk->keyid));
 
           if (opt.legacy_list_mode)
-            tty_printf ("  ");
+            tty_fprintf (fp, "  ");
           else
-            tty_printf ("\n     ");
+            tty_fprintf (fp, "\n     ");
 
-          tty_printf (_("created: %s"), datestr_from_pk (pk));
-	  tty_printf ("  ");
+          tty_fprintf (fp, _("created: %s"), datestr_from_pk (pk));
+	  tty_fprintf (fp, "  ");
 	  if (pk->flags.revoked)
-	    tty_printf (_("revoked: %s"), revokestr_from_pk (pk));
+	    tty_fprintf (fp, _("revoked: %s"), revokestr_from_pk (pk));
 	  else if (pk->has_expired)
-	    tty_printf (_("expired: %s"), expirestr_from_pk (pk));
+	    tty_fprintf (fp, _("expired: %s"), expirestr_from_pk (pk));
 	  else
-	    tty_printf (_("expires: %s"), expirestr_from_pk (pk));
-	  tty_printf ("  ");
-	  tty_printf (_("usage: %s"), usagestr_from_pk (pk));
-	  tty_printf ("\n");
+	    tty_fprintf (fp, _("expires: %s"), expirestr_from_pk (pk));
+	  tty_fprintf (fp, "  ");
+	  tty_fprintf (fp, _("usage: %s"), usagestr_from_pk (pk));
+	  tty_fprintf (fp, "\n");
 
 	  if (pk->seckey_info
               && pk->seckey_info->is_protected
               && pk->seckey_info->s2k.mode == 1002)
 	    {
-	      tty_printf ("%*s%s", opt.legacy_list_mode? 21:5, "",
-                          _("card-no: "));
+	      tty_fprintf (fp, "%*s%s", opt.legacy_list_mode? 21:5, "",
+                           _("card-no: "));
 	      if (pk->seckey_info->ivlen == 16
 		  && !memcmp (pk->seckey_info->iv,
                               "\xD2\x76\x00\x01\x24\x01", 6))
@@ -2818,17 +2832,17 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 		  for (i = 8; i < 14; i++)
 		    {
 		      if (i == 10)
-			tty_printf (" ");
-		      tty_printf ("%02X", pk->seckey_info->iv[i]);
+			tty_fprintf (fp, " ");
+		      tty_fprintf (fp, "%02X", pk->seckey_info->iv[i]);
 		    }
 		}
 	      else
 		{
                   /* Unknown card: Print all. */
 		  for (i = 0; i < pk->seckey_info->ivlen; i++)
-		    tty_printf ("%02X", pk->seckey_info->iv[i]);
+		    tty_fprintf (fp, "%02X", pk->seckey_info->iv[i]);
 		}
-	      tty_printf ("\n");
+	      tty_fprintf (fp, "\n");
 	    }
 
 	  if (node->pkt->pkttype == PKT_PUBLIC_KEY
@@ -2836,9 +2850,9 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 	    {
 	      if (opt.trust_model != TM_ALWAYS)
 		{
-		  tty_printf ("%*s",
-                              opt.legacy_list_mode?
-                              ((int) keystrlen () + 13):5, "");
+		  tty_fprintf (fp, "%*s",
+                               opt.legacy_list_mode?
+                               ((int) keystrlen () + 13):5, "");
 		  /* Ownertrust is only meaningful for the PGP or
 		     classic trust models */
 		  if (opt.trust_model == TM_PGP
@@ -2847,37 +2861,38 @@ show_key_with_all_names (KBNODE keyblock, int only_marked, int with_revoker,
 		      int width = 14 - strlen (otrust);
 		      if (width <= 0)
 			width = 1;
-		      tty_printf (_("trust: %s"), otrust);
-		      tty_printf ("%*s", width, "");
+		      tty_fprintf (fp, _("trust: %s"), otrust);
+		      tty_fprintf (fp, "%*s", width, "");
 		    }
 
-		  tty_printf (_("validity: %s"), trust);
-		  tty_printf ("\n");
+		  tty_fprintf (fp, _("validity: %s"), trust);
+		  tty_fprintf (fp, "\n");
 		}
 	      if (node->pkt->pkttype == PKT_PUBLIC_KEY
 		  && (get_ownertrust (pk) & TRUST_FLAG_DISABLED))
 		{
-		  tty_printf ("*** ");
-		  tty_printf (_("This key has been disabled"));
-		  tty_printf ("\n");
+		  tty_fprintf (fp, "*** ");
+		  tty_fprintf (fp, _("This key has been disabled"));
+		  tty_fprintf (fp, "\n");
 		}
 	    }
 
 	  if ((node->pkt->pkttype == PKT_PUBLIC_KEY
                || node->pkt->pkttype == PKT_SECRET_KEY) && with_fpr)
 	    {
-	      print_fingerprint (pk, 2);
-	      tty_printf ("\n");
+              print_fingerprint (fp, pk, 2);
+	      tty_fprintf (fp, "\n");
 	    }
 	}
     }
 
-  show_names (keyblock, primary, only_marked ? NODFLG_MARK_A : 0, with_prefs);
+  show_names (fp,
+              keyblock, primary, only_marked ? NODFLG_MARK_A : 0, with_prefs);
 
   if (do_warn)
-    tty_printf (_("Please note that the shown key validity"
-		  " is not necessarily correct\n"
-		  "unless you restart the program.\n"));
+    tty_fprintf (fp, _("Please note that the shown key validity"
+                       " is not necessarily correct\n"
+                       "unless you restart the program.\n"));
 }
 
 
@@ -2912,7 +2927,7 @@ show_basic_key_info (KBNODE keyblock)
 	  tty_printf ("  ");
 	  tty_printf (_("expires: %s"), expirestr_from_pk (pk));
 	  tty_printf ("\n");
-	  print_fingerprint (pk, 3);
+	  print_fingerprint (NULL, pk, 3);
 	  tty_printf ("\n");
 	}
     }
@@ -2962,7 +2977,7 @@ show_key_and_fingerprint (KBNODE keyblock)
     }
   tty_printf ("\n");
   if (pk)
-    print_fingerprint (pk, 2);
+    print_fingerprint (NULL, pk, 2);
 }
 
 
@@ -3438,7 +3453,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 	}
 
       print_pubkey_info (NULL, revoker_pk);
-      print_fingerprint (revoker_pk, 2);
+      print_fingerprint (NULL, revoker_pk, 2);
       tty_printf ("\n");
 
       tty_printf (_("WARNING: appointing a key as a designated revoker "

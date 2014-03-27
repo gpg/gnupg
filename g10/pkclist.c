@@ -258,7 +258,7 @@ do_edit_ownertrust (PKT_public_key *pk, int mode,
 		tty_printf(_("  aka \"%s\"\n"),p);
 	      }
 
-            print_fingerprint (pk, 2);
+            print_fingerprint (NULL, pk, 2);
             tty_printf("\n");
 	    release_kbnode (keyblock);
           }
@@ -470,7 +470,7 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
   if( !opt.batch && !rc )
     {
       print_pubkey_info(NULL,pk);
-      print_fingerprint (pk, 2);
+      print_fingerprint (NULL, pk, 2);
       tty_printf("\n");
 
       tty_printf(
@@ -529,7 +529,7 @@ check_signatures_trust( PKT_signature *sig )
       if( !opt.quiet )
         log_info(_("WARNING: Using untrusted key!\n"));
       if (opt.with_fingerprint)
-        print_fingerprint (pk, 1);
+        print_fingerprint (NULL, pk, 1);
       goto leave;
     }
 
@@ -617,7 +617,7 @@ check_signatures_trust( PKT_signature *sig )
     {
     case TRUST_EXPIRED:
       log_info(_("Note: This key has expired!\n"));
-      print_fingerprint (pk, 1);
+      print_fingerprint (NULL, pk, 1);
       break;
 
     default:
@@ -631,7 +631,7 @@ check_signatures_trust( PKT_signature *sig )
                  " a trusted signature!\n"));
       log_info(_("         There is no indication that the "
                  "signature belongs to the owner.\n" ));
-      print_fingerprint (pk, 1);
+      print_fingerprint (NULL, pk, 1);
       break;
 
     case TRUST_NEVER:
@@ -640,7 +640,7 @@ check_signatures_trust( PKT_signature *sig )
       log_info(_("WARNING: We do NOT trust this key!\n"));
       log_info(_("         The signature is probably a FORGERY.\n"));
       if (opt.with_fingerprint)
-        print_fingerprint (pk, 1);
+        print_fingerprint (NULL, pk, 1);
       rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
       break;
 
@@ -650,19 +650,19 @@ check_signatures_trust( PKT_signature *sig )
                  " sufficiently trusted signatures!\n"));
       log_info(_("         It is not certain that the"
                  " signature belongs to the owner.\n" ));
-      print_fingerprint (pk, 1);
+      print_fingerprint (NULL, pk, 1);
       break;
 
     case TRUST_FULLY:
       write_status( STATUS_TRUST_FULLY );
       if (opt.with_fingerprint)
-        print_fingerprint (pk, 1);
+        print_fingerprint (NULL, pk, 1);
       break;
 
     case TRUST_ULTIMATE:
       write_status( STATUS_TRUST_ULTIMATE );
       if (opt.with_fingerprint)
-        print_fingerprint (pk, 1);
+        print_fingerprint (NULL, pk, 1);
       break;
     }
 

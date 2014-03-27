@@ -866,7 +866,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
   es_fprintf (es_stdout, "\n");
 
   if (fpr)
-    print_fingerprint (pk, 0);
+    print_fingerprint (NULL, pk, 0);
 
   if (opt.with_keygrip && hexgrip)
     es_fprintf (es_stdout, "      Keygrip = %s\n", hexgrip);
@@ -991,7 +991,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
             {
-              print_fingerprint (pk2, 0);
+              print_fingerprint (NULL, pk2, 0);
               if (serialno)
                 print_card_serialno (serialno);
             }
@@ -1112,7 +1112,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 }
 
 void
-print_revokers (PKT_public_key * pk)
+print_revokers (estream_t fp, PKT_public_key * pk)
 {
   /* print the revoker record */
   if (!pk->revkey && pk->numrevkeys)
@@ -1125,12 +1125,13 @@ print_revokers (PKT_public_key * pk)
 	{
 	  byte *p;
 
-	  es_fprintf (es_stdout, "rvk:::%d::::::", pk->revkey[i].algid);
+	  es_fprintf (fp, "rvk:::%d::::::", pk->revkey[i].algid);
 	  p = pk->revkey[i].fpr;
 	  for (j = 0; j < 20; j++, p++)
-	    es_fprintf (es_stdout, "%02X", *p);
-	  es_fprintf (es_stdout, ":%02x%s:\n", pk->revkey[i].class,
-		  (pk->revkey[i].class & 0x40) ? "s" : "");
+	    es_fprintf (fp, "%02X", *p);
+	  es_fprintf (fp, ":%02x%s:\n",
+                      pk->revkey[i].class,
+                      (pk->revkey[i].class & 0x40) ? "s" : "");
 	}
     }
 }
@@ -1227,9 +1228,9 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   es_putc (':', es_stdout);		/* End of field 17. */
   es_putc ('\n', es_stdout);
 
-  print_revokers (pk);
+  print_revokers (es_stdout, pk);
   if (fpr)
-    print_fingerprint (pk, 0);
+    print_fingerprint (NULL, pk, 0);
   if (opt.with_key_data || opt.with_keygrip)
     {
       if (hexgrip)
@@ -1353,7 +1354,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
           es_putc (':', es_stdout);	/* End of field 17. */
 	  es_putc ('\n', es_stdout);
 	  if (fpr > 1)
-	    print_fingerprint (pk2, 0);
+	    print_fingerprint (NULL, pk2, 0);
 	  if (opt.with_key_data || opt.with_keygrip)
             {
               if (hexgrip)
@@ -1553,10 +1554,12 @@ list_keyblock (KBNODE keyblock, int secret, int fpr, void *opaque)
  *      3: direct use of tty but only primary key.
  *
  * Modes 1 and 2 will try and print both subkey and primary key
- * fingerprints.  A MODE with bit 7 set is used internally.
+ * fingerprints.  A MODE with bit 7 set is used internally.  If
+ * OVERRIDE_FP is not NULL that stream will be used in  0 instead
+ * of es_stdout or instead of the TTY in modes 2 and 3.
  */
 void
-print_fingerprint (PKT_public_key *pk, int mode)
+print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
 {
   byte array[MAX_FINGERPRINT_LEN], *p;
   size_t i, n;
@@ -1581,7 +1584,7 @@ print_fingerprint (PKT_public_key *pk, int mode)
     {
       PKT_public_key *primary_pk = xmalloc_clear (sizeof (*primary_pk));
       get_pubkey (primary_pk, pk->main_keyid);
-      print_fingerprint (primary_pk, mode | 0x80);
+      print_fingerprint (override_fp, primary_pk, (mode | 0x80));
       free_public_key (primary_pk);
     }
 
@@ -1595,7 +1598,7 @@ print_fingerprint (PKT_public_key *pk, int mode)
     }
   else if (mode == 2)
     {
-      fp = NULL; /* Use tty.  */
+      fp = override_fp; /* Use tty or given stream.  */
       if (primary)
 	/* TRANSLATORS: this should fit into 24 bytes to that the
 	 * fingerprint data is properly aligned with the user ID */
@@ -1605,12 +1608,12 @@ print_fingerprint (PKT_public_key *pk, int mode)
     }
   else if (mode == 3)
     {
-      fp = NULL; /* Use tty.  */
+      fp = override_fp; /* Use tty or given stream.  */
       text = _("      Key fingerprint =");
     }
   else
     {
-      fp = es_stdout;
+      fp = override_fp? override_fp : es_stdout;
       text = _("      Key fingerprint =");
     }
 

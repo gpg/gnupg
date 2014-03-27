@@ -47,9 +47,10 @@ void tty_printf (const char *fmt, ... );
 void tty_fprintf (estream_t fp, const char *fmt, ... );
 char *tty_getf (const char *promptfmt, ... );
 #endif
-void tty_print_string (const unsigned char *p, size_t n);
+void tty_print_string (estream_t fp, const unsigned char *p, size_t n);
 void tty_print_utf8_string (const unsigned char *p, size_t n);
-void tty_print_utf8_string2 (const unsigned char *p, size_t n, size_t max_n);
+void tty_print_utf8_string2 (estream_t fp,
+                             const unsigned char *p, size_t n, size_t max_n);
 char *tty_get (const char *prompt);
 char *tty_get_hidden (const char *prompt);
 void tty_kill_prompt (void);

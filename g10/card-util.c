@@ -269,7 +269,7 @@ print_name (estream_t fp, const char *text, const char *name)
       if (fp)
         print_utf8_buffer2 (fp, name, strlen (name), '\n');
       else
-        tty_print_utf8_string2 (name, strlen (name), 0);
+        tty_print_utf8_string2 (NULL, name, strlen (name), 0);
     }
   else
     tty_fprintf (fp, _("[not set]"));
@@ -302,7 +302,7 @@ print_isoname (estream_t fp, const char *text,
           else if (fp)
             print_utf8_buffer2 (fp, given, strlen (given), '\n');
           else
-            tty_print_utf8_string2 (given, strlen (given), 0);
+            tty_print_utf8_string2 (NULL, given, strlen (given), 0);
 
           if (opt.with_colons)
             es_putc (':', fp);
@@ -315,7 +315,7 @@ print_isoname (estream_t fp, const char *text,
       else if (fp)
         print_utf8_buffer2 (fp, buf, strlen (buf), '\n');
       else
-        tty_print_utf8_string2 (buf, strlen (buf), 0);
+        tty_print_utf8_string2 (NULL, buf, strlen (buf), 0);
       xfree (buf);
     }
   else

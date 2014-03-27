@@ -310,53 +310,101 @@ tty_fprintf (estream_t fp, const char *fmt, ... )
 
 
 /****************
- * Print a string, but filter all control characters out.
+ * Print a string, but filter all control characters out.  If FP is
+ * not NULL print to that stream instead to the tty.
  */
 void
-tty_print_string ( const byte *p, size_t n )
+tty_print_string (estream_t fp, const byte *p, size_t n )
 {
-    if (no_terminal)
+    if (no_terminal && !fp)
 	return;
 
-    if( !initialized )
+    if( !initialized & !fp)
 	init_ttyfp();
 
 #ifdef USE_W32_CONSOLE
     /* not so effective, change it if you want */
-    for( ; n; n--, p++ )
-	if( iscntrl( *p ) ) {
-	    if( *p == '\n' )
-		tty_printf("\\n");
-	    else if( !*p )
-		tty_printf("\\0");
-	    else
-		tty_printf("\\x%02x", *p);
-	}
-	else
-	    tty_printf("%c", *p);
+    if (fp)
+      {
+        for( ; n; n--, p++ )
+          {
+            if( iscntrl( *p ) )
+              {
+                if( *p == '\n' )
+                  tty_fprintf (fp, "\\n");
+                else if( !*p )
+                  tty_fprintf (fp, "\\0");
+                else
+                  tty_fprintf (fp, "\\x%02x", *p);
+              }
+            else
+              tty_fprintf (fp, "%c", *p);
+          }
+      }
+    else
+      {
+        for( ; n; n--, p++ )
+          {
+            if( iscntrl( *p ) )
+              {
+                if( *p == '\n' )
+                  tty_printf ("\\n");
+                else if( !*p )
+                  tty_printf ("\\0");
+                else
+                  tty_printf ("\\x%02x", *p);
+              }
+            else
+              tty_printf ("%c", *p);
+          }
+      }
 #else
-    for( ; n; n--, p++ )
-	if( iscntrl( *p ) ) {
-	    putc('\\', ttyfp);
-	    if( *p == '\n' )
-		putc('n', ttyfp);
-	    else if( !*p )
-		putc('0', ttyfp);
-	    else
-		fprintf(ttyfp, "x%02x", *p );
-	}
-	else
-	    putc(*p, ttyfp);
+    if (fp)
+      {
+        for( ; n; n--, p++ )
+          {
+            if (iscntrl (*p))
+              {
+                es_putc ('\\', fp);
+                if ( *p == '\n' )
+                  es_putc ('n', fp);
+                else if ( !*p )
+                  es_putc ('0', fp);
+                else
+                  es_fprintf (fp, "x%02x", *p);
+              }
+            else
+              es_putc (*p, fp);
+          }
+      }
+    else
+      {
+        for (; n; n--, p++)
+          {
+            if (iscntrl (*p))
+              {
+                putc ('\\', ttyfp);
+                if ( *p == '\n' )
+                  putc ('n', ttyfp);
+                else if ( !*p )
+                  putc ('0', ttyfp);
+                else
+                  fprintf (ttyfp, "x%02x", *p );
+              }
+            else
+              putc (*p, ttyfp);
+          }
+      }
 #endif
 }
 
 void
-tty_print_utf8_string2( const byte *p, size_t n, size_t max_n )
+tty_print_utf8_string2 (estream_t fp, const byte *p, size_t n, size_t max_n)
 {
     size_t i;
     char *buf;
 
-    if (no_terminal)
+    if (no_terminal && !fp)
 	return;
 
     /* we can handle plain ascii simpler, so check for it first */
@@ -370,21 +418,22 @@ tty_print_utf8_string2( const byte *p, size_t n, size_t max_n )
 	    buf[max_n] = 0;
 	}
 	/*(utf8 conversion already does the control character quoting)*/
-	tty_printf("%s", buf );
-	xfree( buf );
+	tty_fprintf (fp, "%s", buf);
+	xfree (buf);
     }
     else {
 	if( max_n && (n > max_n) ) {
 	    n = max_n;
 	}
-	tty_print_string( p, n );
+	tty_print_string (fp, p, n );
     }
 }
+
 
 void
 tty_print_utf8_string( const byte *p, size_t n )
 {
-    tty_print_utf8_string2( p, n, 0 );
+  tty_print_utf8_string2 (NULL, p, n, 0);
 }
 
 
