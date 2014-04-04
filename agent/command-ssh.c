@@ -1617,15 +1617,13 @@ ssh_signature_encoder_eddsa (ssh_key_type_spec_t *spec,
   gpg_error_t err = 0;
   gcry_sexp_t valuelist = NULL;
   gcry_sexp_t sublist = NULL;
-  gcry_mpi_t sig_value = NULL;
-  gcry_mpi_t *mpis = NULL;
   const char *elems;
   size_t elems_n;
   int i;
 
   unsigned char *data[2] = {NULL, NULL};
   size_t data_n[2];
-  size_t totallen;
+  size_t totallen = 0;
 
   valuelist = gcry_sexp_nth (s_signature, 1);
   if (!valuelist)
@@ -1637,14 +1635,13 @@ ssh_signature_encoder_eddsa (ssh_key_type_spec_t *spec,
   elems = spec->elems_signature;
   elems_n = strlen (elems);
 
-  mpis = xtrycalloc (elems_n + 1, sizeof *mpis);
-  if (!mpis)
+  if (elems_n != DIM(data))
     {
-      err = gpg_error_from_syserror ();
+      err = gpg_error (GPG_ERR_INV_SEXP);
       goto out;
     }
 
-  for (i = 0; i < elems_n; i++)
+  for (i = 0; i < DIM(data); i++)
     {
       sublist = gcry_sexp_find_token (valuelist, spec->elems_signature + i, 1);
       if (!sublist)
@@ -1653,30 +1650,18 @@ ssh_signature_encoder_eddsa (ssh_key_type_spec_t *spec,
 	  break;
 	}
 
-      sig_value = gcry_sexp_nth_mpi (sublist, 1, GCRYMPI_FMT_USG);
-      if (!sig_value)
+      data[i] = gcry_sexp_nth_buffer (sublist, 1, &data_n[i]);
+      if (!data[i])
 	{
 	  err = gpg_error (GPG_ERR_INTERNAL); /* FIXME?  */
 	  break;
 	}
+      totallen += data_n[i];
       gcry_sexp_release (sublist);
       sublist = NULL;
-
-      mpis[i] = sig_value;
     }
   if (err)
     goto out;
-
-  /* EdDSA specific.  Actually TOTALLEN will always be 64.  */
-
-  totallen = 0;
-  for (i = 0; i < DIM(data); i++)
-    {
-      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, &data[i], &data_n[i], mpis[i]);
-      if (err)
-	goto out;
-      totallen += data_n[i];
-    }
 
   gcry_log_debug ("  out: len=%zu\n", totallen);
   err = stream_write_uint32 (stream, totallen);
@@ -1696,7 +1681,6 @@ ssh_signature_encoder_eddsa (ssh_key_type_spec_t *spec,
     xfree (data[i]);
   gcry_sexp_release (valuelist);
   gcry_sexp_release (sublist);
-  mpint_list_free (mpis);
   return err;
 }
 
