@@ -324,12 +324,18 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       int key_type;
       int is_RSA = 0;
       int is_ECDSA = 0;
+      int is_EdDSA = 0;
 
-      key_type = agent_is_dsa_key (s_skey);
-      if (key_type == 0)
-        is_RSA = 1;
-      else if (key_type == GCRY_PK_ECDSA)
-        is_ECDSA = 1;
+      if (agent_is_eddsa_key (s_skey))
+        is_EdDSA = 1;
+      else
+        {
+          key_type = agent_is_dsa_key (s_skey);
+          if (key_type == 0)
+            is_RSA = 1;
+          else if (key_type == GCRY_PK_ECDSA)
+            is_ECDSA = 1;
+        }
 
       rc = divert_pksign (ctrl,
                           data, datalen,
@@ -355,6 +361,11 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
             }
 
           rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))", len, buf);
+        }
+      else if (is_EdDSA)
+        {
+          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
+                                len/2, buf, len/2, buf + len/2);
         }
       else if (is_ECDSA)
         {
