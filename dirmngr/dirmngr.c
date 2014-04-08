@@ -1686,18 +1686,36 @@ housekeeping_thread (void *arg)
 }
 
 
+#if JNLIB_GCC_HAVE_PUSH_PRAGMA
+# pragma GCC push_options
+# pragma GCC optimize ("no-strict-overflow")
+#endif
+static int
+time_for_housekeeping_p (time_t curtime)
+{
+  static time_t last_housekeeping;
+
+  if (!last_housekeeping)
+    last_housekeeping = curtime;
+
+  if (last_housekeeping + HOUSEKEEPING_INTERVAL <= curtime
+      || last_housekeeping > curtime /*(be prepared for y2038)*/)
+    {
+      last_housekeeping = curtime;
+      return 1;
+    }
+  return 0;
+}
+#if JNLIB_GCC_HAVE_PUSH_PRAGMA
+# pragma GCC pop_options
+#endif
+
+
 /* This is the worker for the ticker.  It is called every few seconds
    and may only do fast operations. */
 static void
 handle_tick (void)
 {
-  static time_t last_housekeeping;
-  time_t curtime;
-
-  curtime = gnupg_get_time ();
-  if (!last_housekeeping)
-    last_housekeeping = curtime;
-
   /* Under Windows we don't use signals and need a way for the loop to
      check for the shutdown flag.  */
 #ifdef HAVE_W32_SYSTEM
@@ -1712,15 +1730,11 @@ handle_tick (void)
     }
 #endif /*HAVE_W32_SYSTEM*/
 
-  /* Start a housekeeping thread every 10 minutes  */
-  if (last_housekeeping + HOUSEKEEPING_INTERVAL <= curtime
-      || last_housekeeping > curtime /*(be prepared for y2038)*/)
+  if (time_for_housekeeping_p (gnupg_get_time ()))
     {
       npth_t thread;
       npth_attr_t tattr;
       int err;
-
-      last_housekeeping = curtime;
 
       err = npth_attr_init (&tattr);
       if (err)

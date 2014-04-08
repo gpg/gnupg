@@ -52,10 +52,12 @@ time_t timegm (struct tm *tm);
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
 
+#undef JNLIB_GCC_HAVE_PUSH_PRAGMA
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
 # define JNLIB_GCC_M_FUNCTION 1
 # define JNLIB_GCC_A_NR 	     __attribute__ ((noreturn))
 # if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4 )
+#   define JNLIB_GCC_HAVE_PUSH_PRAGMA 1
 #   define JNLIB_GCC_A_PRINTF( f, a ) \
                     __attribute__ ((format (__gnu_printf__,f,a)))
 #   define JNLIB_GCC_A_NR_PRINTF( f, a ) \
