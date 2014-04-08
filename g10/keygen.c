@@ -4031,7 +4031,11 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH)
-    curve = ask_curve ();
+    {
+      curve = ask_curve ();
+      if (curve && !strcmp (curve, "Ed25519"))
+        algo = PUBKEY_ALGO_EDDSA;
+    }
   else
     nbits = ask_keysize (algo, 0);
 

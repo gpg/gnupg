@@ -813,7 +813,9 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
         else
           {
             err = gcry_sexp_build (&s_pkey, NULL,
-                                   "(public-key(ecc(curve%s)(q%m)))",
+                                   pk->pubkey_algo == PUBKEY_ALGO_EDDSA ?
+                                   "(public-key(ecc(curve%s)(flags eddsa)(q%m)))"
+                                   : "(public-key(ecc(curve%s)(q%m)))",
                                    curve, pk->pkey[1]);
             xfree (curve);
           }
