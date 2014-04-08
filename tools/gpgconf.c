@@ -51,6 +51,7 @@ enum cmd_and_opt_values
     aListConfig,
     aCheckConfig,
     aListDirs,
+    aLaunch,
     aKill,
     aReload
   };
@@ -75,6 +76,7 @@ static ARGPARSE_OPTS opts[] =
     { aCheckConfig,   "check-config", 256,
       N_("check global configuration file") },
     { aReload,        "reload", 256, N_("reload all or a given component")},
+    { aLaunch,        "launch", 256, N_("launch a given component")},
     { aKill,          "kill", 256,   N_("kill a given component")},
 
     { 301, NULL, 0, N_("@\nOptions:\n ") },
@@ -184,6 +186,7 @@ main (int argc, char **argv)
         case aListConfig:
         case aCheckConfig:
         case aReload:
+        case aLaunch:
         case aKill:
 	  cmd = pargs.r_opt;
 	  break;
@@ -255,6 +258,7 @@ main (int argc, char **argv)
 	}
       break;
 
+    case aLaunch:
     case aKill:
       if (!fname)
 	{
@@ -266,7 +270,7 @@ main (int argc, char **argv)
 	}
       else
         {
-          /* Kill a given component.  */
+          /* Launch/Kill a given component.  */
           int idx;
 
           idx = gc_component_find (fname);
@@ -276,10 +280,10 @@ main (int argc, char **argv)
               es_putc ('\n', es_stderr);
               exit (1);
             }
+          else if (cmd == aLaunch)
+            gc_component_launch (idx);
           else
-            {
-              gc_component_kill (idx);
-            }
+            gc_component_kill (idx);
         }
       break;
 

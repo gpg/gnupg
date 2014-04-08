@@ -44,6 +44,9 @@ char *gc_percent_escape (const char *src);
 
 void gc_error (int status, int errnum, const char *fmt, ...);
 
+/* Launch given component.  */
+void gc_component_launch (int component);
+
 /* Kill given component.  */
 void gc_component_kill (int component);
 

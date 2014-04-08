@@ -1108,6 +1108,44 @@ scdaemon_runtime_change (int killflag)
 }
 
 
+/* Launch the gpg-agent or the dirmngr if not already running.  */
+void
+gc_component_launch (int component)
+{
+  gpg_error_t err;
+  const char *pgmname;
+  const char *argv[3];
+  int i;
+  pid_t pid;
+
+  if (!(component == GC_COMPONENT_GPG_AGENT
+        || component == GC_COMPONENT_DIRMNGR))
+    {
+      es_fputs (_("Component not suitable for launching"), es_stderr);
+      es_putc ('\n', es_stderr);
+      exit (1);
+    }
+
+  pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
+  i = 0;
+  if (component == GC_COMPONENT_DIRMNGR)
+    argv[i++] = "--dirmngr";
+  argv[i++] = "NOP";
+  argv[i] = NULL;
+
+  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  if (!err)
+    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+  if (err)
+    gc_error (0, 0, "error running '%s%s%s': %s",
+              pgmname,
+              component == GC_COMPONENT_DIRMNGR? " --dirmngr":"",
+              " NOP",
+              gpg_strerror (err));
+  gnupg_release_process (pid);
+}
+
+
 /* Unconditionally restart COMPONENT.  */
 void
 gc_component_kill (int component)
