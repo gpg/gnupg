@@ -2710,6 +2710,8 @@ build_ecdsa_privkey_template (app_t app, int keyno,
   unsigned char *template;
   size_t template_size;
 
+  (void)app;
+
   *result = NULL;
   *resultlen = 0;
 
@@ -3174,6 +3176,14 @@ ecdh_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
               void *pincb_arg, int keyno,
               const unsigned char *buf, size_t buflen, int depth)
 {
+  (void)app;
+  (void)pincb;
+  (void)pincb_arg;
+  (void)keyno;
+  (void)buf;
+  (void)buflen;
+  (void)depth;
+
   return GPG_ERR_NOT_IMPLEMENTED;
 }
 
