@@ -122,6 +122,7 @@ typedef enum
   {
     KEY_TYPE_ECDH,
     KEY_TYPE_ECDSA,
+    KEY_TYPE_EDDSA,
     KEY_TYPE_RSA,
   }
 key_type_t;
@@ -146,7 +147,8 @@ enum
     CURVE_NIST_P384,
     CURVE_NIST_P521,
     CURVE_SEC_P256K1,
-    CURVE_UNKOWN,
+    CURVE_ED25519,
+    CURVE_UNKNOWN,
   };
 
 
@@ -235,6 +237,9 @@ struct app_local_s {
       struct {
         int curve;
       } ecdsa;
+      struct {
+        int curve;
+      } eddsa;
       struct {
         int curve;
         int hashalgo;
@@ -746,6 +751,8 @@ get_algo_byte (key_type_t key_type)
     return 19;
   else if (key_type == KEY_TYPE_ECDH)
     return 18;
+  else if (key_type == KEY_TYPE_EDDSA)
+    return 105;                 /* (experimental) */
   else
     return 1;  /* RSA */
 }
@@ -770,7 +777,8 @@ store_fpr (app_t app, int keynumber, u32 timestamp,
   int i;
 
   n = 6;    /* key packet version, 4-byte timestamps, and algorithm */
-  if (key_type == KEY_TYPE_RSA || key_type == KEY_TYPE_ECDSA)
+  if (key_type == KEY_TYPE_RSA || key_type == KEY_TYPE_ECDSA
+      || key_type == KEY_TYPE_EDDSA)
     argc = 2;
   else if (key_type == KEY_TYPE_ECDH)
     argc = 3;
@@ -935,10 +943,20 @@ get_ecc_key_parameters (int curve, int *r_n_bits, const char **r_curve_oid)
       *r_n_bits = 521;
       *r_curve_oid = "1.3.132.0.35";
     }
-  else
+  else if (curve == CURVE_SEC_P256K1)
     {
       *r_n_bits = 256;
       *r_curve_oid = "1.3.132.0.10";
+    }
+  else if (curve == CURVE_ED25519)
+    {
+      *r_n_bits = 255;
+      *r_curve_oid = "1.3.6.1.4.1.11591.15.1";
+    }
+  else
+    {
+      *r_n_bits = 0;
+      *r_curve_oid = "1.3.6.1.4.1.11591.2.12242973"; /* gnu.gnupg.badoid */
     }
 }
 
@@ -972,6 +990,13 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int number)
                 number+1, n_bits, curve_oid,
                 app->app_local->keyattr[number].ecdh.hashalgo,
                 app->app_local->keyattr[number].ecdh.cipheralgo);
+    }
+  else if (app->app_local->keyattr[number].key_type == KEY_TYPE_EDDSA)
+    {
+      get_ecc_key_parameters (app->app_local->keyattr[number].eddsa.curve,
+                              &n_bits, &curve_oid);
+      snprintf (buffer, sizeof buffer, "%d 105 %u %s",
+                number+1, n_bits, curve_oid);
     }
   else
     snprintf (buffer, sizeof buffer, "0 0 UNKNOWN");
@@ -1282,8 +1307,12 @@ get_curve_name (int curve)
     return "NIST P-384";
   else if (curve == CURVE_NIST_P521)
     return "NIST P-521";
-  else
+  else if (curve == CURVE_SEC_P256K1)
     return "secp256k1";
+  else if (curve == CURVE_ED25519)
+    return "Ed25519";
+  else
+    return "unknown";
 }
 
 
@@ -1455,7 +1484,8 @@ get_public_key (app_t app, int keyno)
       goto leave;
     }
   /* Prepend numbers with a 0 if needed.  */
-  if (mlen && (*m & 0x80))
+  if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_EDDSA
+      && mlen && (*m & 0x80))
     {
       *mbuf = 0;
       memcpy (mbuf+1, m, mlen);
@@ -1505,6 +1535,29 @@ get_public_key (app_t app, int keyno)
 
       err = gcry_sexp_build (&s_pkey, NULL,
                              "(public-key(ecc(curve%s)(q%b)))",
+                             curve_name, mlen, mbuf);
+      if (err)
+        goto leave;
+
+      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+
+      keybuf = xtrymalloc (len);
+      if (!keybuf)
+        {
+          gcry_sexp_release (s_pkey);
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
+      gcry_sexp_release (s_pkey);
+    }
+  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_EDDSA)
+    {
+      const char *curve_name
+        = get_curve_name (app->app_local->keyattr[keyno].eddsa.curve);
+
+      err = gcry_sexp_build (&s_pkey, NULL,
+                             "(public-key(ecc(curve%s)(flags eddsa)(q%b)))",
                              curve_name, mlen, mbuf);
       if (err)
         goto leave;
@@ -2695,9 +2748,9 @@ build_privkey_template (app_t app, int keyno,
 }
 
 static gpg_error_t
-build_ecdsa_privkey_template (app_t app, int keyno,
-                              const unsigned char *ecc_d, size_t ecc_d_len,
-                              unsigned char **result, size_t *resultlen)
+build_ecc_privkey_template (app_t app, int keyno,
+                            const unsigned char *ecc_d, size_t ecc_d_len,
+                            unsigned char **result, size_t *resultlen)
 {
   unsigned char privkey[2];
   size_t privkey_len;
@@ -3189,9 +3242,9 @@ ecdh_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
 
 static gpg_error_t
-ecdsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
-                void *pincb_arg, int keyno,
-                const unsigned char *buf, size_t buflen, int depth)
+ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
+              void *pincb_arg, int keyno,
+              const unsigned char *buf, size_t buflen, int depth)
 {
   gpg_error_t err;
   const unsigned char *tok;
@@ -3204,10 +3257,14 @@ ecdsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   size_t template_len;
   unsigned char fprbuf[20];
   u32 created_at = 0;
-  int curve = CURVE_UNKOWN;
+  int curve = CURVE_UNKNOWN;
 
-  /* (private-key(ecdsa(curve%s)(q%m)(d%m))): curve = "1.2.840.10045.3.1.7" */
-  /* (private-key(ecc(curve%s)(q%m)(d%m))): curve = "secp256k1" */
+  /* (private-key(ecdsa(curve%s)(q%m)(d%m))(created-at%d)):
+     curve = "1.2.840.10045.3.1.7" */
+  /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
+     curve = "secp256k1" */
+  /* (private-key(ecc(curve%s)(flags eddsa)(q%m)(d%m))(created-at%d)):
+      curve = "Ed25519" */
   last_depth1 = depth;
   while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
          && depth && depth >= last_depth1)
@@ -3229,33 +3286,34 @@ ecdsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
             curve = CURVE_NIST_P256;
           else if (tok && toklen == 9 && !memcmp (tok, "secp256k1", 9))
             curve = CURVE_SEC_P256K1;
+          else if (tok && toklen == 7 && !memcmp (tok, "Ed25519", 7))
+            curve = CURVE_ED25519;
         }
       else if (tok && toklen == 1)
         {
-          const unsigned char **mpi;
-          size_t *mpi_len;
+          const unsigned char **buf2;
+          size_t *buf2len;
 
           switch (*tok)
             {
-            case 'q': mpi = &ecc_q; mpi_len = &ecc_q_len; break;
-            case 'd': mpi = &ecc_d; mpi_len = &ecc_d_len; break;
-            default: mpi = NULL;  mpi_len = NULL; break;
+            case 'q': buf2 = &ecc_q; buf2len = &ecc_q_len; break;
+            case 'd': buf2 = &ecc_d; buf2len = &ecc_d_len; break;
+            default: buf2 = NULL;  buf2len = NULL; break;
             }
-          if (mpi && *mpi)
+          if (buf2 && *buf2)
             {
               err = gpg_error (GPG_ERR_DUP_VALUE);
               goto leave;
             }
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
-          if (tok && mpi)
-            {
-              /* Strip off leading zero bytes and save. */
-              for (;toklen && !*tok; toklen--, tok++)
-                ;
-              *mpi = tok;
-              *mpi_len = toklen;
-            }
+          if (tok && buf2 && curve != CURVE_ED25519)
+            /* It's MPI.  Strip off leading zero bytes and save. */
+            for (;toklen && !*tok; toklen--, tok++)
+              ;
+
+          *buf2 = tok;
+          *buf2len = toklen;
         }
       /* Skip until end of list. */
       last_depth2 = depth;
@@ -3322,9 +3380,9 @@ ecdsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
          the OpenPGP card specs version 2.0.  */
       int exmode;
 
-      err = build_ecdsa_privkey_template (app, keyno,
-                                          ecc_d, ecc_d_len,
-                                          &template, &template_len);
+      err = build_ecc_privkey_template (app, keyno,
+                                        ecc_d, ecc_d_len,
+                                        &template, &template_len);
       if (err)
         goto leave;
 
@@ -3353,11 +3411,14 @@ ecdsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
     }
 
   err = store_fpr (app, keyno, created_at, fprbuf, app->card_version,
-                   KEY_TYPE_ECDSA,
-                   curve == CURVE_NIST_P256?
+                   curve == CURVE_ED25519 ? KEY_TYPE_EDDSA : KEY_TYPE_ECDSA,
+                   curve == CURVE_ED25519 ?
+                   "\x09\x2b\x06\x01\x04\x01\xda\x47\x0f\x01"
+                   : curve == CURVE_NIST_P256 ?
                    "\x08\x2a\x86\x48\xce\x3d\x03\x01\x07"
                    : "\05\x2b\x81\x04\x00\x0a",
-                   curve == CURVE_NIST_P256? 9 : 6,
+                   curve == CURVE_ED25519 ? 10
+                   : curve == CURVE_NIST_P256? 9 : 6,
                    ecc_q, ecc_q_len);
   if (err)
     goto leave;
@@ -3435,7 +3496,7 @@ do_writekey (app_t app, ctrl_t ctrl,
   else if ((tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0
             && (keyno == 0 || keyno == 2))
            || (tok && toklen == 5 && memcmp ("ecdsa", tok, toklen) == 0))
-    ecdsa_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
+    ecc_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
   else if ((tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0
             && keyno == 1)
            || (tok && toklen == 4 && memcmp ("ecdh", tok, toklen) == 0))
@@ -3922,7 +3983,8 @@ do_auth (app_t app, const char *keyidstr,
 
   if (!keyidstr || !*keyidstr)
     return gpg_error (GPG_ERR_INV_VALUE);
-  if (indatalen > 101) /* For a 2048 bit key. */
+  if (app->app_local->keyattr[2].key_type == KEY_TYPE_RSA
+      && indatalen > 101) /* For a 2048 bit key. */
     return gpg_error (GPG_ERR_INV_VALUE);
 
   if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECDSA
@@ -3931,6 +3993,12 @@ do_auth (app_t app, const char *keyidstr,
       const char *p = (const char *)indata + 19;
       indata = p;
       indatalen -= 19;
+    }
+  else if (app->app_local->keyattr[2].key_type == KEY_TYPE_EDDSA)
+    {
+      const char *p = (const char *)indata + 15;
+      indata = p;
+      indatalen -= 15;
     }
 
   /* Check whether an OpenPGP card of any version has been requested. */
@@ -4308,14 +4376,18 @@ parse_ecc_curve (const unsigned char *buffer, size_t buflen)
 {
   int curve;
 
-  if (buflen == 6 && buffer[5] == 0x22)
+  if (buflen == 5 && buffer[5] == 0x22)
     curve = CURVE_NIST_P384;
-  else if (buflen == 6 && buffer[5] == 0x23)
+  else if (buflen == 5 && buffer[5] == 0x23)
     curve = CURVE_NIST_P521;
-  else if (buflen == 9)
+  else if (buflen == 8)
     curve = CURVE_NIST_P256;
-  else
+  else if (buflen == 5 && buffer[5] == 0x0a)
     curve = CURVE_SEC_P256K1;
+  else if (buflen == 9)
+    curve = CURVE_ED25519;
+  else
+    curve = CURVE_UNKNOWN;
 
   return curve;
 }
@@ -4384,10 +4456,16 @@ parse_algorithm_attribute (app_t app, int keyno)
   else if (*buffer == 18 && buflen == 11) /* ECDH */
     {
       app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECDH;
-      app->app_local->keyattr[keyno].ecdh.curve
-        = parse_ecc_curve (buffer + 1, buflen - 1);
       app->app_local->keyattr[keyno].ecdh.hashalgo = buffer[1];
       app->app_local->keyattr[keyno].ecdh.cipheralgo = buffer[2];
+      app->app_local->keyattr[keyno].ecdh.curve
+        = parse_ecc_curve (buffer + 3, buflen - 3);
+    }
+  else if (*buffer == 105) /* EdDSA (experimental) */
+    {
+      app->app_local->keyattr[keyno].key_type = KEY_TYPE_EDDSA;
+      app->app_local->keyattr[keyno].eddsa.curve
+        = parse_ecc_curve (buffer + 1, buflen - 1);
     }
   else if (opt.verbose)
     log_printhex ("", buffer, buflen);
