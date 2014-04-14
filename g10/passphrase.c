@@ -645,29 +645,49 @@ gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
   char *maink;
   char *desc;
   const char *prompt;
+  const char *trailer = "";
+  int is_subkey;
 
+  is_subkey = (pk->main_keyid[0] && pk->main_keyid[1]
+               && pk->keyid[0] != pk->main_keyid[0]
+               && pk->keyid[1] != pk->main_keyid[1]);
   algo_name = openpgp_pk_algo_name (pk->pubkey_algo);
   timestr = strtimestamp (pk->timestamp);
-  uid = get_user_id (pk->keyid, &uidlen);
+  uid = get_user_id (is_subkey? pk->main_keyid:pk->keyid, &uidlen);
 
   orig_codeset = i18n_switchto_utf8 ();
 
-  if (pk->main_keyid[0] && pk->main_keyid[1]
-      && pk->keyid[0] != pk->main_keyid[0]
-      && pk->keyid[1] != pk->main_keyid[1])
+  if (is_subkey)
     maink = xtryasprintf (_(" (main key ID %s)"), keystr (pk->main_keyid));
   else
     maink = NULL;
 
   switch (mode)
     {
-    case 0:
+    case FORMAT_KEYDESC_NORMAL:
       prompt = _("Please enter the passphrase to unlock the"
-                 " secret key for the OpenPGP certificate:");
+                 " OpenPGP secret key:");
       break;
-    case 1:
+    case FORMAT_KEYDESC_IMPORT:
       prompt = _("Please enter the passphrase to import the"
-                 " secret key for the OpenPGP certificate:");
+                 " OpenPGP secret key:");
+      break;
+    case FORMAT_KEYDESC_EXPORT:
+      if (is_subkey)
+        prompt = _("Please enter the passphrase to export the"
+                   " OpenPGP secret subkey:");
+      else
+        prompt = _("Please enter the passphrase to export the"
+                   " OpenPGP secret key:");
+      break;
+    case FORMAT_KEYDESC_DELKEY:
+      if (is_subkey)
+        prompt = _("Do you really want to permanently delete the"
+                   " OpenPGP secret subkey key:");
+      else
+        prompt = _("Do you really want to permanently delete the"
+                   " OpenPGP secret key:");
+      trailer = "?";
       break;
     default:
       prompt = "?";
@@ -677,12 +697,12 @@ gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
   desc = xtryasprintf (_("%s\n"
                          "\"%.*s\"\n"
                          "%u-bit %s key, ID %s,\n"
-                         "created %s%s.\n"),
+                         "created %s%s.\n%s"),
                        prompt,
                        (int)uidlen, uid,
                        nbits_from_pk (pk), algo_name,
                        keystr (pk->keyid), timestr,
-                       maink?maink:"" );
+                       maink?maink:"", trailer );
   xfree (maink);
   xfree (uid);
 

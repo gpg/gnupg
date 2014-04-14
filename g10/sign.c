@@ -270,7 +270,7 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
       char *desc;
       gcry_sexp_t s_sigval;
 
-      desc = gpg_format_keydesc (pksk, 0, 1);
+      desc = gpg_format_keydesc (pksk, FORMAT_KEYDESC_NORMAL, 1);
       err = agent_pksign (NULL/*ctrl*/, cache_nonce, hexgrip, desc,
                           pksk->keyid, pksk->main_keyid, pksk->pubkey_algo,
                           dp, gcry_md_get_algo_dlen (mdalgo), mdalgo,

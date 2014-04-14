@@ -200,7 +200,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     }
 
   /* Decrypt. */
-  desc = gpg_format_keydesc (sk, 0, 1);
+  desc = gpg_format_keydesc (sk, FORMAT_KEYDESC_NORMAL, 1);
   err = agent_pkdecrypt (NULL, keygrip,
                          desc, sk->keyid, sk->main_keyid, sk->pubkey_algo,
                          s_data, &frame, &nframe, &padding);

@@ -1431,7 +1431,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
 
       /* Send the wrapped key to the agent.  */
       {
-        char *desc = gpg_format_keydesc (pk, 1, 1);
+        char *desc = gpg_format_keydesc (pk, FORMAT_KEYDESC_IMPORT, 1);
         err = agent_import_key (ctrl, desc, &cache_nonce,
                                 wrappedkey, wrappedkeylen, opt.batch);
         xfree (desc);

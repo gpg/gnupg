@@ -1200,7 +1200,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
           if (err)
             goto leave;
 
-          desc = gpg_format_keydesc (pk, 0, 1);
+          desc = gpg_format_keydesc (pk, FORMAT_KEYDESC_NORMAL, 1);
           err = agent_passwd (ctrl, hexgrip, desc, &cache_nonce, &passwd_nonce);
           xfree (desc);
 

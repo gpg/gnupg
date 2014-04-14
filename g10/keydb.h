@@ -198,6 +198,10 @@ void next_to_last_passphrase(void);
 
 void emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 
+#define FORMAT_KEYDESC_NORMAL  0
+#define FORMAT_KEYDESC_IMPORT  1
+#define FORMAT_KEYDESC_EXPORT  2
+
 char *gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped);
 
 
