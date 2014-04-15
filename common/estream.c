@@ -3300,7 +3300,7 @@ es_fileno_unlocked (estream_t stream)
 {
   es_syshd_t syshd;
 
-  if (es_syshd (stream, &syshd))
+  if (es_syshd_unlocked (stream, &syshd))
     return -1;
   switch (syshd.type)
     {
