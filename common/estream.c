@@ -1,5 +1,6 @@
 /* estream.c - Extended Stream I/O Library
- * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011 g10 Code GmbH
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011,
+ *               2014 g10 Code GmbH
  *
  * This file is part of Libestream.
  *
@@ -221,6 +222,7 @@ struct estream_internal
   unsigned int is_stdstream:1;   /* This is a standard stream.  */
   unsigned int stdstream_fd:2;   /* 0, 1 or 2 for a standard stream.  */
   unsigned int printable_fname_inuse: 1;  /* es_fname_get has been used.  */
+  unsigned int samethread: 1;    /* The "samethread" mode keyword.  */
   size_t print_ntotal;           /* Bytes written from in print_writer. */
   notify_list_t onclose;         /* On close notify function list.  */
 };
@@ -359,9 +361,14 @@ init_stream_lock (estream_t ES__RESTRICT stream)
 #ifdef HAVE_NPTH
   int rc;
 
-  dbg_lock_1 ("enter init_stream_lock for %p\n", stream);
-  rc = npth_mutex_init (&stream->intern->lock, NULL);
-  dbg_lock_2 ("leave init_stream_lock for %p: rc=%d\n", stream, rc);
+  if (!stream->intern->samethread)
+    {
+      dbg_lock_1 ("enter init_stream_lock for %p\n", stream);
+      rc = npth_mutex_init (&stream->intern->lock, NULL);
+      dbg_lock_2 ("leave init_stream_lock for %p: rc=%d\n", stream, rc);
+    }
+  else
+    rc = 0;
   return rc;
 #else
   (void)stream;
@@ -374,9 +381,12 @@ static void
 lock_stream (estream_t ES__RESTRICT stream)
 {
 #ifdef HAVE_NPTH
-  dbg_lock_1 ("enter lock_stream for %p\n", stream);
-  npth_mutex_lock (&stream->intern->lock);
-  dbg_lock_1 ("leave lock_stream for %p\n", stream);
+  if (!stream->intern->samethread)
+    {
+      dbg_lock_1 ("enter lock_stream for %p\n", stream);
+      npth_mutex_lock (&stream->intern->lock);
+      dbg_lock_1 ("leave lock_stream for %p\n", stream);
+    }
 #else
   (void)stream;
 #endif
@@ -389,9 +399,14 @@ trylock_stream (estream_t ES__RESTRICT stream)
 #ifdef HAVE_NPTH
   int rc;
 
-  dbg_lock_1 ("enter trylock_stream for %p\n", stream);
-  rc = npth_mutex_trylock (&stream->intern->lock)? 0 : -1;
-  dbg_lock_2 ("leave trylock_stream for %p: rc=%d\n", stream, rc);
+  if (!stream->intern->samethread)
+    {
+      dbg_lock_1 ("enter trylock_stream for %p\n", stream);
+      rc = npth_mutex_trylock (&stream->intern->lock)? 0 : -1;
+      dbg_lock_2 ("leave trylock_stream for %p: rc=%d\n", stream, rc);
+    }
+  else
+    rc = 0;
   return rc;
 #else
   (void)stream;
@@ -404,9 +419,12 @@ static void
 unlock_stream (estream_t ES__RESTRICT stream)
 {
 #ifdef HAVE_NPTH
-  dbg_lock_1 ("enter unlock_stream for %p\n", stream);
-  npth_mutex_unlock (&stream->intern->lock);
-  dbg_lock_1 ("leave unlock_stream for %p\n", stream);
+  if (!stream->intern->samethread)
+    {
+      dbg_lock_1 ("enter unlock_stream for %p\n", stream);
+      npth_mutex_unlock (&stream->intern->lock);
+      dbg_lock_1 ("leave unlock_stream for %p\n", stream);
+    }
 #else
   (void)stream;
 #endif
@@ -1478,28 +1496,39 @@ func_file_create (void **cookie, int *filedes,
    defined mode flags keyword parameters are supported.  These are
    key/value pairs delimited by comma and optional white spaces.
    Keywords and values may not contain a comma or white space; unknown
-   keyword are skipped.  The only supported keyword is mode; for
-   example:
+   keywords are skipped. Supported keywords are:
 
-     "wb,mode=-rw-r--"
+   mode=<string>
 
-   Creates a file and gives the new file read and write permissions
-   for the user and read permission for the group.  The format of the
-   string is the same as shown by the -l option of the ls(1) command.
-   However the first letter must be a dash and it is allowed to leave
-   out trailing dashes.  If this keyword parameter is not given the
-   default mode for creating files is "-rw-rw-r--" (664).  Note that
-   the system still applies the current umask to the mode when crating
-   a file.
+      Creates a file and gives the new file read and write permissions
+      for the user and read permission for the group.  The format of
+      the string is the same as shown by the -l option of the ls(1)
+      command.  However the first letter must be a dash and it is
+      allowed to leave out trailing dashes.  If this keyword parameter
+      is not given the default mode for creating files is "-rw-rw-r--"
+      (664).  Note that the system still applies the current umask to
+      the mode when crating a file.  Example:
+
+         "wb,mode=-rw-r--"
+
+   samethread
+
+      Assumes that the object is only used by the creating thread and
+      disables any internal locking.  This keyword is also found on
+      IBM systems.
+
 
    Note: R_CMODE is optional because is only required by functions
    which are able to creat a file.  */
 static int
 parse_mode (const char *modestr,
-            unsigned int *modeflags, unsigned int *r_cmode)
+            unsigned int *modeflags, int *samethread,
+            unsigned int *r_cmode)
 {
   unsigned int omode, oflags, cmode;
   int got_cmode = 0;
+
+  *samethread = 0;
 
   switch (*modestr)
     {
@@ -1572,6 +1601,16 @@ parse_mode (const char *modestr,
               _set_errno (EINVAL);
               return -1;
             }
+        }
+      else if (!strncmp (modestr, "samethread", 10))
+        {
+          modestr += 10;
+          if (*modestr && !strchr (" \t,", *modestr))
+            {
+              _set_errno (EINVAL);
+              return -1;
+            }
+          *samethread = 1;
         }
     }
   if (!got_cmode)
@@ -1712,10 +1751,10 @@ es_empty (estream_t stream)
 
 /* Initialize STREAM.  */
 static void
-es_initialize (estream_t stream,
-	       void *cookie, es_syshd_t *syshd,
-               es_cookie_io_functions_t functions,
-               unsigned int modeflags)
+init_stream_obj (estream_t stream,
+                 void *cookie, es_syshd_t *syshd,
+                 es_cookie_io_functions_t functions,
+                 unsigned int modeflags, int samethread)
 {
   stream->intern->cookie = cookie;
   stream->intern->opaque = NULL;
@@ -1735,6 +1774,7 @@ es_initialize (estream_t stream,
   stream->intern->deallocate_buffer = 0;
   stream->intern->printable_fname = NULL;
   stream->intern->printable_fname_inuse = 0;
+  stream->intern->samethread = !!samethread;
   stream->intern->onclose = NULL;
 
   stream->data_len = 0;
@@ -1784,7 +1824,7 @@ es_deinitialize (estream_t stream)
 static int
 es_create (estream_t *stream, void *cookie, es_syshd_t *syshd,
 	   es_cookie_io_functions_t functions, unsigned int modeflags,
-           int with_locked_list)
+           int samethread, int with_locked_list)
 {
   estream_internal_t stream_internal_new;
   estream_t stream_new;
@@ -1813,8 +1853,8 @@ es_create (estream_t *stream, void *cookie, es_syshd_t *syshd,
   stream_new->unread_buffer_size = sizeof (stream_internal_new->unread_buffer);
   stream_new->intern = stream_internal_new;
 
+  init_stream_obj (stream_new, cookie, syshd, functions, modeflags, samethread);
   init_stream_lock (stream_new);
-  es_initialize (stream_new, cookie, syshd, functions, modeflags);
 
   err = do_list_add (stream_new, with_locked_list);
   if (err)
@@ -2406,7 +2446,7 @@ doreadline (estream_t ES__RESTRICT stream, size_t max_length,
 
   memset (&syshd, 0, sizeof syshd);
   err = es_create (&line_stream, line_stream_cookie, &syshd,
-		   estream_functions_mem, O_RDWR, 0);
+		   estream_functions_mem, O_RDWR, 1, 0);
   if (err)
     goto out;
 
@@ -2667,7 +2707,7 @@ estream_t
 es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
 {
   unsigned int modeflags, cmode;
-  int create_called;
+  int samethread, create_called;
   estream_t stream;
   void *cookie;
   int err;
@@ -2678,7 +2718,7 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   cookie = NULL;
   create_called = 0;
 
-  err = parse_mode (mode, &modeflags, &cmode);
+  err = parse_mode (mode, &modeflags, &samethread, &cmode);
   if (err)
     goto out;
 
@@ -2690,7 +2730,8 @@ es_fopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode)
   syshd.u.fd = fd;
 
   create_called = 1;
-  err = es_create (&stream, cookie, &syshd, estream_functions_fd, modeflags, 0);
+  err = es_create (&stream, cookie, &syshd, estream_functions_fd, modeflags,
+                   samethread, 0);
   if (err)
     goto out;
 
@@ -2731,10 +2772,11 @@ es_mopen (void *ES__RESTRICT data, size_t data_n, size_t data_len,
   estream_t stream = NULL;
   void *cookie = NULL;
   unsigned int modeflags;
+  int samethread;
   int err;
   es_syshd_t syshd;
 
-  err = parse_mode (mode, &modeflags, NULL);
+  err = parse_mode (mode, &modeflags, &samethread, NULL);
   if (err)
     goto out;
 
@@ -2747,7 +2789,7 @@ es_mopen (void *ES__RESTRICT data, size_t data_n, size_t data_len,
   memset (&syshd, 0, sizeof syshd);
   create_called = 1;
   err = es_create (&stream, cookie, &syshd,
-                   estream_functions_mem, modeflags, 0);
+                   estream_functions_mem, modeflags, samethread, 0);
 
  out:
 
@@ -2763,13 +2805,14 @@ estream_t
 es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
 {
   unsigned int modeflags;
+  int samethread;
   estream_t stream = NULL;
   void *cookie = NULL;
   es_syshd_t syshd;
 
   /* Memory streams are always read/write.  We use MODE only to get
      the append flag.  */
-  if (parse_mode (mode, &modeflags, NULL))
+  if (parse_mode (mode, &modeflags, &samethread, NULL))
     return NULL;
   modeflags |= O_RDWR;
 
@@ -2780,7 +2823,8 @@ es_fopenmem (size_t memlimit, const char *ES__RESTRICT mode)
     return NULL;
 
   memset (&syshd, 0, sizeof syshd);
-  if (es_create (&stream, cookie, &syshd, estream_functions_mem, modeflags, 0))
+  if (es_create (&stream, cookie, &syshd, estream_functions_mem, modeflags,
+                 samethread, 0))
     (*estream_functions_mem.func_close) (cookie);
 
   if (stream)
@@ -2830,6 +2874,7 @@ es_fopencookie (void *ES__RESTRICT cookie,
 		es_cookie_io_functions_t functions)
 {
   unsigned int modeflags;
+  int samethread;
   estream_t stream;
   int err;
   es_syshd_t syshd;
@@ -2837,12 +2882,13 @@ es_fopencookie (void *ES__RESTRICT cookie,
   stream = NULL;
   modeflags = 0;
 
-  err = parse_mode (mode, &modeflags, NULL);
+  err = parse_mode (mode, &modeflags, &samethread, NULL);
   if (err)
     goto out;
 
   memset (&syshd, 0, sizeof syshd);
-  err = es_create (&stream, cookie, &syshd, functions, modeflags, 0);
+  err = es_create (&stream, cookie, &syshd, functions, modeflags,
+                   samethread, 0);
   if (err)
     goto out;
 
@@ -2856,7 +2902,7 @@ estream_t
 do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
 {
   unsigned int modeflags;
-  int create_called;
+  int samethread, create_called;
   estream_t stream;
   void *cookie;
   int err;
@@ -2866,7 +2912,7 @@ do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
   cookie = NULL;
   create_called = 0;
 
-  err = parse_mode (mode, &modeflags, NULL);
+  err = parse_mode (mode, &modeflags, &samethread, NULL);
   if (err)
     goto out;
 
@@ -2878,7 +2924,7 @@ do_fdopen (int filedes, const char *mode, int no_close, int with_locked_list)
   syshd.u.fd = filedes;
   create_called = 1;
   err = es_create (&stream, cookie, &syshd, estream_functions_fd,
-                   modeflags, with_locked_list);
+                   modeflags, samethread, with_locked_list);
 
  out:
   if (err && create_called)
@@ -2906,7 +2952,7 @@ estream_t
 do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
 {
   unsigned int modeflags, cmode;
-  int create_called;
+  int samethread, create_called;
   estream_t stream;
   void *cookie;
   int err;
@@ -2916,7 +2962,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   cookie = NULL;
   create_called = 0;
 
-  err = parse_mode (mode, &modeflags, &cmode);
+  err = parse_mode (mode, &modeflags, &samethread, &cmode);
   if (err)
     goto out;
 
@@ -2930,7 +2976,7 @@ do_fpopen (FILE *fp, const char *mode, int no_close, int with_locked_list)
   syshd.u.fd = fp? fileno (fp): -1;
   create_called = 1;
   err = es_create (&stream, cookie, &syshd, estream_functions_fp,
-                   modeflags, with_locked_list);
+                   modeflags, samethread, with_locked_list);
 
  out:
 
@@ -2971,13 +3017,14 @@ do_w32open (HANDLE hd, const char *mode,
             int no_close, int with_locked_list)
 {
   unsigned int modeflags, cmode;
+  int samethread;
   int create_called = 0;
   estream_t stream = NULL;
   void *cookie = NULL;
   int err;
   es_syshd_t syshd;
 
-  err = parse_mode (mode, &modeflags, &cmode);
+  err = parse_mode (mode, &modeflags, &samethread, &cmode);
   if (err)
     goto leave;
 
@@ -2989,7 +3036,7 @@ do_w32open (HANDLE hd, const char *mode,
   syshd.u.handle = hd;
   create_called = 1;
   err = es_create (&stream, cookie, &syshd, estream_functions_w32,
-                   modeflags, with_locked_list);
+                   modeflags, samethread, with_locked_list);
 
  leave:
   if (err && create_called)
@@ -3127,7 +3174,8 @@ _es_get_std_stream (int fd)
   return stream;
 }
 
-
+/* Note: A "samethread" keyword given in "mode" is ignored and the
+   value used by STREAM is used instead. */
 estream_t
 es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	    estream_t ES__RESTRICT stream)
@@ -3137,7 +3185,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
   if (path)
     {
       unsigned int modeflags, cmode;
-      int create_called;
+      int dummy, samethread, create_called;
       void *cookie;
       int fd;
       es_syshd_t syshd;
@@ -3145,13 +3193,16 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       cookie = NULL;
       create_called = 0;
 
+      samethread = stream->intern->samethread;
+
       lock_stream (stream);
 
       es_deinitialize (stream);
 
-      err = parse_mode (mode, &modeflags, &cmode);
+      err = parse_mode (mode, &modeflags, &dummy, &cmode);
       if (err)
 	goto leave;
+      (void)dummy;
 
       err = func_file_create (&cookie, &fd, path, modeflags, cmode);
       if (err)
@@ -3160,7 +3211,8 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       syshd.type = ES_SYSHD_FD;
       syshd.u.fd = fd;
       create_called = 1;
-      es_initialize (stream, cookie, &syshd, estream_functions_fd, modeflags);
+      init_stream_obj (stream, cookie, &syshd, estream_functions_fd,
+                       modeflags, samethread);
 
     leave:
 
@@ -4186,7 +4238,8 @@ es_tmpfile (void)
   syshd.type = ES_SYSHD_FD;
   syshd.u.fd = fd;
   create_called = 1;
-  err = es_create (&stream, cookie, &syshd, estream_functions_fd, modeflags, 0);
+  err = es_create (&stream, cookie, &syshd, estream_functions_fd, modeflags,
+                   0, 0);
 
  out:
   if (err)
