@@ -948,12 +948,12 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
  leave:
   release_kid_list (blob->temp_kids);
   blob->temp_kids = NULL;
-  if (blob && names)
+  if (names)
     {
       for (i=0; i < blob->nuids; i++)
         xfree (names[i]);
+      xfree (names);
     }
-  xfree (names);
   if (rc)
     {
       _keybox_release_blob (blob);

@@ -3101,7 +3101,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
 	}
       else
         {
-          if (stream && path)
+          if (path)
             fname_set_internal (stream, path, 1);
           ESTREAM_UNLOCK (stream);
         }

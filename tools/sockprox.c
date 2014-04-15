@@ -443,7 +443,8 @@ run_proxy (void)
  out:
 
   pthread_attr_destroy (&thread_attr);
-  fclose (protocol_file);	/* FIXME, err checking.  */
+  if (protocol_file)
+    fclose (protocol_file);	/* FIXME, err checking.  */
 
   return err;
 }
