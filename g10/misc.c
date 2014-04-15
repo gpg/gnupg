@@ -822,6 +822,23 @@ pct_expando(const char *string,struct expando_args *args)
 		}
 	      break;
 
+	    case 'U': /* z-base-32 encoded user id hash. */
+              if (args->namehash)
+                {
+                  char *tmp = zb32_encode (args->namehash, 8*20);
+                  if (tmp)
+                    {
+                      if (idx + strlen (tmp) < maxlen)
+                        {
+                          strcpy (ret+idx, tmp);
+                          idx += strlen (tmp);
+                        }
+                      xfree (tmp);
+                      done = 1;
+                    }
+                }
+	      break;
+
 	    case 'c': /* signature count from card, if any. */
 	      if(idx+10<maxlen)
 		{

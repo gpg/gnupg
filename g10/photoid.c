@@ -305,6 +305,8 @@ show_photos(const struct user_attribute *attrs, int count,
   args.pk = pk;
   args.validity_info = get_validity_info (pk, uid);
   args.validity_string = get_validity_string (pk, uid);
+  namehash_from_uid (uid);
+  args.namehash = uid->namehash;
 
   if (pk)
     keyid_from_pk (pk, kid);
