@@ -71,6 +71,34 @@ gethome (void)
 }
 
 
+static char *
+mygetcwd (void)
+{
+  char *buffer;
+  size_t size = 100;
+
+  for (;;)
+    {
+      buffer = xmalloc (size+1);
+#ifdef HAVE_W32CE_SYSTEM
+      strcpy (buffer, "/");  /* Always "/".  */
+      return buffer;
+#else
+      if (getcwd (buffer, size) == buffer)
+        return buffer;
+      xfree (buffer);
+      if (errno != ERANGE)
+        {
+          fprintf (stderr,"error getting current cwd: %s\n",
+                   strerror (errno));
+          exit (2);
+        }
+      size *= 2;
+#endif
+    }
+}
+
+
 static void
 test_percent_escape (void)
 {
@@ -407,6 +435,50 @@ test_make_filename_try (void)
 }
 
 
+static void
+test_make_absfilename_try (void)
+{
+  char *out;
+  char *cwd = mygetcwd ();
+  size_t cwdlen = strlen (cwd);
+
+  out = make_absfilename_try ("foo", "bar", NULL);
+  if (!out)
+    fail (0);
+  if (strlen (out) < cwdlen + 7)
+    fail (0);
+  if (strncmp (out, cwd, cwdlen))
+    fail (0);
+  if (strcmp (out+cwdlen, "/foo/bar"))
+    fail (0);
+  xfree (out);
+
+  out = make_absfilename_try ("./foo", NULL);
+  if (!out)
+    fail (1);
+  if (strlen (out) < cwdlen + 5)
+    fail (1);
+  if (strncmp (out, cwd, cwdlen))
+    fail (1);
+  if (strcmp (out+cwdlen, "/./foo"))
+    fail (1);
+  xfree (out);
+
+  out = make_absfilename_try (".", NULL);
+  if (!out)
+    fail (2);
+  if (strlen (out) < cwdlen)
+    fail (2);
+  if (strncmp (out, cwd, cwdlen))
+    fail (2);
+  if (strcmp (out+cwdlen, ""))
+    fail (2);
+  xfree (out);
+
+  xfree (cwd);
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -418,6 +490,7 @@ main (int argc, char **argv)
   test_strconcat ();
   test_xstrconcat ();
   test_make_filename_try ();
+  test_make_absfilename_try ();
 
   xfree (home_buffer);
   return 0;

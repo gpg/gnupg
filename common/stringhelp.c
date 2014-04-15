@@ -1,6 +1,7 @@
 /* stringhelp.c -  standard string helper functions
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009, 2010  Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -49,8 +50,8 @@
 
 #include "libjnlib-config.h"
 #include "utf8conv.h"
+#include "sysutils.h"
 #include "stringhelp.h"
-
 
 #define tohex_lower(n) ((n) < 10 ? ((n) + '0') : (((n) - 10) + 'a'))
 
@@ -395,6 +396,12 @@ get_pwdir (int xmode, const char *name)
   return result;
 }
 
+
+/* xmode 0 := Return NULL on error
+         1 := Terminate on error
+         2 := Make sure that name is absolute; return NULL on error
+         3 := Make sure that name is absolute; terminate on error
+ */
 static char *
 do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
 {
@@ -404,6 +411,10 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
   int skip = 1;
   char *home_buffer = NULL;
   char *name, *home, *p;
+  int want_abs;
+
+  want_abs = !!(xmode & 2);
+  xmode &= 1;
 
   n = strlen (first_part) + 1;
   argc = 0;
@@ -478,10 +489,65 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
     p = stpcpy (name, first_part);
 
   jnlib_free (home_buffer);
-
   for (argc=0; argv[argc]; argc++)
     p = stpcpy (stpcpy (p, "/"), argv[argc]);
 
+  if (want_abs)
+    {
+#ifdef HAVE_DRIVE_LETTERS
+      p = strchr (name, ':');
+      if (!p)
+        p = name;
+#else
+      p = name;
+#endif
+      if (*p != '/'
+#ifdef HAVE_DRIVE_LETTERS
+          && *p != '\\'
+#endif
+          )
+        {
+          home = gnupg_getcwd ();
+          if (!home)
+            {
+              if (xmode)
+                {
+                  fprintf (stderr, "\nfatal: getcwd failed: %s\n",
+                           strerror (errno));
+                  exit(2);
+                }
+              jnlib_free (name);
+              return NULL;
+            }
+          n = strlen (home) + 1 + strlen (name) + 1;
+          if (xmode)
+            home_buffer = jnlib_xmalloc (n);
+          else
+            {
+              home_buffer = jnlib_malloc (n);
+              if (!home_buffer)
+                {
+                  jnlib_free (name);
+                  return NULL;
+                }
+            }
+          if (p == name)
+            p = home_buffer;
+          else /* Windows case.  */
+            {
+              memcpy (home_buffer, p, p - name + 1);
+              p = home_buffer + (p - name + 1);
+            }
+          strcpy (stpcpy (stpcpy (p, home), "/"), name);
+          jnlib_free (name);
+          name = home_buffer;
+          /* Let's do a simple compression to catch the most common
+             case of using "." for gpg's --homedir option.  */
+          n = strlen (name);
+          if (n > 2 && name[n-2] == '/' && name[n-1] == '.')
+            name[n-2] = 0;
+        }
+    }
   return change_slashes (name);
 }
 
@@ -511,6 +577,36 @@ make_filename_try (const char *first_part, ... )
 
   va_start (arg_ptr, first_part);
   result = do_make_filename (0, first_part, arg_ptr);
+  va_end (arg_ptr);
+  return result;
+}
+
+/* Construct an absolute filename from the NULL terminated list of
+   parts.  Tilde expansion is done for the first argument.  This
+   function terminates the process on memory shortage. */
+char *
+make_absfilename (const char *first_part, ... )
+{
+  va_list arg_ptr;
+  char *result;
+
+  va_start (arg_ptr, first_part);
+  result = do_make_filename (3, first_part, arg_ptr);
+  va_end (arg_ptr);
+  return result;
+}
+
+/* Construct an absolute filename from the NULL terminated list of
+   parts.  Tilde expansion is done for the first argument.  This
+   function may return NULL on error. */
+char *
+make_absfilename_try (const char *first_part, ... )
+{
+  va_list arg_ptr;
+  char *result;
+
+  va_start (arg_ptr, first_part);
+  result = do_make_filename (2, first_part, arg_ptr);
   va_end (arg_ptr);
   return result;
 }

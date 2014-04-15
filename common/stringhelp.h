@@ -53,6 +53,9 @@ char *make_basename(const char *filepath, const char *inputpath);
 char *make_dirname(const char *filepath);
 char *make_filename( const char *first_part, ... ) GNUPG_GCC_A_SENTINEL(0);
 char *make_filename_try (const char *first_part, ... ) GNUPG_GCC_A_SENTINEL(0);
+char *make_absfilename (const char *first_part, ...) GNUPG_GCC_A_SENTINEL(0);
+char *make_absfilename_try (const char *first_part,
+                            ...) GNUPG_GCC_A_SENTINEL(0);
 int compare_filenames( const char *a, const char *b );
 
 int hextobyte (const char *s);
