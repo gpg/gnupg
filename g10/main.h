@@ -230,7 +230,7 @@ int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 			  u32 *r_expiredate, int *r_expired );
 
 /*-- delkey.c --*/
-int delete_keys( strlist_t names, int secret, int allow_both );
+gpg_error_t delete_keys (strlist_t names, int secret, int allow_both);
 
 /*-- keyedit.c --*/
 void keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
