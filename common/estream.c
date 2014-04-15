@@ -343,12 +343,26 @@ map_w32_to_errno (DWORD w32_err)
 /*
  * Lock wrappers
  */
+#if 0
+# define dbg_lock_0(f)        fprintf (stderr, "estream: " f);
+# define dbg_lock_1(f, a)     fprintf (stderr, "estream: " f, (a));
+# define dbg_lock_2(f, a, b)  fprintf (stderr, "estream: " f, (a), (b));
+#else
+# define dbg_lock_0(f)
+# define dbg_lock_1(f, a)
+# define dbg_lock_2(f, a, b)
+#endif
 
 static int
 init_stream_lock (estream_t ES__RESTRICT stream)
 {
 #ifdef HAVE_NPTH
-  return npth_mutex_init (&stream->intern->lock, NULL);
+  int rc;
+
+  dbg_lock_1 ("enter init_stream_lock for %p\n", stream);
+  rc = npth_mutex_init (&stream->intern->lock, NULL);
+  dbg_lock_2 ("leave init_stream_lock for %p: rc=%d\n", stream, rc);
+  return rc;
 #else
   (void)stream;
   return 0;
@@ -360,7 +374,9 @@ static void
 lock_stream (estream_t ES__RESTRICT stream)
 {
 #ifdef HAVE_NPTH
+  dbg_lock_1 ("enter lock_stream for %p\n", stream);
   npth_mutex_lock (&stream->intern->lock);
+  dbg_lock_1 ("leave lock_stream for %p\n", stream);
 #else
   (void)stream;
 #endif
@@ -371,7 +387,12 @@ static int
 trylock_stream (estream_t ES__RESTRICT stream)
 {
 #ifdef HAVE_NPTH
-  return npth_mutex_trylock (&stream->intern->lock)? 0 : -1;
+  int rc;
+
+  dbg_lock_1 ("enter trylock_stream for %p\n", stream);
+  rc = npth_mutex_trylock (&stream->intern->lock)? 0 : -1;
+  dbg_lock_2 ("leave trylock_stream for %p: rc=%d\n", stream, rc);
+  return rc;
 #else
   (void)stream;
   return 0;
@@ -383,7 +404,9 @@ static void
 unlock_stream (estream_t ES__RESTRICT stream)
 {
 #ifdef HAVE_NPTH
+  dbg_lock_1 ("enter unlock_stream for %p\n", stream);
   npth_mutex_unlock (&stream->intern->lock);
+  dbg_lock_1 ("leave unlock_stream for %p\n", stream);
 #else
   (void)stream;
 #endif
@@ -394,7 +417,12 @@ static int
 init_list_lock (void)
 {
 #ifdef HAVE_NPTH
-  return npth_mutex_init (&estream_list_lock, NULL);
+  int rc;
+
+  dbg_lock_0 ("enter init_list_lock\n");
+  rc = npth_mutex_init (&estream_list_lock, NULL);
+  dbg_lock_1 ("leave init_list_lock: rc=%d\n", rc);
+  return rc;
 #else
   return 0;
 #endif
@@ -405,7 +433,9 @@ static void
 lock_list (void)
 {
 #ifdef HAVE_NPTH
+  dbg_lock_0 ("enter lock_list\n");
   npth_mutex_lock (&estream_list_lock);
+  dbg_lock_0 ("leave lock_list\n");
 #endif
 }
 
@@ -414,10 +444,16 @@ static void
 unlock_list (void)
 {
 #ifdef HAVE_NPTH
+  dbg_lock_0 ("enter unlock_list\n");
   npth_mutex_unlock (&estream_list_lock);
+  dbg_lock_0 ("leave unlock_list\n");
 #endif
 }
 
+
+#undef dbg_lock_0
+#undef dbg_lock_1
+#undef dbg_lock_2
 
 
 
