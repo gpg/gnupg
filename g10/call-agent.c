@@ -1,6 +1,7 @@
 /* call-agent.c - Divert GPG operations to the agent.
  * Copyright (C) 2001, 2002, 2003, 2006, 2007,
  *               2008, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2014  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -108,6 +109,95 @@ status_sc_op_failure (int rc)
 }
 
 
+static gpg_error_t
+membuf_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  membuf_t *data = opaque;
+
+  if (buffer)
+    put_membuf (data, buffer, length);
+  return 0;
+}
+
+
+/* This is the default inquiry callback.  It mainly handles the
+   Pinentry notifications.  */
+static gpg_error_t
+default_inq_cb (void *opaque, const char *line)
+{
+  (void)opaque;
+
+  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
+    {
+      /* There is no working server mode yet thus we use
+         AllowSetForegroundWindow window right here.  We might want to
+         do this anyway in case gpg is called on the console. */
+      gnupg_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
+      /* We do not pass errors to avoid breaking other code.  */
+    }
+  else
+    log_debug ("ignoring gpg-agent inquiry `%s'\n", line);
+
+  return 0;
+}
+
+
+/* Check whether gnome-keyring hijacked the gpg-agent.  */
+static void
+check_hijacking (assuan_context_t ctx)
+{
+  membuf_t mb;
+  char *string;
+
+  init_membuf (&mb, 64);
+
+  /* AGENT_ID is a command implemented by gnome-keyring-daemon.  IT
+     does not reatun any data but an OK line with a remark.  */
+  if (assuan_transact (ctx, "AGENT_ID",
+                       membuf_data_cb, &mb, NULL, NULL, NULL, NULL))
+    {
+      xfree (get_membuf (&mb, NULL));
+      return; /* Error - Probably not hijacked.  */
+    }
+  put_membuf (&mb, "", 1);
+  string = get_membuf (&mb, NULL);
+  if (!string || !*string)
+    {
+      /* Definitley hijacked - show a warning prompt.  */
+      static int shown;
+      const char warn1[] =
+        "The GNOME keyring manager hijacked the GnuPG agent.";
+      const char warn2[] =
+        "GnuPG will not work proberly - please configure that "
+        "tool to not interfere with the GnuPG system!";
+      log_info ("WARNING: %s\n", warn1);
+      log_info ("WARNING: %s\n", warn2);
+      /*                 (GPG_ERR_SOURCRE_GPG, GPG_ERR_NO_AGENT) */
+      write_status_text (STATUS_ERROR, "check_hijacking 33554509");
+      xfree (string);
+      string = strconcat (warn1, "\n\n", warn2, NULL);
+      if (string && !shown && !opt.batch)
+        {
+          /* NB: The Pinentry based prompt will only work if a
+             gnome-keyring manager passes invalid commands on to the
+             original gpg-agent.  */
+          char *cmd, *cmdargs;
+
+          cmdargs = percent_plus_escape (string);
+          cmd = strconcat ("GET_CONFIRMATION ", cmdargs, NULL);
+          xfree (cmdargs);
+          if (cmd)
+            {
+              assuan_transact (ctx, cmd, NULL, NULL,
+                               default_inq_cb, NULL,
+                               NULL, NULL);
+              xfree (cmd);
+              shown = 1;
+            }
+        }
+    }
+  xfree (string);
+}
 
 
 /* Try to connect to the agent via socket or fork it off and work by
@@ -138,6 +228,7 @@ start_agent (int for_card)
              agents.  */
           assuan_transact (agent_ctx, "OPTION allow-pinentry-notify",
                            NULL, NULL, NULL, NULL, NULL, NULL);
+          check_hijacking (agent_ctx);
         }
     }
 
@@ -276,29 +367,6 @@ get_serialno_cb (void *opaque, const char *line)
 
   return 0;
 }
-
-
-/* This is the default inquiry callback.  It mainly handles the
-   Pinentry notifications.  */
-static gpg_error_t
-default_inq_cb (void *opaque, const char *line)
-{
-  (void)opaque;
-
-  if (!strncmp (line, "PINENTRY_LAUNCHED", 17) && (line[17]==' '||!line[17]))
-    {
-      /* There is no working server mode yet thus we use
-         AllowSetForegroundWindow window right here.  We might want to
-         do this anyway in case gpg is called on the console. */
-      gnupg_allow_set_foregound_window ((pid_t)strtoul (line+17, NULL, 10));
-      /* We do not pass errors to avoid breaking other code.  */
-    }
-  else
-    log_debug ("ignoring gpg-agent inquiry `%s'\n", line);
-
-  return 0;
-}
-
 
 
 /* Release the card info structure INFO. */
@@ -942,17 +1010,6 @@ select_openpgp (const char *serialno)
 
 
 
-static gpg_error_t
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
-{
-  membuf_t *data = opaque;
-
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
-}
-
-
 /* Helper returning a command option to describe the used hash
    algorithm.  See scd/command.c:cmd_pksign.  */
 static const char *
