@@ -63,6 +63,7 @@ int  gnupg_remove (const char *fname);
 int  gnupg_mkdir (const char *name, const char *modestr);
 int  gnupg_setenv (const char *name, const char *value, int overwrite);
 int  gnupg_unsetenv (const char *name);
+char *gnupg_getcwd (void);
 
 #ifdef HAVE_W32_SYSTEM
 void *w32_get_user_sid (void);

@@ -657,6 +657,36 @@ gnupg_unsetenv (const char *name)
 #endif
 }
 
+
+/* Return the current working directory as a malloced string.  Return
+   NULL and sets ERRNo on error.  */
+char *
+gnupg_getcwd (void)
+{
+  char *buffer;
+  size_t size = 100;
+
+  for (;;)
+    {
+      buffer = xtrymalloc (size+1);
+      if (!buffer)
+        return NULL;
+#ifdef HAVE_W32CE_SYSTEM
+      strcpy (buffer, "/");  /* Always "/".  */
+      return buffer;
+#else
+      if (getcwd (buffer, size) == buffer)
+        return buffer;
+      xfree (buffer);
+      if (errno != ERANGE)
+        return NULL;
+      size *= 2;
+#endif
+    }
+}
+
+
+
 #ifdef HAVE_W32CE_SYSTEM
 /* There is a isatty function declaration in cegcc but it does not
    make sense, thus we redefine it.  */

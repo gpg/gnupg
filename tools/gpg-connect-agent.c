@@ -212,30 +212,6 @@ my_strusage( int level )
 }
 
 
-static char *
-gnu_getcwd (void)
-{
-  char *buffer;
-  size_t size = 100;
-
-  for (;;)
-    {
-      buffer = xmalloc (size+1);
-#ifdef HAVE_W32CE_SYSTEM
-      strcpy (buffer, "/");
-      return buffer;
-#else
-      if (getcwd (buffer, size) == buffer)
-        return buffer;
-      xfree (buffer);
-      if (errno != ERANGE)
-        return NULL;
-      size *= 2;
-#endif
-    }
-}
-
-
 /* Unescape STRING and returned the malloced result.  The surrounding
    quotes must already be removed from STRING.  */
 static char *
@@ -568,7 +544,7 @@ get_var_ext (const char *name)
         s++;
       if (!strcmp (s, "cwd"))
         {
-          result = gnu_getcwd ();
+          result = gnupg_getcwd ();
           if (!result)
             log_error ("getcwd failed: %s\n", strerror (errno));
         }
