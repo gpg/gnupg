@@ -1359,6 +1359,9 @@ pubkey_get_npkey( int algo )
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (algo == GCRY_PK_RSA_E || algo == GCRY_PK_RSA_S)
+    algo = GCRY_PK_RSA;
+
   if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
                          GCRYCTL_GET_ALGO_NPKEY, NULL, &n))
     n = 0;
@@ -1379,6 +1382,9 @@ pubkey_get_nskey( int algo )
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (algo == GCRY_PK_RSA_E || algo == GCRY_PK_RSA_S)
+    algo = GCRY_PK_RSA;
+
   if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
                          GCRYCTL_GET_ALGO_NSKEY, NULL, &n ))
     n = 0;
@@ -1399,6 +1405,9 @@ pubkey_get_nsig( int algo )
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (algo == GCRY_PK_RSA_E || algo == GCRY_PK_RSA_S)
+    algo = GCRY_PK_RSA;
+
   if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
                          GCRYCTL_GET_ALGO_NSIGN, NULL, &n))
     n = 0;
@@ -1419,6 +1428,9 @@ pubkey_get_nenc( int algo )
 
   if (algo == GCRY_PK_ELG_E)
     algo = GCRY_PK_ELG;
+  else if (algo == GCRY_PK_RSA_E || algo == GCRY_PK_RSA_S)
+    algo = GCRY_PK_RSA;
+
   if (gcry_pk_algo_info (map_pk_openpgp_to_gcry (algo),
                          GCRYCTL_GET_ALGO_NENCR, NULL, &n ))
     n = 0;
@@ -1443,7 +1455,9 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 			      "(public-key(elg(p%m)(g%m)(y%m)))",
 				  key[0], key[1], key[2] );
     }
-    else if( algo == GCRY_PK_RSA ) {
+    else if (algo == GCRY_PK_RSA
+             || algo == GCRY_PK_RSA_S
+             || algo == GCRY_PK_RSA_E ) {
 	rc = gcry_sexp_build ( &sexp, NULL,
 			      "(public-key(rsa(n%m)(e%m)))",
 				  key[0], key[1] );
