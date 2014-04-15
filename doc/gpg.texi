@@ -1449,7 +1449,9 @@ Set what trust model GnuPG should follow. The models are:
   trusted. You generally won't use this unless you are using some
   external validation scheme. This option also suppresses the
   "[uncertain]" tag printed with signature checks when there is no
-  evidence that the user ID is bound to the key.
+  evidence that the user ID is bound to the key.  Note that this
+  trust model still does not allow the use of expired, revoked, or
+  disabled keys.
 
   @item auto
   @opindex trust-mode:auto
