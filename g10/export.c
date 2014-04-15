@@ -830,6 +830,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           log_error ("public key packet not found in keyblock - skipped\n");
           continue;
         }
+      setup_main_keyids (keyblock);  /* gpg_format_keydesc needs it.  */
       pk = node->pkt->pkt.public_key;
       keyid_from_pk (pk, keyid);
 
@@ -1077,8 +1078,13 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                     log_info ("key %s: asking agent for the secret parts\n",
                               keystr_with_sub (keyid, subkid));
 
-                  err = agent_export_key (ctrl, hexgrip, "Key foo", NULL,
-                                          &wrappedkey, &wrappedkeylen);
+                  {
+                    char *prompt = gpg_format_keydesc (pk,
+                                                       FORMAT_KEYDESC_EXPORT,1);
+                    err = agent_export_key (ctrl, hexgrip, prompt, NULL,
+                                            &wrappedkey, &wrappedkeylen);
+                    xfree (prompt);
+                  }
                   if (err)
                     goto unwraperror;
                   if (wrappedkeylen < 24)

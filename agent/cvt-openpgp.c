@@ -1,7 +1,7 @@
 /* cvt-openpgp.c - Convert an OpenPGP key to our internal format.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006, 2009,
  *               2010 Free Software Foundation, Inc.
- * Copyright (C) 2013 Werner Koch
+ * Copyright (C) 2013, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1134,7 +1134,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   gcry_sexp_t list, l2;
   char *name;
   const char *algoname;
-  const char *elems;
   int npkey, nskey;
   gcry_mpi_t array[10];
   char protect_iv[16];
@@ -1170,55 +1169,62 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
     {
       algoname = "rsa";
       npkey = 2;
-      elems = "nedpqu";
+      nskey = 6;
+      err = gcry_sexp_extract_param (list, NULL, "nedpqu",
+                                     array+0, array+1, array+2, array+3,
+                                     array+4, array+5, NULL);
     }
   else if (!strcmp (name, "elg"))
     {
       algoname = "elg";
       npkey = 3;
-      elems = "pgyx";
+      nskey = 4;
+      err = gcry_sexp_extract_param (list, NULL, "pgyx",
+                                     array+0, array+1, array+2, array+3,
+                                     NULL);
     }
   else if (!strcmp (name, "dsa"))
     {
       algoname = "dsa";
       npkey = 4;
-      elems = "pqgyx";
+      nskey = 5;
+      err = gcry_sexp_extract_param (list, NULL, "pqgyx",
+                                     array+0, array+1, array+2, array+3,
+                                     array+4, NULL);
     }
   else if (!strcmp (name, "ecc"))
     {
+      /* FIXME: We need to use the curve parameter.  */
       algoname = "?"; /* Decide later by checking the usage.  */
       npkey = 6;
-      elems = "pabgnqd";
+      nskey = 7;
+      err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
+                                     array+0, array+1, array+2, array+3,
+                                     array+4, array+5, array+6, NULL);
     }
   else if (!strcmp (name, "ecdsa"))
     {
       algoname = "ecdsa";
       npkey = 6;
-      elems = "pabgnqd";
+      nskey = 7;
+      err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
+                                     array+0, array+1, array+2, array+3,
+                                     array+4, array+5, array+6, NULL);
     }
   else if (!strcmp (name, "ecdh"))
     {
       algoname = "ecdh";
       npkey = 6;
-      elems = "pabgnqd";
+      nskey= 7;
+      err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
+                                     array+0, array+1, array+2, array+3,
+                                     array+4, array+5, array+6, NULL);
     }
   else
     {
-      algoname = "";
-      npkey = 0;
-      elems = NULL;
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
   xfree (name);
-  assert (!elems || strlen (elems) < DIM (array) );
-  nskey = elems? strlen (elems) : 0;
-
-  /* Extract the parameters and put them into an array.  */
-  if (!elems)
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-  else
-    err = gcry_sexp_extract_param (list, NULL, elems,
-                                   array+0, array+1, array+2, array+3, array+4,
-                                   array+5, array+6, NULL);
   gcry_sexp_release (list);
   if (err)
     return err;
