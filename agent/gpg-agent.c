@@ -885,6 +885,10 @@ main (int argc, char **argv )
   if (nogreeting )
     greeting = 0;
 
+  /* Turn the homedir into an absolute one. */
+  opt.homedir = make_absfilename (opt.homedir, NULL);
+
+
   if (greeting)
     {
       es_fprintf (es_stderr, "%s %s; %s\n",

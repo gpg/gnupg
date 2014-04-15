@@ -301,7 +301,7 @@ lock_spawning (lock_spawn_t *lock, const char *homedir, const char *name,
 
   *lock = NULL;
 
-  fname = make_filename
+  fname = make_absfilename_try
     (homedir,
      !strcmp (name, "agent")?   "gnupg_spawn_agent_sentinel":
      !strcmp (name, "dirmngr")? "gnupg_spawn_dirmngr_sentinel":
@@ -382,17 +382,19 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   if (!infostr || !*infostr)
     {
       char *sockname;
-      const char *argv[3];
+      const char *argv[5];
       pid_t pid;
       int excode;
 
       /* First check whether we can connect at the standard
          socket.  */
-      sockname = make_filename (homedir, GPG_AGENT_SOCK_NAME, NULL);
+      sockname = make_absfilename (homedir, GPG_AGENT_SOCK_NAME, NULL);
       err = assuan_socket_connect (ctx, sockname, 0, 0);
 
       if (err)
         {
+          char *abs_homedir;
+
           /* With no success start a new server.  */
           if (!agent_program || !*agent_program)
             agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
@@ -405,6 +407,20 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
             status_cb (status_cb_arg, STATUS_PROGRESS,
                        "starting_agent ? 0 0", NULL);
 
+          /* We better pass an absolute home directory to the agent
+             just in casee gpg-agent does not convert the passed name
+             to an absolute one (which it should do).  */
+          abs_homedir = make_absfilename_try (homedir, NULL);
+          if (!abs_homedir)
+            {
+              gpg_error_t tmperr = gpg_err_make (errsource,
+                                                 gpg_err_code_from_syserror ());
+              log_error ("error building filename: %s\n",gpg_strerror (tmperr));
+              xfree (sockname);
+	      assuan_release (ctx);
+              return tmperr;
+            }
+
           if (fflush (NULL))
             {
               gpg_error_t tmperr = gpg_err_make (errsource,
@@ -413,11 +429,14 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                          strerror (errno));
               xfree (sockname);
 	      assuan_release (ctx);
+              xfree (abs_homedir);
               return tmperr;
             }
 
-          argv[0] = "--use-standard-socket-p";
-          argv[1] = NULL;
+          argv[0] = "--homedir";
+          argv[1] = abs_homedir;
+          argv[2] = "--use-standard-socket-p";
+          argv[3] = NULL;
           err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
           if (err)
             log_debug ("starting '%s' for testing failed: %s\n",
@@ -438,9 +457,11 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                  here.  */
               lock_spawn_t lock;
 
-              argv[0] = "--daemon";
-              argv[1] = "--use-standard-socket";
-              argv[2] = NULL;
+              argv[0] = "--homedir";
+              argv[1] = abs_homedir;
+              argv[2] = "--use-standard-socket";
+              argv[3] = "--daemon";
+              argv[4] = NULL;
 
               if (!(err = lock_spawning (&lock, homedir, "agent", verbose))
                   && assuan_socket_connect (ctx, sockname, 0, 0))
@@ -492,9 +513,11 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               else
                 pgmname++;
 
-              argv[0] = pgmname;
-              argv[1] = "--server";
-              argv[2] = NULL;
+              argv[0] = pgmname;   /* (Assuan expects a standard argv.)  */
+              argv[1] = "--homedir";
+              argv[2] = abs_homedir;
+              argv[3] = "--server";
+              argv[4] = NULL;
 
               i=0;
               if (log_get_fd () != -1)
@@ -506,6 +529,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
               err = assuan_pipe_connect (ctx, agent_program, argv,
                                          no_close_list, NULL, NULL, 0);
             }
+          xfree (abs_homedir);
         }
       xfree (sockname);
     }
@@ -646,7 +670,15 @@ start_new_dirmngr (assuan_context_t *r_ctx,
         status_cb (status_cb_arg, STATUS_PROGRESS,
                    "starting_dirmngr ? 0 0", NULL);
 
-      abs_homedir = make_filename (homedir, NULL);
+      abs_homedir = make_absfilename (homedir, NULL);
+      if (!abs_homedir)
+        {
+          gpg_error_t tmperr = gpg_err_make (errsource,
+                                             gpg_err_code_from_syserror ());
+          log_error ("error building filename: %s\n",gpg_strerror (tmperr));
+          assuan_release (ctx);
+          return tmperr;
+        }
 
       if (fflush (NULL))
         {

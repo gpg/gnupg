@@ -600,7 +600,7 @@ dirmngr_sys_socket_name (void)
 }
 
 
-/* Return the user socket name used by DirMngr.  If a a user specific
+/* Return the user socket name used by DirMngr.  If a user specific
    dirmngr installation is not supported, NULL is returned.  */
 const char *
 dirmngr_user_socket_name (void)
@@ -611,7 +611,7 @@ dirmngr_user_socket_name (void)
   static char *name;
 
   if (!name)
-    name = make_filename (default_homedir (), DIRMNGR_SOCK_NAME, NULL);
+    name = make_absfilename (default_homedir (), DIRMNGR_SOCK_NAME, NULL);
   return name;
 #endif /*!HAVE_W32_SYSTEM*/
 }
