@@ -159,47 +159,6 @@ typedef void (*func_free_t) (void *mem);
 #define BUFFER_UNREAD_SIZE 16
 
 
-
-/* Locking.  */
-
-#ifdef HAVE_NPTH
-
-typedef npth_mutex_t estream_mutex_t;
-# define ESTREAM_MUTEX_INITIALIZER NPTH_MUTEX_INIT
-# define ESTREAM_MUTEX_LOCK(mutex)        \
-  npth_mutex_lock (&(mutex))
-# define ESTREAM_MUTEX_UNLOCK(mutex)      \
-  npth_mutex_unlock (&(mutex))
-# define ESTREAM_MUTEX_TRYLOCK(mutex)     \
-  (npth_mutex_trylock (&(mutex))? 0 : -1)
-# define ESTREAM_MUTEX_INITIALIZE(mutex)  \
-  npth_mutex_init (&(mutex), NULL)
-
-#else /*!HAVE_NPTH*/
-
-typedef void *estream_mutex_t;
-
-static inline void
-dummy_mutex_call_void (estream_mutex_t mutex)
-{
-  (void)mutex;
-}
-
-static inline int
-dummy_mutex_call_int (estream_mutex_t mutex)
-{
-  (void)mutex;
-  return 0;
-}
-
-# define ESTREAM_MUTEX_INITIALIZER NULL
-# define ESTREAM_MUTEX_LOCK(mutex) dummy_mutex_call_void ((mutex))
-# define ESTREAM_MUTEX_UNLOCK(mutex) dummy_mutex_call_int ((mutex))
-# define ESTREAM_MUTEX_TRYLOCK(mutex) dummy_mutex_call_int ((mutex))
-# define ESTREAM_MUTEX_INITIALIZE(mutex) dummy_mutex_call_int ((mutex))
-
-#endif /*!HAVE_NPTH*/
-
 /* Primitive system I/O.  */
 
 #ifdef HAVE_NPTH
@@ -231,14 +190,16 @@ typedef int (*cookie_ioctl_function_t) (void *cookie, int cmd,
 #define COOKIE_IOCTL_SNATCH_BUFFER 1
 
 
-
-
-/* An internal stream object.  */
+/* The internal stream object.  */
 struct estream_internal
 {
   unsigned char buffer[BUFFER_BLOCK_SIZE];
   unsigned char unread_buffer[BUFFER_UNREAD_SIZE];
-  estream_mutex_t lock;		 /* Lock. */
+
+#ifdef HAVE_NPTH
+  npth_mutex_t lock;		 /* Lock. */
+#endif
+
   void *cookie;			 /* Cookie.                */
   void *opaque;			 /* Opaque data.           */
   unsigned int modeflags;	 /* Flags for the backend. */
@@ -263,13 +224,7 @@ struct estream_internal
   size_t print_ntotal;           /* Bytes written from in print_writer. */
   notify_list_t onclose;         /* On close notify function list.  */
 };
-
-
 typedef struct estream_internal *estream_internal_t;
-
-#define ESTREAM_LOCK(stream) ESTREAM_MUTEX_LOCK (stream->intern->lock)
-#define ESTREAM_UNLOCK(stream) ESTREAM_MUTEX_UNLOCK (stream->intern->lock)
-#define ESTREAM_TRYLOCK(stream) ESTREAM_MUTEX_TRYLOCK (stream->intern->lock)
 
 /* A linked list to hold active stream objects.   */
 struct estream_list_s
@@ -285,9 +240,9 @@ static int custom_std_fds[3];
 static unsigned char custom_std_fds_valid[3];
 
 /* A lock object for the estream list and the custom_std_fds array.  */
-static estream_mutex_t estream_list_lock;
-#define ESTREAM_LIST_LOCK   ESTREAM_MUTEX_LOCK   (estream_list_lock)
-#define ESTREAM_LIST_UNLOCK ESTREAM_MUTEX_UNLOCK (estream_list_lock)
+#ifdef HAVE_NPTH
+static npth_mutex_t estream_list_lock;
+#endif
 
 
 /* Error code replacements.  */
@@ -324,6 +279,7 @@ static void fname_set_internal (estream_t stream, const char *fname, int quote);
   while (0)
 
 
+
 /* Malloc wrappers to overcome problems on some older OSes.  */
 static void *
 mem_alloc (size_t n)
@@ -382,6 +338,89 @@ map_w32_to_errno (DWORD w32_err)
 }
 #endif /*HAVE_W32_SYSTEM*/
 
+
+
+/*
+ * Lock wrappers
+ */
+
+static int
+init_stream_lock (estream_t ES__RESTRICT stream)
+{
+#ifdef HAVE_NPTH
+  return npth_mutex_init (&stream->intern->lock, NULL);
+#else
+  (void)stream;
+  return 0;
+#endif
+}
+
+
+static void
+lock_stream (estream_t ES__RESTRICT stream)
+{
+#ifdef HAVE_NPTH
+  npth_mutex_lock (&stream->intern->lock);
+#else
+  (void)stream;
+#endif
+}
+
+
+static int
+trylock_stream (estream_t ES__RESTRICT stream)
+{
+#ifdef HAVE_NPTH
+  return npth_mutex_trylock (&stream->intern->lock)? 0 : -1;
+#else
+  (void)stream;
+  return 0;
+#endif
+}
+
+
+static void
+unlock_stream (estream_t ES__RESTRICT stream)
+{
+#ifdef HAVE_NPTH
+  npth_mutex_unlock (&stream->intern->lock);
+#else
+  (void)stream;
+#endif
+}
+
+
+static int
+init_list_lock (void)
+{
+#ifdef HAVE_NPTH
+  return npth_mutex_init (&estream_list_lock, NULL);
+#else
+  return 0;
+#endif
+}
+
+
+static void
+lock_list (void)
+{
+#ifdef HAVE_NPTH
+  npth_mutex_lock (&estream_list_lock);
+#endif
+}
+
+
+static void
+unlock_list (void)
+{
+#ifdef HAVE_NPTH
+  npth_mutex_unlock (&estream_list_lock);
+#endif
+}
+
+
+
+
 /*
  * List manipulation.
  */
@@ -402,7 +441,7 @@ do_list_add (estream_t stream, int with_locked_list)
   estream_list_t item;
 
   if (!with_locked_list)
-    ESTREAM_LIST_LOCK;
+    lock_list ();
 
   for (item = estream_list; item && item->stream; item = item->next)
     ;
@@ -419,7 +458,7 @@ do_list_add (estream_t stream, int with_locked_list)
     item->stream = stream;
 
   if (!with_locked_list)
-    ESTREAM_LIST_UNLOCK;
+    unlock_list ();
 
   return item? 0 : -1;
 }
@@ -431,7 +470,7 @@ do_list_remove (estream_t stream, int with_locked_list)
   estream_list_t item;
 
   if (!with_locked_list)
-    ESTREAM_LIST_LOCK;
+    lock_list ();
 
   for (item = estream_list; item; item = item->next)
     if (item->stream == stream)
@@ -441,7 +480,7 @@ do_list_remove (estream_t stream, int with_locked_list)
       }
 
   if (!with_locked_list)
-    ESTREAM_LIST_UNLOCK;
+    unlock_list ();
 }
 
 
@@ -512,12 +551,8 @@ do_init (void)
 
   if (!initialized)
     {
-#ifdef HAVE_NPTH
-      if (npth_mutex_init (&estream_list_lock, NULL))
+      if (!init_list_lock ())
         initialized = 1;
-#else
-      initialized = 1;
-#endif
       atexit (do_deinit);
     }
   return 0;
@@ -1742,7 +1777,7 @@ es_create (estream_t *stream, void *cookie, es_syshd_t *syshd,
   stream_new->unread_buffer_size = sizeof (stream_internal_new->unread_buffer);
   stream_new->intern = stream_internal_new;
 
-  ESTREAM_MUTEX_INITIALIZE (stream_new->intern->lock);
+  init_stream_lock (stream_new);
   es_initialize (stream_new, cookie, syshd, functions, modeflags);
 
   err = do_list_add (stream_new, with_locked_list);
@@ -2981,13 +3016,13 @@ void
 _es_set_std_fd (int no, int fd)
 {
   /* fprintf (stderr, "es_set_std_fd(%d, %d)\n", no, fd); */
-  ESTREAM_LIST_LOCK;
+  lock_list ();
   if (no >= 0 && no < 3 && !custom_std_fds_valid[no])
     {
       custom_std_fds[no] = fd;
       custom_std_fds_valid[no] = 1;
     }
-  ESTREAM_LIST_UNLOCK;
+  unlock_list ();
 }
 
 
@@ -2999,7 +3034,9 @@ _es_get_std_stream (int fd)
   estream_t stream = NULL;
 
   fd %= 3; /* We only allow 0, 1 or 2 but we don't want to return an error. */
-  ESTREAM_LIST_LOCK;
+
+  lock_list ();
+
   for (list_obj = estream_list; list_obj; list_obj = list_obj->next)
     if (list_obj->stream && list_obj->stream->intern->is_stdstream
         && list_obj->stream->intern->stdstream_fd == fd)
@@ -3049,7 +3086,8 @@ _es_get_std_stream (int fd)
                           fd == 0? "[stdin]" :
                           fd == 1? "[stdout]" : "[stderr]", 0);
     }
-  ESTREAM_LIST_UNLOCK;
+
+  unlock_list ();
   return stream;
 }
 
@@ -3071,7 +3109,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
       cookie = NULL;
       create_called = 0;
 
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
 
       es_deinitialize (stream);
 
@@ -3102,7 +3140,7 @@ es_freopen (const char *ES__RESTRICT path, const char *ES__RESTRICT mode,
         {
           if (path)
             fname_set_internal (stream, path, 1);
-          ESTREAM_UNLOCK (stream);
+          unlock_stream (stream);
         }
     }
   else
@@ -3213,9 +3251,9 @@ es_onclose (estream_t stream, int mode,
 {
   int err;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   err = do_onclose (stream, mode, fnc, fnc_value);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return err;
 }
@@ -3262,21 +3300,21 @@ es_syshd_unlocked (estream_t stream, es_syshd_t *syshd)
 void
 es_flockfile (estream_t stream)
 {
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
 }
 
 
 int
 es_ftrylockfile (estream_t stream)
 {
-  return ESTREAM_TRYLOCK (stream);
+  return trylock_stream (stream);
 }
 
 
 void
 es_funlockfile (estream_t stream)
 {
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 }
 
 
@@ -3285,9 +3323,9 @@ es_fileno (estream_t stream)
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_fileno_unlocked (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3302,9 +3340,9 @@ es_syshd (estream_t stream, es_syshd_t *syshd)
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_syshd_unlocked (stream, syshd);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3322,9 +3360,9 @@ es_feof (estream_t stream)
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_feof_unlocked (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3342,9 +3380,9 @@ es_ferror (estream_t stream)
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_ferror_unlocked (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3360,9 +3398,9 @@ es_clearerr_unlocked (estream_t stream)
 void
 es_clearerr (estream_t stream)
 {
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   es_clearerr_unlocked (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 }
 
 
@@ -3390,24 +3428,24 @@ es_fflush (estream_t stream)
 
   if (stream)
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       err = do_fflush (stream);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
     }
   else
     {
       estream_list_t item;
 
       err = 0;
-      ESTREAM_LIST_LOCK;
+      lock_list ();
       for (item = estream_list; item; item = item->next)
         if (item->stream)
           {
-            ESTREAM_LOCK (item->stream);
+            lock_stream (item->stream);
             err |= do_fflush (item->stream);
-            ESTREAM_UNLOCK (item->stream);
+            unlock_stream (item->stream);
           }
-      ESTREAM_LIST_UNLOCK;
+      unlock_list ();
     }
   return err ? EOF : 0;
 }
@@ -3418,9 +3456,9 @@ es_fseek (estream_t stream, long int offset, int whence)
 {
   int err;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   err = es_seek (stream, offset, whence, NULL);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return err;
 }
@@ -3431,9 +3469,9 @@ es_fseeko (estream_t stream, off_t offset, int whence)
 {
   int err;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   err = es_seek (stream, offset, whence, NULL);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return err;
 }
@@ -3444,9 +3482,9 @@ es_ftell (estream_t stream)
 {
   long int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_offset_calculate (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3457,9 +3495,9 @@ es_ftello (estream_t stream)
 {
   off_t ret = -1;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_offset_calculate (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3468,10 +3506,10 @@ es_ftello (estream_t stream)
 void
 es_rewind (estream_t stream)
 {
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   es_seek (stream, 0L, SEEK_SET, NULL);
   es_set_indicators (stream, 0, -1);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 }
 
 
@@ -3505,9 +3543,9 @@ es_fgetc (estream_t stream)
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_getc_unlocked (stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3518,9 +3556,9 @@ es_fputc (int c, estream_t stream)
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_putc_unlocked (c, stream);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3532,9 +3570,9 @@ es_ungetc (int c, estream_t stream)
   unsigned char data = (unsigned char) c;
   size_t data_unread;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   es_unreadn (stream, &data, 1, &data_unread);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return data_unread ? c : EOF;
 }
@@ -3549,9 +3587,9 @@ es_read (estream_t ES__RESTRICT stream,
 
   if (bytes_to_read)
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       err = es_readn (stream, buffer, bytes_to_read, bytes_read);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
     }
   else
     err = 0;
@@ -3569,9 +3607,9 @@ es_write (estream_t ES__RESTRICT stream,
 
   if (bytes_to_write)
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       err = es_writen (stream, buffer, bytes_to_write, bytes_written);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
     }
   else
     err = 0;
@@ -3588,9 +3626,9 @@ es_fread (void *ES__RESTRICT ptr, size_t size, size_t nitems,
 
   if (size * nitems)
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       es_readn (stream, ptr, size * nitems, &bytes);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
 
       ret = bytes / size;
     }
@@ -3609,9 +3647,9 @@ es_fwrite (const void *ES__RESTRICT ptr, size_t size, size_t nitems,
 
   if (size * nitems)
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       es_writen (stream, ptr, size * nitems, &bytes);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
 
       ret = bytes / size;
     }
@@ -3632,13 +3670,13 @@ es_fgets (char *ES__RESTRICT buffer, int length, estream_t ES__RESTRICT stream)
     return NULL;
 
   c = EOF;
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   while (length > 1 && (c = es_getc_unlocked (stream)) != EOF && c != '\n')
     {
       *s++ = c;
       length--;
     }
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   if (c == EOF && s == (unsigned char*)buffer)
     return NULL; /* Nothing read.  */
@@ -3669,9 +3707,9 @@ es_fputs (const char *ES__RESTRICT s, estream_t ES__RESTRICT stream)
   int err;
 
   length = strlen (s);
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   err = es_writen (stream, s, length, NULL);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return err ? EOF : 0;
 }
@@ -3685,9 +3723,9 @@ es_getline (char *ES__RESTRICT *ES__RESTRICT lineptr, size_t *ES__RESTRICT n,
   size_t line_n = 0;
   int err;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   err = doreadline (stream, 0, &line, &line_n);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
   if (err)
     goto out;
 
@@ -3798,7 +3836,7 @@ es_read_line (estream_t stream,
     }
   length -= 3; /* Reserve 3 bytes for CR,LF,EOL. */
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   p = buffer;
   while  ((c = es_getc_unlocked (stream)) != EOF)
     {
@@ -3826,7 +3864,7 @@ es_read_line (estream_t stream,
               *length_of_buffer = 0;
               if (max_length)
                 *max_length = 0;
-              ESTREAM_UNLOCK (stream);
+              unlock_stream (stream);
               _set_errno (save_errno);
               return -1;
             }
@@ -3841,7 +3879,7 @@ es_read_line (estream_t stream,
         break;
     }
   *p = 0; /* Make sure the line is a string. */
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return nbytes;
 }
@@ -3871,9 +3909,9 @@ es_vfprintf (estream_t ES__RESTRICT stream, const char *ES__RESTRICT format,
 {
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_print (stream, format, ap);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -3902,9 +3940,9 @@ es_fprintf (estream_t ES__RESTRICT stream,
 
   va_list ap;
   va_start (ap, format);
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_print (stream, format, ap);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
   va_end (ap);
 
   return ret;
@@ -3933,9 +3971,9 @@ es_printf (const char *ES__RESTRICT format, ...)
 
   va_list ap;
   va_start (ap, format);
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   ret = es_print (stream, format, ap);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
   va_end (ap);
 
   return ret;
@@ -4137,9 +4175,9 @@ es_setvbuf (estream_t ES__RESTRICT stream,
   if ((type == _IOFBF || type == _IOLBF || type == _IONBF)
       && (!buf || size || type == _IONBF))
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       err = es_set_buffering (stream, buf, type, size);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
     }
   else
     {
@@ -4154,9 +4192,9 @@ es_setvbuf (estream_t ES__RESTRICT stream,
 void
 es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf)
 {
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   es_set_buffering (stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 }
 
 
@@ -4167,7 +4205,7 @@ es_setbuf (estream_t ES__RESTRICT stream, char *ES__RESTRICT buf)
 void
 es_set_binary (estream_t stream)
 {
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   if (!(stream->intern->modeflags & O_BINARY))
     {
       stream->intern->modeflags |= O_BINARY;
@@ -4188,16 +4226,16 @@ es_set_binary (estream_t stream)
         }
 #endif
     }
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 }
 
 
 void
 es_opaque_set (estream_t stream, void *opaque)
 {
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   es_opaque_ctrl (stream, opaque, NULL);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 }
 
 
@@ -4206,9 +4244,9 @@ es_opaque_get (estream_t stream)
 {
   void *opaque;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   es_opaque_ctrl (stream, NULL, &opaque);
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return opaque;
 }
@@ -4249,9 +4287,9 @@ es_fname_set (estream_t stream, const char *fname)
 {
   if (fname)
     {
-      ESTREAM_LOCK (stream);
+      lock_stream (stream);
       fname_set_internal (stream, fname, 1);
-      ESTREAM_UNLOCK (stream);
+      unlock_stream (stream);
     }
 }
 
@@ -4264,11 +4302,11 @@ es_fname_get (estream_t stream)
 {
   const char *fname;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   fname = stream->intern->printable_fname;
   if (fname)
     stream->intern->printable_fname_inuse = 1;
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
   if (!fname)
     fname = "[?]";
   return fname;
@@ -4290,7 +4328,7 @@ es_write_sanitized (estream_t ES__RESTRICT stream,
   size_t count = 0;
   int ret;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
   for (; length; length--, p++, count++)
     {
       if (*p < 0x20
@@ -4346,7 +4384,7 @@ es_write_sanitized (estream_t ES__RESTRICT stream,
   if (bytes_written)
     *bytes_written = count;
   ret =  es_ferror_unlocked (stream)? -1 : 0;
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 }
@@ -4372,7 +4410,7 @@ es_write_hexstring (estream_t ES__RESTRICT stream,
   if (!length)
     return 0;
 
-  ESTREAM_LOCK (stream);
+  lock_stream (stream);
 
   for (s = buffer; length; s++, length--)
     {
@@ -4385,7 +4423,7 @@ es_write_hexstring (estream_t ES__RESTRICT stream,
     *bytes_written = count;
   ret = es_ferror_unlocked (stream)? -1 : 0;
 
-  ESTREAM_UNLOCK (stream);
+  unlock_stream (stream);
 
   return ret;
 
