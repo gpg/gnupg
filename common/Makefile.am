@@ -52,6 +52,7 @@ common_sources = \
 	gettime.c \
 	yesno.c \
 	b64enc.c b64dec.c \
+	zb32.c \
 	convert.c \
 	percent.c \
 	miscellaneous.c \
