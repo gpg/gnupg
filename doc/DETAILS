@@ -818,6 +818,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - 1 :: No such key
     - 2 :: Must delete secret key first
     - 3 :: Ambigious specification
+    - 4 :: Key is stored on a smartcard.
 
 *** PROGRESS <what> <char> <cur> <total>
     Used by the primegen and Public key functions to indicate

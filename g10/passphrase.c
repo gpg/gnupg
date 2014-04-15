@@ -702,7 +702,7 @@ gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
                        (int)uidlen, uid,
                        nbits_from_pk (pk), algo_name,
                        keystr (pk->keyid), timestr,
-                       maink?maink:"", trailer );
+                       maink?maink:"", trailer);
   xfree (maink);
   xfree (uid);
 

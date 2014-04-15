@@ -2127,6 +2127,44 @@ agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
 
 
 
+/* Ask the agent to delete the key identified by HEXKEYGRIP.  If DESC
+   is not NULL, display DESC instead of the default description
+   message.  */
+gpg_error_t
+agent_delete_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc)
+{
+  gpg_error_t err;
+  char line[ASSUAN_LINELENGTH];
+  struct default_inq_parm_s dfltparm;
+
+  memset (&dfltparm, 0, sizeof dfltparm);
+  dfltparm.ctrl = ctrl;
+
+  err = start_agent (ctrl, 0);
+  if (err)
+    return err;
+
+  if (!hexkeygrip || strlen (hexkeygrip) != 40)
+    return gpg_error (GPG_ERR_INV_VALUE);
+
+  if (desc)
+    {
+      snprintf (line, DIM(line)-1, "SETKEYDESC %s", desc);
+      err = assuan_transact (agent_ctx, line,
+                             NULL, NULL, NULL, NULL, NULL, NULL);
+      if (err)
+        return err;
+    }
+
+  snprintf (line, DIM(line)-1, "DELETE_KEY %s", hexkeygrip);
+  err = assuan_transact (agent_ctx, line, NULL, NULL,
+                         default_inq_cb, &dfltparm,
+                         NULL, NULL);
+  return err;
+}
+
+
+
 /* Ask the agent to change the passphrase of the key identified by
    HEXKEYGRIP.  If DESC is not NULL, display DESC instead of the
    default description message.  If CACHE_NONCE_ADDR is not NULL the

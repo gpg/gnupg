@@ -1237,6 +1237,38 @@ getkey_end (getkey_ctx_t ctx)
  ************* Merging stuff ********************
  ************************************************/
 
+/* Set the mainkey_id fields for all keys in KEYBLOCK.  This is
+   usually done by merge_selfsigs but at some places we only need the
+   main_kid but the the full merging.  The function also guarantees
+   that all pk->keyids are computed. */
+void
+setup_main_keyids (kbnode_t keyblock)
+{
+  u32 kid[2], mainkid[2];
+  kbnode_t kbctx, node;
+  PKT_public_key *pk;
+
+  if (keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
+    BUG ();
+  pk = keyblock->pkt->pkt.public_key;
+
+  keyid_from_pk (pk, mainkid);
+  for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+    {
+      if (!(node->pkt->pkttype == PKT_PUBLIC_KEY
+            || node->pkt->pkttype == PKT_PUBLIC_SUBKEY))
+        continue;
+      pk = node->pkt->pkt.public_key;
+      keyid_from_pk (pk, kid); /* Make sure pk->keyid is set.  */
+      if (!pk->main_keyid[0] && !pk->main_keyid[1])
+        {
+          pk->main_keyid[0] = mainkid[0];
+          pk->main_keyid[1] = mainkid[1];
+        }
+    }
+}
+
+
 /* Merge all self-signatures with the keys.  */
 void
 merge_keys_and_selfsig (KBNODE keyblock)

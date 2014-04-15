@@ -40,6 +40,7 @@
 #include "ttyio.h"
 #include "status.h"
 #include "i18n.h"
+#include "call-agent.h"
 
 
 /****************
@@ -52,7 +53,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
 {
   gpg_error_t err;
   kbnode_t keyblock = NULL;
-  kbnode_t node;
+  kbnode_t node, kbctx;
   KEYDB_HANDLE hd;
   PKT_public_key *pk = NULL;
   u32 keyid[2];
@@ -156,9 +157,47 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
     {
       if (secret)
 	{
-	  log_error (_("deleting secret key not implemented\n"));
-	  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED); /* FIXME */
-	  goto leave;
+          char *prompt;
+          gpg_error_t firsterr = 0;
+          char *hexgrip;
+
+          setup_main_keyids (keyblock);
+          for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
+            {
+              if (!(node->pkt->pkttype == PKT_PUBLIC_KEY
+                    || node->pkt->pkttype == PKT_PUBLIC_SUBKEY))
+                continue;
+
+              if (agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
+                continue;  /* No secret key for that public (sub)key.  */
+
+              prompt = gpg_format_keydesc (node->pkt->pkt.public_key,
+                                           FORMAT_KEYDESC_DELKEY, 1);
+              err = hexkeygrip_from_pk (node->pkt->pkt.public_key, &hexgrip);
+              if (!err)
+                err = agent_delete_key (NULL, hexgrip, prompt);
+              xfree (prompt);
+              xfree (hexgrip);
+              if (err)
+                {
+                  if (gpg_err_code (err) == GPG_ERR_KEY_ON_CARD)
+                    write_status_text (STATUS_DELETE_PROBLEM, "1");
+                  log_error (_("deleting secret %s failed: %s\n"),
+                             (node->pkt->pkttype == PKT_PUBLIC_KEY
+                              ? _("key"):_("subkey")),
+                             gpg_strerror (err));
+                  if (!firsterr)
+                    firsterr = err;
+                  if (gpg_err_code (err) == GPG_ERR_CANCELED
+                      || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
+                    break;
+                }
+
+            }
+
+          err = firsterr;
+          if (firsterr)
+            goto leave;
 	}
       else
 	{

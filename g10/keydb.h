@@ -201,7 +201,7 @@ void emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo);
 #define FORMAT_KEYDESC_NORMAL  0
 #define FORMAT_KEYDESC_IMPORT  1
 #define FORMAT_KEYDESC_EXPORT  2
-
+#define FORMAT_KEYDESC_DELKEY  3
 char *gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped);
 
 
@@ -248,6 +248,7 @@ void getkey_end (getkey_ctx_t ctx);
 
 gpg_error_t enum_secret_keys (void **context, PKT_public_key *pk);
 
+void setup_main_keyids (kbnode_t keyblock);
 void merge_keys_and_selfsig( KBNODE keyblock );
 char*get_user_id_string( u32 *keyid );
 char*get_user_id_string_native( u32 *keyid );
