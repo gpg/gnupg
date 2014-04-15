@@ -164,16 +164,16 @@ typedef void (*func_free_t) (void *mem);
 
 #ifdef HAVE_NPTH
 
-typedef pth_mutex_t estream_mutex_t;
-# define ESTREAM_MUTEX_INITIALIZER PTH_MUTEX_INIT
+typedef npth_mutex_t estream_mutex_t;
+# define ESTREAM_MUTEX_INITIALIZER NPTH_MUTEX_INIT
 # define ESTREAM_MUTEX_LOCK(mutex)        \
-  pth_mutex_acquire (&(mutex), 0, NULL)
+  npth_mutex_lock (&(mutex))
 # define ESTREAM_MUTEX_UNLOCK(mutex)      \
-  pth_mutex_release (&(mutex))
+  npth_mutex_unlock (&(mutex))
 # define ESTREAM_MUTEX_TRYLOCK(mutex)     \
-  ((pth_mutex_acquire (&(mutex), 1, NULL) == TRUE) ? 0 : -1)
+  (npth_mutex_trylock (&(mutex))? 0 : -1)
 # define ESTREAM_MUTEX_INITIALIZE(mutex)  \
-  pth_mutex_init    (&(mutex))
+  npth_mutex_init (&(mutex), NULL)
 
 #else /*!HAVE_NPTH*/
 
@@ -203,9 +203,9 @@ dummy_mutex_call_int (estream_mutex_t mutex)
 /* Primitive system I/O.  */
 
 #ifdef HAVE_NPTH
-# define ESTREAM_SYS_READ  do_pth_read
-# define ESTREAM_SYS_WRITE do_pth_write
-# define ESTREAM_SYS_YIELD() pth_yield (NULL)
+# define ESTREAM_SYS_READ  do_npth_read
+# define ESTREAM_SYS_WRITE do_npth_write
+# define ESTREAM_SYS_YIELD() npth_usleep (0)
 #else
 # define ESTREAM_SYS_READ  read
 # define ESTREAM_SYS_WRITE write
@@ -450,35 +450,35 @@ do_list_remove (estream_t stream, int with_locked_list)
  * I/O Helper
  *
  * Unfortunately our Pth emulation for Windows expects system handles
- * for pth_read and pth_write.  We use a simple approach to fix this:
+ * for npth_read and npth_write.  We use a simple approach to fix this:
  * If the function returns an error we fall back to a vanilla read or
  * write, assuming that we do I/O on a plain file where the operation
- * can't block.
+ * can't block.  FIXME:  Is this still needed for npth?
  */
 #ifdef HAVE_NPTH
 static int
-do_pth_read (int fd, void *buffer, size_t size)
+do_npth_read (int fd, void *buffer, size_t size)
 {
 # ifdef HAVE_W32_SYSTEM
-  int rc = pth_read (fd, buffer, size);
+  int rc = npth_read (fd, buffer, size);
   if (rc == -1 && errno == EINVAL)
     rc = read (fd, buffer, size);
   return rc;
 # else /*!HAVE_W32_SYSTEM*/
-  return pth_read (fd, buffer, size);
+  return npth_read (fd, buffer, size);
 # endif /* !HAVE_W32_SYSTEM*/
 }
 
 static int
-do_pth_write (int fd, const void *buffer, size_t size)
+do_npth_write (int fd, const void *buffer, size_t size)
 {
 # ifdef HAVE_W32_SYSTEM
-  int rc = pth_write (fd, buffer, size);
+  int rc = npth_write (fd, buffer, size);
   if (rc == -1 && errno == EINVAL)
     rc = write (fd, buffer, size);
   return rc;
 # else /*!HAVE_W32_SYSTEM*/
-  return pth_write (fd, buffer, size);
+  return npth_write (fd, buffer, size);
 # endif /* !HAVE_W32_SYSTEM*/
 }
 #endif /*HAVE_NPTH*/
@@ -513,9 +513,7 @@ do_init (void)
   if (!initialized)
     {
 #ifdef HAVE_NPTH
-      if (!pth_init () && errno != EPERM )
-        return -1;
-      if (pth_mutex_init (&estream_list_lock))
+      if (npth_mutex_init (&estream_list_lock, NULL))
         initialized = 1;
 #else
       initialized = 1;
@@ -1039,8 +1037,9 @@ es_func_w32_read (void *cookie, void *buffer, size_t size)
       do
         {
 #ifdef HAVE_NPTH
-          /* Note: Our pth_read actually uses HANDLE! */
-          bytes_read = pth_read ((int)w32_cookie->hd, buffer, size);
+          /* Note: Our pth_read actually uses HANDLE!
+             FIXME: Check  whether this is the case for npth. */
+          bytes_read = npth_read ((int)w32_cookie->hd, buffer, size);
 #else
           DWORD nread, ec;
 
@@ -1085,7 +1084,7 @@ es_func_w32_write (void *cookie, const void *buffer, size_t size)
         {
 #ifdef HAVE_NPTH
           /* Note: Our pth_write actually uses HANDLE! */
-          bytes_written = pth_write ((int)w32_cookie->hd, buffer, size);
+          bytes_written = npth_write ((int)w32_cookie->hd, buffer, size);
 #else
           DWORD nwritten;
 
