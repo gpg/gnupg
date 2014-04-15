@@ -297,11 +297,12 @@ show_photos(const struct user_attribute *attrs,
   u32 len;
   u32 kid[2]={0,0};
 
-  memset(&args,0,sizeof(args));
-  args.pk=pk;
-  args.sk=sk;
-  args.validity_info=get_validity_info(pk,uid);
-  args.validity_string=get_validity_string(pk,uid);
+  memset (&args, 0, sizeof(args));
+  args.pk = pk;
+  args.validity_info = get_validity_info (pk, uid);
+  args.validity_string = get_validity_string (pk, uid);
+  namehash_from_uid (uid);
+  args.namehash = uid->namehash;
 
   if(pk)
     keyid_from_pk(pk,kid);

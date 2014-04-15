@@ -109,6 +109,7 @@ struct expando_args
   byte imagetype;
   int validity_info;
   const char *validity_string;
+  const byte *namehash;
 };
 
 char *pct_expando(const char *string,struct expando_args *args);
