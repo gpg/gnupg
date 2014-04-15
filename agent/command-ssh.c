@@ -1031,7 +1031,8 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
 
   assert (strlen (hexgrip) == 40 );
 
-  *r_disabled = 0;
+  if (r_disabled)
+    *r_disabled = 0;
   if (r_ttl)
     *r_ttl = 0;
   if (r_confirm)
@@ -1047,7 +1048,8 @@ search_control_file (ssh_control_file_t cf, const char *hexgrip,
     }
   if (!err)
     {
-      *r_disabled = cf->item.disabled;
+      if (r_disabled)
+        *r_disabled = cf->item.disabled;
       if (r_ttl)
         *r_ttl = cf->item.ttl;
       if (r_confirm)

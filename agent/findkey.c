@@ -1,6 +1,7 @@
 /* findkey.c - Locate the secret key
  * Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
  *               2010, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -189,6 +190,7 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
 
    %% - Replaced by a single %
    %c - Replaced by the content of COMMENT.
+   %C - Same as %c but put into parentheses.
    %F - Replaced by an ssh style fingerprint computed from KEY.
 
    The functions returns 0 on success or an error code.  On success a
@@ -238,6 +240,20 @@ modify_description (const char *in, const char *comment, const gcry_sexp_t key,
                     }
                   else
                     out_len += comment_length;
+                  break;
+
+                case 'C': /* Comment.  */
+                  if (!comment_length)
+                    ;
+                  else if (out)
+                    {
+                      *out++ = '(';
+                      memcpy (out, comment, comment_length);
+                      out += comment_length;
+                      *out++ = ')';
+                    }
+                  else
+                    out_len += comment_length + 2;
                   break;
 
                 case 'F': /* SSH style fingerprint.  */
@@ -533,6 +549,24 @@ read_key_file (const unsigned char *grip, gcry_sexp_t *result)
     }
   *result = s_skey;
   return 0;
+}
+
+
+/* Remove the key identified by GRIP from the private key directory.  */
+static gpg_error_t
+remove_key_file (const unsigned char *grip)
+{
+  gpg_error_t err = 0;
+  char *fname;
+  char hexgrip[40+4+1];
+
+  bin2hex (grip, 20, hexgrip);
+  strcpy (hexgrip+40, ".key");
+  fname = make_filename (opt.homedir, GNUPG_PRIVATE_KEYS_DIR, hexgrip, NULL);
+  if (gnupg_remove (fname))
+    err = gpg_error_from_syserror ();
+  xfree (fname);
+  return err;
 }
 
 
@@ -1143,5 +1177,114 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
     *r_keytype = keytype;
 
   xfree (buf);
+  return err;
+}
+
+
+
+/* Delete the key with GRIP from the disk after having asked for
+   confirmation using DESC_TEXT.  Common error codes are:
+     GPG_ERR_NO_SECKEY
+     GPG_ERR_KEY_ON_CARD
+     GPG_ERR_NOT_CONFIRMED
+*/
+gpg_error_t
+agent_delete_key (ctrl_t ctrl, const char *desc_text,
+                  const unsigned char *grip)
+{
+  gpg_error_t err;
+  gcry_sexp_t s_skey = NULL;
+  unsigned char *buf = NULL;
+  size_t len;
+  char *desc_text_final = NULL;
+  char *comment = NULL;
+  ssh_control_file_t cf = NULL;
+  char hexgrip[40+4+1];
+  char *default_desc = NULL;
+
+  err = read_key_file (grip, &s_skey);
+  if (gpg_err_code (err) == GPG_ERR_ENOENT)
+    err = gpg_error (GPG_ERR_NO_SECKEY);
+  if (err)
+    goto leave;
+
+  err = make_canon_sexp (s_skey, &buf, &len);
+  if (err)
+    goto leave;
+
+  switch (agent_private_key_type (buf))
+    {
+    case PRIVATE_KEY_CLEAR:
+    case PRIVATE_KEY_PROTECTED:
+      {
+        bin2hex (grip, 20, hexgrip);
+        if (!desc_text)
+          {
+            default_desc = xtryasprintf
+              ("Do you really want to delete the key identified by keygrip%%0A"
+               "  %s%%0A  %%C%%0A?", hexgrip);
+            desc_text = default_desc;
+          }
+
+        /* Note, that we will take the comment as a C string for
+           display purposes; i.e. all stuff beyond a Nul character is
+           ignored.  */
+        {
+          gcry_sexp_t comment_sexp;
+
+          comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+          if (comment_sexp)
+            comment = gcry_sexp_nth_string (comment_sexp, 1);
+          gcry_sexp_release (comment_sexp);
+        }
+
+	if (desc_text)
+          err = modify_description (desc_text, comment? comment:"", s_skey,
+                                    &desc_text_final);
+	if (err)
+          goto leave;
+
+        err = agent_get_confirmation (ctrl, desc_text_final,
+                                      _("Delete key"), _("No"), 0);
+        if (err)
+          goto leave;
+
+        cf = ssh_open_control_file ();
+        if (cf)
+          {
+            if (!ssh_search_control_file (cf, hexgrip, NULL, NULL, NULL))
+              {
+                err = agent_get_confirmation
+                  (ctrl,
+                   _("Warning: This key is also listed for use with SSH!\n"
+                     "Deleting the key will may remove your ability to"
+                     "access remote machines."),
+                   _("Delete key"), _("No"), 0);
+                if (err)
+                  goto leave;
+              }
+          }
+
+        err = remove_key_file (grip);
+      }
+      break;
+
+    case PRIVATE_KEY_SHADOWED:
+      err = gpg_error (GPG_ERR_KEY_ON_CARD);
+      break;
+
+    default:
+      log_error ("invalid private key format\n");
+      err = gpg_error (GPG_ERR_BAD_SECKEY);
+      break;
+    }
+
+ leave:
+  ssh_close_control_file (cf);
+  gcry_free (comment);
+  xfree (desc_text_final);
+  xfree (default_desc);
+  xfree (buf);
+  gcry_sexp_release (s_skey);
   return err;
 }

@@ -695,7 +695,7 @@ static const char hlp_setkeydesc[] =
   "blanks unless they are percent or '+' escaped.\n"
   "\n"
   "The description is only valid for the next PKSIGN, PKDECRYPT,\n"
-  "IMPORT_KEY or EXPORT_KEY operation.";
+  "IMPORT_KEY, EXPORT_KEY, or DELETE_KEY operation.";
 static gpg_error_t
 cmd_setkeydesc (assuan_context_t ctx, char *line)
 {
@@ -2244,6 +2244,39 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
   return leave_cmd (ctx, err);
 }
+
+
+
+static const char hlp_delete_key[] =
+  "DELETE_KEY <hexstring_with_keygrip>\n"
+  "\n"
+  "Delete a secret key from the key store.\n"
+  "As safeguard the agent asks the user for confirmation.\n";
+static gpg_error_t
+cmd_delete_key (assuan_context_t ctx, char *line)
+{
+  ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err;
+  unsigned char grip[20];
+
+  line = skip_options (line);
+
+  err = parse_keygrip (ctx, line, grip);
+  if (err)
+    goto leave;
+
+  err = agent_delete_key (ctrl, ctrl->server_local->keydesc, grip);
+  if (err)
+    goto leave;
+
+ leave:
+  xfree (ctrl->server_local->keydesc);
+  ctrl->server_local->keydesc = NULL;
+
+  return leave_cmd (ctx, err);
+}
+
+
 
 static const char hlp_keytocard[] =
   "KEYTOCARD [--force] <hexstring_with_keygrip> <serialno> <id> <timestamp>\n"
@@ -2926,6 +2959,7 @@ register_commands (assuan_context_t ctx)
     { "KEYWRAP_KEY",    cmd_keywrap_key, hlp_keywrap_key },
     { "IMPORT_KEY",     cmd_import_key, hlp_import_key },
     { "EXPORT_KEY",     cmd_export_key, hlp_export_key },
+    { "DELETE_KEY",     cmd_delete_key, hlp_delete_key },
     { "GETVAL",         cmd_getval,    hlp_getval },
     { "PUTVAL",         cmd_putval,    hlp_putval },
     { "UPDATESTARTUPTTY",  cmd_updatestartuptty, hlp_updatestartuptty },
