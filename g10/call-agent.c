@@ -1,6 +1,7 @@
 /* call-agent.c - Divert GPG operations to the agent.
  * Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008, 2009,
  *               2010, 2011, 2013 Free Software Foundation, Inc.
+ * Copyright (C) 2013, 2014  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -139,6 +140,129 @@ status_sc_op_failure (int rc)
 }
 
 
+static gpg_error_t
+membuf_data_cb (void *opaque, const void *buffer, size_t length)
+{
+  membuf_t *data = opaque;
+
+  if (buffer)
+    put_membuf (data, buffer, length);
+  return 0;
+}
+
+
+
+/* This is the default inquiry callback.  It mainly handles the
+   Pinentry notifications.  */
+static gpg_error_t
+default_inq_cb (void *opaque, const char *line)
+{
+  gpg_error_t err = 0;
+  struct default_inq_parm_s *parm = opaque;
+
+  if (has_leading_keyword (line, "PINENTRY_LAUNCHED"))
+    {
+      err = gpg_proxy_pinentry_notify (parm->ctrl, line);
+      if (err)
+        log_error (_("failed to proxy %s inquiry to client\n"),
+                   "PINENTRY_LAUNCHED");
+      /* We do not pass errors to avoid breaking other code.  */
+    }
+  else if ((has_leading_keyword (line, "PASSPHRASE")
+            || has_leading_keyword (line, "NEW_PASSPHRASE"))
+           && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
+    {
+      if (have_static_passphrase ())
+        {
+          const char *s = get_static_passphrase ();
+          err = assuan_send_data (parm->ctx, s, strlen (s));
+        }
+      else
+        {
+          char *pw;
+
+          if (parm->keyinfo.keyid)
+            emit_status_need_passphrase (parm->keyinfo.keyid,
+                                         parm->keyinfo.mainkeyid,
+                                         parm->keyinfo.pubkey_algo);
+          pw = cpr_get_hidden ("passphrase.enter", _("Enter passphrase: "));
+          cpr_kill_prompt ();
+          if (*pw == CONTROL_D && !pw[1])
+            err = gpg_error (GPG_ERR_CANCELED);
+          else
+            err = assuan_send_data (parm->ctx, pw, strlen (pw));
+          xfree (pw);
+        }
+    }
+  else
+    log_debug ("ignoring gpg-agent inquiry '%s'\n", line);
+
+  return err;
+}
+
+
+/* Check whether gnome-keyring hijacked the gpg-agent.  */
+static void
+check_hijacking (assuan_context_t ctx)
+{
+  membuf_t mb;
+  char *string;
+
+  init_membuf (&mb, 64);
+
+  /* AGENT_ID is a command implemented by gnome-keyring-daemon.  IT
+     does not reatun any data but an OK line with a remark.  */
+  if (assuan_transact (ctx, "AGENT_ID",
+                       membuf_data_cb, &mb, NULL, NULL, NULL, NULL))
+    {
+      xfree (get_membuf (&mb, NULL));
+      return; /* Error - Probably not hijacked.  */
+    }
+  put_membuf (&mb, "", 1);
+  string = get_membuf (&mb, NULL);
+  if (!string || !*string)
+    {
+      /* Definitley hijacked - show a warning prompt.  */
+      static int shown;
+      const char warn1[] =
+        "The GNOME keyring manager hijacked the GnuPG agent.";
+      const char warn2[] =
+        "GnuPG will not work proberly - please configure that "
+        "tool to not interfere with the GnuPG system!";
+      log_info ("WARNING: %s\n", warn1);
+      log_info ("WARNING: %s\n", warn2);
+      /*                 (GPG_ERR_SOURCRE_GPG, GPG_ERR_NO_AGENT) */
+      write_status_text (STATUS_ERROR, "check_hijacking 33554509");
+      xfree (string);
+      string = strconcat (warn1, "\n\n", warn2, NULL);
+      if (string && !shown && !opt.batch)
+        {
+          /* NB: The Pinentry based prompt will only work if a
+             gnome-keyring manager passes invalid commands on to the
+             original gpg-agent.  */
+          char *cmd, *cmdargs;
+
+          cmdargs = percent_plus_escape (string);
+          cmd = strconcat ("GET_CONFIRMATION ", cmdargs, NULL);
+          xfree (cmdargs);
+          if (cmd)
+            {
+              struct default_inq_parm_s dfltparm;
+
+              memset (&dfltparm, 0, sizeof dfltparm);
+              dfltparm.ctx = ctx;
+              assuan_transact (ctx, cmd, NULL, NULL,
+                               default_inq_cb, &dfltparm,
+                               NULL, NULL);
+              xfree (cmd);
+              shown = 1;
+            }
+        }
+    }
+  xfree (string);
+}
+
+
 
 /* Try to connect to the agent via socket or fork it off and work by
    pipes.  Handle the server's initial greeting */
@@ -188,6 +312,7 @@ start_agent (ctrl_t ctrl, int for_card)
                            gpg_strerror (rc));
             }
 
+          check_hijacking (agent_ctx);
         }
     }
 
@@ -325,55 +450,6 @@ get_serialno_cb (void *opaque, const char *line)
     }
 
   return 0;
-}
-
-
-/* This is the default inquiry callback.  It mainly handles the
-   Pinentry notifications.  */
-static gpg_error_t
-default_inq_cb (void *opaque, const char *line)
-{
-  gpg_error_t err = 0;
-  struct default_inq_parm_s *parm = opaque;
-
-  if (has_leading_keyword (line, "PINENTRY_LAUNCHED"))
-    {
-      err = gpg_proxy_pinentry_notify (parm->ctrl, line);
-      if (err)
-        log_error (_("failed to proxy %s inquiry to client\n"),
-                   "PINENTRY_LAUNCHED");
-      /* We do not pass errors to avoid breaking other code.  */
-    }
-  else if ((has_leading_keyword (line, "PASSPHRASE")
-            || has_leading_keyword (line, "NEW_PASSPHRASE"))
-           && opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
-    {
-      if (have_static_passphrase ())
-        {
-          const char *s = get_static_passphrase ();
-          err = assuan_send_data (parm->ctx, s, strlen (s));
-        }
-      else
-        {
-          char *pw;
-
-          if (parm->keyinfo.keyid)
-            emit_status_need_passphrase (parm->keyinfo.keyid,
-                                         parm->keyinfo.mainkeyid,
-                                         parm->keyinfo.pubkey_algo);
-          pw = cpr_get_hidden ("passphrase.enter", _("Enter passphrase: "));
-          cpr_kill_prompt ();
-          if (*pw == CONTROL_D && !pw[1])
-            err = gpg_error (GPG_ERR_CANCELED);
-          else
-            err = assuan_send_data (parm->ctx, pw, strlen (pw));
-          xfree (pw);
-        }
-    }
-  else
-    log_debug ("ignoring gpg-agent inquiry '%s'\n", line);
-
-  return err;
 }
 
 
@@ -1065,19 +1141,6 @@ select_openpgp (const char *serialno)
 
   return err;
 }
-
-
-
-static gpg_error_t
-membuf_data_cb (void *opaque, const void *buffer, size_t length)
-{
-  membuf_t *data = opaque;
-
-  if (buffer)
-    put_membuf (data, buffer, length);
-  return 0;
-}
-
 
 
 
