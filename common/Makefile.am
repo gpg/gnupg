@@ -72,7 +72,7 @@ common_sources = \
 	homedir.c \
 	gettime.c gettime.h \
 	yesno.c \
-	b64enc.c b64dec.c \
+	b64enc.c b64dec.c zb32.c \
 	convert.c \
 	percent.c \
 	miscellaneous.c \
@@ -166,7 +166,7 @@ jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils t-dns-cert \
-	       t-mapstrings
+	       t-mapstrings t-zb32
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -202,3 +202,4 @@ t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
 t_dns_cert_LDADD = $(t_common_ldadd) $(DNSLIBS)
 t_mapstrings_LDADD = $(t_common_ldadd)
+t_zb32_LDADD = $(t_common_ldadd)

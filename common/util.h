@@ -164,6 +164,8 @@ gpg_error_t b64dec_proc (struct b64state *state, void *buffer, size_t length,
 gpg_error_t b64dec_finish (struct b64state *state);
 
 
+/*-- zb32.c --*/
+char *zb32_encode (const void *data, unsigned int databits);
 
 
 /*-- sexputil.c */
