@@ -185,7 +185,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
         err = gpg_error (GPG_ERR_BAD_MPI);
       else
         err = gcry_sexp_build (&s_data, NULL, "(enc-val(ecdh(s%m)(e%m)))",
-                               enc->data[0], enc->data[1]);
+                               enc->data[1], enc->data[0]);
     }
   else
     err = gpg_error (GPG_ERR_BUG);

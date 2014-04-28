@@ -1991,7 +1991,7 @@ agent_pkdecrypt (ctrl_t ctrl, const char *keygrip, const char *desc,
       xfree (buf);
       return gpg_error (GPG_ERR_INV_SEXP);
     }
-  len -= 11;   /* Count only the data of the second part. */
+  len -= 10;   /* Count only the data of the second part. */
   p = buf + 8; /* Skip leading parenthesis and the value tag. */
 
   n = strtoul (p, &endp, 10);

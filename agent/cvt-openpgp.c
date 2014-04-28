@@ -68,21 +68,17 @@ get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
       break;
 
     case GCRY_PK_ELG:
-    case GCRY_PK_ELG_E:
       err = gcry_sexp_build (&s_pkey, NULL,
                              "(public-key(elg(p%m)(g%m)(y%m)))",
                              pkey[0], pkey[1], pkey[2]);
       break;
 
     case GCRY_PK_RSA:
-    case GCRY_PK_RSA_E:
-    case GCRY_PK_RSA_S:
       err = gcry_sexp_build (&s_pkey, NULL,
                              "(public-key(rsa(n%m)(e%m)))", pkey[0], pkey[1]);
       break;
 
-    case GCRY_PK_ECDSA:
-    case GCRY_PK_ECDH:
+    case GCRY_PK_ECC:
       err = gcry_sexp_build (&s_pkey, NULL,
                              "(public-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)))",
                              pkey[0], pkey[1], pkey[2], pkey[3], pkey[4],
@@ -138,14 +134,10 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
                              skey[5]);
       break;
 
-    case GCRY_PK_ECDSA:
-    case GCRY_PK_ECDH:
-      /* Although our code would work with "ecc" we explicitly use
-         "ecdh" or "ecdsa" to implicitly set the key capabilities.  */
+    case GCRY_PK_ECC:
       err = gcry_sexp_build (&s_skey, NULL,
-                             "(private-key(%s(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
+                             "(private-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
                              "(d%m)))",
-                             pubkey_algo == GCRY_PK_ECDSA?"ecdsa":"ecdh",
                              skey[0], skey[1], skey[2], skey[3], skey[4],
                              skey[5], skey[6]);
       break;
@@ -186,7 +178,6 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
       break;
 
     case GCRY_PK_ELG:
-    case GCRY_PK_ELG_E:
       err = gcry_sexp_build
         (&s_skey, NULL,
          "(protected-private-key(elg(p%m)(g%m)(y%m)"
@@ -196,8 +187,6 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
 
 
     case GCRY_PK_RSA:
-    case GCRY_PK_RSA_E:
-    case GCRY_PK_RSA_S:
       err = gcry_sexp_build
         (&s_skey, NULL,
          "(protected-private-key(rsa(n%m)(e%m)",
@@ -205,15 +194,11 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
          skey[0], skey[1], transfer_key );
       break;
 
-    case GCRY_PK_ECDSA:
-    case GCRY_PK_ECDH:
-      /* Although our code would work with "ecc" we explicitly use
-         "ecdh" or "ecdsa" to implicitly set the key capabilities.  */
+    case GCRY_PK_ECC:
       err = gcry_sexp_build
         (&s_skey, NULL,
-         "(protected-private-key(%s(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
+         "(protected-private-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
          "(protected openpgp-native%S)))",
-         pubkey_algo == GCRY_PK_ECDSA?"ecdsa":"ecdh",
          skey[0], skey[1], skey[2], skey[3], skey[4], skey[5], transfer_key);
       break;
 
@@ -358,10 +343,6 @@ do_unprotect (const char *passphrase,
   gcry_mpi_t tmpmpi;
 
   *r_key = NULL;
-
-  /* Unfortunately, the OpenPGP PK algorithm numbers need to be
-     re-mapped for Libgcrypt.    */
-  pubkey_algo = map_pk_openpgp_to_gcry (pubkey_algo);
 
   err = prepare_unprotect (pubkey_algo, skey, skeysize, s2k_mode,
                            &npkey, &nskey, &skeylen);
@@ -864,14 +845,12 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
 
   if (unattended && !from_native)
     {
-      int pubkey_g_algo = map_pk_openpgp_to_gcry (pubkey_algo);
-
-      err = prepare_unprotect (pubkey_g_algo, skey, DIM(skey), s2k_mode,
+      err = prepare_unprotect (pubkey_algo, skey, DIM(skey), s2k_mode,
                                NULL, NULL, NULL);
       if (err)
         goto leave;
 
-      err = convert_transfer_key (&s_skey, pubkey_g_algo, skey, s_pgp);
+      err = convert_transfer_key (&s_skey, pubkey_algo, skey, s_pgp);
       if (err)
         goto leave;
     }
@@ -1195,7 +1174,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   else if (!strcmp (name, "ecc"))
     {
       /* FIXME: We need to use the curve parameter.  */
-      algoname = "?"; /* Decide later by checking the usage.  */
+      algoname = "ecc"; /* Decide later by checking the usage.  */
       npkey = 6;
       nskey = 7;
       err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
