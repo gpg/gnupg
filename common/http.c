@@ -161,7 +161,9 @@ typedef void * gnutls_session_t;
 #endif
 
 static gpg_err_code_t do_parse_uri (parsed_uri_t uri, int only_local_part,
-                                    int no_scheme_check);
+                                    int no_scheme_check, int force_tls);
+static gpg_error_t parse_uri (parsed_uri_t *ret_uri, const char *uri,
+                              int no_scheme_check, int force_tls);
 static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
@@ -463,7 +465,9 @@ make_header_line (const char *prefix, const char *suffix,
 
 
 
-/* Register the global TLS callback fucntion.  */
+/* Register a non-standard global TLS callback function.  If no
+   verification is desired a callback needs to be registered which
+   always returns NULL.  */
 void
 http_register_tls_callback (gpg_error_t (*cb)(http_t, http_session_t, int))
 {
@@ -473,15 +477,24 @@ http_register_tls_callback (gpg_error_t (*cb)(http_t, http_session_t, int))
 
 /* Register a CA certificate for future use.  The certificate is
    expected to be in FNAME.  PEM format is assume if FNAME has a
-   suffix of ".pem" */
+   suffix of ".pem".  If FNAME is NULL the list of CA files is
+   removed.  */
 void
 http_register_tls_ca (const char *fname)
 {
   strlist_t sl;
 
-  sl = add_to_strlist (&tls_ca_certlist, fname);
-  if (*sl->d && !strcmp (sl->d + strlen (sl->d) - 4, ".pem"))
-    sl->flags = 1;
+  if (!fname)
+    {
+      free_strlist (tls_ca_certlist);
+      tls_ca_certlist = NULL;
+    }
+  else
+    {
+      sl = add_to_strlist (&tls_ca_certlist, fname);
+      if (*sl->d && !strcmp (sl->d + strlen (sl->d) - 4, ".pem"))
+        sl->flags = 1;
+    }
 }
 
 
@@ -614,7 +627,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
   hd->flags = flags;
   hd->session = session;
 
-  err = http_parse_uri (&hd->uri, url, 0);
+  err = parse_uri (&hd->uri, url, 0, !!(flags & HTTP_FLAG_FORCE_TLS));
   if (!err)
     err = send_request (hd, auth, proxy, srvtag, headers);
 
@@ -875,8 +888,46 @@ http_get_status_code (http_t hd)
   return hd?hd->status_code:0;
 }
 
+/* Return information pertaining to TLS.  If TLS is not in use for HD,
+   NULL is returned.  WHAT is used ask for specific information:
+
+     (NULL) := Only check whether TLS is is use.  Returns an
+               unspecified string if TLS is in use.  That string may
+               even be the empty string.
+ */
+const char *
+http_get_tls_info (http_t hd, const char *what)
+{
+  (void)what;
+
+  if (!hd)
+    return NULL;
+
+  return hd->uri->use_tls? "":NULL;
+}
+
 
 
+static gpg_error_t
+parse_uri (parsed_uri_t *ret_uri, const char *uri,
+           int no_scheme_check, int force_tls)
+{
+  gpg_err_code_t ec;
+
+  *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
+  if (!*ret_uri)
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+  strcpy ((*ret_uri)->buffer, uri);
+  ec = do_parse_uri (*ret_uri, 0, no_scheme_check, force_tls);
+  if (ec)
+    {
+      xfree (*ret_uri);
+      *ret_uri = NULL;
+    }
+  return gpg_err_make (default_errsource, ec);
+}
+
+
 /*
  * Parse an URI and put the result into the newly allocated RET_URI.
  * On success the caller must use release_parsed_uri() to releases the
@@ -887,20 +938,9 @@ gpg_error_t
 http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
                 int no_scheme_check)
 {
-  gpg_err_code_t ec;
-
-  *ret_uri = xtrycalloc (1, sizeof **ret_uri + strlen (uri));
-  if (!*ret_uri)
-    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-  strcpy ((*ret_uri)->buffer, uri);
-  ec = do_parse_uri (*ret_uri, 0, no_scheme_check);
-  if (ec)
-    {
-      xfree (*ret_uri);
-      *ret_uri = NULL;
-    }
-  return gpg_err_make (default_errsource, ec);
+  return parse_uri (ret_uri, uri, no_scheme_check, 0);
 }
+
 
 void
 http_release_parsed_uri (parsed_uri_t uri)
@@ -920,7 +960,8 @@ http_release_parsed_uri (parsed_uri_t uri)
 
 
 static gpg_err_code_t
-do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
+do_parse_uri (parsed_uri_t uri, int only_local_part,
+              int no_scheme_check, int force_tls)
 {
   uri_tuple_t *tail;
   char *p, *p2, *p3, *pp;
@@ -951,18 +992,20 @@ do_parse_uri (parsed_uri_t uri, int only_local_part, int no_scheme_check)
       for (pp=p; *pp; pp++)
        *pp = tolower (*(unsigned char*)pp);
       uri->scheme = p;
-      if (!strcmp (uri->scheme, "http"))
+      if (!strcmp (uri->scheme, "http") && !force_tls)
         {
           uri->port = 80;
           uri->is_http = 1;
         }
-      else if (!strcmp (uri->scheme, "hkp"))
+      else if (!strcmp (uri->scheme, "hkp") && !force_tls)
         {
           uri->port = 11371;
           uri->is_http = 1;
         }
 #ifdef HTTP_USE_GNUTLS
-      else if (!strcmp (uri->scheme, "https") || !strcmp (uri->scheme,"hkps"))
+      else if (!strcmp (uri->scheme, "https") || !strcmp (uri->scheme,"hkps")
+               || (force_tls && (!strcmp (uri->scheme, "http")
+                                 || !strcmp (uri->scheme,"hkp"))))
         {
           uri->port = 443;
           uri->is_http = 1;
@@ -1329,7 +1372,8 @@ send_request (http_t hd, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = http_parse_uri (&uri, http_proxy, 0);
+      err = parse_uri (&uri, http_proxy, 0,
+                       !!(hd->flags & HTTP_FLAG_FORCE_TLS));
       if (err)
 	{
 	  log_error ("invalid HTTP proxy (%s): %s\n",
@@ -1412,17 +1456,17 @@ send_request (http_t hd, const char *auth,
           return gpg_err_make (default_errsource, GPG_ERR_NETWORK);
         }
 
+      hd->session->verify.done = 0;
       if (tls_callback)
+        err = tls_callback (hd, hd->session, 0);
+      else
+        err = http_verify_server_credentials (hd->session);
+      if (err)
         {
-          hd->session->verify.done = 0;
-          err = tls_callback (hd, hd->session, 0);
-          if (err)
-            {
-              log_info ("TLS connection authentication failed: %s\n",
-                        gpg_strerror (err));
-              xfree (proxy_authstr);
-              return err;
-            }
+          log_info ("TLS connection authentication failed: %s\n",
+                    gpg_strerror (err));
+          xfree (proxy_authstr);
+          return err;
         }
     }
 #endif /*HTTP_USE_GNUTLS*/

@@ -46,7 +46,11 @@
 # include <gnutls/gnutls.h>  /* For init, logging, and deinit.  */
 #endif /*HTTP_USE_GNUTLS*/
 
+#define PGM "t-http"
 
+static int verbose;
+static int debug;
+static int no_verify;
 
 /* static void */
 /* read_dh_params (const char *fname) */
@@ -98,7 +102,7 @@ verify_callback (http_t hd, http_session_t session, int reserved)
 {
   (void)hd;
   (void)reserved;
-  return http_verify_server_credentials (session);
+  return no_verify? 0 : http_verify_server_credentials (session);
 }
 
 
@@ -131,23 +135,92 @@ prepend_srcdir (const char *fname)
 int
 main (int argc, char **argv)
 {
+  int last_argc = -1;
   gpg_error_t err;
   int rc;
   parsed_uri_t uri;
   uri_tuple_t r;
   http_t hd;
   int c;
+  unsigned int my_http_flags = 0;
+  int no_out = 0;
+  const char *cafile = NULL;
   http_session_t session = NULL;
 
   es_init ();
-  log_set_prefix ("t-http", 1 | 4);
-  if (argc != 2)
+  log_set_prefix (PGM, 1 | 4);
+  if (argc)
+    { argc--; argv++; }
+  while (argc && last_argc != argc )
     {
-      fprintf (stderr, "usage: t-http uri\n");
-      return 1;
+      last_argc = argc;
+      if (!strcmp (*argv, "--"))
+        {
+          argc--; argv++;
+          break;
+        }
+      else if (!strcmp (*argv, "--help"))
+        {
+          fputs ("usage: " PGM " URL\n"
+                 "Options:\n"
+                 "  --verbose       print timings etc.\n"
+                 "  --debug         flyswatter\n"
+                 "  --cacert FNAME  expect CA certificate in file FNAME\n"
+                 "  --no-verify     do not verify the certificate\n"
+                 "  --force-tls     use HTTP_FLAG_FORCE_TLS\n"
+                 "  --no-out        do not print the content\n",
+                 stdout);
+          exit (0);
+        }
+      else if (!strcmp (*argv, "--verbose"))
+        {
+          verbose++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--debug"))
+        {
+          verbose += 2;
+          debug++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cacert"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              cafile = *argv;
+              argc--; argv++;
+            }
+        }
+      else if (!strcmp (*argv, "--no-verify"))
+        {
+          no_verify = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--force-tls"))
+        {
+          my_http_flags |= HTTP_FLAG_FORCE_TLS;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--no-out"))
+        {
+          no_out = 1;
+          argc--; argv++;
+        }
+      else if (!strncmp (*argv, "--", 2))
+        {
+          fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
+          exit (1);
+        }
     }
-  argc--;
-  argv++;
+  if (argc != 1)
+    {
+      fprintf (stderr, PGM ": no or roo many URLS given\n");
+      exit (1);
+    }
+
+  if (!cafile)
+    cafile = prepend_srcdir ("tls-ca.pem");
 
 #ifdef HTTP_USE_GNUTLS
   rc = gnutls_global_init ();
@@ -155,7 +228,7 @@ main (int argc, char **argv)
     log_error ("gnutls_global_init failed: %s\n", gnutls_strerror (rc));
 
   http_register_tls_callback (verify_callback);
-  http_register_tls_ca (prepend_srcdir ("tls-ca.pem"));
+  http_register_tls_ca (cafile);
 
   err = http_session_new (&session, NULL);
   if (err)
@@ -217,11 +290,17 @@ main (int argc, char **argv)
             }
           putchar ('\n');
         }
+      printf ("TLS   : %s\n",
+              uri->use_tls? "yes":
+              (my_http_flags&HTTP_FLAG_FORCE_TLS)? "forced" : "no");
+
     }
+  fflush (stdout);
   http_release_parsed_uri (uri);
   uri = NULL;
 
-  rc = http_open_document (&hd, *argv, NULL, 0, NULL, session, NULL, NULL);
+  rc = http_open_document (&hd, *argv, NULL, my_http_flags,
+                           NULL, session, NULL, NULL);
   if (rc)
     {
       log_error ("can't get '%s': %s\n", *argv, gpg_strerror (rc));
@@ -242,6 +321,7 @@ main (int argc, char **argv)
       printf ("HDR: %s: %s\n", names[i], http_get_header (hd, names[i]));
     xfree (names);
   }
+  fflush (stdout);
 
   switch (http_get_status_code (hd))
     {
@@ -250,12 +330,21 @@ main (int argc, char **argv)
     case 401:
     case 403:
     case 404:
-      while ((c = es_getc (http_get_read_ptr (hd))) != EOF)
-        putchar (c);
+      {
+        unsigned long count = 0;
+        while ((c = es_getc (http_get_read_ptr (hd))) != EOF)
+          {
+            count++;
+            if (!no_out)
+              putchar (c);
+          }
+        log_info ("Received bytes: %lu\n", count);
+      }
       break;
     case 301:
     case 302:
-      printf ("Redirected to '%s'\n", http_get_header (hd, "Location"));
+    case 307:
+      log_info ("Redirected to: %s\n", http_get_header (hd, "Location"));
       break;
     }
   http_close (hd, 0);
