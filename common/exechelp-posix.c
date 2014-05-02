@@ -50,7 +50,7 @@
 #undef USE_NPTH
 #endif
 
-#ifdef USE_NPTH
+#ifdef HAVE_NPTH
 #include <npth.h>
 #endif
 #include <sys/wait.h>

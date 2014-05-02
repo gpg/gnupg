@@ -162,7 +162,7 @@ typedef void (*func_free_t) (void *mem);
 
 /* Primitive system I/O.  */
 
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
 # define ESTREAM_SYS_READ  do_npth_read
 # define ESTREAM_SYS_WRITE do_npth_write
 # define ESTREAM_SYS_YIELD() npth_usleep (0)
@@ -197,7 +197,7 @@ struct estream_internal
   unsigned char buffer[BUFFER_BLOCK_SIZE];
   unsigned char unread_buffer[BUFFER_UNREAD_SIZE];
 
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   npth_mutex_t lock;		 /* Lock. */
 #endif
 
@@ -242,7 +242,7 @@ static int custom_std_fds[3];
 static unsigned char custom_std_fds_valid[3];
 
 /* A lock object for the estream list and the custom_std_fds array.  */
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
 static npth_mutex_t estream_list_lock;
 #endif
 
@@ -358,7 +358,7 @@ map_w32_to_errno (DWORD w32_err)
 static int
 init_stream_lock (estream_t ES__RESTRICT stream)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   int rc;
 
   if (!stream->intern->samethread)
@@ -380,7 +380,7 @@ init_stream_lock (estream_t ES__RESTRICT stream)
 static void
 lock_stream (estream_t ES__RESTRICT stream)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   if (!stream->intern->samethread)
     {
       dbg_lock_1 ("enter lock_stream for %p\n", stream);
@@ -396,7 +396,7 @@ lock_stream (estream_t ES__RESTRICT stream)
 static int
 trylock_stream (estream_t ES__RESTRICT stream)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   int rc;
 
   if (!stream->intern->samethread)
@@ -418,7 +418,7 @@ trylock_stream (estream_t ES__RESTRICT stream)
 static void
 unlock_stream (estream_t ES__RESTRICT stream)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   if (!stream->intern->samethread)
     {
       dbg_lock_1 ("enter unlock_stream for %p\n", stream);
@@ -434,7 +434,7 @@ unlock_stream (estream_t ES__RESTRICT stream)
 static int
 init_list_lock (void)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   int rc;
 
   dbg_lock_0 ("enter init_list_lock\n");
@@ -450,7 +450,7 @@ init_list_lock (void)
 static void
 lock_list (void)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   dbg_lock_0 ("enter lock_list\n");
   npth_mutex_lock (&estream_list_lock);
   dbg_lock_0 ("leave lock_list\n");
@@ -461,7 +461,7 @@ lock_list (void)
 static void
 unlock_list (void)
 {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
   dbg_lock_0 ("enter unlock_list\n");
   npth_mutex_unlock (&estream_list_lock);
   dbg_lock_0 ("leave unlock_list\n");
@@ -548,7 +548,7 @@ do_list_remove (estream_t stream, int with_locked_list)
  * write, assuming that we do I/O on a plain file where the operation
  * can't block.  FIXME:  Is this still needed for npth?
  */
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
 static int
 do_npth_read (int fd, void *buffer, size_t size)
 {
@@ -574,7 +574,7 @@ do_npth_write (int fd, const void *buffer, size_t size)
   return npth_write (fd, buffer, size);
 # endif /* !HAVE_W32_SYSTEM*/
 }
-#endif /*HAVE_NPTH*/
+#endif /*USE_NPTH*/
 
 
 
@@ -1125,7 +1125,7 @@ es_func_w32_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
           /* Note: Our pth_read actually uses HANDLE!
              FIXME: Check  whether this is the case for npth. */
           bytes_read = npth_read ((int)w32_cookie->hd, buffer, size);
@@ -1171,7 +1171,7 @@ es_func_w32_write (void *cookie, const void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
           /* Note: Our pth_write actually uses HANDLE! */
           bytes_written = npth_write ((int)w32_cookie->hd, buffer, size);
 #else

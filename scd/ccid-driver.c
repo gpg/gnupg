@@ -315,18 +315,8 @@ set_msg_len (unsigned char *msg, unsigned int length)
 static void
 my_sleep (int seconds)
 {
-#ifdef HAVE_NPTH
-  /* With Pth we also call the standard sleep(0) so that the process
-     may give up its timeslot.  */
-  if (!seconds)
-    {
-# ifdef HAVE_W32_SYSTEM
-      Sleep (0);
-# else
-      sleep (0);
-# endif
-    }
-  pth_sleep (seconds);
+#ifdef USE_NPTH
+  npth_sleep (seconds);
 #else
 # ifdef HAVE_W32_SYSTEM
   Sleep (seconds*1000);

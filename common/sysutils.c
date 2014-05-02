@@ -275,18 +275,8 @@ check_permissions(const char *path,int extension,int checkonly)
 void
 gnupg_sleep (unsigned int seconds)
 {
-#ifdef HAVE_NPTH
-  /* With Pth we force a regular sleep for seconds == 0 so that also
-     the process will give up its timeslot.  */
-  if (!seconds)
-    {
-# ifdef HAVE_W32_SYSTEM
-      Sleep (0);
-# else
-      sleep (0);
-# endif
-    }
-  pth_sleep (seconds);
+#ifdef USE_NPTH
+  npth_sleep (seconds);
 #else
   /* Fixme:  make sure that a sleep won't wake up to early.  */
 # ifdef HAVE_W32_SYSTEM

@@ -900,9 +900,10 @@ AC_DEFINE_UNQUOTED(SHRED,
 #
 AM_PATH_NPTH("$NEED_NPTH_API:$NEED_NPTH_VERSION",have_npth=yes,have_npth=no)
 if test "$have_npth" = "yes"; then
-  # We define this macro because some code parts require it.
-  AC_DEFINE(USE_NPTH, 1,
+  AC_DEFINE(HAVE_NPTH, 1,
               [Defined if the New Portable Thread Library is available])
+  AC_DEFINE(USE_NPTH, 1,
+              [Defined if support for nPth is requested and nPth is available])
 else
   AC_MSG_WARN([[
 ***

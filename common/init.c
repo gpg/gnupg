@@ -156,18 +156,12 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
 #ifdef HAVE_W32_SYSTEM
   /* For W32 we need to initialize the socket layer.  This is because
      we use recv and send in libassuan as well as at some other
-     places.  If we are building with PTH we let pth_init do it.  We
-     can't do much on error so we ignore them.  An error would anyway
-     later pop up if one of the socket functions is used. */
-# ifdef HAVE_NPTH
-  pth_init ();
-# else
+     places.  */
   {
     WSADATA wsadat;
 
     WSAStartup (0x202, &wsadat);
   }
-# endif /*!HAVE_NPTH*/
 #endif
 
 #ifdef HAVE_W32CE_SYSTEM

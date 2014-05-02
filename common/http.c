@@ -74,14 +74,12 @@
 #endif /*!HAVE_W32_SYSTEM*/
 
 #ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
-# undef HAVE_NPTH
 # undef USE_NPTH
 #endif
 
-#ifdef HAVE_NPTH
+#ifdef USE_NPTH
 # include <npth.h>
 #endif
-
 
 #ifdef HTTP_USE_GNUTLS
 # include <gnutls/gnutls.h>
@@ -94,7 +92,7 @@ typedef gnutls_transport_ptr gnutls_transport_ptr_t;
 #endif /*HTTP_USE_GNUTLS*/
 
 #ifdef TEST
-#undef USE_DNS_SRV
+# undef USE_DNS_SRV
 #endif
 
 #include "util.h"
@@ -119,10 +117,10 @@ struct srventry
 #endif/*!USE_DNS_SRV*/
 
 
-#ifdef HAVE_NPTH
-# define my_select(a,b,c,d,e)  pth_select ((a), (b), (c), (d), (e))
-# define my_connect(a,b,c)     pth_connect ((a), (b), (c))
-# define my_accept(a,b,c)      pth_accept ((a), (b), (c))
+#ifdef USE_NPTH
+# define my_select(a,b,c,d,e)  npth_select ((a), (b), (c), (d), (e))
+# define my_connect(a,b,c)     npth_connect ((a), (b), (c))
+# define my_accept(a,b,c)      npth_accept ((a), (b), (c))
 #else
 # define my_select(a,b,c,d,e)  select ((a), (b), (c), (d), (e))
 # define my_connect(a,b,c)     connect ((a), (b), (c))
@@ -359,8 +357,9 @@ my_socket_unref (my_socket_t so)
 /* #define my_socket_unref(a) _my_socket_unref ((a),__LINE__) */
 
 
+
 /* This notification function is called by estream whenever stream is
-   closed.  Its purpose is to mark the the closing in the handle so
+   closed.  Its purpose is to mark the closing in the handle so
    that a http_close won't accidentally close the estream.  The function
    http_close removes this notification so that it won't be called if
    http_close was used before an es_fclose.  */
@@ -1835,7 +1834,7 @@ connect_server (const char *server, unsigned short port,
       sock = socket (host->h_addrtype, SOCK_STREAM, 0);
       if (sock == -1)
         {
-          log_error (_("error creating socket: %s\n"), strerror (errno));
+          log_error ("error creating socket: %s\n", strerror (errno));
           xfree (serverlist);
           return -1;
         }
@@ -1879,7 +1878,7 @@ connect_server (const char *server, unsigned short port,
 #ifdef HAVE_W32_SYSTEM
       log_error ("can't connect to '%s': %s%sec=%d\n",
                    server,
-                   hostfound? "":_("host not found"),
+                   hostfound? "":"host not found",
                    hostfound? "":" - ", (int)WSAGetLastError());
 #else
       log_error ("can't connect to '%s': %s\n",
@@ -1906,16 +1905,16 @@ write_server (int sock, const char *data, size_t length)
   nleft = length;
   while (nleft > 0)
     {
-#if defined(HAVE_W32_SYSTEM) && !defined(HAVE_NPTH)
+#if defined(HAVE_W32_SYSTEM) && !defined(USE_NPTH)
       nwritten = send (sock, data, nleft, 0);
       if ( nwritten == SOCKET_ERROR )
         {
           log_info ("network write failed: ec=%d\n", (int)WSAGetLastError ());
           return gpg_error (GPG_ERR_NETWORK);
         }
-#else /*!HAVE_W32_SYSTEM || HAVE_NPTH*/
-# ifdef HAVE_NPTH
-      nwritten = pth_write (sock, data, nleft);
+#else /*!HAVE_W32_SYSTEM || USE_NPTH*/
+# ifdef USE_NPTH
+      nwritten = npth_write (sock, data, nleft);
 # else
       nwritten = write (sock, data, nleft);
 # endif
@@ -1935,7 +1934,7 @@ write_server (int sock, const char *data, size_t length)
 	  log_info ("network write failed: %s\n", strerror (errno));
 	  return gpg_error_from_syserror ();
 	}
-#endif /*!HAVE_W32_SYSTEM || HAVE_NPTH*/
+#endif /*!HAVE_W32_SYSTEM || USE_NPTH*/
       nleft -= nwritten;
       data += nwritten;
     }
@@ -1990,8 +1989,8 @@ cookie_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
-#ifdef HAVE_NPTH
-          nread = pth_read (c->sock->fd, buffer, size);
+#ifdef USE_NPTH
+          nread = npth_read (c->sock->fd, buffer, size);
 #elif defined(HAVE_W32_SYSTEM)
           /* Under Windows we need to use recv for a socket.  */
           nread = recv (c->sock->fd, buffer, size, 0);
