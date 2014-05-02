@@ -58,6 +58,8 @@ NEED_KSBA_VERSION=1.2.0
 NEED_NPTH_API=1
 NEED_NPTH_VERSION=0.91
 
+NEED_GNUTLS_VERSION=3.0
+
 
 development_version=mym4_isgit
 PACKAGE=$PACKAGE_NAME
@@ -911,6 +913,26 @@ else
 *** we need the support of the New Portable Threads Library.
 ***]])
 fi
+
+#
+# Check whether GNUTLS is available
+#
+PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= $NEED_GNUTLS_VERSION],
+                               [have_gnutls=yes],
+                               [have_gnutls=no])
+if test "$have_gnutls" = "yes"; then
+  AC_SUBST([LIBGNUTLS_CFLAGS])
+  AC_SUBST([LIBGNUTLS_LIBS])
+  AC_DEFINE(HTTP_USE_GNUTLS, 1, [Enable GNUTLS support in http.c])
+else
+  tmp=$(echo "$LIBGNUTLS_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
+  AC_MSG_WARN([[
+***
+*** Building without GNUTLS - no TLS access to keyservers.
+***
+*** $tmp]])
+fi
+
 
 
 AC_MSG_NOTICE([checking for networking options])
@@ -1867,6 +1889,8 @@ echo "
         Use standard socket: $use_standard_socket
         Dirmngr auto start:  $dirmngr_auto_start
         Readline support:    $gnupg_cv_have_readline
+        DNS SRV support:     $use_dns_srv
+        TLS support:         $have_gnutls
 "
 if test x"$use_regex" != xyes ; then
 echo "

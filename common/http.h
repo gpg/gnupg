@@ -82,10 +82,20 @@ enum
     HTTP_FLAG_IGNORE_IPv6 = 128  /* Do not use IPv6.  */
   };
 
+
+struct http_session_s;
+typedef struct http_session_s *http_session_t;
+
 struct http_context_s;
 typedef struct http_context_s *http_t;
 
-void http_register_tls_callback (gpg_error_t (*cb) (http_t, void *, int));
+void http_register_tls_callback (gpg_error_t (*cb)(http_t,http_session_t,int));
+void http_register_tls_ca (const char *fname);
+
+gpg_error_t http_session_new (http_session_t *r_session,
+                              const char *tls_priority);
+void http_session_release (http_session_t sess);
+
 
 gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
                             int no_scheme_check);
@@ -101,7 +111,7 @@ gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        const char *auth,
                        unsigned int flags,
                        const char *proxy,
-                       void *tls_context,
+                       http_session_t session,
                        const char *srvtag,
                        strlist_t headers);
 
@@ -116,7 +126,7 @@ gpg_error_t http_open_document (http_t *r_hd,
                                 const char *auth,
                                 unsigned int flags,
                                 const char *proxy,
-                                void *tls_context,
+                                http_session_t session,
                                 const char *srvtag,
                                 strlist_t headers);
 
@@ -124,6 +134,8 @@ estream_t http_get_read_ptr (http_t hd);
 estream_t http_get_write_ptr (http_t hd);
 unsigned int http_get_status_code (http_t hd);
 const char *http_get_header (http_t hd, const char *name);
+const char **http_get_header_names (http_t hd);
+gpg_error_t http_verify_server_credentials (http_session_t sess);
 
 char *http_escape_string (const char *string, const char *specials);
 char *http_escape_data (const void *data, size_t datalen, const char *specials);

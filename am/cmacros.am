@@ -75,3 +75,5 @@ resource_objs =
 # Convenience macros
 libcommon = ../common/libcommon.a
 libcommonpth = ../common/libcommonpth.a
+libcommontls = ../common/libcommontls.a
+libcommontlsnpth = ../common/libcommontlsnpth.a

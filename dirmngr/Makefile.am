@@ -60,8 +60,10 @@ dirmngr_SOURCES += ldap-wrapper-ce.c  dirmngr_ldap.c
 endif
 
 
-dirmngr_LDADD = $(libcommonpth) ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
-	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) $(LIBINTL) $(LIBICONV)
+dirmngr_LDADD = $(libcommontlsnpth) $(libcommonpth) \
+        ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
+	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
+	$(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV)
 if !USE_LDAPWRAPPER
 dirmngr_LDADD += $(LDAPLIBS)
 endif
@@ -79,8 +81,7 @@ endif
 dirmngr_client_SOURCES = dirmngr-client.c
 dirmngr_client_LDADD = $(libcommon) no-libgcrypt.o \
 	                ../gl/libgnu.a $(LIBASSUAN_LIBS) \
-	               $(GPG_ERROR_LIBS) $(LIBINTL) \
-                       $(LIBICONV)
+	               $(GPG_ERROR_LIBS) $(NETLIBS) $(LIBINTL) $(LIBICONV)
 dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
 
 

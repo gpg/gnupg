@@ -39,8 +39,9 @@
   - fixme: list other requirements.
 
 
-  - With HTTP_USE_GNUTLS support for https is provided (this also
-    requires estream).
+  - With HTTP_USE_GNUTLS or HTTP_USE_POLARSSL support for https is
+    provided (this also requires estream).
+
   - With HTTP_NO_WSASTARTUP the socket initialization is not done
     under Windows.  This is useful if the socket layer has already
     been initialized elsewhere.  This also avoids the installation of
@@ -81,19 +82,18 @@
 # include <npth.h>
 #endif
 
+#if defined (HTTP_USE_GNUTLS) && defined (HTTP_USE_POLARSSL)
+# error Both, HTTP_USE_GNUTLS and HTTP_USE_POLARSSL, are defined.
+#endif
+
 #ifdef HTTP_USE_GNUTLS
 # include <gnutls/gnutls.h>
-/* For non-understandable reasons GNUTLS dropped the _t suffix from
-   all types. yes, ISO-C might be read as this but there are still
-   other name space conflicts and using _t is actually a Good
-   Thing. */
-typedef gnutls_session gnutls_session_t;
-typedef gnutls_transport_ptr gnutls_transport_ptr_t;
+# include <gnutls/x509.h>
 #endif /*HTTP_USE_GNUTLS*/
-
-#ifdef TEST
-# undef USE_DNS_SRV
+#ifdef HTTP_USE_POLARSSL
+# error Support for PolarSSL has not yet been added
 #endif
+
 
 #include "util.h"
 #include "i18n.h"
@@ -204,22 +204,36 @@ struct cookie_s
   /* Socket object or NULL if already closed. */
   my_socket_t sock;
 
-  /* TLS session context or NULL if not used. */
-  gnutls_session_t tls_session;
+  /* The session object or NULL if not used. */
+  http_session_t session;
+
+  /* True if TLS is to be used.  */
+  int use_tls;
 
   /* The remaining content length and a flag telling whether to use
      the content length.  */
   longcounter_t content_length;
   unsigned int content_length_valid:1;
-
-  /* Flag to communicate with the close handler. */
-  unsigned int keep_socket:1;
 };
 typedef struct cookie_s *cookie_t;
 
+/* The session object. */
+struct http_session_s
+{
 #ifdef HTTP_USE_GNUTLS
-static gpg_error_t (*tls_callback) (http_t, gnutls_session_t, int);
-#endif /*HTTP_USE_GNUTLS*/
+  gnutls_certificate_credentials_t certcred;
+  gnutls_session_t tls_session;
+  struct {
+    int done;      /* Verifciation has been done.  */
+    int rc;        /* GnuTLS verification return code.  */
+    unsigned int status; /* Verification status.  */
+  } verify;
+  char *servername; /* Malloced server name.  */
+#else
+  int dummy;
+#endif
+};
+
 
 
 /* An object to save header lines. */
@@ -243,7 +257,7 @@ struct http_context_s
   estream_t fp_write;
   void *write_cookie;
   void *read_cookie;
-  void *tls_context;
+  http_session_t session;
   parsed_uri_t uri;
   http_req_t req_type;
   char *buffer;          /* Line buffer. */
@@ -252,6 +266,12 @@ struct http_context_s
   header_t headers;      /* Received headers. */
 };
 
+
+/* The global callback for the verification fucntion.  */
+static gpg_error_t (*tls_callback) (http_t, http_session_t, int);
+
+/* The list of files with trusted CA certificates.  */
+static strlist_t tls_ca_certlist;
 
 
 
@@ -340,7 +360,7 @@ my_socket_ref (my_socket_t so)
    has no more references, close the socket and release the
    object.  */
 static void
-my_socket_unref (my_socket_t so)
+my_socket_unref (my_socket_t so, void (*preclose)(void*), void *preclosearg)
 {
   if (so)
     {
@@ -349,12 +369,29 @@ my_socket_unref (my_socket_t so)
       /*            lnr, so, so->fd, so->refcount); */
       if (!so->refcount)
         {
+          if (preclose)
+            preclose (preclosearg);
           sock_close (so->fd);
           xfree (so);
         }
     }
 }
 /* #define my_socket_unref(a) _my_socket_unref ((a),__LINE__) */
+
+
+#if defined (USE_NPTH) && defined(HTTP_USE_GNUTLS)
+static ssize_t
+my_npth_read (gnutls_transport_ptr_t ptr, void *buffer, size_t size)
+{
+  return npth_read ((int)(unsigned long)ptr, buffer, size);
+}
+static ssize_t
+my_npth_write (gnutls_transport_ptr_t ptr, const void *buffer, size_t size)
+{
+  return npth_write ((int)(unsigned long)ptr, buffer, size);
+}
+#endif /*USE_NPTH && HTTP_USE_GNUTLS*/
+
 
 
 
@@ -383,13 +420,13 @@ fp_onclose_notification (estream_t stream, void *opaque)
  */
 static char *
 make_header_line (const char *prefix, const char *suffix,
-                   const void *data, size_t len )
+                  const void *data, size_t len )
 {
   static unsigned char bintoasc[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789+/";
-  const unsigned int *s = data;
+  const unsigned char *s = data;
   char *buffer, *p;
 
   buffer = xtrymalloc (strlen (prefix) + (len+2)/3*4 + strlen (suffix) + 1);
@@ -402,6 +439,7 @@ make_header_line (const char *prefix, const char *suffix,
       *p++ = bintoasc[(((s[0] <<4)&060)|((s[1] >> 4)&017))&077];
       *p++ = bintoasc[(((s[1]<<2)&074)|((s[2]>>6)&03))&077];
       *p++ = bintoasc[s[2]&077];
+      *p = 0;
     }
   if ( len == 2 )
     {
@@ -417,6 +455,7 @@ make_header_line (const char *prefix, const char *suffix,
       *p++ = '=';
       *p++ = '=';
     }
+  *p = 0;
   strcpy (p, suffix);
   return buffer;
 }
@@ -424,16 +463,131 @@ make_header_line (const char *prefix, const char *suffix,
 
 
 
+/* Register the global TLS callback fucntion.  */
 void
-http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
+http_register_tls_callback (gpg_error_t (*cb)(http_t, http_session_t, int))
 {
-#ifdef HTTP_USE_GNUTLS
-  tls_callback = (gpg_error_t (*) (http_t, gnutls_session_t, int))cb;
-#else
-  (void)cb;
-#endif
+  tls_callback = cb;
 }
 
+
+/* Register a CA certificate for future use.  The certificate is
+   expected to be in FNAME.  PEM format is assume if FNAME has a
+   suffix of ".pem" */
+void
+http_register_tls_ca (const char *fname)
+{
+  strlist_t sl;
+
+  sl = add_to_strlist (&tls_ca_certlist, fname);
+  if (*sl->d && !strcmp (sl->d + strlen (sl->d) - 4, ".pem"))
+    sl->flags = 1;
+}
+
+
+/* Create a new session object which is currently used to enable TLS
+   support.  It may eventually allow reusing existing connections.  */
+gpg_error_t
+http_session_new (http_session_t *r_session, const char *tls_priority)
+{
+  gpg_error_t err;
+  http_session_t sess;
+
+  *r_session = NULL;
+
+  sess = xtrycalloc (1, sizeof *sess);
+  if (!sess)
+    return gpg_error_from_syserror ();
+
+#ifdef HTTP_USE_GNUTLS
+  {
+    const char *errpos;
+    int rc;
+    strlist_t sl;
+
+    rc = gnutls_certificate_allocate_credentials (&sess->certcred);
+    if (rc < 0)
+      {
+        log_error ("gnutls_certificate_allocate_credentials failed: %s\n",
+                   gnutls_strerror (rc));
+        err = gpg_error (GPG_ERR_GENERAL);
+        goto leave;
+      }
+
+    for (sl = tls_ca_certlist; sl; sl = sl->next)
+      {
+        rc = gnutls_certificate_set_x509_trust_file
+          (sess->certcred, sl->d,
+           (sl->flags & 1)? GNUTLS_X509_FMT_PEM : GNUTLS_X509_FMT_DER);
+        if (rc < 0)
+          log_info ("setting CA from file '%s' failed: %s\n",
+                    sl->d, gnutls_strerror (rc));
+      }
+
+    rc = gnutls_init (&sess->tls_session, GNUTLS_CLIENT);
+    if (rc < 0)
+      {
+        log_error ("gnutls_init failed: %s\n", gnutls_strerror (rc));
+        err = gpg_error (GPG_ERR_GENERAL);
+        goto leave;
+      }
+    rc = gnutls_priority_set_direct (sess->tls_session,
+                                     tls_priority? tls_priority : "NORMAL",
+                                     &errpos);
+    if (rc < 0)
+      {
+        log_error ("gnutls_priority_set_direct failed at '%s': %s\n",
+                   errpos, gnutls_strerror (rc));
+        err = gpg_error (GPG_ERR_GENERAL);
+        goto leave;
+      }
+
+    rc = gnutls_credentials_set (sess->tls_session,
+                                 GNUTLS_CRD_CERTIFICATE, sess->certcred);
+    if (rc < 0)
+      {
+        log_error ("gnutls_credentials_set failed: %s\n", gnutls_strerror (rc));
+        err = gpg_error (GPG_ERR_GENERAL);
+        goto leave;
+      }
+  }
+
+#else /*!HTTP_USE_GNUTLS*/
+  (void)tls_priority;
+#endif /*!HTTP_USE_GNUTLS*/
+
+  err = 0;
+
+#ifdef HTTP_USE_GNUTLS
+ leave:
+#endif /*HTTP_USE_GNUTLS*/
+  if (err)
+    http_session_release (sess);
+  else
+    *r_session = sess;
+
+  return err;
+}
+
+
+/* Release a session.  Take care not to release it while it is beeing
+   used by a http contect object.  */
+void
+http_session_release (http_session_t sess)
+{
+  if (!sess)
+    return;
+
+#ifdef HTTP_USE_GNUTLS
+  if (sess->tls_session)
+    gnutls_deinit (sess->tls_session);
+  if (sess->certcred)
+    gnutls_certificate_free_credentials (sess->certcred);
+  xfree (sess->servername);
+#endif /*HTTP_USE_GNUTLS*/
+
+  xfree (sess);
+}
 
 
 /* Start a HTTP retrieval and return on success in R_HD a context
@@ -442,7 +596,7 @@ http_register_tls_callback ( gpg_error_t (*cb) (http_t, void *, int) )
 gpg_error_t
 http_open (http_t *r_hd, http_req_t reqtype, const char *url,
            const char *auth, unsigned int flags, const char *proxy,
-           void *tls_context, const char *srvtag, strlist_t headers)
+           http_session_t session, const char *srvtag, strlist_t headers)
 {
   gpg_error_t err;
   http_t hd;
@@ -458,7 +612,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
     return gpg_error_from_syserror ();
   hd->req_type = reqtype;
   hd->flags = flags;
-  hd->tls_context = tls_context;
+  hd->session = session;
 
   err = http_parse_uri (&hd->uri, url, 0);
   if (!err)
@@ -466,7 +620,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   if (err)
     {
-      my_socket_unref (hd->sock);
+      my_socket_unref (hd->sock, NULL, NULL);
       if (hd->fp_read)
         es_fclose (hd->fp_read);
       if (hd->fp_write)
@@ -531,7 +685,7 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   if (!hd->fp_write)
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock);
+      my_socket_unref (cookie->sock, NULL, NULL);
       xfree (cookie);
       goto leave;
     }
@@ -548,7 +702,7 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   if (!hd->fp_read)
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock);
+      my_socket_unref (cookie->sock, NULL, NULL);
       xfree (cookie);
       goto leave;
     }
@@ -567,7 +721,7 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
         es_fclose (hd->fp_read);
       if (hd->fp_write)
         es_fclose (hd->fp_write);
-      my_socket_unref (hd->sock);
+      my_socket_unref (hd->sock, NULL, NULL);
       xfree (hd);
     }
   else
@@ -624,15 +778,15 @@ http_wait_response (http_t hd)
   if (!cookie)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   cookie->sock = my_socket_ref (hd->sock);
-  if (hd->uri->use_tls)
-    cookie->tls_session = hd->tls_context;
+  cookie->session = hd->session;
+  cookie->use_tls = hd->uri->use_tls;
 
   hd->read_cookie = cookie;
   hd->fp_read = es_fopencookie (cookie, "r", cookie_functions);
   if (!hd->fp_read)
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      my_socket_unref (cookie->sock);
+      my_socket_unref (cookie->sock, NULL, NULL);
       xfree (cookie);
       hd->read_cookie = NULL;
       return err;
@@ -654,12 +808,13 @@ http_wait_response (http_t hd)
 gpg_error_t
 http_open_document (http_t *r_hd, const char *document,
                     const char *auth, unsigned int flags, const char *proxy,
-                    void *tls_context, const char *srvtag, strlist_t headers)
+                    http_session_t session,
+                    const char *srvtag, strlist_t headers)
 {
   gpg_error_t err;
 
   err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
-                   proxy, tls_context, srvtag, headers);
+                   proxy, session, srvtag, headers);
   if (err)
     return err;
 
@@ -684,7 +839,7 @@ http_close (http_t hd, int keep_read_stream)
     es_onclose (hd->fp_write, 0, fp_onclose_notification, hd);
 
   /* Now we can close the streams.  */
-  my_socket_unref (hd->sock);
+  my_socket_unref (hd->sock, NULL, NULL);
   if (hd->fp_read && !keep_read_stream)
     es_fclose (hd->fp_read);
   if (hd->fp_write)
@@ -962,16 +1117,41 @@ remove_escapes (char *string)
 }
 
 
+/* If SPECIAL is NULL this function escapes in forms mode.  */
 static size_t
 escape_data (char *buffer, const void *data, size_t datalen,
              const char *special)
 {
+  int forms = !special;
   const unsigned char *s;
   size_t n = 0;
 
+  if (forms)
+    special = "%;?&=";
+
   for (s = data; datalen; s++, datalen--)
     {
-      if (strchr (VALID_URI_CHARS, *s) && !strchr (special, *s))
+      if (forms && *s == ' ')
+        {
+	  if (buffer)
+	    *buffer++ = '+';
+	  n++;
+        }
+      else if (forms && *s == '\n')
+        {
+	  if (buffer)
+	    memcpy (buffer, "%0D%0A", 6);
+	  n += 6;
+        }
+      else if (forms && *s == '\r' && datalen > 1 && s[1] == '\n')
+        {
+	  if (buffer)
+	    memcpy (buffer, "%0D%0A", 6);
+	  n += 6;
+          s++;
+          datalen--;
+        }
+      else if (strchr (VALID_URI_CHARS, *s) && !strchr (special, *s))
 	{
 	  if (buffer)
 	    *(unsigned char*)buffer++ = *s;
@@ -1003,7 +1183,8 @@ insert_escapes (char *buffer, const char *string,
    well as escaping of characters given in SPECIALS.  A common pattern
    for SPECIALS is "%;?&=". However it depends on the needs, for
    example "+" and "/: often needs to be escaped too.  Returns NULL on
-   failure and sets ERRNO. */
+   failure and sets ERRNO.  If SPECIAL is NULL a dedicated forms
+   encoding mode is used. */
 char *
 http_escape_string (const char *string, const char *specials)
 {
@@ -1024,7 +1205,8 @@ http_escape_string (const char *string, const char *specials)
    escaping as well as escaping of characters given in SPECIALS.  A
    common pattern for SPECIALS is "%;?&=".  However it depends on the
    needs, for example "+" and "/: often needs to be escaped too.
-   Returns NULL on failure and sets ERRNO. */
+   Returns NULL on failure and sets ERRNO.  If SPECIAL is NULL a
+   dedicated forms encoding mode is used. */
 char *
 http_escape_data (const void *data, size_t datalen, const char *specials)
 {
@@ -1040,7 +1222,6 @@ http_escape_data (const void *data, size_t datalen, const char *specials)
     }
   return buf;
 }
-
 
 
 static uri_tuple_t
@@ -1089,7 +1270,6 @@ static gpg_error_t
 send_request (http_t hd, const char *auth,
 	      const char *proxy, const char *srvtag, strlist_t headers)
 {
-  gnutls_session_t tls_session;
   gpg_error_t err;
   const char *server;
   char *request, *p;
@@ -1100,15 +1280,43 @@ send_request (http_t hd, const char *auth,
   int sock;
   int hnf;
 
-  tls_session = hd->tls_context;
-  if (hd->uri->use_tls && !tls_session)
+  if (hd->uri->use_tls && !hd->session)
     {
-      log_error ("TLS requested but no GNUTLS context provided\n");
+      log_error ("TLS requested but no session object provided\n");
       return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
     }
+#ifdef HTTP_USE_GNUTLS
+  if (hd->uri->use_tls && !hd->session->tls_session)
+    {
+      log_error ("TLS requested but no GNUTLS context available\n");
+      return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
+    }
+#endif /*HTTP_USE_GNUTLS*/
 
   server = *hd->uri->host ? hd->uri->host : "localhost";
   port = hd->uri->port ? hd->uri->port : 80;
+
+  /* Try to use SNI.  */
+#ifdef HTTP_USE_GNUTLS
+  if (hd->uri->use_tls)
+    {
+      int rc;
+
+      xfree (hd->session->servername);
+      hd->session->servername = xtrystrdup (server);
+      if (!hd->session->servername)
+        {
+          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+          return err;
+        }
+
+      rc = gnutls_server_name_set (hd->session->tls_session,
+                                   GNUTLS_NAME_DNS,
+                                   server, strlen (server));
+      if (rc < 0)
+        log_info ("gnutls_server_name_set failed: %s\n", gnutls_strerror (rc));
+    }
+#endif /*HTTP_USE_GNUTLS*/
 
   if ( (proxy && *proxy)
        || ( (hd->flags & HTTP_FLAG_TRY_PROXY)
@@ -1179,11 +1387,22 @@ send_request (http_t hd, const char *auth,
       int rc;
 
       my_socket_ref (hd->sock);
-      gnutls_transport_set_ptr (tls_session,
+#if GNUTLS_VERSION_NUMBER >= 0x030109
+      gnutls_transport_set_int (hd->session->tls_session, hd->sock->fd);
+#else
+      gnutls_transport_set_ptr (hd->session->tls_session,
                                 (gnutls_transport_ptr_t)(hd->sock->fd));
+#endif
+#ifdef USE_NPTH
+      gnutls_transport_set_pull_function (hd->session->tls_session,
+                                          my_npth_read);
+      gnutls_transport_set_push_function (hd->session->tls_session,
+                                          my_npth_write);
+#endif
+
       do
         {
-          rc = gnutls_handshake (tls_session);
+          rc = gnutls_handshake (hd->session->tls_session);
         }
       while (rc == GNUTLS_E_INTERRUPTED || rc == GNUTLS_E_AGAIN);
       if (rc < 0)
@@ -1195,7 +1414,8 @@ send_request (http_t hd, const char *auth,
 
       if (tls_callback)
         {
-          err = tls_callback (hd, tls_session, 0);
+          hd->session->verify.done = 0;
+          err = tls_callback (hd, hd->session, 0);
           if (err)
             {
               log_info ("TLS connection authentication failed: %s\n",
@@ -1227,7 +1447,7 @@ send_request (http_t hd, const char *auth,
           myauth = hd->uri->auth;
         }
 
-      authstr = make_header_line ("Authorization: Basic %s", "\r\n",
+      authstr = make_header_line ("Authorization: Basic ", "\r\n",
                                   myauth, strlen (myauth));
       if (auth)
         xfree (myauth);
@@ -1281,6 +1501,7 @@ send_request (http_t hd, const char *auth,
       return err;
     }
 
+  /* log_debug ("request:\n%s\nEND request\n", request); */
 
   /* First setup estream so that we can write even the first line
      using estream.  This is also required for the sake of gnutls. */
@@ -1295,14 +1516,14 @@ send_request (http_t hd, const char *auth,
       }
     cookie->sock = my_socket_ref (hd->sock);
     hd->write_cookie = cookie;
-    if (hd->uri->use_tls)
-      cookie->tls_session = tls_session;
+    cookie->use_tls = hd->uri->use_tls;
+    cookie->session = hd->session;
 
     hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
     if (!hd->fp_write)
       {
         err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-        my_socket_unref (cookie->sock);
+        my_socket_unref (cookie->sock, NULL, NULL);
         xfree (cookie);
         hd->write_cookie = NULL;
       }
@@ -1491,8 +1712,8 @@ store_header (http_t hd, char *line)
 
 
 /* Return the header NAME from the last response.  The returned value
-   is valid as along as HD has not been closed and no othe request has
-   been send. If the header was not found, NULL is returned.  Name
+   is valid as along as HD has not been closed and no other request
+   has been send. If the header was not found, NULL is returned.  NAME
    must be canonicalized, that is the first letter of each dash
    delimited part must be uppercase and all other letters lowercase.  */
 const char *
@@ -1506,6 +1727,29 @@ http_get_header (http_t hd, const char *name)
   return NULL;
 }
 
+
+/* Return a newly allocated and NULL terminated array with pointers to
+   header names.  The array must be released with xfree() and its
+   content is only values as long as no other request has been
+   send.  */
+const char **
+http_get_header_names (http_t hd)
+{
+  const char **array;
+  size_t n;
+  header_t h;
+
+  for (n=0, h = hd->headers; h; h = h->next)
+    n++;
+  array = xtrycalloc (n+1, sizeof *array);
+  if (array)
+    {
+      for (n=0, h = hd->headers; h; h = h->next)
+        array[n++] = h->name;
+    }
+
+  return array;
+}
 
 
 /*
@@ -1960,10 +2204,10 @@ cookie_read (void *cookie, void *buffer, size_t size)
     }
 
 #ifdef HTTP_USE_GNUTLS
-  if (c->tls_session)
+  if (c->use_tls && c->session && c->session->tls_session)
     {
     again:
-      nread = gnutls_record_recv (c->tls_session, buffer, size);
+      nread = gnutls_record_recv (c->session->tls_session, buffer, size);
       if (nread < 0)
         {
           if (nread == GNUTLS_E_INTERRUPTED)
@@ -2014,18 +2258,20 @@ cookie_read (void *cookie, void *buffer, size_t size)
 
 /* Write handler for estream.  */
 static ssize_t
-cookie_write (void *cookie, const void *buffer, size_t size)
+cookie_write (void *cookie, const void *buffer_arg, size_t size)
 {
+  const char *buffer = buffer_arg;
   cookie_t c = cookie;
   int nwritten = 0;
 
 #ifdef HTTP_USE_GNUTLS
-  if (c->tls_session)
+  if (c->use_tls && c->session && c->session->tls_session)
     {
       int nleft = size;
       while (nleft > 0)
         {
-          nwritten = gnutls_record_send (c->tls_session, buffer, nleft);
+          nwritten = gnutls_record_send (c->session->tls_session,
+                                         buffer, nleft);
           if (nwritten <= 0)
             {
               if (nwritten == GNUTLS_E_INTERRUPTED)
@@ -2063,6 +2309,18 @@ cookie_write (void *cookie, const void *buffer, size_t size)
   return nwritten;
 }
 
+
+#ifdef HTTP_USE_GNUTLS
+/* Wrapper for gnutls_bye used by my_socket_unref.  */
+static void
+send_gnutls_bye (void *opaque)
+{
+  gnutls_session_t tls_session = opaque;
+
+  gnutls_bye (tls_session, GNUTLS_SHUT_RDWR);
+}
+#endif /*HTTP_USE_GNUTLS*/
+
 /* Close handler for estream.  */
 static int
 cookie_close (void *cookie)
@@ -2073,182 +2331,117 @@ cookie_close (void *cookie)
     return 0;
 
 #ifdef HTTP_USE_GNUTLS
-  if (c->tls_session && !c->keep_socket)
-    {
-      gnutls_bye (c->tls_session, GNUTLS_SHUT_RDWR);
-      my_socket_unref (c->sock);
-    }
+  if (c->use_tls && c->session && c->session->tls_session)
+    my_socket_unref (c->sock, send_gnutls_bye, c->session->tls_session);
+  else
 #endif /*HTTP_USE_GNUTLS*/
-  if (c->sock && !c->keep_socket)
-    my_socket_unref (c->sock);
+    if (c->sock)
+      my_socket_unref (c->sock, NULL, NULL);
 
   xfree (c);
   return 0;
 }
 
 
+
 
-/**** Test code ****/
-#ifdef TEST
-
+/* Verify the credentials of the server.  Returns 0 on success and
+   store the result in the session object.  */
+gpg_error_t
+http_verify_server_credentials (http_session_t sess)
+{
 #ifdef HTTP_USE_GNUTLS
-static gpg_error_t
-verify_callback (http_t hd, void *tls_context, int reserved)
-{
-  log_info ("verification of certificates skipped\n");
-  return 0;
-}
-#endif /*HTTP_USE_GNUTLS*/
-
-
-/* static void */
-/* my_gnutls_log (int level, const char *text) */
-/* { */
-/*   fprintf (stderr, "gnutls:L%d: %s", level, text); */
-/* } */
-
-int
-main (int argc, char **argv)
-{
+  static const char const errprefix[] = "TLS verification of peer failed";
   int rc;
-  parsed_uri_t uri;
-  uri_tuple_t r;
-  http_t hd;
-  int c;
-  gnutls_session_t tls_session = NULL;
-#ifdef HTTP_USE_GNUTLS
-  gnutls_certificate_credentials certcred;
-  const int certprio[] = { GNUTLS_CRT_X509, 0 };
-#endif /*HTTP_USE_GNUTLS*/
-  header_t hdr;
+  unsigned int status;
+  const char *hostname;
+  const gnutls_datum_t *certlist;
+  unsigned int certlistlen;
+  gnutls_x509_crt_t cert;
 
-  es_init ();
-  log_set_prefix ("http-test", 1 | 4);
-  if (argc == 1)
+  sess->verify.done = 1;
+  sess->verify.status = 0;
+  sess->verify.rc = GNUTLS_E_CERTIFICATE_ERROR;
+
+  if (gnutls_certificate_type_get (sess->tls_session) != GNUTLS_CRT_X509)
     {
-      /*start_server (); */
-      return 0;
+      log_error ("%s: %s\n", errprefix, "not an X.509 certificate");
+      sess->verify.rc = GNUTLS_E_UNSUPPORTED_CERTIFICATE_TYPE;
+      return gpg_error (GPG_ERR_GENERAL);
     }
 
-  if (argc != 2)
-    {
-      fprintf (stderr, "usage: http-test uri\n");
-      return 1;
-    }
-  argc--;
-  argv++;
-
-#ifdef HTTP_USE_GNUTLS
-  rc = gnutls_global_init ();
-  if (rc)
-    log_error ("gnutls_global_init failed: %s\n", gnutls_strerror (rc));
-  rc = gnutls_certificate_allocate_credentials (&certcred);
-  if (rc)
-    log_error ("gnutls_certificate_allocate_credentials failed: %s\n",
-               gnutls_strerror (rc));
-/*   rc = gnutls_certificate_set_x509_trust_file */
-/*     (certcred, "ca.pem", GNUTLS_X509_FMT_PEM); */
-/*   if (rc) */
-/*     log_error ("gnutls_certificate_set_x509_trust_file failed: %s\n", */
-/*                gnutls_strerror (rc)); */
-  rc = gnutls_init (&tls_session, GNUTLS_CLIENT);
-  if (rc)
-    log_error ("gnutls_init failed: %s\n", gnutls_strerror (rc));
-  rc = gnutls_set_default_priority (tls_session);
-  if (rc)
-    log_error ("gnutls_set_default_priority failed: %s\n",
-               gnutls_strerror (rc));
-  rc = gnutls_certificate_type_set_priority (tls_session, certprio);
-  if (rc)
-    log_error ("gnutls_certificate_type_set_priority failed: %s\n",
-               gnutls_strerror (rc));
-  rc = gnutls_credentials_set (tls_session, GNUTLS_CRD_CERTIFICATE, certcred);
-  if (rc)
-    log_error ("gnutls_credentials_set failed: %s\n", gnutls_strerror (rc));
-/*   gnutls_global_set_log_function (my_gnutls_log); */
-/*   gnutls_global_set_log_level (4); */
-
-  http_register_tls_callback (verify_callback);
-#endif /*HTTP_USE_GNUTLS*/
-
-  rc = http_parse_uri (&uri, *argv, 1);
+  rc = gnutls_certificate_verify_peers2 (sess->tls_session, &status);
   if (rc)
     {
-      log_error ("'%s': %s\n", *argv, gpg_strerror (rc));
-      return 1;
+      log_error ("%s: %s\n", errprefix, gnutls_strerror (rc));
+      return gpg_error (GPG_ERR_GENERAL);
     }
-
-  printf ("Scheme: %s\n", uri->scheme);
-  if (uri->opaque)
-    printf ("Value : %s\n", uri->path);
-  else
+  if (status)
     {
-      printf ("Auth  : %s\n", uri->auth? uri->auth:"[none]");
-      printf ("Host  : %s\n", uri->host);
-      printf ("Port  : %u\n", uri->port);
-      printf ("Path  : %s\n", uri->path);
-      for (r = uri->params; r; r = r->next)
-        {
-          printf ("Params: %s", r->name);
-          if (!r->no_value)
-            {
-              printf ("=%s", r->value);
-              if (strlen (r->value) != r->valuelen)
-                printf (" [real length=%d]", (int) r->valuelen);
-            }
-          putchar ('\n');
-        }
-      for (r = uri->query; r; r = r->next)
-        {
-          printf ("Query : %s", r->name);
-          if (!r->no_value)
-            {
-              printf ("=%s", r->value);
-              if (strlen (r->value) != r->valuelen)
-                printf (" [real length=%d]", (int) r->valuelen);
-            }
-          putchar ('\n');
-        }
+      log_error ("%s: status=0x%04x\n", errprefix, status);
+      sess->verify.status = status;
+      return gpg_error (GPG_ERR_GENERAL);
     }
-  http_release_parsed_uri (uri);
-  uri = NULL;
 
-  rc = http_open_document (&hd, *argv, NULL, 0, NULL, tls_session, NULL, NULL);
-  if (rc)
+  hostname = sess->servername;
+  if (!hostname || !strchr (hostname, '.'))
     {
-      log_error ("can't get '%s': %s\n", *argv, gpg_strerror (rc));
-      return 1;
+      log_error ("%s: %s\n", errprefix, "hostname missing");
+      return gpg_error (GPG_ERR_GENERAL);
     }
-  log_info ("open_http_document succeeded; status=%u\n",
-            http_get_status_code (hd));
-  for (hdr = hd->headers; hdr; hdr = hdr->next)
-    printf ("HDR: %s: %s\n", hdr->name, hdr->value);
-  switch (http_get_status_code (hd))
+
+  certlist = gnutls_certificate_get_peers (sess->tls_session, &certlistlen);
+  if (!certlistlen)
     {
-    case 200:
-      while ((c = es_getc (http_get_read_ptr (hd))) != EOF)
-        putchar (c);
-      break;
-    case 301:
-    case 302:
-      printf ("Redirected to '%s'\n", http_get_header (hd, "Location"));
-      break;
+      log_error ("%s: %s\n", errprefix, "server did not send a certificate");
+      return gpg_error (GPG_ERR_GENERAL);
     }
-  http_close (hd, 0);
 
-#ifdef HTTP_USE_GNUTLS
-  gnutls_deinit (tls_session);
-  gnutls_certificate_free_credentials (certcred);
-  gnutls_global_deinit ();
-#endif /*HTTP_USE_GNUTLS*/
+  /* log_debug ("Server sent %u certs\n", certlistlen); */
+  /* { */
+  /*   int i; */
+  /*   char fname[50]; */
+  /*   FILE *fp; */
 
-  return 0;
+  /*   for (i=0; i < certlistlen; i++) */
+  /*     { */
+  /*       snprintf (fname, sizeof fname, "xc_%d.der", i); */
+  /*       fp = fopen (fname, "wb"); */
+  /*       if (!fp) */
+  /*         log_fatal ("Failed to create '%s'\n", fname); */
+  /*       if (fwrite (certlist[i].data, certlist[i].size, 1, fp) != 1) */
+  /*         log_fatal ("Error writing to '%s'\n", fname); */
+  /*       fclose (fp); */
+  /*     } */
+  /* } */
+
+  rc = gnutls_x509_crt_init (&cert);
+  if (rc < 0)
+    {
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  rc = gnutls_x509_crt_import (cert, &certlist[0], GNUTLS_X509_FMT_DER);
+  if (rc < 0)
+    {
+      log_error ("%s: %s: %s\n", errprefix, "error importing certificate",
+                 gnutls_strerror (rc));
+      gnutls_x509_crt_deinit (cert);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  if (!gnutls_x509_crt_check_hostname (cert, hostname))
+    {
+      log_error ("%s: %s\n", errprefix, "hostname does not match");
+      gnutls_x509_crt_deinit (cert);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  gnutls_x509_crt_deinit (cert);
+  sess->verify.rc = 0;
+  return 0;  /* Verification succeeded.  */
+#else /*!HTTP_USE_GNUTLS*/
+  (void)sess;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
-#endif /*TEST*/
-
-
-/*
-Local Variables:
-compile-command: "gcc -I.. -I../gl -DTEST -DHAVE_CONFIG_H -Wall -O2 -g -o http-test http.c -L. -lcommon -lgcrypt -lpth -lgnutls"
-End:
-*/

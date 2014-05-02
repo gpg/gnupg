@@ -20,9 +20,10 @@
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
              audit-events.h status-codes.h README.jnlib ChangeLog.jnlib \
-	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico
+	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico tls-ca.pem
 
-noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
+noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a \
+                   libcommontls.a libcommontlsnpth.a
 if !HAVE_W32CE_SYSTEM
 noinst_LIBRARIES += libsimple-pwquery.a
 endif
@@ -88,7 +89,6 @@ common_sources = \
 	srv.h \
 	dns-cert.c dns-cert.h \
 	pka.c pka.h \
-	http.c http.h \
 	localename.c \
 	session-env.c session-env.h \
 	userids.c userids.h \
@@ -96,6 +96,12 @@ common_sources = \
 	ssh-utils.c ssh-utils.h \
 	agent-opt.c \
 	helpfile.c
+
+# Sources possible requiring a TLS library are put into a separate
+# conveince library.
+tls_sources = \
+	http.c http.h
+
 
 # To make the code easier to read we have split home some code into
 # separate source files.
@@ -125,6 +131,12 @@ if USE_DNS_SRV
 libcommonpth_a_SOURCES += srv.c
 endif
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
+
+libcommontls_a_SOURCES = $(tls_sources)
+libcommontls_a_CFLAGS = $(AM_CFLAGS) $(LIBGNUTLS_CFLAGS) -DWITHOUT_NPTH=1
+
+libcommontlsnpth_a_SOURCES = $(tls_sources)
+libcommontlsnpth_a_CFLAGS = $(AM_CFLAGS) $(LIBGNUTLS_CFLAGS) $(NPTH_CFLAGS)
 
 if !HAVE_W32CE_SYSTEM
 libsimple_pwquery_a_SOURCES = \
@@ -170,11 +182,12 @@ module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
-module_maint_tests = t-helpfile t-b64
+module_maint_tests = t-helpfile t-b64 t-http
 
 
 t_common_ldadd = libcommon.a ../gl/libgnu.a \
-                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+                 $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+	         $(LIBINTL) $(LIBICONV)
 
 # jnlib tests
 t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)
@@ -203,3 +216,8 @@ t_ssh_utils_LDADD = $(t_common_ldadd)
 t_dns_cert_LDADD = $(t_common_ldadd) $(DNSLIBS)
 t_mapstrings_LDADD = $(t_common_ldadd)
 t_zb32_LDADD = $(t_common_ldadd)
+
+# http tests
+t_http_SOURCES = t-http.c
+t_http_CFLAGS  = $(t_common_cflags) $(LIBGNUTLS_CFLAGS)
+t_http_LDADD   = $(libcommontls) $(t_common_ldadd) $(LIBGNUTLS_LIBS) $(DNSLIBS)
