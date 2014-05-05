@@ -18,7 +18,7 @@
 @mansect synopsis
 @ifset manverb
 .B  dirmngr
-.RI [ options ]  
+.RI [ options ]
 .I command
 .RI [ args ]
 @end ifset
@@ -32,7 +32,7 @@ system daemon through the @command{dirmngr-client} tool.
 
 If @command{dirmngr} is started in system daemon mode, it uses a
 directory layout as common for system daemons and does not make use of
-the default @file{~/.gnupg} directory.  
+the default @file{~/.gnupg} directory.
 
 
 @manpause
@@ -175,7 +175,7 @@ numeric value or by a keyword:
 @item none
 No debugging at all.  A value of less than 1 may be used instead of
 the keyword.
-@item basic  
+@item basic
 Some basic debug messages.  A value between 1 and 2 may be used
 instead of the keyword.
 @item advanced
@@ -203,6 +203,10 @@ usual C-Syntax.
 @item --debug-all
 @opindex debug-all
 Same as @code{--debug=0xffffffff}
+
+@item --gnutls-debug @var{level}
+@opindex gnutls-debug
+Enable debugging of GNUTLS at @var{level}.
 
 @item --debug-wait @var{n}
 @opindex debug-wait
@@ -247,12 +251,12 @@ scheme are ignored when looking for a suitable DP.
 @item --ignore-ldap-dp
 @opindex ignore-ldap-dp
 This is similar to @option{--ignore-http-dp} but ignores entries using
-the @acronym{LDAP} scheme.  Both options may be combined resulting in 
+the @acronym{LDAP} scheme.  Both options may be combined resulting in
 ignoring DPs entirely.
 
 @item --ignore-ocsp-service-url
 @opindex ignore-ocsp-service-url
-Ignore all OCSP URLs contained in the certificate.  The effect is to 
+Ignore all OCSP URLs contained in the certificate.  The effect is to
 force the use of the default responder.
 
 @item --honor-http-proxy
@@ -284,7 +288,7 @@ configured LDAP server if the connection using the "proxy" failed.
 @item --ldapserverlist-file @var{file}
 @opindex ldapserverlist-file
 Read the list of LDAP servers to consult for CRLs and certificates from
-file instead of the default per-user ldap server list file. The default 
+file instead of the default per-user ldap server list file. The default
 value for @var{file} is @file{dirmngr_ldapservers.conf} or
 @file{ldapservers.conf} when running in @option{--daemon} mode.
 
@@ -328,7 +332,7 @@ Note: The current version of dirmngr has this option disabled by default.
 
 @item --allow-ocsp
 @opindex allow-ocsp
-This option enables OCSP support if requested by the client.  
+This option enables OCSP support if requested by the client.
 
 OCSP requests are rejected by default because they may violate the
 privacy of the user; for example it is possible to track the time when
@@ -395,10 +399,17 @@ won't be rejected due to an unknown critical extension.  Use this
 option with care because extensions are usually flagged as critical
 for a reason.
 
+@item --hkp-cacert @var{file}
+Use the root certificates in @var{file} for verification of the TLS
+certificates used with @code{hkps} (keyserver access over TLS).  If
+the file is in PEM format a suffix of @code{.pem} is expected for
+@var{file}.  This option may be given multiple times to add more
+root certificates.
+
 @end table
 
 
-@c 
+@c
 @c Dirmngr Configuration
 @c
 @mansect files
@@ -472,7 +483,7 @@ Please ignore the output; it is not needed anymore.  Check the log file
 to see whether all trusted root certificates have been loaded correctly.
 
 
-@c 
+@c
 @c Dirmngr Signals
 @c
 @mansect signals
@@ -480,7 +491,7 @@ to see whether all trusted root certificates have been loaded correctly.
 @section Use of signals.
 
 A running @command{dirmngr} may be controlled by signals, i.e. using
-the @command{kill} command to send a signal to the process. 
+the @command{kill} command to send a signal to the process.
 
 Here is a list of supported signals:
 
@@ -522,7 +533,7 @@ This prints some caching statistics to the log file.
 Dirmngr is supposed to be used as a system wide daemon, it should be
 started like:
 
-@example 
+@example
   dirmngr --daemon
 @end example
 
@@ -613,7 +624,7 @@ local lookup will be done in this case.
 
 Check whether the certificate described by the @var{certid} has been
 revoked.  Due to caching, the Dirmngr is able to answer immediately in
-most cases.  
+most cases.
 
 The @var{certid} is a hex encoded string consisting of two parts,
 delimited by a single dot.  The first part is the SHA-1 hash of the
@@ -642,7 +653,7 @@ us that it has been revoked.
 
 @item GPG_ERR_NO_CRL_KNOWN
 No CRL is known for this certificate or the CRL is not valid or out of
-date. 
+date.
 
 @item GPG_ERR_NO_DATA
 The OCSP responder returned an ``unknown'' status.  This means that it
@@ -690,7 +701,7 @@ given or the certificate is not know, the function inquires the
 certificate using:
 
 @example
-  S: INQUIRE TARGETCERT 
+  S: INQUIRE TARGETCERT
   C: D <DER encoded certificate>
   C: END
 @end example
@@ -720,7 +731,7 @@ certificate is not known by Dirmngr, the function inquires the
 certificate using:
 
 @example
-  S: INQUIRE TARGETCERT 
+  S: INQUIRE TARGETCERT
   C: D <DER encoded certificate>
   C: END
 @end example
@@ -751,13 +762,13 @@ helpful for debugging.  To get the actual certificate, this command
 immediately inquires it using
 
 @example
-  S: INQUIRE TARGETCERT 
+  S: INQUIRE TARGETCERT
   C: D <DER encoded certificate>
   C: END
 @end example
 
 Thus the caller is expected to return the certificate for the request
-as a binary blob. 
+as a binary blob.
 
 @noindent
 The return code is 0 for success; i.e. the certificate has not been
@@ -771,45 +782,45 @@ internally by dirmngr.  This command is only useful for debugging.  To
 get the actual certificate, this command immediately inquires it using
 
 @example
-  S: INQUIRE TARGETCERT 
+  S: INQUIRE TARGETCERT
   C: D <DER encoded certificate>
   C: END
 @end example
 
 Thus the caller is expected to return the certificate for the request
-as a binary blob. 
+as a binary blob.
 
 
 @mansect see also
 @ifset isman
-@command{gpgsm}(1), 
+@command{gpgsm}(1),
 @command{dirmngr-client}(1)
 @end ifset
 @include see-also-note.texi
 
-@c 
+@c
 @c !!! UNDER CONSTRUCTION !!!
-@c 
-@c 
+@c
+@c
 @c @section Verifying a Certificate
-@c 
+@c
 @c There are several ways to request services from Dirmngr.  Almost all of
 @c them are done using the Assuan protocol.  What we describe here is the
 @c Assuan command CHECKCRL as used for example by the dirmnr-client tool if
 @c invoked as
-@c 
+@c
 @c @example
 @c   dirmngr-client foo.crt
 @c @end example
-@c 
+@c
 @c This command will send an Assuan request to an already running Dirmngr
 @c instance.  foo.crt is expected to be a standard X.509 certificate and
 @c dirmngr will receive the Assuan command
-@c 
+@c
 @c @example
 @c    CHECKCRL @var [{fingerprint}]
 @c @end example
-@c 
+@c
 @c @var{fingerprint} is optional and expected to be the SHA-1 has of the
 @c DER encoding of the certificate under question.  It is to be HEX
 @c encoded.  The rationale for sending the fingerprint is that it allows
@@ -817,15 +828,15 @@ as a binary blob.
 @c this is not the case and no certificate has been found in dirmngr's
 @c internal certificate storage, dirmngr will request the certificate using
 @c the Assuan inquiry
-@c 
+@c
 @c @example
 @c       INQUIRE TARGETCERT
 @c @end example
-@c 
+@c
 @c The caller (in our example dirmngr-client) is then expected to return
 @c the certificate for the request (which should match @var{fingerprint})
 @c as a binary blob.
-@c 
+@c
 @c Dirmngr now passes control to @code{crl_cache_cert_isvalid}.  This
 @c function checks whether a CRL item exists for target certificate.  These
 @c CRL items are kept in a database of already loaded and verified CRLs.
@@ -837,25 +848,25 @@ as a binary blob.
 @c listed in the CRL or @code{GPG_ERR_NO_CRL_KNOWN} in cases where no CRL or no
 @c information is available.  The first two codes are immediatly returned to
 @c the caller and the processing of this request has been done.
-@c 
+@c
 @c Only the @code{GPG_ERR_NO_CRL_KNOWN} needs more attention: Dirmngr now
 @c calls @code{clr_cache_reload_crl} and if this succeeds calls
 @c @code{crl_cache_cert_isvald) once more.  All further errors are
 @c immediately returned to the caller.
-@c 
+@c
 @c @code{crl_cache_reload_crl} is the actual heart of the CRL management.
 @c It locates the corresponding CRL for the target certificate, reads and
 @c verifies this CRL and stores it in the CRL cache.  It works like this:
-@c 
+@c
 @c * Loop over all crlDPs in the target certificate.
 @c     * If the crlDP is invalid immediately terminate the loop.
 @c     * Loop over all names in the current crlDP.
-@c         * If the URL scheme is unknown or not enabled 
+@c         * If the URL scheme is unknown or not enabled
 @c           (--ignore-http-dp, --ignore-ldap-dp) continues with
 @c           the next name.
 @c         * @code{crl_fetch} is called to actually retrieve the CRL.
 @c           In case of problems this name is ignore and we continue with
-@c           the next name.  Note that @code{crl_fetch} does only return 
+@c           the next name.  Note that @code{crl_fetch} does only return
 @c           a descriptor for the CRL for further reading so does the CRL
 @c           does not yet end up in memory.
 @c         * @code{crl_cache_insert} is called with that descriptor to
@@ -873,16 +884,16 @@ as a binary blob.
 @c     * @code(crl_cache_insert) is then used to actually insert the CRL
 @c       into the cache.  If this failed we give up immediatley without
 @c       checking the rest of the servers from the first step.
-@c * Ready. 
-@c 
-@c 
+@c * Ready.
+@c
+@c
 @c The @code{crl_cache_insert} function takes care of reading the bulk of
 @c the CRL, parsing it and checking the signature.  It works like this: A
 @c new database file is created using a temporary file name.  The CRL
 @c parsing machinery is started and all items of the CRL are put into
 @c this database file.  At the end the issuer certificate of the CRL
 @c needs to be retrieved.  Three cases are to be distinguished:
-@c 
+@c
 @c  a) An authorityKeyIdentifier with an issuer and serialno exits: The
 @c     certificate is retrieved using @code{find_cert_bysn}.  If
 @c     the certificate is in the certificate cache, it is directly
@@ -899,7 +910,7 @@ as a binary blob.
 @c     certificate to match the requested issuer and seriano (This is
 @c     needed because the LDAP layer may return several certificates as
 @c     LDAP as no standard way to retrieve by serial number).
-@c 
+@c
 @c  b) An authorityKeyIdentifier with a key ID exists: The certificate is
 @c     retrieved using @code{find_cert_bysubject}.  If the certificate is
 @c     in the certificate cache, it is directly returned.  Then the
@@ -913,7 +924,7 @@ as a binary blob.
 @c     external resources.  This is done using the @code{ca_cert_fetch}
 @c     and @code{fetch_next_ksba_cert} and comparing the returned
 @c     certificate to match the requested subject and key ID.
-@c 
+@c
 @c  c) No authorityKeyIdentifier exits: The certificate is retrieved
 @c     using @code{find_cert_bysubject} without the key ID argument.  If
 @c     the certificate is in the certificate cache the first one with a
@@ -930,12 +941,12 @@ as a binary blob.
 @c     and @code{fetch_next_ksba_cert} and comparing the returned
 @c     certificate to match the requested subject; the first certificate
 @c     with a matching subject is then returned.
-@c 
+@c
 @c If no certificate was found, the function returns with the error
 @c GPG_ERR_MISSING_CERT.  Now the signature is verified.  If this fails,
 @c the erro is returned.  On success the @code{validate_cert_chain} is
-@c used to verify that the certificate is actually valid. 
-@c 
+@c used to verify that the certificate is actually valid.
+@c
 @c Here we may encounter a recursive situation:
 @c @code{validate_cert_chain} needs to look at other certificates and
 @c also at CRLs to check whether tehse other certificates and well, the
@@ -944,7 +955,7 @@ as a binary blob.
 @c are currently processing. This would be a catch-22 and may indicate a
 @c broken PKI.  However, due to overlapping expiring times and imprecise
 @c clocks thsi may actually happen.
-@c     
+@c
 @c For historical reasons the Assuan command ISVALID is a bit different
 @c to CHECKCRL but this is mainly due to different calling conventions.
 @c In the end the same fucntionality is used, albeit hidden by a couple
@@ -952,44 +963,44 @@ as a binary blob.
 @c ingetrages OCSP checking depending on options are the way it is
 @c called.  GPGSM still uses this command but might eventuall switch over
 @c to CHECKCRL and CHECKOCSP so that ISVALID can be retired.
-@c   
-@c 
+@c
+@c
 @c @section Validating a certificate
-@c 
+@c
 @c We describe here how the internal function @code{validate_cert_chain}
 @c works. Note that mainly testing purposes this functionality may be
 @c called directly using @cmd{dirmngr-client --validate @file{foo.crt}}.
-@c 
+@c
 @c For backward compatibility this function returns success if Dirmngr is
 @c not used as a system daemon.  Thus not validating the certicates at
 @c all. FIXME:  This is definitely not correct and should be fixed ASAP.
-@c 
+@c
 @c The function takes the target certificate and a mode argument as
 @c parameters and returns an error code and optionally the closes
 @c expiration time of all certificates in the chain.
-@c 
+@c
 @c We first check that the certificate may be used for the requested
 @c purpose (i.e. OCSP or CRL signing).  If this is not the case
 @c GPG_ERR_WRONG_KEY_USAGE is returned.
-@c 
+@c
 @c The next step is to find the trust anchor (root certificate) and to
 @c assemble the chain in memory: Starting with the target certificate,
 @c the expiration time is checked against the current date, unknown
 @c critical extensions are detected and certificate policies are matched
 @c (We only allow 2.289.9.9 but I have no clue about that OID and from
 @c where I got it - it does not even seem to be assigned - debug cruft?).
-@c 
+@c
 @c Now if this certificate is a self-signed one, we have reached the
 @c trust anchor.  In this case we check that the signature is good, the
 @c certificate is allowed to act as a CA, that it is a trusted one (by
 @c checking whether it is has been put into the trusted-certs
 @c configuration directory) and finally prepend into to our list
 @c representing the certificate chain.  This steps ends then.
-@c 
+@c
 @c If it is not a self-signed certificate, we check that the chain won't
 @c get too long (current limit is 100), if this is the case we terminate
 @c with the error GPG_ERR_BAD_CERT_CHAIN.
-@c 
+@c
 @c Now the issuer's certificate is looked up: If an
 @c authorityKeyIdentifier is available, this one is used to locate the
 @c certificate either using issuer and serialnumber or subject DN
@@ -1002,7 +1013,7 @@ as a binary blob.
 @c that a matching certificate has explicitly been put into the
 @c certificate cache.  If the issuer's certificate could not be found,
 @c the validation terminates with the error code @code{GPG_ERR_MISSING_CERT}.
-@c 
+@c
 @c If the issuer's certificate has been found, the signature of the
 @c actual certificate is checked and in case this fails the error
 @c #code{GPG_ERR_BAD_CERT_CHAIN} is returned.  If the signature checks out, the
@@ -1011,13 +1022,13 @@ as a binary blob.
 @c certificate signing).  Then the certificate is prepended to our list
 @c representing the certificate chain.  Finally the loop is continued now
 @c with the issuer's certificate as the current certificate.
-@c 
+@c
 @c After the end of the loop and if no error as been encountered
 @c (i.e. the certificate chain has been assempled correctly), a check is
 @c done whether any certificate expired or a critical policy has not been
 @c met.  In any of these cases the validation terminates with an
-@c appropriate error. 
-@c 
+@c appropriate error.
+@c
 @c Finally the function @code{check_revocations} is called to verify no
 @c certificate in the assempled chain has been revoked: This is an
 @c recursive process because a CRL has to be checked for each certificate
@@ -1025,16 +1036,16 @@ as a binary blob.
 @c that it is trusted and we avoid checking a CRL here due to common
 @c setup problems and the assumption that a revoked root certifcate has
 @c been removed from the list of trusted certificates.
-@c 
-@c 
-@c 
-@c 
+@c
+@c
+@c
+@c
 @c @section Looking up certificates through LDAP.
-@c 
+@c
 @c This describes the LDAP layer to retrieve certificates.
 @c the functions @code{ca_cert_fetch} and @code{fetch_next_ksba_cert} are
 @c used for this.  The first one starts a search and the second one is
 @c used to retrieve certificate after certificate.
-@c 
+@c
 
-  
+

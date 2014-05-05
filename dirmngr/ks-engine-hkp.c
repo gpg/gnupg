@@ -628,12 +628,14 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
   const char const data[] =
     "Handler for HKP URLs:\n"
     "  hkp://\n"
+    "  hkps://\n"
     "Supported methods: search, get, put\n";
   gpg_error_t err;
 
   if (!uri)
-    err = ks_print_help (ctrl, "  hkp");
-  else if (uri->is_http && !strcmp (uri->scheme, "hkp"))
+    err = ks_print_help (ctrl, "  hkp\n  hkps");
+  else if (uri->is_http && (!strcmp (uri->scheme, "hkp")
+                            || !strcmp (uri->scheme, "hkps")))
     err = ks_print_help (ctrl, data);
   else
     err = 0;
@@ -747,12 +749,17 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
               estream_t *r_fp)
 {
   gpg_error_t err;
+  http_session_t session = NULL;
   http_t http = NULL;
   int redirects_left = MAX_REDIRECTS;
   estream_t fp = NULL;
   char *request_buffer = NULL;
 
   *r_fp = NULL;
+
+  err = http_session_new (&session, NULL);
+  if (err)
+    goto leave;
 
  once_more:
   err = http_open (&http,
@@ -761,7 +768,8 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                    /* fixme: AUTH */ NULL,
                    httpflags,
                    /* fixme: proxy*/ NULL,
-                   NULL, NULL,
+                   session,
+                   NULL,
                    /*FIXME curl->srvtag*/NULL);
   if (!err)
     {
@@ -798,6 +806,13 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       goto leave;
     }
 
+  if (http_get_tls_info (http, NULL))
+    {
+      /* Update the httpflags so that a redirect won't fallback to an
+         unencrypted connection.  */
+      httpflags |= HTTP_FLAG_FORCE_TLS;
+    }
+
   switch (http_get_status_code (http))
     {
     case 200:
@@ -806,6 +821,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 
     case 301:
     case 302:
+    case 307:
       {
         const char *s = http_get_header (http, "Location");
 
@@ -837,6 +853,10 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       goto leave;
     }
 
+  /* FIXME: We should register a permanent redirection and whether a
+     host has ever used TLS so that future calls will always use
+     TLS. */
+
   fp = http_get_read_ptr (http);
   if (!fp)
     {
@@ -851,6 +871,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
 
  leave:
   http_close (http, 0);
+  http_session_release (session);
   xfree (request_buffer);
   return err;
 }

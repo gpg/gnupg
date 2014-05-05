@@ -1630,16 +1630,29 @@ are available for all keyserver types, some common options are:
   program uses internally (libcurl, openldap, etc).
 
   @item check-cert
+@ifset gpgtwoone
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
   Enable certificate checking if the keyserver presents one (for hkps or
   ldaps).  Defaults to on.
+@end ifclear
 
   @item ca-cert-file
+@ifset gpgtwoone
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
   Provide a certificate store to override the system default.  Only
   necessary if check-cert is enabled, and the keyserver is using a
   certificate that is not present in a system default certificate list.
 
   Note that depending on the SSL library that the keyserver helper is
   built with, this may actually be a directory or a file.
+@end ifclear
+
 @end table
 
 @item --completes-needed @code{n}

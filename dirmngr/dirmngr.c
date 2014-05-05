@@ -40,6 +40,9 @@
 # include <signal.h>
 #endif
 #include <npth.h>
+#ifdef HTTP_USE_GNUTLS
+# include <gnutls/gnutls.h>
+#endif /*HTTP_USE_GNUTLS*/
 
 
 #define JNLIB_NEED_LOG_LOGV
@@ -92,6 +95,7 @@ enum cmd_and_opt_values {
   oDebugAll,
   oDebugWait,
   oDebugLevel,
+  oGnutlsDebug,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -116,6 +120,7 @@ enum cmd_and_opt_values {
   oOCSPMaxPeriod,
   oOCSPCurrentPeriod,
   oMaxReplies,
+  oHkpCaCert,
   oFakedSystemTime,
   oForce,
   oAllowOCSP,
@@ -195,11 +200,16 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oMaxReplies, "max-replies",
                 N_("|N|do not return more than N items in one query")),
 
+  ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
+                N_("|FILE|use the CA certifciates in FILE for HKP over TLS")),
+
+
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
   ARGPARSE_s_u (oFakedSystemTime, "faked-system-time", "@"), /*(epoch time)*/
   ARGPARSE_p_u (oDebug,    "debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
+  ARGPARSE_s_i (oGnutlsDebug, "gnutls-debug", "@"),
   ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
@@ -233,6 +243,9 @@ static char *current_logfile;
 
 /* Helper to implement --debug-level. */
 static const char *debug_level;
+
+/* Helper to set the GNUTLS log level.  */
+static int opt_gnutls_debug = -1;
 
 /* Flag indicating that a shutdown has been requested.  */
 static volatile int shutdown_pending;
@@ -331,6 +344,20 @@ my_ksba_hash_buffer (void *arg, const char *oid,
 }
 
 
+/* GNUTLS log function callback.  */
+static void
+my_gnutls_log (int level, const char *text)
+{
+  int n;
+
+  n = strlen (text);
+  while (n && text[n-1] == '\n')
+    n--;
+
+  log_debug ("gnutls:L%d: %.*s\n", level, n, text);
+}
+
+
 /* Setup the debugging.  With a LEVEL of NULL only the active debug
    flags are propagated to the subsystems.  With LEVEL set, a specific
    set of debug flags is set; thus overriding all flags already
@@ -382,6 +409,14 @@ set_debug (void)
 
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
+
+#ifdef HTTP_USE_GNUTLS
+  if (opt_gnutls_debug >= 0)
+    {
+      gnutls_global_set_log_function (my_gnutls_log);
+      gnutls_global_set_log_level (opt_gnutls_debug);
+    }
+#endif /*HTTP_USE_GNUTLS*/
 }
 
 
@@ -439,6 +474,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
           opt.ocsp_signer = tmp;
         }
       FREE_STRLIST (opt.ignored_cert_extensions);
+      http_register_tls_ca (NULL);
       return 1;
     }
 
@@ -449,6 +485,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDebug:   opt.debug |= pargs->r.ret_ulong; break;
     case oDebugAll: opt.debug = ~0; break;
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
+    case oGnutlsDebug: opt_gnutls_debug = pargs->r.ret_int; break;
 
     case oLogFile:
       if (!reread)
@@ -489,6 +526,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oOCSPCurrentPeriod: opt.ocsp_current_period = pargs->r.ret_int; break;
 
     case oMaxReplies: opt.max_replies = pargs->r.ret_int; break;
+
+    case oHkpCaCert:
+      http_register_tls_ca (pargs->r.ret_str);
+      break;
 
     case oIgnoreCertExtension:
       add_to_strlist (&opt.ignored_cert_extensions, pargs->r.ret_str);
@@ -628,6 +669,12 @@ main (int argc, char **argv)
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
   ksba_set_hash_buffer_function (my_ksba_hash_buffer, NULL);
 
+  /* Init GNUTLS.  */
+#ifdef HTTP_USE_GNUTLS
+  rc = gnutls_global_init ();
+  if (rc)
+    log_fatal ("gnutls_global_init failed: %s\n", gnutls_strerror (rc));
+#endif /*HTTP_USE_GNUTLS*/
 
   /* Init Assuan. */
   malloc_hooks.malloc = gcry_malloc;
