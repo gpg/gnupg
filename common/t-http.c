@@ -144,6 +144,7 @@ main (int argc, char **argv)
   int c;
   unsigned int my_http_flags = 0;
   int no_out = 0;
+  int tls_dbg = 0;
   const char *cafile = NULL;
   http_session_t session = NULL;
 
@@ -163,12 +164,13 @@ main (int argc, char **argv)
         {
           fputs ("usage: " PGM " URL\n"
                  "Options:\n"
-                 "  --verbose       print timings etc.\n"
-                 "  --debug         flyswatter\n"
-                 "  --cacert FNAME  expect CA certificate in file FNAME\n"
-                 "  --no-verify     do not verify the certificate\n"
-                 "  --force-tls     use HTTP_FLAG_FORCE_TLS\n"
-                 "  --no-out        do not print the content\n",
+                 "  --verbose         print timings etc.\n"
+                 "  --debug           flyswatter\n"
+                 "  --gnutls-debug N  use GNUTLS debug level N\n"
+                 "  --cacert FNAME    expect CA certificate in file FNAME\n"
+                 "  --no-verify       do not verify the certificate\n"
+                 "  --force-tls       use HTTP_FLAG_FORCE_TLS\n"
+                 "  --no-out          do not print the content\n",
                  stdout);
           exit (0);
         }
@@ -182,6 +184,15 @@ main (int argc, char **argv)
           verbose += 2;
           debug++;
           argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--gnutls-debug"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              tls_dbg = atoi (*argv);
+              argc--; argv++;
+            }
         }
       else if (!strcmp (*argv, "--cacert"))
         {
@@ -248,7 +259,8 @@ main (int argc, char **argv)
   /* gnutls_certificate_set_dh_params (certcred, dh_params); */
 
   gnutls_global_set_log_function (my_gnutls_log);
-  /* gnutls_global_set_log_level (2); */
+  if (tls_dbg)
+    gnutls_global_set_log_level (tls_dbg);
 
 #endif /*HTTP_USE_GNUTLS*/
 

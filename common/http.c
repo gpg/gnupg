@@ -222,6 +222,7 @@ typedef struct cookie_s *cookie_t;
 /* The session object. */
 struct http_session_s
 {
+  int refcount;    /* Number of references to this object.  */
 #ifdef HTTP_USE_GNUTLS
   gnutls_certificate_credentials_t certcred;
   gnutls_session_t tls_session;
@@ -231,9 +232,7 @@ struct http_session_s
     unsigned int status; /* Verification status.  */
   } verify;
   char *servername; /* Malloced server name.  */
-#else
-  int dummy;
-#endif
+#endif /*HTTP_USE_GNUTLS*/
 };
 
 
@@ -327,7 +326,7 @@ init_sockets (void)
 /* Create a new socket object.  Returns NULL and closes FD if not
    enough memory is available.  */
 static my_socket_t
-my_socket_new (int fd)
+_my_socket_new (int lnr, int fd)
 {
   my_socket_t so;
 
@@ -341,34 +340,39 @@ my_socket_new (int fd)
     }
   so->fd = fd;
   so->refcount = 1;
-  /* log_debug ("my_socket_new(%d): object %p for fd %d created\n", */
+  /* log_debug ("http.c:socket_new(%d): object %p for fd %d created\n", */
   /*            lnr, so, so->fd); */
+  (void)lnr;
   return so;
 }
-/* #define my_socket_new(a) _my_socket_new ((a),__LINE__) */
+#define my_socket_new(a) _my_socket_new (__LINE__, (a))
 
 /* Bump up the reference counter for the socket object SO.  */
 static my_socket_t
-my_socket_ref (my_socket_t so)
+_my_socket_ref (int lnr, my_socket_t so)
 {
   so->refcount++;
-  /* log_debug ("my_socket_ref(%d): object %p for fd %d refcount now %d\n", */
+  /* log_debug ("http.c:socket_ref(%d) object %p for fd %d refcount now %d\n", */
   /*            lnr, so, so->fd, so->refcount); */
+  (void)lnr;
   return so;
 }
-/* #define my_socket_ref(a) _my_socket_ref ((a),__LINE__) */
+#define my_socket_ref(a) _my_socket_ref (__LINE__,(a))
+
 
 /* Bump down the reference counter for the socket object SO.  If SO
    has no more references, close the socket and release the
    object.  */
 static void
-my_socket_unref (my_socket_t so, void (*preclose)(void*), void *preclosearg)
+_my_socket_unref (int lnr, my_socket_t so,
+                  void (*preclose)(void*), void *preclosearg)
 {
   if (so)
     {
       so->refcount--;
-      /* log_debug ("my_socket_unref(%d): object %p for fd %d ref now %d\n", */
+      /* log_debug ("http.c:socket_unref(%d): object %p for fd %d ref now %d\n", */
       /*            lnr, so, so->fd, so->refcount); */
+      (void)lnr;
       if (!so->refcount)
         {
           if (preclose)
@@ -378,19 +382,21 @@ my_socket_unref (my_socket_t so, void (*preclose)(void*), void *preclosearg)
         }
     }
 }
-/* #define my_socket_unref(a) _my_socket_unref ((a),__LINE__) */
+#define my_socket_unref(a,b,c) _my_socket_unref (__LINE__,(a),(b),(c))
 
 
 #if defined (USE_NPTH) && defined(HTTP_USE_GNUTLS)
 static ssize_t
 my_npth_read (gnutls_transport_ptr_t ptr, void *buffer, size_t size)
 {
-  return npth_read ((int)(unsigned long)ptr, buffer, size);
+  my_socket_t sock = ptr;
+  return npth_read (sock->fd, buffer, size);
 }
 static ssize_t
 my_npth_write (gnutls_transport_ptr_t ptr, const void *buffer, size_t size)
 {
-  return npth_write ((int)(unsigned long)ptr, buffer, size);
+  my_socket_t sock = ptr;
+  return npth_write (sock->fd, buffer, size);
 }
 #endif /*USE_NPTH && HTTP_USE_GNUTLS*/
 
@@ -498,6 +504,44 @@ http_register_tls_ca (const char *fname)
 }
 
 
+/* Release a session.  Take care not to release it while it is being
+   used by a http context object.  */
+static void
+session_unref (int lnr, http_session_t sess)
+{
+  if (!sess)
+    return;
+
+  sess->refcount--;
+  /* log_debug ("http.c:session_unref(%d): sess %p ref now %d\n", */
+  /*            lnr, sess, sess->refcount); */
+  (void)lnr;
+  if (sess->refcount)
+    return;
+
+#ifdef HTTP_USE_GNUTLS
+  if (sess->tls_session)
+    {
+      my_socket_t sock = gnutls_transport_get_ptr (sess->tls_session);
+      my_socket_unref (sock, NULL, NULL);
+      gnutls_deinit (sess->tls_session);
+    }
+  if (sess->certcred)
+    gnutls_certificate_free_credentials (sess->certcred);
+  xfree (sess->servername);
+#endif /*HTTP_USE_GNUTLS*/
+
+  xfree (sess);
+}
+#define http_session_unref(a) session_unref (__LINE__, (a))
+
+void
+http_session_release (http_session_t sess)
+{
+  http_session_unref (sess);
+}
+
+
 /* Create a new session object which is currently used to enable TLS
    support.  It may eventually allow reusing existing connections.  */
 gpg_error_t
@@ -511,6 +555,7 @@ http_session_new (http_session_t *r_session, const char *tls_priority)
   sess = xtrycalloc (1, sizeof *sess);
   if (!sess)
     return gpg_error_from_syserror ();
+  sess->refcount = 1;
 
 #ifdef HTTP_USE_GNUTLS
   {
@@ -544,6 +589,10 @@ http_session_new (http_session_t *r_session, const char *tls_priority)
         err = gpg_error (GPG_ERR_GENERAL);
         goto leave;
       }
+    /* A new session has the transport ptr set to (void*(-1), we need
+       it to be NULL.  */
+    gnutls_transport_set_ptr (sess->tls_session, NULL);
+
     rc = gnutls_priority_set_direct (sess->tls_session,
                                      tls_priority? tls_priority : "NORMAL",
                                      &errpos);
@@ -569,13 +618,14 @@ http_session_new (http_session_t *r_session, const char *tls_priority)
   (void)tls_priority;
 #endif /*!HTTP_USE_GNUTLS*/
 
+  /* log_debug ("http.c:session_new: sess %p created\n", sess); */
   err = 0;
 
 #ifdef HTTP_USE_GNUTLS
  leave:
 #endif /*HTTP_USE_GNUTLS*/
   if (err)
-    http_session_release (sess);
+    http_session_unref (sess);
   else
     *r_session = sess;
 
@@ -583,23 +633,13 @@ http_session_new (http_session_t *r_session, const char *tls_priority)
 }
 
 
-/* Release a session.  Take care not to release it while it is beeing
-   used by a http contect object.  */
-void
-http_session_release (http_session_t sess)
+/* Increment the reference count for session SESS.  */
+http_session_t
+http_session_ref (http_session_t sess)
 {
-  if (!sess)
-    return;
-
-#ifdef HTTP_USE_GNUTLS
-  if (sess->tls_session)
-    gnutls_deinit (sess->tls_session);
-  if (sess->certcred)
-    gnutls_certificate_free_credentials (sess->certcred);
-  xfree (sess->servername);
-#endif /*HTTP_USE_GNUTLS*/
-
-  xfree (sess);
+  sess->refcount++;
+  /* log_debug ("http.c:session_ref: sess %p ref now %d\n", sess, sess->refcount); */
+  return sess;
 }
 
 
@@ -625,7 +665,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
     return gpg_error_from_syserror ();
   hd->req_type = reqtype;
   hd->flags = flags;
-  hd->session = session;
+  hd->session = http_session_ref (session);
 
   err = parse_uri (&hd->uri, url, 0, !!(flags & HTTP_FLAG_FORCE_TLS));
   if (!err)
@@ -638,6 +678,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
         es_fclose (hd->fp_read);
       if (hd->fp_write)
         es_fclose (hd->fp_write);
+      http_session_unref (hd->session);
       xfree (hd);
     }
   else
@@ -791,7 +832,7 @@ http_wait_response (http_t hd)
   if (!cookie)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
   cookie->sock = my_socket_ref (hd->sock);
-  cookie->session = hd->session;
+  cookie->session = http_session_ref (hd->session);
   cookie->use_tls = hd->uri->use_tls;
 
   hd->read_cookie = cookie;
@@ -800,6 +841,7 @@ http_wait_response (http_t hd)
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       my_socket_unref (cookie->sock, NULL, NULL);
+      http_session_unref (cookie->session);
       xfree (cookie);
       hd->read_cookie = NULL;
       return err;
@@ -857,6 +899,7 @@ http_close (http_t hd, int keep_read_stream)
     es_fclose (hd->fp_read);
   if (hd->fp_write)
     es_fclose (hd->fp_write);
+  http_session_unref (hd->session);
   http_release_parsed_uri (hd->uri);
   while (hd->headers)
     {
@@ -1431,12 +1474,7 @@ send_request (http_t hd, const char *auth,
       int rc;
 
       my_socket_ref (hd->sock);
-#if GNUTLS_VERSION_NUMBER >= 0x030109
-      gnutls_transport_set_int (hd->session->tls_session, hd->sock->fd);
-#else
-      gnutls_transport_set_ptr (hd->session->tls_session,
-                                (gnutls_transport_ptr_t)(hd->sock->fd));
-#endif
+      gnutls_transport_set_ptr (hd->session->tls_session, hd->sock);
 #ifdef USE_NPTH
       gnutls_transport_set_pull_function (hd->session->tls_session,
                                           my_npth_read);
@@ -1561,7 +1599,7 @@ send_request (http_t hd, const char *auth,
     cookie->sock = my_socket_ref (hd->sock);
     hd->write_cookie = cookie;
     cookie->use_tls = hd->uri->use_tls;
-    cookie->session = hd->session;
+    cookie->session = http_session_ref (hd->session);
 
     hd->fp_write = es_fopencookie (cookie, "w", cookie_functions);
     if (!hd->fp_write)
@@ -2382,6 +2420,8 @@ cookie_close (void *cookie)
     if (c->sock)
       my_socket_unref (c->sock, NULL, NULL);
 
+  if (c->session)
+    http_session_unref (c->session);
   xfree (c);
   return 0;
 }
