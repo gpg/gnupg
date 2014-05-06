@@ -925,7 +925,7 @@ armor_data (char **r_string, const void *data, size_t datalen)
 
   *r_string = NULL;
 
-  fp = es_fopenmem (0, "rw");
+  fp = es_fopenmem (0, "rw,samethread");
   if (!fp)
     return gpg_error_from_syserror ();
 

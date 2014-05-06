@@ -593,7 +593,7 @@ ks_put_inq_cb (void *opaque, const char *line)
       estream_t fp;
 
       /* Parse the keyblock and send info lines back to the server.  */
-      fp = es_fopenmem (0, "rw");
+      fp = es_fopenmem (0, "rw,samethread");
       if (!fp)
         err = gpg_error_from_syserror ();
 
