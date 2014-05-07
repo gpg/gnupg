@@ -612,8 +612,6 @@ main (int argc, char **argv )
   unsigned configlineno;
   int parse_debug = 0;
   int default_config =1;
-  int greeting = 0;
-  int nogreeting = 0;
   int pipe_server = 0;
   int is_daemon = 0;
   int nodetach = 0;
@@ -811,7 +809,7 @@ main (int argc, char **argv )
 		goto next_pass;
 	    }
           break;
-        case oNoGreeting: nogreeting = 1; break;
+        case oNoGreeting: /* Dummy option.  */ break;
         case oNoVerbose: opt.verbose = 0; break;
         case oNoOptions: break; /* no-options */
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
@@ -882,24 +880,9 @@ main (int argc, char **argv )
   configname = NULL;
   if (log_get_errorcount(0))
     exit(2);
-  if (nogreeting )
-    greeting = 0;
 
   /* Turn the homedir into an absolute one. */
   opt.homedir = make_absfilename (opt.homedir, NULL);
-
-
-  if (greeting)
-    {
-      es_fprintf (es_stderr, "%s %s; %s\n",
-                  strusage(11), strusage(13), strusage(14) );
-      es_fprintf (es_stderr, "%s\n", strusage(15) );
-    }
-#ifdef IS_DEVELOPMENT_VERSION
-  /* We don't want to print it here because gpg-agent is useful of its
-     own and quite matured.  */
-  /*log_info ("NOTE: this is a development version!\n");*/
-#endif
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
