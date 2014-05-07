@@ -220,4 +220,7 @@ t_zb32_LDADD = $(t_common_ldadd)
 # http tests
 t_http_SOURCES = t-http.c
 t_http_CFLAGS  = $(t_common_cflags) $(LIBGNUTLS_CFLAGS)
-t_http_LDADD   = $(libcommontls) $(t_common_ldadd) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+t_http_LDADD   = libcommontls.a $(t_common_ldadd) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+
+# All programs should depend on the created libs.
+$(PROGRAMS) : libcommon.a libcommonpth.a libcommontls.a libcommontlsnpth.a

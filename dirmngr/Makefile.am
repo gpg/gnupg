@@ -87,3 +87,6 @@ dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
 
 no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
 	cat $(top_srcdir)/tools/no-libgcrypt.c > no-libgcrypt.c
+
+
+$(PROGRAMS) : $(libcommon) $(libcommonpth) $(libcommontls) $(libcommontlsnpth)
