@@ -199,23 +199,24 @@ parse_key (const unsigned char *data, size_t datalen,
 
   switch (algorithm)
     {
-    case 1:
-    case 2:
-    case 3: /* RSA */
+    case PUBKEY_ALGO_RSA:
+    case PUBKEY_ALGO_RSA_E:
+    case PUBKEY_ALGO_RSA_S:
       npkey = 2;
       break;
-    case 16:
-    case 20: /* Elgamal */
+    case PUBKEY_ALGO_ELGAMAL_E:
+    case PUBKEY_ALGO_ELGAMAL:
       npkey = 3;
       break;
-    case 17: /* DSA */
+    case PUBKEY_ALGO_DSA:
       npkey = 4;
       break;
-    case 18: /* ECDH */
+    case PUBKEY_ALGO_ECDH:
       npkey = 3;
       is_ecc = 1;
       break;
-    case 19: /* ECDSA */
+    case PUBKEY_ALGO_ECDSA:
+    case PUBKEY_ALGO_EDDSA:
       npkey = 2;
       is_ecc = 1;
       break;
