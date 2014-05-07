@@ -2240,6 +2240,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  pk->pkey[npkey] = gcry_mpi_set_opaque (NULL,
 						 read_rest (inp, pktlen),
 						 pktlen * 8);
+          /* Mark that MPI as protected - we need this information for
+             importing a key.  The OPAQUE flag can't be used because
+             we also store public EdDSA values in opaque MPIs.  */
+          if (pk->pkey[npkey])
+            gcry_mpi_set_flag (pk->pkey[npkey], GCRYMPI_FLAG_USER1);
 	  pktlen = 0;
 	  if (list_mode)
             es_fprintf (listfp, "\tskey[%d]: [v4 protected]\n", npkey);
@@ -2252,6 +2257,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	      if (ski->is_protected)
 		{
 		  pk->pkey[i] = read_protected_v3_mpi (inp, &pktlen);
+                  if (pk->pkey[i])
+                    gcry_mpi_set_flag (pk->pkey[i], GCRYMPI_FLAG_USER1);
 		  if (list_mode)
 		    es_fprintf (listfp, "\tskey[%d]: [v3 protected]\n", i);
 		}

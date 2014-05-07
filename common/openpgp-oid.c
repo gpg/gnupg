@@ -280,17 +280,20 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
       oidstr = "1.3.6.1.4.1.11591.15.1";
       nbits = 255;
     }
-  else if (!strcmp (name, "nistp256"))
+  else if (!strcmp (name, "nistp256") || !strcmp (name, "NIST P-256"))
     {
+      /* Libgcrypt uses "NIST P-256" as standard name for this curve
+         and thus the key generation returns this value.  Thus we
+         allow both strings.  */
       oidstr = "1.2.840.10045.3.1.7";
       nbits = 256;
     }
-  else if (!strcmp (name, "nistp384"))
+  else if (!strcmp (name, "nistp384") || !strcmp (name, "NIST P-384"))
     {
       oidstr = "1.3.132.0.34";
       nbits = 384;
     }
-  else if (!strcmp (name, "nistp521"))
+  else if (!strcmp (name, "nistp521") || !strcmp (name, "NIST P-521"))
     {
       oidstr = "1.3.132.0.35";
       nbits = 521;

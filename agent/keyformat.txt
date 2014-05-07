@@ -211,6 +211,7 @@ This format is used to transfer keys between gpg and gpg-agent.
 (openpgp-private-key
   (version V)
   (algo PUBKEYALGO)
+  (curve CURVENAME)
   (skey _ P1 _ P2 _ P3 ... e PN)
   (csum n)
   (protection PROTTYPE PROTALGO IV S2KMODE S2KHASH S2KSALT S2KCOUNT))
@@ -218,6 +219,7 @@ This format is used to transfer keys between gpg and gpg-agent.
 
 * V is the packet version number (3 or 4).
 * PUBKEYALGO is a Libgcrypt algo name
+* CURVENAME is the name of the curve - only used with ECC.
 * P1 .. PN are the parameters; the public parameters are never encrypted
   the secrect key parameters are encrypted if the "protection" list is
   given.  To make this more explicit each parameter is preceded by a

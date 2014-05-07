@@ -36,6 +36,7 @@ struct try_do_unprotect_arg_s
   int  is_v4;
   int  is_protected;
   int  pubkey_algo;
+  const char *curve;
   int  protect_algo;
   char *iv;
   int  ivlen;
@@ -54,7 +55,8 @@ struct try_do_unprotect_arg_s
 
 /* Compute the keygrip from the public key and store it at GRIP.  */
 static gpg_error_t
-get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
+get_keygrip (int pubkey_algo, const char *curve, gcry_mpi_t *pkey,
+             unsigned char *grip)
 {
   gpg_error_t err;
   gcry_sexp_t s_pkey = NULL;
@@ -80,9 +82,8 @@ get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
 
     case GCRY_PK_ECC:
       err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)))",
-                             pkey[0], pkey[1], pkey[2], pkey[3], pkey[4],
-                             pkey[5]);
+                             "(public-key(ecc(curve %s)(q%m)))",
+                             curve, pkey[0]);
       break;
 
     default:
@@ -102,7 +103,8 @@ get_keygrip (int pubkey_algo, gcry_mpi_t *pkey, unsigned char *grip)
    parameters into our s-expression based format.  Note that
    PUBKEY_ALGO has an gcrypt algorithm number. */
 static gpg_error_t
-convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
+convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
+                    const char *curve)
 {
   gpg_error_t err;
   gcry_sexp_t s_skey = NULL;
@@ -135,11 +137,12 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
       break;
 
     case GCRY_PK_ECC:
-      err = gcry_sexp_build (&s_skey, NULL,
-                             "(private-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
-                             "(d%m)))",
-                             skey[0], skey[1], skey[2], skey[3], skey[4],
-                             skey[5], skey[6]);
+      if (!curve)
+        err = gpg_error (GPG_ERR_BAD_SECKEY);
+      else
+        err = gcry_sexp_build (&s_skey, NULL,
+                               "(private-key(ecc(curve%s)(q%m)(d%m)))",
+                               curve, skey[0], skey[1]);
       break;
 
     default:
@@ -160,7 +163,7 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey)
    mode.  Note that PUBKEY_ALGO has an gcrypt algorithm number. */
 static gpg_error_t
 convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
-                      gcry_sexp_t transfer_key)
+                      const char *curve, gcry_sexp_t transfer_key)
 {
   gpg_error_t err;
   gcry_sexp_t s_skey = NULL;
@@ -197,9 +200,9 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
     case GCRY_PK_ECC:
       err = gcry_sexp_build
         (&s_skey, NULL,
-         "(protected-private-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)(q%m)"
+         "(protected-private-key(ecc(curve%s)(q%m)"
          "(protected openpgp-native%S)))",
-         skey[0], skey[1], skey[2], skey[3], skey[4], skey[5], transfer_key);
+         curve, skey[0], transfer_key);
       break;
 
     default:
@@ -254,6 +257,22 @@ checksum (const unsigned char *p, unsigned int n)
 }
 
 
+/* Return the number of expected key parameters.  */
+static void
+get_npkey_nskey (int pubkey_algo, size_t *npkey, size_t *nskey)
+{
+  switch (pubkey_algo)
+    {
+    case GCRY_PK_RSA:   *npkey = 2; *nskey = 6; break;
+    case GCRY_PK_ELG:   *npkey = 3; *nskey = 4; break;
+    case GCRY_PK_ELG_E: *npkey = 3; *nskey = 4; break;
+    case GCRY_PK_DSA:   *npkey = 4; *nskey = 5; break;
+    case GCRY_PK_ECC:   *npkey = 1; *nskey = 2; break;
+    default:            *npkey = 0; *nskey = 0; break;
+    }
+}
+
+
 /* Helper for do_unprotect.  PUBKEY_ALOGO is the gcrypt algo number.
    On success R_NPKEY and R_NSKEY receive the number or parameters for
    the algorithm PUBKEY_ALGO and R_SKEYLEN the used length of
@@ -264,7 +283,6 @@ prepare_unprotect (int pubkey_algo, gcry_mpi_t *skey, size_t skeysize,
                    unsigned int *r_npkey, unsigned int *r_nskey,
                    unsigned int *r_skeylen)
 {
-  gpg_error_t err;
   size_t npkey, nskey, skeylen;
   int i;
 
@@ -293,12 +311,8 @@ prepare_unprotect (int pubkey_algo, gcry_mpi_t *skey, size_t skeysize,
   /* Get properties of the public key algorithm and do some
      consistency checks.  Note that we need at least NPKEY+1 elements
      in the SKEY array. */
-  if ( (err = gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NPKEY,
-                                 NULL, &npkey))
-       || (err = gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NSKEY,
-                                    NULL, &nskey)))
-    return err;
-  if (!npkey || npkey >= nskey)
+  get_npkey_nskey (pubkey_algo, &npkey, &nskey);
+  if (!npkey || !nskey || npkey >= nskey)
     return gpg_error (GPG_ERR_INTERNAL);
   if (skeylen <= npkey)
     return gpg_error (GPG_ERR_MISSING_VALUE);
@@ -309,7 +323,7 @@ prepare_unprotect (int pubkey_algo, gcry_mpi_t *skey, size_t skeysize,
      encrypted.  */
   for (i=0; i < npkey; i++)
     {
-      if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
+      if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
         return gpg_error (GPG_ERR_BAD_SECKEY);
     }
 
@@ -329,7 +343,7 @@ prepare_unprotect (int pubkey_algo, gcry_mpi_t *skey, size_t skeysize,
 static int
 do_unprotect (const char *passphrase,
               int pkt_version, int pubkey_algo, int is_protected,
-              gcry_mpi_t *skey, size_t skeysize,
+              const char *curve, gcry_mpi_t *skey, size_t skeysize,
               int protect_algo, void *protect_iv, size_t protect_ivlen,
               int s2k_mode, int s2k_algo, byte *s2k_salt, u32 s2k_count,
               u16 desired_csum, gcry_sexp_t *r_key)
@@ -353,23 +367,26 @@ do_unprotect (const char *passphrase,
      merely verify the checksum.  */
   if (!is_protected)
     {
-      unsigned char *buffer;
-
       actual_csum = 0;
       for (i=npkey; i < nskey; i++)
         {
-          if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
+          if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
             return gpg_error (GPG_ERR_BAD_SECKEY);
 
-          err = gcry_mpi_print (GCRYMPI_FMT_PGP, NULL, 0, &nbytes, skey[i]);
-          if (!err)
+          if (gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
             {
-              buffer = (gcry_is_secure (skey[i])?
-                        xtrymalloc_secure (nbytes) : xtrymalloc (nbytes));
-              if (!buffer)
-                return gpg_error_from_syserror ();
-              err = gcry_mpi_print (GCRYMPI_FMT_PGP, buffer, nbytes,
-                                    NULL, skey[i]);
+              unsigned int nbits;
+              const unsigned char *buffer;
+              buffer = gcry_mpi_get_opaque (skey[i], &nbits);
+              nbytes = (nbits+7)/8;
+              actual_csum += checksum (buffer, nbytes);
+            }
+          else
+            {
+              unsigned char *buffer;
+
+              err = gcry_mpi_aprint (GCRYMPI_FMT_PGP, &buffer, &nbytes,
+                                     skey[i]);
               if (!err)
                 actual_csum += checksum (buffer, nbytes);
               xfree (buffer);
@@ -428,7 +445,8 @@ do_unprotect (const char *passphrase,
     {
       int ndata;
       unsigned int ndatabits;
-      unsigned char *p, *data;
+      const unsigned char *p;
+      unsigned char *data;
       u16 csum_pgp7 = 0;
 
       if (!gcry_mpi_get_flag (skey[npkey], GCRYMPI_FLAG_OPAQUE ))
@@ -527,7 +545,7 @@ do_unprotect (const char *passphrase,
 
       for (i = npkey; i < nskey; i++)
         {
-          unsigned char *p;
+          const unsigned char *p;
           size_t ndata;
           unsigned int ndatabits;
 
@@ -580,7 +598,7 @@ do_unprotect (const char *passphrase,
   if (nskey != skeylen)
     err = gpg_error (GPG_ERR_BAD_SECKEY);
   else
-    err = convert_secret_key (r_key, pubkey_algo, skey);
+    err = convert_secret_key (r_key, pubkey_algo, skey, curve);
   if (err)
     return err;
 
@@ -608,6 +626,7 @@ try_do_unprotect_cb (struct pin_entry_info_s *pi)
   err = do_unprotect (pi->pin,
                       arg->is_v4? 4:3,
                       arg->pubkey_algo, arg->is_protected,
+                      arg->curve,
                       arg->skey, arg->skeysize,
                       arg->protect_algo, arg->iv, arg->ivlen,
                       arg->s2k_mode, arg->s2k_algo,
@@ -651,6 +670,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
   u32  s2k_count = 0;
   size_t npkey, nskey;
   gcry_mpi_t skey[10];  /* We support up to 9 parameters.  */
+  char *curve = NULL;
   u16 desired_csum;
   int skeyidx = 0;
   gcry_sexp_t s_skey = NULL;
@@ -695,8 +715,6 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       if (!string)
         goto bad_seckey;
       protect_algo = gcry_cipher_map_name (string);
-      if (!protect_algo && !!strcmp (string, "IDEA"))
-        protect_algo = GCRY_CIPHER_IDEA;
       xfree (string);
 
       value = gcry_sexp_nth_data (list, 3, &valuelen);
@@ -739,10 +757,20 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
   pubkey_algo = gcry_pk_map_name (string);
   xfree (string);
 
-  if (gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
-      || gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
-      || !npkey || npkey >= nskey)
+  get_npkey_nskey (pubkey_algo, &npkey, &nskey);
+  if (!npkey || !nskey || npkey >= nskey)
     goto bad_seckey;
+
+  if (npkey == 1) /* This is ECC */
+    {
+      gcry_sexp_release (list);
+      list = gcry_sexp_find_token (top_list, "curve", 0);
+      if (!list)
+        goto bad_seckey;
+      curve = gcry_sexp_nth_string (list, 1);
+      if (!curve)
+        goto bad_seckey;
+    }
 
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "skey", 0);
@@ -770,15 +798,15 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       value = gcry_sexp_nth_data (list, ++idx, &valuelen);
       if (!value || !valuelen)
         goto bad_seckey;
-      if (is_enc)
+      if (is_enc || curve)
         {
-          void *p = xtrymalloc (valuelen);
-          if (!p)
-            goto outofmem;
-          memcpy (p, value, valuelen);
-          skey[skeyidx] = gcry_mpi_set_opaque (NULL, p, valuelen*8);
+          /* Encrypted parameters and ECC parameters need or can be
+             stored as opaque.  */
+          skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
           if (!skey[skeyidx])
             goto outofmem;
+          if (is_enc)
+            gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
         }
       else
         {
@@ -807,33 +835,24 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
   gcry_sexp_release (list); list = NULL;
   gcry_sexp_release (top_list); top_list = NULL;
 
-  /* log_debug ("XXX is_v4=%d\n", is_v4); */
-  /* log_debug ("XXX pubkey_algo=%d\n", pubkey_algo); */
-  /* log_debug ("XXX is_protected=%d\n", is_protected); */
-  /* log_debug ("XXX protect_algo=%d\n", protect_algo); */
-  /* log_printhex ("XXX iv", iv, ivlen); */
-  /* log_debug ("XXX ivlen=%d\n", ivlen); */
-  /* log_debug ("XXX s2k_mode=%d\n", s2k_mode); */
-  /* log_debug ("XXX s2k_algo=%d\n", s2k_algo); */
-  /* log_printhex ("XXX s2k_salt", s2k_salt, sizeof s2k_salt); */
-  /* log_debug ("XXX s2k_count=%lu\n", (unsigned long)s2k_count); */
-  /* for (idx=0; skey[idx]; idx++) */
-  /*   { */
-  /*     int is_enc = gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_OPAQUE); */
-  /*     log_info ("XXX skey[%d]%s:", idx, is_enc? " (enc)":""); */
-  /*     if (is_enc) */
-  /*       { */
-  /*         void *p; */
-  /*         unsigned int nbits; */
-  /*         p = gcry_mpi_get_opaque (skey[idx], &nbits); */
-  /*         log_printhex (NULL, p, (nbits+7)/8); */
-  /*       } */
-  /*     else */
-  /*       gcry_mpi_dump (skey[idx]); */
-  /*     log_printf ("\n"); */
-  /*   } */
+#if 0
+  log_debug ("XXX is_v4=%d\n", is_v4);
+  log_debug ("XXX pubkey_algo=%d\n", pubkey_algo);
+  log_debug ("XXX is_protected=%d\n", is_protected);
+  log_debug ("XXX protect_algo=%d\n", protect_algo);
+  log_printhex ("XXX iv", iv, ivlen);
+  log_debug ("XXX ivlen=%d\n", ivlen);
+  log_debug ("XXX s2k_mode=%d\n", s2k_mode);
+  log_debug ("XXX s2k_algo=%d\n", s2k_algo);
+  log_printhex ("XXX s2k_salt", s2k_salt, sizeof s2k_salt);
+  log_debug ("XXX s2k_count=%lu\n", (unsigned long)s2k_count);
+  log_debug ("XXX curve='%s'\n", curve);
+  for (idx=0; skey[idx]; idx++)
+    gcry_log_debugmpi (gcry_mpi_get_flag (skey[idx], GCRYMPI_FLAG_USER1)
+                       ? "skey(e)" : "skey(_)", skey[idx]);
+#endif /*0*/
 
-  err = get_keygrip (pubkey_algo, skey, grip);
+  err = get_keygrip (pubkey_algo, curve, skey, grip);
   if (err)
     goto leave;
 
@@ -850,7 +869,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       if (err)
         goto leave;
 
-      err = convert_transfer_key (&s_skey, pubkey_algo, skey, s_pgp);
+      err = convert_transfer_key (&s_skey, pubkey_algo, skey, curve, s_pgp);
       if (err)
         goto leave;
     }
@@ -871,6 +890,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       pi_arg.is_v4 = is_v4;
       pi_arg.is_protected = is_protected;
       pi_arg.pubkey_algo = pubkey_algo;
+      pi_arg.curve = curve;
       pi_arg.protect_algo = protect_algo;
       pi_arg.iv = iv;
       pi_arg.ivlen = ivlen;
@@ -929,6 +949,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
   err = make_canon_sexp_pad (s_skey, 1, r_key, NULL);
 
  leave:
+  xfree (curve);
   gcry_sexp_release (s_skey);
   gcry_sexp_release (list);
   gcry_sexp_release (top_list);
@@ -1223,11 +1244,9 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
     {
       char countbuf[35];
       membuf_t mbuf;
-      void *format_args_buf_ptr[1];
-      int   format_args_buf_int[1];
       void *format_args[10+2];
-      unsigned int n;
-      gcry_sexp_t tmpkey, tmpsexp = NULL;
+      gcry_sexp_t tmpkey;
+      gcry_sexp_t tmpsexp = NULL;
 
       snprintf (countbuf, sizeof countbuf, "%lu", s2k_count);
 
@@ -1238,11 +1257,8 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
           put_membuf_str (&mbuf, " _ %m");
           format_args[j++] = array + i;
         }
-      put_membuf_str (&mbuf, " e %b");
-      format_args_buf_ptr[0] = gcry_mpi_get_opaque (array[npkey], &n);
-      format_args_buf_int[0] = (n+7)/8;
-      format_args[j++] = format_args_buf_int;
-      format_args[j++] = format_args_buf_ptr;
+      put_membuf_str (&mbuf, " e %m");
+      format_args[j++] = array + npkey;
       put_membuf_str (&mbuf, ")\n");
       put_membuf (&mbuf, "", 1);
 

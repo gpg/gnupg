@@ -2086,29 +2086,30 @@ ask_keysize (int algo, unsigned int primary_keysize)
 }
 
 
-/* Ask for the key size.  ALGO is the algorithm.  If PRIMARY_KEYSIZE
-   is not 0, the function asks for the size of the encryption
-   subkey. */
+/* Ask for the curve.  ALGO is the selected algorithm which this
+   function may adjust.  Returns a malloced string with the name of
+   the curve.  */
 static char *
-ask_curve (void)
+ask_curve (int *algo)
 {
   struct {
     const char *name;
     int available;
     int expert_only;
+    int fix_curve;
     const char *pretty_name;
   } curves[] = {
 #if GPG_USE_EDDSA
-    { "Ed25519",         0, 0, "Curve 25519" },
+    { "Curve25519",      0, 0, 1, "Curve 25519" },
 #endif
 #if GPG_USE_ECDSA || GPG_USE_ECDH
-    { "NIST P-256",      0, 1, },
-    { "NIST P-384",      0, 0, },
-    { "NIST P-521",      0, 1, },
-    { "brainpoolP256r1", 0, 1, "Brainpool P-256" },
-    { "brainpoolP384r1", 0, 1, "Brainpool P-384" },
-    { "brainpoolP512r1", 0, 1, "Brainpool P-512" },
-    { "secp256k1", 0, 1 },
+    { "NIST P-256",      0, 1, 0, },
+    { "NIST P-384",      0, 0, 0, },
+    { "NIST P-521",      0, 1, 0, },
+    { "brainpoolP256r1", 0, 1, 0, "Brainpool P-256" },
+    { "brainpoolP384r1", 0, 1, 0, "Brainpool P-384" },
+    { "brainpoolP512r1", 0, 1, 0, "Brainpool P-512" },
+    { "secp256k1",       0, 1, 0  },
 #endif
   };
   int idx;
@@ -2127,9 +2128,14 @@ ask_curve (void)
       if (!opt.expert && curves[idx].expert_only)
         continue;
 
+      /* FIXME: The strcmp below is a temporary hack during
+         development.  It shall be removed as soon as we have proper
+         Curve25519 support in Libgcrypt.  */
       gcry_sexp_release (keyparms);
       rc = gcry_sexp_build (&keyparms, NULL,
-                            "(public-key(ecc(curve %s)))", curves[idx].name);
+                            "(public-key(ecc(curve %s)))",
+                            (!strcmp (curves[idx].name, "Curve25519")
+                             ? "Ed25519" : curves[idx].name));
       if (rc)
         continue;
       if (!gcry_pk_get_curve (keyparms, 0, NULL))
@@ -2171,7 +2177,22 @@ ask_curve (void)
         tty_printf (_("Invalid selection.\n"));
       else
         {
-          result = xstrdup (curves[idx].name);
+          if (curves[idx].fix_curve)
+            log_info ("WARNING: Curve25519 is an experimental algorithm and"
+                      " not yet specified by OpenPGP.  The current"
+                      " implementation may change with the next GnuPG release"
+                      " and thus rendering the key unusable!\n");
+
+          /* If the user selected a signing algorithm and Curve25519
+             we need to update the algo and and the curve name.  */
+          if ((*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
+              && curves[idx].fix_curve)
+            {
+              *algo = PUBKEY_ALGO_EDDSA;
+              result = xstrdup ("Ed25519");
+            }
+          else
+            result = xstrdup (curves[idx].name);
           break;
         }
     }
@@ -3459,16 +3480,16 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
         {
           /* Create primary and subkey at once.  */
           both = 1;
-          r = xmalloc_clear( sizeof *r + 20 );
-          r->key = pKEYTYPE;
-          sprintf( r->u.value, "%d", algo );
-          r->next = para;
-          para = r;
           if (algo == PUBKEY_ALGO_ECDSA
               || algo == PUBKEY_ALGO_EDDSA
               || algo == PUBKEY_ALGO_ECDH)
             {
-              curve = ask_curve ();
+              curve = ask_curve (&algo);
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pKEYTYPE;
+              sprintf( r->u.value, "%d", algo);
+              r->next = para;
+              para = r;
               nbits = 0;
               r = xmalloc_clear (sizeof *r + strlen (curve));
               r->key = pKEYCURVE;
@@ -3478,6 +3499,11 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
             }
           else
             {
+              r = xmalloc_clear( sizeof *r + 20 );
+              r->key = pKEYTYPE;
+              sprintf( r->u.value, "%d", algo);
+              r->next = para;
+              para = r;
               nbits = ask_keysize (algo, 0);
               r = xmalloc_clear( sizeof *r + 20 );
               r->key = pKEYLENGTH;
@@ -3501,9 +3527,43 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
           strcpy( r->u.value, "encrypt" );
           r->next = para;
           para = r;
+
+          if (algo == PUBKEY_ALGO_ECDSA
+              || algo == PUBKEY_ALGO_EDDSA
+              || algo == PUBKEY_ALGO_ECDH)
+            {
+              if (algo == PUBKEY_ALGO_EDDSA
+                  && subkey_algo == PUBKEY_ALGO_ECDH)
+                {
+                  /* Need to switch to a different curve for the
+                     encryption key.  */
+                  xfree (curve);
+                  curve = xstrdup ("Curve25519");
+                }
+              r = xmalloc_clear (sizeof *r + strlen (curve));
+              r->key = pSUBKEYCURVE;
+              strcpy (r->u.value, curve);
+              r->next = para;
+              para = r;
+            }
         }
-      else
+      else /* Create only a single key.  */
         {
+          /* For ECC we need to ask for the curve before storing the
+             algo becuase ask_curve may change the algo.  */
+          if (algo == PUBKEY_ALGO_ECDSA
+              || algo == PUBKEY_ALGO_EDDSA
+              || algo == PUBKEY_ALGO_ECDH)
+            {
+              curve = ask_curve (&algo);
+              nbits = 0;
+              r = xmalloc_clear (sizeof *r + strlen (curve));
+              r->key = pKEYCURVE;
+              strcpy (r->u.value, curve);
+              r->next = para;
+              para = r;
+            }
+
           r = xmalloc_clear( sizeof *r + 20 );
           r->key = pKEYTYPE;
           sprintf( r->u.value, "%d", algo );
@@ -3528,13 +3588,7 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
           || algo == PUBKEY_ALGO_EDDSA
           || algo == PUBKEY_ALGO_ECDH)
         {
-          if (!both)
-            curve = ask_curve ();
-          r = xmalloc_clear (sizeof *r + strlen (curve));
-          r->key = both? pSUBKEYCURVE : pKEYCURVE;
-          strcpy (r->u.value, curve);
-          r->next = para;
-          para = r;
+          /* The curve has already been set.  */
         }
       else
         {
@@ -4031,11 +4085,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH)
-    {
-      curve = ask_curve ();
-      if (curve && !strcmp (curve, "Ed25519"))
-        algo = PUBKEY_ALGO_EDDSA;
-    }
+    curve = ask_curve (&algo);
   else
     nbits = ask_keysize (algo, 0);
 

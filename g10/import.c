@@ -1128,37 +1128,6 @@ import_one (ctrl_t ctrl,
 }
 
 
-/* Extract one MPI value from the S-expression PKEY which is expected
-   to hold a "public-key".  Returns NULL on error.  */
-static gcry_mpi_t
-one_mpi_from_pkey (gcry_sexp_t pkey, const char *name, size_t namelen)
-{
-  gcry_sexp_t list, l2;
-  gcry_mpi_t a;
-
-  list = gcry_sexp_find_token (pkey, "public-key", 0);
-  if (!list)
-    return NULL;
-  l2 = gcry_sexp_cadr (list);
-  gcry_sexp_release (list);
-  list = l2;
-  if (!list)
-    return NULL;
-
-  l2 = gcry_sexp_find_token (list, name, namelen);
-  if (!l2)
-    {
-      gcry_sexp_release (list);
-      return NULL;
-    }
-  a = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
-  gcry_sexp_release (l2);
-  gcry_sexp_release (list);
-
-  return a;
-}
-
-
 /* Transfer all the secret keys in SEC_KEYBLOCK to the gpg-agent.  The
    function prints diagnostics and returns an error code. */
 static gpg_error_t
@@ -1174,18 +1143,15 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
   int nskey;
   membuf_t mbuf;
   int i, j;
-  unsigned int n;
-  void *format_args_buf_ptr[PUBKEY_MAX_NSKEY];
-  int   format_args_buf_int[PUBKEY_MAX_NSKEY];
   void *format_args[2*PUBKEY_MAX_NSKEY];
   gcry_sexp_t skey, prot, tmpsexp;
+  gcry_sexp_t curve = NULL;
   unsigned char *transferkey = NULL;
   size_t transferkeylen;
   gcry_cipher_hd_t cipherhd = NULL;
   unsigned char *wrappedkey = NULL;
   size_t wrappedkeylen;
   char *cache_nonce = NULL;
-  gcry_mpi_t ecc_params[5] = {NULL, NULL, NULL, NULL, NULL};
 
   /* Get the current KEK.  */
   err = agent_keywrap_key (ctrl, 0, &kek, &keklen);
@@ -1263,65 +1229,30 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
           || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
           || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
         {
-          /* We need special treatment for ECC algorithms.  OpenPGP
-             stores only the curve name but the agent expects a full
-             key.  This is so that we can keep all curve name
-             validation code out of gpg-agent.  */
-#if PUBKEY_MAX_NSKEY < 7
-#error  PUBKEY_MAX_NSKEY too low for ECC
-#endif
-          char *curve = openpgp_oid_to_str (pk->pkey[0]);
-          if (!curve)
+          /* The ECC case.  */
+          char *curvestr = openpgp_oid_to_str (pk->pkey[0]);
+          if (!curvestr)
             err = gpg_error_from_syserror ();
           else
             {
-              gcry_sexp_t cparam = gcry_pk_get_param (GCRY_PK_ECC, curve);
-
-              xfree (curve);
-              if (!cparam)
-                err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
-              else
+              err = gcry_sexp_build (&curve, NULL, "(curve %s)", curvestr);
+              xfree (curvestr);
+              if (!err)
                 {
-                  const char *s;
+                  j = 0;
+                  /* Append the public key element Q.  */
+                  put_membuf_str (&mbuf, " _ %m");
+                  format_args[j++] = pk->pkey + 1;
 
-                  /* Append the curve parameters P, A, B, G and N.  */
-                  for (i=j=0; !err && *(s = "pabgn"+i); i++)
-                    {
-                      ecc_params[i] = one_mpi_from_pkey (cparam, s, 1);
-                      if (!ecc_params[i])
-                        err = gpg_error (GPG_ERR_INV_CURVE);
-                      else
-                        {
-                          put_membuf_str (&mbuf, " _ %m");
-                          format_args[j++] = ecc_params+i;
-                        }
-                    }
-                  gcry_sexp_release (cparam);
-                  if (!err)
-                    {
-                      /* Append the public key element Q.  */
-                      put_membuf_str (&mbuf, " _ %m");
-                      format_args[j++] = pk->pkey + 1;
-
-                      /* Append the secret key element D.  Note that
-                         for ECDH we need to skip PKEY[2] because this
-                         holds the KEK which is not needed.  */
-                      i = pk->pubkey_algo == PUBKEY_ALGO_ECDH? 3 : 2;
-                      if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
-                        {
-                          put_membuf_str (&mbuf, " e %b");
-                          format_args_buf_ptr[i]
-                            = gcry_mpi_get_opaque (pk->pkey[i],&n);
-                          format_args_buf_int[i] = (n+7)/8;
-                          format_args[j++] = format_args_buf_int + i;
-                          format_args[j++] = format_args_buf_ptr + i;
-                        }
-                      else
-                        {
-                          put_membuf_str (&mbuf, " _ %m");
-                          format_args[j++] = pk->pkey + i;
-                        }
-                    }
+                  /* Append the secret key element D.  For ECDH we
+                     skip PKEY[2] because this holds the KEK which is
+                     not needed by gpg-agent.  */
+                  i = pk->pubkey_algo == PUBKEY_ALGO_ECDH? 3 : 2;
+                  if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_USER1))
+                    put_membuf_str (&mbuf, " e %m");
+                  else
+                    put_membuf_str (&mbuf, " _ %m");
+                  format_args[j++] = pk->pkey + i;
                 }
             }
         }
@@ -1331,23 +1262,16 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
           for (i=j=0; i < nskey; i++)
             {
               if (!pk->pkey[i])
-                ; /* Protected keys only have NPKEY+1 elements.  */
-              else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
-                {
-                  put_membuf_str (&mbuf, " e %b");
-                  format_args_buf_ptr[i] = gcry_mpi_get_opaque (pk->pkey[i],&n);
-                  format_args_buf_int[i] = (n+7)/8;
-                  format_args[j++] = format_args_buf_int + i;
-                  format_args[j++] = format_args_buf_ptr + i;
-                }
+                continue; /* Protected keys only have NPKEY+1 elements.  */
+
+              if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_USER1))
+                put_membuf_str (&mbuf, " e %m");
               else
-                {
-                  put_membuf_str (&mbuf, " _ %m");
-                  format_args[j++] = pk->pkey + i;
-                }
+                put_membuf_str (&mbuf, " _ %m");
+              format_args[j++] = pk->pkey + i;
             }
         }
-      put_membuf_str (&mbuf, ")\n");
+      put_membuf_str (&mbuf, ")");
       put_membuf (&mbuf, "", 1);
       if (err)
         xfree (get_membuf (&mbuf, NULL));
@@ -1398,12 +1322,13 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
                                "(openpgp-private-key\n"
                                " (version %d)\n"
                                " (algo %s)\n"
-                               " %S\n"
+                               " %S%S\n"
                                " (csum %d)\n"
                                " %S)\n",
                                pk->version,
                                openpgp_pk_algo_name (pk->pubkey_algo),
-                               skey, (int)(unsigned long)ski->csum, prot);
+                               curve, skey,
+                               (int)(unsigned long)ski->csum, prot);
       gcry_sexp_release (skey);
       gcry_sexp_release (prot);
       if (!err)
@@ -1463,8 +1388,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock)
     }
 
  leave:
-  for (i=0; i < DIM (ecc_params); i++)
-    gcry_mpi_release (ecc_params[i]);
+  gcry_sexp_release (curve);
   xfree (cache_nonce);
   xfree (wrappedkey);
   xfree (transferkey);
