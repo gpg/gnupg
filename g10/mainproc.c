@@ -1564,6 +1564,9 @@ check_sig_and_print (CTX c, KBNODE node)
   int rc;
   int is_expkey = 0;
   int is_revkey = 0;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
+
+  *pkstrbuf = 0;
 
   if (opt.skip_verify)
     {
@@ -1843,6 +1846,8 @@ check_sig_and_print (CTX c, KBNODE node)
             log_printf (" [%s]\n",trust_value_to_string(valid));
           else
             log_printf ("\n");
+
+          pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
           count++;
 	}
 
@@ -2017,10 +2022,12 @@ check_sig_and_print (CTX c, KBNODE node)
         log_info (_("Signature expires %s\n"), asctimestamp(sig->expiredate));
 
       if (opt.verbose)
-        log_info (_("%s signature, digest algorithm %s\n"),
+        log_info (_("%s signature, digest algorithm %s%s%s\n"),
                   sig->sig_class==0x00?_("binary"):
                   sig->sig_class==0x01?_("textmode"):_("unknown"),
-                  gcry_md_algo_name (sig->digest_algo));
+                  gcry_md_algo_name (sig->digest_algo),
+                  *pkstrbuf?", key algorithm ":"",
+                  pkstrbuf);
 
       if (rc)
         g10_errors_seen = 1;
