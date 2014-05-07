@@ -1,7 +1,7 @@
 /* mainproc.c - handle packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009 Free Software Foundation, Inc.
- * Copyright (C) 2013 Werner Koch
+ * Copyright (C) 2013, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1529,7 +1529,7 @@ pka_uri_from_sig (PKT_signature *sig)
 
 
 static int
-check_sig_and_print( CTX c, KBNODE node )
+check_sig_and_print (CTX c, KBNODE node)
 {
   PKT_signature *sig = node->pkt->pkt.signature;
   const char *astr;
@@ -1649,390 +1649,405 @@ check_sig_and_print( CTX c, KBNODE node )
         log_error(_("can't handle this ambiguous signature data\n"));
         return 0;
       }
-
   }
 
-  /* (Indendation below not yet changed to GNU style.) */
+  astr = openpgp_pk_algo_name ( sig->pubkey_algo );
+  if (keystrlen () > 8)
+    {
+      log_info (_("Signature made %s\n"), asctimestamp(sig->timestamp));
+      log_info (_("               using %s key %s\n"),
+                astr? astr: "?",keystr(sig->keyid));
+    }
+  else
+    log_info (_("Signature made %s using %s key ID %s\n"),
+              asctimestamp(sig->timestamp), astr? astr: "?",
+              keystr(sig->keyid));
 
-    astr = openpgp_pk_algo_name ( sig->pubkey_algo );
-    if(keystrlen()>8)
-      {
-	log_info(_("Signature made %s\n"),asctimestamp(sig->timestamp));
-	log_info(_("               using %s key %s\n"),
-		 astr? astr: "?",keystr(sig->keyid));
-      }
-    else
-      log_info(_("Signature made %s using %s key ID %s\n"),
-	       asctimestamp(sig->timestamp), astr? astr: "?",
-	       keystr(sig->keyid));
+  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
 
-    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
+  /* If the key isn't found, check for a preferred keyserver */
 
-    /* If the key isn't found, check for a preferred keyserver */
+  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY && sig->flags.pref_ks)
+    {
+      const byte *p;
+      int seq = 0;
+      size_t n;
 
-    if(rc==G10ERR_NO_PUBKEY && sig->flags.pref_ks)
-      {
-	const byte *p;
-	int seq=0;
-	size_t n;
+      while ((p=enum_sig_subpkt (sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
+        {
+          /* According to my favorite copy editor, in English grammar,
+             you say "at" if the key is located on a web page, but
+             "from" if it is located on a keyserver.  I'm not going to
+             even try to make two strings here :) */
+          log_info(_("Key available at: ") );
+          print_utf8_buffer (log_get_stream(), p, n);
+          log_printf ("\n");
 
-	while((p=enum_sig_subpkt(sig->hashed,SIGSUBPKT_PREF_KS,&n,&seq,NULL)))
-	  {
-	    /* According to my favorite copy editor, in English
-	       grammar, you say "at" if the key is located on a web
-	       page, but "from" if it is located on a keyserver.  I'm
-	       not going to even try to make two strings here :) */
-	    log_info(_("Key available at: ") );
-	    print_utf8_buffer (log_get_stream(), p, n);
-	    log_printf ("\n");
+          if (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
+              && opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
+            {
+              struct keyserver_spec *spec;
 
-	    if(opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
-	       && opt.keyserver_options.options&KEYSERVER_HONOR_KEYSERVER_URL)
-	      {
-		struct keyserver_spec *spec;
+              spec = parse_preferred_keyserver (sig);
+              if (spec)
+                {
+                  int res;
 
-		spec=parse_preferred_keyserver(sig);
-		if(spec)
-		  {
-		    int res;
+                  glo_ctrl.in_auto_key_retrieve++;
+                  res = keyserver_import_keyid (c->ctrl, sig->keyid,spec);
+                  glo_ctrl.in_auto_key_retrieve--;
+                  if (!res)
+                    rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
+                  free_keyserver_spec (spec);
 
-		    glo_ctrl.in_auto_key_retrieve++;
-		    res = keyserver_import_keyid (c->ctrl, sig->keyid,spec);
-		    glo_ctrl.in_auto_key_retrieve--;
-		    if(!res)
-		      rc=do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
-		    free_keyserver_spec(spec);
+                  if (!rc)
+                    break;
+                }
+            }
+        }
+    }
 
-		    if(!rc)
-		      break;
-		  }
-	      }
-	  }
-      }
+  /* If the preferred keyserver thing above didn't work, our second
+     try is to use the URI from a DNS PKA record. */
+  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY
+      && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
+      && (opt.keyserver_options.options & KEYSERVER_HONOR_PKA_RECORD))
+    {
+      const char *uri = pka_uri_from_sig (sig);
 
-    /* If the preferred keyserver thing above didn't work, our second
-       try is to use the URI from a DNS PKA record. */
-    if ( rc == G10ERR_NO_PUBKEY
-	 && opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE
-         && opt.keyserver_options.options&KEYSERVER_HONOR_PKA_RECORD)
-      {
-        const char *uri = pka_uri_from_sig (sig);
+      if (uri)
+        {
+          /* FIXME: We might want to locate the key using the
+             fingerprint instead of the keyid. */
+          int res;
+          struct keyserver_spec *spec;
 
-        if (uri)
-          {
-            /* FIXME: We might want to locate the key using the
-               fingerprint instead of the keyid. */
-            int res;
-            struct keyserver_spec *spec;
-
-            spec = parse_keyserver_uri (uri, 1, NULL, 0);
-            if (spec)
-              {
-                glo_ctrl.in_auto_key_retrieve++;
-                res = keyserver_import_keyid (c->ctrl, sig->keyid, spec);
+          spec = parse_keyserver_uri (uri, 1, NULL, 0);
+          if (spec)
+            {
+              glo_ctrl.in_auto_key_retrieve++;
+              res = keyserver_import_keyid (c->ctrl, sig->keyid, spec);
                 glo_ctrl.in_auto_key_retrieve--;
                 free_keyserver_spec (spec);
                 if (!res)
-                  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
-              }
-          }
-      }
+                  rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+            }
+        }
+    }
 
-    /* If the preferred keyserver thing above didn't work and we got
+  /* If the preferred keyserver thing above didn't work and we got
        no information from the DNS PKA, this is a third try. */
 
-    if( rc == G10ERR_NO_PUBKEY && opt.keyserver
-	&& opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE)
-      {
-	int res;
+  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY
+      && opt.keyserver
+      && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
+    {
+      int res;
 
-	glo_ctrl.in_auto_key_retrieve++;
-	res=keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
-	glo_ctrl.in_auto_key_retrieve--;
-	if(!res)
-	  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
-      }
+      glo_ctrl.in_auto_key_retrieve++;
+      res=keyserver_import_keyid (c->ctrl, sig->keyid, opt.keyserver );
+      glo_ctrl.in_auto_key_retrieve--;
+      if (!res)
+        rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
+    }
 
-    if( !rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE ) {
-	KBNODE un, keyblock;
-	int count=0, statno;
-        char keyid_str[50];
-	PKT_public_key *pk=NULL;
+  if (!rc || gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE)
+    {
+      kbnode_t un, keyblock;
+      int count = 0;
+      int statno;
+      char keyid_str[50];
+      PKT_public_key *pk = NULL;
 
-	if(rc)
-	  statno=STATUS_BADSIG;
-	else if(sig->flags.expired)
-	  statno=STATUS_EXPSIG;
-	else if(is_expkey)
-	  statno=STATUS_EXPKEYSIG;
-	else if(is_revkey)
-	  statno=STATUS_REVKEYSIG;
-	else
-	  statno=STATUS_GOODSIG;
+      if (rc)
+        statno = STATUS_BADSIG;
+      else if (sig->flags.expired)
+        statno = STATUS_EXPSIG;
+      else if (is_expkey)
+        statno = STATUS_EXPKEYSIG;
+      else if(is_revkey)
+        statno = STATUS_REVKEYSIG;
+      else
+        statno = STATUS_GOODSIG;
 
-	keyblock = get_pubkeyblock( sig->keyid );
+      keyblock = get_pubkeyblock (sig->keyid);
 
-        sprintf (keyid_str, "%08lX%08lX [uncertain] ",
-                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
+      snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
+                (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
 
-        /* find and print the primary user ID */
-	for( un=keyblock; un; un = un->next ) {
-	    char *p;
-	    int valid;
-	    if(un->pkt->pkttype==PKT_PUBLIC_KEY)
-	      {
-	        pk=un->pkt->pkt.public_key;
-		continue;
-	      }
-	    if( un->pkt->pkttype != PKT_USER_ID )
-		continue;
-	    if ( !un->pkt->pkt.user_id->created )
-	        continue;
-            if ( un->pkt->pkt.user_id->is_revoked )
-                continue;
-            if ( un->pkt->pkt.user_id->is_expired )
-                continue;
-	    if ( !un->pkt->pkt.user_id->is_primary )
-	        continue;
-	    /* We want the textual primary user ID here */
-	    if ( un->pkt->pkt.user_id->attrib_data )
-	        continue;
+      /* Find and print the primary user ID.  */
+      for (un=keyblock; un; un = un->next)
+        {
+          char *p;
+          int valid;
 
-	    assert(pk);
+          if (un->pkt->pkttype==PKT_PUBLIC_KEY)
+            {
+              pk=un->pkt->pkt.public_key;
+              continue;
+            }
+          if (un->pkt->pkttype != PKT_USER_ID)
+            continue;
+          if (!un->pkt->pkt.user_id->created)
+            continue;
+          if (un->pkt->pkt.user_id->is_revoked)
+            continue;
+          if (un->pkt->pkt.user_id->is_expired)
+            continue;
+          if (!un->pkt->pkt.user_id->is_primary)
+            continue;
+          /* We want the textual primary user ID here */
+          if (un->pkt->pkt.user_id->attrib_data)
+            continue;
 
-	    /* Get it before we print anything to avoid interrupting
-	       the output with the "please do a --check-trustdb"
-	       line. */
-	    valid=get_validity(pk,un->pkt->pkt.user_id);
+          assert (pk);
 
-            keyid_str[17] = 0; /* cut off the "[uncertain]" part */
-            write_status_text_and_buffer (statno, keyid_str,
-                                          un->pkt->pkt.user_id->name,
-                                          un->pkt->pkt.user_id->len,
-                                          -1 );
+          /* Get it before we print anything to avoid interrupting the
+             output with the "please do a --check-trustdb" line. */
+          valid = get_validity (pk, un->pkt->pkt.user_id);
 
-	    p=utf8_to_native(un->pkt->pkt.user_id->name,
-			     un->pkt->pkt.user_id->len,0);
+          keyid_str[17] = 0; /* cut off the "[uncertain]" part */
+          write_status_text_and_buffer (statno, keyid_str,
+                                        un->pkt->pkt.user_id->name,
+                                        un->pkt->pkt.user_id->len,
+                                        -1);
 
-	    if(rc)
-	      log_info(_("BAD signature from \"%s\""),p);
-	    else if(sig->flags.expired)
-	      log_info(_("Expired signature from \"%s\""),p);
-	    else
-	      log_info(_("Good signature from \"%s\""),p);
+          p = utf8_to_native (un->pkt->pkt.user_id->name,
+                              un->pkt->pkt.user_id->len, 0);
 
-	    xfree(p);
+          if (rc)
+            log_info (_("BAD signature from \"%s\""), p);
+          else if (sig->flags.expired)
+            log_info (_("Expired signature from \"%s\""), p);
+          else
+            log_info (_("Good signature from \"%s\""), p);
 
-	    if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
-	      log_printf (" [%s]\n",trust_value_to_string(valid));
-	    else
-	      log_printf ("\n");
-            count++;
+          xfree(p);
+
+          if (opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
+            log_printf (" [%s]\n",trust_value_to_string(valid));
+          else
+            log_printf ("\n");
+          count++;
 	}
-	if( !count ) {	/* just in case that we have no valid textual
-                           userid */
-	    char *p;
 
-	    /* Try for an invalid textual userid */
-            for( un=keyblock; un; un = un->next ) {
-                if( un->pkt->pkttype == PKT_USER_ID &&
-		    !un->pkt->pkt.user_id->attrib_data )
-                    break;
+      if (!count)  /* Just in case that we have no valid textual userid */
+        {
+          char *p;
+
+          /* Try for an invalid textual userid */
+          for (un=keyblock; un; un = un->next)
+            {
+              if (un->pkt->pkttype == PKT_USER_ID
+                  && !un->pkt->pkt.user_id->attrib_data)
+                break;
             }
 
-	    /* Try for any userid at all */
-	    if(!un) {
-	        for( un=keyblock; un; un = un->next ) {
-                    if( un->pkt->pkttype == PKT_USER_ID )
-                        break;
+          /* Try for any userid at all */
+          if (!un)
+            {
+              for (un=keyblock; un; un = un->next)
+                {
+                  if (un->pkt->pkttype == PKT_USER_ID)
+                    break;
 		}
 	    }
 
-            if (opt.trust_model==TM_ALWAYS || !un)
-                keyid_str[17] = 0; /* cut off the "[uncertain]" part */
+          if (opt.trust_model==TM_ALWAYS || !un)
+            keyid_str[17] = 0; /* cut off the "[uncertain]" part */
 
-            write_status_text_and_buffer (statno, keyid_str,
-                                          un? un->pkt->pkt.user_id->name:"[?]",
-                                          un? un->pkt->pkt.user_id->len:3,
-                                          -1 );
+          write_status_text_and_buffer (statno, keyid_str,
+                                        un? un->pkt->pkt.user_id->name:"[?]",
+                                        un? un->pkt->pkt.user_id->len:3,
+                                        -1 );
 
-	    if(un)
-	      p=utf8_to_native(un->pkt->pkt.user_id->name,
-                               un->pkt->pkt.user_id->len,0);
-	    else
-	      p=xstrdup("[?]");
+          if (un)
+            p= utf8_to_native (un->pkt->pkt.user_id->name,
+                               un->pkt->pkt.user_id->len, 0);
+          else
+            p = xstrdup ("[?]");
 
-	    if(rc)
-	      log_info(_("BAD signature from \"%s\""),p);
-	    else if(sig->flags.expired)
-	      log_info(_("Expired signature from \"%s\""),p);
-	    else
-	      log_info(_("Good signature from \"%s\""),p);
-            if (opt.trust_model!=TM_ALWAYS && un)
-              log_printf (" %s",_("[uncertain]") );
-	    log_printf ("\n");
+          if (rc)
+            log_info (_("BAD signature from \"%s\""), p);
+          else if (sig->flags.expired)
+            log_info (_("Expired signature from \"%s\""), p);
+          else
+            log_info (_("Good signature from \"%s\""), p);
+          if (opt.trust_model != TM_ALWAYS && un)
+            log_printf (" %s",_("[uncertain]") );
+          log_printf ("\n");
 	}
 
-        /* If we have a good signature and already printed
-         * the primary user ID, print all the other user IDs */
-        if ( count && !rc
-             && !(opt.verify_options&VERIFY_SHOW_PRIMARY_UID_ONLY)) {
-	    char *p;
-            for( un=keyblock; un; un = un->next ) {
-                if( un->pkt->pkttype != PKT_USER_ID )
-                    continue;
-                if((un->pkt->pkt.user_id->is_revoked
-		    || un->pkt->pkt.user_id->is_expired)
-		   && !(opt.verify_options&VERIFY_SHOW_UNUSABLE_UIDS))
-		  continue;
-		/* Only skip textual primaries */
-                if ( un->pkt->pkt.user_id->is_primary &&
-		     !un->pkt->pkt.user_id->attrib_data )
-		    continue;
+      /* If we have a good signature and already printed
+       * the primary user ID, print all the other user IDs */
+      if (count
+          && !rc
+          && !(opt.verify_options & VERIFY_SHOW_PRIMARY_UID_ONLY))
+        {
+          char *p;
+          for( un=keyblock; un; un = un->next)
+            {
+              if (un->pkt->pkttype != PKT_USER_ID)
+                continue;
+              if ((un->pkt->pkt.user_id->is_revoked
+                   || un->pkt->pkt.user_id->is_expired)
+                  && !(opt.verify_options & VERIFY_SHOW_UNUSABLE_UIDS))
+                continue;
+              /* Only skip textual primaries */
+              if (un->pkt->pkt.user_id->is_primary
+                  && !un->pkt->pkt.user_id->attrib_data )
+                continue;
 
-		if(un->pkt->pkt.user_id->attrib_data)
-		  {
-		    dump_attribs (un->pkt->pkt.user_id, pk);
+              if (un->pkt->pkt.user_id->attrib_data)
+                {
+                  dump_attribs (un->pkt->pkt.user_id, pk);
 
-		    if(opt.verify_options&VERIFY_SHOW_PHOTOS)
-		      show_photos(un->pkt->pkt.user_id->attribs,
-				  un->pkt->pkt.user_id->numattribs,
-				  pk ,un->pkt->pkt.user_id);
-		  }
+                  if (opt.verify_options&VERIFY_SHOW_PHOTOS)
+                    show_photos (un->pkt->pkt.user_id->attribs,
+                                 un->pkt->pkt.user_id->numattribs,
+                                 pk ,un->pkt->pkt.user_id);
+                }
 
-		p=utf8_to_native(un->pkt->pkt.user_id->name,
-				 un->pkt->pkt.user_id->len,0);
-		log_info(_("                aka \"%s\""),p);
-		xfree(p);
+              p = utf8_to_native (un->pkt->pkt.user_id->name,
+				  un->pkt->pkt.user_id->len, 0);
+              log_info (_("                aka \"%s\""), p);
+              xfree (p);
 
-		if(opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
-		  {
-		    const char *valid;
-		    if(un->pkt->pkt.user_id->is_revoked)
-		      valid=_("revoked");
-		    else if(un->pkt->pkt.user_id->is_expired)
-		      valid=_("expired");
-		    else
-		      valid=trust_value_to_string(get_validity(pk,
-							       un->pkt->
-							       pkt.user_id));
-		    log_printf (" [%s]\n",valid);
-		  }
-		else
-		  log_printf ("\n");
+              if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
+                {
+                  const char *valid;
+
+                  if (un->pkt->pkt.user_id->is_revoked)
+                    valid = _("revoked");
+                  else if (un->pkt->pkt.user_id->is_expired)
+                    valid = _("expired");
+                  else
+                    valid = (trust_value_to_string
+                             (get_validity (pk, un->pkt->pkt.user_id)));
+                  log_printf (" [%s]\n",valid);
+                }
+              else
+                log_printf ("\n");
             }
 	}
-	release_kbnode( keyblock );
+      release_kbnode( keyblock );
 
-	if( !rc )
-	  {
-	    if(opt.verify_options&VERIFY_SHOW_POLICY_URLS)
-	      show_policy_url(sig,0,1);
-	    else
-	      show_policy_url(sig,0,2);
+      if (!rc)
+        {
+          if ((opt.verify_options & VERIFY_SHOW_POLICY_URLS))
+            show_policy_url (sig, 0, 1);
+          else
+            show_policy_url (sig, 0, 2);
 
-	    if(opt.verify_options&VERIFY_SHOW_KEYSERVER_URLS)
-	      show_keyserver_url(sig,0,1);
-	    else
-	      show_keyserver_url(sig,0,2);
+          if ((opt.verify_options & VERIFY_SHOW_KEYSERVER_URLS))
+            show_keyserver_url (sig, 0, 1);
+          else
+            show_keyserver_url (sig, 0, 2);
 
-	    if(opt.verify_options&VERIFY_SHOW_NOTATIONS)
-	      show_notation(sig,0,1,
-		        ((opt.verify_options&VERIFY_SHOW_STD_NOTATIONS)?1:0)+
-			((opt.verify_options&VERIFY_SHOW_USER_NOTATIONS)?2:0));
-	    else
-	      show_notation(sig,0,2,0);
-	  }
+          if ((opt.verify_options & VERIFY_SHOW_NOTATIONS))
+            show_notation
+              (sig, 0, 1,
+               (((opt.verify_options&VERIFY_SHOW_STD_NOTATIONS)?1:0)
+                + ((opt.verify_options&VERIFY_SHOW_USER_NOTATIONS)?2:0)));
+          else
+            show_notation (sig, 0, 2, 0);
+        }
 
-	if( !rc && is_status_enabled() ) {
-	    /* print a status response with the fingerprint */
-	    PKT_public_key *vpk = xmalloc_clear( sizeof *vpk );
+      if (!rc && is_status_enabled ())
+        {
+          /* Print a status response with the fingerprint. */
+          PKT_public_key *vpk = xmalloc_clear (sizeof *vpk);
 
-	    if( !get_pubkey( vpk, sig->keyid ) ) {
-		byte array[MAX_FINGERPRINT_LEN], *p;
-		char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
-		size_t i, n;
+          if (!get_pubkey (vpk, sig->keyid))
+            {
+              byte array[MAX_FINGERPRINT_LEN], *p;
+              char buf[MAX_FINGERPRINT_LEN*4+90], *bufp;
+              size_t i, n;
 
-                bufp = buf;
-		fingerprint_from_pk( vpk, array, &n );
-		p = array;
-		for(i=0; i < n ; i++, p++, bufp += 2)
-                    sprintf(bufp, "%02X", *p );
-		/* TODO: Replace the reserved '0' in the field below
-		   with bits for status flags (policy url, notation,
-		   etc.).  Remember to make the buffer larger to
-		   match! */
-		sprintf(bufp, " %s %lu %lu %d 0 %d %d %02X ",
-                        strtimestamp( sig->timestamp ),
-                        (ulong)sig->timestamp,(ulong)sig->expiredate,
-			sig->version,sig->pubkey_algo,sig->digest_algo,
-			sig->sig_class);
-                bufp = bufp + strlen (bufp);
-                if (!vpk->flags.primary) {
-                   u32 akid[2];
+              bufp = buf;
+              fingerprint_from_pk (vpk, array, &n);
+              p = array;
+              for(i=0; i < n ; i++, p++, bufp += 2)
+                sprintf (bufp, "%02X", *p );
+              /* TODO: Replace the reserved '0' in the field below
+                 with bits for status flags (policy url, notation,
+                 etc.).  Remember to make the buffer larger to match! */
+              sprintf (bufp, " %s %lu %lu %d 0 %d %d %02X ",
+                       strtimestamp( sig->timestamp ),
+                       (ulong)sig->timestamp,(ulong)sig->expiredate,
+                       sig->version,sig->pubkey_algo,sig->digest_algo,
+                       sig->sig_class);
+              bufp = bufp + strlen (bufp);
+              if (!vpk->flags.primary)
+                {
+                  u32 akid[2];
 
-                   akid[0] = vpk->main_keyid[0];
-                   akid[1] = vpk->main_keyid[1];
-                   free_public_key (vpk);
-                   vpk = xmalloc_clear( sizeof *vpk );
-                   if (get_pubkey (vpk, akid)) {
-                     /* impossible error, we simply return a zeroed out fpr */
-                     n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
-                     memset (array, 0, n);
-                   }
-                   else
-                     fingerprint_from_pk( vpk, array, &n );
+                  akid[0] = vpk->main_keyid[0];
+                  akid[1] = vpk->main_keyid[1];
+                  free_public_key (vpk);
+                  vpk = xmalloc_clear (sizeof *vpk);
+                  if (get_pubkey (vpk, akid))
+                    {
+                      /* Impossible error, we simply return a zeroed out fpr */
+                      n = MAX_FINGERPRINT_LEN < 20? MAX_FINGERPRINT_LEN : 20;
+                      memset (array, 0, n);
+                    }
+                  else
+                    fingerprint_from_pk( vpk, array, &n );
                 }
-		p = array;
-		for(i=0; i < n ; i++, p++, bufp += 2)
-                    sprintf(bufp, "%02X", *p );
-		write_status_text( STATUS_VALIDSIG, buf );
+              p = array;
+              for (i=0; i < n ; i++, p++, bufp += 2)
+                sprintf(bufp, "%02X", *p );
+              write_status_text (STATUS_VALIDSIG, buf);
 	    }
-	    free_public_key( vpk );
+          free_public_key (vpk);
 	}
 
-	if (!rc)
-          {
-	    if(opt.verify_options&VERIFY_PKA_LOOKUPS)
-	      pka_uri_from_sig (sig); /* Make sure PKA info is available. */
-	    rc = check_signatures_trust( sig );
-          }
+      if (!rc)
+        {
+          if ((opt.verify_options & VERIFY_PKA_LOOKUPS))
+            pka_uri_from_sig (sig); /* Make sure PKA info is available. */
+          rc = check_signatures_trust (sig);
+        }
 
-	if(sig->flags.expired)
-	  {
-	    log_info(_("Signature expired %s\n"),
-		     asctimestamp(sig->expiredate));
-	    rc=G10ERR_GENERAL; /* need a better error here? */
-	  }
-	else if(sig->expiredate)
-	  log_info(_("Signature expires %s\n"),asctimestamp(sig->expiredate));
+      if (sig->flags.expired)
+        {
+          log_info (_("Signature expired %s\n"), asctimestamp(sig->expiredate));
+          rc = G10ERR_GENERAL; /* need a better error here? */
+        }
+      else if (sig->expiredate)
+        log_info (_("Signature expires %s\n"), asctimestamp(sig->expiredate));
 
-	if(opt.verbose)
-	  log_info(_("%s signature, digest algorithm %s\n"),
-		   sig->sig_class==0x00?_("binary"):
-		   sig->sig_class==0x01?_("textmode"):_("unknown"),
-		   gcry_md_algo_name (sig->digest_algo));
+      if (opt.verbose)
+        log_info (_("%s signature, digest algorithm %s\n"),
+                  sig->sig_class==0x00?_("binary"):
+                  sig->sig_class==0x01?_("textmode"):_("unknown"),
+                  gcry_md_algo_name (sig->digest_algo));
 
-	if( rc )
-	    g10_errors_seen = 1;
-	if( opt.batch && rc )
-	    g10_exit(1);
+      if (rc)
+        g10_errors_seen = 1;
+      if (opt.batch && rc)
+        g10_exit (1);
     }
-    else {
-	char buf[50];
-	sprintf(buf, "%08lX%08lX %d %d %02x %lu %d",
-		     (ulong)sig->keyid[0], (ulong)sig->keyid[1],
-		     sig->pubkey_algo, sig->digest_algo,
-		     sig->sig_class, (ulong)sig->timestamp, rc );
-	write_status_text( STATUS_ERRSIG, buf );
-	if( rc == G10ERR_NO_PUBKEY ) {
-	    buf[16] = 0;
-	    write_status_text( STATUS_NO_PUBKEY, buf );
+  else
+    {
+      char buf[50];
+
+      snprintf (buf, sizeof buf, "%08lX%08lX %d %d %02x %lu %d",
+                (ulong)sig->keyid[0], (ulong)sig->keyid[1],
+                sig->pubkey_algo, sig->digest_algo,
+                sig->sig_class, (ulong)sig->timestamp, rc);
+      write_status_text (STATUS_ERRSIG, buf);
+      if (gpg_err_code (rc) == G10ERR_NO_PUBKEY)
+        {
+          buf[16] = 0;
+          write_status_text (STATUS_NO_PUBKEY, buf);
 	}
-	if( rc != G10ERR_NOT_PROCESSED )
-	    log_error(_("Can't check signature: %s\n"), g10_errstr(rc) );
+      if (gpg_err_code (rc) != G10ERR_NOT_PROCESSED)
+        log_error (_("Can't check signature: %s\n"), g10_errstr(rc));
     }
-    return rc;
+
+  return rc;
 }
 
 
