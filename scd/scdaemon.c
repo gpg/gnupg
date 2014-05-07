@@ -489,7 +489,8 @@ main (int argc, char **argv )
 
 
   if (default_config)
-    configname = make_filename (opt.homedir, "scdaemon.conf", NULL );
+    configname = make_filename (opt.homedir, SCDAEMON_NAME EXTSEP_S "conf",
+                                NULL );
 
 
   argc = orig_argc;
@@ -659,10 +660,12 @@ main (int argc, char **argv )
       if (config_filename)
 	filename = xstrdup (config_filename);
       else
-        filename = make_filename (opt.homedir, "scdaemon.conf", NULL);
+        filename = make_filename (opt.homedir, SCDAEMON_NAME EXTSEP_S "conf",
+                                  NULL);
       filename_esc = percent_escape (filename, NULL);
 
-      es_printf ("gpgconf-scdaemon.conf:%lu:\"%s\n",
+      es_printf ("%s-%s.conf:%lu:\"%s\n",
+                 GPGCONF_NAME, SCDAEMON_NAME,
                  GC_OPT_FLAG_DEFAULT, filename_esc);
       xfree (filename_esc);
       xfree (filename);
@@ -742,8 +745,8 @@ main (int argc, char **argv )
       if (multi_server)
         {
           socket_name = create_socket_name (standard_socket,
-                                            "S.scdaemon",
-                                            "gpg-XXXXXX/S.scdaemon");
+                                            SCDAEMON_SOCK_NAME,
+                                            "gpg-XXXXXX/" SCDAEMON_SOCK_NAME);
 
           fd = FD2INT(create_server_socket (standard_socket,
                                             socket_name, &socket_nonce));
@@ -798,8 +801,8 @@ main (int argc, char **argv )
 
       /* Create the socket.  */
       socket_name = create_socket_name (standard_socket,
-                                        "S.scdaemon",
-                                        "gpg-XXXXXX/S.scdaemon");
+                                        SCDAEMON_SOCK_NAME,
+                                        "gpg-XXXXXX/" SCDAEMON_SOCK_NAME);
 
       fd = FD2INT (create_server_socket (standard_socket,
                                          socket_name, &socket_nonce));

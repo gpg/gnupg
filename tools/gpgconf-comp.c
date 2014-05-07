@@ -180,20 +180,20 @@ static struct
 } gc_backend[GC_BACKEND_NR] =
   {
     { NULL },		/* GC_BACKEND_ANY dummy entry.  */
-    { GNUPG_NAME, GPGNAME, GNUPG_MODULE_NAME_GPG,
-      NULL, "gpgconf-gpg.conf" },
-    { "GPGSM", GPGSM_NAME, GNUPG_MODULE_NAME_GPGSM,
-      NULL, "gpgconf-gpgsm.conf" },
-    { "GPG Agent", GPG_AGENT_NAME, GNUPG_MODULE_NAME_AGENT,
-      gpg_agent_runtime_change, "gpgconf-gpg-agent.conf" },
-    { "SCDaemon", SCDAEMON_NAME, GNUPG_MODULE_NAME_SCDAEMON,
-      scdaemon_runtime_change, "gpgconf-scdaemon.conf" },
-    { "DirMngr", DIRMNGR_NAME, GNUPG_MODULE_NAME_DIRMNGR,
-      NULL, "gpgconf-dirmngr.conf" },
-    { "DirMngr LDAP Server List", NULL, 0,
+    { GPG_DISP_NAME, GPGNAME, GNUPG_MODULE_NAME_GPG,
+      NULL, GPGCONF_NAME "-" GPG_NAME ".conf" },
+    { GPGSM_DISP_NAME, GPGSM_NAME, GNUPG_MODULE_NAME_GPGSM,
+      NULL, GPGCONF_NAME "-" GPGSM_NAME ".conf" },
+    { GPG_AGENT_DISP_NAME, GPG_AGENT_NAME, GNUPG_MODULE_NAME_AGENT,
+      gpg_agent_runtime_change, GPGCONF_NAME"-" GPG_AGENT_NAME ".conf" },
+    { SCDAEMON_DISP_NAME, SCDAEMON_NAME, GNUPG_MODULE_NAME_SCDAEMON,
+      scdaemon_runtime_change, GPGCONF_NAME"-" SCDAEMON_NAME ".conf" },
+    { DIRMNGR_DISP_NAME, DIRMNGR_NAME, GNUPG_MODULE_NAME_DIRMNGR,
+      NULL, GPGCONF_NAME "-" DIRMNGR_NAME ".conf" },
+    { DIRMNGR_DISP_NAME " LDAP Server List", NULL, 0,
       NULL, "ldapserverlist-file", "LDAP Server" },
     { "Pinentry", "pinentry", GNUPG_MODULE_NAME_PINENTRY,
-      NULL, "gpgconf-pinentry.conf" },
+      NULL, GPGCONF_NAME "-pinentry.conf" },
   };
 
 
@@ -470,7 +470,8 @@ typedef struct gc_option gc_option_t;
 static gc_option_t gc_options_gpg_agent[] =
  {
    /* The configuration file to which we write the changes.  */
-   { "gpgconf-gpg-agent.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { GPGCONF_NAME"-" GPG_AGENT_NAME ".conf",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG_AGENT },
 
    { "Monitor",
@@ -584,7 +585,8 @@ static gc_option_t gc_options_gpg_agent[] =
 static gc_option_t gc_options_scdaemon[] =
  {
    /* The configuration file to which we write the changes.  */
-   { "gpgconf-scdaemon.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { GPGCONF_NAME"-"SCDAEMON_NAME".conf",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_SCDAEMON },
 
    { "Monitor",
@@ -658,7 +660,8 @@ static gc_option_t gc_options_scdaemon[] =
 static gc_option_t gc_options_gpg[] =
  {
    /* The configuration file to which we write the changes.  */
-   { "gpgconf-gpg.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { GPGCONF_NAME"-"GPG_NAME".conf",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_GPG },
 
    { "Monitor",
@@ -736,7 +739,8 @@ static gc_option_t gc_options_gpg[] =
 static gc_option_t gc_options_gpgsm[] =
  {
    /* The configuration file to which we write the changes.  */
-   { "gpgconf-gpgsm.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { GPGCONF_NAME"-"GPGSM_NAME".conf",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_GPGSM },
 
    { "Monitor",
@@ -831,7 +835,8 @@ static gc_option_t gc_options_gpgsm[] =
 static gc_option_t gc_options_dirmngr[] =
  {
    /* The configuration file to which we write the changes.  */
-   { "gpgconf-dirmngr.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { GPGCONF_NAME"-"DIRMNGR_NAME".conf",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_DIRMNGR },
 
    { "Monitor",
@@ -973,7 +978,8 @@ static gc_option_t gc_options_pinentry[] =
  {
    /* A dummy option to allow gc_component_list_components to find the
       pinentry backend.  Needs to be a conf file. */
-   { "gpgconf-pinentry.conf", GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
+   { GPGCONF_NAME"-pinentry.conf",
+     GC_OPT_FLAG_NONE, GC_LEVEL_INTERNAL,
      NULL, NULL, GC_ARG_TYPE_FILENAME, GC_BACKEND_PINENTRY },
 
    GC_OPTION_NULL
@@ -2414,7 +2420,7 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 		     char **src_filenamep, char **dest_filenamep,
 		     char **orig_filenamep)
 {
-  static const char marker[] = "###+++--- GPGConf ---+++###";
+  static const char marker[] = "###+++--- " GPGCONF_DISP_NAME " ---+++###";
   /* True if we are within the marker in the config file.  */
   int in_marker = 0;
   gc_option_t *option;
@@ -2441,8 +2447,10 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   /* Note that get_config_filename() calls percent_deescape(), so we
      call this before processing the arguments.  */
   dest_filename = xstrdup (get_config_filename (component, backend));
-  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, (int)getpid ());
-  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename,(int)getpid ());
+  src_filename = xasprintf ("%s.%s.%i.new",
+                            dest_filename, GPGCONF_NAME, (int)getpid ());
+  orig_filename = xasprintf ("%s.%s.%i.bak",
+                             dest_filename, GPGCONF_NAME, (int)getpid ());
 
   arg = option->new_value;
   if (arg && arg[0] == '\0')
@@ -2579,8 +2587,8 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 	      if (!in_marker)
 		{
 		  fprintf (src_file,
-			   "# GPGConf disabled this option here at %s\n",
-			   asctimestamp (gnupg_get_time ()));
+			   "# %s disabled this option here at %s\n",
+			   GPGCONF_DISP_NAME, asctimestamp (gnupg_get_time ()));
 		  if (ferror (src_file))
 		    goto change_file_one_err;
 		  fprintf (src_file, "# %s", line);
@@ -2648,7 +2656,8 @@ change_options_file (gc_component_t component, gc_backend_t backend,
 
   if (!in_marker)
     {
-      fprintf (src_file, "# GPGConf edited this configuration file.\n");
+      fprintf (src_file, "# %s edited this configuration file.\n",
+               GPGCONF_DISP_NAME);
       if (ferror (src_file))
 	goto change_file_one_err;
       fprintf (src_file, "# It will disable options before this marked "
@@ -2714,7 +2723,7 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 			char **src_filenamep, char **dest_filenamep,
 			char **orig_filenamep)
 {
-  static const char marker[] = "###+++--- GPGConf ---+++###";
+  static const char marker[] = "###+++--- " GPGCONF_DISP_NAME " ---+++###";
   /* True if we are within the marker in the config file.  */
   int in_marker = 0;
   gc_option_t *option;
@@ -2733,8 +2742,10 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
   /* FIXME.  Throughout the function, do better error reporting.  */
   dest_filename = xstrdup (get_config_filename (component, backend));
-  src_filename = xasprintf ("%s.gpgconf.%i.new", dest_filename, (int)getpid ());
-  orig_filename = xasprintf ("%s.gpgconf.%i.bak", dest_filename,(int)getpid ());
+  src_filename = xasprintf ("%s.%s.%i.new",
+                            dest_filename, GPGCONF_NAME, (int)getpid ());
+  orig_filename = xasprintf ("%s.%s.%i.bak",
+                             dest_filename, GPGCONF_NAME, (int)getpid ());
 
 #ifdef HAVE_W32_SYSTEM
   res = copy_file (dest_filename, orig_filename);
@@ -2825,8 +2836,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 	      if (!in_marker)
 		{
 		  fprintf (src_file,
-			   "# GPGConf disabled this option here at %s\n",
-			   asctimestamp (gnupg_get_time ()));
+			   "# %s disabled this option here at %s\n",
+			   GPGCONF_DISP_NAME, asctimestamp (gnupg_get_time ()));
 		  if (ferror (src_file))
 		    goto change_one_err;
 		  fprintf (src_file, "# %s", line);
@@ -2946,7 +2957,8 @@ change_options_program (gc_component_t component, gc_backend_t backend,
 
   if (!in_marker)
     {
-      fprintf (src_file, "# GPGConf edited this configuration file.\n");
+      fprintf (src_file, "# %s edited this configuration file.\n",
+               GPGCONF_DISP_NAME);
       if (ferror (src_file))
 	goto change_one_err;
       fprintf (src_file, "# It will disable options before this marked "
@@ -3287,7 +3299,8 @@ gc_component_change_options (int component, estream_t in, estream_t out)
 
 	assert (dest_filename[backend]);
 
-	backup_filename = xasprintf ("%s.gpgconf.bak", dest_filename[backend]);
+	backup_filename = xasprintf ("%s.%s.bak",
+                                     dest_filename[backend], GPGCONF_NAME);
 
 #ifdef HAVE_W32_SYSTEM
 	/* There is no atomic update on W32.  */
@@ -3436,7 +3449,8 @@ gc_process_gpgconf_conf (const char *fname_arg, int update, int defaults,
   if (fname_arg)
     fname = xstrdup (fname_arg);
   else
-    fname = make_filename (gnupg_sysconfdir (), "gpgconf.conf", NULL);
+    fname = make_filename (gnupg_sysconfdir (), GPGCONF_NAME EXTSEP_S "conf",
+                           NULL);
 
   for (backend_id = 0; backend_id < GC_BACKEND_NR; backend_id++)
     runtime[backend_id] = 0;

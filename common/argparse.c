@@ -1126,7 +1126,7 @@ show_help (ARGPARSE_OPTS *opts, unsigned int flags)
         writestrings (0, "Options:", "\n", NULL);
       for (i=0; opts[i].short_opt; i++ )
         {
-          s = _( opts[i].description );
+          s = map_static_macro_string (_( opts[i].description ));
           if ( s && *s== '@' && !s[1] ) /* Hide this line.  */
             continue;
           if ( s && *s == '@' )  /* Unindented comment only line.  */

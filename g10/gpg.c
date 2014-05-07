@@ -1697,7 +1697,8 @@ gpgconf_list (const char *configfile)
 {
   char *configfile_esc = percent_escape (configfile, NULL);
 
-  es_printf ("gpgconf-gpg.conf:%lu:\"%s\n",
+  es_printf ("%s-%s.conf:%lu:\"%s\n",
+             GPGCONF_NAME, GPG_NAME,
              GC_OPT_FLAG_DEFAULT,
              configfile_esc ? configfile_esc : "/dev/null");
   es_printf ("verbose:%lu:\n", GC_OPT_FLAG_NONE);

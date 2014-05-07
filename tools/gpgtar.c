@@ -172,9 +172,9 @@ main (int argc, char **argv)
 
   assert (sizeof (struct ustar_raw_header) == 512);
 
-  gnupg_reopen_std ("gpgtar");
+  gnupg_reopen_std (GPGTAR_NAME);
   set_strusage (my_strusage);
-  log_set_prefix ("gpgtar", 1);
+  log_set_prefix (GPGTAR_NAME, 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();

@@ -899,7 +899,7 @@ main ( int argc, char **argv)
 
   /*mtrace();*/
 
-  gnupg_reopen_std ("gpgsm");
+  gnupg_reopen_std (GPGSM_NAME);
   /* trap_unaligned ();*/
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
@@ -908,7 +908,7 @@ main ( int argc, char **argv)
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to secmem_init()
      somewhere after the option parsing */
-  log_set_prefix ("gpgsm", 1);
+  log_set_prefix (GPGSM_NAME, 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -998,7 +998,7 @@ main ( int argc, char **argv)
 
   /* Set the default option file */
   if (default_config )
-    configname = make_filename (opt.homedir, "gpgsm.conf", NULL);
+    configname = make_filename (opt.homedir, GPGSM_NAME EXTSEP_S "conf", NULL);
   /* Set the default policy file */
   opt.policy_file = make_filename (opt.homedir, "policies.txt", NULL);
 
@@ -1422,7 +1422,8 @@ main ( int argc, char **argv)
   configname = NULL;
 
   if (!opt.config_filename)
-    opt.config_filename = make_filename (opt.homedir, "gpgsm.conf", NULL);
+    opt.config_filename = make_filename (opt.homedir, GPG_NAME EXTSEP_S "conf",
+                                         NULL);
 
   if (log_get_errorcount(0))
     gpgsm_exit(2);
@@ -1653,7 +1654,8 @@ main ( int argc, char **argv)
       { /* List options and default values in the GPG Conf format.  */
 	char *config_filename_esc = percent_escape (opt.config_filename, NULL);
 
-        es_printf ("gpgconf-gpgsm.conf:%lu:\"%s\n",
+        es_printf ("%s-%s.conf:%lu:\"%s\n",
+                   GPGCONF_NAME, GPGSM_NAME,
                    GC_OPT_FLAG_DEFAULT, config_filename_esc);
         xfree (config_filename_esc);
 

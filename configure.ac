@@ -1689,13 +1689,32 @@ fi
 # Define Name strings
 #
 AC_DEFINE_UNQUOTED(GNUPG_NAME, "GnuPG", [The name of the project])
+
 AC_DEFINE_UNQUOTED(GPG_NAME, "gpg", [The name of the OpenPGP tool])
+AC_DEFINE_UNQUOTED(GPG_DISP_NAME, "GnuPG", [The displayed name of gpg])
+
 AC_DEFINE_UNQUOTED(GPGSM_NAME, "gpgsm", [The name of the S/MIME tool])
+AC_DEFINE_UNQUOTED(GPGSM_DISP_NAME, "GPGSM", [The displayed name of gpgsm])
+
 AC_DEFINE_UNQUOTED(GPG_AGENT_NAME, "gpg-agent", [The name of the agent])
+AC_DEFINE_UNQUOTED(GPG_AGENT_DISP_NAME, "GPG Agent",
+                                        [The displayed name of gpg-agent])
+
 AC_DEFINE_UNQUOTED(SCDAEMON_NAME, "scdaemon", [The name of the scdaemon])
+AC_DEFINE_UNQUOTED(SCDAEMON_DISP_NAME, "SCDaemon",
+                                       [The displayed name of scdaemon])
+
 AC_DEFINE_UNQUOTED(DIRMNGR_NAME, "dirmngr", [The name of the dirmngr])
+AC_DEFINE_UNQUOTED(DIRMNGR_DISP_NAME, "DirMngr",
+                                      [The displayed name of dirmngr])
+
 AC_DEFINE_UNQUOTED(G13_NAME, "g13", [The name of the g13 tool])
+AC_DEFINE_UNQUOTED(G13_DISP_NAME, "G13", [The displayed name of g13])
+
 AC_DEFINE_UNQUOTED(GPGCONF_NAME, "gpgconf", [The name of the gpgconf tool])
+AC_DEFINE_UNQUOTED(GPGCONF_DISP_NAME, "GPGConf",
+                                      [The displayed name of gpgconf])
+
 AC_DEFINE_UNQUOTED(GPGTAR_NAME, "gpgtar", [The name of the gpgtar tool])
 
 AC_DEFINE_UNQUOTED(GPG_AGENT_INFO_NAME, "GPG_AGENT_INFO",
@@ -1706,6 +1725,8 @@ AC_DEFINE_UNQUOTED(GPG_AGENT_SSH_SOCK_NAME, "S.gpg-agent.ssh",
                    [The name of the agent socket for ssh])
 AC_DEFINE_UNQUOTED(DIRMNGR_INFO_NAME, "DIRMNGR_INFO",
                    [The name of the dirmngr info envvar])
+AC_DEFINE_UNQUOTED(SCDAEMON_SOCK_NAME, "S.scdaemon",
+                   [The name of the SCdaemon socket])
 AC_DEFINE_UNQUOTED(DIRMNGR_SOCK_NAME, "S.dirmngr",
                    [The name of the dirmngr socket])
 

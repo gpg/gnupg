@@ -70,7 +70,7 @@ static ARGPARSE_OPTS opts[] =
     { aApplyDefaults, "apply-defaults", 256,
       N_("apply global default values") },
     { aListDirs, "list-dirs", 256,
-      N_("get the configuration directories for gpgconf") },
+      N_("get the configuration directories for @GPGCONF@") },
     { aListConfig,   "list-config", 256,
       N_("list global configuration file") },
     { aCheckConfig,   "check-config", 256,
@@ -151,9 +151,9 @@ main (int argc, char **argv)
   enum cmd_and_opt_values cmd = 0;
   estream_t outfp = NULL;
 
-  gnupg_reopen_std ("gpgconf");
+  gnupg_reopen_std (GPGCONF_NAME);
   set_strusage (my_strusage);
-  log_set_prefix ("gpgconf", 1);
+  log_set_prefix (GPGCONF_NAME, 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init();
@@ -228,7 +228,7 @@ main (int argc, char **argv)
     case aCheckOptions:
       if (!fname)
 	{
-	  es_fputs (_("usage: gpgconf [options] "), es_stderr);
+	  es_fprintf (es_stderr, _("usage: %s [options] "), GPGCONF_NAME);
 	  es_putc ('\n', es_stderr);
 	  es_fputs (_("Need one component argument"), es_stderr);
 	  es_putc ('\n', es_stderr);
@@ -262,7 +262,7 @@ main (int argc, char **argv)
     case aKill:
       if (!fname)
 	{
-	  es_fputs (_("usage: gpgconf [options] "), es_stderr);
+	  es_fprintf (es_stderr, _("usage: %s [options] "), GPGCONF_NAME);
 	  es_putc ('\n', es_stderr);
 	  es_fputs (_("Need one component argument"), es_stderr);
 	  es_putc ('\n', es_stderr);
@@ -325,7 +325,7 @@ main (int argc, char **argv)
     case aApplyDefaults:
       if (fname)
 	{
-	  es_fputs (_("usage: gpgconf [options] "), es_stderr);
+	  es_fprintf (es_stderr, _("usage: %s [options] "), GPGCONF_NAME);
 	  es_putc ('\n', es_stderr);
 	  es_fputs (_("No argument allowed"), es_stderr);
 	  es_putc ('\n', es_stderr);

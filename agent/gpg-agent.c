@@ -747,7 +747,8 @@ main (int argc, char **argv )
   */
 
   if (default_config)
-    configname = make_filename (opt.homedir, "gpg-agent.conf", NULL );
+    configname = make_filename (opt.homedir, GPG_AGENT_NAME EXTSEP_S "conf",
+                                NULL );
 
   argc = orig_argc;
   argv = orig_argv;
@@ -956,11 +957,13 @@ main (int argc, char **argv )
       char *filename_esc;
 
       /* List options and default values in the GPG Conf format.  */
-      filename = make_filename (opt.homedir, "gpg-agent.conf", NULL );
+      filename = make_filename (opt.homedir, GPG_AGENT_NAME EXTSEP_S "conf",
+                                NULL );
       filename_esc = percent_escape (filename, NULL);
 
-      es_printf ("gpgconf-gpg-agent.conf:%lu:\"%s\n",
-              GC_OPT_FLAG_DEFAULT, filename_esc);
+      es_printf ("%s-%s.conf:%lu:\"%s\n",
+                 GPGCONF_NAME, GPG_AGENT_NAME,
+                 GC_OPT_FLAG_DEFAULT, filename_esc);
       xfree (filename);
       xfree (filename_esc);
 
