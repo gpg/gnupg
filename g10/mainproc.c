@@ -1528,12 +1528,42 @@ pka_uri_from_sig (PKT_signature *sig)
 }
 
 
+static void
+print_good_bad_signature (int statno, const char *keyid_str, kbnode_t un,
+                          PKT_signature *sig, int rc)
+{
+  char *p;
+
+  write_status_text_and_buffer (statno, keyid_str,
+                                un? un->pkt->pkt.user_id->name:"[?]",
+                                un? un->pkt->pkt.user_id->len:3,
+                                -1);
+
+  if (un)
+    p = utf8_to_native (un->pkt->pkt.user_id->name,
+                        un->pkt->pkt.user_id->len, 0);
+  else
+    p = xstrdup ("[?]");
+
+  if (rc)
+    log_info (_("BAD signature from \"%s\""), p);
+  else if (sig->flags.expired)
+    log_info (_("Expired signature from \"%s\""), p);
+  else
+    log_info (_("Good signature from \"%s\""), p);
+
+  xfree (p);
+}
+
+
 static int
 check_sig_and_print (CTX c, KBNODE node)
 {
   PKT_signature *sig = node->pkt->pkt.signature;
   const char *astr;
-  int rc, is_expkey=0, is_revkey=0;
+  int rc;
+  int is_expkey = 0;
+  int is_revkey = 0;
 
   if (opt.skip_verify)
     {
@@ -1663,7 +1693,7 @@ check_sig_and_print (CTX c, KBNODE node)
               asctimestamp(sig->timestamp), astr? astr: "?",
               keystr(sig->keyid));
 
-  rc = do_check_sig(c, node, NULL, &is_expkey, &is_revkey );
+  rc = do_check_sig (c, node, NULL, &is_expkey, &is_revkey );
 
   /* If the key isn't found, check for a preferred keyserver */
 
@@ -1778,7 +1808,6 @@ check_sig_and_print (CTX c, KBNODE node)
       /* Find and print the primary user ID.  */
       for (un=keyblock; un; un = un->next)
         {
-          char *p;
           int valid;
 
           if (un->pkt->pkttype==PKT_PUBLIC_KEY)
@@ -1807,24 +1836,10 @@ check_sig_and_print (CTX c, KBNODE node)
           valid = get_validity (pk, un->pkt->pkt.user_id);
 
           keyid_str[17] = 0; /* cut off the "[uncertain]" part */
-          write_status_text_and_buffer (statno, keyid_str,
-                                        un->pkt->pkt.user_id->name,
-                                        un->pkt->pkt.user_id->len,
-                                        -1);
 
-          p = utf8_to_native (un->pkt->pkt.user_id->name,
-                              un->pkt->pkt.user_id->len, 0);
+          print_good_bad_signature (statno, keyid_str, un, sig, rc);
 
-          if (rc)
-            log_info (_("BAD signature from \"%s\""), p);
-          else if (sig->flags.expired)
-            log_info (_("Expired signature from \"%s\""), p);
-          else
-            log_info (_("Good signature from \"%s\""), p);
-
-          xfree(p);
-
-          if (opt.verify_options&VERIFY_SHOW_UID_VALIDITY)
+          if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
             log_printf (" [%s]\n",trust_value_to_string(valid));
           else
             log_printf ("\n");
@@ -1833,8 +1848,6 @@ check_sig_and_print (CTX c, KBNODE node)
 
       if (!count)  /* Just in case that we have no valid textual userid */
         {
-          char *p;
-
           /* Try for an invalid textual userid */
           for (un=keyblock; un; un = un->next)
             {
@@ -1856,23 +1869,8 @@ check_sig_and_print (CTX c, KBNODE node)
           if (opt.trust_model==TM_ALWAYS || !un)
             keyid_str[17] = 0; /* cut off the "[uncertain]" part */
 
-          write_status_text_and_buffer (statno, keyid_str,
-                                        un? un->pkt->pkt.user_id->name:"[?]",
-                                        un? un->pkt->pkt.user_id->len:3,
-                                        -1 );
+          print_good_bad_signature (statno, keyid_str, un, sig, rc);
 
-          if (un)
-            p= utf8_to_native (un->pkt->pkt.user_id->name,
-                               un->pkt->pkt.user_id->len, 0);
-          else
-            p = xstrdup ("[?]");
-
-          if (rc)
-            log_info (_("BAD signature from \"%s\""), p);
-          else if (sig->flags.expired)
-            log_info (_("Expired signature from \"%s\""), p);
-          else
-            log_info (_("Good signature from \"%s\""), p);
           if (opt.trust_model != TM_ALWAYS && un)
             log_printf (" %s",_("[uncertain]") );
           log_printf ("\n");
