@@ -1,6 +1,7 @@
 /* keylist.c - Print information about OpenPGP keys
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2008, 2010, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2013, 2014  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -822,18 +823,6 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
               pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
               keystr_from_pk (pk), datestr_from_pk (pk));
 
-  if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA
-      || pk->pubkey_algo == PUBKEY_ALGO_EDDSA
-      || pk->pubkey_algo == PUBKEY_ALGO_ECDH)
-    {
-      char *curve = openpgp_oid_to_str (pk->pkey[0]);
-      const char *name = openpgp_oid_to_curve (curve);
-      if (!*name || *name == '?')
-        name = curve;
-      es_fprintf (es_stdout, " %s", name);
-      xfree (curve);
-    }
-
   if (pk->flags.revoked)
     {
       es_fprintf (es_stdout, " [");
@@ -862,6 +851,9 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
       es_fprintf (es_stdout, " [%s]", trust_value_to_string (validity));
     }
 #endif
+
+  if (pk->pubkey_algo >= 100)
+    es_fprintf (es_stdout, " [experimental algorithm %d]", pk->pubkey_algo);
 
   es_fprintf (es_stdout, "\n");
 

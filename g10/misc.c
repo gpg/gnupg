@@ -299,10 +299,10 @@ print_pubkey_algo_note (pubkey_algo_t algo)
 	{
 	  warn=1;
 	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
-		    openpgp_cipher_algo_name (algo));
+		    openpgp_pk_algo_name (algo));
 	}
     }
-  else if (algo == 20)
+  else if (algo == PUBKEY_ALGO_ELGAMAL)
     {
       log_info (_("WARNING: Elgamal sign+encrypt keys are deprecated\n"));
     }
