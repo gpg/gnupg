@@ -397,7 +397,8 @@ do_unprotect (const char *passphrase,
 
       if (actual_csum != desired_csum)
         return gpg_error (GPG_ERR_CHECKSUM);
-      return 0;
+
+      goto do_convert;
     }
 
 
@@ -595,6 +596,7 @@ do_unprotect (const char *passphrase,
   if (actual_csum != desired_csum)
     return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 
+ do_convert:
   if (nskey != skeylen)
     err = gpg_error (GPG_ERR_BAD_SECKEY);
   else
@@ -905,7 +907,11 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       pi_arg.r_key = &s_skey;
 
       err = gpg_error (GPG_ERR_BAD_PASSPHRASE);
-      if (cache_nonce)
+      if (!is_protected)
+        {
+          err = try_do_unprotect_cb (pi);
+        }
+      else if (cache_nonce)
         {
           char *cache_value;
 
@@ -928,7 +934,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE && !from_native)
         err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
       skeyidx = pi_arg.skeyidx;
-      if (!err && r_passphrase)
+      if (!err && r_passphrase && is_protected)
         {
           *r_passphrase = xtrystrdup (pi->pin);
           if (!*r_passphrase)
