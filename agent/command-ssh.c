@@ -2331,7 +2331,9 @@ ssh_send_key_public (estream_t stream, gcry_sexp_t key,
   else
     {
       err = ssh_key_extract_comment (key, &comment);
-      if (!err)
+      if (err)
+        err = stream_write_cstring (stream, "(none)");
+      else
         err = stream_write_cstring (stream, comment);
     }
   if (err)
