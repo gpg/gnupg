@@ -798,7 +798,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
           BUG(); /* we should never see it here */
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc);
+          rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc, NULL);
           break;
         }
       if (rc == -1) /* EOF -> switch to next resource */

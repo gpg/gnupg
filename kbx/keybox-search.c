@@ -720,7 +720,8 @@ keybox_search_reset (KEYBOX_HANDLE hd)
 /* Note: When in ephemeral mode the search function does visit all
    blobs but in standard mode, blobs flagged as ephemeral are ignored.  */
 int
-keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
+keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
+               size_t *r_descindex)
 {
   int rc;
   size_t n;
@@ -945,6 +946,10 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc)
 	}
       continue;
     found:
+      /* Record which DESC we matched on.  Note this value is only
+	 meaningful if this function returns with no errors. */
+      if(r_descindex)
+	*r_descindex = n;
       for (n=any_skip?0:ndesc; n < ndesc; n++)
         {
 /*            if (desc[n].skipfnc */

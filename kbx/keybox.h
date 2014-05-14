@@ -83,7 +83,8 @@ int keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *ret_cert);
 int keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value);
 
 int keybox_search_reset (KEYBOX_HANDLE hd);
-int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc);
+int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
+                   size_t *r_descindex);
 
 
 /*-- keybox-update.c --*/
@@ -109,8 +110,6 @@ int keybox_compress (KEYBOX_HANDLE hd);
 
 #if 0
 int keybox_locate_writable (KEYBOX_HANDLE hd);
-int keybox_search_reset (KEYBOX_HANDLE hd);
-int keybox_search (KEYBOX_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc);
 int keybox_rebuild_cache (void *);
 #endif
 

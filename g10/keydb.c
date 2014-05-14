@@ -1319,6 +1319,9 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 {
   gpg_error_t rc;
 
+  if (descindex)
+    *descindex = 0; /* Make sure it is always set on return.  */
+
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
@@ -1333,6 +1336,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       && keyblock_cache.kid[0] == desc[0].u.kid[0]
       && keyblock_cache.kid[1] == desc[0].u.kid[1])
     {
+      /* (DESCINDEX is already set).  */
       if (DBG_CLOCK)
         log_clock ("keydb_search leave (cached)");
       return 0;
@@ -1352,7 +1356,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
                                ndesc, descindex);
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_search (hd->active[hd->current].u.kb, desc, ndesc);
+          rc = keybox_search (hd->active[hd->current].u.kb, desc,
+                              ndesc, descindex);
           break;
         }
       if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
