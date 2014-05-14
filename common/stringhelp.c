@@ -496,7 +496,9 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
     {
 #ifdef HAVE_DRIVE_LETTERS
       p = strchr (name, ':');
-      if (!p)
+      if (p)
+        p++;
+      else
         p = name;
 #else
       p = name;
