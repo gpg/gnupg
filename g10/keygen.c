@@ -2302,7 +2302,7 @@ ask_expire_interval(int object,const char *def_expire)
     answer = NULL;
     for(;;)
       {
-	u32 curtime=make_timestamp();
+	u32 curtime;
 
 	xfree(answer);
 	if(object==0)
@@ -2326,6 +2326,7 @@ ask_expire_interval(int object,const char *def_expire)
 	  }
 	cpr_kill_prompt();
 	trim_spaces(answer);
+        curtime = make_timestamp ();
 	interval = parse_expire_string( answer );
 	if( interval == (u32)-1 )
 	  {
