@@ -243,14 +243,10 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
       gcry_md_write (dfx->mdc_hash, dfx->defer, 2);
       gcry_md_final (dfx->mdc_hash);
 
-      if (dfx->defer[0] != '\xd3' || dfx->defer[1] != '\x14' )
-        {
-          log_error("mdc_packet with invalid encoding\n");
-          rc = gpg_error (GPG_ERR_INV_PACKET);
-        }
-      else if (datalen != 20
-               || memcmp (gcry_md_read (dfx->mdc_hash, 0),
-                          dfx->defer+2,datalen ))
+      if (   dfx->defer[0] != '\xd3'
+          || dfx->defer[1] != '\x14'
+          || datalen != 20
+          || memcmp (gcry_md_read (dfx->mdc_hash, 0), dfx->defer+2, datalen))
         rc = gpg_error (GPG_ERR_BAD_SIGNATURE);
       /* log_printhex("MDC message:", dfx->defer, 22); */
       /* log_printhex("MDC calc:", gcry_md_read (dfx->mdc_hash,0), datalen); */
