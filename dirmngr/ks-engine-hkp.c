@@ -69,12 +69,20 @@ struct hostinfo_s
   int *pool;         /* A -1 terminated array with indices into
                         HOSTTABLE or NULL if NAME is not a pool
                         name.  */
-  int poolidx;       /* Index into POOL with the used host.  */
+  int poolidx;       /* Index into POOL with the used host.  -1 if not set.  */
   unsigned int v4:1; /* Host supports AF_INET.  */
   unsigned int v6:1; /* Host supports AF_INET6.  */
   unsigned int dead:1; /* Host is currently unresponsive.  */
-  time_t died_at;    /* The time the host was marked dead.  IF this is
+  time_t died_at;    /* The time the host was marked dead.  If this is
                         0 the host has been manually marked dead.  */
+  char *cname;       /* Canonical name of the host.  Only set if this
+                        is a pool.  */
+  char *v4addr;      /* A string with the v4 IP address of the host.
+                        NULL if NAME has a numeric IP address or no v4
+                        address is available.  */
+  char *v6addr;      /* A string with the v6 IP address of the host.
+                        NULL if NAME has a numeric IP address or no v4
+                        address is available.  */
   char name[1];      /* The hostname.  */
 };
 
@@ -110,6 +118,9 @@ create_new_hostinfo (const char *name)
   hi->v6 = 0;
   hi->dead = 0;
   hi->died_at = 0;
+  hi->cname = NULL;
+  hi->v4addr = NULL;
+  hi->v6addr = NULL;
 
   /* Add it to the hosttable. */
   for (idx=0; idx < hosttable_size; idx++)
@@ -217,19 +228,28 @@ select_random_host (int *table)
 
 /* Simplified version of getnameinfo which also returns a numeric
    hostname inside of brackets.  The caller should provide a buffer
-   for TMPHOST which is 2 bytes larger than the the largest hostname.
-   returns 0 on success or an EAI error code.  */
+   for HOST which is 2 bytes larger than the largest hostname.  If
+   NUMERIC is true the returned value is numeric IP address.  Returns
+   0 on success or an EAI error code.  True is stored at R_ISNUMERIC
+   if HOST has a numeric IP address. */
 static int
-my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen)
+my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen,
+                int numeric, int *r_isnumeric)
 {
   int ec;
   char *p;
 
+  *r_isnumeric = 0;
+
   if (hostlen < 5)
     return EAI_OVERFLOW;
 
-  ec = getnameinfo (ai->ai_addr, ai->ai_addrlen,
-                    host, hostlen, NULL, 0, NI_NAMEREQD);
+  if (numeric)
+    ec = EAI_NONAME;
+  else
+    ec = getnameinfo (ai->ai_addr, ai->ai_addrlen,
+                      host, hostlen, NULL, 0, NI_NAMEREQD);
+
   if (!ec && *host == '[')
     ec = EAI_FAIL;  /* A name may never start with a bracket.  */
   else if (ec == EAI_NONAME)
@@ -244,9 +264,43 @@ my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen)
                         p, hostlen, NULL, 0, NI_NUMERICHOST);
       if (!ec && ai->ai_family == AF_INET6)
         strcat (host, "]");
+
+      *r_isnumeric = 1;
     }
 
   return ec;
+}
+
+
+/* Check whether NAME is an IP address.  */
+static int
+is_ip_address (const char *name)
+{
+  int ndots, n;
+
+  if (*name == '[')
+    return 1;
+  /* Check whether it is legacy IP address.  */
+  if (*name == '.')
+    return 0; /* No.  */
+  ndots = n = 0;
+  for (; *name; name++)
+    {
+      if (*name == '.')
+        {
+          if (name[1] == '.')
+            return 0; /* No. */
+          if (atoi (name+1) > 255)
+            return 0; /* Value too large.  */
+          ndots++;
+          n = 0;
+        }
+      else if (!strchr ("012345678", *name))
+        return 0; /* Not a digit.  */
+      else if (++n > 3)
+        return 0; /* More than 3 digits.  */
+    }
+  return !!(ndots == 3);
 }
 
 
@@ -256,16 +310,20 @@ my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen)
    failed for some time and we stick to one host for a time
    independent of DNS retry times.  If FORCE_RESELECT is true a new
    host is always selected.  If R_HTTPFLAGS is not NULL if will
-   received flags which are to be passed to http_open. */
+   receive flags which are to be passed to http_open.  If R_HOST is
+   not NULL a malloced name of the pool is stored or NULL if it is not
+   a pool. */
 static char *
 map_host (ctrl_t ctrl, const char *name, int force_reselect,
-          unsigned int *r_httpflags)
+          unsigned int *r_httpflags, char **r_host)
 {
   hostinfo_t hi;
   int idx;
 
   if (r_httpflags)
     *r_httpflags = 0;
+  if (r_host)
+    *r_host = NULL;
 
   /* No hostname means localhost.  */
   if (!name || !*name)
@@ -280,6 +338,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       int *reftbl;
       size_t reftblsize;
       int refidx;
+      int is_pool = 0;
 
       reftblsize = 100;
       reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
@@ -298,13 +357,40 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       /* Find all A records for this entry and put them into the pool
          list - if any.  */
       memset (&hints, 0, sizeof (hints));
+      hints.ai_family = AF_UNSPEC;
       hints.ai_socktype = SOCK_STREAM;
+      hints.ai_flags = AI_CANONNAME;
+      /* We can't use the the AI_IDN flag because that does the
+         conversion using the current locale.  However, GnuPG always
+         used UTF-8.  To support IDN we would need to make use of the
+         libidn API.  */
       if (!getaddrinfo (name, NULL, &hints, &aibuf))
         {
+          int n_v6, n_v4;
+
+          /* First figure out whether this is a pool.  For a pool we
+             use a different strategy than for a plains erver: We use
+             the canonical name of the pool as the virtual host along
+             with the IP addresses.  If it is not a pool, we use the
+             specified name. */
+          n_v6 = n_v4 = 0;
           for (ai = aibuf; ai; ai = ai->ai_next)
             {
-              char tmphost[NI_MAXHOST];
+              if (ai->ai_family != AF_INET6)
+                n_v6++;
+              else if (ai->ai_family != AF_INET)
+                n_v4++;
+            }
+          if (n_v6 > 1 || n_v4 > 1)
+            is_pool = 1;
+          if (is_pool && aibuf->ai_canonname)
+            hi->cname = xtrystrdup (aibuf->ai_canonname);
+
+          for (ai = aibuf; ai; ai = ai->ai_next)
+            {
+              char tmphost[NI_MAXHOST + 2];
               int tmpidx;
+              int is_numeric;
               int ec;
               int i;
 
@@ -312,7 +398,28 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                 continue;
 
               dirmngr_tick (ctrl);
-              if ((ec = my_getnameinfo (ai, tmphost, sizeof tmphost)))
+
+              if (!is_pool && !is_ip_address (name))
+                {
+                  /* This is a hostname but not a pool.  Use the name
+                     as given without going through getnameinfo.  */
+                  if (strlen (name)+1 > sizeof tmphost)
+                    {
+                      ec = EAI_SYSTEM;
+                      gpg_err_set_errno (EINVAL);
+                    }
+                  else
+                    {
+                      ec = 0;
+                      strcpy (tmphost, name);
+                    }
+                  is_numeric = 0;
+                }
+              else
+                ec = my_getnameinfo (ai, tmphost, sizeof tmphost,
+                                     0, &is_numeric);
+
+              if (ec)
                 {
                   log_info ("getnameinfo failed while checking '%s': %s\n",
                             name, gai_strerror (ec));
@@ -324,15 +431,49 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                 }
               else
                 {
+                  tmpidx = find_hostinfo (tmphost);
+                  log_info ("getnameinfo returned for '%s': '%s'%s\n",
+                            name, tmphost,
+                            tmpidx == -1? "" : " [already known]");
 
-                  if ((tmpidx = find_hostinfo (tmphost)) != -1)
+                  if (tmpidx == -1) /* Create a new entry.  */
+                    tmpidx = create_new_hostinfo (tmphost);
+
+                  if (tmpidx == -1)
                     {
-                      log_info ("getnameinfo returned for '%s': '%s'"
-                                " [already known]\n", name, tmphost);
-                      if (ai->ai_family == AF_INET)
-                        hosttable[tmpidx]->v4 = 1;
+                      log_error ("map_host for '%s' problem: %s - '%s'"
+                                 " [ignored]\n",
+                                 name, strerror (errno), tmphost);
+                    }
+                  else  /* Set or update the entry. */
+                    {
+                      char *ipaddr = NULL;
+
+                      if (!is_numeric)
+                        {
+                          ec = my_getnameinfo (ai, tmphost, sizeof tmphost,
+                                               1, &is_numeric);
+                          if (!ec && !(ipaddr = xtrystrdup (tmphost)))
+                            ec = EAI_SYSTEM;
+                          if (ec)
+                            log_info ("getnameinfo failed: %s\n",
+                                      gai_strerror (ec));
+                        }
+
                       if (ai->ai_family == AF_INET6)
-                        hosttable[tmpidx]->v6 = 1;
+                        {
+                          hosttable[tmpidx]->v6 = 1;
+                          xfree (hosttable[tmpidx]->v6addr);
+                          hosttable[tmpidx]->v6addr = ipaddr;
+                        }
+                      else if (ai->ai_family == AF_INET)
+                        {
+                          hosttable[tmpidx]->v4 = 1;
+                          xfree (hosttable[tmpidx]->v4addr);
+                          hosttable[tmpidx]->v4addr = ipaddr;
+                        }
+                      else
+                        BUG ();
 
                       for (i=0; i < refidx; i++)
                         if (reftbl[i] == tmpidx)
@@ -340,35 +481,12 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                       if (!(i < refidx) && tmpidx != idx)
                         reftbl[refidx++] = tmpidx;
                     }
-                  else
-                    {
-                      log_info ("getnameinfo returned for '%s': '%s'\n",
-                                name, tmphost);
-                      /* Create a new entry.  */
-                      tmpidx = create_new_hostinfo (tmphost);
-                      if (tmpidx == -1)
-                        log_error ("map_host for '%s' problem: %s - '%s'"
-                                   " [ignored]\n",
-                                   name, strerror (errno), tmphost);
-                      else
-                        {
-                          if (ai->ai_family == AF_INET)
-                            hosttable[tmpidx]->v4 = 1;
-                          if (ai->ai_family == AF_INET6)
-                            hosttable[tmpidx]->v6 = 1;
-
-                          for (i=0; i < refidx; i++)
-                            if (reftbl[i] == tmpidx)
-                              break;
-                          if (!(i < refidx) && tmpidx != idx)
-                            reftbl[refidx++] = tmpidx;
-                        }
-                    }
                 }
             }
+          freeaddrinfo (aibuf);
         }
       reftbl[refidx] = -1;
-      if (refidx)
+      if (refidx && is_pool)
         {
           assert (!hi->pool);
           hi->pool = xtryrealloc (reftbl, (refidx+1) * sizeof *reftbl);
@@ -423,12 +541,16 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
          supports IPv<N>, we explicit set the corresponding http
          flags.  The reason for this is that a host might be listed in
          a pool as not v6 only but actually support v6 when later
-         resolved the name is resolved by our http layer.  */
+         the name is resolved by our http layer.  */
       if (!hi->v4)
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv4;
       if (!hi->v6)
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv6;
     }
+
+  if (r_host && hi->pool && hi->cname)
+    *r_host = xtrystrdup (hi->cname);
+
   return xtrystrdup (hi->name);
 }
 
@@ -571,7 +693,7 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
   char *p, *died;
   const char *diedstr;
 
-  err = ks_print_help (ctrl, "hosttable (idx, ipv4, ipv6, dead, name, time):");
+  err = ks_print_help (ctrl, "hosttable (idx, ipv6, ipv4, dead, name, time):");
   if (err)
     return err;
 
@@ -586,16 +708,26 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
           }
         else
           diedstr = died = NULL;
-        err = ks_printf_help (ctrl, "%3d %s %s %s %s%s%s%s\n",
-                              idx, hi->v4? "4":" ", hi->v6? "6":" ",
-                              hi->dead? "d":" ", hi->name,
+        err = ks_printf_help (ctrl, "%3d %s %s %s %s%s%s%s%s%s%s%s\n",
+                              idx, hi->v6? "6":" ", hi->v4? "4":" ",
+                              hi->dead? "d":" ",
+                              hi->name,
+                              hi->v6addr? " v6=":"",
+                              hi->v6addr? hi->v6addr:"",
+                              hi->v4addr? " v4=":"",
+                              hi->v4addr? hi->v4addr:"",
                               diedstr? "  (":"",
                               diedstr? diedstr:"",
                               diedstr? ")":""   );
         xfree (died);
-
         if (err)
           return err;
+
+        if (hi->cname)
+          err = ks_printf_help (ctrl, "  .       %s", hi->cname);
+        if (err)
+          return err;
+
         if (hi->pool)
           {
             init_membuf (&mb, 256);
@@ -644,13 +776,15 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 }
 
 
-/* Build the remote part or the URL from SCHEME, HOST and an optional
+/* Build the remote part of the URL from SCHEME, HOST and an optional
    PORT.  Returns an allocated string or NULL on failure and sets
-   ERRNO.  */
+   ERRNO.  If R_HTTPHOST is not NULL it receive a mallcoed string with
+   the poolname.  */
 static char *
 make_host_part (ctrl_t ctrl,
                 const char *scheme, const char *host, unsigned short port,
-                int force_reselect, unsigned int *r_httpflags)
+                int force_reselect,
+                unsigned int *r_httpflags, char **r_httphost)
 {
   char portstr[10];
   char *hostname;
@@ -674,7 +808,7 @@ make_host_part (ctrl_t ctrl,
       /*fixme_do_srv_lookup ()*/
     }
 
-  hostname = map_host (ctrl, host, force_reselect, r_httpflags);
+  hostname = map_host (ctrl, host, force_reselect, r_httpflags, r_httphost);
   if (!hostname)
     return NULL;
 
@@ -693,7 +827,8 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
   gpg_error_t err;
   char *hostport = NULL;
 
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1, NULL);
+  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1,
+                             NULL, NULL);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -739,12 +874,13 @@ ks_hkp_housekeeping (time_t curtime)
 
 
 /* Send an HTTP request.  On success returns an estream object at
-   R_FP.  HOSTPORTSTR is only used for diagnostics.  If POST_CB is not
+   R_FP.  HOSTPORTSTR is only used for diagnostics.  If HTTPHOST is
+   not NULL it will be used as HTTP "Host" header.  If POST_CB is not
    NULL a post request is used and that callback is called to allow
    writing the post data.  */
 static gpg_error_t
 send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
-              unsigned int httpflags,
+              const char *httphost, unsigned int httpflags,
               gpg_error_t (*post_cb)(void *, http_t), void *post_cb_value,
               estream_t *r_fp)
 {
@@ -765,7 +901,7 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
   err = http_open (&http,
                    post_cb? HTTP_REQ_POST : HTTP_REQ_GET,
                    request,
-                   NULL,
+                   httphost,
                    /* fixme: AUTH */ NULL,
                    httpflags,
                    /* fixme: proxy*/ NULL,
@@ -987,6 +1123,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   estream_t fp = NULL;
   int reselect;
   unsigned int httpflags;
+  char *httphost = NULL;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
   *r_fp = NULL;
@@ -1035,8 +1172,9 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     char *searchkey;
 
     xfree (hostport);
+    xfree (httphost); httphost = NULL;
     hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                               reselect, &httpflags);
+                               reselect, &httpflags, &httphost);
     if (!hostport)
       {
         err = gpg_error_from_syserror ();
@@ -1064,7 +1202,8 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   }
 
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, httpflags, NULL, NULL, &fp);
+  err = send_request (ctrl, request, hostport, httphost, httpflags,
+                      NULL, NULL, &fp);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1104,6 +1243,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   es_fclose (fp);
   xfree (request);
   xfree (hostport);
+  xfree (httphost);
   return err;
 }
 
@@ -1123,6 +1263,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   char *request = NULL;
   estream_t fp = NULL;
   int reselect;
+  char *httphost = NULL;
   unsigned int httpflags;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
@@ -1174,8 +1315,9 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
  again:
   /* Build the request string.  */
   xfree (hostport);
+  xfree (httphost); httphost = NULL;
   hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                             reselect, &httpflags);
+                             reselect, &httpflags, &httphost);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -1195,7 +1337,8 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
     }
 
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, httpflags, NULL, NULL, &fp);
+  err = send_request (ctrl, request, hostport, httphost, httpflags,
+                      NULL, NULL, &fp);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1216,6 +1359,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   es_fclose (fp);
   xfree (request);
   xfree (hostport);
+  xfree (httphost);
   xfree (searchkey);
   return err;
 }
@@ -1263,6 +1407,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   struct put_post_parm_s parm;
   char *armored = NULL;
   int reselect;
+  char *httphost = NULL;
   unsigned int httpflags;
   unsigned int tries = SEND_REQUEST_RETRIES;
 
@@ -1285,8 +1430,9 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   reselect = 0;
  again:
   xfree (hostport);
+  xfree (httphost); httphost = NULL;
   hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                             reselect, &httpflags);
+                             reselect, &httpflags, &httphost);
   if (!hostport)
     {
       err = gpg_error_from_syserror ();
@@ -1302,7 +1448,8 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
     }
 
   /* Send the request.  */
-  err = send_request (ctrl, request, hostport, 0, put_post_cb, &parm, &fp);
+  err = send_request (ctrl, request, hostport, httphost, 0,
+                      put_post_cb, &parm, &fp);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1317,5 +1464,6 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   xfree (armored);
   xfree (request);
   xfree (hostport);
+  xfree (httphost);
   return err;
 }
