@@ -198,7 +198,7 @@ curl_easy_perform(CURL *curl)
 
   if(curl->flags.post)
     {
-      rc = http_open (&curl->hd, HTTP_REQ_POST, curl->url, curl->auth,
+      rc = http_open (&curl->hd, HTTP_REQ_POST, curl->url, NULL, curl->auth,
                       0, proxy, NULL, curl->srvtag,
 		      curl->headers?curl->headers->list:NULL);
       if (!rc)
@@ -222,7 +222,7 @@ curl_easy_perform(CURL *curl)
     }
   else
     {
-      rc = http_open (&curl->hd, HTTP_REQ_GET, curl->url, curl->auth,
+      rc = http_open (&curl->hd, HTTP_REQ_GET, curl->url, NULL, curl->auth,
                       0, proxy, NULL, curl->srvtag,
 		      curl->headers?curl->headers->list:NULL);
       if (!rc)
@@ -282,7 +282,7 @@ curl_easy_perform(CURL *curl)
       err=CURLE_COULDNT_CONNECT;
       break;
     }
-      
+
   return handle_error(curl,err,errstr);
 }
 

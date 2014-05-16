@@ -68,6 +68,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   err = http_open (&http,
                    HTTP_REQ_GET,
                    url,
+                   /* httphost */ NULL,
                    /* fixme: AUTH */ NULL,
                    0,
                    /* fixme: proxy*/ NULL,

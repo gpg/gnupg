@@ -168,7 +168,8 @@ static int remove_escapes (char *string);
 static int insert_escapes (char *buffer, const char *string,
                            const char *special);
 static uri_tuple_t parse_tuple (char *string);
-static gpg_error_t send_request (http_t hd, const char *auth,const char *proxy,
+static gpg_error_t send_request (http_t hd, const char *httphost,
+                                 const char *auth,const char *proxy,
 				 const char *srvtag,strlist_t headers);
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
@@ -643,11 +644,13 @@ http_session_ref (http_session_t sess)
 }
 
 
-/* Start a HTTP retrieval and return on success in R_HD a context
-   pointer for completing the the request and to wait for the
-   response.  */
+/* Start a HTTP retrieval and on success store at R_HD a context
+   pointer for completing the request and to wait for the response.
+   If HTTPHOST is not NULL it is used hor the Host header instead of a
+   Host header derived from the URL. */
 gpg_error_t
 http_open (http_t *r_hd, http_req_t reqtype, const char *url,
+           const char *httphost,
            const char *auth, unsigned int flags, const char *proxy,
            http_session_t session, const char *srvtag, strlist_t headers)
 {
@@ -669,7 +672,7 @@ http_open (http_t *r_hd, http_req_t reqtype, const char *url,
 
   err = parse_uri (&hd->uri, url, 0, !!(flags & HTTP_FLAG_FORCE_TLS));
   if (!err)
-    err = send_request (hd, auth, proxy, srvtag, headers);
+    err = send_request (hd, httphost, auth, proxy, srvtag, headers);
 
   if (err)
     {
@@ -868,7 +871,7 @@ http_open_document (http_t *r_hd, const char *document,
 {
   gpg_error_t err;
 
-  err = http_open (r_hd, HTTP_REQ_GET, document, auth, flags,
+  err = http_open (r_hd, HTTP_REQ_GET, document, NULL, auth, flags,
                    proxy, session, srvtag, headers);
   if (err)
     return err;
@@ -1353,7 +1356,7 @@ parse_tuple (char *string)
  * Returns 0 if the request was successful
  */
 static gpg_error_t
-send_request (http_t hd, const char *auth,
+send_request (http_t hd, const char *httphost, const char *auth,
 	      const char *proxy, const char *srvtag, strlist_t headers)
 {
   gpg_error_t err;
@@ -1389,7 +1392,7 @@ send_request (http_t hd, const char *auth,
       int rc;
 
       xfree (hd->session->servername);
-      hd->session->servername = xtrystrdup (server);
+      hd->session->servername = xtrystrdup (httphost? httphost : server);
       if (!hd->session->servername)
         {
           err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
@@ -1549,11 +1552,13 @@ send_request (http_t hd, const char *auth,
   if (http_proxy && *http_proxy)
     {
       request = es_asprintf
-        ("%s http://%s:%hu%s%s HTTP/1.0\r\n%s%s",
+        ("%s %s://%s:%hu%s%s HTTP/1.0\r\n%s%s",
          hd->req_type == HTTP_REQ_GET ? "GET" :
          hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
          hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-         server, port, *p == '/' ? "" : "/", p,
+         hd->uri->use_tls? "https" : "http",
+         httphost? httphost : server,
+         port, *p == '/' ? "" : "/", p,
          authstr ? authstr : "",
          proxy_authstr ? proxy_authstr : "");
     }
@@ -1571,7 +1576,9 @@ send_request (http_t hd, const char *auth,
          hd->req_type == HTTP_REQ_GET ? "GET" :
          hd->req_type == HTTP_REQ_HEAD ? "HEAD" :
          hd->req_type == HTTP_REQ_POST ? "POST" : "OOPS",
-         *p == '/' ? "" : "/", p, server, portstr,
+         *p == '/' ? "" : "/", p,
+         httphost? httphost : server,
+         portstr,
          authstr? authstr:"");
     }
   xfree (p);
@@ -2442,6 +2449,7 @@ http_verify_server_credentials (http_session_t sess)
   const gnutls_datum_t *certlist;
   unsigned int certlistlen;
   gnutls_x509_crt_t cert;
+  gpg_error_t err = 0;
 
   sess->verify.done = 1;
   sess->verify.status = 0;
@@ -2458,27 +2466,35 @@ http_verify_server_credentials (http_session_t sess)
   if (rc)
     {
       log_error ("%s: %s\n", errprefix, gnutls_strerror (rc));
-      return gpg_error (GPG_ERR_GENERAL);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
     }
-  if (status)
+  else if (status)
     {
       log_error ("%s: status=0x%04x\n", errprefix, status);
       sess->verify.status = status;
-      return gpg_error (GPG_ERR_GENERAL);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
     }
 
   hostname = sess->servername;
   if (!hostname || !strchr (hostname, '.'))
     {
       log_error ("%s: %s\n", errprefix, "hostname missing");
-      return gpg_error (GPG_ERR_GENERAL);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
     }
 
   certlist = gnutls_certificate_get_peers (sess->tls_session, &certlistlen);
   if (!certlistlen)
     {
       log_error ("%s: %s\n", errprefix, "server did not send a certificate");
-      return gpg_error (GPG_ERR_GENERAL);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
+
+      /* Need to stop here.  */
+      if (err)
+        return err;
     }
 
   /* log_debug ("Server sent %u certs\n", certlistlen); */
@@ -2502,7 +2518,10 @@ http_verify_server_credentials (http_session_t sess)
   rc = gnutls_x509_crt_init (&cert);
   if (rc < 0)
     {
-      return gpg_error (GPG_ERR_GENERAL);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
+      if (err)
+        return err;
     }
 
   rc = gnutls_x509_crt_import (cert, &certlist[0], GNUTLS_X509_FMT_DER);
@@ -2510,20 +2529,22 @@ http_verify_server_credentials (http_session_t sess)
     {
       log_error ("%s: %s: %s\n", errprefix, "error importing certificate",
                  gnutls_strerror (rc));
-      gnutls_x509_crt_deinit (cert);
-      return gpg_error (GPG_ERR_GENERAL);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
     }
 
   if (!gnutls_x509_crt_check_hostname (cert, hostname))
     {
       log_error ("%s: %s\n", errprefix, "hostname does not match");
-      gnutls_x509_crt_deinit (cert);
-      return gpg_error (GPG_ERR_GENERAL);
+      log_info ("(expected '%s')\n", hostname);
+      if (!err)
+        err = gpg_error (GPG_ERR_GENERAL);
     }
 
   gnutls_x509_crt_deinit (cert);
-  sess->verify.rc = 0;
-  return 0;  /* Verification succeeded.  */
+  if (!err)
+    sess->verify.rc = 0;
+  return err;
 #else /*!HTTP_USE_GNUTLS*/
   (void)sess;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);

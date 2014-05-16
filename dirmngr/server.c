@@ -298,7 +298,7 @@ skip_options (char *line)
 }
 
 
-/* Return an error if the assuan context does not belong to teh owner
+/* Return an error if the assuan context does not belong to the owner
    of the process or to root.  On error FAILTEXT is set as Assuan
    error string.  */
 static gpg_error_t

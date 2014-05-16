@@ -110,6 +110,7 @@ gpg_error_t http_raw_connect (http_t *r_hd,
 
 gpg_error_t http_open (http_t *r_hd, http_req_t reqtype,
                        const char *url,
+                       const char *httphost,
                        const char *auth,
                        unsigned int flags,
                        const char *proxy,
