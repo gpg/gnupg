@@ -98,6 +98,11 @@ gpg_error_t http_session_new (http_session_t *r_session,
 http_session_t http_session_ref (http_session_t sess);
 void http_session_release (http_session_t sess);
 
+void http_session_set_log_cb (http_session_t sess,
+                              void (*cb)(http_session_t, gpg_error_t,
+                                         const char *,
+                                         const void **, size_t *));
+
 
 gpg_error_t http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
                             int no_scheme_check);

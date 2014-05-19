@@ -234,8 +234,10 @@ struct http_session_s
   } verify;
   char *servername; /* Malloced server name.  */
 #endif /*HTTP_USE_GNUTLS*/
+  /* A callback function to log details of TLS certifciates.  */
+  void (*cert_log_cb) (http_session_t, gpg_error_t, const char *,
+                       const void **, size_t *);
 };
-
 
 
 /* An object to save header lines. */
@@ -644,6 +646,18 @@ http_session_ref (http_session_t sess)
 }
 
 
+void
+http_session_set_log_cb (http_session_t sess,
+                         void (*cb)(http_session_t, gpg_error_t,
+                                    const char *hostname,
+                                    const void **certs, size_t *certlens))
+{
+  sess->cert_log_cb = cb;
+}
+
+
+
+
 /* Start a HTTP retrieval and on success store at R_HD a context
    pointer for completing the request and to wait for the response.
    If HTTPHOST is not NULL it is used hor the Host header instead of a
@@ -2497,24 +2511,6 @@ http_verify_server_credentials (http_session_t sess)
         return err;
     }
 
-  /* log_debug ("Server sent %u certs\n", certlistlen); */
-  /* { */
-  /*   int i; */
-  /*   char fname[50]; */
-  /*   FILE *fp; */
-
-  /*   for (i=0; i < certlistlen; i++) */
-  /*     { */
-  /*       snprintf (fname, sizeof fname, "xc_%d.der", i); */
-  /*       fp = fopen (fname, "wb"); */
-  /*       if (!fp) */
-  /*         log_fatal ("Failed to create '%s'\n", fname); */
-  /*       if (fwrite (certlist[i].data, certlist[i].size, 1, fp) != 1) */
-  /*         log_fatal ("Error writing to '%s'\n", fname); */
-  /*       fclose (fp); */
-  /*     } */
-  /* } */
-
   rc = gnutls_x509_crt_init (&cert);
   if (rc < 0)
     {
@@ -2536,14 +2532,31 @@ http_verify_server_credentials (http_session_t sess)
   if (!gnutls_x509_crt_check_hostname (cert, hostname))
     {
       log_error ("%s: %s\n", errprefix, "hostname does not match");
-      log_info ("(expected '%s')\n", hostname);
       if (!err)
         err = gpg_error (GPG_ERR_GENERAL);
     }
 
   gnutls_x509_crt_deinit (cert);
+
   if (!err)
     sess->verify.rc = 0;
+
+  if (sess->cert_log_cb)
+    {
+      const void *bufarr[10];
+      size_t buflenarr[10];
+      size_t n;
+
+      for (n = 0; n < certlistlen && n < DIM (bufarr)-1; n++)
+        {
+          bufarr[n] = certlist[n].data;
+          buflenarr[n] = certlist[n].size;
+        }
+      bufarr[n] = NULL;
+      buflenarr[n] = 0;
+      sess->cert_log_cb (sess, err, hostname, bufarr, buflenarr);
+    }
+
   return err;
 #else /*!HTTP_USE_GNUTLS*/
   (void)sess;
