@@ -111,24 +111,31 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
   /*FIXME: Needs to be synced with gnupg14/mpi/mpicoder.c*/
 
   int c, c1, c2, i;
+  unsigned int nmax = *ret_nread;
   unsigned int nbits, nbytes;
   size_t nread = 0;
   gcry_mpi_t a = NULL;
   byte *buf = NULL;
   byte *p;
 
+  if (!nmax)
+    goto overflow;
+
   if ( (c = c1 = iobuf_get (inp)) == -1 )
     goto leave;
+  if (++nread == nmax)
+    goto overflow;
   nbits = c << 8;
   if ( (c = c2 = iobuf_get (inp)) == -1 )
     goto leave;
+  ++nread;
   nbits |= c;
   if ( nbits > MAX_EXTERN_MPI_BITS )
     {
       log_error("mpi too large (%u bits)\n", nbits);
       goto leave;
     }
-  nread = 2;
+
   nbytes = (nbits+7) / 8;
   buf = secure ? gcry_xmalloc_secure (nbytes + 2) : gcry_xmalloc (nbytes + 2);
   p = buf;
@@ -137,6 +144,8 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
   for ( i=0 ; i < nbytes; i++ )
     {
       p[i+2] = iobuf_get(inp) & 0xff;
+      if (nread == nmax)
+        goto overflow;
       nread++;
     }
 
@@ -152,12 +161,15 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
         a = NULL;
     }
 
- leave:
+  *ret_nread = nread;
   gcry_free(buf);
-  if ( nread > *ret_nread )
-    log_bug ("mpi larger than packet");
-  else
-    *ret_nread = nread;
+  return a;
+
+ overflow:
+  log_error ("mpi larger than indicated length (%u bits)\n", 8*nmax);
+ leave:
+  *ret_nread = nread;
+  gcry_free(buf);
   return a;
 }
 
