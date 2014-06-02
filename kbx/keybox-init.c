@@ -148,6 +148,7 @@ keybox_release (KEYBOX_HANDLE hd)
           hd->kb->handle_table[idx] = NULL;
     }
   _keybox_release_blob (hd->found.blob);
+  _keybox_release_blob (hd->saved_found.blob);
   if (hd->fp)
     {
       fclose (hd->fp);
@@ -156,6 +157,35 @@ keybox_release (KEYBOX_HANDLE hd)
   xfree (hd->word_match.name);
   xfree (hd->word_match.pattern);
   xfree (hd);
+}
+
+
+/* Save the current found state in HD for later retrieval by
+   keybox_restore_found_state.  Only one state may be saved.  */
+void
+keybox_push_found_state (KEYBOX_HANDLE hd)
+{
+  if (hd->saved_found.blob)
+    {
+      _keybox_release_blob (hd->saved_found.blob);
+      hd->saved_found.blob = NULL;
+    }
+  hd->saved_found = hd->found;
+  hd->found.blob = NULL;
+}
+
+
+/* Restore the saved found state in HD.  */
+void
+keybox_pop_found_state (KEYBOX_HANDLE hd)
+{
+  if (hd->found.blob)
+    {
+      _keybox_release_blob (hd->found.blob);
+      hd->found.blob = NULL;
+    }
+  hd->found = hd->saved_found;
+  hd->saved_found.blob = NULL;
 }
 
 

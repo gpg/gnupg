@@ -54,7 +54,7 @@ typedef struct keyboxblob *KEYBOXBLOB;
 
 typedef struct keybox_name *KB_NAME;
 typedef struct keybox_name const *CONST_KB_NAME;
-struct keybox_name 
+struct keybox_name
 {
   /* Link to the next resources, so that we can walk all
      resources.  */
@@ -70,7 +70,7 @@ struct keybox_name
      entrues are set to NULL.  HANDLE_TABLE may be NULL. */
   KEYBOX_HANDLE *handle_table;
   size_t handle_table_size;
-  
+
   /* Not yet used.  */
   int is_locked;
 
@@ -82,6 +82,14 @@ struct keybox_name
 };
 
 
+struct keybox_found_s
+{
+  KEYBOXBLOB blob;
+  off_t offset;
+  size_t pk_no;
+  size_t uid_no;
+  unsigned int n_packets; /*used for delete and update*/
+};
 
 struct keybox_handle {
   CONST_KB_NAME kb;
@@ -89,14 +97,9 @@ struct keybox_handle {
   FILE *fp;
   int eof;
   int error;
-  int ephemeral;  
-  struct {
-    KEYBOXBLOB blob;
-    off_t offset;
-    size_t pk_no;
-    size_t uid_no;
-    unsigned int n_packets; /*used for delete and update*/
-  } found;
+  int ephemeral;
+  struct keybox_found_s found;
+  struct keybox_found_s saved_found;
   struct {
     char *name;
     char *pattern;
@@ -215,7 +218,7 @@ void  _keybox_free (void *p);
 #define STR2(v) STR(v)
 
 /*
-  a couple of handy macros 
+  a couple of handy macros
 */
 
 #define return_if_fail(expr) do {                        \
