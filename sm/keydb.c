@@ -56,6 +56,7 @@ static int used_resources;
 struct keydb_handle {
   int locked;
   int found;
+  int saved_found;
   int current;
   int is_ephemeral;
   int used; /* items in active */
@@ -265,6 +266,7 @@ keydb_new (int secret)
 
   hd = xcalloc (1, sizeof *hd);
   hd->found = -1;
+  hd->saved_found = -1;
 
   assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
@@ -475,6 +477,58 @@ unlock_all (KEYDB_HANDLE hd)
     }
   hd->locked = 0;
 }
+
+
+
+/* Push the last found state if any.  */
+void
+keydb_push_found_state (KEYDB_HANDLE hd)
+{
+  if (!hd)
+    return;
+
+  if (hd->found < 0 || hd->found >= hd->used)
+    {
+      hd->saved_found = -1;
+      return;
+    }
+
+  switch (hd->active[hd->found].type)
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      keybox_push_found_state (hd->active[hd->found].u.kr);
+      break;
+    }
+
+  hd->saved_found = hd->found;
+  hd->found = -1;
+}
+
+
+/* Pop the last found state.  */
+void
+keydb_pop_found_state (KEYDB_HANDLE hd)
+{
+  if (!hd)
+    return;
+
+  hd->found = hd->saved_found;
+  hd->saved_found = -1;
+  if (hd->found < 0 || hd->found >= hd->used)
+    return;
+
+  switch (hd->active[hd->found].type)
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      keybox_pop_found_state (hd->active[hd->found].u.kr);
+      break;
+    }
+}
+
 
 
 /*

@@ -64,6 +64,8 @@ int keybox_is_writable (void *token);
 
 KEYBOX_HANDLE keybox_new (void *token, int secret);
 void keybox_release (KEYBOX_HANDLE hd);
+void keybox_push_found_state (KEYBOX_HANDLE hd);
+void keybox_pop_found_state (KEYBOX_HANDLE hd);
 const char *keybox_get_resource_name (KEYBOX_HANDLE hd);
 int keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes);
 

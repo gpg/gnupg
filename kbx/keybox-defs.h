@@ -85,6 +85,14 @@ struct keybox_name
 };
 
 
+struct keybox_found_s
+{
+  KEYBOXBLOB blob;
+  off_t offset;
+  size_t pk_no;
+  size_t uid_no;
+  unsigned int n_packets; /*used for delete and update*/
+};
 
 struct keybox_handle {
   CONST_KB_NAME kb;
@@ -93,13 +101,8 @@ struct keybox_handle {
   int eof;
   int error;
   int ephemeral;
-  struct {
-    KEYBOXBLOB blob;
-    off_t offset;
-    size_t pk_no;
-    size_t uid_no;
-    unsigned int n_packets; /*used for delete and update*/
-  } found;
+  struct keybox_found_s found;
+  struct keybox_found_s saved_found;
   struct {
     char *name;
     char *pattern;
