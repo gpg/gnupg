@@ -36,7 +36,15 @@ out_of_core(void)
 void *
 xmalloc( size_t n )
 {
-    void *p = malloc( n );
+    void *p;
+
+    /* Make sure that xmalloc (0) works.  This is the same behaviour
+       has in gpg 2.x.  Note that in contrast to this code, Libgcrypt
+       (and thus most xmallocs in gpg 2.x) detect the !n and bail out.  */
+    if (!n)
+      n = 1;
+
+    p = malloc( n );
     if( !p )
 	out_of_core();
     return p;
@@ -54,7 +62,14 @@ xrealloc( void *a, size_t n )
 void *
 xcalloc( size_t n, size_t m )
 {
-    void *p = calloc( n, m );
+    void *p;
+
+    if (!n)
+      n = 1;
+    if (!m)
+      m = 1;
+
+    p = calloc( n, m );
     if( !p )
 	out_of_core();
     return p;
