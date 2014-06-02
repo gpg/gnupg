@@ -917,7 +917,6 @@ print_userid( PACKET *pkt )
 static void
 list_node( CTX c, KBNODE node )
 {
-    int any=0;
     int mainkey;
 
     if( !node )
@@ -945,47 +944,55 @@ list_node( CTX c, KBNODE node )
 	    if( mainkey && !opt.fast_list_mode )
 	      putchar( get_ownertrust_info (pk) );
 	    putchar(':');
-	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
-	      putchar('\n'); any=1;
-	      if( opt.fingerprint )
-		print_fingerprint( pk, NULL, 0 );
-	      printf("rtv:1:%u:\n",
-		     node->next->pkt->pkt.ring_trust->trustval );
-	    }
-	  }
+          }
 	else
-	  printf("%s  %4u%c/%s %s%s",
-		 mainkey? "pub":"sub", nbits_from_pk( pk ),
-		 pubkey_letter( pk->pubkey_algo ), keystr_from_pk( pk ),
-		 datestr_from_pk( pk ), mainkey?" ":"");
+          {
+            printf("%s  %4u%c/%s %s",
+                   mainkey? "pub":"sub", nbits_from_pk( pk ),
+                   pubkey_letter( pk->pubkey_algo ), keystr_from_pk( pk ),
+                   datestr_from_pk (pk));
+          }
+
+        if (pk->is_revoked)
+          {
+            printf(" [");
+            printf(_("revoked: %s"),revokestr_from_pk(pk));
+            printf("]\n");
+          }
+        else if (pk->expiredate && !opt.with_colons)
+          {
+            printf(" [");
+            printf(_("expires: %s"),expirestr_from_pk(pk));
+            printf("]\n");
+          }
+        else
+          putchar ('\n');
+
+        if ((mainkey && opt.fingerprint) || opt.fingerprint > 1)
+          print_fingerprint (pk, NULL, 0);
+
+	if (opt.with_colons)
+	  {
+	    if (node->next && node->next->pkt->pkttype == PKT_RING_TRUST)
+	      printf("rtv:1:%u:\n", node->next->pkt->pkt.ring_trust->trustval);
+	  }
 
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
 		if( node->pkt->pkttype == PKT_SIGNATURE ) {
-		    if( !any ) {
-			if( node->pkt->pkt.signature->sig_class == 0x20 )
-			    puts("[revoked]");
-			else
-			    putchar('\n');
-			any = 1;
-		    }
 		    list_node(c,  node );
 		}
 		else if( node->pkt->pkttype == PKT_USER_ID ) {
-		    if( any ) {
-			if( opt.with_colons )
-			    printf("%s:::::::::",
-			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
-			else
-			    printf( "uid%*s", 28, "" );
-		    }
+                    if( opt.with_colons )
+                      printf("%s:::::::::",
+                             node->pkt->pkt.user_id->attrib_data?"uat":"uid");
+                    else
+                      printf( "uid%*s", 28, "" );
 		    print_userid( node->pkt );
 		    if( opt.with_colons )
 			putchar(':');
 		    putchar('\n');
-		    if( opt.fingerprint && !any )
-			print_fingerprint( pk, NULL, 0 );
 		    if( opt.with_colons
                         && node->next
 			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
@@ -993,38 +1000,12 @@ list_node( CTX c, KBNODE node )
                                node->next->pkt->pkt.ring_trust?
                                node->next->pkt->pkt.ring_trust->trustval : 0);
 		    }
-		    any=1;
 		}
 		else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-		    if( !any ) {
-			putchar('\n');
-			any = 1;
-		    }
-		    list_node(c,  node );
+                  list_node(c,  node );
 		}
 	    }
 	}
-	else
-	  {
-	    /* of subkey */
-	    if( pk->is_revoked )
-	      {
-		printf(" [");
-		printf(_("revoked: %s"),revokestr_from_pk(pk));
-		printf("]");
-	      }
-	    else if( pk->expiredate )
-	      {
-		printf(" [");
-		printf(_("expires: %s"),expirestr_from_pk(pk));
-		printf("]");
-	      }
-	  }
-
-	if( !any )
-	    putchar('\n');
-	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( pk, NULL, 0 );
     }
     else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
 	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
@@ -1040,55 +1021,39 @@ list_node( CTX c, KBNODE node )
 		   sk->pubkey_algo,
 		   (ulong)keyid[0],(ulong)keyid[1],
 		   colon_datestr_from_sk( sk ),
-		   colon_strtime (sk->expiredate)
-		   /* fixme: add LID */ );
+		   colon_strtime (sk->expiredate));
 	  }
 	else
 	  printf("%s  %4u%c/%s %s ", mainkey? "sec":"ssb",
 		 nbits_from_sk( sk ), pubkey_letter( sk->pubkey_algo ),
 		 keystr_from_sk( sk ), datestr_from_sk( sk ));
+
+        putchar ('\n');
+        if ((mainkey && opt.fingerprint) || opt.fingerprint > 1)
+          print_fingerprint (NULL, sk,0);
+
 	if( mainkey ) {
 	    /* and now list all userids with their signatures */
 	    for( node = node->next; node; node = node->next ) {
 		if( node->pkt->pkttype == PKT_SIGNATURE ) {
-		    if( !any ) {
-			if( node->pkt->pkt.signature->sig_class == 0x20 )
-			    puts("[revoked]");
-			else
-			    putchar('\n');
-			any = 1;
-		    }
 		    list_node(c,  node );
 		}
 		else if( node->pkt->pkttype == PKT_USER_ID ) {
-		    if( any ) {
-			if( opt.with_colons )
-			    printf("%s:::::::::",
-			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
-			else
-			    printf( "uid%*s", 28, "" );
-		    }
+                    if( opt.with_colons )
+		        printf("%s:::::::::",
+                               node->pkt->pkt.user_id->attrib_data?"uat":"uid");
+                    else
+                        printf( "uid%*s", 28, "" );
 		    print_userid( node->pkt );
 		    if( opt.with_colons )
 			putchar(':');
 		    putchar('\n');
-		    if( opt.fingerprint && !any )
-			print_fingerprint( NULL, sk, 0 );
-		    any=1;
 		}
 		else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-		    if( !any ) {
-			putchar('\n');
-			any = 1;
-		    }
-		    list_node(c,  node );
+                  list_node(c,  node );
 		}
 	    }
 	}
-	if( !any )
-	    putchar('\n');
-	if( !mainkey && opt.fingerprint > 1 )
-	    print_fingerprint( NULL, sk, 0 );
     }
     else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
 	PKT_signature *sig = node->pkt->pkt.signature;
