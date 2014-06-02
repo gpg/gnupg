@@ -1628,46 +1628,54 @@ pubkey_get_nenc (pubkey_algo_t algo)
 unsigned int
 pubkey_nbits( int algo, gcry_mpi_t *key )
 {
-    int rc, nbits;
-    gcry_sexp_t sexp;
+  int rc, nbits;
+  gcry_sexp_t sexp;
 
-    if( algo == PUBKEY_ALGO_DSA ) {
-	rc = gcry_sexp_build ( &sexp, NULL,
-			      "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
-				  key[0], key[1], key[2], key[3] );
+  if (algo == PUBKEY_ALGO_DSA
+      && key[0] && key[1] && key[2] && key[3])
+    {
+      rc = gcry_sexp_build (&sexp, NULL,
+                            "(public-key(dsa(p%m)(q%m)(g%m)(y%m)))",
+                            key[0], key[1], key[2], key[3] );
     }
-    else if( algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E ) {
-	rc = gcry_sexp_build ( &sexp, NULL,
-			      "(public-key(elg(p%m)(g%m)(y%m)))",
-				  key[0], key[1], key[2] );
+  else if ((algo == PUBKEY_ALGO_ELGAMAL || algo == PUBKEY_ALGO_ELGAMAL_E)
+           && key[0] && key[1] && key[2])
+    {
+      rc = gcry_sexp_build (&sexp, NULL,
+                            "(public-key(elg(p%m)(g%m)(y%m)))",
+                            key[0], key[1], key[2] );
     }
-    else if( is_RSA (algo) ) {
-	rc = gcry_sexp_build ( &sexp, NULL,
-			      "(public-key(rsa(n%m)(e%m)))",
-				  key[0], key[1] );
+  else if (is_RSA (algo)
+           && key[0] && key[1])
+    {
+      rc = gcry_sexp_build (&sexp, NULL,
+                            "(public-key(rsa(n%m)(e%m)))",
+                            key[0], key[1] );
     }
-    else if (algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH
-             || algo == PUBKEY_ALGO_EDDSA) {
-        char *curve = openpgp_oid_to_str (key[0]);
-        if (!curve)
-          rc = gpg_error_from_syserror ();
-        else
-          {
-            rc = gcry_sexp_build (&sexp, NULL,
-                                  "(public-key(ecc(curve%s)(q%m)))",
-				  curve, key[1]);
-            xfree (curve);
-          }
+  else if ((algo == PUBKEY_ALGO_ECDSA || algo == PUBKEY_ALGO_ECDH
+            || algo == PUBKEY_ALGO_EDDSA)
+           && key[0] && key[1])
+    {
+      char *curve = openpgp_oid_to_str (key[0]);
+      if (!curve)
+        rc = gpg_error_from_syserror ();
+      else
+        {
+          rc = gcry_sexp_build (&sexp, NULL,
+                                "(public-key(ecc(curve%s)(q%m)))",
+                                curve, key[1]);
+          xfree (curve);
+        }
     }
-    else
-	return 0;
+  else
+    return 0;
 
-    if ( rc )
-	BUG ();
+  if (rc)
+    BUG ();
 
-    nbits = gcry_pk_get_nbits( sexp );
-    gcry_sexp_release( sexp );
-    return nbits;
+  nbits = gcry_pk_get_nbits (sexp);
+  gcry_sexp_release (sexp);
+  return nbits;
 }
 
 

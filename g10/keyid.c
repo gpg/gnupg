@@ -167,7 +167,15 @@ hash_public_key (gcry_md_hd_t md, PKT_public_key *pk)
     {
       for (i=0; i < npkey; i++ )
         {
-          if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
+          if (!pk->pkey[i])
+            {
+              /* This case may only happen if the parsing of the MPI
+                 failed but the key was anyway created.  May happen
+                 during "gpg KEYFILE".  */
+              pp[i] = NULL;
+              nn[i] = 0;
+            }
+          else if (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE))
             {
               const void *p;
 
