@@ -444,6 +444,8 @@ find_up_search_by_keyid (KEYDB_HANDLE kh,
   int rc;
   ksba_cert_t cert = NULL;
   ksba_sexp_t subj = NULL;
+  int anyfound = 0;
+  ksba_isotime_t not_before, last_not_before;
 
   keydb_search_reset (kh);
   while (!(rc = keydb_search_subject (kh, issuer)))
@@ -460,8 +462,35 @@ find_up_search_by_keyid (KEYDB_HANDLE kh,
       if (!ksba_cert_get_subj_key_id (cert, NULL, &subj))
         {
           if (!cmp_simple_canon_sexp (keyid, subj))
-            break; /* Found matching cert. */
+            {
+              /* Found matching cert. */
+              rc = ksba_cert_get_validity (cert, 0, not_before);
+              if (rc)
+                {
+                  log_error ("keydb_get_validity() failed: rc=%d\n", rc);
+                  rc = -1;
+                  break;
+                }
+
+              if (!anyfound || strcmp (last_not_before, not_before) < 0)
+                {
+                  /* This certificate is the first one found or newer
+                     than the previous one.  This copes with
+                     re-issuing CA certificates while keeping the same
+                     key information.  */
+                  anyfound = 1;
+                  gnupg_copy_time (last_not_before, not_before);
+                  keydb_push_found_state (kh);
+                }
+            }
         }
+    }
+
+  if (anyfound)
+    {
+      /* Take the last saved one.  */
+      keydb_pop_found_state (kh);
+      rc = 0;  /* Ignore EOF or other error after the first cert.  */
     }
 
   ksba_cert_release (cert);
@@ -606,6 +635,8 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
   ksba_sexp_t keyid;
   int rc = -1;
 
+  if (DBG_X509)
+    log_debug ("looking for parent certificate\n");
   if (!ksba_cert_get_auth_key_id (cert, &keyid, &authid, &authidno))
     {
       const char *s = ksba_name_enum (authid, 0);
@@ -614,6 +645,9 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
           rc = keydb_search_issuer_sn (kh, s, authidno);
           if (rc)
             keydb_search_reset (kh);
+
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and sn+issuer\n");
 
           /* In case of an error, try to get the certificate from the
              dirmngr.  That is done by trying to put that certifcate
@@ -634,6 +668,9 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
                   rc = keydb_search_issuer_sn (kh, s, authidno);
                   if (rc)
                     keydb_search_reset (kh);
+
+                  if (!rc && DBG_X509)
+                    log_debug ("  found via authid and sn+issuer (ephem)\n");
                 }
               keydb_set_ephemeral (kh, old);
             }
@@ -649,11 +686,15 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
              subjectKeyIdentifier. */
           /* Fixme: Should we also search in the dirmngr?  */
           rc = find_up_search_by_keyid (kh, issuer, keyid);
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and keyid\n");
           if (rc)
             {
               int old = keydb_set_ephemeral (kh, 1);
               if (!old)
                 rc = find_up_search_by_keyid (kh, issuer, keyid);
+              if (!rc && DBG_X509)
+                log_debug ("  found via authid and keyid (ephem)\n");
               keydb_set_ephemeral (kh, old);
             }
           if (rc)
@@ -678,11 +719,19 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
             }
           if (rc)
             rc = -1; /* Need to make sure to have this error code. */
+
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and issuer from dirmngr cache\n");
         }
 
       /* If we still didn't found it, try an external lookup.  */
       if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-        rc = find_up_external (ctrl, kh, issuer, keyid);
+        {
+          rc = find_up_external (ctrl, kh, issuer, keyid);
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and external lookup\n");
+        }
+
 
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
@@ -733,11 +782,18 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
           rc = keydb_search_subject (kh, issuer);
         }
       keydb_set_ephemeral (kh, old);
+
+      if (!rc && DBG_X509)
+        log_debug ("  found via issuer\n");
     }
 
   /* Still not found.  If enabled, try an external lookup.  */
   if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-    rc = find_up_external (ctrl, kh, issuer, NULL);
+    {
+      rc = find_up_external (ctrl, kh, issuer, NULL);
+      if (!rc && DBG_X509)
+        log_debug ("  found via issuer and external lookup\n");
+    }
 
   return rc;
 }
