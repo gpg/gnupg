@@ -921,267 +921,203 @@ print_userid( PACKET *pkt )
 static void
 list_node( CTX c, KBNODE node )
 {
-    int any=0;
-    int mainkey;
-    char pkstrbuf[PUBKEY_STRING_SIZE];
+  int mainkey;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
-    if( !node )
-	;
-    else if( (mainkey = (node->pkt->pkttype == PKT_PUBLIC_KEY) )
-	     || node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	PKT_public_key *pk = node->pkt->pkt.public_key;
+  if (!node)
+    ;
+  else if ((mainkey = (node->pkt->pkttype == PKT_PUBLIC_KEY))
+           || node->pkt->pkttype == PKT_PUBLIC_SUBKEY )
+    {
+      PKT_public_key *pk = node->pkt->pkt.public_key;
 
-	if( opt.with_colons )
-	  {
-	    u32 keyid[2];
-	    keyid_from_pk( pk, keyid );
-	    if( mainkey )
-	      c->trustletter = opt.fast_list_mode?
-		0 : get_validity_info( pk, NULL );
-	    printf("%s:", mainkey? "pub":"sub" );
-	    if( c->trustletter )
-	      putchar( c->trustletter );
-	    printf(":%u:%d:%08lX%08lX:%s:%s::",
-		   nbits_from_pk( pk ),
-		   pk->pubkey_algo,
-		   (ulong)keyid[0],(ulong)keyid[1],
-		   colon_datestr_from_pk( pk ),
-		   colon_strtime (pk->expiredate) );
-	    if( mainkey && !opt.fast_list_mode )
-	      putchar( get_ownertrust_info (pk) );
-	    putchar(':');
-	    if( node->next && node->next->pkt->pkttype == PKT_RING_TRUST) {
-	      putchar('\n'); any=1;
-	      if( opt.fingerprint )
-		print_fingerprint (NULL, pk, 0);
-	      printf("rtv:1:%u:\n",
-		     node->next->pkt->pkt.ring_trust->trustval );
-	    }
-	  }
-	else
-	  printf("%s  %s/%s %s%s",
-		 mainkey? "pub":"sub",
-                 pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-		 keystr_from_pk( pk ),
-		 datestr_from_pk( pk ), mainkey?" ":"");
+      if (opt.with_colons)
+        {
+          u32 keyid[2];
 
-	if( mainkey ) {
-	    /* and now list all userids with their signatures */
-	    for( node = node->next; node; node = node->next ) {
-		if( node->pkt->pkttype == PKT_SIGNATURE ) {
-		    if( !any ) {
-			if( node->pkt->pkt.signature->sig_class == 0x20 )
-			    puts("[revoked]");
-			else
-			    putchar('\n');
-			any = 1;
-		    }
-		    list_node(c,  node );
+          keyid_from_pk( pk, keyid );
+          if (mainkey)
+            c->trustletter = (opt.fast_list_mode?
+                              0 : get_validity_info( pk, NULL));
+          es_printf ("%s:", mainkey? "pub":"sub" );
+          if (c->trustletter)
+            es_putc (c->trustletter, es_stdout);
+          es_printf (":%u:%d:%08lX%08lX:%s:%s::",
+                     nbits_from_pk( pk ),
+                     pk->pubkey_algo,
+                     (ulong)keyid[0],(ulong)keyid[1],
+                     colon_datestr_from_pk( pk ),
+                     colon_strtime (pk->expiredate) );
+          if (mainkey && !opt.fast_list_mode)
+            es_putc (get_ownertrust_info (pk), es_stdout);
+          es_putc (':', es_stdout);
+        }
+      else
+        es_printf ("%s  %s/%s %s",
+                   mainkey? "pub":"sub",
+                   pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                   keystr_from_pk (pk),
+                   datestr_from_pk (pk));
+
+      if (pk->flags.revoked)
+        {
+          es_printf (" [");
+          es_printf (_("revoked: %s"), revokestr_from_pk (pk));
+          es_printf ("]\n");
+        }
+      else if( pk->expiredate && !opt.with_colons)
+        {
+          es_printf (" [");
+          es_printf (_("expires: %s"), expirestr_from_pk (pk));
+          es_printf ("]\n");
+        }
+      else
+        es_putc ('\n', es_stdout);
+
+      if ((mainkey && opt.fingerprint) || opt.fingerprint > 1)
+        print_fingerprint (NULL, pk, 0);
+
+      if (opt.with_colons)
+        {
+          if (node->next && node->next->pkt->pkttype == PKT_RING_TRUST)
+            es_printf ("rtv:1:%u:\n",
+                       node->next->pkt->pkt.ring_trust->trustval);
+        }
+
+      if (mainkey)
+        {
+          /* Now list all userids with their signatures. */
+          for (node = node->next; node; node = node->next)
+            {
+              if (node->pkt->pkttype == PKT_SIGNATURE)
+                {
+                  list_node (c,  node );
+                }
+              else if (node->pkt->pkttype == PKT_USER_ID)
+                {
+                  if (opt.with_colons)
+                    es_printf ("%s:::::::::",
+                               node->pkt->pkt.user_id->attrib_data?"uat":"uid");
+                  else
+                    es_printf ("uid%*s", 28, "" );
+                  print_userid (node->pkt);
+                  if (opt.with_colons)
+                    es_putc (':', es_stdout);
+                  es_putc ('\n', es_stdout);
+                  if (opt.with_colons
+                      && node->next
+                      && node->next->pkt->pkttype == PKT_RING_TRUST)
+                    {
+                      es_printf ("rtv:2:%u:\n",
+                                 node->next->pkt->pkt.ring_trust?
+                                 node->next->pkt->pkt.ring_trust->trustval : 0);
+                    }
 		}
-		else if( node->pkt->pkttype == PKT_USER_ID ) {
-		    if( any ) {
-			if( opt.with_colons )
-			    printf("%s:::::::::",
-			      node->pkt->pkt.user_id->attrib_data?"uat":"uid");
-			else
-			    printf( "uid%*s", 28, "" );
-		    }
-		    print_userid( node->pkt );
-		    if( opt.with_colons )
-			putchar(':');
-		    putchar('\n');
-		    if( opt.fingerprint && !any )
-                        print_fingerprint (NULL, pk, 0 );
-		    if( opt.with_colons
-                        && node->next
-			&& node->next->pkt->pkttype == PKT_RING_TRUST ) {
-			printf("rtv:2:%u:\n",
-                               node->next->pkt->pkt.ring_trust?
-                               node->next->pkt->pkt.ring_trust->trustval : 0);
-		    }
-		    any=1;
-		}
-		else if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-		    if( !any ) {
-			putchar('\n');
-			any = 1;
-		    }
-		    list_node(c,  node );
-		}
-	    }
-	}
-	else
-	  {
-	    /* of subkey */
-	    if( pk->flags.revoked )
-	      {
-		printf(" [");
-		printf(_("revoked: %s"),revokestr_from_pk(pk));
-		printf("]");
-	      }
-	    else if( pk->expiredate )
-	      {
-		printf(" [");
-		printf(_("expires: %s"),expirestr_from_pk(pk));
-		printf("]");
-	      }
-	  }
-
-	if( !any )
-	    putchar('\n');
-	if( !mainkey && opt.fingerprint > 1 )
-            print_fingerprint (NULL, pk, 0);
+              else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+                {
+                  list_node(c,  node );
+                }
+            }
+        }
     }
-    else if( (mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
-	     || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
+  else if ((mainkey = (node->pkt->pkttype == PKT_SECRET_KEY) )
+           || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+    {
 
       log_debug ("FIXME: No way to print secret key packets here\n");
-      /* fixme: We may use a fucntion to trun a secret key packet into
+      /* fixme: We may use a fucntion to turn a secret key packet into
          a public key one and use that here.  */
-	/* PKT_secret_key *sk = node->pkt->pkt.secret_key; */
-
-	/* if( opt.with_colons ) */
-	/*   { */
-	/*     u32 keyid[2]; */
-	/*     keyid_from_sk( sk, keyid ); */
-	/*     printf("%s::%u:%d:%08lX%08lX:%s:%s:::", */
-	/* 	   mainkey? "sec":"ssb", */
-	/* 	   nbits_from_sk( sk ), */
-	/* 	   sk->pubkey_algo, */
-	/* 	   (ulong)keyid[0],(ulong)keyid[1], */
-	/* 	   colon_datestr_from_sk( sk ), */
-	/* 	   colon_strtime (sk->expiredate) */
-	/* 	   /\* fixme: add LID *\/ ); */
-	/*   } */
-	/* else */
-	/*   printf("%s  %4u%c/%s %s ", mainkey? "sec":"ssb", */
-	/* 	 nbits_from_sk( sk ), pubkey_letter( sk->pubkey_algo ), */
-	/* 	 keystr_from_sk( sk ), datestr_from_sk( sk )); */
-	/* if( mainkey ) { */
-	/*     /\* and now list all userids with their signatures *\/ */
-	/*     for( node = node->next; node; node = node->next ) { */
-	/* 	if( node->pkt->pkttype == PKT_SIGNATURE ) { */
-	/* 	    if( !any ) { */
-	/* 		if( node->pkt->pkt.signature->sig_class == 0x20 ) */
-	/* 		    puts("[revoked]"); */
-	/* 		else */
-	/* 		    putchar('\n'); */
-	/* 		any = 1; */
-	/* 	    } */
-	/* 	    list_node(c,  node ); */
-	/* 	} */
-	/* 	else if( node->pkt->pkttype == PKT_USER_ID ) { */
-	/* 	    if( any ) { */
-	/* 		if( opt.with_colons ) */
-	/* 		    printf("%s:::::::::", */
-	/* 		      node->pkt->pkt.user_id->attrib_data?"uat":"uid"); */
-	/* 		else */
-	/* 		    printf( "uid%*s", 28, "" ); */
-	/* 	    } */
-	/* 	    print_userid( node->pkt ); */
-	/* 	    if( opt.with_colons ) */
-	/* 		putchar(':'); */
-	/* 	    putchar('\n'); */
-	/* 	    if( opt.fingerprint && !any ) */
-	/* 		print_fingerprint( NULL, sk, 0 ); */
-	/* 	    any=1; */
-	/* 	} */
-	/* 	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) { */
-	/* 	    if( !any ) { */
-	/* 		putchar('\n'); */
-	/* 		any = 1; */
-	/* 	    } */
-	/* 	    list_node(c,  node ); */
-	/* 	} */
-	/*     } */
-	/* } */
-	/* if( !any ) */
-	/*     putchar('\n'); */
-	/* if( !mainkey && opt.fingerprint > 1 ) */
-	/*     print_fingerprint( NULL, sk, 0 ); */
     }
-    else if( node->pkt->pkttype == PKT_SIGNATURE  ) {
-	PKT_signature *sig = node->pkt->pkt.signature;
-	int is_selfsig = 0;
-	int rc2=0;
-	size_t n;
-	char *p;
-	int sigrc = ' ';
+  else if (node->pkt->pkttype == PKT_SIGNATURE)
+    {
+      PKT_signature *sig = node->pkt->pkt.signature;
+      int is_selfsig = 0;
+      int rc2 = 0;
+      size_t n;
+      char *p;
+      int sigrc = ' ';
 
-	if( !opt.verbose )
-	    return;
+      if (!opt.verbose)
+        return;
 
-	if( sig->sig_class == 0x20 || sig->sig_class == 0x30 )
-	    fputs("rev", stdout);
-	else
-	    fputs("sig", stdout);
-	if( opt.check_sigs ) {
-	    fflush(stdout);
-	    rc2=do_check_sig( c, node, &is_selfsig, NULL, NULL );
-	    switch (gpg_err_code (rc2)) {
-	      case 0:		             sigrc = '!'; break;
-	      case GPG_ERR_BAD_SIGNATURE:    sigrc = '-'; break;
-	      case GPG_ERR_NO_PUBKEY:
-	      case GPG_ERR_UNUSABLE_PUBKEY:  sigrc = '?'; break;
-	      default:		             sigrc = '%'; break;
+      if (sig->sig_class == 0x20 || sig->sig_class == 0x30)
+        es_fputs ("rev", es_stdout);
+      else
+        es_fputs ("sig", es_stdout);
+      if (opt.check_sigs)
+        {
+          fflush (stdout);
+          rc2 = do_check_sig (c, node, &is_selfsig, NULL, NULL);
+          switch (gpg_err_code (rc2))
+            {
+            case 0:		          sigrc = '!'; break;
+            case GPG_ERR_BAD_SIGNATURE:   sigrc = '-'; break;
+            case GPG_ERR_NO_PUBKEY:
+            case GPG_ERR_UNUSABLE_PUBKEY: sigrc = '?'; break;
+            default:		          sigrc = '%'; break;
 	    }
 	}
-	else {	/* check whether this is a self signature */
-	    u32 keyid[2];
+      else /* Check whether this is a self signature.  */
+        {
+          u32 keyid[2];
 
-	    if( c->list->pkt->pkttype == PKT_PUBLIC_KEY
-		|| c->list->pkt->pkttype == PKT_SECRET_KEY )
-              {
-                keyid_from_pk (c->list->pkt->pkt.public_key, keyid);
+          if (c->list->pkt->pkttype == PKT_PUBLIC_KEY
+              || c->list->pkt->pkttype == PKT_SECRET_KEY )
+            {
+              keyid_from_pk (c->list->pkt->pkt.public_key, keyid);
 
-                if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
-                  is_selfsig = 1;
-              }
+              if (keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1])
+                is_selfsig = 1;
+            }
 	}
-	if( opt.with_colons ) {
-	    putchar(':');
-	    if( sigrc != ' ' )
-		putchar(sigrc);
-	    printf("::%d:%08lX%08lX:%s:%s:", sig->pubkey_algo,
-		   (ulong)sig->keyid[0], (ulong)sig->keyid[1],
-		   colon_datestr_from_sig(sig),
-		   colon_expirestr_from_sig(sig));
 
-	    if(sig->trust_depth || sig->trust_value)
-	      printf("%d %d",sig->trust_depth,sig->trust_value);
-	    printf(":");
+      if (opt.with_colons)
+        {
+          es_putc (':', es_stdout);
+          if (sigrc != ' ')
+            es_putc (sigrc, es_stdout);
+          es_printf ("::%d:%08lX%08lX:%s:%s:", sig->pubkey_algo,
+                     (ulong)sig->keyid[0], (ulong)sig->keyid[1],
+                     colon_datestr_from_sig (sig),
+                     colon_expirestr_from_sig (sig));
 
-	    if(sig->trust_regexp)
-	      es_write_sanitized (es_stdout,sig->trust_regexp,
-                                  strlen(sig->trust_regexp), ":", NULL);
-	    printf(":");
+          if (sig->trust_depth || sig->trust_value)
+            es_printf ("%d %d",sig->trust_depth,sig->trust_value);
+          es_putc (':', es_stdout);
+
+          if (sig->trust_regexp)
+            es_write_sanitized (es_stdout, sig->trust_regexp,
+                                strlen (sig->trust_regexp), ":", NULL);
+          es_putc (':', es_stdout);
 	}
-	else
-	  printf("%c       %s %s   ",
-		 sigrc, keystr(sig->keyid), datestr_from_sig(sig));
-	if( sigrc == '%' )
-	    printf("[%s] ", g10_errstr(rc2) );
-	else if( sigrc == '?' )
-	    ;
-	else if( is_selfsig ) {
-	    if( opt.with_colons )
-		putchar(':');
-	    fputs( sig->sig_class == 0x18? "[keybind]":"[selfsig]", stdout);
-	    if( opt.with_colons )
-		putchar(':');
+      else
+        es_printf ("%c       %s %s   ",
+                   sigrc, keystr (sig->keyid), datestr_from_sig(sig));
+      if (sigrc == '%')
+        es_printf ("[%s] ", g10_errstr(rc2) );
+      else if (sigrc == '?')
+        ;
+      else if (is_selfsig)
+        {
+          if (opt.with_colons)
+            es_putc (':', es_stdout);
+          es_fputs (sig->sig_class == 0x18? "[keybind]":"[selfsig]", es_stdout);
+          if (opt.with_colons)
+            es_putc (':', es_stdout);
 	}
-	else if( !opt.fast_list_mode ) {
-	    p = get_user_id( sig->keyid, &n );
-	    es_write_sanitized (es_stdout, p, n,
-                                opt.with_colons?":":NULL, NULL );
-	    xfree(p);
+      else if (!opt.fast_list_mode)
+        {
+          p = get_user_id (sig->keyid, &n);
+          es_write_sanitized (es_stdout, p, n,
+                              opt.with_colons?":":NULL, NULL );
+          xfree (p);
 	}
-	if( opt.with_colons )
-	    printf(":%02x%c:", sig->sig_class, sig->flags.exportable?'x':'l');
-	putchar('\n');
+      if (opt.with_colons)
+        es_printf (":%02x%c:", sig->sig_class, sig->flags.exportable?'x':'l');
+      es_putc ('\n', es_stdout);
     }
-    else
-	log_error("invalid node with packet of type %d\n", node->pkt->pkttype);
+  else
+    log_error ("invalid node with packet of type %d\n", node->pkt->pkttype);
 }
 
 
