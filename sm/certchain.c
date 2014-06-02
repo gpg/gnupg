@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <time.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -193,7 +193,7 @@ has_validation_model_chain (ksba_cert_t cert, int listmode, estream_t listfp)
 
   if (opt.verbose)
     do_list (0, listmode, listfp,
-             _("validation model requested by certificate: %s"), 
+             _("validation model requested by certificate: %s"),
               !strcmp (oidbuf, "1.3.6.1.4.1.8301.3.5.1")? _("chain") :
               !strcmp (oidbuf, "1.3.6.1.4.1.8301.3.5.2")? _("shell") :
               /* */                                       oidbuf);
@@ -274,9 +274,9 @@ unknown_criticals (ksba_cert_t cert, int listmode, estream_t fp)
 /* Check whether CERT is an allowed certificate.  This requires that
    CERT matches all requirements for such a CA, i.e. the
    BasicConstraints extension.  The function returns 0 on success and
-   the awlloed length of the chain at CHAINLEN. */
+   the allowed length of the chain at CHAINLEN. */
 static int
-allowed_ca (ctrl_t ctrl, 
+allowed_ca (ctrl_t ctrl,
             ksba_cert_t cert, int *chainlen, int listmode, estream_t fp)
 {
   gpg_error_t err;
@@ -327,7 +327,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
   any_critical = !!strstr (policies, ":C");
 
   if (!opt.policy_file)
-    { 
+    {
       xfree (policies);
       if (any_critical)
         {
@@ -358,7 +358,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
       return gpg_error (GPG_ERR_NO_POLICY_MATCH);
     }
 
-  for (;;) 
+  for (;;)
     {
       int c;
       char *p, line[256];
@@ -389,7 +389,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
               fclose (fp);
               return tmperr;
             }
-      
+
           if (!*line || line[strlen(line)-1] != '\n')
             {
               /* eat until end of line */
@@ -400,13 +400,13 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
               return gpg_error (*line? GPG_ERR_LINE_TOO_LONG
                                      : GPG_ERR_INCOMPLETE_LINE);
             }
-          
+
           /* Allow for empty lines and spaces */
           for (p=line; spacep (p); p++)
             ;
         }
       while (!*p || *p == '\n' || *p == '#');
-  
+
       /* parse line */
       for (allowed=line; spacep (allowed); allowed++)
         ;
@@ -444,6 +444,8 @@ find_up_search_by_keyid (KEYDB_HANDLE kh,
   int rc;
   ksba_cert_t cert = NULL;
   ksba_sexp_t subj = NULL;
+  int anyfound = 0;
+  ksba_isotime_t not_before, last_not_before;
 
   keydb_search_reset (kh);
   while (!(rc = keydb_search_subject (kh, issuer)))
@@ -460,10 +462,37 @@ find_up_search_by_keyid (KEYDB_HANDLE kh,
       if (!ksba_cert_get_subj_key_id (cert, NULL, &subj))
         {
           if (!cmp_simple_canon_sexp (keyid, subj))
-            break; /* Found matching cert. */
+            {
+              /* Found matching cert. */
+              rc = ksba_cert_get_validity (cert, 0, not_before);
+              if (rc)
+                {
+                  log_error ("keydb_get_validity() failed: rc=%d\n", rc);
+                  rc = -1;
+                  break;
+                }
+
+              if (!anyfound || strcmp (last_not_before, not_before) < 0)
+                {
+                  /* This certificate is the first one found or newer
+                     than the previous one.  This copes with
+                     re-issuing CA certificates while keeping the same
+                     key information.  */
+                  anyfound = 1;
+                  gnupg_copy_time (last_not_before, not_before);
+                  keydb_push_found_state (kh);
+                }
+            }
         }
     }
-  
+
+  if (anyfound)
+    {
+      /* Take the last saved one.  */
+      keydb_pop_found_state (kh);
+      rc = 0;  /* Ignore EOF or other error after the first cert.  */
+    }
+
   ksba_cert_release (cert);
   xfree (subj);
   return rc? -1:0;
@@ -493,7 +522,7 @@ find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
   int count = 0;
   char *pattern;
   const char *s;
-      
+
   if (opt.verbose)
     log_info (_("looking up issuer at external location\n"));
   /* The Dirmngr process is confused about unknown attributes.  As a
@@ -515,7 +544,7 @@ find_up_external (ctrl_t ctrl, KEYDB_HANDLE kh,
 
   if (opt.verbose)
     log_info (_("number of issuers matching: %d\n"), count);
-  if (rc) 
+  if (rc)
     {
       log_error ("external key lookup failed: %s\n", gpg_strerror (rc));
       rc = -1;
@@ -556,7 +585,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
   char *pattern;
 
   (void)kh;
-      
+
   if (opt.verbose)
     log_info (_("looking up issuer from the Dirmngr cache\n"));
   if (subject_mode)
@@ -583,7 +612,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
 
   if (opt.verbose)
     log_info (_("number of matching certificates: %d\n"), count);
-  if (rc && !opt.quiet) 
+  if (rc && !opt.quiet)
     log_info (_("dirmngr cache-only key lookup failed: %s\n"),
               gpg_strerror (rc));
   return (!rc && count)? 0 : -1;
@@ -598,7 +627,7 @@ find_up_dirmngr (ctrl_t ctrl, KEYDB_HANDLE kh,
    keydb_get_cert on the keyDb context KH will return it.  Returns 0
    on success, -1 if not found or an error code.  */
 static int
-find_up (ctrl_t ctrl, KEYDB_HANDLE kh, 
+find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
          ksba_cert_t cert, const char *issuer, int find_next)
 {
   ksba_name_t authid;
@@ -606,6 +635,8 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
   ksba_sexp_t keyid;
   int rc = -1;
 
+  if (DBG_X509)
+    log_debug ("looking for parent certificate\n");
   if (!ksba_cert_get_auth_key_id (cert, &keyid, &authid, &authidno))
     {
       const char *s = ksba_name_enum (authid, 0);
@@ -614,7 +645,10 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
           rc = keydb_search_issuer_sn (kh, s, authidno);
           if (rc)
             keydb_search_reset (kh);
-          
+
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and sn+issuer\n");
+
           /* In case of an error, try to get the certificate from the
              dirmngr.  That is done by trying to put that certifcate
              into the ephemeral DB and let the code below do the
@@ -627,17 +661,20 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
              that in find_next mode because we can't keep the search
              state then. */
           if (rc == -1 && !find_next)
-            { 
+            {
               int old = keydb_set_ephemeral (kh, 1);
               if (!old)
                 {
                   rc = keydb_search_issuer_sn (kh, s, authidno);
                   if (rc)
                     keydb_search_reset (kh);
+
+                  if (!rc && DBG_X509)
+                    log_debug ("  found via authid and sn+issuer (ephem)\n");
                 }
               keydb_set_ephemeral (kh, old);
             }
-          if (rc) 
+          if (rc)
             rc = -1; /* Need to make sure to have this error code. */
         }
 
@@ -649,14 +686,18 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
              subjectKeyIdentifier. */
           /* Fixme: Should we also search in the dirmngr?  */
           rc = find_up_search_by_keyid (kh, issuer, keyid);
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and keyid\n");
           if (rc)
             {
               int old = keydb_set_ephemeral (kh, 1);
               if (!old)
                 rc = find_up_search_by_keyid (kh, issuer, keyid);
+              if (!rc && DBG_X509)
+                log_debug ("  found via authid and keyid (ephem)\n");
               keydb_set_ephemeral (kh, old);
             }
-          if (rc) 
+          if (rc)
             rc = -1; /* Need to make sure to have this error code. */
         }
 
@@ -676,13 +717,21 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
                 }
               keydb_set_ephemeral (kh, old);
             }
-          if (rc) 
+          if (rc)
             rc = -1; /* Need to make sure to have this error code. */
+
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and issuer from dirmngr cache\n");
         }
 
       /* If we still didn't found it, try an external lookup.  */
       if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-        rc = find_up_external (ctrl, kh, issuer, keyid);
+        {
+          rc = find_up_external (ctrl, kh, issuer, keyid);
+          if (!rc && DBG_X509)
+            log_debug ("  found via authid and external lookup\n");
+        }
+
 
       /* Print a note so that the user does not feel too helpless when
          an issuer certificate was found and gpgsm prints BAD
@@ -714,7 +763,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
       ksba_name_release (authid);
       xfree (authidno);
     }
-  
+
   if (rc) /* Not found via authorithyKeyIdentifier, try regular issuer name. */
     rc = keydb_search_subject (kh, issuer);
   if (rc == -1 && !find_next)
@@ -733,11 +782,18 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
           rc = keydb_search_subject (kh, issuer);
         }
       keydb_set_ephemeral (kh, old);
+
+      if (!rc && DBG_X509)
+        log_debug ("  found via issuer\n");
     }
 
   /* Still not found.  If enabled, try an external lookup.  */
   if (rc == -1 && opt.auto_issuer_key_retrieve && !find_next)
-    rc = find_up_external (ctrl, kh, issuer, NULL);
+    {
+      rc = find_up_external (ctrl, kh, issuer, NULL);
+      if (!rc && DBG_X509)
+        log_debug ("  found via issuer and external lookup\n");
+    }
 
   return rc;
 }
@@ -748,7 +804,7 @@ find_up (ctrl_t ctrl, KEYDB_HANDLE kh,
 int
 gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
 {
-  int rc = 0; 
+  int rc = 0;
   char *issuer = NULL;
   char *subject = NULL;
   KEYDB_HANDLE kh = keydb_new (0);
@@ -779,7 +835,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
   if (is_root_cert (start, issuer, subject))
     {
       rc = -1; /* we are at the root */
-      goto leave; 
+      goto leave;
     }
 
   rc = find_up (ctrl, kh, start, issuer, 0);
@@ -803,7 +859,7 @@ gpgsm_walk_cert_chain (ctrl_t ctrl, ksba_cert_t start, ksba_cert_t *r_next)
  leave:
   xfree (issuer);
   xfree (subject);
-  keydb_release (kh); 
+  keydb_release (kh);
   return rc;
 }
 
@@ -850,20 +906,20 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
      that is the case this is a root certificate.  */
   ak_name_str = ksba_name_enum (ak_name, 0);
   if (ak_name_str
-      && !strcmp (ak_name_str, issuerdn) 
+      && !strcmp (ak_name_str, issuerdn)
       && !cmp_simple_canon_sexp (ak_sn, serialno))
     {
       result = 1;  /* Right, CERT is self-signed.  */
       goto leave;
-    } 
-   
+    }
+
   /* Similar for the ak_keyid. */
   if (ak_keyid && !ksba_cert_get_subj_key_id (cert, NULL, &subj_keyid)
       && !cmp_simple_canon_sexp (ak_keyid, subj_keyid))
     {
       result = 1;  /* Right, CERT is self-signed.  */
       goto leave;
-    } 
+    }
 
 
  leave:
@@ -872,7 +928,7 @@ is_root_cert (ksba_cert_t cert, const char *issuerdn, const char *subjectdn)
   ksba_name_release (ak_name);
   ksba_free (ak_sn);
   ksba_free (serialno);
-  return result; 
+  return result;
 }
 
 
@@ -896,7 +952,7 @@ gpgsm_is_root_cert (ksba_cert_t cert)
 
 
 /* This is a helper for gpgsm_validate_chain. */
-static gpg_error_t 
+static gpg_error_t
 is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
                      ksba_cert_t subject_cert, ksba_cert_t issuer_cert,
                      int *any_revoked, int *any_no_crl, int *any_crl_too_old)
@@ -905,13 +961,13 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
 
   if (opt.no_crl_check && !ctrl->use_ocsp)
     {
-      audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, 
+      audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK,
                     gpg_error (GPG_ERR_NOT_ENABLED));
       return 0;
     }
 
   err = gpgsm_dirmngr_isvalid (ctrl,
-                               subject_cert, issuer_cert, 
+                               subject_cert, issuer_cert,
                                force_ocsp? 2 : !!ctrl->use_ocsp);
   audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK, err);
 
@@ -948,7 +1004,7 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
                         "\"dirmngr\" is properly installed\n"));
           *any_crl_too_old = 1;
           break;
-          
+
         default:
           do_list (1, lm, fp, _("checking the CRL failed: %s"),
                    gpg_strerror (err));
@@ -963,7 +1019,7 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
    SUBJECT_CERT.  The caller needs to pass EXPTIME which will be
    updated to the nearest expiration time seen.  A DEPTH of 0 indicates
    the target certifciate, -1 the final root certificate and other
-   values intermediate certificates. */ 
+   values intermediate certificates. */
 static gpg_error_t
 check_validity_period (ksba_isotime_t current_time,
                        ksba_cert_t subject_cert,
@@ -993,7 +1049,7 @@ check_validity_period (ksba_isotime_t current_time,
 
   if (*not_before && strcmp (current_time, not_before) < 0 )
     {
-      do_list (1, listmode, listfp, 
+      do_list (1, listmode, listfp,
                depth ==  0 ? _("certificate not yet valid") :
                depth == -1 ? _("root certificate not yet valid") :
                /* other */   _("intermediate certificate not yet valid"));
@@ -1004,8 +1060,8 @@ check_validity_period (ksba_isotime_t current_time,
           log_printf (")\n");
         }
       return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
-    } 
-           
+    }
+
   if (*not_after && strcmp (current_time, not_after) > 0 )
     {
       do_list (opt.ignore_expiration?0:1, listmode, listfp,
@@ -1022,8 +1078,8 @@ check_validity_period (ksba_isotime_t current_time,
         log_info ("WARNING: ignoring expiration\n");
       else
         return gpg_error (GPG_ERR_CERT_EXPIRED);
-    }      
-      
+    }
+
   return 0;
 }
 
@@ -1070,7 +1126,7 @@ check_validity_period_cm (ksba_isotime_t current_time,
       log_printf (")\n");
       return gpg_error (GPG_ERR_BAD_CERT);
     }
-  
+
   if (!*exptime)
     gnupg_copy_time (exptime, not_after);
   else if (strcmp (not_after, exptime) < 0 )
@@ -1078,7 +1134,7 @@ check_validity_period_cm (ksba_isotime_t current_time,
 
   if (strcmp (current_time, not_before) < 0 )
     {
-      do_list (1, listmode, listfp, 
+      do_list (1, listmode, listfp,
                depth ==  0 ? _("certificate not yet valid") :
                depth == -1 ? _("root certificate not yet valid") :
                /* other */   _("intermediate certificate not yet valid"));
@@ -1089,16 +1145,16 @@ check_validity_period_cm (ksba_isotime_t current_time,
           log_printf (")\n");
         }
       return gpg_error (GPG_ERR_CERT_TOO_YOUNG);
-    } 
+    }
 
   if (*check_time
-      && (strcmp (check_time, not_before) < 0 
+      && (strcmp (check_time, not_before) < 0
           || strcmp (check_time, not_after) > 0))
     {
       /* Note that we don't need a case for the root certificate
          because its own consitency has already been checked.  */
       do_list(opt.ignore_expiration?0:1, listmode, listfp,
-              depth == 0 ? 
+              depth == 0 ?
               _("signature not created during lifetime of certificate") :
               depth == 1 ?
               _("certificate not created during lifetime of issuer") :
@@ -1135,7 +1191,7 @@ check_validity_period_cm (ksba_isotime_t current_time,
 static int
 ask_marktrusted (ctrl_t ctrl, ksba_cert_t cert, int listmode)
 {
-  static int no_more_questions; 
+  static int no_more_questions;
   int rc;
   char *fpr;
   int success = 0;
@@ -1143,7 +1199,7 @@ ask_marktrusted (ctrl_t ctrl, ksba_cert_t cert, int listmode)
   fpr = gpgsm_get_fingerprint_string (cert, GCRY_MD_SHA1);
   log_info (_("fingerprint=%s\n"), fpr? fpr : "?");
   xfree (fpr);
-  
+
   if (no_more_questions)
     rc = gpg_error (GPG_ERR_NOT_SUPPORTED);
   else
@@ -1225,7 +1281,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
     {
       if (!strcmp (checktime_arg, "19700101T000000"))
         {
-          do_list (1, listmode, listfp, 
+          do_list (1, listmode, listfp,
                    _("WARNING: creation time of signature not known - "
                      "assuming current time"));
           gnupg_copy_time (check_time, current_time);
@@ -1314,7 +1370,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           if (has_validation_model_chain (subject_cert, listmode, listfp))
             rootca_flags->chain_model = 1;
         }
-      
+
 
       /* Check the validity period. */
       if ( (flags & VALIDATE_FLAG_CHAIN_MODEL) )
@@ -1332,7 +1388,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
         }
       else if (rc)
         goto leave;
-        
+
 
       /* Assert that we understand all critical extensions. */
       rc = unknown_criticals (subject_cert, listmode, listfp);
@@ -1355,7 +1411,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
 
       /* If this is the root certificate we are at the end of the chain.  */
       if (is_root)
-        { 
+        {
           if (!istrusted_rc)
             ; /* No need to check the certificate for a trusted one. */
           else if (gpgsm_check_cert_sig (subject_cert, subject_cert) )
@@ -1378,8 +1434,8 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
               if (rc)
                 goto leave;
             }
-              
-          
+
+
           /* Set the flag for qualified signatures.  This flag is
              deduced from a list of root certificates allowed for
              qualified signatures. */
@@ -1388,15 +1444,15 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
               gpg_error_t err;
               size_t buflen;
               char buf[1];
-              
-              if (!ksba_cert_get_user_data (cert, "is_qualified", 
+
+              if (!ksba_cert_get_user_data (cert, "is_qualified",
                                             &buf, sizeof (buf),
                                             &buflen) && buflen)
                 {
                   /* We already checked this for this certificate,
                      thus we simply take it from the user data. */
                   is_qualified = !!*buf;
-                }    
+                }
               else
                 {
                   /* Need to consult the list of root certificates for
@@ -1419,7 +1475,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                                                      "is_qualified", buf, 1);
                       if (err)
                         log_error ("set_user_data(is_qualified) failed: %s\n",
-                                   gpg_strerror (err)); 
+                                   gpg_strerror (err));
                     }
                 }
             }
@@ -1431,7 +1487,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
             ;
           else if (gpg_err_code (rc) == GPG_ERR_NOT_TRUSTED)
             {
-              do_list (0, listmode, listfp, 
+              do_list (0, listmode, listfp,
                        _("root certificate is not marked trusted"));
               /* If we already figured out that the certificate is
                  expired it does not make much sense to ask the user
@@ -1443,12 +1499,12 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                    && ask_marktrusted (ctrl, subject_cert, listmode) )
                 rc = 0;
             }
-          else 
+          else
             {
               log_error (_("checking the trust list failed: %s\n"),
                          gpg_strerror (rc));
             }
-          
+
           if (rc)
             goto leave;
 
@@ -1456,9 +1512,9 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           if ((flags & VALIDATE_FLAG_NO_DIRMNGR))
             ;
           else if (opt.no_trusted_cert_crl_check || rootca_flags->relax)
-            ; 
+            ;
           else
-            rc = is_cert_still_valid (ctrl, 
+            rc = is_cert_still_valid (ctrl,
                                       (flags & VALIDATE_FLAG_CHAIN_MODEL),
                                       listmode, listfp,
                                       subject_cert, subject_cert,
@@ -1470,7 +1526,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           break;  /* Okay: a self-signed certicate is an end-point. */
         } /* End is_root.  */
 
-      
+
       /* Take care that the chain does not get too long. */
       if ((depth+1) > maxdepth)
         {
@@ -1552,7 +1608,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
                       do_list (0, listmode, listfp,
                                _("found another possible matching "
                                  "CA certificate - trying again"));
-                      ksba_cert_release (issuer_cert); 
+                      ksba_cert_release (issuer_cert);
                       issuer_cert = tmp_cert;
                       goto try_another_cert;
                     }
@@ -1629,9 +1685,9 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
         rc = 0;
       else if (is_root && (opt.no_trusted_cert_crl_check
                            || (!istrusted_rc && rootca_flags->relax)))
-        rc = 0; 
+        rc = 0;
       else
-        rc = is_cert_still_valid (ctrl, 
+        rc = is_cert_still_valid (ctrl,
                                   (flags & VALIDATE_FLAG_CHAIN_MODEL),
                                   listmode, listfp,
                                   subject_cert, issuer_cert,
@@ -1690,7 +1746,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       else if (any_no_policy_match)
         rc = gpg_error (GPG_ERR_NO_POLICY_MATCH);
     }
-  
+
  leave:
   /* If we have traversed a complete chain up to the root we will
      reset the ephemeral flag for all these certificates.  This is done
@@ -1700,7 +1756,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
     {
       gpg_error_t err;
       chain_item_t ci;
-      
+
       for (ci = chain; ci; ci = ci->next)
         {
           /* Note that it is possible for the last certificate in the
@@ -1714,7 +1770,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
             ;
           else if (err)
             log_error ("clearing ephemeral flag failed: %s\n",
-                       gpg_strerror (err)); 
+                       gpg_strerror (err));
         }
     }
 
@@ -1729,14 +1785,14 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       char buf[1];
 
       buf[0] = !!is_qualified;
-      
+
       for (ci = chain; ci; ci = ci->next)
         {
           err = ksba_cert_set_user_data (ci->cert, "is_qualified", buf, 1);
           if (err)
             {
               log_error ("set_user_data(is_qualified) failed: %s\n",
-                         gpg_strerror (err)); 
+                         gpg_strerror (err));
               if (!rc)
                 rc = err;
             }
@@ -1762,7 +1818,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
     gnupg_copy_time (r_exptime, exptime);
   xfree (issuer);
   xfree (subject);
-  keydb_release (kh); 
+  keydb_release (kh);
   while (chain)
     {
       chain_item_t ci_next = chain->next;
@@ -1807,7 +1863,7 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
   *retflags = (flags & VALIDATE_FLAG_CHAIN_MODEL);
   memset (&rootca_flags, 0, sizeof rootca_flags);
 
-  rc = do_validate_chain (ctrl, cert, checktime, 
+  rc = do_validate_chain (ctrl, cert, checktime,
                           r_exptime, listmode, listfp, flags,
                           &rootca_flags);
   if (gpg_err_code (rc) == GPG_ERR_CERT_EXPIRED
@@ -1816,17 +1872,17 @@ gpgsm_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime,
     {
       do_list (0, listmode, listfp, _("switching to chain model"));
       rc = do_validate_chain (ctrl, cert, checktime,
-                              r_exptime, listmode, listfp, 
+                              r_exptime, listmode, listfp,
                               (flags |= VALIDATE_FLAG_CHAIN_MODEL),
                               &rootca_flags);
       *retflags |= VALIDATE_FLAG_CHAIN_MODEL;
     }
 
   if (opt.verbose)
-    do_list (0, listmode, listfp, _("validation model used: %s"), 
+    do_list (0, listmode, listfp, _("validation model used: %s"),
              (*retflags & VALIDATE_FLAG_CHAIN_MODEL)?
              _("chain"):_("shell"));
-  
+
   return rc;
 }
 
@@ -1843,7 +1899,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
   char *subject = NULL;
   KEYDB_HANDLE kh;
   ksba_cert_t issuer_cert = NULL;
-  
+
   if (opt.no_chain_validation)
     {
       log_info ("WARNING: bypassing basic certificate checks\n");
@@ -1900,7 +1956,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
           rc = gpg_error (GPG_ERR_MISSING_ISSUER_CERT);
           goto leave;
         }
-      
+
       ksba_cert_release (issuer_cert); issuer_cert = NULL;
       rc = keydb_get_cert (kh, &issuer_cert);
       if (rc)
@@ -1930,7 +1986,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
  leave:
   xfree (issuer);
   xfree (subject);
-  keydb_release (kh); 
+  keydb_release (kh);
   ksba_cert_release (issuer_cert);
   return rc;
 }
@@ -1941,7 +1997,7 @@ gpgsm_basic_cert_check (ctrl_t ctrl, ksba_cert_t cert)
    authority for qualified signature.  They do not set the
    basicConstraints and thus we need this workaround.  It works by
    looking up the root certificate and checking whether that one is
-   listed as a qualified certificate for Germany. 
+   listed as a qualified certificate for Germany.
 
    We also try to cache this data but as long as don't keep a
    reference to the certificate this won't be used.
@@ -1967,7 +2023,7 @@ get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen)
     chainlen = &dummy_chainlen;
 
   *chainlen = 0;
-  err = ksba_cert_get_user_data (cert, "regtp_ca_chainlen", 
+  err = ksba_cert_get_user_data (cert, "regtp_ca_chainlen",
                                  &buf, sizeof (buf), &buflen);
   if (!err)
     {
@@ -2024,7 +2080,7 @@ get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen)
                                        "\x01\x00", 2);
       if (err)
         log_error ("ksba_set_user_data(%s) failed: %s\n",
-                   "regtp_ca_chainlen", gpg_strerror (err)); 
+                   "regtp_ca_chainlen", gpg_strerror (err));
       for (i=0; i < depth; i++)
         ksba_cert_release (array[i]);
       *chainlen = (depth>1? 0:1);
@@ -2033,11 +2089,11 @@ get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen)
 
  leave:
   /* Nothing special with this certificate. Mark the target
-     certificate anyway to avoid duplicate lookups. */ 
+     certificate anyway to avoid duplicate lookups. */
   err = ksba_cert_set_user_data (cert, "regtp_ca_chainlen", "", 1);
   if (err)
     log_error ("ksba_set_user_data(%s) failed: %s\n",
-               "regtp_ca_chainlen", gpg_strerror (err)); 
+               "regtp_ca_chainlen", gpg_strerror (err));
   for (i=0; i < depth; i++)
     ksba_cert_release (array[i]);
   return 0;
