@@ -2775,7 +2775,10 @@ get_user_id (u32 * keyid, size_t * rn)
 	    {
 	      if (a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1])
 		{
-		  p = xmalloc (r->len);
+                  /* An empty string as user id is possible.  Make
+                     sure that the malloc allocates one byte and does
+                     not bail out.  */
+		  p = xmalloc (r->len? r->len : 1);
 		  memcpy (p, r->name, r->len);
 		  *rn = r->len;
 		  return p;
