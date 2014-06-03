@@ -5,9 +5,8 @@ Mail-Followup-To: gnupg-users@gnupg.org
 Hello!
 
 We are pleased to announce the availability of a new stable GnuPG-2
-release: Version 2.0.22.  This is a *security fix* release and all
-users are advised to updated to this version.  See below for the
-impact of the problem.
+release: Version 2.0.23.  This is a maintenace release with a few
+new features.
 
 The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
 and data storage.  It can be used to encrypt data, create digital
@@ -31,35 +30,33 @@ GnuPG is distributed under the terms of the GNU General Public License
 also available for other Unices, Microsoft Windows and Mac OS X.
 
 
-What's New in 2.0.22
+What's New in 2.0.23
 ====================
 
- * Fixed possible infinite recursion in the compressed packet
-   parser. [CVE-2013-4402]
+ * gpg: Reject signatures made using the MD5 hash algorithm unless the
+   new option --allow-weak-digest-algos or --pgp2 are given.
 
- * Improved support for some card readers.
+ * gpg: Do not create a trustdb file if --trust-model=always is used.
 
- * Prepared building with the forthcoming Libgcrypt 1.6.
+ * gpg: Only the major version number is by default included in the
+   armored output.
 
- * Protect against rogue keyservers sending secret keys.
+ * gpg: Print a warning if the Gnome-Keyring-Daemon intercepts the
+   communication with the gpg-agent.
 
+ * gpg: The format of the fallback key listing ("gpg KEYFILE") is now more
+   aligned to the regular key listing ("gpg -k").
 
-Impact of the security problem
-==============================
+ * gpg: The option--show-session-key prints its output now before the
+   decryption of the bulk message starts.
 
-Special crafted input data may be used to cause a denial of service
-against GPG (GnuPG's OpenPGP part) and some other OpenPGP
-implementations.  All systems using GPG to process incoming data are
-affected.
+ * gpg: New %U expando for the photo viewer.
 
-Taylor R Campbell invented a neat trick to generate OpenPGP packages
-to force GPG to recursively parse certain parts of OpenPGP messages ad
-infinitum.  As a workaround a tight "ulimit -v" setting may be used to
-mitigate the problem.  Sample input data to trigger this problem has
-not yet been seen in the wild.  Details of the attack will eventually
-be published by its inventor.
+ * gpgsm: Improved handling of re-issued CA certificates.
 
-A fixed release of the GnuPG 1.4 series will be releases soon.
+ * scdaemon: Various fixes for pinpad equipped card readers.
+
+ * Minor bug fixes.
 
 
 
@@ -69,25 +66,26 @@ Getting the Software
 Please follow the instructions found at http://www.gnupg.org/download/
 or read on:
 
-GnuPG 2.0.22 may be downloaded from one of the GnuPG mirror sites or
+GnuPG 2.0.23 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
-can be found at http://www.gnupg.org/mirrors.html .  Note, that GnuPG
+can be found at http://www.gnupg.org/mirrors.html .  Note that GnuPG
 is not available at ftp.gnu.org.
 
 On the FTP server and its mirrors you should find the following files
 in the gnupg/ directory:
 
-  gnupg-2.0.22.tar.bz2 (4200k)
-  gnupg-2.0.22.tar.bz2.sig
+  gnupg-2.0.23.tar.bz2 (4196k)
+  gnupg-2.0.23.tar.bz2.sig
 
-      GnuPG source compressed using BZIP2 and OpenPGP signature.
+      GnuPG source compressed using BZIP2 and its OpenPGP signature.
 
-  gnupg-2.0.20-2.0.22.diff.bz2 (39k)
+  gnupg-2.0.22-2.0.23.diff.bz2 (53k)
 
-      A patch file to upgrade a 2.0.20 GnuPG source tree.  This patch
+      A patch file to upgrade a 2.0.22 GnuPG source tree.  This patch
       does not include updates of the language files.
 
 Note, that we don't distribute gzip compressed tarballs for GnuPG-2.
+A Windows version will eventually be released at https://gpg4win.org .
 
 
 Checking the Integrity
@@ -99,9 +97,9 @@ the following ways:
 
  * If you already have a trusted version of GnuPG installed, you
    can simply check the supplied signature.  For example to check the
-   signature of the file gnupg-2.0.22.tar.bz2 you would use this command:
+   signature of the file gnupg-2.0.23.tar.bz2 you would use this command:
 
-     gpg --verify gnupg-2.0.22.tar.bz2.sig
+     gpg --verify gnupg-2.0.23.tar.bz2.sig
 
    This checks whether the signature file matches the source file.
    You should see a message indicating that the signature is good and
@@ -124,15 +122,15 @@ the following ways:
 
  * If you are not able to use an old version of GnuPG, you have to verify
    the SHA-1 checksum.  Assuming you downloaded the file
-   gnupg-2.0.22.tar.bz2, you would run the sha1sum command like this:
+   gnupg-2.0.23.tar.bz2, you would run the sha1sum command like this:
 
-     sha1sum gnupg-2.0.22.tar.bz2
+     sha1sum gnupg-2.0.23.tar.bz2
 
    and check that the output matches the first line from the
    following list:
 
-9ba9ee288e9bf813e0f1e25cbe06b58d3072d8b8  gnupg-2.0.22.tar.bz2
-6cc51b14ed652fe7eadae25ec7cdaa6f63377525  gnupg-2.0.21-2.0.22.diff.bz2
+c90e47ab95a40dd070fd75faef0a05c7b679553b  gnupg-2.0.23.tar.bz2
+e02cfab2bc046f9fac89eef098c34f58b5745d20  gnupg-2.0.22-2.0.23.diff.bz2
 
 
 Documentation
@@ -143,11 +141,11 @@ Separate man pages are included as well; however they have not all the
 details available in the manual.  It is also possible to read the
 complete manual online in HTML format at
 
-  http://www.gnupg.org/documentation/manuals/gnupg/
+  https://www.gnupg.org/documentation/manuals/gnupg/
 
 or in Portable Document Format at
 
-  http://www.gnupg.org/documentation/manuals/gnupg.pdf .
+  https://www.gnupg.org/documentation/manuals/gnupg.pdf .
 
 The chapters on gpg-agent, gpg and gpgsm include information on how
 to set up the whole thing.  You may also want search the GnuPG mailing
@@ -170,7 +168,7 @@ We suggest to send bug reports for a new release to this list in favor
 of filing a bug at <http://bugs.gnupg.org>.  We also have a dedicated
 service directory at:
 
-  http://www.gnupg.org/service.html
+  https://www.gnupg.org/service.html
 
 The driving force behind the development of GnuPG is the company of
 its principal author, Werner Koch.  Maintenance and improvement of
@@ -178,7 +176,12 @@ GnuPG and related software takes up most of their resources.  To allow
 him to continue this work he kindly asks to either purchase a support
 contract, engage g10 Code for custom enhancements, or to donate money:
 
-  http://g10code.com/gnupg-donation.html
+Maintaining and improving GnuPG is costly.  For more than a decade,
+g10 Code GmbH, a German company owned and headed by GnuPG's principal
+author Werner Koch, is bearing the majority of these costs.  To help
+them carry on this work, they need your support.  See
+
+  https://gnupg.org/donate/
 
 
 Thanks
@@ -186,7 +189,7 @@ Thanks
 
 We have to thank all the people who helped with this release, be it
 testing, coding, translating, suggesting, auditing, administering the
-servers, spreading the word, or answering questions on the mailing
+servers, spreading the word, and answering questions on the mailing
 lists.
 
 
