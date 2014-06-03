@@ -93,16 +93,13 @@ yat2m: yat2m.c
 .fig.pdf:
 	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
 
-# Note that yatm --store has a bug in that the @ifset gpgtwoone still
-# creates a dirmngr-client page from tools.texi.
 yat2m-stamp: $(myman_sources)
-	@rm -f yat2m-stamp.tmp
-	@touch yat2m-stamp.tmp
+	rm -f yat2m-stamp.tmp
+	touch yat2m-stamp.tmp
 	for file in $(myman_sources) ; do \
               ./yat2m $(YAT2M_OPTIONS) --store \
 	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
-	@test -f dirmngr-client.1 && rm dirmngr-client.1
-	@mv -f yat2m-stamp.tmp $@
+	mv -f yat2m-stamp.tmp $@
 
 yat2m-stamp: yat2m
 
