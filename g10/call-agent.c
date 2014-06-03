@@ -1475,7 +1475,7 @@ agent_probe_secret_key (ctrl_t ctrl, PKT_public_key *pk)
   return err;
 }
 
-/* Ask the agent whether a secret key is availabale for any of the
+/* Ask the agent whether a secret key is available for any of the
    keys (primary or sub) in KEYBLOCK.  Returns 0 if available.  */
 gpg_error_t
 agent_probe_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)

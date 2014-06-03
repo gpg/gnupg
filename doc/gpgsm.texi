@@ -581,6 +581,13 @@ certificate.
 Include the keygrip in standard key listings.  Note that the keygrip is
 always listed in --with-colons mode.
 
+@ifset gpgtwoone
+@item --with-secret
+@opindex with-secret
+Include info about the presence of a secret key in public key listings
+done with @code{--with-colons}.
+@end ifset
+
 @end table
 
 @c *******************************************

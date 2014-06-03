@@ -194,7 +194,8 @@ described here.
 
     Used in sec/sbb to print the serial number of a token (internal
     protect mode 1002) or a '#' if that key is a simple stub (internal
-    protect mode 1001)
+    protect mode 1001).  If the option --with-secret is used and a
+    secret key is available for the public key, a '+' indicates this.
 
 *** Field 16 - Hash algorithm
 

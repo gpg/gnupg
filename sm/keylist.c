@@ -457,7 +457,6 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   algo = gpgsm_get_key_algo_info (cert, &nbits);
   es_fprintf (fp, ":%u:%d:%s:", nbits, algo, fpr+24);
 
-  /* We assume --fixed-list-mode for gpgsm */
   ksba_cert_get_validity (cert, 0, t);
   print_time (t, fp);
   es_putc (':', fp);
@@ -495,19 +494,24 @@ list_cert_colon (ctrl_t ctrl, ksba_cert_t cert, unsigned int validity,
   es_putc (':', fp);
   /* Field 12, capabilities: */
   print_capabilities (cert, fp);
+  es_putc (':', fp);
   /* Field 13, not used: */
   es_putc (':', fp);
-  if (have_secret)
+  if (have_secret || ctrl->with_secret)
     {
       char *cardsn;
 
       p = gpgsm_get_keygrip_hexstring (cert);
-      if (!gpgsm_agent_keyinfo (ctrl, p, &cardsn) && cardsn)
+      if (!gpgsm_agent_keyinfo (ctrl, p, &cardsn)
+          && (cardsn || ctrl->with_secret))
         {
           /* Field 14, not used: */
           es_putc (':', fp);
-          /* Field 15:  Token serial number.  */
-          es_fputs (cardsn, fp);
+          /* Field 15:  Token serial number or secret key indicator.  */
+          if (cardsn)
+            es_fputs (cardsn, fp);
+          else if (ctrl->with_secret)
+            es_putc ('+', fp);
           es_putc (':', fp);
         }
       xfree (cardsn);

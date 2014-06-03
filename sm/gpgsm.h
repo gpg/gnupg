@@ -177,6 +177,7 @@ struct server_control_s
                          accessed.  */
 
   int with_colons;    /* Use column delimited output format */
+  int with_secret;    /* Mark secret keys in a public key listing.  */
   int with_chain;     /* Include the certifying certs in a listing */
   int with_validation;/* Validate each key while listing. */
   int with_ephemeral_keys;  /* Include ephemeral flagged keys in the

@@ -148,6 +148,7 @@ enum cmd_and_opt_values {
   oWithFingerprint,
   oWithMD5Fingerprint,
   oWithKeygrip,
+  oWithSecret,
   oAnswerYes,
   oAnswerNo,
   oKeyring,
@@ -383,6 +384,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
   ARGPARSE_s_n (oWithFingerprint, "with-fingerprint", "@"),
   ARGPARSE_s_n (oWithKeygrip,     "with-keygrip", "@"),
+  ARGPARSE_s_n (oWithSecret,      "with-secret", "@"),
   ARGPARSE_s_s (oDisableCipherAlgo,  "disable-cipher-algo", "@"),
   ARGPARSE_s_s (oDisablePubkeyAlgo,  "disable-pubkey-algo", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
@@ -1333,6 +1335,7 @@ main ( int argc, char **argv)
 
         case oWithKeyData: opt.with_key_data=1; /* fall thru */
         case oWithColons: ctrl.with_colons = 1; break;
+        case oWithSecret: ctrl.with_secret = 1; break;
         case oWithValidation: ctrl.with_validation=1; break;
         case oWithEphemeralKeys: ctrl.with_ephemeral_keys=1; break;
 

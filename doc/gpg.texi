@@ -2127,6 +2127,12 @@ of the output and may be used together with another command.
 @item --with-keygrip
 @opindex with-keygrip
 Include the keygrip in the key listings.
+
+@item --with-secret
+@opindex with-secret
+Include info about the presence of a secret key in public key listings
+done with @code{--with-colons}.
+
 @end ifset
 
 @end table

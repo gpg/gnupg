@@ -24,6 +24,8 @@ Noteworthy changes in version 2.1.0-betaN (unreleased)
 
  * New option --enable-pinpad-varlen for scdaemon.
 
+ * New option --with-secret for GPG and GPGSM.
+
  * Rename option --disable-pinpad for scdaemon (was: --disable-keypad).
 
  * Better support fo CCID readers.  Now, internal CCID driver supports

@@ -274,6 +274,11 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->with_validation = i;
     }
+  else if (!strcmp (key, "with-validation"))
+    {
+      int i = *value? atoi (value) : 0;
+      ctrl->with_secret = i;
+    }
   else if (!strcmp (key, "validation-model"))
     {
       int i = gpgsm_parse_validation_model (value);

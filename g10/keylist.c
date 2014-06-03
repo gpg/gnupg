@@ -43,8 +43,8 @@
 #include "status.h"
 #include "call-agent.h"
 
-static void list_all (int);
-static void list_one (strlist_t names, int secret);
+static void list_all (int, int);
+static void list_one (strlist_t names, int secret, int mark_secret);
 static void locate_one (ctrl_t ctrl, strlist_t names);
 static void print_card_serialno (const char *serialno);
 
@@ -114,9 +114,9 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
   if (locate_mode)
     locate_one (ctrl, list);
   else if (!list)
-    list_all (0);
+    list_all (0, opt.with_secret);
   else
-    list_one (list, 0);
+    list_one (list, 0, opt.with_secret);
 }
 
 
@@ -128,9 +128,9 @@ secret_key_list (ctrl_t ctrl, strlist_t list)
   check_trustdb_stale ();
 
   if (!list)
-    list_all (1);
+    list_all (1, 0);
   else				/* List by user id */
-    list_one (list, 1);
+    list_one (list, 1, 0);
 }
 
 void
@@ -427,12 +427,17 @@ print_signature_stats (struct sig_stats *s)
     tty_printf (_("%d signatures not checked due to errors\n"), s->oth_err);
 }
 
+
+/* List all keys.  If SECRET is true only secret keys are listed.  If
+   MARK_SECRET is true secret keys are indicated in a public key
+   listing.  */
 static void
-list_all (int secret)
+list_all (int secret, int mark_secret)
 {
   KEYDB_HANDLE hd;
   KBNODE keyblock = NULL;
   int rc = 0;
+  int any_secret;
   const char *lastresname, *resname;
   struct sig_stats stats;
 
@@ -459,7 +464,13 @@ list_all (int secret)
 	  log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
 	  goto leave;
 	}
-      if (secret && agent_probe_any_secret_key (NULL, keyblock))
+
+      if (secret || mark_secret)
+        any_secret = !agent_probe_any_secret_key (NULL, keyblock);
+      else
+        any_secret = 0;
+
+      if (secret && !any_secret)
         ; /* Secret key listing requested but this isn't one.  */
       else
         {
@@ -478,7 +489,7 @@ list_all (int secret)
                 }
             }
           merge_keys_and_selfsig (keyblock);
-          list_keyblock (keyblock, secret, opt.fingerprint,
+          list_keyblock (keyblock, secret, any_secret, opt.fingerprint,
                          opt.check_sigs ? &stats : NULL);
         }
       release_kbnode (keyblock);
@@ -498,7 +509,7 @@ leave:
 
 
 static void
-list_one (strlist_t names, int secret)
+list_one (strlist_t names, int secret, int mark_secret)
 {
   int rc = 0;
   KBNODE keyblock = NULL;
@@ -537,7 +548,7 @@ list_one (strlist_t names, int secret)
             es_putc ('-', es_stdout);
           es_putc ('\n', es_stdout);
         }
-      list_keyblock (keyblock, secret, opt.fingerprint,
+      list_keyblock (keyblock, secret, mark_secret, opt.fingerprint,
                      (!secret && opt.check_sigs)? &stats : NULL);
       release_kbnode (keyblock);
     }
@@ -572,7 +583,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	{
 	  do
 	    {
-	      list_keyblock (keyblock, 0, opt.fingerprint,
+	      list_keyblock (keyblock, 0, 0, opt.fingerprint,
 			     opt.check_sigs ? &stats : NULL);
 	      release_kbnode (keyblock);
 	    }
@@ -1128,8 +1139,12 @@ print_revokers (estream_t fp, PKT_public_key * pk)
     }
 }
 
+
+/* List a key in colon mode.  If SECRET is true this is a secret key
+   record (i.e. requested via --list-secret-key).  If HAS_SECRET a
+   secret key is available even if SECRET is not set.  */
 static void
-list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
+list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 {
   int rc;
   KBNODE kbctx;
@@ -1154,14 +1169,14 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
     }
 
   pk = node->pkt->pkt.public_key;
-  if (secret || opt.with_keygrip || opt.with_key_data)
+  if (secret || has_secret || opt.with_keygrip || opt.with_key_data)
     {
       rc = hexkeygrip_from_pk (pk, &hexgrip);
       if (rc)
         log_error ("error computing a keygrip: %s\n", gpg_strerror (rc));
     }
   stubkey = 0;
-  if (secret && agent_get_keyinfo (NULL, hexgrip, &serialno))
+  if ((secret||has_secret) && agent_get_keyinfo (NULL, hexgrip, &serialno))
     stubkey = 1;  /* Key not found.  */
 
   keyid_from_pk (pk, keyid);
@@ -1197,12 +1212,14 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
   print_capabilities (pk, keyblock);
   es_putc (':', es_stdout);		/* End of field 13. */
   es_putc (':', es_stdout);		/* End of field 14. */
-  if (secret)
+  if (secret || has_secret)
     {
       if (stubkey)
 	es_putc ('#', es_stdout);
       else if (serialno)
         es_fputs (serialno, es_stdout);
+      else if (has_secret)
+        es_putc ('+', es_stdout);
     }
   es_putc (':', es_stdout);		/* End of field 15. */
   es_putc (':', es_stdout);		/* End of field 16. */
@@ -1286,7 +1303,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
           pk2 = node->pkt->pkt.public_key;
           xfree (hexgrip); hexgrip = NULL;
           xfree (serialno); serialno = NULL;
-          if (secret || opt.with_keygrip || opt.with_key_data)
+          if (secret || has_secret || opt.with_keygrip || opt.with_key_data)
             {
               rc = hexkeygrip_from_pk (pk2, &hexgrip);
               if (rc)
@@ -1294,7 +1311,8 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
                            gpg_strerror (rc));
             }
           stubkey = 0;
-          if (secret && agent_get_keyinfo (NULL, hexgrip, &serialno))
+          if ((secret||has_secret)
+              && agent_get_keyinfo (NULL, hexgrip, &serialno))
             stubkey = 1;  /* Key not found.  */
 
 	  keyid_from_pk (pk2, keyid2);
@@ -1323,12 +1341,14 @@ list_keyblock_colon (KBNODE keyblock, int secret, int fpr)
 	  print_capabilities (pk2, NULL);
           es_putc (':', es_stdout);	/* End of field 13. */
           es_putc (':', es_stdout);	/* End of field 14. */
-          if (secret)
+          if (secret || has_secret)
             {
               if (stubkey)
                 es_putc ('#', es_stdout);
               else if (serialno)
                 es_fputs (serialno, es_stdout);
+              else if (has_secret)
+                es_putc ('+', es_stdout);
             }
           es_putc (':', es_stdout);	/* End of field 15. */
           es_putc (':', es_stdout);	/* End of field 16. */
@@ -1529,11 +1549,12 @@ reorder_keyblock (KBNODE keyblock)
 }
 
 void
-list_keyblock (KBNODE keyblock, int secret, int fpr, void *opaque)
+list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
+               void *opaque)
 {
   reorder_keyblock (keyblock);
   if (opt.with_colons)
-    list_keyblock_colon (keyblock, secret, fpr);
+    list_keyblock_colon (keyblock, secret, has_secret, fpr);
   else
     list_keyblock_print (keyblock, secret, fpr, opaque);
 }
