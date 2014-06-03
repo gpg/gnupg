@@ -42,6 +42,9 @@ Noteworthy changes in version 2.1.0-betaN (unreleased)
 
  * Protect against rogue keyservers sending secret keys.
 
+ * GPGSM can now be used to export a secret RSA key in PKCS#1 or
+   PKCS#8 format.
+
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 -----------------------------------------------------

@@ -348,7 +348,8 @@ int gpgsm_import_files (ctrl_t ctrl, int nfiles, char **files,
 
 /*-- export.c --*/
 void gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream);
-void gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream);
+void gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream,
+                       int rawmode);
 
 /*-- delete.c --*/
 int gpgsm_delete (ctrl_t ctrl, strlist_t names);

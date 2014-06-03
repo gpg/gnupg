@@ -1,5 +1,6 @@
 /* minip12.c - A minimal pkcs-12 implementation.
  * Copyright (C) 2002, 2003, 2004, 2006, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1891,10 +1892,15 @@ create_final (struct buffer_s *sequences, const char *pw, size_t *r_length)
          }
        }
      }
+
+  MODE controls what is being generated:
+     0 - As described above
+     1 - Ditto but without the padding
+     2 - Only the inner part (pkcs#1)
 */
 
 static unsigned char *
-build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
+build_key_sequence (gcry_mpi_t *kparms, int mode, size_t *r_length)
 {
   int rc, i;
   size_t needed, n;
@@ -1902,7 +1908,7 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
   size_t plainlen;
   size_t outseqlen, oidseqlen, octstrlen, inseqlen;
 
-  needed = 3; /* The version(?) integer of value 0. */
+  needed = 3; /* The version integer with value 0. */
   for (i=0; kparms[i]; i++)
     {
       n = 0;
@@ -1929,23 +1935,27 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
   if (!n)
     return NULL;
   needed += n;
-  /* Encapsulate all into an octet string. */
-  octstrlen = needed;
-  n = compute_tag_length (needed);
-  if (!n)
-    return NULL;
-  needed += n;
-  /* Prepend the object identifier sequence. */
-  oidseqlen = 2 + DIM (oid_rsaEncryption) + 2;
-  needed += 2 + oidseqlen;
-  /* The version number. */
-  needed += 3;
-  /* And finally put the whole thing into a sequence. */
-  outseqlen = needed;
-  n = compute_tag_length (needed);
-  if (!n)
-    return NULL;
-  needed += n;
+
+  if (mode != 2)
+    {
+      /* Encapsulate all into an octet string. */
+      octstrlen = needed;
+      n = compute_tag_length (needed);
+      if (!n)
+        return NULL;
+      needed += n;
+      /* Prepend the object identifier sequence. */
+      oidseqlen = 2 + DIM (oid_rsaEncryption) + 2;
+      needed += 2 + oidseqlen;
+      /* The version number. */
+      needed += 3;
+      /* And finally put the whole thing into a sequence. */
+      outseqlen = needed;
+      n = compute_tag_length (needed);
+      if (!n)
+        return NULL;
+      needed += n;
+    }
 
   /* allocate 8 extra bytes for padding */
   plain = gcry_malloc_secure (needed+8);
@@ -1957,20 +1967,24 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
 
   /* And now fill the plaintext buffer. */
   p = plain;
-  p = store_tag_length (p, TAG_SEQUENCE, outseqlen);
-  /* Store version. */
-  *p++ = TAG_INTEGER;
-  *p++ = 1;
-  *p++ = 0;
-  /* Store object identifier sequence. */
-  p = store_tag_length (p, TAG_SEQUENCE, oidseqlen);
-  p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_rsaEncryption));
-  memcpy (p, oid_rsaEncryption, DIM (oid_rsaEncryption));
-  p += DIM (oid_rsaEncryption);
-  *p++ = TAG_NULL;
-  *p++ = 0;
-  /* Start with the octet string. */
-  p = store_tag_length (p, TAG_OCTET_STRING, octstrlen);
+  if (mode != 2)
+    {
+      p = store_tag_length (p, TAG_SEQUENCE, outseqlen);
+      /* Store version. */
+      *p++ = TAG_INTEGER;
+      *p++ = 1;
+      *p++ = 0;
+      /* Store object identifier sequence. */
+      p = store_tag_length (p, TAG_SEQUENCE, oidseqlen);
+      p = store_tag_length (p, TAG_OBJECT_ID, DIM (oid_rsaEncryption));
+      memcpy (p, oid_rsaEncryption, DIM (oid_rsaEncryption));
+      p += DIM (oid_rsaEncryption);
+      *p++ = TAG_NULL;
+      *p++ = 0;
+      /* Start with the octet string. */
+      p = store_tag_length (p, TAG_OCTET_STRING, octstrlen);
+    }
+
   p = store_tag_length (p, TAG_SEQUENCE, inseqlen);
   /* Store the key parameters. */
   *p++ = TAG_INTEGER;
@@ -2003,10 +2017,14 @@ build_key_sequence (gcry_mpi_t *kparms, size_t *r_length)
 
   plainlen = p - plain;
   assert (needed == plainlen);
-  /* Append some pad characters; we already allocated extra space. */
-  n = 8 - plainlen % 8;
-  for (i=0; i < n; i++, plainlen++)
-    *p++ = n;
+
+  if (!mode)
+    {
+      /* Append some pad characters; we already allocated extra space. */
+      n = 8 - plainlen % 8;
+      for (i=0; i < n; i++, plainlen++)
+        *p++ = n;
+    }
 
   *r_length = plainlen;
   return plain;
@@ -2459,7 +2477,7 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
   if (kparms)
     {
       /* Encode the key. */
-      buffer = build_key_sequence (kparms, &buflen);
+      buffer = build_key_sequence (kparms, 0, &buflen);
       if (!buffer)
         goto failure;
 
@@ -2498,6 +2516,24 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
     gcry_free (seqlist[seqlistidx].buffer);
 
   *r_length = buffer? buflen : 0;
+  return buffer;
+}
+
+
+/* This is actually not a pkcs#12 function but one which creates an
+   unencrypted a pkcs#1 private key.  */
+unsigned char *
+p12_raw_build (gcry_mpi_t *kparms, int rawmode, size_t *r_length)
+{
+  unsigned char *buffer;
+  size_t buflen;
+
+  assert (rawmode == 1 || rawmode == 2);
+  buffer = build_key_sequence (kparms, rawmode, &buflen);
+  if (!buffer)
+    return NULL;
+
+  *r_length = buflen;
   return buffer;
 }
 

@@ -31,6 +31,9 @@ unsigned char *p12_build (gcry_mpi_t *kparms,
                           const void *cert, size_t certlen,
                           const char *pw, const char *charset,
                           size_t *r_length);
+unsigned char *p12_raw_build (gcry_mpi_t *kparms,
+                              int rawmode,
+                              size_t *r_length);
 
 
 #endif /*MINIP12_H*/

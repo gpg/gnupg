@@ -74,6 +74,8 @@ enum cmd_and_opt_values {
   aRecvKeys,
   aExport,
   aExportSecretKeyP12,
+  aExportSecretKeyP8,
+  aExportSecretKeyRaw,
   aServer,
   aLearnCard,
   aCallDirmngr,
@@ -208,7 +210,13 @@ static ARGPARSE_OPTS opts[] = {
 /*ARGPARSE_c (aRecvKeys, "recv-keys", N_("import keys from a key server")),*/
   ARGPARSE_c (aImport, "import", N_("import certificates")),
   ARGPARSE_c (aExport, "export", N_("export certificates")),
+
+  /* We use -raw and not -p1 for pkcs#1 secret key export so that it
+     won't accidently be used in case -p12 was intended.  */
   ARGPARSE_c (aExportSecretKeyP12, "export-secret-key-p12", "@"),
+  ARGPARSE_c (aExportSecretKeyP8,  "export-secret-key-p8", "@"),
+  ARGPARSE_c (aExportSecretKeyRaw, "export-secret-key-raw", "@"),
+
   ARGPARSE_c (aLearnCard, "learn-card", N_("register a smartcard")),
   ARGPARSE_c (aServer, "server", N_("run in server mode")),
   ARGPARSE_c (aCallDirmngr, "call-dirmngr",
@@ -1084,6 +1092,8 @@ main ( int argc, char **argv)
         case aRecvKeys:
         case aExport:
         case aExportSecretKeyP12:
+        case aExportSecretKeyP8:
+        case aExportSecretKeyRaw:
         case aDumpKeys:
         case aDumpChain:
         case aDumpExternalKeys:
@@ -1888,9 +1898,35 @@ main ( int argc, char **argv)
         estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
 
         if (argc == 1)
-          gpgsm_p12_export (&ctrl, *argv, fp);
+          gpgsm_p12_export (&ctrl, *argv, fp, 0);
         else
           wrong_args ("--export-secret-key-p12 KEY-ID");
+        if (fp != es_stdout)
+          es_fclose (fp);
+      }
+      break;
+
+    case aExportSecretKeyP8:
+      {
+        estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
+
+        if (argc == 1)
+          gpgsm_p12_export (&ctrl, *argv, fp, 1);
+        else
+          wrong_args ("--export-secret-key-p8 KEY-ID");
+        if (fp != es_stdout)
+          es_fclose (fp);
+      }
+      break;
+
+    case aExportSecretKeyRaw:
+      {
+        estream_t fp = open_es_fwrite (opt.outfile?opt.outfile:"-");
+
+        if (argc == 1)
+          gpgsm_p12_export (&ctrl, *argv, fp, 2);
+        else
+          wrong_args ("--export-secret-key-raw KEY-ID");
         if (fp != es_stdout)
           es_fclose (fp);
       }

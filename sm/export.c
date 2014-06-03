@@ -60,6 +60,7 @@ static void print_short_info (ksba_cert_t cert, estream_t stream);
 static gpg_error_t export_p12 (ctrl_t ctrl,
                                const unsigned char *certimg, size_t certimglen,
                                const char *prompt, const char *keygrip,
+                               int rawmode,
                                void **r_result, size_t *r_resultlen);
 
 
@@ -315,9 +316,14 @@ gpgsm_export (ctrl_t ctrl, strlist_t names, estream_t stream)
 }
 
 
-/* Export a certificate and its private key. */
+/* Export a certificate and its private key.  RAWMODE controls the
+   actual output:
+       0 - Private key and certifciate in PKCS#12 format
+       1 - Only unencrypted private key in PKCS#8 format
+       2 - Only unencrypted private key in PKCS#1 format
+    */
 void
-gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
+gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream, int rawmode)
 {
   gpg_error_t err = 0;
   KEYDB_HANDLE hd;
@@ -416,13 +422,18 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
       es_putc ('\n', stream);
     }
 
-  if (opt.p12_charset && ctrl->create_pem)
+  if (opt.p12_charset && ctrl->create_pem && !rawmode)
     {
       es_fprintf (stream, "The passphrase is %s encoded.\n\n",
                   opt.p12_charset);
     }
 
-  ctrl->pem_name = "PKCS12";
+  if (rawmode == 0)
+    ctrl->pem_name = "PKCS12";
+  else if (rawmode == 1)
+    ctrl->pem_name = "PRIVATE KEY";
+  else
+    ctrl->pem_name = "RSA PRIVATE KEY";
   err = gpgsm_create_writer (&b64writer, ctrl, stream, &writer);
   if (err)
     {
@@ -431,7 +442,8 @@ gpgsm_p12_export (ctrl_t ctrl, const char *name, estream_t stream)
     }
 
   prompt = gpgsm_format_keydesc (cert);
-  err = export_p12 (ctrl, image, imagelen, prompt, keygrip, &data, &datalen);
+  err = export_p12 (ctrl, image, imagelen, prompt, keygrip, rawmode,
+                    &data, &datalen);
   xfree (prompt);
   if (err)
     goto leave;
@@ -513,12 +525,19 @@ print_short_info (ksba_cert_t cert, estream_t stream)
       xfree (p);
     }
   es_putc ('\n', stream);
+
+  p = gpgsm_get_keygrip_hexstring (cert);
+  if (p)
+    {
+      es_fprintf (stream, "Keygrip ..: %s\n", p);
+      xfree (p);
+    }
 }
 
 
 
-/* Parse a private key S-expression and retutn a malloced array with
-   the RSA paramaters in pkcs#12 order.  The caller needs to
+/* Parse a private key S-expression and return a malloced array with
+   the RSA parameters in pkcs#12 order.  The caller needs to
    deep-release this array.  */
 static gcry_mpi_t *
 sexp_to_kparms (gcry_sexp_t sexp)
@@ -587,7 +606,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
 
 static gpg_error_t
 export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
-            const char *prompt, const char *keygrip,
+            const char *prompt, const char *keygrip, int rawmode,
             void **r_result, size_t *r_resultlen)
 {
   gpg_error_t err = 0;
@@ -671,20 +690,30 @@ export_p12 (ctrl_t ctrl, const unsigned char *certimg, size_t certimglen,
       goto leave;
     }
 
-  err = gpgsm_agent_ask_passphrase
-    (ctrl,
-     i18n_utf8 ("Please enter the passphrase to protect the "
-                "new PKCS#12 object."),
-     1, &passphrase);
-  if (err)
-    goto leave;
+  if (rawmode)
+    {
+      /* Export in raw mode, that is only the pkcs#1/#8 private key. */
+      result = p12_raw_build (kparms, rawmode, &resultlen);
+      if (!result)
+        err = gpg_error (GPG_ERR_GENERAL);
+    }
+  else
+    {
+      err = gpgsm_agent_ask_passphrase
+        (ctrl,
+         i18n_utf8 ("Please enter the passphrase to protect the "
+                    "new PKCS#12 object."),
+         1, &passphrase);
+      if (err)
+        goto leave;
 
-  result = p12_build (kparms, certimg, certimglen, passphrase,
-                      opt.p12_charset, &resultlen);
-  xfree (passphrase);
-  passphrase = NULL;
-  if (!result)
-    err = gpg_error (GPG_ERR_GENERAL);
+      result = p12_build (kparms, certimg, certimglen, passphrase,
+                          opt.p12_charset, &resultlen);
+      xfree (passphrase);
+      passphrase = NULL;
+      if (!result)
+        err = gpg_error (GPG_ERR_GENERAL);
+    }
 
  leave:
   xfree (key);

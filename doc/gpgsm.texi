@@ -259,12 +259,25 @@ certificate are only exported if all @var{pattern} are given as
 fingerprints or keygrips.
 
 @item --export-secret-key-p12 @var{key-id}
-@opindex export
+@opindex export-secret-key-p12
 Export the private key and the certificate identified by @var{key-id} in
-a PKCS#12 format. When using along with the @code{--armor} option a few
+a PKCS#12 format. When used with the @code{--armor} option a few
 informational lines are prepended to the output.  Note, that the PKCS#12
 format is not very secure and this command is only provided if there is
 no other way to exchange the private key. (@pxref{option --p12-charset})
+
+@ifset gpgtwoone
+@item --export-secret-key-p8 @var{key-id}
+@itemx --export-secret-key-raw @var{key-id}
+@opindex export-secret-key-p8
+@opindex export-secret-key-raw
+Export the private key of the certificate identified by @var{key-id}
+with any encryption stripped.  The @code{...-raw} command exports in
+PKCS#1 format; the @code{...-p8} command exports in PKCS#8 format.
+When used with the @code{--armor} option a few informational lines are
+prepended to the output.  These commands are useful to prepare a key
+for use on a TLS server.
+@end ifset
 
 @item --import [@var{files}]
 @opindex import
