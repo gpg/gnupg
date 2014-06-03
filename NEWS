@@ -1,10 +1,30 @@
-Noteworthy changes in version 2.0.23 (unreleased)
+Noteworthy changes in version 2.0.23 (2014-06-03)
 -------------------------------------------------
 
- * Do not create a trustdb file if --trust-model=always is used.
+ * gpg: Reject signatures made using the MD5 hash algorithm unless the
+   new option --allow-weak-digest-algos or --pgp2 are given.
 
- * Only the major version number is by default included in the armored
-   output.
+ * gpg: Do not create a trustdb file if --trust-model=always is used.
+
+ * gpg: Only the major version number is by default included in the
+   armored output.
+
+ * gpg: Print a warning if the Gnome-Keyring-Daemon intercepts the
+   communication with the gpg-agent.
+
+ * gpg: The format of the fallback key listing ("gpg KEYFILE") is now more
+   aligned to the regular key listing ("gpg -k").
+
+ * gpg: The option--show-session-key prints its output now before the
+   decryption of the bulk message starts.
+
+ * gpg: New %U expando for the photo viewer.
+
+ * gpgsm: Improved handling of re-issued CA certificates.
+
+ * scdaemon: Various fixes for pinpad equipped card readers.
+
+ * Minor bug fixes.
 
 
 Noteworthy changes in version 2.0.22 (2013-10-04)
