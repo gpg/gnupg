@@ -305,6 +305,7 @@ Reload all or the given component. This is basically the same as sending
 a SIGHUP to the component.  Components which don't support reloading are
 ignored.
 
+@ifset gpgtwoone
 @item --launch [@var{component}]
 @opindex launch
 If the @var{component} is not already running, start it.
@@ -319,6 +320,7 @@ Kill the given component.  Components which support killing are
 gpg-agent and scdaemon.  Components which don't support reloading are
 ignored.  Note that as of now reload and kill have the same effect for
 scdaemon.
+@end ifset
 
 @end table
 

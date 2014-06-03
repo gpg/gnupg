@@ -1503,8 +1503,8 @@ mechanisms, in the order they are to be tried:
   required if @code{local} is also used.
 
   @item clear
-  Clear all defined mechanisms.  This is usefule to override
-  mechanisms fiven in a config file.
+  Clear all defined mechanisms.  This is useful to override
+  mechanisms given in a config file.
 
 @end table
 
