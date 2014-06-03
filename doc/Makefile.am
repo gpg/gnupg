@@ -34,7 +34,7 @@ EXTRA_DIST = samplekeys.asc ChangeLog-2011 \
              gnupg-card-architecture.pdf \
              FAQ gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi texi.css  yat2m.c
+	     gpgv.texi yat2m.c
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf
@@ -55,7 +55,7 @@ gnupg_TEXINFOS = \
 
 DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
 
-AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css
+AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css
 
 YAT2M_OPTIONS = -I $(srcdir) \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
@@ -136,12 +136,12 @@ online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
 	cp $(srcdir)/gnupg-logo.png gnupg.html/; \
-        user=werner ; dashdevel="" ; \
+        user=werner ; webhost=ftp.gnupg.org; dashdevel="" ; \
         if echo "@PACKAGE_VERSION@" | grep -- "-git" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
-          rsync -v gnupg.pdf $${user}@cvs.gnupg.org:webspace/manuals/ ; \
+          rsync -v gnupg.pdf $${user}@{webhost}:webspace/manuals/ ; \
         fi ; \
 	cd gnupg.html ; \
         rsync -vr --exclude='.svn' .  \
-	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg$${dashdevel}/
+	  $${user}@{webhost}:webspace/manuals/gnupg$${dashdevel}/
