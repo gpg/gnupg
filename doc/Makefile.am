@@ -34,7 +34,7 @@ EXTRA_DIST = samplekeys.asc mksamplekeys \
              gnupg-card-architecture.pdf \
              FAQ gnupg7.texi \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
-	     gpgv.texi texi.css yat2m.c ChangeLog-2011
+	     gpgv.texi yat2m.c ChangeLog-2011
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
                 gnupg-card-architecture.pdf
@@ -57,7 +57,7 @@ gnupg_TEXINFOS = \
 
 DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
 
-AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css -D gpgtwoone
+AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css -D gpgtwoone
 
 YAT2M_OPTIONS = -I $(srcdir) -D gpgtwoone \
         --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
@@ -130,15 +130,15 @@ online: gnupg.html gnupg.pdf
 	set -e; \
 	echo "Uploading current manuals to www.gnupg.org ..."; \
 	cp $(srcdir)/gnupg-logo-tr.png gnupg.html/; \
-        user=werner ; dashdevel="" ; \
+        user=werner ; webhost="ftp.gnupg.org" ; dashdevel="" ; \
         if echo "@PACKAGE_VERSION@" | grep -- "-git" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
-          rsync -v gnupg.pdf $${user}@cvs.gnupg.org:webspace/manuals/ ; \
+          rsync -v gnupg.pdf $${user}@$${webhost}:webspace/manuals/ ; \
         fi ; \
 	cd gnupg.html ; \
-        rsync -vr --exclude='.svn' .  \
-	  $${user}@cvs.gnupg.org:webspace/manuals/gnupg$${dashdevel}/
+        rsync -vr --exclude='.git' .  \
+	  $${user}@$${webhost}:webspace/manuals/gnupg$${dashdevel}/
 
 # Note that you need a recent version of emacs23 with org-mode 7.01h
 faq.txt faq.html: faq.org
@@ -155,8 +155,8 @@ faq.txt faq.html: faq.org
 
 faq-online: faq.txt faq.html
 	set -e; \
-        user=werner ; \
+        user=werner ; webhost="ftp.gnupg.org" ; ftphost="ftp.gnupg.org" ; \
 	echo "Uploading current FAQ to {www,ftp}.gnupg.org ..."; \
-	scp faq.html $${user}@ftp.gnupg.org:webspace/manuals/GnuPG-FAQ.html ; \
-	scp faq.txt  $${user}@ftp.gnupg.org:gcrypt/gnupg/GnuPG-FAQ.txt ; \
+	scp faq.html $${user}@$${webhost}:webspace/manuals/GnuPG-FAQ.html ; \
+	scp faq.txt  $${user}@$${ftphost}:gcrypt/gnupg/GnuPG-FAQ.txt ; \
 	echo "...ready"
