@@ -4877,6 +4877,11 @@ msgstr "ЗАУВАЖЕННЯ: строк дії ключа підпису %s з�
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "ЗАУВАЖЕННЯ: ключ підпису %s було відкликано\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s підпис, алгоритм контрольної суми %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""

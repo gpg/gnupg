@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-07-03 15:03+0200\n"
+"PO-Revision-Date: 2014-06-03 09:53+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -4902,6 +4902,10 @@ msgstr "Hinweis: Signaturschlüssel %s ist am %s verfallen\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "Hinweis: Signaturschlüssel %s wurde widerrufen\n"
+
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Hinweis: Signaturen mit dem %s Hashverfahren werden zurückgewiesen.\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

@@ -4863,6 +4863,11 @@ msgstr "BİLGİ: %s imza anahtarının kullanım süresi %s sularında dolmuş\n
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "BİLGİ: imza anahtarı %s yürürlükten kaldırılmıştı\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s imzası, %s özet algoritması\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""

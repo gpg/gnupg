@@ -4752,6 +4752,11 @@ msgstr "注意：签名密钥 %s 已于 %s 过期\n"
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "注意：密钥已被吊销"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s 签名，散列算法 %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "假定密钥 %s 的签名由于某个未知的关键位出错而损坏\n"

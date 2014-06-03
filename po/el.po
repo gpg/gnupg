@@ -5036,6 +5036,11 @@ msgid "NOTE: signature key %s has been revoked\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "υπόθεση κακής υπογραφής από κλειδί %08lX λόγω άγνωστου κρίσιμου bit\n"
 

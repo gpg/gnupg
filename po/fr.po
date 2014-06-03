@@ -4932,6 +4932,11 @@ msgstr "Remarque : la clef de signature %s a expiré le %s\n"
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "Remarque : la clef de signature %s a été révoquée\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signature %s, algorithme de hachage %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""

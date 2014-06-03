@@ -5153,6 +5153,11 @@ msgid "NOTE: signature key %s has been revoked\n"
 msgstr "NOTA: aquesta clau ha estat revocada!"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signatura %s, algorisme de resum %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "es supossa una signatura incorrecta de la clau %08lX a causa d'un bit crític "

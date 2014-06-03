@@ -4986,6 +4986,11 @@ msgid "NOTE: signature key %s has been revoked\n"
 msgstr "CATATAN: kunci telah dibatalkan"
 
 #, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signature, algoritma digest %s\n"
+
+#, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "mengasumsikan signature buruk dari kunci %08lX karena ada bit kritik tidak "

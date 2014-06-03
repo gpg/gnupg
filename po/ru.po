@@ -4788,6 +4788,11 @@ msgstr "ЗАМЕЧАНИЕ: подписавший ключ %s - просроч�
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "ЗАМЕЧАНИЕ: ключ %s подписи - отозван\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s подпись, хэш-функция %s\n"
+
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "принята плохая подпись ключа %s с неизвестным критическим битом\n"
