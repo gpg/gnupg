@@ -63,12 +63,12 @@ What's New in 2.0.23
 Getting the Software
 ====================
 
-Please follow the instructions found at http://www.gnupg.org/download/
+Please follow the instructions found at https://www.gnupg.org/download/
 or read on:
 
 GnuPG 2.0.23 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
-can be found at http://www.gnupg.org/mirrors.html .  Note that GnuPG
+can be found at https://www.gnupg.org/mirrors.html .  Note that GnuPG
 is not available at ftp.gnu.org.
 
 On the FTP server and its mirrors you should find the following files
@@ -163,9 +163,9 @@ Support
 =======
 
 Please consult the archive of the gnupg-users mailing list before
-reporting a bug <http://gnupg.org/documentation/mailing-lists.html>.
+reporting a bug <https://gnupg.org/documentation/mailing-lists.html>.
 We suggest to send bug reports for a new release to this list in favor
-of filing a bug at <http://bugs.gnupg.org>.  We also have a dedicated
+of filing a bug at <https://bugs.gnupg.org>.  We also have a dedicated
 service directory at:
 
   https://www.gnupg.org/service.html
