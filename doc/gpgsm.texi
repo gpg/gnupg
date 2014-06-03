@@ -350,7 +350,7 @@ as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
 set or a running agent cannot be connected.
 
 @item --dirmngr-program @var{file}
-@opindex dirmnr-program
+@opindex dirmngr-program
 Specify a dirmngr program to be used for @acronym{CRL} checks.  The
 default value is @file{/usr/sbin/dirmngr}.  This is only used as a
 fallback when the environment variable @code{DIRMNGR_INFO} is not set or

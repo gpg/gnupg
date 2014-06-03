@@ -906,6 +906,24 @@ Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
+@ifset gpgtwoone
+@item --quick-sign-key @code{fpr} [@code{names}]
+@itemx --quick-lsign-key @code{name}
+@opindex quick-sign-key
+@opindex quick-lsign-key
+Directly sign a key from the passphrase without any further user
+interaction.  The @code{fpr} must be the verified primary fingerprint
+of a key in the local keyring. If no @code{names} are given, all
+useful user ids are signed; with given [@code{names}] only useful user
+ids matching one of theses names are signed.  The command
+@option{--quick-lsign-key} marks the signatures as non-exportable.
+
+This command uses reasonable defaults and thus does not provide the
+full flexibility of the "sign" subcommand from @option{--edit-key}.
+Its intended use to help unattended signing using a list of verified
+fingerprints.
+@end ifset
+
 @ifclear gpgone
 @item --passwd @var{user_id}
 @opindex passwd
@@ -1431,7 +1449,9 @@ Set what trust model GnuPG should follow. The models are:
   trusted. You generally won't use this unless you are using some
   external validation scheme. This option also suppresses the
   "[uncertain]" tag printed with signature checks when there is no
-  evidence that the user ID is bound to the key.
+  evidence that the user ID is bound to the key.  Note that this
+  trust model still does not allow the use of expired, revoked, or
+  disabled keys.
 
   @item auto
   @opindex trust-mode:auto
@@ -1481,6 +1501,10 @@ mechanisms, in the order they are to be tried:
   mechanisms defined by the @option{--auto-key-locate} are tried.  The
   position of this mechanism in the list does not matter.  It is not
   required if @code{local} is also used.
+
+  @item clear
+  Clear all defined mechanisms.  This is useful to override
+  mechanisms given in a config file.
 
 @end table
 
@@ -1606,16 +1630,29 @@ are available for all keyserver types, some common options are:
   program uses internally (libcurl, openldap, etc).
 
   @item check-cert
+@ifset gpgtwoone
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
   Enable certificate checking if the keyserver presents one (for hkps or
   ldaps).  Defaults to on.
+@end ifclear
 
   @item ca-cert-file
+@ifset gpgtwoone
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
   Provide a certificate store to override the system default.  Only
   necessary if check-cert is enabled, and the keyserver is using a
   certificate that is not present in a system default certificate list.
 
   Note that depending on the SSL library that the keyserver helper is
   built with, this may actually be a directory or a file.
+@end ifclear
+
 @end table
 
 @item --completes-needed @code{n}
@@ -1694,6 +1731,25 @@ Override the value of the environment variable
 @samp{GPG_AGENT_INFO}. This is only used when @option{--use-agent} has
 been given.  Given that this option is not anymore used by
 @command{gpg2}, it should be avoided if possible.
+@end ifset
+
+
+@ifclear gpgone
+@item --agent-program @var{file}
+@opindex agent-program
+Specify an agent program to be used for secret key operations.  The
+default value is the @file{/usr/bin/gpg-agent}.  This is only used
+as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
+set or a running agent cannot be connected.
+@end ifclear
+
+@ifset gpgtwoone
+@item --dirmngr-program @var{file}
+@opindex dirmngr-program
+Specify a dirmngr program to be used for keyserver access.  The
+default value is @file{/usr/sbin/dirmngr}.  This is only used as a
+fallback when the environment variable @code{DIRMNGR_INFO} is not set or
+a running dirmngr cannot be connected.
 @end ifset
 
 @item --lock-once
@@ -2053,6 +2109,15 @@ Since GnuPG 2.0.10, this mode is always used and thus this option is
 obsolete; it does not harm to use it though.
 @end ifclear
 
+@ifset gpgtwoone
+@item --legacy-list-mode
+@opindex legacy-list-mode
+Revert to the pre-2.1 public key list mode.  This only affects the
+human readable output and not the machine interface
+(i.e. @code{--with-colons}).  Note that the legacy format does not
+allow to convey suitable information for elliptic curves.
+@end ifset
+
 @item --with-fingerprint
 @opindex with-fingerprint
 Same as the command @option{--fingerprint} but changes only the format
@@ -2245,8 +2310,8 @@ available, but the MIT release is a good common baseline.
 
 This option implies @option{--rfc1991 --disable-mdc
 --no-force-v4-certs --escape-from-lines --force-v3-sigs
---allow-weak-digest-algos --cipher-algo IDEA --digest-algo
-MD5--compress-algo ZIP}. It also disables @option{--textmode} when
+--allow-weak-digest-algos --cipher-algo IDEA --digest-algo MD5
+--compress-algo ZIP}. It also disables @option{--textmode} when
 encrypting.
 
 @item --pgp6

@@ -305,12 +305,22 @@ Reload all or the given component. This is basically the same as sending
 a SIGHUP to the component.  Components which don't support reloading are
 ignored.
 
+@ifset gpgtwoone
+@item --launch [@var{component}]
+@opindex launch
+If the @var{component} is not already running, start it.
+@command{component} must be a daemon.  This is in general not required
+because the system starts these daemons as needed.  However, external
+software making direct use of @command{gpg-agent} or @command{dirmngr}
+may use this command to ensure that they are started.
+
 @item --kill [@var{component}]
 @opindex kill
 Kill the given component.  Components which support killing are
 gpg-agent and scdaemon.  Components which don't support reloading are
 ignored.  Note that as of now reload and kill have the same effect for
 scdaemon.
+@end ifset
 
 @end table
 
@@ -1190,6 +1200,18 @@ Try to be as quiet as possible.
 @opindex agent-program
 Specify the agent program to be started if none is running.
 
+@ifset gpgtwoone
+@item --dirmngr-program @var{file}
+@opindex dirmngr-program
+Specify the directory manager (keyserver client) program to be started
+if none is running.  This has only an effect if used together with the
+option @option{--dirmngr}.
+
+@item --dirmngr
+@opindex dirmngr
+Connect to a running directory manager (keyserver client) instead of
+to the gpg-agent.  If a dirmngr is not running, start it.
+@end ifset
 
 @item -S
 @itemx --raw-socket @var{name}
