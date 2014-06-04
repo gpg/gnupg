@@ -274,7 +274,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->with_validation = i;
     }
-  else if (!strcmp (key, "with-validation"))
+  else if (!strcmp (key, "with-secret"))
     {
       int i = *value? atoi (value) : 0;
       ctrl->with_secret = i;
