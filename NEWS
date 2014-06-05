@@ -1,5 +1,5 @@
-Noteworthy changes in version 2.1.0-betaN (unreleased)
------------------------------------------------------
+Noteworthy changes in version 2.1.0-beta442 (2014-06-05)
+--------------------------------------------------------
 
  * gpg: Add experimental signature support using curve Ed25519 and
    with a patched Libgcrypt also encryption support with Curve25519.
