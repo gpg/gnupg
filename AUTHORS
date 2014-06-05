@@ -1,9 +1,34 @@
 Program: GnuPG
-Homepage: http://www.gnupg.org
+Homepage: https://www.gnupg.org
 Maintainer: Werner Koch <wk@gnupg.org>
 Bug reports: http://bugs.gnupg.org
 Security related bug reports: <security@gnupg.org>
 License: GPLv3+
+
+GnuPG is free software.  See the files COPYING for copying conditions.
+License copyright years may be listed using range notation, e.g.,
+2000-2013, indicating that every year in the range, inclusive, is a
+copyrightable year that would otherwise be listed individually.
+
+List of Copyright holders
+=========================
+
+  Copyright (C) 1997-1998, 2013-2014 Werner Koch
+  Copyright (C) 1994-2013 Free Software Foundation, Inc.
+  Copyright (C) 2003-2013 g10 Code GmbH
+  Copyright (C) 2002 Klarälvdalens Datakonsult AB
+  Copyright (C) 1995-1997, 2000-2007 Ulrich Drepper <drepper@gnu.ai.mit.edu>
+  Copyright (C) 1994 X Consortium
+  Copyright (C) 1998 by The Internet Society.
+  Copyright (C) 1998-2004 The OpenLDAP Foundation
+  Copyright (C) 1998-2004 Kurt D. Zeilenga.
+  Copyright (C) 1998-2004 Net Boolean Incorporated.
+  Copyright (C) 2001-2004 IBM Corporation.
+  Copyright (C) 1999-2003 Howard Y.H. Chu.
+  Copyright (C) 1999-2003 Symas Corporation.
+  Copyright (C) 1998-2003 Hallvard B. Furuseth.
+  Copyright (C) 1992-1996 Regents of the University of Michigan.
+
 
 
 Authors with a FSF copyright assignment
@@ -181,28 +206,15 @@ or later.
 Note that some files are under a combination of the GNU Lesser General
 Public License, version 3 and the GNU General Public License, version
 2.  A few other files carry the all permissive license note as found
-at the bottom of this file.  Certain files in keyserver/ allow one
-specific exception:
+at the bottom of this file.
 
-  In addition, as a special exception, the Free Software Foundation
-  gives permission to link the code of the keyserver helper tools:
-  gpgkeys_ldap, gpgkeys_curl and gpgkeys_hkp with the OpenSSL
-  project's "OpenSSL" library (or with modified versions of it that
-  use the same license as the "OpenSSL" library), and distribute the
-  linked executables.  You must obey the GNU General Public License
-  in all respects for all of the code used other than "OpenSSL".  If
-  you modify this file, you may extend this exception to your version
-  of the file, but you are not obligated to do so.  If you do not
-  wish to do so, delete this exception statement from your version.
-
-Note that the gpgkeys_* binaries are currently installed under the
-name gpg2keys_*.
 
 =========
 
  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
            2006, 2007, 2008, 2009, 2010, 2011,
            2012, 2013 Free Software Foundation, Inc.
+ Copyright 1997, 1998, 2013, 2014 Werner Koch
 
  This file is free software; as a special exception the author gives
  unlimited permission to copy and/or distribute it, with or without

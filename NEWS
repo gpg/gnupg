@@ -1,51 +1,84 @@
 Noteworthy changes in version 2.1.0-betaN (unreleased)
 -----------------------------------------------------
 
- * GPG now accepts a space separated fingerprint as a user ID.  This
+ * gpg: Add experimental signature support using curve Ed25519 and
+   with a patched Libgcrypt also encryption support with Curve25519.
+
+ * gpg: Allow use of Brainpool curves.
+
+ * gpg: Accepts a space separated fingerprint as user ID.  This
    allows to copy and paste the fingerprint from the key listing.
+
+ * gpg: The hash algorithm is now printed for signature records in key
+   listings.
+
+ * gpg: Reject signatures made using the MD5 hash algorithm unless the
+   new option --allow-weak-digest-algos or --pgp2 are given.
+
+ * gpg: Print a warning if the Gnome-Keyring-Daemon intercepts the
+   communication with the gpg-agent.
+
+ * gpg: Changed the format of key listings.  To revert to the old
+   format the option --legacy-list-mode is available.
+
+ * gpg: New option --pinentry-mode.
+
+ * gpg: Fixed decryption using an OpenPGP card.
+
+ * gpg: Fixed bug with deeply nested compressed packets.
+
+ * gpg: Only the major version number is by default included in the
+   armored output.
+
+ * gpg: Do not create a trustdb file if --trust-model=always is used.
+
+ * gpg: Protect against rogue keyservers sending secret keys.
+
+ * gpg: The format of the fallback key listing ("gpg KEYFILE") is now
+   more aligned to the regular key listing ("gpg -k").
+
+ * gpg: The option--show-session-key prints its output now before the
+   decryption of the bulk message starts.
+
+ * gpg: New %U expando for the photo viewer.
+
+ * gpg,gpgsm: New option --with-secret.
+
+ * gpgsm: By default the users are now asked via the Pinentry whether
+   they trust an X.509 root key.  To prohibit interactive marking of
+   such keys, the new option --no-allow-mark-trusted may be used.
+
+ * gpgsm: New commands to export a secret RSA key in PKCS#1 or PKCS#8
+   format.
+
+ * gpgsm: Improved handling of re-issued CA certificates.
+
+ * agent: The included ssh agent does now support ECDSA keys.
+
+ * agent: New option --enable-putty-support to allow gpg-agent on
+   Windows to act as a Pageant replacement with full smartcard support.
+
+ * scdaemon: New option --enable-pinpad-varlen.
+
+ * scdaemon: Various fixes for pinpad equipped card readers.
+
+ * scdaemon: Rename option --disable-pinpad (was --disable-keypad).
+
+ * scdaemon: Better support fo CCID readers.  Now, internal CCID
+   driver supports readers with no auto configuration feature.
+
+ * dirmngr: Removed support for the original HKP keyserver which is
+   not anymore used by any site.
+
+ * dirmngr: Improved support for keyserver pools.
+
+ * tools: New option --dirmngr for gpg-connect-agent.
 
  * The GNU Pth library has been replaced by the new nPth library.
 
- * By default the users are now asked via the Pinentry whether they
-   trust an X.509 root key.  To prohibit interactive marking of such
-   keys, the new option --no-allow-mark-trusted may be used.
-
- * The included ssh agent does now support ECDSA keys.
-
- * The new option --enable-putty-support allows gpg-agent on Windows
-   to act as a Pageant replacement with full smartcard support.
-
- * Removed support for the original HKP keyserver which is not anymore
-   used by any site.
-
- * The hash algorithm is now printed for sig records in key listings.
-
- * New option --pinentry-mode for GPG.
-
- * New option --enable-pinpad-varlen for scdaemon.
-
- * New option --with-secret for GPG and GPGSM.
-
- * Rename option --disable-pinpad for scdaemon (was: --disable-keypad).
-
- * Better support fo CCID readers.  Now, internal CCID driver supports
-   readers with no auto configuration feature.
-
  * Support installation as portable application under Windows.
 
- * Fixed GPG to decrypt using an OpenPGP card.
-
- * Fixed bug with deeply nested compressed packets.
-
- * Only the major version number is by default included in the armored
-   output.
-
- * Do not create a trustdb file if --trust-model=always is used.
-
- * Protect against rogue keyservers sending secret keys.
-
- * GPGSM can now be used to export a secret RSA key in PKCS#1 or
-   PKCS#8 format.
+ * All kind of other improvements - see the git log.
 
 
 Noteworthy changes in version 2.1.0beta3 (2011-12-20)
@@ -53,7 +86,7 @@ Noteworthy changes in version 2.1.0beta3 (2011-12-20)
 
  * Fixed regression in GPG's secret key export function.
 
- * Allow generation of card keys up to 4096 bit.
+ * Allowj generation of card keys up to 4096 bit.
 
  * Support the SSH confirm flag.
 
