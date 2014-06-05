@@ -40,12 +40,8 @@ endif
 
 if BUILD_GPG
 gpg = g10
-if !HAVE_W32CE_SYSTEM
-keyserver =
-endif
 else
 gpg =
-keyserver =
 endif
 if BUILD_GPGSM
 sm = sm
@@ -90,7 +86,7 @@ tests =
 endif
 
 SUBDIRS = m4 gl common ${kbx} \
-          ${gpg} ${keyserver} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
+          ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
           ${tools} po ${doc} ${tests}
 
 dist_doc_DATA = README

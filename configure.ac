@@ -90,7 +90,6 @@ use_zip=yes
 use_bzip2=yes
 use_exec=yes
 use_trust_models=yes
-disable_keyserver_path=no
 card_support=yes
 use_ccid_driver=yes
 use_standard_socket=yes
@@ -313,61 +312,6 @@ if test "$use_exec" = yes ; then
         fi],withval=no)
     AC_MSG_RESULT($withval)
   fi
-
-  AC_MSG_CHECKING([whether to enable external keyserver helpers])
-  AC_ARG_ENABLE(keyserver-helpers,
-      [  --disable-keyserver-helpers  disable all external keyserver support],
-      [if test "$enableval" = no ; then
-         AC_DEFINE(DISABLE_KEYSERVER_HELPERS,1,
-                  [define to disable keyserver helpers])
-      fi],enableval=yes)
-  gnupg_cv_enable_keyserver_helpers=$enableval
-  AC_MSG_RESULT($enableval)
-
-  if test "$gnupg_cv_enable_keyserver_helpers" = yes ; then
-    # LDAP is defined only after we confirm the library is available later
-    AC_MSG_CHECKING([whether LDAP keyserver support is requested])
-    AC_ARG_ENABLE(ldap,
-      AC_HELP_STRING([--disable-ldap],[disable LDAP keyserver interface only]),
-      try_ks_ldap=$enableval, try_ks_ldap=yes)
-    AC_MSG_RESULT($try_ks_ldap)
-
-    AC_MSG_CHECKING([whether HKP keyserver support is requested])
-    AC_ARG_ENABLE(hkp,
-      AC_HELP_STRING([--disable-hkp],[disable HKP keyserver interface only]),
-      try_hkp=$enableval, try_hkp=yes)
-    AC_MSG_RESULT($try_hkp)
-
-    AC_MSG_CHECKING([whether finger key fetching support is requested])
-    AC_ARG_ENABLE(finger,
-      AC_HELP_STRING([--disable-finger],
-        [disable finger key fetching interface only]),
-      try_finger=$enableval, try_finger=yes)
-    AC_MSG_RESULT($try_finger)
-
-    AC_MSG_CHECKING([whether generic object key fetching support is requested])
-    AC_ARG_ENABLE(generic,
-      AC_HELP_STRING([--disable-generic],
-        [disable generic object key fetching interface only]),
-      try_generic=$enableval, try_generic=yes)
-    AC_MSG_RESULT($try_generic)
-
-    AC_MSG_CHECKING([whether email keyserver support is requested])
-    AC_ARG_ENABLE(mailto,
-      AC_HELP_STRING([--enable-mailto],
-	[enable email keyserver interface only]),
-      try_mailto=$enableval, try_mailto=no)
-    AC_MSG_RESULT($try_mailto)
-  fi
-
-  AC_MSG_CHECKING([whether keyserver exec-path is enabled])
-  AC_ARG_ENABLE(keyserver-path,
-      AC_HELP_STRING([--disable-keyserver-path],
-        [disable the exec-path option for keyserver helpers]),
-      [if test "$enableval" = no ; then
-         disable_keyserver_path=yes
-      fi],enableval=yes)
-  AC_MSG_RESULT($enableval)
 fi
 
 
@@ -655,7 +599,6 @@ case "${host}" in
                   [Because the Unix gettext has too much overhead on
                    MingW32 systems and these systems lack Posix functions,
                    we use a simplified version of gettext])
-        disable_keyserver_path=yes
         have_dosish_system=yes
         have_w32_system=yes
         run_tests=no
@@ -758,10 +701,6 @@ if test "$use_ldapwrapper" = yes; then
 fi
 AM_CONDITIONAL(USE_LDAPWRAPPER, test "$use_ldapwrapper" = yes)
 
-if test "$disable_keyserver_path" = yes; then
-    AC_DEFINE(DISABLE_KEYSERVER_PATH,1,
-              [Defined to disable exec-path for keyserver helpers])
-fi
 
 #
 # Allows enabling the use of a standard socket by default This is
@@ -1878,9 +1817,6 @@ tests/Makefile
 tests/openpgp/Makefile
 tests/pkits/Makefile
 ])
-#keyserver/Makefile
-#keyserver/gpg2keys_mailto
-#keyserver/gpg2keys_test
 
 
 AC_OUTPUT
