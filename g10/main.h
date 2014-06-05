@@ -290,6 +290,7 @@ int import_keys_stream (ctrl_t ctrl, iobuf_t inp, void *stats_hd,
 int import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
                            unsigned char **fpr, size_t *fpr_len,
                            unsigned int options);
+gpg_error_t import_old_secring (ctrl_t ctrl, const char *fname);
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);
@@ -378,5 +379,9 @@ int  card_store_subkey (KBNODE node, int use);
 #endif
 
 #define S2K_DECODE_COUNT(_val) ((16ul + ((_val) & 15)) << (((_val) >> 4) + 6))
+
+/*-- migrate.c --*/
+void migrate_secring (ctrl_t ctrl);
+
 
 #endif /*G10_MAIN_H*/

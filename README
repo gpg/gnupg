@@ -85,21 +85,10 @@ MIGRATION FROM 1.4 or 2.0 to 2.1
 The major change in 2.1 is gpg-agent taking care of the OpenPGP secret
 keys (those managed by GPG).  The former file "secring.gpg" will not
 be used anymore.  Newly generated keys are stored in the agent's key
-store directory "~/.gnupg/private-keys-v1.d/".
-
-To migrate your existing keys you need to run the command
-
-  gpg2 --batch --import ~/.gnupg/secring.gpg
-
-Secret keys already imported are skipped by this command.  It is
-advisable to keep the secring.gpg for use with older versions of GPG.
-
-The use of "--batch" with "--import" is highly recommended.  If you do
-not use "--batch" the agent would ask for the passphrase of each key.
-In this case you may use the Cancel button of the Pinentry to skip
-importing this key.  If you want to stop the enite import process and
-you use a decent version of Pinentry, you should close the Pinentry
-window instead of hitting the Cancel button.
+store directory "~/.gnupg/private-keys-v1.d/".  The first time gpg
+needs a secret key it checks whether a "secring.gpg" exists and
+copies them to the new store.  The old secring.gpg is kept for use by
+older versions of gpg.
 
 Note that gpg-agent now uses a fixed socket by default.  All tools
 will start the gpg-agent as needed.  In general there is no more need
@@ -111,11 +100,11 @@ of the card related sub-commands of --edit-key are not yet fully
 supported.  However, signing and decryption with a smartcard does
 work.
 
-The Dirmngr is now part of GnuPG proper.  Thus there is no more need
-to install the separate dirmngr package.  The directroy layout of
-Dirmngr changed to make use of the GnuPG directories; for example you
-use /etc/gnupg/trusted-certs and /var/lib/gnupg/extra-certs.  Dirmngr
-needs to be started as a system daemon.
+The Dirmngr is now part of GnuPG proper and also used to access
+OpenPGP keyservers.  The directroy layout of Dirmngr changed to make
+use of the GnuPG directories.  Dirmngr is started by gpg or gpgsm as
+needed needed. There is no more need to install a separate dirmngr
+package.
 
 
 

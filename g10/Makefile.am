@@ -110,6 +110,7 @@ gpg2_SOURCES  = gpg.c		\
 	      dearmor.c 	\
 	      import.c		\
 	      export.c		\
+	      migrate.c         \
 	      delkey.c		\
 	      keygen.c          \
 	      helptext.c        \

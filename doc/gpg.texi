@@ -3042,17 +3042,32 @@ files; They all live in in the current home directory (@pxref{option
 
 
 @table @file
-  @item ~/.gnupg/secring.gpg
-  The secret keyring.  You should backup this file.
-
-  @item ~/.gnupg/secring.gpg.lock
-  The lock file for the secret keyring.
-
   @item ~/.gnupg/pubring.gpg
   The public keyring.  You should backup this file.
 
   @item ~/.gnupg/pubring.gpg.lock
   The lock file for the public keyring.
+
+@ifset gpgtwoone
+  @item ~/.gnupg/pubring.kbx
+  The public keyring using a different format.  This file is sharred
+  with @command{gpgsm}.  You should backup this file.
+
+  @item ~/.gnupg/pubring.kbx.lock
+  The lock file for @file{pubring.kbx}.
+@end ifset
+
+  @item ~/.gnupg/secring.gpg
+@ifclear gpgtwoone
+  The secret keyring.  You should backup this file.
+@end ifclear
+@ifset gpgtwoone
+  A secret keyring as used by GnuPG versions before 2.1.  It is not
+  used by GnuPG 2.1 and later.
+
+  @item ~/.gnupg/.gpg-v21-migrated
+  File indicating that a migration to GnuPG 2.1 has taken place.
+@end ifset
 
   @item ~/.gnupg/trustdb.gpg
   The trust database.  There is no need to backup this file; it is better
@@ -3063,6 +3078,9 @@ files; They all live in in the current home directory (@pxref{option
 
   @item ~/.gnupg/random_seed
   A file used to preserve the state of the internal random pool.
+
+  @item ~/.gnupg/secring.gpg.lock
+  The lock file for the secret keyring.
 
   @item /usr[/local]/share/gnupg/options.skel
   The skeleton options file.

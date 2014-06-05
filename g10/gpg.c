@@ -3594,6 +3594,43 @@ main (int argc, char **argv)
         break;
       }
 
+
+    /* Check for certain command whether we need to migrate a
+       secring.gpg to the gpg-agent. */
+    switch (cmd)
+      {
+      case aListSecretKeys:
+      case aSign:
+      case aSignEncr:
+      case aSignEncrSym:
+      case aSignSym:
+      case aClearsign:
+      case aDecrypt:
+      case aSignKey:
+      case aLSignKey:
+      case aEditKey:
+      case aPasswd:
+      case aDeleteSecretKeys:
+      case aDeleteSecretAndPublicKeys:
+      case aKeygen:
+      case aImport:
+      case aExportSecret:
+      case aExportSecretSub:
+      case aGenRevoke:
+      case aDesigRevoke:
+      case aCardEdit:
+      case aChangePIN:
+        migrate_secring (ctrl);
+	break;
+      case aListKeys:
+        if (opt.with_secret)
+          migrate_secring (ctrl);
+        break;
+      default:
+        break;
+      }
+
+    /* The command dispatcher.  */
     switch( cmd )
       {
       case aServer:
