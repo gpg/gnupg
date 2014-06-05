@@ -97,14 +97,12 @@ msgstr "Phrase de passe"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "les clefs SSH plus grandes que %d bits ne sont pas prises en charge\n"
 
-#, fuzzy, c-format
-#| msgid "can't create '%s': %s\n"
-msgid "can't create `%s': %s\n"
+#, c-format
+msgid "can't create '%s': %s\n"
 msgstr "impossible de créer « %s » : %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't open '%s': %s\n"
-msgid "can't open `%s': %s\n"
+#, c-format
+msgid "can't open '%s': %s\n"
 msgstr "impossible d'ouvrir « %s » : %s\n"
 
 #, c-format
@@ -298,11 +296,11 @@ msgstr ""
 "@Options :\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "exécuter en mode serveur (premier plan)"
-
 msgid "run in daemon mode (background)"
 msgstr "exécuter en mode démon (arrière-plan)"
+
+msgid "run in server mode (foreground)"
+msgstr "exécuter en mode serveur (premier plan)"
 
 msgid "verbose"
 msgstr "bavard"
@@ -352,14 +350,21 @@ msgstr "|N|oublier les codes personnels après N secondes"
 msgid "do not use the PIN cache when signing"
 msgstr "ne pas utiliser le cache de code pour signer"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "permettre de marquer la confiance des clefs"
 
 msgid "allow presetting passphrase"
 msgstr "permettre de préconfigurer la phrase de passe"
 
-msgid "enable ssh-agent emulation"
-msgstr "activer l'émulation de ssh-agent"
+msgid "enable ssh support"
+msgstr ""
+
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "non pris en charge"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FICHIER|écrire aussi les réglages d'env. dans FICHIER"
@@ -373,12 +378,18 @@ msgstr ""
 "Veuillez signaler toutes anomalies sur <@EMAIL@> (en anglais)\n"
 "et tout problème de traduction à <traduc@traduc.org>.\n"
 
-msgid "Usage: gpg-agent [options] (-h for help)"
-msgstr "Utilisation : gpg-agent [options] (-h pour l'aide)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
+msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-agent [options] [command [args]]\n"
+#| "Secret key management for GnuPG\n"
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
 "Syntaxe : gpg-agent [options] [commande [arguments]]\n"
 "Gestionnaire de clefs secrètes pour GnuPG\n"
@@ -490,8 +501,10 @@ msgid "no gpg-agent running in this session\n"
 msgstr ""
 "aucune instance de gpg-agent n'est en cours d'exécution dans cette session\n"
 
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "la variable d'environnement GPG_AGENT_INFO est mal définie\n"
+#, fuzzy, c-format
+#| msgid "malformed DIRMNGR_INFO environment variable\n"
+msgid "malformed %s environment variable\n"
+msgstr "la variable d'environnement DIRMNGR_INFO est mal définie\n"
 
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -663,6 +676,16 @@ msgstr "Modifier la phrase de passe"
 msgid "I'll change it later"
 msgstr "Je la modifierai plus tard"
 
+#, fuzzy
+#| msgid "enable key"
+msgid "Delete key"
+msgstr "activer la clef"
+
+msgid ""
+"Warning: This key is also listed for use with SSH!\n"
+"Deleting the key will may remove your ability toaccess remote machines."
+msgstr ""
+
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSA nécessite que la longueur du hachage soit un multiple de 8 bits\n"
 
@@ -722,13 +745,6 @@ msgstr "erreur d'exécution de « %s » : terminé\n"
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "erreur de lecture du code de retour du processus %d : %s\n"
-
-#, c-format
-msgid "error creating socket: %s\n"
-msgstr "erreur de création de socket : %s\n"
-
-msgid "host not found"
-msgstr "hôte introuvable"
 
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent n'est pas disponible dans cette session\n"
@@ -968,10 +984,6 @@ msgstr "Dirmngr utilisable"
 msgid "No help available for '%s'."
 msgstr "Pas d'aide disponible pour « %s »."
 
-#, c-format
-msgid "can't open '%s': %s\n"
-msgstr "impossible d'ouvrir « %s » : %s\n"
-
 msgid "ignoring garbage line"
 msgstr "ligne inutile ignorée"
 
@@ -1034,14 +1046,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "vous avez trouvé un bogue… (%s : %d)\n"
 
 #, c-format
-msgid "error loading '%s': %s\n"
-msgstr "erreur de chargement de « %s » : %s\n"
-
-#, c-format
-msgid "please see %s for more information\n"
-msgstr "veuillez consulter %s pour plus de renseignements\n"
-
-#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "conversion de « %s » vers « %s » non disponible\n"
 
@@ -1060,10 +1064,6 @@ msgstr "impossible de créer le fichier temporaire « %s » : %s\n"
 #, c-format
 msgid "error writing to '%s': %s\n"
 msgstr "erreur d'écriture sur « %s » : %s\n"
-
-#, c-format
-msgid "can't create '%s': %s\n"
-msgstr "impossible de créer « %s » : %s\n"
 
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
@@ -1477,8 +1477,20 @@ msgstr "Faut-il supprimer cette clef du porte-clefs ? (o/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "C'est une clef secrète — faut-il vraiment la supprimer ? (o/N) "
 
-msgid "deleting secret key not implemented\n"
-msgstr "la suppression de clef secrète n'est pas implémentée\n"
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting secret %s failed: %s\n"
+msgstr "échec de suppression du certificat « %s » : %s\n"
+
+#, fuzzy
+#| msgid "bad key"
+msgid "key"
+msgstr "mauvaise clef"
+
+#, fuzzy
+#| msgid "Pubkey: "
+msgid "subkey"
+msgstr "Clef publique : "
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1736,6 +1748,16 @@ msgstr "supprimer les clefs du porte-clefs public"
 msgid "remove keys from the secret keyring"
 msgstr "supprimer les clefs du porte-clefs secret"
 
+#, fuzzy
+#| msgid "sign a key"
+msgid "quickly sign a key"
+msgstr "signer une clef"
+
+#, fuzzy
+#| msgid "sign a key locally"
+msgid "quickly sign a key locally"
+msgstr "signer une clef localement"
+
 msgid "sign a key"
 msgstr "signer une clef"
 
@@ -1838,7 +1860,9 @@ msgstr ""
 " --list-keys [noms]         montrer les clefs\n"
 " --fingerprint [noms]       montrer les empreintes\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
 msgstr "Utilisation : gpg [options] [fichiers] (-h pour l'aide)"
 
 #, fuzzy
@@ -1847,7 +1871,7 @@ msgstr "Utilisation : gpg [options] [fichiers] (-h pour l'aide)"
 #| "sign, check, encrypt or decrypt\n"
 #| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpg [options] [files]\n"
+"Syntax: @GPG@ [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
@@ -2578,12 +2602,12 @@ msgstr "clef %s : la clef secrète clef existe déjà\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "clef %s : erreur d'envoi à l'agent : %s\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "impossible d'importer des clefs secrètes\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "clef %s : clef secrète avec chiffrement %d incorrect — ignorée\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "impossible d'importer des clefs secrètes\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -3202,6 +3226,26 @@ msgstr "échec de la mise à jour : %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "La clef n'a pas été modifiée donc la mise à jour est inutile.\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a fingerprint\n"
+msgstr "empreinte incorrecte"
+
+#, fuzzy, c-format
+#| msgid "failed to get the fingerprint\n"
+msgid "\"%s\" is not the primary fingerprint\n"
+msgstr "impossible d'obtenir l'empreinte\n"
+
+#, fuzzy
+#| msgid "No such user ID.\n"
+msgid "No matching user IDs."
+msgstr "Cette identité n'existe pas.\n"
+
+#, fuzzy
+#| msgid "Nothing to sign with key %s\n"
+msgid "Nothing to sign.\n"
+msgstr "Rien à signer avec la clef %s\n"
+
 msgid "Digest: "
 msgstr "Hachage : "
 
@@ -3634,20 +3678,24 @@ msgstr "   (%d) DSA (indiquez vous-même les capacités)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (indiquez vous-même les capacités)\n"
 
-#, c-format
-msgid "   (%d) ECDSA and ECDH\n"
-msgstr "   (%d) ECDSA et ECDH\n"
+#, fuzzy, c-format
+#| msgid "   (%d) RSA\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) RSA\n"
 
-#, c-format
-msgid "  (%d) ECDSA (sign only)\n"
+#, fuzzy, c-format
+#| msgid "  (%d) ECDSA (sign only)\n"
+msgid "  (%d) ECC (sign only)\n"
 msgstr "  (%d) ECDSA (signature seule)\n"
 
-#, c-format
-msgid "  (%d) ECDSA (set your own capabilities)\n"
+#, fuzzy, c-format
+#| msgid "  (%d) ECDSA (set your own capabilities)\n"
+msgid "  (%d) ECC (set your own capabilities)\n"
 msgstr "  (%d) ECDSA (indiquez vous-même les capacités)\n"
 
-#, c-format
-msgid "  (%d) ECDH (encrypt only)\n"
+#, fuzzy, c-format
+#| msgid "  (%d) ECDH (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)\n"
 msgstr "  (%d) ECDH (chiffrement seul)\n"
 
 #, c-format
@@ -3682,6 +3730,11 @@ msgstr "La taille demandée est %u bits\n"
 #, c-format
 msgid "rounded to %u bits\n"
 msgstr "arrondie à %u bits\n"
+
+#, fuzzy
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select which elliptic curve you want:\n"
+msgstr "Sélectionnez le type de clef désiré :\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -4208,6 +4261,18 @@ msgstr "révocation autonome — utilisez « gpg --import » pour l'appliquer\
 msgid "no signature found\n"
 msgstr "aucune signature trouvée\n"
 
+#, c-format
+msgid "BAD signature from \"%s\""
+msgstr "MAUVAISE signature de « %s »"
+
+#, c-format
+msgid "Expired signature from \"%s\""
+msgstr "Signature expirée de « %s »"
+
+#, c-format
+msgid "Good signature from \"%s\""
+msgstr "Bonne signature de « %s »"
+
 msgid "signature verification suppressed\n"
 msgstr "vérification de signature supprimée\n"
 
@@ -4229,18 +4294,6 @@ msgstr "Signature faite le %s avec la clef %s d'identifiant %s\n"
 msgid "Key available at: "
 msgstr "Clef disponible sur : "
 
-#, c-format
-msgid "BAD signature from \"%s\""
-msgstr "MAUVAISE signature de « %s »"
-
-#, c-format
-msgid "Expired signature from \"%s\""
-msgstr "Signature expirée de « %s »"
-
-#, c-format
-msgid "Good signature from \"%s\""
-msgstr "Bonne signature de « %s »"
-
 msgid "[uncertain]"
 msgstr "[doute]"
 
@@ -4256,8 +4309,9 @@ msgstr "La signature a expiré le %s\n"
 msgid "Signature expires %s\n"
 msgstr "La signature expire le %s\n"
 
-#, c-format
-msgid "%s signature, digest algorithm %s\n"
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "signature %s, algorithme de hachage %s\n"
 
 msgid "binary"
@@ -4459,27 +4513,65 @@ msgstr "clef %2$s de %1$u bits, identifiant %3$s, créée le %4$s"
 msgid "         (subkey on main key ID %s)"
 msgstr "        (sous-clef de la clef principale d'identifiant %s)"
 
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:"
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
 "Veuillez entrer la phrase de passe pour déverrouiller la clef secrète pour "
 "le\n"
 "certificat OpenPGP :"
 
-msgid ""
-"Please enter the passphrase to import the secret key for the OpenPGP "
-"certificate:"
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to import the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to import the OpenPGP secret key:"
 msgstr ""
 "Veuillez entrer la phrase de passe pour importer la clef secrète pour le\n"
 "certificat OpenPGP :"
 
-#, c-format
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to import the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
+msgstr ""
+"Veuillez entrer la phrase de passe pour importer la clef secrète pour le\n"
+"certificat OpenPGP :"
+
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to import the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgstr ""
+"Veuillez entrer la phrase de passe pour importer la clef secrète pour le\n"
+"certificat OpenPGP :"
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
+msgstr "Voulez-vous vraiment supprimer les clefs sélectionnées ? (o/N) "
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgstr "Voulez-vous vraiment supprimer les clefs sélectionnées ? (o/N) "
+
+#, fuzzy, c-format
+#| msgid ""
+#| "%s\n"
+#| "\"%.*s\"\n"
+#| "%u-bit %s key, ID %s,\n"
+#| "created %s%s.\n"
 msgid ""
 "%s\n"
 "\"%.*s\"\n"
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
+"%s"
 msgstr ""
 "%1$s\n"
 "« %3$.*2$s »\n"
@@ -4923,6 +5015,10 @@ msgstr ""
 "Attention : la sous-clef de signature %s n'a pas de certificat croisé\n"
 
 #, c-format
+msgid "please see %s for more information\n"
+msgstr "veuillez consulter %s pour plus de renseignements\n"
+
+#, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
 msgstr ""
 "Attention : la sous-clef de signature %s a un certificat croisé incorrect\n"
@@ -4957,6 +5053,11 @@ msgstr "Remarque : la clef de signature %s a expiré le %s\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "Remarque : la clef de signature %s a été révoquée\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signature %s, algorithme de hachage %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -5242,53 +5343,6 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "utilisation du modèle de confiance %s\n"
 
-#. TRANSLATORS: these strings are similar to those in
-#. trust_value_to_string(), but are a fixed length.  This is needed to
-#. make attractive information listings where columns line up
-#. properly.  The value "10" should be the length of the strings you
-#. choose to translate to.  This is the length in printable columns.
-#. It gets passed to atoi() so everything after the number is
-#. essentially a comment and need not be translated.  Either key and
-#. uid are both NULL, or neither are NULL.
-msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-msgstr "11 le traducteur a bien lu ce qu'il fallait :)"
-
-msgid "[ revoked]"
-msgstr "[ révoquée]"
-
-msgid "[ expired]"
-msgstr "[ expirée ]"
-
-msgid "[ unknown]"
-msgstr "[ inconnue]"
-
-msgid "[  undef ]"
-msgstr "[indéfinie]"
-
-msgid "[marginal]"
-msgstr "[marginale]"
-
-msgid "[  full  ]"
-msgstr "[  totale ]"
-
-msgid "[ultimate]"
-msgstr "[  ultime ]"
-
-msgid "undefined"
-msgstr "indéfinie"
-
-msgid "never"
-msgstr "jamais"
-
-msgid "marginal"
-msgstr "marginale"
-
-msgid "full"
-msgstr "totale"
-
-msgid "ultimate"
-msgstr "ultime"
-
 msgid "no need for a trustdb check\n"
 msgstr "inutile de vérifier la base de confiance\n"
 
@@ -5465,6 +5519,11 @@ msgid "response does not contain the RSA modulus\n"
 msgstr "la réponse ne contient pas le module RSA\n"
 
 msgid "response does not contain the RSA public exponent\n"
+msgstr "la réponse ne contient pas l'exposant public RSA\n"
+
+#, fuzzy
+#| msgid "response does not contain the RSA public exponent\n"
+msgid "response does not contain the EC public point\n"
 msgstr "la réponse ne contient pas l'exposant public RSA\n"
 
 #, c-format
@@ -5662,12 +5721,18 @@ msgstr "refus d'utiliser les commandes d'administration de la carte"
 msgid "use variable length input for pinpad"
 msgstr ""
 
-msgid "Usage: scdaemon [options] (-h for help)"
-msgstr "Utilisation : scdaemon [options] (-h pour l'aide)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
+msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: scdaemon [options] [command [args]]\n"
+#| "Smartcard daemon for GnuPG\n"
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
 "Syntaxe : scdaemon [options] [commande [arguments]]\n"
 "Démon de carte à puce pour GnuPG\n"
@@ -6242,8 +6307,10 @@ msgstr "|NOM|utiliser l'algorithme de chiffrement NOM"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOM|utiliser l'algorithme de hachage NOM"
 
-msgid "Usage: gpgsm [options] [files] (-h for help)"
-msgstr "Utilisation : gpgsm [options] [fichiers] (-h pour l'aide)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
+msgstr "Utilisation : gpg [options] [fichiers] (-h pour l'aide)"
 
 #, fuzzy
 #| msgid ""
@@ -6251,7 +6318,7 @@ msgstr "Utilisation : gpgsm [options] [fichiers] (-h pour l'aide)"
 #| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
 #| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
+"Syntax: @GPGSM@ [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
@@ -7089,9 +7156,6 @@ msgstr ""
 "pas d'instance de dirmngr en cours d'exécution —\n"
 "démarrage d'une nouvelle instance\n"
 
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "la variable d'environnement DIRMNGR_INFO est mal définie\n"
-
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "le protocole dirmngr version %d n'est pas pris en charge\n"
@@ -7196,6 +7260,9 @@ msgstr "|EMPR|réponse OCSP signée par EMPR"
 msgid "|N|do not return more than N items in one query"
 msgstr "|N|ne pas renvoyer plus de N éléments dans une requête"
 
+msgid "|FILE|use the CA certifciates in FILE for HKP over TLS"
+msgstr ""
+
 msgid ""
 "@\n"
 "(See the \"info\" manual for a complete listing of all commands and "
@@ -7205,12 +7272,18 @@ msgstr ""
 "(Consultez le manuel « info » pour obtenir une liste complète des commandes\n"
 "et options)\n"
 
-msgid "Usage: dirmngr [options] (-h for help)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: dirmngr [options] [command [args]]\n"
+#| "LDAP and OCSP access for GnuPG\n"
 msgid ""
-"Syntax: dirmngr [options] [command [args]]\n"
-"LDAP and OCSP access for GnuPG\n"
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"LDAP and OCSP access for @GNUPG@\n"
 msgstr ""
 "Syntaxe : dirmngr [options] [commande [arguments]]\n"
 "Accès LDAP et OCSP pour GnuPG\n"
@@ -7219,8 +7292,10 @@ msgstr ""
 msgid "valid debug levels are: %s\n"
 msgstr "les niveaux de débogage possibles sont : %s\n"
 
-msgid "usage: dirmngr [options] "
-msgstr "utilisation : dirmngr [options] "
+#, fuzzy, c-format
+#| msgid "usage: gpgsm [options] "
+msgid "usage: %s [options] "
+msgstr "utilisation : gpgsm [options] "
 
 msgid "colons are not allowed in the socket name\n"
 msgstr "les deux-points ne sont pas permis avec dans le nom de socket\n"
@@ -7711,6 +7786,11 @@ msgstr "afficher les données encodées au format hexadécimal"
 msgid "decode received data lines"
 msgstr "décoder les lignes de données reçues"
 
+#, fuzzy
+#| msgid "can't connect to the dirmngr: %s\n"
+msgid "connect to the dirmngr"
+msgstr "impossible de se connecter au dirmngr : %s\n"
+
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr "|NOM|se connecter à la socket Assuan NOM"
 
@@ -7729,11 +7809,17 @@ msgstr "|FICHIER|exécuter les commandes du FICHIER au démarrage"
 msgid "run /subst on startup"
 msgstr "exécuter /subst au démarrage"
 
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg-connect-agent [options] (-h for help)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
 msgstr "Utilisation : gpg-connect-agent [options] (-h pour l'aide)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-connect-agent [options]\n"
+#| "Connect to a running agent and send commands\n"
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 "Syntaxe : gpg-connect-agent [options]\n"
@@ -7880,6 +7966,11 @@ msgstr "Gestionnaire de répertoires"
 msgid "PIN and Passphrase Entry"
 msgstr "Entrée de code personnel et de phrase de passe"
 
+#, fuzzy
+#| msgid "Component not found"
+msgid "Component not suitable for launching"
+msgstr "Composant introuvable"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "Échec de vérification externe du composant %s"
@@ -7905,7 +7996,9 @@ msgstr "|COMPOSANT|vérifier les options"
 msgid "apply global default values"
 msgstr "appliquer les valeurs par défaut globales"
 
-msgid "get the configuration directories for gpgconf"
+#, fuzzy
+#| msgid "get the configuration directories for gpgconf"
+msgid "get the configuration directories for @GPGCONF@"
 msgstr "aff. répertoires de configuration pour gpgconf"
 
 msgid "list global configuration file"
@@ -7917,6 +8010,11 @@ msgstr "vérifier le fichier de configuration globale"
 msgid "reload all or a given component"
 msgstr "recharger tous les composants ou celui donné"
 
+#, fuzzy
+#| msgid "kill a given component"
+msgid "launch a given component"
+msgstr "tuer un composant donné"
+
 msgid "kill a given component"
 msgstr "tuer un composant donné"
 
@@ -7926,18 +8024,21 @@ msgstr "utiliser comme fichier de sortie"
 msgid "activate changes at runtime, if possible"
 msgstr "activer modif. pendant l'exécution si possible"
 
-msgid "Usage: gpgconf [options] (-h for help)"
-msgstr "Utilisation : gpgconf [options] (-h pour l'aide)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
+msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgconf [options]\n"
+#| "Manage configuration options for tools of the GnuPG system\n"
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
 "Syntaxe : gpgconf [options]\n"
 "Gérer les options de configuration pour les outils du système GnuPG\n"
-
-msgid "usage: gpgconf [options] "
-msgstr "utilisation : gpgconf [options] "
 
 msgid "Need one component argument"
 msgstr "Un argument de composant nécessaire"
@@ -8092,6 +8193,94 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#, fuzzy
+#~| msgid "can't create '%s': %s\n"
+#~ msgid "can't create `%s': %s\n"
+#~ msgstr "impossible de créer « %s » : %s\n"
+
+#, fuzzy
+#~| msgid "can't open '%s': %s\n"
+#~ msgid "can't open `%s': %s\n"
+#~ msgstr "impossible d'ouvrir « %s » : %s\n"
+
+#~ msgid "enable ssh-agent emulation"
+#~ msgstr "activer l'émulation de ssh-agent"
+
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "Utilisation : gpg-agent [options] (-h pour l'aide)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "la variable d'environnement GPG_AGENT_INFO est mal définie\n"
+
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "erreur de création de socket : %s\n"
+
+#~ msgid "host not found"
+#~ msgstr "hôte introuvable"
+
+#~ msgid "error loading '%s': %s\n"
+#~ msgstr "erreur de chargement de « %s » : %s\n"
+
+#~ msgid "deleting secret key not implemented\n"
+#~ msgstr "la suppression de clef secrète n'est pas implémentée\n"
+
+#~ msgid "   (%d) ECDSA and ECDH\n"
+#~ msgstr "   (%d) ECDSA et ECDH\n"
+
+#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+#~ msgstr "11 le traducteur a bien lu ce qu'il fallait :)"
+
+#~ msgid "[ revoked]"
+#~ msgstr "[ révoquée]"
+
+#~ msgid "[ expired]"
+#~ msgstr "[ expirée ]"
+
+#~ msgid "[ unknown]"
+#~ msgstr "[ inconnue]"
+
+#~ msgid "[  undef ]"
+#~ msgstr "[indéfinie]"
+
+#~ msgid "[marginal]"
+#~ msgstr "[marginale]"
+
+#~ msgid "[  full  ]"
+#~ msgstr "[  totale ]"
+
+#~ msgid "[ultimate]"
+#~ msgstr "[  ultime ]"
+
+#~ msgid "undefined"
+#~ msgstr "indéfinie"
+
+#~ msgid "never"
+#~ msgstr "jamais"
+
+#~ msgid "marginal"
+#~ msgstr "marginale"
+
+#~ msgid "full"
+#~ msgstr "totale"
+
+#~ msgid "ultimate"
+#~ msgstr "ultime"
+
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "Utilisation : scdaemon [options] (-h pour l'aide)"
+
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "Utilisation : gpgsm [options] [fichiers] (-h pour l'aide)"
+
+#~ msgid "usage: dirmngr [options] "
+#~ msgstr "utilisation : dirmngr [options] "
+
+#~ msgid "Usage: gpgconf [options] (-h for help)"
+#~ msgstr "Utilisation : gpgconf [options] (-h pour l'aide)"
+
+#~ msgid "usage: gpgconf [options] "
+#~ msgstr "utilisation : gpgconf [options] "
 
 #~ msgid "too many entries in pk cache - disabled\n"
 #~ msgstr "trop d'entrées dans le cache de clefs publiques — désactivé\n"
@@ -8781,12 +8970,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "mauvaise clef secrète utilisée"
-
-#~ msgid "not supported"
-#~ msgstr "non pris en charge"
-
-#~ msgid "bad key"
-#~ msgstr "mauvaise clef"
 
 #~ msgid "file write error"
 #~ msgstr "erreur d'écriture de fichier"

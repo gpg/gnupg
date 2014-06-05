@@ -97,11 +97,11 @@ msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "ssh鍵で%dビットより大きいものはサポートされません\n"
 
 #, c-format
-msgid "can't create `%s': %s\n"
+msgid "can't create '%s': %s\n"
 msgstr "'%s'が作成できません: %s\n"
 
 #, c-format
-msgid "can't open `%s': %s\n"
+msgid "can't open '%s': %s\n"
 msgstr "'%s'が開けません: %s\n"
 
 #, c-format
@@ -282,11 +282,11 @@ msgstr ""
 "@オプション:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "サーバ・モードで実行 (フォアグラウンド)"
-
 msgid "run in daemon mode (background)"
 msgstr "デーモン・モードで実行 (バックグラウンド)"
+
+msgid "run in server mode (foreground)"
+msgstr "サーバ・モードで実行 (フォアグラウンド)"
 
 msgid "verbose"
 msgstr "冗長"
@@ -336,14 +336,19 @@ msgstr "|N|N秒後に保持したPINを無効とする"
 msgid "do not use the PIN cache when signing"
 msgstr "署名に対してPINの保持を使わない"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "クライアントが鍵に\"trusted\"マークをつけることを認める"
 
 msgid "allow presetting passphrase"
 msgstr "パスフレーズの事前設定を認める"
 
-msgid "enable ssh-agent emulation"
-msgstr "ssh-agentエミュレーションを有効とする"
+msgid "enable ssh support"
+msgstr ""
+
+msgid "enable putty support"
+msgstr ""
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|FILEに環境変数の設定も書き出す"
@@ -354,12 +359,18 @@ msgstr "|FILE|FILEに環境変数の設定も書き出す"
 msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "バグは <@EMAIL@> までご報告ください。\n"
 
-msgid "Usage: gpg-agent [options] (-h for help)"
-msgstr "使い方: gpg-agent [オプション] (ヘルプは -h)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
+msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-agent [options] [command [args]]\n"
+#| "Secret key management for GnuPG\n"
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
 "形式: gpg-agent [オプション] [コマンド [引数]]\n"
 "GnuPGの秘密鍵の管理\n"
@@ -468,8 +479,10 @@ msgstr "%s %s 停止しました\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "このセッションでgpg-agentは実行されていません\n"
 
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "GPG_AGENT_INFO環境変数が壊れています\n"
+#, fuzzy, c-format
+#| msgid "malformed DIRMNGR_INFO environment variable\n"
+msgid "malformed %s environment variable\n"
+msgstr "DIRMNGR_INFO環境変数が破壊されています\n"
 
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -636,6 +649,16 @@ msgstr "パスフレーズを変更する"
 msgid "I'll change it later"
 msgstr "後で変更する"
 
+#, fuzzy
+#| msgid "enable key"
+msgid "Delete key"
+msgstr "鍵を有効にする"
+
+msgid ""
+"Warning: This key is also listed for use with SSH!\n"
+"Deleting the key will may remove your ability toaccess remote machines."
+msgstr ""
+
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSAは8ビットの倍数のハッシュ長を必要とします\n"
 
@@ -693,13 +716,6 @@ msgstr "'%s'の実行エラー: 終了しました\n"
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "プロセス %d のexitコード取得エラー: %s\n"
-
-#, c-format
-msgid "error creating socket: %s\n"
-msgstr "ソケット作成エラー: %s\n"
-
-msgid "host not found"
-msgstr "ホストが見つかりません"
 
 msgid "gpg-agent is not available in this session\n"
 msgstr "このセッションでgpg-agentは無効です\n"
@@ -937,10 +953,6 @@ msgstr "Dirmngr利用可能"
 msgid "No help available for '%s'."
 msgstr "'%s'のヘルプはありません。"
 
-#, c-format
-msgid "can't open '%s': %s\n"
-msgstr "'%s'が開けません: %s\n"
-
 msgid "ignoring garbage line"
 msgstr "ガベージ行を無視します"
 
@@ -1003,14 +1015,6 @@ msgid "you found a bug ... (%s:%d)\n"
 msgstr "あなたはバグを発見しました ... (%s:%d)\n"
 
 #, c-format
-msgid "error loading '%s': %s\n"
-msgstr "'%s'の読込みエラー: %s\n"
-
-#, c-format
-msgid "please see %s for more information\n"
-msgstr "詳細は%sをご覧ください\n"
-
-#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "'%s'から'%s'への変換は利用できません\n"
 
@@ -1029,10 +1033,6 @@ msgstr "一時ファイル'%s'が作成できません: %s\n"
 #, c-format
 msgid "error writing to '%s': %s\n"
 msgstr "'%s'の書き込みエラー: %s\n"
-
-#, c-format
-msgid "can't create '%s': %s\n"
-msgstr "'%s'が作成できません: %s\n"
 
 #, c-format
 msgid "removing stale lockfile (created by %d)\n"
@@ -1338,6 +1338,16 @@ msgstr "   (3) 認証鍵\n"
 msgid "Invalid selection.\n"
 msgstr "無効な選択です。\n"
 
+#, fuzzy
+#| msgid "Please select the reason for the revocation:\n"
+msgid "Please select where to store the key:\n"
+msgstr "失効の理由を選択してください:\n"
+
+#, fuzzy, c-format
+#| msgid "read failed: %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "read が失敗しました: %s\n"
+
 msgid "quit this menu"
 msgstr "このメニューを終了"
 
@@ -1428,8 +1438,18 @@ msgstr "この鍵を鍵リングから削除しますか? (y/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "これは秘密鍵です! 本当に削除しますか? (y/N) "
 
-msgid "deleting secret key not implemented\n"
-msgstr "秘密鍵の削除は実装されていません\n"
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting secret %s failed: %s\n"
+msgstr "証明書'%s'の削除に失敗しました: %s\n"
+
+msgid "key"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pubkey: "
+msgid "subkey"
+msgstr "公開鍵: "
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1593,9 +1613,6 @@ msgstr " - スキップされました"
 msgid "WARNING: nothing exported\n"
 msgstr "*警告*: 何もエクスポートしていません\n"
 
-msgid "too many entries in pk cache - disabled\n"
-msgstr "pkキャッシュのエントリーが多すぎます - 使用禁止\n"
-
 msgid "[User ID not found]"
 msgstr "[ユーザIDが見つかりません]"
 
@@ -1669,6 +1686,16 @@ msgstr "公開鍵リングから鍵を削除"
 
 msgid "remove keys from the secret keyring"
 msgstr "秘密鍵リングから鍵を削除"
+
+#, fuzzy
+#| msgid "sign a key"
+msgid "quickly sign a key"
+msgstr "鍵に署名"
+
+#, fuzzy
+#| msgid "sign a key locally"
+msgid "quickly sign a key locally"
+msgstr "鍵へ内部的に署名"
 
 msgid "sign a key"
 msgstr "鍵に署名"
@@ -1771,11 +1798,18 @@ msgstr ""
 " --list-keys [名前]         鍵を表示\n"
 " --fingerprint [名前]       フィンガー・プリントを表示\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
 msgstr "使い方: gpg [オプション] [ファイル] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "Sign, check, encrypt or decrypt\n"
+#| "Default operation depends on the input data\n"
 msgid ""
-"Syntax: gpg [options] [files]\n"
+"Syntax: @GPG@ [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
@@ -2470,12 +2504,12 @@ msgstr "鍵 %s: 秘密鍵はもうあります\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "鍵 %s: エージェントへの送信エラー: %s\n"
 
+msgid "importing secret keys not allowed\n"
+msgstr "秘密鍵のインポートは禁止です\n"
+
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "鍵%s: 無効な暗号方式%dの秘密鍵です - スキップします\n"
-
-msgid "importing secret keys not allowed\n"
-msgstr "秘密鍵のインポートは禁止です\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2582,8 +2616,16 @@ msgid "key %s: direct key signature added\n"
 msgstr "鍵%s: 直接鍵署名を追加\n"
 
 #, c-format
+msgid "error creating keybox '%s': %s\n"
+msgstr "keybox'%s'の作成エラー: %s\n"
+
+#, c-format
 msgid "error creating keyring '%s': %s\n"
 msgstr "鍵リング'%s'の作成エラー: %s\n"
+
+#, c-format
+msgid "keybox '%s' created\n"
+msgstr "keybox'%s'が作成されました\n"
 
 #, c-format
 msgid "keyring '%s' created\n"
@@ -3060,6 +3102,26 @@ msgstr "更新に失敗しました: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a fingerprint\n"
+msgstr "無効なフィンガー・プリント"
+
+#, fuzzy, c-format
+#| msgid "failed to get the fingerprint\n"
+msgid "\"%s\" is not the primary fingerprint\n"
+msgstr "フィンガー・プリントの取得に失敗しました\n"
+
+#, fuzzy
+#| msgid "No such user ID.\n"
+msgid "No matching user IDs."
+msgstr "そのユーザIDはありません。\n"
+
+#, fuzzy
+#| msgid "Nothing to sign with key %s\n"
+msgid "Nothing to sign.\n"
+msgstr "鍵%sで署名すべきものはありません\n"
+
 msgid "Digest: "
 msgstr "ダイジェスト: "
 
@@ -3476,20 +3538,24 @@ msgstr "   (%d) DSA (特性をあなた自身で設定)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (特性をあなた自身で設定)\n"
 
-#, c-format
-msgid "   (%d) ECDSA and ECDH\n"
-msgstr "   (%d) ECDSA と ECDH\n"
+#, fuzzy, c-format
+#| msgid "   (%d) RSA\n"
+msgid "   (%d) ECC\n"
+msgstr "   (%d) RSA\n"
 
-#, c-format
-msgid "  (%d) ECDSA (sign only)\n"
+#, fuzzy, c-format
+#| msgid "  (%d) ECDSA (sign only)\n"
+msgid "  (%d) ECC (sign only)\n"
 msgstr "   (%d) ECDSA (署名のみ)\n"
 
-#, c-format
-msgid "  (%d) ECDSA (set your own capabilities)\n"
+#, fuzzy, c-format
+#| msgid "  (%d) ECDSA (set your own capabilities)\n"
+msgid "  (%d) ECC (set your own capabilities)\n"
 msgstr "   (%d) ECDSA (特性をあなた自身で設定)\n"
 
-#, c-format
-msgid "  (%d) ECDH (encrypt only)\n"
+#, fuzzy, c-format
+#| msgid "  (%d) ECDH (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)\n"
 msgstr "   (%d) ECDH (暗号化のみ)\n"
 
 #, c-format
@@ -3524,6 +3590,11 @@ msgstr "要求された鍵長は%uビット\n"
 #, c-format
 msgid "rounded to %u bits\n"
 msgstr "%uビットに切り上げます\n"
+
+#, fuzzy
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select which elliptic curve you want:\n"
+msgstr "ご希望の鍵の種類を選択してください:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -4025,6 +4096,18 @@ msgstr "スタンドアロン失効 - \"gpg --import\"を使って適用して�
 msgid "no signature found\n"
 msgstr "署名が見つかりません\n"
 
+#, c-format
+msgid "BAD signature from \"%s\""
+msgstr "\"%s\"からの*不正な*署名"
+
+#, c-format
+msgid "Expired signature from \"%s\""
+msgstr "\"%s\"からの期限切れの署名"
+
+#, c-format
+msgid "Good signature from \"%s\""
+msgstr "\"%s\"からの正しい署名"
+
 msgid "signature verification suppressed\n"
 msgstr "署名の検証を省略\n"
 
@@ -4046,18 +4129,6 @@ msgstr "%sに%s鍵ID %sで施された署名\n"
 msgid "Key available at: "
 msgstr "以下に鍵があります: "
 
-#, c-format
-msgid "BAD signature from \"%s\""
-msgstr "\"%s\"からの*不正な*署名"
-
-#, c-format
-msgid "Expired signature from \"%s\""
-msgstr "\"%s\"からの期限切れの署名"
-
-#, c-format
-msgid "Good signature from \"%s\""
-msgstr "\"%s\"からの正しい署名"
-
 msgid "[uncertain]"
 msgstr "[不確定]"
 
@@ -4073,8 +4144,9 @@ msgstr "期限切れの署名 %s\n"
 msgid "Signature expires %s\n"
 msgstr "この署名は%sで期限切れとなります\n"
 
-#, c-format
-msgid "%s signature, digest algorithm %s\n"
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "%s署名、ダイジェスト・アルゴリズム %s\n"
 
 msgid "binary"
@@ -4266,24 +4338,60 @@ msgstr "%uビット%s鍵, ID %s作成日付は%s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (主鍵ID %s の副鍵)"
 
-msgid ""
-"Please enter the passphrase to unlock the secret key for the OpenPGP "
-"certificate:"
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to unlock the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
 "OpenPGP証明書の秘密鍵のロックを解除するためにパスフレーズを入力してください:"
 
-msgid ""
-"Please enter the passphrase to import the secret key for the OpenPGP "
-"certificate:"
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to import the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to import the OpenPGP secret key:"
 msgstr ""
 "OpenPGP証明書の秘密鍵をインポートするためにパスフレーズを入力してください:"
 
-#, c-format
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to import the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
+msgstr ""
+"OpenPGP証明書の秘密鍵をインポートするためにパスフレーズを入力してください:"
+
+#, fuzzy
+#| msgid ""
+#| "Please enter the passphrase to import the secret key for the OpenPGP "
+#| "certificate:"
+msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgstr ""
+"OpenPGP証明書の秘密鍵をインポートするためにパスフレーズを入力してください:"
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
+msgstr "選択した鍵を本当に削除しますか? (y/N) "
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgstr "選択した鍵を本当に削除しますか? (y/N) "
+
+#, fuzzy, c-format
+#| msgid ""
+#| "%s\n"
+#| "\"%.*s\"\n"
+#| "%u-bit %s key, ID %s,\n"
+#| "created %s%s.\n"
 msgid ""
 "%s\n"
 "\"%.*s\"\n"
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
+"%s"
 msgstr ""
 "%s\n"
 "\"%.*s\"\n"
@@ -4699,6 +4807,10 @@ msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr "*警告*: 署名副鍵%sは、相互証明されてません\n"
 
 #, c-format
+msgid "please see %s for more information\n"
+msgstr "詳細は%sをご覧ください\n"
+
+#, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
 msgstr "*警告*: 無効な相互証明が、署名副鍵%sにあります\n"
 
@@ -4727,6 +4839,11 @@ msgstr "*注意*: 署名鍵%sは%sに期限切れとなります\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "*注意*: 鍵 %s は失効済みです\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s署名、ダイジェスト・アルゴリズム %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -4989,53 +5106,6 @@ msgstr "不明の信用モデル (%d) は使えません - %s信用モデルを�
 msgid "using %s trust model\n"
 msgstr "%s信用モデルを使用\n"
 
-#. TRANSLATORS: these strings are similar to those in
-#. trust_value_to_string(), but are a fixed length.  This is needed to
-#. make attractive information listings where columns line up
-#. properly.  The value "10" should be the length of the strings you
-#. choose to translate to.  This is the length in printable columns.
-#. It gets passed to atoi() so everything after the number is
-#. essentially a comment and need not be translated.  Either key and
-#. uid are both NULL, or neither are NULL.
-msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-msgstr "10"
-
-msgid "[ revoked]"
-msgstr "[  失効  ]"
-
-msgid "[ expired]"
-msgstr "[期限切れ]"
-
-msgid "[ unknown]"
-msgstr "[  不明  ]"
-
-msgid "[  undef ]"
-msgstr "[ 未定義 ]"
-
-msgid "[marginal]"
-msgstr "[まぁまぁ]"
-
-msgid "[  full  ]"
-msgstr "[  充分  ]"
-
-msgid "[ultimate]"
-msgstr "[  究極  ]"
-
-msgid "undefined"
-msgstr "未定義"
-
-msgid "never"
-msgstr "無期限"
-
-msgid "marginal"
-msgstr "まぁまぁ"
-
-msgid "full"
-msgstr "充分"
-
-msgid "ultimate"
-msgstr "究極"
-
 msgid "no need for a trustdb check\n"
 msgstr "信用データベースの検査は、不要です\n"
 
@@ -5188,6 +5258,11 @@ msgid "response does not contain the RSA modulus\n"
 msgstr "応答にRSAの法(modulus)が含まれていません\n"
 
 msgid "response does not contain the RSA public exponent\n"
+msgstr "応答にRSA公開指数が含まれていません\n"
+
+#, fuzzy
+#| msgid "response does not contain the RSA public exponent\n"
+msgid "response does not contain the EC public point\n"
 msgstr "応答にRSA公開指数が含まれていません\n"
 
 #, c-format
@@ -5365,12 +5440,18 @@ msgstr "管理カード・コマンドの使用を拒否"
 msgid "use variable length input for pinpad"
 msgstr "ピンパッドの可変長入力を使う"
 
-msgid "Usage: scdaemon [options] (-h for help)"
-msgstr "使い方: scdaemon [オプション] (ヘルプは -h)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
+msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: scdaemon [options] [command [args]]\n"
+#| "Smartcard daemon for GnuPG\n"
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
 "形式: scdaemon [オプション] [コマンド [引数]]\n"
 "GnuPGのSmartcardデーモン\n"
@@ -5923,11 +6004,18 @@ msgstr "|NAME|暗号アルゴリズムにNAMEを使用"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|ダイジェスト・アルゴリズムにNAMEを使用"
 
-msgid "Usage: gpgsm [options] [files] (-h for help)"
-msgstr "使い方: gpgsm [オプション] [ファイル] (ヘルプは -h)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
+msgstr "使い方: gpg [オプション] [ファイル] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgsm [options] [files]\n"
+#| "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+#| "Default operation depends on the input data\n"
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
+"Syntax: @GPGSM@ [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
@@ -5994,16 +6082,8 @@ msgstr "証明書のインポート・エラー: %s\n"
 msgid "error reading input: %s\n"
 msgstr "入力読み込みエラー: %s\n"
 
-#, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "keybox'%s'の作成エラー: %s\n"
-
 msgid "you may want to start the gpg-agent first\n"
 msgstr "まず gpg-agent を開始したいでしょう\n"
-
-#, c-format
-msgid "keybox '%s' created\n"
-msgstr "keybox'%s'が作成されました\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "フィンガー・プリントの取得に失敗しました\n"
@@ -6333,7 +6413,8 @@ msgid "invalid formatted checksum for '%s'\n"
 msgstr "'%s'に対する無効な形式のチェックサム\n"
 
 msgid "too many open cache files; can't open anymore\n"
-msgstr "キャッシュ・ファイルを多くオープンしすぎです。これ以上オープンできません\n"
+msgstr ""
+"キャッシュ・ファイルを多くオープンしすぎです。これ以上オープンできません\n"
 
 #, c-format
 msgid "opening cache file '%s'\n"
@@ -6382,7 +6463,8 @@ msgstr "発行者ID%sに対する利用可能なCRLが使用できません\n"
 
 #, c-format
 msgid "cached CRL for issuer id %s tampered; we need to update\n"
-msgstr "発行者ID%sに対するキャッシュされたCRLが変更されています。更新が必要です\n"
+msgstr ""
+"発行者ID%sに対するキャッシュされたCRLが変更されています。更新が必要です\n"
 
 msgid "WARNING: invalid cache record length for S/N "
 msgstr "**警告**: S/Nに対する無効なキャッシュ・レコード長"
@@ -6494,7 +6576,9 @@ msgstr "一時キャッシュ・ファイル'%s'のクローズ・エラー: %s\
 
 #, c-format
 msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
-msgstr "**警告**: 新しいCRLはまだ古すぎます。%sに期限がきています - それでも読み込みます\n"
+msgstr ""
+"**警告**: 新しいCRLはまだ古すぎます。%sに期限がきています - それでも読み込み"
+"ます\n"
 
 #, c-format
 msgid "new CRL still too old; it expired on %s\n"
@@ -6520,7 +6604,8 @@ msgid ""
 "updating the DIR file failed - cache entry will get lost with the next "
 "program start\n"
 msgstr ""
-"DIRファイルの更新の失敗 - キャッシュ・エントリは次のプログラムの開始で失われます\n"
+"DIRファイルの更新の失敗 - キャッシュ・エントリは次のプログラムの開始で失われ"
+"ます\n"
 
 #, c-format
 msgid "Begin CRL dump (retrieved via %s)\n"
@@ -6529,13 +6614,11 @@ msgstr "CRLダンプの開始 (%s から取得)\n"
 msgid ""
 " ERROR: The CRL will not be used because it was still too old after an "
 "update!\n"
-msgstr ""
-"*エラー*: CRLは使用されません。更新後でも、古すぎるからです!\n"
+msgstr "*エラー*: CRLは使用されません。更新後でも、古すぎるからです!\n"
 
 msgid ""
 " ERROR: The CRL will not be used due to an unknown critical extension!\n"
-msgstr ""
-"*エラー*: CRLは不明なクリティカル拡張のため使用されません!\n"
+msgstr "*エラー*: CRLは不明なクリティカル拡張のため使用されません!\n"
 
 msgid " ERROR: The CRL will not be used\n"
 msgstr "*エラー*: CRLは使用されません\n"
@@ -6708,9 +6791,6 @@ msgstr "あきらかにdirmngrが動いていません\n"
 msgid "no running dirmngr - starting one\n"
 msgstr "dirmngrが動いていません - 開始します\n"
 
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "DIRMNGR_INFO環境変数が破壊されています\n"
-
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "dirmngrプロトコル・バージョン%dはサポートされていません\n"
@@ -6805,6 +6885,9 @@ msgstr "|FPR|FPRで署名されたOCSPレスポンス"
 msgid "|N|do not return more than N items in one query"
 msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 
+msgid "|FILE|use the CA certifciates in FILE for HKP over TLS"
+msgstr ""
+
 msgid ""
 "@\n"
 "(See the \"info\" manual for a complete listing of all commands and "
@@ -6813,12 +6896,18 @@ msgstr ""
 "@\n"
 "(コマンドとオプション全部の一覧は、\"info\" マニュアルをご覧ください)\n"
 
-msgid "Usage: dirmngr [options] (-h for help)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: dirmngr [options] [command [args]]\n"
+#| "LDAP and OCSP access for GnuPG\n"
 msgid ""
-"Syntax: dirmngr [options] [command [args]]\n"
-"LDAP and OCSP access for GnuPG\n"
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"LDAP and OCSP access for @GNUPG@\n"
 msgstr ""
 "形式: dirmngr [オプション] [コマンド [引数]]\n"
 "GnuPGのLDAPとOCSPアクセス\n"
@@ -6827,8 +6916,10 @@ msgstr ""
 msgid "valid debug levels are: %s\n"
 msgstr "有効なdebugレベルは: %s\n"
 
-msgid "usage: dirmngr [options] "
-msgstr "使い方: dirmngr [オプション] "
+#, fuzzy, c-format
+#| msgid "usage: gpgsm [options] "
+msgid "usage: %s [options] "
+msgstr "使い方: gpgsm [オプション] "
 
 msgid "colons are not allowed in the socket name\n"
 msgstr "コロンはソケット名に許されません\n"
@@ -7300,6 +7391,11 @@ msgstr "16進でエンコードしてデータ出力を表示する"
 msgid "decode received data lines"
 msgstr "受信したデータ行をデコードする"
 
+#, fuzzy
+#| msgid "can't connect to the dirmngr: %s\n"
+msgid "connect to the dirmngr"
+msgstr "dirmngrへ接続できません: %s\n"
+
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr "|NAME|Assuanのソケット名NAMEに接続する"
 
@@ -7318,11 +7414,17 @@ msgstr "|FILE|起動時にFILEからコマンドを実行する"
 msgid "run /subst on startup"
 msgstr "起動時に /subst を実行する"
 
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg-connect-agent [options] (-h for help)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
 msgstr "使い方: gpg-connect-agent [オプション] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-connect-agent [options]\n"
+#| "Connect to a running agent and send commands\n"
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 "形式: gpg-connect-agent [オプション]\n"
@@ -7470,6 +7572,11 @@ msgstr "ディレクトリ・マネージャ"
 msgid "PIN and Passphrase Entry"
 msgstr "PINとパスフレーズの入力"
 
+#, fuzzy
+#| msgid "Component not found"
+msgid "Component not suitable for launching"
+msgstr "コンポーネントが見つかりません"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "コンポーネント%sの外部の検証が失敗しました"
@@ -7495,7 +7602,9 @@ msgstr "|COMPONENT|オプションをチェックする"
 msgid "apply global default values"
 msgstr "グローバル・デフォルト値を適用する"
 
-msgid "get the configuration directories for gpgconf"
+#, fuzzy
+#| msgid "get the configuration directories for gpgconf"
+msgid "get the configuration directories for @GPGCONF@"
 msgstr "gpgconfのためにコンフィグレーション・ディレクトリを取得する"
 
 msgid "list global configuration file"
@@ -7507,6 +7616,11 @@ msgstr "グローバルのコンフィグレーション・ファイルをチェ
 msgid "reload all or a given component"
 msgstr "すべて、あるいは指定されたコンポーネントをリロードする"
 
+#, fuzzy
+#| msgid "kill a given component"
+msgid "launch a given component"
+msgstr "指定されたコンポーネントをkillする"
+
 msgid "kill a given component"
 msgstr "指定されたコンポーネントをkillする"
 
@@ -7516,18 +7630,21 @@ msgstr "出力ファイルとして使用"
 msgid "activate changes at runtime, if possible"
 msgstr "可能な場合、実行時に変更を有効とする"
 
-msgid "Usage: gpgconf [options] (-h for help)"
-msgstr "使い方: gpgconf [オプション] (ヘルプは -h)"
+#, fuzzy
+#| msgid "Usage: dirmngr [options] (-h for help)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
+msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgconf [options]\n"
+#| "Manage configuration options for tools of the GnuPG system\n"
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
 "形式: gpgconf [オプション]\n"
 "GnuPGシステムのツールに対しコンフィグレーション・オプションを管理する\n"
-
-msgid "usage: gpgconf [options] "
-msgstr "使い方: gpgconf [オプション] "
 
 msgid "Need one component argument"
 msgstr "一つコンポーネント引数が必要です"
@@ -7681,3 +7798,90 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "can't create `%s': %s\n"
+#~ msgstr "'%s'が作成できません: %s\n"
+
+#~ msgid "can't open `%s': %s\n"
+#~ msgstr "'%s'が開けません: %s\n"
+
+#~ msgid "enable ssh-agent emulation"
+#~ msgstr "ssh-agentエミュレーションを有効とする"
+
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "使い方: gpg-agent [オプション] (ヘルプは -h)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "GPG_AGENT_INFO環境変数が壊れています\n"
+
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "ソケット作成エラー: %s\n"
+
+#~ msgid "host not found"
+#~ msgstr "ホストが見つかりません"
+
+#~ msgid "error loading '%s': %s\n"
+#~ msgstr "'%s'の読込みエラー: %s\n"
+
+#~ msgid "deleting secret key not implemented\n"
+#~ msgstr "秘密鍵の削除は実装されていません\n"
+
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "pkキャッシュのエントリーが多すぎます - 使用禁止\n"
+
+#~ msgid "   (%d) ECDSA and ECDH\n"
+#~ msgstr "   (%d) ECDSA と ECDH\n"
+
+#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+#~ msgstr "10"
+
+#~ msgid "[ revoked]"
+#~ msgstr "[  失効  ]"
+
+#~ msgid "[ expired]"
+#~ msgstr "[期限切れ]"
+
+#~ msgid "[ unknown]"
+#~ msgstr "[  不明  ]"
+
+#~ msgid "[  undef ]"
+#~ msgstr "[ 未定義 ]"
+
+#~ msgid "[marginal]"
+#~ msgstr "[まぁまぁ]"
+
+#~ msgid "[  full  ]"
+#~ msgstr "[  充分  ]"
+
+#~ msgid "[ultimate]"
+#~ msgstr "[  究極  ]"
+
+#~ msgid "undefined"
+#~ msgstr "未定義"
+
+#~ msgid "never"
+#~ msgstr "無期限"
+
+#~ msgid "marginal"
+#~ msgstr "まぁまぁ"
+
+#~ msgid "full"
+#~ msgstr "充分"
+
+#~ msgid "ultimate"
+#~ msgstr "究極"
+
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "使い方: scdaemon [オプション] (ヘルプは -h)"
+
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "使い方: gpgsm [オプション] [ファイル] (ヘルプは -h)"
+
+#~ msgid "usage: dirmngr [options] "
+#~ msgstr "使い方: dirmngr [オプション] "
+
+#~ msgid "Usage: gpgconf [options] (-h for help)"
+#~ msgstr "使い方: gpgconf [オプション] (ヘルプは -h)"
+
+#~ msgid "usage: gpgconf [options] "
+#~ msgstr "使い方: gpgconf [オプション] "
