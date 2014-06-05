@@ -2088,9 +2088,9 @@ ask_keysize (int algo, unsigned int primary_keysize)
 
 /* Ask for the curve.  ALGO is the selected algorithm which this
    function may adjust.  Returns a malloced string with the name of
-   the curve.  */
+   the curve.  BOTH tells that gpg creates a primary and subkey. */
 static char *
-ask_curve (int *algo)
+ask_curve (int *algo, int both)
 {
   struct {
     const char *name;
@@ -2119,6 +2119,7 @@ ask_curve (int *algo)
 
   tty_printf (_("Please select which elliptic curve you want:\n"));
 
+ again:
   keyparms = NULL;
   for (idx=0; idx < DIM(curves); idx++)
     {
@@ -2140,6 +2141,19 @@ ask_curve (int *algo)
         continue;
       if (!gcry_pk_get_curve (keyparms, 0, NULL))
         continue;
+      if (both && curves[idx].fix_curve)
+        {
+          /* Both Curve 25519 keys are to be created.  Check that
+             Libgcrypt also supports the real Curve25519.  */
+          gcry_sexp_release (keyparms);
+          rc = gcry_sexp_build (&keyparms, NULL,
+                                "(public-key(ecc(curve %s)))",
+                                 curves[idx].name);
+          if (rc)
+            continue;
+          if (!gcry_pk_get_curve (keyparms, 0, NULL))
+            continue;
+        }
 
       curves[idx].available = 1;
       tty_printf ("   (%d) %s\n", idx + 1,
@@ -2178,10 +2192,16 @@ ask_curve (int *algo)
       else
         {
           if (curves[idx].fix_curve)
-            log_info ("WARNING: Curve25519 is an experimental algorithm and"
-                      " not yet specified by OpenPGP.  The current"
-                      " implementation may change with the next GnuPG release"
-                      " and thus rendering the key unusable!\n");
+            {
+              log_info ("WARNING: Curve25519 is an experimental algorithm"
+                        " and not yet standardized.\n");
+              log_info ("         The key format will eventually change"
+                        " and render this key unusable!\n\n");
+
+              if (!cpr_get_answer_is_yes("experimental_curve.override",
+                                         "Use this curve anyway? (y/N) ")  )
+                goto again;
+            }
 
           /* If the user selected a signing algorithm and Curve25519
              we need to update the algo and and the curve name.  */
@@ -3485,7 +3505,7 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
               || algo == PUBKEY_ALGO_EDDSA
               || algo == PUBKEY_ALGO_ECDH)
             {
-              curve = ask_curve (&algo);
+              curve = ask_curve (&algo, both);
               r = xmalloc_clear( sizeof *r + 20 );
               r->key = pKEYTYPE;
               sprintf( r->u.value, "%d", algo);
@@ -3551,12 +3571,12 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
       else /* Create only a single key.  */
         {
           /* For ECC we need to ask for the curve before storing the
-             algo becuase ask_curve may change the algo.  */
+             algo because ask_curve may change the algo.  */
           if (algo == PUBKEY_ALGO_ECDSA
               || algo == PUBKEY_ALGO_EDDSA
               || algo == PUBKEY_ALGO_ECDH)
             {
-              curve = ask_curve (&algo);
+              curve = ask_curve (&algo, 0);
               nbits = 0;
               r = xmalloc_clear (sizeof *r + strlen (curve));
               r->key = pKEYCURVE;
@@ -4086,7 +4106,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH)
-    curve = ask_curve (&algo);
+    curve = ask_curve (&algo, 0);
   else
     nbits = ask_keysize (algo, 0);
 
