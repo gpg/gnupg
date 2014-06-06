@@ -15,7 +15,7 @@
 # configure it for the respective package.  It is maintained as part of
 # GnuPG and source copied by other packages.
 #
-# Version: 2014-01-10
+# Version: 2014-06-06
 
 configure_ac="configure.ac"
 
@@ -41,7 +41,7 @@ fatal () {
 
 info () {
     if [ -z "${SILENT}" ]; then
-      echo "autogen.sh:" "$*"
+      echo "autogen.sh:" "$*" >&2
     fi
 }
 
@@ -72,6 +72,7 @@ FORCE=
 SILENT=
 tmp=$(dirname "$0")
 tsdir=$(cd "${tmp}"; pwd)
+version_parts=3
 
 if [ -n "${AUTOGEN_SH_SILENT}" ]; then
   SILENT=" --silent"
@@ -133,6 +134,11 @@ amd64_toolprefixes=
 myhost=""
 myhostsub=""
 case "$1" in
+    --find-version)
+        myhost="find-version"
+        SILENT=" --silent"
+        shift
+        ;;
     --build-w32)
         myhost="w32"
         shift
@@ -171,6 +177,57 @@ if [ -f "$HOME/.gnupg-autogen.rc" ]; then
     info "sourcing extra definitions from $HOME/.gnupg-autogen.rc"
     . "$HOME/.gnupg-autogen.rc"
 fi
+
+
+# **** FIND VERSION ****
+# This is a helper for the configure.ac M4 magic
+# Called
+#   ./autogen.sh --find-version PACKAGE MAJOR MINOR [MICRO]
+# returns a complete version string with automatic beta numbering.
+if [ "$myhost" = "find-version" ]; then
+    package="$1"
+    major="$2"
+    minor="$3"
+    micro="$4"
+
+    case "$version_parts" in
+      2)
+        matchstr1="$package-$major.*[0-9]"
+        matchstr2="$package-$major-base"
+        vers="$major.$minor"
+        ;;
+      *)
+        matchstr1="$package-$major.$minor.*[0-9]"
+        matchstr2="$package-$major.$minor-base"
+        vers="$major.$minor.$micro"
+        ;;
+    esac
+
+    beta=no
+    if [ -d .git ]; then
+      ingit=yes
+      tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null \
+            | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}' )
+      if [ -z "$tmp" ]; then
+          tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null \
+                | awk -F- '$4!=0{print"-beta"$4}')
+      fi
+      [ -n "$tmp" ] && beta=yes
+      rev=$(git rev-parse --short HEAD | tr -d '\n\r')
+      rvd=$((0x$(echo ${rev} | head -c 4)))
+    else
+      ingit=no
+      beta=yes
+      tmp="-unknown"
+      rev="0000000"
+      rvd="0"
+    fi
+
+    echo "$package-$vers$tmp:$beta:$ingit:$vers$tmp:$vers:$tmp:$rev:$rvd:"
+    exit 0
+fi
+# **** end FIND VERSION ****
+
 
 # ******************
 #  W32 build script

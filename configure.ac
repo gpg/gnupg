@@ -26,23 +26,29 @@ min_automake_version="1.10"
 # (git tag -s gnupg-2.n.m) and run "./autogen.sh --force".  Please
 # bump the version number immediately *after* the release and do
 # another commit and push so that the git magic is able to work.
-m4_define([mym4_version], [2.1.0])
+m4_define([mym4_package],[gnupg])
+m4_define([mym4_major], [2])
+m4_define([mym4_minor], [1])
+m4_define([mym4_micro], [0])
+
+# To start a new development series, i.e a new major or minor number
+# you need to mark an arbitrary commit before the first beta release
+# with an annotated tag.  For example the 2.1 branch starts off with
+# the tag "gnupg-2.1-base".  This is used as the base for counting
+# beta numbers before the first release of a series.
 
 # Below is m4 magic to extract and compute the git revision number,
 # the decimalized short revision number, a beta version string and a
-# flag indicating a development version (mym4_isgit).  Note that the
+# flag indicating a development version (mym4_isbeta).  Note that the
 # m4 processing is done by autoconf and not during the configure run.
-m4_define([mym4_revision],
-          m4_esyscmd([git rev-parse --short HEAD | tr -d '\n\r']))
-m4_define([mym4_revision_dec],
-          m4_esyscmd_s([echo $((0x$(echo ]mym4_revision[|head -c 4)))]))
-m4_define([mym4_betastring],
-          m4_esyscmd_s([git describe --match 'gnupg-2.[0-9].*[0-9]' --long|\
-                        awk -F- '$3!=0{print"-beta"$3}']))
-m4_define([mym4_isgit],m4_if(mym4_betastring,[],[no],[yes]))
-m4_define([mym4_full_version],[mym4_version[]mym4_betastring])
+m4_define([mym4_verslist], m4_split(m4_esyscmd([./autogen.sh --find-version] \
+                           mym4_package mym4_major mym4_minor mym4_micro),[:]))
+m4_define([mym4_isbeta],       m4_argn(2, mym4_verslist))
+m4_define([mym4_version],      m4_argn(4, mym4_verslist))
+m4_define([mym4_revision],     m4_argn(7, mym4_verslist))
+m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
 
-AC_INIT([gnupg],[mym4_full_version], [http://bugs.gnupg.org])
+AC_INIT([mym4_package],[mym4_version], [http://bugs.gnupg.org])
 
 NEED_GPG_ERROR_VERSION=1.13
 
@@ -61,7 +67,7 @@ NEED_NPTH_VERSION=0.91
 NEED_GNUTLS_VERSION=3.0
 
 
-development_version=mym4_isgit
+development_version=mym4_isbeta
 PACKAGE=$PACKAGE_NAME
 PACKAGE_GT=${PACKAGE_NAME}2
 VERSION=$PACKAGE_VERSION
