@@ -40,9 +40,16 @@
 #include "userids.h"
 #include "ks-engine.h"
 
-/* Substitute a missing Mingw macro.  */
+/* Substitutes for missing Mingw macro.  The EAI_SYSTEM mechanism
+   seems not to be available (probably because there is only one set
+   of error codes anyway).  For now we use WSAEINVAL. */
 #ifndef EAI_OVERFLOW
 # define EAI_OVERFLOW EAI_FAIL
+#endif
+#ifdef HAVE_W32_SYSTEM
+# ifndef EAI_SYSTEM
+#  define EAI_SYSTEM WSAEINVAL
+# endif
 #endif
 
 
