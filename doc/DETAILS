@@ -1,6 +1,6 @@
                                                               -*- text -*-
 
-NOTE: The definitive reference is the file from the SVN trunk.
+NOTE: The definitive reference is in GIT master.
 
 Format of colon listings
 ========================
@@ -517,6 +517,8 @@ more arguments in future versions.
           8 := "Policy mismatch"
           9 := "Not a secret key"
 	 10 := "Key not trusted"
+         13 := "Key disabled"
+         14 := "Syntax error in specification"
 
         Note that this status is also used for gpgsm's SIGNER command
         where it relates to signer's of course.

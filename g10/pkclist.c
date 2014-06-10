@@ -822,7 +822,11 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
             {
               free_public_key ( pk ); pk = NULL;
               log_error (_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+              write_status_text_and_buffer (STATUS_INV_RECP,
+                                            (rc == G10ERR_NO_PUBKEY
+                                             || rc == G10ERR_NO_SECKEY)? "1 ":
+                                            (rc == G10ERR_INV_USER_ID)? "14 ":
+                                            "0 ",
                                             rov->d, strlen (rov->d), -1);
               goto fail;
             }
@@ -865,7 +869,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
                  available. */
               free_public_key( pk ); pk = NULL;
               log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+              write_status_text_and_buffer (STATUS_INV_RECP, "3 ",
                                             rov->d, strlen (rov->d), -1);
               goto fail;
             }
@@ -1077,7 +1081,11 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
               /* Key not found or other error. */
               free_public_key( pk ); pk = NULL;
               log_error(_("%s: skipped: %s\n"), remusr->d, g10_errstr(rc) );
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+              write_status_text_and_buffer (STATUS_INV_RECP,
+                                            (rc == G10ERR_NO_PUBKEY
+                                             || rc == G10ERR_NO_SECKEY)? "1 ":
+                                            (rc == G10ERR_INV_USER_ID)? "14 ":
+                                            "0 ",
                                             remusr->d, strlen (remusr->d),
                                             -1);
               goto fail;
@@ -1094,7 +1102,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
                   free_public_key(pk); pk = NULL;
                   log_info(_("%s: skipped: public key is disabled\n"),
                            remusr->d);
-                  write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+                  write_status_text_and_buffer (STATUS_INV_RECP, "13 ",
                                                 remusr->d,
                                                 strlen (remusr->d),
                                                 -1);
@@ -1143,7 +1151,7 @@ build_pk_list( STRLIST rcpts, PK_LIST *ret_pk_list, unsigned int use )
             {
               /* Key found but not usable for us (e.g. sign-only key). */
               free_public_key( pk ); pk = NULL;
-              write_status_text_and_buffer (STATUS_INV_RECP, "0 ",
+              write_status_text_and_buffer (STATUS_INV_RECP, "3 ",
                                             remusr->d,
                                             strlen (remusr->d),
                                             -1);
