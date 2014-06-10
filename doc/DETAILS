@@ -583,6 +583,8 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
        - 10 :: Key not trusted
        - 11 :: Missing certificate
        - 12 :: Missing issuer certificate
+       - 13 :: Key disabled
+       - 14 :: Syntax error in specification
 
     Note that for historical reasons the INV_RECP status is also used
     for gpgsm's SIGNER command where it relates to signer's of course.

@@ -802,9 +802,18 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   rc = get_pubkey_byname (ctrl, NULL, pk, name, NULL, NULL, 0, 0);
   if (rc)
     {
+      int code;
+
       /* Key not found or other error. */
       log_error (_("%s: skipped: %s\n"), name, g10_errstr(rc) );
-      send_status_inv_recp (0, name);
+      switch (gpg_err_code (rc))
+        {
+        case GPG_ERR_NO_SECKEY:
+        case GPG_ERR_NO_PUBKEY:   code =  1; break;
+        case GPG_ERR_INV_USER_ID: code = 14; break;
+        default: code = 0; break;
+        }
+      send_status_inv_recp (code, name);
       free_public_key (pk);
       return rc;
     }
@@ -813,7 +822,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   if (rc)
     {
       /* Key found but not usable for us (e.g. sign-only key). */
-      send_status_inv_recp (0, name);
+      send_status_inv_recp (3, name); /* Wrong key usage */
       log_error (_("%s: skipped: %s\n"), name, g10_errstr(rc) );
       free_public_key (pk);
       return rc;
@@ -824,7 +833,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
   if ( (trustlevel & TRUST_FLAG_DISABLED) )
     {
       /* Key has been disabled. */
-      send_status_inv_recp (0, name);
+      send_status_inv_recp (13, name);
       log_info (_("%s: skipped: public key is disabled\n"), name);
       free_public_key (pk);
       return G10ERR_UNU_PUBKEY;
@@ -936,7 +945,7 @@ build_pk_list (ctrl_t ctrl,
           pk->req_usage = use;
 
           /* We explicitly allow encrypt-to to an disabled key; thus
-             we pass 1for the second last argument and 1 as the last
+             we pass 1 for the second last argument and 1 as the last
              argument to disable AKL. */
           if ( (rc = get_pubkey_byname (ctrl,
                                         NULL, pk, rov->d, NULL, NULL, 1, 1)) )
@@ -981,11 +990,10 @@ build_pk_list (ctrl_t ctrl,
             }
           else
             {
-              /* The public key is not usable for encryption or not
-                 available. */
+              /* The public key is not usable for encryption. */
               free_public_key( pk ); pk = NULL;
               log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
-              send_status_inv_recp (0, rov->d);
+              send_status_inv_recp (3, rov->d); /* Wrong key usage */
               goto fail;
             }
         }
