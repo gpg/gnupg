@@ -70,6 +70,8 @@ MSGMERGE=${GETTEXT_PREFIX}${MSGMERGE:-msgmerge}${GETTEXT_SUFFIX}
 DIE=no
 FORCE=
 SILENT=
+PRINT_HOST=no
+PRINT_BUILD=no
 tmp=$(dirname "$0")
 tsdir=$(cd "${tmp}"; pwd)
 version_parts=3
@@ -87,6 +89,14 @@ if test x"$1" = x"--silent"; then
 fi
 if test x"$1" = x"--force"; then
   FORCE=" --force"
+  shift
+fi
+if test x"$1" = x"--print-host"; then
+  PRINT_HOST=yes
+  shift
+fi
+if test x"$1" = x"--print-build"; then
+  PRINT_BUILD=yes
   shift
 fi
 
@@ -229,16 +239,22 @@ fi
 # **** end FIND VERSION ****
 
 
+if [ ! -f "$tsdir/build-aux/config.guess" ]; then
+    fatal "$tsdir/build-aux/config.guess not found"
+    exit 1
+fi
+build=`$tsdir/build-aux/config.guess`
+if [ $PRINT_BUILD = yes ]; then
+    echo "$build"
+    exit 0
+fi
+
+
+
 # ******************
 #  W32 build script
 # ******************
 if [ "$myhost" = "w32" ]; then
-    if [ ! -f "$tsdir/build-aux/config.guess" ]; then
-        fatal "$tsdir/build-aux/config.guess not found"
-        exit 1
-    fi
-    build=`$tsdir/build-aux/config.guess`
-
     case $myhostsub in
         ce)
           w32root="$w32ce_root"
@@ -279,6 +295,10 @@ if [ "$myhost" = "w32" ]; then
         fi
         die_p
     fi
+    if [ $PRINT_HOST = yes ]; then
+        echo "$host"
+        exit 0
+    fi
 
     if [ -f "$tsdir/config.log" ]; then
         if ! head $tsdir/config.log | grep "$host" >/dev/null; then
@@ -299,13 +319,6 @@ fi
 # ***** AMD64 cross build script *******
 # Used to cross-compile for AMD64 (for testing)
 if [ "$myhost" = "amd64" ]; then
-    shift
-    if [ ! -f $tsdir/build-aux/config.guess ]; then
-        echo "$tsdir/build-aux/config.guess not found" >&2
-        exit 1
-    fi
-    build=`$tsdir/build-aux/config.guess`
-
     [ -z "$amd64root" ] && amd64root="$HOME/amd64root"
     info "Using $amd64root as standard install directory"
     replace_sysroot
@@ -325,6 +338,10 @@ if [ "$myhost" = "amd64" ]; then
         echo "Cross compiler kit not installed" >&2
         echo "Stop." >&2
         exit 1
+    fi
+    if [ $PRINT_HOST = yes ]; then
+        echo "$host"
+        exit 0
     fi
 
     if [ -f "$tsdir/config.log" ]; then
