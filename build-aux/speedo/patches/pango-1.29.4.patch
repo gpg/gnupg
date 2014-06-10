@@ -1,0 +1,27 @@
+#! /bin/sh
+patch -p0 -l -f $* < $0
+exit $?
+
+Without that patch the module is build with wrong symbols and thus
+can't be loaded by pango.  I don't know why they have this defines
+just in this module.  It entirely defeats the feature of loading
+modules dynamically - maybe this was just a quick hack for including
+the code directly - however, I was not able to make that work either.
+
+
+--- modules/basic/basic-win32.c~	2011-09-28 16:34:33.000000000 +0200
++++ modules/basic/basic-win32.c	2014-02-20 20:01:10.107723565 +0100
+@@ -33,9 +33,10 @@
+
+ extern HFONT _pango_win32_font_get_hfont (PangoFont *font);
+
+-#ifndef PANGO_MODULE_PREFIX
+-#define PANGO_MODULE_PREFIX _pango_basic_win32
+-#endif
++/* #ifndef PANGO_MODULE_PREFIX */
++/* #define PANGO_MODULE_PREFIX _pango_basic_win32 */
++/* #endif */
++#undef PANGO_MODULE_PREFIX
+
+ #include "pango-engine.h"
+ #include "pango-utils.h"

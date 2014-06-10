@@ -1,0 +1,3 @@
+# Pango Modules file
+#
+"../lib/pango/1.6.0/modules/pango-basic-win32.dll" BasicScriptEngineWin32 PangoEngineShape PangoRenderWin32 common:

@@ -1,0 +1,165 @@
+Here is a list with collected copyright notices. For details see the
+description of each individual package.  [Compiled by wk FIXME]
+
+GnuPG is
+
+  Copyright (C) 1997-1998, 2013-2014 Werner Koch
+  Copyright (C) 1998-2013 Free Software Foundation, Inc.
+  Copyright (C) 2003-2013 g10 Code GmbH
+  Copyright (C) 2002 Klarälvdalens Datakonsult AB
+  Copyright (C) 1995-1997, 2000-2007 Ulrich Drepper <drepper@gnu.ai.mit.edu>
+  Copyright (C) 1994 X Consortium
+  Copyright (C) 1998 by The Internet Society.
+  Copyright (C) 1998-2004 The OpenLDAP Foundation
+  Copyright (C) 1998-2004 Kurt D. Zeilenga.
+  Copyright (C) 1998-2004 Net Boolean Incorporated.
+  Copyright (C) 2001-2004 IBM Corporation.
+  Copyright (C) 1999-2003 Howard Y.H. Chu.
+  Copyright (C) 1999-2003 Symas Corporation.
+  Copyright (C) 1998-2003 Hallvard B. Furuseth.
+  Copyright (C) 1992-1996 Regents of the University of Michigan.
+
+  GnuPG is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  GnuPG is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+  02110-1301, USA
+
+
+GPA is
+
+  Copyright (C) 2000-2002 G-N-U GmbH (http://www.g-n-u.de)
+  Copyright (C) 2002-2003 Miguel Coca.
+  Copyright (C) 2005, 2006, 2008, 2012, 2014 g10 Code GmbH.
+  Copyright (C) 1998-2000 Free Software Foundation, Inc.
+  Copyright (C) 2000-2001 Werner Koch
+  Copyright (C) 2000-2002 Timo Schulz
+
+  GPA is free software; you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+
+  GPA is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+  License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+GPGME is
+
+  Copyright (C) 2000 Werner Koch (dd9jn)
+  Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 g10 Code GmbH
+
+  GPGME is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation; either version 2.1 of
+  the License, or (at your option) any later version.
+
+  GPGME is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+LIBGPG-ERROR is
+
+  Copyright (C) 2003, 2004 g10 Code GmbH
+
+  libgpg-error is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public License
+  as published by the Free Software Foundation; either version 2.1 of
+  the License, or (at your option) any later version.
+
+  libgpg-error is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with this program; if not, see <http://www.gnu.org/licenses/>.
+
+
+GLIB is
+
+  Copyright (C) 1995-1997  Peter Mattis, Spencer Kimball and Josh MacDonald
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the
+  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+  Boston, MA 02111-1307, USA.
+
+  Modified by the GLib Team and others 1997-2000.  See the AUTHORS
+  file for a list of people on the GLib Team.  See the ChangeLog
+  files for a list of changes.  These files are distributed with
+  GLib at ftp://ftp.gtk.org/pub/gtk/.
+
+
+Pthreads-win32 is
+
+  Copyright(C) 1998 John E. Bossom
+  Copyright(C) 1999,2002 Pthreads-win32 contributors
+
+  Most of this is work available under the GNU Lesser General Public
+  License as published by the Free Software Foundation version 2.1 of
+  the License.  The detailed terms are given in the file COPYING in
+  the source distribution; that very file may not be modified and thus
+  it is not possible to include it here.
+
+
+NSIS is
+
+  Copyright (C) 1999-2005 Nullsoft, Inc.
+
+  This license applies to everything in the NSIS package, except where
+  otherwise noted.
+
+  This software is provided 'as-is', without any express or implied
+  warranty. In no event will the authors be held liable for any
+  damages arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any
+  purpose, including commercial applications, and to alter it and
+  redistribute it freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must
+     not claim that you wrote the original software. If you use this
+     software in a product, an acknowledgment in the product
+     documentation would be appreciated but is not required.
+
+  2. Altered source versions must be plainly marked as such, and must
+     not be misrepresented as being the original software.
+
+  3. This notice may not be removed or altered from any source
+     distribution.
+
+  The user interface used with the installer is
+
+  Copyright (C) 2002-2005 Joost Verburg
+
+  [It is distributed along with NSIS and the same conditions as stated
+   above apply]

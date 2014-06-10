@@ -21,6 +21,7 @@ keyserver/gpg2keys_test
 tools/gpg-zip
 
 # Files created by make when not using a VPATH build
+play/
 *.o
 po/en@boldquot.insert-header
 po/en@boldquot.po
