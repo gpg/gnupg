@@ -23,7 +23,7 @@
 # or
 #   make -f speedo.mk
 #
-# Builds all packages and installs them under play/inst.  At the end,
+# Builds all packages and installs them under PLAY/inst.  At the end,
 # speedo prints commands that can be executed in the local shell to
 # make use of the installed packages.
 #
@@ -390,7 +390,7 @@ MAKENSIS=makensis
 BUILD_ISODATE=$(shell date -u +%Y-%m-%d)
 
 # These paths must be absolute, as we switch directories pretty often.
-root := $(shell pwd)/play
+root := $(shell pwd)/PLAY
 sdir := $(root)/src
 bdir := $(root)/build
 bdir6:= $(root)/build-w64
@@ -772,7 +772,7 @@ clean-stamps:
 	$(RM) -fR $(stampdir)
 
 clean-speedo:
-	$(RM) -fR play
+	$(RM) -fR PLAY
 
 
 #
@@ -780,10 +780,16 @@ clean-speedo:
 #
 
 dist-source: all
-	for i in 00 01 02 03; do sleep 1;touch play/stamps/stamp-*-${i}-*;done
-	tar -cvJf gnupg-$(INST_VERSION)_$(BUILD_ISODATE).tar.xz \
-	    --exclude-backups --exclude-vc \
-	    patches play/stamps/stamp-*-00-unpack play/src
+	for i in 00 01 02 03; do sleep 1;touch PLAY/stamps/stamp-*-${i}-*;done
+	(set -e;\
+	 tarname="gnupg-w32-$(INST_VERSION)_$(BUILD_ISODATE).tar" ;\
+	 [ -f "$$tarname" ] && rm "$$tarname" ;\
+         tar -C $(topsrc) -cf "$$tarname" --exclude-backups --exclude-vc \
+             --anchored --exclude './PLAY' . ;\
+	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vc \
+	     PLAY/stamps/stamp-*-00-unpack PLAY/src ;\
+         xz "$$tarname" ;\
+	)
 
 
 $(bdir)/NEWS.tmp: $(topsrc)/NEWS
@@ -820,6 +826,7 @@ installer: all w32_insthelpers $(bdir)/inst-options.ini $(bdir)/README.txt
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
 		    $(w32src)/inst.nsi
+	@echo "Ready: $(idir)/gnupg-w32-$(INST_VERSION)"
 
 #
 # Mark phony targets

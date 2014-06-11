@@ -93,7 +93,7 @@ SetCompressor lzma
 Name "${PRETTY_PACKAGE}"
 
 # Set the output filename.
-OutFile "${PACKAGE}-${VERSION}.exe"
+OutFile "gnupg-w32-${VERSION}.exe"
 
 #Fixme: Do we need a logo
 #Icon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
@@ -526,6 +526,7 @@ Section "-gnupginst"
   # If we are reinstalling, try to kill a possible running agent using
   # an already installed gpgconf.
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
+    ExecWait '"$INSTDIR\bin\gpgconf" --kill dirmngr'
     ExecWait '"$INSTDIR\bin\gpgconf" --kill gpg-agent'
 
   no_gpgconf:
@@ -542,9 +543,11 @@ Section "GnuPG" SEC_gnupg
 
   SetOutPath "$INSTDIR\bin"
   File /oname=gpg.exe "bin/gpg2.exe"
+  File /oname=gpgv.exe "bin/gpgv2.exe"
   File "bin/gpgsm.exe"
   File "bin/gpgconf.exe"
   File "bin/gpg-connect-agent.exe"
+  File "bin/gpgtar.exe"
 
   ClearErrors
   SetOverwrite try
@@ -553,6 +556,22 @@ Section "GnuPG" SEC_gnupg
   ifErrors 0 +3
       File /oname=gpg-agent.exe.tmp "bin/gpg-agent.exe"
       Rename /REBOOTOK gpg-agent.exe.tmp gpg-agent.exe
+
+  ClearErrors
+  SetOverwrite try
+  File "libexec/scdaemon.exe"
+  SetOverwrite lastused
+  ifErrors 0 +3
+      File /oname=scdaemon.exe.tmp "libexec/scdaemon.exe"
+      Rename /REBOOTOK scdaemon.exe.tmp scdaemon.exe
+
+  ClearErrors
+  SetOverwrite try
+  File "bin/dirmngr.exe"
+  SetOverwrite lastused
+  ifErrors 0 +3
+      File /oname=dirmngr.exe.tmp "bin/dirmngr.exe"
+      Rename /REBOOTOK dirmngr.exe.tmp dirmngr.exe
 
   SetOutPath "$INSTDIR\share\gnupg"
   File "share/gnupg/gpg-conf.skel"
@@ -995,10 +1014,14 @@ SectionEnd
 
 Section "-un.gnupg"
   Delete "$INSTDIR\bin\gpg.exe"
+  Delete "$INSTDIR\bin\gpgv.exe"
   Delete "$INSTDIR\bin\gpgsm.exe"
   Delete "$INSTDIR\bin\gpg-agent.exe"
+  Delete "$INSTDIR\bin\scdaemon.exe"
+  Delete "$INSTDIR\bin\dirmngr.exe"
   Delete "$INSTDIR\bin\gpgconf.exe"
   Delete "$INSTDIR\bin\gpg-connect-agent.exe"
+  Delete "$INSTDIR\bin\gpgtar.exe"
 
   Delete "$INSTDIR\share\gnupg\gpg-conf.skel"
   RMDir  "$INSTDIR\share\gnupg"
