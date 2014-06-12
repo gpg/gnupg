@@ -403,11 +403,18 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
   int hdrlen;
   int new_ctb = 0, partial = 0;
   int with_uid = (onlykeypkts == 2);
+  off_t pos;
 
   *skip = 0;
   assert (!pkt->pkt.generic);
-  if (retpos)
-    *retpos = iobuf_tell (inp);
+  if (retpos || list_mode)
+    {
+      pos = iobuf_tell (inp);
+      if (retpos)
+        *retpos = pos;
+    }
+  else
+    pos = 0; /* (silence compiler warning) */
 
   if ((ctb = iobuf_get (inp)) == -1)
     {
@@ -558,6 +565,12 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
 		 new_ctb ? " (new_ctb)" : "");
 #endif
     }
+
+  if (list_mode)
+    es_fprintf (listfp, "# off=%lu ctb=%02x tag=%d hlen=%d plen=%lu%s%s\n",
+                (unsigned long)pos, ctb, pkttype, hdrlen, pktlen,
+                partial? " partial":"",
+                new_ctb? " new-ctb":"");
 
   pkt->pkttype = pkttype;
   rc = G10ERR_UNKNOWN_PACKET;	/* default error */
