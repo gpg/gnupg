@@ -222,12 +222,12 @@ check_hijacking (assuan_context_t ctx)
   string = get_membuf (&mb, NULL);
   if (!string || !*string)
     {
-      /* Definitley hijacked - show a warning prompt.  */
+      /* Definitely hijacked - show a warning prompt.  */
       static int shown;
       const char warn1[] =
         "The GNOME keyring manager hijacked the GnuPG agent.";
       const char warn2[] =
-        "GnuPG will not work proberly - please configure that "
+        "GnuPG will not work properly - please configure that "
         "tool to not interfere with the GnuPG system!";
       log_info ("WARNING: %s\n", warn1);
       log_info ("WARNING: %s\n", warn2);
