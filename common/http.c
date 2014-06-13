@@ -2419,8 +2419,21 @@ static void
 send_gnutls_bye (void *opaque)
 {
   gnutls_session_t tls_session = opaque;
+  int ret;
 
-  gnutls_bye (tls_session, GNUTLS_SHUT_RDWR);
+ again:
+  do
+    ret = gnutls_bye (tls_session, GNUTLS_SHUT_RDWR);
+  while (ret == GNUTLS_E_INTERRUPTED);
+  if (ret == GNUTLS_E_AGAIN)
+    {
+      struct timeval tv;
+
+      tv.tv_sec = 0;
+      tv.tv_usec = 50000;
+      my_select (0, NULL, NULL, NULL, &tv);
+      goto again;
+    }
 }
 #endif /*HTTP_USE_GNUTLS*/
 
@@ -2486,6 +2499,19 @@ http_verify_server_credentials (http_session_t sess)
   else if (status)
     {
       log_error ("%s: status=0x%04x\n", errprefix, status);
+#if GNUTLS_VERSION_NUMBER >= 0x030104
+      {
+        gnutls_datum_t statusdat;
+
+        if (!gnutls_certificate_verification_status_print
+            (status, GNUTLS_CRT_X509, &statusdat, 0))
+          {
+            log_info ("%s: %s\n", errprefix, statusdat.data);
+            gnutls_free (statusdat.data);
+          }
+      }
+#endif /*gnutls >= 3.1.4*/
+
       sess->verify.status = status;
       if (!err)
         err = gpg_error (GPG_ERR_GENERAL);
