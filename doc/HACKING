@@ -93,12 +93,47 @@ appear in the ChangeLog.
   need.  If you really need to do it, use a separate commit for such a
   change.
 
+* Windows
+** How to build an installer for Windows
+
+   Your best bet is to use a decent Debian System for development.
+   You need to install a long list of tools for building.  This list
+   still needs to be compiled.  However, the build process will stop
+   if a tool is missing.  GNU make is required (on non GNU systems
+   often installed as "gmake").  The installer requires a couple of
+   extra software to be available either as tarballs or as local git
+   repositories.  In case this file here is part of a gnupg-w32-2.*.xz
+   complete tarball as distributed from the same place as a binary
+   installer, all such tarballs are already included.
+
+   Cd to the GnuPG source directory and use one of one of these
+   command:
+
+   - If sources are included (gnupg-w32-*.tar.xz)
+
+     make -f build-aux/speedo.mk WHAT=this installer
+
+   - To build from tarballs
+
+     make -f build-aux/speedo.mk WHAT=release TARBALLS=TARDIR installer
+
+   - To build from local GIT repos
+
+     make -f build-aux/speedo.mk WHAT=git TARBALLS=TARDIR installer
+
+   Note that also you need to supply tarballs with supporting
+   libraries even if you build from git.  The makefile expects only
+   the core GnuPG software to be available as local GIT repositories.
+   speedo.mk has the versions of the tarballs and the branch names of
+   the git repositories.  In case of problems, don't hesitate to ask
+   on the gnupg-devel mailing for help.
+
+
 * Debug hints
 
   See the manual for some hints.
 
 * Standards
-
 ** RFCs
 
 1423  Privacy Enhancement for Internet Electronic Mail:
@@ -119,6 +154,8 @@ appear in the ChangeLog.
 3156  MIME Security with Pretty Good Privacy (PGP).
 
 4880  Current OpenPGP specification.
+
+6337  Elliptic Curve Cryptography (ECC) in OpenPGP
 
 * Various information
 

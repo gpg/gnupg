@@ -46,18 +46,23 @@
 SPEEDO_MK := $(realpath $(lastword $(MAKEFILE_LIST)))
 
 
-# Set this to "git" or "release".
+# Set this to "git" to build from git,
+#          to "release" from tarballs,
+#          to "this" from the unpacked sources.
 WHAT=git
 
 # Set target to "native" or "w32"
 TARGETOS=w32
 
-# Set to the location of the directory with traballs of
+# Set to the location of the directory with tarballs of
 # external packages.
 TARBALLS=$(shell pwd)/../tarballs
 
 #  Number of parallel make jobs
 MAKE_J=3
+
+# Name to use for the w32 installer and sources
+INST_NAME=gnupg-w32
 
 # =====BEGIN LIST OF PACKAGES=====
 # The packages that should be built.  The order is also the build order.
@@ -172,7 +177,8 @@ pkg2rep = $(TARBALLS)
 # Note that you can override the defaults in this file in a local file
 # "config.mk"
 
-ifeq ($(WHAT),git)
+ifeq ($(WHAT),this)
+else ifeq ($(WHAT),git)
   speedo_pkg_libgpg_error_git = $(gitrep)/libgpg-error
   speedo_pkg_libgpg_error_gitref = master
   speedo_pkg_npth_git = $(gitrep)/npth
@@ -191,7 +197,7 @@ ifeq ($(WHAT),git)
   speedo_pkg_gpa_gitref = master
   speedo_pkg_gpgex_git = $(gitrep)/gpgex
   speedo_pkg_gpgex_gitref = master
-else
+else ifeq ($(WHAT),release)
   speedo_pkg_libgpg_error_tar = \
 	$(pkgrep)/libgpg-error/libgpg-error-$(libgpg_error_ver).tar.bz2
   speedo_pkg_npth_tar = \
@@ -210,6 +216,8 @@ else
 	$(pkgrep)/gpa/gpa-$(gpa_ver).tar.bz2
   speedo_pkg_gpgex_tar = \
 	$(pkgrep)/gpex/gpgex-$(gpa_ver).tar.bz2
+else
+  $(error invalid value for WHAT (use on of: git release this))
 endif
 
 speedo_pkg_pkg_config_tar = $(pkg2rep)/pkg-config-$(pkg_config_ver).tar.gz
@@ -529,7 +537,9 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
 	@echo "speedo:  */"
 	@(set -e; cd $(sdir);				\
 	 $(call SETVARS,$(1)); 				\
-	 if [ "$(1)" = "gnupg" ]; then                  \
+	 if [ "$(WHAT)" = "this" ]; then                \
+           echo "speedo: using included source";        \
+	 elif [ "$(1)" = "gnupg" ]; then                \
 	   cd $$$${pkgsdir};                            \
            if [ -f config.log ]; then                   \
              echo "GnuPG has already been build in-source" >&2  ;\
@@ -782,11 +792,13 @@ clean-speedo:
 dist-source: all
 	for i in 00 01 02 03; do sleep 1;touch PLAY/stamps/stamp-*-${i}-*;done
 	(set -e;\
-	 tarname="gnupg-w32-$(INST_VERSION)_$(BUILD_ISODATE).tar" ;\
+	 tarname="$(INST_NAME)-$(INST_VERSION)_$(BUILD_ISODATE).tar" ;\
 	 [ -f "$$tarname" ] && rm "$$tarname" ;\
          tar -C $(topsrc) -cf "$$tarname" --exclude-backups --exclude-vc \
+             --transform='s,^\./,$(INST_NAME)-$(INST_VERSION)/,' \
              --anchored --exclude './PLAY' . ;\
 	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vc \
+              --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
 	     PLAY/stamps/stamp-*-00-unpack PLAY/src ;\
          xz "$$tarname" ;\
 	)
@@ -823,10 +835,11 @@ installer: all w32_insthelpers $(bdir)/inst-options.ini $(bdir)/README.txt
                     -DTOP_SRCDIR=$(topsrc) \
                     -DW32_SRCDIR=$(w32src) \
                     -DBUILD_ISODATE=$(BUILD_ISODATE) \
+		    -DNAME=$(INST_NAME) \
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
 		    $(w32src)/inst.nsi
-	@echo "Ready: $(idir)/gnupg-w32-$(INST_VERSION)"
+	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)"
 
 #
 # Mark phony targets

@@ -70,6 +70,10 @@ binary gpg but a gpg2 so that this package won't conflict with a GnuPG
 In case of problem please ask on the gnupg-users@gnupg.org mailing
 list for advise.
 
+Instruction on how to build for Windows can be found in the file
+doc/HACKING in the section "How to build an installer for Windows".
+This requires some experience as developer.
+
 Note that the PKITS tests are always skipped unless you copy the PKITS
 test data file into the tests/pkits directory.  There is no need to
 run these test and some of them may even fail because the test scripts

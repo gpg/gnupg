@@ -23,6 +23,7 @@
 #  TOP_SRCDIR
 #  W32_SRCDIR
 #  BUILD_ISODATE
+#  NAME
 #  VERSION
 #  PROD_VERSION
 
@@ -93,7 +94,7 @@ SetCompressor lzma
 Name "${PRETTY_PACKAGE}"
 
 # Set the output filename.
-OutFile "gnupg-w32-${VERSION}.exe"
+OutFile "$(NAME)-${VERSION}.exe"
 
 #Fixme: Do we need a logo
 #Icon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
