@@ -1,6 +1,7 @@
 /* export.c - Export keys in the OpenPGP defined format.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
  *               2005, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2014  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -338,8 +339,8 @@ exact_subkey_match_p (KEYDB_SEARCH_DESC *desc, KBNODE node)
 /* Return a canonicalized public key algoithms.  This is used to
    compare different flavors of algorithms (e.g. ELG and ELG_E are
    considered the same).  */
-static int
-canon_pubkey_algo (int algo)
+static enum gcry_pk_algos
+canon_pk_algo (enum gcry_pk_algos algo)
 {
   switch (algo)
     {
@@ -348,6 +349,9 @@ canon_pubkey_algo (int algo)
     case GCRY_PK_RSA_S: return GCRY_PK_RSA;
     case GCRY_PK_ELG:
     case GCRY_PK_ELG_E: return GCRY_PK_ELG;
+    case GCRY_PK_ECC:
+    case GCRY_PK_ECDSA:
+    case GCRY_PK_ECDH: return GCRY_PK_ECC;
     default: return algo;
     }
 }
@@ -362,12 +366,13 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   gpg_error_t err;
   gcry_sexp_t top_list;
   gcry_sexp_t list = NULL;
+  char *curve = NULL;
   const char *value;
   size_t valuelen;
   char *string;
   int  idx;
   int  is_v4, is_protected;
-  int  pubkey_algo;
+  enum gcry_pk_algos pk_algo;
   int  protect_algo = 0;
   char iv[16];
   int  ivlen = 0;
@@ -375,11 +380,13 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   int  s2k_algo = 0;
   byte s2k_salt[8];
   u32  s2k_count = 0;
+  int  is_ecdh = 0;
   size_t npkey, nskey;
   gcry_mpi_t skey[10];  /* We support up to 9 parameters.  */
   int skeyidx = 0;
   struct seckey_info *ski;
 
+  /* gcry_log_debugsxp ("transferkey", s_pgp); */
   top_list = gcry_sexp_find_token (s_pgp, "openpgp-private-key", 0);
   if (!top_list)
     goto bad_seckey;
@@ -445,6 +452,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       xfree (string);
     }
 
+  /* Parse the gcrypt PK algo and check that it is okay.  */
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "algo", 0);
   if (!list)
@@ -452,15 +460,52 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   string = gcry_sexp_nth_string (list, 1);
   if (!string)
     goto bad_seckey;
-  pubkey_algo = gcry_pk_map_name (string);
-  xfree (string);
-
-  if (gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
-      || gcry_pk_algo_info (pubkey_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
+  pk_algo = gcry_pk_map_name (string);
+  xfree (string); string = NULL;
+  if (gcry_pk_algo_info (pk_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
+      || gcry_pk_algo_info (pk_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
       || !npkey || npkey >= nskey || nskey > PUBKEY_MAX_NSKEY)
     goto bad_seckey;
-  pubkey_algo = map_pk_gcry_to_openpgp (pubkey_algo);
 
+  /* Check that the pubkey algo matches the one from the public key.  */
+  switch (canon_pk_algo (pk_algo))
+    {
+    case GCRY_PK_RSA:
+      if (!is_RSA (pk->pubkey_algo))
+        pk_algo = 0;  /* Does not match.  */
+      break;
+    case GCRY_PK_DSA:
+      if (!is_DSA (pk->pubkey_algo))
+        pk_algo = 0;  /* Does not match.  */
+      break;
+    case GCRY_PK_ELG:
+      if (!is_ELGAMAL (pk->pubkey_algo))
+        pk_algo = 0;  /* Does not match.  */
+      break;
+    case GCRY_PK_ECC:
+      if (pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
+        ;
+      else if (pk->pubkey_algo == PUBKEY_ALGO_ECDH)
+        is_ecdh = 1;
+      else if (pk->pubkey_algo == PUBKEY_ALGO_EDDSA)
+        ;
+      else
+        pk_algo = 0;  /* Does not match.  */
+      /* For ECC we do not have the domain parameters thus fix our info.  */
+      npkey = 1;
+      nskey = 2;
+      break;
+    default:
+      pk_algo = 0;   /* Oops.  */
+      break;
+    }
+  if (!pk_algo)
+    {
+      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      goto leave;
+    }
+
+  /* Parse the key parameters.  */
   gcry_sexp_release (list);
   list = gcry_sexp_find_token (top_list, "skey", 0);
   if (!list)
@@ -509,7 +554,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
 
   gcry_sexp_release (list); list = NULL;
 
-  /* We have no need for the CSUM valuel thus we don't parse it.  */
+  /* We have no need for the CSUM value thus we don't parse it.  */
   /* list = gcry_sexp_find_token (top_list, "csum", 0); */
   /* if (list) */
   /*   { */
@@ -522,6 +567,14 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   /* else */
   /*   desired_csum = 0; */
   /* gcry_sexp_release (list); list = NULL; */
+
+  /* Get the curve name if any,  */
+  list = gcry_sexp_find_token (top_list, "curve", 0);
+  if (list)
+    {
+      curve = gcry_sexp_nth_string (list, 1);
+      gcry_sexp_release (list); list = NULL;
+    }
 
   gcry_sexp_release (top_list); top_list = NULL;
 
@@ -559,57 +612,49 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
     }
 
   /* We need to change the received parameters for ECC algorithms.
-     The transfer format has all parameters but OpenPGP defines that
-     only the OID of the curve is to be used.  */
-  if (pubkey_algo == PUBKEY_ALGO_ECDSA
-      || pubkey_algo == PUBKEY_ALGO_EDDSA
-      || pubkey_algo == PUBKEY_ALGO_ECDH)
+     The transfer format has the curve name and the parameters
+     separate.  We put them all into the SKEY array.  */
+  if (canon_pk_algo (pk_algo) == GCRY_PK_ECC)
     {
-      gcry_sexp_t s_pubkey;
-      const char *curvename, *curveoidstr;
-      gcry_mpi_t mpi;
+      const char *oidstr;
 
-      /* We build an S-expression with the public key parameters and
-         ask Libgcrypt to return the matching curve name.  */
-      if (npkey != 6 || !skey[0] || !skey[1] || !skey[2]
-          || !skey[3] || !skey[4] || !skey[5]
-          || !skey[6] || skey[7])
+      /* Assert that all required parameters are available.  We also
+         check that the array does not contain more parameters than
+         needed (this was used by some beta versions of 2.1.  */
+      if (!curve || !skey[0] || !skey[1] || skey[2])
         {
           err = gpg_error (GPG_ERR_INTERNAL);
           goto leave;
         }
-      err = gcry_sexp_build (&s_pubkey, NULL,
-                             "(public-key(ecc(p%m)(a%m)(b%m)(g%m)(n%m)))",
-                             skey[0], skey[1], skey[2], skey[3], skey[4]);
-      if (err)
-        goto leave;
-      curvename = gcry_pk_get_curve (s_pubkey, 0, NULL);
-      gcry_sexp_release (s_pubkey);
-      curveoidstr = openpgp_curve_to_oid (curvename, NULL);
-      if (!curveoidstr)
+
+      oidstr = openpgp_curve_to_oid (curve, NULL);
+      if (!oidstr)
         {
-          log_error ("no OID known for curve '%s'\n", curvename);
-          err = gpg_error (GPG_ERR_UNKNOWN_NAME);
+          log_error ("no OID known for curve '%s'\n", curve);
+          err = gpg_error (GPG_ERR_UNKNOWN_CURVE);
           goto leave;
         }
-      err = openpgp_oid_from_str (curveoidstr, &mpi);
+      /* Put the curve's OID into into the MPI array.  This requires
+         that we shift Q and D.  For ECDH also insert the KDF parms. */
+      if (is_ecdh)
+        {
+          skey[4] = NULL;
+          skey[3] = skey[1];
+          skey[2] = gcry_mpi_copy (pk->pkey[2]);
+        }
+      else
+        {
+          skey[3] = NULL;
+          skey[2] = skey[1];
+        }
+      skey[1] = skey[0];
+      skey[0] = NULL;
+      err = openpgp_oid_from_str (oidstr, skey + 0);
       if (err)
         goto leave;
-
-      /* Now replace the curve parameters by the OID and shift the
-         rest of the parameters.  */
-      gcry_mpi_release (skey[0]);
-      skey[0] = mpi;
-      for (idx=1; idx <= 4; idx++)
-        gcry_mpi_release (skey[idx]);
-      skey[1] = skey[5];
-      skey[2] = skey[6];
-      for (idx=3; idx <= 6; idx++)
-        skey[idx] = NULL;
-
       /* Fixup the NPKEY and NSKEY to match OpenPGP reality.  */
-      npkey = 2;
-      nskey = 3;
+      npkey = 2 + is_ecdh;
+      nskey = 3 + is_ecdh;
 
       /* for (idx=0; skey[idx]; idx++) */
       /*   { */
@@ -632,11 +677,6 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
     {
       /* We expect an already encoded S2K count.  */
       err = gpg_error (GPG_ERR_INV_DATA);
-      goto leave;
-    }
-  if (canon_pubkey_algo (pubkey_algo) != canon_pubkey_algo (pk->pubkey_algo))
-    {
-      err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       goto leave;
     }
   err = openpgp_cipher_test_algo (protect_algo);
@@ -695,6 +735,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   /* That's it.  */
 
  leave:
+  gcry_free (curve);
   gcry_sexp_release (list);
   gcry_sexp_release (top_list);
   for (idx=0; idx < skeyidx; idx++)

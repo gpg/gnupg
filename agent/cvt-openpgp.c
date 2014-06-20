@@ -1142,6 +1142,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   const char *algoname;
   int npkey, nskey;
   gcry_mpi_t array[10];
+  gcry_sexp_t curve = NULL;
   char protect_iv[16];
   char salt[8];
   unsigned long s2k_count;
@@ -1200,13 +1201,26 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
     }
   else if (!strcmp (name, "ecc"))
     {
-      /* FIXME: We need to use the curve parameter.  */
+      gcry_buffer_t iob;
+      char iobbuf[32];
+
       algoname = "ecc"; /* Decide later by checking the usage.  */
-      npkey = 6;
-      nskey = 7;
-      err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
-                                     array+0, array+1, array+2, array+3,
-                                     array+4, array+5, array+6, NULL);
+      npkey = 1;
+      nskey = 2;
+      iob.data = iobbuf;
+      iob.size = sizeof iobbuf - 1;
+      iob.off = 0;
+      iob.len = 0;
+      err = gcry_sexp_extract_param (list, NULL, "&'curve'/qd",
+                                     &iob, array+0, array+1, NULL);
+      if (!err)
+        {
+          assert (iob.len < sizeof iobbuf -1);
+          iobbuf[iob.len] = 0;
+          err = gcry_sexp_build (&curve, NULL, "(curve %s)", iobbuf);
+
+          gcry_log_debugsxp ("at 1", curve);
+        }
     }
   else if (!strcmp (name, "ecdsa"))
     {
@@ -1231,9 +1245,12 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
   xfree (name);
-  gcry_sexp_release (list);
+  gcry_sexp_release (list); list = NULL;
   if (err)
-    return err;
+    {
+      gcry_sexp_release (curve);
+      return err;
+    }
 
   gcry_create_nonce (protect_iv, sizeof protect_iv);
   gcry_create_nonce (salt, sizeof salt);
@@ -1282,9 +1299,10 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
                                "(openpgp-private-key\n"
                                " (version 1:4)\n"
                                " (algo %s)\n"
-                               " %S\n"
+                               " %S%S\n"
                                " (protection sha1 aes %b 1:3 sha1 %b %s))\n",
                                algoname,
+                               curve,
                                tmpkey,
                                (int)sizeof protect_iv, protect_iv,
                                (int)sizeof salt, salt,
@@ -1297,6 +1315,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
 
   for (i=0; i < DIM (array); i++)
     gcry_mpi_release (array[i]);
+  gcry_sexp_release (curve);
 
   return err;
 }
