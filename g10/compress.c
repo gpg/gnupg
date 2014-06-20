@@ -131,7 +131,7 @@ init_uncompress( compress_filter_context_t *zfx, z_stream *zs )
      * PGP uses a windowsize of 13 bits. Using a negative value for
      * it forces zlib not to expect a zlib header.  This is a
      * undocumented feature Peter Gutmann told me about.
-     *    
+     *
      * We must use 15 bits for the inflator because CryptoEx uses 15
      * bits thus the output would get scrambled w/o error indication
      * if we would use 13 bits.  For the uncompressing this does not
@@ -155,7 +155,8 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	       IOBUF a, size_t *ret_len )
 {
     int zrc;
-    int rc=0;
+    int rc = 0;
+    int leave = 0;
     size_t n;
     int nread, count;
     int refill = !zs->avail_in;
@@ -178,13 +179,14 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    if( nread == -1 )
                 nread = 0;
 	    n += nread;
-	    /* If we use the undocumented feature to suppress
-	     * the zlib header, we have to give inflate an
-	     * extra dummy byte to read */
-	    if( nread < count && zfx->algo == 1 ) {
-		*(zfx->inbuf + n) = 0xFF; /* is it really needed ? */
-		zfx->algo1hack = 1;
+	    /* Algo 1 has no zlib header which requires us to to give
+	     * inflate an extra dummy byte to read. To be on the safe
+	     * side we allow for up to 4 ff bytes.  */
+	    if( nread < count && zfx->algo == 1 && zfx->algo1hack < 4) {
+		*(zfx->inbuf + n) = 0xFF;
+		zfx->algo1hack++;
 		n++;
+                leave = 1;
 	    }
 	    zs->avail_in = n;
 	}
@@ -208,7 +210,8 @@ do_uncompress( compress_filter_context_t *zfx, z_stream *zs,
 	    else
 		log_fatal("zlib inflate problem: rc=%d\n", zrc );
 	}
-    } while( zs->avail_out && zrc != Z_STREAM_END  && zrc != Z_BUF_ERROR );
+    } while (zs->avail_out && zrc != Z_STREAM_END && zrc != Z_BUF_ERROR
+             && !leave);
     *ret_len = zfx->outbufsize - zs->avail_out;
     if( DBG_FILTER )
 	log_debug("do_uncompress: returning %u bytes\n", (unsigned)*ret_len );
