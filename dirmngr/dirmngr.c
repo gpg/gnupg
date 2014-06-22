@@ -201,7 +201,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|N|do not return more than N items in one query")),
 
   ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
-                N_("|FILE|use the CA certifciates in FILE for HKP over TLS")),
+                N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
 
 
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */

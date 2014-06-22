@@ -1257,7 +1257,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
                 err = agent_get_confirmation
                   (ctrl,
                    _("Warning: This key is also listed for use with SSH!\n"
-                     "Deleting the key will may remove your ability to"
+                     "Deleting the key will may remove your ability to "
                      "access remote machines."),
                    _("Delete key"), _("No"), 0);
                 if (err)
