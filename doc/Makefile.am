@@ -18,7 +18,7 @@
 
 EXTRA_DIST = DETAILS FAQ \
              HACKING OpenPGP README.W32 samplekeys.asc gnupg.7 \
-             TRANSLATE gpg.ru.sgml gpg.ru.1 highlights-1.4.txt \
+             TRANSLATE highlights-1.4.txt \
              gpg.texi gpgv.texi specify-user-id.texi see-also-note.texi \
 	     opt-homedir.texi texi.css yat2m.c gpl.texi gpg-zip.1
 
@@ -32,7 +32,7 @@ sources_from_trunk = $(myman_sources) \
 
 info_TEXINFOS = gnupg1.texi
 
-man_MANS = $(myman_pages) gnupg.7 gpg.ru.1 gpg-zip.1
+man_MANS = $(myman_pages) gnupg.7 gpg-zip.1
 
 gnupg1_TEXINFOS = gnupg1.texi
 
@@ -44,7 +44,7 @@ pkgdata_DATA = FAQ
 # we can't add gpg.texi gpgv.texi here because automake does not like them to
 # be built files.
 
-CLEANFILES = gpg.xml gpgv.xml gpg.ru.xml
+CLEANFILES = gpg.xml gpgv.xml
 DISTCLEANFILES = yat2m yat2m-stamp.tmp yat2m-stamp $(myman_pages)
 
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css -D gpgone
@@ -78,15 +78,6 @@ $(myman_pages) : yat2m-stamp
                fi; \
              fi
 
-
-.sgml.1:
-if HAVE_DOCBOOK_TO_MAN
-	docbook-to-man $<  >$@
-else
-	: Warning: missing docbook-to-man, cannot make $@
-	echo ".TH $< 1"   >$@
-	echo "No man page due to missing docbook-to-man" >>$@
-endif
 
 dist-hook:
 	@if test "`wc -c < gpg.1`" -lt 200; then \
