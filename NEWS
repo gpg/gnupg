@@ -1,5 +1,19 @@
-Noteworthy changes in version 1.4.17 (unreleased)
+Noteworthy changes in version 1.4.17 (2014-06-23)
 -------------------------------------------------
+
+ * Avoid DoS due to garbled compressed data packets.
+
+ * Screen keyserver reponses to avoid import of unwanted keys by rogue
+   servers.
+
+ * Add hash algorithms to the "sig" records of the colon output.
+
+ * More specific reason codes for INV_RECP status.
+
+ * Fixes for PC/SC access on Apple.
+
+ * Minor bug fixes.
+
 
 Noteworthy changes in version 1.4.16 (2013-12-18)
 -------------------------------------------------

@@ -1,12 +1,12 @@
 
 		    GnuPG - The GNU Privacy Guard
 		   -------------------------------
-                            Version 1.4.16
+                            Version 1.4.17
 
 	 Copyright 1998, 1999, 2000, 2001, 2002, 2003,
                    2004, 2005, 2006, 2007, 2008, 2009,
                    2010, 2012, 2013  Free Software Foundation, Inc.
-         Copyright 1997, 1998, 2013 Werner Koch
+         Copyright 1997, 1998, 2013, 2014 Werner Koch
 
     This file is free software; as a special exception the author
     gives unlimited permission to copy and/or distribute it, with or
@@ -783,10 +783,12 @@
     How to Get More Information
     ---------------------------
 
-    The primary WWW page is http://www.gnupg.org
+    The primary WWW page is https://www.gnupg.org
+               or using TOR http://ic6au7wa3f6naxjq.onion
+
     The primary FTP site is ftp://ftp.gnupg.org/gcrypt/
 
-    See http://www.gnupg.org/download/mirrors.html for a list of
+    See https://www.gnupg.org/download/mirrors.html for a list of
     mirrors and use them if possible.  You may also find GnuPG
     mirrored on some of the regular GNU mirrors.
 
@@ -813,7 +815,7 @@
     of "subscribe" to x-request@gnupg.org, where x is the name of the
     mailing list (gnupg-announce, gnupg-users, etc.).  An archive of
     the mailing lists are available at
-    http://www.gnupg.org/documentation/mailing-lists.html
+    https://www.gnupg.org/documentation/mailing-lists.html
 
     Please direct bug reports to http://bugs.gnupg.org or post
     them direct to the mailing list <gnupg-devel@gnupg.org>.
@@ -825,12 +827,9 @@
     by the authors and we try to answer questions when time allows us
     to do so.
 
-    Commercial grade support for GnuPG is available; please see
-    http://www.gnupg.org/service.html .
-
-    The driving force behind the development of GnuPG is the company
-    of its principal author, Werner Koch.  Maintenance and improvement
-    of GnuPG and related software take up most of their resources.
-    To continue the work they ask to either donate money, purchase a
-    support contract, or engage them for custom enhancements. See
-    http://g10code.com/gnupg-donation.html
+    Commercial grade support for GnuPG is available; for a listing of
+    offers see https://www.gnupg.org/service.html .  Maintaining and
+    improving GnuPG is costly.  Since 2001, g10 Code GmbH, a German
+    company owned and headed by GnuPG's principal author Werner Koch,
+    is bearing the majority of these costs.  To help them carry on
+    this work, they need your support.  See https://gnupg.org/donate/

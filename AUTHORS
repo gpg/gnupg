@@ -1,9 +1,15 @@
 Program: GnuPG
 Version: 1.4
+Homepage: https://www.gnupg.org
 Maintainer:  Werner Koch <wk@gnupg.org>
 Bug reports: http://bugs.gnupg.org
 Security related bug reports: <security@gnupg.org>
 License: GPLv3+
+
+GnuPG is free software.  See the files COPYING for copying conditions.
+License copyright years may be listed using range notation, e.g.,
+2000-2013, indicating that every year in the range, inclusive, is a
+copyrightable year that would otherwise be listed individually.
 
 
 Authors with a FSF copyright assignment
@@ -129,7 +135,7 @@ Other authors
 =============
 
 The need for copyright assignments to the FSF has been waived on
-2013-03-29; The need for copyright disclaimers for translations has
+2013-03-29; the need for copyright disclaimers for translations has
 been waived in December 2012.
 
 This program uses the zlib compression library written by
@@ -161,13 +167,26 @@ was written by 1996-2010 Julian R Seward.  See bzip/LICENSE for
 details.
 
 
+Copyright
+=========
+
+GnuPG is distributed under the GNU General Public License, version 3
+or later.
+
+Note that some files are under a combination of the GNU Lesser General
+Public License, version 3 and the GNU General Public License, version
+2.  A few other files carry the all permissive license note as found
+at the bottom of this file.
+
+====================
+
  Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
            2008, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
- Copyright 2013 Werner Koch
+ Copyright 2013, 2014 Werner Koch
 
- This file is free software; as a special exception the author gives
- unlimited permission to copy and/or distribute it, with or without
- modifications, as long as this notice is preserved.
+ This file (AUTHORS) is free software; as a special exception the
+ author gives unlimited permission to copy and/or distribute it, with
+ or without modifications, as long as this notice is preserved.
 
  This file is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
