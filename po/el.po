@@ -2016,6 +2016,13 @@ msgid "key %s: no user ID\n"
 msgstr "κλειδί %08lX: δεν υπάρχει αυτό το user ID\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "παραλείφθηκε `%s': %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "κλειδί %08lX: επιδιόρθωση φθαρμένου υποκλειδιού HKP\n"
 
@@ -2109,6 +2116,10 @@ msgstr "κλειδί %08lX: \"%s\" %d νέα user ID\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "κλειδί %08lX: \"%s\" αμετάβλητο\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "το μυστικό κλειδί `%s' δε βρέθηκε: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"

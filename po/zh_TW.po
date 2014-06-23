@@ -1920,6 +1920,14 @@ msgstr "你可以像這樣來更新偏好設定: gpg --edit-key %s updpref save\
 msgid "key %s: no user ID\n"
 msgstr "金鑰 %s: 沒有使用者 ID\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "已跳過 \"%s\": %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "金鑰 %s: PKS 子鑰的訛誤已被修復\n"
@@ -2014,6 +2022,11 @@ msgstr "金鑰 %s: \"%s\" 已清除 %d 個使用者 ID\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "金鑰 %s: \"%s\" 未改變\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "找不到私鑰 \"%s\": %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "未允許匯入私鑰\n"

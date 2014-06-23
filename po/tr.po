@@ -1950,6 +1950,14 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "anahtar %s: kullanıcı kimliği yok\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "\"%s\" atlandı: %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "anahtar %s: PKS yardımcı anahtar bozulması giderildi\n"
@@ -2044,6 +2052,11 @@ msgstr "anahtar %s: \"%s\" %d yeni kullanıcı kimliği\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "anahtar %s: \"%s\" değişmedi\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "gizli anahtar \"%s\" yok: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "gizli anahtarı alımına izin verilmez\n"

@@ -1984,6 +1984,13 @@ msgid "key %s: no user ID\n"
 msgstr "þlosilo %08lX: mankas uzantidentigilo\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "ignoris '%s': %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "þlosilo %08lX: mankas subþlosilo por þlosilbindado\n"
 
@@ -2077,6 +2084,10 @@ msgstr "þlosilo %08lX: %d novaj uzantidentigiloj\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "þlosilo %08lX: ne þanøita\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"

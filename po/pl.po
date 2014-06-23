@@ -1955,6 +1955,14 @@ msgstr "ustawienia mo¿na zaktualizowaæ przez: gpg --edit-key %s updpref save\n"
 msgid "key %s: no user ID\n"
 msgstr "klucz %s: brak identyfikatora u¿ytkownika\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "pominiêty ,,%s'': %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "klucz %s: podklucz uszkodzony przez serwer PKS zosta³ naprawiony\n"
@@ -2049,6 +2057,11 @@ msgstr "klucz %s: ,,%s'' %d oczyszczonych identyfikatorów\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "klucz %s: ,,%s'' bez zmian\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "klucz prywatny ,,%s'' nie zosta³ odnaleziony: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"

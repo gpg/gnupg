@@ -2015,6 +2015,13 @@ msgid "key %s: no user ID\n"
 msgstr "chiave %08lX: nessun user ID\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "saltata `%s': %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "chiave %08lX: riparati i danni di HKP alla subchiave\n"
 
@@ -2108,6 +2115,10 @@ msgstr "chiave %08lX: \"%s\" %d nuovi user ID\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "chiave %08lX: \"%s\" non cambiata\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "chiave segreta `%s' non trovata: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"

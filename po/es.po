@@ -1987,6 +1987,14 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "clave %s: sin identificador de usuario\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "omitido \"%s\": %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "clave %s: reparada la subclave PKS corrompida\n"
@@ -2081,6 +2089,11 @@ msgstr "clave %s: \"%s\" %d nuevos identificadores de usuario\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "clave %s: \"%s\" sin cambios\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "clave secreta \"%s\" no encontrada: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "no se permite importar claves secretas\n"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.4.8\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2012-08-24 16:58+0200\n"
+"PO-Revision-Date: 2014-06-23 16:34+0200\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -2011,6 +2011,13 @@ msgid "key %s: no user ID\n"
 msgstr "Schlüssel %s: Keine User-ID\n"
 
 #, c-format
+msgid "key %s: %s\n"
+msgstr "Schlüssel \"%s\": %s\n"
+
+msgid "rejected by import filter"
+msgstr "durch Importfilter zurückgewiesen"
+
+#, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "Schlüssel %s: PKS Unterschlüsseldefekt repariert\n"
 
@@ -2104,6 +2111,10 @@ msgstr "Schlüssel %s: \"%s\" %d User-IDs bereinigt\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "Schlüssel %s: \"%s\" nicht geändert\n"
+
+#, c-format
+msgid "secret key %s: %s\n"
+msgstr "Geheimer Schlüssel \"%s\": %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "Importieren geheimer Schlüssel ist nicht erlaubt\n"

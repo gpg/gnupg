@@ -1958,6 +1958,14 @@ msgstr "du kan opdatere dine præferencer med: gpg --edit-key %s updpref save\n"
 msgid "key %s: no user ID\n"
 msgstr "nøgle %s: ingen bruger-id\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "udelod »%s«: %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "nøgle %s: korruption af PKS-undernøgle er repareret!\n"
@@ -2052,6 +2060,11 @@ msgstr "nøgle %s: »%s« %d bruger-id'er renset\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nøgle %s: »%s« ikke ændret\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "import af hemmelige nøgler er ikke tilladt\n"

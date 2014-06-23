@@ -1900,6 +1900,14 @@ msgstr "您可以这样更新您的首选项：gpg --edit-key %s updpref save\n"
 msgid "key %s: no user ID\n"
 msgstr "密钥 %s：没有用户标识\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "“%s”已跳过：%s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "密钥 %s：PKS 子钥破损已修复\n"
@@ -1994,6 +2002,11 @@ msgstr "密钥 %s：“%s”%d 个用户标识被清除\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "密钥 %s：“%s”未改变\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "找不到私钥“%s”：%s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "不允许导入私钥\n"

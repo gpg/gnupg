@@ -2016,6 +2016,13 @@ msgid "key %s: no user ID\n"
 msgstr "avain %08lX: ei käyttäjätunnusta\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "ohitetaan \"%s\": %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "avain %08lX: HKP-aliavainvirhe korjattu\n"
 
@@ -2110,6 +2117,10 @@ msgstr "avain %08lX: \"%s\" %d uutta käyttäjätunnusta\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "avain %08lX: \"%s\" ei muutoksia\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "salaista avainta \"%s\" ei löydy: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"
