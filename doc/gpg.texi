@@ -906,6 +906,24 @@ Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
+@ifset gpgtwoone
+@item --quick-sign-key @code{fpr} [@code{names}]
+@itemx --quick-lsign-key @code{name}
+@opindex quick-sign-key
+@opindex quick-lsign-key
+Directly sign a key from the passphrase without any further user
+interaction.  The @code{fpr} must be the verified primary fingerprint
+of a key in the local keyring. If no @code{names} are given, all
+useful user ids are signed; with given [@code{names}] only useful user
+ids matching one of theses names are signed.  The command
+@option{--quick-lsign-key} marks the signatures as non-exportable.
+
+This command uses reasonable defaults and thus does not provide the
+full flexibility of the "sign" subcommand from @option{--edit-key}.
+Its intended use to help unattended signing using a list of verified
+fingerprints.
+@end ifset
+
 @ifclear gpgone
 @item --passwd @var{user_id}
 @opindex passwd
@@ -1177,7 +1195,7 @@ for the key fingerprint, "%t" for the extension of the image type
 (e.g. "jpg"), "%T" for the MIME type of the image (e.g. "image/jpeg"),
 "%v" for the single-character calculated validity of the image being
 viewed (e.g. "f"), "%V" for the calculated validity as a string (e.g.
-"full"),
+"full"), "%U" for a base32 encoded hash of the user ID,
 and "%%" for an actual percent sign. If neither %i or %I are present,
 then the photo will be supplied to the viewer on standard input.
 
@@ -1431,7 +1449,9 @@ Set what trust model GnuPG should follow. The models are:
   trusted. You generally won't use this unless you are using some
   external validation scheme. This option also suppresses the
   "[uncertain]" tag printed with signature checks when there is no
-  evidence that the user ID is bound to the key.
+  evidence that the user ID is bound to the key.  Note that this
+  trust model still does not allow the use of expired, revoked, or
+  disabled keys.
 
   @item auto
   @opindex trust-mode:auto
@@ -1481,6 +1501,10 @@ mechanisms, in the order they are to be tried:
   mechanisms defined by the @option{--auto-key-locate} are tried.  The
   position of this mechanism in the list does not matter.  It is not
   required if @code{local} is also used.
+
+  @item clear
+  Clear all defined mechanisms.  This is useful to override
+  mechanisms given in a config file.
 
 @end table
 
@@ -1606,16 +1630,29 @@ are available for all keyserver types, some common options are:
   program uses internally (libcurl, openldap, etc).
 
   @item check-cert
+@ifset gpgtwoone
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
   Enable certificate checking if the keyserver presents one (for hkps or
   ldaps).  Defaults to on.
+@end ifclear
 
   @item ca-cert-file
+@ifset gpgtwoone
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
   Provide a certificate store to override the system default.  Only
   necessary if check-cert is enabled, and the keyserver is using a
   certificate that is not present in a system default certificate list.
 
   Note that depending on the SSL library that the keyserver helper is
   built with, this may actually be a directory or a file.
+@end ifclear
+
 @end table
 
 @item --completes-needed @code{n}
@@ -1694,6 +1731,25 @@ Override the value of the environment variable
 @samp{GPG_AGENT_INFO}. This is only used when @option{--use-agent} has
 been given.  Given that this option is not anymore used by
 @command{gpg2}, it should be avoided if possible.
+@end ifset
+
+
+@ifclear gpgone
+@item --agent-program @var{file}
+@opindex agent-program
+Specify an agent program to be used for secret key operations.  The
+default value is the @file{/usr/bin/gpg-agent}.  This is only used
+as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
+set or a running agent cannot be connected.
+@end ifclear
+
+@ifset gpgtwoone
+@item --dirmngr-program @var{file}
+@opindex dirmngr-program
+Specify a dirmngr program to be used for keyserver access.  The
+default value is @file{/usr/sbin/dirmngr}.  This is only used as a
+fallback when the environment variable @code{DIRMNGR_INFO} is not set or
+a running dirmngr cannot be connected.
 @end ifset
 
 @item --lock-once
@@ -2053,6 +2109,15 @@ Since GnuPG 2.0.10, this mode is always used and thus this option is
 obsolete; it does not harm to use it though.
 @end ifclear
 
+@ifset gpgtwoone
+@item --legacy-list-mode
+@opindex legacy-list-mode
+Revert to the pre-2.1 public key list mode.  This only affects the
+human readable output and not the machine interface
+(i.e. @code{--with-colons}).  Note that the legacy format does not
+allow to convey suitable information for elliptic curves.
+@end ifset
+
 @item --with-fingerprint
 @opindex with-fingerprint
 Same as the command @option{--fingerprint} but changes only the format
@@ -2062,6 +2127,12 @@ of the output and may be used together with another command.
 @item --with-keygrip
 @opindex with-keygrip
 Include the keygrip in the key listings.
+
+@item --with-secret
+@opindex with-secret
+Include info about the presence of a secret key in public key listings
+done with @code{--with-colons}.
+
 @end ifset
 
 @end table
@@ -2244,9 +2315,13 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 available, but the MIT release is a good common baseline.
 
 This option implies @option{--rfc1991 --disable-mdc
---no-force-v4-certs --escape-from-lines --force-v3-sigs --cipher-algo
-IDEA --digest-algo MD5 --compress-algo ZIP}. It also disables
-@option{--textmode} when encrypting.
+--no-force-v4-certs --escape-from-lines --force-v3-sigs
+@ifclear gpgone
+--allow-weak-digest-algos
+@end ifclear
+--cipher-algo IDEA --digest-algo
+MD5--compress-algo ZIP}. It also disables @option{--textmode} when
+encrypting.
 
 @item --pgp6
 @opindex pgp6
@@ -2702,6 +2777,14 @@ necessary to get as much data as possible out of the corrupt message.
 However, be aware that a MDC protection failure may also mean that the
 message was tampered with intentionally by an attacker.
 
+@ifclear gpgone
+@item --allow-weak-digest-algos
+@opindex allow-weak-digest-algos
+Signatures made with the broken MD5 algorithm are normally rejected
+with an ``invalid digest algorithm'' message.  This option allows the
+verification of signatures made with such weak algorithms.
+@end ifclear
+
 @item --no-default-keyring
 @opindex no-default-keyring
 Do not add the default keyrings to the list of keyrings. Note that
@@ -2963,17 +3046,32 @@ files; They all live in in the current home directory (@pxref{option
 
 
 @table @file
-  @item ~/.gnupg/secring.gpg
-  The secret keyring.  You should backup this file.
-
-  @item ~/.gnupg/secring.gpg.lock
-  The lock file for the secret keyring.
-
   @item ~/.gnupg/pubring.gpg
   The public keyring.  You should backup this file.
 
   @item ~/.gnupg/pubring.gpg.lock
   The lock file for the public keyring.
+
+@ifset gpgtwoone
+  @item ~/.gnupg/pubring.kbx
+  The public keyring using a different format.  This file is sharred
+  with @command{gpgsm}.  You should backup this file.
+
+  @item ~/.gnupg/pubring.kbx.lock
+  The lock file for @file{pubring.kbx}.
+@end ifset
+
+  @item ~/.gnupg/secring.gpg
+@ifclear gpgtwoone
+  The secret keyring.  You should backup this file.
+@end ifclear
+@ifset gpgtwoone
+  A secret keyring as used by GnuPG versions before 2.1.  It is not
+  used by GnuPG 2.1 and later.
+
+  @item ~/.gnupg/.gpg-v21-migrated
+  File indicating that a migration to GnuPG 2.1 has taken place.
+@end ifset
 
   @item ~/.gnupg/trustdb.gpg
   The trust database.  There is no need to backup this file; it is better
@@ -2984,6 +3082,9 @@ files; They all live in in the current home directory (@pxref{option
 
   @item ~/.gnupg/random_seed
   A file used to preserve the state of the internal random pool.
+
+  @item ~/.gnupg/secring.gpg.lock
+  The lock file for the secret keyring.
 
   @item /usr[/local]/share/gnupg/options.skel
   The skeleton options file.
