@@ -208,12 +208,10 @@ decrypt_data( void *procctx, PKT_encrypted *ed, DEK *dek )
 	cipher_decrypt ( dfx->cipher_hd, dfx->defer, dfx->defer, 22);
         md_write ( dfx->mdc_hash, dfx->defer, 2);
 	md_final ( dfx->mdc_hash );
-        if (dfx->defer[0] != '\xd3' || dfx->defer[1] != '\x14' ) {
-            log_error("mdc_packet with invalid encoding\n");
-            rc = G10ERR_INVALID_PACKET;
-        }
-	else if ( datalen != 20
-	    || memcmp(md_read( dfx->mdc_hash, 0 ), dfx->defer+2, datalen) )
+        if (   dfx->defer[0] != '\xd3'
+            || dfx->defer[1] != '\x14'
+            || datalen != 20
+	    || memcmp (md_read (dfx->mdc_hash, 0 ), dfx->defer+2, datalen))
 	    rc = G10ERR_BAD_SIGN;
 	/*log_hexdump("MDC calculated:",md_read( dfx->mdc_hash, 0), datalen);*/
 	/*log_hexdump("MDC message   :", dfx->defer, 20);*/
