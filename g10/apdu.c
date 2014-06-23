@@ -84,7 +84,7 @@
 #endif
 
 #if defined(__APPLE__) || defined(_WIN32) || defined(__CYGWIN__)
-typedef unsinged int pcsc_dword_t;
+typedef unsigned int pcsc_dword_t;
 #else
 typedef unsigned long pcsc_dword_t;
 #endif
@@ -1290,7 +1290,7 @@ connect_pcsc_card (int slot)
     {
       char reader[250];
       pcsc_dword_t readerlen, atrlen;
-      long card_state, card_protocol;
+      pcsc_dword_t card_state, card_protocol;
 
       atrlen = DIM (reader_table[0].atr);
       readerlen = sizeof reader -1 ;
@@ -1300,7 +1300,8 @@ connect_pcsc_card (int slot)
                          reader_table[slot].atr, &atrlen);
       if (err)
         log_error ("pcsc_status failed: %s (0x%lx) %lu\n",
-                   pcsc_error_string (err), err, readerlen);
+                   pcsc_error_string (err),
+                   (unsigned long)err, (unsigned long)readerlen);
       else
         {
           if (atrlen > DIM (reader_table[0].atr))
