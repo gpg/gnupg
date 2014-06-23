@@ -89,6 +89,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len,
       elems = "pqgy";
       gcry_md_write (md, "\0\0\0\x07ssh-dss", 11);
       break;
+    case GCRY_PK_ECC:
     case GCRY_PK_ECDSA:
       /* We only support the 3 standard curves for now.  It is just a
          quick hack.  */
