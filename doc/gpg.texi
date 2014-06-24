@@ -408,8 +408,8 @@ removed first. In batch mode the key must be specified by fingerprint.
 @opindex export
 Either export all keys from all keyrings (default keyrings and those
 registered via option @option{--keyring}), or if at least one name is given,
-those of the given name. The new keyring is written to STDOUT or to the
-file given with option @option{--output}. Use together with
+those of the given name. The exported keys are written to STDOUT or to the
+file given with option @option{--output}.  Use together with
 @option{--armor} to mail those keys.
 
 @item --send-keys @code{key IDs}
@@ -424,14 +424,30 @@ or changed by you.  If no key IDs are given, @command{gpg} does nothing.
 @itemx --export-secret-subkeys
 @opindex export-secret-keys
 @opindex export-secret-subkeys
-Same as @option{--export}, but exports the secret keys instead.  This is
-normally not very useful and a security risk.  The second form of the
-command has the special property to render the secret part of the
-primary key useless; this is a GNU extension to OpenPGP and other
-implementations can not be expected to successfully import such a key.
+Same as @option{--export}, but exports the secret keys instead.  The
+exported keys are written to STDOUT or to the file given with option
+@option{--output}.  This command is often used along with the option
+@option{--armor} to allow easy printing of the key for paper backup;
+however the external tool @command{paperkey} does a better job for
+creating backups on paper.  Note that exporting a secret key can be a
+security risk if the exported keys are send over an insecure channel.
+
+The second form of the command has the special property to render the
+secret part of the primary key useless; this is a GNU extension to
+OpenPGP and other implementations can not be expected to successfully
+import such a key.  Its intended use is to generated a full key with
+an additional signing subkey on a dedicated machine and then using
+this command to export the key without the primary key to the main
+machine.
+
+@ifset gpgtwoone
+GnuPG may ask you to enter the passphrase for the key.  This is
+required because the internal protection method of the secret key is
+different from the one specified by the OpenPGP protocol.
+@end ifset
 @ifclear gpgtwoone
-See the option @option{--simple-sk-checksum} if you want to import such
-an exported key with an older OpenPGP implementation.
+See the option @option{--simple-sk-checksum} if you want to import an
+exported secret key into ancient OpenPGP implementations.
 @end ifclear
 
 @item --import
