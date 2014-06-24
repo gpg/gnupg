@@ -1570,7 +1570,7 @@ card_store_subkey (KBNODE node, int use)
       goto leave;
     }
 
-  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG)));
+  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT)));
   allow_keyno[1] = (!use || (use & (PUBKEY_USAGE_ENC)));
   allow_keyno[2] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)));
 
