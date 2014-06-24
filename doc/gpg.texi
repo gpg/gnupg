@@ -408,8 +408,8 @@ removed first. In batch mode the key must be specified by fingerprint.
 @opindex export
 Either export all keys from all keyrings (default keyrings and those
 registered via option @option{--keyring}), or if at least one name is given,
-those of the given name. The new keyring is written to STDOUT or to the
-file given with option @option{--output}. Use together with
+those of the given name. The exported keys are written to STDOUT or to the
+file given with option @option{--output}.  Use together with
 @option{--armor} to mail those keys.
 
 @item --send-keys @code{key IDs}
@@ -424,14 +424,30 @@ or changed by you.  If no key IDs are given, @command{gpg} does nothing.
 @itemx --export-secret-subkeys
 @opindex export-secret-keys
 @opindex export-secret-subkeys
-Same as @option{--export}, but exports the secret keys instead.  This is
-normally not very useful and a security risk.  The second form of the
-command has the special property to render the secret part of the
-primary key useless; this is a GNU extension to OpenPGP and other
-implementations can not be expected to successfully import such a key.
+Same as @option{--export}, but exports the secret keys instead.  The
+exported keys are written to STDOUT or to the file given with option
+@option{--output}.  This command is often used along with the option
+@option{--armor} to allow easy printing of the key for paper backup;
+however the external tool @command{paperkey} does a better job for
+creating backups on paper.  Note that exporting a secret key can be a
+security risk if the exported keys are send over an insecure channel.
+
+The second form of the command has the special property to render the
+secret part of the primary key useless; this is a GNU extension to
+OpenPGP and other implementations can not be expected to successfully
+import such a key.  Its intended use is to generated a full key with
+an additional signing subkey on a dedicated machine and then using
+this command to export the key without the primary key to the main
+machine.
+
+@ifset gpgtwoone
+GnuPG may ask you to enter the passphrase for the key.  This is
+required because the internal protection method of the secret key is
+different from the one specified by the OpenPGP protocol.
+@end ifset
 @ifclear gpgtwoone
-See the option @option{--simple-sk-checksum} if you want to import such
-an exported key with an older OpenPGP implementation.
+See the option @option{--simple-sk-checksum} if you want to import an
+exported secret key into ancient OpenPGP implementations.
 @end ifclear
 
 @item --import
@@ -2127,6 +2143,12 @@ of the output and may be used together with another command.
 @item --with-keygrip
 @opindex with-keygrip
 Include the keygrip in the key listings.
+
+@item --with-secret
+@opindex with-secret
+Include info about the presence of a secret key in public key listings
+done with @code{--with-colons}.
+
 @end ifset
 
 @end table
@@ -2310,9 +2332,11 @@ available, but the MIT release is a good common baseline.
 
 This option implies @option{--rfc1991 --disable-mdc
 --no-force-v4-certs --escape-from-lines --force-v3-sigs
---allow-weak-digest-algos --cipher-algo IDEA --digest-algo MD5
---compress-algo ZIP}. It also disables @option{--textmode} when
-encrypting.
+@ifclear gpgone
+--allow-weak-digest-algos
+@end ifclear
+--cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
+It also disables @option{--textmode} when encrypting.
 
 @item --pgp6
 @opindex pgp6
@@ -2768,12 +2792,13 @@ necessary to get as much data as possible out of the corrupt message.
 However, be aware that a MDC protection failure may also mean that the
 message was tampered with intentionally by an attacker.
 
+@ifclear gpgone
 @item --allow-weak-digest-algos
 @opindex allow-weak-digest-algos
 Signatures made with the broken MD5 algorithm are normally rejected
 with an ``invalid digest algorithm'' message.  This option allows the
 verification of signatures made with such weak algorithms.
-
+@end ifclear
 
 @item --no-default-keyring
 @opindex no-default-keyring
@@ -3036,17 +3061,32 @@ files; They all live in in the current home directory (@pxref{option
 
 
 @table @file
-  @item ~/.gnupg/secring.gpg
-  The secret keyring.  You should backup this file.
-
-  @item ~/.gnupg/secring.gpg.lock
-  The lock file for the secret keyring.
-
   @item ~/.gnupg/pubring.gpg
   The public keyring.  You should backup this file.
 
   @item ~/.gnupg/pubring.gpg.lock
   The lock file for the public keyring.
+
+@ifset gpgtwoone
+  @item ~/.gnupg/pubring.kbx
+  The public keyring using a different format.  This file is sharred
+  with @command{gpgsm}.  You should backup this file.
+
+  @item ~/.gnupg/pubring.kbx.lock
+  The lock file for @file{pubring.kbx}.
+@end ifset
+
+  @item ~/.gnupg/secring.gpg
+@ifclear gpgtwoone
+  The secret keyring.  You should backup this file.
+@end ifclear
+@ifset gpgtwoone
+  A secret keyring as used by GnuPG versions before 2.1.  It is not
+  used by GnuPG 2.1 and later.
+
+  @item ~/.gnupg/.gpg-v21-migrated
+  File indicating that a migration to GnuPG 2.1 has taken place.
+@end ifset
 
   @item ~/.gnupg/trustdb.gpg
   The trust database.  There is no need to backup this file; it is better
@@ -3057,6 +3097,9 @@ files; They all live in in the current home directory (@pxref{option
 
   @item ~/.gnupg/random_seed
   A file used to preserve the state of the internal random pool.
+
+  @item ~/.gnupg/secring.gpg.lock
+  The lock file for the secret keyring.
 
   @item /usr[/local]/share/gnupg/options.skel
   The skeleton options file.
