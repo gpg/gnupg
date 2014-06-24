@@ -2085,9 +2085,11 @@ main (int argc, char **argv)
     opt.keyserver_options.export_options = EXPORT_ATTRIBUTES;
     opt.keyserver_options.options = (KEYSERVER_HONOR_KEYSERVER_URL
                                      | KEYSERVER_HONOR_PKA_RECORD );
-    opt.verify_options = (VERIFY_SHOW_POLICY_URLS
+    opt.verify_options = (LIST_SHOW_UID_VALIDITY
+                          | VERIFY_SHOW_POLICY_URLS
                           | VERIFY_SHOW_STD_NOTATIONS
                           | VERIFY_SHOW_KEYSERVER_URLS);
+    opt.list_options   = LIST_SHOW_UID_VALIDITY;
 #ifdef NO_TRUST_MODELS
     opt.trust_model = TM_ALWAYS;
 #else
