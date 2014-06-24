@@ -2004,6 +2004,8 @@ main (int argc, char **argv)
     opt.passphrase_repeat=1;
     opt.emit_version = 1; /* Limit to the major number.  */
 
+    opt.list_options   |= LIST_SHOW_UID_VALIDITY;
+    opt.verify_options |= LIST_SHOW_UID_VALIDITY;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
