@@ -5,7 +5,7 @@ Noteworthy changes in version 1.4.18 (unreleased)
 Noteworthy changes in version 1.4.17 (2014-06-23)
 -------------------------------------------------
 
- * Avoid DoS due to garbled compressed data packets.
+ * Avoid DoS due to garbled compressed data packets. [CVE-2014-4617]
 
  * Screen keyserver reponses to avoid import of unwanted keys by rogue
    servers.
