@@ -86,7 +86,7 @@ change_pin (int unblock_v2, int allow_admin)
                   gpg_strerror (rc));
       return;
     }
-  
+
   log_info (_("OpenPGP card no. %s detected\n"),
               info.serialno? info.serialno : "[none]");
 
@@ -180,7 +180,7 @@ change_pin (int unblock_v2, int allow_admin)
 	    rc = agent_scd_change_pin (102, info.serialno);
             write_sc_op_status (rc);
 	    if (rc)
-	      tty_printf ("Error setting the Reset Code: %s\n", 
+	      tty_printf ("Error setting the Reset Code: %s\n",
                           gpg_strerror (rc));
 	    else
               tty_printf ("Reset Code set.\n");
@@ -382,7 +382,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
   else
     tty_fprintf (fp, "Application ID ...: %s\n",
                  info.serialno? info.serialno : "[none]");
-  if (!info.serialno || strncmp (info.serialno, "D27600012401", 12) 
+  if (!info.serialno || strncmp (info.serialno, "D27600012401", 12)
       || strlen (info.serialno) != 32 )
     {
       if (info.apptype && !strcmp (info.apptype, "NKS"))
@@ -424,7 +424,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
     ;
   else if (strlen (serialno)+1 > serialnobuflen)
     log_error ("serial number longer than expected\n");
-  else 
+  else
     strcpy (serialno, info.serialno);
 
   if (opt.with_colons)
@@ -437,7 +437,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       uval = xtoi_2(info.serialno+16)*256 + xtoi_2 (info.serialno+18);
       fprintf (fp, "vendor:%04x:%s:\n", uval, get_manufacturer (uval));
       fprintf (fp, "serial:%.8s:\n", info.serialno+20);
-      
+
       print_isoname (fp, "Name of cardholder: ", "name", info.disp_name);
 
       fputs ("lang:", fp);
@@ -494,18 +494,18 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
                (unsigned long)info.fpr1time, (unsigned long)info.fpr2time,
                (unsigned long)info.fpr3time);
     }
-  else 
+  else
     {
       tty_fprintf (fp, "Version ..........: %.1s%c.%.1s%c\n",
                    info.serialno[12] == '0'?"":info.serialno+12,
                    info.serialno[13],
                    info.serialno[14] == '0'?"":info.serialno+14,
                    info.serialno[15]);
-      tty_fprintf (fp, "Manufacturer .....: %s\n", 
+      tty_fprintf (fp, "Manufacturer .....: %s\n",
                    get_manufacturer (xtoi_2(info.serialno+16)*256
                                      + xtoi_2 (info.serialno+18)));
       tty_fprintf (fp, "Serial number ....: %.8s\n", info.serialno+20);
-      
+
       print_isoname (fp, "Name of cardholder: ", "name", info.disp_name);
       print_name (fp, "Language prefs ...: ", info.disp_lang);
       tty_fprintf (fp,    "Sex ..............: %s\n",
@@ -568,13 +568,13 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       if (info.fpr3valid && info.fpr3time)
         tty_fprintf (fp, "      created ....: %s\n",
                      isotimestamp (info.fpr3time));
-      tty_fprintf (fp, "General key info..: "); 
+      tty_fprintf (fp, "General key info..: ");
 
-      thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 : 
+      thefpr = (info.fpr1valid? info.fpr1 : info.fpr2valid? info.fpr2 :
                 info.fpr3valid? info.fpr3 : NULL);
       /* If the fingerprint is all 0xff, the key has no asssociated
          OpenPGP certificate.  */
-      if ( thefpr && !fpr_is_ff (thefpr) 
+      if ( thefpr && !fpr_is_ff (thefpr)
            && !get_pubkey_byfprint (pk, thefpr, 20))
         {
           KBNODE keyblock = NULL;
@@ -587,7 +587,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
             {
               release_kbnode (keyblock);
               keyblock = NULL;
-              
+
               if (!auto_create_card_key_stub (info.serialno,
                                               info.fpr1valid? info.fpr1:NULL,
                                               info.fpr2valid? info.fpr2:NULL,
@@ -603,7 +603,7 @@ card_status (FILE *fp, char *serialno, size_t serialnobuflen)
       else
         tty_fprintf (fp, "[none]\n");
     }
-      
+
   free_public_key (pk);
   agent_release_card_info (&info);
 }
@@ -632,7 +632,7 @@ get_one_name (const char *prompt1, const char *prompt2)
       else if (strchr (name, '<'))
         tty_printf (_("Error: The \"<\" character may not be used.\n"));
       else if (strstr (name, "  "))
-        tty_printf (_("Error: Double spaces are not allowed.\n"));    
+        tty_printf (_("Error: Double spaces are not allowed.\n"));
       else
         return name;
       xfree (name);
@@ -670,7 +670,7 @@ change_name (void)
   if (strlen (isoname) > 39 )
     {
       tty_printf (_("Error: Combined name too long "
-                    "(limit is %d characters).\n"), 39);    
+                    "(limit is %d characters).\n"), 39);
       xfree (isoname);
       return -1;
     }
@@ -699,7 +699,7 @@ change_url (void)
   if (strlen (url) > 254 )
     {
       tty_printf (_("Error: URL too long "
-                    "(limit is %d characters).\n"), 254);    
+                    "(limit is %d characters).\n"), 254);
       xfree (url);
       return -1;
     }
@@ -770,7 +770,7 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
   FILE *fp;
   char *data;
   int n;
-  
+
   *r_buffer = NULL;
 
   fp = fopen (fname, "rb");
@@ -787,7 +787,7 @@ get_data_from_file (const char *fname, size_t maxlen, char **r_buffer)
       tty_printf (_("can't open `%s': %s\n"), fname, strerror (errno));
       return -1;
     }
-          
+
   data = xtrymalloc (maxlen? maxlen:1);
   if (!data)
     {
@@ -818,7 +818,7 @@ static int
 put_data_to_file (const char *fname, const void *buffer, size_t length)
 {
   FILE *fp;
-  
+
   fp = fopen (fname, "wb");
 #if GNUPG_MAJOR_VERSION == 1
   if (fp && is_secured_file (fileno (fp)))
@@ -833,7 +833,7 @@ put_data_to_file (const char *fname, const void *buffer, size_t length)
       tty_printf (_("can't create `%s': %s\n"), fname, strerror (errno));
       return -1;
     }
-          
+
   if (length && fwrite (buffer, length, 1, fp) != 1)
     {
       tty_printf (_("error writing `%s': %s\n"), fname, strerror (errno));
@@ -874,7 +874,7 @@ change_login (const char *args)
   if (n > 254 )
     {
       tty_printf (_("Error: Login data too long "
-                    "(limit is %d characters).\n"), 254);    
+                    "(limit is %d characters).\n"), 254);
       xfree (data);
       return -1;
     }
@@ -893,7 +893,7 @@ change_private_do (const char *args, int nr)
   char do_name[] = "PRIVATE-DO-X";
   char *data;
   int n;
-  int rc; 
+  int rc;
 
   assert (nr >= 1 && nr <= 4);
   do_name[11] = '0' + nr;
@@ -920,7 +920,7 @@ change_private_do (const char *args, int nr)
   if (n > 254 )
     {
       tty_printf (_("Error: Private DO too long "
-                    "(limit is %d characters).\n"), 254);    
+                    "(limit is %d characters).\n"), 254);
       xfree (data);
       return -1;
     }
@@ -1053,13 +1053,13 @@ change_sex (void)
     str = "1";
   else if ((*data == 'F' || *data == 'f') && !data[1])
     str = "2";
-  else 
+  else
     {
       tty_printf (_("Error: invalid response.\n"));
       xfree (data);
       return -1;
     }
-     
+
   rc = agent_scd_setattr ("DISP-SEX", str, 1, NULL );
   if (rc)
     log_error ("error setting sex: %s\n", gpg_strerror (rc));
@@ -1147,7 +1147,7 @@ get_info_for_key_operation (struct agent_card_info_s *info)
 
   memset (info, 0, sizeof *info);
   rc = agent_scd_getattr ("SERIALNO", info);
-  if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12) 
+  if (rc || !info->serialno || strncmp (info->serialno, "D27600012401", 12)
       || strlen (info->serialno) != 32 )
     {
       log_error (_("key operation not possible: %s\n"),
@@ -1172,7 +1172,7 @@ get_info_for_key_operation (struct agent_card_info_s *info)
 /* Helper for the key generation/edit functions.  */
 static int
 check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
-{     
+{
   int rc = 0;
 
   agent_clear_pin_cache (info->serialno);
@@ -1206,7 +1206,7 @@ check_pin_for_key_operation (struct agent_card_info_s *info, int *forced_chv1)
 }
 
 /* Helper for the key generation/edit functions.  */
-static void 
+static void
 restore_forced_chv1 (int *forced_chv1)
 {
   int rc;
@@ -1290,7 +1290,7 @@ ask_card_keysize (int keyno, unsigned int nbits)
 
   for (;;)
     {
-      prompt = xasprintf 
+      prompt = xasprintf
         (keyno == 0?
          _("What keysize do you want for the Signature key? (%u) "):
          keyno == 1?
@@ -1302,16 +1302,16 @@ ask_card_keysize (int keyno, unsigned int nbits)
       req_nbits = *answer? atoi (answer): nbits;
       xfree (prompt);
       xfree (answer);
-      
+
       if (req_nbits != nbits && (req_nbits % 32) )
         {
           req_nbits = ((req_nbits + 31) / 32) * 32;
           tty_printf (_("rounded up to %u bits\n"), req_nbits);
         }
-  
+
       if (req_nbits == nbits)
         return 0;  /* Use default.  */
-      
+
       if (req_nbits < min_nbits || req_nbits > max_nbits)
         {
           tty_printf (_("%s keysizes must be in the range %u-%u\n"),
@@ -1331,19 +1331,19 @@ ask_card_keysize (int keyno, unsigned int nbits)
 /* Change the size of key KEYNO (0..2) to NBITS and show an error
    message if that fails.  */
 static gpg_error_t
-do_change_keysize (int keyno, unsigned int nbits) 
+do_change_keysize (int keyno, unsigned int nbits)
 {
   gpg_error_t err;
   char args[100];
-  
+
   snprintf (args, sizeof args, "--force %d 1 %u", keyno+1, nbits);
   err = agent_scd_setattr ("KEY-ATTR", args, strlen (args), NULL);
   if (err)
-    log_error (_("error changing size of key %d to %u bits: %s\n"), 
+    log_error (_("error changing size of key %d to %u bits: %s\n"),
                keyno+1, nbits, gpg_strerror (err));
   return err;
 }
- 
+
 
 static void
 generate_card_keys (void)
@@ -1422,7 +1422,7 @@ generate_card_keys (void)
       /* Note that INFO has not be synced.  However we will only use
          the serialnumber and thus it won't harm.  */
     }
-     
+
   generate_keypair (NULL, info.serialno, want_backup? opt.homedir:NULL);
 
  leave:
@@ -1452,7 +1452,7 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
   tty_printf (_("   (2) Encryption key\n"));
   tty_printf (_("   (3) Authentication key\n"));
 
-  for (;;) 
+  for (;;)
     {
       char *answer = cpr_get ("cardedit.genkeys.subkeytype",
                               _("Your selection? "));
@@ -1509,7 +1509,7 @@ card_generate_subkey (KBNODE pub_keyblock, KBNODE sec_keyblock)
    carry the serialno stuff instead of the actual secret key
    parameters.  USE is the usage for that key; 0 means any
    usage. */
-int 
+int
 card_store_subkey (KBNODE node, int use)
 {
   struct agent_card_info_s info;
@@ -1549,7 +1549,7 @@ card_store_subkey (KBNODE node, int use)
       goto leave;
     }
 
-  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG)));
+  allow_keyno[0] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_CERT)));
   allow_keyno[1] = (!use || (use & (PUBKEY_USAGE_ENC)));
   allow_keyno[2] = (!use || (use & (PUBKEY_USAGE_SIG|PUBKEY_USAGE_AUTH)));
 
@@ -1562,7 +1562,7 @@ card_store_subkey (KBNODE node, int use)
   if (allow_keyno[2])
     tty_printf (_("   (3) Authentication key\n"));
 
-  for (;;) 
+  for (;;)
     {
       char *answer = cpr_get ("cardedit.genkeys.storekeytype",
                               _("Your selection? "));
@@ -1576,7 +1576,7 @@ card_store_subkey (KBNODE node, int use)
       xfree(answer);
       if (keyno >= 1 && keyno <= 3 && allow_keyno[keyno-1])
         {
-          if (info.is_v2 && !info.extcap.aac 
+          if (info.is_v2 && !info.extcap.aac
               && info.key_attr[keyno-1].nbits != nbits)
             {
               tty_printf ("Key does not match the card's capability.\n");
@@ -1628,7 +1628,7 @@ card_store_subkey (KBNODE node, int use)
   if (copied_sk)
     {
       free_secret_key (copied_sk);
-      copied_sk = NULL; 
+      copied_sk = NULL;
     }
   sk = node->pkt->pkt.secret_key;
 
@@ -1703,7 +1703,7 @@ static struct
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
     { "writecert", cmdWRITECERT, 1, NULL },
-    { NULL, cmdINVCMD, 0, NULL } 
+    { NULL, cmdINVCMD, 0, NULL }
   };
 
 
@@ -1782,7 +1782,7 @@ card_edit (strlist_t commands)
       char *p;
       int i;
       int cmd_admin_only;
-      
+
       tty_printf("\n");
       if (redisplay )
         {
@@ -1834,7 +1834,7 @@ card_edit (strlist_t commands)
         cmd = cmdLIST; /* Default to the list command */
       else if (*answer == CONTROL_D)
         cmd = cmdQUIT;
-      else 
+      else
         {
           if ((p=strchr (answer,' ')))
             {
@@ -1849,7 +1849,7 @@ card_edit (strlist_t commands)
               while (spacep (arg_rest))
                 arg_rest++;
             }
-          
+
           for (i=0; cmds[i].name; i++ )
             if (!ascii_strcasecmp (answer, cmds[i].name ))
               break;
