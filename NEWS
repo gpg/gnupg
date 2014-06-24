@@ -4,7 +4,7 @@ Noteworthy changes in version 2.0.25 (unreleased)
 Noteworthy changes in version 2.0.24 (2014-06-24)
 -------------------------------------------------
 
- * gpg: Avoid DoS due to garbled compressed data packets.
+ * gpg: Avoid DoS due to garbled compressed data packets. [CVE-2014-4617]
 
  * gpg: Screen keyserver responses to avoid importing unwanted keys
    from rogue servers.

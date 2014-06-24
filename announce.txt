@@ -5,8 +5,9 @@ Mail-Followup-To: gnupg-users@gnupg.org
 Hello!
 
 We are pleased to announce the availability of a new stable GnuPG-2
-release: Version 2.0.23.  This is a maintenace release with a few
-new features.
+release: Version 2.0.24.  This release includes a *security fix* to
+stop a possible DoS using garbled compressed data packets which can
+be used to put gpg into an infinite loop.
 
 The GNU Privacy Guard (GnuPG) is GNU's tool for secure communication
 and data storage.  It can be used to encrypt data, create digital
@@ -15,7 +16,7 @@ framework for public key cryptography.  It includes an advanced key
 management facility and is compliant with the OpenPGP and S/MIME
 standards.
 
-GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.14) in
+GnuPG-2 has a different architecture than GnuPG-1 (e.g. 1.4.17) in
 that it splits up functionality into several modules.  However, both
 versions may be installed alongside without any conflict.  In fact,
 the gpg version from GnuPG-1 is able to make use of the gpg-agent as
@@ -30,34 +31,24 @@ GnuPG is distributed under the terms of the GNU General Public License
 also available for other Unices, Microsoft Windows and Mac OS X.
 
 
-What's New in 2.0.23
+What's New in 2.0.24
 ====================
 
- * gpg: Reject signatures made using the MD5 hash algorithm unless the
-   new option --allow-weak-digest-algos or --pgp2 are given.
+ * gpg: Avoid DoS due to garbled compressed data packets.
 
- * gpg: Do not create a trustdb file if --trust-model=always is used.
+ * gpg: Screen keyserver responses to avoid importing unwanted keys
+   from rogue servers.
 
- * gpg: Only the major version number is by default included in the
-   armored output.
+ * gpg: The validity of user ids is now shown by default.  To revert
+   this add "list-options no-show-uid-validity" to gpg.conf.
 
- * gpg: Print a warning if the Gnome-Keyring-Daemon intercepts the
-   communication with the gpg-agent.
+ * gpg: Print more specific reason codes with the INV_RECP status.
 
- * gpg: The format of the fallback key listing ("gpg KEYFILE") is now more
-   aligned to the regular key listing ("gpg -k").
+ * gpg: Allow loading of a cert only key to an OpenPGP card.
 
- * gpg: The option--show-session-key prints its output now before the
-   decryption of the bulk message starts.
-
- * gpg: New %U expando for the photo viewer.
-
- * gpgsm: Improved handling of re-issued CA certificates.
-
- * scdaemon: Various fixes for pinpad equipped card readers.
+ * gpg-agent: Make ssh support for ECDSA keys work with Libgcrypt 1.6.
 
  * Minor bug fixes.
-
 
 
 Getting the Software
@@ -66,23 +57,24 @@ Getting the Software
 Please follow the instructions found at https://www.gnupg.org/download/
 or read on:
 
-GnuPG 2.0.23 may be downloaded from one of the GnuPG mirror sites or
+GnuPG 2.0.24 may be downloaded from one of the GnuPG mirror sites or
 direct from ftp://ftp.gnupg.org/gcrypt/gnupg/ .  The list of mirrors
 can be found at https://www.gnupg.org/mirrors.html .  Note that GnuPG
 is not available at ftp.gnu.org.
 
-On the FTP server and its mirrors you should find the following files
-in the gnupg/ directory:
+On ftp.gnupg.org and on its mirrors you should find the following new
+files in the gnupg/ directory:
 
-  gnupg-2.0.23.tar.bz2 (4196k)
-  gnupg-2.0.23.tar.bz2.sig
+  - The GnuPG-2 source code compressed using BZIP2 and its OpenPGP
+    signature:
 
-      GnuPG source compressed using BZIP2 and its OpenPGP signature.
+    gnupg-2.0.24.tar.bz2     (4201k)
+    gnupg-2.0.24.tar.bz2.sig
 
-  gnupg-2.0.22-2.0.23.diff.bz2 (53k)
+  - A patch file to upgrade a 2.0.23 GnuPG source tree.  This patch does
+    not include updates of the language files.
 
-      A patch file to upgrade a 2.0.22 GnuPG source tree.  This patch
-      does not include updates of the language files.
+    gnupg-2.0.23-2.0.24.diff.bz2 (20k)
 
 Note, that we don't distribute gzip compressed tarballs for GnuPG-2.
 A Windows version will eventually be released at https://gpg4win.org .
@@ -97,9 +89,9 @@ the following ways:
 
  * If you already have a trusted version of GnuPG installed, you
    can simply check the supplied signature.  For example to check the
-   signature of the file gnupg-2.0.23.tar.bz2 you would use this command:
+   signature of the file gnupg-2.0.24.tar.bz2 you would use this command:
 
-     gpg --verify gnupg-2.0.23.tar.bz2.sig
+     gpg --verify gnupg-2.0.24.tar.bz2.sig
 
    This checks whether the signature file matches the source file.
    You should see a message indicating that the signature is good and
@@ -122,15 +114,15 @@ the following ways:
 
  * If you are not able to use an old version of GnuPG, you have to verify
    the SHA-1 checksum.  Assuming you downloaded the file
-   gnupg-2.0.23.tar.bz2, you would run the sha1sum command like this:
+   gnupg-2.0.24.tar.bz2, you would run the sha1sum command like this:
 
-     sha1sum gnupg-2.0.23.tar.bz2
+     sha1sum gnupg-2.0.24.tar.bz2
 
    and check that the output matches the first line from the
    following list:
 
-c90e47ab95a40dd070fd75faef0a05c7b679553b  gnupg-2.0.23.tar.bz2
-e02cfab2bc046f9fac89eef098c34f58b5745d20  gnupg-2.0.22-2.0.23.diff.bz2
+010e027d5f622778cadc4c124013fe515ed705cf  gnupg-2.0.24.tar.bz2
+594d7f91ba4fc215345f18afee46c4aa9f2b3303  gnupg-2.0.23-2.0.24.diff.bz2
 
 
 Documentation
@@ -175,11 +167,6 @@ its principal author, Werner Koch.  Maintenance and improvement of
 GnuPG and related software takes up most of their resources.  To allow
 him to continue this work he kindly asks to either purchase a support
 contract, engage g10 Code for custom enhancements, or to donate money:
-
-Maintaining and improving GnuPG is costly.  For more than a decade,
-g10 Code GmbH, a German company owned and headed by GnuPG's principal
-author Werner Koch, is bearing the majority of these costs.  To help
-them carry on this work, they need your support.  See
 
   https://gnupg.org/donate/
 
