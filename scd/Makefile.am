@@ -33,8 +33,8 @@ if HAVE_W32_SYSTEM
 resource_objs += scdaemon-w32info.o
 endif
 
-AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) \
-	     $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
+AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+	    $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS) $(PTH_CFLAGS)
 
 
 card_apps = app-openpgp.c app-nks.c app-dinsig.c app-p15.c app-geldkarte.c

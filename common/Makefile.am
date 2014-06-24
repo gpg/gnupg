@@ -32,7 +32,7 @@ MAINTAINERCLEANFILES = audit-events.h status-codes.h
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
+AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
 include $(top_srcdir)/am/cmacros.am
 

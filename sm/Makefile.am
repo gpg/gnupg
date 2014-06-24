@@ -22,7 +22,8 @@ bin_PROGRAMS = gpgsm
 
 EXTRA_DIST = ChangeLog-2011 gpgsm-w32info.rc
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
+AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+            $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl
 include $(top_srcdir)/am/cmacros.am

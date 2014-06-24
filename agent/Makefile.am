@@ -31,7 +31,7 @@ if HAVE_W32_SYSTEM
 resource_objs += gpg-agent-w32info.o
 endif
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS)
+AM_CFLAGS = $(GPG_ERROR_CFLAGS) $(LIBGCRYPT_CFLAGS)
 
 gpg_agent_SOURCES = \
 	gpg-agent.c agent.h \
