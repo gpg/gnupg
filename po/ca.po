@@ -2445,6 +2445,13 @@ msgid "key %s: no user ID\n"
 msgstr "clau %08lX: sense ID\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "es descarta «%s»: %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "clau %08lX: corrupció de la subclau HKP reparada\n"
 
@@ -2538,6 +2545,10 @@ msgstr "clau %08lX: «%s» %d ID d'usuari nous\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "clau %08lX: «%s» no ha estat modificada\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"

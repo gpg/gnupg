@@ -2281,6 +2281,13 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "паказаць сьпіс ключоў і ID карыстальнікаў"
 
+#, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "грамадскі ключ ня знойдзены"
+
+msgid "rejected by import filter"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr ""
@@ -2375,6 +2382,10 @@ msgstr "паказаць сьпіс ключоў і подпісаў"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "грамадскі ключ ня знойдзены"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"

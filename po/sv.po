@@ -2335,6 +2335,14 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "nyckel %s: ingen användaridentitet\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "hoppade över \"%s\": %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
 # Undernyckeln är skadad på HKP-servern. Vanligt fel vid många undernycklar.
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2432,6 +2440,11 @@ msgstr "nyckel %s: \"%s\" %d användaridentiteter rensade\n"
 #, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nyckel %s: \"%s\" inte ändrad\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "hemliga nyckeln \"%s\" hittades inte: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "import av hemliga nycklar tillåts inte\n"

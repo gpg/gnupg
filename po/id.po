@@ -2369,6 +2369,13 @@ msgid "key %s: no user ID\n"
 msgstr "kunci %08lX: tidak ada ID user\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "melewati `%s': %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "kunci %08lX: subkey HKP yang rusak diperbaiki\n"
 
@@ -2462,6 +2469,10 @@ msgstr "kunci %08lX: \"%s\" %d user ID baru\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "kunci %08lX: \"%s\" tidak berubah\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "kunci rahasia `%s' tidak ditemukan: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"

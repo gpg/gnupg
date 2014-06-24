@@ -2375,6 +2375,13 @@ msgid "key %s: no user ID\n"
 msgstr "kµúè %08lX: chyba identifikátor u¾ívateµa\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "preskoèený `%s': %s\n"
+
+msgid "rejected by import filter"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "kµúè %08lX: HKP po¹kodenie podkµúèa opravené\n"
 
@@ -2470,6 +2477,10 @@ msgstr "kµúè %08lX: \"%s\" %d nových identifikátorov u¾ívateµa\n"
 #, fuzzy, c-format
 msgid "key %s: \"%s\" not changed\n"
 msgstr "kµúè %08lX: \"%s\" bez zmeny\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "tajný kµúè `%s' nebol nájdený: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"
