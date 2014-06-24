@@ -2330,12 +2330,17 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 
-This option implies @option{--rfc1991 --disable-mdc
---no-force-v4-certs --escape-from-lines --force-v3-sigs
-@ifclear gpgone
---allow-weak-digest-algos
-@end ifclear
+This option implies
+@ifset gpgone
+@option{--rfc1991 --disable-mdc --no-force-v4-certs
+--escape-from-lines --force-v3-sigs
 --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
+@end ifset
+@ifclear gpgone
+@option{--rfc1991 --disable-mdc --no-force-v4-certs
+--escape-from-lines --force-v3-sigs --allow-weak-digest-algos
+--cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
+@end ifclear
 It also disables @option{--textmode} when encrypting.
 
 @item --pgp6

@@ -1,5 +1,19 @@
-Noteworthy changes in version 2.0.24 (unreleased)
+Noteworthy changes in version 2.0.24 (2014-06-24)
 -------------------------------------------------
+
+ * gpg: Avoid DoS due to garbled compressed data packets.
+
+ * gpg: Screen keyserver responses to avoid importing unwanted keys
+   from rogue servers.
+
+ * gpg: The validity of user ids is now shown by default.  To revert
+   this add "list-options no-show-uid-validity" to gpg.conf.
+
+ * gpg: Print more specific reason codes with the INV_RECP status.
+
+ * gpg: Allow loading of a cert only key to an OpenPGP card.
+
+ * gpg-agent: Make ssh support for ECDSA keys work with Libgcrypt 1.6.
 
 
 Noteworthy changes in version 2.0.23 (2014-06-03)
