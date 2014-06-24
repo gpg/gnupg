@@ -308,6 +308,7 @@ static int check_for_running_agent (int silent, int mode);
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_PTH_IMPL;
 
+#if GCRYPT_VERSION_NUMBER < 0x010600
 GCRY_THREAD_OPTION_PTH_IMPL;
 #if GCRY_THREAD_OPTION_VERSION < 1
 static int fixed_gcry_pth_init (void)
@@ -315,6 +316,7 @@ static int fixed_gcry_pth_init (void)
   return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
 }
 #endif
+#endif /*GCRYPT_VERSION_NUMBER < 0x10600*/
 
 #ifndef PTH_HAVE_PTH_THREAD_ID
 static unsigned long pth_thread_id (void)
@@ -625,7 +627,8 @@ main (int argc, char **argv )
   init_common_subsystems ();
 
 
-  /* Libgcrypt requires us to register the threading model first.
+#if GCRYPT_VERSION_NUMBER < 0x010600
+  /* Libgcrypt < 1.6 requires us to register the threading model first.
      Note that this will also do the pth_init. */
 #if GCRY_THREAD_OPTION_VERSION < 1
   gcry_threads_pth.init = fixed_gcry_pth_init;
@@ -636,6 +639,7 @@ main (int argc, char **argv )
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
+#endif /*GCRYPT_VERSION_NUMBER < 0x010600*/
 
 
   /* Check that the libraries are suitable.  Do it here because

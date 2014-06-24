@@ -212,6 +212,7 @@ static void handle_connections (int listen_fd);
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_PTH_IMPL;
 
+#if GCRYPT_VERSION_NUMBER < 0x010600
 GCRY_THREAD_OPTION_PTH_IMPL;
 #if GCRY_THREAD_OPTION_VERSION < 1
 static int fixed_gcry_pth_init (void)
@@ -219,6 +220,7 @@ static int fixed_gcry_pth_init (void)
   return pth_self ()? 0 : (pth_init () == FALSE) ? errno : 0;
 }
 #endif
+#endif /*GCRYPT_VERSION_NUMBER < 0x010600*/
 
 
 static char *
@@ -380,7 +382,6 @@ main (int argc, char **argv )
 {
   ARGPARSE_ARGS pargs;
   int orig_argc;
-  gpg_error_t err;
   char **orig_argv;
   FILE *configfp = NULL;
   char *configname = NULL;
@@ -415,17 +416,23 @@ main (int argc, char **argv )
   init_common_subsystems ();
 
 
-  /* Libgcrypt requires us to register the threading model first.
+#if GCRYPT_VERSION_NUMBER < 0x010600
+  /* Libgcrypt < 1.6 requires us to register the threading model first.
      Note that this will also do the pth_init. */
+  {
+    gpg_error_t err;
 #if GCRY_THREAD_OPTION_VERSION < 1
   gcry_threads_pth.init = fixed_gcry_pth_init;
 #endif
+
   err = gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pth);
   if (err)
     {
       log_fatal ("can't register GNU Pth with Libgcrypt: %s\n",
                  gpg_strerror (err));
     }
+  }
+#endif /*GCRYPT_VERSION_NUMBER < 0x010600*/
 
   /* Check that the libraries are suitable.  Do it here because
      the option parsing may need services of the library */
