@@ -124,7 +124,7 @@ LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg2_LDADD =  $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(resource_objs)
-gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
+gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(resource_objs)
 
 t_common_ldadd =
