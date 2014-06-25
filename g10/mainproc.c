@@ -1962,7 +1962,7 @@ check_sig_and_print (CTX c, KBNODE node)
                   sig->sig_class==0x00?_("binary"):
                   sig->sig_class==0x01?_("textmode"):_("unknown"),
                   gcry_md_algo_name (sig->digest_algo),
-                  *pkstrbuf?", key algorithm ":"",
+                  *pkstrbuf?_(", key algorithm "):"",
                   pkstrbuf);
 
       if (rc)

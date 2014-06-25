@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-11-18 14:05+0100\n"
+"PO-Revision-Date: 2014-06-27 20:13+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -354,19 +354,17 @@ msgstr "|N|lasse PINs im Cache nach N Sekunden verfallen"
 msgid "do not use the PIN cache when signing"
 msgstr "benutze PINs im Cache nicht beim Signieren"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "erlaube Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
+msgstr "verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 
 msgid "allow presetting passphrase"
 msgstr "erlaube ein \"preset\" von Passphrases"
 
 msgid "enable ssh support"
-msgstr ""
+msgstr "SSH Unterstützung einschalten"
 
 msgid "enable putty support"
-msgstr ""
+msgstr "PuTTY Unterstützung einschalten"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|DATEI|Schreibe die Umgebungsvariablen auf DATEI"
@@ -670,15 +668,16 @@ msgstr "Die Passphrase ändern"
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
 
-#, fuzzy
-#| msgid "enable key"
 msgid "Delete key"
-msgstr "Schlüssel anschalten"
+msgstr "Schlüssel löschen"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
-"Deleting the key will may remove your ability toaccess remote machines."
+"Deleting the key will may remove your ability to access remote machines."
 msgstr ""
+"WARNUNG: Dieser Schlüssel wird auch für SSH benutzt!\n"
+"Das Löschen dieses Schlüssels kann Ihren Zugriff auf entfernte Rechner\n"
+"behindern."
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "Für DSA muß die Hashlänge ein Vielfaches von 8 Bit sein\n"
@@ -1466,18 +1465,15 @@ msgstr "Diesen Schlüssel aus dem Schlüsselbund löschen? (j/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Dies ist ein privater Schlüssel! - Wirklich löschen? (j/N) "
 
-#, fuzzy, c-format
-#| msgid "deleting certificate \"%s\" failed: %s\n"
+#, c-format
 msgid "deleting secret %s failed: %s\n"
-msgstr "Fehler beim Löschen des Zertifikats \"%s\": %s\n"
+msgstr "Fehler beim Löschen des privaten %ss: %s\n"
 
 msgid "key"
-msgstr ""
+msgstr "Schlüssel"
 
-#, fuzzy
-#| msgid "Pubkey: "
 msgid "subkey"
-msgstr "Öff. Schlüssel: "
+msgstr "Unterschlüssel"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1733,15 +1729,11 @@ msgstr "Schlüssel aus dem öff. Schlüsselbund entfernen"
 msgid "remove keys from the secret keyring"
 msgstr "Schlüssel aus dem geh. Schlüsselbund entfernen"
 
-#, fuzzy
-#| msgid "sign a key"
 msgid "quickly sign a key"
-msgstr "Schlüssel signieren"
+msgstr "Schlüssel schnell signieren"
 
-#, fuzzy
-#| msgid "sign a key locally"
 msgid "quickly sign a key locally"
-msgstr "Schlüssel nur für diesen Rechner signieren"
+msgstr "Schlüssel schnell nur für diesen Rechner signieren"
 
 msgid "sign a key"
 msgstr "Schlüssel signieren"
@@ -1876,8 +1868,9 @@ msgstr "Hash: "
 msgid "Compression: "
 msgstr "Komprimierung: "
 
-msgid "usage: gpg [options] "
-msgstr "Aufruf: gpg [Optionen] "
+#, c-format
+msgid "usage: %s [options] %s\n"
+msgstr "Aufruf: %s [Optionen] %s\n"
 
 msgid "conflicting commands\n"
 msgstr "Widersprüchliche Befehle\n"
@@ -3206,25 +3199,19 @@ msgstr "Änderung fehlgeschlagen: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
 
-#, fuzzy, c-format
-#| msgid "invalid fingerprint"
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
-msgstr "ungültiger Fingerabdruck"
+msgstr "\"%s\" ist kein Fingerabdruck\n"
 
-#, fuzzy, c-format
-#| msgid "failed to get the fingerprint\n"
+#, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
-msgstr "Kann den Fingerprint nicht ermitteln\n"
+msgstr "\"%s\" ist nicht der Fingerabdruck des Hauptschlüssels\n"
 
-#, fuzzy
-#| msgid "No such user ID.\n"
 msgid "No matching user IDs."
-msgstr "Keine solche User-ID vorhanden.\n"
+msgstr "Keine passende User-ID"
 
-#, fuzzy
-#| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
-msgstr "Nichts zu beglaubigen für Schlüssel %s\n"
+msgstr "Nichts zu beglaubigen\n"
 
 msgid "Digest: "
 msgstr "Digest: "
@@ -3655,25 +3642,21 @@ msgstr "   (%d) DSA (Leistungsfähigkeit selber einstellbar)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (Leistungsfähigkeit selber einstellbar)\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) %s\n"
+#, c-format
 msgid "   (%d) ECC\n"
-msgstr "   (%d) signieren\n"
+msgstr "   (%d) ECC\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDSA (sign only)\n"
+#, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "  (%d) ECDSA (nur signieren/beglaubigen)\n"
+msgstr "  (%d) ECC (nur signieren)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDSA (set your own capabilities)\n"
+#, c-format
 msgid "  (%d) ECC (set your own capabilities)\n"
-msgstr "  (%d) ECDSA (Leistungsfähigkeit selber einstellbar)\n"
+msgstr "  (%d) ECC (Leistungsfähigkeit selber einstellbar)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDH (encrypt only)\n"
+#, c-format
 msgid "  (%d) ECC (encrypt only)\n"
-msgstr "  (%d) ECDH (nur verschlüsseln)\n"
+msgstr "  (%d) ECC (nur verschlüsseln)\n"
 
 #, c-format
 msgid "  (%d) Existing key\n"
@@ -4273,10 +4256,9 @@ msgstr "Diese Signatur ist seit %s verfallen.\n"
 msgid "Signature expires %s\n"
 msgstr "Diese Signatur verfällt am %s.\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "%s signature, digest algorithm %s%s%s\n"
-msgstr "%s Signatur, Hashmethode \"%s\"\n"
+msgstr "%s Signatur, Hashmethode %s%s%s\n"
 
 msgid "binary"
 msgstr "Binäre"
@@ -4286,6 +4268,9 @@ msgstr "Textmodus"
 
 msgid "unknown"
 msgstr "unbekannt"
+
+msgid ", key algorithm "
+msgstr ", Schlüsselverfahren "
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4473,58 +4458,37 @@ msgstr "%u-Bit %s Schlüssel, ID %s, erzeugt %s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (Unterschlüssel aus Hauptschlüssel-ID %s)"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to unlock the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
 "Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
 "entsperren:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to import the OpenPGP secret key:"
 msgstr ""
 "Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
 "importieren:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
 msgstr ""
-"Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
-"importieren:"
+"Sie benötigen eine Passphrase, um den geheimen OpenPGP Unterschlüssel zu "
+"exportieren:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to export the OpenPGP secret key:"
 msgstr ""
 "Sie benötigen eine Passphrase, um den geheimen OpenPGP Schlüssel zu "
-"importieren:"
+"exportieren:"
 
-#, fuzzy
-#| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
-msgstr "Möchten Sie die ausgewählten Schlüssel wirklich entfernen? (j/N) "
+msgstr ""
+"Möchten Sie den ausgewählten geheimen OpenPGP Unterschlüssel wirklich "
+"dauerhaft entfernen? (j/N) "
 
-#, fuzzy
-#| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
-msgstr "Möchten Sie die ausgewählten Schlüssel wirklich entfernen? (j/N) "
+msgstr ""
+"Möchten Sie den ausgewählten geheimen OpenPGP Schlüssel wirklich dauerhaft "
+"entfernen? (j/N) "
 
-#, fuzzy, c-format
-#| msgid ""
-#| "%s\n"
-#| "\"%.*s\"\n"
-#| "%u-bit %s key, ID %s,\n"
-#| "created %s%s.\n"
+#, c-format
 msgid ""
 "%s\n"
 "\"%.*s\"\n"
@@ -4536,6 +4500,7 @@ msgstr ""
 "\"%.*s\"\n"
 "%u-Bit %s Schlüssel, ID %s,\n"
 "erzeugt %s%s.\n"
+"%s"
 
 # translated by wk
 msgid ""
@@ -5010,10 +4975,9 @@ msgstr "Hinweis: Signaturschlüssel %s ist am %s verfallen\n"
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "Hinweis: Signaturschlüssel %s wurde widerrufen\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s Signatur, Hashmethode \"%s\"\n"
+msgstr "Hinweis: %s basierte Signaturen werden zurückgewiesen.\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -6230,9 +6194,6 @@ msgstr ""
 "Syntax: @GPGSM@ [Optionen] [Dateien]\n"
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME Protokoll\n"
 
-msgid "usage: gpgsm [options] "
-msgstr "Aufruf: gpgsm [Optionen] "
-
 #, c-format
 msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "Hinweis: Verschlüsselung für `%s' wird nicht möglich sein: %s\n"
@@ -7129,8 +7090,8 @@ msgstr "|FPR|OCSP Antwort ist durch FPR signiert"
 msgid "|N|do not return more than N items in one query"
 msgstr "|N|Nicht mehr als N Angaben in einer Anfrage zurückgeben"
 
-msgid "|FILE|use the CA certifciates in FILE for HKP over TLS"
-msgstr ""
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
 
 msgid ""
 "@\n"
@@ -7635,10 +7596,8 @@ msgstr "Druckdaten hexkodiert ausgeben"
 msgid "decode received data lines"
 msgstr "Dekodiere empfangene Datenzeilen"
 
-#, fuzzy
-#| msgid "can't connect to the dirmngr: %s\n"
 msgid "connect to the dirmngr"
-msgstr "Verbindung zum Dirmngr nicht möglich: %s\n"
+msgstr "Mit dem Dirmngr verbinden"
 
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr "|NAME|Verbinde mit dem Assuan-Socket NAME"
@@ -7811,10 +7770,8 @@ msgstr "Directory Manager"
 msgid "PIN and Passphrase Entry"
 msgstr "Falsche PIN oder Passphrase!"
 
-#, fuzzy
-#| msgid "Component not found"
 msgid "Component not suitable for launching"
-msgstr "Komponente nicht gefunden"
+msgstr "Komponente unterstützt kein direktes starten"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -7841,10 +7798,8 @@ msgstr "|KOMPONENTE|Prüfe die Optionen"
 msgid "apply global default values"
 msgstr "Wende die gobalen Voreinstellungen an"
 
-#, fuzzy
-#| msgid "get the configuration directories for gpgconf"
 msgid "get the configuration directories for @GPGCONF@"
-msgstr "Hole die Einstellungsverzeichnisse von gpgconf"
+msgstr "Hole die Einstellungsverzeichnisse von @GPGCONF@"
 
 msgid "list global configuration file"
 msgstr "Zeige die globale Konfigurationsdatei an"
@@ -7855,10 +7810,8 @@ msgstr "Prüfe die globale Konfigurationsdatei"
 msgid "reload all or a given component"
 msgstr "\"reload\" an alle oder eine Komponente senden"
 
-#, fuzzy
-#| msgid "kill a given component"
 msgid "launch a given component"
-msgstr "\"kill\" an eine Komponente senden"
+msgstr "Die angegebene Komponente starten"
 
 msgid "kill a given component"
 msgstr "\"kill\" an eine Komponente senden"
@@ -8031,6 +7984,12 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "Aufruf: gpg [Optionen] "
+
+#~ msgid "usage: gpgsm [options] "
+#~ msgstr "Aufruf: gpgsm [Optionen] "
 
 #~ msgid "enable ssh-agent emulation"
 #~ msgstr "Die ssh-agent-Emulation anschalten"
