@@ -77,7 +77,7 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     gnupg-test.stop pubring.gpg~ random_seed gpg-agent.log
 
 clean-local:
-	-rm -rf private-keys-v1.d
+	-rm -rf private-keys-v1.d openpgp-revocs.d
 
 
 # We need to depend on a couple of programs so that the tests don't

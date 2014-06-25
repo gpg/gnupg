@@ -174,9 +174,10 @@ ask_outfile_name( const char *name, size_t namelen )
  * Mode 0 = use ".gpg"
  *	1 = use ".asc"
  *	2 = use ".sig"
+ *      3 = use ".rev"
  *
  * If INP_FD is not -1 the function simply creates an IOBUF for that
- * file descriptor and ignorea INAME and MODE.  Note that INP_FD won't
+ * file descriptor and ignore INAME and MODE.  Note that INP_FD won't
  * be closed if the returned IOBUF is closed.  With RESTRICTEDPERM a
  * file will be created with mode 700 if possible.
  */
@@ -239,7 +240,8 @@ open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
               const char *newsfx;
 
               newsfx = (mode==1 ? ".asc" :
-                        mode==2 ? ".sig" : ".gpg");
+                        mode==2 ? ".sig" :
+                        mode==3 ? ".rev" : ".gpg");
 
               buf = xmalloc (strlen(iname)+4+1);
               strcpy (buf, iname);
@@ -258,6 +260,7 @@ open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
               buf = xstrconcat (iname,
                                 (mode==1 ? EXTSEP_S "asc" :
                                  mode==2 ? EXTSEP_S "sig" :
+                                 mode==3 ? EXTSEP_S "rev" :
                                  /*     */ EXTSEP_S GPGEXT_GPG),
                                 NULL);
             }
@@ -450,4 +453,25 @@ try_make_homedir (const char *fname)
         log_info ( _("directory '%s' created\n"), fname );
       copy_options_file( fname );
     }
+}
+
+
+/* Get and if needed create a string with the directory used to store
+   openpgp revocations.  */
+char *
+get_openpgp_revocdir (const char *home)
+{
+  char *fname;
+  struct stat statbuf;
+
+  fname = make_filename (home, GNUPG_OPENPGP_REVOC_DIR, NULL);
+  if (stat (fname, &statbuf) && errno == ENOENT)
+    {
+      if (gnupg_mkdir (fname, "-rwx"))
+        log_error (_("can't create directory '%s': %s\n"),
+                   fname, strerror (errno) );
+      else if (!opt.quiet)
+        log_info (_("directory '%s' created\n"), fname);
+    }
+  return fname;
 }

@@ -4000,6 +4000,8 @@ do_generate_keypair (struct para_data_s *para,
           update_ownertrust (pk, ((get_ownertrust (pk) & ~TRUST_MASK)
                                   | TRUST_ULTIMATE ));
 
+          gen_standard_revoke (pk);
+
           if (!opt.batch)
             {
               tty_printf (_("public and secret key created and signed.\n") );

@@ -633,7 +633,8 @@ emit_status_need_passphrase (u32 *keyid, u32 *mainkeyid, int pubkey_algo)
 
 /* Return an allocated utf-8 string describing the key PK.  If ESCAPED
    is true spaces and control characters are percent or plus escaped.
-   MODE 0 is for the common prompt, MODE 1 for the import prompt. */
+   MODE describes the use of the key description; use one of the
+   FORMAT_KEYDESC_ macros. */
 char *
 gpg_format_keydesc (PKT_public_key *pk, int mode, int escaped)
 {

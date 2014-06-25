@@ -436,12 +436,14 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
    revocation reason.  PSK is the public primary key - we expect that
    a corresponding secret key is available.  KEYBLOCK is the entire
    KEYBLOCK which is used in PGP mode to write a a minimal key and not
-   just the naked revocation signature; it may be NULL.  */
+   just the naked revocation signature; it may be NULL.  If LEADINTEXT
+   is not NULL, it is written right before the (armored) output.*/
 static int
 create_revocation (const char *filename,
                    struct revocation_reason_info *reason,
                    PKT_public_key *psk,
-                   kbnode_t keyblock)
+                   kbnode_t keyblock,
+                   const char *leadintext, int suffix)
 {
   int rc;
   iobuf_t out = NULL;
@@ -451,8 +453,11 @@ create_revocation (const char *filename,
 
   afx = new_armor_context ();
 
-  if ((rc = open_outfile (-1, filename, 0, 1, &out)))
+  if ((rc = open_outfile (-1, filename, suffix, 1, &out)))
     goto leave;
+
+  if (leadintext )
+    iobuf_writestr (out, leadintext);
 
   afx->what = 1;
   afx->hdrlines = "Comment: This is a revocation certificate\n";
@@ -500,6 +505,81 @@ create_revocation (const char *filename,
   release_armor_context (afx);
   return rc;
 }
+
+
+/* This function is used to generate a standard revocation certificate
+   by gpg's interactive key generation function.  The certificate is
+   stored at a dedicated place in a slightly modified form to avoid an
+   accidental import.  PSK is the primary key; a corresponding secret
+   key must be available.  */
+int
+gen_standard_revoke (PKT_public_key *psk)
+{
+  int rc;
+  estream_t memfp;
+  struct revocation_reason_info reason;
+  char *dir, *tmpstr, *fname;
+  void *leadin;
+  size_t len;
+  u32 keyid[2];
+  char pkstrbuf[PUBKEY_STRING_SIZE];
+  char *orig_codeset;
+
+  dir = get_openpgp_revocdir (opt.homedir);
+  tmpstr = hexfingerprint (psk);
+  fname = xstrconcat (dir, DIRSEP_S, tmpstr, NULL);
+  xfree (tmpstr);
+  xfree (dir);
+
+  keyid_from_pk (psk, keyid);
+
+  memfp = es_fopenmem (0, "r+");
+  if (!memfp)
+    log_fatal ("error creating memory stream\n");
+
+  orig_codeset = i18n_switchto_utf8 ();
+
+  es_fprintf (memfp, "%s\n\n",
+              _("This is a revocation certificate for the OpenPGP key:"));
+
+  es_fprintf (memfp, "pub  %s/%s %s\n",
+              pubkey_string (psk, pkstrbuf, sizeof pkstrbuf),
+              keystr (keyid),
+              datestr_from_pk (psk));
+
+  print_fingerprint (memfp, psk, 3);
+
+  tmpstr = get_user_id (keyid, &len);
+  es_fprintf (memfp, "uid%*s%.*s\n\n",
+              (int)keystrlen () + 10, "",
+              (int)len, tmpstr);
+  xfree (tmpstr);
+
+  es_fprintf (memfp, "%s\n\n%s\n\n:",
+     _("Use it to revoke this key in case of a compromise or loss of\n"
+       "the secret key.  However, if the secret key is still accessible,\n"
+       "it is better to generate a new revocation certificate and give\n"
+       "a reason for the revocation."),
+     _("To avoid an accidental use of this file, a colon has been inserted\n"
+       "before the 5 dashes below.  Remove this colon with a text editor\n"
+       "before making use of this revocation certificate."));
+
+  es_putc (0, memfp);
+
+  i18n_switchback (orig_codeset);
+
+  if (es_fclose_snatch (memfp, &leadin, NULL))
+    log_fatal ("error snatching memory stream\n");
+
+  reason.code = 0x00; /* No particular reason.  */
+  reason.desc = NULL;
+  rc = create_revocation (fname, &reason, psk, NULL, leadin, 3);
+  xfree (leadin);
+  xfree (fname);
+
+  return rc;
+}
+
 
 
 /****************
@@ -582,7 +662,7 @@ gen_revoke (const char *uname)
   if (!opt.armor)
     tty_printf (_("ASCII armored output forced.\n"));
 
-  rc = create_revocation (NULL, reason, psk, keyblock);
+  rc = create_revocation (NULL, reason, psk, keyblock, NULL, 0);
   if (rc)
     goto leave;
 

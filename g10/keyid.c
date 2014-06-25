@@ -772,6 +772,20 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 }
 
 
+/* Return an allocated buffer with the fingerprint of PK formatted as
+   a plain hexstring.  */
+char *
+hexfingerprint (PKT_public_key *pk)
+{
+  unsigned char fpr[MAX_FINGERPRINT_LEN];
+  size_t len;
+  char *result;
+
+  fingerprint_from_pk (pk, fpr, &len);
+  result = xmalloc (2 * len + 1);
+  bin2hex (fpr, len, result);
+  return result;
+}
 
 
 

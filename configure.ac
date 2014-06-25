@@ -444,7 +444,8 @@ AH_BOTTOM([
 #else
 #define GNUPG_DEFAULT_HOMEDIR "~/.gnupg"
 #endif
-#define GNUPG_PRIVATE_KEYS_DIR "private-keys-v1.d"
+#define GNUPG_PRIVATE_KEYS_DIR  "private-keys-v1.d"
+#define GNUPG_OPENPGP_REVOC_DIR "openpgp-revocs.d"
 
 /* For some systems (DOS currently), we hardcode the path here.  For
    POSIX systems the values are constructed by the Makefiles, so that
