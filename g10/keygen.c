@@ -1039,9 +1039,13 @@ gen_elg(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 
     assert( is_ELGAMAL(algo) );
 
-    if( nbits < 512 ) {
+    if (nbits < 1024) {
 	nbits = 2048;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
+    }
+    else if (nbits > 4096) {
+        nbits = 4096;
+        log_info(_("keysize invalid; using %u bits\n"), nbits );
     }
 
     if( (nbits % 32) ) {
@@ -1121,7 +1125,7 @@ gen_dsa(unsigned int nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     MPI *factors;
     unsigned int qbits;
 
-    if( nbits < 512)
+    if( nbits < 768)
       {
 	nbits = 2048;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
@@ -1255,6 +1259,10 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     if( nbits < 1024 ) {
 	nbits = 2048;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
+    }
+    else if (nbits > 4096) {
+        nbits = 4096;
+        log_info(_("keysize invalid; using %u bits\n"), nbits );
     }
 
     if( (nbits % 32) ) {
