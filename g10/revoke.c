@@ -431,6 +431,77 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 }
 
 
+/* Common core to create the revocation. FILENAME may be NULL to write
+   to stdout or the filename given by --output.  REASON describes the
+   revocation reason.  PSK is the public primary key - we expect that
+   a corresponding secret key is available.  KEYBLOCK is the entire
+   KEYBLOCK which is used in PGP mode to write a a minimal key and not
+   just the naked revocation signature; it may be NULL.  */
+static int
+create_revocation (const char *filename,
+                   struct revocation_reason_info *reason,
+                   PKT_public_key *psk,
+                   kbnode_t keyblock)
+{
+  int rc;
+  iobuf_t out = NULL;
+  armor_filter_context_t *afx;
+  PKT_signature *sig = NULL;
+  PACKET pkt;
+
+  afx = new_armor_context ();
+
+  if ((rc = open_outfile (-1, filename, 0, 1, &out)))
+    goto leave;
+
+  afx->what = 1;
+  afx->hdrlines = "Comment: This is a revocation certificate\n";
+  push_armor_filter (afx, out);
+
+  rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
+                           opt.force_v4_certs? 4:0,
+                           0, 0,
+                           revocation_reason_build_cb, reason, NULL);
+  if (rc)
+    {
+      log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));
+      goto leave;
+    }
+
+  if (keyblock && (PGP2 || PGP6 || PGP7 || PGP8))
+    {
+      /* Use a minimal pk for PGPx mode, since PGP can't import bare
+         revocation certificates. */
+      rc = export_minimal_pk (out, keyblock, sig, NULL);
+      if (rc)
+        goto leave;
+    }
+  else
+    {
+      init_packet (&pkt);
+      pkt.pkttype = PKT_SIGNATURE;
+      pkt.pkt.signature = sig;
+
+      rc = build_packet (out, &pkt);
+      if (rc)
+        {
+          log_error (_("build_packet failed: %s\n"), g10_errstr (rc));
+          goto leave;
+        }
+    }
+
+ leave:
+  if (sig)
+    free_seckey_enc (sig);
+  if (rc)
+    iobuf_cancel (out);
+  else
+    iobuf_close (out);
+  release_armor_context (afx);
+  return rc;
+}
+
+
 /****************
  * Generate a revocation certificate for UNAME
  */
@@ -438,12 +509,8 @@ int
 gen_revoke (const char *uname)
 {
   int rc = 0;
-  armor_filter_context_t *afx;
-  PACKET pkt;
   PKT_public_key *psk;
-  PKT_signature *sig = NULL;
   u32 keyid[2];
-  iobuf_t out = NULL;
   kbnode_t keyblock = NULL;
   kbnode_t node;
   KEYDB_HANDLE kdbhd;
@@ -455,9 +522,6 @@ gen_revoke (const char *uname)
       log_error(_("can't do this in batch mode\n"));
       return G10ERR_GENERAL;
     }
-
-  afx = new_armor_context ();
-  init_packet( &pkt );
 
   /* Search the userid; we don't want the whole getkey stuff here.  */
   kdbhd = keydb_new ();
@@ -518,44 +582,9 @@ gen_revoke (const char *uname)
   if (!opt.armor)
     tty_printf (_("ASCII armored output forced.\n"));
 
-  if ((rc = open_outfile (-1, NULL, 0, 1, &out )))
-    goto leave;
-
-  afx->what = 1;
-  afx->hdrlines = "Comment: A revocation certificate should follow\n";
-  push_armor_filter (afx, out);
-
-  /* create it */
-  rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
-                           opt.force_v4_certs?4:0, 0, 0,
-                           revocation_reason_build_cb, reason, NULL);
+  rc = create_revocation (NULL, reason, psk, keyblock);
   if (rc)
-    {
-      log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));
-      goto leave;
-    }
-
-  if (PGP2 || PGP6 || PGP7 || PGP8)
-    {
-      /* Use a minimal pk for PGPx mode, since PGP can't import bare
-         revocation certificates. */
-      rc = export_minimal_pk (out, keyblock, sig, NULL);
-      if(rc)
-        goto leave;
-    }
-  else
-    {
-      init_packet( &pkt );
-      pkt.pkttype = PKT_SIGNATURE;
-      pkt.pkt.signature = sig;
-
-      rc = build_packet (out, &pkt);
-      if (rc)
-        {
-          log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
-          goto leave;
-        }
-    }
+    goto leave;
 
   /* and issue a usage notice */
   tty_printf (_(
@@ -567,16 +596,9 @@ gen_revoke (const char *uname)
 "your machine might store the data and make it available to others!\n"));
 
  leave:
-  if (sig)
-    free_seckey_enc (sig);
   release_kbnode (keyblock);
   keydb_release (kdbhd);
-  if (rc)
-    iobuf_cancel(out);
-  else
-    iobuf_close(out);
   release_revocation_reason_info( reason );
-  release_armor_context (afx);
   return rc;
 }
 
