@@ -735,15 +735,6 @@ fi
 # (These need to go after AC_PROG_CC so that $EXEEXT is defined)
 AC_DEFINE_UNQUOTED(EXEEXT,"$EXEEXT",[The executable file extension, if any])
 
-if test x"$try_hkp" = xyes ; then
-  AC_SUBST(GPGKEYS_HKP,"gpg2keys_hkp$EXEEXT")
-fi
-
-if test x"$try_finger" = xyes ; then
-  AC_SUBST(GPGKEYS_FINGER,"gpg2keys_finger$EXEEXT")
-fi
-
-
 
 #
 # Checks for libraries.
@@ -925,12 +916,10 @@ AC_CHECK_FUNCS(adns_free)
 #
 # Now try for the resolver functions so we can use DNS for SRV, PA and CERT.
 #
-if test x"$try_hkp" = xyes || test x"$try_http" = xyes ; then
-  AC_ARG_ENABLE(dns-srv,
-     AC_HELP_STRING([--disable-dns-srv],
-                    [disable the use of DNS SRV in HKP and HTTP]),
-                use_dns_srv=$enableval,use_dns_srv=yes)
-fi
+AC_ARG_ENABLE(dns-srv,
+              AC_HELP_STRING([--disable-dns-srv],
+                             [disable the use of DNS SRV in HKP and HTTP]),
+              use_dns_srv=$enableval,use_dns_srv=yes)
 
 AC_ARG_ENABLE(dns-pka,
    AC_HELP_STRING([--disable-dns-pka],
