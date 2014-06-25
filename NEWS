@@ -1,5 +1,11 @@
-Noteworthy changes in version 1.4.18 (unreleased)
+Noteworthy changes in version 1.4.18 (2014-06-30)
 -------------------------------------------------
+
+ * Fix a regression in 1.4.17 if more than one keyid is given
+   to --recv-keys et al.
+
+ * Cap RSA and Elgamal keysize at 4096 bit also for unattended key
+   generation.
 
 
 Noteworthy changes in version 1.4.17 (2014-06-23)
