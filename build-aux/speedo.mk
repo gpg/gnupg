@@ -731,11 +731,15 @@ $(stampdir)/stamp-w64-final-$(1): $(stampdir)/stamp-w64-$(1)-03-install
 .PHONY : clean-$(1)
 clean-$(1):
 	@echo "speedo: uninstalling $(1)"
-	@($(call SETVARS,$(1));				\
-	 (cd "$$$${pkgbdir}" 2>/dev/null &&		\
-	  $(MAKE) --no-print-directory                  \
-           $$$${pkgmkargs_inst} uninstall V=0 ) || true;\
-	 rm -fR "$$$${pkgsdir}" "$$$${pkgbdir}" || true)
+	@($(call SETVARS,$(1));			          \
+	 (cd "$$$${pkgbdir}" 2>/dev/null &&		  \
+	  $(MAKE) --no-print-directory                    \
+           $$$${pkgmkargs_inst} uninstall V=0 ) || true  ;\
+         if [ "$(1)" = "gnupg" ]; then                    \
+	   rm -fR "$$$${pkgbdir}" || true                ;\
+	 else                                             \
+	   rm -fR "$$$${pkgsdir}" "$$$${pkgbdir}" || true;\
+	 fi)
 	-rm -f $(stampdir)/stamp-final-$(1) $(stampdir)/stamp-$(1)-*
 
 
