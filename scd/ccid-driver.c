@@ -227,6 +227,7 @@ enum {
 #define CHERRY_ST2000   0x003e
 #define VASCO_920       0x0920
 #define GEMPC_PINPAD    0x3478
+#define GEMPC_CT30      0x3437
 #define VEGA_ALPHA      0x0008
 #define CYBERJACK_GO    0x0504
 
@@ -998,6 +999,11 @@ parse_ccid_descriptor (ccid_driver_t handle,
       handle->max_ifsd = 48;
     }
 
+  if (handle->id_vendor == VENDOR_GEMPC && handle->id_product == GEMPC_CT30)
+    {
+      DEBUGOUT ("enabling product quirk: disable non-null NAD\n");
+      handle->nonnull_nad = 0;
+    }
 
   return 0;
 }
