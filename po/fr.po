@@ -675,7 +675,7 @@ msgstr "activer la clef"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
-"Deleting the key will may remove your ability to access remote machines."
+"Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
@@ -4926,6 +4926,24 @@ msgstr "Certificat de révocation créé.\n"
 #, c-format
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "aucune clef de révocation trouvée pour « %s »\n"
+
+#, fuzzy
+#| msgid "Create a revocation certificate for this key? (y/N) "
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr "Faut-il créer un certificat de révocation pour cette clef ? (o/N) "
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"

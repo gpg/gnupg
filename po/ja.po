@@ -656,7 +656,7 @@ msgstr "鍵を有効にする"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
-"Deleting the key will may remove your ability to access remote machines."
+"Deleting the key might remove your ability to access remote machines."
 msgstr ""
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
@@ -4739,6 +4739,24 @@ msgstr "失効証明書を作成。\n"
 #, c-format
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "\"%s\"用の失効鍵が見つかりません\n"
+
+#, fuzzy
+#| msgid "Create a revocation certificate for this key? (y/N) "
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr "この鍵にたいする失効証明書を作成しますか? (y/N) "
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"

@@ -661,9 +661,13 @@ msgstr "Я зміню його пізніше"
 msgid "Delete key"
 msgstr "Вилучити ключ"
 
+#, fuzzy
+#| msgid ""
+#| "Warning: This key is also listed for use with SSH!\n"
+#| "Deleting the key will may remove your ability to access remote machines."
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
-"Deleting the key will may remove your ability to access remote machines."
+"Deleting the key might remove your ability to access remote machines."
 msgstr ""
 "Попередження: цей ключ є у списку використання для SSH!\n"
 "Вилучення цього ключа може призвести до неможливості отримати доступ до "
@@ -4827,6 +4831,24 @@ msgstr "Створено сертифікат відкликання.\n"
 #, c-format
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "для «%s» не знайдено ключів відкликання\n"
+
+#, fuzzy
+#| msgid "Create a revocation certificate for this key? (y/N) "
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr "Створити сертифікат відкликання для цього ключа? (y/N або т/Н) "
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
