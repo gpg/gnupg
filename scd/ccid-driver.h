@@ -80,6 +80,7 @@ enum {
 #define CHERRY_ST2000   0x003e
 #define VASCO_920       0x0920
 #define GEMPC_PINPAD    0x3478
+#define GEMPC_CT30      0x3437
 #define VEGA_ALPHA      0x0008
 
 #endif /*CCID_DRIVER_INCLUDE_USB_IDS*/
