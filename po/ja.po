@@ -656,7 +656,7 @@ msgstr "鍵を有効にする"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
-"Deleting the key will may remove your ability toaccess remote machines."
+"Deleting the key will may remove your ability to access remote machines."
 msgstr ""
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
@@ -1836,8 +1836,10 @@ msgstr "ハッシュ: "
 msgid "Compression: "
 msgstr "圧縮: "
 
-msgid "usage: gpg [options] "
-msgstr "使い方: gpg [オプション] "
+#, fuzzy, c-format
+#| msgid "usage: gpgsm [options] "
+msgid "usage: %s [options] %s\n"
+msgstr "使い方: gpgsm [オプション] "
 
 msgid "conflicting commands\n"
 msgstr "対立するコマンド\n"
@@ -4158,6 +4160,11 @@ msgstr "テキストモード"
 msgid "unknown"
 msgstr "不明の"
 
+#, fuzzy
+#| msgid "algorithm: %s"
+msgid ", key algorithm "
+msgstr "アルゴリズム: %s"
+
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名を検査できません: %s\n"
@@ -6023,9 +6030,6 @@ msgstr ""
 "S/MIMEプロトコルを用いて、署名、検査、暗号化や復号を行います\n"
 "デフォルトの操作は、入力データに依存します\n"
 
-msgid "usage: gpgsm [options] "
-msgstr "使い方: gpgsm [オプション] "
-
 #, c-format
 msgid "NOTE: won't be able to encrypt to '%s': %s\n"
 msgstr "*注意*:'%s'に対して暗号化できません: %s\n"
@@ -6885,7 +6889,7 @@ msgstr "|FPR|FPRで署名されたOCSPレスポンス"
 msgid "|N|do not return more than N items in one query"
 msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 
-msgid "|FILE|use the CA certifciates in FILE for HKP over TLS"
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
 msgid ""
@@ -7798,6 +7802,12 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "使い方: gpg [オプション] "
+
+#~ msgid "usage: gpgsm [options] "
+#~ msgstr "使い方: gpgsm [オプション] "
 
 #~ msgid "can't create `%s': %s\n"
 #~ msgstr "'%s'が作成できません: %s\n"

@@ -4258,6 +4258,11 @@ msgstr "текстовий"
 msgid "unknown"
 msgstr "невідомо"
 
+#, fuzzy
+#| msgid "algorithm: %s"
+msgid ", key algorithm "
+msgstr "алгоритм: %s"
+
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Не вдалося перевірити підпис: %s\n"
