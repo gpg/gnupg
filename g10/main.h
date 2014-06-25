@@ -270,7 +270,8 @@ int save_unprotected_key_to_card (PKT_public_key *sk, int keyno);
 int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
-int open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a);
+int open_outfile (int inp_fd, const char *iname, int mode,
+                  int restrictedperm, iobuf_t *a);
 iobuf_t open_sigfile( const char *iname, progress_filter_context_t *pfx );
 void try_make_homedir( const char *fname );
 

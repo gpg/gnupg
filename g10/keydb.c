@@ -213,7 +213,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force)
       gpg_err_set_errno (EPERM);
     }
   else
-    iobuf = iobuf_create (filename);
+    iobuf = iobuf_create (filename, 0);
   umask (oldmask);
   if (!iobuf)
     {

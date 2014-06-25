@@ -1197,7 +1197,9 @@ create_tmp_file (const char *template,
     strcpy (stpcpy(tmpfname,template), EXTSEP_S "tmp");
 # endif /* Posix filename */
 
-    /* Create the temp file with limited access */
+    /* Create the temp file with limited access.  Note that the umask
+       call is not anymore needed because iobuf_create now takes care
+       of it.  However, it does not harm and thus we keep it.  */
     oldmask=umask(077);
     if (is_secured_filename (tmpfname))
       {
@@ -1205,7 +1207,7 @@ create_tmp_file (const char *template,
         gpg_err_set_errno (EPERM);
       }
     else
-      *r_fp = iobuf_create (tmpfname);
+      *r_fp = iobuf_create (tmpfname, 1);
     umask(oldmask);
     if (!*r_fp)
       {
@@ -1513,7 +1515,7 @@ do_copy (int mode, const char *fname, KBNODE root,
             gpg_err_set_errno (EPERM);
         }
         else
-            newfp = iobuf_create (fname);
+            newfp = iobuf_create (fname, 1);
 	umask(oldmask);
 	if( !newfp )
 	  {

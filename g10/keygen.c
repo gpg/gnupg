@@ -3814,7 +3814,7 @@ do_generate_keypair (struct para_data_s *para,
               gpg_err_set_errno (EPERM);
             }
           else
-            outctrl->pub.stream = iobuf_create( outctrl->pub.fname );
+            outctrl->pub.stream = iobuf_create (outctrl->pub.fname, 0);
           if (!outctrl->pub.stream)
             {
               log_error(_("can't create '%s': %s\n"), outctrl->pub.newfname,
@@ -4442,6 +4442,9 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
               (ulong)sk->keyid[0], (ulong)sk->keyid[1]);
 
     fname = make_filename (backup_dir, name_buffer, NULL);
+    /* Note that the umask call is not anymore needed because
+       iobuf_create now takes care of it.  However, it does not harm
+       and thus we keep it.  */
     oldmask = umask (077);
     if (is_secured_filename (fname))
       {
@@ -4449,7 +4452,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
         gpg_err_set_errno (EPERM);
       }
     else
-      fp = iobuf_create (fname);
+      fp = iobuf_create (fname, 1);
     umask (oldmask);
     if (!fp)
       {

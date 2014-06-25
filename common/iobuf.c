@@ -248,7 +248,7 @@ fd_cache_synchronize (const char *fname)
 
 
 static gnupg_fd_t
-direct_open (const char *fname, const char *mode)
+direct_open (const char *fname, const char *mode, int mode700)
 {
 #ifdef HAVE_W32_SYSTEM
   unsigned long da, cd, sm;
@@ -303,7 +303,10 @@ direct_open (const char *fname, const char *mode)
 #else /*!HAVE_W32_SYSTEM*/
 
   int oflag;
-  int cflag = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+  int cflag = S_IRUSR | S_IWUSR;
+
+  if (!mode700)
+    cflag |= S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 
   /* Note, that we do not handle all mode combinations */
   if (strchr (mode, '+'))
@@ -420,7 +423,7 @@ fd_cache_open (const char *fname, const char *mode)
     }
   if (DBG_IOBUF)
     log_debug ("fd_cache_open (%s) not cached\n", fname);
-  return direct_open (fname, mode);
+  return direct_open (fname, mode, 0);
 }
 
 
@@ -1425,10 +1428,11 @@ iobuf_sockopen (int fd, const char *mode)
 }
 
 /****************
- * create an iobuf for writing to a file; the file will be created.
+ * Create an iobuf for writing to a file; the file will be created.
+ * With MODE700 set the file is created with that mode (Unix only).
  */
 iobuf_t
-iobuf_create (const char *fname)
+iobuf_create (const char *fname, int mode700)
 {
   iobuf_t a;
   gnupg_fd_t fp;
@@ -1445,7 +1449,7 @@ iobuf_create (const char *fname)
     }
   else if ((fd = check_special_filename (fname)) != -1)
     return iobuf_fdopen (translate_file_handle (fd, 1), "wb");
-  else if ((fp = direct_open (fname, "wb")) == GNUPG_INVALID_FD)
+  else if ((fp = direct_open (fname, "wb", mode700)) == GNUPG_INVALID_FD)
     return NULL;
   a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
@@ -1476,7 +1480,7 @@ iobuf_openrw (const char *fname)
 
   if (!fname)
     return NULL;
-  else if ((fp = direct_open (fname, "r+b")) == GNUPG_INVALID_FD)
+  else if ((fp = direct_open (fname, "r+b", 0)) == GNUPG_INVALID_FD)
     return NULL;
   a = iobuf_alloc (2, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));

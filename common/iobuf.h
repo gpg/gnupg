@@ -115,7 +115,7 @@ iobuf_t iobuf_fdopen (int fd, const char *mode);
 iobuf_t iobuf_fdopen_nc (int fd, const char *mode);
 iobuf_t iobuf_esopen (estream_t estream, const char *mode, int keep_open);
 iobuf_t iobuf_sockopen (int fd, const char *mode);
-iobuf_t iobuf_create (const char *fname);
+iobuf_t iobuf_create (const char *fname, int mode700);
 iobuf_t iobuf_append (const char *fname);
 iobuf_t iobuf_openrw (const char *fname);
 int iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval);

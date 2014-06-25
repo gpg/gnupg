@@ -177,10 +177,12 @@ ask_outfile_name( const char *name, size_t namelen )
  *
  * If INP_FD is not -1 the function simply creates an IOBUF for that
  * file descriptor and ignorea INAME and MODE.  Note that INP_FD won't
- * be closed if the returned IOBUF is closed.
+ * be closed if the returned IOBUF is closed.  With RESTRICTEDPERM a
+ * file will be created with mode 700 if possible.
  */
 int
-open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
+open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
+              iobuf_t *a)
 {
   int rc = 0;
 
@@ -204,7 +206,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
     }
   else if (iobuf_is_pipe_filename (iname) && !opt.outfile)
     {
-      *a = iobuf_create(NULL);
+      *a = iobuf_create (NULL, 0);
       if ( !*a )
         {
           rc = gpg_error_from_syserror ();
@@ -284,7 +286,7 @@ open_outfile (int inp_fd, const char *iname, int mode, iobuf_t *a)
               gpg_err_set_errno (EPERM);
             }
           else
-            *a = iobuf_create (name);
+            *a = iobuf_create (name, restrictedperm);
           if (!*a)
             {
               rc = gpg_error_from_syserror ();
