@@ -1209,7 +1209,9 @@ pr_string (estream_printf_out_t outfnc, void *outfncarg,
     string = "(null)";
   if (arg->precision >= 0)
     {
-      for (n=0,s=string; *s && n < arg->precision; s++)
+      /* Test for nul after N so that we can pass a non-nul terminated
+         string.  */
+      for (n=0,s=string; n < arg->precision && *s; s++)
         n++;
     }
   else
