@@ -47,8 +47,8 @@
 #include "estream.h"
 
 
-enum cmd_and_opt_values 
-{ 
+enum cmd_and_opt_values
+{
   aNull = 0,
   oVerbose	  = 'v',
   oArmor          = 'a',
@@ -56,7 +56,7 @@ enum cmd_and_opt_values
 
   oProtect        = 'p',
   oUnprotect      = 'u',
-  
+
   oNoVerbose = 500,
   oShadow,
   oShowShadowInfo,
@@ -73,13 +73,13 @@ enum cmd_and_opt_values
   oNoFailOnExist,
   oHomedir,
   oPrompt,
-  oStatusMsg, 
+  oStatusMsg,
 
   oAgentProgram
 };
 
 
-struct rsa_secret_key_s 
+struct rsa_secret_key_s
 {
   gcry_mpi_t n;	    /* public modulus */
   gcry_mpi_t e;	    /* public exponent */
@@ -101,7 +101,8 @@ static const char *opt_passphrase;
 static char *opt_prompt;
 static int opt_status_msg;
 static const char *opt_p12_charset;
-static const char *opt_agent_program; 
+static const char *opt_agent_program;
+static session_env_t opt_session_env;
 
 static char *get_passphrase (int promptno);
 static void release_passphrase (char *pw);
@@ -117,13 +118,13 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (oShadow,    "shadow", "create a shadow entry for a public key"),
   ARGPARSE_c (oShowShadowInfo,  "show-shadow-info", "return the shadow info"),
   ARGPARSE_c (oShowKeygrip, "show-keygrip", "show the \"keygrip\""),
-  ARGPARSE_c (oP12Import, "p12-import", 
+  ARGPARSE_c (oP12Import, "p12-import",
               "import a pkcs#12 encoded private key"),
   ARGPARSE_c (oP12Export, "p12-export",
               "export a private key pkcs#12 encoded"),
 
   ARGPARSE_c (oS2Kcalibration, "s2k-calibration", "@"),
-  
+
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
   ARGPARSE_s_n (oVerbose, "verbose", "verbose"),
@@ -135,14 +136,14 @@ static ARGPARSE_OPTS opts[] = {
                 "|NAME|set charset for a new PKCS#12 passphrase to NAME"),
   ARGPARSE_s_n (oHaveCert, "have-cert",
                 "certificate to export provided on STDIN"),
-  ARGPARSE_s_n (oStore,    "store", 
+  ARGPARSE_s_n (oStore,    "store",
                 "store the created key in the appropriate place"),
-  ARGPARSE_s_n (oForce,    "force", 
+  ARGPARSE_s_n (oForce,    "force",
                 "force overwriting"),
   ARGPARSE_s_n (oNoFailOnExist, "no-fail-on-exist", "@"),
-  ARGPARSE_s_s (oHomedir, "homedir", "@"), 
-  ARGPARSE_s_s (oPrompt,  "prompt", 
-                "|ESCSTRING|use ESCSTRING as prompt in pinentry"), 
+  ARGPARSE_s_s (oHomedir, "homedir", "@"),
+  ARGPARSE_s_s (oPrompt,  "prompt",
+                "|ESCSTRING|use ESCSTRING as prompt in pinentry"),
   ARGPARSE_s_n (oStatusMsg, "enable-status-msg", "@"),
 
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
@@ -168,7 +169,7 @@ my_strusage (int level)
     case 41: p =  _("Syntax: gpg-protect-tool [options] [args]\n"
                     "Secret key maintenance tool\n");
     break;
-    
+
     default: p = NULL;
     }
   return p;
@@ -249,7 +250,7 @@ read_file (const char *fname, size_t *r_length)
   FILE *fp;
   char *buf;
   size_t buflen;
-  
+
   if (!strcmp (fname, "-"))
     {
       size_t nread, bufsize = 0;
@@ -261,7 +262,7 @@ read_file (const char *fname, size_t *r_length)
       buf = NULL;
       buflen = 0;
 #define NCHUNK 8192
-      do 
+      do
         {
           bufsize += NCHUNK;
           if (!buf)
@@ -292,14 +293,14 @@ read_file (const char *fname, size_t *r_length)
           log_error ("can't open `%s': %s\n", fname, strerror (errno));
           return NULL;
         }
-  
+
       if (fstat (fileno(fp), &st))
         {
           log_error ("can't stat `%s': %s\n", fname, strerror (errno));
           fclose (fp);
           return NULL;
         }
-      
+
       buflen = st.st_size;
       buf = xmalloc (buflen+1);
       if (fread (buf, buflen, 1, fp) != 1)
@@ -323,7 +324,7 @@ read_key (const char *fname)
   char *buf;
   size_t buflen;
   unsigned char *key;
-  
+
   buf = read_file (fname, &buflen);
   if (!buf)
     return NULL;
@@ -342,7 +343,7 @@ read_and_protect (const char *fname)
   unsigned char *result;
   size_t resultlen;
   char *pw;
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -356,7 +357,7 @@ read_and_protect (const char *fname)
       log_error ("protecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);
@@ -386,7 +387,7 @@ read_and_unprotect (const char *fname)
   if (!key)
     return;
 
-  rc = agent_unprotect (key, (pw=get_passphrase (1)), 
+  rc = agent_unprotect (key, (pw=get_passphrase (1)),
                         protected_at, &result, &resultlen);
   release_passphrase (pw);
   xfree (key);
@@ -427,7 +428,7 @@ read_and_shadow (const char *fname)
   unsigned char *result;
   size_t resultlen;
   unsigned char dummy_info[] = "(8:313233342:43)";
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -441,7 +442,7 @@ read_and_shadow (const char *fname)
     }
   resultlen = gcry_sexp_canon_len (result, 0, NULL,NULL);
   assert (resultlen);
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);
@@ -463,7 +464,7 @@ show_shadow_info (const char *fname)
   unsigned char *key;
   const unsigned char *info;
   size_t infolen;
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -477,7 +478,7 @@ show_shadow_info (const char *fname)
     }
   infolen = gcry_sexp_canon_len (info, 0, NULL,NULL);
   assert (infolen);
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (info, infolen);
@@ -497,14 +498,14 @@ show_file (const char *fname)
   unsigned char *key;
   size_t keylen;
   char *p;
-  
+
   key = read_key (fname);
   if (!key)
     return;
 
   keylen = gcry_sexp_canon_len (key, 0, NULL,NULL);
   assert (keylen);
-  
+
   if (opt_canonical)
     {
       fwrite (key, keylen, 1, stdout);
@@ -528,7 +529,7 @@ show_keygrip (const char *fname)
   gcry_sexp_t private;
   unsigned char grip[20];
   int i;
-  
+
   key = read_key (fname);
   if (!key)
     return;
@@ -537,7 +538,7 @@ show_keygrip (const char *fname)
     {
       log_error ("gcry_sexp_new failed\n");
       return;
-    } 
+    }
   xfree (key);
 
   if (!gcry_pk_get_keygrip (private, grip))
@@ -672,7 +673,7 @@ import_p12_file (const char *fname)
   char *pw;
 
   /* fixme: we should release some stuff on error */
-  
+
   buf = read_file (fname, &buflen);
   if (!buf)
     return;
@@ -776,7 +777,7 @@ import_p12_file (const char *fname)
       log_error ("protecting the key failed: %s\n", gpg_strerror (rc));
       return;
     }
-  
+
   if (opt_armor)
     {
       char *p = make_advanced (result, resultlen);
@@ -810,7 +811,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
 
   list = gcry_sexp_find_token (sexp, "private-key", 0 );
   if(!list)
-    return NULL; 
+    return NULL;
   l2 = gcry_sexp_cadr (list);
   gcry_sexp_release (list);
   list = l2;
@@ -824,7 +825,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
   /* Parameter names used with RSA. */
   elems = "nedpqu";
   array = xcalloc (strlen(elems) + 1, sizeof *array);
-  for (idx=0, s=elems; *s; s++, idx++ ) 
+  for (idx=0, s=elems; *s; s++, idx++ )
     {
       l2 = gcry_sexp_find_token (list, s, 1);
       if (!l2)
@@ -846,7 +847,7 @@ sexp_to_kparms (gcry_sexp_t sexp)
           return NULL; /* required parameter is invalid */
 	}
     }
-  
+
   gcry_sexp_release (list);
   return array;
 }
@@ -859,9 +860,9 @@ is_keygrip (const char *string)
 {
   int i;
 
-  for(i=0; string[i] && i < 41; i++) 
+  for(i=0; string[i] && i < 41; i++)
     if (!strchr("01234567890ABCDEF", string[i]))
-      return 0; 
+      return 0;
   return i == 40;
 }
 
@@ -886,7 +887,7 @@ export_p12_file (const char *fname)
     {
       char hexgrip[40+4+1];
       char *p;
-  
+
       assert (strlen(fname) == 40);
       strcpy (stpcpy (hexgrip, fname), ".key");
 
@@ -960,7 +961,7 @@ export_p12_file (const char *fname)
       xfree (key);
       xfree (cert);
       return;
-    } 
+    }
   wipememory (key, keylen_for_wipe);
   xfree (key);
 
@@ -971,7 +972,7 @@ export_p12_file (const char *fname)
       log_error ("error converting key parameters\n");
       xfree (cert);
       return;
-    } 
+    }
   sk.n = kp[0];
   sk.e = kp[1];
   sk.d = kp[2];
@@ -980,7 +981,7 @@ export_p12_file (const char *fname)
   sk.u = kp[5];
   xfree (kp);
 
- 
+
   kparms[0] = sk.n;
   kparms[1] = sk.e;
   kparms[2] = sk.d;
@@ -988,10 +989,10 @@ export_p12_file (const char *fname)
   kparms[4] = sk.p;
   kparms[5] = gcry_mpi_snew (0);  /* compute d mod (p-1) */
   gcry_mpi_sub_ui (kparms[5], kparms[3], 1);
-  gcry_mpi_mod (kparms[5], sk.d, kparms[5]);   
+  gcry_mpi_mod (kparms[5], sk.d, kparms[5]);
   kparms[6] = gcry_mpi_snew (0);  /* compute d mod (q-1) */
   gcry_mpi_sub_ui (kparms[6], kparms[4], 1);
-  gcry_mpi_mod (kparms[6], sk.d, kparms[6]);   
+  gcry_mpi_mod (kparms[6], sk.d, kparms[6]);
   kparms[7] = sk.u;
   kparms[8] = NULL;
 
@@ -1003,7 +1004,7 @@ export_p12_file (const char *fname)
     gcry_mpi_release (kparms[i]);
   if (!key)
     return;
-  
+
 #ifdef HAVE_DOSISH_SYSTEM
   setmode ( fileno (stdout) , O_BINARY );
 #endif
@@ -1022,7 +1023,7 @@ main (int argc, char **argv )
 
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-  log_set_prefix ("gpg-protect-tool", 1); 
+  log_set_prefix ("gpg-protect-tool", 1);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -1040,6 +1041,7 @@ main (int argc, char **argv )
 
   opt_homedir = default_homedir ();
 
+  opt_session_env = session_env_new ();
 
   pargs.argc = &argc;
   pargs.argv = &argv;
@@ -1073,7 +1075,7 @@ main (int argc, char **argv )
         case oHaveCert: opt_have_cert = 1; break;
         case oPrompt: opt_prompt = pargs.r.ret_str; break;
         case oStatusMsg: opt_status_msg = 1; break;
-          
+
         default: pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}
     }
@@ -1091,7 +1093,7 @@ main (int argc, char **argv )
                                 opt.verbose,
                                 opt_homedir,
                                 opt_agent_program,
-                                NULL, NULL, NULL);
+                                NULL, NULL, opt_session_env);
 
   if (opt_prompt)
     opt_prompt = percent_plus_unescape (opt_prompt, 0);
@@ -1127,6 +1129,8 @@ void
 agent_exit (int rc)
 {
   rc = rc? rc : log_get_errorcount(0)? 2 : 0;
+  session_env_release (opt_session_env);
+  opt_session_env = NULL;
   exit (rc);
 }
 
@@ -1147,7 +1151,7 @@ get_passphrase (int promptno)
   const char *desc;
   char *orig_codeset;
   int repeat = 0;
-  
+
   if (opt_passphrase)
     return xstrdup (opt_passphrase);
 
@@ -1214,7 +1218,7 @@ store_private_key (const unsigned char *grip,
   char *fname;
   estream_t fp;
   char hexgrip[40+4+1];
-  
+
   bin2hex (grip, 20, hexgrip);
   strcpy (hexgrip+40, ".key");
 
@@ -1236,11 +1240,11 @@ store_private_key (const unsigned char *grip,
       }
       /* FWIW: Under Windows Vista the standard fopen in the msvcrt
          fails if the "x" GNU extension is used.  */
-      fp = es_fopen (fname, "wbx"); 
+      fp = es_fopen (fname, "wbx");
     }
 
-  if (!fp) 
-    { 
+  if (!fp)
+    {
       log_error ("can't create `%s': %s\n", fname, strerror (errno));
       xfree (fname);
       return -1;
