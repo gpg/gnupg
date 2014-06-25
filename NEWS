@@ -1,5 +1,34 @@
-Noteworthy changes in version 2.1.0 (unreleased)
-------------------------------------------------
+Noteworthy changes in version 2.1.0-beta751 (2014-07-03)
+--------------------------------------------------------
+
+ * gpg: Make export of secret keys work again.
+
+ * gpg: Create revocation certificates during key generation.
+
+ * gpg: Create exported secret keys and revocation certifciates with
+   mode 0700
+
+ * gpg: The output of --list-packets does now print the offset of the
+   packet and information about the packet header.
+
+ * gpg: Avoid DoS due to garbled compressed data packets. [CVE-2014-4617]
+
+ * gpg: Screen keyserver responses to avoid importing unwanted keys
+   from rogue servers.
+
+ * gpg: The validity of user ids is now shown by default.  To revert
+   this add "list-options no-show-uid-validity" to gpg.conf.
+
+ * gpg: Print more specific reason codes with the INV_RECP status.
+
+ * gpg: Cap RSA and Elgamal keysize at 4096 bit also for unattended
+   key generation.
+
+ * scdaemon: Support reader Gemalto IDBridge CT30 and pinpad of SCT
+   cyberJack go.
+
+ * The speedo build system has been improved.  It is now also possible
+   to build a partly working installer for Windows.
 
 
 Noteworthy changes in version 2.1.0-beta442 (2014-06-05)
