@@ -1435,7 +1435,8 @@ main ( int argc, char **argv)
   configname = NULL;
 
   if (!opt.config_filename)
-    opt.config_filename = make_filename (opt.homedir, GPG_NAME EXTSEP_S "conf",
+    opt.config_filename = make_filename (opt.homedir,
+                                         GPGSM_NAME EXTSEP_S "conf",
                                          NULL);
 
   if (log_get_errorcount(0))
