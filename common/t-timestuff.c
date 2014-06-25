@@ -112,7 +112,11 @@ test_timegm (void)
           tbuf.tm_hour = tvalues[tidx].hour;
           tbuf.tm_min  = tvalues[tidx].min;
           tbuf.tm_sec  = tvalues[tidx].sec;
+#ifdef HAVE_TIMEGM
+          now = timegm (&tbuf);
+#else
           now = mktime (&tbuf);
+#endif
         }
       if (now == (time_t)(-1))
         fail (tidx);
@@ -122,7 +126,11 @@ test_timegm (void)
         fail (tidx);
       tbuf = *tp;
       tbuf2 = tbuf;
+#ifdef HAVE_TIMEGM
       atime = timegm (&tbuf);
+#else
+      atime = mktime (&tbuf);
+#endif
       if (atime == (time_t)(-1))
         fail (tidx);
       if (atime != now)
@@ -145,6 +153,14 @@ main (int argc, char **argv)
 {
   (void)argc;
   (void)argv;
+
+  /* If we do not have timegm, we use mktime.  However, we need to use
+     UTC in this case so that the 20380118T235959 test does not fail
+     for other timezones.  */
+#ifndef HAVE_TIMEGM
+  setenv ("TZ", "UTC", 1);
+  tzset ();
+#endif
 
   test_timegm ();
 
