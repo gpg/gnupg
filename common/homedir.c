@@ -605,15 +605,11 @@ dirmngr_sys_socket_name (void)
 const char *
 dirmngr_user_socket_name (void)
 {
-#ifdef HAVE_W32_SYSTEM
-  return NULL;  /* We support only a system service.  */
-#else /*!HAVE_W32_SYSTEM*/
   static char *name;
 
   if (!name)
     name = make_absfilename (default_homedir (), DIRMNGR_SOCK_NAME, NULL);
   return name;
-#endif /*!HAVE_W32_SYSTEM*/
 }
 
 
