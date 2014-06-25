@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-08-21 15:44-0400\n"
+"PO-Revision-Date: 2014-06-27 19:51+0200\n"
 "Last-Translator: David Prévot <david@tilapin.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -182,8 +182,7 @@ msgstr "CDP"
 msgid "Reset Code"
 msgstr "Code de réinitialisation"
 
-#, fuzzy, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
+#, c-format
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AUtilisez le pavé numérique du lecteur en entrée."
 
@@ -281,8 +280,7 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Oui, aucune protection n'est nécessaire"
 
-#, fuzzy, c-format
-#| msgid "Please enter the passphrase to%0Ato protect your new key"
+#, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Veuillez entrer la phrase de passe%0Apour protéger la nouvelle clef"
 
@@ -378,21 +376,15 @@ msgstr ""
 "Veuillez signaler toutes anomalies sur <@EMAIL@> (en anglais)\n"
 "et tout problème de traduction à <traduc@traduc.org>.\n"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
-msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
+msgstr "Utilisation : dirmngr @GPG_AGENT@ (-h pour l'aide)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg-agent [options] [command [args]]\n"
-#| "Secret key management for GnuPG\n"
 msgid ""
 "Syntax: @GPG_AGENT@ [options] [command [args]]\n"
 "Secret key management for @GNUPG@\n"
 msgstr ""
-"Syntaxe : gpg-agent [options] [commande [arguments]]\n"
-"Gestionnaire de clefs secrètes pour GnuPG\n"
+"Syntaxe : @GPG_AGENT@ [options] [commande [arguments]]\n"
+"Gestionnaire de clefs secrètes pour @GNUPG@\n"
 
 #, c-format
 msgid "invalid debug-level '%s' given\n"
@@ -683,7 +675,7 @@ msgstr "activer la clef"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
-"Deleting the key will may remove your ability toaccess remote machines."
+"Deleting the key will may remove your ability to access remote machines."
 msgstr ""
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
@@ -1860,22 +1852,15 @@ msgstr ""
 " --list-keys [noms]         montrer les clefs\n"
 " --fingerprint [noms]       montrer les empreintes\n"
 
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
 msgid "Usage: @GPG@ [options] [files] (-h for help)"
-msgstr "Utilisation : gpg [options] [fichiers] (-h pour l'aide)"
+msgstr "Utilisation : @GPG@ [options] [fichiers] (-h pour l'aide)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: @GPG@ [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"Syntaxe : gpg [options] [fichiers]\n"
+"Syntaxe : @GPG@ [options] [fichiers]\n"
 "Signer, vérifier, chiffrer ou déchiffrer\n"
 "L'opération par défaut dépend des données entrées\n"
 
@@ -1898,8 +1883,9 @@ msgstr "Hachage : "
 msgid "Compression: "
 msgstr "Compression : "
 
-msgid "usage: gpg [options] "
-msgstr "utilisation : gpg [options] "
+#, c-format
+msgid "usage: %s [options] %s\n"
+msgstr "utilisation : %s [options] %s\n"
 
 msgid "conflicting commands\n"
 msgstr "commandes en conflit\n"
@@ -4323,6 +4309,11 @@ msgstr "mode texte"
 msgid "unknown"
 msgstr "inconnu"
 
+#, fuzzy
+#| msgid "unknown pubkey algorithm"
+msgid ", key algorithm "
+msgstr "algorithme de clef publique inconnu"
+
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossible de vérifier la signature : %s\n"
@@ -5721,10 +5712,8 @@ msgstr "refus d'utiliser les commandes d'administration de la carte"
 msgid "use variable length input for pinpad"
 msgstr ""
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
-msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
+msgstr "Utilisation : @SCDAEMON@ [options] (-h pour l'aide)"
 
 #, fuzzy
 #| msgid ""
@@ -6307,27 +6296,17 @@ msgstr "|NOM|utiliser l'algorithme de chiffrement NOM"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOM|utiliser l'algorithme de hachage NOM"
 
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
-msgstr "Utilisation : gpg [options] [fichiers] (-h pour l'aide)"
+msgstr "Utilisation : @GPGSM@ [options] [fichiers] (-h pour l'aide)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: @GPGSM@ [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"Syntaxe : gpgsm [options] [fichiers]\n"
+"Syntaxe : @GPGSM@ [options] [fichiers]\n"
 "Signer, vérifier, chiffrer ou déchiffrer en utilisant le protocole S/MIME\n"
 "L'opération par défaut dépend des données entrées\n"
-
-msgid "usage: gpgsm [options] "
-msgstr "utilisation : gpgsm [options] "
 
 #, c-format
 msgid "NOTE: won't be able to encrypt to '%s': %s\n"
@@ -7260,7 +7239,7 @@ msgstr "|EMPR|réponse OCSP signée par EMPR"
 msgid "|N|do not return more than N items in one query"
 msgstr "|N|ne pas renvoyer plus de N éléments dans une requête"
 
-msgid "|FILE|use the CA certifciates in FILE for HKP over TLS"
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
 msgid ""
@@ -7272,21 +7251,15 @@ msgstr ""
 "(Consultez le manuel « info » pour obtenir une liste complète des commandes\n"
 "et options)\n"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
-msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
+msgstr "Utilisation : @DIRMNGR@ [options] (-h pour l'aide)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: dirmngr [options] [command [args]]\n"
-#| "LDAP and OCSP access for GnuPG\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
 "LDAP and OCSP access for @GNUPG@\n"
 msgstr ""
-"Syntaxe : dirmngr [options] [commande [arguments]]\n"
-"Accès LDAP et OCSP pour GnuPG\n"
+"Syntaxe : @DIRMNGR@ [options] [commande [arguments]]\n"
+"Accès LDAP et OCSP pour @GNUPG@\n"
 
 #, c-format
 msgid "valid debug levels are: %s\n"
@@ -7809,20 +7782,14 @@ msgstr "|FICHIER|exécuter les commandes du FICHIER au démarrage"
 msgid "run /subst on startup"
 msgstr "exécuter /subst au démarrage"
 
-#, fuzzy
-#| msgid "Usage: gpg-connect-agent [options] (-h for help)"
 msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
-msgstr "Utilisation : gpg-connect-agent [options] (-h pour l'aide)"
+msgstr "Utilisation : @GPG@-connect-agent [options] (-h pour l'aide)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg-connect-agent [options]\n"
-#| "Connect to a running agent and send commands\n"
 msgid ""
 "Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
-"Syntaxe : gpg-connect-agent [options]\n"
+"Syntaxe : @GPG@-connect-agent [options]\n"
 "Se connecter à un agent en fonctionnement et envoyer des commandes\n"
 
 #, c-format
@@ -7996,10 +7963,8 @@ msgstr "|COMPOSANT|vérifier les options"
 msgid "apply global default values"
 msgstr "appliquer les valeurs par défaut globales"
 
-#, fuzzy
-#| msgid "get the configuration directories for gpgconf"
 msgid "get the configuration directories for @GPGCONF@"
-msgstr "aff. répertoires de configuration pour gpgconf"
+msgstr "aff. répertoires de configuration pour @GPGCONF@"
 
 msgid "list global configuration file"
 msgstr "afficher le fichier de configuration globale"
@@ -8024,21 +7989,16 @@ msgstr "utiliser comme fichier de sortie"
 msgid "activate changes at runtime, if possible"
 msgstr "activer modif. pendant l'exécution si possible"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @GPGCONF@ [options] (-h for help)"
-msgstr "Utilisation : dirmngr [options] (-h pour l'aide)"
+msgstr "Utilisation : @GPGCONF@ [options] (-h pour l'aide)"
 
 #, fuzzy
-#| msgid ""
-#| "Syntax: gpgconf [options]\n"
-#| "Manage configuration options for tools of the GnuPG system\n"
 msgid ""
 "Syntax: @GPGCONF@ [options]\n"
 "Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-"Syntaxe : gpgconf [options]\n"
-"Gérer les options de configuration pour les outils du système GnuPG\n"
+"Syntaxe : @GPGCONF@ [options]\n"
+"Gérer les options de configuration pour les outils du système @GNUPG@\n"
 
 msgid "Need one component argument"
 msgstr "Un argument de composant nécessaire"
@@ -8193,6 +8153,12 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "utilisation : gpg [options] "
+
+#~ msgid "usage: gpgsm [options] "
+#~ msgstr "utilisation : gpgsm [options] "
 
 #, fuzzy
 #~| msgid "can't create '%s': %s\n"
@@ -8937,9 +8903,6 @@ msgstr ""
 
 #~ msgid "unknown packet type"
 #~ msgstr "type de paquet inconnu"
-
-#~ msgid "unknown pubkey algorithm"
-#~ msgstr "algorithme de clef publique inconnu"
 
 #~ msgid "unknown digest algorithm"
 #~ msgstr "algorithme de hachage inconnu"
