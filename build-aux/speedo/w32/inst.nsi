@@ -94,7 +94,7 @@ SetCompressor lzma
 Name "${PRETTY_PACKAGE}"
 
 # Set the output filename.
-OutFile "$(NAME)-${VERSION}.exe"
+OutFile "${NAME}-${VERSION}.exe"
 
 #Fixme: Do we need a logo
 #Icon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
