@@ -2120,7 +2120,7 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   struct timespec timeout;
 #ifdef HAVE_W32_SYSTEM
   HANDLE events[2];
-  int events_set;
+  unsigned int events_set;
 #endif
 
   ret = npth_attr_init(&tattr);
@@ -2219,7 +2219,6 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
           handle_signal (signo);
       }
 #else
-      events_set = 0;
       ret = npth_eselect (nfd+1, &read_fdset, NULL, NULL, &timeout,
                           events, &events_set);
       saved_errno = errno;
