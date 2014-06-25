@@ -178,7 +178,8 @@ show memory statistics.
 @item 9  (512)
 write hashed data to files named @code{dbgmd-000*}
 @item 10 (1024)
-trace Assuan protocol.  See also option @option{--debug-assuan-log-cats}.
+trace Assuan protocol.
+See also option @option{--debug-assuan-log-cats}.
 @item 11 (2048)
 trace APDU I/O to the card.  This may reveal sensitive data.
 @item 12 (4096)
@@ -268,10 +269,12 @@ a list of available readers.  The default is then the first reader
 found.
 
 To get a list of available CCID readers you may use this command:
+@cartouche
 @smallexample
-echo scd getinfo reader_list | gpg-connect-agent --decode | awk '/^D/ @{print $2@}'
+  echo scd getinfo reader_list \
+    | gpg-connect-agent --decode | awk '/^D/ @{print $2@}'
 @end smallexample
-
+@end cartouche
 
 @item --card-timeout @var{n}
 @opindex card-timeout
@@ -347,8 +350,9 @@ This application is currently only used by @command{gpg} but may in
 future also be useful with @command{gpgsm}.  Version 1 and version 2 of
 the card is supported.
 
-The specifications for these cards are available at
-@uref{http://g10code.com/docs/openpgp-card-1.0.pdf} and
+@noindent
+The specifications for these cards are available at@*
+@uref{http://g10code.com/docs/openpgp-card-1.0.pdf} and@*
 @uref{http://g10code.com/docs/openpgp-card-2.0.pdf}.
 
 @node NKS Card

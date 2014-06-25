@@ -29,12 +29,13 @@ This is the @cite{The GNU Privacy Guard Manual} (version
 @value{VERSION}, @value{UPDATED-MONTH}).
 
 @iftex
-Published by the Free Software Foundation@*
-51 Franklin St, Fifth Floor@*
-Boston, MA 02110-1301 USA
+Published by The GnuPG Project@*
+@url{https://gnupg.org}@*
+(or @url{http://ic6au7wa3f6naxjq.onion})
 @end iftex
 
-Copyright @copyright{} 2002, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+@copyright{} 2002, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.@*
+@copyright{} 2013, 2014 Werner Koch.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -92,11 +93,11 @@ section entitled ``Copying''.
 
 @sp 3
 
-@image{gnupg-logo,16cm,,The GnuPG Logo}
+@image{gnupg-logo,,,The GnuPG Logo}
 
 @sp 3
 
-@author Werner Koch (@email{wk@@gnupg.org})
+@author The GnuPG Project (@url{https://gnupg.org})
 
 @page
 @vskip 0pt plus 1filll

@@ -177,10 +177,13 @@ you created the signing request.  By running the command
 
 you get a listing of all private keys under control of @command{gpg-agent}.
 Pick the key which best matches the creation time and run the command
- 
+
+@cartouche
 @smallexample
-  /usr/local/libexec/gpg-protect-tool --p12-export ~/.gnupg/private-keys-v1.d/@var{foo} >@var{foo}.p12
+  /usr/local/libexec/gpg-protect-tool --p12-export \
+     ~/.gnupg/private-keys-v1.d/@var{foo} >@var{foo}.p12
 @end smallexample
+@end cartouche
 
 (Please adjust the path to @command{gpg-protect-tool} to the appropriate
 location). @var{foo} is the name of the key file you picked (it should
@@ -188,11 +191,13 @@ have the suffix @file{.key}).  A Pinentry box will pop up and ask you
 for the current passphrase of the key and a new passphrase to protect it
 in the pkcs#12 file.
 
-To import the created file on the machine you use this command:  
+To import the created file on the machine you use this command:
 
+@cartouche
 @smallexample
   /usr/local/libexec/gpg-protect-tool --p12-import --store  @var{foo}.p12
 @end smallexample
+@end cartouche
 
 You will be asked for the pkcs#12 passphrase and a new passphrase to
 protect the imported private key at its new location.
@@ -230,7 +235,7 @@ gpg: fatal: WriteConsole failed: Access denied
 @end smallexample
 
 @noindent
-The solution is to use the command @command{wineconsole}. 
+The solution is to use the command @command{wineconsole}.
 
 Some operations like gen-key really want to talk to the console directly
 for increased security (for example to prevent the passphrase from

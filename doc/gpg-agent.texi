@@ -597,7 +597,8 @@ agent. By default they may all be found in the current home directory
   Here is an example where two keys are marked as ultimately trusted
   and one as not trusted:
 
-  @example
+  @cartouche
+  @smallexample
   # CN=Wurzel ZS 3,O=Intevation GmbH,C=DE
   A6935DD34EF3087973C706FC311AA2CCF733765B S
 
@@ -606,7 +607,8 @@ agent. By default they may all be found in the current home directory
 
   # CN=Root-CA/O=Schlapphuete/L=Pullach/C=DE
   !14:56:98:D3:FE:9C:CA:5A:31:6E:BC:81:D3:11:4E:00:90:A3:44:C2 S
-  @end example
+  @end smallexample
+  @end cartouche
 
 Before entering a key into this file, you need to ensure its
 authenticity.  How to do this depends on your organisation; your
@@ -669,11 +671,13 @@ The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
 implicitly added to this list; i.e. there is no need to list them.
 
-  @example
+  @cartouche
+  @smallexample
   # Key added on: 2011-07-20 20:38:46
   # Fingerprint:  5e:8d:c4:ad:e7:af:6e:27:8a:d6:13:e4:79:ad:0b:81
   34B62F25E277CF13D3C6BCEBFD3F85D08F0A864B 0 confirm
-  @end example
+  @end smallexample
+  @end cartouche
 
 @item private-keys-v1.d/
 
@@ -892,8 +896,8 @@ If the decryption was successful the decrypted data is returned by
 means of "D" lines.
 
 Here is an example session:
-
-@example
+@cartouche
+@smallexample
    C: PKDECRYPT
    S: INQUIRE CIPHERTEXT
    C: D (enc-val elg (a 349324324)
@@ -903,7 +907,8 @@ Here is an example session:
    S: S PADDING 0
    S: D (value 1234567890ABCDEF0)
    S: OK descryption successful
-@end example
+@end smallexample
+@end cartouche
 
 The “PADDING” status line is only send if gpg-agent can tell what kind
 of padding is used.  As of now only the value 0 is used to indicate
@@ -937,10 +942,15 @@ must be given.  Valid names for <name> are:
 
 @table @code
 @item sha1
+The SHA-1 hash algorithm
 @item sha256
+The SHA-256 hash algorithm
 @item rmd160
+The RIPE-MD160 hash algorithm
 @item md5
+The old and broken MD5 hash algorithm
 @item tls-md5sha1
+A combined hash algorithm as used by the TLS protocol.
 @end table
 
 @noindent
@@ -977,8 +987,8 @@ caching.
 
 
 Here is an example session:
-
-@example
+@cartouche
+@smallexample
    C: SIGKEY <keyGrip>
    S: OK key available
    C: SIGKEY <keyGrip>
@@ -992,8 +1002,8 @@ Here is an example session:
    S: # signature follows
    S: D (sig-val rsa (s 45435453654612121212))
    S: OK
-@end example
-
+@end smallexample
+@end cartouche
 
 @node Agent GENKEY
 @subsection Generating a Key
@@ -1043,8 +1053,8 @@ like S-Expression like this:
 @end example
 
 Here is an example session:
-
-@example
+@cartouche
+@smallexample
    C: GENKEY
    S: INQUIRE KEYPARM
    C: D (genkey (rsa (nbits  1024)))
@@ -1052,7 +1062,8 @@ Here is an example session:
    S: D (public-key
    S: D   (rsa (n 326487324683264) (e 10001)))
    S  OK key created
-@end example
+@end smallexample
+@end cartouche
 
 @ifset gpgtwoone
 The @option{--no-protection} option may be used to prevent prompting for a
@@ -1170,7 +1181,9 @@ special handling of passphrases.  This command uses a syntax which helps
 clients to use the agent with minimum effort.
 
 @example
-  GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] [--qualitybar] @var{cache_id} [@var{error_message} @var{prompt} @var{description}]
+  GET_PASSPHRASE [--data] [--check] [--no-ask] [--repeat[=N]] \
+                 [--qualitybar] @var{cache_id}                \
+                 [@var{error_message} @var{prompt} @var{description}]
 @end example
 
 @var{cache_id} is expected to be a string used to identify a cached
