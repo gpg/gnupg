@@ -91,6 +91,7 @@ have_ksba=no
 have_npth=no
 have_libusb=no
 have_adns=no
+gnupg_have_ldap="n/a"
 
 use_zip=yes
 use_bzip2=yes
@@ -100,8 +101,6 @@ card_support=yes
 use_ccid_driver=yes
 use_standard_socket=yes
 dirmngr_auto_start=yes
-
-try_ks_ldap=no
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -205,13 +204,6 @@ fi
 AC_DEFINE_UNQUOTED(NAME_OF_INSTALLED_GPG, "$name_of_installed_gpg",
                    [The name of the installed GPG tool])
 
-
-# Some folks want to use only the agent from this packet.  Make it
-# easier for them by providing the configure option
-# --enable-only-agent.
-AC_ARG_ENABLE(agent-only,
-    AC_HELP_STRING([--enable-agent-only],[build only the gpg-agent]),
-    build_agent_only=$enableval)
 
 # SELinux support includes tracking of sensitive files to avoid
 # leaking their contents through processing these files by gpg itself
@@ -1036,7 +1028,9 @@ AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 #
 # Check for LDAP
 #
-if test "$try_ks_ldap" = yes || test "$build_dirmngr" = "yes" ; then
+# Note that running the check changes the variable
+# gnupg_have_ldap from "n/a" to "no" or "yes".
+if test "$build_dirmngr" = "yes" ; then
    GNUPG_CHECK_LDAP($NETLIBS)
    AC_CHECK_LIB(lber, ber_free,
                 [ LBER_LIBS="$LBER_LIBS -llber"
@@ -1048,44 +1042,23 @@ fi
 AC_SUBST(LBER_LIBS)
 
 #
-# Check for curl.  We fake the curl API if libcurl isn't installed.
-# We require 7.10 or later as we use curl_version_info().
-#
-LIBCURL_CHECK_CONFIG([yes],[7.10],,[fake_curl=yes])
-AM_CONDITIONAL(FAKE_CURL,test x"$fake_curl" = xyes)
-
-# Generic, for us, means curl
-
-if test x"$try_generic" = xyes ; then
-   AC_SUBST(GPGKEYS_CURL,"gpg2keys_curl$EXEEXT")
-fi
-
-#
 # Check for sendmail
 #
 # This isn't necessarily sendmail itself, but anything that gives a
 # sendmail-ish interface to the outside world.  That includes Exim,
 # Postfix, etc.  Basically, anything that can handle "sendmail -t".
-if test "$try_mailto" = yes ; then
-  AC_ARG_WITH(mailprog,
+AC_ARG_WITH(mailprog,
       AC_HELP_STRING([--with-mailprog=NAME],
                      [use "NAME -t" for mail transport]),
              ,with_mailprog=yes)
-
-  if test x"$with_mailprog" = xyes ; then
+if test x"$with_mailprog" = xyes ; then
     AC_PATH_PROG(SENDMAIL,sendmail,,$PATH:/usr/sbin:/usr/libexec:/usr/lib)
-    if test "$ac_cv_path_SENDMAIL" ; then
-      GPGKEYS_MAILTO="gpg2keys_mailto"
-    fi
-  elif test x"$with_mailprog" != xno ; then
+elif test x"$with_mailprog" != xno ; then
     AC_MSG_CHECKING([for a mail transport program])
     AC_SUBST(SENDMAIL,$with_mailprog)
     AC_MSG_RESULT($with_mailprog)
-    GPGKEYS_MAILTO="gpg2keys_mailto"
-  fi
 fi
 
-AC_SUBST(GPGKEYS_MAILTO)
 
 #
 # Construct a printable name of the OS
@@ -1552,10 +1525,6 @@ estream_INIT
 #
 # Decide what to build
 #
-if test "$have_adns" = "yes"; then
-  AC_SUBST(GPGKEYS_KDNS, "gpg2keys_kdns$EXEEXT")
-fi
-
 
 build_scdaemon_extra=""
 if test "$build_scdaemon" = "yes"; then
@@ -1567,14 +1536,6 @@ if test "$build_scdaemon" = "yes"; then
   fi
 fi
 
-
-if test "$build_agent_only" = "yes" ; then
-  build_gpg=no
-  build_gpgsm=no
-  build_scdaemon=no
-  build_tools=no
-  build_doc=no
-fi
 
 #
 # Set variables for use by automake makefiles.
@@ -1743,7 +1704,7 @@ if test "$gnupg_have_ldap" = "no"; then
     die=yes
     AC_MSG_NOTICE([[
 ***
-*** You need a LDAP library to build this program.
+*** The Dirmngr part requires an LDAP library
 *** Check out
 ***    http://www.openldap.org
 *** for a suitable implementation.

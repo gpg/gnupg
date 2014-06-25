@@ -42,4 +42,4 @@ esac
 
 extra_aclocal_flags="-I gl/m4"
 
-final_info="./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-mailto --enable-gpgtar && make"
+final_info="./configure --sysconfdir=/etc --enable-maintainer-mode --enable-symcryptrun --enable-gpgtar && make"
