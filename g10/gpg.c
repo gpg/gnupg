@@ -1018,10 +1018,8 @@ build_list (const char *text, char letter,
 static void
 wrong_args( const char *text)
 {
-    fputs(_("usage: gpg [options] "),stderr);
-    fputs(text,stderr);
-    putc('\n',stderr);
-    g10_exit(2);
+  fprintf (stderr, _("usage: %s [options] %s\n"), GPG_NAME, text);
+  g10_exit(2);
 }
 
 

@@ -636,9 +636,7 @@ set_binary (FILE *fp)
 static void
 wrong_args (const char *text)
 {
-  fputs (_("usage: gpgsm [options] "), stderr);
-  fputs (text, stderr);
-  putc ('\n', stderr);
+  fprintf (stderr, _("usage: %s [options] %s\n"), GPGSM_NAME, text);
   gpgsm_exit (2);
 }
 
