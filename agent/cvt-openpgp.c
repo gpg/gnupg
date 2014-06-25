@@ -192,7 +192,7 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
     case GCRY_PK_RSA:
       err = gcry_sexp_build
         (&s_skey, NULL,
-         "(protected-private-key(rsa(n%m)(e%m)",
+         "(protected-private-key(rsa(n%m)(e%m)"
          "(protected openpgp-native%S)))",
          skey[0], skey[1], transfer_key );
       break;
