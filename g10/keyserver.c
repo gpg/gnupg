@@ -960,13 +960,25 @@ direct_uri_map(const char *scheme,unsigned int is_direct)
 #define KEYSERVER_ARGS_NOKEEP " -o \"%o\" \"%i\""
 
 
+/* Structure to convey the arg to keyserver_retrieval_filter.  */
+struct ks_retrieval_filter_arg_s
+{
+  KEYDB_SEARCH_DESC *desc;
+  int ndesc;
+};
+
+
 /* Check whether a key matches the search description.  The filter
    returns 0 if the key shall be imported.  Note that this kind of
    filter is not related to the iobuf filters. */
 static int
-keyserver_retrieval_filter (PKT_public_key *pk, PKT_secret_key *sk, void *arg)
+keyserver_retrieval_filter (PKT_public_key *pk, PKT_secret_key *sk,
+                            void *opaque)
 {
-  KEYDB_SEARCH_DESC *desc = arg;
+  struct ks_retrieval_filter_arg_s *arg = opaque;
+  KEYDB_SEARCH_DESC *desc = arg->desc;
+  int ndesc = arg->ndesc;
+  int n;
   u32 keyid[2];
   byte fpr[MAX_FINGERPRINT_LEN];
   size_t fpr_len = 0;
@@ -975,32 +987,40 @@ keyserver_retrieval_filter (PKT_public_key *pk, PKT_secret_key *sk, void *arg)
   if (sk)
     return G10ERR_GENERAL;
 
+  if (!ndesc)
+    return 0; /* Okay if no description given.  */
+
   fingerprint_from_pk (pk, fpr, &fpr_len);
   keyid_from_pk (pk, keyid);
 
   /* Compare requested and returned fingerprints if available. */
-  if (desc->mode == KEYDB_SEARCH_MODE_FPR20)
+  for (n = 0; n < ndesc; n++)
     {
-      if (fpr_len != 20 || memcmp (fpr, desc->u.fpr, 20))
-        return G10ERR_GENERAL;
-    }
-  else if (desc->mode == KEYDB_SEARCH_MODE_FPR16)
-    {
-      if (fpr_len != 16 || memcmp (fpr, desc->u.fpr, 16))
-        return G10ERR_GENERAL;
-    }
-  else if (desc->mode == KEYDB_SEARCH_MODE_LONG_KID)
-    {
-      if (keyid[0] != desc->u.kid[0] || keyid[1] != desc->u.kid[1])
-        return G10ERR_GENERAL;
-    }
-  else if (desc->mode == KEYDB_SEARCH_MODE_SHORT_KID)
-    {
-      if (keyid[1] != desc->u.kid[1])
-        return G10ERR_GENERAL;
+      if (desc[n].mode == KEYDB_SEARCH_MODE_FPR20)
+        {
+          if (fpr_len == 20 && !memcmp (fpr, desc[n].u.fpr, 20))
+            return 0;
+        }
+      else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR16)
+        {
+          if (fpr_len == 16 && !memcmp (fpr, desc[n].u.fpr, 16))
+            return 0;
+        }
+      else if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
+        {
+          if (keyid[0] == desc[n].u.kid[0] && keyid[1] == desc[n].u.kid[1])
+            return 0;
+        }
+      else if (desc[n].mode == KEYDB_SEARCH_MODE_SHORT_KID)
+        {
+          if (keyid[1] == desc[n].u.kid[1])
+            return 0;
+        }
+      else
+        return 0;
     }
 
-  return 0;
+  return G10ERR_GENERAL;
 }
 
 
@@ -1540,6 +1560,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
       case KS_GETNAME:
 	{
 	  void *stats_handle;
+          struct ks_retrieval_filter_arg_s filterarg;
 
 	  stats_handle=import_new_stats_handle();
 
@@ -1552,11 +1573,12 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	     that we don't allow the import of secret keys from a
 	     keyserver.  Keyservers should never accept or send them
 	     but we better protect against rogue keyservers. */
-
+          filterarg.desc = desc;
+          filterarg.ndesc = count;
 	  import_keys_stream (spawn->fromchild, stats_handle, fpr, fpr_len,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY),
-                              keyserver_retrieval_filter, desc);
+                              keyserver_retrieval_filter, &filterarg);
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);
