@@ -299,7 +299,9 @@ direct_open (const char *fname, const char *mode)
   hfile = CreateFile (fname, da, sm, NULL, cd, FILE_ATTRIBUTE_NORMAL, NULL);
 #endif
   return hfile;
+
 #else /*!HAVE_W32_SYSTEM*/
+
   int oflag;
   int cflag = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 
@@ -324,21 +326,18 @@ direct_open (const char *fname, const char *mode)
   if (strchr (mode, 'b'))
     oflag |= O_BINARY;
 #endif
-  /* No we need to distinguish between POSIX and RISC OS.  */
-#ifndef __riscos__
-  return open (fname, oflag, cflag);
-#else
+
+#ifdef __riscos__
   {
     struct stat buf;
-    int rc = stat (fname, &buf);
 
     /* Don't allow iobufs on directories */
-    if (!rc && S_ISDIR (buf.st_mode) && !S_ISREG (buf.st_mode))
+    if (!stat (fname, &buf) && S_ISDIR (buf.st_mode) && !S_ISREG (buf.st_mode))
       return __set_errno (EISDIR);
-    else
-      return open (fname, oflag, cflag);
   }
 #endif
+  return open (fname, oflag, cflag);
+
 #endif /*!HAVE_W32_SYSTEM*/
 }
 
