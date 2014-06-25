@@ -1,5 +1,16 @@
-Noteworthy changes in version 2.0.25 (unreleased)
+Noteworthy changes in version 2.0.25 (2014-06-30)
 -------------------------------------------------
+
+ * gpg: Fix a regression in 2.0.24 if more than one keyid is given
+   to --recv-keys et al.
+
+ * gpg: Cap RSA and Elgamal keysize at 4096 bit also for unattended
+   key generation.
+
+ * gpgsm: Fix a DISPLAY related problem with --export-secret-key-p12.
+
+ * scdaemon: Support reader Gemalto IDBridge CT30.
+
 
 Noteworthy changes in version 2.0.24 (2014-06-24)
 -------------------------------------------------
