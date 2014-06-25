@@ -220,7 +220,7 @@ ReserveFile "${BUILD_DIR}\g4wihelp.dll"
 #ReserveFile "${TOP_SRCDIR}\doc\logo\gnupg-logo-400px.bmp"
 #ReserveFile "${W32_SRCDIR}\gnupg-splash.wav"
 ReserveFile "${TOP_SRCDIR}\COPYING"
-ReserveFile "${BUILD_DIR}\inst-options.ini"
+ReserveFile "${W32_SRCDIR}\inst-options.ini"
 #ReserveFile "${TOP_SRCDIR}\doc\logo\gnupg-logo-164x314.bmp"
 
 # Language support
@@ -303,18 +303,18 @@ Function CustomPageOptions
   !insertmacro MUI_HEADER_TEXT "$(T_InstallOptions)" "$(T_InstallOptLinks)"
 
   # Note, that the default selection is done in the ini file
-  !insertmacro MUI_INSTALLOPTIONS_WRITE "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "${W32_SRCDIR}/inst-options.ini" \
 	"Field 1" "Text"  "$(T_InstOptLabelA)"
-  !insertmacro MUI_INSTALLOPTIONS_WRITE "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "${W32_SRCDIR}/inst-options.ini" \
 	"Field 2" "Text"  "$(T_InstOptFieldA)"
-  !insertmacro MUI_INSTALLOPTIONS_WRITE "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "${W32_SRCDIR}/inst-options.ini" \
 	"Field 3" "Text"  "$(T_InstOptFieldB)"
-  !insertmacro MUI_INSTALLOPTIONS_WRITE "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "${W32_SRCDIR}/inst-options.ini" \
 	"Field 4" "Text"  "$(T_InstOptFieldC)"
-  !insertmacro MUI_INSTALLOPTIONS_WRITE "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_WRITE "${W32_SRCDIR}/inst-options.ini" \
 	"Field 5" "Text"  "$(T_InstOptLabelB)"
 
-  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "${BUILD_DIR}/inst-options.ini"
+  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "${W32_SRCDIR}/inst-options.ini"
 FunctionEnd
 
 
@@ -371,7 +371,7 @@ FunctionEnd
 # Check whether the start menu is actually wanted.
 
 Function CheckIfStartMenuWanted
-  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${W32_SRCDIR}/inst-options.ini" \
 	"Field 2" "State"
   IntCmp $R0 1 +2
     Abort
@@ -519,8 +519,8 @@ Section "-gnupginst"
 
   # If we are reinstalling, try to kill a possible running gpa using
   # an already installed gpa.
-  ifFileExists "$INSTDIR\bin\gpa.exe"  0 no_uiserver
-    ExecWait '"$INSTDIR\bin\gpa" --stop-server'
+  ifFileExists "$INSTDIR\bin\launch-gpa.exe"  0 no_uiserver
+    ExecWait '"$INSTDIR\bin\launch-gpa" --stop-server'
 
   no_uiserver:
 
@@ -834,8 +834,8 @@ SectionEnd
 #
 
 Section "-un.gnupglast"
-  ifFileExists "$INSTDIR\bin\gpa.exe"  0 no_uiserver
-    ExecWait '"$INSTDIR\bin\gpa" --stop-server'
+  ifFileExists "$INSTDIR\bin\launch-gpa.exe"  0 no_uiserver
+    ExecWait '"$INSTDIR\bin\launch-gpa" --stop-server'
   no_uiserver:
   ifFileExists "$INSTDIR\bin\gpgconf.exe"  0 no_gpgconf
     ExecWait '"$INSTDIR\bin\gpgconf" --kill gpg-agent'
@@ -1067,7 +1067,7 @@ Function .onInit
   # We can't use TOP_SRCDIR dir as the name of the file needs to be
   # the same while building and running the installer.  Thus we
   # generate the file from a template.
-  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "${BUILD_DIR}/inst-options.ini"
+  !insertmacro MUI_INSTALLOPTIONS_EXTRACT "${W32_SRCDIR}/inst-options.ini"
 
   #Call CalcDepends
 FunctionEnd
@@ -1107,7 +1107,7 @@ Section "-startmenu"
   SetShellVarContext all
 
   # Check if the start menu entries where requested.
-  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${W32_SRCDIR}/inst-options.ini" \
 	"Field 2" "State"
   IntCmp $R0 0 no_start_menu
 
@@ -1139,7 +1139,7 @@ no_start_menu:
 
 
   # Check if the desktop entries where requested.
-  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${W32_SRCDIR}/inst-options.ini" \
 	"Field 3" "State"
   IntCmp $R0 0 no_desktop
 
@@ -1160,7 +1160,7 @@ no_desktop:
 
 
   # Check if the quick launch bar entries where requested.
-  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${BUILD_DIR}/inst-options.ini" \
+  !insertmacro MUI_INSTALLOPTIONS_READ $R0 "${W32_SRCDIR}/inst-options.ini" \
 	"Field 4" "State"
   IntCmp $R0 0 no_quick_launch
   StrCmp $QUICKLAUNCH $TEMP no_quick_launch
