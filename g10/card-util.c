@@ -205,6 +205,7 @@ get_manufacturer (unsigned int no)
     case 0x0003: return "OpenFortress";
     case 0x0004: return "Wewid AB";
     case 0x0005: return "ZeitControl";
+    case 0x0006: return "Yubico";
 
     case 0x002A: return "Magrathea";
 
