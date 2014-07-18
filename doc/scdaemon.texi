@@ -340,6 +340,7 @@ stripping off the two leading dashes.
 * DINSIG Card::           The DINSIG card application
 * PKCS#15 Card::          The PKCS#15 card application
 * Geldkarte Card::        The Geldkarte application
+* SmartCard-HSM::         The SmartCard-HSM application
 * Undefined Card::        The Undefined stub application
 @end menu
 
@@ -381,6 +382,19 @@ This is common framework for smart card applications.  It is used by
 This is a simple application to display information of a German
 Geldkarte.  The Geldkarte is a small amount debit card application which
 comes with almost all German banking cards.
+
+@node SmartCard-HSM
+@subsection The SmartCard-HSM card application ``sc-hsm''
+
+This application adds read/only support for keys and certificates
+stored on a @uref{http://www.smartcard-hsm.com, SmartCard-HSM}.
+
+To generate keys and store certifiates you may use
+@uref{https://github.com/OpenSC/OpenSC/wiki/SmartCardHSM, OpenSC} or
+the tools from @uref{http://www.openscdp.org, OpenSCDP}.
+
+The SmartCard-HSM cards requires a card reader that supports Extended
+Length APDUs.
 
 @node Undefined Card
 @subsection The Undefined card application ``undefined''
