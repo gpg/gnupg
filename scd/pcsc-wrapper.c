@@ -715,7 +715,7 @@ handle_transmit (unsigned char *argbuf, size_t arglen)
   long err;
   struct pcsc_io_request_s send_pci;
   pcsc_dword_t recv_len;
-  unsigned char buffer[1024];
+  unsigned char buffer[4096];
 
   /* The apdu should at least be one byte. */
   if (!arglen)
