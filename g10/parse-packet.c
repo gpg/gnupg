@@ -2478,11 +2478,23 @@ parse_attribute (IOBUF inp, int pkttype, unsigned long pktlen,
 
   (void) pkttype;
 
+  /* We better cap the size of an attribute packet to make DoS not too
+     easy.  16MB should be more then enough for one attribute packet
+     (ie. a photo).  */
+  if (pktlen > 16*1024*1024)
+    {
+      log_error ("packet(%d) too large\n", pkttype);
+      if (list_mode)
+        es_fprintf (listfp, ":attribute packet: [too large]\n");
+      iobuf_skip_rest (inp, pktlen, 0);
+      return G10ERR_INVALID_PACKET;
+    }
+
 #define EXTRA_UID_NAME_SPACE 71
   packet->pkt.user_id = xmalloc_clear (sizeof *packet->pkt.user_id
 				       + EXTRA_UID_NAME_SPACE);
   packet->pkt.user_id->ref = 1;
-  packet->pkt.user_id->attrib_data = xmalloc (pktlen);
+  packet->pkt.user_id->attrib_data = xmalloc (pktlen? pktlen:1);
   packet->pkt.user_id->attrib_len = pktlen;
 
   p = packet->pkt.user_id->attrib_data;
