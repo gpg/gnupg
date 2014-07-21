@@ -1,6 +1,7 @@
 /* parse-packet.c  - read packets
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -853,6 +854,8 @@ parse_marker (IOBUF inp, int pkttype, unsigned long pktlen)
 
  fail:
   log_error ("invalid marker packet\n");
+  if (list_mode)
+    es_fputs (":marker packet: [invalid]\n", listfp);
   iobuf_skip_rest (inp, pktlen, 0);
   return G10ERR_INVALID_PACKET;
 }
@@ -869,6 +872,8 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   if (pktlen < 4)
     {
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fprintf (listfp, ":symkey enc packet: [too short]\n");
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -877,12 +882,16 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   if (version != 4)
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
+      if (list_mode)
+        es_fprintf (listfp, ":symkey enc packet: [unknown version]\n");
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
   if (pktlen > 200)
     {				/* (we encode the seskeylen in a byte) */
       log_error ("packet(%d) too large\n", pkttype);
+      if (list_mode)
+        es_fprintf (listfp, ":symkey enc packet: [too large]\n");
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -905,11 +914,15 @@ parse_symkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
       break;
     default:
       log_error ("unknown S2K mode %d\n", s2kmode);
+      if (list_mode)
+        es_fprintf (listfp, ":symkey enc packet: [unknown S2K mode]\n");
       goto leave;
     }
   if (minlen > pktlen)
     {
       log_error ("packet with S2K %d too short\n", s2kmode);
+      if (list_mode)
+        es_fprintf (listfp, ":symkey enc packet: [too short]\n");
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -983,6 +996,8 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   if (pktlen < 12)
     {
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":pubkey enc packet: [too short]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -991,6 +1006,8 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
   if (k->version != 2 && k->version != 3)
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, k->version);
+      if (list_mode)
+        es_fputs (":pubkey enc packet: [unknown version]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -1561,6 +1578,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   if (pktlen < 16)
     {
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":signature packet: [too short]\n", listfp);
       goto leave;
     }
   sig->version = iobuf_get_noeof (inp);
@@ -1571,6 +1590,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       log_error ("packet(%d) with unknown version %d\n",
 		 pkttype, sig->version);
+      if (list_mode)
+        es_fputs (":signature packet: [unknown version]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -1604,6 +1625,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       if (n > 10000)
 	{
 	  log_error ("signature packet: hashed data too long\n");
+          if (list_mode)
+            es_fputs (":signature packet: [hashed data too long]\n", listfp);
 	  rc = G10ERR_INVALID_PACKET;
 	  goto leave;
 	}
@@ -1616,6 +1639,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    {
 	      log_error ("premature eof while reading "
 			 "hashed signature data\n");
+              if (list_mode)
+                es_fputs (":signature packet: [premature eof]\n", listfp);
 	      rc = -1;
 	      goto leave;
 	    }
@@ -1626,6 +1651,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       if (n > 10000)
 	{
 	  log_error ("signature packet: unhashed data too long\n");
+          if (list_mode)
+            es_fputs (":signature packet: [unhashed data too long]\n", listfp);
 	  rc = G10ERR_INVALID_PACKET;
 	  goto leave;
 	}
@@ -1638,6 +1665,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    {
 	      log_error ("premature eof while reading "
 			 "unhashed signature data\n");
+              if (list_mode)
+                es_fputs (":signature packet: [premature eof]\n", listfp);
 	      rc = -1;
 	      goto leave;
 	    }
@@ -1648,6 +1677,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   if (pktlen < 5)  /* Sanity check.  */
     {
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":signature packet: [too short]\n", listfp);
       rc = G10ERR_INVALID_PACKET;
       goto leave;
     }
@@ -1811,6 +1842,8 @@ parse_onepass_sig (IOBUF inp, int pkttype, unsigned long pktlen,
   if (pktlen < 13)
     {
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":onepass_sig packet: [too short]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -1819,6 +1852,8 @@ parse_onepass_sig (IOBUF inp, int pkttype, unsigned long pktlen,
   if (version != 3)
     {
       log_error ("onepass_sig with unknown version %d\n", version);
+      if (list_mode)
+        es_fputs (":onepass_sig packet: [unknown version]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -1942,6 +1977,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   else if (version != 2 && version != 3)
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
+      if (list_mode)
+        es_fputs (":key packet: [unknown version]\n", listfp);
       err = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -1949,6 +1986,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   if (pktlen < 11)
     {
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":key packet: [too short]\n", listfp);
       err = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -2405,6 +2444,8 @@ parse_user_id (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * packet)
   if (pktlen > 2048)
     {
       log_error ("packet(%d) too large\n", pkttype);
+      if (list_mode)
+        es_fprintf (listfp, ":user ID packet: [too large]\n");
       iobuf_skip_rest (inp, pktlen, 0);
       return G10ERR_INVALID_PACKET;
     }
@@ -2528,6 +2569,9 @@ parse_comment (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * packet)
   if (pktlen > 65536)
     {
       log_error ("packet(%d) too large\n", pkttype);
+      if (list_mode)
+        es_fprintf (listfp, ":%scomment packet: [too large]\n",
+                    pkttype == PKT_OLD_COMMENT ? "OpenPGP draft " : "");
       iobuf_skip_rest (inp, pktlen, 0);
       return G10ERR_INVALID_PACKET;
     }
@@ -2605,6 +2649,8 @@ parse_plaintext (IOBUF inp, int pkttype, unsigned long pktlen,
   if (!partial && pktlen < 6)
     {
       log_error ("packet(%d) too short (%lu)\n", pkttype, (ulong) pktlen);
+      if (list_mode)
+        es_fputs (":literal data packet: [too short]\n", listfp);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
@@ -2715,6 +2761,8 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
 	{
 	  log_error ("encrypted_mdc packet with unknown version %d\n",
 		     version);
+          if (list_mode)
+            es_fputs (":encrypted data packet: [unknown version]\n", listfp);
 	  /*skip_rest(inp, pktlen); should we really do this? */
 	  rc = gpg_error (GPG_ERR_INV_PACKET);
 	  goto leave;
@@ -2731,6 +2779,8 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
     {
       /* Actually this is blocksize+2.  */
       log_error ("packet(%d) too short\n", pkttype);
+      if (list_mode)
+        es_fputs (":encrypted data packet: [too short]\n", listfp);
       rc = G10ERR_INVALID_PACKET;
       iobuf_skip_rest (inp, pktlen, partial);
       goto leave;
