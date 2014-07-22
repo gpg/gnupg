@@ -19,11 +19,7 @@
 
 EXTRA_DIST = ChangeLog-2011 scdaemon-w32info.rc
 
-if HAVE_W32_SYSTEM
 libexec_PROGRAMS = scdaemon
-else
-libexec_PROGRAMS = scdaemon gnupg-pcsc-wrapper
-endif
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
@@ -72,6 +68,3 @@ scdaemon_LDADD = $(libcommonpth) ../gl/libgnu.a \
 #	 $(LIBUSB_LIBS) \
 #        -lgpg-error @LIBINTL@ @DL_LIBS@
 #
-gnupg_pcsc_wrapper_SOURCES = pcsc-wrapper.c
-gnupg_pcsc_wrapper_LDADD = $(DL_LIBS)
-gnupg_pcsc_wrapper_CFLAGS =

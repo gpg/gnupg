@@ -66,8 +66,9 @@
 #include "ccid-driver.h"
 
 /* Due to conflicting use of threading libraries we usually can't link
-   against libpcsclite.   Instead we use a wrapper program.  */
-#ifdef USE_NPTH
+   against libpcsclite if we are using Pth.  Instead we use a wrapper
+   program.  Note that with nPth there is no need for a wrapper. */
+#ifdef USE_PTH  /* Right, plain old Pth.  */
 #if !defined(HAVE_W32_SYSTEM) && !defined(__CYGWIN__)
 #define NEED_PCSC_WRAPPER 1
 #endif

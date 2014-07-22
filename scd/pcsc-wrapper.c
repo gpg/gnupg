@@ -20,7 +20,8 @@
 /*
   This wrapper is required to handle problems with the libpscslite
   library.  That library assumes that pthreads are used and fails
-  badly if one tries to use it with a procerss using Pth.
+  badly if one tries to use it with a process using Pth.  Note that
+  the wrapper is not required if nPth is used.
 
   The operation model is pretty simple: It reads requests from stdin
   and returns the answer on stdout.  There is no direct mapping to the
