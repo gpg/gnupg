@@ -179,9 +179,12 @@ take_this_one_anyway (ctrl_t ctrl, const char *desc)
 int
 check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   unsigned int minlen = opt.min_passphrase_len;
   unsigned int minnonalpha = opt.min_passphrase_nonalpha;
+  char *msg1 = NULL;
+  char *msg2 = NULL;
+  char *msg3 = NULL;
 
   if (!pw)
     pw = "";
@@ -200,52 +203,51 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
       if (silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
-      return take_this_one_anyway2 (ctrl, desc,
+      err = take_this_one_anyway2 (ctrl, desc,
                                    _("Yes, protection is not needed"));
+      goto leave;
     }
 
+  /* Now check the constraints and collect the error messages unless
+     in in silent mode which returns immediately.  */
   if (utf8_charcount (pw) < minlen )
     {
-      char *desc;
-
       if (silent)
-        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+        {
+          err = gpg_error (GPG_ERR_INV_PASSPHRASE);
+          goto leave;
+        }
 
-      desc = xtryasprintf
-        ( ngettext ("Warning: You have entered an insecure passphrase.%%0A"
-                    "A passphrase should be at least %u character long.",
-                    "Warning: You have entered an insecure passphrase.%%0A"
+      msg1 = xtryasprintf
+        ( ngettext ("A passphrase should be at least %u character long.",
                     "A passphrase should be at least %u characters long.",
                     minlen), minlen );
-      if (!desc)
-        return gpg_error_from_syserror ();
-      err = take_this_one_anyway (ctrl, desc);
-      xfree (desc);
-      if (err)
-        return err;
+      if (!msg1)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
 
   if (nonalpha_count (pw) < minnonalpha )
     {
-      char *desc;
-
       if (silent)
-        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+        {
+          err = gpg_error (GPG_ERR_INV_PASSPHRASE);
+          goto leave;
+        }
 
-      desc = xtryasprintf
-        ( ngettext ("Warning: You have entered an insecure passphrase.%%0A"
-                    "A passphrase should contain at least %u digit or%%0A"
+      msg2 = xtryasprintf
+        ( ngettext ("A passphrase should contain at least %u digit or%%0A"
                     "special character.",
-                    "Warning: You have entered an insecure passphrase.%%0A"
                     "A passphrase should contain at least %u digits or%%0A"
                     "special characters.",
                     minnonalpha), minnonalpha );
-      if (!desc)
-        return gpg_error_from_syserror ();
-      err = take_this_one_anyway (ctrl, desc);
-      xfree (desc);
-      if (err)
-        return err;
+      if (!msg2)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
 
   /* If configured check the passphrase against a list of known words
@@ -255,20 +257,54 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
   if (*pw && opt.check_passphrase_pattern &&
       check_passphrase_pattern (ctrl, pw))
     {
-      const char *desc =
-        /* */     _("Warning: You have entered an insecure passphrase.%%0A"
-                    "A passphrase may not be a known term or match%%0A"
-                    "certain pattern.");
-
       if (silent)
-        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+        {
+          err = gpg_error (GPG_ERR_INV_PASSPHRASE);
+          goto leave;
+        }
 
-      err = take_this_one_anyway (ctrl, desc);
-      if (err)
-        return err;
+      msg3 = xtryasprintf
+        (_("A passphrase may not be a known term or match%%0A"
+           "certain pattern."));
+      if (!msg3)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
 
-  return 0;
+  if (msg1 || msg2 || msg3)
+    {
+      char *msg;
+      size_t n;
+
+      msg = strconcat
+        (_("Warning: You have entered an insecure passphrase."),
+         "%0A%0A",
+         msg1? msg1 : "", msg1? "%0A" : "",
+         msg2? msg2 : "", msg2? "%0A" : "",
+         msg3? msg3 : "", msg3? "%0A" : "",
+         NULL);
+      if (!msg)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      /* Strip a trailing "%0A".  */
+      n = strlen (msg);
+      if (n > 3 && !strcmp (msg + n - 3, "%0A"))
+        msg[n-3] = 0;
+
+      /* Show error messages.  */
+      err = take_this_one_anyway (ctrl, msg);
+      xfree (msg);
+    }
+
+ leave:
+  xfree (msg1);
+  xfree (msg2);
+  xfree (msg3);
+  return err;
 }
 
 
