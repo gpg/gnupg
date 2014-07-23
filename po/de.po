@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-06-27 20:13+0200\n"
+"PO-Revision-Date: 2014-07-23 21:11+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -231,44 +231,6 @@ msgstr "Diese trotzdem benutzen"
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
-"Eine Passphrase sollte%%0Amindestens %u Zeichen lang sein."
-msgstr[1] ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
-"Eine Passphrase sollte%%0Amindestens %u Zeichen lang sein."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
-"Eine Passphrase sollte%%0Amindestens %u Sonderzeichen oder eine Ziffer "
-"enthalten."
-msgstr[1] ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
-"Eine Passphrase sollte%%0Amindestens %u Sonderzeichen oder Ziffern enthalten."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben.  "
-"Eine Passphrase sollte kein%%0Abekanntes Wort sein oder nach bekannten "
-"Regeln aufgebaut sein."
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
 "Sie haben keine Passphrase eingegeben!%0AEine leere Passphrase ist nicht "
@@ -285,6 +247,32 @@ msgstr ""
 
 msgid "Yes, protection is not needed"
 msgstr "Ja, ein Schutz ist nicht notwendig"
+
+#, c-format
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "Eine Passphrase sollte mindestens %u Zeichen lang sein."
+msgstr[1] "Eine Passphrase sollte mindestens %u Zeichen lang sein."
+
+#, c-format
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+"Eine Passphrase sollte mindestens %u Sonderzeichen oder%%0Aeine Ziffer "
+"enthalten."
+msgstr[1] ""
+"Eine Passphrase sollte mindestens %u Sonderzeichen oder%%0AZiffern enthalten."
+
+#, c-format
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+"Eine Passphrase sollte kein bekanntes Wort sein oder%%0Anach bekannten "
+"Regeln aufgebaut sein."
+
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+"WARNUNG:  Sie haben eine offensichtlich unsichere%%0APassphrase eingegeben."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -671,10 +659,6 @@ msgstr "Ich werde sie später ändern"
 msgid "Delete key"
 msgstr "Schlüssel löschen"
 
-#, fuzzy
-#| msgid ""
-#| "Warning: This key is also listed for use with SSH!\n"
-#| "Deleting the key will may remove your ability to access remote machines."
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
 "Deleting the key might remove your ability to access remote machines."
@@ -1720,6 +1704,9 @@ msgstr "Liste der Schlüssel und ihrer \"Fingerabdrücke\""
 
 msgid "list secret keys"
 msgstr "Liste der geheimen Schlüssel"
+
+msgid "quickly generate a new key pair"
+msgstr "Schnell ein neues Schlüsselpaar erzeugen"
 
 msgid "generate a new key pair"
 msgstr "Ein neues Schlüsselpaar erzeugen"
@@ -3900,6 +3887,33 @@ msgstr ""
 "unterstützen, indem Sie z.B. in einem anderen Fenster/Konsole irgendetwas\n"
 "tippen, die Maus verwenden oder irgendwelche anderen Programme benutzen.\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Schlüsselerzeugung fehlgeschlagen: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+"Erzeugung eines Schlüssels für:\n"
+"    \"%s\"\n"
+"\n"
+
+msgid "Continue? (Y/n) "
+msgstr "Fortsetzen? (J/n) "
+
+#, c-format
+msgid "A key for \"%s\" already exists\n"
+msgstr "Ein Schlüssel für \"%s\" existiert bereits\n"
+
+msgid "Create anyway? (y/N) "
+msgstr "Trotzdem erzeugen? (j/N) "
+
+msgid "creating anyway\n"
+msgstr "wird trotzdem erzeugt\n"
+
 msgid "Key generation canceled.\n"
 msgstr "Schlüsselerzeugung abgebrochen.\n"
 
@@ -3925,10 +3939,6 @@ msgstr ""
 "Bitte beachten Sie, daß dieser Schlüssel nicht zum Verschlüsseln benutzt\n"
 "werden kann.  Sie können aber mit dem Befehl \"--edit-key\" einen\n"
 "Unterschlüssel für diesem Zweck erzeugen.\n"
-
-#, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Schlüsselerzeugung fehlgeschlagen: %s\n"
 
 #, c-format
 msgid ""
@@ -4865,10 +4875,8 @@ msgstr "Widerrufzertifikat erzeugt.\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "keine Widerrufsschlüssel für \"%s\" gefunden\n"
 
-#, fuzzy
-#| msgid "Create a revocation certificate for this key? (y/N) "
 msgid "This is a revocation certificate for the OpenPGP key:"
-msgstr "Ein Widerrufszertifikat für diesen Schlüssel erzeugen? (j/N) "
+msgstr "Dies ist ein Widerrufszertifikat für den OpenPGP Schlüssel:"
 
 msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
@@ -4876,12 +4884,21 @@ msgid ""
 "it is better to generate a new revocation certificate and give\n"
 "a reason for the revocation."
 msgstr ""
+"Benutzen Sie es, um einen Schlüssel zu widerrufen, falls der private\n"
+"Schlüssel verloren wurde oder kompromittiert ist.  Falls jedoch auf\n"
+"den privaten Schlüssel noch zugegriffen werden kann, so ist es besser,\n"
+"ein neues Widerrufszertifikat zu erzeugen, um den Grund des Widerrufs\n"
+"mit angeben zu können."
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
+"Um eine versehentliche Aktivierung des Widerrufszertifikats zu\n"
+"vermeiden, wurde ein Doppelpunkt direkt vor den 5 Spiegelstrichen\n"
+"unten eingefügt.  Vor dem Import dieses Widerrufszertifikats\n"
+"entfernen Sie bitte dieses Doppelpunkt mittels eines Texteditors."
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
