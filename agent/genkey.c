@@ -186,6 +186,24 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
   if (!pw)
     pw = "";
 
+  /* The first check is to warn about an empty passphrase. */
+  if (!*pw)
+    {
+      const char *desc = (opt.enforce_passphrase_constraints?
+                          _("You have not entered a passphrase!%0A"
+                            "An empty passphrase is not allowed.") :
+                          _("You have not entered a passphrase - "
+                            "this is in general a bad idea!%0A"
+                            "Please confirm that you do not want to "
+                            "have any protection on your key."));
+
+      if (silent)
+        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+
+      return take_this_one_anyway2 (ctrl, desc,
+                                   _("Yes, protection is not needed"));
+    }
+
   if (utf8_charcount (pw) < minlen )
     {
       char *desc;
@@ -230,7 +248,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
         return err;
     }
 
-  /* If configured check the passphrase against a list of know words
+  /* If configured check the passphrase against a list of known words
      and pattern.  The actual test is done by an external program.
      The warning message is generic to give the user no hint on how to
      circumvent this list.  */
@@ -246,26 +264,6 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
         return gpg_error (GPG_ERR_INV_PASSPHRASE);
 
       err = take_this_one_anyway (ctrl, desc);
-      if (err)
-        return err;
-    }
-
-  /* The final check is to warn about an empty passphrase. */
-  if (!*pw)
-    {
-      const char *desc = (opt.enforce_passphrase_constraints?
-                          _("You have not entered a passphrase!%0A"
-                            "An empty passphrase is not allowed.") :
-                          _("You have not entered a passphrase - "
-                            "this is in general a bad idea!%0A"
-                            "Please confirm that you do not want to "
-                            "have any protection on your key."));
-
-      if (silent)
-        return gpg_error (GPG_ERR_INV_PASSPHRASE);
-
-      err = take_this_one_anyway2 (ctrl, desc,
-                                   _("Yes, protection is not needed"));
       if (err)
         return err;
     }
