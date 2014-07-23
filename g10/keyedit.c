@@ -767,9 +767,7 @@ sign_uids (estream_t fp,
 		      tty_fprintf (fp, _("Your current signature on \"%s\"\n"
                                          "is a local signature.\n"), user);
 
-                      if (quick)
-                        ;
-		      else if (cpr_get_answer_is_yes
+		      if (quick || cpr_get_answer_is_yes
 			  ("sign_uid.local_promote_okay",
 			   _("Do you want to promote "
 			     "it to a full exportable " "signature? (y/N) ")))

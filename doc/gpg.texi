@@ -932,7 +932,9 @@ interaction.  The @code{fpr} must be the verified primary fingerprint
 of a key in the local keyring. If no @code{names} are given, all
 useful user ids are signed; with given [@code{names}] only useful user
 ids matching one of theses names are signed.  The command
-@option{--quick-lsign-key} marks the signatures as non-exportable.
+@option{--quick-lsign-key} marks the signatures as non-exportable.  If
+such a non-exportable signature already exists the
+@option{--quick-sign-key} turns it into a exportable signature.
 
 This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.
