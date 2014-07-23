@@ -191,6 +191,8 @@ char *cpr_get_no_help( const char *keyword, const char *prompt );
 char *cpr_get_utf8( const char *keyword, const char *prompt );
 char *cpr_get_hidden( const char *keyword, const char *prompt );
 void cpr_kill_prompt(void);
+int  cpr_get_answer_is_yes_def (const char *keyword, const char *prompt,
+                                int def_yes);
 int  cpr_get_answer_is_yes( const char *keyword, const char *prompt );
 int  cpr_get_answer_yes_no_quit( const char *keyword, const char *prompt );
 int  cpr_get_answer_okay_cancel (const char *keyword,

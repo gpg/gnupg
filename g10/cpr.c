@@ -493,7 +493,7 @@ cpr_kill_prompt(void)
 }
 
 int
-cpr_get_answer_is_yes( const char *keyword, const char *prompt )
+cpr_get_answer_is_yes_def (const char *keyword, const char *prompt, int def_yes)
 {
     int yes;
     char *p;
@@ -509,11 +509,17 @@ cpr_get_answer_is_yes( const char *keyword, const char *prompt )
 	}
 	else {
 	    tty_kill_prompt();
-	    yes = answer_is_yes(p);
+	    yes = answer_is_yes_no_default (p, def_yes);
 	    xfree(p);
 	    return yes;
 	}
     }
+}
+
+int
+cpr_get_answer_is_yes (const char *keyword, const char *prompt)
+{
+  return cpr_get_answer_is_yes_def (keyword, prompt, 0);
 }
 
 int
