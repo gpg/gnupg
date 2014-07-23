@@ -154,6 +154,7 @@ int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);
 int has_invalid_email_chars (const char *s);
 int is_valid_mailbox (const char *name);
+int is_valid_user_id (const char *uid);
 const char *get_libexecdir (void);
 int path_access(const char *file,int mode);
 
@@ -247,6 +248,7 @@ void show_basic_key_info (KBNODE keyblock);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
+void quick_generate_keypair (const char *uid);
 void generate_keypair (ctrl_t ctrl, const char *fname,
                        const char *card_serialno, int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);

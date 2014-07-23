@@ -1499,6 +1499,20 @@ is_valid_mailbox (const char *name)
 }
 
 
+/* Check whether UID is a valid standard user id of the form
+     "Heinrich Heine <heinrichh@duesseldorf.de>"
+   and return true if this is the case. */
+int
+is_valid_user_id (const char *uid)
+{
+  if (!uid || !*uid)
+    return 0;
+
+  return 1;
+}
+
+
+
 /* Similar to access(2), but uses PATH to find the file. */
 int
 path_access(const char *file,int mode)

@@ -1,6 +1,7 @@
 /* keygen.c - generate a key pair
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006
  *               2007, 2009, 2010, 2011  Free Software Foundation, Inc.
+ * Copyright (C) 2014  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -3405,6 +3406,129 @@ read_parameter_file( const char *fname )
     release_parameter_list( para );
     iobuf_close (fp);
     release_armor_context (outctrl.pub.afx);
+}
+
+
+/* Helper for quick_generate_keypair.  */
+static struct para_data_s *
+quickgen_set_para (struct para_data_s *para, int for_subkey,
+                   int algo, int nbits, const char *curve)
+{
+  struct para_data_s *r;
+
+  r = xmalloc_clear (sizeof *r + 20);
+  r->key = for_subkey? pSUBKEYUSAGE :  pKEYUSAGE;
+  strcpy (r->u.value, for_subkey ? "encrypt" : "sign");
+  r->next = para;
+  para = r;
+  r = xmalloc_clear (sizeof *r + 20);
+  r->key = for_subkey? pSUBKEYTYPE : pKEYTYPE;
+  sprintf (r->u.value, "%d", algo);
+  r->next = para;
+  para = r;
+
+  if (curve)
+    {
+      r = xmalloc_clear (sizeof *r + strlen (curve));
+      r->key = for_subkey? pSUBKEYCURVE : pKEYCURVE;
+      strcpy (r->u.value, curve);
+      r->next = para;
+      para = r;
+    }
+  else
+    {
+      r = xmalloc_clear (sizeof *r + 20);
+      r->key = for_subkey? pSUBKEYLENGTH : pKEYLENGTH;
+      sprintf (r->u.value, "%u", nbits);
+      r->next = para;
+      para = r;
+    }
+
+  return para;
+}
+
+
+
+/*
+ * Unattended generaion of a standard key.
+ */
+void
+quick_generate_keypair (const char *uid)
+{
+  gpg_error_t err;
+  struct para_data_s *para = NULL;
+  struct para_data_s *r;
+  struct output_control_s outctrl;
+  int use_tty;
+
+  memset (&outctrl, 0, sizeof outctrl);
+
+  use_tty = (!opt.batch && !opt.answer_yes
+             && !cpr_enabled ()
+             && gnupg_isatty (fileno (stdin))
+             && gnupg_isatty (fileno (stdout))
+             && gnupg_isatty (fileno (stderr)));
+
+  r = xmalloc_clear (sizeof *r + strlen (uid));
+  r->key = pUSERID;
+  strcpy (r->u.value, uid);
+  r->next = para;
+  para = r;
+
+  uid = trim_spaces (r->u.value);
+  if (!*uid || (!opt.allow_freeform_uid && !is_valid_user_id (uid)))
+    {
+      log_error (_("Key generation failed: %s\n"),
+                 gpg_strerror (GPG_ERR_INV_USER_ID));
+      goto leave;
+    }
+
+  /* If gpg is directly used on the console ask whether a key with the
+     given user id shall really be created.  */
+  if (use_tty)
+    {
+      tty_printf (_("About to create a key for:\n    \"%s\"\n\n"), uid);
+      if (!cpr_get_answer_is_yes_def ("quick_keygen.okay",
+                                      _("Continue? (Y/n) "), 1))
+        goto leave;
+    }
+
+  /* Check whether such a user ID already exists.  */
+  {
+    KEYDB_HANDLE kdbhd;
+    KEYDB_SEARCH_DESC desc;
+
+    memset (&desc, 0, sizeof desc);
+    desc.mode = KEYDB_SEARCH_MODE_EXACT;
+    desc.u.name = uid;
+
+    kdbhd = keydb_new ();
+    err = keydb_search (kdbhd, &desc, 1, NULL);
+    keydb_release (kdbhd);
+    if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+      {
+        log_info (_("A key for \"%s\" already exists\n"), uid);
+        if (opt.answer_yes)
+          ;
+        else if (!use_tty
+                 || !cpr_get_answer_is_yes_def ("quick_keygen.force",
+                                                _("Create anyway? (y/N) "), 0))
+          {
+            log_inc_errorcount ();  /* we used log_info */
+            goto leave;
+          }
+        log_info (_("creating anyway\n"));
+      }
+  }
+
+  para = quickgen_set_para (para, 0, PUBKEY_ALGO_RSA, 2048, NULL);
+  para = quickgen_set_para (para, 1, PUBKEY_ALGO_RSA, 2048, NULL);
+  /* para = quickgen_set_para (para, 0, PUBKEY_ALGO_EDDSA, 0, "Ed25519"); */
+  /* para = quickgen_set_para (para, 1, PUBKEY_ALGO_ECDH,  0, "Curve25519"); */
+
+  proc_parameter_file (para, "[internal]", &outctrl, 0);
+ leave:
+  release_parameter_list (para);
 }
 
 

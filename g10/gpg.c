@@ -106,6 +106,7 @@ enum cmd_and_opt_values
     aDecryptFiles,
     aClearsign,
     aStore,
+    aQuickKeygen,
     aKeygen,
     aSignEncr,
     aSignEncrSym,
@@ -406,6 +407,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCheckKeys, "check-sigs",N_("list and check key signatures")),
   ARGPARSE_c (oFingerprint, "fingerprint", N_("list keys and fingerprints")),
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
+  ARGPARSE_c (aQuickKeygen,  "quick-gen-key" ,
+              N_("quickly generate a new key pair")),
   ARGPARSE_c (aKeygen,	   "gen-key",  N_("generate a new key pair")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
   ARGPARSE_c (aDeleteKeys,"delete-keys",
@@ -2279,6 +2282,7 @@ main (int argc, char **argv)
 	  case aSignKey:
 	  case aLSignKey:
 	  case aStore:
+	  case aQuickKeygen:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -3612,6 +3616,7 @@ main (int argc, char **argv)
       case aPasswd:
       case aDeleteSecretKeys:
       case aDeleteSecretAndPublicKeys:
+      case aQuickKeygen:
       case aKeygen:
       case aImport:
       case aExportSecret:
@@ -3894,6 +3899,14 @@ main (int argc, char **argv)
 	public_key_list (ctrl, sl, 1);
 	free_strlist (sl);
 	break;
+
+      case aQuickKeygen:
+        if (argc != 1 )
+          wrong_args("--gen-key user-id");
+        username = make_username (fname);
+        quick_generate_keypair (username);
+        xfree (username);
+        break;
 
       case aKeygen: /* generate a key */
 	if( opt.batch ) {

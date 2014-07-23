@@ -592,14 +592,29 @@ This section explains the main commands for key management
 
 @table @gnupgtabopt
 
+@ifset gpgtwoone
+@item --quick-gen-key @code{user-id}
+@opindex quick-gen-key
+This is simple command to generate a standard key with one user id.
+In contrast to @option{--gen-key} the key is generated directly
+without the need to answer a bunch of prompts.  Unless the option
+@option{--yes} is given, the key creation will be canceled if the
+given user id already exists in the key ring.
+
+If invoked directly on the console without any special options an
+answer to a ``Continue?'' style confirmation prompt is required.  In
+case the user id already exists in the key ring a second prompt to
+force the creation of the key will show up.
+@end ifset
+
 @item --gen-key
 @opindex gen-key
 Generate a new key pair. This command is normally only used
 interactively.
 
-There is an experimental feature which allows you to create keys in
-batch mode. See the file @file{doc/DETAILS} in the source distribution
-on how to use this.
+There is also a feature which allows you to create keys in batch
+mode. See the file @file{doc/DETAILS} in the source distribution on
+how to use this.
 
 @item --gen-revoke @code{name}
 @opindex gen-revoke
