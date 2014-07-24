@@ -698,7 +698,7 @@ read_ef_odf (app_t app, unsigned short odf_fid)
 }
 
 
-/* Parse the BIT STRING with the keyUsageFlags from teh
+/* Parse the BIT STRING with the keyUsageFlags from the
    CommonKeyAttributes. */
 static gpg_error_t
 parse_keyusage_flags (const unsigned char *der, size_t derlen,
@@ -2405,7 +2405,7 @@ keygripstr_from_prkdf (app_t app, prkdf_object_t prkdf, char *r_gripstr)
      a matching certificate and extract the key from there. */
 
   /* Look for a matching certificate. A certificate matches if the Id
-     matches the obne of the private key info. */
+     matches the one of the private key info. */
   for (cdf = app->app_local->certificate_info; cdf; cdf = cdf->next)
     if (cdf->objidlen == prkdf->objidlen
         && !memcmp (cdf->objid, prkdf->objid, prkdf->objidlen))
@@ -2443,7 +2443,7 @@ keygripstr_from_prkdf (app_t app, prkdf_object_t prkdf, char *r_gripstr)
 
 /* Helper to do_learn_status: Send information about all known
    keypairs back.  FIXME: much code duplication from
-   send_sertinfo(). */
+   send_certinfo(). */
 static gpg_error_t
 send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
 {
@@ -2642,7 +2642,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
    the CERTINFO status lines) and return it in the freshly allocated
    buffer to be stored at R_CERT and its length at R_CERTLEN.  A error
    code will be returned on failure and R_CERT and R_CERTLEN will be
-   set to NULL/0. */
+   set to (NULL,0). */
 static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **r_cert, size_t *r_certlen)
@@ -2654,7 +2654,7 @@ do_readcert (app_t app, const char *certid,
   *r_certlen = 0;
   err = cdf_object_from_certid (app, certid, &cdf);
   if (!err)
-    err =readcert_by_cdf (app, cdf, r_cert, r_certlen);
+    err = readcert_by_cdf (app, cdf, r_cert, r_certlen);
   return err;
 }
 
