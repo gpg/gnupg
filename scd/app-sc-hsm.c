@@ -2,8 +2,6 @@
  *	Copyright (C) 2005 Free Software Foundation, Inc.
  *	Copyright (C) 2014 Andreas Schwier <andreas.schwier@cardcontact.de>
  *
- * Code in this driver is based on app-p15.c with modifications
- *
  * This file is part of GnuPG.
  *
  * GnuPG is free software; you can redistribute it and/or modify
@@ -18,6 +16,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+   Code in this driver is based on app-p15.c with modifications.
  */
 
 #include <config.h>
@@ -217,7 +219,7 @@ list_ef (int slot, unsigned char **result, size_t *resultlen)
   *resultlen = 0;
 
   sw = apdu_send_le (slot, 1, 0x80, 0x58, 0x00, 0x00, -1, NULL, 65536,
-                  result, resultlen);
+                     result, resultlen);
   if (sw != SW_SUCCESS)
     {
       /* Make sure that pending buffers are released. */
@@ -225,7 +227,7 @@ list_ef (int slot, unsigned char **result, size_t *resultlen)
       *result = NULL;
       *resultlen = 0;
     }
-  return iso7816_map_sw(sw);
+  return iso7816_map_sw (sw);
 }
 
 
@@ -250,10 +252,10 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
   sw = apdu_send_le(slot, 1, 0x00, 0xB1, efid >> 8, efid & 0xFF,
                     4, cdata, maxread, buffer, buflen);
 
-  if (sw == 0x6282)
-    sw = 0x9000;
+  if (sw == SW_EOF_REACHED)
+    sw = SW_SUCCESS;
 
-  err = iso7816_map_sw(sw);
+  err = iso7816_map_sw (sw);
   if (err)
     {
       log_error ("error reading %s (0x%04X): %s\n",
@@ -272,7 +274,6 @@ select_and_read_binary (int slot, unsigned short efid, const char *efid_desc,
 static gpg_error_t
 parse_certid (const char *certid, unsigned char **r_objid, size_t *r_objidlen)
 {
-  char tmpbuf[10];
   const char *s;
   size_t objidlen;
   unsigned char *objid;
@@ -281,14 +282,9 @@ parse_certid (const char *certid, unsigned char **r_objid, size_t *r_objidlen)
   *r_objid = NULL;
   *r_objidlen = 0;
 
-  strcpy (tmpbuf, "HSM.");
-  if (strncmp (certid, tmpbuf, strlen (tmpbuf)) )
-    {
-      if (!strncmp (certid, "HSM.", 4))
-        return gpg_error (GPG_ERR_NOT_FOUND);
-      return gpg_error (GPG_ERR_INV_ID);
-    }
-  certid += strlen (tmpbuf);
+  if (strncmp (certid, "HSM.", 4))
+    return gpg_error (GPG_ERR_INV_ID);
+  certid += 4;
 
   for (s=certid, objidlen=0; hexdigitp (s); s++, objidlen++)
     ;
@@ -431,14 +427,19 @@ parse_keyusage_flags (const unsigned char *der, size_t derlen,
 
 
 
-/* Read and  parse a Private Key Directory File containing a single
- * key description in PKCS#15 format
- * For each private key a matching certificate description is created,
- * if the certificate EF exists and contains a X.509 certificate*/
-/*
+/* Read and parse a Private Key Directory File containing a single key
+   description in PKCS#15 format.  For each private key a matching
+   certificate description is created, if the certificate EF exists
+   and contains a X.509 certificate.
+
+   Example data:
+
 0000  30 2A 30 13 0C 11 4A 6F 65 20 44 6F 65 20 28 52  0*0...Joe Doe (R
 0010  53 41 32 30 34 38 29 30 07 04 01 01 03 02 02 74  SA2048)0.......t
 0020  A1 0A 30 08 30 02 04 00 02 02 08 00              ..0.0.......
+
+   Decoded example:
+
 SEQUENCE SIZE( 42 )
   SEQUENCE SIZE( 19 )
     UTF8-STRING SIZE( 17 )                -- label
@@ -446,20 +447,21 @@ SEQUENCE SIZE( 42 )
       0010  29                                               )
   SEQUENCE SIZE( 7 )
     OCTET-STRING SIZE( 1 )                -- id
-      0000  01                                               .
+      0000  01
     BIT-STRING SIZE( 2 )                  -- key usage
-      0000  02 74                                            .t
+      0000  02 74
   A1 [ CONTEXT 1 ] IMPLICIT SEQUENCE SIZE( 10 )
     SEQUENCE SIZE( 8 )
       SEQUENCE SIZE( 2 )
         OCTET-STRING SIZE( 0 )            -- empty path, req object in PKCS#15
       INTEGER SIZE( 2 )                   -- modulus size in bits
-        0000  08 00                                            ..
+        0000  08 00
 */
 static gpg_error_t
 read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
               cdf_object_t *cdresult)
 {
+#warning  function not yet audited
   gpg_error_t err;
   unsigned char *buffer = NULL;
   size_t buflen;
@@ -854,24 +856,28 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
 
 
 /* Read and parse the Certificate Description File identified by FID.
-   On success a the CDF list gets stored at RESULT and the
-   caller is then responsible of releasing the object.*/
-/*
+   On success a the CDF list gets stored at RESULT and the caller is
+   then responsible of releasing the object.
+
+   Example data:
+
 0000  30 35 30 11 0C 0B 43 65 72 74 69 66 69 63 61 74  050...Certificat
 0010  65 03 02 06 40 30 16 04 14 C2 01 7C 2F BA A4 4A  e...@0.....|/..J
 0020  4A BB B8 49 11 DB 4A CA AA 7E 6A 2D 1B A1 08 30  J..I..J..~j-...0
 0030  06 30 04 04 02 CA 00                             .0.....
+
+   Decoded example:
 
 SEQUENCE SIZE( 53 )
   SEQUENCE SIZE( 17 )
     UTF8-STRING SIZE( 11 )                      -- label
       0000  43 65 72 74 69 66 69 63 61 74 65                 Certificate
     BIT-STRING SIZE( 2 )                        -- common object attributes
-      0000  06 40                                            .@
+      0000  06 40
   SEQUENCE SIZE( 22 )
     OCTET-STRING SIZE( 20 )                     -- id
-      0000  C2 01 7C 2F BA A4 4A 4A BB B8 49 11 DB 4A CA AA  ..|/..JJ..I..J..
-      0010  7E 6A 2D 1B                                      ~j-.
+      0000  C2 01 7C 2F BA A4 4A 4A BB B8 49 11 DB 4A CA AA
+      0010  7E 6A 2D 1B
   A1 [ CONTEXT 1 ] IMPLICIT SEQUENCE SIZE( 8 )
     SEQUENCE SIZE( 6 )
       SEQUENCE SIZE( 4 )
@@ -881,6 +887,7 @@ SEQUENCE SIZE( 53 )
 static gpg_error_t
 read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
 {
+#warning needs an audit
   gpg_error_t err;
   unsigned char *buffer = NULL;
   size_t buflen;
@@ -1062,10 +1069,13 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
 
 
 
-/* Read the device certificate and extract the serial number
+/* Read the device certificate and extract the serial number.
 
-EF.C_DevAut (2F02) contains two CVCs, the first is the device certificate, the
-second is the issuer certificate
+   EF.C_DevAut (2F02) contains two CVCs, the first is the device
+   certificate, the second is the issuer certificate.
+
+   Example data:
+
 0000  7F 21 81 E2 7F 4E 81 9B 5F 29 01 00 42 0B 55 54  .!...N.._)..B.UT
 0010  43 43 30 32 30 30 30 30 32 7F 49 4F 06 0A 04 00  CC0200002.IO....
 0020  7F 00 07 02 02 02 02 03 86 41 04 6D FF D6 85 57  .........A.m...W
@@ -1096,44 +1106,45 @@ second is the issuer certificate
 01B0  76 E6 2B A0 4C 01 CA C1 26 0C 45 6D C6 CB EC 92  v.+.L...&.Em....
 01C0  BF 38 18 AD 8F B2 29 40 A9 51                    .8....)@.Q
 
-The certificate format is defined in BSI TR-03110
+   The certificate format is defined in BSI TR-03110:
 
 7F21 [ APPLICATION 33 ] IMPLICIT SEQUENCE SIZE( 226 )
   7F4E [ APPLICATION 78 ] IMPLICIT SEQUENCE SIZE( 155 )
     5F29 [ APPLICATION 41 ] SIZE( 1 )                           -- profile id
-      0000  00                                               .
+      0000  00
     42 [ APPLICATION 2 ] SIZE( 11 )                             -- CAR
       0000  55 54 43 43 30 32 30 30 30 30 32                 UTCC0200002
     7F49 [ APPLICATION 73 ] IMPLICIT SEQUENCE SIZE( 79 )        -- public key
       OBJECT IDENTIFIER = { id-TA-ECDSA-SHA-256 }
       86 [ CONTEXT 6 ] SIZE( 65 )
-        0000  04 6D FF D6 85 57 40 FB 10 5D 94 71 8A 94 D2 5E  .m...W@..].q...^
-        0010  50 33 E7 1E C0 6C 63 D5 C8 FC BA F3 02 1D 70 23  P3...lc.......p#
-        0020  F6 47 E8 35 48 EF B5 94 72 3C 6F BE C0 EB 9A C7  .G.5H...r<o.....
-        0030  FB 06 59 26 CF 65 EF A1 72 E0 98 F3 F0 44 1B B7  ..Y&.e..r....D..
-        0040  71                                               q
+        0000  04 6D FF D6 85 57 40 FB 10 5D 94 71 8A 94 D2 5E
+        0010  50 33 E7 1E C0 6C 63 D5 C8 FC BA F3 02 1D 70 23
+        0020  F6 47 E8 35 48 EF B5 94 72 3C 6F BE C0 EB 9A C7
+        0030  FB 06 59 26 CF 65 EF A1 72 E0 98 F3 F0 44 1B B7
+        0040  71
     5F20 [ APPLICATION 32 ] SIZE( 16 )                          -- CHR
       0000  55 54 43 43 30 32 30 30 30 31 33 30 30 30 30 30  UTCC020001300000
     7F4C [ APPLICATION 76 ] IMPLICIT SEQUENCE SIZE( 16 )        -- CHAT
       OBJECT IDENTIFIER = { 1 3 6 1 4 1 24991 3 1 1 }
       53 [ APPLICATION 19 ] SIZE( 1 )
-        0000  00                                               .
+        0000  00
     5F25 [ APPLICATION 37 ] SIZE( 6 )                           -- Valid from
-      0000  01 04 00 07 01 01                                ......
+      0000  01 04 00 07 01 01
     5F24 [ APPLICATION 36 ] SIZE( 6 )                           -- Valid to
-      0000  02 01 00 03 02 07                                ......
+      0000  02 01 00 03 02 07
   5F37 [ APPLICATION 55 ] SIZE( 64 )                            -- Signature
-    0000  7F 73 04 3B 06 63 79 41 BE 1A 9F FC F6 77 67 2B  .s.;.cyA.....wg+
-    0010  8A 41 D1 11 F6 9B 54 44 AD 19 FB B8 0C C6 2F 34  .A....TD....../4
-    0020  71 8E 4F F6 92 59 34 61 D9 4F 4A 86 36 A8 D8 9A  q.O..Y4a.OJ.6...
-    0030  C6 3C 17 7E 71 CE A8 26 D0 C5 25 61 78 9D 01 F8  .<.~q..&..%ax...
+    0000  7F 73 04 3B 06 63 79 41 BE 1A 9F FC F6 77 67 2B
+    0010  8A 41 D1 11 F6 9B 54 44 AD 19 FB B8 0C C6 2F 34
+    0020  71 8E 4F F6 92 59 34 61 D9 4F 4A 86 36 A8 D8 9A
+    0030  C6 3C 17 7E 71 CE A8 26 D0 C5 25 61 78 9D 01 F8
 
-the serial number is contained in tag 5F20, while the last 5 digits are
-truncated
+   The serial number is contained in tag 5F20, while the last 5 digits
+   are truncated.
  */
 static gpg_error_t
 read_serialno(app_t app)
 {
+#warning audit!
   gpg_error_t err;
   unsigned char *buffer = NULL;
   size_t buflen;
@@ -1188,10 +1199,11 @@ read_serialno(app_t app)
 
 /* Get all the basic information from the SmartCard-HSM, check the
    structure and initialize our local context.  This is used once at
-   application initialization. */
+   application initialization.  */
 static gpg_error_t
 read_meta (app_t app)
 {
+#warning audit!
   gpg_error_t err;
   unsigned char *eflist = NULL;
   size_t eflistlen = 0;
@@ -1205,29 +1217,31 @@ read_meta (app_t app)
   if (err)
     return err;
 
-  for (i = 0; i < eflistlen; i += 2) {
-    switch(eflist[i]) {
-      case SC_HSM_KEY_PREFIX:
-        if (eflist[i + 1] == 0)    /* No key with ID=0 */
+  for (i = 0; i < eflistlen; i += 2)
+    {
+      switch(eflist[i])
+        {
+        case SC_HSM_KEY_PREFIX:
+          if (eflist[i + 1] == 0)    /* No key with ID=0 */
+            break;
+          err = read_ef_prkd (app, ((SC_HSM_PRKD_PREFIX << 8) | eflist[i + 1]),
+                              &app->app_local->private_key_info,
+                              &app->app_local->certificate_info);
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            err = 0;
+          if (err)
+            return err;
           break;
-        err = read_ef_prkd (app, (SC_HSM_PRKD_PREFIX << 8) | eflist[i + 1],
-                             &app->app_local->private_key_info,
-                             &app->app_local->certificate_info);
-        if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-          err = 0;
-        if (err)
-           return err;
-        break;
-      case SC_HSM_CD_PREFIX:
-        err = read_ef_cd (app, (eflist[i] << 8) | eflist[i + 1],
-                           &app->app_local->trusted_certificate_info);
-        if (gpg_err_code (err) == GPG_ERR_NO_DATA)
-          err = 0;
-        if (err)
-           return err;
-        break;
+        case SC_HSM_CD_PREFIX:
+          err = read_ef_cd (app, ((eflist[i] << 8) | eflist[i + 1]),
+                            &app->app_local->trusted_certificate_info);
+          if (gpg_err_code (err) == GPG_ERR_NO_DATA)
+            err = 0;
+          if (err)
+            return err;
+          break;
+        }
     }
-  }
 
   xfree (eflist);
 
@@ -1246,7 +1260,7 @@ send_certinfo (ctrl_t ctrl, const char *certtype, cdf_object_t certinfo)
     {
       char *buf, *p;
 
-      buf = xtrymalloc (9 + certinfo->objidlen*2 + 1);
+      buf = xtrymalloc (4 + certinfo->objidlen*2 + 1);
       if (!buf)
         return gpg_error_from_syserror ();
       p = stpcpy (buf, "HSM.");
@@ -1313,7 +1327,7 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
       char gripstr[40+1];
       char *buf, *p;
 
-      buf = xtrymalloc (9 + keyinfo->objidlen*2 + 1);
+      buf = xtrymalloc (4 + keyinfo->objidlen*2 + 1);
       if (!buf)
         return gpg_error_from_syserror ();
       p = stpcpy (buf, "HSM.");
@@ -1393,7 +1407,8 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
       return 0;
     }
 
-  err = select_and_read_binary (app->slot, cdf->fid, "CD", &buffer, &buflen, 4096);
+  err = select_and_read_binary (app->slot, cdf->fid, "CD",
+                                &buffer, &buflen, 4096);
   if (err)
     {
       log_error ("error reading certificate with Id ");
@@ -1481,7 +1496,7 @@ readcert_by_cdf (app_t app, cdf_object_t cdf,
    the CERTINFO status lines) and return it in the freshly allocated
    buffer to be stored at R_CERT and its length at R_CERTLEN.  A error
    code will be returned on failure and R_CERT and R_CERTLEN will be
-   set to NULL/0. */
+   set to (NULL,0). */
 static gpg_error_t
 do_readcert (app_t app, const char *certid,
              unsigned char **r_cert, size_t *r_certlen)
@@ -1493,7 +1508,7 @@ do_readcert (app_t app, const char *certid,
   *r_certlen = 0;
   err = cdf_object_from_certid (app, certid, &cdf);
   if (!err)
-    err =readcert_by_cdf (app, cdf, r_cert, r_certlen);
+    err = readcert_by_cdf (app, cdf, r_cert, r_certlen);
   return err;
 }
 
@@ -1517,7 +1532,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           break;
       if (prkdf)
         {
-          buf = xtrymalloc (9 + prkdf->objidlen*2 + 1);
+          buf = xtrymalloc (4 + prkdf->objidlen*2 + 1);
           if (!buf)
             return gpg_error_from_syserror ();
           p = stpcpy (buf, "HSM.");
@@ -1539,18 +1554,18 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
 
 
 
-/* Apply PKCS#1 V1.5 padding for signature operation
- * The function combines padding, digest info and the hash value. The buffer
- * must be allocated by the caller matching the key size
- */
-static
-void apply_PKCS_padding(const unsigned char *dig, int diglen,
-                        const unsigned char *prefix, int prefixlen,
-                        unsigned char *buff, int bufflen)
+/* Apply PKCS#1 V1.5 padding for signature operation.  The function
+ * combines padding, digest info and the hash value.  The buffer must
+ * be allocated by the caller matching the key size.  */
+static void
+apply_PKCS_padding(const unsigned char *dig, int diglen,
+                   const unsigned char *prefix, int prefixlen,
+                   unsigned char *buff, int bufflen)
 {
+#warning Seems okay but needs a seconds opinion
   int i;
 
-  // Caller must ensure sufficient buffer
+  /* Caller must ensure a sufficient buffer.  */
   if (diglen + prefixlen + 4 > bufflen)
     return;
 
@@ -1561,23 +1576,22 @@ void apply_PKCS_padding(const unsigned char *dig, int diglen,
 
   *buff++ = 0x00;
   if (prefix)
-    memcpy(buff, prefix, prefixlen);
-  buff+= prefixlen;
-  memcpy(buff, dig, diglen);
+    memcpy (buff, prefix, prefixlen);
+  buff += prefixlen;
+  memcpy (buff, dig, diglen);
 }
 
 
 
-/*
- * Decode a digest info structure to extract the hash value. The
- * buffer to receive the hash must be provided by the caller with
- * hashlen pointing to the inbound length. hashlen is updated to the
- * outbound length
- */
-static
-int hash_from_digestinfo(const unsigned char *di, size_t dilen,
-                         unsigned char *hash, size_t *hashlen)
+/* Decode a digest info structure (DI,DILEN) to extract the hash
+ * value.  The buffer HASH to receive the digest must be provided by
+ * the caller with HASHLEN pointing to the inbound length.  HASHLEN is
+ * updated to the outbound length.  */
+static int
+hash_from_digestinfo (const unsigned char *di, size_t dilen,
+                      unsigned char *hash, size_t *hashlen)
 {
+#warning audit!
   const unsigned char *p,*pp;
   size_t n, nn, objlen, hdrlen;
   int class, tag, constructed, ndef;
@@ -1630,8 +1644,8 @@ int hash_from_digestinfo(const unsigned char *di, size_t dilen,
 /* Perform PIN verification
  */
 static gpg_error_t
-verify_pin(app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
-           void *pincb_arg)
+verify_pin (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
+            void *pincb_arg)
 {
   gpg_error_t err;
   pininfo_t pininfo;
@@ -1645,15 +1659,17 @@ verify_pin(app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   if (sw == SW_SUCCESS)
     return 0;                   /* PIN already verified */
 
-  if (sw == 0x6984) {
+  if (sw == SW_REF_DATA_INV)
+    {
       log_error ("SmartCard-HSM not initialized. Run sc-hsm-tool first\n");
       return gpg_error (GPG_ERR_NO_PIN);
-  }
+    }
 
-  if (sw == SW_CHV_BLOCKED) {
+  if (sw == SW_CHV_BLOCKED)
+    {
       log_error ("PIN Blocked\n");
       return gpg_error (GPG_ERR_PIN_BLOCKED);
-  }
+    }
 
   memset (&pininfo, 0, sizeof pininfo);
   pininfo.fixedlen = 0;
@@ -1668,8 +1684,7 @@ verify_pin(app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       err = pincb (pincb_arg, prompt, NULL);
       if (err)
         {
-          log_info ("PIN callback returned error: %s\n",
-              gpg_strerror (err));
+          log_info ("PIN callback returned error: %s\n", gpg_strerror (err));
           return err;
         }
 
@@ -1745,8 +1760,9 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
       0x00, 0x04, 0x40  };
 
   gpg_error_t err;
-  unsigned char cdsblk[256]; /* Raw PKCS#1 V1.5 block with padding (RSA) or hash */
-  prkdf_object_t prkdf;    /* The private key object. */
+  unsigned char cdsblk[256]; /* Raw PKCS#1 V1.5 block with padding
+                                (RSA) or hash.  */
+  prkdf_object_t prkdf;      /* The private key object. */
   size_t cdsblklen;
   unsigned char algoid;
   int sw;
@@ -1776,55 +1792,60 @@ do_sign (app_t app, const char *keyidstr, int hashalgo,
         cdsblklen = 256;
 
       if (hashalgo == GCRY_MD_SHA1 && indatalen == 20)
-        apply_PKCS_padding(indata, indatalen, sha1_prefix, sizeof(sha1_prefix),
-                           cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen,
+                            sha1_prefix, sizeof(sha1_prefix),
+                            cdsblk, cdsblklen);
       else if (hashalgo == GCRY_MD_MD5 && indatalen == 20)
-        apply_PKCS_padding(indata, indatalen, rmd160_prefix, sizeof(rmd160_prefix),
-                           cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen,
+                            rmd160_prefix, sizeof(rmd160_prefix),
+                            cdsblk, cdsblklen);
       else if (hashalgo == GCRY_MD_SHA224 && indatalen == 28)
-        apply_PKCS_padding(indata, indatalen, sha224_prefix, sizeof(sha224_prefix),
-                           cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen,
+                            sha224_prefix, sizeof(sha224_prefix),
+                            cdsblk, cdsblklen);
       else if (hashalgo == GCRY_MD_SHA256 && indatalen == 32)
-        apply_PKCS_padding(indata, indatalen, sha256_prefix, sizeof(sha256_prefix),
-                           cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen,
+                            sha256_prefix, sizeof(sha256_prefix),
+                            cdsblk, cdsblklen);
       else if (hashalgo == GCRY_MD_SHA384 && indatalen == 48)
-        apply_PKCS_padding(indata, indatalen, sha384_prefix, sizeof(sha384_prefix),
-                           cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen,
+                            sha384_prefix, sizeof(sha384_prefix),
+                            cdsblk, cdsblklen);
       else if (hashalgo == GCRY_MD_SHA512 && indatalen == 64)
-        apply_PKCS_padding(indata, indatalen, sha512_prefix, sizeof(sha512_prefix),
-                           cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen,
+                            sha512_prefix, sizeof(sha512_prefix),
+                            cdsblk, cdsblklen);
       else  /* Assume it's already a digest info or TLS_MD5SHA1 */
-        apply_PKCS_padding(indata, indatalen, NULL, 0, cdsblk, cdsblklen);
+        apply_PKCS_padding (indata, indatalen, NULL, 0, cdsblk, cdsblklen);
     }
   else
     {
       algoid = 0x70;
-      if (indatalen != 20 && indatalen != 28 && indatalen != 32 &&
-                             indatalen != 48 && indatalen != 64)
+      if (indatalen != 20 && indatalen != 28 && indatalen != 32
+          && indatalen != 48 && indatalen != 64)
         {
           cdsblklen = sizeof(cdsblk);
-          err = hash_from_digestinfo(indata, indatalen, cdsblk, &cdsblklen);
+          err = hash_from_digestinfo (indata, indatalen, cdsblk, &cdsblklen);
           if (err)
             {
-              log_error ("DigestInfo invalid : %s\n", gpg_strerror (err));
+              log_error ("DigestInfo invalid: %s\n", gpg_strerror (err));
               return err;
             }
-
         }
       else
         {
-          memcpy(cdsblk, indata, indatalen);
+          memcpy (cdsblk, indata, indatalen);
           cdsblklen = indatalen;
         }
     }
 
-  err = verify_pin(app, pincb, pincb_arg);
+  err = verify_pin (app, pincb, pincb_arg);
   if (err)
     return err;
 
   sw = apdu_send_le (app->slot, 1, 0x80, 0x68, prkdf->key_reference, algoid,
                      cdsblklen, cdsblk, 0, outdata, outdatalen);
-  return iso7816_map_sw(sw);
+  return iso7816_map_sw (sw);
 }
 
 
@@ -1865,14 +1886,14 @@ do_auth (app_t app, const char *keyidstr,
 
 
 
-/* Check PKCS#1 V1.5 padding and extract plain text.
- * The function allocates a buffer for the plain text. The caller must release
- * the buffer
- */
+/* Check PKCS#1 V1.5 padding and extract plain text.  The function
+ * allocates a buffer for the plain text.  The caller must release the
+ * buffer.  */
 static gpg_error_t
 strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
                      size_t *dstlen)
 {
+#warning audit!
   int c1,c2,c3;
   unsigned char *p;
 
@@ -1884,7 +1905,7 @@ strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
       src++;
       srclen--;
     }
-  c3 = srclen > 0;
+  c3 = (srclen > 0);
 
   if (!(c1 && c2 && c3))
     return gpg_error (GPG_ERR_DECRYPT_FAILED);
@@ -1896,7 +1917,7 @@ strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
   if (!p)
     return gpg_error_from_syserror ();
 
-  memcpy(p, src, srclen);
+  memcpy (p, src, srclen);
   *dst = p;
   *dstlen = srclen;
 
@@ -1904,9 +1925,8 @@ strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
 }
 
 
-
-/* Decrypt a PKCS#1 V1.5 formatted cryptogram using the referenced key
- */
+/* Decrypt a PKCS#1 V1.5 formatted cryptogram using the referenced
+   key.  */
 static gpg_error_t
 do_decipher (app_t app, const char *keyidstr,
              gpg_error_t (*pincb)(void*, const char *, char **),
@@ -1917,11 +1937,11 @@ do_decipher (app_t app, const char *keyidstr,
 {
   gpg_error_t err;
   unsigned char p1blk[256]; /* Enciphered P1 block */
-  prkdf_object_t prkdf;    /* The private key object. */
+  prkdf_object_t prkdf;     /* The private key object. */
   unsigned char *rspdata;
   size_t rspdatalen;
   size_t p1blklen;
-  int ofs, sw;
+  int sw;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -1942,13 +1962,16 @@ do_decipher (app_t app, const char *keyidstr,
   if (!p1blklen)
     p1blklen = 256;
 
-  /* Due to MPI the input may be shorter or longer than the block size */
-  memset(p1blk, 0, sizeof(p1blk));
-  ofs = p1blklen - indatalen;
-  if (ofs < 0)
-    memcpy(p1blk, (unsigned char *)indata - ofs, p1blklen);
+  /* The input may be shorter (due to MPIs not storing leading zeroes)
+     or longer than the block size.  We put INDATA right aligned into
+     the buffer.  If INDATA is longer than the block size we truncate
+     it on the left. */
+  memset (p1blk, 0, sizeof(p1blk));
+  if (indatalen > p1blklen)
+    memcpy (p1blk, (unsigned char *)indata + (indatalen - p1blklen), p1blklen);
   else
-    memcpy(p1blk + ofs, indata, indatalen);
+    memcpy (p1blk + (p1blklen - indatalen), indata, indatalen);
+
 
   err = verify_pin(app, pincb, pincb_arg);
   if (err)
@@ -1956,15 +1979,15 @@ do_decipher (app_t app, const char *keyidstr,
 
   sw = apdu_send_le (app->slot, 1, 0x80, 0x62, prkdf->key_reference, 0x21,
                      p1blklen, p1blk, 0, &rspdata, &rspdatalen);
-  err = iso7816_map_sw(sw);
+  err = iso7816_map_sw (sw);
   if (err)
     {
       log_error ("Decrypt failed: %s\n", gpg_strerror (err));
       return err;
     }
 
-  err = strip_PKCS15_padding(rspdata, rspdatalen, outdata, outdatalen);
-  xfree(rspdata);
+  err = strip_PKCS15_padding (rspdata, rspdatalen, outdata, outdatalen);
+  xfree (rspdata);
 
   if (!err)
     *r_info |= APP_DECIPHER_INFO_NOPAD;
