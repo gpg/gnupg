@@ -1526,12 +1526,23 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
   if (!curve || !*curve)
     return gpg_error (GPG_ERR_UNKNOWN_CURVE);
 
-  keyparms = xtryasprintf ("(genkey(ecc(curve %zu:%s)(flags nocomp%s%s)))",
-                           strlen (curve), curve,
-                           (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
-                             && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
-                            " transient-key" : ""),
-                           (!strcmp (curve, "Ed25519")? " eddsa":""));
+  /* Note that we use the "comp" flag with EdDSA to request the use of
+     a 0x40 compression prefix octet.  */
+  if (algo == PUBKEY_ALGO_EDDSA)
+    keyparms = xtryasprintf
+      ("(genkey(ecc(curve %zu:%s)(flags eddsa comp%s)))",
+       strlen (curve), curve,
+       (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+         && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+        " transient-key" : ""));
+  else
+    keyparms = xtryasprintf
+      ("(genkey(ecc(curve %zu:%s)(flags nocomp%s)))",
+       strlen (curve), curve,
+       (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+         && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+        " transient-key" : ""));
+
   if (!keyparms)
     err = gpg_error_from_syserror ();
   else
@@ -3448,9 +3459,8 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
 }
 
 
-
 /*
- * Unattended generaion of a standard key.
+ * Unattended generation of a standard key.
  */
 void
 quick_generate_keypair (const char *uid)
