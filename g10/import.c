@@ -799,7 +799,7 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
 	return 0;
       }
 
-    if (filter && filter (pk, NULL, filter_arg))
+    if (filter && filter (keyblock, filter_arg))
       {
         log_error (_("key %s: %s\n"), keystr_from_pk(pk),
                    _("rejected by import filter"));
@@ -1201,7 +1201,7 @@ import_secret_one (const char *fname, KBNODE keyblock,
     keyid_from_sk( sk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
-    if (filter && filter (NULL, sk, filter_arg)) {
+    if (filter && filter (keyblock, filter_arg)) {
         log_error (_("secret key %s: %s\n"), keystr_from_sk(sk),
                    _("rejected by import filter"));
         return 0;

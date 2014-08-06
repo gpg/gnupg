@@ -261,8 +261,7 @@ gcry_mpi_t encode_md_value( PKT_public_key *pk, PKT_secret_key *sk,
 
 /*-- import.c --*/
 
-typedef int (*import_filter_t)(PKT_public_key *pk, PKT_secret_key *sk,
-                               void *arg);
+typedef int (*import_filter_t)(kbnode_t keyblock, void *arg);
 
 int parse_import_options(char *str,unsigned int *options,int noisy);
 void import_keys( char **fnames, int nnames,

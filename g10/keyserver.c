@@ -994,52 +994,68 @@ struct ks_retrieval_filter_arg_s
    returns 0 if the key shall be imported.  Note that this kind of
    filter is not related to the iobuf filters. */
 static int
-keyserver_retrieval_filter (PKT_public_key *pk, PKT_secret_key *sk,
-                            void *opaque)
+keyserver_retrieval_filter (kbnode_t keyblock, void *opaque)
 {
   struct ks_retrieval_filter_arg_s *arg = opaque;
   KEYDB_SEARCH_DESC *desc = arg->desc;
   int ndesc = arg->ndesc;
+  kbnode_t node;
+  PKT_public_key *pk;
   int n;
   u32 keyid[2];
   byte fpr[MAX_FINGERPRINT_LEN];
   size_t fpr_len = 0;
 
-  /* Secret keys are not expected from a keyserver.  Do not import.  */
-  if (sk)
-    return G10ERR_GENERAL;
+  /* Secret keys are not expected from a keyserver.  We do not
+     care about secret subkeys because the import code takes care
+     of skipping them.  Not allowing an import of a public key
+     with a secret subkey would make it too easy to inhibit the
+     downloading of a public key.  Recall that keyservers do only
+     limited checks.  */
+  node = find_kbnode (keyblock, PKT_SECRET_KEY);
+  if (node)
+    return G10ERR_GENERAL;   /* Do not import. */
 
   if (!ndesc)
     return 0; /* Okay if no description given.  */
 
-  fingerprint_from_pk (pk, fpr, &fpr_len);
-  keyid_from_pk (pk, keyid);
-
-  /* Compare requested and returned fingerprints if available. */
-  for (n = 0; n < ndesc; n++)
+  /* Loop over all key packets.  */
+  for (node = keyblock; node; node = node->next)
     {
-      if (desc[n].mode == KEYDB_SEARCH_MODE_FPR20)
+      if (node->pkt->pkttype != PKT_PUBLIC_KEY
+          && node->pkt->pkttype != PKT_PUBLIC_SUBKEY)
+        continue;
+
+      pk = node->pkt->pkt.public_key;
+      fingerprint_from_pk (pk, fpr, &fpr_len);
+      keyid_from_pk (pk, keyid);
+
+      /* Compare requested and returned fingerprints if available. */
+      for (n = 0; n < ndesc; n++)
         {
-          if (fpr_len == 20 && !memcmp (fpr, desc[n].u.fpr, 20))
-            return 0;
+          if (desc[n].mode == KEYDB_SEARCH_MODE_FPR20)
+            {
+              if (fpr_len == 20 && !memcmp (fpr, desc[n].u.fpr, 20))
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR16)
+            {
+              if (fpr_len == 16 && !memcmp (fpr, desc[n].u.fpr, 16))
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
+            {
+              if (keyid[0] == desc[n].u.kid[0] && keyid[1] == desc[n].u.kid[1])
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_SHORT_KID)
+            {
+              if (keyid[1] == desc[n].u.kid[1])
+                return 0;
+            }
+          else /* No keyid or fingerprint - can't check.  */
+            return 0; /* allow import.  */
         }
-      else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR16)
-        {
-          if (fpr_len == 16 && !memcmp (fpr, desc[n].u.fpr, 16))
-            return 0;
-        }
-      else if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
-        {
-          if (keyid[0] == desc[n].u.kid[0] && keyid[1] == desc[n].u.kid[1])
-            return 0;
-        }
-      else if (desc[n].mode == KEYDB_SEARCH_MODE_SHORT_KID)
-        {
-          if (keyid[1] == desc[n].u.kid[1])
-            return 0;
-        }
-      else
-        return 0;
     }
 
   return G10ERR_GENERAL;
