@@ -23,6 +23,7 @@
 #define MAX_FINGERPRINT_LEN 20
 
 typedef struct kbnode_struct *KBNODE;
+typedef struct kbnode_struct *kbnode_t;
 typedef struct keydb_search_desc KEYDB_SEARCH_DESC;
 
 #endif /*GPG_GLOBAL_H*/
