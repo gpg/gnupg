@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-02-12 13:30+0900\n"
+"PO-Revision-Date: 2014-08-07 10:06+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
-"Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
+"Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -336,19 +336,17 @@ msgstr "|N|N秒後に保持したPINを無効とする"
 msgid "do not use the PIN cache when signing"
 msgstr "署名に対してPINの保持を使わない"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "クライアントが鍵に\"trusted\"マークをつけることを認める"
+msgstr "クライアントが鍵に\"trusted\"マークをつけることを認めない"
 
 msgid "allow presetting passphrase"
 msgstr "パスフレーズの事前設定を認める"
 
 msgid "enable ssh support"
-msgstr ""
+msgstr "sshサポートを有功にする"
 
 msgid "enable putty support"
-msgstr ""
+msgstr "puttyサポートを有功にする"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|FILEに環境変数の設定も書き出す"
@@ -359,21 +357,15 @@ msgstr "|FILE|FILEに環境変数の設定も書き出す"
 msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "バグは <@EMAIL@> までご報告ください。\n"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
-msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
+msgstr "使い方: @GPG_AGENT@ [オプション] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg-agent [options] [command [args]]\n"
-#| "Secret key management for GnuPG\n"
 msgid ""
 "Syntax: @GPG_AGENT@ [options] [command [args]]\n"
 "Secret key management for @GNUPG@\n"
 msgstr ""
-"形式: gpg-agent [オプション] [コマンド [引数]]\n"
-"GnuPGの秘密鍵の管理\n"
+"形式: @GPG_AGENT@ [オプション] [コマンド [引数]]\n"
+"@GnuPG@の秘密鍵の管理\n"
 
 #, c-format
 msgid "invalid debug-level '%s' given\n"
@@ -479,10 +471,8 @@ msgstr "%s %s 停止しました\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "このセッションでgpg-agentは実行されていません\n"
 
-#, fuzzy, c-format
-#| msgid "malformed DIRMNGR_INFO environment variable\n"
 msgid "malformed %s environment variable\n"
-msgstr "DIRMNGR_INFO環境変数が破壊されています\n"
+msgstr "環境変数%sが破壊されています\n"
 
 #, c-format
 msgid "gpg-agent protocol version %d is not supported\n"
@@ -619,7 +609,7 @@ msgid ""
 "Please verify that the certificate identified as:%%0A  \"%s\"%%0Ahas the "
 "fingerprint:%%0A  %s"
 msgstr ""
-"確認してください。証明書:%%0A  \"%s\"%%0Aは下記のフィンガー・プリントを持つ:"
+"確認してください。証明書:%%0A  \"%s\"%%0Aは下記のフィンガープリントを持つ:"
 "%%0A  %s"
 
 #. TRANSLATORS: "Correct" is the label of a button and intended
@@ -649,15 +639,15 @@ msgstr "パスフレーズを変更する"
 msgid "I'll change it later"
 msgstr "後で変更する"
 
-#, fuzzy
-#| msgid "enable key"
 msgid "Delete key"
-msgstr "鍵を有効にする"
+msgstr "鍵を削除する"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
+"警告: この鍵はSSHの使用にもリストされています!\n"
+"この鍵を削除するとリモート・マシンのアクセスの能力を失うかもしれません。"
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSAは8ビットの倍数のハッシュ長を必要とします\n"
@@ -1248,10 +1238,10 @@ msgid "Error: invalid response.\n"
 msgstr "エラー: 無効な応答。\n"
 
 msgid "CA fingerprint: "
-msgstr "CAのフィンガー・プリント: "
+msgstr "CAのフィンガープリント: "
 
 msgid "Error: invalid formatted fingerprint.\n"
-msgstr "エラー: 無効な形式のフィンガー・プリント。\n"
+msgstr "エラー: 無効な形式のフィンガープリント。\n"
 
 #, c-format
 msgid "key operation not possible: %s\n"
@@ -1338,15 +1328,11 @@ msgstr "   (3) 認証鍵\n"
 msgid "Invalid selection.\n"
 msgstr "無効な選択です。\n"
 
-#, fuzzy
-#| msgid "Please select the reason for the revocation:\n"
 msgid "Please select where to store the key:\n"
-msgstr "失効の理由を選択してください:\n"
+msgstr "鍵を保管する場所を選択してください:\n"
 
-#, fuzzy, c-format
-#| msgid "read failed: %s\n"
 msgid "KEYTOCARD failed: %s\n"
-msgstr "read が失敗しました: %s\n"
+msgstr "KEYTOCARDが失敗しました: %s\n"
 
 msgid "quit this menu"
 msgstr "このメニューを終了"
@@ -1379,7 +1365,7 @@ msgid "change card holder's sex"
 msgstr "カード所有者の性別の変更"
 
 msgid "change a CA fingerprint"
-msgstr "CAフィンガー・プリントの変更"
+msgstr "CAフィンガープリントの変更"
 
 msgid "toggle the signature force PIN flag"
 msgstr "署名強制PINフラグを反転"
@@ -1427,7 +1413,7 @@ msgid "error reading keyblock: %s\n"
 msgstr "鍵ブロックの読み込みエラー: %s\n"
 
 msgid "(unless you specify the key by fingerprint)\n"
-msgstr "(あるいは、フィンガー・プリントで鍵を指定)\n"
+msgstr "(あるいは、フィンガープリントで鍵を指定)\n"
 
 msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "\"--yes\"なしでバッチ・モードではできません\n"
@@ -1438,18 +1424,14 @@ msgstr "この鍵を鍵リングから削除しますか? (y/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "これは秘密鍵です! 本当に削除しますか? (y/N) "
 
-#, fuzzy, c-format
-#| msgid "deleting certificate \"%s\" failed: %s\n"
 msgid "deleting secret %s failed: %s\n"
-msgstr "証明書'%s'の削除に失敗しました: %s\n"
+msgstr "秘密%sの削除に失敗しました: %s\n"
 
 msgid "key"
-msgstr ""
+msgstr "鍵"
 
-#, fuzzy
-#| msgid "Pubkey: "
 msgid "subkey"
-msgstr "公開鍵: "
+msgstr "サブ鍵: "
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1625,7 +1607,7 @@ msgid "error retrieving '%s' via %s: %s\n"
 msgstr "'%s'を %s から取得する際のエラー: %s\n"
 
 msgid "No fingerprint"
-msgstr "フィンガー・プリントがありません"
+msgstr "フィンガープリントがありません"
 
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -1670,7 +1652,7 @@ msgid "list and check key signatures"
 msgstr "鍵署名の検査と一覧"
 
 msgid "list keys and fingerprints"
-msgstr "鍵とフィンガー・プリントの一覧"
+msgstr "鍵とフィンガープリントの一覧"
 
 msgid "list secret keys"
 msgstr "秘密鍵の一覧"
@@ -1687,21 +1669,17 @@ msgstr "公開鍵リングから鍵を削除"
 msgid "remove keys from the secret keyring"
 msgstr "秘密鍵リングから鍵を削除"
 
-#, fuzzy
-#| msgid "sign a key"
 msgid "quickly sign a key"
-msgstr "鍵に署名"
+msgstr "鍵にすばやく署名"
 
-#, fuzzy
-#| msgid "sign a key locally"
 msgid "quickly sign a key locally"
-msgstr "鍵へ内部的に署名"
+msgstr "鍵へすばやくローカルに署名"
 
 msgid "sign a key"
 msgstr "鍵に署名"
 
 msgid "sign a key locally"
-msgstr "鍵へ内部的に署名"
+msgstr "鍵へローカルに署名"
 
 msgid "sign or edit a key"
 msgstr "鍵への署名や編集"
@@ -1796,25 +1774,18 @@ msgstr ""
 " --clearsign [ファイル]     クリア・テクスト署名を作成\n"
 " --detach-sign [ファイル]   分離署名を作成\n"
 " --list-keys [名前]         鍵を表示\n"
-" --fingerprint [名前]       フィンガー・プリントを表示\n"
+" --fingerprint [名前]       フィンガープリントを表示\n"
 
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
 msgid "Usage: @GPG@ [options] [files] (-h for help)"
-msgstr "使い方: gpg [オプション] [ファイル] (ヘルプは -h)"
+msgstr "使い方: @GPG@ [オプション] [ファイル] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "Sign, check, encrypt or decrypt\n"
-#| "Default operation depends on the input data\n"
 msgid ""
 "Syntax: @GPG@ [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"形式: gpg [オプション] [ファイル]\n"
-"署名、検査、暗号化や復号\n"
+"形式: @GPG@ [オプション] [ファイル]\n"
+"署名、検査、暗号化または復号\n"
 "デフォルトの操作は、入力データに依存\n"
 
 msgid ""
@@ -1836,10 +1807,8 @@ msgstr "ハッシュ: "
 msgid "Compression: "
 msgstr "圧縮: "
 
-#, fuzzy, c-format
-#| msgid "usage: gpgsm [options] "
 msgid "usage: %s [options] %s\n"
-msgstr "使い方: gpgsm [オプション] "
+msgstr "使い方: %s [オプション] %s\n"
 
 msgid "conflicting commands\n"
 msgstr "対立するコマンド\n"
@@ -2682,7 +2651,7 @@ msgid ""
 "etc.)\n"
 msgstr ""
 "他のユーザの鍵を正しく検証するために、このユーザの信用度を決めてください\n"
-"(パスポートを見せてもらったり、他から得たフィンガー・プリントを検査したり、な"
+"(パスポートを見せてもらったり、他から得たフィンガープリントを検査したり、な"
 "どなど)\n"
 
 #, c-format
@@ -2877,7 +2846,7 @@ msgid "save and quit"
 msgstr "保存して終了"
 
 msgid "show key fingerprint"
-msgstr "鍵のフィンガー・プリントを表示"
+msgstr "鍵のフィンガープリントを表示"
 
 msgid "list key and user IDs"
 msgstr "鍵とユーザIDの一覧"
@@ -3104,25 +3073,17 @@ msgstr "更新に失敗しました: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
-#, fuzzy, c-format
-#| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
-msgstr "無効なフィンガー・プリント"
+msgstr "\"%s\"はフィンガープリントではありません\n"
 
-#, fuzzy, c-format
-#| msgid "failed to get the fingerprint\n"
 msgid "\"%s\" is not the primary fingerprint\n"
-msgstr "フィンガー・プリントの取得に失敗しました\n"
+msgstr "\"%s\" はプライマリ・フィンガープリントではありません\n"
 
-#, fuzzy
-#| msgid "No such user ID.\n"
 msgid "No matching user IDs."
-msgstr "そのユーザIDはありません。\n"
+msgstr "マッチするユーザIDはありません。\n"
 
-#, fuzzy
-#| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
-msgstr "鍵%sで署名すべきものはありません\n"
+msgstr "署名するものがありません。\n"
 
 msgid "Digest: "
 msgstr "ダイジェスト: "
@@ -3372,7 +3333,7 @@ msgid "Are you sure you still want to revoke it? (y/N) "
 msgstr "それでも本当に失効したいですか? (y/N) "
 
 msgid "Create a revocation certificate for this signature? (y/N) "
-msgstr "この署名にたいする失効証明書を作成しますか? (y/N) "
+msgstr "この署名に対する失効証明書を作成しますか? (y/N) "
 
 msgid "Not signed by you.\n"
 msgstr "あなたによって署名されていません。\n"
@@ -3540,29 +3501,21 @@ msgstr "   (%d) DSA (特性をあなた自身で設定)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (特性をあなた自身で設定)\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) RSA\n"
 msgid "   (%d) ECC\n"
-msgstr "   (%d) RSA\n"
+msgstr "   (%d) ECC\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDSA (sign only)\n"
 msgid "  (%d) ECC (sign only)\n"
-msgstr "   (%d) ECDSA (署名のみ)\n"
+msgstr "  (%d) ECC (署名のみ)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDSA (set your own capabilities)\n"
 msgid "  (%d) ECC (set your own capabilities)\n"
-msgstr "   (%d) ECDSA (特性をあなた自身で設定)\n"
+msgstr "  (%d) ECC (特性をあなた自身で設定)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDH (encrypt only)\n"
 msgid "  (%d) ECC (encrypt only)\n"
-msgstr "   (%d) ECDH (暗号化のみ)\n"
+msgstr "  (%d) ECC (暗号化のみ)\n"
 
 #, c-format
 msgid "  (%d) Existing key\n"
-msgstr "   (%d) 既存の鍵\n"
+msgstr "  (%d) 既存の鍵\n"
 
 msgid "Enter the keygrip: "
 msgstr "keygripを入力: "
@@ -3593,10 +3546,8 @@ msgstr "要求された鍵長は%uビット\n"
 msgid "rounded to %u bits\n"
 msgstr "%uビットに切り上げます\n"
 
-#, fuzzy
-#| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
-msgstr "ご希望の鍵の種類を選択してください:\n"
+msgstr "ご希望の楕円曲線を選択してください:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -3886,21 +3837,21 @@ msgid "Keyring"
 msgstr "鍵リング"
 
 msgid "Primary key fingerprint:"
-msgstr "主鍵のフィンガー・プリント:"
+msgstr "主鍵のフィンガープリント:"
 
 msgid "     Subkey fingerprint:"
-msgstr "副鍵のフィンガー・プリント:"
+msgstr "副鍵のフィンガープリント:"
 
 #. TRANSLATORS: this should fit into 24 bytes to that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
-msgstr "主鍵フィンガー・プリント:"
+msgstr "主鍵フィンガープリント:"
 
 msgid "      Subkey fingerprint:"
-msgstr "副鍵フィンガー・プリント:"
+msgstr "副鍵フィンガープリント:"
 
 msgid "      Key fingerprint ="
-msgstr "   フィンガー・プリント ="
+msgstr "   フィンガープリント ="
 
 msgid "      Card serial no. ="
 msgstr "   カード・シリアル番号 ="
@@ -4146,10 +4097,8 @@ msgstr "期限切れの署名 %s\n"
 msgid "Signature expires %s\n"
 msgstr "この署名は%sで期限切れとなります\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
 msgid "%s signature, digest algorithm %s%s%s\n"
-msgstr "%s署名、ダイジェスト・アルゴリズム %s\n"
+msgstr "%s署名、ダイジェスト・アルゴリズム %s%s%s\n"
 
 msgid "binary"
 msgstr "バイナリ"
@@ -4160,10 +4109,8 @@ msgstr "テキストモード"
 msgid "unknown"
 msgstr "不明の"
 
-#, fuzzy
-#| msgid "algorithm: %s"
 msgid ", key algorithm "
-msgstr "アルゴリズム: %s"
+msgstr "、鍵アルゴリズム "
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4345,54 +4292,28 @@ msgstr "%uビット%s鍵, ID %s作成日付は%s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (主鍵ID %s の副鍵)"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to unlock the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
 msgstr ""
-"OpenPGP証明書の秘密鍵のロックを解除するためにパスフレーズを入力してください:"
+"OpenPGPの秘密鍵のロックを解除するためにパスフレーズを入力してください:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to import the OpenPGP secret key:"
 msgstr ""
-"OpenPGP証明書の秘密鍵をインポートするためにパスフレーズを入力してください:"
+"OpenPGPの秘密鍵をインポートするためにパスフレーズを入力してください:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
 msgstr ""
-"OpenPGP証明書の秘密鍵をインポートするためにパスフレーズを入力してください:"
+"OpenPGPの秘密サブ鍵をエクスポートするためにパスフレーズを入力してください:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to export the OpenPGP secret key:"
 msgstr ""
-"OpenPGP証明書の秘密鍵をインポートするためにパスフレーズを入力してください:"
+"OpenPGPの秘密鍵をエクスポートするためにパスフレーズを入力してください:"
 
-#, fuzzy
-#| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
-msgstr "選択した鍵を本当に削除しますか? (y/N) "
+msgstr "選択したOpenPGPサブ鍵を本当に永久に削除しますか? (y/N) "
 
-#, fuzzy
-#| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
-msgstr "選択した鍵を本当に削除しますか? (y/N) "
+msgstr "選択したOpenPGP秘密鍵を本当に永久に削除しますか? (y/N) "
 
-#, fuzzy, c-format
-#| msgid ""
-#| "%s\n"
-#| "\"%.*s\"\n"
-#| "%u-bit %s key, ID %s,\n"
-#| "created %s%s.\n"
 msgid ""
 "%s\n"
 "\"%.*s\"\n"
@@ -4404,6 +4325,7 @@ msgstr ""
 "\"%.*s\"\n"
 "%uビット%s鍵, ID %s,\n"
 "作成日付 %s%s.\n"
+"%s"
 
 msgid ""
 "\n"
@@ -4724,7 +4646,7 @@ msgid "(This is a sensitive revocation key)\n"
 msgstr "(これは、機密指定の失効鍵です)\n"
 
 msgid "Create a designated revocation certificate for this key? (y/N) "
-msgstr "この鍵にたいする指名失効証明書を作成しますか? (y/N) "
+msgstr "この鍵に対する指名失効証明書を作成しますか? (y/N) "
 
 msgid "ASCII armored output forced.\n"
 msgstr "ASCII外装出力を強制します。\n"
@@ -4740,10 +4662,8 @@ msgstr "失効証明書を作成。\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "\"%s\"用の失効鍵が見つかりません\n"
 
-#, fuzzy
-#| msgid "Create a revocation certificate for this key? (y/N) "
 msgid "This is a revocation certificate for the OpenPGP key:"
-msgstr "この鍵にたいする失効証明書を作成しますか? (y/N) "
+msgstr "これは失効証明書でこちらのOpenPGP鍵に対するものです:"
 
 msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
@@ -4751,19 +4671,24 @@ msgid ""
 "it is better to generate a new revocation certificate and give\n"
 "a reason for the revocation."
 msgstr ""
+"秘密鍵のコンプロマイズや紛失の場合、これを使ってこの鍵を失効させます。\n"
+"しかし、秘密鍵がまだアクセス可能である場合、新しい失効証明書を生成し、\n"
+"失効の理由をつける方がよいでしょう。"
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
+"このファイルを誤って使うのを避けるため、以下ではコロンが5つのダッシュの前に挿入されます。\n"
+"この失効証明書を使う前にはテクスト・エディタでこのコロンを削除してください。"
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
-msgstr "この鍵にたいする失効証明書を作成しますか? (y/N) "
+msgstr "この鍵に対する失効証明書を作成しますか? (y/N) "
 
 msgid ""
 "Revocation certificate created.\n"
@@ -4865,10 +4790,8 @@ msgstr "*注意*: 署名鍵%sは%sに期限切れとなります\n"
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "*注意*: 鍵 %s は失効済みです\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s署名、ダイジェスト・アルゴリズム %s\n"
+msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -4963,7 +4886,7 @@ msgid "colon missing"
 msgstr "コロンがありません"
 
 msgid "invalid fingerprint"
-msgstr "無効なフィンガー・プリント"
+msgstr "無効なフィンガープリント"
 
 msgid "ownertrust value missing"
 msgstr "所有者信用度がありません"
@@ -5285,10 +5208,8 @@ msgstr "応答にRSAの法(modulus)が含まれていません\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "応答にRSA公開指数が含まれていません\n"
 
-#, fuzzy
-#| msgid "response does not contain the RSA public exponent\n"
 msgid "response does not contain the EC public point\n"
-msgstr "応答にRSA公開指数が含まれていません\n"
+msgstr "応答に楕円曲線の公開点が含まれていません\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -5366,7 +5287,7 @@ msgid "error reading application data\n"
 msgstr "アプリケーション・データの読み込みエラー\n"
 
 msgid "error reading fingerprint DO\n"
-msgstr "フィンガー・プリントのデータ・オブジェクトの読み込みエラー\n"
+msgstr "フィンガープリントのデータ・オブジェクトの読み込みエラー\n"
 
 msgid "key already exists\n"
 msgstr "鍵はもうあります\n"
@@ -5405,7 +5326,7 @@ msgid "invalid structure of OpenPGP card (DO 0x93)\n"
 msgstr "OpenPGPカードに無効な構造 (データ・オブジェクト 0x93)\n"
 
 msgid "fingerprint on card does not match requested one\n"
-msgstr "カードのフィンガー・プリントが要求されたものと一致しません\n"
+msgstr "カードのフィンガープリントが要求されたものと一致しません\n"
 
 #, c-format
 msgid "card does not support digest algorithm %s\n"
@@ -5465,21 +5386,15 @@ msgstr "管理カード・コマンドの使用を拒否"
 msgid "use variable length input for pinpad"
 msgstr "ピンパッドの可変長入力を使う"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
-msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
+msgstr "使い方: @SCDAEMON@ [オプション] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: scdaemon [options] [command [args]]\n"
-#| "Smartcard daemon for GnuPG\n"
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for @GNUPG@\n"
 msgstr ""
 "形式: scdaemon [オプション] [コマンド [引数]]\n"
-"GnuPGのSmartcardデーモン\n"
+"@GNUPG@のSmartcardデーモン\n"
 
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
@@ -5614,7 +5529,7 @@ msgstr "  (     発行者、有効"
 
 #, c-format
 msgid "fingerprint=%s\n"
-msgstr "フィンガー・プリント=%s\n"
+msgstr "フィンガープリント=%s\n"
 
 msgid "root certificate has now been marked as trusted\n"
 msgstr "ルート証明書は信用すると今、マークされました\n"
@@ -6029,22 +5944,15 @@ msgstr "|NAME|暗号アルゴリズムにNAMEを使用"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NAME|ダイジェスト・アルゴリズムにNAMEを使用"
 
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
-msgstr "使い方: gpg [オプション] [ファイル] (ヘルプは -h)"
+msgstr "使い方: @GPGSM@ [オプション] [ファイル] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "Default operation depends on the input data\n"
 msgid ""
 "Syntax: @GPGSM@ [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"形式: gpgsm [オプション] [ファイル]\n"
+"形式: @GPGSM@ [オプション] [ファイル]\n"
 "S/MIMEプロトコルを用いて、署名、検査、暗号化や復号を行います\n"
 "デフォルトの操作は、入力データに依存します\n"
 
@@ -6108,7 +6016,7 @@ msgid "you may want to start the gpg-agent first\n"
 msgstr "まず gpg-agent を開始したいでしょう\n"
 
 msgid "failed to get the fingerprint\n"
-msgstr "フィンガー・プリントの取得に失敗しました\n"
+msgstr "フィンガープリントの取得に失敗しました\n"
 
 #, c-format
 msgid "problem looking for existing certificate: %s\n"
@@ -6138,7 +6046,7 @@ msgstr "GPG_TTY が設定されていません - 少々疑問のデフォルト�
 
 #, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
-msgstr "'%s'(行 %d) 無効な形式のフィンガー・プリント\n"
+msgstr "'%s'(行 %d) 無効な形式のフィンガープリント\n"
 
 #, c-format
 msgid "invalid country code in '%s', line %d\n"
@@ -6257,7 +6165,7 @@ msgstr "証明書'%s'をロードしました\n"
 
 #, c-format
 msgid "  SHA1 fingerprint = %s\n"
-msgstr "  SHA1フィンガー・プリント = %s\n"
+msgstr "  SHA1フィンガープリント = %s\n"
 
 msgid "   issuer ="
 msgstr "   発行者 ="
@@ -6289,7 +6197,7 @@ msgstr "証明書のキャッシュのエラー: %s\n"
 
 #, c-format
 msgid "invalid SHA1 fingerprint string '%s'\n"
-msgstr "無効なSHA1フィンガー・プリント文字列'%s'\n"
+msgstr "無効なSHA1フィンガープリント文字列'%s'\n"
 
 #, c-format
 msgid "error fetching certificate by S/N: %s\n"
@@ -6908,7 +6816,7 @@ msgid "|N|do not return more than N items in one query"
 msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
+msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
 
 msgid ""
 "@\n"
@@ -6918,30 +6826,22 @@ msgstr ""
 "@\n"
 "(コマンドとオプション全部の一覧は、\"info\" マニュアルをご覧ください)\n"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
-msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
+msgstr "使い方: @DIRMNGR@ [オプション] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: dirmngr [options] [command [args]]\n"
-#| "LDAP and OCSP access for GnuPG\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
 "LDAP and OCSP access for @GNUPG@\n"
 msgstr ""
-"形式: dirmngr [オプション] [コマンド [引数]]\n"
-"GnuPGのLDAPとOCSPアクセス\n"
+"形式: @DIRMNGR@ [オプション] [コマンド [引数]]\n"
+"@GnuPG@のLDAPとOCSPアクセス\n"
 
 #, c-format
 msgid "valid debug levels are: %s\n"
 msgstr "有効なdebugレベルは: %s\n"
 
-#, fuzzy, c-format
-#| msgid "usage: gpgsm [options] "
 msgid "usage: %s [options] "
-msgstr "使い方: gpgsm [オプション] "
+msgstr "使い方: %s [オプション] "
 
 msgid "colons are not allowed in the socket name\n"
 msgstr "コロンはソケット名に許されません\n"
@@ -6960,7 +6860,7 @@ msgstr "%s:%u: 行が長すぎます - スキップされました\n"
 
 #, c-format
 msgid "%s:%u: invalid fingerprint detected\n"
-msgstr "%s:%u: 無効なフィンガー・プリントが検出されました\n"
+msgstr "%s:%u: 無効なフィンガープリントが検出されました\n"
 
 #, c-format
 msgid "%s:%u: read error: %s\n"
@@ -7413,10 +7313,8 @@ msgstr "16進でエンコードしてデータ出力を表示する"
 msgid "decode received data lines"
 msgstr "受信したデータ行をデコードする"
 
-#, fuzzy
-#| msgid "can't connect to the dirmngr: %s\n"
 msgid "connect to the dirmngr"
-msgstr "dirmngrへ接続できません: %s\n"
+msgstr "dirmngrへ接続"
 
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr "|NAME|Assuanのソケット名NAMEに接続する"
@@ -7436,20 +7334,14 @@ msgstr "|FILE|起動時にFILEからコマンドを実行する"
 msgid "run /subst on startup"
 msgstr "起動時に /subst を実行する"
 
-#, fuzzy
-#| msgid "Usage: gpg-connect-agent [options] (-h for help)"
 msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
-msgstr "使い方: gpg-connect-agent [オプション] (ヘルプは -h)"
+msgstr "使い方: @GPG@-connect-agent [オプション] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg-connect-agent [options]\n"
-#| "Connect to a running agent and send commands\n"
 msgid ""
 "Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
-"形式: gpg-connect-agent [オプション]\n"
+"形式: @GPG@-connect-agent [オプション]\n"
 "実行中のagentに接続し、コマンドを送る\n"
 
 #, c-format
@@ -7594,10 +7486,8 @@ msgstr "ディレクトリ・マネージャ"
 msgid "PIN and Passphrase Entry"
 msgstr "PINとパスフレーズの入力"
 
-#, fuzzy
-#| msgid "Component not found"
 msgid "Component not suitable for launching"
-msgstr "コンポーネントが見つかりません"
+msgstr "コンポーネントが起動するために適切ではありません"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -7624,10 +7514,8 @@ msgstr "|COMPONENT|オプションをチェックする"
 msgid "apply global default values"
 msgstr "グローバル・デフォルト値を適用する"
 
-#, fuzzy
-#| msgid "get the configuration directories for gpgconf"
 msgid "get the configuration directories for @GPGCONF@"
-msgstr "gpgconfのためにコンフィグレーション・ディレクトリを取得する"
+msgstr "@GPGCONF@のためにコンフィグレーション・ディレクトリを取得する"
 
 msgid "list global configuration file"
 msgstr "グローバルのコンフィグレーション・ファイルをリストする"
@@ -7638,10 +7526,8 @@ msgstr "グローバルのコンフィグレーション・ファイルをチェ
 msgid "reload all or a given component"
 msgstr "すべて、あるいは指定されたコンポーネントをリロードする"
 
-#, fuzzy
-#| msgid "kill a given component"
 msgid "launch a given component"
-msgstr "指定されたコンポーネントをkillする"
+msgstr "指定されたコンポーネントを起動する"
 
 msgid "kill a given component"
 msgstr "指定されたコンポーネントをkillする"
@@ -7652,21 +7538,15 @@ msgstr "出力ファイルとして使用"
 msgid "activate changes at runtime, if possible"
 msgstr "可能な場合、実行時に変更を有効とする"
 
-#, fuzzy
-#| msgid "Usage: dirmngr [options] (-h for help)"
 msgid "Usage: @GPGCONF@ [options] (-h for help)"
-msgstr "使い方: dirmngr [オプション] (ヘルプは -h)"
+msgstr "使い方: @GPGCONF@ [オプション] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgconf [options]\n"
-#| "Manage configuration options for tools of the GnuPG system\n"
 msgid ""
 "Syntax: @GPGCONF@ [options]\n"
 "Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-"形式: gpgconf [オプション]\n"
-"GnuPGシステムのツールに対しコンフィグレーション・オプションを管理する\n"
+"形式: @GPGCONF@ [オプション]\n"
+"@GNUPG@システムのツールに対しコンフィグレーション・オプションを管理する\n"
 
 msgid "Need one component argument"
 msgstr "一つコンポーネント引数が必要です"
@@ -7821,48 +7701,6 @@ msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
 
-#~ msgid "usage: gpg [options] "
-#~ msgstr "使い方: gpg [オプション] "
-
-#~ msgid "usage: gpgsm [options] "
-#~ msgstr "使い方: gpgsm [オプション] "
-
-#~ msgid "can't create `%s': %s\n"
-#~ msgstr "'%s'が作成できません: %s\n"
-
-#~ msgid "can't open `%s': %s\n"
-#~ msgstr "'%s'が開けません: %s\n"
-
-#~ msgid "enable ssh-agent emulation"
-#~ msgstr "ssh-agentエミュレーションを有効とする"
-
-#~ msgid "Usage: gpg-agent [options] (-h for help)"
-#~ msgstr "使い方: gpg-agent [オプション] (ヘルプは -h)"
-
-#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
-#~ msgstr "GPG_AGENT_INFO環境変数が壊れています\n"
-
-#~ msgid "error creating socket: %s\n"
-#~ msgstr "ソケット作成エラー: %s\n"
-
-#~ msgid "host not found"
-#~ msgstr "ホストが見つかりません"
-
-#~ msgid "error loading '%s': %s\n"
-#~ msgstr "'%s'の読込みエラー: %s\n"
-
-#~ msgid "deleting secret key not implemented\n"
-#~ msgstr "秘密鍵の削除は実装されていません\n"
-
-#~ msgid "too many entries in pk cache - disabled\n"
-#~ msgstr "pkキャッシュのエントリーが多すぎます - 使用禁止\n"
-
-#~ msgid "   (%d) ECDSA and ECDH\n"
-#~ msgstr "   (%d) ECDSA と ECDH\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "10"
-
 #~ msgid "[ revoked]"
 #~ msgstr "[  失効  ]"
 
@@ -7898,18 +7736,3 @@ msgstr ""
 
 #~ msgid "ultimate"
 #~ msgstr "究極"
-
-#~ msgid "Usage: scdaemon [options] (-h for help)"
-#~ msgstr "使い方: scdaemon [オプション] (ヘルプは -h)"
-
-#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
-#~ msgstr "使い方: gpgsm [オプション] [ファイル] (ヘルプは -h)"
-
-#~ msgid "usage: dirmngr [options] "
-#~ msgstr "使い方: dirmngr [オプション] "
-
-#~ msgid "Usage: gpgconf [options] (-h for help)"
-#~ msgstr "使い方: gpgconf [オプション] (ヘルプは -h)"
-
-#~ msgid "usage: gpgconf [options] "
-#~ msgstr "使い方: gpgconf [オプション] "
