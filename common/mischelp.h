@@ -30,7 +30,7 @@
  */
 
 #ifndef LIBJNLIB_MISCHELP_H
-#define LIBJNLIB_MISCHHELP_H
+#define LIBJNLIB_MISCHELP_H
 
 
 /* Because we can't use the internal jnlib_free macro in inline
