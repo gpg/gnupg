@@ -19,7 +19,7 @@
  */
 
 #ifndef LIBJNLIB_MISCHELP_H
-#define LIBJNLIB_MISCHHELP_H
+#define LIBJNLIB_MISCHELP_H
 
 
 /* Check whether the files NAME1 and NAME2 are identical.  This is for
