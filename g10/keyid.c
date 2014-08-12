@@ -629,7 +629,7 @@ revokestr_from_pk( PKT_public_key *pk )
 
 
 const char *
-usagestr_from_pk( PKT_public_key *pk )
+usagestr_from_pk (PKT_public_key *pk, int fill)
 {
   static char buffer[10];
   int i = 0;
@@ -647,7 +647,7 @@ usagestr_from_pk( PKT_public_key *pk )
   if ( (use & PUBKEY_USAGE_AUTH) )
     buffer[i++] = 'A';
 
-  while (i < 4)
+  while (fill && i < 4)
     buffer[i++] = ' ';
 
   buffer[i] = 0;

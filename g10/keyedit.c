@@ -2991,7 +2991,7 @@ show_key_with_all_names (estream_t fp,
 	  else
 	    tty_fprintf (fp, _("expires: %s"), expirestr_from_pk (pk));
 	  tty_fprintf (fp, "  ");
-	  tty_fprintf (fp, _("usage: %s"), usagestr_from_pk (pk));
+	  tty_fprintf (fp, _("usage: %s"), usagestr_from_pk (pk, 1));
 	  tty_fprintf (fp, "\n");
 
 	  if (pk->seckey_info

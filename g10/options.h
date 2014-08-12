@@ -349,6 +349,7 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define LIST_SHOW_KEYRING                (1<<8)
 #define LIST_SHOW_SIG_EXPIRE             (1<<9)
 #define LIST_SHOW_SIG_SUBPACKETS         (1<<10)
+#define LIST_SHOW_USAGE                  (1<<11)
 
 #define VERIFY_SHOW_PHOTOS               (1<<0)
 #define VERIFY_SHOW_POLICY_URLS          (1<<1)

@@ -834,6 +834,10 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
               pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
               keystr_from_pk (pk), datestr_from_pk (pk));
 
+  if ((opt.list_options & LIST_SHOW_USAGE))
+    {
+      es_fprintf (es_stdout, " [%s]", usagestr_from_pk (pk, 0));
+    }
   if (pk->flags.revoked)
     {
       es_fprintf (es_stdout, " [");
@@ -973,6 +977,10 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
               xfree (curve);
             }
 
+          if ((opt.list_options & LIST_SHOW_USAGE))
+            {
+              es_fprintf (es_stdout, " [%s]", usagestr_from_pk (pk2, 0));
+            }
 	  if (pk2->flags.revoked)
 	    {
 	      es_fprintf (es_stdout, " [");

@@ -1793,6 +1793,8 @@ parse_list_options(char *str)
     {
       {"show-photos",LIST_SHOW_PHOTOS,NULL,
        N_("display photo IDs during key listings")},
+      {"show-usage",LIST_SHOW_USAGE,NULL,
+       N_("show key usage information during key listings")},
       {"show-policy-urls",LIST_SHOW_POLICY_URLS,NULL,
        N_("show policy URLs during signature listings")},
       {"show-notations",LIST_SHOW_NOTATIONS,NULL,

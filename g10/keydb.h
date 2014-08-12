@@ -282,7 +282,7 @@ const char *datestr_from_sig( PKT_signature *sig );
 const char *expirestr_from_pk( PKT_public_key *pk );
 const char *expirestr_from_sig( PKT_signature *sig );
 const char *revokestr_from_pk( PKT_public_key *pk );
-const char *usagestr_from_pk( PKT_public_key *pk );
+const char *usagestr_from_pk (PKT_public_key *pk, int fill);
 const char *colon_strtime (u32 t);
 const char *colon_datestr_from_pk (PKT_public_key *pk);
 const char *colon_datestr_from_sig (PKT_signature *sig);

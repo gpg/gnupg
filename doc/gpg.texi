@@ -1096,6 +1096,13 @@ give the opposite meaning.  The options are:
   see @option{--attribute-fd} for the appropriate way to get photo data
   for scripts and other frontends.
 
+  @item show-usage
+  @opindex list-options:show-usage
+  Show usage information for keys and subkeys in the standard key
+  listing.  This is a list of letters indicating the allowed usage for a
+  key (@code{E}=encryption, @code{S}=signing, @code{C}=certification,
+  @code{A}=authentication).  Defaults to no.
+
   @item show-policy-urls
   @opindex list-options:show-policy-urls
   Show policy URLs in the @option{--list-sigs} or @option{--check-sigs}
