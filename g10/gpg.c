@@ -73,6 +73,9 @@
 #define MY_O_BINARY  0
 #endif
 
+#ifdef __MINGW32__
+int _dowildcard = -1;
+#endif
 
 enum cmd_and_opt_values
   {
