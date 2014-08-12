@@ -144,7 +144,7 @@ ask_outfile_name( const char *name, size_t namelen )
 
   if ( opt.batch )
     return NULL;
-  
+
   defname = name && namelen? make_printable_string (name, namelen, 0) : NULL;
 
   s = _("Enter new filename");
@@ -159,9 +159,9 @@ ask_outfile_name( const char *name, size_t namelen )
   cpr_kill_prompt ();
   tty_disable_completion ();
   xfree (prompt);
-  if ( !*fname ) 
+  if ( !*fname )
     {
-      xfree (fname); 
+      xfree (fname);
       fname = defname;
       defname = NULL;
     }
@@ -197,7 +197,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
   else {
     char *buf = NULL;
     const char *name;
-    
+
     if ( opt.dry_run )
       {
 #ifdef HAVE_W32_SYSTEM
@@ -222,7 +222,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
           char *dot;
           const char *newsfx = mode==1 ? ".asc" :
                                mode==2 ? ".sig" : ".gpg";
-          
+
           buf = xmalloc(strlen(iname)+4+1);
           strcpy(buf,iname);
           dot = strchr(buf, '.' );
@@ -259,7 +259,7 @@ open_outfile( const char *iname, int mode, IOBUF *a )
         xfree (buf);
         name = buf = tmp;
       }
-    
+
     if( !rc )
       {
         if (is_secured_filename (name) )
@@ -385,7 +385,7 @@ copy_options_file( const char *destdir )
                     ;
                 else if (c == '#')
                     esc = 2;
-                else 
+                else
                     any_option = 1;
             }
         }
@@ -431,6 +431,6 @@ try_make_homedir (const char *fname)
       else if (!opt.quiet )
         log_info ( _("directory `%s' created\n"), fname );
       copy_options_file( fname );
-      
+
     }
 }
