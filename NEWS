@@ -1,5 +1,16 @@
-Noteworthy changes in version 2.0.26 (unreleased)
+Noteworthy changes in version 2.0.26 (2014-08-12)
 -------------------------------------------------
+
+ * gpg: Fix a regression in 2.0.24 if a subkey id is given
+   to --recv-keys et al.
+
+ * gpg: Cap attribute packets at 16MB.
+
+ * gpgsm: Auto-create the ".gnupg" home directory in the same
+   way gpg does.
+
+ * scdaemon: Allow for certificates > 1024 when using PC/SC.
+
 
 Noteworthy changes in version 2.0.25 (2014-06-30)
 -------------------------------------------------

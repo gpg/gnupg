@@ -34,6 +34,11 @@
 #include "keydb.h"
 #include "i18n.h"
 
+#ifdef MKDIR_TAKES_ONE_ARG
+#undef mkdir
+#define mkdir(a,b) mkdir(a)
+#endif
+
 static int active_handles;
 
 typedef enum {
@@ -245,7 +250,6 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
   const char *resname = url;
   char *filename = NULL;
   int rc = 0;
-  FILE *fp;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
 
   if (auto_created)
