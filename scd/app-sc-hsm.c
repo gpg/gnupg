@@ -204,9 +204,9 @@ do_deinit (app_t app)
 
 
 
-/* Get the list of EFs from the SmartCard-HSM. On success a dynamically
- * buffer containing the EF list is returned. The caller is responsible for
- * freeing the buffer.
+/* Get the list of EFs from the SmartCard-HSM.
+ * On success a dynamically buffer containing the EF list is returned.
+ * The caller is responsible for freeing the buffer.
  */
 static gpg_error_t
 list_ef (int slot, unsigned char **result, size_t *resultlen)
@@ -461,7 +461,6 @@ static gpg_error_t
 read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
               cdf_object_t *cdresult)
 {
-#warning  function not yet audited
   gpg_error_t err;
   unsigned char *buffer = NULL;
   size_t buflen;
@@ -494,7 +493,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   n = buflen;
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > n || (tag != TAG_SEQUENCE && tag != 0x00)))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -513,66 +512,67 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   /* Parse the commonObjectAttributes.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > nn || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto parse_error;
+
   {
-      const unsigned char *ppp = pp;
-      size_t nnn = objlen;
+    const unsigned char *ppp = pp;
+    size_t nnn = objlen;
 
-      pp += objlen;
-      nn -= objlen;
+    pp += objlen;
+    nn -= objlen;
 
-      /* Search the optional AuthId.  We need to skip the optional
-           Label (UTF8STRING) and the optional CommonObjectFlags
-           (BITSTRING). */
-      where = __LINE__;
-      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-          &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (gpg_err_code (err) == GPG_ERR_EOF)
-        goto no_authid;
-      if (err)
-        goto parse_error;
-      if (tag == TAG_UTF8_STRING)
-        {
-          ppp += objlen; /* Skip the Label. */
-          nnn -= objlen;
+    /* Search the optional AuthId.  We need to skip the optional Label
+       (UTF8STRING) and the optional CommonObjectFlags (BITSTRING). */
+    where = __LINE__;
+    err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                            &ndef, &objlen, &hdrlen);
+    if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+      err = gpg_error (GPG_ERR_INV_OBJ);
+    if (gpg_err_code (err) == GPG_ERR_EOF)
+      goto no_authid;
+    if (err)
+      goto parse_error;
 
-          where = __LINE__;
-          err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-              &ndef, &objlen, &hdrlen);
-          if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto no_authid;
-          if (err)
-            goto parse_error;
-        }
-      if (tag == TAG_BIT_STRING)
-        {
-          ppp += objlen; /* Skip the CommonObjectFlags.  */
-          nnn -= objlen;
+    if (tag == TAG_UTF8_STRING)
+      {
+        ppp += objlen; /* Skip the Label. */
+        nnn -= objlen;
 
-          where = __LINE__;
-          err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-              &ndef, &objlen, &hdrlen);
-          if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto no_authid;
-          if (err)
-            goto parse_error;
-        }
-      if (tag == TAG_OCTET_STRING && objlen)
-        {
-          /* AuthId ignored */
-        }
-      no_authid:
-      ;
+        where = __LINE__;
+        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                                &ndef, &objlen, &hdrlen);
+        if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+          err = gpg_error (GPG_ERR_INV_OBJ);
+        if (gpg_err_code (err) == GPG_ERR_EOF)
+          goto no_authid;
+        if (err)
+          goto parse_error;
+      }
+    if (tag == TAG_BIT_STRING)
+      {
+        ppp += objlen; /* Skip the CommonObjectFlags.  */
+        nnn -= objlen;
+
+        where = __LINE__;
+        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                                &ndef, &objlen, &hdrlen);
+        if (!err && (objlen > nnn || class != CLASS_UNIVERSAL))
+          err = gpg_error (GPG_ERR_INV_OBJ);
+        if (gpg_err_code (err) == GPG_ERR_EOF)
+          goto no_authid;
+        if (err)
+          goto parse_error;
+      }
+    if (tag == TAG_OCTET_STRING && objlen)
+      {
+        /* AuthId ignored */
+      }
+  no_authid:
+    ;
   }
 
   /* Parse the commonKeyAttributes.  */
@@ -583,102 +583,108 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto parse_error;
+
   {
-      const unsigned char *ppp = pp;
-      size_t nnn = objlen;
+    const unsigned char *ppp = pp;
+    size_t nnn = objlen;
 
-      pp += objlen;
-      nn -= objlen;
+    pp += objlen;
+    nn -= objlen;
 
-      /* Get the Id. */
-      where = __LINE__;
-      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-          &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nnn
-          || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (err)
-        goto parse_error;
-      objid = ppp;
-      objidlen = objlen;
-      ppp += objlen;
-      nnn -= objlen;
+    /* Get the Id. */
+    where = __LINE__;
+    err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                            &ndef, &objlen, &hdrlen);
+    if (!err && (objlen > nnn
+                 || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
+      err = gpg_error (GPG_ERR_INV_OBJ);
+    if (err)
+      goto parse_error;
 
-      /* Get the KeyUsageFlags. */
-      where = __LINE__;
-      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-          &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nnn
-          || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (err)
-        goto parse_error;
-      err = parse_keyusage_flags (ppp, objlen, &usageflags);
-      if (err)
-        goto parse_error;
-      ppp += objlen;
-      nnn -= objlen;
+    objid = ppp;
+    objidlen = objlen;
+    ppp += objlen;
+    nnn -= objlen;
 
-      /* Find the keyReference */
-      where = __LINE__;
-      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-          &ndef, &objlen, &hdrlen);
-      if (gpg_err_code (err) == GPG_ERR_EOF)
-        goto leave_cki;
-      if (!err && objlen > nnn)
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (err)
-        goto parse_error;
-      if (class == CLASS_UNIVERSAL && tag == TAG_BOOLEAN)
-        {
-          /* Skip the native element. */
-          ppp += objlen;
-          nnn -= objlen;
+    /* Get the KeyUsageFlags. */
+    where = __LINE__;
+    err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                            &ndef, &objlen, &hdrlen);
+    if (!err && (objlen > nnn
+                 || class != CLASS_UNIVERSAL || tag != TAG_BIT_STRING))
+      err = gpg_error (GPG_ERR_INV_OBJ);
+    if (err)
+      goto parse_error;
 
-          err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-              &ndef, &objlen, &hdrlen);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto leave_cki;
-          if (!err && objlen > nnn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-        }
-      if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
-        {
-          /* Skip the accessFlags. */
-          ppp += objlen;
-          nnn -= objlen;
+    err = parse_keyusage_flags (ppp, objlen, &usageflags);
+    if (err)
+      goto parse_error;
 
-          err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-              &ndef, &objlen, &hdrlen);
-          if (gpg_err_code (err) == GPG_ERR_EOF)
-            goto leave_cki;
-          if (!err && objlen > nnn)
-            err = gpg_error (GPG_ERR_INV_OBJ);
-          if (err)
-            goto parse_error;
-        }
-      if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
-        {
-          /* Yep, this is the keyReference.  */
-          for (ul=0; objlen; objlen--)
-            {
-              ul <<= 8;
-              ul |= (*ppp++) & 0xff;
-              nnn--;
-            }
-        }
+    ppp += objlen;
+    nnn -= objlen;
 
-      leave_cki:
-      ;
+    /* Find the keyReference */
+    where = __LINE__;
+    err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                            &ndef, &objlen, &hdrlen);
+    if (gpg_err_code (err) == GPG_ERR_EOF)
+      goto leave_cki;
+    if (!err && objlen > nnn)
+      err = gpg_error (GPG_ERR_INV_OBJ);
+    if (err)
+      goto parse_error;
+
+    if (class == CLASS_UNIVERSAL && tag == TAG_BOOLEAN)
+      {
+        /* Skip the native element. */
+        ppp += objlen;
+        nnn -= objlen;
+
+        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                                &ndef, &objlen, &hdrlen);
+        if (gpg_err_code (err) == GPG_ERR_EOF)
+          goto leave_cki;
+        if (!err && objlen > nnn)
+          err = gpg_error (GPG_ERR_INV_OBJ);
+        if (err)
+          goto parse_error;
+      }
+    if (class == CLASS_UNIVERSAL && tag == TAG_BIT_STRING)
+      {
+        /* Skip the accessFlags. */
+        ppp += objlen;
+        nnn -= objlen;
+
+        err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                                &ndef, &objlen, &hdrlen);
+        if (gpg_err_code (err) == GPG_ERR_EOF)
+          goto leave_cki;
+        if (!err && objlen > nnn)
+          err = gpg_error (GPG_ERR_INV_OBJ);
+        if (err)
+          goto parse_error;
+      }
+    if (class == CLASS_UNIVERSAL && tag == TAG_INTEGER)
+      {
+        /* Yep, this is the keyReference.
+           Note: UL is currently not used. */
+        for (ul=0; objlen; objlen--)
+          {
+            ul <<= 8;
+            ul |= (*ppp++) & 0xff;
+            nnn--;
+          }
+      }
+
+  leave_cki:
+    ;
   }
 
 
   /* Skip subClassAttributes.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && objlen > nn)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -690,18 +696,20 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
 
       where = __LINE__;
       err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-          &ndef, &objlen, &hdrlen);
+                              &ndef, &objlen, &hdrlen);
     }
+
   /* Parse the keyAttributes.  */
   if (!err && (objlen > nn || class != CLASS_CONTEXT || tag != 1))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto parse_error;
+
   nn = objlen;
 
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && objlen > nn)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -712,7 +720,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   /* Check that the reference is a Path object.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && objlen > nn)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -729,7 +737,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   /* Parse the key size object. */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && objlen > nn)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -740,7 +748,6 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
       keysize  = *pp++ << 8;
       keysize += *pp++;
     }
-
 
   /* Create a new PrKDF list item. */
   prkdf = xtrycalloc (1, sizeof *prkdf);
@@ -757,6 +764,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
     {
       err = gpg_error_from_syserror ();
       xfree (prkdf);
+      prkdf = NULL;
       goto leave;
     }
   memcpy (prkdf->objid, objid, objidlen);
@@ -768,30 +776,67 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
   for (i=0; i < prkdf->objidlen; i++)
     log_printf ("%02X", prkdf->objid[i]);
   log_printf (" keyref=0x%02X", prkdf->key_reference);
-  log_printf (" keysize=%u", (unsigned int)prkdf->keysize);
+  log_printf (" keysize=%zu", prkdf->keysize);
   log_printf (" usage=");
   s = "";
-  if (prkdf->usageflags.encrypt) log_printf ("%sencrypt", s), s = ",";
-  if (prkdf->usageflags.decrypt) log_printf ("%sdecrypt", s), s = ",";
-  if (prkdf->usageflags.sign   ) log_printf ("%ssign", s), s = ",";
+  if (prkdf->usageflags.encrypt)
+    {
+      log_printf ("%sencrypt", s);
+      s = ",";
+    }
+  if (prkdf->usageflags.decrypt)
+    {
+      log_printf ("%sdecrypt", s);
+      s = ",";
+    }
+  if (prkdf->usageflags.sign)
+    {
+      log_printf ("%ssign", s);
+      s = ",";
+    }
   if (prkdf->usageflags.sign_recover)
-    log_printf ("%ssign_recover", s), s = ",";
-  if (prkdf->usageflags.wrap   ) log_printf ("%swrap", s), s = ",";
-  if (prkdf->usageflags.unwrap ) log_printf ("%sunwrap", s), s = ",";
-  if (prkdf->usageflags.verify ) log_printf ("%sverify", s), s = ",";
+    {
+      log_printf ("%ssign_recover", s);
+      s = ",";
+    }
+  if (prkdf->usageflags.wrap   )
+    {
+      log_printf ("%swrap", s);
+      s = ",";
+    }
+  if (prkdf->usageflags.unwrap )
+    {
+      log_printf ("%sunwrap", s);
+      s = ",";
+    }
+  if (prkdf->usageflags.verify )
+    {
+      log_printf ("%sverify", s);
+      s = ",";
+    }
   if (prkdf->usageflags.verify_recover)
-    log_printf ("%sverify_recover", s), s = ",";
-  if (prkdf->usageflags.derive ) log_printf ("%sderive", s), s = ",";
+    {
+      log_printf ("%sverify_recover", s);
+      s = ",";
+    }
+  if (prkdf->usageflags.derive )
+    {
+      log_printf ("%sderive", s);
+      s = ",";
+    }
   if (prkdf->usageflags.non_repudiation)
-    log_printf ("%snon_repudiation", s), s = ",";
+    {
+      log_printf ("%snon_repudiation", s);
+      s = ",";
+    }
   log_printf ("\n");
 
   xfree (buffer);
   buffer = NULL;
   buflen = 0;
   err = select_and_read_binary (app->slot,
-        (SC_HSM_EE_PREFIX << 8) | (fid & 0xFF), "CertEF", &buffer, &buflen, 1);
-
+                                ((SC_HSM_EE_PREFIX << 8) | (fid & 0xFF)),
+                                "CertEF", &buffer, &buflen, 1);
   if (!err && buffer[0] == 0x30)
     {
       /* Create a matching CDF list item. */
@@ -807,6 +852,7 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
         {
           err = gpg_error_from_syserror ();
           xfree (cdf);
+          cdf = NULL;
           goto leave;
         }
       memcpy (cdf->objid, prkdf->objid, objidlen);
@@ -818,14 +864,15 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
         log_printf ("%02X", cdf->objid[i]);
       log_printf (" fid=%04X\n", cdf->fid);
     }
+
   goto leave; /* Ready. */
 
-  parse_error:
+ parse_error:
   log_error ("error parsing PrKDF record (%d): %s - skipped\n",
-      where, errstr? errstr : gpg_strerror (err));
+             where, errstr? errstr : gpg_strerror (err));
   err = 0;
 
-  leave:
+ leave:
   xfree (buffer);
   if (err)
     {
@@ -841,14 +888,16 @@ read_ef_prkd (app_t app, unsigned short fid, prkdf_object_t *prkdresult,
             xfree (cdf->objid);
           xfree (cdf);
         }
-    } else {
-        prkdf->next = *prkdresult;
-        *prkdresult = prkdf;
-        if (cdf)
-          {
-            cdf->next = *cdresult;
-            *cdresult = cdf;
-          }
+    }
+  else
+    {
+      prkdf->next = *prkdresult;
+      *prkdresult = prkdf;
+      if (cdf)
+        {
+          cdf->next = *cdresult;
+          *cdresult = cdf;
+        }
     }
   return err;
 }
@@ -887,7 +936,6 @@ SEQUENCE SIZE( 53 )
 static gpg_error_t
 read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
 {
-#warning needs an audit
   gpg_error_t err;
   unsigned char *buffer = NULL;
   size_t buflen;
@@ -914,7 +962,7 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
   n = buflen;
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > n || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -930,7 +978,7 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
   /* Skip the commonObjectAttributes.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > nn || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -941,35 +989,37 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
   /* Parse the commonCertificateAttributes.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > nn || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto parse_error;
+
   {
-      const unsigned char *ppp = pp;
-      size_t nnn = objlen;
+    const unsigned char *ppp = pp;
+    size_t nnn = objlen;
 
-      pp += objlen;
-      nn -= objlen;
+    pp += objlen;
+    nn -= objlen;
 
-      /* Get the Id. */
-      where = __LINE__;
-      err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
-          &ndef, &objlen, &hdrlen);
-      if (!err && (objlen > nnn
-          || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
-        err = gpg_error (GPG_ERR_INV_OBJ);
-      if (err)
-        goto parse_error;
-      objid = ppp;
-      objidlen = objlen;
+    /* Get the Id. */
+    where = __LINE__;
+    err = parse_ber_header (&ppp, &nnn, &class, &tag, &constructed,
+                            &ndef, &objlen, &hdrlen);
+    if (!err && (objlen > nnn
+                 || class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING))
+      err = gpg_error (GPG_ERR_INV_OBJ);
+    if (err)
+      goto parse_error;
+
+    objid = ppp;
+    objidlen = objlen;
   }
 
   /* Parse the certAttribute.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > nn || class != CLASS_CONTEXT || tag != 1))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -978,9 +1028,9 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
 
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && (objlen > nn
-      || class != CLASS_UNIVERSAL || tag != TAG_SEQUENCE))
+               || class != CLASS_UNIVERSAL || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto parse_error;
@@ -989,7 +1039,7 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
   /* Check that the reference is a Path object.  */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && objlen > nn)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
@@ -1004,14 +1054,14 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
   /* Parse the Path object. */
   where = __LINE__;
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
-      &ndef, &objlen, &hdrlen);
+                          &ndef, &objlen, &hdrlen);
   if (!err && objlen > nn)
     err = gpg_error (GPG_ERR_INV_OBJ);
   if (err)
     goto parse_error;
 
   /* Make sure that the next element is a non zero path and of
-         even length (FID are two bytes each). */
+     even length (FID are two bytes each). */
   if (class != CLASS_UNIVERSAL || tag != TAG_OCTET_STRING
       || (objlen & 1) )
     {
@@ -1031,6 +1081,7 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
     {
       err = gpg_error_from_syserror ();
       xfree (cdf);
+      cdf = NULL;
       goto leave;
     }
   memcpy (cdf->objid, objid, objidlen);
@@ -1043,12 +1094,12 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
 
   goto leave;
 
-  parse_error:
+ parse_error:
   log_error ("error parsing CDF record (%d): %s - skipped\n",
-      where, errstr? errstr : gpg_strerror (err));
+             where, errstr? errstr : gpg_strerror (err));
   err = 0;
 
-  leave:
+ leave:
   xfree (buffer);
   if (err)
     {
@@ -1144,7 +1195,6 @@ read_ef_cd (app_t app, unsigned short fid, cdf_object_t *result)
 static gpg_error_t
 read_serialno(app_t app)
 {
-#warning audit!
   gpg_error_t err;
   unsigned char *buffer = NULL;
   size_t buflen;
@@ -1171,13 +1221,12 @@ read_serialno(app_t app)
     }
 
   chr = find_tlv (p, objlen, 0x5F20, &chrlen);
-  if (!chr)
+  if (!chr || chrlen <= 5)
     {
       err = gpg_error (GPG_ERR_INV_OBJ);
       log_error ("CHR not found in CVC\n");
       goto leave;
     }
-
   chrlen -= 5;
 
   app->serialno = xtrymalloc (chrlen);
@@ -1188,13 +1237,12 @@ read_serialno(app_t app)
     }
 
   app->serialnolen = chrlen;
-  memcpy(app->serialno, chr, chrlen);
+  memcpy (app->serialno, chr, chrlen);
 
-  leave:
-   xfree (buffer);
-   return err;
+ leave:
+  xfree (buffer);
+  return err;
 }
-
 
 
 /* Get all the basic information from the SmartCard-HSM, check the
@@ -1203,7 +1251,6 @@ read_serialno(app_t app)
 static gpg_error_t
 read_meta (app_t app)
 {
-#warning audit!
   gpg_error_t err;
   unsigned char *eflist = NULL;
   size_t eflistlen = 0;
@@ -1562,19 +1609,19 @@ apply_PKCS_padding(const unsigned char *dig, int diglen,
                    const unsigned char *prefix, int prefixlen,
                    unsigned char *buff, int bufflen)
 {
-#warning Seems okay but needs a seconds opinion
-  int i;
+  int i, n_ff;
 
   /* Caller must ensure a sufficient buffer.  */
   if (diglen + prefixlen + 4 > bufflen)
     return;
+  n_ff = bufflen - diglen - prefixlen - 3;
 
   *buff++ = 0x00;
   *buff++ = 0x01;
-  for (i = bufflen - diglen - prefixlen - 3; i > 0; i--)
+  for (i=0; i < n_ff; i++)
     *buff++ = 0xFF;
-
   *buff++ = 0x00;
+
   if (prefix)
     memcpy (buff, prefix, prefixlen);
   buff += prefixlen;
@@ -1591,7 +1638,6 @@ static int
 hash_from_digestinfo (const unsigned char *di, size_t dilen,
                       unsigned char *hash, size_t *hashlen)
 {
-#warning audit!
   const unsigned char *p,*pp;
   size_t n, nn, objlen, hdrlen;
   int class, tag, constructed, ndef;
@@ -1602,7 +1648,6 @@ hash_from_digestinfo (const unsigned char *di, size_t dilen,
 
   err = parse_ber_header (&p, &n, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
-
   if (!err && (objlen > n || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if ( err )
@@ -1613,7 +1658,6 @@ hash_from_digestinfo (const unsigned char *di, size_t dilen,
 
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
-
   if (!err && (objlen > nn || tag != TAG_SEQUENCE))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if ( err )
@@ -1624,7 +1668,6 @@ hash_from_digestinfo (const unsigned char *di, size_t dilen,
 
   err = parse_ber_header (&pp, &nn, &class, &tag, &constructed,
                           &ndef, &objlen, &hdrlen);
-
   if (!err && (objlen > nn || tag != TAG_OCTET_STRING))
     err = gpg_error (GPG_ERR_INV_OBJ);
   if ( err )
@@ -1632,13 +1675,10 @@ hash_from_digestinfo (const unsigned char *di, size_t dilen,
 
   if (*hashlen < objlen)
     return gpg_error (GPG_ERR_TOO_SHORT);
-
-  memcpy(hash, pp, objlen);
+  memcpy (hash, pp, objlen);
   *hashlen = objlen;
-
-  return err;
+  return 0;
 }
-
 
 
 /* Perform PIN verification
@@ -1893,21 +1933,22 @@ static gpg_error_t
 strip_PKCS15_padding(unsigned char *src, int srclen, unsigned char **dst,
                      size_t *dstlen)
 {
-#warning audit!
-  int c1,c2,c3;
   unsigned char *p;
 
-  c1 = *src++ == 0x00;
-  c2 = *src++ == 0x02;
+  if (srclen < 2)
+    return gpg_error (GPG_ERR_DECRYPT_FAILED);
+  if (*src++ != 0x00)
+    return gpg_error (GPG_ERR_DECRYPT_FAILED);
+  if (*src++ != 0x02)
+    return gpg_error (GPG_ERR_DECRYPT_FAILED);
   srclen -= 2;
   while ((srclen > 0) && *src)
     {
       src++;
       srclen--;
     }
-  c3 = (srclen > 0);
 
-  if (!(c1 && c2 && c3))
+  if (srclen < 2)
     return gpg_error (GPG_ERR_DECRYPT_FAILED);
 
   src++;
