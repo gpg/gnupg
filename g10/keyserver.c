@@ -836,7 +836,7 @@ show_prompt (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int numdesc,
    KS_SEARCH command.  If SPECIAL is 0, LINE is the actual data line
    received with all escaping removed and guaranteed to be exactly one
    line with stripped LF; an EOF is indicated by LINE passed as NULL.
-   If special is 1, the line conatins the source of the information
+   If special is 1, the line contains the source of the information
    (usually an URL).  LINE may be modified after return.  */
 static gpg_error_t
 search_line_handler (void *opaque, int special, char *line)
@@ -865,7 +865,7 @@ search_line_handler (void *opaque, int special, char *line)
   /* Print the received line.  */
   if (opt.with_colons && line)
     {
-      log_debug ("%s\n",line);
+      es_printf ("%s\n", line);
     }
 
   /* Look for an info: line.  The only current info: values defined
