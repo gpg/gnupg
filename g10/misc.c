@@ -342,6 +342,21 @@ print_digest_algo_note (digest_algo_t algo)
 }
 
 
+void
+print_md5_rejected_note (void)
+{
+  static int shown;
+
+  if (!shown)
+    {
+      log_info
+        (_("Note: signatures using the %s algorithm are rejected\n"),
+         "MD5");
+      shown = 1;
+    }
+}
+
+
 /* Map OpenPGP algo numbers to those used by Libgcrypt.  We need to do
    this for algorithms we implemented in Libgcrypt after they become
    part of OpenPGP.  */

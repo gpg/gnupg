@@ -269,16 +269,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
     if (sig->digest_algo == GCRY_MD_MD5
         && !opt.flags.allow_weak_digest_algos)
       {
-        static int shown;
-
-        if (!shown)
-          {
-            log_info
-              (_("Note: signatures using the %s algorithm are rejected\n"),
-               "MD5");
-            shown = 1;
-          }
-
+        print_md5_rejected_note ();
         return GPG_ERR_DIGEST_ALGO;
       }
 

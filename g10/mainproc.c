@@ -694,7 +694,8 @@ proc_plaintext( CTX c, PACKET *pkt )
 	gcry_md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
 	gcry_md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
       }
-    if( opt.pgp2_workarounds && only_md5 && !opt.skip_verify ) {
+    if (opt.pgp2_workarounds && only_md5 && !opt.skip_verify
+        && opt.flags.allow_weak_digest_algos) {
 	/* This is a kludge to work around a bug in pgp2.  It does only
 	 * catch those mails which are armored.  To catch the non-armored
 	 * pgp mails we could see whether there is the signature packet
@@ -2132,7 +2133,8 @@ proc_tree( CTX c, KBNODE node )
 	    if( !opt.pgp2_workarounds )
 		;
 	    else if( sig->digest_algo == DIGEST_ALGO_MD5
-		     && is_RSA( sig->pubkey_algo ) ) {
+		     && is_RSA( sig->pubkey_algo)
+                     && opt.flags.allow_weak_digest_algos) {
 		/* enable a workaround for a pgp2 bug */
                 if (gcry_md_open (&c->mfx.md2, DIGEST_ALGO_MD5, 0))
                   BUG ();
@@ -2145,16 +2147,17 @@ proc_tree( CTX c, KBNODE node )
               if (gcry_md_open (&c->mfx.md2, sig->digest_algo, 0 ))
                 BUG ();
 	    }
-#if 0 /* workaround disabled */
-	    /* Here we have another hack to work around a pgp 2 bug
-	     * It works by not using the textmode for detached signatures;
-	     * this will let the first signature check (on md) fail
-	     * but the second one (on md2) which adds an extra CR should
-	     * then produce the "correct" hash.  This is very, very ugly
-	     * hack but it may help in some cases (and break others)
-	     */
-		    /*	c->mfx.md2? 0 :(sig->sig_class == 0x01) */
-#endif
+
+	    /* Here we used to have another hack to work around a pgp
+	     * 2 bug: It worked by not using the textmode for detached
+	     * signatures; this would let the first signature check
+	     * (on md) fail but the second one (on md2), which adds an
+	     * extra CR would then have produced the "correct" hash.
+	     * This is very, very ugly hack but it may haved help in
+	     * some cases (and break others).
+	     *	 c->mfx.md2? 0 :(sig->sig_class == 0x01)
+             */
+
             if ( DBG_HASHING ) {
                 gcry_md_debug( c->mfx.md, "verify" );
                 if ( c->mfx.md2  )
