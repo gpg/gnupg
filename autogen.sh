@@ -216,9 +216,10 @@ if [ "$myhost" = "find-version" ]; then
     beta=no
     if [ -d .git ]; then
       ingit=yes
-      tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null \
-            | awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}' )
-      if [ -z "$tmp" ]; then
+      tmp=$(git describe --match "${matchstr1}" --long 2>/dev/null)
+      if [ -n "$tmp" ]; then
+          tmp=$(echo "$tmp"|awk -F- '$3!=0 && $3 !~ /^beta/ {print"-beta"$3}')
+      else
           tmp=$(git describe --match "${matchstr2}" --long 2>/dev/null \
                 | awk -F- '$4!=0{print"-beta"$4}')
       fi
