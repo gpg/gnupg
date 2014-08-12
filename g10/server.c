@@ -320,10 +320,6 @@ cmd_encrypt (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  /* Fixme: Check that we are using real files and not pipes if in
-     PGP-2 mode.  Do all the other checks we do in gpg.c for aEncr.
-     Maybe we should drop the PGP2 compatibility. */
-
 
   /* FIXME: GPGSM does this here: Add all encrypt-to marked recipients
      from the default list. */

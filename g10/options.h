@@ -121,7 +121,7 @@ struct
   int force_ownertrust;
   enum
     {
-      CO_GNUPG, CO_RFC4880, CO_RFC2440, CO_RFC1991, CO_PGP2,
+      CO_GNUPG, CO_RFC4880, CO_RFC2440,
       CO_PGP6, CO_PGP7, CO_PGP8
     } compliance;
   enum
@@ -307,14 +307,12 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 
 /* Compatibility flags.  */
 #define GNUPG   (opt.compliance==CO_GNUPG)
-#define RFC1991 (opt.compliance==CO_RFC1991 || opt.compliance==CO_PGP2)
 #define RFC2440 (opt.compliance==CO_RFC2440)
 #define RFC4880 (opt.compliance==CO_RFC4880)
-#define PGP2    (opt.compliance==CO_PGP2)
 #define PGP6    (opt.compliance==CO_PGP6)
 #define PGP7    (opt.compliance==CO_PGP7)
 #define PGP8    (opt.compliance==CO_PGP8)
-#define PGPX    (PGP2 || PGP6 || PGP7 || PGP8)
+#define PGPX    (PGP6 || PGP7 || PGP8)
 
 /* Various option flags.  Note that there should be no common string
    names between the IMPORT_ and EXPORT_ flags as they can be mixed in

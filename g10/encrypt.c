@@ -104,8 +104,8 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
 static int
 use_mdc(PK_LIST pk_list,int algo)
 {
-  /* RFC-1991 and 2440 don't have MDC */
-  if(RFC1991 || RFC2440)
+  /* RFC-2440 don't has MDC */
+  if (RFC2440)
     return 0;
 
   /* --force-mdc overrides --disable-mdc */
@@ -174,7 +174,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   compress_filter_context_t zfx;
   text_filter_context_t tfx;
   progress_filter_context_t *pfx;
-  int do_compress = !RFC1991 && default_compress_algo();
+  int do_compress = !!default_compress_algo();
 
   pfx = new_progress_context ();
   memset( &cfx, 0, sizeof cfx);
@@ -206,19 +206,13 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if (opt.textmode)
     iobuf_push_filter( inp, text_filter, &tfx );
 
-  /* Due the the fact that we use don't use an IV to encrypt the
-     session key we can't use the new mode with RFC1991 because it has
-     no S2K salt.  RFC1991 always uses simple S2K. */
-  if ( RFC1991 && use_seskey )
-    use_seskey = 0;
-
   cfx.dek = NULL;
   if ( mode )
     {
       int canceled;
 
       s2k = xmalloc_clear( sizeof *s2k );
-      s2k->mode = RFC1991? 0:opt.s2k_mode;
+      s2k->mode = opt.s2k_mode;
       s2k->hash_algo = S2K_DIGEST_ALGO;
       cfx.dek = passphrase_to_dek (NULL, 0,
                                    default_cipher_algo(), s2k, 4,
@@ -279,7 +273,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       push_armor_filter (afx, out);
     }
 
-  if ( s2k && !RFC1991 )
+  if ( s2k )
     {
       PKT_symkey_enc *enc = xmalloc_clear( sizeof *enc + seskeylen + 1 );
       enc->version = 4;
@@ -335,7 +329,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       pt->timestamp = make_timestamp();
       pt->mode = opt.textmode? 't' : 'b';
       pt->len = filesize;
-      pt->new_ctb = !pt->len && !RFC1991;
+      pt->new_ctb = !pt->len;
       pt->buf = inp;
       pkt.pkttype = PKT_PLAINTEXT;
       pkt.pkt.plaintext = pt;
@@ -478,13 +472,13 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   compress_filter_context_t zfx;
   text_filter_context_t tfx;
   progress_filter_context_t *pfx;
-  PK_LIST pk_list, work_list;
+  PK_LIST pk_list;
   int do_compress;
 
   if (filefd != -1 && filename)
     return gpg_error (GPG_ERR_INV_ARG);
 
-  do_compress = opt.compress_algo && !RFC1991;
+  do_compress = !!opt.compress_algo;
 
   pfx = new_progress_context ();
   memset( &cfx, 0, sizeof cfx);
@@ -508,19 +502,6 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
           release_progress_context (pfx);
           return rc;
         }
-    }
-
-  if(PGP2)
-    {
-      for (work_list=pk_list; work_list; work_list=work_list->next)
-        if (!(is_RSA (work_list->pk->pubkey_algo)
-              && nbits_from_pk (work_list->pk) <= 2048))
-          {
-            log_info(_("you can only encrypt to RSA keys of 2048 bits or "
-                       "less in --pgp2 mode\n"));
-            compliance_failure();
-            break;
-          }
     }
 
   /* Prepare iobufs. */
@@ -592,13 +573,6 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
       if (cfx.dek->algo == -1)
         {
           cfx.dek->algo = CIPHER_ALGO_3DES;
-
-          if (PGP2)
-            {
-              log_info(_("unable to use the IDEA cipher for all of the keys "
-                         "you are encrypting to.\n"));
-              compliance_failure();
-            }
         }
 
       /* In case 3DES has been selected, print a warning if any key
@@ -687,7 +661,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
       pt->timestamp = make_timestamp();
       pt->mode = opt.textmode ? 't' : 'b';
       pt->len = filesize;
-      pt->new_ctb = !pt->len && !RFC1991;
+      pt->new_ctb = !pt->len;
       pt->buf = inp;
       pkt.pkttype = PKT_PLAINTEXT;
       pkt.pkt.plaintext = pt;
@@ -895,7 +869,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
       keyid_from_pk( pk, enc->keyid );
       enc->throw_keyid = (opt.throw_keyid || (pk_list->flags&1));
 
-      if (opt.throw_keyid && (PGP2 || PGP6 || PGP7 || PGP8))
+      if (opt.throw_keyid && (PGP6 || PGP7 || PGP8))
         {
           log_info(_("you may not use %s while in %s mode\n"),
                    "--throw-keyid",compliance_option_string());

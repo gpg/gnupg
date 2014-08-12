@@ -205,11 +205,9 @@ enum cmd_and_opt_values
     oMaxCertDepth,
     oLoadExtension,
     oGnuPG,
-    oRFC1991,
     oRFC2440,
     oRFC4880,
     oOpenPGP,
-    oPGP2,
     oPGP6,
     oPGP7,
     oPGP8,
@@ -573,11 +571,9 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oGnuPG, "no-pgp6", "@"),
   ARGPARSE_s_n (oGnuPG, "no-pgp7", "@"),
   ARGPARSE_s_n (oGnuPG, "no-pgp8", "@"),
-  ARGPARSE_s_n (oRFC1991, "rfc1991", "@"),
   ARGPARSE_s_n (oRFC2440, "rfc2440", "@"),
   ARGPARSE_s_n (oRFC4880, "rfc4880", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", N_("use strict OpenPGP behavior")),
-  ARGPARSE_s_n (oPGP2, "pgp2", "@"),
   ARGPARSE_s_n (oPGP6, "pgp6", "@"),
   ARGPARSE_s_n (oPGP7, "pgp7", "@"),
   ARGPARSE_s_n (oPGP8, "pgp8", "@"),
@@ -2484,11 +2480,6 @@ main (int argc, char **argv)
             /* Dummy so that gpg 1.4 conf files can work. Should
                eventually be removed.  */
 	    break;
-	  case oRFC1991:
-	    opt.compliance = CO_RFC1991;
-	    opt.force_v4_certs = 0;
-	    opt.escape_from = 1;
-	    break;
 	  case oOpenPGP:
 	  case oRFC4880:
 	    /* This is effectively the same as RFC2440, but with
@@ -2530,7 +2521,6 @@ main (int argc, char **argv)
 	    opt.s2k_digest_algo = DIGEST_ALGO_SHA1;
 	    opt.s2k_cipher_algo = CIPHER_ALGO_3DES;
 	    break;
-	  case oPGP2:  opt.compliance = CO_PGP2;  break;
 	  case oPGP6:  opt.compliance = CO_PGP6;  break;
 	  case oPGP7:  opt.compliance = CO_PGP7;  break;
 	  case oPGP8:  opt.compliance = CO_PGP8;  break;
@@ -3238,78 +3228,7 @@ main (int argc, char **argv)
       log_clock ("start");
 
     /* Do these after the switch(), so they can override settings. */
-    if(PGP2)
-      {
-	int unusable=0;
-
-	if(cmd==aSign && !detached_sig)
-	  {
-	    log_info(_("you can only make detached or clear signatures "
-		       "while in --pgp2 mode\n"));
-	    unusable=1;
-	  }
-	else if(cmd==aSignEncr || cmd==aSignSym)
-	  {
-	    log_info(_("you can't sign and encrypt at the "
-		       "same time while in --pgp2 mode\n"));
-	    unusable=1;
-	  }
-	else if(argc==0 && (cmd==aSign || cmd==aEncr || cmd==aSym))
-	  {
-	    log_info(_("you must use files (and not a pipe) when "
-		       "working with --pgp2 enabled.\n"));
-	    unusable=1;
-	  }
-	else if(cmd==aEncr || cmd==aSym)
-	  {
-	    /* Everything else should work without IDEA (except using
-	       a secret key encrypted with IDEA and setting an IDEA
-	       preference, but those have their own error
-	       messages). */
-
-	    if (openpgp_cipher_test_algo(CIPHER_ALGO_IDEA))
-	      {
-		log_info(_("encrypting a message in --pgp2 mode requires "
-			   "the IDEA cipher\n"));
-		unusable=1;
-	      }
-	    else if(cmd==aSym)
-	      {
-		/* This only sets IDEA for symmetric encryption
-		   since it is set via select_algo_from_prefs for
-		   pk encryption. */
-		xfree(def_cipher_string);
-		def_cipher_string = xstrdup("idea");
-	      }
-
-	    /* PGP2 can't handle the output from the textmode
-	       filter, so we disable it for anything that could
-	       create a literal packet (only encryption and
-	       symmetric encryption, since we disable signing
-	       above). */
-	    if(!unusable)
-	      opt.textmode=0;
-	  }
-
-	if(unusable)
-	  compliance_failure();
-	else
-	  {
-	    opt.force_v4_certs = 0;
-	    opt.escape_from = 1;
-	    opt.force_v3_sigs = 1;
-	    opt.pgp2_workarounds = 1;
-	    opt.ask_sig_expire = 0;
-	    opt.ask_cert_expire = 0;
-            opt.flags.allow_weak_digest_algos = 1;
-	    xfree(def_digest_string);
-	    def_digest_string = xstrdup("md5");
-	    xfree(s2k_digest_string);
-	    s2k_digest_string = xstrdup("md5");
-	    opt.compress_algo = COMPRESS_ALGO_ZIP;
-	  }
-      }
-    else if(PGP6)
+    if(PGP6)
       {
 	opt.disable_mdc=1;
 	opt.escape_from=1;
@@ -3675,7 +3594,7 @@ main (int argc, char **argv)
 	else if(opt.s2k_mode==0)
 	  log_error(_("you cannot use --symmetric --encrypt"
 		      " with --s2k-mode 0\n"));
-	else if(PGP2 || PGP6 || PGP7 || RFC1991)
+	else if(PGP6 || PGP7)
 	  log_error(_("you cannot use --symmetric --encrypt"
 		      " while in %s mode\n"),compliance_option_string());
 	else
@@ -3726,7 +3645,7 @@ main (int argc, char **argv)
 	else if(opt.s2k_mode==0)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
 		      " with --s2k-mode 0\n"));
-	else if(PGP2 || PGP6 || PGP7 || RFC1991)
+	else if(PGP6 || PGP7)
 	  log_error(_("you cannot use --symmetric --sign --encrypt"
 		      " while in %s mode\n"),compliance_option_string());
 	else

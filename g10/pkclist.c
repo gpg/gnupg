@@ -928,7 +928,7 @@ build_pk_list (ctrl_t ctrl,
 
           /* Hidden recipients are not allowed while in PGP mode,
              issue a warning and switch into GnuPG mode. */
-          if ((rov->flags&2) && (PGP2 || PGP6 || PGP7 || PGP8))
+          if ((rov->flags&2) && (PGP6 || PGP7 || PGP8))
             {
               log_info(_("you may not use %s while in %s mode\n"),
                        "--hidden-recipient",
@@ -978,7 +978,7 @@ build_pk_list (ctrl_t ctrl,
                   /* Hidden encrypt-to recipients are not allowed while
                      in PGP mode, issue a warning and switch into
                      GnuPG mode. */
-                  if ((r->flags&1) && (PGP2 || PGP6 || PGP7 || PGP8))
+                  if ((r->flags&1) && (PGP6 || PGP7 || PGP8))
                     {
                       log_info(_("you may not use %s while in %s mode\n"),
                                "--hidden-encrypt-to",
@@ -1344,10 +1344,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	     dropped from 4880 but is still relevant to GPG's 1991
 	     support.  All this doesn't mean IDEA is actually
 	     available, of course. */
-	  if(PGP2 && pkr->pk->version<4 && pkr->pk->selfsigversion<4)
-	    implicit=CIPHER_ALGO_IDEA;
-	  else
-	    implicit=CIPHER_ALGO_3DES;
+          implicit=CIPHER_ALGO_3DES;
 
 	  break;
 
@@ -1359,12 +1356,7 @@ select_algo_from_prefs(PK_LIST pk_list, int preftype,
 	     mode, and that's the only time PREFTYPE_HASH is used
 	     anyway. -dms */
 
-	  /* MD5 is there for v3 keys with v3 selfsigs when --pgp2 is
-	     on. */
-	  if(PGP2 && pkr->pk->version<4 && pkr->pk->selfsigversion<4)
-	    implicit=DIGEST_ALGO_MD5;
-	  else
-	    implicit=DIGEST_ALGO_SHA1;
+          implicit=DIGEST_ALGO_SHA1;
 
 	  break;
 

@@ -518,19 +518,6 @@ sign_uids (estream_t fp,
   KBNODE node, uidnode;
   PKT_public_key *primary_pk = NULL;
   int select_all = !count_selected_uids (keyblock) || interactive;
-  int all_v3 = 1;
-
-  /* Are there any non-v3 sigs on this key already? */
-  if (PGP2)
-    {
-      for (node = keyblock; node; node = node->next)
-        if (node->pkt->pkttype == PKT_SIGNATURE &&
-            node->pkt->pkt.signature->version > 3)
-          {
-            all_v3 = 0;
-            break;
-          }
-    }
 
   /* Build a list of all signators.
    *
@@ -893,29 +880,6 @@ sign_uids (estream_t fp,
 
       if (duration)
 	force_v4 = 1;
-
-      /* Is --pgp2 on, it's a v3 key, all the sigs on the key are
-         currently v3 and we're about to sign it with a v4 sig?  If
-         so, danger! */
-      if (PGP2 && all_v3 &&
-	  (pk->version > 3 || force_v4) && primary_pk->version <= 3)
-	{
-	  tty_fprintf (fp, _("You may not make an OpenPGP signature on a "
-                             "PGP 2.x key while in --pgp2 mode.\n"));
-	  tty_fprintf (fp, _("This would make the key unusable in PGP 2.x.\n"));
-
-	  if (opt.expert && !quick)
-	    {
-	      if (!cpr_get_answer_is_yes ("sign_uid.v4_on_v3_okay",
-					  _("Are you sure you still "
-					    "want to sign it? (y/N) ")))
-		continue;
-
-	      all_v3 = 0;
-	    }
-	  else
-	    continue;
-	}
 
       if (selfsig)
 	;
@@ -1773,7 +1737,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdADDPHOTO:
-	  if (RFC2440 || RFC1991 || PGP2)
+	  if (RFC2440)
 	    {
 	      tty_printf (_("This command is not allowed while in %s mode.\n"),
 			  compliance_option_string ());

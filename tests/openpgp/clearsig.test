@@ -24,17 +24,6 @@ done
 
 
 # ======================================
-# and once more to check rfc1991
-# ======================================
-
-if have_pubkey_algo "RSA"; then
-  for i in $plain_files plain-large ; do
-      $GPG -u $usrname3 --rfc1991 --digest-algo md5 --clearsign -o x --yes $i
-      $GPG --verify x
-  done
-fi
-
-# ======================================
 # and one with long lines
 # ======================================
 cat >y <<EOF
@@ -100,7 +89,7 @@ cat >y <<EOF
 	    }
 	    /* ask for file and hash it */
 -	    if( c->sigs_only ) {
-+	    if( c->sigs_only )   
++	    if( c->sigs_only )
 		rc = hash_datafiles( c->mfx.md, NULL,
 				     c->signed_data, c->sigfilename,
 			n1? (n1->pkt->pkt.onepass_sig->sig_class == 0x01):0 );

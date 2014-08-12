@@ -341,16 +341,6 @@ keygen_set_std_prefs (const char *string,int personal)
 	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_CAST5) )
 	      strcat(dummy_string,"S3 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
-	    /* If we have it, IDEA goes *after* 3DES so it won't be
-	       used unless we're encrypting along with a V3 key.
-	       Ideally, we would only put the S1 preference in if the
-	       key was RSA and <=2048 bits, as that is what won't
-	       break PGP2, but that is difficult with the current
-	       code, and not really worth checking as a non-RSA <=2048
-	       bit key wouldn't be usable by PGP2 anyway. -dms */
-	    if (PGP2 && !openpgp_cipher_test_algo (CIPHER_ALGO_IDEA) )
-	      strcat(dummy_string,"S1 ");
-
 
             /* The default hash algo order is:
                  SHA-256, SHA-1, SHA-384, SHA-512, SHA-224.

@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.1.0-betaxxx (unreleased)
 --------------------------------------------------------
 
+ * gpg: Removed the option --pgp2 and --rfc1991 and the ability to
+   create PGP-2 compatible messages.
+
 
 Noteworthy changes in version 2.1.0-beta751 (2014-07-03)
 --------------------------------------------------------

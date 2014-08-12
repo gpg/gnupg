@@ -473,7 +473,7 @@ create_revocation (const char *filename,
       goto leave;
     }
 
-  if (keyblock && (PGP2 || PGP6 || PGP7 || PGP8))
+  if (keyblock && (PGP6 || PGP7 || PGP8))
     {
       /* Use a minimal pk for PGPx mode, since PGP can't import bare
          revocation certificates. */

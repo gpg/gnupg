@@ -1476,7 +1476,7 @@ Set what trust model GnuPG should follow. The models are:
 
   @item classic
   @opindex trust-mode:classic
-  This is the standard Web of Trust as used in PGP 2.x and earlier.
+  This is the standard Web of Trust as introduced by PGP 2.
 
   @item direct
   @opindex trust-mode:direct
@@ -2342,9 +2342,11 @@ behavior. Note that this is currently the same thing as
 Reset all packet, cipher and digest options to strict RFC-2440
 behavior.
 
+@ifclear gpgtowone
 @item --rfc1991
 @opindex rfc1991
-Try to be more RFC-1991 (PGP 2.x) compliant.
+Try to be more RFC-1991 (PGP 2.x) compliant.  This option is
+deprecated will be removed in GnuPG 2.1.
 
 @item --pgp2
 @opindex pgp2
@@ -2366,6 +2368,12 @@ This option implies
  --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
 @end ifclear
 It also disables @option{--textmode} when encrypting.
+
+This option is deprecated will be removed in GnuPG 2.1.  The reason
+for dropping PGP-2 support is that the PGP 2 format is not anymore
+considered safe (for example due to the use of the broken MD5 algorithm).
+Note that the decryption of PGP-2 created messages will continue to work.
+@end ifclear
 
 @item --pgp6
 @opindex pgp6

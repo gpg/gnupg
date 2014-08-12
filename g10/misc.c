@@ -1191,8 +1191,6 @@ compliance_option_string(void)
     case CO_GNUPG:   return "--gnupg";
     case CO_RFC4880: return "--openpgp";
     case CO_RFC2440: return "--rfc2440";
-    case CO_RFC1991: return "--rfc1991";
-    case CO_PGP2:    return "--pgp2";
     case CO_PGP6:    return "--pgp6";
     case CO_PGP7:    return "--pgp7";
     case CO_PGP8:    return "--pgp8";
@@ -1218,14 +1216,6 @@ compliance_failure(void)
 
     case CO_RFC2440:
       ver="OpenPGP (older)";
-      break;
-
-    case CO_RFC1991:
-      ver="old PGP";
-      break;
-
-    case CO_PGP2:
-      ver="PGP 2.x";
       break;
 
     case CO_PGP6:
