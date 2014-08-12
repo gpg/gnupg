@@ -968,9 +968,9 @@ read_w32_registry_string (HKEY root, const char *dir, const char *name)
 #define ENV_HK HKEY_CURRENT_USER
 #define ENV_REG "Environment"
 #endif
-/* Due to a bug in Windows7 (kb 2685893) we better but a lower limit
+/* Due to a bug in Windows7 (kb 2685893) we better put a lower limit
    than 8191 on the maximum length of the PATH variable.  Note, that
-   depending on the used toolchain we used to have a 259 byte limit in
+   depending on the used toolchain we used to had a 259 byte limit in
    the past.  */
 #define PATH_LENGTH_LIMIT 2047
 
