@@ -1,5 +1,6 @@
 /* keydb.c - key database dispatcher
  * Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+ * Copyright (C) 2014 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -25,6 +26,7 @@
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include "gpgsm.h"
@@ -68,11 +70,173 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
+static void
+try_make_homedir (const char *fname)
+{
+  const char *defhome = standard_homedir ();
+
+  /* Create the directory only if the supplied directory name is the
+     same as the default one.  This way we avoid to create arbitrary
+     directories when a non-default home directory is used.  To cope
+     with HOME, we do compare only the suffix if we see that the
+     default homedir does start with a tilde.  */
+  if ( opt.dry_run || opt.no_homedir_creation )
+    return;
+
+  if (
+#ifdef HAVE_W32_SYSTEM
+      ( !compare_filenames (fname, defhome) )
+#else
+      ( *defhome == '~'
+        && (strlen(fname) >= strlen (defhome+1)
+            && !strcmp(fname+strlen(fname)-strlen(defhome+1), defhome+1 ) ))
+      || (*defhome != '~'  && !compare_filenames( fname, defhome ) )
+#endif
+      )
+    {
+      if ( mkdir (fname, S_IRUSR|S_IWUSR|S_IXUSR) )
+        log_info (_("can't create directory `%s': %s\n"),
+                  fname, strerror(errno) );
+      else if (!opt.quiet )
+        log_info (_("directory `%s' created\n"), fname);
+    }
+}
+
+
+/* Handle the creation of a keybox if it does not yet exist.  Take
+   into acount that other processes might have the keybox already
+   locked.  This lock check does not work if the directory itself is
+   not yet available.  If R_CREATED is not NULL it will be set to true
+   if the function created a new keybox.  */
+static int
+maybe_create_keybox (char *filename, int force, int *r_created)
+{
+  DOTLOCK lockhd = NULL;
+  FILE *fp;
+  int rc;
+  mode_t oldmask;
+  char *last_slash_in_filename;
+  int save_slash;
+
+  if (r_created)
+    *r_created = 0;
+
+  /* A quick test whether the filename already exists. */
+  if (!access (filename, F_OK))
+    return 0;
+
+  /* If we don't want to create a new file at all, there is no need to
+     go any further - bail out right here.  */
+  if (!force)
+    return gpg_error (GPG_ERR_ENOENT);
+
+  /* First of all we try to create the home directory.  Note, that we
+     don't do any locking here because any sane application of gpg
+     would create the home directory by itself and not rely on gpg's
+     tricky auto-creation which is anyway only done for some home
+     directory name patterns. */
+  last_slash_in_filename = strrchr (filename, DIRSEP_C);
+#if HAVE_W32_SYSTEM
+  {
+    /* Windows may either have a slash or a backslash.  Take care of it.  */
+    char *p = strrchr (filename, '/');
+    if (!last_slash_in_filename || p > last_slash_in_filename)
+      last_slash_in_filename = p;
+  }
+#endif /*HAVE_W32_SYSTEM*/
+  if (!last_slash_in_filename)
+    return gpg_error (GPG_ERR_ENOENT);  /* No slash at all - should
+                                           not happen though.  */
+  save_slash = *last_slash_in_filename;
+  *last_slash_in_filename = 0;
+  if (access(filename, F_OK))
+    {
+      static int tried;
+
+      if (!tried)
+        {
+          tried = 1;
+          try_make_homedir (filename);
+        }
+      if (access (filename, F_OK))
+        {
+          rc = gpg_error_from_syserror ();
+          *last_slash_in_filename = save_slash;
+          goto leave;
+        }
+    }
+  *last_slash_in_filename = save_slash;
+
+  /* To avoid races with other instances of gpg trying to create or
+     update the keybox (it is removed during an update for a short
+     time), we do the next stuff in a locked state. */
+  lockhd = create_dotlock (filename);
+  if (!lockhd)
+    {
+      /* A reason for this to fail is that the directory is not
+         writable. However, this whole locking stuff does not make
+         sense if this is the case. An empty non-writable directory
+         with no keyring is not really useful at all. */
+      if (opt.verbose)
+        log_info ("can't allocate lock for `%s'\n", filename );
+
+      if (!force)
+        return gpg_error (GPG_ERR_ENOENT);
+      else
+        return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  if ( make_dotlock (lockhd, -1) )
+    {
+      /* This is something bad.  Probably a stale lockfile.  */
+      log_info ("can't lock `%s'\n", filename);
+      rc = gpg_error (GPG_ERR_GENERAL);
+      goto leave;
+    }
+
+  /* Now the real test while we are locked. */
+  if (!access(filename, F_OK))
+    {
+      rc = 0;  /* Okay, we may access the file now.  */
+      goto leave;
+    }
+
+  /* The file does not yet exist, create it now. */
+  oldmask = umask (077);
+  fp = fopen (filename, "w");
+  if (!fp)
+    {
+      rc = gpg_error_from_syserror ();
+      umask (oldmask);
+      log_error (_("error creating keybox `%s': %s\n"),
+                 filename, gpg_strerror (rc));
+      goto leave;
+    }
+  umask (oldmask);
+
+  if (!opt.quiet)
+    log_info (_("keybox `%s' created\n"), filename);
+  if (r_created)
+    *r_created = 1;
+
+  fclose (fp);
+  rc = 0;
+
+ leave:
+  if (lockhd)
+    {
+      release_dotlock (lockhd);
+      destroy_dotlock (lockhd);
+    }
+  return rc;
+}
+
+
 /*
  * Register a resource (which currently may only be a keybox file).
  * The first keybox which is added by this function is created if it
  * does not exist.  If AUTO_CREATED is not NULL it will be set to true
- * if the function has created a a new keybox.
+ * if the function has created a new keybox.
  */
 int
 keydb_add_resource (const char *url, int force, int secret, int *auto_created)
@@ -137,11 +301,11 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
             else
               rt = KEYDB_RESOURCE_TYPE_KEYBOX;
           }
-        else /* maybe empty: assume ring */
+        else /* maybe empty: assume keybox */
           rt = KEYDB_RESOURCE_TYPE_KEYBOX;
         fclose (fp2);
       }
-      else /* no file yet: create ring */
+      else /* no file yet: create keybox */
         rt = KEYDB_RESOURCE_TYPE_KEYBOX;
     }
 
@@ -153,91 +317,46 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
       goto leave;
 
     case KEYDB_RESOURCE_TYPE_KEYBOX:
-      fp = fopen (filename, "rb");
-      if (!fp && !force)
-        {
-          rc = gpg_error (gpg_err_code_from_errno (errno));
-          goto leave;
-        }
-
-      if (!fp)
-        { /* no file */
-#if 0 /* no autocreate of the homedirectory yet */
+      rc = maybe_create_keybox (filename, force, auto_created);
+      if (rc)
+        goto leave;
+      /* Now register the file */
+      {
+        void *token = keybox_register_file (filename, secret);
+        if (!token)
+          ; /* already registered - ignore it */
+        else if (used_resources >= MAX_KEYDB_RESOURCES)
+          rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
+        else
           {
-            char *last_slash_in_filename;
+            all_resources[used_resources].type = rt;
+            all_resources[used_resources].u.kr = NULL; /* Not used here */
+            all_resources[used_resources].token = token;
+            all_resources[used_resources].secret = secret;
 
-            last_slash_in_filename = strrchr (filename, DIRSEP_C);
-            *last_slash_in_filename = 0;
-            if (access (filename, F_OK))
-              { /* on the first time we try to create the default
-                   homedir and in this case the process will be
-                   terminated, so that on the next invocation can
-                   read the options file in on startup */
-                try_make_homedir (filename);
-                rc = gpg_error (GPG_ERR_FILE_OPEN_ERROR);
-                *last_slash_in_filename = DIRSEP_C;
-                goto leave;
+            all_resources[used_resources].lockhandle
+              = create_dotlock (filename);
+            if (!all_resources[used_resources].lockhandle)
+              log_fatal ( _("can't create lock for `%s'\n"), filename);
+
+            /* Do a compress run if needed and the file is not locked. */
+            if (!make_dotlock (all_resources[used_resources].lockhandle, 0))
+              {
+                KEYBOX_HANDLE kbxhd = keybox_new (token, secret);
+
+                if (kbxhd)
+                  {
+                    keybox_compress (kbxhd);
+                    keybox_release (kbxhd);
+                  }
+                release_dotlock (all_resources[used_resources].lockhandle);
               }
-            *last_slash_in_filename = DIRSEP_C;
+
+            used_resources++;
           }
-#endif
-          fp = fopen (filename, "w");
-          if (!fp)
-            {
-              rc = gpg_error (gpg_err_code_from_errno (errno));
-              log_error (_("error creating keybox `%s': %s\n"),
-                         filename, strerror(errno));
-              if (errno == ENOENT)
-                log_info (_("you may want to start the gpg-agent first\n"));
-              goto leave;
-	    }
+      }
+      break;
 
-          if (!opt.quiet)
-            log_info (_("keybox `%s' created\n"), filename);
-          if (auto_created)
-            *auto_created = 1;
-	}
-	fclose (fp);
-	fp = NULL;
-        /* now register the file */
-        {
-
-          void *token = keybox_register_file (filename, secret);
-          if (!token)
-            ; /* already registered - ignore it */
-          else if (used_resources >= MAX_KEYDB_RESOURCES)
-            rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
-          else
-            {
-              all_resources[used_resources].type = rt;
-              all_resources[used_resources].u.kr = NULL; /* Not used here */
-              all_resources[used_resources].token = token;
-              all_resources[used_resources].secret = secret;
-
-              all_resources[used_resources].lockhandle
-                = create_dotlock (filename);
-              if (!all_resources[used_resources].lockhandle)
-                log_fatal ( _("can't create lock for `%s'\n"), filename);
-
-              /* Do a compress run if needed and the file is not locked. */
-              if (!make_dotlock (all_resources[used_resources].lockhandle, 0))
-                {
-                  KEYBOX_HANDLE kbxhd = keybox_new (token, secret);
-
-                  if (kbxhd)
-                    {
-                      keybox_compress (kbxhd);
-                      keybox_release (kbxhd);
-                    }
-                  release_dotlock (all_resources[used_resources].lockhandle);
-                }
-
-              used_resources++;
-            }
-        }
-
-
-	break;
     default:
       log_error ("resource type of `%s' not supported\n", url);
       rc = gpg_error (GPG_ERR_NOT_SUPPORTED);

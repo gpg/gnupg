@@ -50,7 +50,7 @@ struct keyserver_spec
 
 
 /* A large struct named "opt" to keep global flags. */
-struct 
+struct
 {
   unsigned int debug; /* debug flags (DBG_foo_VALUE) */
   int verbose;      /* verbosity level */
@@ -59,10 +59,11 @@ struct
   int answer_yes;   /* assume yes on most questions */
   int answer_no;    /* assume no on most questions */
   int dry_run;      /* don't change any persistent data */
+  int no_homedir_creation;
 
   const char *homedir;         /* Configuration directory name */
   const char *config_filename; /* Name of the used config file. */
-  const char *agent_program; 
+  const char *agent_program;
 
   session_env_t session_env;
   char *lc_ctype;
