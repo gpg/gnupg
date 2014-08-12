@@ -251,8 +251,6 @@ enum cmd_and_opt_values
     oSkipVerify,
     oSkipHiddenRecipients,
     oNoSkipHiddenRecipients,
-    oCompressKeys,
-    oCompressSigs,
     oAlwaysTrust,
     oTrustModel,
     oForceOwnertrust,
@@ -563,9 +561,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oAttributeFD, "attribute-fd", "@"),
   ARGPARSE_s_s (oAttributeFile, "attribute-file", "@"),
 
-  ARGPARSE_s_n (oNoop, "sk-comments", "@"),
-  ARGPARSE_s_n (oNoop, "no-sk-comments", "@"),
-
   ARGPARSE_s_i (oCompletesNeeded, "completes-needed", "@"),
   ARGPARSE_s_i (oMarginalsNeeded, "marginals-needed", "@"),
   ARGPARSE_s_i (oMaxCertDepth,	"max-cert-depth", "@" ),
@@ -672,8 +667,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSkipVerify, "skip-verify", "@"),
   ARGPARSE_s_n (oSkipHiddenRecipients, "skip-hidden-recipients", "@"),
   ARGPARSE_s_n (oNoSkipHiddenRecipients, "no-skip-hidden-recipients", "@"),
-  ARGPARSE_s_n (oCompressKeys, "compress-keys", "@"),
-  ARGPARSE_s_n (oCompressSigs, "compress-sigs", "@"),
   ARGPARSE_s_i (oDefCertLevel, "default-cert-check-level", "@"), /* old */
   ARGPARSE_s_n (oAlwaysTrust, "always-trust", "@"),
   ARGPARSE_s_s (oTrustModel, "trust-model", "@"),
@@ -798,6 +791,12 @@ static ARGPARSE_OPTS opts[] = {
   /* New options.  Fixme: Should go more to the top.  */
   ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
+
+  /* Dummy options.  */
+  ARGPARSE_s_n (oNoop, "sk-comments", "@"),
+  ARGPARSE_s_n (oNoop, "no-sk-comments", "@"),
+  ARGPARSE_s_n (oNoop, "compress-keys", "@"),
+  ARGPARSE_s_n (oNoop, "compress-sigs", "@"),
 
   ARGPARSE_end ()
 };
@@ -2459,7 +2458,6 @@ main (int argc, char **argv)
 	  case oSkipHiddenRecipients: opt.skip_hidden_recipients = 1; break;
 	  case oNoSkipHiddenRecipients: opt.skip_hidden_recipients = 0; break;
 
-	  case oCompressKeys: opt.compress_keys = 1; break;
 	  case aListSecretKeys: set_cmd( &cmd, aListSecretKeys); break;
 
 #ifndef NO_TRUST_MODELS
@@ -2505,8 +2503,6 @@ main (int argc, char **argv)
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 1;
 	    opt.force_v3_sigs = 0;
-	    opt.compress_keys = 0;	    /* not mandated, but we do it */
-	    opt.compress_sigs = 0;	    /* ditto. */
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
@@ -2525,8 +2521,6 @@ main (int argc, char **argv)
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.force_v3_sigs = 0;
-	    opt.compress_keys = 0;	    /* not mandated, but we do it */
-	    opt.compress_sigs = 0;	    /* ditto. */
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
@@ -2541,7 +2535,6 @@ main (int argc, char **argv)
 	  case oPGP7:  opt.compliance = CO_PGP7;  break;
 	  case oPGP8:  opt.compliance = CO_PGP8;  break;
 	  case oGnuPG: opt.compliance = CO_GNUPG; break;
-	  case oCompressSigs: opt.compress_sigs = 1; break;
 	  case oRFC2440Text: opt.rfc2440_text=1; break;
 	  case oNoRFC2440Text: opt.rfc2440_text=0; break;
  	  case oSetFilename:

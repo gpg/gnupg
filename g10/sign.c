@@ -998,7 +998,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	iobuf_push_filter( out, encrypt_filter, &efx );
     }
 
-    if( opt.compress_algo && !outfile && ( !detached || opt.compress_sigs) )
+    if (opt.compress_algo && !outfile && !detached)
       {
         int compr_algo=opt.compress_algo;
 

@@ -213,8 +213,6 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
           afx->what = secret? 5 : 1;
           push_armor_filter (afx, out);
         }
-      if ( opt.compress_keys )
-        push_compress_filter (out,&zfx,default_compress_algo());
     }
 
   rc = do_export_stream (ctrl, out, users, secret, NULL, options, &any );
