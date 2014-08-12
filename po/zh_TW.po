@@ -6044,9 +6044,6 @@ msgstr "讀取輸入時出錯: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "建立金鑰鑰匙盒 `%s' 時出錯: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr "你可能會先想啟動 gpg-agent\n"
-
 #, c-format
 msgid "keybox `%s' created\n"
 msgstr "`%s' 鑰匙盒已建立\n"
@@ -6522,6 +6519,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "你可能會先想啟動 gpg-agent\n"
 
 #~ msgid "error loading `%s': %s\n"
 #~ msgstr "載入 `%s' 時出錯: %s\n"

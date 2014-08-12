@@ -6355,9 +6355,6 @@ msgstr "eroare la citire `%s': %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "eroare la crearea inelului de chei `%s': %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "inelul de chei `%s' creat\n"

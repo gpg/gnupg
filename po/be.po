@@ -6119,9 +6119,6 @@ msgstr "паказаць ключы й адбіткі пальцаў"
 msgid "error creating keybox `%s': %s\n"
 msgstr "памылка стварэньня \"%s\": %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "%s: тэчка створана\n"

@@ -6460,9 +6460,6 @@ msgstr "eraro dum legado de '%s': %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "þlosilaro '%s' kreita\n"

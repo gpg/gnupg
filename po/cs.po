@@ -6205,9 +6205,6 @@ msgstr "chyba při čtení vstupu: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "chyba při vytváření schránky na klíče (keybox) „%s“: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr "možná byste chtěl(a) nejprve spustit gpg-agenta\n"
-
 #, c-format
 msgid "keybox `%s' created\n"
 msgstr "schránka na klíče (keybox) „%s“ vytvořena\n"
@@ -6688,6 +6685,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [VOLBY] SOUBOR_SE_VZOREM\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "možná byste chtěl(a) nejprve spustit gpg-agenta\n"
 
 #~ msgid "enable ssh-agent emulation"
 #~ msgstr "zapnout emulaci ssh-agenta"

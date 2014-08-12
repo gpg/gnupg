@@ -6291,9 +6291,6 @@ msgstr "girdi okunurken hata: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "anahtar bloku `%s' oluşturulurken hata: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr "gpg-agent'ı önce başlatmak isteyebilirsiniz\n"
-
 #, c-format
 msgid "keybox `%s' created\n"
 msgstr "`%s' anahtar bloğu oluşturuldu\n"
@@ -6777,6 +6774,9 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "gpg-agent'ı önce başlatmak isteyebilirsiniz\n"
 
 #~ msgid "error loading `%s': %s\n"
 #~ msgstr "`%s' yüklenirken hata: %s\n"

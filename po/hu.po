@@ -6446,9 +6446,6 @@ msgstr "Hiba \"%s\" olvasásakor: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "\"%s\" kulcskarikát létrehoztam.\n"

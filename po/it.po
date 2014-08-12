@@ -6485,9 +6485,6 @@ msgstr "errore leggendo `%s': %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "errore creando il portachiavi `%s': %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "portachiavi `%s' creato\n"

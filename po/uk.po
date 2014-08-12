@@ -6300,9 +6300,6 @@ msgstr "помилка під час спроби читання вхідних 
 msgid "error creating keybox `%s': %s\n"
 msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr "вам варто спочатку запустити gpg-agent\n"
-
 #, c-format
 msgid "keybox `%s' created\n"
 msgstr "створено сховище ключів «%s»\n"
@@ -6789,6 +6786,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "вам варто спочатку запустити gpg-agent\n"
 
 #~ msgid "error loading `%s': %s\n"
 #~ msgstr "помилка під час спроби завантаження «%s»: %s\n"

@@ -6239,9 +6239,6 @@ msgstr "b³±d odczytu wej¶cia: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "b³±d tworzenia keyboksa ,,%s'': %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr "mo¿na najpierw uruchomiæ najpierw gpg-agenta\n"
-
 #, c-format
 msgid "keybox `%s' created\n"
 msgstr "keybox ,,%s'' utworzony\n"
@@ -6725,6 +6722,9 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "mo¿na najpierw uruchomiæ najpierw gpg-agenta\n"
 
 #~ msgid "enable ssh-agent emulation"
 #~ msgstr "w³±czenie emulacji ssh-agenta"

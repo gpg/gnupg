@@ -6413,9 +6413,6 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "viga võtmehoidla `%s' loomisel: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "võtmehoidla `%s' on loodud\n"

@@ -6443,9 +6443,6 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "kesalahan menulis keyring `%s': %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "%s: keyring tercipta\n"

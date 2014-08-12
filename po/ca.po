@@ -6660,9 +6660,6 @@ msgstr "error en la lectura de «%s»: %s\n"
 msgid "error creating keybox `%s': %s\n"
 msgstr "error en crear l'anell «%s»: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "keybox `%s' created\n"
 msgstr "s'ha creat l'anell «%s»\n"
