@@ -202,12 +202,12 @@ if [ "$myhost" = "find-version" ]; then
 
     case "$version_parts" in
       2)
-        matchstr1="$package-$major.*[0-9]"
+        matchstr1="$package-$major.[0-9][0-9]*"
         matchstr2="$package-$major-base"
         vers="$major.$minor"
         ;;
       *)
-        matchstr1="$package-$major.$minor.*[0-9]"
+        matchstr1="$package-$major.$minor.[0-9][0-9]*"
         matchstr2="$package-$major.$minor-base"
         vers="$major.$minor.$micro"
         ;;
