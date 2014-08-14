@@ -223,36 +223,6 @@ msgstr "それでもこれを使います"
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズは最低%u"
-"文字であるべきです。"
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズは最低%u"
-"文字の数字もしくは%%0A特殊文字を含むべきです。"
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズには、よ"
-"く知られている用語や%%0A特定のパターンにマッチするものは避けましょう。"
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
 "パスフレーズが入力されませんでした!%0A空のパスフレーズは認められません。"
@@ -267,6 +237,47 @@ msgstr ""
 
 msgid "Yes, protection is not needed"
 msgstr "はい、保護は必要ありません"
+
+#, fuzzy, c-format
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "名前は5文字以上でなければなりません\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digit or%%0Aspecial character."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digits or%%0Aspecial characters."
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズは最低%u"
+"文字の数字もしくは%%0A特殊文字を含むべきです。"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase may not "
+#| "be a known term or match%%0Acertain pattern."
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズには、よ"
+"く知られている用語や%%0A特定のパターンにマッチするものは避けましょう。"
+
+#, fuzzy
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u character long."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u characters long."
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズは最低%u"
+"文字であるべきです。"
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -471,6 +482,7 @@ msgstr "%s %s 停止しました\n"
 msgid "no gpg-agent running in this session\n"
 msgstr "このセッションでgpg-agentは実行されていません\n"
 
+#, c-format
 msgid "malformed %s environment variable\n"
 msgstr "環境変数%sが破壊されています\n"
 
@@ -1331,6 +1343,7 @@ msgstr "無効な選択です。\n"
 msgid "Please select where to store the key:\n"
 msgstr "鍵を保管する場所を選択してください:\n"
 
+#, c-format
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARDが失敗しました: %s\n"
 
@@ -1424,6 +1437,7 @@ msgstr "この鍵を鍵リングから削除しますか? (y/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "これは秘密鍵です! 本当に削除しますか? (y/N) "
 
+#, c-format
 msgid "deleting secret %s failed: %s\n"
 msgstr "秘密%sの削除に失敗しました: %s\n"
 
@@ -1466,16 +1480,9 @@ msgstr "'%s'はもう圧縮済みです\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "*警告*: '%s'は空のファイルです\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr "--pgp2モードでは2048ビット以下のRSA鍵で暗号化しかできません\n"
-
 #, c-format
 msgid "reading from '%s'\n"
 msgstr "'%s'から読み込み\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr "暗号化しようとしている鍵は全部IDEA暗号を使えません。\n"
 
 #, c-format
 msgid ""
@@ -1657,6 +1664,11 @@ msgstr "鍵とフィンガープリントの一覧"
 msgid "list secret keys"
 msgstr "秘密鍵の一覧"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "新しい鍵対を生成"
+
 msgid "generate a new key pair"
 msgstr "新しい鍵対を生成"
 
@@ -1807,6 +1819,7 @@ msgstr "ハッシュ: "
 msgid "Compression: "
 msgstr "圧縮: "
 
+#, c-format
 msgid "usage: %s [options] %s\n"
 msgstr "使い方: %s [オプション] %s\n"
 
@@ -1876,6 +1889,11 @@ msgstr "不明のコンフィグレーション項目'%s'\n"
 
 msgid "display photo IDs during key listings"
 msgstr "鍵の一覧にフォトIDを表示する"
+
+#, fuzzy
+#| msgid "show user ID validity during key listings"
+msgid "show key usage information during key listings"
+msgstr "鍵の一覧にユーザIDの有効性を表示する"
 
 msgid "show policy URLs during signature listings"
 msgstr "署名の一覧にポリシURLを表示する"
@@ -2034,18 +2052,6 @@ msgstr "*警告*: ニセモノのシステム時刻で実行しています: "
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "%s のため、セキュアでないメモリで実行しません\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "--pgp2モードでは分離署名かクリア・テクスト署名だけしかできません\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "--pgp2モードでは署名と暗号化を同時にできません\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr "--pgp2を指定したら、(パイプでなく) ファイルを指定せねばなりません。\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr "--pgp2モードのメッセージ暗号化では、IDEA暗号方式が必要です\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "選択された暗号アルゴリズムは、無効です\n"
@@ -2368,6 +2374,14 @@ msgstr "以下で、優先指定を更新できます: gpg --edit-key %s updpref
 msgid "key %s: no user ID\n"
 msgstr "鍵%s: ユーザIDがありません\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "\"%s\"をスキップしました: %s\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "鍵%s: PKSの副鍵変造を修復\n"
@@ -2474,6 +2488,11 @@ msgstr "鍵 %s: 秘密鍵はもうあります\n"
 #, c-format
 msgid "key %s: error sending to agent: %s\n"
 msgstr "鍵 %s: エージェントへの送信エラー: %s\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "秘密鍵のインポートは禁止です\n"
@@ -2651,8 +2670,8 @@ msgid ""
 "etc.)\n"
 msgstr ""
 "他のユーザの鍵を正しく検証するために、このユーザの信用度を決めてください\n"
-"(パスポートを見せてもらったり、他から得たフィンガープリントを検査したり、な"
-"どなど)\n"
+"(パスポートを見せてもらったり、他から得たフィンガープリントを検査したり、など"
+"など)\n"
 
 #, c-format
 msgid "  %d = I trust marginally\n"
@@ -2755,14 +2774,6 @@ msgstr "この鍵は%sで期限が切れます。\n"
 
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "同時に署名も期限切れとしたいですか? (Y/n) "
-
-msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr "--pgp2モードではPGP 2.x鍵でOpenPGP署名ができません。\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "この鍵はPGP 2.xで使用できなくなります。\n"
 
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
@@ -3073,9 +3084,11 @@ msgstr "更新に失敗しました: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\"はフィンガープリントではありません\n"
 
+#, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
 msgstr "\"%s\" はプライマリ・フィンガープリントではありません\n"
 
@@ -3501,15 +3514,19 @@ msgstr "   (%d) DSA (特性をあなた自身で設定)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (特性をあなた自身で設定)\n"
 
+#, c-format
 msgid "   (%d) ECC\n"
 msgstr "   (%d) ECC\n"
 
+#, c-format
 msgid "  (%d) ECC (sign only)\n"
 msgstr "  (%d) ECC (署名のみ)\n"
 
+#, c-format
 msgid "  (%d) ECC (set your own capabilities)\n"
 msgstr "  (%d) ECC (特性をあなた自身で設定)\n"
 
+#, c-format
 msgid "  (%d) ECC (encrypt only)\n"
 msgstr "  (%d) ECC (暗号化のみ)\n"
 
@@ -3752,6 +3769,35 @@ msgstr ""
 "に\n"
 "十分なエントロピーを供給する機会を与えることができます。\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "鍵の生成に失敗しました: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "key already exists\n"
+msgid "A key for \"%s\" already exists\n"
+msgstr "鍵はもうあります\n"
+
+#, fuzzy
+#| msgid "Use this key anyway? (y/N) "
+msgid "Create anyway? (y/N) "
+msgstr "それでもこの鍵を使いますか? (y/N) "
+
+#, fuzzy
+#| msgid "generating new key\n"
+msgid "creating anyway\n"
+msgstr "新しい鍵を生成\n"
+
 msgid "Key generation canceled.\n"
 msgstr "鍵の生成が取り消されました。\n"
 
@@ -3776,10 +3822,6 @@ msgid ""
 msgstr ""
 "この鍵は暗号化には使用できないことに注意してください。暗号化を行うには、\n"
 "\"--edit-key\"コマンドを使って副鍵を生成してください。\n"
-
-#, c-format
-msgid "Key generation failed: %s\n"
-msgstr "鍵の生成に失敗しました: %s\n"
 
 #, c-format
 msgid ""
@@ -4097,6 +4139,7 @@ msgstr "期限切れの署名 %s\n"
 msgid "Signature expires %s\n"
 msgstr "この署名は%sで期限切れとなります\n"
 
+#, c-format
 msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "%s署名、ダイジェスト・アルゴリズム %s%s%s\n"
 
@@ -4159,6 +4202,10 @@ msgstr "*警告*: 実験的ダイジェスト・アルゴリズム %sを使用\n
 #, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "*警告*: ダイジェスト・アルゴリズム %s は廃止されています\n"
+
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4293,20 +4340,17 @@ msgid "         (subkey on main key ID %s)"
 msgstr "         (主鍵ID %s の副鍵)"
 
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
-msgstr ""
-"OpenPGPの秘密鍵のロックを解除するためにパスフレーズを入力してください:"
+msgstr "OpenPGPの秘密鍵のロックを解除するためにパスフレーズを入力してください:"
 
 msgid "Please enter the passphrase to import the OpenPGP secret key:"
-msgstr ""
-"OpenPGPの秘密鍵をインポートするためにパスフレーズを入力してください:"
+msgstr "OpenPGPの秘密鍵をインポートするためにパスフレーズを入力してください:"
 
 msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
 msgstr ""
 "OpenPGPの秘密サブ鍵をエクスポートするためにパスフレーズを入力してください:"
 
 msgid "Please enter the passphrase to export the OpenPGP secret key:"
-msgstr ""
-"OpenPGPの秘密鍵をエクスポートするためにパスフレーズを入力してください:"
+msgstr "OpenPGPの秘密鍵をエクスポートするためにパスフレーズを入力してください:"
 
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
 msgstr "選択したOpenPGPサブ鍵を本当に永久に削除しますか? (y/N) "
@@ -4314,6 +4358,7 @@ msgstr "選択したOpenPGPサブ鍵を本当に永久に削除しますか? (y/
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgstr "選択したOpenPGP秘密鍵を本当に永久に削除しますか? (y/N) "
 
+#, c-format
 msgid ""
 "%s\n"
 "\"%.*s\"\n"
@@ -4680,7 +4725,8 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-"このファイルを誤って使うのを避けるため、以下ではコロンが5つのダッシュの前に挿入されます。\n"
+"このファイルを誤って使うのを避けるため、以下ではコロンが5つのダッシュの前に挿"
+"入されます。\n"
 "この失効証明書を使う前にはテクスト・エディタでこのコロンを削除してください。"
 
 #, c-format
@@ -4790,9 +4836,6 @@ msgstr "*注意*: 署名鍵%sは%sに期限切れとなります\n"
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "*注意*: 鍵 %s は失効済みです\n"
 
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "注意: アルゴリズム %s を用いた署名は拒否されました\n"
-
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "不明のクリティカル・ビットにより、鍵%sの署名を不正とみなします\n"
@@ -4828,9 +4871,6 @@ msgstr "作成された署名の検査に失敗しました: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s署名。署名者:\"%s\"\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分離署名できるだけです\n"
-
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -4840,9 +4880,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "署名:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr "--pgp2モードではPGP 2.x形式の鍵でクリア・テクスト署名しかできません\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -6012,9 +6049,6 @@ msgstr "証明書のインポート・エラー: %s\n"
 msgid "error reading input: %s\n"
 msgstr "入力読み込みエラー: %s\n"
 
-msgid "you may want to start the gpg-agent first\n"
-msgstr "まず gpg-agent を開始したいでしょう\n"
-
 msgid "failed to get the fingerprint\n"
 msgstr "フィンガープリントの取得に失敗しました\n"
 
@@ -6840,6 +6874,7 @@ msgstr ""
 msgid "valid debug levels are: %s\n"
 msgstr "有効なdebugレベルは: %s\n"
 
+#, c-format
 msgid "usage: %s [options] "
 msgstr "使い方: %s [オプション] "
 
@@ -7700,6 +7735,74 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#, fuzzy
+#~| msgid "can't create directory '%s': %s\n"
+#~ msgid "can't create directory `%s': %s\n"
+#~ msgstr "ディレクトリ'%s'が作成できません: %s\n"
+
+#, fuzzy
+#~| msgid "directory '%s' created\n"
+#~ msgid "directory `%s' created\n"
+#~ msgstr "ディレクトリ'%s'が作成されました\n"
+
+#, fuzzy
+#~| msgid "error creating keybox '%s': %s\n"
+#~ msgid "error creating keybox `%s': %s\n"
+#~ msgstr "keybox'%s'の作成エラー: %s\n"
+
+#, fuzzy
+#~| msgid "keybox '%s' created\n"
+#~ msgid "keybox `%s' created\n"
+#~ msgstr "keybox'%s'が作成されました\n"
+
+#, fuzzy
+#~| msgid "can't create lock for '%s'\n"
+#~ msgid "can't create lock for `%s'\n"
+#~ msgstr "'%s'のロックを作成できません\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr "--pgp2モードでは2048ビット以下のRSA鍵で暗号化しかできません\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr "暗号化しようとしている鍵は全部IDEA暗号を使えません。\n"
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr "--pgp2モードでは分離署名かクリア・テクスト署名だけしかできません\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr "--pgp2モードでは署名と暗号化を同時にできません\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr ""
+#~ "--pgp2を指定したら、(パイプでなく) ファイルを指定せねばなりません。\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr "--pgp2モードのメッセージ暗号化では、IDEA暗号方式が必要です\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr "--pgp2モードではPGP 2.x鍵でOpenPGP署名ができません。\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "この鍵はPGP 2.xで使用できなくなります。\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分離署名できるだけです\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "--pgp2モードではPGP 2.x形式の鍵でクリア・テクスト署名しかできません\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "まず gpg-agent を開始したいでしょう\n"
 
 #~ msgid "[ revoked]"
 #~ msgstr "[  失効  ]"

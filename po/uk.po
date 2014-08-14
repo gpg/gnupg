@@ -226,48 +226,6 @@ msgstr "Скористатися цим"
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-"Попередження: вами введено занадто простий пароль.%%0AПароль має складатися "
-"не менше ніж з %u символу."
-msgstr[1] ""
-"Попередження: вами введено занадто простий пароль.%%0AПароль має складатися "
-"не менше ніж з %u символів."
-msgstr[2] ""
-"Попередження: вами введено занадто простий пароль.%%0AПароль має складатися "
-"не менше ніж з %u символів."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"Попередження: вами введено занадто простий пароль.%%0AПароль має містити "
-"принаймні %u цифру або%%0Aспеціальний символ."
-msgstr[1] ""
-"Попередження: вами введено занадто простий пароль.%%0AПароль має містити "
-"принаймні %u цифри або%%0Aспеціальних символи."
-msgstr[2] ""
-"Попередження: вами введено занадто простий пароль.%%0AПароль має містити "
-"принаймні %u цифр або%%0Aспеціальних символів."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-"Попередження: вами вказано занадто простий пароль.%%0AПаролем не повинно "
-"бути слово зі словника або слово%%0A, що відповідає певному зразку."
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr "Вами не вказано пароля!%0AВикористання порожніх паролів заборонено."
 
@@ -281,6 +239,55 @@ msgstr ""
 
 msgid "Yes, protection is not needed"
 msgstr "Так, у захисті немає потреби"
+
+#, fuzzy, c-format
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "Ім’я має бути не коротшим за 5 літер\n"
+msgstr[1] "Ім’я має бути не коротшим за 5 літер\n"
+msgstr[2] "Ім’я має бути не коротшим за 5 літер\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digit or%%0Aspecial character."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digits or%%0Aspecial characters."
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+"Попередження: вами введено занадто простий пароль.%%0AПароль має містити "
+"принаймні %u цифру або%%0Aспеціальний символ."
+msgstr[1] ""
+"Попередження: вами введено занадто простий пароль.%%0AПароль має містити "
+"принаймні %u цифри або%%0Aспеціальних символи."
+msgstr[2] ""
+"Попередження: вами введено занадто простий пароль.%%0AПароль має містити "
+"принаймні %u цифр або%%0Aспеціальних символів."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase may not "
+#| "be a known term or match%%0Acertain pattern."
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+"Попередження: вами вказано занадто простий пароль.%%0AПаролем не повинно "
+"бути слово зі словника або слово%%0A, що відповідає певному зразку."
+
+#, fuzzy
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u character long."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u characters long."
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+"Попередження: вами введено занадто простий пароль.%%0AПароль має складатися "
+"не менше ніж з %u символу."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -1503,20 +1510,9 @@ msgstr "«%s» вже стиснено\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "УВАГА: файл «%s» є порожнім\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"шифрувати ключами RSA з розміром у 2048 бітів або менше лише у режимі --"
-"pgp2\n"
-
 #, c-format
 msgid "reading from '%s'\n"
 msgstr "читання з «%s»\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr ""
-"не можна використовувати шифр IDEA для всіх ключів, якими виконується "
-"шифрування.\n"
 
 #, c-format
 msgid ""
@@ -1708,6 +1704,11 @@ msgstr "показати список ключів і відбитків"
 
 msgid "list secret keys"
 msgstr "показати список закритих ключів"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "створити пару ключів"
 
 msgid "generate a new key pair"
 msgstr "створити пару ключів"
@@ -1946,6 +1947,11 @@ msgstr "невідомий пункт налаштувань «%s»\n"
 msgid "display photo IDs during key listings"
 msgstr "показувати фотоідентифікатори у списках ключів"
 
+#, fuzzy
+#| msgid "show user ID validity during key listings"
+msgid "show key usage information during key listings"
+msgstr "показувати чинність ідентифікаторів користувачів у списках ключів"
+
 msgid "show policy URLs during signature listings"
 msgstr "показувати адреси правил у списках підписів"
 
@@ -2110,21 +2116,6 @@ msgstr "УВАГА: запущено з фіктивним системним ч
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "не буде запущено з помилками у захисті пам’яті через %s\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "від’єднані та текстові підписи можна створювати лише у режимі --pgp2\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "у режимі --pgp2 не можна одночасно підписувати і зашифровувати дані\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr ""
-"вам слід використовувати файли (не канали даних) під час роботи з увімкненим "
-"--pgp2.\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr ""
-"шифрування повідомлень у режимі --pgp2 потребує використання шифру IDEA\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "вибраний алгоритм шифрування є некоректним\n"
@@ -2464,6 +2455,14 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "ключ %s: немає ідентифікатор користувача\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "пропущено «%s»: %s\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "ключ %s: відновлено пошкоджений підключ PKS\n"
@@ -2570,6 +2569,11 @@ msgstr "ключ %s: закритий ключ вже існує\n"
 #, c-format
 msgid "key %s: error sending to agent: %s\n"
 msgstr "ключ %s: помилка під час спроби надсилання агенту: %s\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "закритий ключ «%s» не знайдено: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "імпортування закритих ключів заборонено\n"
@@ -2861,14 +2865,6 @@ msgstr "Строк дії цього ключа завершиться %s.\n"
 
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Бажаєте, щоб строк дії вашого підпису був таким самим? (Y/n або Т/н) "
-
-msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr "Не можна створювати підпис OpenPGP ключа PGP 2.x у режимі --pgp2.\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Це може зробити ключ непридатним до використання у PGP 2.x.\n"
 
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
@@ -3891,6 +3887,35 @@ msgstr ""
 "під час створення простого числа. Це надасть змогу генератору\n"
 "псевдовипадкових чисел створити краще випадкове число.\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Помилка під час спроби створення ключа: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "key already exists\n"
+msgid "A key for \"%s\" already exists\n"
+msgstr "ключ вже існує\n"
+
+#, fuzzy
+#| msgid "Use this key anyway? (y/N) "
+msgid "Create anyway? (y/N) "
+msgstr "Попри все використовувати цей ключ? (y/N або т/Н) "
+
+#, fuzzy
+#| msgid "generating new key\n"
+msgid "creating anyway\n"
+msgstr "створення нового ключа\n"
+
 msgid "Key generation canceled.\n"
 msgstr "Створення ключа скасовано.\n"
 
@@ -3915,10 +3940,6 @@ msgid ""
 msgstr ""
 "Зауважте, що цей ключ не може бути використано для шифрування. Ви можете\n"
 "скористатися командою «--edit-key» для створення підключа з цією метою.\n"
-
-#, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Помилка під час спроби створення ключа: %s\n"
 
 #, c-format
 msgid ""
@@ -4319,6 +4340,10 @@ msgstr ""
 #, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "УВАГА: алгоритм обчислення контрольних сум %s вважається застарілим\n"
+
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Зауваження: підписи за допомогою алгоритму %s відкинуто\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4965,10 +4990,6 @@ msgid "NOTE: signature key %s has been revoked\n"
 msgstr "ЗАУВАЖЕННЯ: ключ підпису %s було відкликано\n"
 
 #, c-format
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "Зауваження: підписи за допомогою алгоритму %s відкинуто\n"
-
-#, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "припускаємо помилковий підпису від ключа %s через невідомий критичний біт\n"
@@ -5010,11 +5031,6 @@ msgstr "невдала спроба перевірити створений пі
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s підпис від: \"%s\"\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"підписування від’єднаним ключем можливе лише за допомогою ключів у форматі "
-"PGP 2.x у режимі --pgp2\n"
-
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -5024,11 +5040,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "підписування:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"підписування текстовим ключем можливе лише за допомогою ключів у форматі PGP "
-"2.x у режимі --pgp2\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -6230,9 +6241,6 @@ msgstr "помилка під час спроби імпортування се�
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "помилка під час спроби читання вхідних даних: %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr "вам варто спочатку запустити gpg-agent\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "не вдалося отримати відбиток\n"
@@ -7944,6 +7952,85 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#, fuzzy
+#~| msgid "can't create directory '%s': %s\n"
+#~ msgid "can't create directory `%s': %s\n"
+#~ msgstr "не вдалося створити каталог «%s»: %s\n"
+
+#, fuzzy
+#~| msgid "directory '%s' created\n"
+#~ msgid "directory `%s' created\n"
+#~ msgstr "створено каталог «%s»\n"
+
+#, fuzzy
+#~| msgid "error creating keybox '%s': %s\n"
+#~ msgid "error creating keybox `%s': %s\n"
+#~ msgstr "помилка під час спроби створення сховища ключів «%s»: %s\n"
+
+#, fuzzy
+#~| msgid "keybox '%s' created\n"
+#~ msgid "keybox `%s' created\n"
+#~ msgstr "створено сховище ключів «%s»\n"
+
+#, fuzzy
+#~| msgid "can't create lock for '%s'\n"
+#~ msgid "can't create lock for `%s'\n"
+#~ msgstr "не вдалося створити блокування для «%s»\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "шифрувати ключами RSA з розміром у 2048 бітів або менше лише у режимі --"
+#~ "pgp2\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr ""
+#~ "не можна використовувати шифр IDEA для всіх ключів, якими виконується "
+#~ "шифрування.\n"
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "від’єднані та текстові підписи можна створювати лише у режимі --pgp2\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "у режимі --pgp2 не можна одночасно підписувати і зашифровувати дані\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr ""
+#~ "вам слід використовувати файли (не канали даних) під час роботи з "
+#~ "увімкненим --pgp2.\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr ""
+#~ "шифрування повідомлень у режимі --pgp2 потребує використання шифру IDEA\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr "Не можна створювати підпис OpenPGP ключа PGP 2.x у режимі --pgp2.\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "Це може зробити ключ непридатним до використання у PGP 2.x.\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "підписування від’єднаним ключем можливе лише за допомогою ключів у "
+#~ "форматі PGP 2.x у режимі --pgp2\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "підписування текстовим ключем можливе лише за допомогою ключів у форматі "
+#~ "PGP 2.x у режимі --pgp2\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "вам варто спочатку запустити gpg-agent\n"
 
 #~ msgid "usage: gpg [options] "
 #~ msgstr "використання: gpg [параметри] "

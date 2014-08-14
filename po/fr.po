@@ -226,44 +226,6 @@ msgstr "La prendre quand même"
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
-"phrase de passe devrait être longue d'au moins %u caractère."
-msgstr[1] ""
-"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
-"phrase de passe devrait être longue d'au moins %u caractères."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
-"phrase de passe devrait contenir au moins%%0A%u chiffre ou caractère spécial."
-msgstr[1] ""
-"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
-"phrase de passe devrait contenir au moins%%0A%u chiffres ou caractères "
-"spéciaux."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
-"phrase de passe ne devrait ni être un mot commun,%%0Ani correspondre à un "
-"certain schéma."
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
 "Aucune phrase de passe n'a été entrée.%0AUne phrase de passe vide n'est pas "
@@ -279,6 +241,53 @@ msgstr ""
 
 msgid "Yes, protection is not needed"
 msgstr "Oui, aucune protection n'est nécessaire"
+
+#, fuzzy, c-format
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "Le nom doit contenir au moins cinq caractères\n"
+msgstr[1] "Le nom doit contenir au moins cinq caractères\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digit or%%0Aspecial character."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digits or%%0Aspecial characters."
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
+"phrase de passe devrait contenir au moins%%0A%u chiffre ou caractère spécial."
+msgstr[1] ""
+"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
+"phrase de passe devrait contenir au moins%%0A%u chiffres ou caractères "
+"spéciaux."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase may not "
+#| "be a known term or match%%0Acertain pattern."
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
+"phrase de passe ne devrait ni être un mot commun,%%0Ani correspondre à un "
+"certain schéma."
+
+#, fuzzy
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u character long."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u characters long."
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+"Avertissement : une phrase de passe non sécurisée a été entrée.%%0AUne "
+"phrase de passe devrait être longue d'au moins %u caractère."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -1518,20 +1527,9 @@ msgstr "« %s » est déjà compressé\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "Attention : « %s » est un fichier vide\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"le chiffrement RSA n'est possible qu'avec des clefs d'au plus 2048 bits\n"
-"en mode --pgp2\n"
-
 #, c-format
 msgid "reading from '%s'\n"
 msgstr "lecture de « %s »\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr ""
-"impossible d'utiliser le chiffrement IDEA avec toutes les clefs\n"
-"utilisés pour chiffrer.\n"
 
 #, c-format
 msgid ""
@@ -1727,6 +1725,11 @@ msgstr "afficher les clefs et les empreintes"
 
 msgid "list secret keys"
 msgstr "afficher les clefs secrètes"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "générer une nouvelle paire de clefs"
 
 msgid "generate a new key pair"
 msgstr "générer une nouvelle paire de clefs"
@@ -1975,6 +1978,11 @@ msgstr "élément de configuration « %s » inconnu\n"
 msgid "display photo IDs during key listings"
 msgstr "montrer les photos d'identité en affichant les clefs"
 
+#, fuzzy
+#| msgid "show user ID validity during key listings"
+msgid "show key usage information during key listings"
+msgstr "indiquer la validité de l'identité en affichant les clefs"
+
 msgid "show policy URLs during signature listings"
 msgstr "montrer les URL de politique en affichant les signatures"
 
@@ -2138,23 +2146,6 @@ msgstr "Attention : exécution avec un système de temps contrefait : "
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "ne sera pas exécuté avec une mémoire non sécurisée à cause de %s\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr ""
-"une signature détachée ou en texte clair n'est possible qu'en mode --pgp2\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "signer et chiffrer en même temps n'est possible qu'en mode --pgp2\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr ""
-"des fichiers (et pas un tube) doivent être utilisés lorsque --pgp2\n"
-"est activé.\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr ""
-"chiffrer un message en mode --pgp2 nécessite l'algorithme de chiffrement "
-"IDEA\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "l'algorithme de chiffrement sélectionné est incorrect\n"
@@ -2481,6 +2472,14 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "clef %s : pas d'identité\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "« %s » a été ignorée : %s\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "clef %s : corruption de sous-clef PKS réparée\n"
@@ -2587,6 +2586,11 @@ msgstr "clef %s : la clef secrète clef existe déjà\n"
 #, c-format
 msgid "key %s: error sending to agent: %s\n"
 msgstr "clef %s : erreur d'envoi à l'agent : %s\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "clef secrète « %s » introuvable : %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "impossible d'importer des clefs secrètes\n"
@@ -2879,16 +2883,6 @@ msgstr "Cette clef va expirer le %s.\n"
 
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Voulez-vous que votre signature expire en même temps ? (O/n) "
-
-msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr ""
-"Impossible de faire une signature OpenPGP d'une clef PGP 2.x en mode --"
-"pgp2.\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Cela rendrait la clef inutilisable par PGP 2.x.\n"
 
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
@@ -3931,6 +3925,35 @@ msgstr ""
 "pendant la génération de nombres premiers ; cela donne au générateur de\n"
 "nombres aléatoires une meilleure chance d'obtenir suffisamment d'entropie.\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Échec de génération de la clef : %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "key already exists\n"
+msgid "A key for \"%s\" already exists\n"
+msgstr "la clef existe déjà\n"
+
+#, fuzzy
+#| msgid "Use this key anyway? (y/N) "
+msgid "Create anyway? (y/N) "
+msgstr "Faut-il quand même utiliser cette clef ? (o/N) "
+
+#, fuzzy
+#| msgid "generating new key\n"
+msgid "creating anyway\n"
+msgstr "génération d'une nouvelle clef\n"
+
 msgid "Key generation canceled.\n"
 msgstr "La génération de clef a été annulée.\n"
 
@@ -3956,10 +3979,6 @@ msgstr ""
 "Remarquez que cette clef ne peut pas être utilisée pour chiffrer. Vous "
 "pouvez\n"
 "utiliser la commande « --edit-key » pour générer une sous-clef à cette fin.\n"
-
-#, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Échec de génération de la clef : %s\n"
 
 #, c-format
 msgid ""
@@ -4367,6 +4386,11 @@ msgstr "Attention : utilisation de l'algorithme expérimental de hachage %s\n"
 #, c-format
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "Attention : l'algorithme de hachage %s est déconseillé\n"
+
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signature %s, algorithme de hachage %s\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -5063,11 +5087,6 @@ msgstr "Remarque : la clef de signature %s a expiré le %s\n"
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "Remarque : la clef de signature %s a été révoquée\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "signature %s, algorithme de hachage %s\n"
-
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
@@ -5115,11 +5134,6 @@ msgstr "échec de vérification de la signature créée : %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s signature de : « %s »\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"une signature détachée avec des clefs de type\n"
-"PGP 2.x n'est possible qu'en mode --pgp2\n"
-
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -5129,11 +5143,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "signature :"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"une signature en texte clair avec des clefs de type\n"
-"PGP 2.x n'est possible qu'en mode --pgp2\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -6381,9 +6390,6 @@ msgstr "erreur d'importation du certificat : %s\n"
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "erreur de lecture de l'entrée : %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr "vous pourriez d'abord démarrer l'agent GPG\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "impossible d'obtenir l'empreinte\n"
@@ -8171,6 +8177,88 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#, fuzzy
+#~| msgid "can't create directory '%s': %s\n"
+#~ msgid "can't create directory `%s': %s\n"
+#~ msgstr "impossible de créer le répertoire « %s » : %s\n"
+
+#, fuzzy
+#~| msgid "directory '%s' created\n"
+#~ msgid "directory `%s' created\n"
+#~ msgstr "répertoire « %s » créé\n"
+
+#, fuzzy
+#~| msgid "error creating keybox '%s': %s\n"
+#~ msgid "error creating keybox `%s': %s\n"
+#~ msgstr "erreur de création du trousseau local « %s » : %s\n"
+
+#, fuzzy
+#~| msgid "keybox '%s' created\n"
+#~ msgid "keybox `%s' created\n"
+#~ msgstr "le trousseau local « %s » a été créé\n"
+
+#, fuzzy
+#~| msgid "can't create lock for '%s'\n"
+#~ msgid "can't create lock for `%s'\n"
+#~ msgstr "impossible de créer un verrou pour « %s »\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "le chiffrement RSA n'est possible qu'avec des clefs d'au plus 2048 bits\n"
+#~ "en mode --pgp2\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr ""
+#~ "impossible d'utiliser le chiffrement IDEA avec toutes les clefs\n"
+#~ "utilisés pour chiffrer.\n"
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "une signature détachée ou en texte clair n'est possible qu'en mode --"
+#~ "pgp2\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr "signer et chiffrer en même temps n'est possible qu'en mode --pgp2\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr ""
+#~ "des fichiers (et pas un tube) doivent être utilisés lorsque --pgp2\n"
+#~ "est activé.\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr ""
+#~ "chiffrer un message en mode --pgp2 nécessite l'algorithme de chiffrement "
+#~ "IDEA\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr ""
+#~ "Impossible de faire une signature OpenPGP d'une clef PGP 2.x en mode --"
+#~ "pgp2.\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "Cela rendrait la clef inutilisable par PGP 2.x.\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "une signature détachée avec des clefs de type\n"
+#~ "PGP 2.x n'est possible qu'en mode --pgp2\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "une signature en texte clair avec des clefs de type\n"
+#~ "PGP 2.x n'est possible qu'en mode --pgp2\n"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "vous pourriez d'abord démarrer l'agent GPG\n"
 
 #~ msgid "usage: gpg [options] "
 #~ msgstr "utilisation : gpg [options] "

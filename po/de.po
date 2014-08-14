@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-07-23 21:11+0200\n"
+"PO-Revision-Date: 2014-08-14 17:12+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1501,20 +1501,9 @@ msgstr "`%s' ist bereits komprimiert\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "WARNUNG: '%s' ist eine leere Datei.\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"Im --pgp2-Modus kann nur für RSA-Schlüssel mit maximal 2048 Bit "
-"verschlüsselt werden\n"
-
 #, c-format
 msgid "reading from '%s'\n"
 msgstr "Lesen von '%s'\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr ""
-"Die IDEA-Verschlüsselung kann nicht mit allen Zielschlüsseln verwendet "
-"werden.\n"
 
 #, c-format
 msgid ""
@@ -1938,20 +1927,23 @@ msgstr "Unbekanntes Konfigurationselement `%s'\n"
 msgid "display photo IDs during key listings"
 msgstr "Anzeigen der Foto-ID in den Schlüssellisten"
 
+msgid "show key usage information during key listings"
+msgstr "Schlüsselverwendungszwecke mit den Schlüsseln anlisten"
+
 msgid "show policy URLs during signature listings"
-msgstr "Zeige Richtlinien-URL während des listens der Signaturen"
+msgstr "Richtlinien-URL mit den Signaturen anlisten"
 
 msgid "show all notations during signature listings"
 msgstr "Alle Notationen mit den Signaturen anlisten"
 
 msgid "show IETF standard notations during signature listings"
-msgstr "Zeige IETF-Standard"
+msgstr "Standard Notationen mit den Signaturen anlisten"
 
 msgid "show user-supplied notations during signature listings"
-msgstr "Zeige Benutzer-Notationen während des listens der Signaturen"
+msgstr "Benutzer-Notationen mit den Signaturen anlisten"
 
 msgid "show preferred keyserver URLs during signature listings"
-msgstr "Der bevorzugten Schlüsselserver mit den Signaturen anlisten"
+msgstr "Bevorzugten Schlüsselserver mit den Signaturen anlisten"
 
 msgid "show user ID validity during key listings"
 msgstr "Zeige Gültigkeit der User-ID in den Schlüssellisten"
@@ -2099,24 +2091,6 @@ msgstr "WARNUNG: Ausführung mit gefälschter Systemzeit: "
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "Startet nicht mit unsicherem Speicher, wegen Option %s\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr ""
-"Im --pgp2-Modus können Sie nur abgetrennte oder Klartextsignaturen machen\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr ""
-"Im --pgp2-Modus können Sie nicht gleichzeitig signieren und verschlüsseln\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr ""
-"Im --pgp2-Modus müssen Sie Dateien benutzen und können keine Pipes "
-"verwenden.\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr ""
-"Verschlüsseln einer Botschaft benötigt im --pgp2-Modus die IDEA-"
-"Verschlüsselung\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "Das ausgewählte Verschlüsselungsverfahren ist ungültig\n"
@@ -2452,6 +2426,13 @@ msgid "key %s: no user ID\n"
 msgstr "Schlüssel %s: Keine User-ID\n"
 
 #, c-format
+msgid "key %s: %s\n"
+msgstr "Schlüssel %s: %s\n"
+
+msgid "rejected by import screener"
+msgstr "vom Import-Aufpasser zurückgewiesen"
+
+#, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "Schlüssel %s: PKS Unterschlüsseldefekt repariert\n"
 
@@ -2557,6 +2538,10 @@ msgstr "Schlüssel %s: geheimer Schlüssel bereits vorhanden\n"
 #, c-format
 msgid "key %s: error sending to agent: %s\n"
 msgstr "Schlüssel %s: Fehler beim Senden zum gpg-agent: %s\n"
+
+#, c-format
+msgid "secret key %s: %s\n"
+msgstr "Geheimer Schlüssel %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "Importieren geheimer Schlüssel ist nicht erlaubt\n"
@@ -2856,15 +2841,6 @@ msgstr "Dieser Schlüssel wird %s verfallen.\n"
 
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Soll Ihre Beglaubigung zur selben Zeit verfallen? (J/n) "
-
-msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr ""
-"Im --pgp2-Modus kann nur mit PGP-2.x-artigen Schlüsseln signiert werden\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Dies würde den Schlüssel für PGP 2.x unbrauchbar machen\n"
 
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
@@ -4338,6 +4314,10 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "WARNUNG: Die Verwendung des Hashverfahrens %s ist nicht ratsam\n"
 
 #, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Hinweis: %s basierte Signaturen werden zurückgewiesen.\n"
+
+#, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
 msgstr "%s:%d: mißbilligte Option \"%s\".\n"
 
@@ -5015,10 +4995,6 @@ msgid "NOTE: signature key %s has been revoked\n"
 msgstr "Hinweis: Signaturschlüssel %s wurde widerrufen\n"
 
 #, c-format
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "Hinweis: %s basierte Signaturen werden zurückgewiesen.\n"
-
-#, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
 "Vermutlich eine FALSCHE Signatur von Schlüssel %s, wegen unbekanntem "
@@ -5065,11 +5041,6 @@ msgstr "Prüfung der erstellten Signatur ist fehlgeschlagen: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s Signatur von: \"%s\"\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"Im --pgp2-Modus kann nur mit PGP-2.x-artigen Schlüsseln eine abgetrennte "
-"Signatur erzeugt werden\n"
-
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -5079,11 +5050,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "signiere:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"Im --pgp2-Modus können Sie Klartextsignaturen nur mit PGP-2.x-artigen "
-"Schlüssel machen\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -6288,9 +6254,6 @@ msgstr "Fehler beim Importieren des Zertifikats: %s\n"
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "Fehler beim Lesen der Eingabe: %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr "Sie sollten zuerst den gpg-agent starten\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "Kann den Fingerprint nicht ermitteln\n"
@@ -8024,6 +7987,67 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "can't create directory `%s': %s\n"
+#~ msgstr " git describe --match gnupg-2.1.*[0-9] --long"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "Sie sollten zuerst den gpg-agent starten\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus kann nur für RSA-Schlüssel mit maximal 2048 Bit "
+#~ "verschlüsselt werden\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr ""
+#~ "Die IDEA-Verschlüsselung kann nicht mit allen Zielschlüsseln verwendet "
+#~ "werden.\n"
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus können Sie nur abgetrennte oder Klartextsignaturen "
+#~ "machen\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus können Sie nicht gleichzeitig signieren und "
+#~ "verschlüsseln\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus müssen Sie Dateien benutzen und können keine Pipes "
+#~ "verwenden.\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr ""
+#~ "Verschlüsseln einer Botschaft benötigt im --pgp2-Modus die IDEA-"
+#~ "Verschlüsselung\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus kann nur mit PGP-2.x-artigen Schlüsseln signiert werden\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "Dies würde den Schlüssel für PGP 2.x unbrauchbar machen\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus kann nur mit PGP-2.x-artigen Schlüsseln eine abgetrennte "
+#~ "Signatur erzeugt werden\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Im --pgp2-Modus können Sie Klartextsignaturen nur mit PGP-2.x-artigen "
+#~ "Schlüssel machen\n"
+
 #~ msgid "usage: gpg [options] "
 #~ msgstr "Aufruf: gpg [Optionen] "
 
@@ -8110,19 +8134,6 @@ msgstr ""
 
 #~ msgid "Usage: gpg-agent [options] (-h for help)"
 #~ msgstr "Aufruf: gpg-agent [Optionen] (-h für Hilfe)"
-
-#, fuzzy
-#~| msgid "can't create '%s': %s\n"
-#~ msgid "can't create `%s': %s\n"
-#~ msgstr "'%s' kann nicht erzeugt werden: %s\n"
-
-#, fuzzy
-#~| msgid "can't open '%s': %s\n"
-#~ msgid "can't open `%s': %s\n"
-#~ msgstr "'%s' kann nicht geöffnet werden: %s\n"
-
-#~ msgid "too many entries in pk cache - disabled\n"
-#~ msgstr "zu viele Einträge im pk-Cache - abgeschaltet\n"
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "Ein keyDB Handle konnte nicht bereitgestellt werden\n"
