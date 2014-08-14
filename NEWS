@@ -1,8 +1,33 @@
-Noteworthy changes in version 2.1.0-betaxxx (unreleased)
+Noteworthy changes in version 2.1.0-beta783 (2014-08-14)
 --------------------------------------------------------
+
+ * gpg: Add command --quick-gen-key.
+
+ * gpg: Make --quick-sign-key promote local key signatures.
+
+ * gpg: Add "show-usage" sub-option to --list-options.
+
+ * gpg: Screen keyserver responses to avoid importing unwanted keys
+   from rogue servers.
 
  * gpg: Removed the option --pgp2 and --rfc1991 and the ability to
    create PGP-2 compatible messages.
+
+ * gpg: Removed options --compress-keys and --compress-sigs.
+
+ * gpg: Cap attribute packets at 16MB.
+
+ * gpg: Improved output of --list-packets.
+
+ * gpg: Make with-colons output of --search-keys work again.
+
+ * gpgsm: Auto-create the ".gnupg" directory like gpg does.
+
+ * agent: Fold new passphrase warning prompts into one.
+
+ * scdaemon: Add support for the Smartcard-HSM card.
+
+ * scdaemon: Remove the use of the pcsc-wrapper.
 
 
 Noteworthy changes in version 2.1.0-beta751 (2014-07-03)
@@ -19,9 +44,6 @@ Noteworthy changes in version 2.1.0-beta751 (2014-07-03)
    packet and information about the packet header.
 
  * gpg: Avoid DoS due to garbled compressed data packets. [CVE-2014-4617]
-
- * gpg: Screen keyserver responses to avoid importing unwanted keys
-   from rogue servers.
 
  * gpg: The validity of user ids is now shown by default.  To revert
    this add "list-options no-show-uid-validity" to gpg.conf.

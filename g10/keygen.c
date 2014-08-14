@@ -2208,7 +2208,9 @@ ask_curve (int *algo, int both)
               log_info ("WARNING: Curve25519 is an experimental algorithm"
                         " and not yet standardized.\n");
               log_info ("         The key format will eventually change"
-                        " and render this key unusable!\n\n");
+                        " and render this key unusable!\n");
+              log_info ("         You also need a recent development version"
+                        " of Libgcrypt.\n");
 
               if (!cpr_get_answer_is_yes("experimental_curve.override",
                                          "Use this curve anyway? (y/N) ")  )
