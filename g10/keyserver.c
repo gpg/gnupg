@@ -1042,6 +1042,85 @@ keyserver_export (ctrl_t ctrl, strlist_t users)
 }
 
 
+/* Structure to convey the arg to keyserver_retrieval_screener.  */
+struct ks_retrieval_screener_arg_s
+{
+  KEYDB_SEARCH_DESC *desc;
+  int ndesc;
+};
+
+
+/* Check whether a key matches the search description.  The function
+   returns 0 if the key shall be imported.  */
+static gpg_error_t
+keyserver_retrieval_screener (kbnode_t keyblock, void *opaque)
+{
+  struct ks_retrieval_screener_arg_s *arg = opaque;
+  KEYDB_SEARCH_DESC *desc = arg->desc;
+  int ndesc = arg->ndesc;
+  kbnode_t node;
+  PKT_public_key *pk;
+  int n;
+  u32 keyid[2];
+  byte fpr[MAX_FINGERPRINT_LEN];
+  size_t fpr_len = 0;
+
+  /* Secret keys are not expected from a keyserver.  We do not
+     care about secret subkeys because the import code takes care
+     of skipping them.  Not allowing an import of a public key
+     with a secret subkey would make it too easy to inhibit the
+     downloading of a public key.  Recall that keyservers do only
+     limited checks.  */
+  node = find_kbnode (keyblock, PKT_SECRET_KEY);
+  if (node)
+    return gpg_error (GPG_ERR_GENERAL);   /* Do not import. */
+
+  if (!ndesc)
+    return 0; /* Okay if no description given.  */
+
+  /* Loop over all key packets.  */
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype != PKT_PUBLIC_KEY
+          && node->pkt->pkttype != PKT_PUBLIC_SUBKEY)
+        continue;
+
+      pk = node->pkt->pkt.public_key;
+      fingerprint_from_pk (pk, fpr, &fpr_len);
+      keyid_from_pk (pk, keyid);
+
+      /* Compare requested and returned fingerprints if available. */
+      for (n = 0; n < ndesc; n++)
+        {
+          if (desc[n].mode == KEYDB_SEARCH_MODE_FPR20)
+            {
+              if (fpr_len == 20 && !memcmp (fpr, desc[n].u.fpr, 20))
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_FPR16)
+            {
+              if (fpr_len == 16 && !memcmp (fpr, desc[n].u.fpr, 16))
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
+            {
+              if (keyid[0] == desc[n].u.kid[0] && keyid[1] == desc[n].u.kid[1])
+                return 0;
+            }
+          else if (desc[n].mode == KEYDB_SEARCH_MODE_SHORT_KID)
+            {
+              if (keyid[1] == desc[n].u.kid[1])
+                return 0;
+            }
+          else /* No keyid or fingerprint - can't check.  */
+            return 0; /* allow import.  */
+        }
+    }
+
+  return gpg_error (GPG_ERR_GENERAL);
+}
+
+
 int
 keyserver_import (ctrl_t ctrl, strlist_t users)
 {
@@ -1601,6 +1680,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   if (!err)
     {
       void *stats_handle;
+      struct ks_retrieval_screener_arg_s screenerarg;
 
       stats_handle = import_new_stats_handle();
 
@@ -1616,10 +1696,14 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
          never accept or send them but we better protect against rogue
          keyservers. */
 
+      screenerarg.desc = desc;
+      screenerarg.ndesc = ndesc;
       import_keys_es_stream (ctrl, datastream, stats_handle,
                              r_fpr, r_fprlen,
                              (opt.keyserver_options.import_options
-                              | IMPORT_NO_SECKEY));
+                              | IMPORT_NO_SECKEY),
+                             keyserver_retrieval_screener, &screenerarg);
+
       import_print_stats (stats_handle);
       import_release_stats_handle (stats_handle);
     }
@@ -1684,7 +1768,7 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
 }
 
 
-/* Loop over all URLs in STRLIST and fetch the key that URL.  Note
+/* Loop over all URLs in STRLIST and fetch the key at that URL.  Note
    that the fetch operation ignores the configured key servers and
    instead directly retrieves the keys.  */
 int
@@ -1712,7 +1796,8 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
 
           stats_handle = import_new_stats_handle();
           import_keys_es_stream (ctrl, datastream, stats_handle, NULL, NULL,
-                                 opt.keyserver_options.import_options);
+                                 opt.keyserver_options.import_options,
+                                 NULL, NULL);
 
           import_print_stats (stats_handle);
           import_release_stats_handle (stats_handle);
@@ -1762,7 +1847,8 @@ keyserver_import_cert (ctrl_t ctrl,
 
       err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,
                                    (opt.keyserver_options.import_options
-                                    | IMPORT_NO_SECKEY));
+                                    | IMPORT_NO_SECKEY),
+                                   NULL, NULL);
 
       opt.no_armor=armor_status;
 

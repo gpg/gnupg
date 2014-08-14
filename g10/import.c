@@ -63,16 +63,19 @@ struct stats_s {
 
 static int import (ctrl_t ctrl,
                    IOBUF inp, const char* fname, struct stats_s *stats,
-		   unsigned char **fpr, size_t *fpr_len, unsigned int options);
+		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
+		   import_screener_t screener, void *screener_arg);
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
 static int import_one (ctrl_t ctrl,
                        const char *fname, KBNODE keyblock,struct stats_s *stats,
-                       unsigned char **fpr,size_t *fpr_len,
-                       unsigned int options,int from_sk, int silent);
+                       unsigned char **fpr, size_t *fpr_len,
+                       unsigned int options, int from_sk, int silent,
+                       import_screener_t screener, void *screener_arg);
 static int import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                               struct stats_s *stats, int batch,
-                              unsigned int options, int for_migration);
+                              unsigned int options, int for_migration,
+                              import_screener_t screener, void *screener_arg);
 static int import_revoke_cert( const char *fname, KBNODE node,
                                struct stats_s *stats);
 static int chk_self_sigs( const char *fname, KBNODE keyblock,
@@ -169,7 +172,8 @@ import_release_stats_handle (void *p)
 static int
 import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 		      void *stats_handle, unsigned char **fpr, size_t *fpr_len,
-		      unsigned int options )
+		      unsigned int options,
+                      import_screener_t screener, void *screener_arg)
 {
     int i, rc = 0;
     struct stats_s *stats = stats_handle;
@@ -178,7 +182,8 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
         stats = import_new_stats_handle ();
 
     if (inp) {
-      rc = import (ctrl, inp, "[stream]", stats, fpr, fpr_len, options);
+      rc = import (ctrl, inp, "[stream]", stats, fpr, fpr_len, options,
+                   screener, screener_arg);
     }
     else {
         if( !fnames && !nnames )
@@ -199,7 +204,8 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 	        log_error(_("can't open '%s': %s\n"), fname, strerror(errno) );
 	    else
 	      {
-	        rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options);
+	        rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options,
+                             screener, screener_arg);
 	        iobuf_close(inp2);
                 /* Must invalidate that ugly cache to actually close it. */
                 iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
@@ -235,15 +241,15 @@ import_keys (ctrl_t ctrl, char **fnames, int nnames,
 	     void *stats_handle, unsigned int options )
 {
   import_keys_internal (ctrl, NULL, fnames, nnames, stats_handle,
-                        NULL, NULL, options);
+                        NULL, NULL, options, NULL, NULL);
 }
 
 int
 import_keys_stream (ctrl_t ctrl, IOBUF inp, void *stats_handle,
-		    unsigned char **fpr, size_t *fpr_len,unsigned int options)
+		    unsigned char **fpr, size_t *fpr_len, unsigned int options)
 {
   return import_keys_internal (ctrl, inp, NULL, 0, stats_handle,
-                               fpr, fpr_len, options);
+                               fpr, fpr_len, options, NULL, NULL);
 }
 
 
@@ -251,7 +257,8 @@ import_keys_stream (ctrl_t ctrl, IOBUF inp, void *stats_handle,
 int
 import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
                        unsigned char **fpr, size_t *fpr_len,
-                       unsigned int options)
+                       unsigned int options,
+                       import_screener_t screener, void *screener_arg)
 {
   int rc;
   iobuf_t inp;
@@ -265,7 +272,8 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
     }
 
   rc = import_keys_internal (ctrl, inp, NULL, 0, stats_handle,
-                             fpr, fpr_len, options);
+                             fpr, fpr_len, options,
+                             screener, screener_arg);
 
   iobuf_close (inp);
   return rc;
@@ -274,7 +282,8 @@ import_keys_es_stream (ctrl_t ctrl, estream_t fp, void *stats_handle,
 
 static int
 import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
-	unsigned char **fpr,size_t *fpr_len,unsigned int options )
+	unsigned char **fpr,size_t *fpr_len, unsigned int options,
+	import_screener_t screener, void *screener_arg)
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock = NULL;  /* Need to initialize because gcc can't
@@ -296,10 +305,12 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
 	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
           rc = import_one (ctrl, fname, keyblock,
-                           stats, fpr, fpr_len, options, 0, 0);
+                           stats, fpr, fpr_len, options, 0, 0,
+                           screener, screener_arg);
 	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
           rc = import_secret_one (ctrl, fname, keyblock, stats,
-                                  opt.batch, options, 0);
+                                  opt.batch, options, 0,
+                                  screener, screener_arg);
 	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
 		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
 	    rc = import_revoke_cert( fname, keyblock, stats );
@@ -355,7 +366,8 @@ import_old_secring (ctrl_t ctrl, const char *fname)
   while (!(err = read_block (inp, &pending_pkt, &keyblock)))
     {
       if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
-        err = import_secret_one (ctrl, fname, keyblock, stats, 1, 0, 1);
+        err = import_secret_one (ctrl, fname, keyblock, stats, 1, 0, 1,
+                                 NULL, NULL);
       release_kbnode (keyblock);
       if (err)
         break;
@@ -835,8 +847,9 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 static int
 import_one (ctrl_t ctrl,
             const char *fname, KBNODE keyblock, struct stats_s *stats,
-	    unsigned char **fpr,size_t *fpr_len,unsigned int options,
-	    int from_sk, int silent)
+	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
+	    int from_sk, int silent,
+            import_screener_t screener, void *screener_arg)
 {
     PKT_public_key *pk;
     PKT_public_key *pk_orig;
@@ -878,6 +891,13 @@ import_one (ctrl_t ctrl,
         if (!silent)
           log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
 	return 0;
+      }
+
+    if (screener && screener (keyblock, screener_arg))
+      {
+        log_error (_("key %s: %s\n"), keystr_from_pk (pk),
+                   _("rejected by import screener"));
+        return 0;
       }
 
     if (opt.interactive && !silent) {
@@ -1519,7 +1539,8 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
 static int
 import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
                    struct stats_s *stats, int batch, unsigned int options,
-                   int for_migration)
+                   int for_migration,
+                   import_screener_t screener, void *screener_arg)
 {
   PKT_public_key *pk;
   struct seckey_info *ski;
@@ -1539,6 +1560,13 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
 
   keyid_from_pk (pk, keyid);
   uidnode = find_next_kbnode (keyblock, PKT_USER_ID);
+
+  if (screener && screener (keyblock, screener_arg))
+    {
+      log_error (_("secret key %s: %s\n"), keystr_from_pk (pk),
+                 _("rejected by import screener"));
+      return 0;
+  }
 
   if (opt.verbose && !for_migration)
     {
@@ -1610,7 +1638,8 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
 	 public key block, and below we will output another one for
 	 the secret keys.  FIXME?  */
       import_one (ctrl, fname, pub_keyblock, stats,
-		  NULL, NULL, options, 1, for_migration);
+		  NULL, NULL, options, 1, for_migration,
+                  screener, screener_arg);
 
       /* Fixme: We should check for an invalid keyblock and
 	 cancel the secret key import in this case.  */
