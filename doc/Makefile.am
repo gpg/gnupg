@@ -131,7 +131,7 @@ online: gnupg.html gnupg.pdf
 	echo "Uploading current manuals to www.gnupg.org ..."; \
 	cp $(srcdir)/gnupg-logo-tr.png gnupg.html/; \
         user=werner ; webhost="ftp.gnupg.org" ; dashdevel="" ; \
-        if echo "@PACKAGE_VERSION@" | grep -- "-git" >/dev/null; then \
+        if echo "@PACKAGE_VERSION@" | grep -- "-beta" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
           rsync -v gnupg.pdf $${user}@$${webhost}:webspace/manuals/ ; \

@@ -1,3 +1,7 @@
+Noteworthy changes in version 2.1.0-betaNNN (unreleased)
+--------------------------------------------------------
+
+
 Noteworthy changes in version 2.1.0-beta783 (2014-08-14)
 --------------------------------------------------------
 
@@ -5,7 +9,7 @@ Noteworthy changes in version 2.1.0-beta783 (2014-08-14)
 
  * gpg: Make --quick-sign-key promote local key signatures.
 
- * gpg: Add "show-usage" sub-option to --list-options.
+ * gpg: Added "show-usage" sub-option to --list-options.
 
  * gpg: Screen keyserver responses to avoid importing unwanted keys
    from rogue servers.
