@@ -1,4 +1,4 @@
-@c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ @c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
 @c               2008, 2009, 2010 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
@@ -13,6 +13,19 @@
 @cindex GPG command options
 @cindex command options
 @cindex options, GPG command
+
+@c Begin algorithm defaults
+
+@ifclear gpgtwoone
+@set DEFSYMENCALGO CAST5
+@end ifclear
+
+@ifset gpgtwoone
+@set DEFSYMENCALGO AES128
+@end ifset
+
+@c End algorithm defaults
+
 
 @c Begin GnuPG 1.x specific stuff
 @ifset gpgone
@@ -217,7 +230,7 @@ decrypted via a secret key or a passphrase).
 @itemx -c
 @opindex symmetric
 Encrypt with a symmetric cipher using a passphrase. The default
-symmetric cipher used is CAST5, but may be chosen with the
+symmetric cipher used is @value{DEFSYMENCALGO}, but may be chosen with the
 @option{--cipher-algo} option. This option may be combined with
 @option{--sign} (for a signed and symmetrically encrypted message),
 @option{--encrypt} (for a message that may be decrypted via a secret key
@@ -2272,7 +2285,7 @@ to consider (e.g. @option{--symmetric}).
 @item --s2k-cipher-algo @code{name}
 @opindex s2k-cipher-algo
 Use @code{name} as the cipher algorithm used to protect secret keys.
-The default cipher is CAST5. This cipher is also used for
+The default cipher is @value{DEFSYMENCALGO}. This cipher is also used for
 conventional encryption if @option{--personal-cipher-preferences} and
 @option{--cipher-algo} is not given.
 
