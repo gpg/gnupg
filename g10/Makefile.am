@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = options.skel ChangeLog-2011 gpg-w32info.rc
+EXTRA_DIST = options.skel distsigkey.gpg ChangeLog-2011 gpg-w32info.rc
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
               -I$(top_srcdir)/include -I$(top_srcdir)/intl
@@ -161,9 +161,12 @@ install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/options.skel \
 				$(DESTDIR)$(pkgdatadir)/gpg-conf.skel
+	$(INSTALL_DATA) $(srcdir)/distsigkey.gpg \
+				$(DESTDIR)$(pkgdatadir)/distsigkey.gpg
 
 uninstall-local:
 	-@rm $(DESTDIR)$(pkgdatadir)/gpg-conf.skel
+	-@rm $(DESTDIR)$(pkgdatadir)/distsigkey.gpg
 
 
 # There has never been a gpg for WindowsCE, thus we don't need a gpg2 here
