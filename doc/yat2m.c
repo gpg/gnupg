@@ -87,6 +87,10 @@
     detects the number of white spaces in front of an @item and remove
     this number of spaces from all following lines until a new @item
     is found or there are less spaces than for the last @item.
+
+    Note that @* does only work correctly if used at the end of an
+    input line.
+
 */
 
 #include <stdio.h>
@@ -664,6 +668,8 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "table",   3 },
     { "itemize",   3 },
     { "bullet",  0, "* " },
+    { "*",       0, "\n.br"},
+    { "/",       0 },
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
     { NULL }
