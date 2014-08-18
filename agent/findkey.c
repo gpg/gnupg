@@ -605,7 +605,11 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
 
   rc = read_key_file (grip, &s_skey);
   if (rc)
-    return rc;
+    {
+      if (gpg_err_code (rc) == GPG_ERR_ENOENT)
+        rc = gpg_error (GPG_ERR_NO_SECKEY);
+      return rc;
+    }
 
   /* For use with the protection functions we also need the key as an
      canonical encoded S-expression in a buffer.  Create this buffer

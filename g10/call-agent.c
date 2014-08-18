@@ -210,8 +210,8 @@ check_hijacking (assuan_context_t ctx)
 
   init_membuf (&mb, 64);
 
-  /* AGENT_ID is a command implemented by gnome-keyring-daemon.  IT
-     does not reatun any data but an OK line with a remark.  */
+  /* AGENT_ID is a command implemented by gnome-keyring-daemon.  It
+     does not return any data but an OK line with a remark.  */
   if (assuan_transact (ctx, "AGENT_ID",
                        membuf_data_cb, &mb, NULL, NULL, NULL, NULL))
     {

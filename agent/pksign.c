@@ -312,7 +312,8 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                             &s_skey, NULL);
   if (rc)
     {
-      log_error ("failed to read the secret key\n");
+      if (gpg_err_code (rc) != GPG_ERR_NO_SECKEY)
+        log_error ("failed to read the secret key\n");
       goto leave;
     }
 
