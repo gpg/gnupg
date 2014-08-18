@@ -11,7 +11,7 @@
 
 @c Begin algorithm defaults
 
-@set DEFSYMENCALGO CAST5
+@set DEFSYMENCALGO AES128
 
 @c End algorithm defaults
 
