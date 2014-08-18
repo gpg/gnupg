@@ -20,7 +20,7 @@ mainkeyids='BAA59D9C
             45AF2FFE'
 
 
-if have_pubkey_algo "ECC"; then
+if have_pubkey_algo "ECDH"; then
   :
 else
   info "No ECC support due to an old Libgcrypt"
