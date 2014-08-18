@@ -702,9 +702,6 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 
   *r_blob = NULL;
 
-  if (!info->nuids || !info->nsigs)
-    return gpg_error (GPG_ERR_BAD_PUBKEY);
-
   /* If we have a signature status vector, check that the number of
      elements matches the actual number of signatures.  */
   if (sigstatus && sigstatus[0] != info->nsigs)
@@ -721,19 +718,27 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
       err = gpg_error_from_syserror ();
       goto leave;
     }
+
   blob->nuids = info->nuids;
-  blob->uids = xtrycalloc (blob->nuids, sizeof *blob->uids );
-  if (!blob->uids)
+  if (blob->nuids)
     {
-      err = gpg_error_from_syserror ();
-      goto leave;
+      blob->uids = xtrycalloc (blob->nuids, sizeof *blob->uids );
+      if (!blob->uids)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
+
   blob->nsigs = info->nsigs;
-  blob->sigs = xtrycalloc (blob->nsigs, sizeof *blob->sigs );
-  if (!blob->sigs)
+  if (blob->nsigs)
     {
-      err = gpg_error_from_syserror ();
-      goto leave;
+      blob->sigs = xtrycalloc (blob->nsigs, sizeof *blob->sigs );
+      if (!blob->sigs)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
     }
 
   err = pgp_create_key_part (blob, info);
