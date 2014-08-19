@@ -158,3 +158,5 @@ tools/gpgtar
 private-keys-v1.d/
 x.parm
 /VERSION
+/swdb.lst
+/swdb.lst.sig

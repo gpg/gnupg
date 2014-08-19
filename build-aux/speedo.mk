@@ -64,6 +64,21 @@ MAKE_J=3
 # Name to use for the w32 installer and sources
 INST_NAME=gnupg-w32
 
+
+# Directory names.
+# They must be absolute, as we switch directories pretty often.
+root := $(shell pwd)/PLAY
+sdir := $(root)/src
+bdir := $(root)/build
+bdir6:= $(root)/build-w64
+idir := $(root)/inst
+idir6:= $(root)/inst-w64
+stampdir := $(root)/stamps
+topsrc := $(shell cd $(dir $(SPEEDO_MK)).. && pwd)
+auxsrc := $(topsrc)/build-aux/speedo
+patdir := $(topsrc)/build-aux/speedo/patches
+w32src := $(topsrc)/build-aux/speedo/w32
+
 # =====BEGIN LIST OF PACKAGES=====
 # The packages that should be built.  The order is also the build order.
 # Fixme: Do we need to build pkg-config for cross-building?
@@ -118,17 +133,34 @@ speedo_gnupg_style = \
 speedo_make_only_style = \
 	zlib
 
+# Get the content of the software DB.
+SWDB := $(shell $(topsrc)/build-aux/getswdb.sh && echo okay)
+ifeq ($(strip $(SWDB)),)
+$(error Error getting GnuPG software version database)
+endif
+
 # Version numbers of the released packages
-# Fixme: Take the version numbers from gnupg-doc/web/swdb.mac
-libgpg_error_ver = 1.13
-npth_ver = 0.91
-libgcrypt_ver = 1.6.1
-libassuan_ver = 2.1.1
-libksba_ver = 1.3.0
-gpgme_ver = 1.5.0
-pinentry_ver = 0.8.4
-gpa_ver = 0.9.5
-gpgex_ver = 1.0.0
+gnupg_ver = $(shell cat $(topsrc)/VERSION)
+libgpg_error_ver = $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
+npth_ver = $(shell awk '$$1=="npth_ver" {print $$2}' swdb.lst)
+libgcrypt_ver = $(shell awk '$$1=="libgcrypt_ver" {print $$2}' swdb.lst)
+libassuan_ver = $(shell awk '$$1=="libassuan_ver" {print $$2}' swdb.lst)
+libksba_ver = $(shell awk '$$1=="libksba_ver" {print $$2}' swdb.lst)
+gpgme_ver = $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
+pinentry_ver = $(shell awk '$$1=="pinentry_ver" {print $$2}' swdb.lst)
+gpa_ver = $(shell awk '$$1=="gpa_ver" {print $$2}' swdb.lst)
+gpgex_ver = $(shell awk '$$1=="gpgex_ver" {print $$2}' swdb.lst)
+
+$(info Information from the version database)
+$(info GnuPG ..........: $(gnupg_ver))
+$(info Libgpg-error ...: $(libgpg_error_ver))
+$(info Npth ...........: $(npth_ver))
+$(info Libgcrypt ......: $(libgcrypt_ver))
+$(info Libassuan ......: $(libassuan_ver))
+$(info GPGME ..........: $(gpgme_ver))
+$(info Pinentry .......: $(pinentry_ver))
+$(info GPA ............: $(gpa_ver))
+$(info GpgEX.... ......: $(gpgex_ver))
 
 
 # Version number for external packages
@@ -396,19 +428,6 @@ W32CC = i686-w64-mingw32-gcc
 MKDIR=mkdir
 MAKENSIS=makensis
 BUILD_ISODATE=$(shell date -u +%Y-%m-%d)
-
-# These paths must be absolute, as we switch directories pretty often.
-root := $(shell pwd)/PLAY
-sdir := $(root)/src
-bdir := $(root)/build
-bdir6:= $(root)/build-w64
-idir := $(root)/inst
-idir6:= $(root)/inst-w64
-stampdir := $(root)/stamps
-topsrc := $(shell cd $(dir $(SPEEDO_MK)).. && pwd)
-auxsrc := $(topsrc)/build-aux/speedo
-patdir := $(topsrc)/build-aux/speedo/patches
-w32src := $(topsrc)/build-aux/speedo/w32
 
 # The next two macros will work only after gnupg has been build.
 INST_VERSION=$(shell head -1 $(idir)/INST_VERSION)
