@@ -25,7 +25,7 @@ GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
 EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc
 	     ChangeLog-2011 po/ChangeLog-2011 build-aux/ChangeLog-2011 \
-	     build-aux/gitlog-to-changelog \
+	     VERSION build-aux/gitlog-to-changelog \
 	     build-aux/git-log-fix build-aux/git-log-footer \
 	     build-aux/speedo.mk README.GIT
 
@@ -93,7 +93,6 @@ dist_doc_DATA = README
 
 
 dist-hook: gen-ChangeLog
-	echo "$(VERSION)" > $(distdir)/VERSION
 
 if HAVE_W32_SYSTEM
 install-data-hook:

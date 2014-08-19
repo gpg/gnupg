@@ -157,3 +157,4 @@ tools/watchgnupg
 tools/gpgtar
 private-keys-v1.d/
 x.parm
+/VERSION
