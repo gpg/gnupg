@@ -1773,14 +1773,14 @@ do_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
 #define W (ctx->keySched)
 
     for (j = KC-1; j >= 0; j--) {
-        *((u32*)tk[j]) = *((u32*)k[j]);
+        *((u32_a_t*)tk[j]) = *((u32_a_t*)k[j]);
     }
     r = 0;
     t = 0;
     /* copy values into round key array */
     for (j = 0; (j < KC) && (r < ROUNDS + 1); ) {
         for (; (j < KC) && (t < 4); j++, t++) {
-            *((u32*)W[r][t]) = *((u32*)tk[j]);
+            *((u32_a_t*)W[r][t]) = *((u32_a_t*)tk[j]);
         }
         if (t == 4) {
             r++;
@@ -1799,24 +1799,24 @@ do_setkey (RIJNDAEL_context *ctx, const byte *key, const unsigned keylen)
 
         if (KC != 8) {
             for (j = 1; j < KC; j++) {
-                *((u32*)tk[j]) ^= *((u32*)tk[j-1]);
+                *((u32_a_t*)tk[j]) ^= *((u32_a_t*)tk[j-1]);
             }
         } else {
             for (j = 1; j < KC/2; j++) {
-                *((u32*)tk[j]) ^= *((u32*)tk[j-1]);
+                *((u32_a_t*)tk[j]) ^= *((u32_a_t*)tk[j-1]);
             }
             tk[KC/2][0] ^= S[tk[KC/2 - 1][0]];
             tk[KC/2][1] ^= S[tk[KC/2 - 1][1]];
             tk[KC/2][2] ^= S[tk[KC/2 - 1][2]];
             tk[KC/2][3] ^= S[tk[KC/2 - 1][3]];
             for (j = KC/2 + 1; j < KC; j++) {
-                *((u32*)tk[j]) ^= *((u32*)tk[j-1]);
+                *((u32_a_t*)tk[j]) ^= *((u32_a_t*)tk[j-1]);
             }
         }
         /* copy values into round key array */
         for (j = 0; (j < KC) && (r < ROUNDS + 1); ) {
             for (; (j < KC) && (t < 4); j++, t++) {
-                *((u32*)W[r][t]) = *((u32*)tk[j]);
+                *((u32_a_t*)W[r][t]) = *((u32_a_t*)tk[j]);
             }
             if (t == 4) {
                 r++;
@@ -1845,29 +1845,29 @@ prepare_decryption( RIJNDAEL_context *ctx )
     byte *w;
 
     for (r=0; r < MAXROUNDS+1; r++ ) {
-        *((u32*)ctx->keySched2[r][0]) = *((u32*)ctx->keySched[r][0]);
-        *((u32*)ctx->keySched2[r][1]) = *((u32*)ctx->keySched[r][1]);
-        *((u32*)ctx->keySched2[r][2]) = *((u32*)ctx->keySched[r][2]);
-        *((u32*)ctx->keySched2[r][3]) = *((u32*)ctx->keySched[r][3]);
+        *((u32_a_t*)ctx->keySched2[r][0]) = *((u32_a_t*)ctx->keySched[r][0]);
+        *((u32_a_t*)ctx->keySched2[r][1]) = *((u32_a_t*)ctx->keySched[r][1]);
+        *((u32_a_t*)ctx->keySched2[r][2]) = *((u32_a_t*)ctx->keySched[r][2]);
+        *((u32_a_t*)ctx->keySched2[r][3]) = *((u32_a_t*)ctx->keySched[r][3]);
     }
 #define W (ctx->keySched2)
     for (r = 1; r < ctx->ROUNDS; r++) {
         w = W[r][0];
-        *((u32*)w) = *((u32*)U1[w[0]]) ^ *((u32*)U2[w[1]])
-                   ^ *((u32*)U3[w[2]]) ^ *((u32*)U4[w[3]]);
+        *((u32_a_t*)w) = *((u32_a_t*)U1[w[0]]) ^ *((u32_a_t*)U2[w[1]])
+                       ^ *((u32_a_t*)U3[w[2]]) ^ *((u32_a_t*)U4[w[3]]);
 
         w = W[r][1];
-        *((u32*)w) = *((u32*)U1[w[0]]) ^ *((u32*)U2[w[1]])
-                   ^ *((u32*)U3[w[2]]) ^ *((u32*)U4[w[3]]);
+        *((u32_a_t*)w) = *((u32_a_t*)U1[w[0]]) ^ *((u32_a_t*)U2[w[1]])
+                       ^ *((u32_a_t*)U3[w[2]]) ^ *((u32_a_t*)U4[w[3]]);
 
         w = W[r][2];
-        *((u32*)w) = *((u32*)U1[w[0]]) ^ *((u32*)U2[w[1]])
-                   ^ *((u32*)U3[w[2]]) ^ *((u32*)U4[w[3]]);
+        *((u32_a_t*)w) = *((u32_a_t*)U1[w[0]]) ^ *((u32_a_t*)U2[w[1]])
+                       ^ *((u32_a_t*)U3[w[2]]) ^ *((u32_a_t*)U4[w[3]]);
 
         w = W[r][3];
-        *((u32*)w) = *((u32*)U1[w[0]]) ^ *((u32*)U2[w[1]])
-                   ^ *((u32*)U3[w[2]]) ^ *((u32*)U4[w[3]]);
-    }
+        *((u32_a_t*)w) = *((u32_a_t*)U1[w[0]]) ^ *((u32_a_t*)U2[w[1]])
+                       ^ *((u32_a_t*)U3[w[2]]) ^ *((u32_a_t*)U4[w[3]]);
+}
 #undef W
 }
 
