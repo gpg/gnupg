@@ -195,12 +195,29 @@ unknown_pubkey_warning (int algo)
 {
   static byte unknown_pubkey_algos[256];
 
-  algo &= 0xff;
-  if (!unknown_pubkey_algos[algo])
+  /* First check whether the algorithm is usable but not suitable for
+     encryption/signing.  */
+  if (pubkey_get_npkey (algo))
     {
       if (opt.verbose)
-	log_info (_("can't handle public key algorithm %d\n"), algo);
-      unknown_pubkey_algos[algo] = 1;
+        {
+          if (!pubkey_get_nsig (algo))
+            log_info ("public key algorithm %s not suitable for %s\n",
+                      openpgp_pk_algo_name (algo), "signing");
+          if (!pubkey_get_nenc (algo))
+            log_info ("public key algorithm %s not suitable for %s\n",
+                      openpgp_pk_algo_name (algo), "encryption");
+        }
+    }
+  else
+    {
+      algo &= 0xff;
+      if (!unknown_pubkey_algos[algo])
+        {
+          if (opt.verbose)
+            log_info (_("can't handle public key algorithm %d\n"), algo);
+          unknown_pubkey_algos[algo] = 1;
+        }
     }
 }
 
