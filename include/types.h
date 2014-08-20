@@ -143,4 +143,13 @@ struct string_list {
 typedef struct string_list *STRLIST;
 typedef struct string_list *strlist_t;
 
+
+
+#if __GNUC__ > 2 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 5 )
+# define GNUPG_GCC_ATTR_UNUSED  __attribute__ ((unused))
+#else
+# define GNUPG_GCC_ATTR_UNUSED
+#endif
+
+
 #endif /*G10_TYPES_H*/
