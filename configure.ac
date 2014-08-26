@@ -1208,6 +1208,7 @@ AM_CONDITIONAL(DISABLE_REGEX, test x"$use_regex" != xyes)
 # when compiling a conftest (due to the "-lz" from LIBS).
 # Note that we combine zlib and bzlib2 in ZLIBS.
 #
+missing_zlib=yes
 _cppflags="${CPPFLAGS}"
 _ldflags="${LDFLAGS}"
 AC_ARG_WITH(zlib,
@@ -1220,7 +1221,10 @@ AC_ARG_WITH(zlib,
 
 AC_CHECK_HEADER(zlib.h,
       AC_CHECK_LIB(z, deflateInit2_,
-       ZLIBS="-lz",
+       [
+       ZLIBS="-lz"
+       missing_zlib=no
+       ],
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}),
        CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags})
 
@@ -1526,6 +1530,16 @@ if test "$missing_pth" = "yes"; then
 *** To build GnuPG for Windows you need to use the W32PTH
 *** package; available at:
 ***   ftp://ftp.g10code.com/g10code/w32pth/
+***]])
+   die=yes
+fi
+if test "$missing_zlib" = "yes"; then
+    AC_MSG_NOTICE([[
+***
+*** The zlib compression library is required.
+*** Please install a suitable development package
+*** (e.g. Debian package zlib1g-dev) or download
+*** it from http://zlib.net and build yourself.
 ***]])
    die=yes
 fi
