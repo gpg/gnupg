@@ -30,8 +30,6 @@
 #ifndef GNUPG_COMMON_EXECHELP_H
 #define GNUPG_COMMON_EXECHELP_H
 
-#include "../common/estream.h"
-
 
 /* Return the maximum number of currently allowed file descriptors.
    Only useful on POSIX systems.  */

@@ -686,8 +686,8 @@ cmd_learn (assuan_context_t ctx, char *line)
         {
           char *command;
 
-          rc = estream_asprintf (&command, "KNOWNCARDP %s %lu",
-                                 serial, (unsigned long)stamp);
+          rc = gpgrt_asprintf (&command, "KNOWNCARDP %s %lu",
+                               serial, (unsigned long)stamp);
           if (rc < 0)
             {
               xfree (serial);
@@ -915,7 +915,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
       if (info)
         {
           log_debug ("prompting for pinpad entry '%s'\n", info);
-          rc = estream_asprintf (&command, "POPUPPINPADPROMPT %s", info);
+          rc = gpgrt_asprintf (&command, "POPUPPINPADPROMPT %s", info);
           if (rc < 0)
             return gpg_error (gpg_err_code_from_errno (errno));
           rc = assuan_inquire (ctx, command, &value, &valuelen, MAXLEN_PIN);
@@ -935,7 +935,7 @@ pin_cb (void *opaque, const char *info, char **retstr)
   *retstr = NULL;
   log_debug ("asking for PIN '%s'\n", info);
 
-  rc = estream_asprintf (&command, "NEEDPIN %s", info);
+  rc = gpgrt_asprintf (&command, "NEEDPIN %s", info);
   if (rc < 0)
     return gpg_error (gpg_err_code_from_errno (errno));
 
@@ -2340,7 +2340,7 @@ update_reader_status_file (int set_card_removed_flag)
             gpg_error_t err;
 
             homestr = make_filename (opt.homedir, NULL);
-            if (estream_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
+            if (gpgrt_asprintf (&envstr, "GNUPGHOME=%s", homestr) < 0)
               log_error ("out of core while building environment\n");
             else
               {

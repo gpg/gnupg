@@ -648,7 +648,7 @@ tty_getf (const char *promptfmt, ... )
   char *answer;
 
   va_start (arg_ptr, promptfmt);
-  if (estream_vasprintf (&prompt, promptfmt, arg_ptr) < 0)
+  if (gpgrt_vasprintf (&prompt, promptfmt, arg_ptr) < 0)
     log_fatal ("estream_vasprintf failed: %s\n", strerror (errno));
   va_end (arg_ptr);
   answer = tty_get (prompt);

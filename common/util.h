@@ -33,15 +33,11 @@
 
 #include <gcrypt.h> /* We need this for the memory function protos. */
 #include <errno.h>  /* We need errno.  */
-#include <gpg-error.h> /* We need gpg_error_t. */
+#include <gpg-error.h> /* We need gpg_error_t and estream. */
 
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
-
-/* Estream replaces most uses of stdio.  */
-#include "../common/estream.h"
-#include "../common/estream-printf.h"
 
 /* Get all the stuff from jnlib. */
 #include "../common/logging.h"
@@ -57,13 +53,13 @@
 
 /* Redefine asprintf by our estream version which uses our own memory
    allocator..  */
-#define asprintf estream_asprintf
-#define vasprintf estream_vasprintf
+#define asprintf gpgrt_asprintf
+#define vasprintf gpgrt_vasprintf
 
 /* Due to a bug in mingw32's snprintf related to the 'l' modifier and
    for increased portability we use our snprintf on all systems. */
 #undef snprintf
-#define snprintf estream_snprintf
+#define snprintf gpgrt_snprintf
 
 
 /* GCC attributes.  */
@@ -278,6 +274,8 @@ const char *gnupg_cipher_algo_name (int algo);
 
 const char *print_fname_stdout (const char *s);
 const char *print_fname_stdin (const char *s);
+void print_utf8_buffer3 (estream_t fp, const void *p, size_t n,
+                         const char *delim);
 void print_utf8_buffer2 (estream_t fp, const void *p, size_t n, int delim);
 void print_utf8_buffer (estream_t fp, const void *p, size_t n);
 void print_hexstring (FILE *fp, const void *buffer, size_t length,

@@ -113,7 +113,6 @@
 #include "crlfetch.h"
 #include "misc.h"
 #include "cdb.h"
-#include "estream-printf.h"
 
 /* Change this whenever the format changes */
 #define DBDIR_D (opt.system_daemon? "crls.d" : "dirmngr-cache.d")
@@ -818,8 +817,8 @@ update_dir (crl_cache_t cache)
       nodename = utsbuf.nodename;
 #endif
 
-    estream_asprintf (&tmpbuf, "DIR-tmp-%s-%u-%p.txt.tmp",
-                      nodename, (unsigned int)getpid (), &tmpbuf);
+    gpgrt_asprintf (&tmpbuf, "DIR-tmp-%s-%u-%p.txt.tmp",
+                    nodename, (unsigned int)getpid (), &tmpbuf);
     if (!tmpbuf)
       {
         err = gpg_error_from_errno (errno);
@@ -2022,8 +2021,8 @@ crl_cache_insert (ctrl_t ctrl, const char *url, ksba_reader_t reader)
       nodename = utsbuf.nodename;
 #endif
 
-    estream_asprintf (&tmpfname, "crl-tmp-%s-%u-%p.db.tmp",
-                      nodename, (unsigned int)getpid (), &tmpfname);
+    gpgrt_asprintf (&tmpfname, "crl-tmp-%s-%u-%p.db.tmp",
+                    nodename, (unsigned int)getpid (), &tmpfname);
     if (!tmpfname)
       {
         err = gpg_error_from_syserror ();

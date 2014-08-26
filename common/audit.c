@@ -381,7 +381,7 @@ writeout_v (audit_ctx_t ctx, const char *format, va_list arg_ptr)
 {
   char *buf;
 
-  estream_vasprintf (&buf, format, arg_ptr);
+  gpgrt_vasprintf (&buf, format, arg_ptr);
   if (buf)
     {
       writeout (ctx, buf);

@@ -50,6 +50,7 @@
 
 
 #define JNLIB_NEED_LOG_LOGV
+#include <gpg-error.h>
 #include "../common/logging.h"
 #include "../common/argparse.h"
 #include "../common/stringhelp.h"
