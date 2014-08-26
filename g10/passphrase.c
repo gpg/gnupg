@@ -341,37 +341,26 @@ passphrase_get ( u32 *keyid, int mode, const char *cacheid, int repeat,
       if ( !algo_name )
         algo_name = "?";
 
-#define KEYIDSTRING _(" (main key ID %s)")
-
-      maink = xmalloc ( strlen (KEYIDSTRING) + keystrlen() + 20 );
-      if( keyid[2] && keyid[3] && keyid[0] != keyid[2]
+      if (keyid[2] && keyid[3]
+          && keyid[0] != keyid[2]
           && keyid[1] != keyid[3] )
-        sprintf( maink, KEYIDSTRING, keystr(&keyid[2]) );
+        maink = xasprintf (_(" (main key ID %s)"), keystr (&keyid[2]));
       else
-        *maink = 0;
+        maink = xstrdup ("");
 
       uid = get_user_id ( keyid, &uidlen );
       timestr = strtimestamp (pk->timestamp);
 
-#undef KEYIDSTRING
-
-#define PROMPTSTRING _("Please enter the passphrase to unlock the" \
-		       " secret key for the OpenPGP certificate:\n" \
-		       "\"%.*s\"\n" \
-		       "%u-bit %s key, ID %s,\n" \
-                       "created %s%s.\n" )
-
-      atext = xmalloc ( 100 + strlen (PROMPTSTRING)
-                        + uidlen + 15 + strlen(algo_name) + keystrlen()
-                        + strlen (timestr) + strlen (maink) );
-      sprintf (atext, PROMPTSTRING,
-               (int)uidlen, uid,
-               nbits_from_pk (pk), algo_name, keystr(&keyid[0]), timestr,
-               maink  );
+      atext = xasprintf (_("Please enter the passphrase to unlock the"
+                           " secret key for the OpenPGP certificate:\n"
+                           "\"%.*s\"\n"
+                           "%u-bit %s key, ID %s,\n"
+                           "created %s%s.\n"),
+                         (int)uidlen, uid,
+                         nbits_from_pk (pk), algo_name, keystr(&keyid[0]),
+                         timestr, maink);
       xfree (uid);
       xfree (maink);
-
-#undef PROMPTSTRING
 
       {
         size_t dummy;
