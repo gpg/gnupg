@@ -462,7 +462,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   xfree (string); string = NULL;
   if (gcry_pk_algo_info (pk_algo, GCRYCTL_GET_ALGO_NPKEY, NULL, &npkey)
       || gcry_pk_algo_info (pk_algo, GCRYCTL_GET_ALGO_NSKEY, NULL, &nskey)
-      || !npkey || npkey >= nskey || nskey > PUBKEY_MAX_NSKEY)
+      || !npkey || npkey >= nskey)
     goto bad_seckey;
 
   /* Check that the pubkey algo matches the one from the public key.  */
@@ -502,6 +502,10 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
       goto leave;
     }
+
+  /* This check has to go after the ecc adjustments. */
+  if (nskey > PUBKEY_MAX_NSKEY)
+    goto bad_seckey;
 
   /* Parse the key parameters.  */
   gcry_sexp_release (list);
