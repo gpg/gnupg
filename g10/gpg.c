@@ -842,6 +842,12 @@ make_libversion (const char *libname, const char *(*getfnc)(const char*))
 static int
 build_list_pk_test_algo (int algo)
 {
+  /* Show only one "RSA" string.  If RSA_E or RSA_S is available RSA
+     is also available.  */
+  if (algo == PUBKEY_ALGO_RSA_E
+      || algo == PUBKEY_ALGO_RSA_S)
+    return GPG_ERR_DIGEST_ALGO;
+
   return openpgp_pk_test_algo (algo);
 }
 
@@ -866,6 +872,11 @@ build_list_cipher_algo_name (int algo)
 static int
 build_list_md_test_algo (int algo)
 {
+  /* By default we do not accept MD5 based signatures.  To avoid
+     confusion we do not announce support for it either.  */
+  if (algo == DIGEST_ALGO_MD5)
+    return GPG_ERR_DIGEST_ALGO;
+
   return openpgp_md_test_algo (algo);
 }
 
