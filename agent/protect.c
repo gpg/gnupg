@@ -42,7 +42,9 @@
 #include "cvt-openpgp.h"
 #include "sexp-parse.h"
 
-#define PROT_CIPHER        GCRY_CIPHER_AES
+/* The protection mode for encryption.  The supported modes for
+   decryption are listed in agent_unprotect().  */
+#define PROT_CIPHER        GCRY_CIPHER_AES128
 #define PROT_CIPHER_STRING "aes"
 #define PROT_CIPHER_KEYLEN (128/8)
 
@@ -632,6 +634,7 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
                const char *passphrase,
                const unsigned char *s2ksalt, unsigned long s2kcount,
                const unsigned char *iv, size_t ivlen,
+               int prot_cipher, int prot_cipher_keylen,
                unsigned char **result)
 {
   int rc = 0;
@@ -640,11 +643,11 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
   unsigned char *outbuf;
   size_t reallen;
 
-  blklen = gcry_cipher_get_algo_blklen (PROT_CIPHER);
+  blklen = gcry_cipher_get_algo_blklen (prot_cipher);
   if (protectedlen < 4 || (protectedlen%blklen))
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
 
-  rc = gcry_cipher_open (&hd, PROT_CIPHER, GCRY_CIPHER_MODE_CBC,
+  rc = gcry_cipher_open (&hd, prot_cipher, GCRY_CIPHER_MODE_CBC,
                          GCRY_CIPHER_SECURE);
   if (rc)
     return rc;
@@ -657,17 +660,16 @@ do_decryption (const unsigned char *protected, size_t protectedlen,
   if (!rc)
     {
       unsigned char *key;
-      size_t keylen = PROT_CIPHER_KEYLEN;
 
-      key = gcry_malloc_secure (keylen);
+      key = gcry_malloc_secure (prot_cipher_keylen);
       if (!key)
         rc = out_of_core ();
       else
         {
           rc = hash_passphrase (passphrase, GCRY_MD_SHA1,
-                                3, s2ksalt, s2kcount, key, keylen);
+                                3, s2ksalt, s2kcount, key, prot_cipher_keylen);
           if (!rc)
-            rc = gcry_cipher_setkey (hd, key, keylen);
+            rc = gcry_cipher_setkey (hd, key, prot_cipher_keylen);
           xfree (key);
         }
     }
@@ -860,6 +862,15 @@ agent_unprotect (ctrl_t ctrl,
                  gnupg_isotime_t protected_at,
                  unsigned char **result, size_t *resultlen)
 {
+  static struct {
+    const char *name; /* Name of the protection method. */
+    int algo;         /* (A zero indicates the "openpgp-native" hack.)  */
+    int keylen;       /* Used key length in bytes.  */
+  } algotable[] = {
+    { "openpgp-s2k3-sha1-aes-cbc",    GCRY_CIPHER_AES128, (128/8)},
+    { "openpgp-s2k3-sha1-aes256-cbc", GCRY_CIPHER_AES256, (256/8)},
+    { "openpgp-native", 0, 0 }
+  };
   int rc;
   const unsigned char *s;
   const unsigned char *protect_list;
@@ -869,6 +880,7 @@ agent_unprotect (ctrl_t ctrl,
   const unsigned char *s2ksalt;
   unsigned long s2kcount;
   const unsigned char *iv;
+  int prot_cipher, prot_cipher_keylen;
   const unsigned char *prot_begin;
   unsigned char *cleartext;
   unsigned char *final;
@@ -959,31 +971,40 @@ agent_unprotect (ctrl_t ctrl,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  if (!smatch (&s, n, "openpgp-s2k3-sha1-" PROT_CIPHER_STRING "-cbc"))
+
+  /* Lookup the protection algo.  */
+  prot_cipher = 0;        /* (avoid gcc warning) */
+  prot_cipher_keylen = 0; /* (avoid gcc warning) */
+  for (i= 0; i < DIM (algotable); i++)
+    if (smatch (&s, n, algotable[i].name))
+      {
+        prot_cipher = algotable[i].algo;
+        prot_cipher_keylen = algotable[i].keylen;
+        break;
+      }
+  if (i == DIM (algotable))
+    return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
+
+  if (!prot_cipher)  /* This is "openpgp-native".  */
     {
-      if (smatch (&s, n, "openpgp-native"))
+      gcry_sexp_t s_prot_begin;
+
+      rc = gcry_sexp_sscan (&s_prot_begin, NULL,
+                            prot_begin,
+                            gcry_sexp_canon_len (prot_begin, 0,NULL,NULL));
+      if (rc)
+        return rc;
+
+      rc = convert_from_openpgp_native (ctrl, s_prot_begin, passphrase, &final);
+      gcry_sexp_release (s_prot_begin);
+      if (!rc)
         {
-          gcry_sexp_t s_prot_begin;
-
-          rc = gcry_sexp_sscan (&s_prot_begin, NULL,
-                                prot_begin,
-                                gcry_sexp_canon_len (prot_begin, 0,NULL,NULL));
-          if (rc)
-            return rc;
-
-          rc = convert_from_openpgp_native (ctrl,
-                                            s_prot_begin, passphrase, &final);
-          gcry_sexp_release (s_prot_begin);
-          if (!rc)
-            {
-              *result = final;
-              *resultlen = gcry_sexp_canon_len (final, 0, NULL, NULL);
-            }
-          return rc;
+          *result = final;
+          *resultlen = gcry_sexp_canon_len (final, 0, NULL, NULL);
         }
-      else
-        return gpg_error (GPG_ERR_UNSUPPORTED_PROTECTION);
+      return rc;
     }
+
   if (*s != '(' || s[1] != '(')
     return gpg_error (GPG_ERR_INV_SEXP);
   s += 2;
@@ -1026,7 +1047,7 @@ agent_unprotect (ctrl_t ctrl,
   s++; /* skip list end */
 
   n = snext (&s);
-  if (n != 16) /* Wrong blocksize for IV (we support only aes-128). */
+  if (n != 16) /* Wrong blocksize for IV (we support only 128 bit). */
     return gpg_error (GPG_ERR_CORRUPTED_PROTECTION);
   iv = s;
   s += n;
@@ -1040,7 +1061,7 @@ agent_unprotect (ctrl_t ctrl,
   cleartext = NULL; /* Avoid cc warning. */
   rc = do_decryption (s, n,
                       passphrase, s2ksalt, s2kcount,
-                      iv, 16,
+                      iv, 16, prot_cipher, prot_cipher_keylen,
                       &cleartext);
   if (rc)
     return rc;
