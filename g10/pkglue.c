@@ -190,7 +190,9 @@ int
 pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
             PKT_public_key *pk, gcry_mpi_t *pkey)
 {
-  gcry_sexp_t s_ciph, s_data, s_pkey;
+  gcry_sexp_t s_ciph = NULL;
+  gcry_sexp_t s_data = NULL;
+  gcry_sexp_t s_pkey = NULL;
   int rc;
 
   /* Make a sexp from pkey.  */
@@ -200,9 +202,8 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 			    "(public-key(elg(p%m)(g%m)(y%m)))",
 			    pkey[0], pkey[1], pkey[2]);
       /* Put DATA into a simplified S-expression.  */
-      if (rc || gcry_sexp_build (&s_data, NULL, "%m", data))
-        BUG ();
-
+      if (!rc)
+        rc = gcry_sexp_build (&s_data, NULL, "%m", data);
     }
   else if (algo == PUBKEY_ALGO_RSA || algo == PUBKEY_ALGO_RSA_E)
     {
@@ -210,40 +211,42 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
 			    "(public-key(rsa(n%m)(e%m)))",
 			    pkey[0], pkey[1]);
       /* Put DATA into a simplified S-expression.  */
-      if (rc || gcry_sexp_build (&s_data, NULL, "%m", data))
-        BUG ();
+      if (!rc)
+        rc = gcry_sexp_build (&s_data, NULL, "%m", data);
     }
   else if (algo == PUBKEY_ALGO_ECDH)
     {
       gcry_mpi_t k;
-      char *curve;
 
       rc = pk_ecdh_generate_ephemeral_key (pkey, &k);
-      if (rc)
-        return rc;
-
-      curve = openpgp_oid_to_str (pkey[0]);
-      if (!curve)
-        rc = gpg_error_from_syserror ();
-      else
+      if (!rc)
         {
-          /* Now use the ephemeral secret to compute the shared point.  */
-          rc = gcry_sexp_build (&s_pkey, NULL,
-                                "(public-key(ecdh(curve%s)(q%m)))",
-                                curve, pkey[1]);
-          xfree (curve);
-          /* FIXME: Take care of RC.  */
-          /* Put K into a simplified S-expression.  */
-          if (rc || gcry_sexp_build (&s_data, NULL, "%m", k))
-            BUG ();
+          char *curve;
+
+          curve = openpgp_oid_to_str (pkey[0]);
+          if (!curve)
+            rc = gpg_error_from_syserror ();
+          else
+            {
+              /* Now use the ephemeral secret to compute the shared point.  */
+              rc = gcry_sexp_build (&s_pkey, NULL,
+                                    "(public-key(ecdh(curve%s)(q%m)))",
+                                    curve, pkey[1]);
+              xfree (curve);
+              /* Put K into a simplified S-expression.  */
+              if (!rc)
+                rc = gcry_sexp_build (&s_data, NULL, "%m", k);
+            }
+          gcry_mpi_release (k);
         }
     }
   else
-    return gpg_error (GPG_ERR_PUBKEY_ALGO);
-
+    rc = gpg_error (GPG_ERR_PUBKEY_ALGO);
 
   /* Pass it to libgcrypt. */
-  rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
+  if (!rc)
+    rc = gcry_pk_encrypt (&s_ciph, s_data, s_pkey);
+
   gcry_sexp_release (s_data);
   gcry_sexp_release (s_pkey);
 

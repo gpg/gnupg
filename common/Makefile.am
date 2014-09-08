@@ -59,7 +59,6 @@ endif
 common_sources = \
 	common-defs.h \
 	util.h i18n.c i18n.h \
-	estream.c estream.h estream-printf.c estream-printf.h \
 	status.c status.h\
 	shareddefs.h \
 	openpgpdefs.h \

@@ -50,7 +50,7 @@ m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
 m4_esyscmd([echo ]mym4_version[>VERSION])
 AC_INIT([mym4_package],[mym4_version], [http://bugs.gnupg.org])
 
-NEED_GPG_ERROR_VERSION=1.13
+NEED_GPG_ERROR_VERSION=1.14
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.6.0
@@ -497,6 +497,8 @@ AH_BOTTOM([
 # endif
 #endif
 
+/* Provide the es_ macro for estream.  */
+#define GPGRT_ENABLE_ES_MACROS 1
 
 /* Tell libgcrypt not to use its own libgpg-error implementation. */
 #define USE_LIBGPG_ERROR 1
@@ -514,11 +516,6 @@ AH_BOTTOM([
    avoid the on-demand initialization which would also install an atexit
    handler.  */
 #define HTTP_NO_WSASTARTUP
-
-/* We want to use the libgcrypt provided memory allocation for
-   asprintf.  */
-#define _ESTREAM_PRINTF_REALLOC       gcry_realloc
-#define _ESTREAM_PRINTF_EXTRA_INCLUDE "../common/util.h"
 
 /* Under Windows we use the gettext code from libgpg-error.  */
 #define GPG_ERR_ENABLE_GETTEXT_MACROS
@@ -1495,14 +1492,6 @@ if test "$GCC" = yes; then
     if test x"$_gcc_psign" = xyes ; then
        CFLAGS="$CFLAGS -Wpointer-arith"
     fi
-
-    # The undocumented option -Wno-psabi suppresses the annoying
-    #   "the ABI of passing union with long double has changed in GCC 4.4"
-    # which is emitted in estream-printf.c but entirely irrelvant
-    # because that union is local to the file.
-    if test x"$_gcc_silent_wno" = xyes ; then
-       CFLAGS="$CFLAGS -Wno-psabi"
-    fi
 fi
 
 
@@ -1516,12 +1505,6 @@ AC_ARG_ENABLE(optimization,
                   [if test $enableval = no ; then
                       CFLAGS=`echo $CFLAGS | sed s/-O[[1-9]]\ /-O0\ /g`
                    fi])
-
-#
-# Prepare building of estream
-#
-estream_INIT
-
 
 #
 # Decide what to build

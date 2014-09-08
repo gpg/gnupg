@@ -29,7 +29,6 @@
 #include "misc.h"
 #include "http.h"
 
-#include "estream.h"
 #include "ldap-wrapper.h"
 
 

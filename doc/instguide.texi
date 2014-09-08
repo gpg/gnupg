@@ -13,7 +13,7 @@ include brief information on how to set up the whole thing.  Please
 watch the GnuPG website for updates of the documentation.  In the
 meantime you may search the GnuPG mailing list archives or ask on the
 gnupg-users mailing listsfor advise on how to solve problems or how to
-get that whole thing up and running. 
+get that whole thing up and running.
 
 ** Building the software
 
@@ -22,7 +22,7 @@ that you are already reading this documentation we can only give some
 extra hints
 
 To comply with the rules on GNU systems you should have build time
-configured @command{dirmngr} using:
+configured @command{gnupg} using:
 
 @example
 ./configure --sysconfdir=/etc --localstatedir=/var
@@ -36,19 +36,7 @@ the binaries get installed.  If you selected to use the
 the default then.
 
 
-
-** Explain how to setup a root CA key as trusted
-
-
-Such questions may also help to write a proper installation guide.
-
-[to be written]
-
-
-XXX Tell how to setup the system, install certificates, how dirmngr relates
-to GnuPG etc.
-
-** Explain how to setup a root CA key as trusted
+** Notes on setting a root CA key to trusted
 
 X.509 is based on a hierarchical key infrastructure.  At the root of the
 tree a trusted anchor (root certificate) is required.  There are usually
@@ -64,28 +52,26 @@ contains a few root certificates.  Most installations will need more.
 
 @item
 Let @command{gpgsm} ask you whether you want to insert a new root
-certificate.  To enable this feature you need to set the option
-@option{allow-mark-trusted} into @file{gpg-agent.conf}.  In general it
-is not a good idea to do it this way.  Checking whether a root
-certificate is really trustworthy requires decisions, which casual
-users are not up to.  Thus, by default this option is not enabled.
+certificate.  This feature is enabled by default; you may disable it
+using the option @option{no-allow-mark-trusted} into
+@file{gpg-agent.conf}.
 
-@item 
+@item
 Manually maintain the list of trusted root certificates. For a multi
 user installation this can be done once for all users on a machine.
-Specific changes on a per-user base are also possible. 
+Specific changes on a per-user base are also possible.
 @end itemize
 
-XXX decribe how to maintain trustlist.txt and /etc/gnupg/trustlist.txt.
+@c decribe how to maintain trustlist.txt and /etc/gnupg/trustlist.txt.
 
 
-** How to get the ssh support running
+@c ** How to get the ssh support running
+@c
+@c XXX How to use the ssh support.
 
-XXX How to use the ssh support.
 
-
-@section Installation Overview 
-
-XXXX
+@c @section Installation Overview
+@c
+@c XXXX
 
 

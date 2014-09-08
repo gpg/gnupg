@@ -8,8 +8,6 @@ EXTRA_DIST += gpg-error.m4 libgcrypt.m4 libassuan.m4 ksba.m4
 
 EXTRA_DIST += autobuild.m4
 
-EXTRA_DIST += estream.m4
-
 EXTRA_DIST += sys_socket_h.m4 socklen.m4
 
 EXTRA_DIST += ChangeLog-2011

@@ -32,15 +32,14 @@
 #include <errno.h>
 
 #include "util.h"
-#include "iobuf.h"
-
-#if !defined(_ESTREAM_PRINTF_REALLOC)
-#error Need to define _ESTREAM_PRINTF_REALLOC
-#endif
 
 /* Same as asprintf but return an allocated buffer suitable to be
    freed using xfree.  This function simply dies on memory failure,
-   thus no extra check is required. */
+   thus no extra check is required.
+
+   FIXME: We should remove these functions in favor of gpgrt_bsprintf
+   and a xgpgrt_bsprintf or rename them to xbsprintf and
+   xtrybsprintf.  */
 char *
 xasprintf (const char *fmt, ...)
 {
@@ -48,7 +47,7 @@ xasprintf (const char *fmt, ...)
   char *buf;
 
   va_start (ap, fmt);
-  if (estream_vasprintf (&buf, fmt, ap) < 0)
+  if (gpgrt_vasprintf (&buf, fmt, ap) < 0)
     log_fatal ("estream_asprintf failed: %s\n", strerror (errno));
   va_end (ap);
   return buf;
@@ -63,7 +62,7 @@ xtryasprintf (const char *fmt, ...)
   char *buf;
 
   va_start (ap, fmt);
-  rc = estream_vasprintf (&buf, fmt, ap);
+  rc = gpgrt_vasprintf (&buf, fmt, ap);
   va_end (ap);
   if (rc < 0)
     return NULL;

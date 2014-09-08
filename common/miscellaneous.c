@@ -145,6 +145,47 @@ print_fname_stdin (const char *s)
 }
 
 
+static int
+do_print_utf8_buffer (estream_t stream,
+                      const void *buffer, size_t length,
+                      const char *delimiters, size_t *bytes_written)
+{
+  const char *p = buffer;
+  size_t i;
+
+  /* We can handle plain ascii simpler, so check for it first. */
+  for (i=0; i < length; i++ )
+    {
+      if ( (p[i] & 0x80) )
+        break;
+    }
+  if (i < length)
+    {
+      int delim = delimiters? *delimiters : 0;
+      char *buf;
+      int ret;
+
+      /*(utf8 conversion already does the control character quoting). */
+      buf = utf8_to_native (p, length, delim);
+      if (bytes_written)
+        *bytes_written = strlen (buf);
+      ret = es_fputs (buf, stream);
+      xfree (buf);
+      return ret == EOF? ret : (int)i;
+    }
+  else
+    return es_write_sanitized (stream, p, length, delimiters, bytes_written);
+}
+
+
+void
+print_utf8_buffer3 (estream_t stream, const void *p, size_t n,
+                    const char *delim)
+{
+  do_print_utf8_buffer (stream, p, n, delim, NULL);
+}
+
+
 void
 print_utf8_buffer2 (estream_t stream, const void *p, size_t n, int delim)
 {
@@ -152,14 +193,14 @@ print_utf8_buffer2 (estream_t stream, const void *p, size_t n, int delim)
 
   tmp[0] = delim;
   tmp[1] = 0;
-  es_write_sanitized_utf8_buffer (stream, p, n, tmp, NULL);
+  do_print_utf8_buffer (stream, p, n, tmp, NULL);
 }
 
 
 void
 print_utf8_buffer (estream_t stream, const void *p, size_t n)
 {
-  es_write_sanitized_utf8_buffer (stream, p, n, NULL, NULL);
+  do_print_utf8_buffer (stream, p, n, NULL, NULL);
 }
 
 /* Write LENGTH bytes of BUFFER to FP as a hex encoded string.

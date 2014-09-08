@@ -37,6 +37,30 @@
 #include "util.h"
 
 
+/* A table with all our supported OpenPGP curves.  */
+static struct {
+  const char *name;   /* Standard name.  */
+  const char *oidstr; /* IETF formatted OID.  */
+  unsigned int nbits; /* Nominla bit length of the curve.  */
+  const char *alias;  /* NULL or alternative name of the curve.  */
+} oidtable[] = {
+
+  { "Ed25519",         "1.3.6.1.4.1.11591.15.1", 255, "ed25519" },
+
+  { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
+  { "NIST P-384",      "1.3.132.0.34",           384, "nistp384" },
+  { "NIST P-521",      "1.3.132.0.35",           521, "nistp521" },
+
+  { "brainpoolP256r1", "1.3.36.3.3.2.8.1.1.7",   256 },
+  { "brainpoolP384r1", "1.3.36.3.3.2.8.1.1.11",  384 },
+  { "brainpoolP512r1", "1.3.36.3.3.2.8.1.1.13",  512 },
+
+  { "secp256k1",       "1.3.132.0.10",           256 },
+
+  { NULL, NULL, 0}
+};
+
+
 /* The OID for Curve Ed25519 in OpenPGP format.  */
 static const char oid_ed25519[] =
   { 0x09, 0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01 };
@@ -270,56 +294,33 @@ openpgp_oid_is_ed25519 (gcry_mpi_t a)
 const char *
 openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 {
+  int i;
   unsigned int nbits = 0;
-  const char *oidstr;
+  const char *oidstr = NULL;
 
-  if (!name)
-    oidstr = NULL;
-  else if (!strcmp (name, "Ed25519") || !strcmp (name, "ed25519"))
+  if (name)
     {
-      oidstr = "1.3.6.1.4.1.11591.15.1";
-      nbits = 255;
+      for (i=0; oidtable[i].name; i++)
+        if (!strcmp (oidtable[i].name, name)
+            || (oidtable[i].alias && !strcmp (oidtable[i].alias, name)))
+          {
+            oidstr = oidtable[i].oidstr;
+            nbits  = oidtable[i].nbits;
+            break;
+          }
+      if (!oidtable[i].name)
+        {
+          /* If not found assume the input is already an OID and check
+             whether we support it.  */
+          for (i=0; oidtable[i].name; i++)
+            if (!strcmp (name, oidtable[i].oidstr))
+              {
+                oidstr = oidtable[i].oidstr;
+                nbits  = oidtable[i].nbits;
+                break;
+              }
+        }
     }
-  else if (!strcmp (name, "nistp256") || !strcmp (name, "NIST P-256"))
-    {
-      /* Libgcrypt uses "NIST P-256" as standard name for this curve
-         and thus the key generation returns this value.  Thus we
-         allow both strings.  */
-      oidstr = "1.2.840.10045.3.1.7";
-      nbits = 256;
-    }
-  else if (!strcmp (name, "nistp384") || !strcmp (name, "NIST P-384"))
-    {
-      oidstr = "1.3.132.0.34";
-      nbits = 384;
-    }
-  else if (!strcmp (name, "nistp521") || !strcmp (name, "NIST P-521"))
-    {
-      oidstr = "1.3.132.0.35";
-      nbits = 521;
-    }
-  else if (!strcmp (name,"brainpoolP256r1"))
-    {
-      oidstr = "1.3.36.3.3.2.8.1.1.7";
-      nbits = 256;
-    }
-  else if (!strcmp (name, "brainpoolP384r1"))
-    {
-      oidstr = "1.3.36.3.3.2.8.1.1.11";
-      nbits = 384;
-    }
-  else if (!strcmp (name, "brainpoolP512r1"))
-    {
-      oidstr =  "1.3.36.3.3.2.8.1.1.13";
-      nbits = 512;
-    }
-  else if (!strcmp (name, "secp256k1"))
-    {
-      oidstr =  "1.3.132.0.10";
-      nbits = 256;
-    }
-  else
-    oidstr = NULL;
 
   if (r_nbits)
     *r_nbits = nbits;
@@ -328,32 +329,19 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 
 
 /* Map an OpenPGP OID to the Libgcrypt curve NAME.  Returns "?" for
-   unknown curve names.  */
+   unknown curve names.  We prefer an alias name here which is more
+   suitable for printing.  */
 const char *
-openpgp_oid_to_curve (const char *oid)
+openpgp_oid_to_curve (const char *oidstr)
 {
-  const char *name;
+  int i;
 
-  if (!oid)
-    name = "";
-  else if (!strcmp (oid, "1.3.6.1.4.1.11591.15.1"))
-    name = "ed25519";
-  else if (!strcmp (oid, "1.2.840.10045.3.1.7"))
-    name = "nistp256";
-  else if (!strcmp (oid, "1.3.132.0.10"))
-    name = "secp256k1";
-  else if (!strcmp (oid, "1.3.132.0.34"))
-    name = "nistp384";
-  else if (!strcmp (oid, "1.3.132.0.35"))
-    name = "nistp521";
-  else if (!strcmp (oid, "1.3.36.3.3.2.8.1.1.7"))
-    name = "brainpoolP256r1";
-  else if (!strcmp (oid, "1.3.36.3.3.2.8.1.1.11"))
-    name = "brainpoolP384r1";
-  else if (!strcmp (oid, "1.3.36.3.3.2.8.1.1.13"))
-    name = "brainpoolP512r1";
-  else
-    name = "?";
+  if (!oidstr)
+    return "";
 
-  return name;
+  for (i=0; oidtable[i].name; i++)
+    if (!strcmp (oidtable[i].oidstr, oidstr))
+      return oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
+
+  return "?";
 }

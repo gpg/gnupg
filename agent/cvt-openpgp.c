@@ -81,9 +81,16 @@ get_keygrip (int pubkey_algo, const char *curve, gcry_mpi_t *pkey,
       break;
 
     case GCRY_PK_ECC:
-      err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(curve %s)(q%m)))",
-                             curve, pkey[0]);
+      if (!curve)
+        err = gpg_error (GPG_ERR_BAD_SECKEY);
+      else if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
+        err = gcry_sexp_build (&s_pkey, NULL,
+                               "(public-key(ecc(curve %s)(flags eddsa)(q%m)))",
+                               "Ed25519", pkey[0]);
+      else
+        err = gcry_sexp_build (&s_pkey, NULL,
+                               "(public-key(ecc(curve %s)(q%m)))",
+                               curve, pkey[0]);
       break;
 
     default:
@@ -139,6 +146,15 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
     case GCRY_PK_ECC:
       if (!curve)
         err = gpg_error (GPG_ERR_BAD_SECKEY);
+      else if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
+        {
+          /* Do not store the OID as name but the real name and the
+             EdDSA flag.  */
+          err = gcry_sexp_build (&s_skey, NULL,
+                                 "(private-key(ecc(curve%s)(flags eddsa)"
+                                 "(q%m)(d%m)))",
+                                 "Ed25519", skey[0], skey[1]);
+        }
       else
         err = gcry_sexp_build (&s_skey, NULL,
                                "(private-key(ecc(curve%s)(q%m)(d%m)))",
@@ -198,11 +214,24 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
       break;
 
     case GCRY_PK_ECC:
-      err = gcry_sexp_build
-        (&s_skey, NULL,
-         "(protected-private-key(ecc(curve%s)(q%m)"
-         "(protected openpgp-native%S)))",
-         curve, skey[0], transfer_key);
+      if (!curve)
+        err = gpg_error (GPG_ERR_BAD_SECKEY);
+      else if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
+        {
+          /* Do not store the OID as name but the real name and the
+             EdDSA flag.  */
+          err = gcry_sexp_build
+            (&s_skey, NULL,
+             "(protected-private-key(ecc(curve%s)(flags eddsa)(q%m)"
+             "(protected openpgp-native%S)))",
+             "Ed25519", skey[0], transfer_key);
+        }
+      else
+        err = gcry_sexp_build
+          (&s_skey, NULL,
+           "(protected-private-key(ecc(curve%s)(q%m)"
+           "(protected openpgp-native%S)))",
+           curve, skey[0], transfer_key);
       break;
 
     default:
@@ -373,7 +402,7 @@ do_unprotect (const char *passphrase,
           if (!skey[i] || gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
             return gpg_error (GPG_ERR_BAD_SECKEY);
 
-          if (gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_USER1))
+          if (gcry_mpi_get_flag (skey[i], GCRYMPI_FLAG_OPAQUE))
             {
               unsigned int nbits;
               const unsigned char *buffer;
@@ -1064,15 +1093,36 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
   ndata = 20; /* Space for the SHA-1 checksum.  */
   for (i = npkey, j = 0; i < nskey; i++, j++ )
     {
-      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
-      if (err)
+      if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_OPAQUE))
         {
-          err = gpg_error_from_syserror ();
-          for (i = 0; i < j; i++)
-            xfree (bufarr[i]);
-          return err;
+          const void *s;
+          unsigned int n;
+
+          s = gcry_mpi_get_opaque (array[i], &n);
+          nbits[j] = n;
+          n = (n+7)/8;
+          narr[j] = n;
+          bufarr[j] = gcry_is_secure (s)? xtrymalloc_secure (n):xtrymalloc (n);
+          if (!bufarr[j])
+            {
+              err = gpg_error_from_syserror ();
+              for (i = 0; i < j; i++)
+                xfree (bufarr[i]);
+              return err;
+            }
+          memcpy (bufarr[j], s, n);
         }
-      nbits[j] = gcry_mpi_get_nbits (array[i]);
+      else
+        {
+          err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
+          if (err)
+            {
+              for (i = 0; i < j; i++)
+                xfree (bufarr[i]);
+              return err;
+            }
+          nbits[j] = gcry_mpi_get_nbits (array[i]);
+        }
       ndata += 2 + narr[j];
     }
 
@@ -1218,8 +1268,6 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
           assert (iob.len < sizeof iobbuf -1);
           iobbuf[iob.len] = 0;
           err = gcry_sexp_build (&curve, NULL, "(curve %s)", iobbuf);
-
-          gcry_log_debugsxp ("at 1", curve);
         }
     }
   else if (!strcmp (name, "ecdsa"))

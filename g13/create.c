@@ -34,7 +34,6 @@
 #include "backend.h"
 #include "utils.h"
 #include "call-gpg.h"
-#include "estream.h"
 
 /* Create a new blob with all the session keys and other meta
    information which are to be stored encrypted in the crypto

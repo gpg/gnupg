@@ -826,8 +826,8 @@ main (int argc, char **argv )
           close (fd);
 
           /* create the info string: <name>:<pid>:<protocol_version> */
-          if (estream_asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
-				socket_name, (ulong) pid) < 0)
+          if (gpgrt_asprintf (&infostr, "SCDAEMON_INFO=%s:%lu:1",
+                              socket_name, (ulong) pid) < 0)
             {
               log_error ("out of core\n");
               kill (pid, SIGTERM);

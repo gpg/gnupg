@@ -34,7 +34,6 @@
 #include "backend.h"
 #include "utils.h"
 #include "call-gpg.h"
-#include "estream.h"
 #include "mountinfo.h"
 #include "runner.h"
 

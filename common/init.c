@@ -173,7 +173,11 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
 #endif
 
   /* Initialize the Estream library. */
-  es_init ();
+  gpgrt_init ();
+  gpgrt_set_alloc_func (gcry_realloc);
+#ifdef USE_NPTH
+  gpgrt_set_syscall_clamp (npth_unprotect, npth_protect);
+#endif
 
   /* Special hack for Windows CE: We extract some options from arg
      to setup the standard handles.  */
@@ -191,7 +195,7 @@ _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
   {
     int i;
     for (i=0; i < 3; i++)
-      (void)_es_get_std_stream (i);
+      (void)_gpgrt_get_std_stream (i);
   }
 
   /* --version et al shall use estream as well.  */

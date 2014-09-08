@@ -67,7 +67,7 @@ ks_printf_help (ctrl_t ctrl, const char *format, ...)
   char *buf;
 
   va_start (arg_ptr, format);
-  buf = es_vasprintf (format, arg_ptr);
+  buf = es_vbsprintf (format, arg_ptr);
   err = buf? 0 : gpg_error_from_syserror ();
   va_end (arg_ptr);
   if (!err)

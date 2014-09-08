@@ -33,7 +33,6 @@
 
 #include "../common/types.h"
 #include "../common/sysutils.h"
-#include "../common/estream.h"
 
 #define DBG_IOBUF   iobuf_debug_mode
 

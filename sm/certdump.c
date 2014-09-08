@@ -504,9 +504,8 @@ print_dn_part (FILE *fp, estream_t stream,
                 {
                   es_fprintf (stream, "/%s=", dn->key);
                   if (translate)
-                    es_write_sanitized_utf8_buffer (stream, dn->value,
-                                                    strlen (dn->value),
-                                                    "/", NULL);
+                    print_utf8_buffer3 (stream, dn->value, strlen (dn->value),
+                                         "/");
                   else
                     es_write_sanitized (stream, dn->value, strlen (dn->value),
                                         "/", NULL);
@@ -716,8 +715,7 @@ gpgsm_es_print_name2 (estream_t fp, const char *name, int translate)
       if (s2)
         {
           if (translate)
-            es_write_sanitized_utf8_buffer (fp, s + 1, s2 - (char*)s - 1,
-                                            NULL, NULL);
+            print_utf8_buffer (fp, s + 1, s2 - (char*)s - 1);
           else
             es_write_sanitized (fp, s + 1, s2 - (char*)s - 1, NULL, NULL);
         }

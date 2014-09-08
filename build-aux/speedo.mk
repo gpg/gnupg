@@ -376,8 +376,9 @@ speedo_pkg_glib_configure = \
 	CCC=$(host)-g++ \
         LIBFFI_CFLAGS=-I$(idir)/lib/libffi-$(libffi_ver)/include \
 	LIBFFI_LIBS=\"-L$(idir)/lib -lffi\"
+ifeq ($(TARGETOS),w32)
 speedo_pkg_glib_extracflags = -march=i486
-
+endif
 
 speedo_pkg_libpng_configure = \
 	CPPFLAGS=\"-I$(idir)/include -DPNG_BUILD_DLL\" \

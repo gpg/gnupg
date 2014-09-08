@@ -148,7 +148,7 @@ main (int argc, char **argv)
   const char *cafile = NULL;
   http_session_t session = NULL;
 
-  es_init ();
+  gpgrt_init ();
   log_set_prefix (PGM, 1 | 4);
   if (argc)
     { argc--; argv++; }

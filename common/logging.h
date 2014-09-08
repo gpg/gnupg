@@ -33,7 +33,6 @@
 #define LIBJNLIB_LOGGING_H
 
 #include <stdio.h>
-#include "estream.h"
 #include "mischelp.h"
 #include "w32help.h"
 

@@ -338,22 +338,13 @@ keygen_set_std_prefs (const char *string,int personal)
 	      strcat(dummy_string,"S8 ");
 	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_AES) )
 	      strcat(dummy_string,"S7 ");
-	    if ( !openpgp_cipher_test_algo (CIPHER_ALGO_CAST5) )
-	      strcat(dummy_string,"S3 ");
 	    strcat(dummy_string,"S2 "); /* 3DES */
 
             /* The default hash algo order is:
-                 SHA-256, SHA-1, SHA-384, SHA-512, SHA-224.
-               Ordering SHA-1 before SHA-384 might be viewed as a bit
-               strange; it is done because we expect that soon enough
-               SHA-3 will be available and at that point there should
-               be no more need for SHA-384 etc.  Anyway this order is
-               just a default and can easily be changed by a config
-               option.  */
+                 SHA-256, SHA-384, SHA-512, SHA-224, SHA-1.
+             */
 	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA256))
 	      strcat (dummy_string, "H8 ");
-
-	    strcat (dummy_string, "H2 "); /* SHA-1 */
 
 	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA384))
 	      strcat (dummy_string, "H9 ");
@@ -363,6 +354,8 @@ keygen_set_std_prefs (const char *string,int personal)
 
 	    if (!openpgp_md_test_algo (DIGEST_ALGO_SHA224))
 	      strcat (dummy_string, "H11 ");
+
+	    strcat (dummy_string, "H2 "); /* SHA-1 */
 
 	    if(!check_compress_algo(COMPRESS_ALGO_ZLIB))
               {

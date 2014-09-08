@@ -22,8 +22,6 @@
 
 #include <ksba.h>
 
-#include "../common/estream.h"
-
 struct audit_ctx_s;
 typedef struct audit_ctx_s *audit_ctx_t;
 

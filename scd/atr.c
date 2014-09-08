@@ -24,7 +24,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "../common/estream.h"
+#include <gpg-error.h>
 #include "../common/logging.h"
 #include "atr.h"
 

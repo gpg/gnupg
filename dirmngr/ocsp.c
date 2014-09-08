@@ -30,7 +30,6 @@
 #include "validate.h"
 #include "certcache.h"
 #include "ocsp.h"
-#include "estream.h"
 
 /* The maximum size we allow as a response from an OCSP reponder. */
 #define MAX_RESPONSE_SIZE 65536

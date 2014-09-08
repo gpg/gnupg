@@ -28,7 +28,6 @@
 
 #include "../common/util.h"
 #include "../common/status.h"
-#include "../common/estream.h"
 #include "../common/session-env.h"
 
 /* A large struct named "opt" to keep global flags.  */
