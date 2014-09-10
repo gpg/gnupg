@@ -384,6 +384,39 @@ cert_log_subject (const char *text, ksba_cert_t cert)
 }
 
 
+/* Callback to print infos about the TLS certificates.  */
+void
+cert_log_cb (http_session_t sess, gpg_error_t err,
+             const char *hostname, const void **certs, size_t *certlens)
+{
+  ksba_cert_t cert;
+  size_t n;
+
+  (void)sess;
+
+  if (!err)
+    return; /* No error - no need to log anything  */
+
+  log_debug ("expected hostname: %s\n", hostname);
+  for (n=0; certs[n]; n++)
+    {
+      err = ksba_cert_new (&cert);
+      if (!err)
+        err = ksba_cert_init_from_mem (cert, certs[n], certlens[n]);
+      if (err)
+        log_error ("error parsing cert for logging: %s\n", gpg_strerror (err));
+      else
+        {
+          char textbuf[20];
+          snprintf (textbuf, sizeof textbuf, "server[%u]", (unsigned int)n);
+          dump_cert (textbuf, cert);
+        }
+
+      ksba_cert_release (cert);
+    }
+}
+
+
 /****************
  * Remove all %xx escapes; this is done inplace.
  * Returns: New length of the string.

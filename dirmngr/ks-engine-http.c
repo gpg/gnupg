@@ -38,6 +38,7 @@ ks_http_help (ctrl_t ctrl, parsed_uri_t uri)
   const char const data[] =
     "Handler for HTTP URLs:\n"
     "  http://\n"
+    "  https://\n"
     "Supported methods: fetch\n";
   gpg_error_t err;
 
@@ -58,10 +59,16 @@ gpg_error_t
 ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
 {
   gpg_error_t err;
+  http_session_t session = NULL;
   http_t http = NULL;
   int redirects_left = MAX_REDIRECTS;
   estream_t fp = NULL;
   char *request_buffer = NULL;
+
+  err = http_session_new (&session, NULL);
+  if (err)
+    goto leave;
+  http_session_set_log_cb (session, cert_log_cb);
 
   *r_fp = NULL;
  once_more:
@@ -72,7 +79,8 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                    /* fixme: AUTH */ NULL,
                    0,
                    /* fixme: proxy*/ NULL,
-                   NULL, NULL,
+                   session,
+                   NULL,
                    /*FIXME curl->srvtag*/NULL);
   if (!err)
     {
@@ -112,6 +120,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
 
     case 301:
     case 302:
+    case 307:
       {
         const char *s = http_get_header (http, "Location");
 
@@ -157,6 +166,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
 
  leave:
   http_close (http, 0);
+  http_session_release (session);
   xfree (request_buffer);
   return err;
 }

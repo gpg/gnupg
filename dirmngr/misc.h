@@ -68,6 +68,10 @@ void dump_string (const char *string);
    TEXT.  This is used for debugging. */
 void dump_cert (const char *text, ksba_cert_t cert);
 
+/* Callback to print infos about the TLS certificates.  */
+void cert_log_cb (http_session_t sess, gpg_error_t err,
+                  const char *hostname, const void **certs, size_t *certlens);
+
 /* Return the host name and the port (0 if none was given) from the
    URL.  Return NULL on error or if host is not included in the
    URL.  */
