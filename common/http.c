@@ -636,12 +636,17 @@ http_session_new (http_session_t *r_session, const char *tls_priority)
 }
 
 
-/* Increment the reference count for session SESS.  */
+/* Increment the reference count for session SESS.  Passing NULL for
+   SESS is allowed. */
 http_session_t
 http_session_ref (http_session_t sess)
 {
-  sess->refcount++;
-  /* log_debug ("http.c:session_ref: sess %p ref now %d\n", sess, sess->refcount); */
+  if (sess)
+    {
+      sess->refcount++;
+      /* log_debug ("http.c:session_ref: sess %p ref now %d\n", sess, */
+      /*            sess->refcount); */
+    }
   return sess;
 }
 
