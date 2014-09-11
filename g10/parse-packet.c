@@ -1978,7 +1978,9 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  for (; pktlen; pktlen--)
 	    {
 	      int c;
-	      c = iobuf_get_noeof (inp);
+	      c = iobuf_get (inp);
+              if (c == -1)
+                break; /* Ooops: shorter than indicated.  */
 	      if (c >= ' ' && c <= 'z')
 		es_putc (c, listfp);
 	      else
