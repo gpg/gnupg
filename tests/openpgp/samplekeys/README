@@ -6,3 +6,5 @@ ecc-sample-2-pub.asc   A NIST P-384 ECC sample key.
 ecc-sample-2-sec.asc   Ditto, but the secret keyblock.
 ecc-sample-3-pub.asc   A NIST P-521 ECC sample key.
 ecc-sample-3-sec.asc   Ditto, but the secret keyblock.
+eddsa-sample-1-pub.asc An Ed25519 sample key.
+eddsa-sample-1-sec.asc Ditto, but as protected secret keyblock.

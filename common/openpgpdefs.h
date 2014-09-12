@@ -122,8 +122,8 @@ typedef enum
     PUBKEY_ALGO_ECDH        = 18, /* RFC-6637  */
     PUBKEY_ALGO_ECDSA       = 19, /* RFC-6637  */
     PUBKEY_ALGO_ELGAMAL     = 20, /* Elgamal encrypt+sign (legacy).  */
-
-    PUBKEY_ALGO_EDDSA      = 105  /* EdDSA (cf. Ed25519) (experimental). */
+    /*                        21     reserved by OpenPGP.            */
+    PUBKEY_ALGO_EDDSA       = 22  /* EdDSA (not yet assigned).       */
   }
 pubkey_algo_t;
 

@@ -58,14 +58,17 @@ priv_keys = privkeys/50B2D4FA4122C212611048BC5FC31BD44393626E.asc \
             privkeys/0D6F6AD4C4C803B25470F9104E9F4E6A4CA64255.asc \
             privkeys/FD692BD59D6640A84C8422573D469F84F3B98E53.asc \
             privkeys/76F7E2B35832976B50A27A282D9B87E44577EB66.asc \
-            privkeys/A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD.asc
+            privkeys/A0747D5F9425E6664F4FFBEED20FBCA79FDED2BD.asc \
+	    privkeys/0DD40284FF992CD24DC4AAC367037E066FCEE26A.asc
 
 sample_keys = samplekeys/ecc-sample-1-pub.asc \
               samplekeys/ecc-sample-2-pub.asc \
               samplekeys/ecc-sample-3-pub.asc \
               samplekeys/ecc-sample-1-sec.asc \
               samplekeys/ecc-sample-2-sec.asc \
-              samplekeys/ecc-sample-3-sec.asc
+              samplekeys/ecc-sample-3-sec.asc \
+	      samplekeys/eddsa-sample-1-pub.asc \
+	      samplekeys/eddsa-sample-1-sec.asc
 
 EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)
