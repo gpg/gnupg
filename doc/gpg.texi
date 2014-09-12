@@ -966,8 +966,8 @@ such a non-exportable signature already exists the
 
 This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.
-Its intended use to help unattended signing using a list of verified
-fingerprints.
+Its intended use is to help unattended key signing by utilizing a list
+of verified fingerprints.
 @end ifset
 
 @ifclear gpgone
