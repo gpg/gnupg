@@ -1,0 +1,19 @@
+#! /bin/sh
+patch -p0 -l -f $* < $0
+exit $?
+
+On some systems the gets macro has been removed and thus the test
+leads to an unresolved symbol error.
+
+--- srclib/stdio.in.h~	2011-08-07 15:42:06.000000000 +0200
++++ srclib/stdio.in.h	2014-09-04 13:07:07.079024312 +0200
+@@ -691,11 +691,6 @@
+ _GL_CXXALIAS_SYS (gets, char *, (char *s));
+ #  undef gets
+ # endif
+-_GL_CXXALIASWARN (gets);
+-/* It is very rare that the developer ever has full control of stdin,
+-   so any use of gets warrants an unconditional warning.  Assume it is
+-   always declared, since it is required by C89.  */
+-_GL_WARN_ON_USE (gets, "gets is a security hole - use fgets instead");
+ #endif

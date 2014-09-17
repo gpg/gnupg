@@ -45,6 +45,60 @@
 # We need to know our own name.
 SPEEDO_MK := $(realpath $(lastword $(MAKEFILE_LIST)))
 
+.PHONY : help native native-gui w32-installer w32-source
+.PHONY :      git-native git-native-gui git-w32-installer git-w32-source
+.PHONY :      this-native this-native-gui this-w32-installer this-w32-source
+
+help:
+	@echo 'usage: make -f speedo.mk TARGET'
+	@echo '       with TARGET being one of:'
+	@echo '  help           This help'
+	@echo '  native         Native build of the GnuPG core'
+	@echo '  native-gui     Ditto but with pinentry and GPA'
+	@echo '  w32-installer  Build a Windows installer'
+	@echo '  w32-source     Pack a source archive'
+	@echo
+	@echo 'Prepend TARGET with "git-" to build from GIT repos'
+	@echo 'Prepend TARGET with "this-" to build from the source tarball'
+
+SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
+
+native:
+	$(SPEEDOMAKE) TARGETOS=native WHAT=release WITH_GUI=0 all
+
+git-native:
+	$(SPEEDOMAKE) TARGETOS=native WHAT=git     WITH_GUI=0 all
+
+this-native:
+	$(SPEEDOMAKE) TARGETOS=native WHAT=this    WITH_GUI=0 all
+
+native-gui:
+	$(SPEEDOMAKE) TARGETOS=native WHAT=release WITH_GUI=1 all
+
+git-native-gui:
+	$(SPEEDOMAKE) TARGETOS=native WHAT=git     WITH_GUI=1 all
+
+this-native-gui:
+	$(SPEEDOMAKE) TARGETOS=native WHAT=this    WITH_GUI=1 all
+
+w32-installer:
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=1 installer
+
+git-w32-installer:
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 installer
+
+this-w32-installer:
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=1 installer
+
+w32-source:
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=1 dist-source
+
+git-w32-source:
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 dist-source
+
+this-w32-source:
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 dist-source
+
 
 # Set this to "git" to build from git,
 #          to "release" from tarballs,
@@ -53,6 +107,12 @@ WHAT=git
 
 # Set target to "native" or "w32"
 TARGETOS=w32
+
+# Set to 1 to build the GUI tools
+WITH_GUI=0
+
+# Set to 1 to really download the swdb.
+UPD_SWDB=0
 
 # Set to the location of the directory with tarballs of
 # external packages.
@@ -108,8 +168,11 @@ speedo_spkgs += \
 	gdk-pixbuf atk pixman cairo pango gtk+
 endif
 
+
+ifeq ($(WITH_GUI),1)
 speedo_spkgs += \
 	pinentry gpa
+endif
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
@@ -134,6 +197,7 @@ speedo_make_only_style = \
 	zlib
 
 # Get the content of the software DB.
+ifeq ($(UPD_SWDB),1)
 SWDB := $(shell $(topsrc)/build-aux/getswdb.sh && echo okay)
 ifeq ($(strip $(SWDB)),)
 $(error Error getting GnuPG software version database)
@@ -141,15 +205,33 @@ endif
 
 # Version numbers of the released packages
 gnupg_ver = $(shell cat $(topsrc)/VERSION)
-libgpg_error_ver = $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
-npth_ver = $(shell awk '$$1=="npth_ver" {print $$2}' swdb.lst)
-libgcrypt_ver = $(shell awk '$$1=="libgcrypt_ver" {print $$2}' swdb.lst)
-libassuan_ver = $(shell awk '$$1=="libassuan_ver" {print $$2}' swdb.lst)
-libksba_ver = $(shell awk '$$1=="libksba_ver" {print $$2}' swdb.lst)
-gpgme_ver = $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
-pinentry_ver = $(shell awk '$$1=="pinentry_ver" {print $$2}' swdb.lst)
-gpa_ver = $(shell awk '$$1=="gpa_ver" {print $$2}' swdb.lst)
-gpgex_ver = $(shell awk '$$1=="gpgex_ver" {print $$2}' swdb.lst)
+
+libgpg_error_ver := $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
+libgpg_error_sha1:= $(shell awk '$$1=="libgpg_error_sha1" {print $$2}' swdb.lst)
+
+npth_ver  := $(shell awk '$$1=="npth_ver" {print $$2}' swdb.lst)
+npth_sha1 := $(shell awk '$$1=="npth_sha1" {print $$2}' swdb.lst)
+
+libgcrypt_ver  := $(shell awk '$$1=="libgcrypt_ver" {print $$2}' swdb.lst)
+libgcrypt_sha1 := $(shell awk '$$1=="libgcrypt_sha1" {print $$2}' swdb.lst)
+
+libassuan_ver  := $(shell awk '$$1=="libassuan_ver" {print $$2}' swdb.lst)
+libassuan_sha1 := $(shell awk '$$1=="libassuan_sha1" {print $$2}' swdb.lst)
+
+libksba_ver  := $(shell awk '$$1=="libksba_ver" {print $$2}' swdb.lst)
+libksba_sha1 := $(shell awk '$$1=="libksba_sha1" {print $$2}' swdb.lst)
+
+gpgme_ver  := $(shell awk '$$1=="gpgme_ver" {print $$2}' swdb.lst)
+gpgme_sha1 := $(shell awk '$$1=="gpgme_sha1" {print $$2}' swdb.lst)
+
+pinentry_ver  := $(shell awk '$$1=="pinentry_ver" {print $$2}' swdb.lst)
+pinentry_sha1 := $(shell awk '$$1=="pinentry_sha1" {print $$2}' swdb.lst)
+
+gpa_ver  := $(shell awk '$$1=="gpa_ver" {print $$2}' swdb.lst)
+gpa_sha1 := $(shell awk '$$1=="gpa_sha1" {print $$2}' swdb.lst)
+
+gpgex_ver  := $(shell awk '$$1=="gpgex_ver" {print $$2}' swdb.lst)
+gpgex_sha1 := $(shell awk '$$1=="gpgex_sha1" {print $$2}' swdb.lst)
 
 $(info Information from the version database)
 $(info GnuPG ..........: $(gnupg_ver))
@@ -161,7 +243,7 @@ $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 $(info GPA ............: $(gpa_ver))
 $(info GpgEX.... ......: $(gpgex_ver))
-
+endif
 
 # Version number for external packages
 pkg_config_ver = 0.23
@@ -324,6 +406,7 @@ speedo_pkg_w64_gpgex_configure = \
 # External packages
 #
 
+ifeq ($(TARGETOS),w32)
 speedo_pkg_zlib_make_args = \
         -fwin32/Makefile.gcc PREFIX=$(host)- IMPLIB=libz.dll.a
 
@@ -353,6 +436,9 @@ echo "dlpreopen=''" >> lib/libz.la;			\
 echo "libdir=\"$(idir)/lib\"" >> lib/libz.la)
 endef
 
+endif
+
+
 speedo_pkg_w64_libiconv_configure = \
 	--enable-shared=no --enable-static=yes
 
@@ -370,7 +456,7 @@ speedo_pkg_gettext_make_dir = gettext-runtime
 
 speedo_pkg_glib_configure = \
 	--disable-modular-tests \
-	--with-lib-prefix=$(idir) --with-libiconv-prefix=$(idir) \
+	--with-libiconv=gnu \
 	CPPFLAGS=-I$(idir)/include \
 	LDFLAGS=-L$(idir)/lib \
 	CCC=$(host)-g++ \
@@ -380,19 +466,36 @@ ifeq ($(TARGETOS),w32)
 speedo_pkg_glib_extracflags = -march=i486
 endif
 
+ifeq ($(TARGETOS),w32)
 speedo_pkg_libpng_configure = \
 	CPPFLAGS=\"-I$(idir)/include -DPNG_BUILD_DLL\" \
 	LDFLAGS=\"-L$(idir)/lib\" LIBPNG_DEFINES=\"-DPNG_BUILD_DLL\"
+else
+speedo_pkg_libpng_configure = \
+        CPPFLAGS=\"-I$(idir)/include\" \
+        LDFLAGS=\"-L$(idir)/lib\"
+endif
+
+ifneq ($(TARGETOS),w32)
+speedo_pkg_gdk_pixbuf_configure = --without-libtiff --without-libjpeg
+endif
 
 speedo_pkg_pixman_configure = \
 	CPPFLAGS=-I$(idir)/include \
 	LDFLAGS=-L$(idir)/lib
 
+ifeq ($(TARGETOS),w32)
 speedo_pkg_cairo_configure = \
 	--disable-qt --disable-ft --disable-fc \
 	--enable-win32 --enable-win32-font \
 	CPPFLAGS=-I$(idir)/include \
 	LDFLAGS=-L$(idir)/lib
+else
+speedo_pkg_cairo_configure = \
+	--disable-qt \
+        CPPFLAGS=-I$(idir)/include \
+        LDFLAGS=-L$(idir)/lib
+endif
 
 speedo_pkg_pango_configure = \
 	--disable-gtk-doc  \
@@ -490,60 +593,76 @@ endef
 
 # Set a couple of common variables.
 define SETVARS
-	pkg="$(1)";							\
-	git="$(call GETVAR,speedo_pkg_$(1)_git)";			\
-	gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";			\
-	tar="$(call GETVAR,speedo_pkg_$(1)_tar)";			\
-	pkgsdir="$(sdir)/$(1)";						\
-	if [ "$(1)" = "gnupg" ]; then                                   \
-	  git='';                                                       \
-	  gitref='';                                                    \
-	  tar='';                                                       \
+        pkg="$(1)";                                                     \
+        git="$(call GETVAR,speedo_pkg_$(1)_git)";                       \
+        gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";                 \
+        tar="$(call GETVAR,speedo_pkg_$(1)_tar)";                       \
+        sha1="$(call GETVAR,$(1)_sha1)";                                \
+        pkgsdir="$(sdir)/$(1)";                                         \
+        if [ "$(1)" = "gnupg" ]; then                                   \
+          git='';                                                       \
+          gitref='';                                                    \
+          tar='';                                                       \
           pkgsdir="$(topsrc)";                                          \
         fi;                                                             \
-	pkgbdir="$(bdir)/$(1)";	                    			\
-	pkgcfg="$(call GETVAR,speedo_pkg_$(1)_configure)";		\
-	pkgextracflags="$(call GETVAR,speedo_pkg_$(1)_extracflags)";	\
-	pkgmkdir="$(call GETVAR,speedo_pkg_$(1)_make_dir)";             \
-	pkgmkargs="$(call GETVAR,speedo_pkg_$(1)_make_args)";           \
-	pkgmkargs_inst="$(call GETVAR,speedo_pkg_$(1)_make_args_inst)"; \
-	export PKG_CONFIG="/usr/bin/pkg-config";			\
-	export PKG_CONFIG_PATH="$(idir)/lib/pkgconfig";			\
-	export PKG_CONFIG_LIBDIR="";					\
-	export SYSROOT="$(idir)";					\
-	export PATH="$(idir)/bin:$${PATH}";				\
-	export LD_LIBRARY_PATH="$(idir)/lib:$${LD_LIBRARY_PATH}"
+        pkgbdir="$(bdir)/$(1)";                                         \
+        pkgcfg="$(call GETVAR,speedo_pkg_$(1)_configure)";              \
+        tmp="$(speedo_w32_cflags)                                       \
+             $(call GETVAR,speedo_pkg_$(1)_extracflags)";               \
+        if [ x$$$$(echo "$$$$tmp" | tr -d '[:space:]')x != xx ]; then   \
+          pkgextracflags="CFLAGS=\"$$$$tmp\"";                          \
+        else                                                            \
+          pkgextracflags=;                                              \
+        fi;                                                             \
+        pkgmkdir="$(call GETVAR,speedo_pkg_$(1)_make_dir)";             \
+        pkgmkargs="$(call GETVAR,speedo_pkg_$(1)_make_args)";           \
+        pkgmkargs_inst="$(call GETVAR,speedo_pkg_$(1)_make_args_inst)"; \
+        pkgmkargs_uninst="$(call GETVAR,speedo_pkg_$(1)_make_args_uninst)"; \
+        export PKG_CONFIG="/usr/bin/pkg-config";                        \
+        export PKG_CONFIG_PATH="$(idir)/lib/pkgconfig";                 \
+        [ "$(TARGETOS)" != native ] && export PKG_CONFIG_LIBDIR="";     \
+        export SYSROOT="$(idir)";                                       \
+        export PATH="$(idir)/bin:$${PATH}";                             \
+        export LD_LIBRARY_PATH="$(idir)/lib:$${LD_LIBRARY_PATH}"
 endef
 
 define SETVARS_W64
-	pkg="$(1)";							\
-	git="$(call GETVAR,speedo_pkg_$(1)_git)";			\
-	gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";			\
-	tar="$(call GETVAR,speedo_pkg_$(1)_tar)";			\
-	pkgsdir="$(sdir)/$(1)";						\
-	if [ "$(1)" = "gnupg" ]; then                                   \
-	  git='';                                                       \
-	  gitref='';                                                    \
-	  tar='';                                                       \
+        pkg="$(1)";                                                     \
+        git="$(call GETVAR,speedo_pkg_$(1)_git)";                       \
+        gitref="$(call GETVAR,speedo_pkg_$(1)_gitref)";                 \
+        tar="$(call GETVAR,speedo_pkg_$(1)_tar)";                       \
+        sha1="$(call GETVAR,$(1)_sha1)";                                \
+        pkgsdir="$(sdir)/$(1)";                                         \
+        if [ "$(1)" = "gnupg" ]; then                                   \
+          git='';                                                       \
+          gitref='';                                                    \
+          tar='';                                                       \
           pkgsdir="$(topsrc)";                                          \
         fi;                                                             \
-	pkgbdir="$(bdir6)/$(1)";                  			\
-	pkgcfg="$(call GETVAR,speedo_pkg_w64_$(1)_configure)";		\
-	pkgextracflags="$(call GETVAR,speedo_pkg_$(1)_extracflags)";	\
-	pkgmkdir="$(call GETVAR,speedo_pkg_$(1)_make_dir)";             \
-	pkgmkargs="$(call GETVAR,speedo_pkg_$(1)_make_args)";           \
-	pkgmkargs_inst="$(call GETVAR,speedo_pkg_$(1)_make_args_inst)"; \
-	export PKG_CONFIG="/usr/bin/pkg-config";			\
-	export PKG_CONFIG_PATH="$(idir6)/lib/pkgconfig";		\
-	export PKG_CONFIG_LIBDIR="";					\
-	export SYSROOT="$(idir6)";					\
-	export PATH="$(idir6)/bin:$${PATH}";				\
-	export LD_LIBRARY_PATH="$(idir6)/lib:$${LD_LIBRARY_PATH}"
+        pkgbdir="$(bdir6)/$(1)";                                        \
+        pkgcfg="$(call GETVAR,speedo_pkg_w64_$(1)_configure)";          \
+        tmp="$(speedo_w32_cflags)                                       \
+             $(call GETVAR,speedo_pkg_$(1)_extracflags)";               \
+        if [ x$$$$(echo "$$$$tmp" | tr -d '[:space:]')x != xx ]; then   \
+          pkgextracflags="CFLAGS=\"$$$$tmp\"";                          \
+        else                                                            \
+          pkgextracflags=;                                              \
+        fi;                                                             \
+        pkgmkdir="$(call GETVAR,speedo_pkg_$(1)_make_dir)";             \
+        pkgmkargs="$(call GETVAR,speedo_pkg_$(1)_make_args)";           \
+        pkgmkargs_inst="$(call GETVAR,speedo_pkg_$(1)_make_args_inst)"; \
+        pkgmkargs_uninst="$(call GETVAR,speedo_pkg_$(1)_make_args_uninst)"; \
+        export PKG_CONFIG="/usr/bin/pkg-config";                        \
+        export PKG_CONFIG_PATH="$(idir6)/lib/pkgconfig";                \
+        [ "$(TARGETOS)" != native ] && export PKG_CONFIG_LIBDIR="";     \
+        export SYSROOT="$(idir6)";                                      \
+        export PATH="$(idir6)/bin:$${PATH}";                            \
+        export LD_LIBRARY_PATH="$(idir6)/lib:$${LD_LIBRARY_PATH}"
 endef
 
 
 # Template for source packages.
-#
+
 # Note that the gnupg package is special: The package source dir is
 # the same as the topsrc dir and thus we need to detect the gnupg
 # package and cd to that directory.  We also test that no in-source build
@@ -580,11 +699,27 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
 	     *.xz) opt=J ;;                      	\
              *) opt= ;;					\
            esac;					\
+           [ -f tmp.tgz ] && rm tmp.tgz;                \
            case "$$$${tar}" in				\
-	     /*) cmd=cat ;;				\
-	     *) cmd="wget -q -O -" ;;			\
+	     /*) tar x$$$${opt}f - < $$$${tar} ;;	\
+	     *)  wget -q -O - $$$${tar} | tee tmp.tgz | tar x$$$${opt}f - ;; \
 	   esac;					\
-	   $$$${cmd} "$$$${tar}" | tar x$$$${opt}f - ;	\
+	   if [ -f tmp.tgz ]; then                      \
+	     if [ -n "$$$${sha1}" ]; then               \
+               tmp=$$$$(sha1sum <tmp.tgz|cut -d' ' -f1);\
+               if [ "$$$${tmp}" != "$$$${sha1}" ]; then \
+	         echo "speedo:";                        \
+                 echo "speedo: ERROR: checksum mismatch for $(1)";\
+	         echo "speedo:";                        \
+                 exit 1;                                \
+               fi;                                      \
+	     else                                       \
+               echo "speedo:";                          \
+               echo "speedo: Warning: No checksum known for $(1)";\
+               echo "speedo:";                          \
+             fi;                                        \
+	     rm tmp.tgz;                                \
+           fi;                                          \
 	   base=`echo "$$$${tar}" | sed -e 's,^.*/,,'   \
                  | sed -e 's,\.tar.*$$$$,,'`;		\
 	   mv $$$${base} $(1);				\
@@ -612,15 +747,13 @@ else ifneq ($(findstring $(1),$(speedo_gnupg_style)),)
             eval AUTOGEN_SH_SILENT=1 w32root="$(idir)"  \
                "$$$${pkgsdir}/autogen.sh"               \
                $(speedo_autogen_buildopt)            	\
-               $$$${pkgcfg}                         	\
-               CFLAGS=\"$(speedo_w32_cflags) $$$${pkgextracflags}\";\
+               $$$${pkgcfg} $$$${pkgextracflags}; 	\
          else                                        	\
             eval "$$$${pkgsdir}/configure" 		\
 	       --silent                 		\
 	       --enable-maintainer-mode			\
                --prefix="$(idir)"		        \
-               $$$${pkgcfg}                         	\
-               CFLAGS=\"$(speedo_w32_cflags) $$$${pkgextracflags}\";\
+               $$$${pkgcfg} $$$${pkgextracflags};     	\
 	 fi)
 else
 	@($(call SETVARS,$(1)); 			\
@@ -629,8 +762,7 @@ else
 	 eval "$$$${pkgsdir}/configure" 		\
 	     --silent $(speedo_host_build_option)	\
              --prefix="$(idir)"		        	\
-	     $$$${pkgcfg}                          	\
-             CFLAGS=\"$(speedo_w32_cflags) $$$${pkgextracflags}\";\
+	     $$$${pkgcfg}  $$$${pkgextracflags};	\
 	 )
 endif
 	@touch $(stampdir)/stamp-$(1)-01-configure
@@ -650,15 +782,13 @@ else ifneq ($(findstring $(1),$(speedo_gnupg_style)),)
             eval AUTOGEN_SH_SILENT=1 w64root="$(idir6)" \
                "$$$${pkgsdir}/autogen.sh"               \
                $(speedo_autogen_buildopt6)            	\
-               $$$${pkgcfg}                         	\
-               CFLAGS=\"$(speedo_w32_cflags) $$$${pkgextracflags}\";\
+               $$$${pkgcfg} $$$${pkgextracflags};       \
          else                                        	\
             eval "$$$${pkgsdir}/configure" 		\
 	       --silent                 		\
 	       --enable-maintainer-mode			\
                --prefix="$(idir6)"		        \
-               $$$${pkgcfg}                         	\
-               CFLAGS=\"$(speedo_w32_cflags) $$$${pkgextracflags}\";\
+               $$$${pkgcfg} $$$${pkgextracflags};       \
 	 fi)
 else
 	@($(call SETVARS_W64,$(1)); 			\
@@ -667,8 +797,7 @@ else
 	 eval "$$$${pkgsdir}/configure" 		\
 	     --silent $(speedo_host_build_option6)	\
              --prefix="$(idir6)"	        	\
-	     $$$${pkgcfg}                          	\
-             CFLAGS=\"$(speedo_w32_cflags) $$$${pkgextracflags}\";\
+	     $$$${pkgcfg} $$$${pkgextracflags};       	\
 	 )
 endif
 	@touch $(stampdir)/stamp-w64-$(1)-01-configure
@@ -680,6 +809,9 @@ ifneq ($(findstring $(1),$(speedo_make_only_style)),)
 	@($(call SETVARS,$(1));				\
           cd "$$$${pkgsdir}";				\
 	  test -n "$$$${pkgmkdir}" && cd "$$$${pkgmkdir}"; \
+          if test "$$$${pkg}" = zlib -a "$(TARGETOS)" != w32 ; then \
+            ./configure --prefix="$(idir)" ; \
+          fi ;\
 	  $(MAKE) --no-print-directory $(speedo_makeopt) $$$${pkgmkargs} V=0)
 else
 	@($(call SETVARS,$(1));				\
@@ -754,7 +886,7 @@ clean-$(1):
 	@($(call SETVARS,$(1));			          \
 	 (cd "$$$${pkgbdir}" 2>/dev/null &&		  \
 	  $(MAKE) --no-print-directory                    \
-           $$$${pkgmkargs_inst} uninstall V=0 ) || true  ;\
+           $$$${pkgmkargs_uninst} uninstall V=0 ) || true;\
          if [ "$(1)" = "gnupg" ]; then                    \
 	   rm -fR "$$$${pkgbdir}" || true                ;\
 	 else                                             \
@@ -851,7 +983,7 @@ w32_insthelpers: $(bdir)/g4wihelp.dll
 $(bdir)/inst-options.ini: $(w32src)/inst-options.ini
 	cat $(w32src)/inst-options.ini >$(bdir)/inst-options.ini
 
-installer: all w32_insthelpers $(bdir)/inst-options.ini $(bdir)/README.txt
+installer: all w32_insthelpers $(w32dir)/inst-options.ini $(bdir)/README.txt
 	$(MAKENSIS) -V2 \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
@@ -868,5 +1000,5 @@ installer: all w32_insthelpers $(bdir)/inst-options.ini $(bdir)/README.txt
 #
 # Mark phony targets
 #
-.PHONY: all-speedo report-speedo clean-stamps clean-speedo installer \
+.PHONY: all all-speedo report-speedo clean-stamps clean-speedo installer \
 	w32_insthelpers
