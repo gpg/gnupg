@@ -443,7 +443,8 @@ create_revocation (const char *filename,
                    struct revocation_reason_info *reason,
                    PKT_public_key *psk,
                    kbnode_t keyblock,
-                   const char *leadintext, int suffix)
+                   const char *leadintext, int suffix,
+                   const char *cache_nonce)
 {
   int rc;
   iobuf_t out = NULL;
@@ -466,7 +467,7 @@ create_revocation (const char *filename,
   rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
                            opt.force_v4_certs? 4:0,
                            0, 0,
-                           revocation_reason_build_cb, reason, NULL);
+                           revocation_reason_build_cb, reason, cache_nonce);
   if (rc)
     {
       log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));
@@ -511,9 +512,10 @@ create_revocation (const char *filename,
    by gpg's interactive key generation function.  The certificate is
    stored at a dedicated place in a slightly modified form to avoid an
    accidental import.  PSK is the primary key; a corresponding secret
-   key must be available.  */
+   key must be available.  CACHE_NONCE is optional but can be used to
+   help gpg-agent to avoid an extra passphrase prompt. */
 int
-gen_standard_revoke (PKT_public_key *psk)
+gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce)
 {
   int rc;
   estream_t memfp;
@@ -573,7 +575,7 @@ gen_standard_revoke (PKT_public_key *psk)
 
   reason.code = 0x00; /* No particular reason.  */
   reason.desc = NULL;
-  rc = create_revocation (fname, &reason, psk, NULL, leadin, 3);
+  rc = create_revocation (fname, &reason, psk, NULL, leadin, 3, cache_nonce);
   xfree (leadin);
   xfree (fname);
 
@@ -662,7 +664,7 @@ gen_revoke (const char *uname)
   if (!opt.armor)
     tty_printf (_("ASCII armored output forced.\n"));
 
-  rc = create_revocation (NULL, reason, psk, keyblock, NULL, 0);
+  rc = create_revocation (NULL, reason, psk, keyblock, NULL, 0, NULL);
   if (rc)
     goto leave;
 

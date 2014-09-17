@@ -333,7 +333,7 @@ int enarmor_file( const char *fname );
 
 /*-- revoke.c --*/
 struct revocation_reason_info;
-int gen_standard_revoke (PKT_public_key *psk);
+int gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce);
 int gen_revoke( const char *uname );
 int gen_desig_revoke( const char *uname, strlist_t locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );

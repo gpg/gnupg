@@ -65,6 +65,9 @@ struct cache_item_s {
 /* The cache himself.  */
 static ITEM thecache;
 
+/* NULL or the last cache key stored by agent_store_cache_hit.  */
+static char *last_stored_cache_key;
+
 
 /* This function must be called once to initialize this module. It
    has to be done before a second thread is spawned.  */
@@ -388,12 +391,24 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
   ITEM r;
   char *value = NULL;
   int res;
+  int last_stored = 0;
 
   if (cache_mode == CACHE_MODE_IGNORE)
     return NULL;
 
+  if (!key)
+    {
+      key = last_stored_cache_key;
+      if (!key)
+        return NULL;
+      last_stored = 1;
+    }
+
+
   if (DBG_CACHE)
-    log_debug ("agent_get_cache '%s' (mode %d) ...\n", key, cache_mode);
+    log_debug ("agent_get_cache '%s' (mode %d)%s ...\n",
+               key, cache_mode,
+               last_stored? " (stored cache key)":"");
   housekeeping ();
 
   for (r=thecache; r; r = r->next)
@@ -404,6 +419,7 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
               || r->cache_mode == cache_mode)
           && !strcmp (r->key, key))
         {
+          /* Note: To avoid races KEY may not be accessed anymore below.  */
           r->accessed = gnupg_get_time ();
           if (DBG_CACHE)
             log_debug ("... hit\n");
@@ -441,4 +457,15 @@ agent_get_cache (const char *key, cache_mode_t cache_mode)
     log_debug ("... miss\n");
 
   return NULL;
+}
+
+
+/* Store the key for the last successful cache hit.  That value is
+   used by agent_get_cache if the requested KEY is given as NULL.
+   NULL may be used to remove that key. */
+void
+agent_store_cache_hit (const char *key)
+{
+  xfree (last_stored_cache_key);
+  last_stored_cache_key = key? xtrystrdup (key) : NULL;
 }

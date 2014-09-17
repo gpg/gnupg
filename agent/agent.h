@@ -364,6 +364,7 @@ void agent_flush_cache (void);
 int agent_put_cache (const char *key, cache_mode_t cache_mode,
                      const char *data, int ttl);
 char *agent_get_cache (const char *key, cache_mode_t cache_mode);
+void agent_store_cache_hit (const char *key);
 
 
 /*-- pksign.c --*/

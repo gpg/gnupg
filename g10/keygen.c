@@ -4115,7 +4115,7 @@ do_generate_keypair (struct para_data_s *para,
           update_ownertrust (pk, ((get_ownertrust (pk) & ~TRUST_MASK)
                                   | TRUST_ULTIMATE ));
 
-          gen_standard_revoke (pk);
+          gen_standard_revoke (pk, cache_nonce);
 
           if (!opt.batch)
             {

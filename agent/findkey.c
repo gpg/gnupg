@@ -372,6 +372,8 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
           rc = agent_unprotect (ctrl, *keybuf, pw, NULL, &result, &resultlen);
           if (!rc)
             {
+              if (cache_mode == CACHE_MODE_NORMAL)
+                agent_store_cache_hit (hexgrip);
               if (r_passphrase)
                 *r_passphrase = pw;
               else
@@ -382,6 +384,45 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
             }
           xfree (pw);
           rc  = 0;
+        }
+      else if (cache_mode == CACHE_MODE_NORMAL)
+        {
+          /* The standard use of GPG keys is to have a signing and an
+             encryption subkey.  Commonly both use the same
+             passphrase.  We try to help the user to enter the
+             passphrase only once by silently trying the last
+             correctly entered passphrase.  Checking one additional
+             passphrase should be acceptable; despite the S2K
+             introduced delays. The assumed workflow is:
+
+               1. Read encrypted message in a MUA and thus enter a
+                  passphrase for the encryption subkey.
+
+               2. Reply to that mail with an encrypted and signed
+                  mail, thus entering the passphrase for the signing
+                  subkey.
+
+             We can often avoid the passphrase entry in the second
+             step.  We do this only in normal mode, so not to
+             interfere with unrelated cache entries.  */
+          pw = agent_get_cache (NULL, cache_mode);
+          if (pw)
+            {
+              rc = agent_unprotect (ctrl, *keybuf, pw, NULL,
+                                    &result, &resultlen);
+              if (!rc)
+                {
+                  if (r_passphrase)
+                    *r_passphrase = pw;
+                  else
+                    xfree (pw);
+                  xfree (*keybuf);
+                  *keybuf = result;
+                  return 0;
+                }
+              xfree (pw);
+              rc  = 0;
+            }
         }
 
       /* If the pinentry is currently in use, we wait up to 60 seconds
@@ -460,6 +501,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
         {
           agent_put_cache (hexgrip, cache_mode, pi->pin,
                            lookup_ttl? lookup_ttl (hexgrip) : 0);
+          agent_store_cache_hit (hexgrip);
           if (r_passphrase && *pi->pin)
             *r_passphrase = xtrystrdup (pi->pin);
         }
