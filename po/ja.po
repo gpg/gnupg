@@ -3181,6 +3181,14 @@ msgstr ""
 "*警告*: 主たるユーザIDがありません。このコマンドは、別な\n"
 "              ユーザIDが主になると仮定する場合があります。\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "v3鍵の有効期限は変更できません\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"

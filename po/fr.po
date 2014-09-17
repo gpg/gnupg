@@ -3310,6 +3310,14 @@ msgstr ""
 "commande\n"
 "            risque de rendre une autre identité principale par défaut.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Vous ne pouvez pas modifier la date d'expiration d'une clef v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
