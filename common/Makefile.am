@@ -181,12 +181,20 @@ module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
+
+if MAINTAINER_MODE
 module_maint_tests = t-helpfile t-b64 t-http
+else
+module_maint_tests =
+endif
 
 
+t_common_cflags = $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS) \
+                  $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 t_common_ldadd = libcommon.a ../gl/libgnu.a \
                  $(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	         $(LIBINTL) $(LIBICONV)
+
 
 # jnlib tests
 t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)

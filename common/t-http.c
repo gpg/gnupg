@@ -226,7 +226,7 @@ main (int argc, char **argv)
     }
   if (argc != 1)
     {
-      fprintf (stderr, PGM ": no or roo many URLS given\n");
+      fprintf (stderr, PGM ": no or too many URLS given\n");
       exit (1);
     }
 
