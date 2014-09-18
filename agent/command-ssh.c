@@ -1665,14 +1665,12 @@ ssh_signature_encoder_eddsa (ssh_key_type_spec_t *spec,
   if (err)
     goto out;
 
-  gcry_log_debug ("  out: len=%zu\n", totallen);
   err = stream_write_uint32 (stream, totallen);
   if (err)
     goto out;
 
   for (i = 0; i < DIM(data); i++)
     {
-      gcry_log_debughex ("  out", data[i], data_n[i]);
       err = stream_write_data (stream, data[i], data_n[i]);
       if (err)
         goto out;
