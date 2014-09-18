@@ -3159,12 +3159,13 @@ files; They all live in in the current home directory (@pxref{option
 
   @item ~/.gnupg/openpgp-revocs.d/
   This is the directory where gpg stores pre-generated revocation
-  certificates.  It is suggested to backup those certificates and if the
-  primary private key is not stored on the disk to move them to an
-  external storage device.  Anyone who can access theses files is able to
-  revoke the corresponding key.  You may want to print them out.  You
-  should backup all files in this directory and take care to keep this
-  backup closed away.
+  certificates.  The file name corresponds to the OpenPGP fingerprint of
+  the respective key.  It is suggested to backup those certificates and
+  if the primary private key is not stored on the disk to move them to
+  an external storage device.  Anyone who can access theses files is
+  able to revoke the corresponding key.  You may want to print them out.
+  You should backup all files in this directory and take care to keep
+  this backup closed away.
 
   @item /usr[/local]/share/gnupg/options.skel
   The skeleton options file.
