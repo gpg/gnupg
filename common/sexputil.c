@@ -370,9 +370,9 @@ make_canon_sexp_from_rsa_pk (const void *m_arg, size_t mlen,
   char mlen_str[35];
   char elen_str[35];
   unsigned char *keybuf, *p;
-  const char const part1[] = "(10:public-key(3:rsa(1:n";
-  const char const part2[] = ")(1:e";
-  const char const part3[] = ")))";
+  const char part1[] = "(10:public-key(3:rsa(1:n";
+  const char part2[] = ")(1:e";
+  const char part3[] = ")))";
 
   /* Remove leading zeroes.  */
   for (; mlen && !*m; mlen--, m++)

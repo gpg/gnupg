@@ -70,15 +70,6 @@
 #include "exechelp.h"
 
 
-/* We have the usual problem here: Some modules are linked against pth
-   and some are not.  However we want to use pth_fork and pth_waitpid
-   here. Using a weak symbol works but is not portable - we should
-   provide a an explicit dummy pth module instead of using the
-   pragma.  */
-#pragma weak pth_fork
-#pragma weak pth_waitpid
-
-
 /* Return the maximum number of currently allowed open file
    descriptors.  Only useful on POSIX systems but returns a value on
    other systems too.  */
