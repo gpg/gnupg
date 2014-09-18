@@ -1258,10 +1258,10 @@ enum_sig_subpkt( const subpktarea_t *pktbuf, sigsubpkttype_t reqtype,
       critical=&critical_dummy;
 
     if( !pktbuf || reqseq == -1 ) {
-	/* return some value different from NULL to indicate that
-	 * there is no critical bit we do not understand.  The caller
-	 * will never use the value.  Yes I know, it is an ugly hack */
-	return reqtype == SIGSUBPKT_TEST_CRITICAL? (const byte*)&pktbuf : NULL;
+	static char dummy[] = "x";
+	/* Return a value different from NULL to indicate that
+	 * there is no critical bit we do not understand.  */
+	return reqtype ==	SIGSUBPKT_TEST_CRITICAL ? dummy : NULL;
     }
     buffer = pktbuf->data;
     buflen = pktbuf->len;
