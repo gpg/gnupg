@@ -52,19 +52,19 @@
 
 !define ABOUT_ENGLISH \
  "GnuPG is the mostly used software for mail and data encryption. \
-  It can be used to encrypt data and to create digital signatures. \
-  It includes an advanced key management facility and is compliant \
-  with the proposed OpenPGP Internet standard as described in RFC-4880. \
+  GnuPG can be used to encrypt data and to create digital signatures. \
+  GnuPG includes an advanced key management facility and is compliant \
+  with the OpenPGP Internet standard as described in RFC-4880. \
   \r\n\r\n$_CLICK \
-  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}\r\n\
-  file version ${PROD_VERSION}\r\n\
-  release date ${BUILD_ISODATE}"
+  \r\n\r\n\r\n\r\n\r\nThis is GnuPG version ${VERSION}.\r\n\
+  File version: ${PROD_VERSION}\r\n\
+  Release date: ${BUILD_ISODATE}"
 !define ABOUT_GERMAN \
  "GnuPG is die häufigst verwendete Software zur Mail- und Datenverschlüsselung.\
    \r\n\r\n$_CLICK \
-   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION}\r\n\
-   Dateiversion ${PROD_VERSION}\r\n\
-   Releasedatum ${BUILD_ISODATE}"
+   \r\n\r\n\r\n\r\n\r\nDies ist GnuPG Version ${VERSION}.\r\n\
+   Dateiversion: ${PROD_VERSION}\r\n\
+   Releasedatum: ${BUILD_ISODATE}"
 
 
 # The copyright license of the package.  Define only one of these.

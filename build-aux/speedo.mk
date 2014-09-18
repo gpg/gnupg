@@ -148,7 +148,7 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib libiconv gettext
+	zlib bzip2 libiconv gettext
 endif
 
 speedo_spkgs += \
@@ -194,7 +194,7 @@ speedo_gnupg_style = \
 
 # Packages which use only make and no build directory
 speedo_make_only_style = \
-	zlib
+	zlib bzip2
 
 # Get the content of the software DB.
 ifeq ($(UPD_SWDB),1)
@@ -233,12 +233,20 @@ gpa_sha1 := $(shell awk '$$1=="gpa_sha1" {print $$2}' swdb.lst)
 gpgex_ver  := $(shell awk '$$1=="gpgex_ver" {print $$2}' swdb.lst)
 gpgex_sha1 := $(shell awk '$$1=="gpgex_sha1" {print $$2}' swdb.lst)
 
+zlib_ver  := $(shell awk '$$1=="zlib_ver" {print $$2}' swdb.lst)
+zlib_sha1 := $(shell awk '$$1=="zlib_sha1_gz" {print $$2}' swdb.lst)
+
+bzip2_ver  := $(shell awk '$$1=="bzip2_ver" {print $$2}' swdb.lst)
+bzip2_sha1 := $(shell awk '$$1=="bzip2_sha1_gz" {print $$2}' swdb.lst)
+
 $(info Information from the version database)
 $(info GnuPG ..........: $(gnupg_ver))
 $(info Libgpg-error ...: $(libgpg_error_ver))
 $(info Npth ...........: $(npth_ver))
 $(info Libgcrypt ......: $(libgcrypt_ver))
 $(info Libassuan ......: $(libassuan_ver))
+$(info Zlib ...........: $(zlib_ver))
+$(info Bzip2 ..........: $(bzip2_ver))
 $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 $(info GPA ............: $(gpa_ver))
@@ -267,6 +275,7 @@ gitrep = ${HOME}/s
 
 # The tarball directories
 pkgrep = ftp://ftp.gnupg.org/gcrypt
+pkg10rep = ftp://ftp.g10code.com/g10code
 pkg2rep = $(TARBALLS)
 
 # For each package, the following variables can be defined:
@@ -329,13 +338,14 @@ else ifeq ($(WHAT),release)
   speedo_pkg_gpa_tar = \
 	$(pkgrep)/gpa/gpa-$(gpa_ver).tar.bz2
   speedo_pkg_gpgex_tar = \
-	$(pkgrep)/gpex/gpgex-$(gpa_ver).tar.bz2
+	$(pkg10rep)/gpgex/gpgex-$(gpgex_ver).tar.bz2
 else
   $(error invalid value for WHAT (use on of: git release this))
 endif
 
 speedo_pkg_pkg_config_tar = $(pkg2rep)/pkg-config-$(pkg_config_ver).tar.gz
-speedo_pkg_zlib_tar       = $(pkg2rep)/zlib-$(zlib_ver).tar.gz
+speedo_pkg_zlib_tar       = $(pkgrep)/zlib/zlib-$(zlib_ver).tar.gz
+speedo_pkg_bzip2_tar      = $(pkgrep)/bzip2/bzip2-$(bzip2_ver).tar.gz
 speedo_pkg_libiconv_tar   = $(pkg2rep)/libiconv-$(libiconv_ver).tar.gz
 speedo_pkg_gettext_tar    = $(pkg2rep)/gettext-$(gettext_ver).tar.gz
 speedo_pkg_libffi_tar     = $(pkg2rep)/libffi-$(libffi_ver).tar.gz
@@ -438,6 +448,13 @@ endef
 
 endif
 
+ifeq ($(TARGETOS),w32)
+speedo_pkg_bzip2_make_args = \
+	CC="$(host)-gcc" AR="$(host)-ar" RANLIB="$(host)-ranlib"
+
+speedo_pkg_bzip2_make_args_inst = \
+	PREFIX=$(idir) CC="$(host)-gcc" AR="$(host)-ar" RANLIB="$(host)-ranlib"
+endif
 
 speedo_pkg_w64_libiconv_configure = \
 	--enable-shared=no --enable-static=yes
@@ -817,7 +834,7 @@ else
 	@($(call SETVARS,$(1));				\
           cd "$$$${pkgbdir}";				\
 	  test -n "$$$${pkgmkdir}" && cd "$$$${pkgmkdir}"; \
-	  $(MAKE) --no-print-directory $(speedo_makeopt) $$$${pkgmkargs} V=1)
+	  $(MAKE) --no-print-directory $(speedo_makeopt) $$$${pkgmkargs} V=0)
 endif
 	@touch $(stampdir)/stamp-$(1)-02-make
 
@@ -832,7 +849,7 @@ else
 	@($(call SETVARS_W64,$(1));				\
           cd "$$$${pkgbdir}";				\
 	  test -n "$$$${pkgmkdir}" && cd "$$$${pkgmkdir}"; \
-	  $(MAKE) --no-print-directory $(speedo_makeopt) $$$${pkgmkargs} V=1)
+	  $(MAKE) --no-print-directory $(speedo_makeopt) $$$${pkgmkargs} V=0)
 endif
 	@touch $(stampdir)/stamp-w64-$(1)-02-make
 
@@ -844,7 +861,7 @@ ifneq ($(findstring $(1),$(speedo_make_only_style)),)
 	@($(call SETVARS,$(1));				\
           cd "$$$${pkgsdir}";				\
 	  test -n "$$$${pkgmkdir}" && cd "$$$${pkgmkdir}"; \
-	  $(MAKE) --no-print-directory $$$${pkgmkargs_inst} install V=1;\
+	  $(MAKE) --no-print-directory $$$${pkgmkargs_inst} install V=0;\
 	  $(call speedo_pkg_$(call FROB_macro,$(1))_post_install))
 else
 	@($(call SETVARS,$(1));				\
@@ -861,7 +878,7 @@ ifneq ($(findstring $(1),$(speedo_make_only_style)),)
 	@($(call SETVARS_W64,$(1));				\
           cd "$$$${pkgsdir}";				\
 	  test -n "$$$${pkgmkdir}" && cd "$$$${pkgmkdir}"; \
-	  $(MAKE) --no-print-directory $$$${pkgmkargs_inst} install V=1;\
+	  $(MAKE) --no-print-directory $$$${pkgmkargs_inst} install V=0;\
 	  $(call speedo_pkg_$(call FROB_macro,$(1))_post_install))
 else
 	@($(call SETVARS_W64,$(1));				\
@@ -983,7 +1000,7 @@ w32_insthelpers: $(bdir)/g4wihelp.dll
 $(bdir)/inst-options.ini: $(w32src)/inst-options.ini
 	cat $(w32src)/inst-options.ini >$(bdir)/inst-options.ini
 
-installer: all w32_insthelpers $(w32dir)/inst-options.ini $(bdir)/README.txt
+installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 	$(MAKENSIS) -V2 \
                     -DINST_DIR=$(idir) \
                     -DINST6_DIR=$(idir6) \
