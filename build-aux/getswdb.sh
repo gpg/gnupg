@@ -94,6 +94,12 @@ fi
 version=$(cat "$srcdir/../VERSION")
 version_num=$(echo "$version" | cvtver)
 
+if ! $GPGV --version >/dev/null 2>/dev/null ; then
+  echo "command \"gpgv\" is not installed" >&2
+  echo "(please install an older version of GnuPG)" >&2
+  exit 1
+fi
+
 #
 # Download the list and verify.
 #
@@ -107,6 +113,11 @@ if [ $skip_download = yes ]; then
       exit 1
   fi
 else
+  if ! $WGET --version >/dev/null 2>/dev/null ; then
+      echo "command \"wget\" is not installed" >&2
+      exit 1
+  fi
+
   if ! $WGET -q -O swdb.lst "$urlbase/swdb.lst" ; then
       echo "download of swdb.lst failed." >&2
       exit 1
