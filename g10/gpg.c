@@ -4386,18 +4386,18 @@ print_mds( const char *fname, int algo )
     gcry_md_enable (md, algo);
   else
     {
-      if (!openpgp_md_test_algo (GCRY_MD_MD5))
+      if (!gcry_md_test_algo (GCRY_MD_MD5))
         gcry_md_enable (md, GCRY_MD_MD5);
       gcry_md_enable (md, GCRY_MD_SHA1);
-      if (!openpgp_md_test_algo (GCRY_MD_RMD160))
+      if (!gcry_md_test_algo (GCRY_MD_RMD160))
         gcry_md_enable (md, GCRY_MD_RMD160);
-      if (!openpgp_md_test_algo (GCRY_MD_SHA224))
+      if (!gcry_md_test_algo (GCRY_MD_SHA224))
         gcry_md_enable (md, GCRY_MD_SHA224);
-      if (!openpgp_md_test_algo (GCRY_MD_SHA256))
+      if (!gcry_md_test_algo (GCRY_MD_SHA256))
         gcry_md_enable (md, GCRY_MD_SHA256);
-      if (!openpgp_md_test_algo (GCRY_MD_SHA384))
+      if (!gcry_md_test_algo (GCRY_MD_SHA384))
         gcry_md_enable (md, GCRY_MD_SHA384);
-      if (!openpgp_md_test_algo (GCRY_MD_SHA512))
+      if (!gcry_md_test_algo (GCRY_MD_SHA512))
         gcry_md_enable (md, GCRY_MD_SHA512);
     }
 
@@ -4415,18 +4415,18 @@ print_mds( const char *fname, int algo )
             print_hashline (md, algo, fname);
           else
             {
-              if (!openpgp_md_test_algo (GCRY_MD_MD5))
+              if (!gcry_md_test_algo (GCRY_MD_MD5))
                 print_hashline( md, GCRY_MD_MD5, fname );
               print_hashline( md, GCRY_MD_SHA1, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_RMD160))
+              if (!gcry_md_test_algo (GCRY_MD_RMD160))
                 print_hashline( md, GCRY_MD_RMD160, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_SHA224))
+              if (!gcry_md_test_algo (GCRY_MD_SHA224))
                 print_hashline (md, GCRY_MD_SHA224, fname);
-              if (!openpgp_md_test_algo (GCRY_MD_SHA256))
+              if (!gcry_md_test_algo (GCRY_MD_SHA256))
                 print_hashline( md, GCRY_MD_SHA256, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_SHA384))
+              if (!gcry_md_test_algo (GCRY_MD_SHA384))
                 print_hashline ( md, GCRY_MD_SHA384, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_SHA512))
+              if (!gcry_md_test_algo (GCRY_MD_SHA512))
                 print_hashline ( md, GCRY_MD_SHA512, fname );
             }
         }
@@ -4436,18 +4436,18 @@ print_mds( const char *fname, int algo )
             print_hex (md, -algo, fname);
           else
             {
-              if (!openpgp_md_test_algo (GCRY_MD_MD5))
+              if (!gcry_md_test_algo (GCRY_MD_MD5))
                 print_hex (md, GCRY_MD_MD5, fname);
               print_hex (md, GCRY_MD_SHA1, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_RMD160))
+              if (!gcry_md_test_algo (GCRY_MD_RMD160))
                 print_hex (md, GCRY_MD_RMD160, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_SHA224))
+              if (!gcry_md_test_algo (GCRY_MD_SHA224))
                 print_hex (md, GCRY_MD_SHA224, fname);
-              if (!openpgp_md_test_algo (GCRY_MD_SHA256))
+              if (!gcry_md_test_algo (GCRY_MD_SHA256))
                 print_hex (md, GCRY_MD_SHA256, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_SHA384))
+              if (!gcry_md_test_algo (GCRY_MD_SHA384))
                 print_hex (md, GCRY_MD_SHA384, fname );
-              if (!openpgp_md_test_algo (GCRY_MD_SHA512))
+              if (!gcry_md_test_algo (GCRY_MD_SHA512))
                 print_hex (md, GCRY_MD_SHA512, fname );
             }
         }
