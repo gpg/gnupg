@@ -110,11 +110,13 @@ keyblock_cache_clear (void)
 
 
 /* Handle the creation of a keyring or a keybox if it does not yet
-   exist.  Take into acount that other processes might have the
+   exist.  Take into account that other processes might have the
    keyring/keybox already locked.  This lock check does not work if
-   the directory itself is not yet available. */
+   the directory itself is not yet available.  If is IS_BOX is true
+   the filename is expected to be a keybox.  If FORCE_CREATE is true
+   the keyring or keybox shall be created.  */
 static int
-maybe_create_keyring_or_box (char *filename, int is_box, int force)
+maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 {
   dotlock_t lockhd = NULL;
   IOBUF iobuf;
@@ -129,14 +131,14 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force)
 
   /* If we don't want to create a new file at all, there is no need to
      go any further - bail out right here.  */
-  if (!force)
+  if (!force_create)
     return gpg_error (GPG_ERR_ENOENT);
 
   /* First of all we try to create the home directory.  Note, that we
      don't do any locking here because any sane application of gpg
      would create the home directory by itself and not rely on gpg's
-     tricky auto-creation which is anyway only done for some home
-     directory name patterns. */
+     tricky auto-creation which is anyway only done for certain home
+     directory name pattern. */
   last_slash_in_filename = strrchr (filename, DIRSEP_C);
 #if HAVE_W32_SYSTEM
   {
@@ -184,8 +186,8 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force)
         log_info ("can't allocate lock for '%s': %s\n",
                   filename, gpg_strerror (rc));
 
-      if (!force)
-        return gpg_error (GPG_ERR_ENOENT);
+      if (!force_create)
+        return gpg_error (GPG_ERR_ENOENT);  /* Won't happen.  */
       else
         return rc;
     }
@@ -289,6 +291,7 @@ keydb_add_resource (const char *url, unsigned int flags)
   char *filename = NULL;
   int create;
   int read_only = !!(flags&KEYDB_RESOURCE_FLAG_READONLY);
+  int is_default = !!(flags&KEYDB_RESOURCE_FLAG_DEFAULT);
   int rc = 0;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
   void *token;
@@ -334,8 +337,13 @@ keydb_add_resource (const char *url, unsigned int flags)
   /* See whether we can determine the filetype.  */
   if (rt == KEYDB_RESOURCE_TYPE_NONE)
     {
-      FILE *fp = fopen (filename, "rb");
+      FILE *fp;
+      int pass = 0;
+      size_t filenamelen;
 
+    check_again:
+      filenamelen = strlen (filename);
+      fp = fopen (filename, "rb");
       if (fp)
         {
           u32 magic;
@@ -357,6 +365,20 @@ keydb_add_resource (const char *url, unsigned int flags)
 
           fclose (fp);
 	}
+      else if (!pass
+               && is_default && create
+               && filenamelen > 4 && !strcmp (filename+filenamelen-4, ".gpg"))
+        {
+          /* The file does not exist, the default resource has been
+             requested, the file shall be created, and the file has a
+             ".gpg" suffix.  Change the suffix to ".kbx" and try once
+             more.  This way we achieve that we open an existing
+             ".gpg" keyring, but create a new keybox file with an
+             ".kbx" suffix.  */
+          strcpy (filename+filenamelen-4, ".kbx");
+          pass++;
+          goto check_again;
+        }
       else /* No file yet: create keybox. */
         rt = KEYDB_RESOURCE_TYPE_KEYBOX;
     }
@@ -369,7 +391,7 @@ keydb_add_resource (const char *url, unsigned int flags)
       goto leave;
 
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = maybe_create_keyring_or_box (filename, create, 0);
+      rc = maybe_create_keyring_or_box (filename, 0, create);
       if (rc)
         goto leave;
 
@@ -399,7 +421,7 @@ keydb_add_resource (const char *url, unsigned int flags)
 
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       {
-        rc = maybe_create_keyring_or_box (filename, create, 1);
+        rc = maybe_create_keyring_or_box (filename, 1, create);
         if (rc)
           goto leave;
 
