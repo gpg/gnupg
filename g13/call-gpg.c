@@ -332,11 +332,11 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
                   strlist_t keys, void **r_ciph, size_t *r_ciphlen)
 {
   gpg_error_t err;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   int outbound_fds[2] = { -1, -1 };
   int inbound_fds[2]  = { -1, -1 };
-  npth_t writer_thread;
-  npth_t reader_thread;
+  npth_t writer_thread = (npth_t)0;
+  npth_t reader_thread = (npth_t)0;
   gpg_error_t writer_err, reader_err;
   membuf_t reader_mb;
   char line[ASSUAN_LINELENGTH];
@@ -475,11 +475,11 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
                   void **r_plain, size_t *r_plainlen)
 {
   gpg_error_t err;
-  assuan_context_t ctx;
+  assuan_context_t ctx = NULL;
   int outbound_fds[2] = { -1, -1 };
   int inbound_fds[2]  = { -1, -1 };
-  npth_t writer_thread;
-  npth_t reader_thread;
+  npth_t writer_thread = (npth_t)0;
+  npth_t reader_thread = (npth_t)0;
   gpg_error_t writer_err, reader_err;
   membuf_t reader_mb;
   int ret;
