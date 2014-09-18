@@ -147,7 +147,6 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
   char *subject_name;
   membuf_t mb_email, mb_dns, mb_uri, mb_result;
   char *result = NULL;
-  int i;
   const char *s, *s2;
   int selfsigned;
 
@@ -381,7 +380,7 @@ gpgsm_gencertreq_tty (ctrl_t ctrl, estream_t output_stream)
     goto mem_error;
 
   tty_printf (_("These parameters are used:\n"));
-  for (s=result; (s2 = strchr (s, '\n')); s = s2+1, i++)
+  for (s=result; (s2 = strchr (s, '\n')); s = s2+1)
     tty_printf ("    %.*s\n", (int)(s2-s), s);
   tty_printf ("\n");
 

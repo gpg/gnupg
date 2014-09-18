@@ -437,7 +437,7 @@ proc_parameters (ctrl_t ctrl, struct para_data_s *para,
   char numbuf[20];
   unsigned char keyparms[100];
   int rc = 0;
-  ksba_sexp_t public;
+  ksba_sexp_t public = NULL;
   ksba_sexp_t sigkey = NULL;
   int seq;
   size_t erroff, errlen;
