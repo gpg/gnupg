@@ -1833,7 +1833,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 
 #if GPG_USE_ECDSA || GPG_USE_ECDH || GPG_USE_EDDSA
   if (opt.expert && !addmode)
-    tty_printf (_("   (%d) ECC\n"), 9 );
+    tty_printf (_("   (%d) ECC and ECC\n"), 9 );
   if (opt.expert)
     tty_printf (_("  (%d) ECC (sign only)\n"), 10 );
   if (opt.expert)
