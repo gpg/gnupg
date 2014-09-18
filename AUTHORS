@@ -1,5 +1,7 @@
 Program: GnuPG
 Homepage: https://www.gnupg.org
+Download: ftp://ftp.gnupg.org/gcrypt/gnupg/
+Repository: git://git.gnupg.org/gnupg.git
 Maintainer: Werner Koch <wk@gnupg.org>
 Bug reports: http://bugs.gnupg.org
 Security related bug reports: <security@gnupg.org>

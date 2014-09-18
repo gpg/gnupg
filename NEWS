@@ -1,5 +1,21 @@
-Noteworthy changes in version 2.1.0-betaNNN (unreleased)
+Noteworthy changes in version 2.1.0-beta834 (2014-09-18)
 --------------------------------------------------------
+
+ * gpg: Improved passphrase caching.
+
+ * gpg: Switched to algorithm number 22 for EdDSA.
+
+ * gpg: Removed CAST5 from the default preferences.
+
+ * gpg: Order SHA-1 last in the hash preferences.
+
+ * gpg: Changed default cipher for --symmetric to AES-128.
+
+ * gpg: Fixed export of ECC keys and import of EdDSA keys.
+
+ * dirmngr: Fixed the KS_FETCH command.
+
+ * speedo: Downloads related packages and works for non-Windows.
 
 
 Noteworthy changes in version 2.1.0-beta783 (2014-08-14)

@@ -85,6 +85,15 @@ You may run
 
 to view the default directories used by GnuPG.
 
+To quickly build all required software without installing it, the
+Speedo method may be used:
+
+  make -f build-aux/speedo.mk  native
+
+This method downloads all required libraries and does a native build
+of GnuPG to PLAY/inst/.  GNU make is required and you need to set
+LD_LIBRARY_PATH to $(pwd)/PLAY/inst/lib.
+
 
 MIGRATION FROM 1.4 or 2.0 to 2.1
 ================================
