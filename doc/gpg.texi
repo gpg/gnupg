@@ -1279,7 +1279,13 @@ use the specified keyring alone, use @option{--keyring} along with
 
 @item --secret-keyring @code{file}
 @opindex secret-keyring
+@ifset gpgtwoone
+This is an obsolete option and ignored.  All secret keys are stored in
+the @file{private-keys-v1.d} directory below the GnuPG home directory.
+@end ifset
+@ifclear gpgtwoone
 Same as @option{--keyring} but for the secret keyrings.
+@end ifclear
 
 @item --primary-keyring @code{file}
 @opindex primary-keyring
