@@ -63,40 +63,40 @@ help:
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
-native:
+native: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=release WITH_GUI=0 all
 
-git-native:
+git-native: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=git     WITH_GUI=0 all
 
-this-native:
+this-native: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=this    WITH_GUI=0 all
 
-native-gui:
+native-gui: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=release WITH_GUI=1 all
 
-git-native-gui:
+git-native-gui: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=git     WITH_GUI=1 all
 
-this-native-gui:
+this-native-gui: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=this    WITH_GUI=1 all
 
-w32-installer:
+w32-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=1 installer
 
-git-w32-installer:
+git-w32-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 installer
 
-this-w32-installer:
+this-w32-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=1 installer
 
-w32-source:
+w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=1 dist-source
 
-git-w32-source:
+git-w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 dist-source
 
-this-w32-source:
+this-w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 dist-source
 
 
@@ -548,6 +548,12 @@ W32CC = i686-w64-mingw32-gcc
 
 MKDIR=mkdir
 MAKENSIS=makensis
+SHA1SUM := $(shell $(topsrc)/build-aux/getswdb.sh --find-sha1sum)
+ifeq ($(SHA1SUM),false)
+$(error The sha1sum tool is missing)
+endif
+
+
 BUILD_ISODATE=$(shell date -u +%Y-%m-%d)
 
 # The next two macros will work only after gnupg has been build.
@@ -580,7 +586,6 @@ ifeq ($(MAKE_J),)
 else
   speedo_makeopt=-j$(MAKE_J)
 endif
-
 
 
 
@@ -723,7 +728,7 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
 	   esac;					\
 	   if [ -f tmp.tgz ]; then                      \
 	     if [ -n "$$$${sha1}" ]; then               \
-               tmp=$$$$(sha1sum <tmp.tgz|cut -d' ' -f1);\
+               tmp=$$$$($(SHA1SUM) <tmp.tgz|cut -d' ' -f1);\
                if [ "$$$${tmp}" != "$$$${sha1}" ]; then \
 	         echo "speedo:";                        \
                  echo "speedo: ERROR: checksum mismatch for $(1)";\
@@ -1015,7 +1020,13 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)"
 
 #
+# Check availibility of standard tools
+#
+check-tools:
+
+
+#
 # Mark phony targets
 #
 .PHONY: all all-speedo report-speedo clean-stamps clean-speedo installer \
-	w32_insthelpers
+	w32_insthelpers check-tools

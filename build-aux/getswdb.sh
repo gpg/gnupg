@@ -32,6 +32,7 @@ Usage: $(basename $0) [OPTIONS]
 Get the online version of the GnuPG software version database
 Options:
     --skip-download  Assume download has already been done.
+    --find-sha1sum   Print the name of the sha1sum utility
     --help           Print this help.
 EOF
     exit $1
@@ -41,6 +42,7 @@ EOF
 # Parse options
 #
 skip_download=no
+find_sha1sum=no
 while test $# -gt 0; do
     case "$1" in
 	# Set up `optarg'.
@@ -59,6 +61,9 @@ while test $# -gt 0; do
         --skip-download)
             skip_download=yes
             ;;
+        --find-sha1sum)
+            find_sha1sum=yes
+            ;;
 	*)
 	    usage 1 1>&2
 	    ;;
@@ -66,7 +71,20 @@ while test $# -gt 0; do
     shift
 done
 
-# Get GnuPG version from VERSIOn file.  For a GIT checkout this means
+# Mac OSX has only a shasum and not sha1sum
+if [ ${find_sha1sum} = yes ]; then
+    for i in sha1sum shasum ; do
+       tmp=$($i </dev/null 2>/dev/null | cut -d ' ' -f1)
+       if [ x"$tmp" = x"da39a3ee5e6b4b0d3255bfef95601890afd80709" ]; then
+           echo "$i"
+           exit 0
+       fi
+    done
+    echo "false"
+    exit 1
+fi
+
+# Get GnuPG version from VERSION file.  For a GIT checkout this means
 # that ./autogen.sh must have been run first.  For a regular tarball
 # VERSION is always available.
 if [ ! -f "$srcdir/../VERSION" ]; then
