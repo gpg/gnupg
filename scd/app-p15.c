@@ -494,7 +494,8 @@ parse_certid (app_t app, const char *certid,
   *r_objidlen = 0;
 
   if (app->app_local->home_df)
-    sprintf (tmpbuf, "P15-%04hX.", (app->app_local->home_df & 0xffff));
+    snprintf (tmpbuf, sizeof tmpbuf,
+              "P15-%04X.", (unsigned int)(app->app_local->home_df & 0xffff));
   else
     strcpy (tmpbuf, "P15.");
   if (strncmp (certid, tmpbuf, strlen (tmpbuf)) )
@@ -2370,7 +2371,8 @@ send_certinfo (app_t app, ctrl_t ctrl, const char *certtype,
       p = stpcpy (buf, "P15");
       if (app->app_local->home_df)
         {
-          sprintf (p, "-%04hX", (app->app_local->home_df & 0xffff));
+          snprintf (p, 6, "-%04X",
+                    (unsigned int)(app->app_local->home_df & 0xffff));
           p += 5;
         }
       p = stpcpy (p, ".");
@@ -2461,7 +2463,8 @@ send_keypairinfo (app_t app, ctrl_t ctrl, prkdf_object_t keyinfo)
       p = stpcpy (buf, "P15");
       if (app->app_local->home_df)
         {
-          sprintf (p, "-%04hX", (app->app_local->home_df & 0xffff));
+          snprintf (p, 6, "-%04hX",
+                    (unsigned int)(app->app_local->home_df & 0xffff));
           p += 5;
         }
       p = stpcpy (p, ".");
@@ -2686,7 +2689,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
           p = stpcpy (buf, "P15");
           if (app->app_local->home_df)
             {
-              sprintf (p, "-%04hX", (app->app_local->home_df & 0xffff));
+              snprintf (p, 6, "-%04hX",
+                        (unsigned int)(app->app_local->home_df & 0xffff));
               p += 5;
             }
           p = stpcpy (p, ".");
