@@ -192,6 +192,8 @@ gpg_error_t agent_delete_key (ctrl_t ctrl, const char *hexkeygrip,
 /* Change the passphrase of a key.  */
 gpg_error_t agent_passwd (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                           char **cache_nonce_addr, char **passwd_nonce_addr);
+/* Get the version reported by gpg-agent.  */
+gpg_error_t agent_get_version (ctrl_t ctrl, char **r_version);
 
 
 #endif /*GNUPG_G10_CALL_AGENT_H*/

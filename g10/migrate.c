@@ -29,6 +29,7 @@
 #include "keydb.h"
 #include "util.h"
 #include "main.h"
+#include "call-agent.h"
 
 
 #ifdef HAVE_DOSISH_SYSTEM
@@ -46,6 +47,7 @@ migrate_secring (ctrl_t ctrl)
   dotlock_t lockhd = NULL;
   char *secring = NULL;
   char *flagfile = NULL;
+  char *agent_version = NULL;
 
   secring = make_filename (opt.homedir, "secring" EXTSEP_S "gpg", NULL);
   if (access (secring, F_OK))
@@ -69,6 +71,27 @@ migrate_secring (ctrl_t ctrl)
                  flagfile, gpg_strerror (gpg_error_from_syserror ()));
       dotlock_destroy (lockhd);
       lockhd = NULL;
+      goto leave;
+    }
+
+  if (!agent_get_version (ctrl, &agent_version))
+    {
+      if (!gnupg_compare_version (agent_version, "2.1.0"))
+        {
+          log_error ("error: GnuPG agent version \"%s\" is too old. ",
+                     agent_version);
+          log_error ("Please install an updated GnuPG agent.\n");
+          log_error ("migration aborted\n");
+          xfree (agent_version);
+          goto leave;
+        }
+      xfree (agent_version);
+    }
+  else
+    {
+      log_error ("error: GnuPG agent unusable. "
+                 "Please check that a GnuPG agent can be started.\n");
+      log_error ("migration aborted\n");
       goto leave;
     }
 
