@@ -518,7 +518,7 @@ static ARGPARSE_OPTS opts[] = {
     { oOptions, "options", 2, "@"},
     { oDebug, "debug"     ,4|16, "@"},
     { oDebugAll, "debug-all" ,0, "@"},
-    { oDebugLevel, "debug-level" ,0, "@"},
+    { oDebugLevel, "debug-level" ,2, "@"},
     { oStatusFD, "status-fd" ,1, "@"},
     { oStatusFile, "status-file" ,2, "@"},
     { oAttributeFD, "attribute-fd" ,1, "@" },
