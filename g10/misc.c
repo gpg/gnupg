@@ -1043,6 +1043,20 @@ obsolete_option (const char *configname, unsigned int configlineno,
 }
 
 
+void
+obsolete_scdaemon_option (const char *configname, unsigned int configlineno,
+                          const char *name)
+{
+  if (configname)
+    log_info (_("%s:%u: \"%s\" is obsolete in this file"
+                " - it only has effect in %s\n"),
+              configname, configlineno, name, SCDAEMON_NAME EXTSEP_S "conf");
+  else
+    log_info (_("WARNING: \"%s\" is an obsolete option"
+                " - it has no effect except on %s\n"), name, SCDAEMON_NAME);
+}
+
+
 /*
  * Wrapper around gcry_cipher_map_name to provide a fallback using the
  * "Sn" syntax as used by the preference strings.
