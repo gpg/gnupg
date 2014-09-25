@@ -1038,8 +1038,8 @@ obsolete_option (const char *configname, unsigned int configlineno,
     log_info (_("%s:%u: obsolete option \"%s\" - it has no effect\n"),
               configname, configlineno, name);
   else
-    log_info (_("WARNING: \"%s\" is an obsolete option - it has no effect\n"),
-              name);
+    log_info (_("WARNING: \"%s%s\" is an obsolete option - it has no effect\n"),
+              "--", name);
 }
 
 
@@ -1052,8 +1052,9 @@ obsolete_scdaemon_option (const char *configname, unsigned int configlineno,
                 " - it only has effect in %s\n"),
               configname, configlineno, name, SCDAEMON_NAME EXTSEP_S "conf");
   else
-    log_info (_("WARNING: \"%s\" is an obsolete option"
-                " - it has no effect except on %s\n"), name, SCDAEMON_NAME);
+    log_info (_("WARNING: \"%s%s\" is an obsolete option"
+                " - it has no effect except on %s\n"),
+              "--", name, SCDAEMON_NAME);
 }
 
 
