@@ -358,6 +358,10 @@ enum cmd_and_opt_values
     oKeyidFormat,
     oExitOnStatusWriteError,
     oLimitCardInsertTries,
+    oReaderPort,
+    octapiDriver,
+    opcscDriver,
+    oDisableCCID,
     oRequireCrossCert,
     oNoRequireCrossCert,
     oAutoKeyLocate,
@@ -505,10 +509,6 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
   ARGPARSE_s_n (oInteractive, "interactive", N_("prompt before overwriting")),
-
-  ARGPARSE_s_n (oUseAgent,      "use-agent", "@"),
-  ARGPARSE_s_n (oNoUseAgent, "no-use-agent", "@"),
-  ARGPARSE_s_s (oGpgAgentInfo, "gpg-agent-info", "@"),
 
   ARGPARSE_s_n (oBatch, "batch", "@"),
   ARGPARSE_s_n (oAnswerYes, "yes", "@"),
@@ -760,6 +760,21 @@ static ARGPARSE_OPTS opts[] = {
   /* New options.  Fixme: Should go more to the top.  */
   ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
+
+  /* Dummy options with warnings.  */
+  ARGPARSE_s_n (oUseAgent,      "use-agent", "@"),
+  ARGPARSE_s_n (oNoUseAgent, "no-use-agent", "@"),
+  ARGPARSE_s_s (oGpgAgentInfo, "gpg-agent-info", "@"),
+  ARGPARSE_s_s (oReaderPort, "reader-port", "@"),
+  ARGPARSE_s_s (octapiDriver, "ctapi-driver", "@"),
+  ARGPARSE_s_s (opcscDriver, "pcsc-driver", "@"),
+  ARGPARSE_s_n (oDisableCCID, "disable-ccid", "@"),
+
+  /* Dummy options.  */
+  ARGPARSE_s_n (oNoop, "sk-comments", "@"),
+  ARGPARSE_s_n (oNoop, "no-sk-comments", "@"),
+  ARGPARSE_s_n (oNoop, "compress-keys", "@"),
+  ARGPARSE_s_n (oNoop, "compress-sigs", "@"),
 
   ARGPARSE_end ()
 };
@@ -2237,6 +2252,19 @@ main (int argc, char **argv)
             break;
 	  case oGpgAgentInfo:
 	    obsolete_option (configname, configlineno, "--gpg-agent-info");
+            break;
+
+          case oReaderPort:
+	    obsolete_scdaemon_option (configname, configlineno, "reader-port");
+            break;
+          case octapiDriver:
+	    obsolete_scdaemon_option (configname, configlineno, "ctapi-driver");
+            break;
+          case opcscDriver:
+	    obsolete_scdaemon_option (configname, configlineno, "pcsc-driver");
+            break;
+          case oDisableCCID:
+	    obsolete_scdaemon_option (configname, configlineno, "disable-ccid");
             break;
 
 	  case oAnswerYes: opt.answer_yes = 1; break;

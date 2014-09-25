@@ -118,6 +118,8 @@ void deprecated_warning(const char *configname,unsigned int configlineno,
 void deprecated_command (const char *name);
 void obsolete_option (const char *configname, unsigned int configlineno,
                       const char *name);
+void obsolete_scdaemon_option (const char *configname,
+                               unsigned int configlineno, const char *name);
 
 int string_to_cipher_algo (const char *string);
 int string_to_digest_algo (const char *string);
