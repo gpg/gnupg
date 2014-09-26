@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -27,7 +27,7 @@
 #    /usr/share/gnupg/help.LL_TT.txt
 #    /usr/share/gnupg/help.LL.txt
 #    /usr/share/gnupg/help.txt
-#    
+#
 # Here LL_TT denotes the full name of the current locale with the
 # territory (.e.g. "de_DE"), LL denotes just the locale name
 # (e.g. "de").  The first matching item is returned.  To put a dot or
@@ -44,7 +44,7 @@
 # the users about the configured passphrase constraints and save that
 # to /etc/gnupg/help.txt.  The help text should not be longer than
 # about 800 characters.
-This bar indicates the quality of the passphrase entered above.  
+This bar indicates the quality of the passphrase entered above.
 
 As long as the bar is shown in red, GnuPG considers the passphrase too
 weak to accept.  Please ask your administrator for details about the
@@ -55,7 +55,7 @@ configured passphrase constraints.
 .gnupg.agent-problem
 # There was a problem accessing or starting the agent.
 It was either not possible to connect to a running Gpg-Agent or a
-communication problem with a running agent occurred.  
+communication problem with a running agent occurred.
 
 The system uses a background process, called Gpg-Agent, for processing
 private keys and to ask for passphrases.  The agent is usually started
@@ -74,7 +74,7 @@ administrator anyway because this indicates a bug in the software.
 .gnupg.dirmngr-problem
 # There was a problen accessing the dirmngr.
 It was either not possible to connect to a running Dirmngr or a
-communication problem with a running Dirmngr occurred.  
+communication problem with a running Dirmngr occurred.
 
 To lookup certificate revocation lists (CRLs), performing OCSP
 validation and to lookup keys through LDAP servers, the system uses an
@@ -134,13 +134,28 @@ Please consult your security expert first.
 .
 
 
+.gpg.keygen.flags
+Toggle the capabilities of the key.
+
+It is only possible to toggle those capabilities which are possible
+for the selected algorithm.
+
+To quickly set the capabilities all at once it is possible to enter a
+'=' as first character followed by a list of letters indicating the
+capability to set: 's' for signing, 'e' for encryption, and 'a' for
+authentication.  Invalid letters and impossible capabilities are
+ignored.  This submenu is immediately closed after using this
+shortcut.
+.
+
+
 .gpg.keygen.size
-Enter the size of the key.  
+Enter the size of the key.
 
 The suggested default is usually a good choice.
 
 If you want to use a large key size, for example 4096 bit, please
-think again whether it really makes sense for you.  You may want 
+think again whether it really makes sense for you.  You may want
 to view the web page http://www.xkcd.com/538/ .
 .
 
@@ -167,7 +182,7 @@ Answer "yes" or "no".
 
 
 .gpg.keygen.name
-Enter the name of the key holder. 
+Enter the name of the key holder.
 The characters "<" and ">" are not allowed.
 Example: Heinrich Heine
 .
@@ -321,7 +336,7 @@ file (which is shown in brackets) will be used.
 .
 
 .gpg.ask_revocation_reason.code
-# revoke.c (ask_revocation_reason) 
+# revoke.c (ask_revocation_reason)
 You should specify a reason for the certification.  Depending on the
 context you have the ability to choose from this list:
   "Key has been compromised"
