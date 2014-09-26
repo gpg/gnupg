@@ -1655,6 +1655,7 @@ ask_key_flags(int algo,int subkey)
   */
   const char *togglers=_("SsEeAaQq");
   char *answer=NULL;
+  const char *s;
   unsigned int current=0;
   unsigned int possible=openpgp_pk_algo_usage(algo);
 
@@ -1701,7 +1702,22 @@ ask_key_flags(int algo,int subkey)
       answer = cpr_get("keygen.flags",_("Your selection? "));
       cpr_kill_prompt();
 
-      if(strlen(answer)>1)
+      if (*answer == '=')
+        {
+          /* Hack to allow direct entry of the capabilities.  */
+          current = 0;
+          for (s=answer+1; *s; s++)
+            {
+              if ((*s == 's' || *s == 'S') && (possible&PUBKEY_USAGE_SIG))
+                current |= PUBKEY_USAGE_SIG;
+              else if ((*s == 'e' || *s == 'E') && (possible&PUBKEY_USAGE_ENC))
+                current |= PUBKEY_USAGE_ENC;
+              else if ((*s == 'a' || *s == 'A') && (possible&PUBKEY_USAGE_AUTH))
+                current |= PUBKEY_USAGE_AUTH;
+            }
+          break;
+        }
+      else if (strlen(answer)>1)
 	tty_printf(_("Invalid selection.\n"));
       else if(*answer=='\0' || *answer==togglers[6] || *answer==togglers[7])
 	break;
