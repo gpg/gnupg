@@ -1,9 +1,8 @@
 		    GnuPG and OpenPGP
 		    =================
 
-   See RFC2440 for a description of OpenPGP.  We have an annotated version
-   of this RFC online:	http://www.gnupg.org/rfc2440.html
-
+   See RFC-4880 for a description of OpenPGP.  These notes are older
+   than RFC-4880 and refer to the predecessor of the specs (RFC-2440).
 
 
   Compatibility Notes
@@ -12,7 +11,9 @@
 
     * (9.2) states that IDEA SHOULD be implemented.  This is not done
       due to patent problems.
-
+      UPDATE: Since version 1.4.13 (or GnuPG 2.x with Libgcrypt 1.6)
+              IDEA support has been added to allow decryption of old
+              PGP-2 encrypted material.
 
    All MAY features are implemented with this exception:
 
@@ -28,15 +29,15 @@
    A special format of partial packet length exists for v3 packets
    which can be considered to be in compliance with RFC1991;  this
    format is only created if a special option is active.
+   UPDATE: This support has been removed with version 1.3.6.
 
    GnuPG uses a S2K mode of 101 for GNU extensions to the secret key
    protection algorithms.  This number is not defined in OpenPGP, but
-   given the fact that this number is in a range which used at many
-   other places in OpenPGP for private/experimenat algorithm identifiers,
-   this should be not a so bad choice.	The 3 bytes "GNU" are used
-   to identify this as a GNU extension - see the file DETAILS for a
+   given that this number is in a range which is used at many other
+   places in OpenPGP for private/experimental algorithm identifiers,
+   this should be not a too bad choice.  The 3 bytes "GNU" are used to
+   identify this as a GNU extension - see the file DETAILS for a
    definition of the used data formats.
-
 
 
   Some Notes on OpenPGP / PGP Compatibility:
@@ -104,5 +105,3 @@
 
    The limited permissions granted above are perpetual and will not be
    revoked by the Internet Society or its successors or assigns.
-
-
