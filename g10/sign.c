@@ -1499,7 +1499,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
                 (ecdsa_qbits_from_Q (gcry_mpi_get_nbits (pksk->pkey[1]))/8);
           }
 	else
-	  digest_algo = DIGEST_ALGO_SHA1;
+	  digest_algo = DEFAULT_DIGEST_ALGO;
       }
 
     if ( gcry_md_open (&md, digest_algo, 0 ) )
