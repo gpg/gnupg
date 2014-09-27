@@ -1425,7 +1425,7 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 	else if(sk->pubkey_algo==PUBKEY_ALGO_DSA)
 	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (sk->skey[1])/8);
 	else
-	  digest_algo = DIGEST_ALGO_SHA1;
+	  digest_algo = DEFAULT_DIGEST_ALGO;
       }
 
     if ( gcry_md_open (&md, digest_algo, 0 ) )
