@@ -47,8 +47,12 @@
 /* The default algorithms.  If you change them remember to change them
    also in gpg.c:gpgconf_list.  You should also check that the value
    is inside the bounds enforced by ask_keysize and gen_xxx.  */
-#define DEFAULT_STD_ALGO    GCRY_PK_RSA
-#define DEFAULT_STD_KEYSIZE 2048
+#define DEFAULT_STD_ALGO       PUBKEY_ALGO_RSA
+#define DEFAULT_STD_KEYSIZE    2048
+#define DEFAULT_STD_CURVE      NULL
+#define DEFAULT_STD_SUBALGO    PUBKEY_ALGO_RSA
+#define DEFAULT_STD_SUBKEYSIZE 2048
+#define DEFAULT_STD_SUBCURVE   NULL
 
 /* Flag bits used during key generation.  */
 #define KEYGEN_FLAG_NO_PROTECTION 1
@@ -2435,9 +2439,9 @@ uid_from_string (const char *string)
 /* Ask for a user ID.  With a MODE of 1 an extra help prompt is
    printed for use during a new key creation.  If KEYBLOCK is not NULL
    the function prevents the creation of an already existing user
-   ID.  */
+   ID.  IF FULL is not set some prompts are not shown.  */
 static char *
-ask_user_id (int mode, KBNODE keyblock)
+ask_user_id (int mode, int full, KBNODE keyblock)
 {
     char *answer;
     char *aname, *acomment, *amail, *uid;
@@ -2447,7 +2451,7 @@ ask_user_id (int mode, KBNODE keyblock)
         /* TRANSLATORS: This is the new string telling the user what
            gpg is now going to do (i.e. ask for the parts of the user
            ID).  Note that if you do not translate this string, a
-           different string will be used used, which might still have
+           different string will be used, which might still have
            a correct translation.  */
 	const char *s1 =
           N_("\n"
@@ -2515,7 +2519,8 @@ ask_user_id (int mode, KBNODE keyblock)
 		    break;
 	    }
 	}
-	if( !acomment ) {
+	if (!acomment) {
+          if (full) {
 	    for(;;) {
 		xfree(acomment);
 		acomment = cpr_get("keygen.comment",_("Comment: "));
@@ -2528,6 +2533,11 @@ ask_user_id (int mode, KBNODE keyblock)
 		else
 		    break;
 	    }
+          }
+          else {
+            xfree (acomment);
+            acomment = xstrdup ("");
+          }
 	}
 
 
@@ -2596,10 +2606,16 @@ ask_user_id (int mode, KBNODE keyblock)
                 answer = xstrdup (ansstr + (fail?8:6));
 		answer[1] = 0;
 	    }
-	    else {
+            else if (full) {
 		answer = cpr_get("keygen.userid.cmd", fail?
 		  _("Change (N)ame, (C)omment, (E)mail or (Q)uit? ") :
 		  _("Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "));
+		cpr_kill_prompt();
+            }
+            else {
+		answer = cpr_get("keygen.userid.cmd", fail?
+		  _("Change (N)ame, (E)mail, or (Q)uit? ") :
+		  _("Change (N)ame, (E)mail, or (O)kay/(Q)uit? "));
 		cpr_kill_prompt();
 	    }
 	    if( strlen(answer) > 1 )
@@ -2745,7 +2761,7 @@ generate_user_id (KBNODE keyblock)
 {
   char *p;
 
-  p = ask_user_id (1, keyblock);
+  p = ask_user_id (1, 1, keyblock);
   if (!p)
     return NULL;  /* Canceled. */
   return uid_from_string (p);
@@ -2822,7 +2838,7 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
     i = atoi( r->u.value );
   else if (!strcmp (r->u.value, "ELG-E")
            || !strcmp (r->u.value, "ELG"))
-    i = GCRY_PK_ELG_E;
+    i = PUBKEY_ALGO_ELGAMAL_E;
   else
     i = map_pk_gcry_to_openpgp (gcry_pk_map_name (r->u.value));
 
@@ -3528,10 +3544,12 @@ quick_generate_keypair (const char *uid)
       }
   }
 
-  para = quickgen_set_para (para, 0, PUBKEY_ALGO_RSA, 2048, NULL);
-  para = quickgen_set_para (para, 1, PUBKEY_ALGO_RSA, 2048, NULL);
-  /* para = quickgen_set_para (para, 0, PUBKEY_ALGO_EDDSA, 0, "Ed25519"); */
-  /* para = quickgen_set_para (para, 1, PUBKEY_ALGO_ECDH,  0, "Curve25519"); */
+  para = quickgen_set_para (para, 0,
+                            DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
+                            DEFAULT_STD_CURVE);
+  para = quickgen_set_para (para, 1,
+                            DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
+                            DEFAULT_STD_SUBCURVE);
 
   proc_parameter_file (para, "[internal]", &outctrl, 0);
  leave:
@@ -3544,11 +3562,13 @@ quick_generate_keypair (const char *uid)
  * CARD_SERIALNO is not NULL the function will create the keys on an
  * OpenPGP Card.  If CARD_BACKUP_KEY has been set and CARD_SERIALNO is
  * NOT NULL, the encryption key for the card is generated on the host,
- * imported to the card and a backup file created by gpg-agent.
+ * imported to the card and a backup file created by gpg-agent.  If
+ * FULL is not set only the basic prompts are used (except for batch
+ * mode).
  */
 void
-generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
-                  int card_backup_key)
+generate_keypair (ctrl_t ctrl, int full, const char *fname,
+                  const char *card_serialno, int card_backup_key)
 {
   unsigned int nbits;
   char *uid = NULL;
@@ -3628,7 +3648,7 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
         }
 #endif /*ENABLE_CARD_SUPPORT*/
     }
-  else
+  else if (full)  /* Full featured key generation.  */
     {
       int subkey_algo;
       char *curve = NULL;
@@ -3764,34 +3784,47 @@ generate_keypair (ctrl_t ctrl, const char *fname, const char *card_serialno,
 
       xfree (curve);
     }
+  else /* Default key generation.  */
+    {
+      tty_printf ( _("Note: Use \"%s %s\""
+                     " for a full featured key generation dialog.\n"),
+                   GPG_NAME, "--full-gen-key" );
+      para = quickgen_set_para (para, 0,
+                                DEFAULT_STD_ALGO, DEFAULT_STD_KEYSIZE,
+                                DEFAULT_STD_CURVE);
+      para = quickgen_set_para (para, 1,
+                                DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
+                                DEFAULT_STD_SUBCURVE);
+    }
 
-  expire = ask_expire_interval(0,NULL);
-  r = xmalloc_clear( sizeof *r + 20 );
+
+  expire = full? ask_expire_interval (0, NULL) : 0;
+  r = xcalloc (1, sizeof *r + 20);
   r->key = pKEYEXPIRE;
   r->u.expire = expire;
   r->next = para;
   para = r;
-  r = xmalloc_clear( sizeof *r + 20 );
+  r = xcalloc (1, sizeof *r + 20);
   r->key = pSUBKEYEXPIRE;
   r->u.expire = expire;
   r->next = para;
   para = r;
 
-  uid = ask_user_id (0, NULL);
-  if( !uid )
+  uid = ask_user_id (0, full, NULL);
+  if (!uid)
     {
       log_error(_("Key generation canceled.\n"));
       release_parameter_list( para );
       return;
     }
-  r = xmalloc_clear( sizeof *r + strlen(uid) );
+  r = xcalloc (1, sizeof *r + strlen (uid));
   r->key = pUSERID;
-  strcpy( r->u.value, uid );
+  strcpy (r->u.value, uid);
   r->next = para;
   para = r;
 
-  proc_parameter_file( para, "[internal]", &outctrl, !!card_serialno);
-  release_parameter_list( para );
+  proc_parameter_file (para, "[internal]", &outctrl, !!card_serialno);
+  release_parameter_list (para);
 }
 
 

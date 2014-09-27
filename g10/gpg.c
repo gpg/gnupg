@@ -107,6 +107,7 @@ enum cmd_and_opt_values
     aClearsign,
     aStore,
     aQuickKeygen,
+    aFullKeygen,
     aKeygen,
     aSignEncr,
     aSignEncrSym,
@@ -407,9 +408,12 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCheckKeys, "check-sigs",N_("list and check key signatures")),
   ARGPARSE_c (oFingerprint, "fingerprint", N_("list keys and fingerprints")),
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
-  ARGPARSE_c (aQuickKeygen,  "quick-gen-key" ,
+  ARGPARSE_c (aKeygen,	    "gen-key",
+              N_("generate a new key pair")),
+  ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
               N_("quickly generate a new key pair")),
-  ARGPARSE_c (aKeygen,	   "gen-key",  N_("generate a new key pair")),
+  ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
+              N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
   ARGPARSE_c (aDeleteKeys,"delete-keys",
               N_("remove keys from the public keyring")),
@@ -2307,6 +2311,7 @@ main (int argc, char **argv)
             break;
 
 	  case aKeygen:
+	  case aFullKeygen:
 	  case aEditKey:
 	  case aDeleteSecretKeys:
 	  case aDeleteSecretAndPublicKeys:
@@ -3564,6 +3569,7 @@ main (int argc, char **argv)
       case aDeleteSecretKeys:
       case aDeleteSecretAndPublicKeys:
       case aQuickKeygen:
+      case aFullKeygen:
       case aKeygen:
       case aImport:
       case aExportSecret:
@@ -3859,12 +3865,27 @@ main (int argc, char **argv)
 	if( opt.batch ) {
 	    if( argc > 1 )
 		wrong_args("--gen-key [parameterfile]");
-	    generate_keypair (ctrl, argc? *argv : NULL, NULL, 0);
+	    generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
 	}
 	else {
 	    if( argc )
 		wrong_args("--gen-key");
-	    generate_keypair (ctrl, NULL, NULL, 0);
+	    generate_keypair (ctrl, 0, NULL, NULL, 0);
+	}
+	break;
+
+      case aFullKeygen: /* Generate a key with all options. */
+	if (opt.batch)
+          {
+	    if (argc > 1)
+              wrong_args ("--full-gen-key [parameterfile]");
+	    generate_keypair (ctrl, 1, argc? *argv : NULL, NULL, 0);
+          }
+	else
+          {
+	    if (argc)
+              wrong_args("--full-gen-key");
+	    generate_keypair (ctrl, 1, NULL, NULL, 0);
 	}
 	break;
 

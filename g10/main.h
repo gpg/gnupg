@@ -259,7 +259,7 @@ u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
 void quick_generate_keypair (const char *uid);
-void generate_keypair (ctrl_t ctrl, const char *fname,
+void generate_keypair (ctrl_t ctrl, int full, const char *fname,
                        const char *card_serialno, int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);
 PKT_user_id *keygen_get_std_prefs (void);
