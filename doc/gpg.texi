@@ -3,10 +3,9 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
-@c Note that we use this texinfo file for all versions of GnuPG: 1.4.x,
-@c 2.0 and 2.1.  The macro "gpgone" controls parts which are only valid
-@c for GnuPG 1.4, the macro "gpgtwoone" controls parts which are only
-@c valid for GnupG 2.1 and later.
+@c Note that we use this texinfo file for all GnuPG-2 branches.
+@c The macro "gpgtwoone" controls parts which are only
+@c valid for GnuPG 2.1 and later.
 
 @node Invoking GPG
 @chapter Invoking GPG
@@ -27,33 +26,6 @@
 @c End algorithm defaults
 
 
-@c Begin GnuPG 1.x specific stuff
-@ifset gpgone
-@macro gpgname
-gpg
-@end macro
-@manpage gpg.1
-@ifset manverb
-.B gpg
-\- OpenPGP encryption and signing tool
-@end ifset
-
-@mansect synopsis
-@ifset manverb
-.B  gpg
-.RB [ \-\-homedir
-.IR dir ]
-.RB [ \-\-options
-.IR file ]
-.RI [ options ]
-.I command
-.RI [ args ]
-@end ifset
-@end ifset
-@c End GnuPG 1.x specific stuff
-
-@c Begin GnuPG 2 specific stuff
-@ifclear gpgone
 @macro gpgname
 gpg2
 @end macro
@@ -74,8 +46,7 @@ gpg2
 .I command
 .RI [ args ]
 @end ifset
-@end ifclear
-@c Begin GnuPG 2 specific stuff
+
 
 @mansect description
 @command{@gpgname} is the OpenPGP part of the GNU Privacy Guard (GnuPG). It
@@ -84,28 +55,17 @@ OpenPGP standard. @command{@gpgname} features complete key management and
 all bells and whistles you can expect from a decent OpenPGP
 implementation.
 
-@ifset gpgone
-This is the standalone version of @command{gpg}.  For desktop use you
-should consider using @command{gpg2} @footnote{On some platforms gpg2 is
-installed under the name @command{gpg}}.
-@end ifset
-
-@ifclear gpgone
-In contrast to the standalone version @command{gpg}, which is more
-suited for server and embedded platforms, this version is commonly
-installed under the name @command{gpg2} and more targeted to the desktop
-as it requires several other modules to be installed.  The standalone
-version will be kept maintained and it is possible to install both
-versions on the same system.  If you need to use different configuration
-files, you should make use of something like @file{gpg.conf-2} instead
-of just @file{gpg.conf}.
-@end ifclear
+In contrast to the standalone command gpg from GnuPG 1.x, which is
+might be better suited for server and embedded platforms, the 2.x
+version is commonly installed under the name @command{gpg2} and
+targeted to the desktop as it requires several other modules to be
+installed.
 
 @manpause
-@ifclear gpgone
-Documentation for the old standard @command{gpg} is available as a man
-page and at @inforef{Top,GnuPG 1,gpg}.
-@end ifclear
+The old 1.x version will be kept maintained and it is possible to
+install both versions on the same system.  Documentation for the old
+GnuPG 1.x command is available as a man page and at
+@inforef{Top,GnuPG 1,gpg}.
 
 @xref{Option Index}, for an index to @command{@gpgname}'s commands and options.
 @mancont
@@ -300,12 +260,6 @@ Identical to @option{--multifile --decrypt}.
 @opindex list-keys
 List all keys from the public keyrings, or just the keys given on the
 command line.
-@ifset gpgone
-@option{-k} is slightly different from @option{--list-keys} in that it
-allows only for one argument and takes the second argument as the
-keyring to search.  This is for command line compatibility with PGP 2
-and has been removed in @command{gpg2}.
-@end ifset
 
 Avoid using the output of this command in scripts or other programs as
 it is likely to change as GnuPG changes. See @option{--with-colons} for a
@@ -323,10 +277,8 @@ secret key is not usable (for example, if it was created via
 @item --list-sigs
 @opindex list-sigs
 Same as @option{--list-keys}, but the signatures are listed too.
-@ifclear gpgone
 This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-list}.
-@end ifclear
 
 For each signature listed, there are several flags in between the "sig"
 tag and keyid. These flags give additional information about each
@@ -346,10 +298,8 @@ command "tsign").
 Same as @option{--list-sigs}, but the signatures are verified.  Note
 that for performance reasons the revocation status of a signing key is
 not shown.
-@ifclear gpgone
 This command has the same effect as
 using @option{--list-keys} with @option{--with-sig-check}.
-@end ifclear
 
 The status of the verification is indicated by a flag directly following
 the "sig" tag (and thus before the flags described above for
@@ -358,7 +308,6 @@ successfully verified, a "-" denotes a bad signature and a "%" is used
 if an error occurred while checking the signature (e.g. a non supported
 algorithm).
 
-@ifclear gpgone
 @item --locate-keys
 @opindex locate-keys
 Locate the keys given as arguments.  This command basically uses the
@@ -366,8 +315,6 @@ same algorithm as used when locating keys for encryption or signing and
 may thus be used to see what keys @command{@gpgname} might use.  In
 particular external methods as defined by @option{--auto-key-locate} may
 be used to locate a key.  Only public keys are listed.
-@end ifclear
-
 
 @item --fingerprint
 @opindex fingerprint
@@ -977,13 +924,11 @@ Its intended use is to help unattended key signing by utilizing a list
 of verified fingerprints.
 @end ifset
 
-@ifclear gpgone
 @item --passwd @var{user_id}
 @opindex passwd
 Change the passphrase of the secret key belonging to the certificate
 specified as @var{user_id}.  This is a shortcut for the sub-command
 @code{passwd} of the edit key menu.
-@end ifclear
 
 @end table
 
@@ -1308,40 +1253,8 @@ the filename does not contain a slash, it is assumed to be in the GnuPG
 home directory (@file{~/.gnupg} if @option{--homedir} or $GNUPGHOME is
 not used).
 
-@ifset gpgone
-@anchor{option --homedir}
-@end ifset
 @include opt-homedir.texi
 
-
-@ifset gpgone
-@item --pcsc-driver @code{file}
-@opindex pcsc-driver
-Use @code{file} to access the smartcard reader. The current default is
-`libpcsclite.so.1' for GLIBC based systems,
-`/System/Library/Frameworks/PCSC.framework/PCSC' for MAC OS X,
-`winscard.dll' for Windows and `libpcsclite.so' for other systems.
-@end ifset
-
-@ifset gpgone
-@item --disable-ccid
-@opindex disable-ccid
-Disable the integrated support for CCID compliant readers. This
-allows to fall back to one of the other drivers even if the internal
-CCID driver can handle the reader. Note, that CCID support is only
-available if libusb was available at build time.
-@end ifset
-
-@ifset gpgone
-@item --reader-port @code{number_or_string}
-@opindex reader-port
-This option may be used to specify the port of the card terminal. A
-value of 0 refers to the first serial device; add 32768 to access USB
-devices. The default is 32768 (first USB device). PC/SC or CCID
-readers might need a string here; run the program in verbose mode to get
-a list of available readers. The default is then the first reader
-found.
-@end ifset
 
 @item --display-charset @code{name}
 @opindex display-charset
@@ -1778,36 +1691,19 @@ process. @option{--no-auto-check-trustdb} disables this option.
 @item --use-agent
 @itemx --no-use-agent
 @opindex use-agent
-@ifclear gpgone
 This is dummy option. @command{@gpgname} always requires the agent.
-@end ifclear
-@ifset gpgone
-Try to use the GnuPG-Agent.  With this option, GnuPG first tries to
-connect to the agent before it asks for a
-passphrase. @option{--no-use-agent} disables this option.
-@end ifset
 
 @item --gpg-agent-info
 @opindex gpg-agent-info
-@ifclear gpgone
 This is dummy option. It has no effect when used with @command{gpg2}.
-@end ifclear
-@ifset gpgone
-Override the value of the environment variable
-@samp{GPG_AGENT_INFO}. This is only used when @option{--use-agent} has
-been given.  Given that this option is not anymore used by
-@command{gpg2}, it should be avoided if possible.
-@end ifset
 
 
-@ifclear gpgone
 @item --agent-program @var{file}
 @opindex agent-program
 Specify an agent program to be used for secret key operations.  The
 default value is the @file{/usr/bin/gpg-agent}.  This is only used
 as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
 set or a running agent cannot be connected.
-@end ifclear
 
 @ifset gpgtwoone
 @item --dirmngr-program @var{file}
@@ -2170,10 +2066,8 @@ source distribution.
 @opindex fixed-list-mode
 Do not merge primary user ID and primary key in @option{--with-colon}
 listing mode and print all timestamps as seconds since 1970-01-01.
-@ifclear gpgone
 Since GnuPG 2.0.10, this mode is always used and thus this option is
 obsolete; it does not harm to use it though.
-@end ifclear
 
 @ifset gpgtwoone
 @item --legacy-list-mode
@@ -2222,14 +2116,6 @@ system uses. This option is useful when communicating between two
 platforms that have different line ending conventions (UNIX-like to Mac,
 Mac to Windows, etc). @option{--no-textmode} disables this option, and
 is the default.
-
-@ifset gpgone
-If @option{-t} (but not @option{--textmode}) is used together with
-armoring and signing, this enables clearsigned messages. This kludge is
-needed for command-line compatibility with command-line versions of PGP;
-normally you would use @option{--sign} or @option{--clearsign} to select
-the type of the signature.
-@end ifset
 
 @item --force-v3-sigs
 @itemx --no-force-v3-sigs
@@ -2383,16 +2269,9 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 available, but the MIT release is a good common baseline.
 
 This option implies
-@ifset gpgone
-@option{--rfc1991 --disable-mdc --no-force-v4-certs
- --escape-from-lines  --force-v3-sigs
- --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
-@end ifset
-@ifclear gpgone
 @option{--rfc1991 --disable-mdc --no-force-v4-certs
  --escape-from-lines  --force-v3-sigs --allow-weak-digest-algos
  --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
-@end ifclear
 It also disables @option{--textmode} when encrypting.
 
 This option is deprecated will be removed in GnuPG 2.1.  The reason
@@ -2492,13 +2371,6 @@ be given in C syntax (e.g. 0x0042).
 @item --debug-all
 @opindex debug-all
 Set all useful debugging flags.
-
-@ifset gpgone
-@item --debug-ccid-driver
-@opindex debug-ccid-driver
-Enable debug output from the included CCID driver for smartcards.
-Note that this option is only available on some system.
-@end ifset
 
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time
@@ -2749,10 +2621,9 @@ Read the passphrase from file descriptor @code{n}. Only the first line
 will be read from file descriptor @code{n}. If you use 0 for @code{n},
 the passphrase will be read from STDIN. This can only be used if only
 one passphrase is supplied.
-@ifclear gpgone
+
 Note that this passphrase is only used if the option @option{--batch}
-has also been given.  This is different from @command{gpg}.
-@end ifclear
+has also been given.  This is different from GnuPG version 1.x.
 
 @item --passphrase-file @code{file}
 @opindex passphrase-file
@@ -2761,10 +2632,8 @@ be read from file @code{file}. This can only be used if only one
 passphrase is supplied. Obviously, a passphrase stored in a file is
 of questionable security if other users can read this file. Don't use
 this option if you can avoid it.
-@ifclear gpgone
 Note that this passphrase is only used if the option @option{--batch}
-has also been given.  This is different from @command{gpg}.
-@end ifclear
+has also been given.  This is different from GnuPG version 1.x.
 
 @item --passphrase @code{string}
 @opindex passphrase
@@ -2772,10 +2641,8 @@ Use @code{string} as the passphrase. This can only be used if only one
 passphrase is supplied. Obviously, this is of very questionable
 security on a multi-user system. Don't use this option if you can
 avoid it.
-@ifclear gpgone
 Note that this passphrase is only used if the option @option{--batch}
-has also been given.  This is different from @command{gpg}.
-@end ifclear
+has also been given.  This is different from GnuPG version 1.x.
 
 @ifset gpgtwoone
 @item --pinentry-mode @code{mode}
@@ -2855,13 +2722,11 @@ necessary to get as much data as possible out of the corrupt message.
 However, be aware that a MDC protection failure may also mean that the
 message was tampered with intentionally by an attacker.
 
-@ifclear gpgone
 @item --allow-weak-digest-algos
 @opindex allow-weak-digest-algos
 Signatures made with the broken MD5 algorithm are normally rejected
 with an ``invalid digest algorithm'' message.  This option allows the
 verification of signatures made with such weak algorithms.
-@end ifclear
 
 @item --no-default-keyring
 @opindex no-default-keyring
@@ -3026,15 +2891,6 @@ on the configuration file.
 
 @table @gnupgtabopt
 
-@ifset gpgone
-@item --load-extension @code{name}
-@opindex load-extension
-Load an extension module. If @code{name} does not contain a slash it is
-searched for in the directory configured when GnuPG was built
-(generally "/usr/local/lib/gnupg"). Extensions are not generally
-useful anymore, and the use of this option is deprecated.
-@end ifset
-
 @item --show-photos
 @itemx --no-show-photos
 @opindex show-photos
@@ -3050,14 +2906,6 @@ any. See also @option{--photo-viewer}. These options are deprecated. Use
 Display the keyring name at the head of key listings to show which
 keyring a given key resides on. This option is deprecated: use
 @option{--list-options [no-]show-keyring} instead.
-
-@ifset gpgone
-@item --ctapi-driver @code{file}
-@opindex ctapi-driver
-Use @code{file} to access the smartcard reader. The current default
-is `libtowitoko.so'. Note that the use of this interface is
-deprecated; it may be removed in future releases.
-@end ifset
 
 @item --always-trust
 @opindex always-trust
@@ -3113,10 +2961,8 @@ current home directory (@pxref{option --homedir}).
 Note that on larger installations, it is useful to put predefined files
 into the directory @file{/etc/skel/.gnupg/} so that newly created users
 start up with a working configuration.
-@ifclear gpgone
-For existing users the a small
+For existing users a small
 helper script is provided to create these files (@pxref{addgnupghome}).
-@end ifclear
 
 For internal purposes @command{@gpgname} creates and maintains a few other
 files; They all live in in the current home directory (@pxref{option
@@ -3195,9 +3041,7 @@ Operation is further controlled by a few environment variables:
 
   @item GPG_AGENT_INFO
   Used to locate the gpg-agent.
-@ifset gpgone
-  This is only honored when @option{--use-agent} is set.
-@end ifset
+
   The value consists of 3 colon delimited fields: The first is the path
   to the Unix Domain Socket, the second the PID of the gpg-agent and the
   protocol version which should be set to 1. When starting the gpg-agent
@@ -3611,9 +3455,7 @@ these parameters:
 @mansect see also
 @ifset isman
 @command{gpgv}(1),
-@ifclear gpgone
 @command{gpgsm}(1),
 @command{gpg-agent}(1)
-@end ifclear
 @end ifset
 @include see-also-note.texi
