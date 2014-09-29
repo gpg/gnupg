@@ -538,9 +538,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oAttributeFD, "attribute-fd", "@"),
   ARGPARSE_s_s (oAttributeFile, "attribute-file", "@"),
 
-  ARGPARSE_s_n (oNoop, "sk-comments", "@"),
-  ARGPARSE_s_n (oNoop, "no-sk-comments", "@"),
-
   ARGPARSE_s_i (oCompletesNeeded, "completes-needed", "@"),
   ARGPARSE_s_i (oMarginalsNeeded, "marginals-needed", "@"),
   ARGPARSE_s_i (oMaxCertDepth,	"max-cert-depth", "@" ),
