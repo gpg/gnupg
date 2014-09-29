@@ -770,8 +770,6 @@ static ARGPARSE_OPTS opts[] = {
   /* Dummy options.  */
   ARGPARSE_s_n (oNoop, "sk-comments", "@"),
   ARGPARSE_s_n (oNoop, "no-sk-comments", "@"),
-  ARGPARSE_s_n (oNoop, "compress-keys", "@"),
-  ARGPARSE_s_n (oNoop, "compress-sigs", "@"),
 
   ARGPARSE_end ()
 };
