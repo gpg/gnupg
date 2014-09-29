@@ -46,7 +46,7 @@ DISTCLEANFILES = yat2m yat2m-stamp.tmp yat2m-stamp $(myman_pages)
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-include=$(srcdir)/texi.css -D gpgone
 
 YAT2M_OPTIONS = -I $(srcdir) -D gpgone \
-        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard"
+        --release "GnuPG @PACKAGE_VERSION@" --source "GNU Privacy Guard 1.4"
 
 yat2m: Makefile yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
