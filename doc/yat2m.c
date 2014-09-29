@@ -87,6 +87,10 @@
     detects the number of white spaces in front of an @item and remove
     this number of spaces from all following lines until a new @item
     is found or there are less spaces than for the last @item.
+
+    Note that @* does only work correctly if used at the end of an
+    input line.
+
 */
 
 #include <stdio.h>
@@ -135,6 +139,9 @@ typedef struct macro_s *macro_t;
 
 /* List of all defined macros. */
 static macro_t macrolist;
+
+/* List of variables set by @set. */
+static macro_t variablelist;
 
 /* List of global macro names.  The value part is not used.  */
 static macro_t predefinedmacrolist;
@@ -375,8 +382,44 @@ set_macro (const char *macroname, char *macrovalue)
 }
 
 
-/* Return true if the macro NAME is set, i.e. not the empty string and
-   not evaluating to 0.  */
+/* Create or update a variable with name and value given in NAMEANDVALUE.  */
+static void
+set_variable (char *nameandvalue)
+{
+  macro_t m;
+  const char *value;
+  char *p;
+
+  for (p = nameandvalue; *p && *p != ' ' && *p != '\t'; p++)
+    ;
+  if (!*p)
+    value = "";
+  else
+    {
+      *p++ = 0;
+      while (*p == ' ' || *p == '\t')
+        p++;
+      value = p;
+    }
+
+  for (m=variablelist; m; m = m->next)
+    if (!strcmp (m->name, nameandvalue))
+      break;
+  if (m)
+    free (m->value);
+  else
+    {
+      m = xcalloc (1, sizeof *m + strlen (nameandvalue));
+      strcpy (m->name, nameandvalue);
+      m->next = variablelist;
+      variablelist = m;
+    }
+  m->value = xstrdup (value);
+}
+
+
+/* Return true if the macro or variable NAME is set, i.e. not the
+   empty string and not evaluating to 0.  */
 static int
 macro_set_p (const char *name)
 {
@@ -385,6 +428,10 @@ macro_set_p (const char *name)
   for (m = macrolist; m ; m = m->next)
     if (!strcmp (m->name, name))
       break;
+  if (!m)
+    for (m = variablelist; m ; m = m->next)
+      if (!strcmp (m->name, name))
+        break;
   if (!m || !m->value || !*m->value)
     return 0;
   if ((*m->value & 0x80) || !isdigit (*m->value))
@@ -664,8 +711,11 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
     { "table",   3 },
     { "itemize",   3 },
     { "bullet",  0, "* " },
+    { "*",       0, "\n.br"},
+    { "/",       0 },
     { "end",     4 },
     { "quotation",1, ".RS\n\\fB" },
+    { "value", 8 },
     { NULL }
   };
   size_t n;
@@ -741,11 +791,46 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
         case 7:
           ignore_args = 1;
           break;
+        case 8:
+          ignore_args = 1;
+          if (*rest != '{')
+            {
+              err ("opening brace for command '%s' missing", command);
+              return len;
+            }
+          else
+            {
+              /* Find closing brace.  */
+              for (s=rest+1, n=1; *s && n < len; s++, n++)
+                if (*s == '}')
+                  break;
+              if (*s != '}')
+                {
+                  err ("closing brace for command '%s' not found", command);
+                  return len;
+                }
+              else
+                {
+                  size_t len = s - (rest + 1);
+                  macro_t m;
+
+                  for (m = variablelist; m; m = m->next)
+                    if (strlen (m->name) == len
+                        &&!strncmp (m->name, rest+1, len))
+                      break;
+                  if (m)
+                    fputs (m->value, fp);
+                  else
+                    inf ("texinfo variable '%.*s' is not set",
+                         (int)len, rest+1);
+                }
+            }
+          break;
         default:
           break;
         }
     }
-  else
+  else /* macro */
     {
       macro_t m;
 
@@ -1215,6 +1300,10 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
               macrovalue = xmalloc ((macrovaluesize = 1024));
               macrovalueused = 0;
             }
+          else if (n == 4 && !memcmp (line, "@set", 4))
+            {
+              set_variable (p);
+            }
           else if (n == 8 && !memcmp (line, "@manpage", 8))
             {
               free (*section_name);
@@ -1324,6 +1413,13 @@ top_parse_file (const char *fname, FILE *fp)
       free (macrolist->value);
       free (macrolist);
       macrolist = next;
+    }
+  while (variablelist)
+    {
+      macro_t next = variablelist->next;
+      free (variablelist->value);
+      free (variablelist);
+      variablelist = next;
     }
   for (m=predefinedmacrolist; m; m = m->next)
     set_macro (m->name, xstrdup ("1"));

@@ -1,4 +1,4 @@
-@c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+ @c Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
 @c               2008, 2009, 2010 Free Software Foundation, Inc.
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
@@ -13,6 +13,19 @@
 @cindex GPG command options
 @cindex command options
 @cindex options, GPG command
+
+@c Begin algorithm defaults
+
+@ifclear gpgtwoone
+@set DEFSYMENCALGO CAST5
+@end ifclear
+
+@ifset gpgtwoone
+@set DEFSYMENCALGO AES128
+@end ifset
+
+@c End algorithm defaults
+
 
 @c Begin GnuPG 1.x specific stuff
 @ifset gpgone
@@ -217,7 +230,7 @@ decrypted via a secret key or a passphrase).
 @itemx -c
 @opindex symmetric
 Encrypt with a symmetric cipher using a passphrase. The default
-symmetric cipher used is CAST5, but may be chosen with the
+symmetric cipher used is @value{DEFSYMENCALGO}, but may be chosen with the
 @option{--cipher-algo} option. This option may be combined with
 @option{--sign} (for a signed and symmetrically encrypted message),
 @option{--encrypt} (for a message that may be decrypted via a secret key
@@ -408,8 +421,8 @@ removed first. In batch mode the key must be specified by fingerprint.
 @opindex export
 Either export all keys from all keyrings (default keyrings and those
 registered via option @option{--keyring}), or if at least one name is given,
-those of the given name. The new keyring is written to STDOUT or to the
-file given with option @option{--output}. Use together with
+those of the given name. The exported keys are written to STDOUT or to the
+file given with option @option{--output}.  Use together with
 @option{--armor} to mail those keys.
 
 @item --send-keys @code{key IDs}
@@ -424,14 +437,30 @@ or changed by you.  If no key IDs are given, @command{gpg} does nothing.
 @itemx --export-secret-subkeys
 @opindex export-secret-keys
 @opindex export-secret-subkeys
-Same as @option{--export}, but exports the secret keys instead.  This is
-normally not very useful and a security risk.  The second form of the
-command has the special property to render the secret part of the
-primary key useless; this is a GNU extension to OpenPGP and other
-implementations can not be expected to successfully import such a key.
+Same as @option{--export}, but exports the secret keys instead.  The
+exported keys are written to STDOUT or to the file given with option
+@option{--output}.  This command is often used along with the option
+@option{--armor} to allow easy printing of the key for paper backup;
+however the external tool @command{paperkey} does a better job for
+creating backups on paper.  Note that exporting a secret key can be a
+security risk if the exported keys are send over an insecure channel.
+
+The second form of the command has the special property to render the
+secret part of the primary key useless; this is a GNU extension to
+OpenPGP and other implementations can not be expected to successfully
+import such a key.  Its intended use is to generated a full key with
+an additional signing subkey on a dedicated machine and then using
+this command to export the key without the primary key to the main
+machine.
+
+@ifset gpgtwoone
+GnuPG may ask you to enter the passphrase for the key.  This is
+required because the internal protection method of the secret key is
+different from the one specified by the OpenPGP protocol.
+@end ifset
 @ifclear gpgtwoone
-See the option @option{--simple-sk-checksum} if you want to import such
-an exported key with an older OpenPGP implementation.
+See the option @option{--simple-sk-checksum} if you want to import an
+exported secret key into ancient OpenPGP implementations.
 @end ifclear
 
 @item --import
@@ -576,14 +605,36 @@ This section explains the main commands for key management
 
 @table @gnupgtabopt
 
+@ifset gpgtwoone
+@item --quick-gen-key @code{user-id}
+@opindex quick-gen-key
+This is simple command to generate a standard key with one user id.
+In contrast to @option{--gen-key} the key is generated directly
+without the need to answer a bunch of prompts.  Unless the option
+@option{--yes} is given, the key creation will be canceled if the
+given user id already exists in the key ring.
+
+If invoked directly on the console without any special options an
+answer to a ``Continue?'' style confirmation prompt is required.  In
+case the user id already exists in the key ring a second prompt to
+force the creation of the key will show up.
+@end ifset
+
 @item --gen-key
 @opindex gen-key
-Generate a new key pair. This command is normally only used
-interactively.
+Generate a new key pair using teh current default parameters.  This is
+the standard command to create a new key.
 
-There is an experimental feature which allows you to create keys in
-batch mode. See the file @file{doc/DETAILS} in the source distribution
-on how to use this.
+@ifset gpgtwoone
+@item --full-gen-key
+@opindex gen-key
+Generate a new key pair with dialogs for all options.  This is an
+extended version of @option{--gen-key}.
+
+@end ifset
+There is also a feature which allows you to create keys in batch
+mode. See the the manual section ``Unattended key generation'' on how
+to use this.
 
 @item --gen-revoke @code{name}
 @opindex gen-revoke
@@ -916,12 +967,14 @@ interaction.  The @code{fpr} must be the verified primary fingerprint
 of a key in the local keyring. If no @code{names} are given, all
 useful user ids are signed; with given [@code{names}] only useful user
 ids matching one of theses names are signed.  The command
-@option{--quick-lsign-key} marks the signatures as non-exportable.
+@option{--quick-lsign-key} marks the signatures as non-exportable.  If
+such a non-exportable signature already exists the
+@option{--quick-sign-key} turns it into a exportable signature.
 
 This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.
-Its intended use to help unattended signing using a list of verified
-fingerprints.
+Its intended use is to help unattended key signing by utilizing a list
+of verified fingerprints.
 @end ifset
 
 @ifclear gpgone
@@ -1062,6 +1115,13 @@ give the opposite meaning.  The options are:
   @option{--photo-viewer}.  Does not work with @option{--with-colons}:
   see @option{--attribute-fd} for the appropriate way to get photo data
   for scripts and other frontends.
+
+  @item show-usage
+  @opindex list-options:show-usage
+  Show usage information for keys and subkeys in the standard key
+  listing.  This is a list of letters indicating the allowed usage for a
+  key (@code{E}=encryption, @code{S}=signing, @code{C}=certification,
+  @code{A}=authentication).  Defaults to no.
 
   @item show-policy-urls
   @opindex list-options:show-policy-urls
@@ -1226,7 +1286,13 @@ use the specified keyring alone, use @option{--keyring} along with
 
 @item --secret-keyring @code{file}
 @opindex secret-keyring
+@ifset gpgtwoone
+This is an obsolete option and ignored.  All secret keys are stored in
+the @file{private-keys-v1.d} directory below the GnuPG home directory.
+@end ifset
+@ifclear gpgtwoone
 Same as @option{--keyring} but for the secret keyrings.
+@end ifclear
 
 @item --primary-keyring @code{file}
 @opindex primary-keyring
@@ -1436,7 +1502,7 @@ Set what trust model GnuPG should follow. The models are:
 
   @item classic
   @opindex trust-mode:classic
-  This is the standard Web of Trust as used in PGP 2.x and earlier.
+  This is the standard Web of Trust as introduced by PGP 2.
 
   @item direct
   @opindex trust-mode:direct
@@ -2232,7 +2298,7 @@ to consider (e.g. @option{--symmetric}).
 @item --s2k-cipher-algo @code{name}
 @opindex s2k-cipher-algo
 Use @code{name} as the cipher algorithm used to protect secret keys.
-The default cipher is CAST5. This cipher is also used for
+The default cipher is @value{DEFSYMENCALGO}. This cipher is also used for
 conventional encryption if @option{--personal-cipher-preferences} and
 @option{--cipher-algo} is not given.
 
@@ -2302,9 +2368,11 @@ behavior. Note that this is currently the same thing as
 Reset all packet, cipher and digest options to strict RFC-2440
 behavior.
 
+@ifclear gpgtowone
 @item --rfc1991
 @opindex rfc1991
-Try to be more RFC-1991 (PGP 2.x) compliant.
+Try to be more RFC-1991 (PGP 2.x) compliant.  This option is
+deprecated will be removed in GnuPG 2.1.
 
 @item --pgp2
 @opindex pgp2
@@ -2314,14 +2382,24 @@ a message that PGP 2.x will not be able to handle. Note that `PGP
 2.x' here means `MIT PGP 2.6.2'. There are other versions of PGP 2.x
 available, but the MIT release is a good common baseline.
 
-This option implies @option{--rfc1991 --disable-mdc
---no-force-v4-certs --escape-from-lines --force-v3-sigs
+This option implies
+@ifset gpgone
+@option{--rfc1991 --disable-mdc --no-force-v4-certs
+ --escape-from-lines  --force-v3-sigs
+ --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
+@end ifset
 @ifclear gpgone
---allow-weak-digest-algos
+@option{--rfc1991 --disable-mdc --no-force-v4-certs
+ --escape-from-lines  --force-v3-sigs --allow-weak-digest-algos
+ --cipher-algo IDEA --digest-algo MD5 --compress-algo ZIP}.
 @end ifclear
---cipher-algo IDEA --digest-algo
-MD5--compress-algo ZIP}. It also disables @option{--textmode} when
-encrypting.
+It also disables @option{--textmode} when encrypting.
+
+This option is deprecated will be removed in GnuPG 2.1.  The reason
+for dropping PGP-2 support is that the PGP 2 format is not anymore
+considered safe (for example due to the use of the broken MD5 algorithm).
+Note that the decryption of PGP-2 created messages will continue to work.
+@end ifclear
 
 @item --pgp6
 @opindex pgp6
@@ -3086,6 +3164,16 @@ files; They all live in in the current home directory (@pxref{option
   @item ~/.gnupg/secring.gpg.lock
   The lock file for the secret keyring.
 
+  @item ~/.gnupg/openpgp-revocs.d/
+  This is the directory where gpg stores pre-generated revocation
+  certificates.  The file name corresponds to the OpenPGP fingerprint of
+  the respective key.  It is suggested to backup those certificates and
+  if the primary private key is not stored on the disk to move them to
+  an external storage device.  Anyone who can access theses files is
+  able to revoke the corresponding key.  You may want to print them out.
+  You should backup all files in this directory and take care to keep
+  this backup closed away.
+
   @item /usr[/local]/share/gnupg/options.skel
   The skeleton options file.
 
@@ -3435,7 +3523,7 @@ sense.  Although OpenPGP works with time intervals, GnuPG uses an
 absolute value internally and thus the last year we can represent is
 2105.
 
-@item  Ceation-Date: @var{iso-date}
+@item  Creation-Date: @var{iso-date}
 Set the creation date of the key as stored in the key information and
 which is also part of the fingerprint calculation.  Either a date like
 "1986-04-26" or a full timestamp like "19860426T042640" may be used.

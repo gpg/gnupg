@@ -26,10 +26,6 @@ EXTRA_DIST = DETAILS FAQ \
 myman_sources = gpg.texi gpgv.texi
 myman_pages   = gpg.1 gpgv.1
 
-
-sources_from_trunk = $(myman_sources) \
-                     opt-homedir.texi specify-user-id.texi see-also-note.texi
-
 info_TEXINFOS = gnupg1.texi
 
 man_MANS = $(myman_pages) gnupg.7 gpg-zip.1
@@ -83,12 +79,6 @@ dist-hook:
 	@if test "`wc -c < gpg.1`" -lt 200; then \
 	    echo 'ERROR: dummy man page'; false; fi
 
-# Copy shared files from the master branch.  We keep the texinfo files
-# all in master so that we need to modify only one source.  Macros are
-# used to customize them for a specific version.
 update-source:
-	@set -e; cd $(srcdir); \
-	 for i in $(sources_from_trunk) yat2m.c ; do \
-	   echo "updating from master:doc/$$i" >&2 ; \
-	   git show master:doc/$$i >$$i ; \
-	 done
+	@echo Not anymore used - we now keep docs for 1.x separate
+	@echo from GnuPG-2.
