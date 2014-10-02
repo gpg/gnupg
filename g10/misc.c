@@ -686,11 +686,7 @@ map_md_openpgp_to_gcry (digest_algo_t algo)
     case DIGEST_ALGO_SHA224: return 0;
 #endif
 
-#ifdef GPG_USE_SHA256
     case DIGEST_ALGO_SHA256: return GCRY_MD_SHA256;
-#else
-    case DIGEST_ALGO_SHA256: return 0;
-#endif
 
 #ifdef GPG_USE_SHA384
     case DIGEST_ALGO_SHA384: return GCRY_MD_SHA384;

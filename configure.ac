@@ -259,7 +259,7 @@ GNUPG_GPG_DISABLE_ALGO([camellia192],[CAMELLIA192 cipher])
 GNUPG_GPG_DISABLE_ALGO([camellia256],[CAMELLIA256 cipher])
 
 GNUPG_GPG_DISABLE_ALGO([md5],[MD5 hash])
-# SHA1 is a MUSt algorithm
+# SHA1 is a MUST algorithm
 GNUPG_GPG_DISABLE_ALGO([rmd160],[RIPE-MD160 hash])
 GNUPG_GPG_DISABLE_ALGO([sha224],[SHA-224 hash])
 # SHA256 is a MUST algorithm for GnuPG.
