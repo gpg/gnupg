@@ -460,6 +460,7 @@ AH_BOTTOM([
 
 
 AM_MAINTAINER_MODE
+AC_ARG_VAR(SYSROOT,[locate config scripts also below that directory])
 
 # Checks for programs.
 AC_MSG_NOTICE([checking for programs])
@@ -1612,4 +1613,13 @@ echo "
                  OpenPGP trust signatures won't work.
                  gpg-check-pattern will not be build.
 "
+fi
+if test "x${gpg_config_script_warn}" != x; then
+cat <<G10EOF
+        Warning: Mismatches between the target platform and the
+                 to be used libraries have been detected for:
+                  ${gpg_config_script_warn}
+                 Please check above for more warning messages.
+
+G10EOF
 fi
