@@ -40,7 +40,12 @@
 # include <signal.h>
 #endif
 #include <npth.h>
-#ifdef HTTP_USE_GNUTLS
+
+#include "dirmngr-err.h"
+
+#if  HTTP_USE_NTBTLS
+# include <ntbtls.h>
+#elif HTTP_USE_GNUTLS
 # include <gnutls/gnutls.h>
 #endif /*HTTP_USE_GNUTLS*/
 
@@ -210,6 +215,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_p_u (oDebug,    "debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_i (oGnutlsDebug, "gnutls-debug", "@"),
+  ARGPARSE_s_i (oGnutlsDebug, "tls-debug", "@"),
   ARGPARSE_s_i (oDebugWait, "debug-wait", "@"),
   ARGPARSE_s_n (oNoGreeting, "no-greeting", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
@@ -244,7 +250,7 @@ static char *current_logfile;
 /* Helper to implement --debug-level. */
 static const char *debug_level;
 
-/* Helper to set the GNUTLS log level.  */
+/* Helper to set the NTBTLS or GNUTLS log level.  */
 static int opt_gnutls_debug = -1;
 
 /* Flag indicating that a shutdown has been requested.  */
@@ -410,7 +416,12 @@ set_debug (void)
   if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
 
-#ifdef HTTP_USE_GNUTLS
+#if HTTP_USE_NTBTLS
+  if (opt_gnutls_debug >= 0)
+    {
+      ntbtls_set_debug (opt_gnutls_debug, NULL, NULL);
+    }
+#elif HTTP_USE_GNUTLS
   if (opt_gnutls_debug >= 0)
     {
       gnutls_global_set_log_function (my_gnutls_log);
@@ -669,8 +680,12 @@ main (int argc, char **argv)
   ksba_set_malloc_hooks (gcry_malloc, gcry_realloc, gcry_free );
   ksba_set_hash_buffer_function (my_ksba_hash_buffer, NULL);
 
-  /* Init GNUTLS.  */
-#ifdef HTTP_USE_GNUTLS
+  /* Init TLS library.  */
+#if HTTP_USE_NTBTLS
+  if (!ntbtls_check_version (NEED_NTBTLS_VERSION) )
+    log_fatal( _("%s is too old (need %s, have %s)\n"), "ntbtls",
+               NEED_NTBTLS_VERSION, ntbtls_check_version (NULL) );
+#elif HTTP_USE_GNUTLS
   rc = gnutls_global_init ();
   if (rc)
     log_fatal ("gnutls_global_init failed: %s\n", gnutls_strerror (rc));

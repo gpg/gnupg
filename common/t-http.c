@@ -42,7 +42,9 @@
 #include "http.h"
 
 
-#ifdef HTTP_USE_GNUTLS
+#if HTTP_USE_NTBTLS
+# include <ntbtls.h>
+#elif HTTP_USE_GNUTLS
 # include <gnutls/gnutls.h>  /* For init, logging, and deinit.  */
 #endif /*HTTP_USE_GNUTLS*/
 
@@ -97,6 +99,7 @@ static int no_verify;
 
 
 
+#if HTTP_USE_GNUTLS
 static gpg_error_t
 verify_callback (http_t hd, http_session_t session, int reserved)
 {
@@ -104,14 +107,15 @@ verify_callback (http_t hd, http_session_t session, int reserved)
   (void)reserved;
   return no_verify? 0 : http_verify_server_credentials (session);
 }
+#endif
 
-
+#if HTTP_USE_GNUTLS
 static void
 my_gnutls_log (int level, const char *text)
 {
   fprintf (stderr, "gnutls:L%d: %s", level, text);
 }
-
+#endif
 
 /* Prepend FNAME with the srcdir environment variable's value and
    return an allocated filename. */
@@ -233,7 +237,14 @@ main (int argc, char **argv)
   if (!cafile)
     cafile = prepend_srcdir ("tls-ca.pem");
 
-#ifdef HTTP_USE_GNUTLS
+#if HTTP_USE_NTBTLS
+
+  (void)err;
+
+  ntbtls_set_debug (tls_dbg, NULL, NULL);
+
+#elif HTTP_USE_GNUTLS
+
   rc = gnutls_global_init ();
   if (rc)
     log_error ("gnutls_global_init failed: %s\n", gnutls_strerror (rc));

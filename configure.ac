@@ -61,8 +61,12 @@ NEED_LIBASSUAN_VERSION=2.1.0
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.2.0
 
+NEED_NTBTLS_API=1
+NEED_NTBTLS_VERSION=0.1.0
+
 NEED_NPTH_API=1
 NEED_NPTH_VERSION=0.91
+
 
 NEED_GNUTLS_VERSION=3.0
 
@@ -88,6 +92,7 @@ have_gpg_error=no
 have_libgcrypt=no
 have_libassuan=no
 have_ksba=no
+have_ntbtls=no
 have_npth=no
 have_libusb=no
 have_adns=no
@@ -101,6 +106,7 @@ card_support=yes
 use_ccid_driver=yes
 use_standard_socket=yes
 dirmngr_auto_start=yes
+use_tls_library=no
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -126,6 +132,8 @@ AC_DEFINE_UNQUOTED(NEED_LIBGCRYPT_VERSION, "$NEED_LIBGCRYPT_VERSION",
                                        [Required version of Libgcrypt])
 AC_DEFINE_UNQUOTED(NEED_KSBA_VERSION, "$NEED_KSBA_VERSION",
                                        [Required version of Libksba])
+AC_DEFINE_UNQUOTED(NEED_NTBTLS_VERSION, "$NEED_NTBTLS_VERSION",
+                                       [Required version of NTBTLS])
 
 
 
@@ -841,25 +849,35 @@ else
 ***]])
 fi
 
+
 #
-# Check whether GNUTLS is available
+# NTBTLS is our TLS library.  If it is not available fallback to
+# GNUTLS.
 #
-PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= $NEED_GNUTLS_VERSION],
-                               [have_gnutls=yes],
-                               [have_gnutls=no])
-if test "$have_gnutls" = "yes"; then
-  AC_SUBST([LIBGNUTLS_CFLAGS])
-  AC_SUBST([LIBGNUTLS_LIBS])
-  AC_DEFINE(HTTP_USE_GNUTLS, 1, [Enable GNUTLS support in http.c])
+AM_PATH_NTBTLS("$NEED_NTBTLS_API:$NEED_NTBTLS_VERSION",
+               [have_ntbtls=yes],[have_ntbtls=no])
+
+if test "$have_ntbtls" = yes ; then
+   use_tls_library=ntbtls
+   AC_DEFINE(HTTP_USE_NTBTLS, 1, [Enable NTBTLS support in http.c])
 else
-  tmp=$(echo "$LIBGNUTLS_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
-  AC_MSG_WARN([[
+  PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= $NEED_GNUTLS_VERSION],
+                                 [have_gnutls=yes],
+                                 [have_gnutls=no])
+  if test "$have_gnutls" = "yes"; then
+    AC_SUBST([LIBGNUTLS_CFLAGS])
+    AC_SUBST([LIBGNUTLS_LIBS])
+    use_tls_library=gnutls
+    AC_DEFINE(HTTP_USE_GNUTLS, 1, [Enable GNUTLS support in http.c])
+  else
+    tmp=$(echo "$LIBGNUTLS_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
+    AC_MSG_WARN([[
 ***
-*** Building without GNUTLS - no TLS access to keyservers.
+*** Building without NTBTLS and GNUTLS - no TLS access to keyservers.
 ***
 *** $tmp]])
+  fi
 fi
-
 
 
 AC_MSG_NOTICE([checking for networking options])
@@ -1788,7 +1806,7 @@ echo "
         Dirmngr auto start:  $dirmngr_auto_start
         Readline support:    $gnupg_cv_have_readline
         DNS SRV support:     $use_dns_srv
-        TLS support:         $have_gnutls
+        TLS support:         $use_tls_library
 "
 if test x"$use_regex" != xyes ; then
 echo "

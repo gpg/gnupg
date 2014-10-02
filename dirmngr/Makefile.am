@@ -63,7 +63,7 @@ endif
 dirmngr_LDADD = $(libcommontlsnpth) $(libcommonpth) \
         ../gl/libgnu.a $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
-	$(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV)
+	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV)
 if !USE_LDAPWRAPPER
 dirmngr_LDADD += $(LDAPLIBS)
 endif
