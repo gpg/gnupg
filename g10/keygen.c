@@ -1718,6 +1718,13 @@ ask_key_flags(int algo,int subkey)
                 current |= PUBKEY_USAGE_ENC;
               else if ((*s == 'a' || *s == 'A') && (possible&PUBKEY_USAGE_AUTH))
                 current |= PUBKEY_USAGE_AUTH;
+              else if (!subkey && *s == 'c')
+                {
+                  /* Accept 'c' for the primary key because USAGE_CERT
+                     will will be set anyway.  This is for folks who
+                     want to experiment with a cert-only primary key.  */
+                  current |= PUBKEY_USAGE_CERT;
+                }
             }
           break;
         }
