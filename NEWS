@@ -1,5 +1,22 @@
-Noteworthy changes in version 2.1.0-betaNNN (unreleased)
+Noteworthy changes in version 2.1.0-beta864 (2014-10-03)
 --------------------------------------------------------
+
+ * gpg: Removed the GPG_AGENT_INFO related code.  GnuPG does now only
+   use a fixed socket name in its home directory.
+
+ * gpg: Renamed --gen-key to --full-gen-key and re-added a --gen-key
+   command using less prompts.
+
+ * gpg: Use SHA-256 for all signature types also on RSA keys.
+
+ * gpg: Default keyring is now created with a .kbx suffix.
+
+ * gpg: Add a shortcut to key capabilies menu (e.g. "=e" sets the
+   encryption capabilities).
+
+ * gpg: Fixed obsolete options parsing.
+
+ * speedo: Improved the quick build system.
 
 
 Noteworthy changes in version 2.1.0-beta834 (2014-09-18)
