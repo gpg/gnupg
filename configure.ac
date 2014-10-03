@@ -93,6 +93,7 @@ have_libgcrypt=no
 have_libassuan=no
 have_ksba=no
 have_ntbtls=no
+have_gnutls=no
 have_npth=no
 have_libusb=no
 have_adns=no
@@ -829,16 +830,27 @@ fi
 # NTBTLS is our TLS library.  If it is not available fallback to
 # GNUTLS.
 #
-AM_PATH_NTBTLS("$NEED_NTBTLS_API:$NEED_NTBTLS_VERSION",
-               [have_ntbtls=yes],[have_ntbtls=no])
-
+AC_ARG_ENABLE(ntbtls,
+              AC_HELP_STRING([--disable-ntbtls],
+                             [disable the use of NTBTLS as TLS library]),
+              try_ntbtls=$enableval, try_ntbtls=yes)
+if test x"$try_ntbtls" = xyes ; then
+  AM_PATH_NTBTLS("$NEED_NTBTLS_API:$NEED_NTBTLS_VERSION",
+                 [have_ntbtls=yes],[have_ntbtls=no])
+fi
 if test "$have_ntbtls" = yes ; then
    use_tls_library=ntbtls
    AC_DEFINE(HTTP_USE_NTBTLS, 1, [Enable NTBTLS support in http.c])
 else
-  PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= $NEED_GNUTLS_VERSION],
-                                 [have_gnutls=yes],
-                                 [have_gnutls=no])
+  AC_ARG_ENABLE(gnutls,
+                AC_HELP_STRING([--disable-gnutls],
+                               [disable GNUTLS as fallback TLS library]),
+                try_gnutls=$enableval, try_gnutls=yes)
+  if test x"$try_gnutls" = xyes ; then
+    PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= $NEED_GNUTLS_VERSION],
+                                   [have_gnutls=yes],
+                                   [have_gnutls=no])
+  fi
   if test "$have_gnutls" = "yes"; then
     AC_SUBST([LIBGNUTLS_CFLAGS])
     AC_SUBST([LIBGNUTLS_LIBS])
