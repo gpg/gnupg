@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-08-14 17:12+0200\n"
+"PO-Revision-Date: 2014-10-03 12:12+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -318,9 +318,6 @@ msgstr "Tastatur und Maus nicht \"grabben\""
 msgid "use a log file for the server"
 msgstr "Logausgaben in eine Datei umlenken"
 
-msgid "use a standard location for the socket"
-msgstr "Benutze einen Standardnamen für den Socket"
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PGM|benutze PGM as PIN-Entry"
 
@@ -353,9 +350,6 @@ msgstr "SSH Unterstützung einschalten"
 
 msgid "enable putty support"
 msgstr "PuTTY Unterstützung einschalten"
-
-msgid "|FILE|write environment settings also to FILE"
-msgstr "|DATEI|Schreibe die Umgebungsvariablen auf DATEI"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -399,14 +393,6 @@ msgstr "Optionen werden aus '%s' gelesen\n"
 msgid "NOTE: '%s' is not considered an option\n"
 msgstr "Hinweis: `%s' wird nicht als Option betrachtet\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "Fehler beim Erstellen von `%s': %s\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "Verzeichnis `%s' kann nicht erzeugt werden: %s\n"
-
 msgid "name of socket too long\n"
 msgstr "Der Name des Sockets ist zu lang\n"
 
@@ -435,6 +421,10 @@ msgstr "Der listen()-Aufruf ist fehlgeschlagen: %s\n"
 #, c-format
 msgid "listening on socket '%s'\n"
 msgstr "Es wird auf Socket `%s' gehört\n"
+
+#, c-format
+msgid "can't create directory '%s': %s\n"
+msgstr "Verzeichnis `%s' kann nicht erzeugt werden: %s\n"
 
 #, c-format
 msgid "directory '%s' created\n"
@@ -478,14 +468,6 @@ msgstr "%s %s angehalten\n"
 
 msgid "no gpg-agent running in this session\n"
 msgstr "Der gpg-agent läuft nicht für diese Session\n"
-
-#, c-format
-msgid "malformed %s environment variable\n"
-msgstr "Fehlerhafte %s Variable\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "GPG-Agent-Protokoll-Version %d wird nicht unterstützt\n"
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr "Aufruf: gpg-preset-passphrase [Optionen] KEYGRIP (-h für Hilfe)\n"
@@ -811,9 +793,6 @@ msgstr "Warte bis der gpg-agent bereit ist ... (%ds)\n"
 
 msgid "connection to agent established\n"
 msgstr "Verbindung zum gpg-agent aufgebaut\n"
-
-msgid "can't connect to the agent - trying fall back\n"
-msgstr "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1694,11 +1673,14 @@ msgstr "Liste der Schlüssel und ihrer \"Fingerabdrücke\""
 msgid "list secret keys"
 msgstr "Liste der geheimen Schlüssel"
 
+msgid "generate a new key pair"
+msgstr "Ein neues Schlüsselpaar erzeugen"
+
 msgid "quickly generate a new key pair"
 msgstr "Schnell ein neues Schlüsselpaar erzeugen"
 
-msgid "generate a new key pair"
-msgstr "Ein neues Schlüsselpaar erzeugen"
+msgid "full featured key pair generation"
+msgstr "Ein neues Schlüsselpaar erzeugen (alle Optionen)"
 
 msgid "generate a revocation certificate"
 msgstr "Ein Schlüsselwiderruf-Zertifikat erzeugen"
@@ -3266,12 +3248,10 @@ msgstr ""
 "dazu führen, daß eine andere User-ID als primär angesehen wird.\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "WARNUNG: Ihr Unterschlüssel zum Verschlüsseln wird bald verfallen.\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "Sie können das Verfallsdatum eines v3-Schlüssels nicht ändern\n"
+msgstr "Bitte erwägen Sie, dessen Verfallsdatum auch zu ändern.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3618,8 +3598,8 @@ msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (Leistungsfähigkeit selber einstellbar)\n"
 
 #, c-format
-msgid "   (%d) ECC\n"
-msgstr "   (%d) ECC\n"
+msgid "   (%d) ECC and ECC\n"
+msgstr "  (%d) ECC und ECC\n"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
@@ -3825,6 +3805,12 @@ msgstr "Ändern: (N)ame, (K)ommentar, (E)-Mail oder (A)bbrechen? "
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Ändern: (N)ame, (K)ommentar, (E)-Mail oder (F)ertig/(A)bbrechen? "
 
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "Ändern: (N)ame, (E)-Mail oder (A)bbrechen? "
+
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr "Ändern: (N)ame, (E)-Mail oder (F)ertig/(A)bbrechen? "
+
 msgid "Please correct the error first\n"
 msgstr "Bitte beseitigen Sie zuerst den Fehler\n"
 
@@ -3897,6 +3883,10 @@ msgstr "Trotzdem erzeugen? (j/N) "
 
 msgid "creating anyway\n"
 msgstr "wird trotzdem erzeugt\n"
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr "Hinweis: \"%s %s\" ruft den erweiterten Dialog auf.\n"
 
 msgid "Key generation canceled.\n"
 msgstr "Schlüsselerzeugung abgebrochen.\n"
@@ -4347,8 +4337,19 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr "%s:%u: Die Option \"%s\" is veraltet - sie hat keine Wirkung\n"
 
 #, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgstr "WARNUNG: \"%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
+
+#, c-format
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: Die Option \"%s\" is veraltet - sie hat eine Wirkung nur in %s.\n"
+
+#, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgstr ""
+"WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat eine Wirkung nur\n"
+"in %s.\n"
 
 msgid "Uncompressed"
 msgstr "nicht komprimiert"
@@ -4783,6 +4784,10 @@ msgstr "Hinweis: Schlüssel %s hat keine Einstellung für %s\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "Daten wurden nicht gespeichert; verwenden Sie dafür die Option \"--output\"\n"
+
+#, c-format
+msgid "error creating '%s': %s\n"
+msgstr "Fehler beim Erstellen von `%s': %s\n"
 
 msgid "Detached signature.\n"
 msgstr "Abgetrennte Beglaubigungen.\n"
@@ -7007,6 +7012,10 @@ msgid "no running dirmngr - starting one\n"
 msgstr "Dirmngr läuft nicht - ein neuer wird gestartet\n"
 
 #, c-format
+msgid "malformed %s environment variable\n"
+msgstr "Fehlerhafte %s Variable\n"
+
+#, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "Dirmngr Protocol Version %d wird nicht unterstützt\n"
 
@@ -7995,6 +8004,22 @@ msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
 
+#~ msgid "use a standard location for the socket"
+#~ msgstr "Benutze einen Standardnamen für den Socket"
+
+#~ msgid "|FILE|write environment settings also to FILE"
+#~ msgstr "|DATEI|Schreibe die Umgebungsvariablen auf DATEI"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "GPG-Agent-Protokoll-Version %d wird nicht unterstützt\n"
+
+#~ msgid "can't connect to the agent - trying fall back\n"
+#~ msgstr ""
+#~ "Verbindung zum gpg-agent nicht möglich - Ersatzmethode wird versucht\n"
+
+#~ msgid "   (%d) ECC\n"
+#~ msgstr "   (%d) ECC\n"
+
 #~ msgid "can't create directory `%s': %s\n"
 #~ msgstr " git describe --match gnupg-2.1.*[0-9] --long"
 
@@ -8076,9 +8101,6 @@ msgstr ""
 
 #~ msgid "deleting secret key not implemented\n"
 #~ msgstr "Löschen des geheimen Schlüssel ist nicht implementiert\n"
-
-#~ msgid "   (%d) ECDSA and ECDH\n"
-#~ msgstr "  (%d) ECDSA und ECDH\n"
 
 #~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 #~ msgstr "10"
