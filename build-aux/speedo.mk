@@ -58,8 +58,10 @@ help:
 	@echo '  w32-installer  Build a Windows installer'
 	@echo '  w32-source     Pack a source archive'
 	@echo
-	@echo 'Prepend TARGET with "git-" to build from GIT repos'
-	@echo 'Prepend TARGET with "this-" to build from the source tarball'
+	@echo 'You may append INSTALL_REFIX=<dir> for native builds.'
+	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
+	@echo 'Prepend TARGET with "this-" to build from the source tarball.'
+
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
@@ -124,6 +126,9 @@ MAKE_J=3
 # Name to use for the w32 installer and sources
 INST_NAME=gnupg-w32
 
+# Use this to override the installaion directory for native builds.
+INSTALL_PREFIX=none
+
 
 # Directory names.
 # They must be absolute, as we switch directories pretty often.
@@ -131,7 +136,11 @@ root := $(shell pwd)/PLAY
 sdir := $(root)/src
 bdir := $(root)/build
 bdir6:= $(root)/build-w64
+ifeq ($(INSTALL_PREFIX),none)
 idir := $(root)/inst
+else
+idir := $(abspath $(INSTALL_PREFIX))
+endif
 idir6:= $(root)/inst-w64
 stampdir := $(root)/stamps
 topsrc := $(shell cd $(dir $(SPEEDO_MK)).. && pwd)
