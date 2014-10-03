@@ -333,9 +333,6 @@ msgstr "ne pas capturer le clavier et la souris"
 msgid "use a log file for the server"
 msgstr "utiliser un fichier journal pour le serveur"
 
-msgid "use a standard location for the socket"
-msgstr "utiliser un emplacement de socket standard"
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PROG|utiliser PROG pour entrer le code personnel"
 
@@ -372,9 +369,6 @@ msgstr ""
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "non pris en charge"
-
-msgid "|FILE|write environment settings also to FILE"
-msgstr "|FICHIER|écrire aussi les réglages d'env. dans FICHIER"
 
 # @EMAIL@ is currently an URL
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
@@ -419,14 +413,6 @@ msgstr "lecture des options de « %s »\n"
 msgid "NOTE: '%s' is not considered an option\n"
 msgstr "Remarque : « %s » n'est pas considéré comme une option\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "erreur de création de « %s » : %s\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "impossible de créer le répertoire « %s » : %s\n"
-
 msgid "name of socket too long\n"
 msgstr "nom de socket trop long\n"
 
@@ -457,6 +443,10 @@ msgstr "échec de listen() : %s\n"
 #, c-format
 msgid "listening on socket '%s'\n"
 msgstr "écoute sur la socket « %s »\n"
+
+#, c-format
+msgid "can't create directory '%s': %s\n"
+msgstr "impossible de créer le répertoire « %s » : %s\n"
 
 #, c-format
 msgid "directory '%s' created\n"
@@ -501,15 +491,6 @@ msgstr "%s %s arrêté\n"
 msgid "no gpg-agent running in this session\n"
 msgstr ""
 "aucune instance de gpg-agent n'est en cours d'exécution dans cette session\n"
-
-#, fuzzy, c-format
-#| msgid "malformed DIRMNGR_INFO environment variable\n"
-msgid "malformed %s environment variable\n"
-msgstr "la variable d'environnement DIRMNGR_INFO est mal définie\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "le protocole gpg-agent version %d n'est pas pris en charge\n"
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr ""
@@ -832,10 +813,6 @@ msgstr "attente pour permettre à l'agent d'arriver… (%d s)\n"
 
 msgid "connection to agent established\n"
 msgstr "connexion à l'agent établie\n"
-
-msgid "can't connect to the agent - trying fall back\n"
-msgstr ""
-"impossible de se connecter à l'agent — essai avec la solution de repli\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1726,13 +1703,16 @@ msgstr "afficher les clefs et les empreintes"
 msgid "list secret keys"
 msgstr "afficher les clefs secrètes"
 
+msgid "generate a new key pair"
+msgstr "générer une nouvelle paire de clefs"
+
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
 msgstr "générer une nouvelle paire de clefs"
 
-msgid "generate a new key pair"
-msgstr "générer une nouvelle paire de clefs"
+msgid "full featured key pair generation"
+msgstr ""
 
 msgid "generate a revocation certificate"
 msgstr "générer un certificat de révocation"
@@ -3667,9 +3647,9 @@ msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (indiquez vous-même les capacités)\n"
 
 #, fuzzy, c-format
-#| msgid "   (%d) RSA\n"
-msgid "   (%d) ECC\n"
-msgstr "   (%d) RSA\n"
+#| msgid "   (%d) ECDSA and ECDH\n"
+msgid "   (%d) ECC and ECC\n"
+msgstr "   (%d) ECDSA et ECDH\n"
 
 #, fuzzy, c-format
 #| msgid "  (%d) ECDSA (sign only)\n"
@@ -3886,6 +3866,19 @@ msgstr ""
 "Changer le (N)om, le (C)ommentaire, l'(A)dresse électronique\n"
 "ou (O)ui/(Q)uitter ? "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr ""
+"Changer le (N)om, le (C)ommentaire, l'(A)dresse électronique ou (Q)uitter ? "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr ""
+"Changer le (N)om, le (C)ommentaire, l'(A)dresse électronique\n"
+"ou (O)ui/(Q)uitter ? "
+
 msgid "Please correct the error first\n"
 msgstr "Veuillez d'abord corriger l'erreur\n"
 
@@ -3961,6 +3954,10 @@ msgstr "Faut-il quand même utiliser cette clef ? (o/N) "
 #| msgid "generating new key\n"
 msgid "creating anyway\n"
 msgstr "génération d'une nouvelle clef\n"
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
 
 msgid "Key generation canceled.\n"
 msgstr "La génération de clef a été annulée.\n"
@@ -4420,8 +4417,20 @@ msgstr "Attention : « %s » est une commande déconseillée — ne l'utilise
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr "%s : %u : option « %s » obsolète — non prise en compte\n"
 
-#, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "Attention : « %s » est une option obsolète — non prise en compte\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s : %u : option « %s » obsolète — non prise en compte\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "Attention : « %s » est une option obsolète — non prise en compte\n"
 
 msgid "Uncompressed"
@@ -4878,6 +4887,10 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "les données ne sont pas enregistrées ; utilisez l'option « --output » pour\n"
 "les enregistrer\n"
+
+#, c-format
+msgid "error creating '%s': %s\n"
+msgstr "erreur de création de « %s » : %s\n"
 
 msgid "Detached signature.\n"
 msgstr "Signature détachée.\n"
@@ -7167,6 +7180,11 @@ msgstr ""
 "pas d'instance de dirmngr en cours d'exécution —\n"
 "démarrage d'une nouvelle instance\n"
 
+#, fuzzy, c-format
+#| msgid "malformed DIRMNGR_INFO environment variable\n"
+msgid "malformed %s environment variable\n"
+msgstr "la variable d'environnement DIRMNGR_INFO est mal définie\n"
+
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "le protocole dirmngr version %d n'est pas pris en charge\n"
@@ -8186,6 +8204,24 @@ msgstr ""
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "use a standard location for the socket"
+#~ msgstr "utiliser un emplacement de socket standard"
+
+#~ msgid "|FILE|write environment settings also to FILE"
+#~ msgstr "|FICHIER|écrire aussi les réglages d'env. dans FICHIER"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "le protocole gpg-agent version %d n'est pas pris en charge\n"
+
+#~ msgid "can't connect to the agent - trying fall back\n"
+#~ msgstr ""
+#~ "impossible de se connecter à l'agent — essai avec la solution de repli\n"
+
+#, fuzzy
+#~| msgid "   (%d) RSA\n"
+#~ msgid "   (%d) ECC\n"
+#~ msgstr "   (%d) RSA\n"
+
 #, fuzzy
 #~| msgid "can't create directory '%s': %s\n"
 #~ msgid "can't create directory `%s': %s\n"
@@ -8304,9 +8340,6 @@ msgstr ""
 
 #~ msgid "deleting secret key not implemented\n"
 #~ msgstr "la suppression de clef secrète n'est pas implémentée\n"
-
-#~ msgid "   (%d) ECDSA and ECDH\n"
-#~ msgstr "   (%d) ECDSA et ECDH\n"
 
 #~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
 #~ msgstr "11 le traducteur a bien lu ce qu'il fallait :)"

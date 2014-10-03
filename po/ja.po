@@ -323,9 +323,6 @@ msgstr "キーボードとマウスを占有しない"
 msgid "use a log file for the server"
 msgstr "サーバのログ・ファイルを使う"
 
-msgid "use a standard location for the socket"
-msgstr "ソケットに標準の場所を使う"
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|PGM|PGMをPIN入力プログラムとして使う"
 
@@ -358,9 +355,6 @@ msgstr "sshサポートを有功にする"
 
 msgid "enable putty support"
 msgstr "puttyサポートを有功にする"
-
-msgid "|FILE|write environment settings also to FILE"
-msgstr "|FILE|FILEに環境変数の設定も書き出す"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -402,14 +396,6 @@ msgstr "'%s' からオプションを読み込みます\n"
 msgid "NOTE: '%s' is not considered an option\n"
 msgstr "*注意*: '%s'はオプションとは考えられません\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "'%s'の作成エラー: %s\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "ディレクトリ'%s'が作成できません: %s\n"
-
 msgid "name of socket too long\n"
 msgstr "ソケット名が長すぎます\n"
 
@@ -438,6 +424,10 @@ msgstr "listen() に失敗しました: %s\n"
 #, c-format
 msgid "listening on socket '%s'\n"
 msgstr "ソケット'%s'でlisten\n"
+
+#, c-format
+msgid "can't create directory '%s': %s\n"
+msgstr "ディレクトリ'%s'が作成できません: %s\n"
 
 #, c-format
 msgid "directory '%s' created\n"
@@ -481,14 +471,6 @@ msgstr "%s %s 停止しました\n"
 
 msgid "no gpg-agent running in this session\n"
 msgstr "このセッションでgpg-agentは実行されていません\n"
-
-#, c-format
-msgid "malformed %s environment variable\n"
-msgstr "環境変数%sが破壊されています\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "gpg-agentプロトコル・バージョン%dはサポートされていません\n"
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr "使い方: gpg-preset-passphrase [オプション] KEYGRIP (ヘルプは -h)\n"
@@ -803,9 +785,6 @@ msgstr "agentの起動のため、%d秒待ちます\n"
 
 msgid "connection to agent established\n"
 msgstr "エージェントへの接続が確立しました。\n"
-
-msgid "can't connect to the agent - trying fall back\n"
-msgstr "agentに接続できません - フォールバックしてみます\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1664,13 +1643,16 @@ msgstr "鍵とフィンガープリントの一覧"
 msgid "list secret keys"
 msgstr "秘密鍵の一覧"
 
+msgid "generate a new key pair"
+msgstr "新しい鍵対を生成"
+
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
 msgstr "新しい鍵対を生成"
 
-msgid "generate a new key pair"
-msgstr "新しい鍵対を生成"
+msgid "full featured key pair generation"
+msgstr ""
 
 msgid "generate a revocation certificate"
 msgstr "失効証明書を生成"
@@ -3522,8 +3504,9 @@ msgstr "   (%d) DSA (特性をあなた自身で設定)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (特性をあなた自身で設定)\n"
 
-#, c-format
-msgid "   (%d) ECC\n"
+#, fuzzy, c-format
+#| msgid "   (%d) ECC\n"
+msgid "   (%d) ECC and ECC\n"
 msgstr "   (%d) ECC\n"
 
 #, c-format
@@ -3730,6 +3713,16 @@ msgstr "名前(N)、コメント(C)、電子メール(E)の変更、または終
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "名前(N)、コメント(C)、電子メール(E)の変更、またはOK(O)か終了(Q)? "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "名前(N)、コメント(C)、電子メール(E)の変更、または終了(Q)? "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr "名前(N)、コメント(C)、電子メール(E)の変更、またはOK(O)か終了(Q)? "
+
 msgid "Please correct the error first\n"
 msgstr "まずエラーを修正してください\n"
 
@@ -3805,6 +3798,10 @@ msgstr "それでもこの鍵を使いますか? (y/N) "
 #| msgid "generating new key\n"
 msgid "creating anyway\n"
 msgstr "新しい鍵を生成\n"
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
 
 msgid "Key generation canceled.\n"
 msgstr "鍵の生成が取り消されました。\n"
@@ -4236,8 +4233,22 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr ""
 "%s:%u: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
 
-#, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr ""
+"*警告*: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr ""
+"%s:%u: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr ""
 "*警告*: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
 
@@ -4638,6 +4649,10 @@ msgstr "注意: 鍵%sには%sに対する優先指定がありません\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "データは保存されていません。保存には\"--output\"オプションを使ってください\n"
+
+#, c-format
+msgid "error creating '%s': %s\n"
+msgstr "'%s'の作成エラー: %s\n"
 
 msgid "Detached signature.\n"
 msgstr "分離署名。\n"
@@ -6764,6 +6779,10 @@ msgid "no running dirmngr - starting one\n"
 msgstr "dirmngrが動いていません - 開始します\n"
 
 #, c-format
+msgid "malformed %s environment variable\n"
+msgstr "環境変数%sが破壊されています\n"
+
+#, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "dirmngrプロトコル・バージョン%dはサポートされていません\n"
 
@@ -7743,6 +7762,18 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "use a standard location for the socket"
+#~ msgstr "ソケットに標準の場所を使う"
+
+#~ msgid "|FILE|write environment settings also to FILE"
+#~ msgstr "|FILE|FILEに環境変数の設定も書き出す"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "gpg-agentプロトコル・バージョン%dはサポートされていません\n"
+
+#~ msgid "can't connect to the agent - trying fall back\n"
+#~ msgstr "agentに接続できません - フォールバックしてみます\n"
 
 #, fuzzy
 #~| msgid "can't create directory '%s': %s\n"

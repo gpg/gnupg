@@ -333,9 +333,6 @@ msgstr "не захоплювати керування клавіатурою і
 msgid "use a log file for the server"
 msgstr "використовувати файл журналу для сервера"
 
-msgid "use a standard location for the socket"
-msgstr "використовувати для сокета стандартне розташування"
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "використовувати вказану програму пінзаписів"
 
@@ -368,9 +365,6 @@ msgstr "увімкнути підтримку ssh"
 
 msgid "enable putty support"
 msgstr "увімкнути підтримку putty"
-
-msgid "|FILE|write environment settings also to FILE"
-msgstr "записати параметри середовища і до файла"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -412,14 +406,6 @@ msgstr "прочитати параметри з «%s»\n"
 msgid "NOTE: '%s' is not considered an option\n"
 msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "помилка створення «%s»: %s.\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "не вдалося створити каталог «%s»: %s\n"
-
 msgid "name of socket too long\n"
 msgstr "назва сокета є надто довгою\n"
 
@@ -448,6 +434,10 @@ msgstr "помилка listen(): %s\n"
 #, c-format
 msgid "listening on socket '%s'\n"
 msgstr "очікування даних на сокеті «%s»\n"
+
+#, c-format
+msgid "can't create directory '%s': %s\n"
+msgstr "не вдалося створити каталог «%s»: %s\n"
 
 #, c-format
 msgid "directory '%s' created\n"
@@ -493,14 +483,6 @@ msgstr "%s %s зупинено\n"
 
 msgid "no gpg-agent running in this session\n"
 msgstr "у цьому сеансі не запущено gpg-agent\n"
-
-#, c-format
-msgid "malformed %s environment variable\n"
-msgstr "помилкове форматування змінної середовища %s\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "підтримки версії протоколу gpg-agent %d не передбачено\n"
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr ""
@@ -825,10 +807,6 @@ msgstr "очікування на працездатність агента… (
 
 msgid "connection to agent established\n"
 msgstr "встановлено з’єднання з агентом\n"
-
-msgid "can't connect to the agent - trying fall back\n"
-msgstr ""
-"не вдалося встановити з’єднання з агентом, використовуємо резервний варіант\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1705,13 +1683,16 @@ msgstr "показати список ключів і відбитків"
 msgid "list secret keys"
 msgstr "показати список закритих ключів"
 
+msgid "generate a new key pair"
+msgstr "створити пару ключів"
+
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
 msgstr "створити пару ключів"
 
-msgid "generate a new key pair"
-msgstr "створити пару ключів"
+msgid "full featured key pair generation"
+msgstr ""
 
 msgid "generate a revocation certificate"
 msgstr "створити сертифікат відкликання"
@@ -3636,9 +3617,10 @@ msgstr "   (%d) DSA (із визначенням можливостей влас
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (із визначенням можливостей власноруч)\n"
 
-#, c-format
-msgid "   (%d) ECC\n"
-msgstr "   (%d) ECC\n"
+#, fuzzy, c-format
+#| msgid "   (%d) ECDSA and ECDH\n"
+msgid "   (%d) ECC and ECC\n"
+msgstr "   (%d) ECDSA і ECDH\n"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
@@ -3849,6 +3831,17 @@ msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "Змінити назву (N), коментар (C), ел. пошту (E) або гаразд (O) чи вийти (Q)? "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "Змінити назву (N), коментар (C), ел. пошту (E) або вийти (Q)? "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr ""
+"Змінити назву (N), коментар (C), ел. пошту (E) або гаразд (O) чи вийти (Q)? "
+
 msgid "Please correct the error first\n"
 msgstr "Спочатку виправте помилку\n"
 
@@ -3923,6 +3916,10 @@ msgstr "Попри все використовувати цей ключ? (y/N �
 #| msgid "generating new key\n"
 msgid "creating anyway\n"
 msgstr "створення нового ключа\n"
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
 
 msgid "Key generation canceled.\n"
 msgstr "Створення ключа скасовано.\n"
@@ -4373,8 +4370,20 @@ msgstr "УВАГА: «%s» вважається застарілою коман�
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr "%s:%u: застарілий параметр «%s» — він не працюватиме\n"
 
-#, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "УВАГА: «%s» є застарілим параметром — він не працюватиме\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: застарілий параметр «%s» — він не працюватиме\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "УВАГА: «%s» є застарілим параметром — він не працюватиме\n"
 
 msgid "Uncompressed"
@@ -4787,6 +4796,10 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "дані не збережено; скористайтеся для їхнього збереження параметром «--"
 "output»\n"
+
+#, c-format
+msgid "error creating '%s': %s\n"
+msgstr "помилка створення «%s»: %s.\n"
 
 msgid "Detached signature.\n"
 msgstr "Від’єднаний підпис.\n"
@@ -6971,6 +6984,10 @@ msgid "no running dirmngr - starting one\n"
 msgstr "dirmngr не запущено — запускаємо\n"
 
 #, c-format
+msgid "malformed %s environment variable\n"
+msgstr "помилкове форматування змінної середовища %s\n"
+
+#, c-format
 msgid "dirmngr protocol version %d is not supported\n"
 msgstr "підтримки протоколу dirmngr версії %d не передбачено\n"
 
@@ -7961,6 +7978,23 @@ msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
 
+#~ msgid "use a standard location for the socket"
+#~ msgstr "використовувати для сокета стандартне розташування"
+
+#~ msgid "|FILE|write environment settings also to FILE"
+#~ msgstr "записати параметри середовища і до файла"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "підтримки версії протоколу gpg-agent %d не передбачено\n"
+
+#~ msgid "can't connect to the agent - trying fall back\n"
+#~ msgstr ""
+#~ "не вдалося встановити з’єднання з агентом, використовуємо резервний "
+#~ "варіант\n"
+
+#~ msgid "   (%d) ECC\n"
+#~ msgstr "   (%d) ECC\n"
+
 #, fuzzy
 #~| msgid "can't create directory '%s': %s\n"
 #~ msgid "can't create directory `%s': %s\n"
@@ -8072,9 +8106,6 @@ msgstr ""
 
 #~ msgid "too many entries in pk cache - disabled\n"
 #~ msgstr "занадто багато записів у кеші pk — вимкнено\n"
-
-#~ msgid "   (%d) ECDSA and ECDH\n"
-#~ msgstr "   (%d) ECDSA і ECDH\n"
 
 #~ msgid "the IDEA cipher plugin is not present\n"
 #~ msgstr "не виявлено додатка шифрування IDEA\n"
