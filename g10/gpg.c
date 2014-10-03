@@ -372,6 +372,8 @@ enum cmd_and_opt_values
     oAutoKeyLocate,
     oNoAutoKeyLocate,
     oAllowMultisigVerification,
+    oEnableLargeRSA,
+    oDisableLargeRSA,
     oEnableDSA2,
     oDisableDSA2,
     oAllowMultipleMessages,
@@ -719,6 +721,8 @@ static ARGPARSE_OPTS opts[] = {
     { oDebugCCIDDriver, "debug-ccid-driver", 0, "@"},
 #endif
     { oAllowMultisigVerification, "allow-multisig-verification", 0, "@"},
+    { oEnableLargeRSA, "enable-large-rsa", 0, "@"},
+    { oDisableLargeRSA, "disable-large-rsa", 0, "@"},
     { oEnableDSA2, "enable-dsa2", 0, "@"},
     { oDisableDSA2, "disable-dsa2", 0, "@"},
     { oAllowMultipleMessages, "allow-multiple-messages", 0, "@"},
@@ -1995,7 +1999,7 @@ main (int argc, char **argv )
     }
 #endif
     /* initialize the secure memory. */
-    got_secmem=secmem_init( 32768 );
+    got_secmem=secmem_init( SECMEM_BUFFER_SIZE );
     maybe_setuid = 0;
     /* Okay, we are now working under our real uid */
 
@@ -2850,6 +2854,22 @@ main (int argc, char **argv )
 	  case oNoAutoKeyLocate:
 	    release_akl();
 	    break;
+
+	  case oEnableLargeRSA:
+#if SECMEM_BUFFER_SIZE >= 65536
+            opt.flags.large_rsa=1;
+#else
+            if (configname)
+              log_info("%s:%d: WARNING: gpg not built with large secure "
+                         "memory buffer.  Ignoring enable-large-rsa\n",
+                        configname,configlineno);
+            else
+              log_info("WARNING: gpg not built with large secure "
+                         "memory buffer.  Ignoring --enable-large-rsa\n");
+#endif /* SECMEM_BUFFER_SIZE >= 65536 */
+            break;
+	  case oDisableLargeRSA: opt.flags.large_rsa=0;
+            break;
 
 	  case oEnableDSA2: opt.flags.dsa2=1; break;
 	  case oDisableDSA2: opt.flags.dsa2=0; break;

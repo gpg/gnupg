@@ -158,6 +158,7 @@ use_exec=yes
 card_support=yes
 agent_support=yes
 disable_keyserver_path=no
+large_secmem=no
 
 AC_ARG_ENABLE(minimal,
    AC_HELP_STRING([--enable-minimal],[build the smallest gpg binary possible]),
@@ -175,6 +176,21 @@ AC_ARG_ENABLE(minimal,
    use_exec=no
    card_support=no
    agent_support=no)
+
+
+AC_MSG_CHECKING([whether to allocate extra secure memory])
+AC_ARG_ENABLE(large-secmem,
+              AC_HELP_STRING([--enable-large-secmem],
+                             [allocate extra secure memory]),
+              large_secmem=$enableval, large_secmem=no)
+AC_MSG_RESULT($large_secmem)
+if test "$large_secmem" = yes ; then
+   SECMEM_BUFFER_SIZE=65536
+else
+   SECMEM_BUFFER_SIZE=32768
+fi
+AC_DEFINE_UNQUOTED(SECMEM_BUFFER_SIZE,$SECMEM_BUFFER_SIZE,
+                   [Size of secure memory buffer])
 
 
 AC_MSG_CHECKING([whether OpenPGP card support is requested])

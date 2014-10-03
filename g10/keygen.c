@@ -1253,6 +1253,7 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
     PKT_public_key *pk;
     MPI skey[6];
     MPI *factors;
+    const unsigned maxsize = (opt.flags.large_rsa ? 8192 : 4096);
 
     assert( is_RSA(algo) );
 
@@ -1260,8 +1261,8 @@ gen_rsa(int algo, unsigned nbits, KBNODE pub_root, KBNODE sec_root, DEK *dek,
 	nbits = 2048;
 	log_info(_("keysize invalid; using %u bits\n"), nbits );
     }
-    else if (nbits > 4096) {
-        nbits = 4096;
+    else if (nbits > maxsize) {
+        nbits = maxsize;
         log_info(_("keysize invalid; using %u bits\n"), nbits );
     }
 
