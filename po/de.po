@@ -4342,7 +4342,8 @@ msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
-msgstr "%s:%u: Die Option \"%s\" is veraltet - sie hat eine Wirkung nur in %s.\n"
+msgstr ""
+"%s:%u: Die Option \"%s\" is veraltet - sie hat eine Wirkung nur in %s.\n"
 
 #, c-format
 msgid ""

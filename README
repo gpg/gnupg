@@ -2,28 +2,39 @@
                       =========================
                              Version 2.1
 
-   THIS IS A DEVELOPMENT VERSION AND NOT INTENDED FOR REGULAR USE.
-
           Copyright 1997-1998, 2013-2014 Werner Koch
           Copyright 1998-2013 Free Software Foundation, Inc.
 
 
 * INTRODUCTION
 
-  GnuPG is a tool for secure communication and data storage.  It can
-  be used to encrypt data and to create digital signatures.  It
-  includes an advanced key management facility and is compliant with
-  the proposed OpenPGP Internet standard as described in RFC4880 and
-  the S/MIME standard as described by several RFCs.
+  GnuPG is a complete and free implementation of the OpenPGP standard
+  as defined by RFC4880 (also known as PGP).  GnuPG allows to encrypt
+  and sign data and communication, features a versatile key management
+  system as well as access modules for public key directories.
 
-  GnuPG is distributed under the terms of the GNU General Public
-  License.  See the file COPYING for details.  GnuPG works best on
-  GNU/Linux or *BSD systems.  Most other Unices are also supported but
-  are not as well tested as the Free Unices.
+  GnuPG, also known as GPG, is a command line tool with features for
+  easy integration with other applications.  A wealth of frontend
+  applications and libraries making use of GnuPG are available.  Since
+  version 2 GnuPG provides support for S/MIME and Secure Shell in
+  addition to OpenPGP.
 
-  GnuPG-2 is the stable version of GnuPG integrating support for
-  OpenPGP and S/MIME.  It does not conflict with an installed 1.4
-  OpenPGP-only version.
+  GnuPG is Free Software (meaning that it respects your freedom). It
+  can be freely used, modified and distributed under the terms of the
+  GNU General Public License.
+
+  We are currently maintaining three branches of GnuPG:
+
+  - 2.1 (i.e. this release) is the latest development with a lot of
+    new features.
+
+  - 2.0 is the current stable version for general use.
+
+  - 1.4 is the old standalone version which is most suitable for older
+    or embedded platforms.
+
+  You may not install 2.1 and 2.0 at the same time.  However, it is
+  possible to install 1.4 along with any of the 2.x versions.
 
 
 * BUILD INSTRUCTIONS
@@ -115,22 +126,15 @@
   exists and copies them to the new store.  The old secring.gpg is
   kept for use by older versions of gpg.
 
-  GPG's smartcard commands --card-edit and --card-status as well as some
-  of the card related sub-commands of --edit-key are not yet fully
-  supported.  However, signing and decryption with a smartcard does
-  work.
-
-  Note that gpg-agent now uses a fixed socket by default.  All tools
-  will start the gpg-agent as needed.  In general there is no more
-  need to set the GPG_AGENT_INFO environment variable.  The
-  SSH_AUTH_SOCK environment variable should be set to a fixed value.
+  Note that gpg-agent now uses a fixed socket.  All tools will start
+  the gpg-agent as needed.  The formerly used environment variable
+  GPG_AGENT_INFO is ignored by 2.1.  The SSH_AUTH_SOCK environment
+  variable should be set to a fixed value.
 
   The Dirmngr is now part of GnuPG proper and also used to access
-  OpenPGP keyservers.  The directroy layout of Dirmngr changed to make
+  OpenPGP keyservers.  The directory layout of Dirmngr changed to make
   use of the GnuPG directories.  Dirmngr is started by gpg or gpgsm as
-  needed needed. There is no more need to install a separate dirmngr
-  package.
-
+  needed. There is no more need to install a separate Dirmngr package.
 
 
 * DOCUMENTATION
@@ -203,10 +207,12 @@
 
   Commercial grade support for GnuPG is available; for a listing of
   offers see https://www.gnupg.org/service.html .  Maintaining and
-  improving GnuPG is costly.  Since 2001, g10 Code GmbH, a German
-  company owned and headed by GnuPG's principal author Werner Koch, is
-  bearing the majority of these costs.  To help them carry on this
-  work, they need your support.  See https://gnupg.org/donate/ .
+  improving GnuPG requires a lot of time.  Since 2001, g10 Code GmbH,
+  a German company owned and headed by GnuPG's principal author Werner
+  Koch, is bearing the majority of these costs.  To keep GnuPG in a
+  healthy state, they need your support.
+
+  Please consider to donate at https://gnupg.org/donate/ .
 
 
 # This file is Free Software; as a special exception the authors gives

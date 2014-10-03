@@ -76,8 +76,9 @@ EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
 CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     plain-1 plain-2 plain-3 trustdb.gpg *.lock .\#lk* \
 	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
-	     pubring.gpg secring.gpg pubring.pkr secring.skr \
-	     gnupg-test.stop pubring.gpg~ random_seed gpg-agent.log
+	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
+	     secring.gpg pubring.pkr secring.skr \
+	     gnupg-test.stop random_seed gpg-agent.log
 
 clean-local:
 	-rm -rf private-keys-v1.d openpgp-revocs.d
