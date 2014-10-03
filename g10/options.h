@@ -232,6 +232,7 @@ struct
     unsigned int dsa2:1;
     unsigned int allow_multiple_messages:1;
     unsigned int allow_weak_digest_algos:1;
+    unsigned int large_rsa:1;
   } flags;
 
   /* Linked list of ways to find a key if the key isn't on the local

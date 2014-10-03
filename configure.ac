@@ -83,6 +83,7 @@ use_exec=yes
 disable_keyserver_path=no
 use_ccid_driver=yes
 use_standard_socket=no
+large_secmem=no
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -173,6 +174,22 @@ AC_ARG_ENABLE(selinux-support,
                              [enable SELinux support]),
               selinux_support=$enableval, selinux_support=no)
 AC_MSG_RESULT($selinux_support)
+
+
+AC_MSG_CHECKING([whether to allocate extra secure memory])
+AC_ARG_ENABLE(large-secmem,
+              AC_HELP_STRING([--enable-large-secmem],
+                             [allocate extra secure memory]),
+              large_secmem=$enableval, large_secmem=no)
+AC_MSG_RESULT($large_secmem)
+if test "$large_secmem" = yes ; then
+   SECMEM_BUFFER_SIZE=65536
+else
+   SECMEM_BUFFER_SIZE=32768
+fi
+AC_DEFINE_UNQUOTED(SECMEM_BUFFER_SIZE,$SECMEM_BUFFER_SIZE,
+                   [Size of secure memory buffer])
+
 
 # Allow disabling of bzib2 support.
 # It is defined only after we confirm the library is available later

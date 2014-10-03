@@ -1192,6 +1192,15 @@ the opposite meaning. The options are:
   validation. This option is only meaningful if pka-lookups is set.
 @end table
 
+@item --enable-large-rsa
+@itemx --disable-large-rsa
+@opindex enable-large-rsa
+@opindex disable-large-rsa
+With --gen-key and --batch, enable the creation of larger RSA secret
+keys than is generally recommended (up to 8192 bits).  These large
+keys are more expensive to use, and their signatures and
+certifications are also larger.
+
 @item --enable-dsa2
 @itemx --disable-dsa2
 @opindex enable-dsa2
