@@ -754,10 +754,7 @@ gnupg_spawn_process_detached (const char *pgmname, const char *argv[],
   char *cmdline;
 
 
-  /* FIXME: We don't make use of ENVP yet.  It is currently only used
-     to pass the GPG_AGENT_INFO variable to gpg-agent.  As the default
-     on windows is to use a standard socket, this does not really
-     matter.  */
+  /* We don't use ENVP.  */
   (void)envp;
 
   if (access (pgmname, X_OK))

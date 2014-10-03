@@ -58,9 +58,6 @@ struct
   int batch;           /* Batch mode */
   const char *homedir; /* Configuration directory name */
 
-  /* True if we are listening on the standard socket.  */
-  int use_standard_socket;
-
   /* True if we handle sigusr2.  */
   int sigusr2_enabled;
 

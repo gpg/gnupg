@@ -2605,17 +2605,13 @@ cmd_updatestartuptty (assuan_context_t ctx, char *line)
 static const char hlp_killagent[] =
   "KILLAGENT\n"
   "\n"
-  "If the agent has been started using a standard socket\n"
-  "we allow a client to stop the agent.";
+  "Stop the agent.";
 static gpg_error_t
 cmd_killagent (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
 
   (void)line;
-
-  if (!opt.use_standard_socket)
-    return set_error (GPG_ERR_NOT_SUPPORTED, "no --use-standard-socket");
 
   ctrl->server_local->stopme = 1;
   assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);

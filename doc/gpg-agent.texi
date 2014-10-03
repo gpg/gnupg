@@ -53,10 +53,10 @@ independently from any protocol.  It is used as a backend for
 utilities.
 
 @ifset gpgtwoone
-The agent is usualy started on demand by @command{gpg}, @command{gpgsm},
-@command{gpgconf} or @command{gpg-connect-agent}.  Thus there is no
-reason to start it manually.  In case you want to use the included
-Secure Shell Agent you may start the agent using:
+The agent is automatically started on demand by @command{gpg},
+@command{gpgsm}, @command{gpgconf}, or @command{gpg-connect-agent}.
+Thus there is no reason to start it manually.  In case you want to use
+the included Secure Shell Agent you may start the agent using:
 
 @example
 gpg-connect-agent /bye
@@ -174,11 +174,15 @@ default mode is to create a socket and listen for commands there.
 @item --daemon [@var{command line}]
 @opindex daemon
 Start the gpg-agent as a daemon; that is, detach it from the console
-and run it in the background.  Because @command{gpg-agent} prints out
+and run it in the background.
+@ifclear gpgtwoone
+Because @command{gpg-agent} prints out
 important information required for further use, a common way of
 invoking gpg-agent is: @code{eval $(gpg-agent --daemon)} to setup the
 environment variables.  The option @option{--write-env-file} is
-another way commonly used to do this.  Yet another way is creating
+another way commonly used to do this.
+@end ifclear
+Yet another way is creating
 a new process as a child of gpg-agent: @code{gpg-agent --daemon
 /bin/sh}.  This way you get a new shell with the environment setup
 properly; if you exit from this shell, gpg-agent terminates as well.
@@ -305,6 +309,7 @@ shell or the C-shell respectively.  The default is to guess it based on
 the environment variable @code{SHELL} which is correct in almost all
 cases.
 
+@ifclear gpgtwoone
 @item --write-env-file @var{file}
 @opindex write-env-file
 Often it is required to connect to the agent from a process not being an
@@ -319,7 +324,7 @@ to be evaluated by a Bourne shell like in this simple example:
 eval $(cat @var{file})
 eval $(cut -d= -f 1 < @var{file} | xargs echo export)
 @end example
-
+@end ifclear
 
 
 @item --no-grab
@@ -466,6 +471,11 @@ debugging purposes.
 @itemx --no-use-standard-socket
 @opindex use-standard-socket
 @opindex no-use-standard-socket
+@ifset gpgtwoone
+Since GnuPG 2.1 the standard socket is always used.  These options
+have no more effect.
+@end ifset
+@ifclear gpgtwoone
 By enabling this option @command{gpg-agent} will listen on the socket
 named @file{S.gpg-agent}, located in the home directory, and not create
 a random socket below a temporary directory.  Tools connecting to
@@ -474,19 +484,16 @@ environment variable @var{GPG_AGENT_INFO} and then fall back to this
 socket.  This option may not be used if the home directory is mounted on
 a remote file system which does not support special files like fifos or
 sockets.
-@ifset gpgtwoone
-Note, that @option{--use-standard-socket} is the default on all
-systems since GnuPG 2.1.
-@end ifset
-@ifclear gpgtwoone
+
 Note, that @option{--use-standard-socket} is the default on
 Windows systems.
-@end ifclear
+
 The default may be changed at build time.  It is
 possible to test at runtime whether the agent has been configured for
 use with the standard socket by issuing the command @command{gpg-agent
 --use-standard-socket-p} which returns success if the standard socket
 option has been enabled.
+@end ifclear
 
 @item --display @var{string}
 @itemx --ttyname @var{string}
@@ -751,6 +758,30 @@ This signal is used for internal purposes.
 @node Agent Examples
 @section Examples
 
+@ifset gpgtwoone
+It is important to set the GPG_TTY environment variable in
+your login shell, for example in the @file{~/.bashrc} init script:
+
+@cartouche
+@example
+  export GPG_TTY=$(tty)
+@end example
+@end cartouche
+
+If you enabled the Ssh Agent Support, you also need to tell ssh about
+it by adding this to your init script:
+
+@cartouche
+@example
+unset SSH_AGENT_PID
+if [ "$@{gnupg_SSH_AUTH_SOCK_by:-0@}" -ne $$ ]; then
+  export SSH_AUTH_SOCK="$@{HOME@}/.gnupg/S.gpg-agent.ssh"
+fi
+@end example
+@end cartouche
+@end ifset
+
+@ifclear gpgtwoone
 The usual way to invoke @command{gpg-agent} is
 
 @example
@@ -786,6 +817,7 @@ and add something like (for Bourne shells)
 
 @noindent
 to your shell initialization file (e.g. @file{~/.bashrc}).
+@end ifclear
 
 @c
 @c  Assuan Protocol
@@ -797,15 +829,21 @@ to your shell initialization file (e.g. @file{~/.bashrc}).
 Note: this section does only document the protocol, which is used by
 GnuPG components; it does not deal with the ssh-agent protocol.
 
+@ifset gpgtwoone
+The @command{gpg-agent} daemon is started on demand by the GnuPG
+components.
+@end ifset
+@ifclear gpgtwoone
 The @command{gpg-agent} should be started by the login shell and set an
 environment variable to tell clients about the socket to be used.
 Clients should deny to access an agent with a socket name which does
 not match its own configuration.  An application may choose to start
-an instance of the gpgagent if it does not figure that any has been
-started; it should not do this if a gpgagent is running but not
+an instance of the gpg-agent if it does not figure that any has been
+started; it should not do this if a gpg-agent is running but not
 usable.  Because @command{gpg-agent} can only be used in background mode, no
 special command line option is required to activate the use of the
 protocol.
+@end ifclear
 
 To identify a key we use a thing called keygrip which is the SHA-1 hash
 of an canonical encoded S-Expression of the public key as used in

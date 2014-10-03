@@ -206,9 +206,8 @@ static int ticker_disabled;
 
 
 
-static char *create_socket_name (int use_standard_socket,
-                                 char *standard_name, char *template);
-static gnupg_fd_t create_server_socket (int is_standard_name, const char *name,
+static char *create_socket_name (char *standard_name);
+static gnupg_fd_t create_server_socket (const char *name,
                                         assuan_sock_nonce_t *nonce);
 
 static void *start_connection_thread (void *arg);
@@ -399,7 +398,6 @@ main (int argc, char **argv )
   int gpgconf_list = 0;
   const char *config_filename = NULL;
   int allow_coredump = 0;
-  int standard_socket = 0;
   struct assuan_malloc_hooks malloc_hooks;
   int res;
   npth_t pipecon_handler;
@@ -444,12 +442,6 @@ main (int argc, char **argv )
   /* Set default options. */
   opt.allow_admin = 1;
   opt.pcsc_driver = DEFAULT_PCSC_DRIVER;
-
-#ifdef HAVE_W32_SYSTEM
-  standard_socket = 1;  /* Under Windows we always use a standard
-                           socket.  */
-#endif
-
 
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
@@ -744,12 +736,8 @@ main (int argc, char **argv )
          back the name of that socket. */
       if (multi_server)
         {
-          socket_name = create_socket_name (standard_socket,
-                                            SCDAEMON_SOCK_NAME,
-                                            "gpg-XXXXXX/" SCDAEMON_SOCK_NAME);
-
-          fd = FD2INT(create_server_socket (standard_socket,
-                                            socket_name, &socket_nonce));
+          socket_name = create_socket_name (SCDAEMON_SOCK_NAME);
+          fd = FD2INT(create_server_socket (socket_name, &socket_nonce));
         }
 
       res = npth_attr_init (&tattr);
@@ -800,12 +788,8 @@ main (int argc, char **argv )
 #endif
 
       /* Create the socket.  */
-      socket_name = create_socket_name (standard_socket,
-                                        SCDAEMON_SOCK_NAME,
-                                        "gpg-XXXXXX/" SCDAEMON_SOCK_NAME);
-
-      fd = FD2INT (create_server_socket (standard_socket,
-                                         socket_name, &socket_nonce));
+      socket_name = create_socket_name (SCDAEMON_SOCK_NAME);
+      fd = FD2INT (create_server_socket (socket_name, &socket_nonce));
 
 
       fflush (NULL);
@@ -1026,46 +1010,17 @@ handle_tick (void)
 }
 
 
-/* Create a name for the socket.  With USE_STANDARD_SOCKET given as
-   true using STANDARD_NAME in the home directory or if given has
-   false from the mkdir type name TEMPLATE.  In the latter case a
-   unique name in a unique new directory will be created.  In both
-   cases check for valid characters as well as against a maximum
-   allowed length for a unix domain socket is done.  The function
-   terminates the process in case of an error.  Retunrs: Pointer to an
-   allcoated string with the absolute name of the socket used.  */
+/* Create a name for the socket.  We check for valid characters as
+   well as against a maximum allowed length for a unix domain socket
+   is done.  The function terminates the process in case of an error.
+   Retunrs: Pointer to an allcoated string with the absolute name of
+   the socket used.  */
 static char *
-create_socket_name (int use_standard_socket,
-		    char *standard_name, char *template)
+create_socket_name (char *standard_name)
 {
-  char *name, *p;
+  char *name;
 
-  if (use_standard_socket)
-    name = make_filename (opt.homedir, standard_name, NULL);
-  else
-    {
-      /* Prepend the tmp directory to the template.  */
-      p = getenv ("TMPDIR");
-      if (!p || !*p)
-        p = "/tmp";
-      if (p[strlen (p) - 1] == '/')
-        name = xstrconcat (p, template, NULL);
-      else
-        name = xstrconcat (p, "/", template, NULL);
-
-      p = strrchr (name, '/');
-      if (!p)
-	BUG ();
-      *p = 0;
-      if (!mkdtemp (name))
-	{
-	  log_error (_("can't create directory '%s': %s\n"),
-		     name, strerror (errno));
-	  scd_exit (2);
-	}
-      *p = '/';
-    }
-
+  name = make_filename (opt.homedir, standard_name, NULL);
   if (strchr (name, PATHSEP_C))
     {
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
@@ -1081,12 +1036,10 @@ create_socket_name (int use_standard_socket,
 
 
 
-/* Create a Unix domain socket with NAME.  IS_STANDARD_NAME indicates
-   whether a non-random socket is used.  Returns the file descriptor
+/* Create a Unix domain socket with NAME.  Returns the file descriptor
    or terminates the process in case of an error. */
 static gnupg_fd_t
-create_server_socket (int is_standard_name, const char *name,
-                      assuan_sock_nonce_t *nonce)
+create_server_socket (const char *name, assuan_sock_nonce_t *nonce)
 {
   struct sockaddr_un *serv_addr;
   socklen_t len;
@@ -1108,7 +1061,7 @@ create_server_socket (int is_standard_name, const char *name,
   len = SUN_LEN (serv_addr);
 
   rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
-  if (is_standard_name && rc == -1 && errno == EADDRINUSE)
+  if (rc == -1 && errno == EADDRINUSE)
     {
       remove (name);
       rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);

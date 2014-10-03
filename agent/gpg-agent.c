@@ -1,7 +1,7 @@
 /* gpg-agent.c  -  The GnuPG Agent
  * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009,
  *               2010 Free Software Foundation, Inc.
- * Copyright (C) 2013 Werner Koch
+ * Copyright (C) 2013, 2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -152,9 +152,8 @@ static ARGPARSE_OPTS opts[] = {
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
-  { oUseStandardSocket, "use-standard-socket", 0,
-                      N_("use a standard location for the socket")},
-  { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"},
+  { oUseStandardSocket, "use-standard-socket", 0, "@"},      /* dummy */
+  { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"}, /* dummy */
   { oPinentryProgram, "pinentry-program", 2 ,
                                N_("|PGM|use PGM as the PIN-Entry program") },
   { oPinentryTouchFile, "pinentry-touch-file", 2 , "@" },
@@ -207,8 +206,7 @@ static ARGPARSE_OPTS opts[] = {
       "@"
 #endif
   },
-  { oWriteEnvFile, "write-env-file", 2|8,
-            N_("|FILE|write environment settings also to FILE")},
+  { oWriteEnvFile, "write-env-file", 2|8, "@" }, /* dummy */
   {0}
 };
 
@@ -314,7 +312,7 @@ static int active_connections;
    Local prototypes.
  */
 
-static char *create_socket_name (char *standard_name, char *template);
+static char *create_socket_name (char *standard_name);
 static gnupg_fd_t create_server_socket (char *name, int is_ssh,
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
@@ -325,7 +323,7 @@ static void agent_deinit_default_ctrl (ctrl_t ctrl);
 static void handle_connections (gnupg_fd_t listen_fd,
                                 gnupg_fd_t listen_fd_ssh);
 static void check_own_socket (void);
-static int check_for_running_agent (int silent, int mode);
+static int check_for_running_agent (int silent);
 
 /* Pth wrapper function definitions. */
 ASSUAN_SYSTEM_NPTH_IMPL;
@@ -620,7 +618,6 @@ main (int argc, char **argv )
   int debug_wait = 0;
   int gpgconf_list = 0;
   gpg_error_t err;
-  const char *env_file_name = NULL;
   struct assuan_malloc_hooks malloc_hooks;
 
   /* Before we do anything else we save the list of currently open
@@ -670,9 +667,6 @@ main (int argc, char **argv )
 
   /* Set default options.  */
   parse_rereadable_options (NULL, 0); /* Reset them to default values. */
-#ifdef USE_STANDARD_SOCKET
-  opt.use_standard_socket = 1;
-#endif
 
   shell = getenv ("SHELL");
   if (shell && strlen (shell) >= 3 && !strcmp (shell+strlen (shell)-3, "csh") )
@@ -830,8 +824,8 @@ main (int argc, char **argv )
         case oXauthority: default_xauthority = xstrdup (pargs.r.ret_str);
           break;
 
-        case oUseStandardSocket:   opt.use_standard_socket = 1; break;
-        case oNoUseStandardSocket: opt.use_standard_socket = 0; break;
+        case oUseStandardSocket:   /* dummy */ break;
+        case oNoUseStandardSocket: /* dummy */ break;
 
         case oFakedSystemTime:
           {
@@ -853,12 +847,7 @@ main (int argc, char **argv )
 #        endif
           break;
 
-        case oWriteEnvFile:
-          if (pargs.r_type)
-            env_file_name = pargs.r.ret_str;
-          else
-            env_file_name = make_filename ("~/.gpg-agent-info", NULL);
-          break;
+        case oWriteEnvFile: /* dummy */ break;
 
         default : pargs.err = configfp? 1:2; break;
 	}
@@ -914,7 +903,7 @@ main (int argc, char **argv )
         print the status directly to stderr. */
       opt.debug = 0;
       set_debug ();
-      check_for_running_agent (0, 0);
+      check_for_running_agent (0);
       agent_exit (0);
     }
 
@@ -945,9 +934,9 @@ main (int argc, char **argv )
 
   if (gpgconf_list == 3)
     {
-      if (opt.use_standard_socket && !opt.quiet)
-        log_info ("configured to use the standard socket\n");
-      agent_exit (!opt.use_standard_socket);
+      /* We now use the standard socket always - return true for
+         backward compatibility.  */
+      agent_exit (0);
     }
   else if (gpgconf_list == 2)
     agent_exit (0);
@@ -1077,14 +1066,11 @@ main (int argc, char **argv )
 
 
       /* Create the sockets.  */
-      socket_name = create_socket_name
-        (GPG_AGENT_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SOCK_NAME);
-
+      socket_name = create_socket_name (GPG_AGENT_SOCK_NAME);
       fd = create_server_socket (socket_name, 0, &socket_nonce);
       if (opt.ssh_support)
         {
-          socket_name_ssh = create_socket_name
-            (GPG_AGENT_SSH_SOCK_NAME, "gpg-XXXXXX/"GPG_AGENT_SSH_SOCK_NAME);
+          socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME);
           fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
         }
       else
@@ -1100,10 +1086,7 @@ main (int argc, char **argv )
 #ifdef HAVE_W32_SYSTEM
       (void)csh_style;
       (void)nodetach;
-      (void)env_file_name;
       pid = getpid ();
-      es_printf ("set %s=%s;%lu;1\n",
-                 GPG_AGENT_INFO_NAME, socket_name, (ulong)pid);
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1)
@@ -1113,7 +1096,7 @@ main (int argc, char **argv )
         }
       else if (pid)
         { /* We are the parent */
-          char *infostr, *infostr_ssh_sock, *infostr_ssh_valid;
+          char *infostr_ssh_sock, *infostr_ssh_valid;
 
           /* Close the socket FD. */
           close (fd);
@@ -1133,14 +1116,7 @@ main (int argc, char **argv )
             log_info ("no saved signal mask\n");
 #endif /*HAVE_SIGPROCMASK*/
 
-          /* Create the info string: <name>:<pid>:<protocol_version> */
-          if (asprintf (&infostr, "%s=%s:%lu:1",
-                        GPG_AGENT_INFO_NAME, socket_name, (ulong)pid ) < 0)
-            {
-              log_error ("out of core\n");
-              kill (pid, SIGTERM);
-              exit (1);
-            }
+          /* Create the SSH info string if enabled. */
 	  if (opt.ssh_support)
 	    {
 	      if (asprintf (&infostr_ssh_sock, "SSH_AUTH_SOCK=%s",
@@ -1164,37 +1140,8 @@ main (int argc, char **argv )
 	  if (opt.ssh_support)
 	    *socket_name_ssh = 0;
 
-          if (env_file_name)
-            {
-              estream_t fp;
-
-              fp = es_fopen (env_file_name, "w,mode=-rw");
-              if (!fp)
-                log_error (_("error creating '%s': %s\n"),
-                             env_file_name, strerror (errno));
-              else
-                {
-                  es_fputs (infostr, fp);
-                  es_putc ('\n', fp);
-                  if (opt.ssh_support)
-                    {
-                      es_fputs (infostr_ssh_sock, fp);
-                      es_putc ('\n', fp);
-                    }
-                  es_fclose (fp);
-                }
-            }
-
-
           if (argc)
             { /* Run the program given on the commandline.  */
-              if (putenv (infostr))
-                {
-                  log_error ("failed to set environment: %s\n",
-                             strerror (errno) );
-                  kill (pid, SIGTERM );
-                  exit (1);
-                }
               if (opt.ssh_support && (putenv (infostr_ssh_sock)
                                       || putenv (infostr_ssh_valid)))
                 {
@@ -1222,8 +1169,6 @@ main (int argc, char **argv )
                  shell's eval to set it */
               if (csh_style)
                 {
-                  *strchr (infostr, '=') = ' ';
-                  es_printf ("setenv %s;\n", infostr);
 		  if (opt.ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
@@ -1232,14 +1177,12 @@ main (int argc, char **argv )
                 }
               else
                 {
-                  es_printf ( "%s; export %s;\n", infostr, GPG_AGENT_INFO_NAME);
 		  if (opt.ssh_support)
 		    {
 		      es_printf ("%s; export SSH_AUTH_SOCK;\n",
                                  infostr_ssh_sock);
 		    }
                 }
-              xfree (infostr);
 	      if (opt.ssh_support)
 		{
 		  xfree (infostr_ssh_sock);
@@ -1496,45 +1439,18 @@ get_agent_scd_notify_event (void)
 
 
 
-/* Create a name for the socket.  With USE_STANDARD_SOCKET given as
-   true using STANDARD_NAME in the home directory or if given as
-   false from the mkdir type name TEMPLATE.  In the latter case a
-   unique name in a unique new directory will be created.  In both
-   cases check for valid characters as well as against a maximum
-   allowed length for a unix domain socket is done.  The function
-   terminates the process in case of an error.  Returns: Pointer to an
-   allocated string with the absolute name of the socket used.  */
+/* Create a name for the socket in the home directory as using
+   STANDARD_NAME.  We also check for valid characters as well as
+   against a maximum allowed length for a unix domain socket is done.
+   The function terminates the process in case of an error.  Returns:
+   Pointer to an allocated string with the absolute name of the socket
+   used.  */
 static char *
-create_socket_name (char *standard_name, char *template)
+create_socket_name (char *standard_name)
 {
-  char *name, *p;
+  char *name;
 
-  if (opt.use_standard_socket)
-    name = make_filename (opt.homedir, standard_name, NULL);
-  else
-    {
-      /* Prepend the tmp directory to the template.  */
-      p = getenv ("TMPDIR");
-      if (!p || !*p)
-        p = "/tmp";
-      if (p[strlen (p) - 1] == '/')
-        name = xstrconcat (p, template, NULL);
-      else
-        name = xstrconcat (p, "/", template, NULL);
-
-      p = strrchr (name, '/');
-      if (!p)
-	BUG ();
-      *p = 0;
-      if (!mkdtemp (name))
-	{
-	  log_error (_("can't create directory '%s': %s\n"),
-		     name, strerror (errno));
-	  agent_exit (2);
-	}
-      *p = '/';
-    }
-
+  name = make_filename (opt.homedir, standard_name, NULL);
   if (strchr (name, PATHSEP_C))
     {
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
@@ -1583,22 +1499,22 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
 
   /* Our error code mapping on W32CE returns EEXIST thus we also test
      for this. */
-  if (opt.use_standard_socket && rc == -1
+  if (rc == -1
       && (errno == EADDRINUSE
 #ifdef HAVE_W32_SYSTEM
           || errno == EEXIST
 #endif
           ))
     {
-      /* Check whether a gpg-agent is already running on the standard
-         socket.  We do this test only if this is not the ssh socket.
+      /* Check whether a gpg-agent is already running.
+         We do this test only if this is not the ssh socket.
          For ssh we assume that a test for gpg-agent has already been
          done and reuse the requested ssh socket.  Testing the
          ssh-socket is not possible because at this point, though we
          know the new Assuan socket, the Assuan server and thus the
          ssh-agent server is not yet operational.  This would lead to
          a hang.  */
-      if (!is_ssh && !check_for_running_agent (1, 1))
+      if (!is_ssh && !check_for_running_agent (1))
         {
           log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX);
           log_set_file (NULL);
@@ -1623,8 +1539,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
                  gpg_strerror (gpg_error_from_errno (errno)));
 
       assuan_sock_close (fd);
-      if (opt.use_standard_socket)
-        *name = 0; /* Inhibit removal of the socket by cleanup(). */
+      *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
 
@@ -2429,9 +2344,6 @@ check_own_socket (void)
   if (disable_check_own_socket)
     return;
 
-  if (!opt.use_standard_socket)
-    return; /* This check makes only sense in standard socket mode.  */
-
   if (check_own_socket_running || shutdown_pending)
     return;  /* Still running or already shutting down.  */
 
@@ -2452,73 +2364,25 @@ check_own_socket (void)
 
 
 /* Figure out whether an agent is available and running. Prints an
-   error if not.  If SILENT is true, no messages are printed.  Usually
-   started with MODE 0.  Returns 0 if the agent is running. */
+   error if not.  If SILENT is true, no messages are printed.
+   Returns 0 if the agent is running. */
 static int
-check_for_running_agent (int silent, int mode)
+check_for_running_agent (int silent)
 {
-  int rc;
-  char *infostr, *p;
+  gpg_error_t err;
+  char *sockname;
   assuan_context_t ctx = NULL;
-  int prot, pid;
 
-  if (!mode)
+  sockname = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
+
+  err = assuan_new (&ctx);
+  if (!err)
+    err = assuan_socket_connect (ctx, sockname, (pid_t)(-1), 0);
+  xfree (sockname);
+  if (err)
     {
-      infostr = getenv (GPG_AGENT_INFO_NAME);
-      if (!infostr || !*infostr)
-        {
-          if (!check_for_running_agent (silent, 1))
-            return 0; /* Okay, its running on the standard socket. */
-          if (!silent)
-            log_error (_("no gpg-agent running in this session\n"));
-          return -1;
-        }
-
-      infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
-        {
-          xfree (infostr);
-          if (!check_for_running_agent (silent, 1))
-            return 0; /* Okay, its running on the standard socket. */
-          if (!silent)
-            log_error (_("malformed %s environment variable\n"),
-                       GPG_AGENT_INFO_NAME);
-          return -1;
-        }
-
-      *p++ = 0;
-      pid = atoi (p);
-      while (*p && *p != PATHSEP_C)
-        p++;
-      prot = *p? atoi (p+1) : 0;
-      if (prot != 1)
-        {
-          xfree (infostr);
-          if (!silent)
-            log_error (_("gpg-agent protocol version %d is not supported\n"),
-                       prot);
-          if (!check_for_running_agent (silent, 1))
-            return 0; /* Okay, its running on the standard socket. */
-          return -1;
-        }
-    }
-  else /* MODE != 0 */
-    {
-      infostr = make_filename (opt.homedir, GPG_AGENT_SOCK_NAME, NULL);
-      pid = (pid_t)(-1);
-    }
-
-  rc = assuan_new (&ctx);
-  if (! rc)
-    rc = assuan_socket_connect (ctx, infostr, pid, 0);
-  xfree (infostr);
-  if (rc)
-    {
-      if (!mode && !check_for_running_agent (silent, 1))
-        return 0; /* Okay, its running on the standard socket. */
-
-      if (!mode && !silent)
-        log_error ("can't connect to the agent: %s\n", gpg_strerror (rc));
+      if (!silent)
+        log_error (_("no gpg-agent running in this session\n"));
 
       if (ctx)
 	assuan_release (ctx);

@@ -366,28 +366,10 @@ main (int argc, char **argv)
         }
 
       {
-        char *infostr = getenv (GPG_AGENT_INFO_NAME);
-
-        if (!infostr || !*infostr)
-          infostr = make_filename (default_homedir (),
+        char *tmp = make_filename (default_homedir (),
                                    GPG_AGENT_SOCK_NAME, NULL);
-        else
-          {
-            char *tmp;
-
-            infostr = xstrdup (infostr);
-            tmp = strchr (infostr, PATHSEP_C);
-            if (!tmp || tmp == infostr)
-              {
-                xfree (infostr);
-                infostr = NULL;
-              }
-            else
-              *tmp = 0;
-          }
-        es_fprintf (outfp, "agent-socket:%s\n",
-                    infostr? gc_percent_escape (infostr) : "");
-        xfree (infostr);
+        es_fprintf (outfp, "agent-socket:%s\n", gc_percent_escape (tmp));
+        xfree (tmp);
       }
       {
         /* We need to use make_filename to expand a possible "~/".  */

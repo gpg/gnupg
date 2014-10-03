@@ -359,14 +359,11 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg)
 {
-  /* If we ever failed to connect via a socket we will force the use
-     of the pipe based server for the lifetime of the process.  */
-  static int force_pipe_server = 0;
-
-  gpg_error_t err = 0;
-  char *infostr, *p;
+  gpg_error_t err;
   assuan_context_t ctx;
   int did_success_msg = 0;
+  char *sockname;
+  const char *argv[5];
 
   *r_ctx = NULL;
 
@@ -377,200 +374,96 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
       return err;
     }
 
- restart:
-  infostr = force_pipe_server? NULL : getenv (GPG_AGENT_INFO_NAME);
-  if (!infostr || !*infostr)
+  sockname = make_absfilename (homedir, GPG_AGENT_SOCK_NAME, NULL);
+  err = assuan_socket_connect (ctx, sockname, 0, 0);
+  if (err)
     {
-      char *sockname;
-      const char *argv[5];
-      pid_t pid;
-      int excode;
+      char *abs_homedir;
+      lock_spawn_t lock;
 
-      /* First check whether we can connect at the standard
-         socket.  */
-      sockname = make_absfilename (homedir, GPG_AGENT_SOCK_NAME, NULL);
-      err = assuan_socket_connect (ctx, sockname, 0, 0);
+      /* With no success start a new server.  */
+      if (!agent_program || !*agent_program)
+        agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
 
-      if (err)
+      if (verbose)
+        log_info (_("no running gpg-agent - starting '%s'\n"),
+                  agent_program);
+
+      if (status_cb)
+        status_cb (status_cb_arg, STATUS_PROGRESS,
+                   "starting_agent ? 0 0", NULL);
+
+      /* We better pass an absolute home directory to the agent just
+         in case gpg-agent does not convert the passed name to an
+         absolute one (which it should do).  */
+      abs_homedir = make_absfilename_try (homedir, NULL);
+      if (!abs_homedir)
         {
-          char *abs_homedir;
+          gpg_error_t tmperr = gpg_err_make (errsource,
+                                             gpg_err_code_from_syserror ());
+          log_error ("error building filename: %s\n",gpg_strerror (tmperr));
+          xfree (sockname);
+          assuan_release (ctx);
+          return tmperr;
+        }
 
-          /* With no success start a new server.  */
-          if (!agent_program || !*agent_program)
-            agent_program = gnupg_module_name (GNUPG_MODULE_NAME_AGENT);
+      if (fflush (NULL))
+        {
+          gpg_error_t tmperr = gpg_err_make (errsource,
+                                             gpg_err_code_from_syserror ());
+          log_error ("error flushing pending output: %s\n",
+                     strerror (errno));
+          xfree (sockname);
+          assuan_release (ctx);
+          xfree (abs_homedir);
+          return tmperr;
+        }
 
-          if (verbose)
-            log_info (_("no running gpg-agent - starting '%s'\n"),
-                      agent_program);
+      /* If the agent has been configured for use with a standard
+         socket, an environment variable is not required and thus
+         we we can savely start the agent here.  */
 
-          if (status_cb)
-            status_cb (status_cb_arg, STATUS_PROGRESS,
-                       "starting_agent ? 0 0", NULL);
+      argv[0] = "--homedir";
+      argv[1] = abs_homedir;
+      argv[2] = "--use-standard-socket";
+      argv[3] = "--daemon";
+      argv[4] = NULL;
 
-          /* We better pass an absolute home directory to the agent
-             just in casee gpg-agent does not convert the passed name
-             to an absolute one (which it should do).  */
-          abs_homedir = make_absfilename_try (homedir, NULL);
-          if (!abs_homedir)
-            {
-              gpg_error_t tmperr = gpg_err_make (errsource,
-                                                 gpg_err_code_from_syserror ());
-              log_error ("error building filename: %s\n",gpg_strerror (tmperr));
-              xfree (sockname);
-	      assuan_release (ctx);
-              return tmperr;
-            }
-
-          if (fflush (NULL))
-            {
-              gpg_error_t tmperr = gpg_err_make (errsource,
-                                                 gpg_err_code_from_syserror ());
-              log_error ("error flushing pending output: %s\n",
-                         strerror (errno));
-              xfree (sockname);
-	      assuan_release (ctx);
-              xfree (abs_homedir);
-              return tmperr;
-            }
-
-          argv[0] = "--homedir";
-          argv[1] = abs_homedir;
-          argv[2] = "--use-standard-socket-p";
-          argv[3] = NULL;
-          err = gnupg_spawn_process_fd (agent_program, argv, -1, -1, -1, &pid);
+      if (!(err = lock_spawning (&lock, homedir, "agent", verbose))
+          && assuan_socket_connect (ctx, sockname, 0, 0))
+        {
+          err = gnupg_spawn_process_detached (agent_program, argv,NULL);
           if (err)
-            log_debug ("starting '%s' for testing failed: %s\n",
+            log_error ("failed to start agent '%s': %s\n",
                        agent_program, gpg_strerror (err));
-          else if ((err = gnupg_wait_process (agent_program, pid, 1, &excode)))
-            {
-              if (excode == -1)
-                log_debug ("running '%s' for testing failed (wait): %s\n",
-                           agent_program, gpg_strerror (err));
-            }
-          gnupg_release_process (pid);
-
-          if (!err && !excode)
-            {
-              /* If the agent has been configured for use with a
-                 standard socket, an environment variable is not
-                 required and thus we we can savely start the agent
-                 here.  */
-              lock_spawn_t lock;
-
-              argv[0] = "--homedir";
-              argv[1] = abs_homedir;
-              argv[2] = "--use-standard-socket";
-              argv[3] = "--daemon";
-              argv[4] = NULL;
-
-              if (!(err = lock_spawning (&lock, homedir, "agent", verbose))
-                  && assuan_socket_connect (ctx, sockname, 0, 0))
-                {
-                  err = gnupg_spawn_process_detached (agent_program, argv,NULL);
-                  if (err)
-                    log_error ("failed to start agent '%s': %s\n",
-                               agent_program, gpg_strerror (err));
-                  else
-                    {
-                      int i;
-
-                      for (i=0; i < SECS_TO_WAIT_FOR_AGENT; i++)
-                        {
-                          if (verbose)
-                            log_info (_("waiting for the agent "
-                                        "to come up ... (%ds)\n"),
-                                      SECS_TO_WAIT_FOR_AGENT - i);
-                          gnupg_sleep (1);
-                          err = assuan_socket_connect (ctx, sockname, 0, 0);
-                          if (!err)
-                            {
-                              if (verbose)
-                                {
-                                  log_info (_("connection to agent "
-                                              "established\n"));
-                                  did_success_msg = 1;
-                                }
-                              break;
-                            }
-                        }
-                    }
-                }
-
-              unlock_spawning (&lock, "agent");
-            }
           else
             {
-              /* If using the standard socket is not the default we
-                 start the agent as a pipe server which gives us most
-                 of the required features except for passphrase
-                 caching etc.  */
-              const char *pgmname;
-              assuan_fd_t no_close_list[3];
               int i;
 
-              if ( !(pgmname = strrchr (agent_program, '/')))
-                pgmname = agent_program;
-              else
-                pgmname++;
-
-              argv[0] = pgmname;   /* (Assuan expects a standard argv.)  */
-              argv[1] = "--homedir";
-              argv[2] = abs_homedir;
-              argv[3] = "--server";
-              argv[4] = NULL;
-
-              i=0;
-              if (log_get_fd () != -1)
-                no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
-              no_close_list[i++] = assuan_fd_from_posix_fd (fileno (stderr));
-              no_close_list[i] = ASSUAN_INVALID_FD;
-
-              /* Connect to the agent and perform initial handshaking. */
-              err = assuan_pipe_connect (ctx, agent_program, argv,
-                                         no_close_list, NULL, NULL, 0);
+              for (i=0; i < SECS_TO_WAIT_FOR_AGENT; i++)
+                {
+                  if (verbose)
+                    log_info (_("waiting for the agent to come up ... (%ds)\n"),
+                              SECS_TO_WAIT_FOR_AGENT - i);
+                  gnupg_sleep (1);
+                  err = assuan_socket_connect (ctx, sockname, 0, 0);
+                  if (!err)
+                    {
+                      if (verbose)
+                        {
+                          log_info (_("connection to agent established\n"));
+                          did_success_msg = 1;
+                        }
+                      break;
+                    }
+                }
             }
-          xfree (abs_homedir);
         }
-      xfree (sockname);
+
+      unlock_spawning (&lock, "agent");
+      xfree (abs_homedir);
     }
-  else
-    {
-      int prot;
-      int pid;
-
-      infostr = xstrdup (infostr);
-      if ( !(p = strchr (infostr, PATHSEP_C)) || p == infostr)
-        {
-          log_error (_("malformed %s environment variable\n"),
-                     GPG_AGENT_INFO_NAME);
-          xfree (infostr);
-          force_pipe_server = 1;
-          goto restart;
-        }
-      *p++ = 0;
-      pid = atoi (p);
-      while (*p && *p != PATHSEP_C)
-        p++;
-      prot = *p? atoi (p+1) : 0;
-      if (prot != 1)
-        {
-          log_error (_("gpg-agent protocol version %d is not supported\n"),
-                     prot);
-          xfree (infostr);
-          force_pipe_server = 1;
-          goto restart;
-        }
-
-      err = assuan_socket_connect (ctx, infostr, pid, 0);
-      xfree (infostr);
-      if (gpg_err_code (err) == GPG_ERR_ASS_CONNECT_FAILED)
-        {
-          log_info (_("can't connect to the agent - trying fall back\n"));
-          force_pipe_server = 1;
-          goto restart;
-        }
-    }
-
+  xfree (sockname);
   if (err)
     {
       log_error ("can't connect to the agent: %s\n", gpg_strerror (err));
@@ -582,11 +475,11 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
     log_debug (_("connection to agent established\n"));
 
   err = assuan_transact (ctx, "RESET",
-                        NULL, NULL, NULL, NULL, NULL, NULL);
+                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (!err)
     err = send_pinentry_environment (ctx, errsource,
-                                    opt_lc_ctype, opt_lc_messages,
-                                    session_env);
+                                     opt_lc_ctype, opt_lc_messages,
+                                     session_env);
   if (err)
     {
       assuan_release (ctx);

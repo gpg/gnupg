@@ -358,9 +358,12 @@ Change the default name of the policy file to @var{filename}.
 @item --agent-program @var{file}
 @opindex agent-program
 Specify an agent program to be used for secret key operations.  The
-default value is the @file{/usr/local/bin/gpg-agent}.  This is only used
+default value is the @file{/usr/local/bin/gpg-agent}.
+@ifclear gpgtwoone
+This is only used
 as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
 set or a running agent cannot be connected.
+@end ifclear
 
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
@@ -892,8 +895,12 @@ other programs of this software too.
 
 @item S.gpg-agent
 @cindex S.gpg-agent
-If this file exists and the environment variable @env{GPG_AGENT_INFO} is
-not set, @command{gpgsm} will first try to connect to this socket for
+If this file exists
+@ifclear gpgtwoone
+and the environment variable @env{GPG_AGENT_INFO} is
+not set,
+@end ifclear
+@command{gpgsm} will first try to connect to this socket for
 accessing @command{gpg-agent} before starting a new @command{gpg-agent}
 instance.  Under Windows this socket (which in reality be a plain file
 describing a regular TCP listening port) is the standard way of

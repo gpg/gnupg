@@ -104,7 +104,6 @@ use_exec=yes
 use_trust_models=yes
 card_support=yes
 use_ccid_driver=yes
-use_standard_socket=yes
 dirmngr_auto_start=yes
 use_tls_library=no
 
@@ -705,30 +704,6 @@ if test "$use_ldapwrapper" = yes; then
    AC_DEFINE(USE_LDAPWRAPPER,1, [Build dirmngr with LDAP wrapper process])
 fi
 AM_CONDITIONAL(USE_LDAPWRAPPER, test "$use_ldapwrapper" = yes)
-
-
-#
-# Allows enabling the use of a standard socket by default This is
-# gpg-agent's option --[no-]use-standard-socket.  For Windows we force
-# the use of this.
-#
-AC_MSG_CHECKING([whether to use a standard socket by default])
-AC_ARG_ENABLE(standard-socket,
-              AC_HELP_STRING([--disable-standard-socket],
-                             [don't use a standard socket by default]),
-              use_standard_socket=$enableval)
-tmp=""
-if test "$use_standard_socket" != yes; then
-  if test "$have_w32_system" = yes; then
-    use_standard_socket=yes
-    tmp=" (forced)"
-  fi
-fi
-AC_MSG_RESULT($use_standard_socket$tmp)
-if test "$use_standard_socket" = yes; then
-  AC_DEFINE(USE_STANDARD_SOCKET,1,
-            [Use the standard socket for the agent by default])
-fi
 
 
 # (These need to go after AC_PROG_CC so that $EXEEXT is defined)
@@ -1615,8 +1590,6 @@ AC_DEFINE_UNQUOTED(GPGCONF_DISP_NAME, "GPGConf",
 
 AC_DEFINE_UNQUOTED(GPGTAR_NAME, "gpgtar", [The name of the gpgtar tool])
 
-AC_DEFINE_UNQUOTED(GPG_AGENT_INFO_NAME, "GPG_AGENT_INFO",
-                   [The name of the agent info envvar])
 AC_DEFINE_UNQUOTED(GPG_AGENT_SOCK_NAME, "S.gpg-agent",
                    [The name of the agent socket])
 AC_DEFINE_UNQUOTED(GPG_AGENT_SSH_SOCK_NAME, "S.gpg-agent.ssh",
@@ -1802,7 +1775,6 @@ echo "
         Default scdaemon:  $show_gnupg_scdaemon_pgm
         Default dirmngr:   $show_gnupg_dirmngr_pgm
 
-        Use standard socket: $use_standard_socket
         Dirmngr auto start:  $dirmngr_auto_start
         Readline support:    $gnupg_cv_have_readline
         DNS SRV support:     $use_dns_srv

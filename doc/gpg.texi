@@ -1701,9 +1701,12 @@ This is dummy option. It has no effect when used with @command{gpg2}.
 @item --agent-program @var{file}
 @opindex agent-program
 Specify an agent program to be used for secret key operations.  The
-default value is the @file{/usr/bin/gpg-agent}.  This is only used
+default value is the @file{/usr/bin/gpg-agent}.
+@ifclear gpgtwoone
+This is only used
 as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
 set or a running agent cannot be connected.
+@end ifclear
 
 @ifset gpgtwoone
 @item --dirmngr-program @var{file}
@@ -3040,6 +3043,10 @@ Operation is further controlled by a few environment variables:
   If set directory used instead of "~/.gnupg".
 
   @item GPG_AGENT_INFO
+@ifset gpgtwoone
+  This variable was used by GnuPG versions before 2.1
+@end ifset
+@ifclear gpgtwoone
   Used to locate the gpg-agent.
 
   The value consists of 3 colon delimited fields: The first is the path
@@ -3047,6 +3054,7 @@ Operation is further controlled by a few environment variables:
   protocol version which should be set to 1. When starting the gpg-agent
   as described in its documentation, this variable is set to the correct
   value. The option @option{--gpg-agent-info} can be used to override it.
+@end ifclear
 
   @item PINENTRY_USER_DATA
   This value is passed via gpg-agent to pinentry.  It is useful to convey

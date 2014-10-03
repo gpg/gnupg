@@ -728,15 +728,12 @@ gpg_server (ctrl_t ctrl)
   if (opt.verbose || opt.debug)
     {
       char *tmp = NULL;
-      const char *s1 = getenv (GPG_AGENT_INFO_NAME);
 
       tmp = xtryasprintf ("Home: %s\n"
                           "Config: %s\n"
-                          "AgentInfo: %s\n"
                           "%s",
                           opt.homedir,
                           "fixme: need config filename",
-                          s1?s1:"[not set]",
                           hello);
       if (tmp)
         {

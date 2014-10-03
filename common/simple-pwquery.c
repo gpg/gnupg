@@ -69,10 +69,9 @@
 #endif
 
 
-/* Name of the socket to be used if GPG_AGENT_INFO has not been
-   set. No default socket is used if this is NULL.  */
+/* Name of the socket to be used.  This is a kludge to keep on using
+   the existsing code despite that we only support a standard socket.  */
 static char *default_gpg_agent_info;
-
 
 
 
@@ -324,14 +323,11 @@ agent_open (int *rfd)
   char *infostr, *p;
   struct sockaddr_un client_addr;
   size_t len;
-  int prot;
   char line[200];
   int nread;
 
   *rfd = -1;
-  infostr = getenv (GPG_AGENT_INFO_NAME);
-  if ( !infostr || !*infostr )
-    infostr = default_gpg_agent_info;
+  infostr = default_gpg_agent_info;
   if ( !infostr || !*infostr )
     {
 #ifdef SPWQ_USE_LOGGING
@@ -348,23 +344,12 @@ agent_open (int *rfd)
   if ( !(p = strchr ( infostr, PATHSEP_C)) || p == infostr
        || (p-infostr)+1 >= sizeof client_addr.sun_path )
     {
-#ifdef SPWQ_USE_LOGGING
-      log_error (_("malformed %s environment variable\n"), GPG_AGENT_INFO_NAME);
-#endif
       return SPWQ_NO_AGENT;
     }
   *p++ = 0;
 
   while (*p && *p != PATHSEP_C)
     p++;
-  prot = *p? atoi (p+1) : 0;
-  if ( prot != 1)
-    {
-#ifdef SPWQ_USE_LOGGING
-      log_error (_("gpg-agent protocol version %d is not supported\n"),prot);
-#endif
-      return SPWQ_PROTOCOL_ERROR;
-    }
 
 #ifdef HAVE_W32_SYSTEM
   fd = _w32_sock_new (AF_UNIX, SOCK_STREAM, 0);
