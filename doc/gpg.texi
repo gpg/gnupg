@@ -1425,7 +1425,7 @@ Set what trust model GnuPG should follow. The models are:
   @item always
   @opindex trust-mode:always
   Skip key validation and assume that used keys are always fully
-  trusted. You generally won't use this unless you are using some
+  valid. You generally won't use this unless you are using some
   external validation scheme. This option also suppresses the
   "[uncertain]" tag printed with signature checks when there is no
   evidence that the user ID is bound to the key.  Note that this

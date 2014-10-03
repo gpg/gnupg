@@ -1,3 +1,10 @@
+Noteworthy changes in version 2.1.0 (unreleased)
+------------------------------------------------
+
+ * For a complete list of changes see the lists of changes for the
+   2.1.0 beta versions below.
+
+
 Noteworthy changes in version 2.1.0-beta864 (2014-10-03)
 --------------------------------------------------------
 
@@ -11,7 +18,7 @@ Noteworthy changes in version 2.1.0-beta864 (2014-10-03)
 
  * gpg: Default keyring is now created with a .kbx suffix.
 
- * gpg: Add a shortcut to key capabilies menu (e.g. "=e" sets the
+ * gpg: Add a shortcut to the key capabilies menu (e.g. "=e" sets the
    encryption capabilities).
 
  * gpg: Fixed obsolete options parsing.
