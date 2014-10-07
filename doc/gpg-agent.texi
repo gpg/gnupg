@@ -349,6 +349,12 @@ Allow clients to mark keys as trusted, i.e. put them into the
 @file{trustlist.txt} file.  This is by default not allowed to make it
 harder for users to inadvertently accept Root-CA keys.
 
+@anchor{option --allow-preset-passphrase}
+@item --allow-preset-passphrase
+@opindex allow-preset-passphrase
+This option allows the use of @command{gpg-preset-passphrase} to seed the
+internal cache of @command{gpg-agent} with passphrases.
+
 @ifset gpgtwoone
 @anchor{option --allow-loopback-pinentry}
 @item --allow-loopback-pinentry
