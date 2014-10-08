@@ -98,7 +98,7 @@ gpgconf_SOURCES = gpgconf.c gpgconf.h gpgconf-comp.c no-libgcrypt.c
 # common sucks in gpg-error, will they, nil they (some compilers
 # do not eliminate the supposed-to-be-unused-inline-functions).
 gpgconf_LDADD = $(maybe_commonpth_libs) $(opt_libassuan_libs) \
-                $(LIBINTL) $(GPG_ERROR_LIBS) $(NPTH_LIBS) $(NETLIBS) \
+                $(LIBINTL) $(GPG_ERROR_LIBS) $(NETLIBS) \
 	        $(LIBICONV) $(W32SOCKLIBS)
 gpgconf_LDFLAGS = $(extra_bin_ldflags)
 

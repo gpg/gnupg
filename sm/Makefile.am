@@ -61,7 +61,7 @@ common_libs = ../kbx/libkeybox.a $(libcommon) ../gl/libgnu.a
 
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \
-              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) $(ZLIBS) \
+              $(GPG_ERROR_LIBS) $(LIBREADLINE) $(LIBINTL) \
 	      $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpgsm_LDFLAGS = $(extra_bin_ldflags)
 
