@@ -854,7 +854,8 @@ keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
 
   if (!gcry_pk_get_keygrip (s_pkey, array))
     {
-      log_error ("error computing keygrip\n");
+      log_info ("error computing keygrip\n");
+      memset (array, 0, 20);
       err = gpg_error (GPG_ERR_GENERAL);
     }
   else
