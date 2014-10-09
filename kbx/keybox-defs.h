@@ -101,6 +101,7 @@ struct keybox_handle {
   int eof;
   int error;
   int ephemeral;
+  int for_openpgp;        /* Used by gpg.  */
   struct keybox_found_s found;
   struct keybox_found_s saved_found;
   struct {
@@ -176,7 +177,7 @@ int  _keybox_new_blob (KEYBOXBLOB *r_blob,
 void _keybox_release_blob (KEYBOXBLOB blob);
 const unsigned char *_keybox_get_blob_image (KEYBOXBLOB blob, size_t *n);
 off_t _keybox_get_blob_fileoffset (KEYBOXBLOB blob);
-void _keybox_update_header_blob (KEYBOXBLOB blob);
+void _keybox_update_header_blob (KEYBOXBLOB blob, int for_openpgp);
 
 /*-- keybox-openpgp.c --*/
 gpg_error_t _keybox_parse_openpgp (const unsigned char *image, size_t imagelen,

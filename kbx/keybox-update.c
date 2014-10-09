@@ -211,18 +211,18 @@ rename_tmp_file (const char *bakfname, const char *tmpfname,
 
 
 
-/* Perform insert/delete/update operation.
-   MODE is one of FILECOPY_INSERT, FILECOPY_DELETE, FILECOPY_UPDATE.
-*/
+/* Perform insert/delete/update operation.  MODE is one of
+   FILECOPY_INSERT, FILECOPY_DELETE, FILECOPY_UPDATE.  FOR_OPENPGP
+   indicates that this is called due to an OpenPGP keyblock change.  */
 static int
 blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
-               int secret, off_t start_offset)
+               int secret, int for_openpgp, off_t start_offset)
 {
   FILE *fp, *newfp;
   int rc=0;
   char *bakfname = NULL;
   char *tmpfname = NULL;
-  char buffer[4096];
+  char buffer[4096];  /* (Must be at least 32 bytes) */
   int nread, nbytes;
 
   /* Open the source file. Because we do a rename, we have to check the
@@ -239,7 +239,7 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
       if (!newfp )
         return gpg_error_from_syserror ();
 
-      rc = _keybox_write_header_blob (newfp);
+      rc = _keybox_write_header_blob (newfp, for_openpgp);
       if (rc)
         return rc;
 
@@ -275,9 +275,19 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   /* prepare for insert */
   if (mode == FILECOPY_INSERT)
     {
-      /* Copy everything to the new file. */
+      int first_record = 1;
+
+      /* Copy everything to the new file.  If this is for OpenPGP, we
+         make sure that the openpgp flag is set in the header.  (We
+         failsafe the blob type.) */
       while ( (nread = fread (buffer, 1, DIM(buffer), fp)) > 0 )
         {
+          if (first_record && for_openpgp && buffer[4] == BLOBTYPE_HEADER)
+            {
+              first_record = 0;
+              buffer[7] |= 0x02; /* OpenPGP data may be available.  */
+            }
+
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
@@ -409,7 +419,7 @@ keybox_insert_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen,
   _keybox_destroy_openpgp_info (&info);
   if (!err)
     {
-      err = blob_filecopy (FILECOPY_INSERT, fname, blob, hd->secret, 0);
+      err = blob_filecopy (FILECOPY_INSERT, fname, blob, hd->secret, 1, 0);
       _keybox_release_blob (blob);
       /*    if (!rc && !hd->secret && kb_offtbl) */
       /*      { */
@@ -462,7 +472,7 @@ keybox_update_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
   /* Update the keyblock.  */
   if (!err)
     {
-      err = blob_filecopy (FILECOPY_UPDATE, fname, blob, hd->secret, off);
+      err = blob_filecopy (FILECOPY_UPDATE, fname, blob, hd->secret, 1, off);
       _keybox_release_blob (blob);
     }
   return err;
@@ -495,7 +505,7 @@ keybox_insert_cert (KEYBOX_HANDLE hd, ksba_cert_t cert,
   rc = _keybox_create_x509_blob (&blob, cert, sha1_digest, hd->ephemeral);
   if (!rc)
     {
-      rc = blob_filecopy (FILECOPY_INSERT, fname, blob, hd->secret, 0);
+      rc = blob_filecopy (FILECOPY_INSERT, fname, blob, hd->secret, 0, 0);
       _keybox_release_blob (blob);
       /*    if (!rc && !hd->secret && kb_offtbl) */
       /*      { */
@@ -743,8 +753,10 @@ keybox_compress (KEYBOX_HANDLE hd)
           first_blob = 0;
           if (length > 4 && buffer[4] == BLOBTYPE_HEADER)
             {
-              /* Write out the blob with an updated maintenance time stamp. */
-              _keybox_update_header_blob (blob);
+              /* Write out the blob with an updated maintenance time
+                 stamp and if needed (ie. used by gpg) set the openpgp
+                 flag.  */
+              _keybox_update_header_blob (blob, hd->for_openpgp);
               rc = _keybox_write_blob (blob, newfp);
               if (rc)
                 break;
@@ -752,7 +764,7 @@ keybox_compress (KEYBOX_HANDLE hd)
             }
 
           /* The header blob is missing.  Insert it.  */
-          rc = _keybox_write_header_blob (newfp);
+          rc = _keybox_write_header_blob (newfp, hd->for_openpgp);
           if (rc)
             break;
           any_changes = 1;

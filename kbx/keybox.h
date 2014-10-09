@@ -62,7 +62,8 @@ typedef enum
 void *keybox_register_file (const char *fname, int secret);
 int keybox_is_writable (void *token);
 
-KEYBOX_HANDLE keybox_new (void *token, int secret);
+KEYBOX_HANDLE keybox_new_openpgp (void *token, int secret);
+KEYBOX_HANDLE keybox_new_x509 (void *token, int secret);
 void keybox_release (KEYBOX_HANDLE hd);
 void keybox_push_found_state (KEYBOX_HANDLE hd);
 void keybox_pop_found_state (KEYBOX_HANDLE hd);
@@ -74,7 +75,7 @@ int keybox_lock (KEYBOX_HANDLE hd, int yes);
 /*-- keybox-file.c --*/
 /* Fixme: This function does not belong here: Provide a better
    interface to create a new keybox file.  */
-int _keybox_write_header_blob (FILE *fp);
+int _keybox_write_header_blob (FILE *fp, int openpgp_flag);
 
 /*-- keybox-search.c --*/
 gpg_error_t keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,

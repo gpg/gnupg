@@ -42,8 +42,9 @@
    - u32  Length of this blob
    - byte Blob type (1)
    - byte Version number (1)
-   - byte RFU
-   - byte RFU
+   - u16  Header flags
+          bit 0 - RFU
+          bit 1 - Is being or has been used for OpenPGP blobs
    - b4   Magic 'KBXf'
    - u32  RFU
    - u32  file_created_at
@@ -1028,7 +1029,7 @@ _keybox_get_blob_fileoffset (KEYBOXBLOB blob)
 
 
 void
-_keybox_update_header_blob (KEYBOXBLOB blob)
+_keybox_update_header_blob (KEYBOXBLOB blob, int for_openpgp)
 {
   if (blob->bloblen >= 32 && blob->blob[4] == BLOBTYPE_HEADER)
     {
@@ -1039,5 +1040,8 @@ _keybox_update_header_blob (KEYBOXBLOB blob)
       blob->blob[20+1] = (val >> 16);
       blob->blob[20+2] = (val >>  8);
       blob->blob[20+3] = (val      );
+
+      if (for_openpgp)
+        blob->blob[7] |= 0x02;  /* OpenPGP data may be available.  */
     }
 }

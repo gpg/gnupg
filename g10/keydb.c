@@ -242,7 +242,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
         rc = gpg_error_from_syserror ();
       else
         {
-          rc = _keybox_write_header_blob (fp);
+          rc = _keybox_write_header_blob (fp, 1);
           fclose (fp);
         }
       if (rc)
@@ -274,6 +274,50 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
       dotlock_destroy (lockhd);
     }
   return rc;
+}
+
+
+/* Helper for keydb_add_resource.  Opens FILENAME to figures out the
+   resource type.  Returns the resource type and a flag at R_NOTFOUND
+   indicating whether FILENAME could be opened at all.  If the openpgp
+   flag is set in a keybox header, R_OPENPGP will be set to true.  */
+static KeydbResourceType
+rt_from_file (const char *filename, int *r_found, int *r_openpgp)
+{
+  u32 magic;
+  unsigned char verbuf[4];
+  FILE *fp;
+  KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
+
+  *r_found = *r_openpgp = 0;
+  fp = fopen (filename, "rb");
+  if (fp)
+    {
+      *r_found = 1;
+
+      if (fread (&magic, 4, 1, fp) == 1 )
+        {
+          if (magic == 0x13579ace || magic == 0xce9a5713)
+            ; /* GDBM magic - not anymore supported. */
+          else if (fread (&verbuf, 4, 1, fp) == 1
+                   && verbuf[0] == 1
+                   && fread (&magic, 4, 1, fp) == 1
+                   && !memcmp (&magic, "KBXf", 4))
+            {
+              if ((verbuf[3] & 0x02))
+                *r_openpgp = 1;
+              rt = KEYDB_RESOURCE_TYPE_KEYBOX;
+            }
+          else
+            rt = KEYDB_RESOURCE_TYPE_KEYRING;
+        }
+      else /* Maybe empty: assume keyring. */
+        rt = KEYDB_RESOURCE_TYPE_KEYRING;
+
+      fclose (fp);
+    }
+
+  return rt;
 }
 
 
@@ -337,33 +381,34 @@ keydb_add_resource (const char *url, unsigned int flags)
   /* See whether we can determine the filetype.  */
   if (rt == KEYDB_RESOURCE_TYPE_NONE)
     {
-      FILE *fp;
+      int found, openpgp_flag;
       int pass = 0;
       size_t filenamelen;
 
     check_again:
       filenamelen = strlen (filename);
-      fp = fopen (filename, "rb");
-      if (fp)
+      rt = rt_from_file (filename, &found, &openpgp_flag);
+      if (found)
         {
-          u32 magic;
+          /* The file exists and we have the resource type in RT.
 
-          if (fread (&magic, 4, 1, fp) == 1 )
+             Now let us check whether in addition to the "pubring.gpg"
+             a "pubring.kbx with openpgp keys exists.  This is so that
+             GPG 2.1 will use an existing "pubring.kbx" by default iff
+             that file has been created or used by 2.1.  This check is
+             needed because after creation or use of the kbx file with
+             2.1 an older version of gpg may have created a new
+             pubring.gpg for its own use.  */
+          if (!pass && is_default && rt == KEYDB_RESOURCE_TYPE_KEYRING
+              && filenamelen > 4 && !strcmp (filename+filenamelen-4, ".gpg"))
             {
-              if (magic == 0x13579ace || magic == 0xce9a5713)
-                ; /* GDBM magic - not anymore supported. */
-              else if (fread (&magic, 4, 1, fp) == 1
-                       && !memcmp (&magic, "\x01", 1)
-                       && fread (&magic, 4, 1, fp) == 1
-                       && !memcmp (&magic, "KBXf", 4))
+              strcpy (filename+filenamelen-4, ".kbx");
+              if ((rt_from_file (filename, &found, &openpgp_flag)
+                   == KEYDB_RESOURCE_TYPE_KEYBOX) && found && openpgp_flag)
                 rt = KEYDB_RESOURCE_TYPE_KEYBOX;
-              else
-                rt = KEYDB_RESOURCE_TYPE_KEYRING;
-	    }
-          else /* Maybe empty: assume keyring. */
-            rt = KEYDB_RESOURCE_TYPE_KEYRING;
-
-          fclose (fp);
+              else /* Restore filename */
+                strcpy (filename+filenamelen-4, ".gpg");
+            }
 	}
       else if (!pass
                && is_default && create
@@ -508,7 +553,7 @@ keydb_new (void)
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           hd->active[j].type   = all_resources[i].type;
           hd->active[j].token  = all_resources[i].token;
-          hd->active[j].u.kb   = keybox_new (all_resources[i].token, 0);
+          hd->active[j].u.kb   = keybox_new_openpgp (all_resources[i].token, 0);
           if (!hd->active[j].u.kb)
             {
               xfree (hd);

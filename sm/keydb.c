@@ -341,7 +341,7 @@ keydb_add_resource (const char *url, int force, int secret, int *auto_created)
             /* Do a compress run if needed and the file is not locked. */
             if (!dotlock_take (all_resources[used_resources].lockhandle, 0))
               {
-                KEYBOX_HANDLE kbxhd = keybox_new (token, secret);
+                KEYBOX_HANDLE kbxhd = keybox_new_x509 (token, secret);
 
                 if (kbxhd)
                   {
@@ -400,7 +400,7 @@ keydb_new (int secret)
           hd->active[j].token  = all_resources[i].token;
           hd->active[j].secret = all_resources[i].secret;
           hd->active[j].lockhandle = all_resources[i].lockhandle;
-          hd->active[j].u.kr = keybox_new (all_resources[i].token, secret);
+          hd->active[j].u.kr = keybox_new_x509 (all_resources[i].token, secret);
           if (!hd->active[j].u.kr)
             {
               xfree (hd);

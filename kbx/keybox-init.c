@@ -77,15 +77,10 @@ keybox_is_writable (void *token)
 
 
 
-/* Create a new handle for the resource associated with TOKEN.  SECRET
-   is just a cross-check.
-
-   The returned handle must be released using keybox_release (). */
-KEYBOX_HANDLE
-keybox_new (void *token, int secret)
+static KEYBOX_HANDLE
+do_keybox_new (KB_NAME resource, int secret, int for_openpgp)
 {
   KEYBOX_HANDLE hd;
-  KB_NAME resource = token;
   int idx;
 
   assert (resource && !resource->secret == !secret);
@@ -94,6 +89,7 @@ keybox_new (void *token, int secret)
     {
       hd->kb = resource;
       hd->secret = !!secret;
+      hd->for_openpgp = for_openpgp;
       if (!resource->handle_table)
         {
           resource->handle_table_size = 3;
@@ -134,6 +130,30 @@ keybox_new (void *token, int secret)
     }
   return hd;
 }
+
+
+/* Create a new handle for the resource associated with TOKEN.  SECRET
+   is just a cross-check.  This is the OpenPGP version.  The returned
+   handle must be released using keybox_release.  */
+KEYBOX_HANDLE
+keybox_new_openpgp (void *token, int secret)
+{
+  KB_NAME resource = token;
+
+  return do_keybox_new (resource, secret, 1);
+}
+
+/* Create a new handle for the resource associated with TOKEN.  SECRET
+   is just a cross-check.  This is the X.509 version.  The returned
+   handle must be released using keybox_release.  */
+KEYBOX_HANDLE
+keybox_new_x509 (void *token, int secret)
+{
+  KB_NAME resource = token;
+
+  return do_keybox_new (resource, secret, 0);
+}
+
 
 void
 keybox_release (KEYBOX_HANDLE hd)

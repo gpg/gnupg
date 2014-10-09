@@ -141,6 +141,25 @@ dump_header_blob (const byte *buffer, size_t length, FILE *fp)
       return -1;
     }
   fprintf (fp, "Version: %d\n", buffer[5]);
+
+  n = get16 (buffer + 6);
+  fprintf( fp, "Flags:   %04lX", n);
+  if (n)
+    {
+      int any = 0;
+
+      fputs (" (", fp);
+      if ((n & 2))
+        {
+          if (any)
+            putc (',', fp);
+          fputs ("openpgp", fp);
+          any++;
+        }
+      putc (')', fp);
+    }
+  putc ('\n', fp);
+
   if ( memcmp (buffer+8, "KBXf", 4))
     fprintf (fp, "[Error: invalid magic number]\n");
 

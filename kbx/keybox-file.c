@@ -132,7 +132,7 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
 
 /* Write a fresh header type blob. */
 int
-_keybox_write_header_blob (FILE *fp)
+_keybox_write_header_blob (FILE *fp, int for_openpgp)
 {
   unsigned char image[32];
   u32 val;
@@ -143,6 +143,8 @@ _keybox_write_header_blob (FILE *fp)
 
   image[4] = BLOBTYPE_HEADER;
   image[5] = 1; /* Version */
+  if (for_openpgp)
+    image[7] = 0x02; /* OpenPGP data may be available.  */
 
   memcpy (image+8, "KBXf", 4);
   val = time (NULL);
