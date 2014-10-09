@@ -298,12 +298,14 @@ print_pubkey_algo_note (pubkey_algo_t algo)
       if(!warn)
 	{
 	  warn=1;
+          es_fflush (es_stdout);
 	  log_info (_("WARNING: using experimental public key algorithm %s\n"),
 		    openpgp_pk_algo_name (algo));
 	}
     }
   else if (algo == PUBKEY_ALGO_ELGAMAL)
     {
+      es_fflush (es_stdout);
       log_info (_("WARNING: Elgamal sign+encrypt keys are deprecated\n"));
     }
 }
@@ -317,6 +319,7 @@ print_cipher_algo_note (cipher_algo_t algo)
       if(!warn)
 	{
 	  warn=1;
+          es_fflush (es_stdout);
 	  log_info (_("WARNING: using experimental cipher algorithm %s\n"),
                     openpgp_cipher_algo_name (algo));
 	}
@@ -332,13 +335,17 @@ print_digest_algo_note (digest_algo_t algo)
       if(!warn)
 	{
 	  warn=1;
+          es_fflush (es_stdout);
 	  log_info (_("WARNING: using experimental digest algorithm %s\n"),
                     gcry_md_algo_name (algo));
 	}
     }
   else if(algo==DIGEST_ALGO_MD5)
-    log_info (_("WARNING: digest algorithm %s is deprecated\n"),
-              gcry_md_algo_name (algo));
+    {
+      es_fflush (es_stdout);
+      log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+                gcry_md_algo_name (algo));
+    }
 }
 
 
@@ -349,6 +356,7 @@ print_md5_rejected_note (void)
 
   if (!shown)
     {
+      es_fflush (es_stdout);
       log_info
         (_("Note: signatures using the %s algorithm are rejected\n"),
          "MD5");

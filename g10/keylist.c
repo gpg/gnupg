@@ -496,6 +496,7 @@ list_all (int secret, int mark_secret)
       keyblock = NULL;
     }
   while (!(rc = keydb_search_next (hd)));
+  es_fflush (es_stdout);
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search_next failed: %s\n", g10_errstr (rc));
 
