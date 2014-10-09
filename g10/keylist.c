@@ -499,6 +499,9 @@ list_all (int secret, int mark_secret)
   es_fflush (es_stdout);
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search_next failed: %s\n", g10_errstr (rc));
+  if (keydb_get_skipped_counter (hd))
+    log_info (_("Warning: %lu key(s) skipped due to their large size\n"),
+              keydb_get_skipped_counter (hd));
 
   if (opt.check_sigs && !opt.with_colons)
     print_signature_stats (&stats);

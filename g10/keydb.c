@@ -67,6 +67,7 @@ struct keydb_handle
 {
   int locked;
   int found;
+  unsigned long skipped_long_blobs;
   int current;
   int used;   /* Number of items in ACTIVE. */
   struct resource_item active[MAX_KEYDB_RESOURCES];
@@ -1289,6 +1290,13 @@ keydb_rebuild_caches (int noisy)
 }
 
 
+/* Return the number of skipped blocks since the last search reset.  */
+unsigned long
+keydb_get_skipped_counter (KEYDB_HANDLE hd)
+{
+  return hd ? hd->skipped_long_blobs : 0;
+}
+
 
 /*
  * Start the next search on this handle right at the beginning
@@ -1307,6 +1315,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
   if (DBG_CLOCK)
     log_clock ("keydb_search_reset");
 
+  hd->skipped_long_blobs = 0;
   hd->current = 0;
   hd->found = -1;
   /* Now reset all resources.  */
@@ -1424,7 +1433,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           rc = keybox_search (hd->active[hd->current].u.kb, desc,
-                              ndesc, descindex);
+                              ndesc, descindex, &hd->skipped_long_blobs);
           break;
         }
       if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)

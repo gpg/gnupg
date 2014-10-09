@@ -718,10 +718,12 @@ keybox_search_reset (KEYBOX_HANDLE hd)
 
 
 /* Note: When in ephemeral mode the search function does visit all
-   blobs but in standard mode, blobs flagged as ephemeral are ignored.  */
+   blobs but in standard mode, blobs flagged as ephemeral are ignored.
+   The value at R_SKIPPED is updated by the number of skipped long
+   records (counts PGP and X.509). */
 int
 keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
-               size_t *r_descindex)
+               size_t *r_descindex, unsigned long *r_skipped)
 {
   int rc;
   size_t n;
@@ -852,6 +854,13 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
       _keybox_release_blob (blob); blob = NULL;
       rc = _keybox_read_blob (&blob, hd->fp);
+      if (gpg_err_code (rc) == GPG_ERR_TOO_LARGE
+          && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
+        {
+          ++*r_skipped;
+          continue; /* Skip too large records.  */
+        }
+
       if (rc)
         break;
 

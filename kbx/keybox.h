@@ -87,7 +87,7 @@ int keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value);
 
 int keybox_search_reset (KEYBOX_HANDLE hd);
 int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
-                   size_t *r_descindex);
+                   size_t *r_descindex, unsigned long *r_skipped);
 
 
 /*-- keybox-update.c --*/

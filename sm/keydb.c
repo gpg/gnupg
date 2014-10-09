@@ -958,6 +958,7 @@ int
 keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
   int rc = -1;
+  unsigned long skipped;
 
   if (!hd)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -970,7 +971,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
           BUG(); /* we should never see it here */
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc, NULL);
+          rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
+                              NULL, &skipped);
           break;
         }
       if (rc == -1) /* EOF -> switch to next resource */
