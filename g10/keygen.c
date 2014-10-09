@@ -1555,6 +1555,7 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
   int err;
   char *keyparms;
   char nbitsstr[35];
+  const unsigned maxsize = (opt.flags.large_rsa ? 8192 : 4096);
 
   assert (is_RSA(algo));
 
@@ -1566,9 +1567,9 @@ gen_rsa (int algo, unsigned int nbits, KBNODE pub_root,
       nbits = 2048;
       log_info (_("keysize invalid; using %u bits\n"), nbits );
     }
-  else if (nbits > 4096)
+  else if (nbits > maxsize)
     {
-      nbits = 4096;
+      nbits = maxsize;
       log_info (_("keysize invalid; using %u bits\n"), nbits );
     }
 

@@ -107,6 +107,7 @@ card_support=yes
 use_ccid_driver=yes
 dirmngr_auto_start=yes
 use_tls_library=no
+large_secmem=no
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -222,6 +223,20 @@ AC_ARG_ENABLE(selinux-support,
               selinux_support=$enableval, selinux_support=no)
 AC_MSG_RESULT($selinux_support)
 
+
+AC_MSG_CHECKING([whether to allocate extra secure memory])
+AC_ARG_ENABLE(large-secmem,
+              AC_HELP_STRING([--enable-large-secmem],
+                             [allocate extra secure memory]),
+              large_secmem=$enableval, large_secmem=no)
+AC_MSG_RESULT($large_secmem)
+if test "$large_secmem" = yes ; then
+   SECMEM_BUFFER_SIZE=65536
+else
+   SECMEM_BUFFER_SIZE=32768
+fi
+AC_DEFINE_UNQUOTED(SECMEM_BUFFER_SIZE,$SECMEM_BUFFER_SIZE,
+                   [Size of secure memory buffer])
 
 AC_MSG_CHECKING([whether to enable trust models])
 AC_ARG_ENABLE(trust-models,

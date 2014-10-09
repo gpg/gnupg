@@ -376,6 +376,8 @@ enum cmd_and_opt_values
     oAutoKeyLocate,
     oNoAutoKeyLocate,
     oAllowMultisigVerification,
+    oEnableLargeRSA,
+    oDisableLargeRSA,
     oEnableDSA2,
     oDisableDSA2,
     oAllowMultipleMessages,
@@ -770,6 +772,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_n (oAllowMultisigVerification,
                 "allow-multisig-verification", "@"),
+  ARGPARSE_s_n (oEnableLargeRSA, "enable-large-rsa", "@"),
+  ARGPARSE_s_n (oDisableLargeRSA, "disable-large-rsa", "@"),
   ARGPARSE_s_n (oEnableDSA2, "enable-dsa2", "@"),
   ARGPARSE_s_n (oDisableDSA2, "disable-dsa2", "@"),
   ARGPARSE_s_n (oAllowMultipleMessages,      "allow-multiple-messages", "@"),
@@ -2181,7 +2185,7 @@ main (int argc, char **argv)
 #endif
 
     /* Initialize the secure memory. */
-    if (!gcry_control (GCRYCTL_INIT_SECMEM, 32768, 0))
+    if (!gcry_control (GCRYCTL_INIT_SECMEM, SECMEM_BUFFER_SIZE, 0))
       got_secmem = 1;
 #if defined(HAVE_GETUID) && defined(HAVE_GETEUID)
     /* There should be no way to get to this spot while still carrying
@@ -3098,6 +3102,22 @@ main (int argc, char **argv)
 	  case oNoAutoKeyLocate:
 	    release_akl();
 	    break;
+
+	  case oEnableLargeRSA:
+#if SECMEM_BUFFER_SIZE >= 65536
+            opt.flags.large_rsa=1;
+#else
+            if (configname)
+              log_info("%s:%d: WARNING: gpg not built with large secure "
+                         "memory buffer.  Ignoring enable-large-rsa\n",
+                        configname,configlineno);
+            else
+              log_info("WARNING: gpg not built with large secure "
+                         "memory buffer.  Ignoring --enable-large-rsa\n");
+#endif /* SECMEM_BUFFER_SIZE >= 65536 */
+            break;
+	  case oDisableLargeRSA: opt.flags.large_rsa=0;
+            break;
 
 	  case oEnableDSA2: opt.flags.dsa2=1; break;
 	  case oDisableDSA2: opt.flags.dsa2=0; break;
