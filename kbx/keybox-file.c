@@ -27,6 +27,9 @@
 #include "keybox-defs.h"
 
 
+#define IMAGELEN_LIMIT (2*1024*1024)
+
+
 #if !defined(HAVE_FTELLO) && !defined(ftello)
 static off_t
 ftello (FILE *stream)
@@ -75,9 +78,6 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
     }
 
   imagelen = (c1 << 24) | (c2 << 16) | (c3 << 8 ) | c4;
-  if (imagelen > 1000000) /* Sanity check. */
-    return gpg_error (GPG_ERR_TOO_LARGE);
-
   if (imagelen < 5)
     return gpg_error (GPG_ERR_TOO_SHORT);
 
@@ -88,6 +88,15 @@ _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)
         return gpg_error_from_syserror ();
       *skipped_deleted = 1;
       goto again;
+    }
+
+  if (imagelen > IMAGELEN_LIMIT) /* Sanity check. */
+    {
+      /* Seek forward so that the caller may choose to ignore this
+         record.  */
+      if (fseek (fp, imagelen-5, SEEK_CUR))
+        return gpg_error_from_syserror ();
+      return gpg_error (GPG_ERR_TOO_LARGE);
     }
 
   image = xtrymalloc (imagelen);
@@ -124,6 +133,10 @@ _keybox_write_blob (KEYBOXBLOB blob, FILE *fp)
   size_t length;
 
   image = _keybox_get_blob_image (blob, &length);
+
+  if (length > IMAGELEN_LIMIT)
+    return gpg_error (GPG_ERR_TOO_LARGE);
+
   if (fwrite (image, length, 1, fp) != 1)
     return gpg_error_from_syserror ();
   return 0;

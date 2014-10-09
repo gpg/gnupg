@@ -491,6 +491,7 @@ struct file_stats_s
   unsigned long non_flagged;
   unsigned long secret_flagged;
   unsigned long ephemeral_flagged;
+  unsigned long skipped_long_blobs;
 };
 
 static int
@@ -594,8 +595,25 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
   if (!(fp = open_file (&filename, outfp)))
     return gpg_error_from_syserror ();
 
-  while ( !(rc = _keybox_read_blob (&blob, fp)) )
+  for (;;)
     {
+      rc = _keybox_read_blob (&blob, fp);
+      if (gpg_err_code (rc) == GPG_ERR_TOO_LARGE
+          && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
+        {
+          if (stats_only)
+            stats.skipped_long_blobs++;
+          else
+            {
+              fprintf (outfp, "BEGIN-RECORD: %lu\n", count );
+              fprintf (outfp, "# Record too large\nEND-RECORD\n");
+            }
+          count++;
+          continue;
+        }
+      if (rc)
+        break;
+
       if (stats_only)
         {
           update_stats (blob, &stats);
@@ -612,7 +630,7 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
   if (rc == -1)
     rc = 0;
   if (rc)
-    fprintf (outfp, "error reading '%s': %s\n", filename, gpg_strerror (rc));
+    fprintf (outfp, "# error reading '%s': %s\n", filename, gpg_strerror (rc));
 
   if (fp != stdin)
     fclose (fp);
@@ -636,14 +654,17 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
                stats.non_flagged,
                stats.secret_flagged,
                stats.ephemeral_flagged);
+        if (stats.skipped_long_blobs)
+          fprintf (outfp, "   skipped long blobs: %8lu\n",
+                   stats.skipped_long_blobs);
         if (stats.unknown_blob_count)
           fprintf (outfp, "   unknown blob types: %8lu\n",
                    stats.unknown_blob_count);
         if (stats.too_short_blobs)
-          fprintf (outfp, "      too short blobs: %8lu\n",
+          fprintf (outfp, "      too short blobs: %8lu (error)\n",
                    stats.too_short_blobs);
         if (stats.too_large_blobs)
-          fprintf (outfp, "      too large blobs: %8lu\n",
+          fprintf (outfp, "      too large blobs: %8lu (error)\n",
                    stats.too_large_blobs);
     }
 
