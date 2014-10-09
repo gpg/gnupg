@@ -80,8 +80,9 @@ migrate_secring (ctrl_t ctrl)
         {
           log_error ("error: GnuPG agent version \"%s\" is too old. ",
                      agent_version);
-          log_error ("Please install an updated GnuPG agent.\n");
-          log_error ("migration aborted\n");
+          log_info ("Please make sure that a recent gpg-agent is running.\n");
+          log_info ("(restarting the user session may achieve this.)\n");
+          log_info ("migration aborted\n");
           xfree (agent_version);
           goto leave;
         }
