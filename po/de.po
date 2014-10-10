@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-10-03 12:12+0200\n"
+"PO-Revision-Date: 2014-10-10 14:57+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -319,13 +319,13 @@ msgid "use a log file for the server"
 msgstr "Logausgaben in eine Datei umlenken"
 
 msgid "|PGM|use PGM as the PIN-Entry program"
-msgstr "|PGM|benutze PGM as PIN-Entry"
+msgstr "|PGM|Benutze PGM as PIN-Entry"
 
 msgid "|PGM|use PGM as the SCdaemon program"
-msgstr "|PGM|benutze PGM als SCdaemon"
+msgstr "|PGM|Benutze PGM als SCdaemon"
 
 msgid "do not use the SCdaemon"
-msgstr "Den Scdaemon-basierten Kartenzugriff nicht nutzen"
+msgstr "Den SCdaemon-basierten Kartenzugriff nicht nutzen"
 
 msgid "ignore requests to change the TTY"
 msgstr "Ignoriere Anfragen, das TTY zu wechseln"
@@ -334,16 +334,16 @@ msgid "ignore requests to change the X display"
 msgstr "Ignoriere Anfragen, das X-Display zu wechseln"
 
 msgid "|N|expire cached PINs after N seconds"
-msgstr "|N|lasse PINs im Cache nach N Sekunden verfallen"
+msgstr "|N|Lasse PINs im Cache nach N Sekunden verfallen"
 
 msgid "do not use the PIN cache when signing"
-msgstr "benutze PINs im Cache nicht beim Signieren"
+msgstr "Benutze PINs im Cache nicht beim Signieren"
 
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
+msgstr "Verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 
 msgid "allow presetting passphrase"
-msgstr "erlaube ein \"preset\" von Passphrases"
+msgstr "Erlaube ein \"preset\" von Passphrases"
 
 msgid "enable ssh support"
 msgstr "SSH Unterstützung einschalten"
@@ -1294,7 +1294,8 @@ msgstr "%s-Schlüssellängen müssen im Bereich %u-%u sein\n"
 #, c-format
 msgid "The card will now be re-configured to generate a key of %u bits\n"
 msgstr ""
-"Die Karte wird nun rekonfiguriert um einen Schlüssel von %u Bit zu erzeugen\n"
+"Die Karte wird nun rekonfiguriert, um einen Schlüssel von %u Bit zu "
+"erzeugen\n"
 
 #, c-format
 msgid "error changing size of key %d to %u bits: %s\n"
@@ -1523,8 +1524,7 @@ msgstr "Mit unbekanntem Verfahren verschlüsselt %d\n"
 
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
-msgstr ""
-"Warnung: Botschaft wurde mit einem unsicheren Schlüssel verschlüsselt.\n"
+msgstr "WARNUNG: Botschaft wurde mit einem unsicheren Schlüssel verschlüsselt.\n"
 
 msgid "problem handling encrypted packet\n"
 msgstr "Problem beim Bearbeiten des verschlüsselten Pakets\n"
@@ -3719,7 +3719,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"GnuPG erstellt eine User-ID um Ihren Schlüssel identifizierbar zu machen.\n"
+"GnuPG erstellt eine User-ID, um Ihren Schlüssel identifizierbar zu machen.\n"
 "\n"
 
 #. TRANSLATORS: This string is in general not anymore used
@@ -3929,7 +3929,7 @@ msgstr ""
 "Uhren stimmen nicht überein)\n"
 
 msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr "HINWEIS: Unterschlüssel für v3-Schlüssel sind nicht OpenPGP-konform\n"
+msgstr "Hinweis: Unterschlüssel für v3-Schlüssel sind nicht OpenPGP-konform\n"
 
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Geheime Teile des Hauptschlüssels sind nicht vorhanden.\n"
@@ -3969,6 +3969,10 @@ msgstr "Entscheidender Beglaubigungs-\"Notation\": "
 
 msgid "Signature notation: "
 msgstr "Beglaubigungs-\"Notation\": "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
 
 msgid "Keyring"
 msgstr "Schlüsselbund"
@@ -4167,7 +4171,7 @@ msgstr ""
 "WARNUNG: Botschaft wurde nicht integritätsgeschützt (integrity protected)\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
-msgstr "Warnung: Verschlüsselte Botschaft ist manipuliert worden!\n"
+msgstr "WARNUNG: Verschlüsselte Botschaft ist manipuliert worden!\n"
 
 #, c-format
 msgid "cleared passphrase cached with ID: %s\n"
@@ -4690,8 +4694,7 @@ msgstr "Hinweis: Überprüfte Adresse des Unterzeichners ist `%s'\n"
 
 #, c-format
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
-msgstr ""
-"Hinweise: Adresse des Unterzeichners `%s' passt nicht zum DNS-Eintrag\n"
+msgstr "Hinweis: Adresse des Unterzeichners `%s' passt nicht zum DNS-Eintrag\n"
 
 msgid "trustlevel adjusted to FULL due to valid PKA info\n"
 msgstr "\"Trust\"-Ebene auf VOLLSTÄNDIG geändert (wg. gültiger PKA-Info)\n"
@@ -5166,7 +5169,7 @@ msgid "%s: trustdb created\n"
 msgstr "%s: trust-db erzeugt\n"
 
 msgid "NOTE: trustdb not writable\n"
-msgstr "Notiz: Die \"trustdb\" ist nicht schreibbar\n"
+msgstr "Hinweis: Die \"trustdb\" ist nicht schreibbar\n"
 
 #, c-format
 msgid "%s: invalid trustdb\n"
@@ -5682,7 +5685,7 @@ msgid "failed to open '%s': %s\n"
 msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
 
 msgid "note: non-critical certificate policy not allowed"
-msgstr "Notiz: Die unkritische Zertifikatsrichtlinie ist nicht erlaubt"
+msgstr "Hinweis: Die unkritische Zertifikatsrichtlinie ist nicht erlaubt"
 
 msgid "certificate policy not allowed"
 msgstr "Die Zertifikatsrichtlinie ist nicht erlaubt"
@@ -8388,7 +8391,7 @@ msgstr ""
 #~ msgstr "Fehler beim Schreiben des geheimen Schlüsselbundes `%s': %s\n"
 
 #~ msgid "WARNING: 2 files with confidential information exists.\n"
-#~ msgstr "Warnung: Zwei Dateien mit vertraulichem Inhalt vorhanden.\n"
+#~ msgstr "WARNUNG: Zwei Dateien mit vertraulichem Inhalt vorhanden.\n"
 
 #~ msgid "%s is the unchanged one\n"
 #~ msgstr "%s ist der Unveränderte\n"
