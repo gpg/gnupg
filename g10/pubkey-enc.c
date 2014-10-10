@@ -375,14 +375,14 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
           BUG ();
         if (pk->expiredate && pk->expiredate <= make_timestamp ())
           {
-            log_info (_("NOTE: secret key %s expired at %s\n"),
+            log_info (_("Note: secret key %s expired at %s\n"),
                       keystr (keyid), asctimestamp (pk->expiredate));
           }
       }
 
     if (pk && pk->flags.revoked)
       {
-        log_info (_("NOTE: key has been revoked"));
+        log_info (_("Note: key has been revoked"));
         log_printf ("\n");
         show_revocation_reason (pk, 1);
       }

@@ -1282,7 +1282,7 @@ show_keysize_warning (void)
     return;
   shown = 1;
   tty_printf
-    (_("NOTE: There is no guarantee that the card "
+    (_("Note: There is no guarantee that the card "
        "supports the requested size.\n"
        "      If the key generation does not succeed, "
        "please check the\n"
@@ -1392,7 +1392,7 @@ generate_card_keys (ctrl_t ctrl)
        || (info.fpr3valid && !fpr_is_zero (info.fpr3)))
     {
       tty_printf ("\n");
-      log_info (_("NOTE: keys are already stored on the card!\n"));
+      log_info (_("Note: keys are already stored on the card!\n"));
       tty_printf ("\n");
       if ( !cpr_get_answer_is_yes ("cardedit.genkeys.replace_keys",
                                    _("Replace existing keys? (y/N) ")))

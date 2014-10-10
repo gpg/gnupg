@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-10-10 14:57+0200\n"
+"PO-Revision-Date: 2014-10-10 15:27+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -378,7 +378,7 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "Die Bibliothek %s ist nicht aktuell (benötige %s, habe %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file '%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "Hinweis: Keine voreingestellte Optionendatei '%s' vorhanden\n"
 
 #, c-format
@@ -390,7 +390,7 @@ msgid "reading options from '%s'\n"
 msgstr "Optionen werden aus '%s' gelesen\n"
 
 #, c-format
-msgid "NOTE: '%s' is not considered an option\n"
+msgid "Note: '%s' is not considered an option\n"
 msgstr "Hinweis: `%s' wird nicht als Option betrachtet\n"
 
 msgid "name of socket too long\n"
@@ -1259,7 +1259,7 @@ msgid "Replace existing key? (y/N) "
 msgstr "Vorhandenen Schlüssel ersetzen? (j/N) "
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1305,8 +1305,8 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "Sicherung des Verschlüsselungsschlüssel außerhalb der Karte erstellen? (J/n) "
 
-msgid "NOTE: keys are already stored on the card!\n"
-msgstr "ACHTUNG: Auf der Karte sind bereits Schlüssel gespeichert!\n"
+msgid "Note: keys are already stored on the card!\n"
+msgstr "Hinweis: Auf der Karte sind bereits Schlüssel gespeichert!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Vorhandene Schlüssel ersetzen? (j/N) "
@@ -1524,7 +1524,8 @@ msgstr "Mit unbekanntem Verfahren verschlüsselt %d\n"
 
 msgid ""
 "WARNING: message was encrypted with a weak key in the symmetric cipher.\n"
-msgstr "WARNUNG: Botschaft wurde mit einem unsicheren Schlüssel verschlüsselt.\n"
+msgstr ""
+"WARNUNG: Botschaft wurde mit einem unsicheren Schlüssel verschlüsselt.\n"
 
 msgid "problem handling encrypted packet\n"
 msgstr "Problem beim Bearbeiten des verschlüsselten Pakets\n"
@@ -1943,7 +1944,7 @@ msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 
 #, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
 
 #, c-format
@@ -1953,7 +1954,7 @@ msgstr ""
 "%s)\n"
 
 #, c-format
-msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "Hinweis: %s ist nicht für den üblichen Gebrauch gedacht!\n"
 
 #, c-format
@@ -2061,7 +2062,7 @@ msgstr "WARNUNG: %s ersetzt %s\n"
 
 #, c-format
 msgid "%s not allowed with %s!\n"
-msgstr "%s kann nicht zusammen mit %s verwendet werden!\n"
+msgstr "%s zusammen mit %s ist nicht erlaubt!\n"
 
 #, c-format
 msgid "%s makes no sense with %s!\n"
@@ -2101,7 +2102,7 @@ msgstr "ungültiger \"default-cert-level\"; Wert muß 0, 1, 2 oder 3 sein\n"
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "ungültiger \"min-cert-level\"; Wert muß 0, 1, 2 oder 3 sein\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "Hinweis: Vom \"simple S2K\"-Modus (0) ist strikt abzuraten\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -3928,7 +3929,7 @@ msgstr ""
 "Der Schlüssel wurde %lu Sekunden in der Zukunft erzeugt (Zeitreise oder "
 "Uhren stimmen nicht überein)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "Hinweis: Unterschlüssel für v3-Schlüssel sind nicht OpenPGP-konform\n"
 
 msgid "Secret parts of primary key are not available.\n"
@@ -3949,7 +3950,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "Sicherungsdatei '%s' kann nicht erzeugt werden: %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "Hinweis: Sicherung des Kartenschlüssels wurde auf `%s' gespeichert\n"
 
 msgid "never     "
@@ -4181,7 +4182,7 @@ msgstr "Passphrase aus dem Cache gelöscht.  Cache ID: %s\n"
 msgid "decryption failed: %s\n"
 msgstr "Entschlüsselung fehlgeschlagen: %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr ""
 "Hinweis: Der Absender verlangte Vertraulichkeit(\"for-your-eyes-only\")\n"
 
@@ -4834,10 +4835,10 @@ msgstr ""
 "Empfängereinstellungen gefunden\n"
 
 #, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "Hinweis: geheimer Schlüssel %s verfällt am %s\n"
 
-msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "Hinweis: Schlüssel wurde widerrufen"
 
 #, c-format
@@ -5004,11 +5005,11 @@ msgstr ""
 "Uhrenproblem)\n"
 
 #, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "Hinweis: Signaturschlüssel %s ist am %s verfallen\n"
 
 #, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "Hinweis: Signaturschlüssel %s wurde widerrufen\n"
 
 #, c-format
@@ -5168,7 +5169,7 @@ msgstr "%s: ungültige trust-db erzeugt\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: trust-db erzeugt\n"
 
-msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "Hinweis: Die \"trustdb\" ist nicht schreibbar\n"
 
 #, c-format
@@ -5684,7 +5685,7 @@ msgstr "entscheidende Richtlinie ohne konfigurierte Richtlinien"
 msgid "failed to open '%s': %s\n"
 msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
+msgid "Note: non-critical certificate policy not allowed"
 msgstr "Hinweis: Die unkritische Zertifikatsrichtlinie ist nicht erlaubt"
 
 msgid "certificate policy not allowed"
@@ -6217,7 +6218,7 @@ msgstr ""
 "Signieren, prüfen, ver- und entschlüsseln mittels S/MIME Protokoll\n"
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "Hinweis: Verschlüsselung für `%s' wird nicht möglich sein: %s\n"
 
 #, c-format
@@ -8355,15 +8356,15 @@ msgstr ""
 #~ msgid "key %s: secret key not found: %s\n"
 #~ msgstr "Schlüssel %s: geheimer Schlüssel nicht gefunden: %s\n"
 
-#~ msgid "NOTE: a key's S/N does not match the card's one\n"
+#~ msgid "Note: a key's S/N does not match the card's one\n"
 #~ msgstr ""
 #~ "Hinweis: Eine Schlüsselseriennr stimmt nicht mit derjenigen der Karte "
 #~ "überein\n"
 
-#~ msgid "NOTE: primary key is online and stored on card\n"
+#~ msgid "Note: primary key is online and stored on card\n"
 #~ msgstr "Hinweis: Hauptschlüssel ist online und auf der Karte gespeichert\n"
 
-#~ msgid "NOTE: secondary key is online and stored on card\n"
+#~ msgid "Note: secondary key is online and stored on card\n"
 #~ msgstr "Hinweis: Zweitschlüssel ist online und auf der Karte gespeichert\n"
 
 #~ msgid "Key is protected.\n"
@@ -8411,7 +8412,7 @@ msgstr ""
 #~ msgid "unknown protection algorithm\n"
 #~ msgstr "Unbekanntes Schutzverfahren\n"
 
-#~ msgid "NOTE: This key is not protected!\n"
+#~ msgid "Note: This key is not protected!\n"
 #~ msgstr "Dieser Schlüssel ist nicht geschützt.\n"
 
 #~ msgid "Invalid passphrase; please try again"

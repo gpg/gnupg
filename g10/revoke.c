@@ -113,7 +113,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error("build_packet failed: %s\n", g10_errstr(rc) );
 	  return rc;
 	}
     }

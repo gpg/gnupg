@@ -4263,7 +4263,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
 
   if (pri_psk->version < 4)
     {
-      log_info (_("NOTE: creating subkeys for v3 keys "
+      log_info (_("Note: creating subkeys for v3 keys "
                   "is not OpenPGP compliant\n"));
       err = gpg_error (GPG_ERR_CONFLICT);
       goto leave;
@@ -4386,7 +4386,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
 
   if (pri_pk->version < 4)
     {
-      log_info (_("NOTE: creating subkeys for v3 keys "
+      log_info (_("Note: creating subkeys for v3 keys "
                   "is not OpenPGP compliant\n"));
       err = gpg_error (GPG_ERR_NOT_SUPPORTED);
       goto leave;
@@ -4657,7 +4657,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
 
         iobuf_close (fp);
         iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
-        log_info (_("NOTE: backup of card key saved to '%s'\n"), fname);
+        log_info (_("Note: backup of card key saved to '%s'\n"), fname);
 
         fingerprint_from_sk (sk, array, &n);
         p = fprbuf = xmalloc (MAX_FINGERPRINT_LEN*2 + 1 + 1);

@@ -398,7 +398,7 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s est trop ancien (nécessaire : %s, utilisé : %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file '%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "Remarque : pas de fichier d'options par défaut « %s »\n"
 
 #, c-format
@@ -410,7 +410,7 @@ msgid "reading options from '%s'\n"
 msgstr "lecture des options de « %s »\n"
 
 #, c-format
-msgid "NOTE: '%s' is not considered an option\n"
+msgid "Note: '%s' is not considered an option\n"
 msgstr "Remarque : « %s » n'est pas considéré comme une option\n"
 
 msgid "name of socket too long\n"
@@ -1282,7 +1282,7 @@ msgid "Replace existing key? (y/N) "
 msgstr "Faut-il remplacer la clef existante ? (o/N) "
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1324,7 +1324,7 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 "Faut-il faire une sauvegarde hors carte de la clef de chiffrement ? (O/n) "
 
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "Remarque : les clefs sont déjà stockées sur la carte.\n"
 
 msgid "Replace existing keys? (y/N) "
@@ -1996,7 +1996,7 @@ msgid "show expiration dates during signature listings"
 msgstr "montrer les dates d'expiration en affichant les signatures"
 
 #, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "Remarque : l'ancien fichier d'options par défaut « %s » a été ignoré\n"
 
 #, c-format
@@ -2004,7 +2004,7 @@ msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt est trop ancienne (nécessaire : %s, utilisé : %s)\n"
 
 #, c-format
-msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "Remarque : %s n'est pas pour une utilisation normale.\n"
 
 #, c-format
@@ -2154,7 +2154,7 @@ msgstr "« default-cert-level » incorrect ; doit être 0, 1, 2 ou 3\n"
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "« min-cert-level » incorrect ; doit être , 1, 2 ou 3\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "Remarque : le mode S2K simple (0) est fortement déconseillé\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -3999,7 +3999,7 @@ msgstr ""
 "la clef a été créée %lu secondes dans le futur (faille temporelle ou\n"
 "problème d'horloge)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 "Remarque : la création de sous-clefs pour des clefs v3 n'est pas compatible\n"
 "           avec OpenPGP\n"
@@ -4023,7 +4023,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "impossible de créer le fichier de sauvegarde « %s » : %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "Remarque : sauvegarde de la clef de la carte dans « %s »\n"
 
 msgid "never     "
@@ -4043,6 +4043,10 @@ msgstr "Notation de signature critique : "
 
 msgid "Signature notation: "
 msgstr "Notation de signature : "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "Porte-clefs"
@@ -4255,7 +4259,7 @@ msgstr "phrase de passe effacée mise en cache avec l'identifiant : %s\n"
 msgid "decryption failed: %s\n"
 msgstr "échec du déchiffrement : %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "Remarque : l'expéditeur a demandé « à votre seule attention »\n"
 
 #, c-format
@@ -4934,10 +4938,10 @@ msgstr ""
 "            dans les préférences du destinataire\n"
 
 #, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "Remarque : la clef secrète %s a expiré le %s\n"
 
-msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "Remarque : la clef a été révoquée"
 
 #, c-format
@@ -5101,11 +5105,11 @@ msgstr ""
 "(faille temporelle ou problème d'horloge)\n"
 
 #, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "Remarque : la clef de signature %s a expiré le %s\n"
 
 #, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "Remarque : la clef de signature %s a été révoquée\n"
 
 #, c-format
@@ -5266,7 +5270,7 @@ msgstr "%s : base de confiance incorrecte créée\n"
 msgid "%s: trustdb created\n"
 msgstr "%s : base de confiance créée\n"
 
-msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "Remarque : la base de confiance n'est pas accessible en écriture\n"
 
 #, c-format
@@ -5816,7 +5820,9 @@ msgstr "politique de signature marquée critique sans politiques configurées"
 msgid "failed to open '%s': %s\n"
 msgstr "échec d'ouverture de « %s » : %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
+#, fuzzy
+#| msgid "note: non-critical certificate policy not allowed"
+msgid "Note: non-critical certificate policy not allowed"
 msgstr "remarque : politique de certificat non critique non autorisée"
 
 msgid "certificate policy not allowed"
@@ -6357,7 +6363,7 @@ msgstr ""
 "L'opération par défaut dépend des données entrées\n"
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "Remarque : ne sera pas capable de chiffrer à « %s » : %s\n"
 
 #, c-format
@@ -8204,6 +8210,27 @@ msgstr ""
 "Vérifier une phrase de passe donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#, fuzzy
+#~| msgid "Note: no default option file '%s'\n"
+#~ msgid "NOTE: no default option file '%s'\n"
+#~ msgstr "Remarque : pas de fichier d'options par défaut « %s »\n"
+
+#, fuzzy
+#~| msgid "Note: %s is not for normal use!\n"
+#~ msgid "NOTE: %s is not for normal use!\n"
+#~ msgstr "Remarque : %s n'est pas pour une utilisation normale.\n"
+
+#, fuzzy
+#~| msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#~ msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#~ msgstr ""
+#~ "Remarque : la création de sous-clefs pour des clefs v3 n'est pas "
+#~ "compatible\n"
+#~ "           avec OpenPGP\n"
+
+#~ msgid "note: non-critical certificate policy not allowed"
+#~ msgstr "remarque : politique de certificat non critique non autorisée"
+
 #~ msgid "use a standard location for the socket"
 #~ msgstr "utiliser un emplacement de socket standard"
 
@@ -8444,16 +8471,16 @@ msgstr ""
 #~ msgid "key %s: secret key not found: %s\n"
 #~ msgstr "clef %s : clef secrète introuvable : %s\n"
 
-#~ msgid "NOTE: a key's S/N does not match the card's one\n"
+#~ msgid "Note: a key's S/N does not match the card's one\n"
 #~ msgstr ""
 #~ "Remarque : le numéro de série d'une clef ne correspond pas à celui de la "
 #~ "carte\n"
 
-#~ msgid "NOTE: primary key is online and stored on card\n"
+#~ msgid "Note: primary key is online and stored on card\n"
 #~ msgstr ""
 #~ "Remarque : la clef principale est en ligne et stockée sur la carte\n"
 
-#~ msgid "NOTE: secondary key is online and stored on card\n"
+#~ msgid "Note: secondary key is online and stored on card\n"
 #~ msgstr ""
 #~ "Remarque : la clef secondaire est en ligne et stockée sur la carte\n"
 
@@ -8580,7 +8607,7 @@ msgstr ""
 #~ msgid "unknown protection algorithm\n"
 #~ msgstr "algorithme de protection inconnu\n"
 
-#~ msgid "NOTE: This key is not protected!\n"
+#~ msgid "Note: This key is not protected!\n"
 #~ msgstr "Remarque : cette clef n'est pas protégée.\n"
 
 #~ msgid "protection digest %d is not supported\n"
@@ -9030,7 +9057,7 @@ msgstr ""
 #~ msgid "         algorithms on these user IDs:\n"
 #~ msgstr "            algorithmes indisponibles pour ces identités :\n"
 
-#~ msgid "NOTE: This feature is not available in %s\n"
+#~ msgid "Note: This feature is not available in %s\n"
 #~ msgstr "Remarque : cette fonctionnalité n'est pas disponible dans %s\n"
 
 #~ msgid "Repeat passphrase\n"

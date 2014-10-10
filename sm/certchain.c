@@ -350,7 +350,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
         {
           if (!opt.quiet)
             do_list (0, listmode, fplist,
-                     _("note: non-critical certificate policy not allowed"));
+                     _("Note: non-critical certificate policy not allowed"));
           return 0;
         }
       do_list (1, listmode, fplist,
@@ -379,7 +379,7 @@ check_cert_policy (ksba_cert_t cert, int listmode, estream_t fplist)
                   if (!any_critical)
                     {
                       do_list (0, listmode, fplist,
-                     _("note: non-critical certificate policy not allowed"));
+                     _("Note: non-critical certificate policy not allowed"));
                       return 0;
                     }
                   do_list (1, listmode, fplist,

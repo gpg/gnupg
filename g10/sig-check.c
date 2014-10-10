@@ -235,7 +235,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
     if( pk->has_expired || (pk->expiredate && pk->expiredate < cur_time)) {
         char buf[11];
         if (opt.verbose)
-	  log_info(_("NOTE: signature key %s expired %s\n"),
+	  log_info(_("Note: signature key %s expired %s\n"),
 		   keystr_from_pk(pk), asctimestamp( pk->expiredate ) );
 	sprintf(buf,"%lu",(ulong)pk->expiredate);
 	write_status_text(STATUS_KEYEXPIRED,buf);
@@ -246,7 +246,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
     if (pk->flags.revoked)
       {
         if (opt.verbose)
-	  log_info (_("NOTE: signature key %s has been revoked\n"),
+	  log_info (_("Note: signature key %s has been revoked\n"),
                     keystr_from_pk(pk));
         if (r_revoked)
           *r_revoked=1;

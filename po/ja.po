@@ -381,7 +381,7 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s が古すぎます (%s が必要、現在 %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file '%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "*注意*: デフォルトのオプション・ファイル '%s' がありません\n"
 
 #, c-format
@@ -393,7 +393,7 @@ msgid "reading options from '%s'\n"
 msgstr "'%s' からオプションを読み込みます\n"
 
 #, c-format
-msgid "NOTE: '%s' is not considered an option\n"
+msgid "Note: '%s' is not considered an option\n"
 msgstr "*注意*: '%s'はオプションとは考えられません\n"
 
 msgid "name of socket too long\n"
@@ -1249,7 +1249,7 @@ msgid "Replace existing key? (y/N) "
 msgstr "既存の鍵を交換しますか? (y/N) "
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1288,7 +1288,7 @@ msgstr "鍵%dの長さを%u bit に変更する際にエラー: %s\n"
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "暗号鍵のカード外バックアップを作成しますか? (Y/n) "
 
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "*注意*: 秘密鍵はもうカードに保管してあります!\n"
 
 msgid "Replace existing keys? (y/N) "
@@ -1908,7 +1908,7 @@ msgid "show expiration dates during signature listings"
 msgstr "署名の一覧に有効期限の日付を表示する"
 
 #, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "*注意*: 以前デフォルトだったオプション・ファイル'%s'は、無視されます\n"
 
 #, c-format
@@ -1916,7 +1916,7 @@ msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt は古すぎます (必要 %s, 現在 %s)\n"
 
 #, c-format
-msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "*注意*: 普通%sは使いません!\n"
 
 #, c-format
@@ -2062,7 +2062,7 @@ msgstr "無効なdefault-cert-level。0か1か2か3でなければなりませ�
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "無効なmin-cert-level。0か1か2か3でなければなりません\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "*注意*: 単純なS2Kモード(0)の使用には強く反対します\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -3838,7 +3838,7 @@ msgid ""
 "key has been created %lu seconds in future (time warp or clock problem)\n"
 msgstr "鍵は%lu秒未来にできました (時間歪曲か時計の障害でしょう)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "*注意*: v3鍵に対する副鍵の作成は、OpenPGPに適合しません\n"
 
 msgid "Secret parts of primary key are not available.\n"
@@ -3859,7 +3859,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "バックアップ・ファイル'%s'が作成できません: %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "*注意*: カード鍵のバックアップが'%s'へ保存されます\n"
 
 msgid "never     "
@@ -3879,6 +3879,10 @@ msgstr "クリティカルな署名注釈: "
 
 msgid "Signature notation: "
 msgstr "署名注釈: "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "鍵リング"
@@ -4080,7 +4084,7 @@ msgstr "保持したパスフレーズをクリアしました ID: %s\n"
 msgid "decryption failed: %s\n"
 msgstr "復号に失敗しました: %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "*注意*: 送信者は\"極秘とする\"ように求めています\n"
 
 #, c-format
@@ -4693,10 +4697,10 @@ msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "*警告*: 暗号アルゴリズム%sは受取人の優先指定に入っていません\n"
 
 #, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "*注意*: 秘密鍵%sは%sで期限切れとなります\n"
 
-msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "*注意*: 鍵は失効済みです"
 
 #, c-format
@@ -4852,11 +4856,11 @@ msgid ""
 msgstr "鍵%sは%lu秒未来にできました (時間歪曲か時計の障害でしょう)\n"
 
 #, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "*注意*: 署名鍵%sは%sに期限切れとなります\n"
 
 #, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "*注意*: 鍵 %s は失効済みです\n"
 
 #, c-format
@@ -5002,7 +5006,7 @@ msgstr "%s: 無効な信用データベースを作成\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: 信用データベースができました\n"
 
-msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "*注意*: 信用データベースが、書き込み不能です\n"
 
 #, c-format
@@ -5497,7 +5501,9 @@ msgstr "コンフィグされたポリシなしにクリティカルにマーク
 msgid "failed to open '%s': %s\n"
 msgstr "'%s'が開けません: %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
+#, fuzzy
+#| msgid "note: non-critical certificate policy not allowed"
+msgid "Note: non-critical certificate policy not allowed"
 msgstr "注意: クリティカルでない証明書ポリシは認められません"
 
 msgid "certificate policy not allowed"
@@ -6017,7 +6023,7 @@ msgstr ""
 "デフォルトの操作は、入力データに依存します\n"
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "*注意*:'%s'に対して暗号化できません: %s\n"
 
 #, c-format
@@ -7762,6 +7768,24 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#, fuzzy
+#~| msgid "Note: no default option file '%s'\n"
+#~ msgid "NOTE: no default option file '%s'\n"
+#~ msgstr "*注意*: デフォルトのオプション・ファイル '%s' がありません\n"
+
+#, fuzzy
+#~| msgid "Note: %s is not for normal use!\n"
+#~ msgid "NOTE: %s is not for normal use!\n"
+#~ msgstr "*注意*: 普通%sは使いません!\n"
+
+#, fuzzy
+#~| msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#~ msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#~ msgstr "*注意*: v3鍵に対する副鍵の作成は、OpenPGPに適合しません\n"
+
+#~ msgid "note: non-critical certificate policy not allowed"
+#~ msgstr "注意: クリティカルでない証明書ポリシは認められません"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "ソケットに標準の場所を使う"

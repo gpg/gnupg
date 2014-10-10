@@ -205,7 +205,7 @@ main (int argc, char **argv)
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
+          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
   fname = argc ? *argv : NULL;

@@ -391,7 +391,7 @@ msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s є занадто застарілою (потрібно %s, маємо %s)\n"
 
 #, c-format
-msgid "NOTE: no default option file '%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
 
 #, c-format
@@ -403,7 +403,7 @@ msgid "reading options from '%s'\n"
 msgstr "прочитати параметри з «%s»\n"
 
 #, c-format
-msgid "NOTE: '%s' is not considered an option\n"
+msgid "Note: '%s' is not considered an option\n"
 msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
 
 msgid "name of socket too long\n"
@@ -1275,7 +1275,7 @@ msgid "Replace existing key? (y/N) "
 msgstr "Замінити вже створений ключ? (y/N або т/Н) "
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1316,7 +1316,7 @@ msgstr "помилка під час спроби зміни розміру кл
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Створити резервну копію ключа шифрування поза карткою? (Y/n або Т/н) "
 
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "ЗАУВАЖЕННЯ: ключі вже збережено на картці!\n"
 
 msgid "Replace existing keys? (y/N) "
@@ -1966,7 +1966,7 @@ msgid "show expiration dates during signature listings"
 msgstr "показувати дати завершення строків дії у списку підписів"
 
 #, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "ЗАУВАЖЕННЯ: застарілий файл типових параметрів «%s» проігноровано\n"
 
 #, c-format
@@ -1974,7 +1974,7 @@ msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt занадто стара (потрібна — %s, маємо %s)\n"
 
 #, c-format
-msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
 
 #, c-format
@@ -2126,7 +2126,7 @@ msgstr "некоректне значення default-cert-level; має бут�
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "некоректне значення min-cert-level; має бути 1, 2 або 3\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr ""
 "ЗАУВАЖЕННЯ: наполегливо не рекомендуємо вам користуватися простим режимом "
 "S2K (0)\n"
@@ -3960,7 +3960,7 @@ msgstr ""
 "ключ було створено з позначкою на %lu секунду у майбутньому (часова петля "
 "або проблема з годинником)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "ЗАУВАЖЕННЯ: створення підключів для ключів v3 несумісне з OpenPGP\n"
 
 msgid "Secret parts of primary key are not available.\n"
@@ -3981,7 +3981,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "не вдалося створити файл резервної копії «%s»: %s\n"
 
 #, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "ЗАУВАЖЕННЯ: резервну копію ключа на картці збережено до «%s»\n"
 
 msgid "never     "
@@ -4001,6 +4001,10 @@ msgstr "Критична примітка підпису: "
 
 msgid "Signature notation: "
 msgstr "Примітка підпису: "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "Сховище ключів"
@@ -4210,7 +4214,7 @@ msgstr "текстовий пароль кешовано з ідентифіка
 msgid "decryption failed: %s\n"
 msgstr "невдала спроба розшифрування: %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "ЗАУВАЖЕННЯ: вимога відправника: «лише для Вас»\n"
 
 #, c-format
@@ -4840,10 +4844,10 @@ msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "УВАГА: не виявлено алгоритму шифрування %s у перевагах отримувача\n"
 
 #, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "ЗАУВАЖЕННЯ: строк дії закритого ключа %s завершився %s\n"
 
-msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "ЗАУВАЖЕННЯ: ключ було відкликано"
 
 #, c-format
@@ -5003,11 +5007,11 @@ msgstr ""
 "або проблема з годинником)\n"
 
 #, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "ЗАУВАЖЕННЯ: строк дії ключа підпису %s завершився %s\n"
 
 #, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "ЗАУВАЖЕННЯ: ключ підпису %s було відкликано\n"
 
 #, c-format
@@ -5162,7 +5166,7 @@ msgstr "%s: створено некоректну trustdb\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: створено trustdb\n"
 
-msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "ЗАУВАЖЕННЯ: запис до trustdb заборонено\n"
 
 #, c-format
@@ -5679,7 +5683,9 @@ msgstr "правила, позначені як критичні, без нал�
 msgid "failed to open '%s': %s\n"
 msgstr "не вдалося відкрити «%s»: %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
+#, fuzzy
+#| msgid "note: non-critical certificate policy not allowed"
+msgid "Note: non-critical certificate policy not allowed"
 msgstr "зауваження: заборонено некритичні правила сертифікації"
 
 msgid "certificate policy not allowed"
@@ -6208,7 +6214,7 @@ msgstr ""
 "Типова дія залежатиме від вхідних даних\n"
 
 #, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "ЗАУВАЖЕННЯ: не вдасться зашифрувати до «%s»: %s\n"
 
 #, c-format
@@ -7977,6 +7983,24 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#, fuzzy
+#~| msgid "Note: no default option file '%s'\n"
+#~ msgid "NOTE: no default option file '%s'\n"
+#~ msgstr "ЗАУВАЖЕННЯ: не виявлено файла типових параметрів «%s»\n"
+
+#, fuzzy
+#~| msgid "Note: %s is not for normal use!\n"
+#~ msgid "NOTE: %s is not for normal use!\n"
+#~ msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
+
+#, fuzzy
+#~| msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#~ msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#~ msgstr "ЗАУВАЖЕННЯ: створення підключів для ключів v3 несумісне з OpenPGP\n"
+
+#~ msgid "note: non-critical certificate policy not allowed"
+#~ msgstr "зауваження: заборонено некритичні правила сертифікації"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "використовувати для сокета стандартне розташування"

@@ -759,7 +759,7 @@ main (int argc, char **argv )
           if (default_config)
             {
               if( parse_debug )
-                log_info (_("NOTE: no default option file '%s'\n"),
+                log_info (_("Note: no default option file '%s'\n"),
                           configname );
               /* Save the default conf file name so that
                  reread_configuration is able to test whether the
@@ -881,7 +881,7 @@ main (int argc, char **argv )
 
       for (i=0; i < argc; i++)
         if (argv[i][0] == '-' && argv[i][1] == '-')
-          log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
+          log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
     }
 
 #ifdef ENABLE_NLS

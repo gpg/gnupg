@@ -1976,7 +1976,7 @@ get_default_configname (void)
       /* Print a warning when both config files are present.  */
       char *p = make_filename (opt.homedir, "options", NULL);
       if (! access (p, R_OK))
-	log_info (_("NOTE: old default options file '%s' ignored\n"), p);
+	log_info (_("Note: old default options file '%s' ignored\n"), p);
       xfree (p);
     }
   else
@@ -2243,7 +2243,7 @@ main (int argc, char **argv)
 	if( !configfp ) {
 	    if( default_config ) {
 		if( parse_debug )
-		    log_info(_("NOTE: no default option file '%s'\n"),
+		    log_info(_("Note: no default option file '%s'\n"),
 							    configname );
 	    }
 	    else {
@@ -2509,7 +2509,7 @@ main (int argc, char **argv)
 #endif /*!NO_TRUST_MODELS*/
 
 	  case oForceOwnertrust:
-	    log_info(_("NOTE: %s is not for normal use!\n"),
+	    log_info(_("Note: %s is not for normal use!\n"),
 		     "--force-ownertrust");
 	    opt.force_ownertrust=string_to_trust_value(pargs.r.ret_str);
 	    if(opt.force_ownertrust==-1)
@@ -3235,7 +3235,7 @@ main (int argc, char **argv)
     }
 
     if (opt.no_literal) {
-	log_info(_("NOTE: %s is not for normal use!\n"), "--no-literal");
+	log_info(_("Note: %s is not for normal use!\n"), "--no-literal");
 	if (opt.textmode)
 	    log_error(_("%s not allowed with %s!\n"),
 		       "--textmode", "--no-literal" );
@@ -3247,7 +3247,7 @@ main (int argc, char **argv)
 
 
     if (opt.set_filesize)
-	log_info(_("NOTE: %s is not for normal use!\n"), "--set-filesize");
+	log_info(_("Note: %s is not for normal use!\n"), "--set-filesize");
     if( opt.batch )
 	tty_batchmode( 1 );
 
@@ -3268,7 +3268,7 @@ main (int argc, char **argv)
 
         for (i=0; i < argc; i++)
           if (argv[i][0] == '-' && argv[i][1] == '-')
-            log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
+            log_info (_("Note: '%s' is not considered an option\n"), argv[i]);
       }
 
 
@@ -3353,7 +3353,7 @@ main (int argc, char **argv)
       log_error(_("invalid min-cert-level; must be 1, 2, or 3\n"));
     switch( opt.s2k_mode ) {
       case 0:
-	log_info(_("NOTE: simple S2K mode (0) is strongly discouraged\n"));
+	log_info(_("Note: simple S2K mode (0) is strongly discouraged\n"));
 	break;
       case 1: case 3: break;
       default:

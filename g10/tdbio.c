@@ -647,7 +647,7 @@ open_db()
       /* Take care of read-only trustdbs.  */
       db_fd = open (db_name, O_RDONLY | MY_O_BINARY );
       if (db_fd != -1 && !opt.quiet)
-          log_info (_("NOTE: trustdb not writable\n"));
+          log_info (_("Note: trustdb not writable\n"));
   }
   if ( db_fd == -1 )
     log_fatal( _("can't open '%s': %s\n"), db_name, strerror(errno) );

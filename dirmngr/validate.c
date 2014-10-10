@@ -164,7 +164,7 @@ check_cert_policy (ksba_cert_t cert)
 
   if (!any_critical)
     {
-      log_info (_("note: non-critical certificate policy not allowed"));
+      log_info (_("Note: non-critical certificate policy not allowed"));
       err = 0;
     }
   else
