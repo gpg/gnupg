@@ -684,13 +684,13 @@ The following example lists exactly one key.  Note that keys available
 through a OpenPGP smartcard in the active smartcard reader are
 implicitly added to this list; i.e. there is no need to list them.
 
-  @cartouche
-  @smallexample
-  # Key added on: 2011-07-20 20:38:46
-  # Fingerprint:  5e:8d:c4:ad:e7:af:6e:27:8a:d6:13:e4:79:ad:0b:81
-  34B62F25E277CF13D3C6BCEBFD3F85D08F0A864B 0 confirm
-  @end smallexample
-  @end cartouche
+@cartouche
+@smallexample
+       # Key added on: 2011-07-20 20:38:46
+       # Fingerprint:  5e:8d:c4:ad:e7:af:6e:27:8a:d6:13:e4:79:ad:0b:81
+       34B62F25E277CF13D3C6BCEBFD3F85D08F0A864B 0 confirm
+@end smallexample
+@end cartouche
 
 @item private-keys-v1.d/
 
