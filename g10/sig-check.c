@@ -272,16 +272,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
     if (sig->digest_algo == GCRY_MD_MD5
         && !opt.flags.allow_weak_digest_algos)
       {
-        static int shown;
-
-        if (!shown)
-          {
-            log_info
-              (_("Note: signatures using the %s algorithm are rejected\n"),
-               "MD5");
-            shown = 1;
-          }
-
+        print_md5_rejected_note ();
         return GPG_ERR_DIGEST_ALGO;
       }
 
@@ -549,9 +540,11 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
     /* Check whether we have cached the result of a previous signature
        check.  Note that we may no longer have the pubkey or hash
        needed to verify a sig, but can still use the cached value.  A
-       cache refresh detects and clears these cases. */
+       cache refresh detects and clears these cases.
+       For safety reasons we ignore cache entries from MD5 signatures.  */
     if ( !opt.no_sig_cache ) {
-        if (sig->flags.checked) { /*cached status available*/
+        if (sig->flags.checked && sig->digest_algo != DIGEST_ALGO_MD5) {
+            /*cached status available*/
 	    if( is_selfsig ) {
 		u32 keyid[2];
 

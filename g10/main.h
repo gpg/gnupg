@@ -63,9 +63,6 @@ extern int g10_errors_seen;
 #else
   void g10_exit(int rc);
 #endif
-void print_pubkey_algo_note( int algo );
-void print_cipher_algo_note( int algo );
-void print_digest_algo_note( int algo );
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );
@@ -82,6 +79,10 @@ u16 checksum( byte *p, unsigned n );
 u16 checksum_mpi( gcry_mpi_t a );
 u32 buffer_to_u32( const byte *buffer );
 const byte *get_session_marker( size_t *rlen );
+void print_pubkey_algo_note( int algo );
+void print_cipher_algo_note( int algo );
+void print_digest_algo_note( int algo );
+void print_md5_rejected_note (void);
 int map_cipher_openpgp_to_gcry (int algo);
 #define openpgp_cipher_open(_a,_b,_c,_d) gcry_cipher_open((_a),map_cipher_openpgp_to_gcry((_b)),(_c),(_d))
 #define openpgp_cipher_get_algo_keylen(_a) gcry_cipher_get_algo_keylen(map_cipher_openpgp_to_gcry((_a)))
