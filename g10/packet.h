@@ -530,7 +530,7 @@ int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,
 int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			PKT_user_id *uid, PKT_public_key *subpk,
 			PKT_public_key *pksk, int sigclass, int digest_algo,
-			int sigversion, u32 timestamp, u32 duration,
+			u32 timestamp, u32 duration,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque,
                         const char *cache_nonce);

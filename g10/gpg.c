@@ -272,10 +272,6 @@ enum cmd_and_opt_values
     oShowPhotos,
     oNoShowPhotos,
     oPhotoViewer,
-    oForceV3Sigs,
-    oNoForceV3Sigs,
-    oForceV4Certs,
-    oNoForceV4Certs,
     oForceMDC,
     oNoForceMDC,
     oDisableMDC,
@@ -525,10 +521,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	  "quiet",   "@"),
   ARGPARSE_s_n (oNoTTY,   "no-tty",  "@"),
 
-  ARGPARSE_s_n (oForceV3Sigs,      "force-v3-sigs", "@"),
-  ARGPARSE_s_n (oNoForceV3Sigs, "no-force-v3-sigs", "@"),
-  ARGPARSE_s_n (oForceV4Certs,     "force-v4-certs", "@"),
-  ARGPARSE_s_n (oNoForceV4Certs, "no-force-v4-certs", "@"),
   ARGPARSE_s_n (oForceMDC, "force-mdc", "@"),
   ARGPARSE_s_n (oNoForceMDC, "no-force-mdc", "@"),
   ARGPARSE_s_n (oDisableMDC, "disable-mdc", "@"),
@@ -810,6 +802,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoop, "no-sk-comments", "@"),
   ARGPARSE_s_n (oNoop, "compress-keys", "@"),
   ARGPARSE_s_n (oNoop, "compress-sigs", "@"),
+  ARGPARSE_s_n (oNoop, "force-v3-sigs", "@"),
+  ARGPARSE_s_n (oNoop, "no-force-v3-sigs", "@"),
+  ARGPARSE_s_n (oNoop, "force-v4-certs", "@"),
+  ARGPARSE_s_n (oNoop, "no-force-v4-certs", "@"),
 
   ARGPARSE_end ()
 };
@@ -2535,7 +2531,6 @@ main (int argc, char **argv)
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 1;
-	    opt.force_v3_sigs = 0;
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
@@ -2553,7 +2548,6 @@ main (int argc, char **argv)
 	    opt.allow_freeform_uid = 1;
 	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
-	    opt.force_v3_sigs = 0;
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
 	    opt.def_digest_algo = 0;
@@ -2637,10 +2631,7 @@ main (int argc, char **argv)
 	    opt.verify_options&=~VERIFY_SHOW_PHOTOS;
 	    break;
 	  case oPhotoViewer: opt.photo_viewer = pargs.r.ret_str; break;
-	  case oForceV3Sigs: opt.force_v3_sigs = 1; break;
-	  case oNoForceV3Sigs: opt.force_v3_sigs = 0; break;
-          case oForceV4Certs: opt.force_v4_certs = 1; break;
-          case oNoForceV4Certs: opt.force_v4_certs = 0; break;
+
 	  case oForceMDC: opt.force_mdc = 1; break;
 	  case oNoForceMDC: opt.force_mdc = 0; break;
 	  case oDisableMDC: opt.disable_mdc = 1; break;
@@ -3288,15 +3279,17 @@ main (int argc, char **argv)
     /* Do these after the switch(), so they can override settings. */
     if(PGP6)
       {
+        /* That does not anymore work becuase we have no more support
+           for v3 signatures.  */
 	opt.disable_mdc=1;
 	opt.escape_from=1;
-	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
       }
     else if(PGP7)
       {
+        /* That does not anymore work because we have no more support
+           for v3 signatures.  */
 	opt.escape_from=1;
-	opt.force_v3_sigs=1;
 	opt.ask_sig_expire=0;
       }
     else if(PGP8)

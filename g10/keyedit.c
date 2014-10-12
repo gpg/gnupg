@@ -536,13 +536,9 @@ sign_uids (estream_t fp,
     {
       u32 sk_keyid[2], pk_keyid[2];
       char *p, *trust_regexp = NULL;
-      int force_v4 = 0, class = 0, selfsig = 0;
+      int class = 0, selfsig = 0;
       u32 duration = 0, timestamp = 0;
       byte trust_depth = 0, trust_value = 0;
-
-      if (local || nonrevocable || trust
-          || opt.cert_policy_url || opt.cert_notations)
-	force_v4 = 1;
 
       pk = sk_rover->pk;
       keyid_from_pk (pk, sk_keyid);
@@ -567,14 +563,7 @@ sign_uids (estream_t fp,
 
 	      /* Is this a self-sig? */
 	      if (pk_keyid[0] == sk_keyid[0] && pk_keyid[1] == sk_keyid[1])
-		{
-		  selfsig = 1;
-		  /* Do not force a v4 sig here, otherwise it would
-		     be difficult to remake a v3 selfsig.  If this
-		     is a v3->v4 promotion case, then we set
-		     force_v4 later anyway. */
-		  force_v4 = 0;
-		}
+                selfsig = 1;
 	    }
 	  else if (node->pkt->pkttype == PKT_USER_ID)
 	    {
@@ -716,7 +705,6 @@ sign_uids (estream_t fp,
 						     "it to an OpenPGP self-"
 						     "signature? (y/N) ")))
 			  {
-			    force_v4 = 1;
 			    node->flag |= NODFLG_DELSIG;
 			    xfree (user);
 			    continue;
@@ -860,7 +848,6 @@ sign_uids (estream_t fp,
 		         passphrase, etc). */
 		      timestamp = now;
 		      duration = primary_pk->expiredate - now;
-		      force_v4 = 1;
 		    }
 
 		  cpr_kill_prompt ();
@@ -878,9 +865,6 @@ sign_uids (estream_t fp,
 	  else
 	    duration = parse_expire_string (opt.def_cert_expire);
 	}
-
-      if (duration)
-	force_v4 = 1;
 
       if (selfsig)
 	;
@@ -1041,7 +1025,7 @@ sign_uids (estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 0x13, 0, force_v4 ? 4 : 0, 0, 0,
+					 0x13, 0, 0, 0,
 					 keygen_add_std_prefs, primary_pk,
                                          NULL);
 	      else
@@ -1049,7 +1033,7 @@ sign_uids (estream_t fp,
 					 node->pkt->pkt.user_id,
 					 NULL,
 					 pk,
-					 class, 0, force_v4 ? 4 : 0,
+					 class, 0,
 					 timestamp, duration,
 					 sign_mk_attrib, &attrib,
                                          NULL);
@@ -3290,7 +3274,7 @@ menu_adduid (KBNODE pub_keyblock, int photo, const char *photo_name)
   if (!uid)
     return 0;
 
-  err = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x13, 0, 0, 0, 0,
+  err = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x13, 0, 0, 0,
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
@@ -3674,9 +3658,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       break;
     }
 
-  /* The 1F signature must be at least v4 to carry the revocation key
-     subpacket. */
-  rc = make_keysig_packet (&sig, pk, NULL, NULL, pk, 0x1F, 0, 4, 0, 0,
+  rc = make_keysig_packet (&sig, pk, NULL, NULL, pk, 0x1F, 0, 0, 0,
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
@@ -4966,7 +4948,7 @@ reloop:			/* (must use this, because we are modifing the list) */
 	}
       rc = make_keysig_packet (&sig, primary_pk,
 			       unode->pkt->pkt.user_id,
-			       NULL, signerkey, 0x30, 0, 0, 0, 0,
+			       NULL, signerkey, 0x30, 0, 0, 0,
                                sign_mk_attrib, &attrib, NULL);
       free_public_key (signerkey);
       if (rc)
@@ -5058,7 +5040,7 @@ menu_revuid (KBNODE pub_keyblock)
 	    node->flag &= ~NODFLG_SELUID;
 
 	    rc = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x30, 0,
-				     (reason == NULL) ? 3 : 0, timestamp, 0,
+				     timestamp, 0,
 				     sign_mk_attrib, &attrib, NULL);
 	    if (rc)
 	      {
@@ -5122,7 +5104,7 @@ menu_revkey (KBNODE pub_keyblock)
     return 0;
 
   rc = make_keysig_packet (&sig, pk, NULL, NULL, pk,
-			   0x20, 0, opt.force_v4_certs ? 4 : 0, 0, 0,
+			   0x20, 0, 0, 0,
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
@@ -5183,7 +5165,7 @@ menu_revsubkey (KBNODE pub_keyblock)
 
 	  node->flag &= ~NODFLG_SELKEY;
 	  rc = make_keysig_packet (&sig, mainpk, NULL, subpk, mainpk,
-				   0x28, 0, 0, 0, 0, sign_mk_attrib, &attrib,
+				   0x28, 0, 0, 0, sign_mk_attrib, &attrib,
                                    NULL);
 	  if (rc)
 	    {

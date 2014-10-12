@@ -24,7 +24,7 @@ dsa_usrname1="pgp5"
 # we use the sub key because we do not yet have the logic to to derive
 # the first encryption key from a keyblock (I guess) (Well of course
 # we have this by now and the notation below will lookup the primary
-# first and the search for the encryption subkey.)
+# first and then search for the encryption subkey.)
 dsa_usrname2="0xCB879DE9"
 
 

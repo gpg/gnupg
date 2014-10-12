@@ -1901,53 +1901,6 @@ parse_onepass_sig (IOBUF inp, int pkttype, unsigned long pktlen,
 }
 
 
-static gcry_mpi_t
-read_protected_v3_mpi (IOBUF inp, unsigned long *length)
-{
-  int c;
-  unsigned int nbits, nbytes;
-  unsigned char *buf, *p;
-  gcry_mpi_t val;
-
-  if (*length < 2)
-    {
-      log_error ("mpi too small\n");
-      return NULL;
-    }
-
-  if ((c = iobuf_get (inp)) == -1)
-    return NULL;
-  --*length;
-  nbits = c << 8;
-  if ((c = iobuf_get (inp)) == -1)
-    return NULL;
-  --*length;
-  nbits |= c;
-
-  if (nbits > 16384)
-    {
-      log_error ("mpi too large (%u bits)\n", nbits);
-      return NULL;
-    }
-  nbytes = (nbits + 7) / 8;
-  buf = p = xmalloc (2 + nbytes);
-  *p++ = nbits >> 8;
-  *p++ = nbits;
-  for (; nbytes && *length; nbytes--, --*length)
-    *p++ = iobuf_get (inp);
-  if (nbytes)
-    {
-      log_error ("packet shorter than mpi\n");
-      xfree (buf);
-      return NULL;
-    }
-
-  /* Convert buffer into an opaque MPI.  */
-  val = gcry_mpi_set_opaque (NULL, buf, (p - buf) * 8);
-  return val;
-}
-
-
 static int
 parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	   byte * hdr, int hdrlen, PACKET * pkt)
@@ -1956,7 +1909,6 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   int i, version, algorithm;
   unsigned long timestamp, expiredate, max_expiredate;
   int npkey, nskey;
-  int is_v4 = 0;
   int rc = 0;
   u32 keyid[2];
   PKT_public_key *pk;
@@ -1991,8 +1943,19 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       return 0;
     }
   else if (version == 4)
-    is_v4 = 1;
-  else if (version != 2 && version != 3)
+    {
+      /* The only supported version.  Use an older gpg
+         versions (i.e. gpg 1.4 to parse v3 packets).  */
+    }
+  else if (version == 2 || version == 3)
+    {
+      log_info ("packet(%d) with obsolete version %d\n", pkttype, version);
+      if (list_mode)
+        es_fprintf (listfp, ":key packet: [obsolete version %d]\n", version);
+      err = gpg_error (GPG_ERR_INV_PACKET);
+      goto leave;
+    }
+  else
     {
       log_error ("packet(%d) with unknown version %d\n", pkttype, version);
       if (list_mode)
@@ -2012,23 +1975,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 
   timestamp = read_32 (inp);
   pktlen -= 4;
-  if (is_v4)
-    {
-      expiredate = 0;		/* have to get it from the selfsignature */
-      max_expiredate = 0;
-    }
-  else
-    {
-      unsigned short ndays;
-      ndays = read_16 (inp);
-      pktlen -= 2;
-      if (ndays)
-	expiredate = timestamp + ndays * 86400L;
-      else
-	expiredate = 0;
-
-      max_expiredate = expiredate;
-    }
+  expiredate = 0;		/* have to get it from the selfsignature */
+  max_expiredate = 0;
   algorithm = iobuf_get_noeof (inp);
   pktlen--;
   if (list_mode)
@@ -2145,7 +2093,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	      ski->s2k.hash_algo = iobuf_get_noeof (inp);
 	      pktlen--;
 	      /* Check for the special GNU extension.  */
-	      if (is_v4 && ski->s2k.mode == 101)
+	      if (ski->s2k.mode == 101)
 		{
 		  for (i = 0; i < 4 && pktlen; i++, pktlen--)
 		    temp[i] = iobuf_get_noeof (inp);
@@ -2312,7 +2260,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 						 10 * 8);
 	  pktlen = 0;
 	}
-      else if (is_v4 && ski->is_protected)
+      else if (ski->is_protected)
 	{
 	  /* Ugly: The length is encrypted too, so we read all stuff
 	   * up to the end of the packet into the first SKEY
@@ -2331,29 +2279,18 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
       else
 	{
-          /* The v3 method: The mpi length is not encrypted.  */
+          /* Not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
-	      if (ski->is_protected)
-		{
-		  pk->pkey[i] = read_protected_v3_mpi (inp, &pktlen);
-                  if (pk->pkey[i])
-                    gcry_mpi_set_flag (pk->pkey[i], GCRYMPI_FLAG_USER1);
-		  if (list_mode)
-		    es_fprintf (listfp, "\tskey[%d]: [v3 protected]\n", i);
-		}
-	      else
-		{
-		  unsigned int n = pktlen;
-		  pk->pkey[i] = mpi_read (inp, &n, 0);
-		  pktlen -= n;
-		  if (list_mode)
-		    {
-		      es_fprintf (listfp, "\tskey[%d]: ", i);
-		      mpi_print (listfp, pk->pkey[i], mpi_print_mode);
-		      es_putc ('\n', listfp);
-		    }
-		}
+              unsigned int n = pktlen;
+              pk->pkey[i] = mpi_read (inp, &n, 0);
+              pktlen -= n;
+              if (list_mode)
+                {
+                  es_fprintf (listfp, "\tskey[%d]: ", i);
+                  mpi_print (listfp, pk->pkey[i], mpi_print_mode);
+                  es_putc ('\n', listfp);
+                }
 
 	      if (!pk->pkey[i])
 		err = gpg_error (GPG_ERR_INV_PACKET);
