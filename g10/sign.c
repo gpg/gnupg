@@ -155,30 +155,32 @@ mk_notation_policy_etc (PKT_signature *sig,
 static void
 hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 {
-    if ( sigversion >= 4 ) {
-        byte buf[5];
+  byte buf[5];
 
-	if(uid->attrib_data) {
-	  buf[0] = 0xd1;	           /* indicates an attribute packet */
-	  buf[1] = uid->attrib_len >> 24;  /* always use 4 length bytes */
-	  buf[2] = uid->attrib_len >> 16;
-	  buf[3] = uid->attrib_len >>  8;
-	  buf[4] = uid->attrib_len;
-	}
-	else {
-	  buf[0] = 0xb4;	    /* indicates a userid packet */
-	  buf[1] = uid->len >> 24;  /* always use 4 length bytes */
-	  buf[2] = uid->len >> 16;
-	  buf[3] = uid->len >>  8;
-	  buf[4] = uid->len;
-	}
-        gcry_md_write( md, buf, 5 );
+  (void)sigversion;
+
+  if (uid->attrib_data)
+    {
+      buf[0] = 0xd1;	               /* Indicates an attribute packet.  */
+      buf[1] = uid->attrib_len >> 24;  /* Always use 4 length bytes.  */
+      buf[2] = uid->attrib_len >> 16;
+      buf[3] = uid->attrib_len >>  8;
+      buf[4] = uid->attrib_len;
     }
+  else
+    {
+      buf[0] = 0xb4;	               /* Indicates a userid packet.  */
+      buf[1] = uid->len >> 24;         /* Always use 4 length bytes.  */
+      buf[2] = uid->len >> 16;
+      buf[3] = uid->len >>  8;
+      buf[4] = uid->len;
+    }
+  gcry_md_write( md, buf, 5 );
 
-    if(uid->attrib_data)
-      gcry_md_write (md, uid->attrib_data, uid->attrib_len );
-    else
-      gcry_md_write (md, uid->name, uid->len );
+  if (uid->attrib_data)
+    gcry_md_write (md, uid->attrib_data, uid->attrib_len );
+  else
+    gcry_md_write (md, uid->name, uid->len );
 }
 
 
@@ -188,44 +190,37 @@ hash_uid (gcry_md_hd_t md, int sigversion, const PKT_user_id *uid)
 static void
 hash_sigversion_to_magic (gcry_md_hd_t md, const PKT_signature *sig)
 {
-    if (sig->version >= 4)
-        gcry_md_putc (md, sig->version);
-    gcry_md_putc (md, sig->sig_class);
-    if (sig->version < 4) {
-        u32 a = sig->timestamp;
-        gcry_md_putc (md, (a >> 24) & 0xff );
-        gcry_md_putc (md, (a >> 16) & 0xff );
-        gcry_md_putc (md, (a >>  8) & 0xff );
-        gcry_md_putc (md,  a	       & 0xff );
-    }
-    else {
-        byte buf[6];
-        size_t n;
+  byte buf[6];
+  size_t n;
 
-        gcry_md_putc (md, sig->pubkey_algo);
-        gcry_md_putc (md, sig->digest_algo);
-        if (sig->hashed) {
-            n = sig->hashed->len;
-            gcry_md_putc (md, (n >> 8) );
-            gcry_md_putc (md,  n       );
-            gcry_md_write (md, sig->hashed->data, n );
-            n += 6;
-        }
-        else {
-            gcry_md_putc (md, 0);  /* always hash the length of the subpacket*/
-            gcry_md_putc (md, 0);
-            n = 6;
-        }
-        /* add some magic */
-        buf[0] = sig->version;
-        buf[1] = 0xff;
-        buf[2] = n >> 24; /* hmmm, n is only 16 bit, so this is always 0 */
-        buf[3] = n >> 16;
-        buf[4] = n >>  8;
-        buf[5] = n;
-        gcry_md_write (md, buf, 6);
+  gcry_md_putc (md, sig->version);
+  gcry_md_putc (md, sig->sig_class);
+  gcry_md_putc (md, sig->pubkey_algo);
+  gcry_md_putc (md, sig->digest_algo);
+  if (sig->hashed)
+    {
+      n = sig->hashed->len;
+      gcry_md_putc (md, (n >> 8) );
+      gcry_md_putc (md,  n       );
+      gcry_md_write (md, sig->hashed->data, n );
+      n += 6;
     }
+  else
+    {
+      gcry_md_putc (md, 0);  /* Always hash the length of the subpacket.  */
+      gcry_md_putc (md, 0);
+      n = 6;
+    }
+  /* Add some magic.  */
+  buf[0] = sig->version;
+  buf[1] = 0xff;
+  buf[2] = n >> 24;         /* (n is only 16 bit, so this is always 0) */
+  buf[3] = n >> 16;
+  buf[4] = n >>  8;
+  buf[5] = n;
+  gcry_md_write (md, buf, 6);
 }
+
 
 /* Perform the sign operation.  If CACHE_NONCE is given the agent is
    advised to use that cached passphrase fro the key.  */
@@ -520,26 +515,6 @@ hash_for (PKT_public_key *pk)
 }
 
 
-/* Return true iff all keys in SK_LIST are old style (v3 RSA).  */
-static int
-only_old_style (SK_LIST sk_list)
-{
-  SK_LIST sk_rover = NULL;
-  int old_style = 0;
-
-  for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
-    {
-      PKT_public_key *pk = sk_rover->pk;
-
-      if (pk->pubkey_algo == PUBKEY_ALGO_RSA && pk->version < 4)
-        old_style = 1;
-      else
-        return 0;
-    }
-  return old_style;
-}
-
-
 static void
 print_status_sig_created (PKT_public_key *pk, PKT_signature *sig, int what)
 {
@@ -705,10 +680,8 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
 
       /* Build the signature packet.  */
       sig = xmalloc_clear (sizeof *sig);
-      if (opt.force_v3_sigs)
-        sig->version = 3;
-      else if (duration || opt.sig_policy_url
-               || opt.sig_notations || opt.sig_keyserver_url)
+      if (duration || opt.sig_policy_url
+          || opt.sig_notations || opt.sig_keyserver_url)
         sig->version = 4;
       else
         sig->version = pk->version;
@@ -727,11 +700,8 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
       if (gcry_md_copy (&md, hash))
         BUG ();
 
-      if (sig->version >= 4)
-        {
-          build_sig_subpkt_from_sig (sig);
-          mk_notation_policy_etc (sig, pk, NULL);
-        }
+      build_sig_subpkt_from_sig (sig);
+      mk_notation_policy_etc (sig, pk, NULL);
 
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
@@ -814,13 +784,10 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
        && (rc=setup_symkey(&efx.symkey_s2k,&efx.symkey_dek)))
       goto leave;
 
-    if(!opt.force_v3_sigs)
-      {
-	if(opt.ask_sig_expire && !opt.batch)
-	  duration=ask_expire_interval(1,opt.def_sig_expire);
-	else
-	  duration=parse_expire_string(opt.def_sig_expire);
-      }
+    if (opt.ask_sig_expire && !opt.batch)
+      duration = ask_expire_interval(1,opt.def_sig_expire);
+    else
+      duration = parse_expire_string(opt.def_sig_expire);
 
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
@@ -1123,29 +1090,21 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     int rc = 0;
     SK_LIST sk_list = NULL;
     SK_LIST sk_rover = NULL;
-    int old_style = 0;
-    int only_md5 = 0;
     u32 duration=0;
 
     pfx = new_progress_context ();
     afx = new_armor_context ();
     init_packet( &pkt );
 
-    if(!opt.force_v3_sigs)
-      {
-	if(opt.ask_sig_expire && !opt.batch)
-	  duration=ask_expire_interval(1,opt.def_sig_expire);
-	else
-	  duration=parse_expire_string(opt.def_sig_expire);
-      }
+    if (opt.ask_sig_expire && !opt.batch)
+      duration = ask_expire_interval (1,opt.def_sig_expire);
+    else
+      duration = parse_expire_string (opt.def_sig_expire);
 
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
     if( (rc=build_sk_list( locusr, &sk_list, PUBKEY_USAGE_SIG )) )
 	goto leave;
-
-    if(!duration )
-	old_style = only_old_style( sk_list );
 
     /* prepare iobufs */
     inp = iobuf_open(fname);
@@ -1184,18 +1143,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 
     iobuf_writestr(out, "-----BEGIN PGP SIGNED MESSAGE-----" LF );
 
-    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next)
-      {
-	if (hash_for (sk_rover->pk) == DIGEST_ALGO_MD5)
-          only_md5 = 1;
-	else
-          {
-	    only_md5 = 0;
-	    break;
-          }
-      }
-
-    if( !(old_style && only_md5) ) {
+    {
 	const char *s;
 	int any = 0;
 	byte hashs_seen[256];
@@ -1234,8 +1182,8 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
     if ( DBG_HASHING )
       gcry_md_debug ( textmd, "clearsign" );
 
-    copy_clearsig_text( out, inp, textmd, !opt.not_dash_escaped,
-			opt.escape_from, (old_style && only_md5) );
+    copy_clearsig_text (out, inp, textmd, !opt.not_dash_escaped,
+                        opt.escape_from);
     /* fixme: check for read errors */
 
     /* now write the armor */
@@ -1292,13 +1240,10 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
     memset( &cfx, 0, sizeof cfx);
     init_packet( &pkt );
 
-    if(!opt.force_v3_sigs)
-      {
-	if(opt.ask_sig_expire && !opt.batch)
-	  duration=ask_expire_interval(1,opt.def_sig_expire);
-	else
-	  duration=parse_expire_string(opt.def_sig_expire);
-      }
+    if (opt.ask_sig_expire && !opt.batch)
+      duration = ask_expire_interval (1, opt.def_sig_expire);
+    else
+      duration = parse_expire_string (opt.def_sig_expire);
 
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
@@ -1441,52 +1386,39 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
  * applied (actually: dropped) when a v3 key is used.  TIMESTAMP is
  * the timestamp to use for the signature. 0 means "now" */
 int
-make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
+make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
 		    PKT_user_id *uid, PKT_public_key *subpk,
 		    PKT_public_key *pksk,
 		    int sigclass, int digest_algo,
-                    int sigversion, u32 timestamp, u32 duration,
+                    u32 timestamp, u32 duration,
 		    int (*mksubpkt)(PKT_signature *, void *), void *opaque,
                     const char *cache_nonce)
 {
     PKT_signature *sig;
     int rc=0;
+    int sigversion;
     gcry_md_hd_t md;
 
     assert( (sigclass >= 0x10 && sigclass <= 0x13) || sigclass == 0x1F
 	    || sigclass == 0x20 || sigclass == 0x18 || sigclass == 0x19
 	    || sigclass == 0x30 || sigclass == 0x28 );
 
-    if (opt.force_v4_certs)
-        sigversion = 4;
-
+    sigversion = 4;
     if (sigversion < pksk->version)
         sigversion = pksk->version;
 
-    /* If you are making a signature on a v4 key using your v3 key, it
-       doesn't make sense to generate a v3 sig.  After all, no v3-only
-       PGP implementation could understand the v4 key in the first
-       place.  Note that this implies that a signature on an attribute
-       uid is usually going to be v4 as well, since they are not
-       generally found on v3 keys. */
-    if (sigversion < pk->version)
-        sigversion = pk->version;
-
     if( !digest_algo )
       {
-	/* Basically, this means use SHA1 always unless it's a v3 RSA
-	   key making a v3 cert (use MD5), or the user specified
-	   something (use whatever they said), or it's DSA (use the
-	   best match).  They still can't pick an inappropriate hash
-	   for DSA or the signature will fail.  Note that this still
-	   allows the caller of make_keysig_packet to override the
-	   user setting if it must. */
+	/* Basically, this means use SHA1 always unless the user
+	   specified something (use whatever they said), or it's DSA
+	   (use the best match).  They still can't pick an
+	   inappropriate hash for DSA or the signature will fail.
+	   Note that this still allows the caller of
+	   make_keysig_packet to override the user setting if it
+	   must. */
 
 	if(opt.cert_digest_algo)
 	  digest_algo=opt.cert_digest_algo;
-	else if(pksk->pubkey_algo == PUBKEY_ALGO_RSA
-		&& pk->version<4 && sigversion<4)
-	  digest_algo = DIGEST_ALGO_MD5;
 	else if(pksk->pubkey_algo == PUBKEY_ALGO_DSA)
 	  digest_algo = match_dsa_hash (gcry_mpi_get_nbits (pksk->pkey[1])/8);
         else if (pksk->pubkey_algo == PUBKEY_ALGO_ECDSA
@@ -1533,16 +1465,14 @@ make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
     if(duration)
       sig->expiredate=sig->timestamp+duration;
     sig->sig_class = sigclass;
-    if( sig->version >= 4 )
-      {
-	build_sig_subpkt_from_sig( sig );
-	mk_notation_policy_etc (sig, pk, pksk);
-      }
+
+    build_sig_subpkt_from_sig( sig );
+    mk_notation_policy_etc (sig, pk, pksk);
 
     /* Crucial that the call to mksubpkt comes LAST before the calls
        to finalize the sig as that makes it possible for the mksubpkt
        function to get a reliable pointer to the subpacket area. */
-    if( sig->version >= 4 && mksubpkt )
+    if (mksubpkt)
 	rc = (*mksubpkt)( sig, opaque );
 
     if( !rc ) {
@@ -1627,17 +1557,14 @@ update_keysig_packet( PKT_signature **ret_sig,
        duration of 1) since build-packet.c:build_sig_subpkt_from_sig
        detects this case. */
 
-    if( sig->version >= 4 )
-      {
-	/* Put the updated timestamp into the sig.  Note that this
-	   will automagically lower any sig expiration dates to
-	   correctly correspond to the differences in the timestamps
-	   (i.e. the duration will shrink). */
-	build_sig_subpkt_from_sig( sig );
+    /* Put the updated timestamp into the sig.  Note that this will
+       automagically lower any sig expiration dates to correctly
+       correspond to the differences in the timestamps (i.e. the
+       duration will shrink).  */
+    build_sig_subpkt_from_sig( sig );
 
-	if (mksubpkt)
-	  rc = (*mksubpkt)(sig, opaque);
-      }
+    if (mksubpkt)
+      rc = (*mksubpkt)(sig, opaque);
 
     if (!rc) {
         hash_sigversion_to_magic (md, sig);

@@ -9,6 +9,15 @@
   ===================
    GnuPG (>=1.0.3) is in compliance with RFC2440 despite these exceptions:
 
+    * With GnuPG >= 2.1.0 all support for version 3 keys has been
+      removed.  Thus there is no more compatibility with PGP-2.  Users
+      who need to be able to decrypt old PGP 2 messages should use
+      GnuPG 1.4.x along with the option --allow-weak-digest-algos.
+
+    * With GnuPG >= 2.1.0 all signatures (on messages and keys) are
+      created using version 4 signatures.  Support for verifying
+      version 3 signature is still available.
+
     * (9.2) states that IDEA SHOULD be implemented.  This is not done
       due to patent problems.
       UPDATE: Since version 1.4.13 (or GnuPG 2.x with Libgcrypt 1.6)

@@ -2129,6 +2129,7 @@ platforms that have different line ending conventions (UNIX-like to Mac,
 Mac to Windows, etc). @option{--no-textmode} disables this option, and
 is the default.
 
+@ifclear gpgtwoone
 @item --force-v3-sigs
 @itemx --no-force-v3-sigs
 @opindex force-v3-sigs
@@ -2147,6 +2148,15 @@ Defaults to no.
 Always use v4 key signatures even on v3 keys. This option also
 changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
 @option{--no-force-v4-certs} disables this option.
+@end ifclear
+
+@ifset gpgtwoone
+@item --force-v3-sigs
+@itemx --no-force-v3-sigs
+@item --force-v4-certs
+@itemx --no-force-v4-certs
+These options are obsolete and have no effect since GnuPG 2.1.
+@end ifset
 
 @item --force-mdc
 @opindex force-mdc
@@ -2301,8 +2311,12 @@ compression algorithms none and ZIP. This also disables
 --throw-keyids, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
-This option implies @option{--disable-mdc --escape-from-lines
---force-v3-sigs}.
+@ifclear gpgtwoone
+This option implies @option{--disable-mdc --escape-from-lines --force-v3-sigs}.
+@end ifclear
+@ifset gpgtwoone
+This option implies @option{--disable-mdc --escape-from-lines}.
+@end ifset
 
 @item --pgp7
 @opindex pgp7

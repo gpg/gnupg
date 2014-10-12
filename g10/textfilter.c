@@ -161,7 +161,7 @@ text_filter( void *opaque, int control,
  */
 int
 copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
-		    int escape_dash, int escape_from, int pgp2mode )
+		    int escape_dash, int escape_from)
 {
     unsigned int maxlen;
     byte *buffer = NULL;    /* malloced buffer */
@@ -170,10 +170,7 @@ copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
     int truncated = 0;
     int pending_lf = 0;
 
-    if( !opt.pgp2_workarounds )
-	pgp2mode = 0;
-
-    if( !escape_dash )
+   if( !escape_dash )
 	escape_from = 0;
 
     write_status_begin_signing (md);
@@ -194,9 +191,7 @@ copy_clearsig_text( IOBUF out, IOBUF inp, gcry_md_hd_t md,
 		gcry_md_putc ( md, '\n' );
 	    }
 	    gcry_md_write ( md, buffer,
-                            len_without_trailing_chars (buffer, n,
-                                                        pgp2mode?
-                                                        " \r\n":" \t\r\n"));
+                            len_without_trailing_chars (buffer, n, " \t\r\n"));
 	}
 	else
             gcry_md_write ( md, buffer, n );

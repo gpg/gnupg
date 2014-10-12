@@ -338,7 +338,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 
 	    /* create it */
 	    rc = make_keysig_packet( &sig, pk, NULL, NULL, pk2, 0x20, 0,
-				     0, 0, 0,
+				     0, 0,
 				     revocation_reason_build_cb, reason,
                                      NULL);
 	    if( rc ) {
@@ -465,7 +465,6 @@ create_revocation (const char *filename,
   push_armor_filter (afx, out);
 
   rc = make_keysig_packet (&sig, psk, NULL, NULL, psk, 0x20, 0,
-                           opt.force_v4_certs? 4:0,
                            0, 0,
                            revocation_reason_build_cb, reason, cache_nonce);
   if (rc)
@@ -649,16 +648,13 @@ gen_revoke (const char *uname)
       goto leave;
     }
 
-  if (psk->version >= 4 || opt.force_v4_certs)
+  /* Get the reason for the revocation.  */
+  reason = ask_revocation_reason (1, 0, 1);
+  if (!reason)
     {
-      /* Get the reason for the revocation.  */
-      reason = ask_revocation_reason (1, 0, 1);
-      if (!reason)
-        {
-          /* user decided to cancel */
-          rc = 0;
-          goto leave;
-        }
+      /* User decided to cancel.  */
+      rc = 0;
+      goto leave;
     }
 
   if (!opt.armor)

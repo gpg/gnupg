@@ -152,7 +152,7 @@ int cipher_filter( void *opaque, int control,
 int text_filter( void *opaque, int control,
 		 iobuf_t chain, byte *buf, size_t *ret_len);
 int copy_clearsig_text (iobuf_t out, iobuf_t inp, gcry_md_hd_t md,
-                        int escape_dash, int escape_from, int pgp2mode);
+                        int escape_dash, int escape_from);
 
 /*-- progress.c --*/
 progress_filter_context_t *new_progress_context (void);

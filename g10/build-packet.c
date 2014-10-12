@@ -291,23 +291,12 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   int i, nskey, npkey;
   iobuf_t a = iobuf_temp(); /* Build in a self-enlarging buffer.  */
 
-  /* Write the version number - if none is specified, use 3 */
+  /* Write the version number - if none is specified, use 4 */
   if ( !pk->version )
-    iobuf_put ( a, 3 );
+    iobuf_put ( a, 4 );
   else
     iobuf_put ( a, pk->version );
   write_32 (a, pk->timestamp );
-
-  /* v3 needs the expiration time. */
-  if ( pk->version < 4 )
-    {
-      u16 ndays;
-      if ( pk->expiredate )
-        ndays = (u16)((pk->expiredate - pk->timestamp) / 86400L);
-      else
-        ndays = 0;
-      write_16(a, ndays);
-    }
 
   iobuf_put (a, pk->pubkey_algo );
 
@@ -347,45 +336,37 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
       /* Build the header for protected (encrypted) secret parameters.  */
       if (ski->is_protected)
         {
-          if ( is_RSA (pk->pubkey_algo) && pk->version < 4 && !ski->s2k.mode )
+          /* OpenPGP protection according to rfc2440. */
+          iobuf_put (a, ski->sha1chk? 0xfe : 0xff);
+          iobuf_put (a, ski->algo);
+          if (ski->s2k.mode >= 1000)
             {
-              /* The simple rfc1991 (v3) way. */
-              iobuf_put (a, ski->algo );
-              iobuf_write (a, ski->iv, ski->ivlen);
+              /* These modes are not possible in OpenPGP, we use them
+                 to implement our extensions, 101 can be viewed as a
+                 private/experimental extension (this is not specified
+                 in rfc2440 but the same scheme is used for all other
+                 algorithm identifiers). */
+              iobuf_put (a, 101);
+              iobuf_put (a, ski->s2k.hash_algo);
+              iobuf_write (a, "GNU", 3 );
+              iobuf_put (a, ski->s2k.mode - 1000);
             }
           else
             {
-              /* OpenPGP protection according to rfc2440. */
-              iobuf_put (a, ski->sha1chk? 0xfe : 0xff);
-              iobuf_put (a, ski->algo);
-              if (ski->s2k.mode >= 1000)
-                {
-                  /* These modes are not possible in OpenPGP, we use
-                     them to implement our extensions, 101 can be
-                     viewed as a private/experimental extension (this
-                     is not specified in rfc2440 but the same scheme
-                     is used for all other algorithm identifiers). */
-                  iobuf_put (a, 101);
-                  iobuf_put (a, ski->s2k.hash_algo);
-                  iobuf_write (a, "GNU", 3 );
-                  iobuf_put (a, ski->s2k.mode - 1000);
-                }
-              else
-                {
-                  iobuf_put (a, ski->s2k.mode);
-                  iobuf_put (a, ski->s2k.hash_algo);
-                }
-
-              if (ski->s2k.mode == 1 || ski->s2k.mode == 3)
-                iobuf_write (a, ski->s2k.salt, 8);
-
-              if (ski->s2k.mode == 3)
-                iobuf_put (a, ski->s2k.count);
-
-              /* For our special modes 1001, 1002 we do not need an IV. */
-              if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
-                iobuf_write (a, ski->iv, ski->ivlen);
+              iobuf_put (a, ski->s2k.mode);
+              iobuf_put (a, ski->s2k.hash_algo);
             }
+
+          if (ski->s2k.mode == 1 || ski->s2k.mode == 3)
+            iobuf_write (a, ski->s2k.salt, 8);
+
+          if (ski->s2k.mode == 3)
+            iobuf_put (a, ski->s2k.count);
+
+          /* For our special modes 1001, 1002 we do not need an IV. */
+          if (ski->s2k.mode != 1001 && ski->s2k.mode != 1002)
+            iobuf_write (a, ski->iv, ski->ivlen);
+
         }
       else /* Not protected. */
         iobuf_put (a, 0 );
@@ -400,7 +381,7 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           /* The serial number gets stored in the IV field.  */
           iobuf_write (a, ski->iv, ski->ivlen);
         }
-      else if (ski->is_protected && pk->version >= 4)
+      else if (ski->is_protected)
         {
           /* The secret key is protected - write it out as it is.  */
           byte *p;
@@ -409,20 +390,6 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
           assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (pk->pkey[npkey], &ndatabits);
           iobuf_write (a, p, (ndatabits+7)/8 );
-        }
-      else if (ski->is_protected)
-        {
-          /* The secret key is protected the old v4 way. */
-          for ( ; i < nskey; i++ )
-            {
-              byte *p;
-              unsigned int ndatabits;
-
-              assert (gcry_mpi_get_flag (pk->pkey[i], GCRYMPI_FLAG_OPAQUE));
-              p = gcry_mpi_get_opaque (pk->pkey[i], &ndatabits);
-              iobuf_write (a, p, (ndatabits+7)/8);
-            }
-          write_16 (a, ski->csum );
         }
       else
         {
