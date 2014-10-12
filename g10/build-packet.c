@@ -52,7 +52,6 @@ static int write_header( IOBUF out, int ctb, u32 len );
 static int write_sign_packet_header( IOBUF out, int ctb, u32 len );
 static int write_header2( IOBUF out, int ctb, u32 len, int hdrlen );
 static int write_new_header( IOBUF out, int ctb, u32 len, int hdrlen );
-static int write_version( IOBUF out, int ctb );
 
 /****************
  * Build a packet and write it to INP
@@ -488,7 +487,8 @@ do_pubkey_enc( IOBUF out, int ctb, PKT_pubkey_enc *enc )
   int n, i;
   IOBUF a = iobuf_temp();
 
-  write_version( a, ctb );
+  iobuf_put (a, 3); /* Version.  */
+
   if ( enc->throw_keyid )
     {
       write_32(a, 0 );  /* Don't tell Eve who can decrypt the message.  */
@@ -1190,7 +1190,7 @@ do_onepass_sig( IOBUF out, int ctb, PKT_onepass_sig *ops )
     int rc = 0;
     IOBUF a = iobuf_temp();
 
-    write_version( a, ctb );
+    iobuf_put (a, 3);  /* Version.  */
     iobuf_put(a, ops->sig_class );
     iobuf_put(a, ops->digest_algo );
     iobuf_put(a, ops->pubkey_algo );
@@ -1369,14 +1369,4 @@ write_new_header( IOBUF out, int ctb, u32 len, int hdrlen )
 	}
     }
     return 0;
-}
-
-static int
-write_version (IOBUF out, int ctb)
-{
-  (void)ctb;
-
-  if (iobuf_put (out, 3))
-    return -1;
-  return 0;
 }
