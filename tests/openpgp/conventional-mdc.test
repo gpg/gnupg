@@ -10,6 +10,10 @@
 
 . $srcdir/defs.inc || exit 3
 
+# We use use a lower than default value for the S2K count to run the
+# tests faster.  We used a fixed value of 65536 already the past.
+s2k="--s2k-count=65536"
+
 #info Checking conventional encryption
 for ciph in `all_cipher_algos`; do
   progress "$ciph"
@@ -20,9 +24,9 @@ for ciph in `all_cipher_algos`; do
     else
         dd if=data-80000 of=z bs=1 count=$i 2>/dev/null
     fi
-    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k \
 	--force-mdc --cipher $ciph -c -o x --yes z
-    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k \
 	-o y --yes x
     cmp z y || error "$ciph/$i: mismatch"
   done

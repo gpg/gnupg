@@ -45,7 +45,6 @@ struct stats_s {
     ulong count;
     ulong no_user_id;
     ulong imported;
-    ulong imported_rsa;
     ulong n_uids;
     ulong n_sigs;
     ulong n_subk;
@@ -399,10 +398,8 @@ import_print_stats (void *hd)
 						stats->skipped_new_keys );
 	if( stats->no_user_id )
 	    log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
-	if( stats->imported || stats->imported_rsa ) {
+	if( stats->imported) {
 	    log_info(_("              imported: %lu"), stats->imported );
-	    if (stats->imported_rsa)
-              log_printf ("  (RSA: %lu)", stats->imported_rsa );
 	    log_printf ("\n");
 	}
 	if( stats->unchanged )
@@ -431,11 +428,10 @@ import_print_stats (void *hd)
 
     if( is_status_enabled() ) {
 	char buf[14*20];
-	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+	sprintf(buf, "%lu %lu %lu 0 %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
 		stats->count,
 		stats->no_user_id,
 		stats->imported,
-		stats->imported_rsa,
 		stats->unchanged,
 		stats->n_uids,
 		stats->n_subk,
@@ -855,12 +851,15 @@ import_one (ctrl_t ctrl,
     PKT_public_key *pk_orig;
     KBNODE node, uidnode;
     KBNODE keyblock_orig = NULL;
+    byte fpr2[MAX_FINGERPRINT_LEN];
+    size_t fpr2len;
     u32 keyid[2];
     int rc = 0;
     int new_key = 0;
     int mod_key = 0;
     int same_key = 0;
     int non_self = 0;
+    size_t an;
     char pkstrbuf[PUBKEY_STRING_SIZE];
 
     /* get the key and print some info about it */
@@ -870,6 +869,9 @@ import_one (ctrl_t ctrl,
 
     pk = node->pkt->pkt.public_key;
 
+    fingerprint_from_pk (pk, fpr2, &fpr2len);
+    for (an = fpr2len; an < MAX_FINGERPRINT_LEN; an++)
+      fpr2[an] = 0;
     keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
@@ -957,7 +959,7 @@ import_one (ctrl_t ctrl,
 
     /* do we have this key already in one of our pubrings ? */
     pk_orig = xmalloc_clear( sizeof *pk_orig );
-    rc = get_pubkey_fast ( pk_orig, keyid );
+    rc = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
     if( rc && rc != G10ERR_NO_PUBKEY && rc != G10ERR_UNU_PUBKEY )
       {
         if (!silent)
@@ -1003,9 +1005,9 @@ import_one (ctrl_t ctrl,
 	/* we are ready */
 	if( !opt.quiet && !silent)
 	  {
-	    char *p=get_user_id_native (keyid);
-	    log_info( _("key %s: public key \"%s\" imported\n"),
-		      keystr(keyid),p);
+	    char *p = get_user_id_byfpr_native (fpr2);
+	    log_info (_("key %s: public key \"%s\" imported\n"),
+		      keystr(keyid), p);
 	    xfree(p);
 	  }
 	if( is_status_enabled() )
@@ -1016,8 +1018,6 @@ import_one (ctrl_t ctrl,
             print_import_ok (pk, 1);
 	  }
 	stats->imported++;
-	if( is_RSA( pk->pubkey_algo ) )
-	    stats->imported_rsa++;
 	new_key = 1;
     }
     else { /* merge */
@@ -1033,17 +1033,11 @@ import_one (ctrl_t ctrl,
 	    goto leave;
 	  }
 
-	/* now read the original keyblock */
+	/* Now read the original keyblock again so that we can use
+           that handle for updating the keyblock.  */
         hd = keydb_new ();
-        {
-            byte afp[MAX_FINGERPRINT_LEN];
-            size_t an;
-
-            fingerprint_from_pk (pk_orig, afp, &an);
-            while (an < MAX_FINGERPRINT_LEN)
-                afp[an++] = 0;
-            rc = keydb_search_fpr (hd, afp);
-        }
+        keydb_disable_caching (hd);
+        rc = keydb_search_fpr (hd, fpr2);
 	if( rc )
 	  {
 	    log_error (_("key %s: can't locate original keyblock: %s\n"),
@@ -1051,7 +1045,7 @@ import_one (ctrl_t ctrl,
             keydb_release (hd);
 	    goto leave;
 	  }
-	rc = keydb_get_keyblock (hd, &keyblock_orig );
+	rc = keydb_get_keyblock (hd, &keyblock_orig);
 	if (rc)
 	  {
 	    log_error (_("key %s: can't read original keyblock: %s\n"),
@@ -1094,7 +1088,7 @@ import_one (ctrl_t ctrl,
 	    /* we are ready */
 	    if( !opt.quiet && !silent)
 	      {
-	        char *p=get_user_id_native(keyid);
+	        char *p = get_user_id_byfpr_native (fpr2);
 		if( n_uids == 1 )
 		  log_info( _("key %s: \"%s\" 1 new user ID\n"),
 			   keystr(keyid),p);
@@ -1145,7 +1139,7 @@ import_one (ctrl_t ctrl,
 
 	    if( !opt.quiet && !silent)
 	      {
-		char *p=get_user_id_native(keyid);
+		char *p = get_user_id_byfpr_native (fpr2);
 		log_info( _("key %s: \"%s\" not changed\n"),keystr(keyid),p);
 		xfree(p);
 	      }

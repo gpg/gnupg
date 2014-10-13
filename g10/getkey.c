@@ -74,6 +74,7 @@ static struct
 typedef struct keyid_list
 {
   struct keyid_list *next;
+  char fpr[MAX_FINGERPRINT_LEN];
   u32 keyid[2];
 } *keyid_list_t;
 
@@ -263,6 +264,7 @@ cache_user_id (KBNODE keyblock)
 	  keyid_list_t a = xmalloc_clear (sizeof *a);
 	  /* Hmmm: For a long list of keyids it might be an advantage
 	   * to append the keys.  */
+          fingerprint_from_pk (k->pkt->pkt.public_key, a->fpr, NULL);
 	  keyid_from_pk (k->pkt->pkt.public_key, a->keyid);
 	  /* First check for duplicates.  */
 	  for (r = user_id_db; r; r = r->next)
@@ -270,8 +272,7 @@ cache_user_id (KBNODE keyblock)
 	      keyid_list_t b = r->keyids;
 	      for (b = r->keyids; b; b = b->next)
 		{
-		  if (b->keyid[0] == a->keyid[0]
-		      && b->keyid[1] == a->keyid[1])
+		  if (!memcmp (b->fpr, a->fpr, MAX_FINGERPRINT_LEN))
 		    {
 		      if (DBG_CACHE)
 			log_debug ("cache_user_id: already in cache\n");
@@ -947,6 +948,34 @@ get_pubkey_end (GETKEY_CTX ctx)
       if (!ctx->not_allocated)
 	xfree (ctx);
     }
+}
+
+
+/* Search for a key with the given standard fingerprint.  In contrast
+ * to get_pubkey_byfprint we assume a right padded fingerprint of the
+ * standard length.  PK may be NULL to only put the result into the
+ * internal caches.  */
+gpg_error_t
+get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr)
+{
+  gpg_error_t err;
+  struct getkey_ctx_s ctx;
+  kbnode_t kb = NULL;
+
+  memset (&ctx, 0, sizeof ctx);
+  ctx.exact = 1;
+  ctx.not_allocated = 1;
+  ctx.kr_handle = keydb_new ();
+  ctx.nitems = 1;
+  ctx.items[0].mode = KEYDB_SEARCH_MODE_FPR;
+  memcpy (ctx.items[0].u.fpr, fpr, MAX_FINGERPRINT_LEN);
+  err = lookup (&ctx, &kb, 0);
+  if (!err && pk)
+    pk_from_block (&ctx, pk, kb);
+  release_kbnode (kb);
+  get_pubkey_end (&ctx);
+
+  return err;
 }
 
 
@@ -2687,11 +2716,10 @@ enum_secret_keys (void **context, PKT_public_key *sk)
 
 /* Return a string with a printable representation of the user_id.
  * this string must be freed by xfree.   */
-char *
+static char *
 get_user_id_string (u32 * keyid)
 {
   user_id_db_t r;
-  char *p;
   int pass = 0;
   /* Try it two times; second pass reads from key resources.  */
   do
@@ -2703,17 +2731,13 @@ get_user_id_string (u32 * keyid)
 	    {
 	      if (a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1])
 		{
-		  p = xmalloc (keystrlen () + 1 + r->len + 1);
-		  sprintf (p, "%s %.*s", keystr (keyid), r->len, r->name);
-		  return p;
+		  return xasprintf ("%s %.*s", keystr (keyid), r->len, r->name);
 		}
 	    }
 	}
     }
   while (++pass < 2 && !get_pubkey (NULL, keyid));
-  p = xmalloc (keystrlen () + 5);
-  sprintf (p, "%s [?]", keystr (keyid));
-  return p;
+  return xasprintf ("%s [?]", keystr (keyid));
 }
 
 
@@ -2731,33 +2755,30 @@ char *
 get_long_user_id_string (u32 * keyid)
 {
   user_id_db_t r;
-  char *p;
+  keyid_list_t a;
   int pass = 0;
   /* Try it two times; second pass reads from key resources.  */
   do
     {
       for (r = user_id_db; r; r = r->next)
 	{
-	  keyid_list_t a;
 	  for (a = r->keyids; a; a = a->next)
 	    {
 	      if (a->keyid[0] == keyid[0] && a->keyid[1] == keyid[1])
 		{
-		  p = xmalloc (r->len + 20);
-		  sprintf (p, "%08lX%08lX %.*s",
-			   (ulong) keyid[0], (ulong) keyid[1],
-			   r->len, r->name);
-		  return p;
+		  return xasprintf ("%08lX%08lX %.*s",
+                                    (ulong) keyid[0], (ulong) keyid[1],
+                                    r->len, r->name);
 		}
 	    }
 	}
     }
   while (++pass < 2 && !get_pubkey (NULL, keyid));
-  p = xmalloc (25);
-  sprintf (p, "%08lX%08lX [?]", (ulong) keyid[0], (ulong) keyid[1]);
-  return p;
+  return xasprintf ("%08lX%08lX [?]", (ulong) keyid[0], (ulong) keyid[1]);
 }
 
+
+/* Please try to use get_user_id_native instead of this one.  */
 char *
 get_user_id (u32 * keyid, size_t * rn)
 {
@@ -2792,6 +2813,7 @@ get_user_id (u32 * keyid, size_t * rn)
   return p;
 }
 
+/* Please try to use get_user_id_byfpr_native instead of this one.  */
 char *
 get_user_id_native (u32 * keyid)
 {
@@ -2801,6 +2823,55 @@ get_user_id_native (u32 * keyid)
   xfree (p);
   return p2;
 }
+
+
+/* Return a user id from the caching by looking it up using the FPR
+   which mustbe of size MAX_FINGERPRINT_LEN.  */
+char *
+get_user_id_byfpr (const byte *fpr, size_t *rn)
+{
+  user_id_db_t r;
+  char *p;
+  int pass = 0;
+
+  /* Try it two times; second pass reads from key resources.  */
+  do
+    {
+      for (r = user_id_db; r; r = r->next)
+	{
+	  keyid_list_t a;
+	  for (a = r->keyids; a; a = a->next)
+	    {
+	      if (!memcmp (a->fpr, fpr, MAX_FINGERPRINT_LEN))
+		{
+                  /* An empty string as user id is possible.  Make
+                     sure that the malloc allocates one byte and does
+                     not bail out.  */
+		  p = xmalloc (r->len? r->len : 1);
+		  memcpy (p, r->name, r->len);
+		  *rn = r->len;
+		  return p;
+		}
+	    }
+	}
+    }
+  while (++pass < 2 && !get_pubkey_byfpr (NULL, fpr));
+  p = xstrdup (user_id_not_found_utf8 ());
+  *rn = strlen (p);
+  return p;
+}
+
+char *
+get_user_id_byfpr_native (const byte *fpr)
+{
+  size_t rn;
+  char *p = get_user_id_byfpr (fpr, &rn);
+  char *p2 = utf8_to_native (p, rn, 0);
+  xfree (p);
+  return p2;
+}
+
+
 
 KEYDB_HANDLE
 get_ctx_handle (GETKEY_CTX ctx)

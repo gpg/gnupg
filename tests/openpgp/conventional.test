@@ -10,19 +10,23 @@
 
 . $srcdir/defs.inc || exit 3
 
+# We use use a lower than default value for the S2K count to run the
+# tests faster.  We used a fixed value of 65536 already the past.
+s2k="--s2k-count=65536"
+
 #info Checking conventional encryption
 for i in plain-2 data-32000 ; do
-    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 -c -o x --yes $i
-    echo "Hier spricht HAL" | $GPG --passphrase-fd 0    -o y --yes x
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k -c -o x --yes $i
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k    -o y --yes x
     cmp $i y || error "$i: mismatch"
 done
 
 for a in `all_cipher_algos`; do
     progress "$a"
     for i in plain-1 data-80000 ; do
-      echo "Hier spricht HAL" | $GPG --passphrase-fd 0 \
+      echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k \
 					  --cipher-algo $a -c -o x --yes $i
-      echo "Hier spricht HAL" | $GPG --passphrase-fd 0 -o y --yes x
+      echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k -o y --yes x
       cmp $i y || error "$i: ($a) mismatch"
     done
 done

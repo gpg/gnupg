@@ -695,7 +695,8 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
   pk->keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
   gcry_md_close( md);
 
-  *ret_len = len;
+  if (ret_len)
+    *ret_len = len;
   return array;
 }
 

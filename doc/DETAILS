@@ -739,7 +739,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - <count>
     - <no_user_id>
     - <imported>
-    - <imported_rsa>
+    - always 0 (formerly used for the number of RSA keys)
     - <unchanged>
     - <n_uids>
     - <n_subk>
