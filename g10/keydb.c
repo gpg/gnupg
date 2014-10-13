@@ -68,6 +68,7 @@ struct keydb_handle
   int locked;
   int found;
   unsigned long skipped_long_blobs;
+  int no_caching;
   int current;
   int used;   /* Number of items in ACTIVE. */
   struct resource_item active[MAX_KEYDB_RESOURCES];
@@ -75,7 +76,7 @@ struct keydb_handle
 
 
 /* This is a simple cache used to return the last result of a
-   successful long kid search.  This works only for keybox resources
+   successful fingerprint search.  This works only for keybox resources
    because (due to lack of a copy_keyblock function) we need to store
    an image of the keyblock which is fortunately instantly available
    for keyboxes.  */
@@ -87,7 +88,7 @@ enum keyblock_cache_states {
 
 struct {
   enum keyblock_cache_states state;
-  u32 kid[2];
+  byte fpr[MAX_FINGERPRINT_LEN];
   iobuf_t iobuf; /* Image of the keyblock.  */
   u32 *sigstatus;
   int pk_no;
@@ -570,6 +571,7 @@ keydb_new (void)
   return hd;
 }
 
+
 void
 keydb_release (KEYDB_HANDLE hd)
 {
@@ -597,6 +599,17 @@ keydb_release (KEYDB_HANDLE hd)
     }
 
   xfree (hd);
+}
+
+
+/* Set a flag on handle to not use cached results.  This is required
+   for updating a keyring.  Fixme: Using a new parameter for keydb_new
+   might be a better solution.  */
+void
+keydb_disable_caching (KEYDB_HANDLE hd)
+{
+  if (hd)
+    hd->no_caching = 1;
 }
 
 
@@ -1407,10 +1420,12 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_CACHE)
     dump_search_desc ("keydb_search", desc, ndesc);
 
-  if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
+  if (!hd->no_caching
+      && ndesc == 1
+      && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
+          || desc[0].mode == KEYDB_SEARCH_MODE_FPR)
       && keyblock_cache.state  == KEYBLOCK_CACHE_FILLED
-      && keyblock_cache.kid[0] == desc[0].u.kid[0]
-      && keyblock_cache.kid[1] == desc[0].u.kid[1])
+      && !memcmp (keyblock_cache.fpr, desc[0].u.fpr, 20))
     {
       /* (DESCINDEX is already set).  */
       if (DBG_CLOCK)
@@ -1450,11 +1465,13 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         : rc);
 
   keyblock_cache_clear ();
-  if (!rc && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
+  if (!hd->no_caching
+      && !rc
+      && ndesc == 1 && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
+                        || desc[0].mode == KEYDB_SEARCH_MODE_FPR))
     {
       keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
-      keyblock_cache.kid[0] = desc[0].u.kid[0];
-      keyblock_cache.kid[1] = desc[0].u.kid[1];
+      memcpy (keyblock_cache.fpr, desc[0].u.fpr, 20);
     }
 
   if (DBG_CLOCK)

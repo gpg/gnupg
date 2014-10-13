@@ -855,12 +855,15 @@ import_one (ctrl_t ctrl,
     PKT_public_key *pk_orig;
     KBNODE node, uidnode;
     KBNODE keyblock_orig = NULL;
+    byte fpr2[MAX_FINGERPRINT_LEN];
+    size_t fpr2len;
     u32 keyid[2];
     int rc = 0;
     int new_key = 0;
     int mod_key = 0;
     int same_key = 0;
     int non_self = 0;
+    size_t an;
     char pkstrbuf[PUBKEY_STRING_SIZE];
 
     /* get the key and print some info about it */
@@ -870,6 +873,9 @@ import_one (ctrl_t ctrl,
 
     pk = node->pkt->pkt.public_key;
 
+    fingerprint_from_pk (pk, fpr2, &fpr2len);
+    for (an = fpr2len; an < MAX_FINGERPRINT_LEN; an++)
+      fpr2[an] = 0;
     keyid_from_pk( pk, keyid );
     uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
@@ -957,7 +963,7 @@ import_one (ctrl_t ctrl,
 
     /* do we have this key already in one of our pubrings ? */
     pk_orig = xmalloc_clear( sizeof *pk_orig );
-    rc = get_pubkey_fast ( pk_orig, keyid );
+    rc = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
     if( rc && rc != G10ERR_NO_PUBKEY && rc != G10ERR_UNU_PUBKEY )
       {
         if (!silent)
@@ -1033,17 +1039,11 @@ import_one (ctrl_t ctrl,
 	    goto leave;
 	  }
 
-	/* now read the original keyblock */
+	/* Now read the original keyblock again so that we can use
+           that handle for updating the keyblock.  */
         hd = keydb_new ();
-        {
-            byte afp[MAX_FINGERPRINT_LEN];
-            size_t an;
-
-            fingerprint_from_pk (pk_orig, afp, &an);
-            while (an < MAX_FINGERPRINT_LEN)
-                afp[an++] = 0;
-            rc = keydb_search_fpr (hd, afp);
-        }
+        keydb_disable_caching (hd);
+        rc = keydb_search_fpr (hd, fpr2);
 	if( rc )
 	  {
 	    log_error (_("key %s: can't locate original keyblock: %s\n"),
@@ -1051,7 +1051,7 @@ import_one (ctrl_t ctrl,
             keydb_release (hd);
 	    goto leave;
 	  }
-	rc = keydb_get_keyblock (hd, &keyblock_orig );
+	rc = keydb_get_keyblock (hd, &keyblock_orig);
 	if (rc)
 	  {
 	    log_error (_("key %s: can't read original keyblock: %s\n"),
