@@ -45,7 +45,6 @@ struct stats_s {
     ulong count;
     ulong no_user_id;
     ulong imported;
-    ulong imported_rsa;
     ulong n_uids;
     ulong n_sigs;
     ulong n_subk;
@@ -399,10 +398,8 @@ import_print_stats (void *hd)
 						stats->skipped_new_keys );
 	if( stats->no_user_id )
 	    log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
-	if( stats->imported || stats->imported_rsa ) {
+	if( stats->imported) {
 	    log_info(_("              imported: %lu"), stats->imported );
-	    if (stats->imported_rsa)
-              log_printf ("  (RSA: %lu)", stats->imported_rsa );
 	    log_printf ("\n");
 	}
 	if( stats->unchanged )
@@ -431,11 +428,10 @@ import_print_stats (void *hd)
 
     if( is_status_enabled() ) {
 	char buf[14*20];
-	sprintf(buf, "%lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+	sprintf(buf, "%lu %lu %lu 0 %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
 		stats->count,
 		stats->no_user_id,
 		stats->imported,
-		stats->imported_rsa,
 		stats->unchanged,
 		stats->n_uids,
 		stats->n_subk,
@@ -1022,8 +1018,6 @@ import_one (ctrl_t ctrl,
             print_import_ok (pk, 1);
 	  }
 	stats->imported++;
-	if( is_RSA( pk->pubkey_algo ) )
-	    stats->imported_rsa++;
 	new_key = 1;
     }
     else { /* merge */

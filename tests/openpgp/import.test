@@ -43,4 +43,6 @@ $GPG --import $key1 || true
 $GPG --import $key2 || true
 n=$($GPG --list-keys --with-colons $fpr1 $fpr2 2>/dev/null \
     | grep '^pub:.:4096:1:DDA252EBB8EBE1AF:' | wc -l)
-[ $n -ne 2 ] && error "Importing keys with long id collision failed"
+if [ $n -ne 2 ] ; then
+  error "Importing keys with long id collision failed"
+fi
