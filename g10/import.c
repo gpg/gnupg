@@ -1009,9 +1009,9 @@ import_one (ctrl_t ctrl,
 	/* we are ready */
 	if( !opt.quiet && !silent)
 	  {
-	    char *p=get_user_id_native (keyid);
-	    log_info( _("key %s: public key \"%s\" imported\n"),
-		      keystr(keyid),p);
+	    char *p = get_user_id_byfpr_native (fpr2);
+	    log_info (_("key %s: public key \"%s\" imported\n"),
+		      keystr(keyid), p);
 	    xfree(p);
 	  }
 	if( is_status_enabled() )
@@ -1094,7 +1094,7 @@ import_one (ctrl_t ctrl,
 	    /* we are ready */
 	    if( !opt.quiet && !silent)
 	      {
-	        char *p=get_user_id_native(keyid);
+	        char *p = get_user_id_byfpr_native (fpr2);
 		if( n_uids == 1 )
 		  log_info( _("key %s: \"%s\" 1 new user ID\n"),
 			   keystr(keyid),p);
@@ -1145,7 +1145,7 @@ import_one (ctrl_t ctrl,
 
 	    if( !opt.quiet && !silent)
 	      {
-		char *p=get_user_id_native(keyid);
+		char *p = get_user_id_byfpr_native (fpr2);
 		log_info( _("key %s: \"%s\" not changed\n"),keystr(keyid),p);
 		xfree(p);
 	      }

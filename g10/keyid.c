@@ -767,7 +767,8 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
       gcry_md_close( md);
     }
 
-  *ret_len = len;
+  if (ret_len)
+    *ret_len = len;
   return array;
 }
 

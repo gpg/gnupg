@@ -222,6 +222,7 @@ int get_pubkey_bynames( GETKEY_CTX *rx, PKT_public_key *pk,
 int get_pubkey_next( GETKEY_CTX ctx, PKT_public_key *pk, KBNODE *ret_keyblock );
 void get_pubkey_end( GETKEY_CTX ctx );
 gpg_error_t get_seckey (PKT_public_key *pk, u32 *keyid);
+gpg_error_t get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr);
 int get_pubkey_byfprint( PKT_public_key *pk, const byte *fprint,
 						 size_t fprint_len );
 int get_pubkey_byfprint_fast (PKT_public_key *pk,
@@ -252,11 +253,12 @@ gpg_error_t enum_secret_keys (void **context, PKT_public_key *pk);
 
 void setup_main_keyids (kbnode_t keyblock);
 void merge_keys_and_selfsig( KBNODE keyblock );
-char*get_user_id_string( u32 *keyid );
 char*get_user_id_string_native( u32 *keyid );
 char*get_long_user_id_string( u32 *keyid );
 char*get_user_id( u32 *keyid, size_t *rn );
 char*get_user_id_native( u32 *keyid );
+char *get_user_id_byfpr (const byte *fpr, size_t *rn);
+char *get_user_id_byfpr_native (const byte *fpr);
 KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
 void release_akl(void);
 int parse_auto_key_locate(char *options);
