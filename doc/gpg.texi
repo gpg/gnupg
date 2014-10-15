@@ -906,7 +906,7 @@ from @option{--edit-key}.
 
 @ifset gpgtwoone
 @item --quick-sign-key @code{fpr} [@code{names}]
-@itemx --quick-lsign-key @code{name}
+@itemx --quick-lsign-key @code{fpr} [@code{names}]
 @opindex quick-sign-key
 @opindex quick-lsign-key
 Directly sign a key from the passphrase without any further user
