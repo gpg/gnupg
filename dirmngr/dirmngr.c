@@ -1,4 +1,4 @@
-/* dirmngr.c - LDAP access
+/* dirmngr.c - Keyserver and X.509 LDAP access
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
  * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2010, 2011 g10 Code GmbH
  * Copyright (C) 2014 Werner Koch
@@ -320,7 +320,7 @@ my_strusage( int level )
     case 40: p = _("Usage: @DIRMNGR@ [options] (-h for help)");
       break;
     case 41: p = _("Syntax: @DIRMNGR@ [options] [command [args]]\n"
-                   "LDAP and OCSP access for @GNUPG@\n");
+                   "Keyserver, CRL, and OCSP access for @GNUPG@\n");
       break;
 
     default: p = NULL;
