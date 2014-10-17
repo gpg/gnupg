@@ -1,6 +1,8 @@
 Noteworthy changes in version 2.1.0 (unreleased)
 ------------------------------------------------
 
+ * Dirmngr may now be build without support for LDAP.
+
  * For a complete list of changes see the lists of changes for the
    2.1.0 beta versions below.
 

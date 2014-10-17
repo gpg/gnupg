@@ -60,9 +60,13 @@
 #include "crlcache.h"
 #include "crlfetch.h"
 #include "misc.h"
-#include "ldapserver.h"
+#if USE_LDAP
+# include "ldapserver.h"
+#endif
 #include "asshelp.h"
-#include "ldap-wrapper.h"
+#if USE_LDAP
+# include "ldap-wrapper.h"
+#endif
 #include "../common/init.h"
 #include "gc-opt-flags.h"
 
@@ -294,7 +298,9 @@ static int my_tlskey_current_fd;
 
 /* Prototypes. */
 static void cleanup (void);
+#if USE_LDAP
 static ldap_server_t parse_ldapserver_file (const char* filename);
+#endif /*USE_LDAP*/
 static fingerprint_list_t parse_ocsp_signer (const char *string);
 static void handle_connections (assuan_fd_t listen_fd);
 
@@ -445,7 +451,9 @@ wrong_args (const char *text)
 static void
 shutdown_reaper (void)
 {
+#if USE_LDAP
   ldap_wrapper_wait_connections ();
+#endif
 }
 
 
@@ -627,7 +635,9 @@ main (int argc, char **argv)
   int nodetach = 0;
   int csh_style = 0;
   char *logfile = NULL;
+#if USE_LDAP
   char *ldapfile = NULL;
+#endif /*USE_LDAP*/
   int debug_wait = 0;
   int rc;
   int homedir_seen = 0;
@@ -869,7 +879,11 @@ main (int argc, char **argv)
         case oLogFile: logfile = pargs.r.ret_str; break;
         case oCsh: csh_style = 1; break;
         case oSh: csh_style = 0; break;
-	case oLDAPFile: ldapfile = pargs.r.ret_str; break;
+	case oLDAPFile:
+#        if USE_LDAP
+          ldapfile = pargs.r.ret_str;
+#        endif /*USE_LDAP*/
+          break;
 	case oLDAPAddServers: opt.add_new_ldapservers = 1; break;
 	case oLDAPTimeout:
 	  opt.ldaptimeout = pargs.r.ret_int;
@@ -948,6 +962,7 @@ main (int argc, char **argv)
   set_debug ();
 
   /* Get LDAP server list from file. */
+#if USE_LDAP
   if (!ldapfile)
     {
       ldapfile = make_filename (opt.homedir,
@@ -959,6 +974,7 @@ main (int argc, char **argv)
     }
   else
       opt.ldapservers = parse_ldapserver_file (ldapfile);
+#endif /*USE_LDAP*/
 
 #ifndef HAVE_W32_SYSTEM
   /* We need to ignore the PIPE signal because the we might log to a
@@ -995,7 +1011,10 @@ main (int argc, char **argv)
           log_debug ("... okay\n");
         }
 
+#if USE_LDAP
       ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
+
       cert_cache_init ();
       crl_cache_init ();
       start_command_handler (ASSUAN_INVALID_FD);
@@ -1170,7 +1189,10 @@ main (int argc, char **argv)
         }
 #endif
 
+#if USE_LDAP
       ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
+
       cert_cache_init ();
       crl_cache_init ();
 #ifdef USE_W32_SERVICE
@@ -1196,7 +1218,9 @@ main (int argc, char **argv)
       /* Just list the CRL cache and exit. */
       if (argc)
         wrong_args ("--list-crls");
+#if USE_LDAP
       ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       crl_cache_init ();
       crl_cache_list (es_stdout);
     }
@@ -1207,7 +1231,9 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
+#if USE_LDAP
       ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       cert_cache_init ();
       crl_cache_init ();
       if (!argc)
@@ -1229,7 +1255,9 @@ main (int argc, char **argv)
       memset (&ctrlbuf, 0, sizeof ctrlbuf);
       dirmngr_init_default_ctrl (&ctrlbuf);
 
+#if USE_LDAP
       ldap_wrapper_launch_thread ();
+#endif /*USE_LDAP*/
       cert_cache_init ();
       crl_cache_init ();
       rc = crl_fetch (&ctrlbuf, argv[0], &reader);
@@ -1376,7 +1404,9 @@ cleanup (void)
   crl_cache_deinit ();
   cert_cache_deinit (1);
 
+#if USE_LDAP
   ldapserver_list_free (opt.ldapservers);
+#endif /*USE_LDAP*/
   opt.ldapservers = NULL;
 
   if (cleanup_socket)
@@ -1419,6 +1449,7 @@ dirmngr_init_default_ctrl (ctrl_t ctrl)
    5. field: Base DN
 
 */
+#if USE_LDAP
 static ldap_server_t
 parse_ldapserver_file (const char* filename)
 {
@@ -1475,7 +1506,7 @@ parse_ldapserver_file (const char* filename)
 
   return serverstart;
 }
-
+#endif /*USE_LDAP*/
 
 static fingerprint_list_t
 parse_ocsp_signer (const char *string)

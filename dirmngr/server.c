@@ -36,12 +36,16 @@
 
 #include "crlcache.h"
 #include "crlfetch.h"
-#include "ldapserver.h"
+#if USE_LDAP
+# include "ldapserver.h"
+#endif
 #include "ocsp.h"
 #include "certcache.h"
 #include "validate.h"
 #include "misc.h"
-#include "ldap-wrapper.h"
+#if USE_LDAP
+# include "ldap-wrapper.h"
+#endif
 #include "ks-action.h"
 #include "ks-engine.h"  /* (ks_hkp_print_hosttable) */
 
@@ -595,6 +599,7 @@ static const char hlp_ldapserver[] =
 static gpg_error_t
 cmd_ldapserver (assuan_context_t ctx, char *line)
 {
+#if USE_LDAP
   ctrl_t ctrl = assuan_get_pointer (ctx);
   ldap_server_t server;
   ldap_server_t *last_next_p;
@@ -613,6 +618,10 @@ cmd_ldapserver (assuan_context_t ctx, char *line)
     last_next_p = &(*last_next_p)->next;
   *last_next_p = server;
   return leave_cmd (ctx, 0);
+#else
+  (void)line;
+  return leave_cmd (ctx, gpg_error (GPG_ERR_NOT_IMPLEMENTED));
+#endif
 }
 
 
@@ -991,17 +1000,19 @@ static int
 lookup_cert_by_pattern (assuan_context_t ctx, char *line,
                         int single, int cache_only)
 {
-  ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err = 0;
   char *p;
   strlist_t sl, list = NULL;
   int truncated = 0, truncation_forced = 0;
   int count = 0;
   int local_count = 0;
+#if USE_LDAP
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   unsigned char *value = NULL;
   size_t valuelen;
   struct ldapserver_iter ldapserver_iter;
   cert_fetch_context_t fetch_context;
+#endif /*USE_LDAP*/
   int any_no_data = 0;
 
   /* Break the line down into an STRLIST */
@@ -1060,6 +1071,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
 
   /* Loop over all configured servers unless we want only the
      certificates from the cache.  */
+#if USE_LDAP
   for (ldapserver_iter_begin (&ldapserver_iter, ctrl);
        !cache_only && !ldapserver_iter_end_p (&ldapserver_iter)
 	 && ldapserver_iter.server->host && !truncation_forced;
@@ -1152,6 +1164,7 @@ lookup_cert_by_pattern (assuan_context_t ctx, char *line,
 
       end_cert_fetch (fetch_context);
     }
+#endif /*USE_LDAP*/
 
  ready:
   if (truncated || truncation_forced)
@@ -1916,7 +1929,9 @@ reset_notify (assuan_context_t ctx, char *line)
   ctrl_t ctrl = assuan_get_pointer (ctx);
   (void)line;
 
+#if USE_LDAP
   ldapserver_list_free (ctrl->server_local->ldapservers);
+#endif /*USE_LDAP*/
   ctrl->server_local->ldapservers = NULL;
   return 0;
 }
@@ -2042,9 +2057,11 @@ start_command_handler (assuan_fd_t fd)
         }
     }
 
+#if USE_LDAP
   ldap_wrapper_connection_cleanup (ctrl);
 
   ldapserver_list_free (ctrl->server_local->ldapservers);
+#endif /*USE_LDAP*/
   ctrl->server_local->ldapservers = NULL;
 
   ctrl->server_local->assuan_ctx = NULL;

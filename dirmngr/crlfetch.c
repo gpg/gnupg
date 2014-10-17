@@ -29,8 +29,9 @@
 #include "misc.h"
 #include "http.h"
 
-#include "ldap-wrapper.h"
-
+#if USE_LDAP
+# include "ldap-wrapper.h"
+#endif
 
 /* For detecting armored CRLs received via HTTP (yes, such CRLS really
    exits, e.g. http://grid.fzk.de/ca/gridka-crl.pem at least in June
@@ -155,6 +156,10 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
   parsed_uri_t uri;
   char *free_this = NULL;
   int redirects_left = 2; /* We allow for 2 redirect levels.  */
+
+#ifndef USE_LDAP
+  (void)ctrl;
+#endif
 
   *reader = NULL;
 
@@ -286,7 +291,13 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
           err = gpg_error (GPG_ERR_NOT_SUPPORTED);
         }
       else
-        err = url_fetch_ldap (ctrl, url, NULL, 0, reader);
+        {
+#       if USE_LDAP
+          err = url_fetch_ldap (ctrl, url, NULL, 0, reader);
+#       else /*!USE_LDAP*/
+          err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#       endif /*!USE_LDAP*/
+        }
     }
 
   xfree (free_this);
@@ -305,8 +316,15 @@ crl_fetch_default (ctrl_t ctrl, const char *issuer, ksba_reader_t *reader)
                  "LDAP");
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
+#if USE_LDAP
   return attr_fetch_ldap (ctrl, issuer, "certificateRevocationList",
                           reader);
+#else
+  (void)ctrl;
+  (void)issuer;
+  (void)reader;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 
@@ -323,7 +341,14 @@ ca_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context, const char *dn)
                  "LDAP");
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
+#if USE_LDAP
   return start_default_fetch_ldap (ctrl, context, dn, "cACertificate");
+#else
+  (void)ctrl;
+  (void)context;
+  (void)dn;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 
@@ -337,7 +362,15 @@ start_cert_fetch (ctrl_t ctrl, cert_fetch_context_t *context,
                  "LDAP");
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
+#if USE_LDAP
   return start_cert_fetch_ldap (ctrl, context, patterns, server);
+#else
+  (void)ctrl;
+  (void)context;
+  (void)patterns;
+  (void)server;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 
@@ -345,7 +378,14 @@ gpg_error_t
 fetch_next_cert (cert_fetch_context_t context,
                  unsigned char **value, size_t * valuelen)
 {
+#if USE_LDAP
   return fetch_next_cert_ldap (context, value, valuelen);
+#else
+  (void)context;
+  (void)value;
+  (void)valuelen;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
 }
 
 
@@ -361,9 +401,14 @@ fetch_next_ksba_cert (cert_fetch_context_t context, ksba_cert_t *r_cert)
 
   *r_cert = NULL;
 
+#if USE_LDAP
   err = fetch_next_cert_ldap (context, &value, &valuelen);
   if (!err && !value)
     err = gpg_error (GPG_ERR_BUG);
+#else
+  (void)context;
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif
   if (err)
     return err;
 
@@ -389,7 +434,11 @@ fetch_next_ksba_cert (cert_fetch_context_t context, ksba_cert_t *r_cert)
 void
 end_cert_fetch (cert_fetch_context_t context)
 {
-  return end_cert_fetch_ldap (context);
+#if USE_LDAP
+  end_cert_fetch_ldap (context);
+#else
+  (void)context;
+#endif
 }
 
 
@@ -410,7 +459,13 @@ fetch_cert_by_url (ctrl_t ctrl, const char *url,
   reader = NULL;
   cert = NULL;
 
+#if USE_LDAP
   err = url_fetch_ldap (ctrl, url, NULL, 0, &reader);
+#else
+  (void)ctrl;
+  (void)url;
+  err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+#endif /*USE_LDAP*/
   if (err)
     goto leave;
 
@@ -442,7 +497,9 @@ fetch_cert_by_url (ctrl_t ctrl, const char *url,
  leave:
 
   ksba_cert_release (cert);
+#if USE_LDAP
   ldap_wrapper_release_context (reader);
+#endif /*USE_LDAP*/
 
   return err;
 }
@@ -472,7 +529,11 @@ crl_close_reader (ksba_reader_t reader)
       xfree (cb_ctx);
     }
   else /* This is an ldap wrapper context (Currently not used). */
-    ldap_wrapper_release_context (reader);
+    {
+#if USE_LDAP
+      ldap_wrapper_release_context (reader);
+#endif /*USE_LDAP*/
+    }
 
   /* Now get rid of the reader object. */
   ksba_reader_release (reader);

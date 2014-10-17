@@ -716,11 +716,6 @@ if test "$run_tests" = yes; then
 fi
 AM_CONDITIONAL(RUN_TESTS, test "$run_tests" = yes)
 
-if test "$use_ldapwrapper" = yes; then
-   AC_DEFINE(USE_LDAPWRAPPER,1, [Build dirmngr with LDAP wrapper process])
-fi
-AM_CONDITIONAL(USE_LDAPWRAPPER, test "$use_ldapwrapper" = yes)
-
 
 # (These need to go after AC_PROG_CC so that $EXEEXT is defined)
 AC_DEFINE_UNQUOTED(EXEEXT,"$EXEEXT",[The executable file extension, if any])
@@ -1049,16 +1044,45 @@ AM_CONDITIONAL(USE_DNS_SRV, test x"$use_dns_srv" = xyes)
 #
 # Note that running the check changes the variable
 # gnupg_have_ldap from "n/a" to "no" or "yes".
-if test "$build_dirmngr" = "yes" ; then
-   GNUPG_CHECK_LDAP($NETLIBS)
-   AC_CHECK_LIB(lber, ber_free,
-                [ LBER_LIBS="$LBER_LIBS -llber"
-                  AC_DEFINE(HAVE_LBER,1,
-                           [defined if liblber is available])
-                  have_lber=yes
-               ])
+
+AC_ARG_ENABLE(ldap,
+    AC_HELP_STRING([--disable-ldap],[disable LDAP support]),
+    [if test "$enableval" = "no"; then gnupg_have_ldap=no; fi])
+
+if test "$gnupg_have_ldap" != "no" ; then
+  if test "$build_dirmngr" = "yes" ; then
+     GNUPG_CHECK_LDAP($NETLIBS)
+     AC_CHECK_LIB(lber, ber_free,
+                  [ LBER_LIBS="$LBER_LIBS -llber"
+                    AC_DEFINE(HAVE_LBER,1,
+                             [defined if liblber is available])
+                    have_lber=yes
+                 ])
+  fi
 fi
 AC_SUBST(LBER_LIBS)
+if test "$gnupg_have_ldap" = "no"; then
+    AC_MSG_WARN([[
+***
+*** Building without LDAP support.
+*** No CRL access or X.509 certificate search available.
+***]])
+fi
+
+AM_CONDITIONAL(USE_LDAP, [test "$gnupg_have_ldap" = yes])
+if test "$gnupg_have_ldap" = yes ; then
+  AC_DEFINE(USE_LDAP,1,[Defined if LDAP is support])
+else
+ use_ldapwrapper=no
+fi
+
+if test "$use_ldapwrapper" = yes; then
+   AC_DEFINE(USE_LDAPWRAPPER,1, [Build dirmngr with LDAP wrapper process])
+fi
+AM_CONDITIONAL(USE_LDAPWRAPPER, test "$use_ldapwrapper" = yes)
+
+
+
 
 #
 # Check for sendmail
@@ -1703,16 +1727,8 @@ if test "$have_ksba" = "no"; then
 *** (at least version $NEED_KSBA_VERSION using API $NEED_KSBA_API is required).
 ***]])
 fi
-if test "$gnupg_have_ldap" = "no"; then
-    die=yes
-    AC_MSG_NOTICE([[
-***
-*** The Dirmngr part requires an LDAP library
-*** Check out
-***    http://www.openldap.org
-*** for a suitable implementation.
-***]])
-   if test "$have_w32ce_system" = yes; then
+if test "$gnupg_have_ldap" = yes; then
+  if test "$have_w32ce_system" = yes; then
     AC_MSG_NOTICE([[
 *** Note that CeGCC might be broken, a package fixing this is:
 ***    http://files.kolab.org/local/windows-ce/
@@ -1804,6 +1820,7 @@ echo "
 
         Dirmngr auto start:  $dirmngr_auto_start
         Readline support:    $gnupg_cv_have_readline
+        LDAP support:        $gnupg_have_ldap
         DNS SRV support:     $use_dns_srv
         TLS support:         $use_tls_library
 "

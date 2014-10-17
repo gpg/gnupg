@@ -44,19 +44,27 @@ else
 ldap_url =
 endif
 
+if USE_LDAPWRAPPER
+extraldap_src = ldap-wrapper.c
+else
+extraldap_src = ldap-wrapper-ce.c  dirmngr_ldap.c
+endif
+
 noinst_HEADERS = dirmngr.h crlcache.h crlfetch.h misc.h
 
 dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
-	ldapserver.h ldapserver.c certcache.c certcache.h \
-	cdb.h cdblib.c ldap.c misc.c dirmngr-err.h w32-ldap-help.h \
-	ocsp.c ocsp.h validate.c validate.h ldap-wrapper.h $(ldap_url) \
+	certcache.c certcache.h \
+	cdb.h cdblib.c misc.c dirmngr-err.h  \
+	ocsp.c ocsp.h validate.c validate.h  \
 	ks-action.c ks-action.h ks-engine.h \
         ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c
 
-if USE_LDAPWRAPPER
-dirmngr_SOURCES += ldap-wrapper.c
+if USE_LDAP
+dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c w32-ldap-help.h \
+                   ldap-wrapper.h $(ldap_url) $(extraldap_src)
+ldaplibs = $(LDAPLIBS)
 else
-dirmngr_SOURCES += ldap-wrapper-ce.c  dirmngr_ldap.c
+ldaplibs =
 endif
 
 
@@ -65,7 +73,7 @@ dirmngr_LDADD = $(libcommontlsnpth) $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
 	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV)
 if !USE_LDAPWRAPPER
-dirmngr_LDADD += $(LDAPLIBS)
+dirmngr_LDADD += $(ldaplibs)
 endif
 dirmngr_LDFLAGS = $(extra_bin_ldflags)
 
