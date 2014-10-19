@@ -1949,7 +1949,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     }
   else if (version == 2 || version == 3)
     {
-      log_info ("packet(%d) with obsolete version %d\n", pkttype, version);
+      if (opt.verbose > 1)
+        log_info ("packet(%d) with obsolete version %d\n", pkttype, version);
       if (list_mode)
         es_fprintf (listfp, ":key packet: [obsolete version %d]\n", version);
       err = gpg_error (GPG_ERR_INV_PACKET);
