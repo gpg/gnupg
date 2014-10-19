@@ -76,7 +76,10 @@ struct agent_card_genkey_s {
 void agent_release_card_info (struct agent_card_info_s *info);
 
 /* Return card info. */
-int agent_learn (struct agent_card_info_s *info);
+int agent_scd_learn (struct agent_card_info_s *info);
+
+/* Let the agent learn about the current card.  */
+gpg_error_t agent_learn (void);
 
 /* Update INFO with the attribute NAME. */
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info);

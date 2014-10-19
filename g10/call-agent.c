@@ -639,9 +639,9 @@ learn_status_cb (void *opaque, const char *line)
   return 0;
 }
 
-/* Call the agent to learn about a smartcard */
+/* Call the scdaemon to learn about a smartcard */
 int
-agent_learn (struct agent_card_info_s *info)
+agent_scd_learn (struct agent_card_info_s *info)
 {
   int rc;
   struct default_inq_parm_s parm;
@@ -674,6 +674,29 @@ agent_learn (struct agent_card_info_s *info)
     agent_scd_getattr ("KEY-ATTR", info);
 
   return rc;
+}
+
+
+/* Call the agent to learn about the current smartcard.  This is
+   currently only used to have the agent create the shadow key.  */
+gpg_error_t
+agent_learn (void)
+{
+  gpg_error_t err;
+  struct default_inq_parm_s parm;
+
+  memset (&parm, 0, sizeof parm);
+
+  err = start_agent (NULL, 1);
+  if (err)
+    return err;
+
+  parm.ctx = agent_ctx;
+  err = assuan_transact (agent_ctx, "LEARN",
+                         dummy_data_cb, NULL, default_inq_cb, &parm,
+                         NULL, NULL);
+
+  return err;
 }
 
 

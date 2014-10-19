@@ -4510,6 +4510,19 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
       return err;
     }
 
+  /* Send the learn command so that the agent creates a shadow key for
+     card key.  We need to do that now so that we are able to create
+     the self-signatures. */
+  err = agent_learn ();
+  if (err)
+    {
+      /* Oops: Card removed during generation.  */
+      log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (err));
+      xfree (pkt);
+      xfree (pk);
+      return err;
+    }
+
   if (*timestamp != info.created_at)
     log_info ("NOTE: the key does not use the suggested creation date\n");
   *timestamp = info.created_at;
