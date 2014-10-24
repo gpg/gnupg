@@ -220,6 +220,8 @@ struct pin_entry_info_s
   int max_tries;  /* max. number of allowed tries.  */
   int failed_tries; /* Number of tries so far failed.  */
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
+  int with_repeat;  /* Request repetition of the passphrase.  */
+  int repeat_okay;  /* Repetition worked. */
   int (*check_cb)(struct pin_entry_info_s *); /* CB used to check the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
   const char *cb_errtext; /* used by the cb to display a specific error */

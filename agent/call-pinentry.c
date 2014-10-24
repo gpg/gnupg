@@ -682,22 +682,22 @@ setup_qualitybar (void)
 }
 
 
-/* Check the button_info line for a close action.  */
+/* Check the button_info line for a close action.  Also check for the
+   PIN_REPEATED flag.  */
 static gpg_error_t
 close_button_status_cb (void *opaque, const char *line)
 {
-  int *flag = opaque;
-  const char *keyword = line;
-  int keywordlen;
+  unsigned int *flag = opaque;
+  const char *args;
 
-  for (keywordlen=0; *line && !spacep (line); line++, keywordlen++)
-    ;
-  while (spacep (line))
-    line++;
-  if (keywordlen == 11 && !memcmp (keyword, "BUTTON_INFO", keywordlen))
+  if ((args = has_leading_keyword (line, "BUTTON_INFO")))
     {
-      if ( !strcmp (line, "close") )
+      if (!strcmp (args, "close"))
         *flag = 1;
+    }
+  else if (has_leading_keyword (line, "PIN_REPEATED"))
+    {
+      *flag |= 256;
     }
 
   return 0;
@@ -721,7 +721,7 @@ agent_askpin (ctrl_t ctrl,
   const char *errtext = NULL;
   int is_pin = 0;
   int saveflag;
-  int close_button;
+  unsigned int close_button;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -806,6 +806,18 @@ agent_askpin (ctrl_t ctrl,
         return unlock_pinentry (rc);
     }
 
+  if (pininfo->with_repeat)
+    {
+      snprintf (line, DIM(line)-1, "SETREPEATERROR %s",
+                _("does not match - try again"));
+      line[DIM(line)-1] = 0;
+      rc = assuan_transact (entry_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc)
+        pininfo->with_repeat = 0; /* Pinentry does not support it.  */
+    }
+  pininfo->repeat_okay = 0;
+
   for (;pininfo->failed_tries < pininfo->max_tries; pininfo->failed_tries++)
     {
       memset (&parm, 0, sizeof parm);
@@ -828,6 +840,16 @@ agent_askpin (ctrl_t ctrl,
           errtext = NULL;
         }
 
+      if (pininfo->with_repeat)
+        {
+          snprintf (line, DIM(line)-1, "SETREPEAT %s", _("Repeat:"));
+          line[DIM(line)-1] = 0;
+          rc = assuan_transact (entry_ctx, line,
+                                NULL, NULL, NULL, NULL, NULL, NULL);
+          if (rc)
+            return unlock_pinentry (rc);
+        }
+
       saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
       assuan_begin_confidential (entry_ctx);
       close_button = 0;
@@ -842,9 +864,10 @@ agent_askpin (ctrl_t ctrl,
           && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
         rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
 
+
       /* Change error code in case the window close button was clicked
          to cancel the operation.  */
-      if (close_button && gpg_err_code (rc) == GPG_ERR_CANCELED)
+      if ((close_button & 1) && gpg_err_code (rc) == GPG_ERR_CANCELED)
         rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
@@ -881,7 +904,11 @@ agent_askpin (ctrl_t ctrl,
         }
 
       if (!errtext)
-        return unlock_pinentry (0); /* okay, got a PIN or passphrase */
+        {
+          if (pininfo->with_repeat && (close_button & 256))
+            pininfo->repeat_okay = 1;
+          return unlock_pinentry (0); /* okay, got a PIN or passphrase */
+        }
     }
 
   return unlock_pinentry (gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
@@ -902,7 +929,7 @@ agent_get_passphrase (ctrl_t ctrl,
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   int saveflag;
-  int close_button;
+  unsigned int close_button;
 
   *retpass = NULL;
   if (opt.batch)
@@ -991,7 +1018,7 @@ agent_get_passphrase (ctrl_t ctrl,
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
   /* Change error code in case the window close button was clicked
      to cancel the operation.  */
-  if (close_button && gpg_err_code (rc) == GPG_ERR_CANCELED)
+  if ((close_button & 1) && gpg_err_code (rc) == GPG_ERR_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
   if (rc)

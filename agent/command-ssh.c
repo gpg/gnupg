@@ -3104,6 +3104,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   pi2 = pi + (sizeof *pi + 100 + 1);
   pi->max_length = 100;
   pi->max_tries = 1;
+  pi->with_repeat = 1;
   pi2->max_length = 100;
   pi2->max_tries = 1;
   pi2->check_cb = reenter_compare_cb;
@@ -3115,8 +3116,9 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   if (err)
     goto out;
 
-  /* Unless the passphrase is empty, ask to confirm it.  */
-  if (pi->pin && *pi->pin)
+  /* Unless the passphrase is empty or the pinentry told us that
+     it already did the repetition check, ask to confirm it.  */
+  if (pi->pin && *pi->pin && !pi->repeat_okay)
     {
       err = agent_askpin (ctrl, description2, NULL, NULL, pi2);
       if (err == -1)

@@ -363,6 +363,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   pi->max_length = 100;
   pi->max_tries = 3;
   pi->with_qualitybar = 1;
+  pi->with_repeat = 1;
   pi2->max_length = 100;
   pi2->max_tries = 3;
   pi2->check_cb = reenter_compare_cb;
@@ -379,8 +380,9 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
           pi2->failed_tries = 0;
           goto next_try;
         }
-      /* Unless the passphrase is empty, ask to confirm it.  */
-      if (pi->pin && *pi->pin)
+      /* Unless the passphrase is empty or the pinentry told us that
+         it already did the repetition check, ask to confirm it.  */
+      if (pi->pin && *pi->pin && !pi->repeat_okay)
         {
           err = agent_askpin (ctrl, text2, NULL, NULL, pi2);
           if (err == -1)
