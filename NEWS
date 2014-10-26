@@ -1,28 +1,34 @@
 Noteworthy changes in version 2.1.0 (unreleased)
 ------------------------------------------------
 
+ * This release introduces a lot of changes.  Most of them are
+   internal and thus not user visible.  However, some long standing
+   behavior has slightly changed and it is strongly suggested that an
+   existing "~/.gnupg" directory is backed up before this version is
+   used.
+
  * gpg: All support for v3 (PGP 2) keys has been dropped.  All
-   signatures are now creates as v4 signatures.
+   signatures are now created as v4 signatures.
 
  * gpg: With pinentry-0.9.0 the passphrase "enter again" prompt shows
    up in the same window as the "new passphrase" prompt.
 
  * gpg: Allow importing keys with duplicated long key ids.
 
- * Dirmngr may now be build without support for LDAP.
+ * dirmngr: May now be build without support for LDAP.
 
  * For a complete list of changes see the lists of changes for the
-   2.1.0 beta versions below.
+   2.1.0 beta versions below.  Note that all relevant fixes from
+   versions 2.0.14 to 2.0.26 are also applied to this version.
 
 
-Noteworthy changes in version 2.1.0-beta864 (2014-10-03)
---------------------------------------------------------
+ [Noteworthy changes in version 2.1.0-beta864 (2014-10-03)]
 
- * gpg: Removed the GPG_AGENT_INFO related code.  GnuPG does now only
-   use a fixed socket name in its home directory.
+ * gpg: Removed the GPG_AGENT_INFO related code.  GnuPG does now
+   always use a fixed socket name in its home directory.
 
  * gpg: Renamed --gen-key to --full-gen-key and re-added a --gen-key
-   command using less prompts.
+   command with less choices.
 
  * gpg: Use SHA-256 for all signature types also on RSA keys.
 
@@ -33,11 +39,10 @@ Noteworthy changes in version 2.1.0-beta864 (2014-10-03)
 
  * gpg: Fixed obsolete options parsing.
 
- * speedo: Improved the quick build system.
+ * Further improvements for the alternative speedo build system.
 
 
-Noteworthy changes in version 2.1.0-beta834 (2014-09-18)
---------------------------------------------------------
+ [Noteworthy changes in version 2.1.0-beta834 (2014-09-18)]
 
  * gpg: Improved passphrase caching.
 
@@ -53,11 +58,11 @@ Noteworthy changes in version 2.1.0-beta834 (2014-09-18)
 
  * dirmngr: Fixed the KS_FETCH command.
 
- * speedo: Downloads related packages and works for non-Windows.
+ * The speedo build system now downloads related packages and works
+   for non-Windows platforms.
 
 
-Noteworthy changes in version 2.1.0-beta783 (2014-08-14)
---------------------------------------------------------
+ [Noteworthy changes in version 2.1.0-beta783 (2014-08-14)]
 
  * gpg: Add command --quick-gen-key.
 
@@ -88,23 +93,22 @@ Noteworthy changes in version 2.1.0-beta783 (2014-08-14)
  * scdaemon: Remove the use of the pcsc-wrapper.
 
 
-Noteworthy changes in version 2.1.0-beta751 (2014-07-03)
---------------------------------------------------------
-
- * gpg: Make export of secret keys work again.
+ [Noteworthy changes in version 2.1.0-beta751 (2014-07-03)]
 
  * gpg: Create revocation certificates during key generation.
 
  * gpg: Create exported secret keys and revocation certifciates with
    mode 0700
 
+ * gpg: The validity of user ids is now shown by default.  To revert
+   this add "list-options no-show-uid-validity" to gpg.conf.
+
+ * gpg: Make export of secret keys work again.
+
  * gpg: The output of --list-packets does now print the offset of the
    packet and information about the packet header.
 
  * gpg: Avoid DoS due to garbled compressed data packets. [CVE-2014-4617]
-
- * gpg: The validity of user ids is now shown by default.  To revert
-   this add "list-options no-show-uid-validity" to gpg.conf.
 
  * gpg: Print more specific reason codes with the INV_RECP status.
 
@@ -118,11 +122,15 @@ Noteworthy changes in version 2.1.0-beta751 (2014-07-03)
    to build a partly working installer for Windows.
 
 
-Noteworthy changes in version 2.1.0-beta442 (2014-06-05)
---------------------------------------------------------
+ [Noteworthy changes in version 2.1.0-beta442 (2014-06-05)]
+
+ * gpg: Changed the format of key listings.  To revert to the old
+   format the option --legacy-list-mode is available.
 
  * gpg: Add experimental signature support using curve Ed25519 and
    with a patched Libgcrypt also encryption support with Curve25519.
+   [Update: this encryption support has been removed from 2.1.0 until
+   we have agreed on a suitable format.]
 
  * gpg: Allow use of Brainpool curves.
 
@@ -137,9 +145,6 @@ Noteworthy changes in version 2.1.0-beta442 (2014-06-05)
 
  * gpg: Print a warning if the Gnome-Keyring-Daemon intercepts the
    communication with the gpg-agent.
-
- * gpg: Changed the format of key listings.  To revert to the old
-   format the option --legacy-list-mode is available.
 
  * gpg: New option --pinentry-mode.
 
@@ -201,111 +206,110 @@ Noteworthy changes in version 2.1.0-beta442 (2014-06-05)
  * All kind of other improvements - see the git log.
 
 
-Noteworthy changes in version 2.1.0beta3 (2011-12-20)
------------------------------------------------------
+ [Noteworthy changes in version 2.1.0beta3 (2011-12-20)]
 
- * Fixed regression in GPG's secret key export function.
+ * gpg: Fixed regression in the secret key export function.
 
- * Allowj generation of card keys up to 4096 bit.
+ * gpg: Allow generation of card keys up to 4096 bit.
 
- * Support the SSH confirm flag.
+ * gpgsm: Preliminary support for the validation model "steed".
 
- * The Assuan commands KILLAGENT and KILLSCD are working again.
+ * gpgsm: Improved certificate creation.
 
- * SCdaemon does not anymore block after changing a card (regression
-   fix).
+ * agent: Support the SSH confirm flag.
 
- * gpg-connect-agent does now proberly display the help output for
-   "SCD HELP" commands.
-
- * Preliminary support for the GPGSM validation model "steed".
-
- * Improved certificate creation in GPGSM.
-
- * New option for GPG_AGENT to select a passphrase mode.  The loopback
+ * agent: New option to select a passphrase mode.  The loopback
    mode may be used to bypass Pinentry.
 
+ * agent: The Assuan commands KILLAGENT and KILLSCD are working again.
 
-Noteworthy changes in version 2.1.0beta2 (2011-03-08)
------------------------------------------------------
+ * scdaemon: Does not anymore block after changing a card (regression
+   fix).
 
- * TMPDIR is now also honored when creating a socket using
-   --no-standard-socket and with symcryptrun's temp files.
+ * tools: gpg-connect-agent does now proberly display the help output
+   for "SCD HELP" commands.
 
- * Fixed a bug where SCdaemon sends a signal to Gpg-agent running in
-   non-daemon mode.
 
- * Print "AES128" instead of "AES".  This change introduces a little
-   incompatibility for tools using "gpg --list-config".  We hope that
-   these tools are written robust enough to accept this new algorithm
-   name as well.
+ [Noteworthy changes in version 2.1.0beta2 (2011-03-08)]
 
- * Fixed CRL loading under W32 (bug#1010).
+ * gpg: ECC support as described by draft-jivsov-openpgp-ecc-06.txt
+   [Update: now known as RFC-6637].
 
- * Fixed TTY management for pinentries and session variable update
-   problem.
+ * gpg: Print "AES128" instead of "AES".  This change introduces a
+   little incompatibility for tools using "gpg --list-config".  We
+   hope that these tools are written robust enough to accept this new
+   algorithm name as well.
+
+ * gpgsm: New feature to create certificates from a parameter file.
+   Add prompt to the --gen-key UI to create self-signed certificates.
+
+ * agent: TMPDIR is now also honored when creating a socket using
+   the --no-standard-socket option and with symcryptrun's temp files.
+
+ * scdaemon: Fixed a bug where scdaemon sends a signal to gpg-agent
+   running in non-daemon mode.
+
+ * dirmngr: Fixed CRL loading under W32 (bug#1010).
 
  * Dirmngr has taken over the function of the keyserver helpers.  Thus
    we now have a specified direct interface to keyservers via Dirmngr.
    LDAP, DNS and mail backends are not yet implemented.
 
- * ECC support for GPG as described by draft-jivsov-openpgp-ecc-06.txt.
-
- * New GPGSM feature to create certificates from a parameter file.
-   Add prompt to the --gen-key UI to create self-signed certificates.
+ * Fixed TTY management for pinentries and session variable update
+   problem.
 
 
-Noteworthy changes in version 2.1.0beta1 (2010-10-26)
------------------------------------------------------
+ [Noteworthy changes in version 2.1.0beta1 (2010-10-26)]
 
- * Encrypted OpenPGP messages with trailing data (e.g. other OpenPGP
-   packets) are now correctly parsed.
+ * gpg: secring.gpg is not anymore used but all secret key operations
+   are delegated to gpg-agent.  The import command moves secret keys
+   to the agent.
 
- * The GPGSM --audit-log feature is now more complete.
+ * gpg: The OpenPGP import command is now able to merge secret keys.
 
- * The G13 tool for disk encryption key management has been added.
+ * gpg: Encrypted OpenPGP messages with trailing data (e.g. other
+   OpenPGP packets) are now correctly parsed.
 
- * The default for --include-cert is now to include all certificates
-   in the chain except for the root certificate.
+ * gpg: Given sufficient permissions Dirmngr is started automagically.
+
+ * gpg: Fixed output of "gpgconf --check-options".
+
+ * gpg: Removed options --export-options(export-secret-subkey-passwd)
+   and --simple-sk-checksum.
+
+ * gpg: New options --try-secret-key.
+
+ * gpg: Support DNS lookups for SRV, PKA and CERT on W32.
+
+ * gpgsm: The --audit-log feature is now more complete.
+
+ * gpgsm: The default for --include-cert is now to include all
+   certificates in the chain except for the root certificate.
+
+ * gpgsm: New option --ignore-cert-extension.
+
+ * g13: The G13 tool for disk encryption key management has been
+   added.
+
+ * agent: If the agent's --use-standard-socket option is active, all
+   tools try to start and daemonize the agent on the fly.  In the past
+   this was only supported on W32; on non-W32 systems the new
+   configure option --disable-standard-socket may now be used to
+   disable this new default.
+
+ * agent: New and changed passphrases are now created with an
+   iteration count requiring about 100ms of CPU work.
+
+ * dirmngr: Dirmngr is now a part of this package.  It is now also
+   expected to run as a system service and the configuration
+   directories are changed to the GnuPG name space. [Update: 2.1.0
+   starts dirmngr on demand as user daemon.]
+
+ * Support for Windows CE. [Update: This has not been tested for the
+   2.1.0 release]
 
  * Numerical values may now be used as an alternative to the
    debug-level keywords.
-
- * Support DNS lookups for SRV, PKA and CERT on W32.
-
- * New GPGSM option --ignore-cert-extension.
-
- * New and changed passphrases are now created with an iteration count
-   requiring about 100ms of CPU work.
-
- * Support for Windows CE.
-
- * If the agent's --use-standard-socket option is active, all tools
-   try to start and daemonize the agent on the fly.  In the past this
-   was only supported on W32; on non-W32 systems the new configure
-   option --disable-standard-socket may now be used to disable this
-   new default.
-
- * Dirmngr is now a part of this package.  Dirmngr is now also
-   expected to run as a system service and the configuration
-   directories are changed to the GnuPG name space.
-
- * Given sufficient permissions Dirmngr is started automagically.
-
- * Fixed output of "gpgconf --check-options".
-
- * GPG does not anymore use secring.gpg but delegates all secret key
-   operations to gpg-agent.  The import command moves secret keys to
-   the agent.
-
- * The OpenPGP import command is now able to merge secret keys.
-
- * Removed GPG options:
-    --export-options: export-secret-subkey-passwd
-    --simple-sk-checksum
-
- * New GPG options:
-    --try-secret-key
 
 
 Noteworthy changes in version 2.0.13 (2009-09-04)
