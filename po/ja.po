@@ -64,12 +64,18 @@ msgstr ""
 "あなたのパスフレーズを入力してください(このセッションで秘密鍵のロックを解除す"
 "るために使われます)"
 
+msgid "does not match - try again"
+msgstr "一致しません - もう一度"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (現在 %d / 最大 %d)"
+
+msgid "Repeat:"
+msgstr ""
 
 msgid "PIN too long"
 msgstr "PINが長すぎます"
@@ -156,9 +162,6 @@ msgid ""
 msgstr ""
 "パスフレーズを入力してください。gpg-agentの鍵の保管で受信した秘密鍵%%0A   %s"
 "%%0A   %s%%0Aを保護します。"
-
-msgid "does not match - try again"
-msgstr "一致しません - もう一度"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -6896,9 +6899,13 @@ msgstr ""
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "使い方: @DIRMNGR@ [オプション] (ヘルプは -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: @DIRMNGR@ [options] [command [args]]\n"
+#| "LDAP and OCSP access for @GNUPG@\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
-"LDAP and OCSP access for @GNUPG@\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
 msgstr ""
 "形式: @DIRMNGR@ [オプション] [コマンド [引数]]\n"
 "@GnuPG@のLDAPとOCSPアクセス\n"

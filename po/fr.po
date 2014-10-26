@@ -65,12 +65,18 @@ msgstr ""
 "Veuillez entrer votre phrase de passe, pour pouvoir débloquer la clef "
 "secrète pendant cette session"
 
+msgid "does not match - try again"
+msgstr "ne correspond pas — veuillez réessayer"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (essai %d sur %d)"
+
+msgid "Repeat:"
+msgstr ""
 
 msgid "PIN too long"
 msgstr "Code personnel trop long"
@@ -157,9 +163,6 @@ msgid ""
 msgstr ""
 "Veuillez entrer une phrase de passe pour protéger la clef secrète%%0A   %s"
 "%%0A   %s%%0Areçue dans l'espace de stockage de clefs de gpg-agent"
-
-msgid "does not match - try again"
-msgstr "ne correspond pas — veuillez réessayer"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -7310,9 +7313,13 @@ msgstr ""
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "Utilisation : @DIRMNGR@ [options] (-h pour l'aide)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: @DIRMNGR@ [options] [command [args]]\n"
+#| "LDAP and OCSP access for @GNUPG@\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
-"LDAP and OCSP access for @GNUPG@\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
 msgstr ""
 "Syntaxe : @DIRMNGR@ [options] [commande [arguments]]\n"
 "Accès LDAP et OCSP pour @GNUPG@\n"

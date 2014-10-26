@@ -66,12 +66,18 @@ msgstr ""
 "Будь ласка, вкажіть ваш пароль, щоб ключ можна було розблокувати для цього "
 "сеансу"
 
+msgid "does not match - try again"
+msgstr "паролі не збігаються, повторіть спробу"
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (спроба %d з %d)"
+
+msgid "Repeat:"
+msgstr ""
 
 msgid "PIN too long"
 msgstr "Занадто довгий пінкод"
@@ -159,9 +165,6 @@ msgid ""
 msgstr ""
 "Будь ласка, вкажіть пароль для захисту отриманого закритого ключа%%0A   %s"
 "%%0A   %s%%0Aу сховищі ключів gpg-agent"
-
-msgid "does not match - try again"
-msgstr "паролі не збігаються, повторіть спробу"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -7104,9 +7107,13 @@ msgstr ""
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "Використання: @DIRMNGR@ [параметри] (-h — довідка)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: @DIRMNGR@ [options] [command [args]]\n"
+#| "LDAP and OCSP access for @GNUPG@\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
-"LDAP and OCSP access for @GNUPG@\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
 msgstr ""
 "Синтаксис: @DIRMNGR@ [параметри] [команда [аргументи]]\n"
 "Доступ до LDAP і OCSP для @GNUPG@\n"
