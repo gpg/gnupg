@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-10-10 15:27+0200\n"
+"PO-Revision-Date: 2014-10-26 12:38+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -67,12 +67,18 @@ msgstr ""
 "Bitte geben Sie Ihre Passphrase ein, so daß der geheime Schlüssel benutzt "
 "werden kann."
 
+msgid "does not match - try again"
+msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
+
 #. TRANSLATORS: The string is appended to an error message in
 #. the pinentry.  The %s is the actual error message, the
 #. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (Versuch %d von %d)"
+
+msgid "Repeat:"
+msgstr "Nochmal:"
 
 msgid "PIN too long"
 msgstr "Die PIN ist zu lang"
@@ -162,9 +168,6 @@ msgstr ""
 "Bitte geben Sie eine Passphrase ein, um den empfangenen geheimen\n"
 "Schlüssel%%0A   %s%%0A  %s%%0Aim Schlüsselspeicher des Gpg-Agenten zu "
 "schützen."
-
-msgid "does not match - try again"
-msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -7131,10 +7134,10 @@ msgstr "Gebrauch: @DIRMNGR@ [Optionen]"
 
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
-"LDAP and OCSP access for @GNUPG@\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
 msgstr ""
 "Syntax: @DIRMNGR@ [Optionen] [Kommando [Argumente]]\n"
-"LDAP und OCSP Zugriff für @GNUPG@\n"
+"Keyserver, CRL und OCSP Zugriff für @GNUPG@\n"
 
 #, c-format
 msgid "valid debug levels are: %s\n"
