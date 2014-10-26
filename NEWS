@@ -1,6 +1,14 @@
 Noteworthy changes in version 2.1.0 (unreleased)
 ------------------------------------------------
 
+ * gpg: All support for v3 (PGP 2) keys has been dropped.  All
+   signatures are now creates as v4 signatures.
+
+ * gpg: With pinentry-0.9.0 the passphrase "enter again" prompt shows
+   up in the same window as the "new passphrase" prompt.
+
+ * gpg: Allow importing keys with duplicated long key ids.
+
  * Dirmngr may now be build without support for LDAP.
 
  * For a complete list of changes see the lists of changes for the
