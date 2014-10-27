@@ -108,7 +108,7 @@ this-w32-source: check-tools
 WHAT=git
 
 # Set target to "native" or "w32"
-TARGETOS=w32
+TARGETOS=
 
 # Set to 1 to build the GUI tools
 WITH_GUI=0
@@ -382,16 +382,23 @@ speedo_pkg_libgcrypt_configure = --disable-static
 
 speedo_pkg_libksba_configure = --disable-static
 
+ifeq ($(TARGETOS),w32)
 speedo_pkg_gnupg_configure = --enable-gpg2-is-gpg --disable-g13
+else
+speedo_pkg_gnupg_configure = --disable-g13
+endif
 speedo_pkg_gnupg_extracflags = -g
 
+# Create the version info files only for W32 so that they won't get
+# installed if for example INSTALL_PREFIX=/usr/local is used.
+ifeq ($(TARGETOS),w32)
 define speedo_pkg_gnupg_post_install
 (set -e; \
  sed -n  's/.*PACKAGE_VERSION "\(.*\)"/\1/p' config.h >$(idir)/INST_VERSION; \
  sed -n  's/.*W32INFO_VI_PRODUCTVERSION \(.*\)/\1/p' common/w32info-rc.h \
     |sed 's/,/./g' >$(idir)/INST_PROD_VERSION )
 endef
-
+endif
 
 # The LDFLAGS is needed for -lintl for glib.
 speedo_pkg_gpgme_configure = \
@@ -566,12 +573,18 @@ endif
 BUILD_ISODATE=$(shell date -u +%Y-%m-%d)
 
 # The next two macros will work only after gnupg has been build.
+ifeq ($(TARGETOS),w32)
 INST_VERSION=$(shell head -1 $(idir)/INST_VERSION)
 INST_PROD_VERSION=$(shell head -1 $(idir)/INST_PROD_VERSION)
+endif
 
 # List with packages
 speedo_build_list = $(speedo_spkgs)
 speedo_w64_build_list = $(speedo_w64_spkgs)
+
+# To avoid running external commands during the read phase (":=" style
+# assignments), we check that the targetos has been given
+ifneq ($(TARGETOS),)
 
 # Determine build and host system
 build := $(shell $(topsrc)/autogen.sh --silent --print-build)
@@ -594,6 +607,9 @@ ifeq ($(MAKE_J),)
   speedo_makeopt=
 else
   speedo_makeopt=-j$(MAKE_J)
+endif
+
+# End non-empty TARGETOS
 endif
 
 
@@ -975,6 +991,8 @@ clean-speedo:
 #
 # Windows installer
 #
+# {{{
+ifeq ($(TARGETOS),w32)
 
 dist-source: all
 	for i in 00 01 02 03; do sleep 1;touch PLAY/stamps/stamp-*-${i}-*;done
@@ -1027,6 +1045,10 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
 		    $(w32src)/inst.nsi
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)"
+
+endif
+# }}} W32
+
 
 #
 # Check availibility of standard tools
