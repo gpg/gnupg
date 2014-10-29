@@ -1062,7 +1062,7 @@ machine startup.
 Passphrases set with this utility don't expire unless the
 @option{--forget} option is used to explicitly clear them from the
 cache --- or @command{gpg-agent} is either restarted or reloaded (by
-sending a SIGHUP to it).  Nite that the maximum cache time as set with
+sending a SIGHUP to it).  Note that the maximum cache time as set with
 @option{--max-cache-ttl} is still honored.  It is necessary to allow
 this passphrase presetting by starting @command{gpg-agent} with the
 @option{--allow-preset-passphrase}.

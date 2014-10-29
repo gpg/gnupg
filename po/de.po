@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-10-27 14:12+0100\n"
+"PO-Revision-Date: 2014-10-29 17:05+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -963,6 +963,9 @@ msgstr "Schlüsselwort ist zu lang"
 msgid "missing argument"
 msgstr "Fehlendes Argument"
 
+msgid "invalid argument"
+msgstr "Ungültiges Argument"
+
 msgid "invalid command"
 msgstr "Ungültiger Befehl"
 
@@ -978,6 +981,10 @@ msgstr "Ungültige Option"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "Fehlendes Argument für Option \"%.50s\"\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "Ungültiges Argument für Option \"%.50s\"\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
