@@ -55,6 +55,13 @@
 # include @ABSOLUTE_STDINT_H@
 #endif
 
+#ifdef __APPLE__
+  /* Apple's implementation of <stdint.h> is bugy; we therefore use
+     the source definitions.  */
+# include <_types/_intmax_t.h>
+# include <_types/_uintmax_t.h>
+#endif
+
 /* <sys/types.h> defines some of the stdint.h types as well, on glibc,
    IRIX 6.5, and OpenBSD 3.8 (via <machine/types.h>).
    MacOS X 10.4.6 <sys/types.h> includes <stdint.h> (which is us), but
