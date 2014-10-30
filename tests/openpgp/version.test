@@ -39,9 +39,12 @@ done
 # create a faked random seed file.  Note that we need to set the
 # agent-program so that gpg-connect-agent is able to start the agent
 # we are currently testing and not an already installed one.
+# The "|--debug-quick-random" is a hack to start gpg-agent with
+# that option on the command line.
 info "Starting the agent"
 $MKTDATA 600 >random_seed
-if $GPG_CONNECT_AGENT -v --agent-program="$GPG_AGENT" /bye; then
+if $GPG_CONNECT_AGENT -v \
+    --agent-program="${GPG_AGENT}|--debug-quick-random" /bye; then
     :
 else
     error "starting the gpg-agent failed"

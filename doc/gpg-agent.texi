@@ -293,6 +293,14 @@ When running in server mode, wait @var{n} seconds before entering the
 actual processing loop and print the pid.  This gives time to attach a
 debugger.
 
+@item --debug-quick-random
+@opindex debug-quick-random
+This option inhibits the use the very secure random quality level
+(Libgcrypt’s @code{GCRY_VERY_STRONG_RANDOM}) and degrades all request
+down to standard random quality.  It is only used for testing and
+shall not be used for any production quality keys.  This option is
+only effective when given on the command line.
+
 @item --no-detach
 @opindex no-detach
 Don't detach the process from the console.  This is mainly useful for

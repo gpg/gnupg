@@ -1199,7 +1199,11 @@ Try to be as quiet as possible.
 
 @item --agent-program @var{file}
 @opindex agent-program
-Specify the agent program to be started if none is running.
+Specify the agent program to be started if none is running.  The
+default value is determined by running @command{gpgconf} with the
+option @option{--list-dirs}.  Note that the pipe symbol (@code{|}) is
+used for a regression test suite hack and may thus not be used in the
+file name.
 
 @ifset gpgtwoone
 @item --dirmngr-program @var{file}

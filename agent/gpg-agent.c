@@ -81,6 +81,7 @@ enum cmd_and_opt_values
   oDebugAll,
   oDebugLevel,
   oDebugWait,
+  oDebugQuickRandom,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -149,6 +150,7 @@ static ARGPARSE_OPTS opts[] = {
   { oDebugAll, "debug-all"     ,0, "@"},
   { oDebugLevel, "debug-level" ,2, "@"},
   { oDebugWait,"debug-wait",1, "@"},
+  ARGPARSE_s_n (oDebugQuickRandom, "debug-quick-random", "@"),
   { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
   { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
   { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
@@ -730,6 +732,11 @@ main (int argc, char **argv )
           default_config = 0; /* --no-options */
 	else if (pargs.r_opt == oHomedir)
           opt.homedir = pargs.r.ret_str;
+	else if (pargs.r_opt == oDebugQuickRandom)
+          {
+            gcry_control (GCRYCTL_ENABLE_QUICK_RANDOM, 0);
+          }
+
     }
 
   /* Initialize the secure memory. */
@@ -845,6 +852,10 @@ main (int argc, char **argv )
           putty_support = 1;
           opt.ssh_support = 1;
 #        endif
+          break;
+
+        case oDebugQuickRandom:
+          /* Only used by the first stage command line parser.  */
           break;
 
         case oWriteEnvFile: /* dummy */ break;

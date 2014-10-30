@@ -1710,7 +1710,10 @@ This is dummy option. It has no effect when used with @command{gpg2}.
 @item --agent-program @var{file}
 @opindex agent-program
 Specify an agent program to be used for secret key operations.  The
-default value is the @file{/usr/bin/gpg-agent}.
+default value is determined by running @command{gpgconf} with the
+option @option{--list-dirs}.  Note that the pipe symbol (@code{|}) is
+used for a regression test suite hack and may thus not be used in the
+file name.
 @ifclear gpgtwoone
 This is only used
 as a fallback when the environment variable @code{GPG_AGENT_INFO} is not

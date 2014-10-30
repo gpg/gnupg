@@ -244,10 +244,9 @@ for f in gpg.conf gpg-agent.conf ; do
     case "$f" in
       gpg.conf)
         [ -n "${opt_always}" ] && echo "no-auto-check-trustdb" >>"$f"
-        echo "agent-program $GPG_AGENT" >>"$f"
+        echo "agent-program ${GPG_AGENT}|--debug-quick-random" >>"$f"
         echo "allow-weak-digest-algos" >>"$f"
-
-      ;;
+        ;;
       gpg-agent.conf)
         echo "pinentry-program $PINENTRY" >>"$f"
         ;;
