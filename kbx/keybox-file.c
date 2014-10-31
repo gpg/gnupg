@@ -154,7 +154,7 @@ _keybox_write_header_blob (FILE *fp, int for_openpgp)
   /* Length of this blob. */
   image[3] = 32;
 
-  image[4] = BLOBTYPE_HEADER;
+  image[4] = KEYBOX_BLOBTYPE_HEADER;
   image[5] = 1; /* Version */
   if (for_openpgp)
     image[7] = 0x02; /* OpenPGP data may be available.  */

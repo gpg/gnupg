@@ -1448,7 +1448,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           rc = keybox_search (hd->active[hd->current].u.kb, desc,
-                              ndesc, descindex, &hd->skipped_long_blobs);
+                              ndesc, KEYBOX_BLOBTYPE_PGP,
+                              descindex, &hd->skipped_long_blobs);
           break;
         }
       if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)

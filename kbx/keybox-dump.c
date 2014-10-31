@@ -205,17 +205,17 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   type = buffer[4];
   switch (type)
     {
-    case BLOBTYPE_EMPTY:
+    case KEYBOX_BLOBTYPE_EMPTY:
       fprintf (fp, "Type:   Empty\n");
       return 0;
 
-    case BLOBTYPE_HEADER:
+    case KEYBOX_BLOBTYPE_HEADER:
       fprintf (fp, "Type:   Header\n");
       return dump_header_blob (buffer, length, fp);
-    case BLOBTYPE_PGP:
+    case KEYBOX_BLOBTYPE_PGP:
       fprintf (fp, "Type:   OpenPGP\n");
       break;
-    case BLOBTYPE_X509:
+    case KEYBOX_BLOBTYPE_X509:
       fprintf (fp, "Type:   X.509\n");
       break;
     default:
@@ -271,7 +271,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   fprintf (fp, "Key-Count: %lu\n", nkeys );
   if (!nkeys)
     fprintf (fp, "[Error: no keys]\n");
-  if (nkeys > 1 && type == BLOBTYPE_X509)
+  if (nkeys > 1 && type == KEYBOX_BLOBTYPE_X509)
     fprintf (fp, "[Error: only one key allowed for X509]\n");
 
   keyinfolen = get16 (buffer + 18 );
@@ -321,13 +321,13 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 
       uidoff = get32( p );
       uidlen = get32( p+4 );
-      if (type == BLOBTYPE_X509 && !n)
+      if (type == KEYBOX_BLOBTYPE_X509 && !n)
         {
           fprintf (fp, "Issuer-Off: %lu\n", uidoff );
           fprintf (fp, "Issuer-Len: %lu\n", uidlen );
           fprintf (fp, "Issuer: \"");
         }
-      else if (type == BLOBTYPE_X509 && n == 1)
+      else if (type == KEYBOX_BLOBTYPE_X509 && n == 1)
         {
           fprintf (fp, "Subject-Off: %lu\n", uidoff );
           fprintf (fp, "Subject-Len: %lu\n", uidlen );
@@ -342,12 +342,12 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       print_string (fp, buffer+uidoff, uidlen, '\"');
       fputs ("\"\n", fp);
       uflags = get16 (p + 8);
-      if (type == BLOBTYPE_X509 && !n)
+      if (type == KEYBOX_BLOBTYPE_X509 && !n)
         {
           fprintf (fp, "Issuer-Flags: %04lX\n", uflags );
           fprintf (fp, "Issuer-Validity: %d\n", p[10] );
         }
-      else if (type == BLOBTYPE_X509 && n == 1)
+      else if (type == KEYBOX_BLOBTYPE_X509 && n == 1)
         {
           fprintf (fp, "Subject-Flags: %04lX\n", uflags );
           fprintf (fp, "Subject-Validity: %d\n", p[10] );
@@ -452,12 +452,12 @@ hash_blob_rawdata (KEYBOXBLOB blob, unsigned char *digest)
   type = buffer[4];
   switch (type)
     {
-    case BLOBTYPE_PGP:
-    case BLOBTYPE_X509:
+    case KEYBOX_BLOBTYPE_PGP:
+    case KEYBOX_BLOBTYPE_X509:
       break;
 
-    case BLOBTYPE_EMPTY:
-    case BLOBTYPE_HEADER:
+    case KEYBOX_BLOBTYPE_EMPTY:
+    case KEYBOX_BLOBTYPE_HEADER:
     default:
       memset (digest, 0, 20);
       return 0;
@@ -519,16 +519,16 @@ update_stats (KEYBOXBLOB blob, struct file_stats_s *s)
   type = buffer[4];
   switch (type)
     {
-    case BLOBTYPE_EMPTY:
+    case KEYBOX_BLOBTYPE_EMPTY:
       s->empty_blob_count++;
       return 0;
-    case BLOBTYPE_HEADER:
+    case KEYBOX_BLOBTYPE_HEADER:
       s->header_blob_count++;
       return 0;
-    case BLOBTYPE_PGP:
+    case KEYBOX_BLOBTYPE_PGP:
       s->pgp_blob_count++;
       break;
-    case BLOBTYPE_X509:
+    case KEYBOX_BLOBTYPE_X509:
       s->x509_blob_count++;
       break;
     default:

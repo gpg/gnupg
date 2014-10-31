@@ -56,6 +56,14 @@ typedef enum
 #define KEYBOX_FLAG_BLOB_SECRET     1
 #define KEYBOX_FLAG_BLOB_EPHEMERAL  2
 
+/* The keybox blob types.  */
+typedef enum
+  {
+    KEYBOX_BLOBTYPE_EMPTY  = 0,
+    KEYBOX_BLOBTYPE_HEADER = 1,
+    KEYBOX_BLOBTYPE_PGP    = 2,
+    KEYBOX_BLOBTYPE_X509   = 3
+  } keybox_blobtype_t;
 
 
 /*-- keybox-init.c --*/
@@ -87,6 +95,7 @@ int keybox_get_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int *value);
 
 int keybox_search_reset (KEYBOX_HANDLE hd);
 int keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
+                   keybox_blobtype_t want_blobtype,
                    size_t *r_descindex, unsigned long *r_skipped);
 
 

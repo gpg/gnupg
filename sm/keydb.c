@@ -972,6 +972,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc, size_t ndesc)
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           rc = keybox_search (hd->active[hd->current].u.kr, desc, ndesc,
+                              KEYBOX_BLOBTYPE_X509,
                               NULL, &skipped);
           break;
         }

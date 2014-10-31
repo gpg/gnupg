@@ -44,14 +44,6 @@
 #include "keybox.h"
 
 
-enum {
-  BLOBTYPE_EMPTY = 0,
-  BLOBTYPE_HEADER = 1,
-  BLOBTYPE_PGP = 2,
-  BLOBTYPE_X509 = 3
-};
-
-
 typedef struct keyboxblob *KEYBOXBLOB;
 
 

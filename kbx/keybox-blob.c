@@ -591,7 +591,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
 
   /* space where we write keyIDs and and other stuff so that the
      pointers can actually point to somewhere */
-  if (blobtype == BLOBTYPE_PGP)
+  if (blobtype == KEYBOX_BLOBTYPE_PGP)
     {
       /* We need to store the keyids for all pgp v3 keys because those key
          IDs are not part of the fingerprint.  While we are doing that, we
@@ -611,7 +611,7 @@ create_blob_header (KEYBOXBLOB blob, int blobtype, int as_ephemeral)
         }
     }
 
-  if (blobtype == BLOBTYPE_X509)
+  if (blobtype == KEYBOX_BLOBTYPE_X509)
     {
       /* We don't want to point to ASN.1 encoded UserIDs (DNs) but to
          the utf-8 string represenation of them */
@@ -750,7 +750,7 @@ _keybox_create_openpgp_blob (KEYBOXBLOB *r_blob,
 
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
-  err = create_blob_header (blob, BLOBTYPE_PGP, as_ephemeral);
+  err = create_blob_header (blob, KEYBOX_BLOBTYPE_PGP, as_ephemeral);
   if (err)
     goto leave;
   err = pgp_create_blob_keyblock (blob, image, imagelen);
@@ -937,7 +937,7 @@ _keybox_create_x509_blob (KEYBOXBLOB *r_blob, ksba_cert_t cert,
   init_membuf (&blob->bufbuf, 1024);
   blob->buf = &blob->bufbuf;
   /* write out what we already have */
-  rc = create_blob_header (blob, BLOBTYPE_X509, as_ephemeral);
+  rc = create_blob_header (blob, KEYBOX_BLOBTYPE_X509, as_ephemeral);
   if (rc)
     goto leave;
   rc = x509_create_blob_cert (blob, cert);
@@ -1031,7 +1031,7 @@ _keybox_get_blob_fileoffset (KEYBOXBLOB blob)
 void
 _keybox_update_header_blob (KEYBOXBLOB blob, int for_openpgp)
 {
-  if (blob->bloblen >= 32 && blob->blob[4] == BLOBTYPE_HEADER)
+  if (blob->bloblen >= 32 && blob->blob[4] == KEYBOX_BLOBTYPE_HEADER)
     {
       u32 val = make_timestamp ();
 

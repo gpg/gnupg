@@ -282,7 +282,8 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
          failsafe the blob type.) */
       while ( (nread = fread (buffer, 1, DIM(buffer), fp)) > 0 )
         {
-          if (first_record && for_openpgp && buffer[4] == BLOBTYPE_HEADER)
+          if (first_record && for_openpgp
+              && buffer[4] == KEYBOX_BLOBTYPE_HEADER)
             {
               first_record = 0;
               buffer[7] |= 0x02; /* OpenPGP data may be available.  */
@@ -446,7 +447,7 @@ keybox_update_keyblock (KEYBOX_HANDLE hd, const void *image, size_t imagelen)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!hd->found.blob)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
-  if (blob_get_type (hd->found.blob) != BLOBTYPE_PGP)
+  if (blob_get_type (hd->found.blob) != KEYBOX_BLOBTYPE_PGP)
     return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
   fname = hd->kb->fname;
   if (!fname)
@@ -704,7 +705,7 @@ keybox_compress (KEYBOX_HANDLE hd)
       size_t length;
 
       buffer = _keybox_get_blob_image (blob, &length);
-      if (length > 4 && buffer[4] == BLOBTYPE_HEADER)
+      if (length > 4 && buffer[4] == KEYBOX_BLOBTYPE_HEADER)
         {
           u32 last_maint = ((buffer[20] << 24) | (buffer[20+1] << 16)
                             | (buffer[20+2] << 8) | (buffer[20+3]));
@@ -751,7 +752,7 @@ keybox_compress (KEYBOX_HANDLE hd)
       if (first_blob)
         {
           first_blob = 0;
-          if (length > 4 && buffer[4] == BLOBTYPE_HEADER)
+          if (length > 4 && buffer[4] == KEYBOX_BLOBTYPE_HEADER)
             {
               /* Write out the blob with an updated maintenance time
                  stamp and if needed (ie. used by gpg) set the openpgp
@@ -769,7 +770,7 @@ keybox_compress (KEYBOX_HANDLE hd)
             break;
           any_changes = 1;
         }
-      else if (length > 4 && buffer[4] == BLOBTYPE_HEADER)
+      else if (length > 4 && buffer[4] == KEYBOX_BLOBTYPE_HEADER)
         {
           /* Oops: There is another header record - remove it. */
           any_changes = 1;

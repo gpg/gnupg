@@ -573,7 +573,7 @@ static inline int
 has_keygrip (KEYBOXBLOB blob, const unsigned char *grip)
 {
 #ifdef KEYBOX_WITH_X509
-  if (blob_get_type (blob) == BLOBTYPE_X509)
+  if (blob_get_type (blob) == KEYBOX_BLOBTYPE_X509)
     return blob_x509_has_grip (blob, grip);
 #endif
   return 0;
@@ -587,7 +587,7 @@ has_issuer (KEYBOXBLOB blob, const char *name)
 
   return_val_if_fail (name, 0);
 
-  if (blob_get_type (blob) != BLOBTYPE_X509)
+  if (blob_get_type (blob) != KEYBOX_BLOBTYPE_X509)
     return 0;
 
   namelen = strlen (name);
@@ -603,7 +603,7 @@ has_issuer_sn (KEYBOXBLOB blob, const char *name,
   return_val_if_fail (name, 0);
   return_val_if_fail (sn, 0);
 
-  if (blob_get_type (blob) != BLOBTYPE_X509)
+  if (blob_get_type (blob) != KEYBOX_BLOBTYPE_X509)
     return 0;
 
   namelen = strlen (name);
@@ -617,7 +617,7 @@ has_sn (KEYBOXBLOB blob, const unsigned char *sn, int snlen)
 {
   return_val_if_fail (sn, 0);
 
-  if (blob_get_type (blob) != BLOBTYPE_X509)
+  if (blob_get_type (blob) != KEYBOX_BLOBTYPE_X509)
     return 0;
   return blob_cmp_sn (blob, sn, snlen);
 }
@@ -629,7 +629,7 @@ has_subject (KEYBOXBLOB blob, const char *name)
 
   return_val_if_fail (name, 0);
 
-  if (blob_get_type (blob) != BLOBTYPE_X509)
+  if (blob_get_type (blob) != KEYBOX_BLOBTYPE_X509)
     return 0;
 
   namelen = strlen (name);
@@ -646,12 +646,12 @@ has_username (KEYBOXBLOB blob, const char *name, int substr)
   return_val_if_fail (name, 0);
 
   btype = blob_get_type (blob);
-  if (btype != BLOBTYPE_PGP && btype != BLOBTYPE_X509)
+  if (btype != KEYBOX_BLOBTYPE_PGP && btype != KEYBOX_BLOBTYPE_X509)
     return 0;
 
   namelen = strlen (name);
   return blob_cmp_name (blob, -1 /* all subject/user names */, name,
-                        namelen, substr, (btype == BLOBTYPE_X509));
+                        namelen, substr, (btype == KEYBOX_BLOBTYPE_X509));
 }
 
 
@@ -664,16 +664,17 @@ has_mail (KEYBOXBLOB blob, const char *name, int substr)
   return_val_if_fail (name, 0);
 
   btype = blob_get_type (blob);
-  if (btype != BLOBTYPE_PGP && btype != BLOBTYPE_X509)
+  if (btype != KEYBOX_BLOBTYPE_PGP && btype != KEYBOX_BLOBTYPE_X509)
     return 0;
 
-  if (btype == BLOBTYPE_PGP && *name == '<')
+  if (btype == KEYBOX_BLOBTYPE_PGP && *name == '<')
     name++; /* Hack to remove the leading '<' for gpg.  */
 
   namelen = strlen (name);
   if (namelen && name[namelen-1] == '>')
     namelen--;
-  return blob_cmp_mail (blob, name, namelen, substr, (btype == BLOBTYPE_X509));
+  return blob_cmp_mail (blob, name, namelen, substr,
+                        (btype == KEYBOX_BLOBTYPE_X509));
 }
 
 
@@ -719,10 +720,12 @@ keybox_search_reset (KEYBOX_HANDLE hd)
 
 /* Note: When in ephemeral mode the search function does visit all
    blobs but in standard mode, blobs flagged as ephemeral are ignored.
+   If WANT_BLOBTYPE is not 0 only blobs of this type are considered.
    The value at R_SKIPPED is updated by the number of skipped long
    records (counts PGP and X.509). */
 int
 keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
+               keybox_blobtype_t want_blobtype,
                size_t *r_descindex, unsigned long *r_skipped)
 {
   int rc;
@@ -851,6 +854,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
   for (;;)
     {
       unsigned int blobflags;
+      int blobtype;
 
       _keybox_release_blob (blob); blob = NULL;
       rc = _keybox_read_blob (&blob, hd->fp);
@@ -864,9 +868,11 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
       if (rc)
         break;
 
-      if (blob_get_type (blob) == BLOBTYPE_HEADER)
+      blobtype = blob_get_type (blob);
+      if (blobtype == KEYBOX_BLOBTYPE_HEADER)
         continue;
-
+      if (want_blobtype && blobtype != want_blobtype)
+        continue;
 
       blobflags = blob_get_blob_flags (blob);
       if (!hd->ephemeral && (blobflags & 2))
@@ -1025,7 +1031,7 @@ keybox_get_keyblock (KEYBOX_HANDLE hd, iobuf_t *r_iobuf,
   if (!hd->found.blob)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
 
-  if (blob_get_type (hd->found.blob) != BLOBTYPE_PGP)
+  if (blob_get_type (hd->found.blob) != KEYBOX_BLOBTYPE_PGP)
     return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
 
   buffer = _keybox_get_blob_image (hd->found.blob, &length);
@@ -1077,7 +1083,7 @@ keybox_get_cert (KEYBOX_HANDLE hd, ksba_cert_t *r_cert)
   if (!hd->found.blob)
     return gpg_error (GPG_ERR_NOTHING_FOUND);
 
-  if (blob_get_type (hd->found.blob) != BLOBTYPE_X509)
+  if (blob_get_type (hd->found.blob) != KEYBOX_BLOBTYPE_X509)
     return gpg_error (GPG_ERR_WRONG_BLOB_TYPE);
 
   buffer = _keybox_get_blob_image (hd->found.blob, &length);
