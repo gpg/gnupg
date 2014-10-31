@@ -30,7 +30,6 @@ EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
 	     build-aux/getswdb.sh                           \
 	     build-aux/speedo.mk                            \
              build-aux/speedo/zlib.pc			    \
-             build-aux/speedo/w32			    \
              build-aux/speedo/w32/inst-options.ini	    \
              build-aux/speedo/w32/inst.nsi		    \
              build-aux/speedo/w32/pkg-copyright.txt	    \
@@ -39,7 +38,6 @@ EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
              build-aux/speedo/w32/gdk-pixbuf-loaders.cache  \
              build-aux/speedo/w32/exdll.h		    \
              build-aux/speedo/w32/README.txt		    \
-             build-aux/speedo/patches			    \
              build-aux/speedo/patches/atk-1.32.0.patch	    \
              build-aux/speedo/patches/libiconv-1.14.patch   \
              build-aux/speedo/patches/pango-1.29.4.patch
