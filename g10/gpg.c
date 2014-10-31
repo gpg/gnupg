@@ -3202,15 +3202,6 @@ main (int argc, char **argv)
         log_set_prefix (NULL, 1|2|4);
       }
 
-    /* Older Libgcrypts fail with an assertion during DSA key
-       generation.  Better disable DSA2 entirely. */
-    if (opt.flags.dsa2 && !gcry_check_version ("1.4.0") )
-      {
-        log_info ("WARNING: "
-                  "DSA2 is only available with Libgcrypt 1.4 and later\n");
-        opt.flags.dsa2 = 0;
-      }
-
     if (opt.verbose > 2)
         log_info ("using character set '%s'\n", get_native_charset ());
 
