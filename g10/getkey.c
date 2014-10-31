@@ -3012,7 +3012,6 @@ have_secret_key_with_kid (u32 *keyid)
   desc.u.kid[1] = keyid[1];
   while (!result && !(err = keydb_search (kdbhd, &desc, 1, NULL)))
     {
-      desc.mode = KEYDB_SEARCH_MODE_NEXT;
       err = keydb_get_keyblock (kdbhd, &keyblock);
       if (err)
         {
