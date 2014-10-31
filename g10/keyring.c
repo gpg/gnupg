@@ -1409,40 +1409,51 @@ keyring_rebuild_cache (void *token,int noisy)
           goto leave;
         }
 
-      /* check all signature to set the signature's cache flags */
-      for (node=keyblock; node; node=node->next)
+      if (keyblock->pkt->pkt.public_key->version < 4)
         {
-	  /* Note that this doesn't cache the result of a revocation
-	     issued by a designated revoker.  This is because the pk
-	     in question does not carry the revkeys as we haven't
-	     merged the key and selfsigs.  It is questionable whether
-	     this matters very much since there are very very few
-	     designated revoker revocation packets out there. */
-
-          if (node->pkt->pkttype == PKT_SIGNATURE)
-            {
-	      PKT_signature *sig=node->pkt->pkt.signature;
-
-	      if(!opt.no_sig_cache && sig->flags.checked && sig->flags.valid
-		 && (openpgp_md_test_algo(sig->digest_algo)
-		     || openpgp_pk_test_algo(sig->pubkey_algo)))
-		sig->flags.checked=sig->flags.valid=0;
-	      else
-		check_key_signature (keyblock, node, NULL);
-
-              sigcount++;
-            }
+          /* We do not copy/cache v3 keys or any other unknown
+             packets.  It is better to remove them from the keyring.
+             The code required to keep them in the keyring would be
+             too complicated.  Given that we do not touch the old
+             secring.gpg a suitable backup for decryption of v3 stuff
+             using an older gpg version will always be available.  */
         }
+      else
+        {
+          /* Check all signature to set the signature's cache flags. */
+          for (node=keyblock; node; node=node->next)
+            {
+              /* Note that this doesn't cache the result of a
+                 revocation issued by a designated revoker.  This is
+                 because the pk in question does not carry the revkeys
+                 as we haven't merged the key and selfsigs.  It is
+                 questionable whether this matters very much since
+                 there are very very few designated revoker revocation
+                 packets out there. */
+              if (node->pkt->pkttype == PKT_SIGNATURE)
+                {
+                  PKT_signature *sig=node->pkt->pkt.signature;
 
-      /* write the keyblock to the temporary file */
-      rc = write_keyblock (tmpfp, keyblock);
-      if (rc)
-        goto leave;
+                  if(!opt.no_sig_cache && sig->flags.checked && sig->flags.valid
+                     && (openpgp_md_test_algo(sig->digest_algo)
+                         || openpgp_pk_test_algo(sig->pubkey_algo)))
+                    sig->flags.checked=sig->flags.valid=0;
+                  else
+                    check_key_signature (keyblock, node, NULL);
 
-      if ( !(++count % 50) && noisy && !opt.quiet)
-        log_info(_("%lu keys cached so far (%lu signatures)\n"),
-                 count, sigcount );
+                  sigcount++;
+                }
+            }
 
+          /* Write the keyblock to the temporary file.  */
+          rc = write_keyblock (tmpfp, keyblock);
+          if (rc)
+            goto leave;
+
+          if ( !(++count % 50) && noisy && !opt.quiet)
+            log_info(_("%lu keys cached so far (%lu signatures)\n"),
+                     count, sigcount );
+        }
     } /* end main loop */
   if (rc == -1)
     rc = 0;

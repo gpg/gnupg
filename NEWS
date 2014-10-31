@@ -8,7 +8,8 @@ Noteworthy changes in version 2.1.0 (unreleased)
    used.
 
  * gpg: All support for v3 (PGP 2) keys has been dropped.  All
-   signatures are now created as v4 signatures.
+   signatures are now created as v4 signatures.  v3 keys will be
+   removed from the keyring.
 
  * gpg: With pinentry-0.9.0 the passphrase "enter again" prompt shows
    up in the same window as the "new passphrase" prompt.

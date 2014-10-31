@@ -1953,6 +1953,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
         log_info ("packet(%d) with obsolete version %d\n", pkttype, version);
       if (list_mode)
         es_fprintf (listfp, ":key packet: [obsolete version %d]\n", version);
+      pk->version = version;
       err = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
