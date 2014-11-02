@@ -83,8 +83,6 @@ enum para_name {
   pKEYEXPIRE, /* in n seconds */
   pSUBKEYEXPIRE, /* in n seconds */
   pPASSPHRASE,
-  pPASSPHRASE_DEK,
-  pPASSPHRASE_S2K,
   pSERIALNO,
   pCARDBACKUPKEY,
   pHANDLE,
@@ -96,8 +94,6 @@ struct para_data_s {
     int lnr;
     enum para_name key;
     union {
-        DEK *dek;
-        STRING2KEY *s2k;
         u32 expire;
         u32 creation;
         unsigned int usage;
@@ -110,7 +106,6 @@ struct output_control_s
 {
   int lnr;
   int dryrun;
-  int ask_passphrase;
   unsigned int keygen_flags;
   int use_files;
   struct {
@@ -2676,6 +2671,7 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 
 /*  MODE  0 - standard
           1 - Ask for passphrase of the card backup key.  */
+#if 0
 static DEK *
 do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
 {
@@ -2720,6 +2716,7 @@ do_ask_passphrase (STRING2KEY **ret_s2k, int mode, int *r_canceled)
     *ret_s2k = s2k;
     return dek;
 }
+#endif /* 0 */
 
 
 /* Basic key generation.  Here we divert to the actual generation
@@ -2795,11 +2792,6 @@ release_parameter_list (struct para_data_s *r)
   for (; r ; r = r2)
     {
       r2 = r->next;
-      if (r->key == pPASSPHRASE_DEK)
-        xfree (r->u.dek);
-      else if (r->key == pPASSPHRASE_S2K )
-        xfree (r->u.s2k);
-
       xfree (r);
     }
 }
@@ -3123,72 +3115,6 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
   if (parse_revocation_key (fname, para, pREVOKER))
     return -1;
 
-  /* Make DEK and S2K from the Passphrase. */
-  if (outctrl->ask_passphrase)
-    {
-      /* %ask-passphrase is active - ignore pPASSPRASE and ask.  This
-         feature is required so that GUIs are able to do a key
-         creation but have gpg-agent ask for the passphrase.  */
-      int canceled = 0;
-      STRING2KEY *s2k;
-      DEK *dek;
-
-      dek = do_ask_passphrase (&s2k, 0, &canceled);
-      if (dek)
-        {
-          r = xmalloc_clear( sizeof *r );
-          r->key = pPASSPHRASE_DEK;
-          r->u.dek = dek;
-          append_to_parameter (para, r);
-          r = xmalloc_clear( sizeof *r );
-          r->key = pPASSPHRASE_S2K;
-          r->u.s2k = s2k;
-          append_to_parameter (para, r);
-        }
-
-      if (canceled)
-        {
-	  log_error ("%s:%d: key generation canceled\n", fname, r->lnr );
-          return -1;
-        }
-    }
-  else
-    {
-      r = get_parameter( para, pPASSPHRASE );
-      if ( r && *r->u.value )
-        {
-          /* We have a plain text passphrase - create a DEK from it.
-           * It is a little bit ridiculous to keep it in secure memory
-           * but because we do this always, why not here.  */
-          STRING2KEY *s2k;
-          DEK *dek;
-
-          s2k = xmalloc ( sizeof *s2k );
-          s2k->mode = opt.s2k_mode;
-          s2k->hash_algo = S2K_DIGEST_ALGO;
-          set_next_passphrase ( r->u.value );
-          dek = passphrase_to_dek (NULL, 0, opt.s2k_cipher_algo, s2k, 2,
-                                   NULL, NULL);
-          if (!dek)
-            {
-              log_error ("%s:%d: error post processing the passphrase\n",
-                         fname, r->lnr );
-              xfree (s2k);
-              return -1;
-            }
-          set_next_passphrase (NULL);
-          memset (r->u.value, 0, strlen(r->u.value));
-
-          r = xmalloc_clear (sizeof *r);
-          r->key = pPASSPHRASE_S2K;
-          r->u.s2k = s2k;
-          append_to_parameter (para, r);
-          r = xmalloc_clear (sizeof *r);
-          r->key = pPASSPHRASE_DEK;
-          r->u.dek = dek;
-          append_to_parameter (para, r);
-        }
-    }
 
   /* Make KEYCREATIONDATE from Creation-Date.  */
   r = get_parameter (para, pCREATIONDATE);
@@ -3324,9 +3250,9 @@ read_parameter_file( const char *fname )
 	    else if( !ascii_strcasecmp( keyword, "%dry-run" ) )
 		outctrl.dryrun = 1;
 	    else if( !ascii_strcasecmp( keyword, "%ask-passphrase" ) )
-		outctrl.ask_passphrase = 1;
+              ; /* Dummy for backward compatibility. */
 	    else if( !ascii_strcasecmp( keyword, "%no-ask-passphrase" ) )
-		outctrl.ask_passphrase = 0;
+	      ; /* Dummy for backward compatibility. */
 	    else if( !ascii_strcasecmp( keyword, "%no-protection" ) )
                 outctrl.keygen_flags |= KEYGEN_FLAG_NO_PROTECTION;
 	    else if( !ascii_strcasecmp( keyword, "%transient-key" ) )

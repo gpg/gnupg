@@ -3312,12 +3312,18 @@ control statements must be given. For GnuPG 2.1 and later
 
 @item %ask-passphrase
 @itemx %no-ask-passphrase
+@ifclear gpgtwoone
 Enable (or disable) a mode where the command @option{passphrase} is
 ignored and instead the usual passphrase dialog is used.  This does
 not make sense for batch key generation; however the unattended key
 generation feature is also used by GUIs and this feature relinquishes
 the GUI from implementing its own passphrase entry code.  These are
 global control statements and affect all future key genrations.
+@end ifclear
+@ifset gpgtwoone
+This option is a no-op for GnuPG 2.1 and later.
+@end ifset
+
 
 @item %no-protection
 Since GnuPG version 2.1 it is not anymore possible to specify a
