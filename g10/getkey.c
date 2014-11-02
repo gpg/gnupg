@@ -928,26 +928,13 @@ get_pubkey_bynames (GETKEY_CTX * retctx, PKT_public_key * pk,
 int
 get_pubkey_next (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE * ret_keyblock)
 {
-  int rc;
-
-  rc = lookup (ctx, ret_keyblock, 0);
-  if (!rc && pk && ret_keyblock)
-    pk_from_block (ctx, pk, *ret_keyblock);
-
-  return rc;
+  return gpg_err_code (getkey_next (ctx, pk, ret_keyblock));
 }
 
 void
 get_pubkey_end (GETKEY_CTX ctx)
 {
-  if (ctx)
-    {
-      memset (&ctx->kbpos, 0, sizeof ctx->kbpos);
-      keydb_release (ctx->kr_handle);
-      free_strlist (ctx->extra_list);
-      if (!ctx->not_allocated)
-	xfree (ctx);
-    }
+  getkey_end (ctx);
 }
 
 
@@ -1257,7 +1244,14 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 void
 getkey_end (getkey_ctx_t ctx)
 {
-  get_pubkey_end (ctx);
+  if (ctx)
+    {
+      memset (&ctx->kbpos, 0, sizeof ctx->kbpos);
+      keydb_release (ctx->kr_handle);
+      free_strlist (ctx->extra_list);
+      if (!ctx->not_allocated)
+	xfree (ctx);
+    }
 }
 
 

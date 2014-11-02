@@ -603,8 +603,8 @@ keydb_release (KEYDB_HANDLE hd)
 
 
 /* Set a flag on handle to not use cached results.  This is required
-   for updating a keyring.  Fixme: Using a new parameter for keydb_new
-   might be a better solution.  */
+   for updating a keyring and for key listins.  Fixme: Using a new
+   parameter for keydb_new might be a better solution.  */
 void
 keydb_disable_caching (KEYDB_HANDLE hd)
 {
@@ -1328,6 +1328,9 @@ keydb_search_reset (KEYDB_HANDLE hd)
   if (DBG_CLOCK)
     log_clock ("keydb_search_reset");
 
+  if (DBG_CACHE)
+    log_debug ("keydb_search: reset  (hd=%p)", hd);
+
   hd->skipped_long_blobs = 0;
   hd->current = 0;
   hd->found = -1;
@@ -1351,7 +1354,8 @@ keydb_search_reset (KEYDB_HANDLE hd)
 
 
 static void
-dump_search_desc (const char *text, KEYDB_SEARCH_DESC *desc, size_t ndesc)
+dump_search_desc (KEYDB_HANDLE hd, const char *text,
+                  KEYDB_SEARCH_DESC *desc, size_t ndesc)
 {
   int n;
   const char *s;
@@ -1382,7 +1386,7 @@ dump_search_desc (const char *text, KEYDB_SEARCH_DESC *desc, size_t ndesc)
         default:                          s = "?";         break;
         }
       if (!n)
-        log_debug ("%s: mode=%s", text, s);
+        log_debug ("%s: mode=%s  (hd=%p)", text, s, hd);
       else
         log_debug ("%*s  mode=%s", (int)strlen (text), "", s);
       if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
@@ -1418,7 +1422,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     log_clock ("keydb_search enter");
 
   if (DBG_CACHE)
-    dump_search_desc ("keydb_search", desc, ndesc);
+    dump_search_desc (hd, "keydb_search", desc, ndesc);
 
   if (!hd->no_caching
       && ndesc == 1
