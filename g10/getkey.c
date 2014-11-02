@@ -1232,6 +1232,12 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 {
   int rc; /* Fixme:  Make sure this is proper gpg_error */
 
+  /* We need to disable the caching so that for an exact key search we
+     won't get the result back from the cache and thus end up in an
+     endless loop.  Disabling this here is sufficient because although
+     the result has been cached, if won't be used then.  */
+  keydb_disable_caching (ctx->kr_handle);
+
   rc = lookup (ctx, ret_keyblock, ctx->want_secret);
   if (!rc && pk && ret_keyblock)
     pk_from_block (ctx, pk, *ret_keyblock);
