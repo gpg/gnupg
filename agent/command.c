@@ -2127,16 +2127,19 @@ cmd_export_key (assuan_context_t ctx, char *line)
   char *cache_nonce;
   char *passphrase = NULL;
   unsigned char *shadow_info = NULL;
+  char *pend;
+  int c;
 
   openpgp = has_option (line, "--openpgp");
   cache_nonce = option_value (line, "--cache-nonce");
   if (cache_nonce)
     {
-      for (; *line && !spacep (line); line++)
+      for (pend = cache_nonce; *pend && !spacep (pend); pend++)
         ;
-      if (*line)
-        *line++ = '\0';
+      c = *pend;
+      *pend = '\0';
       cache_nonce = xtrystrdup (cache_nonce);
+      *pend = c;
       if (!cache_nonce)
         {
           err = gpg_error_from_syserror ();
@@ -2163,7 +2166,8 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
   /* Get the key from the file.  With the openpgp flag we also ask for
      the passphrase so that we can use it to re-encrypt it.  */
-  err = agent_key_from_file (ctrl, NULL, ctrl->server_local->keydesc, grip,
+  err = agent_key_from_file (ctrl, cache_nonce,
+                             ctrl->server_local->keydesc, grip,
                              &shadow_info, CACHE_MODE_IGNORE, NULL, &s_skey,
                              openpgp ? &passphrase : NULL);
   if (err)
@@ -2190,6 +2194,24 @@ cmd_export_key (assuan_context_t ctx, char *line)
             goto leave;
         }
       err = convert_to_openpgp (ctrl, s_skey, passphrase, &key, &keylen);
+      if (!err && passphrase)
+        {
+          if (!cache_nonce)
+            {
+              char buf[12];
+              gcry_create_nonce (buf, 12);
+              cache_nonce = bin2hex (buf, 12, NULL);
+            }
+          if (cache_nonce
+              && !agent_put_cache (cache_nonce, CACHE_MODE_NONCE,
+                                   passphrase, CACHE_TTL_NONCE))
+            {
+              assuan_write_status (ctx, "CACHE_NONCE", cache_nonce);
+              xfree (ctrl->server_local->last_cache_nonce);
+              ctrl->server_local->last_cache_nonce = cache_nonce;
+              cache_nonce = NULL;
+            }
+        }
     }
   else
     {

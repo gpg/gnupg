@@ -777,6 +777,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   strlist_t sl;
   int indent = 0;
   gcry_cipher_hd_t cipherhd = NULL;
+  char *cache_nonce = NULL;
 
   *any = 0;
   init_packet (&pkt);
@@ -914,6 +915,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
         clean_key (keyblock, opt.verbose, (options&EXPORT_MINIMAL), NULL, NULL);
 
       /* And write it. */
+      xfree (cache_nonce);
+      cache_nonce = NULL;
       for (kbctx=NULL; (node = walk_kbnode (keyblock, &kbctx, 0)); )
         {
           if (skip_until_subkey)
@@ -1124,7 +1127,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   {
                     char *prompt = gpg_format_keydesc (pk,
                                                        FORMAT_KEYDESC_EXPORT,1);
-                    err = agent_export_key (ctrl, hexgrip, prompt, NULL,
+                    err = agent_export_key (ctrl, hexgrip, prompt, &cache_nonce,
                                             &wrappedkey, &wrappedkeylen);
                     xfree (prompt);
                   }
@@ -1246,6 +1249,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   keydb_release (kdbhd);
   if (err || !keyblock_out)
     release_kbnode( keyblock );
+  xfree (cache_nonce);
   if( !*any )
     log_info(_("WARNING: nothing exported\n"));
   return err;

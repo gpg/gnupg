@@ -2152,8 +2152,10 @@ agent_import_key (ctrl_t ctrl, const char *desc, char **cache_nonce_addr,
 
 /* Receive a secret key from the agent.  HEXKEYGRIP is the hexified
    keygrip, DESC a prompt to be displayed with the agent's passphrase
-   question (needs to be plus+percent escaped).  On success the key is
-   stored as a canonical S-expression at R_RESULT and R_RESULTLEN.  */
+   question (needs to be plus+percent escaped).  If CACHE_NONCE_ADDR
+   is not NULL the agent is advised to first try a passphrase
+   associated with that nonce.  On success the key is stored as a
+   canonical S-expression at R_RESULT and R_RESULTLEN.  */
 gpg_error_t
 agent_export_key (ctrl_t ctrl, const char *hexkeygrip, const char *desc,
                   char **cache_nonce_addr,
