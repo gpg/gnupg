@@ -381,8 +381,8 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     gpgsm and might eventually also be available for OpenPGP.
 
     Note, that TIME may either be the number of seconds since Epoch or
-    the letter 'T'.
     an ISO 8601 string.  The latter can be detected by the presence of
+    the letter 'T'.
 
 *** VALIDSIG <args>
 

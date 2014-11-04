@@ -1000,7 +1000,7 @@ only create a CSR.
 
 The command @option{--gen-key} may be used along with the option
 @option{--batch} to either create a certificate signing request (CSR)
-or an X.509 certificate. The is controlled by a parameter file; the
+or an X.509 certificate.  This is controlled by a parameter file; the
 format of this file is as follows:
 
 @itemize @bullet
