@@ -209,6 +209,7 @@ get_manufacturer (unsigned int no)
     case 0x0005: return "ZeitControl";
     case 0x0006: return "Yubico";
     case 0x0007: return "OpenKMS";
+    case 0x0008: return "LogoEmail";
 
     case 0x002A: return "Magrathea";
 
