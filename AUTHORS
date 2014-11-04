@@ -196,10 +196,6 @@ The need for copyright assignments to the FSF has been waived on
 2013-03-29; the need for copyright disclaimers for translations
 already in December 2012.
 
-The files common/libestream.[ch] are maintained as a separate project
-by g10 Code GmbH.  These files, as used here, are considered part of
-GnuPG.
-
 The RPM specs file scripts/gnupg.spec has been contributed by
 several people.
 
