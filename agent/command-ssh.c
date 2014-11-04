@@ -1,6 +1,6 @@
 /* command-ssh.c - gpg-agent's ssh-agent emulation layer
- * Copyright (C) 2004, 2005, 2006, 2009, 2012 Free Software Foundation, Inc.
- * Copyright (C) 2013, 2014 Werner Koch
+ * Copyright (C) 2004-2006, 2009, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 2004-2006, 2009, 2012-2014 Werner Koch
  *
  * This file is part of GnuPG.
  *

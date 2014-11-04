@@ -1,7 +1,6 @@
 /* gpg-agent.c  -  The GnuPG Agent
- * Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009,
- *               2010 Free Software Foundation, Inc.
- * Copyright (C) 2013, 2014 Werner Koch
+ * Copyright (C) 2000-2007, 2009-2010 Free Software Foundation, Inc.
+ * Copyright (C) 2000-2014 Werner Koch
  *
  * This file is part of GnuPG.
  *

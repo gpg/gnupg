@@ -1,7 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
- * Copyright (C) 1998, 1999, 2000, 2001, 2006
- *               2007, 2008, 2012  Free Software Foundation, Inc.
- * Copyright (C) 1997, 2013 Werner Koch
+ * Copyright (C) 1998-2001, 2006-2008, 2012  Free Software Foundation, Inc.
+ * Copyright (C) 1997-2001, 2006-2008, 2013 Werner Koch
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *

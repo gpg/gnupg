@@ -1,11 +1,13 @@
-Noteworthy changes in version 2.1.0 (unreleased)
+Noteworthy changes in version 2.1.0 (2014-11-06)
 ------------------------------------------------
 
- * This release introduces a lot of changes.  Most of them are
-   internal and thus not user visible.  However, some long standing
-   behavior has slightly changed and it is strongly suggested that an
-   existing "~/.gnupg" directory is backed up before this version is
-   used.
+ This release introduces a lot of changes.  Most of them are internal
+ and thus not user visible.  However, some long standing behavior has
+ slightly changed and it is strongly suggested that an existing
+ "~/.gnupg" directory is backed up before this version is used.
+
+ A verbose description of the major new features and changes can be
+ found in the file doc/whats-new-in-2.1.txt.
 
  * gpg: All support for v3 (PGP 2) keys has been dropped.  All
    signatures are now created as v4 signatures.  v3 keys will be

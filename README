@@ -2,7 +2,7 @@
                       =========================
                              Version 2.1
 
-          Copyright 1997-1998, 2013-2014 Werner Koch
+          Copyright 1997-2014 Werner Koch
           Copyright 1998-2013 Free Software Foundation, Inc.
 
 
@@ -163,6 +163,10 @@
 
 
 * HOW TO GET MORE INFORMATION
+
+  A description of new features and changes in version 2.1 can be
+  found in the file "doc/whats-new-in-2.1.txt" and online at
+  "https://gnupg.org/faq/whats-new-in-2.1.html" .
 
   The primary WWW page is "https://www.gnupg.org"
              or using TOR "http://ic6au7wa3f6naxjq.onion"

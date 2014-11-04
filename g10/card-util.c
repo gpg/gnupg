@@ -1,5 +1,6 @@
 /* card-util.c - Utility functions for the OpenPGP card.
- * Copyright (C) 2003, 2004, 2005, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2003-2005, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2003-2005, 2009 Werner Koch
  *
  * This file is part of GnuPG.
  *

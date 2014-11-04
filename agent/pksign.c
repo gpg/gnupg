@@ -1,6 +1,6 @@
 /* pksign.c - public key signing (well, actually using a secret key)
- * Copyright (C) 2001, 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
- * Copyright (C) 2013  Werner Koch
+ * Copyright (C) 2001-2004, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2001-2004, 2010, 2013  Werner Koch
  *
  * This file is part of GnuPG.
  *

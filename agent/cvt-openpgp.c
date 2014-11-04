@@ -1,6 +1,5 @@
 /* cvt-openpgp.c - Convert an OpenPGP key to our internal format.
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2006, 2009,
- *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2002, 2006, 2009, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2013, 2014 Werner Koch
  *
  * This file is part of GnuPG.
