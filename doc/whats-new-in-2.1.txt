@@ -1,0 +1,712 @@
+                      ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                       GNUPG - WHAT’S NEW IN 2.1
+
+
+                              Werner Koch
+                      ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+                               2014-11-04
+
+
+Table of Contents
+─────────────────
+
+1 What’s new in GnuPG 2.1
+.. 1.1 Removal of the secret keyring
+.. 1.2 Removal of PGP-2 support
+.. 1.3 Leaner key generation interface
+.. 1.4 Support for ECC
+.. 1.5 Quick generate and sign commands
+.. 1.6 Improved Pinentry support
+.. 1.7 Auto-start of the gpg-agent
+.. 1.8 Duplicate long key id fixes
+.. 1.9 Enhanced Dirmngr
+.. 1.10 Better keyserver pool support
+.. 1.11 Faster keyring format
+.. 1.12 Auto-generated revocation certificates
+.. 1.13 Improved card support
+.. 1.14 New format for key listings
+.. 1.15 Support for Putty
+.. 1.16 Improved X.509 certificate creation
+.. 1.17 Scripts to create a Windows installer
+
+
+A possibly revised version of this article can be found at:
+https://gnupg.org/faq/whats-new-in-2.1.html
+
+
+1 What’s new in GnuPG 2.1
+═════════════════════════
+
+  GnuPG version 2.1 comes with a bag of new features which changes some
+  things old-timers are used to.  This page explains the more important
+  ones.  It expects that the reader is familiar with GnuPG version 2.0
+  and aware that GnuPG consists of /gpg/, /gpgsm/, and /gpg-agent/ as
+  its main components.
+
+  • The file /secring.gpg/ is not anymore used to store the secret keys.
+    Merging of secret keys is now supported.
+
+  • All support for /PGP-2 keys/ has been removed for security reasons.
+
+  • The standard key generation interface is now much leaner.  This will
+    help a new user to quickly generate a suitable key.
+
+  • Support for /Elliptic Curve Cryptography/ (ECC) is now available.
+
+  • Commands to create and sign keys from the command line without any
+    extra prompts are now available.
+
+  • The Pinentry may now show the new passphrase entry and the
+    passphrase confirmation entry in one dialog.
+
+  • There is no more need to manually start the gpg-agent.  It is now
+    started by any part of GnuPG as needed.
+
+  • Problems with importing keys with the same long key id have been
+    addressed.
+
+  • The /dirmngr/ is now part of GnuPG proper and also takes care of
+    accessing keyserver.
+
+  • Keyserver pools are now handled in a smarter way.
+
+  • A new format for locally storing the public keys is now used.  This
+    considerable speeds up operations on large keyrings.
+
+  • /Revocation certificates/ are now created by default.
+
+  • Card support has been updated, new readers and token types are
+    supported.
+
+  • The format of the key listing has been changed to better identify
+    the properties of a key.
+
+  • The gpg-agent may now be used on Windows as /pageant/ replacement
+    for /putty/ in the same way it is used for years on Unix as
+    /ssh-agent/ replacement.
+
+  • Creation of X.509 certificates has been improved.  It is now also
+    possible to export them directly in PKCS#8 and PEM format for use on
+    TLS servers.
+
+  • The scripts to create a Windows installer are now part of GnuPG.
+
+  Now for the detailed description of these new features:
+
+
+1.1 Removal of the secret keyring
+─────────────────────────────────
+
+  gpg used to keep the public key pairs in two files: `pubring.gpg' and
+  `secring.gpg'.  The only difference is that secring stored in addition
+  to the public part also the private part of the key pair.  The secret
+  keyring thus contained only the keys for which a private key is
+  availaable, that is the user’s key.  It required a lot of code to keep
+  both versions of the key in sync and led to sometimes surprising
+  inconsistencies.
+
+  The design of GnuPG-2 demands that only the gpg-agent has control over
+  the private parts of the keys and the actual encryption engine (gpg or
+  gpgsm) does not know about the private key but care only about session
+  keys and keys for symmetric encryption.  This has been implemented
+  about 10 years ago for /gpgsm/ (the S/MIME part of GnuPG).  However,
+  /gpg/ (the OpenPGP part) used the gpg-agent only as passphrase entry
+  and cache device but handles the private key itself.
+
+  With GnuPG 2.1 this changed and /gpg/ now also delegates all private
+  key operations to the gpg-agent.  Thus there is no more code in the
+  /gpg/ binary for handling private keys.  En passant this allows the
+  long time requested “merging of secret keys” and several other
+  advanced key management techniques.
+
+  To ease the migration to the no-secring method, /gpg/ detects the
+  presence of a `secring.gpg' and converts the keys on-the-fly to the
+  the key store of /gpg-agent/ (this is the `private-keys-v1.d'
+  directory below the GnuPG home directory (`~/.gnupg')).  This is done
+  only once and an existing `secring.gpg' is then not anymore touched by
+  /gpg/.  This allows co-existence of older GnuPG versions with GnuPG
+  2.1.  However, any change to the private keys using the new /gpg/ will
+  not show up when using pre-2.1 versions of GnuPG and vice versa.
+
+  Note that the command `--export-secret-keys' still creates an OpenPGP
+  compliant file with the secret keys.  This is achieved by asking
+  /gpg-agent/ to convert a key and return it in the OpenPGP protected
+  format.  The export operation requires that the passphrase for the key
+  is entered so that /gpg-agent/ is able to change the protection from
+  its internal format to the OpenPGP required format.
+
+
+1.2 Removal of PGP-2 support
+────────────────────────────
+
+  Some algorithms and parts of the protocols as used by the 20 years old
+  [PGP-2] software are meanwhile considered unsafe.  In particular the
+  baked in use of the [MD5] hash algorithm limits the security of PGP-2
+  keys to non-acceptable rate.  Technically those PGP-2 keys are called
+  version 3 keys (v3) and are easily identified by a shorter fingerprint
+  which is commonly presented as 16 separate double hex digits.
+
+  With GnuPG 2.1 all support for those keys has gone.  If they are in an
+  existing keyring they will eventually be removed.  If GnuPG encounters
+  such a key on import it will not be imported due to the not anymore
+  implemented v3 key format.  Removing the v3 key support also reduces
+  complexity of the code and is thus better than to keep on handling
+  them with a specific error message.
+
+  There is one use case where PGP-2 keys may still be required: For
+  existing encrypted data.  We suggest to keep a version of GnuPG 1.4
+  around which still has support for these keys (it might be required to
+  use the `--allow-weak-digest-algos' option).  A better solution is to
+  re-encrypt the data using a modern key.
+
+
+  [PGP-2] https://en.wikipedia.org/wiki/Pretty_Good_Privacy
+
+  [MD5] https://en.wikipedia.org/wiki/MD5
+
+
+1.3 Leaner key generation interface
+───────────────────────────────────
+
+  This is best shown with an example:
+
+  ╭────
+  │ $ gpg2 --gen-key
+  │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
+  │ This is free software: you are free to change and redistribute it.
+  │ There is NO WARRANTY, to the extent permitted by law.
+  │
+  │ gpg: keybox '/home/foo/.gnupg/pubring.kbx' created
+  │ Note: Use "gpg --full-gen-key" for a full featured key generation dialog.
+  │
+  │ GnuPG needs to construct a user ID to identify your key.
+  │
+  │ Real name: Glenn Greenwald
+  │ Email address: glenn@example.org
+  │ You selected this USER-ID:
+  │     "Glenn Greenwald <glenn@example.org>"
+  │
+  │ Change (N)ame, (E)mail, or (O)kay/(Q)uit? o
+  │ [...]
+  │ pub   rsa2048/68FD0088 2014-11-03
+  │       Key fingerprint = 0290 5ABF 17C7 81FB C390  9B00 636A 1BBD 68FD 0088
+  │ uid       [ultimate] Glenn Greenwald <glenn@example.org>
+  │ sub   rsa2048/84439DCD 2014-11-03
+  ╰────
+
+  Thus only the name and the mail address are required.  For all other
+  parameters the default values are used.  Many graphical frontends
+  works in the same way.  Note that GPG prints a hint for the old time
+  GPG users on how to get the full option menu.
+
+
+1.4 Support for ECC
+───────────────────
+
+  GnuPG now support Elliptic Curve keys for public key encryption.  This
+  is defined in [RFC-6637].  Because there is no other mainstream
+  OpenPGP implementation yet available which supports ECC, the use of
+  such keys is still very limited.  Thus GnuPG 2.1 currently hides the
+  options to create an ECC key.
+
+  For those who want to experiment with ECC or already want to prepare a
+  key for future use, the command `--gen-full-key' along with the option
+  `--expert' is the enabler:
+
+  ╭────
+  │ $ gpg2 --expert --full-gen-key
+  │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
+  │ This is free software: you are free to change and redistribute it.
+  │ There is NO WARRANTY, to the extent permitted by law.
+  │
+  │ Please select what kind of key you want:
+  │    (1) RSA and RSA (default)
+  │    (2) DSA and Elgamal
+  │    (3) DSA (sign only)
+  │    (4) RSA (sign only)
+  │    (7) DSA (set your own capabilities)
+  │    (8) RSA (set your own capabilities)
+  │    (9) ECC and ECC
+  │   (10) ECC (sign only)
+  │   (11) ECC (set your own capabilities)
+  │ Your selection? 9
+  │ Please select which elliptic curve you want:
+  │    (2) NIST P-256
+  │    (3) NIST P-384
+  │    (4) NIST P-521
+  │    (5) Brainpool P-256
+  │    (6) Brainpool P-384
+  │    (7) Brainpool P-512
+  │ Your selection? 2
+  │ Please specify how long the key should be valid.
+  │          0 = key does not expire
+  │       <n>  = key expires in n days
+  │       <n>w = key expires in n weeks
+  │       <n>m = key expires in n months
+  │       <n>y = key expires in n years
+  │ Key is valid for? (0)
+  │ Key does not expire at all
+  │ Is this correct? (y/N) y
+  │
+  │ GnuPG needs to construct a user ID to identify your key.
+  │
+  │ Real name: Edward Snowden
+  │ Email address: edward@example.org
+  │ Comment:
+  │ You selected this USER-ID:
+  │     "Edward Snowden <edward@example.org>"
+  │
+  │ Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+  │ [...]
+  │ pub   nistp256/382660E3 2014-11-03
+  │       Key fingerprint = E630 27CF 3D68 22A7 6FF2  093E D179 9E72 3826 60E3
+  │ uid       [ultimate] Edward Snowden <edward@example.org>
+  │ sub   nistp256/48C9A997 2014-11-03 nistp256
+  ╰────
+
+  In this example we created a primary ECC key for signing and an subkey
+  for encryption.  For both we use the NIST P-256 curve.  The key may
+  now be used in the same way as any other key.  It is possible to add
+  an RSA subkey or one can create an RSA or DSA main key and add an ECC
+  subkey for signing or encryption.  Note that the list of offered
+  curves depends on the installed Libgcrypt version.
+
+  For many people the NIST and also the Brainpool curves have an
+  doubtful origin and thus the plan for GnuPG is to use Bernstein’s
+  [Curve 25519] as default.  GnuPG 2.1.0 already comes with support for
+  signing keys using the [Ed25519] variant of this curve.  This has not
+  yet been standardized by the IETF (i.e. there is no RFC) but we won’t
+  wait any longer and go ahead using the proposed format for this
+  signing algorithm.  The format for an encryption key has not yet been
+  finalized and will be added to GnuPG in one of the next point
+  releases.  Recall that an encryption subkey can be added to a key at
+  any time.  If you want to create a signing key you may do it this way:
+
+  ╭────
+  │ $ gpg2 --expert --full-gen-key
+  │ gpg (GnuPG) 2.1.0; Copyright (C) 2014 Free Software Foundation, Inc.
+  │ This is free software: you are free to change and redistribute it.
+  │ There is NO WARRANTY, to the extent permitted by law.
+  │
+  │ Please select what kind of key you want:
+  │    (1) RSA and RSA (default)
+  │    (2) DSA and Elgamal
+  │    (3) DSA (sign only)
+  │    (4) RSA (sign only)
+  │    (7) DSA (set your own capabilities)
+  │    (8) RSA (set your own capabilities)
+  │    (9) ECC and ECC
+  │   (10) ECC (sign only)
+  │   (11) ECC (set your own capabilities)
+  │ Your selection? 10
+  │ Please select which elliptic curve you want:
+  │    (1) Curve 25519
+  │    (2) NIST P-256
+  │    (3) NIST P-384
+  │    (4) NIST P-521
+  │    (5) Brainpool P-256
+  │    (6) Brainpool P-384
+  │    (7) Brainpool P-512
+  │ Your selection? 1
+  │ gpg: WARNING: Curve25519 is not yet part of the OpenPGP standard.
+  │ Use this curve anyway? (y/N) y
+  │ Please specify how long the key should be valid.
+  │          0 = key does not expire
+  │       <n>  = key expires in n days
+  │       <n>w = key expires in n weeks
+  │       <n>m = key expires in n months
+  │       <n>y = key expires in n years
+  │ Key is valid for? (0)
+  │ Key does not expire at all
+  │ Is this correct? (y/N) y
+  │
+  │ GnuPG needs to construct a user ID to identify your key.
+  │
+  │ Real name: Laura Poitras
+  │ Email address: laura@example.org
+  │ Comment:
+  │ You selected this USER-ID:
+  │     "Laura Poitras <laura@example.org>"
+  │
+  │ Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+  │ [...]
+  │ pub   ed25519/5C1AFC2A 2014-11-03
+  │       Key fingerprint = ED85 4D98 5D8F 502F C6C5  FFB2 AA81 319E 5C1A FC2A
+  │ uid       [ultimate] Laura Poitras <laura@example.org>
+  ╰────
+
+  Support for ECC keys is available only on some keyservers but it is
+  expected that this will be fixed over the next few months.
+
+
+  [RFC-6637] https://rfc-editor.org/info/rfc6637
+
+  [Curve 25519] http://cr.yp.to/ecdh/curve25519-20060209.pdf
+
+  [Ed25519] http://dx.doi.org/10.1007/s13389-012-0027-1
+
+
+1.5 Quick generate and sign commands
+────────────────────────────────────
+
+  Sometimes it is useful to use only command line options without any
+  parameter file or interactive prompts for generating a key or to sign
+  a key.  This can now be accomplished with a few new commands:
+
+  ╭────
+  │ $ gpg2 --batch --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
+  │ gpg: key 911B90A9 marked as ultimately trusted
+  ╰────
+
+  If a key with that user id already exists, gpg bails out with an error
+  message.  You can force creation using the option `--yes'.  If you
+  want some more control, you may not use `--batch' and gpg will ask for
+  confirmation and show the resulting key:
+
+  ╭────
+  │ $ gpg2 --quick-gen-key 'Daniel Ellsberg <ellsberg@example.org>'
+  │ About to create a key for:
+  │     "Daniel Ellsberg <ellsberg@example.org>"
+  │
+  │ Continue? (Y/n) y
+  │ gpg: A key for "Daniel Ellsberg <ellsberg@example.org>" already exists
+  │ Create anyway? (y/N) y
+  │ gpg: creating anyway
+  │ [...]
+  │ pub   rsa2048/BD19AC1C 2014-11-04
+  │       Key fingerprint = 15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C
+  │ uid       [ultimate] Daniel Ellsberg <ellsberg@example.org>
+  │ sub   rsa2048/72A4D018 2014-11-04
+  ╰────
+
+  Another common operation is to sign a key.  gpg can do this directly
+  from the command line by giving the fingerprint of the to-be-signed
+  key:
+
+  ╭────
+  │ $ gpg2 --quick-sign-key  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
+  │
+  │ pub  rsa2048/BD19AC1C
+  │      created: 2014-11-04  expires: never       usage: SC
+  │      trust: ultimate      validity: ultimate
+  │  Primary key fingerprint: 15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C
+  │
+  │      Daniel Ellsberg <ellsberg@example.org>
+  ╰────
+
+  In case the key has already been signed, the command prints a note and
+  exits with success.  In case you want to check that it really worked,
+  use `=--check-sigs' as usual:
+
+  ╭────
+  │ $ gpg2 --check-sigs  '15CB 723E 2000 A1A8 2505  F3B7 CC00 B501 BD19 AC1C'
+  │ gpg: checking the trustdb
+  │ gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+  │ gpg: depth: 0  valid:   6  signed:   1  trust: 0-, 0q, 0n, 0m, 0f, 6u
+  │ pub   rsa2048/BD19AC1C 2014-11-04
+  │ uid       [  full  ] Daniel Ellsberg <ellsberg@example.org>
+  │ sig!3        BD19AC1C 2014-11-04  Daniel Ellsberg <ellsberg@example.org>
+  │ sig!         68FD0088 2014-11-04  Glenn Greenwald <glenn@example.org>
+  │ sub   rsa2048/72A4D018 2014-11-04
+  │ sig!         BD19AC1C 2014-11-04  Daniel Ellsberg <ellsberg@example.org>
+  ╰────
+
+
+  The fingerprint may also be given without the spaces in which case
+  there is no need for the quotes.  If you want to sign only certain
+  user ids of a key, list those user id verbatim after the fingerprint.
+  To create a non-exportable key signature, use the command
+  `--quick-lsign-key' instead.
+
+
+1.6 Improved Pinentry support
+─────────────────────────────
+
+  When using a recent Pinentry module (0.90, GTK+ variant), the
+  gpg-agent will not anymore show two separate Pinentry dialogs to enter
+  a new passphrase and later to confirm the new passphrase.  Instead the
+  first dialog also has the confirm/repeat entry and internally checks
+  whether they match.
+
+  With any Pinentry version the several separate dialogs to inform and
+  ask for confirmation about questionable properties of a new passphrase
+  (e.g. length, only alpha letters) have been combined into one dialog
+  to show all non-asserted constraints at once.
+
+  The GTK+ Pinentry does now allow pasting of values into the entries.
+  Copying them from the entries is still inhibited on purpose.
+  Depending on the system, the option `no-grab' may be required for in
+  the `gpg-agent.conf' file to actually make use of the paste feature.
+
+
+1.7 Auto-start of the gpg-agent
+───────────────────────────────
+
+  The /gpg-agent/ is the central part of the GnuPG system.  It takes
+  care of all private (secret) keys and if required diverts operations
+  to a smartcard or other token.  It also provides support for the
+  Secure Shell by implementing the ssh-agent protocol.
+
+  The classic way to run /gpg-agent/ on Unix systems is by launching it
+  at login time and use an environment variable (`GPG_AGENT_INFO') to
+  tell the other GnuPG modules how to connect to the agent.  However,
+  correctly managing the start up and this environment variable is
+  cumbersome so that that an easier method is required.  Since GnuPG
+  2.0.16 the `--use-standard-socket' option already allowed to start the
+  agent on the fly; however the environment variable was still required.
+
+  With GnuPG 2.1 the need of `GPG_AGENT_INFO' has been completely
+  removed and the variable is ignored.  Instead a fixed Unix domain
+  socket named `S.gpg-agent' in the GnuPG home directory (by default
+  `~/.gnupg') is used.  The agent is also started on demand by all tools
+  requiring services from the agent.
+
+  If the option `--enable-ssh-support' is used the auto-start mechanism
+  does not work because /ssh/ does not know about this mechanism.
+  Instead it is required that the environment variable `SSH_AUTH_SOCK'
+  is set to the `S.gpg-agent.ssh' socket in the GnuPG home directory.
+  Further /gpg-agent/ must be started: Either by using a GnuPG command
+  which implicitly starts /gpg-agent/ or by using `gpgconf --launch
+  gpg-agent' to explicitly start it if not yet done.
+
+
+1.8 Duplicate long key id fixes
+───────────────────────────────
+
+  A deficit of the OpenPGP protocol is that signatures carry only a
+  limited indication on which public has been used to create a
+  signature.  Thus a verification engine may only use this “long key id”
+  to lookup the the key in its own store or from a public keyserver.
+  Unfortunately it has now become possible to create a key with a long
+  key id matching the key id of another key.  Importing a key with a
+  long key id already used by another key in gpg’s local key store was
+  not possible due to checks done on import.  Now, if the “wrong” key
+  has been imported first /gpg/ would not allow to later import the
+  second “correct” key.  This problem has been fixed in 2.1 by allowing
+  the import and by doing trial verification against all matching keys.
+
+
+1.9 Enhanced Dirmngr
+────────────────────
+
+  Before version 2.1, /gpg/ used so-called keyserver helpers to access
+  the OpenPGP keyservers.  A problem with that is that they are short
+  living processes which are not able to keep a state.  With 2.1, the
+  formerly separate package Dirmngr (which was separate due to copyright
+  assignment reasons) has been integrated into GnuPG.
+
+  In the past /dirmngr/ was only used by /gpgsm/ for X.509 (S/MIME) CRL
+  and OCSP handling.  Being a proper part of GnuPG /dirmngr/ does now
+  also care about accessing OpenPGP keyservers.  This make its easier to
+  debug problems with the keyservers and to exchange additional
+  information about the keyserver between /gpg/ and /dirmngr/.  It will
+  eventually also be possible to run background tasks to refresh keys.
+
+  Although the ability to start /dirmngr/ as a system service is still
+  available, this is not anymore recommended and instead /dirmngr/ is
+  now by default started on-demand, very similar to /gpg-agent/.
+
+
+1.10 Better keyserver pool support
+──────────────────────────────────
+
+  For load balancing reasons, keyservers are organized in pools to
+  enable instant round-robin DNS assignment of random keyservers.  A
+  problem with that approach is that the DNS resolver is not aware of
+  the state of the keyserver.  If a keyserver has gone down or a routing
+  problems occurs, /gpg/ and its keyserver helpers were not ware of it
+  and would try over and over to use the same, dead, keyserver up until
+  the DNS information expires and a the DNS resolver assigned a new
+  server from the pool.
+
+  The new /dirmngr/ in GnuPG does not use the implicit round-robin of
+  the DNS resolver but uses its own DNS lookup and keeps an internal
+  table of all hosts from the pool along with the encountered aliveness
+  state.  Thus after a failure (timeout) of a request, /dirmngr/ flags a
+  host as dead and randomly selects another one from the pool.  After a
+  few hours the flag is removed so that the host will be tried again.
+  It is also possible to mark a specif host from a pool explicitly as
+  dead so that it won’t be used in future.  To interact with the
+  /dirmngr/ the `gpg-connect-agent' tool is used:
+
+  ╭────
+  │ $ gpg-connect-agent --dirmngr 'help keyserver' /bye
+  │ $ gpg-connect-agent --dirmngr 'keyserver --hosttable' /bye
+  ╰────
+
+  The first command prints a help screen for the keyserver command and
+  the second command prints the current host table.
+
+
+1.11 Faster keyring format
+──────────────────────────
+
+  The format GnuPG has always used for the public keyring is actually a
+  slighly extended version of the on-the-wire format for OpenPGP key
+  exchange.  This format is quite inflexible to work with when random
+  access to keys in the keyring is required.  In fact /gpg/ always
+  parsed all keys in the kering until it encountred the desired one.
+  With a large keyring (more than a few thousand keys) this could be
+  quite slow.
+
+  From its very beginning /gpgsm/ has used a different format to store
+  public keys (certificates) which we call a /keybox/. That file format
+  carries meta information about the stored keys and thus allows
+  searching without actually parsing the key and computing fingerprints
+  and such.  The /keybox/ format has been designed protocol independent
+  and with 2.1 support for OpenPGP keys has been added.  Random access
+  to the keys is now really fast and keyrings with 30000 keys and more
+  are now easily possible.  That change also enables us to easily
+  introduce other storage methods
+
+  If no `pubring.gpg' is found, /gpg/ defaults to the new /keybox/
+  format and creates a `pubring.kbx' keybox file.  If such a keybox file
+  already exists, for example due to the use of /gpgsm/, it will also be
+  used for OpenPGP keys.  However, if a `pubring.gpg' is found and no
+  keybox file with OpenPGP keys exists, the old `pubring.gpg' will be
+  used.  Take care: GnuPG versions before 2.1 will always use the
+  `pubring.gpg' file and not know anything about keys stored in the
+  keybox file.
+
+  To convert an existsing `pubring.gpg' file to the keybox format, you
+  first rename the file to (for example) `publickeys' so it won’t be
+  recognized by any GnupG version and then you run the command
+
+  ╭────
+  │ $ gpg2 --import publickeys
+  ╰────
+
+  You may then rename the `publickeys' file back so that it can be used
+  by older GnuPG versions.  Remember that in this case you have two
+  independent copies of the public keys.
+
+
+1.12 Auto-generated revocation certificates
+───────────────────────────────────────────
+
+  This version creates an ASCII armored revocation certificate for each
+  generated keypair and stores that certificate in a file named after
+  the fingerprint of the key in the `openpgp-revocs.d' directory below
+  the GnuPG home directory.  Brief instructions on how to use this
+  revocation certificate are put at the top of the file.
+
+
+1.13 Improved card support
+──────────────────────────
+
+  The /scdaemon/, which is responsible for accessing smardcards and
+  other tokens, has received may updates.  In particilar pluggable USB
+  readers with a fixed card now work smoothless and simlar to standard
+  readers.  The latest features of the /gnuk/ token are supported.  Code
+  for the HSM smartcard has been added.  More card readers with a PIN
+  pad are supported.  The internal CCID driver does now also work with
+  certain non-auto configration equipped readers.
+
+
+1.14 New format for key listings
+────────────────────────────────
+
+  Due to the introduction of ECC keys the old format to list keys was
+  not anymore suitable.  In particular, the length of an ECC key is
+  defined but its expressiveness is limited without the other parameters
+  of the curve.  The common way to describe an ECC key is by using the
+  assigned name of its curve.  To allow for a common description we now
+  either use the algorithm name with appended key length or use the name
+  of the curve:
+
+  ╭────
+  │ pub   2048D/1E42B367 2007-12-31 [expires: 2018-12-31]
+  │ pub   dsa2048/1E42B367 2007-12-31 [expires: 2018-12-31]
+  │ pub   ed25519/0AA914C9 2014-10-18
+  ╰────
+
+  The first two lines show the same key in the old format and in the new
+  format.  The third line shows an example of an ECC key using the
+  ed25519 curve.
+
+  As a further change the validity of a key is now shown by default;
+  that is `show-uid-validity' is implicitly used for the
+  `--list-options'.
+
+  The annotated key listing produced by the `--with-colons' options did
+  not change.  However a couple of new fields have been added, for
+  example if the new option `--with-secret-' is used the “S/N of a token
+  field” indicates the presence of a secret key even in a public key
+  listing.  This option is supported by recent [GPGME] versions and
+  makes writing of key manager software easier.
+
+
+  [GPGME] https://gnupg.org/related_software/gpgme/
+
+
+1.15 Support for Putty
+──────────────────────
+
+  On Windows the new option `--enable-putty-support' allows gpg-agent to
+  act as a replacement for [Putty]’s authentication agent /Pageant/.  It
+  is the Windows counterpart for the `--enable-ssh-support' option as
+  used on Unix.
+
+
+  [Putty] http://www.chiark.greenend.org.uk/~sgtatham/putty/
+
+
+1.16 Improved X.509 certificate creation
+────────────────────────────────────────
+
+  In addition to an improved certificate signing request menu, it is now
+  possible to create a self-signed certificate using the interactive
+  menu of /gpgsm/.
+
+  In batch mode the certificate creation dialog can now be controlled by
+  a parameter file with several new keywords.  Such a parameter file
+  allows the creation of arbitrary X.509 certificates similar to what
+  can be done with /openssl/.  It may this be used as the base for a CA
+  software.  For details see the “CSR and certificate creation” section
+  in the manual.
+
+  The new commands `--export-secret-key-p8' and –export-secret-key-raw=
+  may be used to export a secret key directly in PKCS#8 or PKCS#1
+  format.  Thus X.509 certificates for TLS use may be managed by /gpgsm/
+  and directly exported in a format suitable for OpenSSL based servers.
+
+
+1.17 Scripts to create a Windows installer
+──────────────────────────────────────────
+
+  GnuPG now comes with the /speedo/ build system which may be used to
+  quickly download and build GnuPG and all its direct dependencies on a
+  decent Unix system.  See the README file for more instructions.
+
+  The very same script may also be used to build a complete NSIS based
+  installer for Windows using the mingw-w64 cross-compiler toolchain.
+  That installer will feature GnuPG proper, GPA as graphical frontend,
+  and GpgEX as a Windows Explorer extension.  GnuPG needs to be unpacked
+  and from the top source directory you run this command
+
+  ╭────
+  │ make -f build-aux/speedo.mk w32-installer
+  ╰────
+
+  This command downloads all direct dependencies, checks the signatures
+  using the GnuPG version from the build system (all Linux distros
+  feature a suitable GnuPG tool), builds everthing from source, and uses
+  NSIS to create the installer.  Although this sounds easy, some
+  experience in setting up a development machine is still required.
+  Some versions of the toolchain exhibit bugs and thus your mileage may
+  vary.  Support for keyserver access over TLS is currently not
+  available but will be added with one of the next point releases.
+
+
+
+  # Copyright 2014 The GnuPG Project.
+  # This work is licensed under the Creative Commons
+  # Attribution-ShareAlike 4.0 International License.  To view a copy of
+  # this license, visit http://creativecommons.org/licenses/by-sa/4.0/
+  # or send a letter to Creative Commons, PO Box 1866, Mountain View, CA
+  # 94042, USA.
+  #
+  # The canonical source for this article can be found in the gnupg-doc
+  # git repository as web/faq/whats-new-in-2.1.org.
