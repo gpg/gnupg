@@ -977,6 +977,11 @@ msgstr "занадто довге ключове слово"
 msgid "missing argument"
 msgstr "не вистачає аргументу"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "некоректне значення\n"
+
 msgid "invalid command"
 msgstr "некоректна команда"
 
@@ -991,6 +996,11 @@ msgstr "некоректний параметр"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "не вказано аргументу до параметра «%.50s»\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "не вказано аргументу до параметра «%.50s»\n"
 
 #, c-format
@@ -1645,10 +1655,6 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "використовуємо підключ %s замість основного ключа %s\n"
-
-#, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr "немає закритого підключа для відкритого підключа %s — пропускаємо\n"
 
 msgid "make a signature"
 msgstr "створити підпис"
@@ -7990,6 +7996,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr "немає закритого підключа для відкритого підключа %s — пропускаємо\n"
 
 #, fuzzy
 #~| msgid "Note: no default option file '%s'\n"

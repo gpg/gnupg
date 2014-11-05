@@ -1643,11 +1643,6 @@ msgstr ""
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "der Unterschlüssel %s wird anstelle des Hauptschlüssels %s verwendet\n"
 
-#, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr ""
-"Kein privater Unterschlüssel zum öffentlichen Unterschlüssel %s - ignoriert\n"
-
 msgid "make a signature"
 msgstr "Eine Signatur erzeugen"
 
@@ -8018,6 +8013,11 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr ""
+#~ "Kein privater Unterschlüssel zum öffentlichen Unterschlüssel %s - "
+#~ "ignoriert\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "Benutze einen Standardnamen für den Socket"

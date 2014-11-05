@@ -955,6 +955,11 @@ msgstr "キーワードが長すぎます"
 msgid "missing argument"
 msgstr "引数ありません"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "無効な値\n"
+
 msgid "invalid command"
 msgstr "無効なコマンド"
 
@@ -969,6 +974,11 @@ msgstr "無効なオプション"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "オプション\"%.50s\"に引数がありません\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"に引数がありません\n"
 
 #, c-format
@@ -1605,10 +1615,6 @@ msgstr "--allow-non-selfsigned-uidで有効にされた無効な鍵%sです\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "副鍵%s(主鍵%sではなく)を用います\n"
-
-#, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr "公開副鍵%sにたいする秘密副鍵がありません - 無視\n"
 
 msgid "make a signature"
 msgstr "署名を作成"
@@ -7775,6 +7781,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr "公開副鍵%sにたいする秘密副鍵がありません - 無視\n"
 
 #, fuzzy
 #~| msgid "Note: no default option file '%s'\n"
