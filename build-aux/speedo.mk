@@ -421,11 +421,13 @@ speedo_pkg_gpa_configure = \
 
 speedo_pkg_gpgex_configure = \
 	--with-gpg-error-prefix=$(idir) \
-	--with-libassuan-prefix=$(idir)
+	--with-libassuan-prefix=$(idir) \
+	--enable-gpa-only
 
 speedo_pkg_w64_gpgex_configure = \
 	--with-gpg-error-prefix=$(idir6) \
-	--with-libassuan-prefix=$(idir6)
+	--with-libassuan-prefix=$(idir6) \
+	--enable-gpa-only
 
 
 #
@@ -741,15 +743,16 @@ $(stampdir)/stamp-$(1)-00-unpack: $(stampdir)/stamp-directories
          elif [ -n "$$$${tar}" ]; then			\
 	   echo "speedo: unpacking $(1) from $$$${tar}"; \
            case "$$$${tar}" in				\
-             *.gz) opt=z ;;				\
-             *.bz2) opt=j ;;				\
-	     *.xz) opt=J ;;                      	\
-             *) opt= ;;					\
+             *.gz) pretar=zcat ;;	   		\
+             *.bz2) pretar=bzcat ;;			\
+	     *.xz) pretar=xzcat ;;                     	\
+             *) pretar=cat ;;				\
            esac;					\
            [ -f tmp.tgz ] && rm tmp.tgz;                \
            case "$$$${tar}" in				\
-	     /*) tar x$$$${opt}f - < $$$${tar} ;;	\
-	     *)  wget -q -O - $$$${tar} | tee tmp.tgz | tar x$$$${opt}f - ;; \
+	     /*) $$$${pretar} < $$$${tar} | tar xf - ;;	\
+	     *)  wget -q -O - $$$${tar} | tee tmp.tgz   \
+                  | $$$${pretar} | tar x$$$${opt}f - ;; \
 	   esac;					\
 	   if [ -f tmp.tgz ]; then                      \
 	     if [ -n "$$$${sha1}" ]; then               \
