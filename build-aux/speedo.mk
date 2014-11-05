@@ -573,6 +573,7 @@ endif
 
 
 BUILD_ISODATE=$(shell date -u +%Y-%m-%d)
+BUILD_DATESTR=$(subst -,,$(BUILD_ISODATE))
 
 # The next two macros will work only after gnupg has been build.
 ifeq ($(TARGETOS),w32)
@@ -1000,7 +1001,7 @@ ifeq ($(TARGETOS),w32)
 dist-source: all
 	for i in 00 01 02 03; do sleep 1;touch PLAY/stamps/stamp-*-${i}-*;done
 	(set -e;\
-	 tarname="$(INST_NAME)-$(INST_VERSION)_$(BUILD_ISODATE).tar" ;\
+	 tarname="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar" ;\
 	 [ -f "$$tarname" ] && rm "$$tarname" ;\
          tar -C $(topsrc) -cf "$$tarname" --exclude-backups --exclude-vc \
              --transform='s,^\./,$(INST_NAME)-$(INST_VERSION)/,' \
@@ -1043,11 +1044,12 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
                     -DTOP_SRCDIR=$(topsrc) \
                     -DW32_SRCDIR=$(w32src) \
                     -DBUILD_ISODATE=$(BUILD_ISODATE) \
+                    -DBUILD_DATESTR=$(BUILD_DATESTR) \
 		    -DNAME=$(INST_NAME) \
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
 		    $(w32src)/inst.nsi
-	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)"
+	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
 endif
 # }}} W32

@@ -22,7 +22,8 @@
 #  BUILD_DIR
 #  TOP_SRCDIR
 #  W32_SRCDIR
-#  BUILD_ISODATE
+#  BUILD_ISODATE   - the build date, e.g. "2014-10-31"
+#  BUILD_DATESTR   - ditto w/o '-',  e.g. "20141031"
 #  NAME
 #  VERSION
 #  PROD_VERSION
@@ -94,9 +95,9 @@ SetCompressor lzma
 Name "${PRETTY_PACKAGE}"
 
 # Set the output filename.
-OutFile "${NAME}-${VERSION}.exe"
+OutFile "${NAME}-${VERSION}_${BUILD_DATESTR}.exe"
 
-#Fixme: Do we need a logo
+#Fixme: Do we need a logo?
 #Icon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
 #UninstallIcon "${TOP_SRCDIR}/doc/logo/gnupg-logo-icon.ico"
 
