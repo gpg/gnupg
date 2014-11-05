@@ -618,8 +618,10 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 	if( n == 255 ) {
 	    if( buflen < 4 )
 		break;
-	    n = (buffer[0] << 24) | (buffer[1] << 16)
-                | (buffer[2] << 8) | buffer[3];
+	    n = (((size_t)buffer[0] << 24)
+                 | (buffer[1] << 16)
+                 | (buffer[2] << 8)
+                 | buffer[3]);
 	    buffer += 4;
 	    buflen -= 4;
 	}
