@@ -103,7 +103,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   `secring.gpg'.  The only difference is that secring stored in addition
   to the public part also the private part of the key pair.  The secret
   keyring thus contained only the keys for which a private key is
-  availaable, that is the user’s key.  It required a lot of code to keep
+  available, that is the user’s key.  It required a lot of code to keep
   both versions of the key in sync and led to sometimes surprising
   inconsistencies.
 
@@ -198,8 +198,8 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   Thus only the name and the mail address are required.  For all other
   parameters the default values are used.  Many graphical frontends
-  works in the same way.  Note that GPG prints a hint for the old time
-  GPG users on how to get the full option menu.
+  works in the same way.  Note that /gpg/ prints a hint for the old time
+  gpg users on how to get the full option menu.
 
 
 1.4 Support for ECC
@@ -381,7 +381,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   │ sub   rsa2048/72A4D018 2014-11-04
   ╰────
 
-  Another common operation is to sign a key.  gpg can do this directly
+  Another common operation is to sign a key.  /gpg/ can do this directly
   from the command line by giving the fingerprint of the to-be-signed
   key:
 
@@ -478,7 +478,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   A deficit of the OpenPGP protocol is that signatures carry only a
   limited indication on which public has been used to create a
   signature.  Thus a verification engine may only use this “long key id”
-  to lookup the the key in its own store or from a public keyserver.
+  to look up the the key in its own store or from a public keyserver.
   Unfortunately it has now become possible to create a key with a long
   key id matching the key id of another key.  Importing a key with a
   long key id already used by another key in gpg’s local key store was
@@ -522,7 +522,7 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   server from the pool.
 
   The new /dirmngr/ in GnuPG does not use the implicit round-robin of
-  the DNS resolver but uses its own DNS lookup and keeps an internal
+  the DNS resolver but uses its own DNS look up and keeps an internal
   table of all hosts from the pool along with the encountered aliveness
   state.  Thus after a failure (timeout) of a request, /dirmngr/ flags a
   host as dead and randomly selects another one from the pool.  After a
@@ -544,10 +544,10 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 ──────────────────────────
 
   The format GnuPG has always used for the public keyring is actually a
-  slighly extended version of the on-the-wire format for OpenPGP key
+  slightly extended version of the on-the-wire format for OpenPGP key
   exchange.  This format is quite inflexible to work with when random
   access to keys in the keyring is required.  In fact /gpg/ always
-  parsed all keys in the kering until it encountred the desired one.
+  parsed all keys in the keyring until it encountered the desired one.
   With a large keyring (more than a few thousand keys) this could be
   quite slow.
 
@@ -570,9 +570,9 @@ https://gnupg.org/faq/whats-new-in-2.1.html
   `pubring.gpg' file and not know anything about keys stored in the
   keybox file.
 
-  To convert an existsing `pubring.gpg' file to the keybox format, you
+  To convert an existing `pubring.gpg' file to the keybox format, you
   first rename the file to (for example) `publickeys' so it won’t be
-  recognized by any GnupG version and then you run the command
+  recognized by any GnuPG version and then you run the command
 
   ╭────
   │ $ gpg2 --import publickeys
@@ -597,12 +597,12 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 ──────────────────────────
 
   The /scdaemon/, which is responsible for accessing smardcards and
-  other tokens, has received may updates.  In particilar pluggable USB
-  readers with a fixed card now work smoothless and simlar to standard
+  other tokens, has received may updates.  In particular plugable USB
+  readers with a fixed card now work smoothless and similar to standard
   readers.  The latest features of the /gnuk/ token are supported.  Code
   for the HSM smartcard has been added.  More card readers with a PIN
   pad are supported.  The internal CCID driver does now also work with
-  certain non-auto configration equipped readers.
+  certain non-auto configuration equipped readers.
 
 
 1.14 New format for key listings
@@ -692,8 +692,8 @@ https://gnupg.org/faq/whats-new-in-2.1.html
 
   This command downloads all direct dependencies, checks the signatures
   using the GnuPG version from the build system (all Linux distros
-  feature a suitable GnuPG tool), builds everthing from source, and uses
-  NSIS to create the installer.  Although this sounds easy, some
+  feature a suitable GnuPG tool), builds everything from source, and
+  uses NSIS to create the installer.  Although this sounds easy, some
   experience in setting up a development machine is still required.
   Some versions of the toolchain exhibit bugs and thus your mileage may
   vary.  Support for keyserver access over TLS is currently not
