@@ -904,18 +904,14 @@ AC_ARG_WITH(adns,
              fi])
 if test "$with_adns" != "no"; then
   AC_CHECK_HEADERS(adns.h,
-                AC_CHECK_LIB(adns, adns_init,
+                AC_CHECK_LIB(adns, adns_free,
                              [have_adns=yes],
                              [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
-                [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
+                             [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
 fi
 if test "$have_adns" = "yes"; then
   ADNSLIBS="-ladns"
 fi
-AC_SUBST(ADNSLIBS)
-# Newer adns versions feature a free function to be used under W32.
-AC_CHECK_FUNCS(adns_free)
-
 
 
 #

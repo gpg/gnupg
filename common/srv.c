@@ -45,9 +45,6 @@
 #include <time.h>
 #ifdef USE_ADNS
 # include <adns.h>
-# ifndef HAVE_ADNS_FREE
-#  define adns_free free
-# endif
 #endif
 
 #include "util.h"
