@@ -85,14 +85,14 @@ with left and right angles.
 @end cartouche
 
 
-@item By word match.
-All words must match exactly (not case sensitive) but can appear in any
-order in the user ID or a subjects name.  Words are any sequences of
-letters, digits, the underscore and all characters with bit 7 set.
+@item By partial match on an email address.
+This is indicated by prefixing the search string with an @code{@@}.
+This uses a substring search but considers only the mail address
+(i.e. inside the angle brackets).
 
 @cartouche
 @example
-+Heinrich Heine duesseldorf
+@@heinrichh
 @end example
 @end cartouche
 
@@ -156,8 +156,12 @@ Heine
 @end example
 @end cartouche
 
-@end itemize
+@item . and + prefixes
+These prefixes are reserved for looking up mails anchored at the end
+and for a word search mode.  They are not yet implemented and using
+them is undefined.
 
+@end itemize
 
 Please note that we have reused the hash mark identifier which was used
 in old GnuPG versions to indicate the so called local-id.  It is not

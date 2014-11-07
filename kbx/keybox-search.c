@@ -907,7 +907,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
               break;
             case KEYDB_SEARCH_MODE_MAILEND:
             case KEYDB_SEARCH_MODE_WORDS:
-              never_reached (); /* not yet implemented */
+              /* not yet implemented */
               break;
             case KEYDB_SEARCH_MODE_ISSUER:
               if (has_issuer (blob, desc[n].u.name))
