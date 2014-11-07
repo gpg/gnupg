@@ -2320,14 +2320,20 @@ write_server (int sock, const char *data, size_t length)
   nleft = length;
   while (nleft > 0)
     {
-#if defined(HAVE_W32_SYSTEM) && !defined(USE_NPTH)
+#if defined(HAVE_W32_SYSTEM)
+# if defined(USE_NPTH)
+      npth_unprotect ();
+# endif
       nwritten = send (sock, data, nleft, 0);
+# if defined(USE_NPTH)
+      npth_protect ();
+# endif
       if ( nwritten == SOCKET_ERROR )
         {
           log_info ("network write failed: ec=%d\n", (int)WSAGetLastError ());
           return gpg_error (GPG_ERR_NETWORK);
         }
-#else /*!HAVE_W32_SYSTEM || USE_NPTH*/
+#else /*!HAVE_W32_SYSTEM*/
 # ifdef USE_NPTH
       nwritten = npth_write (sock, data, nleft);
 # else
@@ -2349,7 +2355,7 @@ write_server (int sock, const char *data, size_t length)
 	  log_info ("network write failed: %s\n", strerror (errno));
 	  return gpg_error_from_syserror ();
 	}
-#endif /*!HAVE_W32_SYSTEM || USE_NPTH*/
+#endif /*!HAVE_W32_SYSTEM*/
       nleft -= nwritten;
       data += nwritten;
     }
@@ -2404,14 +2410,25 @@ cookie_read (void *cookie, void *buffer, size_t size)
     {
       do
         {
-#ifdef USE_NPTH
-          nread = npth_read (c->sock->fd, buffer, size);
-#elif defined(HAVE_W32_SYSTEM)
+#ifdef HAVE_W32_SYSTEM
           /* Under Windows we need to use recv for a socket.  */
+# if defined(USE_NPTH)
+          npth_unprotect ();
+# endif
           nread = recv (c->sock->fd, buffer, size, 0);
-#else
+# if defined(USE_NPTH)
+          npth_protect ();
+# endif
+
+#else /*!HAVE_W32_SYSTEM*/
+
+# ifdef USE_NPTH
+          nread = npth_read (c->sock->fd, buffer, size);
+# else
           nread = read (c->sock->fd, buffer, size);
-#endif
+# endif
+
+#endif /*!HAVE_W32_SYSTEM*/
         }
       while (nread == -1 && errno == EINTR);
     }
