@@ -34,6 +34,7 @@ Usage: $(basename $0) [OPTIONS]
 Get the online version of the GnuPG software version database
 Options:
     --skip-download  Assume download has already been done.
+    --skip-verify    Do not check signatures
     --find-sha1sum   Print the name of the sha1sum utility
     --help           Print this help.
 EOF
@@ -44,6 +45,7 @@ EOF
 # Parse options
 #
 skip_download=no
+skip_verify=no
 find_sha1sum=no
 while test $# -gt 0; do
     case "$1" in
@@ -62,6 +64,9 @@ while test $# -gt 0; do
 	    ;;
         --skip-download)
             skip_download=yes
+            ;;
+        --skip-verify)
+            skip_verify=yes
             ;;
         --find-sha1sum)
             find_sha1sum=yes
@@ -96,10 +101,12 @@ fi
 version=$(cat "$srcdir/../VERSION")
 version_num=$(echo "$version" | cvtver)
 
-if ! $GPGV --version >/dev/null 2>/dev/null ; then
-  echo "command \"gpgv\" is not installed" >&2
-  echo "(please install an older version of GnuPG)" >&2
-  exit 1
+if [ $skip_verify = no ]; then
+  if ! $GPGV --version >/dev/null 2>/dev/null ; then
+    echo "command \"gpgv\" is not installed" >&2
+    echo "(please install an older version of GnuPG)" >&2
+    exit 1
+  fi
 fi
 
 #
@@ -110,9 +117,11 @@ if [ $skip_download = yes ]; then
       echo "swdb.lst is missing." >&2
       exit 1
   fi
-  if [ ! -f swdb.lst.sig ]; then
+  if [ $skip_verify = no ]; then
+    if [ ! -f swdb.lst.sig ]; then
       echo "swdb.lst.sig is missing." >&2
       exit 1
+    fi
   fi
 else
   if ! $WGET --version >/dev/null 2>/dev/null ; then
@@ -124,14 +133,18 @@ else
       echo "download of swdb.lst failed." >&2
       exit 1
   fi
-  if ! $WGET -q -O swdb.lst.sig "$urlbase/swdb.lst.sig" ; then
+  if [ $skip_verify = no ]; then
+    if ! $WGET -q -O swdb.lst.sig "$urlbase/swdb.lst.sig" ; then
       echo "download of swdb.lst.sig failed." >&2
       exit 1
+    fi
   fi
 fi
-if ! $GPGV --keyring "$distsigkey" swdb.lst.sig swdb.lst; then
+if [ $skip_verify = no ]; then
+  if ! $GPGV --keyring "$distsigkey" swdb.lst.sig swdb.lst; then
     echo "list of software versions is not valid!" >&2
     exit 1
+ fi
 fi
 
 #

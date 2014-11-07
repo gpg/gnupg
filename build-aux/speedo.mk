@@ -58,10 +58,10 @@ help:
 	@echo '  w32-installer  Build a Windows installer'
 	@echo '  w32-source     Pack a source archive'
 	@echo
-	@echo 'You may append INSTALL_REFIX=<dir> for native builds.'
+	@echo 'You may append INSTALL_PREFIX=<dir> for native builds.'
 	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
 	@echo 'Prepend TARGET with "this-" to build from the source tarball.'
-
+	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
 
@@ -113,6 +113,9 @@ TARGETOS=
 # Set to 1 to build the GUI tools
 WITH_GUI=0
 
+# Set to 1 to use a pre-installed swdb.lst instead of the online version.
+CUSTOM_SWDB=0
+
 # Set to 1 to really download the swdb.
 UPD_SWDB=0
 
@@ -157,7 +160,7 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib bzip2 libiconv gettext
+	zlib bzip2 adns libiconv gettext
 endif
 
 speedo_spkgs += \
@@ -206,8 +209,13 @@ speedo_make_only_style = \
 	zlib bzip2
 
 # Get the content of the software DB.
+ifeq ($(CUSTOM_SWDB),1)
+getswdb_options = --skip-download --skip-verify
+else
+getswdb_options =
+endif
 ifeq ($(UPD_SWDB),1)
-SWDB := $(shell $(topsrc)/build-aux/getswdb.sh && echo okay)
+SWDB := $(shell $(topsrc)/build-aux/getswdb.sh $(getswdb_options) && echo okay)
 ifeq ($(strip $(SWDB)),)
 $(error Error getting GnuPG software version database)
 endif
@@ -248,6 +256,9 @@ zlib_sha1 := $(shell awk '$$1=="zlib_sha1_gz" {print $$2}' swdb.lst)
 bzip2_ver  := $(shell awk '$$1=="bzip2_ver" {print $$2}' swdb.lst)
 bzip2_sha1 := $(shell awk '$$1=="bzip2_sha1_gz" {print $$2}' swdb.lst)
 
+adns_ver  := $(shell awk '$$1=="adns_ver" {print $$2}' swdb.lst)
+adns_sha1 := $(shell awk '$$1=="adns_sha1" {print $$2}' swdb.lst)
+
 $(info Information from the version database)
 $(info GnuPG ..........: $(gnupg_ver))
 $(info Libgpg-error ...: $(libgpg_error_ver))
@@ -256,6 +267,7 @@ $(info Libgcrypt ......: $(libgcrypt_ver))
 $(info Libassuan ......: $(libassuan_ver))
 $(info Zlib ...........: $(zlib_ver))
 $(info Bzip2 ..........: $(bzip2_ver))
+$(info ADNS ...........: $(adns_ver))
 $(info GPGME ..........: $(gpgme_ver))
 $(info Pinentry .......: $(pinentry_ver))
 $(info GPA ............: $(gpa_ver))
@@ -264,7 +276,6 @@ endif
 
 # Version number for external packages
 pkg_config_ver = 0.23
-zlib_ver = 1.2.8
 libiconv_ver = 1.14
 gettext_ver = 0.18.2.1
 libffi_ver = 3.0.13
@@ -276,7 +287,6 @@ pango_ver = 1.29.4
 pixman_ver = 0.32.4
 cairo_ver = 1.12.16
 gtk__ver = 2.24.17
-
 
 # The GIT repository.  Using a local repo is much faster.
 #gitrep = git://git.gnupg.org
@@ -355,6 +365,7 @@ endif
 speedo_pkg_pkg_config_tar = $(pkg2rep)/pkg-config-$(pkg_config_ver).tar.gz
 speedo_pkg_zlib_tar       = $(pkgrep)/zlib/zlib-$(zlib_ver).tar.gz
 speedo_pkg_bzip2_tar      = $(pkgrep)/bzip2/bzip2-$(bzip2_ver).tar.gz
+speedo_pkg_adns_tar       = $(pkg10rep)/adns/adns-$(adns_ver).tar.bz2
 speedo_pkg_libiconv_tar   = $(pkg2rep)/libiconv-$(libiconv_ver).tar.gz
 speedo_pkg_gettext_tar    = $(pkg2rep)/gettext-$(gettext_ver).tar.gz
 speedo_pkg_libffi_tar     = $(pkg2rep)/libffi-$(libffi_ver).tar.gz
