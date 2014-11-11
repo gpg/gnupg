@@ -30,6 +30,7 @@
 #include "keyblob.h"
 #include "be-encfs.h"
 #include "runner.h"
+#include "../common/sysutils.h"
 #include "../common/exechelp.h"
 
 
@@ -415,7 +416,7 @@ be_encfs_create_container (ctrl_t ctrl, const char *fname, tupledesc_t tuples,
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  if (!mkdtemp (mountpoint))
+  if (!gnupg_mkdtemp (mountpoint))
     {
       err = gpg_error_from_syserror ();
       log_error (_("can't create directory '%s': %s\n"),

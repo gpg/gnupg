@@ -99,6 +99,9 @@ int memicmp( const char *a, const char *b, size_t n );
 #ifndef HAVE_STPCPY
 char *stpcpy(char *a,const char *b);
 #endif
+#ifndef HAVE_STRPBRK
+char *strpbrk (const char *s, const char *accept);
+#endif
 #ifndef HAVE_STRSEP
 char *strsep (char **stringp, const char *delim);
 #endif

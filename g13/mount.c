@@ -33,6 +33,7 @@
 #include "keyblob.h"
 #include "backend.h"
 #include "utils.h"
+#include "../common/sysutils.h"
 #include "call-gpg.h"
 #include "mountinfo.h"
 #include "runner.h"
@@ -260,7 +261,7 @@ g13_mount_container (ctrl_t ctrl, const char *filename, const char *mountpoint)
       mountpoint_buffer = xtrystrdup ("/tmp/g13-XXXXXX");
       if (!mountpoint_buffer)
         return gpg_error_from_syserror ();
-      if (!mkdtemp (mountpoint_buffer))
+      if (!gnupg_mkdtemp (mountpoint_buffer))
         {
           err = gpg_error_from_syserror ();
           log_error (_("can't create directory '%s': %s\n"),

@@ -90,6 +90,7 @@
 #include "i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"
+#include "../common/sysutils.h"
 
 /* FIXME: Bah.  For spwq_secure_free.  */
 #define SIMPLE_PWQUERY_IMPLEMENTATION 1
@@ -315,7 +316,7 @@ confucius_mktmpdir (void)
     name = xstrconcat (p, "gpg-XXXXXX", NULL);
   else
     name = xstrconcat (p, "/", "gpg-XXXXXX", NULL);
-  if (!name || !mkdtemp (name))
+  if (!name || !gnupg_mkdtemp (name))
     {
       log_error (_("can't create temporary directory '%s': %s\n"),
                  name?name:"", strerror (errno));

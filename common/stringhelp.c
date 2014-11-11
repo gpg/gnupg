@@ -1035,6 +1035,26 @@ stpcpy(char *a,const char *b)
 }
 #endif
 
+#ifndef HAVE_STRPBRK
+/* Find the first occurrence in S of any character in ACCEPT.
+   Code taken from glibc-2.6/string/strpbrk.c (LGPLv2.1+) and modified. */
+char *
+strpbrk (const char *s, const char *accept)
+{
+  while (*s != '\0')
+    {
+      const char *a = accept;
+      while (*a != '\0')
+	if (*a++ == *s)
+	  return (char *) s;
+      ++s;
+    }
+
+  return NULL;
+}
+#endif /*!HAVE_STRPBRK*/
+
+
 #ifndef HAVE_STRSEP
 /* Code taken from glibc-2.2.1/sysdeps/generic/strsep.c. */
 char *

@@ -49,6 +49,7 @@
 #include "iobuf.h"
 #include "util.h"
 #include "membuf.h"
+#include "sysutils.h"
 #include "exec.h"
 
 #ifdef NO_EXEC
@@ -194,7 +195,7 @@ make_tempdir(struct exec_info *info)
   xfree(tmp);
 #endif
 
-  if(mkdtemp(info->tempdir)==NULL)
+  if (!gnupg_mkdtemp(info->tempdir))
     log_error(_("can't create directory '%s': %s\n"),
 	      info->tempdir,strerror(errno));
   else

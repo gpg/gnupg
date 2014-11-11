@@ -1,7 +1,7 @@
 /* sysutils.c -  system helpers
- * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004,
- *               2007, 2008  Free Software Foundation, Inc.
- * Copyright (C) 2013 Werner Koch
+ * Copyright (C) 1991-2001, 2003-2004,
+ *               2006-2008  Free Software Foundation, Inc.
+ * Copyright (C) 2013-2014 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -38,6 +38,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
@@ -617,6 +618,90 @@ gnupg_mkdir (const char *name, const char *modestr)
 }
 
 
+/* Our version of mkdtemp.  The API is identical to POSIX.1-2008
+   version.  We do not use a system provided mkdtemp because we have a
+   good RNG instantly available and this way we don't have diverging
+   versions.  */
+char *
+gnupg_mkdtemp (char *tmpl)
+{
+  /* A lower bound on the number of temporary files to attempt to
+     generate.  The maximum total number of temporary file names that
+     can exist for a given template is 62**6 (5*36**3 for Windows).
+     It should never be necessary to try all these combinations.
+     Instead if a reasonable number of names is tried (we define
+     reasonable as 62**3 or 5*36**3) fail to give the system
+     administrator the chance to remove the problems.  */
+#ifdef HAVE_W32_SYSTEM
+  static const char letters[] =
+    "abcdefghijklmnopqrstuvwxyz0123456789";
+# define NUMBER_OF_LETTERS 36
+# define ATTEMPTS_MIN (5 * 36 * 36 * 36)
+#else
+  static const char letters[] =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+# define NUMBER_OF_LETTERS 62
+# define ATTEMPTS_MIN (62 * 62 * 62)
+#endif
+  int len;
+  char *XXXXXX;
+  uint64_t value;
+  unsigned int count;
+  int save_errno = errno;
+  /* The number of times to attempt to generate a temporary file.  To
+     conform to POSIX, this must be no smaller than TMP_MAX.  */
+#if ATTEMPTS_MIN < TMP_MAX
+  unsigned int attempts = TMP_MAX;
+#else
+  unsigned int attempts = ATTEMPTS_MIN;
+#endif
+
+  len = strlen (tmpl);
+  if (len < 6 || strcmp (&tmpl[len - 6], "XXXXXX"))
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;
+    }
+
+  /* This is where the Xs start.  */
+  XXXXXX = &tmpl[len - 6];
+
+  /* Get a random start value.  */
+  gcry_create_nonce (&value, sizeof value);
+
+  /* Loop until a directory was created.  */
+  for (count = 0; count < attempts; value += 7777, ++count)
+    {
+      uint64_t v = value;
+
+      /* Fill in the random bits.  */
+      XXXXXX[0] = letters[v % NUMBER_OF_LETTERS];
+      v /= NUMBER_OF_LETTERS;
+      XXXXXX[1] = letters[v % NUMBER_OF_LETTERS];
+      v /= NUMBER_OF_LETTERS;
+      XXXXXX[2] = letters[v % NUMBER_OF_LETTERS];
+      v /= NUMBER_OF_LETTERS;
+      XXXXXX[3] = letters[v % NUMBER_OF_LETTERS];
+      v /= NUMBER_OF_LETTERS;
+      XXXXXX[4] = letters[v % NUMBER_OF_LETTERS];
+      v /= NUMBER_OF_LETTERS;
+      XXXXXX[5] = letters[v % NUMBER_OF_LETTERS];
+
+      if (!gnupg_mkdir (tmpl, "-rwx"))
+        {
+          gpg_err_set_errno (save_errno);
+          return tmpl;
+        }
+      if (errno != EEXIST)
+	return NULL;
+    }
+
+  /* We got out of the loop because we ran out of combinations to try.  */
+  gpg_err_set_errno (EEXIST);
+  return NULL;
+}
+
+
 int
 gnupg_setenv (const char *name, const char *value, int overwrite)
 {
@@ -625,10 +710,41 @@ gnupg_setenv (const char *name, const char *value, int overwrite)
   (void)value;
   (void)overwrite;
   return 0;
-#else
+#elif defined(HAVE_W32_SYSTEM)
+  if (!overwrite)
+    {
+      char tmpbuf[10];
+      if (GetEnvironmentVariable (name, tmpbuf, sizeof tmpbuf))
+        return 0; /* Exists but overwrite was not requested.  */
+    }
+  if (!SetEnvironmentVariable (name, value))
+    {
+      gpg_err_set_errno (EINVAL); /* (Might also be ENOMEM.) */
+      return -1;
+    }
+  return 0;
+#elif defined(HAVE_SETENV)
   return setenv (name, value, overwrite);
+#else
+  char *buf;
+
+  (void)overwrite;
+  if (!name || !value)
+    {
+      gpg_err_set_errno (EINVAL);
+      return -1;
+    }
+  buf = xtrymalloc (strlen (name) + 1 + strlen (value) + 1);
+  if (!buf)
+    return -1;
+  strcpy (stpcpy (stpcpy (buf, name), "="), value);
+#if __GNUC__
+# warning no setenv - using putenv but leaking memory.
+#endif
+  return putenv (buf);
 #endif
 }
+
 
 int
 gnupg_unsetenv (const char *name)
@@ -636,12 +752,30 @@ gnupg_unsetenv (const char *name)
 #ifdef HAVE_W32CE_SYSTEM
   (void)name;
   return 0;
-#else
-# ifdef HAVE_UNSETENV
+#elif defined(HAVE_W32_SYSTEM)
+  if (!SetEnvironmentVariable (name, NULL))
+    {
+      gpg_err_set_errno (EINVAL); /* (Might also be ENOMEM.) */
+      return -1;
+    }
+  return 0;
+#elif defined(HAVE_UNSETENV)
   return unsetenv (name);
-# else
-  return putenv (name);
-# endif
+#else
+  char *buf;
+
+  if (!name)
+    {
+      gpg_err_set_errno (EINVAL);
+      return -1;
+    }
+  buf = xtrystrdup (name);
+  if (!buf)
+    return -1;
+#if __GNUC__
+# warning no unsetenv - trying putenv but leaking memory.
+#endif
+  return putenv (buf);
 #endif
 }
 

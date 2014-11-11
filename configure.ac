@@ -577,7 +577,6 @@ AC_CHECK_TOOL(AR, ar, :)
 AC_PATH_PROG(PERL,"perl")
 AC_CHECK_TOOL(WINDRES, windres, :)
 AC_ISC_POSIX
-gl_EARLY
 AC_SYS_LARGEFILE
 GNUPG_CHECK_USTAR
 
@@ -1293,7 +1292,7 @@ AC_CHECK_HEADERS([signal.h])
 AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 memrchr isascii timegm getrusage setrlimit stat setlocale   \
                 flockfile funlockfile fopencookie funopen getpwnam getpwuid \
-                getenv inet_pton])
+                getenv inet_pton strpbrk])
 # end jnlib checks.
 
 

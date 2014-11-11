@@ -83,6 +83,7 @@ main (int argc, char **argv)
     verbose = 1;
 
   test_gnupg_tmpfile ();
+  /* Fixme: Add tests for setenv and unsetenv.  */
 
   return !!errcount;
 }
