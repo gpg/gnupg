@@ -27,7 +27,7 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = ../kbx/libkeybox.a $(libcommon) ../gl/libgnu.a
+needed_libs = ../kbx/libkeybox.a $(libcommon)
 
 bin_PROGRAMS = gpg2
 if !HAVE_W32CE_SYSTEM

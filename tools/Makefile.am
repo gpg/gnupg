@@ -69,8 +69,8 @@ if !HAVE_W32CE_SYSTEM
 noinst_PROGRAMS = clean-sat mk-tdata make-dns-cert gpgsplit
 endif
 
-common_libs = $(libcommon) ../gl/libgnu.a
-commonpth_libs = $(libcommonpth) ../gl/libgnu.a
+common_libs = $(libcommon)
+commonpth_libs = $(libcommonpth)
 
 # Some modules require PTH under W32CE.
 if HAVE_W32CE_SYSTEM

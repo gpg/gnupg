@@ -69,8 +69,6 @@
 
 #include <assuan.h>
 
-#include "setenv.h"   /* Gnulib replacement.  */
-
 #include "util.h"
 #include "i18n.h"
 

@@ -40,6 +40,6 @@ case "$myhost" in
 esac
 
 
-extra_aclocal_flags="-I gl/m4"
+extra_aclocal_flags=""
 
 final_info="./configure --sysconfdir=/etc --enable-maintainer-mode  && make"

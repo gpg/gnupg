@@ -18,7 +18,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-ACLOCAL_AMFLAGS = -I m4 -I gl/m4
+ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-symcryptrun --enable-mailto --enable-gpgtar
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
@@ -99,7 +99,7 @@ else
 tests =
 endif
 
-SUBDIRS = m4 gl common ${kbx} \
+SUBDIRS = m4 common ${kbx} \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
           ${tools} po ${doc} ${tests}
 

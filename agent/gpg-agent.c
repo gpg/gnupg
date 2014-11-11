@@ -55,7 +55,6 @@
 #include <assuan.h> /* Malloc hooks  and socket wrappers. */
 
 #include "i18n.h"
-#include "mkdtemp.h" /* Gnulib replacement. */
 #include "sysutils.h"
 #include "gc-opt-flags.h"
 #include "exechelp.h"

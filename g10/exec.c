@@ -48,7 +48,6 @@
 #include "i18n.h"
 #include "iobuf.h"
 #include "util.h"
-#include "mkdtemp.h"  /* From gnulib. */
 #include "membuf.h"
 #include "exec.h"
 

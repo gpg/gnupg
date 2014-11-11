@@ -51,7 +51,6 @@
 #include "iso7816.h"
 #include "apdu.h"
 #include "ccid-driver.h"
-#include "mkdtemp.h"
 #include "gc-opt-flags.h"
 #include "asshelp.h"
 #include "../common/init.h"

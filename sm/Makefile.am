@@ -57,7 +57,7 @@ gpgsm_SOURCES = \
 	qualified.c
 
 
-common_libs = ../kbx/libkeybox.a $(libcommon) ../gl/libgnu.a
+common_libs = ../kbx/libkeybox.a $(libcommon)
 
 gpgsm_LDADD = $(common_libs) ../common/libgpgrl.a \
               $(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) \

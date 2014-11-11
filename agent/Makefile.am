@@ -55,8 +55,8 @@ gpg_agent_SOURCES = \
 	call-scd.c \
 	learncard.c
 
-common_libs = $(libcommon) ../gl/libgnu.a
-commonpth_libs = $(libcommonpth) ../gl/libgnu.a
+common_libs = $(libcommon)
+commonpth_libs = $(libcommonpth)
 if HAVE_W32CE_SYSTEM
 pwquery_libs =
 else

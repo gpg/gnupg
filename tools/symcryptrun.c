@@ -90,7 +90,6 @@
 #include "i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"
-#include "mkdtemp.h"
 
 /* FIXME: Bah.  For spwq_secure_free.  */
 #define SIMPLE_PWQUERY_IMPLEMENTATION 1

@@ -1266,7 +1266,8 @@ AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_CHECK_FUNCS([strerror strlwr tcgetattr mmap canonicalize_file_name])
 AC_CHECK_FUNCS([strcasecmp strncasecmp ctermid times gmtime_r strtoull])
-AC_CHECK_FUNCS([unsetenv fcntl ftruncate inet_ntop canonicalize_file_name])
+AC_CHECK_FUNCS([setenv unsetenv fcntl ftruncate inet_ntop])
+AC_CHECK_FUNCS([canonicalize_file_name])
 AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
@@ -1294,16 +1295,6 @@ AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
                 flockfile funlockfile fopencookie funopen getpwnam getpwuid \
                 getenv inet_pton])
 # end jnlib checks.
-
-
-
-#
-# gnulib checks
-#
-gl_SOURCE_BASE([gl])
-gl_M4_BASE([gl/m4])
-gl_MODULES([setenv mkdtemp xsize strpbrk])
-gl_INIT
 
 
 #
@@ -1770,7 +1761,6 @@ fi
 AC_CONFIG_FILES([ m4/Makefile
 Makefile
 po/Makefile.in
-gl/Makefile
 common/Makefile
 common/w32info-rc.h
 kbx/Makefile
