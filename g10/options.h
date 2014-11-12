@@ -299,6 +299,7 @@ struct {
 #define IMPORT_MINIMAL                   (1<<5)
 #define IMPORT_CLEAN                     (1<<6)
 #define IMPORT_NO_SECKEY                 (1<<7)
+#define IMPORT_KEEP_OWNERTTRUST          (1<<8)
 
 #define EXPORT_LOCAL_SIGS                (1<<0)
 #define EXPORT_ATTRIBUTES                (1<<1)
