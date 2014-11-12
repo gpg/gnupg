@@ -429,7 +429,7 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
    error an error code is returned and NULL stored at R_FP.
 
    The pattern may only use search specification which a keyserver can
-   use to retriev keys.  Because we know the format of the pattern we
+   use to retrieve keys.  Because we know the format of the pattern we
    don't need to escape the patterns before sending them to the
    server.
 

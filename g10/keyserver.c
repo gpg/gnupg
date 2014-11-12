@@ -1567,17 +1567,16 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
   return err;
 }
 
-
-
-/* Retrieve a key from a keyserver.  The search pattern are in
-   (DESC,NDESC).  Allowed search modes are keyid, fingerprint, and
-   exact searches.  KEYSERVER gives an optional override keyserver. If
-   (R_FPR,R_FPRLEN) are not NULL, the may retrun the fingerprint of
-   one imported key.  */
+/* Helper for keyserver_get.  Here we only receive a chunk of the
+   description to be processed in one batch.  This is required due to
+   the limited number of patterns the dirmngr interface (KS_GET) can
+   grok and to limit the amount of temporary required memory.  */
 static gpg_error_t
-keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
-               struct keyserver_spec *keyserver,
-               unsigned char **r_fpr, size_t *r_fprlen)
+keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
+                     int *r_ndesc_used,
+                     void *stats_handle,
+                     struct keyserver_spec *keyserver,
+                     unsigned char **r_fpr, size_t *r_fprlen)
 
 {
   gpg_error_t err = 0;
@@ -1585,12 +1584,26 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   int idx, npat;
   estream_t datastream;
   char *source = NULL;
+  size_t linelen;  /* Estimated linelen for KS_GET.  */
+  size_t n;
+
+#define MAX_KS_GET_LINELEN 950  /* Somewhat lower than the real limit.  */
+
+  *r_ndesc_used = 0;
 
   /* Create an array filled with a search pattern for each key.  The
      array is delimited by a NULL entry.  */
   pattern = xtrycalloc (ndesc+1, sizeof *pattern);
   if (!pattern)
     return gpg_error_from_syserror ();
+
+  /* Note that we break the loop as soon as our estimation of the to
+     be used line length reaches the limit.  But we do this only if we
+     have processed at leas one search requests so that an overlong
+     single request will be rejected only later by gpg_dirmngr_ks_get
+     but we are sure that R_NDESC_USED has been updated.  This avoids
+     a possible indefinite loop.  */
+  linelen = 9; /* "KS_GET --" */
   for (npat=idx=0; idx < ndesc; idx++)
     {
       int quiet = 0;
@@ -1598,7 +1611,12 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
       if (desc[idx].mode == KEYDB_SEARCH_MODE_FPR20
           || desc[idx].mode == KEYDB_SEARCH_MODE_FPR16)
         {
-          pattern[npat] = xtrymalloc (2+2*20+1);
+          n = 1+2+2*20;
+          if (idx && linelen + n > MAX_KS_GET_LINELEN)
+            break; /* Declare end of this chunk.  */
+          linelen += n;
+
+          pattern[npat] = xtrymalloc (n);
           if (!pattern[npat])
             err = gpg_error_from_syserror ();
           else
@@ -1612,6 +1630,11 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
         }
       else if(desc[idx].mode == KEYDB_SEARCH_MODE_LONG_KID)
         {
+          n = 1+2+16;
+          if (idx && linelen + n > MAX_KS_GET_LINELEN)
+            break; /* Declare end of this chunk.  */
+          linelen += n;
+
           pattern[npat] = xtryasprintf ("0x%08lX%08lX",
                                         (ulong)desc[idx].u.kid[0],
                                         (ulong)desc[idx].u.kid[1]);
@@ -1622,6 +1645,11 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
         }
       else if(desc[idx].mode == KEYDB_SEARCH_MODE_SHORT_KID)
         {
+          n = 1+2+8;
+          if (idx && linelen + n > MAX_KS_GET_LINELEN)
+            break; /* Declare end of this chunk.  */
+          linelen += n;
+
           pattern[npat] = xtryasprintf ("0x%08lX", (ulong)desc[idx].u.kid[1]);
           if (!pattern[npat])
             err = gpg_error_from_syserror ();
@@ -1630,11 +1658,17 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
         }
       else if(desc[idx].mode == KEYDB_SEARCH_MODE_EXACT)
         {
-          /* The Dirmngr uses also classify_user_id to detect the type
+          /* The Dirmngr also uses classify_user_id to detect the type
              of the search string.  By adding the '=' prefix we force
              Dirmngr's KS_GET to consider this an exact search string.
              (In gpg 1.4 and gpg 2.0 the keyserver helpers used the
              KS_GETNAME command to indicate this.)  */
+
+          n = 1+1+strlen (desc[idx].u.name);
+          if (idx && linelen + n > MAX_KS_GET_LINELEN)
+            break; /* Declare end of this chunk.  */
+          linelen += n;
+
           pattern[npat] = strconcat ("=", desc[idx].u.name, NULL);
           if (!pattern[npat])
             err = gpg_error_from_syserror ();
@@ -1669,6 +1703,9 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
         }
     }
 
+  /* Remember now many of search items were considered.  Note that
+     this is different from NPAT.  */
+  *r_ndesc_used = idx;
 
   err = gpg_dirmngr_ks_get (ctrl, pattern, &datastream, &source);
   for (idx=0; idx < npat; idx++)
@@ -1679,10 +1716,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 
   if (!err)
     {
-      void *stats_handle;
       struct ks_retrieval_screener_arg_s screenerarg;
-
-      stats_handle = import_new_stats_handle();
 
       /* FIXME: Check whether this comment should be moved to dirmngr.
 
@@ -1697,19 +1731,54 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
          keyservers. */
 
       screenerarg.desc = desc;
-      screenerarg.ndesc = ndesc;
+      screenerarg.ndesc = *r_ndesc_used;
       import_keys_es_stream (ctrl, datastream, stats_handle,
                              r_fpr, r_fprlen,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY),
                              keyserver_retrieval_screener, &screenerarg);
-
-      import_print_stats (stats_handle);
-      import_release_stats_handle (stats_handle);
     }
   es_fclose (datastream);
   xfree (source);
 
+  return err;
+}
+
+
+/* Retrieve a key from a keyserver.  The search pattern are in
+   (DESC,NDESC).  Allowed search modes are keyid, fingerprint, and
+   exact searches.  KEYSERVER gives an optional override keyserver. If
+   (R_FPR,R_FPRLEN) are not NULL, they may return the fingerprint of a
+   single imported key.  */
+static gpg_error_t
+keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
+               struct keyserver_spec *keyserver,
+               unsigned char **r_fpr, size_t *r_fprlen)
+{
+  gpg_error_t err;
+  void *stats_handle;
+  int ndesc_used;
+  int any_good = 0;
+
+  stats_handle = import_new_stats_handle();
+
+  for (;;)
+    {
+      err = keyserver_get_chunk (ctrl, desc, ndesc, &ndesc_used, stats_handle,
+                                 keyserver, r_fpr, r_fprlen);
+      if (!err)
+        any_good = 1;
+      if (err || ndesc_used >= ndesc)
+        break; /* Error or all processed.  */
+      /* Prepare for the next chunk.  */
+      desc += ndesc_used;
+      ndesc -= ndesc_used;
+    }
+
+  if (any_good)
+    import_print_stats (stats_handle);
+
+  import_release_stats_handle (stats_handle);
   return err;
 }
 
