@@ -1569,6 +1569,8 @@ list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
     list_keyblock_colon (keyblock, secret, has_secret, fpr);
   else
     list_keyblock_print (keyblock, secret, fpr, opaque);
+  if (secret)
+    es_fflush (es_stdout);
 }
 
 /*
