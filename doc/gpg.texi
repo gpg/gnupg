@@ -2039,6 +2039,15 @@ opposite meaning. The options are:
   generally useful unless a shared keyring scheme is being used.
   Defaults to no.
 
+  @item import-keep-ownertrust
+  Normally possible still existing ownertrust values of a key are
+  cleared if a key is imported.  This is in general desirable so that
+  a formerly deleted key does not automatically gain an ownertrust
+  values merely due to import.  On the other hand it is sometimes
+  necessary to re-import a trusted set of keys again but keeping
+  already assigned ownertrust values.  This can be achived by using
+  this option.
+
   @item repair-pks-subkey-bug
   During import, attempt to repair the damage caused by the PKS keyserver
   bug (pre version 0.9.6) that mangles keys with multiple subkeys. Note

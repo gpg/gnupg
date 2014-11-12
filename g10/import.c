@@ -95,18 +95,28 @@ parse_import_options(char *str,unsigned int *options,int noisy)
     {
       {"import-local-sigs",IMPORT_LOCAL_SIGS,NULL,
        N_("import signatures that are marked as local-only")},
+
       {"repair-pks-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,
        N_("repair damage from the pks keyserver during import")},
+
+      {"keep-ownertrust", IMPORT_KEEP_OWNERTTRUST, NULL,
+       N_("do not clear the ownertrust values during import")},
+
       {"fast-import",IMPORT_FAST,NULL,
        N_("do not update the trustdb after import")},
+
       {"convert-sk-to-pk",IMPORT_SK2PK,NULL,
        N_("create a public key when importing a secret key")},
+
       {"merge-only",IMPORT_MERGE_ONLY,NULL,
        N_("only accept updates to existing keys")},
+
       {"import-clean",IMPORT_CLEAN,NULL,
        N_("remove unusable parts from key after import")},
+
       {"import-minimal",IMPORT_MINIMAL|IMPORT_CLEAN,NULL,
        N_("remove as much as possible from key after import")},
+
       /* Aliases for backward compatibility */
       {"allow-local-sigs",IMPORT_LOCAL_SIGS,NULL,NULL},
       {"repair-hkp-subkey-bug",IMPORT_REPAIR_PKS_SUBKEY_BUG,NULL,NULL},
@@ -890,12 +900,13 @@ import_one( const char *fname, KBNODE keyblock, struct stats_s *stats,
         if (rc)
 	   log_error (_("error writing keyring `%s': %s\n"),
 		       keydb_get_resource_name (hd), g10_errstr(rc));
-	else
+	else if (!(opt.import_options & IMPORT_KEEP_OWNERTTRUST))
 	  {
 	    /* This should not be possible since we delete the
 	       ownertrust when a key is deleted, but it can happen if
 	       the keyring and trustdb are out of sync.  It can also
-	       be made to happen with the trusted-key command. */
+	       be made to happen with the trusted-key command and by
+	       importing and locally exported key. */
 
 	    clear_ownertrusts (pk);
 	    if(non_self)
