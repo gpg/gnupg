@@ -126,7 +126,6 @@ struct
     {
       KF_SHORT, KF_LONG, KF_0xSHORT, KF_0xLONG
     } keyid_format;
-  int pgp2_workarounds;
   int shm_coprocess;
   const char *set_filename;
   strlist_t comments;

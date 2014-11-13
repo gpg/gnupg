@@ -49,7 +49,6 @@ typedef struct {
     int faked;		    /* we are faking a literal data packet */
     int truncated;	    /* number of truncated lines */
     int qp_detected;
-    int pgp2mode;
     byte eol[3];            /* The end of line characters as a
 			       zero-terminated string.  Defaults
 			       (eol[0]=='\0') to whatever the local

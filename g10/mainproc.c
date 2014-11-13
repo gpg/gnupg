@@ -555,9 +555,9 @@ proc_encrypted( CTX c, PACKET *pkt )
 		algo = CIPHER_ALGO_IDEA;
 		if (!opt.s2k_digest_algo)
 		  {
-		    /* If no digest is given we assume MD5 */
+		    /* If no digest is given we assume SHA-1. */
 		    s2kbuf.mode = 0;
-		    s2kbuf.hash_algo = DIGEST_ALGO_MD5;
+		    s2kbuf.hash_algo = DIGEST_ALGO_SHA1;
 		    s2k = &s2kbuf;
 		  }
 		log_info (_("assuming %s encrypted data\n"), "IDEA");
@@ -617,7 +617,7 @@ static void
 proc_plaintext( CTX c, PACKET *pkt )
 {
     PKT_plaintext *pt = pkt->pkt.plaintext;
-    int any, clearsig, only_md5, rc;
+    int any, clearsig, rc;
     KBNODE n;
 
     literals_seen++;
@@ -635,7 +635,7 @@ proc_plaintext( CTX c, PACKET *pkt )
      * Should we assume that plaintext in mode 't' has always sigclass 1??
      * See: Russ Allbery's mail 1999-02-09
      */
-    any = clearsig = only_md5 = 0;
+    any = clearsig = 0;
     for(n=c->list; n; n = n->next )
       {
 	if( n->pkt->pkttype == PKT_ONEPASS_SIG )
@@ -645,15 +645,8 @@ proc_plaintext( CTX c, PACKET *pkt )
 	      {
 		gcry_md_enable (c->mfx.md,
                                 n->pkt->pkt.onepass_sig->digest_algo);
-		if( !any && n->pkt->pkt.onepass_sig->digest_algo
-		    == DIGEST_ALGO_MD5 )
-		  only_md5 = 1;
-		else
-		  only_md5 = 0;
 		any = 1;
 	      }
-	    if( n->pkt->pkt.onepass_sig->sig_class != 0x01 )
-	      only_md5 = 0;
 	  }
 	else if( n->pkt->pkttype == PKT_GPG_CONTROL
                  && n->pkt->pkt.gpg_control->control
@@ -692,18 +685,7 @@ proc_plaintext( CTX c, PACKET *pkt )
 	   answer. */
 	gcry_md_enable( c->mfx.md, DIGEST_ALGO_RMD160 );
 	gcry_md_enable( c->mfx.md, DIGEST_ALGO_SHA1 );
-	gcry_md_enable( c->mfx.md, DIGEST_ALGO_MD5 );
       }
-    if (opt.pgp2_workarounds && only_md5 && !opt.skip_verify
-        && opt.flags.allow_weak_digest_algos) {
-	/* This is a kludge to work around a bug in pgp2.  It does only
-	 * catch those mails which are armored.  To catch the non-armored
-	 * pgp mails we could see whether there is the signature packet
-	 * in front of the plaintext.  If someone needs this, send me a patch.
-	 */
-      if ( gcry_md_open (&c->mfx.md2, DIGEST_ALGO_MD5, 0) )
-        BUG ();
-    }
     if ( DBG_HASHING ) {
 	gcry_md_debug ( c->mfx.md, "verify" );
 	if ( c->mfx.md2  )
@@ -2130,20 +2112,13 @@ proc_tree( CTX c, KBNODE node )
             if (gcry_md_open (&c->mfx.md, sig->digest_algo, 0))
               BUG ();
 
-	    if( !opt.pgp2_workarounds )
-		;
-	    else if( sig->digest_algo == DIGEST_ALGO_MD5
-		     && is_RSA( sig->pubkey_algo)
-                     && opt.flags.allow_weak_digest_algos) {
-		/* enable a workaround for a pgp2 bug */
-                if (gcry_md_open (&c->mfx.md2, DIGEST_ALGO_MD5, 0))
-                  BUG ();
-	    }
+	    if (RFC2440 || RFC4880)
+              ; /* Strict RFC mode.  */
 	    else if( sig->digest_algo == DIGEST_ALGO_SHA1
 		     && sig->pubkey_algo == PUBKEY_ALGO_DSA
 		     && sig->sig_class == 0x01 ) {
-		/* enable the workaround also for pgp5 when the detached
-		 * signature has been created in textmode */
+		/* Enable a workaround for a pgp5 bug when the
+		 * detached signature has been created in textmode.  */
               if (gcry_md_open (&c->mfx.md2, sig->digest_algo, 0 ))
                 BUG ();
 	    }

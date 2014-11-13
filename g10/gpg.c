@@ -2099,7 +2099,6 @@ main (int argc, char **argv)
     opt.completes_needed = 1;
     opt.marginals_needed = 3;
     opt.max_cert_depth = 5;
-    opt.pgp2_workarounds = 1;
     opt.escape_from = 1;
     opt.flags.require_cross_cert = 1;
     opt.import_options = 0;
@@ -2528,7 +2527,6 @@ main (int argc, char **argv)
 	    opt.rfc2440_text = 0;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
-	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 1;
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
@@ -2545,7 +2543,6 @@ main (int argc, char **argv)
 	    opt.rfc2440_text = 1;
 	    opt.allow_non_selfsigned_uid = 1;
 	    opt.allow_freeform_uid = 1;
-	    opt.pgp2_workarounds = 0;
 	    opt.escape_from = 0;
 	    opt.not_dash_escaped = 0;
 	    opt.def_cipher_algo = 0;
