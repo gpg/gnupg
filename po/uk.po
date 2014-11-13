@@ -2328,6 +2328,11 @@ msgstr "імпортувати підписи, позначені як лише 
 msgid "repair damage from the pks keyserver during import"
 msgstr "відновлювати пошкодження сервером ключів pks під час імпортування"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "не оновлювати базу даних довіри після імпортування"
+
 msgid "do not update the trustdb after import"
 msgstr "не оновлювати базу даних довіри після імпортування"
 
@@ -4307,6 +4312,10 @@ msgid ", key algorithm "
 msgstr "алгоритм: %s"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Не вдалося перевірити підпис: %s\n"
 
@@ -4323,9 +4332,6 @@ msgstr "окремий підпис класу 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "підпис у застарілому форматі (PGP 2.x)\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "виявлено некоректний кореневий пакет у proc_tree()\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -7996,6 +8002,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "виявлено некоректний кореневий пакет у proc_tree()\n"
 
 #~ msgid "no secret subkey for public subkey %s - ignoring\n"
 #~ msgstr "немає закритого підключа для відкритого підключа %s — пропускаємо\n"

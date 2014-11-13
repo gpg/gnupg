@@ -2251,6 +2251,11 @@ msgstr "ローカルだけとマークされた署名をインポートします
 msgid "repair damage from the pks keyserver during import"
 msgstr "インポート時にpksキーサーバからのダメージを修正します"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "インポートの際、信用データベースを更新しない"
+
 msgid "do not update the trustdb after import"
 msgstr "インポートの際、信用データベースを更新しない"
 
@@ -4174,6 +4179,10 @@ msgid ", key algorithm "
 msgstr "、鍵アルゴリズム "
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名を検査できません: %s\n"
 
@@ -4190,9 +4199,6 @@ msgstr "クラス0x%02xのスタンドアロン署名\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "古い形式 (PGP 2.x) の署名\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "proc_tree() の中に無効なルート・パケットを検出しました\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -7781,6 +7787,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "proc_tree() の中に無効なルート・パケットを検出しました\n"
 
 #~ msgid "no secret subkey for public subkey %s - ignoring\n"
 #~ msgstr "公開副鍵%sにたいする秘密副鍵がありません - 無視\n"

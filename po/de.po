@@ -2295,6 +2295,11 @@ msgstr "Importiere Signaturen, die als nicht exportfähig markiert sind"
 msgid "repair damage from the pks keyserver during import"
 msgstr "Beseitige Beschädigung durch den Schlüsselserver während des Imports"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "ändern Sie die \"Trust\"-Datenbank nach dem Import nicht"
+
 msgid "do not update the trustdb after import"
 msgstr "ändern Sie die \"Trust\"-Datenbank nach dem Import nicht"
 
@@ -4271,6 +4276,10 @@ msgid ", key algorithm "
 msgstr ", Schlüsselverfahren "
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Signatur kann nicht geprüft werden: %s\n"
 
@@ -4288,9 +4297,6 @@ msgstr "Einzelne Signatur der Klasse 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Signatur nach alter (PGP 2.x) Art\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "ungültiges root-Paket in proc_tree() entdeckt\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -8013,6 +8019,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "ungültiges root-Paket in proc_tree() entdeckt\n"
 
 #~ msgid "no secret subkey for public subkey %s - ignoring\n"
 #~ msgstr ""

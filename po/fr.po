@@ -2305,6 +2305,11 @@ msgstr "importer des signatures marquées comme locales seulement"
 msgid "repair damage from the pks keyserver during import"
 msgstr "réparer les données endommagées du serveur pks pendant l'importation"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "ne pas mettre à jour la base de confiance après l'importation"
+
 msgid "do not update the trustdb after import"
 msgstr "ne pas mettre à jour la base de confiance après l'importation"
 
@@ -4286,6 +4291,10 @@ msgid ", key algorithm "
 msgstr ", algorithme de clef "
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossible de vérifier la signature : %s\n"
 
@@ -4304,9 +4313,6 @@ msgstr "signature autonome de classe 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "signature d'un ancien type (PGP 2.x)\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "paquet racine incorrect détecté dans proc_tree()\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -8093,6 +8099,9 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "paquet racine incorrect détecté dans proc_tree()\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "utiliser un emplacement de socket standard"
