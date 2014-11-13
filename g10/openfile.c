@@ -59,7 +59,7 @@
 
 /* FIXME:  Implement opt.interactive. */
 
-/****************
+/*
  * Check whether FNAME exists and ask if it's okay to overwrite an
  * existing one.
  * Returns: True: it's okay to overwrite or the file does not exist
@@ -92,35 +92,37 @@ overwrite_filep( const char *fname )
 }
 
 
-/****************
+/*
  * Strip known extensions from iname and return a newly allocated
  * filename.  Return NULL if we can't do that.
  */
 char *
-make_outfile_name( const char *iname )
+make_outfile_name (const char *iname)
 {
-    size_t n;
+  size_t n;
 
-    if ( iobuf_is_pipe_filename (iname) )
-	return xstrdup("-");
+  if (iobuf_is_pipe_filename (iname))
+    return xstrdup ("-");
 
-    n = strlen(iname);
-    if( n > 4 && (    !CMP_FILENAME(iname+n-4, EXTSEP_S GPGEXT_GPG)
-		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
-		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
-		   || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc") ) ) {
-	char *buf = xstrdup( iname );
-	buf[n-4] = 0;
-	return buf;
+  n = strlen (iname);
+  if (n > 4 && (!CMP_FILENAME(iname+n-4, EXTSEP_S GPGEXT_GPG)
+                || !CMP_FILENAME(iname+n-4, EXTSEP_S "pgp")
+                || !CMP_FILENAME(iname+n-4, EXTSEP_S "sig")
+                || !CMP_FILENAME(iname+n-4, EXTSEP_S "asc")))
+    {
+      char *buf = xstrdup (iname);
+      buf[n-4] = 0;
+      return buf;
     }
-    else if( n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign") ) {
-	char *buf = xstrdup( iname );
-	buf[n-5] = 0;
-	return buf;
+  else if (n > 5 && !CMP_FILENAME(iname+n-5, EXTSEP_S "sign"))
+    {
+      char *buf = xstrdup (iname);
+      buf[n-5] = 0;
+      return buf;
     }
 
-    log_info(_("%s: unknown suffix\n"), iname );
-    return NULL;
+  log_info (_("%s: unknown suffix\n"), iname);
+  return NULL;
 }
 
 
@@ -168,7 +170,7 @@ ask_outfile_name( const char *name, size_t namelen )
 }
 
 
-/****************
+/*
  * Make an output filename for the inputfile INAME.
  * Returns an IOBUF and an errorcode
  * Mode 0 = use ".gpg"
@@ -308,117 +310,132 @@ open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
 }
 
 
-/****************
+/*
  * Try to open a file without the extension ".sig" or ".asc"
  * Return NULL if such a file is not available.
  */
 IOBUF
 open_sigfile( const char *iname, progress_filter_context_t *pfx )
 {
-    IOBUF a = NULL;
-    size_t len;
+  IOBUF a = NULL;
+  size_t len;
 
-    if( !iobuf_is_pipe_filename (iname) ) {
-	len = strlen(iname);
-	if( len > 4 && ( !strcmp(iname + len - 4, EXTSEP_S "sig")
-                        || ( len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign") )
-                        || !strcmp(iname + len - 4, EXTSEP_S "asc")) ) {
-	    char *buf;
-	    buf = xstrdup(iname);
-	    buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
-	    a = iobuf_open( buf );
-            if (a && is_secured_file (iobuf_get_fd (a)))
-              {
-                iobuf_close (a);
-                a = NULL;
-                gpg_err_set_errno (EPERM);
-              }
-	    if( a && opt.verbose )
-		log_info(_("assuming signed data in '%s'\n"), buf );
-	    if (a && pfx)
-	      handle_progress (pfx, a, buf);
-            xfree(buf);
+  if (!iobuf_is_pipe_filename (iname))
+    {
+      len = strlen(iname);
+      if( len > 4 && (!strcmp(iname + len - 4, EXTSEP_S "sig")
+                      || (len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign"))
+                      || !strcmp(iname + len - 4, EXTSEP_S "asc")))
+        {
+          char *buf;
+
+          buf = xstrdup(iname);
+          buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
+          a = iobuf_open( buf );
+          if (a && is_secured_file (iobuf_get_fd (a)))
+            {
+              iobuf_close (a);
+              a = NULL;
+              gpg_err_set_errno (EPERM);
+            }
+          if (a && opt.verbose)
+            log_info (_("assuming signed data in '%s'\n"), buf);
+          if (a && pfx)
+            handle_progress (pfx, a, buf);
+          xfree (buf);
 	}
     }
-    return a;
+
+  return a;
 }
+
 
 /****************
  * Copy the option file skeleton to the given directory.
  */
 static void
-copy_options_file( const char *destdir )
+copy_options_file (const char *destdir)
 {
-    const char *datadir = gnupg_datadir ();
-    char *fname;
-    FILE *src, *dst;
-    int linefeeds=0;
-    int c;
-    mode_t oldmask;
-    int esc = 0;
-    int any_option = 0;
+  const char *datadir = gnupg_datadir ();
+  char *fname;
+  FILE *src, *dst;
+  int linefeeds=0;
+  int c;
+  mode_t oldmask;
+  int esc = 0;
+  int any_option = 0;
 
-    if( opt.dry_run )
-	return;
+  if (opt.dry_run)
+    return;
 
-    fname = xmalloc( strlen(datadir) + strlen(destdir) + 15 );
-    strcpy(stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT );
-    src = fopen( fname, "r" );
-    if (src && is_secured_file (fileno (src)))
-      {
-        fclose (src);
-        src = NULL;
-        gpg_err_set_errno (EPERM);
-      }
-    if( !src ) {
-	log_info (_("can't open '%s': %s\n"), fname, strerror(errno) );
-	xfree(fname);
-	return;
+  fname = xmalloc (strlen(datadir) + strlen(destdir) + 15);
+  strcpy (stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT);
+  src = fopen (fname, "r");
+  if (src && is_secured_file (fileno (src)))
+    {
+      fclose (src);
+      src = NULL;
+      gpg_err_set_errno (EPERM);
     }
-    strcpy(stpcpy(fname, destdir), DIRSEP_S GPGEXT_GPG EXTSEP_S "conf" );
-    oldmask=umask(077);
-    if ( is_secured_filename (fname) )
-      {
-        dst = NULL;
-        gpg_err_set_errno (EPERM);
-      }
-    else
-      dst = fopen( fname, "w" );
-    umask(oldmask);
-    if( !dst ) {
-	log_info (_("can't create '%s': %s\n"), fname, strerror(errno) );
-	fclose( src );
-	xfree(fname);
-	return;
+  if (!src)
+    {
+      log_info (_("can't open '%s': %s\n"), fname, strerror(errno));
+      xfree(fname);
+      return;
+    }
+  strcpy (stpcpy (fname, destdir), DIRSEP_S GPGEXT_GPG EXTSEP_S "conf");
+
+  oldmask = umask (077);
+  if (is_secured_filename (fname))
+    {
+      dst = NULL;
+      gpg_err_set_errno (EPERM);
+    }
+  else
+    dst = fopen( fname, "w" );
+  umask (oldmask);
+
+  if (!dst)
+    {
+      log_info (_("can't create '%s': %s\n"), fname, strerror(errno) );
+      fclose (src);
+      xfree (fname);
+      return;
     }
 
-    while( (c=getc(src)) != EOF ) {
-	if( linefeeds < 3 ) {
-	    if( c == '\n' )
-		linefeeds++;
+  while ((c = getc (src)) != EOF)
+    {
+      if (linefeeds < 3)
+        {
+          if (c == '\n')
+            linefeeds++;
 	}
-	else {
-	    putc( c, dst );
-            if (c== '\n')
-                esc = 1;
-            else if (esc == 1) {
-                if (c == ' ' || c == '\t')
-                    ;
-                else if (c == '#')
-                    esc = 2;
-                else
-                    any_option = 1;
+      else
+        {
+          putc (c, dst);
+          if (c== '\n')
+            esc = 1;
+          else if (esc == 1)
+            {
+              if (c == ' ' || c == '\t')
+                ;
+              else if (c == '#')
+                esc = 2;
+              else
+                any_option = 1;
             }
         }
     }
-    fclose( dst );
-    fclose( src );
-    log_info(_("new configuration file '%s' created\n"), fname );
-    if (any_option)
-        log_info (_("WARNING: options in '%s'"
-                    " are not yet active during this run\n"),
-                  fname);
-    xfree(fname);
+
+  fclose (dst);
+  fclose (src);
+
+  log_info (_("new configuration file '%s' created\n"), fname);
+  if (any_option)
+    log_info (_("WARNING: options in '%s'"
+                " are not yet active during this run\n"),
+              fname);
+  xfree (fname);
 }
 
 
