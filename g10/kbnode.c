@@ -424,6 +424,8 @@ dump_kbnode (KBNODE node)
                       pk->flags.valid?    'v':'.',
                       pk->flags.mdc?   'm':'.');
         }
+      else
+        log_printf ("\n");
 
       log_flush ();
     }
