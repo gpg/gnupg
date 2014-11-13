@@ -2008,6 +2008,44 @@ check_sig_and_print (CTX c, kbnode_t node)
                   *pkstrbuf?_(", key algorithm "):"",
                   pkstrbuf);
 
+      if (!rc && !c->signed_data.used)
+        {
+          /* Signature is basically good but we test whether the
+             deprecated command
+               gpg --verify FILE.sig
+             was used instead of
+               gpg --verify FILE.sig FILE
+             to verify a detached signature.  If we figure out that a
+             data file with a matching name exists, we print a warning.
+
+             The problem is that the first form would also verify a
+             standard signature.  This behavior could be used to
+             create a made up .sig file for a tarball by creating a
+             standard signature from a valid detached signature packet
+             (for example from a signed git tag).  Then replace the
+             sig file on the FTP server along with a changed tarball.
+             Using the first form the verify command would correctly
+             verify the signature but don't even consider the tarball.  */
+          kbnode_t n;
+          char *dfile;
+
+          dfile = get_matching_datafile (c->sigfilename);
+          if (dfile)
+            {
+              for (n = c->list; n; n = n->next)
+                if (n->pkt->pkttype != PKT_SIGNATURE)
+                  break;
+              if (n)
+                {
+                  /* Not only signature packets in the tree thus this
+                     is not a detached signature.  */
+                  log_info (_("WARNING: not a detached signature; "
+                              "file '%s' was NOT verified!\n"), dfile);
+                }
+              xfree (dfile);
+            }
+        }
+
       if (rc)
         g10_errors_seen = 1;
       if (opt.batch && rc)

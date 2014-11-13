@@ -607,10 +607,8 @@ leave:
 
 
 
-/****************
- * Hash the given files and append the hash to hash context md.
- * If FILES is NULL, hash stdin.
- */
+/* Hash the given files and append the hash to hash contexts MD and
+ * MD2.  If FILES is NULL, stdin is hashed.  */
 int
 hash_datafiles (gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 		const char *sigfilename, int textmode)
@@ -623,15 +621,22 @@ hash_datafiles (gcry_md_hd_t md, gcry_md_hd_t md2, strlist_t files,
 
   if (!files)
     {
-      /* check whether we can open the signed material */
-      fp = open_sigfile (sigfilename, pfx);
-      if (fp)
-	{
-	  do_hash (md, md2, fp, textmode);
-	  iobuf_close (fp);
-	  release_progress_context (pfx);
-	  return 0;
-	}
+      /* Check whether we can open the signed material.  We avoid
+         trying to open a file if run in batch mode.  This assumed
+         data file for a sig file feature is just a convenience thing
+         for the command line and the user needs to read possible
+         warning messages. */
+      if (!opt.batch)
+        {
+          fp = open_sigfile (sigfilename, pfx);
+          if (fp)
+            {
+              do_hash (md, md2, fp, textmode);
+              iobuf_close (fp);
+              release_progress_context (pfx);
+              return 0;
+            }
+        }
       log_error (_("no signed data\n"));
       release_progress_context (pfx);
       return gpg_error (GPG_ERR_NO_DATA);

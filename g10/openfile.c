@@ -310,40 +310,64 @@ open_outfile (int inp_fd, const char *iname, int mode, int restrictedperm,
 }
 
 
+/* Find a matching data file for the signature file SIGFILENAME and
+   return it as a malloced string.  If no matching data file is found,
+   return NULL.  */
+char *
+get_matching_datafile (const char *sigfilename)
+{
+  char *fname = NULL;
+  size_t len;
+
+  if (iobuf_is_pipe_filename (sigfilename))
+    return NULL;
+
+  len = strlen (sigfilename);
+  if (len > 4
+      && (!strcmp (sigfilename + len - 4, EXTSEP_S "sig")
+          || (len > 5 && !strcmp(sigfilename + len - 5, EXTSEP_S "sign"))
+          || !strcmp(sigfilename + len - 4, EXTSEP_S "asc")))
+    {
+
+      fname = xstrdup (sigfilename);
+      fname[len-(fname[len-1]=='n'?5:4)] = 0 ;
+      if (access (fname, R_OK ))
+        {
+          /* Not found or other error.  */
+          xfree (fname);
+          fname = NULL;
+        }
+    }
+
+  return fname;
+}
+
+
 /*
  * Try to open a file without the extension ".sig" or ".asc"
  * Return NULL if such a file is not available.
  */
-IOBUF
-open_sigfile( const char *iname, progress_filter_context_t *pfx )
+iobuf_t
+open_sigfile (const char *sigfilename, progress_filter_context_t *pfx)
 {
-  IOBUF a = NULL;
-  size_t len;
+  iobuf_t a = NULL;
+  char *buf;
 
-  if (!iobuf_is_pipe_filename (iname))
+  buf = get_matching_datafile (sigfilename);
+  if (buf)
     {
-      len = strlen(iname);
-      if( len > 4 && (!strcmp(iname + len - 4, EXTSEP_S "sig")
-                      || (len > 5 && !strcmp(iname + len - 5, EXTSEP_S "sign"))
-                      || !strcmp(iname + len - 4, EXTSEP_S "asc")))
+      a = iobuf_open (buf);
+      if (a && is_secured_file (iobuf_get_fd (a)))
         {
-          char *buf;
-
-          buf = xstrdup(iname);
-          buf[len-(buf[len-1]=='n'?5:4)] = 0 ;
-          a = iobuf_open( buf );
-          if (a && is_secured_file (iobuf_get_fd (a)))
-            {
-              iobuf_close (a);
-              a = NULL;
-              gpg_err_set_errno (EPERM);
-            }
-          if (a && opt.verbose)
-            log_info (_("assuming signed data in '%s'\n"), buf);
-          if (a && pfx)
-            handle_progress (pfx, a, buf);
-          xfree (buf);
-	}
+          iobuf_close (a);
+          a = NULL;
+          gpg_err_set_errno (EPERM);
+        }
+      if (a)
+        log_info (_("assuming signed data in '%s'\n"), buf);
+      if (a && pfx)
+        handle_progress (pfx, a, buf);
+      xfree (buf);
     }
 
   return a;

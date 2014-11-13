@@ -286,7 +286,8 @@ char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
 int open_outfile (int inp_fd, const char *iname, int mode,
                   int restrictedperm, iobuf_t *a);
-iobuf_t open_sigfile( const char *iname, progress_filter_context_t *pfx );
+char *get_matching_datafile (const char *sigfilename);
+iobuf_t open_sigfile (const char *sigfilename, progress_filter_context_t *pfx);
 void try_make_homedir( const char *fname );
 char *get_openpgp_revocdir (const char *home);
 
@@ -374,7 +375,7 @@ void decrypt_messages (ctrl_t ctrl, int nfiles, char *files[]);
 
 /*-- plaintext.c --*/
 int hash_datafiles( gcry_md_hd_t md, gcry_md_hd_t md2,
-		    strlist_t files, const char *sigfilename, int textmode );
+		    strlist_t files, const char *sigfilename, int textmode);
 int hash_datafile_by_fd ( gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
                           int textmode );
 PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
