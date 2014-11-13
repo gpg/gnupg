@@ -596,6 +596,10 @@ LangString DESC_Menu_gnupg_manual ${LANG_GERMAN} \
 Section "-libgpg-error" SEC_libgpg_error
   SetOutPath "$INSTDIR\bin"
   File bin/libgpg-error-0.dll
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libgpg-error.imp lib/libgpg-error.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/gpg-error.h
 SectionEnd
 
 Section "-libiconv" SEC_libiconv
@@ -611,21 +615,37 @@ SectionEnd
 Section "-npth" SEC_npth
   SetOutPath "$INSTDIR\bin"
   File bin/libnpth-0.dll
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libnpth.imp lib/libnpth.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/npth.h
 SectionEnd
 
 Section "-gcrypt" SEC_gcrypt
   SetOutPath "$INSTDIR\bin"
   File bin/libgcrypt-20.dll
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libgcrypt.imp lib/libgcrypt.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/gcrypt.h
 SectionEnd
 
 Section "-assuan" SEC_assuan
   SetOutPath "$INSTDIR\bin"
   File bin/libassuan-0.dll
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libassuan.imp lib/libassuan.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/assuan.h
 SectionEnd
 
 Section "-ksba" SEC_ksba
   SetOutPath "$INSTDIR\bin"
   File bin/libksba-8.dll
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libksba.imp lib/libksba.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/ksba.h
 SectionEnd
 
 Section "-gpgme" SEC_gpgme
@@ -633,6 +653,11 @@ Section "-gpgme" SEC_gpgme
   File bin/libgpgme-11.dll
   File bin/libgpgme-glib-11.dll
   File libexec/gpgme-w32spawn.exe
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libgpgme.imp      lib/libgpgme.dll.a
+  File /oname=libgpgme-glib.imp lib/libgpgme-glib.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/gpgme.h
 SectionEnd
 
 Section "-gettext" SEC_gettext
@@ -984,22 +1009,32 @@ Section "-un.gpgme"
   Delete "$INSTDIR\bin\libgpgme-11.dll"
   Delete "$INSTDIR\bin\libgpgme-glib-11.dll"
   Delete "$INSTDIR\bin\gpgme-w32spawn.exe"
+  Delete "$INSTDIR\lib\libgpgme.imp"
+  Delete "$INSTDIR\include\gpgme.h"
 SectionEnd
 
 Section "-un.ksba"
   Delete "$INSTDIR\bin\libksba-8.dll"
+  Delete "$INSTDIR\lib\libksba.imp"
+  Delete "$INSTDIR\include\ksba.h"
 SectionEnd
 
 Section "-un.assuan"
   Delete "$INSTDIR\bin\libassuan-0.dll"
+  Delete "$INSTDIR\lib\libassuan.imp"
+  Delete "$INSTDIR\include\assuan.h"
 SectionEnd
 
 Section "-un.gcrypt"
   Delete "$INSTDIR\bin\libgcrypt-20.dll"
+  Delete "$INSTDIR\lib\libgcrypt.imp"
+  Delete "$INSTDIR\include\gcrypt.h"
 SectionEnd
 
 Section "-un.npth"
   Delete "$INSTDIR\bin\libnpth-0.dll"
+  Delete "$INSTDIR\lib\libnpth.imp"
+  Delete "$INSTDIR\include\npth.h"
 SectionEnd
 
 Section "-un.zlib"
@@ -1012,6 +1047,8 @@ SectionEnd
 
 Section "-un.libgpg-error"
   Delete "$INSTDIR\bin\libgpg-error-0.dll"
+  Delete "$INSTDIR\lib\libgpg-error.imp"
+  Delete "$INSTDIR\include\gpg-error.h"
 SectionEnd
 
 Section "-un.gnupg"
@@ -1038,6 +1075,7 @@ Section "-un.gnupginst"
   # Try to remove the top level directories.
   RMDir "$INSTDIR\bin"
   RMDir "$INSTDIR\lib"
+  RMDir "$INSTDIR\include"
   RMDir "$INSTDIR\share"
   RMDir "$INSTDIR\etc"
   RMDir "$INSTDIR"
