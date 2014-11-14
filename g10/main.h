@@ -253,7 +253,8 @@ int overwrite_filep( const char *fname );
 char *make_outfile_name( const char *iname );
 char *ask_outfile_name( const char *name, size_t namelen );
 int   open_outfile( const char *iname, int mode, iobuf_t *a );
-iobuf_t open_sigfile( const char *iname, progress_filter_context_t *pfx );
+char *get_matching_datafile (const char *sigfilename);
+iobuf_t open_sigfile (const char *sigfilename, progress_filter_context_t *pfx);
 void try_make_homedir( const char *fname );
 
 /*-- seskey.c --*/
