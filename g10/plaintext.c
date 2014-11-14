@@ -538,13 +538,20 @@ hash_datafiles( MD_HANDLE md, MD_HANDLE md2, STRLIST files,
     STRLIST sl;
 
     if( !files ) {
-	/* check whether we can open the signed material */
-	fp = open_sigfile( sigfilename, &pfx );
-	if( fp ) {
-	    do_hash( md, md2, fp, textmode );
-	    iobuf_close(fp);
-	    return 0;
-	}
+      /* Check whether we can open the signed material.  We avoid
+         trying to open a file if run in batch mode.  This assumed
+         data file for a sig file feature is just a convenience thing
+         for the command line and the user needs to read possible
+         warning messages. */
+        if (!opt.batch) {
+            fp = open_sigfile( sigfilename, &pfx );
+            if( fp ) {
+                do_hash( md, md2, fp, textmode );
+	        iobuf_close(fp);
+	        return 0;
+            }
+        }
+
         log_error (_("no signed data\n"));
         return G10ERR_OPEN_FILE;
     }

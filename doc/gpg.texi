@@ -198,16 +198,22 @@ files which don't begin with an encrypted message.
 
 @item --verify
 @opindex verify
-Assume that the first argument is a signed file or a detached signature
-and verify it without generating any output. With no arguments, the
-signature packet is read from STDIN. If only a sigfile is given, it may
-be a complete signature or a detached signature, in which case the
-signed stuff is expected in a file without the ".sig" or ".asc"
-extension.  With more than 1 argument, the first should be a detached
-signature and the remaining files are the signed stuff. To read the
-signed stuff from STDIN, use @samp{-} as the second filename.  For
-security reasons a detached signature cannot read the signed material
-from STDIN without denoting it in the above way.
+Assume that the first argument is a signed file and verify it without
+generating any output.  With no arguments, the signature packet is
+read from STDIN.  If only a one argument is given, it is expected to
+be a complete signature.
+
+With more than 1 argument, the first should be a detached signature
+and the remaining files ake up the the signed data. To read the signed
+data from STDIN, use @samp{-} as the second filename.  For security
+reasons a detached signature cannot read the signed material from
+STDIN without denoting it in the above way.
+
+Note: If the option @option{--batch} is not used, @command{gpg}
+may assume that a single argument is a file with a detached signature
+and it will try to find a matching data file by stripping certain
+suffixes.  Using this historical feature to verify a detached
+signature is strongly discouraged; always specify the data file too.
 
 Note: When verifying a cleartext signature, @command{gpg} verifies
 only what makes up the cleartext signed data and not any extra data
@@ -216,6 +222,7 @@ the dash marker line.  The option @code{--output} may be used to write
 out the actual signed data; but there are other pitfalls with this
 format as well.  It is suggested to avoid cleartext signatures in
 favor of detached signatures.
+
 
 @item --multifile
 @opindex multifile
