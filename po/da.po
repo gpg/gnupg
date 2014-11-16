@@ -1,20 +1,21 @@
 # Dansk oversættelse af: / Danish translation of: GnuPG
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2014 Free Software Foundation, Inc.
 # Birger Langkjer, <birger.langkjer@image.dk>, 2000.
 # Kenneth Christiansen, kenneth@ripen.dk, 2000.
-# Joe Hansen, <joedalton2@yahoo.dk>, 2012.
+# Joe Hansen, <joedalton2@yahoo.dk>, 2012, 2014.
 #
 # deadlock -> baglås
 # ownertrust -> ejertroværdighed (pålidelighed, tillid)
+# pinpad -> numerisk tastatur
 # record -> post
 # trust -> troværdig (pålidelig, tillid)
 # trustlist -> troværdig liste (betroet liste)
-# 2012-06-05
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2012-11-01 20:27+0200\n"
+"PO-Revision-Date: 2014-11-16 20:27+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <debian-l10n-danish@lists.debian.org>\n"
 "Language: da\n"
@@ -144,7 +145,7 @@ msgid ""
 "allow this?"
 msgstr ""
 "En ssh-proces anmodte om brugen af nøgle%%0A  %s%%0A  (%s)%%0AØnsker du at "
-"tillade dette"
+"tillade dette?"
 
 msgid "Allow"
 msgstr "Tillad"
@@ -352,21 +353,17 @@ msgstr "|N|udløb mellemlagrede PIN'er efter N sekunder"
 msgid "do not use the PIN cache when signing"
 msgstr "brug ikke PIN-mellemlageret når der underskrives"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "tillad klienter at markere nøgler som »trusted« (troværdige)"
+msgstr "tillad ikke at klienter markerer nøgler som »trusted« (troværdige)"
 
 msgid "allow presetting passphrase"
 msgstr "tillad forhåndsindstilling af adgangsfrase"
 
-#, fuzzy
-#| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
-msgstr "aktiver ssh-agent-emulering"
+msgstr "aktiver ssh-understøttelse"
 
 msgid "enable putty support"
-msgstr ""
+msgstr "aktiver putty-understøttelse"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FIL|skriv også miljøindstillinger til FIL"
@@ -2151,6 +2148,9 @@ msgstr "importer underskrifter som er markeret som local-only"
 msgid "repair damage from the pks keyserver during import"
 msgstr "reparer skade fra pks-nøgleserveren under import"
 
+msgid "do not clear the ownertrust values during import"
+msgstr "ryd ikke ejerskabsværdierne under import"
+
 msgid "do not update the trustdb after import"
 msgstr "opdater ikke trustdb efter import"
 
@@ -2270,13 +2270,12 @@ msgstr "du kan opdatere dine præferencer med: gpg --edit-key %s updpref save\n"
 msgid "key %s: no user ID\n"
 msgstr "nøgle %s: ingen bruger-id\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "udelod »%s«: %s\n"
+msgstr "nøgle %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "afvist af importfilter"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2373,10 +2372,9 @@ msgstr "nøgle %s: »%s« %d bruger-id'er renset\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "nøgle %s: »%s« ikke ændret\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
+msgstr "hemmelig nøgle %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "import af hemmelige nøgler er ikke tilladt\n"
@@ -4136,6 +4134,11 @@ msgid "unknown"
 msgstr "ukendt"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+"ADVARSEL: Ikke en frakoblet underskrift; filen »%s« blev IKKE verificeret!\n"
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Kan ikke kontrollere underskrift: %s\n"
 
@@ -4185,6 +4188,10 @@ msgstr "ADVARSEL: bruger eksperimentel sammendragsalgoritme %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "ADVARSEL: sammendragsalgoritme %s er forældet\n"
 
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Bemærk: underskrifter der bruger %s-algoritmen videresendes\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "udvidelsesmodulet for IDEA-chifret er ikke til stede\n"
 
@@ -4215,6 +4222,16 @@ msgstr "%s:%u: forældet indstilling »%s« - den har ingen effekt\n"
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
+
+#, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: »%s%s« er forældet i denne fil - den har kun effekt i %s\n"
+
+#, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgstr ""
+"ADVARSEL: »%s%s« er en forældet indstilling - den har ingen effekt på %s\n"
 
 msgid "Uncompressed"
 msgstr "Ukomprimeret"
@@ -4253,7 +4270,7 @@ msgid "writing to stdout\n"
 msgstr "skriver til stdout\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "antager underskrevne data i »%s«\n"
 
 #, c-format
@@ -4815,11 +4832,6 @@ msgstr "BEMÆRK: underskriftnøgle %s udløb %s\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "BEMÆRK: underskriftnøgle %s er blevet tilbagekaldt\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s underskrift, sammendragsalgoritme %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -5580,7 +5592,7 @@ msgid "deny the use of admin card commands"
 msgstr "nægt brugen af kommandoer for administratorkort"
 
 msgid "use variable length input for pinpad"
-msgstr ""
+msgstr "brug variabellængdeinddata for numerisk tastatur"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Brug: scdaemon [tilvalg] (-h for hjælp)"
