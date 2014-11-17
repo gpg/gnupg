@@ -1,6 +1,8 @@
 # Greek Translation of GnuPG.
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # Dokianakis Theofanis <madf@hellug.gr>, 2002.
+#                      !-- psbl.surriel.com rejected (2011-01-11)
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""
@@ -9,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2003-06-27 12:00+0200\n"
 "Last-Translator: Dokianakis Theofanis <madf@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-7\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,6 +19,20 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
+
+#. TRANSLATORS: These are labels for buttons etc used in
+#. Pinentries.  An underscore indicates that the next letter
+#. should be used as an accelerator.  Double the underscore for
+#. a literal one.  The actual to be translated text starts after
+#. the second vertical bar.
+msgid "|pinentry-label|_OK"
+msgstr ""
+
+msgid "|pinentry-label|_Cancel"
+msgstr ""
+
+msgid "|pinentry-label|PIN:"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -42,8 +59,17 @@ msgid ""
 "this session"
 msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
 
+msgid "does not match - try again"
+msgstr ""
+
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
+msgstr ""
+
+msgid "Repeat:"
 msgstr ""
 
 #, fuzzy
@@ -77,11 +103,13 @@ msgstr "κακή φράση κλειδί"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
 msgid "can't create '%s': %s\n"
 msgstr "αδυναμία δημιουργίας του `%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
 
@@ -94,7 +122,7 @@ msgid "detected card with S/N: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error getting default authentication keyID of card: %s\n"
+msgid "no authentication key for ssh on card: %s\n"
 msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
 #, fuzzy, c-format
@@ -109,22 +137,31 @@ msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
 msgid "error writing key: %s\n"
 msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "αλλαγή της φράσης κλειδί"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
-
-msgid "does not match - try again"
-msgstr ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
 
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -148,7 +185,7 @@ msgid "Reset Code"
 msgstr ""
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -197,32 +234,6 @@ msgstr "Χρήση οπωσδήποτε αυτού του κλειδιού; "
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
 
@@ -236,7 +247,28 @@ msgid "Yes, protection is not needed"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "Το όνομα πρέπει να έχει τουλάχιστον 5 χαρακτήρες\n"
+msgstr[1] "Το όνομα πρέπει να έχει τουλάχιστον 5 χαρακτήρες\n"
+
+#, c-format
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
 "Χρειάζεστε μια Φράση κλειδί για να προστατεύσετε το μυστικό κλειδί.\n"
 "\n"
@@ -254,10 +286,10 @@ msgstr ""
 "Επιλογές:\n"
 " "
 
-msgid "run in server mode (foreground)"
+msgid "run in daemon mode (background)"
 msgstr ""
 
-msgid "run in daemon mode (background)"
+msgid "run in server mode (foreground)"
 msgstr ""
 
 msgid "verbose"
@@ -286,11 +318,6 @@ msgstr ""
 msgid "use a log file for the server"
 msgstr "αναζήτηση κλειδιών σε ένα διακομιστή κλειδιών"
 
-#, fuzzy
-msgid "use a standard location for the socket"
-msgstr ""
-"Σίγουρα θέλετε να ανανεωθούν οι προεπιλογές για το επιλεγμένο user ID; "
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
 
@@ -313,18 +340,22 @@ msgstr ""
 msgid "do not use the PIN cache when signing"
 msgstr ""
 
-msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
 
 #, fuzzy
 msgid "allow presetting passphrase"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "δεν υποστηρίζεται"
 
-msgid "|FILE|write environment settings also to FILE"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "δεν υποστηρίζεται"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -334,12 +365,12 @@ msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "Αναφέρετε τα προβλήματα στο <gnupg-bugs@gnu.org>\n"
 
 #, fuzzy
-msgid "Usage: gpg-agent [options] (-h for help)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
 
 #, c-format
@@ -350,25 +381,25 @@ msgstr ""
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#, c-format
-msgid "NOTE: no default option file '%s'\n"
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "ΣΗΜΕΙΩΣΗ: μη προκαθορισμένο αρχείο επιλογών `%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
 msgid "option file '%s': %s\n"
 msgstr "αρχείο επιλογών `%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "ανάγνωση επιλογών από `%s'\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is a deprecated option\n"
+msgid "Note: '%s' is not considered an option\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
 
 msgid "name of socket too long\n"
 msgstr ""
@@ -400,6 +431,11 @@ msgstr "η ενημέρωση απέτυχε: %s\n"
 #, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
@@ -434,7 +470,7 @@ msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "pth_select failed: %s - waiting 1s\n"
+msgid "npth_pselect failed: %s - waiting 1s\n"
 msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
 
 #, fuzzy, c-format
@@ -444,13 +480,6 @@ msgstr "%s: παραλείφθηκε: %s\n"
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
-
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "κακοδιατυπομένη μεταβλητή περιβάλλοντος GPG_AGENT_INFO\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -525,9 +554,9 @@ msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 msgid "file '%s', line %d: %s\n"
 msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "statement \"%s\" ignored in '%s', line %d\n"
-msgstr ""
+msgstr "σφάλμα ανάγνωσης: %s\n"
 
 #, fuzzy, c-format
 msgid "system trustlist '%s' not available\n"
@@ -537,9 +566,9 @@ msgstr "τμήματα του μυστικού κλειδιού δεν είναι διαθέσιμα\n"
 msgid "bad fingerprint in '%s', line %d\n"
 msgstr "σφάλμα ανάγνωσης: %s\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "invalid keyflag in '%s', line %d\n"
-msgstr ""
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
 #, fuzzy, c-format
 msgid "error reading '%s', line %d: %s\n"
@@ -609,13 +638,51 @@ msgstr "αλλαγή της φράσης κλειδί"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy
+msgid "Delete key"
+msgstr "ενεργοποιεί ένα κλειδί"
+
+msgid ""
+"Warning: This key is also listed for use with SSH!\n"
+"Deleting the key might remove your ability to access remote machines."
+msgstr ""
+
+msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgstr ""
+
+#, c-format
+msgid "%s key uses an unsafe (%u bit) hash\n"
+msgstr ""
+
+#, c-format
+msgid "a %zu bit hash is not valid for a %u bit %s key\n"
+msgstr ""
+
+msgid "secret key parts are not available\n"
+msgstr "τμήματα του μυστικού κλειδιού δεν είναι διαθέσιμα\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "public key algorithm %d (%s) is not supported\n"
+msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection algorithm %d (%s) is not supported\n"
+msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection hash algorithm %d (%s) is not supported\n"
+msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
+
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 #, fuzzy, c-format
-msgid "can't fdopen pipe for reading: %s\n"
-msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
+msgid "error creating a stream for a pipe: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
@@ -626,33 +693,26 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
+msgid "error running '%s': probably not installed\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error running '%s': exit status %d\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error running '%s': terminated\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error creating socket: %s\n"
-msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
-
-#, fuzzy
-msgid "host not found"
-msgstr "[User id δεν βρέθηκε]"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
 msgid "gpg-agent is not available in this session\n"
 msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "αδυναμία σύνδεσης στο `%s': %s\n"
 
@@ -727,10 +787,26 @@ msgstr ""
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-msgid "no running gpg-agent - starting one\n"
+#, c-format
+msgid "no running gpg-agent - starting '%s'\n"
 msgstr ""
 
-msgid "can't connect to the agent - trying fall back\n"
+#, c-format
+msgid "waiting for the agent to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to agent established\n"
+msgstr ""
+
+#, c-format
+msgid "no running Dirmngr - starting '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "waiting for the dirmngr to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -754,6 +830,22 @@ msgstr "κακό πιστοποιητικό"
 
 msgid "|audit-log-result|Error"
 msgstr ""
+
+#, fuzzy
+msgid "|audit-log-result|Not used"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy
+msgid "|audit-log-result|Okay"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy
+msgid "|audit-log-result|Skipped"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy
+msgid "|audit-log-result|Some"
+msgstr "κακό πιστοποιητικό"
 
 #, fuzzy
 msgid "Certificate chain available"
@@ -798,8 +890,24 @@ msgstr ""
 msgid "Data signing succeeded"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "data hash algorithm: %s"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
+#, fuzzy, c-format
+msgid "Signer %d"
+msgstr "Υπογραφή έληξε στις %s.\n"
+
+#, fuzzy, c-format
+msgid "attr hash algorithm: %s"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
 msgid "Data decryption succeeded"
 msgstr ""
+
+#, fuzzy
+msgid "Encryption algorithm supported"
+msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
 
 #, fuzzy
 msgid "Data verification succeeded"
@@ -810,11 +918,11 @@ msgid "Signature available"
 msgstr "Υπογραφή έληξε στις %s.\n"
 
 #, fuzzy
-msgid "Parsing signature succeeded"
+msgid "Parsing data succeeded"
 msgstr "Καλή υπογραφή από \""
 
 #, fuzzy, c-format
-msgid "Bad hash algorithm: %s"
+msgid "bad data hash algorithm: %s"
 msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
 #, fuzzy, c-format
@@ -869,6 +977,118 @@ msgstr "σφάλμα στη γραμμή trailer\n"
 #, fuzzy
 msgid "[none]"
 msgstr "άγνωστο"
+
+#, fuzzy
+msgid "argument not expected"
+msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#, fuzzy
+msgid "read error"
+msgstr "σφάλμα ανάγνωσης αρχείου"
+
+#, fuzzy
+msgid "keyword too long"
+msgstr "η γραμμή είναι πολύ μεγάλη\n"
+
+#, fuzzy
+msgid "missing argument"
+msgstr "μη έγκυρο όρισμα"
+
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "μη έγκυρη θωράκιση"
+
+#, fuzzy
+msgid "invalid command"
+msgstr "συγκρουόμενες εντολές\n"
+
+#, fuzzy
+msgid "invalid alias definition"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, fuzzy
+msgid "out of core"
+msgstr "μη επεξεργασμένο"
+
+#, fuzzy
+msgid "invalid option"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
+
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#, fuzzy
+msgid "out of core\n"
+msgstr "μη επεξεργασμένο"
+
+#, fuzzy, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, c-format
+msgid "you found a bug ... (%s:%d)\n"
+msgstr "βρήκατε ένα bug ... (%s:%d)\n"
+
+#, fuzzy, c-format
+msgid "conversion from '%s' to '%s' not available\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "iconv_open failed: %s\n"
+msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
+
+#, fuzzy, c-format
+msgid "conversion from '%s' to '%s' failed: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to create temporary file '%s': %s\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error writing to '%s': %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, c-format
+msgid "removing stale lockfile (created by %d)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "waiting for lock (held by %d%s) %s...\n"
+msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+msgid "(deadlock?) "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "lock '%s' not made: %s\n"
+msgstr "το δημόσιο κλειδί %08lX δεν βρέθηκε: %s\n"
+
+#, fuzzy, c-format
+msgid "waiting for lock %s...\n"
+msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -957,6 +1177,13 @@ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: βρέθηκαν μη έγκυρα δεδομένα σημείωσης\n"
 msgid "not human readable"
 msgstr "μη αναγνώσιμο"
 
+#, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr ""
+
+msgid "Enter passphrase: "
+msgstr "Πληκτρολογήστε τη φράση κλειδί: "
+
 #, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "το μυστικό κλειδί δεν είναι διαθέσιμο"
@@ -1033,7 +1260,8 @@ msgstr ""
 msgid "error allocating enough memory: %s\n"
 msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
 
@@ -1098,7 +1326,7 @@ msgid "Replace existing key? (y/N) "
 msgstr ""
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1135,7 +1363,7 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
 #, fuzzy
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
 
 msgid "Replace existing keys? (y/N) "
@@ -1144,7 +1372,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
-"   PIN = `%s'     Admin PIN = `%s'\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
 "You should change them using the command --change-pin\n"
 msgstr ""
 
@@ -1170,21 +1398,9 @@ msgstr "Μη έγκυρη επιλογή.\n"
 msgid "Please select where to store the key:\n"
 msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
 
-#, fuzzy
-msgid "unknown key protection algorithm\n"
-msgstr "άγνωστος αλγόριθμος προστασίας\n"
-
-#, fuzzy
-msgid "secret parts of key are not available\n"
-msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
-
-#, fuzzy
-msgid "secret key already stored on a card\n"
-msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
-
 #, fuzzy, c-format
-msgid "error writing key to card: %s\n"
-msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
 
 msgid "quit this menu"
 msgstr "τερματισμός αυτού του μενού"
@@ -1240,8 +1456,8 @@ msgstr ""
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-msgid "Command> "
-msgstr "Εντολή> "
+msgid "gpg/card> "
+msgstr ""
 
 #, fuzzy
 msgid "Admin-only command\n"
@@ -1261,7 +1477,8 @@ msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output δεν λειτουργεί για αυτή την εντολή\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s'\n"
 msgid "can't open '%s'\n"
 msgstr "αδυναμία πρόσβασης του `%s'\n"
 
@@ -1287,6 +1504,18 @@ msgstr "Διαγραφή αυτού του κλειδιού από τη κλειδοθήκη; "
 #, fuzzy
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Αυτό είναι ένα μυστικό κλειδί! - Σίγουρα να διαγραφεί; "
+
+#, fuzzy, c-format
+msgid "deleting secret %s failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+msgid "key"
+msgstr "key"
+
+#, fuzzy
+#| msgid "Pubkey: "
+msgid "subkey"
+msgstr "ΔημοσΚλειδί:"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1314,28 +1543,20 @@ msgstr "αδυναμία χρήσης ενός συμμετρικού πακέτου ESK λόγω της κατάστασης S2K\n"
 msgid "using cipher %s\n"
 msgstr "χρήση του κρυπταλγόριθμου: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
 msgid "'%s' already compressed\n"
 msgstr "`%s' ήδη συμπιέστηκε\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: `%s' είναι ένα άδειο αρχείο\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"κρυπτογράφηση με κλειδία RSA από 2048 bit ή πιο λίγο μόνο σε κατάσταση --"
-"pgp2\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "ανάγνωση από `%s'\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr ""
-"αδυναμία χρήσης του κρυπταλγόριθμου IDEA για όλα τα κλειδία με τα "
-"οποίακρυπτογραφείτε.\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -1419,11 +1640,13 @@ msgstr "αδυναμία εκτέλεσης του εξωτερικού προγράμματος\n"
 msgid "unable to read external program response: %s\n"
 msgstr "αδυναμία ανάγνωσης της απάντησης του εξωτερικού προγράμματος: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
 msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove temp directory `%s': %s\n"
 msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής προσωρινού φακέλου `%s': %s\n"
 
@@ -1442,10 +1665,6 @@ msgid "export revocation keys marked as \"sensitive\""
 msgstr "δε βρέθηκαν κλειδιά ανάκλησης για το `%s'\n"
 
 #, fuzzy
-msgid "remove the passphrase from exported subkeys"
-msgstr "ανάκληση ενός δευτερεύοντος κλειδιού"
-
-#, fuzzy
 msgid "remove unusable parts from key during export"
 msgstr "μη χρησιμοποιήσιμο μυστικό κλειδί"
 
@@ -1460,10 +1679,6 @@ msgid "exporting secret keys not allowed\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
 #, fuzzy, c-format
-msgid "key %s: not protected - skipped\n"
-msgstr "κλειδί %08lX: δεν είναι προστατευμένο - παραλείφθηκε\n"
-
-#, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "κλειδί %08lX:  κλειδί τύπου PGP 2.x - παραλείφθηκε\n"
 
@@ -1472,30 +1687,21 @@ msgid "key %s: key material on-card - skipped\n"
 msgstr ""
 "κλειδί %08lX: η υπογραφή του υποκλειδιού σε λάθος σημείο - παραλείφθηκε\n"
 
-msgid "about to export an unprotected subkey\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "failed to unprotect the subkey: %s\n"
-msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
-
-#, fuzzy, c-format
-msgid "WARNING: secret key %s does not have a simple SK checksum\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το μυστικό κλειδί %08lX δεν έχει απλό SK checksum\n"
+#, fuzzy
+#| msgid "%s: skipped: %s\n"
+msgid " - skipped"
+msgstr "%s: παραλείφθηκε: %s\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν έγινε καμμία εξαγωγή\n"
-
-msgid "too many entries in pk cache - disabled\n"
-msgstr "πάρα πολλές καταχωρήσεις στη pk cache - απενεργοποιήθηκε\n"
 
 #, fuzzy
 msgid "[User ID not found]"
 msgstr "[User id δεν βρέθηκε]"
 
-#, c-format
+#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
-msgstr ""
+msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error retrieving '%s' via %s: %s\n"
@@ -1511,16 +1717,8 @@ msgstr ""
 "Μη έγκυρο κλειδί %08lX έγινε έγκυρο από το --allow-non-selfsigned-uid\n"
 
 #, fuzzy, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr "κανένα μυστικό υποκλειδί για το δημόσιο υποκλειδί %08lX - αγνόηση\n"
-
-#, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "χρήση του δευτερεύοντος κλειδιού %08lX αντί του πρωτεύοντος %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -1564,11 +1762,32 @@ msgstr "απεικόνιση της λίστας μυστικών κλειδιών"
 msgid "generate a new key pair"
 msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
+
+msgid "full featured key pair generation"
+msgstr ""
+
+msgid "generate a revocation certificate"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+
 msgid "remove keys from the public keyring"
 msgstr "αφαίρεση των κλειδιών από τη δημόσια κλειδοθήκη"
 
 msgid "remove keys from the secret keyring"
 msgstr "αφαίρεση των κλειδιών από τη μυστική κλειδοθήκη"
+
+#, fuzzy
+#| msgid "sign a key"
+msgid "quickly sign a key"
+msgstr "υπογραφή ενός κλειδιού"
+
+#, fuzzy
+#| msgid "sign a key locally"
+msgid "quickly sign a key locally"
+msgstr "υπογραφή ενός κλειδιού τοπικά"
 
 msgid "sign a key"
 msgstr "υπογραφή ενός κλειδιού"
@@ -1579,8 +1798,9 @@ msgstr "υπογραφή ενός κλειδιού τοπικά"
 msgid "sign or edit a key"
 msgstr "υπογραφή ή επεξεργασία ενός κλειδιού"
 
-msgid "generate a revocation certificate"
-msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+#, fuzzy
+msgid "change a passphrase"
+msgstr "αλλαγή της φράσης κλειδί"
 
 msgid "export keys"
 msgstr "εξαγωγή κλειδιών"
@@ -1676,13 +1896,20 @@ msgstr ""
 " --list-keys [ονόματα]        απεικόνιση κλειδιών\n"
 " --fingerprint [ονόματα]      απεικόνιση αποτυπωμάτων (fingerprints)\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Syntax: @GPG@ [options] [files]\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Σύνταξη: gpg [επιλογές] [αρχεία]\n"
 "υπογραφή, έλεγχος, κρυπτογράφηση ή αποκρυπτογράφηση\n"
@@ -1707,7 +1934,8 @@ msgstr "Hash: "
 msgid "Compression: "
 msgstr "Συμπίεση: "
 
-msgid "usage: gpg [options] "
+#, fuzzy, c-format
+msgid "usage: %s [options] %s\n"
 msgstr "χρήση: gpg [επιλογές] "
 
 msgid "conflicting commands\n"
@@ -1748,7 +1976,7 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλής ιδιοκτησίαεσώκλειστου φακέλου στο %s \"%s\"\n"
 
@@ -1763,7 +1991,7 @@ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη ασφαλείς άδειες εσώκλειστου φακέλου στο %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1776,6 +2004,10 @@ msgstr "άγνωστο αντικείμενο ρυθμίσεως \"%s\"\n"
 
 msgid "display photo IDs during key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show key usage information during key listings"
+msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
 msgid "show policy URLs during signature listings"
 msgstr ""
@@ -1811,21 +2043,27 @@ msgstr "απεικόνιση της κλειδοθήκης στην οποία αναφέρετε το κλειδί"
 msgid "show expiration dates during signature listings"
 msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
-#, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+#, fuzzy, c-format
+#| msgid "NOTE: old default options file `%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "ΣΗΜΕΙΩΣΗ: αγνοήθηκε το παλιό αρχείο προκαθορισμένων επιλογών `%s'\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#, c-format
-msgid "NOTE: %s is not for normal use!\n"
+#, fuzzy, c-format
+#| msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το %s δεν είναι για κανονική χρήση!\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "το %s δεν είναι έγκυρο σετ χαρακτήρων\n"
+
+#, fuzzy, c-format
+msgid "invalid pinentry mode '%s'\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid character set\n"
@@ -1936,25 +2174,12 @@ msgstr "το %s δεν επιτρέπεται με το %s!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "το %s δεν έχει καμμία έννοια μαζί με το %s!\n"
 
+msgid "WARNING: running with faked system time: "
+msgstr ""
+
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr ""
-"μπορείτε να κάνετε αποκομμένες ή καθαρές υπογραφές μόνο σε --pgp2 κατάσταση\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr ""
-"δεν μπορείτε να υπογράφετε και να κρυπτογραφείτε ταυτόχρονα σε --pgp2 "
-"κατάσταση\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr "μόνο αρχεία επιτρέπονται (και όχι pipes) κατα την κατασταση --pgp2.\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr ""
-"η κρυπτογράφηση ενός μηνύματος σε --pgp2 κατάσταση απαιτεί τον αλγορ. IDEA\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "ο επιλεγμένος αλγόριθμος κρυπτογράφησης δεν είναι έγκυρος\n"
@@ -1987,7 +2212,9 @@ msgstr "μη έγκυρο default-cert-level· πρέπει να είναι 0, 1, 2, ή 3\n"
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "μη έγκυρο min-cert-level· πρέπει να είναι 0, 1, 2, ή 3\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+#, fuzzy
+#| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "ΣΗΜΕΙΩΣΗ: η απλή S2K κατάσταση (0) πρέπει να αποφεύγεται\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -2091,6 +2318,10 @@ msgstr "--lsign-key user-id"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key user-id [εντολές]"
 
+#, fuzzy
+msgid "--passwd <user-id>"
+msgstr "--sign-key user-id"
+
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "keyserver αποστολή απέτυχε: %s\n"
@@ -2119,7 +2350,8 @@ msgstr "αποθωράκιση απέτυχε: %s\n"
 msgid "enarmoring failed: %s\n"
 msgstr "θωράκιση απέτυχε: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
@@ -2163,7 +2395,8 @@ msgstr ""
 msgid "No help available"
 msgstr "Δεν υπάρχει διαθέσιμη βοήθεια"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
 msgid "No help available for '%s'"
 msgstr "Δεν υπάρχει διαθέσιμη βοήθεια για `%s'"
 
@@ -2174,12 +2407,12 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
-msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
 #, fuzzy
-msgid "create a public key when importing a secret key"
-msgstr "το δημοσίο κλειδί δεν ταιριάζει με το μυστικό!\n"
+msgid "do not update the trustdb after import"
+msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
 msgid "only accept updates to existing keys"
 msgstr ""
@@ -2292,6 +2525,13 @@ msgid "key %s: no user ID\n"
 msgstr "κλειδί %08lX: δεν υπάρχει αυτό το user ID\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "παραλείφθηκε `%s': %s\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "κλειδί %08lX: επιδιόρθωση φθαρμένου υποκλειδιού HKP\n"
 
@@ -2318,11 +2558,13 @@ msgstr "κλειδί %08lX:  νέο κλειδί - παραλείφθηκε\n"
 msgid "no writable keyring found: %s\n"
 msgstr "δεν βρεθηκε εγγράψιμη κλειδοθήκη: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
 msgid "writing to '%s'\n"
 msgstr "εγγραφή στο  `%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing keyring `%s': %s\n"
 msgid "error writing keyring '%s': %s\n"
 msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
 
@@ -2387,28 +2629,29 @@ msgid "key %s: \"%s\" not changed\n"
 msgstr "κλειδί %08lX: \"%s\" αμετάβλητο\n"
 
 #, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "κλειδί %08lX: μυστικό κλειδί με άκυρο κρυπταλγ. %d - παραλείφθηκε\n"
+msgid "key %s: secret key imported\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί εισήχθηκε\n"
+
+#, fuzzy, c-format
+#| msgid "skipped: secret key already present\n"
+msgid "key %s: secret key already exists\n"
+msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
+
+#, fuzzy, c-format
+msgid "key %s: error sending to agent: %s\n"
+msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "το μυστικό κλειδί `%s' δε βρέθηκε: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
-#, c-format
-msgid "no default secret keyring: %s\n"
-msgstr "δεν υπάρχει προκαθορισμένη κλειδοθήκη: %s\n"
-
 #, fuzzy, c-format
-msgid "key %s: secret key imported\n"
-msgstr "κλειδί %08lX: μυστικό κλειδί εισήχθηκε\n"
-
-#, fuzzy, c-format
-msgid "key %s: already in secret keyring\n"
-msgstr "κλειδί %08lX: ήδη στη μυστική κλειδοθήκη\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key not found: %s\n"
-msgstr "κλειδί %08lX: δε βρέθηκε το μυστικό κλειδί: %s\n"
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί με άκυρο κρυπταλγ. %d - παραλείφθηκε\n"
 
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2431,20 +2674,24 @@ msgstr "κλειδί %08lX: δεν υπάρχει user ID για την υπογραφή\n"
 #, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm on user ID \"%s\"\n"
 msgstr ""
-"κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού στο user id \"%"
-"s\"\n"
+"κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού στο user id "
+"\"%s\"\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "κλειδί %08lX: μη έγκυρη ιδιο-υπογραφή στο user id \"%s\"\n"
 
 #, fuzzy, c-format
-msgid "key %s: no subkey for key binding\n"
-msgstr "κλειδί %08lX: δεν υπάρχει υποκλειδί για τη δέσμευση κλειδιού\n"
-
-#, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "κλειδί %08lX: μη υποστηριζόμενος αλγόριθμος δημοσίου κλειδιού\n"
+
+#, fuzzy, c-format
+msgid "key %s: invalid direct key signature\n"
+msgstr "κλειδί %08lX: άμεση υπογραφή κλειδιού προστέθηκε\n"
+
+#, fuzzy, c-format
+msgid "key %s: no subkey for key binding\n"
+msgstr "κλειδί %08lX: δεν υπάρχει υποκλειδί για τη δέσμευση κλειδιού\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid subkey binding\n"
@@ -2503,8 +2750,8 @@ msgstr "κλειδί %08lX: εντοπίστηκε διπλό user ID - ενώθηκαν\n"
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: fetching revocation key %s\n"
 msgstr ""
-"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: κλειδί %08lX μπορεί να ανακληθεί: λήψη κλειδιού ανάκλησης %"
-"08lX\n"
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: κλειδί %08lX μπορεί να ανακληθεί: λήψη κλειδιού ανάκλησης "
+"%08lX\n"
 
 #, fuzzy, c-format
 msgid "WARNING: key %s may be revoked: revocation key %s not present.\n"
@@ -2520,23 +2767,21 @@ msgstr "κλειδί %08lX: \"%s\" πιστοποιητικό ανάκλησης προστέθηκε\n"
 msgid "key %s: direct key signature added\n"
 msgstr "κλειδί %08lX: άμεση υπογραφή κλειδιού προστέθηκε\n"
 
-#, fuzzy
-msgid "NOTE: a key's S/N does not match the card's one\n"
-msgstr "το δημοσίο κλειδί δεν ταιριάζει με το μυστικό!\n"
+#, fuzzy, c-format
+msgid "error creating keybox '%s': %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
 
-#, fuzzy
-msgid "NOTE: primary key is online and stored on card\n"
-msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
-
-#, fuzzy
-msgid "NOTE: secondary key is online and stored on card\n"
-msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
 msgid "error creating keyring '%s': %s\n"
 msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+msgid "keybox '%s' created\n"
+msgstr "κλειδοθήκη `%s' δημιουργήθηκε\n"
+
+#, fuzzy, c-format
+#| msgid "keyring `%s' created\n"
 msgid "keyring '%s' created\n"
 msgstr "κλειδοθήκη `%s' δημιουργήθηκε\n"
 
@@ -2697,16 +2942,6 @@ msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Θέλετε η υπογαφήσας να λήξει ταυτόχρονα;  (Y/n) "
 
 msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr ""
-"Μπορείτε να χρησιμόποιήσετε μια OpenPGP υπογραφή σε ένα PGP 2.x μόνο σε "
-"κατάσταση --pgp2.\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Αυτό θα κάνει το κλειδί άχρηστο με το PGP 2.x.\n"
-
-msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
@@ -2804,41 +3039,10 @@ msgstr "η υπογραφή απέτυχε: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-msgid "This key is not protected.\n"
-msgstr "Αυτό το κλειδί δεν προστατεύεται.\n"
-
-msgid "Secret parts of primary key are not available.\n"
-msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
-
-#, fuzzy
-msgid "Secret parts of primary key are stored on-card.\n"
-msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
-
-msgid "Key is protected.\n"
-msgstr "Το κλειδί προστατεύεται.\n"
-
-#, c-format
-msgid "Can't edit this key: %s\n"
-msgstr "Αδύνατη η επεξεργασία αυτού του κλειδιού:%s\n"
-
-msgid ""
-"Enter the new passphrase for this secret key.\n"
-"\n"
-msgstr ""
-"Πληκτρολογήστε την νέα φράση κλειδί για αυτό το μυστικό κλειδί.\n"
-"\n"
-
-msgid "passphrase not correctly repeated; try again"
-msgstr "η φράση κλειδί δεν επαναλήφθηκε σωστά. Δοκιμάστε ξανά"
-
-msgid ""
-"You don't want a passphrase - this is probably a *bad* idea!\n"
-"\n"
-msgstr "Δεν θέλετε φράση κλειδί - αυτό είναι μάλλον *κακή* ιδέα!\n"
-
-#, fuzzy
-msgid "Do you really want to do this? (y/N) "
-msgstr "Σίγουρα θέλετε να κάνετε αυτό; "
+#, fuzzy, c-format
+#| msgid "error creating passphrase: %s\n"
+msgid "key %s: error changing passphrase: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 msgid "moving a key signature to the correct place\n"
 msgstr "μετακίνηση υπογραφής κλειδιού στη σωστή θέση\n"
@@ -2981,10 +3185,6 @@ msgstr ""
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "error reading secret keyblock \"%s\": %s\n"
-msgstr "σφάλμα κατά την ανάγνωση μυστικού μπλοκ κλειδιού `%s': %s\n"
-
 msgid "Secret key is available.\n"
 msgstr "Το μυστικό κλειδί είναι διαθέσιμο.\n"
 
@@ -2995,9 +3195,9 @@ msgid "Please use the command \"toggle\" first.\n"
 msgstr "Παρακαλώ χρησιμοποιείστε την εντολή \"toggle\" πρώτα.\n"
 
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures "
+"* The 'sign' command may be prefixed with an 'l' for local signatures "
 "(lsign),\n"
-"  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
+"  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
@@ -3113,12 +3313,25 @@ msgstr "Τερματισμός χωρίς αποθήκευση; "
 msgid "update failed: %s\n"
 msgstr "η ενημέρωση απέτυχε: %s\n"
 
-#, c-format
-msgid "update secret failed: %s\n"
-msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "Το κλειδί δεν άλλαξε οπότε δεν χρειάζεται ενημέρωση.\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a fingerprint\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not the primary fingerprint\n"
+msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
+
+#, fuzzy
+#| msgid "No such user ID.\n"
+msgid "No matching user IDs."
+msgstr "Δεν υπάρχει αυτό το user ID.\n"
+
+#, fuzzy
+msgid "Nothing to sign.\n"
+msgstr "Τίποτα για να υπογραφεί με το κλειδί  %08lX\n"
 
 msgid "Digest: "
 msgstr "Περίληψη: "
@@ -3140,7 +3353,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Δεν υπάρχουν προεπιλογές σε ένα user ID τύπου PGP 2.x.\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Αυτό το κλειδί μπορεί να ανακληθεί από %s κλειδί "
 
 #, fuzzy, c-format
@@ -3171,6 +3384,9 @@ msgstr " [λήγει: %s]"
 msgid "usage: %s"
 msgstr " εμπιστοσύνη: %c/%c"
 
+msgid "card-no: "
+msgstr ""
+
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " εμπιστοσύνη: %c/%c"
@@ -3181,9 +3397,6 @@ msgstr ""
 
 msgid "This key has been disabled"
 msgstr "Αυτό το κλειδί έχει απενεργοποιηθεί"
-
-msgid "card-no: "
-msgstr ""
 
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
@@ -3206,6 +3419,14 @@ msgid ""
 msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν έχει σημειωθεί ID χρήστη σαν πρωτεύων.  Αυτή η εντολή\n"
 "              μπορεί να κάνει ένα άλλο ID χρήστη να γίνει το πρωτεύων.\n"
+
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Δεν μπορείτε να αλλάξετε την ημερομηνία λήξης σε ένα v3 κλειδί\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3309,9 +3530,6 @@ msgstr ""
 "Είστε σίγουροι ότι θέλετε να ορίσετε ένα κλειδί σαν διορισμένο ανακλητή; (y/"
 "N): "
 
-msgid "Please remove selections from the secret keys.\n"
-msgstr "Παρακαλώ αφαιρέστε τις επιλογές από τα μυστικά κλειδιά.\n"
-
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Παρακαλώ επιλέξτε το πολύ ένα δευτερεύον κλειδί.\n"
@@ -3325,9 +3543,6 @@ msgstr "Αλλαγή ημερομηνίας λήξης για ένα πρωτεύον κλειδί.\n"
 
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Δεν μπορείτε να αλλάξετε την ημερομηνία λήξης σε ένα v3 κλειδί\n"
-
-msgid "No corresponding signature in secret ring\n"
-msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
 
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -3570,6 +3785,39 @@ msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
 
+#, fuzzy, c-format
+msgid "   (%d) ECC and ECC\n"
+msgstr "   (%d) DSA και ElGamal (προκαθορισμένο)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (sign only)\n"
+msgid "  (%d) ECC (sign only)\n"
+msgstr "   (%d) DSA (για υπογραφή μόνο)\n"
+
+#, fuzzy, c-format
+msgid "  (%d) ECC (set your own capabilities)\n"
+msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)\n"
+msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+
+#, fuzzy, c-format
+msgid "  (%d) Existing key\n"
+msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
+
+#, fuzzy
+msgid "Enter the keygrip: "
+msgstr "Σημείωση υπογραφής: "
+
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
+
+#, fuzzy
+msgid "No key with this keygrip\n"
+msgstr "Δεν υπάρχει user ID με δείκτη %d\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -3585,6 +3833,16 @@ msgstr "Τι μέγεθος κλειδιού θα θέλατε; (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Το μέγεθος κλειδιού που ζητήθηκε είναι %u bits\n"
+
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "στρογγυλοποιήθηκε έως τα %u bits\n"
+
+#, fuzzy
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select which elliptic curve you want:\n"
+msgstr "Παρακαλώ επιλέξτε τον τύπο του κλειδιού που θέλετε:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -3703,7 +3961,8 @@ msgstr "Σχόλιο: "
 msgid "Invalid character in comment\n"
 msgstr "Μη έγκυρος χαρακτήρας στο σχόλιο\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "You are using the `%s' character set.\n"
 msgid "You are using the '%s' character set.\n"
 msgstr "Χρησιμοποιείτε το `%s' σετ χαρακτήρων.\n"
 
@@ -3743,6 +4002,16 @@ msgstr "Αλλαγή (N)όνομα, (C)σχόλιο, (E)mail ή (Q)τερματισμός; "
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Αλλαγή (N)όνομα, (C)σχόλιο, (E)mail ή (O)εντάξει/(Q)τερματισμός; "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "Αλλαγή (N)όνομα, (C)σχόλιο, (E)mail ή (Q)τερματισμός; "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr "Αλλαγή (N)όνομα, (C)σχόλιο, (E)mail ή (O)εντάξει/(Q)τερματισμός; "
+
 msgid "Please correct the error first\n"
 msgstr "Παρακαλώ, διορθώστε πρώτα το σφάλμα\n"
 
@@ -3758,6 +4027,9 @@ msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+msgid "passphrase not correctly repeated; try again"
+msgstr "η φράση κλειδί δεν επαναλήφθηκε σωστά. Δοκιμάστε ξανά"
 
 #, c-format
 msgid "%s.\n"
@@ -3785,36 +4057,52 @@ msgstr ""
 "τους δίσκους) κατα τη διάρκεια υπολογισμού πρώτων αριθμών. Αυτό δίνει\n"
 "στη γεννήτρια τυχαίων αριθμών μια ευκαιρία να μαζέψει αρκετή εντροπία.\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "A key for \"%s\" already exists\n"
+msgstr "`%s' ήδη συμπιέστηκε\n"
+
+#, fuzzy
+msgid "Create anyway? (y/N) "
+msgstr "Χρήση οπωσδήποτε αυτού του κλειδιού; "
+
+#, fuzzy
+msgid "creating anyway\n"
+msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
+
 msgid "Key generation canceled.\n"
 msgstr "Η δημιουργία κλειδιού αναβλήθηκε.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
 msgstr "εγγραφή του δημοσίου κλειδιού στο `%s'\n"
-
-#, fuzzy, c-format
-msgid "writing secret key stub to '%s'\n"
-msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
-
-#, c-format
-msgid "writing secret key to '%s'\n"
-msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "δε βρέθηκε εγγράψιμη δημόσια κλειδοθήκη: %s\n"
 
-#, c-format
-msgid "no writable secret keyring found: %s\n"
-msgstr "δε βρέθηκε εγγράψιμη μυστική κλειδοθήκη: %s\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing public keyring `%s': %s\n"
 msgid "error writing public keyring '%s': %s\n"
 msgstr "αδυναμία εγγραφής δημόσιας κλειδοθήκης `%s': %s\n"
-
-#, c-format
-msgid "error writing secret keyring '%s': %s\n"
-msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
 msgid "public and secret key created and signed.\n"
 msgstr "το δημόσιο και το μυστικό κλειδί δημιουργήθηκαν και υπογράφηκαν.\n"
@@ -3830,10 +4118,6 @@ msgstr ""
 "ένα δευτερεύον κλειδί για αυτό το λόγο.\n"
 
 #, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Η δημιουργία κλειδιού απέτυχε: %s\n"
-
-#, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
@@ -3847,10 +4131,19 @@ msgstr ""
 "το κλειδί δημιουργήθηκε %lu δευτερόλεπτα στο μέλλον (χρονοδίνη ή\n"
 "απλώς πρόβλημα στο ρολόι)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#, fuzzy
+#| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 "ΣΗΜΕΙΩΣΗ: η δημιουργία υποκλειδιών για κλειδιά v3 δεν είναι σύμφωνο\n"
 "με το OpenPGP\n"
+
+msgid "Secret parts of primary key are not available.\n"
+msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
+
+#, fuzzy
+msgid "Secret parts of primary key are stored on-card.\n"
+msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
 
 #, fuzzy
 msgid "Really create? (y/N) "
@@ -3865,7 +4158,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "αδυναμία δημιουργίας του `%s': %s\n"
 
 #, fuzzy, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το μυστικό κλειδί %08lX έληξε στις %s\n"
 
 msgid "never     "
@@ -3885,6 +4178,10 @@ msgstr "Σημείωση κρίσιμης υπογραφής: "
 
 msgid "Signature notation: "
 msgstr "Σημείωση υπογραφής: "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "Κλειδοθήκη"
@@ -3913,20 +4210,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "θωράκιση απέτυχε: %s\n"
-
-msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: 2 αρχεία με εμπιστευτικές πληροφορίες υπάρχουν.\n"
-
-#, c-format
-msgid "%s is the unchanged one\n"
-msgstr "%s είναι το αμετάβλητο\n"
-
-#, c-format
-msgid "%s is the new one\n"
-msgstr "%s είναι το νέο\n"
-
-msgid "Please fix this possible security flaw\n"
-msgstr "Παρακαλώ διορθώστε αυτή την πιθανή \"τρύπα\" ασφαλείας\n"
 
 #, fuzzy, c-format
 msgid "caching keyring '%s'\n"
@@ -3982,6 +4265,25 @@ msgstr ""
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "μη έγκυρες επιλογές εξαγωγής\n"
 
+#, c-format
+msgid "\"%s\" not a key ID: skipping\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "refreshing 1 key from %s\n"
+msgstr "αίτηση κλειδιού %08lX από το %s\n"
+
+#, fuzzy, c-format
+msgid "refreshing %d keys from %s\n"
+msgstr "αίτηση κλειδιού %08lX από το %s\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
@@ -3999,12 +4301,8 @@ msgid "requesting key %s from %s\n"
 msgstr "αίτηση κλειδιού %08lX από το %s\n"
 
 #, fuzzy, c-format
-msgid "searching for names from %s server %s\n"
-msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
-
-#, fuzzy, c-format
-msgid "searching for names from %s\n"
-msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
+msgid "skipped \"%s\": %s\n"
+msgstr "παραλείφθηκε `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4017,76 +4315,11 @@ msgstr ""
 "υπογράφθηκε με το κλειδί σας %08lX στις %s\n"
 
 #, fuzzy, c-format
-msgid "searching for \"%s\" from %s server %s\n"
-msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
-
-#, fuzzy, c-format
-msgid "searching for \"%s\" from %s\n"
-msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
-
-#, fuzzy
-msgid "no keyserver action!\n"
-msgstr "μη έγκυρες επιλογές εξαγωγής\n"
-
-#, c-format
-msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
-msgstr ""
-
-msgid "keyserver did not send VERSION\n"
-msgstr ""
-
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
-msgid "external keyserver calls are not supported in this build\n"
-msgstr ""
-
-#, c-format
-msgid "no handler for keyserver scheme '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "action '%s' not supported with keyserver scheme '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s does not support handler version %d\n"
-msgstr ""
-
-#, fuzzy
-msgid "keyserver timed out\n"
-msgstr "σφάλμα διακομιστή κλειδιών"
-
-#, fuzzy
-msgid "keyserver internal error\n"
-msgstr "σφάλμα διακομιστή κλειδιών"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "keyserver λήψη απέτυχε: %s\n"
-
-#, c-format
-msgid "\"%s\" not a key ID: skipping\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "refreshing 1 key from %s\n"
-msgstr "αίτηση κλειδιού %08lX από το %s\n"
-
-#, fuzzy, c-format
-msgid "refreshing %d keys from %s\n"
+msgid "requesting key from '%s'\n"
 msgstr "αίτηση κλειδιού %08lX από το %s\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unable to parse URI %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
 
 #, c-format
@@ -4158,7 +4391,9 @@ msgstr ""
 msgid "decryption failed: %s\n"
 msgstr "αποκρυπτογράφηση απέτυχε: %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+#, fuzzy
+#| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "ΣΗΜΕΙΩΣΗ: ο αποστολέας ζήτησε \"για-τα-μάτια-σας-μόνο\"\n"
 
 #, c-format
@@ -4173,6 +4408,18 @@ msgstr "ανεξάρτητη ανάκληση - χρησιμοποιείστε \"gpg --import\" για εφαρμογή\n"
 
 #, fuzzy
 msgid "no signature found\n"
+msgstr "Καλή υπογραφή από \""
+
+#, fuzzy, c-format
+msgid "BAD signature from \"%s\""
+msgstr "ΚΑΚΗ υπογραφή από \""
+
+#, fuzzy, c-format
+msgid "Expired signature from \"%s\""
+msgstr "Ληγμένη υπογραφή από \""
+
+#, fuzzy, c-format
+msgid "Good signature from \"%s\""
 msgstr "Καλή υπογραφή από \""
 
 msgid "signature verification suppressed\n"
@@ -4197,18 +4444,6 @@ msgstr "Υπογραφή έγινε στο %.*s με χρήση του κλειδιού%s ID %08lX\n"
 msgid "Key available at: "
 msgstr "Κλειδί διαθέσιμο στο: "
 
-#, fuzzy, c-format
-msgid "BAD signature from \"%s\""
-msgstr "ΚΑΚΗ υπογραφή από \""
-
-#, fuzzy, c-format
-msgid "Expired signature from \"%s\""
-msgstr "Ληγμένη υπογραφή από \""
-
-#, fuzzy, c-format
-msgid "Good signature from \"%s\""
-msgstr "Καλή υπογραφή από \""
-
 msgid "[uncertain]"
 msgstr "[αβέβαιο]"
 
@@ -4224,8 +4459,9 @@ msgstr "Υπογραφή έληξε στις %s.\n"
 msgid "Signature expires %s\n"
 msgstr "Υπογραφή λήγει στις %s.\n"
 
-#, c-format
-msgid "%s signature, digest algorithm %s\n"
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
 
 msgid "binary"
@@ -4236,6 +4472,15 @@ msgstr "κατάσταση-κειμένου"
 
 msgid "unknown"
 msgstr "άγνωστο"
+
+#, fuzzy
+#| msgid "unknown pubkey algorithm"
+msgid ", key algorithm "
+msgstr "άγνωστος αλγόριθμος δημοσίου κλειδιού"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4255,9 +4500,6 @@ msgstr "ανεξάρτητη υπογραφή κλάσης 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "υπογραφή παλιού στυλ (PGP 2.x)\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "μη έγκυρο ριζικό(root) πακέτο ανιχνεύτηκε στο proc_tree()\n"
 
 #, fuzzy, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -4291,12 +4533,10 @@ msgstr ""
 "ο εξαναγκασμός του αλγόριθμου περίληψης %s (%d) παραβιάζει τις\n"
 "προεπιλογές του παραλήπτη\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "το βύσμα του κρυπταλγόριθμου IDEA δεν υπάρχει\n"
-
 #, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = απεικόνιση περισσότερων πληροφοριών\n"
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4319,7 +4559,16 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
 
 msgid "Uncompressed"
@@ -4342,7 +4591,11 @@ msgstr "ανάγνωση επιλογών από `%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
 
-#, c-format
+msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "File `%s' exists. "
 msgid "File '%s' exists. "
 msgstr "Το αρχείο `%s' υπάρχει ήδη. "
 
@@ -4360,15 +4613,18 @@ msgstr "Πληκτρολογήστε ένα νέο όνομα αρχείου"
 msgid "writing to stdout\n"
 msgstr "εγγραφή στην stdout\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "υπόθεση υπογεγραμμένων δεδομένων στο `%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "new configuration file `%s' created\n"
 msgid "new configuration file '%s' created\n"
 msgstr "δημιουργήθηκε νέο αρχείο επιλογών `%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: οι επιλογες στο `%s' δεν είναι ενεργές σε αυτή την εκτέλεση\n"
@@ -4383,6 +4639,10 @@ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: πιθανόν μη ασφαλές κρυπτογραφημένο συμμετρικά κλειδί\n"
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "υποπακέτο τύπου %d έχει ορισμένο το κριτικό bit\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent: %s\n"
+msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
 
 #, fuzzy, c-format
 msgid " (main key ID %s)"
@@ -4408,10 +4668,6 @@ msgid "cancelled by user\n"
 msgstr "ακυρώθηκε από το χρήστη\n"
 
 #, fuzzy, c-format
-msgid "problem with the agent: %s\n"
-msgstr "πρόβλημα με τον agent: agent επιστρέφει 0x%lx\n"
-
-#, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
 "user: \"%s\"\n"
@@ -4427,6 +4683,39 @@ msgstr "%u-bit %s κλειδί, ID %08lX, δημιουργία %s"
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
+
+#, fuzzy
+msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to import the OpenPGP secret key:"
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgstr "Πληκτρολογήστε τη φράση κλειδί· αυτή είναι μια μυστική πρόταση \n"
+
+#, fuzzy
+msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
+msgstr "Σίγουρα θέλετε να διαγραφούν τα επιλεγμένα κλειδιά; "
+
+#, fuzzy
+msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgstr "Σίγουρα θέλετε να διαγραφούν τα επιλεγμένα κλειδιά; "
+
+#, fuzzy, c-format
+msgid ""
+"%s\n"
+"\"%.*s\"\n"
+"%u-bit %s key, ID %s,\n"
+"created %s%s.\n"
+"%s"
+msgstr "%u-bit %s κλειδί, ID %08lX, δημιουργία %s"
 
 msgid ""
 "\n"
@@ -4487,6 +4776,16 @@ msgstr "αιτία για ανάκληση:"
 msgid "revocation comment: "
 msgstr "σχόλιο ανάκλησης:"
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMqQsS"
 
@@ -4649,6 +4948,10 @@ msgid "%s: skipped: %s\n"
 msgstr "%s: παραλείφθηκε: %s\n"
 
 #, c-format
+msgid "%s: skipped: public key is disabled\n"
+msgstr "%s: παραλείφθηκε: το δημόσιο κλειδί έχει απενεργοποιηθεί.\n"
+
+#, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: παραλείφθηκε: δημόσιο κλειδί είναι ήδη παρόν\n"
 
@@ -4682,10 +4985,6 @@ msgstr "παραλείφθηκε: δημόσιο κλειδί έχει ήδη οριστεί\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "άγνωστος προκαθορισμένος παραλήπτης `%s'\n"
 
-#, c-format
-msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: παραλείφθηκε: το δημόσιο κλειδί έχει απενεργοποιηθεί.\n"
-
 msgid "no valid addressees\n"
 msgstr "καμμία έγκυρη διεύθυνση\n"
 
@@ -4700,6 +4999,11 @@ msgstr "κλειδί %08lX: δεν υπάρχει αυτό το user ID\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "δεδομένα δεν αποθηκεύτηκαν. Αποθήκευση με την επιλογή \"--output\"\n"
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
+
 msgid "Detached signature.\n"
 msgstr "Αποκομμένη υπογραφή.\n"
 
@@ -4712,7 +5016,8 @@ msgstr "ανάγνωση της stdin ...\n"
 msgid "no signed data\n"
 msgstr "δεν υπάρχουν υπογεγραμμένα δεδομένα\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open signed data `%s'\n"
 msgid "can't open signed data '%s'\n"
 msgstr "αδυναμία πρόσβασης υπογεγραμμένων δεδομένων `%s'\n"
 
@@ -4739,10 +5044,12 @@ msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "ΣΗΜΕΙΩΣΗ: ο αλγόριθμος κρυπτογράφησης %d δεν είναι στις επιλογές\n"
 
 #, fuzzy, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το μυστικό κλειδί %08lX έληξε στις %s\n"
 
-msgid "NOTE: key has been revoked"
+#, fuzzy
+#| msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
 
 #, c-format
@@ -4777,26 +5084,30 @@ msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "δε βρέθηκαν κλειδιά ανάκλησης για το `%s'\n"
 
+#, fuzzy
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr "Δημιουργία ενός πιστοποιητικού ανάκλησης για αυτό το κλειδί; "
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "το μυστικό κλειδί `%s' δε βρέθηκε: %s\n"
 
-#, c-format
-msgid "no corresponding public key: %s\n"
-msgstr "κανένα αντίστιχο δημόσιο κλειδί: %s\n"
-
-msgid "public key does not match secret key!\n"
-msgstr "το δημοσίο κλειδί δεν ταιριάζει με το μυστικό!\n"
-
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Δημιουργία ενός πιστοποιητικού ανάκλησης για αυτό το κλειδί; "
-
-msgid "unknown protection algorithm\n"
-msgstr "άγνωστος αλγόριθμος προστασίας\n"
-
-msgid "NOTE: This key is not protected!\n"
-msgstr "ΣΗΜΕΙΩΣΗ: Αυτό το κλειδί δεν προστατεύεται!\n"
 
 msgid ""
 "Revocation certificate created.\n"
@@ -4840,32 +5151,6 @@ msgstr "(Δεν δώθηκε περιγραφή)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Είναι αυτό εντάξει; "
 
-msgid "secret key parts are not available\n"
-msgstr "τμήματα του μυστικού κλειδιού δεν είναι διαθέσιμα\n"
-
-#, c-format
-msgid "protection algorithm %d%s is not supported\n"
-msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
-
-#, fuzzy, c-format
-msgid "protection digest %d is not supported\n"
-msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
-
-msgid "Invalid passphrase; please try again"
-msgstr "Μη έγκυρη φράση κλειδί, δοκιμάστε ξανά"
-
-#, c-format
-msgid "%s ...\n"
-msgstr "%s ...\n"
-
-msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Ανιχνεύτηκε αδύναμο κλειδί - αλλάξτε τη φράση κλειδί\n"
-
-msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
-"δημιουργία του μη συνειστόμενου 16-bit checksum για τη προστασία του\n"
-"μυστικού κλειδιού\n"
-
 msgid "weak key created - retrying\n"
 msgstr "δημιουργήθηκε αδύναμο κλειδί - επανάληψη προσπάθειας\n"
 
@@ -4875,15 +5160,12 @@ msgstr ""
 "αδυναμία αποφυγής αδύναμου κλειδιού για συμμετρικό κρυπταλγόριθμο, δοκιμή "
 "για %d φορές!\n"
 
-msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+#, c-format
+msgid "%s key %s uses an unsafe (%zu bit) hash\n"
 msgstr ""
 
 #, c-format
-msgid "DSA key %s uses an unsafe (%u bit) hash\n"
-msgstr ""
-
-#, c-format
-msgid "DSA key %s requires a %u bit or larger hash\n"
+msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
@@ -4894,6 +5176,10 @@ msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το υπογράφων υποκλειδί %08lX δεν έχει κατ' αντιπαράσταση "
 "πιστοποιηθεί\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = απεικόνιση περισσότερων πληροφοριών\n"
 
 #, fuzzy, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
@@ -4926,11 +5212,11 @@ msgstr ""
 "απλώς πρόβλημα στο ρολόι)\n"
 
 #, fuzzy, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί υπογραφής %08lX έληξε στις %s\n"
 
 #, fuzzy, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
 
 #, fuzzy, c-format
@@ -4974,11 +5260,6 @@ msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s υπογραφή από: \"%s\"\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"μπορείτε να υπογράψετε-αποκομμένα με κλειδιά τύπου PGP 2.x μόνο σε\n"
-"--pgp2 κατάσταση\n"
-
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -4988,10 +5269,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "υπογραφή:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"μπορείτε να υπογράψετε καθαρά με κλειδιά τύπου PGP 2.x σε κατάσταση --pgp2\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -5005,10 +5282,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "skipped \"%s\": duplicated\n"
 msgstr "παραλείφθηκε `%s': αντιγράφτηκε\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "παραλείφθηκε `%s': %s\n"
 
 msgid "skipped: secret key already present\n"
 msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
@@ -5101,7 +5374,9 @@ msgstr "%s: δημιουργήθηκε μη έγκυρη trustdb\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: δημιουργήθηκε η trustdb\n"
 
-msgid "NOTE: trustdb not writable\n"
+#, fuzzy
+#| msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "ΣΗΜΕΙΩΣΗ: η trustdb δεν είναι εγγράψιμη\n"
 
 #, c-format
@@ -5172,7 +5447,8 @@ msgstr "αδυναμία χειρισμού γραμμών κειμένου μεγαλύτερες από %d χαρακτήρες\n"
 msgid "input line longer than %d characters\n"
 msgstr "γραμμή εισόδου μεγαλύτερη από %d χαρακτήρες\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid long keyID\n"
 msgid "'%s' is not a valid long keyID\n"
 msgstr "`%s' δεν είναι έγκυρο μακρύ keyID\n"
 
@@ -5214,49 +5490,6 @@ msgstr ""
 
 #, c-format
 msgid "using %s trust model\n"
-msgstr ""
-
-msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-msgstr ""
-
-#, fuzzy
-msgid "[ revoked]"
-msgstr "[ανακλημένο]"
-
-#, fuzzy
-msgid "[ expired]"
-msgstr "[ληγμένο]"
-
-#, fuzzy
-msgid "[ unknown]"
-msgstr "άγνωστο"
-
-msgid "[  undef ]"
-msgstr ""
-
-msgid "[marginal]"
-msgstr ""
-
-msgid "[  full  ]"
-msgstr ""
-
-msgid "[ultimate]"
-msgstr ""
-
-msgid "undefined"
-msgstr ""
-
-#, fuzzy
-msgid "never"
-msgstr "ποτέ     "
-
-msgid "marginal"
-msgstr ""
-
-msgid "full"
-msgstr ""
-
-msgid "ultimate"
 msgstr ""
 
 msgid "no need for a trustdb check\n"
@@ -5326,116 +5559,6 @@ msgstr "γραμμή εισόδου %u είναι πολύ μεγάλη ή της λείπει το LF\n"
 msgid "can't open fd %d: %s\n"
 msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "σφάλμα ανάγνωσης αρχείου"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "η γραμμή είναι πολύ μεγάλη\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "μη έγκυρο όρισμα"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "συγκρουόμενες εντολές\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, fuzzy
-msgid "out of core"
-msgstr "μη επεξεργασμένο"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Μη έγκυρη εντολή  (δοκιμάστε \"help\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy
-msgid "out of core\n"
-msgstr "μη επεξεργασμένο"
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
-
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "βρήκατε ένα bug ... (%s:%d)\n"
-
-#, fuzzy, c-format
-msgid "error loading '%s': %s\n"
-msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, c-format
-msgid "conversion from '%s' to '%s' not available\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "iconv_open failed: %s\n"
-msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
-
-#, fuzzy, c-format
-msgid "conversion from '%s' to '%s' failed: %s\n"
-msgstr "θωράκιση απέτυχε: %s\n"
-
-#, fuzzy, c-format
-msgid "failed to create temporary file '%s': %s\n"
-msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to '%s': %s\n"
-msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
-
-#, c-format
-msgid "removing stale lockfile (created by %d)\n"
-msgstr ""
-
-msgid " - probably dead - removing lock"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for lock (held by %d%s) %s...\n"
-msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
-
-msgid "(deadlock?) "
-msgstr ""
-
-#, fuzzy, c-format
-msgid "lock '%s' not made: %s\n"
-msgstr "το δημόσιο κλειδί %08lX δεν βρέθηκε: %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for lock %s...\n"
-msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
-
 msgid "set debugging flags"
 msgstr ""
 
@@ -5446,10 +5569,11 @@ msgstr ""
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
+#, fuzzy
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
-msgstr ""
+"List, export, import Keybox data\n"
+msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5523,6 +5647,9 @@ msgstr ""
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
+msgid "response does not contain the EC public point\n"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -5578,6 +5705,9 @@ msgstr "Παρακαλώ επιλέξτε την αιτία για την ανάκληση:\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -5586,6 +5716,14 @@ msgstr ""
 
 msgid "|N|New PIN"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "αλλαγή της φράσης κλειδί"
+
+#, fuzzy
+msgid "||Please enter the PIN and New PIN"
+msgstr "αλλαγή της φράσης κλειδί"
 
 #, fuzzy
 msgid "error reading application data\n"
@@ -5654,8 +5792,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "δε βρέθηκαν έγκυρα OpenPGP δεδομένα.\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
+#, fuzzy
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "αλλαγή της φράσης κλειδί"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5691,20 +5830,23 @@ msgstr "μη χρήση τερματικού"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr ""
 
-msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr ""
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "συγκρουόμενες εντολές\n"
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
 #, fuzzy
-msgid "Usage: scdaemon [options] (-h for help)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
 msgid "please use the option '--daemon' to run the program in the background\n"
@@ -5721,25 +5863,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "μη έγκυρος radix64 χαρακτήρας %02x παράβλεψη\n"
-
-#, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr ""
-
-#, c-format
-msgid "no running dirmngr - starting '%s'\n"
-msgstr ""
-
-#, fuzzy
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "κακοδιατυπομένη μεταβλητή περιβάλλοντος GPG_AGENT_INFO\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -5766,8 +5889,9 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
-msgstr ""
+#, fuzzy
+msgid "Note: non-critical certificate policy not allowed"
+msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
 
 #, fuzzy
 msgid "certificate policy not allowed"
@@ -5792,7 +5916,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
 
 #, fuzzy
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
 
 #, fuzzy
@@ -5934,10 +6058,6 @@ msgid "validation model used: %s"
 msgstr ""
 
 #, c-format
-msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr ""
-
-#, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
@@ -5982,16 +6102,16 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
 
-msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr ""
 
-msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
-msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
-msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr ""
 
 msgid "certificate is not usable for encryption\n"
@@ -6012,17 +6132,53 @@ msgstr ""
 msgid "line %d: no subject name given\n"
 msgstr ""
 
-#, c-format
+#, fuzzy, c-format
 msgid "line %d: invalid subject name label '%.*s'\n"
-msgstr ""
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "line %d: invalid subject name '%s' at pos %d\n"
-msgstr ""
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
 #, fuzzy, c-format
 msgid "line %d: not a valid email address\n"
 msgstr "Μη έγκυρη διεύθυνση Email\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid serial number\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
+#, c-format
+msgid "line %d: invalid issuer name label '%.*s'\n"
+msgstr ""
+
+#, c-format
+msgid "line %d: invalid issuer name '%s' at pos %d\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "line %d: invalid date given\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
+#, fuzzy, c-format
+msgid "line %d: error getting signing key by keygrip '%s': %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid hash algorithm given\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid authority-key-id\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid subject-key-id\n"
+msgstr "κλειδί %08lX: μη έγκυρη δέσμευση υποκλειδιού\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid extension syntax\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
 #, fuzzy, c-format
 msgid "line %d: error reading key '%s' from card: %s\n"
@@ -6052,17 +6208,6 @@ msgstr "   (%d) RSA (για κρυπτογράφηση μόνο)\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr ""
-
-#, fuzzy
-msgid "Enter the keygrip: "
-msgstr "Σημείωση υπογραφής: "
-
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
-#, fuzzy
-msgid "No key with this keygrip\n"
-msgstr "Δεν υπάρχει user ID με δείκτη %d\n"
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -6099,9 +6244,9 @@ msgstr ""
 msgid "No subject name given\n"
 msgstr "(Δεν δώθηκε περιγραφή)\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "Invalid subject name label '%.*s'\n"
-msgstr ""
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
 
 #. TRANSLATORS: The 22 in the second string is the
 #. length of the first string up to the "%s".  Please
@@ -6136,10 +6281,25 @@ msgstr "Πληκτρολογήστε μια προαιρετική περιγραφή· τέλος με μια άδεια γραμμή:\n"
 msgid "Enter URIs"
 msgstr ""
 
-msgid "Parameters to be used for the certificate request:\n"
+#, fuzzy
+msgid "Create self-signed certificate? (y/N) "
+msgstr "Δημιουργία ενός πιστοποιητικού ανάκλησης για αυτό το κλειδί; "
+
+msgid "These parameters are used:\n"
 msgstr ""
 
-msgid "Now creating certificate request.  This may take a while ...\n"
+msgid "Now creating self-signed certificate.  "
+msgstr ""
+
+#, fuzzy
+#| msgid "Revocation certificate created.\n"
+msgid "Now creating certificate request.  "
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+msgid "This may take a while ...\n"
+msgstr ""
+
+msgid "Ready.\n"
 msgstr ""
 
 msgid "Ready.  You should now send this request to your CA.\n"
@@ -6204,10 +6364,6 @@ msgid "invoke gpg-protect-tool"
 msgstr ""
 
 #, fuzzy
-msgid "change a passphrase"
-msgstr "αλλαγή της φράσης κλειδί"
-
-#, fuzzy
 msgid "create base-64 encoded output"
 msgstr "δημιουργία ascii θωρακισμένης εξόδου"
 
@@ -6218,9 +6374,6 @@ msgid "assume input is in base-64 format"
 msgstr ""
 
 msgid "assume input is in binary format"
-msgstr ""
-
-msgid "use system's dirmngr if available"
 msgstr ""
 
 msgid "never consult a CRL"
@@ -6279,25 +6432,22 @@ msgid "|NAME|use message digest algorithm NAME"
 msgstr "|ΟΝΟΜΑ|χρήση αλγόριθμου περίληψης μηνύματος ΟΝΟΜΑ "
 
 #, fuzzy
-msgid "Usage: gpgsm [options] [files] (-h for help)"
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 #, fuzzy
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Syntax: @GPGSM@ [options] [files]\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Σύνταξη: gpg [επιλογές] [αρχεία]\n"
 "υπογραφή, έλεγχος, κρυπτογράφηση ή αποκρυπτογράφηση\n"
 "η προκαθορισμένη λειτουργία εξαρτάται από τα δεδομένα εισόδου\n"
 
-#, fuzzy
-msgid "usage: gpgsm [options] "
-msgstr "χρήση: gpg [επιλογές] "
-
 #, fuzzy, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "αδυναμία σύνδεσης στο `%s': %s\n"
 
 #, fuzzy, c-format
@@ -6319,9 +6469,6 @@ msgstr " s = παράλειψη αυτού του κλειδιού\n"
 #, fuzzy
 msgid "could not parse keyserver\n"
 msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
-
-msgid "WARNING: running with faked system time: "
-msgstr ""
 
 #, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
@@ -6345,10 +6492,6 @@ msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
-#, fuzzy
-msgid "failed to allocate keyDB handle\n"
-msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
-
 #, fuzzy, c-format
 msgid "error getting stored flags: %s\n"
 msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
@@ -6360,17 +6503,6 @@ msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "keybox '%s' created\n"
-msgstr "κλειδοθήκη `%s' δημιουργήθηκε\n"
 
 #, fuzzy
 msgid "failed to get the fingerprint\n"
@@ -6406,9 +6538,9 @@ msgstr ""
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "invalid country code in '%s', line %d\n"
-msgstr ""
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
 #, c-format
 msgid ""
@@ -6473,6 +6605,1258 @@ msgstr ""
 "\n"
 "Αυτή θα είναι μια ιδιο-υπογραφή.\n"
 
+#, fuzzy, c-format
+msgid "can't initialize certificate cache lock: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, c-format
+msgid "can't acquire read lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't acquire write lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't release lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "dropping %u certificates from the cache\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "can't access directory '%s': %s\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
+msgid "can't parse certificate '%s': %s\n"
+msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "certificate '%s' already cached\n"
+msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
+
+#, fuzzy, c-format
+msgid "trusted certificate '%s' loaded\n"
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+#, fuzzy, c-format
+msgid "certificate '%s' loaded\n"
+msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
+
+#, fuzzy, c-format
+msgid "  SHA1 fingerprint = %s\n"
+msgstr "απεικόνιση του fingerprint"
+
+msgid "   issuer ="
+msgstr ""
+
+msgid "  subject ="
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error loading certificate '%s': %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "permanently loaded certificates: %u\n"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy, c-format
+msgid "    runtime cached certificates: %u\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy
+msgid "certificate already cached\n"
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+#, fuzzy
+msgid "certificate cached\n"
+msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
+
+#, fuzzy, c-format
+msgid "error caching certificate: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "invalid SHA1 fingerprint string '%s'\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy, c-format
+msgid "error fetching certificate by S/N: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "error fetching certificate by subject: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy
+msgid "no issuer found in certificate\n"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+
+#, fuzzy, c-format
+msgid "error getting authorityKeyIdentifier: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "creating directory '%s'\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error creating directory '%s': %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "ignoring database dir '%s'\n"
+msgstr "σφάλμα στη γραμμή trailer\n"
+
+#, fuzzy, c-format
+msgid "error reading directory '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "removing cache file '%s'\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+#| msgid "enarmoring failed: %s\n"
+msgid "not removing file '%s'\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "error closing cache file: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to open cache dir file '%s': %s\n"
+msgstr "αδυναμία πρόσβασης στο `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error creating new cache dir file '%s': %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing new cache dir file '%s': %s\n"
+msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing new cache dir file '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "new configuration file `%s' created\n"
+msgid "new cache dir file '%s' created\n"
+msgstr "δημιουργήθηκε νέο αρχείο επιλογών `%s'\n"
+
+#, fuzzy, c-format
+msgid "failed to re-open cache dir file '%s': %s\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, c-format
+msgid "first record of '%s' is not the version\n"
+msgstr ""
+
+msgid "old version of cache directory - cleaning up\n"
+msgstr ""
+
+msgid "old version of cache directory - giving up\n"
+msgstr ""
+
+#, c-format
+msgid "extra field detected in crl record of '%s' line %u\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid line detected in '%s' line %u\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy, c-format
+msgid "duplicate entry detected in '%s' line %u\n"
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+#, c-format
+msgid "unsupported record type in '%s' line %u skipped\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid issuer hash in '%s' line %u\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy, c-format
+msgid "no issuer DN in '%s' line %u\n"
+msgstr "σφάλμα ανάγνωσης: %s\n"
+
+#, fuzzy, c-format
+msgid "invalid timestamp in '%s' line %u\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: invalid size of random_seed file - not used\n"
+msgid "WARNING: invalid cache file hash in '%s' line %u\n"
+msgstr ""
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη έγκυρο μέγεθος αρχείου random_seed - δεν\n"
+"χρησιμοποιείτε\n"
+
+msgid "detected errors in cache dir file\n"
+msgstr ""
+
+msgid "please check the reason and manually delete that file\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "failed to create temporary cache dir file '%s': %s\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't hash '%s': %s\n"
+msgstr "αδυναμία κλεισίματος του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error setting up MD5 hash context: %s\n"
+msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error hashing '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "invalid formatted checksum for '%s'\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+msgid "too many open cache files; can't open anymore\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "opening cache file '%s'\n"
+msgstr "η υπογραφή απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "error opening cache file '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, c-format
+msgid "error initializing cache file '%s' for reading: %s\n"
+msgstr ""
+
+msgid "calling unlock_db_file on a closed file\n"
+msgstr ""
+
+msgid "calling unlock_db_file on an unlocked file\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "failed to create a new cache object: %s\n"
+msgstr "%s: αδυναμία δημιουργίας hashtable: %s\n"
+
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
+msgid "no CRL available for issuer id %s\n"
+msgstr "Δεν υπάρχει διαθέσιμη βοήθεια για `%s'"
+
+#, c-format
+msgid "cached CRL for issuer id %s too old; update required\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"force-crl-refresh active and %d minutes passed for issuer id %s; update "
+"required\n"
+msgstr ""
+
+#, c-format
+msgid "force-crl-refresh active for issuer id %s; update required\n"
+msgstr ""
+
+#, c-format
+msgid "available CRL for issuer ID %s can't be used\n"
+msgstr ""
+
+#, c-format
+msgid "cached CRL for issuer id %s tampered; we need to update\n"
+msgstr ""
+
+msgid "WARNING: invalid cache record length for S/N "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "problem reading cache record for S/N %s: %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
+
+#, c-format
+msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
+msgstr ""
+
+#, c-format
+msgid "S/N %s is valid, it is not listed in the CRL\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting data from cache file: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "μη έγκυρος αλγόριθμος  hash `%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid response from agent\n"
+msgid "got an invalid S-expression from libksba\n"
+msgstr "μη έγκυρη απάντηση από τον agent\n"
+
+#, fuzzy, c-format
+msgid "converting S-expression failed: %s\n"
+msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
+
+#, fuzzy, c-format
+msgid "creating S-expression failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+#| msgid "build_packet failed: %s\n"
+msgid "ksba_crl_parse failed: %s\n"
+msgstr "build_packet απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "error getting update times of CRL: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, c-format
+msgid "update times of this CRL: this=%s next=%s\n"
+msgstr ""
+
+msgid "nextUpdate not given; assuming a validity period of one day\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting CRL item: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "error inserting item into temporary cache file: %s\n"
+msgstr "εγγραφή στο  `%s'\n"
+
+#, fuzzy, c-format
+msgid "no CRL issuer found in CRL: %s\n"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+
+msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signature verification suppressed\n"
+msgid "CRL signature verification failed: %s\n"
+msgstr "καταστολή ανάκλησης υπογραφής\n"
+
+#, fuzzy, c-format
+msgid "error checking validity of CRL issuer certificate: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_new failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_set_reader failed: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "removed stale temporary cache file '%s'\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "problem removing stale temporary cache file '%s': %s\n"
+msgstr "αδυναμία δημιουργίας καταλόγου `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error creating temporary cache file '%s': %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "crl_parse_insert failed: %s\n"
+msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "error finishing temporary cache file '%s': %s\n"
+msgstr "εγγραφή στο  `%s'\n"
+
+#, fuzzy, c-format
+msgid "error closing temporary cache file '%s': %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, c-format
+msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
+msgstr ""
+
+#, c-format
+msgid "new CRL still too old; it expired on %s\n"
+msgstr ""
+
+#, c-format
+msgid "unknown critical CRL extension %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading CRL extensions: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "creating cache file '%s'\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "problem renaming '%s' to '%s': %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+msgid ""
+"updating the DIR file failed - cache entry will get lost with the next "
+"program start\n"
+msgstr ""
+
+#, c-format
+msgid "Begin CRL dump (retrieved via %s)\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used because it was still too old after an "
+"update!\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used due to an unknown critical extension!\n"
+msgstr ""
+
+msgid " ERROR: The CRL will not be used\n"
+msgstr ""
+
+msgid " ERROR: This cached CRL may have been tampered with!\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "WARNING: invalid size of random_seed file - not used\n"
+msgid " WARNING: invalid cache record length\n"
+msgstr ""
+"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη έγκυρο μέγεθος αρχείου random_seed - δεν\n"
+"χρησιμοποιείτε\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache record: %s\n"
+msgstr "%s: σφάλμα στην ανάγνωση της εγγραφής free : %s\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache key: %s\n"
+msgstr "rev? πρόβλημα στον έλεγχο ανάκλησης: %s\n"
+
+#, fuzzy, c-format
+msgid "error reading cache entry from db: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+msgid "End CRL dump\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "crl_fetch via DP failed: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "crl_cache_insert via DP failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, fuzzy, c-format
+msgid "crl_cache_insert via issuer failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+msgid "reader to file mapping table full - waiting\n"
+msgstr ""
+
+msgid "using \"http\" instead of \"https\"\n"
+msgstr ""
+
+#, c-format
+msgid "CRL access not possible due to disabled %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: σφάλμα στην εγγραφή της εγγραφής dir : %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+msgid "too many redirections\n"
+msgstr "πάρα πολλές `%c' προεπιλογές\n"
+
+#, fuzzy, c-format
+msgid "error retrieving '%s': %s\n"
+msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error retrieving '%s': http status %u\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "certificate search not possible due to disabled %s\n"
+msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
+
+msgid "use OCSP instead of CRLs"
+msgstr ""
+
+msgid "check whether a dirmngr is running"
+msgstr ""
+
+#, fuzzy
+msgid "add a certificate to the cache"
+msgstr "Πιστοποιητικό ανάκλησης δημιουργήθηκε.\n"
+
+#, fuzzy
+msgid "validate a certificate"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy
+msgid "lookup a certificate"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy
+msgid "lookup only locally stored certificates"
+msgstr "κακό πιστοποιητικό"
+
+msgid "expect an URL for --lookup"
+msgstr ""
+
+msgid "load a CRL into the dirmngr"
+msgstr ""
+
+msgid "special mode for use by Squid"
+msgstr ""
+
+#, fuzzy
+msgid "expect certificates in PEM format"
+msgstr "κακό πιστοποιητικό"
+
+#, fuzzy
+#| msgid "Enter the user ID of the designated revoker: "
+msgid "force the use of the default OCSP responder"
+msgstr "Πληκτρολογήστε το user ID του διορισμένου ανακλητή: "
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
+msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+msgid ""
+"Syntax: dirmngr-client [options] [certfile|pattern]\n"
+"Test an X.509 certificate against a CRL or do an OCSP check\n"
+"The process returns 0 if the certificate is valid, 1 if it is\n"
+"not valid and other error codes for general failures\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading certificate from stdin: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, fuzzy, c-format
+msgid "error reading certificate from '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+msgid "certificate too large to make any sense\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "update failed: %s\n"
+msgid "lookup failed: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "loading CRL '%s' failed: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+msgid "a dirmngr daemon is up and running\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "validation of certificate failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy
+msgid "certificate is valid\n"
+msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
+
+#, fuzzy
+msgid "certificate has been revoked\n"
+msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
+
+#, fuzzy, c-format
+msgid "certificate check failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't stat `%s': %s\n"
+msgid "got status: '%s'\n"
+msgstr "αδυναμία λήψης πληροφοριών για το `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing base64 encoding: %s\n"
+msgstr "αδυναμία εγγραφής μυστικής κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: αδυναμία δημιουργίας hashtable: %s\n"
+
+msgid "apparently no running dirmngr\n"
+msgstr ""
+
+msgid "no running dirmngr - starting one\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "malformed %s environment variable\n"
+msgstr "κακοδιατυπομένη μεταβλητή περιβάλλοντος GPG_AGENT_INFO\n"
+
+#, fuzzy, c-format
+msgid "dirmngr protocol version %d is not supported\n"
+msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
+
+msgid "can't connect to the dirmngr - trying fall back\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "αδυναμία σύνδεσης στο `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "unsupported inquiry '%s'\n"
+msgstr ""
+"\n"
+"Υποστηριζόμενοι αλγόριθμοι:\n"
+
+msgid "absolute file name expected\n"
+msgstr ""
+
+#, c-format
+msgid "looking up '%s'\n"
+msgstr ""
+
+msgid "run as windows service (background)"
+msgstr ""
+
+msgid "list the contents of the CRL cache"
+msgstr ""
+
+#, fuzzy
+msgid "|FILE|load CRL from FILE into cache"
+msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
+
+msgid "|URL|fetch a CRL from URL"
+msgstr ""
+
+msgid "shutdown the dirmngr"
+msgstr ""
+
+msgid "flush the cache"
+msgstr ""
+
+msgid "|FILE|write server mode logs to FILE"
+msgstr ""
+
+#, fuzzy
+msgid "run without asking a user"
+msgstr "Τερματισμός χωρίς αποθήκευση; "
+
+msgid "force loading of outdated CRLs"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "inhibit the use of HTTP"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore HTTP CRL distribution points"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
+msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "|HOST|use HOST for LDAP queries"
+msgstr ""
+
+msgid "do not use fallback hosts with --ldap-proxy"
+msgstr ""
+
+#, fuzzy
+msgid "|FILE|read LDAP server list from FILE"
+msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
+
+msgid "add new servers discovered in CRL distribution points to serverlist"
+msgstr ""
+
+msgid "|N|set LDAP timeout to N seconds"
+msgstr ""
+
+#, fuzzy
+msgid "|URL|use OCSP responder at URL"
+msgstr "αδυναμία επεξεργασίας του URI του διακομιση κλειδιών\n"
+
+msgid "|FPR|OCSP response signed by FPR"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "(See the man page for a complete listing of all commands and options)\n"
+msgid ""
+"@\n"
+"(See the \"info\" manual for a complete listing of all commands and "
+"options)\n"
+msgstr ""
+"@\n"
+"(δείτε τη σελίδα man για μια πλήρη λίστα εντολών και επιλογών)\n"
+
+#, fuzzy
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
+msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+msgid ""
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
+msgstr ""
+
+#, c-format
+msgid "valid debug levels are: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "usage: %s [options] "
+msgstr "χρήση: gpg [επιλογές] "
+
+#, fuzzy
+#| msgid "%s not allowed with %s!\n"
+msgid "colons are not allowed in the socket name\n"
+msgstr "το %s δεν επιτρέπεται με το %s!\n"
+
+#, fuzzy, c-format
+msgid "fetching CRL from '%s' failed: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "processing CRL from '%s' failed: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: line too long - skipped\n"
+msgstr "η γραμμή είναι πολύ μεγάλη\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: invalid fingerprint detected\n"
+msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: read error: %s\n"
+msgstr "σφάλμα ανάγνωσης: %s\n"
+
+#, c-format
+msgid "%s:%u: garbage at end of line ignored\n"
+msgstr ""
+
+msgid "SIGHUP received - re-reading configuration and flushing caches\n"
+msgstr ""
+
+msgid "SIGUSR2 received - no action defined\n"
+msgstr ""
+
+msgid "SIGTERM received - shutting down ...\n"
+msgstr ""
+
+#, c-format
+msgid "SIGTERM received - still %d active connections\n"
+msgstr ""
+
+#, fuzzy
+msgid "shutdown forced\n"
+msgstr "μη επεξεργασμένο"
+
+msgid "SIGINT received - immediate shutdown\n"
+msgstr ""
+
+#, c-format
+msgid "signal %d received - no action defined\n"
+msgstr ""
+
+msgid "return all values in a record oriented format"
+msgstr ""
+
+msgid "|NAME|ignore host part and connect through NAME"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|connect to host NAME"
+msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
+
+msgid "|N|connect to port N"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "|NAME|use user NAME for authentication"
+msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
+
+msgid "|PASS|use password PASS for authentication"
+msgstr ""
+
+msgid "take password from $DIRMNGR_LDAP_PASS"
+msgstr ""
+
+msgid "|STRING|query DN STRING"
+msgstr ""
+
+msgid "|STRING|use STRING as filter expression"
+msgstr ""
+
+msgid "|STRING|return the attribute STRING"
+msgstr ""
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+msgid ""
+"Syntax: dirmngr_ldap [options] [URL]\n"
+"Internal LDAP helper for Dirmngr\n"
+"Interface and options may change without notice\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "invalid import options\n"
+msgid "invalid port number %d\n"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
+
+#, c-format
+msgid "scanning result for attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, c-format
+msgid "          available attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "attribute '%s' not found\n"
+msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
+
+#, c-format
+msgid "found attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "processing url '%s'\n"
+msgstr "ανάγνωση από `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "          w/o user IDs: %lu\n"
+msgid "          user '%s'\n"
+msgstr "          χωρίς user ID: %lu\n"
+
+#, fuzzy, c-format
+msgid "          pass '%s'\n"
+msgstr "                γνωστό σαν \""
+
+#, fuzzy, c-format
+msgid "          host '%s'\n"
+msgstr "                γνωστό σαν \""
+
+#, fuzzy, c-format
+#| msgid "          not imported: %lu\n"
+msgid "          port %d\n"
+msgstr "          μη  εισαχθέντα: %lu\n"
+
+#, fuzzy, c-format
+msgid "            DN '%s'\n"
+msgstr "                γνωστό σαν \""
+
+#, c-format
+msgid "        filter '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "          attr '%s'\n"
+msgstr "                γνωστό σαν \""
+
+#, fuzzy, c-format
+msgid "no host name in '%s'\n"
+msgstr "(Δεν δώθηκε περιγραφή)\n"
+
+#, c-format
+msgid "no attribute given for query '%s'\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "WARNING: using insecure memory!\n"
+msgid "WARNING: using first attribute only\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: χρήση μη ασφαλούς μνήμης!\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s:%d' failed: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "binding to '%s:%d' failed: %s\n"
+msgstr "θωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+#| msgid "dearmoring failed: %s\n"
+msgid "searching '%s' failed: %s\n"
+msgstr "αποθωράκιση απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" δεν είναι JPEG αρχείο\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "αδυναμία δημιουργίας της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error printing log line: %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error reading log from ldap wrapper %d: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "npth_select failed: %s - waiting 1s\n"
+msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
+
+#, c-format
+msgid "ldap wrapper %d ready"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: timeout\n"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: exitcode=%d\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "waiting for ldap wrapper %d failed: %s\n"
+msgstr "η ενημέρωση απέτυχε: %s\n"
+
+#, c-format
+msgid "ldap wrapper %d stalled - killing\n"
+msgstr ""
+
+#, c-format
+msgid "error spawning ldap wrapper reaper thread: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "reading from ldap wrapper %d failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, c-format
+msgid "invalid char 0x%02x in host name - not added\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "adding '%s:%d' to the ldap server list\n"
+msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
+
+#, fuzzy, c-format
+msgid "malloc failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, c-format
+msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgstr ""
+
+msgid "ldap_search hit the size limit of the server\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "%s: invalid file version %d\n"
+msgid "invalid canonical S-expression found\n"
+msgstr "%s: μη έγκυρη έκδοση αρχείου %d\n"
+
+#, fuzzy, c-format
+msgid "gcry_md_open failed: %s\n"
+msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "oops: ksba_cert_hash failed: %s\n"
+msgstr "η ενημέρωση μυστικού απέτυχε: %s\n"
+
+msgid "bad URL encoding detected\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading from responder: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, c-format
+msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to disabled HTTP\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting OCSP target: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error building OCSP request: %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error connecting to '%s': %s\n"
+msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error reading HTTP response for '%s': %s\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "σφάλμα κατά την ανάγνωση του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error parsing OCSP response for '%s': %s\n"
+msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
+
+#, c-format
+msgid "OCSP responder at '%s' status: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "hashing the OCSP response for '%s' failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+msgid "not signed by a default OCSP signer's certificate"
+msgstr ""
+
+msgid "only SHA-1 is supported for OCSP responses\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "allocating list item failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "error getting responder ID: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+msgid "no suitable certificate found to verify the OCSP response\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "issuer certificate not found: %s\n"
+msgstr "το κλειδί '%s' δε βρέθηκε: %s\n"
+
+msgid "caller did not return the target certificate\n"
+msgstr ""
+
+#, fuzzy
+msgid "caller did not return the issuing certificate\n"
+msgstr "δημιουργία ενός πιστοποιητικού ανάκλησης"
+
+#, fuzzy, c-format
+msgid "failed to allocate OCSP context: %s\n"
+msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: αδυναμία πρόσβασης: %s\n"
+
+msgid "no default OCSP responder defined\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "no default secret keyring: %s\n"
+msgid "no default OCSP signer defined\n"
+msgstr "δεν υπάρχει προκαθορισμένη κλειδοθήκη: %s\n"
+
+#, c-format
+msgid "using default OCSP responder '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using OCSP responder '%s'\n"
+msgstr "χρήση του κρυπταλγόριθμου: %s\n"
+
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting OCSP status for target certificate: %s\n"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
+
+#, c-format
+msgid "certificate status is: %s  (this=%s  next=%s)\n"
+msgstr ""
+
+msgid "good"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "certificate has been revoked at: %s due to: %s\n"
+msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
+
+msgid "OCSP responder returned a status in the future\n"
+msgstr ""
+
+msgid "OCSP responder returned a non-current status\n"
+msgstr ""
+
+msgid "OCSP responder returned an too old status\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "assuan_inquire(%s) failed: %s\n"
+msgstr "η υπογραφή απέτυχε: %s\n"
+
+msgid "ldapserver missing"
+msgstr ""
+
+msgid "serialno missing in cert ID"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "assuan_inquire failed: %s\n"
+msgstr "η υπογραφή απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "fetch_cert_by_url failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "error sending data: %s\n"
+msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "start_cert_fetch failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, fuzzy, c-format
+msgid "fetch_next_cert failed: %s\n"
+msgstr "διαγραφή block κλειδιών απέτυχε: %s\n"
+
+#, c-format
+msgid "max_replies %d exceeded\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "can't allocate control structure: %s\n"
+msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to initialize the TrustDB: %s\n"
+msgid "failed to initialize the server: %s\n"
+msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to the register commands with Assuan: %s\n"
+msgstr "αποτυχία επαναδόμησης της cache κλειδοθήκης: %s\n"
+
+#, c-format
+msgid "Assuan accept problem: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signing failed: %s\n"
+msgid "Assuan processing failed: %s\n"
+msgstr "η υπογραφή απέτυχε: %s\n"
+
+msgid "accepting root CA not marked as a CA"
+msgstr ""
+
+#, fuzzy
+#| msgid "checking the trustdb\n"
+msgid "CRL checking too deeply nested\n"
+msgstr "έλεγχος της trustdb\n"
+
+msgid "not checking CRL for"
+msgstr ""
+
+#, fuzzy
+msgid "checking CRL for"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+msgid "running in compatibility mode - certificate chain not checked!\n"
+msgstr ""
+
+#, fuzzy
+msgid "selfsigned certificate has a BAD signature"
+msgstr "επαλήθευση μιας υπογραφής"
+
+#, fuzzy, c-format
+msgid "checking trustworthiness of root certificate failed: %s\n"
+msgstr "απέτυχε ο έλεγχος της υπογραφής που δημιουργήθηκε: %s\n"
+
+#, fuzzy
+msgid "certificate chain is good\n"
+msgstr "η προεπιλογή %c%lu αντιγράφτηκε\n"
+
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr "ο DSA απαιτεί τη χρήση ενός 160 bit αλγόριθμου hash\n"
+
+msgid "certificate should not have been used for CRL signing\n"
+msgstr ""
+
 #, fuzzy
 msgid "quiet"
 msgstr "τερματισμός"
@@ -6483,7 +7867,13 @@ msgstr ""
 msgid "decode received data lines"
 msgstr ""
 
+msgid "connect to the dirmngr"
+msgstr ""
+
 msgid "|NAME|connect to Assuan socket NAME"
+msgstr ""
+
+msgid "|ADDR|connect to Assuan server at ADDR"
 msgstr ""
 
 msgid "run the Assuan server given on the command line"
@@ -6500,11 +7890,11 @@ msgid "run /subst on startup"
 msgstr ""
 
 #, fuzzy
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 
@@ -6536,10 +7926,6 @@ msgid "sending line failed: %s\n"
 msgstr "η υπογραφή απέτυχε: %s\n"
 
 #, fuzzy, c-format
-msgid "error sending %s command: %s\n"
-msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "σφάλμα στη αποστολή προς το `%s': %s\n"
 
@@ -6550,9 +7936,6 @@ msgid "Options controlling the configuration"
 msgstr ""
 
 msgid "Options useful for debugging"
-msgstr ""
-
-msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
 msgid "Options controlling the security"
@@ -6644,6 +8027,29 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
+msgid "GPG for OpenPGP"
+msgstr ""
+
+msgid "GPG Agent"
+msgstr ""
+
+msgid "Smartcard Daemon"
+msgstr ""
+
+msgid "GPG for S/MIME"
+msgstr ""
+
+msgid "Directory Manager"
+msgstr ""
+
+#, fuzzy
+msgid "PIN and Passphrase Entry"
+msgstr "κακή φράση κλειδί"
+
+#, fuzzy
+msgid "Component not suitable for launching"
+msgstr "δεν βρέθηκε το δημόσιο κλειδί"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr ""
@@ -6669,7 +8075,7 @@ msgstr ""
 msgid "apply global default values"
 msgstr ""
 
-msgid "get the configuration directories for gpgconf"
+msgid "get the configuration directories for @GPGCONF@"
 msgstr ""
 
 #, fuzzy
@@ -6680,6 +8086,15 @@ msgstr "άγνωστο αντικείμενο ρυθμίσεως \"%s\"\n"
 msgid "check global configuration file"
 msgstr "άγνωστο αντικείμενο ρυθμίσεως \"%s\"\n"
 
+msgid "reload all or a given component"
+msgstr ""
+
+msgid "launch a given component"
+msgstr ""
+
+msgid "kill a given component"
+msgstr ""
+
 msgid "use as output file"
 msgstr "χρήση ως αρχείου εξόδου"
 
@@ -6687,17 +8102,13 @@ msgid "activate changes at runtime, if possible"
 msgstr ""
 
 #, fuzzy
-msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
 msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
 
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-
-#, fuzzy
-msgid "usage: gpgconf [options] "
-msgstr "χρήση: gpg [επιλογές] "
 
 msgid "Need one component argument"
 msgstr ""
@@ -6855,6 +8266,324 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "use a standard location for the socket"
+#~ msgstr ""
+#~ "Σίγουρα θέλετε να ανανεωθούν οι προεπιλογές για το επιλεγμένο user ID; "
+
+#, fuzzy
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "κακοδιατυπομένη μεταβλητή περιβάλλοντος GPG_AGENT_INFO\n"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "δεν υποστηρίζεται η έκδοση πρωτοκόλλου %d του gpg-agent\n"
+
+#, fuzzy
+#~ msgid "can't fdopen pipe for reading: %s\n"
+#~ msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
+
+#, fuzzy
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "σφάλμα κατά τη δημιουργία του `%s': %s\n"
+
+#, fuzzy
+#~ msgid "host not found"
+#~ msgstr "[User id δεν βρέθηκε]"
+
+#, fuzzy
+#~ msgid "unknown key protection algorithm\n"
+#~ msgstr "άγνωστος αλγόριθμος προστασίας\n"
+
+#, fuzzy
+#~ msgid "secret parts of key are not available\n"
+#~ msgstr "Μυστικά τμήματα του κύριου κλειδιού δεν είναι διαθέσιμα.\n"
+
+#, fuzzy
+#~ msgid "secret key already stored on a card\n"
+#~ msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
+
+#, fuzzy
+#~ msgid "error writing key to card: %s\n"
+#~ msgstr "αδυναμία εγγραφής της κλειδοθήκης `%s': %s\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "κρυπτογράφηση με κλειδία RSA από 2048 bit ή πιο λίγο μόνο σε κατάσταση --"
+#~ "pgp2\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr ""
+#~ "αδυναμία χρήσης του κρυπταλγόριθμου IDEA για όλα τα κλειδία με τα "
+#~ "οποίακρυπτογραφείτε.\n"
+
+#, fuzzy
+#~ msgid "remove the passphrase from exported subkeys"
+#~ msgstr "ανάκληση ενός δευτερεύοντος κλειδιού"
+
+#, fuzzy
+#~ msgid "key %s: not protected - skipped\n"
+#~ msgstr "κλειδί %08lX: δεν είναι προστατευμένο - παραλείφθηκε\n"
+
+#, fuzzy
+#~ msgid "failed to unprotect the subkey: %s\n"
+#~ msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
+
+#, fuzzy
+#~ msgid "WARNING: secret key %s does not have a simple SK checksum\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: το μυστικό κλειδί %08lX δεν έχει απλό SK checksum\n"
+
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "πάρα πολλές καταχωρήσεις στη pk cache - απενεργοποιήθηκε\n"
+
+#, fuzzy
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr "κανένα μυστικό υποκλειδί για το δημόσιο υποκλειδί %08lX - αγνόηση\n"
+
+#, fuzzy
+#~ msgid "key %s: secret key without public key - skipped\n"
+#~ msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "χρήση: gpg [επιλογές] "
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "μπορείτε να κάνετε αποκομμένες ή καθαρές υπογραφές μόνο σε --pgp2 "
+#~ "κατάσταση\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "δεν μπορείτε να υπογράφετε και να κρυπτογραφείτε ταυτόχρονα σε --pgp2 "
+#~ "κατάσταση\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr ""
+#~ "μόνο αρχεία επιτρέπονται (και όχι pipes) κατα την κατασταση --pgp2.\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr ""
+#~ "η κρυπτογράφηση ενός μηνύματος σε --pgp2 κατάσταση απαιτεί τον αλγορ. "
+#~ "IDEA\n"
+
+#, fuzzy
+#~ msgid "create a public key when importing a secret key"
+#~ msgstr "το δημοσίο κλειδί δεν ταιριάζει με το μυστικό!\n"
+
+#, fuzzy
+#~ msgid "key %s: already in secret keyring\n"
+#~ msgstr "κλειδί %08lX: ήδη στη μυστική κλειδοθήκη\n"
+
+#, fuzzy
+#~ msgid "key %s: secret key not found: %s\n"
+#~ msgstr "κλειδί %08lX: δε βρέθηκε το μυστικό κλειδί: %s\n"
+
+#, fuzzy
+#~ msgid "NOTE: a key's S/N does not match the card's one\n"
+#~ msgstr "το δημοσίο κλειδί δεν ταιριάζει με το μυστικό!\n"
+
+#, fuzzy
+#~ msgid "NOTE: primary key is online and stored on card\n"
+#~ msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
+
+#, fuzzy
+#~ msgid "NOTE: secondary key is online and stored on card\n"
+#~ msgstr "παραλείφθηκε: μυστικό κλειδί ήδη παρών\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr ""
+#~ "Μπορείτε να χρησιμόποιήσετε μια OpenPGP υπογραφή σε ένα PGP 2.x μόνο σε "
+#~ "κατάσταση --pgp2.\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "Αυτό θα κάνει το κλειδί άχρηστο με το PGP 2.x.\n"
+
+#~ msgid "This key is not protected.\n"
+#~ msgstr "Αυτό το κλειδί δεν προστατεύεται.\n"
+
+#~ msgid "Key is protected.\n"
+#~ msgstr "Το κλειδί προστατεύεται.\n"
+
+#~ msgid "Can't edit this key: %s\n"
+#~ msgstr "Αδύνατη η επεξεργασία αυτού του κλειδιού:%s\n"
+
+#~ msgid ""
+#~ "Enter the new passphrase for this secret key.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Πληκτρολογήστε την νέα φράση κλειδί για αυτό το μυστικό κλειδί.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
+#~ "\n"
+#~ msgstr "Δεν θέλετε φράση κλειδί - αυτό είναι μάλλον *κακή* ιδέα!\n"
+
+#, fuzzy
+#~ msgid "Do you really want to do this? (y/N) "
+#~ msgstr "Σίγουρα θέλετε να κάνετε αυτό; "
+
+#, fuzzy
+#~ msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgstr "σφάλμα κατά την ανάγνωση μυστικού μπλοκ κλειδιού `%s': %s\n"
+
+#~ msgid "Please remove selections from the secret keys.\n"
+#~ msgstr "Παρακαλώ αφαιρέστε τις επιλογές από τα μυστικά κλειδιά.\n"
+
+#~ msgid "No corresponding signature in secret ring\n"
+#~ msgstr "Δεν βρέθηκε αντίστοιχη υπογραφή στη μυστική κλειδοθήκη\n"
+
+#, fuzzy
+#~ msgid "writing secret key stub to `%s'\n"
+#~ msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#~ msgid "writing secret key to `%s'\n"
+#~ msgstr "εγγραφή του μυστικού κλειδιού στο `%s'\n"
+
+#~ msgid "no writable secret keyring found: %s\n"
+#~ msgstr "δε βρέθηκε εγγράψιμη μυστική κλειδοθήκη: %s\n"
+
+#~ msgid "WARNING: 2 files with confidential information exists.\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: 2 αρχεία με εμπιστευτικές πληροφορίες υπάρχουν.\n"
+
+#~ msgid "%s is the unchanged one\n"
+#~ msgstr "%s είναι το αμετάβλητο\n"
+
+#~ msgid "%s is the new one\n"
+#~ msgstr "%s είναι το νέο\n"
+
+#~ msgid "Please fix this possible security flaw\n"
+#~ msgstr "Παρακαλώ διορθώστε αυτή την πιθανή \"τρύπα\" ασφαλείας\n"
+
+#, fuzzy
+#~ msgid "searching for names from %s server %s\n"
+#~ msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
+
+#, fuzzy
+#~ msgid "searching for names from %s\n"
+#~ msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
+
+#, fuzzy
+#~ msgid "searching for \"%s\" from %s server %s\n"
+#~ msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
+
+#, fuzzy
+#~ msgid "searching for \"%s\" from %s\n"
+#~ msgstr "αναζήτηση του \"%s\" από το HKP διακομιστή %s\n"
+
+#, fuzzy
+#~ msgid "no keyserver action!\n"
+#~ msgstr "μη έγκυρες επιλογές εξαγωγής\n"
+
+#, fuzzy
+#~ msgid "keyserver timed out\n"
+#~ msgstr "σφάλμα διακομιστή κλειδιών"
+
+#, fuzzy
+#~ msgid "keyserver internal error\n"
+#~ msgstr "σφάλμα διακομιστή κλειδιών"
+
+#, fuzzy
+#~ msgid "keyserver communications error: %s\n"
+#~ msgstr "keyserver λήψη απέτυχε: %s\n"
+
+#, fuzzy
+#~ msgid "WARNING: unable to parse URI %s\n"
+#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "μη έγκυρο ριζικό(root) πακέτο ανιχνεύτηκε στο proc_tree()\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "το βύσμα του κρυπταλγόριθμου IDEA δεν υπάρχει\n"
+
+#~ msgid "no corresponding public key: %s\n"
+#~ msgstr "κανένα αντίστιχο δημόσιο κλειδί: %s\n"
+
+#~ msgid "public key does not match secret key!\n"
+#~ msgstr "το δημοσίο κλειδί δεν ταιριάζει με το μυστικό!\n"
+
+#~ msgid "unknown protection algorithm\n"
+#~ msgstr "άγνωστος αλγόριθμος προστασίας\n"
+
+#~ msgid "NOTE: This key is not protected!\n"
+#~ msgstr "ΣΗΜΕΙΩΣΗ: Αυτό το κλειδί δεν προστατεύεται!\n"
+
+#, fuzzy
+#~ msgid "protection digest %d is not supported\n"
+#~ msgstr "δεν υποστηρίζεται ο αλγόριθμος προστασίας %d%s\n"
+
+#~ msgid "Invalid passphrase; please try again"
+#~ msgstr "Μη έγκυρη φράση κλειδί, δοκιμάστε ξανά"
+
+#~ msgid "%s ...\n"
+#~ msgstr "%s ...\n"
+
+#~ msgid "WARNING: Weak key detected - please change passphrase again.\n"
+#~ msgstr ""
+#~ "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: Ανιχνεύτηκε αδύναμο κλειδί - αλλάξτε τη φράση κλειδί\n"
+
+#~ msgid ""
+#~ "generating the deprecated 16-bit checksum for secret key protection\n"
+#~ msgstr ""
+#~ "δημιουργία του μη συνειστόμενου 16-bit checksum για τη προστασία του\n"
+#~ "μυστικού κλειδιού\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "μπορείτε να υπογράψετε-αποκομμένα με κλειδιά τύπου PGP 2.x μόνο σε\n"
+#~ "--pgp2 κατάσταση\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "μπορείτε να υπογράψετε καθαρά με κλειδιά τύπου PGP 2.x σε κατάσταση --"
+#~ "pgp2\n"
+
+#, fuzzy
+#~ msgid "[ revoked]"
+#~ msgstr "[ανακλημένο]"
+
+#, fuzzy
+#~ msgid "[ expired]"
+#~ msgstr "[ληγμένο]"
+
+#, fuzzy
+#~ msgid "[ unknown]"
+#~ msgstr "άγνωστο"
+
+#, fuzzy
+#~ msgid "never"
+#~ msgstr "ποτέ     "
+
+#, fuzzy
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+#, fuzzy
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "Χρήση: gpg [επιλογές] [αρχεία] (-h για βοήθεια)"
+
+#, fuzzy
+#~ msgid "usage: gpgconf [options] "
+#~ msgstr "χρήση: gpg [επιλογές] "
+
+#, fuzzy
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "αποτυχία αρχικοποίησης της TrustDB: %s\n"
+
+#~ msgid "Command> "
+#~ msgstr "Εντολή> "
+
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""
 #~ "η trustdb είναι φθαρμένη - χρησιμοποιείστε το \"gpg --fix-trustdb\".\n"
@@ -6888,9 +8617,6 @@ msgstr ""
 #~ msgid "|[FILE]|make a clear text signature"
 #~ msgstr "|[αρχείο]|δημιουργία μιας μη κρυπτογραφημένης υπογραφής"
 
-#~ msgid "|NAME|use NAME as default recipient"
-#~ msgstr "|ΟΝΟΜΑ|χρήση του ΟΝΟΜΑτος ως προκαθορισμένου παραλήπτη"
-
 #~ msgid "use the default key as default recipient"
 #~ msgstr "χρήση του προκαθορισμένου κλειδιού ως προκαθορισμένου παραλήπτη"
 
@@ -6902,9 +8628,6 @@ msgstr ""
 
 #~ msgid "add this secret keyring to the list"
 #~ msgstr "προσθήκη αυτής της μυστικής κλειδοθήκης στη λίστα"
-
-#~ msgid "|NAME|set terminal charset to NAME"
-#~ msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
 
 #~ msgid "|FILE|load extension module FILE"
 #~ msgstr "|ΑΡΧΕΙΟ|φόρτωμα του αρθρώματος επέκτασης ΑΡΧΕΙΟ"
@@ -7249,9 +8972,6 @@ msgstr ""
 #~ "η επέκταση του κρυπταλγόριθμου \"%s\" δεν φορτώθηκε επειδή υπάρχουν\n"
 #~ "ανασφαλείς άδειες\n"
 
-#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
-#~ msgstr "ο DSA απαιτεί τη χρήση ενός 160 bit αλγόριθμου hash\n"
-
 #, fuzzy
 #~ msgid ".\n"
 #~ msgstr "%s.\n"
@@ -7262,9 +8982,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "can't query passphrase in batch mode\n"
 #~ msgstr "αδυναμία ερώτησης της λέξης κλειδί σε κατάσταση δέσμης\n"
-
-#~ msgid "Enter passphrase: "
-#~ msgstr "Πληκτρολογήστε τη φράση κλειδί: "
 
 #~ msgid "Repeat passphrase: "
 #~ msgstr "Επαναλάβετε τη φράση κλειδί: "
@@ -7286,19 +9003,11 @@ msgstr ""
 #~ msgid "can't lock `%s': %s\n"
 #~ msgstr "αδυναμία πρόσβασης του `%s'\n"
 
-#~ msgid "can't stat `%s': %s\n"
-#~ msgstr "αδυναμία λήψης πληροφοριών για το `%s': %s\n"
-
 #~ msgid "`%s' is not a regular file - ignored\n"
 #~ msgstr "`%s' δεν είναι κανονικό αρχείο - αγνοήθηκε\n"
 
 #~ msgid "note: random_seed file is empty\n"
 #~ msgstr "σημείωση: το αρχείο random_seed είναι άδειο\n"
-
-#~ msgid "WARNING: invalid size of random_seed file - not used\n"
-#~ msgstr ""
-#~ "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: μη έγκυρο μέγεθος αρχείου random_seed - δεν\n"
-#~ "χρησιμοποιείτε\n"
 
 #~ msgid "can't read `%s': %s\n"
 #~ msgstr "αδυναμία ανάγνωσης του `%s': %s\n"
@@ -7363,9 +9072,6 @@ msgstr ""
 #~ msgid "unknown packet type"
 #~ msgstr "άγνωστος τύπος πακέτου"
 
-#~ msgid "unknown pubkey algorithm"
-#~ msgstr "άγνωστος αλγόριθμος δημοσίου κλειδιού"
-
 #~ msgid "unknown digest algorithm"
 #~ msgstr "άγνωστος αλγοριθμος περίληψης"
 
@@ -7390,9 +9096,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "μη έγκυρο πακέτο"
 
-#~ msgid "invalid armor"
-#~ msgstr "μη έγκυρη θωράκιση"
-
 #~ msgid "no such user id"
 #~ msgstr "άγνωστη ταυτότητα χρήστη (user id)"
 
@@ -7401,9 +9104,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "χρήση λάθος μυστικού κλειδιού"
-
-#~ msgid "not supported"
-#~ msgstr "δεν υποστηρίζεται"
 
 #~ msgid "bad key"
 #~ msgstr "κακό κλειδί"
@@ -7500,9 +9200,6 @@ msgstr ""
 #~ msgid "... this is a bug (%s:%d:%s)\n"
 #~ msgstr "... αυτό είναι bug (%s:%d:%s)\n"
 
-#~ msgid "WARNING: using insecure memory!\n"
-#~ msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: χρήση μη ασφαλούς μνήμης!\n"
-
 #~ msgid "operation is not possible without initialized secure memory\n"
 #~ msgstr "η λειτουργία δεν είναι δυνατή χωρίς αρχικοποιημένη ασφαλή μνήμη\n"
 
@@ -7551,9 +9248,6 @@ msgstr ""
 
 #~ msgid "can't get server write FD for the agent\n"
 #~ msgstr "αδυναμία εγγραφής του FD από το διακομιστή για τον agent\n"
-
-#~ msgid "invalid response from agent\n"
-#~ msgstr "μη έγκυρη απάντηση από τον agent\n"
 
 #~ msgid "select secondary key N"
 #~ msgstr "επιλογή δευτερεύοντος κλειδιού N"
@@ -7637,9 +9331,6 @@ msgstr ""
 
 #~ msgid "uid"
 #~ msgstr "uid"
-
-#~ msgid "key"
-#~ msgstr "key"
 
 #~ msgid "check"
 #~ msgstr "check"
@@ -7807,10 +9498,6 @@ msgstr ""
 #~ msgid "can't open file `%s': %s\n"
 #~ msgstr "αδυναμία πρόσβασης του αρχείου: %s\n"
 
-#, fuzzy
-#~ msgid "          \""
-#~ msgstr "                γνωστό σαν \""
-
 #~ msgid "key %08lX: key has been revoked!\n"
 #~ msgstr "κλειδί %08lX: το κλειδί έχει ανακληθεί!\n"
 
@@ -7864,9 +9551,6 @@ msgstr ""
 #~ msgstr ""
 #~ "\"\n"
 #~ "υπογράφθηκε τοπικά με το κλειδί σας %08lX στις %s\n"
-
-#~ msgid "%s: can't access: %s\n"
-#~ msgstr "%s: αδυναμία πρόσβασης: %s\n"
 
 #~ msgid "%s: can't create lock\n"
 #~ msgstr "%s: αδυναμία δημιουργίας κλειδώματος (lock)\n"

@@ -9,6 +9,7 @@ msgstr ""
 "PO-Revision-Date: 2004-06-19 21:53+0200\n"
 "Last-Translator: Nagy Ferenc László <nfl@nfllab.com>\n"
 "Language-Team: Hungarian <translation-team-hu@lists.sourceforge.net>\n"
+"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,6 +17,20 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
+#. TRANSLATORS: These are labels for buttons etc used in
+#. Pinentries.  An underscore indicates that the next letter
+#. should be used as an accelerator.  Double the underscore for
+#. a literal one.  The actual to be translated text starts after
+#. the second vertical bar.
+msgid "|pinentry-label|_OK"
+msgstr ""
+
+msgid "|pinentry-label|_Cancel"
+msgstr ""
+
+msgid "|pinentry-label|PIN:"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -42,8 +57,17 @@ msgid ""
 "this session"
 msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
 
+msgid "does not match - try again"
+msgstr ""
+
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
+msgstr ""
+
+msgid "Repeat:"
 msgstr ""
 
 #, fuzzy
@@ -77,11 +101,13 @@ msgstr "rossz jelszó"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "%d%s védõ algoritmus nem támogatott.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
 msgid "can't create '%s': %s\n"
 msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" állományt: %s.\n"
 
@@ -94,7 +120,7 @@ msgid "detected card with S/N: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error getting default authentication keyID of card: %s\n"
+msgid "no authentication key for ssh on card: %s\n"
 msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
 
 #, fuzzy, c-format
@@ -109,22 +135,31 @@ msgstr "A kulcsblokk törlése sikertelen: %s.\n"
 msgid "error writing key: %s\n"
 msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "jelszóváltoztatás"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
-
-msgid "does not match - try again"
-msgstr ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
+msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
 
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -148,7 +183,7 @@ msgid "Reset Code"
 msgstr ""
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -197,32 +232,6 @@ msgstr "Mégis használjuk ezt a kulcsot? "
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
 
@@ -236,7 +245,28 @@ msgid "Yes, protection is not needed"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "A név legalább 5 karakter kell legyen!\n"
+msgstr[1] "A név legalább 5 karakter kell legyen!\n"
+
+#, c-format
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
 "Most szükség van egy jelszóra (vagy mondatra), amely a titkos kulcsát védi.\n"
 "\n"
@@ -254,10 +284,10 @@ msgstr ""
 "Opciók:\n"
 " "
 
-msgid "run in server mode (foreground)"
+msgid "run in daemon mode (background)"
 msgstr ""
 
-msgid "run in daemon mode (background)"
+msgid "run in server mode (foreground)"
 msgstr ""
 
 msgid "verbose"
@@ -286,10 +316,6 @@ msgstr ""
 msgid "use a log file for the server"
 msgstr "kulcsok keresése kulcsszerveren"
 
-#, fuzzy
-msgid "use a standard location for the socket"
-msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
 
@@ -312,18 +338,22 @@ msgstr ""
 msgid "do not use the PIN cache when signing"
 msgstr ""
 
-msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
 
 #, fuzzy
 msgid "allow presetting passphrase"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "nem támogatott"
 
-msgid "|FILE|write environment settings also to FILE"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "nem támogatott"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -333,12 +363,12 @@ msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "A hibákat (angolul) a <gnupg-bugs@gnu.org> címre írja meg!\n"
 
 #, fuzzy
-msgid "Usage: gpg-agent [options] (-h for help)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
 
 #, c-format
@@ -349,25 +379,25 @@ msgstr ""
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#, c-format
-msgid "NOTE: no default option file '%s'\n"
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "MEGJEGYZÉS: Nincs alapértelmezett opciós fájl (%s).\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
 msgid "option file '%s': %s\n"
 msgstr "\"%s\" opciós fájl: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "Hiba \"%s\" létrehozásakor: %s\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is a deprecated option\n"
+msgid "Note: '%s' is not considered an option\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
 
 msgid "name of socket too long\n"
 msgstr ""
@@ -399,6 +429,11 @@ msgstr "Frissítés sikertelen: %s.\n"
 #, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
 
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
@@ -433,7 +468,7 @@ msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "pth_select failed: %s - waiting 1s\n"
+msgid "npth_pselect failed: %s - waiting 1s\n"
 msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
 
 #, fuzzy, c-format
@@ -443,13 +478,6 @@ msgstr "%s: kihagyva: %s\n"
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "GPG ügynök nem elérhetõ ebben a munkafolyamatban.\n"
-
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "Nem megfelelõ formájú GPG_AGENT_INFO környezeti változó!\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "%d gpg-agent protokollverzió nem támogatott!\n"
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -524,9 +552,9 @@ msgstr "Hiba \"%s\" olvasásakor: %s\n"
 msgid "file '%s', line %d: %s\n"
 msgstr "\"%s\" kulcs nem található: %s\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "statement \"%s\" ignored in '%s', line %d\n"
-msgstr ""
+msgstr "Olvasási hiba: %s.\n"
 
 #, fuzzy, c-format
 msgid "system trustlist '%s' not available\n"
@@ -536,9 +564,9 @@ msgstr "Titkos kulcsrészek nem állnak rendelkezésre.\n"
 msgid "bad fingerprint in '%s', line %d\n"
 msgstr "Olvasási hiba: %s.\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "invalid keyflag in '%s', line %d\n"
-msgstr ""
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
 #, fuzzy, c-format
 msgid "error reading '%s', line %d: %s\n"
@@ -608,13 +636,51 @@ msgstr "jelszóváltoztatás"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy
+msgid "Delete key"
+msgstr "kulcs engedélyezése"
+
+msgid ""
+"Warning: This key is also listed for use with SSH!\n"
+"Deleting the key might remove your ability to access remote machines."
+msgstr ""
+
+msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgstr ""
+
+#, c-format
+msgid "%s key uses an unsafe (%u bit) hash\n"
+msgstr ""
+
+#, c-format
+msgid "a %zu bit hash is not valid for a %u bit %s key\n"
+msgstr ""
+
+msgid "secret key parts are not available\n"
+msgstr "Titkos kulcsrészek nem állnak rendelkezésre.\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "public key algorithm %d (%s) is not supported\n"
+msgstr "%d%s védõ algoritmus nem támogatott.\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection algorithm %d (%s) is not supported\n"
+msgstr "%d%s védõ algoritmus nem támogatott.\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection hash algorithm %d (%s) is not supported\n"
+msgstr "%d%s védõ algoritmus nem támogatott.\n"
+
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 #, fuzzy, c-format
-msgid "can't fdopen pipe for reading: %s\n"
-msgstr "Nem tudom megnyitni az állományt: %s.\n"
+msgid "error creating a stream for a pipe: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
@@ -625,33 +691,26 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
+msgid "error running '%s': probably not installed\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
 #, fuzzy, c-format
 msgid "error running '%s': exit status %d\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error running '%s': terminated\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
 #, fuzzy, c-format
-msgid "error creating socket: %s\n"
-msgstr "Hiba \"%s\" létrehozásakor: %s\n"
-
-#, fuzzy
-msgid "host not found"
-msgstr "[ismeretlen kulcs]"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
 
 msgid "gpg-agent is not available in this session\n"
 msgstr "GPG ügynök nem elérhetõ ebben a munkafolyamatban.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "Nem tudok kapcsolódni \"%s\" objektumhoz: %s\n"
 
@@ -726,10 +785,26 @@ msgstr ""
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-msgid "no running gpg-agent - starting one\n"
+#, c-format
+msgid "no running gpg-agent - starting '%s'\n"
 msgstr ""
 
-msgid "can't connect to the agent - trying fall back\n"
+#, c-format
+msgid "waiting for the agent to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to agent established\n"
+msgstr ""
+
+#, c-format
+msgid "no running Dirmngr - starting '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "waiting for the dirmngr to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -753,6 +828,22 @@ msgstr "rossz igazolás"
 
 msgid "|audit-log-result|Error"
 msgstr ""
+
+#, fuzzy
+msgid "|audit-log-result|Not used"
+msgstr "rossz igazolás"
+
+#, fuzzy
+msgid "|audit-log-result|Okay"
+msgstr "rossz igazolás"
+
+#, fuzzy
+msgid "|audit-log-result|Skipped"
+msgstr "rossz igazolás"
+
+#, fuzzy
+msgid "|audit-log-result|Some"
+msgstr "rossz igazolás"
 
 #, fuzzy
 msgid "Certificate chain available"
@@ -797,8 +888,24 @@ msgstr ""
 msgid "Data signing succeeded"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "data hash algorithm: %s"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, fuzzy, c-format
+msgid "Signer %d"
+msgstr "Az aláírás lejárt: %s.\n"
+
+#, fuzzy, c-format
+msgid "attr hash algorithm: %s"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
 msgid "Data decryption succeeded"
 msgstr ""
+
+#, fuzzy
+msgid "Encryption algorithm supported"
+msgstr "%d%s védõ algoritmus nem támogatott.\n"
 
 #, fuzzy
 msgid "Data verification succeeded"
@@ -809,11 +916,11 @@ msgid "Signature available"
 msgstr "Az aláírás lejárt: %s.\n"
 
 #, fuzzy
-msgid "Parsing signature succeeded"
+msgid "Parsing data succeeded"
 msgstr "Jó aláírás a következõtõl: \""
 
 #, fuzzy, c-format
-msgid "Bad hash algorithm: %s"
+msgid "bad data hash algorithm: %s"
 msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
 #, fuzzy, c-format
@@ -868,6 +975,118 @@ msgstr "Hiba a záró sorban!\n"
 #, fuzzy
 msgid "[none]"
 msgstr "Ismeretlen módú"
+
+#, fuzzy
+msgid "argument not expected"
+msgstr "Írom a titkos kulcsot a %s állományba.\n"
+
+#, fuzzy
+msgid "read error"
+msgstr "állományolvasási hiba"
+
+#, fuzzy
+msgid "keyword too long"
+msgstr "A sor túl hosszú!\n"
+
+#, fuzzy
+msgid "missing argument"
+msgstr "érvénytelen argumentum"
+
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "érvénytelen páncél"
+
+#, fuzzy
+msgid "invalid command"
+msgstr "Egymásnak ellentmondó parancsok!\n"
+
+#, fuzzy
+msgid "invalid alias definition"
+msgstr "Érvénytelen import opciók!\n"
+
+#, fuzzy
+msgid "out of core"
+msgstr "nem feldolgozott"
+
+#, fuzzy
+msgid "invalid option"
+msgstr "Érvénytelen import opciók!\n"
+
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "Érvénytelen import opciók!\n"
+
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Érvénytelen parancs! (Próbálja a súgót: \"help\".)\n"
+
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#, fuzzy
+msgid "out of core\n"
+msgstr "nem feldolgozott"
+
+#, fuzzy, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "Érvénytelen import opciók!\n"
+
+#, c-format
+msgid "you found a bug ... (%s:%d)\n"
+msgstr "Talált egy programhibát... (%s:%d)\n"
+
+#, fuzzy, c-format
+msgid "conversion from '%s' to '%s' not available\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "iconv_open failed: %s\n"
+msgstr "Nem tudom megnyitni az állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "conversion from '%s' to '%s' failed: %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to create temporary file '%s': %s\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy, c-format
+msgid "error writing to '%s': %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+
+#, c-format
+msgid "removing stale lockfile (created by %d)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "waiting for lock (held by %d%s) %s...\n"
+msgstr "Írom a titkos kulcsot a %s állományba.\n"
+
+msgid "(deadlock?) "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "lock '%s' not made: %s\n"
+msgstr "A(z) %08lX nyilvános kulcsot nem találom: %s.\n"
+
+#, fuzzy, c-format
+msgid "waiting for lock %s...\n"
+msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -955,6 +1174,13 @@ msgstr "FIGYELEM: Érvénytelen jelölõ adatot találtam.\n"
 msgid "not human readable"
 msgstr "nem olvasható forma"
 
+#, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr ""
+
+msgid "Enter passphrase: "
+msgstr "Írja be a jelszót: "
+
 #, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "titkos kulcs nem áll rendelkezésre"
@@ -1031,7 +1257,8 @@ msgstr ""
 msgid "error allocating enough memory: %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
 
@@ -1096,7 +1323,7 @@ msgid "Replace existing key? (y/N) "
 msgstr ""
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1133,7 +1360,7 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
 #, fuzzy
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "Kihagytam: titkos kulcs már jelen van.\n"
 
 msgid "Replace existing keys? (y/N) "
@@ -1142,7 +1369,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
-"   PIN = `%s'     Admin PIN = `%s'\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
 "You should change them using the command --change-pin\n"
 msgstr ""
 
@@ -1168,21 +1395,9 @@ msgstr "Érvénytelen választás.\n"
 msgid "Please select where to store the key:\n"
 msgstr "Kérem, válassza ki a visszavonás okát:\n"
 
-#, fuzzy
-msgid "unknown key protection algorithm\n"
-msgstr "Ismeretlen védelmi algoritmus!\n"
-
-#, fuzzy
-msgid "secret parts of key are not available\n"
-msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
-
-#, fuzzy
-msgid "secret key already stored on a card\n"
-msgstr "Kihagytam: titkos kulcs már jelen van.\n"
-
 #, fuzzy, c-format
-msgid "error writing key to card: %s\n"
-msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "Frissítés sikertelen: %s.\n"
 
 msgid "quit this menu"
 msgstr "kilépés ebbõl a menübõl"
@@ -1238,8 +1453,8 @@ msgstr ""
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-msgid "Command> "
-msgstr "Parancs> "
+msgid "gpg/card> "
+msgstr ""
 
 #, fuzzy
 msgid "Admin-only command\n"
@@ -1259,7 +1474,8 @@ msgstr "Érvénytelen parancs! (Próbálja a súgót: \"help\".)\n"
 msgid "--output doesn't work for this command\n"
 msgstr "Az --output opció nem mûködik ehhez a parancshoz.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s'\n"
 msgid "can't open '%s'\n"
 msgstr "Nem tudom megnyitni %s-t!\n"
 
@@ -1286,6 +1502,18 @@ msgstr "Töröljem ezt a kulcsot a kulcskarikáról? "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Ez egy titkos kulcs! Valóban töröljem? "
 
+#, fuzzy, c-format
+msgid "deleting secret %s failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+msgid "key"
+msgstr "key"
+
+#, fuzzy
+#| msgid "Pubkey: "
+msgid "subkey"
+msgstr "Nyilvános kulcsú (pubkey): "
+
 #, c-format
 msgid "deleting keyblock failed: %s\n"
 msgstr "A kulcsblokk törlése sikertelen: %s.\n"
@@ -1311,25 +1539,20 @@ msgstr "Nem tudok szimmetrikus ESK csomagot használni a S2K mód miatt!\n"
 msgid "using cipher %s\n"
 msgstr "%s rejtjelezést használok.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
 msgid "'%s' already compressed\n"
 msgstr "\"%s\" már tömörített.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "FIGYELEM: A(z) \"%s\" állomány üres.\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"Csak 2048 bites, vagy rövidebb RSA kulcsokkal titkosíthat --pgp2 módban!\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "Olvasok a \"%s\" állományból.\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr "Nem tudom az IDEA rejtjelezõt használni az összes címzett kulcshoz.\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -1406,12 +1629,14 @@ msgstr "Nem tudom a végrehajtani a külsõ programot.\n"
 msgid "unable to read external program response: %s\n"
 msgstr "Nem tudom beolvasni a külsõ program válaszát: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
 msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr ""
 "FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove temp directory `%s': %s\n"
 msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "FIGYELEM: nem tudom törölni a \"%s\" átmeneti könyvtárat: %s\n"
 
@@ -1429,10 +1654,6 @@ msgid "export revocation keys marked as \"sensitive\""
 msgstr "Nem találtam visszavonó kulcsot a következõhöz: \"%s\".\n"
 
 #, fuzzy
-msgid "remove the passphrase from exported subkeys"
-msgstr "másodlagos kulcs visszavonása"
-
-#, fuzzy
 msgid "remove unusable parts from key during export"
 msgstr "használhatatlan titkos kulcs"
 
@@ -1447,10 +1668,6 @@ msgid "exporting secret keys not allowed\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, fuzzy, c-format
-msgid "key %s: not protected - skipped\n"
-msgstr "%08lX kulcs: nem védett - kihagytam.\n"
-
-#, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "%08lX kulcs: PGP 2.x stílusú kulcs - kihagytam.\n"
 
@@ -1458,30 +1675,21 @@ msgstr "%08lX kulcs: PGP 2.x stílusú kulcs - kihagytam.\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "%08lX kulcs: Alkulcsaláírás rossz helyen - kihagytam.\n"
 
-msgid "about to export an unprotected subkey\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "failed to unprotect the subkey: %s\n"
-msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
-
-#, fuzzy, c-format
-msgid "WARNING: secret key %s does not have a simple SK checksum\n"
-msgstr "FIGYELEM: %08lX titkos kulcsnak nincs egyszerû SK ellenõrzõösszege.\n"
+#, fuzzy
+#| msgid "%s: skipped: %s\n"
+msgid " - skipped"
+msgstr "%s: kihagyva: %s\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "FIGYELEM: Semmit sem exportáltam.\n"
-
-msgid "too many entries in pk cache - disabled\n"
-msgstr "Túl sok bejegyzés van a nyilvánoskulcs-gyorsítótárban - letiltom.\n"
 
 #, fuzzy
 msgid "[User ID not found]"
 msgstr "[ismeretlen kulcs]"
 
-#, c-format
+#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
-msgstr ""
+msgstr "Hiba \"%s\" létrehozásakor: %s\n"
 
 #, fuzzy, c-format
 msgid "error retrieving '%s' via %s: %s\n"
@@ -1498,17 +1706,8 @@ msgstr ""
 "--allow-non-selfsigned-uid opcióval.\n"
 
 #, fuzzy, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr ""
-"Nincs titkos alkulcs a %08lX nyilvános alkulcshoz - figyelmen kívül hagyom.\n"
-
-#, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "A %08lX másodlagos kulcsot használjuk a %08lX elsõdleges helyett.\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -1552,11 +1751,32 @@ msgstr "titkos kulcsok listázása"
 msgid "generate a new key pair"
 msgstr "új kulcspár létrehozása"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "új kulcspár létrehozása"
+
+msgid "full featured key pair generation"
+msgstr ""
+
+msgid "generate a revocation certificate"
+msgstr "visszavonási igazolás készítése"
+
 msgid "remove keys from the public keyring"
 msgstr "kulcsok eltávolítása a nyilvánoskulcs-karikáról"
 
 msgid "remove keys from the secret keyring"
 msgstr "kulcsok eltávolítása a titkoskulcs-karikáról"
+
+#, fuzzy
+#| msgid "sign a key"
+msgid "quickly sign a key"
+msgstr "kulcs aláírása"
+
+#, fuzzy
+#| msgid "sign a key locally"
+msgid "quickly sign a key locally"
+msgstr "kulcs aláírása helyileg"
 
 msgid "sign a key"
 msgstr "kulcs aláírása"
@@ -1567,8 +1787,9 @@ msgstr "kulcs aláírása helyileg"
 msgid "sign or edit a key"
 msgstr "kulcs aláírása vagy szerkesztése"
 
-msgid "generate a revocation certificate"
-msgstr "visszavonási igazolás készítése"
+#, fuzzy
+msgid "change a passphrase"
+msgstr "jelszóváltoztatás"
 
 msgid "export keys"
 msgstr "kulcsok exportálása"
@@ -1664,13 +1885,20 @@ msgstr ""
 " --list-keys [nevek]        kulcsok kiíratása\n"
 " --fingerprint [nevek]      ujjlenyomatok kiíratása\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Syntax: @GPG@ [options] [files]\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Szintaxis: gpg [opciók] [fájlok]\n"
 "Aláírás, ellenõrzés, titkosítás vagy visszafejtés.\n"
@@ -1695,7 +1923,8 @@ msgstr "Kivonatoló (hash): "
 msgid "Compression: "
 msgstr "Tömörítõ (compression): "
 
-msgid "usage: gpg [options] "
+#, fuzzy, c-format
+msgid "usage: %s [options] %s\n"
 msgstr "Használat: gpg [opciók] "
 
 msgid "conflicting commands\n"
@@ -1735,7 +1964,7 @@ msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtártulajdonos: %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1748,7 +1977,7 @@ msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr "FIGYELEM: nem biztonságos könyvtárengedélyek: %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1761,6 +1990,10 @@ msgstr "\"%s\": ismeretlen konfigurációs elem.\n"
 
 msgid "display photo IDs during key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show key usage information during key listings"
+msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
 
 msgid "show policy URLs during signature listings"
 msgstr ""
@@ -1796,21 +2029,27 @@ msgstr "mutatja a kilistázott kulcs kulcskarikáját is"
 msgid "show expiration dates during signature listings"
 msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
 
-#, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+#, fuzzy, c-format
+#| msgid "NOTE: old default options file `%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "MEGJEGYZÉS: Figyelmen kívül hagytam a régi opciókat (%s).\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#, c-format
-msgid "NOTE: %s is not for normal use!\n"
+#, fuzzy, c-format
+#| msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "MEGJEGYZÉS: %s nem normál használatra van!\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "%s nem érvényes karakterkiosztás!\n"
+
+#, fuzzy, c-format
+msgid "invalid pinentry mode '%s'\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid character set\n"
@@ -1921,21 +2160,12 @@ msgstr "%s és %s nem használható együtt!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s értelmetlen %s mellett!\n"
 
+msgid "WARNING: running with faked system time: "
+msgstr ""
+
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "Csak különálló és olvashatószöveg-aláírást készíthet --pgp2 módban!\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "Nem írhat alá és titkosíthat egyszerre --pgp2 módban!\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr "Csak állományokat (pipe-ot nem) használhat --pgp2 módban!\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr "Üzenet titkosítása --pgp2 módban IDEA rejtjelezõt igényel!\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "A kiválasztott rejtjelezõ algoritmus érvénytelen!\n"
@@ -1966,7 +2196,9 @@ msgstr "Érvénytelen default-cert-level; 0, 1, 2 vagy 3 lehet.\n"
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "Érvénytelen min-cert-level; 0, 1, 2 vagy 3 lehet.\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+#, fuzzy
+#| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "MEGJEGYZÉS: Egyszerû S2K mód (0) erõsen ellenjavallt!\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -2069,6 +2301,10 @@ msgstr "--lsign-key felh-azonosító"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key felh-azonosító [parancsok]"
 
+#, fuzzy
+msgid "--passwd <user-id>"
+msgstr "--sign-key felh-azonosító"
+
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "Küldés a kulcsszerverre sikertelen: %s\n"
@@ -2097,7 +2333,8 @@ msgstr "Páncél eltávolítása nem sikerült: %s\n"
 msgid "enarmoring failed: %s\n"
 msgstr "Páncélozás nem sikerült: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
@@ -2141,7 +2378,8 @@ msgstr ""
 msgid "No help available"
 msgstr "Nem áll rendelkezésre segítség."
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
 msgid "No help available for '%s'"
 msgstr "Nem áll rendelkezésre segítség \"%s\" témához."
 
@@ -2152,12 +2390,12 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
-msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
 msgstr "bizalmi adatbázis frissítése"
 
 #, fuzzy
-msgid "create a public key when importing a secret key"
-msgstr "A nyilvános kulcs nem passzol a titkos kulcshoz!\n"
+msgid "do not update the trustdb after import"
+msgstr "bizalmi adatbázis frissítése"
 
 msgid "only accept updates to existing keys"
 msgstr ""
@@ -2270,6 +2508,13 @@ msgid "key %s: no user ID\n"
 msgstr "%08lX kulcs: Nincs felhasználói azonosító.\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "Kihagytam \"%s\"-t: %s.\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "%08lX kulcs: HKP alkulcssérülés kijavítva.\n"
 
@@ -2296,11 +2541,13 @@ msgstr "%08lX kulcs: új kulcs - kihagytam.\n"
 msgid "no writable keyring found: %s\n"
 msgstr "Nem írható kulcskarikát találtam: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
 msgid "writing to '%s'\n"
 msgstr "Írok a \"%s\" állományba.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing keyring `%s': %s\n"
 msgid "error writing keyring '%s': %s\n"
 msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
 
@@ -2365,29 +2612,30 @@ msgid "key %s: \"%s\" not changed\n"
 msgstr "%08lX kulcs: \"%s\" nem változott.\n"
 
 #, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr ""
-"%08lX kulcs: Titkos kulcs érvénytelen (%d) rejtjelezõvel - kihagytam.\n"
+msgid "key %s: secret key imported\n"
+msgstr "%08lX kulcs: Titkos kulcs importálva.\n"
+
+#, fuzzy, c-format
+#| msgid "skipped: secret key already present\n"
+msgid "key %s: secret key already exists\n"
+msgstr "Kihagytam: titkos kulcs már jelen van.\n"
+
+#, fuzzy, c-format
+msgid "key %s: error sending to agent: %s\n"
+msgstr "Hiba %s-ra/-re küldéskor: %s\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "\"%s\" titkos kulcs nem található: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
-#, c-format
-msgid "no default secret keyring: %s\n"
-msgstr "Nincs alapértelmezett titkoskulcs-karika: %s\n"
-
 #, fuzzy, c-format
-msgid "key %s: secret key imported\n"
-msgstr "%08lX kulcs: Titkos kulcs importálva.\n"
-
-#, fuzzy, c-format
-msgid "key %s: already in secret keyring\n"
-msgstr "%08lX kulcs: Már szerepel a titkoskulcs-karikán.\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key not found: %s\n"
-msgstr "%08lX kulcs: Titkos kulcs nem található: %s\n"
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr ""
+"%08lX kulcs: Titkos kulcs érvénytelen (%d) rejtjelezõvel - kihagytam.\n"
 
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2416,12 +2664,16 @@ msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "%08lX kulcs: Érvénytelen önaláírás a \"%s\" felh. azonosítón!\n"
 
 #, fuzzy, c-format
-msgid "key %s: no subkey for key binding\n"
-msgstr "%08lX kulcs: Nincs alkulcs a kulcskötéshez!\n"
-
-#, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "%08lX kulcs: Nem támogatott nyilvános kulcsú algoritmus!\n"
+
+#, fuzzy, c-format
+msgid "key %s: invalid direct key signature\n"
+msgstr "%08lX kulcs: Kulcsaláírást hozzáadtam.\n"
+
+#, fuzzy, c-format
+msgid "key %s: no subkey for key binding\n"
+msgstr "%08lX kulcs: Nincs alkulcs a kulcskötéshez!\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid subkey binding\n"
@@ -2495,23 +2747,21 @@ msgstr "%08lX kulcs: \"%s\" visszavonó igazolást hozzáadtam.\n"
 msgid "key %s: direct key signature added\n"
 msgstr "%08lX kulcs: Kulcsaláírást hozzáadtam.\n"
 
-#, fuzzy
-msgid "NOTE: a key's S/N does not match the card's one\n"
-msgstr "A nyilvános kulcs nem passzol a titkos kulcshoz!\n"
+#, fuzzy, c-format
+msgid "error creating keybox '%s': %s\n"
+msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
-#, fuzzy
-msgid "NOTE: primary key is online and stored on card\n"
-msgstr "Kihagytam: titkos kulcs már jelen van.\n"
-
-#, fuzzy
-msgid "NOTE: secondary key is online and stored on card\n"
-msgstr "Kihagytam: titkos kulcs már jelen van.\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
 msgid "error creating keyring '%s': %s\n"
 msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+msgid "keybox '%s' created\n"
+msgstr "\"%s\" kulcskarikát létrehoztam.\n"
+
+#, fuzzy, c-format
+#| msgid "keyring `%s' created\n"
 msgid "keyring '%s' created\n"
 msgstr "\"%s\" kulcskarikát létrehoztam.\n"
 
@@ -2671,15 +2921,6 @@ msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Szeretné, ha az aláírása ugyanekkor járna le? (I/n) "
 
 msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr ""
-"Lehet, hogy nem rakhat OpenPGP aláírást egy PGP 2.x kulcsra --pgp2 módban.\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Ez használhatatlanná tenné a kulcsot PGP 2.x-ben.\n"
-
-msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
@@ -2774,43 +3015,10 @@ msgstr "Aláírás sikertelen: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-msgid "This key is not protected.\n"
-msgstr "Ez a kulcs nem védett.\n"
-
-msgid "Secret parts of primary key are not available.\n"
-msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
-
-#, fuzzy
-msgid "Secret parts of primary key are stored on-card.\n"
-msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
-
-msgid "Key is protected.\n"
-msgstr "A kulcs védett.\n"
-
-#, c-format
-msgid "Can't edit this key: %s\n"
-msgstr "Nem tudom szerkeszteni ezt a kulcsot: %s\n"
-
-msgid ""
-"Enter the new passphrase for this secret key.\n"
-"\n"
-msgstr ""
-"Írja be az új jelszót ehhez a titkos kulcshoz!\n"
-"\n"
-
-msgid "passphrase not correctly repeated; try again"
-msgstr "Nem ismételte meg helyesen a jelszót! Próbálja újra!"
-
-msgid ""
-"You don't want a passphrase - this is probably a *bad* idea!\n"
-"\n"
-msgstr ""
-"Ön nem akar jelszót. Ez valószínûleg *rossz* ötlet!\n"
-"\n"
-
-#, fuzzy
-msgid "Do you really want to do this? (y/N) "
-msgstr "Valóban ezt akarja? "
+#, fuzzy, c-format
+#| msgid "error creating passphrase: %s\n"
+msgid "key %s: error changing passphrase: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 msgid "moving a key signature to the correct place\n"
 msgstr "Átrakom a kulcsaláírást a megfelelõ helyre.\n"
@@ -2950,10 +3158,6 @@ msgstr ""
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "error reading secret keyblock \"%s\": %s\n"
-msgstr "Hiba \"%s\" titkoskulcs-blokk olvasásakor: %s.\n"
-
 msgid "Secret key is available.\n"
 msgstr "Titkos kulcs rendelkezésre áll.\n"
 
@@ -2964,9 +3168,9 @@ msgid "Please use the command \"toggle\" first.\n"
 msgstr "Kérem, használja elõbb a \"toggle\" parancsot!\n"
 
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures "
+"* The 'sign' command may be prefixed with an 'l' for local signatures "
 "(lsign),\n"
-"  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
+"  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
@@ -3081,12 +3285,25 @@ msgstr "Kilépjek mentés nélkül? "
 msgid "update failed: %s\n"
 msgstr "Frissítés sikertelen: %s.\n"
 
-#, c-format
-msgid "update secret failed: %s\n"
-msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "A kulcs nem változott, nincs szükség frissítésre.\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a fingerprint\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not the primary fingerprint\n"
+msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
+#, fuzzy
+#| msgid "No such user ID.\n"
+msgid "No matching user IDs."
+msgstr "Nincs ilyen felhasználói azonosító.\n"
+
+#, fuzzy
+msgid "Nothing to sign.\n"
+msgstr "Nincs mit aláírni a %08lX kulccsal!\n"
 
 msgid "Digest: "
 msgstr "Kivonat: "
@@ -3108,7 +3325,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Nincsenek preferenciák egy PGP 2.x felhasználóazonosítón!\n"
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Ezt a kulcsot a következõ %s kulcs visszavonhatja: "
 
 #, fuzzy, c-format
@@ -3139,6 +3356,9 @@ msgstr " [lejár: %s]"
 msgid "usage: %s"
 msgstr " bizalom: %c/%c"
 
+msgid "card-no: "
+msgstr ""
+
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " bizalom: %c/%c"
@@ -3149,9 +3369,6 @@ msgstr ""
 
 msgid "This key has been disabled"
 msgstr "Ez a kulcs tiltott."
-
-msgid "card-no: "
-msgstr ""
 
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
@@ -3174,6 +3391,14 @@ msgid ""
 msgstr ""
 "FIGYELEM: Nincs kijelölt elsõdleges felhasználóazonosító. Ez a parancs\n"
 " azt okozhatja, hogy egy másik azonosító lesz elsõdlegesként használva.\n"
+
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nem változtathatja meg egy v3 kulcs lejárati dátumát!\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3272,9 +3497,6 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Biztosan ez a kulcs legyen a kijelölt visszavonó? (i/N): "
 
-msgid "Please remove selections from the secret keys.\n"
-msgstr "Kérem, távolítsa el a kijelöléseket a titkos kulcsokról!\n"
-
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Maximum egy másodlagos kulcsot jelöljön ki, kérem!\n"
@@ -3288,9 +3510,6 @@ msgstr "Elsõdleges kulcs lejárati idejének változtatása.\n"
 
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Nem változtathatja meg egy v3 kulcs lejárati dátumát!\n"
-
-msgid "No corresponding signature in secret ring\n"
-msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
 
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -3531,6 +3750,39 @@ msgstr "   (%d) RSA (csak titkosítás)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (csak titkosítás)\n"
 
+#, fuzzy, c-format
+msgid "   (%d) ECC and ECC\n"
+msgstr "   (%d) DSA és ElGamal (alapértelmezés)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (sign only)\n"
+msgid "  (%d) ECC (sign only)\n"
+msgstr "   (%d) DSA (csak aláírás)\n"
+
+#, fuzzy, c-format
+msgid "  (%d) ECC (set your own capabilities)\n"
+msgstr "   (%d) RSA (csak titkosítás)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)\n"
+msgstr "   (%d) RSA (csak titkosítás)\n"
+
+#, fuzzy, c-format
+msgid "  (%d) Existing key\n"
+msgstr "   (%d) RSA (csak titkosítás)\n"
+
+#, fuzzy
+msgid "Enter the keygrip: "
+msgstr "Aláírás-jelölés: "
+
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
+
+#, fuzzy
+msgid "No key with this keygrip\n"
+msgstr "Nincs %d indexû felhasználóazonosító!\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -3546,6 +3798,16 @@ msgstr "Milyen kulcsméretet szeretne? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "A kívánt kulcsméret %u bit.\n"
+
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "Felkerekítve %u bitre.\n"
+
+#, fuzzy
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select which elliptic curve you want:\n"
+msgstr "Kérem, adja meg, milyen kulcsot kíván:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -3664,7 +3926,8 @@ msgstr "Megjegyzés: "
 msgid "Invalid character in comment\n"
 msgstr "Érvénytelen karakter a megjegyzésben!\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "You are using the `%s' character set.\n"
 msgid "You are using the '%s' character set.\n"
 msgstr "Ön a(z) %s karakterkódolást használja.\n"
 
@@ -3705,6 +3968,17 @@ msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (K)ilépés? "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr ""
+"(N)év, (M)egjegyzés, (E)-mail megváltoztatása vagy (R)endben/(K)ilépés? "
+
 msgid "Please correct the error first\n"
 msgstr "Kérem, elõbb javítsa ki a hibát!\n"
 
@@ -3720,6 +3994,9 @@ msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
+
+msgid "passphrase not correctly repeated; try again"
+msgstr "Nem ismételte meg helyesen a jelszót! Próbálja újra!"
 
 #, c-format
 msgid "%s.\n"
@@ -3747,36 +4024,54 @@ msgstr ""
 "a lemezeket) a prímszám generálása alatt. Ez segíti a véletlenszám-\n"
 "generátort, hogy entrópiát tudjon gyûjteni.\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Kulcsgenerálás sikertelen: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "A key for \"%s\" already exists\n"
+msgstr "\"%s\" már tömörített.\n"
+
+#, fuzzy
+#| msgid "Create anyway? "
+msgid "Create anyway? (y/N) "
+msgstr "Mégis létrehozzam? "
+
+#, fuzzy
+#| msgid "Create anyway? "
+msgid "creating anyway\n"
+msgstr "Mégis létrehozzam? "
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
+
 msgid "Key generation canceled.\n"
 msgstr "Kulcs létrehozása megszakítva.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
 msgstr "Írom a kulcsot a %s állományba.\n"
-
-#, fuzzy, c-format
-msgid "writing secret key stub to '%s'\n"
-msgstr "Írom a titkos kulcsot a %s állományba.\n"
-
-#, c-format
-msgid "writing secret key to '%s'\n"
-msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "Nem írható nyilvánoskulcs-karikát találtam: %s\n"
 
-#, c-format
-msgid "no writable secret keyring found: %s\n"
-msgstr "Nem írható titkoskulcs-karikát találtam: %s\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing public keyring `%s': %s\n"
 msgid "error writing public keyring '%s': %s\n"
 msgstr "Hiba a(z) \"%s\" nyilvánoskulcs-karika írásakor: %s.\n"
-
-#, c-format
-msgid "error writing secret keyring '%s': %s\n"
-msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
 
 msgid "public and secret key created and signed.\n"
 msgstr "A nyilvános és titkos kulcsokat létrehoztam és aláírtam.\n"
@@ -3791,10 +4086,6 @@ msgstr ""
 "teheti meg.\n"
 
 #, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Kulcsgenerálás sikertelen: %s\n"
-
-#, c-format
 msgid ""
 "key has been created %lu second in future (time warp or clock problem)\n"
 msgstr ""
@@ -3806,9 +4097,18 @@ msgid ""
 msgstr ""
 "A kulcs %lu másodperccel a jövõben készült. (Idõugrás vagy óraprobléma.)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#, fuzzy
+#| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 "MEGJEGYZÉS: Alkulcsok létrehozása v3 kulcsokhoz nem OpenPGP-megfelelõ.\n"
+
+msgid "Secret parts of primary key are not available.\n"
+msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
+
+#, fuzzy
+msgid "Secret parts of primary key are stored on-card.\n"
+msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
 
 #, fuzzy
 msgid "Really create? (y/N) "
@@ -3823,7 +4123,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
 
 #, fuzzy, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "MEGJEGYZÉS: %08lX titkos kulcs %s-kor lejárt.\n"
 
 msgid "never     "
@@ -3843,6 +4143,10 @@ msgstr "Kritikus aláírás-jelölés: "
 
 msgid "Signature notation: "
 msgstr "Aláírás-jelölés: "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "Kulcskarika"
@@ -3871,20 +4175,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "Páncélozás nem sikerült: %s\n"
-
-msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "FIGYELEM: 2 bizalmas információkat tartalmazó állomány van!\n"
-
-#, c-format
-msgid "%s is the unchanged one\n"
-msgstr "%s az eredeti példány.\n"
-
-#, c-format
-msgid "%s is the new one\n"
-msgstr "%s az új példány.\n"
-
-msgid "Please fix this possible security flaw\n"
-msgstr "Kérem, oldja meg ezt a lehetséges biztonsági problémát!\n"
 
 #, fuzzy, c-format
 msgid "caching keyring '%s'\n"
@@ -3940,89 +4230,6 @@ msgstr ""
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "Érvénytelen export opciók!\n"
 
-#, fuzzy, c-format
-msgid "key \"%s\" not found on keyserver\n"
-msgstr "\"%s\" kulcs nem található: %s\n"
-
-#, fuzzy
-msgid "key not found on keyserver\n"
-msgstr "\"%s\" kulcs nem található: %s\n"
-
-#, fuzzy, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
-
-#, fuzzy, c-format
-msgid "requesting key %s from %s\n"
-msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
-
-#, fuzzy, c-format
-msgid "searching for names from %s server %s\n"
-msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
-
-#, fuzzy, c-format
-msgid "searching for names from %s\n"
-msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
-
-#, fuzzy, c-format
-msgid "sending key %s to %s server %s\n"
-msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
-
-#, fuzzy, c-format
-msgid "sending key %s to %s\n"
-msgstr ""
-"\"\n"
-"Aláírva az Ön %08lX kulcsával %s idõpontban.\n"
-
-#, fuzzy, c-format
-msgid "searching for \"%s\" from %s server %s\n"
-msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
-
-#, fuzzy, c-format
-msgid "searching for \"%s\" from %s\n"
-msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
-
-#, fuzzy
-msgid "no keyserver action!\n"
-msgstr "Érvénytelen export opciók!\n"
-
-#, c-format
-msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
-msgstr ""
-
-msgid "keyserver did not send VERSION\n"
-msgstr ""
-
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
-msgid "external keyserver calls are not supported in this build\n"
-msgstr ""
-
-#, c-format
-msgid "no handler for keyserver scheme '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "action '%s' not supported with keyserver scheme '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s does not support handler version %d\n"
-msgstr ""
-
-#, fuzzy
-msgid "keyserver timed out\n"
-msgstr "kulcsszerverhiba"
-
-#, fuzzy
-msgid "keyserver internal error\n"
-msgstr "kulcsszerverhiba"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "Vétel a kulcsszerverrõl sikertelen: %s\n"
-
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
@@ -4040,13 +4247,45 @@ msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
 
-#, fuzzy, c-format
-msgid "WARNING: unable to fetch URI %s: %s\n"
+msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
-"FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unable to parse URI %s\n"
+msgid "key \"%s\" not found on keyserver\n"
+msgstr "\"%s\" kulcs nem található: %s\n"
+
+#, fuzzy
+msgid "key not found on keyserver\n"
+msgstr "\"%s\" kulcs nem található: %s\n"
+
+#, fuzzy, c-format
+msgid "requesting key %s from %s server %s\n"
+msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
+
+#, fuzzy, c-format
+msgid "requesting key %s from %s\n"
+msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
+
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "Kihagytam \"%s\"-t: %s.\n"
+
+#, fuzzy, c-format
+msgid "sending key %s to %s server %s\n"
+msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
+
+#, fuzzy, c-format
+msgid "sending key %s to %s\n"
+msgstr ""
+"\"\n"
+"Aláírva az Ön %08lX kulcsával %s idõpontban.\n"
+
+#, fuzzy, c-format
+msgid "requesting key from '%s'\n"
+msgstr "Lekérem a %08lX kulcsot a %s kulcsszerverrõl.\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr ""
 "FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
 
@@ -4119,7 +4358,9 @@ msgstr ""
 msgid "decryption failed: %s\n"
 msgstr "Visszafejtés sikertelen: %s.\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+#, fuzzy
+#| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "MEGJEGYZÉS: A feladó kérése: \"csak az Ön szemeinek\".\n"
 
 #, c-format
@@ -4135,6 +4376,18 @@ msgstr ""
 
 #, fuzzy
 msgid "no signature found\n"
+msgstr "Jó aláírás a következõtõl: \""
+
+#, fuzzy, c-format
+msgid "BAD signature from \"%s\""
+msgstr "ROSSZ aláírás a következõtõl: \""
+
+#, fuzzy, c-format
+msgid "Expired signature from \"%s\""
+msgstr "Lejárt aláírás a következõtõl: \""
+
+#, fuzzy, c-format
+msgid "Good signature from \"%s\""
 msgstr "Jó aláírás a következõtõl: \""
 
 msgid "signature verification suppressed\n"
@@ -4159,18 +4412,6 @@ msgstr "Aláírva: %.*s; kulcs: %s, %08lX.\n"
 msgid "Key available at: "
 msgstr "Kulcs található: "
 
-#, fuzzy, c-format
-msgid "BAD signature from \"%s\""
-msgstr "ROSSZ aláírás a következõtõl: \""
-
-#, fuzzy, c-format
-msgid "Expired signature from \"%s\""
-msgstr "Lejárt aláírás a következõtõl: \""
-
-#, fuzzy, c-format
-msgid "Good signature from \"%s\""
-msgstr "Jó aláírás a következõtõl: \""
-
 msgid "[uncertain]"
 msgstr "[bizonytalan]"
 
@@ -4186,8 +4427,9 @@ msgstr "Az aláírás lejárt: %s.\n"
 msgid "Signature expires %s\n"
 msgstr "Az aláírás lejár: %s.\n"
 
-#, c-format
-msgid "%s signature, digest algorithm %s\n"
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
 
 msgid "binary"
@@ -4198,6 +4440,15 @@ msgstr "Szövegmódú"
 
 msgid "unknown"
 msgstr "Ismeretlen módú"
+
+#, fuzzy
+#| msgid "unknown pubkey algorithm"
+msgid ", key algorithm "
+msgstr "ismeretlen nyilvános kulcsú algoritmus"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4216,9 +4467,6 @@ msgstr "0x%02x osztályú különálló aláírás.\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "Régi stílusú (PGP 2.x) aláírás.\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "Érvénytelen gyökércsomagot találtam a proc_tree() függvényben!\n"
 
 #, fuzzy, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -4252,12 +4500,10 @@ msgstr ""
 "%s (%d) kivonatoló algoritmus használatának erõltetése ellentétes\n"
 "a címzett preferenciáival.\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "Az IDEA rejtjelezõ bõvítés nincs jelen!\n"
-
 #, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = további információkat kérek\n"
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4280,7 +4526,16 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "FIGYELEM: \"%s\" elavult opció!\n"
 
 msgid "Uncompressed"
@@ -4303,7 +4558,11 @@ msgstr "Az opciókat a \"%s\" állományból olvasom.\n"
 msgid "unknown option '%s'\n"
 msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
 
-#, c-format
+msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "File `%s' exists. "
 msgid "File '%s' exists. "
 msgstr "\"%s\" állomány létezik. "
 
@@ -4321,15 +4580,18 @@ msgstr "Írja be az új állománynevet"
 msgid "writing to stdout\n"
 msgstr "Írok a szabványos kimenetre.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "Azt feltételezem, hogy az aláírt adat a %s állományban van.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "new configuration file `%s' created\n"
 msgid "new configuration file '%s' created\n"
 msgstr "\"%s\" új konfigurációs állományt létrehoztam.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr ""
 "FIGYELEM: \"%s\" opciói csak a következõ futáskor lesznek érvényesek!\n"
@@ -4345,6 +4607,10 @@ msgstr ""
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "A %d típusú alcsomag kritikus bitje beállított.\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent: %s\n"
+msgstr "Probléma az ügynökkel: ügynök válasza: 0x%lx\n"
 
 #, fuzzy, c-format
 msgid " (main key ID %s)"
@@ -4372,10 +4638,6 @@ msgid "cancelled by user\n"
 msgstr "A felhasználó megszakította a mûveletet.\n"
 
 #, fuzzy, c-format
-msgid "problem with the agent: %s\n"
-msgstr "Probléma az ügynökkel: ügynök válasza: 0x%lx\n"
-
-#, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
 "user: \"%s\"\n"
@@ -4392,6 +4654,39 @@ msgstr "%u bites %s kulcs, azonosító: %08lX, létrehozva: %s."
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
+
+#, fuzzy
+msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
+msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to import the OpenPGP secret key:"
+msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
+msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgstr "Kérem, adja meg a jelszót! Ezt egy titkos mondat. \n"
+
+#, fuzzy
+msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
+msgstr "Valóban törli a kiválasztott kulcsokat? "
+
+#, fuzzy
+msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgstr "Valóban törli a kiválasztott kulcsokat? "
+
+#, fuzzy, c-format
+msgid ""
+"%s\n"
+"\"%.*s\"\n"
+"%u-bit %s key, ID %s,\n"
+"created %s%s.\n"
+"%s"
+msgstr "%u bites %s kulcs, azonosító: %08lX, létrehozva: %s."
 
 msgid ""
 "\n"
@@ -4452,6 +4747,16 @@ msgstr "Visszavonás oka: "
 msgid "revocation comment: "
 msgstr "Megjegyzés a visszavonáshoz: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iIfFkKhH"
 
@@ -4608,6 +4913,10 @@ msgid "%s: skipped: %s\n"
 msgstr "%s: kihagyva: %s\n"
 
 #, c-format
+msgid "%s: skipped: public key is disabled\n"
+msgstr "%s: Kihagyva: Nyilvános kulcs nincs engedélyezve.\n"
+
+#, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: kihagyva: nyilvános kulcs már szerepel\n"
 
@@ -4642,10 +4951,6 @@ msgstr "Kihagyva: Nyilvános kulcs már be lett állítva.\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "Ismeretlen alapértelmezett címzett: \"%s\"\n"
 
-#, c-format
-msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: Kihagyva: Nyilvános kulcs nincs engedélyezve.\n"
-
 msgid "no valid addressees\n"
 msgstr "Nincsenek érvényes címzettek!\n"
 
@@ -4661,6 +4966,11 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "Az adatot nem mentettem el. Használja az \"--output\" opciót a mentéshez!\n"
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "Hiba \"%s\" létrehozásakor: %s\n"
+
 msgid "Detached signature.\n"
 msgstr "Különálló aláírás.\n"
 
@@ -4673,7 +4983,8 @@ msgstr "Olvasom a szabványos bemenetet...\n"
 msgid "no signed data\n"
 msgstr "Nincs aláírt adat.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open signed data `%s'\n"
 msgid "can't open signed data '%s'\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" aláírt adatot!\n"
 
@@ -4700,10 +5011,12 @@ msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "MEGJEGYZÉS: %d rejtjelezõ algoritmus nincs a preferenciák között.\n"
 
 #, fuzzy, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "MEGJEGYZÉS: %08lX titkos kulcs %s-kor lejárt.\n"
 
-msgid "NOTE: key has been revoked"
+#, fuzzy
+#| msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
 
 #, c-format
@@ -4738,26 +5051,30 @@ msgstr "Visszavonó igazolás létrehozva.\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "Nem találtam visszavonó kulcsot a következõhöz: \"%s\".\n"
 
+#, fuzzy
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr "Csináljunk egy visszavonó igazolást ehhez a kulcshoz? "
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "\"%s\" titkos kulcs nem található: %s\n"
 
-#, c-format
-msgid "no corresponding public key: %s\n"
-msgstr "Nincs hozzá tartozó nyilvános kulcs: %s\n"
-
-msgid "public key does not match secret key!\n"
-msgstr "A nyilvános kulcs nem passzol a titkos kulcshoz!\n"
-
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Csináljunk egy visszavonó igazolást ehhez a kulcshoz? "
-
-msgid "unknown protection algorithm\n"
-msgstr "Ismeretlen védelmi algoritmus!\n"
-
-msgid "NOTE: This key is not protected!\n"
-msgstr "MEGJEGYZÉS: Ez a kulcs nem védett.\n"
 
 msgid ""
 "Revocation certificate created.\n"
@@ -4800,32 +5117,6 @@ msgstr "(Nincs leírás.)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Ez így rendben van? "
 
-msgid "secret key parts are not available\n"
-msgstr "Titkos kulcsrészek nem állnak rendelkezésre.\n"
-
-#, c-format
-msgid "protection algorithm %d%s is not supported\n"
-msgstr "%d%s védõ algoritmus nem támogatott.\n"
-
-#, fuzzy, c-format
-msgid "protection digest %d is not supported\n"
-msgstr "%d%s védõ algoritmus nem támogatott.\n"
-
-msgid "Invalid passphrase; please try again"
-msgstr "Érvénytelen jelszó. Próbálja újra"
-
-#, c-format
-msgid "%s ...\n"
-msgstr "%s...\n"
-
-msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr ""
-"FIGYELEM: Gyenge kulcsot találtam. Kérem, változtassa meg ismét a jelszót!\n"
-
-msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
-"Elavult, 16 bites ellenõrzõösszeget hozok létre titkos kulcs védelméhez.\n"
-
 msgid "weak key created - retrying\n"
 msgstr "Gyenge kulcs jött létre. Újrapróbálom.\n"
 
@@ -4835,15 +5126,12 @@ msgstr ""
 "Nem tudom elkerülni a gyenge kulcsot a szimmetrikus titkosítóhoz.\n"
 "%d alkalommal próbáltam!\n"
 
-msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+#, c-format
+msgid "%s key %s uses an unsafe (%zu bit) hash\n"
 msgstr ""
 
 #, c-format
-msgid "DSA key %s uses an unsafe (%u bit) hash\n"
-msgstr ""
-
-#, c-format
-msgid "DSA key %s requires a %u bit or larger hash\n"
+msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
@@ -4852,6 +5140,10 @@ msgstr "FIGYELEM: Aláíráskivonat-konfliktus az üzenetben.\n"
 #, fuzzy, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr "FIGYELEM: %08lX aláíró alkulcs nem kereszthitelesített.\n"
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = további információkat kérek\n"
 
 #, fuzzy, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
@@ -4878,11 +5170,11 @@ msgstr ""
 "A kulcs %lu másodperccel a jövõben készült. (Idõugrás vagy óraprobléma.)\n"
 
 #, fuzzy, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "MEGJEGYZÉS: Aláíró kulcs (%08lX) lejárt: %s\n"
 
 #, fuzzy, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
 
 #, fuzzy, c-format
@@ -4930,10 +5222,6 @@ msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s aláírás a következõtõl: \"%s\"\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"Különálló aláírást PGP 2.x stílusú kulcsokkal csak --pgp2 módban készíthet!\n"
-
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -4943,10 +5231,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "Aláírom:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"Olvasható szöveget PGP 2.x stílusú kulccsal csak --pgp2 módban írhat alá!\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -4960,10 +5244,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "skipped \"%s\": duplicated\n"
 msgstr "\"%s\"-t kihagytam: másodpéldány.\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "Kihagytam \"%s\"-t: %s.\n"
 
 msgid "skipped: secret key already present\n"
 msgstr "Kihagytam: titkos kulcs már jelen van.\n"
@@ -5056,7 +5336,9 @@ msgstr "%s: Érvénytelen bizalmi adatbázis jött létre.\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: Bizalmi adatbázis létrejött.\n"
 
-msgid "NOTE: trustdb not writable\n"
+#, fuzzy
+#| msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "MEGJEGYZÉS: Bizalmi adatbázis nem írható.\n"
 
 #, c-format
@@ -5127,7 +5409,8 @@ msgstr "Nem tudok %d karakternél hosszabb szövegsorokat kezelni!\n"
 msgid "input line longer than %d characters\n"
 msgstr "A bemeneti sor hosszabb, mint %d karakter.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid long keyID\n"
 msgid "'%s' is not a valid long keyID\n"
 msgstr "\"%s\" nem egy érvényes hosszú kulcsazonosító.\n"
 
@@ -5168,49 +5451,6 @@ msgstr ""
 
 #, c-format
 msgid "using %s trust model\n"
-msgstr ""
-
-msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-msgstr ""
-
-#, fuzzy
-msgid "[ revoked]"
-msgstr "[visszavont] "
-
-#, fuzzy
-msgid "[ expired]"
-msgstr "[lejárt]     "
-
-#, fuzzy
-msgid "[ unknown]"
-msgstr "Ismeretlen módú"
-
-msgid "[  undef ]"
-msgstr ""
-
-msgid "[marginal]"
-msgstr ""
-
-msgid "[  full  ]"
-msgstr ""
-
-msgid "[ultimate]"
-msgstr ""
-
-msgid "undefined"
-msgstr ""
-
-#, fuzzy
-msgid "never"
-msgstr "soha      "
-
-msgid "marginal"
-msgstr ""
-
-msgid "full"
-msgstr ""
-
-msgid "ultimate"
 msgstr ""
 
 msgid "no need for a trustdb check\n"
@@ -5279,116 +5519,6 @@ msgstr "A bemeneti sor (%u) túl hosszú, vagy hiányzik a soremelés.\n"
 msgid "can't open fd %d: %s\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" állományt: %s.\n"
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "Írom a titkos kulcsot a %s állományba.\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "állományolvasási hiba"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "A sor túl hosszú!\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "érvénytelen argumentum"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "Egymásnak ellentmondó parancsok!\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "Érvénytelen import opciók!\n"
-
-#, fuzzy
-msgid "out of core"
-msgstr "nem feldolgozott"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "Érvénytelen import opciók!\n"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Érvénytelen parancs! (Próbálja a súgót: \"help\".)\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy
-msgid "out of core\n"
-msgstr "nem feldolgozott"
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "Érvénytelen import opciók!\n"
-
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "Talált egy programhibát... (%s:%d)\n"
-
-#, fuzzy, c-format
-msgid "error loading '%s': %s\n"
-msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, c-format
-msgid "conversion from '%s' to '%s' not available\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "iconv_open failed: %s\n"
-msgstr "Nem tudom megnyitni az állományt: %s.\n"
-
-#, fuzzy, c-format
-msgid "conversion from '%s' to '%s' failed: %s\n"
-msgstr "Páncélozás nem sikerült: %s\n"
-
-#, fuzzy, c-format
-msgid "failed to create temporary file '%s': %s\n"
-msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
-
-#, fuzzy, c-format
-msgid "error writing to '%s': %s\n"
-msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
-
-#, c-format
-msgid "removing stale lockfile (created by %d)\n"
-msgstr ""
-
-msgid " - probably dead - removing lock"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for lock (held by %d%s) %s...\n"
-msgstr "Írom a titkos kulcsot a %s állományba.\n"
-
-msgid "(deadlock?) "
-msgstr ""
-
-#, fuzzy, c-format
-msgid "lock '%s' not made: %s\n"
-msgstr "A(z) %08lX nyilvános kulcsot nem találom: %s.\n"
-
-#, fuzzy, c-format
-msgid "waiting for lock %s...\n"
-msgstr "Írom a titkos kulcsot a %s állományba.\n"
-
 msgid "set debugging flags"
 msgstr ""
 
@@ -5399,10 +5529,11 @@ msgstr ""
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
+#, fuzzy
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
-msgstr ""
+"List, export, import Keybox data\n"
+msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5476,6 +5607,9 @@ msgstr ""
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
+msgid "response does not contain the EC public point\n"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -5531,6 +5665,9 @@ msgstr "Kérem, válassza ki a visszavonás okát:\n"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -5539,6 +5676,14 @@ msgstr ""
 
 msgid "|N|New PIN"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "jelszóváltoztatás"
+
+#, fuzzy
+msgid "||Please enter the PIN and New PIN"
+msgstr "jelszóváltoztatás"
 
 #, fuzzy
 msgid "error reading application data\n"
@@ -5607,8 +5752,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "Nem találtam érvényes OpenPGP adatot.\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
+#, fuzzy
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "jelszóváltoztatás"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5644,20 +5790,23 @@ msgstr "ne használja a terminált egyáltalán"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr ""
 
-msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr ""
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "Egymásnak ellentmondó parancsok!\n"
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
 #, fuzzy
-msgid "Usage: scdaemon [options] (-h for help)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
 msgid "please use the option '--daemon' to run the program in the background\n"
@@ -5674,25 +5823,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Kihagytam a %02x kódú érvénytelen radix64 karaktert.\n"
-
-#, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr ""
-
-#, c-format
-msgid "no running dirmngr - starting '%s'\n"
-msgstr ""
-
-#, fuzzy
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "Nem megfelelõ formájú GPG_AGENT_INFO környezeti változó!\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "%d gpg-agent protokollverzió nem támogatott!\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -5719,8 +5849,9 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "Nem tudom megnyitni a(z) \"%s\" állományt: %s.\n"
 
-msgid "note: non-critical certificate policy not allowed"
-msgstr ""
+#, fuzzy
+msgid "Note: non-critical certificate policy not allowed"
+msgstr "Írom a titkos kulcsot a %s állományba.\n"
 
 #, fuzzy
 msgid "certificate policy not allowed"
@@ -5745,7 +5876,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "A kulcsblokk törlése sikertelen: %s.\n"
 
 #, fuzzy
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
 
 #, fuzzy
@@ -5887,10 +6018,6 @@ msgid "validation model used: %s"
 msgstr ""
 
 #, c-format
-msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr ""
-
-#, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
@@ -5935,16 +6062,16 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
 
-msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr ""
 
-msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
-msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
-msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr ""
 
 msgid "certificate is not usable for encryption\n"
@@ -5965,17 +6092,53 @@ msgstr ""
 msgid "line %d: no subject name given\n"
 msgstr ""
 
-#, c-format
+#, fuzzy, c-format
 msgid "line %d: invalid subject name label '%.*s'\n"
-msgstr ""
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "line %d: invalid subject name '%s' at pos %d\n"
-msgstr ""
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
 #, fuzzy, c-format
 msgid "line %d: not a valid email address\n"
 msgstr "Ez nem érvényes e-mail cím.\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid serial number\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, c-format
+msgid "line %d: invalid issuer name label '%.*s'\n"
+msgstr ""
+
+#, c-format
+msgid "line %d: invalid issuer name '%s' at pos %d\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "line %d: invalid date given\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, fuzzy, c-format
+msgid "line %d: error getting signing key by keygrip '%s': %s\n"
+msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid hash algorithm given\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid authority-key-id\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid subject-key-id\n"
+msgstr "%08lX kulcs: Érvénytelen alkulcskötés!\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid extension syntax\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
 #, fuzzy, c-format
 msgid "line %d: error reading key '%s' from card: %s\n"
@@ -6005,17 +6168,6 @@ msgstr "   (%d) RSA (csak titkosítás)\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr ""
-
-#, fuzzy
-msgid "Enter the keygrip: "
-msgstr "Aláírás-jelölés: "
-
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
-#, fuzzy
-msgid "No key with this keygrip\n"
-msgstr "Nincs %d indexû felhasználóazonosító!\n"
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -6052,9 +6204,9 @@ msgstr ""
 msgid "No subject name given\n"
 msgstr "(Nincs leírás.)\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "Invalid subject name label '%.*s'\n"
-msgstr ""
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
 
 #. TRANSLATORS: The 22 in the second string is the
 #. length of the first string up to the "%s".  Please
@@ -6089,10 +6241,25 @@ msgstr "Adjon meg egy nem kötelezõ leírást! Üres sorral fejezze be:\n"
 msgid "Enter URIs"
 msgstr ""
 
-msgid "Parameters to be used for the certificate request:\n"
+#, fuzzy
+msgid "Create self-signed certificate? (y/N) "
+msgstr "Csináljunk egy visszavonó igazolást ehhez a kulcshoz? "
+
+msgid "These parameters are used:\n"
 msgstr ""
 
-msgid "Now creating certificate request.  This may take a while ...\n"
+msgid "Now creating self-signed certificate.  "
+msgstr ""
+
+#, fuzzy
+#| msgid "Revocation certificate created.\n"
+msgid "Now creating certificate request.  "
+msgstr "Visszavonó igazolás létrehozva.\n"
+
+msgid "This may take a while ...\n"
+msgstr ""
+
+msgid "Ready.\n"
 msgstr ""
 
 msgid "Ready.  You should now send this request to your CA.\n"
@@ -6157,10 +6324,6 @@ msgid "invoke gpg-protect-tool"
 msgstr ""
 
 #, fuzzy
-msgid "change a passphrase"
-msgstr "jelszóváltoztatás"
-
-#, fuzzy
 msgid "create base-64 encoded output"
 msgstr "ascii páncélozott kimenet létrehozása"
 
@@ -6171,9 +6334,6 @@ msgid "assume input is in base-64 format"
 msgstr ""
 
 msgid "assume input is in binary format"
-msgstr ""
-
-msgid "use system's dirmngr if available"
 msgstr ""
 
 msgid "never consult a CRL"
@@ -6232,25 +6392,22 @@ msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NÉV|NÉV kivonatoló algoritmus használata"
 
 #, fuzzy
-msgid "Usage: gpgsm [options] [files] (-h for help)"
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
 #, fuzzy
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Syntax: @GPGSM@ [options] [files]\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Szintaxis: gpg [opciók] [fájlok]\n"
 "Aláírás, ellenõrzés, titkosítás vagy visszafejtés.\n"
 "Az alapértelmezett mûvelet a bemeneti adattól függ.\n"
 
-#, fuzzy
-msgid "usage: gpgsm [options] "
-msgstr "Használat: gpg [opciók] "
-
 #, fuzzy, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "Nem tudok kapcsolódni \"%s\" objektumhoz: %s\n"
 
 #, fuzzy, c-format
@@ -6272,9 +6429,6 @@ msgstr " h = kulcs kihagyása\n"
 #, fuzzy
 msgid "could not parse keyserver\n"
 msgstr "Értelmezhetetlen a kulcsszerver URI-ja!\n"
-
-msgid "WARNING: running with faked system time: "
-msgstr ""
 
 #, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
@@ -6298,10 +6452,6 @@ msgstr "visszavonási igazolás készítése"
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
-#, fuzzy
-msgid "failed to allocate keyDB handle\n"
-msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
-
 #, fuzzy, c-format
 msgid "error getting stored flags: %s\n"
 msgstr "Hiba a jelszó létrehozásakor: %s.\n"
@@ -6313,17 +6463,6 @@ msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "Hiba \"%s\" olvasásakor: %s\n"
-
-#, fuzzy, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "keybox '%s' created\n"
-msgstr "\"%s\" kulcskarikát létrehoztam.\n"
 
 #, fuzzy
 msgid "failed to get the fingerprint\n"
@@ -6359,9 +6498,9 @@ msgstr ""
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "invalid country code in '%s', line %d\n"
-msgstr ""
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
 
 #, c-format
 msgid ""
@@ -6426,6 +6565,1254 @@ msgstr ""
 "\n"
 "Ez egy önaláírás lesz.\n"
 
+#, fuzzy, c-format
+msgid "can't initialize certificate cache lock: %s\n"
+msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
+
+#, c-format
+msgid "can't acquire read lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't acquire write lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't release lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "dropping %u certificates from the cache\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "can't access directory '%s': %s\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
+msgid "can't parse certificate '%s': %s\n"
+msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "certificate '%s' already cached\n"
+msgstr "%c%lu preferencia kétszer szerepel!\n"
+
+#, fuzzy, c-format
+msgid "trusted certificate '%s' loaded\n"
+msgstr "Visszavonó igazolás létrehozva.\n"
+
+#, fuzzy, c-format
+msgid "certificate '%s' loaded\n"
+msgstr "%c%lu preferencia kétszer szerepel!\n"
+
+#, fuzzy, c-format
+msgid "  SHA1 fingerprint = %s\n"
+msgstr "megmutatja az ujjlenyomatot"
+
+msgid "   issuer ="
+msgstr ""
+
+msgid "  subject ="
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error loading certificate '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "permanently loaded certificates: %u\n"
+msgstr "rossz igazolás"
+
+#, fuzzy, c-format
+msgid "    runtime cached certificates: %u\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy
+msgid "certificate already cached\n"
+msgstr "Visszavonó igazolás létrehozva.\n"
+
+#, fuzzy
+msgid "certificate cached\n"
+msgstr "%c%lu preferencia kétszer szerepel!\n"
+
+#, fuzzy, c-format
+msgid "error caching certificate: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "invalid SHA1 fingerprint string '%s'\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+#, fuzzy, c-format
+msgid "error fetching certificate by S/N: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "error fetching certificate by subject: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy
+msgid "no issuer found in certificate\n"
+msgstr "visszavonási igazolás készítése"
+
+#, fuzzy, c-format
+msgid "error getting authorityKeyIdentifier: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "creating directory '%s'\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy, c-format
+msgid "error creating directory '%s': %s\n"
+msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "ignoring database dir '%s'\n"
+msgstr "Hiba a záró sorban!\n"
+
+#, fuzzy, c-format
+msgid "error reading directory '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "removing cache file '%s'\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "enarmoring failed: %s\n"
+msgid "not removing file '%s'\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "error closing cache file: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to open cache dir file '%s': %s\n"
+msgstr "Nem tudom megnyitni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "error creating new cache dir file '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing new cache dir file '%s': %s\n"
+msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "error closing new cache dir file '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "new configuration file `%s' created\n"
+msgid "new cache dir file '%s' created\n"
+msgstr "\"%s\" új konfigurációs állományt létrehoztam.\n"
+
+#, fuzzy, c-format
+msgid "failed to re-open cache dir file '%s': %s\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, c-format
+msgid "first record of '%s' is not the version\n"
+msgstr ""
+
+msgid "old version of cache directory - cleaning up\n"
+msgstr ""
+
+msgid "old version of cache directory - giving up\n"
+msgstr ""
+
+#, c-format
+msgid "extra field detected in crl record of '%s' line %u\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid line detected in '%s' line %u\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+#, fuzzy, c-format
+msgid "duplicate entry detected in '%s' line %u\n"
+msgstr "Visszavonó igazolás létrehozva.\n"
+
+#, c-format
+msgid "unsupported record type in '%s' line %u skipped\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid issuer hash in '%s' line %u\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+#, fuzzy, c-format
+msgid "no issuer DN in '%s' line %u\n"
+msgstr "Olvasási hiba: %s.\n"
+
+#, fuzzy, c-format
+msgid "invalid timestamp in '%s' line %u\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: invalid size of random_seed file - not used\n"
+msgid "WARNING: invalid cache file hash in '%s' line %u\n"
+msgstr "FIGYELEM: Érvénytelen méretû random_seed állomány. Nem használom.\n"
+
+msgid "detected errors in cache dir file\n"
+msgstr ""
+
+msgid "please check the reason and manually delete that file\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "failed to create temporary cache dir file '%s': %s\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "can't hash '%s': %s\n"
+msgstr "Nem tudom bezárni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "error setting up MD5 hash context: %s\n"
+msgstr "Hiba %s-ra/-re küldéskor: %s\n"
+
+#, fuzzy, c-format
+msgid "error hashing '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "invalid formatted checksum for '%s'\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+msgid "too many open cache files; can't open anymore\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "opening cache file '%s'\n"
+msgstr "Aláírás sikertelen: %s\n"
+
+#, fuzzy, c-format
+msgid "error opening cache file '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, c-format
+msgid "error initializing cache file '%s' for reading: %s\n"
+msgstr ""
+
+msgid "calling unlock_db_file on a closed file\n"
+msgstr ""
+
+msgid "calling unlock_db_file on an unlocked file\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "failed to create a new cache object: %s\n"
+msgstr "%s: Hashtábla létrehozása sikertelen: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
+msgid "no CRL available for issuer id %s\n"
+msgstr "Nem áll rendelkezésre segítség \"%s\" témához."
+
+#, c-format
+msgid "cached CRL for issuer id %s too old; update required\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"force-crl-refresh active and %d minutes passed for issuer id %s; update "
+"required\n"
+msgstr ""
+
+#, c-format
+msgid "force-crl-refresh active for issuer id %s; update required\n"
+msgstr ""
+
+#, c-format
+msgid "available CRL for issuer ID %s can't be used\n"
+msgstr ""
+
+#, c-format
+msgid "cached CRL for issuer id %s tampered; we need to update\n"
+msgstr ""
+
+msgid "WARNING: invalid cache record length for S/N "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "problem reading cache record for S/N %s: %s\n"
+msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
+
+#, c-format
+msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
+msgstr ""
+
+#, c-format
+msgid "S/N %s is valid, it is not listed in the CRL\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting data from cache file: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "Érvénytelen kivonatoló algoritmus: %s\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid response from agent\n"
+msgid "got an invalid S-expression from libksba\n"
+msgstr "Érvénytelen válasz az ügynöktõl!\n"
+
+#, fuzzy, c-format
+msgid "converting S-expression failed: %s\n"
+msgstr "Nem tudom megnyitni az állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "creating S-expression failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "build_packet failed: %s\n"
+msgid "ksba_crl_parse failed: %s\n"
+msgstr "build_packet sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "error getting update times of CRL: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, c-format
+msgid "update times of this CRL: this=%s next=%s\n"
+msgstr ""
+
+msgid "nextUpdate not given; assuming a validity period of one day\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting CRL item: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "error inserting item into temporary cache file: %s\n"
+msgstr "Írok a \"%s\" állományba.\n"
+
+#, fuzzy, c-format
+msgid "no CRL issuer found in CRL: %s\n"
+msgstr "visszavonási igazolás készítése"
+
+msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signature verification suppressed\n"
+msgid "CRL signature verification failed: %s\n"
+msgstr "Aláírás-ellenõrzés elnyomva.\n"
+
+#, fuzzy, c-format
+msgid "error checking validity of CRL issuer certificate: %s\n"
+msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_new failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_set_reader failed: %s\n"
+msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "removed stale temporary cache file '%s'\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy, c-format
+msgid "problem removing stale temporary cache file '%s': %s\n"
+msgstr "Nem tudom a \"%s\" könyvtárat létrehozni: %s.\n"
+
+#, fuzzy, c-format
+msgid "error creating temporary cache file '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "crl_parse_insert failed: %s\n"
+msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
+
+#, fuzzy, c-format
+msgid "error finishing temporary cache file '%s': %s\n"
+msgstr "Írok a \"%s\" állományba.\n"
+
+#, fuzzy, c-format
+msgid "error closing temporary cache file '%s': %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, c-format
+msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
+msgstr ""
+
+#, c-format
+msgid "new CRL still too old; it expired on %s\n"
+msgstr ""
+
+#, c-format
+msgid "unknown critical CRL extension %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading CRL extensions: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "creating cache file '%s'\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "problem renaming '%s' to '%s': %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+msgid ""
+"updating the DIR file failed - cache entry will get lost with the next "
+"program start\n"
+msgstr ""
+
+#, c-format
+msgid "Begin CRL dump (retrieved via %s)\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used because it was still too old after an "
+"update!\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used due to an unknown critical extension!\n"
+msgstr ""
+
+msgid " ERROR: The CRL will not be used\n"
+msgstr ""
+
+msgid " ERROR: This cached CRL may have been tampered with!\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "WARNING: invalid size of random_seed file - not used\n"
+msgid " WARNING: invalid cache record length\n"
+msgstr "FIGYELEM: Érvénytelen méretû random_seed állomány. Nem használom.\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache record: %s\n"
+msgstr "%s: Hiba szabad rekord olvasásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache key: %s\n"
+msgstr "rev? Nem tudom ellenõrizni a visszavonást: %s.\n"
+
+#, fuzzy, c-format
+msgid "error reading cache entry from db: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+msgid "End CRL dump\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "crl_fetch via DP failed: %s\n"
+msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "crl_cache_insert via DP failed: %s\n"
+msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "crl_cache_insert via issuer failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+msgid "reader to file mapping table full - waiting\n"
+msgstr ""
+
+msgid "using \"http\" instead of \"https\"\n"
+msgstr ""
+
+#, c-format
+msgid "CRL access not possible due to disabled %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: Hiba könyvtárrekord írásakor: %s.\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+msgid "too many redirections\n"
+msgstr "Túl sok \"%c\" preferencia.\n"
+
+#, fuzzy, c-format
+msgid "error retrieving '%s': %s\n"
+msgstr "Hiba \"%s\" létrehozásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error retrieving '%s': http status %u\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "certificate search not possible due to disabled %s\n"
+msgstr "\"%s\" kulcs nem található: %s\n"
+
+msgid "use OCSP instead of CRLs"
+msgstr ""
+
+msgid "check whether a dirmngr is running"
+msgstr ""
+
+#, fuzzy
+msgid "add a certificate to the cache"
+msgstr "Visszavonó igazolás létrehozva.\n"
+
+#, fuzzy
+msgid "validate a certificate"
+msgstr "rossz igazolás"
+
+#, fuzzy
+msgid "lookup a certificate"
+msgstr "rossz igazolás"
+
+#, fuzzy
+msgid "lookup only locally stored certificates"
+msgstr "rossz igazolás"
+
+msgid "expect an URL for --lookup"
+msgstr ""
+
+msgid "load a CRL into the dirmngr"
+msgstr ""
+
+msgid "special mode for use by Squid"
+msgstr ""
+
+#, fuzzy
+msgid "expect certificates in PEM format"
+msgstr "rossz igazolás"
+
+#, fuzzy
+#| msgid "Enter the user ID of the designated revoker: "
+msgid "force the use of the default OCSP responder"
+msgstr "Írja be a kijelölt visszavonó felhasználóazonosítóját: "
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
+msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+msgid ""
+"Syntax: dirmngr-client [options] [certfile|pattern]\n"
+"Test an X.509 certificate against a CRL or do an OCSP check\n"
+"The process returns 0 if the certificate is valid, 1 if it is\n"
+"not valid and other error codes for general failures\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading certificate from stdin: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "error reading certificate from '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+msgid "certificate too large to make any sense\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "update failed: %s\n"
+msgid "lookup failed: %s\n"
+msgstr "Frissítés sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "loading CRL '%s' failed: %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+msgid "a dirmngr daemon is up and running\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "validation of certificate failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy
+msgid "certificate is valid\n"
+msgstr "%c%lu preferencia kétszer szerepel!\n"
+
+#, fuzzy
+msgid "certificate has been revoked\n"
+msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
+
+#, fuzzy, c-format
+msgid "certificate check failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "can't stat `%s': %s\n"
+msgid "got status: '%s'\n"
+msgstr "Nem tudom a stat mûveletet elvégezni a(z) \"%s\" állományon: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing base64 encoding: %s\n"
+msgstr "Hiba a(z) \"%s\" titkoskulcs-karika írásakor: %s.\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: Hashtábla létrehozása sikertelen: %s.\n"
+
+msgid "apparently no running dirmngr\n"
+msgstr ""
+
+msgid "no running dirmngr - starting one\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "malformed %s environment variable\n"
+msgstr "Nem megfelelõ formájú GPG_AGENT_INFO környezeti változó!\n"
+
+#, fuzzy, c-format
+msgid "dirmngr protocol version %d is not supported\n"
+msgstr "%d gpg-agent protokollverzió nem támogatott!\n"
+
+msgid "can't connect to the dirmngr - trying fall back\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "Nem tudok kapcsolódni \"%s\" objektumhoz: %s\n"
+
+#, fuzzy, c-format
+msgid "unsupported inquiry '%s'\n"
+msgstr ""
+"\n"
+"Támogatott algoritmusok:\n"
+
+msgid "absolute file name expected\n"
+msgstr ""
+
+#, c-format
+msgid "looking up '%s'\n"
+msgstr ""
+
+msgid "run as windows service (background)"
+msgstr ""
+
+msgid "list the contents of the CRL cache"
+msgstr ""
+
+#, fuzzy
+msgid "|FILE|load CRL from FILE into cache"
+msgstr "|fájl|bõvítõ modul betöltése"
+
+msgid "|URL|fetch a CRL from URL"
+msgstr ""
+
+msgid "shutdown the dirmngr"
+msgstr ""
+
+msgid "flush the cache"
+msgstr ""
+
+msgid "|FILE|write server mode logs to FILE"
+msgstr ""
+
+#, fuzzy
+msgid "run without asking a user"
+msgstr "Kilépjek mentés nélkül? "
+
+msgid "force loading of outdated CRLs"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "inhibit the use of HTTP"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore HTTP CRL distribution points"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
+msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "|HOST|use HOST for LDAP queries"
+msgstr ""
+
+msgid "do not use fallback hosts with --ldap-proxy"
+msgstr ""
+
+#, fuzzy
+msgid "|FILE|read LDAP server list from FILE"
+msgstr "|fájl|bõvítõ modul betöltése"
+
+msgid "add new servers discovered in CRL distribution points to serverlist"
+msgstr ""
+
+msgid "|N|set LDAP timeout to N seconds"
+msgstr ""
+
+#, fuzzy
+msgid "|URL|use OCSP responder at URL"
+msgstr "Értelmezhetetlen a kulcsszerver URI-ja!\n"
+
+msgid "|FPR|OCSP response signed by FPR"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "(See the man page for a complete listing of all commands and options)\n"
+msgid ""
+"@\n"
+"(See the \"info\" manual for a complete listing of all commands and "
+"options)\n"
+msgstr ""
+"@\n"
+"(A parancsok és opciók teljes listáját a man oldalon tekintheti meg.)\n"
+
+#, fuzzy
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
+msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+msgid ""
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
+msgstr ""
+
+#, c-format
+msgid "valid debug levels are: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "usage: %s [options] "
+msgstr "Használat: gpg [opciók] "
+
+#, fuzzy
+#| msgid "%s not allowed with %s!\n"
+msgid "colons are not allowed in the socket name\n"
+msgstr "%s és %s nem használható együtt!\n"
+
+#, fuzzy, c-format
+msgid "fetching CRL from '%s' failed: %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "processing CRL from '%s' failed: %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: line too long - skipped\n"
+msgstr "A sor túl hosszú!\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: invalid fingerprint detected\n"
+msgstr "Hiba: Érvénytelen ujjlenyomat.\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: read error: %s\n"
+msgstr "Olvasási hiba: %s.\n"
+
+#, c-format
+msgid "%s:%u: garbage at end of line ignored\n"
+msgstr ""
+
+msgid "SIGHUP received - re-reading configuration and flushing caches\n"
+msgstr ""
+
+msgid "SIGUSR2 received - no action defined\n"
+msgstr ""
+
+msgid "SIGTERM received - shutting down ...\n"
+msgstr ""
+
+#, c-format
+msgid "SIGTERM received - still %d active connections\n"
+msgstr ""
+
+#, fuzzy
+msgid "shutdown forced\n"
+msgstr "nem feldolgozott"
+
+msgid "SIGINT received - immediate shutdown\n"
+msgstr ""
+
+#, c-format
+msgid "signal %d received - no action defined\n"
+msgstr ""
+
+msgid "return all values in a record oriented format"
+msgstr ""
+
+msgid "|NAME|ignore host part and connect through NAME"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|connect to host NAME"
+msgstr "|NÉV|terminál karakterkódolásának megadása"
+
+msgid "|N|connect to port N"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "|NAME|use user NAME for authentication"
+msgstr "|NÉV|NÉV használata alapértelmezett címzettként"
+
+msgid "|PASS|use password PASS for authentication"
+msgstr ""
+
+msgid "take password from $DIRMNGR_LDAP_PASS"
+msgstr ""
+
+msgid "|STRING|query DN STRING"
+msgstr ""
+
+msgid "|STRING|use STRING as filter expression"
+msgstr ""
+
+msgid "|STRING|return the attribute STRING"
+msgstr ""
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+msgid ""
+"Syntax: dirmngr_ldap [options] [URL]\n"
+"Internal LDAP helper for Dirmngr\n"
+"Interface and options may change without notice\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "invalid import options\n"
+msgid "invalid port number %d\n"
+msgstr "Érvénytelen import opciók!\n"
+
+#, c-format
+msgid "scanning result for attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+
+#, c-format
+msgid "          available attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "attribute '%s' not found\n"
+msgstr "\"%s\" kulcs nem található: %s\n"
+
+#, c-format
+msgid "found attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "processing url '%s'\n"
+msgstr "Olvasok a \"%s\" állományból.\n"
+
+#, fuzzy, c-format
+#| msgid "          w/o user IDs: %lu\n"
+msgid "          user '%s'\n"
+msgstr "    felh. azonosító nélkül: %lu\n"
+
+#, fuzzy, c-format
+msgid "          pass '%s'\n"
+msgstr "               azaz \""
+
+#, fuzzy, c-format
+msgid "          host '%s'\n"
+msgstr "               azaz \""
+
+#, fuzzy, c-format
+#| msgid "          not imported: %lu\n"
+msgid "          port %d\n"
+msgstr "             nem importált: %lu\n"
+
+#, fuzzy, c-format
+msgid "            DN '%s'\n"
+msgstr "               azaz \""
+
+#, c-format
+msgid "        filter '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "          attr '%s'\n"
+msgstr "               azaz \""
+
+#, fuzzy, c-format
+msgid "no host name in '%s'\n"
+msgstr "(Nincs leírás.)\n"
+
+#, c-format
+msgid "no attribute given for query '%s'\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "WARNING: using insecure memory!\n"
+msgid "WARNING: using first attribute only\n"
+msgstr "FIGYELEM: Nem biztonságos memóriát használunk!\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s:%d' failed: %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "binding to '%s:%d' failed: %s\n"
+msgstr "Páncélozás nem sikerült: %s\n"
+
+#, fuzzy, c-format
+#| msgid "dearmoring failed: %s\n"
+msgid "searching '%s' failed: %s\n"
+msgstr "Páncél eltávolítása nem sikerült: %s\n"
+
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "\"%s\" nem JPEG állomány.\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "Hiba a(z) \"%s\" kulcskarika létrehozásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error printing log line: %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error reading log from ldap wrapper %d: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "npth_select failed: %s - waiting 1s\n"
+msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
+
+#, c-format
+msgid "ldap wrapper %d ready"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: timeout\n"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: exitcode=%d\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "waiting for ldap wrapper %d failed: %s\n"
+msgstr "Frissítés sikertelen: %s.\n"
+
+#, c-format
+msgid "ldap wrapper %d stalled - killing\n"
+msgstr ""
+
+#, c-format
+msgid "error spawning ldap wrapper reaper thread: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "reading from ldap wrapper %d failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, c-format
+msgid "invalid char 0x%02x in host name - not added\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "adding '%s:%d' to the ldap server list\n"
+msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
+
+#, fuzzy, c-format
+msgid "malloc failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, c-format
+msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgstr ""
+
+msgid "ldap_search hit the size limit of the server\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "%s: invalid file version %d\n"
+msgid "invalid canonical S-expression found\n"
+msgstr "%s: Érvénytelen állományverzió (%d).\n"
+
+#, fuzzy, c-format
+msgid "gcry_md_open failed: %s\n"
+msgstr "Nem tudom megnyitni az állományt: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "oops: ksba_cert_hash failed: %s\n"
+msgstr "Titkoskulcs-blokk frissítése sikertelen: %s\n"
+
+msgid "bad URL encoding detected\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading from responder: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, c-format
+msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to disabled HTTP\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting OCSP target: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error building OCSP request: %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error connecting to '%s': %s\n"
+msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error reading HTTP response for '%s': %s\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "Hiba \"%s\" olvasásakor: %s\n"
+
+#, fuzzy, c-format
+msgid "error parsing OCSP response for '%s': %s\n"
+msgstr "Hiba %s-ra/-re küldéskor: %s\n"
+
+#, c-format
+msgid "OCSP responder at '%s' status: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "hashing the OCSP response for '%s' failed: %s\n"
+msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
+
+msgid "not signed by a default OCSP signer's certificate"
+msgstr ""
+
+msgid "only SHA-1 is supported for OCSP responses\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "allocating list item failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "error getting responder ID: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+msgid "no suitable certificate found to verify the OCSP response\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "issuer certificate not found: %s\n"
+msgstr "\"%s\" kulcs nem található: %s\n"
+
+msgid "caller did not return the target certificate\n"
+msgstr ""
+
+#, fuzzy
+msgid "caller did not return the issuing certificate\n"
+msgstr "visszavonási igazolás készítése"
+
+#, fuzzy, c-format
+msgid "failed to allocate OCSP context: %s\n"
+msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: Nem tudom elérni: %s.\n"
+
+msgid "no default OCSP responder defined\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "no default secret keyring: %s\n"
+msgid "no default OCSP signer defined\n"
+msgstr "Nincs alapértelmezett titkoskulcs-karika: %s\n"
+
+#, c-format
+msgid "using default OCSP responder '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using OCSP responder '%s'\n"
+msgstr "%s rejtjelezést használok.\n"
+
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting OCSP status for target certificate: %s\n"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
+
+#, c-format
+msgid "certificate status is: %s  (this=%s  next=%s)\n"
+msgstr ""
+
+msgid "good"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "certificate has been revoked at: %s due to: %s\n"
+msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
+
+msgid "OCSP responder returned a status in the future\n"
+msgstr ""
+
+msgid "OCSP responder returned a non-current status\n"
+msgstr ""
+
+msgid "OCSP responder returned an too old status\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "assuan_inquire(%s) failed: %s\n"
+msgstr "Aláírás sikertelen: %s\n"
+
+msgid "ldapserver missing"
+msgstr ""
+
+msgid "serialno missing in cert ID"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "assuan_inquire failed: %s\n"
+msgstr "Aláírás sikertelen: %s\n"
+
+#, fuzzy, c-format
+msgid "fetch_cert_by_url failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "error sending data: %s\n"
+msgstr "Hiba %s-ra/-re küldéskor: %s\n"
+
+#, fuzzy, c-format
+msgid "start_cert_fetch failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, fuzzy, c-format
+msgid "fetch_next_cert failed: %s\n"
+msgstr "A kulcsblokk törlése sikertelen: %s.\n"
+
+#, c-format
+msgid "max_replies %d exceeded\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "can't allocate control structure: %s\n"
+msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+#| msgid "failed to initialize the TrustDB: %s\n"
+msgid "failed to initialize the server: %s\n"
+msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
+#, fuzzy, c-format
+msgid "failed to the register commands with Assuan: %s\n"
+msgstr "Nem tudtam újraépíteni a kulcskarika cache-ét: %s\n"
+
+#, c-format
+msgid "Assuan accept problem: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signing failed: %s\n"
+msgid "Assuan processing failed: %s\n"
+msgstr "Aláírás sikertelen: %s\n"
+
+msgid "accepting root CA not marked as a CA"
+msgstr ""
+
+#, fuzzy
+#| msgid "checking the trustdb\n"
+msgid "CRL checking too deeply nested\n"
+msgstr "Ellenõrzöm a bizalmi adatbázist.\n"
+
+msgid "not checking CRL for"
+msgstr ""
+
+#, fuzzy
+msgid "checking CRL for"
+msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
+
+msgid "running in compatibility mode - certificate chain not checked!\n"
+msgstr ""
+
+#, fuzzy
+msgid "selfsigned certificate has a BAD signature"
+msgstr "aláírás ellenõrzése"
+
+#, fuzzy, c-format
+msgid "checking trustworthiness of root certificate failed: %s\n"
+msgstr "A létrehozott aláírás ellenõrzése sikertelen: %s.\n"
+
+#, fuzzy
+msgid "certificate chain is good\n"
+msgstr "%c%lu preferencia kétszer szerepel!\n"
+
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr "A DSA 160 bites hash (kivonatoló) algoritmust igényel.\n"
+
+msgid "certificate should not have been used for CRL signing\n"
+msgstr ""
+
 #, fuzzy
 msgid "quiet"
 msgstr "kilépés|kilepes"
@@ -6436,7 +7823,13 @@ msgstr ""
 msgid "decode received data lines"
 msgstr ""
 
+msgid "connect to the dirmngr"
+msgstr ""
+
 msgid "|NAME|connect to Assuan socket NAME"
+msgstr ""
+
+msgid "|ADDR|connect to Assuan server at ADDR"
 msgstr ""
 
 msgid "run the Assuan server given on the command line"
@@ -6453,11 +7846,11 @@ msgid "run /subst on startup"
 msgstr ""
 
 #, fuzzy
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 
@@ -6489,10 +7882,6 @@ msgid "sending line failed: %s\n"
 msgstr "Aláírás sikertelen: %s\n"
 
 #, fuzzy, c-format
-msgid "error sending %s command: %s\n"
-msgstr "Hiba %s-ra/-re küldéskor: %s\n"
-
-#, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "Hiba %s-ra/-re küldéskor: %s\n"
 
@@ -6503,9 +7892,6 @@ msgid "Options controlling the configuration"
 msgstr ""
 
 msgid "Options useful for debugging"
-msgstr ""
-
-msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
 msgid "Options controlling the security"
@@ -6597,6 +7983,29 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
+msgid "GPG for OpenPGP"
+msgstr ""
+
+msgid "GPG Agent"
+msgstr ""
+
+msgid "Smartcard Daemon"
+msgstr ""
+
+msgid "GPG for S/MIME"
+msgstr ""
+
+msgid "Directory Manager"
+msgstr ""
+
+#, fuzzy
+msgid "PIN and Passphrase Entry"
+msgstr "rossz jelszó"
+
+#, fuzzy
+msgid "Component not suitable for launching"
+msgstr "nyilvános kulcs nem található"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr ""
@@ -6622,7 +8031,7 @@ msgstr ""
 msgid "apply global default values"
 msgstr ""
 
-msgid "get the configuration directories for gpgconf"
+msgid "get the configuration directories for @GPGCONF@"
 msgstr ""
 
 #, fuzzy
@@ -6633,6 +8042,15 @@ msgstr "\"%s\": ismeretlen konfigurációs elem.\n"
 msgid "check global configuration file"
 msgstr "\"%s\": ismeretlen konfigurációs elem.\n"
 
+msgid "reload all or a given component"
+msgstr ""
+
+msgid "launch a given component"
+msgstr ""
+
+msgid "kill a given component"
+msgstr ""
+
 msgid "use as output file"
 msgstr "kimeneti állomány megadása"
 
@@ -6640,17 +8058,13 @@ msgid "activate changes at runtime, if possible"
 msgstr ""
 
 #, fuzzy
-msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
 msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
 
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-
-#, fuzzy
-msgid "usage: gpgconf [options] "
-msgstr "Használat: gpg [opciók] "
 
 msgid "Need one component argument"
 msgstr ""
@@ -6808,6 +8222,321 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "use a standard location for the socket"
+#~ msgstr "Valóban frissíti a kijelölt felhasználóazonosítók preferenciáit? "
+
+#, fuzzy
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "Nem megfelelõ formájú GPG_AGENT_INFO környezeti változó!\n"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "%d gpg-agent protokollverzió nem támogatott!\n"
+
+#, fuzzy
+#~ msgid "can't fdopen pipe for reading: %s\n"
+#~ msgstr "Nem tudom megnyitni az állományt: %s.\n"
+
+#, fuzzy
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "Hiba \"%s\" létrehozásakor: %s\n"
+
+#, fuzzy
+#~ msgid "host not found"
+#~ msgstr "[ismeretlen kulcs]"
+
+#, fuzzy
+#~ msgid "unknown key protection algorithm\n"
+#~ msgstr "Ismeretlen védelmi algoritmus!\n"
+
+#, fuzzy
+#~ msgid "secret parts of key are not available\n"
+#~ msgstr "Az elsõdleges kulcs titkos részei nem elérhetõk.\n"
+
+#, fuzzy
+#~ msgid "secret key already stored on a card\n"
+#~ msgstr "Kihagytam: titkos kulcs már jelen van.\n"
+
+#, fuzzy
+#~ msgid "error writing key to card: %s\n"
+#~ msgstr "Hiba a \"%s\" kulcskarika írásakor: %s\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Csak 2048 bites, vagy rövidebb RSA kulcsokkal titkosíthat --pgp2 módban!\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr ""
+#~ "Nem tudom az IDEA rejtjelezõt használni az összes címzett kulcshoz.\n"
+
+#, fuzzy
+#~ msgid "remove the passphrase from exported subkeys"
+#~ msgstr "másodlagos kulcs visszavonása"
+
+#, fuzzy
+#~ msgid "key %s: not protected - skipped\n"
+#~ msgstr "%08lX kulcs: nem védett - kihagytam.\n"
+
+#, fuzzy
+#~ msgid "failed to unprotect the subkey: %s\n"
+#~ msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
+#, fuzzy
+#~ msgid "WARNING: secret key %s does not have a simple SK checksum\n"
+#~ msgstr ""
+#~ "FIGYELEM: %08lX titkos kulcsnak nincs egyszerû SK ellenõrzõösszege.\n"
+
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "Túl sok bejegyzés van a nyilvánoskulcs-gyorsítótárban - letiltom.\n"
+
+#, fuzzy
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr ""
+#~ "Nincs titkos alkulcs a %08lX nyilvános alkulcshoz - figyelmen kívül "
+#~ "hagyom.\n"
+
+#, fuzzy
+#~ msgid "key %s: secret key without public key - skipped\n"
+#~ msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "Használat: gpg [opciók] "
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Csak különálló és olvashatószöveg-aláírást készíthet --pgp2 módban!\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr "Nem írhat alá és titkosíthat egyszerre --pgp2 módban!\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr "Csak állományokat (pipe-ot nem) használhat --pgp2 módban!\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr "Üzenet titkosítása --pgp2 módban IDEA rejtjelezõt igényel!\n"
+
+#, fuzzy
+#~ msgid "create a public key when importing a secret key"
+#~ msgstr "A nyilvános kulcs nem passzol a titkos kulcshoz!\n"
+
+#, fuzzy
+#~ msgid "key %s: already in secret keyring\n"
+#~ msgstr "%08lX kulcs: Már szerepel a titkoskulcs-karikán.\n"
+
+#, fuzzy
+#~ msgid "key %s: secret key not found: %s\n"
+#~ msgstr "%08lX kulcs: Titkos kulcs nem található: %s\n"
+
+#, fuzzy
+#~ msgid "NOTE: a key's S/N does not match the card's one\n"
+#~ msgstr "A nyilvános kulcs nem passzol a titkos kulcshoz!\n"
+
+#, fuzzy
+#~ msgid "NOTE: primary key is online and stored on card\n"
+#~ msgstr "Kihagytam: titkos kulcs már jelen van.\n"
+
+#, fuzzy
+#~ msgid "NOTE: secondary key is online and stored on card\n"
+#~ msgstr "Kihagytam: titkos kulcs már jelen van.\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr ""
+#~ "Lehet, hogy nem rakhat OpenPGP aláírást egy PGP 2.x kulcsra --pgp2 "
+#~ "módban.\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "Ez használhatatlanná tenné a kulcsot PGP 2.x-ben.\n"
+
+#~ msgid "This key is not protected.\n"
+#~ msgstr "Ez a kulcs nem védett.\n"
+
+#~ msgid "Key is protected.\n"
+#~ msgstr "A kulcs védett.\n"
+
+#~ msgid "Can't edit this key: %s\n"
+#~ msgstr "Nem tudom szerkeszteni ezt a kulcsot: %s\n"
+
+#~ msgid ""
+#~ "Enter the new passphrase for this secret key.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Írja be az új jelszót ehhez a titkos kulcshoz!\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Ön nem akar jelszót. Ez valószínûleg *rossz* ötlet!\n"
+#~ "\n"
+
+#, fuzzy
+#~ msgid "Do you really want to do this? (y/N) "
+#~ msgstr "Valóban ezt akarja? "
+
+#, fuzzy
+#~ msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgstr "Hiba \"%s\" titkoskulcs-blokk olvasásakor: %s.\n"
+
+#~ msgid "Please remove selections from the secret keys.\n"
+#~ msgstr "Kérem, távolítsa el a kijelöléseket a titkos kulcsokról!\n"
+
+#~ msgid "No corresponding signature in secret ring\n"
+#~ msgstr "Nincs megfelelõ aláírás a titkoskulcs-karikán.\n"
+
+#, fuzzy
+#~ msgid "writing secret key stub to `%s'\n"
+#~ msgstr "Írom a titkos kulcsot a %s állományba.\n"
+
+#~ msgid "writing secret key to `%s'\n"
+#~ msgstr "Írom a titkos kulcsot a %s állományba.\n"
+
+#~ msgid "no writable secret keyring found: %s\n"
+#~ msgstr "Nem írható titkoskulcs-karikát találtam: %s\n"
+
+#~ msgid "WARNING: 2 files with confidential information exists.\n"
+#~ msgstr "FIGYELEM: 2 bizalmas információkat tartalmazó állomány van!\n"
+
+#~ msgid "%s is the unchanged one\n"
+#~ msgstr "%s az eredeti példány.\n"
+
+#~ msgid "%s is the new one\n"
+#~ msgstr "%s az új példány.\n"
+
+#~ msgid "Please fix this possible security flaw\n"
+#~ msgstr "Kérem, oldja meg ezt a lehetséges biztonsági problémát!\n"
+
+#, fuzzy
+#~ msgid "searching for names from %s server %s\n"
+#~ msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
+
+#, fuzzy
+#~ msgid "searching for names from %s\n"
+#~ msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
+
+#, fuzzy
+#~ msgid "searching for \"%s\" from %s server %s\n"
+#~ msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
+
+#, fuzzy
+#~ msgid "searching for \"%s\" from %s\n"
+#~ msgstr "Keresem \"%s\"-t a %s HKP szerveren.\n"
+
+#, fuzzy
+#~ msgid "no keyserver action!\n"
+#~ msgstr "Érvénytelen export opciók!\n"
+
+#, fuzzy
+#~ msgid "keyserver timed out\n"
+#~ msgstr "kulcsszerverhiba"
+
+#, fuzzy
+#~ msgid "keyserver internal error\n"
+#~ msgstr "kulcsszerverhiba"
+
+#, fuzzy
+#~ msgid "keyserver communications error: %s\n"
+#~ msgstr "Vétel a kulcsszerverrõl sikertelen: %s\n"
+
+#, fuzzy
+#~ msgid "WARNING: unable to parse URI %s\n"
+#~ msgstr ""
+#~ "FIGYELEM: Nem tudom törölni az (\"%s\") átmeneti állományt: \"%s\": %s.\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "Érvénytelen gyökércsomagot találtam a proc_tree() függvényben!\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "Az IDEA rejtjelezõ bõvítés nincs jelen!\n"
+
+#~ msgid "no corresponding public key: %s\n"
+#~ msgstr "Nincs hozzá tartozó nyilvános kulcs: %s\n"
+
+#~ msgid "public key does not match secret key!\n"
+#~ msgstr "A nyilvános kulcs nem passzol a titkos kulcshoz!\n"
+
+#~ msgid "unknown protection algorithm\n"
+#~ msgstr "Ismeretlen védelmi algoritmus!\n"
+
+#~ msgid "NOTE: This key is not protected!\n"
+#~ msgstr "MEGJEGYZÉS: Ez a kulcs nem védett.\n"
+
+#, fuzzy
+#~ msgid "protection digest %d is not supported\n"
+#~ msgstr "%d%s védõ algoritmus nem támogatott.\n"
+
+#~ msgid "Invalid passphrase; please try again"
+#~ msgstr "Érvénytelen jelszó. Próbálja újra"
+
+#~ msgid "%s ...\n"
+#~ msgstr "%s...\n"
+
+#~ msgid "WARNING: Weak key detected - please change passphrase again.\n"
+#~ msgstr ""
+#~ "FIGYELEM: Gyenge kulcsot találtam. Kérem, változtassa meg ismét a "
+#~ "jelszót!\n"
+
+#~ msgid ""
+#~ "generating the deprecated 16-bit checksum for secret key protection\n"
+#~ msgstr ""
+#~ "Elavult, 16 bites ellenõrzõösszeget hozok létre titkos kulcs védelméhez.\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Különálló aláírást PGP 2.x stílusú kulcsokkal csak --pgp2 módban "
+#~ "készíthet!\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "Olvasható szöveget PGP 2.x stílusú kulccsal csak --pgp2 módban írhat "
+#~ "alá!\n"
+
+#, fuzzy
+#~ msgid "[ revoked]"
+#~ msgstr "[visszavont] "
+
+#, fuzzy
+#~ msgid "[ expired]"
+#~ msgstr "[lejárt]     "
+
+#, fuzzy
+#~ msgid "[ unknown]"
+#~ msgstr "Ismeretlen módú"
+
+#, fuzzy
+#~ msgid "never"
+#~ msgstr "soha      "
+
+#, fuzzy
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+#, fuzzy
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "Használat: gpg [opciók] [fájlok] (-h a súgóhoz)"
+
+#, fuzzy
+#~ msgid "usage: gpgconf [options] "
+#~ msgstr "Használat: gpg [opciók] "
+
+#, fuzzy
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "Bizalmi adatbázis (%s) inicializálása sikertelen!\n"
+
+#~ msgid "Command> "
+#~ msgstr "Parancs> "
+
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr "Bizalmi adatbázis sérült. Kérem, futtassa: \"gpg --fix-trustdb\".\n"
 
@@ -6840,9 +8569,6 @@ msgstr ""
 #~ msgid "|[FILE]|make a clear text signature"
 #~ msgstr "|[fájl]|olvasható szöveg aláírása"
 
-#~ msgid "|NAME|use NAME as default recipient"
-#~ msgstr "|NÉV|NÉV használata alapértelmezett címzettként"
-
 #~ msgid "use the default key as default recipient"
 #~ msgstr "alapért. kulcs haszn. alapért. címzettként"
 
@@ -6854,9 +8580,6 @@ msgstr ""
 
 #~ msgid "add this secret keyring to the list"
 #~ msgstr "titkoskulcs-karika hozzáadása a listához"
-
-#~ msgid "|NAME|set terminal charset to NAME"
-#~ msgstr "|NÉV|terminál karakterkódolásának megadása"
 
 #~ msgid "|FILE|load extension module FILE"
 #~ msgstr "|fájl|bõvítõ modul betöltése"
@@ -7194,9 +8917,6 @@ msgstr ""
 #~ msgid "cipher extension `%s' not loaded due to unsafe permissions\n"
 #~ msgstr "A \"%s\" rejtjelezõ bõvítést rossz engedélyek miatt töltöm be.\n"
 
-#~ msgid "DSA requires the use of a 160 bit hash algorithm\n"
-#~ msgstr "A DSA 160 bites hash (kivonatoló) algoritmust igényel.\n"
-
 #, fuzzy
 #~ msgid ".\n"
 #~ msgstr "%s.\n"
@@ -7207,9 +8927,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "can't query passphrase in batch mode\n"
 #~ msgstr "Nem tudok jelszót bekérni kötegelt módban!\n"
-
-#~ msgid "Enter passphrase: "
-#~ msgstr "Írja be a jelszót: "
 
 #~ msgid "Repeat passphrase: "
 #~ msgstr "Ismételje meg a jelszót: "
@@ -7231,18 +8948,12 @@ msgstr ""
 #~ msgid "can't lock `%s': %s\n"
 #~ msgstr "Nem tudom megnyitni %s-t!\n"
 
-#~ msgid "can't stat `%s': %s\n"
-#~ msgstr "Nem tudom a stat mûveletet elvégezni a(z) \"%s\" állományon: %s.\n"
-
 #~ msgid "`%s' is not a regular file - ignored\n"
 #~ msgstr "\"%s\" nem szabályos állomány. Figyelmen kívül hagyom.\n"
 
 #~ msgid "note: random_seed file is empty\n"
 #~ msgstr ""
 #~ "Megjegyzés: random_seed állomány (véletlenszám-generátor állapota) üres.\n"
-
-#~ msgid "WARNING: invalid size of random_seed file - not used\n"
-#~ msgstr "FIGYELEM: Érvénytelen méretû random_seed állomány. Nem használom.\n"
 
 #~ msgid "can't read `%s': %s\n"
 #~ msgstr "Nem tudom olvasni a(z) \"%s\" állományt: %s.\n"
@@ -7308,9 +9019,6 @@ msgstr ""
 #~ msgid "unknown packet type"
 #~ msgstr "ismeretlen csomagtípus"
 
-#~ msgid "unknown pubkey algorithm"
-#~ msgstr "ismeretlen nyilvános kulcsú algoritmus"
-
 #~ msgid "unknown digest algorithm"
 #~ msgstr "ismeretlen kivonatoló algoritmus"
 
@@ -7335,9 +9043,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "érvénytelen csomag"
 
-#~ msgid "invalid armor"
-#~ msgstr "érvénytelen páncél"
-
 #~ msgid "no such user id"
 #~ msgstr "nincs ilyen felhasználói azonosító"
 
@@ -7346,9 +9051,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "rossz titkos kulcs használata"
-
-#~ msgid "not supported"
-#~ msgstr "nem támogatott"
 
 #~ msgid "bad key"
 #~ msgstr "rossz kulcs"
@@ -7445,9 +9147,6 @@ msgstr ""
 #~ msgid "... this is a bug (%s:%d:%s)\n"
 #~ msgstr "Ez egy programhiba... (%s:%d:%s)\n"
 
-#~ msgid "WARNING: using insecure memory!\n"
-#~ msgstr "FIGYELEM: Nem biztonságos memóriát használunk!\n"
-
 #~ msgid "operation is not possible without initialized secure memory\n"
 #~ msgstr "A mûvelet nem lehetséges biztonságos memória nélkül.\n"
 
@@ -7496,9 +9195,6 @@ msgstr ""
 
 #~ msgid "can't get server write FD for the agent\n"
 #~ msgstr "Nem tudom lekérni a szerver írási állományleíróját az ügynöknek.\n"
-
-#~ msgid "invalid response from agent\n"
-#~ msgstr "Érvénytelen válasz az ügynöktõl!\n"
 
 #~ msgid "select secondary key N"
 #~ msgstr "N. másodlagos kulcs kiválasztása"
@@ -7582,9 +9278,6 @@ msgstr ""
 
 #~ msgid "uid"
 #~ msgstr "uid"
-
-#~ msgid "key"
-#~ msgstr "key"
 
 #~ msgid "check"
 #~ msgstr "check"
@@ -7745,10 +9438,6 @@ msgstr ""
 #~ msgid "can't open file `%s': %s\n"
 #~ msgstr "Nem tudom megnyitni az állományt: %s.\n"
 
-#, fuzzy
-#~ msgid "          \""
-#~ msgstr "               azaz \""
-
 #~ msgid "key %08lX: key has been revoked!\n"
 #~ msgstr "%08lX kulcs vissza lett vonva!\n"
 
@@ -7802,9 +9491,6 @@ msgstr ""
 #~ msgstr ""
 #~ "\"\n"
 #~ "Helyileg aláírva az Ön %08lX kulcsával %s idõpontban.\n"
-
-#~ msgid "%s: can't access: %s\n"
-#~ msgstr "%s: Nem tudom elérni: %s.\n"
 
 #~ msgid "%s: can't create lock\n"
 #~ msgstr "%s: Nem tudok lock-ot létrehozni.\n"
@@ -8096,9 +9782,6 @@ msgstr ""
 #~ "a kulccsal Ön nem fog tudni kommunikálni a PGP-t használókkal. Továbbá\n"
 #~ "ez az algoritmus nagyon lassú, és talán nem is olyan biztonságos, mint\n"
 #~ "a többi választható.\n"
-
-#~ msgid "Create anyway? "
-#~ msgstr "Mégis létrehozzam? "
 
 #~ msgid "invalid symkey algorithm detected (%d)\n"
 #~ msgstr "Érvénytelen szimmetrikus kulcsú algoritmust találtam (%d).\n"

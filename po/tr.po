@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2008-12-14 23:25+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,6 +20,20 @@ msgstr ""
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "PIN giriş kilidi edinilemedi: %s\n"
+
+#. TRANSLATORS: These are labels for buttons etc used in
+#. Pinentries.  An underscore indicates that the next letter
+#. should be used as an accelerator.  Double the underscore for
+#. a literal one.  The actual to be translated text starts after
+#. the second vertical bar.
+msgid "|pinentry-label|_OK"
+msgstr ""
+
+msgid "|pinentry-label|_Cancel"
+msgstr ""
+
+msgid "|pinentry-label|PIN:"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -48,9 +63,18 @@ msgstr ""
 "Lütfen anahtar parolanızı giriniz, böylelikle bu oturumda bu gizli anahtar "
 "kilitsiz olabilecek"
 
+msgid "does not match - try again"
+msgstr "aynı değiller - tekrar deneyin"
+
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (%d/%d dene)"
+
+msgid "Repeat:"
+msgstr ""
 
 msgid "PIN too long"
 msgstr "PIN çok uzun"
@@ -77,11 +101,13 @@ msgstr "Anahtar Parolası"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "%d bitlikten daha büyük SSH anahtarları desteklenmiyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
 msgid "can't create '%s': %s\n"
 msgstr "\"%s\" oluşturulamıyor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "`%s' açılamıyor: %s\n"
 
@@ -93,8 +119,9 @@ msgstr "kartın seri numarası alınırken hata: %s\n"
 msgid "detected card with S/N: %s\n"
 msgstr "Algılanan kartın seri nr: %s\n"
 
-#, c-format
-msgid "error getting default authentication keyID of card: %s\n"
+#, fuzzy, c-format
+#| msgid "error getting default authentication keyID of card: %s\n"
+msgid "no authentication key for ssh on card: %s\n"
 msgstr "kartın öntanımlı kimlik doğrulama anahtar kimliği alınırken hata: %s\n"
 
 #, c-format
@@ -110,22 +137,31 @@ msgid "error writing key: %s\n"
 msgstr "anahtarı yazarken hata: %s\n"
 
 #, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Lütfen SSH anahtarı %0A  %c için anahtar parolasını giriniz"
 
 msgid "Please re-enter this passphrase"
 msgstr "Lütfen bu anahtar parolasını tekrar girin"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
 msgstr ""
 "gpg-agent'in anahtar deposuna korumak için alınan gizli anahtar %%0A  %s%%0A "
 "için lütfen anahtar parolası giriniz"
-
-msgid "does not match - try again"
-msgstr "aynı değiller - tekrar deneyin"
 
 #, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -149,7 +185,7 @@ msgid "Reset Code"
 msgstr "Sıfırlama Kodu"
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 msgid "Repeat this Reset Code"
@@ -192,42 +228,6 @@ msgstr "Ne olursa olsun bunu al"
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u "
-"karakterlik olmalı."
-msgstr[1] ""
-"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u "
-"karakterlik olmalı."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u rakam "
-"veya%%0Aözel karakter içermeli."
-msgstr[1] ""
-"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u rakam "
-"veya%%0Aözel karakter içermeli."
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola bilinen bir "
-"terim olmamalı ve%%0Abelli bir kalıpla eşleşmemeli."
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr "Bir anahtar parolası girmediniz!%0ABoş parolaya izin verilmez."
 
@@ -242,8 +242,54 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Evet, korumak gereksiz"
 
-#, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#, fuzzy, c-format
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "Ad ve soyadınız en az 5 harfli olmalı\n"
+msgstr[1] "Ad ve soyadınız en az 5 harfli olmalı\n"
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digit or%%0Aspecial character."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "contain at least %u digits or%%0Aspecial characters."
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u rakam "
+"veya%%0Aözel karakter içermeli."
+msgstr[1] ""
+"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u rakam "
+"veya%%0Aözel karakter içermeli."
+
+#, fuzzy, c-format
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase may not "
+#| "be a known term or match%%0Acertain pattern."
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola bilinen bir "
+"terim olmamalı ve%%0Abelli bir kalıpla eşleşmemeli."
+
+#, fuzzy
+#| msgid ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u character long."
+#| msgid_plural ""
+#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
+#| "be at least %u characters long."
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+"Uyarı: Girdiğiniz anahtar parolası güvenli değil.%%0AParola en az %u "
+"karakterlik olmalı."
+
+#, fuzzy, c-format
+#| msgid "Please enter the passphrase to%0Ato protect your new key"
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Yeni anahtarınızı korumak için Lütfen%0AAnahtar Parolanızı giriniz"
 
 msgid "Please enter the new passphrase"
@@ -256,11 +302,11 @@ msgstr ""
 "@Seçenekler:\n"
 " "
 
-msgid "run in server mode (foreground)"
-msgstr "sunucu olarak (önalanda) çalışır"
-
 msgid "run in daemon mode (background)"
 msgstr "artalan süreci olarak çalışır"
+
+msgid "run in server mode (foreground)"
+msgstr "sunucu olarak (önalanda) çalışır"
 
 msgid "verbose"
 msgstr "ayrıntılı"
@@ -286,9 +332,6 @@ msgstr "klavye ve fare gaspedilmez"
 msgid "use a log file for the server"
 msgstr "sunucu için bir günlük dosyası kullanılır"
 
-msgid "use a standard location for the socket"
-msgstr "soket için standart bir yer kullanılır"
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr "|UYG|PIN girme uygulaması olarak UYG kullanılır"
 
@@ -310,17 +353,21 @@ msgstr "|N|arabellekteki PINler N saniyede zamanaşımına uğrar"
 msgid "do not use the PIN cache when signing"
 msgstr "imzalarken PIN arabelleği kullanılmaz"
 
-msgid "allow clients to mark keys as \"trusted\""
+#, fuzzy
+#| msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr "istemcilerin anahtarları \"güvenilir\" olarak imlemesine izin verilir"
 
 msgid "allow presetting passphrase"
 msgstr "anahtar parolasının önceden atanmasına izin verilir"
 
-msgid "enable ssh-agent emulation"
+#, fuzzy
+#| msgid "enable ssh-agent emulation"
+msgid "enable ssh support"
 msgstr "ssh-agent öykünümü etkinleşir"
 
-msgid "|FILE|write environment settings also to FILE"
-msgstr "|DOSYA|ortam ayarlarını ayrıca DOSYAya da yazar"
+msgid "enable putty support"
+msgstr ""
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -329,17 +376,24 @@ msgstr "|DOSYA|ortam ayarlarını ayrıca DOSYAya da yazar"
 msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "Yazılım hatalarını lütfen <"
 
-msgid "Usage: gpg-agent [options] (-h for help)"
-msgstr "Kullanımı: gpg [seçenekler] (yardım için -h)"
+#, fuzzy
+#| msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
+msgstr "Kullanımı: gpgconf [seçenekler] (yardım için -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-agent [options] [command [args]]\n"
+#| "Secret key management for GnuPG\n"
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
 "Sözdizimi: gpg-agent [seçenekler] [komut [arg ...]]\n"
 "GnuPG için gizli anahtar yönetimi\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid debug-level `%s' given\n"
 msgid "invalid debug-level '%s' given\n"
 msgstr "belirtilen hata seviyesi `%s' geçersiz\n"
 
@@ -347,25 +401,25 @@ msgstr "belirtilen hata seviyesi `%s' geçersiz\n"
 msgid "%s is too old (need %s, have %s)\n"
 msgstr "%s çok eski (gereken %s, sizinki %s)\n"
 
-#, c-format
-msgid "NOTE: no default option file '%s'\n"
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "BİLGİ: \"%s\" öntanımlı seçenek dosyası yok\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
 msgid "option file '%s': %s\n"
 msgstr "seçenek dosyası \"%s\": %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "\"%s\"den seçenekler okunuyor\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "`%s' oluşturulurken hata: %s\n"
-
-#, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "`%s' dizini oluşturulamıyor: %s\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is a deprecated option\n"
+msgid "Note: '%s' is not considered an option\n"
+msgstr "UYARI: %s seçeneği kullanımdan kaldırılmak üzere.\n"
 
 msgid "name of socket too long\n"
 msgstr "soketin ismi çok uzun\n"
@@ -374,7 +428,8 @@ msgstr "soketin ismi çok uzun\n"
 msgid "can't create socket: %s\n"
 msgstr "soket oluşturulamıyor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "socket name `%s' is too long\n"
 msgid "socket name '%s' is too long\n"
 msgstr "soketin ismi `%s' çok uzun\n"
 
@@ -384,7 +439,8 @@ msgstr "çalışan bir gpg-agent zaten var - bir yenisi başlatılmayacak\n"
 msgid "error getting nonce for the socket\n"
 msgstr "soket için tuz alınırken hata\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error binding socket to `%s': %s\n"
 msgid "error binding socket to '%s': %s\n"
 msgstr "soket `%s'e bağlanırken hata: %s\n"
 
@@ -392,19 +448,28 @@ msgstr "soket `%s'e bağlanırken hata: %s\n"
 msgid "listen() failed: %s\n"
 msgstr "soket dinleme başarısız: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "listening on socket `%s'\n"
 msgid "listening on socket '%s'\n"
 msgstr "`%s' soketi dinlemede\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "can't create directory '%s': %s\n"
+msgstr "`%s' dizini oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "directory `%s' created\n"
 msgid "directory '%s' created\n"
 msgstr "dizin `%s' oluşturuldu\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "stat() failed for `%s': %s\n"
 msgid "stat() failed for '%s': %s\n"
 msgstr "%s için stat() başarısız oldu: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't use `%s' as home directory\n"
 msgid "can't use '%s' as home directory\n"
 msgstr "`%s' ev dizini olarak kullanılamıyor\n"
 
@@ -428,8 +493,9 @@ msgstr "ssh tutamağı 0x%lx, fd %d için başlatıldı\n"
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "ssh tutamağı 0x%lx, fd %d için sonlandırıldı\n"
 
-#, c-format
-msgid "pth_select failed: %s - waiting 1s\n"
+#, fuzzy, c-format
+#| msgid "pth_select failed: %s - waiting 1s\n"
+msgid "npth_pselect failed: %s - waiting 1s\n"
 msgstr "pth_select başarısız: %s - 1s bekliyor\n"
 
 #, c-format
@@ -438,13 +504,6 @@ msgstr "%s %s durdu\n"
 
 msgid "no gpg-agent running in this session\n"
 msgstr "bu oturumda çalışan gpg-agent yok\n"
-
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "GPG_AGENT_INFO çevre değişkeni hatalı\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "gpg-agent protokolü sürüm %d desteklenmiyor\n"
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
 msgstr ""
@@ -514,31 +573,38 @@ msgstr "iptal edildi\n"
 msgid "error while asking for the passphrase: %s\n"
 msgstr "anahtar parolası sorulurken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error opening `%s': %s\n"
 msgid "error opening '%s': %s\n"
 msgstr "'%s' açılırken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "file `%s', line %d: %s\n"
 msgid "file '%s', line %d: %s\n"
 msgstr "`%s' dosyası, %d. satır: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "statement \"%s\" ignored in `%s', line %d\n"
 msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "`%2$s' dosyasının %3$d. satırındaki \"%1$s\" deyimi yoksayıldı\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "system trustlist `%s' not available\n"
 msgid "system trustlist '%s' not available\n"
 msgstr "sistem güvence listesi `%s' kullanım dışı\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "bad fingerprint in `%s', line %d\n"
 msgid "bad fingerprint in '%s', line %d\n"
 msgstr "`%s', %d. satırda parmakizi hatalı\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid keyflag in `%s', line %d\n"
 msgid "invalid keyflag in '%s', line %d\n"
 msgstr "`%s', %d. satırda anahtar bayrağı geçersiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error reading `%s', line %d: %s\n"
 msgid "error reading '%s', line %d: %s\n"
 msgstr "`%s' okunurken %d. satırda hata: %s\n"
 
@@ -611,13 +677,54 @@ msgstr "Anahtar parolasını değiştir"
 msgid "I'll change it later"
 msgstr "Sonra değiştireceğim"
 
+#, fuzzy
+#| msgid "enable key"
+msgid "Delete key"
+msgstr "anahtarı kullanıma sokar"
+
+msgid ""
+"Warning: This key is also listed for use with SSH!\n"
+"Deleting the key might remove your ability to access remote machines."
+msgstr ""
+
+msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgstr "DSA sekizin katlarında bir çittirim uzunluğu gerektirir\n"
+
+#, c-format
+msgid "%s key uses an unsafe (%u bit) hash\n"
+msgstr "%s anahtarı, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
+
+#, fuzzy, c-format
+#| msgid "a %u bit hash is not valid for a %u bit %s key\n"
+msgid "a %zu bit hash is not valid for a %u bit %s key\n"
+msgstr "%u bitlik çittirim %u bitlik %s anahtarı için geçersiz\n"
+
+msgid "secret key parts are not available\n"
+msgstr "gizli anahtar parçaları kullanım dışı\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "public key algorithm %d (%s) is not supported\n"
+msgstr "koruma algoritması %d%s desteklenmiyor\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection algorithm %d (%s) is not supported\n"
+msgstr "koruma algoritması %d%s desteklenmiyor\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection hash algorithm %d (%s) is not supported\n"
+msgstr "koruma algoritması %d%s desteklenmiyor\n"
+
 #, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "boru oluşturulurken hata: %s\n"
 
-#, c-format
-msgid "can't fdopen pipe for reading: %s\n"
-msgstr "okumak için boruya fdopen yapılamadı: %s\n"
+#, fuzzy, c-format
+#| msgid "error creating a pipe: %s\n"
+msgid "error creating a stream for a pipe: %s\n"
+msgstr "boru oluşturulurken hata: %s\n"
 
 #, c-format
 msgid "error forking process: %s\n"
@@ -627,33 +734,30 @@ msgstr "süreç çatallanırken hata: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "süreç %d sonlanacak diye beklerken başarısızlık: %s\n"
 
-#, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "süreç %d çıkış kodu alınırken hata: %s\n"
-
-#, c-format
-msgid "error running '%s': exit status %d\n"
-msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error running `%s': probably not installed\n"
 msgid "error running '%s': probably not installed\n"
 msgstr "`%s' çalıştırılırken hata: muhtemelen kurulu değil\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error running '%s': exit status %d\n"
+msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
+
+#, fuzzy, c-format
+#| msgid "error running `%s': terminated\n"
 msgid "error running '%s': terminated\n"
 msgstr "`%s' çalışırken hata: sonlandırıldı\n"
 
 #, c-format
-msgid "error creating socket: %s\n"
-msgstr "soket oluşturulurken hata: %s\n"
-
-msgid "host not found"
-msgstr "konak yok"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "süreç %d çıkış kodu alınırken hata: %s\n"
 
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent bu oturumda kullanılamaz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "\"%s\" sunucusuna bağlanılamadı: %s\n"
 
@@ -724,11 +828,31 @@ msgstr "%lu bayt ayrılırken güvenli bellekte nüve dışına çıkıldı"
 msgid "out of core while allocating %lu bytes"
 msgstr "%lu bayt ayrılırken nüve dışına çıkıldı"
 
-msgid "no running gpg-agent - starting one\n"
+#, fuzzy, c-format
+#| msgid "no running gpg-agent - starting one\n"
+msgid "no running gpg-agent - starting '%s'\n"
 msgstr "çalışan gpg-agent yok - bir tane başlatılıyor\n"
 
-msgid "can't connect to the agent - trying fall back\n"
-msgstr "aracıya bağlanılamıyor - son çareye başvuruluyor\n"
+#, c-format
+msgid "waiting for the agent to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to agent established\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "no running dirmngr - starting `%s'\n"
+msgid "no running Dirmngr - starting '%s'\n"
+msgstr "çalışan dirmngr yok - `%s' başlatılıyor\n"
+
+#, c-format
+msgid "waiting for the dirmngr to come up ... (%ds)\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to the dirmngr established\n"
+msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
 #. verbatim.  It will not be printed.
@@ -751,6 +875,22 @@ msgstr "sertifikaları ithal eder"
 
 msgid "|audit-log-result|Error"
 msgstr ""
+
+#, fuzzy
+msgid "|audit-log-result|Not used"
+msgstr "sertifikaları ithal eder"
+
+#, fuzzy
+msgid "|audit-log-result|Okay"
+msgstr "sertifikaları ithal eder"
+
+#, fuzzy
+msgid "|audit-log-result|Skipped"
+msgstr "sertifikaları ithal eder"
+
+#, fuzzy
+msgid "|audit-log-result|Some"
+msgstr "sertifikaları ithal eder"
 
 msgid "Certificate chain available"
 msgstr "Sertifika zinciri mevcut"
@@ -788,8 +928,24 @@ msgstr "%d. alıcı"
 msgid "Data signing succeeded"
 msgstr "Verinin imzalanması başarılı"
 
+#, fuzzy, c-format
+msgid "data hash algorithm: %s"
+msgstr "Kötü çittirim algoritması: %s"
+
+#, fuzzy, c-format
+msgid "Signer %d"
+msgstr "İmza %d"
+
+#, fuzzy, c-format
+msgid "attr hash algorithm: %s"
+msgstr "Kötü çittirim algoritması: %s"
+
 msgid "Data decryption succeeded"
 msgstr "Verinin şifresinin çözülmesi başarılı"
+
+#, fuzzy
+msgid "Encryption algorithm supported"
+msgstr "koruma algoritması %d%s desteklenmiyor\n"
 
 msgid "Data verification succeeded"
 msgstr "Verinin doğrulanması başarılı"
@@ -797,11 +953,12 @@ msgstr "Verinin doğrulanması başarılı"
 msgid "Signature available"
 msgstr "İmza kullanılabilir"
 
-msgid "Parsing signature succeeded"
+#, fuzzy
+msgid "Parsing data succeeded"
 msgstr "İmzanın çözümlenmesi başarılı"
 
-#, c-format
-msgid "Bad hash algorithm: %s"
+#, fuzzy, c-format
+msgid "bad data hash algorithm: %s"
 msgstr "Kötü çittirim algoritması: %s"
 
 #, c-format
@@ -838,7 +995,8 @@ msgstr "Gpg-Agent elverişli"
 msgid "Dirmngr usable"
 msgstr "Dirmngr elverişli"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "No help available for `%s'."
 msgid "No help available for '%s'."
 msgstr "`%s' için yardım mevcut değil."
 
@@ -847,6 +1005,115 @@ msgstr "bozuk satır yok sayılıyor"
 
 msgid "[none]"
 msgstr "[yok]"
+
+msgid "argument not expected"
+msgstr "değiştirge beklenmiyordu"
+
+msgid "read error"
+msgstr "okuma hatası"
+
+msgid "keyword too long"
+msgstr "anahtar sözcük çok uzun"
+
+msgid "missing argument"
+msgstr "eksik değiştirge"
+
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "değer hatalı\n"
+
+msgid "invalid command"
+msgstr "geçersiz komut"
+
+msgid "invalid alias definition"
+msgstr "geçersiz rumuz tanımı"
+
+msgid "out of core"
+msgstr "nüve dışı"
+
+msgid "invalid option"
+msgstr "geçersiz seçenek"
+
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
+
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr "\"%.50s\" seçeneğinin değiştirge ihtiyacı yok\n"
+
+#, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "geçersiz komut \"%.50s\"\n"
+
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr "\"%.50s\" seçeneği belirsiz\n"
+
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr "\"%.50s\" komutu belirsiz\n"
+
+msgid "out of core\n"
+msgstr "nüve dışında\n"
+
+#, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "geçersiz seçenekler \"%.50s\"\n"
+
+#, c-format
+msgid "you found a bug ... (%s:%d)\n"
+msgstr "bir yazılım hatası buldunuz ... (%s:%d)\n"
+
+#, fuzzy, c-format
+#| msgid "conversion from `%s' to `%s' not available\n"
+msgid "conversion from '%s' to '%s' not available\n"
+msgstr "`%s' > `%s' dönüşümü elverişli değil\n"
+
+#, c-format
+msgid "iconv_open failed: %s\n"
+msgstr "iconv_open başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "conversion from '%s' to '%s' failed: %s\n"
+msgstr "`%s' > `%s' dönüşümü başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary file '%s': %s\n"
+msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing to `%s': %s\n"
+msgid "error writing to '%s': %s\n"
+msgstr "`%s' yazılırken hata: %s\n"
+
+#, c-format
+msgid "removing stale lockfile (created by %d)\n"
+msgstr "bayat kilit dosyası siliniyor (%d tarafından oluşturulmuş)\n"
+
+#, c-format
+msgid "waiting for lock (held by %d%s) %s...\n"
+msgstr "kilit için bekleniyor (%d%s tarafından tutulmuş) %s...\n"
+
+msgid "(deadlock?) "
+msgstr "(ölükilit?) "
+
+#, fuzzy, c-format
+#| msgid "lock `%s' not made: %s\n"
+msgid "lock '%s' not made: %s\n"
+msgstr "kilit `%s' yapılmadı: %s\n"
+
+#, c-format
+msgid "waiting for lock %s...\n"
+msgstr "%s kilidi için bekleniyor...\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -932,6 +1199,15 @@ msgid "not human readable"
 msgstr "insan okuyabilir değil"
 
 #, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter passphrase\n"
+msgid "Enter passphrase: "
+msgstr "Anahtar parolasını giriniz\n"
+
+#, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "OpenPGP anahtarı kullanılabilir değil: %s\n"
 
@@ -999,7 +1275,8 @@ msgstr "Hata: URL çok uzun (sınır: %d karakter).\n"
 msgid "error allocating enough memory: %s\n"
 msgstr "yeterli bellek ayrılırken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
 msgstr "\"%s\" okunurken hata: %s\n"
 
@@ -1057,7 +1334,7 @@ msgid "Replace existing key? (y/N) "
 msgstr "Mevcut anahtar değiştirilsin mi? (e/H ya da y/N) "
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1094,16 +1371,20 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Şifreli anahtarın kartsız yedeği yapılsın mı? (E/h ya da Y/n) "
 
 #, fuzzy
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "gizli anahtar zaten bir kartın üzerinde saklı\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Mevcut anahtarlar değiştirilsin mi? (e/H ya da y/N) "
 
-#, c-format
+#, fuzzy, c-format
+#| msgid ""
+#| "Please note that the factory settings of the PINs are\n"
+#| "   PIN = `%s'     Admin PIN = `%s'\n"
+#| "You should change them using the command --change-pin\n"
 msgid ""
 "Please note that the factory settings of the PINs are\n"
-"   PIN = `%s'     Admin PIN = `%s'\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
 "You should change them using the command --change-pin\n"
 msgstr ""
 "Lütfen dikkat edin, PIN'lerin öntanımlı ayarları böyledir:\n"
@@ -1128,18 +1409,10 @@ msgstr "Seçim geçersiz.\n"
 msgid "Please select where to store the key:\n"
 msgstr "Lütfen anahtarın saklanacağı yeri seçiniz:\n"
 
-msgid "unknown key protection algorithm\n"
-msgstr "bilinmeyen anahtar koruma algoritması\n"
-
-msgid "secret parts of key are not available\n"
-msgstr "anahtarın gizli parçaları kullanılabilir değil\n"
-
-msgid "secret key already stored on a card\n"
-msgstr "gizli anahtar zaten bir kartın üzerinde saklı\n"
-
 #, fuzzy, c-format
-msgid "error writing key to card: %s\n"
-msgstr "anahtarı yazarken hata: %s\n"
+#| msgid "read failed: %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "read başarısız: %s\n"
 
 msgid "quit this menu"
 msgstr "bu menüden çık"
@@ -1189,8 +1462,8 @@ msgstr "PIN'i doğrular ve tüm veriyi listeler"
 msgid "unblock the PIN using a Reset Code"
 msgstr "Bir Sıfırlama Kodu kullanarak PIN'in engelini kaldır"
 
-msgid "Command> "
-msgstr "Komut> "
+msgid "gpg/card> "
+msgstr ""
 
 msgid "Admin-only command\n"
 msgstr "Yöneticiye özel komut\n"
@@ -1207,7 +1480,8 @@ msgstr "Komut geçersiz (\"help\" komutunu deneyin)\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output seçeneği bu komutla çalışmaz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s'\n"
 msgid "can't open '%s'\n"
 msgstr "`%s' açılamadı\n"
 
@@ -1230,6 +1504,19 @@ msgstr "Bu anahtar, anahtar zincirinden silinsin mi? (e/H ya da y/N) "
 
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Bu bir gizli anahtar! - gerçekten silinecek mi? (e/H veya y/N)"
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "deleting secret %s failed: %s\n"
+msgstr "\"%s\" sertifikası silinemedi: %s\n"
+
+msgid "key"
+msgstr ""
+
+#, fuzzy
+#| msgid "Pubkey: "
+msgid "subkey"
+msgstr "GenAnah: "
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1256,26 +1543,20 @@ msgstr "S2K kipi sayesinde bir simetrik ESK paketi kullanılamıyor\n"
 msgid "using cipher %s\n"
 msgstr "%s şifrelemesi kullanılıyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
 msgid "'%s' already compressed\n"
 msgstr "`%s' zaten sıkıştırılmış\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "UYARI: \"%s\" dosyası boş\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr ""
-"--pgp2 kipinde sadece 2048 bitlik RSA anahtarları ile şifreleme "
-"yapabilirsiniz\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "`%s'den okunuyor\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr "tüm anahtarları şifrelemek için IDEA şifresi kullanılamaz.\n"
 
 #, c-format
 msgid ""
@@ -1333,11 +1614,13 @@ msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
 "bu platformda, dış uygulamalar çalıştırılırken geçici dosyalar gerekiyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unable to execute program `%s': %s\n"
 msgid "unable to execute program '%s': %s\n"
 msgstr " '%s' çalıştırılamıyor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unable to execute shell `%s': %s\n"
 msgid "unable to execute shell '%s': %s\n"
 msgstr "'%s' kabuğu çalıştırılamıyor: %s\n"
 
@@ -1355,11 +1638,13 @@ msgstr "dış uygulama çalıştırılamıyor\n"
 msgid "unable to read external program response: %s\n"
 msgstr "dış uygulamanın yanıtı okunamıyor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
 msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "UYARI: geçici dosya silinemiyor (%s) `%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unable to remove temp directory `%s': %s\n"
 msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "UYARI: %s geçici dizini silinemiyor: %s\n"
 
@@ -1372,9 +1657,6 @@ msgstr ""
 
 msgid "export revocation keys marked as \"sensitive\""
 msgstr "\"hassas\" olarak imli yürürlükten kaldırma anahtarlarını ihraç eder"
-
-msgid "remove the passphrase from exported subkeys"
-msgstr "ihracedilen yardımcı anahtarlardan anahtar parolasını kaldırır"
 
 msgid "remove unusable parts from key during export"
 msgstr "ihraç sırasında anahtardan kullanışsız parçalar kaldırılır"
@@ -1389,10 +1671,6 @@ msgid "exporting secret keys not allowed\n"
 msgstr "gizli anahtarların ihracına izin verilmez\n"
 
 #, c-format
-msgid "key %s: not protected - skipped\n"
-msgstr "anahtar %s: korunmamış - atlandı\n"
-
-#, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "anahtar %s: PGP 2.x tarzı bir anahtar - atlandı\n"
 
@@ -1400,31 +1678,24 @@ msgstr "anahtar %s: PGP 2.x tarzı bir anahtar - atlandı\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "anahtar %s: anahtar malzemesi kartta - atlandı\n"
 
-msgid "about to export an unprotected subkey\n"
-msgstr "korunmamış bir yardımcı anahtar ihraca hazır\n"
-
-#, c-format
-msgid "failed to unprotect the subkey: %s\n"
-msgstr "yardımcı anahtarın koruması kaldırılamadı: %s\n"
-
-#, c-format
-msgid "WARNING: secret key %s does not have a simple SK checksum\n"
-msgstr "UYARI: gizli anahtar %s basit bir SK sağlamasına sahip değil\n"
+#, fuzzy
+#| msgid "%s: skipped: %s\n"
+msgid " - skipped"
+msgstr "%s: atlandı: %s\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "UYARI: hiçbir şey dışarı aktarılmadı\n"
 
-msgid "too many entries in pk cache - disabled\n"
-msgstr "pk belleğinde çok fazla girdi - iptal edildi\n"
-
 msgid "[User ID not found]"
 msgstr "[Kullanıcı kimliği yok]"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "automatically retrieved `%s' via %s\n"
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "`%s' %s üzerinden özdevinimli olarak alındı\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error retrieving `%s' via %s: %s\n"
 msgid "error retrieving '%s' via %s: %s\n"
 msgstr "`%s' %s üzerinden alınırken hata: %s\n"
 
@@ -1437,17 +1708,8 @@ msgstr ""
 "Geçersiz %s anahtarı --allow-non-selfsigned-uid kullanılarak geçerli oldu\n"
 
 #, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr ""
-"yardımcı genel anahtar %s için gizli yardımcı anahtar yok - yoksayılıyor\n"
-
-#, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "yardımcı anahtar %s, asıl anahtar %s yerine kullanılıyor\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "anahtar %s: genel anahtarsız gizli anahtar - atlandı\n"
 
 msgid "make a signature"
 msgstr "bir imza yapar"
@@ -1488,11 +1750,32 @@ msgstr "gizli anahtarları listeler"
 msgid "generate a new key pair"
 msgstr "yeni bir anahtar çifti üretir"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "yeni bir anahtar çifti üretir"
+
+msgid "full featured key pair generation"
+msgstr ""
+
+msgid "generate a revocation certificate"
+msgstr "bir yürürlükten kaldırma sertifikası üretir"
+
 msgid "remove keys from the public keyring"
 msgstr "anahtarları genel anahtar zincirinden siler"
 
 msgid "remove keys from the secret keyring"
 msgstr "anahtarları gizli anahtar zincirinden siler"
+
+#, fuzzy
+#| msgid "sign a key"
+msgid "quickly sign a key"
+msgstr "bir anahtarı imzalar"
+
+#, fuzzy
+#| msgid "sign a key locally"
+msgid "quickly sign a key locally"
+msgstr "bir anahtarı yerel olarak imzalar"
 
 msgid "sign a key"
 msgstr "bir anahtarı imzalar"
@@ -1503,8 +1786,8 @@ msgstr "bir anahtarı yerel olarak imzalar"
 msgid "sign or edit a key"
 msgstr "bir anahtarı düzenler ve imzalar"
 
-msgid "generate a revocation certificate"
-msgstr "bir yürürlükten kaldırma sertifikası üretir"
+msgid "change a passphrase"
+msgstr "anahtar parolası değiştirir"
 
 msgid "export keys"
 msgstr "anahtarları gönderir"
@@ -1597,13 +1880,20 @@ msgstr ""
 " --list-keys [isimler]      anahtarları listeler\n"
 " --fingerprint [isimler]    parmak izlerini gösterir\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
 msgstr "Kullanımı: gpg [seçenekler] [dosyalar] (yardım için -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Syntax: @GPG@ [options] [files]\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Yazılışı: gpg [seçenekler] [dosyalar]\n"
 "imzalama, kontrol, şifreleme veya çözme\n"
@@ -1628,72 +1918,96 @@ msgstr "Hash: "
 msgid "Compression: "
 msgstr "Sıkıştırma: "
 
-msgid "usage: gpg [options] "
-msgstr "kullanımı: gpg [seçenekler] "
+#, fuzzy, c-format
+#| msgid "usage: gpgsm [options] "
+msgid "usage: %s [options] %s\n"
+msgstr "kullanımı: gpgsm [seçenekler] "
 
 msgid "conflicting commands\n"
 msgstr "çelişen komutlar\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "no = sign found in group definition `%s'\n"
 msgid "no = sign found in group definition '%s'\n"
 msgstr "grup tanımı '%s' içinde = işareti yok\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe ownership on homedir `%s'\n"
 msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr "UYARI: '%s' evdizininde güvensiz iyelik\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe ownership on configuration file `%s'\n"
 msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr "UYARI: '%s' yapılandırma dosyasında güvensiz iyelik\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe ownership on extension `%s'\n"
 msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr "UYARI: '%s' eklentisinde güvensiz iyelik\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe permissions on homedir `%s'\n"
 msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr "UYARI: UYARI: '%s' evdizininde güvensiz izinler\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe permissions on configuration file `%s'\n"
 msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr "UYARI: '%s' yapılandırma dosyasında güvensiz izinler\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe permissions on extension `%s'\n"
 msgid "WARNING: unsafe permissions on extension '%s'\n"
 msgstr "UYARI: '%s' eklentisinde güvensiz izinler\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
 msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr "UYARI: '%s' evdizinindeki ilgili dizinin iyeliği güvensiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid ""
+#| "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
 msgid ""
-"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr "UYARI: '%s' yapılandırma dosyasını içeren dizinin iyeliği güvensiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
 msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr "UYARI: '%s' eklentisini içeren dizinin iyeliği güvensiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
 msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr "UYARI: '%s' evdizinindeki ilgili dizinin izinleri güvensiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid ""
+#| "WARNING: unsafe enclosing directory permissions on configuration file `"
+#| "%s'\n"
 msgid ""
-"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr "UYARI: '%s' yapılandırma dosyasını içeren dizinin izinleri güvensiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
 msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr "UYARI: '%s' eklentisini içeren dizinin izinleri güvensiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unknown configuration item `%s'\n"
 msgid "unknown configuration item '%s'\n"
 msgstr "yapılandırma öğesi '%s' bilinmiyor\n"
 
 msgid "display photo IDs during key listings"
 msgstr "anahtarların listelenmesi sırasında foto kimliklerini gösterir"
+
+#, fuzzy
+#| msgid "show user ID validity during key listings"
+msgid "show key usage information during key listings"
+msgstr "anahtar listelemesi sırasında kullanıcı kimliği geçerliliğini gösterir"
 
 msgid "show policy URLs during signature listings"
 msgstr "imza listelemesi sırasında poliçe URLleri gösterilir"
@@ -1730,23 +2044,32 @@ msgstr "anahtar zinciri ismini anahtar listelerinde gösterir"
 msgid "show expiration dates during signature listings"
 msgstr "imza listelemesi sırasında zamanaşımı tarihleri gösterilir"
 
-#, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+#, fuzzy, c-format
+#| msgid "NOTE: old default options file `%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "BİLGİ: eski öntanımlı seçenekler dosyası `%s' yoksayıldı\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt çok eski (%s lazım, sizinki %s)\n"
 
-#, c-format
-msgid "NOTE: %s is not for normal use!\n"
+#, fuzzy, c-format
+#| msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "BİLGİ: %s normal kullanım için değil!\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid signature expiration\n"
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "'%s' geçerli bir imza zamanaşımı değil\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid country code in `%s', line %d\n"
+msgid "invalid pinentry mode '%s'\n"
+msgstr "`%s', %d. satırındaki ülke kodu geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid character set\n"
 msgid "'%s' is not a valid character set\n"
 msgstr "'%s' geçerli bir karakter kümesi değil\n"
 
@@ -1851,21 +2174,12 @@ msgstr "%s ile %s birlikte kullanılmaz!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s, %s ile etkisiz olur!\n"
 
+msgid "WARNING: running with faked system time: "
+msgstr "UYARI: sahte sistem zamanıyla çalışıyor: "
+
 #, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "%s olmasından dolayı güvensiz bellekle çalıştırılmayacak\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "--pgp2 kipindeyken sadece ayrık veya sade imzalar yapabilirsiniz\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "--pgp2 kipinde aynı anda hem imzalama hem de şifreleme yapamazsınız\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr "--pgp2 ile çalışırken veri yolu yerine dosyaları kullanmalısınız.\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr "--pgp2 kipinde ileti şifrelemesi IDEA şifresi gerektirir\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "seçilen şifre algoritması geçersiz\n"
@@ -1894,7 +2208,9 @@ msgstr "öntanımlı sertifika seviyesi geçersiz; 0, 1, 2, ya da 3 olabilir\n"
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "asgari sertifika seviyesi geçersiz; 1, 2, ya da 3 olabilir\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+#, fuzzy
+#| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "BİLGİ: basit S2K kipi (0) kesinlikle tavsiye edilmez\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -1916,15 +2232,18 @@ msgstr "kişisel sıkıştırma tercihleri geçersiz\n"
 msgid "%s does not yet work with %s\n"
 msgstr "%s, %s ile henüz çalışmıyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
 msgid "you may not use cipher algorithm '%s' while in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' şifreleme algoritması kullanılamaz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
 msgid "you may not use digest algorithm '%s' while in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' özet algoritması kullanılamaz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "you may not use compression algorithm `%s' while in %s mode\n"
 msgid "you may not use compression algorithm '%s' while in %s mode\n"
 msgstr "%2$s kipindeyken '%1$s' sıkıştırma algoritması kullanılamaz\n"
 
@@ -1942,7 +2261,8 @@ msgstr "--store [dosyaismi]"
 msgid "--symmetric [filename]"
 msgstr "--symmetric [dosyaismi]"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "symmetric encryption of `%s' failed: %s\n"
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "`%s' için simetrik şifreleme başarısız: %s\n"
 
@@ -1993,6 +2313,10 @@ msgstr "--lsign-key kullanıcı-kimliği"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key kullanıcı-kimliği [komutlar]"
 
+#, fuzzy
+msgid "--passwd <user-id>"
+msgstr "--sign-key kullanıcı-kimliği"
+
 #, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "anahtar sunucusuna gönderim başarısızlığa uğradı: %s\n"
@@ -2021,7 +2345,8 @@ msgstr "zırhın kaldırılması başarısız: %s\n"
 msgid "enarmoring failed: %s\n"
 msgstr "zırhlama başarısız: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "`%s' çittirim algoritması geçersiz\n"
 
@@ -2063,7 +2388,8 @@ msgstr ""
 msgid "No help available"
 msgstr "yardım mevcut değil"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
 msgid "No help available for '%s'"
 msgstr "\"%s\" için yardım mevcut değil"
 
@@ -2073,11 +2399,13 @@ msgstr "salt-yerel olarak imlenmiş imzaları ithal eder"
 msgid "repair damage from the pks keyserver during import"
 msgstr "ithalat sırasında pks anahtar sunucusundaki bozukluğu giderir"
 
-msgid "do not update the trustdb after import"
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
 msgstr "ithalat sonrası güvence veritabanını güncellemez"
 
-msgid "create a public key when importing a secret key"
-msgstr "bir gizli anahtar ithal ederken bir genel anahtar oluşturur"
+msgid "do not update the trustdb after import"
+msgstr "ithalat sonrası güvence veritabanını güncellemez"
 
 msgid "only accept updates to existing keys"
 msgstr "güncellemeleri sadece mevcut anahtarlar için kabul eder"
@@ -2195,6 +2523,14 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "anahtar %s: kullanıcı kimliği yok\n"
 
+#, fuzzy, c-format
+#| msgid "skipped \"%s\": %s\n"
+msgid "key %s: %s\n"
+msgstr "\"%s\" atlandı: %s\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "anahtar %s: PKS yardımcı anahtar bozulması giderildi\n"
@@ -2222,11 +2558,13 @@ msgstr "anahtar %s: yeni anahtar - atlandı\n"
 msgid "no writable keyring found: %s\n"
 msgstr "yazılabilir bir anahtar zinciri yok: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
 msgid "writing to '%s'\n"
 msgstr "\"%s\"e yazıyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing keyring `%s': %s\n"
 msgid "error writing keyring '%s': %s\n"
 msgstr "\"%s\" anahtarlığına yazarken hata oluştu: %s\n"
 
@@ -2291,27 +2629,30 @@ msgid "key %s: \"%s\" not changed\n"
 msgstr "anahtar %s: \"%s\" değişmedi\n"
 
 #, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "anahtar %s: geçersiz şifreli (%d) gizli anahtar - atlandı\n"
+msgid "key %s: secret key imported\n"
+msgstr "anahtar %s: gizli anahtar alındı\n"
+
+#, fuzzy, c-format
+#| msgid "skipped: secret key already present\n"
+msgid "key %s: secret key already exists\n"
+msgstr "atlandı: gizli anahtar zaten var\n"
+
+#, fuzzy, c-format
+#| msgid "error sending %s command: %s\n"
+msgid "key %s: error sending to agent: %s\n"
+msgstr "%s komutu gönderilirken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key %s: %s\n"
+msgstr "gizli anahtar \"%s\" yok: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "gizli anahtarı alımına izin verilmez\n"
 
 #, c-format
-msgid "no default secret keyring: %s\n"
-msgstr "öntanımlı gizli anahtar zinciri yok: %s\n"
-
-#, c-format
-msgid "key %s: secret key imported\n"
-msgstr "anahtar %s: gizli anahtar alındı\n"
-
-#, c-format
-msgid "key %s: already in secret keyring\n"
-msgstr "anahtar %s: zaten gizli anahtar zincirinde\n"
-
-#, c-format
-msgid "key %s: secret key not found: %s\n"
-msgstr "anahtar %s: gizli anahtar yok: %s\n"
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "anahtar %s: geçersiz şifreli (%d) gizli anahtar - atlandı\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2343,12 +2684,16 @@ msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "anahtar %s: kullanıcı kimliği \"%s\" için öz-imza geçersiz\n"
 
 #, c-format
-msgid "key %s: no subkey for key binding\n"
-msgstr "anahtar %s: anahtarı garantilemek için yardımcı anahtar yok\n"
-
-#, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "anahtar %s: genel anahtar algoritması desteklenmiyor\n"
+
+#, fuzzy, c-format
+msgid "key %s: invalid direct key signature\n"
+msgstr "anahtar %s: doğrudan anahtar imzası eklendi\n"
+
+#, c-format
+msgid "key %s: no subkey for key binding\n"
+msgstr "anahtar %s: anahtarı garantilemek için yardımcı anahtar yok\n"
 
 #, c-format
 msgid "key %s: invalid subkey binding\n"
@@ -2423,24 +2768,28 @@ msgstr "anahtar %s: \"%s\" yürürlükten kaldırma sertifikası eklendi\n"
 msgid "key %s: direct key signature added\n"
 msgstr "anahtar %s: doğrudan anahtar imzası eklendi\n"
 
-msgid "NOTE: a key's S/N does not match the card's one\n"
-msgstr "BİLGİ: bir anahtarın seri numarası kartlardan biriyle uyuşmuyor\n"
+#, fuzzy, c-format
+#| msgid "error creating keybox `%s': %s\n"
+msgid "error creating keybox '%s': %s\n"
+msgstr "anahtar bloku `%s' oluşturulurken hata: %s\n"
 
-msgid "NOTE: primary key is online and stored on card\n"
-msgstr "BİLGİ: asıl anahtar kart üzerinde saklı ve kullanılabilir\n"
-
-msgid "NOTE: secondary key is online and stored on card\n"
-msgstr "BİLGİ: ikincil anahtar kart üzerinde saklı ve kullanılabilir\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
 msgid "error creating keyring '%s': %s\n"
 msgstr "`%s' anahtarlığı oluşturulurken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "keybox `%s' created\n"
+msgid "keybox '%s' created\n"
+msgstr "`%s' anahtar bloğu oluşturuldu\n"
+
+#, fuzzy, c-format
+#| msgid "keyring `%s' created\n"
 msgid "keyring '%s' created\n"
 msgstr "`%s' anahtarlığı oluşturuldu\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "keyblock resource `%s': %s\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "anahtar bloku özkaynağı `%s': %s\n"
 
@@ -2602,16 +2951,6 @@ msgstr ""
 "İmzanızın da aynı süreyle geçerli olmasını ister misiniz? (E/h veya Y/n) "
 
 msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr ""
-"--pgp2 kipinde bir PGP 2.x anahtarlara bir OpenPGP imzası "
-"uygulanamayabilir.\n"
-
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "Bu, anahtarı PGP 2.x için kullanışsız yapacak.\n"
-
-msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
 "to the person named above?  If you don't know what to answer, enter \"0\".\n"
@@ -2635,6 +2974,8 @@ msgstr "   (2) İlişkisel denetim yaptım.%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Çok dikkatli bir denetim yaptım.%s\n"
 
+#, fuzzy
+#| msgid "Your selection? (enter `?' for more information): "
 msgid "Your selection? (enter '?' for more information): "
 msgstr "Seçiminiz? (daha fazla bilgi için: '?'): "
 
@@ -2683,43 +3024,10 @@ msgstr ""
 "Anahtar sadece kısa veya karta özel öğeler içeriyor,\n"
 "değiştirilecek bir anahtar parolası yok.\n"
 
-msgid "This key is not protected.\n"
-msgstr "Bu anahtar korunmamış.\n"
-
-msgid "Secret parts of primary key are not available.\n"
-msgstr "Asıl anahtarın gizli parçaları kullanılamaz.\n"
-
-msgid "Secret parts of primary key are stored on-card.\n"
-msgstr "Asıl anahtarın gizli parçaları kart üzerinde saklı.\n"
-
-msgid "Key is protected.\n"
-msgstr "Anahtar korunmuş.\n"
-
-#, c-format
-msgid "Can't edit this key: %s\n"
-msgstr "Bu anahtar üzerinde düzenleme yapılamaz: %s\n"
-
-msgid ""
-"Enter the new passphrase for this secret key.\n"
-"\n"
-msgstr ""
-"Bu gizli anahtar için yeni anahtar parolasını giriniz.\n"
-"\n"
-
-msgid "passphrase not correctly repeated; try again"
-msgstr ""
-"ikinci kez yazdığınız anahtar parolası ilkiyle aynı değil; işlem "
-"tekrarlanacak"
-
-msgid ""
-"You don't want a passphrase - this is probably a *bad* idea!\n"
-"\n"
-msgstr ""
-"Bir anahtar parolası vermediniz - bu çok *kötü* bir fikir!\n"
-"\n"
-
-msgid "Do you really want to do this? (y/N) "
-msgstr "Gerçekten bunu yapmak istiyor musunuz? (e/H ya da y/N) "
+#, fuzzy, c-format
+#| msgid "error creating passphrase: %s\n"
+msgid "key %s: error changing passphrase: %s\n"
+msgstr "anahtar parolası oluşturulurken hata: %s\n"
 
 msgid "moving a key signature to the correct place\n"
 msgstr "bir anahtar imzası doğru yere taşınıyor\n"
@@ -2848,10 +3156,6 @@ msgstr ""
 "kullanışsız kullanıcı kimlikleri sıkıştırır ve tüm imzaları anahtardan "
 "kaldırır"
 
-#, c-format
-msgid "error reading secret keyblock \"%s\": %s\n"
-msgstr "gizli anahtar bloğu \"%s\" okunurken hata oluştu: %s\n"
-
 msgid "Secret key is available.\n"
 msgstr "Gizli anahtar mevcut.\n"
 
@@ -2861,10 +3165,17 @@ msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 
+#, fuzzy
+#| msgid ""
+#| "* The `sign' command may be prefixed with an `l' for local signatures "
+#| "(lsign),\n"
+#| "  a `t' for trust signatures (tsign), an `nr' for non-revocable "
+#| "signatures\n"
+#| "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures "
+"* The 'sign' command may be prefixed with an 'l' for local signatures "
 "(lsign),\n"
-"  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
+"  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 "* `sign' komutu şu harflerden bir veya birkaçı ile başlayabilir:\n"
@@ -2881,7 +3192,8 @@ msgstr "Tüm kullanıcı kimlikler gerçekten imzalanacak mı? (e/H ya da y/N)"
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "İpucu: İmzalamak için bir kullanıcı kimliği seçiniz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
 msgid "Unknown signature type '%s'\n"
 msgstr "imza türü `%s' bilinmiyor\n"
 
@@ -2913,11 +3225,13 @@ msgstr "Sadece ve sadece bir anahtar seçmelisiniz.\n"
 msgid "Command expects a filename argument\n"
 msgstr "Komut değiştirge olarak bir dosya ismi gerektiriyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Can't open `%s': %s\n"
 msgid "Can't open '%s': %s\n"
 msgstr "`%s' açılamıyor: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Error reading backup key from `%s': %s\n"
 msgid "Error reading backup key from '%s': %s\n"
 msgstr "yedekleme anahtarı `%s' den okunurken hata oluştu: %s\n"
 
@@ -2980,12 +3294,28 @@ msgstr "Kaydetmeden çıkılsın mı? (e/H ya da y/N) "
 msgid "update failed: %s\n"
 msgstr "güncelleme başarısız: %s\n"
 
-#, c-format
-msgid "update secret failed: %s\n"
-msgstr "gizliyi güncelleme başarısız: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "Güncelleme gereği olmadığından anahtar değişmedi.\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "\"%s\" is not a fingerprint\n"
+msgstr "parmakizi geçersiz"
+
+#, fuzzy, c-format
+#| msgid "failed to get the fingerprint\n"
+msgid "\"%s\" is not the primary fingerprint\n"
+msgstr "parmakizinin alınması başarısız oldu\n"
+
+#, fuzzy
+#| msgid "No such user ID.\n"
+msgid "No matching user IDs."
+msgstr "Böyle bir kullanıcı kimliği yok.\n"
+
+#, fuzzy
+#| msgid "Nothing to sign with key %s\n"
+msgid "Nothing to sign.\n"
+msgstr "%s anahtarı ile imzalanacak hiçbir şey yok\n"
 
 msgid "Digest: "
 msgstr "Özet: "
@@ -3005,8 +3335,8 @@ msgstr "Simgelemler: "
 msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr "Bir PGP 2.x tarzı kullanıcı kimliğine uygun tercih yok.\n"
 
-#, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+#, fuzzy, c-format
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr ""
 "Bu anahtar %2$s tarafından %3$s anahtarıyla %1$s üzerinde yürürlükten "
 "kaldırılmış\n"
@@ -3039,6 +3369,9 @@ msgstr "son kullanma tarihi: %s"
 msgid "usage: %s"
 msgstr "kullanımı: %s"
 
+msgid "card-no: "
+msgstr "kart-no: "
+
 #, c-format
 msgid "trust: %s"
 msgstr "güvencesi: %s"
@@ -3049,9 +3382,6 @@ msgstr "geçerliliği: %s"
 
 msgid "This key has been disabled"
 msgstr "Bu anahtar iptal edilmişti"
-
-msgid "card-no: "
-msgstr "kart-no: "
 
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
@@ -3073,6 +3403,14 @@ msgstr ""
 "UYARI: birincil olarak imlenmiş bir kullanıcı kimlik yok. Bu komutla\n"
 "       farklı bir kullanıcı kimliğin birincil kullanıcı kimlik olarak\n"
 "       kabul edilmesini sağlayabilirsiniz.\n"
+
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Bir v3 anahtarının son kullanma tarihini değiştiremezsiniz\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3176,9 +3514,6 @@ msgstr ""
 "Bu anahtarın, yürürlükten kaldıran anahtar olmasını istediğinizden emin "
 "misiniz? (e/H ya da y/N) "
 
-msgid "Please remove selections from the secret keys.\n"
-msgstr "Lütfen gizli anahtarlardan seçilenleri silin.\n"
-
 msgid "Please select at most one subkey.\n"
 msgstr "Lütfen en fazla bir yardımcı anahtar seçin.\n"
 
@@ -3190,9 +3525,6 @@ msgstr "Asıl anahtar için son kullanma tarihi değiştiriliyor.\n"
 
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Bir v3 anahtarının son kullanma tarihini değiştiremezsiniz\n"
-
-msgid "No corresponding signature in secret ring\n"
-msgstr "Gizli anahtar demetinde uygun/benzer imza yok\n"
 
 #, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -3308,7 +3640,8 @@ msgstr ""
 "Anahtar 0x%3$s (kull-kiml %4$d) için %2$ld uzunluktaki %1$s foto kimliği "
 "gösteriliyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "preference `%s' duplicated\n"
 msgid "preference '%s' duplicated\n"
 msgstr "'%s' tercihi yinelendi\n"
 
@@ -3321,7 +3654,8 @@ msgstr "çok fazla özet tercihi\n"
 msgid "too many compression preferences\n"
 msgstr "çok fazla sıkıştırma tercihi\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid item `%s' in preference string\n"
 msgid "invalid item '%s' in preference string\n"
 msgstr "tercih dizgesindeki '%s' öğesi geçersiz\n"
 
@@ -3431,6 +3765,41 @@ msgstr "   (%d) DSA (yeteneklerini belirtin)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (yeteneklerini belirtin)\n"
 
+#, fuzzy, c-format
+msgid "   (%d) ECC and ECC\n"
+msgstr "  (%d) DSA ve ElGamal (öntanımlı)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (sign only)\n"
+msgid "  (%d) ECC (sign only)\n"
+msgstr "   (%d) DSA (yalnız imzalamak için)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (set your own capabilities)\n"
+msgid "  (%d) ECC (set your own capabilities)\n"
+msgstr "   (%d) DSA (yeteneklerini belirtin)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)\n"
+msgstr "   (%d) RSA (sadece şifrelemek için)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) Existing key\n"
+msgid "  (%d) Existing key\n"
+msgstr "   (%d) Mevcut anahtar\n"
+
+#, fuzzy
+msgid "Enter the keygrip: "
+msgstr "Simgelemi giriniz: "
+
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
+
+#, fuzzy
+msgid "No key with this keygrip\n"
+msgstr "%d indisli bir yardımcı anahtar yok\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr "%s anahtarları %u bit ile %u bit arasında olmalı.\n"
@@ -3446,6 +3815,16 @@ msgstr "İstediğiniz anahtar uzunluğu nedir? (%u) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "İstenen anahtar uzunluğu: %u bit\n"
+
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "%u bite yuvarlandı\n"
+
+#, fuzzy
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select which elliptic curve you want:\n"
+msgstr "Lütfen istediğiniz anahtarı seçiniz:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -3564,7 +3943,8 @@ msgstr "Önbilgi: "
 msgid "Invalid character in comment\n"
 msgstr "Önbilgi alanında geçersiz karakter var\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "You are using the `%s' character set.\n"
 msgid "You are using the '%s' character set.\n"
 msgstr "`%s' karakter kümesini kullanıyorsunuz.\n"
 
@@ -3606,6 +3986,17 @@ msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr ""
 "(A)dı ve Soyadı, (Y)orum, (E)posta alanlarını değiştir ya da (T)amam/Çı(k)? "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "(A)dı ve Soyadı, (Y)orum, (E)posta alanlarını değiştir ya da Çı(k)? "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr ""
+"(A)dı ve Soyadı, (Y)orum, (E)posta alanlarını değiştir ya da (T)amam/Çı(k)? "
+
 msgid "Please correct the error first\n"
 msgstr "Lütfen önce hatayı düzeltin\n"
 
@@ -3623,6 +4014,11 @@ msgid ""
 msgstr ""
 "Lütfen GnuPG sistemine ithal edilen nesneyi koruyacak anahtar parolasını "
 "giriniz."
+
+msgid "passphrase not correctly repeated; try again"
+msgstr ""
+"ikinci kez yazdığınız anahtar parolası ilkiyle aynı değil; işlem "
+"tekrarlanacak"
 
 #, c-format
 msgid "%s.\n"
@@ -3651,36 +4047,55 @@ msgstr ""
 "iyi olacaktır; bu yeterli rasgele bayt kazanmak için rasgele sayı\n"
 "üretecine yardımcı olur. \n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "key already exists\n"
+msgid "A key for \"%s\" already exists\n"
+msgstr "anahtar zaten mevcut\n"
+
+#, fuzzy
+#| msgid "Use this key anyway? (y/N) "
+msgid "Create anyway? (y/N) "
+msgstr "Bu anahtar yine de kullanılsın mı? (e/H ya da y/N) "
+
+#, fuzzy
+#| msgid "generating new key\n"
+msgid "creating anyway\n"
+msgstr "yeni anahtar üretiliyor\n"
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
+
 msgid "Key generation canceled.\n"
 msgstr "Anahtar üretimi durduruldu.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
 msgstr "genel anahtarı `%s'e yazıyor\n"
-
-#, c-format
-msgid "writing secret key stub to '%s'\n"
-msgstr "gizli anahtar koçanı `%s'e yazılıyor\n"
-
-#, c-format
-msgid "writing secret key to '%s'\n"
-msgstr "gizli anahtarı `%s'e yazıyor\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "yazılabilir bir genel anahtar zinciri yok: %s\n"
 
-#, c-format
-msgid "no writable secret keyring found: %s\n"
-msgstr "yazılabilir bir gizli anahtar zinciri yok: %s\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing public keyring `%s': %s\n"
 msgid "error writing public keyring '%s': %s\n"
 msgstr "`%s' genel anahtarlığa yazılırken hata oluştu: %s\n"
-
-#, c-format
-msgid "error writing secret keyring '%s': %s\n"
-msgstr "`%s' gizli anahtarlığa yazılırken hata oluştu: %s\n"
 
 msgid "public and secret key created and signed.\n"
 msgstr "genel ve gizli anahtar üretildi ve imzalandı.\n"
@@ -3691,10 +4106,6 @@ msgid ""
 msgstr ""
 "Bu anahtar şifreleme için kullanılamaz. Şifreleme için yardımcı anahtarı\n"
 "\"--edit-key\" seçeneğini kullanarak üretebilirsiniz.\n"
-
-#, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Anahtar üretimi başarısızlığa uğradı: %s\n"
 
 #, c-format
 msgid ""
@@ -3709,9 +4120,17 @@ msgstr ""
 "anahtar bundan %lu saniye sonra üretilmiş (zaman sapması veya saat "
 "problemi)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#, fuzzy
+#| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr ""
 "BİLGİ: v3 anahtarları için yardımcı anahtar üretimi OpenPGP uyumlu değildir\n"
+
+msgid "Secret parts of primary key are not available.\n"
+msgstr "Asıl anahtarın gizli parçaları kullanılamaz.\n"
+
+msgid "Secret parts of primary key are stored on-card.\n"
+msgstr "Asıl anahtarın gizli parçaları kart üzerinde saklı.\n"
 
 msgid "Really create? (y/N) "
 msgstr "Gerçekten oluşturulsun mu? (e/H ya da y/N) "
@@ -3720,12 +4139,14 @@ msgstr "Gerçekten oluşturulsun mu? (e/H ya da y/N) "
 msgid "storing key onto card failed: %s\n"
 msgstr "anahtarın kart üzerinde saklanması başarısız: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create backup file `%s': %s\n"
 msgid "can't create backup file '%s': %s\n"
 msgstr "'%s' yedek dosyası oluşturulamıyor: %s\n"
 
-#, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+#, fuzzy, c-format
+#| msgid "NOTE: backup of card key saved to `%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "BİLGİ: kart anahtarının yedeklemesi '%s' e kaydedildi\n"
 
 msgid "never     "
@@ -3745,6 +4166,10 @@ msgstr "Kritik imza simgelemi: "
 
 msgid "Signature notation: "
 msgstr "imza simgelemi: "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "Anahtar zinciri"
@@ -3769,25 +4194,13 @@ msgstr "     Anahtar parmakizi ="
 msgid "      Card serial no. ="
 msgstr "      Kart seri no. ="
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
 msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
 
-msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "UYARI: gizli bilgi içeren 2 dosya mevcut.\n"
-
-#, c-format
-msgid "%s is the unchanged one\n"
-msgstr "%s değişmeyenlerden\n"
-
-#, c-format
-msgid "%s is the new one\n"
-msgstr "%s yenilerden\n"
-
-msgid "Please fix this possible security flaw\n"
-msgstr "Lütfen bu güvenlik çatlağını giderin\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "caching keyring `%s'\n"
 msgid "caching keyring '%s'\n"
 msgstr "`%s' anahtar zinciri önbellekleniyor\n"
 
@@ -3826,7 +4239,8 @@ msgstr "tercihli anahtar sunucusunun adresini adrese atar"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "anahtarları alırken PKA kaydını bir anahtara atar"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
 msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr "UYARI: anahtar sunucusu seçeneği `%s' bu platformda kullanımda değil\n"
 
@@ -3839,83 +4253,6 @@ msgstr "Sayıyı/sayıları girin veya S)onraki ya da Ç)ık >"
 #, c-format
 msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "anahtar sunucu protokolü geçersiz (bizimki %d!=eylemci %d)\n"
-
-#, c-format
-msgid "key \"%s\" not found on keyserver\n"
-msgstr "anahtar \"%s\" anahtar sunucusunda yok\n"
-
-msgid "key not found on keyserver\n"
-msgstr "anahtar, anahtar sunucusunda yok\n"
-
-#, c-format
-msgid "requesting key %s from %s server %s\n"
-msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"
-
-#, c-format
-msgid "requesting key %s from %s\n"
-msgstr "%s anahtarı %s adresinden isteniyor\n"
-
-#, c-format
-msgid "searching for names from %s server %s\n"
-msgstr "%2$s sunucusunda %1$s içindeki isimler aranıyor\n"
-
-#, c-format
-msgid "searching for names from %s\n"
-msgstr "%s içindeki isimler aranıyor\n"
-
-#, c-format
-msgid "sending key %s to %s server %s\n"
-msgstr "anahtar %1$s, %3$s sunucusunun %2$s adresine gönderiliyor\n"
-
-#, c-format
-msgid "sending key %s to %s\n"
-msgstr "%s anahtarı %s adresine gönderiliyor\n"
-
-#, c-format
-msgid "searching for \"%s\" from %s server %s\n"
-msgstr "%3$s sunucusunun %2$s adresinde \"%1$s\" aranıyor\n"
-
-#, c-format
-msgid "searching for \"%s\" from %s\n"
-msgstr "%2$s adresinde \"%1$s\" aranıyor\n"
-
-msgid "no keyserver action!\n"
-msgstr "bir anahtar sunucusu eylemi yok!\n"
-
-#, c-format
-msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
-msgstr "UYARI: GnuPG'nin başka bir sürümünün anahtar sunucusu eylemcisi (%s)\n"
-
-msgid "keyserver did not send VERSION\n"
-msgstr "anahtar sunucusu VERSION göndermiyor\n"
-
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
-
-msgid "external keyserver calls are not supported in this build\n"
-msgstr "harici anahtar sunucusu çağrıları bu kurulumda desteklenmiyor\n"
-
-#, c-format
-msgid "no handler for keyserver scheme '%s'\n"
-msgstr "`%s' anahtar sunucusu şeması için eylemci yok\n"
-
-#, c-format
-msgid "action '%s' not supported with keyserver scheme '%s'\n"
-msgstr "`%s' eylemi `%s' anahtar sunucusu şeması ile desteklenmiyor\n"
-
-#, c-format
-msgid "%s does not support handler version %d\n"
-msgstr "%s  %d sürümü eylemciyi desteklemiyor\n"
-
-msgid "keyserver timed out\n"
-msgstr "anahtar sunucusu zamanaşımına uğradı\n"
-
-msgid "keyserver internal error\n"
-msgstr "anahtar sunucusu iç hatası\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3933,13 +4270,44 @@ msgstr "1 anahtar %s adresinden tazeleniyor\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "%d anahtar %s adresinden tazeleniyor\n"
 
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
+
+#, c-format
+msgid "key \"%s\" not found on keyserver\n"
+msgstr "anahtar \"%s\" anahtar sunucusunda yok\n"
+
+msgid "key not found on keyserver\n"
+msgstr "anahtar, anahtar sunucusunda yok\n"
+
+#, c-format
+msgid "requesting key %s from %s server %s\n"
+msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"
+
+#, c-format
+msgid "requesting key %s from %s\n"
+msgstr "%s anahtarı %s adresinden isteniyor\n"
+
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "\"%s\" atlandı: %s\n"
+
+#, c-format
+msgid "sending key %s to %s server %s\n"
+msgstr "anahtar %1$s, %3$s sunucusunun %2$s adresine gönderiliyor\n"
+
+#, c-format
+msgid "sending key %s to %s\n"
+msgstr "%s anahtarı %s adresine gönderiliyor\n"
+
+#, fuzzy, c-format
+#| msgid "requesting key %s from %s\n"
+msgid "requesting key from '%s'\n"
+msgstr "%s anahtarı %s adresinden isteniyor\n"
+
 #, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
 msgstr "UYARI: Betimleyici %s alınamıyor: %s\n"
-
-#, c-format
-msgid "WARNING: unable to parse URI %s\n"
-msgstr "UYARI: Betimleyici %s çözümlenemiyor\n"
 
 #, c-format
 msgid "weird size for an encrypted session key (%d)\n"
@@ -4011,7 +4379,9 @@ msgstr ""
 msgid "decryption failed: %s\n"
 msgstr "şifre çözme başarısız: %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+#, fuzzy
+#| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "BİLGİ: gönderen \"yalnız-gözleriniz-için\" ricasında bulundu\n"
 
 #, c-format
@@ -4027,6 +4397,18 @@ msgstr ""
 
 msgid "no signature found\n"
 msgstr "hiç imza yok\n"
+
+#, c-format
+msgid "BAD signature from \"%s\""
+msgstr "\"%s\" deki imza KÖTÜ"
+
+#, c-format
+msgid "Expired signature from \"%s\""
+msgstr "\"%s\" deki imza zamanaşımına uğramış"
+
+#, c-format
+msgid "Good signature from \"%s\""
+msgstr "\"%s\" deki imza iyi"
 
 msgid "signature verification suppressed\n"
 msgstr "imza doğrulama engellendi\n"
@@ -4049,18 +4431,6 @@ msgstr "%s imzası, %s anahtarı ve %s kullanıcı kimliği ile yapılmış\n"
 msgid "Key available at: "
 msgstr "Anahtar burada:"
 
-#, c-format
-msgid "BAD signature from \"%s\""
-msgstr "\"%s\" deki imza KÖTÜ"
-
-#, c-format
-msgid "Expired signature from \"%s\""
-msgstr "\"%s\" deki imza zamanaşımına uğramış"
-
-#, c-format
-msgid "Good signature from \"%s\""
-msgstr "\"%s\" deki imza iyi"
-
 msgid "[uncertain]"
 msgstr "[şüpheli]"
 
@@ -4076,8 +4446,9 @@ msgstr "Bu imzanın geçerliliği %s de bitti.\n"
 msgid "Signature expires %s\n"
 msgstr "Bu imzanın geçerliliği %s de bitecek.\n"
 
-#, c-format
-msgid "%s signature, digest algorithm %s\n"
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "%s imzası, %s özet algoritması\n"
 
 msgid "binary"
@@ -4088,6 +4459,15 @@ msgstr "metinkipi"
 
 msgid "unknown"
 msgstr "bilinmeyen"
+
+#, fuzzy
+#| msgid "algorithm: %s"
+msgid ", key algorithm "
+msgstr "algoritma: %s"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4107,10 +4487,8 @@ msgstr "0x%02x sınıfı tek başına imza\n"
 msgid "old style (PGP 2.x) signature\n"
 msgstr "eski stil (PGP 2.x) imza\n"
 
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "proc_tree() içinde geçersiz kök paket saptandı\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "fstat of `%s' failed in %s: %s\n"
 msgid "fstat of '%s' failed in %s: %s\n"
 msgstr "`%s' için %s de durum bilgisi alınamıyor: %s\n"
 
@@ -4137,12 +4515,10 @@ msgstr "UYARI: deneysel %s özet algoritması kullanılıyor\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "UYARI: %s özet algoritması artık önerilmiyor.\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "IDEA şifre eklentisi yok\n"
-
-#, c-format
-msgid "please see %s for more information\n"
-msgstr "daha fazla bilgi için lütfen %s adresine bakınız\n"
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s imzası, %s özet algoritması\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4164,8 +4540,20 @@ msgstr "UYARI: \"%s\" komutu artık önerilmiyor - kullanmayın onu\n"
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr "%s:%u: eskimiş seçenek \"%s\" - artık etkisiz\n"
 
-#, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: eskimiş seçenek \"%s\" - artık etkisiz\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
 
 msgid "Uncompressed"
@@ -4179,15 +4567,23 @@ msgstr "Sıkıştırılmamış|yok"
 msgid "this message may not be usable by %s\n"
 msgstr "bu ileti %s tarafından kullanılamayabilir\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "ambiguous option `%s'\n"
 msgid "ambiguous option '%s'\n"
 msgstr "`%s' seçeneği belirsiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unknown option `%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "`%s' seçeneği bilinmiyor\n"
 
-#, c-format
+#, fuzzy
+#| msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
+msgstr "DSA sekizin katlarında bir çittirim uzunluğu gerektirir\n"
+
+#, fuzzy, c-format
+#| msgid "File `%s' exists. "
 msgid "File '%s' exists. "
 msgstr "\"%s\" dosyası var. "
 
@@ -4204,15 +4600,18 @@ msgstr "Yeni dosya ismini giriniz"
 msgid "writing to stdout\n"
 msgstr "standart çıktıya yazıyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "\"%s\" içindeki veri imzalı kabul ediliyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "new configuration file `%s' created\n"
 msgid "new configuration file '%s' created\n"
 msgstr "yeni yapılandırma dosyası `%s' oluşturuldu\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: options in `%s' are not yet active during this run\n"
 msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr ""
 "UYARI: `%s' deki seçenekler bu çalıştırma sırasında henüz etkin değil\n"
@@ -4227,6 +4626,10 @@ msgstr "UYARI: simetrik şifreli oturum anahtarı potansiyel olarak güvensiz\n"
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "%d tipi alt paket kritik bit kümesine sahip\n"
+
+#, c-format
+msgid "problem with the agent: %s\n"
+msgstr "aracı ile sorun var: %s\n"
 
 #, c-format
 msgid " (main key ID %s)"
@@ -4252,10 +4655,6 @@ msgid "cancelled by user\n"
 msgstr "kullanıcı tarafından durduruldu\n"
 
 #, c-format
-msgid "problem with the agent: %s\n"
-msgstr "aracı ile sorun var: %s\n"
-
-#, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
 "user: \"%s\"\n"
@@ -4270,6 +4669,47 @@ msgstr "%u bitlik %s anahtarı, %s kimliği ile %s tarihinde üretilmiş"
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr "         (asıl anahtar kimliği %s üzerinde yardımcı anahtar)"
+
+#, fuzzy
+#| msgid "Please enter the passphrase to unprotect the PKCS#12 object."
+msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
+msgstr ""
+"PKCS#12 nesnesinin korumasını aşmak için lütfen anahtar parolasını giriniz."
+
+#, fuzzy
+#| msgid "Please enter the passphrase to protect the new PKCS#12 object."
+msgid "Please enter the passphrase to import the OpenPGP secret key:"
+msgstr "PKCS#12 nesnesini korumak için lütfen anahtar parolasını giriniz."
+
+#, fuzzy
+#| msgid "Please enter the passphrase to protect the new PKCS#12 object."
+msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
+msgstr "PKCS#12 nesnesini korumak için lütfen anahtar parolasını giriniz."
+
+#, fuzzy
+#| msgid "Please enter the passphrase to protect the new PKCS#12 object."
+msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgstr "PKCS#12 nesnesini korumak için lütfen anahtar parolasını giriniz."
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
+msgstr "Seçili anahtarları gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgstr "Seçili anahtarları gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
+
+#, fuzzy, c-format
+#| msgid "%u-bit %s key, ID %s, created %s"
+msgid ""
+"%s\n"
+"\"%.*s\"\n"
+"%u-bit %s key, ID %s,\n"
+"created %s%s.\n"
+"%s"
+msgstr "%u bitlik %s anahtarı, %s kimliği ile %s tarihinde üretilmiş"
 
 msgid ""
 "\n"
@@ -4287,7 +4727,8 @@ msgstr ""
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Foto kimliği için JPEG dosya ismini giriniz: "
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unable to open JPEG file `%s': %s\n"
 msgid "unable to open JPEG file '%s': %s\n"
 msgstr "JPEG dosyası `%s' açılamıyor: %s\n"
 
@@ -4298,7 +4739,8 @@ msgstr "Bu JPEG gerçekten büyük (%d bayt)!\n"
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Onu kullanmak istediğinizden emin misiniz? (e/H ya da y/N)  "
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' is not a JPEG file\n"
 msgid "'%s' is not a JPEG file\n"
 msgstr "'%s' bir JPEG dosyası değil\n"
 
@@ -4329,6 +4771,16 @@ msgstr "yürürlükten kaldırma sebebi: "
 msgid "revocation comment: "
 msgstr "yürürlükten kaldırma açıklaması: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "bBmMaAkK"
 
@@ -4438,11 +4890,13 @@ msgstr ""
 msgid "Note: This key has been disabled.\n"
 msgstr "Bilgi: Bu anahtar iptal edildi.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Note: Verified signer's address is `%s'\n"
 msgid "Note: Verified signer's address is '%s'\n"
 msgstr "Bilgi: Doğrulanmış imzacının adresi: `%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Note: Signer's address `%s' does not match DNS entry\n"
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "Bilgi: İmzacının adresi `%s', DNS girdisiyle eşleşmiyor\n"
 
@@ -4482,6 +4936,10 @@ msgid "%s: skipped: %s\n"
 msgstr "%s: atlandı: %s\n"
 
 #, c-format
+msgid "%s: skipped: public key is disabled\n"
+msgstr "%s: atlandı: genel anahtar iptal edildi\n"
+
+#, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: atlandı: genel anahtar zaten var\n"
 
@@ -4514,10 +4972,6 @@ msgstr "atlandı: genel anahtar zaten belirtilmiş\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "öntanımlı alıcı \"%s\" bilinmiyor\n"
 
-#, c-format
-msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: atlandı: genel anahtar iptal edildi\n"
-
 msgid "no valid addressees\n"
 msgstr "geçerli adresler yok\n"
 
@@ -4532,6 +4986,11 @@ msgstr "Bilginize: anahtar %s %s için bir tercihe sahip değil\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "veri kaydedilmedi; kaydetmek için \"--output\" seçeneğini kullanın\n"
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "`%s' oluşturulurken hata: %s\n"
+
 msgid "Detached signature.\n"
 msgstr "Bağımsız imza.\n"
 
@@ -4544,7 +5003,8 @@ msgstr "standart girdiden okuyor ...\n"
 msgid "no signed data\n"
 msgstr "imzalı veri yok\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open signed data `%s'\n"
 msgid "can't open signed data '%s'\n"
 msgstr "imzalı veri '%s'  açılamadı\n"
 
@@ -4570,11 +5030,14 @@ msgstr "şifre algoritması %d%s bilinmiyor ya da iptal edilmiş\n"
 msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "UYARI: %s şifre algoritması alıcı tercihlerinde yok\n"
 
-#, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+#, fuzzy, c-format
+#| msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "BİLGİ: %s gizli anahtarının %s tarihinde kullanım süresi doldu\n"
 
-msgid "NOTE: key has been revoked"
+#, fuzzy
+#| msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "BİLGİ: anahtar yürürlükten kaldırılmıştı"
 
 #, c-format
@@ -4610,27 +5073,34 @@ msgstr "Yürürlükten kaldırma sertifikası üretildi.\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "\"%s\" için yürürlükten kaldırma anahtarları yok\n"
 
+#, fuzzy
+#| msgid "Create a revocation certificate for this key? (y/N) "
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr ""
+"Bu anahtar için bir yürürlükten kaldırma sertifikası oluşturulsun mu? (e/H "
+"ya da y/N) "
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
+
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "gizli anahtar \"%s\" yok: %s\n"
-
-#, c-format
-msgid "no corresponding public key: %s\n"
-msgstr "karşılığı olan genel anahtar yok: `%s\n"
-
-msgid "public key does not match secret key!\n"
-msgstr "genel anahtar gizli anahtarla uyuşmuyor!\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr ""
 "Bu anahtar için bir yürürlükten kaldırma sertifikası oluşturulsun mu? (e/H "
 "ya da y/N) "
-
-msgid "unknown protection algorithm\n"
-msgstr "bilinmeyen sıkıştırma algoritması\n"
-
-msgid "NOTE: This key is not protected!\n"
-msgstr "BİLGİ: Bu anahtar korunmamış!\n"
 
 msgid ""
 "Revocation certificate created.\n"
@@ -4673,34 +5143,6 @@ msgstr "(açıklama verilmedi)\n"
 msgid "Is this okay? (y/N) "
 msgstr "Bu tamam mı? (e/H ya da y/N) "
 
-msgid "secret key parts are not available\n"
-msgstr "gizli anahtar parçaları kullanım dışı\n"
-
-#, c-format
-msgid "protection algorithm %d%s is not supported\n"
-msgstr "koruma algoritması %d%s desteklenmiyor\n"
-
-#, c-format
-msgid "protection digest %d is not supported\n"
-msgstr "koruma özeti %d desteklenmiyor\n"
-
-msgid "Invalid passphrase; please try again"
-msgstr "Anahtar parolası geçersiz; lütfen tekrar deneyin"
-
-#, c-format
-msgid "%s ...\n"
-msgstr "%s ...\n"
-
-msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr ""
-"UYARI: Zayıf anahtar saptandı - lütfen anahtar parolasını tekrar "
-"değiştirin.\n"
-
-msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
-"gizli anahtarın güvenliği için eski tarz 16 bitlik sağlama toplamı "
-"üretiliyor\n"
-
 msgid "weak key created - retrying\n"
 msgstr "zayıf anahtar oluşturuldu - yeniden deneniyor\n"
 
@@ -4710,15 +5152,14 @@ msgstr ""
 "simetrik şifre için zayıf anahtarın önlenmesi mümkün olamadı: %d kere "
 "denendi!\n"
 
-msgid "DSA requires the hash length to be a multiple of 8 bits\n"
-msgstr "DSA sekizin katlarında bir çittirim uzunluğu gerektirir\n"
+#, fuzzy, c-format
+#| msgid "%s key uses an unsafe (%u bit) hash\n"
+msgid "%s key %s uses an unsafe (%zu bit) hash\n"
+msgstr "%s anahtarı, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
 
-#, c-format
-msgid "DSA key %s uses an unsafe (%u bit) hash\n"
-msgstr "DSA anahtarı %s, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
-
-#, c-format
-msgid "DSA key %s requires a %u bit or larger hash\n"
+#, fuzzy, c-format
+#| msgid "DSA key %s requires a %u bit or larger hash\n"
+msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr "DSA anahtarı %s, %u bitlik veya daha geniş bir çittirim gerektiriyor\n"
 
 msgid "WARNING: signature digest conflict in message\n"
@@ -4727,6 +5168,10 @@ msgstr "UYARI: iletideki imza özeti çelişkili\n"
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr "UYARI: yardımcı imzalama anahtarı %s çapraz sertifikalı değil\n"
+
+#, c-format
+msgid "please see %s for more information\n"
+msgstr "daha fazla bilgi için lütfen %s adresine bakınız\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
@@ -4754,12 +5199,14 @@ msgstr ""
 "anahtar %s bundan %lu saniye sonra üretilmiş (zaman sapması veya saat "
 "problemi)\n"
 
-#, c-format
-msgid "NOTE: signature key %s expired %s\n"
+#, fuzzy, c-format
+#| msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "BİLGİ: %s imza anahtarının kullanım süresi %s sularında dolmuş\n"
 
-#, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+#, fuzzy, c-format
+#| msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "BİLGİ: imza anahtarı %s yürürlükten kaldırılmıştı\n"
 
 #, c-format
@@ -4807,10 +5254,6 @@ msgstr "oluşturulan imzanın denetimi başarısız: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s imza: \"%s\" den\n"
 
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"--pgp2 kipinde sadece PGP 2.x tarzı anahtarlarla ayrık imza yapabilirsiniz\n"
-
 #, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -4820,11 +5263,6 @@ msgstr ""
 
 msgid "signing:"
 msgstr "imzalanıyor:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"--pgp2 kipinde sadece PGP 2.x tarzı anahtarlarla açık imzalama "
-"yapabilirsiniz\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -4836,10 +5274,6 @@ msgstr "anahtar güvenli olarak imlenmemiş - onu sahte RSÜ ile kullanmayın!\n
 #, c-format
 msgid "skipped \"%s\": duplicated\n"
 msgstr "\"%s\" atlandı: tekrarlanmış\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "\"%s\" atlandı: %s\n"
 
 msgid "skipped: secret key already present\n"
 msgstr "atlandı: gizli anahtar zaten var\n"
@@ -4859,7 +5293,8 @@ msgstr ""
 "# Atanan güvencedeğerlerinin listesi %s oluşturuldu\n"
 "# (Eski haline getirmek için \"gpg --import-ownertrust\" kullanın\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error in `%s': %s\n"
 msgid "error in '%s': %s\n"
 msgstr "'%s' de hata: %s\n"
 
@@ -4875,11 +5310,13 @@ msgstr "parmakizi geçersiz"
 msgid "ownertrust value missing"
 msgstr "sahibiningüvencesi değeri kayıp"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error finding trust record in `%s': %s\n"
 msgid "error finding trust record in '%s': %s\n"
 msgstr "`%s' deki güvence kaydını ararken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "read error in `%s': %s\n"
 msgid "read error in '%s': %s\n"
 msgstr "`%s' için okuma hatası: %s\n"
 
@@ -4898,7 +5335,8 @@ msgstr "güvence veritabanı %lu kaydı: yazma başarısız (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "güvence veritabanı işlemi çok uzun\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't access `%s': %s\n"
 msgid "can't access '%s': %s\n"
 msgstr "'%s' erişilemiyor: %s\n"
 
@@ -4906,11 +5344,13 @@ msgstr "'%s' erişilemiyor: %s\n"
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dizin yok!\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
 msgid "can't create lock for '%s'\n"
 msgstr "`%s' için kilit oluşturulamıyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
 msgid "can't lock '%s'\n"
 msgstr "`%s' kiltlenemedi\n"
 
@@ -4926,7 +5366,9 @@ msgstr "%s: geçersiz güvence veritabanı oluşturuldu\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: güvence veritabanı oluşturuldu\n"
 
-msgid "NOTE: trustdb not writable\n"
+#, fuzzy
+#| msgid "NOTE: trustdb not writable\n"
+msgid "Note: trustdb not writable\n"
 msgstr "BİLGİ: güvence veritabanına yazılamıyor\n"
 
 #, c-format
@@ -4997,7 +5439,8 @@ msgstr "%d karakterden daha uzun metin satırları okunamıyor\n"
 msgid "input line longer than %d characters\n"
 msgstr "girdi satırı %d karakterden daha uzun\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid long keyID\n"
 msgid "'%s' is not a valid long keyID\n"
 msgstr "`%s' geçerli bir anahtar kimliği değil\n"
 
@@ -5041,45 +5484,6 @@ msgstr ""
 msgid "using %s trust model\n"
 msgstr "%s güvence modeli kullanılıyor\n"
 
-msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-msgstr "20 translator seen trustdb.c:uid_trust_string_fixed"
-
-msgid "[ revoked]"
-msgstr "[yürürlükten kalktı]"
-
-msgid "[ expired]"
-msgstr "[  süresi  doldu  ]"
-
-msgid "[ unknown]"
-msgstr "[    bilinmeyen   ]"
-
-msgid "[  undef ]"
-msgstr "[     tanımsız    ]"
-
-msgid "[marginal]"
-msgstr "[   şöyle böyle   ]"
-
-msgid "[  full  ]"
-msgstr "[     tamamen     ]"
-
-msgid "[ultimate]"
-msgstr "[   son  derece   ]"
-
-msgid "undefined"
-msgstr "tanımsız"
-
-msgid "never"
-msgstr "asla    "
-
-msgid "marginal"
-msgstr "şöyle böyle"
-
-msgid "full"
-msgstr "tamamen"
-
-msgid "ultimate"
-msgstr "son derece"
-
 msgid "no need for a trustdb check\n"
 msgstr "bir güvence veritabanı denetimi gereksiz\n"
 
@@ -5087,11 +5491,13 @@ msgstr "bir güvence veritabanı denetimi gereksiz\n"
 msgid "next trustdb check due at %s\n"
 msgstr "sonraki güvence veritabanı denetimi %s de\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "no need for a trustdb check with `%s' trust model\n"
 msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr "`%s' güvence modelli güvence veritabanı sınaması için gereksiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "no need for a trustdb update with `%s' trust model\n"
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "`%s' güvence modelli güvence veritabanı güncellemesi için gereksiz\n"
 
@@ -5149,107 +5555,6 @@ msgstr "girdi satırı %u ya çok uzun ya da sonunda satırsonu karakteri yok\n"
 msgid "can't open fd %d: %s\n"
 msgstr "fd %d açılamıyor: %s\n"
 
-msgid "argument not expected"
-msgstr "değiştirge beklenmiyordu"
-
-msgid "read error"
-msgstr "okuma hatası"
-
-msgid "keyword too long"
-msgstr "anahtar sözcük çok uzun"
-
-msgid "missing argument"
-msgstr "eksik değiştirge"
-
-msgid "invalid command"
-msgstr "geçersiz komut"
-
-msgid "invalid alias definition"
-msgstr "geçersiz rumuz tanımı"
-
-msgid "out of core"
-msgstr "nüve dışı"
-
-msgid "invalid option"
-msgstr "geçersiz seçenek"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "\"%.50s\" seçeneğinin değiştirge ihtiyacı yok\n"
-
-#, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "geçersiz komut \"%.50s\"\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr "\"%.50s\" seçeneği belirsiz\n"
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr "\"%.50s\" komutu belirsiz\n"
-
-msgid "out of core\n"
-msgstr "nüve dışında\n"
-
-#, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "geçersiz seçenekler \"%.50s\"\n"
-
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "bir yazılım hatası buldunuz ... (%s:%d)\n"
-
-#, c-format
-msgid "error loading '%s': %s\n"
-msgstr "`%s' yüklenirken hata: %s\n"
-
-#, c-format
-msgid "conversion from '%s' to '%s' not available\n"
-msgstr "`%s' > `%s' dönüşümü elverişli değil\n"
-
-#, c-format
-msgid "iconv_open failed: %s\n"
-msgstr "iconv_open başarısız: %s\n"
-
-#, c-format
-msgid "conversion from '%s' to '%s' failed: %s\n"
-msgstr "`%s' > `%s' dönüşümü başarısız: %s\n"
-
-#, c-format
-msgid "failed to create temporary file '%s': %s\n"
-msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
-
-#, c-format
-msgid "error writing to '%s': %s\n"
-msgstr "`%s' yazılırken hata: %s\n"
-
-#, c-format
-msgid "removing stale lockfile (created by %d)\n"
-msgstr "bayat kilit dosyası siliniyor (%d tarafından oluşturulmuş)\n"
-
-msgid " - probably dead - removing lock"
-msgstr " - muhtemelen ölü - kilit siliniyor"
-
-#, c-format
-msgid "waiting for lock (held by %d%s) %s...\n"
-msgstr "kilit için bekleniyor (%d%s tarafından tutulmuş) %s...\n"
-
-msgid "(deadlock?) "
-msgstr "(ölükilit?) "
-
-#, c-format
-msgid "lock '%s' not made: %s\n"
-msgstr "kilit `%s' yapılmadı: %s\n"
-
-#, c-format
-msgid "waiting for lock %s...\n"
-msgstr "%s kilidi için bekleniyor...\n"
-
 msgid "set debugging flags"
 msgstr "hata ayıklama bayrakları ayarlanır"
 
@@ -5259,9 +5564,13 @@ msgstr "tam hata ayıklama etkin olur"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Kullanımı: kbxutil [seçenekler] [dosyalar] (yardım için -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: kbxutil [options] [files]\n"
+#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
+"List, export, import Keybox data\n"
 msgstr ""
 "Sözdizimi: kbxutil [seçenekler] [dosyalar]\n"
 "Anahtar kutusu verisini listeler, ithal ve ihraç eder\n"
@@ -5338,6 +5647,11 @@ msgstr "yanıt RSA modülü içermiyor\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "yanıt RSA genel bileşenini içermiyor\n"
 
+#, fuzzy
+#| msgid "response does not contain the RSA public exponent\n"
+msgid "response does not contain the EC public point\n"
+msgstr "yanıt RSA genel bileşenini içermiyor\n"
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr "%s olarak öntanımlı PIN kullanılıyor\n"
@@ -5379,8 +5693,8 @@ msgstr ""
 #, fuzzy, c-format
 msgid "|A|Please enter the Admin PIN%%0A[remaining attempts: %d]"
 msgstr ""
-"|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz%%0A[kalan deneme: %"
-"d]"
+"|A|Lütfen Yönetici PIN'ini okuyucu tuştakımından giriniz%%0A[kalan deneme: "
+"%d]"
 
 #, fuzzy
 msgid "|A|Please enter the Admin PIN"
@@ -5396,6 +5710,9 @@ msgstr "||Lütfen kart için Sıfırlama Kodunu giriniz"
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr "Sıfırlama Kodu çok kısa; asgari uzunluk: %d\n"
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr "|YSK|Yeni Sıfırlama Kodu"
 
@@ -5404,6 +5721,15 @@ msgstr "|YYP|Yeni Yönetici PIN'i"
 
 msgid "|N|New PIN"
 msgstr "|N|Yeni PIN"
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "||Lütfen PIN'i giriniz"
+
+#, fuzzy
+#| msgid "||Please enter the PIN"
+msgid "||Please enter the PIN and New PIN"
+msgstr "||Lütfen PIN'i giriniz"
 
 msgid "error reading application data\n"
 msgstr "uygulama verisi okunurken hata\n"
@@ -5467,7 +5793,9 @@ msgstr "Yönetici PIN'inin doğrulanması bu komut yüzünden şimdilik yasaktı
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "%s erişilebilir değil - OpenPGP kartı geçersiz olabilir mi?\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
+#, fuzzy
+#| msgid "||Please enter your PIN at the reader's keypad"
+msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Lütfen PIN'inizi okuyucunun tuştakımından giriniz"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
@@ -5500,23 +5828,37 @@ msgstr "dahili CCID sürücüsü kullanılmaz"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|N saniyelik durgunluktan sonra kartı ayırır"
 
-msgid "do not use a reader's keypad"
+#, fuzzy
+#| msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr "bir okuyucu tuştakımı kullanılmaz"
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "yönetici kartı komutları kullanımına izin verir"
 
-msgid "Usage: scdaemon [options] (-h for help)"
-msgstr "Kullanımı: scdaemon [seçenekler] (yardım için -h)"
+msgid "use variable length input for pinpad"
+msgstr ""
 
+#, fuzzy
+#| msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
+msgstr "Kullanımı: gpgconf [seçenekler] (yardım için -h)"
+
+#, fuzzy
+#| msgid ""
+#| "Syntax: scdaemon [options] [command [args]]\n"
+#| "Smartcard daemon for GnuPG\n"
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
 "Sözdizimi: scdaemon [seçenekler] [komut [arg ...]]\n"
 "GnuPG için akıllı kart artalan süreci\n"
 
+#, fuzzy
+#| msgid ""
+#| "please use the option `--daemon' to run the program in the background\n"
 msgid "please use the option '--daemon' to run the program in the background\n"
 msgstr ""
 "Programı artalanda çalışır bırakmak için lütfen `--daemon' seçeneğini "
@@ -5533,24 +5875,6 @@ msgstr "fd %d için eylemci sonlandı\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "geçersiz radix64 karakteri %02x atlandı\n"
-
-#, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr ""
-
-#, c-format
-msgid "no running dirmngr - starting '%s'\n"
-msgstr "çalışan dirmngr yok - `%s' başlatılıyor\n"
-
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "DIRMNGR_INFO ortam değişkeni hatalı\n"
-
-#, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "dirmngr protokolünün %d. sürümü desteklenmiyor\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -5572,11 +5896,14 @@ msgstr "sertifikacı onu bir CA gibi imlememiş"
 msgid "critical marked policy without configured policies"
 msgstr "yapılandırılmış poliçeler olmaksızın kritik imli poliçe"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "failed to open `%s': %s\n"
 msgid "failed to open '%s': %s\n"
 msgstr "`%s' açılamadı: %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
+#, fuzzy
+#| msgid "note: non-critical certificate policy not allowed"
+msgid "Note: non-critical certificate policy not allowed"
 msgstr "bilgi: kritik olmayan sertifika poliçesine izin verilmez"
 
 msgid "certificate policy not allowed"
@@ -5600,8 +5927,8 @@ msgstr "eşleşen sertifika sayısı: %d\n"
 msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "dirmngr sadece-önbellek anahtar araması başarısızi: %s\n"
 
-msgid "failed to allocated keyDB handle\n"
-msgstr "ayrılmış anahtar veritabanı elde edilemedi: %s\n"
+msgid "failed to allocate keyDB handle\n"
+msgstr "anahtar veritabanı eylemcisine yer ayrılması başarısız oldu\n"
 
 msgid "certificate has been revoked"
 msgstr "sertifika yürürlükten kaldırılmıştı"
@@ -5729,10 +6056,6 @@ msgid "validation model used: %s"
 msgstr "kullanılan geçerlilik modeli: %s"
 
 #, c-format
-msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr "%s anahtarı, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
-
-#, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr "%u bitlik çittirim %u bitlik %s anahtarı için geçersiz\n"
 
@@ -5775,16 +6098,24 @@ msgstr "hiç anahtar kullanımı belirtilmemiş - tüm kullanımlar var sayılı
 msgid "error getting key usage information: %s\n"
 msgstr "anahtar kullanım bilgisi alınırken hata: %s\n"
 
-msgid "certificate should have not been used for certification\n"
+#, fuzzy
+#| msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr "sertifika onaylama için kullanılmamalıydı\n"
 
-msgid "certificate should have not been used for OCSP response signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "sertifika, OCSP yanıtının imzalanması için kullanılmamalıydı\n"
 
-msgid "certificate should have not been used for encryption\n"
+#, fuzzy
+#| msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr "sertifika şifreleme için kullanılmamalıydı\n"
 
-msgid "certificate should have not been used for signing\n"
+#, fuzzy
+#| msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr "sertifika imzalama için kullanılmamalıydı\n"
 
 msgid "certificate is not usable for encryption\n"
@@ -5805,11 +6136,13 @@ msgstr "%d. satır: anahtar uzunluğu %u geçersiz (%d .. %d geçerli)\n"
 msgid "line %d: no subject name given\n"
 msgstr "%d. satır: konu ismi belirtilmemiş\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "line %d: invalid subject name label `%.*s'\n"
 msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr "%d. satır: konu ismi yaftası `%.*s' geçersiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "line %d: invalid subject name `%s' at pos %d\n"
 msgid "line %d: invalid subject name '%s' at pos %d\n"
 msgstr "%1$d. satır: %3$d konumundaki konu ismi %2$s' geçersiz\n"
 
@@ -5817,11 +6150,58 @@ msgstr "%1$d. satır: %3$d konumundaki konu ismi %2$s' geçersiz\n"
 msgid "line %d: not a valid email address\n"
 msgstr "%d. satır: geçerli bir eposta adresi değil\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "line %d: invalid serial number\n"
+msgstr "`%d. satır: algoritma geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid subject name label `%.*s'\n"
+msgid "line %d: invalid issuer name label '%.*s'\n"
+msgstr "%d. satır: konu ismi yaftası `%.*s' geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid issuer name '%s' at pos %d\n"
+msgstr "%1$d. satır: %3$d konumundaki konu ismi %2$s' geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "line %d: invalid date given\n"
+msgstr "`%d. satır: algoritma geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: error getting key by keygrip `%s': %s\n"
+msgid "line %d: error getting signing key by keygrip '%s': %s\n"
+msgstr "%d. satır: `%s' anahtar maşası tarafından alınırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "line %d: invalid hash algorithm given\n"
+msgstr "`%d. satır: algoritma geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "line %d: invalid authority-key-id\n"
+msgstr "`%d. satır: algoritma geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid subject name `%s' at pos %d\n"
+msgid "line %d: invalid subject-key-id\n"
+msgstr "%1$d. satır: %3$d konumundaki konu ismi %2$s' geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "line %d: invalid extension syntax\n"
+msgstr "`%d. satır: algoritma geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: error reading key `%s' from card: %s\n"
 msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "%d. satır: `%s' anahtarı karttan okunurken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "line %d: error getting key by keygrip `%s': %s\n"
 msgid "line %d: error getting key by keygrip '%s': %s\n"
 msgstr "%d. satır: `%s' anahtar maşası tarafından alınırken hata: %s\n"
 
@@ -5847,17 +6227,6 @@ msgstr "   (%d) Mevcut anahtar\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr "   (%d) Karttaki mevcut anahtar\n"
-
-#, fuzzy
-msgid "Enter the keygrip: "
-msgstr "Simgelemi giriniz: "
-
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
-#, fuzzy
-msgid "No key with this keygrip\n"
-msgstr "%d indisli bir yardımcı anahtar yok\n"
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -5893,7 +6262,8 @@ msgstr "X.509 konu ismini girin: "
 msgid "No subject name given\n"
 msgstr "Konu ismi belirtilmemiş\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "Invalid subject name label `%.*s'\n"
 msgid "Invalid subject name label '%.*s'\n"
 msgstr "Geçersiz konu ismi yaftası `%.*s'\n"
 
@@ -5902,7 +6272,8 @@ msgstr "Geçersiz konu ismi yaftası `%.*s'\n"
 #. adjust it do the length of your translation.  The
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
-#, c-format
+#, fuzzy, c-format
+#| msgid "Invalid subject name `%s'\n"
 msgid "Invalid subject name '%s'\n"
 msgstr "Geçersiz konu ismi`%s'\n"
 
@@ -5924,11 +6295,31 @@ msgstr " (seçimlik; boş bir satır işlemi sonlandırır):\n"
 msgid "Enter URIs"
 msgstr "URI'leri girin"
 
-msgid "Parameters to be used for the certificate request:\n"
-msgstr "Sertifika isteği için kullanılacak değiştirgeler:\n"
+#, fuzzy
+#| msgid "Create a designated revocation certificate for this key? (y/N) "
+msgid "Create self-signed certificate? (y/N) "
+msgstr ""
+"Bu imza için bir yürürlükten kaldırma sertifikası oluşturulsun mu? (e/H ya "
+"da y/N) "
 
-msgid "Now creating certificate request.  This may take a while ...\n"
+msgid "These parameters are used:\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "self-signed certificate has a BAD signature"
+msgid "Now creating self-signed certificate.  "
+msgstr "öz-imzalı sertifika KÖTÜ bir imzaya sahip"
+
+#, fuzzy
+#| msgid "Now creating certificate request.  This may take a while ...\n"
+msgid "Now creating certificate request.  "
 msgstr "Sertifika isteği oluşturuluyor.  Bu biraz vakit alabilir...\n"
+
+msgid "This may take a while ...\n"
+msgstr ""
+
+msgid "Ready.\n"
+msgstr ""
 
 msgid "Ready.  You should now send this request to your CA.\n"
 msgstr "Hazır.  Bu isteği şimdi Sertifika Yetkilinize (CA) göndermelisiniz.\n"
@@ -5942,7 +6333,8 @@ msgstr "(bu, RC2 algoritmasıdır)\n"
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(bu bir şifreli iletiymiş gibi görünmüyor)\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "certificate `%s' not found: %s\n"
 msgid "certificate '%s' not found: %s\n"
 msgstr "sertifika \"%s\" yok: %s\n"
 
@@ -5950,11 +6342,13 @@ msgstr "sertifika \"%s\" yok: %s\n"
 msgid "error locking keybox: %s\n"
 msgstr "anahtar bloğu kilitlenirken hata: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "duplicated certificate `%s' deleted\n"
 msgid "duplicated certificate '%s' deleted\n"
 msgstr "yinelenmiş sertifika `%s' silindi\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "certificate `%s' deleted\n"
 msgid "certificate '%s' deleted\n"
 msgstr "sertifika `%s' silindi\n"
 
@@ -5986,9 +6380,6 @@ msgstr "dirmngr'a bir komut aktarır"
 msgid "invoke gpg-protect-tool"
 msgstr "gpg-protect-tool'u çalıştırır"
 
-msgid "change a passphrase"
-msgstr "anahtar parolası değiştirir"
-
 msgid "create base-64 encoded output"
 msgstr "base-64 kodlu çıktı oluşturur"
 
@@ -6000,9 +6391,6 @@ msgstr "girdinin base-64 biçiminde olduğu kabul edilir"
 
 msgid "assume input is in binary format"
 msgstr "girdinin ikilik biçimde olduğu kabul edilir"
-
-msgid "use system's dirmngr if available"
-msgstr "elverişliyse sistemin dirmngr'ı kullanılır"
 
 msgid "never consult a CRL"
 msgstr "asla bir CRL sormaz"
@@ -6057,26 +6445,32 @@ msgstr "|İSİM|şifre algoritması olarak İSİM kullanılır"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|İSİM|özet algoritması olarak İSİM kullanılır"
 
-msgid "Usage: gpgsm [options] [files] (-h for help)"
-msgstr "Kullanımı: gpgsm [seçenekler] [dosyalar] (yardım için -h)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
+msgstr "Kullanımı: gpg [seçenekler] [dosyalar] (yardım için -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgsm [options] [files]\n"
+#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
+#| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Syntax: @GPGSM@ [options] [files]\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sözdizimi: gpgsm [seçenekler] [dosyalar]\n"
 "imzalama, kontrol, şifreleme veya çözme S/MIME protokolü kullanarak yapılır\n"
 "öntanımlı işlem girilen veriye bağımlıdır\n"
 
-msgid "usage: gpgsm [options] "
-msgstr "kullanımı: gpgsm [seçenekler] "
-
-#, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+#, fuzzy, c-format
+#| msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "BİLGİ:`%s'e şifrelenemez: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unknown validation model `%s'\n"
 msgid "unknown validation model '%s'\n"
 msgstr "`%s' geçerlilik modeli bilinmiyor\n"
 
@@ -6095,14 +6489,13 @@ msgstr "%s:%u: bu satır atlanıyor\n"
 msgid "could not parse keyserver\n"
 msgstr "anahtar sunucusu çözümlenemedi\n"
 
-msgid "WARNING: running with faked system time: "
-msgstr "UYARI: sahte sistem zamanıyla çalışıyor: "
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "importing common certificates `%s'\n"
 msgid "importing common certificates '%s'\n"
 msgstr "ortak sertifikalar `%s' ithal ediliyor\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't sign using `%s': %s\n"
 msgid "can't sign using '%s': %s\n"
 msgstr "`%s' kullanarak imzalanamıyor: %s\n"
 
@@ -6119,9 +6512,6 @@ msgstr "sertifika saklanırken hata\n"
 msgid "basic certificate checks failed - not imported\n"
 msgstr "temel sertifika sınamaları başarısız oldu - ithal edilmedi\n"
 
-msgid "failed to allocate keyDB handle\n"
-msgstr "anahtar veritabanı eylemcisine yer ayrılması başarısız oldu\n"
-
 #, c-format
 msgid "error getting stored flags: %s\n"
 msgstr "saklanmış bayraklar alınırken hata: %s\n"
@@ -6133,17 +6523,6 @@ msgstr "sertifika ithal edilirken hata: %s\n"
 #, c-format
 msgid "error reading input: %s\n"
 msgstr "girdi okunurken hata: %s\n"
-
-#, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "anahtar bloku `%s' oluşturulurken hata: %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr "gpg-agent'ı önce başlatmak isteyebilirsiniz\n"
-
-#, c-format
-msgid "keybox '%s' created\n"
-msgstr "`%s' anahtar bloğu oluşturuldu\n"
 
 msgid "failed to get the fingerprint\n"
 msgstr "parmakizinin alınması başarısız oldu\n"
@@ -6174,11 +6553,13 @@ msgstr "Hata - "
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr "GPG_TTY atanmamıştı - kullanımı sorunlara yolaçabilir\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid formatted fingerprint in `%s', line %d\n"
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "`%s', %d. satırındaki biçimli parmakizi geçersiz\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid country code in `%s', line %d\n"
 msgid "invalid country code in '%s', line %d\n"
 msgstr "`%s', %d. satırındaki ülke kodu geçersiz\n"
 
@@ -6250,6 +6631,1421 @@ msgstr "        nam-ı diğer"
 msgid "This is a qualified signature\n"
 msgstr "Bu bir nitelikli imzadır.\n"
 
+#, fuzzy, c-format
+#| msgid "checking for qualified certificate failed: %s\n"
+msgid "can't initialize certificate cache lock: %s\n"
+msgstr "nitelikli sertifika için sınama başarısız: %s\n"
+
+#, c-format
+msgid "can't acquire read lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't acquire write lock on the certificate cache: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "problem looking for existing certificate: %s\n"
+msgid "can't release lock on the certificate cache: %s\n"
+msgstr "mevcut sertifika aranırken sorun çıktı: %s\n"
+
+#, fuzzy, c-format
+#| msgid "looking up issuer from the Dirmngr cache\n"
+msgid "dropping %u certificates from the cache\n"
+msgstr "Dirmngr önbelleğinde sertifikacıyı arar\n"
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "can't access directory '%s': %s\n"
+msgstr "`%s' dizini oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
+msgid "can't parse certificate '%s': %s\n"
+msgstr "\"%s\" oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' already cached\n"
+msgstr "sertifika `%s' silindi\n"
+
+#, fuzzy, c-format
+#| msgid "duplicated certificate `%s' deleted\n"
+msgid "trusted certificate '%s' loaded\n"
+msgstr "yinelenmiş sertifika `%s' silindi\n"
+
+#, fuzzy, c-format
+#| msgid "certificate `%s' deleted\n"
+msgid "certificate '%s' loaded\n"
+msgstr "sertifika `%s' silindi\n"
+
+#, fuzzy, c-format
+#| msgid "fingerprint=%s\n"
+msgid "  SHA1 fingerprint = %s\n"
+msgstr "parmakizi=%s\n"
+
+msgid "   issuer ="
+msgstr ""
+
+msgid "  subject ="
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error loading certificate '%s': %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "Included certificates"
+msgid "permanently loaded certificates: %u\n"
+msgstr "İçerilen sertifikalar"
+
+#, fuzzy, c-format
+#| msgid "number of matching certificates: %d\n"
+msgid "    runtime cached certificates: %u\n"
+msgstr "eşleşen sertifika sayısı: %d\n"
+
+#, fuzzy
+#| msgid "  (certificate created at "
+msgid "certificate already cached\n"
+msgstr "  (  sertifikanın oluşturuluşu: "
+
+#, fuzzy
+#| msgid "certificate is good\n"
+msgid "certificate cached\n"
+msgstr "sertifika iyi durumda\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error caching certificate: %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "invalid SHA1 fingerprint string '%s'\n"
+msgstr "parmakizi geçersiz"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error fetching certificate by S/N: %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error fetching certificate by subject: %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
+#, fuzzy
+#| msgid "no issuer found in certificate"
+msgid "no issuer found in certificate\n"
+msgstr "sertifikacı kim belli değil"
+
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error getting authorityKeyIdentifier: %s\n"
+msgstr "saklanmış bayraklar alınırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't create directory `%s': %s\n"
+msgid "creating directory '%s'\n"
+msgstr "`%s' dizini oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating keybox `%s': %s\n"
+msgid "error creating directory '%s': %s\n"
+msgstr "anahtar bloku `%s' oluşturulurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "ignoring garbage line"
+msgid "ignoring database dir '%s'\n"
+msgstr "bozuk satır yok sayılıyor"
+
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error reading directory '%s': %s\n"
+msgstr "%s okunurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "removing cache file '%s'\n"
+msgstr "satır alımı başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "enarmoring failed: %s\n"
+msgid "not removing file '%s'\n"
+msgstr "zırhlama başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error closing cache file: %s\n"
+msgstr "%s kapanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to open `%s': %s\n"
+msgid "failed to open cache dir file '%s': %s\n"
+msgstr "`%s' açılamadı: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating new cache dir file '%s': %s\n"
+msgstr "geçici dosya oluşturulurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing new cache dir file '%s': %s\n"
+msgstr "`%s' gizli anahtarlığa yazılırken hata oluştu: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error closing new cache dir file '%s': %s\n"
+msgstr "%s kapanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "new configuration file `%s' created\n"
+msgid "new cache dir file '%s' created\n"
+msgstr "yeni yapılandırma dosyası `%s' oluşturuldu\n"
+
+#, fuzzy, c-format
+#| msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to re-open cache dir file '%s': %s\n"
+msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
+
+#, c-format
+msgid "first record of '%s' is not the version\n"
+msgstr ""
+
+msgid "old version of cache directory - cleaning up\n"
+msgstr ""
+
+msgid "old version of cache directory - giving up\n"
+msgstr ""
+
+#, c-format
+msgid "extra field detected in crl record of '%s' line %u\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "invalid country code in `%s', line %d\n"
+msgid "invalid line detected in '%s' line %u\n"
+msgstr "`%s', %d. satırındaki ülke kodu geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "invalid country code in `%s', line %d\n"
+msgid "duplicate entry detected in '%s' line %u\n"
+msgstr "`%s', %d. satırındaki ülke kodu geçersiz\n"
+
+#, c-format
+msgid "unsupported record type in '%s' line %u skipped\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid issuer hash in '%s' line %u\n"
+msgstr "`%s', %d. satırda anahtar bayrağı geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "bad fingerprint in `%s', line %d\n"
+msgid "no issuer DN in '%s' line %u\n"
+msgstr "`%s', %d. satırda parmakizi hatalı\n"
+
+#, fuzzy, c-format
+#| msgid "invalid keyflag in `%s', line %d\n"
+msgid "invalid timestamp in '%s' line %u\n"
+msgstr "`%s', %d. satırda anahtar bayrağı geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "invalid keyflag in `%s', line %d\n"
+msgid "WARNING: invalid cache file hash in '%s' line %u\n"
+msgstr "`%s', %d. satırda anahtar bayrağı geçersiz\n"
+
+msgid "detected errors in cache dir file\n"
+msgstr ""
+
+msgid "please check the reason and manually delete that file\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "failed to create temporary file `%s': %s\n"
+msgid "failed to create temporary cache dir file '%s': %s\n"
+msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error closing %s: %s\n"
+msgid "error closing '%s': %s\n"
+msgstr "%s kapanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "\"%s\" okunurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't access `%s': %s\n"
+msgid "can't hash '%s': %s\n"
+msgstr "'%s' erişilemiyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error sending %s command: %s\n"
+msgid "error setting up MD5 hash context: %s\n"
+msgstr "%s komutu gönderilirken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error in `%s': %s\n"
+msgid "error hashing '%s': %s\n"
+msgstr "'%s' de hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid formatted fingerprint in `%s', line %d\n"
+msgid "invalid formatted checksum for '%s'\n"
+msgstr "`%s', %d. satırındaki biçimli parmakizi geçersiz\n"
+
+msgid "too many open cache files; can't open anymore\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sending line failed: %s\n"
+msgid "opening cache file '%s'\n"
+msgstr "satır göndirimi başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error opening `%s': %s\n"
+msgid "error opening cache file '%s': %s\n"
+msgstr "'%s' açılırken hata: %s\n"
+
+#, c-format
+msgid "error initializing cache file '%s' for reading: %s\n"
+msgstr ""
+
+msgid "calling unlock_db_file on a closed file\n"
+msgstr ""
+
+msgid "calling unlock_db_file on an unlocked file\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "failed to create stream from socket: %s\n"
+msgid "failed to create a new cache object: %s\n"
+msgstr "sokette akım oluşturulamadı: %s\n"
+
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
+msgid "no CRL available for issuer id %s\n"
+msgstr "\"%s\" için yardım mevcut değil"
+
+#, c-format
+msgid "cached CRL for issuer id %s too old; update required\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"force-crl-refresh active and %d minutes passed for issuer id %s; update "
+"required\n"
+msgstr ""
+
+#, c-format
+msgid "force-crl-refresh active for issuer id %s; update required\n"
+msgstr ""
+
+#, c-format
+msgid "available CRL for issuer ID %s can't be used\n"
+msgstr ""
+
+#, c-format
+msgid "cached CRL for issuer id %s tampered; we need to update\n"
+msgstr ""
+
+msgid "WARNING: invalid cache record length for S/N "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Error reading backup key from `%s': %s\n"
+msgid "problem reading cache record for S/N %s: %s\n"
+msgstr "yedekleme anahtarı `%s' den okunurken hata oluştu: %s\n"
+
+#, c-format
+msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
+msgstr ""
+
+#, c-format
+msgid "S/N %s is valid, it is not listed in the CRL\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error getting stored flags: %s\n"
+msgid "error getting data from cache file: %s\n"
+msgstr "saklanmış bayraklar alınırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "`%s' çittirim algoritması geçersiz\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
+
+msgid "got an invalid S-expression from libksba\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "iconv_open failed: %s\n"
+msgid "converting S-expression failed: %s\n"
+msgstr "iconv_open başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "creating S-expression failed: %s\n"
+msgstr "satır alımı başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "build_packet failed: %s\n"
+msgid "ksba_crl_parse failed: %s\n"
+msgstr "build_packet başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting serial number of card: %s\n"
+msgid "error getting update times of CRL: %s\n"
+msgstr "kartın seri numarası alınırken hata: %s\n"
+
+#, c-format
+msgid "update times of this CRL: this=%s next=%s\n"
+msgstr ""
+
+msgid "nextUpdate not given; assuming a validity period of one day\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error getting new PIN: %s\n"
+msgid "error getting CRL item: %s\n"
+msgstr "yeni PIN alınırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing to temporary file: %s\n"
+msgid "error inserting item into temporary cache file: %s\n"
+msgstr "geçeci dosyaya yazma hatası: %s\n"
+
+#, fuzzy, c-format
+#| msgid "no issuer found in certificate"
+msgid "no CRL issuer found in CRL: %s\n"
+msgstr "sertifikacı kim belli değil"
+
+msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signature verification suppressed\n"
+msgid "CRL signature verification failed: %s\n"
+msgstr "imza doğrulama engellendi\n"
+
+#, fuzzy, c-format
+#| msgid "error reading list of trusted root certificates\n"
+msgid "error checking validity of CRL issuer certificate: %s\n"
+msgstr "güvenilir kök sertifika listesinin okunmasında hata\n"
+
+#, fuzzy, c-format
+#| msgid "select failed: %s\n"
+msgid "ksba_crl_new failed: %s\n"
+msgstr "select başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "read failed: %s\n"
+msgid "ksba_crl_set_reader failed: %s\n"
+msgstr "read başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to create temporary file `%s': %s\n"
+msgid "removed stale temporary cache file '%s'\n"
+msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to create temporary file `%s': %s\n"
+msgid "problem removing stale temporary cache file '%s': %s\n"
+msgstr "`%s' geçici dosyası oluşturulamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error creating temporary cache file '%s': %s\n"
+msgstr "geçici dosya oluşturulurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "crl_parse_insert failed: %s\n"
+msgstr "gizliyi güncelleme başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing to temporary file: %s\n"
+msgid "error finishing temporary cache file '%s': %s\n"
+msgstr "geçeci dosyaya yazma hatası: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating temporary file: %s\n"
+msgid "error closing temporary cache file '%s': %s\n"
+msgstr "geçici dosya oluşturulurken hata: %s\n"
+
+#, c-format
+msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
+msgstr ""
+
+#, c-format
+msgid "new CRL still too old; it expired on %s\n"
+msgstr ""
+
+#, c-format
+msgid "unknown critical CRL extension %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error reading input: %s\n"
+msgid "error reading CRL extensions: %s\n"
+msgstr "girdi okunurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error creating a pipe: %s\n"
+msgid "creating cache file '%s'\n"
+msgstr "boru oluşturulurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "problem renaming '%s' to '%s': %s\n"
+msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+msgid ""
+"updating the DIR file failed - cache entry will get lost with the next "
+"program start\n"
+msgstr ""
+
+#, c-format
+msgid "Begin CRL dump (retrieved via %s)\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used because it was still too old after an "
+"update!\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used due to an unknown critical extension!\n"
+msgstr ""
+
+msgid " ERROR: The CRL will not be used\n"
+msgstr ""
+
+msgid " ERROR: This cached CRL may have been tampered with!\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "WARNING: invalid notation data found\n"
+msgid " WARNING: invalid cache record length\n"
+msgstr "UYARI: geçersiz simgelem verisi bulundu\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache record: %s\n"
+msgstr "%s: serbest kaydı okuma hatası: %s\n"
+
+#, fuzzy, c-format
+#| msgid "problem re-searching certificate: %s\n"
+msgid "problem reading cache key: %s\n"
+msgstr "sertifika yeniden aranırken sorun çıktı: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading nonce on fd %d: %s\n"
+msgid "error reading cache entry from db: %s\n"
+msgstr "fd %d üzerinde tuz okunurken hata: %s\n"
+
+msgid "End CRL dump\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "read failed: %s\n"
+msgid "crl_fetch via DP failed: %s\n"
+msgstr "read başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "crl_cache_insert via DP failed: %s\n"
+msgstr "güvence listesinin sınanması başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "crl_cache_insert via issuer failed: %s\n"
+msgstr "satır alımı başarısız: %s\n"
+
+msgid "reader to file mapping table full - waiting\n"
+msgstr ""
+
+msgid "using \"http\" instead of \"https\"\n"
+msgstr ""
+
+#, c-format
+msgid "CRL access not possible due to disabled %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: dizin kaydını yazma hatası: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "too many cipher preferences\n"
+msgid "too many redirections\n"
+msgstr "çok fazla şifreleme tercihi\n"
+
+#, fuzzy, c-format
+#| msgid "error retrieving `%s' via %s: %s\n"
+msgid "error retrieving '%s': %s\n"
+msgstr "`%s' %s üzerinden alınırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error retrieving '%s': http status %u\n"
+msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
+
+#, fuzzy, c-format
+#| msgid "certificate `%s' not found: %s\n"
+msgid "certificate search not possible due to disabled %s\n"
+msgstr "sertifika \"%s\" yok: %s\n"
+
+msgid "use OCSP instead of CRLs"
+msgstr ""
+
+msgid "check whether a dirmngr is running"
+msgstr ""
+
+#, fuzzy
+#| msgid "  (certificate created at "
+msgid "add a certificate to the cache"
+msgstr "  (  sertifikanın oluşturuluşu: "
+
+#, fuzzy
+#| msgid "Included certificates"
+msgid "validate a certificate"
+msgstr "İçerilen sertifikalar"
+
+#, fuzzy
+#| msgid "Included certificates"
+msgid "lookup a certificate"
+msgstr "İçerilen sertifikalar"
+
+#, fuzzy
+#| msgid "Included certificates"
+msgid "lookup only locally stored certificates"
+msgstr "İçerilen sertifikalar"
+
+msgid "expect an URL for --lookup"
+msgstr ""
+
+#, fuzzy
+#| msgid "pass a command to the dirmngr"
+msgid "load a CRL into the dirmngr"
+msgstr "dirmngr'a bir komut aktarır"
+
+msgid "special mode for use by Squid"
+msgstr ""
+
+#, fuzzy
+#| msgid "export certificates"
+msgid "expect certificates in PEM format"
+msgstr "sertifikaları ihraç eder"
+
+#, fuzzy
+#| msgid "Enter the user ID of the designated revoker: "
+msgid "force the use of the default OCSP responder"
+msgstr ""
+"Tasarlanmış yürürlükten kaldırma anahtarının kullanıcı kimliğini giriniz: "
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
+msgstr "Kullanımı: gpg [seçenekler] [dosyalar] (yardım için -h)"
+
+msgid ""
+"Syntax: dirmngr-client [options] [certfile|pattern]\n"
+"Test an X.509 certificate against a CRL or do an OCSP check\n"
+"The process returns 0 if the certificate is valid, 1 if it is\n"
+"not valid and other error codes for general failures\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error reading certificate from stdin: %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error reading certificate from '%s': %s\n"
+msgstr "%s okunurken hata: %s\n"
+
+msgid "certificate too large to make any sense\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "update failed: %s\n"
+msgid "lookup failed: %s\n"
+msgstr "güncelleme başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "loading CRL '%s' failed: %s\n"
+msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+msgid "a dirmngr daemon is up and running\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "validation of certificate failed: %s\n"
+msgstr "\"%s\" sertifikası silinemedi: %s\n"
+
+#, fuzzy
+#| msgid "certificate is good\n"
+msgid "certificate is valid\n"
+msgstr "sertifika iyi durumda\n"
+
+#, fuzzy
+#| msgid "certificate has been revoked"
+msgid "certificate has been revoked\n"
+msgstr "sertifika yürürlükten kaldırılmıştı"
+
+#, fuzzy, c-format
+#| msgid "deleting certificate \"%s\" failed: %s\n"
+msgid "certificate check failed: %s\n"
+msgstr "\"%s\" sertifikası silinemedi: %s\n"
+
+#, c-format
+msgid "got status: '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing base64 encoding: %s\n"
+msgstr "`%s' gizli anahtarlığa yazılırken hata oluştu: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to create stream from socket: %s\n"
+msgid "failed to allocate assuan context: %s\n"
+msgstr "sokette akım oluşturulamadı: %s\n"
+
+msgid "apparently no running dirmngr\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "no running dirmngr - starting `%s'\n"
+msgid "no running dirmngr - starting one\n"
+msgstr "çalışan dirmngr yok - `%s' başlatılıyor\n"
+
+#, fuzzy, c-format
+#| msgid "malformed DIRMNGR_INFO environment variable\n"
+msgid "malformed %s environment variable\n"
+msgstr "DIRMNGR_INFO ortam değişkeni hatalı\n"
+
+#, c-format
+msgid "dirmngr protocol version %d is not supported\n"
+msgstr "dirmngr protokolünün %d. sürümü desteklenmiyor\n"
+
+msgid "can't connect to the dirmngr - trying fall back\n"
+msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
+
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "\"%s\" sunucusuna bağlanılamadı: %s\n"
+
+#, fuzzy, c-format
+#| msgid "unsupported algorithm: %s"
+msgid "unsupported inquiry '%s'\n"
+msgstr "desteklenmeyen algoritma: %s"
+
+msgid "absolute file name expected\n"
+msgstr ""
+
+#, c-format
+msgid "looking up '%s'\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "run in daemon mode (background)"
+msgid "run as windows service (background)"
+msgstr "artalan süreci olarak çalışır"
+
+msgid "list the contents of the CRL cache"
+msgstr ""
+
+#, fuzzy
+#| msgid "|FILE|run commands from FILE on startup"
+msgid "|FILE|load CRL from FILE into cache"
+msgstr "|DOSYA|DOSYAdaki komutlar başlangıçta çalıştırılır"
+
+msgid "|URL|fetch a CRL from URL"
+msgstr ""
+
+#, fuzzy
+#| msgid "pass a command to the dirmngr"
+msgid "shutdown the dirmngr"
+msgstr "dirmngr'a bir komut aktarır"
+
+msgid "flush the cache"
+msgstr ""
+
+msgid "|FILE|write server mode logs to FILE"
+msgstr "|DOSYA|sunucu kipi günlükleri DOSYAya yazar"
+
+#, fuzzy
+#| msgid "Quit without saving? (y/N) "
+msgid "run without asking a user"
+msgstr "Kaydetmeden çıkılsın mı? (e/H ya da y/N) "
+
+msgid "force loading of outdated CRLs"
+msgstr ""
+
+#, fuzzy
+#| msgid "allow PKA lookups (DNS requests)"
+msgid "allow sending OCSP requests"
+msgstr "PKA aramalarına izin verilir (DNS istekleri)"
+
+msgid "inhibit the use of HTTP"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore HTTP CRL distribution points"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
+msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "|HOST|use HOST for LDAP queries"
+msgstr ""
+
+msgid "do not use fallback hosts with --ldap-proxy"
+msgstr ""
+
+#, fuzzy
+#| msgid "|FILE|read options from FILE"
+msgid "|FILE|read LDAP server list from FILE"
+msgstr "|DOSYA|seçenekler DOSYAdan okunur"
+
+msgid "add new servers discovered in CRL distribution points to serverlist"
+msgstr ""
+
+#, fuzzy
+#| msgid "|N|set maximum PIN cache lifetime to N seconds"
+msgid "|N|set LDAP timeout to N seconds"
+msgstr "|N|azami PIN önbelleği ömrü N saniyeye ayarlanır"
+
+#, fuzzy
+#| msgid "|URL|use keyserver at URL"
+msgid "|URL|use OCSP responder at URL"
+msgstr "|URL| URL'si veriler anahtar sunucusu kullanılır"
+
+msgid "|FPR|OCSP response signed by FPR"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "(See the man page for a complete listing of all commands and options)\n"
+msgid ""
+"@\n"
+"(See the \"info\" manual for a complete listing of all commands and "
+"options)\n"
+msgstr ""
+"@\n"
+"(Tüm komut ve seçeneklerin komple listesi için man sayfalarına bakın)\n"
+
+#, fuzzy
+#| msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
+msgstr "Kullanımı: gpgconf [seçenekler] (yardım için -h)"
+
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-agent [options] [command [args]]\n"
+#| "Secret key management for GnuPG\n"
+msgid ""
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
+msgstr ""
+"Sözdizimi: gpg-agent [seçenekler] [komut [arg ...]]\n"
+"GnuPG için gizli anahtar yönetimi\n"
+
+#, fuzzy, c-format
+#| msgid "invalid debug-level `%s' given\n"
+msgid "valid debug levels are: %s\n"
+msgstr "belirtilen hata seviyesi `%s' geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "usage: gpgsm [options] "
+msgid "usage: %s [options] "
+msgstr "kullanımı: gpgsm [seçenekler] "
+
+#, fuzzy
+#| msgid "%s not allowed with %s!\n"
+msgid "colons are not allowed in the socket name\n"
+msgstr "%s ile %s birlikte kullanılmaz!\n"
+
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "fetching CRL from '%s' failed: %s\n"
+msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "conversion from `%s' to `%s' failed: %s\n"
+msgid "processing CRL from '%s' failed: %s\n"
+msgstr "`%s' > `%s' dönüşümü başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "line too long - skipped\n"
+msgid "%s:%u: line too long - skipped\n"
+msgstr "satır çok uzun - atlandı\n"
+
+#, fuzzy, c-format
+#| msgid "invalid fingerprint"
+msgid "%s:%u: invalid fingerprint detected\n"
+msgstr "parmakizi geçersiz"
+
+#, fuzzy, c-format
+#| msgid "read error in `%s': %s\n"
+msgid "%s:%u: read error: %s\n"
+msgstr "`%s' için okuma hatası: %s\n"
+
+#, c-format
+msgid "%s:%u: garbage at end of line ignored\n"
+msgstr ""
+
+msgid "SIGHUP received - re-reading configuration and flushing caches\n"
+msgstr ""
+
+msgid "SIGUSR2 received - no action defined\n"
+msgstr ""
+
+msgid "SIGTERM received - shutting down ...\n"
+msgstr ""
+
+#, c-format
+msgid "SIGTERM received - still %d active connections\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "not forced"
+msgid "shutdown forced\n"
+msgstr "zorlanmadı"
+
+msgid "SIGINT received - immediate shutdown\n"
+msgstr ""
+
+#, c-format
+msgid "signal %d received - no action defined\n"
+msgstr ""
+
+msgid "return all values in a record oriented format"
+msgstr ""
+
+msgid "|NAME|ignore host part and connect through NAME"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|NAME|connect to host NAME"
+msgstr "|İSİM|Assuan soketi İSİMe bağlanır"
+
+#, fuzzy
+#| msgid "|N|connect to reader at port N"
+msgid "|N|connect to port N"
+msgstr "|N|N. porttaki okuyucuya bağlanır"
+
+msgid "|NAME|use user NAME for authentication"
+msgstr ""
+
+msgid "|PASS|use password PASS for authentication"
+msgstr ""
+
+msgid "take password from $DIRMNGR_LDAP_PASS"
+msgstr ""
+
+msgid "|STRING|query DN STRING"
+msgstr ""
+
+msgid "|STRING|use STRING as filter expression"
+msgstr ""
+
+msgid "|STRING|return the attribute STRING"
+msgstr ""
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+msgstr "Kullanımı: gpg [seçenekler] [dosyalar] (yardım için -h)"
+
+msgid ""
+"Syntax: dirmngr_ldap [options] [URL]\n"
+"Internal LDAP helper for Dirmngr\n"
+"Interface and options may change without notice\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "invalid import options\n"
+msgid "invalid port number %d\n"
+msgstr "içselleştirme seçenekleri geçersiz\n"
+
+#, c-format
+msgid "scanning result for attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error writing to stdout: %s\n"
+msgstr "%s yazılırken hata: %s\n"
+
+#, c-format
+msgid "          available attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "certificate `%s' not found: %s\n"
+msgid "attribute '%s' not found\n"
+msgstr "sertifika \"%s\" yok: %s\n"
+
+#, c-format
+msgid "found attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "processing url '%s'\n"
+msgstr "`%s'den okunuyor\n"
+
+#, fuzzy, c-format
+#| msgid "          w/o user IDs: %lu\n"
+msgid "          user '%s'\n"
+msgstr "         kullanıcı kimliksiz: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "          pass '%s'\n"
+msgstr "                nam-ı diğer \"%s\""
+
+#, fuzzy, c-format
+#| msgid "          w/o user IDs: %lu\n"
+msgid "          host '%s'\n"
+msgstr "         kullanıcı kimliksiz: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "          not imported: %lu\n"
+msgid "          port %d\n"
+msgstr "             alınamadı: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "            DN '%s'\n"
+msgstr "                nam-ı diğer \"%s\""
+
+#, c-format
+msgid "        filter '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "                aka \"%s\""
+msgid "          attr '%s'\n"
+msgstr "                nam-ı diğer \"%s\""
+
+#, fuzzy, c-format
+#| msgid "%s:%u: no hostname given\n"
+msgid "no host name in '%s'\n"
+msgstr "%s:%u: konak adı belirtilmemiş\n"
+
+#, c-format
+msgid "no attribute given for query '%s'\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "WARNING: Using untrusted key!\n"
+msgid "WARNING: using first attribute only\n"
+msgstr "UYARI: Güven derecesiz anahtar kullanılıyor!\n"
+
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "LDAP init to '%s:%d' failed: %s\n"
+msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "renaming `%s' to `%s' failed: %s\n"
+msgid "binding to '%s:%d' failed: %s\n"
+msgstr "`%s' > `%s' isim değişikliği başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "dearmoring failed: %s\n"
+msgid "searching '%s' failed: %s\n"
+msgstr "zırhın kaldırılması başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "`%s' is not a JPEG file\n"
+msgid "'%s' is not an LDAP URL\n"
+msgstr "'%s' bir JPEG dosyası değil\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error allocating enough memory: %s\n"
+msgid "error allocating memory: %s\n"
+msgstr "yeterli bellek ayrılırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing to %s: %s\n"
+msgid "error printing log line: %s\n"
+msgstr "%s yazılırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error reading log from ldap wrapper %d: %s\n"
+msgstr "%s okunurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "pth_select failed: %s - waiting 1s\n"
+msgid "npth_select failed: %s - waiting 1s\n"
+msgstr "pth_select başarısız: %s - 1s bekliyor\n"
+
+#, c-format
+msgid "ldap wrapper %d ready"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: timeout\n"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: exitcode=%d\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "waiting for process %d to terminate failed: %s\n"
+msgid "waiting for ldap wrapper %d failed: %s\n"
+msgstr "süreç %d sonlanacak diye beklerken başarısızlık: %s\n"
+
+#, c-format
+msgid "ldap wrapper %d stalled - killing\n"
+msgstr ""
+
+#, c-format
+msgid "error spawning ldap wrapper reaper thread: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "reading public key failed: %s\n"
+msgid "reading from ldap wrapper %d failed: %s\n"
+msgstr "genel anahtar okuması başarısız: %s\n"
+
+#, c-format
+msgid "invalid char 0x%02x in host name - not added\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sending key %s to %s server %s\n"
+msgid "adding '%s:%d' to the ldap server list\n"
+msgstr "anahtar %1$s, %3$s sunucusunun %2$s adresine gönderiliyor\n"
+
+#, fuzzy, c-format
+#| msgid "select failed: %s\n"
+msgid "malloc failed: %s\n"
+msgstr "select başarısız: %s\n"
+
+#, c-format
+msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgstr ""
+
+msgid "ldap_search hit the size limit of the server\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "%s: invalid file version %d\n"
+msgid "invalid canonical S-expression found\n"
+msgstr "%s: dosya sürümü %d geçersiz\n"
+
+#, fuzzy, c-format
+#| msgid "iconv_open failed: %s\n"
+msgid "gcry_md_open failed: %s\n"
+msgstr "iconv_open başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "oops: ksba_cert_hash failed: %s\n"
+msgstr "gizliyi güncelleme başarısız: %s\n"
+
+msgid "bad URL encoding detected\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error reading from responder: %s\n"
+msgstr "%s okunurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "Error: Private DO too long (limit is %d characters).\n"
+msgid "response from server too large; limit is %d bytes\n"
+msgstr "Hata: Özel DO çok uzun (sınır: %d karakter).\n"
+
+msgid "OCSP request not possible due to disabled HTTP\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing flags: %s\n"
+msgid "error setting OCSP target: %s\n"
+msgstr "bayraklar saklanırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error loading `%s': %s\n"
+msgid "error building OCSP request: %s\n"
+msgstr "`%s' yüklenirken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing to `%s': %s\n"
+msgid "error connecting to '%s': %s\n"
+msgstr "`%s' yazılırken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading from %s: %s\n"
+msgid "error reading HTTP response for '%s': %s\n"
+msgstr "%s okunurken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error running `%s': exit status %d\n"
+msgid "error accessing '%s': http status %u\n"
+msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
+
+#, fuzzy, c-format
+#| msgid "error binding socket to `%s': %s\n"
+msgid "error parsing OCSP response for '%s': %s\n"
+msgstr "soket `%s'e bağlanırken hata: %s\n"
+
+#, c-format
+msgid "OCSP responder at '%s' status: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "checking the trust list failed: %s\n"
+msgid "hashing the OCSP response for '%s' failed: %s\n"
+msgstr "güvence listesinin sınanması başarısız: %s\n"
+
+msgid "not signed by a default OCSP signer's certificate"
+msgstr ""
+
+msgid "only SHA-1 is supported for OCSP responses\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "receiving line failed: %s\n"
+msgid "allocating list item failed: %s\n"
+msgstr "satır alımı başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error getting new PIN: %s\n"
+msgid "error getting responder ID: %s\n"
+msgstr "yeni PIN alınırken hata: %s\n"
+
+#, fuzzy
+#| msgid "certificate should have not been used for OCSP response signing\n"
+msgid "no suitable certificate found to verify the OCSP response\n"
+msgstr "sertifika, OCSP yanıtının imzalanması için kullanılmamalıydı\n"
+
+#, fuzzy, c-format
+#| msgid "issuer certificate not found"
+msgid "issuer certificate not found: %s\n"
+msgstr "sertifikacı belli değil"
+
+#, fuzzy
+#| msgid "error reading list of trusted root certificates\n"
+msgid "caller did not return the target certificate\n"
+msgstr "güvenilir kök sertifika listesinin okunmasında hata\n"
+
+#, fuzzy
+#| msgid "error storing certificate\n"
+msgid "caller did not return the issuing certificate\n"
+msgstr "sertifika saklanırken hata\n"
+
+#, fuzzy, c-format
+#| msgid "failed to allocate keyDB handle\n"
+msgid "failed to allocate OCSP context: %s\n"
+msgstr "anahtar veritabanı eylemcisine yer ayrılması başarısız oldu\n"
+
+#, fuzzy, c-format
+#| msgid "can't access `%s': %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "'%s' erişilemiyor: %s\n"
+
+msgid "no default OCSP responder defined\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "no default secret keyring: %s\n"
+msgid "no default OCSP signer defined\n"
+msgstr "öntanımlı gizli anahtar zinciri yok: %s\n"
+
+#, fuzzy, c-format
+#| msgid "using default PIN as %s\n"
+msgid "using default OCSP responder '%s'\n"
+msgstr "%s olarak öntanımlı PIN kullanılıyor\n"
+
+#, fuzzy, c-format
+#| msgid "using cipher %s\n"
+msgid "using OCSP responder '%s'\n"
+msgstr "%s şifrelemesi kullanılıyor\n"
+
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error getting OCSP status for target certificate: %s\n"
+msgstr "serifika saklanırken hata: %s\n"
+
+#, c-format
+msgid "certificate status is: %s  (this=%s  next=%s)\n"
+msgstr ""
+
+msgid "good"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "certificate has been revoked"
+msgid "certificate has been revoked at: %s due to: %s\n"
+msgstr "sertifika yürürlükten kaldırılmıştı"
+
+msgid "OCSP responder returned a status in the future\n"
+msgstr ""
+
+msgid "OCSP responder returned a non-current status\n"
+msgstr ""
+
+msgid "OCSP responder returned an too old status\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sending line failed: %s\n"
+msgid "assuan_inquire(%s) failed: %s\n"
+msgstr "satır göndirimi başarısız: %s\n"
+
+msgid "ldapserver missing"
+msgstr ""
+
+msgid "serialno missing in cert ID"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "sending line failed: %s\n"
+msgid "assuan_inquire failed: %s\n"
+msgstr "satır göndirimi başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "select failed: %s\n"
+msgid "fetch_cert_by_url failed: %s\n"
+msgstr "select başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error sending %s command: %s\n"
+msgid "error sending data: %s\n"
+msgstr "%s komutu gönderilirken hata: %s\n"
+
+#, fuzzy, c-format
+#| msgid "select failed: %s\n"
+msgid "start_cert_fetch failed: %s\n"
+msgstr "select başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "select failed: %s\n"
+msgid "fetch_next_cert failed: %s\n"
+msgstr "select başarısız: %s\n"
+
+#, c-format
+msgid "max_replies %d exceeded\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "cannot allocate outfile string: %s\n"
+msgid "can't allocate control structure: %s\n"
+msgstr "dosya dışı dizge ayrılamıyor: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to initialize the TrustDB: %s\n"
+msgid "failed to initialize the server: %s\n"
+msgstr "\"TrustDB\" güvence veritabanı başlangıç aşamasında başarısız: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to store the creation date: %s\n"
+msgid "failed to the register commands with Assuan: %s\n"
+msgstr "oluşturma tarihinin saklanması başarısız oldu: %s\n"
+
+#, c-format
+msgid "Assuan accept problem: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signing failed: %s\n"
+msgid "Assuan processing failed: %s\n"
+msgstr "imzalama başarısız: %s\n"
+
+#, fuzzy
+#| msgid "issuer certificate is not marked as a CA"
+msgid "accepting root CA not marked as a CA"
+msgstr "sertifikacı onu bir CA gibi imlememiş"
+
+#, fuzzy
+#| msgid "checking the trustdb\n"
+msgid "CRL checking too deeply nested\n"
+msgstr "güvence veritabanı denetleniyor\n"
+
+msgid "not checking CRL for"
+msgstr ""
+
+#, fuzzy
+#| msgid "checking the CRL failed: %s"
+msgid "checking CRL for"
+msgstr "CRL sınaması başarısız: %s"
+
+msgid "running in compatibility mode - certificate chain not checked!\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "self-signed certificate has a BAD signature"
+msgid "selfsigned certificate has a BAD signature"
+msgstr "öz-imzalı sertifika KÖTÜ bir imzaya sahip"
+
+#, fuzzy, c-format
+#| msgid "checking for qualified certificate failed: %s\n"
+msgid "checking trustworthiness of root certificate failed: %s\n"
+msgstr "nitelikli sertifika için sınama başarısız: %s\n"
+
+#, fuzzy
+#| msgid "certificate is good\n"
+msgid "certificate chain is good\n"
+msgstr "sertifika iyi durumda\n"
+
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for CRL signing\n"
+msgstr "sertifika imzalama için kullanılmamalıydı\n"
+
 msgid "quiet"
 msgstr "sessiz"
 
@@ -6259,7 +8055,17 @@ msgstr "veri çıktısını onaltılık kodlamayla basar"
 msgid "decode received data lines"
 msgstr "alınan veri satırlarının kodunu açar"
 
+#, fuzzy
+#| msgid "pass a command to the dirmngr"
+msgid "connect to the dirmngr"
+msgstr "dirmngr'a bir komut aktarır"
+
 msgid "|NAME|connect to Assuan socket NAME"
+msgstr "|İSİM|Assuan soketi İSİMe bağlanır"
+
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|ADDR|connect to Assuan server at ADDR"
 msgstr "|İSİM|Assuan soketi İSİMe bağlanır"
 
 msgid "run the Assuan server given on the command line"
@@ -6274,11 +8080,17 @@ msgstr "|DOSYA|DOSYAdaki komutlar başlangıçta çalıştırılır"
 msgid "run /subst on startup"
 msgstr "/subst başlangıçta çalıştırılır"
 
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg-connect-agent [options] (-h for help)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
 msgstr "Kullanımı: gpg-connect-agent [seçenekler] (yardım için -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg-connect-agent [options]\n"
+#| "Connect to a running agent and send commands\n"
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 "Sözdizimi: gpg-connect-agent [seçenekler]\n"
@@ -6302,17 +8114,14 @@ msgstr "satır çok uzun - atlandı\n"
 msgid "line shortened due to embedded Nul character\n"
 msgstr "gömülü boş karakterden dolayı satır kısaldı\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "unknown command `%s'\n"
 msgid "unknown command '%s'\n"
 msgstr "komut `%s' bilinmiyor\n"
 
 #, c-format
 msgid "sending line failed: %s\n"
 msgstr "satır göndirimi başarısız: %s\n"
-
-#, c-format
-msgid "error sending %s command: %s\n"
-msgstr "%s komutu gönderilirken hata: %s\n"
 
 #, c-format
 msgid "error sending standard options: %s\n"
@@ -6326,9 +8135,6 @@ msgstr "Yapılandırmayı denetleyen seçenekler"
 
 msgid "Options useful for debugging"
 msgstr "Hata ayıklamaya elverişli seçenekler"
-
-msgid "|FILE|write server mode logs to FILE"
-msgstr "|DOSYA|sunucu kipi günlükleri DOSYAya yazar"
 
 msgid "Options controlling the security"
 msgstr "Güvenliği denetleyen seçenekler"
@@ -6417,6 +8223,31 @@ msgstr "LDAP sunucu listesi"
 msgid "Configuration for OCSP"
 msgstr "OCSP için yapılandırma"
 
+msgid "GPG for OpenPGP"
+msgstr ""
+
+msgid "GPG Agent"
+msgstr ""
+
+msgid "Smartcard Daemon"
+msgstr ""
+
+msgid "GPG for S/MIME"
+msgstr ""
+
+msgid "Directory Manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Bad Passphrase"
+msgid "PIN and Passphrase Entry"
+msgstr "Anahtar Parolası hatalı"
+
+#, fuzzy
+#| msgid "Component not found"
+msgid "Component not suitable for launching"
+msgstr "Bileşen yok"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr "%s bileşeninin harici doğrulaması başarısız oldu"
@@ -6442,7 +8273,9 @@ msgstr "|BİLEŞEN|seçenekleri sınar"
 msgid "apply global default values"
 msgstr "öntanımlı küresel değerleri uygular"
 
-msgid "get the configuration directories for gpgconf"
+#, fuzzy
+#| msgid "get the configuration directories for gpgconf"
+msgid "get the configuration directories for @GPGCONF@"
 msgstr "gpgconf için yapılandırma dizinlerini getirir"
 
 msgid "list global configuration file"
@@ -6451,24 +8284,42 @@ msgstr "küresel yapılandırma dosyasını listeler"
 msgid "check global configuration file"
 msgstr "küresel yapılandırma dosayasını sınar"
 
+#, fuzzy
+#| msgid "list all components"
+msgid "reload all or a given component"
+msgstr "tüm bileşenleri listeler"
+
+#, fuzzy
+#| msgid "list all components"
+msgid "launch a given component"
+msgstr "tüm bileşenleri listeler"
+
+#, fuzzy
+#| msgid "list all components"
+msgid "kill a given component"
+msgstr "tüm bileşenleri listeler"
+
 msgid "use as output file"
 msgstr "çıktı dosyası olarak kullanılır"
 
 msgid "activate changes at runtime, if possible"
 msgstr "mümkünse değişiklikleri çalışma sırasında etkin kılar"
 
-msgid "Usage: gpgconf [options] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
 msgstr "Kullanımı: gpgconf [seçenekler] (yardım için -h)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpgconf [options]\n"
+#| "Manage configuration options for tools of the GnuPG system\n"
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
 "Sözdizimi: gpgconf [seçenekler]\n"
 "GnuPG sisteminin araçları için yapılandırma seçeneklerini yönetir\n"
-
-msgid "usage: gpgconf [options] "
-msgstr "kullanımı: gpgconf [seçenekler] "
 
 msgid "Need one component argument"
 msgstr "Tek bileşenlik değiştirge gerekli"
@@ -6526,7 +8377,8 @@ msgstr "%2$s üzerindeki %1$s %3$i durumuyla çıktı\n"
 msgid "%s on %s failed with status %i\n"
 msgstr "%2$s üzerindeki %1$s %3$i durumuyla başarısız oldu\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create temporary directory `%s': %s\n"
 msgid "can't create temporary directory '%s': %s\n"
 msgstr "`%s' geçici dizini oluşturulamıyor: %s\n"
 
@@ -6624,6 +8476,348 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "use a standard location for the socket"
+#~ msgstr "soket için standart bir yer kullanılır"
+
+#~ msgid "|FILE|write environment settings also to FILE"
+#~ msgstr "|DOSYA|ortam ayarlarını ayrıca DOSYAya da yazar"
+
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "Kullanımı: gpg [seçenekler] (yardım için -h)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "GPG_AGENT_INFO çevre değişkeni hatalı\n"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "gpg-agent protokolü sürüm %d desteklenmiyor\n"
+
+#~ msgid "can't fdopen pipe for reading: %s\n"
+#~ msgstr "okumak için boruya fdopen yapılamadı: %s\n"
+
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "soket oluşturulurken hata: %s\n"
+
+#~ msgid "host not found"
+#~ msgstr "konak yok"
+
+#~ msgid "can't connect to the agent - trying fall back\n"
+#~ msgstr "aracıya bağlanılamıyor - son çareye başvuruluyor\n"
+
+#~ msgid "unknown key protection algorithm\n"
+#~ msgstr "bilinmeyen anahtar koruma algoritması\n"
+
+#~ msgid "secret parts of key are not available\n"
+#~ msgstr "anahtarın gizli parçaları kullanılabilir değil\n"
+
+#~ msgid "secret key already stored on a card\n"
+#~ msgstr "gizli anahtar zaten bir kartın üzerinde saklı\n"
+
+#, fuzzy
+#~ msgid "error writing key to card: %s\n"
+#~ msgstr "anahtarı yazarken hata: %s\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "--pgp2 kipinde sadece 2048 bitlik RSA anahtarları ile şifreleme "
+#~ "yapabilirsiniz\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr "tüm anahtarları şifrelemek için IDEA şifresi kullanılamaz.\n"
+
+#~ msgid "remove the passphrase from exported subkeys"
+#~ msgstr "ihracedilen yardımcı anahtarlardan anahtar parolasını kaldırır"
+
+#~ msgid "key %s: not protected - skipped\n"
+#~ msgstr "anahtar %s: korunmamış - atlandı\n"
+
+#~ msgid "about to export an unprotected subkey\n"
+#~ msgstr "korunmamış bir yardımcı anahtar ihraca hazır\n"
+
+#~ msgid "failed to unprotect the subkey: %s\n"
+#~ msgstr "yardımcı anahtarın koruması kaldırılamadı: %s\n"
+
+#~ msgid "WARNING: secret key %s does not have a simple SK checksum\n"
+#~ msgstr "UYARI: gizli anahtar %s basit bir SK sağlamasına sahip değil\n"
+
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "pk belleğinde çok fazla girdi - iptal edildi\n"
+
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr ""
+#~ "yardımcı genel anahtar %s için gizli yardımcı anahtar yok - yoksayılıyor\n"
+
+#~ msgid "key %s: secret key without public key - skipped\n"
+#~ msgstr "anahtar %s: genel anahtarsız gizli anahtar - atlandı\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "kullanımı: gpg [seçenekler] "
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr "--pgp2 kipindeyken sadece ayrık veya sade imzalar yapabilirsiniz\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "--pgp2 kipinde aynı anda hem imzalama hem de şifreleme yapamazsınız\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr "--pgp2 ile çalışırken veri yolu yerine dosyaları kullanmalısınız.\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr "--pgp2 kipinde ileti şifrelemesi IDEA şifresi gerektirir\n"
+
+#~ msgid "create a public key when importing a secret key"
+#~ msgstr "bir gizli anahtar ithal ederken bir genel anahtar oluşturur"
+
+#~ msgid "key %s: already in secret keyring\n"
+#~ msgstr "anahtar %s: zaten gizli anahtar zincirinde\n"
+
+#~ msgid "key %s: secret key not found: %s\n"
+#~ msgstr "anahtar %s: gizli anahtar yok: %s\n"
+
+#~ msgid "NOTE: a key's S/N does not match the card's one\n"
+#~ msgstr "BİLGİ: bir anahtarın seri numarası kartlardan biriyle uyuşmuyor\n"
+
+#~ msgid "NOTE: primary key is online and stored on card\n"
+#~ msgstr "BİLGİ: asıl anahtar kart üzerinde saklı ve kullanılabilir\n"
+
+#~ msgid "NOTE: secondary key is online and stored on card\n"
+#~ msgstr "BİLGİ: ikincil anahtar kart üzerinde saklı ve kullanılabilir\n"
+
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr ""
+#~ "--pgp2 kipinde bir PGP 2.x anahtarlara bir OpenPGP imzası "
+#~ "uygulanamayabilir.\n"
+
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "Bu, anahtarı PGP 2.x için kullanışsız yapacak.\n"
+
+#~ msgid "This key is not protected.\n"
+#~ msgstr "Bu anahtar korunmamış.\n"
+
+#~ msgid "Key is protected.\n"
+#~ msgstr "Anahtar korunmuş.\n"
+
+#~ msgid "Can't edit this key: %s\n"
+#~ msgstr "Bu anahtar üzerinde düzenleme yapılamaz: %s\n"
+
+#~ msgid ""
+#~ "Enter the new passphrase for this secret key.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bu gizli anahtar için yeni anahtar parolasını giriniz.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Bir anahtar parolası vermediniz - bu çok *kötü* bir fikir!\n"
+#~ "\n"
+
+#~ msgid "Do you really want to do this? (y/N) "
+#~ msgstr "Gerçekten bunu yapmak istiyor musunuz? (e/H ya da y/N) "
+
+#~ msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgstr "gizli anahtar bloğu \"%s\" okunurken hata oluştu: %s\n"
+
+#~ msgid "Please remove selections from the secret keys.\n"
+#~ msgstr "Lütfen gizli anahtarlardan seçilenleri silin.\n"
+
+#~ msgid "No corresponding signature in secret ring\n"
+#~ msgstr "Gizli anahtar demetinde uygun/benzer imza yok\n"
+
+#~ msgid "writing secret key stub to `%s'\n"
+#~ msgstr "gizli anahtar koçanı `%s'e yazılıyor\n"
+
+#~ msgid "writing secret key to `%s'\n"
+#~ msgstr "gizli anahtarı `%s'e yazıyor\n"
+
+#~ msgid "no writable secret keyring found: %s\n"
+#~ msgstr "yazılabilir bir gizli anahtar zinciri yok: %s\n"
+
+#~ msgid "WARNING: 2 files with confidential information exists.\n"
+#~ msgstr "UYARI: gizli bilgi içeren 2 dosya mevcut.\n"
+
+#~ msgid "%s is the unchanged one\n"
+#~ msgstr "%s değişmeyenlerden\n"
+
+#~ msgid "%s is the new one\n"
+#~ msgstr "%s yenilerden\n"
+
+#~ msgid "Please fix this possible security flaw\n"
+#~ msgstr "Lütfen bu güvenlik çatlağını giderin\n"
+
+#~ msgid "searching for names from %s server %s\n"
+#~ msgstr "%2$s sunucusunda %1$s içindeki isimler aranıyor\n"
+
+#~ msgid "searching for names from %s\n"
+#~ msgstr "%s içindeki isimler aranıyor\n"
+
+#~ msgid "searching for \"%s\" from %s server %s\n"
+#~ msgstr "%3$s sunucusunun %2$s adresinde \"%1$s\" aranıyor\n"
+
+#~ msgid "searching for \"%s\" from %s\n"
+#~ msgstr "%2$s adresinde \"%1$s\" aranıyor\n"
+
+#~ msgid "no keyserver action!\n"
+#~ msgstr "bir anahtar sunucusu eylemi yok!\n"
+
+#~ msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
+#~ msgstr ""
+#~ "UYARI: GnuPG'nin başka bir sürümünün anahtar sunucusu eylemcisi (%s)\n"
+
+#~ msgid "keyserver did not send VERSION\n"
+#~ msgstr "anahtar sunucusu VERSION göndermiyor\n"
+
+#~ msgid "external keyserver calls are not supported in this build\n"
+#~ msgstr "harici anahtar sunucusu çağrıları bu kurulumda desteklenmiyor\n"
+
+#~ msgid "no handler for keyserver scheme `%s'\n"
+#~ msgstr "`%s' anahtar sunucusu şeması için eylemci yok\n"
+
+#~ msgid "action `%s' not supported with keyserver scheme `%s'\n"
+#~ msgstr "`%s' eylemi `%s' anahtar sunucusu şeması ile desteklenmiyor\n"
+
+#~ msgid "%s does not support handler version %d\n"
+#~ msgstr "%s  %d sürümü eylemciyi desteklemiyor\n"
+
+#~ msgid "keyserver timed out\n"
+#~ msgstr "anahtar sunucusu zamanaşımına uğradı\n"
+
+#~ msgid "keyserver internal error\n"
+#~ msgstr "anahtar sunucusu iç hatası\n"
+
+#~ msgid "keyserver communications error: %s\n"
+#~ msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
+
+#~ msgid "WARNING: unable to parse URI %s\n"
+#~ msgstr "UYARI: Betimleyici %s çözümlenemiyor\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "proc_tree() içinde geçersiz kök paket saptandı\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "IDEA şifre eklentisi yok\n"
+
+#~ msgid "no corresponding public key: %s\n"
+#~ msgstr "karşılığı olan genel anahtar yok: `%s\n"
+
+#~ msgid "public key does not match secret key!\n"
+#~ msgstr "genel anahtar gizli anahtarla uyuşmuyor!\n"
+
+#~ msgid "unknown protection algorithm\n"
+#~ msgstr "bilinmeyen sıkıştırma algoritması\n"
+
+#~ msgid "NOTE: This key is not protected!\n"
+#~ msgstr "BİLGİ: Bu anahtar korunmamış!\n"
+
+#~ msgid "protection digest %d is not supported\n"
+#~ msgstr "koruma özeti %d desteklenmiyor\n"
+
+#~ msgid "Invalid passphrase; please try again"
+#~ msgstr "Anahtar parolası geçersiz; lütfen tekrar deneyin"
+
+#~ msgid "%s ...\n"
+#~ msgstr "%s ...\n"
+
+#~ msgid "WARNING: Weak key detected - please change passphrase again.\n"
+#~ msgstr ""
+#~ "UYARI: Zayıf anahtar saptandı - lütfen anahtar parolasını tekrar "
+#~ "değiştirin.\n"
+
+#~ msgid ""
+#~ "generating the deprecated 16-bit checksum for secret key protection\n"
+#~ msgstr ""
+#~ "gizli anahtarın güvenliği için eski tarz 16 bitlik sağlama toplamı "
+#~ "üretiliyor\n"
+
+#~ msgid "DSA key %s uses an unsafe (%u bit) hash\n"
+#~ msgstr "DSA anahtarı %s, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
+
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "--pgp2 kipinde sadece PGP 2.x tarzı anahtarlarla ayrık imza "
+#~ "yapabilirsiniz\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "--pgp2 kipinde sadece PGP 2.x tarzı anahtarlarla açık imzalama "
+#~ "yapabilirsiniz\n"
+
+#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+#~ msgstr "20 translator seen trustdb.c:uid_trust_string_fixed"
+
+#~ msgid "[ revoked]"
+#~ msgstr "[yürürlükten kalktı]"
+
+#~ msgid "[ expired]"
+#~ msgstr "[  süresi  doldu  ]"
+
+#~ msgid "[ unknown]"
+#~ msgstr "[    bilinmeyen   ]"
+
+#~ msgid "[  undef ]"
+#~ msgstr "[     tanımsız    ]"
+
+#~ msgid "[marginal]"
+#~ msgstr "[   şöyle böyle   ]"
+
+#~ msgid "[  full  ]"
+#~ msgstr "[     tamamen     ]"
+
+#~ msgid "[ultimate]"
+#~ msgstr "[   son  derece   ]"
+
+#~ msgid "undefined"
+#~ msgstr "tanımsız"
+
+#~ msgid "never"
+#~ msgstr "asla    "
+
+#~ msgid "marginal"
+#~ msgstr "şöyle böyle"
+
+#~ msgid "full"
+#~ msgstr "tamamen"
+
+#~ msgid "ultimate"
+#~ msgstr "son derece"
+
+#~ msgid " - probably dead - removing lock"
+#~ msgstr " - muhtemelen ölü - kilit siliniyor"
+
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "Kullanımı: scdaemon [seçenekler] (yardım için -h)"
+
+#~ msgid "Parameters to be used for the certificate request:\n"
+#~ msgstr "Sertifika isteği için kullanılacak değiştirgeler:\n"
+
+#~ msgid "use system's dirmngr if available"
+#~ msgstr "elverişliyse sistemin dirmngr'ı kullanılır"
+
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "Kullanımı: gpgsm [seçenekler] [dosyalar] (yardım için -h)"
+
+#~ msgid "usage: gpgconf [options] "
+#~ msgstr "kullanımı: gpgconf [seçenekler] "
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "gpg-agent'ı önce başlatmak isteyebilirsiniz\n"
+
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "ayrılmış anahtar veritabanı elde edilemedi: %s\n"
+
+#~ msgid "Command> "
+#~ msgstr "Komut> "
 
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""

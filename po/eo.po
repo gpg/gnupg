@@ -1,6 +1,8 @@
 # Mesaøoj por la programo GnuPG
 # Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 # Edmund GRIMLEY EVANS <edmundo@rano.org>, 2000-2002.
+#                      !--- psbl.surriel.com rejected (2011-01-11)
+# Designated-Translator: none
 #
 msgid ""
 msgstr ""
@@ -9,6 +11,7 @@ msgstr ""
 "PO-Revision-Date: 2002-04-14 14:33+0100\n"
 "Last-Translator: Edmund GRIMLEY EVANS <edmundo@rano.org>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
+"Language: eo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-3\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,6 +19,20 @@ msgstr ""
 #, fuzzy, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
 msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#. TRANSLATORS: These are labels for buttons etc used in
+#. Pinentries.  An underscore indicates that the next letter
+#. should be used as an accelerator.  Double the underscore for
+#. a literal one.  The actual to be translated text starts after
+#. the second vertical bar.
+msgid "|pinentry-label|_OK"
+msgstr ""
+
+msgid "|pinentry-label|_Cancel"
+msgstr ""
+
+msgid "|pinentry-label|PIN:"
+msgstr ""
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -42,8 +59,17 @@ msgid ""
 "this session"
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
+msgid "does not match - try again"
+msgstr ""
+
+#. TRANSLATORS: The string is appended to an error message in
+#. the pinentry.  The %s is the actual error message, the
+#. two %d give the current and maximum number of tries.
 #, c-format
 msgid "SETERROR %s (try %d of %d)"
+msgstr ""
+
+msgid "Repeat:"
 msgstr ""
 
 #, fuzzy
@@ -77,11 +103,13 @@ msgstr "malbona pasfrazo"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "protekto-metodo %d%s ne estas realigita\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
 msgid "can't create '%s': %s\n"
 msgstr "ne povas krei '%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s': %s\n"
 msgid "can't open '%s': %s\n"
 msgstr "ne povas malfermi '%s': %s\n"
 
@@ -94,7 +122,7 @@ msgid "detected card with S/N: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error getting default authentication keyID of card: %s\n"
+msgid "no authentication key for ssh on card: %s\n"
 msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
 #, fuzzy, c-format
@@ -109,22 +137,31 @@ msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
 msgid "error writing key: %s\n"
 msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
 
+#, c-format
+msgid ""
+"An ssh process requested the use of key%%0A  %s%%0A  (%s)%%0ADo you want to "
+"allow this?"
+msgstr ""
+
+msgid "Allow"
+msgstr ""
+
+msgid "Deny"
+msgstr ""
+
 #, fuzzy, c-format
-msgid "Please enter the passphrase for the ssh key%0A  %c"
+msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
 #, fuzzy
 msgid "Please re-enter this passphrase"
 msgstr "þanøi la pasfrazon"
 
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"Please enter a passphrase to protect the received secret key%%0A   %s%%"
-"0Awithin gpg-agent's key storage"
-msgstr ""
-
-msgid "does not match - try again"
-msgstr ""
+"Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
+"%s%%0Awithin gpg-agent's key storage"
+msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
 
 #, fuzzy, c-format
 msgid "failed to create stream from socket: %s\n"
@@ -149,7 +186,7 @@ msgid "Reset Code"
 msgstr ""
 
 #, c-format
-msgid "%s%%0A%%0AUse the reader's keypad for input."
+msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr ""
 
 #, fuzzy
@@ -198,32 +235,6 @@ msgstr "Æu tamen uzi æi tiun þlosilon? "
 
 #, c-format
 msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u character long."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should be "
-"at least %u characters long."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digit or%%0Aspecial character."
-msgid_plural ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-"contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-msgstr[1] ""
-
-#, c-format
-msgid ""
-"Warning: You have entered an insecure passphrase.%%0AA passphrase may not be "
-"a known term or match%%0Acertain pattern."
-msgstr ""
-
-#, c-format
-msgid ""
 "You have not entered a passphrase!%0AAn empty passphrase is not allowed."
 msgstr ""
 
@@ -237,7 +248,28 @@ msgid "Yes, protection is not needed"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "Please enter the passphrase to%0Ato protect your new key"
+#| msgid "Name must be at least 5 characters long\n"
+msgid "A passphrase should be at least %u character long."
+msgid_plural "A passphrase should be at least %u characters long."
+msgstr[0] "Nomo devas havi almenaý 5 signojn\n"
+msgstr[1] "Nomo devas havi almenaý 5 signojn\n"
+
+#, c-format
+msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
+msgid_plural ""
+"A passphrase should contain at least %u digits or%%0Aspecial characters."
+msgstr[0] ""
+msgstr[1] ""
+
+#, c-format
+msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+msgstr ""
+
+msgid "Warning: You have entered an insecure passphrase."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr ""
 "Vi bezonas pasfrazon por protekti vian sekretan þlosilon.\n"
 "\n"
@@ -255,10 +287,10 @@ msgstr ""
 "Opcioj:\n"
 " "
 
-msgid "run in server mode (foreground)"
+msgid "run in daemon mode (background)"
 msgstr ""
 
-msgid "run in daemon mode (background)"
+msgid "run in server mode (foreground)"
 msgstr ""
 
 msgid "verbose"
@@ -287,10 +319,6 @@ msgstr ""
 msgid "use a log file for the server"
 msgstr "seræi þlosilojn æe þlosilservilo"
 
-#, fuzzy
-msgid "use a standard location for the socket"
-msgstr "Æu vere aktualigi la preferojn por la elektitaj uzantidentigiloj? "
-
 msgid "|PGM|use PGM as the PIN-Entry program"
 msgstr ""
 
@@ -313,18 +341,22 @@ msgstr ""
 msgid "do not use the PIN cache when signing"
 msgstr ""
 
-msgid "allow clients to mark keys as \"trusted\""
+msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
 
 #, fuzzy
 msgid "allow presetting passphrase"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
-msgid "enable ssh-agent emulation"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable ssh support"
+msgstr "ne realigita"
 
-msgid "|FILE|write environment settings also to FILE"
-msgstr ""
+#, fuzzy
+#| msgid "not supported"
+msgid "enable putty support"
+msgstr "ne realigita"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -334,12 +366,12 @@ msgid "Please report bugs to <@EMAIL@>.\n"
 msgstr "Bonvolu raporti cimojn al <gnupg-bugs@gnu.org>.\n"
 
 #, fuzzy
-msgid "Usage: gpg-agent [options] (-h for help)"
+msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 msgid ""
-"Syntax: gpg-agent [options] [command [args]]\n"
-"Secret key management for GnuPG\n"
+"Syntax: @GPG_AGENT@ [options] [command [args]]\n"
+"Secret key management for @GNUPG@\n"
 msgstr ""
 
 #, c-format
@@ -350,25 +382,24 @@ msgstr ""
 msgid "%s is too old (need %s, have %s)\n"
 msgstr ""
 
-#, c-format
-msgid "NOTE: no default option file '%s'\n"
+#, fuzzy, c-format
+#| msgid "NOTE: no default option file `%s'\n"
+msgid "Note: no default option file '%s'\n"
 msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "option file `%s': %s\n"
 msgid "option file '%s': %s\n"
 msgstr "opcio-dosiero '%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading options from `%s'\n"
 msgid "reading options from '%s'\n"
 msgstr "legas opciojn el '%s'\n"
 
-#, c-format
-msgid "error creating '%s': %s\n"
-msgstr "eraro dum kreado de '%s': %s\n"
-
 #, fuzzy, c-format
-msgid "can't create directory '%s': %s\n"
-msgstr "%s: ne povas krei dosierujon: %s\n"
+msgid "Note: '%s' is not considered an option\n"
+msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
 msgid "name of socket too long\n"
 msgstr ""
@@ -400,6 +431,10 @@ msgstr "aktualigo malsukcesis: %s\n"
 #, fuzzy, c-format
 msgid "listening on socket '%s'\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
+
+#, fuzzy, c-format
+msgid "can't create directory '%s': %s\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
 
 #, fuzzy, c-format
 msgid "directory '%s' created\n"
@@ -434,7 +469,7 @@ msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "pth_select failed: %s - waiting 1s\n"
+msgid "npth_pselect failed: %s - waiting 1s\n"
 msgstr "aktualigo de sekreto malsukcesis: %s\n"
 
 #, fuzzy, c-format
@@ -444,13 +479,6 @@ msgstr "\t%lu þlosiloj ignoritaj\n"
 #, fuzzy
 msgid "no gpg-agent running in this session\n"
 msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
-
-msgid "malformed GPG_AGENT_INFO environment variable\n"
-msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
-
-#, c-format
-msgid "gpg-agent protocol version %d is not supported\n"
-msgstr "protokolversio %d de gpg-agent ne estas uzebla\n"
 
 #, fuzzy
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
@@ -525,9 +553,9 @@ msgstr "eraro dum legado de '%s': %s\n"
 msgid "file '%s', line %d: %s\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "statement \"%s\" ignored in '%s', line %d\n"
-msgstr ""
+msgstr "kiraso: %s\n"
 
 #, fuzzy, c-format
 msgid "system trustlist '%s' not available\n"
@@ -537,9 +565,9 @@ msgstr "sekretaj þlosilpartoj ne estas disponataj\n"
 msgid "bad fingerprint in '%s', line %d\n"
 msgstr "kiraso: %s\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "invalid keyflag in '%s', line %d\n"
-msgstr ""
+msgstr "%s: nevalida dosiero-versio %d\n"
 
 #, fuzzy, c-format
 msgid "error reading '%s', line %d: %s\n"
@@ -609,13 +637,51 @@ msgstr "þanøi la pasfrazon"
 msgid "I'll change it later"
 msgstr ""
 
+#, fuzzy
+msgid "Delete key"
+msgstr "þalti þlosilon"
+
+msgid ""
+"Warning: This key is also listed for use with SSH!\n"
+"Deleting the key might remove your ability to access remote machines."
+msgstr ""
+
+msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+msgstr ""
+
+#, c-format
+msgid "%s key uses an unsafe (%u bit) hash\n"
+msgstr ""
+
+#, c-format
+msgid "a %zu bit hash is not valid for a %u bit %s key\n"
+msgstr ""
+
+msgid "secret key parts are not available\n"
+msgstr "sekretaj þlosilpartoj ne estas disponataj\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "public key algorithm %d (%s) is not supported\n"
+msgstr "protekto-metodo %d%s ne estas realigita\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection algorithm %d (%s) is not supported\n"
+msgstr "protekto-metodo %d%s ne estas realigita\n"
+
+#, fuzzy, c-format
+#| msgid "protection algorithm %d%s is not supported\n"
+msgid "protection hash algorithm %d (%s) is not supported\n"
+msgstr "protekto-metodo %d%s ne estas realigita\n"
+
 #, fuzzy, c-format
 msgid "error creating a pipe: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 #, fuzzy, c-format
-msgid "can't fdopen pipe for reading: %s\n"
-msgstr "ne povas malfermi %s: %s\n"
+msgid "error creating a stream for a pipe: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 #, fuzzy, c-format
 msgid "error forking process: %s\n"
@@ -626,33 +692,26 @@ msgid "waiting for process %d to terminate failed: %s\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "error getting exit code of process %d: %s\n"
-msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
+msgid "error running '%s': probably not installed\n"
+msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error running '%s': exit status %d\n"
 msgstr "eraro dum legado de '%s': %s\n"
-
-#, c-format
-msgid "error running '%s': probably not installed\n"
-msgstr ""
 
 #, fuzzy, c-format
 msgid "error running '%s': terminated\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy, c-format
-msgid "error creating socket: %s\n"
-msgstr "eraro dum kreado de '%s': %s\n"
-
-#, fuzzy
-msgid "host not found"
-msgstr "%s: uzanto ne trovita\n"
+msgid "error getting exit code of process %d: %s\n"
+msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
 msgstr "ne povas konektiøi al '%s': %s\n"
 
@@ -728,10 +787,26 @@ msgstr ""
 msgid "out of core while allocating %lu bytes"
 msgstr ""
 
-msgid "no running gpg-agent - starting one\n"
+#, c-format
+msgid "no running gpg-agent - starting '%s'\n"
 msgstr ""
 
-msgid "can't connect to the agent - trying fall back\n"
+#, c-format
+msgid "waiting for the agent to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to agent established\n"
+msgstr ""
+
+#, c-format
+msgid "no running Dirmngr - starting '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "waiting for the dirmngr to come up ... (%ds)\n"
+msgstr ""
+
+msgid "connection to the dirmngr established\n"
 msgstr ""
 
 #. TRANSLATORS: Copy the prefix between the vertical bars
@@ -755,6 +830,22 @@ msgstr "Bona atestilo"
 
 msgid "|audit-log-result|Error"
 msgstr ""
+
+#, fuzzy
+msgid "|audit-log-result|Not used"
+msgstr "Bona atestilo"
+
+#, fuzzy
+msgid "|audit-log-result|Okay"
+msgstr "Bona atestilo"
+
+#, fuzzy
+msgid "|audit-log-result|Skipped"
+msgstr "Bona atestilo"
+
+#, fuzzy
+msgid "|audit-log-result|Some"
+msgstr "Bona atestilo"
 
 #, fuzzy
 msgid "Certificate chain available"
@@ -801,8 +892,24 @@ msgstr ""
 msgid "Data signing succeeded"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "data hash algorithm: %s"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, fuzzy, c-format
+msgid "Signer %d"
+msgstr "Æi tiu þlosilo eksvalidiøos je %s.\n"
+
+#, fuzzy, c-format
+msgid "attr hash algorithm: %s"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
 msgid "Data decryption succeeded"
 msgstr ""
+
+#, fuzzy
+msgid "Encryption algorithm supported"
+msgstr "protekto-metodo %d%s ne estas realigita\n"
 
 #, fuzzy
 msgid "Data verification succeeded"
@@ -813,11 +920,11 @@ msgid "Signature available"
 msgstr "Æi tiu þlosilo eksvalidiøos je %s.\n"
 
 #, fuzzy
-msgid "Parsing signature succeeded"
+msgid "Parsing data succeeded"
 msgstr "Bona subskribo de \""
 
 #, fuzzy, c-format
-msgid "Bad hash algorithm: %s"
+msgid "bad data hash algorithm: %s"
 msgstr "nevalida kompendi-metodo '%s'\n"
 
 #, fuzzy, c-format
@@ -874,6 +981,118 @@ msgstr "eraro en vostolinio\n"
 #, fuzzy
 msgid "[none]"
 msgstr "nekonata versio"
+
+#, fuzzy
+msgid "argument not expected"
+msgstr "skribas sekretan þlosilon al '%s'\n"
+
+#, fuzzy
+msgid "read error"
+msgstr "legeraro æe dosiero"
+
+#, fuzzy
+msgid "keyword too long"
+msgstr "pasfrazo estas tro longa\n"
+
+#, fuzzy
+msgid "missing argument"
+msgstr "nevalida argumento"
+
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "nevalida kiraso"
+
+#, fuzzy
+msgid "invalid command"
+msgstr "malkongruaj komandoj\n"
+
+#, fuzzy
+msgid "invalid alias definition"
+msgstr "nevalida kiraso"
+
+#, fuzzy
+msgid "out of core"
+msgstr "ne traktita"
+
+#, fuzzy
+msgid "invalid option"
+msgstr "nevalida kiraso"
+
+#, c-format
+msgid "missing argument for option \"%.50s\"\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "nevalida kiraso"
+
+#, c-format
+msgid "option \"%.50s\" does not expect an argument\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid command \"%.50s\"\n"
+msgstr "Nevalida komando (provu per \"helpo\")\n"
+
+#, c-format
+msgid "option \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#, c-format
+msgid "command \"%.50s\" is ambiguous\n"
+msgstr ""
+
+#, fuzzy
+msgid "out of core\n"
+msgstr "ne traktita"
+
+#, fuzzy, c-format
+msgid "invalid option \"%.50s\"\n"
+msgstr "nevalida kiraso"
+
+#, c-format
+msgid "you found a bug ... (%s:%d)\n"
+msgstr "vi trovis cimon ... (%s:%d)\n"
+
+#, fuzzy, c-format
+msgid "conversion from '%s' to '%s' not available\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "iconv_open failed: %s\n"
+msgstr "ne povas malfermi %s: %s\n"
+
+#, fuzzy, c-format
+msgid "conversion from '%s' to '%s' failed: %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to create temporary file '%s': %s\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+msgid "error writing to '%s': %s\n"
+msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
+
+#, c-format
+msgid "removing stale lockfile (created by %d)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "waiting for lock (held by %d%s) %s...\n"
+msgstr "skribas sekretan þlosilon al '%s'\n"
+
+msgid "(deadlock?) "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "lock '%s' not made: %s\n"
+msgstr "publika þlosilo %08lX ne trovita: %s\n"
+
+#, fuzzy, c-format
+msgid "waiting for lock %s...\n"
+msgstr "skribas sekretan þlosilon al '%s'\n"
 
 #, c-format
 msgid "armor: %s\n"
@@ -965,6 +1184,13 @@ msgid "not human readable"
 msgstr "ne homlegebla"
 
 #, fuzzy, c-format
+msgid "failed to proxy %s inquiry to client\n"
+msgstr "malsukcesis meti '%s' en fido-datenaron: %s\n"
+
+msgid "Enter passphrase: "
+msgstr "Donu pasfrazon: "
+
+#, fuzzy, c-format
 msgid "OpenPGP card not available: %s\n"
 msgstr "sekreta þlosilo ne havebla"
 
@@ -1040,7 +1266,8 @@ msgstr ""
 msgid "error allocating enough memory: %s\n"
 msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
 msgid "error reading '%s': %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
@@ -1105,7 +1332,7 @@ msgid "Replace existing key? (y/N) "
 msgstr ""
 
 msgid ""
-"NOTE: There is no guarantee that the card supports the requested size.\n"
+"Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
@@ -1142,7 +1369,7 @@ msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr ""
 
 #, fuzzy
-msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: keys are already stored on the card!\n"
 msgstr "ignorita: sekreta þlosilo jam æeestas\n"
 
 msgid "Replace existing keys? (y/N) "
@@ -1151,7 +1378,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
-"   PIN = `%s'     Admin PIN = `%s'\n"
+"   PIN = '%s'     Admin PIN = '%s'\n"
 "You should change them using the command --change-pin\n"
 msgstr ""
 
@@ -1177,21 +1404,9 @@ msgstr "Nevalida elekto.\n"
 msgid "Please select where to store the key:\n"
 msgstr "Kialo por revoko: "
 
-#, fuzzy
-msgid "unknown key protection algorithm\n"
-msgstr "nekonata densig-metodo"
-
-#, fuzzy
-msgid "secret parts of key are not available\n"
-msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
-
-#, fuzzy
-msgid "secret key already stored on a card\n"
-msgstr "ignorita: sekreta þlosilo jam æeestas\n"
-
 #, fuzzy, c-format
-msgid "error writing key to card: %s\n"
-msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
+msgid "KEYTOCARD failed: %s\n"
+msgstr "aktualigo malsukcesis: %s\n"
 
 msgid "quit this menu"
 msgstr "forlasi æi tiun menuon"
@@ -1247,8 +1462,8 @@ msgstr ""
 msgid "unblock the PIN using a Reset Code"
 msgstr ""
 
-msgid "Command> "
-msgstr "Komando> "
+msgid "gpg/card> "
+msgstr ""
 
 #, fuzzy
 msgid "Admin-only command\n"
@@ -1268,7 +1483,8 @@ msgstr "Nevalida komando (provu per \"helpo\")\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output ne funkcias por æi tiu komando\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open `%s'\n"
 msgid "can't open '%s'\n"
 msgstr "ne povas malfermi '%s'\n"
 
@@ -1295,6 +1511,17 @@ msgstr "Æu forviþi æi tiun þlosilon de la þlosilaro? "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Tio estas sekreta þlosilo! Æu vere forviþi øin? "
 
+#, fuzzy, c-format
+msgid "deleting secret %s failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+msgid "key"
+msgstr "þlosilo"
+
+#, fuzzy
+msgid "subkey"
+msgstr "al"
+
 #, c-format
 msgid "deleting keyblock failed: %s\n"
 msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
@@ -1320,24 +1547,20 @@ msgstr ""
 msgid "using cipher %s\n"
 msgstr "subskribado malsukcesis: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' already compressed\n"
 msgid "'%s' already compressed\n"
 msgstr "'%s' jam densigita\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "WARNING: `%s' is an empty file\n"
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
-msgid "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-msgstr "eblas æifri nur per RSA-þlosiloj de maksimume 2048 bitoj kun --pgp2\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
 msgid "reading from '%s'\n"
 msgstr "legas el '%s'\n"
-
-msgid ""
-"unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-msgstr "ne povas uzi la æifron IDEA por æiuj þlosiloj, al kiuj vi æifras.\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -1411,9 +1634,9 @@ msgstr ""
 msgid "unable to read external program response: %s\n"
 msgstr ""
 
-#, c-format
+#, fuzzy, c-format
 msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
-msgstr ""
+msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unable to remove temp directory '%s': %s\n"
@@ -1432,10 +1655,6 @@ msgid "export revocation keys marked as \"sensitive\""
 msgstr ""
 
 #, fuzzy
-msgid "remove the passphrase from exported subkeys"
-msgstr "revoki flankan þlosilon"
-
-#, fuzzy
 msgid "remove unusable parts from key during export"
 msgstr "neuzebla sekreta þlosilo"
 
@@ -1450,10 +1669,6 @@ msgid "exporting secret keys not allowed\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
 #, fuzzy, c-format
-msgid "key %s: not protected - skipped\n"
-msgstr "þlosilo %08lX: ne protektita - ignorita\n"
-
-#, fuzzy, c-format
 msgid "key %s: PGP 2.x style key - skipped\n"
 msgstr "þlosilo %08lX: PGP-2.x-stila þlosilo - ignorita\n"
 
@@ -1461,30 +1676,21 @@ msgstr "þlosilo %08lX: PGP-2.x-stila þlosilo - ignorita\n"
 msgid "key %s: key material on-card - skipped\n"
 msgstr "þlosilo %08lX: revokatestilo en maløusta loko - ignorita\n"
 
-msgid "about to export an unprotected subkey\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "failed to unprotect the subkey: %s\n"
-msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
-
-#, c-format
-msgid "WARNING: secret key %s does not have a simple SK checksum\n"
-msgstr ""
+#, fuzzy
+#| msgid "%s: skipped: %s\n"
+msgid " - skipped"
+msgstr "%s: ignorita: %s\n"
 
 msgid "WARNING: nothing exported\n"
 msgstr "AVERTO: nenio estis eksportita\n"
-
-msgid "too many entries in pk cache - disabled\n"
-msgstr "tro da registroj en pk-staplo - malþaltas\n"
 
 #, fuzzy
 msgid "[User ID not found]"
 msgstr "[Uzantidentigilo ne trovita]"
 
-#, c-format
+#, fuzzy, c-format
 msgid "automatically retrieved '%s' via %s\n"
-msgstr ""
+msgstr "eraro dum kreado de '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "error retrieving '%s' via %s: %s\n"
@@ -1499,16 +1705,8 @@ msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Nevalida þlosilo %08lX validigita per --always-trust\n"
 
 #, fuzzy, c-format
-msgid "no secret subkey for public subkey %s - ignoring\n"
-msgstr "estas sekreta þlosilo por la publika þlosilo \"%s\"!\n"
-
-#, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "uzas flankan þlosilon %08lX anstataý la æefa þlosilo %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -1552,11 +1750,32 @@ msgstr "listigi sekretajn þlosilojn"
 msgid "generate a new key pair"
 msgstr "krei novan þlosilparon"
 
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly generate a new key pair"
+msgstr "krei novan þlosilparon"
+
+msgid "full featured key pair generation"
+msgstr ""
+
+msgid "generate a revocation certificate"
+msgstr "krei revokatestilon"
+
 msgid "remove keys from the public keyring"
 msgstr "forigi þlosilojn de la publika þlosilaro"
 
 msgid "remove keys from the secret keyring"
 msgstr "forigi þlosilojn de la sekreta þlosilaro"
+
+#, fuzzy
+#| msgid "sign a key"
+msgid "quickly sign a key"
+msgstr "subskribi þlosilon"
+
+#, fuzzy
+#| msgid "sign a key locally"
+msgid "quickly sign a key locally"
+msgstr "subskribi þlosilon loke"
 
 msgid "sign a key"
 msgstr "subskribi þlosilon"
@@ -1567,8 +1786,9 @@ msgstr "subskribi þlosilon loke"
 msgid "sign or edit a key"
 msgstr "subskribi aý redakti þlosilon"
 
-msgid "generate a revocation certificate"
-msgstr "krei revokatestilon"
+#, fuzzy
+msgid "change a passphrase"
+msgstr "þanøi la pasfrazon"
 
 msgid "export keys"
 msgstr "eksporti þlosilojn"
@@ -1664,13 +1884,20 @@ msgstr ""
 " --list-keys [nomoj]        montri þlosilojn\n"
 " --fingerprint [nomoj]      montri fingroþpurojn\n"
 
-msgid "Usage: gpg [options] [files] (-h for help)"
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPG@ [options] [files] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
+#, fuzzy
+#| msgid ""
+#| "Syntax: gpg [options] [files]\n"
+#| "sign, check, encrypt or decrypt\n"
+#| "default operation depends on the input data\n"
 msgid ""
-"Syntax: gpg [options] [files]\n"
-"sign, check, encrypt or decrypt\n"
-"default operation depends on the input data\n"
+"Syntax: @GPG@ [options] [files]\n"
+"Sign, check, encrypt or decrypt\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sintakso: gpg [opcioj] [dosieroj]\n"
 "subskribi, kontroli, æifri aý malæifri\n"
@@ -1696,7 +1923,8 @@ msgstr ""
 msgid "Compression: "
 msgstr "Komento: "
 
-msgid "usage: gpg [options] "
+#, fuzzy, c-format
+msgid "usage: %s [options] %s\n"
 msgstr "uzado: gpg [opcioj] "
 
 msgid "conflicting commands\n"
@@ -1736,7 +1964,7 @@ msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1749,7 +1977,7 @@ msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid ""
-"WARNING: unsafe enclosing directory permissions on configuration file `%s'\n"
+"WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr "Averto: malsekuraj permesoj sur %s \"%s\"\n"
 
 #, fuzzy, c-format
@@ -1762,6 +1990,10 @@ msgstr "%s: nova opcio-dosiero kreita\n"
 
 msgid "display photo IDs during key listings"
 msgstr ""
+
+#, fuzzy
+msgid "show key usage information during key listings"
+msgstr "Mankas responda subskribo en sekreta þlosilaro\n"
 
 msgid "show policy URLs during signature listings"
 msgstr ""
@@ -1798,20 +2030,25 @@ msgid "show expiration dates during signature listings"
 msgstr "Mankas responda subskribo en sekreta þlosilaro\n"
 
 #, fuzzy, c-format
-msgid "NOTE: old default options file '%s' ignored\n"
+msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr ""
 
-#, c-format
-msgid "NOTE: %s is not for normal use!\n"
+#, fuzzy, c-format
+#| msgid "NOTE: %s is not for normal use!\n"
+msgid "Note: %s is not for normal use!\n"
 msgstr "NOTO: %s ne estas por normala uzado!\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "%s ne estas valida signaro\n"
+
+#, fuzzy, c-format
+msgid "invalid pinentry mode '%s'\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
 
 #, fuzzy, c-format
 msgid "'%s' is not a valid character set\n"
@@ -1924,21 +2161,12 @@ msgstr "%s ne eblas kun %s!\n"
 msgid "%s makes no sense with %s!\n"
 msgstr "%s ne havas sencon kun %s!\n"
 
+msgid "WARNING: running with faked system time: "
+msgstr ""
+
 #, fuzzy, c-format
 msgid "will not run with insecure memory due to %s\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
-
-msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "eblas fari nur apartajn kaj klartekstajn subskribojn kun --pgp2\n"
-
-msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-msgstr "ne eblas samtempe subskribi kaj æifri kun --pgp2\n"
-
-msgid "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-msgstr "necesas uzi dosierojn (kaj ne tubon) kun --pgp2\n"
-
-msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-msgstr "æifri mesaøon kun --pgp2 postulas la æifron IDEA\n"
 
 msgid "selected cipher algorithm is invalid\n"
 msgstr "elektita æifrad-metodo ne validas\n"
@@ -1972,7 +2200,9 @@ msgstr "nevalida default-check-level; devas esti 0, 1, 2 aý 3\n"
 msgid "invalid min-cert-level; must be 1, 2, or 3\n"
 msgstr "nevalida default-check-level; devas esti 0, 1, 2 aý 3\n"
 
-msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+#, fuzzy
+#| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
+msgid "Note: simple S2K mode (0) is strongly discouraged\n"
 msgstr "NOTO: simpla S2K-reøimo (0) estas forte malrekomendata\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
@@ -2076,6 +2306,10 @@ msgstr "--lsign-key uzantidentigilo"
 msgid "--edit-key user-id [commands]"
 msgstr "--edit-key uzantidentigilo [komandoj]"
 
+#, fuzzy
+msgid "--passwd <user-id>"
+msgstr "--sign-key uzantidentigilo"
+
 #, fuzzy, c-format
 msgid "keyserver send failed: %s\n"
 msgstr "Kreado de þlosiloj malsukcesis: %s\n"
@@ -2104,7 +2338,8 @@ msgstr "elkirasigo malsukcesis: %s\n"
 msgid "enarmoring failed: %s\n"
 msgstr "enkirasigo malsukcesis: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "nevalida kompendi-metodo '%s'\n"
 
@@ -2147,7 +2382,8 @@ msgstr ""
 msgid "No help available"
 msgstr "Nenia helpo disponata"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
 msgid "No help available for '%s'"
 msgstr "Nenia helpo disponata por '%s'"
 
@@ -2158,11 +2394,12 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
-msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
 msgstr "aktualigi la fido-datenaron"
 
-msgid "create a public key when importing a secret key"
-msgstr ""
+#, fuzzy
+msgid "do not update the trustdb after import"
+msgstr "aktualigi la fido-datenaron"
 
 msgid "only accept updates to existing keys"
 msgstr ""
@@ -2275,6 +2512,13 @@ msgid "key %s: no user ID\n"
 msgstr "þlosilo %08lX: mankas uzantidentigilo\n"
 
 #, fuzzy, c-format
+msgid "key %s: %s\n"
+msgstr "ignoris '%s': %s\n"
+
+msgid "rejected by import screener"
+msgstr ""
+
+#, fuzzy, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
 msgstr "þlosilo %08lX: mankas subþlosilo por þlosilbindado\n"
 
@@ -2301,11 +2545,13 @@ msgstr "þlosilo %08lX: nova þlosilo - ignorita\n"
 msgid "no writable keyring found: %s\n"
 msgstr "neniu skribebla þlosilaro trovita: %s\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing to `%s'\n"
 msgid "writing to '%s'\n"
 msgstr "skribas al '%s'\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing keyring `%s': %s\n"
 msgid "error writing keyring '%s': %s\n"
 msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
 
@@ -2370,28 +2616,29 @@ msgid "key %s: \"%s\" not changed\n"
 msgstr "þlosilo %08lX: ne þanøita\n"
 
 #, fuzzy, c-format
-msgid "key %s: secret key with invalid cipher %d - skipped\n"
-msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
+msgid "key %s: secret key imported\n"
+msgstr "þlosilo %08lX: sekreta þlosilo importita\n"
+
+#, fuzzy, c-format
+#| msgid "skipped: secret key already present\n"
+msgid "key %s: secret key already exists\n"
+msgstr "ignorita: sekreta þlosilo jam æeestas\n"
+
+#, fuzzy, c-format
+msgid "key %s: error sending to agent: %s\n"
+msgstr "eraro dum sendo al '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "secret key %s: %s\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
 
 #, fuzzy
 msgid "importing secret keys not allowed\n"
 msgstr "skribas sekretan þlosilon al '%s'\n"
 
-#, c-format
-msgid "no default secret keyring: %s\n"
-msgstr "mankas implicita sekreta þlosilaro: %s\n"
-
 #, fuzzy, c-format
-msgid "key %s: secret key imported\n"
-msgstr "þlosilo %08lX: sekreta þlosilo importita\n"
-
-#, fuzzy, c-format
-msgid "key %s: already in secret keyring\n"
-msgstr "þlosilo %08lX: jam en sekreta þlosilaro\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key not found: %s\n"
-msgstr "þlosilo %08lX: sekreta þlosilo ne trovita: %s\n"
+msgid "key %s: secret key with invalid cipher %d - skipped\n"
+msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2419,12 +2666,16 @@ msgid "key %s: invalid self-signature on user ID \"%s\"\n"
 msgstr "þlosilo %08lX: nevalida mem-subskribo\n"
 
 #, fuzzy, c-format
-msgid "key %s: no subkey for key binding\n"
-msgstr "þlosilo %08lX: mankas subþlosilo por þlosilbindado\n"
-
-#, fuzzy, c-format
 msgid "key %s: unsupported public key algorithm\n"
 msgstr "þlosilo %08lX: nerealigita publikþlosila metodo\n"
+
+#, fuzzy, c-format
+msgid "key %s: invalid direct key signature\n"
+msgstr "þlosilo %08lX: rekta þlosilsubskribo aldonita\n"
+
+#, fuzzy, c-format
+msgid "key %s: no subkey for key binding\n"
+msgstr "þlosilo %08lX: mankas subþlosilo por þlosilbindado\n"
 
 #, fuzzy, c-format
 msgid "key %s: invalid subkey binding\n"
@@ -2494,22 +2745,21 @@ msgstr "þlosilo %08lX: revokatestilo aldonita\n"
 msgid "key %s: direct key signature added\n"
 msgstr "þlosilo %08lX: rekta þlosilsubskribo aldonita\n"
 
-msgid "NOTE: a key's S/N does not match the card's one\n"
-msgstr ""
+#, fuzzy, c-format
+msgid "error creating keybox '%s': %s\n"
+msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
-#, fuzzy
-msgid "NOTE: primary key is online and stored on card\n"
-msgstr "ignorita: sekreta þlosilo jam æeestas\n"
-
-#, fuzzy
-msgid "NOTE: secondary key is online and stored on card\n"
-msgstr "ignorita: sekreta þlosilo jam æeestas\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
 msgid "error creating keyring '%s': %s\n"
 msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
-#, c-format
+#, fuzzy, c-format
+msgid "keybox '%s' created\n"
+msgstr "þlosilaro '%s' kreita\n"
+
+#, fuzzy, c-format
+#| msgid "keyring `%s' created\n"
 msgid "keyring '%s' created\n"
 msgstr "þlosilaro '%s' kreita\n"
 
@@ -2688,16 +2938,6 @@ msgstr "Æi tiu þlosilo eksvalidiøos je %s.\n"
 msgid "Do you want your signature to expire at the same time? (Y/n) "
 msgstr "Æu vi volas, ke via subskribo eksvalidiøu je la sama tempo? (j/n) "
 
-#, fuzzy
-msgid ""
-"You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-"mode.\n"
-msgstr "eblas subskribi nur per PGP-2.x-stilaj þlosiloj kun --pgp2\n"
-
-#, fuzzy
-msgid "This would make the key unusable in PGP 2.x.\n"
-msgstr "æi tiu mesaøo povas ne esti uzebla de PGP 2.x\n"
-
 msgid ""
 "How carefully have you verified the key you are about to sign actually "
 "belongs\n"
@@ -2722,8 +2962,9 @@ msgstr "   (2) Mi malzorge kontrolis.%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Mi tre zorge kontrolis.%s\n"
 
+#, fuzzy
 msgid "Your selection? (enter '?' for more information): "
-msgstr ""
+msgstr " i = bonvolu montri pli da informoj\n"
 
 #, fuzzy, c-format
 msgid ""
@@ -2790,43 +3031,10 @@ msgstr "subskribado malsukcesis: %s\n"
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 
-msgid "This key is not protected.\n"
-msgstr "Æi tiu þlosilo ne estas protektita.\n"
-
-msgid "Secret parts of primary key are not available.\n"
-msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
-
-#, fuzzy
-msgid "Secret parts of primary key are stored on-card.\n"
-msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
-
-msgid "Key is protected.\n"
-msgstr "Þlosilo estas protektita.\n"
-
-#, c-format
-msgid "Can't edit this key: %s\n"
-msgstr "Ne povas redakti æi tiun þlosilon: %s\n"
-
-msgid ""
-"Enter the new passphrase for this secret key.\n"
-"\n"
-msgstr ""
-"Donu la novan pasfrazon por æi tiu sekreta þlosilo.\n"
-"\n"
-
-msgid "passphrase not correctly repeated; try again"
-msgstr "la pasfrazo ne estis øuste ripetita; provu denove"
-
-msgid ""
-"You don't want a passphrase - this is probably a *bad* idea!\n"
-"\n"
-msgstr ""
-"Vi ne deziras pasfrazon - tio verþajne estas *malbona* ideo!\n"
-"\n"
-
-#, fuzzy
-msgid "Do you really want to do this? (y/N) "
-msgstr "Æu vi vere volas fari tion? "
+#, fuzzy, c-format
+#| msgid "error creating passphrase: %s\n"
+msgid "key %s: error changing passphrase: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 msgid "moving a key signature to the correct place\n"
 msgstr "movas þlosilsubskribon al la øusta loko\n"
@@ -2967,10 +3175,6 @@ msgstr ""
 msgid "compact unusable user IDs and remove all signatures from key"
 msgstr ""
 
-#, fuzzy, c-format
-msgid "error reading secret keyblock \"%s\": %s\n"
-msgstr "eraro dum legado de sekreta þlosilbloko '%s': %s\n"
-
 msgid "Secret key is available.\n"
 msgstr "Sekreta þlosilo estas havebla.\n"
 
@@ -2981,9 +3185,9 @@ msgid "Please use the command \"toggle\" first.\n"
 msgstr "Bonvolu uzi la komandon \"toggle\" unue.\n"
 
 msgid ""
-"* The `sign' command may be prefixed with an `l' for local signatures "
+"* The 'sign' command may be prefixed with an 'l' for local signatures "
 "(lsign),\n"
-"  a `t' for trust signatures (tsign), an `nr' for non-revocable signatures\n"
+"  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
 
@@ -3099,12 +3303,25 @@ msgstr "Æu fini sen skribi þanøojn? "
 msgid "update failed: %s\n"
 msgstr "aktualigo malsukcesis: %s\n"
 
-#, c-format
-msgid "update secret failed: %s\n"
-msgstr "aktualigo de sekreto malsukcesis: %s\n"
-
 msgid "Key not changed so no update needed.\n"
 msgstr "Þlosilo ne þanøita, do aktualigo ne necesas.\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not a fingerprint\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "\"%s\" is not the primary fingerprint\n"
+msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#, fuzzy
+#| msgid "No such user ID.\n"
+msgid "No matching user IDs."
+msgstr "Uzantidentigilo ne ekzistas.\n"
+
+#, fuzzy
+msgid "Nothing to sign.\n"
+msgstr "Nenio por subskribi per þlosilo %08lX\n"
 
 msgid "Digest: "
 msgstr ""
@@ -3126,7 +3343,7 @@ msgid "There are no preferences on a PGP 2.x-style user ID.\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "This key was revoked on %s by %s key %s\n"
+msgid "The following key was revoked on %s by %s key %s\n"
 msgstr "Æi tiu þlosilo estas revokebla per %s þlosilo %s%s\n"
 
 #, fuzzy, c-format
@@ -3157,6 +3374,9 @@ msgstr " [eksvalidiøos: %s]"
 msgid "usage: %s"
 msgstr " fido: %c/%c"
 
+msgid "card-no: "
+msgstr ""
+
 #, fuzzy, c-format
 msgid "trust: %s"
 msgstr " fido: %c/%c"
@@ -3167,9 +3387,6 @@ msgstr ""
 
 msgid "This key has been disabled"
 msgstr "Æi tiu þlosilo estas malþaltita"
-
-msgid "card-no: "
-msgstr ""
 
 msgid ""
 "Please note that the shown key validity is not necessarily correct\n"
@@ -3188,6 +3405,14 @@ msgid ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
+
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Vi ne povas þanøi la daton de eksvalidiøo de v3-þlosilo\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3285,9 +3510,6 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
-msgid "Please remove selections from the secret keys.\n"
-msgstr "Bonvolu malelekti la sekretajn þlosilojn.\n"
-
 #, fuzzy
 msgid "Please select at most one subkey.\n"
 msgstr "Bonvolu elekti maksimume unu flankan þlosilon.\n"
@@ -3301,9 +3523,6 @@ msgstr "Þanøas la daton de eksvalidiøo de la æefa þlosilo.\n"
 
 msgid "You can't change the expiration date of a v3 key\n"
 msgstr "Vi ne povas þanøi la daton de eksvalidiøo de v3-þlosilo\n"
-
-msgid "No corresponding signature in secret ring\n"
-msgstr "Mankas responda subskribo en sekreta þlosilaro\n"
 
 #, fuzzy, c-format
 msgid "signing subkey %s is already cross-certified\n"
@@ -3547,6 +3766,39 @@ msgstr "   (%d) RSA (nur æifri)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (nur æifri)\n"
 
+#, fuzzy, c-format
+msgid "   (%d) ECC and ECC\n"
+msgstr "   (%d) DSA kaj ElGamal (implicita elekto)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) DSA (sign only)\n"
+msgid "  (%d) ECC (sign only)\n"
+msgstr "   (%d) DSA (nur subskribi)\n"
+
+#, fuzzy, c-format
+msgid "  (%d) ECC (set your own capabilities)\n"
+msgstr "   (%d) RSA (nur æifri)\n"
+
+#, fuzzy, c-format
+#| msgid "   (%d) RSA (encrypt only)\n"
+msgid "  (%d) ECC (encrypt only)\n"
+msgstr "   (%d) RSA (nur æifri)\n"
+
+#, fuzzy, c-format
+msgid "  (%d) Existing key\n"
+msgstr "   (%d) RSA (nur æifri)\n"
+
+#, fuzzy
+msgid "Enter the keygrip: "
+msgstr "Subskribo-notacio: "
+
+msgid "Not a valid keygrip (expecting 40 hex digits)\n"
+msgstr ""
+
+#, fuzzy
+msgid "No key with this keygrip\n"
+msgstr "Mankas uzantidentigilo kun indekso %d\n"
+
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
 msgstr ""
@@ -3562,6 +3814,16 @@ msgstr "Kiun þlosilgrandon vi deziras? (1024) "
 #, c-format
 msgid "Requested keysize is %u bits\n"
 msgstr "Petita þlosilgrando estas %u bitoj\n"
+
+#, fuzzy, c-format
+#| msgid "rounded up to %u bits\n"
+msgid "rounded to %u bits\n"
+msgstr "rondigita øis %u bitoj\n"
+
+#, fuzzy
+#| msgid "Please select what kind of key you want:\n"
+msgid "Please select which elliptic curve you want:\n"
+msgstr "Bonvolu elekti, kian þlosilon vi deziras:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -3679,7 +3941,8 @@ msgstr "Komento: "
 msgid "Invalid character in comment\n"
 msgstr "Nevalida signo en komento\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "You are using the `%s' character set.\n"
 msgid "You are using the '%s' character set.\n"
 msgstr "Vi uzas la signaron '%s'.\n"
 
@@ -3719,6 +3982,16 @@ msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (F)ini? "
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (B)one/(F)ini? "
 
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
+msgid "Change (N)ame, (E)mail, or (Q)uit? "
+msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (F)ini? "
+
+#, fuzzy
+#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
+msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
+msgstr "Þanøu (N)omon, (K)omenton, (A)adreson, aý (B)one/(F)ini? "
+
 msgid "Please correct the error first\n"
 msgstr "Bonvolu korekti la eraron unue\n"
 
@@ -3734,6 +4007,9 @@ msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
+
+msgid "passphrase not correctly repeated; try again"
+msgstr "la pasfrazo ne estis øuste ripetita; provu denove"
 
 #, c-format
 msgid "%s.\n"
@@ -3761,36 +4037,52 @@ msgstr ""
 "kreado de la primoj; tio donas al la stokastilo pli bonan þancon\n"
 "akiri sufiæe da entropio.\n"
 
+#, c-format
+msgid "Key generation failed: %s\n"
+msgstr "Kreado de þlosiloj malsukcesis: %s\n"
+
+#, c-format
+msgid ""
+"About to create a key for:\n"
+"    \"%s\"\n"
+"\n"
+msgstr ""
+
+msgid "Continue? (Y/n) "
+msgstr ""
+
+#, fuzzy, c-format
+msgid "A key for \"%s\" already exists\n"
+msgstr "'%s' jam densigita\n"
+
+#, fuzzy
+msgid "Create anyway? (y/N) "
+msgstr "Æu tamen uzi æi tiun þlosilon? "
+
+#, fuzzy
+msgid "creating anyway\n"
+msgstr "Æu tamen uzi æi tiun þlosilon? "
+
+#, c-format
+msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
+msgstr ""
+
 msgid "Key generation canceled.\n"
 msgstr "Kreado de þlosiloj nuligita.\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "writing public key to `%s'\n"
 msgid "writing public key to '%s'\n"
 msgstr "skribas publikan þlosilon al '%s'\n"
-
-#, fuzzy, c-format
-msgid "writing secret key stub to '%s'\n"
-msgstr "skribas sekretan þlosilon al '%s'\n"
-
-#, c-format
-msgid "writing secret key to '%s'\n"
-msgstr "skribas sekretan þlosilon al '%s'\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "neniu skribebla publika þlosilaro trovita: %s\n"
 
-#, c-format
-msgid "no writable secret keyring found: %s\n"
-msgstr "neniu skribebla sekreta þlosilaro trovita: %s\n"
-
-#, c-format
+#, fuzzy, c-format
+#| msgid "error writing public keyring `%s': %s\n"
 msgid "error writing public keyring '%s': %s\n"
 msgstr "eraro dum skribado de publika þlosilaro '%s': %s\n"
-
-#, c-format
-msgid "error writing secret keyring '%s': %s\n"
-msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
 msgid "public and secret key created and signed.\n"
 msgstr "publika kaj sekreta þlosiloj kreitaj kaj subskribitaj.\n"
@@ -3802,10 +4094,6 @@ msgid ""
 msgstr ""
 "Notu, ke æi tiu þlosilo ne estas uzebla por æifrado. Vi eble volos\n"
 "uzi la komandon \"--edit-key\" por krei flankan þlosilon por tiu celo.\n"
-
-#, c-format
-msgid "Key generation failed: %s\n"
-msgstr "Kreado de þlosiloj malsukcesis: %s\n"
 
 #, c-format
 msgid ""
@@ -3821,8 +4109,17 @@ msgstr ""
 "þlosilo estis kreita %lu sekundojn en la estonteco (tempotordo aý "
 "horloøeraro)\n"
 
-msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+#, fuzzy
+#| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
+msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgstr "NOTO: krei subþlosilojn por v3-þlosiloj ne estas OpenPGP-kongrue\n"
+
+msgid "Secret parts of primary key are not available.\n"
+msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
+
+#, fuzzy
+msgid "Secret parts of primary key are stored on-card.\n"
+msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
 
 #, fuzzy
 msgid "Really create? (y/N) "
@@ -3837,7 +4134,7 @@ msgid "can't create backup file '%s': %s\n"
 msgstr "ne povas krei '%s': %s\n"
 
 #, fuzzy, c-format
-msgid "NOTE: backup of card key saved to '%s'\n"
+msgid "Note: backup of card key saved to '%s'\n"
 msgstr "NOTO: sekreta þlosilo %08lX eksvalidiøis je %s\n"
 
 msgid "never     "
@@ -3859,6 +4156,10 @@ msgstr "Subskribo-notacio: "
 
 msgid "Signature notation: "
 msgstr "Subskribo-notacio: "
+
+#, c-format
+msgid "Warning: %lu key(s) skipped due to their large size\n"
+msgstr ""
 
 msgid "Keyring"
 msgstr "Þlosilaro"
@@ -3891,20 +4192,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "enkirasigo malsukcesis: %s\n"
-
-msgid "WARNING: 2 files with confidential information exists.\n"
-msgstr "AVERTO: ekzistas 2 dosieroj kun sekretaj informoj.\n"
-
-#, c-format
-msgid "%s is the unchanged one\n"
-msgstr "%s estas la neþanøita\n"
-
-#, c-format
-msgid "%s is the new one\n"
-msgstr "%s estas la nova\n"
-
-msgid "Please fix this possible security flaw\n"
-msgstr "Bonvolu ripari æi tiun eblan sekurecproblemon\n"
 
 #, fuzzy, c-format
 msgid "caching keyring '%s'\n"
@@ -3960,6 +4247,25 @@ msgid "invalid keyserver protocol (us %d!=handler %d)\n"
 msgstr "nevalida þlosilaro"
 
 #, fuzzy, c-format
+msgid "\"%s\" not a key ID: skipping\n"
+msgstr "%s: ne valida þlosilidentigilo\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
+
+#, fuzzy, c-format
+msgid "refreshing 1 key from %s\n"
+msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
+
+#, fuzzy, c-format
+msgid "refreshing %d keys from %s\n"
+msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "neniu þlosilservilo konata (uzu la opcion --keyserver)\n"
+
+#, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
@@ -3976,12 +4282,8 @@ msgid "requesting key %s from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
 #, fuzzy, c-format
-msgid "searching for names from %s server %s\n"
-msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
-
-#, fuzzy, c-format
-msgid "searching for names from %s\n"
-msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
+msgid "skipped \"%s\": %s\n"
+msgstr "ignoris '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
@@ -3994,76 +4296,11 @@ msgstr ""
 "subskribita per via þlosilo %08lX je %s\n"
 
 #, fuzzy, c-format
-msgid "searching for \"%s\" from %s server %s\n"
-msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
-
-#, fuzzy, c-format
-msgid "searching for \"%s\" from %s\n"
-msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
-
-#, fuzzy
-msgid "no keyserver action!\n"
-msgstr "nevalida þlosilaro"
-
-#, c-format
-msgid "WARNING: keyserver handler from a different version of GnuPG (%s)\n"
-msgstr ""
-
-msgid "keyserver did not send VERSION\n"
-msgstr ""
-
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "neniu þlosilservilo konata (uzu la opcion --keyserver)\n"
-
-msgid "external keyserver calls are not supported in this build\n"
-msgstr ""
-
-#, c-format
-msgid "no handler for keyserver scheme '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "action '%s' not supported with keyserver scheme '%s'\n"
-msgstr ""
-
-#, c-format
-msgid "%s does not support handler version %d\n"
-msgstr ""
-
-#, fuzzy
-msgid "keyserver timed out\n"
-msgstr "þlosilservila eraro"
-
-#, fuzzy
-msgid "keyserver internal error\n"
-msgstr "þlosilservila eraro"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "listigo de sekretaj þlosiloj malsukcesis: %s\n"
-
-#, fuzzy, c-format
-msgid "\"%s\" not a key ID: skipping\n"
-msgstr "%s: ne valida þlosilidentigilo\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "refreshing 1 key from %s\n"
-msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
-
-#, fuzzy, c-format
-msgid "refreshing %d keys from %s\n"
+msgid "requesting key from '%s'\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
 
 #, fuzzy, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
-msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
-
-#, fuzzy, c-format
-msgid "WARNING: unable to parse URI %s\n"
 msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, c-format
@@ -4135,7 +4372,9 @@ msgstr ""
 msgid "decryption failed: %s\n"
 msgstr "malæifrado malsukcesis: %s\n"
 
-msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+#, fuzzy
+#| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
+msgid "Note: sender requested \"for-your-eyes-only\"\n"
 msgstr "NOTO: sendinto petis konfidencon (\"for-your-eyes-only\")\n"
 
 #, c-format
@@ -4150,6 +4389,18 @@ msgstr "memstara revoko - uzu \"gpg --import\" por apliki øin\n"
 
 #, fuzzy
 msgid "no signature found\n"
+msgstr "Bona subskribo de \""
+
+#, fuzzy, c-format
+msgid "BAD signature from \"%s\""
+msgstr "MALBONA subskribo de \""
+
+#, fuzzy, c-format
+msgid "Expired signature from \"%s\""
+msgstr "Eksvalidiøinta subskribo de \""
+
+#, fuzzy, c-format
+msgid "Good signature from \"%s\""
 msgstr "Bona subskribo de \""
 
 msgid "signature verification suppressed\n"
@@ -4175,18 +4426,6 @@ msgstr "Subskribo farita je %.*s per %s, þlosilo %08lX\n"
 msgid "Key available at: "
 msgstr "Nenia helpo disponata"
 
-#, fuzzy, c-format
-msgid "BAD signature from \"%s\""
-msgstr "MALBONA subskribo de \""
-
-#, fuzzy, c-format
-msgid "Expired signature from \"%s\""
-msgstr "Eksvalidiøinta subskribo de \""
-
-#, fuzzy, c-format
-msgid "Good signature from \"%s\""
-msgstr "Bona subskribo de \""
-
 msgid "[uncertain]"
 msgstr "[malcerta]"
 
@@ -4203,7 +4442,7 @@ msgid "Signature expires %s\n"
 msgstr "Æi tiu þlosilo eksvalidiøos je %s.\n"
 
 #, fuzzy, c-format
-msgid "%s signature, digest algorithm %s\n"
+msgid "%s signature, digest algorithm %s%s%s\n"
 msgstr "%s-subskribo de: %s\n"
 
 #, fuzzy
@@ -4216,6 +4455,15 @@ msgstr ""
 #, fuzzy
 msgid "unknown"
 msgstr "nekonata versio"
+
+#, fuzzy
+#| msgid "unknown pubkey algorithm"
+msgid ", key algorithm "
+msgstr "nekonata publikþlosila metodo"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4234,9 +4482,6 @@ msgstr "memstara subskribo de klaso 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "malnovstila subskribo (PGP 2.x)\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "nevalida radikpaketo trovita en proc_tree()\n"
 
 #, fuzzy, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -4266,12 +4511,9 @@ msgstr "%s-subskribo de: %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 
-msgid "the IDEA cipher plugin is not present\n"
-msgstr "la aldona¼o por la æifro IDEA en æeestas\n"
-
 #, fuzzy, c-format
-msgid "please see %s for more information\n"
-msgstr " i = bonvolu montri pli da informoj\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s-subskribo de: %s\n"
 
 #, fuzzy, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4294,7 +4536,16 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "AVERTO: '%s' estas malplena dosiero\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "AVERTO: '%s' estas malplena dosiero\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
 #, fuzzy
@@ -4318,7 +4569,11 @@ msgstr "legas opciojn el '%s'\n"
 msgid "unknown option '%s'\n"
 msgstr "nekonata implicita ricevonto '%s'\n"
 
-#, c-format
+msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "File `%s' exists. "
 msgid "File '%s' exists. "
 msgstr "Dosiero '%s' ekzistas. "
 
@@ -4336,7 +4591,8 @@ msgstr "Donu novan dosiernomon"
 msgid "writing to stdout\n"
 msgstr "skribas al la normala eligo\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "supozas subskribitajn datenojn en '%s'\n"
 
@@ -4358,6 +4614,10 @@ msgstr ""
 #, c-format
 msgid "subpacket of type %d has critical bit set\n"
 msgstr "subpaketo de speco %d havas þaltitan \"critical bit\"\n"
+
+#, fuzzy, c-format
+msgid "problem with the agent: %s\n"
+msgstr "problemo kun agento: agento redonas 0x%lx\n"
 
 #, fuzzy, c-format
 msgid " (main key ID %s)"
@@ -4382,10 +4642,6 @@ msgid "cancelled by user\n"
 msgstr "nuligita de uzanto\n"
 
 #, fuzzy, c-format
-msgid "problem with the agent: %s\n"
-msgstr "problemo kun agento: agento redonas 0x%lx\n"
-
-#, fuzzy, c-format
 msgid ""
 "You need a passphrase to unlock the secret key for\n"
 "user: \"%s\"\n"
@@ -4401,6 +4657,39 @@ msgstr "%u-bita %s-þlosilo, %08lX, kreita je %s"
 #, c-format
 msgid "         (subkey on main key ID %s)"
 msgstr ""
+
+#, fuzzy
+msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
+msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to import the OpenPGP secret key:"
+msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
+msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
+
+#, fuzzy
+msgid "Please enter the passphrase to export the OpenPGP secret key:"
+msgstr "Bonvolu doni la pasfrazon; tio estas sekreta frazo \n"
+
+#, fuzzy
+msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
+msgstr "Æu vi vere volas forviþi la elektitajn þlosilojn? "
+
+#, fuzzy
+msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgstr "Æu vi vere volas forviþi la elektitajn þlosilojn? "
+
+#, fuzzy, c-format
+msgid ""
+"%s\n"
+"\"%.*s\"\n"
+"%u-bit %s key, ID %s,\n"
+"created %s%s.\n"
+"%s"
+msgstr "%u-bita %s-þlosilo, %08lX, kreita je %s"
 
 msgid ""
 "\n"
@@ -4460,6 +4749,16 @@ msgstr "Kialo por revoko: "
 msgid "revocation comment: "
 msgstr "Komento pri revoko: "
 
+#. TRANSLATORS: These are the allowed answers in lower and
+#. uppercase.  Below you will find the matching strings which
+#. should be translated accordingly and the letter changed to
+#. match the one in the answer string.
+#.
+#. i = please show me more information
+#. m = back to the main menu
+#. s = skip this key
+#. q = quit
+#.
 msgid "iImMqQsS"
 msgstr "iImMfFsS"
 
@@ -4618,6 +4917,10 @@ msgid "%s: skipped: %s\n"
 msgstr "%s: ignorita: %s\n"
 
 #, c-format
+msgid "%s: skipped: public key is disabled\n"
+msgstr "%s: ignorita: publika þlosilo estas malþaltita\n"
+
+#, c-format
 msgid "%s: skipped: public key already present\n"
 msgstr "%s: ignorita: publika þlosilo jam æeestas\n"
 
@@ -4650,10 +4953,6 @@ msgstr "ignorita: publika þlosilo jam agordita\n"
 msgid "unknown default recipient \"%s\"\n"
 msgstr "nekonata implicita ricevonto '%s'\n"
 
-#, c-format
-msgid "%s: skipped: public key is disabled\n"
-msgstr "%s: ignorita: publika þlosilo estas malþaltita\n"
-
 msgid "no valid addressees\n"
 msgstr "mankas validaj adresitoj\n"
 
@@ -4668,6 +4967,11 @@ msgstr "þlosilo %08lX: mankas uzantidentigilo\n"
 msgid "data not saved; use option \"--output\" to save it\n"
 msgstr "datenoj ne savitaj; uzu la opcion \"--output\" por savi ilin\n"
 
+#, fuzzy, c-format
+#| msgid "error creating `%s': %s\n"
+msgid "error creating '%s': %s\n"
+msgstr "eraro dum kreado de '%s': %s\n"
+
 msgid "Detached signature.\n"
 msgstr "Aparta subskribo.\n"
 
@@ -4680,7 +4984,8 @@ msgstr "legas la normalan enigon ...\n"
 msgid "no signed data\n"
 msgstr "mankas subskribitaj datenoj\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "can't open signed data `%s'\n"
 msgid "can't open signed data '%s'\n"
 msgstr "ne povas malfermi subskribitan dosieron '%s'\n"
 
@@ -4707,11 +5012,11 @@ msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 
 #, fuzzy, c-format
-msgid "NOTE: secret key %s expired at %s\n"
+msgid "Note: secret key %s expired at %s\n"
 msgstr "NOTO: sekreta þlosilo %08lX eksvalidiøis je %s\n"
 
 #, fuzzy
-msgid "NOTE: key has been revoked"
+msgid "Note: key has been revoked"
 msgstr "þlosilo %08lX: þlosilo estas revokita!\n"
 
 #, fuzzy, c-format
@@ -4747,28 +5052,30 @@ msgstr "þlosilo %08lX: revokatestilo aldonita\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr ""
 
+#, fuzzy
+msgid "This is a revocation certificate for the OpenPGP key:"
+msgstr "Æu krei revokatestilon por æi tiu subskribo? (j/N)"
+
+msgid ""
+"Use it to revoke this key in case of a compromise or loss of\n"
+"the secret key.  However, if the secret key is still accessible,\n"
+"it is better to generate a new revocation certificate and give\n"
+"a reason for the revocation."
+msgstr ""
+
+msgid ""
+"To avoid an accidental use of this file, a colon has been inserted\n"
+"before the 5 dashes below.  Remove this colon with a text editor\n"
+"before making use of this revocation certificate."
+msgstr ""
+
 #, fuzzy, c-format
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
-#, fuzzy, c-format
-msgid "no corresponding public key: %s\n"
-msgstr "skribas publikan þlosilon al '%s'\n"
-
-msgid "public key does not match secret key!\n"
-msgstr ""
-
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Æu krei revokatestilon por æi tiu subskribo? (j/N)"
-
-#, fuzzy
-msgid "unknown protection algorithm\n"
-msgstr "nekonata densig-metodo"
-
-#, fuzzy
-msgid "NOTE: This key is not protected!\n"
-msgstr "Æi tiu þlosilo ne estas protektita.\n"
 
 msgid ""
 "Revocation certificate created.\n"
@@ -4808,31 +5115,6 @@ msgstr ""
 msgid "Is this okay? (y/N) "
 msgstr "Æu tamen uzi æi tiun þlosilon? "
 
-msgid "secret key parts are not available\n"
-msgstr "sekretaj þlosilpartoj ne estas disponataj\n"
-
-#, c-format
-msgid "protection algorithm %d%s is not supported\n"
-msgstr "protekto-metodo %d%s ne estas realigita\n"
-
-#, fuzzy, c-format
-msgid "protection digest %d is not supported\n"
-msgstr "protekto-metodo %d%s ne estas realigita\n"
-
-msgid "Invalid passphrase; please try again"
-msgstr "Nevalida pasfrazo; bonvolu provi denove"
-
-#, c-format
-msgid "%s ...\n"
-msgstr "%s ...\n"
-
-msgid "WARNING: Weak key detected - please change passphrase again.\n"
-msgstr ""
-"AVERTO: Malforta þlosilo trovita - bonvolu þanøi la pasfrazon denove.\n"
-
-msgid "generating the deprecated 16-bit checksum for secret key protection\n"
-msgstr ""
-
 msgid "weak key created - retrying\n"
 msgstr "malforta þlosilo kreita - provas denove\n"
 
@@ -4841,15 +5123,12 @@ msgid "cannot avoid weak key for symmetric cipher; tried %d times!\n"
 msgstr ""
 "ne povas eviti malfortajn þlosilojn por simetria æifro; provis %d fojojn!\n"
 
-msgid "DSA requires the hash length to be a multiple of 8 bits\n"
+#, c-format
+msgid "%s key %s uses an unsafe (%zu bit) hash\n"
 msgstr ""
 
 #, c-format
-msgid "DSA key %s uses an unsafe (%u bit) hash\n"
-msgstr ""
-
-#, c-format
-msgid "DSA key %s requires a %u bit or larger hash\n"
+msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
 msgstr ""
 
 msgid "WARNING: signature digest conflict in message\n"
@@ -4858,6 +5137,10 @@ msgstr ""
 #, c-format
 msgid "WARNING: signing subkey %s is not cross-certified\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "please see %s for more information\n"
+msgstr " i = bonvolu montri pli da informoj\n"
 
 #, c-format
 msgid "WARNING: signing subkey %s has an invalid cross-certification\n"
@@ -4886,11 +5169,11 @@ msgstr ""
 "horloøeraro)\n"
 
 #, fuzzy, c-format
-msgid "NOTE: signature key %s expired %s\n"
+msgid "Note: signature key %s expired %s\n"
 msgstr "NOTO: subskribo-þlosilo %08lX eksvalidiøis je %s\n"
 
 #, fuzzy, c-format
-msgid "NOTE: signature key %s has been revoked\n"
+msgid "Note: signature key %s has been revoked\n"
 msgstr "þlosilo %08lX: þlosilo estas revokita!\n"
 
 #, fuzzy, c-format
@@ -4934,10 +5217,6 @@ msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s-subskribo de: %s\n"
 
-#, fuzzy
-msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr "eblas subskribi nur per PGP-2.x-stilaj þlosiloj kun --pgp2\n"
-
 #, fuzzy, c-format
 msgid ""
 "WARNING: forcing digest algorithm %s (%d) violates recipient preferences\n"
@@ -4945,10 +5224,6 @@ msgstr "NOTO: æifrad-metodo %d ne trovita en preferoj\n"
 
 msgid "signing:"
 msgstr "subskribas:"
-
-msgid "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr ""
-"eblas klartekste subskribi nur per PGP-2.x-stilaj þlosiloj kun --pgp2\n"
 
 #, c-format
 msgid "%s encryption will be used\n"
@@ -4962,10 +5237,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "skipped \"%s\": duplicated\n"
 msgstr "ignoris '%s': ripetita\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "ignoris '%s': %s\n"
 
 msgid "skipped: secret key already present\n"
 msgstr "ignorita: sekreta þlosilo jam æeestas\n"
@@ -5056,8 +5327,9 @@ msgstr "%s: nevalida fido-datenaro kreita\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: fido-datenaro kreita\n"
 
-msgid "NOTE: trustdb not writable\n"
-msgstr ""
+#, fuzzy
+msgid "Note: trustdb not writable\n"
+msgstr "sekretaj þlosilpartoj ne estas disponataj\n"
 
 #, c-format
 msgid "%s: invalid trustdb\n"
@@ -5127,7 +5399,8 @@ msgstr "ne povas trakti tekstliniojn pli longajn ol %d signojn\n"
 msgid "input line longer than %d characters\n"
 msgstr "enigata linio pli longa ol %d signojn\n"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "`%s' is not a valid long keyID\n"
 msgid "'%s' is not a valid long keyID\n"
 msgstr "'%s' ne estas valida longa þlosilidentigilo\n"
 
@@ -5167,48 +5440,6 @@ msgstr ""
 
 #, c-format
 msgid "using %s trust model\n"
-msgstr ""
-
-msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-msgstr ""
-
-#, fuzzy
-msgid "[ revoked]"
-msgstr "rev"
-
-#, fuzzy
-msgid "[ expired]"
-msgstr "eksval"
-
-#, fuzzy
-msgid "[ unknown]"
-msgstr "nekonata versio"
-
-msgid "[  undef ]"
-msgstr ""
-
-msgid "[marginal]"
-msgstr ""
-
-msgid "[  full  ]"
-msgstr ""
-
-msgid "[ultimate]"
-msgstr ""
-
-msgid "undefined"
-msgstr ""
-
-msgid "never"
-msgstr ""
-
-msgid "marginal"
-msgstr ""
-
-msgid "full"
-msgstr ""
-
-msgid "ultimate"
 msgstr ""
 
 msgid "no need for a trustdb check\n"
@@ -5278,116 +5509,6 @@ msgstr "enigata linio %u tro longa, aý mankas linifino\n"
 msgid "can't open fd %d: %s\n"
 msgstr "ne povas malfermi '%s': %s\n"
 
-#, fuzzy
-msgid "argument not expected"
-msgstr "skribas sekretan þlosilon al '%s'\n"
-
-#, fuzzy
-msgid "read error"
-msgstr "legeraro æe dosiero"
-
-#, fuzzy
-msgid "keyword too long"
-msgstr "pasfrazo estas tro longa\n"
-
-#, fuzzy
-msgid "missing argument"
-msgstr "nevalida argumento"
-
-#, fuzzy
-msgid "invalid command"
-msgstr "malkongruaj komandoj\n"
-
-#, fuzzy
-msgid "invalid alias definition"
-msgstr "nevalida kiraso"
-
-#, fuzzy
-msgid "out of core"
-msgstr "ne traktita"
-
-#, fuzzy
-msgid "invalid option"
-msgstr "nevalida kiraso"
-
-#, c-format
-msgid "missing argument for option \"%.50s\"\n"
-msgstr ""
-
-#, c-format
-msgid "option \"%.50s\" does not expect an argument\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "invalid command \"%.50s\"\n"
-msgstr "Nevalida komando (provu per \"helpo\")\n"
-
-#, c-format
-msgid "option \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, c-format
-msgid "command \"%.50s\" is ambiguous\n"
-msgstr ""
-
-#, fuzzy
-msgid "out of core\n"
-msgstr "ne traktita"
-
-#, fuzzy, c-format
-msgid "invalid option \"%.50s\"\n"
-msgstr "nevalida kiraso"
-
-#, c-format
-msgid "you found a bug ... (%s:%d)\n"
-msgstr "vi trovis cimon ... (%s:%d)\n"
-
-#, fuzzy, c-format
-msgid "error loading '%s': %s\n"
-msgstr "eraro dum legado de '%s': %s\n"
-
-#, c-format
-msgid "conversion from '%s' to '%s' not available\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "iconv_open failed: %s\n"
-msgstr "ne povas malfermi %s: %s\n"
-
-#, fuzzy, c-format
-msgid "conversion from '%s' to '%s' failed: %s\n"
-msgstr "enkirasigo malsukcesis: %s\n"
-
-#, fuzzy, c-format
-msgid "failed to create temporary file '%s': %s\n"
-msgstr "%s: ne povas krei dosierujon: %s\n"
-
-#, fuzzy, c-format
-msgid "error writing to '%s': %s\n"
-msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
-
-#, c-format
-msgid "removing stale lockfile (created by %d)\n"
-msgstr ""
-
-msgid " - probably dead - removing lock"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "waiting for lock (held by %d%s) %s...\n"
-msgstr "skribas sekretan þlosilon al '%s'\n"
-
-msgid "(deadlock?) "
-msgstr ""
-
-#, fuzzy, c-format
-msgid "lock '%s' not made: %s\n"
-msgstr "publika þlosilo %08lX ne trovita: %s\n"
-
-#, fuzzy, c-format
-msgid "waiting for lock %s...\n"
-msgstr "skribas sekretan þlosilon al '%s'\n"
-
 msgid "set debugging flags"
 msgstr ""
 
@@ -5398,10 +5519,11 @@ msgstr ""
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
+#, fuzzy
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
-"list, export, import Keybox data\n"
-msgstr ""
+"List, export, import Keybox data\n"
+msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 #, c-format
 msgid "RSA modulus missing or not of size %d bits\n"
@@ -5475,6 +5597,9 @@ msgstr ""
 msgid "response does not contain the RSA public exponent\n"
 msgstr ""
 
+msgid "response does not contain the EC public point\n"
+msgstr ""
+
 #, c-format
 msgid "using default PIN as %s\n"
 msgstr ""
@@ -5530,6 +5655,9 @@ msgstr "Kialo por revoko: "
 msgid "Reset Code is too short; minimum length is %d\n"
 msgstr ""
 
+#. TRANSLATORS: Do not translate the "|*|" prefixes but
+#. keep it at the start of the string.  We need this elsewhere
+#. to get some infos on the string.
 msgid "|RN|New Reset Code"
 msgstr ""
 
@@ -5538,6 +5666,14 @@ msgstr ""
 
 msgid "|N|New PIN"
 msgstr ""
+
+#, fuzzy
+msgid "||Please enter the Admin PIN and New Admin PIN"
+msgstr "þanøi la pasfrazon"
+
+#, fuzzy
+msgid "||Please enter the PIN and New PIN"
+msgstr "þanøi la pasfrazon"
 
 #, fuzzy
 msgid "error reading application data\n"
@@ -5606,8 +5742,9 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "validaj OpenPGP-datenoj ne trovitaj.\n"
 
-msgid "||Please enter your PIN at the reader's keypad"
-msgstr ""
+#, fuzzy
+msgid "||Please enter your PIN at the reader's pinpad"
+msgstr "þanøi la pasfrazon"
 
 #. TRANSLATORS: Do not translate the "|*|" prefixes but
 #. keep it at the start of the string.  We need this elsewhere
@@ -5644,20 +5781,23 @@ msgstr "tute ne uzi la terminalon"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr ""
 
-msgid "do not use a reader's keypad"
+msgid "do not use a reader's pinpad"
 msgstr ""
 
 #, fuzzy
 msgid "deny the use of admin card commands"
 msgstr "malkongruaj komandoj\n"
 
+msgid "use variable length input for pinpad"
+msgstr ""
+
 #, fuzzy
-msgid "Usage: scdaemon [options] (-h for help)"
+msgid "Usage: @SCDAEMON@ [options] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
-"Smartcard daemon for GnuPG\n"
+"Smartcard daemon for @GNUPG@\n"
 msgstr ""
 
 msgid "please use the option '--daemon' to run the program in the background\n"
@@ -5674,25 +5814,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "nevalida signo %02x en bazo 64 ignorita\n"
-
-#, fuzzy, c-format
-msgid "failed to proxy %s inquiry to client\n"
-msgstr "malsukcesis meti '%s' en fido-datenaron: %s\n"
-
-#, c-format
-msgid "no running dirmngr - starting '%s'\n"
-msgstr ""
-
-#, fuzzy
-msgid "malformed DIRMNGR_INFO environment variable\n"
-msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "protokolversio %d de gpg-agent ne estas uzebla\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -5719,8 +5840,9 @@ msgstr ""
 msgid "failed to open '%s': %s\n"
 msgstr "ne povas malfermi '%s': %s\n"
 
-msgid "note: non-critical certificate policy not allowed"
-msgstr ""
+#, fuzzy
+msgid "Note: non-critical certificate policy not allowed"
+msgstr "skribas sekretan þlosilon al '%s'\n"
 
 #, fuzzy
 msgid "certificate policy not allowed"
@@ -5745,7 +5867,7 @@ msgid "dirmngr cache-only key lookup failed: %s\n"
 msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
 
 #, fuzzy
-msgid "failed to allocated keyDB handle\n"
+msgid "failed to allocate keyDB handle\n"
 msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
 
 #, fuzzy
@@ -5899,10 +6021,6 @@ msgid "validation model used: %s"
 msgstr ""
 
 #, c-format
-msgid "%s key uses an unsafe (%u bit) hash\n"
-msgstr ""
-
-#, c-format
 msgid "a %u bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
@@ -5946,16 +6064,16 @@ msgstr ""
 msgid "error getting key usage information: %s\n"
 msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
-msgid "certificate should have not been used for certification\n"
+msgid "certificate should not have been used for certification\n"
 msgstr ""
 
-msgid "certificate should have not been used for OCSP response signing\n"
+msgid "certificate should not have been used for OCSP response signing\n"
 msgstr ""
 
-msgid "certificate should have not been used for encryption\n"
+msgid "certificate should not have been used for encryption\n"
 msgstr ""
 
-msgid "certificate should have not been used for signing\n"
+msgid "certificate should not have been used for signing\n"
 msgstr ""
 
 msgid "certificate is not usable for encryption\n"
@@ -5976,17 +6094,53 @@ msgstr ""
 msgid "line %d: no subject name given\n"
 msgstr ""
 
-#, c-format
+#, fuzzy, c-format
 msgid "line %d: invalid subject name label '%.*s'\n"
-msgstr ""
+msgstr "nevalida kompendi-metodo '%s'\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "line %d: invalid subject name '%s' at pos %d\n"
-msgstr ""
+msgstr "nevalida kompendi-metodo '%s'\n"
 
 #, fuzzy, c-format
 msgid "line %d: not a valid email address\n"
 msgstr "Nevalida retadreso\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid serial number\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, c-format
+msgid "line %d: invalid issuer name label '%.*s'\n"
+msgstr ""
+
+#, c-format
+msgid "line %d: invalid issuer name '%s' at pos %d\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "line %d: invalid date given\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, fuzzy, c-format
+msgid "line %d: error getting signing key by keygrip '%s': %s\n"
+msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid hash algorithm given\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid authority-key-id\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid subject-key-id\n"
+msgstr "þlosilo %08lX: nevalida subþlosila bindado\n"
+
+#, fuzzy, c-format
+msgid "line %d: invalid extension syntax\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
 
 #, fuzzy, c-format
 msgid "line %d: error reading key '%s' from card: %s\n"
@@ -6016,17 +6170,6 @@ msgstr "   (%d) RSA (nur æifri)\n"
 #, c-format
 msgid "   (%d) Existing key from card\n"
 msgstr ""
-
-#, fuzzy
-msgid "Enter the keygrip: "
-msgstr "Subskribo-notacio: "
-
-msgid "Not a valid keygrip (expecting 40 hex digits)\n"
-msgstr ""
-
-#, fuzzy
-msgid "No key with this keygrip\n"
-msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
 #, fuzzy, c-format
 msgid "error reading the card: %s\n"
@@ -6062,9 +6205,9 @@ msgstr ""
 msgid "No subject name given\n"
 msgstr ""
 
-#, c-format
+#, fuzzy, c-format
 msgid "Invalid subject name label '%.*s'\n"
-msgstr ""
+msgstr "nevalida kompendi-metodo '%s'\n"
 
 #. TRANSLATORS: The 22 in the second string is the
 #. length of the first string up to the "%s".  Please
@@ -6102,10 +6245,24 @@ msgstr ""
 msgid "Enter URIs"
 msgstr "Donu la uzantidentigilon: "
 
-msgid "Parameters to be used for the certificate request:\n"
+#, fuzzy
+msgid "Create self-signed certificate? (y/N) "
+msgstr "Æu krei revokatestilon por æi tiu subskribo? (j/N)"
+
+msgid "These parameters are used:\n"
 msgstr ""
 
-msgid "Now creating certificate request.  This may take a while ...\n"
+msgid "Now creating self-signed certificate.  "
+msgstr ""
+
+#, fuzzy
+msgid "Now creating certificate request.  "
+msgstr "þlosilo %08lX: revokatestilo aldonita\n"
+
+msgid "This may take a while ...\n"
+msgstr ""
+
+msgid "Ready.\n"
 msgstr ""
 
 msgid "Ready.  You should now send this request to your CA.\n"
@@ -6170,10 +6327,6 @@ msgid "invoke gpg-protect-tool"
 msgstr ""
 
 #, fuzzy
-msgid "change a passphrase"
-msgstr "þanøi la pasfrazon"
-
-#, fuzzy
 msgid "create base-64 encoded output"
 msgstr "krei eligon en askia kiraso"
 
@@ -6184,9 +6337,6 @@ msgid "assume input is in base-64 format"
 msgstr ""
 
 msgid "assume input is in binary format"
-msgstr ""
-
-msgid "use system's dirmngr if available"
 msgstr ""
 
 msgid "never consult a CRL"
@@ -6245,25 +6395,22 @@ msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NOMO|uzi kompendi-metodon NOMO"
 
 #, fuzzy
-msgid "Usage: gpgsm [options] [files] (-h for help)"
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 #, fuzzy
 msgid ""
-"Syntax: gpgsm [options] [files]\n"
-"sign, check, encrypt or decrypt using the S/MIME protocol\n"
-"default operation depends on the input data\n"
+"Syntax: @GPGSM@ [options] [files]\n"
+"Sign, check, encrypt or decrypt using the S/MIME protocol\n"
+"Default operation depends on the input data\n"
 msgstr ""
 "Sintakso: gpg [opcioj] [dosieroj]\n"
 "subskribi, kontroli, æifri aý malæifri\n"
 "implicita operacio dependas de la enigataj datenoj\n"
 
-#, fuzzy
-msgid "usage: gpgsm [options] "
-msgstr "uzado: gpg [opcioj] "
-
 #, fuzzy, c-format
-msgid "NOTE: won't be able to encrypt to '%s': %s\n"
+msgid "Note: won't be able to encrypt to '%s': %s\n"
 msgstr "ne povas konektiøi al '%s': %s\n"
 
 #, fuzzy, c-format
@@ -6285,9 +6432,6 @@ msgstr " s = supersalti æi tiun þlosilon\n"
 #, fuzzy
 msgid "could not parse keyserver\n"
 msgstr "ne povis analizi URI de þlosilservilo\n"
-
-msgid "WARNING: running with faked system time: "
-msgstr ""
 
 #, fuzzy, c-format
 msgid "importing common certificates '%s'\n"
@@ -6311,10 +6455,6 @@ msgstr "Bona atestilo"
 msgid "basic certificate checks failed - not imported\n"
 msgstr ""
 
-#, fuzzy
-msgid "failed to allocate keyDB handle\n"
-msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
-
 #, fuzzy, c-format
 msgid "error getting stored flags: %s\n"
 msgstr "eraro dum kreado de pasfrazo: %s\n"
@@ -6326,17 +6466,6 @@ msgstr "eraro dum kreado de pasfrazo: %s\n"
 #, fuzzy, c-format
 msgid "error reading input: %s\n"
 msgstr "eraro dum legado de '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "error creating keybox '%s': %s\n"
-msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
-
-msgid "you may want to start the gpg-agent first\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "keybox '%s' created\n"
-msgstr "þlosilaro '%s' kreita\n"
 
 #, fuzzy
 msgid "failed to get the fingerprint\n"
@@ -6372,9 +6501,9 @@ msgstr ""
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "%s: nevalida dosiero-versio %d\n"
 
-#, c-format
+#, fuzzy, c-format
 msgid "invalid country code in '%s', line %d\n"
-msgstr ""
+msgstr "%s: nevalida dosiero-versio %d\n"
 
 #, c-format
 msgid ""
@@ -6437,6 +6566,1249 @@ msgstr "            alinome \""
 msgid "This is a qualified signature\n"
 msgstr "tio povas esti kaýzata de mankanta mem-subskribo\n"
 
+#, fuzzy, c-format
+msgid "can't initialize certificate cache lock: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+#, c-format
+msgid "can't acquire read lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't acquire write lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "can't release lock on the certificate cache: %s\n"
+msgstr ""
+
+#, c-format
+msgid "dropping %u certificates from the cache\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "can't access directory '%s': %s\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't create `%s': %s\n"
+msgid "can't parse certificate '%s': %s\n"
+msgstr "ne povas krei '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "certificate '%s' already cached\n"
+msgstr "ripetita atestilo - forviþita"
+
+#, fuzzy, c-format
+msgid "trusted certificate '%s' loaded\n"
+msgstr "ripetita atestilo - forviþita"
+
+#, fuzzy, c-format
+msgid "certificate '%s' loaded\n"
+msgstr "ripetita atestilo - forviþita"
+
+#, fuzzy, c-format
+msgid "  SHA1 fingerprint = %s\n"
+msgstr "Fingrospuro:"
+
+msgid "   issuer ="
+msgstr ""
+
+msgid "  subject ="
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error loading certificate '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "permanently loaded certificates: %u\n"
+msgstr "Nevalida atestilo"
+
+#, fuzzy, c-format
+msgid "    runtime cached certificates: %u\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy
+msgid "certificate already cached\n"
+msgstr "þlosilo %08lX: revokatestilo aldonita\n"
+
+#, fuzzy
+msgid "certificate cached\n"
+msgstr "Valida atestilrevoko"
+
+#, fuzzy, c-format
+msgid "error caching certificate: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "invalid SHA1 fingerprint string '%s'\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "error fetching certificate by S/N: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "error fetching certificate by subject: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy
+msgid "no issuer found in certificate\n"
+msgstr "Bona atestilo"
+
+#, fuzzy, c-format
+msgid "error getting authorityKeyIdentifier: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "creating directory '%s'\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+msgid "error creating directory '%s': %s\n"
+msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "ignoring database dir '%s'\n"
+msgstr "eraro en vostolinio\n"
+
+#, fuzzy, c-format
+msgid "error reading directory '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "removing cache file '%s'\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy, c-format
+#| msgid "enarmoring failed: %s\n"
+msgid "not removing file '%s'\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "error closing cache file: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to open cache dir file '%s': %s\n"
+msgstr "ne povas malfermi '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error creating new cache dir file '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing new cache dir file '%s': %s\n"
+msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error closing new cache dir file '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "new cache dir file '%s' created\n"
+msgstr "%s: nova opcio-dosiero kreita\n"
+
+#, fuzzy, c-format
+msgid "failed to re-open cache dir file '%s': %s\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, c-format
+msgid "first record of '%s' is not the version\n"
+msgstr ""
+
+msgid "old version of cache directory - cleaning up\n"
+msgstr ""
+
+msgid "old version of cache directory - giving up\n"
+msgstr ""
+
+#, c-format
+msgid "extra field detected in crl record of '%s' line %u\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid line detected in '%s' line %u\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "duplicate entry detected in '%s' line %u\n"
+msgstr "ripetita atestilo - forviþita"
+
+#, c-format
+msgid "unsupported record type in '%s' line %u skipped\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid issuer hash in '%s' line %u\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "no issuer DN in '%s' line %u\n"
+msgstr "kiraso: %s\n"
+
+#, fuzzy, c-format
+msgid "invalid timestamp in '%s' line %u\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "WARNING: invalid cache file hash in '%s' line %u\n"
+msgstr "averto: nevalida grando de la dosiero random_seen - ne uzita\n"
+
+msgid "detected errors in cache dir file\n"
+msgstr ""
+
+msgid "please check the reason and manually delete that file\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "failed to create temporary cache dir file '%s': %s\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+msgid "error closing '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error reading `%s': %s\n"
+msgid "error renaming '%s' to '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't hash '%s': %s\n"
+msgstr "ne povas fermi '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error setting up MD5 hash context: %s\n"
+msgstr "eraro dum sendo al '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error hashing '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "invalid formatted checksum for '%s'\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+msgid "too many open cache files; can't open anymore\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "opening cache file '%s'\n"
+msgstr "subskribado malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "error opening cache file '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, c-format
+msgid "error initializing cache file '%s' for reading: %s\n"
+msgstr ""
+
+msgid "calling unlock_db_file on a closed file\n"
+msgstr ""
+
+msgid "calling unlock_db_file on an unlocked file\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "failed to create a new cache object: %s\n"
+msgstr "%s: malsukcesis krei haktabelon: %s\n"
+
+#, fuzzy, c-format
+#| msgid "No help available for `%s'"
+msgid "no CRL available for issuer id %s\n"
+msgstr "Nenia helpo disponata por '%s'"
+
+#, c-format
+msgid "cached CRL for issuer id %s too old; update required\n"
+msgstr ""
+
+#, c-format
+msgid ""
+"force-crl-refresh active and %d minutes passed for issuer id %s; update "
+"required\n"
+msgstr ""
+
+#, c-format
+msgid "force-crl-refresh active for issuer id %s; update required\n"
+msgstr ""
+
+#, c-format
+msgid "available CRL for issuer ID %s can't be used\n"
+msgstr ""
+
+#, c-format
+msgid "cached CRL for issuer id %s tampered; we need to update\n"
+msgstr ""
+
+msgid "WARNING: invalid cache record length for S/N "
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error reading dir record for LID %lu: %s\n"
+msgid "problem reading cache record for S/N %s: %s\n"
+msgstr "eraro dum legado de dosieruja registro por LID %lu: %s\n"
+
+#, c-format
+msgid "S/N %s is not valid; reason=%02X  date=%.15s\n"
+msgstr ""
+
+#, c-format
+msgid "S/N %s is valid, it is not listed in the CRL\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting data from cache file: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+#| msgid "invalid hash algorithm `%s'\n"
+msgid "unknown hash algorithm '%s'\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, c-format
+msgid "gcry_md_open for algorithm %d failed: %s\n"
+msgstr ""
+
+msgid "got an invalid S-expression from libksba\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "changing permission of  `%s' failed: %s\n"
+msgid "converting S-expression failed: %s\n"
+msgstr "þanøo de permesoj de '%s' malsukcesis: %s\n"
+
+#, fuzzy, c-format
+#| msgid "changing permission of  `%s' failed: %s\n"
+msgid "creating S-expression failed: %s\n"
+msgstr "þanøo de permesoj de '%s' malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_parse failed: %s\n"
+msgstr "aktualigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "error getting update times of CRL: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, c-format
+msgid "update times of this CRL: this=%s next=%s\n"
+msgstr ""
+
+msgid "nextUpdate not given; assuming a validity period of one day\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting CRL item: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "error inserting item into temporary cache file: %s\n"
+msgstr "skribas al '%s'\n"
+
+#, fuzzy, c-format
+msgid "no CRL issuer found in CRL: %s\n"
+msgstr "Bona atestilo"
+
+msgid "locating CRL issuer certificate by authorityKeyIdentifier\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signature verification suppressed\n"
+msgid "CRL signature verification failed: %s\n"
+msgstr "kontrolo de subskribo estas malþaltita\n"
+
+#, fuzzy, c-format
+msgid "error checking validity of CRL issuer certificate: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_new failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "ksba_crl_set_reader failed: %s\n"
+msgstr "aktualigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "removed stale temporary cache file '%s'\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+msgid "problem removing stale temporary cache file '%s': %s\n"
+msgstr "%s: ne povas krei dosierujon: %s\n"
+
+#, fuzzy, c-format
+msgid "error creating temporary cache file '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+#| msgid "lid ?: insert failed: %s\n"
+msgid "crl_parse_insert failed: %s\n"
+msgstr "lid ?: enþovo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "error finishing temporary cache file '%s': %s\n"
+msgstr "skribas al '%s'\n"
+
+#, fuzzy, c-format
+msgid "error closing temporary cache file '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, c-format
+msgid "WARNING: new CRL still too old; it expired on %s - loading anyway\n"
+msgstr ""
+
+#, c-format
+msgid "new CRL still too old; it expired on %s\n"
+msgstr ""
+
+#, c-format
+msgid "unknown critical CRL extension %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading CRL extensions: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "creating cache file '%s'\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "problem renaming '%s' to '%s': %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+msgid ""
+"updating the DIR file failed - cache entry will get lost with the next "
+"program start\n"
+msgstr ""
+
+#, c-format
+msgid "Begin CRL dump (retrieved via %s)\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used because it was still too old after an "
+"update!\n"
+msgstr ""
+
+msgid ""
+" ERROR: The CRL will not be used due to an unknown critical extension!\n"
+msgstr ""
+
+msgid " ERROR: The CRL will not be used\n"
+msgstr ""
+
+msgid " ERROR: This cached CRL may have been tampered with!\n"
+msgstr ""
+
+#, fuzzy
+msgid " WARNING: invalid cache record length\n"
+msgstr "averto: nevalida grando de la dosiero random_seen - ne uzita\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache record: %s\n"
+msgstr "%s: eraro dum legado de libera registro: %s\n"
+
+#, fuzzy, c-format
+msgid "problem reading cache key: %s\n"
+msgstr "rev? problemo en kontrolo de revoko: %s\n"
+
+#, fuzzy, c-format
+msgid "error reading cache entry from db: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+msgid "End CRL dump\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "crl_fetch via DP failed: %s\n"
+msgstr "aktualigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+#| msgid "lid ?: insert failed: %s\n"
+msgid "crl_cache_insert via DP failed: %s\n"
+msgstr "lid ?: enþovo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "crl_cache_insert via issuer failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+msgid "reader to file mapping table full - waiting\n"
+msgstr ""
+
+msgid "using \"http\" instead of \"https\"\n"
+msgstr ""
+
+#, c-format
+msgid "CRL access not possible due to disabled %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "%s: error writing dir record: %s\n"
+msgid "error initializing reader object: %s\n"
+msgstr "%s: eraro dum skribo de dosieruja registro: %s\n"
+
+#, c-format
+msgid "URL '%s' redirected to '%s' (%u)\n"
+msgstr ""
+
+#, fuzzy
+msgid "too many redirections\n"
+msgstr "tro da '%c'-preferoj\n"
+
+#, fuzzy, c-format
+msgid "error retrieving '%s': %s\n"
+msgstr "eraro dum kreado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error retrieving '%s': http status %u\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "certificate search not possible due to disabled %s\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
+
+msgid "use OCSP instead of CRLs"
+msgstr ""
+
+msgid "check whether a dirmngr is running"
+msgstr ""
+
+#, fuzzy
+msgid "add a certificate to the cache"
+msgstr "þlosilo %08lX: revokatestilo aldonita\n"
+
+#, fuzzy
+#| msgid "bad certificate"
+msgid "validate a certificate"
+msgstr "malbona atestilo"
+
+#, fuzzy
+#| msgid "bad certificate"
+msgid "lookup a certificate"
+msgstr "malbona atestilo"
+
+#, fuzzy
+msgid "lookup only locally stored certificates"
+msgstr "Nevalida atestilo"
+
+msgid "expect an URL for --lookup"
+msgstr ""
+
+msgid "load a CRL into the dirmngr"
+msgstr ""
+
+msgid "special mode for use by Squid"
+msgstr ""
+
+#, fuzzy
+msgid "expect certificates in PEM format"
+msgstr "Bona atestilo"
+
+#, fuzzy
+msgid "force the use of the default OCSP responder"
+msgstr "Donu la þlosilgrandon"
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
+msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
+
+msgid ""
+"Syntax: dirmngr-client [options] [certfile|pattern]\n"
+"Test an X.509 certificate against a CRL or do an OCSP check\n"
+"The process returns 0 if the certificate is valid, 1 if it is\n"
+"not valid and other error codes for general failures\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading certificate from stdin: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, fuzzy, c-format
+msgid "error reading certificate from '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+msgid "certificate too large to make any sense\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "update failed: %s\n"
+msgid "lookup failed: %s\n"
+msgstr "aktualigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "loading CRL '%s' failed: %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+msgid "a dirmngr daemon is up and running\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "validation of certificate failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy
+msgid "certificate is valid\n"
+msgstr "Valida atestilrevoko"
+
+#, fuzzy
+msgid "certificate has been revoked\n"
+msgstr "þlosilo %08lX: þlosilo estas revokita!\n"
+
+#, fuzzy, c-format
+msgid "certificate check failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy, c-format
+#| msgid "can't stat `%s': %s\n"
+msgid "got status: '%s'\n"
+msgstr "ne povas stat-i '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "error writing secret keyring `%s': %s\n"
+msgid "error writing base64 encoding: %s\n"
+msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: malsukcesis krei haktabelon: %s\n"
+
+msgid "apparently no running dirmngr\n"
+msgstr ""
+
+msgid "no running dirmngr - starting one\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "malformed %s environment variable\n"
+msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
+
+#, fuzzy, c-format
+msgid "dirmngr protocol version %d is not supported\n"
+msgstr "protokolversio %d de gpg-agent ne estas uzebla\n"
+
+msgid "can't connect to the dirmngr - trying fall back\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "ne povas konektiøi al '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "unsupported inquiry '%s'\n"
+msgstr ""
+"\n"
+"Realigitaj metodoj:\n"
+
+msgid "absolute file name expected\n"
+msgstr ""
+
+#, c-format
+msgid "looking up '%s'\n"
+msgstr ""
+
+msgid "run as windows service (background)"
+msgstr ""
+
+msgid "list the contents of the CRL cache"
+msgstr ""
+
+#, fuzzy
+msgid "|FILE|load CRL from FILE into cache"
+msgstr "|DOSIERO|legi aldonan bibliotekon DOSIERO"
+
+msgid "|URL|fetch a CRL from URL"
+msgstr ""
+
+msgid "shutdown the dirmngr"
+msgstr ""
+
+msgid "flush the cache"
+msgstr ""
+
+msgid "|FILE|write server mode logs to FILE"
+msgstr ""
+
+#, fuzzy
+msgid "run without asking a user"
+msgstr "Æu fini sen skribi þanøojn? "
+
+msgid "force loading of outdated CRLs"
+msgstr ""
+
+msgid "allow sending OCSP requests"
+msgstr ""
+
+msgid "inhibit the use of HTTP"
+msgstr ""
+
+msgid "inhibit the use of LDAP"
+msgstr ""
+
+msgid "ignore HTTP CRL distribution points"
+msgstr ""
+
+msgid "ignore LDAP CRL distribution points"
+msgstr ""
+
+msgid "ignore certificate contained OCSP service URLs"
+msgstr ""
+
+msgid "|URL|redirect all HTTP requests to URL"
+msgstr ""
+
+msgid "|HOST|use HOST for LDAP queries"
+msgstr ""
+
+msgid "do not use fallback hosts with --ldap-proxy"
+msgstr ""
+
+#, fuzzy
+msgid "|FILE|read LDAP server list from FILE"
+msgstr "|DOSIERO|legi aldonan bibliotekon DOSIERO"
+
+msgid "add new servers discovered in CRL distribution points to serverlist"
+msgstr ""
+
+msgid "|N|set LDAP timeout to N seconds"
+msgstr ""
+
+#, fuzzy
+msgid "|URL|use OCSP responder at URL"
+msgstr "ne povis analizi URI de þlosilservilo\n"
+
+msgid "|FPR|OCSP response signed by FPR"
+msgstr ""
+
+msgid "|N|do not return more than N items in one query"
+msgstr ""
+
+msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+#, fuzzy
+#| msgid ""
+#| "@\n"
+#| "(See the man page for a complete listing of all commands and options)\n"
+msgid ""
+"@\n"
+"(See the \"info\" manual for a complete listing of all commands and "
+"options)\n"
+msgstr ""
+"@\n"
+"(Vidu la manpaøon por kompleta listo de æiuj komandoj kaj opcioj)\n"
+
+#, fuzzy
+msgid "Usage: @DIRMNGR@ [options] (-h for help)"
+msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
+
+msgid ""
+"Syntax: @DIRMNGR@ [options] [command [args]]\n"
+"Keyserver, CRL, and OCSP access for @GNUPG@\n"
+msgstr ""
+
+#, c-format
+msgid "valid debug levels are: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "usage: %s [options] "
+msgstr "uzado: gpg [opcioj] "
+
+#, fuzzy
+#| msgid "%s not allowed with %s!\n"
+msgid "colons are not allowed in the socket name\n"
+msgstr "%s ne eblas kun %s!\n"
+
+#, fuzzy, c-format
+msgid "fetching CRL from '%s' failed: %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "processing CRL from '%s' failed: %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: line too long - skipped\n"
+msgstr "pasfrazo estas tro longa\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: invalid fingerprint detected\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: read error: %s\n"
+msgstr "kiraso: %s\n"
+
+#, c-format
+msgid "%s:%u: garbage at end of line ignored\n"
+msgstr ""
+
+msgid "SIGHUP received - re-reading configuration and flushing caches\n"
+msgstr ""
+
+msgid "SIGUSR2 received - no action defined\n"
+msgstr ""
+
+msgid "SIGTERM received - shutting down ...\n"
+msgstr ""
+
+#, c-format
+msgid "SIGTERM received - still %d active connections\n"
+msgstr ""
+
+#, fuzzy
+msgid "shutdown forced\n"
+msgstr "ne traktita"
+
+msgid "SIGINT received - immediate shutdown\n"
+msgstr ""
+
+#, c-format
+msgid "signal %d received - no action defined\n"
+msgstr ""
+
+msgid "return all values in a record oriented format"
+msgstr ""
+
+msgid "|NAME|ignore host part and connect through NAME"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|connect to host NAME"
+msgstr "|NOMO|difini NOMOn kiel la signaron de la terminalo"
+
+msgid "|N|connect to port N"
+msgstr ""
+
+#, fuzzy
+#| msgid "|NAME|use NAME as default recipient"
+msgid "|NAME|use user NAME for authentication"
+msgstr "|NOMO|uzi NOMOn kiel implicitan ricevonton"
+
+msgid "|PASS|use password PASS for authentication"
+msgstr ""
+
+msgid "take password from $DIRMNGR_LDAP_PASS"
+msgstr ""
+
+msgid "|STRING|query DN STRING"
+msgstr ""
+
+msgid "|STRING|use STRING as filter expression"
+msgstr ""
+
+msgid "|STRING|return the attribute STRING"
+msgstr ""
+
+#, fuzzy
+#| msgid "Usage: gpg [options] [files] (-h for help)"
+msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
+msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
+
+msgid ""
+"Syntax: dirmngr_ldap [options] [URL]\n"
+"Internal LDAP helper for Dirmngr\n"
+"Interface and options may change without notice\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid port number %d\n"
+msgstr "nevalida kiraso"
+
+#, c-format
+msgid "scanning result for attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error writing to stdout: %s\n"
+msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
+
+#, c-format
+msgid "          available attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "user '%s' not found: %s\n"
+msgid "attribute '%s' not found\n"
+msgstr "uzanto '%s' ne trovita: %s\n"
+
+#, c-format
+msgid "found attribute '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "reading from `%s'\n"
+msgid "processing url '%s'\n"
+msgstr "legas el '%s'\n"
+
+#, fuzzy, c-format
+#| msgid "          w/o user IDs: %lu\n"
+msgid "          user '%s'\n"
+msgstr "         sen uzantidentigilo: %lu\n"
+
+#, fuzzy, c-format
+msgid "          pass '%s'\n"
+msgstr "            alinome \""
+
+#, fuzzy, c-format
+msgid "          host '%s'\n"
+msgstr "            alinome \""
+
+#, fuzzy, c-format
+msgid "          port %d\n"
+msgstr "                  importitaj: %lu"
+
+#, fuzzy, c-format
+msgid "            DN '%s'\n"
+msgstr "            alinome \""
+
+#, c-format
+msgid "        filter '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "          attr '%s'\n"
+msgstr "            alinome \""
+
+#, c-format
+msgid "no host name in '%s'\n"
+msgstr ""
+
+#, c-format
+msgid "no attribute given for query '%s'\n"
+msgstr ""
+
+#, fuzzy
+msgid "WARNING: using first attribute only\n"
+msgstr "Averto: uzas malsekuran memoron!\n"
+
+#, fuzzy, c-format
+msgid "LDAP init to '%s:%d' failed: %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "binding to '%s:%d' failed: %s\n"
+msgstr "enkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+#| msgid "dearmoring failed: %s\n"
+msgid "searching '%s' failed: %s\n"
+msgstr "elkirasigo malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "'%s' is not an LDAP URL\n"
+msgstr "%s: ne estas fido-datenaro\n"
+
+#, c-format
+msgid "'%s' is an invalid LDAP URL\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error allocating memory: %s\n"
+msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error printing log line: %s\n"
+msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error reading log from ldap wrapper %d: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "npth_select failed: %s - waiting 1s\n"
+msgstr "aktualigo de sekreto malsukcesis: %s\n"
+
+#, c-format
+msgid "ldap wrapper %d ready"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: timeout\n"
+msgstr ""
+
+#, c-format
+msgid "ldap wrapper %d ready: exitcode=%d\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "waiting for ldap wrapper %d failed: %s\n"
+msgstr "aktualigo malsukcesis: %s\n"
+
+#, c-format
+msgid "ldap wrapper %d stalled - killing\n"
+msgstr ""
+
+#, c-format
+msgid "error spawning ldap wrapper reaper thread: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "reading from ldap wrapper %d failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, c-format
+msgid "invalid char 0x%02x in host name - not added\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "adding '%s:%d' to the ldap server list\n"
+msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
+
+#, fuzzy, c-format
+msgid "malloc failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, c-format
+msgid "start_cert_fetch: invalid pattern '%s'\n"
+msgstr ""
+
+msgid "ldap_search hit the size limit of the server\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "%s: invalid file version %d\n"
+msgid "invalid canonical S-expression found\n"
+msgstr "%s: nevalida dosiero-versio %d\n"
+
+#, fuzzy, c-format
+msgid "gcry_md_open failed: %s\n"
+msgstr "ne povas malfermi %s: %s\n"
+
+#, fuzzy, c-format
+#| msgid "update secret failed: %s\n"
+msgid "oops: ksba_cert_hash failed: %s\n"
+msgstr "aktualigo de sekreto malsukcesis: %s\n"
+
+msgid "bad URL encoding detected\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error reading from responder: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, c-format
+msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to disabled HTTP\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error setting OCSP target: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error building OCSP request: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error connecting to '%s': %s\n"
+msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error reading HTTP response for '%s': %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error accessing '%s': http status %u\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "error parsing OCSP response for '%s': %s\n"
+msgstr "eraro dum sendo al '%s': %s\n"
+
+#, c-format
+msgid "OCSP responder at '%s' status: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "changing permission of  `%s' failed: %s\n"
+msgid "hashing the OCSP response for '%s' failed: %s\n"
+msgstr "þanøo de permesoj de '%s' malsukcesis: %s\n"
+
+msgid "not signed by a default OCSP signer's certificate"
+msgstr ""
+
+msgid "only SHA-1 is supported for OCSP responses\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "allocating list item failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "error getting responder ID: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+msgid "no suitable certificate found to verify the OCSP response\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "issuer certificate not found: %s\n"
+msgstr "Valida atestilrevoko"
+
+msgid "caller did not return the target certificate\n"
+msgstr ""
+
+#, fuzzy
+msgid "caller did not return the issuing certificate\n"
+msgstr "Bona atestilo"
+
+#, fuzzy, c-format
+msgid "failed to allocate OCSP context: %s\n"
+msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#, fuzzy, c-format
+#| msgid "%s: can't access: %s\n"
+msgid "can't get authorityInfoAccess: %s\n"
+msgstr "%s: ne povas aliri: %s\n"
+
+msgid "no default OCSP responder defined\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "no default secret keyring: %s\n"
+msgid "no default OCSP signer defined\n"
+msgstr "mankas implicita sekreta þlosilaro: %s\n"
+
+#, c-format
+msgid "using default OCSP responder '%s'\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "using OCSP responder '%s'\n"
+msgstr "subskribado malsukcesis: %s\n"
+
+#, c-format
+msgid "failed to establish a hashing context for OCSP: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "error getting OCSP status for target certificate: %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, c-format
+msgid "certificate status is: %s  (this=%s  next=%s)\n"
+msgstr ""
+
+msgid "good"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "certificate has been revoked at: %s due to: %s\n"
+msgstr "þlosilo %08lX: þlosilo estas revokita!\n"
+
+msgid "OCSP responder returned a status in the future\n"
+msgstr ""
+
+msgid "OCSP responder returned a non-current status\n"
+msgstr ""
+
+msgid "OCSP responder returned an too old status\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "assuan_inquire(%s) failed: %s\n"
+msgstr "subskribado malsukcesis: %s\n"
+
+msgid "ldapserver missing"
+msgstr ""
+
+msgid "serialno missing in cert ID"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "assuan_inquire failed: %s\n"
+msgstr "subskribado malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "fetch_cert_by_url failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "error sending data: %s\n"
+msgstr "eraro dum sendo al '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "start_cert_fetch failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, fuzzy, c-format
+msgid "fetch_next_cert failed: %s\n"
+msgstr "forviþo de þlosilbloko malsukcesis: %s\n"
+
+#, c-format
+msgid "max_replies %d exceeded\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "can't allocate control structure: %s\n"
+msgstr "ne povas krei '%s': %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to initialize the TrustDB: %s\n"
+msgid "failed to initialize the server: %s\n"
+msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to the register commands with Assuan: %s\n"
+msgstr "malsukcesis rekonstrui þlosilaran staplon: %s\n"
+
+#, c-format
+msgid "Assuan accept problem: %s\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "signing failed: %s\n"
+msgid "Assuan processing failed: %s\n"
+msgstr "subskribado malsukcesis: %s\n"
+
+msgid "accepting root CA not marked as a CA"
+msgstr ""
+
+#, fuzzy
+#| msgid "checking the trustdb\n"
+msgid "CRL checking too deeply nested\n"
+msgstr "kontrolas la fido-datenaron\n"
+
+msgid "not checking CRL for"
+msgstr ""
+
+#, fuzzy
+msgid "checking CRL for"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+msgid "running in compatibility mode - certificate chain not checked!\n"
+msgstr ""
+
+#, fuzzy
+msgid "selfsigned certificate has a BAD signature"
+msgstr "kontroli subskribon"
+
+#, fuzzy, c-format
+msgid "checking trustworthiness of root certificate failed: %s\n"
+msgstr "kontrolo de kreita subskribo malsukcesis: %s\n"
+
+#, fuzzy
+msgid "certificate chain is good\n"
+msgstr "Valida atestilrevoko"
+
+msgid "DSA requires the use of a 160 bit hash algorithm\n"
+msgstr ""
+
+msgid "certificate should not have been used for CRL signing\n"
+msgstr ""
+
 #, fuzzy
 msgid "quiet"
 msgstr "fini"
@@ -6447,7 +7819,13 @@ msgstr ""
 msgid "decode received data lines"
 msgstr ""
 
+msgid "connect to the dirmngr"
+msgstr ""
+
 msgid "|NAME|connect to Assuan socket NAME"
+msgstr ""
+
+msgid "|ADDR|connect to Assuan server at ADDR"
 msgstr ""
 
 msgid "run the Assuan server given on the command line"
@@ -6464,11 +7842,11 @@ msgid "run /subst on startup"
 msgstr ""
 
 #, fuzzy
-msgid "Usage: gpg-connect-agent [options] (-h for help)"
+msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 msgid ""
-"Syntax: gpg-connect-agent [options]\n"
+"Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
 
@@ -6500,10 +7878,6 @@ msgid "sending line failed: %s\n"
 msgstr "subskribado malsukcesis: %s\n"
 
 #, fuzzy, c-format
-msgid "error sending %s command: %s\n"
-msgstr "eraro dum sendo al '%s': %s\n"
-
-#, fuzzy, c-format
 msgid "error sending standard options: %s\n"
 msgstr "eraro dum sendo al '%s': %s\n"
 
@@ -6514,9 +7888,6 @@ msgid "Options controlling the configuration"
 msgstr ""
 
 msgid "Options useful for debugging"
-msgstr ""
-
-msgid "|FILE|write server mode logs to FILE"
 msgstr ""
 
 msgid "Options controlling the security"
@@ -6608,6 +7979,29 @@ msgstr ""
 msgid "Configuration for OCSP"
 msgstr ""
 
+msgid "GPG for OpenPGP"
+msgstr ""
+
+msgid "GPG Agent"
+msgstr ""
+
+msgid "Smartcard Daemon"
+msgstr ""
+
+msgid "GPG for S/MIME"
+msgstr ""
+
+msgid "Directory Manager"
+msgstr ""
+
+#, fuzzy
+msgid "PIN and Passphrase Entry"
+msgstr "malbona pasfrazo"
+
+#, fuzzy
+msgid "Component not suitable for launching"
+msgstr "publika þlosilo ne trovita"
+
 #, c-format
 msgid "External verification of component %s failed"
 msgstr ""
@@ -6633,7 +8027,7 @@ msgstr ""
 msgid "apply global default values"
 msgstr ""
 
-msgid "get the configuration directories for gpgconf"
+msgid "get the configuration directories for @GPGCONF@"
 msgstr ""
 
 #, fuzzy
@@ -6644,6 +8038,15 @@ msgstr "%s: nova opcio-dosiero kreita\n"
 msgid "check global configuration file"
 msgstr "%s: nova opcio-dosiero kreita\n"
 
+msgid "reload all or a given component"
+msgstr ""
+
+msgid "launch a given component"
+msgstr ""
+
+msgid "kill a given component"
+msgstr ""
+
 msgid "use as output file"
 msgstr "uzi dosieron por eligo"
 
@@ -6651,17 +8054,13 @@ msgid "activate changes at runtime, if possible"
 msgstr ""
 
 #, fuzzy
-msgid "Usage: gpgconf [options] (-h for help)"
+msgid "Usage: @GPGCONF@ [options] (-h for help)"
 msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
 
 msgid ""
-"Syntax: gpgconf [options]\n"
-"Manage configuration options for tools of the GnuPG system\n"
+"Syntax: @GPGCONF@ [options]\n"
+"Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-
-#, fuzzy
-msgid "usage: gpgconf [options] "
-msgstr "uzado: gpg [opcioj] "
 
 msgid "Need one component argument"
 msgstr ""
@@ -6818,6 +8217,291 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "use a standard location for the socket"
+#~ msgstr "Æu vere aktualigi la preferojn por la elektitaj uzantidentigiloj? "
+
+#, fuzzy
+#~ msgid "Usage: gpg-agent [options] (-h for help)"
+#~ msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
+
+#~ msgid "malformed GPG_AGENT_INFO environment variable\n"
+#~ msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
+
+#~ msgid "gpg-agent protocol version %d is not supported\n"
+#~ msgstr "protokolversio %d de gpg-agent ne estas uzebla\n"
+
+#, fuzzy
+#~ msgid "can't fdopen pipe for reading: %s\n"
+#~ msgstr "ne povas malfermi %s: %s\n"
+
+#, fuzzy
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "eraro dum kreado de '%s': %s\n"
+
+#, fuzzy
+#~ msgid "host not found"
+#~ msgstr "%s: uzanto ne trovita\n"
+
+#, fuzzy
+#~ msgid "unknown key protection algorithm\n"
+#~ msgstr "nekonata densig-metodo"
+
+#, fuzzy
+#~ msgid "secret parts of key are not available\n"
+#~ msgstr "Sekretaj partoj de æefa þlosilo ne estas disponataj.\n"
+
+#, fuzzy
+#~ msgid "secret key already stored on a card\n"
+#~ msgstr "ignorita: sekreta þlosilo jam æeestas\n"
+
+#, fuzzy
+#~ msgid "error writing key to card: %s\n"
+#~ msgstr "eraro dum skribado de þlosilaro '%s': %s\n"
+
+#~ msgid ""
+#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
+#~ msgstr ""
+#~ "eblas æifri nur per RSA-þlosiloj de maksimume 2048 bitoj kun --pgp2\n"
+
+#~ msgid ""
+#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
+#~ msgstr "ne povas uzi la æifron IDEA por æiuj þlosiloj, al kiuj vi æifras.\n"
+
+#, fuzzy
+#~ msgid "remove the passphrase from exported subkeys"
+#~ msgstr "revoki flankan þlosilon"
+
+#, fuzzy
+#~ msgid "key %s: not protected - skipped\n"
+#~ msgstr "þlosilo %08lX: ne protektita - ignorita\n"
+
+#, fuzzy
+#~ msgid "failed to unprotect the subkey: %s\n"
+#~ msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#~ msgid "too many entries in pk cache - disabled\n"
+#~ msgstr "tro da registroj en pk-staplo - malþaltas\n"
+
+#, fuzzy
+#~ msgid "no secret subkey for public subkey %s - ignoring\n"
+#~ msgstr "estas sekreta þlosilo por la publika þlosilo \"%s\"!\n"
+
+#, fuzzy
+#~ msgid "key %s: secret key without public key - skipped\n"
+#~ msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
+
+#~ msgid "usage: gpg [options] "
+#~ msgstr "uzado: gpg [opcioj] "
+
+#~ msgid ""
+#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
+#~ msgstr "eblas fari nur apartajn kaj klartekstajn subskribojn kun --pgp2\n"
+
+#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
+#~ msgstr "ne eblas samtempe subskribi kaj æifri kun --pgp2\n"
+
+#~ msgid ""
+#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
+#~ msgstr "necesas uzi dosierojn (kaj ne tubon) kun --pgp2\n"
+
+#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
+#~ msgstr "æifri mesaøon kun --pgp2 postulas la æifron IDEA\n"
+
+#, fuzzy
+#~ msgid "key %s: already in secret keyring\n"
+#~ msgstr "þlosilo %08lX: jam en sekreta þlosilaro\n"
+
+#, fuzzy
+#~ msgid "key %s: secret key not found: %s\n"
+#~ msgstr "þlosilo %08lX: sekreta þlosilo ne trovita: %s\n"
+
+#, fuzzy
+#~ msgid "NOTE: primary key is online and stored on card\n"
+#~ msgstr "ignorita: sekreta þlosilo jam æeestas\n"
+
+#, fuzzy
+#~ msgid "NOTE: secondary key is online and stored on card\n"
+#~ msgstr "ignorita: sekreta þlosilo jam æeestas\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
+#~ "mode.\n"
+#~ msgstr "eblas subskribi nur per PGP-2.x-stilaj þlosiloj kun --pgp2\n"
+
+#, fuzzy
+#~ msgid "This would make the key unusable in PGP 2.x.\n"
+#~ msgstr "æi tiu mesaøo povas ne esti uzebla de PGP 2.x\n"
+
+#~ msgid "This key is not protected.\n"
+#~ msgstr "Æi tiu þlosilo ne estas protektita.\n"
+
+#~ msgid "Key is protected.\n"
+#~ msgstr "Þlosilo estas protektita.\n"
+
+#~ msgid "Can't edit this key: %s\n"
+#~ msgstr "Ne povas redakti æi tiun þlosilon: %s\n"
+
+#~ msgid ""
+#~ "Enter the new passphrase for this secret key.\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Donu la novan pasfrazon por æi tiu sekreta þlosilo.\n"
+#~ "\n"
+
+#~ msgid ""
+#~ "You don't want a passphrase - this is probably a *bad* idea!\n"
+#~ "\n"
+#~ msgstr ""
+#~ "Vi ne deziras pasfrazon - tio verþajne estas *malbona* ideo!\n"
+#~ "\n"
+
+#, fuzzy
+#~ msgid "Do you really want to do this? (y/N) "
+#~ msgstr "Æu vi vere volas fari tion? "
+
+#, fuzzy
+#~ msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgstr "eraro dum legado de sekreta þlosilbloko '%s': %s\n"
+
+#~ msgid "Please remove selections from the secret keys.\n"
+#~ msgstr "Bonvolu malelekti la sekretajn þlosilojn.\n"
+
+#~ msgid "No corresponding signature in secret ring\n"
+#~ msgstr "Mankas responda subskribo en sekreta þlosilaro\n"
+
+#, fuzzy
+#~ msgid "writing secret key stub to `%s'\n"
+#~ msgstr "skribas sekretan þlosilon al '%s'\n"
+
+#~ msgid "writing secret key to `%s'\n"
+#~ msgstr "skribas sekretan þlosilon al '%s'\n"
+
+#~ msgid "no writable secret keyring found: %s\n"
+#~ msgstr "neniu skribebla sekreta þlosilaro trovita: %s\n"
+
+#~ msgid "WARNING: 2 files with confidential information exists.\n"
+#~ msgstr "AVERTO: ekzistas 2 dosieroj kun sekretaj informoj.\n"
+
+#~ msgid "%s is the unchanged one\n"
+#~ msgstr "%s estas la neþanøita\n"
+
+#~ msgid "%s is the new one\n"
+#~ msgstr "%s estas la nova\n"
+
+#~ msgid "Please fix this possible security flaw\n"
+#~ msgstr "Bonvolu ripari æi tiun eblan sekurecproblemon\n"
+
+#, fuzzy
+#~ msgid "searching for names from %s server %s\n"
+#~ msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
+
+#, fuzzy
+#~ msgid "searching for names from %s\n"
+#~ msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
+
+#, fuzzy
+#~ msgid "searching for \"%s\" from %s server %s\n"
+#~ msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
+
+#, fuzzy
+#~ msgid "searching for \"%s\" from %s\n"
+#~ msgstr "seræas pri \"%s\" æe HKP-servilo %s\n"
+
+#, fuzzy
+#~ msgid "no keyserver action!\n"
+#~ msgstr "nevalida þlosilaro"
+
+#, fuzzy
+#~ msgid "keyserver timed out\n"
+#~ msgstr "þlosilservila eraro"
+
+#, fuzzy
+#~ msgid "keyserver internal error\n"
+#~ msgstr "þlosilservila eraro"
+
+#, fuzzy
+#~ msgid "keyserver communications error: %s\n"
+#~ msgstr "listigo de sekretaj þlosiloj malsukcesis: %s\n"
+
+#, fuzzy
+#~ msgid "WARNING: unable to parse URI %s\n"
+#~ msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "nevalida radikpaketo trovita en proc_tree()\n"
+
+#~ msgid "the IDEA cipher plugin is not present\n"
+#~ msgstr "la aldona¼o por la æifro IDEA en æeestas\n"
+
+#, fuzzy
+#~ msgid "no corresponding public key: %s\n"
+#~ msgstr "skribas publikan þlosilon al '%s'\n"
+
+#, fuzzy
+#~ msgid "unknown protection algorithm\n"
+#~ msgstr "nekonata densig-metodo"
+
+#, fuzzy
+#~ msgid "NOTE: This key is not protected!\n"
+#~ msgstr "Æi tiu þlosilo ne estas protektita.\n"
+
+#, fuzzy
+#~ msgid "protection digest %d is not supported\n"
+#~ msgstr "protekto-metodo %d%s ne estas realigita\n"
+
+#~ msgid "Invalid passphrase; please try again"
+#~ msgstr "Nevalida pasfrazo; bonvolu provi denove"
+
+#~ msgid "%s ...\n"
+#~ msgstr "%s ...\n"
+
+#~ msgid "WARNING: Weak key detected - please change passphrase again.\n"
+#~ msgstr ""
+#~ "AVERTO: Malforta þlosilo trovita - bonvolu þanøi la pasfrazon denove.\n"
+
+#, fuzzy
+#~ msgid ""
+#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr "eblas subskribi nur per PGP-2.x-stilaj þlosiloj kun --pgp2\n"
+
+#~ msgid ""
+#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
+#~ msgstr ""
+#~ "eblas klartekste subskribi nur per PGP-2.x-stilaj þlosiloj kun --pgp2\n"
+
+#, fuzzy
+#~ msgid "[ revoked]"
+#~ msgstr "rev"
+
+#, fuzzy
+#~ msgid "[ expired]"
+#~ msgstr "eksval"
+
+#, fuzzy
+#~ msgid "[ unknown]"
+#~ msgstr "nekonata versio"
+
+#, fuzzy
+#~ msgid "Usage: scdaemon [options] (-h for help)"
+#~ msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
+
+#, fuzzy
+#~ msgid "Usage: gpgsm [options] [files] (-h for help)"
+#~ msgstr "Uzado: gpg [opcioj] [dosieroj] (-h por helpo)"
+
+#, fuzzy
+#~ msgid "usage: gpgconf [options] "
+#~ msgstr "uzado: gpg [opcioj] "
+
+#, fuzzy
+#~ msgid "failed to allocated keyDB handle\n"
+#~ msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
+
+#~ msgid "Command> "
+#~ msgstr "Komando> "
+
 #~ msgid "the trustdb is corrupted; please run \"gpg --fix-trustdb\".\n"
 #~ msgstr ""
 #~ "la fido-datenaro estas fuþita; bonvolu ruli \"gpg --fix-trustdb\".\n"
@@ -6851,9 +8535,6 @@ msgstr ""
 #~ msgid "|[FILE]|make a clear text signature"
 #~ msgstr "|[dosiero]|fari klartekstan subskribon"
 
-#~ msgid "|NAME|use NAME as default recipient"
-#~ msgstr "|NOMO|uzi NOMOn kiel implicitan ricevonton"
-
 #~ msgid "use the default key as default recipient"
 #~ msgstr "uzi la implicitan þlosilon kiel implicitan ricevonton"
 
@@ -6865,9 +8546,6 @@ msgstr ""
 
 #~ msgid "add this secret keyring to the list"
 #~ msgstr "aldoni æi tiun sekretan þlosilaron al la listo"
-
-#~ msgid "|NAME|set terminal charset to NAME"
-#~ msgstr "|NOMO|difini NOMOn kiel la signaron de la terminalo"
 
 #~ msgid "|FILE|load extension module FILE"
 #~ msgstr "|DOSIERO|legi aldonan bibliotekon DOSIERO"
@@ -7177,9 +8855,6 @@ msgstr ""
 #~ msgid "can't query passphrase in batch mode\n"
 #~ msgstr "ne povas kontroli pasvorton en neinteraga reøimo\n"
 
-#~ msgid "Enter passphrase: "
-#~ msgstr "Donu pasfrazon: "
-
 #~ msgid "Repeat passphrase: "
 #~ msgstr "Ripetu pasfrazon: "
 
@@ -7190,18 +8865,11 @@ msgstr ""
 #~ msgid "can't lock `%s': %s\n"
 #~ msgstr "ne povas malfermi '%s'\n"
 
-#~ msgid "can't stat `%s': %s\n"
-#~ msgstr "ne povas stat-i '%s': %s\n"
-
 #~ msgid "`%s' is not a regular file - ignored\n"
 #~ msgstr "'%s' ne estas normala dosiero - ignorita\n"
 
 #~ msgid "note: random_seed file is empty\n"
 #~ msgstr "noto: dosiero random_seed estas malplena\n"
-
-#, fuzzy
-#~ msgid "WARNING: invalid size of random_seed file - not used\n"
-#~ msgstr "averto: nevalida grando de la dosiero random_seen - ne uzita\n"
 
 #~ msgid "can't read `%s': %s\n"
 #~ msgstr "ne povas legi '%s': %s\n"
@@ -7258,9 +8926,6 @@ msgstr ""
 #~ msgid "unknown packet type"
 #~ msgstr "nekonata paketo-speco"
 
-#~ msgid "unknown pubkey algorithm"
-#~ msgstr "nekonata publikþlosila metodo"
-
 #~ msgid "unknown digest algorithm"
 #~ msgstr "nekonata kompendi-metodo"
 
@@ -7285,9 +8950,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "nevalida paketo"
 
-#~ msgid "invalid armor"
-#~ msgstr "nevalida kiraso"
-
 #~ msgid "no such user id"
 #~ msgstr "uzantidentigilo ne ekzistas"
 
@@ -7296,9 +8958,6 @@ msgstr ""
 
 #~ msgid "wrong secret key used"
 #~ msgstr "maløusta sekreta þlosilo uzata"
-
-#~ msgid "not supported"
-#~ msgstr "ne realigita"
 
 #~ msgid "bad key"
 #~ msgstr "malbona þlosilo"
@@ -7335,9 +8994,6 @@ msgstr ""
 
 #~ msgid "invalid keyring"
 #~ msgstr "nevalida þlosilaro"
-
-#~ msgid "bad certificate"
-#~ msgstr "malbona atestilo"
 
 #~ msgid "malformed user id"
 #~ msgstr "misformita uzantidentigilo"
@@ -7397,10 +9053,6 @@ msgstr ""
 
 #~ msgid "... this is a bug (%s:%d:%s)\n"
 #~ msgstr "... æi tio estas cimo (%s:%d:%s)\n"
-
-#, fuzzy
-#~ msgid "WARNING: using insecure memory!\n"
-#~ msgstr "Averto: uzas malsekuran memoron!\n"
 
 #~ msgid "operation is not possible without initialized secure memory\n"
 #~ msgstr "operacio ne eblas sen sekura memoro kun komenca valoro\n"
@@ -7532,9 +9184,6 @@ msgstr ""
 
 #~ msgid "uid"
 #~ msgstr "uid"
-
-#~ msgid "key"
-#~ msgstr "þlosilo"
 
 #~ msgid "check"
 #~ msgstr "kontroli"
@@ -7694,10 +9343,6 @@ msgstr ""
 #~ msgid "can't open file `%s': %s\n"
 #~ msgstr "ne povas malfermi %s: %s\n"
 
-#, fuzzy
-#~ msgid "          \""
-#~ msgstr "            alinome \""
-
 #~ msgid "key %08lX: key has been revoked!\n"
 #~ msgstr "þlosilo %08lX: þlosilo estas revokita!\n"
 
@@ -7751,9 +9396,6 @@ msgstr ""
 #~ msgstr ""
 #~ "\"\n"
 #~ "subskribita per via þlosilo %08lX je %s\n"
-
-#~ msgid "%s: can't access: %s\n"
-#~ msgstr "%s: ne povas aliri: %s\n"
 
 #~ msgid "%s: can't create lock\n"
 #~ msgstr "%s: ne povas krei þloson\n"
@@ -7943,8 +9585,8 @@ msgstr ""
 
 #~ msgid "checking at depth %d signed=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%d\n"
 #~ msgstr ""
-#~ "kontrolas æe profundo %d subskribita=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/%"
-#~ "d\n"
+#~ "kontrolas æe profundo %d subskribita=%d ot(-/q/n/m/f/u)=%d/%d/%d/%d/%d/"
+#~ "%d\n"
 
 #~ msgid ""
 #~ "Select the algorithm to use.\n"
@@ -8009,10 +9651,6 @@ msgstr ""
 #~ msgstr "   (%d) ElGamal (subskribi kaj æifri)\n"
 
 #, fuzzy
-#~ msgid "Create anyway? "
-#~ msgstr "Æu tamen uzi æi tiun þlosilon? "
-
-#, fuzzy
 #~ msgid "invalid symkey algorithm detected (%d)\n"
 #~ msgstr "nevalida kompendi-metodo '%s'\n"
 
@@ -8024,9 +9662,6 @@ msgstr ""
 #~ "you have to start GnuPG again, so it can read the new configuration file\n"
 #~ msgstr ""
 #~ "vi devas restartigi GnuPG, por ke øi povu legi la novan opcio-dosieron\n"
-
-#~ msgid "changing permission of  `%s' failed: %s\n"
-#~ msgstr "þanøo de permesoj de '%s' malsukcesis: %s\n"
 
 #~ msgid "             Fingerprint:"
 #~ msgstr "             Fingrospuro:"
@@ -8114,9 +9749,6 @@ msgstr ""
 #~ msgid "assuming bad MDC due to an unknown critical bit\n"
 #~ msgstr "supozas malbonan sigelon (MDC) pro nekonata \"critical bit\"\n"
 
-#~ msgid "error reading dir record for LID %lu: %s\n"
-#~ msgstr "eraro dum legado de dosieruja registro por LID %lu: %s\n"
-
 #~ msgid "lid %lu: expected dir record, got type %d\n"
 #~ msgstr "lid %lu: atendis dosierujan registron, trovis specon %d\n"
 
@@ -8174,9 +9806,6 @@ msgstr ""
 #~ msgid "tdbio_search_dir failed: %s\n"
 #~ msgstr "tdbio_search_dir malsukcesis: %s\n"
 
-#~ msgid "lid ?: insert failed: %s\n"
-#~ msgstr "lid ?: enþovo malsukcesis: %s\n"
-
 #~ msgid "lid %lu: insert failed: %s\n"
 #~ msgstr "lid %lu: enþovo malsukcesis: %s\n"
 
@@ -8219,9 +9848,6 @@ msgstr ""
 
 #~ msgid "key %08lX.%lu: trust check failed: %s\n"
 #~ msgstr "þlosilo %08lX.%lu: fido-kontrolo malsukcesis: %s\n"
-
-#~ msgid "user '%s' not found: %s\n"
-#~ msgstr "uzanto '%s' ne trovita: %s\n"
 
 #~ msgid "problem finding '%s' in trustdb: %s\n"
 #~ msgstr "problemo dum trovo de '%s' en fido-datenaro: %s\n"
