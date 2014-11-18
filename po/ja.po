@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-08-12 16:21+0200\n"
+"PO-Revision-Date: 2014-11-18 11:59+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -75,7 +75,7 @@ msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (現在 %d / 最大 %d)"
 
 msgid "Repeat:"
-msgstr ""
+msgstr "繰り返し:"
 
 msgid "PIN too long"
 msgstr "PINが長すぎます"
@@ -241,46 +241,25 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "はい、保護は必要ありません"
 
-#, fuzzy, c-format
-#| msgid "Name must be at least 5 characters long\n"
+#, c-format
 msgid "A passphrase should be at least %u character long."
 msgid_plural "A passphrase should be at least %u characters long."
-msgstr[0] "名前は5文字以上でなければなりません\n"
+msgstr[0] "パスフレーズは最低でも%u文字以上でなければなりません\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "contain at least %u digit or%%0Aspecial character."
-#| msgid_plural ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "contain at least %u digits or%%0Aspecial characters."
+#, c-format
 msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
 msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] ""
-"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズは最低%u"
-"文字の数字もしくは%%0A特殊文字を含むべきです。"
+"パスフレーズは最低でも%u文字の数字か特殊文字を含むべきです。"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase may not "
-#| "be a known term or match%%0Acertain pattern."
+#, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
-"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズには、よ"
-"く知られている用語や%%0A特定のパターンにマッチするものは避けましょう。"
+"パスフレーズには、よく知られている用語や特定のパターンにマッチするものは%%0A避けましょう。"
 
-#, fuzzy
-#| msgid ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "be at least %u character long."
-#| msgid_plural ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "be at least %u characters long."
 msgid "Warning: You have entered an insecure passphrase."
-msgstr ""
-"警告: 安全とは言えないパスフレーズが入力されました。%%0Aパスフレーズは最低%u"
-"文字であるべきです。"
+msgstr "*警告*: 安全とは言えないパスフレーズが入力されました。"
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -955,10 +934,8 @@ msgstr "キーワードが長すぎます"
 msgid "missing argument"
 msgstr "引数ありません"
 
-#, fuzzy
-#| msgid "invalid value\n"
 msgid "invalid argument"
-msgstr "無効な値\n"
+msgstr "無効な引数"
 
 msgid "invalid command"
 msgstr "無効なコマンド"
@@ -976,10 +953,9 @@ msgstr "無効なオプション"
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"に引数がありません\n"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
+#, c-format
 msgid "invalid argument for option \"%.50s\"\n"
-msgstr "オプション\"%.50s\"に引数がありません\n"
+msgstr "オプション\"%.50s\"には無効な引数です\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -1623,7 +1599,7 @@ msgid "make a clear text signature"
 msgstr "クリア・テクスト署名を作成"
 
 msgid "make a detached signature"
-msgstr "分離署名を作成"
+msgstr "分遣署名を作成"
 
 msgid "encrypt data"
 msgstr "データを暗号化"
@@ -1653,15 +1629,13 @@ msgid "list secret keys"
 msgstr "秘密鍵の一覧"
 
 msgid "generate a new key pair"
-msgstr "新しい鍵対を生成"
+msgstr "新しい鍵ペアを生成"
 
-#, fuzzy
-#| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
-msgstr "新しい鍵対を生成"
+msgstr "すばやく新しい鍵ペアを生成"
 
 msgid "full featured key pair generation"
-msgstr ""
+msgstr "全機能の鍵ペアを生成"
 
 msgid "generate a revocation certificate"
 msgstr "失効証明書を生成"
@@ -1775,7 +1749,7 @@ msgstr ""
 "\n"
 " -se -r Bob [ファイル]      ユーザBobへ署名と暗号化\n"
 " --clearsign [ファイル]     クリア・テクスト署名を作成\n"
-" --detach-sign [ファイル]   分離署名を作成\n"
+" --detach-sign [ファイル]   分遣署名を作成\n"
 " --list-keys [名前]         鍵を表示\n"
 " --fingerprint [名前]       フィンガープリントを表示\n"
 
@@ -1881,10 +1855,8 @@ msgstr "不明のコンフィグレーション項目'%s'\n"
 msgid "display photo IDs during key listings"
 msgstr "鍵の一覧にフォトIDを表示する"
 
-#, fuzzy
-#| msgid "show user ID validity during key listings"
 msgid "show key usage information during key listings"
-msgstr "鍵の一覧にユーザIDの有効性を表示する"
+msgstr "鍵の一覧に鍵の使い方の情報を表示する"
 
 msgid "show policy URLs during signature listings"
 msgstr "署名の一覧にポリシURLを表示する"
@@ -2251,10 +2223,8 @@ msgstr "ローカルだけとマークされた署名をインポートします
 msgid "repair damage from the pks keyserver during import"
 msgstr "インポート時にpksキーサーバからのダメージを修正します"
 
-#, fuzzy
-#| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
-msgstr "インポートの際、信用データベースを更新しない"
+msgstr "インポートの際、所有者信用の値をクリアしない"
 
 msgid "do not update the trustdb after import"
 msgstr "インポートの際、信用データベースを更新しない"
@@ -2370,13 +2340,12 @@ msgstr "以下で、優先指定を更新できます: gpg --edit-key %s updpref
 msgid "key %s: no user ID\n"
 msgstr "鍵%s: ユーザIDがありません\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "\"%s\"をスキップしました: %s\n"
+msgstr "鍵  %s: %s\n"
 
 msgid "rejected by import screener"
-msgstr ""
+msgstr "インポートの検査で拒否されました"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2485,10 +2454,9 @@ msgstr "鍵 %s: 秘密鍵はもうあります\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "鍵 %s: エージェントへの送信エラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
+msgstr "秘密鍵 %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "秘密鍵のインポートは禁止です\n"
@@ -3178,12 +3146,10 @@ msgstr ""
 "              ユーザIDが主になると仮定する場合があります。\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "*警告*: あなたの暗号サブ鍵はもうすぐ期限切れとなります。\\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "v3鍵の有効期限は変更できません\n"
+msgstr "その有効期限も変更したいでしょう\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3518,10 +3484,9 @@ msgstr "   (%d) DSA (特性をあなた自身で設定)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (特性をあなた自身で設定)\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECC\n"
+#, c-format
 msgid "   (%d) ECC and ECC\n"
-msgstr "   (%d) ECC\n"
+msgstr "   (%d) ECC と ECC\n"
 
 #, c-format
 msgid "  (%d) ECC (sign only)\n"
@@ -3727,15 +3692,11 @@ msgstr "名前(N)、コメント(C)、電子メール(E)の変更、または終
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "名前(N)、コメント(C)、電子メール(E)の変更、またはOK(O)か終了(Q)? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgid "Change (N)ame, (E)mail, or (Q)uit? "
-msgstr "名前(N)、コメント(C)、電子メール(E)の変更、または終了(Q)? "
+msgstr "名前(N)、電子メール(E)の変更、または終了(Q)? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
-msgstr "名前(N)、コメント(C)、電子メール(E)の変更、またはOK(O)か終了(Q)? "
+msgstr "名前(N)、電子メール(E)の変更、またはOK(O)か終了(Q)? "
 
 msgid "Please correct the error first\n"
 msgstr "まずエラーを修正してください\n"
@@ -3794,28 +3755,26 @@ msgid ""
 "    \"%s\"\n"
 "\n"
 msgstr ""
+"鍵を作成します:\n"
+"    \"%s\"\n"
+"\n"
 
 msgid "Continue? (Y/n) "
-msgstr ""
+msgstr "続けますか? (Y/n) "
 
-#, fuzzy, c-format
-#| msgid "key already exists\n"
+#, c-format
 msgid "A key for \"%s\" already exists\n"
-msgstr "鍵はもうあります\n"
+msgstr "\"%s\" の鍵はもうあります\n"
 
-#, fuzzy
-#| msgid "Use this key anyway? (y/N) "
 msgid "Create anyway? (y/N) "
-msgstr "それでもこの鍵を使いますか? (y/N) "
+msgstr "それでも鍵を作成しますか? (y/N) "
 
-#, fuzzy
-#| msgid "generating new key\n"
 msgid "creating anyway\n"
-msgstr "新しい鍵を生成\n"
+msgstr "いずれにしろ鍵を作成\n"
 
 #, c-format
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
-msgstr ""
+msgstr "注意: 全機能の鍵生成には \"%s %s\" を使います。\n"
 
 msgid "Key generation canceled.\n"
 msgstr "鍵の生成が取り消されました。\n"
@@ -3896,7 +3855,7 @@ msgstr "署名注釈: "
 
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
-msgstr ""
+msgstr "*警告*: %lu 鍵がその大きさのためスキップされました\n"
 
 msgid "Keyring"
 msgstr "鍵リング"
@@ -4180,14 +4139,14 @@ msgstr "、鍵アルゴリズム "
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr ""
+msgstr "*警告*: 分遣署名ではありません。ファイル「%s」は検証され*ませんでした*!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名を検査できません: %s\n"
 
 msgid "not a detached signature\n"
-msgstr "分離署名でありません\n"
+msgstr "分遣署名でありません\n"
 
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
@@ -4252,24 +4211,21 @@ msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr ""
 "%s:%u: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, c-format
 msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgstr ""
-"*警告*: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+"*警告*: \"%s%s\"は、使われなくなったオプションです - なんの効果もありません\n"
 
-#, fuzzy, c-format
-#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+#, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr ""
-"%s:%u: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+"%s:%u: \"%s\"は、このファイルで使われなくなりました - %sになんの効果もありません\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr ""
-"*警告*: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+"*警告*: \"%s%s\"は、使われなくなったオプションです - %s以外になんの効果もありません\n"
 
 msgid "Uncompressed"
 msgstr "無圧縮"
@@ -4674,7 +4630,7 @@ msgid "error creating '%s': %s\n"
 msgstr "'%s'の作成エラー: %s\n"
 
 msgid "Detached signature.\n"
-msgstr "分離署名。\n"
+msgstr "分遣署名。\n"
 
 msgid "Please enter name of data file: "
 msgstr "データ・ファイルの名前を入力: "
@@ -5516,8 +5472,6 @@ msgstr "コンフィグされたポリシなしにクリティカルにマーク
 msgid "failed to open '%s': %s\n"
 msgstr "'%s'が開けません: %s\n"
 
-#, fuzzy
-#| msgid "note: non-critical certificate policy not allowed"
 msgid "Note: non-critical certificate policy not allowed"
 msgstr "注意: クリティカルでない証明書ポリシは認められません"
 
@@ -6911,16 +6865,12 @@ msgstr ""
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
 msgstr "使い方: @DIRMNGR@ [オプション] (ヘルプは -h)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: @DIRMNGR@ [options] [command [args]]\n"
-#| "LDAP and OCSP access for @GNUPG@\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
 "Keyserver, CRL, and OCSP access for @GNUPG@\n"
 msgstr ""
 "形式: @DIRMNGR@ [オプション] [コマンド [引数]]\n"
-"@GnuPG@のLDAPとOCSPアクセス\n"
+"@GnuPG@の鍵サーバ、CRLとOCSPアクセス\n"
 
 #, c-format
 msgid "valid debug levels are: %s\n"
@@ -7787,143 +7737,3 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
-
-#~ msgid "invalid root packet detected in proc_tree()\n"
-#~ msgstr "proc_tree() の中に無効なルート・パケットを検出しました\n"
-
-#~ msgid "no secret subkey for public subkey %s - ignoring\n"
-#~ msgstr "公開副鍵%sにたいする秘密副鍵がありません - 無視\n"
-
-#, fuzzy
-#~| msgid "Note: no default option file '%s'\n"
-#~ msgid "NOTE: no default option file '%s'\n"
-#~ msgstr "*注意*: デフォルトのオプション・ファイル '%s' がありません\n"
-
-#, fuzzy
-#~| msgid "Note: %s is not for normal use!\n"
-#~ msgid "NOTE: %s is not for normal use!\n"
-#~ msgstr "*注意*: 普通%sは使いません!\n"
-
-#, fuzzy
-#~| msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
-#~ msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
-#~ msgstr "*注意*: v3鍵に対する副鍵の作成は、OpenPGPに適合しません\n"
-
-#~ msgid "note: non-critical certificate policy not allowed"
-#~ msgstr "注意: クリティカルでない証明書ポリシは認められません"
-
-#~ msgid "use a standard location for the socket"
-#~ msgstr "ソケットに標準の場所を使う"
-
-#~ msgid "|FILE|write environment settings also to FILE"
-#~ msgstr "|FILE|FILEに環境変数の設定も書き出す"
-
-#~ msgid "gpg-agent protocol version %d is not supported\n"
-#~ msgstr "gpg-agentプロトコル・バージョン%dはサポートされていません\n"
-
-#~ msgid "can't connect to the agent - trying fall back\n"
-#~ msgstr "agentに接続できません - フォールバックしてみます\n"
-
-#, fuzzy
-#~| msgid "can't create directory '%s': %s\n"
-#~ msgid "can't create directory `%s': %s\n"
-#~ msgstr "ディレクトリ'%s'が作成できません: %s\n"
-
-#, fuzzy
-#~| msgid "directory '%s' created\n"
-#~ msgid "directory `%s' created\n"
-#~ msgstr "ディレクトリ'%s'が作成されました\n"
-
-#, fuzzy
-#~| msgid "error creating keybox '%s': %s\n"
-#~ msgid "error creating keybox `%s': %s\n"
-#~ msgstr "keybox'%s'の作成エラー: %s\n"
-
-#, fuzzy
-#~| msgid "keybox '%s' created\n"
-#~ msgid "keybox `%s' created\n"
-#~ msgstr "keybox'%s'が作成されました\n"
-
-#, fuzzy
-#~| msgid "can't create lock for '%s'\n"
-#~ msgid "can't create lock for `%s'\n"
-#~ msgstr "'%s'のロックを作成できません\n"
-
-#~ msgid ""
-#~ "you can only encrypt to RSA keys of 2048 bits or less in --pgp2 mode\n"
-#~ msgstr "--pgp2モードでは2048ビット以下のRSA鍵で暗号化しかできません\n"
-
-#~ msgid ""
-#~ "unable to use the IDEA cipher for all of the keys you are encrypting to.\n"
-#~ msgstr "暗号化しようとしている鍵は全部IDEA暗号を使えません。\n"
-
-#~ msgid ""
-#~ "you can only make detached or clear signatures while in --pgp2 mode\n"
-#~ msgstr "--pgp2モードでは分離署名かクリア・テクスト署名だけしかできません\n"
-
-#~ msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
-#~ msgstr "--pgp2モードでは署名と暗号化を同時にできません\n"
-
-#~ msgid ""
-#~ "you must use files (and not a pipe) when working with --pgp2 enabled.\n"
-#~ msgstr ""
-#~ "--pgp2を指定したら、(パイプでなく) ファイルを指定せねばなりません。\n"
-
-#~ msgid "encrypting a message in --pgp2 mode requires the IDEA cipher\n"
-#~ msgstr "--pgp2モードのメッセージ暗号化では、IDEA暗号方式が必要です\n"
-
-#~ msgid ""
-#~ "You may not make an OpenPGP signature on a PGP 2.x key while in --pgp2 "
-#~ "mode.\n"
-#~ msgstr "--pgp2モードではPGP 2.x鍵でOpenPGP署名ができません。\n"
-
-#~ msgid "This would make the key unusable in PGP 2.x.\n"
-#~ msgstr "この鍵はPGP 2.xで使用できなくなります。\n"
-
-#~ msgid ""
-#~ "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-#~ msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分離署名できるだけです\n"
-
-#~ msgid ""
-#~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
-#~ msgstr ""
-#~ "--pgp2モードではPGP 2.x形式の鍵でクリア・テクスト署名しかできません\n"
-
-#~ msgid "you may want to start the gpg-agent first\n"
-#~ msgstr "まず gpg-agent を開始したいでしょう\n"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[  失効  ]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[期限切れ]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[  不明  ]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[ 未定義 ]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[まぁまぁ]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[  充分  ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[  究極  ]"
-
-#~ msgid "undefined"
-#~ msgstr "未定義"
-
-#~ msgid "never"
-#~ msgstr "無期限"
-
-#~ msgid "marginal"
-#~ msgstr "まぁまぁ"
-
-#~ msgid "full"
-#~ msgstr "充分"
-
-#~ msgid "ultimate"
-#~ msgstr "究極"
