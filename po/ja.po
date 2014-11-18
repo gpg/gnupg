@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-18 11:59+0900\n"
+"PO-Revision-Date: 2014-11-18 13:01+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -244,19 +244,19 @@ msgstr "はい、保護は必要ありません"
 #, c-format
 msgid "A passphrase should be at least %u character long."
 msgid_plural "A passphrase should be at least %u characters long."
-msgstr[0] "パスフレーズは最低でも%u文字以上でなければなりません\n"
+msgstr[0] "パスフレーズは最低でも%u文字以上でなければなりません。"
 
 #, c-format
 msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
 msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"パスフレーズは最低でも%u文字の数字か特殊文字を含むべきです。"
+msgstr[0] "パスフレーズは最低でも%u文字の数字か特殊文字を含むべきです。"
 
 #, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
-"パスフレーズには、よく知られている用語や特定のパターンにマッチするものは%%0A避けましょう。"
+"パスフレーズには、よく知られている用語や特定のパターンにマッチするものは%%0A"
+"避けましょう。"
 
 msgid "Warning: You have entered an insecure passphrase."
 msgstr "*警告*: 安全とは言えないパスフレーズが入力されました。"
@@ -3146,7 +3146,7 @@ msgstr ""
 "              ユーザIDが主になると仮定する場合があります。\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr "*警告*: あなたの暗号サブ鍵はもうすぐ期限切れとなります。\\n"
+msgstr "*警告*: あなたの暗号サブ鍵はもうすぐ期限切れとなります。\n"
 
 msgid "You may want to change its expiration date too.\n"
 msgstr "その有効期限も変更したいでしょう\n"
@@ -4139,7 +4139,8 @@ msgstr "、鍵アルゴリズム "
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "*警告*: 分遣署名ではありません。ファイル「%s」は検証され*ませんでした*!\n"
+msgstr ""
+"*警告*: 分遣署名ではありません。ファイル「%s」は検証され*ませんでした*!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4219,13 +4220,15 @@ msgstr ""
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr ""
-"%s:%u: \"%s\"は、このファイルで使われなくなりました - %sになんの効果もありません\n"
+"%s:%u: \"%s\"は、このファイルで使われなくなりました - %sになんの効果もありま"
+"せん\n"
 
 #, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr ""
-"*警告*: \"%s%s\"は、使われなくなったオプションです - %s以外になんの効果もありません\n"
+"*警告*: \"%s%s\"は、使われなくなったオプションです - %s以外になんの効果もあり"
+"ません\n"
 
 msgid "Uncompressed"
 msgstr "無圧縮"
