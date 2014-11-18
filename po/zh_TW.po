@@ -7,18 +7,18 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.0.17-git56b2bc2\n"
+"Project-Id-Version: GNU gnupg 2.0.27\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-04-24 19:34+0800\n"
+"PO-Revision-Date: 2014-11-17 13:03+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Basepath: gnupg-2.0.17-git56b2bc2/\n"
+"X-Poedit-Basepath: gnupg-2.0.27/\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 1.5.5\n"
+"X-Generator: Poedit 1.5.7\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -330,23 +330,17 @@ msgstr "|N|讓快取住的個人識別碼 (PIN) 在 N 秒後到期"
 msgid "do not use the PIN cache when signing"
 msgstr "簽署時不要使用個人識別碼 (PIN) 快取"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "允許用戶端將金鑰標記為 \"已信任\""
+msgstr "不允許用戶端將金鑰標記為 \"已信任\""
 
 msgid "allow presetting passphrase"
 msgstr "允許預先設定密語"
 
-#, fuzzy
-#| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
-msgstr "啟用 ssh-agent 模擬"
+msgstr "啟用 ssh 支援"
 
-#, fuzzy
-#| msgid "not supported"
 msgid "enable putty support"
-msgstr "未支援"
+msgstr "啟用 putty 支援"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|檔案|將環境設定也寫至「檔案」"
@@ -2098,6 +2092,9 @@ msgstr "匯入標記為僅限本機使用的簽章"
 msgid "repair damage from the pks keyserver during import"
 msgstr "匯入時修復來自 pks 金鑰伺服器的損壞"
 
+msgid "do not clear the ownertrust values during import"
+msgstr "匯入過程中不要清除主觀信任值"
+
 msgid "do not update the trustdb after import"
 msgstr "匯入後不要更新信任資料庫"
 
@@ -2213,13 +2210,12 @@ msgstr "你可以像這樣來更新偏好設定: gpg --edit-key %s updpref save\
 msgid "key %s: no user ID\n"
 msgstr "金鑰 %s: 沒有使用者 ID\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "已跳過 \"%s\": %s\n"
+msgstr "金鑰 %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "已由匯入過濾器駁回"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2316,10 +2312,9 @@ msgstr "金鑰 %s: \"%s\" 已清除 %d 個使用者 ID\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "金鑰 %s: \"%s\" 未改變\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "找不到私鑰 \"%s\": %s\n"
+msgstr "私鑰 %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "未允許匯入私鑰\n"
@@ -4041,6 +4036,10 @@ msgid "unknown"
 msgstr "未知"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr "警告: 並非分離簽章; '%s' 檔案 *沒有* 通過驗證!\n"
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "無法檢查簽章: %s\n"
 
@@ -4088,6 +4087,10 @@ msgstr "警告: 正在使用實驗性的 %s 摘要演算法\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "警告: 已不建議使用 %s 摘要演算法\n"
 
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "注意: 採用 %s 演算法的簽章已駁回\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA 編密法外掛模組不存在\n"
 
@@ -4118,6 +4121,15 @@ msgstr "%s:%u: 廢棄的 \"%s\" 選項 - 沒有任何影響\n"
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "警告: \"%s\" 是已廢棄的選項 - 沒有效果\n"
+
+#, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: \"%s%s\" 在此檔案中已廢棄 - 僅對 %s 造成影響\n"
+
+#, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgstr "警告: \"%s%s\" 是已廢棄的選項 - 除了對 %s 之外沒有效果\n"
 
 msgid "Uncompressed"
 msgstr "未壓縮"
@@ -4156,8 +4168,8 @@ msgid "writing to stdout\n"
 msgstr "寫到標準輸出中\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
-msgstr "假設被簽署的資料在 `%s'\n"
+msgid "assuming signed data in '%s'\n"
+msgstr "假設被簽署的資料在 '%s'\n"
 
 #, c-format
 msgid "new configuration file `%s' created\n"
@@ -4696,11 +4708,6 @@ msgstr "請注意: 簽章金鑰 %s 已於 %s 過期\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "請注意: 簽署金鑰 %s 已撤銷\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s 簽章, 摘要演算法 %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
