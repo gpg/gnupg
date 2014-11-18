@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.0.25\n"
+"Project-Id-Version: GNU gnupg 2.0.26\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-08-08 10:06+0900\n"
+"PO-Revision-Date: 2014-11-18 11:04+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -414,7 +414,7 @@ msgstr "ソケットのナンス取得エラー\n"
 
 #, c-format
 msgid "error binding socket to `%s': %s\n"
-msgstr "「%s」でソケットのバインドのエラー: %s\n"
+msgstr "ソケットの「%s」へのバインドのエラー: %s\n"
 
 #, c-format
 msgid "listen() failed: %s\n"
@@ -563,7 +563,7 @@ msgstr "「%s」の不正なフィンガープリント (行 %d)\n"
 
 #, c-format
 msgid "invalid keyflag in `%s', line %d\n"
-msgstr "「%s」の無効なフラグ(行 %d)\n"
+msgstr "「%s」の無効な鍵フラグ(行 %d)\n"
 
 #, c-format
 msgid "error reading `%s', line %d: %s\n"
@@ -749,7 +749,7 @@ msgid "out of core while allocating %lu bytes"
 msgstr "%luバイトの確保においてメモリが足りません"
 
 msgid "no running gpg-agent - starting one\n"
-msgstr "gpg-agentが実行されていません - 実行を開始します\n"
+msgstr "gpg-agentが動いていません - 開始します\n"
 
 #, c-format
 msgid "waiting %d seconds for the agent to come up\n"
@@ -1384,7 +1384,7 @@ msgstr ""
 
 #, c-format
 msgid "unable to execute program `%s': %s\n"
-msgstr "「%s」を実行できません: %s\n"
+msgstr "プログラム「%s」を実行できません: %s\n"
 
 #, c-format
 msgid "unable to execute shell `%s': %s\n"
@@ -1502,7 +1502,7 @@ msgid "make a clear text signature"
 msgstr "クリア・テクスト署名を作成"
 
 msgid "make a detached signature"
-msgstr "分離署名を作成"
+msgstr "分遣署名を作成"
 
 msgid "encrypt data"
 msgstr "データを暗号化"
@@ -1640,7 +1640,7 @@ msgstr ""
 "\n"
 " -se -r Bob [ファイル]      ユーザBobへ署名と暗号化\n"
 " --clearsign [ファイル]     クリア・テクスト署名を作成\n"
-" --detach-sign [ファイル]   分離署名を作成\n"
+" --detach-sign [ファイル]   分遣署名を作成\n"
 " --list-keys [名前]         鍵を表示\n"
 " --fingerprint [名前]       フィンガー・プリントを表示\n"
 
@@ -1791,7 +1791,7 @@ msgstr "*注意*: 普通%sは使いません!\n"
 
 #, c-format
 msgid "`%s' is not a valid signature expiration\n"
-msgstr "「%s」は、有効な署名表現ではありません\n"
+msgstr "「%s」は、有効な署名期限ではありません\n"
 
 #, c-format
 msgid "`%s' is not a valid character set\n"
@@ -1899,7 +1899,7 @@ msgid "will not run with insecure memory due to %s\n"
 msgstr "%s のため、セキュアでないメモリで実行しません\n"
 
 msgid "you can only make detached or clear signatures while in --pgp2 mode\n"
-msgstr "--pgp2モードでは分離署名かクリア・テクスト署名だけしかできません\n"
+msgstr "--pgp2モードでは分遣署名かクリア・テクスト署名だけしかできません\n"
 
 msgid "you can't sign and encrypt at the same time while in --pgp2 mode\n"
 msgstr "--pgp2モードでは署名と暗号化を同時にできません\n"
@@ -2116,6 +2116,9 @@ msgstr "ローカルだけとマークされた署名をインポートします
 
 msgid "repair damage from the pks keyserver during import"
 msgstr "インポート時にpksキーサーバからのダメージを修正します"
+
+msgid "do not clear the ownertrust values during import"
+msgstr "インポートの際、所有者信用の値をクリアしない"
 
 msgid "do not update the trustdb after import"
 msgstr "インポートの際、信用データベースを更新しない"
@@ -2482,7 +2485,7 @@ msgstr "鍵リング「%s」の作成エラー: %s\n"
 
 #, c-format
 msgid "keyring `%s' created\n"
-msgstr "鍵リング「%s」ができました\n"
+msgstr "鍵リング「%s」を作成しました\n"
 
 #, c-format
 msgid "keyblock resource `%s': %s\n"
@@ -4064,11 +4067,16 @@ msgid "unknown"
 msgstr "不明の"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+"*警告*: 分遣署名ではありません。ファイル「%s」は検証されて*いませんでした*!\n"
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "署名を検査できません: %s\n"
 
 msgid "not a detached signature\n"
-msgstr "分離署名でありません\n"
+msgstr "分遣署名ではありません\n"
 
 msgid ""
 "WARNING: multiple signatures detected.  Only the first will be checked.\n"
@@ -4111,6 +4119,10 @@ msgstr "*警告*: 実験的ダイジェスト・アルゴリズム %sを使用\n
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "*警告*: ダイジェスト・アルゴリズム %s は廃止されています\n"
 
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "注意: %s のアルゴリズムを使った署名は拒否されます\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA暗号方式のプラグインがありません\n"
 
@@ -4144,6 +4156,17 @@ msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr ""
 "*警告*: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
 
+#, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr ""
+"%s:%u: \"%s%s\"は、使われなくなったオプションです - %sになんの効果もありません\n"
+
+#, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgstr ""
+"*警告*: \"%s%s\"は、使われなくなったオプションです - %s以外になんの効果もありません\n"
+
 msgid "Uncompressed"
 msgstr "無圧縮"
 
@@ -4165,7 +4188,7 @@ msgstr "不明のオプション「%s」\n"
 
 #, c-format
 msgid "File `%s' exists. "
-msgstr "ファイル「%s」は既に存在します。"
+msgstr "ファイル「%s」は存在します。"
 
 msgid "Overwrite? (y/N) "
 msgstr "上書きしますか? (y/N) "
@@ -4181,12 +4204,12 @@ msgid "writing to stdout\n"
 msgstr "標準出力に書き込みます\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "署名されたデータが「%s」にあると想定します\n"
 
 #, c-format
 msgid "new configuration file `%s' created\n"
-msgstr "新しいコンフィグレーション・ファイル「%s」ができました\n"
+msgstr "新しいコンフィグレーション・ファイル「%s」を作成しました\n"
 
 #, c-format
 msgid "WARNING: options in `%s' are not yet active during this run\n"
@@ -4507,7 +4530,7 @@ msgstr ""
 "データは保存されていません。保存には\"--output\"オプションを使ってください\n"
 
 msgid "Detached signature.\n"
-msgstr "分離署名。\n"
+msgstr "分遣署名。\n"
 
 msgid "Please enter name of data file: "
 msgstr "データ・ファイルの名前を入力: "
@@ -4650,7 +4673,7 @@ msgstr "秘密部分が得られません\n"
 
 #, c-format
 msgid "protection algorithm %d%s is not supported\n"
-msgstr "保護アルゴリズム%d%sはサポートしていません\n"
+msgstr "保護アルゴリズム%d%sはサポートされていません\n"
 
 #, c-format
 msgid "protection digest %d is not supported\n"
@@ -4685,7 +4708,7 @@ msgstr "DSA鍵 %sは安全でない(%uビット)ハッシュを用います\n"
 
 #, c-format
 msgid "DSA key %s requires a %u bit or larger hash\n"
-msgstr "DSA鍵 %s は%u ビットあるいはより大きいハッシュを必要とします\n"
+msgstr "DSA鍵 %s は%u ビット以上のハッシュを必要とします\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "*警告*: 署名のダイジェストが、メッセージと衝突します\n"
@@ -4725,10 +4748,6 @@ msgid "NOTE: signature key %s has been revoked\n"
 msgstr "*注意*: 鍵 %s は失効済みです\n"
 
 #, c-format
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "注意: %s のアルゴリズムを使った署名は拒否されます\n"
-
-#, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr "不明のクリティカル・ビットにより、鍵%sの署名を不正とみなします\n"
 
@@ -4764,7 +4783,7 @@ msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s署名。署名者:\"%s\"\n"
 
 msgid "you can only detach-sign with PGP 2.x style keys while in --pgp2 mode\n"
-msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分離署名できるだけです\n"
+msgstr "--pgp2モードでは、PGP 2.x形式の鍵で分遣署名できるだけです\n"
 
 #, c-format
 msgid ""
@@ -5173,11 +5192,11 @@ msgstr "iconv_openに失敗しました: %s\n"
 
 #, c-format
 msgid "conversion from `%s' to `%s' failed: %s\n"
-msgstr "「%s」から「%s」への変換に失敗: %s\n"
+msgstr "「%s」から「%s」への変換に失敗しました: %s\n"
 
 #, c-format
 msgid "failed to create temporary file `%s': %s\n"
-msgstr "一時ファイル「%s」が作成できません: %s\n"
+msgstr "一時ファイル「%s」の作成に失敗しました: %s\n"
 
 #, c-format
 msgid "error writing to `%s': %s\n"
@@ -5199,7 +5218,7 @@ msgstr "(デッドロック?) "
 
 #, c-format
 msgid "lock `%s' not made: %s\n"
-msgstr "lock 「%s」 は作成されません: %s\n"
+msgstr "lock 「%s」 は作成されませんでした: %s\n"
 
 #, c-format
 msgid "waiting for lock %s...\n"
@@ -5499,7 +5518,7 @@ msgstr "プロキシ%sのクライアントへの問い合わせが失敗しま�
 
 #, c-format
 msgid "no running dirmngr - starting `%s'\n"
-msgstr "dirmngrが動いていません - 開始します「%s」\n"
+msgstr "Dirmngrが動いていません - 開始します「%s」\n"
 
 msgid "malformed DIRMNGR_INFO environment variable\n"
 msgstr "DIRMNGR_INFO環境変数が破壊されています\n"
@@ -6570,9 +6589,3 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
-
-#~ msgid "you may want to start the gpg-agent first\n"
-#~ msgstr "まず gpg-agent を開始したいでしょう\n"
-
-#~ msgid "error loading `%s': %s\n"
-#~ msgstr "「%s」の読込みエラー: %s\n"
