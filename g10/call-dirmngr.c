@@ -130,7 +130,7 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
                            GPG_ERR_SOURCE_DEFAULT,
                            opt.homedir,
                            opt.dirmngr_program,
-                           opt.verbose, DBG_ASSUAN,
+                           1, opt.verbose, DBG_ASSUAN,
                            NULL /*gpg_status2*/, ctrl);
   if (!err)
     {

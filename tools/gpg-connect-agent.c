@@ -63,7 +63,8 @@ enum cmd_and_opt_values
     oHex,
     oDecode,
     oNoExtConnect,
-    oDirmngr
+    oDirmngr,
+    oNoAutostart,
 
   };
 
@@ -89,6 +90,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|FILE|run commands from FILE on startup")),
   ARGPARSE_s_n (oSubst, "subst",     N_("run /subst on startup")),
 
+  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
   ARGPARSE_s_n (oNoVerbose, "no-verbose", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@" ),
   ARGPARSE_s_s (oAgentProgram, "agent-program", "@"),
@@ -103,6 +105,7 @@ struct
 {
   int verbose;		/* Verbosity level.  */
   int quiet;		/* Be extra quiet.  */
+  int autostart;        /* Start the server if not running.  */
   const char *homedir;  /* Configuration directory name */
   const char *agent_program;  /* Value of --agent-program.  */
   const char *dirmngr_program;  /* Value of --dirmngr-program.  */
@@ -1175,6 +1178,7 @@ main (int argc, char **argv)
 
 
   opt.homedir = default_homedir ();
+  opt.autostart = 1;
   opt.connect_flags = 1;
 
   /* Parse the command line. */
@@ -1191,6 +1195,7 @@ main (int argc, char **argv)
         case oHomedir:   opt.homedir = pargs.r.ret_str; break;
         case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
         case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str;  break;
+        case oNoAutostart:    opt.autostart = 0; break;
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
         case oDirmngr:   opt.use_dirmngr = 1; break;
@@ -2195,6 +2200,7 @@ start_agent (void)
                              GPG_ERR_SOURCE_DEFAULT,
                              opt.homedir,
                              opt.dirmngr_program,
+                             opt.autostart,
                              !opt.quiet, 0,
                              NULL, NULL);
   else
@@ -2204,14 +2210,30 @@ start_agent (void)
                                opt.agent_program,
                                NULL, NULL,
                                session_env,
+                               opt.autostart,
                                !opt.quiet, 0,
                                NULL, NULL);
 
   session_env_release (session_env);
   if (err)
     {
-      log_error (_("error sending standard options: %s\n"), gpg_strerror (err));
-      exit (1);
+      if (!opt.autostart
+          && (gpg_err_code (err)
+              == opt.use_dirmngr? GPG_ERR_NO_DIRMNGR : GPG_ERR_NO_AGENT))
+        {
+          /* In the no-autostart case we don't make gpg-connect-agent
+             fail on a missing server.  */
+          log_info (opt.use_dirmngr?
+                    _("no dirmngr running in this session\n"):
+                    _("no gpg-agent running in this session\n"));
+          exit (0);
+        }
+      else
+        {
+          log_error (_("error sending standard options: %s\n"),
+                     gpg_strerror (err));
+          exit (1);
+        }
     }
 
   return ctx;

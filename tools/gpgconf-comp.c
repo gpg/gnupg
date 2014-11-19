@@ -107,6 +107,7 @@ gc_error (int status, int errnum, const char *fmt, ...)
 /* Forward declaration.  */
 static void gpg_agent_runtime_change (int killflag);
 static void scdaemon_runtime_change (int killflag);
+static void dirmngr_runtime_change (int killflag);
 
 /* Backend configuration.  Backends are used to decide how the default
    and current value of an option can be determined, and how the
@@ -189,7 +190,7 @@ static struct
     { SCDAEMON_DISP_NAME, SCDAEMON_NAME, GNUPG_MODULE_NAME_SCDAEMON,
       scdaemon_runtime_change, GPGCONF_NAME"-" SCDAEMON_NAME ".conf" },
     { DIRMNGR_DISP_NAME, DIRMNGR_NAME, GNUPG_MODULE_NAME_DIRMNGR,
-      NULL, GPGCONF_NAME "-" DIRMNGR_NAME ".conf" },
+      dirmngr_runtime_change, GPGCONF_NAME "-" DIRMNGR_NAME ".conf" },
     { DIRMNGR_DISP_NAME " LDAP Server List", NULL, 0,
       NULL, "ldapserverlist-file", "LDAP Server" },
     { "Pinentry", "pinentry", GNUPG_MODULE_NAME_PINENTRY,
@@ -1064,19 +1065,20 @@ gpg_agent_runtime_change (int killflag)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[2];
+  const char *argv[3];
   pid_t pid;
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
-  argv[0] = killflag? "KILLAGENT" : "RELOADAGENT";
-  argv[1] = NULL;
+  argv[0] = "--no-autostart";
+  argv[1] = killflag? "KILLAGENT" : "RELOADAGENT";
+  argv[2] = NULL;
 
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
-    gc_error (0, 0, "error running '%s%s': %s",
-              pgmname, " reloadagent", gpg_strerror (err));
+    gc_error (0, 0, "error running '%s %s': %s",
+              pgmname, argv[1], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 
@@ -1086,7 +1088,7 @@ scdaemon_runtime_change (int killflag)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[6];
+  const char *argv[7];
   pid_t pid;
 
   (void)killflag;  /* For scdaemon kill and reload are synonyms.  */
@@ -1098,18 +1100,43 @@ scdaemon_runtime_change (int killflag)
 
   pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
   argv[0] = "-s";
-  argv[1] = "GETINFO scd_running";
-  argv[2] = "/if ${! $?}";
-  argv[3] = "scd killscd";
-  argv[4] = "/end";
-  argv[5] = NULL;
+  argv[1] = "--no-autostart";
+  argv[2] = "GETINFO scd_running";
+  argv[3] = "/if ${! $?}";
+  argv[4] = "scd killscd";
+  argv[5] = "/end";
+  argv[6] = NULL;
 
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
     err = gnupg_wait_process (pgmname, pid, 1, NULL);
   if (err)
-    gc_error (0, 0, "error running '%s%s': %s",
-              pgmname, " scd killscd", gpg_strerror (err));
+    gc_error (0, 0, "error running '%s %s': %s",
+              pgmname, argv[4], gpg_strerror (err));
+  gnupg_release_process (pid);
+}
+
+
+static void
+dirmngr_runtime_change (int killflag)
+{
+  gpg_error_t err;
+  const char *pgmname;
+  const char *argv[4];
+  pid_t pid;
+
+  pgmname = gnupg_module_name (GNUPG_MODULE_NAME_CONNECT_AGENT);
+  argv[0] = "--no-autostart";
+  argv[1] = "--dirmngr";
+  argv[2] = killflag? "KILLDIRMNGR" : "RELOADDIRMNGR";
+  argv[3] = NULL;
+
+  err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
+  if (!err)
+    err = gnupg_wait_process (pgmname, pid, 1, NULL);
+  if (err)
+    gc_error (0, 0, "error running '%s %s': %s",
+              pgmname, argv[2], gpg_strerror (err));
   gnupg_release_process (pid);
 }
 

@@ -95,7 +95,7 @@ start_agent (ctrl_t ctrl)
                                 opt.agent_program,
                                 opt.lc_ctype, opt.lc_messages,
                                 opt.session_env,
-                                opt.verbose, DBG_ASSUAN,
+                                1, opt.verbose, DBG_ASSUAN,
                                 gpgsm_status2, ctrl);
 
       if (!rc)

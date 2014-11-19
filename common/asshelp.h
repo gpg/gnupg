@@ -58,7 +58,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
                      session_env_t session_env,
-                     int verbose, int debug,
+                     int autostart, int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg);
 
@@ -69,7 +69,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
                    const char *homedir,
                    const char *dirmngr_program,
-                   int verbose, int debug,
+                   int autostart, int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg);
 

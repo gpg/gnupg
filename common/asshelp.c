@@ -344,9 +344,10 @@ unlock_spawning (lock_spawn_t *lock, const char *name)
     }
 }
 
-/* Try to connect to the agent via socket or fork it off and work by
-   pipes.  Handle the server's initial greeting.  Returns a new assuan
-   context at R_CTX or an error code. */
+/* Try to connect to the agent via socket or start it if it is not
+   running and AUTOSTART is set.  Handle the server's initial
+   greeting.  Returns a new assuan context at R_CTX or an error
+   code. */
 gpg_error_t
 start_new_gpg_agent (assuan_context_t *r_ctx,
                      gpg_err_source_t errsource,
@@ -355,7 +356,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
                      const char *opt_lc_ctype,
                      const char *opt_lc_messages,
                      session_env_t session_env,
-                     int verbose, int debug,
+                     int autostart, int verbose, int debug,
                      gpg_error_t (*status_cb)(ctrl_t, int, ...),
                      ctrl_t status_cb_arg)
 {
@@ -376,7 +377,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 
   sockname = make_absfilename (homedir, GPG_AGENT_SOCK_NAME, NULL);
   err = assuan_socket_connect (ctx, sockname, 0, 0);
-  if (err)
+  if (err && autostart)
     {
       char *abs_homedir;
       lock_spawn_t lock;
@@ -491,7 +492,8 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   xfree (sockname);
   if (err)
     {
-      log_error ("can't connect to the agent: %s\n", gpg_strerror (err));
+      if (autostart || gpg_err_code (err) != GPG_ERR_ASS_CONNECT_FAILED)
+        log_error ("can't connect to the agent: %s\n", gpg_strerror (err));
       assuan_release (ctx);
       return gpg_err_make (errsource, GPG_ERR_NO_AGENT);
     }
@@ -517,13 +519,14 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
 
 
 /* Try to connect to the dirmngr via a socket.  On platforms
-   supporting it, start it up if needed.  Returns a new assuan context
-   at R_CTX or an error code. */
+   supporting it, start it up if needed and if AUTOSTART is true.
+   Returns a new assuan context at R_CTX or an error code. */
 gpg_error_t
 start_new_dirmngr (assuan_context_t *r_ctx,
                    gpg_err_source_t errsource,
                    const char *homedir,
                    const char *dirmngr_program,
+                   int autostart,
                    int verbose, int debug,
                    gpg_error_t (*status_cb)(ctrl_t, int, ...),
                    ctrl_t status_cb_arg)
@@ -557,7 +560,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
   err = assuan_socket_connect (ctx, sockname, 0, 0);
 
 #ifdef USE_DIRMNGR_AUTO_START
-  if (err)
+  if (err && autostart)
     {
       lock_spawn_t lock;
       const char *argv[4];
@@ -670,8 +673,9 @@ start_new_dirmngr (assuan_context_t *r_ctx,
 
   if (err)
     {
-      log_error ("connecting dirmngr at '%s' failed: %s\n",
-                 sockname, gpg_strerror (err));
+      if (autostart || gpg_err_code (err) != GPG_ERR_ASS_CONNECT_FAILED)
+        log_error ("connecting dirmngr at '%s' failed: %s\n",
+                   sockname, gpg_strerror (err));
       assuan_release (ctx);
       return gpg_err_make (errsource, GPG_ERR_NO_DIRMNGR);
     }

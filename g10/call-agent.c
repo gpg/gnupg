@@ -285,7 +285,7 @@ start_agent (ctrl_t ctrl, int for_card)
                                 opt.agent_program,
                                 opt.lc_ctype, opt.lc_messages,
                                 opt.session_env,
-                                opt.verbose, DBG_ASSUAN,
+                                1, opt.verbose, DBG_ASSUAN,
                                 NULL, NULL);
       if (!rc)
         {
