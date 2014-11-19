@@ -899,13 +899,12 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	    for (sk_rover = sk_list; sk_rover; sk_rover = sk_rover->next )
 	      {
 		if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_DSA
-                    || (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_EDDSA
-                        && !openpgp_oid_is_ed25519 (sk_rover->pk->pkey[1])))
+                    || sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
 		  {
 		    int temp_hashlen = (gcry_mpi_get_nbits
                                         (sk_rover->pk->pkey[1]));
 
-		    if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_EDDSA)
+		    if (sk_rover->pk->pubkey_algo == PUBKEY_ALGO_ECDSA)
 		      temp_hashlen = ecdsa_qbits_from_Q (temp_hashlen);
 		    temp_hashlen = (temp_hashlen+7)/8;
 
@@ -915,7 +914,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 		    if (hint.digest_length<temp_hashlen)
 		      hint.digest_length=temp_hashlen;
 		  }
-                /* FIXME: need toall gpg-agent */
+                /* FIXME: need to check gpg-agent for this. */
 		/* else if (sk_rover->pk->is_protected */
                 /*          && sk_rover->pk->protect.s2k.mode == 1002) */
 		/*   smartcard = 1;  */
