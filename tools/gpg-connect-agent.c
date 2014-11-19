@@ -64,6 +64,7 @@ enum cmd_and_opt_values
     oDecode,
     oNoExtConnect,
     oDirmngr,
+    oUIServer,
     oNoAutostart,
 
   };
@@ -78,6 +79,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oHex,   "hex",       N_("print data out hex encoded")),
   ARGPARSE_s_n (oDecode,"decode",    N_("decode received data lines")),
   ARGPARSE_s_n (oDirmngr,"dirmngr",  N_("connect to the dirmngr")),
+  ARGPARSE_s_n (oUIServer, "uiserver", "@"),
   ARGPARSE_s_s (oRawSocket, "raw-socket",
                 N_("|NAME|connect to Assuan socket NAME")),
   ARGPARSE_s_s (oTcpSocket, "tcp-socket",
@@ -112,6 +114,7 @@ struct
   int hex;              /* Print data lines in hex format. */
   int decode;           /* Decode received data lines.  */
   int use_dirmngr;      /* Use the dirmngr and not gpg-agent.  */
+  int use_uiserver;     /* Use the standard UI server.  */
   const char *raw_socket; /* Name of socket to connect in raw mode. */
   const char *tcp_socket; /* Name of server to connect in tcp mode. */
   int exec;             /* Run the pgm given on the command line. */
@@ -1199,6 +1202,7 @@ main (int argc, char **argv)
         case oHex:       opt.hex = 1; break;
         case oDecode:    opt.decode = 1; break;
         case oDirmngr:   opt.use_dirmngr = 1; break;
+        case oUIServer:  opt.use_uiserver = 1; break;
         case oRawSocket: opt.raw_socket = pargs.r.ret_str; break;
         case oTcpSocket: opt.tcp_socket = pargs.r.ret_str; break;
         case oExec:      opt.exec = 1; break;
@@ -1216,6 +1220,12 @@ main (int argc, char **argv)
   if (log_get_errorcount (0))
     exit (2);
 
+  /* --uiserver is a shortcut for a specific raw socket.  This comes
+       in particular handy on Windows. */
+  if (opt.use_uiserver)
+    {
+      opt.raw_socket = make_absfilename (opt.homedir, "S.uiserver", NULL);
+    }
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
