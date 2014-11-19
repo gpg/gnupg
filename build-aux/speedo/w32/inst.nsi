@@ -132,11 +132,9 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
-#!define MUI_HEADERIMAGE
-#!define MUI_HEADERIMAGE_BITMAP \
-#               "${TOP_SRCDIR}/doc/logo/gnupg-logo-150x57.bmp"
-#!define MUI_WELCOMEFINISHPAGE_BITMAP \
-#               "${TOP_SRCDIR}/doc/logo/gnupg-logo-164x314.bmp"
+!define MUI_HEADERIMAGE
+!define MUI_HEADERIMAGE_BITMAP "${W32_SRCDIR}\gnupg-logo-150x57.bmp"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "${W32_SRCDIR}\gnupg-logo-164x314.bmp"
 
 # Remember the installer language
 !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
@@ -218,11 +216,10 @@ Var STARTMENU_FOLDER
 !insertmacro MUI_RESERVEFILE_LANGDLL
 !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 ReserveFile "${BUILD_DIR}\g4wihelp.dll"
-#ReserveFile "${TOP_SRCDIR}\doc\logo\gnupg-logo-400px.bmp"
-#ReserveFile "${W32_SRCDIR}\gnupg-splash.wav"
+ReserveFile "${W32_SRCDIR}\gnupg-logo-150x57.bmp"
+ReserveFile "${W32_SRCDIR}\gnupg-logo-164x314.bmp"
 ReserveFile "${TOP_SRCDIR}\COPYING"
 ReserveFile "${W32_SRCDIR}\inst-options.ini"
-#ReserveFile "${TOP_SRCDIR}\doc\logo\gnupg-logo-164x314.bmp"
 
 # Language support
 
@@ -1019,6 +1016,7 @@ Section "-un.gpgme"
   Delete "$INSTDIR\bin\libgpgme-glib-11.dll"
   Delete "$INSTDIR\bin\gpgme-w32spawn.exe"
   Delete "$INSTDIR\lib\libgpgme.imp"
+  Delete "$INSTDIR\lib\libgpgme-glib.imp"
   Delete "$INSTDIR\include\gpgme.h"
 SectionEnd
 

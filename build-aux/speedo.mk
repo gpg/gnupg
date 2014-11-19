@@ -1024,16 +1024,20 @@ dist-source: all
 	)
 
 
+# Extract the two latest news entries.  */
 $(bdir)/NEWS.tmp: $(topsrc)/NEWS
-	sed -e '/^#/d' <$(topsrc)/NEWS >$(bdir)/NEWS.tmp
+	awk '/^Notewo/ {if(okay>1){exit}; okay++};okay {print $0}' \
+	    <$(topsrc)/NEWS  >$(bdir)/NEWS.tmp
 
-$(bdir)/README.txt: $(bdir)/NEWS.tmp $(w32src)/README.txt \
+$(bdir)/README.txt: $(bdir)/NEWS.tmp $(topsrc)/README $(w32src)/README.txt \
                     $(w32src)/pkg-copyright.txt
 	sed -e '/^;.*/d;' \
-	-e '/!NEWSFILE!/{r NEWS.tmp' -e 'd;}' \
+	-e '/!NEWSFILE!/{r $(bdir)/NEWS.tmp' -e 'd;}' \
+	-e '/!GNUPGREADME!/{r $(topsrc)/README' -e 'd;}' \
         -e '/!PKG-COPYRIGHT!/{r $(w32src)/pkg-copyright.txt' -e 'd;}' \
         -e 's,!VERSION!,$(INST_VERSION),g' \
 	   < $(w32src)/README.txt \
+           | sed -e '/^#/d' \
            | awk '{printf "%s\r\n", $$0}' >$(bdir)/README.txt
 
 $(bdir)/g4wihelp.dll: $(w32src)/g4wihelp.c $(w32src)/exdll.h
