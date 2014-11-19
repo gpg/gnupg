@@ -612,6 +612,15 @@ Section "-zlib" SEC_zlib
   File bin/zlib1.dll
 SectionEnd
 
+Section "-adns" SEC_adns
+  SetOutPath "$INSTDIR\bin"
+  File bin/libadns-1.dll
+  SetOutPath "$INSTDIR\lib"
+  File /oname=libadns.imp lib/libadns.dll.a
+  SetOutPath "$INSTDIR\include"
+  File include/adns.h
+SectionEnd
+
 Section "-npth" SEC_npth
   SetOutPath "$INSTDIR\bin"
   File bin/libnpth-0.dll
@@ -1035,6 +1044,12 @@ Section "-un.npth"
   Delete "$INSTDIR\bin\libnpth-0.dll"
   Delete "$INSTDIR\lib\libnpth.imp"
   Delete "$INSTDIR\include\npth.h"
+SectionEnd
+
+Section "-un.adns"
+  Delete "$INSTDIR\bin\libadns-1.dll"
+  Delete "$INSTDIR\lib\libadns.imp"
+  Delete "$INSTDIR\include\adns.h"
 SectionEnd
 
 Section "-un.zlib"
