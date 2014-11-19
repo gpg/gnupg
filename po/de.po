@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-10-29 17:05+0100\n"
+"PO-Revision-Date: 2014-11-19 10:33+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -571,7 +571,7 @@ msgid "error reading '%s', line %d: %s\n"
 msgstr "Fehler beim Lesen von `%s', Zeile %d: %s\n"
 
 msgid "error reading list of trusted root certificates\n"
-msgstr "Fehler beim Lesen der Liste vertrauenswürdiger root-Zertifikate\n"
+msgstr "Fehler beim Lesen der Liste vertrauenswürdiger Wurzelzertifikate\n"
 
 #. TRANSLATORS: This prompt is shown by the Pinentry
 #. and has one special property: A "%%0A" is used by
@@ -710,9 +710,6 @@ msgstr "Fehler bei Ausführung von `%s': beendet\n"
 #, c-format
 msgid "error getting exit code of process %d: %s\n"
 msgstr "Fehler beim Holen des Exitwerte des Prozesses %d: %s\n"
-
-msgid "gpg-agent is not available in this session\n"
-msgstr "GPG-Agent ist in dieser Sitzung nicht vorhanden\n"
 
 #, c-format
 msgid "can't connect to '%s': %s\n"
@@ -2295,10 +2292,8 @@ msgstr "Importiere Signaturen, die als nicht exportfähig markiert sind"
 msgid "repair damage from the pks keyserver during import"
 msgstr "Beseitige Beschädigung durch den Schlüsselserver während des Imports"
 
-#, fuzzy
-#| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
-msgstr "ändern Sie die \"Trust\"-Datenbank nach dem Import nicht"
+msgstr "die \"Ownertrust\" Werte beim Import nicht löschen"
 
 msgid "do not update the trustdb after import"
 msgstr "ändern Sie die \"Trust\"-Datenbank nach dem Import nicht"
@@ -3006,7 +3001,7 @@ msgid "change the passphrase"
 msgstr "Die Passphrase ändern"
 
 msgid "change the ownertrust"
-msgstr "Den \"Owner trust\" ändern"
+msgstr "Den \"Ownertrust\" ändern"
 
 msgid "revoke signatures on the selected user IDs"
 msgstr "Beglaubigungen der ausgewählten User-IDs widerrufen"
@@ -4278,6 +4273,7 @@ msgstr ", Schlüsselverfahren "
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
 msgstr ""
+"WARNUNG: Keine abgetrennte Signatur; die Datei '%s' wurde NICHT überprüft!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -5110,7 +5106,7 @@ msgid ""
 "# List of assigned trustvalues, created %s\n"
 "# (Use \"gpg --import-ownertrust\" to restore them)\n"
 msgstr ""
-"# Liste der zugewiesenen Trustwerte, erzeugt am %s\n"
+"# Liste der zugewiesenen \"Ownertrust\" Werte, erzeugt am %s\n"
 "# (\"gpg --import-ownertrust\" um sie zu restaurieren)\n"
 
 #, c-format
@@ -5127,7 +5123,7 @@ msgid "invalid fingerprint"
 msgstr "ungültiger Fingerabdruck"
 
 msgid "ownertrust value missing"
-msgstr "\"Owner trust\"-Wert fehlt"
+msgstr "\"Ownertrust\"-Wert fehlt"
 
 #, c-format
 msgid "error finding trust record in '%s': %s\n"
@@ -7688,6 +7684,9 @@ msgstr "unbekannter Befehl `%s'\n"
 msgid "sending line failed: %s\n"
 msgstr "Senden der Zeile schlug fehl: %s\n"
 
+msgid "no dirmngr running in this session\n"
+msgstr "Der Dirmngr läuft nicht für diese Session\n"
+
 #, c-format
 msgid "error sending standard options: %s\n"
 msgstr "Fehler beim Senden der Standardoptionen: %s\n"
@@ -8019,6 +8018,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "GPG-Agent ist in dieser Sitzung nicht vorhanden\n"
 
 #~ msgid "invalid root packet detected in proc_tree()\n"
 #~ msgstr "ungültiges root-Paket in proc_tree() entdeckt\n"
