@@ -331,7 +331,7 @@ agent_open (int *rfd)
   if ( !infostr || !*infostr )
     {
 #ifdef SPWQ_USE_LOGGING
-      log_error (_("gpg-agent is not available in this session\n"));
+      log_error (_("no gpg-agent running in this session\n"));
 #endif
       return SPWQ_NO_AGENT;
     }
