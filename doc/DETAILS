@@ -750,6 +750,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - <sec_dups>
     - <skipped_new_keys>
     - <not_imported>
+    - <skipped_v3_keys>
 
 ** Smartcard related
 *** CARDCTRL <what> [<serialno>]

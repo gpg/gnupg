@@ -57,6 +57,7 @@ struct stats_s {
     ulong not_imported;
     ulong n_sigs_cleaned;
     ulong n_uids_cleaned;
+    ulong v3keys;   /* Number of V3 keys seen.  */
 };
 
 
@@ -64,7 +65,8 @@ static int import (ctrl_t ctrl,
                    IOBUF inp, const char* fname, struct stats_s *stats,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
 		   import_screener_t screener, void *screener_arg);
-static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
+static int read_block (IOBUF a, PACKET **pending_pkt, KBNODE *ret_root,
+                       int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
 static int import_one (ctrl_t ctrl,
                        const char *fname, KBNODE keyblock,struct stats_s *stats,
@@ -298,6 +300,7 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
                                 grasp the return semantics of
                                 read_block. */
     int rc = 0;
+    int v3keys;
 
     getkey_disable_caches();
 
@@ -310,8 +313,9 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
         release_armor_context (afx);
     }
 
-    while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
-	if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
+    while( !(rc = read_block( inp, &pending_pkt, &keyblock, &v3keys) )) {
+        stats->v3keys += v3keys;
+        if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
           rc = import_one (ctrl, fname, keyblock,
                            stats, fpr, fpr_len, options, 0, 0,
                            screener, screener_arg);
@@ -334,9 +338,10 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
 	if( !(++stats->count % 100) && !opt.quiet )
 	    log_info(_("%lu keys processed so far\n"), stats->count );
     }
+    stats->v3keys += v3keys;
     if( rc == -1 )
 	rc = 0;
-    else if( rc && rc != G10ERR_INV_KEYRING )
+    else if( rc && gpg_err_code (rc) != G10ERR_INV_KEYRING )
 	log_error( _("error reading '%s': %s\n"), fname, g10_errstr(rc));
 
     return rc;
@@ -354,6 +359,7 @@ import_old_secring (ctrl_t ctrl, const char *fname)
                                 grasp the return semantics of
                                 read_block. */
   struct stats_s *stats;
+  int v3keys;
 
   inp = iobuf_open (fname);
   if (inp && is_secured_file (iobuf_get_fd (inp)))
@@ -371,7 +377,7 @@ import_old_secring (ctrl_t ctrl, const char *fname)
 
   getkey_disable_caches();
   stats = import_new_stats_handle ();
-  while (!(err = read_block (inp, &pending_pkt, &keyblock)))
+  while (!(err = read_block (inp, &pending_pkt, &keyblock, &v3keys)))
     {
       if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
         err = import_secret_one (ctrl, fname, keyblock, stats, 1, 0, 1,
@@ -401,7 +407,10 @@ import_print_stats (void *hd)
     struct stats_s *stats = hd;
 
     if( !opt.quiet ) {
-	log_info(_("Total number processed: %lu\n"), stats->count );
+	log_info(_("Total number processed: %lu\n"),
+                 stats->count + stats->v3keys);
+	if( stats->v3keys)
+	    log_info(_("    skipped PGP-2 keys: %lu\n"), stats->v3keys);
 	if( stats->skipped_new_keys )
 	    log_info(_("      skipped new keys: %lu\n"),
 						stats->skipped_new_keys );
@@ -436,9 +445,10 @@ import_print_stats (void *hd)
     }
 
     if( is_status_enabled() ) {
-	char buf[14*20];
-	sprintf(buf, "%lu %lu %lu 0 %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
-		stats->count,
+	char buf[15*20];
+	snprintf (buf, sizeof buf,
+                  "%lu %lu %lu 0 %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+		stats->count + stats->v3keys,
 		stats->no_user_id,
 		stats->imported,
 		stats->unchanged,
@@ -450,7 +460,8 @@ import_print_stats (void *hd)
 		stats->secret_imported,
 		stats->secret_dups,
 		stats->skipped_new_keys,
-                stats->not_imported );
+                  stats->not_imported,
+                stats->v3keys );
 	write_status_text( STATUS_IMPORT_RES, buf );
     }
 }
@@ -480,16 +491,20 @@ valid_keyblock_packet (int pkttype)
 /****************
  * Read the next keyblock from stream A.
  * PENDING_PKT should be initialzed to NULL
- * and not chnaged form the caller.
+ * and not changed by the caller.
  * Return: 0 = okay, -1 no more blocks or another errorcode.
+ *         The int at at R_V3KEY counts the number of unsupported v3
+ *         keyblocks.
  */
 static int
-read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
+read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root, int *r_v3keys)
 {
     int rc;
     PACKET *pkt;
     KBNODE root = NULL;
-    int in_cert;
+    int in_cert, in_v3key;
+
+    *r_v3keys = 0;
 
     if( *pending_pkt ) {
 	root = new_kbnode( *pending_pkt );
@@ -500,9 +515,23 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	in_cert = 0;
     pkt = xmalloc( sizeof *pkt );
     init_packet(pkt);
+    in_v3key = 0;
     while( (rc=parse_packet(a, pkt)) != -1 ) {
-	if( rc ) {  /* ignore errors */
-	    if( rc != G10ERR_UNKNOWN_PACKET ) {
+	if (rc && (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+                   && (pkt->pkttype == PKT_PUBLIC_KEY
+                       || pkt->pkttype == PKT_SECRET_KEY)
+                   && (pkt->pkt.public_key->version == 2
+                       || pkt->pkt.public_key->version == 3))) {
+            in_v3key = 1;
+            ++*r_v3keys;
+	    free_packet (pkt);
+	    init_packet (pkt);
+            continue;
+        }
+        else if (rc ) {  /* ignore errors */
+            if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET)
+                ; /* Do not show a diagnostic.  */
+            else {
 		log_error("read_block: read error: %s\n", g10_errstr(rc) );
 		rc = G10ERR_INV_KEYRING;
 		goto ready;
@@ -511,6 +540,14 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root )
 	    init_packet(pkt);
 	    continue;
 	}
+
+        if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
+                          || pkt->pkttype == PKT_SECRET_KEY)) {
+	    free_packet( pkt );
+	    init_packet(pkt);
+	    continue;
+        }
+        in_v3key = 0;
 
 	if( !root && pkt->pkttype == PKT_SIGNATURE
 		  && pkt->pkt.signature->sig_class == 0x20 ) {
