@@ -658,7 +658,11 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
   /* FIXME: Do we leak in case of an error?  */
   if (!rc && iobuf_error (inp))
     rc = G10ERR_INV_KEYRING;
-  return rc;
+
+  /* FIXME: We use only the error code for now to avoid problems with
+     callers which have not been checked to always use gpg_err_code()
+     when comparing error codes.  */
+  return rc == -1? -1 : gpg_err_code (rc);
 }
 
 
@@ -1909,7 +1913,6 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   int i, version, algorithm;
   unsigned long timestamp, expiredate, max_expiredate;
   int npkey, nskey;
-  int rc = 0;
   u32 keyid[2];
   PKT_public_key *pk;
 
@@ -2313,7 +2316,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 
  leave:
   iobuf_skip_rest (inp, pktlen, 0);
-  return rc;
+  return err;
 }
 
 
