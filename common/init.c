@@ -67,8 +67,11 @@ static mem_cleanup_item_t mem_cleanup_list;
 
 /* The default error source of the application.  This is different
    from GPG_ERR_SOURCE_DEFAULT in that it does not depend on the
-   source file and thus is usable in code shared by applications.  */
-gpg_err_source_t default_errsource;
+   source file and thus is usable in code shared by applications.
+   Note that we need to initialize it because otherwise some linkers
+   (OS X at least) won't find the symbol when linking the t-*.c
+   files.  */
+gpg_err_source_t default_errsource = 0;
 
 
 #ifdef HAVE_W32CE_SYSTEM
@@ -145,7 +148,7 @@ writestring_via_estream (int mode, const char *string)
 void
 _init_common_subsystems (gpg_err_source_t errsource, int *argcp, char ***argvp)
 {
-  /* Store the error source in a gloabl variable. */
+  /* Store the error source in a global variable. */
   default_errsource = errsource;
 
   atexit (run_mem_cleanup);
