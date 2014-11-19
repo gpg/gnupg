@@ -215,8 +215,8 @@ get_manufacturer (unsigned int no)
 
     case 0xF517: return "FSIJ";
 
-      /* 0x00000 and 0xFFFF are defined as test cards per spec,
-         0xFFF00 to 0xFFFE are assigned for use with randomly created
+      /* 0x0000 and 0xFFFF are defined as test cards per spec,
+         0xFF00 to 0xFFFE are assigned for use with randomly created
          serial numbers.  */
     case 0x0000:
     case 0xffff: return "test card";

@@ -395,7 +395,7 @@ passphrase_clear_cache ( u32 *keyid, const char *cacheid, int algo )
 }
 
 
-/* Return a new DEK object Using the string-to-key sepcifier S2K.  Use
+/* Return a new DEK object using the string-to-key specifier S2K.  Use
    KEYID and PUBKEY_ALGO to prompt the user.  Returns NULL is the user
    selected to cancel the passphrase entry and if CANCELED is not
    NULL, sets it to true.
