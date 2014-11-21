@@ -290,7 +290,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
             jnlib_log_error (_("invalid command \"%.50s\"\n"), s);
           else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_OPTION )
             jnlib_log_error (_("option \"%.50s\" is ambiguous\n"), s);
-          else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_OPTION )
+          else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_COMMAND )
             jnlib_log_error (_("command \"%.50s\" is ambiguous\n"),s );
           else if ( arg->r_opt == ARGPARSE_OUT_OF_CORE )
             jnlib_log_error ("%s\n", _("out of core\n"));
