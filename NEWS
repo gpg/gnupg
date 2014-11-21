@@ -1,6 +1,28 @@
 Noteworthy changes in version 2.1.1 (unreleased)
 ------------------------------------------------
 
+ * gpg: Detect faulty use of --verify on detached signatures.
+
+ * gpg: New import option "keep-ownertrust".
+
+ * gpg: Fixed regression in --refresh-keys.
+
+ * gpg: Fixed best matching hash algo detection for ECDSA and EdDSA.
+
+ * gpg: Improved perceived speed of secret key listisngs.
+
+ * gpg: Print number of skipped PGP-2 keys on import.
+
+ * gpgconf --kill does not anymore start a service only to kill it.
+
+ * Fixed keyserver access for Windows.
+
+ * Fixed build problems on Mac OS X
+
+ * The Windows installer does now install development files
+
+ * More translations (but most of them are not complete).
+
 
 Noteworthy changes in version 2.1.0 (2014-11-06)
 ------------------------------------------------
