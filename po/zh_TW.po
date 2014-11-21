@@ -7,19 +7,18 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 1.4.11\n"
+"Project-Id-Version: gnupg 1.4.18\n"
 "Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2012-05-13 10:57+0800\n"
+"PO-Revision-Date: 2014-11-21 23:17+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-Basepath: gnupg-1.4.11/\n"
-"X-Poedit-Language: Chinese\n"
-"X-Poedit-Country: TAIWAN\n"
+"X-Poedit-Basepath: gnupg-1.4.18/\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 1.5.7\n"
 
 #, c-format
 msgid "can't gen prime with pbits=%u qbits=%u\n"
@@ -957,7 +956,7 @@ msgid "create ascii armored output"
 msgstr "建立以 ASCII 封裝過的輸出"
 
 msgid "|NAME|encrypt for NAME"
-msgstr "|名字|以「名字」作為加密對象"
+msgstr "|名字|以指定名字作為加密對象"
 
 msgid "use this user-id to sign or decrypt"
 msgstr "拿這個使用者 ID 來簽署或解密"
@@ -1019,18 +1018,13 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "用法: gpg [選項] [檔案] (或用 -h 求助)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
 "語法: gpg [選項] [檔案]\n"
-"簽署, 檢查, 加密或解密\n"
+"簽署, 檢查, 加密, 解密\n"
 "預設的操作會依輸入資料而定\n"
 
 msgid ""
@@ -1583,13 +1577,6 @@ msgstr "請輸入選用 (但強烈建議使用) 的電子郵件位址"
 msgid "Please enter an optional comment"
 msgstr "請輸入選用的註釋"
 
-#, fuzzy
-#| msgid ""
-#| "N  to change the name.\n"
-#| "C  to change the comment.\n"
-#| "E  to change the email address.\n"
-#| "O  to continue with key generation.\n"
-#| "Q  to to quit the key generation."
 msgid ""
 "N  to change the name.\n"
 "C  to change the comment.\n"
@@ -1732,8 +1719,6 @@ msgstr ""
 "變更所有 (或祇有被選取的那幾個) 使用者 ID 的偏好成現用的偏好清單.\n"
 "所有受到影響的自我簽章的時間戳記都會增加一秒鐘.\n"
 
-#, fuzzy
-#| msgid "Please enter the passhrase; this is a secret sentence \n"
 msgid "Please enter the passphrase; this is a secret sentence \n"
 msgstr "請輸入密語; 這是個秘密的句子 \n"
 
@@ -1920,13 +1905,12 @@ msgstr "你可以像這樣來更新偏好設定: gpg --edit-key %s updpref save\
 msgid "key %s: no user ID\n"
 msgstr "金鑰 %s: 沒有使用者 ID\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "已跳過 \"%s\": %s\n"
+msgstr "金鑰 %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "受到匯入過濾器所排除"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2023,10 +2007,9 @@ msgstr "金鑰 %s: \"%s\" 已清除 %d 個使用者 ID\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "金鑰 %s: \"%s\" 未改變\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "找不到私鑰 \"%s\": %s\n"
+msgstr "私鑰 %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "未允許匯入私鑰\n"
@@ -4973,12 +4956,10 @@ msgstr "cC"
 msgid "WARNING: using insecure memory!\n"
 msgstr "警告: 正在使用不安全的記憶體!\n"
 
-#, fuzzy
-#| msgid "please see http://www.gnupg.org/faq.html for more information\n"
 msgid ""
 "please see http://www.gnupg.org/documentation/faqs.html for more "
 "information\n"
-msgstr "請參考 http://www.gnupg.org/faq.html 上進一步的資訊\n"
+msgstr "請參考 http://www.gnupg.org/documentation/faqs.html 上進一步的資訊\n"
 
 msgid "operation is not possible without initialized secure memory\n"
 msgstr "尚未啟用安全的記憶體時, 不可能進行操作\n"
