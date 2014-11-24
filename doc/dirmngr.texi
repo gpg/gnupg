@@ -24,15 +24,17 @@
 @end ifset
 
 @mansect description
-Dirmngr is a server for managing and downloading certificate revocation
-lists (CRLs) for X.509 certificates and for downloading the certificates
-themselves. Dirmngr also handles OCSP requests as an alternative to
-CRLs. Dirmngr is either invoked internally by gpgsm or when running as a
-system daemon through the @command{dirmngr-client} tool.
+Since version 2.1 of GnuPG, @command{dirmngr} takes care of accessing
+the OpenPGP keyservers.  As with previous versions it is also used as
+a server for managing and downloading certificate revocation lists
+(CRLs) for X.509 certificates, downloading X.509 certificates, and
+providing access to OCSP providers.  Dirmngr is invoked internally by
+@command{gpg}, @command{gpgsm}, or via the @command{gpg-connect-agent}
+tool.
 
-If @command{dirmngr} is started in system daemon mode, it uses a
-directory layout as common for system daemons and does not make use of
-the default @file{~/.gnupg} directory.
+For historical reasons it is also possible to start @command{dirmngr}
+in a system daemon mode which uses a different directory layout.
+However, this mode is deprecated and may eventually be removed.
 
 
 @manpause
@@ -78,12 +80,13 @@ abbreviate this command.
 @opindex server
 Run in server mode and wait for commands on the @code{stdin}.  The
 default mode is to create a socket and listen for commands there.
+This is only used for testing.
 
 @item --daemon
 @opindex daemon
 Run in background daemon mode and listen for commands on a socket.
 Note that this also changes the default home directory and enables the
-internal certificate validation code.
+internal certificate validation code.  This mode is deprecated.
 
 @item --list-crls
 @opindex list-crls
@@ -420,51 +423,63 @@ Dirmngr makes use of several directories when running in daemon mode:
 
 @table @file
 
-@item /etc/gnupg
-This is where all the configuration files are expected by default.
+@item ~/.gnupg
+@itemx /etc/gnupg
+The first is the standard home directory for all configuration files.
+In the deprecated system daemon mode the second directory is used instead.
 
-@item /etc/gnupg/trusted-certs
-This directory should be filled with certificates of Root CAs you are
-trusting in checking the CRLS and signing OCSP Reponses.  Usually
-these are the same certificates you use with the applications making
-use of dirmngr.  It is expected that each of these certificate files
-contain exactly one @acronym{DER} encoded certificate in a file with
-the suffix @file{.crt} or @file{.der}.  @command{dirmngr} reads those
-certificates on startup and when given a SIGHUP.  Certificates which
-are not readable or do not make up a proper X.509 certificate are
-ignored; see the log file for details.
+@item ~/.gnupg/trusted-certs
+@itemx /etc/gnupg/trusted-certs
+The first directory should be filled with certificates of Root CAs you
+are trusting in checking the CRLs and signing OCSP Reponses.  The
+second directory is used in the deprecated systems daemon mode.
+
+Usually these are the same certificates you use with the applications
+making use of dirmngr.  It is expected that each of these certificate
+files contain exactly one @acronym{DER} encoded certificate in a file
+with the suffix @file{.crt} or @file{.der}.  @command{dirmngr} reads
+those certificates on startup and when given a SIGHUP.  Certificates
+which are not readable or do not make up a proper X.509 certificate
+are ignored; see the log file for details.
 
 Note that for OCSP responses the certificate specified using the option
 @option{--ocsp-signer} is always considered valid to sign OCSP requests.
 
 
-@item /var/lib/gnupg/extra-certs
-This directory may contain extra certificates which are preloaded into
-the interal cache on startup.  This is convenient in cases you have a
-couple intermediate CA certificates or certificates ususally used to
-sign OCSP reponses.  These certificates are first tried before going out
-to the net to look for them.  These certificates must also be
+@item ~/.gnupg/extra-certs
+@itemx /var/lib/gnupg/extra-certs
+The first directory may contain extra certificates which are preloaded
+into the interal cache on startup.This is convenient in cases you have
+a couple intermediate CA certificates or certificates ususally used to
+sign OCSP reponses.  These certificates are first tried before going
+out to the net to look for them.  These certificates must also be
 @acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.
+The second directory is used instead in the deprecated systems daemon
+mode.
 
 @item /var/run/gnupg
-This directory keeps the socket file for accsing @command{dirmngr} services.
-The name of the socket file will be @file{S.dirmngr}.  Make sure that this
-directory has the proper permissions to let @command{dirmngr} create the
-socket file and that eligible users may read and write to that socket.
+This directory is only used in the deprecated system daemon mode.  It
+keeps the socket file for accessing @command{dirmngr} services.  The
+name of the socket file will be @file{S.dirmngr}.  Make sure that this
+directory has the proper permissions to let @command{dirmngr} create
+the socket file and that eligible users may read and write to that
+socket.
 
-@item /var/cache/gnupg/crls.d
-This directory is used to store cached CRLs.  The @file{crls.d} part
-will be created by dirmngr if it does not exists but you need to make
-sure that the upper directory exists.
+@item ~/.gnupg/crls.d
+@itemx /var/cache/gnupg/crls.d
+The first directory is used to store cached CRLs.  The @file{crls.d}
+part will be created by dirmngr if it does not exists but you need to
+make sure that the upper directory exists.  The second directory is
+used instead in the deprecated systems daemon mode.
 
 @end table
 @manpause
 
 To be able to see what's going on you should create the configure file
-@file{/etc/dirmngr/dirmngr.conf} with at least one line:
+@file{~/gnupg/dirmngr.conf} with at least one line:
 
 @example
-log-file /var/log/gnupg/dirmngr.log
+log-file ~/dirmngr.log
 @end example
 
 To be able to perform OCSP requests you probably want to add the line:
@@ -473,14 +488,16 @@ To be able to perform OCSP requests you probably want to add the line:
 allow-ocsp
 @end example
 
-Now you may start dirmngr as a system daemon using:
+To make sure that new options are read and that after the installation
+of a new GnuPG versions the installed dirmngr is running, you may want
+to kill an existing dirmngr first:
 
 @example
-dirmngr --daemon
+gpgconf --kill dirmngr
 @end example
 
-Please ignore the output; it is not needed anymore.  Check the log file
-to see whether all trusted root certificates have been loaded correctly.
+You may check the log file to see whether all desired root
+certificates have been loaded correctly.
 
 
 @c
@@ -501,13 +518,21 @@ Here is a list of supported signals:
 @cpindex SIGHUP
 This signals flushes all internally cached CRLs as well as any cached
 certificates.  Then the certificate cache is reinitialized as on
-startup.  Options are re-read from the configuration file.
+startup.  Options are re-read from the configuration file.  Instead of
+sending this signal it is better to use
+@example
+gpgconf --reload dirmngr
+@end example
 
 @item SIGTERM
 @cpindex SIGTERM
 Shuts down the process but waits until all current requests are
 fulfilled.  If the process has received 3 of these signals and requests
-are still pending, a shutdown is forced.
+are still pending, a shutdown is forced.  You may also use
+@example
+gpgconf --kill dirmngr
+@end example
+instead of this signal
 
 @item SIGINT
 @cpindex SIGINT
@@ -529,25 +554,25 @@ This prints some caching statistics to the log file.
 @node Dirmngr Examples
 @section Examples
 
-
-Dirmngr is supposed to be used as a system wide daemon, it should be
-started like:
+Here is an example on how to show dirmngr's internal table of OpenPGP
+keyserver addresses.  The output is intended for debugging purposes
+and not part of a defined API.
 
 @example
-  dirmngr --daemon
+  gpg-connect-agent --dirmngr 'keyserver --hosttable' /bye
 @end example
 
-This will force it to go into the backround, read the default
-certificates (including the trusted root certificates) and listen on a
-socket for client requests.  It does also print information about the
-socket used but they are only for compatibilty reasons with old GnuPG
-versions and may be ignored.
-
-For debugging purposes it is also possible to start Dirmngr in the
-foreground:
+To inhibit the use of a particular host you have noticed in one of the
+keyserver pools, you may use
 
 @example
-  dirmngr --server -v
+ gpg-connect-agent --dirmngr 'keyserver --dead pgpkeys.bnd.de' /bye
+@end example
+
+The description of the @code{keyserver} command can be printed using
+
+@example
+ gpg-connect-agent --dirmngr 'help keyserver' /bye
 @end example
 
 
