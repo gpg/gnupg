@@ -540,7 +540,9 @@ proc_encrypted( CTX c, PACKET *pkt )
 	result = -1;
     else if( !c->dek && !c->last_was_session_key ) {
         int algo;
-        STRING2KEY s2kbuf, *s2k = NULL;
+        STRING2KEY s2kbuf;
+        STRING2KEY *s2k = NULL;
+        int canceled;
 
 	if(opt.override_session_key)
 	  {
@@ -580,9 +582,13 @@ proc_encrypted( CTX c, PACKET *pkt )
 		log_info (_("assuming %s encrypted data\n"), "IDEA");
 	      }
 
-	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 0, NULL, NULL );
+	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 0, NULL,&canceled);
 	    if (c->dek)
 	      c->dek->algo_info_printed = 1;
+            else if (canceled)
+              result = G10ERR_CANCELED;
+            else
+              result = G10ERR_PASSPHRASE;
 	  }
     }
     else if( !c->dek )
