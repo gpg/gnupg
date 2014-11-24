@@ -1151,7 +1151,11 @@ dump_sig_subpkt (int hashed, int type, int critical,
       if (!length)
 	p = "[invalid regexp subpacket]";
       else
-	es_fprintf (listfp, "regular expression: \"%s\"", buffer);
+        {
+          es_fprintf (listfp, "regular expression: \"");
+          es_write_sanitized (listfp, buffer, length, "\"", NULL);
+          p = "\"";
+        }
       break;
     case SIGSUBPKT_REVOCABLE:
       if (length)
