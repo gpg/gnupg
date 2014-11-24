@@ -2826,6 +2826,8 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
   if (!r)
     return -1;
 
+  /* Note that we need to handle the ECC algorithms specified as
+     strings directly because Libgcrypt folds them all to ECC.  */
   if (!ascii_strcasecmp (r->u.value, "default"))
     {
       /* Note: If you change this default algo, remember to change it
@@ -2839,6 +2841,12 @@ get_parameter_algo( struct para_data_s *para, enum para_name key,
   else if (!strcmp (r->u.value, "ELG-E")
            || !strcmp (r->u.value, "ELG"))
     i = PUBKEY_ALGO_ELGAMAL_E;
+  else if (!ascii_strcasecmp (r->u.value, "EdDSA"))
+    i = PUBKEY_ALGO_EDDSA;
+  else if (!ascii_strcasecmp (r->u.value, "ECDSA"))
+    i = PUBKEY_ALGO_ECDSA;
+  else if (!ascii_strcasecmp (r->u.value, "ECDH"))
+    i = PUBKEY_ALGO_ECDH;
   else
     i = map_pk_gcry_to_openpgp (gcry_pk_map_name (r->u.value));
 
