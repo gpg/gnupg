@@ -49,7 +49,7 @@ m4_define([mym4_revision_dec], m4_argn(8, mym4_verslist))
 m4_esyscmd([echo ]mym4_version[>VERSION])
 AC_INIT([mym4_package],[mym4_version], [http://bugs.gnupg.org])
 
-NEED_GPG_ERROR_VERSION=1.15
+NEED_GPG_ERROR_VERSION=1.16
 
 NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.6.0
