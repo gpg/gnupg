@@ -28,7 +28,10 @@ myman_pages   = gpg.1 gpgv.1
 
 info_TEXINFOS = gnupg1.texi
 
-man_MANS = $(myman_pages) gnupg.7 gpg-zip.1
+# We do not install gnupg.7 because 2.1 does it also be default.  This
+# is the more future proof way of handling it.
+man_MANS = $(myman_pages) gpg-zip.1
+noinst_man_MANS = gnupg.7
 
 gnupg1_TEXINFOS = gnupg1.texi
 
