@@ -520,7 +520,9 @@ proc_encrypted( CTX c, PACKET *pkt )
 	result = -1;
     else if( !c->dek && !c->last_was_session_key ) {
         int algo;
-        STRING2KEY s2kbuf, *s2k = NULL;
+        STRING2KEY s2kbuf;
+        STRING2KEY *s2k = NULL;
+        int canceled;
 
 	if(opt.override_session_key)
 	  {
@@ -562,9 +564,13 @@ proc_encrypted( CTX c, PACKET *pkt )
 		log_info (_("assuming %s encrypted data\n"), "IDEA");
 	      }
 
-	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 3, NULL, NULL );
+	    c->dek = passphrase_to_dek ( NULL, 0, algo, s2k, 3, NULL,&canceled);
 	    if (c->dek)
 	      c->dek->algo_info_printed = 1;
+            else if (canceled)
+              result = gpg_error (GPG_ERR_CANCELED);
+            else
+              result = gpg_error (GPG_ERR_INV_PASSPHRASE);
 	  }
     }
     else if( !c->dek )
@@ -585,7 +591,7 @@ proc_encrypted( CTX c, PACKET *pkt )
 	else if(!opt.no_mdc_warn)
 	    log_info (_("WARNING: message was not integrity protected\n"));
     }
-    else if( result == G10ERR_BAD_SIGN ) {
+    else if( gpg_err_code (result) == G10ERR_BAD_SIGN ) {
 	log_error(_("WARNING: encrypted message has been manipulated!\n"));
 	write_status( STATUS_BADMDC );
 	write_status( STATUS_DECRYPTION_FAILED );
