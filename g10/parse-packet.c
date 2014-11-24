@@ -892,13 +892,18 @@ dump_sig_subpkt( int hashed, int type, int critical,
 	if(length!=2)
 	  p="[invalid trust subpacket]";
 	else
-	  fprintf (listfp, "trust signature of depth %d, value %d",buffer[0],buffer[1]);
+	  fprintf (listfp, "trust signature of depth %d, value %d",
+                   buffer[0],buffer[1]);
 	break;
       case SIGSUBPKT_REGEXP:
 	if(!length)
 	  p="[invalid regexp subpacket]";
 	else
-	  fprintf (listfp, "regular expression: \"%s\"",buffer);
+          {
+            fprintf (listfp, "regular expression: \"");
+            print_string (listfp, buffer, length, '\"');
+            p = "\"";
+          }
 	break;
       case SIGSUBPKT_REVOCABLE:
 	if( length )
