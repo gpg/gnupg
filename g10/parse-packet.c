@@ -2026,6 +2026,14 @@ parse_attribute_subpkts(PKT_user_id *uid)
       if( buflen < n )
 	goto too_short;
 
+      if (!n)
+        {
+          /* Too short to encode the subpacket type.  */
+          if (opt.verbose)
+            log_info ("attribute subpacket too short\n");
+          break;
+        }
+
       attribs=xrealloc(attribs,(count+1)*sizeof(struct user_attribute));
       memset(&attribs[count],0,sizeof(struct user_attribute));
 
