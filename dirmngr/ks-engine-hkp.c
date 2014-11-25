@@ -767,12 +767,20 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
   const char const data[] =
     "Handler for HKP URLs:\n"
     "  hkp://\n"
+#if  HTTP_USE_GNUTLS || HTTP_USE_NTBTLS
     "  hkps://\n"
+#endif
     "Supported methods: search, get, put\n";
   gpg_error_t err;
 
+#if  HTTP_USE_GNUTLS || HTTP_USE_NTBTLS
+  const char data2[] = "  hkp\n  hkps";
+#else
+  const char data2[] = "  hkp";
+#endif
+
   if (!uri)
-    err = ks_print_help (ctrl, "  hkp\n  hkps");
+    err = ks_print_help (ctrl, data2);
   else if (uri->is_http && (!strcmp (uri->scheme, "hkp")
                             || !strcmp (uri->scheme, "hkps")))
     err = ks_print_help (ctrl, data);
