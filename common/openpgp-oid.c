@@ -236,6 +236,8 @@ openpgp_oid_to_str (gcry_mpi_t a)
         val <<= 7;
         val |= buf[n] & 0x7f;
       }
+    if (val < 80)
+      goto badoid;
     val -= 80;
     sprintf (p, "2.%lu", val);
     p += strlen (p);

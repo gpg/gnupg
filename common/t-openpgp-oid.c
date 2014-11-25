@@ -32,6 +32,9 @@
   } while(0)
 
 
+#define BADOID "1.3.6.1.4.1.11591.2.12242973"
+
+
 static void
 test_openpgp_oid_from_str (void)
 {
@@ -107,6 +110,12 @@ test_openpgp_oid_to_str (void)
 
     { "1.3.132.0.35",
       { 5, 0x2B, 0x81, 0x04, 0x00, 0x23 }},
+
+    { BADOID,
+      { 9, 0x80, 0x02, 0x70, 0x50, 0x25, 0x46, 0xfd, 0x0c, 0xc0 }},
+
+    { BADOID,
+      { 1, 0x80 }},
 
     { NULL }};
   gcry_mpi_t a;
