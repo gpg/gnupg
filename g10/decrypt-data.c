@@ -130,7 +130,12 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
     log_fatal ("unsupported blocksize %u\n", blocksize );
   nprefix = blocksize;
   if ( ed->len && ed->len < (nprefix+2) )
-    BUG();
+    {
+       /* An invalid message.  We can't check that during parsing
+          because we may not know the used cipher then.  */
+      rc = gpg_error (GPG_ERR_INV_PACKET);
+      goto leave;
+    }
 
   if ( ed->mdc_method )
     {
