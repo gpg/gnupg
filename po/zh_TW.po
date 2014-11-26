@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.27\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-17 13:03+0800\n"
+"PO-Revision-Date: 2014-11-21 23:15+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
@@ -295,7 +295,7 @@ msgid "csh-style command output"
 msgstr "csh 樣式的指令輸出"
 
 msgid "|FILE|read options from FILE"
-msgstr "|檔案|從「檔案」中讀取選項"
+msgstr "|檔案|從指定檔案中讀取選項"
 
 msgid "do not detach from the console"
 msgstr "不要從 console 分離"
@@ -343,7 +343,7 @@ msgid "enable putty support"
 msgstr "啟用 putty 支援"
 
 msgid "|FILE|write environment settings also to FILE"
-msgstr "|檔案|將環境設定也寫至「檔案」"
+msgstr "|檔案|將環境設定也寫至指定檔案"
 
 #. TRANSLATORS: @EMAIL@ will get replaced by the actual bug
 #. reporting address.  This is so that we can change the
@@ -1575,10 +1575,10 @@ msgid "create ascii armored output"
 msgstr "建立以 ASCII 封裝過的輸出"
 
 msgid "|USER-ID|encrypt for USER-ID"
-msgstr "|使用者-ID|以「使用者-ID」作為加密對象"
+msgstr "|使用者-ID|以指定使用者 ID 作為加密對象"
 
 msgid "|USER-ID|use USER-ID to sign or decrypt"
-msgstr "|使用者-ID|拿「使用者-ID」來簽署或解密"
+msgstr "|使用者-ID|拿指定使用者 ID 來簽署或解密"
 
 msgid "|N|set compress level to N (0 disables)"
 msgstr "|N|設定壓縮等級為 N (0 表示不壓縮)"
@@ -1587,7 +1587,7 @@ msgid "use canonical text mode"
 msgstr "使用標準的文字模式"
 
 msgid "|FILE|write output to FILE"
-msgstr "|檔案|將輸出寫入至「檔案」"
+msgstr "|檔案|將輸出寫入至指定檔案"
 
 msgid "do not make any changes"
 msgstr "不要做任何改變"
@@ -2061,13 +2061,13 @@ msgid "the given preferred keyserver URL is invalid\n"
 msgstr "給定的偏好金鑰伺服器 URL 無效\n"
 
 msgid "|FILE|take the keys from the keyring FILE"
-msgstr "|檔案|從鑰匙圈「檔案」裡取用金鑰"
+msgstr "|檔案|從指定鑰匙圈檔案裡取用金鑰"
 
 msgid "make timestamp conflicts only a warning"
 msgstr "僅把時間戳印矛盾視為警告"
 
 msgid "|FD|write status info to this FD"
-msgstr "|檔案描述|把狀態資訊寫入此「檔案描述」"
+msgstr "|檔案描述|把狀態資訊寫入此指定檔案描述"
 
 msgid "Usage: gpgv [options] [files] (-h for help)"
 msgstr "用法: gpgv [選項] [檔案] (或用 -h 求助)"
@@ -2092,6 +2092,7 @@ msgstr "匯入標記為僅限本機使用的簽章"
 msgid "repair damage from the pks keyserver during import"
 msgstr "匯入時修復來自 pks 金鑰伺服器的損壞"
 
+#| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
 msgstr "匯入過程中不要清除主觀信任值"
 
@@ -4123,10 +4124,12 @@ msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "警告: \"%s\" 是已廢棄的選項 - 沒有效果\n"
 
 #, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr "%s:%u: \"%s%s\" 在此檔案中已廢棄 - 僅對 %s 造成影響\n"
 
 #, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "警告: \"%s%s\" 是已廢棄的選項 - 除了對 %s 之外沒有效果\n"
@@ -4168,6 +4171,7 @@ msgid "writing to stdout\n"
 msgstr "寫到標準輸出中\n"
 
 #, c-format
+#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "假設被簽署的資料在 '%s'\n"
 
@@ -5408,19 +5412,19 @@ msgid "run in multi server mode (foreground)"
 msgstr "以多重伺服器模式執行 (前景)"
 
 msgid "|LEVEL|set the debugging level to LEVEL"
-msgstr "|等級|設定除錯等級為「等級」"
+msgstr "|等級|設定除錯等級為指定等級"
 
 msgid "|FILE|write a log to FILE"
-msgstr "|檔案|將日誌寫入至「檔案」"
+msgstr "|檔案|將日誌寫入至指定檔案"
 
 msgid "|N|connect to reader at port N"
 msgstr "|N|從 N 埠連線至讀卡機"
 
 msgid "|NAME|use NAME as ct-API driver"
-msgstr "|名稱|使用「名稱」做為 ct-API 驅動程式"
+msgstr "|名稱|使用指定名稱做為 ct-API 驅動程式"
 
 msgid "|NAME|use NAME as PC/SC driver"
-msgstr "|名稱|使用「名稱」做為 PC/SC 驅動程式"
+msgstr "|名稱|使用指定名稱做為 PC/SC 驅動程式"
 
 msgid "do not use the internal CCID driver"
 msgstr "不要使用內部的 CCID 驅動程式"
@@ -5492,7 +5496,7 @@ msgstr "shell"
 
 #, c-format
 msgid "critical certificate extension %s is not supported"
-msgstr "未支援關鍵憑證延伸 %s"
+msgstr "未支援關鍵憑證擴充欄位 %s"
 
 msgid "issuer certificate is not marked as a CA"
 msgstr "發行者憑證並未標記為 CA"
@@ -5932,7 +5936,7 @@ msgid "|N|number of certificates to include"
 msgstr "|N|要包含的憑證數量"
 
 msgid "|FILE|take policy information from FILE"
-msgstr "|檔案|從「檔案」中取得原則資訊"
+msgstr "|檔案|從指定檔案中取得原則資訊"
 
 msgid "do not check certificate policies"
 msgstr "不要檢查憑證原則"
@@ -5944,10 +5948,10 @@ msgid "don't use the terminal at all"
 msgstr "完全不要使用終端機"
 
 msgid "|FILE|write a server mode log to FILE"
-msgstr "|檔案|將伺服器模式日誌寫入至「檔案」"
+msgstr "|檔案|將伺服器模式日誌寫入至指定檔案"
 
 msgid "|FILE|write an audit log to FILE"
-msgstr "|檔案|將稽核日誌寫入至「檔案」"
+msgstr "|檔案|將稽核日誌寫入至指定檔案"
 
 msgid "batch mode: never ask"
 msgstr "批次模式: 永遠不詢問"
@@ -5959,19 +5963,19 @@ msgid "assume no on most questions"
 msgstr "假設大部分的問題都回答否"
 
 msgid "|FILE|add keyring to the list of keyrings"
-msgstr "|檔案|將此金鑰鑰匙圈加到金鑰鑰匙圈清單「檔案」中"
+msgstr "|檔案|將此金鑰鑰匙圈加到金鑰鑰匙圈清單指定檔案中"
 
 msgid "|USER-ID|use USER-ID as default secret key"
-msgstr "|使用者-ID|使用「使用者-ID」做為預設私鑰"
+msgstr "|使用者-ID|使用指定使用者 ID 做為預設私鑰"
 
 msgid "|SPEC|use this keyserver to lookup keys"
 msgstr "|SPEC|使用此金鑰伺服器來查找金鑰"
 
 msgid "|NAME|use cipher algorithm NAME"
-msgstr "|名稱|使用「名稱」編密演算法"
+msgstr "|名稱|使用指定名稱的編密演算法"
 
 msgid "|NAME|use message digest algorithm NAME"
-msgstr "|名稱|使用「名稱」訊息摘要演算法"
+msgstr "|名稱|使用指定名稱的訊息摘要演算法"
 
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "用法: gpgsm [選項] [檔案] (或用 -h 求助)"
@@ -6167,7 +6171,7 @@ msgid "decode received data lines"
 msgstr "對已收到的資料列解碼"
 
 msgid "|NAME|connect to Assuan socket NAME"
-msgstr "|名稱|連線至 Assuan socket「名稱」"
+msgstr "|名稱|連線至指定名稱的 Assuan socket"
 
 msgid "run the Assuan server given on the command line"
 msgstr "執行命令列所給定的 Assuan 伺服器"
@@ -6176,7 +6180,7 @@ msgid "do not use extended connect mode"
 msgstr "不要使用延伸連線模式"
 
 msgid "|FILE|run commands from FILE on startup"
-msgstr "|檔案|啟動時執行「檔案」中的指令"
+msgstr "|檔案|啟動時執行指定檔案中的指令"
 
 msgid "run /subst on startup"
 msgstr "啟動時執行 /subst"
@@ -6235,7 +6239,7 @@ msgid "Options useful for debugging"
 msgstr "對除錯有幫助的選項"
 
 msgid "|FILE|write server mode logs to FILE"
-msgstr "|檔案|將伺服器模式日誌寫入至「檔案」"
+msgstr "|檔案|將伺服器模式日誌寫入至指定檔案"
 
 msgid "Options controlling the security"
 msgstr "控制著安全性的選項"
@@ -6262,7 +6266,7 @@ msgid "|N|require at least N non-alpha characters for a new passphrase"
 msgstr "|N|新密語至少要有 N 個非字母的字符"
 
 msgid "|FILE|check new passphrases against pattern in FILE"
-msgstr "|檔案|用「檔案」中的樣式來檢查新密語"
+msgstr "|檔案|用指定檔案中的樣式來檢查新密語"
 
 msgid "|N|expire the passphrase after N days"
 msgstr "|N|在 N 天之後讓密語過期"
@@ -6271,10 +6275,10 @@ msgid "do not allow the reuse of old passphrases"
 msgstr "不允許重複使用舊密語"
 
 msgid "|NAME|use NAME as default secret key"
-msgstr "|名字|使用「名字」做為預設私鑰"
+msgstr "|名字|使用指定名字做為預設私鑰"
 
 msgid "|NAME|encrypt to user ID NAME as well"
-msgstr "|名字|也加密給使用者 ID「名字」"
+msgstr "|名字|也加密給指定名字的使用者 ID"
 
 msgid "|SPEC|set up email aliases"
 msgstr "|SPEC|設定電子郵件別名"
@@ -6295,7 +6299,7 @@ msgid "disable all access to the dirmngr"
 msgstr "停用所有的 dirmngr 存取"
 
 msgid "|NAME|use encoding NAME for PKCS#12 passphrases"
-msgstr "|名稱|將「名稱」編碼用於 PKCS#12 密語"
+msgstr "|名稱|將指定名稱編碼用於 PKCS#12 密語"
 
 msgid "do not check CRLs for root certificates"
 msgstr "不要為根憑證檢查 CRL"
