@@ -1,14 +1,14 @@
 # Gnu Privacy Guard.
-# Copyright (C) 1998, 1999, 2000, 2001, 2002, 
+# Copyright (C) 1998, 1999, 2000, 2001, 2002,
 #               2007 Free Software Foundation, Inc.
 # Janusz A. Urbanowicz <alex@bofh.net.pl>, 1999, 2000, 2001, 2002, 2003-2004
-# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2013.
+# Jakub Bogusz <qboosh@pld-linux.org>, 2003-2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg-2.0.20\n"
+"Project-Id-Version: gnupg-2.0.24\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-05-12 17:25+0200\n"
+"PO-Revision-Date: 2014-11-21 20:42+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "Language: pl\n"
@@ -345,19 +345,17 @@ msgstr "|N|przedawnienie pamiętanych PIN-ów po N sekundach"
 msgid "do not use the PIN cache when signing"
 msgstr "nie używanie pamięci PIN-ów przy podpisywaniu"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "zezwolenie klientom na oznaczanie kluczy jako \"zaufanych\""
+msgstr "brak zezwolenia dla klientów na oznaczanie kluczy jako ,,zaufanych''"
 
 msgid "allow presetting passphrase"
 msgstr "zezwolenie na predefiniowane hasło"
 
 msgid "enable ssh support"
-msgstr ""
+msgstr "włączenie obsługi ssh"
 
 msgid "enable putty support"
-msgstr ""
+msgstr "włączenie obsługi putty"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|PLIK|zapis ustawień środowiska także do PLIKU"
@@ -2160,6 +2158,9 @@ msgstr "import podpisów oznaczonych jako tylko lokalne"
 msgid "repair damage from the pks keyserver during import"
 msgstr "naprawienie uszkodzeń z serwera pks przy imporcie"
 
+msgid "do not clear the ownertrust values during import"
+msgstr "bez czyszczenia wartości zaufania właściciela przy imporcie"
+
 msgid "do not update the trustdb after import"
 msgstr "nie uaktualnianie bazy zaufania po imporcie"
 
@@ -2278,13 +2279,12 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "klucz %s: brak identyfikatora użytkownika\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "pominięty ,,%s'': %s\n"
+msgstr "klucz %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "odrzucony przez filtr importu"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2381,10 +2381,9 @@ msgstr "klucz %s: ,,%s'' %d identyfikatorów użytkownika wyczyszczonych\n"
 msgid "key %s: \"%s\" not changed\n"
 msgstr "klucz %s: ,,%s'' bez zmian\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "klucz prywatny ,,%s'' nie został odnaleziony: %s\n"
+msgstr "klucz prywatny %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"
@@ -4168,6 +4167,11 @@ msgid "unknown"
 msgstr "nieznany"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+"UWAGA: to nie jest podpis oddzielony; plik ,,%s'' NIE został sprawdzony!\n"
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nie można sprawdzić podpisu: %s\n"
 
@@ -4218,6 +4222,10 @@ msgstr "OSTRZEŻENIE: użycie eksperymentalnego algorytmu skrótu %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "OSTRZEŻENIE: algorytm skrótu %s jest odradzany\n"
 
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Uwaga: podpisy wykonane algorytmem %s są odrzucane\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "moduł szyfru IDEA nie jest dostępny\n"
 
@@ -4249,6 +4257,17 @@ msgstr "%s:%u: przestarzała opcja ,,%s'' - nie ma efektu\n"
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "OSTRZEŻENIE: ,,%s'' jest przestarzałą opcją - nie ma efektu\n"
+
+#, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: ,,%s%s'' jest przestarzałe w tym pliku - efektywne tylko w %s\n"
+
+#, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgstr ""
+"OSTRZEŻENIE: ,,%s%s'' jest przestarzałą opcją - nie ma efektu z wyjątkiem "
+"%s\n"
 
 msgid "Uncompressed"
 msgstr "Nieskompresowany"
@@ -4287,8 +4306,8 @@ msgid "writing to stdout\n"
 msgstr "zapisywanie na wyjście standardowe\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
-msgstr "przyjęto obecność podpisanych danych w '%s'\n"
+msgid "assuming signed data in '%s'\n"
+msgstr "przyjęto obecność podpisanych danych w ,,%s''\n"
 
 #, c-format
 msgid "new configuration file `%s' created\n"
@@ -4850,11 +4869,6 @@ msgstr "UWAGA: klucz podpisujący %s przekroczył datę ważności %s\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "UWAGA: klucz podpisujący %s został unieważniony\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "podpis %s, skrót %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -6722,12 +6736,3 @@ msgid ""
 msgstr ""
 "Składnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie hasła ze standardowego wejścia względem pliku wzorców\n"
-
-#~ msgid "you may want to start the gpg-agent first\n"
-#~ msgstr "można najpierw uruchomić najpierw gpg-agenta\n"
-
-#~ msgid "enable ssh-agent emulation"
-#~ msgstr "włączenie emulacji ssh-agenta"
-
-#~ msgid "error loading `%s': %s\n"
-#~ msgstr "błąd odczytu ,,%s'': %s\n"
