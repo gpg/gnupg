@@ -2,12 +2,12 @@
 # Copyright (C) 2011 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 #
-# Yuri Chornoivan <yurchor@ukr.net>, 2011, 2013.
+# Yuri Chornoivan <yurchor@ukr.net>, 2011, 2013, 2014.
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg2\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-04-27 14:41+0300\n"
+"PO-Revision-Date: 2014-11-15 19:07+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
 "Language: uk\n"
@@ -351,21 +351,17 @@ msgstr "вважати кешовані пінкоди за вказану кі�
 msgid "do not use the PIN cache when signing"
 msgstr "не використовувати кеш пін-кодів для підписування"
 
-#, fuzzy
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
-msgstr "дозволити клієнтам позначати ключі як надійні"
+msgstr "заборонити клієнтам позначати ключі як надійні"
 
 msgid "allow presetting passphrase"
 msgstr "дозволити попереднє встановлення пароля"
 
-#, fuzzy
-#| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
-msgstr "увімкнути емуляцію ssh-агента"
+msgstr "увімкнути підтримку ssh"
 
 msgid "enable putty support"
-msgstr ""
+msgstr "увімкнути підтримку putty"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "записати параметри середовища і до файла"
@@ -2202,6 +2198,9 @@ msgstr "імпортувати підписи, позначені як лише 
 msgid "repair damage from the pks keyserver during import"
 msgstr "відновлювати пошкодження сервером ключів pks під час імпортування"
 
+msgid "do not clear the ownertrust values during import"
+msgstr "не спорожняти дані щодо довіри власнику під час імпортування"
+
 msgid "do not update the trustdb after import"
 msgstr "не оновлювати базу даних довіри після імпортування"
 
@@ -2231,27 +2230,27 @@ msgstr "Загалом оброблено: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
-msgstr "      пропущено нових ключів: %lu\n"
+msgstr "пропущено нових ключів: %lu\n"
 
 #, c-format
 msgid "          w/o user IDs: %lu\n"
-msgstr "          без ід. користувача: %lu\n"
+msgstr "   без ід. користувача: %lu\n"
 
 #, c-format
 msgid "              imported: %lu"
-msgstr "              імпортовано: %lu"
+msgstr "           імпортовано: %lu"
 
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "             без змін: %lu\n"
+msgstr "              без змін: %lu\n"
 
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "          нових ід. користувачів: %lu\n"
+msgstr "нових ід. користувачів: %lu\n"
 
 #, c-format
 msgid "           new subkeys: %lu\n"
-msgstr "           нових підключів: %lu\n"
+msgstr "       нових підключів: %lu\n"
 
 #, c-format
 msgid "        new signatures: %lu\n"
@@ -2259,15 +2258,15 @@ msgstr "        нових підписів: %lu\n"
 
 #, c-format
 msgid "   new key revocations: %lu\n"
-msgstr "   відкликань нових ключів: %lu\n"
+msgstr "відкликань нових ключів: %lu\n"
 
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr "      прочитано закритих ключів: %lu\n"
+msgstr "прочитано закритих ключів: %lu\n"
 
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "  імпортовано закр. ключів: %lu\n"
+msgstr "імпортовано закр. ключів: %lu\n"
 
 #, c-format
 msgid " secret keys unchanged: %lu\n"
@@ -2275,7 +2274,7 @@ msgstr " закр. ключів без змін: %lu\n"
 
 #, c-format
 msgid "          not imported: %lu\n"
-msgstr "          не імпортовано: %lu\n"
+msgstr "        не імпортовано: %lu\n"
 
 #, c-format
 msgid "    signatures cleaned: %lu\n"
@@ -2283,7 +2282,7 @@ msgstr "    вилучених підписів: %lu\n"
 
 #, c-format
 msgid "      user IDs cleaned: %lu\n"
-msgstr "      вилучених ід. корист.: %lu\n"
+msgstr " вилучених ід. корист.: %lu\n"
 
 #, c-format
 msgid ""
@@ -2322,13 +2321,12 @@ msgstr ""
 msgid "key %s: no user ID\n"
 msgstr "ключ %s: немає ідентифікатор користувача\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "пропущено «%s»: %s\n"
+msgstr "ключ %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "відкинуто фільтром імпортування"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2425,10 +2423,9 @@ msgstr "ключ %s: «%s» спорожнено %d ідентифікаторі
 msgid "key %s: \"%s\" not changed\n"
 msgstr "ключ %s: «%s» не змінено\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "закритий ключ «%s» не знайдено: %s\n"
+msgstr "закритий ключ %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "імпортування закритих ключів заборонено\n"
@@ -3840,7 +3837,7 @@ msgid "NOTE: backup of card key saved to `%s'\n"
 msgstr "ЗАУВАЖЕННЯ: резервну копію ключа на картці збережено до «%s»\n"
 
 msgid "never     "
-msgstr "ніколи     "
+msgstr "ніколи    "
 
 msgid "Critical signature policy: "
 msgstr "Критичні правила підпису: "
@@ -3864,21 +3861,21 @@ msgid "Primary key fingerprint:"
 msgstr "Основний відбиток ключа:"
 
 msgid "     Subkey fingerprint:"
-msgstr "     Відбиток підключа:"
+msgstr "      Відбиток підключа:"
 
 #. TRANSLATORS: this should fit into 24 bytes to that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
-msgstr " Відбиток основного ключа:"
+msgstr "Відбиток основного ключа:"
 
 msgid "      Subkey fingerprint:"
-msgstr "      Відбиток підключа:"
+msgstr "       Відбиток підключа:"
 
 msgid "      Key fingerprint ="
 msgstr "      Відбиток ключа ="
 
 msgid "      Card serial no. ="
-msgstr "      Серійний номер картки ="
+msgstr "Серійний номер картки ="
 
 #, c-format
 msgid "renaming `%s' to `%s' failed: %s\n"
@@ -4206,6 +4203,10 @@ msgid "unknown"
 msgstr "невідомо"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr "УВАГА: підпис не є від’єднаним; перевірку файла «%s» не виконано!\n"
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Не вдалося перевірити підпис: %s\n"
 
@@ -4258,6 +4259,10 @@ msgstr ""
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "УВАГА: алгоритм обчислення контрольних сум %s вважається застарілим\n"
 
+#, c-format
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Зауваження: підписи за допомогою алгоритму %s відкинуто\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "не виявлено додатка шифрування IDEA\n"
 
@@ -4288,6 +4293,16 @@ msgstr "%s:%u: застарілий параметр «%s» — він не пр
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "УВАГА: «%s» є застарілим параметром — він не працюватиме\n"
+
+#, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: «%s%s» є застарілим у цьому файлі — він працює лише у %s\n"
+
+#, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
+msgstr ""
+"УВАГА: «%s%s» є застарілим параметром — він не працюватиме, окрім як на %s\n"
 
 msgid "Uncompressed"
 msgstr "Нестиснений"
@@ -4326,7 +4341,7 @@ msgid "writing to stdout\n"
 msgstr "записуємо до stdout\n"
 
 #, c-format
-msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "припускаємо підписані дані у «%s»\n"
 
 #, c-format
@@ -4889,11 +4904,6 @@ msgstr "ЗАУВАЖЕННЯ: строк дії ключа підпису %s з�
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "ЗАУВАЖЕННЯ: ключ підпису %s було відкликано\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s підпис, алгоритм контрольної суми %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -5559,10 +5569,10 @@ msgid "|N|New PIN"
 msgstr "|N|Новий пінкод"
 
 msgid "||Please enter the Admin PIN and New Admin PIN"
-msgstr "|A|Вкажіть новий адміністративний пінкод"
+msgstr "||Вкажіть адміністративний пінкод та новий адміністративний пінкод"
 
 msgid "||Please enter the PIN and New PIN"
-msgstr "||Вкажіть новий пінкод"
+msgstr "||Вкажіть пінкод та новий пінкод"
 
 msgid "error reading application data\n"
 msgstr "помилка читання даних програми\n"
@@ -5666,7 +5676,7 @@ msgid "deny the use of admin card commands"
 msgstr "заборонити використання команд з адміністрування картки"
 
 msgid "use variable length input for pinpad"
-msgstr "використовувати для клавіатурної панелі змінну довжину введених даних"
+msgstr "використовувати змінну довжину вхідних даних для зчитувача"
 
 msgid "Usage: scdaemon [options] (-h for help)"
 msgstr "Використання: scdaemon [параметри] (-h — довідка)"
