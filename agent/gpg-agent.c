@@ -131,83 +131,91 @@ enum cmd_and_opt_values
 
 static ARGPARSE_OPTS opts[] = {
 
-  { aGPGConfList, "gpgconf-list", 256, "@" },
-  { aGPGConfTest, "gpgconf-test", 256, "@" },
-  { aUseStandardSocketP, "use-standard-socket-p", 256, "@" },
+  ARGPARSE_c (aGPGConfList, "gpgconf-list", "@"),
+  ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@"),
+  ARGPARSE_c (aUseStandardSocketP, "use-standard-socket-p", "@"),
 
-  { 301, NULL, 0, N_("@Options:\n ") },
+  ARGPARSE_group (301, N_("@Options:\n ")),
 
-  { oDaemon,   "daemon",     0, N_("run in daemon mode (background)") },
-  { oServer,   "server",     0, N_("run in server mode (foreground)") },
-  { oVerbose, "verbose",     0, N_("verbose") },
-  { oQuiet,	"quiet",     0, N_("be somewhat more quiet") },
-  { oSh,	"sh",        0, N_("sh-style command output") },
-  { oCsh,	"csh",       0, N_("csh-style command output") },
-  { oOptions, "options"  , 2, N_("|FILE|read options from FILE")},
-  { oDebug,	"debug"     ,4|16, "@"},
-  { oDebugAll, "debug-all"     ,0, "@"},
-  { oDebugLevel, "debug-level" ,2, "@"},
-  { oDebugWait,"debug-wait",1, "@"},
+  ARGPARSE_s_n (oDaemon,  "daemon", N_("run in daemon mode (background)")),
+  ARGPARSE_s_n (oServer,  "server", N_("run in server mode (foreground)")),
+  ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
+  ARGPARSE_s_n (oQuiet,	  "quiet",     N_("be somewhat more quiet")),
+  ARGPARSE_s_n (oSh,	  "sh",        N_("sh-style command output")),
+  ARGPARSE_s_n (oCsh,	  "csh",       N_("csh-style command output")),
+  ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
+
+  ARGPARSE_s_u (oDebug,	     "debug",       "@"),
+  ARGPARSE_s_n (oDebugAll,   "debug-all",   "@"),
+  ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
+  ARGPARSE_s_i (oDebugWait,"  debug-wait",  "@"),
   ARGPARSE_s_n (oDebugQuickRandom, "debug-quick-random", "@"),
-  { oNoDetach, "no-detach" ,0, N_("do not detach from the console")},
-  { oNoGrab, "no-grab"     ,0, N_("do not grab keyboard and mouse")},
-  { oLogFile, "log-file"   ,2, N_("use a log file for the server")},
-  { oUseStandardSocket, "use-standard-socket", 0, "@"},      /* dummy */
-  { oNoUseStandardSocket, "no-use-standard-socket", 0, "@"}, /* dummy */
-  { oPinentryProgram, "pinentry-program", 2 ,
-                               N_("|PGM|use PGM as the PIN-Entry program") },
-  { oPinentryTouchFile, "pinentry-touch-file", 2 , "@" },
-  { oScdaemonProgram, "scdaemon-program", 2 ,
-                               N_("|PGM|use PGM as the SCdaemon program") },
-  { oDisableScdaemon, "disable-scdaemon", 0, N_("do not use the SCdaemon") },
-  { oDisableCheckOwnSocket, "disable-check-own-socket", 0, "@" },
-  { oFakedSystemTime, "faked-system-time", 2, "@" }, /* (epoch time) */
 
-  { oBatch,      "batch",       0, "@" },
-  { oHomedir,    "homedir",     2, "@"},
+  ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
+  ARGPARSE_s_n (oNoGrab,    "no-grab",   N_("do not grab keyboard and mouse")),
+  ARGPARSE_s_s (oLogFile,   "log-file",  N_("use a log file for the server")),
+  ARGPARSE_s_s (oPinentryProgram, "pinentry-program",
+                /* */             N_("|PGM|use PGM as the PIN-Entry program")),
+  ARGPARSE_s_s (oPinentryTouchFile, "pinentry-touch-file", "@"),
+  ARGPARSE_s_s (oScdaemonProgram, "scdaemon-program",
+                /* */             N_("|PGM|use PGM as the SCdaemon program") ),
+  ARGPARSE_s_n (oDisableScdaemon, "disable-scdaemon",
+                /* */             N_("do not use the SCdaemon") ),
+  ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
+  ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
 
-  { oDisplay,    "display",     2, "@" },
-  { oTTYname,    "ttyname",     2, "@" },
-  { oTTYtype,    "ttytype",     2, "@" },
-  { oLCctype,    "lc-ctype",    2, "@" },
-  { oLCmessages, "lc-messages", 2, "@" },
-  { oXauthority, "xauthority",  2, "@" },
-  { oKeepTTY,    "keep-tty",    0,  N_("ignore requests to change the TTY")},
-  { oKeepDISPLAY, "keep-display",
-                          0, N_("ignore requests to change the X display")},
+  ARGPARSE_s_n (oBatch,      "batch",        "@"),
+  ARGPARSE_s_s (oHomedir,    "homedir",      "@"),
 
-  { oDefCacheTTL, "default-cache-ttl", 4,
-                               N_("|N|expire cached PINs after N seconds")},
-  { oDefCacheTTLSSH, "default-cache-ttl-ssh", 4, "@" },
-  { oMaxCacheTTL, "max-cache-ttl", 4, "@" },
-  { oMaxCacheTTLSSH, "max-cache-ttl-ssh", 4, "@" },
+  ARGPARSE_s_s (oDisplay,    "display",     "@"),
+  ARGPARSE_s_s (oTTYname,    "ttyname",     "@"),
+  ARGPARSE_s_s (oTTYtype,    "ttytype",     "@"),
+  ARGPARSE_s_s (oLCctype,    "lc-ctype",    "@"),
+  ARGPARSE_s_s (oLCmessages, "lc-messages", "@"),
+  ARGPARSE_s_s (oXauthority, "xauthority",  "@"),
+  ARGPARSE_s_n (oKeepTTY,    "keep-tty",
+                /* */        N_("ignore requests to change the TTY")),
+  ARGPARSE_s_n (oKeepDISPLAY, "keep-display",
+                /* */        N_("ignore requests to change the X display")),
 
-  { oEnforcePassphraseConstraints, "enforce-passphrase-constraints", 0, "@"},
-  { oMinPassphraseLen, "min-passphrase-len", 4, "@" },
-  { oMinPassphraseNonalpha, "min-passphrase-nonalpha", 4, "@" },
-  { oCheckPassphrasePattern, "check-passphrase-pattern", 2, "@" },
-  { oMaxPassphraseDays, "max-passphrase-days", 4, "@" },
-  { oEnablePassphraseHistory, "enable-passphrase-history", 0, "@" },
+  ARGPARSE_s_u (oDefCacheTTL,    "default-cache-ttl",
+                                 N_("|N|expire cached PINs after N seconds")),
+  ARGPARSE_s_u (oDefCacheTTLSSH, "default-cache-ttl-ssh", "@" ),
+  ARGPARSE_s_u (oMaxCacheTTL,    "max-cache-ttl",         "@" ),
+  ARGPARSE_s_u (oMaxCacheTTLSSH, "max-cache-ttl-ssh",     "@" ),
 
-  { oIgnoreCacheForSigning, "ignore-cache-for-signing", 0,
-                               N_("do not use the PIN cache when signing")},
-  { oNoAllowMarkTrusted, "no-allow-mark-trusted", 0,
-                            N_("disallow clients to mark keys as \"trusted\"")},
-  { oAllowMarkTrusted, "allow-mark-trusted", 0, "@"},
-  { oAllowPresetPassphrase, "allow-preset-passphrase", 0,
-                             N_("allow presetting passphrase")},
-  { oAllowLoopbackPinentry, "allow-loopback-pinentry", 0,
-                             N_("allow presetting passphrase")},
-  { oSSHSupport, "enable-ssh-support", 0, N_("enable ssh support") },
-  { oPuttySupport, "enable-putty-support", 0,
+  ARGPARSE_s_n (oEnforcePassphraseConstraints, "enforce-passphrase-constraints",
+                /* */                          "@"),
+  ARGPARSE_s_u (oMinPassphraseLen,        "min-passphrase-len", "@"),
+  ARGPARSE_s_u (oMinPassphraseNonalpha,   "min-passphrase-nonalpha", "@"),
+  ARGPARSE_s_s (oCheckPassphrasePattern,  "check-passphrase-pattern", "@"),
+  ARGPARSE_s_u (oMaxPassphraseDays,       "max-passphrase-days", "@"),
+  ARGPARSE_s_n (oEnablePassphraseHistory, "enable-passphrase-history", "@"),
+
+  ARGPARSE_s_n (oIgnoreCacheForSigning, "ignore-cache-for-signing",
+                /* */    N_("do not use the PIN cache when signing")),
+  ARGPARSE_s_n (oNoAllowMarkTrusted, "no-allow-mark-trusted",
+                /* */    N_("disallow clients to mark keys as \"trusted\"")),
+  ARGPARSE_s_n (oAllowMarkTrusted,   "allow-mark-trusted", "@"),
+  ARGPARSE_s_n (oAllowPresetPassphrase, "allow-preset-passphrase",
+                /* */                    N_("allow presetting passphrase")),
+  ARGPARSE_s_n (oAllowLoopbackPinentry, "allow-loopback-pinentry",
+                                        N_("allow presetting passphrase")),
+  ARGPARSE_s_n (oSSHSupport,   "enable-ssh-support", N_("enable ssh support")),
+  ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
-      N_("enable putty support")
+                /* */           N_("enable putty support")
 #else
-      "@"
+                /* */           "@"
 #endif
-  },
-  { oWriteEnvFile, "write-env-file", 2|8, "@" }, /* dummy */
-  {0}
+                ),
+
+  /* Dummy options for backward compatibility.  */
+  ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
+  ARGPARSE_s_n (oUseStandardSocket, "use-standard-socket", "@"),
+  ARGPARSE_s_n (oNoUseStandardSocket, "no-use-standard-socket", "@"),
+
+  {0} /* End of list */
 };
 
 
