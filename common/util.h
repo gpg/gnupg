@@ -35,6 +35,12 @@
 #include <errno.h>  /* We need errno.  */
 #include <gpg-error.h> /* We need gpg_error_t and estream. */
 
+/* These error codes are used but not defined in the required
+   libgpg-error version.  Define them here. */
+#if GPG_ERROR_VERSION_NUMBER < 0x011200  /* 1.18 */
+# define GPG_ERR_FORBIDDEN    251
+#endif
+
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)

@@ -532,6 +532,19 @@ Ignore requests to change the current @code{tty} or X window system's
 @code{DISPLAY} variable respectively.  This is useful to lock the
 pinentry to pop up at the @code{tty} or display you started the agent.
 
+
+@anchor{option --extra-socket}
+@item --extra-socket @var{name}
+@opindex extra-socket
+Also listen on native gpg-agent connections on the given socket.  The
+intended use for this extra socket is to setup a Unix domain socket
+forwarding from a remote machine to this socket on the local machine.
+A @command{gpg} running on the remote machine may then connect to the
+local gpg-agent and use its private keys.  This allows to decrypt or
+sign data on a remote machine without exposing the private keys to the
+remote machine.
+
+
 @anchor{option --enable-ssh-support}
 @item --enable-ssh-support
 @opindex enable-ssh-support

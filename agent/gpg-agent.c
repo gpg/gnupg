@@ -111,6 +111,7 @@ enum cmd_and_opt_values
   oEnablePassphraseHistory,
   oUseStandardSocket,
   oNoUseStandardSocket,
+  oExtraSocket,
   oFakedSystemTime,
 
   oIgnoreCacheForSigning,
@@ -209,6 +210,7 @@ static ARGPARSE_OPTS opts[] = {
                 /* */           "@"
 #endif
                 ),
+  ARGPARSE_s_s (oExtraSocket, "extra-socket", "@"),
 
   /* Dummy options for backward compatibility.  */
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
@@ -280,12 +282,16 @@ static int maybe_setuid = 1;
 /* Name of the communication socket used for native gpg-agent requests.  */
 static char *socket_name;
 
+/* Name of the optional extra socket used for native gpg-agent requests.  */
+static char *socket_name_extra;
+
 /* Name of the communication socket used for ssh-agent-emulation.  */
 static char *socket_name_ssh;
 
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
+static assuan_sock_nonce_t socket_nonce_extra;
 static assuan_sock_nonce_t socket_nonce_ssh;
 
 
@@ -320,8 +326,8 @@ static int active_connections;
    Local prototypes.
  */
 
-static char *create_socket_name (char *standard_name);
-static gnupg_fd_t create_server_socket (char *name, int is_ssh,
+static char *create_socket_name (char *standard_name, int with_homedir);
+static gnupg_fd_t create_server_socket (char *name, int primary,
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
@@ -329,6 +335,7 @@ static void agent_init_default_ctrl (ctrl_t ctrl);
 static void agent_deinit_default_ctrl (ctrl_t ctrl);
 
 static void handle_connections (gnupg_fd_t listen_fd,
+                                gnupg_fd_t listen_fd_extra,
                                 gnupg_fd_t listen_fd_ssh);
 static void check_own_socket (void);
 static int check_for_running_agent (int silent);
@@ -498,6 +505,8 @@ cleanup (void)
   done = 1;
   deinitialize_module_cache ();
   remove_socket (socket_name);
+  if (opt.extra_socket > 1)
+    remove_socket (socket_name_extra);
   remove_socket (socket_name_ssh);
 }
 
@@ -860,6 +869,11 @@ main (int argc, char **argv )
 #        endif
           break;
 
+        case oExtraSocket:
+          opt.extra_socket = 1;  /* (1 = points into argv)  */
+          socket_name_extra = pargs.r.ret_str;
+          break;
+
         case oDebugQuickRandom:
           /* Only used by the first stage command line parser.  */
           break;
@@ -1067,7 +1081,8 @@ main (int argc, char **argv )
   else
     { /* Regular server mode */
       gnupg_fd_t fd;
-      gnupg_fd_t fd_ssh;
+      gnupg_fd_t fd_extra = GNUPG_INVALID_FD;
+      gnupg_fd_t fd_ssh = GNUPG_INVALID_FD;
       pid_t pid;
 
       /* Remove the DISPLAY variable so that a pinentry does not
@@ -1081,17 +1096,23 @@ main (int argc, char **argv )
         gnupg_unsetenv ("DISPLAY");
 #endif
 
-
       /* Create the sockets.  */
-      socket_name = create_socket_name (GPG_AGENT_SOCK_NAME);
-      fd = create_server_socket (socket_name, 0, &socket_nonce);
+      socket_name = create_socket_name (GPG_AGENT_SOCK_NAME, 1);
+      fd = create_server_socket (socket_name, 1, &socket_nonce);
+
+      if (opt.extra_socket)
+        {
+          socket_name_extra = create_socket_name (socket_name_extra, 0);
+          opt.extra_socket = 2; /* Indicate that it has been malloced.  */
+          fd_extra = create_server_socket (socket_name_extra, 0,
+                                           &socket_nonce_extra);
+        }
+
       if (opt.ssh_support)
         {
-          socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME);
-          fd_ssh = create_server_socket (socket_name_ssh, 1, &socket_nonce_ssh);
+          socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME, 1);
+          fd_ssh = create_server_socket (socket_name_ssh, 0, &socket_nonce_ssh);
         }
-      else
-	fd_ssh = GNUPG_INVALID_FD;
 
       /* If we are going to exec a program in the parent, we record
          the PID, so that the child may check whether the program is
@@ -1154,6 +1175,8 @@ main (int argc, char **argv )
 
           *socket_name = 0; /* Don't let cleanup() remove the socket -
                                the child should do this from now on */
+	  if (opt.extra_socket)
+	    *socket_name_extra = 0;
 	  if (opt.ssh_support)
 	    *socket_name_ssh = 0;
 
@@ -1264,7 +1287,7 @@ main (int argc, char **argv )
 #endif /*!HAVE_W32_SYSTEM*/
 
       log_info ("%s %s started\n", strusage(11), strusage(13) );
-      handle_connections (fd, opt.ssh_support ? fd_ssh : GNUPG_INVALID_FD);
+      handle_connections (fd, fd_extra, fd_ssh);
       assuan_sock_close (fd);
     }
 
@@ -1304,7 +1327,7 @@ agent_exit (int rc)
    structure usually identified by an argument named CTRL.  This
    function is called immediately after allocating the control
    structure.  Its purpose is to setup the default values for that
-   structure.  */
+   structure.  Note that some values may have already been set.  */
 static void
 agent_init_default_ctrl (ctrl_t ctrl)
 {
@@ -1463,11 +1486,14 @@ get_agent_scd_notify_event (void)
    Pointer to an allocated string with the absolute name of the socket
    used.  */
 static char *
-create_socket_name (char *standard_name)
+create_socket_name (char *standard_name, int with_homedir)
 {
   char *name;
 
-  name = make_filename (opt.homedir, standard_name, NULL);
+  if (with_homedir)
+    name = make_filename (opt.homedir, standard_name, NULL);
+  else
+    name = make_filename (standard_name, NULL);
   if (strchr (name, PATHSEP_C))
     {
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
@@ -1484,11 +1510,11 @@ create_socket_name (char *standard_name)
 
 
 /* Create a Unix domain socket with NAME.  Returns the file descriptor
-   or terminates the process in case of an error.  Not that this
-   function needs to be used for the regular socket first and only
-   then for the ssh socket.  */
+   or terminates the process in case of an error.  Note that this
+   function needs to be used for the regular socket first (indicated
+   by PRIMARY) and only then for the extra and the ssh sockets.  */
 static gnupg_fd_t
-create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
+create_server_socket (char *name, int primary, assuan_sock_nonce_t *nonce)
 {
   struct sockaddr_un *serv_addr;
   socklen_t len;
@@ -1531,7 +1557,7 @@ create_server_socket (char *name, int is_ssh, assuan_sock_nonce_t *nonce)
          know the new Assuan socket, the Assuan server and thus the
          ssh-agent server is not yet operational.  This would lead to
          a hang.  */
-      if (!is_ssh && !check_for_running_agent (1))
+      if (primary && !check_for_running_agent (1))
         {
           log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX);
           log_set_file (NULL);
@@ -1980,12 +2006,9 @@ putty_message_thread (void *arg)
 #endif /*HAVE_W32_SYSTEM*/
 
 
-/* This is the standard connection thread's main function.  */
 static void *
-start_connection_thread (void *arg)
+start_connection_thread (ctrl_t ctrl)
 {
-  ctrl_t ctrl = arg;
-
   if (check_nonce (ctrl, &socket_nonce))
     {
       log_error ("handler 0x%lx nonce check FAILED\n",
@@ -2006,6 +2029,27 @@ start_connection_thread (void *arg)
   agent_deinit_default_ctrl (ctrl);
   xfree (ctrl);
   return NULL;
+}
+
+
+/* This is the standard connection thread's main function.  */
+static void *
+start_connection_thread_std (void *arg)
+{
+  ctrl_t ctrl = arg;
+
+  return start_connection_thread (ctrl);
+}
+
+
+/* This is the extra socket connection thread's main function.  */
+static void *
+start_connection_thread_extra (void *arg)
+{
+  ctrl_t ctrl = arg;
+
+  ctrl->restricted = 1;
+  return start_connection_thread (ctrl);
 }
 
 
@@ -2037,7 +2081,9 @@ start_connection_thread_ssh (void *arg)
 /* Connection handler loop.  Wait for connection requests and spawn a
    thread after accepting a connection.  */
 static void
-handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
+handle_connections (gnupg_fd_t listen_fd,
+                    gnupg_fd_t listen_fd_extra,
+                    gnupg_fd_t listen_fd_ssh)
 {
   npth_attr_t tattr;
   struct sockaddr_un paddr;
@@ -2054,6 +2100,16 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   HANDLE events[2];
   unsigned int events_set;
 #endif
+  struct {
+    const char *name;
+    void *(*func) (void *arg);
+    gnupg_fd_t l_fd;
+  } listentbl[] = {
+    { "std",  start_connection_thread_std   },
+    { "extra",start_connection_thread_extra },
+    { "ssh",  start_connection_thread_ssh   }
+  };
+
 
   ret = npth_attr_init(&tattr);
   if (ret)
@@ -2103,12 +2159,22 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
   FD_ZERO (&fdset);
   FD_SET (FD2INT (listen_fd), &fdset);
   nfd = FD2INT (listen_fd);
+  if (listen_fd_extra != GNUPG_INVALID_FD)
+    {
+      FD_SET ( FD2INT(listen_fd_extra), &fdset);
+      if (FD2INT (listen_fd_extra) > nfd)
+        nfd = FD2INT (listen_fd_extra);
+    }
   if (listen_fd_ssh != GNUPG_INVALID_FD)
     {
       FD_SET ( FD2INT(listen_fd_ssh), &fdset);
       if (FD2INT (listen_fd_ssh) > nfd)
         nfd = FD2INT (listen_fd_ssh);
     }
+
+  listentbl[0].l_fd = listen_fd;
+  listentbl[1].l_fd = listen_fd_extra;
+  listentbl[2].l_fd = listen_fd_ssh;
 
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
@@ -2172,92 +2238,56 @@ handle_connections (gnupg_fd_t listen_fd, gnupg_fd_t listen_fd_ssh)
 	   next timeout.  */
 	continue;
 
-      if (!shutdown_pending && FD_ISSET (FD2INT (listen_fd), &read_fdset))
-	{
+      if (!shutdown_pending)
+        {
+          int idx;
           ctrl_t ctrl;
+          npth_t thread;
 
-          plen = sizeof paddr;
-	  fd = INT2FD (npth_accept (FD2INT(listen_fd),
-				    (struct sockaddr *)&paddr, &plen));
-	  if (fd == GNUPG_INVALID_FD)
-	    {
-	      log_error ("accept failed: %s\n", strerror (errno));
-	    }
-          else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
+          for (idx=0; idx < DIM(listentbl); idx++)
             {
-              log_error ("error allocating connection control data: %s\n",
-                         strerror (errno) );
-              assuan_sock_close (fd);
-            }
-          else if ( !(ctrl->session_env = session_env_new ()) )
-            {
-              log_error ("error allocating session environment block: %s\n",
-                         strerror (errno) );
-              xfree (ctrl);
-              assuan_sock_close (fd);
-            }
-          else
-            {
-	      npth_t thread;
+              if (listentbl[idx].l_fd == GNUPG_INVALID_FD)
+                continue;
+              if (!FD_ISSET (FD2INT (listentbl[idx].l_fd), &read_fdset))
+                continue;
 
-              ctrl->thread_startup.fd = fd;
-	      ret = npth_create (&thread, &tattr,
-                                 start_connection_thread, ctrl);
-              if (ret)
+              plen = sizeof paddr;
+              fd = INT2FD (npth_accept (FD2INT(listentbl[idx].l_fd),
+                                        (struct sockaddr *)&paddr, &plen));
+              if (fd == GNUPG_INVALID_FD)
                 {
-                  log_error ("error spawning connection handler: %s\n",
-			     strerror (ret));
-                  assuan_sock_close (fd);
-                  xfree (ctrl);
+                  log_error ("accept failed for %s: %s\n",
+                             listentbl[idx].name, strerror (errno));
                 }
-
-            }
-          fd = GNUPG_INVALID_FD;
-	}
-
-      if (!shutdown_pending && listen_fd_ssh != GNUPG_INVALID_FD
-          && FD_ISSET ( FD2INT (listen_fd_ssh), &read_fdset))
-	{
-          ctrl_t ctrl;
-
-          plen = sizeof paddr;
-	  fd = INT2FD(npth_accept (FD2INT(listen_fd_ssh),
-				   (struct sockaddr *)&paddr, &plen));
-	  if (fd == GNUPG_INVALID_FD)
-	    {
-	      log_error ("accept failed for ssh: %s\n", strerror (errno));
-	    }
-          else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)) )
-            {
-              log_error ("error allocating connection control data: %s\n",
-                         strerror (errno) );
-              assuan_sock_close (fd);
-            }
-          else if ( !(ctrl->session_env = session_env_new ()) )
-            {
-              log_error ("error allocating session environment block: %s\n",
-                         strerror (errno) );
-              xfree (ctrl);
-              assuan_sock_close (fd);
-            }
-          else
-            {
-	      npth_t thread;
-
-              agent_init_default_ctrl (ctrl);
-              ctrl->thread_startup.fd = fd;
-              ret = npth_create (&thread, &tattr,
-                                 start_connection_thread_ssh, ctrl);
-	      if (ret)
+              else if ( !(ctrl = xtrycalloc (1, sizeof *ctrl)))
                 {
-                  log_error ("error spawning ssh connection handler: %s\n",
-			     strerror (ret));
+                  log_error ("error allocating connection data for %s: %s\n",
+                             listentbl[idx].name, strerror (errno) );
                   assuan_sock_close (fd);
-                  xfree (ctrl);
                 }
+              else if ( !(ctrl->session_env = session_env_new ()))
+                {
+                  log_error ("error allocating session env block for %s: %s\n",
+                             listentbl[idx].name, strerror (errno) );
+                  xfree (ctrl);
+                  assuan_sock_close (fd);
+                }
+              else
+                {
+                  ctrl->thread_startup.fd = fd;
+                  ret = npth_create (&thread, &tattr,
+                                     listentbl[idx].func, ctrl);
+                  if (ret)
+                    {
+                      log_error ("error spawning connection handler for %s:"
+                                 " %s\n", listentbl[idx].name, strerror (ret));
+                      assuan_sock_close (fd);
+                      xfree (ctrl);
+                    }
+                }
+              fd = GNUPG_INVALID_FD;
             }
-          fd = GNUPG_INVALID_FD;
-	}
+        }
     }
 
   cleanup ();

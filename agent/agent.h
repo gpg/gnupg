@@ -130,6 +130,11 @@ struct
 
   /* This global option enables the ssh-agent subsystem.  */
   int ssh_support;
+
+  /* This global options indicates the use of an extra socket. Note
+     that we use a hack for cleanup handling in gpg-agent.c: If the
+     value is less than 2 the name has not yet been malloced. */
+  int extra_socket;
 } opt;
 
 
@@ -170,6 +175,9 @@ struct server_control_s
   struct {
     gnupg_fd_t fd;
   } thread_startup;
+
+  /* Flag indicating the connection is run in restricted mode.  */
+  int restricted;
 
   /* Private data of the server (command.c). */
   struct server_local_s *server_local;

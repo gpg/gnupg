@@ -504,9 +504,23 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
   err = assuan_transact (ctx, "RESET",
                          NULL, NULL, NULL, NULL, NULL, NULL);
   if (!err)
-    err = send_pinentry_environment (ctx, errsource,
-                                     opt_lc_ctype, opt_lc_messages,
-                                     session_env);
+    {
+      err = send_pinentry_environment (ctx, errsource,
+                                       opt_lc_ctype, opt_lc_messages,
+                                       session_env);
+      if (gpg_err_code (err) == GPG_ERR_FORBIDDEN
+          && gpg_err_source (err) == GPG_ERR_SOURCE_GPGAGENT)
+        {
+          /* Check whether we are in restricted mode.  */
+          if (!assuan_transact (ctx, "GETINFO restricted",
+                                NULL, NULL, NULL, NULL, NULL, NULL))
+            {
+              if (verbose)
+                log_info (_("connection to agent is in restricted mode\n"));
+              err = 0;
+            }
+        }
+    }
   if (err)
     {
       assuan_release (ctx);
