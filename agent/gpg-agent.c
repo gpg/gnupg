@@ -129,6 +129,10 @@ enum cmd_and_opt_values
 };
 
 
+#ifndef ENAMETOOLONG
+# define ENAMETOOLONG EINVAL
+#endif
+
 
 static ARGPARSE_OPTS opts[] = {
 
@@ -279,14 +283,19 @@ static int disable_check_own_socket;
 /* It is possible that we are currently running under setuid permissions */
 static int maybe_setuid = 1;
 
-/* Name of the communication socket used for native gpg-agent requests.  */
+/* Name of the communication socket used for native gpg-agent
+   requests. The second variable is either NULL or a malloced string
+   with the real socket name in case it has been redirected.  */
 static char *socket_name;
+static char *redir_socket_name;
 
 /* Name of the optional extra socket used for native gpg-agent requests.  */
 static char *socket_name_extra;
+static char *redir_socket_name_extra;
 
 /* Name of the communication socket used for ssh-agent-emulation.  */
 static char *socket_name_ssh;
+static char *redir_socket_name_ssh;
 
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
@@ -328,6 +337,7 @@ static int active_connections;
 
 static char *create_socket_name (char *standard_name, int with_homedir);
 static gnupg_fd_t create_server_socket (char *name, int primary,
+                                        char **r_redir_name,
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
 
@@ -472,13 +482,17 @@ set_debug (void)
 }
 
 
-/* Helper for cleanup to remove one socket with NAME.  */
+/* Helper for cleanup to remove one socket with NAME.  REDIR_NAME is
+   the corresponding real name if the socket has been redirected.  */
 static void
-remove_socket (char *name)
+remove_socket (char *name, char *redir_name)
 {
   if (name && *name)
     {
       char *p;
+
+      if (redir_name)
+        name = redir_name;
 
       gnupg_remove (name);
       p = strrchr (name, '/');
@@ -504,10 +518,10 @@ cleanup (void)
     return;
   done = 1;
   deinitialize_module_cache ();
-  remove_socket (socket_name);
+  remove_socket (socket_name, redir_socket_name);
   if (opt.extra_socket > 1)
-    remove_socket (socket_name_extra);
-  remove_socket (socket_name_ssh);
+    remove_socket (socket_name_extra, redir_socket_name_extra);
+  remove_socket (socket_name_ssh, redir_socket_name_ssh);
 }
 
 
@@ -1098,20 +1112,24 @@ main (int argc, char **argv )
 
       /* Create the sockets.  */
       socket_name = create_socket_name (GPG_AGENT_SOCK_NAME, 1);
-      fd = create_server_socket (socket_name, 1, &socket_nonce);
+      fd = create_server_socket (socket_name, 1,
+                                 &redir_socket_name, &socket_nonce);
 
       if (opt.extra_socket)
         {
           socket_name_extra = create_socket_name (socket_name_extra, 0);
           opt.extra_socket = 2; /* Indicate that it has been malloced.  */
           fd_extra = create_server_socket (socket_name_extra, 0,
+                                           &redir_socket_name_extra,
                                            &socket_nonce_extra);
         }
 
       if (opt.ssh_support)
         {
           socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME, 1);
-          fd_ssh = create_server_socket (socket_name_ssh, 0, &socket_nonce_ssh);
+          fd_ssh = create_server_socket (socket_name_ssh, 0,
+                                         &redir_socket_name_ssh,
+                                         &socket_nonce_ssh);
         }
 
       /* If we are going to exec a program in the parent, we record
@@ -1499,11 +1517,6 @@ create_socket_name (char *standard_name, int with_homedir)
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
       agent_exit (2);
     }
-  if (strlen (name) + 1 >= DIMof (struct sockaddr_un, sun_path) )
-    {
-      log_error (_("name of socket too long\n"));
-      agent_exit (2);
-    }
   return name;
 }
 
@@ -1512,33 +1525,69 @@ create_socket_name (char *standard_name, int with_homedir)
 /* Create a Unix domain socket with NAME.  Returns the file descriptor
    or terminates the process in case of an error.  Note that this
    function needs to be used for the regular socket first (indicated
-   by PRIMARY) and only then for the extra and the ssh sockets.  */
+   by PRIMARY) and only then for the extra and the ssh sockets.  if
+   the soecket has been redirected the name of the real socket is
+   stored as a malloced string at R_REDIR_NAME.  */
 static gnupg_fd_t
-create_server_socket (char *name, int primary, assuan_sock_nonce_t *nonce)
+create_server_socket (char *name, int primary,
+                      char **r_redir_name, assuan_sock_nonce_t *nonce)
 {
-  struct sockaddr_un *serv_addr;
+  struct sockaddr *addr;
+  struct sockaddr_un *unaddr;
   socklen_t len;
   gnupg_fd_t fd;
   int rc;
+
+  xfree (*r_redir_name);
+  *r_redir_name = NULL;
 
   fd = assuan_sock_new (AF_UNIX, SOCK_STREAM, 0);
   if (fd == ASSUAN_INVALID_FD)
     {
       log_error (_("can't create socket: %s\n"), strerror (errno));
+      *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
 
-  serv_addr = xmalloc (sizeof (*serv_addr));
-  memset (serv_addr, 0, sizeof *serv_addr);
-  serv_addr->sun_family = AF_UNIX;
-  if (strlen (name) + 1 >= sizeof (serv_addr->sun_path))
+  unaddr = xmalloc (sizeof *unaddr);
+  addr = (struct sockaddr*)unaddr;
+
+#if ASSUAN_VERSION_NUMBER >= 0x020104 /* >= 2.1.4 */
+  {
+    int redirected;
+
+    if (assuan_sock_set_sockaddr_un (name, addr, &redirected))
+      {
+        if (errno == ENAMETOOLONG)
+          log_error (_("socket name '%s' is too long\n"), name);
+        else
+          log_error ("error preparing socket '%s': %s\n",
+                     name, gpg_strerror (gpg_error_from_syserror ()));
+        *name = 0; /* Inhibit removal of the socket by cleanup(). */
+        agent_exit (2);
+      }
+    if (redirected)
+      {
+        *r_redir_name = xstrdup (unaddr->sun_path);
+        if (opt.verbose)
+          log_info ("redirecting socket '%s' to '%s'\n", name, *r_redir_name);
+      }
+  }
+#else /* Assuan < 2.1.4 */
+  redirected = 0;
+  memset (unaddr, 0, sizeof *unaddr);
+  unaddr->sun_family = AF_UNIX;
+  if (strlen (name) + 1 >= sizeof (unaddr->sun_path))
     {
       log_error (_("socket name '%s' is too long\n"), name);
+      *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
-  strcpy (serv_addr->sun_path, name);
-  len = SUN_LEN (serv_addr);
-  rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+  strcpy (unaddr->sun_path, name);
+#endif /* Assuan < 2.1.4 */
+
+  len = SUN_LEN (unaddr);
+  rc = assuan_sock_bind (fd, addr, len);
 
   /* Our error code mapping on W32CE returns EEXIST thus we also test
      for this. */
@@ -1549,14 +1598,13 @@ create_server_socket (char *name, int primary, assuan_sock_nonce_t *nonce)
 #endif
           ))
     {
-      /* Check whether a gpg-agent is already running.
-         We do this test only if this is not the ssh socket.
-         For ssh we assume that a test for gpg-agent has already been
-         done and reuse the requested ssh socket.  Testing the
-         ssh-socket is not possible because at this point, though we
-         know the new Assuan socket, the Assuan server and thus the
-         ssh-agent server is not yet operational.  This would lead to
-         a hang.  */
+      /* Check whether a gpg-agent is already running.  We do this
+         test only if this is the primary socket.  For secondary
+         sockets we assume that a test for gpg-agent has already been
+         done and reuse the requested socket.  Testing the ssh-socket
+         is not possible because at this point, though we know the new
+         Assuan socket, the Assuan server and thus the ssh-agent
+         server is not yet operational; this would lead to a hang.  */
       if (primary && !check_for_running_agent (1))
         {
           log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX);
@@ -1567,19 +1615,18 @@ create_server_socket (char *name, int primary, assuan_sock_nonce_t *nonce)
           assuan_sock_close (fd);
           agent_exit (2);
         }
-      gnupg_remove (name);
-      rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+      gnupg_remove (unaddr->sun_path);
+      rc = assuan_sock_bind (fd, addr, len);
     }
-  if (rc != -1
-      && (rc=assuan_sock_get_nonce ((struct sockaddr*)serv_addr, len, nonce)))
+  if (rc != -1 && (rc=assuan_sock_get_nonce (addr, len, nonce)))
     log_error (_("error getting nonce for the socket\n"));
   if (rc == -1)
     {
       /* We use gpg_strerror here because it allows us to get strings
          for some W32 socket error codes.  */
       log_error (_("error binding socket to '%s': %s\n"),
-		 serv_addr->sun_path,
-                 gpg_strerror (gpg_error_from_errno (errno)));
+		 unaddr->sun_path,
+                 gpg_strerror (gpg_error_from_syserror ()));
 
       assuan_sock_close (fd);
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
@@ -1589,12 +1636,13 @@ create_server_socket (char *name, int primary, assuan_sock_nonce_t *nonce)
   if (listen (FD2INT(fd), 5 ) == -1)
     {
       log_error (_("listen() failed: %s\n"), strerror (errno));
+      *name = 0; /* Inhibit removal of the socket by cleanup(). */
       assuan_sock_close (fd);
       agent_exit (2);
     }
 
   if (opt.verbose)
-    log_info (_("listening on socket '%s'\n"), serv_addr->sun_path);
+    log_info (_("listening on socket '%s'\n"), unaddr->sun_path);
 
   return fd;
 }
