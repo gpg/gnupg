@@ -2123,8 +2123,9 @@ proc_tree (CTX c, kbnode_t node)
 
           free_md_filter_context (&c->mfx);
           /* Prepare to create all requested message digests.  */
-          if (gcry_md_open (&c->mfx.md, 0, 0))
-            BUG ();
+          rc = gcry_md_open (&c->mfx.md, 0, 0);
+          if (rc)
+            goto hash_err;
 
           /* Fixme: why looking for the signature packet and not the
              one-pass packet?  */
@@ -2154,6 +2155,7 @@ proc_tree (CTX c, kbnode_t node)
                                               use_textmode);
 	    }
 
+        hash_err:
           if (rc)
             {
               log_error ("can't hash datafile: %s\n", g10_errstr (rc));
@@ -2225,8 +2227,9 @@ proc_tree (CTX c, kbnode_t node)
         {
           /* Detached signature */
           free_md_filter_context (&c->mfx);
-          if (gcry_md_open (&c->mfx.md, sig->digest_algo, 0))
-            BUG ();
+          rc = gcry_md_open (&c->mfx.md, sig->digest_algo, 0);
+          if (rc)
+            goto detached_hash_err;
 
           if (RFC2440 || RFC4880)
             ; /* Strict RFC mode.  */
@@ -2236,8 +2239,9 @@ proc_tree (CTX c, kbnode_t node)
             {
               /* Enable a workaround for a pgp5 bug when the detached
                * signature has been created in textmode.  */
-              if (gcry_md_open (&c->mfx.md2, sig->digest_algo, 0 ))
-                BUG ();
+              rc = gcry_md_open (&c->mfx.md2, sig->digest_algo, 0);
+              if (rc)
+                goto detached_hash_err;
 	    }
 
           /* Here we used to have another hack to work around a pgp
@@ -2276,6 +2280,7 @@ proc_tree (CTX c, kbnode_t node)
                                               (sig->sig_class == 0x01));
 	    }
 
+        detached_hash_err:
           if (rc)
             {
               log_error ("can't hash datafile: %s\n", g10_errstr(rc));
