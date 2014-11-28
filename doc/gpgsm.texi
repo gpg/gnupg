@@ -384,6 +384,14 @@ always used.
 @item --disable-dirmngr
 Entirely disable the use of the Dirmngr.
 
+@item --no-autostart
+@opindex no-autostart
+Do not start the gpg-agent or the dirmngr if it has not yet been
+started and its service is required.  This option is mostly useful on
+machines where the connection to gpg-agent has been redirected to
+another machines.  If dirmngr is required on the remote machine, it
+may be started manually using @command{gpgconf --launch dirmngr}.
+
 @item --no-secmem-warning
 @opindex no-secmem-warning
 Do not print a warning when the so called "secure memory" cannot be used.

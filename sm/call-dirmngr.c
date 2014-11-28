@@ -209,8 +209,18 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 
   err = start_new_dirmngr (&ctx, GPG_ERR_SOURCE_DEFAULT,
                            opt.homedir, opt.dirmngr_program,
-                           1, opt.verbose, DBG_ASSUAN,
+                           opt.autostart, opt.verbose, DBG_ASSUAN,
                            gpgsm_status2, ctrl);
+  if (!opt.autostart && gpg_err_code (err) == GPG_ERR_NO_DIRMNGR)
+    {
+      static int shown;
+
+      if (!shown)
+        {
+          shown = 1;
+          log_info (_("no dirmngr running in this session\n"));
+        }
+    }
   prepare_dirmngr (ctrl, ctx, err);
   if (err)
     return err;

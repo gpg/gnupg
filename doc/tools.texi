@@ -1241,6 +1241,11 @@ When using @option{-S} or @option{--exec}, @command{gpg-connect-agent}
 connects to the assuan server in extended mode to allow descriptor
 passing.  This option makes it use the old mode.
 
+@item --no-autostart
+@opindex no-autostart
+Do not start the gpg-agent or the dirmngr if it has not yet been
+started.
+
 @item --run @var{file}
 @opindex run
 Run the commands from @var{file} at startup and then continue with the

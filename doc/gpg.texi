@@ -1735,6 +1735,14 @@ fallback when the environment variable @code{DIRMNGR_INFO} is not set or
 a running dirmngr cannot be connected.
 @end ifset
 
+@item --no-autostart
+@opindex no-autostart
+Do not start the gpg-agent or the dirmngr if it has not yet been
+started and its service is required.  This option is mostly useful on
+machines where the connection to gpg-agent has been redirected to
+another machines.  If dirmngr is required on the remote machine, it
+may be started manually using @command{gpgconf --launch dirmngr}.
+
 @item --lock-once
 @opindex lock-once
 Lock the databases the first time a lock is requested

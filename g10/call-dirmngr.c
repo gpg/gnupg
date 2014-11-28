@@ -130,9 +130,19 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
                            GPG_ERR_SOURCE_DEFAULT,
                            opt.homedir,
                            opt.dirmngr_program,
-                           1, opt.verbose, DBG_ASSUAN,
+                           opt.autostart, opt.verbose, DBG_ASSUAN,
                            NULL /*gpg_status2*/, ctrl);
-  if (!err)
+  if (!opt.autostart && gpg_err_code (err) == GPG_ERR_NO_DIRMNGR)
+    {
+      static int shown;
+
+      if (!shown)
+        {
+          shown = 1;
+          log_info (_("no dirmngr running in this session\n"));
+        }
+    }
+  else if (!err)
     {
       keyserver_spec_t ksi;
 

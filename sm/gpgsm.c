@@ -183,7 +183,8 @@ enum cmd_and_opt_values {
   oIgnoreTimeConflict,
   oNoRandomSeedFile,
   oNoCommonCertsImport,
-  oIgnoreCertExtension
+  oIgnoreCertExtension,
+  oNoAutostart
  };
 
 
@@ -391,6 +392,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoRandomSeedFile,  "no-random-seed-file", "@"),
   ARGPARSE_s_n (oNoCommonCertsImport, "no-common-certs-import", "@"),
   ARGPARSE_s_s (oIgnoreCertExtension, "ignore-cert-extension", "@"),
+  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
 
   /* Command aliases.  */
   ARGPARSE_c (aListKeys, "list-key", "@"),
@@ -940,6 +942,7 @@ main ( int argc, char **argv)
 
   dotlock_create (NULL, 0); /* Register lockfile cleanup.  */
 
+  opt.autostart = 1;
   opt.session_env = session_env_new ();
   if (!opt.session_env)
     log_fatal ("error allocating session environment block: %s\n",
@@ -1416,6 +1419,8 @@ main ( int argc, char **argv)
         case oIgnoreCertExtension:
           add_to_strlist (&opt.ignored_cert_extensions, pargs.r.ret_str);
           break;
+
+        case oNoAutostart: opt.autostart = 0; break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;

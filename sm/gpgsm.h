@@ -69,6 +69,7 @@ struct
   char *lc_ctype;
   char *lc_messages;
 
+  int autostart;
   const char *dirmngr_program;
   int disable_dirmngr;        /* Do not do any dirmngr calls.  */
   const char *protect_tool_program;

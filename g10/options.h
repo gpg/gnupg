@@ -53,6 +53,7 @@ struct
   estream_t outfp;  /* Hack, sometimes used in place of outfile.  */
   off_t max_output;
   int dry_run;
+  int autostart;
   int list_only;
   int textmode;
   int expert;

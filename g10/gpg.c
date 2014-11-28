@@ -379,6 +379,7 @@ enum cmd_and_opt_values
     oNoAllowMultipleMessages,
     oAllowWeakDigestAlgos,
     oFakedSystemTime,
+    oNoAutostart,
 
     oNoop
   };
@@ -786,6 +787,7 @@ static ARGPARSE_OPTS opts[] = {
   /* New options.  Fixme: Should go more to the top.  */
   ARGPARSE_s_s (oAutoKeyLocate, "auto-key-locate", "@"),
   ARGPARSE_s_n (oNoAutoKeyLocate, "no-auto-key-locate", "@"),
+  ARGPARSE_s_n (oNoAutostart, "no-autostart", "@"),
 
   /* Dummy options with warnings.  */
   ARGPARSE_s_n (oUseAgent,      "use-agent", "@"),
@@ -2080,6 +2082,7 @@ main (int argc, char **argv)
 
     dotlock_create (NULL, 0); /* Register lock file cleanup. */
 
+    opt.autostart = 1;
     opt.session_env = session_env_new ();
     if (!opt.session_env)
       log_fatal ("error allocating session environment block: %s\n",
@@ -3130,6 +3133,8 @@ main (int argc, char **argv)
               gnupg_set_time (faked_time, 0);
             }
             break;
+
+          case oNoAutostart: opt.autostart = 0; break;
 
 	  case oNoop: break;
 

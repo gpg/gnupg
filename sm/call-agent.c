@@ -95,10 +95,20 @@ start_agent (ctrl_t ctrl)
                                 opt.agent_program,
                                 opt.lc_ctype, opt.lc_messages,
                                 opt.session_env,
-                                1, opt.verbose, DBG_ASSUAN,
+                                opt.autostart, opt.verbose, DBG_ASSUAN,
                                 gpgsm_status2, ctrl);
 
-      if (!rc)
+      if (!opt.autostart && gpg_err_code (rc) == GPG_ERR_NO_AGENT)
+        {
+          static int shown;
+
+          if (!shown)
+            {
+              shown = 1;
+              log_info (_("no gpg-agent running in this session\n"));
+            }
+        }
+      else if (!rc)
         {
           /* Tell the agent that we support Pinentry notifications.  No
              error checking so that it will work also with older
