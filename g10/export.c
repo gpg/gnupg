@@ -804,6 +804,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                        sl->d, gpg_strerror (err));
         }
 
+      keydb_disable_caching (kdbhd);  /* We are looping the search.  */
+
       /* It would be nice to see which of the given users did actually
          match one in the keyring.  To implement this we need to have
          a found flag for each entry in desc.  To set this flag we

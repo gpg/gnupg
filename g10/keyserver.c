@@ -1229,7 +1229,8 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
   *klist=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
-  kdbhd=keydb_new ();
+  kdbhd = keydb_new ();
+  keydb_disable_caching (kdbhd);  /* We are looping the search.  */
 
   if(!users)
     {

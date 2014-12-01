@@ -1424,6 +1424,9 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_CACHE)
     dump_search_desc (hd, "keydb_search", desc, ndesc);
 
+  /* NB: If one of the exact search modes below is used in a loop to
+     walk over all keys (with the same fingerprint) the caching must
+     have been disabled for the handle.  */
   if (!hd->no_caching
       && ndesc == 1
       && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
