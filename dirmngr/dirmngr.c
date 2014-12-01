@@ -79,6 +79,10 @@
 # define USE_W32_SERVICE 1
 #endif
 
+#ifndef ENAMETOOLONG
+# define ENAMETOOLONG EINVAL
+#endif
+
 
 enum cmd_and_opt_values {
   aNull = 0,
@@ -237,8 +241,11 @@ static ARGPARSE_OPTS opts[] = {
 #define DEFAULT_MAX_REPLIES 10
 #define DEFAULT_LDAP_TIMEOUT 100 /* arbitrary large timeout */
 
-/* For the cleanup handler we need to keep track of the socket's name. */
+/* For the cleanup handler we need to keep track of the socket's name.  */
 static const char *socket_name;
+/* If the socket has been redirected, this is the name of the
+   redirected socket..  */
+static const char *redir_socket_name;
 
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
@@ -1047,12 +1054,6 @@ main (int argc, char **argv)
           dirmngr_exit (1);
         }
 #endif
-      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path )
-        {
-          log_error (_("name of socket too long\n"));
-          dirmngr_exit (1);
-        }
-
       fd = assuan_sock_new (AF_UNIX, SOCK_STREAM, 0);
       if (fd == ASSUAN_INVALID_FD)
         {
@@ -1061,9 +1062,41 @@ main (int argc, char **argv)
           dirmngr_exit (1);
         }
 
+#if ASSUAN_VERSION_NUMBER >= 0x020104 /* >= 2.1.4 */
+      {
+        int redirected;
+
+        if (assuan_sock_set_sockaddr_un (socket_name,
+                                         (struct sockaddr*)&serv_addr,
+                                         &redirected))
+          {
+            if (errno == ENAMETOOLONG)
+              log_error (_("socket name '%s' is too long\n"), socket_name);
+            else
+              log_error ("error preparing socket '%s': %s\n",
+                         socket_name,
+                         gpg_strerror (gpg_error_from_syserror ()));
+            dirmngr_exit (1);
+          }
+        if (redirected)
+          {
+            redir_socket_name = xstrdup (serv_addr.sun_path);
+            if (opt.verbose)
+              log_info ("redirecting socket '%s' to '%s'\n",
+                        socket_name, redir_socket_name);
+          }
+      }
+#else /* Assuan < 2.1.4 */
       memset (&serv_addr, 0, sizeof serv_addr);
       serv_addr.sun_family = AF_UNIX;
+      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path )
+        {
+          log_error (_("socket name '%s' is too long\n"), socket_name);
+          dirmngr_exit (1);
+        }
       strcpy (serv_addr.sun_path, socket_name);
+#endif /* Assuan < 2.1.4 */
+
       len = SUN_LEN (&serv_addr);
 
       rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
@@ -1075,7 +1108,7 @@ main (int argc, char **argv)
               ))
 	{
           /* Fixme: We should test whether a dirmngr is already running. */
-	  gnupg_remove (socket_name);
+	  gnupg_remove (redir_socket_name? redir_socket_name : socket_name);
 	  rc = assuan_sock_bind (fd, (struct sockaddr*) &serv_addr, len);
 	}
       if (rc != -1
@@ -1084,7 +1117,8 @@ main (int argc, char **argv)
       if (rc == -1)
         {
           log_error (_("error binding socket to '%s': %s\n"),
-                     serv_addr.sun_path, gpg_strerror (gpg_error_from_errno (errno)));
+                     serv_addr.sun_path,
+                     gpg_strerror (gpg_error_from_errno (errno)));
           assuan_sock_close (fd);
           dirmngr_exit (1);
         }
@@ -1098,7 +1132,7 @@ main (int argc, char **argv)
         }
 
       if (opt.verbose)
-        log_info (_("listening on socket '%s'\n"), socket_name );
+        log_info (_("listening on socket '%s'\n"), serv_addr.sun_path);
 
       es_fflush (NULL);
 
@@ -1132,7 +1166,7 @@ main (int argc, char **argv)
 
           /* Create the info string: <name>:<pid>:<protocol_version> */
           if (asprintf (&infostr, "%s=%s:%lu:1",
-                        DIRMNGR_INFO_NAME, socket_name, (ulong)pid ) < 0)
+                        DIRMNGR_INFO_NAME, serv_addr.sun_path, (ulong)pid ) < 0)
             {
               log_error (_("out of core\n"));
               kill (pid, SIGTERM);
@@ -1412,7 +1446,9 @@ cleanup (void)
   if (cleanup_socket)
     {
       cleanup_socket = 0;
-      if (socket_name && *socket_name)
+      if (redir_socket_name)
+        gnupg_remove (redir_socket_name);
+      else if (socket_name && *socket_name)
         gnupg_remove (socket_name);
     }
 }
