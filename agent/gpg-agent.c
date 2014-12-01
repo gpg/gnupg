@@ -1574,7 +1574,6 @@ create_server_socket (char *name, int primary,
       }
   }
 #else /* Assuan < 2.1.4 */
-  redirected = 0;
   memset (unaddr, 0, sizeof *unaddr);
   unaddr->sun_family = AF_UNIX;
   if (strlen (name) + 1 >= sizeof (unaddr->sun_path))
