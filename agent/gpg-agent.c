@@ -1525,8 +1525,8 @@ create_socket_name (char *standard_name, int with_homedir)
 /* Create a Unix domain socket with NAME.  Returns the file descriptor
    or terminates the process in case of an error.  Note that this
    function needs to be used for the regular socket first (indicated
-   by PRIMARY) and only then for the extra and the ssh sockets.  if
-   the soecket has been redirected the name of the real socket is
+   by PRIMARY) and only then for the extra and the ssh sockets.  If
+   the socket has been redirected the name of the real socket is
    stored as a malloced string at R_REDIR_NAME.  */
 static gnupg_fd_t
 create_server_socket (char *name, int primary,

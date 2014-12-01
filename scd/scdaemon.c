@@ -55,6 +55,9 @@
 #include "asshelp.h"
 #include "../common/init.h"
 
+#ifndef ENAMETOOLONG
+# define ENAMETOOLONG EINVAL
+#endif
 
 enum cmd_and_opt_values
 { aNull = 0,
@@ -194,6 +197,8 @@ static int pipe_server;
 
 /* Name of the communication socket */
 static char *socket_name;
+/* Name of the redirected socket or NULL.  */
+static char *redir_socket_name;
 
 /* We need to keep track of the server's nonces (these are dummies for
    POSIX systems). */
@@ -207,6 +212,7 @@ static int ticker_disabled;
 
 static char *create_socket_name (char *standard_name);
 static gnupg_fd_t create_server_socket (const char *name,
+                                        char **r_redir_name,
                                         assuan_sock_nonce_t *nonce);
 
 static void *start_connection_thread (void *arg);
@@ -357,14 +363,17 @@ cleanup (void)
 {
   if (socket_name && *socket_name)
     {
+      char *name;
       char *p;
 
-      remove (socket_name);
-      p = strrchr (socket_name, '/');
+      name = redir_socket_name? redir_socket_name : socket_name;
+
+      gnupg_remove (name);
+      p = strrchr (name, '/');
       if (p)
         {
           *p = 0;
-          rmdir (socket_name);
+          rmdir (name);
           *p = '/';
         }
       *socket_name = 0;
@@ -736,7 +745,8 @@ main (int argc, char **argv )
       if (multi_server)
         {
           socket_name = create_socket_name (SCDAEMON_SOCK_NAME);
-          fd = FD2INT(create_server_socket (socket_name, &socket_nonce));
+          fd = FD2INT(create_server_socket (socket_name,
+                                            &redir_socket_name, &socket_nonce));
         }
 
       res = npth_attr_init (&tattr);
@@ -788,7 +798,8 @@ main (int argc, char **argv )
 
       /* Create the socket.  */
       socket_name = create_socket_name (SCDAEMON_SOCK_NAME);
-      fd = FD2INT (create_server_socket (socket_name, &socket_nonce));
+      fd = FD2INT (create_server_socket (socket_name,
+                                         &redir_socket_name, &socket_nonce));
 
 
       fflush (NULL);
@@ -1025,25 +1036,27 @@ create_socket_name (char *standard_name)
       log_error (("'%s' are not allowed in the socket name\n"), PATHSEP_S);
       scd_exit (2);
     }
-  if (strlen (name) + 1 >= DIMof (struct sockaddr_un, sun_path) )
-    {
-      log_error (_("name of socket too long\n"));
-      scd_exit (2);
-    }
   return name;
 }
 
 
 
 /* Create a Unix domain socket with NAME.  Returns the file descriptor
-   or terminates the process in case of an error. */
+   or terminates the process in case of an error.  If the socket has
+   been redirected the name of the real socket is stored as a malloced
+   string at R_REDIR_NAME. */
 static gnupg_fd_t
-create_server_socket (const char *name, assuan_sock_nonce_t *nonce)
+create_server_socket (const char *name, char **r_redir_name,
+                      assuan_sock_nonce_t *nonce)
 {
-  struct sockaddr_un *serv_addr;
+  struct sockaddr *addr;
+  struct sockaddr_un *unaddr;
   socklen_t len;
   gnupg_fd_t fd;
   int rc;
+
+  xfree (*r_redir_name);
+  *r_redir_name = NULL;
 
   fd = assuan_sock_new (AF_UNIX, SOCK_STREAM, 0);
   if (fd == GNUPG_INVALID_FD)
@@ -1052,26 +1065,55 @@ create_server_socket (const char *name, assuan_sock_nonce_t *nonce)
       scd_exit (2);
     }
 
-  serv_addr = xmalloc (sizeof (*serv_addr));
-  memset (serv_addr, 0, sizeof *serv_addr);
-  serv_addr->sun_family = AF_UNIX;
-  assert (strlen (name) + 1 < sizeof (serv_addr->sun_path));
-  strcpy (serv_addr->sun_path, name);
-  len = SUN_LEN (serv_addr);
+  unaddr = xmalloc (sizeof (*unaddr));
+  addr = (struct sockaddr*)unaddr;
 
-  rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+#if ASSUAN_VERSION_NUMBER >= 0x020104 /* >= 2.1.4 */
+  {
+    int redirected;
+
+    if (assuan_sock_set_sockaddr_un (name, addr, &redirected))
+      {
+        if (errno == ENAMETOOLONG)
+          log_error (_("socket name '%s' is too long\n"), name);
+        else
+          log_error ("error preparing socket '%s': %s\n",
+                     name, gpg_strerror (gpg_error_from_syserror ()));
+        scd_exit (2);
+      }
+    if (redirected)
+      {
+        *r_redir_name = xstrdup (unaddr->sun_path);
+        if (opt.verbose)
+          log_info ("redirecting socket '%s' to '%s'\n", name, *r_redir_name);
+      }
+  }
+#else /* Assuan < 2.1.4 */
+  memset (unaddr, 0, sizeof *unaddr);
+  unaddr->sun_family = AF_UNIX;
+  if (strlen (name) + 1 >= sizeof (unaddr->sun_path))
+    {
+      log_error (_("socket name '%s' is too long\n"), name);
+      scd_exit (2);
+    }
+  strcpy (unaddr->sun_path, name);
+#endif /* Assuan < 2.1.4 */
+
+  len = SUN_LEN (unaddr);
+
+  rc = assuan_sock_bind (fd, addr, len);
   if (rc == -1 && errno == EADDRINUSE)
     {
-      remove (name);
-      rc = assuan_sock_bind (fd, (struct sockaddr*) serv_addr, len);
+      gnupg_remove (unaddr->sun_path);
+      rc = assuan_sock_bind (fd, addr, len);
     }
   if (rc != -1
-      && (rc=assuan_sock_get_nonce ((struct sockaddr*)serv_addr, len, nonce)))
+      && (rc=assuan_sock_get_nonce (addr, len, nonce)))
     log_error (_("error getting nonce for the socket\n"));
  if (rc == -1)
     {
       log_error (_("error binding socket to '%s': %s\n"),
-		 serv_addr->sun_path,
+		 unaddr->sun_path,
                  gpg_strerror (gpg_error_from_syserror ()));
       assuan_sock_close (fd);
       scd_exit (2);
@@ -1086,7 +1128,7 @@ create_server_socket (const char *name, assuan_sock_nonce_t *nonce)
     }
 
   if (opt.verbose)
-    log_info (_("listening on socket '%s'\n"), serv_addr->sun_path);
+    log_info (_("listening on socket '%s'\n"), unaddr->sun_path);
 
   return fd;
 }
