@@ -3063,7 +3063,6 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   char *comment = NULL;
   char *key_fpr = NULL;
   const char *initial_errtext = NULL;
-  unsigned int i;
   struct pin_entry_info_s *pi = NULL, *pi2;
 
   err = ssh_key_grip (key, key_grip_raw);
@@ -3139,9 +3138,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
     goto out;
 
   /* Cache this passphrase. */
-  for (i = 0; i < 20; i++)
-    sprintf (key_grip + 2 * i, "%02X", key_grip_raw[i]);
-
+  bin2hex (key_grip_raw, 20, key_grip);
   err = agent_put_cache (key_grip, CACHE_MODE_SSH, pi->pin, ttl);
   if (err)
     goto out;

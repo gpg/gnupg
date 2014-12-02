@@ -94,14 +94,9 @@ agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
           goto leave;
         }
 
-      {
-        char tmpbuf[60];
-
-        sprintf (tmpbuf, "(5:value%u:", (unsigned int)len);
-        put_membuf (outbuf, tmpbuf, strlen (tmpbuf));
-        put_membuf (outbuf, buf, len);
-        put_membuf (outbuf, ")", 2);
-      }
+      put_membuf_printf (outbuf, "(5:value%u:", (unsigned int)len);
+      put_membuf (outbuf, buf, len);
+      put_membuf (outbuf, ")", 2);
     }
   else
     { /* No smartcard, but a private key */

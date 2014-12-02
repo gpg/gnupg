@@ -822,8 +822,8 @@ agent_card_pksign (ctrl_t ctrl,
                    const unsigned char *indata, size_t indatalen,
                    unsigned char **r_buf, size_t *r_buflen)
 {
-  int rc, i;
-  char *p, line[ASSUAN_LINELENGTH];
+  int rc;
+  char line[ASSUAN_LINELENGTH];
   membuf_t data;
   struct inq_needpin_s inqparm;
 
@@ -835,10 +835,8 @@ agent_card_pksign (ctrl_t ctrl,
   if (indatalen*2 + 50 > DIM(line))
     return unlock_scd (ctrl, gpg_error (GPG_ERR_GENERAL));
 
-  sprintf (line, "SETDATA ");
-  p = line + strlen (line);
-  for (i=0; i < indatalen ; i++, p += 2 )
-    sprintf (p, "%02X", indata[i]);
+  bin2hex (indata, indatalen, stpcpy (line, "SETDATA "));
+
   rc = assuan_transact (ctrl->scd_local->ctx, line,
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
