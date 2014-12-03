@@ -130,7 +130,7 @@ struct
   int shm_coprocess;
   const char *set_filename;
   strlist_t comments;
-  int throw_keyid;
+  int throw_keyids;
   const char *photo_viewer;
   int s2k_mode;
   int s2k_digest_algo;

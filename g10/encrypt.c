@@ -867,9 +867,9 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
       enc = xmalloc_clear ( sizeof *enc );
       enc->pubkey_algo = pk->pubkey_algo;
       keyid_from_pk( pk, enc->keyid );
-      enc->throw_keyid = (opt.throw_keyid || (pk_list->flags&1));
+      enc->throw_keyid = (opt.throw_keyids || (pk_list->flags&1));
 
-      if (opt.throw_keyid && (PGP6 || PGP7 || PGP8))
+      if (opt.throw_keyids && (PGP6 || PGP7 || PGP8))
         {
           log_info(_("you may not use %s while in %s mode\n"),
                    "--throw-keyids",compliance_option_string());

@@ -587,15 +587,12 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oCertDigestAlgo, "cert-digest-algo", "@"),
   ARGPARSE_s_s (oCompressAlgo,"compress-algo", "@"),
   ARGPARSE_s_s (oCompressAlgo, "compression-algo", "@"), /* Alias */
-  ARGPARSE_s_n (oThrowKeyids, "throw-keyid", "@"),
   ARGPARSE_s_n (oThrowKeyids, "throw-keyids", "@"),
-  ARGPARSE_s_n (oNoThrowKeyids, "no-throw-keyid", "@"),
   ARGPARSE_s_n (oNoThrowKeyids, "no-throw-keyids", "@"),
   ARGPARSE_s_n (oShowPhotos,   "show-photos", "@"),
   ARGPARSE_s_n (oNoShowPhotos, "no-show-photos", "@"),
   ARGPARSE_s_s (oPhotoViewer,  "photo-viewer", "@"),
   ARGPARSE_s_s (oSetNotation,  "set-notation", "@"),
-  ARGPARSE_s_s (oSetNotation,  "notation-data", "@"), /* Alias */
   ARGPARSE_s_s (oSigNotation,  "sig-notation", "@"),
   ARGPARSE_s_s (oCertNotation, "cert-notation", "@"),
 
@@ -2611,8 +2608,8 @@ main (int argc, char **argv)
 	    free_strlist(opt.comments);
 	    opt.comments=NULL;
 	    break;
-	  case oThrowKeyids: opt.throw_keyid = 1; break;
-	  case oNoThrowKeyids: opt.throw_keyid = 0; break;
+	  case oThrowKeyids: opt.throw_keyids = 1; break;
+	  case oNoThrowKeyids: opt.throw_keyids = 0; break;
 	  case oShowPhotos:
 	    deprecated_warning(configname,configlineno,"--show-photos",
 			       "--list-options ","show-photos");

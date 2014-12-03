@@ -23,6 +23,9 @@ Noteworthy changes in version 2.1.1 (unreleased)
 
  * More translations (but most of them are not complete).
 
+ * gpg: Removed the option aliases --throw-keyid and --notation-data;
+   use --throw-keyids and --set-notation instead.
+
 
 Noteworthy changes in version 2.1.0 (2014-11-06)
 ------------------------------------------------
