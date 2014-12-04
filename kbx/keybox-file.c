@@ -27,7 +27,7 @@
 #include "keybox-defs.h"
 
 
-#define IMAGELEN_LIMIT (2*1024*1024)
+#define IMAGELEN_LIMIT (5*1024*1024)
 
 
 #if !defined(HAVE_FTELLO) && !defined(ftello)

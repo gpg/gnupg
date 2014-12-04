@@ -341,10 +341,20 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
           log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
 	}
       release_kbnode (keyblock);
-      /* fixme: we should increment the not imported counter but this
-         does only make sense if we keep on going despite of errors. */
-      if (rc)
+
+      /* fixme: we should increment the not imported counter but
+         this does only make sense if we keep on going despite of
+         errors.  For now we do this only if the imported key is too
+         large. */
+      if (gpg_err_code (rc) == GPG_ERR_TOO_LARGE
+            && gpg_err_source (rc) == GPG_ERR_SOURCE_KEYBOX)
+        {
+          stats->not_imported++;
+          rc = 0;
+        }
+      else if (rc)
         break;
+
       if (!(++stats->count % 100) && !opt.quiet)
         log_info (_("%lu keys processed so far\n"), stats->count );
     }
