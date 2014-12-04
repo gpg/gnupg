@@ -1,6 +1,5 @@
 /* import.c - import a key into our key storage.
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
- *               2007, 2010, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2007, 2010-2011 Free Software Foundation, Inc.
  * Copyright (C) 2014  Werner Koch
  *
  * This file is part of GnuPG.
@@ -41,23 +40,24 @@
 #include "call-agent.h"
 #include "../common/membuf.h"
 
-struct stats_s {
-    ulong count;
-    ulong no_user_id;
-    ulong imported;
-    ulong n_uids;
-    ulong n_sigs;
-    ulong n_subk;
-    ulong unchanged;
-    ulong n_revoc;
-    ulong secret_read;
-    ulong secret_imported;
-    ulong secret_dups;
-    ulong skipped_new_keys;
-    ulong not_imported;
-    ulong n_sigs_cleaned;
-    ulong n_uids_cleaned;
-    ulong v3keys;   /* Number of V3 keys seen.  */
+struct stats_s
+{
+  ulong count;
+  ulong no_user_id;
+  ulong imported;
+  ulong n_uids;
+  ulong n_sigs;
+  ulong n_subk;
+  ulong unchanged;
+  ulong n_revoc;
+  ulong secret_read;
+  ulong secret_imported;
+  ulong secret_dups;
+  ulong skipped_new_keys;
+  ulong not_imported;
+  ulong n_sigs_cleaned;
+  ulong n_uids_cleaned;
+  ulong v3keys;   /* Number of V3 keys seen.  */
 };
 
 
@@ -65,34 +65,34 @@ static int import (ctrl_t ctrl,
                    IOBUF inp, const char* fname, struct stats_s *stats,
 		   unsigned char **fpr, size_t *fpr_len, unsigned int options,
 		   import_screener_t screener, void *screener_arg);
-static int read_block (IOBUF a, PACKET **pending_pkt, KBNODE *ret_root,
+static int read_block (IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root,
                        int *r_v3keys);
 static void revocation_present (ctrl_t ctrl, kbnode_t keyblock);
 static int import_one (ctrl_t ctrl,
-                       const char *fname, KBNODE keyblock,struct stats_s *stats,
+                       const char *fname, kbnode_t keyblock,struct stats_s *stats,
                        unsigned char **fpr, size_t *fpr_len,
                        unsigned int options, int from_sk, int silent,
                        import_screener_t screener, void *screener_arg);
-static int import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
+static int import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
                               struct stats_s *stats, int batch,
                               unsigned int options, int for_migration,
                               import_screener_t screener, void *screener_arg);
-static int import_revoke_cert( const char *fname, KBNODE node,
+static int import_revoke_cert( const char *fname, kbnode_t node,
                                struct stats_s *stats);
-static int chk_self_sigs( const char *fname, KBNODE keyblock,
+static int chk_self_sigs (const char *fname, kbnode_t keyblock,
 			  PKT_public_key *pk, u32 *keyid, int *non_self );
-static int delete_inv_parts( const char *fname, KBNODE keyblock,
+static int delete_inv_parts (const char *fname, kbnode_t keyblock,
 			     u32 *keyid, unsigned int options );
-static int merge_blocks( const char *fname, KBNODE keyblock_orig,
-			 KBNODE keyblock, u32 *keyid,
+static int merge_blocks (const char *fname, kbnode_t keyblock_orig,
+			 kbnode_t keyblock, u32 *keyid,
 			 int *n_uids, int *n_sigs, int *n_subk );
-static int append_uid( KBNODE keyblock, KBNODE node, int *n_sigs,
+static int append_uid (kbnode_t keyblock, kbnode_t node, int *n_sigs,
 			     const char *fname, u32 *keyid );
-static int append_key( KBNODE keyblock, KBNODE node, int *n_sigs,
+static int append_key (kbnode_t keyblock, kbnode_t node, int *n_sigs,
 			     const char *fname, u32 *keyid );
-static int merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
+static int merge_sigs (kbnode_t dst, kbnode_t src, int *n_sigs,
 			     const char *fname, u32 *keyid );
-static int merge_keysigs( KBNODE dst, KBNODE src, int *n_sigs,
+static int merge_keysigs (kbnode_t dst, kbnode_t src, int *n_sigs,
 			     const char *fname, u32 *keyid );
 
 int
@@ -136,19 +136,22 @@ parse_import_options(char *str,unsigned int *options,int noisy)
   return parse_options(str,options,import_opts,noisy);
 }
 
+
 void *
 import_new_stats_handle (void)
 {
-    return xmalloc_clear ( sizeof (struct stats_s) );
+  return xmalloc_clear ( sizeof (struct stats_s) );
 }
+
 
 void
 import_release_stats_handle (void *p)
 {
-    xfree (p);
+  xfree (p);
 }
 
-/****************
+
+/*
  * Import the public keys from the given filename. Input may be armored.
  * This function rejects all keys which are not validly self signed on at
  * least one userid. Only user ids which are self signed will be imported.
@@ -177,7 +180,6 @@ import_release_stats_handle (void *p)
  *  - Proceed with next signature.
  *
  *  Key revocation certificates have special handling.
- *
  */
 static int
 import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
@@ -185,64 +187,70 @@ import_keys_internal (ctrl_t ctrl, iobuf_t inp, char **fnames, int nnames,
 		      unsigned int options,
                       import_screener_t screener, void *screener_arg)
 {
-    int i, rc = 0;
-    struct stats_s *stats = stats_handle;
+  int i;
+  int rc = 0;
+  struct stats_s *stats = stats_handle;
 
-    if (!stats)
-        stats = import_new_stats_handle ();
+  if (!stats)
+    stats = import_new_stats_handle ();
 
-    if (inp) {
+  if (inp)
+    {
       rc = import (ctrl, inp, "[stream]", stats, fpr, fpr_len, options,
                    screener, screener_arg);
     }
-    else {
-        if( !fnames && !nnames )
-	    nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
+  else
+    {
+      if (!fnames && !nnames)
+        nnames = 1;  /* Ohh what a ugly hack to jump into the loop */
 
-	for(i=0; i < nnames; i++ ) {
-	    const char *fname = fnames? fnames[i] : NULL;
-	    IOBUF inp2 = iobuf_open(fname);
-	    if( !fname )
-	        fname = "[stdin]";
-            if (inp2 && is_secured_file (iobuf_get_fd (inp2)))
-              {
-                iobuf_close (inp2);
-                inp2 = NULL;
-                gpg_err_set_errno (EPERM);
-              }
-	    if( !inp2 )
-	        log_error(_("can't open '%s': %s\n"), fname, strerror(errno) );
-	    else
-	      {
-	        rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options,
-                             screener, screener_arg);
-	        iobuf_close(inp2);
-                /* Must invalidate that ugly cache to actually close it. */
-                iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE,
-                             0, (char*)fname);
-	        if( rc )
-		  log_error("import from '%s' failed: %s\n", fname,
-			    g10_errstr(rc) );
-	      }
-	    if( !fname )
-	        break;
+      for (i=0; i < nnames; i++)
+        {
+          const char *fname = fnames? fnames[i] : NULL;
+          IOBUF inp2 = iobuf_open(fname);
+
+          if (!fname)
+            fname = "[stdin]";
+          if (inp2 && is_secured_file (iobuf_get_fd (inp2)))
+            {
+              iobuf_close (inp2);
+              inp2 = NULL;
+              gpg_err_set_errno (EPERM);
+            }
+          if (!inp2)
+            log_error (_("can't open '%s': %s\n"), fname, strerror (errno));
+          else
+            {
+              rc = import (ctrl, inp2, fname, stats, fpr, fpr_len, options,
+                           screener, screener_arg);
+              iobuf_close (inp2);
+              /* Must invalidate that ugly cache to actually close it. */
+              iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char*)fname);
+              if (rc)
+                log_error ("import from '%s' failed: %s\n",
+                           fname, g10_errstr(rc) );
+            }
+          if (!fname)
+            break;
 	}
     }
-    if (!stats_handle) {
-        import_print_stats (stats);
-        import_release_stats_handle (stats);
+
+  if (!stats_handle)
+    {
+      import_print_stats (stats);
+      import_release_stats_handle (stats);
     }
 
-    /* If no fast import and the trustdb is dirty (i.e. we added a key
-       or userID that had something other than a selfsig, a signature
-       that was other than a selfsig, or any revocation), then
-       update/check the trustdb if the user specified by setting
-       interactive or by not setting no-auto-check-trustdb */
+  /* If no fast import and the trustdb is dirty (i.e. we added a key
+     or userID that had something other than a selfsig, a signature
+     that was other than a selfsig, or any revocation), then
+     update/check the trustdb if the user specified by setting
+     interactive or by not setting no-auto-check-trustdb */
 
-    if(!(options&IMPORT_FAST))
-      check_or_update_trustdb ();
+  if (!(options & IMPORT_FAST))
+    check_or_update_trustdb ();
 
-    return rc;
+  return rc;
 }
 
 
@@ -295,56 +303,58 @@ import (ctrl_t ctrl, IOBUF inp, const char* fname,struct stats_s *stats,
 	unsigned char **fpr,size_t *fpr_len, unsigned int options,
 	import_screener_t screener, void *screener_arg)
 {
-    PACKET *pending_pkt = NULL;
-    KBNODE keyblock = NULL;  /* Need to initialize because gcc can't
+  PACKET *pending_pkt = NULL;
+  kbnode_t keyblock = NULL;  /* Need to initialize because gcc can't
                                 grasp the return semantics of
                                 read_block. */
-    int rc = 0;
-    int v3keys;
+  int rc = 0;
+  int v3keys;
 
-    getkey_disable_caches();
+  getkey_disable_caches ();
 
-    if( !opt.no_armor ) { /* armored reading is not disabled */
-	armor_filter_context_t *afx;
+  if (!opt.no_armor) /* Armored reading is not disabled.  */
+    {
+      armor_filter_context_t *afx;
 
-        afx = new_armor_context ();
-	afx->only_keyblocks = 1;
-	push_armor_filter (afx, inp);
-        release_armor_context (afx);
+      afx = new_armor_context ();
+      afx->only_keyblocks = 1;
+      push_armor_filter (afx, inp);
+      release_armor_context (afx);
     }
 
-    while( !(rc = read_block( inp, &pending_pkt, &keyblock, &v3keys) )) {
-        stats->v3keys += v3keys;
-        if( keyblock->pkt->pkttype == PKT_PUBLIC_KEY )
-          rc = import_one (ctrl, fname, keyblock,
-                           stats, fpr, fpr_len, options, 0, 0,
-                           screener, screener_arg);
-	else if( keyblock->pkt->pkttype == PKT_SECRET_KEY )
-          rc = import_secret_one (ctrl, fname, keyblock, stats,
-                                  opt.batch, options, 0,
-                                  screener, screener_arg);
-	else if( keyblock->pkt->pkttype == PKT_SIGNATURE
-		 && keyblock->pkt->pkt.signature->sig_class == 0x20 )
-	    rc = import_revoke_cert( fname, keyblock, stats );
-	else {
-	    log_info( _("skipping block of type %d\n"),
-					    keyblock->pkt->pkttype );
+  while (!(rc = read_block (inp, &pending_pkt, &keyblock, &v3keys)))
+    {
+      stats->v3keys += v3keys;
+      if (keyblock->pkt->pkttype == PKT_PUBLIC_KEY)
+        rc = import_one (ctrl, fname, keyblock,
+                         stats, fpr, fpr_len, options, 0, 0,
+                         screener, screener_arg);
+      else if (keyblock->pkt->pkttype == PKT_SECRET_KEY)
+        rc = import_secret_one (ctrl, fname, keyblock, stats,
+                                opt.batch, options, 0,
+                                screener, screener_arg);
+      else if (keyblock->pkt->pkttype == PKT_SIGNATURE
+               && keyblock->pkt->pkt.signature->sig_class == 0x20 )
+        rc = import_revoke_cert( fname, keyblock, stats );
+      else
+        {
+          log_info (_("skipping block of type %d\n"), keyblock->pkt->pkttype);
 	}
-	release_kbnode(keyblock);
-        /* fixme: we should increment the not imported counter but this
-           does only make sense if we keep on going despite of errors. */
-	if( rc )
-	    break;
-	if( !(++stats->count % 100) && !opt.quiet )
-	    log_info(_("%lu keys processed so far\n"), stats->count );
+      release_kbnode (keyblock);
+      /* fixme: we should increment the not imported counter but this
+         does only make sense if we keep on going despite of errors. */
+      if (rc)
+        break;
+      if (!(++stats->count % 100) && !opt.quiet)
+        log_info (_("%lu keys processed so far\n"), stats->count );
     }
-    stats->v3keys += v3keys;
-    if( rc == -1 )
-	rc = 0;
-    else if( rc && gpg_err_code (rc) != G10ERR_INV_KEYRING )
-	log_error( _("error reading '%s': %s\n"), fname, g10_errstr(rc));
+  stats->v3keys += v3keys;
+  if (rc == -1)
+    rc = 0;
+  else if (rc && gpg_err_code (rc) != G10ERR_INV_KEYRING)
+    log_error (_("error reading '%s': %s\n"), fname, g10_errstr(rc));
 
-    return rc;
+  return rc;
 }
 
 
@@ -404,50 +414,54 @@ import_old_secring (ctrl_t ctrl, const char *fname)
 void
 import_print_stats (void *hd)
 {
-    struct stats_s *stats = hd;
+  struct stats_s *stats = hd;
 
-    if( !opt.quiet ) {
-	log_info(_("Total number processed: %lu\n"),
-                 stats->count + stats->v3keys);
-	if( stats->v3keys)
-	    log_info(_("    skipped PGP-2 keys: %lu\n"), stats->v3keys);
-	if( stats->skipped_new_keys )
-	    log_info(_("      skipped new keys: %lu\n"),
-						stats->skipped_new_keys );
-	if( stats->no_user_id )
-	    log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
-	if( stats->imported) {
-	    log_info(_("              imported: %lu"), stats->imported );
-	    log_printf ("\n");
-	}
-	if( stats->unchanged )
-	    log_info(_("             unchanged: %lu\n"), stats->unchanged );
-	if( stats->n_uids )
-	    log_info(_("          new user IDs: %lu\n"), stats->n_uids );
-	if( stats->n_subk )
-	    log_info(_("           new subkeys: %lu\n"), stats->n_subk );
-	if( stats->n_sigs )
-	    log_info(_("        new signatures: %lu\n"), stats->n_sigs );
-	if( stats->n_revoc )
-	    log_info(_("   new key revocations: %lu\n"), stats->n_revoc );
-	if( stats->secret_read )
-	    log_info(_("      secret keys read: %lu\n"), stats->secret_read );
-	if( stats->secret_imported )
-	    log_info(_("  secret keys imported: %lu\n"), stats->secret_imported );
-	if( stats->secret_dups )
-	    log_info(_(" secret keys unchanged: %lu\n"), stats->secret_dups );
-	if( stats->not_imported )
-	    log_info(_("          not imported: %lu\n"), stats->not_imported );
-	if( stats->n_sigs_cleaned)
-	    log_info(_("    signatures cleaned: %lu\n"),stats->n_sigs_cleaned);
-	if( stats->n_uids_cleaned)
-	    log_info(_("      user IDs cleaned: %lu\n"),stats->n_uids_cleaned);
+  if (!opt.quiet)
+    {
+      log_info(_("Total number processed: %lu\n"),
+               stats->count + stats->v3keys);
+      if (stats->v3keys)
+        log_info(_("    skipped PGP-2 keys: %lu\n"), stats->v3keys);
+      if (stats->skipped_new_keys )
+        log_info(_("      skipped new keys: %lu\n"),
+                 stats->skipped_new_keys );
+      if (stats->no_user_id )
+        log_info(_("          w/o user IDs: %lu\n"), stats->no_user_id );
+      if (stats->imported)
+        {
+          log_info(_("              imported: %lu"), stats->imported );
+          log_printf ("\n");
+        }
+      if (stats->unchanged )
+        log_info(_("             unchanged: %lu\n"), stats->unchanged );
+      if (stats->n_uids )
+        log_info(_("          new user IDs: %lu\n"), stats->n_uids );
+      if (stats->n_subk )
+        log_info(_("           new subkeys: %lu\n"), stats->n_subk );
+      if (stats->n_sigs )
+        log_info(_("        new signatures: %lu\n"), stats->n_sigs );
+      if (stats->n_revoc )
+        log_info(_("   new key revocations: %lu\n"), stats->n_revoc );
+      if (stats->secret_read )
+        log_info(_("      secret keys read: %lu\n"), stats->secret_read );
+      if (stats->secret_imported )
+        log_info(_("  secret keys imported: %lu\n"), stats->secret_imported );
+      if (stats->secret_dups )
+        log_info(_(" secret keys unchanged: %lu\n"), stats->secret_dups );
+      if (stats->not_imported )
+        log_info(_("          not imported: %lu\n"), stats->not_imported );
+      if (stats->n_sigs_cleaned)
+        log_info(_("    signatures cleaned: %lu\n"),stats->n_sigs_cleaned);
+      if (stats->n_uids_cleaned)
+        log_info(_("      user IDs cleaned: %lu\n"),stats->n_uids_cleaned);
     }
 
-    if( is_status_enabled() ) {
-	char buf[15*20];
-	snprintf (buf, sizeof buf,
-                  "%lu %lu %lu 0 %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
+  if (is_status_enabled ())
+    {
+      char buf[15*20];
+
+      snprintf (buf, sizeof buf,
+                "%lu %lu %lu 0 %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu",
 		stats->count + stats->v3keys,
 		stats->no_user_id,
 		stats->imported,
@@ -460,9 +474,9 @@ import_print_stats (void *hd)
 		stats->secret_imported,
 		stats->secret_dups,
 		stats->skipped_new_keys,
-                  stats->not_imported,
+                stats->not_imported,
                 stats->v3keys );
-	write_status_text( STATUS_IMPORT_RES, buf );
+      write_status_text (STATUS_IMPORT_RES, buf);
     }
 }
 
@@ -497,71 +511,80 @@ valid_keyblock_packet (int pkttype)
  *         keyblocks.
  */
 static int
-read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root, int *r_v3keys)
+read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
 {
-    int rc;
-    PACKET *pkt;
-    KBNODE root = NULL;
-    int in_cert, in_v3key;
+  int rc;
+  PACKET *pkt;
+  kbnode_t root = NULL;
+  int in_cert, in_v3key;
 
-    *r_v3keys = 0;
+  *r_v3keys = 0;
 
-    if( *pending_pkt ) {
-	root = new_kbnode( *pending_pkt );
-	*pending_pkt = NULL;
-	in_cert = 1;
+  if (*pending_pkt)
+    {
+      root = new_kbnode( *pending_pkt );
+      *pending_pkt = NULL;
+      in_cert = 1;
     }
-    else
-	in_cert = 0;
-    pkt = xmalloc( sizeof *pkt );
-    init_packet(pkt);
-    in_v3key = 0;
-    while( (rc=parse_packet(a, pkt)) != -1 ) {
-	if (rc && (gpg_err_code (rc) == GPG_ERR_INV_PACKET
-                   && (pkt->pkttype == PKT_PUBLIC_KEY
-                       || pkt->pkttype == PKT_SECRET_KEY)
-                   && (pkt->pkt.public_key->version == 2
-                       || pkt->pkt.public_key->version == 3))) {
-            in_v3key = 1;
-            ++*r_v3keys;
-	    free_packet (pkt);
-	    init_packet (pkt);
-            continue;
+  else
+    in_cert = 0;
+
+  pkt = xmalloc (sizeof *pkt);
+  init_packet (pkt);
+  in_v3key = 0;
+  while ((rc=parse_packet(a, pkt)) != -1)
+    {
+      if (rc && (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+                 && (pkt->pkttype == PKT_PUBLIC_KEY
+                     || pkt->pkttype == PKT_SECRET_KEY)
+                 && (pkt->pkt.public_key->version == 2
+                     || pkt->pkt.public_key->version == 3)))
+        {
+          in_v3key = 1;
+          ++*r_v3keys;
+          free_packet (pkt);
+          init_packet (pkt);
+          continue;
         }
-        else if (rc ) {  /* ignore errors */
-            if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET)
-                ; /* Do not show a diagnostic.  */
-            else {
-		log_error("read_block: read error: %s\n", g10_errstr(rc) );
-		rc = G10ERR_INV_KEYRING;
-		goto ready;
-	    }
-	    free_packet( pkt );
-	    init_packet(pkt);
-	    continue;
+      else if (rc ) /* (ignore errors) */
+        {
+          if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET)
+            ; /* Do not show a diagnostic.  */
+          else
+            {
+              log_error("read_block: read error: %s\n", g10_errstr(rc) );
+              rc = G10ERR_INV_KEYRING;
+              goto ready;
+            }
+          free_packet( pkt );
+          init_packet(pkt);
+          continue;
 	}
 
         if (in_v3key && !(pkt->pkttype == PKT_PUBLIC_KEY
-                          || pkt->pkttype == PKT_SECRET_KEY)) {
+                          || pkt->pkttype == PKT_SECRET_KEY))
+          {
 	    free_packet( pkt );
 	    init_packet(pkt);
 	    continue;
-        }
+          }
         in_v3key = 0;
 
-	if( !root && pkt->pkttype == PKT_SIGNATURE
-		  && pkt->pkt.signature->sig_class == 0x20 ) {
-	    /* this is a revocation certificate which is handled
-	     * in a special way */
+	if (!root && pkt->pkttype == PKT_SIGNATURE
+		  && pkt->pkt.signature->sig_class == 0x20 )
+          {
+	    /* This is a revocation certificate which is handled in a
+	     * special way.  */
 	    root = new_kbnode( pkt );
 	    pkt = NULL;
 	    goto ready;
-	}
+          }
 
-	/* make a linked list of all packets */
-	switch( pkt->pkttype ) {
+	/* Make a linked list of all packets.  */
+	switch (pkt->pkttype)
+          {
 	  case PKT_COMPRESSED:
-	    if(check_compress_algo(pkt->pkt.compressed->algorithm))
+	    if (check_compress_algo (pkt->pkt.compressed->algorithm))
 	      {
 		rc = G10ERR_COMPR_ALGO;
 		goto ready;
@@ -577,43 +600,47 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root, int *r_v3keys)
 	    break;
 
           case PKT_RING_TRUST:
-            /* skip those packets */
+            /* Skip those packets.  */
 	    free_packet( pkt );
 	    init_packet(pkt);
             break;
 
 	  case PKT_PUBLIC_KEY:
 	  case PKT_SECRET_KEY:
-	    if( in_cert ) { /* store this packet */
+	    if (in_cert ) /* Store this packet.  */
+              {
 		*pending_pkt = pkt;
 		pkt = NULL;
 		goto ready;
-	    }
+              }
 	    in_cert = 1;
 	  default:
-	    if (in_cert && valid_keyblock_packet (pkt->pkttype)) {
-		if( !root )
-		    root = new_kbnode( pkt );
+	    if (in_cert && valid_keyblock_packet (pkt->pkttype))
+              {
+		if (!root )
+                  root = new_kbnode (pkt);
 		else
-		    add_kbnode( root, new_kbnode( pkt ) );
-		pkt = xmalloc( sizeof *pkt );
-	    }
+                  add_kbnode (root, new_kbnode (pkt));
+		pkt = xmalloc (sizeof *pkt);
+              }
 	    init_packet(pkt);
 	    break;
-	}
+          }
     }
-  ready:
-    if( rc == -1 && root )
-	rc = 0;
 
-    if( rc )
-	release_kbnode( root );
-    else
-	*ret_root = root;
-    free_packet( pkt );
-    xfree( pkt );
-    return rc;
+ ready:
+  if (rc == -1 && root )
+    rc = 0;
+
+  if (rc )
+    release_kbnode( root );
+  else
+    *ret_root = root;
+  free_packet( pkt );
+  xfree( pkt );
+  return rc;
 }
+
 
 /* Walk through the subkeys on a pk to find if we have the PKS
    disease: multiple subkeys with their binding sigs stripped, and the
@@ -623,61 +650,64 @@ read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root, int *r_v3keys)
    and sub3, as they are already lost, but we can try and rescue sub1
    by reordering the keyblock so that it reads "pk uid sig sub1 bind1
    sub2 sub3".  Returns TRUE if the keyblock was modified. */
-
 static int
-fix_pks_corruption(KBNODE keyblock)
+fix_pks_corruption (kbnode_t keyblock)
 {
-  int changed=0,keycount=0;
-  KBNODE node,last=NULL,sknode=NULL;
+  int changed = 0;
+  int keycount = 0;
+  kbnode_t node;
+  kbnode_t last = NULL;
+  kbnode_t sknode=NULL;
 
   /* First determine if we have the problem at all.  Look for 2 or
      more subkeys in a row, followed by a single binding sig. */
-  for(node=keyblock;node;last=node,node=node->next)
+  for (node=keyblock; node; last=node, node=node->next)
     {
-      if(node->pkt->pkttype==PKT_PUBLIC_SUBKEY)
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
 	  keycount++;
 	  if(!sknode)
 	    sknode=node;
 	}
-      else if(node->pkt->pkttype==PKT_SIGNATURE &&
-	      node->pkt->pkt.signature->sig_class==0x18 &&
-	      keycount>=2 && node->next==NULL)
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && node->pkt->pkt.signature->sig_class == 0x18
+               && keycount >= 2
+               && !node->next)
 	{
 	  /* We might have the problem, as this key has two subkeys in
 	     a row without any intervening packets. */
 
 	  /* Sanity check */
-	  if(last==NULL)
+	  if (!last)
 	    break;
 
 	  /* Temporarily attach node to sknode. */
-	  node->next=sknode->next;
-	  sknode->next=node;
-	  last->next=NULL;
+	  node->next = sknode->next;
+	  sknode->next = node;
+	  last->next = NULL;
 
 	  /* Note we aren't checking whether this binding sig is a
 	     selfsig.  This is not necessary here as the subkey and
 	     binding sig will be rejected later if that is the
 	     case. */
-	  if(check_key_signature(keyblock,node,NULL))
+	  if (check_key_signature (keyblock,node,NULL))
 	    {
 	      /* Not a match, so undo the changes. */
-	      sknode->next=node->next;
-	      last->next=node;
-	      node->next=NULL;
+	      sknode->next = node->next;
+	      last->next = node;
+	      node->next = NULL;
 	      break;
 	    }
 	  else
 	    {
 	      sknode->flag |= 1; /* Mark it good so we don't need to
                                     check it again */
-	      changed=1;
+	      changed = 1;
 	      break;
 	    }
 	}
       else
-	keycount=0;
+	keycount = 0;
     }
 
   return changed;
@@ -742,27 +772,30 @@ print_import_ok (PKT_public_key *pk, unsigned int reason)
   write_status_text (STATUS_IMPORT_OK, buf);
 }
 
+
 static void
 print_import_check (PKT_public_key * pk, PKT_user_id * id)
 {
-    char * buf;
-    byte fpr[24];
-    u32 keyid[2];
-    size_t i, pos = 0, n;
+  char * buf;
+  byte fpr[24];
+  u32 keyid[2];
+  size_t i, n;
+  size_t pos = 0;
 
-    buf = xmalloc (17+41+id->len+32);
-    keyid_from_pk (pk, keyid);
-    sprintf (buf, "%08X%08X ", keyid[0], keyid[1]);
-    pos = 17;
-    fingerprint_from_pk (pk, fpr, &n);
-    for (i = 0; i < n; i++, pos += 2)
-        sprintf (buf+pos, "%02X", fpr[i]);
-    strcat (buf, " ");
-    pos += 1;
-    strcat (buf, id->name);
-    write_status_text (STATUS_IMPORT_CHECK, buf);
-    xfree (buf);
+  buf = xmalloc (17+41+id->len+32);
+  keyid_from_pk (pk, keyid);
+  sprintf (buf, "%08X%08X ", keyid[0], keyid[1]);
+  pos = 17;
+  fingerprint_from_pk (pk, fpr, &n);
+  for (i = 0; i < n; i++, pos += 2)
+    sprintf (buf+pos, "%02X", fpr[i]);
+  strcat (buf, " ");
+  pos += 1;
+  strcat (buf, id->name);
+  write_status_text (STATUS_IMPORT_CHECK, buf);
+  xfree (buf);
 }
+
 
 static void
 check_prefs_warning(PKT_public_key *pk)
@@ -770,6 +803,7 @@ check_prefs_warning(PKT_public_key *pk)
   log_info(_("WARNING: key %s contains preferences for unavailable\n"
              "algorithms on these user IDs:\n"), keystr_from_pk(pk));
 }
+
 
 static void
 check_prefs (ctrl_t ctrl, kbnode_t keyblock)
@@ -787,9 +821,9 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 	 && node->pkt->pkt.user_id->created
 	 && node->pkt->pkt.user_id->prefs)
 	{
-	  PKT_user_id *uid=node->pkt->pkt.user_id;
-	  prefitem_t *prefs=uid->prefs;
-	  char *user=utf8_to_native(uid->name,strlen(uid->name),0);
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+	  prefitem_t *prefs = uid->prefs;
+	  char *user = utf8_to_native(uid->name,strlen(uid->name),0);
 
 	  for(;prefs->type;prefs++)
 	    {
@@ -855,13 +889,14 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
 
       if(!opt.batch)
 	{
-	  strlist_t sl=NULL,locusr=NULL;
+	  strlist_t sl = NULL;
+          strlist_t locusr = NULL;
 	  size_t fprlen=0;
-	  byte fpr[MAX_FINGERPRINT_LEN],*p;
+	  byte fpr[MAX_FINGERPRINT_LEN], *p;
 	  char username[(MAX_FINGERPRINT_LEN*2)+1];
 	  unsigned int i;
 
-	  p=fingerprint_from_pk(pk,fpr,&fprlen);
+	  p = fingerprint_from_pk (pk,fpr,&fprlen);
 	  for(i=0;i<fprlen;i++,p++)
 	    sprintf(username+2*i,"%02X",*p);
 	  add_to_strlist(&locusr,username);
@@ -879,7 +914,8 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
     }
 }
 
-/****************
+
+/*
  * Try to import one keyblock. Return an error only in serious cases,
  * but never for an invalid keyblock.  It uses log_error to increase
  * the internal errorcount, so that invalid input can be detected by
@@ -888,365 +924,374 @@ check_prefs (ctrl_t ctrl, kbnode_t keyblock)
  */
 static int
 import_one (ctrl_t ctrl,
-            const char *fname, KBNODE keyblock, struct stats_s *stats,
+            const char *fname, kbnode_t keyblock, struct stats_s *stats,
 	    unsigned char **fpr, size_t *fpr_len, unsigned int options,
 	    int from_sk, int silent,
             import_screener_t screener, void *screener_arg)
 {
-    PKT_public_key *pk;
-    PKT_public_key *pk_orig;
-    KBNODE node, uidnode;
-    KBNODE keyblock_orig = NULL;
-    byte fpr2[MAX_FINGERPRINT_LEN];
-    size_t fpr2len;
-    u32 keyid[2];
-    int rc = 0;
-    int new_key = 0;
-    int mod_key = 0;
-    int same_key = 0;
-    int non_self = 0;
-    size_t an;
-    char pkstrbuf[PUBKEY_STRING_SIZE];
+  PKT_public_key *pk;
+  PKT_public_key *pk_orig;
+  kbnode_t node, uidnode;
+  kbnode_t keyblock_orig = NULL;
+  byte fpr2[MAX_FINGERPRINT_LEN];
+  size_t fpr2len;
+  u32 keyid[2];
+  int rc = 0;
+  int new_key = 0;
+  int mod_key = 0;
+  int same_key = 0;
+  int non_self = 0;
+  size_t an;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
 
-    /* get the key and print some info about it */
-    node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
-    if( !node )
-	BUG();
+  /* Get the key and print some info about it. */
+  node = find_kbnode( keyblock, PKT_PUBLIC_KEY );
+  if (!node )
+    BUG();
 
-    pk = node->pkt->pkt.public_key;
+  pk = node->pkt->pkt.public_key;
 
-    fingerprint_from_pk (pk, fpr2, &fpr2len);
-    for (an = fpr2len; an < MAX_FINGERPRINT_LEN; an++)
-      fpr2[an] = 0;
-    keyid_from_pk( pk, keyid );
-    uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
+  fingerprint_from_pk (pk, fpr2, &fpr2len);
+  for (an = fpr2len; an < MAX_FINGERPRINT_LEN; an++)
+    fpr2[an] = 0;
+  keyid_from_pk( pk, keyid );
+  uidnode = find_next_kbnode( keyblock, PKT_USER_ID );
 
-    if (opt.verbose && !opt.interactive && !silent)
-      {
-	log_info( "pub  %s/%s %s  ",
-		  pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-		  keystr_from_pk(pk), datestr_from_pk(pk) );
-	if (uidnode)
-	  print_utf8_buffer (log_get_stream (),
-                             uidnode->pkt->pkt.user_id->name,
-			     uidnode->pkt->pkt.user_id->len );
-	log_printf ("\n");
-      }
+  if (opt.verbose && !opt.interactive && !silent)
+    {
+      log_info( "pub  %s/%s %s  ",
+                pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                keystr_from_pk(pk), datestr_from_pk(pk) );
+      if (uidnode)
+        print_utf8_buffer (log_get_stream (),
+                           uidnode->pkt->pkt.user_id->name,
+                           uidnode->pkt->pkt.user_id->len );
+      log_printf ("\n");
+    }
 
 
-    if( !uidnode )
-      {
-        if (!silent)
-          log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
-	return 0;
-      }
+  if (!uidnode )
+    {
+      if (!silent)
+        log_error( _("key %s: no user ID\n"), keystr_from_pk(pk));
+      return 0;
+    }
 
-    if (screener && screener (keyblock, screener_arg))
-      {
-        log_error (_("key %s: %s\n"), keystr_from_pk (pk),
-                   _("rejected by import screener"));
+  if (screener && screener (keyblock, screener_arg))
+    {
+      log_error (_("key %s: %s\n"), keystr_from_pk (pk),
+                 _("rejected by import screener"));
+      return 0;
+    }
+
+  if (opt.interactive && !silent)
+    {
+      if (is_status_enabled())
+        print_import_check (pk, uidnode->pkt->pkt.user_id);
+      merge_keys_and_selfsig (keyblock);
+      tty_printf ("\n");
+      show_basic_key_info (keyblock);
+      tty_printf ("\n");
+      if (!cpr_get_answer_is_yes ("import.okay",
+                                  "Do you want to import this key? (y/N) "))
         return 0;
-      }
-
-    if (opt.interactive && !silent) {
-        if(is_status_enabled())
-	  print_import_check (pk, uidnode->pkt->pkt.user_id);
-	merge_keys_and_selfsig (keyblock);
-        tty_printf ("\n");
-        show_basic_key_info (keyblock);
-        tty_printf ("\n");
-        if (!cpr_get_answer_is_yes ("import.okay",
-                                    "Do you want to import this key? (y/N) "))
-            return 0;
     }
 
-    collapse_uids(&keyblock);
+  collapse_uids(&keyblock);
 
-    /* Clean the key that we're about to import, to cut down on things
-       that we have to clean later.  This has no practical impact on
-       the end result, but does result in less logging which might
-       confuse the user. */
-    if(options&IMPORT_CLEAN)
-      clean_key(keyblock,opt.verbose,options&IMPORT_MINIMAL,NULL,NULL);
+  /* Clean the key that we're about to import, to cut down on things
+     that we have to clean later.  This has no practical impact on the
+     end result, but does result in less logging which might confuse
+     the user. */
+  if (options&IMPORT_CLEAN)
+    clean_key (keyblock,opt.verbose,options&IMPORT_MINIMAL,NULL,NULL);
 
-    clear_kbnode_flags( keyblock );
+  clear_kbnode_flags( keyblock );
 
-    if((options&IMPORT_REPAIR_PKS_SUBKEY_BUG) && fix_pks_corruption(keyblock)
-       && opt.verbose)
-      log_info(_("key %s: PKS subkey corruption repaired\n"),
-	       keystr_from_pk(pk));
+  if ((options&IMPORT_REPAIR_PKS_SUBKEY_BUG) && fix_pks_corruption(keyblock)
+      && opt.verbose)
+    log_info (_("key %s: PKS subkey corruption repaired\n"),
+              keystr_from_pk(pk));
 
-    rc = chk_self_sigs( fname, keyblock , pk, keyid, &non_self );
-    if( rc )
-	return rc== -1? 0:rc;
+  rc = chk_self_sigs( fname, keyblock , pk, keyid, &non_self );
+  if (rc )
+    return rc== -1? 0:rc;
 
-    /* If we allow such a thing, mark unsigned uids as valid */
-    if( opt.allow_non_selfsigned_uid)
-      for( node=keyblock; node; node = node->next )
-	if( node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) )
-	  {
-	    char *user=utf8_to_native(node->pkt->pkt.user_id->name,
-				      node->pkt->pkt.user_id->len,0);
-	    node->flag |= 1;
-	    log_info( _("key %s: accepted non self-signed user ID \"%s\"\n"),
-		      keystr_from_pk(pk),user);
-	    xfree(user);
+  /* If we allow such a thing, mark unsigned uids as valid */
+  if (opt.allow_non_selfsigned_uid)
+    {
+      for (node=keyblock; node; node = node->next )
+        if (node->pkt->pkttype == PKT_USER_ID && !(node->flag & 1) )
+          {
+            char *user=utf8_to_native(node->pkt->pkt.user_id->name,
+                                      node->pkt->pkt.user_id->len,0);
+            node->flag |= 1;
+            log_info( _("key %s: accepted non self-signed user ID \"%s\"\n"),
+                      keystr_from_pk(pk),user);
+            xfree(user);
 	  }
+    }
 
-    if( !delete_inv_parts( fname, keyblock, keyid, options ) ) {
-        if (!silent) {
-           log_error( _("key %s: no valid user IDs\n"), keystr_from_pk(pk));
-           if( !opt.quiet )
-	      log_info(_("this may be caused by a missing self-signature\n"));
+  if (!delete_inv_parts( fname, keyblock, keyid, options ) )
+    {
+      if (!silent)
+        {
+          log_error( _("key %s: no valid user IDs\n"), keystr_from_pk(pk));
+          if (!opt.quiet )
+            log_info(_("this may be caused by a missing self-signature\n"));
         }
-	stats->no_user_id++;
-	return 0;
+      stats->no_user_id++;
+      return 0;
     }
 
-    /* do we have this key already in one of our pubrings ? */
-    pk_orig = xmalloc_clear( sizeof *pk_orig );
-    rc = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
-    if( rc && rc != G10ERR_NO_PUBKEY && rc != G10ERR_UNU_PUBKEY )
-      {
-        if (!silent)
-          log_error (_("key %s: public key not found: %s\n"),
+  /* Do we have this key already in one of our pubrings ? */
+  pk_orig = xmalloc_clear( sizeof *pk_orig );
+  rc = get_pubkey_byfprint_fast (pk_orig, fpr2, fpr2len);
+  if (rc && rc != G10ERR_NO_PUBKEY && rc != G10ERR_UNU_PUBKEY )
+    {
+      if (!silent)
+        log_error (_("key %s: public key not found: %s\n"),
+                   keystr(keyid), g10_errstr(rc));
+    }
+  else if ( rc && (opt.import_options&IMPORT_MERGE_ONLY) )
+    {
+      if (opt.verbose && !silent )
+        log_info( _("key %s: new key - skipped\n"), keystr(keyid));
+      rc = 0;
+      stats->skipped_new_keys++;
+    }
+  else if (rc )  /* Insert this key. */
+    {
+      KEYDB_HANDLE hd = keydb_new ();
+
+      rc = keydb_locate_writable (hd, NULL);
+      if (rc)
+        {
+          log_error (_("no writable keyring found: %s\n"), g10_errstr (rc));
+          keydb_release (hd);
+          return G10ERR_GENERAL;
+	}
+      if (opt.verbose > 1 )
+        log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
+
+      rc = keydb_insert_keyblock (hd, keyblock );
+      if (rc)
+        log_error (_("error writing keyring '%s': %s\n"),
+                   keydb_get_resource_name (hd), g10_errstr(rc));
+      else if (!(opt.import_options & IMPORT_KEEP_OWNERTTRUST))
+        {
+          /* This should not be possible since we delete the
+             ownertrust when a key is deleted, but it can happen if
+             the keyring and trustdb are out of sync.  It can also
+             be made to happen with the trusted-key command and by
+             importing and locally exported key. */
+
+          clear_ownertrusts (pk);
+          if (non_self)
+            revalidation_mark ();
+        }
+      keydb_release (hd);
+
+      /* We are ready.  */
+      if (!opt.quiet && !silent)
+        {
+          char *p = get_user_id_byfpr_native (fpr2);
+          log_info (_("key %s: public key \"%s\" imported\n"),
+                    keystr(keyid), p);
+          xfree(p);
+        }
+      if (is_status_enabled())
+        {
+          char *us = get_long_user_id_string( keyid );
+          write_status_text( STATUS_IMPORTED, us );
+          xfree(us);
+          print_import_ok (pk, 1);
+        }
+      stats->imported++;
+      new_key = 1;
+    }
+  else /* merge */
+    {
+      KEYDB_HANDLE hd;
+      int n_uids, n_sigs, n_subk, n_sigs_cleaned, n_uids_cleaned;
+
+      /* Compare the original against the new key; just to be sure nothing
+       * weird is going on */
+      if (cmp_public_keys( pk_orig, pk ) )
+        {
+          if (!silent)
+            log_error( _("key %s: doesn't match our copy\n"),keystr(keyid));
+          goto leave;
+        }
+
+      /* Now read the original keyblock again so that we can use
+         that handle for updating the keyblock.  */
+      hd = keydb_new ();
+      keydb_disable_caching (hd);
+      rc = keydb_search_fpr (hd, fpr2);
+      if (rc )
+        {
+          log_error (_("key %s: can't locate original keyblock: %s\n"),
                      keystr(keyid), g10_errstr(rc));
-      }
-    else if ( rc && (opt.import_options&IMPORT_MERGE_ONLY) )
-      {
-	if( opt.verbose && !silent )
-	  log_info( _("key %s: new key - skipped\n"), keystr(keyid));
-	rc = 0;
-	stats->skipped_new_keys++;
-      }
-    else if( rc ) { /* insert this key */
-        KEYDB_HANDLE hd = keydb_new ();
+          keydb_release (hd);
+          goto leave;
+        }
+      rc = keydb_get_keyblock (hd, &keyblock_orig);
+      if (rc)
+        {
+          log_error (_("key %s: can't read original keyblock: %s\n"),
+                     keystr(keyid), g10_errstr(rc));
+          keydb_release (hd);
+          goto leave;
+        }
 
-        rc = keydb_locate_writable (hd, NULL);
-	if (rc) {
-            log_error (_("no writable keyring found: %s\n"), g10_errstr (rc));
-            keydb_release (hd);
-	    return G10ERR_GENERAL;
+      /* Make sure the original direct key sigs are all sane.  */
+      n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
+      if (n_sigs_cleaned)
+        commit_kbnode (&keyblock_orig);
+
+      /* and try to merge the block */
+      clear_kbnode_flags( keyblock_orig );
+      clear_kbnode_flags( keyblock );
+      n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
+      rc = merge_blocks( fname, keyblock_orig, keyblock,
+                         keyid, &n_uids, &n_sigs, &n_subk );
+      if (rc )
+        {
+          keydb_release (hd);
+          goto leave;
+        }
+
+      if ((options & IMPORT_CLEAN))
+        clean_key (keyblock_orig,opt.verbose,options&IMPORT_MINIMAL,
+                   &n_uids_cleaned,&n_sigs_cleaned);
+
+      if (n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned)
+        {
+          mod_key = 1;
+          /* KEYBLOCK_ORIG has been updated; write */
+          rc = keydb_update_keyblock (hd, keyblock_orig);
+          if (rc)
+            log_error (_("error writing keyring '%s': %s\n"),
+                       keydb_get_resource_name (hd), g10_errstr(rc) );
+          else if (non_self)
+            revalidation_mark ();
+
+          /* We are ready.  */
+          if (!opt.quiet && !silent)
+            {
+              char *p = get_user_id_byfpr_native (fpr2);
+              if (n_uids == 1 )
+                log_info( _("key %s: \"%s\" 1 new user ID\n"),
+                          keystr(keyid),p);
+              else if (n_uids )
+                log_info( _("key %s: \"%s\" %d new user IDs\n"),
+                          keystr(keyid),p,n_uids);
+              if (n_sigs == 1 )
+                log_info( _("key %s: \"%s\" 1 new signature\n"),
+                          keystr(keyid), p);
+              else if (n_sigs )
+                log_info( _("key %s: \"%s\" %d new signatures\n"),
+                          keystr(keyid), p, n_sigs );
+              if (n_subk == 1 )
+                log_info( _("key %s: \"%s\" 1 new subkey\n"),
+                          keystr(keyid), p);
+              else if (n_subk )
+                log_info( _("key %s: \"%s\" %d new subkeys\n"),
+                          keystr(keyid), p, n_subk );
+              if (n_sigs_cleaned==1)
+                log_info(_("key %s: \"%s\" %d signature cleaned\n"),
+                         keystr(keyid),p,n_sigs_cleaned);
+              else if (n_sigs_cleaned)
+                log_info(_("key %s: \"%s\" %d signatures cleaned\n"),
+                         keystr(keyid),p,n_sigs_cleaned);
+              if (n_uids_cleaned==1)
+                log_info(_("key %s: \"%s\" %d user ID cleaned\n"),
+                         keystr(keyid),p,n_uids_cleaned);
+              else if (n_uids_cleaned)
+                log_info(_("key %s: \"%s\" %d user IDs cleaned\n"),
+                         keystr(keyid),p,n_uids_cleaned);
+              xfree(p);
+            }
+
+          stats->n_uids +=n_uids;
+          stats->n_sigs +=n_sigs;
+          stats->n_subk +=n_subk;
+          stats->n_sigs_cleaned +=n_sigs_cleaned;
+          stats->n_uids_cleaned +=n_uids_cleaned;
+
+          if (is_status_enabled () && !silent)
+            print_import_ok (pk, ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
 	}
-	if( opt.verbose > 1 )
-	    log_info (_("writing to '%s'\n"), keydb_get_resource_name (hd) );
+      else
+        {
+          same_key = 1;
+          if (is_status_enabled ())
+            print_import_ok (pk, 0);
 
-	rc = keydb_insert_keyblock (hd, keyblock );
-        if (rc)
-	   log_error (_("error writing keyring '%s': %s\n"),
-		       keydb_get_resource_name (hd), g10_errstr(rc));
-	else if (!(opt.import_options & IMPORT_KEEP_OWNERTTRUST))
-	  {
-	    /* This should not be possible since we delete the
-	       ownertrust when a key is deleted, but it can happen if
-	       the keyring and trustdb are out of sync.  It can also
-	       be made to happen with the trusted-key command and by
-	       importing and locally exported key. */
+          if (!opt.quiet && !silent)
+            {
+              char *p = get_user_id_byfpr_native (fpr2);
+              log_info( _("key %s: \"%s\" not changed\n"),keystr(keyid),p);
+              xfree(p);
+            }
 
-	    clear_ownertrusts (pk);
-	    if(non_self)
-	      revalidation_mark ();
-	  }
-        keydb_release (hd);
+          stats->unchanged++;
+        }
 
-	/* we are ready */
-	if( !opt.quiet && !silent)
-	  {
-	    char *p = get_user_id_byfpr_native (fpr2);
-	    log_info (_("key %s: public key \"%s\" imported\n"),
-		      keystr(keyid), p);
-	    xfree(p);
-	  }
-	if( is_status_enabled() )
-	  {
-	    char *us = get_long_user_id_string( keyid );
-	    write_status_text( STATUS_IMPORTED, us );
-	    xfree(us);
-            print_import_ok (pk, 1);
-	  }
-	stats->imported++;
-	new_key = 1;
-    }
-    else { /* merge */
-        KEYDB_HANDLE hd;
-	int n_uids, n_sigs, n_subk, n_sigs_cleaned, n_uids_cleaned;
-
-	/* Compare the original against the new key; just to be sure nothing
-	 * weird is going on */
-	if( cmp_public_keys( pk_orig, pk ) )
-	  {
-            if (!silent)
-              log_error( _("key %s: doesn't match our copy\n"),keystr(keyid));
-	    goto leave;
-	  }
-
-	/* Now read the original keyblock again so that we can use
-           that handle for updating the keyblock.  */
-        hd = keydb_new ();
-        keydb_disable_caching (hd);
-        rc = keydb_search_fpr (hd, fpr2);
-	if( rc )
-	  {
-	    log_error (_("key %s: can't locate original keyblock: %s\n"),
-		       keystr(keyid), g10_errstr(rc));
-            keydb_release (hd);
-	    goto leave;
-	  }
-	rc = keydb_get_keyblock (hd, &keyblock_orig);
-	if (rc)
-	  {
-	    log_error (_("key %s: can't read original keyblock: %s\n"),
-		       keystr(keyid), g10_errstr(rc));
-            keydb_release (hd);
-	    goto leave;
-	  }
-
-        /* Make sure the original direct key sigs are all sane.  */
-        n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
-        if (n_sigs_cleaned)
-          commit_kbnode (&keyblock_orig);
-
-	/* and try to merge the block */
-	clear_kbnode_flags( keyblock_orig );
-	clear_kbnode_flags( keyblock );
-	n_uids = n_sigs = n_subk = n_uids_cleaned = 0;
-	rc = merge_blocks( fname, keyblock_orig, keyblock,
-			   keyid, &n_uids, &n_sigs, &n_subk );
-	if( rc )
-	  {
-            keydb_release (hd);
-	    goto leave;
-	  }
-
-	if(options&IMPORT_CLEAN)
-	  clean_key(keyblock_orig,opt.verbose,options&IMPORT_MINIMAL,
-		    &n_uids_cleaned,&n_sigs_cleaned);
-
-	if( n_uids || n_sigs || n_subk || n_sigs_cleaned || n_uids_cleaned) {
-	    mod_key = 1;
-	    /* keyblock_orig has been updated; write */
-	    rc = keydb_update_keyblock (hd, keyblock_orig);
-            if (rc)
-		log_error (_("error writing keyring '%s': %s\n"),
-			     keydb_get_resource_name (hd), g10_errstr(rc) );
-	    else if(non_self)
-	      revalidation_mark ();
-
-	    /* we are ready */
-	    if( !opt.quiet && !silent)
-	      {
-	        char *p = get_user_id_byfpr_native (fpr2);
-		if( n_uids == 1 )
-		  log_info( _("key %s: \"%s\" 1 new user ID\n"),
-			   keystr(keyid),p);
-		else if( n_uids )
-		  log_info( _("key %s: \"%s\" %d new user IDs\n"),
-			    keystr(keyid),p,n_uids);
-		if( n_sigs == 1 )
-		  log_info( _("key %s: \"%s\" 1 new signature\n"),
-			    keystr(keyid), p);
-		else if( n_sigs )
-		  log_info( _("key %s: \"%s\" %d new signatures\n"),
-			    keystr(keyid), p, n_sigs );
-		if( n_subk == 1 )
-		  log_info( _("key %s: \"%s\" 1 new subkey\n"),
-			    keystr(keyid), p);
-		else if( n_subk )
-		  log_info( _("key %s: \"%s\" %d new subkeys\n"),
-			    keystr(keyid), p, n_subk );
-		if(n_sigs_cleaned==1)
-		  log_info(_("key %s: \"%s\" %d signature cleaned\n"),
-			   keystr(keyid),p,n_sigs_cleaned);
-		else if(n_sigs_cleaned)
-		  log_info(_("key %s: \"%s\" %d signatures cleaned\n"),
-			   keystr(keyid),p,n_sigs_cleaned);
-		if(n_uids_cleaned==1)
-		  log_info(_("key %s: \"%s\" %d user ID cleaned\n"),
-			   keystr(keyid),p,n_uids_cleaned);
-		else if(n_uids_cleaned)
-		  log_info(_("key %s: \"%s\" %d user IDs cleaned\n"),
-			   keystr(keyid),p,n_uids_cleaned);
-		xfree(p);
-	      }
-
-	    stats->n_uids +=n_uids;
-	    stats->n_sigs +=n_sigs;
-	    stats->n_subk +=n_subk;
-	    stats->n_sigs_cleaned +=n_sigs_cleaned;
-	    stats->n_uids_cleaned +=n_uids_cleaned;
-
-            if (is_status_enabled () && !silent)
-              print_import_ok (pk, ((n_uids?2:0)|(n_sigs?4:0)|(n_subk?8:0)));
-	}
-	else
-	  {
-            same_key = 1;
-            if (is_status_enabled ())
-	      print_import_ok (pk, 0);
-
-	    if( !opt.quiet && !silent)
-	      {
-		char *p = get_user_id_byfpr_native (fpr2);
-		log_info( _("key %s: \"%s\" not changed\n"),keystr(keyid),p);
-		xfree(p);
-	      }
-
-	    stats->unchanged++;
-	  }
-
-        keydb_release (hd); hd = NULL;
+      keydb_release (hd); hd = NULL;
     }
 
   leave:
-    if (mod_key || new_key || same_key)
-      {
-	/* A little explanation for this: we fill in the fingerprint
-	   when importing keys as it can be useful to know the
-	   fingerprint in certain keyserver-related cases (a keyserver
-	   asked for a particular name, but the key doesn't have that
-	   name).  However, in cases where we're importing more than
-	   one key at a time, we cannot know which key to fingerprint.
-	   In these cases, rather than guessing, we do not
-	   fingerprinting at all, and we must hope the user ID on the
-	   keys are useful.  Note that we need to do this for new
-	   keys, merged keys and even for unchanged keys.  This is
-	   required because for example the --auto-key-locate feature
-	   may import an already imported key and needs to know the
-	   fingerprint of the key in all cases.  */
-	if (fpr)
-	  {
-	    xfree (*fpr);
-            /* Note that we need to compare against 0 here because
-               COUNT gets only incremented after returning form this
-               function.  */
-	    if (stats->count == 0)
-	      *fpr = fingerprint_from_pk (pk, NULL, fpr_len);
-	    else
-	      *fpr = NULL;
-	  }
-      }
+  if (mod_key || new_key || same_key)
+    {
+      /* A little explanation for this: we fill in the fingerprint
+         when importing keys as it can be useful to know the
+         fingerprint in certain keyserver-related cases (a keyserver
+         asked for a particular name, but the key doesn't have that
+         name).  However, in cases where we're importing more than
+         one key at a time, we cannot know which key to fingerprint.
+         In these cases, rather than guessing, we do not
+         fingerprinting at all, and we must hope the user ID on the
+         keys are useful.  Note that we need to do this for new
+         keys, merged keys and even for unchanged keys.  This is
+         required because for example the --auto-key-locate feature
+         may import an already imported key and needs to know the
+         fingerprint of the key in all cases.  */
+      if (fpr)
+        {
+          xfree (*fpr);
+          /* Note that we need to compare against 0 here because
+             COUNT gets only incremented after returning form this
+             function.  */
+          if (!stats->count)
+            *fpr = fingerprint_from_pk (pk, NULL, fpr_len);
+          else
+            *fpr = NULL;
+        }
+    }
 
-    /* Now that the key is definitely incorporated into the keydb, we
-       need to check if a designated revocation is present or if the
-       prefs are not rational so we can warn the user. */
+  /* Now that the key is definitely incorporated into the keydb, we
+     need to check if a designated revocation is present or if the
+     prefs are not rational so we can warn the user. */
 
-    if (mod_key)
-      {
-	revocation_present (ctrl, keyblock_orig);
-	if (!from_sk && have_secret_key_with_kid (keyid))
-	  check_prefs (ctrl, keyblock_orig);
-      }
-    else if (new_key)
-      {
-	revocation_present (ctrl, keyblock);
-	if (!from_sk && have_secret_key_with_kid (keyid))
-	  check_prefs (ctrl, keyblock);
-      }
+  if (mod_key)
+    {
+      revocation_present (ctrl, keyblock_orig);
+      if (!from_sk && have_secret_key_with_kid (keyid))
+        check_prefs (ctrl, keyblock_orig);
+    }
+  else if (new_key)
+    {
+      revocation_present (ctrl, keyblock);
+      if (!from_sk && have_secret_key_with_kid (keyid))
+        check_prefs (ctrl, keyblock);
+    }
 
-    release_kbnode( keyblock_orig );
-    free_public_key( pk_orig );
+  release_kbnode( keyblock_orig );
+  free_public_key( pk_orig );
 
-    return rc;
+  return rc;
 }
 
 
@@ -1578,14 +1623,14 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
  * with the trust calculation.
  */
 static int
-import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
+import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
                    struct stats_s *stats, int batch, unsigned int options,
                    int for_migration,
                    import_screener_t screener, void *screener_arg)
 {
   PKT_public_key *pk;
   struct seckey_info *ski;
-  KBNODE node, uidnode;
+  kbnode_t node, uidnode;
   u32 keyid[2];
   int rc = 0;
   int nr_prev;
@@ -1727,121 +1772,123 @@ import_secret_one (ctrl_t ctrl, const char *fname, KBNODE keyblock,
  * Import a revocation certificate; this is a single signature packet.
  */
 static int
-import_revoke_cert( const char *fname, KBNODE node, struct stats_s *stats )
+import_revoke_cert( const char *fname, kbnode_t node, struct stats_s *stats )
 {
-    PKT_public_key *pk=NULL;
-    KBNODE onode, keyblock = NULL;
-    KEYDB_HANDLE hd = NULL;
-    u32 keyid[2];
-    int rc = 0;
+  PKT_public_key *pk = NULL;
+  kbnode_t onode;
+  kbnode_t keyblock = NULL;
+  KEYDB_HANDLE hd = NULL;
+  u32 keyid[2];
+  int rc = 0;
 
-    (void)fname;
+  (void)fname;
 
-    assert( !node->next );
-    assert( node->pkt->pkttype == PKT_SIGNATURE );
-    assert( node->pkt->pkt.signature->sig_class == 0x20 );
+  assert( !node->next );
+  assert( node->pkt->pkttype == PKT_SIGNATURE );
+  assert( node->pkt->pkt.signature->sig_class == 0x20 );
 
-    keyid[0] = node->pkt->pkt.signature->keyid[0];
-    keyid[1] = node->pkt->pkt.signature->keyid[1];
+  keyid[0] = node->pkt->pkt.signature->keyid[0];
+  keyid[1] = node->pkt->pkt.signature->keyid[1];
 
-    pk = xmalloc_clear( sizeof *pk );
-    rc = get_pubkey( pk, keyid );
-    if( rc == G10ERR_NO_PUBKEY )
-      {
-	log_error(_("key %s: no public key -"
-		    " can't apply revocation certificate\n"), keystr(keyid));
-	rc = 0;
-	goto leave;
-      }
-    else if( rc )
-      {
-	log_error(_("key %s: public key not found: %s\n"),
-		  keystr(keyid), g10_errstr(rc));
-	goto leave;
-      }
-
-    /* read the original keyblock */
-    hd = keydb_new ();
+  pk = xmalloc_clear( sizeof *pk );
+  rc = get_pubkey( pk, keyid );
+  if (rc == G10ERR_NO_PUBKEY )
     {
-        byte afp[MAX_FINGERPRINT_LEN];
-        size_t an;
-
-        fingerprint_from_pk (pk, afp, &an);
-        while (an < MAX_FINGERPRINT_LEN)
-            afp[an++] = 0;
-        rc = keydb_search_fpr (hd, afp);
+      log_error(_("key %s: no public key -"
+                  " can't apply revocation certificate\n"), keystr(keyid));
+      rc = 0;
+      goto leave;
     }
-    if (rc)
-      {
-	log_error (_("key %s: can't locate original keyblock: %s\n"),
-                   keystr(keyid), g10_errstr(rc));
-	goto leave;
-      }
-    rc = keydb_get_keyblock (hd, &keyblock );
-    if (rc)
-      {
-	log_error (_("key %s: can't read original keyblock: %s\n"),
-                   keystr(keyid), g10_errstr(rc));
-	goto leave;
-      }
-
-    /* it is okay, that node is not in keyblock because
-     * check_key_signature works fine for sig_class 0x20 in this
-     * special case. */
-    rc = check_key_signature( keyblock, node, NULL);
-    if( rc )
-      {
-	log_error( _("key %s: invalid revocation certificate"
-		     ": %s - rejected\n"), keystr(keyid), g10_errstr(rc));
-	goto leave;
-      }
-
-    /* check whether we already have this */
-    for(onode=keyblock->next; onode; onode=onode->next ) {
-	if( onode->pkt->pkttype == PKT_USER_ID )
-	    break;
-	else if( onode->pkt->pkttype == PKT_SIGNATURE
-		 && !cmp_signatures(node->pkt->pkt.signature,
-				    onode->pkt->pkt.signature))
-	  {
-	    rc = 0;
-	    goto leave; /* yes, we already know about it */
-	  }
+  else if (rc )
+    {
+      log_error(_("key %s: public key not found: %s\n"),
+                keystr(keyid), g10_errstr(rc));
+      goto leave;
     }
 
+  /* Read the original keyblock. */
+  hd = keydb_new ();
+  {
+    byte afp[MAX_FINGERPRINT_LEN];
+    size_t an;
 
-    /* insert it */
-    insert_kbnode( keyblock, clone_kbnode(node), 0 );
+    fingerprint_from_pk (pk, afp, &an);
+    while (an < MAX_FINGERPRINT_LEN)
+      afp[an++] = 0;
+    rc = keydb_search_fpr (hd, afp);
+  }
+  if (rc)
+    {
+      log_error (_("key %s: can't locate original keyblock: %s\n"),
+                 keystr(keyid), g10_errstr(rc));
+      goto leave;
+    }
+  rc = keydb_get_keyblock (hd, &keyblock );
+  if (rc)
+    {
+      log_error (_("key %s: can't read original keyblock: %s\n"),
+                 keystr(keyid), g10_errstr(rc));
+      goto leave;
+    }
 
-    /* and write the keyblock back */
-    rc = keydb_update_keyblock (hd, keyblock );
-    if (rc)
-	log_error (_("error writing keyring '%s': %s\n"),
-                   keydb_get_resource_name (hd), g10_errstr(rc) );
-    keydb_release (hd); hd = NULL;
-    /* we are ready */
-    if( !opt.quiet )
+  /* it is okay, that node is not in keyblock because
+   * check_key_signature works fine for sig_class 0x20 in this
+   * special case. */
+  rc = check_key_signature( keyblock, node, NULL);
+  if (rc )
+    {
+      log_error( _("key %s: invalid revocation certificate"
+                   ": %s - rejected\n"), keystr(keyid), g10_errstr(rc));
+      goto leave;
+    }
+
+  /* check whether we already have this */
+  for(onode=keyblock->next; onode; onode=onode->next ) {
+    if (onode->pkt->pkttype == PKT_USER_ID )
+      break;
+    else if (onode->pkt->pkttype == PKT_SIGNATURE
+             && !cmp_signatures(node->pkt->pkt.signature,
+                                onode->pkt->pkt.signature))
       {
-        char *p=get_user_id_native (keyid);
-	log_info( _("key %s: \"%s\" revocation certificate imported\n"),
-		  keystr(keyid),p);
-	xfree(p);
+        rc = 0;
+        goto leave; /* yes, we already know about it */
       }
-    stats->n_revoc++;
+  }
 
-    /* If the key we just revoked was ultimately trusted, remove its
-       ultimate trust.  This doesn't stop the user from putting the
-       ultimate trust back, but is a reasonable solution for now. */
-    if(get_ownertrust(pk)==TRUST_ULTIMATE)
-      clear_ownertrusts(pk);
+  /* insert it */
+  insert_kbnode( keyblock, clone_kbnode(node), 0 );
 
-    revalidation_mark ();
+  /* and write the keyblock back */
+  rc = keydb_update_keyblock (hd, keyblock );
+  if (rc)
+    log_error (_("error writing keyring '%s': %s\n"),
+               keydb_get_resource_name (hd), g10_errstr(rc) );
+  keydb_release (hd);
+  hd = NULL;
 
-  leave:
-    keydb_release (hd);
-    release_kbnode( keyblock );
-    free_public_key( pk );
-    return rc;
+  /* we are ready */
+  if (!opt.quiet )
+    {
+      char *p=get_user_id_native (keyid);
+      log_info( _("key %s: \"%s\" revocation certificate imported\n"),
+                keystr(keyid),p);
+      xfree(p);
+    }
+  stats->n_revoc++;
+
+  /* If the key we just revoked was ultimately trusted, remove its
+     ultimate trust.  This doesn't stop the user from putting the
+     ultimate trust back, but is a reasonable solution for now. */
+  if(get_ownertrust(pk)==TRUST_ULTIMATE)
+    clear_ownertrusts(pk);
+
+  revalidation_mark ();
+
+ leave:
+  keydb_release (hd);
+  release_kbnode( keyblock );
+  free_public_key( pk );
+  return rc;
 }
 
 
@@ -1896,7 +1943,7 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
 
       if ( IS_UID_SIG(sig) || IS_UID_REV(sig) )
         {
-          KBNODE unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
+          kbnode_t unode = find_prev_kbnode( keyblock, n, PKT_USER_ID );
           if ( !unode )
             {
               log_error( _("key %s: no user ID for signature\n"),
@@ -2055,95 +2102,104 @@ chk_self_sigs (const char *fname, kbnode_t keyblock,
  * returns: true if at least one valid user-id is left over.
  */
 static int
-delete_inv_parts( const char *fname, KBNODE keyblock,
+delete_inv_parts( const char *fname, kbnode_t keyblock,
 		  u32 *keyid, unsigned int options)
 {
-    KBNODE node;
-    int nvalid=0, uid_seen=0, subkey_seen=0;
+  kbnode_t node;
+  int nvalid=0, uid_seen=0, subkey_seen=0;
 
-    (void)fname;
+  (void)fname;
 
-    for(node=keyblock->next; node; node = node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID ) {
-	    uid_seen = 1;
-	    if( (node->flag & 2) || !(node->flag & 1) ) {
-		if( opt.verbose )
-		  {
-		    char *p=utf8_to_native(node->pkt->pkt.user_id->name,
-					   node->pkt->pkt.user_id->len,0);
-		    log_info( _("key %s: skipped user ID \"%s\"\n"),
-			      keystr(keyid),p);
-		    xfree(p);
-		  }
-		delete_kbnode( node ); /* the user-id */
-		/* and all following packets up to the next user-id */
-		while( node->next
-		       && node->next->pkt->pkttype != PKT_USER_ID
-		       && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
-		       && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ){
-		    delete_kbnode( node->next );
-		    node = node->next;
-		}
+  for (node=keyblock->next; node; node = node->next )
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          uid_seen = 1;
+          if ((node->flag & 2) || !(node->flag & 1) )
+            {
+              if (opt.verbose )
+                {
+                  char *p=utf8_to_native(node->pkt->pkt.user_id->name,
+                                         node->pkt->pkt.user_id->len,0);
+                  log_info( _("key %s: skipped user ID \"%s\"\n"),
+                            keystr(keyid),p);
+                  xfree(p);
+                }
+              delete_kbnode( node ); /* the user-id */
+              /* and all following packets up to the next user-id */
+              while (node->next
+                     && node->next->pkt->pkttype != PKT_USER_ID
+                     && node->next->pkt->pkttype != PKT_PUBLIC_SUBKEY
+                     && node->next->pkt->pkttype != PKT_SECRET_SUBKEY ){
+                delete_kbnode( node->next );
+                node = node->next;
+              }
 	    }
-	    else
-		nvalid++;
+          else
+            nvalid++;
 	}
-	else if(    node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		 || node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    if( (node->flag & 2) || !(node->flag & 1) ) {
-		if( opt.verbose )
-		  log_info( _("key %s: skipped subkey\n"),keystr(keyid));
+      else if (   node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+               || node->pkt->pkttype == PKT_SECRET_SUBKEY )
+        {
+          if ((node->flag & 2) || !(node->flag & 1) )
+            {
+              if (opt.verbose )
+                log_info( _("key %s: skipped subkey\n"),keystr(keyid));
 
-		delete_kbnode( node ); /* the subkey */
-		/* and all following signature packets */
-		while( node->next
-		       && node->next->pkt->pkttype == PKT_SIGNATURE ) {
-		    delete_kbnode( node->next );
-		    node = node->next;
-		}
+              delete_kbnode( node ); /* the subkey */
+              /* and all following signature packets */
+              while (node->next
+                     && node->next->pkt->pkttype == PKT_SIGNATURE ) {
+                delete_kbnode( node->next );
+                node = node->next;
+              }
 	    }
-	    else
-	      subkey_seen = 1;
+          else
+            subkey_seen = 1;
 	}
-	else if (node->pkt->pkttype == PKT_SIGNATURE
-                && openpgp_pk_test_algo (node->pkt->pkt.signature->pubkey_algo)
-		&& node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
-	    delete_kbnode( node ); /* build_packet() can't handle this */
-	else if( node->pkt->pkttype == PKT_SIGNATURE &&
-		 !node->pkt->pkt.signature->flags.exportable &&
-		 !(options&IMPORT_LOCAL_SIGS) &&
-		 !have_secret_key_with_kid (node->pkt->pkt.signature->keyid))
-	  {
-	    /* here we violate the rfc a bit by still allowing
-	     * to import non-exportable signature when we have the
-	     * the secret key used to create this signature - it
-	     * seems that this makes sense */
-	    if(opt.verbose)
-	      log_info( _("key %s: non exportable signature"
-			  " (class 0x%02X) - skipped\n"),
-			keystr(keyid), node->pkt->pkt.signature->sig_class );
-	    delete_kbnode( node );
-	  }
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
-	    if( uid_seen )
-	      {
-	        if(opt.verbose)
-		  log_info( _("key %s: revocation certificate"
-			      " at wrong place - skipped\n"),keystr(keyid));
-		delete_kbnode( node );
-	      }
-	    else {
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && openpgp_pk_test_algo (node->pkt->pkt.signature->pubkey_algo)
+               && node->pkt->pkt.signature->pubkey_algo != PUBKEY_ALGO_RSA )
+        {
+          delete_kbnode( node ); /* build_packet() can't handle this */
+        }
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && !node->pkt->pkt.signature->flags.exportable
+               && !(options&IMPORT_LOCAL_SIGS)
+               && !have_secret_key_with_kid (node->pkt->pkt.signature->keyid))
+        {
+          /* here we violate the rfc a bit by still allowing
+           * to import non-exportable signature when we have the
+           * the secret key used to create this signature - it
+           * seems that this makes sense */
+          if(opt.verbose)
+            log_info( _("key %s: non exportable signature"
+                        " (class 0x%02X) - skipped\n"),
+                      keystr(keyid), node->pkt->pkt.signature->sig_class );
+          delete_kbnode( node );
+        }
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && node->pkt->pkt.signature->sig_class == 0x20)
+        {
+          if (uid_seen )
+            {
+              if(opt.verbose)
+                log_info( _("key %s: revocation certificate"
+                            " at wrong place - skipped\n"),keystr(keyid));
+              delete_kbnode( node );
+            }
+          else
+            {
 	      /* If the revocation cert is from a different key than
                  the one we're working on don't check it - it's
                  probably from a revocation key and won't be
                  verifiable with this key anyway. */
 
-	      if(node->pkt->pkt.signature->keyid[0]==keyid[0] &&
-		 node->pkt->pkt.signature->keyid[1]==keyid[1])
+	      if(node->pkt->pkt.signature->keyid[0]==keyid[0]
+                 && node->pkt->pkt.signature->keyid[1]==keyid[1])
 		{
 		  int rc = check_key_signature( keyblock, node, NULL);
-		  if( rc )
+		  if (rc )
 		    {
 		      if(opt.verbose)
 			log_info( _("key %s: invalid revocation"
@@ -2154,33 +2210,33 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
 		}
 	    }
 	}
-	else if( node->pkt->pkttype == PKT_SIGNATURE &&
-		 (node->pkt->pkt.signature->sig_class == 0x18 ||
-		  node->pkt->pkt.signature->sig_class == 0x28) &&
-		 !subkey_seen )
-	  {
-	    if(opt.verbose)
-	      log_info( _("key %s: subkey signature"
-			  " in wrong place - skipped\n"), keystr(keyid));
-	    delete_kbnode( node );
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && (node->pkt->pkt.signature->sig_class == 0x18
+                   || node->pkt->pkt.signature->sig_class == 0x28)
+               && !subkey_seen )
+        {
+          if(opt.verbose)
+            log_info( _("key %s: subkey signature"
+                        " in wrong place - skipped\n"), keystr(keyid));
+          delete_kbnode( node );
+        }
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && !IS_CERT(node->pkt->pkt.signature))
+        {
+          if(opt.verbose)
+            log_info(_("key %s: unexpected signature class (0x%02X) -"
+                       " skipped\n"),keystr(keyid),
+                     node->pkt->pkt.signature->sig_class);
+          delete_kbnode(node);
 	  }
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && !IS_CERT(node->pkt->pkt.signature))
-	  {
-	    if(opt.verbose)
-	      log_info(_("key %s: unexpected signature class (0x%02X) -"
-			 " skipped\n"),keystr(keyid),
-		       node->pkt->pkt.signature->sig_class);
-	    delete_kbnode(node);
-	  }
-	else if( (node->flag & 4) ) /* marked for deletion */
-	  delete_kbnode( node );
+      else if ((node->flag & 4) ) /* marked for deletion */
+        delete_kbnode( node );
     }
 
-    /* note: because keyblock is the public key, it is never marked
-     * for deletion and so keyblock cannot change */
-    commit_kbnode( &keyblock );
-    return nvalid;
+  /* note: because keyblock is the public key, it is never marked
+   * for deletion and so keyblock cannot change */
+  commit_kbnode( &keyblock );
+  return nvalid;
 }
 
 
@@ -2191,14 +2247,14 @@ delete_inv_parts( const char *fname, KBNODE keyblock,
  * Returns: True if the keyblock has changed.
  */
 int
-collapse_uids( KBNODE *keyblock )
+collapse_uids( kbnode_t *keyblock )
 {
-  KBNODE uid1;
+  kbnode_t uid1;
   int any=0;
 
   for(uid1=*keyblock;uid1;uid1=uid1->next)
     {
-      KBNODE uid2;
+      kbnode_t uid2;
 
       if(is_deleted_kbnode(uid1))
 	continue;
@@ -2218,7 +2274,7 @@ collapse_uids( KBNODE *keyblock )
 			  uid2->pkt->pkt.user_id)==0)
 	    {
 	      /* We have a duplicated uid */
-	      KBNODE sig1,last;
+	      kbnode_t sig1,last;
 
 	      any=1;
 
@@ -2246,7 +2302,7 @@ collapse_uids( KBNODE *keyblock )
 	      /* Now dedupe uid1 */
 	      for(sig1=uid1->next;sig1;sig1=sig1->next)
 		{
-		  KBNODE sig2;
+		  kbnode_t sig2;
 
 		  if(is_deleted_kbnode(sig1))
 		    continue;
@@ -2302,6 +2358,7 @@ collapse_uids( KBNODE *keyblock )
 
   return any;
 }
+
 
 /* Check for a 0x20 revocation from a revocation key that is not
    present.  This may be called without the benefit of merge_xxxx so
@@ -2387,7 +2444,8 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
     }
 }
 
-/****************
+
+/*
  * compare and merge the blocks
  *
  * o compare the signatures: If we already have this signature, check
@@ -2399,320 +2457,355 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
  * Note: We indicate newly inserted packets with flag bit 0
  */
 static int
-merge_blocks( const char *fname, KBNODE keyblock_orig, KBNODE keyblock,
+merge_blocks (const char *fname, kbnode_t keyblock_orig, kbnode_t keyblock,
 	      u32 *keyid, int *n_uids, int *n_sigs, int *n_subk )
 {
-    KBNODE onode, node;
-    int rc, found;
+  kbnode_t onode, node;
+  int rc, found;
 
-    /* 1st: handle revocation certificates */
-    for(node=keyblock->next; node; node=node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID )
-	    break;
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && node->pkt->pkt.signature->sig_class == 0x20 )  {
-	    /* check whether we already have this */
-	    found = 0;
-	    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
-		if( onode->pkt->pkttype == PKT_USER_ID )
-		    break;
-		else if( onode->pkt->pkttype == PKT_SIGNATURE
-			 && onode->pkt->pkt.signature->sig_class == 0x20
-			 && !cmp_signatures(onode->pkt->pkt.signature,
-					    node->pkt->pkt.signature))
-		  {
-		    found = 1;
-		    break;
-		  }
+  /* 1st: handle revocation certificates */
+  for (node=keyblock->next; node; node=node->next )
+    {
+      if (node->pkt->pkttype == PKT_USER_ID )
+        break;
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && node->pkt->pkt.signature->sig_class == 0x20)
+        {
+          /* check whether we already have this */
+          found = 0;
+          for (onode=keyblock_orig->next; onode; onode=onode->next)
+            {
+              if (onode->pkt->pkttype == PKT_USER_ID )
+                break;
+              else if (onode->pkt->pkttype == PKT_SIGNATURE
+                       && onode->pkt->pkt.signature->sig_class == 0x20
+                       && !cmp_signatures(onode->pkt->pkt.signature,
+                                          node->pkt->pkt.signature))
+                {
+                  found = 1;
+                  break;
+                }
 	    }
-	    if( !found ) {
-		KBNODE n2 = clone_kbnode(node);
-		insert_kbnode( keyblock_orig, n2, 0 );
-		n2->flag |= 1;
-                ++*n_sigs;
-		if(!opt.quiet)
-		  {
-		    char *p=get_user_id_native (keyid);
-		    log_info(_("key %s: \"%s\" revocation"
-			       " certificate added\n"), keystr(keyid),p);
-		    xfree(p);
-		  }
+          if (!found)
+            {
+              kbnode_t n2 = clone_kbnode(node);
+              insert_kbnode( keyblock_orig, n2, 0 );
+              n2->flag |= 1;
+              ++*n_sigs;
+              if(!opt.quiet)
+                {
+                  char *p=get_user_id_native (keyid);
+                  log_info(_("key %s: \"%s\" revocation"
+                             " certificate added\n"), keystr(keyid),p);
+                  xfree(p);
+                }
 	    }
 	}
     }
 
-    /* 2nd: merge in any direct key (0x1F) sigs */
-    for(node=keyblock->next; node; node=node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID )
-	    break;
-	else if( node->pkt->pkttype == PKT_SIGNATURE
-		 && node->pkt->pkt.signature->sig_class == 0x1F )  {
-	    /* check whether we already have this */
-	    found = 0;
-	    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
-		if( onode->pkt->pkttype == PKT_USER_ID )
-		    break;
-		else if( onode->pkt->pkttype == PKT_SIGNATURE
-			 && onode->pkt->pkt.signature->sig_class == 0x1F
-			 && !cmp_signatures(onode->pkt->pkt.signature,
-					    node->pkt->pkt.signature)) {
-		    found = 1;
-		    break;
+  /* 2nd: merge in any direct key (0x1F) sigs */
+  for(node=keyblock->next; node; node=node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID )
+        break;
+      else if (node->pkt->pkttype == PKT_SIGNATURE
+               && node->pkt->pkt.signature->sig_class == 0x1F)
+        {
+          /* check whether we already have this */
+          found = 0;
+          for (onode=keyblock_orig->next; onode; onode=onode->next)
+            {
+              if (onode->pkt->pkttype == PKT_USER_ID)
+                break;
+              else if (onode->pkt->pkttype == PKT_SIGNATURE
+                       && onode->pkt->pkt.signature->sig_class == 0x1F
+                       && !cmp_signatures(onode->pkt->pkt.signature,
+                                          node->pkt->pkt.signature))
+                {
+                  found = 1;
+                  break;
 		}
 	    }
-	    if( !found )
-	      {
-		KBNODE n2 = clone_kbnode(node);
-		insert_kbnode( keyblock_orig, n2, 0 );
-		n2->flag |= 1;
-                ++*n_sigs;
-		if(!opt.quiet)
-		  log_info( _("key %s: direct key signature added\n"),
-			    keystr(keyid));
-	      }
+          if (!found )
+            {
+              kbnode_t n2 = clone_kbnode(node);
+              insert_kbnode( keyblock_orig, n2, 0 );
+              n2->flag |= 1;
+              ++*n_sigs;
+              if(!opt.quiet)
+                log_info( _("key %s: direct key signature added\n"),
+                          keystr(keyid));
+            }
 	}
     }
 
-    /* 3rd: try to merge new certificates in */
-    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
-	if( !(onode->flag & 1) && onode->pkt->pkttype == PKT_USER_ID) {
-	    /* find the user id in the imported keyblock */
-	    for(node=keyblock->next; node; node=node->next )
-		if( node->pkt->pkttype == PKT_USER_ID
-		    && !cmp_user_ids( onode->pkt->pkt.user_id,
-					  node->pkt->pkt.user_id ) )
-		    break;
-	    if( node ) { /* found: merge */
-		rc = merge_sigs( onode, node, n_sigs, fname, keyid );
-		if( rc )
-		    return rc;
-	    }
-	}
-    }
-
-    /* 4th: add new user-ids */
-    for(node=keyblock->next; node; node=node->next ) {
-	if( node->pkt->pkttype == PKT_USER_ID) {
-	    /* do we have this in the original keyblock */
-	    for(onode=keyblock_orig->next; onode; onode=onode->next )
-		if( onode->pkt->pkttype == PKT_USER_ID
-		    && !cmp_user_ids( onode->pkt->pkt.user_id,
-				      node->pkt->pkt.user_id ) )
-		    break;
-	    if( !onode ) { /* this is a new user id: append */
-		rc = append_uid( keyblock_orig, node, n_sigs, fname, keyid);
-		if( rc )
-		    return rc;
-		++*n_uids;
+  /* 3rd: try to merge new certificates in */
+  for (onode=keyblock_orig->next; onode; onode=onode->next)
+    {
+      if (!(onode->flag & 1) && onode->pkt->pkttype == PKT_USER_ID)
+        {
+          /* find the user id in the imported keyblock */
+          for (node=keyblock->next; node; node=node->next)
+            if (node->pkt->pkttype == PKT_USER_ID
+                && !cmp_user_ids( onode->pkt->pkt.user_id,
+                                  node->pkt->pkt.user_id ) )
+              break;
+          if (node ) /* found: merge */
+            {
+              rc = merge_sigs( onode, node, n_sigs, fname, keyid );
+              if (rc )
+                return rc;
 	    }
 	}
     }
 
-    /* 5th: add new subkeys */
-    for(node=keyblock->next; node; node=node->next ) {
-	onode = NULL;
-	if( node->pkt->pkttype == PKT_PUBLIC_SUBKEY ) {
-	    /* do we have this in the original keyblock? */
-	    for(onode=keyblock_orig->next; onode; onode=onode->next )
-		if( onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		    && !cmp_public_keys( onode->pkt->pkt.public_key,
-					 node->pkt->pkt.public_key ) )
-		    break;
-	    if( !onode ) { /* this is a new subkey: append */
-		rc = append_key( keyblock_orig, node, n_sigs, fname, keyid);
-		if( rc )
-		    return rc;
-		++*n_subk;
-	    }
-	}
-	else if( node->pkt->pkttype == PKT_SECRET_SUBKEY ) {
-	    /* do we have this in the original keyblock? */
-	    for(onode=keyblock_orig->next; onode; onode=onode->next )
-		if( onode->pkt->pkttype == PKT_SECRET_SUBKEY
-		    && !cmp_public_keys (onode->pkt->pkt.public_key,
-					 node->pkt->pkt.public_key) )
-		    break;
-	    if( !onode ) { /* this is a new subkey: append */
-		rc = append_key( keyblock_orig, node, n_sigs, fname, keyid);
-		if( rc )
-		    return rc;
-		++*n_subk;
+  /* 4th: add new user-ids */
+  for (node=keyblock->next; node; node=node->next)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+        {
+          /* do we have this in the original keyblock */
+          for (onode=keyblock_orig->next; onode; onode=onode->next )
+            if (onode->pkt->pkttype == PKT_USER_ID
+                && !cmp_user_ids( onode->pkt->pkt.user_id,
+                                  node->pkt->pkt.user_id ) )
+              break;
+          if (!onode ) /* this is a new user id: append */
+            {
+              rc = append_uid( keyblock_orig, node, n_sigs, fname, keyid);
+              if (rc )
+                return rc;
+              ++*n_uids;
 	    }
 	}
     }
 
-    /* 6th: merge subkey certificates */
-    for(onode=keyblock_orig->next; onode; onode=onode->next ) {
-	if( !(onode->flag & 1)
-	    &&	(   onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		 || onode->pkt->pkttype == PKT_SECRET_SUBKEY) ) {
-	    /* find the subkey in the imported keyblock */
-	    for(node=keyblock->next; node; node=node->next ) {
-                if ((node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-                     || node->pkt->pkttype == PKT_SECRET_SUBKEY)
-		    && !cmp_public_keys( onode->pkt->pkt.public_key,
-					  node->pkt->pkt.public_key ) )
-		    break;
+  /* 5th: add new subkeys */
+  for (node=keyblock->next; node; node=node->next)
+    {
+      onode = NULL;
+      if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          /* do we have this in the original keyblock? */
+          for(onode=keyblock_orig->next; onode; onode=onode->next)
+            if (onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                && !cmp_public_keys( onode->pkt->pkt.public_key,
+                                     node->pkt->pkt.public_key))
+              break;
+          if (!onode ) /* This is a new subkey: append.  */
+            {
+              rc = append_key (keyblock_orig, node, n_sigs, fname, keyid);
+              if (rc)
+                return rc;
+              ++*n_subk;
 	    }
-	    if( node ) { /* found: merge */
-		rc = merge_keysigs( onode, node, n_sigs, fname, keyid );
-		if( rc )
-		    return rc;
+	}
+      else if (node->pkt->pkttype == PKT_SECRET_SUBKEY)
+        {
+          /* do we have this in the original keyblock? */
+          for (onode=keyblock_orig->next; onode; onode=onode->next )
+            if (onode->pkt->pkttype == PKT_SECRET_SUBKEY
+                && !cmp_public_keys (onode->pkt->pkt.public_key,
+                                     node->pkt->pkt.public_key) )
+              break;
+          if (!onode ) /* This is a new subkey: append.  */
+            {
+              rc = append_key (keyblock_orig, node, n_sigs, fname, keyid);
+              if (rc )
+                return rc;
+              ++*n_subk;
 	    }
 	}
     }
 
+  /* 6th: merge subkey certificates */
+  for (onode=keyblock_orig->next; onode; onode=onode->next)
+    {
+      if (!(onode->flag & 1)
+          && (onode->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || onode->pkt->pkttype == PKT_SECRET_SUBKEY))
+        {
+          /* find the subkey in the imported keyblock */
+          for(node=keyblock->next; node; node=node->next)
+            {
+              if ((node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+                   || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+                  && !cmp_public_keys( onode->pkt->pkt.public_key,
+                                       node->pkt->pkt.public_key ) )
+                break;
+	    }
+          if (node) /* Found: merge.  */
+            {
+              rc = merge_keysigs( onode, node, n_sigs, fname, keyid );
+              if (rc )
+                return rc;
+	    }
+	}
+    }
 
-    return 0;
+  return 0;
 }
 
 
-/****************
- * append the userid starting with NODE and all signatures to KEYBLOCK.
+/*
+ * Append the userid starting with NODE and all signatures to KEYBLOCK.
  */
 static int
-append_uid (KBNODE keyblock, KBNODE node, int *n_sigs,
+append_uid (kbnode_t keyblock, kbnode_t node, int *n_sigs,
             const char *fname, u32 *keyid )
 {
-    KBNODE n, n_where=NULL;
+  kbnode_t n;
+  kbnode_t n_where = NULL;
 
-    (void)fname;
-    (void)keyid;
+  (void)fname;
+  (void)keyid;
 
-    assert(node->pkt->pkttype == PKT_USER_ID );
+  assert(node->pkt->pkttype == PKT_USER_ID );
 
-    /* find the position */
-    for( n = keyblock; n; n_where = n, n = n->next ) {
-	if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	    || n->pkt->pkttype == PKT_SECRET_SUBKEY )
-	    break;
+  /* find the position */
+  for (n = keyblock; n; n_where = n, n = n->next)
+    {
+      if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || n->pkt->pkttype == PKT_SECRET_SUBKEY )
+        break;
     }
-    if( !n )
-	n_where = NULL;
+  if (!n)
+    n_where = NULL;
 
-    /* and append/insert */
-    while( node ) {
-	/* we add a clone to the original keyblock, because this
-	 * one is released first */
-	n = clone_kbnode(node);
-	if( n_where ) {
-	    insert_kbnode( n_where, n, 0 );
-	    n_where = n;
+  /* and append/insert */
+  while (node)
+    {
+      /* we add a clone to the original keyblock, because this
+       * one is released first */
+      n = clone_kbnode(node);
+      if (n_where)
+        {
+          insert_kbnode( n_where, n, 0 );
+          n_where = n;
 	}
-	else
-	    add_kbnode( keyblock, n );
-	n->flag |= 1;
-	node->flag |= 1;
-	if( n->pkt->pkttype == PKT_SIGNATURE )
-	    ++*n_sigs;
+      else
+        add_kbnode( keyblock, n );
+      n->flag |= 1;
+      node->flag |= 1;
+      if (n->pkt->pkttype == PKT_SIGNATURE )
+        ++*n_sigs;
 
-	node = node->next;
-	if( node && node->pkt->pkttype != PKT_SIGNATURE )
-	    break;
+      node = node->next;
+      if (node && node->pkt->pkttype != PKT_SIGNATURE )
+        break;
     }
 
-    return 0;
+  return 0;
 }
 
 
-/****************
+/*
  * Merge the sigs from SRC onto DST. SRC and DST are both a PKT_USER_ID.
  * (how should we handle comment packets here?)
  */
 static int
-merge_sigs( KBNODE dst, KBNODE src, int *n_sigs,
-				    const char *fname, u32 *keyid )
+merge_sigs (kbnode_t dst, kbnode_t src, int *n_sigs,
+            const char *fname, u32 *keyid)
 {
-    KBNODE n, n2;
-    int found=0;
+  kbnode_t n, n2;
+  int found = 0;
 
-    (void)fname;
-    (void)keyid;
+  (void)fname;
+  (void)keyid;
 
-    assert(dst->pkt->pkttype == PKT_USER_ID );
-    assert(src->pkt->pkttype == PKT_USER_ID );
+  assert(dst->pkt->pkttype == PKT_USER_ID );
+  assert(src->pkt->pkttype == PKT_USER_ID );
 
-    for(n=src->next; n && n->pkt->pkttype != PKT_USER_ID; n = n->next ) {
-	if( n->pkt->pkttype != PKT_SIGNATURE )
-	    continue;
-	if( n->pkt->pkt.signature->sig_class == 0x18
-	    || n->pkt->pkt.signature->sig_class == 0x28 )
-	    continue; /* skip signatures which are only valid on subkeys */
-	found = 0;
-	for(n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next)
-	  if(!cmp_signatures(n->pkt->pkt.signature,n2->pkt->pkt.signature))
-	    {
-	      found++;
-	      break;
-	    }
-	if( !found ) {
-	    /* This signature is new or newer, append N to DST.
-	     * We add a clone to the original keyblock, because this
-	     * one is released first */
-	    n2 = clone_kbnode(n);
-	    insert_kbnode( dst, n2, PKT_SIGNATURE );
-	    n2->flag |= 1;
-	    n->flag |= 1;
-	    ++*n_sigs;
+  for (n=src->next; n && n->pkt->pkttype != PKT_USER_ID; n = n->next)
+    {
+      if (n->pkt->pkttype != PKT_SIGNATURE )
+        continue;
+      if (n->pkt->pkt.signature->sig_class == 0x18
+          || n->pkt->pkt.signature->sig_class == 0x28 )
+        continue; /* skip signatures which are only valid on subkeys */
+
+      found = 0;
+      for (n2=dst->next; n2 && n2->pkt->pkttype != PKT_USER_ID; n2 = n2->next)
+        if (!cmp_signatures(n->pkt->pkt.signature,n2->pkt->pkt.signature))
+          {
+            found++;
+            break;
+          }
+      if (!found )
+        {
+          /* This signature is new or newer, append N to DST.
+           * We add a clone to the original keyblock, because this
+           * one is released first */
+          n2 = clone_kbnode(n);
+          insert_kbnode( dst, n2, PKT_SIGNATURE );
+          n2->flag |= 1;
+          n->flag |= 1;
+          ++*n_sigs;
 	}
     }
 
-    return 0;
+  return 0;
 }
 
-/****************
+
+/*
  * Merge the sigs from SRC onto DST. SRC and DST are both a PKT_xxx_SUBKEY.
  */
 static int
-merge_keysigs (KBNODE dst, KBNODE src, int *n_sigs,
+merge_keysigs (kbnode_t dst, kbnode_t src, int *n_sigs,
                const char *fname, u32 *keyid)
 {
-    KBNODE n, n2;
-    int found=0;
+  kbnode_t n, n2;
+  int found = 0;
 
-    (void)fname;
-    (void)keyid;
+  (void)fname;
+  (void)keyid;
 
-    assert(   dst->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	   || dst->pkt->pkttype == PKT_SECRET_SUBKEY );
+  assert (dst->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || dst->pkt->pkttype == PKT_SECRET_SUBKEY);
 
-    for(n=src->next; n ; n = n->next ) {
-	if( n->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	    || n->pkt->pkttype == PKT_PUBLIC_KEY )
-	    break;
-	if( n->pkt->pkttype != PKT_SIGNATURE )
-	    continue;
-	found = 0;
-	for(n2=dst->next; n2; n2 = n2->next){
-	    if( n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
-		|| n2->pkt->pkttype == PKT_PUBLIC_KEY )
-		break;
-	    if( n2->pkt->pkttype == PKT_SIGNATURE
-		&& n->pkt->pkt.signature->keyid[0]
-		   == n2->pkt->pkt.signature->keyid[0]
-		&& n->pkt->pkt.signature->keyid[1]
-		   == n2->pkt->pkt.signature->keyid[1]
-		&& n->pkt->pkt.signature->timestamp
-		   <= n2->pkt->pkt.signature->timestamp
-		&& n->pkt->pkt.signature->sig_class
-		   == n2->pkt->pkt.signature->sig_class ) {
-		found++;
-		break;
+  for (n=src->next; n ; n = n->next)
+    {
+      if (n->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || n->pkt->pkttype == PKT_PUBLIC_KEY )
+        break;
+      if (n->pkt->pkttype != PKT_SIGNATURE )
+        continue;
+
+      found = 0;
+      for (n2=dst->next; n2; n2 = n2->next)
+        {
+          if (n2->pkt->pkttype == PKT_PUBLIC_SUBKEY
+              || n2->pkt->pkttype == PKT_PUBLIC_KEY )
+            break;
+          if (n2->pkt->pkttype == PKT_SIGNATURE
+              && (n->pkt->pkt.signature->keyid[0]
+                  == n2->pkt->pkt.signature->keyid[0])
+              && (n->pkt->pkt.signature->keyid[1]
+                  == n2->pkt->pkt.signature->keyid[1])
+              && (n->pkt->pkt.signature->timestamp
+                  <= n2->pkt->pkt.signature->timestamp)
+              && (n->pkt->pkt.signature->sig_class
+                  == n2->pkt->pkt.signature->sig_class))
+            {
+              found++;
+              break;
 	    }
 	}
-	if( !found ) {
-	    /* This signature is new or newer, append N to DST.
-	     * We add a clone to the original keyblock, because this
-	     * one is released first */
-	    n2 = clone_kbnode(n);
-	    insert_kbnode( dst, n2, PKT_SIGNATURE );
-	    n2->flag |= 1;
-	    n->flag |= 1;
-	    ++*n_sigs;
+      if (!found )
+        {
+          /* This signature is new or newer, append N to DST.
+           * We add a clone to the original keyblock, because this
+           * one is released first */
+          n2 = clone_kbnode(n);
+          insert_kbnode( dst, n2, PKT_SIGNATURE );
+          n2->flag |= 1;
+          n->flag |= 1;
+          ++*n_sigs;
 	}
     }
 
-    return 0;
+  return 0;
 }
 
 
@@ -2721,31 +2814,32 @@ merge_keysigs (KBNODE dst, KBNODE src, int *n_sigs,
  * Mark all new and copied packets by setting flag bit 0.
  */
 static int
-append_key (KBNODE keyblock, KBNODE node, int *n_sigs,
+append_key (kbnode_t keyblock, kbnode_t node, int *n_sigs,
             const char *fname, u32 *keyid)
 {
-    KBNODE n;
+  kbnode_t n;
 
-    (void)fname;
-    (void)keyid;
+  (void)fname;
+  (void)keyid;
 
-    assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	   || node->pkt->pkttype == PKT_SECRET_SUBKEY );
+  assert( node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+          || node->pkt->pkttype == PKT_SECRET_SUBKEY );
 
-    while(  node ) {
-	/* we add a clone to the original keyblock, because this
-	 * one is released first */
-	n = clone_kbnode(node);
-	add_kbnode( keyblock, n );
-	n->flag |= 1;
-	node->flag |= 1;
-	if( n->pkt->pkttype == PKT_SIGNATURE )
-	    ++*n_sigs;
+  while (node)
+    {
+      /* we add a clone to the original keyblock, because this
+       * one is released first */
+      n = clone_kbnode(node);
+      add_kbnode( keyblock, n );
+      n->flag |= 1;
+      node->flag |= 1;
+      if (n->pkt->pkttype == PKT_SIGNATURE )
+        ++*n_sigs;
 
-	node = node->next;
-	if( node && node->pkt->pkttype != PKT_SIGNATURE )
-	    break;
+      node = node->next;
+      if (node && node->pkt->pkttype != PKT_SIGNATURE )
+        break;
     }
 
-    return 0;
+  return 0;
 }
