@@ -350,12 +350,12 @@ descriptor has been set on a Windows platform, the Registry entry
 the logging output.
 
 
-@anchor{option --allow-mark-trusted}
-@item --allow-mark-trusted
-@opindex allow-mark-trusted
-Allow clients to mark keys as trusted, i.e. put them into the
-@file{trustlist.txt} file.  This is by default not allowed to make it
-harder for users to inadvertently accept Root-CA keys.
+@anchor{option --no-allow-mark-trusted}
+@item --no-allow-mark-trusted
+@opindex no-allow-mark-trusted
+Do not allow clients to mark keys as trusted, i.e. put them into the
+@file{trustlist.txt} file.  This makes it harder for users to inadvertently
+accept Root-CA keys.
 
 @anchor{option --allow-preset-passphrase}
 @item --allow-preset-passphrase
@@ -650,11 +650,10 @@ administrator might have already entered those keys which are deemed
 trustworthy enough into this file.  Places where to look for the
 fingerprint of a root certificate are letters received from the CA or
 the website of the CA (after making 100% sure that this is indeed the
-website of that CA).  You may want to consider allowing interactive
-updates of this file by using the @xref{option --allow-mark-trusted}.
-This is however not as secure as maintaining this file manually.  It is
-even advisable to change the permissions to read-only so that this file
-can't be changed inadvertently.
+website of that CA).  You may want to consider disallowing interactive
+updates of this file by using the @xref{option --no-allow-mark-trusted}.
+It might even be advisable to change the permissions to read-only so
+that this file can't be changed inadvertently.
 
 As a special feature a line @code{include-default} will include a global
 list of trusted certificates (e.g. @file{/etc/gnupg/trustlist.txt}).
@@ -751,7 +750,7 @@ again.  Only certain options are honored: @code{quiet},
 @code{verbose}, @code{debug}, @code{debug-all}, @code{debug-level},
 @code{no-grab}, @code{pinentry-program}, @code{default-cache-ttl},
 @code{max-cache-ttl}, @code{ignore-cache-for-signing},
-@code{allow-mark-trusted}, @code{disable-scdaemon}, and
+@code{no-allow-mark-trusted}, @code{disable-scdaemon}, and
 @code{disable-check-own-socket}.  @code{scdaemon-program} is also
 supported but due to the current implementation, which calls the
 scdaemon only once, it is not of much use unless you manually kill the
