@@ -1619,7 +1619,7 @@ card_store_subkey (KBNODE node, int use)
     goto leave;
 
   epoch2isotime (timebuf, (time_t)pk->timestamp);
-  agent_keytocard (hexgrip, keyno, rc, info.serialno, timebuf);
+  rc = agent_keytocard (hexgrip, keyno, rc, info.serialno, timebuf);
 
   if (rc)
     log_error (_("KEYTOCARD failed: %s\n"), gpg_strerror (rc));

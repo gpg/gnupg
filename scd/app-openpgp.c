@@ -3258,8 +3258,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   u32 created_at = 0;
   int curve = CURVE_UNKNOWN;
 
-  /* (private-key(ecdsa(curve%s)(q%m)(d%m))(created-at%d)):
-     curve = "1.2.840.10045.3.1.7" */
+  /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
+     curve = "NIST P-256" */
   /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
      curve = "secp256k1" */
   /* (private-key(ecc(curve%s)(flags eddsa)(q%m)(d%m))(created-at%d)):
@@ -3281,12 +3281,18 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
 
-          if (tok && toklen == 19 && !memcmp (tok, "1.2.840.10045.3.1.7", 19))
+          if (tok && toklen == 10 && !memcmp (tok, "NIST P-256", 10))
             curve = CURVE_NIST_P256;
           else if (tok && toklen == 9 && !memcmp (tok, "secp256k1", 9))
             curve = CURVE_SEC_P256K1;
           else if (tok && toklen == 7 && !memcmp (tok, "Ed25519", 7))
             curve = CURVE_ED25519;
+          else
+            {
+              log_error (_("unsupported curve\n"));
+              err = gpg_error (GPG_ERR_INV_VALUE);
+              goto leave;
+            }
         }
       else if (tok && toklen == 1)
         {
@@ -3491,15 +3497,15 @@ do_writekey (app_t app, ctrl_t ctrl,
   if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
     goto leave;
   if (tok && toklen == 3 && memcmp ("rsa", tok, toklen) == 0)
-    rsa_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
+    err = rsa_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
   else if ((tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0
             && (keyno == 0 || keyno == 2))
            || (tok && toklen == 5 && memcmp ("ecdsa", tok, toklen) == 0))
-    ecc_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
+    err = ecc_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
   else if ((tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0
             && keyno == 1)
            || (tok && toklen == 4 && memcmp ("ecdh", tok, toklen) == 0))
-    ecdh_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
+    err = ecdh_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
   else
     {
       err = gpg_error (GPG_ERR_WRONG_PUBKEY_ALGO);
