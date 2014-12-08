@@ -146,7 +146,6 @@ struct
     unsigned int options;
     unsigned int import_options;
     unsigned int export_options;
-    strlist_t other;
   } keyserver_options;
   int exec_disable;
   int exec_path_set;

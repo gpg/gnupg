@@ -702,7 +702,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oNoAllowFreeformUID, "no-allow-freeform-uid", "@"),
   ARGPARSE_s_n (oNoLiteral, "no-literal", "@"),
   ARGPARSE_p_u (oSetFilesize, "set-filesize", "@"),
-  ARGPARSE_s_n (oHonorHttpProxy, "honor-http-proxy", "@"),
   ARGPARSE_s_n (oFastListMode, "fast-list-mode", "@"),
   ARGPARSE_s_n (oFixedListMode, "fixed-list-mode", "@"),
   ARGPARSE_s_n (oLegacyListMode, "legacy-list-mode", "@"),
@@ -794,6 +793,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (octapiDriver, "ctapi-driver", "@"),
   ARGPARSE_s_s (opcscDriver, "pcsc-driver", "@"),
   ARGPARSE_s_n (oDisableCCID, "disable-ccid", "@"),
+  ARGPARSE_s_n (oHonorHttpProxy, "honor-http-proxy", "@"),
 
   /* Dummy options.  */
   ARGPARSE_s_n (oNoop, "sk-comments", "@"),
@@ -2375,6 +2375,9 @@ main (int argc, char **argv)
           case oDisableCCID:
 	    obsolete_scdaemon_option (configname, configlineno, "disable-ccid");
             break;
+          case oHonorHttpProxy:
+	    obsolete_option (configname, configlineno, "honor-http-proxy");
+            break;
 
 	  case oAnswerYes: opt.answer_yes = 1; break;
 	  case oAnswerNo: opt.answer_no = 1; break;
@@ -2940,12 +2943,6 @@ main (int argc, char **argv)
 	  case oNoAllowFreeformUID: opt.allow_freeform_uid = 0; break;
 	  case oNoLiteral: opt.no_literal = 1; break;
 	  case oSetFilesize: opt.set_filesize = pargs.r.ret_ulong; break;
-	  case oHonorHttpProxy:
-	        add_to_strlist(&opt.keyserver_options.other,"http-proxy");
-		deprecated_warning(configname,configlineno,
-				   "--honor-http-proxy",
-				   "--keyserver-options ","http-proxy");
-		break;
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;

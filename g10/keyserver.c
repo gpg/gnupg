@@ -124,25 +124,22 @@ static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
 static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
 
 static void
-add_canonical_option(char *option,strlist_t *list)
+warn_kshelper_option(char *option)
 {
-  char *arg=argsplit(option);
+  char *p;
 
-  if(arg)
-    {
-      char *joined;
+  if ((p=strchr (option, '=')))
+    *p = 0;
 
-      joined=xmalloc(strlen(option)+1+strlen(arg)+1);
-      /* Make a canonical name=value form with no spaces */
-      strcpy(joined,option);
-      strcat(joined,"=");
-      strcat(joined,arg);
-      append_to_strlist(list,joined);
-      xfree(joined);
-    }
-  else
-    append_to_strlist(list,option);
+  if (!strcmp (option, "ca-cert-file"))
+    log_info ("keyserver option '%s' is obsolete; please use "
+              "'%s' in dirmngr.conf\n",
+              "ca-cert-file", "hkp-cacert");
+  else if (!strcmp (option, "check-cert")
+           || !strcmp (option, "broken-http-proxy"))
+    log_info ("keyserver option '%s' is obsolete\n", option);
 }
+
 
 int
 parse_keyserver_options(char *options)
@@ -190,9 +187,9 @@ parse_keyserver_options(char *options)
 	 && !parse_export_options(tok,
 				  &opt.keyserver_options.export_options,0))
 	{
-	  /* All of the standard options have failed, so the option is
-	     destined for a keyserver plugin. */
-	  add_canonical_option(tok,&opt.keyserver_options.other);
+	  /* All of the standard options have failed, so the option was
+	     destined for a keyserver plugin as used by GnuPG < 2.1 */
+	  warn_kshelper_option (tok);
 	}
     }
 
@@ -285,7 +282,7 @@ parse_keyserver_uri (const char *string,int require_scheme,
       options++;
 
       while((tok=optsep(&options)))
-	add_canonical_option(tok,&keyserver->options);
+	warn_kshelper_option (tok);
     }
 
   /* Get the scheme */
@@ -344,11 +341,8 @@ parse_keyserver_uri (const char *string,int require_scheme,
 
   if(ascii_strcasecmp(keyserver->scheme,"x-broken-hkp")==0)
     {
-      deprecated_warning(configname,configlineno,"x-broken-hkp",
-			 "--keyserver-options ","broken-http-proxy");
-      xfree(keyserver->scheme);
-      keyserver->scheme=xstrdup("hkp");
-      append_to_strlist(&opt.keyserver_options.other,"broken-http-proxy");
+      log_info ("keyserver option '%s' is obsolete\n",
+                "x-broken-hkp");
     }
   else if(ascii_strcasecmp(keyserver->scheme,"x-hkp")==0)
     {
