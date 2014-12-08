@@ -1574,7 +1574,21 @@ send_request (http_t hd, const char *httphost, const char *auth,
       while (rc == GNUTLS_E_INTERRUPTED || rc == GNUTLS_E_AGAIN);
       if (rc < 0)
         {
-          log_info ("TLS handshake failed: %s\n", gnutls_strerror (rc));
+          if (rc == GNUTLS_E_WARNING_ALERT_RECEIVED
+              || rc == GNUTLS_E_FATAL_ALERT_RECEIVED)
+            {
+              gnutls_alert_description_t alertno;
+              const char *alertstr;
+
+              alertno = gnutls_alert_get (hd->session->tls_session);
+              alertstr = gnutls_alert_get_name (alertno);
+              log_info ("TLS handshake failed: %s (alert %d)\n",
+                        alertstr, (int)alertno);
+              if (alertno == GNUTLS_A_UNRECOGNIZED_NAME && server)
+                log_info ("  (sent server name '%s')\n", server);
+            }
+          else
+            log_info ("TLS handshake failed: %s\n", gnutls_strerror (rc));
           xfree (proxy_authstr);
           return gpg_err_make (default_errsource, GPG_ERR_NETWORK);
         }
@@ -2115,6 +2129,7 @@ connect_server (const char *server, unsigned short port,
   int sock = -1;
   int srvcount = 0;
   int hostfound = 0;
+  int anyhostaddr = 0;
   int srv, connected;
   int last_errno = 0;
   struct srventry *serverlist = NULL;
@@ -2221,6 +2236,7 @@ connect_server (const char *server, unsigned short port,
               return -1;
             }
 
+          anyhostaddr = 1;
           if (my_connect (sock, ai->ai_addr, ai->ai_addrlen))
             last_errno = errno;
           else
@@ -2274,6 +2290,7 @@ connect_server (const char *server, unsigned short port,
       /* Try all A records until one responds. */
       for (i = 0; host->h_addr_list[i] && !connected; i++)
         {
+          anyhostaddr = 1;
           memcpy (&addr.sin_addr, host->h_addr_list[i], host->h_length);
           if (my_connect (sock, (struct sockaddr *) &addr, sizeof (addr)))
             last_errno = errno;
@@ -2290,17 +2307,23 @@ connect_server (const char *server, unsigned short port,
 
   if (!connected)
     {
-#ifdef HAVE_W32_SYSTEM
-      log_error ("can't connect to '%s': %s%sec=%d\n",
-                   server,
-                   hostfound? "":"host not found",
-                   hostfound? "":" - ", (int)WSAGetLastError());
-#else
-      log_error ("can't connect to '%s': %s\n",
-                 server,
-                 hostfound? strerror (last_errno):"host not found");
-#endif
       if (!hostfound)
+        log_error ("can't connect to '%s': %s\n",
+                   server, "host not found");
+      else if (!anyhostaddr)
+        log_error ("can't connect to '%s': %s\n",
+                   server, "no IP address for host");
+      else
+        {
+#ifdef HAVE_W32_SYSTEM
+        log_error ("can't connect to '%s': ec=%d\n",
+                   server, (int)WSAGetLastError());
+#else
+        log_error ("can't connect to '%s': %s\n",
+                   server, strerror (last_errno));
+#endif
+        }
+      if (!hostfound || (hostfound && !anyhostaddr))
         *r_host_not_found = 1;
       if (sock != -1)
 	sock_close (sock);
