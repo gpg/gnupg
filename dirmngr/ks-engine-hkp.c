@@ -316,25 +316,30 @@ is_ip_address (const char *name)
    to choose one of the hosts.  For example we skip those hosts which
    failed for some time and we stick to one host for a time
    independent of DNS retry times.  If FORCE_RESELECT is true a new
-   host is always selected.  If R_HTTPFLAGS is not NULL if will
-   receive flags which are to be passed to http_open.  If R_HOST is
-   not NULL a malloced name of the pool is stored or NULL if it is not
-   a pool. */
-static char *
+   host is always selected.  The selected host is stored as a malloced
+   string at R_HOST; on error NULL is stored.  If R_HTTPFLAGS is not
+   NULL it will receive flags which are to be passed to http_open.  If
+   R_POOLNAME is not NULL a malloced name of the pool is stored or
+   NULL if it is not a pool. */
+static gpg_error_t
 map_host (ctrl_t ctrl, const char *name, int force_reselect,
-          unsigned int *r_httpflags, char **r_host)
+          char **r_host, unsigned int *r_httpflags, char **r_poolname)
 {
   hostinfo_t hi;
   int idx;
 
+  *r_host = NULL;
   if (r_httpflags)
     *r_httpflags = 0;
-  if (r_host)
-    *r_host = NULL;
+  if (r_poolname)
+    *r_poolname = NULL;
 
   /* No hostname means localhost.  */
   if (!name || !*name)
-    return xtrystrdup ("localhost");
+    {
+      *r_host = xtrystrdup ("localhost");
+      return *r_host? 0 : gpg_error_from_syserror ();
+    }
 
   /* See whether the host is in our table.  */
   idx = find_hostinfo (name);
@@ -350,14 +355,14 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       reftblsize = 100;
       reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
       if (!reftbl)
-        return NULL;
+        return gpg_error_from_syserror ();
       refidx = 0;
 
       idx = create_new_hostinfo (name);
       if (idx == -1)
         {
           xfree (reftbl);
-          return NULL;
+          return gpg_error_from_syserror ();
         }
       hi = hosttable[idx];
 
@@ -527,7 +532,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
           if (hi->poolidx == -1)
             {
               log_error ("no alive host found in pool '%s'\n", name);
-              return NULL;
+              return gpg_error (GPG_ERR_NO_KEYSERVER);
             }
         }
 
@@ -539,7 +544,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
   if (hi->dead)
     {
       log_error ("host '%s' marked as dead\n", hi->name);
-      return NULL;
+      return gpg_error (GPG_ERR_NO_KEYSERVER);
     }
 
   if (r_httpflags)
@@ -555,10 +560,24 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv6;
     }
 
-  if (r_host && hi->pool && hi->cname)
-    *r_host = xtrystrdup (hi->cname);
+  if (r_poolname && hi->pool && hi->cname)
+    {
+      *r_poolname = xtrystrdup (hi->cname);
+      if (!*r_poolname)
+        return gpg_error_from_syserror ();
+    }
 
-  return xtrystrdup (hi->name);
+  *r_host = xtrystrdup (hi->name);
+  if (!*r_host)
+    {
+      if (r_poolname)
+        {
+          xfree (*r_poolname);
+          *r_poolname = NULL;
+        }
+      return gpg_error_from_syserror ();
+    }
+  return 0;
 }
 
 
@@ -792,18 +811,20 @@ ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri)
 
 
 /* Build the remote part of the URL from SCHEME, HOST and an optional
-   PORT.  Returns an allocated string or NULL on failure and sets
-   ERRNO.  If R_HTTPHOST is not NULL it receive a mallcoed string with
-   the poolname.  */
-static char *
+   PORT.  Returns an allocated string at R_HOSTPORT or NULL on failure
+   If R_POOLNAME is not NULL it receives a malloced string with the
+   poolname.  */
+static gpg_error_t
 make_host_part (ctrl_t ctrl,
                 const char *scheme, const char *host, unsigned short port,
                 int force_reselect,
-                unsigned int *r_httpflags, char **r_httphost)
+                char **r_hostport, unsigned int *r_httpflags, char **r_poolname)
 {
+  gpg_error_t err;
   char portstr[10];
   char *hostname;
-  char *hostport;
+
+  *r_hostport = NULL;
 
   /* Map scheme and port.  */
   if (!strcmp (scheme, "hkps") || !strcmp (scheme,"https"))
@@ -823,13 +844,23 @@ make_host_part (ctrl_t ctrl,
       /*fixme_do_srv_lookup ()*/
     }
 
-  hostname = map_host (ctrl, host, force_reselect, r_httpflags, r_httphost);
-  if (!hostname)
-    return NULL;
+  err = map_host (ctrl, host, force_reselect,
+                  &hostname, r_httpflags, r_poolname);
+  if (err)
+    return err;
 
-  hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
+  *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
   xfree (hostname);
-  return hostport;
+  if (!*r_hostport)
+    {
+      if (r_poolname)
+        {
+          xfree (*r_poolname);
+          *r_poolname = NULL;
+        }
+      return gpg_error_from_syserror ();
+    }
+  return 0;
 }
 
 
@@ -842,11 +873,10 @@ ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri)
   gpg_error_t err;
   char *hostport = NULL;
 
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1,
-                             NULL, NULL);
-  if (!hostport)
+  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, 1,
+                        &hostport, NULL, NULL);
+  if (err)
     {
-      err = gpg_error_from_syserror ();
       err = ks_printf_help (ctrl, "%s://%s:%hu: resolve failed: %s",
                             uri->scheme, uri->host, uri->port,
                             gpg_strerror (err));
@@ -1187,15 +1217,12 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
   {
     char *searchkey;
 
-    xfree (hostport);
+    xfree (hostport); hostport = NULL;
     xfree (httphost); httphost = NULL;
-    hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                               reselect, &httpflags, &httphost);
-    if (!hostport)
-      {
-        err = gpg_error_from_syserror ();
-        goto leave;
-      }
+    err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect,
+                          &hostport, &httpflags, &httphost);
+    if (err)
+      goto leave;
 
     searchkey = http_escape_string (pattern, EXTRA_ESCAPE_CHARS);
     if (!searchkey)
@@ -1330,15 +1357,12 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
   reselect = 0;
  again:
   /* Build the request string.  */
-  xfree (hostport);
+  xfree (hostport); hostport = NULL;
   xfree (httphost); httphost = NULL;
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                             reselect, &httpflags, &httphost);
-  if (!hostport)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect,
+                        &hostport, &httpflags, &httphost);
+  if (err)
+    goto leave;
 
   xfree (request);
   request = strconcat (hostport,
@@ -1445,15 +1469,12 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
   /* Build the request string.  */
   reselect = 0;
  again:
-  xfree (hostport);
+  xfree (hostport); hostport = NULL;
   xfree (httphost); httphost = NULL;
-  hostport = make_host_part (ctrl, uri->scheme, uri->host, uri->port,
-                             reselect, &httpflags, &httphost);
-  if (!hostport)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
+  err = make_host_part (ctrl, uri->scheme, uri->host, uri->port, reselect,
+                        &hostport, &httpflags, &httphost);
+  if (err)
+    goto leave;
 
   xfree (request);
   request = strconcat (hostport, "/pks/add", NULL);
