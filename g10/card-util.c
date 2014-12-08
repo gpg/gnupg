@@ -213,6 +213,8 @@ get_manufacturer (unsigned int no)
 
     case 0x002A: return "Magrathea";
 
+    case 0x1337: return "Warsaw Hackerspace";
+
     case 0xF517: return "FSIJ";
 
       /* 0x0000 and 0xFFFF are defined as test cards per spec,
