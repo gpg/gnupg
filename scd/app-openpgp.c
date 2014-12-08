@@ -752,7 +752,7 @@ get_algo_byte (key_type_t key_type)
   else if (key_type == KEY_TYPE_ECDH)
     return 18;
   else if (key_type == KEY_TYPE_EDDSA)
-    return 105;                 /* (experimental) */
+    return 22;
   else
     return 1;  /* RSA */
 }
@@ -790,8 +790,10 @@ store_fpr (app_t app, int keynumber, u32 timestamp,
     {
       m[i] = va_arg (ap, const unsigned char *);
       mlen[i] = va_arg (ap, size_t);
-      for (; mlen[i] && !*m[i]; mlen[i]--, m[i]++) /* strip leading zeroes */
-        ;
+      if (key_type != KEY_TYPE_EDDSA)
+        /* strip off leading zeroes */
+        for (; mlen[i] && !*m[i]; mlen[i]--, m[i]++)
+          ;
       if (key_type == KEY_TYPE_RSA || i == 1)
         n += 2;
       n += mlen[i];
