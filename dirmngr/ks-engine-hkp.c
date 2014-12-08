@@ -1075,6 +1075,8 @@ handle_send_request_error (gpg_error_t err, const char *request,
     {
     case GPG_ERR_ECONNREFUSED:
     case GPG_ERR_ENETUNREACH:
+    case GPG_ERR_UNKNOWN_HOST:
+    case GPG_ERR_NETWORK:
       if (mark_host_dead (request) && *tries_left)
         retry = 1;
       break;
