@@ -1828,7 +1828,10 @@ keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
           release_kbnode (keyblock);
           xfree (data);
           if (err)
-            log_error (_("keyserver send failed: %s\n"), gpg_strerror (err));
+            {
+              write_status_error ("keyserver_send", err);
+              log_error (_("keyserver send failed: %s\n"), gpg_strerror (err));
+            }
         }
     }
 
