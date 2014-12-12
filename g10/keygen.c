@@ -3447,6 +3447,7 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
 
     rc = do_create (algo, nbits, pub_keyblock, sec_keyblock,
 		    dek, s2k, &sub_sk, timestamp, expire, 1 );
+    xfree( dek );
     if (!rc)
 	rc = write_keybinding (pub_keyblock, pub_keyblock, pri_sk, sub_sk,
                                use, timestamp);
@@ -3463,7 +3464,6 @@ generate_subkeypair( KBNODE pub_keyblock, KBNODE sec_keyblock )
     if( rc )
 	log_error(_("Key generation failed: %s\n"), g10_errstr(rc) );
     xfree( passphrase );
-    xfree( dek );
     xfree( s2k );
     /* release the copy of the (now unprotected) secret keys */
     if( pri_sk )
