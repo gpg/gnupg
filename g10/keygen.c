@@ -4447,7 +4447,7 @@ gen_card_key (int algo, int keyno, int is_primary, kbnode_t pub_root,
   /* Send the learn command so that the agent creates a shadow key for
      card key.  We need to do that now so that we are able to create
      the self-signatures. */
-  err = agent_learn ();
+  err = agent_scd_learn (NULL);
   if (err)
     {
       /* Oops: Card removed during generation.  */

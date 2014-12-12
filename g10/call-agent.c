@@ -655,6 +655,7 @@ agent_scd_learn (struct agent_card_info_s *info)
 {
   int rc;
   struct default_inq_parm_s parm;
+  struct agent_card_info_s dummyinfo;
 
   memset (&parm, 0, sizeof parm);
 
@@ -674,39 +675,22 @@ agent_scd_learn (struct agent_card_info_s *info)
   if (rc)
     return rc;
 
+  if (!info)
+    info = &dummyinfo;
+
   parm.ctx = agent_ctx;
   memset (info, 0, sizeof *info);
-  rc = assuan_transact (agent_ctx, "SCD LEARN --force",
+  rc = assuan_transact (agent_ctx, "LEARN --sendinfo",
                         dummy_data_cb, NULL, default_inq_cb, &parm,
                         learn_status_cb, info);
   /* Also try to get the key attributes.  */
   if (!rc)
     agent_scd_getattr ("KEY-ATTR", info);
 
+  if (info == &dummyinfo)
+    agent_release_card_info (info);
+
   return rc;
-}
-
-
-/* Call the agent to learn about the current smartcard.  This is
-   currently only used to have the agent create the shadow key.  */
-gpg_error_t
-agent_learn (void)
-{
-  gpg_error_t err;
-  struct default_inq_parm_s parm;
-
-  memset (&parm, 0, sizeof parm);
-
-  err = start_agent (NULL, 1);
-  if (err)
-    return err;
-
-  parm.ctx = agent_ctx;
-  err = assuan_transact (agent_ctx, "LEARN",
-                         dummy_data_cb, NULL, default_inq_cb, &parm,
-                         NULL, NULL);
-
-  return err;
 }
 
 

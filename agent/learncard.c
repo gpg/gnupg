@@ -296,10 +296,10 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
   return 0;
 }
 
-/* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL all new
-   certificates are send back via Assuan.  */
+/* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL and
+   SEND is true all new certificates are send back via Assuan.  */
 int
-agent_handle_learn (ctrl_t ctrl, void *assuan_context)
+agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context)
 {
   int rc;
 
@@ -369,7 +369,7 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
             log_info ("          id: %s    (type=%d)\n",
                       citem->id, citem->type);
 
-          if (assuan_context)
+          if (assuan_context && send)
             {
               rc = send_cert_back (ctrl, citem->id, assuan_context);
               if (rc)
@@ -439,9 +439,9 @@ agent_handle_learn (ctrl_t ctrl, void *assuan_context)
         }
 
       if (opt.verbose)
-        log_info ("stored\n");
+        log_info ("          id: %s - shadow key created\n", item->id);
 
-      if (assuan_context)
+      if (assuan_context && send)
         {
           CERTINFO citem;
 

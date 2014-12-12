@@ -1619,21 +1619,26 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
 
 
 static const char hlp_learn[] =
-  "LEARN [--send]\n"
+  "LEARN [--send][--sendinfo]\n"
   "\n"
   "Learn something about the currently inserted smartcard.  With\n"
-  "--send the new certificates are send back.";
+  "--sendinfo information about the card is returned; with --send\n"
+  "the available certificates are returned as D lines.";
 static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
-  int rc;
+  gpg_error_t err;
+  int send, sendinfo;
+
+  send = has_option (line, "--send");
+  sendinfo = send? 1 : has_option (line, "--sendinfo");
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  rc = agent_handle_learn (ctrl, has_option (line, "--send")? ctx : NULL);
-  return leave_cmd (ctx, rc);
+  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL);
+  return leave_cmd (ctx, err);
 }
 
 
