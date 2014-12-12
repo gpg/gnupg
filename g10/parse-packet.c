@@ -1123,10 +1123,13 @@ can_handle_critical( const byte *buffer, size_t n, int type )
   switch( type )
     {
     case SIGSUBPKT_NOTATION:
-      if(n>=8)
-	return can_handle_critical_notation(buffer+8,(buffer[4]<<8)|buffer[5]);
-      else
-	return 0;
+      if (n >= 8)
+	{
+	  size_t notation_len = ((buffer[4] << 8) | buffer[5]);
+	  if (n - 8 >= notation_len)
+	    return can_handle_critical_notation (buffer + 8, notation_len);
+	}
+      return 0;
     case SIGSUBPKT_SIGNATURE:
     case SIGSUBPKT_SIG_CREATED:
     case SIGSUBPKT_SIG_EXPIRE:
