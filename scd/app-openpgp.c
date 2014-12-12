@@ -3711,7 +3711,7 @@ do_check_pin (app_t app, const char *keyidstr,
           log_info (_("card is permanently locked!\n"));
           return gpg_error (GPG_ERR_BAD_PIN);
         }
-      else if (value[6] < 3)
+      else if (count < 3)
         {
           log_info (_("verification of Admin PIN is currently prohibited "
                       "through this command\n"));
