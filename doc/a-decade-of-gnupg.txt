@@ -26,17 +26,17 @@ history: To help political activists Phil Zimmermann published a
 software called Pretty Good Privacy (PGP) in 1991.  PGP was designed
 as an easy to use encryption tool with no backdoors and disclosed
 source code.  PGP was indeed intended to be cryptographically strong
-and not just pretty good; however it had a couple of inital bugs, most
+and not just pretty good; however it had a couple of initial bugs, most
 of all a home designed cipher algorithm.  With the availability of the
 source code a community of hackers (Branko Lankester, Colin Plumb,
 Derek Atkins, Hal Finney, Peter Gutmann and others) helped him to fix
 these flaws and a get a solid version 2 out.
 
-Soon after that the trouble started.  As in many counties the use or
+Soon after that the trouble started.  As in many countries the use or
 export of cryptographic devices and software was also strongly
 restricted in the USA.  Only weak cryptography was generally allowed.
 PGP was much stronger and due to the Usenet and the availability of
-FTP servers and BBSs, PGP accidently leaked out of the country and
+FTP servers and BBSs, PGP accidentally leaked out of the country and
 soon Phil was sued for unlicensed munitions export.  Those export
 control laws were not quite up to the age of software with the funny
 effect that exporting the software in printed form seemed not to be
@@ -58,7 +58,7 @@ the PGP product was later continued by the new PGP Corporation).
 
 Also often claimed to be Free Software, PGP has never fulfilled the
 requirements for it: PGP-5 is straight proprietary software; the
-availability of the source code alonedoes not make it free.  PGP-2 has
+availability of the source code alone does not make it free.  PGP-2 has
 certain restrictions on commercial use [2] and thus puts restrictions
 on the software which makes it also non-free.  Another problem with
 PGP-2 is that it requires the use of the patented RSA and IDEA
@@ -80,8 +80,8 @@ such software in their country or even by US citizens working abroad.
 Thus he told the European hackers that they are in the unique position
 to help the GNU with crypto software.
 
-Being tired of writing SMGL conversion software and without a current
-fun project, I soon found my self hacking on PGP-2 parsing code based
+Being tired of writing SGML conversion software and without a current
+fun project, I soon found myself hacking on PGP-2 parsing code based
 on the description in RFC-1991 and the pgformat.txt file.  As this
 turned out to be easy I continued and finally came up with code to
 decrypt and create PGP-2 data.  After I told the GNU towers that I
@@ -101,7 +101,7 @@ and wrote an announcement [5].
 Right the next day Peter Gutmann offered to allow the use of his
 random number code for systems without a /dev/random.  This eventually
 helped a lot to make GnuPG portable to many platforms.  The next two
-months were filled with code updates and a lengthly discussion on the
+months were filled with code updates and a lengthily discussion on the
 name; we finally settled for Anand Kumria's suggestion of GnuPG and
 made the first release under this name (gnupg-0.2.8) on Feb 24 [6].
 Just a few days later an experimental version with support for Windows
@@ -117,7 +117,7 @@ copyright concerns with the reference code).  Michael Roth contributed
 a Triple-DES implementation later the year and thus completed the
 required set of OpenPGP algorithms.  Over the next year the usual
 problems were solved, features discussed, complaints noticed and
-support for gpg in various other software was introduced by their
+support for GPG in various other software was introduced by their
 respective authors.
 
 Finally, on September 7, 1999 the current code was released as version
@@ -206,7 +206,7 @@ In a reply to this mail Alan Olsen remarked on the ML:
   determined that the only difference was that RSAREF2 had fixed a
   number of buffer overflows and other security flaws.  There were no
   added features.)
-  
+
   If I remember correctly, 2.5 had RSAREF2 and 2.6 had RSAREF1.  One
   of the main reasons for the creation of the "International version"
   was the use of RSAREF.  (Besides the security issues, it was pretty
