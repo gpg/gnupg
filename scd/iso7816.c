@@ -64,7 +64,7 @@ map_sw (int sw)
   switch (sw)
     {
     case SW_EEPROM_FAILURE: ec = GPG_ERR_HARDWARE; break;
-    case SW_TERM_STATE:     ec = GPG_ERR_CARD; break;
+    case SW_TERM_STATE:     ec = GPG_ERR_OBJ_TERM_STATE; break;
     case SW_WRONG_LENGTH:   ec = GPG_ERR_INV_VALUE; break;
     case SW_SM_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;
     case SW_CC_NOT_SUP:     ec = GPG_ERR_NOT_SUPPORTED; break;

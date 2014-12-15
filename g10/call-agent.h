@@ -61,6 +61,7 @@ struct agent_card_info_s
     unsigned int ki:1;     /* Key import available.  */
     unsigned int aac:1;    /* Algorithm attributes are changeable.  */
   } extcap;
+  unsigned int status_indicator;
 };
 
 struct agent_card_genkey_s {
@@ -77,6 +78,9 @@ void agent_release_card_info (struct agent_card_info_s *info);
 
 /* Return card info. */
 int agent_scd_learn (struct agent_card_info_s *info);
+
+/* Send an APDU to the card.  */
+gpg_error_t agent_scd_apdu (const char *hexapdu, unsigned int *r_sw);
 
 /* Update INFO with the attribute NAME. */
 int agent_scd_getattr (const char *name, struct agent_card_info_s *info);

@@ -389,7 +389,7 @@ select_application (ctrl_t ctrl, int slot, const char *name, app_t *r_app)
     err = app_select_dinsig (app);
   if (err && is_app_allowed ("sc-hsm") && (!name || !strcmp (name, "sc-hsm")))
     err = app_select_sc_hsm (app);
-  if (err && name)
+  if (err && name && gpg_err_code (err) != GPG_ERR_OBJ_TERM_STATE)
     err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
  leave:

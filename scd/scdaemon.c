@@ -344,7 +344,7 @@ set_debug (const char *level)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s\n",
+    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s\n",
               (opt.debug & DBG_COMMAND_VALUE)? " command":"",
               (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
               (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
@@ -353,7 +353,8 @@ set_debug (const char *level)
               (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
               (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
               (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
-              (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"");
+              (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
+              (opt.debug & DBG_READER_VALUE )? " reader":"");
 }
 
 

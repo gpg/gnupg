@@ -1635,6 +1635,169 @@ card_store_subkey (KBNODE node, int use)
 }
 
 
+
+/* Direct sending of an hex encoded APDU with error printing.  */
+static gpg_error_t
+send_apdu (const char *hexapdu, const char *desc, unsigned int ignore)
+{
+  gpg_error_t err;
+  unsigned int sw;
+
+  err = agent_scd_apdu (hexapdu, &sw);
+  if (err)
+    tty_printf ("sending card command %s failed: %s\n", desc,
+                gpg_strerror (err));
+  else if (!hexapdu || !strcmp (hexapdu, "undefined"))
+    ;
+  else if (ignore == 0xffff)
+    ; /* Ignore all status words.  */
+  else if (sw != 0x9000)
+    {
+      switch (sw)
+        {
+        case 0x6285: err = gpg_error (GPG_ERR_OBJ_TERM_STATE); break;
+        case 0x6982: err = gpg_error (GPG_ERR_BAD_PIN); break;
+        case 0x6985: err = gpg_error (GPG_ERR_USE_CONDITIONS); break;
+        default: err = gpg_error (GPG_ERR_CARD);
+        }
+      if (!(ignore && ignore == sw))
+        tty_printf ("card command %s failed: %s (0x%04x)\n", desc,
+                    gpg_strerror (err),  sw);
+    }
+  return err;
+}
+
+
+/* Do a factory reset after confirmation.  */
+static void
+factory_reset (void)
+{
+  struct agent_card_info_s info;
+  gpg_error_t err;
+  char *answer = NULL;
+  int termstate = 0;
+  int i;
+
+  /*  The code below basically does the same what this
+      gpg-connect-agent script does:
+
+        scd reset
+        scd serialno undefined
+        scd apdu 00 A4 04 00 06 D2 76 00 01 24 01
+        scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+        scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40
+        scd apdu 00 e6 00 00
+        scd reset
+        scd serialno undefined
+        scd apdu 00 A4 04 00 06 D2 76 00 01 24 01
+        scd apdu 00 44 00 00
+        /echo Card has been reset to factory defaults
+
+      but tries to find out something about the card first.
+   */
+
+  err = agent_scd_learn (&info);
+  if (gpg_err_code (err) == GPG_ERR_OBJ_TERM_STATE
+      && gpg_err_source (err) == GPG_ERR_SOURCE_SCD)
+    termstate = 1;
+  else if (err)
+    {
+      log_error (_("OpenPGP card not available: %s\n"), gpg_strerror (err));
+      return;
+    }
+
+  if (!termstate)
+    {
+      log_info (_("OpenPGP card no. %s detected\n"),
+                info.serialno? info.serialno : "[none]");
+      if (!(info.status_indicator == 3 || info.status_indicator == 5))
+        {
+          /* Note: We won't see status-indicator 3 here because it is not
+             possible to select a card application in termination state.  */
+          log_error (_("This command is not supported by this card\n"));
+          goto leave;
+        }
+
+      tty_printf ("\n");
+      log_info (_("Note: This command destroys all keys stored on the card!\n"));
+      tty_printf ("\n");
+      if (!cpr_get_answer_is_yes ("cardedit.factory-reset.proceed",
+                                  _("Continue? (y/N) ")))
+        goto leave;
+
+
+      answer = cpr_get ("cardedit.factory-reset.really",
+                        _("Really do a factory reset? (enter \"yes\") "));
+      cpr_kill_prompt ();
+      trim_spaces (answer);
+      if (strcmp (answer, "yes"))
+        goto leave;
+
+      /* We need to select a card application before we can send APDUs
+         to the card without scdaemon doing anything on its own.  */
+      err = send_apdu (NULL, "RESET", 0);
+      if (err)
+        goto leave;
+      err = send_apdu ("undefined", "dummy select ", 0);
+      if (err)
+        goto leave;
+
+      /* Select the OpenPGP application.  */
+      err = send_apdu ("00A4040006D27600012401", "SELECT AID", 0);
+      if (err)
+        goto leave;
+
+      /* Do some dummy verifies with wrong PINs to set the retry
+         counter to zero.  We can't easily use the card version 2.1
+         feature of presenting the admin PIN to allow the terminate
+         command because there is no machinery in scdaemon to catch
+         the verify command and ask for the PIN when the "APDU"
+         command is used. */
+      for (i=0; i < 4; i++)
+        send_apdu ("00200081084040404040404040", "VERIFY", 0xffff);
+      for (i=0; i < 4; i++)
+        send_apdu ("00200083084040404040404040", "VERIFY", 0xffff);
+
+      /* Send terminate datafile command.  */
+      err = send_apdu ("00e60000", "TERMINATE DF", 0x6985);
+      if (err)
+        goto leave;
+    }
+
+  /* The card is in termination state - reset and select again.  */
+  err = send_apdu (NULL, "RESET", 0);
+  if (err)
+    goto leave;
+  err = send_apdu ("undefined", "dummy select", 0);
+  if (err)
+    goto leave;
+
+  /* Select the OpenPGP application. (no error checking here). */
+  send_apdu ("00A4040006D27600012401", "SELECT AID", 0xffff);
+
+  /* Send activate datafile command.  This is used without
+     confirmation if the card is already in termination state.  */
+  err = send_apdu ("00440000", "ACTIVATE DF", 0);
+  if (err)
+    goto leave;
+
+  /* Finally we reset the card reader once more.  */
+  err = send_apdu (NULL, "RESET", 0);
+  if (err)
+    goto leave;
+
+ leave:
+  xfree (answer);
+  agent_release_card_info (&info);
+}
+
+
 
 /* Data used by the command parser.  This needs to be outside of the
    function scope to allow readline based command completion.  */
@@ -1644,7 +1807,7 @@ enum cmdids
     cmdQUIT, cmdADMIN, cmdHELP, cmdLIST, cmdDEBUG, cmdVERIFY,
     cmdNAME, cmdURL, cmdFETCH, cmdLOGIN, cmdLANG, cmdSEX, cmdCAFPR,
     cmdFORCESIG, cmdGENERATE, cmdPASSWD, cmdPRIVATEDO, cmdWRITECERT,
-    cmdREADCERT, cmdUNBLOCK,
+    cmdREADCERT, cmdUNBLOCK, cmdFACTORYRESET,
     cmdINVCMD
   };
 
@@ -1676,6 +1839,7 @@ static struct
     { "passwd"  , cmdPASSWD, 0, N_("menu to change or unblock the PIN")},
     { "verify"  , cmdVERIFY, 0, N_("verify the PIN and list all data")},
     { "unblock" , cmdUNBLOCK,0, N_("unblock the PIN using a Reset Code") },
+    { "factory-reset", cmdFACTORYRESET, 1, N_("destroy all keys and data")},
     /* Note, that we do not announce these command yet. */
     { "privatedo", cmdPRIVATEDO, 0, NULL },
     { "readcert", cmdREADCERT, 0, NULL },
@@ -1848,7 +2012,7 @@ card_edit (ctrl_t ctrl, strlist_t commands)
           for (i=0; cmds[i].name; i++ )
             if(cmds[i].desc
 	       && (!cmds[i].admin_only || (cmds[i].admin_only && allow_admin)))
-              tty_printf("%-10s %s\n", cmds[i].name, _(cmds[i].desc) );
+              tty_printf("%-14s %s\n", cmds[i].name, _(cmds[i].desc) );
           break;
 
 	case cmdADMIN:
@@ -1951,6 +2115,10 @@ card_edit (ctrl_t ctrl, strlist_t commands)
 
         case cmdUNBLOCK:
           change_pin (1, allow_admin);
+          break;
+
+        case cmdFACTORYRESET:
+          factory_reset ();
           break;
 
         case cmdQUIT:

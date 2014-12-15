@@ -765,6 +765,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
       - 4 :: No card available
       - 5 :: No card reader available
       - 6 :: No card support available
+      - 7 :: Card is in termination state
 
 *** SC_OP_FAILURE [<code>]
     An operation on a smartcard definitely failed.  Currently there is

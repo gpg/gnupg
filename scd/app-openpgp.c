@@ -1073,10 +1073,10 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
     }
   if (table[idx].special == -2)
     {
-      char tmp[100];
+      char tmp[110];
 
       snprintf (tmp, sizeof tmp,
-                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d sm=%d",
+                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d sm=%d si=%u",
                 app->app_local->extcap.get_challenge,
                 app->app_local->extcap.key_import,
                 app->app_local->extcap.change_force_chv,
@@ -1085,7 +1085,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                 app->app_local->extcap.algo_attr_change,
                 (app->app_local->extcap.sm_supported
                  ? (app->app_local->extcap.sm_aes128? 7 : 2)
-                 : 0));
+                 : 0),
+                app->app_local->status_indicator);
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }

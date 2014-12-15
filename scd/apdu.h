@@ -53,7 +53,7 @@ enum {
   SW_CLA_NOT_SUP    = 0x6e00,
   SW_SUCCESS        = 0x9000,
 
-  /* The follwoing statuswords are no real ones but used to map host
+  /* The following statuswords are no real ones but used to map host
      OS errors into status words.  A status word is 16 bit so that
      those values can't be issued by a card. */
   SW_HOST_OUT_OF_CORE = 0x10001,  /* No way yet to differentiate
