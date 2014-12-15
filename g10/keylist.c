@@ -393,7 +393,12 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
 	      print_utf8_buffer (fp, nd->name, strlen (nd->name));
 	      es_fprintf (fp, "=");
 	      print_utf8_buffer (fp, nd->value, strlen (nd->value));
-	      es_fprintf (fp, "\n");
+              /* (We need to use log_printf so that the next call to a
+                  log function does not insert an extra LF.)  */
+              if (mode)
+                log_printf ("\n");
+              else
+                es_putc ('\n', fp);
 	    }
 	}
 
