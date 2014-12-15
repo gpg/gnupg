@@ -867,23 +867,25 @@ pct_expando(const char *string,struct expando_args *args)
 		}
 	      break;
 
-	    case 'p': /* primary pk fingerprint of a sk */
-	    case 'f': /* pk fingerprint */
-	    case 'g': /* sk fingerprint */
+	    case 'f': /* Fingerprint of key being signed */
+	    case 'p': /* Fingerprint of the primary key making the signature. */
+	    case 'g': /* Fingerprint of thge key making the signature.  */
 	      {
 		byte array[MAX_FINGERPRINT_LEN];
 		size_t len;
 		int i;
 
-		if((*(ch+1))=='p' && args->pksk)
+		if ((*(ch+1))=='f' && args->pk)
+		  fingerprint_from_pk (args->pk, array, &len);
+		else if ((*(ch+1))=='p' && args->pksk)
 		  {
 		    if(args->pksk->flags.primary)
 		      fingerprint_from_pk (args->pksk, array, &len);
 		    else if (args->pksk->main_keyid[0]
                              || args->pksk->main_keyid[1])
 		      {
-                        /* FIXME: Document teh code and check whether
-                           it is still needed.  */
+                        /* Not the primary key: Find the fingerprint
+                           of the primary key.  */
 			PKT_public_key *pk=
 			  xmalloc_clear(sizeof(PKT_public_key));
 
@@ -893,11 +895,9 @@ pct_expando(const char *string,struct expando_args *args)
 			  memset (array, 0, (len=MAX_FINGERPRINT_LEN));
 			free_public_key (pk);
 		      }
-		    else
+		    else /* Oops: info about the primary key missing.  */
 		      memset(array,0,(len=MAX_FINGERPRINT_LEN));
 		  }
-		else if((*(ch+1))=='f' && args->pk)
-		  fingerprint_from_pk (args->pk, array, &len);
 		else if((*(ch+1))=='g' && args->pksk)
 		  fingerprint_from_pk (args->pksk, array, &len);
 		else

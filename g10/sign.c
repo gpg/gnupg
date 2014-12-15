@@ -700,8 +700,11 @@ write_signature_packets (SK_LIST sk_list, IOBUF out, gcry_md_hd_t hash,
       if (gcry_md_copy (&md, hash))
         BUG ();
 
-      build_sig_subpkt_from_sig (sig);
-      mk_notation_policy_etc (sig, pk, NULL);
+      if (sig->version >= 4)
+        {
+          build_sig_subpkt_from_sig (sig);
+          mk_notation_policy_etc (sig, NULL, pk);
+        }
 
       hash_sigversion_to_magic (md, sig);
       gcry_md_final (md);
