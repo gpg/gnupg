@@ -3,7 +3,7 @@
 #               2005 Free Software Foundation, Inc.
 # Magda Procházková <magda@math.muni.cz> 2001,
 # Roman Pavlik <rp@tns.cz> 2001, 2002, 2003, 2004, 2005.
-# Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011, 2013.
+# Petr Pisar <petr.pisar@atlas.cz>, 2009, 2010, 2011, 2013, 2014.
 #
 # A "%%0A" is used by Pinentry to insert a line break. The double percent
 # sign is actually needed because it is also a printf format string. If you
@@ -24,11 +24,18 @@
 # zákon o elektronickém podpisu, <http://portal.gov.cz/zakon/227/2000>:
 # kvalifikovaný certifikát/podpis
 #
+# cache → keš
+# distribution point → místo distribuce
+# DP (distribution point (of CRL)) → DP
+# load → zavést
+# OCSP request → OCSP dotaz
+# validate → ověřit (platnost)
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg2 2.0.21\n"
+"Project-Id-Version: gnupg2 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-09-01 11:14+0200\n"
+"PO-Revision-Date: 2014-11-16 16:22+0100\n"
 "Last-Translator: Petr Pisar <petr.pisar@atlas.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
 "Language: cs\n"
@@ -94,7 +101,7 @@ msgid "SETERROR %s (try %d of %d)"
 msgstr "SETERROR %s (pokus %d z %d)"
 
 msgid "Repeat:"
-msgstr ""
+msgstr "Znovu:"
 
 msgid "PIN too long"
 msgstr "PIN je příliš dlouhý"
@@ -121,15 +128,13 @@ msgstr "Heslo"
 msgid "ssh keys greater than %d bits are not supported\n"
 msgstr "SSH klíče delší než %d bitů nejsou podporovány\n"
 
-#, fuzzy, c-format
-#| msgid "can't create `%s': %s\n"
+#, c-format
 msgid "can't create '%s': %s\n"
-msgstr "nemohu vytvořit „%s“: %s\n"
+msgstr "nelze vytvořit „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't open `%s': %s\n"
+#, c-format
 msgid "can't open '%s': %s\n"
-msgstr "nemohu otevřít „%s“: %s\n"
+msgstr "nelze otevřít „%s“: %s\n"
 
 #, c-format
 msgid "error getting serial number of card: %s\n"
@@ -139,12 +144,9 @@ msgstr "chyba při získání sériového čísla karty: %s\n"
 msgid "detected card with S/N: %s\n"
 msgstr "nalezena karta se sériovým číslem: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error getting default authentication keyID of card: %s\n"
+#, c-format
 msgid "no authentication key for ssh on card: %s\n"
-msgstr ""
-"chyba při získání identifikátoru implicitního autentizačního klíče karty: "
-"%s\n"
+msgstr "na kartě není autentizační klíč pro SSH: %s\n"
 
 #, c-format
 msgid "no suitable card key found: %s\n"
@@ -232,7 +234,7 @@ msgstr "PIN nebyl zopakován správně; zkuste to znovu"
 
 #, c-format
 msgid "Please enter the PIN%s%s%s to unlock the card"
-msgstr "Prosím, vložte PIN%s%s%s, abyste odemkl(a) kartu"
+msgstr "Prosím, vložte PIN%s%s%s, abyste odemkli kartu"
 
 #, c-format
 msgid "error creating temporary file: %s\n"
@@ -264,54 +266,29 @@ msgstr ""
 msgid "Yes, protection is not needed"
 msgstr "Ano, ochrana není třeba"
 
-#, fuzzy, c-format
-#| msgid "Name must be at least 5 characters long\n"
+#, c-format
 msgid "A passphrase should be at least %u character long."
 msgid_plural "A passphrase should be at least %u characters long."
-msgstr[0] "Jméno musí být dlouhé alespoň 5 znaků\n"
-msgstr[1] "Jméno musí být dlouhé alespoň 5 znaků\n"
-msgstr[2] "Jméno musí být dlouhé alespoň 5 znaků\n"
+msgstr[0] "Heslo by mělo být dlouhé alespoň %u znak."
+msgstr[1] "Heslo by mělo být dlouhé alespoň %u znaky."
+msgstr[2] "Heslo by mělo být dlouhé alespoň %u znaků."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "contain at least %u digit or%%0Aspecial character."
-#| msgid_plural ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "contain at least %u digits or%%0Aspecial characters."
+#, c-format
 msgid "A passphrase should contain at least %u digit or%%0Aspecial character."
 msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
-msgstr[0] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
-"%u číslici nebo %%0Azvláštní znak."
-msgstr[1] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
-"%u číslice nebo %%0Azvláštní znaky."
+msgstr[0] "Heslo by mělo obsahovat alespoň %u číslici nebo %%0Azvláštní znak."
+msgstr[1] "Heslo by mělo obsahovat alespoň %u číslice nebo %%0Azvláštní znaky."
 msgstr[2] ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo obsahovat alespoň "
-"%u číslic nebo %%0Azvláštních znaků."
+"Heslo by mělo obsahovat alespoň %u číslic nebo %%0Azvláštních znaků."
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase may not "
-#| "be a known term or match%%0Acertain pattern."
+#, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by nemělo být známým slovem "
-"nebo se shodovat%%0As určitým vzorem."
+"Heslo by nemělo být známým slovem nebo se shodovat%%0As určitým vzorem."
 
-#, fuzzy
-#| msgid ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "be at least %u character long."
-#| msgid_plural ""
-#| "Warning: You have entered an insecure passphrase.%%0AA passphrase should "
-#| "be at least %u characters long."
 msgid "Warning: You have entered an insecure passphrase."
-msgstr ""
-"Varování: Zadali jste nebezpečné heslo.%%0AHeslo by mělo být alespoň %u znak "
-"dlouhé."
+msgstr "Varování: Zadali jste nebezpečné heslo."
 
 #, c-format
 msgid "Please enter the passphrase to%0Aprotect your new key"
@@ -328,13 +305,13 @@ msgstr ""
 " "
 
 msgid "run in daemon mode (background)"
-msgstr "běžet v režimu démona (na pozadí)"
+msgstr "poběží v režimu démona (na pozadí)"
 
 msgid "run in server mode (foreground)"
-msgstr "běžet v režimu serveru (na popředí)"
+msgstr "poběží v režimu serveru (na popředí)"
 
 msgid "verbose"
-msgstr "s dodatečnými informacemi"
+msgstr "upovídaný režim"
 
 msgid "be somewhat more quiet"
 msgstr "být o trochu víc tichý"
@@ -398,60 +375,49 @@ msgstr ""
 "Chyby v programu, prosím, oznamujte (anglicky) na <@EMAIL@>,\n"
 "připomínky k překladu hlaste (česky) na <translations.cs@gnupg.cz>.\n"
 
-#, fuzzy
-#| msgid "Usage: gpgconf [options] (-h for help)"
 msgid "Usage: @GPG_AGENT@ [options] (-h for help)"
-msgstr "Použití: gpgconf [VOLBY] (-h pro nápovědu)"
+msgstr "Použití: @GPG_AGENT@ [volby] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg-agent [options] [command [args]]\n"
-#| "Secret key management for GnuPG\n"
 msgid ""
 "Syntax: @GPG_AGENT@ [options] [command [args]]\n"
 "Secret key management for @GNUPG@\n"
 msgstr ""
-"Syntaxe: gpg-agent [VOLBY] [PŘÍKAZ [ARGUMENTY]]\n"
-"Správa tajných klíčů pro GnuPG\n"
+"Syntaxe: @GPG_AGENT@ [volby] [příkaz [argumenty]]\n"
+"Správa tajných klíčů pro @GNUPG@\n"
 
-#, fuzzy, c-format
-#| msgid "invalid debug-level `%s' given\n"
+#, c-format
 msgid "invalid debug-level '%s' given\n"
 msgstr "zadána neplatná úroveň ladění „%s“\n"
 
+# První argument je název knihovny
 #, c-format
 msgid "%s is too old (need %s, have %s)\n"
-msgstr "%s je příliš stará (potřebuji %s, mám %s)\n"
+msgstr "%s je příliš stará (potřeba %s, přítomna %s)\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: no default option file `%s'\n"
+#, c-format
 msgid "Note: no default option file '%s'\n"
-msgstr "POZNÁMKA: neexistuje implicitní soubor s možnostmi „%s“\n"
+msgstr "Poznámka: neexistuje implicitní soubor s možnostmi „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "option file `%s': %s\n"
+#, c-format
 msgid "option file '%s': %s\n"
 msgstr "soubor s možnostmi „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "reading options from `%s'\n"
+#, c-format
 msgid "reading options from '%s'\n"
-msgstr "čtu možnosti z „%s“\n"
+msgstr "čtou se možnosti z „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is a deprecated option\n"
+#, c-format
 msgid "Note: '%s' is not considered an option\n"
-msgstr "VAROVÁNÍ: používání parametru „%s“ se nedoporučuje\n"
+msgstr "Poznámka: „%s“ není uvažovaná možnost\n"
 
 msgid "name of socket too long\n"
 msgstr "název socketu je příliš dlouhý\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
-msgstr "nemohu vytvořit socket: %s\n"
+msgstr "socket nelze vytvořit: %s\n"
 
-#, fuzzy, c-format
-#| msgid "socket name `%s' is too long\n"
+#, c-format
 msgid "socket name '%s' is too long\n"
 msgstr "název socketu „%s“ je příliš dlouhý\n"
 
@@ -459,45 +425,39 @@ msgid "a gpg-agent is already running - not starting a new one\n"
 msgstr "gpg-agent již běží – nový nebude spuštěn\n"
 
 msgid "error getting nonce for the socket\n"
-msgstr "chyba při získání náhodného řetězce pro socket\n"
+msgstr "chyba při získávání soli pro socket\n"
 
-#, fuzzy, c-format
-#| msgid "error binding socket to `%s': %s\n"
+#, c-format
 msgid "error binding socket to '%s': %s\n"
 msgstr "chyba při přilepování socketu na „%s“: %s\n"
 
 #, c-format
 msgid "listen() failed: %s\n"
-msgstr "služba listen() selhala: %s\n"
+msgstr "volání listen() selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "listening on socket `%s'\n"
+#, c-format
 msgid "listening on socket '%s'\n"
-msgstr "naslouchám na socketu „%s“\n"
+msgstr "naslouchá se na socketu „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "can't create directory `%s': %s\n"
+#, c-format
 msgid "can't create directory '%s': %s\n"
-msgstr "nemohu vytvořit adresář „%s“: %s\n"
+msgstr "nelze vytvořit adresář „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "directory `%s' created\n"
+#, c-format
 msgid "directory '%s' created\n"
 msgstr "adresář „%s“ vytvořen\n"
 
-#, fuzzy, c-format
-#| msgid "stat() failed for `%s': %s\n"
+#, c-format
 msgid "stat() failed for '%s': %s\n"
-msgstr "stat() na „%s“ selhal: %s\n"
+msgstr "volání stat() na „%s“ selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't use `%s' as home directory\n"
+#, c-format
 msgid "can't use '%s' as home directory\n"
 msgstr "„%s“ nelze použít jako domovský adresář\n"
 
 #, c-format
 msgid "error reading nonce on fd %d: %s\n"
-msgstr "chyba při čtení náhodného řetězce z fd %d: %s\n"
+msgstr "chyba při čtení soli z deskriptoru %d: %s\n"
 
 #, c-format
 msgid "handler 0x%lx for fd %d started\n"
@@ -515,10 +475,9 @@ msgstr "SSH obsluha 0x%lx pro fd %d spuštěna\n"
 msgid "ssh handler 0x%lx for fd %d terminated\n"
 msgstr "SSH obsluha 0x%lx pro fd %d ukončena\n"
 
-#, fuzzy, c-format
-#| msgid "pth_select failed: %s - waiting 1s\n"
+#, c-format
 msgid "npth_pselect failed: %s - waiting 1s\n"
-msgstr "pth_select selhala: %s – čekám 1 s\n"
+msgstr "npth_pselect selhala: %s – čeká se 1 s\n"
 
 #, c-format
 msgid "%s %s stopped\n"
@@ -528,13 +487,13 @@ msgid "no gpg-agent running in this session\n"
 msgstr "v této relaci neběží žádný gpg-agent\n"
 
 msgid "Usage: gpg-preset-passphrase [options] KEYGRIP (-h for help)\n"
-msgstr "Použití: gpg-preset-passphrase [VOLBY] KEYGRIP (-h pro nápovědu)\n"
+msgstr "Použití: gpg-preset-passphrase [volby] KEYGRIP (-h pro nápovědu)\n"
 
 msgid ""
 "Syntax: gpg-preset-passphrase [options] KEYGRIP\n"
 "Password cache maintenance\n"
 msgstr ""
-"Syntaxe: gpg-preset-passphrase [VOLBY] KEYGRIP\n"
+"Syntaxe: gpg-preset-passphrase [volby] KEYGRIP\n"
 "Správa dočasné paměti pro hesla\n"
 
 msgid ""
@@ -560,8 +519,8 @@ msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
-"Syntaxe: gpg-protect-tool [VOLBY] [ARGUMENTY]nNástroj na správu tajných "
-"klíčů\n"
+"Syntaxe: gpg-protect-tool [volby] [argumenty]\n"
+"Nástroj na správu tajných klíčů\n"
 
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
 msgstr "Prosím, vložte heslo, abyste zpřístupnili objekt PKCS#12."
@@ -593,38 +552,31 @@ msgstr "zrušeno\n"
 msgid "error while asking for the passphrase: %s\n"
 msgstr "chyba při ptaní se na heslo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error opening `%s': %s\n"
+#, c-format
 msgid "error opening '%s': %s\n"
 msgstr "chyba při otevírání „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "file `%s', line %d: %s\n"
+#, c-format
 msgid "file '%s', line %d: %s\n"
 msgstr "soubor „%s“, řádek %d: %s\n"
 
-#, fuzzy, c-format
-#| msgid "statement \"%s\" ignored in `%s', line %d\n"
+#, c-format
 msgid "statement \"%s\" ignored in '%s', line %d\n"
 msgstr "ignorováno sdělení „%s“ z „%s“, řádku %d\n"
 
-#, fuzzy, c-format
-#| msgid "system trustlist `%s' not available\n"
+#, c-format
 msgid "system trustlist '%s' not available\n"
 msgstr "systémový důvěryhodný seznam „%s“ není dostupný\n"
 
-#, fuzzy, c-format
-#| msgid "bad fingerprint in `%s', line %d\n"
+#, c-format
 msgid "bad fingerprint in '%s', line %d\n"
 msgstr "chybný otisk v „%s“, řádek %d\n"
 
-#, fuzzy, c-format
-#| msgid "invalid keyflag in `%s', line %d\n"
+#, c-format
 msgid "invalid keyflag in '%s', line %d\n"
 msgstr "neplatný příznak klíče v „%s“, řádek %d\n"
 
-#, fuzzy, c-format
-#| msgid "error reading `%s', line %d: %s\n"
+#, c-format
 msgid "error reading '%s', line %d: %s\n"
 msgstr "chyba při čtení „%s“, řádek %d: %s\n"
 
@@ -693,15 +645,15 @@ msgstr "Změnit heslo"
 msgid "I'll change it later"
 msgstr "Změním jej později"
 
-#, fuzzy
-#| msgid "enable key"
 msgid "Delete key"
-msgstr "nastavit klíč jako platný (enable)"
+msgstr "Smazat klíč"
 
 msgid ""
 "Warning: This key is also listed for use with SSH!\n"
 "Deleting the key might remove your ability to access remote machines."
 msgstr ""
+"Pozor: Tento klíč je též veden jako klíč pro SSH!\n"
+"Smazání tohoto klíče může odebrat schopnost přistupovat ke vzdáleným strojům."
 
 msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgstr "DSA vyžaduje, aby délka hashe byla násobkem 8 bitů\n"
@@ -721,10 +673,9 @@ msgstr "tajné části klíče nejsou dostupné\n"
 msgid "public key algorithm %d (%s) is not supported\n"
 msgstr "algoritmus %d (%s) veřejného klíče není podporován\n"
 
-#, fuzzy, c-format
-#| msgid "protection algorithm %d%s is not supported\n"
+#, c-format
 msgid "protection algorithm %d (%s) is not supported\n"
-msgstr "ochranný algoritmus %d%s není podporován\n"
+msgstr "ochranný algoritmus %d (%s) není podporován\n"
 
 #, c-format
 msgid "protection hash algorithm %d (%s) is not supported\n"
@@ -746,18 +697,15 @@ msgstr "chyba při rozdvojování procesu: %s\n"
 msgid "waiting for process %d to terminate failed: %s\n"
 msgstr "čekání na konec procesu %d se nezdařilo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error running `%s': probably not installed\n"
+#, c-format
 msgid "error running '%s': probably not installed\n"
 msgstr "chyba při spouštění „%s“: pravděpodobně není nainstalován\n"
 
-#, fuzzy, c-format
-#| msgid "error running `%s': exit status %d\n"
+#, c-format
 msgid "error running '%s': exit status %d\n"
 msgstr "chyba v běhu „%s“: návratový kód %d\n"
 
-#, fuzzy, c-format
-#| msgid "error running `%s': terminated\n"
+#, c-format
 msgid "error running '%s': terminated\n"
 msgstr "chyba v běhu „%s“: násilně ukončeno\n"
 
@@ -768,10 +716,9 @@ msgstr "chyba při získání návratového kódu procesu %d: %s\n"
 msgid "gpg-agent is not available in this session\n"
 msgstr "gpg-agent není v tomto sezení dostupný\n"
 
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
+#, c-format
 msgid "can't connect to '%s': %s\n"
-msgstr "nemohu se připojit k „%s“: %s\n"
+msgstr "nelze se připojit k „%s“: %s\n"
 
 msgid "communication problem with gpg-agent\n"
 msgstr "problémy v komunikaci s gpg-agentem\n"
@@ -842,21 +789,18 @@ msgstr "při pokusu alokovat %lu bajtů došla bezpečná paměť"
 msgid "out of core while allocating %lu bytes"
 msgstr "při pokusu alokovat %lu bajtů došla paměť"
 
-#, fuzzy, c-format
-#| msgid "no running gpg-agent - starting one\n"
+#, c-format
 msgid "no running gpg-agent - starting '%s'\n"
-msgstr "gpg-agent neběží – spouští se\n"
+msgstr "gpg-agent neběží – spouští se „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "waiting for the dirmngr to come up ... (%ds)\n"
+#, c-format
 msgid "waiting for the agent to come up ... (%ds)\n"
-msgstr "čeká se na dirmngr… (%d s)\n"
+msgstr "čeká se na agenta… (%d s)\n"
 
 msgid "connection to agent established\n"
 msgstr "spojení na agenta ustanoveno\n"
 
-#, fuzzy, c-format
-#| msgid "no running dirmngr - starting `%s'\n"
+#, c-format
 msgid "no running Dirmngr - starting '%s'\n"
 msgstr "žádný dirmngr neběží – spouští se „%s“\n"
 
@@ -1000,8 +944,7 @@ msgstr "Gpg-Agent je použitelný"
 msgid "Dirmngr usable"
 msgstr "Dirmngr je použitelný"
 
-#, fuzzy, c-format
-#| msgid "No help available for `%s'."
+#, c-format
 msgid "No help available for '%s'."
 msgstr "Nápověda pro „%s“ není dostupná.'"
 
@@ -1009,7 +952,7 @@ msgid "ignoring garbage line"
 msgstr "ignoruji řádek s nepořádkem"
 
 msgid "[none]"
-msgstr "[není nastaveno]"
+msgstr "[neuvedeno]"
 
 msgid "argument not expected"
 msgstr "argument nebyl očekáván"
@@ -1023,10 +966,8 @@ msgstr "klíčové slovo je příliš dlouhé"
 msgid "missing argument"
 msgstr "postrádám argument"
 
-#, fuzzy
-#| msgid "invalid armor"
 msgid "invalid argument"
-msgstr "neplatný způsob reprezentace v ASCII"
+msgstr "neplatný argument"
 
 msgid "invalid command"
 msgstr "neplatný příkaz"
@@ -1044,10 +985,9 @@ msgstr "neplatný parametr"
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "postrádám argument u volby „%.50s“\n"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
+#, c-format
 msgid "invalid argument for option \"%.50s\"\n"
-msgstr "postrádám argument u volby „%.50s“\n"
+msgstr "neplatný argument u volby „%.50s“\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -1065,6 +1005,7 @@ msgstr "volba „%.50s“ není jednoznačná\n"
 msgid "command \"%.50s\" is ambiguous\n"
 msgstr "příkaz „%.50s“ není jednoznačný\n"
 
+# Yet another expression for `not enough memory' :)
 msgid "out of core\n"
 msgstr "nedostatek paměti\n"
 
@@ -1074,10 +1015,9 @@ msgstr "neplatný parametr „%.50s“\n"
 
 #, c-format
 msgid "you found a bug ... (%s:%d)\n"
-msgstr "nalezena chyba v programu… (%s:%d)\n"
+msgstr "našli jste chybu… (%s:%d)\n"
 
-#, fuzzy, c-format
-#| msgid "conversion from `%s' to `%s' not available\n"
+#, c-format
 msgid "conversion from '%s' to '%s' not available\n"
 msgstr "převod z „%s“ na „%s“ není k dispozici\n"
 
@@ -1085,18 +1025,15 @@ msgstr "převod z „%s“ na „%s“ není k dispozici\n"
 msgid "iconv_open failed: %s\n"
 msgstr "iconv_open selhala: %s\n"
 
-#, fuzzy, c-format
-#| msgid "conversion from `%s' to `%s' failed: %s\n"
+#, c-format
 msgid "conversion from '%s' to '%s' failed: %s\n"
 msgstr "převod z „%s“ na „%s“ se nezdařil: %s\n"
 
-#, fuzzy, c-format
-#| msgid "failed to create temporary file `%s': %s\n"
+#, c-format
 msgid "failed to create temporary file '%s': %s\n"
-msgstr "nemohu vytvořit dočasný soubor „%s“: %s\n"
+msgstr "nebylo možné vytvořit dočasný soubor „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error writing to `%s': %s\n"
+#, c-format
 msgid "error writing to '%s': %s\n"
 msgstr "chyba při zápisu do „%s“: %s\n"
 
@@ -1111,8 +1048,7 @@ msgstr "čekám na zámek (drží ho %d%s) %s…\n"
 msgid "(deadlock?) "
 msgstr "(uváznutí?) "
 
-#, fuzzy, c-format
-#| msgid "lock `%s' not made: %s\n"
+#, c-format
 msgid "lock '%s' not made: %s\n"
 msgstr "zámek „%s“ nebyl vytvořen: %s\n"
 
@@ -1276,15 +1212,13 @@ msgstr "Chyba: URL je příliš dlouhé (limit je %d znaků).\n"
 
 #, c-format
 msgid "error allocating enough memory: %s\n"
-msgstr "chyba při alokování paměti: %s\n"
+msgstr "chyba při alokování dostatečného množství paměti: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error reading `%s': %s\n"
+#, c-format
 msgid "error reading '%s': %s\n"
 msgstr "chyba při čtení „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error writing `%s': %s\n"
+#, c-format
 msgid "error writing '%s': %s\n"
 msgstr "chyba při zápisu do „%s“: %s\n"
 
@@ -1337,19 +1271,13 @@ msgstr "chyba při získání informací o aktuálním klíči: %s\n"
 msgid "Replace existing key? (y/N) "
 msgstr "Přepsat existující klíč? (a/N) "
 
-#, fuzzy
-#| msgid ""
-#| "NOTE: There is no guarantee that the card supports the requested size.\n"
-#| "      If the key generation does not succeed, please check the\n"
-#| "      documentation of your card to see what sizes are allowed.\n"
 msgid ""
 "Note: There is no guarantee that the card supports the requested size.\n"
 "      If the key generation does not succeed, please check the\n"
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
-"POZNÁMKA: Nelze zaručit, že karta podporuje požadovanou velikost.\n"
-"          Pokud generování klíče neuspěje, prosím, nahlédněte do "
-"dokumentace\n"
+"Poznámka: Nelze zaručit, že karta podporuje požadovanou velikost.\n"
+"          Pokud generování klíče neuspěje, prosím, nahlédněte do dokumentace\n"
 "          své karty, kde se dozvíte, jaké velikosti jsou dovoleny.\n"
 
 #, c-format
@@ -1383,27 +1311,21 @@ msgstr "chyba při změně velikosti klíče %d na %u bitů: %s\n"
 msgid "Make off-card backup of encryption key? (Y/n) "
 msgstr "Vytvořit zálohu šifrovacího klíče mimo kartu? (A/n) "
 
-#, fuzzy
-#| msgid "NOTE: keys are already stored on the card!\n"
 msgid "Note: keys are already stored on the card!\n"
-msgstr "POZNÁMKA: na kartě jsou již klíče uloženy!\n"
+msgstr "Poznámka: na kartě jsou již klíče uloženy!\n"
 
 msgid "Replace existing keys? (y/N) "
 msgstr "Přepsat existující klíče? (a/N) "
 
-#, fuzzy, c-format
-#| msgid ""
-#| "Please note that the factory settings of the PINs are\n"
-#| "   PIN = `%s'     Admin PIN = `%s'\n"
-#| "You should change them using the command --change-pin\n"
+#, c-format
 msgid ""
 "Please note that the factory settings of the PINs are\n"
 "   PIN = '%s'     Admin PIN = '%s'\n"
 "You should change them using the command --change-pin\n"
 msgstr ""
-"Prosím nezapomeňte, že tovární nastavení PINu je\n"
+"Prosím nezapomeňte, že tovární nastavení PINů je\n"
 "   PIN = „%s“     PIN administrátora = „%s“\n"
-"Toto nastavení můžete změnit příkazem --change-pin\n"
+"Měli byste je změnit příkazem --change-pin\n"
 
 msgid "Please select the type of key to generate:\n"
 msgstr "Prosím, vyberte druh klíče, který chcete generovat:\n"
@@ -1423,10 +1345,9 @@ msgstr "Neplatný výběr.\n"
 msgid "Please select where to store the key:\n"
 msgstr "Prosím vyberte místo pro uchování klíče:\n"
 
-#, fuzzy, c-format
-#| msgid "read failed: %s\n"
+#, c-format
 msgid "KEYTOCARD failed: %s\n"
-msgstr "čtení selhalo: %s\n"
+msgstr "Volání KEYTOCARD selhalo: %s\n"
 
 msgid "quit this menu"
 msgstr "ukončit toto menu"
@@ -1494,10 +1415,9 @@ msgstr "Neplatný příkaz (zkuste „help“)\n"
 msgid "--output doesn't work for this command\n"
 msgstr "--output pro tento příkaz není platný\n"
 
-#, fuzzy, c-format
-#| msgid "can't open `%s'\n"
+#, c-format
 msgid "can't open '%s'\n"
-msgstr "nelze otevřít „%s“\n"
+msgstr "„%s“ nelze otevřít\n"
 
 #, c-format
 msgid "key \"%s\" not found: %s\n"
@@ -1519,20 +1439,18 @@ msgstr "Smazat tento klíč ze souboru klíčů? (a/N) "
 msgid "This is a secret key! - really delete? (y/N) "
 msgstr "Toto je tajný klíč! - opravdu smazat? (a/N) "
 
-#, fuzzy, c-format
-#| msgid "deleting certificate \"%s\" failed: %s\n"
+# The first argument is a "key" or "subkey"
+#, c-format
 msgid "deleting secret %s failed: %s\n"
-msgstr "smazání certifikátu „%s“ se nezdařilo: %s\n"
+msgstr "smazání tajného %s se nezdařilo: %s\n"
 
-#, fuzzy
-#| msgid "bad key"
+# deleting secret %s failed
 msgid "key"
-msgstr "špatný klíč"
+msgstr "klíče"
 
-#, fuzzy
-#| msgid "Pubkey: "
+# deleting secret %s failed
 msgid "subkey"
-msgstr "Veřejný klíč: "
+msgstr "podklíče"
 
 #, c-format
 msgid "deleting keyblock failed: %s\n"
@@ -1560,20 +1478,17 @@ msgstr "v módu S2K nelze použít symetrický ESK paket\n"
 msgid "using cipher %s\n"
 msgstr "použití šifry: %s\n"
 
-#, fuzzy, c-format
-#| msgid "`%s' already compressed\n"
+#, c-format
 msgid "'%s' already compressed\n"
 msgstr "„%s“ je již zkomprimován\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: `%s' is an empty file\n"
+#, c-format
 msgid "WARNING: '%s' is an empty file\n"
 msgstr "VAROVÁNÍ: soubor „%s“ je prázdný\n"
 
-#, fuzzy, c-format
-#| msgid "reading from `%s'\n"
+#, c-format
 msgid "reading from '%s'\n"
-msgstr "čtu z „%s“\n"
+msgstr "čte se z „%s“\n"
 
 #, c-format
 msgid ""
@@ -1630,13 +1545,11 @@ msgstr ""
 "na této platformě jsou při volání externích programů vyžadovány\n"
 "dočasné soubory (temp files)\n"
 
-#, fuzzy, c-format
-#| msgid "unable to execute program `%s': %s\n"
+#, c-format
 msgid "unable to execute program '%s': %s\n"
 msgstr "nelze spustit program „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "unable to execute shell `%s': %s\n"
+#, c-format
 msgid "unable to execute shell '%s': %s\n"
 msgstr "nelze spustit shell „%s“: %s\n"
 
@@ -1654,13 +1567,11 @@ msgstr "nelze spustit externí program\n"
 msgid "unable to read external program response: %s\n"
 msgstr "nelze přečíst odpověď externího programu: %s\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unable to remove tempfile (%s) `%s': %s\n"
+#, c-format
 msgid "WARNING: unable to remove tempfile (%s) '%s': %s\n"
 msgstr "VAROVÁNÍ: nelze smazat dočasný soubor (%s) „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unable to remove temp directory `%s': %s\n"
+#, c-format
 msgid "WARNING: unable to remove temp directory '%s': %s\n"
 msgstr "VAROVÁNÍ: nelze smazat dočasný adresář „%s“: %s\n"
 
@@ -1702,13 +1613,11 @@ msgstr "VAROVÁNÍ: nebylo nic vyexportováno\n"
 msgid "[User ID not found]"
 msgstr "[ID uživatele nenalezeno]"
 
-#, fuzzy, c-format
-#| msgid "automatically retrieved `%s' via %s\n"
+#, c-format
 msgid "automatically retrieved '%s' via %s\n"
 msgstr "„%s“ automaticky získáno přes %s\n"
 
-#, fuzzy, c-format
-#| msgid "error retrieving `%s' via %s: %s\n"
+#, c-format
 msgid "error retrieving '%s' via %s: %s\n"
 msgstr "chyba při získávání „%s“ přes %s: %s\n"
 
@@ -1763,13 +1672,11 @@ msgstr "vypsat seznam tajných klíčů"
 msgid "generate a new key pair"
 msgstr "vytvořit nový pár klíčů"
 
-#, fuzzy
-#| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
-msgstr "vytvořit nový pár klíčů"
+msgstr "rychle vytvořit nový pár klíčů"
 
 msgid "full featured key pair generation"
-msgstr ""
+msgstr "komplexní vytvoření páru klíčů"
 
 msgid "generate a revocation certificate"
 msgstr "vytvořit revokační certifikát"
@@ -1780,15 +1687,11 @@ msgstr "odstranit klíč ze souboru veřejných klíčů"
 msgid "remove keys from the secret keyring"
 msgstr "odstranit klíč ze souboru tajných klíčů"
 
-#, fuzzy
-#| msgid "sign a key"
 msgid "quickly sign a key"
-msgstr "podepsat klíč"
+msgstr "rychle podepsat klíč"
 
-#, fuzzy
-#| msgid "sign a key locally"
 msgid "quickly sign a key locally"
-msgstr "podepsat klíč lokálně"
+msgstr "rychle lokálně podepsat klíč"
 
 msgid "sign a key"
 msgstr "podepsat klíč"
@@ -1889,22 +1792,15 @@ msgstr ""
 " --list-keys [jména]        vypsat klíče\n"
 " --fingerprint [jména]      vypsat otisky\n"
 
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
 msgid "Usage: @GPG@ [options] [files] (-h for help)"
-msgstr "Použití: gpg [možnosti] [soubory] (-h pro pomoc)"
+msgstr "Použití: @GPG@ [možnosti] [soubory] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "Sign, check, encrypt or decrypt\n"
-#| "Default operation depends on the input data\n"
 msgid ""
 "Syntax: @GPG@ [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"Syntaxe: gpg [možnosti] [soubory]\n"
+"Syntaxe: @GPG@ [možnosti] [soubory]\n"
 "Podepisuje, ověřuje, šifruje nebo dešifruje.\n"
 "Výchozí operace závisí na vstupních datech.\n"
 
@@ -1927,114 +1823,93 @@ msgstr "Hash: "
 msgid "Compression: "
 msgstr "Komprese: "
 
-#, fuzzy, c-format
-#| msgid "usage: gpgsm [options] "
+#, c-format
 msgid "usage: %s [options] %s\n"
-msgstr "užití: gpgsm [VOLBY] "
+msgstr "použití: %s [přepínače] %s\n"
 
 msgid "conflicting commands\n"
 msgstr "konfliktní příkazy\n"
 
-#, fuzzy, c-format
-#| msgid "no = sign found in group definition `%s'\n"
+#, c-format
 msgid "no = sign found in group definition '%s'\n"
 msgstr "no = podpis nalezen v definici skupiny „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe ownership on homedir `%s'\n"
+#, c-format
 msgid "WARNING: unsafe ownership on homedir '%s'\n"
 msgstr ""
-"VAROVÁNÍ: vlastnictví domovského adresáře není nastaveno bezpečně „%s“\n"
+"VAROVÁNÍ: vlastnictví domovského adresáře „%s“ není nastaveno bezpečně\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe ownership on configuration file `%s'\n"
+#, c-format
 msgid "WARNING: unsafe ownership on configuration file '%s'\n"
 msgstr ""
-"VAROVÁNÍ: vlastnictví konfiguračního souboru není nastaveno bezpečně „%s“\n"
+"VAROVÁNÍ: vlastnictví konfiguračního souboru „%s“ není nastaveno bezpečně\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe ownership on extension `%s'\n"
+#, c-format
 msgid "WARNING: unsafe ownership on extension '%s'\n"
 msgstr ""
-"VAROVÁNÍ: vlastnictví rozšiřujícího modulu není nastaveno bezpečně „%s“\n"
+"VAROVÁNÍ: vlastnictví rozšiřujícího modulu „%s“ není nastaveno bezpečně\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe permissions on homedir `%s'\n"
+#, c-format
 msgid "WARNING: unsafe permissions on homedir '%s'\n"
 msgstr ""
-"VAROVÁNÍ: přístupová práva pro domovský adresáře nejsou bezpečná „%s“\n"
+"VAROVÁNÍ: přístupová práva pro domovský adresář „%s“ nejsou bezpečná\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe permissions on configuration file `%s'\n"
+#, c-format
 msgid "WARNING: unsafe permissions on configuration file '%s'\n"
 msgstr ""
-"VAROVÁNÍ: přístupová práva pro konfigurační soubor nejsou bezpečná „%s“\n"
+"VAROVÁNÍ: přístupová práva pro konfigurační soubor „%s“ nejsou bezpečná\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe permissions on extension `%s'\n"
+#, c-format
 msgid "WARNING: unsafe permissions on extension '%s'\n"
-msgstr "VAROVÁNÍ: přístupová práva rozšiřujícímu modulu nejsou bezpečná „%s“\n"
+msgstr "VAROVÁNÍ: přístupová práva rozšiřujícímu modulu „%s“ nejsou bezpečná\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe enclosing directory ownership on homedir `%s'\n"
+#, c-format
 msgid "WARNING: unsafe enclosing directory ownership on homedir '%s'\n"
 msgstr ""
-"VAROVÁNÍ: vlastnictví adresáře s domovským adresářem není nastaveno "
-"nebezpečně „%s“\n"
+"VAROVÁNÍ: vlastnictví adresáře s domovským adresářem „%s“ není nastaveno "
+"nebezpečně\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "WARNING: unsafe enclosing directory ownership on configuration file `%s'\n"
+#, c-format
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr ""
-"VAROVÁNÍ: vlastnictví adresáře s konfiguračním souborem není nastaveno "
-"nebezpečně „%s“\n"
+"VAROVÁNÍ: vlastnictví adresáře „%s“ s konfiguračním souborem není nastaveno "
+"nebezpečně\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe enclosing directory ownership on extension `%s'\n"
+#, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
 msgstr ""
-"VAROVÁNÍ: vlastnictví adresáře s rozšiřujícím modulem není nastaveno "
-"nebezpečně „%s“\n"
+"VAROVÁNÍ: vlastnictví adresáře „%s“ s rozšiřujícím modulem není nastaveno "
+"nebezpečně\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe enclosing directory permissions on homedir `%s'\n"
+#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr ""
-"VAROVÁNÍ: přístupová práva k adresáři s domovským adresářem nejsou nastavena "
-"bezpečně „%s“\n"
+"VAROVÁNÍ: přístupová práva k adresáři „%s“ s domovským adresářem nejsou nastavena bezpečně\n"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "WARNING: unsafe enclosing directory permissions on configuration file `"
-#| "%s'\n"
+#, c-format
 msgid ""
 "WARNING: unsafe enclosing directory permissions on configuration file '%s'\n"
 msgstr ""
-"VAROVÁNÍ: přístupová práva k adresáři s konfiguračním souborem nejsou "
-"nastavena bezpečně „%s“\n"
+"VAROVÁNÍ: přístupová práva k adresáři „%s“ s konfiguračním souborem nejsou "
+"nastavena bezpečně\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: unsafe enclosing directory permissions on extension `%s'\n"
+#, c-format
 msgid "WARNING: unsafe enclosing directory permissions on extension '%s'\n"
 msgstr ""
-"VAROVÁNÍ: přístupová práva k adresáři s rozšiřujícím modulem nejsou "
-"nastavena bezpečně „%s“\n"
+"VAROVÁNÍ: přístupová práva k adresáři „%s“ s rozšiřujícím modulem nejsou "
+"nastavena bezpečně\n"
 
 # c-format
-#, fuzzy, c-format
-#| msgid "unknown configuration item `%s'\n"
+#, c-format
 msgid "unknown configuration item '%s'\n"
 msgstr "neznámá konfigurační položka „%s“\n"
 
 msgid "display photo IDs during key listings"
 msgstr "zobrazovat ID fotografií během výpisu klíčů"
 
-#, fuzzy
-#| msgid "show user ID validity during key listings"
 msgid "show key usage information during key listings"
-msgstr "ukazovat platnost ID uživatelů při výpisu klíčů"
+msgstr "ukazovat údaje o účelu klíče při výpisu klíčů"
 
 msgid "show policy URLs during signature listings"
 msgstr "ukazovat URL politik během výpisu podpisů"
@@ -2066,32 +1941,27 @@ msgstr "ukazovat název souboru s klíči při výpisu klíčů"
 msgid "show expiration dates during signature listings"
 msgstr "ukazovat data expirace během výpisu podpisů"
 
-#, fuzzy, c-format
-#| msgid "NOTE: old default options file `%s' ignored\n"
+#, c-format
 msgid "Note: old default options file '%s' ignored\n"
-msgstr "POZNÁMKA: starý implicitní soubor s možnostmi „%s“ ignorován\n"
+msgstr "Poznámka: starý implicitní soubor s možnostmi „%s“ ignorován\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
 msgstr "libgcrypt je příliš stará (potřebuji %s, mám %s)\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: %s is not for normal use!\n"
+#, c-format
 msgid "Note: %s is not for normal use!\n"
-msgstr "POZNÁMKA: %s není pro normální použití!\n"
+msgstr "Poznámka: %s není pro normální použití!\n"
 
-#, fuzzy, c-format
-#| msgid "`%s' is not a valid signature expiration\n"
+#, c-format
 msgid "'%s' is not a valid signature expiration\n"
 msgstr "„%s“ není platná doba expirace podpisu\n"
 
-#, fuzzy, c-format
-#| msgid "invalid country code in `%s', line %d\n"
+#, c-format
 msgid "invalid pinentry mode '%s'\n"
-msgstr "neplatný kód země v „%s“, řádek %d\n"
+msgstr "neplatný režim pinentry „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "`%s' is not a valid character set\n"
+#, c-format
 msgid "'%s' is not a valid character set\n"
 msgstr "„%s“ není platná znaková sada\n"
 
@@ -2230,10 +2100,8 @@ msgstr ""
 "neplatná minimální úroveň certifikace (min-cert-level); musí být 0, 1, 2 "
 "nebo 3\n"
 
-#, fuzzy
-#| msgid "NOTE: simple S2K mode (0) is strongly discouraged\n"
 msgid "Note: simple S2K mode (0) is strongly discouraged\n"
-msgstr "POZNÁMKA: jednoduchý mód S2K (0) je důrazně nedoporučován\n"
+msgstr "Poznámka: jednoduchý mód S2K (0) je důrazně nedoporučován\n"
 
 msgid "invalid S2K mode; must be 0, 1 or 3\n"
 msgstr "neplatný mód S2K; musí být 0, 1 nebo 3\n"
@@ -2254,20 +2122,17 @@ msgstr "neplatné uživatelské předvolby pro komprimaci\n"
 msgid "%s does not yet work with %s\n"
 msgstr "%s dosud není funkční s %s\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use cipher algorithm `%s' while in %s mode\n"
+#, c-format
 msgid "you may not use cipher algorithm '%s' while in %s mode\n"
-msgstr "použití šifrovacího algoritmu „%s“ v módu %s dovoleno\n"
+msgstr "použití šifrovacího algoritmu „%s“ v módu %s není dovoleno\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use digest algorithm `%s' while in %s mode\n"
+#, c-format
 msgid "you may not use digest algorithm '%s' while in %s mode\n"
-msgstr "použití hashovacího algoritmu „%s“ v módu %s dovoleno\n"
+msgstr "použití hashovacího algoritmu „%s“ v módu %s není dovoleno\n"
 
-#, fuzzy, c-format
-#| msgid "you may not use compression algorithm `%s' while in %s mode\n"
+#, c-format
 msgid "you may not use compression algorithm '%s' while in %s mode\n"
-msgstr "použití komprimačního algoritmu „%s“ v módu %s dovoleno\n"
+msgstr "použití kompresního algoritmu „%s“ v módu %s není dovoleno\n"
 
 #, c-format
 msgid "failed to initialize the TrustDB: %s\n"
@@ -2283,8 +2148,7 @@ msgstr "--store [jméno souboru]"
 msgid "--symmetric [filename]"
 msgstr "--symmetric [jméno souboru]"
 
-#, fuzzy, c-format
-#| msgid "symmetric encryption of `%s' failed: %s\n"
+#, c-format
 msgid "symmetric encryption of '%s' failed: %s\n"
 msgstr "symetrické šifrování „%s“ se nepovedlo: %s\n"
 
@@ -2366,8 +2230,7 @@ msgstr "dekódování z ASCII formátu selhalo: %s\n"
 msgid "enarmoring failed: %s\n"
 msgstr "kódování do ASCII formátu selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "invalid hash algorithm `%s'\n"
+#, c-format
 msgid "invalid hash algorithm '%s'\n"
 msgstr "neplatný hashovací algoritmus „%s“\n"
 
@@ -2408,8 +2271,7 @@ msgstr ""
 msgid "No help available"
 msgstr "Nápověda není k dispozici"
 
-#, fuzzy, c-format
-#| msgid "No help available for `%s'"
+#, c-format
 msgid "No help available for '%s'"
 msgstr "Pro „%s“ není dostupná žádná nápověda"
 
@@ -2418,11 +2280,6 @@ msgstr "importovat podpisy, které jsou označeny jen jako místní"
 
 msgid "repair damage from the pks keyserver during import"
 msgstr "opravit poškození vzniklá při importu z PKS serveru"
-
-#, fuzzy
-#| msgid "do not update the trustdb after import"
-msgid "do not clear the ownertrust values during import"
-msgstr "neaktualizovat databázi důvěry po importu"
 
 msgid "do not update the trustdb after import"
 msgstr "neaktualizovat databázi důvěry po importu"
@@ -2539,17 +2396,16 @@ msgstr "nelze aktualizovat předvolby s: gpg --edit-key %s updpref save\n"
 msgid "key %s: no user ID\n"
 msgstr "klíč %s: chybí identifikátor uživatele\n"
 
-#, fuzzy, c-format
-#| msgid "skipped \"%s\": %s\n"
+#, c-format
 msgid "key %s: %s\n"
-msgstr "přeskočen „%s“: %s\n"
+msgstr "klíč %s: %s\n"
 
 msgid "rejected by import screener"
-msgstr ""
+msgstr "zamítnut kontrolou při importu"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
-msgstr "klíč %s: PKS poškození podklíče opraveno\n"
+msgstr "klíč %s: poškození PKS podklíče opraveno\n"
 
 # c-format
 #, c-format
@@ -2576,13 +2432,11 @@ msgid "no writable keyring found: %s\n"
 msgstr "nenalezen zapisovatelný soubor klíčů (keyring): %s\n"
 
 # g10/import.c:766 g10/openfile.c:261#, c-format
-#, fuzzy, c-format
-#| msgid "writing to `%s'\n"
+#, c-format
 msgid "writing to '%s'\n"
-msgstr "zapisuji do „%s“\n"
+msgstr "zapisuje se do „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "error writing keyring `%s': %s\n"
+#, c-format
 msgid "error writing keyring '%s': %s\n"
 msgstr "chyba při zápisu souboru klíčů (keyring) „%s“: %s\n"
 
@@ -2658,10 +2512,9 @@ msgstr "klíč %s: tajný klíč již existuje\n"
 msgid "key %s: error sending to agent: %s\n"
 msgstr "klíč %s: chyba při odesílání dat agentovi: %s\n"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key %s: %s\n"
-msgstr "tajný klíč „%s“ nenalezen: %s\n"
+msgstr "tajný klíč %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "import tajných klíčů není povolen\n"
@@ -2776,28 +2629,23 @@ msgstr "klíč %s: „%s“ přidán revokační certifikát\n"
 msgid "key %s: direct key signature added\n"
 msgstr "klíč %s: podpis klíče jím samým (direct key signature) přidán\n"
 
-#, fuzzy, c-format
-#| msgid "error creating keybox `%s': %s\n"
+#, c-format
 msgid "error creating keybox '%s': %s\n"
 msgstr "chyba při vytváření schránky na klíče (keybox) „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error creating keyring `%s': %s\n"
+#, c-format
 msgid "error creating keyring '%s': %s\n"
 msgstr "chyba při vytváření souboru klíčů (keyring) „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "keybox `%s' created\n"
+#, c-format
 msgid "keybox '%s' created\n"
 msgstr "schránka na klíče (keybox) „%s“ vytvořena\n"
 
-#, fuzzy, c-format
-#| msgid "keyring `%s' created\n"
+#, c-format
 msgid "keyring '%s' created\n"
 msgstr "soubor klíčů (keyring) „%s“ vytvořen\n"
 
-#, fuzzy, c-format
-#| msgid "keyblock resource `%s': %s\n"
+#, c-format
 msgid "keyblock resource '%s': %s\n"
 msgstr "zdroj bloku klíče „%s“: %s\n"
 
@@ -2982,10 +2830,8 @@ msgstr "   (2) Částečně jsem to ověřil(a).%s\n"
 msgid "   (3) I have done very careful checking.%s\n"
 msgstr "   (3) Velmi pečlivě jsem to ověřil(a).%s\n"
 
-#, fuzzy
-#| msgid "Your selection? (enter `?' for more information): "
 msgid "Your selection? (enter '?' for more information): "
-msgstr "Váš výběr? (pro více informací vložte „?“): "
+msgstr "Váš výběr? (pro podrobnosti zadejte „?“): "
 
 #, c-format
 msgid ""
@@ -3162,21 +3008,14 @@ msgstr "Pro provedení této operace je potřeba tajný klíč.\n"
 msgid "Please use the command \"toggle\" first.\n"
 msgstr "Prosím, nejdříve použijte příkaz „toggle“ (přepnout).\n"
 
-#, fuzzy
-#| msgid ""
-#| "* The `sign' command may be prefixed with an `l' for local signatures "
-#| "(lsign),\n"
-#| "  a `t' for trust signatures (tsign), an `nr' for non-revocable "
-#| "signatures\n"
-#| "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
 "(lsign),\n"
 "  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
-"* Příkaz „sign“ může být použit s prefixem „l“ pro lokální podpis (lsign),\n"
-"  s prefixem „t“ pro důvěryhodný podpis (tsign) nebo „nr“ pro neodvolatelný\n"
+"* Příkaz „sign“ může být použit s předponou „l“ pro lokální podpis (lsign),\n"
+"  s „t“ pro důvěryhodný podpis (tsign) nebo „nr“ pro neodvolatelný\n"
 "  podpis (nrsign) nebo libovolnou jejich kombinací (ltsign, tnrsign, atd.).\n"
 
 msgid "Key is revoked."
@@ -3188,8 +3027,7 @@ msgstr "Opravdu podepsat všechny id uživatele? (a/N) "
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Nápověda: Vyberte id uživatele k podepsání\n"
 
-#, fuzzy, c-format
-#| msgid "Unknown signature type `%s'\n"
+#, c-format
 msgid "Unknown signature type '%s'\n"
 msgstr "Neznámý typ podpisu „%s“\n"
 
@@ -3220,13 +3058,11 @@ msgstr "Musíte vybrat právě jeden klíč.\n"
 msgid "Command expects a filename argument\n"
 msgstr "Příkaz očekává jméno souboru jako argument\n"
 
-#, fuzzy, c-format
-#| msgid "Can't open `%s': %s\n"
+#, c-format
 msgid "Can't open '%s': %s\n"
-msgstr "Nemohu otevřít „%s“: %s\n"
+msgstr "Nelze otevřít „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "Error reading backup key from `%s': %s\n"
+#, c-format
 msgid "Error reading backup key from '%s': %s\n"
 msgstr "Chyba při čtení záložního klíče z „%s“: %s\n"
 
@@ -3281,25 +3117,19 @@ msgstr "aktualizace selhala: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Klíč nebyl změněn, takže není potřeba jej aktualizovat.\n"
 
-#, fuzzy, c-format
-#| msgid "invalid fingerprint"
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
-msgstr "neplatný otisk"
+msgstr "„%s“ není otisk\n"
 
-#, fuzzy, c-format
-#| msgid "failed to get the fingerprint\n"
+#, c-format
 msgid "\"%s\" is not the primary fingerprint\n"
-msgstr "otisk se nepodařilo získat\n"
+msgstr "„%s“ není primární otisk\n"
 
-#, fuzzy
-#| msgid "No such user ID.\n"
 msgid "No matching user IDs."
-msgstr "Takový identifikátor uživatele neexistuje.\n"
+msgstr "Žádný identifikátor uživatele neodpovídá."
 
-#, fuzzy
-#| msgid "Nothing to sign with key %s\n"
 msgid "Nothing to sign.\n"
-msgstr "Nic k podepsání klíčem %s\n"
+msgstr "Nic na podepsání.\n"
 
 msgid "Digest: "
 msgstr "Hash: "
@@ -3371,8 +3201,9 @@ msgstr ""
 "Prosím nezapomeňte, že zobrazované údaje o platnosti klíčů nemusí\n"
 "být nutně správné, dokud znova nespustíte program.\n"
 
+# status
 msgid "revoked"
-msgstr "revokován"
+msgstr "odvolán"
 
 msgid "expired"
 msgstr "platnost skončila"
@@ -3385,12 +3216,10 @@ msgstr ""
 "              může způsobit, že za primární bude považováno jiné user ID.\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "POZOR: Vašemu šifrovacímu podklíči brzy vyprší platnost.\n"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "Nemůžete změnit dobu platnosti klíče verze 3\n"
+msgstr "Dobu platnosti také můžete změnit.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3601,8 +3430,7 @@ msgstr "Podklíč %s je již revokován.\n"
 msgid "Displaying %s photo ID of size %ld for key %s (uid %d)\n"
 msgstr "Zobrazuji %s fotografický ID o velikosti %ld pro klíč %s (uid %d)\n"
 
-#, fuzzy, c-format
-#| msgid "preference `%s' duplicated\n"
+#, c-format
 msgid "preference '%s' duplicated\n"
 msgstr "duplicita předvolby „%s“\n"
 
@@ -3615,8 +3443,7 @@ msgstr "příliš mnoho předvoleb pro vzorkování\n"
 msgid "too many compression preferences\n"
 msgstr "příliš mnoho předvoleb pro komprimaci\n"
 
-#, fuzzy, c-format
-#| msgid "invalid item `%s' in preference string\n"
+#, c-format
 msgid "invalid item '%s' in preference string\n"
 msgstr "neplatná položka „%s“ v řetězci s předvolbami\n"
 
@@ -3726,30 +3553,25 @@ msgstr "   (%d) DSA (nastavit si vlastní použití)\n"
 msgid "   (%d) RSA (set your own capabilities)\n"
 msgstr "   (%d) RSA (nastavit si vlastní použití)\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) ECDSA and ECDH\n"
+#, c-format
 msgid "   (%d) ECC and ECC\n"
-msgstr "   (%d) ECDSA a ECDH\n"
+msgstr "   (%d) ECC a ECC\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDSA (sign only)\n"
+#, c-format
 msgid "  (%d) ECC (sign only)\n"
-msgstr "  (%d) ECDSA (pouze pro podpis)\n"
+msgstr "  (%d) ECC (pouze pro podpis)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDSA (set your own capabilities)\n"
+#, c-format
 msgid "  (%d) ECC (set your own capabilities)\n"
-msgstr "  (%d) ECDSA (nastavit si vlastní použití)\n"
+msgstr "  (%d) ECC (nastavit si vlastní použití)\n"
 
-#, fuzzy, c-format
-#| msgid "  (%d) ECDH (encrypt only)\n"
+#, c-format
 msgid "  (%d) ECC (encrypt only)\n"
-msgstr "  (%d) ECDH (pouze pro šifrování)\n"
+msgstr "  (%d) ECC (pouze pro šifrování)\n"
 
-#, fuzzy, c-format
-#| msgid "   (%d) Existing key\n"
+#, c-format
 msgid "  (%d) Existing key\n"
-msgstr "   (%d) Existující klíč\n"
+msgstr "  (%d) Existující klíč\n"
 
 msgid "Enter the keygrip: "
 msgstr "Vložte keygrip: "
@@ -3780,10 +3602,8 @@ msgstr "Požadovaná délka klíče je %u bitů.\n"
 msgid "rounded to %u bits\n"
 msgstr "zaokrouhleno na %u bitů\n"
 
-#, fuzzy
-#| msgid "Please select what kind of key you want:\n"
 msgid "Please select which elliptic curve you want:\n"
-msgstr "Prosím, vyberte druh klíče, který chcete:\n"
+msgstr "Prosím, vyberte, kterou eliptickou křivku chcete:\n"
 
 msgid ""
 "Please specify how long the key should be valid.\n"
@@ -3902,8 +3722,7 @@ msgstr "Komentář: "
 msgid "Invalid character in comment\n"
 msgstr "Neplatný znak v komentáři\n"
 
-#, fuzzy, c-format
-#| msgid "You are using the `%s' character set.\n"
+#, c-format
 msgid "You are using the '%s' character set.\n"
 msgstr "Používáte znakovou sadu „%s“.\n"
 
@@ -3945,17 +3764,11 @@ msgstr ""
 "Změnit (J)méno, (K)omentář, (E)-mail, (P)okračovat dál nebo (U)končit "
 "program? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgid "Change (N)ame, (E)mail, or (Q)uit? "
-msgstr "Změnit (J)méno, (K)omentář, (E)-mail nebo (U)končit? "
+msgstr "Změnit (J)méno, (E)-mail nebo (U)končit? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
-msgstr ""
-"Změnit (J)méno, (K)omentář, (E)-mail, (P)okračovat dál nebo (U)končit "
-"program? "
+msgstr "Změnit (J)méno, (E)-mail, (P)okračovat dál nebo (U)končit? "
 
 msgid "Please correct the error first\n"
 msgstr "Nejdřív, prosím, opravte chybu\n"
@@ -4014,43 +3827,39 @@ msgid ""
 "    \"%s\"\n"
 "\n"
 msgstr ""
+"Bude se vytvářet klíč pro:\n"
+"    „%s“\n"
+"\n"
 
 msgid "Continue? (Y/n) "
-msgstr ""
+msgstr "Pokračovat (A/n) "
 
-#, fuzzy, c-format
-#| msgid "key already exists\n"
+#, c-format
 msgid "A key for \"%s\" already exists\n"
-msgstr "klíč již existuje\n"
+msgstr "Klíč pro „%s“ již existuje\n"
 
-#, fuzzy
-#| msgid "Use this key anyway? (y/N) "
 msgid "Create anyway? (y/N) "
-msgstr "Použít přesto tento klíč? (a/N) "
+msgstr "Přesto vytvořit? (a/N) "
 
-#, fuzzy
-#| msgid "generating new key\n"
 msgid "creating anyway\n"
-msgstr "generování nového klíče\n"
+msgstr "přesto se vytváří\n"
 
 #, c-format
 msgid "Note: Use \"%s %s\" for a full featured key generation dialog.\n"
-msgstr ""
+msgstr "Poznámka: Pro komplexní tvorbu klíče použijte „%s %s“.\n"
 
 msgid "Key generation canceled.\n"
 msgstr "Vytváření klíče bylo zrušeno.\n"
 
-#, fuzzy, c-format
-#| msgid "writing public key to `%s'\n"
+#, c-format
 msgid "writing public key to '%s'\n"
-msgstr "zapisuji veřejný klíč do „%s“\n"
+msgstr "veřejný klíč se zapisuje do „%s“\n"
 
 #, c-format
 msgid "no writable public keyring found: %s\n"
 msgstr "nenalezen zapisovatelný soubor veřejných klíčů (pubring): %s\n"
 
-#, fuzzy, c-format
-#| msgid "error writing public keyring `%s': %s\n"
+#, c-format
 msgid "error writing public keyring '%s': %s\n"
 msgstr "chyba při zápisu do souboru veřejných klíčů „%s“: %s\n"
 
@@ -4078,10 +3887,8 @@ msgstr ""
 "klíč byl vytvořen %lu sekund v budoucnosti (došlo ke změně času nebo\n"
 "je problém se systémovým časem)\n"
 
-#, fuzzy
-#| msgid "NOTE: creating subkeys for v3 keys is not OpenPGP compliant\n"
 msgid "Note: creating subkeys for v3 keys is not OpenPGP compliant\n"
-msgstr "POZNÁMKA: vytvoření podklíče pro klíče v3 není v souladu s OpenPGP\n"
+msgstr "Poznámka: vytvoření podklíčů pro klíče v3 není v souladu s OpenPGP\n"
 
 msgid "Secret parts of primary key are not available.\n"
 msgstr "Tajné části primárního klíče nejsou dostupné.\n"
@@ -4096,15 +3903,13 @@ msgstr "Opravdu vytvořit? (a/N) "
 msgid "storing key onto card failed: %s\n"
 msgstr "uložení klíče na kartu se nezdařilo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't create backup file `%s': %s\n"
+#, c-format
 msgid "can't create backup file '%s': %s\n"
-msgstr "nemohu vytvořit zálohu souboru „%s“: %s\n"
+msgstr "záložní soubor „%s“ nelze vytvořit: %s\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: backup of card key saved to `%s'\n"
+#, c-format
 msgid "Note: backup of card key saved to '%s'\n"
-msgstr "POZNÁMKA: záloha klíče z karty uložena do „%s“\n"
+msgstr "Poznámka: záloha klíče z karty uložena do „%s“\n"
 
 msgid "never     "
 msgstr "nikdy     "
@@ -4126,10 +3931,10 @@ msgstr "Podepisovací notace: "
 
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
-msgstr ""
+msgstr "Pozor: %lu klíč(ů) přeskočen(o) kvůli jejich přílišné velikosti\n"
 
 msgid "Keyring"
-msgstr "soubor klíčů (keyring)"
+msgstr "Soubor klíčů (keyring)"
 
 msgid "Primary key fingerprint:"
 msgstr "Otisk primárního klíče:"
@@ -4151,23 +3956,21 @@ msgstr "          Otisk klíče ="
 msgid "      Card serial no. ="
 msgstr "  Sériové číslo karty ="
 
-#, fuzzy, c-format
-#| msgid "renaming `%s' to `%s' failed: %s\n"
+#, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
 msgstr "přejmenování „%s“ na „%s“ se nezdařilo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "caching keyring `%s'\n"
+#, c-format
 msgid "caching keyring '%s'\n"
-msgstr "cache souboru klíčů „%s“\n"
+msgstr "zapamatovává se soubor klíčů „%s“\n"
 
 #, c-format
 msgid "%lu keys cached so far (%lu signatures)\n"
-msgstr "%lu klíčů již uloženo v cache (%lu podpisů)\n"
+msgstr "%lu klíčů již uloženo v keši (%lu podpisů)\n"
 
 #, c-format
 msgid "%lu keys cached (%lu signatures)\n"
-msgstr "%lu klíčů uloženo v cache (%lu podpisů)\n"
+msgstr "%lu klíčů uloženo v keši (%lu podpisů)\n"
 
 #, c-format
 msgid "%s: keyring created\n"
@@ -4194,8 +3997,7 @@ msgstr "respektovat URL upřednostňovaných serverů klíčů daného klíče"
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "respektovat PKA záznamy klíče při získávání klíčů"
 
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#, c-format
 msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr "VAROVÁNÍ: volba „%s“ pro server klíčů není na této platformě účinná\n"
 
@@ -4255,10 +4057,9 @@ msgstr "posílám klíč %s na %s server %s\n"
 msgid "sending key %s to %s\n"
 msgstr "posílám klíč %s na %s\n"
 
-#, fuzzy, c-format
-#| msgid "requesting key from `%s'\n"
+#, c-format
 msgid "requesting key from '%s'\n"
-msgstr "požaduji klíč z „%s“\n"
+msgstr "požaduje se klíč z „%s“\n"
 
 #, c-format
 msgid "WARNING: unable to fetch URI %s: %s\n"
@@ -4335,10 +4136,8 @@ msgstr "vymazané heslo zapamatované pro ID: %s\n"
 msgid "decryption failed: %s\n"
 msgstr "dešifrování selhalo: %s\n"
 
-#, fuzzy
-#| msgid "NOTE: sender requested \"for-your-eyes-only\"\n"
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
-msgstr "POZNÁMKA: odesílatel požadoval („for-your-eyes-only“)\n"
+msgstr "Poznámka: odesílatel považoval data za důvěrná („for-your-eyes-only“)\n"
 
 #, c-format
 msgid "original file name='%.*s'\n"
@@ -4404,10 +4203,9 @@ msgstr "Platnost podpisu skončila %s\n"
 msgid "Signature expires %s\n"
 msgstr "Platnost podpisu skončí %s\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "%s signature, digest algorithm %s%s%s\n"
-msgstr "podpis %s, hashovací algoritmus %s\n"
+msgstr "podpis %s, hashovací algoritmus %s%s%s\n"
 
 msgid "binary"
 msgstr "binární formát"
@@ -4418,14 +4216,8 @@ msgstr "textový formát"
 msgid "unknown"
 msgstr "neznámý formát"
 
-#, fuzzy
-#| msgid "unknown pubkey algorithm"
 msgid ", key algorithm "
-msgstr "neznámý algoritmus veřejného klíče"
-
-#, c-format
-msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr ""
+msgstr ", algoritmus klíče"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4445,10 +4237,12 @@ msgstr "samostatný podpis třídy 0x%02x\n"
 msgid "old style (PGP 2.x) signature\n"
 msgstr "podpis starého typu (PGP 2.x)\n"
 
-#, fuzzy, c-format
-#| msgid "fstat of `%s' failed in %s: %s\n"
+msgid "invalid root packet detected in proc_tree()\n"
+msgstr "nalezen neplatný kořenový paket v proc_tree()\n"
+
+#, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
-msgstr "fstat „%s“ selhal na %s: %s\n"
+msgstr "volání fstat nad „%s“ selhalo v %s: %s\n"
 
 #, c-format
 msgid "fstat(%d) failed in %s: %s\n"
@@ -4473,10 +4267,9 @@ msgstr "VAROVÁNÍ: používám experimentální hashovací algoritmus %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "VAROVÁNÍ: vyžádaný algoritmus %s není doporučen\n"
 
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
+#, c-format
 msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "podpis %s, hashovací algoritmus %s\n"
+msgstr "Poznámka: podpisy používající algoritmus %s jsou zamítány\n"
 
 #, c-format
 msgid "%s:%d: deprecated option \"%s\"\n"
@@ -4498,21 +4291,19 @@ msgstr "VAROVÁNÍ: používání příkaz „%s“ se nedoporučuje - nepouží
 msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgstr "%s:%u: zastaralý parametr „%s“ – neúčinkuje\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, c-format
 msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "VAROVÁNÍ: „%s“ je zastaralý parametr – neúčinkuje\n"
+msgstr "VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje\n"
 
-#, fuzzy, c-format
-#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+#, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
-msgstr "%s:%u: zastaralý parametr „%s“ – neúčinkuje\n"
+msgstr "%s:%u: „%s“ je v tomto souboru zastaralý – účinkuje pouze v %s\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+#, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
-msgstr "VAROVÁNÍ: „%s“ je zastaralý parametr – neúčinkuje\n"
+msgstr ""
+"VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje kromě v %s\n"
 
 msgid "Uncompressed"
 msgstr "Nezkomprimováno"
@@ -4525,13 +4316,11 @@ msgstr "nezkomprimováno|nic"
 msgid "this message may not be usable by %s\n"
 msgstr "tato zpráva nemusí být s %s použitelná\n"
 
-#, fuzzy, c-format
-#| msgid "ambiguous option `%s'\n"
+#, c-format
 msgid "ambiguous option '%s'\n"
-msgstr "nejednoznačné volby „%s“\n"
+msgstr "nejednoznačná volba „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "unknown option `%s'\n"
+#, c-format
 msgid "unknown option '%s'\n"
 msgstr "neznámá volba „%s“\n"
 
@@ -4540,8 +4329,7 @@ msgstr ""
 "U veřejného klíče ECDSA se očekává, že v kódování SEC bude délka násobkem 8 "
 "bitů\n"
 
-#, fuzzy, c-format
-#| msgid "File `%s' exists. "
+#, c-format
 msgid "File '%s' exists. "
 msgstr "Soubor „%s“ existuje. "
 
@@ -4558,18 +4346,15 @@ msgstr "Vložte nový název souboru"
 msgid "writing to stdout\n"
 msgstr "zapisuji do standardního výstupu\n"
 
-#, fuzzy, c-format
-#| msgid "assuming signed data in `%s'\n"
+#, c-format
 msgid "assuming signed data in '%s'\n"
-msgstr "předpokládám podepsaná data v „%s“\n"
+msgstr "v „%s“ se předpokládají podepsaná data\n"
 
-#, fuzzy, c-format
-#| msgid "new configuration file `%s' created\n"
+#, c-format
 msgid "new configuration file '%s' created\n"
 msgstr "vytvořen nový konfigurační soubor „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: options in `%s' are not yet active during this run\n"
+#, c-format
 msgid "WARNING: options in '%s' are not yet active during this run\n"
 msgstr "VAROVÁNÍ: nastavení z „%s“ nejsou při tomto spuštění zatím aktivní\n"
 
@@ -4600,7 +4385,7 @@ msgid ""
 "%u-bit %s key, ID %s,\n"
 "created %s%s.\n"
 msgstr ""
-"Prosím, zadejte heslo, abyste odemkl(a) tajný klíč příslušející OpenPGP "
+"Prosím, zadejte heslo, abyste odemkli tajný klíč příslušející OpenPGP "
 "certifikátu:\n"
 "„%.*s“\n"
 "Klíč o délce %u bitů, typ %s, ID %s\n"
@@ -4617,7 +4402,7 @@ msgid ""
 "You need a passphrase to unlock the secret key for\n"
 "user: \"%s\"\n"
 msgstr ""
-"Musíte znát heslo, abyste odemkl(a) tajný klíč pro\n"
+"Musíte znát heslo, abyste odemkli tajný klíč pro\n"
 "uživatele: „%s“\n"
 
 #, c-format
@@ -4628,58 +4413,25 @@ msgstr "délka %u bitů, typ %s, klíč %s, vytvořený %s"
 msgid "         (subkey on main key ID %s)"
 msgstr "         (podklíč na hlavním klíči ID %s)"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to unlock the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to unlock the OpenPGP secret key:"
-msgstr ""
-"Prosím, zadejte heslo, abyste odemkl(a) tajný klíč příslušející OpenPGP "
-"certifikátu:"
+msgstr "Prosím, zadejte heslo, abyste odemkli tajný klíč OpenPGP:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to import the OpenPGP secret key:"
-msgstr ""
-"Prosím, zadejte heslo, abyste mohl(a) importovat tajný klíč příslušející "
-"OpenPGP certifikátu:"
+msgstr "Prosím, zadejte heslo, abyste mohli importovat tajný klíč OpenPGP:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to export the OpenPGP secret subkey:"
-msgstr ""
-"Prosím, zadejte heslo, abyste mohl(a) importovat tajný klíč příslušející "
-"OpenPGP certifikátu:"
+msgstr "Prosím, zadejte heslo, abyste mohli exportovat tajný podklíč OpenPGP:"
 
-#, fuzzy
-#| msgid ""
-#| "Please enter the passphrase to import the secret key for the OpenPGP "
-#| "certificate:"
 msgid "Please enter the passphrase to export the OpenPGP secret key:"
-msgstr ""
-"Prosím, zadejte heslo, abyste mohl(a) importovat tajný klíč příslušející "
-"OpenPGP certifikátu:"
+msgstr "Prosím, zadejte heslo, abyste mohli exportovat tajný klíč OpenPGP:"
 
-#, fuzzy
-#| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret subkey key:"
-msgstr "Opravdu chcete smazat vybrané klíče? (a/N) "
+msgstr "Opravdu chcete trvale smazat tajný klíč podklíče OpenPGP:"
 
-#, fuzzy
-#| msgid "Do you really want to delete the selected keys? (y/N) "
 msgid "Do you really want to permanently delete the OpenPGP secret key:"
-msgstr "Opravdu chcete smazat vybrané klíče? (a/N) "
+msgstr "Opravdu chcete trvale smazat tajný klíč OpenPGP:"
 
-#, fuzzy, c-format
-#| msgid ""
-#| "%s\n"
-#| "\"%.*s\"\n"
-#| "%u-bit %s key, ID %s,\n"
-#| "created %s%s.\n"
+#, c-format
 msgid ""
 "%s\n"
 "\"%.*s\"\n"
@@ -4691,6 +4443,7 @@ msgstr ""
 "„%.*s“\n"
 "%ubitový klíč %s, ID %s,\n"
 "vytvořen %s%s.\n"
+"%s"
 
 msgid ""
 "\n"
@@ -4708,8 +4461,7 @@ msgstr ""
 msgid "Enter JPEG filename for photo ID: "
 msgstr "Vložte jméno JPEG souboru s fotografickým ID: "
 
-#, fuzzy, c-format
-#| msgid "unable to open JPEG file `%s': %s\n"
+#, c-format
 msgid "unable to open JPEG file '%s': %s\n"
 msgstr "nelze otevřít JPEG soubor „%s“: %s\n"
 
@@ -4720,8 +4472,7 @@ msgstr "Tento JPEG je opravdu velký (%d bajtů)!\n"
 msgid "Are you sure you want to use it? (y/N) "
 msgstr "Jste si jistý(á), že jej chcete použít? (a/N) "
 
-#, fuzzy, c-format
-#| msgid "`%s' is not a JPEG file\n"
+#, c-format
 msgid "'%s' is not a JPEG file\n"
 msgstr "„%s“ není soubor ve formátu JPEG\n"
 
@@ -4862,13 +4613,11 @@ msgstr "VAROVÁNÍ: Tento podklíč byl revokován svým vlastníkem!\n"
 msgid "Note: This key has been disabled.\n"
 msgstr "Poznámka: Tento klíč byl označen jako neplatný (disabled).\n"
 
-#, fuzzy, c-format
-#| msgid "Note: Verified signer's address is `%s'\n"
+#, c-format
 msgid "Note: Verified signer's address is '%s'\n"
 msgstr "Poznámka: Podepisovatelova ověřená adresa je „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "Note: Signer's address `%s' does not match DNS entry\n"
+#, c-format
 msgid "Note: Signer's address '%s' does not match DNS entry\n"
 msgstr "Poznámka: Podepisovatelova adresa „%s“ se neshoduje s DNS záznamem\n"
 
@@ -4960,8 +4709,7 @@ msgid "data not saved; use option \"--output\" to save it\n"
 msgstr ""
 "data nebyla uložena; k jejich uložení použijte parametr příkazu „--output“\n"
 
-#, fuzzy, c-format
-#| msgid "error creating `%s': %s\n"
+#, c-format
 msgid "error creating '%s': %s\n"
 msgstr "chyba při vytváření „%s“: %s\n"
 
@@ -4977,14 +4725,13 @@ msgstr "čtu standardní vstup…\n"
 msgid "no signed data\n"
 msgstr "chybí podepsaná data\n"
 
-#, fuzzy, c-format
-#| msgid "can't open signed data `%s'\n"
+#, c-format
 msgid "can't open signed data '%s'\n"
-msgstr "nemohu otevřít podepsaná data „%s“\n"
+msgstr "nelze otevřít podepsaná data „%s“\n"
 
 #, c-format
 msgid "can't open signed data fd=%d: %s\n"
-msgstr "nemohu otevřít podepsaná data na fd=%d: %s\n"
+msgstr "nelze otevřít podepsaná data na deskriptoru=%d: %s\n"
 
 #, c-format
 msgid "anonymous recipient; trying secret key %s ...\n"
@@ -5004,15 +4751,12 @@ msgstr "šifrovací algoritmus %d%s je neznámý nebo je zneplatněn\n"
 msgid "WARNING: cipher algorithm %s not found in recipient preferences\n"
 msgstr "VAROVÁNÍ: v předvolbách příjemce nenalezen šifrovací algoritmus %s\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: secret key %s expired at %s\n"
+#, c-format
 msgid "Note: secret key %s expired at %s\n"
-msgstr "POZNÁMKA: platnost tajného klíče %s skončila %s\n"
+msgstr "Poznámka: platnost tajného klíče %s skončila v %s\n"
 
-#, fuzzy
-#| msgid "NOTE: key has been revoked"
 msgid "Note: key has been revoked"
-msgstr "POZNÁMKA: klíč byl revokován"
+msgstr "Poznámka: klíč byl odvolán"
 
 #, c-format
 msgid "build_packet failed: %s\n"
@@ -5045,10 +4789,8 @@ msgstr "Revokační certifikát vytvořen.\n"
 msgid "no revocation keys found for \"%s\"\n"
 msgstr "pro „%s“ nebyl nalezen žádný revokační klíč\n"
 
-#, fuzzy
-#| msgid "Create a revocation certificate for this key? (y/N) "
 msgid "This is a revocation certificate for the OpenPGP key:"
-msgstr "Vytvořit pro tento klíč revokační certifikát? (a/N) "
+msgstr "Toto je revokační certifikát pro OpenPGP klíč:"
 
 msgid ""
 "Use it to revoke this key in case of a compromise or loss of\n"
@@ -5056,12 +4798,18 @@ msgid ""
 "it is better to generate a new revocation certificate and give\n"
 "a reason for the revocation."
 msgstr ""
+"Použijte jej pro odvolání tohoto klíče v případě zneužití nebo ztráty\n"
+"soukromého klíče. Avšak bude-li soukromý klíč stále přístupný, bude\n"
+"lepší vytvořit nový revokační certifikát s vysvětlením odvolání."
 
 msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
+"Aby se zabránilo nechtěnému použití tohoto souboru, před 5 pomlček byla\n"
+"vložena dvojtečka. Před použitím tohoto revokačního certifikátu odstraňte\n"
+"tuto dvojtečku textovým editorem."
 
 #, c-format
 msgid "secret key \"%s\" not found: %s\n"
@@ -5124,10 +4872,9 @@ msgstr ""
 msgid "%s key %s uses an unsafe (%zu bit) hash\n"
 msgstr "%s klíč %s používá nebezpečný (%zubitový) hash\n"
 
-#, fuzzy, c-format
-#| msgid "DSA key %s requires a %u bit or larger hash\n"
+#, c-format
 msgid "%s key %s requires a %zu bit or larger hash (hash is %s)\n"
-msgstr "DSA klíč %s vyžaduje hash o délce %u nebo více bitů\n"
+msgstr "%s klíč %s vyžaduje hash o délce %zu nebo více bitů (hash je %s)\n"
 
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "VAROVÁNÍ: konflikt hashe podpisu ve zprávě\n"
@@ -5166,15 +4913,13 @@ msgstr ""
 "klíč %s byl vytvořen %lu sekund v budoucnosti (došlo ke změně času nebo\n"
 "je problém se systémovým časem)\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: signature key %s expired %s\n"
+#, c-format
 msgid "Note: signature key %s expired %s\n"
-msgstr "POZNÁMKA: podpisovému klíči %s skončila platnost %s\n"
+msgstr "Poznámka: podpisovému klíči %s skončila platnost v %s\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: signature key %s has been revoked\n"
+#, c-format
 msgid "Note: signature key %s has been revoked\n"
-msgstr "POZNÁMKA: podpisový klíč %s byl odvolán\n"
+msgstr "Poznámka: podpisový klíč %s byl odvolán\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
@@ -5262,8 +5007,7 @@ msgstr ""
 "# Seznam přidělených hodnot důvěry, vytvořen %s\n"
 "# (Použijte „gpg --import-ownertrust“ k jeho obnově)\n"
 
-#, fuzzy, c-format
-#| msgid "error in `%s': %s\n"
+#, c-format
 msgid "error in '%s': %s\n"
 msgstr "chyba v „%s“: %s\n"
 
@@ -5279,13 +5023,11 @@ msgstr "neplatný otisk"
 msgid "ownertrust value missing"
 msgstr "schází hodnota důvěryhodnosti vlastníka"
 
-#, fuzzy, c-format
-#| msgid "error finding trust record in `%s': %s\n"
+#, c-format
 msgid "error finding trust record in '%s': %s\n"
 msgstr "chyba při hledání záznamu důvěryhodnosti v „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "read error in `%s': %s\n"
+#, c-format
 msgid "read error in '%s': %s\n"
 msgstr "chyba při čtení v „%s“: %s\n"
 
@@ -5304,24 +5046,21 @@ msgstr "záznam v databázi důvěry %lu: zápis se nepodařil (n=%d): %s\n"
 msgid "trustdb transaction too large\n"
 msgstr "transakce s databází důvěry je příliš dlouhá\n"
 
-#, fuzzy, c-format
-#| msgid "can't access `%s': %s\n"
+#, c-format
 msgid "can't access '%s': %s\n"
-msgstr "nemohu otevřít „%s“: %s\n"
+msgstr "k „%s“ nelze přistoupit: %s\n"
 
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresář neexistuje!\n"
 
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
+#, c-format
 msgid "can't create lock for '%s'\n"
-msgstr "nemohu vytvořit zámek pro  „%s“\n"
+msgstr "pro „%s“ nelze vytvořit zámek\n"
 
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
+#, c-format
 msgid "can't lock '%s'\n"
-msgstr "nelze zamknout „%s“\n"
+msgstr "„%s“ nelze zamknout\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5335,10 +5074,8 @@ msgstr "%s: vytvořena neplatná databáze důvěry\n"
 msgid "%s: trustdb created\n"
 msgstr "%s: databáze důvěry vytvořena\n"
 
-#, fuzzy
-#| msgid "NOTE: trustdb not writable\n"
 msgid "Note: trustdb not writable\n"
-msgstr "POZNÁMKA: do trustedb nezle zapisovat\n"
+msgstr "Poznámka: do databáze důvěry nelze zapisovat\n"
 
 #, c-format
 msgid "%s: invalid trustdb\n"
@@ -5407,8 +5144,7 @@ msgstr "nemohu pracovat s řádky delšími než %d znaků\n"
 msgid "input line longer than %d characters\n"
 msgstr "vstupní řádek je delší než %d znaků\n"
 
-#, fuzzy, c-format
-#| msgid "`%s' is not a valid long keyID\n"
+#, c-format
 msgid "'%s' is not a valid long keyID\n"
 msgstr "„%s“ není platný dlouhý keyID\n"
 
@@ -5458,13 +5194,11 @@ msgstr "není nutné kontrolovat databázi důvěry\n"
 msgid "next trustdb check due at %s\n"
 msgstr "další kontrola databáze důvěry v %s\n"
 
-#, fuzzy, c-format
-#| msgid "no need for a trustdb check with `%s' trust model\n"
+#, c-format
 msgid "no need for a trustdb check with '%s' trust model\n"
 msgstr "není nutné kontrolovat databázi důvěry s modelem „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "no need for a trustdb update with `%s' trust model\n"
+#, c-format
 msgid "no need for a trustdb update with '%s' trust model\n"
 msgstr "není nutné aktualizovat databázi důvěry s modelem „%s“\n"
 
@@ -5528,13 +5262,13 @@ msgid "enable full debugging"
 msgstr "zapnout úplné ladění"
 
 msgid "Usage: kbxutil [options] [files] (-h for help)"
-msgstr "Použití: kbxutil [VOLBY] [SOUBORY] (-h pro nápovědu)"
+msgstr "Použití: kbxutil [volby] [soubory] (-h pro nápovědu)"
 
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "List, export, import Keybox data\n"
 msgstr ""
-"Syntaxe: kbxutil [VOLBY] [SOUBORY]\n"
+"Syntaxe: kbxutil [volby] [soubory]\n"
 "Vypisuje, exportuje, importuje schránku na klíče (keybox).\n"
 
 #, c-format
@@ -5613,10 +5347,8 @@ msgstr "odpověď neobsahuje RSA modulus\n"
 msgid "response does not contain the RSA public exponent\n"
 msgstr "odpověď neobsahuje veřejný RSA exponent\n"
 
-#, fuzzy
-#| msgid "response does not contain the RSA public exponent\n"
 msgid "response does not contain the EC public point\n"
-msgstr "odpověď neobsahuje veřejný RSA exponent\n"
+msgstr "odpověď neobsahuje veřejný bod EC\n"
 
 #, c-format
 msgid "using default PIN as %s\n"
@@ -5765,7 +5497,7 @@ msgid "run in multi server mode (foreground)"
 msgstr "pracovat ve více serverové režimu (na popředí)"
 
 msgid "|LEVEL|set the debugging level to LEVEL"
-msgstr "|ÚROVEŇ|nastavit úroveň ladění na ÚROVEŇ"
+msgstr "|ÚROVEŇ|nastaví ladicí úroveň na ÚROVEŇ"
 
 msgid "|FILE|write a log to FILE"
 msgstr "|SOUBOR|zapisovat protokol do SOUBORU"
@@ -5794,28 +5526,18 @@ msgstr "zakázat používání správcovských příkazů karty"
 msgid "use variable length input for pinpad"
 msgstr "používat vstup o proměnné délce na klávesnici čtečky"
 
-#, fuzzy
-#| msgid "Usage: gpgconf [options] (-h for help)"
 msgid "Usage: @SCDAEMON@ [options] (-h for help)"
-msgstr "Použití: gpgconf [VOLBY] (-h pro nápovědu)"
+msgstr "Použití: @SCDAEMON@ [volby] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: scdaemon [options] [command [args]]\n"
-#| "Smartcard daemon for GnuPG\n"
 msgid ""
 "Syntax: scdaemon [options] [command [args]]\n"
 "Smartcard daemon for @GNUPG@\n"
 msgstr ""
-"Syntaxe: scdaemon [VOLBY] [PŘÍKAZ [ARGUMENTY]]\n"
-"Démon pro čipové karty (smartcard) pro GnuPG\n"
+"Syntaxe: scdaemon [volby] [příkaz [argumenty]]\n"
+"Démon pro čipové karty (smartcard) pro @GNUPG@\n"
 
-#, fuzzy
-#| msgid ""
-#| "please use the option `--daemon' to run the program in the background\n"
 msgid "please use the option '--daemon' to run the program in the background\n"
-msgstr ""
-"prosím, použijte volbu „--daemon“, chcete-li nechat běžet program na pozadí\n"
+msgstr "prosím, použijte volbu „--daemon“, chcete-li nechat běžet program na pozadí\n"
 
 #, c-format
 msgid "handler for fd %d started\n"
@@ -5841,23 +5563,20 @@ msgstr "jednovrstvý"
 
 #, c-format
 msgid "critical certificate extension %s is not supported"
-msgstr "kritické rozšíření certifikát %s není podporováno"
+msgstr "kritické rozšířené certifikátu %s není podporováno"
 
 msgid "issuer certificate is not marked as a CA"
-msgstr "vydavatel certifikátu není označen jako CA"
+msgstr "certifikát vydavatele není označen jako CA"
 
 msgid "critical marked policy without configured policies"
 msgstr "politika označená jako kritická bez nastavených politik"
 
-#, fuzzy, c-format
-#| msgid "failed to open `%s': %s\n"
+#, c-format
 msgid "failed to open '%s': %s\n"
-msgstr "nemohu otevřít „%s“: %s\n"
+msgstr "„%s“ nebylo možné otevřít: %s\n"
 
-#, fuzzy
-#| msgid "note: non-critical certificate policy not allowed"
 msgid "Note: non-critical certificate policy not allowed"
-msgstr "poznámka: nekritické certifikační politiky nejsou dovoleny"
+msgstr "Poznámka: nekritické certifikační politiky nejsou dovoleny"
 
 msgid "certificate policy not allowed"
 msgstr "certifikační politika není dovolena"
@@ -5898,10 +5617,10 @@ msgstr "kontrola CRL se nezdařila: %s"
 
 #, c-format
 msgid "certificate with invalid validity: %s"
-msgstr "certifikát s neplatnou platností: %s"
+msgstr "certifikát s chybnou platností: %s"
 
 msgid "certificate not yet valid"
-msgstr "certifikát ještě nezačal platit"
+msgstr "certifikát ještě nenabyl platnosti"
 
 msgid "root certificate not yet valid"
 msgstr "kořenový certifikát ještě nezačal platit"
@@ -5910,7 +5629,7 @@ msgid "intermediate certificate not yet valid"
 msgstr "mezilehlý certifikát ještě nezačal platit"
 
 msgid "certificate has expired"
-msgstr "certifikát je prošlý"
+msgstr "certifikátu vypršela platnost"
 
 msgid "root certificate has expired"
 msgstr "kořenový certifikát je prošlý"
@@ -5979,17 +5698,17 @@ msgid "certificate chain too long\n"
 msgstr "řetěz certifikátů je příliš dlouhý\n"
 
 msgid "issuer certificate not found"
-msgstr "vydavatel certifikátu nebyl nalezen"
+msgstr "certifikát vydavatele nebyl nalezen"
 
 msgid "certificate has a BAD signature"
 msgstr "certifikát má ŠPATNÝ podpis"
 
 msgid "found another possible matching CA certificate - trying again"
-msgstr "nalezen další možný odpovídající certifikát CA – zkouším znovu"
+msgstr "nalezen jiný možný odpovídající certifikát autority – zkusí se znovu"
 
 #, c-format
 msgid "certificate chain longer than allowed by CA (%d)"
-msgstr "řetězec certifikátů je delší, než je dovoleno CA (%d)"
+msgstr "řetěz certifikátů je delší než dovoluje CA (%d)"
 
 msgid "certificate is good\n"
 msgstr "certifikát je v pořádku\n"
@@ -6014,7 +5733,10 @@ msgstr "%ubitový hash není platná pro %ubitový %s klíč\n"
 msgid "(this is the MD2 algorithm)\n"
 msgstr "(toto je algoritmus MD2)\n"
 
+# #-#-#-#-#  cs.po.old (gnupg2 2.1.0)  #-#-#-#-#
 # none serial, none date
+# #-#-#-#-#  cs.po (dirmngr 1.0.3)  #-#-#-#-#
+# status
 msgid "none"
 msgstr "žádný"
 
@@ -6038,17 +5760,17 @@ msgid ""
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Potřebujete heslo, abyste odemkl(a) tajný klíč pro X.509 certifikát:\n"
+"Potřebujete heslo, abyste odemkli tajný klíč pro X.509 certifikát:\n"
 "„%s“\n"
 "sériové číslo %s, ID 0x%08lX,\n"
-"vytvořeno %s, platnost vyprší %s.\n"
+"vytvořen %s, platnost vyprší %s.\n"
 
 msgid "no key usage specified - assuming all usages\n"
-msgstr "žádný způsob užití neuveden – předpokládám všechna užití\n"
+msgstr "žádné použití klíče není určeno – předpokládají se všechna použití\n"
 
 #, c-format
 msgid "error getting key usage information: %s\n"
-msgstr "chyba při získání informací o způsobu užití klíče: %s\n"
+msgstr "chyba při zjišťování informací o použití klíče: %s\n"
 
 msgid "certificate should not have been used for certification\n"
 msgstr "certifikát neměl být použit pro certifikování\n"
@@ -6080,15 +5802,13 @@ msgstr "řádek %d: neplatná délka klíče %u (platná je %d až %d)\n"
 msgid "line %d: no subject name given\n"
 msgstr "řádek %d: nezadán žádný název subjektu\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid subject name label `%.*s'\n"
+#, c-format
 msgid "line %d: invalid subject name label '%.*s'\n"
 msgstr "řádek %d: neplatný název subjektu „%.*s“\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid subject name `%s' at pos %d\n"
+#, c-format
 msgid "line %d: invalid subject name '%s' at pos %d\n"
-msgstr "řádek %d: neplatná název subjektu „%s“ na pozici %d\n"
+msgstr "řádek %d: neplatný název subjektu „%s“ na pozici %d\n"
 
 #, c-format
 msgid "line %d: not a valid email address\n"
@@ -6098,13 +5818,11 @@ msgstr "řádek %d: neplatná e-mailová adresa\n"
 msgid "line %d: invalid serial number\n"
 msgstr "řádek %d: neplatné sériové číslo\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid issuer name label `%.*s'\n"
+#, c-format
 msgid "line %d: invalid issuer name label '%.*s'\n"
 msgstr "řádek %d: neplatný název vydavatele „%.*s“\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid issuer name `%s' at pos %d\n"
+#, c-format
 msgid "line %d: invalid issuer name '%s' at pos %d\n"
 msgstr "řádek %d: neplatný název vydavatele „%s“ na pozici %d\n"
 
@@ -6112,8 +5830,7 @@ msgstr "řádek %d: neplatný název vydavatele „%s“ na pozici %d\n"
 msgid "line %d: invalid date given\n"
 msgstr "řádek %d: zadáno neplatné datum\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: error getting signing key by keygrip `%s': %s\n"
+#, c-format
 msgid "line %d: error getting signing key by keygrip '%s': %s\n"
 msgstr ""
 "řádek %d: chyba při získávání podpisového klíče podle keygripu „%s“: %s\n"
@@ -6122,30 +5839,25 @@ msgstr ""
 msgid "line %d: invalid hash algorithm given\n"
 msgstr "řádek %d: zadán neplatný algoritmus hashe\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid algorithm\n"
+#, c-format
 msgid "line %d: invalid authority-key-id\n"
-msgstr "řádek %d: neplatný algoritmus\n"
+msgstr "řádek %d: neplatný identifikátor klíče autority\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid subject name `%s' at pos %d\n"
+#, c-format
 msgid "line %d: invalid subject-key-id\n"
-msgstr "řádek %d: neplatná název subjektu „%s“ na pozici %d\n"
+msgstr "řádek %d: neplatný identifikátor klíče subjektu\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid date given\n"
+#, c-format
 msgid "line %d: invalid extension syntax\n"
-msgstr "řádek %d: zadáno neplatné datum\n"
+msgstr "řádek %d: neplatná syntaxe rozšíření\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: error reading key `%s' from card: %s\n"
+#, c-format
 msgid "line %d: error reading key '%s' from card: %s\n"
 msgstr "řádek %d: chyba při čtení klíče „%s“ z karty: %s\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: error getting key by keygrip `%s': %s\n"
+#, c-format
 msgid "line %d: error getting key by keygrip '%s': %s\n"
-msgstr "řádek %d: chyba při získávání klíče po keygripu „%s“: %s\n"
+msgstr "řádek %d: chyba při získávání klíče podle keygripu „%s“: %s\n"
 
 #, c-format
 msgid "line %d: key generation failed: %s <%s>\n"
@@ -6203,8 +5915,7 @@ msgstr "Zadejte X.509 jméno subjektu: "
 msgid "No subject name given\n"
 msgstr "Nebylo zadáno Žádné jméno\n"
 
-#, fuzzy, c-format
-#| msgid "Invalid subject name label `%.*s'\n"
+#, c-format
 msgid "Invalid subject name label '%.*s'\n"
 msgstr "Neplatné jméno subjektu „%.*s“\n"
 
@@ -6213,8 +5924,7 @@ msgstr "Neplatné jméno subjektu „%.*s“\n"
 #. adjust it do the length of your translation.  The
 #. second string is merely passed to atoi so you can
 #. drop everything after the number.
-#, fuzzy, c-format
-#| msgid "Invalid subject name `%s'\n"
+#, c-format
 msgid "Invalid subject name '%s'\n"
 msgstr "Neplatné jméno subjektu „%s“\n"
 
@@ -6245,10 +5955,8 @@ msgstr "Budou použity tyto parametry:\n"
 msgid "Now creating self-signed certificate.  "
 msgstr "Nyní se vytváří sám sebou podepsaný certifikát. "
 
-#, fuzzy
-#| msgid "Now creating self-signed certificate.  "
 msgid "Now creating certificate request.  "
-msgstr "Nyní se vytváří sám sebou podepsaný certifikát. "
+msgstr "Nyní se vytváří žádost o certifikát. "
 
 msgid "This may take a while ...\n"
 msgstr "To může chvíli trvat…\n"
@@ -6269,8 +5977,7 @@ msgstr "(toto je algoritmus RC2)\n"
 msgid "(this does not seem to be an encrypted message)\n"
 msgstr "(toto nevypadá jako zašifrovaná zpráva)\n"
 
-#, fuzzy, c-format
-#| msgid "certificate `%s' not found: %s\n"
+#, c-format
 msgid "certificate '%s' not found: %s\n"
 msgstr "certifikát „%s“ nebyl nenalezen: %s\n"
 
@@ -6278,13 +5985,11 @@ msgstr "certifikát „%s“ nebyl nenalezen: %s\n"
 msgid "error locking keybox: %s\n"
 msgstr "chyba při zamykání schránky na klíče: %s\n"
 
-#, fuzzy, c-format
-#| msgid "duplicated certificate `%s' deleted\n"
+#, c-format
 msgid "duplicated certificate '%s' deleted\n"
-msgstr "smazat zdvojený certifikát „%s“\n"
+msgstr "zdvojený certifikát „%s“ smazán\n"
 
-#, fuzzy, c-format
-#| msgid "certificate `%s' deleted\n"
+#, c-format
 msgid "certificate '%s' deleted\n"
 msgstr "certifikát „%s“ smazán\n"
 
@@ -6379,34 +6084,25 @@ msgstr "|NÁZEV|použít šifrovací algoritmus NÁZEV"
 msgid "|NAME|use message digest algorithm NAME"
 msgstr "|NÁZEV|použít hashovací algoritmus NÁZEV"
 
-#, fuzzy
-#| msgid "Usage: gpg [options] [files] (-h for help)"
 msgid "Usage: @GPGSM@ [options] [files] (-h for help)"
-msgstr "Použití: gpg [možnosti] [soubory] (-h pro pomoc)"
+msgstr "Použití: @GPGSM@ [možnosti] [soubory] (-h pro pomoc)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "Default operation depends on the input data\n"
 msgid ""
 "Syntax: @GPGSM@ [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"
 "Default operation depends on the input data\n"
 msgstr ""
-"Syntaxe: gpgsm [VOLBY] [SOUBORY]\n"
+"Syntaxe: @GPGSM@ [volby] [soubory]\n"
 "Podepisuje, ověřuje, šifruje nebo dešifruje pomocí protokolu S/MIME.\n"
 "Výchozí operace závisí na vstupních datech.\n"
 
-#, fuzzy, c-format
-#| msgid "NOTE: won't be able to encrypt to `%s': %s\n"
+#, c-format
 msgid "Note: won't be able to encrypt to '%s': %s\n"
-msgstr "POZNÁMKA: nebudu moci šifrovat pro „%s“: %s\n"
+msgstr "Poznámka: nebude možné šifrovat pro „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "unknown validation model `%s'\n"
+#, c-format
 msgid "unknown validation model '%s'\n"
-msgstr "neznámý režim ověřování „%s“\n"
+msgstr "neznámý model ověřování „%s“\n"
 
 #, c-format
 msgid "%s:%u: no hostname given\n"
@@ -6423,15 +6119,13 @@ msgstr "%s:%u: přeskakuji tento řádek\n"
 msgid "could not parse keyserver\n"
 msgstr "nelze rozebrat serveru klíčů\n"
 
-#, fuzzy, c-format
-#| msgid "importing common certificates `%s'\n"
+#, c-format
 msgid "importing common certificates '%s'\n"
-msgstr "importuji běžné certifikáty „%s“\n"
+msgstr "importují se běžné certifikáty „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "can't sign using `%s': %s\n"
+#, c-format
 msgid "can't sign using '%s': %s\n"
-msgstr "nemohu podepsat pomocí „%s“: %s\n"
+msgstr "nelze podepsat pomocí „%s“: %s\n"
 
 msgid "invalid command (there is no implicit command)\n"
 msgstr "neplatný příkaz (neexistuje žádný implicitní příkaz)\n"
@@ -6487,13 +6181,11 @@ msgstr "Chyba – "
 msgid "GPG_TTY has not been set - using maybe bogus default\n"
 msgstr "GPG_TTY nebyla nastavena – použiji možná chybnou implicitní hodnotu\n"
 
-#, fuzzy, c-format
-#| msgid "invalid formatted fingerprint in `%s', line %d\n"
+#, c-format
 msgid "invalid formatted fingerprint in '%s', line %d\n"
 msgstr "nesprávně formátovaný otisk v „%s“, řádek %d\n"
 
-#, fuzzy, c-format
-#| msgid "invalid country code in `%s', line %d\n"
+#, c-format
 msgid "invalid country code in '%s', line %d\n"
 msgstr "neplatný kód země v „%s“, řádek %d\n"
 
@@ -6508,10 +6200,10 @@ msgid ""
 msgstr ""
 "Chystáte se vytvořit podpis pomocí svého certifikátu:\n"
 "„%s“\n"
-"Tímto vytvoříte kvalifikovaný podpis, který je dle zákona rovnocenný\n"
+"Tímto vytvoříte kvalifikovaný podpis, který je dle zákona rovnocenný "
 "s podpisem vlastnoručním.\n"
 "\n"
-"%s%sJste si skutečně jistý(á), že to chcete udělat?"
+"%s%sJste si skutečně jisti, že to chcete udělat?"
 
 msgid ""
 "Note, that this software is not officially approved to create or verify such "
@@ -6588,34 +6280,29 @@ msgstr "zámek keše certifikátů nelze uvolnit: %s\n"
 msgid "dropping %u certificates from the cache\n"
 msgstr "%u certifikátů bude z keše vyřazeno\n"
 
-#, fuzzy, c-format
-#| msgid "can't access directory `%s': %s\n"
+#, c-format
 msgid "can't access directory '%s': %s\n"
 msgstr "k adresáři „%s“ nelze přistoupit: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't parse certificate `%s': %s\n"
+#, c-format
 msgid "can't parse certificate '%s': %s\n"
 msgstr "certifikát „%s“ nelze rozebrat: %s\n"
 
-#, fuzzy, c-format
-#| msgid "certificate `%s' already cached\n"
+#, c-format
 msgid "certificate '%s' already cached\n"
-msgstr "certifikát „%s“ je již v keši\n"
+msgstr "certifikát „%s“ je již zapamatován\n"
 
-#, fuzzy, c-format
-#| msgid "trusted certificate `%s' loaded\n"
+#, c-format
 msgid "trusted certificate '%s' loaded\n"
 msgstr "zaveden důvěryhodný certifikát „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "certificate `%s' loaded\n"
+#, c-format
 msgid "certificate '%s' loaded\n"
 msgstr "certifikát „%s“ zaveden\n"
 
 #, c-format
 msgid "  SHA1 fingerprint = %s\n"
-msgstr " otisk SHA1 = %s\n"
+msgstr "        otisk SHA1 = %s\n"
 
 msgid "   issuer ="
 msgstr "vydavatel ="
@@ -6624,8 +6311,7 @@ msgstr "vydavatel ="
 msgid "  subject ="
 msgstr "  subjekt ="
 
-#, fuzzy, c-format
-#| msgid "error loading certificate `%s': %s\n"
+#, c-format
 msgid "error loading certificate '%s': %s\n"
 msgstr "chyba při zavádění certifikátu „%s“: %s\n"
 
@@ -6649,8 +6335,7 @@ msgstr "certifikát uložen do keše\n"
 msgid "error caching certificate: %s\n"
 msgstr "chyba při ukládání certifikátu do keše: %s\n"
 
-#, fuzzy, c-format
-#| msgid "invalid SHA1 fingerprint string `%s'\n"
+#, c-format
 msgid "invalid SHA1 fingerprint string '%s'\n"
 msgstr "neplatný řetězec otisku SHA1 „%s“\n"
 
@@ -6669,33 +6354,27 @@ msgstr "v certifikátu nebyl nalezen vydavatel\n"
 msgid "error getting authorityKeyIdentifier: %s\n"
 msgstr "chyba při zjišťování authorityKeyIdentifier: %s\n"
 
-#, fuzzy, c-format
-#| msgid "creating directory `%s'\n"
+#, c-format
 msgid "creating directory '%s'\n"
 msgstr "vytváří se adresář „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "error creating directory `%s': %s\n"
+#, c-format
 msgid "error creating directory '%s': %s\n"
-msgstr "chyba při zakládání adresáře „%s“: %s\n"
+msgstr "chyba při vytváření adresáře „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "ignoring database dir `%s'\n"
+#, c-format
 msgid "ignoring database dir '%s'\n"
-msgstr "adresář databáze „%s“ nebude brán zřetel\n"
+msgstr "adresář databáze „%s“ se ignoruje\n"
 
-#, fuzzy, c-format
-#| msgid "error reading directory `%s': %s\n"
+#, c-format
 msgid "error reading directory '%s': %s\n"
 msgstr "chyba při čtení adresáře „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "removing cache file `%s'\n"
+#, c-format
 msgid "removing cache file '%s'\n"
 msgstr "odstraňuje se soubor keše „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "not removing file `%s'\n"
+#, c-format
 msgid "not removing file '%s'\n"
 msgstr "soubor „%s“ nebude neodstraněn\n"
 
@@ -6703,38 +6382,31 @@ msgstr "soubor „%s“ nebude neodstraněn\n"
 msgid "error closing cache file: %s\n"
 msgstr "chyba při zavírání souboru keše: %s\n"
 
-#, fuzzy, c-format
-#| msgid "failed to open cache dir file `%s': %s\n"
+#, c-format
 msgid "failed to open cache dir file '%s': %s\n"
 msgstr "otevření kešového dir souboru „%s“ selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error creating new cache dir file `%s': %s\n"
+#, c-format
 msgid "error creating new cache dir file '%s': %s\n"
 msgstr "chyba při vytváření nového kešového dir souboru „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error writing new cache dir file `%s': %s\n"
+#, c-format
 msgid "error writing new cache dir file '%s': %s\n"
 msgstr "chyba při zápisu nového kešového dir souboru „%s: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error closing new cache dir file `%s': %s\n"
+#, c-format
 msgid "error closing new cache dir file '%s': %s\n"
 msgstr "chyba při uzavírání nového kešového dir souboru „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "new cache dir file `%s' created\n"
+#, c-format
 msgid "new cache dir file '%s' created\n"
 msgstr "nový kešový dir soubor „%s“ vytvořen\n"
 
-#, fuzzy, c-format
-#| msgid "failed to re-open cache dir file `%s': %s\n"
+#, c-format
 msgid "failed to re-open cache dir file '%s': %s\n"
 msgstr "znovu otevření kešového dir souboru „%s“ selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "first record of `%s' is not the version\n"
+#, c-format
 msgid "first record of '%s' is not the version\n"
 msgstr "první záznam „%s“ není verze\n"
 
@@ -6744,43 +6416,35 @@ msgstr "stará verze adresáře s keší – bude vyčištěna\n"
 msgid "old version of cache directory - giving up\n"
 msgstr "stará verze adresáře s keší – nelze pokračovat\n"
 
-#, fuzzy, c-format
-#| msgid "extra field detected in crl record of `%s' line %u\n"
+#, c-format
 msgid "extra field detected in crl record of '%s' line %u\n"
 msgstr "nalezena nadbytečná položka v záznamu CRL „%s“ na řádku %u\n"
 
-#, fuzzy, c-format
-#| msgid "invalid line detected in `%s' line %u\n"
+#, c-format
 msgid "invalid line detected in '%s' line %u\n"
 msgstr "nalezen neplatný řádek %2$u v „%1$s\n"
 
-#, fuzzy, c-format
-#| msgid "duplicate entry detected in `%s' line %u\n"
+#, c-format
 msgid "duplicate entry detected in '%s' line %u\n"
 msgstr "nalezena duplicitní položka v „%s“ na řádku %u\n"
 
-#, fuzzy, c-format
-#| msgid "unsupported record type in `%s' line %u skipped\n"
+#, c-format
 msgid "unsupported record type in '%s' line %u skipped\n"
 msgstr "nepodporovaný typ záznamu v „%s“ na řádku %u přeskočen\n"
 
-#, fuzzy, c-format
-#| msgid "invalid issuer hash in `%s' line %u\n"
+#, c-format
 msgid "invalid issuer hash in '%s' line %u\n"
 msgstr "neplatný haš vydavatele v „%s“ na řádku %u\n"
 
-#, fuzzy, c-format
-#| msgid "no issuer DN in `%s' line %u\n"
+#, c-format
 msgid "no issuer DN in '%s' line %u\n"
 msgstr "v „%s“ na řádku %u chybí DN vydavatele\n"
 
-#, fuzzy, c-format
-#| msgid "invalid timestamp in `%s' line %u\n"
+#, c-format
 msgid "invalid timestamp in '%s' line %u\n"
 msgstr "neplatné časové razítko v „%s“ na řádku %u\n"
 
-#, fuzzy, c-format
-#| msgid "WARNING: invalid cache file hash in `%s' line %u\n"
+#, c-format
 msgid "WARNING: invalid cache file hash in '%s' line %u\n"
 msgstr "POZOR: neplatný haš souboru keše v „%s“ na řádku %u\n"
 
@@ -6790,23 +6454,19 @@ msgstr "v kešovém dir souboru nalezeny chyby\n"
 msgid "please check the reason and manually delete that file\n"
 msgstr "prosím, zjistěte příčinu a soubor ručně smažte\n"
 
-#, fuzzy, c-format
-#| msgid "failed to create temporary cache dir file `%s': %s\n"
+#, c-format
 msgid "failed to create temporary cache dir file '%s': %s\n"
-msgstr "založení dočasného kešového dir souboru „%s“ selhalo: %s\n"
+msgstr "vytvoření dočasného kešového dir souboru „%s“ selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error closing `%s': %s\n"
+#, c-format
 msgid "error closing '%s': %s\n"
 msgstr "chyba při uzavírání „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error renaming `%s' to `%s': %s\n"
+#, c-format
 msgid "error renaming '%s' to '%s': %s\n"
 msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "can't hash `%s': %s\n"
+#, c-format
 msgid "can't hash '%s': %s\n"
 msgstr "nelze vypočítat haš „%s“: %s\n"
 
@@ -6814,31 +6474,26 @@ msgstr "nelze vypočítat haš „%s“: %s\n"
 msgid "error setting up MD5 hash context: %s\n"
 msgstr "chyba při nastavování hašovacího kontextu MD5: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error hashing `%s': %s\n"
+#, c-format
 msgid "error hashing '%s': %s\n"
 msgstr "chyba při výpočtu haše „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "invalid formatted checksum for `%s'\n"
+#, c-format
 msgid "invalid formatted checksum for '%s'\n"
-msgstr "chybně zformátovaný kontrolní součet souboru „%s“\n"
+msgstr "chybně formátovaný kontrolní součet souboru „%s“\n"
 
 msgid "too many open cache files; can't open anymore\n"
 msgstr "otevřeno příliš mnoho kešových souborů, další již nelze otevřít\n"
 
-#, fuzzy, c-format
-#| msgid "opening cache file `%s'\n"
+#, c-format
 msgid "opening cache file '%s'\n"
 msgstr "otevírá se kešový soubor „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "error opening cache file `%s': %s\n"
+#, c-format
 msgid "error opening cache file '%s': %s\n"
 msgstr "chyba při otevírání kešového souboru „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error initializing cache file `%s' for reading: %s\n"
+#, c-format
 msgid "error initializing cache file '%s' for reading: %s\n"
 msgstr "chyba při inicializaci kešového souboru „%s pro čtení: %s\n"
 
@@ -6908,8 +6563,7 @@ msgstr "sériové číslo %s je platné, není na seznamu CRL\n"
 msgid "error getting data from cache file: %s\n"
 msgstr "chyba při získávání dat ze souboru keše: %s\n"
 
-#, fuzzy, c-format
-#| msgid "unknown hash algorithm `%s'\n"
+#, c-format
 msgid "unknown hash algorithm '%s'\n"
 msgstr "neznámý hašovací algoritmus „%s“\n"
 
@@ -6974,32 +6628,27 @@ msgstr "volání ksba_crl_new selhalo: %s\n"
 msgid "ksba_crl_set_reader failed: %s\n"
 msgstr "volání ksba_crl_set_reader selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "removed stale temporary cache file `%s'\n"
+#, c-format
 msgid "removed stale temporary cache file '%s'\n"
 msgstr "odstraněn zastaralý dočasný soubor keše „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "problem removing stale temporary cache file `%s': %s\n"
+#, c-format
 msgid "problem removing stale temporary cache file '%s': %s\n"
 msgstr "problém s odstraňováním zastaralého dočasného souboru keše „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error creating temporary cache file `%s': %s\n"
+#, c-format
 msgid "error creating temporary cache file '%s': %s\n"
-msgstr "chyba při zakládání dočasného souboru keše „%s“: %s\n"
+msgstr "chyba při vytváření dočasného souboru keše „%s“: %s\n"
 
 #, c-format
 msgid "crl_parse_insert failed: %s\n"
 msgstr "volání crl_parse_insert selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error finishing temporary cache file `%s': %s\n"
+#, c-format
 msgid "error finishing temporary cache file '%s': %s\n"
 msgstr "chyba při dokončování dočasného souboru keše „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error closing temporary cache file `%s': %s\n"
+#, c-format
 msgid "error closing temporary cache file '%s': %s\n"
 msgstr "chyba při uzavírání dočasného souboru keše „%s“: %s\n"
 
@@ -7021,13 +6670,11 @@ msgstr "neznámé kritické rozšíření CRL %s\n"
 msgid "error reading CRL extensions: %s\n"
 msgstr "chyba při čtení rozšíření CRL: %s\n"
 
-#, fuzzy, c-format
-#| msgid "creating cache file `%s'\n"
+#, c-format
 msgid "creating cache file '%s'\n"
 msgstr "vytváří se soubor keše „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "problem renaming `%s' to `%s': %s\n"
+#, c-format
 msgid "problem renaming '%s' to '%s': %s\n"
 msgstr "problém s přejmenováním „%s“ na „%s“: %s\n"
 
@@ -7055,8 +6702,6 @@ msgstr " CHYBA: CRL nebude použit kvůli neznámému kritickému rozšíření!
 msgid " ERROR: The CRL will not be used\n"
 msgstr " CHYBA: CRL nebude použit\n"
 
-#, fuzzy
-#| msgid " ERROR: This cached CRL may has been tampered with!\n"
 msgid " ERROR: This cached CRL may have been tampered with!\n"
 msgstr " CHYBA: Tento nakešovaný CRL byl možná pozměněn!\n"
 
@@ -7105,21 +6750,18 @@ msgstr "Přístup k CRL není možný kvůli vypnutému %s\n"
 msgid "error initializing reader object: %s\n"
 msgstr "chyba při inicializaci čtecího objektu: %s\n"
 
-#, fuzzy, c-format
-#| msgid "URL `%s' redirected to `%s' (%u)\n"
+#, c-format
 msgid "URL '%s' redirected to '%s' (%u)\n"
 msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
 
 msgid "too many redirections\n"
 msgstr "příliš mnoho přesměrování\n"
 
-#, fuzzy, c-format
-#| msgid "error retrieving `%s': %s\n"
+#, c-format
 msgid "error retrieving '%s': %s\n"
 msgstr "chyba při získávání „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error retrieving `%s': http status %u\n"
+#, c-format
 msgid "error retrieving '%s': http status %u\n"
 msgstr "chyba při získávání „%s“: status HTTP je %u\n"
 
@@ -7154,16 +6796,14 @@ msgstr "zavede CRL do dirmngr"
 msgid "special mode for use by Squid"
 msgstr "zvláštní režim pro použití se Squidem"
 
-#, fuzzy
-#| msgid "certificates are expected in PEM format"
 msgid "expect certificates in PEM format"
-msgstr "certifikáty budou očekávány ve formátu PEM"
+msgstr "očekává certifikáty ve formátu PEM"
 
 msgid "force the use of the default OCSP responder"
 msgstr "vynutí použití výchozího OCSP odpovídače"
 
 msgid "Usage: dirmngr-client [options] [certfile|pattern] (-h for help)\n"
-msgstr "Použití: dirmngr-client [VOLBY] [CERT_SOUBOR|VZOR] (-h pro nápovědu)\n"
+msgstr "Použití: dirmngr-client [volby] [cert_soubor|vzor] (-h pro nápovědu)\n"
 
 msgid ""
 "Syntax: dirmngr-client [options] [certfile|pattern]\n"
@@ -7171,7 +6811,7 @@ msgid ""
 "The process returns 0 if the certificate is valid, 1 if it is\n"
 "not valid and other error codes for general failures\n"
 msgstr ""
-"Syntaxe: dirmngr-client [VOLBY] [CERT_SOUBOR|VZOR]\n"
+"Syntaxe: dirmngr-client [volby] [cert_soubor|VZOR]\n"
 "Vyzkouší X.509 certifikát proti CRL nebo OCSP.\n"
 "Proces vrátí 0, pokud je certifikát platný, 1, pokud není platný nebo jiný\n"
 "chybový kód značící obecné selhání.\n"
@@ -7180,10 +6820,9 @@ msgstr ""
 msgid "error reading certificate from stdin: %s\n"
 msgstr "chyba při čtení certifikátu ze standardního vstupu: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error reading certificate from `%s': %s\n"
+#, c-format
 msgid "error reading certificate from '%s': %s\n"
-msgstr "chyba při čtení certifikátu ze „%s“: %s\n"
+msgstr "chyba při čtení certifikátu z „%s“: %s\n"
 
 msgid "certificate too large to make any sense\n"
 msgstr "certifikát je příliš velký, než aby dával smysl\n"
@@ -7192,8 +6831,7 @@ msgstr "certifikát je příliš velký, než aby dával smysl\n"
 msgid "lookup failed: %s\n"
 msgstr "hledání selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "loading CRL `%s' failed: %s\n"
+#, c-format
 msgid "loading CRL '%s' failed: %s\n"
 msgstr "zavádění CRL „%s“ selhalo: %s\n"
 
@@ -7214,8 +6852,7 @@ msgstr "certifikát byl odvolán\n"
 msgid "certificate check failed: %s\n"
 msgstr "kontrola certifikátu selhala: %s\n"
 
-#, fuzzy, c-format
-#| msgid "got status: `%s'\n"
+#, c-format
 msgid "got status: '%s'\n"
 msgstr "obdržen status: „%s“\n"
 
@@ -7233,32 +6870,29 @@ msgstr "dirmngr zjevně neběží\n"
 msgid "no running dirmngr - starting one\n"
 msgstr "žádný dirmngr neběží – jeden bude spuštěn\n"
 
-#, fuzzy, c-format
-#| msgid "malformed DIRMNGR_INFO environment variable\n"
+#, c-format
 msgid "malformed %s environment variable\n"
-msgstr "špatný formát proměnné prostředí DIRMNGR_INFO\n"
+msgstr "špatně utvořená proměnná prostředí %s\n"
 
 #, c-format
 msgid "dirmngr protocol version %d is not supported\n"
-msgstr "protokol dirmngr verze %d není podporován\n"
+msgstr "verze %d protokolu dirmngr není podporována\n"
 
 msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr "k dirmngr se nelze připojit – zkouším náhradní způsob\n"
+msgstr "k dirmngr se nelze připojit – zkusí se náhradní postup\n"
 
 #, c-format
 msgid "can't connect to the dirmngr: %s\n"
 msgstr "k dirmngr se nelze připojit: %s\n"
 
-#, fuzzy, c-format
-#| msgid "unsupported inquiry `%s'\n"
+#, c-format
 msgid "unsupported inquiry '%s'\n"
 msgstr "nepodporovaný dotaz „%s“\n"
 
 msgid "absolute file name expected\n"
 msgstr "očekáván absolutní název souboru\n"
 
-#, fuzzy, c-format
-#| msgid "looking up `%s'\n"
+#, c-format
 msgid "looking up '%s'\n"
 msgstr "hledá se „%s“\n"
 
@@ -7281,7 +6915,7 @@ msgid "flush the cache"
 msgstr "vyprázdní keš"
 
 msgid "|FILE|write server mode logs to FILE"
-msgstr "|SOUBOR|zapisuje protokol serverového režimu do SOUBORU"
+msgstr "|SOUBOR|protokol z režimu serveru se zapíše do SOUBORU"
 
 msgid "run without asking a user"
 msgstr "běží bez dotazování se uživatele"
@@ -7335,7 +6969,7 @@ msgid "|N|do not return more than N items in one query"
 msgstr "|N|nevrací více jak N položek na jeden dotaz"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
-msgstr ""
+msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
 
 msgid ""
 "@\n"
@@ -7345,41 +6979,32 @@ msgstr ""
 "@\n"
 "(Úplný seznam příkazů a voleb naleznete v „info“ manuálu.)\n"
 
-#, fuzzy
-#| msgid "Usage: gpgconf [options] (-h for help)"
 msgid "Usage: @DIRMNGR@ [options] (-h for help)"
-msgstr "Použití: gpgconf [VOLBY] (-h pro nápovědu)"
+msgstr "Použití: @DIRMNGR@ [volby] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: dirmngr [options] [command [args]]\n"
-#| "LDAP and OCSP access for GnuPG\n"
 msgid ""
 "Syntax: @DIRMNGR@ [options] [command [args]]\n"
 "Keyserver, CRL, and OCSP access for @GNUPG@\n"
 msgstr ""
-"Syntaxe: dirmngr [VOLBY] [PŘÍKAZ [ARGUMENTY]]\n"
-"LDAP a OCSP přístup z GnuPG\n"
+"Syntaxe: @DIRMNGR@ [volby] [příkaz [argumenty]]\n"
+"Přístup k serveru s klíči, CRL a OCSP z @GNUPG@\n"
 
 #, c-format
 msgid "valid debug levels are: %s\n"
 msgstr "platné úrovně ladění jsou: %s\n"
 
-#, fuzzy, c-format
-#| msgid "usage: gpgsm [options] "
+#, c-format
 msgid "usage: %s [options] "
-msgstr "užití: gpgsm [VOLBY] "
+msgstr "použití: %s [volby] "
 
 msgid "colons are not allowed in the socket name\n"
 msgstr "dvojtečky v názvu socketu jsou nepřípustné\n"
 
-#, fuzzy, c-format
-#| msgid "fetching CRL from `%s' failed: %s\n"
+#, c-format
 msgid "fetching CRL from '%s' failed: %s\n"
-msgstr "stahování CRL z „%s„ selhalo: %s\n"
+msgstr "stahování CRL z „%s“ selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "processing CRL from `%s' failed: %s\n"
+#, c-format
 msgid "processing CRL from '%s' failed: %s\n"
 msgstr "zpracování CRL z „%s“ selhalo: %s\n"
 
@@ -7454,19 +7079,14 @@ msgid "|STRING|return the attribute STRING"
 msgstr "|ŘETĚZEC|vrátí atribut ŘETĚZEC"
 
 msgid "Usage: dirmngr_ldap [options] [URL] (-h for help)\n"
-msgstr "Použití: dirmngr_ldap [VOLBY] [URL] (-h pro nápovědu)\n"
+msgstr "Použití: dirmngr_ldap [volby] [URL] (-h pro nápovědu)\n"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: dirmngr_ldap [options] [URL]\n"
-#| "Internal LDAP helper for Dirmngr.\n"
-#| "Interface and options may change without notice.\n"
 msgid ""
 "Syntax: dirmngr_ldap [options] [URL]\n"
 "Internal LDAP helper for Dirmngr\n"
 "Interface and options may change without notice\n"
 msgstr ""
-"Syntaxe: dirmngr_ldap [VOLBY] [URL]\n"
+"Syntaxe: dirmngr_ldap [volby] [URL]\n"
 "Vnitřní LDAP pomůcka pro pro Dirmngr.\n"
 "Rozhraní a volby se mohou bez upozornění změnit.\n"
 
@@ -7474,8 +7094,7 @@ msgstr ""
 msgid "invalid port number %d\n"
 msgstr "neplatné číslo portu %d\n"
 
-#, fuzzy, c-format
-#| msgid "scanning result for attribute `%s'\n"
+#, c-format
 msgid "scanning result for attribute '%s'\n"
 msgstr "ve výsledku se hledá atribut „%s“\n"
 
@@ -7483,38 +7102,31 @@ msgstr "ve výsledku se hledá atribut „%s“\n"
 msgid "error writing to stdout: %s\n"
 msgstr "chyba při zápisu na standardní výstup: %s\n"
 
-#, fuzzy, c-format
-#| msgid "          available attribute `%s'\n"
+#, c-format
 msgid "          available attribute '%s'\n"
 msgstr "          dostupný atribut „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "attribute `%s' not found\n"
+#, c-format
 msgid "attribute '%s' not found\n"
 msgstr "atribut „%s“ nenalezen\n"
 
-#, fuzzy, c-format
-#| msgid "found attribute `%s'\n"
+#, c-format
 msgid "found attribute '%s'\n"
 msgstr "nalezen atribut „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "processing url `%s'\n"
+#, c-format
 msgid "processing url '%s'\n"
 msgstr "zpracovává se URL „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "          user `%s'\n"
+#, c-format
 msgid "          user '%s'\n"
 msgstr "          uživatel „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "          pass `%s'\n"
+#, c-format
 msgid "          pass '%s'\n"
 msgstr "          heslo „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "          host `%s'\n"
+#, c-format
 msgid "          host '%s'\n"
 msgstr "          stroj „%s“\n"
 
@@ -7522,58 +7134,48 @@ msgstr "          stroj „%s“\n"
 msgid "          port %d\n"
 msgstr "          port %d\n"
 
-#, fuzzy, c-format
-#| msgid "            DN `%s'\n"
+#, c-format
 msgid "            DN '%s'\n"
 msgstr "            DN „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "        filter `%s'\n"
+#, c-format
 msgid "        filter '%s'\n"
 msgstr "        filtr „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "          attr `%s'\n"
+#, c-format
 msgid "          attr '%s'\n"
 msgstr "          atribut „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "no host name in `%s'\n"
+#, c-format
 msgid "no host name in '%s'\n"
 msgstr "v „%s“ chybí název stroje\n"
 
-#, fuzzy, c-format
-#| msgid "no attribute given for query `%s'\n"
+#, c-format
 msgid "no attribute given for query '%s'\n"
 msgstr "u dotazu „%s“ nezadán žádný atribut\n"
 
 msgid "WARNING: using first attribute only\n"
 msgstr "POZOR: použije se pouze první atribut\n"
 
-#, fuzzy, c-format
-#| msgid "LDAP init to `%s:%d' failed: %s\n"
+#, c-format
 msgid "LDAP init to '%s:%d' failed: %s\n"
 msgstr "Inicializace LDAP u „%s:%d“ selhala: %s\n"
 
-#, fuzzy, c-format
-#| msgid "binding to `%s:%d' failed: %s\n"
+#, c-format
 msgid "binding to '%s:%d' failed: %s\n"
 msgstr "napojení k „%s:%d“ selhalo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "searching `%s' failed: %s\n"
+#, c-format
 msgid "searching '%s' failed: %s\n"
-msgstr "vyhledávání „%s“ selhalo: %s\n"
+msgstr "hledávání „%s“ neuspělo: %s\n"
 
-#, fuzzy, c-format
-#| msgid "`%s' is not an LDAP URL\n"
+#, c-format
 msgid "'%s' is not an LDAP URL\n"
 msgstr "„%s“ není LDAP URL\n"
 
-#, fuzzy, c-format
-#| msgid "`%s' is an invalid LDAP URL\n"
+#, c-format
 msgid "'%s' is an invalid LDAP URL\n"
-msgstr "„%s“ není platní LDAP URL\n"
+msgstr "„%s“ není platné LDAP URL\n"
 
 #, c-format
 msgid "error allocating memory: %s\n"
@@ -7587,10 +7189,9 @@ msgstr "chyba při tisknutí řádku protokolu: %s\n"
 msgid "error reading log from ldap wrapper %d: %s\n"
 msgstr "chyba při čtení protokolu z ldapové obálky č. %d: %s\n"
 
-#, fuzzy, c-format
-#| msgid "pth_select failed: %s - waiting 1s\n"
+#, c-format
 msgid "npth_select failed: %s - waiting 1s\n"
-msgstr "pth_select selhala: %s – čekám 1 s\n"
+msgstr "npth_select selhala: %s – čeká se 1 s\n"
 
 #, c-format
 msgid "ldap wrapper %d ready"
@@ -7624,17 +7225,15 @@ msgstr "čtení z ldapové obálky %d selhalo: %s\n"
 msgid "invalid char 0x%02x in host name - not added\n"
 msgstr "v názvu stroje je neplatný znak 0x%02x – nepřidáno\n"
 
-#, fuzzy, c-format
-#| msgid "adding `%s:%d' to the ldap server list\n"
+#, c-format
 msgid "adding '%s:%d' to the ldap server list\n"
-msgstr "na seznam LDAP serverů bude zařazen „%s:%d“\n"
+msgstr "na seznam LDAP serverů se přidává „%s:%d“\n"
 
 #, c-format
 msgid "malloc failed: %s\n"
 msgstr "funkce malloc selhala: %s\n"
 
-#, fuzzy, c-format
-#| msgid "start_cert_fetch: invalid pattern `%s'\n"
+#, c-format
 msgid "start_cert_fetch: invalid pattern '%s'\n"
 msgstr "start_cert_fetch: chybný vzor „%s“\n"
 
@@ -7674,33 +7273,27 @@ msgstr "chyba při nastavování cíle OCSP: %s\n"
 msgid "error building OCSP request: %s\n"
 msgstr "chyba při sestavování OCSP dotazu: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error connecting to `%s': %s\n"
+#, c-format
 msgid "error connecting to '%s': %s\n"
 msgstr "chyba při připojování na „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error reading HTTP response for `%s': %s\n"
+#, c-format
 msgid "error reading HTTP response for '%s': %s\n"
 msgstr "chyba při čtení HTTP odpovědi od „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "error accessing `%s': http status %u\n"
+#, c-format
 msgid "error accessing '%s': http status %u\n"
 msgstr "chyba přístupu k „%s“: status HTTP %u\n"
 
-#, fuzzy, c-format
-#| msgid "error parsing OCSP response for `%s': %s\n"
+#, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
 msgstr "chyba při rozebírání OCSP odpovědi od „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "OCSP responder at `%s' status: %s\n"
+#, c-format
 msgid "OCSP responder at '%s' status: %s\n"
 msgstr "Stav odpovídače OCSP na „%s“: %s\n"
 
-#, fuzzy, c-format
-#| msgid "hashing the OCSP response for `%s' failed: %s\n"
+#, c-format
 msgid "hashing the OCSP response for '%s' failed: %s\n"
 msgstr "hašování OCSP odpovědi pro „%s“ selhalo: %s\n"
 
@@ -7745,13 +7338,11 @@ msgstr "žádný výchozí OCSP odpovídač nedefinován\n"
 msgid "no default OCSP signer defined\n"
 msgstr "žádný výchozí OCSP podepisovatel nedefinován\n"
 
-#, fuzzy, c-format
-#| msgid "using default OCSP responder `%s'\n"
+#, c-format
 msgid "using default OCSP responder '%s'\n"
 msgstr "použije se výchozí OCSP odpovídač „%s“\n"
 
-#, fuzzy, c-format
-#| msgid "using OCSP responder `%s'\n"
+#, c-format
 msgid "using OCSP responder '%s'\n"
 msgstr "použije se OCSP odpovídač „%s“\n"
 
@@ -7864,12 +7455,10 @@ msgid "certificate chain is good\n"
 msgstr "řetěz certifikátů je v pořádku\n"
 
 msgid "DSA requires the use of a 160 bit hash algorithm\n"
-msgstr "DSA požaduje použití 160-ti bitového hashovacího algoritmu\n"
+msgstr "DSA požaduje použití 160bitového hašovacího algoritmu\n"
 
-#, fuzzy
-#| msgid "certificate should not have been used for signing\n"
 msgid "certificate should not have been used for CRL signing\n"
-msgstr "certifikát neměl být použit pro podepsání\n"
+msgstr "certifikát neměl být použit pro podepsání CRL\n"
 
 msgid "quiet"
 msgstr "stručný výstup"
@@ -7880,10 +7469,8 @@ msgstr "vypisovat data v šestnáctkové soustavě"
 msgid "decode received data lines"
 msgstr "dekódovat přijaté datové řádky"
 
-#, fuzzy
-#| msgid "can't connect to the dirmngr: %s\n"
 msgid "connect to the dirmngr"
-msgstr "k dirmngr se nelze připojit: %s\n"
+msgstr "připojit se k dirmngr"
 
 msgid "|NAME|connect to Assuan socket NAME"
 msgstr "|NÁZEV|připojit se na socket Assuanu s NÁZVEM"
@@ -7903,20 +7490,14 @@ msgstr "|SOUBOR|spustit příkazy ze SOUBORU při startu"
 msgid "run /subst on startup"
 msgstr "spustit /subst při startu"
 
-#, fuzzy
-#| msgid "Usage: gpg-connect-agent [options] (-h for help)"
 msgid "Usage: @GPG@-connect-agent [options] (-h for help)"
-msgstr "Použití: gpg-connect-agent [VOLBY] [SOUBORY] (-h pro nápovědu)"
+msgstr "Použití: @GPG@-connect-agent [volby] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpg-connect-agent [options]\n"
-#| "Connect to a running agent and send commands\n"
 msgid ""
 "Syntax: @GPG@-connect-agent [options]\n"
 "Connect to a running agent and send commands\n"
 msgstr ""
-"Syntaxe: gpg-connect-agent [VOLBY]\n"
+"Syntaxe: @GPG@-connect-agent [volby]\n"
 "Připojí se na běžícího agenta a odesílá příkazy\n"
 
 #, c-format
@@ -7937,8 +7518,7 @@ msgstr "řádek je příliš dlouhý – přeskočen\n"
 msgid "line shortened due to embedded Nul character\n"
 msgstr "řádek zkrácen, protože obsahoval znak \\0\n"
 
-#, fuzzy, c-format
-#| msgid "unknown command `%s'\n"
+#, c-format
 msgid "unknown command '%s'\n"
 msgstr "neznámý příkaz „%s“\n"
 
@@ -8044,29 +7624,25 @@ msgid "Configuration for OCSP"
 msgstr "Nastavení OCSP"
 
 msgid "GPG for OpenPGP"
-msgstr ""
+msgstr "GPG pro OpenPGP"
 
 msgid "GPG Agent"
-msgstr ""
+msgstr "Agent GPG"
 
 msgid "Smartcard Daemon"
-msgstr ""
+msgstr "Démon pro čipové karty"
 
 msgid "GPG for S/MIME"
-msgstr ""
+msgstr "GPG pro S/MIME"
 
 msgid "Directory Manager"
-msgstr ""
+msgstr "Správce adresářů"
 
-#, fuzzy
-#| msgid "Bad Passphrase"
 msgid "PIN and Passphrase Entry"
-msgstr "Špatné heslo"
+msgstr "Zadávání kódu PIN a hesla"
 
-#, fuzzy
-#| msgid "Component not found"
 msgid "Component not suitable for launching"
-msgstr "Komponenta nenalezena"
+msgstr "Komponenta není vhodná pro spuštění"
 
 #, c-format
 msgid "External verification of component %s failed"
@@ -8093,10 +7669,8 @@ msgstr "|KOMPONENTA|zkontrolovat volby"
 msgid "apply global default values"
 msgstr "aplikovat globální implicitní hodnoty"
 
-#, fuzzy
-#| msgid "get the configuration directories for gpgconf"
 msgid "get the configuration directories for @GPGCONF@"
-msgstr "získat adresáře s nastavením gpgconfu"
+msgstr "získat adresáře s nastavením @GPGCONF@"
 
 msgid "list global configuration file"
 msgstr "vypsat globální konfigurační soubor"
@@ -8107,10 +7681,8 @@ msgstr "zkontrolovat globální konfigurační soubor"
 msgid "reload all or a given component"
 msgstr "znovu načíst všechny nebo zadané komponenty"
 
-#, fuzzy
-#| msgid "kill a given component"
 msgid "launch a given component"
-msgstr "zabít zadanou komponentu"
+msgstr "spustit zadanou komponentu"
 
 msgid "kill a given component"
 msgstr "zabít zadanou komponentu"
@@ -8121,21 +7693,15 @@ msgstr "použít jako výstupní soubor"
 msgid "activate changes at runtime, if possible"
 msgstr "provést změny za běhu, pokud to lze"
 
-#, fuzzy
-#| msgid "Usage: gpgconf [options] (-h for help)"
 msgid "Usage: @GPGCONF@ [options] (-h for help)"
-msgstr "Použití: gpgconf [VOLBY] (-h pro nápovědu)"
+msgstr "Použití: @GPGCONF@ [volby] (-h pro nápovědu)"
 
-#, fuzzy
-#| msgid ""
-#| "Syntax: gpgconf [options]\n"
-#| "Manage configuration options for tools of the GnuPG system\n"
 msgid ""
 "Syntax: @GPGCONF@ [options]\n"
 "Manage configuration options for tools of the @GNUPG@ system\n"
 msgstr ""
-"Syntaxe: gpgconf [VOLBY]\n"
-"Spravuje konfigurační volby nástrojů, které patří do systému GnuPG\n"
+"Syntaxe: @GPGCONF@ [volby]\n"
+"Spravuje konfigurační volby nástrojů, které patří do systému @GNUPG@\n"
 
 msgid "Need one component argument"
 msgstr "Potřebuji jeden argument určující komponentu"
@@ -8174,7 +7740,7 @@ msgid "input file name (default stdin)"
 msgstr "název vstupního souboru (implicitně standardní vstup)"
 
 msgid "Usage: symcryptrun [options] (-h for help)"
-msgstr "Použití: symcryptrun [VOLBY]  (-h pro nápovědu)"
+msgstr "Použití: symcryptrun [volby]  (-h pro nápovědu)"
 
 msgid ""
 "Syntax: symcryptrun --class CLASS --program PROGRAM --keyfile KEYFILE "
@@ -8192,10 +7758,9 @@ msgstr "%s nad %s byl ukončen s kódem %i\n"
 msgid "%s on %s failed with status %i\n"
 msgstr "%s nad %s selhal s kódem %i\n"
 
-#, fuzzy, c-format
-#| msgid "can't create temporary directory `%s': %s\n"
+#, c-format
 msgid "can't create temporary directory '%s': %s\n"
-msgstr "nemohu vytvořit dočasný adresář „%s“: %s\n"
+msgstr "nelze vytvořit dočasný adresář „%s“: %s\n"
 
 #, c-format
 msgid "could not open %s for writing: %s\n"
@@ -8282,14 +7847,385 @@ msgstr "třída %s není podporována\n"
 
 msgid "Usage: gpg-check-pattern [options] patternfile (-h for help)\n"
 msgstr ""
-"Použití: gpg-check-pattern [VOLBY] SOUBOR_SE_VZOREM (-h pro nápovědu)\n"
+"Použití: gpg-check-pattern [volby] soubor_se_vzorem (-h pro nápovědu)\n"
 
 msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
-"Syntaxe: gpg-check-pattern [VOLBY] SOUBOR_SE_VZOREM\n"
+"Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "error creating socket: %s\n"
+#~ msgstr "chyba při vytváření socketu: %s\n"
+
+#~ msgid "host not found"
+#~ msgstr "stroj nenalezen"
+
+#~ msgid "Usage: dirmngr [options] (-h for help)"
+#~ msgstr "Použití: dirmngr [volby] (-h pro nápovědu)"
+
+#~ msgid "usage: dirmngr [options] "
+#~ msgstr "použití: dirmngr [volby] "
+
+#~ msgid "pth_event failed: %s\n"
+#~ msgstr "funkce pth_event selhala: %s\n"
+
+#~ msgid "pth_wait failed: %s\n"
+#~ msgstr "funkce pth_wait selhala: %s\n"
+
+#~ msgid "certificate should have not been used for CRL signing\n"
+#~ msgstr "certifikát by neměl být použit pro podepisování CRL\n"
+
+#~ msgid "can't access directory `%s': %s\n"
+#~ msgstr "k adresáři „%s“ nelze přistoupit: %s\n"
+
+#~ msgid "can't open `%s': %s\n"
+#~ msgstr "„%s“ nelze otevřít: %s\n"
+
+#~ msgid "can't setup KSBA reader: %s\n"
+#~ msgstr "čtečku KSBA nelze nastavit: %s\n"
+
+#~ msgid "can't parse certificate `%s': %s\n"
+#~ msgstr "certifikát „%s“ nelze rozebrat: %s\n"
+
+#~ msgid "certificate `%s' already cached\n"
+#~ msgstr "certifikát „%s“ je již v keši\n"
+
+#~ msgid "trusted certificate `%s' loaded\n"
+#~ msgstr "zaveden důvěryhodný certifikát „%s“\n"
+
+#~ msgid "certificate `%s' loaded\n"
+#~ msgstr "certifikát „%s“ zaveden\n"
+
+#~ msgid "error loading certificate `%s': %s\n"
+#~ msgstr "chyba při zavádění certifikátu „%s“: %s\n"
+
+#~ msgid "invalid SHA1 fingerprint string `%s'\n"
+#~ msgstr "neplatný řetězec otisku SHA1 „%s“\n"
+
+#~ msgid "creating directory `%s'\n"
+#~ msgstr "vytváří se adresář „%s“\n"
+
+#~ msgid "error creating directory `%s': %s\n"
+#~ msgstr "chyba při zakládání adresáře „%s“: %s\n"
+
+#~ msgid "ignoring database dir `%s'\n"
+#~ msgstr "adresář databáze „%s“ nebude brán zřetel\n"
+
+#~ msgid "error reading directory `%s': %s\n"
+#~ msgstr "chyba při čtení adresáře „%s“: %s\n"
+
+#~ msgid "removing cache file `%s'\n"
+#~ msgstr "odstraňuje se soubor keše „%s“\n"
+
+#~ msgid "not removing file `%s'\n"
+#~ msgstr "soubor „%s“ nebude neodstraněn\n"
+
+#~ msgid "failed to open cache dir file `%s': %s\n"
+#~ msgstr "otevření kešového dir souboru „%s“ selhalo: %s\n"
+
+#~ msgid "error creating new cache dir file `%s': %s\n"
+#~ msgstr "chyba při vytváření nového kešového dir souboru „%s“: %s\n"
+
+#~ msgid "error writing new cache dir file `%s': %s\n"
+#~ msgstr "chyba při zápisu nového kešového dir souboru „%s: %s\n"
+
+#~ msgid "error closing new cache dir file `%s': %s\n"
+#~ msgstr "chyba při uzavírání nového kešového dir souboru „%s“: %s\n"
+
+#~ msgid "new cache dir file `%s' created\n"
+#~ msgstr "nový kešový dir soubor „%s“ vytvořen\n"
+
+#~ msgid "failed to re-open cache dir file `%s': %s\n"
+#~ msgstr "znovu otevření kešového dir souboru „%s“ selhalo: %s\n"
+
+#~ msgid "first record of `%s' is not the version\n"
+#~ msgstr "první záznam „%s“ není verze\n"
+
+#~ msgid "extra field detected in crl record of `%s' line %u\n"
+#~ msgstr "nalezena nadbytečná položka v záznamu CRL „%s“ na řádku %u\n"
+
+#~ msgid "invalid line detected in `%s' line %u\n"
+#~ msgstr "nalezen neplatný řádek %2$u v „%1$s\n"
+
+#~ msgid "duplicate entry detected in `%s' line %u\n"
+#~ msgstr "nalezena duplicitní položka v „%s“ na řádku %u\n"
+
+#~ msgid "unsupported record type in `%s' line %u skipped\n"
+#~ msgstr "nepodporovaný typ záznamu v „%s“ na řádku %u přeskočen\n"
+
+#~ msgid "error reading `%s': %s\n"
+#~ msgstr "chyba při čtení „%s“: %s\n"
+
+#~ msgid "invalid issuer hash in `%s' line %u\n"
+#~ msgstr "neplatný haš vydavatele v „%s“ na řádku %u\n"
+
+#~ msgid "no issuer DN in `%s' line %u\n"
+#~ msgstr "v „%s“ na řádku %u chybí DN vydavatele\n"
+
+#~ msgid "invalid timestamp in `%s' line %u\n"
+#~ msgstr "neplatné časové razítko v „%s“ na řádku %u\n"
+
+#~ msgid "WARNING: invalid cache file hash in `%s' line %u\n"
+#~ msgstr "POZOR: neplatný haš souboru keše v „%s“ na řádku %u\n"
+
+#~ msgid "failed to create temporary cache dir file `%s': %s\n"
+#~ msgstr "založení dočasného kešového dir souboru „%s“ selhalo: %s\n"
+
+#~ msgid "error writing `%s': %s\n"
+#~ msgstr "chyba při zapisování do „%s“: %s\n"
+
+#~ msgid "error closing `%s': %s\n"
+#~ msgstr "chyba při uzavírání „%s“: %s\n"
+
+#~ msgid "error renaming `%s' to `%s': %s\n"
+#~ msgstr "chyba při přejmenování „%s“ na „%s“: %s\n"
+
+#~ msgid "can't hash `%s': %s\n"
+#~ msgstr "nelze vypočítat haš „%s“: %s\n"
+
+#~ msgid "error hashing `%s': %s\n"
+#~ msgstr "chyba při výpočtu haše „%s“: %s\n"
+
+#~ msgid "invalid formatted checksum for `%s'\n"
+#~ msgstr "chybně zformátovaný kontrolní součet souboru „%s“\n"
+
+#~ msgid "opening cache file `%s'\n"
+#~ msgstr "otevírá se kešový soubor „%s“\n"
+
+#~ msgid "error opening cache file `%s': %s\n"
+#~ msgstr "chyba při otevírání kešového souboru „%s“: %s\n"
+
+#~ msgid "error initializing cache file `%s' for reading: %s\n"
+#~ msgstr "chyba při inicializaci kešového souboru „%s pro čtení: %s\n"
+
+#~ msgid "unknown hash algorithm `%s'\n"
+#~ msgstr "neznámý hašovací algoritmus „%s“\n"
+
+#~ msgid "removed stale temporary cache file `%s'\n"
+#~ msgstr "odstraněn zastaralý dočasný soubor keše „%s“\n"
+
+#~ msgid "problem removing stale temporary cache file `%s': %s\n"
+#~ msgstr ""
+#~ "problém s odstraňováním zastaralého dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "error creating temporary cache file `%s': %s\n"
+#~ msgstr "chyba při zakládání dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "error finishing temporary cache file `%s': %s\n"
+#~ msgstr "chyba při dokončování dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "error closing temporary cache file `%s': %s\n"
+#~ msgstr "chyba při uzavírání dočasného souboru keše „%s“: %s\n"
+
+#~ msgid "creating cache file `%s'\n"
+#~ msgstr "vytváří se soubor keše „%s“\n"
+
+#~ msgid "problem renaming `%s' to `%s': %s\n"
+#~ msgstr "problém s přejmenováním „%s“ na „%s“: %s\n"
+
+#~ msgid " ERROR: This cached CRL may has been tampered with!\n"
+#~ msgstr " CHYBA: Tento nakešovaný CRL byl možná pozměněn!\n"
+
+#~ msgid "URL `%s' redirected to `%s' (%u)\n"
+#~ msgstr "URL „%s“ přesměrováno na „%s“ (%u)\n"
+
+#~ msgid "error retrieving `%s': %s\n"
+#~ msgstr "chyba při získávání „%s“: %s\n"
+
+#~ msgid "error retrieving `%s': http status %u\n"
+#~ msgstr "chyba při získávání „%s“: status HTTP je %u\n"
+
+#~ msgid "|FILE|listen on socket FILE"
+#~ msgstr "|SOUBOR|poslouchá ne socketu SOUBOR"
+
+#~ msgid ""
+#~ "Syntax: dirmngr [options] [command [args]]\n"
+#~ "LDAP and OCSP access for GnuPG\n"
+#~ msgstr ""
+#~ "Syntaxe: dirmngr [volby] [příkaz [argumenty]]\n"
+#~ "LDAP a OCSP přístup z GnuPG\n"
+
+#~ msgid "invalid debug-level `%s' given\n"
+#~ msgstr "zadána neplatná úroveň ladění „%s“\n"
+
+#~ msgid "NOTE: no default option file `%s'\n"
+#~ msgstr "POZNÁMKA: soubor „%s“ s výchozími volbami neexistuje\n"
+
+#~ msgid "option file `%s': %s\n"
+#~ msgstr "konfigurační soubor „%s“: %s\n"
+
+#~ msgid "reading options from `%s'\n"
+#~ msgstr "načítají se volby z „%s“\n"
+
+#~ msgid "WARNING: running with faked system time %s\n"
+#~ msgstr "POZOR: provoz s podvrženým systémovým časem %s\n"
+
+#~ msgid "error binding socket to `%s': %s\n"
+#~ msgstr "chyba při přilepování socketu ne „%s“: %s\n"
+
+#~ msgid "listening on socket `%s'\n"
+#~ msgstr "naslouchá se na socketu „%s“\n"
+
+#~ msgid "fork failed: %s\n"
+#~ msgstr "volání fork() selhalo: %s\n"
+
+#~ msgid "setsid() failed: %s\n"
+#~ msgstr "volání setsid() selhalo: %s\n"
+
+#~ msgid "chdir to / failed: %s\n"
+#~ msgstr "změna pracovního adresáře na / se nezdařila: %s\n"
+
+#~ msgid "fetching CRL from `%s' failed: %s\n"
+#~ msgstr "stahování CRL z „%s„ selhalo: %s\n"
+
+#~ msgid "processing CRL from `%s' failed: %s\n"
+#~ msgstr "zpracování CRL z „%s“ selhalo: %s\n"
+
+#~ msgid "error opening `%s': %s\n"
+#~ msgstr "chyba při otevírání „%s“: %s\n"
+
+#~ msgid "accept failed: %s - waiting 1s\n"
+#~ msgstr "přijetí spojení selhalo: %s – čeká se 1 s\n"
+
+#~ msgid "error spawning connection handler: %s\n"
+#~ msgstr "chyba při vytváření obsluhy spojení: %s\n"
+
+#~ msgid "adding `%s:%d' to the ldap server list\n"
+#~ msgstr "na seznam LDAP serverů bude zařazen „%s:%d“\n"
+
+#~ msgid "start_cert_fetch: invalid pattern `%s'\n"
+#~ msgstr "start_cert_fetch: chybný vzor „%s“\n"
+
+#~ msgid "error connecting to `%s': %s\n"
+#~ msgstr "chyba při připojování na „%s“: %s\n"
+
+#~ msgid "error reading HTTP response for `%s': %s\n"
+#~ msgstr "chyba při čtení HTTP odpovědi od „%s“: %s\n"
+
+#~ msgid "error accessing `%s': http status %u\n"
+#~ msgstr "chyba přístupu k „%s“: status HTTP %u\n"
+
+#~ msgid "error parsing OCSP response for `%s': %s\n"
+#~ msgstr "chyba při rozebírání OCSP odpovědi od „%s“: %s\n"
+
+#~ msgid "OCSP responder at `%s' status: %s\n"
+#~ msgstr "Stav odpovídače OCSP na „%s“: %s\n"
+
+#~ msgid "hashing the OCSP response for `%s' failed: %s\n"
+#~ msgstr "hašování OCSP odpovědi pro „%s“ selhalo: %s\n"
+
+#~ msgid "using default OCSP responder `%s'\n"
+#~ msgstr "použije se výchozí OCSP odpovídač „%s“\n"
+
+#~ msgid "using OCSP responder `%s'\n"
+#~ msgstr "použije se OCSP odpovídač „%s“\n"
+
+#~ msgid "command %s failed: %s\n"
+#~ msgstr "příkaz %s selhal: %s\n"
+
+#~ msgid "no data stream"
+#~ msgstr "žádný datový proud"
+
+#~ msgid "note: non-critical certificate policy not allowed"
+#~ msgstr "poznámka: nekritické certifikační politiky nejsou povoleny"
+
+#~ msgid "certificate should have not been used for certification\n"
+#~ msgstr "certifikát by neměl být použit pro certifikace\n"
+
+#~ msgid "certificate should have not been used for OCSP response signing\n"
+#~ msgstr "certifikát by neměl být použit pro podepisování OCSP odpovědí\n"
+
+#~ msgid "certificate should have not been used for encryption\n"
+#~ msgstr "certifikát by neměl být použit pro šifrování\n"
+
+#~ msgid "certificate should have not been used for signing\n"
+#~ msgstr "certifikát by neměl být použit pro podepisování\n"
+
+#~ msgid "certificates are expected in PEM format"
+#~ msgstr "certifikáty budou očekávány ve formátu PEM"
+
+#~ msgid "error reading certificate from `%s': %s\n"
+#~ msgstr "chyba při čtení certifikátu ze „%s“: %s\n"
+
+#~ msgid "loading CRL `%s' failed: %s\n"
+#~ msgstr "zavádění CRL „%s“ selhalo: %s\n"
+
+#~ msgid "got status: `%s'\n"
+#~ msgstr "obdržen status: „%s“\n"
+
+#~ msgid "malformed DIRMNGR_INFO environment variable\n"
+#~ msgstr "poškozená proměnná prostření DIRMNGR_INFO\n"
+
+#~ msgid "unsupported inquiry `%s'\n"
+#~ msgstr "nepodporovaný dotaz „%s“\n"
+
+#~ msgid "looking up `%s'\n"
+#~ msgstr "hledá se „%s“\n"
+
+#~ msgid ""
+#~ "Syntax: dirmngr_ldap [options] [URL]\n"
+#~ "Internal LDAP helper for Dirmngr.\n"
+#~ "Interface and options may change without notice.\n"
+#~ msgstr ""
+#~ "Syntaxe: dirmngr_ldap [volby] [URL]\n"
+#~ "Vnitřní LDAP pomůcka pro pro Dirmngr.\n"
+#~ "Rozhraní a volby se mohou bez upozornění změnit.\n"
+
+#~ msgid "scanning result for attribute `%s'\n"
+#~ msgstr "ve výsledku se hledá atribut „%s“\n"
+
+#~ msgid "          available attribute `%s'\n"
+#~ msgstr "          dostupný atribut „%s“\n"
+
+#~ msgid "attribute `%s' not found\n"
+#~ msgstr "atribut „%s“ nenalezen\n"
+
+#~ msgid "found attribute `%s'\n"
+#~ msgstr "nalezen atribut „%s“\n"
+
+#~ msgid "processing url `%s'\n"
+#~ msgstr "zpracovává se URL „%s“\n"
+
+#~ msgid "          user `%s'\n"
+#~ msgstr "          uživatel „%s“\n"
+
+#~ msgid "          pass `%s'\n"
+#~ msgstr "          heslo „%s“\n"
+
+#~ msgid "          host `%s'\n"
+#~ msgstr "          stroj „%s“\n"
+
+#~ msgid "            DN `%s'\n"
+#~ msgstr "            DN „%s“\n"
+
+#~ msgid "        filter `%s'\n"
+#~ msgstr "        filtr „%s“\n"
+
+#~ msgid "          attr `%s'\n"
+#~ msgstr "          atribut „%s“\n"
+
+#~ msgid "no host name in `%s'\n"
+#~ msgstr "v „%s“ chybí název stroje\n"
+
+#~ msgid "no attribute given for query `%s'\n"
+#~ msgstr "u dotazu „%s“ nezadán žádný atribut\n"
+
+#~ msgid "LDAP init to `%s:%d' failed: %s\n"
+#~ msgstr "Inicializace LDAP u „%s:%d“ selhala: %s\n"
+
+#~ msgid "binding to `%s:%d' failed: %s\n"
+#~ msgstr "napojení k „%s:%d“ selhalo: %s\n"
+
+#~ msgid "searching `%s' failed: %s\n"
+#~ msgstr "vyhledávání „%s“ selhalo: %s\n"
+
+#~ msgid "`%s' is not an LDAP URL\n"
+#~ msgstr "„%s“ není LDAP URL\n"
+
+#~ msgid "`%s' is an invalid LDAP URL\n"
+#~ msgstr "„%s“ není platní LDAP URL\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "použít standardní umístění socketu"
@@ -8298,7 +8234,7 @@ msgstr ""
 #~ msgstr "|SOUBOR|zapsat nastavení prostředí též do SOUBORU"
 
 #~ msgid "Usage: gpg-agent [options] (-h for help)"
-#~ msgstr "Použití: gpg-agent [VOLBY] (-h pro nápovědu)"
+#~ msgstr "Použití: gpg-agent [volby] (-h pro nápovědu)"
 
 #~ msgid "malformed GPG_AGENT_INFO environment variable\n"
 #~ msgstr "špatný formát proměnné prostředí GPG_AGENT_INFO\n"
@@ -8308,12 +8244,6 @@ msgstr ""
 
 #~ msgid "can't fdopen pipe for reading: %s\n"
 #~ msgstr "nemohu otevřít (fdopen) rouru pro čtení: %s\n"
-
-#~ msgid "error creating socket: %s\n"
-#~ msgstr "chyba při vytváření socketu: %s\n"
-
-#~ msgid "host not found"
-#~ msgstr "stroj nenalezen"
 
 # TODO: Plural
 #~ msgid "waiting %d seconds for the agent to come up\n"
@@ -8525,9 +8455,6 @@ msgstr ""
 #~ msgid "WARNING: unable to parse URI %s\n"
 #~ msgstr "VAROVÁNÍ: URI %s nelze rozebrat\n"
 
-#~ msgid "invalid root packet detected in proc_tree()\n"
-#~ msgstr "nalezen neplatný kořenový paket v proc_tree()\n"
-
 #~ msgid "the IDEA cipher plugin is not present\n"
 #~ msgstr "IDEA modul pro GnuPG nenalezen\n"
 
@@ -8621,7 +8548,7 @@ msgstr ""
 #~ msgstr " – asi mrtvý – odstraňuji zámek"
 
 #~ msgid "Usage: scdaemon [options] (-h for help)"
-#~ msgstr "Použití: scdaemon [možnosti] [SOUBORY] (-h pro nápovědu)"
+#~ msgstr "Použití: scdaemon [možnosti] [soubory] (-h pro nápovědu)"
 
 #~ msgid "Parameters to be used for the certificate request:\n"
 #~ msgstr "Parametry, které budou použity v žádosti o certifikát:\n"
@@ -8633,16 +8560,16 @@ msgstr ""
 #~ msgstr "použít systémový dirmngr, je-li dostupný"
 
 #~ msgid "Usage: gpgsm [options] [files] (-h for help)"
-#~ msgstr "Použití: gpgsm [VOLBY] [SOUBORY] (-h pro nápovědu)"
+#~ msgstr "Použití: gpgsm [VOLBY] [soubory] (-h pro nápovědu)"
+
+#~ msgid "you may want to start the gpg-agent first\n"
+#~ msgstr "možná byste chtěl(a) nejprve spustit gpg-agenta\n"
 
 #~ msgid "error sending %s command: %s\n"
 #~ msgstr "chyba při odesílání příkazu %s: %s\n"
 
 #~ msgid "usage: gpgconf [options] "
 #~ msgstr "použití: gpgconf [VOLBY] "
-
-#~ msgid "you may want to start the gpg-agent first\n"
-#~ msgstr "možná byste chtěl(a) nejprve spustit gpg-agenta\n"
 
 #~ msgid "enable ssh-agent emulation"
 #~ msgstr "zapnout emulaci ssh-agenta"
@@ -8655,21 +8582,6 @@ msgstr ""
 
 #~ msgid "failed to allocated keyDB handle\n"
 #~ msgstr "alokace popisovače keyDB se nezdařila\n"
-
-#~ msgid "Usage: dirmngr [options] (-h for help)"
-#~ msgstr "Použití: dirmngr [VOLBY] (-h pro nápovědu)"
-
-#~ msgid "usage: dirmngr [options] "
-#~ msgstr "použití: dirmngr [VOLBY] "
-
-#~ msgid "pth_event failed: %s\n"
-#~ msgstr "funkce pth_event selhala: %s\n"
-
-#~ msgid "pth_wait failed: %s\n"
-#~ msgstr "funkce pth_wait selhala: %s\n"
-
-#~ msgid "certificate should have not been used for CRL signing\n"
-#~ msgstr "certifikát by neměl být použit pro podepisování CRL\n"
 
 #~ msgid "Command> "
 #~ msgstr "Příkaz> "
