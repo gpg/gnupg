@@ -471,6 +471,8 @@ get_serialno_cb (void *opaque, const char *line)
 void
 agent_release_card_info (struct agent_card_info_s *info)
 {
+  int i;
+
   if (!info)
     return;
 
@@ -482,7 +484,13 @@ agent_release_card_info (struct agent_card_info_s *info)
   xfree (info->login_data); info->login_data = NULL;
   info->cafpr1valid = info->cafpr2valid = info->cafpr3valid = 0;
   info->fpr1valid = info->fpr2valid = info->fpr3valid = 0;
+  for (i=0; i < DIM(info->private_do); i++)
+    {
+      xfree (info->private_do[i]);
+      info->private_do[i] = NULL;
+    }
 }
+
 
 static gpg_error_t
 learn_status_cb (void *opaque, const char *line)
@@ -649,6 +657,14 @@ learn_status_cb (void *opaque, const char *line)
           parm->key_attr[keyno].algo = algo;
           parm->key_attr[keyno].nbits = nbits;
         }
+    }
+  else if (keywordlen == 12 && !memcmp (keyword, "PRIVATE-DO-", 11)
+           && strchr("1234", keyword[11]))
+    {
+      int no = keyword[11] - '1';
+      assert (no >= 0 && no <= 3);
+      xfree (parm->private_do[no]);
+      parm->private_do[no] = unescape_status_string (line);
     }
 
   return 0;
