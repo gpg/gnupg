@@ -1,11 +1,17 @@
-Noteworthy changes in version 2.1.1 (unreleased)
+Noteworthy changes in version 2.1.1 (2014-12-16)
 ------------------------------------------------
 
  * gpg: Detect faulty use of --verify on detached signatures.
 
  * gpg: New import option "keep-ownertrust".
 
+ * gpg: New sub-command "factory-reset" for --card-edit.
+
+ * gpg: A stub key for smartcards is now created by --card-status.
+
  * gpg: Fixed regression in --refresh-keys.
+
+ * gpg: Fixed regresion in %g and %p codes for --sig-notation.
 
  * gpg: Fixed best matching hash algo detection for ECDSA and EdDSA.
 
@@ -13,7 +19,22 @@ Noteworthy changes in version 2.1.1 (unreleased)
 
  * gpg: Print number of skipped PGP-2 keys on import.
 
+ * gpg: Removed the option aliases --throw-keyid and --notation-data;
+   use --throw-keyids and --set-notation instead.
+
+ * gpg: New import option "keep-ownertrust".
+
+ * gpg: Skip too large keys during import.
+
+ * gpg,gpgsm: New option --no-autostart to avoid starting gpg-agent or
+   dirmngr.
+
+ * gpg-agent: New option --extra-socket to provide a restricted
+   command set for use with remote clients.
+
  * gpgconf --kill does not anymore start a service only to kill it.
+
+ * gpg-pconnect-agent: Add convenience option --uiserver.
 
  * Fixed keyserver access for Windows.
 
@@ -23,10 +44,10 @@ Noteworthy changes in version 2.1.1 (unreleased)
 
  * More translations (but most of them are not complete).
 
- * gpg: Removed the option aliases --throw-keyid and --notation-data;
-   use --throw-keyids and --set-notation instead.
+ * To support remotely mounted home directories, the IPC sockets may
+   now be redirected.  This feature requires Libassuan 2.2.0.
 
- * gpg: Skip too large keys during import.
+ * Improved portability and the usual bunch of bug fixes.
 
 
 Noteworthy changes in version 2.1.0 (2014-11-06)
