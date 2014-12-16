@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-19 10:33+0100\n"
+"PO-Revision-Date: 2014-12-16 15:51+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -395,9 +395,6 @@ msgstr "Optionen werden aus '%s' gelesen\n"
 #, c-format
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Hinweis: `%s' wird nicht als Option betrachtet\n"
-
-msgid "name of socket too long\n"
-msgstr "Der Name des Sockets ist zu lang\n"
 
 #, c-format
 msgid "can't create socket: %s\n"
@@ -793,6 +790,9 @@ msgstr "Warte bis der gpg-agent bereit ist ... (%ds)\n"
 
 msgid "connection to agent established\n"
 msgstr "Verbindung zum gpg-agent aufgebaut\n"
+
+msgid "connection to agent is in restricted mode\n"
+msgstr "Verbindung zum gpg-agent ist im eingeschränkten Modus.\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1350,6 +1350,18 @@ msgstr "Wählen Sie den Speicherort für den Schlüssel:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "Das KEYTOCARD Kommando schlug fehl: %s\n"
 
+msgid "This command is not supported by this card\n"
+msgstr "Dieser Befehl wird von dieser Karte nicht unterstützt.\n"
+
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "Hinweis: Dieses Kommando zerstörrt alle auf der Karte gespeicherten Schlüssel!\n"
+
+msgid "Continue? (y/N) "
+msgstr "Fortsetzen? (J/n) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr "Möchten Sie die Karte wirklich komplett löschen? (\"yes\" eingeben) "
+
 msgid "quit this menu"
 msgstr "Menü verlassen"
 
@@ -1397,6 +1409,9 @@ msgstr "überprüfe die PIN und liste alle Daten auf"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "die PIN mit dem Rückstellcode wieder freigeben"
+
+msgid "destroy all keys and data"
+msgstr "alle Schlüssel und Daten löschen"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2318,6 +2333,10 @@ msgstr "%lu Schlüssel bislang bearbeitet\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Anzahl insgesamt bearbeiteter Schlüssel: %lu\n"
+
+#, c-format
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "             ignorierte PGP-2 Schlüssel: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5565,6 +5584,9 @@ msgstr "Die RSA Primzahl %s fehlt oder ist nicht %d Bits lang\n"
 msgid "failed to store the key: %s\n"
 msgstr "Speichern des Schlüssels fehlgeschlagen: %s\n"
 
+msgid "unsupported curve\n"
+msgstr "Nicht unterstützte Kurve\n"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "Bitte warten, der Schlüssel wird erzeugt ...\n"
 
@@ -5667,6 +5689,9 @@ msgstr "Handhabungsroutine für den fd %d beendet\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Ungültiges Basis-64 Zeichen %02X wurde übersprungen\n"
+
+msgid "no dirmngr running in this session\n"
+msgstr "Der Dirmngr läuft nicht für diese Session\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7684,9 +7709,6 @@ msgstr "unbekannter Befehl `%s'\n"
 msgid "sending line failed: %s\n"
 msgstr "Senden der Zeile schlug fehl: %s\n"
 
-msgid "no dirmngr running in this session\n"
-msgstr "Der Dirmngr läuft nicht für diese Session\n"
-
 #, c-format
 msgid "error sending standard options: %s\n"
 msgstr "Fehler beim Senden der Standardoptionen: %s\n"
@@ -8018,6 +8040,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "Der Name des Sockets ist zu lang\n"
 
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "GPG-Agent ist in dieser Sitzung nicht vorhanden\n"
