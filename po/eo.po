@@ -401,9 +401,6 @@ msgstr "legas opciojn el '%s'\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "AVERTO: '%s' estas malplena dosiero\n"
 
-msgid "name of socket too long\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "ne povas krei %s: %s\n"
@@ -707,9 +704,6 @@ msgstr "eraro dum legado de '%s': %s\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -797,6 +791,10 @@ msgstr ""
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+msgid "connection to agent is in restricted mode\n"
+msgstr "ne povas fari tion en neinteraga reøimo\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1408,6 +1406,22 @@ msgstr "Kialo por revoko: "
 msgid "KEYTOCARD failed: %s\n"
 msgstr "aktualigo malsukcesis: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Tiu komando ne eblas en la reøimo %s.\n"
+
+#, fuzzy
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "ignorita: sekreta þlosilo jam æeestas\n"
+
+#, fuzzy
+msgid "Continue? (y/N) "
+msgstr "Æu vere subskribi? "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "forlasi æi tiun menuon"
 
@@ -1460,6 +1474,9 @@ msgid "verify the PIN and list all data"
 msgstr ""
 
 msgid "unblock the PIN using a Reset Code"
+msgstr ""
+
+msgid "destroy all keys and data"
 msgstr ""
 
 msgid "gpg/card> "
@@ -2422,6 +2439,11 @@ msgstr "%lu þlosiloj jam traktitaj\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "      Nombro traktita entute: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "    ignoritaj novaj þlosiloj: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5709,6 +5731,11 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "nerealigita URI"
+
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
@@ -5814,6 +5841,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "nevalida signo %02x en bazo 64 ignorita\n"
+
+#, fuzzy
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8217,6 +8248,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent ne estas disponata en æi tiu sesio\n"
+
 #, fuzzy
 #~ msgid "use a standard location for the socket"
 #~ msgstr "Æu vere aktualigi la preferojn por la elektitaj uzantidentigiloj? "
@@ -9024,9 +9058,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "malbona URI"
-
-#~ msgid "unsupported URI"
-#~ msgstr "nerealigita URI"
 
 #~ msgid "network error"
 #~ msgstr "reteraro"

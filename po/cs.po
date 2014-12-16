@@ -410,9 +410,6 @@ msgstr "čtou se možnosti z „%s“\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "Poznámka: „%s“ není uvažovaná možnost\n"
 
-msgid "name of socket too long\n"
-msgstr "název socketu je příliš dlouhý\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "socket nelze vytvořit: %s\n"
@@ -713,9 +710,6 @@ msgstr "chyba v běhu „%s“: násilně ukončeno\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "chyba při získání návratového kódu procesu %d: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent není v tomto sezení dostupný\n"
-
 #, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "nelze se připojit k „%s“: %s\n"
@@ -798,6 +792,11 @@ msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr "čeká se na agenta… (%d s)\n"
 
 msgid "connection to agent established\n"
+msgstr "spojení na agenta ustanoveno\n"
+
+#, fuzzy
+#| msgid "connection to agent established\n"
+msgid "connection to agent is in restricted mode\n"
 msgstr "spojení na agenta ustanoveno\n"
 
 #, c-format
@@ -1277,7 +1276,8 @@ msgid ""
 "      documentation of your card to see what sizes are allowed.\n"
 msgstr ""
 "Poznámka: Nelze zaručit, že karta podporuje požadovanou velikost.\n"
-"          Pokud generování klíče neuspěje, prosím, nahlédněte do dokumentace\n"
+"          Pokud generování klíče neuspěje, prosím, nahlédněte do "
+"dokumentace\n"
 "          své karty, kde se dozvíte, jaké velikosti jsou dovoleny.\n"
 
 #, c-format
@@ -1349,6 +1349,24 @@ msgstr "Prosím vyberte místo pro uchování klíče:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "Volání KEYTOCARD selhalo: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Tento příkaz není v módů %s dovolený.\n"
+
+#, fuzzy
+#| msgid "Note: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "Poznámka: na kartě jsou již klíče uloženy!\n"
+
+#, fuzzy
+#| msgid "Continue? (Y/n) "
+msgid "Continue? (y/N) "
+msgstr "Pokračovat (A/n) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "ukončit toto menu"
 
@@ -1396,6 +1414,9 @@ msgstr "ověř PIN a vypiš všechna data"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "odblokovat PIN pomocí resetačního kódu"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/karta> "
@@ -1851,8 +1872,7 @@ msgstr ""
 
 #, c-format
 msgid "WARNING: unsafe permissions on homedir '%s'\n"
-msgstr ""
-"VAROVÁNÍ: přístupová práva pro domovský adresář „%s“ nejsou bezpečná\n"
+msgstr "VAROVÁNÍ: přístupová práva pro domovský adresář „%s“ nejsou bezpečná\n"
 
 #, c-format
 msgid "WARNING: unsafe permissions on configuration file '%s'\n"
@@ -1885,7 +1905,8 @@ msgstr ""
 #, c-format
 msgid "WARNING: unsafe enclosing directory permissions on homedir '%s'\n"
 msgstr ""
-"VAROVÁNÍ: přístupová práva k adresáři „%s“ s domovským adresářem nejsou nastavena bezpečně\n"
+"VAROVÁNÍ: přístupová práva k adresáři „%s“ s domovským adresářem nejsou "
+"nastavena bezpečně\n"
 
 #, c-format
 msgid ""
@@ -2281,6 +2302,11 @@ msgstr "importovat podpisy, které jsou označeny jen jako místní"
 msgid "repair damage from the pks keyserver during import"
 msgstr "opravit poškození vzniklá při importu z PKS serveru"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "neaktualizovat databázi důvěry po importu"
+
 msgid "do not update the trustdb after import"
 msgstr "neaktualizovat databázi důvěry po importu"
 
@@ -2304,6 +2330,11 @@ msgstr "%lu klíče byly doposud zpracovány\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Celkový počet zpracovaných klíčů: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "     přeskočeny nové klíče: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -4137,7 +4168,8 @@ msgid "decryption failed: %s\n"
 msgstr "dešifrování selhalo: %s\n"
 
 msgid "Note: sender requested \"for-your-eyes-only\"\n"
-msgstr "Poznámka: odesílatel považoval data za důvěrná („for-your-eyes-only“)\n"
+msgstr ""
+"Poznámka: odesílatel považoval data za důvěrná („for-your-eyes-only“)\n"
 
 #, c-format
 msgid "original file name='%.*s'\n"
@@ -4220,6 +4252,10 @@ msgid ", key algorithm "
 msgstr ", algoritmus klíče"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nemohu ověřit podpis: %s\n"
 
@@ -4236,9 +4272,6 @@ msgstr "samostatný podpis třídy 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "podpis starého typu (PGP 2.x)\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "nalezen neplatný kořenový paket v proc_tree()\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -4302,8 +4335,7 @@ msgstr "%s:%u: „%s“ je v tomto souboru zastaralý – účinkuje pouze v 
 #, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
-msgstr ""
-"VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje kromě v %s\n"
+msgstr "VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje kromě v %s\n"
 
 msgid "Uncompressed"
 msgstr "Nezkomprimováno"
@@ -5452,6 +5484,11 @@ msgstr "schází RSA prime %s nebo nemá velikost %d bitů\n"
 msgid "failed to store the key: %s\n"
 msgstr "nelze uložit klíč: %s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "toto URI není podporováno"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "prosím počkejte než bude klíč vygenerován…\n"
 
@@ -5537,7 +5574,8 @@ msgstr ""
 "Démon pro čipové karty (smartcard) pro @GNUPG@\n"
 
 msgid "please use the option '--daemon' to run the program in the background\n"
-msgstr "prosím, použijte volbu „--daemon“, chcete-li nechat běžet program na pozadí\n"
+msgstr ""
+"prosím, použijte volbu „--daemon“, chcete-li nechat běžet program na pozadí\n"
 
 #, c-format
 msgid "handler for fd %d started\n"
@@ -5550,6 +5588,11 @@ msgstr "obsluha pro deskriptor %d ukončena\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "neplatný radix64 znak %02x byl přeskočen\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "v této relaci neběží žádný gpg-agent\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7856,6 +7899,15 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
+#~ msgid "name of socket too long\n"
+#~ msgstr "název socketu je příliš dlouhý\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent není v tomto sezení dostupný\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "nalezen neplatný kořenový paket v proc_tree()\n"
+
 #~ msgid "error creating socket: %s\n"
 #~ msgstr "chyba při vytváření socketu: %s\n"
 
@@ -9146,9 +9198,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "špatné URI"
-
-#~ msgid "unsupported URI"
-#~ msgstr "toto URI není podporováno"
 
 #~ msgid "network error"
 #~ msgstr "chyba sítě"

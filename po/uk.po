@@ -384,9 +384,6 @@ msgstr "прочитати параметри з «%s»\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "ЗАУВАЖЕННЯ: %s не призначено для звичайного використання!\n"
 
-msgid "name of socket too long\n"
-msgstr "назва сокета є надто довгою\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "не вдалося створити сокет: %s\n"
@@ -696,9 +693,6 @@ msgstr "помилка під час спроби виконання «%s»: в�
 msgid "error getting exit code of process %d: %s\n"
 msgstr "помилка під час спроби отримання коду виходу процесу %d: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent недоступний у цьому сеансі\n"
-
 #, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "не вдалося встановити з’єднання з «%s»: %s\n"
@@ -780,6 +774,11 @@ msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr "очікування на працездатність агента… (%d с)\n"
 
 msgid "connection to agent established\n"
+msgstr "встановлено з’єднання з агентом\n"
+
+#, fuzzy
+#| msgid "connection to agent established\n"
+msgid "connection to agent is in restricted mode\n"
 msgstr "встановлено з’єднання з агентом\n"
 
 #, c-format
@@ -1335,6 +1334,24 @@ msgstr "Виберіть сховище для зберігання ключа:\
 msgid "KEYTOCARD failed: %s\n"
 msgstr "Помилка KEYTOCARD: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Цією командою не можна користуватися у режимі %s.\n"
+
+#, fuzzy
+#| msgid "Note: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "ЗАУВАЖЕННЯ: ключі вже збережено на картці!\n"
+
+#, fuzzy
+#| msgid "Continue? (Y/n) "
+msgid "Continue? (y/N) "
+msgstr "Продовжити? (Y (так)/n (ні)) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "вийти з цього меню"
 
@@ -1382,6 +1399,9 @@ msgstr "перевірити пінкод і показати список вс�
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "розблокувати під коду за допомогою коду скидання"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/картка> "
@@ -2319,6 +2339,11 @@ msgstr "оброблено %lu ключів\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Загалом оброблено: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "пропущено нових ключів: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5527,6 +5552,11 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "не вдалося зберегти ключ: %s\n"
 
+#, fuzzy
+#| msgid "unsupported inquiry '%s'\n"
+msgid "unsupported curve\n"
+msgstr "непідтримуваний запит «%s»\n"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "зачекайте на завершення створення ключа...\n"
 
@@ -5627,6 +5657,11 @@ msgstr "роботу обробника для дескриптора %d пер�
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "пропущено некоректний символ radix64 %02x\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "у цьому сеансі не запущено gpg-agent\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7950,6 +7985,12 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "назва сокета є надто довгою\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent недоступний у цьому сеансі\n"
 
 #~ msgid "invalid root packet detected in proc_tree()\n"
 #~ msgstr "виявлено некоректний кореневий пакет у proc_tree()\n"

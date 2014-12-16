@@ -404,9 +404,6 @@ msgstr "membaca pilihan dari `%s'\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 
-msgid "name of socket too long\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "tidak dapat membuat %s: %s\n"
@@ -711,9 +708,6 @@ msgstr "kesalahan membaca `%s': %s\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "kesalahan menulis keyring rahasia `%s': %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -800,6 +794,10 @@ msgstr ""
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+msgid "connection to agent is in restricted mode\n"
+msgstr "tidak dapat melakukan hal itu dalam mode batch\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1405,6 +1403,22 @@ msgstr "Silakan pilih alasan untuk pembatalan:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "gagal memperbarui: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Perintah ini tidak dibolehkan saat dalam mode %s.\n"
+
+#, fuzzy
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "dilewati: kunci pribadi telah ada\n"
+
+#, fuzzy
+msgid "Continue? (y/N) "
+msgstr "Ditandai? "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "berhenti dari menu ini"
 
@@ -1457,6 +1471,9 @@ msgid "verify the PIN and list all data"
 msgstr ""
 
 msgid "unblock the PIN using a Reset Code"
+msgstr ""
+
+msgid "destroy all keys and data"
 msgstr ""
 
 msgid "gpg/card> "
@@ -2423,6 +2440,11 @@ msgstr "%lu kunci telah diproses\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Jumlah yang telah diproses: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "        lewati kunci baru: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5707,6 +5729,11 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "gagal inisialisasi TrustDB: %s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "URI tidak didukung"
+
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
@@ -5811,6 +5838,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "karakter radix64 tidak valid %02x dilewati\n"
+
+#, fuzzy
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8210,6 +8241,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent tidak tersedia untuk sesi ini\n"
+
 #, fuzzy
 #~ msgid "use a standard location for the socket"
 #~ msgstr "Perbarui preferensi untuk user ID terpilih?"
@@ -9113,9 +9147,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "URI yang buruk"
-
-#~ msgid "unsupported URI"
-#~ msgstr "URI tidak didukung"
 
 #~ msgid "network error"
 #~ msgstr "kesalahan jaringan"

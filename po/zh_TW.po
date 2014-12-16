@@ -373,9 +373,6 @@ msgstr "從 '%s' 讀取選項中\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "請注意: '%s' 並不當成選項\n"
 
-msgid "name of socket too long\n"
-msgstr "socket 名稱太長\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "無法建立 socket: %s\n"
@@ -671,9 +668,6 @@ msgstr "執行 '%s' 時出錯: 已終止\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "取得 %d 執行程序結束碼時出錯: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent 在此階段無法使用\n"
-
 #, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "無法連接至 '%s': %s\n"
@@ -754,6 +748,11 @@ msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr "正在等候代理程式出現 ... (%d 秒)\n"
 
 msgid "connection to agent established\n"
+msgstr "至代理程式的連線已建立\n"
+
+#, fuzzy
+#| msgid "connection to agent established\n"
+msgid "connection to agent is in restricted mode\n"
 msgstr "至代理程式的連線已建立\n"
 
 #, c-format
@@ -1300,6 +1299,24 @@ msgstr "請選擇要把金鑰存放在哪裡:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARD 失敗: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "在 %s 模式中不允許使用這個指令.\n"
+
+#, fuzzy
+#| msgid "Note: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "請注意: 金鑰已經存放在卡片上了!\n"
+
+#, fuzzy
+#| msgid "Continue? (Y/n) "
+msgid "Continue? (y/N) "
+msgstr "是否繼續? (Y/n) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "離開這個選單"
 
@@ -1347,6 +1364,9 @@ msgstr "驗證個人識別碼 (PIN) 並列出所有的資料"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "用重設碼來解凍個人識別碼 (PIN)"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/卡片> "
@@ -2200,6 +2220,11 @@ msgstr "匯入標記為僅限本機使用的簽章"
 msgid "repair damage from the pks keyserver during import"
 msgstr "匯入時修復來自 pks 金鑰伺服器的損壞"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "匯入後不要更新信任資料庫"
+
 msgid "do not update the trustdb after import"
 msgstr "匯入後不要更新信任資料庫"
 
@@ -2223,6 +2248,11 @@ msgstr "目前已處理 %lu 把金鑰\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "處理總量: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "        已跳過的新金鑰: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -4107,6 +4137,10 @@ msgid ", key algorithm "
 msgstr ", 金鑰演算法 "
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "無法檢查簽章: %s\n"
 
@@ -4123,9 +4157,6 @@ msgstr "等級 0x%02x 的獨立簽章\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "舊型 (PGP 2.x) 簽章\n"
-
-msgid "invalid root packet detected in proc_tree()\n"
-msgstr "在 proc_tree() 中偵測到無效的 root 封包\n"
 
 #, c-format
 msgid "fstat of '%s' failed in %s: %s\n"
@@ -5298,6 +5329,11 @@ msgstr "RSA 質數 %s 缺漏或者並非 %d 位元大\n"
 msgid "failed to store the key: %s\n"
 msgstr "存放金鑰失敗: %s\n"
 
+#, fuzzy
+#| msgid "unsupported inquiry '%s'\n"
+msgid "unsupported curve\n"
+msgstr "未支援的查詢 '%s'\n"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "正在產生金鑰中, 請稍候 ...\n"
 
@@ -5396,6 +5432,11 @@ msgstr "用於 fd %d 的經手程式已終止\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "已跳過無效的 radix64 字符 %02x\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "在此階段中沒有執行中的 gpg-agent\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7665,6 +7706,15 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "socket 名稱太長\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent 在此階段無法使用\n"
+
+#~ msgid "invalid root packet detected in proc_tree()\n"
+#~ msgstr "在 proc_tree() 中偵測到無效的 root 封包\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "為 socket 使用標準的位置"

@@ -447,9 +447,6 @@ msgstr "läser inställningar från \"%s\"\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "VARNING: inställningen \"%s\" är föråldrad\n"
 
-msgid "name of socket too long\n"
-msgstr "namnet på uttaget är för långt\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "kan inte skapa uttag: %s\n"
@@ -781,9 +778,6 @@ msgstr "fel vid körning av \"%s\": avslutades\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "fel vid hämtning av avslutskod för processen %d: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -869,6 +863,11 @@ msgstr "väntar %d sekunder för att agenten ska komma igång\n"
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to agent is in restricted mode\n"
+msgstr "kan inte ansluta till dirmngr - försöker falla tillbaka\n"
 
 #, fuzzy, c-format
 #| msgid "no running dirmngr - starting `%s'\n"
@@ -1455,6 +1454,24 @@ msgstr "Välj var nyckeln ska sparas:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "läsning misslyckades: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
+
+#, fuzzy
+#| msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "OBSERVERA: nycklar har redan lagrats på kortet!\n"
+
+#, fuzzy
+#| msgid "Sign it? (y/N) "
+msgid "Continue? (y/N) "
+msgstr "Signera den? (j/N) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "avsluta denna meny"
 
@@ -1504,6 +1521,9 @@ msgstr "validera PIN-koden och lista allt data"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "lås upp PIN-koden med en nollställningskod"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/kort> "
@@ -2489,6 +2509,11 @@ msgstr "%lu nycklar behandlade än så länge\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Totalt antal behandlade enheter: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "        överhoppade nya nycklar: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5823,6 +5848,11 @@ msgstr "RSA-primtal %s saknas eller inte %d bitar stor\n"
 msgid "failed to store the key: %s\n"
 msgstr "misslyckades med att lagra nyckeln: %s\n"
 
+#, fuzzy
+#| msgid "unsupported algorithm: %s"
+msgid "unsupported curve\n"
+msgstr "algoritmen stöds inte: %s"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "var god vänta under tiden nyckeln genereras ...\n"
 
@@ -5937,6 +5967,11 @@ msgstr "hanterare för fd %d avslutad\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "ogiltigt radix64-tecken %02x hoppades över\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "ingen gpg-agent kör i den här sessionen\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8545,6 +8580,12 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "namnet på uttaget är för långt\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "kunde inte få tillgång till GPG-Agent i denna session\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "använd en standardplats för uttaget"

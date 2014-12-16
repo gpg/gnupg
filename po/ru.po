@@ -1328,6 +1328,24 @@ msgstr "Выберите, где хранить ключ:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "сбой записи ключа на карту: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Данная команда в режиме %s недопустима.\n"
+
+#, fuzzy
+#| msgid "Note: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "Замечание: ключи уже хранятся на карте!\n"
+
+#, fuzzy
+#| msgid "Continue? (Y/n) "
+msgid "Continue? (y/N) "
+msgstr "Продолжить? (Y/n) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "выйти из этого меню"
 
@@ -1375,6 +1393,9 @@ msgstr "проверить PIN и показать все данные"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "разблокировать PIN с помощью кода сброса"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/card> "

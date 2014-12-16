@@ -399,9 +399,6 @@ msgstr "lettura delle opzioni da `%s'\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
 
-msgid "name of socket too long\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "impossibile creare %s: %s\n"
@@ -706,9 +703,6 @@ msgstr "errore leggendo `%s': %s\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "errore scrivendo il portachiavi segreto `%s': %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent non è disponibile in questa sessione\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -795,6 +789,10 @@ msgstr ""
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+msgid "connection to agent is in restricted mode\n"
+msgstr "impossibile fare questo in modo batch\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1403,6 +1401,22 @@ msgstr "Per favore scegli il motivo della revoca:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "aggiornamento fallito: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Questo comando non è permesso in modalità %s.\n"
+
+#, fuzzy
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "saltata: chiave pubblica già presente\n"
+
+#, fuzzy
+msgid "Continue? (y/N) "
+msgstr "Firmo davvero? "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "abbandona questo menù"
 
@@ -1455,6 +1469,9 @@ msgid "verify the PIN and list all data"
 msgstr ""
 
 msgid "unblock the PIN using a Reset Code"
+msgstr ""
+
+msgid "destroy all keys and data"
 msgstr ""
 
 msgid "gpg/card> "
@@ -2429,6 +2446,11 @@ msgstr "Per ora sono state esaminate %lu chiavi\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Numero totale esaminato: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "  nuove chiavi saltate: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5748,6 +5770,11 @@ msgstr ""
 msgid "failed to store the key: %s\n"
 msgstr "inizializzazione del trustdb fallita: %s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "URI non gestito"
+
 msgid "please wait while key is being generated ...\n"
 msgstr ""
 
@@ -5852,6 +5879,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "Carattere radix64 non valido %02x saltato\n"
+
+#, fuzzy
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent non è disponibile in questa sessione\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8253,6 +8284,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent non è disponibile in questa sessione\n"
+
 #, fuzzy
 #~ msgid "use a standard location for the socket"
 #~ msgstr "Aggiorno davvero le preferenze per gli user ID selezionati? "
@@ -9170,9 +9204,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "URI non valida"
-
-#~ msgid "unsupported URI"
-#~ msgstr "URI non gestito"
 
 #~ msgid "network error"
 #~ msgstr "errore di rete"

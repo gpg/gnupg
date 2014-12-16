@@ -413,9 +413,6 @@ msgstr "citesc opþiuni din `%s'\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "AVERTISMENT: \"%s\" este o opþiune învechitã\n"
 
-msgid "name of socket too long\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "nu pot crea `%s': %s\n"
@@ -725,9 +722,6 @@ msgstr "eroare la citire `%s': %s\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "eroare la obþinerea informaþiei pentru cheia curentã: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -813,6 +807,11 @@ msgstr ""
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "can't do this in batch mode\n"
+msgid "connection to agent is in restricted mode\n"
+msgstr "nu pot face acest lucru în modul batch\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1407,6 +1406,23 @@ msgstr "Vã rugãm selectaþi unde sã fie stocatã cheia:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "actualizarea a eºuat: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Aceastã comandã nu este permisã în modul %s.\n"
+
+#, fuzzy
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "cheia secretã deja stocatã pe un card\n"
+
+#, fuzzy
+#| msgid "Sign it? (y/N) "
+msgid "Continue? (y/N) "
+msgstr "Doriþi sã-l semnaþi? (d/N) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "ieºi din acest meniu"
 
@@ -1453,6 +1469,9 @@ msgid "verify the PIN and list all data"
 msgstr "verificã PIN-ul ºi listeazã toate datele"
 
 msgid "unblock the PIN using a Reset Code"
+msgstr ""
+
+msgid "destroy all keys and data"
 msgstr ""
 
 msgid "gpg/card> "
@@ -2444,6 +2463,11 @@ msgstr "%lu chei procesate pânã acum\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Numãr total procesate: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "      chei noi sãrite: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5711,6 +5735,11 @@ msgstr "prime-ul RSA %s lipseºte sau nu are %d biþi\n"
 msgid "failed to store the key: %s\n"
 msgstr "am eºuat sã stochez cheia: %s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "URI nesuportat"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "vã rugãm aºteptaþi câtã vreme este creatã noua cheie ...\n"
 
@@ -5816,6 +5845,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caracter radix64 invalid %02X sãrit\n"
+
+#, fuzzy
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8250,6 +8283,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
+
 #, fuzzy
 #~ msgid "use a standard location for the socket"
 #~ msgstr "seteazã lista de preferinþe pentru ID-urile utilizator selectate"
@@ -9209,9 +9245,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "URI incorect"
-
-#~ msgid "unsupported URI"
-#~ msgstr "URI nesuportat"
 
 #~ msgid "network error"
 #~ msgstr "eroare reþea"

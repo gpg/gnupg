@@ -421,9 +421,6 @@ msgstr "\"%s\"den seçenekler okunuyor\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "UYARI: %s seçeneği kullanımdan kaldırılmak üzere.\n"
 
-msgid "name of socket too long\n"
-msgstr "soketin ismi çok uzun\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "soket oluşturulamıyor: %s\n"
@@ -753,9 +750,6 @@ msgstr "`%s' çalışırken hata: sonlandırıldı\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "süreç %d çıkış kodu alınırken hata: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent bu oturumda kullanılamaz\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -839,6 +833,11 @@ msgstr ""
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to agent is in restricted mode\n"
+msgstr "dirmngr'a bağlanılamıyor - son çareye başvuruluyor\n"
 
 #, fuzzy, c-format
 #| msgid "no running dirmngr - starting `%s'\n"
@@ -1414,6 +1413,23 @@ msgstr "Lütfen anahtarın saklanacağı yeri seçiniz:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "read başarısız: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "%s kipindeyken bu komut kullanılamaz.\n"
+
+#, fuzzy
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "gizli anahtar zaten bir kartın üzerinde saklı\n"
+
+#, fuzzy
+#| msgid "Sign it? (y/N) "
+msgid "Continue? (y/N) "
+msgstr "İmzalayacak mısınız? (e/H veya y/N) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "bu menüden çık"
 
@@ -1461,6 +1477,9 @@ msgstr "PIN'i doğrular ve tüm veriyi listeler"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "Bir Sıfırlama Kodu kullanarak PIN'in engelini kaldır"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr ""
@@ -2427,6 +2446,11 @@ msgstr "şu ana kadar %lu anahtar işlendi\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "İşlenmiş toplam miktar: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "     yeni anahtarlar atlandı: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5761,6 +5785,11 @@ msgstr "RSA asal sayısı %s ya eksik la da %d bitlik değil\n"
 msgid "failed to store the key: %s\n"
 msgstr "anahtarın saklanması başarısız: %s\n"
 
+#, fuzzy
+#| msgid "unsupported algorithm: %s"
+msgid "unsupported curve\n"
+msgstr "desteklenmeyen algoritma: %s"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "anahtar üretilene kadar lütfen bekleyiniz ....\n"
 
@@ -5875,6 +5904,11 @@ msgstr "fd %d için eylemci sonlandı\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "geçersiz radix64 karakteri %02x atlandı\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "bu oturumda çalışan gpg-agent yok\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8476,6 +8510,12 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "soketin ismi çok uzun\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent bu oturumda kullanılamaz\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "soket için standart bir yer kullanılır"

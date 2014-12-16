@@ -412,9 +412,6 @@ msgstr "从‘%s’读取选项\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "警告：“%s”选项已不建议使用\n"
 
-msgid "name of socket too long\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "can't create socket: %s\n"
 msgstr "无法建立‘%s’：%s\n"
@@ -721,9 +718,6 @@ msgstr "读取‘%s’时出错：%s\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "取得当前密钥信息时出错：%s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent 在此次舍话中无法使用\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -808,6 +802,11 @@ msgstr ""
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "can't do this in batch mode\n"
+msgid "connection to agent is in restricted mode\n"
+msgstr "在批处理模式中无法完成此操作\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1398,6 +1397,23 @@ msgstr "请选择在哪里存储密钥：\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "更新失败：%s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "在 %s 模式中不允许使用这个指令。\n"
+
+#, fuzzy
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "私钥已存储在卡上\n"
+
+#, fuzzy
+#| msgid "Sign it? (y/N) "
+msgid "Continue? (y/N) "
+msgstr "为其添加签名吗？(y/N)"
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "离开这个菜单"
 
@@ -1444,6 +1460,9 @@ msgid "verify the PIN and list all data"
 msgstr "验证 PIN 并列出所有数据"
 
 msgid "unblock the PIN using a Reset Code"
+msgstr ""
+
+msgid "destroy all keys and data"
 msgstr ""
 
 msgid "gpg/card> "
@@ -2398,6 +2417,11 @@ msgstr "目前已处理 %lu 把密钥\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "合计被处理的数量：%lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "  已跳过的新密钥：%lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5567,6 +5591,11 @@ msgstr "RSA 质数 %s 缺失或者不是 %d 位长\n"
 msgid "failed to store the key: %s\n"
 msgstr "无法存储密钥：%s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "未被支持的 URI"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "请稍候，正在生成密钥……\n"
 
@@ -5668,6 +5697,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "跳过无效的 64 进制字符 %02x\n"
+
+#, fuzzy
+msgid "no dirmngr running in this session\n"
+msgstr "gpg-agent 在此次舍话中无法使用\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8088,6 +8121,9 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent 在此次舍话中无法使用\n"
+
 #, fuzzy
 #~ msgid "use a standard location for the socket"
 #~ msgstr "为所选用户标识的设定注记"
@@ -8971,9 +9007,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "URI 已损坏"
-
-#~ msgid "unsupported URI"
-#~ msgstr "未被支持的 URI"
 
 #~ msgid "network error"
 #~ msgstr "网络错误"

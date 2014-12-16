@@ -447,9 +447,6 @@ msgstr "leyendo opciones desde `%s'\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "ATENCIÓN: \"%s\" es una opción obsoleta\n"
 
-msgid "name of socket too long\n"
-msgstr "nombre de socket demasiado largo\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "no se puede crear el socket: %s\n"
@@ -790,9 +787,6 @@ msgstr "error ejecutando `%s': terminado\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "error obteniendo código de finalización del proceso: %d %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "el agente gpg no esta disponible en esta sesión\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -877,6 +871,11 @@ msgstr "esperando %d segundos para que el agente arranque\n"
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to agent is in restricted mode\n"
+msgstr "no puedo conectar con el dirmngr - intentando retirada\n"
 
 #, fuzzy, c-format
 #| msgid "no running dirmngr - starting `%s'\n"
@@ -1455,6 +1454,24 @@ msgstr "Por favor elija donde guardar la clave:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "lectura fallida: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "Esta orden no se permite en modo %s.\n"
+
+#, fuzzy
+#| msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "NOTA: ¡claves ya almacenadas en la tarjeta!\n"
+
+#, fuzzy
+#| msgid "Sign it? (y/N) "
+msgid "Continue? (y/N) "
+msgstr "¿Firmarlo? (s/N) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "sale de este menú"
 
@@ -1502,6 +1519,9 @@ msgstr "verificar PIN y listar todos los datos"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "desbloquear PIN usando Código de Reinicio"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/tarjeta> "
@@ -2469,6 +2489,11 @@ msgstr "%lu claves procesadas hasta ahora\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Cantidad total procesada: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "      omitidas nuevas claves: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5733,6 +5758,11 @@ msgstr "el primo RSA %s falta o no es de %d bits\n"
 msgid "failed to store the key: %s\n"
 msgstr "fallo al almacenar la clave: %s\n"
 
+#, fuzzy
+#| msgid "unsupported URI"
+msgid "unsupported curve\n"
+msgstr "URI no disponible"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "por favor, espere mientras se genera la clave ...\n"
 
@@ -5845,6 +5875,11 @@ msgstr "manejador del descriptor %d terminado\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "caracter inválido radix64 %02x omitido\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "no hay un agente gpg ejecutándose en esta sesión\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8469,6 +8504,12 @@ msgstr ""
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
 
+#~ msgid "name of socket too long\n"
+#~ msgstr "nombre de socket demasiado largo\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "el agente gpg no esta disponible en esta sesión\n"
+
 #~ msgid "use a standard location for the socket"
 #~ msgstr "usar una localización estándar para el socket"
 
@@ -9462,9 +9503,6 @@ msgstr ""
 
 #~ msgid "bad URI"
 #~ msgstr "URI incorrecto"
-
-#~ msgid "unsupported URI"
-#~ msgstr "URI no disponible"
 
 #~ msgid "network error"
 #~ msgstr "error de red"

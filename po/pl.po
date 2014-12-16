@@ -420,9 +420,6 @@ msgstr "odczyt opcji z ,,%s''\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "OSTRZE¯ENIE: ,,%s'' jest przestarza³± opcj±.\n"
 
-msgid "name of socket too long\n"
-msgstr "nazwa gniazda zbyt d³uga\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "nie mo¿na utworzyæ gniazda: %s\n"
@@ -748,9 +745,6 @@ msgstr "b³±d uruchamiania ,,%s'': zakoñczono\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "b³±d odczytu kodu zakoñczenia procesu %d: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "gpg-agent nie jest dostêpny w tej sesji\n"
-
 #, fuzzy, c-format
 #| msgid "can't connect to `%s': %s\n"
 msgid "can't connect to '%s': %s\n"
@@ -835,6 +829,11 @@ msgstr "oczekiwanie (%d s) na uruchomienie agenta\n"
 
 msgid "connection to agent established\n"
 msgstr ""
+
+#, fuzzy
+#| msgid "can't connect to the dirmngr - trying fall back\n"
+msgid "connection to agent is in restricted mode\n"
+msgstr "nie mo¿na po³±czyæ siê z dirmngr - próba fallbacku\n"
 
 #, fuzzy, c-format
 #| msgid "no running dirmngr - starting `%s'\n"
@@ -1413,6 +1412,24 @@ msgstr "Proszê wybraæ gdzie zapisaæ klucz:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "odczyt nie powiód³ siê: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "To polecenie nie jest dostêpne w trybie %s.\n"
+
+#, fuzzy
+#| msgid "NOTE: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "UWAGA: klucze s± ju¿ zapisane na karcie!\n"
+
+#, fuzzy
+#| msgid "Sign it? (y/N) "
+msgid "Continue? (y/N) "
+msgstr "Podpisaæ go? (t/N) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "wyj¶cie z tego menu"
 
@@ -1460,6 +1477,9 @@ msgstr "sprawdzenie PIN-u i wypisanie wszystkich danych"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "odblokowanie PIN-u przy u¿yciu kodu resetuj±cego"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/karta> "
@@ -2439,6 +2459,11 @@ msgstr "%lu kluczy przetworzonych do tej chwili\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "Ogó³em przetworzonych kluczy: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "   pominiêtych nowych kluczy: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5741,6 +5766,11 @@ msgstr "liczba pierwsza %s RSA brakuj±ca lub o rozmiarze innym ni¿ %d bitów\n"
 msgid "failed to store the key: %s\n"
 msgstr "nie powiód³ siê zapis klucza: %s\n"
 
+#, fuzzy
+#| msgid "unsupported algorithm: %s"
+msgid "unsupported curve\n"
+msgstr "nieobs³ugiwany algorytm: %s"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "proszê czekaæ na wygenerowanie klucza...\n"
 
@@ -5850,6 +5880,11 @@ msgstr "obs³uga fd %d zakoñczona\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "niew³a¶ciwy znak formatu radix64 %02x zosta³ pominiêty\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "brak dzia³aj±cego gpg-agenta w tej sesji\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -8442,6 +8477,12 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "nazwa gniazda zbyt d³uga\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "gpg-agent nie jest dostêpny w tej sesji\n"
 
 #~ msgid "use a standard location for the socket"
 #~ msgstr "u¿ycie standardowego po³o¿enia gniazda"

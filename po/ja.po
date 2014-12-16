@@ -378,9 +378,6 @@ msgstr "'%s' からオプションを読み込みます\n"
 msgid "Note: '%s' is not considered an option\n"
 msgstr "*注意*: '%s'はオプションとは考えられません\n"
 
-msgid "name of socket too long\n"
-msgstr "ソケット名が長すぎます\n"
-
 #, c-format
 msgid "can't create socket: %s\n"
 msgstr "ソケットが作成できません: %s\n"
@@ -683,9 +680,6 @@ msgstr "'%s'の実行エラー: 終了しました\n"
 msgid "error getting exit code of process %d: %s\n"
 msgstr "プロセス %d のexitコード取得エラー: %s\n"
 
-msgid "gpg-agent is not available in this session\n"
-msgstr "このセッションでgpg-agentは無効です\n"
-
 #, c-format
 msgid "can't connect to '%s': %s\n"
 msgstr "'%s'へ接続できません: %s\n"
@@ -766,6 +760,11 @@ msgid "waiting for the agent to come up ... (%ds)\n"
 msgstr "agentの起動のため、%d秒待ちます\n"
 
 msgid "connection to agent established\n"
+msgstr "エージェントへの接続が確立しました。\n"
+
+#, fuzzy
+#| msgid "connection to agent established\n"
+msgid "connection to agent is in restricted mode\n"
 msgstr "エージェントへの接続が確立しました。\n"
 
 #, c-format
@@ -1315,6 +1314,24 @@ msgstr "鍵を保管する場所を選択してください:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARDが失敗しました: %s\n"
 
+#, fuzzy
+#| msgid "This command is not allowed while in %s mode.\n"
+msgid "This command is not supported by this card\n"
+msgstr "%sモードでこのコマンドは禁止です。\n"
+
+#, fuzzy
+#| msgid "Note: keys are already stored on the card!\n"
+msgid "Note: This command destroys all keys stored on the card!\n"
+msgstr "*注意*: 秘密鍵はもうカードに保管してあります!\n"
+
+#, fuzzy
+#| msgid "Continue? (Y/n) "
+msgid "Continue? (y/N) "
+msgstr "続けますか? (Y/n) "
+
+msgid "Really do a factory reset? (enter \"yes\") "
+msgstr ""
+
 msgid "quit this menu"
 msgstr "このメニューを終了"
 
@@ -1362,6 +1379,9 @@ msgstr "PINを確認しすべてのデータを表示する"
 
 msgid "unblock the PIN using a Reset Code"
 msgstr "PINをReset Codeで再設定する"
+
+msgid "destroy all keys and data"
+msgstr ""
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2249,6 +2269,11 @@ msgstr "%lu鍵まで処理\n"
 #, c-format
 msgid "Total number processed: %lu\n"
 msgstr "        処理数の合計: %lu\n"
+
+#, fuzzy, c-format
+#| msgid "      skipped new keys: %lu\n"
+msgid "    skipped PGP-2 keys: %lu\n"
+msgstr "スキップした新しい鍵: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5350,6 +5375,11 @@ msgstr "RSA素数 %s がありません、または%dビットのものではあ
 msgid "failed to store the key: %s\n"
 msgstr "鍵の保管に失敗しました: %s\n"
 
+#, fuzzy
+#| msgid "unsupported inquiry '%s'\n"
+msgid "unsupported curve\n"
+msgstr "サポートされていない問い合わせ: '%s'\n"
+
 msgid "please wait while key is being generated ...\n"
 msgstr "鍵生成の間、お待ちください ...\n"
 
@@ -5450,6 +5480,11 @@ msgstr "fd %dのハンドラが終了しました\n"
 #, c-format
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "無効な64進文字%02Xをスキップしました\n"
+
+#, fuzzy
+#| msgid "no gpg-agent running in this session\n"
+msgid "no dirmngr running in this session\n"
+msgstr "このセッションでgpg-agentは実行されていません\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
@@ -7740,3 +7775,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "name of socket too long\n"
+#~ msgstr "ソケット名が長すぎます\n"
+
+#~ msgid "gpg-agent is not available in this session\n"
+#~ msgstr "このセッションでgpg-agentは無効です\n"
