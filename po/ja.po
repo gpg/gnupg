@@ -1,15 +1,16 @@
 # Japanese messages for GnuPG
 # Copyright (C) 1999, 2000, 2002, 2003, 2004, 2013 Free Software Foundation, Inc.
+# This file is distributed under the same license as the GnuPG package.
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
-# This file is distributed under the same license as the GnuPG package.
-# Special thanks to "Takashi P.KATOH".
+# Takashi P.KATOH, 2002.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1\n"
+"Project-Id-Version: gnupg 2.1.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-18 13:01+0900\n"
+"PO-Revision-Date: 2014-12-17 09:43+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -762,10 +763,8 @@ msgstr "agentの起動のため、%d秒待ちます\n"
 msgid "connection to agent established\n"
 msgstr "エージェントへの接続が確立しました。\n"
 
-#, fuzzy
-#| msgid "connection to agent established\n"
 msgid "connection to agent is in restricted mode\n"
-msgstr "エージェントへの接続が確立しました。\n"
+msgstr "エージェントへの接続は制限モードです。\n"
 
 #, c-format
 msgid "no running Dirmngr - starting '%s'\n"
@@ -1314,23 +1313,17 @@ msgstr "鍵を保管する場所を選択してください:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "KEYTOCARDが失敗しました: %s\n"
 
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
-msgstr "%sモードでこのコマンドは禁止です。\n"
+msgstr "このカードでは、このコマンドはサポートされていません。\n"
 
-#, fuzzy
-#| msgid "Note: keys are already stored on the card!\n"
 msgid "Note: This command destroys all keys stored on the card!\n"
-msgstr "*注意*: 秘密鍵はもうカードに保管してあります!\n"
+msgstr "*注意*: このコマンドはカードに保管してあるすべての鍵を破壊します!\n"
 
-#, fuzzy
-#| msgid "Continue? (Y/n) "
 msgid "Continue? (y/N) "
-msgstr "続けますか? (Y/n) "
+msgstr "続けますか? (y/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
-msgstr ""
+msgstr "工場出荷リセットを行いますか? (本当なら \"yes\" と入力) "
 
 msgid "quit this menu"
 msgstr "このメニューを終了"
@@ -1381,7 +1374,7 @@ msgid "unblock the PIN using a Reset Code"
 msgstr "PINをReset Codeで再設定する"
 
 msgid "destroy all keys and data"
-msgstr ""
+msgstr "すべての鍵とデータを破壊します"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -2270,10 +2263,8 @@ msgstr "%lu鍵まで処理\n"
 msgid "Total number processed: %lu\n"
 msgstr "        処理数の合計: %lu\n"
 
-#, fuzzy, c-format
-#| msgid "      skipped new keys: %lu\n"
 msgid "    skipped PGP-2 keys: %lu\n"
-msgstr "スキップした新しい鍵: %lu\n"
+msgstr "スキップしたPGP-2鍵: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
@@ -5375,10 +5366,8 @@ msgstr "RSA素数 %s がありません、または%dビットのものではあ
 msgid "failed to store the key: %s\n"
 msgstr "鍵の保管に失敗しました: %s\n"
 
-#, fuzzy
-#| msgid "unsupported inquiry '%s'\n"
 msgid "unsupported curve\n"
-msgstr "サポートされていない問い合わせ: '%s'\n"
+msgstr "サポートされていない曲線\n"
 
 msgid "please wait while key is being generated ...\n"
 msgstr "鍵生成の間、お待ちください ...\n"
@@ -5481,10 +5470,8 @@ msgstr "fd %dのハンドラが終了しました\n"
 msgid "invalid radix64 character %02x skipped\n"
 msgstr "無効な64進文字%02Xをスキップしました\n"
 
-#, fuzzy
-#| msgid "no gpg-agent running in this session\n"
 msgid "no dirmngr running in this session\n"
-msgstr "このセッションでgpg-agentは実行されていません\n"
+msgstr "このセッションでdirmngrは実行されていません\n"
 
 #, c-format
 msgid "validation model requested by certificate: %s"
