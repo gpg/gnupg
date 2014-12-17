@@ -281,9 +281,17 @@ main (int argc, char **argv)
               exit (1);
             }
           else if (cmd == aLaunch)
-            gc_component_launch (idx);
+            {
+              if (gc_component_launch (idx))
+                exit (1);
+            }
           else
-            gc_component_kill (idx);
+            {
+              /* We don't error out if the kill failed because this
+                 command should do nothing if the component is not
+                 running.  */
+              gc_component_kill (idx);
+            }
         }
       break;
 

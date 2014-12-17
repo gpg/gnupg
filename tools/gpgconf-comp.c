@@ -1142,7 +1142,7 @@ dirmngr_runtime_change (int killflag)
 
 
 /* Launch the gpg-agent or the dirmngr if not already running.  */
-void
+gpg_error_t
 gc_component_launch (int component)
 {
   gpg_error_t err;
@@ -1176,6 +1176,7 @@ gc_component_launch (int component)
               " NOP",
               gpg_strerror (err));
   gnupg_release_process (pid);
+  return err;
 }
 
 
