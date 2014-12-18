@@ -110,7 +110,8 @@ large_secmem=no
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
-GNUPG_BUILD_PROGRAM(agent, yes)
+# The agent is a required part and can't be disabled anymore.
+build_agent=yes
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
 GNUPG_BUILD_PROGRAM(g13, yes)
 GNUPG_BUILD_PROGRAM(dirmngr, yes)
