@@ -3578,38 +3578,6 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
 }
 
 
-/* Because the ssh protocol does not send us information about the
-   current TTY setting, we use this function to use those from startup
-   or those explictly set.  */
-static gpg_error_t
-setup_ssh_env (ctrl_t ctrl)
-{
-  static const char *names[] =
-    {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
-  gpg_error_t err = 0;
-  int idx;
-  const char *value;
-
-  for (idx=0; !err && names[idx]; idx++)
-      if ((value = session_env_getenv (opt.startup_env, names[idx])))
-      err = session_env_setenv (ctrl->session_env, names[idx], value);
-
-  if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
-    if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
-      err = gpg_error_from_syserror ();
-
-  if (!err && !ctrl->lc_messages && opt.startup_lc_messages)
-    if (!(ctrl->lc_messages = xtrystrdup (opt.startup_lc_messages)))
-      err = gpg_error_from_syserror ();
-
-  if (err)
-    log_error ("error setting default session environment: %s\n",
-               gpg_strerror (err));
-
-  return err;
-}
-
-
 /* Start serving client on SOCK_CLIENT.  */
 void
 start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
@@ -3618,7 +3586,7 @@ start_command_handler_ssh (ctrl_t ctrl, gnupg_fd_t sock_client)
   gpg_error_t err;
   int ret;
 
-  err = setup_ssh_env (ctrl);
+  err = agent_copy_startup_env (ctrl);
   if (err)
     goto out;
 
@@ -3681,7 +3649,7 @@ serve_mmapped_ssh_request (ctrl_t ctrl,
   u32 msglen;
   estream_t request_stream, response_stream;
 
-  if (setup_ssh_env (ctrl))
+  if (agent_copy_startup_env (ctrl))
     goto leave; /* Error setting up the environment.  */
 
   if (maxreqlen < 5)

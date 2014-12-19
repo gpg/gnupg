@@ -278,6 +278,7 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
 
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) JNLIB_GCC_A_NR; /* Also implemented in other tools */
+gpg_error_t agent_copy_startup_env (ctrl_t ctrl);
 const char *get_agent_socket_name (void);
 const char *get_agent_ssh_socket_name (void);
 #ifdef HAVE_W32_SYSTEM

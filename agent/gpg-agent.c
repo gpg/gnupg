@@ -1386,6 +1386,39 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
 }
 
 
+/* Because the ssh protocol does not send us information about the
+   current TTY setting, we use this function to use those from startup
+   or those explictly set.  This is also used for the restricted mode
+   where we ignore requests to change the environment.  */
+gpg_error_t
+agent_copy_startup_env (ctrl_t ctrl)
+{
+  static const char *names[] =
+    {"GPG_TTY", "DISPLAY", "TERM", "XAUTHORITY", "PINENTRY_USER_DATA", NULL};
+  gpg_error_t err = 0;
+  int idx;
+  const char *value;
+
+  for (idx=0; !err && names[idx]; idx++)
+      if ((value = session_env_getenv (opt.startup_env, names[idx])))
+      err = session_env_setenv (ctrl->session_env, names[idx], value);
+
+  if (!err && !ctrl->lc_ctype && opt.startup_lc_ctype)
+    if (!(ctrl->lc_ctype = xtrystrdup (opt.startup_lc_ctype)))
+      err = gpg_error_from_syserror ();
+
+  if (!err && !ctrl->lc_messages && opt.startup_lc_messages)
+    if (!(ctrl->lc_messages = xtrystrdup (opt.startup_lc_messages)))
+      err = gpg_error_from_syserror ();
+
+  if (err)
+    log_error ("error setting default session environment: %s\n",
+               gpg_strerror (err));
+
+  return err;
+}
+
+
 /* Reread parts of the configuration.  Note, that this function is
    obviously not thread-safe and should only be called from the PTH
    signal handler.

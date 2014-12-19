@@ -56,7 +56,7 @@ struct session_environment_s
 };
 
 
-/* A list of environment vribales we pass from the acual user
+/* A list of environment vribales we pass from the actual user
   (e.g. gpgme) down to the pinentry.  We do not handle the locale
   settings because they do not only depend on envvars.  */
 static struct

@@ -3113,6 +3113,12 @@ start_command_handler (ctrl_t ctrl, gnupg_fd_t listen_fd, gnupg_fd_t fd)
   int rc;
   assuan_context_t ctx = NULL;
 
+  if (ctrl->restricted)
+    {
+      if (agent_copy_startup_env (ctrl))
+        return;
+    }
+
   rc = assuan_new (&ctx);
   if (rc)
     {
