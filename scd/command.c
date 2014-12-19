@@ -804,10 +804,8 @@ cmd_readkey (assuan_context_t ctx, char *line)
 
   rc = ksba_cert_new (&kc);
   if (rc)
-    {
-      xfree (cert);
-      goto leave;
-    }
+    goto leave;
+
   rc = ksba_cert_init_from_mem (kc, cert, ncert);
   if (rc)
     {
