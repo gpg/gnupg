@@ -680,7 +680,12 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   if ( write (fd, "\n", 1 ) != 1 )
     goto write_failed;
   if ( close (fd) )
-    goto write_failed;
+    {
+      if ( errno == EINTR )
+        fd = -1;
+      goto write_failed;
+    }
+  fd = -1;
 
   /* Check whether we support hard links.  */
   switch (use_hardlinks_p (h->tname))
@@ -718,7 +723,8 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   all_lockfiles = h->next;
   UNLOCK_all_lockfiles ();
   my_error_2 (_("error writing to '%s': %s\n"), h->tname, strerror (errno));
-  close (fd);
+  if ( fd != -1 )
+    close (fd);
   unlink (h->tname);
   jnlib_free (h->tname);
   jnlib_free (h);
