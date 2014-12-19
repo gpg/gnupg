@@ -731,7 +731,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
 
   if (ctrl->restricted)
     ctrl->server_local->keydesc = strconcat
-      ("Note: Request from a remote site.\n\n", desc, NULL);
+      (_("Note: Request from a remote site."), "%0A%0A", desc, NULL);
   else
     ctrl->server_local->keydesc = xtrystrdup (desc);
   if (!ctrl->server_local->keydesc)
