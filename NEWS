@@ -1,6 +1,10 @@
 Noteworthy changes in version 2.1.2 (unreleased)
 ------------------------------------------------
 
+ * agent: When setting --default-cache-ttl the value for
+   --max-cache-ttl is adjusted to be not lower than the former.
+
+
 Noteworthy changes in version 2.1.1 (2014-12-16)
 ------------------------------------------------
 

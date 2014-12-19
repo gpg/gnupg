@@ -628,6 +628,20 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 }
 
 
+/* Fixup some options after all have been processed.  */
+static void
+finalize_rereadable_options (void)
+{
+  /* It would be too surprising if the max-cache-ttl is lower than the
+     default-cache-ttl - thus we silently correct that.  */
+  if (opt.def_cache_ttl > opt.max_cache_ttl)
+    opt.max_cache_ttl = opt.def_cache_ttl;
+  if (opt.def_cache_ttl_ssh > opt.max_cache_ttl_ssh)
+    opt.max_cache_ttl_ssh = opt.def_cache_ttl_ssh;
+}
+
+
+
 /* The main entry point.  */
 int
 main (int argc, char **argv )
@@ -915,6 +929,8 @@ main (int argc, char **argv )
   configname = NULL;
   if (log_get_errorcount(0))
     exit(2);
+
+  finalize_rereadable_options ();
 
   /* Turn the homedir into an absolute one. */
   opt.homedir = make_absfilename (opt.homedir, NULL);
@@ -1461,6 +1477,7 @@ reread_configuration (void)
         parse_rereadable_options (&pargs, 1);
     }
   fclose (fp);
+  finalize_rereadable_options ();
   set_debug ();
 }
 
