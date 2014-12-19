@@ -1303,7 +1303,7 @@ iobuf_open (const char *fname)
   iobuf_t a;
   fp_or_fd_t fp;
   file_filter_ctx_t *fcx;
-  size_t len;
+  size_t len = 0;
   int print_only = 0;
   int fd;
 
