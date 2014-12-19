@@ -224,6 +224,8 @@ key_to_blob (unsigned char **blob, size_t *blob_n, const char *identifier, ...)
       assert (ret == 1);
     }
 
+  va_end (ap);
+
   blob_new_n = ftell (stream);
   rewind (stream);
 
