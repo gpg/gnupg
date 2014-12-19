@@ -2182,6 +2182,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
                      " requested charset `%s': %s\n",
                      charset, strerror (errno));
           gcry_free (pwbuf);
+          pwbuf = NULL;
           goto failure;
         }
 
@@ -2196,6 +2197,7 @@ p12_build (gcry_mpi_t *kparms, unsigned char *cert, size_t certlen,
                      " requested charset `%s': %s\n",
                      charset, strerror (errno));
           gcry_free (pwbuf);
+          pwbuf = NULL;
           jnlib_iconv_close (cd);
           goto failure;
         }
