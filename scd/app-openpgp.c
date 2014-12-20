@@ -1320,7 +1320,7 @@ get_public_key (app_t app, int keyno)
 	}
 
       err = retrieve_key_material (fp, hexkeyid, &m, &mlen, &e, &elen);
-      fclose (fp);
+      pclose (fp);
       if (err)
 	{
 	  log_error ("error while retrieving key material through pipe: %s\n",
