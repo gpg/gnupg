@@ -840,6 +840,7 @@ parse_keyserver_line (char *line,
     {
       log_info (_("%s:%u: skipping this line\n"), filename, lineno);
       keyserver_list_free (server);
+      server = NULL;
     }
 
   return server;
