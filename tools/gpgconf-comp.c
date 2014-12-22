@@ -2390,7 +2390,10 @@ change_options_file (gc_component_t component, gc_backend_t backend,
   res = link (dest_filename, orig_filename);
 #endif
   if (res < 0 && errno != ENOENT)
-    return -1;
+    {
+      xfree (dest_filename);
+      return -1;
+    }
   if (res < 0)
     {
       xfree (orig_filename);
