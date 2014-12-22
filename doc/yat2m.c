@@ -609,6 +609,7 @@ write_th (FILE *fp)
   *p++ = 0;
   fprintf (fp, ".TH %s %s %s \"%s\" \"%s\"\n",
            name, p, isodatestring (), opt_release, opt_source);
+  free (name);
   return 0;
 }
 
