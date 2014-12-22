@@ -417,17 +417,45 @@ divert_pkdecrypt (ctrl_t ctrl,
   n = snext (&s);
   if (!n)
     return gpg_error (GPG_ERR_INV_SEXP);
-  if (!smatch (&s, n, "rsa"))
+  if (smatch (&s, n, "rsa"))
+    {
+      if (*s != '(')
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      s++;
+      n = snext (&s);
+      if (!n)
+        return gpg_error (GPG_ERR_INV_SEXP);
+      if (!smatch (&s, n, "a"))
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      n = snext (&s);
+    }
+  else if (smatch (&s, n, "ecdh"))
+    {
+      if (*s != '(')
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      s++;
+      n = snext (&s);
+      if (!n)
+        return gpg_error (GPG_ERR_INV_SEXP);
+      if (smatch (&s, n, "s"))
+        {
+          n = snext (&s);
+          s += n;
+          if (*s++ != ')')
+            return gpg_error (GPG_ERR_INV_SEXP);
+          if (*s++ != '(')
+            return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+          n = snext (&s);
+          if (!n)
+            return gpg_error (GPG_ERR_INV_SEXP);
+        }
+      if (!smatch (&s, n, "e"))
+        return gpg_error (GPG_ERR_UNKNOWN_SEXP);
+      n = snext (&s);
+    }
+  else
     return gpg_error (GPG_ERR_UNSUPPORTED_ALGORITHM);
-  if (*s != '(')
-    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
-  s++;
-  n = snext (&s);
-  if (!n)
-    return gpg_error (GPG_ERR_INV_SEXP);
-  if (!smatch (&s, n, "a"))
-    return gpg_error (GPG_ERR_UNKNOWN_SEXP);
-  n = snext (&s);
+
   if (!n)
     return gpg_error (GPG_ERR_UNKNOWN_SEXP);
   ciphertext = s;
