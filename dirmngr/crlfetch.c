@@ -163,10 +163,13 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
 
   *reader = NULL;
 
+  if (!url)
+    return gpg_error (GPG_ERR_INV_ARG);
+
  once_more:
   err = http_parse_uri (&uri, url, 0);
   http_release_parsed_uri (uri);
-  if (err && url && !strncmp (url, "https:", 6))
+  if (err && !strncmp (url, "https:", 6))
     {
       /* Our HTTP code does not support TLS, thus we can't use this
          scheme and it is frankly not useful for CRL retrieval anyway.
