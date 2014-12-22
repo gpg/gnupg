@@ -674,7 +674,7 @@ ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive)
                  member in another pool.  */
               for (idx3=0; idx3 < hosttable_size; idx3++)
                 {
-                  if (hosttable[idx3] && hosttable[idx3]
+                  if (hosttable[idx3]
                       && hosttable[idx3]->pool
                       && idx3 != idx
                       && host_in_pool_p (hosttable[idx3]->pool, n))

@@ -1586,7 +1586,6 @@ cmd_ks_search (assuan_context_t ctx, char *line)
           if (!sl)
             {
               err = gpg_error_from_syserror ();
-              free_strlist (list);
               goto leave;
             }
           sl->flags = 0;
@@ -1607,6 +1606,7 @@ cmd_ks_search (assuan_context_t ctx, char *line)
     }
 
  leave:
+  free_strlist (list);
   return leave_cmd (ctx, err);
 }
 
@@ -1647,7 +1647,6 @@ cmd_ks_get (assuan_context_t ctx, char *line)
           if (!sl)
             {
               err = gpg_error_from_syserror ();
-              free_strlist (list);
               goto leave;
             }
           sl->flags = 0;
@@ -1668,6 +1667,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
     }
 
  leave:
+  free_strlist (list);
   return leave_cmd (ctx, err);
 }
 
