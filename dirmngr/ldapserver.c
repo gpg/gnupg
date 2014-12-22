@@ -125,6 +125,7 @@ ldapserver_parse_one (char *line,
     {
       log_info (_("%s:%u: skipping this line\n"), filename, lineno);
       ldapserver_list_free (server);
+      server = NULL;
     }
 
   return server;
