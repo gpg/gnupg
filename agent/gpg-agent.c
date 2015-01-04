@@ -205,7 +205,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAllowPresetPassphrase, "allow-preset-passphrase",
                 /* */                    N_("allow presetting passphrase")),
   ARGPARSE_s_n (oAllowLoopbackPinentry, "allow-loopback-pinentry",
-                                        N_("allow presetting passphrase")),
+                                   N_("allow caller to override the pinentry")),
   ARGPARSE_s_n (oSSHSupport,   "enable-ssh-support", N_("enable ssh support")),
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
@@ -1060,6 +1060,8 @@ main (int argc, char **argv )
 #else
       es_printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
+      es_printf ("allow-loopback-pinentry:%lu:\n",
+                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
     }
