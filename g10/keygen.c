@@ -3106,7 +3106,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
     {
       struct keyserver_spec *spec;
 
-      spec=parse_keyserver_uri(s1,1,NULL,0);
+      spec = parse_keyserver_uri (s1, 1);
       if(spec)
 	{
 	  free_keyserver_spec(spec);

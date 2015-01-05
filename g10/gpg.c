@@ -2800,8 +2800,7 @@ main (int argc, char **argv)
 	  case oKeyServer:
 	    {
 	      keyserver_spec_t keyserver;
-	      keyserver = parse_keyserver_uri (pargs.r.ret_str,0,
-                                               configname,configlineno);
+	      keyserver = parse_keyserver_uri (pargs.r.ret_str, 0);
 	      if (!keyserver)
 		log_error (_("could not parse keyserver URL\n"));
 	      else
@@ -2990,8 +2989,7 @@ main (int argc, char **argv)
 	  case oDefaultKeyserverURL:
 	    {
 	      keyserver_spec_t keyserver;
-	      keyserver = parse_keyserver_uri (pargs.r.ret_str,1,
-                                               configname,configlineno);
+	      keyserver = parse_keyserver_uri (pargs.r.ret_str,1 );
 	      if (!keyserver)
 		log_error (_("could not parse keyserver URL\n"));
 	      else

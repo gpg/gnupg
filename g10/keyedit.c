@@ -4165,7 +4165,7 @@ menu_set_keyserver_url (const char *url, KBNODE pub_keyblock)
     {
       struct keyserver_spec *keyserver = NULL;
       /* Sanity check the format */
-      keyserver = parse_keyserver_uri (answer, 1, NULL, 0);
+      keyserver = parse_keyserver_uri (answer, 1);
       xfree (answer);
       if (!keyserver)
 	{

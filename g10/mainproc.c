@@ -1739,7 +1739,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           int res;
           struct keyserver_spec *spec;
 
-          spec = parse_keyserver_uri (uri, 1, NULL, 0);
+          spec = parse_keyserver_uri (uri, 1);
           if (spec)
             {
               glo_ctrl.in_auto_key_retrieve++;

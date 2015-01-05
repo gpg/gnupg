@@ -754,7 +754,7 @@ fetch_url (ctrl_t ctrl)
 		  gpg_strerror(rc));
       else if (info.pubkey_url && *info.pubkey_url)
 	{
-	  spec=parse_keyserver_uri(info.pubkey_url,1,NULL,0);
+	  spec = parse_keyserver_uri (info.pubkey_url, 1);
 	  if(spec && info.fpr1valid)
 	    {
 	      /* This is not perfectly right.  Currently, all card

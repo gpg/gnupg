@@ -28,10 +28,8 @@
 int parse_keyserver_options(char *options);
 void free_keyserver_spec(struct keyserver_spec *keyserver);
 struct keyserver_spec *keyserver_match(struct keyserver_spec *spec);
-struct keyserver_spec *parse_keyserver_uri(const char *string,
-					   int require_scheme,
-					   const char *configname,
-					   unsigned int configlineno);
+struct keyserver_spec *parse_keyserver_uri (const char *string,
+                                            int require_scheme);
 struct keyserver_spec *parse_preferred_keyserver(PKT_signature *sig);
 int keyserver_export (ctrl_t ctrl, strlist_t users);
 int keyserver_import (ctrl_t ctrl, strlist_t users);

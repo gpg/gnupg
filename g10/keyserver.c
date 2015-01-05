@@ -258,8 +258,7 @@ keyserver_match(struct keyserver_spec *spec)
    keyserver/ksutil.c for limited use in gpgkeys_ldap or the like. */
 
 keyserver_spec_t
-parse_keyserver_uri (const char *string,int require_scheme,
-		     const char *configname,unsigned int configlineno)
+parse_keyserver_uri (const char *string,int require_scheme)
 {
   int assume_hkp=0;
   struct keyserver_spec *keyserver;
@@ -481,7 +480,7 @@ parse_preferred_keyserver(PKT_signature *sig)
 
       memcpy(dupe,p,plen);
       dupe[plen]='\0';
-      spec=parse_keyserver_uri(dupe,1,NULL,0);
+      spec = parse_keyserver_uri (dupe, 1);
       xfree(dupe);
     }
 
@@ -1931,7 +1930,7 @@ keyserver_import_cert (ctrl_t ctrl,
 	{
 	  struct keyserver_spec *spec;
 
-	  spec=parse_keyserver_uri(url,1,NULL,0);
+	  spec = parse_keyserver_uri (url, 1);
 	  if(spec)
 	    {
 	      err = keyserver_import_fprint (ctrl, *fpr,*fpr_len,spec);
@@ -1977,7 +1976,7 @@ keyserver_import_pka (ctrl_t ctrl,
     {
       /* An URI is available.  Lookup the key. */
       struct keyserver_spec *spec;
-      spec = parse_keyserver_uri (uri, 1, NULL, 0);
+      spec = parse_keyserver_uri (uri, 1);
       if (spec)
 	{
 	  rc = keyserver_import_fprint (ctrl, *fpr, 20, spec);
