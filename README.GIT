@@ -17,8 +17,8 @@ variables to override the default tool names:
 
  AUTOMAKE_SUFFIX  is used as a suffix for all tools from the automake
                   package.  For example
-                     AUTOMAKE_SUFFIX="-1.7" ./autogen.sh
-                  uses "automake-1.7" and "aclocal-1.7.
+                     AUTOMAKE_SUFFIX="-1.14" ./autogen.sh
+                  uses "automake-1.14" and "aclocal-1.14.
  AUTOMAKE_PREFIX  is used as a prefix for all tools from the automake
                   page and may be combined with AUTOMAKE_SUFFIX. e.g.:
                     AUTOMAKE_PREFIX=/usr/foo/bin ./autogen.sh
