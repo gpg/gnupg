@@ -139,7 +139,8 @@ read_keyblob (const char *filename,
 {
   gpg_error_t err;
   estream_t fp = NULL;
-  size_t headerlen, msglen;
+  size_t headerlen = 0;
+  size_t msglen;
   void *msg = NULL;
 
   *r_enckeyblob = NULL;

@@ -112,7 +112,7 @@ transform_sigval (const unsigned char *sigval, size_t sigvallen, int mdalgo,
   int depth, last_depth1, last_depth2;
   int is_pubkey = 0;
   const unsigned char *rsa_s = NULL;
-  size_t rsa_s_len;
+  size_t rsa_s_len = 0;
   const char *oid;
   gcry_sexp_t sexp;
 
