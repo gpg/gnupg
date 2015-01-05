@@ -250,7 +250,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     assert( secret_x_size <= gcry_md_get_algo_dlen (kdf_hash_algo) );
 
     /* We could have allocated more, so clean the tail before returning.  */
-    memset( secret_x+secret_x_size, old_size-secret_x_size, 0 );
+    memset (secret_x+secret_x_size, 0, old_size - secret_x_size);
     if (DBG_CIPHER)
       log_printhex ("ecdh KEK is:", secret_x, secret_x_size );
   }
