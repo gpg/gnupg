@@ -2336,8 +2336,6 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
                      pin_verify, len, result, &resultlen);
   xfree (pin_verify);
   if (sw || resultlen < 2)
-    return sw? sw : SW_HOST_INCOMPLETE_CARD_RESPONSE;
-  sw = (result[resultlen-2] << 8) | result[resultlen-1];
     {
       log_error ("control_pcsc failed: %d\n", sw);
       return sw? sw: SW_HOST_INCOMPLETE_CARD_RESPONSE;
