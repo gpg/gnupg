@@ -588,7 +588,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       strlist_t sl;
       char *url;
 
-      if (argc >= sizeof argv -1)
+      if (argc >= DIM (argv) - 1)
         {
           /* Too many patterns.  It does not make sense to allow an
              arbitrary number of patters because the length of the
