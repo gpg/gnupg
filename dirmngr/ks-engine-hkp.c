@@ -325,6 +325,7 @@ static gpg_error_t
 map_host (ctrl_t ctrl, const char *name, int force_reselect,
           char **r_host, unsigned int *r_httpflags, char **r_poolname)
 {
+  gpg_error_t err = 0;
   hostinfo_t hi;
   int idx;
 
@@ -361,8 +362,9 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       idx = create_new_hostinfo (name);
       if (idx == -1)
         {
+          err = gpg_error_from_syserror ();
           xfree (reftbl);
-          return gpg_error_from_syserror ();
+          return err;
         }
       hi = hosttable[idx];
 
@@ -504,9 +506,11 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
           hi->pool = xtryrealloc (reftbl, (refidx+1) * sizeof *reftbl);
           if (!hi->pool)
             {
+              err = gpg_error_from_syserror ();
               log_error ("shrinking index table in map_host failed: %s\n",
-                         strerror (errno));
+                         gpg_strerror (err));
               xfree (reftbl);
+              return err;
             }
           qsort (reftbl, refidx, sizeof *reftbl, sort_hostpool);
         }
@@ -570,12 +574,13 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
   *r_host = xtrystrdup (hi->name);
   if (!*r_host)
     {
+      err = gpg_error_from_syserror ();
       if (r_poolname)
         {
           xfree (*r_poolname);
           *r_poolname = NULL;
         }
-      return gpg_error_from_syserror ();
+      return err;
     }
   return 0;
 }
