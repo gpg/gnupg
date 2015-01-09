@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-12-16 15:51+0100\n"
+"PO-Revision-Date: 2015-01-09 12:51+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -347,6 +347,9 @@ msgstr "Verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
 
 msgid "allow presetting passphrase"
 msgstr "Erlaube ein \"preset\" von Passphrases"
+
+msgid "allow caller to override the pinentry"
+msgstr "Aufrufer darf das Pinentry ersetzen"
 
 msgid "enable ssh support"
 msgstr "SSH Unterstützung einschalten"
@@ -1359,7 +1362,7 @@ msgstr ""
 "Schlüssel!\n"
 
 msgid "Continue? (y/N) "
-msgstr "Fortsetzen? (J/n) "
+msgstr "Fortsetzen? (j/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
 msgstr "Möchten Sie die Karte wirklich komplett löschen? (\"yes\" eingeben) "
