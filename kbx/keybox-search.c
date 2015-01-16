@@ -79,6 +79,30 @@ blob_get_blob_flags (KEYBOXBLOB blob)
 }
 
 
+static int
+blob_get_keyid (KEYBOXBLOB blob, u32 *kid)
+{
+  const unsigned char *buffer;
+  size_t length, keyinfolen;
+
+  buffer = _keybox_get_blob_image (blob, &length);
+  if (length < 48)
+    return 0; /* blob too short */
+
+  if (buffer[4] != KEYBOX_BLOBTYPE_PGP)
+    return 0; /* don't know what to do with X.509 blobs */
+
+  keyinfolen = get16 (buffer + 18);
+  if (keyinfolen < 28)
+    return 0; /* invalid blob */
+
+  kid[0] = get32 (buffer + 32);
+  kid[1] = get32 (buffer + 36);
+
+  return 1;
+}
+
+
 /* Return information on the flag WHAT within the blob BUFFER,LENGTH.
    Return the offset and the length (in bytes) of the flag in
    FLAGOFF,FLAG_SIZE. */
@@ -967,9 +991,12 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 	*r_descindex = n;
       for (n=any_skip?0:ndesc; n < ndesc; n++)
         {
-/*            if (desc[n].skipfnc */
-/*                && desc[n].skipfnc (desc[n].skipfncvalue, aki, NULL)) */
-/*              break; */
+          u32 kid[2];
+
+          if (desc[n].skipfnc
+              && blob_get_keyid (blob, kid)
+              && desc[n].skipfnc (desc[n].skipfncvalue, kid, NULL))
+            break;
         }
       if (n == ndesc)
         break; /* got it */
