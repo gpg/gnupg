@@ -79,21 +79,21 @@ blob_get_blob_flags (KEYBOXBLOB blob)
 }
 
 
+/* Return the first keyid from the blob.  Returns true if
+   available.  */
 static int
-blob_get_keyid (KEYBOXBLOB blob, u32 *kid)
+blob_get_first_keyid (KEYBOXBLOB blob, u32 *kid)
 {
   const unsigned char *buffer;
-  size_t length, keyinfolen;
+  size_t length, nkeys, keyinfolen;
 
   buffer = _keybox_get_blob_image (blob, &length);
   if (length < 48)
     return 0; /* blob too short */
 
-  if (buffer[4] != KEYBOX_BLOBTYPE_PGP)
-    return 0; /* don't know what to do with X.509 blobs */
-
+  nkeys = get16 (buffer + 16);
   keyinfolen = get16 (buffer + 18);
-  if (keyinfolen < 28)
+  if (!nkeys || keyinfolen < 28)
     return 0; /* invalid blob */
 
   kid[0] = get32 (buffer + 32);
@@ -994,7 +994,7 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
           u32 kid[2];
 
           if (desc[n].skipfnc
-              && blob_get_keyid (blob, kid)
+              && blob_get_first_keyid (blob, kid)
               && desc[n].skipfnc (desc[n].skipfncvalue, kid, NULL))
             break;
         }
