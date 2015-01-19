@@ -20,8 +20,8 @@
 #
 # (Process this file with autoconf to produce a configure script.)
 
-AC_PREREQ(2.59)
-min_automake_version="1.9.3"
+AC_PREREQ(2.61)
+min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s gnupg-1.n.m) and run "./autogen.sh --force".  Please
@@ -51,7 +51,7 @@ development_version=mym4_isgit
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(g10/gpg.c)
 AC_CANONICAL_HOST
-AM_INIT_AUTOMAKE([std-options])
+AM_INIT_AUTOMAKE([serial-tests std-options dist-bzip2 filename-length-max=99])
 AB_INIT
 AC_CONFIG_HEADERS(config.h)
 

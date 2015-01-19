@@ -22,7 +22,6 @@ ACLOCAL_AMFLAGS = -I m4
 # tests are importing secret keys and that is not allowed if
 # selinux-support is enabled.
 DISTCHECK_CONFIGURE_FLAGS = --enable-mailto
-AUTOMAKE_OPTIONS = dist-bzip2 filename-length-max=99
 
 GITLOG_TO_CHANGELOG=gitlog-to-changelog
 
