@@ -290,10 +290,10 @@ static struct RI {
     /* This is a complex and screwball program.  Some systems have things
      * like rX_dmn, x = integer, for RAID systems, but the statistics are
      * pretty dodgy */
-#ifdef __QNXNTO__                                                             
+#ifdef __QNXNTO__
     { "/bin/pidin", "-F%A%B%c%d%E%I%J%K%m%M%n%N%p%P%S%s%T", SC(0.3),
              NULL, 0, 0, 0, 0       },
-#endif     
+#endif
 #if 0
     /* The following aren't enabled since they're somewhat slow and not very
      * unpredictable, however they give an indication of the sort of sources
@@ -625,6 +625,8 @@ slow_poll(FILE *dbgfp, int dbgall, size_t *nbytes )
 	FD_ZERO(&fds);
 	for (i = 0; dataSources[i].path != NULL; i++) {
 	    if (dataSources[i].pipe != NULL) {
+                /* FIXME: We need to make sure that PIPEFD is less
+                   than FD_SETSIZE.  */
 		FD_SET(dataSources[i].pipeFD, &fds);
 		moreSources = 1;
 	    }
@@ -707,7 +709,7 @@ start_gatherer( int pipefd )
 #else
 	nmax = 20; /* assume a reasonable value */
 #endif
-	{  
+	{
 	  int fd;
 	  if ((fd = open ("/dev/null", O_RDWR)) != -1) {
 	    dup2 (fd, STDIN_FILENO);

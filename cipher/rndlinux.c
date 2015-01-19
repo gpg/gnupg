@@ -117,28 +117,33 @@ rndlinux_gather_random( void (*add)(const void*, size_t, int), int requester,
 #endif
 #endif
     while( length ) {
+#ifdef FD_SETSIZE
 	fd_set rfds;
 	struct timeval tv;
-	int rc;
+        int rc;
 
 	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
-	if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
-	    if( !warn )
+        if (fd < FD_SETSIZE)
+          {
+            FD_SET(fd, &rfds);
+            if( !(rc=select(fd+1, &rfds, NULL, NULL, &tv)) ) {
+              if( !warn )
 		tty_printf(
 _("\n"
 "Not enough random bytes available.  Please do some other work to give\n"
 "the OS a chance to collect more entropy! (Need %d more bytes)\n"), (int)length );
-	    warn = 1;
-	    continue;
-	}
-	else if( rc == -1 ) {
-	    tty_printf(
-		       "select() error: %s\n", strerror(errno));
-	    continue;
-	}
+              warn = 1;
+              continue;
+            }
+            else if( rc == -1 ) {
+              tty_printf(
+                         "select() error: %s\n", strerror(errno));
+              continue;
+            }
+          }
+#endif /*FD_SETSIZE*/
 
 	do {
 	    int nbytes = length < sizeof(buffer)? length : sizeof(buffer);
