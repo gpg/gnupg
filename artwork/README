@@ -6,8 +6,10 @@ gnupg-logo-new.svg  Is the new logo from the logo context.
                     We actually use the upper right one; the
                     other elements may still be useful.
 
+gnupg-logo.svg      This is the cropped off version of the above logo.
+
 gnupg-logo-new.eps  Other versions.
-gnupg-logo-new.ai   
+gnupg-logo-new.ai
 
 gnupg-favicon-1.ico  Icons for the website (rectangular)
 gnupg-favicon-2.ico  (round)
