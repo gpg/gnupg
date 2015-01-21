@@ -42,6 +42,7 @@
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "pkglue.h"
+#include "../common/shareddefs.h"
 
 /* The default algorithms.  If you change them remember to change them
    also in gpg.c:gpgconf_list.  You should also check that the value
@@ -2816,6 +2817,18 @@ get_parameter_value( struct para_data_s *para, enum para_name key )
     return (r && *r->u.value)? r->u.value : NULL;
 }
 
+
+/* This is similar to get_parameter_value but also returns the empty
+   string.  This is required so that quick_generate_keypair can use an
+   empty Passphrase to specify no-protection.  */
+static const char *
+get_parameter_passphrase (struct para_data_s *para)
+{
+  struct para_data_s *r = get_parameter (para, pPASSPHRASE);
+  return r->u.value;
+}
+
+
 static int
 get_parameter_algo( struct para_data_s *para, enum para_name key,
                     int *r_default)
@@ -3496,6 +3509,21 @@ quick_generate_keypair (const char *uid)
                             DEFAULT_STD_SUBALGO, DEFAULT_STD_SUBKEYSIZE,
                             DEFAULT_STD_SUBCURVE);
 
+  /* If the pinentry loopback mode is not and we have a static
+     passphrase (i.e. set with --passphrase{,-fd,-file} while in batch
+     mode), we use that passphrase for the new key.  */
+  if (opt.pinentry_mode != PINENTRY_MODE_LOOPBACK
+      && have_static_passphrase ())
+    {
+      const char *s = get_static_passphrase ();
+
+      r = xmalloc_clear (sizeof *r + strlen (s));
+      r->key = pPASSPHRASE;
+      strcpy (r->u.value, s);
+      r->next = para;
+      para = r;
+    }
+
   proc_parameter_file (para, "[internal]", &outctrl, 0);
  leave:
   release_parameter_list (para);
@@ -3970,7 +3998,7 @@ do_generate_keypair (struct para_data_s *para,
                      timestamp,
                      get_parameter_u32( para, pKEYEXPIRE ), 0,
                      outctrl->keygen_flags,
-                     get_parameter_value (para, pPASSPHRASE),
+                     get_parameter_passphrase (para),
                      &cache_nonce);
   else
     err = gen_card_key (PUBKEY_ALGO_RSA, 1, 1, pub_root,
@@ -4024,7 +4052,7 @@ do_generate_keypair (struct para_data_s *para,
                            timestamp,
                            get_parameter_u32 (para, pSUBKEYEXPIRE), 1,
                            outctrl->keygen_flags,
-                           get_parameter_value (para, pPASSPHRASE),
+                           get_parameter_passphrase (para),
                            &cache_nonce);
           /* Get the pointer to the generated public subkey packet.  */
           if (!err)

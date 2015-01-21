@@ -7,6 +7,9 @@ Noteworthy changes in version 2.1.2 (unreleased)
  * gpg: The parameter 'Passphrase' for batch key generation works
    again.
 
+ * gpg: Using a passphrase option in batch mode now has the expected
+   effect on --quick-gen-key.
+
 
 Noteworthy changes in version 2.1.1 (2014-12-16)
 ------------------------------------------------
