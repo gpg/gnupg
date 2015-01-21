@@ -31,8 +31,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) \
-            $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS) $(NPTH_CFLAGS)
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) $(LIBASSUAN_CFLAGS)	\
+            $(GPG_ERROR_CFLAGS) $(NPTH_CFLAGS) $(NTBTLS_CFLAGS)		\
+            $(LIBGNUTLS_CFLAGS)
+
 
 BUILT_SOURCES = no-libgcrypt.c
 
