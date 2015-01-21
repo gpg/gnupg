@@ -914,22 +914,23 @@ cmd_pkdecrypt (assuan_context_t ctx, char *line)
 
 
 static const char hlp_genkey[] =
-  "GENKEY [--no-protection] [--preset] [<cache_nonce>]\n"
+  "GENKEY [--no-protection] [--preset] [--inq-passwd] [<cache_nonce>]\n"
   "\n"
   "Generate a new key, store the secret part and return the public\n"
   "part.  Here is an example transaction:\n"
   "\n"
   "  C: GENKEY\n"
   "  S: INQUIRE KEYPARAM\n"
-  "  C: D (genkey (rsa (nbits  1024)))\n"
+  "  C: D (genkey (rsa (nbits  2048)))\n"
   "  C: END\n"
   "  S: D (public-key\n"
   "  S: D   (rsa (n 326487324683264) (e 10001)))\n"
   "  S: OK key created\n"
   "\n"
   "When the --preset option is used the passphrase for the generated\n"
-  "key will be added to the cache.\n"
-  "\n";
+  "key will be added to the cache.  When --inq-passwd is used an inquire\n"
+  "with the keyword NEWPASSWD is used to request the passphrase for the\n"
+  "new key.\n";
 static gpg_error_t
 cmd_genkey (assuan_context_t ctx, char *line)
 {
@@ -938,16 +939,20 @@ cmd_genkey (assuan_context_t ctx, char *line)
   int no_protection;
   unsigned char *value;
   size_t valuelen;
+  unsigned char *newpasswd = NULL;
   membuf_t outbuf;
   char *cache_nonce = NULL;
   int opt_preset;
+  int opt_inq_passwd;
+  size_t n;
   char *p;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  opt_preset = has_option (line, "--preset");
   no_protection = has_option (line, "--no-protection");
+  opt_preset = has_option (line, "--preset");
+  opt_inq_passwd = has_option (line, "--inq-passwd");
   line = skip_options (line);
 
   p = line;
@@ -966,8 +971,37 @@ cmd_genkey (assuan_context_t ctx, char *line)
 
   init_membuf (&outbuf, 512);
 
+  /* If requested, ask for the password to be used for the key.  If
+     this is not used the regular Pinentry mechanism is used.  */
+  if (opt_inq_passwd && !no_protection)
+    {
+      /* (N is used as a dummy) */
+      assuan_begin_confidential (ctx);
+      rc = assuan_inquire (ctx, "NEWPASSWD", &newpasswd, &n, 256);
+      assuan_end_confidential (ctx);
+      if (rc)
+        goto leave;
+      if (!*newpasswd)
+        {
+          /* Empty password given - switch to no-protection mode.  */
+          xfree (newpasswd);
+          newpasswd = NULL;
+          no_protection = 1;
+        }
+
+    }
+
   rc = agent_genkey (ctrl, cache_nonce, (char*)value, valuelen, no_protection,
-                     opt_preset, &outbuf);
+                     newpasswd, opt_preset, &outbuf);
+
+ leave:
+  if (newpasswd)
+    {
+      /* Assuan_inquire does not allow us to read into secure memory
+         thus we need to wipe it ourself.  */
+      wipememory (newpasswd, strlen (newpasswd));
+      xfree (newpasswd);
+    }
   xfree (value);
   if (rc)
     clear_outbuf (&outbuf);

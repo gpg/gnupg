@@ -154,6 +154,7 @@ gpg_error_t agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip,
 /* Generate a new key.  */
 gpg_error_t agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
                           const char *keyparms, int no_protection,
+                          const char *passphrase,
                           gcry_sexp_t *r_pubkey);
 
 /* Read a public key.  */

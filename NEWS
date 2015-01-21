@@ -4,6 +4,9 @@ Noteworthy changes in version 2.1.2 (unreleased)
  * agent: When setting --default-cache-ttl the value for
    --max-cache-ttl is adjusted to be not lower than the former.
 
+ * gpg: The parameter 'Passphrase' for batch key generation works
+   again.
+
 
 Noteworthy changes in version 2.1.1 (2014-12-16)
 ------------------------------------------------

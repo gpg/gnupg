@@ -3341,17 +3341,13 @@ ignored and instead the usual passphrase dialog is used.  This does
 not make sense for batch key generation; however the unattended key
 generation feature is also used by GUIs and this feature relinquishes
 the GUI from implementing its own passphrase entry code.  These are
-global control statements and affect all future key genrations.
+global control statements and affect all future key generations.
 @end ifclear
 @ifset gpgtwoone
 This option is a no-op for GnuPG 2.1 and later.
 @end ifset
 
-
 @item %no-protection
-Since GnuPG version 2.1 it is not anymore possible to specify a
-passphrase for unattended key generation.  The passphrase command is
-simply ignored and @samp{%ask-passpharse} is thus implicitly enabled.
 Using this option allows the creation of keys without any passphrase
 protection.  This option is mainly intended for regression tests.
 
@@ -3409,8 +3405,8 @@ by running the command @samp{gpg2 --gpgconf-list}".
 Key usage lists for a subkey; similar to @samp{Key-Usage}.
 
 @item Passphrase: @var{string}
-If you want to specify a passphrase for the secret key,
-enter it here.	Default is not to use any passphrase.
+If you want to specify a passphrase for the secret key, enter it here.
+Default is to use the Pinentry dialog to ask for a passphrase.
 
 @item Name-Real: @var{name}
 @itemx Name-Comment: @var{comment}

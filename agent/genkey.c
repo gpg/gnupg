@@ -410,14 +410,16 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 /* Generate a new keypair according to the parameters given in
    KEYPARAM.  If CACHE_NONCE is given first try to lookup a passphrase
    using the cache nonce.  If NO_PROTECTION is true the key will not
-   be protected by a passphrase.  */
+   be protected by a passphrase.  If OVERRIDE_PASSPHRASE is true that
+   passphrase will be used for the new key.  */
 int
 agent_genkey (ctrl_t ctrl, const char *cache_nonce,
               const char *keyparam, size_t keyparamlen, int no_protection,
-              int preset, membuf_t *outbuf)
+              const char *override_passphrase, int preset, membuf_t *outbuf)
 {
   gcry_sexp_t s_keyparam, s_key, s_private, s_public;
-  char *passphrase;
+  char *passphrase_buffer = NULL;
+  const char *passphrase;
   int rc;
   size_t len;
   char *buf;
@@ -430,27 +432,35 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
     }
 
   /* Get the passphrase now, cause key generation may take a while. */
-  if (no_protection || !cache_nonce)
+  if (override_passphrase)
+    passphrase = override_passphrase;
+  else if (no_protection || !cache_nonce)
     passphrase = NULL;
   else
-    passphrase = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
+    {
+      passphrase_buffer = agent_get_cache (cache_nonce, CACHE_MODE_NONCE);
+      passphrase = passphrase_buffer;
+    }
 
   if (passphrase || no_protection)
-    rc = 0;
+    ;
   else
-    rc = agent_ask_new_passphrase (ctrl,
-                                   _("Please enter the passphrase to%0A"
-                                     "protect your new key"),
-                                   &passphrase);
-  if (rc)
-    return rc;
+    {
+      rc = agent_ask_new_passphrase (ctrl,
+                                     _("Please enter the passphrase to%0A"
+                                       "protect your new key"),
+                                     &passphrase_buffer);
+      if (rc)
+        return rc;
+      passphrase = passphrase_buffer;
+    }
 
   rc = gcry_pk_genkey (&s_key, s_keyparam );
   gcry_sexp_release (s_keyparam);
   if (rc)
     {
       log_error ("key generation failed: %s\n", gpg_strerror (rc));
-      xfree (passphrase);
+      xfree (passphrase_buffer);
       return rc;
     }
 
@@ -460,7 +470,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
     {
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_key);
-      xfree (passphrase);
+      xfree (passphrase_buffer);
       return gpg_error (GPG_ERR_INV_DATA);
     }
   s_public = gcry_sexp_find_token (s_key, "public-key", 0);
@@ -469,7 +479,7 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_key);
-      xfree (passphrase);
+      xfree (passphrase_buffer);
       return gpg_error (GPG_ERR_INV_DATA);
     }
   gcry_sexp_release (s_key); s_key = NULL;
@@ -503,7 +513,8 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
 	    }
 	}
     }
-  xfree (passphrase);
+  xfree (passphrase_buffer);
+  passphrase_buffer = NULL;
   passphrase = NULL;
   gcry_sexp_release (s_private);
   if (rc)

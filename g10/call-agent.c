@@ -1,7 +1,6 @@
 /* call-agent.c - Divert GPG operations to the agent.
- * Copyright (C) 2001, 2002, 2003, 2006, 2007, 2008, 2009,
- *               2010, 2011, 2013 Free Software Foundation, Inc.
- * Copyright (C) 2013, 2014  Werner Koch
+ * Copyright (C) 2001-2003, 2006-2011, 2013 Free Software Foundation, Inc.
+ * Copyright (C) 2013-2015  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -90,6 +89,7 @@ struct genkey_parm_s
 {
   struct default_inq_parm_s *dflt;
   const char *keyparms;
+  const char *passphrase;
 };
 
 struct import_key_parm_s
@@ -1737,6 +1737,11 @@ inq_genkey_parms (void *opaque, const char *line)
       err = assuan_send_data (parm->dflt->ctx,
                               parm->keyparms, strlen (parm->keyparms));
     }
+  else if (has_leading_keyword (line, "NEWPASSWD") && parm->passphrase)
+    {
+      err = assuan_send_data (parm->dflt->ctx,
+                              parm->passphrase,  strlen (parm->passphrase));
+    }
   else
     err = default_inq_cb (parm->dflt, line);
 
@@ -1747,10 +1752,13 @@ inq_genkey_parms (void *opaque, const char *line)
 /* Call the agent to generate a new key.  KEYPARMS is the usual
    S-expression giving the parameters of the key.  gpg-agent passes it
    gcry_pk_genkey.  If NO_PROTECTION is true the agent is advised not
-   to protect the generated key. */
+   to protect the generated key.  If NO_PROTECTION is not set and
+   PASSPHRASE is not NULL the agent is requested to protect the key
+   with that passphrase instead of asking for one.  */
 gpg_error_t
 agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
-              const char *keyparms, int no_protection, gcry_sexp_t *r_pubkey)
+              const char *keyparms, int no_protection,
+              const char *passphrase, gcry_sexp_t *r_pubkey)
 {
   gpg_error_t err;
   struct genkey_parm_s gk_parm;
@@ -1778,8 +1786,11 @@ agent_genkey (ctrl_t ctrl, char **cache_nonce_addr,
   init_membuf (&data, 1024);
   gk_parm.dflt     = &dfltparm;
   gk_parm.keyparms = keyparms;
+  gk_parm.passphrase = passphrase;
   snprintf (line, sizeof line, "GENKEY%s%s%s",
-            no_protection? " --no-protection":"",
+            no_protection? " --no-protection" :
+            passphrase   ? " --inq-passwd" :
+            /*          */ "",
             cache_nonce_addr && *cache_nonce_addr? " ":"",
             cache_nonce_addr && *cache_nonce_addr? *cache_nonce_addr:"");
   cn_parm.cache_nonce_addr = cache_nonce_addr;

@@ -396,7 +396,8 @@ gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);
 int agent_genkey (ctrl_t ctrl, const char *cache_nonce,
                   const char *keyparam, size_t keyparmlen,
-                  int no_protection, int preset, membuf_t *outbuf);
+                  int no_protection, const char *override_passphrase,
+                  int preset, membuf_t *outbuf);
 gpg_error_t agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
                                      char **passphrase_addr);
 
