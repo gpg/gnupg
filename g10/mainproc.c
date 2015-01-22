@@ -256,7 +256,7 @@ symkey_decrypt_seskey (DEK *dek, byte *seskey, size_t slen)
     {
       log_error ( _("weird size for an encrypted session key (%d)\n"),
 		  (int)slen);
-      return G10ERR_BAD_KEY;
+      return GPG_ERR_BAD_KEY;
     }
 
   if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
@@ -439,10 +439,10 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
 	    }
 	}
       else
-        result = G10ERR_NO_SECKEY;
+        result = GPG_ERR_NO_SECKEY;
     }
   else
-    result = G10ERR_PUBKEY_ALGO;
+    result = GPG_ERR_PUBKEY_ALGO;
 
   if (result == -1)
     ;
@@ -504,7 +504,7 @@ print_pkenc_list (struct kidlist_item *list, int failed)
 
       free_public_key (pk);
 
-      if (list->reason == G10ERR_NO_SECKEY)
+      if (gpg_err_code (list->reason) == GPG_ERR_NO_SECKEY)
         {
           if (is_status_enabled())
             {
@@ -517,7 +517,7 @@ print_pkenc_list (struct kidlist_item *list, int failed)
       else if (list->reason)
         {
           log_info (_("public key decryption failed: %s\n"),
-                    g10_errstr(list->reason));
+                    gpg_strerror (list->reason));
           write_status_error ("pkdecrypt_failed", list->reason);
         }
     }
@@ -602,7 +602,7 @@ proc_encrypted (CTX c, PACKET *pkt)
         }
     }
   else if (!c->dek)
-    result = G10ERR_NO_SECKEY;
+    result = GPG_ERR_NO_SECKEY;
 
   if (!result)
     result = decrypt_data (c->ctrl, c, pkt->pkt.encrypted, c->dek );
@@ -620,7 +620,7 @@ proc_encrypted (CTX c, PACKET *pkt)
       else if (!opt.no_mdc_warn)
         log_info (_("WARNING: message was not integrity protected\n"));
     }
-  else if (gpg_err_code (result) == G10ERR_BAD_SIGN)
+  else if (gpg_err_code (result) == GPG_ERR_BAD_SIGNATURE)
     {
       glo_ctrl.lasterr = result;
       log_error (_("WARNING: encrypted message has been manipulated!\n"));
@@ -638,7 +638,7 @@ proc_encrypted (CTX c, PACKET *pkt)
         }
       glo_ctrl.lasterr = result;
       write_status (STATUS_DECRYPTION_FAILED);
-      log_error (_("decryption failed: %s\n"), g10_errstr(result));
+      log_error (_("decryption failed: %s\n"), gpg_strerror (result));
       /* Hmmm: does this work when we have encrypted using multiple
        * ways to specify the session key (symmmetric and PK). */
     }
@@ -755,7 +755,7 @@ proc_plaintext( CTX c, PACKET *pkt )
     }
 
   if (rc)
-    log_error ("handle plaintext failed: %s\n", g10_errstr(rc));
+    log_error ("handle plaintext failed: %s\n", gpg_strerror (rc));
 
   free_packet(pkt);
   c->last_was_session_key = 0;
@@ -900,16 +900,16 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
         {
           log_error (_("standalone revocation - "
                        "use \"gpg --import\" to apply\n"));
-          return G10ERR_NOT_PROCESSED;
+          return GPG_ERR_NOT_PROCESSED;
 	}
       else
         {
           log_error ("invalid root packet for sigclass %02x\n", sig->sig_class);
-          return G10ERR_SIG_CLASS;
+          return GPG_ERR_SIG_CLASS;
 	}
     }
   else
-    return G10ERR_SIG_CLASS;
+    return GPG_ERR_SIG_CLASS;
 
   rc = signature_check2 (sig, md, NULL, is_expkey, is_revkey, NULL);
   if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
@@ -1128,7 +1128,7 @@ list_node (CTX c, kbnode_t node)
         es_printf ("%c       %s %s   ",
                    sigrc, keystr (sig->keyid), datestr_from_sig(sig));
       if (sigrc == '%')
-        es_printf ("[%s] ", g10_errstr(rc2) );
+        es_printf ("[%s] ", gpg_strerror (rc2) );
       else if (sigrc == '?')
         ;
       else if (is_selfsig)
@@ -1197,7 +1197,7 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
     {
       write_status_text (STATUS_NODATA, "4");
       log_error (_("no signature found\n"));
-      rc = G10ERR_NO_DATA;
+      rc = GPG_ERR_NO_DATA;
     }
 
   /* Propagate the signature seen flag upward. Do this only on success
@@ -1340,7 +1340,7 @@ do_proc_packets (CTX c, iobuf_t a)
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC:
               write_status_text( STATUS_UNEXPECTED, "0" );
-              rc = G10ERR_UNEXPECTED;
+              rc = GPG_ERR_UNEXPECTED;
               goto leave;
 
             case PKT_SIGNATURE:   newpkt = add_signature (c, pkt); break;
@@ -1359,7 +1359,7 @@ do_proc_packets (CTX c, iobuf_t a)
             case PKT_SECRET_KEY:
             case PKT_USER_ID:
               write_status_text (STATUS_UNEXPECTED, "0");
-              rc = G10ERR_UNEXPECTED;
+              rc = GPG_ERR_UNEXPECTED;
               goto leave;
 
             case PKT_SIGNATURE:   newpkt = add_signature (c, pkt); break;
@@ -1428,7 +1428,7 @@ do_proc_packets (CTX c, iobuf_t a)
         free_packet(pkt);
     }
 
-  if (rc == G10ERR_INVALID_PACKET)
+  if (rc == GPG_ERR_INV_PACKET)
     write_status_text (STATUS_NODATA, "3");
 
   if (any_data)
@@ -1684,7 +1684,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
   /* If the key isn't found, check for a preferred keyserver */
 
-  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY && sig->flags.pref_ks)
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && sig->flags.pref_ks)
     {
       const byte *p;
       int seq = 0;
@@ -1726,7 +1726,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 
   /* If the preferred keyserver thing above didn't work, our second
      try is to use the URI from a DNS PKA record. */
-  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
       && (opt.keyserver_options.options & KEYSERVER_HONOR_PKA_RECORD))
     {
@@ -1755,7 +1755,7 @@ check_sig_and_print (CTX c, kbnode_t node)
   /* If the preferred keyserver thing above didn't work and we got
        no information from the DNS PKA, this is a third try. */
 
-  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
       && opt.keyserver
       && (opt.keyserver_options.options&KEYSERVER_AUTO_KEY_RETRIEVE))
     {
@@ -2000,7 +2000,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       if (sig->flags.expired)
         {
           log_info (_("Signature expired %s\n"), asctimestamp(sig->expiredate));
-          rc = G10ERR_GENERAL; /* need a better error here? */
+          rc = GPG_ERR_GENERAL; /* Need a better error here?  */
         }
       else if (sig->expiredate)
         log_info (_("Signature expires %s\n"), asctimestamp(sig->expiredate));
@@ -2065,13 +2065,13 @@ check_sig_and_print (CTX c, kbnode_t node)
                 sig->pubkey_algo, sig->digest_algo,
                 sig->sig_class, (ulong)sig->timestamp, rc);
       write_status_text (STATUS_ERRSIG, buf);
-      if (gpg_err_code (rc) == G10ERR_NO_PUBKEY)
+      if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
         {
           buf[16] = 0;
           write_status_text (STATUS_NO_PUBKEY, buf);
 	}
-      if (gpg_err_code (rc) != G10ERR_NOT_PROCESSED)
-        log_error (_("Can't check signature: %s\n"), g10_errstr(rc));
+      if (gpg_err_code (rc) != GPG_ERR_NOT_PROCESSED)
+        log_error (_("Can't check signature: %s\n"), gpg_strerror (rc));
     }
 
   return rc;
@@ -2158,7 +2158,7 @@ proc_tree (CTX c, kbnode_t node)
         hash_err:
           if (rc)
             {
-              log_error ("can't hash datafile: %s\n", g10_errstr (rc));
+              log_error ("can't hash datafile: %s\n", gpg_strerror (rc));
               return;
 	    }
 	}
@@ -2283,7 +2283,7 @@ proc_tree (CTX c, kbnode_t node)
         detached_hash_err:
           if (rc)
             {
-              log_error ("can't hash datafile: %s\n", g10_errstr(rc));
+              log_error ("can't hash datafile: %s\n", gpg_strerror (rc));
               return;
 	    }
 	}

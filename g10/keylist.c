@@ -456,7 +456,7 @@ list_all (int secret, int mark_secret)
   if (rc)
     {
       if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
-	log_error ("keydb_search_first failed: %s\n", g10_errstr (rc));
+	log_error ("keydb_search_first failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
 
@@ -466,7 +466,7 @@ list_all (int secret, int mark_secret)
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc)
 	{
-	  log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
+	  log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
 	  goto leave;
 	}
 
@@ -503,7 +503,7 @@ list_all (int secret, int mark_secret)
   while (!(rc = keydb_search_next (hd)));
   es_fflush (es_stdout);
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
-    log_error ("keydb_search_next failed: %s\n", g10_errstr (rc));
+    log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
   if (keydb_get_skipped_counter (hd))
     log_info (_("Warning: %lu key(s) skipped due to their large size\n"),
               keydb_get_skipped_counter (hd));
@@ -542,7 +542,7 @@ list_one (strlist_t names, int secret, int mark_secret)
   rc = getkey_bynames (&ctx, NULL, names, secret, &keyblock);
   if (rc)
     {
-      log_error ("error reading key: %s\n", g10_errstr (rc));
+      log_error ("error reading key: %s\n", gpg_strerror (rc));
       get_pubkey_end (ctx);
       return;
     }
@@ -586,7 +586,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
       if (rc)
 	{
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)
-	    log_error ("error reading key: %s\n", g10_errstr (rc));
+	    log_error ("error reading key: %s\n", gpg_strerror (rc));
 	}
       else
 	{
@@ -1094,7 +1094,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	    es_fprintf (es_stdout, " %s", expirestr_from_sig (sig));
 	  es_fprintf (es_stdout, "  ");
 	  if (sigrc == '%')
-	    es_fprintf (es_stdout, "[%s] ", g10_errstr (rc));
+	    es_fprintf (es_stdout, "[%s] ", gpg_strerror (rc));
 	  else if (sigrc == '?')
 	    ;
 	  else if (!opt.fast_list_mode)
@@ -1477,7 +1477,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 	  es_fprintf (es_stdout, ":");
 
 	  if (sigrc == '%')
-	    es_fprintf (es_stdout, "[%s] ", g10_errstr (rc));
+	    es_fprintf (es_stdout, "[%s] ", gpg_strerror (rc));
 	  else if (sigrc == '?')
 	    ;
 	  else if (!opt.fast_list_mode)

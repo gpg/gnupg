@@ -1,5 +1,5 @@
 /* tdbio.c - trust database I/O operations
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2002, 2012 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -250,7 +250,7 @@ put_record_into_cache( ulong recno, const char *data )
 	    return 0;
 	}
 	log_info(_("trustdb transaction too large\n"));
-	return G10ERR_RESOURCE_LIMIT;
+	return GPG_ERR_RESOURCE_LIMIT;
     }
     if( dirty_count ) {
 	int n = dirty_count / 5; /* discard some dirty entries */
@@ -515,7 +515,7 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 	if( errno != ENOENT ) {
 	    log_error( _("can't access '%s': %s\n"), fname, strerror(errno) );
 	    xfree(fname);
-	    return G10ERR_TRUSTDB;
+	    return GPG_ERR_TRUSTDB;
 	}
 	if (!create)
           *r_nofile = 1;
@@ -565,11 +565,13 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
                 fp =fopen( fname, "wb" );
 	    umask(oldmask);
 	    if( !fp )
-		log_fatal( _("can't create '%s': %s\n"), fname, strerror(errno) );
+		log_fatal (_("can't create '%s': %s\n"),
+                           fname, strerror (errno));
 	    fclose(fp);
 	    db_fd = open( db_name, O_RDWR | MY_O_BINARY );
 	    if( db_fd == -1 )
-		log_fatal( _("can't open '%s': %s\n"), db_name, strerror(errno) );
+		log_fatal (_("can't open '%s': %s\n"),
+                           db_name, strerror (errno));
 
 #ifndef __riscos__
 	    if( !lockhandle )
@@ -581,7 +583,7 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
             rc = create_version_record ();
 	    if( rc )
 		log_fatal( _("%s: failed to create version record: %s"),
-						   fname, g10_errstr(rc));
+						   fname, gpg_strerror (rc));
 	    /* and read again to check that we are okay */
 	    if( tdbio_read_record( 0, &rec, RECTYPE_VER ) )
 		log_fatal( _("%s: invalid trustdb created\n"), db_name );
@@ -689,7 +691,7 @@ create_hashtable( TRUSTREC *vr, int type )
 	 rc = tdbio_write_record( &rec );
 	 if( rc )
 	     log_fatal( _("%s: failed to create hashtable: %s\n"),
-					db_name, g10_errstr(rc));
+					db_name, gpg_strerror (rc));
     }
     /* update the version record */
     rc = tdbio_write_record( vr );
@@ -697,7 +699,7 @@ create_hashtable( TRUSTREC *vr, int type )
 	rc = tdbio_sync();
     if( rc )
 	log_fatal( _("%s: error updating version record: %s\n"),
-						  db_name, g10_errstr(rc));
+						  db_name, gpg_strerror (rc));
 }
 
 
@@ -714,7 +716,7 @@ tdbio_db_matches_options()
       rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
       if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-		   db_name, g10_errstr(rc) );
+		   db_name, gpg_strerror (rc) );
 
       yes_no = vr.r.ver.marginals == opt.marginals_needed
 	&& vr.r.ver.completes == opt.completes_needed
@@ -735,7 +737,7 @@ tdbio_read_model(void)
   rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
   if( rc )
     log_fatal( _("%s: error reading version record: %s\n"),
-	       db_name, g10_errstr(rc) );
+	       db_name, gpg_strerror (rc) );
   return vr.r.ver.trust_model;
 }
 
@@ -751,7 +753,7 @@ tdbio_read_nextcheck ()
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-						    db_name, g10_errstr(rc) );
+						    db_name, gpg_strerror (rc));
     return vr.r.ver.nextcheck;
 }
 
@@ -765,7 +767,7 @@ tdbio_write_nextcheck (ulong stamp)
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-				       db_name, g10_errstr(rc) );
+				       db_name, gpg_strerror (rc) );
 
     if (vr.r.ver.nextcheck == stamp)
       return 0;
@@ -774,7 +776,7 @@ tdbio_write_nextcheck (ulong stamp)
     rc = tdbio_write_record( &vr );
     if( rc )
 	log_fatal( _("%s: error writing version record: %s\n"),
-				       db_name, g10_errstr(rc) );
+				       db_name, gpg_strerror (rc) );
     return 1;
 }
 
@@ -795,7 +797,7 @@ get_trusthashrec(void)
 	rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
 	if( rc )
 	    log_fatal( _("%s: error reading version record: %s\n"),
-					    db_name, g10_errstr(rc) );
+					    db_name, gpg_strerror (rc) );
 	if( !vr.r.ver.trusthashtbl )
 	    create_hashtable( &vr, 0 );
 
@@ -826,7 +828,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error("upd_hashtable: read failed: %s\n",	g10_errstr(rc) );
+	log_error("upd_hashtable: read failed: %s\n",	gpg_strerror (rc) );
 	return rc;
     }
 
@@ -836,7 +838,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	rc = tdbio_write_record( &rec );
 	if( rc ) {
 	    log_error("upd_hashtable: write htbl failed: %s\n",
-							    g10_errstr(rc) );
+							    gpg_strerror (rc) );
 	    return rc;
 	}
     }
@@ -845,7 +847,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	rc = tdbio_read_record( item, &rec, 0 );
 	if( rc ) {
 	    log_error( "upd_hashtable: read item failed: %s\n",
-							    g10_errstr(rc) );
+							    gpg_strerror (rc) );
 	    return rc;
 	}
 
@@ -854,7 +856,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    level++;
 	    if( level >= keylen ) {
 		log_error( "hashtable has invalid indirections.\n");
-		return G10ERR_TRUSTDB;
+		return GPG_ERR_TRUSTDB;
 	    }
 	    goto next_level;
 	}
@@ -870,8 +872,8 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_read_record( rec.r.hlst.next,
 						       &rec, RECTYPE_HLST);
 		    if( rc ) {
-			log_error( "upd_hashtable: read hlst failed: %s\n",
-							     g10_errstr(rc) );
+			log_error ("upd_hashtable: read hlst failed: %s\n",
+                                   gpg_strerror (rc) );
 			return rc;
 		    }
 		}
@@ -885,8 +887,8 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 			rec.r.hlst.rnum[i] = newrecnum;
 			rc = tdbio_write_record( &rec );
 			if( rc )
-			    log_error( "upd_hashtable: write hlst failed: %s\n",
-							      g10_errstr(rc) );
+			    log_error ("upd_hashtable: write hlst failed: %s\n",
+                                       gpg_strerror (rc));
 			return rc; /* done */
 		    }
 		}
@@ -894,8 +896,8 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_read_record( rec.r.hlst.next,
 						      &rec, RECTYPE_HLST );
 		    if( rc ) {
-			log_error( "upd_hashtable: read hlst failed: %s\n",
-							     g10_errstr(rc) );
+			log_error ("upd_hashtable: read hlst failed: %s\n",
+                                   gpg_strerror (rc));
 			return rc;
 		    }
 		}
@@ -904,7 +906,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_write_record( &rec );
 		    if( rc ) {
 			log_error( "upd_hashtable: write hlst failed: %s\n",
-							  g10_errstr(rc) );
+							  gpg_strerror (rc) );
 			return rc;
 		    }
 		    memset( &rec, 0, sizeof rec );
@@ -914,7 +916,7 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 		    rc = tdbio_write_record( &rec );
 		    if( rc )
 			log_error( "upd_hashtable: write ext hlst failed: %s\n",
-							  g10_errstr(rc) );
+							  gpg_strerror (rc) );
 		    return rc; /* done */
 		}
 	    } /* end loop over hlst slots */
@@ -932,22 +934,22 @@ upd_hashtable( ulong table, byte *key, int keylen, ulong newrecnum )
 	    rc = tdbio_write_record( &rec );
 	    if( rc ) {
 		log_error( "upd_hashtable: write new hlst failed: %s\n",
-						  g10_errstr(rc) );
+						  gpg_strerror (rc) );
 		return rc;
 	    }
 	    /* update the hashtable record */
 	    lastrec.r.htbl.item[msb % ITEMS_PER_HTBL_RECORD] = rec.recnum;
 	    rc = tdbio_write_record( &lastrec );
 	    if( rc )
-		log_error( "upd_hashtable: update htbl failed: %s\n",
-							     g10_errstr(rc) );
+		log_error ("upd_hashtable: update htbl failed: %s\n",
+                           gpg_strerror (rc));
 	    return rc; /* ready */
 	}
 	else {
 	    log_error( "hashtbl %lu: %lu/%d points to an invalid record %lu\n",
 		       table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
 	    list_trustdb(NULL);
-	    return G10ERR_TRUSTDB;
+	    return GPG_ERR_TRUSTDB;
 	}
     }
 
@@ -975,7 +977,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
     rc = tdbio_read_record( hashrec, &rec, RECTYPE_HTBL );
     if( rc ) {
 	log_error("drop_from_hashtable: read failed: %s\n",
-							g10_errstr(rc) );
+							gpg_strerror (rc) );
 	return rc;
     }
 
@@ -988,14 +990,14 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 	rc = tdbio_write_record( &rec );
 	if( rc )
 	    log_error("drop_from_hashtable: write htbl failed: %s\n",
-							    g10_errstr(rc) );
+							    gpg_strerror (rc) );
 	return rc;
     }
 
     rc = tdbio_read_record( item, &rec, 0 );
     if( rc ) {
 	log_error( "drop_from_hashtable: read item failed: %s\n",
-							g10_errstr(rc) );
+							gpg_strerror (rc) );
 	return rc;
     }
 
@@ -1004,7 +1006,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 	level++;
 	if( level >= keylen ) {
 	    log_error( "hashtable has invalid indirections.\n");
-	    return G10ERR_TRUSTDB;
+	    return GPG_ERR_TRUSTDB;
 	}
 	goto next_level;
     }
@@ -1016,8 +1018,8 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 		    rec.r.hlst.rnum[i] = 0; /* drop */
 		    rc = tdbio_write_record( &rec );
 		    if( rc )
-			log_error("drop_from_hashtable: write htbl failed: %s\n",
-									g10_errstr(rc) );
+                      log_error("drop_from_hashtable: write htbl failed: %s\n",
+                                gpg_strerror (rc));
 		    return rc;
 		}
 	    }
@@ -1026,7 +1028,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 						   &rec, RECTYPE_HLST);
 		if( rc ) {
 		    log_error( "drop_from_hashtable: read hlst failed: %s\n",
-							 g10_errstr(rc) );
+							 gpg_strerror (rc) );
 		    return rc;
 		}
 	    }
@@ -1037,7 +1039,7 @@ drop_from_hashtable( ulong table, byte *key, int keylen, ulong recnum )
 
     log_error( "hashtbl %lu: %lu/%d points to wrong record %lu\n",
 		    table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
-    return G10ERR_TRUSTDB;
+    return GPG_ERR_TRUSTDB;
 }
 
 
@@ -1063,7 +1065,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
     hashrec += msb / ITEMS_PER_HTBL_RECORD;
     rc = tdbio_read_record( hashrec, rec, RECTYPE_HTBL );
     if( rc ) {
-	log_error("lookup_hashtable failed: %s\n", g10_errstr(rc) );
+	log_error("lookup_hashtable failed: %s\n", gpg_strerror (rc) );
 	return rc;
     }
 
@@ -1073,7 +1075,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 
     rc = tdbio_read_record( item, rec, 0 );
     if( rc ) {
-	log_error( "hashtable read failed: %s\n", g10_errstr(rc) );
+	log_error( "hashtable read failed: %s\n", gpg_strerror (rc) );
 	return rc;
     }
     if( rec->rectype == RECTYPE_HTBL ) {
@@ -1081,7 +1083,7 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 	level++;
 	if( level >= keylen ) {
 	    log_error("hashtable has invalid indirections\n");
-	    return G10ERR_TRUSTDB;
+	    return GPG_ERR_TRUSTDB;
 	}
 	goto next_level;
     }
@@ -1095,8 +1097,8 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 
 		    rc = tdbio_read_record( rec->r.hlst.rnum[i], &tmp, 0 );
 		    if( rc ) {
-			log_error( "lookup_hashtable: read item failed: %s\n",
-							      g10_errstr(rc) );
+			log_error ("lookup_hashtable: read item failed: %s\n",
+                                   gpg_strerror (rc));
 			return rc;
 		    }
 		    if( (*cmpfnc)( cmpdata, &tmp ) ) {
@@ -1108,8 +1110,8 @@ lookup_hashtable( ulong table, const byte *key, size_t keylen,
 	    if( rec->r.hlst.next ) {
 		rc = tdbio_read_record( rec->r.hlst.next, rec, RECTYPE_HLST );
 		if( rc ) {
-		    log_error( "lookup_hashtable: read hlst failed: %s\n",
-							 g10_errstr(rc) );
+		    log_error ("lookup_hashtable: read hlst failed: %s\n",
+                               gpg_strerror (rc) );
 		    return rc;
 		}
 	    }
@@ -1422,7 +1424,7 @@ tdbio_delete_record( ulong recnum )
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-				       db_name, g10_errstr(rc) );
+				       db_name, gpg_strerror (rc) );
 
     rec.recnum = recnum;
     rec.rectype = RECTYPE_FREE;
@@ -1449,21 +1451,21 @@ tdbio_new_recnum()
     rc = tdbio_read_record( 0, &vr, RECTYPE_VER );
     if( rc )
 	log_fatal( _("%s: error reading version record: %s\n"),
-					     db_name, g10_errstr(rc) );
+					     db_name, gpg_strerror (rc) );
     if( vr.r.ver.firstfree ) {
 	recnum = vr.r.ver.firstfree;
 	rc = tdbio_read_record( recnum, &rec, RECTYPE_FREE );
 	if( rc ) {
 	    log_error( _("%s: error reading free record: %s\n"),
-						  db_name,  g10_errstr(rc) );
+						  db_name,  gpg_strerror (rc) );
 	    return rc;
 	}
 	/* update dir record */
 	vr.r.ver.firstfree = rec.r.free.next;
 	rc = tdbio_write_record( &vr );
 	if( rc ) {
-	    log_error( _("%s: error writing dir record: %s\n"),
-						     db_name, g10_errstr(rc) );
+	    log_error (_("%s: error writing dir record: %s\n"),
+                       db_name, gpg_strerror (rc));
 	    return rc;
 	}
 	/*zero out the new record */
@@ -1473,7 +1475,7 @@ tdbio_new_recnum()
 	rc = tdbio_write_record( &rec );
 	if( rc )
 	    log_fatal(_("%s: failed to zero a record: %s\n"),
-				       db_name, g10_errstr(rc));
+				       db_name, gpg_strerror (rc));
     }
     else { /* not found, append a new record */
 	offset = lseek( db_fd, 0, SEEK_END );
@@ -1503,7 +1505,7 @@ tdbio_new_recnum()
 
 	if( rc )
 	    log_fatal(_("%s: failed to append a record: %s\n"),
-				    db_name,	g10_errstr(rc));
+				    db_name,	gpg_strerror (rc));
     }
     return recnum ;
 }

@@ -317,7 +317,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
         {
 	  char *tempkeystr = xstrdup (keystr (pk->main_keyid));
           log_error ("error getting main key %s of subkey %s: %s\n",
-                     tempkeystr, keystr (kid), g10_errstr (rc));
+                     tempkeystr, keystr (kid), gpg_strerror (rc));
 	  xfree (tempkeystr);
           validity = TRUST_UNKNOWN;
           goto leave;

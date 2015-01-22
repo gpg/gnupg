@@ -312,12 +312,12 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
         }
       if (err)
         log_error (_("checking created signature failed: %s\n"),
-                   g10_errstr (err));
+                   gpg_strerror (err));
       free_public_key (pk);
     }
 
   if (err)
-    log_error (_("signing failed: %s\n"), g10_errstr (err));
+    log_error (_("signing failed: %s\n"), gpg_strerror (err));
   else
     {
       if (opt.verbose)
@@ -573,7 +573,7 @@ write_onepass_sig_packets (SK_LIST sk_list, IOBUF out, int sigclass )
         free_packet (&pkt);
         if (rc) {
             log_error ("build onepass_sig packet failed: %s\n",
-                       g10_errstr(rc));
+                       gpg_strerror (rc));
             return rc;
         }
     }
@@ -637,7 +637,7 @@ write_plaintext_packet (IOBUF out, IOBUF inp, const char *fname, int ptmode)
         /*cfx.datalen = filesize? calc_packet_length( &pkt ) : 0;*/
         if( (rc = build_packet (out, &pkt)) )
             log_error ("build_packet(PLAINTEXT) failed: %s\n",
-                       g10_errstr(rc) );
+                       gpg_strerror (rc) );
         pt->buf = NULL;
     }
     else {
@@ -1325,7 +1325,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
 	pkt.pkttype = PKT_SYMKEY_ENC;
 	pkt.pkt.symkey_enc = enc;
 	if( (rc = build_packet( out, &pkt )) )
-	    log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+	    log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
 	xfree(enc);
     }
 
@@ -1520,7 +1520,7 @@ update_keysig_packet( PKT_signature **ret_sig,
     if ((!orig_sig || !pk || !pksk)
 	|| (orig_sig->sig_class >= 0x10 && orig_sig->sig_class <= 0x13 && !uid)
 	|| (orig_sig->sig_class == 0x18 && !subpk))
-      return G10ERR_GENERAL;
+      return GPG_ERR_GENERAL;
 
     if ( opt.cert_digest_algo )
       digest_algo = opt.cert_digest_algo;

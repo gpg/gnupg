@@ -591,7 +591,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
                 new_ctb? " new-ctb":"");
 
   pkt->pkttype = pkttype;
-  rc = G10ERR_UNKNOWN_PACKET;	/* default error */
+  rc = GPG_ERR_UNKNOWN_PACKET;	/* default error */
   switch (pkttype)
     {
     case PKT_PUBLIC_KEY:
@@ -657,7 +657,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
  leave:
   /* FIXME: Do we leak in case of an error?  */
   if (!rc && iobuf_error (inp))
-    rc = G10ERR_INV_KEYRING;
+    rc = GPG_ERR_INV_KEYRING;
 
   /* FIXME: We use only the error code for now to avoid problems with
      callers which have not been checked to always use gpg_err_code()
@@ -878,7 +878,7 @@ parse_marker (IOBUF inp, int pkttype, unsigned long pktlen)
   if (list_mode)
     es_fputs (":marker packet: [invalid]\n", listfp);
   iobuf_skip_rest (inp, pktlen, 0);
-  return G10ERR_INVALID_PACKET;
+  return GPG_ERR_INV_PACKET;
 }
 
 
@@ -1653,7 +1653,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	  log_error ("signature packet: hashed data too long\n");
           if (list_mode)
             es_fputs (":signature packet: [hashed data too long]\n", listfp);
-	  rc = G10ERR_INVALID_PACKET;
+	  rc = GPG_ERR_INV_PACKET;
 	  goto leave;
 	}
       if (n)
@@ -1679,7 +1679,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	  log_error ("signature packet: unhashed data too long\n");
           if (list_mode)
             es_fputs (":signature packet: [unhashed data too long]\n", listfp);
-	  rc = G10ERR_INVALID_PACKET;
+	  rc = GPG_ERR_INV_PACKET;
 	  goto leave;
 	}
       if (n)
@@ -1705,7 +1705,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       log_error ("packet(%d) too short\n", pkttype);
       if (list_mode)
         es_fputs (":signature packet: [too short]\n", listfp);
-      rc = G10ERR_INVALID_PACKET;
+      rc = GPG_ERR_INV_PACKET;
       goto leave;
     }
 
@@ -1825,7 +1825,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	  /* We include a limit to avoid too trivial DoS attacks by
 	     having gpg allocate too much memory.  */
 	  log_error ("signature packet: too much data\n");
-	  rc = G10ERR_INVALID_PACKET;
+	  rc = GPG_ERR_INV_PACKET;
 	}
       else
 	{
@@ -1848,7 +1848,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	      es_putc ('\n', listfp);
 	    }
 	  if (!sig->data[i])
-	    rc = G10ERR_INVALID_PACKET;
+	    rc = GPG_ERR_INV_PACKET;
 	}
     }
 
@@ -2421,7 +2421,7 @@ parse_user_id (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * packet)
       if (list_mode)
         es_fprintf (listfp, ":user ID packet: [too large]\n");
       iobuf_skip_rest (inp, pktlen, 0);
-      return G10ERR_INVALID_PACKET;
+      return GPG_ERR_INV_PACKET;
     }
 
   packet->pkt.user_id = xmalloc_clear (sizeof *packet->pkt.user_id + pktlen);
@@ -2502,7 +2502,7 @@ parse_attribute (IOBUF inp, int pkttype, unsigned long pktlen,
       if (list_mode)
         es_fprintf (listfp, ":attribute packet: [too large]\n");
       iobuf_skip_rest (inp, pktlen, 0);
-      return G10ERR_INVALID_PACKET;
+      return GPG_ERR_INV_PACKET;
     }
 
 #define EXTRA_UID_NAME_SPACE 71
@@ -2547,7 +2547,7 @@ parse_comment (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * packet)
         es_fprintf (listfp, ":%scomment packet: [too large]\n",
                     pkttype == PKT_OLD_COMMENT ? "OpenPGP draft " : "");
       iobuf_skip_rest (inp, pktlen, 0);
-      return G10ERR_INVALID_PACKET;
+      return GPG_ERR_INV_PACKET;
     }
   packet->pkt.comment = xmalloc (sizeof *packet->pkt.comment + pktlen - 1);
   packet->pkt.comment->len = pktlen;
@@ -2755,7 +2755,7 @@ parse_encrypted (IOBUF inp, int pkttype, unsigned long pktlen,
       log_error ("packet(%d) too short\n", pkttype);
       if (list_mode)
         es_fputs (":encrypted data packet: [too short]\n", listfp);
-      rc = G10ERR_INVALID_PACKET;
+      rc = GPG_ERR_INV_PACKET;
       iobuf_skip_rest (inp, pktlen, partial);
       goto leave;
     }

@@ -328,7 +328,7 @@ read_record (ulong recno, TRUSTREC *rec, int rectype )
   if (rc)
     {
       log_error(_("trust record %lu, req type %d: read failed: %s\n"),
-                recno, rec->rectype, g10_errstr(rc) );
+                recno, rec->rectype, gpg_strerror (rc) );
       tdbio_invalid();
     }
   if (rectype != rec->rectype)
@@ -349,7 +349,7 @@ write_record (TRUSTREC *rec)
   if (rc)
     {
       log_error(_("trust record %lu, type %d: write failed: %s\n"),
-			    rec->recnum, rec->rectype, g10_errstr(rc) );
+			    rec->recnum, rec->rectype, gpg_strerror (rc) );
       tdbio_invalid();
     }
 }
@@ -363,7 +363,7 @@ do_sync(void)
     int rc = tdbio_sync ();
     if(rc)
       {
-        log_error (_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
+        log_error (_("trustdb: sync failed: %s\n"), gpg_strerror (rc) );
         g10_exit(2);
       }
 }
@@ -434,7 +434,7 @@ init_trustdb ()
     {
       int rc = tdbio_set_dbname( dbname, !!level, &trustdb_args.no_trustdb);
       if( rc )
-	log_fatal("can't init trustdb: %s\n", g10_errstr(rc) );
+	log_fatal("can't init trustdb: %s\n", gpg_strerror (rc) );
     }
   else
     BUG();
@@ -603,7 +603,7 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
   if (rc)
     {
       log_error ("trustdb: searching trust record failed: %s\n",
-                 g10_errstr (rc));
+                 gpg_strerror (rc));
       return rc;
     }
 
@@ -611,7 +611,7 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
     {
       log_error ("trustdb: record %lu is not a trust record\n",
                  rec->recnum);
-      return G10ERR_TRUSTDB;
+      return GPG_ERR_TRUSTDB;
     }
 
   return 0;
@@ -729,7 +729,7 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
   rc = get_pubkey (pk, kid);
   if (rc)
     {
-      log_error(_("public key %s not found: %s\n"),keystr(kid),g10_errstr(rc));
+      log_error(_("public key %s not found: %s\n"),keystr(kid),gpg_strerror (rc));
       return;
     }
 
@@ -1143,7 +1143,7 @@ ask_ownertrust (u32 *kid,int minimum)
   if (rc)
     {
       log_error (_("public key %s not found: %s\n"),
-                 keystr(kid), g10_errstr(rc) );
+                 keystr(kid), gpg_strerror (rc) );
       return TRUST_UNKNOWN;
     }
 
@@ -1577,7 +1577,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   rc = keydb_search_reset (hd);
   if (rc)
     {
-      log_error ("keydb_search_reset failed: %s\n", g10_errstr(rc));
+      log_error ("keydb_search_reset failed: %s\n", gpg_strerror (rc));
       xfree (keys);
       return NULL;
     }
@@ -1594,7 +1594,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
     }
   if (rc)
     {
-      log_error ("keydb_search_first failed: %s\n", g10_errstr(rc));
+      log_error ("keydb_search_first failed: %s\n", gpg_strerror (rc));
       xfree (keys);
       return NULL;
     }
@@ -1607,7 +1607,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc)
         {
-          log_error ("keydb_get_keyblock failed: %s\n", g10_errstr(rc));
+          log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
           xfree (keys);
           return NULL;
         }
@@ -1664,7 +1664,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
 
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     {
-      log_error ("keydb_search_next failed: %s\n", g10_errstr(rc));
+      log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
       xfree (keys);
       return NULL;
     }
@@ -1881,7 +1881,7 @@ validate_keys (int interactive)
       if (!keys)
         {
           log_error ("validate_key_list failed\n");
-          rc = G10ERR_GENERAL;
+          rc = GPG_ERR_GENERAL;
           goto leave;
         }
 
@@ -1971,7 +1971,7 @@ validate_keys (int interactive)
       if(tdbio_update_version_record()!=0)
 	{
 	  log_error(_("unable to update trustdb version record: "
-		      "write failed: %s\n"), g10_errstr(rc));
+		      "write failed: %s\n"), gpg_strerror (rc));
 	  tdbio_invalid();
 	}
 

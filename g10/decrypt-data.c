@@ -168,7 +168,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
     }
   else if( rc )
     {
-      log_error("key setup failed: %s\n", g10_errstr(rc) );
+      log_error("key setup failed: %s\n", gpg_strerror (rc) );
       goto leave;
     }
 

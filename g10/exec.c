@@ -58,15 +58,15 @@ exec_write(struct exec_info **info,const char *program,
 	       const char *args_in,const char *name,int writeonly,int binary)
 {
   log_error(_("no remote program execution supported\n"));
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 int
-exec_read(struct exec_info *info) { return G10ERR_GENERAL; }
+exec_read(struct exec_info *info) { return GPG_ERR_GENERAL; }
 int
-exec_finish(struct exec_info *info) { return G10ERR_GENERAL; }
+exec_finish(struct exec_info *info) { return GPG_ERR_GENERAL; }
 int
-set_exec_path(const char *path) { return G10ERR_GENERAL; }
+set_exec_path(const char *path) { return GPG_ERR_GENERAL; }
 
 #else /* ! NO_EXEC */
 
@@ -130,7 +130,7 @@ set_exec_path(const char *path)
      set_exec_path multiple times. */
 
   if(putenv(p)!=0)
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
   else
     return 0;
 #endif
@@ -214,7 +214,7 @@ make_tempdir(struct exec_info *info)
 	}
     }
 
-  return info->flags.madedir?0:G10ERR_GENERAL;
+  return info->flags.madedir? 0 : GPG_ERR_GENERAL;
 }
 
 /* Expands %i and %o in the args to the full temp files within the
@@ -299,7 +299,7 @@ expand_args(struct exec_info *info,const char *args_in)
 
  fail:
   xfree (get_membuf (&command, NULL));
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 /* Either handles the tempfile creation, or the fork/exec.  If it
@@ -312,7 +312,7 @@ int
 exec_write(struct exec_info **info,const char *program,
            const char *args_in,const char *name,int writeonly,int binary)
 {
-  int ret=G10ERR_GENERAL;
+  int ret = GPG_ERR_GENERAL;
 
   if(opt.exec_disable && !opt.no_perm_warn)
     {
@@ -500,7 +500,7 @@ exec_write(struct exec_info **info,const char *program,
 int
 exec_read(struct exec_info *info)
 {
-  int ret=G10ERR_GENERAL;
+  int ret = GPG_ERR_GENERAL;
 
   fclose(info->tochild);
   info->tochild=NULL;

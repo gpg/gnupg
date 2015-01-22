@@ -90,7 +90,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   if(!node)
     {
       log_error("key incomplete\n");
-      return G10ERR_GENERAL;
+      return GPG_ERR_GENERAL;
     }
 
   keyid_from_pk(node->pkt->pkt.public_key,keyid);
@@ -99,7 +99,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   rc=build_packet(out,&pkt);
   if(rc)
     {
-      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+      log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
       return rc;
     }
 
@@ -113,7 +113,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error("build_packet failed: %s\n", g10_errstr(rc) );
+	  log_error("build_packet failed: %s\n", gpg_strerror (rc) );
 	  return rc;
 	}
     }
@@ -125,7 +125,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
 	  return rc;
 	}
     }
@@ -143,7 +143,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
 	  else
 	    {
 	      log_error(_("key %s has no user IDs\n"),keystr(keyid));
-	      return G10ERR_GENERAL;
+	      return GPG_ERR_GENERAL;
 	    }
 	}
 
@@ -171,7 +171,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
   rc=build_packet(out,&pkt);
   if(rc)
     {
-      log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+      log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
       return rc;
     }
 
@@ -183,7 +183,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
       rc=build_packet(out,&pkt);
       if(rc)
 	{
-	  log_error(_("build_packet failed: %s\n"), g10_errstr(rc) );
+	  log_error(_("build_packet failed: %s\n"), gpg_strerror (rc) );
 	  return rc;
 	}
     }
@@ -214,7 +214,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
     if( opt.batch )
       {
 	log_error(_("can't do this in batch mode\n"));
-	return G10ERR_GENERAL;
+	return GPG_ERR_GENERAL;
       }
 
     afx = new_armor_context ();
@@ -224,13 +224,13 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
     if (!rc)
       rc = keydb_search (kdbhd, &desc, 1, NULL);
     if (rc) {
-	log_error (_("key \"%s\" not found: %s\n"),uname, g10_errstr (rc));
+	log_error (_("key \"%s\" not found: %s\n"),uname, gpg_strerror (rc));
 	goto leave;
     }
 
     rc = keydb_get_keyblock (kdbhd, &keyblock );
     if( rc ) {
-	log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	goto leave;
     }
 
@@ -342,7 +342,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 				     revocation_reason_build_cb, reason,
                                      NULL);
 	    if( rc ) {
-	      log_error(_("make_keysig_packet failed: %s\n"), g10_errstr(rc));
+	      log_error(_("make_keysig_packet failed: %s\n"), gpg_strerror (rc));
 	      goto leave;
 	    }
 
@@ -469,7 +469,7 @@ create_revocation (const char *filename,
                            revocation_reason_build_cb, reason, cache_nonce);
   if (rc)
     {
-      log_error (_("make_keysig_packet failed: %s\n"), g10_errstr (rc));
+      log_error (_("make_keysig_packet failed: %s\n"), gpg_strerror (rc));
       goto leave;
     }
 
@@ -490,7 +490,7 @@ create_revocation (const char *filename,
       rc = build_packet (out, &pkt);
       if (rc)
         {
-          log_error (_("build_packet failed: %s\n"), g10_errstr (rc));
+          log_error (_("build_packet failed: %s\n"), gpg_strerror (rc));
           goto leave;
         }
     }
@@ -601,7 +601,7 @@ gen_revoke (const char *uname)
   if( opt.batch )
     {
       log_error(_("can't do this in batch mode\n"));
-      return G10ERR_GENERAL;
+      return GPG_ERR_GENERAL;
     }
 
   /* Search the userid; we don't want the whole getkey stuff here.  */
@@ -612,14 +612,14 @@ gen_revoke (const char *uname)
   if (rc)
     {
       log_error (_("secret key \"%s\" not found: %s\n"),
-                 uname, g10_errstr (rc));
+                 uname, gpg_strerror (rc));
       goto leave;
     }
 
   rc = keydb_get_keyblock (kdbhd, &keyblock );
   if (rc)
     {
-      log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+      log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
       goto leave;
     }
 

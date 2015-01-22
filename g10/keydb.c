@@ -1225,7 +1225,7 @@ keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
   (void)reserved;
 
   if (!hd)
-    return G10ERR_INV_ARG;
+    return GPG_ERR_INV_ARG;
 
   rc = keydb_search_reset (hd); /* this does reset hd->current */
   if (rc)
@@ -1293,7 +1293,7 @@ keydb_rebuild_caches (int noisy)
           rc = keyring_rebuild_cache (all_resources[i].token,noisy);
           if (rc)
             log_error (_("failed to rebuild keyring cache: %s\n"),
-                       g10_errstr (rc));
+                       gpg_strerror (rc));
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           /* N/A.  */

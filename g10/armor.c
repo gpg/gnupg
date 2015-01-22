@@ -534,7 +534,7 @@ check_input( armor_filter_context_t *afx, IOBUF a )
 	i = parse_header_line( afx, line, len );
 	if( i <= 0 ) {
 	    if (i && RFC2440)
-		rc = G10ERR_INVALID_ARMOR;
+		rc = GPG_ERR_INV_ARMOR;
 	    break;
 	}
     }
@@ -915,11 +915,11 @@ radix64_read( armor_filter_context_t *afx, IOBUF a, size_t *retn,
 		    rc = 0;
 		else if( rc == 2 ) {
 		    log_error(_("premature eof (in trailer)\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INVALID_ARMOR;
 		}
 		else {
 		    log_error(_("error in trailer line\n"));
-		    rc = G10ERR_INVALID_ARMOR;
+		    rc = GPG_ERR_INVALID_ARMOR;
 		}
 #endif
 	    }

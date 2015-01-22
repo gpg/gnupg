@@ -113,7 +113,8 @@ verify_signatures (ctrl_t ctrl, int nfiles, char **files )
     rc = proc_signature_packets (ctrl, NULL, fp, sl, sigfile );
     free_strlist(sl);
     iobuf_close(fp);
-    if( (afx && afx->no_openpgp_data && rc == -1) || rc == G10ERR_NO_DATA ) {
+    if( (afx && afx->no_openpgp_data && rc == -1)
+        || gpg_err_code (rc) == GPG_ERR_NO_DATA ) {
 	log_error(_("the signature could not be verified.\n"
 		   "Please remember that the signature file (.sig or .asc)\n"
 		   "should be the first file given on the command line.\n") );
@@ -202,7 +203,7 @@ verify_files (ctrl_t ctrl, int nfiles, char **files )
 	    lno++;
 	    if( !*line || line[strlen(line)-1] != '\n' ) {
 		log_error(_("input line %u too long or missing LF\n"), lno );
-		return G10ERR_GENERAL;
+		return GPG_ERR_GENERAL;
 	    }
 	    /* This code does not work on MSDOS but how cares there are
 	     * also no script languages available.  We don't strip any

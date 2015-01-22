@@ -809,7 +809,8 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
   err = make_keysig_packet (&backsig, pk, NULL, sub_pk, sub_psk, 0x19,
                             0, timestamp, 0, NULL, NULL, cache_nonce);
   if (err)
-    log_error ("make_keysig_packet failed for backsig: %s\n", g10_errstr(err));
+    log_error ("make_keysig_packet failed for backsig: %s\n",
+               gpg_strerror (err));
   else
     {
       /* Get it into a binary packed form. */
@@ -822,7 +823,7 @@ make_backsig (PKT_signature *sig, PKT_public_key *pk,
       err = build_packet (backsig_out, &backsig_pkt);
       free_packet (&backsig_pkt);
       if (err)
-	log_error ("build_packet failed for backsig: %s\n", g10_errstr(err));
+	log_error ("build_packet failed for backsig: %s\n", gpg_strerror (err));
       else
 	{
 	  size_t pktlen = 0;
@@ -921,7 +922,7 @@ write_direct_sig (KBNODE root, PKT_public_key *psk,
                             keygen_add_revkey, revkey, cache_nonce);
   if (err)
     {
-      log_error ("make_keysig_packet failed: %s\n", g10_errstr (err) );
+      log_error ("make_keysig_packet failed: %s\n", gpg_strerror (err) );
       return err;
     }
 
@@ -976,7 +977,7 @@ write_selfsigs (KBNODE root, PKT_public_key *psk,
                             keygen_add_std_prefs, pk, cache_nonce);
   if (err)
     {
-      log_error ("make_keysig_packet failed: %s\n", g10_errstr (err));
+      log_error ("make_keysig_packet failed: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -1036,7 +1037,7 @@ write_keybinding (KBNODE root, PKT_public_key *pri_psk, PKT_public_key *sub_psk,
                             cache_nonce);
   if (err)
     {
-      log_error ("make_keysig_packeto failed: %s\n", g10_errstr (err));
+      log_error ("make_keysig_packeto failed: %s\n", gpg_strerror (err));
       return err;
     }
 
@@ -4095,7 +4096,7 @@ do_generate_keypair (struct para_data_s *para,
     {
       err = write_keyblock (outctrl->pub.stream, pub_root);
       if (err)
-        log_error ("can't write public key: %s\n", g10_errstr (err));
+        log_error ("can't write public key: %s\n", gpg_strerror (err));
     }
   else if (!err) /* Write to the standard keyrings.  */
     {
@@ -4104,7 +4105,7 @@ do_generate_keypair (struct para_data_s *para,
       err = keydb_locate_writable (pub_hd, NULL);
       if (err)
         log_error (_("no writable public keyring found: %s\n"),
-                   g10_errstr (err));
+                   gpg_strerror (err));
 
       if (!err && opt.verbose)
         {
@@ -4117,7 +4118,7 @@ do_generate_keypair (struct para_data_s *para,
           err = keydb_insert_keyblock (pub_hd, pub_root);
           if (err)
             log_error (_("error writing public keyring '%s': %s\n"),
-                       keydb_get_resource_name (pub_hd), g10_errstr(err));
+                       keydb_get_resource_name (pub_hd), gpg_strerror (err));
         }
 
       keydb_release (pub_hd);
@@ -4167,9 +4168,9 @@ do_generate_keypair (struct para_data_s *para,
   if (err)
     {
       if (opt.batch)
-        log_error ("key generation failed: %s\n", g10_errstr(err) );
+        log_error ("key generation failed: %s\n", gpg_strerror (err) );
       else
-        tty_printf (_("Key generation failed: %s\n"), g10_errstr(err) );
+        tty_printf (_("Key generation failed: %s\n"), gpg_strerror (err) );
       write_status_error (card? "card_key_generate":"key_generate", err);
       print_status_key_not_created ( get_parameter_value (para, pHANDLE) );
     }
@@ -4297,7 +4298,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   xfree (hexgrip);
   xfree (serialno);
   if (err)
-    log_error (_("Key generation failed: %s\n"), g10_errstr (err) );
+    log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
   return err;
 }
 
@@ -4394,7 +4395,7 @@ generate_card_subkeypair (kbnode_t pub_keyblock,
 
  leave:
   if (err)
-    log_error (_("Key generation failed: %s\n"), g10_errstr(err) );
+    log_error (_("Key generation failed: %s\n"), gpg_strerror (err) );
   else
     write_status_text (STATUS_KEY_CREATED, "S");
   release_parameter_list (para);
@@ -4416,7 +4417,7 @@ write_keyblock( IOBUF out, KBNODE node )
 	  if( rc )
 	    {
 	      log_error("build_packet(%d) failed: %s\n",
-			node->pkt->pkttype, g10_errstr(rc) );
+			node->pkt->pkttype, gpg_strerror (rc) );
 	      return rc;
 	    }
 	}
@@ -4561,7 +4562,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
   rc = save_unprotected_key_to_card (sk_unprotected, keyno);
   if (rc)
     {
-      log_error (_("storing key onto card failed: %s\n"), g10_errstr (rc));
+      log_error (_("storing key onto card failed: %s\n"), gpg_strerror (rc));
       free_secret_key (sk_unprotected);
       free_secret_key (sk_protected);
       write_status_errcode ("save_key_to_card", rc);
@@ -4629,7 +4630,7 @@ gen_card_key_with_backup (int algo, int keyno, int is_primary,
     rc = build_packet (fp, pkt);
     if (rc)
       {
-        log_error("build packet failed: %s\n", g10_errstr(rc) );
+        log_error("build packet failed: %s\n", gpg_strerror (rc));
         iobuf_cancel (fp);
       }
     else
@@ -4727,7 +4728,7 @@ save_unprotected_key_to_card (PKT_public_key *sk, int keyno)
   gcry_mpi_aprint (GCRYMPI_FMT_USG, &rsa_q, &rsa_q_len, sk->skey[4]);
   if (!rsa_n || !rsa_e || !rsa_p || !rsa_q)
     {
-      rc = G10ERR_INV_ARG;
+      rc = GPG_ERR_INV_ARG;
       goto leave;
     }
 

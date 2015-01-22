@@ -128,20 +128,21 @@ print_and_check_one_sig_colon (KBNODE keyblock, KBNODE node,
   /* TODO: Make sure a cached sig record here still has the pk that
      issued it.  See also keylist.c:list_keyblock_print */
 
-  switch ((rc = check_key_signature (keyblock, node, is_selfsig)))
+  rc = check_key_signature (keyblock, node, is_selfsig);
+  switch (gpg_err_code (rc))
     {
     case 0:
       node->flag &= ~(NODFLG_BADSIG | NODFLG_NOKEY | NODFLG_SIGERR);
       sigrc = '!';
       break;
-    case G10ERR_BAD_SIGN:
+    case GPG_ERR_BAD_SIGNATURE:
       node->flag = NODFLG_BADSIG;
       sigrc = '-';
       if (inv_sigs)
 	++ * inv_sigs;
       break;
-    case G10ERR_NO_PUBKEY:
-    case G10ERR_UNU_PUBKEY:
+    case GPG_ERR_NO_PUBKEY:
+    case GPG_ERR_UNUSABLE_PUBKEY:
       node->flag = NODFLG_NOKEY;
       sigrc = '?';
       if (no_key)
@@ -199,20 +200,21 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
   /* TODO: Make sure a cached sig record here still has the pk that
      issued it.  See also keylist.c:list_keyblock_print */
 
-  switch ((rc = check_key_signature (keyblock, node, is_selfsig)))
+  rc = check_key_signature (keyblock, node, is_selfsig);
+  switch (gpg_err_code (rc))
     {
     case 0:
       node->flag &= ~(NODFLG_BADSIG | NODFLG_NOKEY | NODFLG_SIGERR);
       sigrc = '!';
       break;
-    case G10ERR_BAD_SIGN:
+    case GPG_ERR_BAD_SIGNATURE:
       node->flag = NODFLG_BADSIG;
       sigrc = '-';
       if (inv_sigs)
 	++ * inv_sigs;
       break;
-    case G10ERR_NO_PUBKEY:
-    case G10ERR_UNU_PUBKEY:
+    case GPG_ERR_NO_PUBKEY:
+    case GPG_ERR_UNUSABLE_PUBKEY:
       node->flag = NODFLG_NOKEY;
       sigrc = '?';
       if (no_key)
@@ -245,7 +247,7 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 	tty_printf (" %s", expirestr_from_sig (sig));
       tty_printf ("  ");
       if (sigrc == '%')
-	tty_printf ("[%s] ", g10_errstr (rc));
+	tty_printf ("[%s] ", gpg_strerror (rc));
       else if (sigrc == '?')
 	;
       else if (*is_selfsig)
@@ -1039,7 +1041,7 @@ sign_uids (estream_t fp,
                                          NULL);
 	      if (rc)
 		{
-		  log_error (_("signing failed: %s\n"), g10_errstr (rc));
+		  log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 		  goto leave;
 		}
 
@@ -1883,11 +1885,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    iobuf_ioctl (NULL, IOBUF_IOCTL_INVALIDATE_CACHE, 0, (char *) fname);
 	    if (!err && pkt->pkttype != PKT_SECRET_KEY
 		&& pkt->pkttype != PKT_SECRET_SUBKEY)
-	      err = G10ERR_NO_SECKEY;
+	      err = GPG_ERR_NO_SECKEY;
 	    if (err)
 	      {
 		tty_printf (_("Error reading backup key from '%s': %s\n"),
-			    fname, g10_errstr (err));
+			    fname, gpg_strerror (err));
 		free_packet (pkt);
 		xfree (pkt);
 		break;
@@ -2198,7 +2200,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
               err = keydb_update_keyblock (kdbhd, keyblock);
               if (err)
                 {
-                  log_error (_("update failed: %s\n"), g10_errstr (err));
+                  log_error (_("update failed: %s\n"), gpg_strerror (err));
                   break;
                 }
 	    }
@@ -3278,7 +3280,7 @@ menu_adduid (KBNODE pub_keyblock, int photo, const char *photo_name)
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
-      log_error ("signing failed: %s\n", g10_errstr (err));
+      log_error ("signing failed: %s\n", gpg_strerror (err));
       free_user_id (uid);
       return 0;
     }
@@ -3577,7 +3579,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
       if (rc)
 	{
 	  log_error (_("key \"%s\" not found: %s\n"), answer,
-		     g10_errstr (rc));
+		     gpg_strerror (rc));
 	  xfree (answer);
 	  continue;
 	}
@@ -3662,7 +3664,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
-      log_error ("signing failed: %s\n", g10_errstr (rc));
+      log_error ("signing failed: %s\n", gpg_strerror (rc));
       goto fail;
     }
 
@@ -3766,7 +3768,7 @@ menu_expire (KBNODE pub_keyblock)
 	      if (rc)
 		{
 		  log_error ("make_keysig_packet failed: %s\n",
-			     g10_errstr (rc));
+			     gpg_strerror (rc));
 		  return 0;
 		}
 
@@ -3882,13 +3884,13 @@ menu_backsign (KBNODE pub_keyblock)
 	  else
 	    {
 	      log_error ("update_keysig_packet failed: %s\n",
-			 g10_errstr (rc));
+			 gpg_strerror (rc));
 	      break;
 	    }
 	}
       else
 	{
-	  log_error ("make_backsig failed: %s\n", g10_errstr (rc));
+	  log_error ("make_backsig failed: %s\n", gpg_strerror (rc));
 	  break;
 	}
     }
@@ -4024,7 +4026,7 @@ menu_set_primary_uid (KBNODE pub_keyblock)
 		      if (rc)
 			{
 			  log_error ("update_keysig_packet failed: %s\n",
-				     g10_errstr (rc));
+				     gpg_strerror (rc));
 			  return 0;
 			}
 		      /* replace the packet */
@@ -4113,7 +4115,7 @@ menu_set_preferences (KBNODE pub_keyblock)
 		  if (rc)
 		    {
 		      log_error ("update_keysig_packet failed: %s\n",
-				 g10_errstr (rc));
+				 gpg_strerror (rc));
 		      return 0;
 		    }
 		  /* replace the packet */
@@ -4248,7 +4250,7 @@ menu_set_keyserver_url (const char *url, KBNODE pub_keyblock)
 		  if (rc)
 		    {
 		      log_error ("update_keysig_packet failed: %s\n",
-				 g10_errstr (rc));
+				 gpg_strerror (rc));
 		      xfree (uri);
 		      return 0;
 		    }
@@ -4447,7 +4449,7 @@ menu_set_notation (const char *string, KBNODE pub_keyblock)
 		  if (rc)
 		    {
 		      log_error ("update_keysig_packet failed: %s\n",
-				 g10_errstr (rc));
+				 gpg_strerror (rc));
 		      free_notation (notation);
 		      xfree (user);
 		      return 0;
@@ -4953,7 +4955,7 @@ reloop:			/* (must use this, because we are modifing the list) */
       free_public_key (signerkey);
       if (rc)
 	{
-	  log_error (_("signing failed: %s\n"), g10_errstr (rc));
+	  log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 	  release_revocation_reason_info (reason);
 	  return changed;
 	}
@@ -5044,7 +5046,7 @@ menu_revuid (KBNODE pub_keyblock)
 				     sign_mk_attrib, &attrib, NULL);
 	    if (rc)
 	      {
-		log_error (_("signing failed: %s\n"), g10_errstr (rc));
+		log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 		goto leave;
 	      }
 	    else
@@ -5108,7 +5110,7 @@ menu_revkey (KBNODE pub_keyblock)
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
-      log_error (_("signing failed: %s\n"), g10_errstr (rc));
+      log_error (_("signing failed: %s\n"), gpg_strerror (rc));
       goto scram;
     }
 
@@ -5169,7 +5171,7 @@ menu_revsubkey (KBNODE pub_keyblock)
                                    NULL);
 	  if (rc)
 	    {
-	      log_error (_("signing failed: %s\n"), g10_errstr (rc));
+	      log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 	      release_revocation_reason_info (reason);
 	      return changed;
 	    }

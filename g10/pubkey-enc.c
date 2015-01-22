@@ -104,7 +104,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
           rc = enum_secret_keys (&enum_context, sk);
           if (rc)
             {
-              rc = G10ERR_NO_SECKEY;
+              rc = GPG_ERR_NO_SECKEY;
               break;
             }
           if (sk->pubkey_algo != k->pubkey_algo)
@@ -410,22 +410,22 @@ get_override_session_key (DEK *dek, const char *string)
   int i;
 
   if (!string)
-    return G10ERR_BAD_KEY;
+    return GPG_ERR_BAD_KEY;
   dek->algo = atoi (string);
   if (dek->algo < 1)
-    return G10ERR_BAD_KEY;
+    return GPG_ERR_BAD_KEY;
   if (!(s = strchr (string, ':')))
-    return G10ERR_BAD_KEY;
+    return GPG_ERR_BAD_KEY;
   s++;
   for (i = 0; i < DIM (dek->key) && *s; i++, s += 2)
     {
       int c = hextobyte (s);
       if (c == -1)
-        return G10ERR_BAD_KEY;
+        return GPG_ERR_BAD_KEY;
       dek->key[i] = c;
     }
   if (*s)
-    return G10ERR_BAD_KEY;
+    return GPG_ERR_BAD_KEY;
   dek->keylen = i;
   return 0;
 }

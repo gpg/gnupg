@@ -310,7 +310,7 @@ handle_compressed (ctrl_t ctrl, void *procctx, PKT_compressed *cd,
     int rc;
 
     if(check_compress_algo(cd->algorithm))
-      return G10ERR_COMPR_ALGO;
+      return GPG_ERR_COMPR_ALGO;
     cfx = xmalloc_clear (sizeof *cfx);
     cfx->release = release_context;
     cfx->algo = cd->algorithm;

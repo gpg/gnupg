@@ -287,7 +287,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
       pkt.pkttype = PKT_SYMKEY_ENC;
       pkt.pkt.symkey_enc = enc;
       if ((rc = build_packet( out, &pkt )))
-        log_error("build symkey packet failed: %s\n", g10_errstr(rc) );
+        log_error("build symkey packet failed: %s\n", gpg_strerror (rc) );
       xfree (enc);
     }
 
@@ -358,7 +358,7 @@ encrypt_simple (const char *filename, int mode, int use_seskey)
   if (!opt.no_literal)
     {
       if ( (rc = build_packet( out, &pkt )) )
-        log_error("build_packet failed: %s\n", g10_errstr(rc) );
+        log_error("build_packet failed: %s\n", gpg_strerror (rc) );
     }
   else
     {
@@ -441,7 +441,7 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
   pkt.pkt.symkey_enc = enc;
 
   if ((rc=build_packet(out,&pkt)))
-    log_error("build symkey_enc packet failed: %s\n",g10_errstr(rc));
+    log_error("build symkey_enc packet failed: %s\n",gpg_strerror (rc));
 
   xfree(enc);
   return rc;
@@ -708,7 +708,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (!opt.no_literal)
     {
       if ((rc = build_packet( out, &pkt )))
-        log_error ("build_packet failed: %s\n", g10_errstr(rc));
+        log_error ("build_packet failed: %s\n", gpg_strerror (rc));
     }
   else
     {
@@ -912,7 +912,7 @@ write_pubkey_enc_from_list (PK_LIST pk_list, DEK *dek, iobuf_t out)
           rc = build_packet (out, &pkt);
           if (rc)
             log_error ("build_packet(pubkey_enc) failed: %s\n",
-                       g10_errstr (rc));
+                       gpg_strerror (rc));
 	}
       free_pubkey_enc(enc);
       if (rc)
@@ -950,7 +950,7 @@ encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
           rc = encrypt_crypt (ctrl, -1, line, remusr, 0, NULL, -1);
           if (rc)
             log_error ("encryption of '%s' failed: %s\n",
-                       print_fname_stdin(line), g10_errstr(rc) );
+                       print_fname_stdin(line), gpg_strerror (rc) );
           write_status( STATUS_FILE_DONE );
         }
     }
@@ -961,7 +961,7 @@ encrypt_crypt_files (ctrl_t ctrl, int nfiles, char **files, strlist_t remusr)
           print_file_status(STATUS_FILE_START, *files, 2);
           if ( (rc = encrypt_crypt (ctrl, -1, *files, remusr, 0, NULL, -1)) )
             log_error("encryption of '%s' failed: %s\n",
-                      print_fname_stdin(*files), g10_errstr(rc) );
+                      print_fname_stdin(*files), gpg_strerror (rc) );
           write_status( STATUS_FILE_DONE );
           files++;
         }

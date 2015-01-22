@@ -214,7 +214,7 @@ main( int argc, char **argv )
   ctrl = xcalloc (1, sizeof *ctrl);
 
   if ((rc = verify_signatures (ctrl, argc, argv)))
-    log_error("verify signatures failed: %s\n", g10_errstr(rc) );
+    log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
 
   xfree (ctrl);
 
@@ -378,7 +378,7 @@ get_session_key (PKT_pubkey_enc *k, DEK *dek)
 {
   (void)k;
   (void)dek;
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 /* Stub: */
@@ -387,7 +387,7 @@ get_override_session_key (DEK *dek, const char *string)
 {
   (void)dek;
   (void)string;
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 /* Stub: */
@@ -398,7 +398,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   (void)procctx;
   (void)ed;
   (void)dek;
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 
@@ -419,7 +419,7 @@ check_secret_key (PKT_public_key *pk, int n)
 {
   (void)pk;
   (void)n;
-  return G10ERR_GENERAL;
+  return GPG_ERR_GENERAL;
 }
 
 /* Stub:

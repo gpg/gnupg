@@ -1186,7 +1186,7 @@ check_compress_algo(int algo)
 #ifdef HAVE_BZIP2
     case 3: return 0;
 #endif
-    default: return G10ERR_COMPR_ALGO;
+    default: return GPG_ERR_COMPR_ALGO;
     }
 }
 

@@ -1257,7 +1257,7 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
       rc = keydb_get_keyblock (kdbhd, &keyblock );
       if( rc )
 	{
-	  log_error (_("error reading keyblock: %s\n"), g10_errstr(rc) );
+	  log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	  goto leave;
 	}
 
@@ -1414,7 +1414,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	      if(rc)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
-			 keyserver->uri,g10_errstr(rc));
+			 keyserver->uri,gpg_strerror (rc));
 	      else
 		{
 		  /* We got it, so mark it as NONE so we don't try and
@@ -1966,7 +1966,7 @@ keyserver_import_pka (ctrl_t ctrl,
                       const char *name,unsigned char **fpr,size_t *fpr_len)
 {
   char *uri;
-  int rc = G10ERR_NO_PUBKEY;
+  int rc = GPG_ERR_NO_PUBKEY;
 
   *fpr = xmalloc (20);
   *fpr_len = 20;
@@ -2019,7 +2019,7 @@ keyserver_import_ldap (ctrl_t ctrl,
   /* Parse out the domain */
   domain=strrchr(name,'@');
   if(!domain)
-    return G10ERR_GENERAL;
+    return GPG_ERR_GENERAL;
 
   domain++;
 

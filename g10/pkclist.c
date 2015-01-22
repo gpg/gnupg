@@ -520,7 +520,7 @@ check_signatures_trust( PKT_signature *sig )
   if (rc)
     { /* this should not happen */
       log_error("Ooops; the key vanished  - can't check the trust\n");
-      rc = G10ERR_NO_PUBKEY;
+      rc = GPG_ERR_NO_PUBKEY;
       goto leave;
     }
 
@@ -805,7 +805,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
       int code;
 
       /* Key not found or other error. */
-      log_error (_("%s: skipped: %s\n"), name, g10_errstr(rc) );
+      log_error (_("%s: skipped: %s\n"), name, gpg_strerror (rc) );
       switch (gpg_err_code (rc))
         {
         case GPG_ERR_NO_SECKEY:
@@ -823,7 +823,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     {
       /* Key found but not usable for us (e.g. sign-only key). */
       send_status_inv_recp (3, name); /* Wrong key usage */
-      log_error (_("%s: skipped: %s\n"), name, g10_errstr(rc) );
+      log_error (_("%s: skipped: %s\n"), name, gpg_strerror (rc) );
       free_public_key (pk);
       return rc;
     }
@@ -836,7 +836,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
       send_status_inv_recp (13, name);
       log_info (_("%s: skipped: public key is disabled\n"), name);
       free_public_key (pk);
-      return G10ERR_UNU_PUBKEY;
+      return GPG_ERR_UNUSABLE_PUBKEY;
     }
 
   if ( !do_we_trust_pre (pk, trustlevel) )
@@ -844,7 +844,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
       /* We don't trust this key.  */
       send_status_inv_recp (10, name);
       free_public_key (pk);
-      return G10ERR_UNU_PUBKEY;
+      return GPG_ERR_UNUSABLE_PUBKEY;
     }
   /* Note: do_we_trust may have changed the trustlevel. */
 
@@ -951,7 +951,7 @@ build_pk_list (ctrl_t ctrl,
                                         NULL, pk, rov->d, NULL, NULL, 1, 1)) )
             {
               free_public_key ( pk ); pk = NULL;
-              log_error (_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+              log_error (_("%s: skipped: %s\n"), rov->d, gpg_strerror (rc) );
               send_status_inv_recp (0, rov->d);
               goto fail;
             }
@@ -992,7 +992,7 @@ build_pk_list (ctrl_t ctrl,
             {
               /* The public key is not usable for encryption. */
               free_public_key( pk ); pk = NULL;
-              log_error(_("%s: skipped: %s\n"), rov->d, g10_errstr(rc) );
+              log_error(_("%s: skipped: %s\n"), rov->d, gpg_strerror (rc) );
               send_status_inv_recp (3, rov->d); /* Wrong key usage */
               goto fail;
             }
@@ -1210,7 +1210,7 @@ build_pk_list (ctrl_t ctrl,
     {
       log_error(_("no valid addressees\n"));
       write_status_text (STATUS_NO_RECP, "0");
-      rc = G10ERR_NO_USER_ID;
+      rc = GPG_ERR_NO_USER_ID;
     }
 
  fail:

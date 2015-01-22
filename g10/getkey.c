@@ -403,7 +403,9 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
   if (!rc)
     goto leave;
 
-  rc = G10ERR_NO_PUBKEY;
+  log_debug ("looking up key %08X%08X failed: %s\n", keyid[0], keyid[1],
+             gpg_strerror (rc));
+  rc = GPG_ERR_NO_PUBKEY;
 
 leave:
   if (!rc)
@@ -449,14 +451,14 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
       keydb_release (hd);
-      return G10ERR_NO_PUBKEY;
+      return GPG_ERR_NO_PUBKEY;
     }
   rc = keydb_get_keyblock (hd, &keyblock);
   keydb_release (hd);
   if (rc)
     {
-      log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
-      return G10ERR_NO_PUBKEY;
+      log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
+      return GPG_ERR_NO_PUBKEY;
     }
 
   assert (keyblock && keyblock->pkt
@@ -467,7 +469,7 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
   if (keyid[0] == pkid[0] && keyid[1] == pkid[1])
     copy_public_key (pk, keyblock->pkt->pkt.public_key);
   else
-    rc = G10ERR_NO_PUBKEY;
+    rc = GPG_ERR_NO_PUBKEY;
 
   release_kbnode (keyblock);
 
@@ -744,7 +746,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
   if (nodefault && is_mbox)
     {
       /* Nodefault but a mailbox - let the AKL locate the key.  */
-      rc = G10ERR_NO_PUBKEY;
+      rc = GPG_ERR_NO_PUBKEY;
     }
   else
     {
@@ -755,7 +757,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
   /* If the requested name resembles a valid mailbox and automatic
      retrieval has been enabled, we try to import the key. */
-  if (gpg_err_code (rc) == G10ERR_NO_PUBKEY && !no_akl && is_mbox)
+  if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY && !no_akl && is_mbox)
     {
       for (akl = opt.auto_key_locate; akl; akl = akl->next)
 	{
@@ -770,7 +772,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    case AKL_NODEFAULT:
 	      /* This is a dummy mechanism.  */
 	      mechanism = "None";
-	      rc = G10ERR_NO_PUBKEY;
+	      rc = GPG_ERR_NO_PUBKEY;
 	      break;
 
 	    case AKL_LOCAL:
@@ -824,7 +826,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      else
 		{
 		  mechanism = "Unconfigured keyserver";
-		  rc = G10ERR_NO_PUBKEY;
+		  rc = GPG_ERR_NO_PUBKEY;
 		}
 	      break;
 
@@ -869,7 +871,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	  else if (!rc && !fpr && !did_key_byname)
 	    {
 	      no_fingerprint = 1;
-	      rc = G10ERR_NO_PUBKEY;
+	      rc = GPG_ERR_NO_PUBKEY;
 	    }
 	  xfree (fpr);
 	  fpr = NULL;
@@ -892,10 +894,11 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 			name, mechanism);
 	      break;
 	    }
-	  if (rc != G10ERR_NO_PUBKEY || opt.verbose || no_fingerprint)
+	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY
+              || opt.verbose || no_fingerprint)
 	    log_info (_("error retrieving '%s' via %s: %s\n"),
 		      name, mechanism,
-		      no_fingerprint ? _("No fingerprint") : g10_errstr (rc));
+		      no_fingerprint ? _("No fingerprint") : gpg_strerror (rc));
 	}
     }
 
@@ -996,7 +999,7 @@ get_pubkey_byfprint (PKT_public_key * pk,
       get_pubkey_end (&ctx);
     }
   else
-    rc = G10ERR_GENERAL; /* Oops */
+    rc = GPG_ERR_GENERAL; /* Oops */
   return rc;
 }
 
@@ -1026,14 +1029,14 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
       keydb_release (hd);
-      return G10ERR_NO_PUBKEY;
+      return GPG_ERR_NO_PUBKEY;
     }
   rc = keydb_get_keyblock (hd, &keyblock);
   keydb_release (hd);
   if (rc)
     {
-      log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
-      return G10ERR_NO_PUBKEY;
+      log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
+      return GPG_ERR_NO_PUBKEY;
     }
 
   assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
@@ -1073,7 +1076,7 @@ get_keyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
       get_pubkey_end (&ctx);
     }
   else
-    rc = G10ERR_GENERAL; /* Oops */
+    rc = GPG_ERR_GENERAL; /* Oops */
 
   return rc;
 }
@@ -1685,7 +1688,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 		       more revoked than this.  */
 		    break;
 		  }
-		else if (rc == G10ERR_NO_PUBKEY)
+		else if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
 		  pk->flags.maybe_revoked = 1;
 
 		/* A failure here means the sig did not verify, was
@@ -2543,7 +2546,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
       rc = keydb_get_keyblock (ctx->kr_handle, &ctx->keyblock);
       if (rc)
 	{
-	  log_error ("keydb_get_keyblock failed: %s\n", g10_errstr (rc));
+	  log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
 	  rc = 0;
 	  goto skip;
 	}
@@ -2571,7 +2574,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 
 found:
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
-    log_error ("keydb_search failed: %s\n", g10_errstr (rc));
+    log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
 
   if (!rc)
     {
@@ -2579,9 +2582,9 @@ found:
       ctx->keyblock = NULL;
     }
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && no_suitable_key)
-    rc = want_secret? G10ERR_UNU_SECKEY : G10ERR_UNU_PUBKEY;
+    rc = want_secret? GPG_ERR_UNUSABLE_SECKEY : GPG_ERR_UNUSABLE_PUBKEY;
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
-    rc = want_secret? G10ERR_NO_SECKEY : G10ERR_NO_PUBKEY;
+    rc = want_secret? GPG_ERR_NO_SECKEY : GPG_ERR_NO_PUBKEY;
 
   release_kbnode (ctx->keyblock);
   ctx->keyblock = NULL;
@@ -3013,7 +3016,7 @@ have_secret_key_with_kid (u32 *keyid)
       err = keydb_get_keyblock (kdbhd, &keyblock);
       if (err)
         {
-          log_error (_("error reading keyblock: %s\n"), g10_errstr (err));
+          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
           break;
         }
 

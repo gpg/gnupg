@@ -77,13 +77,15 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	   header is missing or does not match the actual sig. */
 
         log_info(_("WARNING: signature digest conflict in message\n"));
-	rc=G10ERR_GENERAL;
+	rc = GPG_ERR_GENERAL;
       }
     else if( get_pubkey( pk, sig->keyid ) )
-	rc = G10ERR_NO_PUBKEY;
+	rc = GPG_ERR_NO_PUBKEY;
     else if(!pk->flags.valid && !pk->flags.primary)
-        rc=G10ERR_BAD_PUBKEY; /* you cannot have a good sig from an
-				 invalid subkey */
+      {
+        /* You cannot have a good sig from an invalid subkey.  */
+        rc = GPG_ERR_BAD_PUBKEY;
+      }
     else
       {
         if(r_expiredate)
@@ -109,13 +111,13 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
                      error.  TODO: change the default to require this
                      after more keys have backsigs. */
 		if(opt.flags.require_cross_cert)
-		  rc=G10ERR_GENERAL;
+		  rc = GPG_ERR_GENERAL;
 	      }
 	    else if(pk->flags.backsig == 1)
 	      {
 		log_info(_("WARNING: signing subkey %s has an invalid"
 			   " cross-certification\n"),keystr_from_pk(pk));
-		rc=G10ERR_GENERAL;
+		rc = GPG_ERR_GENERAL;
 	      }
 	  }
       }
@@ -211,7 +213,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 		 :_("public key %s is %lu seconds newer than the signature\n"),
 		 keystr_from_pk(pk),d );
 	if( !opt.ignore_time_conflict )
-	  return G10ERR_TIME_CONFLICT; /* pubkey newer than signature */
+	  return GPG_ERR_TIME_CONFLICT; /* pubkey newer than signature.  */
       }
 
     cur_time = make_timestamp();
@@ -225,7 +227,7 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 		      " in the future (time warp or clock problem)\n"),
 		  keystr_from_pk(pk),d );
 	if( !opt.ignore_time_conflict )
-	  return G10ERR_TIME_CONFLICT;
+	  return GPG_ERR_TIME_CONFLICT;
       }
 
     /* Check whether the key has expired.  We check the has_expired
@@ -320,7 +322,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
 
     result = encode_md_value (pk, digest, sig->digest_algo );
     if (!result)
-        return G10ERR_GENERAL;
+        return GPG_ERR_GENERAL;
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     gcry_mpi_release (result);
 
@@ -328,7 +330,7 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
       {
 	log_info(_("assuming bad signature from key %s"
 		   " due to an unknown critical bit\n"),keystr_from_pk(pk));
-	rc = G10ERR_BAD_SIGN;
+	rc = GPG_ERR_BAD_SIGNATURE;
       }
 
     if(!rc && ret_pk)
@@ -400,7 +402,7 @@ cache_sig_result ( PKT_signature *sig, int result )
    but it matches how PGP does it. -dms */
 
 /* Returns 0 if sig is valid (i.e. pk is revoked), non-0 if not
-   revoked.  It is important that G10ERR_NO_PUBKEY is only returned
+   revoked.  It is important that GPG_ERR_NO_PUBKEY is only returned
    when a revocation signature is from a valid revocation key
    designated in a revkey subpacket, but the revocation key itself
    isn't present. */
@@ -408,7 +410,8 @@ int
 check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 {
   static int busy=0;
-  int i,rc=G10ERR_GENERAL;
+  int i;
+  int rc = GPG_ERR_GENERAL;
 
   assert(IS_KEY_REV(sig));
   assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
@@ -593,7 +596,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
             if (opt.verbose)
 	      log_info (_("key %s: no subkey for subkey"
 			  " revocation signature\n"),keystr_from_pk(pk));
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPG_ERR_SIG_CLASS;
 	  }
     }
     else if( sig->sig_class == 0x18 ) { /* key binding */
@@ -620,7 +623,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
             if (opt.verbose)
 	      log_info(_("key %s: no subkey for subkey"
 			 " binding signature\n"),keystr_from_pk(pk));
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPG_ERR_SIG_CLASS;
 	  }
     }
     else if( sig->sig_class == 0x1f ) { /* direct key signature */
@@ -661,7 +664,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
             if (!opt.quiet)
 	      log_info ("key %s: no user ID for key signature packet"
 			" of class %02x\n",keystr_from_pk(pk),sig->sig_class);
-	    rc = G10ERR_SIG_CLASS;
+	    rc = GPG_ERR_SIG_CLASS;
 	  }
     }
 

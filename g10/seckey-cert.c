@@ -55,20 +55,20 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 
 	if( sk->protect.s2k.mode == 1001 ) {
 	    log_info(_("secret key parts are not available\n"));
-	    return G10ERR_UNU_SECKEY;
+	    return GPG_ERR_UNUSABLE_SECKEY;
 	}
 	if( sk->protect.algo == CIPHER_ALGO_NONE )
 	    BUG();
 	if( openpgp_cipher_test_algo( sk->protect.algo ) ) {
 	    log_info(_("protection algorithm %d%s is not supported\n"),
 			sk->protect.algo,sk->protect.algo==1?" (IDEA)":"" );
-	    return G10ERR_CIPHER_ALGO;
+	    return GPG_ERR_CIPHER_ALGO;
 	}
 	if(gcry_md_test_algo (sk->protect.s2k.hash_algo))
 	  {
 	    log_info(_("protection digest %d is not supported\n"),
 		     sk->protect.s2k.hash_algo);
-	    return G10ERR_DIGEST_ALGO;
+	    return GPG_ERR_DIGEST_ALGO;
 	  }
 	keyid_from_sk( sk, keyid );
 	keyid[2] = keyid[3] = 0;
@@ -249,7 +249,7 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 	    csum += checksum_mpi( sk->skey[i] );
 	}
 	if( csum != sk->csum )
-	    return G10ERR_CHECKSUM;
+	    return GPG_ERR_CHECKSUM;
     }
 
     return 0;

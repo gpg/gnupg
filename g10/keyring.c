@@ -309,7 +309,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
                 kr->lockhd = dotlock_create (kr->fname, 0);
                 if (!kr->lockhd) {
                     log_info ("can't allocate lock for '%s'\n", kr->fname );
-                    rc = G10ERR_GENERAL;
+                    rc = GPG_ERR_GENERAL;
                 }
             }
         }
@@ -324,7 +324,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
                 ;
             else if (dotlock_take (kr->lockhd, -1) ) {
                 log_info ("can't lock '%s'\n", kr->fname );
-                rc = G10ERR_GENERAL;
+                rc = GPG_ERR_GENERAL;
             }
             else
                 kr->is_locked = 1;
@@ -377,13 +377,13 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     if (!a)
       {
 	log_error(_("can't open '%s'\n"), hd->found.kr->fname);
-	return G10ERR_KEYRING_OPEN;
+	return GPG_ERR_KEYRING_OPEN;
       }
 
     if (iobuf_seek (a, hd->found.offset) ) {
         log_error ("can't seek '%s'\n", hd->found.kr->fname);
 	iobuf_close(a);
-	return G10ERR_KEYRING_OPEN;
+	return GPG_ERR_KEYRING_OPEN;
     }
 
     pkt = xmalloc (sizeof *pkt);
@@ -393,15 +393,15 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     save_mode = set_packet_list_mode(0);
     while ((rc=parse_packet (a, pkt)) != -1) {
         hd->found.n_packets++;
-        if (rc == G10ERR_UNKNOWN_PACKET) {
+        if (gpg_err_code (rc) == GPG_ERR_UNKNOWN_PACKET) {
 	    free_packet (pkt);
 	    init_packet (pkt);
 	    continue;
 	}
 	if (rc) {
             log_error ("keyring_get_keyblock: read error: %s\n",
-                       g10_errstr(rc) );
-            rc = G10ERR_INV_KEYRING;
+                       gpg_strerror (rc) );
+            rc = GPG_ERR_INV_KEYRING;
             break;
         }
 	if (pkt->pkttype == PKT_COMPRESSED) {
@@ -494,7 +494,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     /* Make sure that future search operations fail immediately when
      * we know that we are working on a invalid keyring
      */
-    if (rc == G10ERR_INV_KEYRING)
+    if (gpg_err_code (rc) == GPG_ERR_INV_KEYRING)
         hd->current.error = rc;
 
     return rc;
@@ -515,7 +515,7 @@ keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb)
         /* need to know the number of packets - do a dummy get_keyblock*/
         rc = keyring_get_keyblock (hd, NULL);
         if (rc) {
-            log_error ("re-reading keyblock failed: %s\n", g10_errstr (rc));
+            log_error ("re-reading keyblock failed: %s\n", gpg_strerror (rc));
             return rc;
         }
         if (!hd->found.n_packets)
@@ -567,7 +567,7 @@ keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb)
         fname = hd->resource? hd->resource->fname:NULL;
 
     if (!fname)
-        return G10ERR_GENERAL;
+        return GPG_ERR_GENERAL;
 
     /* Close this one otherwise we will lose the position for
      * a next search.  Fixme: it would be better to adjust the position
@@ -602,7 +602,7 @@ keyring_delete_keyblock (KEYRING_HANDLE hd)
         /* need to know the number of packets - do a dummy get_keyblock*/
         rc = keyring_get_keyblock (hd, NULL);
         if (rc) {
-            log_error ("re-reading keyblock failed: %s\n", g10_errstr (rc));
+            log_error ("re-reading keyblock failed: %s\n", gpg_strerror (rc));
             return rc;
         }
         if (!hd->found.n_packets)
@@ -659,7 +659,7 @@ prepare_search (KEYRING_HANDLE hd)
 
     if (hd->current.kr && !hd->current.eof) {
         if ( !hd->current.iobuf )
-            return G10ERR_GENERAL; /* position invalid after a modify */
+            return GPG_ERR_GENERAL; /* Position invalid after a modify.  */
         return 0; /* okay */
     }
 
@@ -1087,7 +1087,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               goto found;
             break;
           default:
-            rc = G10ERR_INV_ARG;
+            rc = GPG_ERR_INV_ARG;
             goto found;
           }
 	}
@@ -1300,7 +1300,7 @@ write_keyblock (IOBUF fp, KBNODE keyblock)
       if ( (rc = build_packet (fp, node->pkt) ))
         {
           log_error ("build_packet(%d) failed: %s\n",
-                     node->pkt->pkttype, g10_errstr(rc) );
+                     node->pkt->pkttype, gpg_strerror (rc) );
           return rc;
         }
       if (node->pkt->pkttype == PKT_SIGNATURE)
@@ -1391,7 +1391,7 @@ keyring_rebuild_cache (void *token,int noisy)
       rc = keyring_get_keyblock (hd, &keyblock);
       if (rc)
         {
-          log_error ("keyring_get_keyblock failed: %s\n", g10_errstr(rc));
+          log_error ("keyring_get_keyblock failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
       if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
@@ -1409,6 +1409,8 @@ keyring_rebuild_cache (void *token,int noisy)
           goto leave;
         }
 
+      log_debug ("keblock with version %d\n",
+                 keyblock->pkt->pkt.public_key->version);
       if (keyblock->pkt->pkt.public_key->version < 4)
         {
           /* We do not copy/cache v3 keys or any other unknown
@@ -1459,7 +1461,7 @@ keyring_rebuild_cache (void *token,int noisy)
     rc = 0;
   if (rc)
     {
-      log_error ("keyring_search failed: %s\n", g10_errstr(rc));
+      log_error ("keyring_search failed: %s\n", gpg_strerror (rc));
       goto leave;
     }
   if(noisy || opt.verbose)
@@ -1541,7 +1543,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	while ( (node = walk_kbnode( root, &kbctx, 0 )) ) {
 	    if( (rc = build_packet( newfp, node->pkt )) ) {
 		log_error("build_packet(%d) failed: %s\n",
-			    node->pkt->pkttype, g10_errstr(rc) );
+			    node->pkt->pkttype, gpg_strerror (rc) );
 		iobuf_cancel(newfp);
 		return rc;
 	    }
@@ -1573,7 +1575,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	rc = copy_all_packets (fp, newfp);
 	if( rc != -1 ) {
 	    log_error("%s: copy to '%s' failed: %s\n",
-		      fname, tmpfname, g10_errstr(rc) );
+		      fname, tmpfname, gpg_strerror (rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1586,7 +1588,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	rc = copy_some_packets( fp, newfp, start_offset );
 	if( rc ) { /* should never get EOF here */
 	    log_error ("%s: copy to '%s' failed: %s\n",
-                       fname, tmpfname, g10_errstr(rc) );
+                       fname, tmpfname, gpg_strerror (rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1596,7 +1598,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	rc = skip_some_packets( fp, n_packets );
 	if( rc ) {
 	    log_error("%s: skipping %u packets failed: %s\n",
-			    fname, n_packets, g10_errstr(rc));
+			    fname, n_packets, gpg_strerror (rc));
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;
@@ -1617,7 +1619,7 @@ do_copy (int mode, const char *fname, KBNODE root,
 	rc = copy_all_packets( fp, newfp );
 	if( rc != -1 ) {
 	    log_error("%s: copy to '%s' failed: %s\n",
-		      fname, tmpfname, g10_errstr(rc) );
+		      fname, tmpfname, gpg_strerror (rc) );
 	    iobuf_close(fp);
 	    iobuf_cancel(newfp);
 	    goto leave;

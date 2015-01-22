@@ -263,7 +263,7 @@ decrypt_messages (ctrl_t ctrl, int nfiles, char *files[])
       iobuf_close(fp);
       if (rc)
         log_error("%s: decryption failed: %s\n", print_fname_stdin(filename),
-                  g10_errstr(rc));
+                  gpg_strerror (rc));
       p = get_last_passphrase();
       set_next_passphrase(p);
       xfree (p);

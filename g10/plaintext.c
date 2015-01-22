@@ -144,7 +144,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	  if (!tmp || !*tmp)
 	    {
 	      xfree (tmp);
-              /* FIXME: Below used to be G10ERR_CREATE_FILE */
+              /* FIXME: Below used to be GPG_ERR_CREATE_FILE */
 	      err = gpg_error (GPG_ERR_GENERAL);
 	      goto leave;
 	    }
@@ -196,7 +196,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       if (!fp)
 	{
 	  log_error (_("error creating '%s': %s\n"), fname, gpg_strerror (err));
-	  err = G10ERR_CREATE_FILE;
+	  err = GPG_ERR_CREATE_FILE;
 	  if (errno == 106)
 	    log_info ("Do output file and input file have the same name?\n");
 	  goto leave;

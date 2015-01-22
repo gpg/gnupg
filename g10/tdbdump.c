@@ -56,7 +56,7 @@ write_record( TRUSTREC *rec )
     if( !rc )
 	return;
     log_error(_("trust record %lu, type %d: write failed: %s\n"),
-			    rec->recnum, rec->rectype, g10_errstr(rc) );
+			    rec->recnum, rec->rectype, gpg_strerror (rc) );
     tdbio_invalid();
 }
 
@@ -214,7 +214,7 @@ import_ownertrust( const char *fname )
 	}
 	else /* error */
 	    log_error (_("error finding trust record in '%s': %s\n"),
-                       fname, g10_errstr(rc));
+                       fname, gpg_strerror (rc));
     }
     if( ferror(fp) )
 	log_error ( _("read error in '%s': %s\n"), fname, strerror(errno) );
@@ -226,7 +226,7 @@ import_ownertrust( const char *fname )
         revalidation_mark ();
         rc = tdbio_sync ();
         if (rc)
-          log_error (_("trustdb: sync failed: %s\n"), g10_errstr(rc) );
+          log_error (_("trustdb: sync failed: %s\n"), gpg_strerror (rc) );
       }
 
 }
