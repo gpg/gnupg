@@ -52,7 +52,6 @@ struct getkey_ctx_s
   KBPOS kbpos;
   KBNODE found_key;	 /* Pointer into some keyblock. */
   strlist_t extra_list;	 /* Will be freed when releasing the context.  */
-  int last_rc;
   int req_usage;
   int req_algo;
   KEYDB_HANDLE kr_handle;
@@ -2587,7 +2586,6 @@ found:
   release_kbnode (ctx->keyblock);
   ctx->keyblock = NULL;
 
-  ctx->last_rc = rc;
   return rc;
 }
 

@@ -1954,7 +1954,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
   else if (version == 4)
     {
       /* The only supported version.  Use an older gpg
-         versions (i.e. gpg 1.4 to parse v3 packets).  */
+         version (i.e. gpg 1.4) to parse v3 packets.  */
     }
   else if (version == 2 || version == 3)
     {
