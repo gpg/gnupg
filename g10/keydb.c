@@ -1489,24 +1489,40 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 }
 
 
+/* Note that in contrast to using keydb_search in search first mode,
+   this function skips legacy keys.  */
 gpg_error_t
 keydb_search_first (KEYDB_HANDLE hd)
 {
+  gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  return keydb_search (hd, &desc, 1, NULL);
+  err = keydb_search (hd, &desc, 1, NULL);
+  if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
+    err = keydb_search_next (hd);
+  return err;
 }
 
+
+/* Note that in contrast to using keydb_search in search next mode,
+   this fucntion skips legacy keys.  */
 gpg_error_t
 keydb_search_next (KEYDB_HANDLE hd)
 {
+  gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
-  memset (&desc, 0, sizeof desc);
-  desc.mode = KEYDB_SEARCH_MODE_NEXT;
-  return keydb_search (hd, &desc, 1, NULL);
+  do
+    {
+      memset (&desc, 0, sizeof desc);
+      desc.mode = KEYDB_SEARCH_MODE_NEXT;
+      err = keydb_search (hd, &desc, 1, NULL);
+    }
+  while (gpg_err_code (err) == GPG_ERR_LEGACY_KEY);
+
+  return err;
 }
 
 gpg_error_t

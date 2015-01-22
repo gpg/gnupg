@@ -1248,16 +1248,25 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 	}
     }
 
-  while (!(rc = keydb_search (kdbhd, desc, ndesc, NULL)))
+  for (;;)
     {
+      rc = keydb_search (kdbhd, desc, ndesc, NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_LEGACY_KEY)
+        break;  /* ready.  */
+
       if (!users)
 	desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+
+      if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+        continue;
 
       /* read the keyblock */
       rc = keydb_get_keyblock (kdbhd, &keyblock );
       if( rc )
 	{
-	  log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
+          if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+            continue;
+          log_error (_("error reading keyblock: %s\n"), gpg_strerror (rc) );
 	  goto leave;
 	}
 

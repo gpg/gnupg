@@ -398,6 +398,8 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 	    init_packet (pkt);
 	    continue;
 	}
+        if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+          break;  /* Upper layer needs to handle this.  */
 	if (rc) {
             log_error ("keyring_get_keyblock: read error: %s\n",
                        gpg_strerror (rc) );
@@ -654,8 +656,14 @@ keyring_search_reset (KEYRING_HANDLE hd)
 static int
 prepare_search (KEYRING_HANDLE hd)
 {
-    if (hd->current.error)
-        return hd->current.error; /* still in error state */
+    if (hd->current.error) {
+        /* If the last key was a legacy key, we simply ignore the error so that
+           we can easily use search_next.  */
+        if (gpg_err_code (hd->current.error) == GPG_ERR_LEGACY_KEY)
+            hd->current.error = 0;
+        else
+            return hd->current.error; /* still in error state */
+    }
 
     if (hd->current.kr && !hd->current.eof) {
         if ( !hd->current.iobuf )
@@ -1354,8 +1362,12 @@ keyring_rebuild_cache (void *token,int noisy)
   if(rc)
     goto leave;
 
-  while ( !(rc = keyring_search (hd, &desc, 1, NULL)) )
+  for (;;)
     {
+      rc = keyring_search (hd, &desc, 1, NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_LEGACY_KEY)
+        break;  /* ready.  */
+
       desc.mode = KEYDB_SEARCH_MODE_NEXT;
       resname = keyring_get_resource_name (hd);
       if (lastresname != resname )
@@ -1387,10 +1399,15 @@ keyring_rebuild_cache (void *token,int noisy)
             goto leave;
         }
 
+      if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+        continue;
+
       release_kbnode (keyblock);
       rc = keyring_get_keyblock (hd, &keyblock);
       if (rc)
         {
+          if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+            continue;  /* Skip legacy keys.  */
           log_error ("keyring_get_keyblock failed: %s\n", gpg_strerror (rc));
           goto leave;
         }
@@ -1416,7 +1433,9 @@ keyring_rebuild_cache (void *token,int noisy)
              The code required to keep them in the keyring would be
              too complicated.  Given that we do not touch the old
              secring.gpg a suitable backup for decryption of v3 stuff
-             using an older gpg version will always be available.  */
+             using an older gpg version will always be available.
+             Note: This test is actually superfluous because we
+             already acted upon GPG_ERR_LEGACY_KEY.      */
         }
       else
         {

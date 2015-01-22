@@ -466,6 +466,8 @@ list_all (int secret, int mark_secret)
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc)
 	{
+          if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+            continue;  /* Skip legacy keys.  */
 	  log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
 	  goto leave;
 	}
