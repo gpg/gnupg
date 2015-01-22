@@ -330,15 +330,20 @@ scdaemon.
 The following options may be used:
 
 @table @gnupgtabopt
-@c FIXME: Not yet supported.
-@c @item -o @var{file}
-@c @itemx --output @var{file}
-@c Use @var{file} as output file.
+
+@item -o @var{file}
+@itemx --output @var{file}
+Write output to @var{file}.  Default is to write to stdout.
 
 @item -v
 @itemx --verbose
 Outputs additional information while running.  Specifically, this
 extends numerical field values by human-readable descriptions.
+
+@item -q
+@itemx --quiet
+@opindex quiet
+Try to be as quiet as possible.
 
 @item -n
 @itemx --dry-run
@@ -1246,7 +1251,8 @@ passing.  This option makes it use the old mode.
 Do not start the gpg-agent or the dirmngr if it has not yet been
 started.
 
-@item --run @var{file}
+@item -r @var{file}
+@itemx --run @var{file}
 @opindex run
 Run the commands from @var{file} at startup and then continue with the
 regular input method.  Note, that commands given on the command line are
@@ -1361,7 +1367,7 @@ this operator.  A division by zero yields an empty string.
 @itemx |
 @itemx &
 Evaluate all arguments as long integers using @code{strtol} and apply
-the logical oeprators NOT, OR or AND.  The NOT operator works on the
+the logical operators NOT, OR or AND.  The NOT operator works on the
 last argument only.
 
 

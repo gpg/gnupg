@@ -122,7 +122,7 @@ output of the @code{tty} command.  For W32 systems this option is not
 required.
 
 Please make sure that a proper pinentry program has been installed
-under the default filename (which is system dependant) or use the
+under the default filename (which is system dependent) or use the
 option @option{pinentry-program} to specify the full name of that program.
 It is often useful to install a symbolic link from the actual used
 pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
@@ -582,7 +582,7 @@ gpg-connect-agent updatestartuptty /bye
 Although all GnuPG components try to start the gpg-agent as needed, this
 is not possible for the ssh support because ssh does not know about it.
 Thus if no GnuPG tool which accesses the agent has been run, there is no
-guarantee that ssh is abale to use gpg-agent for authentication.  To fix
+guarantee that ssh is able to use gpg-agent for authentication.  To fix
 this you may start gpg-agent if needed using this simple command:
 
 @smallexample

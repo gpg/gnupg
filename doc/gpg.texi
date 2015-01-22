@@ -354,14 +354,14 @@ Present a menu to allow changing the PIN of a smartcard. This
 functionality is also available as the subcommand "passwd" with the
 @option{--card-edit} command.
 
-@item --delete-key @code{name}
-@opindex delete-key
+@item --delete-keys @code{name}
+@itemx --delete-keys @code{name}
 Remove key from the public keyring. In batch mode either @option{--yes} is
 required or the key must be specified by fingerprint. This is a
 safeguard against accidental deletion of multiple keys.
 
-@item --delete-secret-key @code{name}
-@opindex delete-secret-key
+@item --delete-secret-keys @code{name}
+@opindex delete-secret-keys
 Remove key from the secret keyring. In batch mode the key
 must be specified by fingerprint.
 
@@ -544,6 +544,12 @@ Use the source, Luke :-). The output format is still subject to change.
 @opindex dearmor
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
 This is a GnuPG extension to OpenPGP and in general not very useful.
+
+
+@c @item --server
+@c @opindex server
+@c Run gpg in server mode.  This feature is not yet ready for use and
+@c thus not documented.
 
 @end table
 
@@ -798,7 +804,7 @@ create a signature of any type desired.
 
   @item delkey
   @opindex keyedit:delkey
-  Remove a subkey (secondart key). Note that it is not possible to retract
+  Remove a subkey (secondary key). Note that it is not possible to retract
   a subkey, once it has been send to the public (i.e. to a keyserver).  In
   that case you better use @code{revkey}.
 
@@ -1960,7 +1966,7 @@ During decryption skip all anonymous recipients.  This option helps in
 the case that people use the hidden recipients feature to hide there
 own encrypt-to key from others.  If oneself has many secret keys this
 may lead to a major annoyance because all keys are tried in turn to
-decrypt soemthing which was not really intended for it.  The drawback
+decrypt something which was not really intended for it.  The drawback
 of this option is that it is currently not possible to decrypt a
 message which includes real anonymous recipients.
 
