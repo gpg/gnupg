@@ -544,11 +544,9 @@ read_block( IOBUF a, PACKET **pending_pkt, kbnode_t *ret_root, int *r_v3keys)
   in_v3key = 0;
   while ((rc=parse_packet(a, pkt)) != -1)
     {
-      if (rc && (gpg_err_code (rc) == GPG_ERR_INV_PACKET
+      if (rc && (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
                  && (pkt->pkttype == PKT_PUBLIC_KEY
-                     || pkt->pkttype == PKT_SECRET_KEY)
-                 && (pkt->pkt.public_key->version == 2
-                     || pkt->pkt.public_key->version == 3)))
+                     || pkt->pkttype == PKT_SECRET_KEY)))
         {
           in_v3key = 1;
           ++*r_v3keys;

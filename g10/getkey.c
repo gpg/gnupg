@@ -403,8 +403,6 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
   if (!rc)
     goto leave;
 
-  log_debug ("looking up key %08X%08X failed: %s\n", keyid[0], keyid[1],
-             gpg_strerror (rc));
   rc = GPG_ERR_NO_PUBKEY;
 
 leave:
@@ -2573,7 +2571,8 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
     }
 
 found:
-  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND
+      && gpg_err_code (rc) != GPG_ERR_LEGACY_KEY)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
 
   if (!rc)

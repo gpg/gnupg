@@ -350,7 +350,7 @@ keyring_lock (KEYRING_HANDLE hd, int yes)
 
 
 /*
- * Return the last found keyring.  Caller must free it.
+ * Return the last found keyblock.  Caller must free it.
  * The returned keyblock has the kbode flag bit 0 set for the node with
  * the public key used to locate the keyblock or flag bit 1 set for
  * the user ID node.
@@ -1409,8 +1409,6 @@ keyring_rebuild_cache (void *token,int noisy)
           goto leave;
         }
 
-      log_debug ("keblock with version %d\n",
-                 keyblock->pkt->pkt.public_key->version);
       if (keyblock->pkt->pkt.public_key->version < 4)
         {
           /* We do not copy/cache v3 keys or any other unknown

@@ -1963,7 +1963,7 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       if (list_mode)
         es_fprintf (listfp, ":key packet: [obsolete version %d]\n", version);
       pk->version = version;
-      err = gpg_error (GPG_ERR_INV_PACKET);
+      err = gpg_error (GPG_ERR_LEGACY_KEY);
       goto leave;
     }
   else

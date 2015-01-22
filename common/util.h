@@ -38,6 +38,7 @@
 /* These error codes are used but not defined in the required
    libgpg-error version.  Define them here. */
 #if GPG_ERROR_VERSION_NUMBER < 0x011200  /* 1.18 */
+# define GPG_ERR_LEGACY_KEY     222
 # define GPG_ERR_OBJ_TERM_STATE 225
 # define GPG_ERR_FORBIDDEN      251
 #endif
