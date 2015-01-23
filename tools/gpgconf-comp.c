@@ -2365,7 +2365,7 @@ option_check_validity (gc_option_t *option, unsigned long flags,
 	    gc_error (1, 0, "garbage after argument for option %s",
 		      option->name);
 	}
-      else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_INT32)
+      else if (gc_arg_type[option->arg_type].fallback == GC_ARG_TYPE_UINT32)
 	{
 	  unsigned long res;
 
