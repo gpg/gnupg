@@ -2230,8 +2230,8 @@ send_escape_cmd (ccid_driver_t handle,
             {
               memcpy (result, msg, msglen);
               *resultlen = msglen;
+              rc = 0;
             }
-          rc = 0;
         }
         break;
       default:
