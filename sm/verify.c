@@ -467,7 +467,7 @@ gpgsm_verify (ctrl_t ctrl, int in_fd, int data_fd, estream_t out_fp)
           s = gcry_md_read (data_md, algo);
           if ( !s || !msgdigestlen
                || gcry_md_get_algo_dlen (algo) != msgdigestlen
-               || !s || memcmp (s, msgdigest, msgdigestlen) )
+               || memcmp (s, msgdigest, msgdigestlen) )
             {
               char *fpr;
 

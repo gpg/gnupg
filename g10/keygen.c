@@ -2659,7 +2659,7 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 	    xfree(answer);
 	}
 	xfree(answer);
-	if( !amail && !acomment && !amail )
+	if (!amail && !acomment)
 	    break;
 	xfree(uid); uid = NULL;
     }
