@@ -1012,7 +1012,7 @@ fi
 #
 AC_MSG_NOTICE([checking for gettext])
 AM_PO_SUBDIRS
-AM_GNU_GETTEXT_VERSION([0.17])
+AM_GNU_GETTEXT_VERSION([0.19.3])
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT([external],[need-ngettext])
 
