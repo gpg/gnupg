@@ -20,7 +20,7 @@
 
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-min_automake_version="1.10"
+min_automake_version="1.14"
 
 # To build a release you need to create a tag with the version number
 # (git tag -s gnupg-2.n.m) and run "./autogen.sh --force".  Please
@@ -63,7 +63,7 @@ VERSION=$PACKAGE_VERSION
 AC_CONFIG_AUX_DIR(scripts)
 AC_CONFIG_SRCDIR(sm/gpgsm.c)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
+AM_INIT_AUTOMAKE([serial-tests dist-bzip2 no-dist-gzip])
 AC_CANONICAL_HOST
 AB_INIT
 

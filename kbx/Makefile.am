@@ -18,12 +18,11 @@
 
 ## Process this file with automake to produce Makefile.in
 
-localedir = $(datadir)/locale
-INCLUDES = -I../intl -DLOCALEDIR=\"$(localedir)\"
 
 EXTRA_DIST = mkerrors ChangeLog-2011
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common -I$(top_srcdir)/intl \
 	       $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
+include $(top_srcdir)/am/cmacros.am
 
 noinst_LIBRARIES = libkeybox.a
 bin_PROGRAMS = kbxutil
