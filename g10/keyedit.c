@@ -1,6 +1,6 @@
 /* keyedit.c - keyedit stuff
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009, 2010 Free Software Foundation, Inc.
+ *               2008, 2009, 2010, 2015 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -52,6 +52,7 @@ static void show_names(KBNODE keyblock,PKT_public_key *pk,
 static void show_key_with_all_names( KBNODE keyblock, int only_marked,
 	    int with_revoker, int with_fpr, int with_subkeys, int with_prefs );
 static void show_key_and_fingerprint( KBNODE keyblock );
+static void subkey_expire_warning (kbnode_t keyblock);
 static int menu_adduid( KBNODE keyblock, KBNODE sec_keyblock,
 			int photo, const char *photo_name );
 static void menu_deluid( KBNODE pub_keyblock, KBNODE sec_keyblock );
@@ -1541,6 +1542,7 @@ keyedit_menu( const char *username, strlist_t locusr,
     int redisplay = 1;
     int modified = 0;
     int sec_modified = 0;
+    int run_subkey_warnings = 0;
     int toggle;
     int have_commands = !!commands;
 
@@ -1639,6 +1641,14 @@ keyedit_menu( const char *username, strlist_t locusr,
 	    tty_printf("\n");
 	    redisplay = 0;
 	  }
+
+        if (run_subkey_warnings)
+          {
+            run_subkey_warnings = 0;
+            if (!count_selected_keys (keyblock))
+              subkey_expire_warning (keyblock);
+          }
+
 	do {
 	    xfree(answer);
 	    if( have_commands ) {
@@ -2103,6 +2113,7 @@ keyedit_menu( const char *username, strlist_t locusr,
 	      {
 		merge_keys_and_selfsig( sec_keyblock );
 		merge_keys_and_selfsig( keyblock );
+                run_subkey_warnings = 1;
 		sec_modified = 1;
 		modified = 1;
 		redisplay = 1;
@@ -3077,6 +3088,53 @@ no_primary_warning(KBNODE keyblock)
 	       " may\n              cause a different user ID to become"
 	       " the assumed primary.\n"));
 }
+
+
+/* Print a warning if the latest encryption subkey expires soon.  This
+   function is called after the expire data of the primary key has
+   been changed.  */
+static void
+subkey_expire_warning (kbnode_t keyblock)
+{
+  u32 curtime = make_timestamp ();
+  kbnode_t node;
+  PKT_public_key *pk;
+  /* u32 mainexpire = 0; */
+  u32 subexpire = 0;
+  u32 latest_date = 0;
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype != PKT_PUBLIC_SUBKEY)
+        continue;
+      pk = node->pkt->pkt.public_key;
+
+      if (!pk->is_valid)
+        continue;
+      if (pk->is_revoked)
+        continue;
+      if (pk->timestamp > curtime)
+        continue; /* Ignore future keys.  */
+      if (!(pk->pubkey_usage & PUBKEY_USAGE_ENC))
+        continue; /* Not an encryption key.  */
+
+      if (pk->timestamp > latest_date || (!pk->timestamp && !latest_date))
+        {
+          latest_date = pk->timestamp;
+          subexpire = pk->expiredate;
+        }
+    }
+
+  if (!subexpire)
+    return;  /* No valid subkey with an expiration time.  */
+
+  if (curtime + (10*86400) > subexpire)
+    {
+      log_info (_("WARNING: Your encryption subkey expires soon.\n"));
+      log_info (_("You may want to change its expiration date too.\n"));
+    }
+}
+
 
 /****************
  * Ask for a new user id, do the selfsignature and put it into
