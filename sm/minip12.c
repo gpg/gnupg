@@ -2421,8 +2421,6 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
           log_error ("can't convert passphrase to"
                      " requested charset '%s': %s\n",
                      charset, strerror (errno));
-          gcry_free (pwbuf);
-          pwbuf = NULL;
           goto failure;
         }
 
@@ -2436,8 +2434,6 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
           log_error ("error converting passphrase to"
                      " requested charset '%s': %s\n",
                      charset, strerror (errno));
-          gcry_free (pwbuf);
-          pwbuf = NULL;
           jnlib_iconv_close (cd);
           goto failure;
         }
@@ -2511,6 +2507,8 @@ p12_build (gcry_mpi_t *kparms, const void *cert, size_t certlen,
  failure:
   if (pwbuf)
     {
+      /* Note that wipememory is not really needed due to the use of
+         gcry_malloc_secure.  */
       wipememory (pwbuf, pwbufsize);
       gcry_free (pwbuf);
     }
