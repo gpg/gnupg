@@ -497,4 +497,11 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
 int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context);
 
 
+/*-- cvt-openpgp.c --*/
+gpg_error_t
+extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
+                     const char **r_algoname, int *r_npkey, int *r_nskey,
+                     const char **r_format, gcry_mpi_t *mpi_array,
+                     gcry_sexp_t *r_curve, gcry_sexp_t *r_flags);
+
 #endif /*AGENT_H*/

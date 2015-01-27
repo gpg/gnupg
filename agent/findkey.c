@@ -978,18 +978,20 @@ agent_public_key_from_file (ctrl_t ctrl,
   gpg_error_t err;
   int i, idx;
   gcry_sexp_t s_skey;
-  char algoname[6];
-  char elems[7];
+  const char *algoname, *elems;
+  int npkey;
+  gcry_mpi_t array[10];
+  gcry_sexp_t curve = NULL;
+  gcry_sexp_t flags = NULL;
   gcry_sexp_t uri_sexp, comment_sexp;
   const char *uri, *comment;
   size_t uri_length, comment_length;
   char *format, *p;
-  void *args[4+2+2+1]; /* Size is max. # of elements + 2 for uri + 2
-                           for comment + end-of-list.  */
+  void *args[2+7+2+2+1]; /* Size is 2 + max. # of elements + 2 for uri + 2
+                            for comment + end-of-list.  */
   int argidx;
-  gcry_sexp_t list, l2;
+  gcry_sexp_t list = NULL;
   const char *s;
-  gcry_mpi_t *array;
 
   (void)ctrl;
 
@@ -999,54 +1001,16 @@ agent_public_key_from_file (ctrl_t ctrl,
   if (err)
     return err;
 
-  err = key_parms_from_sexp (s_skey, &list,
-                            algoname, sizeof algoname,
-                            elems, sizeof elems);
+  for (i=0; i < DIM (array); i++)
+    array[i] = NULL;
+
+  err = extract_private_key (s_skey, 0, &algoname, &npkey, NULL, &elems,
+                             array, &curve, &flags);
   if (err)
     {
       gcry_sexp_release (s_skey);
       return err;
     }
-
-  /* Allocate an array for the parameters and copy them out of the
-     secret key.   FIXME: We should have a generic copy function. */
-  array = xtrycalloc (strlen(elems) + 1, sizeof *array);
-  if (!array)
-    {
-      err = gpg_error_from_syserror ();
-      gcry_sexp_release (list);
-      gcry_sexp_release (s_skey);
-      return err;
-    }
-
-  for (idx=0, s=elems; *s; s++, idx++ )
-    {
-      l2 = gcry_sexp_find_token (list, s, 1);
-      if (!l2)
-        {
-          /* Required parameter not found.  */
-          for (i=0; i<idx; i++)
-            gcry_mpi_release (array[i]);
-          xfree (array);
-          gcry_sexp_release (list);
-          gcry_sexp_release (s_skey);
-          return gpg_error (GPG_ERR_BAD_SECKEY);
-	}
-      array[idx] = gcry_sexp_nth_mpi (l2, 1, GCRYMPI_FMT_USG);
-      gcry_sexp_release (l2);
-      if (!array[idx])
-        {
-          /* Required parameter is invalid. */
-          for (i=0; i<idx; i++)
-            gcry_mpi_release (array[i]);
-          xfree (array);
-          gcry_sexp_release (list);
-          gcry_sexp_release (s_skey);
-          return gpg_error (GPG_ERR_BAD_SECKEY);
-	}
-    }
-  gcry_sexp_release (list);
-  list = NULL;
 
   uri = NULL;
   uri_length = 0;
@@ -1072,13 +1036,14 @@ agent_public_key_from_file (ctrl_t ctrl,
      them.  */
   assert (sizeof (size_t) <= sizeof (void*));
 
-  format = xtrymalloc (15+7*strlen (elems)+10+15+1+1);
+  format = xtrymalloc (15+4+7*npkey+10+15+1+1);
   if (!format)
     {
       err = gpg_error_from_syserror ();
       for (i=0; array[i]; i++)
         gcry_mpi_release (array[i]);
-      xfree (array);
+      gcry_sexp_release (curve);
+      gcry_sexp_release (flags);
       gcry_sexp_release (uri_sexp);
       gcry_sexp_release (comment_sexp);
       return err;
@@ -1086,10 +1051,13 @@ agent_public_key_from_file (ctrl_t ctrl,
 
   argidx = 0;
   p = stpcpy (stpcpy (format, "(public-key("), algoname);
-  for (idx=0, s=elems; *s; s++, idx++ )
+  p = stpcpy (p, "%S%S");       /* curve name and flags.  */
+  args[argidx++] = &curve;
+  args[argidx++] = &flags;
+  for (idx=0, s=elems; idx < npkey; idx++)
     {
       *p++ = '(';
-      *p++ = *s;
+      *p++ = *s++;
       p = stpcpy (p, " %m)");
       assert (argidx < DIM (args));
       args[argidx++] = &array[idx];
@@ -1118,7 +1086,8 @@ agent_public_key_from_file (ctrl_t ctrl,
   xfree (format);
   for (i=0; array[i]; i++)
     gcry_mpi_release (array[i]);
-  xfree (array);
+  gcry_sexp_release (curve);
+  gcry_sexp_release (flags);
   gcry_sexp_release (uri_sexp);
   gcry_sexp_release (comment_sexp);
 

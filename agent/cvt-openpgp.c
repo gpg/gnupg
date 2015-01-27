@@ -1177,36 +1177,50 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
 }
 
 
-/* Convert our key S_KEY into an OpenPGP key transfer format.  On
-   success a canonical encoded S-expression is stored at R_TRANSFERKEY
-   and its length at R_TRANSFERKEYLEN; this S-expression is also
-   padded to a multiple of 64 bits.  */
+/*
+ * Examining S_KEY in S-Expression and extract data.
+ * When REQ_PRIVATE_KEY_DATA == 1, S_KEY's CAR should be 'private-key',
+ * but it also allows shadowed or protected versions.
+ * On success, it returns 0, otherwise error number.
+ * R_ALGONAME is static string which is no need to free by caller.
+ * R_NPKEY is pointer to number of public key data.
+ * R_NSKEY is pointer to number of private key data.
+ * R_ELEMS is static string which is no need to free by caller.
+ * ARRAY contains public and private key data.
+ * R_CURVE is pointer to S-Expression of the curve (can be NULL).
+ * R_FLAGS is pointer to S-Expression of the flags (can be NULL).
+ */
 gpg_error_t
-convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
-                    unsigned char **r_transferkey, size_t *r_transferkeylen)
+extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
+                     const char **r_algoname, int *r_npkey, int *r_nskey,
+                     const char **r_elems, gcry_mpi_t *array,
+                     gcry_sexp_t *r_curve, gcry_sexp_t *r_flags)
 {
   gpg_error_t err;
   gcry_sexp_t list, l2;
   char *name;
-  const char *algoname;
+  const char *algoname, *format;
   int npkey, nskey;
-  gcry_mpi_t array[10];
   gcry_sexp_t curve = NULL;
-  char protect_iv[16];
-  char salt[8];
-  unsigned long s2k_count;
-  int i, j;
+  gcry_sexp_t flags = NULL;
 
-  (void)ctrl;
+  if (!req_private_key_data)
+    {
+      list = gcry_sexp_find_token (s_key, "shadowed-private-key", 0 );
+      if (!list)
+        list = gcry_sexp_find_token (s_key, "protected-private-key", 0 );
+      if (!list)
+        list = gcry_sexp_find_token (s_key, "private-key", 0 );
+    }
+  else
+    list = gcry_sexp_find_token (s_key, "private-key", 0);
 
-  *r_transferkey = NULL;
-
-  for (i=0; i < DIM (array); i++)
-    array[i] = NULL;
-
-  list = gcry_sexp_find_token (s_key, "private-key", 0);
   if (!list)
-    return gpg_error (GPG_ERR_NO_OBJ); /* Does not contain a key object.  */
+    {
+      log_error ("invalid private key format\n");
+      return gpg_error (GPG_ERR_BAD_SECKEY);
+    }
+
   l2 = gcry_sexp_cadr (list);
   gcry_sexp_release (list);
   list = l2;
@@ -1224,66 +1238,81 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   if (!strcmp (name, "rsa"))
     {
       algoname = "rsa";
+      format = "ned?p?q?u?";
       npkey = 2;
       nskey = 6;
-      err = gcry_sexp_extract_param (list, NULL, "nedpqu",
+      err = gcry_sexp_extract_param (list, NULL, format,
                                      array+0, array+1, array+2, array+3,
                                      array+4, array+5, NULL);
     }
   else if (!strcmp (name, "elg"))
     {
       algoname = "elg";
+      format = "pgyx?";
       npkey = 3;
       nskey = 4;
-      err = gcry_sexp_extract_param (list, NULL, "pgyx",
+      err = gcry_sexp_extract_param (list, NULL, format,
                                      array+0, array+1, array+2, array+3,
                                      NULL);
     }
   else if (!strcmp (name, "dsa"))
     {
       algoname = "dsa";
+      format = "pqgyx?";
       npkey = 4;
       nskey = 5;
-      err = gcry_sexp_extract_param (list, NULL, "pqgyx",
+      err = gcry_sexp_extract_param (list, NULL, format,
                                      array+0, array+1, array+2, array+3,
                                      array+4, NULL);
     }
   else if (!strcmp (name, "ecc"))
     {
-      gcry_buffer_t iob;
-      char iobbuf[32];
-
-      algoname = "ecc"; /* Decide later by checking the usage.  */
+      algoname = "ecc";
+      format = "/qd?";
       npkey = 1;
       nskey = 2;
-      iob.data = iobbuf;
-      iob.size = sizeof iobbuf - 1;
-      iob.off = 0;
-      iob.len = 0;
-      err = gcry_sexp_extract_param (list, NULL, "&'curve'/qd",
-                                     &iob, array+0, array+1, NULL);
-      if (!err)
+      curve = gcry_sexp_find_token (list, "curve", 0);
+      flags = gcry_sexp_find_token (list, "flags", 0);
+      err = gcry_sexp_extract_param (list, NULL, format,
+                                     array+0, array+1, NULL);
+      if (flags)
         {
-          assert (iob.len < sizeof iobbuf -1);
-          iobbuf[iob.len] = 0;
-          err = gcry_sexp_build (&curve, NULL, "(curve %s)", iobbuf);
+          gcry_sexp_t param = gcry_sexp_find_token (flags, "param", 0);
+          if (param)
+            {
+              gcry_sexp_release (param);
+              array[6] = array[0];
+              array[7] = array[1];
+              err = gcry_sexp_extract_param (list, NULL, "pabgnh?",
+                                             array+0, array+1, array+2, array+3,
+                                             array+4, array+5, NULL);
+              if (array[5] == NULL)
+                {
+                  array[5] = GCRYMPI_CONST_ONE;
+                  npkey += 6;
+                  nskey += 6;
+                }
+              format = "pabgnhqd?";
+            }
         }
     }
   else if (!strcmp (name, "ecdsa"))
     {
       algoname = "ecdsa";
+      format = "pabgnqd?";
       npkey = 6;
       nskey = 7;
-      err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
+      err = gcry_sexp_extract_param (list, NULL, format,
                                      array+0, array+1, array+2, array+3,
                                      array+4, array+5, array+6, NULL);
     }
   else if (!strcmp (name, "ecdh"))
     {
       algoname = "ecdh";
+      format = "pabgnqd?";
       npkey = 6;
       nskey= 7;
-      err = gcry_sexp_extract_param (list, NULL, "pabgnqd",
+      err = gcry_sexp_extract_param (list, NULL, format,
                                      array+0, array+1, array+2, array+3,
                                      array+4, array+5, array+6, NULL);
     }
@@ -1292,12 +1321,63 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
       err = gpg_error (GPG_ERR_PUBKEY_ALGO);
     }
   xfree (name);
-  gcry_sexp_release (list); list = NULL;
+  gcry_sexp_release (list);
   if (err)
     {
       gcry_sexp_release (curve);
+      gcry_sexp_release (flags);
       return err;
     }
+  else
+    {
+      *r_algoname = algoname;
+      if (r_elems)
+        {
+          if (format[0] == '/') /* It is opaque data qualifier, skip it.  */
+            *r_elems = format+1;
+          else
+            *r_elems = format;
+        }
+      *r_npkey = npkey;
+      if (r_nskey)
+        *r_nskey = nskey;
+      *r_curve = curve;
+      *r_flags = flags;
+
+      return 0;
+    }
+}
+
+/* Convert our key S_KEY into an OpenPGP key transfer format.  On
+   success a canonical encoded S-expression is stored at R_TRANSFERKEY
+   and its length at R_TRANSFERKEYLEN; this S-expression is also
+   padded to a multiple of 64 bits.  */
+gpg_error_t
+convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
+                    unsigned char **r_transferkey, size_t *r_transferkeylen)
+{
+  gpg_error_t err;
+  const char *algoname;
+  int npkey, nskey;
+  gcry_mpi_t array[10];
+  gcry_sexp_t curve = NULL;
+  gcry_sexp_t flags = NULL;
+  char protect_iv[16];
+  char salt[8];
+  unsigned long s2k_count;
+  int i, j;
+
+  (void)ctrl;
+
+  *r_transferkey = NULL;
+
+  for (i=0; i < DIM (array); i++)
+    array[i] = NULL;
+
+  err = extract_private_key (s_key, 1, &algoname, &npkey, &nskey, NULL,
+                             array, &curve, &flags);
+  if (err)
+    return err;
 
   gcry_create_nonce (protect_iv, sizeof protect_iv);
   gcry_create_nonce (salt, sizeof salt);
@@ -1363,6 +1443,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
   for (i=0; i < DIM (array); i++)
     gcry_mpi_release (array[i]);
   gcry_sexp_release (curve);
+  gcry_sexp_release (flags);
 
   return err;
 }
