@@ -1187,13 +1187,15 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
  * R_NSKEY is pointer to number of private key data.
  * R_ELEMS is static string which is no need to free by caller.
  * ARRAY contains public and private key data.
+ * ARRAYSIZE is the allocated size of the array for cross-checking.
  * R_CURVE is pointer to S-Expression of the curve (can be NULL).
  * R_FLAGS is pointer to S-Expression of the flags (can be NULL).
  */
 gpg_error_t
 extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
                      const char **r_algoname, int *r_npkey, int *r_nskey,
-                     const char **r_elems, gcry_mpi_t *array,
+                     const char **r_elems,
+                     gcry_mpi_t *array, int arraysize,
                      gcry_sexp_t *r_curve, gcry_sexp_t *r_flags)
 {
   gpg_error_t err;
@@ -1203,6 +1205,9 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   int npkey, nskey;
   gcry_sexp_t curve = NULL;
   gcry_sexp_t flags = NULL;
+
+  *r_curve = NULL;
+  *r_flags = NULL;
 
   if (!req_private_key_data)
     {
@@ -1230,6 +1235,9 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
       gcry_sexp_release (list);
       return gpg_error (GPG_ERR_INV_OBJ); /* Invalid structure of object. */
     }
+
+  if (arraysize < 7)
+    BUG ();
 
   /* Map NAME to a name as used by Libgcrypt.  We do not use the
      Libgcrypt function here because we need a lowercase name and
@@ -1375,7 +1383,7 @@ convert_to_openpgp (ctrl_t ctrl, gcry_sexp_t s_key, const char *passphrase,
     array[i] = NULL;
 
   err = extract_private_key (s_key, 1, &algoname, &npkey, &nskey, NULL,
-                             array, &curve, &flags);
+                             array, DIM (array), &curve, &flags);
   if (err)
     return err;
 

@@ -1005,7 +1005,7 @@ agent_public_key_from_file (ctrl_t ctrl,
     array[i] = NULL;
 
   err = extract_private_key (s_skey, 0, &algoname, &npkey, NULL, &elems,
-                             array, &curve, &flags);
+                             array, DIM (array), &curve, &flags);
   if (err)
     {
       gcry_sexp_release (s_skey);
