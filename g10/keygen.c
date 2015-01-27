@@ -2826,7 +2826,7 @@ static const char *
 get_parameter_passphrase (struct para_data_s *para)
 {
   struct para_data_s *r = get_parameter (para, pPASSPHRASE);
-  return r->u.value;
+  return r ? r->u.value : NULL;
 }
 
 
