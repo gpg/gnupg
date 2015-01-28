@@ -242,6 +242,8 @@ ldap_wrapper_main (char **argv, estream_t outstream)
 
   memset (&my_opt_buffer, 0, sizeof my_opt_buffer);
 
+  early_system_init ();
+
 #ifdef USE_LDAPWRAPPER
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX);

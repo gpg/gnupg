@@ -2048,6 +2048,7 @@ main (int argc, char **argv)
     /* Please note that we may running SUID(ROOT), so be very CAREFUL
        when adding any stuff between here and the call to
        secmem_init() somewhere after the option parsing. */
+    early_system_init ();
     gnupg_reopen_std (GPG_NAME);
     trap_unaligned ();
     gnupg_rl_initialize ();

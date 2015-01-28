@@ -164,6 +164,7 @@ main (int argc, char **argv )
   size_t raw_pattern_length;
   pattern_t *patternarray;
 
+  early_system_init ();
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   log_set_prefix ("gpg-check-pattern", 1);

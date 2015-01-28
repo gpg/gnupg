@@ -144,6 +144,7 @@ main( int argc, char **argv )
   unsigned configlineno;
   ctrl_t ctrl;
 
+  early_system_init ();
   set_strusage (my_strusage);
   log_set_prefix ("gpgv", 1);
 

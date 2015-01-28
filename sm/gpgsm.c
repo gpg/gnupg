@@ -910,6 +910,7 @@ main ( int argc, char **argv)
 
   /*mtrace();*/
 
+  early_system_init ();
   gnupg_reopen_std (GPGSM_NAME);
   /* trap_unaligned ();*/
   gnupg_rl_initialize ();

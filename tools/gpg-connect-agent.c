@@ -1169,6 +1169,7 @@ main (int argc, char **argv)
   int        loopidx;
   char **cmdline_commands = NULL;
 
+  early_system_init ();
   gnupg_rl_initialize ();
   set_strusage (my_strusage);
   log_set_prefix ("gpg-connect-agent", 1);

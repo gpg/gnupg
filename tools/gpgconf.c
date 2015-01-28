@@ -151,6 +151,7 @@ main (int argc, char **argv)
   enum cmd_and_opt_values cmd = 0;
   estream_t outfp = NULL;
 
+  early_system_init ();
   gnupg_reopen_std (GPGCONF_NAME);
   set_strusage (my_strusage);
   log_set_prefix (GPGCONF_NAME, 1);

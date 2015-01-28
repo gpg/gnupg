@@ -650,6 +650,8 @@ main (int argc, char **argv)
   int homedir_seen = 0;
   struct assuan_malloc_hooks malloc_hooks;
 
+  early_system_init ();
+
 #ifdef USE_W32_SERVICE
   /* The option will be set by main() below if we should run as a
      system daemon.  */

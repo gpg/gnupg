@@ -212,6 +212,7 @@ main (int argc, char **argv)
   int cmd = 0;
   const char *keygrip = NULL;
 
+  early_system_init ();
   set_strusage (my_strusage);
   log_set_prefix ("gpg-preset-passphrase", 1);
 

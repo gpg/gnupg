@@ -452,6 +452,7 @@ main( int argc, char **argv )
   unsigned long from = 0, to = ULONG_MAX;
   int dry_run = 0;
 
+  early_system_init ();
   set_strusage( my_strusage );
   gcry_control (GCRYCTL_DISABLE_SECMEM);
   log_set_prefix ("kbxutil", 1);

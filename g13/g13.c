@@ -344,6 +344,7 @@ main ( int argc, char **argv)
 
   /*mtrace();*/
 
+  early_system_init ();
   gnupg_reopen_std (G13_NAME);
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);

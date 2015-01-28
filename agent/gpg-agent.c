@@ -665,6 +665,8 @@ main (int argc, char **argv )
   gpg_error_t err;
   struct assuan_malloc_hooks malloc_hooks;
 
+  early_system_init ();
+
   /* Before we do anything else we save the list of currently open
      file descriptors and the signal mask.  This info is required to
      do the exec call properly. */

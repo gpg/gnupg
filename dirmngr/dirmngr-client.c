@@ -40,6 +40,7 @@
 
 #include "i18n.h"
 #include "util.h"
+#include "init.h"
 
 
 /* Constants for the options.  */
@@ -180,6 +181,7 @@ main (int argc, char **argv )
   int cmd_loadcrl = 0;
   int cmd_squid_mode = 0;
 
+  early_system_init ();
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr-client",
                   JNLIB_LOG_WITH_PREFIX);

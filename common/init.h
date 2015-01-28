@@ -38,6 +38,7 @@
 
 void register_mem_cleanup_func (void (*func)(void));
 
+void early_system_init (void);
 void _init_common_subsystems (gpg_err_source_t errsource,
                               int *argcp, char ***argvp);
 #define init_common_subsystems(a,b)                             \

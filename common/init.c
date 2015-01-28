@@ -133,6 +133,13 @@ writestring_via_estream (int mode, const char *string)
 }
 
 
+/* This function should be the first called after main.  */
+void
+early_system_init (void)
+{
+}
+
+
 /* This function is to be used early at program startup to make sure
    that some subsystems are initialized.  This is in particular
    important for W32 to initialize the sockets so that our socket

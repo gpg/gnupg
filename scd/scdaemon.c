@@ -411,6 +411,7 @@ main (int argc, char **argv )
   int res;
   npth_t pipecon_handler;
 
+  early_system_init ();
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL

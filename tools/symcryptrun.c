@@ -889,6 +889,7 @@ main (int argc, char **argv)
   char *logfile = NULL;
   int default_config = 1;
 
+  early_system_init ();
   set_strusage (my_strusage);
   log_set_prefix ("symcryptrun", 1);
 
