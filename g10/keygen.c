@@ -1820,7 +1820,7 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
           char **r_keygrip)
 {
   char *keygrip = NULL;
-  char *answer;
+  char *answer = NULL;
   int algo;
   int dummy_algo;
 
@@ -1875,84 +1875,86 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
     {
       *r_usage = 0;
       *r_subkey_algo = 0;
+      xfree (answer);
       answer = cpr_get ("keygen.algo", _("Your selection? "));
       cpr_kill_prompt ();
       algo = *answer? atoi (answer) : 1;
-      xfree(answer);
-      answer = NULL;
-      if (algo == 1 && !addmode)
+      if ((algo == 1 || !strcmp (answer, "rsa+rsa")) && !addmode)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_subkey_algo = PUBKEY_ALGO_RSA;
           break;
 	}
-      else if (algo == 2 && !addmode)
+      else if ((algo == 2 || !strcmp (answer, "dsa+elg")) && !addmode)
         {
           algo = PUBKEY_ALGO_DSA;
           *r_subkey_algo = PUBKEY_ALGO_ELGAMAL_E;
           break;
 	}
-      else if (algo == 3)
+      else if (algo == 3 || !strcmp (answer, "dsa"))
         {
           algo = PUBKEY_ALGO_DSA;
           *r_usage = PUBKEY_USAGE_SIG;
           break;
 	}
-      else if (algo == 4)
+      else if (algo == 4 || !strcmp (answer, "rsa/s"))
         {
           algo = PUBKEY_ALGO_RSA;
           *r_usage = PUBKEY_USAGE_SIG;
           break;
 	}
-      else if (algo == 5 && addmode)
+      else if ((algo == 5 || !strcmp (answer, "elg")) && addmode)
         {
           algo = PUBKEY_ALGO_ELGAMAL_E;
           *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
-      else if (algo == 6 && addmode)
+      else if ((algo == 6 || !strcmp (answer, "rsa/e")) && addmode)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
-      else if (algo == 7 && opt.expert)
+      else if ((algo == 7 || !strcmp (answer, "dsa/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_DSA;
           *r_usage = ask_key_flags (algo, addmode);
           break;
 	}
-      else if (algo == 8 && opt.expert)
+      else if ((algo == 8 || !strcmp (answer, "rsa/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_usage = ask_key_flags (algo, addmode);
           break;
 	}
-      else if (algo == 9 && opt.expert && !addmode)
+      else if ((algo == 9 || !strcmp (answer, "ecc+ecc"))
+               && opt.expert && !addmode)
         {
           algo = PUBKEY_ALGO_ECDSA;
           *r_subkey_algo = PUBKEY_ALGO_ECDH;
           break;
 	}
-      else if (algo == 10 && opt.expert)
+      else if ((algo == 10 || !strcmp (answer, "ecc/s")) && opt.expert)
         {
           algo = PUBKEY_ALGO_ECDSA;
           *r_usage = PUBKEY_USAGE_SIG;
           break;
 	}
-      else if (algo == 11 && opt.expert)
+      else if ((algo == 11 || !strcmp (answer, "ecc/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_ECDSA;
           *r_usage = ask_key_flags (algo, addmode);
           break;
 	}
-      else if (algo == 12 && opt.expert && addmode)
+      else if ((algo == 12 || !strcmp (answer, "ecc/e"))
+               && opt.expert && addmode)
         {
           algo = PUBKEY_ALGO_ECDH;
           *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
-      else if (algo == 13 && opt.expert && r_keygrip)
+      else if ((algo == 13 || !strcmp (answer, "keygrip"))
+               && opt.expert && r_keygrip)
         {
           for (;;)
             {
@@ -1984,8 +1986,10 @@ ask_algo (ctrl_t ctrl, int addmode, int *r_subkey_algo, unsigned int *r_usage,
 	}
       else
         tty_printf (_("Invalid selection.\n"));
+
     }
 
+  xfree(answer);
   if (r_keygrip)
     *r_keygrip = keygrip;
   return algo;
