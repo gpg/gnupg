@@ -1301,3 +1301,31 @@ This can be implemented using Hurd's translator mechanism.
 However, I think the whole key server stuff has to be re-thought;
 I have some ideas and probably create a white paper.
 
+
+Algorithm names for the "keygen.algo" prompt
+============================================
+
+  When using a --command-fd controlled key generation or "addkey"
+  there is way to know the number to enter on the "keygen.algo"
+  prompt.  The displayed numbers are for human reception and may
+  change with releases.  To provide a stable way to enter a desired
+  algorithm choice the prompt also accepts predefined names for the
+  algorithms, which will not change.
+
+   | Name    | No | Description                     |
+   |---------+----+---------------------------------|
+   | rsa+rsa |  1 | RSA and RSA (default)           |
+   | dsa+elg |  2 | DSA and Elgamal                 |
+   | dsa     |  3 | DSA (sign only)                 |
+   | rsa/s   |  4 | RSA (sign only)                 |
+   | elg     |  5 | Elgamal (encrypt only)          |
+   | rsa/e   |  6 | RSA (encrypt only)              |
+   | dsa/*   |  7 | DSA (set your own capabilities) |
+   | rsa/*   |  8 | RSA (set your own capabilities) |
+
+   If one of the "foo/*" names are used a "keygen.flags" prompt needs
+   to be answered as well.  Instead of toggling the predefined flags,
+   it is also possible to set them direct: Use a "=" character
+   directly followed by a comination of "a" (for authentication), "s"
+   (for signing), or "c" (for certification).
+
