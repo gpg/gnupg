@@ -755,10 +755,8 @@ get_algo_byte (int keynumber, key_type_t key_type)
 
 /* Note, that FPR must be at least 20 bytes. */
 static gpg_error_t
-store_fpr (app_t app, int keynumber, u32 timestamp,
-           unsigned char *fpr, unsigned int card_version,
-           key_type_t key_type,
-           ...)
+store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
+           key_type_t key_type, ...)
 {
   unsigned int n, nbits;
   unsigned char *buffer, *p;
@@ -821,7 +819,7 @@ store_fpr (app_t app, int keynumber, u32 timestamp,
 
   xfree (buffer);
 
-  tag = (card_version > 0x0007? 0xC7 : 0xC6) + keynumber;
+  tag = (app->card_version > 0x0007? 0xC7 : 0xC6) + keynumber;
   flush_cache_item (app, 0xC5);
   tag2 = 0xCE + keynumber;
   flush_cache_item (app, 0xCD);
@@ -830,7 +828,7 @@ store_fpr (app_t app, int keynumber, u32 timestamp,
   if (rc)
     log_error (_("failed to store the fingerprint: %s\n"),gpg_strerror (rc));
 
-  if (!rc && card_version > 0x0100)
+  if (!rc && app->card_version > 0x0100)
     {
       unsigned char buf[4];
 
@@ -3196,8 +3194,8 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       goto leave;
     }
 
-  err = store_fpr (app, keyno, created_at, fprbuf, app->card_version,
-                   KEY_TYPE_RSA, rsa_n, rsa_n_len, rsa_e, rsa_e_len);
+  err = store_fpr (app, keyno, created_at, fprbuf, KEY_TYPE_RSA,
+                   rsa_n, rsa_n_len, rsa_e, rsa_e_len);
   if (err)
     goto leave;
 
@@ -3383,16 +3381,16 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       goto leave;
     }
 
-  err = store_fpr (app, keyno, created_at, fprbuf, app->card_version,
+  err = store_fpr (app, keyno, created_at, fprbuf,
                    curve == CURVE_ED25519 ? KEY_TYPE_EDDSA : KEY_TYPE_ECC,
                    curve == CURVE_ED25519 ?
                    "\x09\x2b\x06\x01\x04\x01\xda\x47\x0f\x01"
                    : curve == CURVE_NIST_P256 ?
                    "\x08\x2a\x86\x48\xce\x3d\x03\x01\x07"
                    : "\x05\x2b\x81\x04\x00\x0a",
-                   curve == CURVE_ED25519 ? 10
-                   : curve == CURVE_NIST_P256? 9 : 6,
-                   ecc_q, ecc_q_len, "\x03\x01\x08\x07", 4);
+                   (size_t)(curve == CURVE_ED25519 ? 10
+                            : curve == CURVE_NIST_P256? 9 : 6),
+                   ecc_q, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
   if (err)
     goto leave;
 
@@ -3604,8 +3602,8 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
-  rc = store_fpr (app, keyno, (u32)created_at, fprbuf, app->card_version,
-                  KEY_TYPE_RSA, m, mlen, e, elen);
+  rc = store_fpr (app, keyno, (u32)created_at, fprbuf, KEY_TYPE_RSA,
+                  m, mlen, e, elen);
   if (rc)
     goto leave;
   send_fpr_if_not_null (ctrl, "KEY-FPR", -1, fprbuf);
