@@ -479,9 +479,9 @@ parse_dn (const unsigned char *string)
 }
 
 
-/* Print a DN part to STREAM or if STREAM is NULL to FP. */
+/* Print a DN part to STREAM. */
 static void
-print_dn_part (FILE *fp, estream_t stream,
+print_dn_part (estream_t stream,
                struct dn_array_s *dn, const char *key, int translate)
 {
   struct dn_array_s *first_dn = dn;
@@ -500,24 +500,13 @@ print_dn_part (FILE *fp, estream_t stream,
         next:
           if (!dn->done && dn->value && *dn->value)
             {
-              if (stream)
-                {
-                  es_fprintf (stream, "/%s=", dn->key);
-                  if (translate)
-                    print_utf8_buffer3 (stream, dn->value, strlen (dn->value),
-                                         "/");
-                  else
-                    es_write_sanitized (stream, dn->value, strlen (dn->value),
-                                        "/", NULL);
-                }
+              es_fprintf (stream, "/%s=", dn->key);
+              if (translate)
+                print_utf8_buffer3 (stream, dn->value, strlen (dn->value),
+                                    "/");
               else
-                {
-                  fprintf (fp, "/%s=", dn->key);
-                  if (translate)
-                    print_sanitized_utf8_string (fp, dn->value, '/');
-                  else
-                    print_sanitized_string (fp, dn->value, '/');
-                }
+                es_write_sanitized (stream, dn->value, strlen (dn->value),
+                                    "/", NULL);
             }
           dn->done = 1;
           if (dn > first_dn && dn[-1].multivalued)
@@ -532,7 +521,7 @@ print_dn_part (FILE *fp, estream_t stream,
 /* Print all parts of a DN in a "standard" sequence.  We first print
    all the known parts, followed by the uncommon ones */
 static void
-print_dn_parts (FILE *fp, estream_t stream,
+print_dn_parts (estream_t stream,
                 struct dn_array_s *dn, int translate)
 {
   const char *stdpart[] = {
@@ -541,58 +530,13 @@ print_dn_parts (FILE *fp, estream_t stream,
   int i;
 
   for (i=0; stdpart[i]; i++)
-      print_dn_part (fp, stream, dn, stdpart[i], translate);
+      print_dn_part (stream, dn, stdpart[i], translate);
 
   /* Now print the rest without any specific ordering */
   for (; dn->key; dn++)
-    print_dn_part (fp, stream, dn, dn->key, translate);
+    print_dn_part (stream, dn, dn->key, translate);
 }
 
-
-/* Print the S-Expression in BUF, which has a valid length of BUFLEN,
-   as a human readable string in one line to FP. */
-static void
-pretty_print_sexp (FILE *fp, const unsigned char *buf, size_t buflen)
-{
-  size_t len;
-  gcry_sexp_t sexp;
-  char *result, *p;
-
-  if ( gcry_sexp_sscan (&sexp, NULL, (const char*)buf, buflen) )
-    {
-      fputs (_("[Error - invalid encoding]"), fp);
-      return;
-    }
-  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, NULL, 0);
-  assert (len);
-  result = xtrymalloc (len);
-  if (!result)
-    {
-      fputs (_("[Error - out of core]"), fp);
-      gcry_sexp_release (sexp);
-      return;
-    }
-  len = gcry_sexp_sprint (sexp, GCRYSEXP_FMT_ADVANCED, result, len);
-  assert (len);
-  for (p = result; len; len--, p++)
-    {
-      if (*p == '\n')
-        {
-          if (len > 1) /* Avoid printing the trailing LF. */
-            fputs ("\\n", fp);
-        }
-      else if (*p == '\r')
-        fputs ("\\r", fp);
-      else if (*p == '\v')
-        fputs ("\\v", fp);
-      else if (*p == '\t')
-        fputs ("\\t", fp);
-      else
-        putc (*p, fp);
-    }
-  xfree (result);
-  gcry_sexp_release (sexp);
-}
 
 /* Print the S-Expression in BUF to extended STREAM, which has a valid
    length of BUFLEN, as a human readable string in one line to FP. */
@@ -640,63 +584,6 @@ pretty_es_print_sexp (estream_t fp, const unsigned char *buf, size_t buflen)
 }
 
 
-
-
-void
-gpgsm_print_name2 (FILE *fp, const char *name, int translate)
-{
-  const unsigned char *s = (const unsigned char *)name;
-  int i;
-
-  if (!s)
-    {
-      fputs (_("[Error - No name]"), fp);
-    }
-  else if (*s == '<')
-    {
-      const char *s2 = strchr ( (char*)s+1, '>');
-      if (s2)
-        {
-          if (translate)
-            print_sanitized_utf8_buffer (fp, s + 1, s2 - (char*)s - 1, 0);
-          else
-            print_sanitized_buffer (fp, s + 1, s2 - (char*)s - 1, 0);
-        }
-    }
-  else if (*s == '(')
-    {
-      pretty_print_sexp (fp, s, gcry_sexp_canon_len (s, 0, NULL, NULL));
-    }
-  else if (!((*s >= '0' && *s < '9')
-             || (*s >= 'A' && *s <= 'Z')
-             || (*s >= 'a' && *s <= 'z')))
-    fputs (_("[Error - invalid encoding]"), fp);
-  else
-    {
-      struct dn_array_s *dn = parse_dn (s);
-      if (!dn)
-        fputs (_("[Error - invalid DN]"), fp);
-      else
-        {
-          print_dn_parts (fp, NULL, dn, translate);
-          for (i=0; dn[i].key; i++)
-            {
-              xfree (dn[i].key);
-              xfree (dn[i].value);
-            }
-          xfree (dn);
-        }
-    }
-}
-
-
-void
-gpgsm_print_name (FILE *fp, const char *name)
-{
-  gpgsm_print_name2 (fp, name, 1);
-}
-
-
 /* This is a variant of gpgsm_print_name sending it output to an estream. */
 void
 gpgsm_es_print_name2 (estream_t fp, const char *name, int translate)
@@ -736,7 +623,7 @@ gpgsm_es_print_name2 (estream_t fp, const char *name, int translate)
         es_fputs (_("[Error - invalid DN]"), fp);
       else
         {
-          print_dn_parts (NULL, fp, dn, translate);
+          print_dn_parts (fp, dn, translate);
           for (i=0; dn[i].key; i++)
             {
               xfree (dn[i].key);

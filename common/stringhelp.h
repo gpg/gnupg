@@ -60,16 +60,6 @@ int compare_filenames( const char *a, const char *b );
 
 int hextobyte (const char *s);
 
-size_t print_sanitized_buffer (FILE *fp, const void *buffer, size_t length,
-                               int delim);
-size_t print_sanitized_buffer2 (FILE *fp, const void *buffer, size_t length,
-                                int delim, int delim2);
-size_t print_sanitized_utf8_buffer (FILE *fp, const void *buffer,
-                                    size_t length, int delim);
-size_t print_sanitized_string (FILE *fp, const char *string, int delim);
-size_t print_sanitized_string2 (FILE *fp, const char *string,
-                                int delim, int delim2);
-size_t print_sanitized_utf8_string (FILE *fp, const char *string, int delim);
 char *sanitize_buffer (const void *p, size_t n, int delim);
 
 

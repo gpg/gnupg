@@ -1599,7 +1599,8 @@ list_config(char *items)
 
 	      for(sl=iter->values;sl;sl=sl->next)
 		{
-		  print_sanitized_string2 (stdout, sl->d, ':',';');
+		  es_write_sanitized (es_stdout, sl->d, strlen (sl->d),
+                                      ":;", NULL);
 		  if(sl->next)
                     es_printf(";");
 		}
