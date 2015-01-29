@@ -664,6 +664,22 @@ agent_key_from_file (ctrl_t ctrl, const char *cache_nonce,
     {
     case PRIVATE_KEY_CLEAR:
       break; /* no unprotection needed */
+    case PRIVATE_KEY_OPENPGP_NONE:
+      {
+        unsigned char *buf_new;
+        size_t buf_newlen;
+
+        rc = agent_unprotect (ctrl, buf, "", NULL, &buf_new, &buf_newlen);
+        if (rc)
+          log_error ("failed to convert unprotected openpgp key: %s\n",
+                     gpg_strerror (rc));
+        else
+          {
+            xfree (buf);
+            buf = buf_new;
+          }
+      }
+      break;
     case PRIVATE_KEY_PROTECTED:
       {
 	char *desc_text_final;
@@ -1159,6 +1175,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
   switch (keytype)
     {
     case PRIVATE_KEY_CLEAR:
+    case PRIVATE_KEY_OPENPGP_NONE:
       break;
     case PRIVATE_KEY_PROTECTED:
       /* If we ever require it we could retrieve the comment fields
@@ -1230,6 +1247,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
   switch (agent_private_key_type (buf))
     {
     case PRIVATE_KEY_CLEAR:
+    case PRIVATE_KEY_OPENPGP_NONE:
     case PRIVATE_KEY_PROTECTED:
       {
         bin2hex (grip, 20, hexgrip);

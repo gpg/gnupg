@@ -1163,7 +1163,9 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
     {
       switch (keytype)
         {
-        case PRIVATE_KEY_CLEAR: protectionstr = "C"; keytypestr = "D";
+        case PRIVATE_KEY_CLEAR:
+        case PRIVATE_KEY_OPENPGP_NONE:
+          protectionstr = "C"; keytypestr = "D";
           break;
         case PRIVATE_KEY_PROTECTED: protectionstr = "P"; keytypestr = "D";
           break;
@@ -1801,12 +1803,12 @@ cmd_passwd (assuan_context_t ctx, char *line)
             }
         }
       if (!err && opt_preset)
-      {
+        {
 	  char hexgrip[40+1];
 	  bin2hex(grip, 20, hexgrip);
 	  err = agent_put_cache (hexgrip, CACHE_MODE_ANY, newpass,
                                  ctrl->cache_ttl_opt_preset);
-      }
+        }
       xfree (newpass);
     }
   ctrl->in_passwd--;

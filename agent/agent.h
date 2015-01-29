@@ -248,7 +248,8 @@ enum
     PRIVATE_KEY_PROTECTED = 2,    /* The key is protected.  */
     PRIVATE_KEY_SHADOWED = 3,     /* The key is a stub for a smartcard
                                      based key.  */
-    PROTECTED_SHARED_SECRET = 4   /* RFU.  */
+    PROTECTED_SHARED_SECRET = 4,  /* RFU.  */
+    PRIVATE_KEY_OPENPGP_NONE = 5  /* openpgp-native with protection "none". */
   };
 
 

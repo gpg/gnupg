@@ -1051,13 +1051,25 @@ convert_from_openpgp_native (ctrl_t ctrl,
   /* On success try to re-write the key.  */
   if (!err)
     {
-      unsigned char *protectedkey = NULL;
-      size_t protectedkeylen;
+      if (*passphrase)
+        {
+          unsigned char *protectedkey = NULL;
+          size_t protectedkeylen;
 
-      if (!agent_protect (*r_key, passphrase, &protectedkey, &protectedkeylen,
-                          ctrl->s2k_count))
-        agent_write_private_key (grip, protectedkey, protectedkeylen, 1);
-      xfree (protectedkey);
+          if (!agent_protect (*r_key, passphrase,
+                              &protectedkey, &protectedkeylen,
+                              ctrl->s2k_count))
+            agent_write_private_key (grip, protectedkey, protectedkeylen, 1);
+          xfree (protectedkey);
+        }
+      else
+        {
+          /* Empty passphrase: write key without protection.  */
+          agent_write_private_key (grip,
+                                   *r_key,
+                                   gcry_sexp_canon_len (*r_key, 0, NULL,NULL),
+                                   1);
+        }
     }
 
   return err;

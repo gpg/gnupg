@@ -1,6 +1,6 @@
 /* protect.c - Un/Protect a secret key
  * Copyright (C) 1998-2003, 2007, 2009, 2011 Free Software Foundation, Inc.
- * Copyright (C) 1998-2003, 2007, 2009, 2011, 2013 Werner Koch
+ * Copyright (C) 1998-2003, 2007, 2009, 2011, 2013-2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -1101,13 +1101,16 @@ agent_unprotect (ctrl_t ctrl,
    PRIVATE_KEY_UNKNOWN if we can't figure out the type (this is the
    value 0), PRIVATE_KEY_CLEAR for an unprotected private key.
    PRIVATE_KEY_PROTECTED for an protected private key or
-   PRIVATE_KEY_SHADOWED for a sub key where the secret parts are stored
-   elsewhere. */
+   PRIVATE_KEY_SHADOWED for a sub key where the secret parts are
+   stored elsewhere.  Finally PRIVATE_KEY_OPENPGP_NONE may be returned
+   is the key is still in the openpgp-native format but without
+   protection.  */
 int
 agent_private_key_type (const unsigned char *privatekey)
 {
   const unsigned char *s;
   size_t n;
+  int i;
 
   s = privatekey;
   if (*s != '(')
@@ -1117,7 +1120,75 @@ agent_private_key_type (const unsigned char *privatekey)
   if (!n)
     return PRIVATE_KEY_UNKNOWN;
   if (smatch (&s, n, "protected-private-key"))
-    return PRIVATE_KEY_PROTECTED;
+    {
+      /* We need to check whether this is openpgp-native protected
+         with the protection method "none".  In that case we return a
+         different key type so that the caller knows that there is no
+         need to ask for a passphrase. */
+      if (*s != '(')
+        return PRIVATE_KEY_PROTECTED; /* Unknown sexp - assume protected. */
+      s++;
+      n = snext (&s);
+      if (!n)
+        return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+      s += n; /* Skip over the algo */
+
+      /* Find the (protected ...) list.  */
+      for (;;)
+        {
+          if (*s != '(')
+            return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+          s++;
+          n = snext (&s);
+          if (!n)
+            return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+          if (smatch (&s, n, "protected"))
+            break;
+          s += n;
+          i = 1;
+          if (sskip (&s, &i))
+            return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+        }
+      /* Found - Is this openpgp-native? */
+      n = snext (&s);
+      if (!n)
+        return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+      if (smatch (&s, n, "openpgp-native")) /* Yes.  */
+        {
+          if (*s != '(')
+            return PRIVATE_KEY_UNKNOWN; /* Unknown sexp. */
+          s++;
+          n = snext (&s);
+          if (!n)
+            return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+          s += n; /* Skip over "openpgp-private-key".  */
+          /* Find the (protection ...) list.  */
+          for (;;)
+            {
+              if (*s != '(')
+                return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+              s++;
+              n = snext (&s);
+              if (!n)
+                return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+              if (smatch (&s, n, "protection"))
+                break;
+              s += n;
+              i = 1;
+              if (sskip (&s, &i))
+                return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+            }
+          /* Found - Is the mode "none"? */
+          n = snext (&s);
+          if (!n)
+            return PRIVATE_KEY_UNKNOWN; /* Invalid sexp.  */
+          log_debug ("openpgp-native protection '%.*s'\n", (int)n, s);
+          if (smatch (&s, n, "none"))
+            return PRIVATE_KEY_OPENPGP_NONE;  /* Yes.  */
+        }
+
+      return PRIVATE_KEY_PROTECTED;
+    }
   if (smatch (&s, n, "shadowed-private-key"))
     return PRIVATE_KEY_SHADOWED;
   if (smatch (&s, n, "private-key"))
