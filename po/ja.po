@@ -4,7 +4,7 @@
 # IIDA Yosiaki <iida@gnu.org>, 1999, 2000, 2002, 2003, 2004.
 # Yoshihiro Kajiki <kajiki@ylug.org>, 1999.
 # Takashi P.KATOH, 2002.
-# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014.
+# NIIBE Yutaka <gniibe@fsij.org>, 2013, 2014, 2015.
 #
 msgid ""
 msgstr ""
@@ -332,6 +332,9 @@ msgstr "クライアントが鍵に\"trusted\"マークをつけることを認�
 
 msgid "allow presetting passphrase"
 msgstr "パスフレーズの事前設定を認める"
+
+msgid "allow caller to override the pinentry"
+msgstr "pinentryより優先してパスフレーズ入力を認める"
 
 msgid "enable ssh support"
 msgstr "sshサポートを有功にする"
@@ -2261,66 +2264,67 @@ msgstr "%lu鍵まで処理\n"
 
 #, c-format
 msgid "Total number processed: %lu\n"
-msgstr "        処理数の合計: %lu\n"
+msgstr "          処理数の合計: %lu\n"
 
+#, c-format
 msgid "    skipped PGP-2 keys: %lu\n"
-msgstr "スキップしたPGP-2鍵: %lu\n"
+msgstr "   スキップしたPGP-2鍵: %lu\n"
 
 #, c-format
 msgid "      skipped new keys: %lu\n"
-msgstr "スキップした新しい鍵: %lu\n"
+msgstr "  スキップした新しい鍵: %lu\n"
 
 #, c-format
 msgid "          w/o user IDs: %lu\n"
-msgstr "        ユーザIDなし: %lu\n"
+msgstr "          ユーザIDなし: %lu\n"
 
 #, c-format
 msgid "              imported: %lu"
-msgstr "          インポート: %lu"
+msgstr "            インポート: %lu"
 
 #, c-format
 msgid "             unchanged: %lu\n"
-msgstr "            変更なし: %lu\n"
+msgstr "              変更なし: %lu\n"
 
 #, c-format
 msgid "          new user IDs: %lu\n"
-msgstr "      新しいユーザID: %lu\n"
+msgstr "        新しいユーザID: %lu\n"
 
 #, c-format
 msgid "           new subkeys: %lu\n"
-msgstr "          新しい副鍵: %lu\n"
+msgstr "            新しい副鍵: %lu\n"
 
 #, c-format
 msgid "        new signatures: %lu\n"
-msgstr "          新しい署名: %lu\n"
+msgstr "            新しい署名: %lu\n"
 
 #, c-format
 msgid "   new key revocations: %lu\n"
-msgstr "      新しい鍵の失効: %lu\n"
+msgstr "        新しい鍵の失効: %lu\n"
 
 #, c-format
 msgid "      secret keys read: %lu\n"
-msgstr "    秘密鍵の読み込み: %lu\n"
+msgstr "      秘密鍵の読み込み: %lu\n"
 
 #, c-format
 msgid "  secret keys imported: %lu\n"
-msgstr "  秘密鍵のインポート: %lu\n"
+msgstr "    秘密鍵のインポート: %lu\n"
 
 #, c-format
 msgid " secret keys unchanged: %lu\n"
-msgstr "      無変更の秘密鍵: %lu\n"
+msgstr "        無変更の秘密鍵: %lu\n"
 
 #, c-format
 msgid "          not imported: %lu\n"
-msgstr "        未インポート: %lu\n"
+msgstr "          未インポート: %lu\n"
 
 #, c-format
 msgid "    signatures cleaned: %lu\n"
-msgstr "      掃除された署名: %lu\n"
+msgstr "        掃除された署名: %lu\n"
 
 #, c-format
 msgid "      user IDs cleaned: %lu\n"
-msgstr "  掃除されたユーザID: %lu\n"
+msgstr "    掃除されたユーザID: %lu\n"
 
 #, c-format
 msgid ""
@@ -3885,16 +3889,16 @@ msgstr "副鍵のフィンガープリント:"
 #. TRANSLATORS: this should fit into 24 bytes to that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
-msgstr "主鍵フィンガープリント:"
+msgstr "主鍵のフィンガープリント:"
 
 msgid "      Subkey fingerprint:"
-msgstr "副鍵フィンガープリント:"
+msgstr "副鍵のフィンガープリント:"
 
 msgid "      Key fingerprint ="
 msgstr "   フィンガープリント ="
 
 msgid "      Card serial no. ="
-msgstr "   カード・シリアル番号 ="
+msgstr "   カードシリアル番号 ="
 
 #, c-format
 msgid "renaming '%s' to '%s' failed: %s\n"
@@ -4543,7 +4547,7 @@ msgid "WARNING: This key has been revoked by its owner!\n"
 msgstr "*警告*: この鍵は所有者によって失効されています!\n"
 
 msgid "         This could mean that the signature is forged.\n"
-msgstr "      署名が偽物なこともある、ということです。\n"
+msgstr "        署名が偽物なこともある、ということです。\n"
 
 msgid "WARNING: This subkey has been revoked by its owner!\n"
 msgstr "*警告*: この副鍵は所有者によって失効されています!\n"
@@ -4579,14 +4583,14 @@ msgid "WARNING: We do NOT trust this key!\n"
 msgstr "*警告*: この鍵は信用できません!\n"
 
 msgid "         The signature is probably a FORGERY.\n"
-msgstr "      この署名はおそらく 偽物 です。\n"
+msgstr "        この署名はおそらく 偽物 です。\n"
 
 msgid ""
 "WARNING: This key is not certified with sufficiently trusted signatures!\n"
 msgstr "*警告*: この鍵は十分に信用できる署名で証明されていません!\n"
 
 msgid "         It is not certain that the signature belongs to the owner.\n"
-msgstr "      この署名が所有者のものかどうか確信できません。\n"
+msgstr "        この署名が所有者のものかどうか確信できません。\n"
 
 #, c-format
 msgid "%s: skipped: %s\n"
