@@ -237,11 +237,17 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
 
       rc = _keybox_write_header_blob (newfp);
       if (rc)
-        return rc;
+        {
+          fclose (newfp);
+          return rc;
+        }
 
       rc = _keybox_write_blob (blob, newfp);
       if (rc)
-        return rc;
+        {
+          fclose (newfp);
+          return rc;
+        }
 
       if ( fclose (newfp) )
         return gpg_error_from_syserror ();
@@ -264,7 +270,8 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
   rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
   if (rc)
     {
-      fclose(fp);
+      fclose (fp);
+      fclose (newfp);
       goto leave;
     }
   
@@ -277,12 +284,16 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
+              fclose (fp);
+              fclose (newfp);
               goto leave;
             }
         }
       if (ferror (fp))
         {
           rc = gpg_error_from_syserror ();
+          fclose (fp);
+          fclose (newfp);
           goto leave;
         }
     }
@@ -306,19 +317,27 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
+              fclose (fp);
+              fclose (newfp);
               goto leave;
             }
         }
       if (ferror (fp))
         {
           rc = gpg_error_from_syserror ();
+          fclose (fp);
+          fclose (newfp);
           goto leave;
         }
       
       /* Skip this blob. */
       rc = _keybox_read_blob (NULL, fp);
       if (rc)
-        return rc;
+        {
+          fclose (fp);
+          fclose (newfp);
+          return rc;
+        }
     }
   
   /* Do an insert or update. */
@@ -326,7 +345,11 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
     { 
       rc = _keybox_write_blob (blob, newfp);
       if (rc)
+        {
+          fclose (fp);
+          fclose (newfp);
           return rc;
+        }
     }
   
   /* Copy the rest of the packet for an delete or update. */
@@ -337,12 +360,16 @@ blob_filecopy (int mode, const char *fname, KEYBOXBLOB blob,
           if (fwrite (buffer, nread, 1, newfp) != 1)
             {
               rc = gpg_error_from_syserror ();
+              fclose (fp);
+              fclose (newfp);
               goto leave;
             }
         }
       if (ferror (fp))
         {
           rc = gpg_error_from_syserror ();
+          fclose (fp);
+          fclose (newfp);
           goto leave;
         }
     }
@@ -614,7 +641,7 @@ keybox_compress (KEYBOX_HANDLE hd)
   rc = create_tmp_file (fname, &bakfname, &tmpfname, &newfp);
   if (rc)
     {
-      fclose(fp);
+      fclose (fp);
       return rc;;
     }
 
