@@ -74,7 +74,7 @@ static int w32_portable_app;
 
 #ifdef HAVE_W32_SYSTEM
 /* This flag is true if this process' binary has been installed under
-   bin and not in the root directory. */
+   bin and not in the root directory as often used before GnuPG 2.1. */
 static int w32_bin_is_bin;
 #endif /*HAVE_W32_SYSTEM*/
 
@@ -288,21 +288,15 @@ w32_rootdir (void)
     {
       char *p;
       int rc;
+      wchar_t wdir [MAX_PATH+5];
 
-#ifdef HAVE_W32CE_SYSTEM
-      {
-        wchar_t wdir [MAX_PATH+5];
-        rc = GetModuleFileName (NULL, wdir, MAX_PATH);
-        if (rc && WideCharToMultiByte (CP_UTF8, 0, wdir, -1, dir, MAX_PATH-4,
-                                       NULL, NULL) < 0)
-          rc = 0;
-      }
-#else
-      rc = GetModuleFileName (NULL, dir, MAX_PATH);
-#endif
+      rc = GetModuleFileNameW (NULL, wdir, MAX_PATH);
+      if (rc && WideCharToMultiByte (CP_UTF8, 0, wdir, -1, dir, MAX_PATH-4,
+                                     NULL, NULL) < 0)
+        rc = 0;
       if (!rc)
         {
-          log_debug ("GetModuleFileName failed: %s\n", w32_strerror (0));
+          log_debug ("GetModuleFileName failed: %s\n", w32_strerror (-1));
           *dir = 0;
         }
       got_dir = 1;
