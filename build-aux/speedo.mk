@@ -84,22 +84,22 @@ this-native-gui: check-tools
 	$(SPEEDOMAKE) TARGETOS=native WHAT=this    WITH_GUI=1 all
 
 w32-installer: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=1 installer
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=0 installer
 
 git-w32-installer: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 installer
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 installer
 
 this-w32-installer: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=1 installer
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 installer
 
 w32-source: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=1 dist-source
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=0 dist-source
 
 git-w32-source: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 dist-source
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 dist-source
 
 this-w32-source: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=1 dist-source
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 dist-source
 
 
 # Set this to "git" to build from git,
@@ -160,43 +160,54 @@ speedo_spkgs  = \
 
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
-	zlib bzip2 adns libiconv gettext
+	zlib bzip2 adns libiconv
+ifeq ($(WITH_GUI),1)
+speedo_spkgs += gettext
+endif
 endif
 
 speedo_spkgs += \
 	libassuan libksba gnupg
 
 ifeq ($(TARGETOS),w32)
+ifeq ($(WITH_GUI),1)
 speedo_spkgs += \
 	libffi glib pkg-config
+endif
 endif
 
 speedo_spkgs += \
 	gpgme
 
 ifeq ($(TARGETOS),w32)
+ifeq ($(WITH_GUI),1)
 speedo_spkgs += \
 	libpng \
 	gdk-pixbuf atk pixman cairo pango gtk+
+endif
 endif
 
 
 ifeq ($(WITH_GUI),1)
 speedo_spkgs += \
 	pinentry gpa
-endif
-
 ifeq ($(TARGETOS),w32)
 speedo_spkgs += \
 	gpgex
 endif
+endif
+
 
 # =====END LIST OF PACKAGES=====
 
 
-# Packages which are additionally build for 64 bit Windows
-speedo_w64_spkgs  = \
-	libgpg-error libiconv gettext libassuan gpgex
+# Packages which are additionally build for 64 bit Windows.  They are
+# only used for gpgex and thus we need to build them only if we want
+# a full installer.
+speedo_w64_spkgs  =
+ifeq ($(WITH_GUI),1)
+speedo_w64_spkgs += ibgpg-error libiconv gettext libassuan gpgex
+endif
 
 # Packages which use the gnupg autogen.sh build style
 speedo_gnupg_style = \
@@ -217,7 +228,9 @@ endif
 ifeq ($(UPD_SWDB),1)
 SWDB := $(shell $(topsrc)/build-aux/getswdb.sh $(getswdb_options) && echo okay)
 ifeq ($(strip $(SWDB)),)
+ifneq ($(WHAT),git)
 $(error Error getting GnuPG software version database)
+endif
 endif
 
 # Version numbers of the released packages
@@ -328,7 +341,7 @@ else ifeq ($(WHAT),git)
   speedo_pkg_libassuan_git = $(gitrep)/libassuan
   speedo_pkg_libassuan_gitref = master
   speedo_pkg_libgcrypt_git = $(gitrep)/libgcrypt
-  speedo_pkg_libgcrypt_gitref = LIBGCRYPT-1-6-BRANCH
+  speedo_pkg_libgcrypt_gitref = master
   speedo_pkg_libksba_git = $(gitrep)/libksba
   speedo_pkg_libksba_gitref = master
   speedo_pkg_gpgme_git = $(gitrep)/gpgme
@@ -412,10 +425,17 @@ endef
 endif
 
 # The LDFLAGS is needed for -lintl for glib.
+ifeq ($(WITH_GUI),1)
 speedo_pkg_gpgme_configure = \
 	--enable-static --enable-w32-glib --disable-w32-qt \
 	--with-gpg-error-prefix=$(idir) \
 	LDFLAGS=-L$(idir)/lib
+else
+speedo_pkg_gpgme_configure = \
+	--disable-static --disable-w32-glib --disable-w32-qt \
+	--with-gpg-error-prefix=$(idir) \
+	LDFLAGS=-L$(idir)/lib
+endif
 
 speedo_pkg_pinentry_configure = \
 	--disable-pinentry-qt --disable-pinentry-qt4 --disable-pinentry-gtk \
@@ -1051,6 +1071,11 @@ w32_insthelpers: $(bdir)/g4wihelp.dll
 $(bdir)/inst-options.ini: $(w32src)/inst-options.ini
 	cat $(w32src)/inst-options.ini >$(bdir)/inst-options.ini
 
+extra_installer_options =
+ifeq ($(WITH_GUI),1)
+extra_installer_options += -DWITH_GUI=1
+endif
+
 installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 	$(MAKENSIS) -V2 \
                     -DINST_DIR=$(idir) \
@@ -1063,7 +1088,7 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    -DNAME=$(INST_NAME) \
 	            -DVERSION=$(INST_VERSION) \
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
-		    $(w32src)/inst.nsi
+		    $(extra_installer_options) $(w32src)/inst.nsi
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
 
 endif

@@ -27,6 +27,8 @@
 #  NAME
 #  VERSION
 #  PROD_VERSION
+#
+#  WITH_GUI        - Include the GPA GUI
 
 !cd "${INST_DIR}"
 !addincludedir "${W32_SRCDIR}"
@@ -40,7 +42,7 @@
 !define PRETTY_PACKAGE "GNU Privacy Guard"
 !define PRETTY_PACKAGE_SHORT "GnuPG"
 !define COMPANY "The GnuPG Project"
-!define COPYRIGHT "Copyright (C) 2014 The GnuPG Project"
+!define COPYRIGHT "Copyright (C) 2015 The GnuPG Project"
 !define DESCRIPTION "GnuPG: The GNU Privacy Guard for Windows"
 
 !define INSTALL_DIR "GnuPG"
@@ -105,9 +107,9 @@ OutFile "${NAME}-${VERSION}_${BUILD_DATESTR}.exe"
 !ifndef INSTALL_DIR
 !define INSTALL_DIR "GnuPG"
 !endif
-InstallDir "$PROGRAMFILES\GNU\${INSTALL_DIR}"
+InstallDir "$PROGRAMFILES\${INSTALL_DIR}"
 
-InstallDirRegKey HKLM "Software\GNU\${PACKAGE_SHORT}" "Install Directory"
+InstallDirRegKey HKLM "Software\${PACKAGE_SHORT}" "Install Directory"
 
 
 # Add version information to the file properties.
@@ -138,7 +140,7 @@ VIAddVersionKey "FileVersion" "${PROD_VERSION}"
 
 # Remember the installer language
 !define MUI_LANGDLL_REGISTRY_ROOT "HKCU"
-!define MUI_LANGDLL_REGISTRY_KEY "Software\GNU\GnuPG"
+!define MUI_LANGDLL_REGISTRY_KEY "Software\GnuPG"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Installer Language"
 
 #
@@ -168,7 +170,7 @@ Var STARTMENU_FOLDER
 !define MUI_PAGE_CUSTOMFUNCTION_PRE CheckIfStartMenuWanted
 !define MUI_STARTMENUPAGE_NODISABLE
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU"
-!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\GNU\GnuPG"
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\GnuPG"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
 # We need to set the Startmenu name explicitly because a slash in the
 # name is not possible.
@@ -498,6 +500,31 @@ Function TrimNewlines
    Exch $R0
 FunctionEnd
 
+
+# AddToPath - Adds the given dir to the search path.
+#        Input - head of the stack
+Function AddToPath
+  Exch $0
+  g4wihelp::path_add "$0"
+  StrCmp $R5 "0" add_to_path_done
+  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+  add_to_path_done:
+  Pop $0
+FunctionEnd
+
+
+# RemoveFromPath - Remove a given dir from the path
+#     Input: head of the stack
+Function un.RemoveFromPath
+  Exch $0
+  g4wihelp::path_remove "$0"
+  StrCmp $R5 "0" remove_from_path_done
+  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+  remove_from_path_done:
+  Pop $0
+FunctionEnd
+
+
 #
 # Define the installer sections.
 #
@@ -513,7 +540,7 @@ Section "-gnupginst"
   FileWrite $0 "${VERSION}$\r$\n"
   FileClose $0
 
-  WriteRegStr HKLM "Software\GNU\GnuPG" "Install Directory" $INSTDIR
+  WriteRegStr HKLM "Software\GnuPG" "Install Directory" $INSTDIR
 
   # If we are reinstalling, try to kill a possible running gpa using
   # an already installed gpa.
@@ -529,6 +556,11 @@ Section "-gnupginst"
     ExecWait '"$INSTDIR\bin\gpgconf" --kill gpg-agent'
 
   no_gpgconf:
+
+  # Add the bin directory to the PATH
+  Push "$INSTDIR\bin"
+  Call AddToPath
+  DetailPrint "Added $INSTDIR\bin to PATH"
 SectionEnd
 
 LangString DESC_Menu_gnupg_readme ${LANG_ENGLISH} \
@@ -558,19 +590,19 @@ Section "GnuPG" SEC_gnupg
 
   ClearErrors
   SetOverwrite try
-  File "libexec/scdaemon.exe"
-  SetOverwrite lastused
-  ifErrors 0 +3
-      File /oname=scdaemon.exe.tmp "libexec/scdaemon.exe"
-      Rename /REBOOTOK scdaemon.exe.tmp scdaemon.exe
-
-  ClearErrors
-  SetOverwrite try
   File "bin/dirmngr.exe"
   SetOverwrite lastused
   ifErrors 0 +3
       File /oname=dirmngr.exe.tmp "bin/dirmngr.exe"
       Rename /REBOOTOK dirmngr.exe.tmp dirmngr.exe
+
+  ClearErrors
+  SetOverwrite try
+  File "libexec/scdaemon.exe"
+  SetOverwrite lastused
+  ifErrors 0 +3
+      File /oname=scdaemon.exe.tmp "libexec/scdaemon.exe"
+      Rename /REBOOTOK scdaemon.exe.tmp scdaemon.exe
 
   SetOutPath "$INSTDIR\share\gnupg"
   File "share/gnupg/gpg-conf.skel"
@@ -657,15 +689,16 @@ SectionEnd
 Section "-gpgme" SEC_gpgme
   SetOutPath "$INSTDIR\bin"
   File bin/libgpgme-11.dll
-  File bin/libgpgme-glib-11.dll
+  File /nonfatal bin/libgpgme-glib-11.dll
   File libexec/gpgme-w32spawn.exe
   SetOutPath "$INSTDIR\lib"
   File /oname=libgpgme.imp      lib/libgpgme.dll.a
-  File /oname=libgpgme-glib.imp lib/libgpgme-glib.dll.a
+  File /nonfatal /oname=libgpgme-glib.imp lib/libgpgme-glib.dll.a
   SetOutPath "$INSTDIR\include"
   File include/gpgme.h
 SectionEnd
 
+!ifdef WITH_GUI
 Section "-gettext" SEC_gettext
   SetOutPath "$INSTDIR\bin"
   File bin/libintl-8.dll
@@ -781,12 +814,16 @@ Section "-gtk+" SEC_gtk_
   SetOutPath "$INSTDIR\etc\gtk-2.0"
   File etc/gtk-2.0/im-multipress.conf
 SectionEnd
+!endif
 
+!ifdef WITH_GUI
 Section "-pinentry" SEC_pinentry
   SetOutPath "$INSTDIR\bin"
   File /oname=pinentry.exe "bin/pinentry-gtk-2.exe"
 SectionEnd
+!endif
 
+!ifdef WITH_GUI
 Section "gpa" SEC_gpa
   SectionIn RO
   SetOutPath "$INSTDIR\bin"
@@ -853,6 +890,8 @@ LangString T_GPGEX_RegFailed ${LANG_ENGLISH} \
 LangString DESC_SEC_gpgex ${LANG_ENGLISH} \
    "GnuPG Explorer Extension"
 
+!endif
+
 
 Section "-gnupglast" SEC_gnupglast
   SetOutPath "$INSTDIR"
@@ -885,19 +924,22 @@ ${If} ${RunningX64}
 ${EndIf}
 SectionEnd
 
-
+!ifdef WITH_GUI
 Section "-un.gpa"
   Delete "$INSTDIR\bin\gpa.exe"
   Delete "$INSTDIR\bin\launch-gpa.exe"
 
   RMDir "$INSTDIR\share\gpa"
 SectionEnd
+!endif
 
+!ifdef WITH_GUI
 Section "-un.pinentry"
   Delete "$INSTDIR\bin\pinentry.exe"
 SectionEnd
+!endif
 
-
+!ifdef WITH_GUI
 Section "-un.gtk+"
   Delete "$INSTDIR\bin\libgdk_pixbuf-2.0-0.dll"
   Delete "$INSTDIR\bin\libgdk-win32-2.0-0.dll"
@@ -1006,6 +1048,8 @@ Section "-un.glib"
   Delete "$INSTDIR\bin\gspawn-win32-helper-console.exe"
   Delete "$INSTDIR\bin\libffi-6.dll"
 SectionEnd
+!endif
+
 
 Section "-un.gettext"
   Delete "$INSTDIR\bin\libintl-8.dll"
@@ -1085,6 +1129,10 @@ Section "-un.gnupginst"
 
   Delete "$INSTDIR\VERSION"
 
+  # Remove the bin directory from the PATH
+  Push "$INSTDIR\bin"
+  Call un.RemoveFromPath
+
   # Try to remove the top level directories.
   RMDir "$INSTDIR\bin"
   RMDir "$INSTDIR\lib"
@@ -1149,6 +1197,7 @@ FunctionEnd
 
 # This also must be in a central place.  Also Urgs.
 
+!ifdef WITH_GUI
 Section "-startmenu"
 
 !ifdef HAVE_STARTMENU
@@ -1231,7 +1280,7 @@ no_quick_launch:
 
 !endif
 SectionEnd
-
+!endif
 
 
 #
@@ -1248,7 +1297,9 @@ Section
   WriteRegExpandStr HKLM $MYTMP "UninstallString" '"$INSTDIR\gnupg-uninstall.exe"'
   WriteRegExpandStr HKLM $MYTMP "InstallLocation" "$INSTDIR"
   WriteRegStr       HKLM $MYTMP "DisplayName"     "${PRETTY_PACKAGE}"
+!ifdef WITH_GUI
   WriteRegStr       HKLM $MYTMP "DisplayIcon"     "$INSTDIR\bin\gpa.exe,0"
+!endif
   WriteRegStr       HKLM $MYTMP "DisplayVersion"  "${VERSION}"
   WriteRegStr       HKLM $MYTMP "Publisher"       "The GnuPG Project"
   WriteRegStr       HKLM $MYTMP "URLInfoAbout"    "https://gnupg.org"
@@ -1259,6 +1310,7 @@ SectionEnd
 
 Section Uninstall
 
+!ifdef WITH_GUI
 !ifdef HAVE_STARTMENU
   # Make sure that the context of the automatic variables has been set to
   # the "all users" shell folder.  This guarantees that the menu gets written
@@ -1296,14 +1348,14 @@ Section Uninstall
 no_quick_launch_uninstall:
 
 !endif
-
+!endif
 
   Delete "$INSTDIR\gnupg-uninstall.exe"
   RMDir "$INSTDIR"
 
   # Clean the registry.
-  DeleteRegValue HKLM "Software\GNU\GnuPG" "Install Directory"
-  DeleteRegKey /ifempty HKLM "Software\GNU\GnuPG"
+  DeleteRegValue HKLM "Software\GnuPG" "Install Directory"
+  DeleteRegKey /ifempty HKLM "Software\GnuPG"
   # Remove Windows Add/Remove Programs support.
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\GnuPG"
 SectionEnd
