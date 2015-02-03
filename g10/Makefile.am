@@ -18,7 +18,8 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = options.skel distsigkey.gpg ChangeLog-2011 gpg-w32info.rc
+EXTRA_DIST = options.skel distsigkey.gpg ChangeLog-2011 gpg-w32info.rc \
+	     gpg.w32-manifest.in
 
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
               -I$(top_srcdir)/include -I$(top_srcdir)/intl
@@ -57,6 +58,9 @@ endif
 
 if HAVE_W32_SYSTEM
 resource_objs += gpg-w32info.o
+
+gpg-w32info.o : gpg.w32-manifest
+
 endif
 
 common_source =  \
