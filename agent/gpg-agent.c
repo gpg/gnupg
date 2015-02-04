@@ -1827,9 +1827,14 @@ agent_sighup_action (void)
 {
   log_info ("SIGHUP received - "
             "re-reading configuration and flushing cache\n");
+
   agent_flush_cache ();
   reread_configuration ();
   agent_reload_trustlist ();
+  /* We flush the module name cache so that after installing a
+     "pinentry" binary that one can be used in case the
+     "pinentry-basic" fallback was in use.  */
+  gnupg_module_name_flush_some ();
 }
 
 

@@ -445,8 +445,10 @@ This option does nothing yet.
 
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
-Use program @var{filename} as the PIN entry.  The default is installation
-dependent.
+Use program @var{filename} as the PIN entry.  The default is
+installation dependent.  With the default configuration the name of
+the default pinentry is @file{pinentry}; if that file does not exist
+but a @file{pinentry-basic} exist the latter is used.
 
 @item --pinentry-touch-file @var{filename}
 @opindex pinentry-touch-file

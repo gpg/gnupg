@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #ifdef HAVE_W32_SYSTEM
 #include <winsock2.h>   /* Due to the stupid mingw64 requirement to
@@ -607,6 +608,41 @@ dirmngr_user_socket_name (void)
 }
 
 
+/* Return the default pinentry name.  If RESET is true the internal
+   cache is first flushed.  */
+static const char *
+get_default_pinentry_name (int reset)
+{
+  static char *name;
+
+  if (reset)
+    {
+      xfree (name);
+      name = NULL;
+    }
+
+  if (!name)
+    {
+      name = xstrconcat (gnupg_bindir (),
+                         DIRSEP_S "pinentry" EXEEXT_S, NULL);
+      if (access (name, F_OK) && errno == ENOENT)
+        {
+          char *name2;
+          name2 = xstrconcat (gnupg_bindir (),
+                              DIRSEP_S "pinentry-basic" EXEEXT_S, NULL);
+          if (access (name2, F_OK))
+            xfree (name2); /* Does not exist.  */
+          else /* Switch to pinentry-basic.  */
+            {
+              xfree (name);
+              name = name2;
+            }
+        }
+    }
+  return name;
+}
+
+
 /* Return the file name of a helper tool.  WHICH is one of the
    GNUPG_MODULE_NAME_foo constants.  */
 const char *
@@ -630,9 +666,9 @@ gnupg_module_name (int which)
 
     case GNUPG_MODULE_NAME_PINENTRY:
 #ifdef GNUPG_DEFAULT_PINENTRY
-      return GNUPG_DEFAULT_PINENTRY;
+      return GNUPG_DEFAULT_PINENTRY;  /* (Set by a configure option) */
 #else
-      X(bindir, "pinentry");
+      return get_default_pinentry_name (0);
 #endif
 
     case GNUPG_MODULE_NAME_SCDAEMON:
@@ -682,4 +718,13 @@ gnupg_module_name (int which)
       BUG ();
     }
 #undef X
+}
+
+
+/* Flush some of the cached module names.  This is for example used by
+   gpg-agent to allow configuring a different pinentry.  */
+void
+gnupg_module_name_flush_some (void)
+{
+  (void)get_default_pinentry_name (1);
 }

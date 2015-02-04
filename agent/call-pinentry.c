@@ -205,6 +205,7 @@ static int
 start_pinentry (ctrl_t ctrl)
 {
   int rc = 0;
+  const char *full_pgmname;
   const char *pgmname;
   assuan_context_t ctx;
   const char *argv[5];
@@ -257,11 +258,11 @@ start_pinentry (ctrl_t ctrl)
 #endif
     }
 
-  if (!opt.pinentry_program || !*opt.pinentry_program)
-    opt.pinentry_program = gnupg_module_name (GNUPG_MODULE_NAME_PINENTRY);
-  pgmname = opt.pinentry_program;
-  if ( !(pgmname = strrchr (opt.pinentry_program, '/')))
-    pgmname = opt.pinentry_program;
+  full_pgmname = opt.pinentry_program;
+  if (!full_pgmname || !*full_pgmname)
+    full_pgmname = gnupg_module_name (GNUPG_MODULE_NAME_PINENTRY);
+  if ( !(pgmname = strrchr (full_pgmname, '/')))
+    pgmname = full_pgmname;
   else
     pgmname++;
 
@@ -269,7 +270,7 @@ start_pinentry (ctrl_t ctrl)
      the resource bundle.  For other systems we stick to the usual
      convention of supplying only the name of the program.  */
 #ifdef __APPLE__
-  argv[0] = opt.pinentry_program;
+  argv[0] = full_pgmname;
 #else /*!__APPLE__*/
   argv[0] = pgmname;
 #endif /*__APPLE__*/
@@ -310,13 +311,13 @@ start_pinentry (ctrl_t ctrl)
      that atfork is used to change the environment for pinentry.  We
      start the server in detached mode to suppress the console window
      under Windows.  */
-  rc = assuan_pipe_connect (ctx, opt.pinentry_program, argv,
+  rc = assuan_pipe_connect (ctx, full_pgmname, argv,
 			    no_close_list, atfork_cb, ctrl,
 			    ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
       log_error ("can't connect to the PIN entry module '%s': %s\n",
-                 opt.pinentry_program, gpg_strerror (rc));
+                 full_pgmname, gpg_strerror (rc));
       assuan_release (ctx);
       return unlock_pinentry (gpg_error (GPG_ERR_NO_PIN_ENTRY));
     }
