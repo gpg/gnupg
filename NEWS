@@ -1,6 +1,9 @@
 Noteworthy changes in version 2.1.3 (unreleased)
 ------------------------------------------------
 
+ * dirmngr: extra-certs and trusted-certs are now always loaded from
+   the sysconfig dir instead of the homedir.
+
 
 Noteworthy changes in version 2.1.2 (2015-02-11)
 ------------------------------------------------

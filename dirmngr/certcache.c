@@ -435,11 +435,11 @@ cert_cache_init (void)
   init_cache_lock ();
   acquire_cache_write_lock ();
 
-  dname = make_filename (opt.homedir, "trusted-certs", NULL);
+  dname = make_filename (gnupg_sysconfdir (), "trusted-certs", NULL);
   load_certs_from_dir (dname, 1);
   xfree (dname);
 
-  dname = make_filename (opt.homedir_data, "extra-certs", NULL);
+  dname = make_filename (gnupg_sysconfdir (), "extra-certs", NULL);
   load_certs_from_dir (dname, 0);
   xfree (dname);
 

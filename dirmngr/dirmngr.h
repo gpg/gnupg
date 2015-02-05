@@ -80,7 +80,6 @@ struct
   int dry_run;        /* don't change any persistent data */
   int batch;          /* batch mode */
   const char *homedir;      /* Configuration directory name */
-  const char *homedir_data; /* Ditto for data files (/usr/share/dirmngr).  */
   const char *homedir_cache; /* Ditto for cache files (/var/cache/dirmngr).  */
 
   char *config_filename;     /* Name of a config file, which will be

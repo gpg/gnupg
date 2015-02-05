@@ -800,7 +800,6 @@ main (int argc, char **argv)
 #else
       opt.homedir = gnupg_sysconfdir ();
 #endif
-      opt.homedir_data = gnupg_datadir ();
       opt.homedir_cache = gnupg_cachedir ();
       socket_name = dirmngr_sys_socket_name ();
     }
@@ -926,8 +925,6 @@ main (int argc, char **argv)
   if (nogreeting )
     greeting = 0;
 
-  if (!opt.homedir_data)
-    opt.homedir_data = opt.homedir;
   if (!opt.homedir_cache)
     opt.homedir_cache = opt.homedir;
 

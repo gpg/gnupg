@@ -143,9 +143,8 @@ running mode:
 @table @asis
 
 @item With @code{--daemon} given on the commandline
-the directory named @file{/etc/gnupg} for configuration files,
-@file{/var/lib/gnupg/} for extra data and @file{/var/cache/gnupg}
-for cached CRLs.
+the directory named @file{/etc/gnupg} is used for configuration files
+and @file{/var/cache/gnupg} for cached CRLs.
 
 @item Without @code{--daemon} given on the commandline
 the directory named @file{.gnupg} directly below the home directory
@@ -428,11 +427,9 @@ Dirmngr makes use of several directories when running in daemon mode:
 The first is the standard home directory for all configuration files.
 In the deprecated system daemon mode the second directory is used instead.
 
-@item ~/.gnupg/trusted-certs
-@itemx /etc/gnupg/trusted-certs
-The first directory should be filled with certificates of Root CAs you
-are trusting in checking the CRLs and signing OCSP Reponses.  The
-second directory is used in the deprecated systems daemon mode.
+@item /etc/gnupg/trusted-certs
+This directory should be filled with certificates of Root CAs you
+are trusting in checking the CRLs and signing OCSP Reponses.
 
 Usually these are the same certificates you use with the applications
 making use of dirmngr.  It is expected that each of these certificate
@@ -442,20 +439,22 @@ those certificates on startup and when given a SIGHUP.  Certificates
 which are not readable or do not make up a proper X.509 certificate
 are ignored; see the log file for details.
 
+Applications using dirmngr (e.g. gpgsm) can request these
+certificates to complete a trust chain in the same way as with the
+extra-certs directory (see below).
+
 Note that for OCSP responses the certificate specified using the option
 @option{--ocsp-signer} is always considered valid to sign OCSP requests.
 
-
-@item ~/.gnupg/extra-certs
-@itemx /var/lib/gnupg/extra-certs
-The first directory may contain extra certificates which are preloaded
-into the interal cache on startup.This is convenient in cases you have
-a couple intermediate CA certificates or certificates ususally used to
-sign OCSP reponses.  These certificates are first tried before going
+@item /etc/gnupg/extra-certs
+This directory may contain extra certificates which are preloaded
+into the interal cache on startup. Applications using dirmngr (e.g. gpgsm)
+can request cached certificates to complete a trust chain.
+This is convenient in cases you have a couple intermediate CA certificates
+or certificates ususally used to sign OCSP reponses.
+These certificates are first tried before going
 out to the net to look for them.  These certificates must also be
 @acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.
-The second directory is used instead in the deprecated systems daemon
-mode.
 
 @item /var/run/gnupg
 This directory is only used in the deprecated system daemon mode.  It
