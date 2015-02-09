@@ -771,21 +771,30 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
           err = gpg_error (GPG_ERR_INV_KEYRING);
           break;
         }
-      if (pkt->pkttype == PKT_COMPRESSED)
+
+      /* Filter allowed packets.  */
+      switch (pkt->pkttype)
         {
-          log_error ("skipped compressed packet in keybox blob\n");
-          free_packet(pkt);
-          init_packet(pkt);
-          continue;
-        }
-      if (pkt->pkttype == PKT_RING_TRUST)
-        {
-          log_info ("skipped ring trust packet in keybox blob\n");
+        case PKT_PUBLIC_KEY:
+        case PKT_PUBLIC_SUBKEY:
+        case PKT_SECRET_KEY:
+        case PKT_SECRET_SUBKEY:
+        case PKT_USER_ID:
+        case PKT_ATTRIBUTE:
+        case PKT_SIGNATURE:
+          break; /* Allowed per RFC.  */
+
+        default:
+          /* Note that can't allow ring trust packets here and some of
+             the other GPG specific packets don't make sense either.  */
+          log_error ("skipped packet of type %d in keybox\n",
+                     (int)pkt->pkttype);
           free_packet(pkt);
           init_packet(pkt);
           continue;
         }
 
+      /* Other sanity checks.  */
       if (!in_cert && pkt->pkttype != PKT_PUBLIC_KEY)
         {
           log_error ("parse_keyblock_image: first packet in a keybox blob "
