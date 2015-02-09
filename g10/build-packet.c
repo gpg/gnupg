@@ -261,6 +261,9 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
   if (!a)
     return 0;
   p = gcry_mpi_get_opaque ( a, &n);
+  if (!p)
+    return 0; /* For example due to a read error in
+                 parse-packet.c:read_rest.  */
   return iobuf_write (out, p, (n+7)/8 );
 }
 
@@ -305,9 +308,9 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
   nskey = pubkey_get_nskey (pk->pubkey_algo);
   npkey = pubkey_get_npkey (pk->pubkey_algo);
 
-  /* If we don't have any public parameters - which is the case if we
-     don't know the algorithm used - the parameters are stored as one
-     blob in a faked (opaque) MPI. */
+  /* If we don't have any public parameters - which is for example the
+     case if we don't know the algorithm used - the parameters are
+     stored as one blob in a faked (opaque) MPI. */
   if (!npkey)
     {
       write_fake_data (a, pk->pkey[0]);
