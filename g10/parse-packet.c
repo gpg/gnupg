@@ -2596,11 +2596,11 @@ parse_trust (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * pkt)
 
   (void) pkttype;
 
+  pkt->pkt.ring_trust = xmalloc (sizeof *pkt->pkt.ring_trust);
   if (pktlen)
     {
       c = iobuf_get_noeof (inp);
       pktlen--;
-      pkt->pkt.ring_trust = xmalloc (sizeof *pkt->pkt.ring_trust);
       pkt->pkt.ring_trust->trustval = c;
       pkt->pkt.ring_trust->sigcache = 0;
       if (!c && pktlen == 1)
@@ -2619,6 +2619,8 @@ parse_trust (IOBUF inp, int pkttype, unsigned long pktlen, PACKET * pkt)
     }
   else
     {
+      pkt->pkt.ring_trust->trustval = 0;
+      pkt->pkt.ring_trust->sigcache = 0;
       if (list_mode)
 	es_fprintf (listfp, ":trust packet: empty\n");
     }
