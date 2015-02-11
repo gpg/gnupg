@@ -2838,8 +2838,13 @@ Display the session key used for one message. See
 We think that Key Escrow is a Bad Thing; however the user should have
 the freedom to decide whether to go to prison or to reveal the content
 of one specific message without compromising all messages ever
-encrypted for one secret key. DON'T USE IT UNLESS YOU ARE REALLY
-FORCED TO DO SO.
+encrypted for one secret key.
+
+You can also use this option if you receive an encrypted message which
+is abusive or offensive, to prove to the administrators of the
+messaging system that the ciphertext transmitted corresponds to an
+inappropriate plaintext so they can take action against the offending
+user.
 
 @item --override-session-key @code{string}
 @opindex override-session-key
