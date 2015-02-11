@@ -1,14 +1,35 @@
-Noteworthy changes in version 2.1.2 (unreleased)
+Noteworthy changes in version 2.1.2 (2015-02-11)
 ------------------------------------------------
-
- * agent: When setting --default-cache-ttl the value for
-   --max-cache-ttl is adjusted to be not lower than the former.
 
  * gpg: The parameter 'Passphrase' for batch key generation works
    again.
 
  * gpg: Using a passphrase option in batch mode now has the expected
    effect on --quick-gen-key.
+
+ * gpg: Improved reporting of unsupported PGP-2 keys.
+
+ * gpg: Added support for algo names when generating keys using
+   --command-fd.
+
+ * gpg: Fixed DoS based on bogus and overlong key packets.
+
+ * agent: When setting --default-cache-ttl the value
+   for --max-cache-ttl is adjusted to be not lower than the former.
+
+ * agent: Fixed problems with the new --extra-socket.
+
+ * agent: Made --allow-loopback-pinentry changeable with gpgconf.
+
+ * agent: Fixed importing of unprotected openpgp keys.
+
+ * agent: Now tries to use a fallback pinentry if the standard
+   pinentry is not installed.
+
+ * scd: Added support for ECDH.
+
+ * Fixed several bugs related to bogus keyrings and improved some
+   other code.
 
 
 Noteworthy changes in version 2.1.1 (2014-12-16)
