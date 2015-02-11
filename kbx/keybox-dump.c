@@ -25,30 +25,14 @@
 
 #include "keybox-defs.h"
 #include <gcrypt.h>
+#include "host2net.h"
 
 /* Argg, we can't include ../common/util.h */
 char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 
+#define get32(a) buf32_to_ulong ((a))
+#define get16(a) buf16_to_ulong ((a))
 
-static ulong
-get32 (const byte *buffer)
-{
-  ulong a;
-  a =  *buffer << 24;
-  a |= buffer[1] << 16;
-  a |= buffer[2] << 8;
-  a |= buffer[3];
-  return a;
-}
-
-static ulong
-get16 (const byte *buffer)
-{
-  ulong a;
-  a =  *buffer << 8;
-  a |= buffer[1];
-  return a;
-}
 
 void
 print_string (FILE *fp, const byte *p, size_t n, int delim)

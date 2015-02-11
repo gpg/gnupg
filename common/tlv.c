@@ -96,7 +96,7 @@ do_find_tlv (const unsigned char *buffer, size_t length,
         { /* Two byte length follows. */
           if (n < 2)
             return NULL; /* We expected 2 more bytes with the length. */
-          len = (s[0] << 8) | s[1];
+          len = ((size_t)s[0] << 8) | s[1];
           s += 2; n -= 2;
         }
       else

@@ -37,6 +37,7 @@
 #include "call-gpg.h"
 #include "mountinfo.h"
 #include "runner.h"
+#include "host2net.h"
 
 
 /* Parse the header prefix and return the length of the entire header.  */
@@ -50,8 +51,7 @@ parse_header (const char *filename,
   if (packetlen != 32)
     return gpg_error (GPG_ERR_BUG);
 
-  len = ((packet[2] << 24) | (packet[3] << 16)
-         | (packet[4] << 8) | packet[5]);
+  len = buf32_to_uint (packet+2);
   if (packet[0] != (0xc0|61) || len < 26
       || memcmp (packet+6, "GnuPG/G13", 10))
     {
@@ -76,8 +76,7 @@ parse_header (const char *filename,
       return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
     }
 
-  len = ((packet[20] << 24) | (packet[21] << 16)
-         | (packet[22] << 8) | packet[23]);
+  len = buf32_to_uint (packet+20);
 
   /* Do a basic sanity check on the length.  */
   if (len < 32 || len > 1024*1024)

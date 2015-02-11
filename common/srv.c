@@ -48,6 +48,7 @@
 #endif
 
 #include "util.h"
+#include "host2net.h"
 #include "srv.h"
 
 /* Not every installation has gotten around to supporting SRVs
@@ -184,27 +185,28 @@ getsrv (const char *name,struct srventry **list)
         if((emsg-pt)<16)
           goto fail;
 
-        type=*pt++ << 8;
-        type|=*pt++;
+        type = buf16_to_u16 (pt);
+        pt += 2;
         /* We asked for SRV and got something else !? */
         if(type!=T_SRV)
           goto fail;
 
-        class=*pt++ << 8;
-        class|=*pt++;
+        class = buf16_to_u16 (pt);
+        pt += 2;
         /* We asked for IN and got something else !? */
         if(class!=C_IN)
           goto fail;
 
-        pt+=4; /* ttl */
-        dlen=*pt++ << 8;
-        dlen|=*pt++;
-        srv->priority=*pt++ << 8;
-        srv->priority|=*pt++;
-        srv->weight=*pt++ << 8;
-        srv->weight|=*pt++;
-        srv->port=*pt++ << 8;
-        srv->port|=*pt++;
+        pt += 4; /* ttl */
+        dlen = buf16_to_u16 (pt);
+        pt += 2;
+
+        srv->priority = buf16_to_ushort (pt);
+        pt += 2;
+        srv->weight = buf16_to_ushort (pt);
+        pt += 2;
+        srv->port = buf16_to_ushort (pt);
+        pt += 2;
 
         /* Get the name.  2782 doesn't allow name compression, but
            dn_expand still works to pull the name out of the

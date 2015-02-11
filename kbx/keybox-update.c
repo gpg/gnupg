@@ -28,6 +28,7 @@
 
 #include "keybox-defs.h"
 #include "../common/sysutils.h"
+#include "../common/host2net.h"
 
 #define EXTSEP_S "."
 
@@ -734,8 +735,7 @@ keybox_compress (KEYBOX_HANDLE hd)
       buffer = _keybox_get_blob_image (blob, &length);
       if (length > 4 && buffer[4] == KEYBOX_BLOBTYPE_HEADER)
         {
-          u32 last_maint = ((buffer[20] << 24) | (buffer[20+1] << 16)
-                            | (buffer[20+2] << 8) | (buffer[20+3]));
+          u32 last_maint = buf32_to_u32 (buffer+20);
 
           if ( (last_maint + 3*3600) > time (NULL) )
             {
@@ -811,7 +811,7 @@ keybox_compress (KEYBOX_HANDLE hd)
           rc = gpg_error (GPG_ERR_BUG);
           break;
         }
-      blobflags = ((buffer[pos] << 8) | (buffer[pos+1]));
+      blobflags = buf16_to_uint (buffer+pos);
       if ((blobflags & KEYBOX_FLAG_BLOB_EPHEMERAL))
         {
           /* This is an ephemeral blob. */
@@ -820,8 +820,7 @@ keybox_compress (KEYBOX_HANDLE hd)
               || size != 4)
             created_at = 0; /* oops. */
           else
-            created_at = ((buffer[pos] << 24) | (buffer[pos+1] << 16)
-                          | (buffer[pos+2] << 8) | (buffer[pos+3]));
+            created_at = buf32_to_u32 (buffer+pos);
 
           if (created_at && created_at < cut_time)
             {

@@ -32,6 +32,7 @@
 #include "iobuf.h"
 #include "i18n.h"
 #include "options.h"
+#include "host2net.h"
 
 static int do_user_id( IOBUF out, int ctb, PKT_user_id *uid );
 static int do_key (iobuf_t out, int ctb, PKT_public_key *pk);
@@ -621,10 +622,7 @@ delete_sig_subpkt (subpktarea_t *area, sigsubpkttype_t reqtype )
 	if( n == 255 ) {
 	    if( buflen < 4 )
 		break;
-	    n = (((size_t)buffer[0] << 24)
-                 | (buffer[1] << 16)
-                 | (buffer[2] << 8)
-                 | buffer[3]);
+	    n = buf32_to_size_t (buffer);
 	    buffer += 4;
 	    buflen -= 4;
 	}
@@ -747,7 +745,7 @@ build_sig_subpkt (PKT_signature *sig, sigsubpkttype_t type,
 	/* This should never happen since we don't currently allow
 	   creating such a subpacket, but just in case... */
       case SIGSUBPKT_SIG_EXPIRE:
-	if(buffer_to_u32(buffer)+sig->timestamp<=make_timestamp())
+	if(buf32_to_u32(buffer)+sig->timestamp<=make_timestamp())
 	  sig->flags.expired=1;
 	else
 	  sig->flags.expired=0;

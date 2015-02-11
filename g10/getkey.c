@@ -36,6 +36,8 @@
 #include "i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
+#include "host2net.h"
+
 
 #define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
 #define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE
@@ -1418,8 +1420,8 @@ fixup_uidnode (KBNODE uidnode, KBNODE signode, u32 keycreated)
 
   /* Ditto for the key expiration.  */
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-  if (p && buffer_to_u32 (p))
-    uid->help_key_expire = keycreated + buffer_to_u32 (p);
+  if (p && buf32_to_u32 (p))
+    uid->help_key_expire = keycreated + buf32_to_u32 (p);
   else
     uid->help_key_expire = 0;
 
@@ -1651,9 +1653,9 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
       key_usage = parse_key_usage (sig);
 
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-      if (p && buffer_to_u32 (p))
+      if (p && buf32_to_u32 (p))
 	{
-	  key_expire = keytimestamp + buffer_to_u32 (p);
+	  key_expire = keytimestamp + buf32_to_u32 (p);
 	  key_expire_seen = 1;
 	}
 
@@ -2102,8 +2104,8 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
   subpk->pubkey_usage = key_usage;
 
   p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
-  if (p && buffer_to_u32 (p))
-    key_expire = keytimestamp + buffer_to_u32 (p);
+  if (p && buf32_to_u32 (p))
+    key_expire = keytimestamp + buf32_to_u32 (p);
   else
     key_expire = 0;
   subpk->has_expired = key_expire >= curtime ? 0 : key_expire;

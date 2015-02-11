@@ -36,6 +36,7 @@
 #include "ldapserver.h"
 #include "misc.h"
 #include "ldap-wrapper.h"
+#include "host2net.h"
 
 
 #define UNENCODED_URL_CHARS "abcdefghijklmnopqrstuvwxyz"   \
@@ -664,7 +665,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
   gpg_error_t err;
   unsigned char hdr[5];
   char *p, *pend;
-  int n;
+  unsigned long n;
   int okay = 0;
   /* int is_cms = 0; */
 
@@ -677,7 +678,7 @@ fetch_next_cert_ldap (cert_fetch_context_t context,
       err = read_buffer (context->reader, hdr, 5);
       if (err)
         break;
-      n = (hdr[1] << 24)|(hdr[2]<<16)|(hdr[3]<<8)|hdr[4];
+      n = buf32_to_ulong (hdr+1);
       if (*hdr == 'V' && okay)
         {
 #if 0  /* That code is not yet ready.  */

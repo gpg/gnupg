@@ -31,6 +31,9 @@
 #include <gcrypt.h>
 #include <ksba.h>
 
+#include "host2net.h"
+
+
 /* Return the fingerprint of the certificate (we can't put this into
    libksba because we need libgcrypt support).  The caller must
    provide an array of sufficient length or NULL so that the function
@@ -149,14 +152,8 @@ gpgsm_get_short_fingerprint (ksba_cert_t cert, unsigned long *r_high)
 
   gpgsm_get_fingerprint (cert, GCRY_MD_SHA1, digest, NULL);
   if (r_high)
-    *r_high = (((unsigned long)digest[12]<<24)
-               |(digest[13]<<16)
-               |(digest[14]<< 8)
-               |digest[15]);
-  return (((unsigned long)digest[16]<<24)
-          |(digest[17]<<16)
-          |(digest[18]<<8)
-          |digest[19]);
+    *r_high = buf32_to_ulong (digest+12);
+  return buf32_to_ulong (digest + 16);
 }
 
 

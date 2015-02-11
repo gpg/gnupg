@@ -33,6 +33,7 @@
 #include "main.h"
 #include "i18n.h"
 #include "trustdb.h"
+#include "host2net.h"
 
 
 /* Return true if key is disabled.  Note that this is usually used via
@@ -536,7 +537,7 @@ mark_usable_uid_certs (kbnode_t keyblock, kbnode_t uidnode,
           u32 expire;
 
           p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
-          expire = p? sig->timestamp + buffer_to_u32(p) : 0;
+          expire = p? sig->timestamp + buf32_to_u32(p) : 0;
 
           if (expire==0 || expire > curtime )
             {

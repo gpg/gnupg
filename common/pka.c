@@ -51,6 +51,7 @@
 #endif
 
 #include "util.h"
+#include "host2net.h"
 #include "pka.h"
 
 #ifdef USE_DNS_PKA
@@ -252,13 +253,14 @@ get_pka_info (const char *address, unsigned char *fpr)
       if (p >= pend - 10)
         return NULL; /* RR too short. */
 
-      type = *p++ << 8;
-      type |= *p++;
-      class = *p++ << 8;
-      class |= *p++;
+      type = buf16_to_uint (p);
+      p += 2;
+      class = buf16_to_uint (p);
+      p += 2;
       p += 4;
-      txtlen = *p++ << 8;
-      txtlen |= *p++;
+      txtlen = buf16_to_uint (p);
+      p += 2;
+
       if (type != T_TXT || class != C_IN)
         return NULL; /* Answer does not match the query. */
 

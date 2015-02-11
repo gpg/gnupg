@@ -1,5 +1,5 @@
 /* host2net.h - Endian conversion macros
- * Copyright (C) 1998, 2014  Werner Koch
+ * Copyright (C) 1998, 2014, 2015  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -32,9 +32,6 @@
 
 #include "types.h"
 
-#define buftoulong( p )  ((*(byte*)(p) << 24) | (*((byte*)(p)+1)<< 16) | \
-		       (*((byte*)(p)+2) << 8) | (*((byte*)(p)+3)))
-#define buftoushort( p )  ((*((byte*)(p)) << 8) | (*((byte*)(p)+1)))
 #define ulongtobuf( p, a ) do { 			  \
 			    ((byte*)p)[0] = a >> 24;	\
 			    ((byte*)p)[1] = a >> 16;	\
@@ -45,8 +42,71 @@
 			    ((byte*)p)[0] = a >>  8;	\
 			    ((byte*)p)[1] = a	   ;	\
 			} while(0)
-#define buftou32( p)	buftoulong( (p) )
-#define u32tobuf( p, a) ulongtobuf( (p), (a) )
+
+
+static inline unsigned long
+buf16_to_ulong (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((unsigned long)p[0] << 8) | p[1]);
+}
+
+static inline unsigned int
+buf16_to_uint (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((unsigned int)p[0] << 8) | p[1]);
+}
+
+static inline unsigned short
+buf16_to_ushort (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((unsigned short)p[0] << 8) | p[1]);
+}
+
+static inline u16
+buf16_to_u16 (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((u16)p[0] << 8) | p[1]);
+}
+
+static inline size_t
+buf32_to_size_t (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((size_t)p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+}
+
+static inline unsigned long
+buf32_to_ulong (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((unsigned long)p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+}
+
+static inline unsigned int
+buf32_to_uint (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((unsigned int)p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+}
+
+static inline u32
+buf32_to_u32 (const void *buffer)
+{
+  const unsigned char *p = buffer;
+
+  return (((u32)p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+}
 
 
 #endif /*GNUPG_COMMON_HOST2NET_H*/

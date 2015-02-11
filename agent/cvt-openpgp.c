@@ -27,6 +27,7 @@
 #include "agent.h"
 #include "i18n.h"
 #include "cvt-openpgp.h"
+#include "host2net.h"
 
 
 /* Helper to pass data via the callback to do_unprotect. */
@@ -487,7 +488,7 @@ do_unprotect (const char *passphrase,
       ndata = (ndatabits+7)/8;
 
       if (ndata > 1)
-        csum_pgp7 = p[ndata-2] << 8 | p[ndata-1];
+        csum_pgp7 = buf16_to_u16 (p+ndata-2);
       data = xtrymalloc_secure (ndata);
       if (!data)
         {
@@ -531,7 +532,7 @@ do_unprotect (const char *passphrase,
             }
           else
             {
-              desired_csum = (data[ndata-2] << 8 | data[ndata-1]);
+              desired_csum = buf16_to_u16 (data+ndata-2);
               actual_csum = checksum (data, ndata-2);
               if (desired_csum != actual_csum)
                 {
@@ -586,7 +587,7 @@ do_unprotect (const char *passphrase,
           p = gcry_mpi_get_opaque (skey[i], &ndatabits);
           ndata = (ndatabits+7)/8;
 
-          if (!(ndata >= 2) || !(ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2))
+          if (!(ndata >= 2) || !(ndata == (buf16_to_ushort (p) + 7)/8 + 2))
             {
               gcry_cipher_close (cipher_hd);
               return gpg_error (GPG_ERR_BAD_SECKEY);

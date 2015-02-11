@@ -115,7 +115,7 @@ xxxx_do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
             ndata = (ndatabits+7)/8;
 
             if ( ndata > 1 )
-                csumc = p[ndata-2] << 8 | p[ndata-1];
+              csumc = buf16_to_u16 (p+ndata-2);
 	    data = xmalloc_secure ( ndata );
 	    gcry_cipher_decrypt ( cipher_hd, data, ndata, p, ndata );
 	    gcry_mpi_release (sk->skey[i]); sk->skey[i] = NULL ;

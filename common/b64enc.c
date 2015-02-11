@@ -253,7 +253,7 @@ b64enc_write (struct b64state *state, const void *buffer, size_t nbytes)
       u32 crc = state->crc;
 
       for (p=buffer, n=nbytes; n; p++, n-- )
-        crc = (crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ *p];
+        crc = ((u32)crc << 8) ^ crc_table[((crc >> 16)&0xff) ^ *p];
       state->crc = (crc & 0x00ffffff);
     }
 

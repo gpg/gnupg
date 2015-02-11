@@ -29,7 +29,7 @@
 
 #include "keybox-defs.h"
 #include <gcrypt.h>
-
+#include "host2net.h"
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
@@ -42,27 +42,8 @@ struct sn_array_s {
 };
 
 
-
-static inline ulong
-get32 (const byte *buffer)
-{
-  ulong a;
-  a =  *buffer << 24;
-  a |= buffer[1] << 16;
-  a |= buffer[2] << 8;
-  a |= buffer[3];
-  return a;
-}
-
-static inline ulong
-get16 (const byte *buffer)
-{
-  ulong a;
-  a =  *buffer << 8;
-  a |= buffer[1];
-  return a;
-}
-
+#define get32(a) buf32_to_ulong ((a))
+#define get16(a) buf16_to_ulong ((a))
 
 
 static inline unsigned int

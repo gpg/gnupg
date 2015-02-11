@@ -41,6 +41,7 @@
 #include "call-agent.h"
 #include "status.h"
 #include "../common/shareddefs.h"
+#include "host2net.h"
 
 #ifndef DBG_ASSUAN
 # define DBG_ASSUAN 1
@@ -761,7 +762,7 @@ agent_scd_apdu (const char *hexapdu, unsigned int *r_sw)
             err = gpg_error (GPG_ERR_CARD);
           else
             {
-              *r_sw = (data[datalen-2] << 8) | data[datalen-1];
+              *r_sw = buf16_to_uint (data+datalen-2);
             }
           xfree (data);
         }

@@ -36,7 +36,7 @@
 #include <gcrypt.h>
 
 #include "../common/openpgpdefs.h"
-
+#include "host2net.h"
 
 /* Assume a valid OpenPGP packet at the address pointed to by BUFBTR
    which has a maximum length as stored at BUFLEN.  Return the header
@@ -94,10 +94,8 @@ next_packet (unsigned char const **bufptr, size_t *buflen,
         {
           if (len <4 )
             return gpg_error (GPG_ERR_INV_PACKET); /* No length bytes. */
-          pktlen  = (*buf++) << 24;
-          pktlen |= (*buf++) << 16;
-          pktlen |= (*buf++) << 8;
-          pktlen |= (*buf++);
+          pktlen = buf32_to_ulong (buf);
+          buf += 4;
           len -= 4;
       }
       else /* Partial length encoding is not allowed for key packets. */

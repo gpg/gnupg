@@ -56,6 +56,7 @@
 #include "app-common.h"
 #include "tlv.h"
 #include "apdu.h"
+#include "host2net.h"
 
 static char const aid_nks[]  = { 0xD2, 0x76, 0x00, 0x00, 0x03, 0x01, 0x02 };
 static char const aid_sigg[] = { 0xD2, 0x76, 0x00, 0x00, 0x66, 0x01 };
@@ -278,7 +279,7 @@ get_chv_status (app_t app, int sigg, int pwid)
     rc = -1; /* Error. */
   else
     {
-      unsigned int sw = ((result[resultlen-2] << 8) | result[resultlen-1]);
+      unsigned int sw = buf16_to_uint (result+resultlen-2);
 
       if (sw == 0x6a88)
         rc = -2; /* No such PIN.  */

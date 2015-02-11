@@ -59,6 +59,7 @@
 #include "scdaemon.h"
 #include "exechelp.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
+#include "host2net.h"
 
 #include "iso7816.h"
 #include "apdu.h"
@@ -1047,15 +1048,14 @@ pcsc_get_status_wrapped (int slot, unsigned int *status)
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  len = buf_to_size_t (msgbuf+1);
   if (msgbuf[0] != 0x81 || len < 4)
     {
       log_error ("invalid response header from PC/SC received\n");
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
-                       | (msgbuf[7] << 8 ) | msgbuf[8]);
+  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
   if (err)
     {
       log_error ("pcsc_status failed: %s (0x%lx)\n",
@@ -1218,15 +1218,14 @@ pcsc_send_apdu_wrapped (int slot, unsigned char *apdu, size_t apdulen,
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  len = buf_to_size_t (msgbuf+1);
   if (msgbuf[0] != 0x81 || len < 4)
     {
       log_error ("invalid response header from PC/SC received\n");
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
-                       | (msgbuf[7] << 8 ) | msgbuf[8]);
+  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
   if (err)
     {
       log_error ("pcsc_transmit failed: %s (0x%lx)\n",
@@ -1359,15 +1358,14 @@ control_pcsc_wrapped (int slot, pcsc_dword_t ioctl_code,
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  len = buf32_to_size_t (msgbuf+1);
   if (msgbuf[0] != 0x81 || len < 4)
     {
       log_error ("invalid response header from PC/SC received\n");
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
-                       | (msgbuf[7] << 8 ) | msgbuf[8]);
+  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
   if (err)
     {
       log_error ("pcsc_control failed: %s (0x%lx)\n",
@@ -1497,15 +1495,14 @@ close_pcsc_reader_wrapped (int slot)
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  len = buf32_to_size_t (msgbuf+1);
   if (msgbuf[0] != 0x81 || len < 4)
     {
       log_error ("invalid response header from PC/SC received\n");
       goto command_failed;
     }
   len -= 4; /* Already read the error code. */
-  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
-                       | (msgbuf[7] << 8 ) | msgbuf[8]);
+  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
   if (err)
     log_error ("pcsc_close failed: %s (0x%lx)\n",
                pcsc_error_string (err), err);
@@ -1687,7 +1684,7 @@ reset_pcsc_reader_wrapped (int slot)
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  len = buf32_to_size_t (msgbuf+1);
   if (msgbuf[0] != 0x81 || len < 4)
     {
       log_error ("invalid response header from PC/SC received\n");
@@ -1701,8 +1698,7 @@ reset_pcsc_reader_wrapped (int slot)
       sw = SW_HOST_GENERAL_ERROR;
       goto command_failed;
     }
-  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
-                       | (msgbuf[7] << 8 ) | msgbuf[8]);
+  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
   if (err)
     {
       log_error ("PC/SC RESET failed: %s (0x%lx)\n",
@@ -1794,9 +1790,9 @@ pcsc_vendor_specific_init (int slot)
           if (l == 1)
             v = p[0];
           else if (l == 2)
-            v = ((p[0] << 8) | p[1]);
+            v = buf16_to_uint (p);
           else if (l == 4)
-            v = ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
+            v = buf32_to_uint (p);
 
           if (code == FEATURE_VERIFY_PIN_DIRECT)
             reader_table[slot].pcsc.verify_ioctl = v;
@@ -1855,9 +1851,9 @@ pcsc_vendor_specific_init (int slot)
       if (l == 1)
         v = p[0];
       else if (l == 2)
-        v = ((p[1] << 8) | p[0]);
+        v = buf16_to_uint (p);
       else if (l == 4)
-        v = ((p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0]);
+        v = buf32_to_uint (p);
 
       if (tag == PCSCv2_PART10_PROPERTY_bMinPINSize)
         reader_table[slot].pcsc.pinmin = v;
@@ -2151,7 +2147,7 @@ open_pcsc_reader_wrapped (const char *portstr)
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  len = (msgbuf[1] << 24) | (msgbuf[2] << 16) | (msgbuf[3] << 8 ) | msgbuf[4];
+  len = buf32_to_size_t (msgbuf+1);
   if (msgbuf[0] != 0x81 || len < 4)
     {
       log_error ("invalid response header from PC/SC received\n");
@@ -2164,9 +2160,7 @@ open_pcsc_reader_wrapped (const char *portstr)
                  (unsigned long)len);
       goto command_failed;
     }
-  err = PCSC_ERR_MASK ((msgbuf[5] << 24) | (msgbuf[6] << 16)
-                       | (msgbuf[7] << 8 ) | msgbuf[8]);
-
+  err = PCSC_ERR_MASK (buf32_to_ulong (msgbuf+5));
   if (err)
     {
       log_error ("PC/SC OPEN failed: %s\n", pcsc_error_string (err));

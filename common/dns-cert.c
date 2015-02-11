@@ -47,6 +47,7 @@
 #endif
 
 #include "util.h"
+#include "host2net.h"
 #include "dns-cert.h"
 
 /* Not every installation has gotten around to supporting CERTs
@@ -130,7 +131,7 @@ get_dns_cert (const char *name, estream_t *r_key,
       if (datalen < 5)
         continue;  /* Truncated CERT record - skip.  */
 
-      ctype = ((data[0] << 8) | data[1]);
+      ctype = buf16_to_uint (data);
       /* (key tag and algorithm fields are not required.) */
       data += 5;
       datalen -= 5;
@@ -262,12 +263,13 @@ get_dns_cert (const char *name, estream_t *r_key,
           if ((emsg - pt) < 15)
             break;
 
-          type = *pt++ << 8;
-          type |= *pt++;
+          type = buf16_to_u16 (pt);
+          pt += 2;
 
-          class = *pt++ << 8;
+          class = buf16_to_u16 (pt);
+          pt += 2;
           class |= *pt++;
-          /* We asked for IN and got something else !? */
+
           if (class != C_IN)
             break;
 
@@ -275,8 +277,8 @@ get_dns_cert (const char *name, estream_t *r_key,
           pt += 4;
 
           /* data length */
-          dlen = *pt++ << 8;
-          dlen |= *pt++;
+          dlen = buf16_to_u16 (pt);
+          pt += 2;
 
           /* We asked for CERT and got something else - might be a
              CNAME, so loop around again. */
@@ -287,8 +289,8 @@ get_dns_cert (const char *name, estream_t *r_key,
             }
 
           /* The CERT type */
-          ctype = *pt++ << 8;
-          ctype |= *pt++;
+          ctype = buf16_to_u16 (pt);
+          pt += 2;
 
           /* Skip the CERT key tag and algo which we don't need. */
           pt += 3;

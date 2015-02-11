@@ -34,6 +34,7 @@
 #include "options.h"
 #include "main.h"
 #include "i18n.h"
+#include "host2net.h"
 
 
 /* Maximum length of packets to avoid excessive memory allocation.  */
@@ -90,7 +91,7 @@ static unsigned short
 read_16 (IOBUF inp)
 {
   unsigned short a;
-  a = iobuf_get_noeof (inp) << 8;
+  a = (unsigned short)iobuf_get_noeof (inp) << 8;
   a |= iobuf_get_noeof (inp);
   return a;
 }
@@ -100,7 +101,7 @@ static unsigned long
 read_32 (IOBUF inp)
 {
   unsigned long a;
-  a = iobuf_get_noeof (inp) << 24;
+  a = (unsigned long)iobuf_get_noeof (inp) << 24;
   a |= iobuf_get_noeof (inp) << 16;
   a |= iobuf_get_noeof (inp) << 8;
   a |= iobuf_get_noeof (inp);
@@ -486,7 +487,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
         }
       else if (c == 255)
         {
-          pktlen = (hdr[hdrlen++] = iobuf_get_noeof (inp)) << 24;
+          pktlen = (unsigned long)(hdr[hdrlen++] = iobuf_get_noeof (inp)) << 24;
           pktlen |= (hdr[hdrlen++] = iobuf_get_noeof (inp)) << 16;
           pktlen |= (hdr[hdrlen++] = iobuf_get_noeof (inp)) << 8;
           if ((c = iobuf_get (inp)) == -1)
@@ -1132,14 +1133,14 @@ dump_sig_subpkt (int hashed, int type, int critical,
     case SIGSUBPKT_SIG_CREATED:
       if (length >= 4)
 	es_fprintf (listfp, "sig created %s",
-                    strtimestamp (buffer_to_u32 (buffer)));
+                    strtimestamp (buf32_to_u32 (buffer)));
       break;
     case SIGSUBPKT_SIG_EXPIRE:
       if (length >= 4)
 	{
-	  if (buffer_to_u32 (buffer))
+	  if (buf32_to_u32 (buffer))
 	    es_fprintf (listfp, "sig expires after %s",
-                        strtimevalue (buffer_to_u32 (buffer)));
+                        strtimevalue (buf32_to_u32 (buffer)));
 	  else
 	    es_fprintf (listfp, "sig does not expire");
 	}
@@ -1172,9 +1173,9 @@ dump_sig_subpkt (int hashed, int type, int critical,
     case SIGSUBPKT_KEY_EXPIRE:
       if (length >= 4)
 	{
-	  if (buffer_to_u32 (buffer))
+	  if (buf32_to_u32 (buffer))
 	    es_fprintf (listfp, "key expires after %s",
-                        strtimevalue (buffer_to_u32 (buffer)));
+                        strtimevalue (buf32_to_u32 (buffer)));
 	  else
 	    es_fprintf (listfp, "key does not expire");
 	}
@@ -1198,8 +1199,8 @@ dump_sig_subpkt (int hashed, int type, int critical,
     case SIGSUBPKT_ISSUER:
       if (length >= 8)
 	es_fprintf (listfp, "issuer key ID %08lX%08lX",
-                    (ulong) buffer_to_u32 (buffer),
-                    (ulong) buffer_to_u32 (buffer + 4));
+                    (ulong) buf32_to_u32 (buffer),
+                    (ulong) buf32_to_u32 (buffer + 4));
       break;
     case SIGSUBPKT_NOTATION:
       {
@@ -1461,8 +1462,7 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
 	{
 	  if (buflen < 4)
 	    goto too_short;
-	  n = (buffer[0] << 24) | (buffer[1] << 16)
-	    | (buffer[2] << 8) | buffer[3];
+	  n = buf32_to_size_t (buffer);
 	  buffer += 4;
 	  buflen -= 4;
 	}
@@ -1735,7 +1735,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_CREATED, NULL);
       if (p)
-	sig->timestamp = buffer_to_u32 (p);
+	sig->timestamp = buf32_to_u32 (p);
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
 	       && opt.verbose)
 	log_info ("signature packet without timestamp\n");
@@ -1743,16 +1743,16 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       p = parse_sig_subpkt2 (sig, SIGSUBPKT_ISSUER, NULL);
       if (p)
 	{
-	  sig->keyid[0] = buffer_to_u32 (p);
-	  sig->keyid[1] = buffer_to_u32 (p + 4);
+	  sig->keyid[0] = buf32_to_u32 (p);
+	  sig->keyid[1] = buf32_to_u32 (p + 4);
 	}
       else if (!(sig->pubkey_algo >= 100 && sig->pubkey_algo <= 110)
 	       && opt.verbose)
 	log_info ("signature packet without keyid\n");
 
       p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL);
-      if (p && buffer_to_u32 (p))
-	sig->expiredate = sig->timestamp + buffer_to_u32 (p);
+      if (p && buf32_to_u32 (p))
+	sig->expiredate = sig->timestamp + buf32_to_u32 (p);
       if (sig->expiredate && sig->expiredate <= make_timestamp ())
 	sig->flags.expired = 1;
 
@@ -2365,8 +2365,7 @@ parse_attribute_subpkts (PKT_user_id * uid)
 	{
 	  if (buflen < 4)
 	    goto too_short;
-	  n = (buffer[0] << 24) | (buffer[1] << 16)
-	    | (buffer[2] << 8) | buffer[3];
+	  n = buf32_to_size_t (buffer);
 	  buffer += 4;
 	  buflen -= 4;
 	}

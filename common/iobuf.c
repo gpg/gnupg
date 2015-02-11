@@ -871,7 +871,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		    }
 		  else if (c == 255)
 		    {
-		      a->size = iobuf_get (chain) << 24;
+		      a->size = (size_t)iobuf_get (chain) << 24;
 		      a->size |= iobuf_get (chain) << 16;
 		      a->size |= iobuf_get (chain) << 8;
 		      if ((c = iobuf_get (chain)) == -1)
@@ -1228,9 +1228,12 @@ iobuf_t
 iobuf_temp_with_content (const char *buffer, size_t length)
 {
   iobuf_t a;
+  int i;
 
   a = iobuf_alloc (3, length);
-  memcpy (a->d.buf, buffer, length);
+  /* memcpy (a->d.buf, buffer, length); */
+  for (i=0; i < length; i++)
+    a->d.buf[i] = buffer[i];
   a->d.len = length;
 
   return a;

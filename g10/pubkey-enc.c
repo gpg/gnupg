@@ -35,6 +35,7 @@
 #include "i18n.h"
 #include "pkglue.h"
 #include "call-agent.h"
+#include "host2net.h"
 
 
 static gpg_error_t get_it (PKT_pubkey_enc *k,
@@ -321,8 +322,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     }
 
   /* Copy the key to DEK and compare the checksum.  */
-  csum = frame[nframe - 2] << 8;
-  csum |= frame[nframe - 1];
+  csum = buf16_to_u16 (frame+nframe-2);
   memcpy (dek->key, frame + n, dek->keylen);
   for (csum2 = 0, n = 0; n < dek->keylen; n++)
     csum2 += dek->key[n];
