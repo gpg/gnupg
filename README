@@ -145,9 +145,9 @@
   enter "make pdf" For a HTML version enter "make html" and point your
   browser to gnupg.html/index.html.  Standard man pages for all
   components are provided as well.  An online version of the manual is
-  available at http://www.gnupg.org/documentation/manuals/gnupg/ .  A
+  available at [[https://gnupg.org/documentation/manuals/gnupg/]] .  A
   version of the manual pertaining to the current development snapshot
-  is at http://www.gnupg.org/documentation/manuals/gnupg-devel/ .
+  is at [[https://gnupg.org/documentation/manuals/gnupg-devel/]] .
 
 
 * GnuPG 1.4 and GnuPG 2.0
@@ -172,7 +172,7 @@
              or using TOR "http://ic6au7wa3f6naxjq.onion"
   The primary FTP site is "ftp://ftp.gnupg.org/gcrypt/"
 
-  See https://www.gnupg.org/download/mirrors.html for a list of
+  See [[https://gnupg.org/download/mirrors.html]] for a list of
   mirrors and use them if possible.  You may also find GnuPG mirrored
   on some of the regular GNU mirrors.
 
