@@ -345,6 +345,9 @@ msgstr "не позволять клиентам помечать ключи к�
 msgid "allow presetting passphrase"
 msgstr "разрешить предустанавливать фразу-пароль"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "включить поддержку ssh"
 

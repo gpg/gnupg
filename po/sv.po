@@ -386,6 +386,9 @@ msgstr "tillåt klienter att markera nycklar som \"trusted\""
 msgid "allow presetting passphrase"
 msgstr "tillåt förinställning av lösenfras"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"

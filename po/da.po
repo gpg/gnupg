@@ -372,6 +372,9 @@ msgstr "tillad klienter at markere nøgler som »trusted« (troværdige)"
 msgid "allow presetting passphrase"
 msgstr "tillad forhåndsindstilling af adgangsfrase"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"

@@ -342,6 +342,9 @@ msgstr "ne pas marquer les clefs comme de confiance"
 msgid "allow presetting passphrase"
 msgstr "permettre de préconfigurer la phrase secrète"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "activer la prise en charge de SSH"
 

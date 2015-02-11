@@ -350,6 +350,9 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "kesalahan penciptaan passphrase: %s\n"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"

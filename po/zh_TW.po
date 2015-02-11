@@ -327,6 +327,9 @@ msgstr "不允許用戶端將金鑰標記為 \"已信任\""
 msgid "allow presetting passphrase"
 msgstr "允許預先設定密語"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "啟用 ssh 支援"
 

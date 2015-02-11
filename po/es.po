@@ -386,6 +386,9 @@ msgstr "permitir que los clientes marquen claves como \"fiables\""
 msgid "allow presetting passphrase"
 msgstr "permitir preestablecer frase contraseña"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"

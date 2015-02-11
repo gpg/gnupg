@@ -370,6 +370,9 @@ msgstr ""
 msgid "allow presetting passphrase"
 msgstr "error en la creació de la contrasenya: %s\n"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 # Gènere?  Nombre?  ivb
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm

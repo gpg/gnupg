@@ -7,10 +7,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.10rc1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2008-12-14 23:25+0200\n"
+"PO-Revision-Date: 2015-02-11 19:18+0100\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish\n"
-"Language: \n"
+"Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -360,6 +360,9 @@ msgstr "istemcilerin anahtarları \"güvenilir\" olarak imlemesine izin verilir"
 
 msgid "allow presetting passphrase"
 msgstr "anahtar parolasının önceden atanmasına izin verilir"
+
+msgid "allow caller to override the pinentry"
+msgstr ""
 
 #, fuzzy
 #| msgid "enable ssh-agent emulation"

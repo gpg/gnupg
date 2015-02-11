@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2002-09-13 18:26+0100\n"
+"PO-Revision-Date: 2015-02-11 19:17+0100\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
-"Language: \n"
+"Language: pt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -347,6 +347,9 @@ msgstr ""
 #, fuzzy
 msgid "allow presetting passphrase"
 msgstr "erro na criação da frase secreta: %s\n"
+
+msgid "allow caller to override the pinentry"
+msgstr ""
 
 #, fuzzy
 #| msgid "not supported"

@@ -361,6 +361,9 @@ msgstr "nedovolit klientům označovat klíče za „důvěryhodné“"
 msgid "allow presetting passphrase"
 msgstr "umožnit přednastavení hesla"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "zapnout podporu pro OpenSSH"
 

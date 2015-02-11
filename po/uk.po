@@ -338,6 +338,9 @@ msgstr "заборонити клієнтам позначати ключі як
 msgid "allow presetting passphrase"
 msgstr "дозволити попереднє встановлення пароля"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "увімкнути підтримку ssh"
 

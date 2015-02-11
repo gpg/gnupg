@@ -363,6 +363,9 @@ msgstr "zezwolenie klientom na oznaczanie kluczy jako \"zaufanych\""
 msgid "allow presetting passphrase"
 msgstr "zezwolenie na predefiniowane has³o"
 
+msgid "allow caller to override the pinentry"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr ""
 
