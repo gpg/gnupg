@@ -364,6 +364,7 @@ my_ksba_hash_buffer (void *arg, const char *oid,
 
 
 /* GNUTLS log function callback.  */
+#ifdef HTTP_USE_GNUTLS
 static void
 my_gnutls_log (int level, const char *text)
 {
@@ -375,7 +376,7 @@ my_gnutls_log (int level, const char *text)
 
   log_debug ("gnutls:L%d: %.*s\n", level, n, text);
 }
-
+#endif /*HTTP_USE_GNUTLS*/
 
 /* Setup the debugging.  With a LEVEL of NULL only the active debug
    flags are propagated to the subsystems.  With LEVEL set, a specific
