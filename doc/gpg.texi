@@ -376,7 +376,7 @@ useful for debugging.
 Present a menu to work with a smartcard. The subcommand "help" provides
 an overview on available commands. For a detailed description, please
 see the Card HOWTO at
-http://www.gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
+https://gnupg.org/documentation/howtos.html#GnuPG-cardHOWTO .
 
 @item --card-status
 @opindex card-status

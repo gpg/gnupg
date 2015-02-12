@@ -105,7 +105,7 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		log_info(_("WARNING: signing subkey %s is not"
 			   " cross-certified\n"),keystr_from_pk(pk));
 		log_info(_("please see %s for more information\n"),
-			 "http://www.gnupg.org/faq/subkey-cross-certify.html");
+			 "https://gnupg.org/faq/subkey-cross-certify.html");
 		/* --require-cross-certification makes this warning an
                      error.  TODO: change the default to require this
                      after more keys have backsigs. */
