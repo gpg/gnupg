@@ -35,6 +35,14 @@
 #include "main.h"
 #include "i18n.h"
 
+
+/* Maximum length of packets to avoid excessive memory allocation.  */
+#define MAX_KEY_PACKET_LENGTH     (256 * 1024)
+#define MAX_UID_PACKET_LENGTH     (  2 * 1024)
+#define MAX_COMMENT_PACKET_LENGTH ( 64 * 1024)
+#define MAX_ATTR_PACKET_LENGTH    ( 16 * 1024*1024)
+
+
 static int mpi_print_mode;
 static int list_mode;
 static FILE *listfp;
@@ -1741,6 +1749,13 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
         rc = gpg_error (GPG_ERR_INV_PACKET);
 	goto leave;
     }
+    else if (pktlen > MAX_KEY_PACKET_LENGTH) {
+        log_error ("packet(%d) too large\n", pkttype);
+        if (list_mode)
+            fputs (":key packet: [too large]\n", listfp);
+        rc = gpg_error (GPG_ERR_INV_PACKET);
+        goto leave;
+    }
 
     timestamp = read_32(inp); pktlen -= 4;
     if( is_v4 ) {
@@ -2158,7 +2173,7 @@ parse_user_id( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
        allocatable, and a very large pktlen could actually cause our
        allocation to wrap around in xmalloc to a small number. */
 
-    if (pktlen > 2048)
+    if (pktlen > MAX_UID_PACKET_LENGTH)
       {
 	log_error ("packet(%d) too large\n", pkttype);
 	iobuf_skip_rest(inp, pktlen, 0);
@@ -2232,7 +2247,7 @@ parse_attribute( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
     /* We better cap the size of an attribute packet to make DoS not
        too easy.  16MB should be more then enough for one attribute
        packet (ie. a photo).  */
-    if (pktlen > 16*1024*1024) {
+    if (pktlen > MAX_ATTR_PACKET_LENGTH) {
         log_error ("packet(%d) too large\n", pkttype);
         if (list_mode)
           fprintf (listfp, ":attribute packet: [too large]\n");
@@ -2274,7 +2289,7 @@ parse_comment( IOBUF inp, int pkttype, unsigned long pktlen, PACKET *packet )
        overflow in the malloc below.  Comment packets are actually not
        anymore define my OpenPGP and we even stopped to use our
        private comment packet. */
-    if (pktlen>65536)
+    if (pktlen > MAX_COMMENT_PACKET_LENGTH)
       {
 	log_error ("packet(%d) too large\n", pkttype);
 	iobuf_skip_rest (inp, pktlen, 0);
