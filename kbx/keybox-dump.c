@@ -25,6 +25,7 @@
 
 #include "keybox-defs.h"
 #include <gcrypt.h>
+#include "../include/host2net.h"
 
 /* Argg, we can't include ../common/util.h */
 char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
@@ -33,21 +34,13 @@ char *bin2hexcolon (const void *buffer, size_t length, char *stringbuf);
 static ulong
 get32 (const byte *buffer)
 {
-  ulong a;
-  a =  *buffer << 24;
-  a |= buffer[1] << 16;
-  a |= buffer[2] << 8;
-  a |= buffer[3];
-  return a;
+  return buf32_to_ulong (buffer);
 }
 
 static ulong
 get16 (const byte *buffer)
 {
-  ulong a;
-  a =  *buffer << 8;
-  a |= buffer[1];
-  return a;
+  return buf16_to_ulong (buffer);
 }
 
 void
@@ -93,9 +86,9 @@ dump_header_blob (const byte *buffer, size_t length, FILE *fp)
   if ( memcmp (buffer+8, "KBXf", 4))
     fprintf (fp, "[Error: invalid magic number]\n");
 
-  n = get32 (buffer+16); 
+  n = get32 (buffer+16);
   fprintf( fp, "created-at: %lu\n", n );
-  n = get32 (buffer+20); 
+  n = get32 (buffer+20);
   fprintf( fp, "last-maint: %lu\n", n );
 
   return 0;
@@ -117,7 +110,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   const byte *p;
 
   buffer = _keybox_get_blob_image (blob, &length);
-  
+
   if (length < 32)
     {
       fprintf (fp, "[blob too short]\n");
@@ -125,7 +118,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
     }
 
   n = get32( buffer );
-  if (n > length) 
+  if (n > length)
     fprintf (fp, "[blob larger than length - output truncated]\n");
   else
     length = n;  /* ignore the rest */
@@ -159,7 +152,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       fprintf (fp, "[blob too short]\n");
       return -1;
     }
-  
+
   n = get16 (buffer + 6);
   fprintf( fp, "Blob-Flags: %04lX", n);
   if (n)
@@ -188,7 +181,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
 
   fprintf( fp, "Data-Offset: %lu\n", rawdata_off );
   fprintf( fp, "Data-Length: %lu\n", rawdata_len );
-  if (rawdata_off > length || rawdata_len > length 
+  if (rawdata_off > length || rawdata_len > length
       || rawdata_off+rawdata_off > length)
     fprintf (fp, "[Error: raw data larger than blob]\n");
 
@@ -207,7 +200,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
     {
       int i;
       ulong kidoff, kflags;
-    
+
       fprintf (fp, "Key-Fpr[%lu]: ", n );
       for (i=0; i < 20; i++ )
         fprintf (fp, "%02X", p[i]);
@@ -220,7 +213,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
       kflags = get16 (p + 24 );
       fprintf( fp, "\nKey-Flags[%lu]: %04lX\n", n, kflags);
     }
-  
+
   /* serial number */
   fputs ("Serial-No: ", fp);
   nserial = get16 (p);
@@ -244,7 +237,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   for (n=0; n < nuids; n++, p += uidinfolen)
     {
       ulong uidoff, uidlen, uflags;
-      
+
       uidoff = get32( p );
       uidlen = get32( p+4 );
       if (type == BLOBTYPE_X509 && !n)
@@ -284,7 +277,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
           fprintf (fp, "Uid-Validity[%lu]: %d\n", n, p[10] );
         }
     }
-  
+
   nsigs = get16 (p);
   fprintf (fp, "Sig-Count: %lu\n", nsigs );
   siginfolen = get16 (p + 2);
@@ -294,7 +287,7 @@ _keybox_dump_blob (KEYBOXBLOB blob, FILE *fp)
   for (n=0; n < nsigs; n++, p += siginfolen)
     {
       ulong sflags;
-    
+
       sflags = get32 (p);
       fprintf (fp, "Sig-Expire[%lu]: ", n );
       if (!sflags)
@@ -341,11 +334,11 @@ hash_blob_rawdata (KEYBOXBLOB blob, unsigned char *digest)
   ulong rawdata_off, rawdata_len;
 
   buffer = _keybox_get_blob_image (blob, &length);
-  
+
   if (length < 32)
     return -1;
   n = get32 (buffer);
-  if (n < length) 
+  if (n < length)
     length = n;  /* Blob larger than length in header - ignore the rest. */
 
   type = buffer[4];
@@ -364,11 +357,11 @@ hash_blob_rawdata (KEYBOXBLOB blob, unsigned char *digest)
 
   if (length < 40)
     return -1;
-  
+
   rawdata_off = get32 (buffer + 8);
   rawdata_len = get32 (buffer + 12);
 
-  if (rawdata_off > length || rawdata_len > length 
+  if (rawdata_off > length || rawdata_len > length
       || rawdata_off+rawdata_off > length)
     return -1; /* Out of bounds.  */
 
@@ -408,7 +401,7 @@ update_stats (KEYBOXBLOB blob, struct file_stats_s *s)
     }
 
   n = get32( buffer );
-  if (n > length) 
+  if (n > length)
     s->too_large_blobs++;
   else
     length = n;  /* ignore the rest */
@@ -439,7 +432,7 @@ update_stats (KEYBOXBLOB blob, struct file_stats_s *s)
       s->too_short_blobs++;
       return -1;
     }
-  
+
   n = get16 (buffer + 6);
   if (n)
     {
@@ -512,13 +505,13 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
     rc = 0;
   if (rc)
     fprintf (outfp, "error reading `%s': %s\n", filename, gpg_strerror (rc));
-  
+
   if (fp != stdin)
     fclose (fp);
 
   if (stats_only)
     {
-      fprintf (outfp, 
+      fprintf (outfp,
                "Total number of blobs: %8lu\n"
                "               header: %8lu\n"
                "                empty: %8lu\n"
@@ -551,9 +544,9 @@ _keybox_dump_file (const char *filename, int stats_only, FILE *outfp)
 
 
 
-struct dupitem_s 
+struct dupitem_s
 {
-  unsigned long recno; 
+  unsigned long recno;
   unsigned char digest[20];
 };
 
@@ -563,7 +556,7 @@ cmp_dupitems (const void *arg_a, const void *arg_b)
 {
   struct dupitem_s *a = (struct dupitem_s *)arg_a;
   struct dupitem_s *b = (struct dupitem_s *)arg_b;
-  
+
   return memcmp (a->digest, b->digest, 20);
 }
 
@@ -581,7 +574,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
   char fprbuf[3*20+1];
 
   (void)print_them;
-  
+
   memset (zerodigest, 0, sizeof zerodigest);
 
   if (!(fp = open_file (&filename, outfp)))
@@ -601,7 +594,7 @@ _keybox_dump_find_dups (const char *filename, int print_them, FILE *outfp)
   while ( !(rc = _keybox_read_blob (&blob, fp)) )
     {
       unsigned char digest[20];
-      
+
       if (hash_blob_rawdata (blob, digest))
         fprintf (outfp, "error in blob %ld of `%s'\n", recno, filename);
       else if (memcmp (digest, zerodigest, 20))
@@ -668,7 +661,7 @@ _keybox_dump_cut_records (const char *filename, unsigned long from,
   KEYBOXBLOB blob;
   int rc;
   unsigned long recno = 0;
-  
+
   if (!(fp = open_file (&filename, stderr)))
     return gpg_error_from_syserror ();
 

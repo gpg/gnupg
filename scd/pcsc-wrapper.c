@@ -273,7 +273,7 @@ read_32 (FILE *fp)
       fprintf (stderr, PGM ": premature EOF while parsing request\n");
       exit (1);
     }
-  return (c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
+  return ((unsigned long)c1 << 24) | (c2 << 16) | (c3 << 8) | c4;
 }
 
 
@@ -760,7 +760,8 @@ handle_control (unsigned char *argbuf, size_t arglen)
   if (arglen < 4)
     bad_request ("CONTROL");
 
-  ioctl_code = (argbuf[0] << 24) | (argbuf[1] << 16) | (argbuf[2] << 8) | argbuf[3];
+  ioctl_code = (((pcsc_dword_t)argbuf[0] << 24)
+                | (argbuf[1] << 16) | (argbuf[2] << 8) | argbuf[3]);
   argbuf += 4;
   arglen -= 4;
 

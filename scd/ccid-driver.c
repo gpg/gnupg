@@ -94,6 +94,7 @@
 #include "scdaemon.h"
 #include "iso7816.h"
 #include "ccid-driver.h"
+#include "../include/host2net.h"
 
 #define DRVNAME "ccid-driver: "
 
@@ -317,7 +318,7 @@ static int send_escape_cmd (ccid_driver_t handle, const unsigned char *data,
 static unsigned int
 convert_le_u32 (const unsigned char *buf)
 {
-  return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
+  return buf[0] | (buf[1] << 8) | (buf[2] << 16) | ((unsigned int)buf[3] << 24);
 }
 
 

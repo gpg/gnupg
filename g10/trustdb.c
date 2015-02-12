@@ -1629,7 +1629,7 @@ mark_usable_uid_certs (KBNODE keyblock, KBNODE uidnode,
           u32 expire;
 
           p = parse_sig_subpkt (sig->hashed, SIGSUBPKT_SIG_EXPIRE, NULL );
-          expire = p? sig->timestamp + buffer_to_u32(p) : 0;
+          expire = p? sig->timestamp + buf32_to_u32 (p) : 0;
 
           if (expire==0 || expire > curtime )
             {

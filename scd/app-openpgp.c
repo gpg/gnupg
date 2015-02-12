@@ -66,6 +66,7 @@
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
+#include "../include/host2net.h"
 
 
 /* A table describing the DOs of the card.  */
@@ -805,7 +806,7 @@ send_fprtime_if_not_null (ctrl_t ctrl, const char *keyword,
   char numbuf1[50], numbuf2[50];
   unsigned long value;
 
-  value = (stamp[0] << 24) | (stamp[1]<<16) | (stamp[2]<<8) | stamp[3];
+  value = buf32_to_ulong (stamp);
   if (!value)
     return;
   sprintf (numbuf1, "%d", number);

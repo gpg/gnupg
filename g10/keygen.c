@@ -42,6 +42,7 @@
 #include "i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
+#include "host2net.h"
 
 /* The default algorithms.  If you change them remember to change them
    also in gpg.c:gpgconf_list.  You should also check that the value
@@ -849,10 +850,7 @@ make_backsig (PKT_signature *sig,PKT_public_key *pk,
 		}
 	      else if(buf[1]==255)
 		{
-		  pktlen =buf[2] << 24;
-		  pktlen|=buf[3] << 16;
-		  pktlen|=buf[4] << 8;
-		  pktlen|=buf[5];
+                  pktlen = buf32_to_size_t (buf+2);
 		  buf+=6;
 		}
 	      else
@@ -869,14 +867,14 @@ make_backsig (PKT_signature *sig,PKT_public_key *pk,
 		  break;
 
 		case 2:
-		  pktlen =buf[mark++] << 24;
-		  pktlen|=buf[mark++] << 16;
+		  pktlen  = (size_t)buf[mark++] << 24;
+		  pktlen |= buf[mark++] << 16;
 
 		case 1:
-		  pktlen|=buf[mark++] << 8;
+		  pktlen |= buf[mark++] << 8;
 
 		case 0:
-		  pktlen|=buf[mark++];
+		  pktlen |= buf[mark++];
 		}
 
 	      buf+=mark;

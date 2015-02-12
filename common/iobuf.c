@@ -42,6 +42,7 @@
 
 #include "util.h"
 #include "sysutils.h"
+#include "../include/host2net.h"
 #include "iobuf.h"
 
 /*-- Begin configurable part.  --*/
@@ -872,7 +873,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 		    }
 		  else if (c == 255)
 		    {
-		      a->size = iobuf_get (chain) << 24;
+		      a->size = (size_t)iobuf_get (chain) << 24;
 		      a->size |= iobuf_get (chain) << 16;
 		      a->size |= iobuf_get (chain) << 8;
 		      if ((c = iobuf_get (chain)) == -1)
