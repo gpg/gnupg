@@ -1851,9 +1851,9 @@ pcsc_vendor_specific_init (int slot)
       if (l == 1)
         v = p[0];
       else if (l == 2)
-        v = buf16_to_uint (p);
+        v = (((unsigned int)p[1] << 8) | p[0]);
       else if (l == 4)
-        v = buf32_to_uint (p);
+        v = (((unsigned int)p[3] << 24) | (p[2] << 16) | (p[1] << 8) | p[0]);
 
       if (tag == PCSCv2_PART10_PROPERTY_bMinPINSize)
         reader_table[slot].pcsc.pinmin = v;
