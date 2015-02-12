@@ -1,5 +1,5 @@
 /* dotlock.c - dotfile locking
- * Copyright (C) 1998, 2000, 2001, 2003, 2004, 
+ * Copyright (C) 1998, 2000, 2001, 2003, 2004,
  *               2005, 2006, 2008 Free Software Foundation, Inc.
  *
  * This file is part of JNLIB.
@@ -58,7 +58,7 @@
 
 
 /* The object describing a lock.  */
-struct dotlock_handle 
+struct dotlock_handle
 {
   struct dotlock_handle *next;
   char *lockname;      /* Name of the actual lockfile.          */
@@ -109,7 +109,7 @@ disable_dotlock(void)
    Calling this function with NULL does only install the atexit
    handler and may thus be used to assure that the cleanup is called
    after all other atexit handlers.
-  
+
    This function creates a lock file in the same directory as
    FILE_TO_LOCK using that name and a suffix of ".lock".  Note that on
    POSIX systems a temporary file ".#lk.<hostname>.pid[.threadid] is
@@ -171,7 +171,7 @@ create_dotlock (const char *file_to_lock)
     nodename = "unknown";
   else
     nodename = utsbuf.nodename;
-  
+
 #ifdef __riscos__
   {
     char *iter = (char *) nodename;
@@ -220,15 +220,15 @@ create_dotlock (const char *file_to_lock)
             "%s/%d", nodename, (int)getpid () );
 #endif /* __riscos__ */
 
-  do 
+  do
     {
       errno = 0;
       fd = open (h->tname, O_WRONLY|O_CREAT|O_EXCL,
                  S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
-    } 
+    }
   while (fd == -1 && errno == EINTR);
 
-  if ( fd == -1 ) 
+  if ( fd == -1 )
     {
       all_lockfiles = h->next;
       log_error (_("failed to create temporary file `%s': %s\n"),
@@ -244,7 +244,12 @@ create_dotlock (const char *file_to_lock)
   if ( write (fd, "\n", 1 ) != 1 )
     goto write_failed;
   if ( close (fd) )
-    goto write_failed;
+    {
+      if ( errno == EINTR )
+        fd = -1;
+      goto write_failed;
+    }
+  fd = -1;
 
 # ifdef _REENTRANT
   /* release mutex */
@@ -267,7 +272,8 @@ create_dotlock (const char *file_to_lock)
   /* fixme: release mutex */
 # endif
   log_error ( _("error writing to `%s': %s\n"), h->tname, strerror(errno) );
-  close (fd);
+  if (fd != -1)
+    close (fd);
   unlink (h->tname);
   jnlib_free (h->tname);
   jnlib_free (h);
@@ -300,7 +306,7 @@ create_dotlock (const char *file_to_lock)
      reasons why a lock file can't be created and thus the process
      would not stop as expected but spin til until Windows crashes.
      Our solution is to keep the lock file open; that does not
-     harm. */ 
+     harm. */
   h->lockhd = CreateFile (h->lockname,
                           GENERIC_READ|GENERIC_WRITE,
                           FILE_SHARE_READ|FILE_SHARE_WRITE,
@@ -339,7 +345,7 @@ destroy_dotlock ( DOTLOCK h )
         h->next = NULL;
         break;
       }
-  
+
   /* Then destroy the lock. */
   if (!h->disable)
     {
@@ -395,7 +401,7 @@ make_dotlock ( DOTLOCK h, long timeout )
   if ( h->disable )
     return 0; /* Locks are completely disabled.  Return success. */
 
-  if ( h->locked ) 
+  if ( h->locked )
     {
 #ifndef __riscos__
       log_debug ("Oops, `%s' is already locked\n", h->lockname);
@@ -419,19 +425,19 @@ make_dotlock ( DOTLOCK h, long timeout )
           return -1;
 	}
 # else /* __riscos__ */
-      if ( !renamefile(h->tname, h->lockname) ) 
+      if ( !renamefile(h->tname, h->lockname) )
         {
           h->locked = 1;
           return 0; /* okay */
         }
-      if ( errno != EEXIST ) 
+      if ( errno != EEXIST )
         {
           log_error( "lock not made: rename() failed: %s\n", strerror(errno) );
           return -1;
         }
 # endif /* __riscos__ */
 
-      if ( (pid = read_lockfile (h, &same_node)) == -1 ) 
+      if ( (pid = read_lockfile (h, &same_node)) == -1 )
         {
           if ( errno != ENOENT )
             {
@@ -461,11 +467,11 @@ make_dotlock ( DOTLOCK h, long timeout )
 # endif /* __riscos__ */
 	}
 
-      if ( timeout == -1 ) 
+      if ( timeout == -1 )
         {
           /* Wait until lock has been released. */
           struct timeval tv;
-          
+
           log_info (_("waiting for lock (held by %d%s) %s...\n"),
                     pid, maybe_dead, maybe_deadlock(h)? _("(deadlock?) "):"");
 
@@ -495,7 +501,7 @@ make_dotlock ( DOTLOCK h, long timeout )
           return -1;
         }
 
-      if ( timeout == -1 ) 
+      if ( timeout == -1 )
         {
           /* Wait until lock has been released. */
           log_info (_("waiting for lock %s...\n"), h->lockname);
@@ -545,7 +551,7 @@ release_dotlock( DOTLOCK h )
 #else
 
   pid = read_lockfile (h, &same_node);
-  if ( pid == -1 ) 
+  if ( pid == -1 )
     {
       log_error( "release_dotlock: lockfile error\n");
       return -1;
@@ -566,7 +572,7 @@ release_dotlock( DOTLOCK h )
   /* Fixme: As an extra check we could check whether the link count is
      now really at 1. */
 #else /* __riscos__ */
-  if ( renamefile (h->lockname, h->tname) ) 
+  if ( renamefile (h->lockname, h->tname) )
     {
       log_error ("release_dotlock: error renaming lockfile `%s' to `%s'\n",
                  h->lockname, h->tname);
@@ -594,7 +600,7 @@ read_lockfile (DOTLOCK h, int *same_node )
   char *buffer, *p;
   size_t expected_len;
   int res, nread;
-  
+
   *same_node = 0;
   expected_len = 10 + 1 + h->nodename_len + 1;
   if ( expected_len >= sizeof buffer_space)
@@ -627,7 +633,7 @@ read_lockfile (DOTLOCK h, int *same_node )
       if (res < 0)
         {
           log_info ("error reading lockfile `%s'", h->lockname );
-          close (fd); 
+          close (fd);
           if (buffer != buffer_space)
             jnlib_free (buffer);
           errno = 0; /* Do not return an inappropriate ERRNO. */
@@ -651,7 +657,7 @@ read_lockfile (DOTLOCK h, int *same_node )
   if (buffer[10] != '\n'
       || (buffer[10] = 0, pid = atoi (buffer)) == -1
 #ifndef __riscos__
-      || !pid 
+      || !pid
 #else /* __riscos__ */
       || (!pid && riscos_getpid())
 #endif /* __riscos__ */
@@ -665,7 +671,7 @@ read_lockfile (DOTLOCK h, int *same_node )
     }
 
   if (nread == expected_len
-      && !memcmp (h->tname+h->nodename_off, buffer+11, h->nodename_len) 
+      && !memcmp (h->tname+h->nodename_off, buffer+11, h->nodename_len)
       && buffer[11+h->nodename_len] == '\n')
     *same_node = 1;
 
@@ -683,10 +689,10 @@ void
 dotlock_remove_lockfiles()
 {
   DOTLOCK h, h2;
-  
+
   h = all_lockfiles;
   all_lockfiles = NULL;
-    
+
   while ( h )
     {
       h2 = h->next;
