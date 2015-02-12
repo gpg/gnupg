@@ -220,7 +220,8 @@ write_fake_data (IOBUF out, gcry_mpi_t a)
       void *p;
 
       p = gcry_mpi_get_opaque ( a, &n );
-      iobuf_write (out, p, (n+7)/8 );
+      if (p)
+        iobuf_write (out, p, (n+7)/8 );
     }
 }
 
