@@ -112,6 +112,12 @@ init_ks_options(void)
 {
   struct ks_options *opt;
 
+#ifndef HAVE_LIBCURL
+  /* Without cURL we use our own HTTP module which uses our logging
+     subsystem.  Thus we need to init that.  */
+  log_set_prefix ("gpgkeys", JNLIB_LOG_WITH_PREFIX);
+#endif /*!HAVE_LIBCURL*/
+
   opt=calloc(1,sizeof(struct ks_options));
 
   if(opt)
