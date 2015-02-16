@@ -4,14 +4,14 @@
 #              !-- no such user (2011-01-11)
 # Thanks Pawel I. Shajdo <pshajdo@gmail.com>.
 # Thanks Cmecb for the inspiration.
-# Ineiev <ineiev@gnu.org>, 2014
+# Ineiev <ineiev@gnu.org>, 2014, 2015
 #
 # Designated-Translator: none
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-12-12 17:16+0000\n"
+"PO-Revision-Date: 2015-02-12 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -128,7 +128,7 @@ msgstr "на карте нет основного аутентификацион
 
 #, c-format
 msgid "no suitable card key found: %s\n"
-msgstr "в карте не найдено подходящего ключа: %s\n"
+msgstr "на карте не найдено подходящего ключа: %s\n"
 
 #, c-format
 msgid "shadowing the key failed: %s\n"
@@ -346,7 +346,7 @@ msgid "allow presetting passphrase"
 msgstr "разрешить предустанавливать фразу-пароль"
 
 msgid "allow caller to override the pinentry"
-msgstr ""
+msgstr "разрешить клиентам замещать собой pinentry"
 
 msgid "enable ssh support"
 msgstr "включить поддержку ssh"
@@ -1041,13 +1041,13 @@ msgid "armor: %s\n"
 msgstr "текстовый формат: %s\n"
 
 msgid "invalid armor header: "
-msgstr "неправильный текстовый заголовок: "
+msgstr "недопустимый текстовый заголовок: "
 
 msgid "armor header: "
 msgstr "текстовый заголовок: "
 
 msgid "invalid clearsig header\n"
-msgstr "неправильный заголовок текстовой подписи\n"
+msgstr "недопустимый заголовок текстовой подписи\n"
 
 msgid "unknown armor header: "
 msgstr "неизвестный текстовый заголовок: "
@@ -1059,7 +1059,7 @@ msgid "unexpected armor: "
 msgstr "неожиданный текстовый формат: "
 
 msgid "invalid dash escaped line: "
-msgstr "неправильная строка, выделенная дефисами: "
+msgstr "недопустимая строка, выделенная дефисами: "
 
 #, c-format
 msgid "invalid radix64 character %02X skipped\n"
@@ -1089,7 +1089,7 @@ msgstr "не найдено данных формата OpenPGP.\n"
 
 #, c-format
 msgid "invalid armor: line longer than %d characters\n"
-msgstr "неправильный текстовый формат: строка длиннее %d символов\n"
+msgstr "недопустимый текстовый формат: строка длиннее %d символов\n"
 
 msgid ""
 "quoted printable character in armor - probably a buggy MTA has been used\n"
@@ -1136,7 +1136,7 @@ msgid "OpenPGP card no. %s detected\n"
 msgstr "Обнаружена карта OpenPGP номер %s\n"
 
 msgid "can't do this in batch mode\n"
-msgstr "невозможно сделать это в пакетном режиме\n"
+msgstr "в пакетном режиме это действие невозможно\n"
 
 msgid "This command is only available for version 2 cards\n"
 msgstr "Эта команда доступна только для карт версии 2.\n"
@@ -1160,13 +1160,13 @@ msgid "unspecified"
 msgstr "не указан"
 
 msgid "not forced"
-msgstr "не принудительно"
+msgstr "не принудительный"
 
 msgid "forced"
-msgstr "принудительно"
+msgstr "принудительный"
 
 msgid "Error: Only plain ASCII is currently allowed.\n"
-msgstr "Ошибка: Допустим только чистый ASCII.\n"
+msgstr "Ошибка: Допустим только простой текст ASCII.\n"
 
 msgid "Error: The \"<\" character may not be used.\n"
 msgstr "Ошибка: Нельзя использовать символ \"<\".\n"
@@ -1204,7 +1204,7 @@ msgid "error writing '%s': %s\n"
 msgstr "ошибка записи '%s': %s\n"
 
 msgid "Login data (account name): "
-msgstr "Учетная запись (имя):"
+msgstr "Учетная запись (имя): "
 
 #, c-format
 msgid "Error: Login data too long (limit is %d characters).\n"
@@ -1237,7 +1237,7 @@ msgid "CA fingerprint: "
 msgstr "отпечаток удостоверяющего центра: "
 
 msgid "Error: invalid formatted fingerprint.\n"
-msgstr "Ошибка: неправильный формат отпечатка.\n"
+msgstr "Ошибка: недопустимый формат отпечатка.\n"
 
 #, c-format
 msgid "key operation not possible: %s\n"
@@ -1291,7 +1291,7 @@ msgid "error changing size of key %d to %u bits: %s\n"
 msgstr "ошибка изменения размера ключа %d до %u бит: %s\n"
 
 msgid "Make off-card backup of encryption key? (Y/n) "
-msgstr "Сделать вне карты архивную копию ключа шифрования? (Y/n)"
+msgstr "Сделать вне карты архивную копию ключа шифрования? (Y/n) "
 
 msgid "Note: keys are already stored on the card!\n"
 msgstr "Замечание: ключи уже хранятся на карте!\n"
@@ -1331,23 +1331,17 @@ msgstr "Выберите, где хранить ключ:\n"
 msgid "KEYTOCARD failed: %s\n"
 msgstr "сбой записи ключа на карту: %s\n"
 
-#, fuzzy
-#| msgid "This command is not allowed while in %s mode.\n"
 msgid "This command is not supported by this card\n"
-msgstr "Данная команда в режиме %s недопустима.\n"
+msgstr "Данная команда этой картой не поддерживается.\n"
 
-#, fuzzy
-#| msgid "Note: keys are already stored on the card!\n"
 msgid "Note: This command destroys all keys stored on the card!\n"
-msgstr "Замечание: ключи уже хранятся на карте!\n"
+msgstr "Замечание: эта команда сотрет с карты все ключи!\n"
 
-#, fuzzy
-#| msgid "Continue? (Y/n) "
 msgid "Continue? (y/N) "
-msgstr "Продолжить? (Y/n) "
+msgstr "Продолжить? (y/N) "
 
 msgid "Really do a factory reset? (enter \"yes\") "
-msgstr ""
+msgstr "Подтвердите сброс к заводским установкам (введите \"yes\") "
 
 msgid "quit this menu"
 msgstr "выйти из этого меню"
@@ -1368,7 +1362,7 @@ msgid "change URL to retrieve key"
 msgstr "изменить URL получения ключа"
 
 msgid "fetch the key specified in the card URL"
-msgstr "запросить ключ, указанный по заданному картой URL"
+msgstr "запросить ключ по заданному картой URL"
 
 msgid "change the login name"
 msgstr "изменить имя учетной записи"
@@ -1398,7 +1392,7 @@ msgid "unblock the PIN using a Reset Code"
 msgstr "разблокировать PIN с помощью кода сброса"
 
 msgid "destroy all keys and data"
-msgstr ""
+msgstr "уничтожить все ключи и данные"
 
 msgid "gpg/card> "
 msgstr "gpg/card> "
@@ -1437,10 +1431,10 @@ msgid "can't do this in batch mode without \"--yes\"\n"
 msgstr "не могу выполнить в пакетном режиме без \"--yes\"\n"
 
 msgid "Delete this key from the keyring? (y/N) "
-msgstr "Удалить данный ключ из таблицы? (y/N)"
+msgstr "Удалить данный ключ из таблицы? (y/N) "
 
 msgid "This is a secret key! - really delete? (y/N) "
-msgstr "Это закрытый ключ! - все равно удалить? (y/N)"
+msgstr "Это закрытый ключ! - все равно удалить? (y/N) "
 
 #, c-format
 msgid "deleting secret %s failed: %s\n"
@@ -1457,7 +1451,7 @@ msgid "deleting keyblock failed: %s\n"
 msgstr "сбой при удалении блока ключа: %s\n"
 
 msgid "ownertrust information cleared\n"
-msgstr "информация о доверии владельцу стерта\n"
+msgstr "сведения о доверии владельцу сброшены\n"
 
 #, c-format
 msgid "there is a secret key for public key \"%s\"!\n"
@@ -1494,20 +1488,19 @@ msgid ""
 "WARNING: forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
 "Внимание: принудительное использование симметричного шифра %s (%d)\n"
-"          противоречит предпочтениям получателя\n"
+"          нарушает предпочтения получателя\n"
 
 #, c-format
 msgid ""
 "WARNING: forcing compression algorithm %s (%d) violates recipient "
 "preferences\n"
-msgstr ""
-"Внимание: сжатие алгоритмом %s (%d) противоречит предпочтениям получателя\n"
+msgstr "Внимание: сжатие алгоритмом %s (%d) нарушает предпочтения получателя\n"
 
 #, c-format
 msgid "forcing symmetric cipher %s (%d) violates recipient preferences\n"
 msgstr ""
-"принудительное использование симметричного шифра %s (%d) противоречит "
-"предпочтениям получателя\n"
+"принудительное использование симметричного шифра %s (%d) нарушает "
+"предпочтения получателя\n"
 
 #, c-format
 msgid "you may not use %s while in %s mode\n"
@@ -1544,8 +1537,7 @@ msgstr ""
 
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
-"на данной платформе требуется использование временных файлов при вызове "
-"внешних программ\n"
+"на данной платформе при вызове внешних программ требуются временные файлы\n"
 
 #, c-format
 msgid "unable to execute program '%s': %s\n"
@@ -2299,7 +2291,7 @@ msgstr "пропущен блок типа %d\n"
 
 #, c-format
 msgid "%lu keys processed so far\n"
-msgstr "%lu ключей обработано\n"
+msgstr "обработано %lu ключей\n"
 
 #, c-format
 msgid "Total number processed: %lu\n"
@@ -2390,14 +2382,12 @@ msgstr "крайне желательно, чтобы Вы обновили св
 
 msgid "re-distribute this key to avoid potential algorithm mismatch problems\n"
 msgstr ""
-"распространили этот ключ, чтобы избежать потенциальных проблем несовпадения "
-"алгоритмов\n"
+"распространили этот ключ во избежание возможных нестыковок алгоритмов\n"
 
 #, c-format
 msgid "you can update your preferences with: gpg --edit-key %s updpref save\n"
 msgstr ""
-"Вы можете обновить список предпочтений командой\n"
-"    gpg --edit-key %s updpref save\n"
+"свои предпочтения можно обновить командой gpg --edit-key %s updpref save\n"
 
 #, c-format
 msgid "key %s: no user ID\n"
@@ -2423,7 +2413,7 @@ msgid "key %s: no valid user IDs\n"
 msgstr "ключ %s: нет действительных ID пользователя\n"
 
 msgid "this may be caused by a missing self-signature\n"
-msgstr "причиной этого может быть отсутствие самоподписи\n"
+msgstr "может быть, из-за отсутствия самоподписи\n"
 
 #, c-format
 msgid "key %s: public key not found: %s\n"
@@ -2455,11 +2445,11 @@ msgstr "ключ %s: не совпадает с нашей копией\n"
 
 #, c-format
 msgid "key %s: can't locate original keyblock: %s\n"
-msgstr "ключ %s: не нахожу оригинальный блок ключа: %s\n"
+msgstr "ключ %s: оригинальный блок ключей не найден: %s\n"
 
 #, c-format
 msgid "key %s: can't read original keyblock: %s\n"
-msgstr "ключ %s: не могу прочитать оригинальный блок ключа: %s\n"
+msgstr "ключ %s: оригинальный блок ключей не читается: %s\n"
 
 #, c-format
 msgid "key %s: \"%s\" 1 new user ID\n"
@@ -2522,7 +2512,7 @@ msgid "secret key %s: %s\n"
 msgstr "закрытый ключ %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
-msgstr "импорт закрытого ключа не позволен\n"
+msgstr "импорт закрытого ключа не допускается\n"
 
 #, c-format
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
@@ -2568,7 +2558,7 @@ msgstr "ключ %s: нет подключа для связывания клю�
 
 #, c-format
 msgid "key %s: invalid subkey binding\n"
-msgstr "ключ %s: неправильная связь подключей\n"
+msgstr "ключ %s: недопустимая связь подключей\n"
 
 #, c-format
 msgid "key %s: removed multiple subkey binding\n"
@@ -2580,7 +2570,7 @@ msgstr "ключ %s: нет подключа для отзыва ключа\n"
 
 #, c-format
 msgid "key %s: invalid subkey revocation\n"
-msgstr "ключ %s: недействительный отзыв подключа\n"
+msgstr "ключ %s: неверный отзыв подключа\n"
 
 #, c-format
 msgid "key %s: removed multiple subkey revocation\n"
@@ -2628,7 +2618,7 @@ msgstr "Внимание: ключ %s, возможно, отозван: клю�
 
 #, c-format
 msgid "key %s: \"%s\" revocation certificate added\n"
-msgstr "ключ %s: \"%s\" добавлен сертификат отзыва\n"
+msgstr "ключ %s: добавлен сертификат отзыва \"%s\"\n"
 
 #, c-format
 msgid "key %s: direct key signature added\n"
@@ -2791,7 +2781,7 @@ msgid "\"%s\" was already signed by key %s\n"
 msgstr "\"%s\" уже подписан ключом %s\n"
 
 msgid "Do you want to sign it again anyway? (y/N) "
-msgstr "Вы все равно хотите снова подписать его? (y/N)"
+msgstr "Вы все равно хотите снова подписать его? (y/N) "
 
 #, c-format
 msgid "Nothing to sign with key %s\n"
@@ -2840,7 +2830,7 @@ msgid ""
 "Are you sure that you want to sign this key with your\n"
 "key \"%s\" (%s)\n"
 msgstr ""
-"Уверены ли Вы, что хотите подписать этот ключ\n"
+"Вы уверены, что хотите подписать этот ключ\n"
 "своим ключом \"%s\" (%s)?\n"
 
 msgid "This will be a self-signature.\n"
@@ -2868,16 +2858,16 @@ msgid "I have checked this key very carefully.\n"
 msgstr "Этот ключ проверен мной очень тщательно.\n"
 
 msgid "Really sign? (y/N) "
-msgstr "Действительно подписать? (y/N)"
+msgstr "Действительно подписать? (y/N) "
 
 #, c-format
 msgid "signing failed: %s\n"
-msgstr "не удалось подписать: %s\n"
+msgstr "подписать не удалось: %s\n"
 
 msgid "Key has only stub or on-card key items - no passphrase to change.\n"
 msgstr ""
 "В ключе только заготовка или элементы для карты -\n"
-"нет фразы-пароля для изменения.\n"
+"фразы-пароля для изменения нет.\n"
 
 #, c-format
 msgid "key %s: error changing passphrase: %s\n"
@@ -2987,7 +2977,7 @@ msgid "revoke key or selected subkeys"
 msgstr "отозвать ключ или выбранные подключи"
 
 msgid "enable key"
-msgstr "включить ключ"
+msgstr "подключить ключ"
 
 msgid "disable key"
 msgstr "отключить ключ"
@@ -3017,7 +3007,7 @@ msgid ""
 "  a 't' for trust signatures (tsign), an 'nr' for non-revocable signatures\n"
 "  (nrsign), or any combination thereof (ltsign, tnrsign, etc.).\n"
 msgstr ""
-"* Команда 'sign' может иметь префикс 'l' (локальные подписи, lsign),\n"
+"* У команды 'sign' может быть приставка 'l' (локальные подписи, lsign),\n"
 "  't' (подписи доверия, tsign), 'nr' (неотзываемые, \n"
 "  nrsign) или любое их сочетание (ltsign, tnrsign и т.д.).\n"
 
@@ -3166,11 +3156,11 @@ msgstr "(особо важный)"
 
 #, c-format
 msgid "created: %s"
-msgstr "создан: %s"
+msgstr "     создан: %s"
 
 #, c-format
 msgid "revoked: %s"
-msgstr "отозван: %s"
+msgstr "    отозван: %s"
 
 #, c-format
 msgid "expired: %s"
@@ -3178,7 +3168,7 @@ msgstr "просрочен с: %s"
 
 #, c-format
 msgid "expires: %s"
-msgstr "срок действия истекает: %s"
+msgstr "   годен до: %s"
 
 # perhaps this should be somewhere in help/man
 # (S - подпись, C - сертификация, E - шифрование, A - аутентификация)
@@ -3340,7 +3330,7 @@ msgid "subkey %s does not sign and so does not need to be cross-certified\n"
 msgstr "подключ %s не для подписей, он не нуждается в перекрестном заверении\n"
 
 msgid "Please select exactly one user ID.\n"
-msgstr "Выберите только один ID пользователя.\n"
+msgstr "Выберите ровно один ID пользователя.\n"
 
 #, c-format
 msgid "skipping v3 self-signature on user ID \"%s\"\n"
@@ -3504,10 +3494,10 @@ msgstr "11223300"
 
 #, c-format
 msgid "Possible actions for a %s key: "
-msgstr "Возможные действия для ключа %s:"
+msgstr "Возможные действия для ключа %s: "
 
 msgid "Current allowed actions: "
-msgstr "Допустимы действия:"
+msgstr "Допустимы действия: "
 
 #, c-format
 msgid "   (%c) Toggle the sign capability\n"
@@ -3591,7 +3581,7 @@ msgstr "Нет ключа с таким кодом\n"
 
 #, c-format
 msgid "%s keys may be between %u and %u bits long.\n"
-msgstr "Ключи %s могут иметь длину от %u до %u бит.\n"
+msgstr "длина ключей %s может быть от %u до %u бит.\n"
 
 #, c-format
 msgid "What keysize do you want for the subkey? (%u) "
@@ -3622,10 +3612,10 @@ msgid ""
 msgstr ""
 "Выберите срок действия ключа.\n"
 "         0 = не ограничен\n"
-"      <n>  = срок действия - n дней\n"
-"      <n>w = срок действия - n недель\n"
-"      <n>m = срок действия - n месяцев\n"
-"      <n>y = срок действия - n лет\n"
+"      <n>  = срок действия ключа - n дней\n"
+"      <n>w = срок действия ключа - n недель\n"
+"      <n>m = срок действия ключа - n месяцев\n"
+"      <n>y = срок действия ключа - n лет\n"
 
 msgid ""
 "Please specify how long the signature should be valid.\n"
@@ -3816,8 +3806,8 @@ msgid ""
 "generator a better chance to gain enough entropy.\n"
 msgstr ""
 "Необходимо получить много случайных чисел. Желательно, чтобы Вы\n"
-"выполняли некоторые другие действия (печать на клавиатуре, движения мыши,\n"
-"обращения к дискам) в процессе генерации; это даст генератору\n"
+"в процессе генерации выполняли какие-то другие действия (печать\n"
+"на клавиатуре, движения мыши, обращения к дискам); это даст генератору\n"
 "случайных чисел больше возможностей получить достаточное количество "
 "энтропии.\n"
 
@@ -3920,7 +3910,7 @@ msgid "never     "
 msgstr "никогда   "
 
 msgid "Critical signature policy: "
-msgstr "Критические правила для подписи: "
+msgstr "Критические правила подписи: "
 
 msgid "Signature policy: "
 msgstr "Правила подписи: "
@@ -4005,7 +3995,7 @@ msgstr "учитывать набор записей PKA при получени
 #, c-format
 msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr ""
-"Внимание: параметр сервера ключей '%s' не используется на данной платформе\n"
+"ВНИМАНИЕ: параметр сервера ключей `%s' на данной платформе не используется\n"
 
 msgid "disabled"
 msgstr "отключен"
@@ -4045,7 +4035,7 @@ msgstr "ключ не найден на сервере ключей\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
-msgstr "запрашиваю ключ %s с %s сервера %s\n"
+msgstr "запрашиваю ключ %s с сервера %s %s\n"
 
 #, c-format
 msgid "requesting key %s from %s\n"
@@ -4057,7 +4047,7 @@ msgstr "пропущено \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
-msgstr "отправка ключа %s на %s сервер %s\n"
+msgstr "отправка ключа %s на сервер %s %s\n"
 
 #, c-format
 msgid "sending key %s to %s\n"
@@ -4236,7 +4226,7 @@ msgstr ""
 
 #, c-format
 msgid "standalone signature of class 0x%02x\n"
-msgstr "самостоятельная подпись класса 0x%02x\n"
+msgstr "отдельная подпись класса 0x%02x\n"
 
 msgid "old style (PGP 2.x) signature\n"
 msgstr "подпись старого типа (PGP 2.x)\n"
@@ -4396,7 +4386,7 @@ msgstr ""
 "создан %s%s.\n"
 
 msgid "Enter passphrase\n"
-msgstr "Введите пароль\n"
+msgstr "Введите фразу-пароль\n"
 
 msgid "cancelled by user\n"
 msgstr "прервано пользователем\n"
@@ -4849,7 +4839,7 @@ msgstr "Отмена"
 
 #, c-format
 msgid "(Probably you want to select %d here)\n"
-msgstr "(Возможно, Вы здесь выберете %d)\n"
+msgstr "(Скорее всего, Вы здесь выберете %d)\n"
 
 msgid "Enter an optional description; end it with an empty line:\n"
 msgstr "Введите необязательное пояснение; завершите пустой строкой:\n"
@@ -4928,7 +4918,7 @@ msgstr "Замечание: ключ для подписей %s отозван\n
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"
 msgstr ""
-"предполагается плохая подпись ключа %s из-за неизвестного критического бита\n"
+"подпись ключа %s считается плохой из-за неизвестного критического бита\n"
 
 #, c-format
 msgid "key %s: no subkey for subkey revocation signature\n"
@@ -5252,7 +5242,7 @@ msgstr ""
 
 #, c-format
 msgid "input line %u too long or missing LF\n"
-msgstr "входная строка %u слишком длинная или пропущен перевод строки\n"
+msgstr "слишком длинная входная строка %u или пропущен перевод строки\n"
 
 #, c-format
 msgid "can't open fd %d: %s\n"
@@ -5485,7 +5475,7 @@ msgstr ""
 
 #, c-format
 msgid "can't access %s - invalid OpenPGP card?\n"
-msgstr "нет доступа к %s - неработоспособная карта OpenPGP?\n"
+msgstr "нет доступа к %s - непригодная карта OpenPGP?\n"
 
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Введите PIN на клавиатуре считывателя"
@@ -5767,8 +5757,8 @@ msgid ""
 "S/N %s, ID 0x%08lX,\n"
 "created %s, expires %s.\n"
 msgstr ""
-"Введите фразу-пароль для доступа к закрытому ключу для сертификата X.509:\"%s"
-"\"\n"
+"Введите фразу-пароль для доступа к закрытому ключу сертификата X.509:\n"
+"\"%s\"\n"
 "S/N %s, ID 0x%08lX,\n"
 "создан %s, истекает %s.\n"
 
@@ -7589,7 +7579,7 @@ msgid "|N|set minimal required length for new passphrases to N"
 msgstr "|N|установить минимальную длину фразы-пароля равной N"
 
 msgid "|N|require at least N non-alpha characters for a new passphrase"
-msgstr "|n|требовать не менее N неалфавитных символов для новой фразы-пароля"
+msgstr "|n|требовать для новой фразы-пароля не менее N неалфавитных символов"
 
 msgid "|FILE|check new passphrases against pattern in FILE"
 msgstr "|FILE|проверять новую фразу-пароль по файлу образцов FILE"
