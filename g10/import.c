@@ -268,7 +268,6 @@ import (IOBUF inp, const char* fname,struct stats_s *stats,
     PACKET *pending_pkt = NULL;
     KBNODE keyblock = NULL;
     int rc = 0;
-    int need_armor = (!opt.no_armor || r_gpgkeys_err);
     armor_filter_context_t *afx = NULL;
 
     getkey_disable_caches();
