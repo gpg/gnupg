@@ -66,6 +66,7 @@ extern int g10_errors_seen;
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );
+int parse_key_failed_line (const void *lineptr, unsigned int len);
 
 /*-- misc.c --*/
 void trap_unaligned(void);
@@ -271,7 +272,8 @@ void import_keys( char **fnames, int nnames,
 		  void *stats_hd, unsigned int options );
 int import_keys_stream (iobuf_t inp, void *stats_hd, unsigned char **fpr,
                         size_t *fpr_len, unsigned int options,
-                        import_filter_t filter, void *filter_arg);
+                        import_filter_t filter, void *filter_arg,
+                        int *r_gpgkeys_err);
 void *import_new_stats_handle (void);
 void import_release_stats_handle (void *p);
 void import_print_stats (void *hd);

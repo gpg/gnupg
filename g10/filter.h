@@ -39,6 +39,8 @@ typedef struct {
 
     /* these fields must be initialized to zero */
     int no_openpgp_data;    /* output flag: "No valid OpenPGP data found" */
+    int key_failed_code;    /* Error code from the first gpgkkeys_*
+                               "KEY <keyid> FAILED <err>" line.  */
 
     /* the following fields must be initialized to zero */
     int inp_checked;	    /* set if the input has been checked */
@@ -121,7 +123,7 @@ typedef struct {
     unsigned long last;		/* last amount reported */
     unsigned long offset;	/* current amount */
     unsigned long total;	/* total amount */
-    int  refcount;              
+    int  refcount;
 } progress_filter_context_t;
 
 /* encrypt_filter_context_t defined in main.h */
