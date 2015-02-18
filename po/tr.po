@@ -10,7 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2008-12-14 23:25+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@belgeler.gen.tr>\n"
 "Language-Team: Turkish\n"
-"Language: \n"
+"Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2160,6 +2160,11 @@ msgstr "salt-yerel olarak imlenmiş imzaları ithal eder"
 msgid "repair damage from the pks keyserver during import"
 msgstr "ithalat sırasında pks anahtar sunucusundaki bozukluğu giderir"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "ithalat sonrası güvence veritabanını güncellemez"
+
 msgid "do not update the trustdb after import"
 msgstr "ithalat sonrası güvence veritabanını güncellemez"
 
@@ -3178,6 +3183,14 @@ msgstr ""
 "       farklı bir kullanıcı kimliğin birincil kullanıcı kimlik olarak\n"
 "       kabul edilmesini sağlayabilirsiniz.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Bir v3 anahtarının son kullanma tarihini değiştiremezsiniz\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3993,6 +4006,10 @@ msgstr "UYARI: GnuPG'nin başka bir sürümünün anahtar sunucusu eylemcisi (%s
 msgid "keyserver did not send VERSION\n"
 msgstr "anahtar sunucusu VERSION göndermiyor\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
 
@@ -4016,10 +4033,6 @@ msgstr "anahtar sunucusu zamanaşımına uğradı\n"
 
 msgid "keyserver internal error\n"
 msgstr "anahtar sunucusu iç hatası\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4194,6 +4207,10 @@ msgid "unknown"
 msgstr "bilinmeyen"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "İmza kontrol edilemedi: %s\n"
 
@@ -4241,6 +4258,11 @@ msgstr "UYARI: deneysel %s özet algoritması kullanılıyor\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "UYARI: %s özet algoritması artık önerilmiyor.\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s imzası, %s özet algoritması\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA şifre eklentisi yok\n"
 
@@ -4270,6 +4292,17 @@ msgstr "%s:%u: eskimiş seçenek \"%s\" - artık etkisiz\n"
 
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: eskimiş seçenek \"%s\" - artık etkisiz\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
 
 msgid "Uncompressed"
@@ -4308,8 +4341,9 @@ msgstr "Yeni dosya ismini giriniz"
 msgid "writing to stdout\n"
 msgstr "standart çıktıya yazıyor\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "\"%s\" içindeki veri imzalı kabul ediliyor\n"
 
 #, c-format
@@ -4875,11 +4909,6 @@ msgstr "BİLGİ: %s imza anahtarının kullanım süresi %s sularında dolmuş\n
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "BİLGİ: imza anahtarı %s yürürlükten kaldırılmıştı\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s imzası, %s özet algoritması\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

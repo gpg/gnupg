@@ -3138,6 +3138,14 @@ msgstr ""
 "ADVARSEL: Intet bruger-id er blevet markeret som primær. Denne kommando\n"
 "        kan medføre at et anden bruger-id bliver den formodede primære.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Du kan ikke ændre udløbsdatoen for en v3-nøgle\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3936,6 +3944,10 @@ msgstr "ADVARSEL: nøgleserverhåndtering fra en anden version af GnuPG (%s)\n"
 msgid "keyserver did not send VERSION\n"
 msgstr "nøgleserver sendte ikke VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "kommunikationsfejl for nøgleserver: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
 
@@ -3959,10 +3971,6 @@ msgstr "nøgleserver fik tidsudløb\n"
 
 msgid "keyserver internal error\n"
 msgstr "nøgleserver fik intern fejl\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "kommunikationsfejl for nøgleserver: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"

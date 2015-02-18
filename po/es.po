@@ -166,7 +166,6 @@ msgid "Deny"
 msgstr "No permitir"
 
 #, c-format
-#| msgid "Please enter the passphrase for the ssh key%0A  %c"
 msgid "Please enter the passphrase for the ssh key%%0A  %F%%0A  (%c)"
 msgstr "Introduzca la contraseña para la clave ssh%%0A  %F%%0A  (%c)"
 
@@ -174,15 +173,12 @@ msgid "Please re-enter this passphrase"
 msgstr "Vuelva a introducir contraseña"
 
 #, c-format
-#| msgid ""
-#| "Please enter a passphrase to protect the received secret key%%0A   %s"
-#| "%%0Awithin gpg-agent's key storage"
 msgid ""
 "Please enter a passphrase to protect the received secret key%%0A   %s%%0A   "
 "%s%%0Awithin gpg-agent's key storage"
 msgstr ""
-"Introduzca una contraseña para proteger la clave secreta recibida%%0A   %s%%0A   "
-"%s%%0Aen el almacén de claves del agente gpg"
+"Introduzca una contraseña para proteger la clave secreta recibida%%0A   %s"
+"%%0A   %s%%0Aen el almacén de claves del agente gpg"
 
 msgid "does not match - try again"
 msgstr "no coincide - inténtelo de nuevo"
@@ -209,7 +205,6 @@ msgid "Reset Code"
 msgstr "Código de Reinicio"
 
 #, c-format
-#| msgid "%s%%0A%%0AUse the reader's keypad for input."
 msgid "%s%%0A%%0AUse the reader's pinpad for input."
 msgstr "%s%%0A%%0AUse el teclado del lector como entrada."
 
@@ -304,7 +299,6 @@ msgid "Yes, protection is not needed"
 msgstr "Sí, no se necesita protección"
 
 #, c-format
-#| msgid "Please enter the passphrase to%0Ato protect your new key"
 msgid "Please enter the passphrase to%0Aprotect your new key"
 msgstr "Introduzca contraseña para%0Aproteger su nueva clave"
 
@@ -372,18 +366,15 @@ msgstr "|N|los PINs en la caché expiran en N segundos"
 msgid "do not use the PIN cache when signing"
 msgstr "no usar el caché de PINs al firmar"
 
-#| msgid "allow clients to mark keys as \"trusted\""
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "permitir que los clientes marquen claves como \"fiables\""
 
 msgid "allow presetting passphrase"
 msgstr "permitir preestablecer contraseña"
 
-#| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
 msgstr "permitir emulación de ssh-agent"
 
-#| msgid "not supported"
 msgid "enable putty support"
 msgstr "no disponible"
 
@@ -1713,10 +1704,6 @@ msgstr ""
 msgid "Usage: gpg [options] [files] (-h for help)"
 msgstr "Uso: gpg [opciones] [ficheros] (-h para ayuda)"
 
-#| msgid ""
-#| "Syntax: gpg [options] [files]\n"
-#| "sign, check, encrypt or decrypt\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpg [options] [files]\n"
 "Sign, check, encrypt or decrypt\n"
@@ -2192,7 +2179,6 @@ msgstr "importar firmas marcadas como sólo locales"
 msgid "repair damage from the pks keyserver during import"
 msgstr "reparar daño del servidor de claves públicas al importar"
 
-#| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
 msgstr "no actualiza la base de datos de confianza después de importar"
 
@@ -2317,7 +2303,6 @@ msgid "key %s: no user ID\n"
 msgstr "clave %s: sin identificador de usuario\n"
 
 #, c-format
-#| msgid "skipped \"%s\": %s\n"
 msgid "key %s: %s\n"
 msgstr "omitido \"%s\": %s\n"
 
@@ -2420,7 +2405,6 @@ msgid "key %s: \"%s\" not changed\n"
 msgstr "clave %s: \"%s\" sin cambios\n"
 
 #, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
 msgid "secret key %s: %s\n"
 msgstr "clave secreta \"%s\" no encontrada: %s\n"
 
@@ -3175,6 +3159,14 @@ msgstr ""
 "puede\n"
 "       causar que se tome como identificador principal otro identificador de "
 "usuario distinto.\n"
+
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "No puede cambiar la fecha de caducidad de una clave v3\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3975,6 +3967,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "el servidor de claves no envió VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "error de comunicación con el servidor de claves: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "no hay servidores de claves conocidos (use opción --keyserver)\n"
 
@@ -4001,10 +3997,6 @@ msgstr "agotado el tiempo de espera para el servidor de claves\n"
 
 msgid "keyserver internal error\n"
 msgstr "error interno del servidor de claves\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "error de comunicación con el servidor de claves: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4228,7 +4220,6 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "ATENCIÓN: el algoritmo de resumen %s está obsoleto\n"
 
 #, c-format
-#| msgid "%s signature, digest algorithm %s\n"
 msgid "Note: signatures using the %s algorithm are rejected\n"
 msgstr "Nota: se rechazarán las firmas que usen el algoritmo %s\n"
 
@@ -4264,15 +4255,14 @@ msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "ATENCIÓN: \"%s\" es una opción obsoleta - no tiene efecto\n"
 
 #, c-format
-#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr "%s:%u: \"%s%s\" está obsoleta en este fichero - solo afecta en %s\n"
 
 #, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
-msgstr "ATENCIÓN: \"%s%s\" es una opción obsoleta - no tiene efecto excepto en %s\n"
+msgstr ""
+"ATENCIÓN: \"%s%s\" es una opción obsoleta - no tiene efecto excepto en %s\n"
 
 msgid "Uncompressed"
 msgstr "Sin comprimir"
@@ -4311,7 +4301,6 @@ msgid "writing to stdout\n"
 msgstr "escribiendo en stdout\n"
 
 #, c-format
-#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "asumiendo que hay datos firmados en `%s'\n"
 
@@ -5379,9 +5368,6 @@ msgstr "habilita depuración completa"
 msgid "Usage: kbxutil [options] [files] (-h for help)"
 msgstr "Uso: kbxutil [opciones] [ficheros] (-h para ayuda)"
 
-#| msgid ""
-#| "Syntax: kbxutil [options] [files]\n"
-#| "list, export, import Keybox data\n"
 msgid ""
 "Syntax: kbxutil [options] [files]\n"
 "List, export, import Keybox data\n"
@@ -5528,11 +5514,9 @@ msgstr "|AN|Nuevo PIN Administrador"
 msgid "|N|New PIN"
 msgstr "|N|Nuevo PIN"
 
-#| msgid "|A|Please enter the Admin PIN"
 msgid "||Please enter the Admin PIN and New Admin PIN"
 msgstr "|A|Introduzca PIN de Administrador"
 
-#| msgid "||Please enter the PIN"
 msgid "||Please enter the PIN and New PIN"
 msgstr "||Introduzca PIN"
 
@@ -5598,7 +5582,6 @@ msgstr ""
 msgid "can't access %s - invalid OpenPGP card?\n"
 msgstr "no se puede acceder a %s - ¿tarjeta OpenPGP inválida?\n"
 
-#| msgid "||Please enter your PIN at the reader's keypad"
 msgid "||Please enter your PIN at the reader's pinpad"
 msgstr "||Inntroduzca su PIN en el teclado del lector"
 
@@ -5632,7 +5615,6 @@ msgstr "no usa el driverd del CCID interno"
 msgid "|N|disconnect the card after N seconds of inactivity"
 msgstr "|N|desconectar la tarjeta después de N segundos de inactividad"
 
-#| msgid "do not use a reader's keypad"
 msgid "do not use a reader's pinpad"
 msgstr "no usar el teclado del lector"
 
@@ -5909,19 +5891,15 @@ msgstr "no se especifica uso de la clave - asumiendo todos los usos\n"
 msgid "error getting key usage information: %s\n"
 msgstr "error obteniendo información sobre uso de la clave: %s\n"
 
-#| msgid "certificate should have not been used for certification\n"
 msgid "certificate should not have been used for certification\n"
 msgstr "el certificado no debería haberse usado para certificar\n"
 
-#| msgid "certificate should have not been used for OCSP response signing\n"
 msgid "certificate should not have been used for OCSP response signing\n"
 msgstr "el certificado no debería haberse usado para firma en respuesta OCSP\n"
 
-#| msgid "certificate should have not been used for encryption\n"
 msgid "certificate should not have been used for encryption\n"
 msgstr "el certificado no debería haberse usado para cifrar\n"
 
-#| msgid "certificate should have not been used for signing\n"
 msgid "certificate should not have been used for signing\n"
 msgstr "el certificado no debería haberse usado para firmar\n"
 
@@ -6196,10 +6174,6 @@ msgstr "|NOMBRE|usa algoritmo de resumen de mensaje NOMBRE"
 msgid "Usage: gpgsm [options] [files] (-h for help)"
 msgstr "Uso: gpgsm [opciones] [ficheros] (-h para ayuda)"
 
-#| msgid ""
-#| "Syntax: gpgsm [options] [files]\n"
-#| "sign, check, encrypt or decrypt using the S/MIME protocol\n"
-#| "default operation depends on the input data\n"
 msgid ""
 "Syntax: gpgsm [options] [files]\n"
 "Sign, check, encrypt or decrypt using the S/MIME protocol\n"

@@ -3158,6 +3158,14 @@ msgstr ""
 "             jako główny. Wykonanie tego polecenie może więc spowodować\n"
 "             wyświetlanie innego identyfikatora jako domyślnego głównego.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nie można zmienić daty ważności klucza w wersji 3.\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3966,6 +3974,10 @@ msgstr "OSTRZEŻENIE: moduł obsługi serwera kluczy z innej wersji GnuPG (%s)\n
 msgid "keyserver did not send VERSION\n"
 msgstr "serwer kluczy nie wysłał VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "błąd komunikacji z serwerem kluczy: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "brak znanyk serwerów kluczy (użyj opcji --keyserver)\n"
 
@@ -3991,10 +4003,6 @@ msgstr "zbyt długi czas oczekiwania na serwer kluczy\n"
 
 msgid "keyserver internal error\n"
 msgstr "błąd wewnętrzny serwera kluczy\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "błąd komunikacji z serwerem kluczy: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"

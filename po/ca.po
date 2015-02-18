@@ -2327,6 +2327,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "actualitza la base de dades de confiança"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "actualitza la base de dades de confiança"
 
@@ -3397,6 +3401,14 @@ msgstr ""
 "      causar que una ID d'usuari diferent esdevinga en la primària "
 "assumida.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "No podeu canviar la data de caducitat de les claus v3\n"
+
 # Photo ID com abans.  ivb
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -4232,6 +4244,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "la recepció des del servidor de claus ha fallat: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "no es coneix cap servidor de claus (useu l'opció \"--keyserver\")\n"
 
@@ -4259,10 +4275,6 @@ msgstr "error de servidor de claus"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "error de servidor de claus"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "la recepció des del servidor de claus ha fallat: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4442,6 +4454,10 @@ msgid "unknown"
 msgstr "desconeguda"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "No s'ha pogut comprovar la signatura: %s\n"
 
@@ -4491,6 +4507,11 @@ msgstr "signatura %s, algorisme de resum %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "signatura %s, algorisme de resum %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "el mòdul de xifratge IDEA no està present\n"
 
@@ -4520,6 +4541,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "AVÍS: %s és una opció desaconsellada.\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "AVÍS: %s és una opció desaconsellada.\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "AVÍS: %s és una opció desaconsellada.\n"
 
 # Gènere?  Nombre?  Passat, futur?  ivb
@@ -4567,8 +4597,9 @@ msgstr "Introduïu el nou nom del fitxer"
 msgid "writing to stdout\n"
 msgstr "s'està escrivint en stdout\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "s'asumeix que hi ha dades signades en «%s»\n"
 
 #, c-format
@@ -5162,11 +5193,6 @@ msgstr "NOTA: la clau de signatura %08lX va caducar el %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "NOTA: aquesta clau ha estat revocada!"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "signatura %s, algorisme de resum %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

@@ -2262,6 +2262,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
@@ -3310,6 +3314,14 @@ msgstr ""
 "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: δεν έχει σημειωθεί ID χρήστη σαν πρωτεύων.  Αυτή η εντολή\n"
 "              μπορεί να κάνει ένα άλλο ID χρήστη να γίνει το πρωτεύων.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Δεν μπορείτε να αλλάξετε την ημερομηνία λήξης σε ένα v3 κλειδί\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4138,6 +4150,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "keyserver λήψη απέτυχε: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4163,10 +4179,6 @@ msgstr "σφάλμα διακομιστή κλειδιών"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "σφάλμα διακομιστή κλειδιών"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "keyserver λήψη απέτυχε: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4341,6 +4353,10 @@ msgid "unknown"
 msgstr "άγνωστο"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Αδυναμία ελέγχου της υπογραφής: %s\n"
 
@@ -4394,6 +4410,11 @@ msgstr ""
 "ο εξαναγκασμός του αλγόριθμου περίληψης %s (%d) παραβιάζει τις\n"
 "προεπιλογές του παραλήπτη\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "το βύσμα του κρυπταλγόριθμου IDEA δεν υπάρχει\n"
 
@@ -4423,6 +4444,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: \"%s\" είναι μια μη συνειστώμενη επιλογή\n"
 
 msgid "Uncompressed"
@@ -4463,8 +4493,9 @@ msgstr "Πληκτρολογήστε ένα νέο όνομα αρχείου"
 msgid "writing to stdout\n"
 msgstr "εγγραφή στην stdout\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "υπόθεση υπογεγραμμένων δεδομένων στο `%s'\n"
 
 #, c-format
@@ -5045,11 +5076,6 @@ msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί υπογραφής %08lX έληξε στις %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "ΣΗΜΕΙΩΣΗ: το κλειδί έχει ανακληθεί"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

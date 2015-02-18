@@ -2251,6 +2251,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "perbarui database trust"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "perbarui database trust"
 
@@ -3290,6 +3294,14 @@ msgstr ""
 "WARNING: no user ID has been marked as primary.  This command may\n"
 "              cause a different user ID to become the assumed primary.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Anda tidak dapat merubah batas waktu kunci v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4107,6 +4119,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "Penerimaan keyserver gagal: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4132,10 +4148,6 @@ msgstr "kesalahan keyserver"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "kesalahan keyserver"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "Penerimaan keyserver gagal: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4308,6 +4320,10 @@ msgid "unknown"
 msgstr "tidak dikenal"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Tidak dapat memeriksa signature: %s\n"
 
@@ -4357,6 +4373,11 @@ msgstr "%s signature, algoritma digest %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "memaksa algoritma digest %s (%d) melanggar preferensi penerima\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signature, algoritma digest %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "plugin cipher IDEA tidak tersedia\n"
 
@@ -4386,6 +4407,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "WARNING: \"%s\" adalah opsi terdepresiasi\n"
 
 msgid "Uncompressed"
@@ -4426,8 +4456,9 @@ msgstr "Masukkan nama file baru"
 msgid "writing to stdout\n"
 msgstr "menulis ke stdout\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "mengasumsikan data bertanda dalam `%s'\n"
 
 #, c-format
@@ -4995,11 +5026,6 @@ msgstr "CATATAN: kunci signature %08lX berakhir %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "CATATAN: kunci telah dibatalkan"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s signature, algoritma digest %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

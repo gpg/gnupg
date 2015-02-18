@@ -2238,6 +2238,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "bizalmi adatbázis frissítése"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "bizalmi adatbázis frissítése"
 
@@ -3276,6 +3280,14 @@ msgstr ""
 "FIGYELEM: Nincs kijelölt elsõdleges felhasználóazonosító. Ez a parancs\n"
 " azt okozhatja, hogy egy másik azonosító lesz elsõdlegesként használva.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nem változtathatja meg egy v3 kulcs lejárati dátumát!\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4094,6 +4106,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "Vétel a kulcsszerverrõl sikertelen: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4119,10 +4135,6 @@ msgstr "kulcsszerverhiba"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "kulcsszerverhiba"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "Vétel a kulcsszerverrõl sikertelen: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4301,6 +4313,10 @@ msgid "unknown"
 msgstr "Ismeretlen módú"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nem tudom ellenõrizni az aláírást: %s.\n"
 
@@ -4353,6 +4369,11 @@ msgstr ""
 "%s (%d) kivonatoló algoritmus használatának erõltetése ellentétes\n"
 "a címzett preferenciáival.\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "Az IDEA rejtjelezõ bõvítés nincs jelen!\n"
 
@@ -4382,6 +4403,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "FIGYELEM: \"%s\" elavult opció!\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "FIGYELEM: \"%s\" elavult opció!\n"
 
 msgid "Uncompressed"
@@ -4422,8 +4452,9 @@ msgstr "Írja be az új állománynevet"
 msgid "writing to stdout\n"
 msgstr "Írok a szabványos kimenetre.\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "Azt feltételezem, hogy az aláírt adat a %s állományban van.\n"
 
 #, c-format
@@ -4995,11 +5026,6 @@ msgstr "MEGJEGYZÉS: Aláíró kulcs (%08lX) lejárt: %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "MEGJEGYZÉS: A kulcsot visszavonták."
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

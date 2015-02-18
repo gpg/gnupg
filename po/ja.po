@@ -3082,6 +3082,14 @@ msgstr ""
 "*警告*: 主たるユーザIDがありません。このコマンドは、別な\n"
 "              ユーザIDが主になると仮定する場合があります。\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "v3鍵の有効期限は変更できません\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3870,6 +3878,10 @@ msgstr "*警告*: 別のバージョンのGnuPGの鍵サーバ・ハンドラ (%
 msgid "keyserver did not send VERSION\n"
 msgstr "鍵サーバはVERSIONを送信しませんでした\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "鍵サーバ通信エラー: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"
 
@@ -3893,10 +3905,6 @@ msgstr "鍵サーバのタイムアウト\n"
 
 msgid "keyserver internal error\n"
 msgstr "鍵サーバの内部エラー\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "鍵サーバ通信エラー: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4159,13 +4167,15 @@ msgstr ""
 #, c-format
 msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr ""
-"%s:%u: \"%s%s\"は、使われなくなったオプションです - %sになんの効果もありません\n"
+"%s:%u: \"%s%s\"は、使われなくなったオプションです - %sになんの効果もありませ"
+"ん\n"
 
 #, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr ""
-"*警告*: \"%s%s\"は、使われなくなったオプションです - %s以外になんの効果もありません\n"
+"*警告*: \"%s%s\"は、使われなくなったオプションです - %s以外になんの効果もあり"
+"ません\n"
 
 msgid "Uncompressed"
 msgstr "無圧縮"

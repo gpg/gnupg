@@ -2252,6 +2252,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "aggiorna il database della fiducia"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "aggiorna il database della fiducia"
 
@@ -3294,6 +3298,14 @@ msgstr ""
 "            potrebbe fare diventare un altro user ID il primario "
 "predefinito.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Non è possibile cambiare la data di scadenza di una chiave v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4123,6 +4135,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "ricezione dal keyserver fallita: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4148,10 +4164,6 @@ msgstr "errore del keyserver"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "errore del keyserver"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "ricezione dal keyserver fallita: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4324,6 +4336,10 @@ msgid "unknown"
 msgstr "sconosciuto"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossibile controllare la firma: %s\n"
 
@@ -4374,6 +4390,11 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "forzare l'algoritmo di digest %s (%d) viola le preferenze del destinatario\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "Firma %s, algoritmo di digest %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "il plugin per il cifrario IDEA non è presente\n"
 
@@ -4403,6 +4424,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "ATTENZIONE: \"%s\" è una opzione deprecata\n"
 
 msgid "Uncompressed"
@@ -4443,8 +4473,9 @@ msgstr "Inserire il nuovo nome del file"
 msgid "writing to stdout\n"
 msgstr "scrivo su stdout\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "suppongo che i dati firmati siano in `%s'\n"
 
 #, c-format
@@ -5029,11 +5060,6 @@ msgstr "NOTA: chiave per firmare %08lX scaduta il %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "NOTA: la chiave è stata revocata"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "Firma %s, algoritmo di digest %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

@@ -4225,7 +4225,9 @@ msgstr "unbekannt"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "WARNING: Dies ist keine abgetrennte Signatur; die Datei '%s' wurde NICHT geprüft!\n"
+msgstr ""
+"WARNING: Dies ist keine abgetrennte Signatur; die Datei '%s' wurde NICHT "
+"geprüft!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
@@ -4316,12 +4318,16 @@ msgstr "WARNUNG: \"%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
 
 #, c-format
 msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
-msgstr "%s:%u: Die Option \"%s%s\" ist in dieser Datei sinnlos - sie hat lediglich Wirkung in %s\n"
+msgstr ""
+"%s:%u: Die Option \"%s%s\" ist in dieser Datei sinnlos - sie hat lediglich "
+"Wirkung in %s\n"
 
 #, c-format
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
-msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat eine Wirkung lediglich in %s\n"
+msgstr ""
+"WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat eine Wirkung lediglich "
+"in %s\n"
 
 msgid "Uncompressed"
 msgstr "nicht komprimiert"

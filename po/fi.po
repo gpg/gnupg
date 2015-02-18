@@ -2260,6 +2260,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "päivitä luottamustietokanta"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "päivitä luottamustietokanta"
 
@@ -3302,6 +3306,14 @@ msgstr ""
 "VAROITUS: mitään käyttäjätunnusta ei ole merkitty ensisijaiseksi.  Tämän \n"
 "komennon johdosta eri käyttäjätunnus voi tulla oletetuksi ensisijaiseksi.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Et voi muuttaa v3-avainten vanhentumispäivää\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4122,6 +4134,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "avainpalvelimelta vastaanotto epäonnistui: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4147,10 +4163,6 @@ msgstr "avainpalvelinvirhe"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "avainpalvelinvirhe"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "avainpalvelimelta vastaanotto epäonnistui: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4327,6 +4339,10 @@ msgid "unknown"
 msgstr "tuntematon "
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Allekirjoitusta ei voi tarkistaa: %s\n"
 
@@ -4380,6 +4396,12 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "valittua tiivistesalgoritmia %s (%d) ei löydy vastaanottajan valinnoista\n"
 
+# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA-salaimen liitännäinen ei käytettävissä\n"
 
@@ -4409,6 +4431,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "VAROITUS: \"%s\" on paheksuttu valitsin\n"
 
 msgid "Uncompressed"
@@ -4449,8 +4480,9 @@ msgstr "Syötä uusi tiedostonimi"
 msgid "writing to stdout\n"
 msgstr "kirjoitetaan vakiotulosteeseen\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "data kohteessa \"%s\" oletetaan allekirjoitetuksi\n"
 
 #, c-format
@@ -5027,12 +5059,6 @@ msgstr "HUOM: allekirjoitusavain %08lX vanheni %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "HUOM: avain on mitätöity!"
-
-# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

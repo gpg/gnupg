@@ -2178,6 +2178,11 @@ msgstr "导入被标记为局部的签名"
 msgid "repair damage from the pks keyserver during import"
 msgstr "导入时修复 PKS 公钥服务器导致的损坏"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "导入后不更新信任度数据库"
+
 msgid "do not update the trustdb after import"
 msgstr "导入后不更新信任度数据库"
 
@@ -3134,6 +3139,14 @@ msgid ""
 msgstr ""
 "警告：没有首选用户标识。此指令可能假定一个不同的用户标识为首选用户标识。\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "您不能变更 v3 密钥的使用期限\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3917,6 +3930,10 @@ msgstr "警告：处理公钥服务器的程序来自不同版本的 GnuPG (%s)\
 msgid "keyserver did not send VERSION\n"
 msgstr "公钥服务器未发送 VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "公钥服务器通讯错误：%s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "未给出公钥服务器(使用 --keyserver 选项)\n"
 
@@ -3940,10 +3957,6 @@ msgstr "公钥服务器超时\n"
 
 msgid "keyserver internal error\n"
 msgstr "公钥服务器内部错误\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "公钥服务器通讯错误：%s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4114,6 +4127,10 @@ msgid "unknown"
 msgstr "未知"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "无法检查签名：%s\n"
 
@@ -4162,6 +4179,11 @@ msgstr "警告：使用试验性质的散列算法 %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "警告：不建议使用散列算法 %s\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s 签名，散列算法 %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA 算法插件不存在\n"
 
@@ -4191,6 +4213,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "警告：“%s”选项已不建议使用\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "警告：“%s”选项已不建议使用\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "警告：“%s”选项已不建议使用\n"
 
 msgid "Uncompressed"
@@ -4229,8 +4260,9 @@ msgstr "请输入新的文件名"
 msgid "writing to stdout\n"
 msgstr "正在写入到标准输出\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "假定被签名的数据是‘%s’\n"
 
 #, c-format
@@ -4764,11 +4796,6 @@ msgstr "注意：签名密钥 %s 已于 %s 过期\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "注意：密钥已被吊销"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s 签名，散列算法 %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

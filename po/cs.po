@@ -2177,6 +2177,11 @@ msgstr "importovat podpisy, které jsou označeny jen jako místní"
 msgid "repair damage from the pks keyserver during import"
 msgstr "opravit poškození vzniklá při importu z PKS serveru"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "neaktualizovat databázi důvěry po importu"
+
 msgid "do not update the trustdb after import"
 msgstr "neaktualizovat databázi důvěry po importu"
 
@@ -3155,6 +3160,14 @@ msgstr ""
 "VAROVÁNÍ: žádné uživatelské ID nebylo označeno jako primární.  Tento příkaz\n"
 "              může způsobit, že za primární bude považováno jiné user ID.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nemůžete změnit dobu platnosti klíče verze 3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3948,6 +3961,10 @@ msgstr "VAROVÁNÍ: obsluha serveru klíčů z jiné verze GnuPG (%s)\n"
 msgid "keyserver did not send VERSION\n"
 msgstr "server klíčů neposlal VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "chyba komunikace se serverem klíčů: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "žádný server klíčů není znám (použijte volbu --keyserver)\n"
 
@@ -3971,10 +3988,6 @@ msgstr "časový limit pro server klíčů vypršel\n"
 
 msgid "keyserver internal error\n"
 msgstr "interní chyba serveru klíčů\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "chyba komunikace se serverem klíčů: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4152,6 +4165,10 @@ msgid "unknown"
 msgstr "neznámý formát"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nemohu ověřit podpis: %s\n"
 
@@ -4199,6 +4216,11 @@ msgstr "VAROVÁNÍ: používám experimentální hashovací algoritmus %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "VAROVÁNÍ: vyžádaný algoritmus %s není doporučen\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "podpis %s, hashovací algoritmus %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA modul pro GnuPG nenalezen\n"
 
@@ -4228,6 +4250,17 @@ msgstr "%s:%u: zastaralý parametr „%s“ – neúčinkuje\n"
 
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "VAROVÁNÍ: „%s“ je zastaralý parametr – neúčinkuje\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: zastaralý parametr „%s“ – neúčinkuje\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "VAROVÁNÍ: „%s“ je zastaralý parametr – neúčinkuje\n"
 
 msgid "Uncompressed"
@@ -4266,8 +4299,9 @@ msgstr "Vložte nový název souboru"
 msgid "writing to stdout\n"
 msgstr "zapisuji do standardního výstupu\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "předpokládám podepsaná data v „%s“\n"
 
 #, c-format
@@ -4820,11 +4854,6 @@ msgstr "POZNÁMKA: podpisovému klíči %s skončila platnost %s\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "POZNÁMKA: podpisový klíč %s byl odvolán\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "podpis %s, hashovací algoritmus %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

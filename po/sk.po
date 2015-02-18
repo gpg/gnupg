@@ -2257,6 +2257,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "aktualizova» databázu dôvery"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "aktualizova» databázu dôvery"
 
@@ -3302,6 +3306,14 @@ msgstr ""
 "VAROVANIE: ¾iadne ID u¾ívateµa nebolo oznaèené ako primárne. Tento príkaz\n"
 "spôsobí, ¾e iné ID u¾ívateµa sa bude pova¾ova» primárne.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nemô¾ete zmeni» dobu platnosti kµúèa verzie 3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4114,6 +4126,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "nepodarilo sa prija» kµúè zo servera: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4139,10 +4155,6 @@ msgstr "chyba servera kµúèov"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "chyba servera kµúèov"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "nepodarilo sa prija» kµúè zo servera: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4322,6 +4334,10 @@ msgid "unknown"
 msgstr "neznáme"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Nemô¾em overi» podpis: %s\n"
 
@@ -4372,6 +4388,11 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "vy¾iadaný hashovací algoritmus %s (%d) nevyhovuje predvoµbám príjemcu\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s podpis, hashovací algoritmus %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA modul pre GnuPG nenájdený\n"
 
@@ -4401,6 +4422,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "VAROVÁNÍ: pou¾itie parametra \"%s\" sa neodporúèa\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "VAROVÁNÍ: pou¾itie parametra \"%s\" sa neodporúèa\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "VAROVÁNÍ: pou¾itie parametra \"%s\" sa neodporúèa\n"
 
 msgid "Uncompressed"
@@ -4441,8 +4471,9 @@ msgstr "Vlo¾te nový názov súboru"
 msgid "writing to stdout\n"
 msgstr "zapisujem na ¹tandardný výstup (stdout)\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "predpokladám podpísané dáta v `%s'\n"
 
 #, c-format
@@ -5011,11 +5042,6 @@ msgstr "POZNÁMKA: podpisovému kµúèu %08lX skonèila platnos» %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "POZNÁMKA: kµúè bol revokovaný"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s podpis, hashovací algoritmus %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

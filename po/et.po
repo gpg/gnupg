@@ -2240,6 +2240,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "uuenda usalduse andmebaasi"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "uuenda usalduse andmebaasi"
 
@@ -3276,6 +3280,14 @@ msgstr ""
 "HOIATUS: ühtegi kasutaja ID pole märgitud primaarseks.  See käsklus võib\n"
 "              põhjustada muu kasutaja ID primaarseks määramist.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "v3 võtme aegumise aega ei saa muuta.\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4084,6 +4096,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "võtmeserverilt lugemine ebaõnnestus: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -4109,10 +4125,6 @@ msgstr "võtmeserveri viga"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "võtmeserveri viga"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "võtmeserverilt lugemine ebaõnnestus: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4285,6 +4297,10 @@ msgid "unknown"
 msgstr "tundmatu"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Allkirja ei saa kontrollida: %s\n"
 
@@ -4335,6 +4351,11 @@ msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr ""
 "sõnumilühendi algoritmi %s (%d) kasutamine on vastuolus saaja eelistustega\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "IDEA ¨ifri lisandprogrammi pole\n"
 
@@ -4364,6 +4385,15 @@ msgstr ""
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
+
+#, fuzzy, c-format
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
+
+#, fuzzy, c-format
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "HOIATUS: võtit \"%s\" ei soovitata kasutada.\n"
 
 msgid "Uncompressed"
@@ -4404,8 +4434,9 @@ msgstr "Sisestage uus failinimi"
 msgid "writing to stdout\n"
 msgstr "kirjutan standardväljundisse\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "eeldan allkirjastatud andmeid failis `%s'\n"
 
 #, c-format
@@ -4970,11 +5001,6 @@ msgstr "MÄRKUS: allkirja võti %08lX aegus %s\n"
 #, fuzzy, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "MÄRKUS: võti on tühistatud"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
 
 #, fuzzy, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

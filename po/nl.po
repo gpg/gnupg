@@ -3250,6 +3250,14 @@ msgstr ""
 "              programma te gebruiken kan er een andere gebruikers-ID de\n"
 "              veronderstelde primaire ID worden.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "U kunt de vervaldatum van een v3-sleutel niet veranderen\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4077,6 +4085,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "sleutelserver verstuurde geen versie-informatie\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "fout in de communicatie met de sleutelserver: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "er is geen sleutelserver bekend (gebruik optie --keyserver)\n"
 
@@ -4102,10 +4114,6 @@ msgstr "sleutelserver reageert te langzaam\n"
 
 msgid "keyserver internal error\n"
 msgstr "sleutelserver geeft een interne fout\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "fout in de communicatie met de sleutelserver: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"

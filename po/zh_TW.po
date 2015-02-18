@@ -2092,7 +2092,6 @@ msgstr "匯入標記為僅限本機使用的簽章"
 msgid "repair damage from the pks keyserver during import"
 msgstr "匯入時修復來自 pks 金鑰伺服器的損壞"
 
-#| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
 msgstr "匯入過程中不要清除主觀信任值"
 
@@ -3058,6 +3057,14 @@ msgstr ""
 "警告: 沒有任何使用者 ID 被標示為主要 ID. 這項指令可能會\n"
 "      導致不同的使用者 ID 被當成主要 ID.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "你不能變更 v3 金鑰的使用期限\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3840,6 +3847,10 @@ msgstr "警告: 金鑰伺服器經手程式係來自不同版本的 GnuPG (%s)\n
 msgid "keyserver did not send VERSION\n"
 msgstr "金鑰伺服器並未送出版本 (VERSION)\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "金鑰伺服器通訊錯誤: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"
 
@@ -3863,10 +3874,6 @@ msgstr "金鑰伺服器逾時\n"
 
 msgid "keyserver internal error\n"
 msgstr "金鑰伺服器內部錯誤\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "金鑰伺服器通訊錯誤: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4124,12 +4131,10 @@ msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgstr "警告: \"%s\" 是已廢棄的選項 - 沒有效果\n"
 
 #, c-format
-#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
 msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
 msgstr "%s:%u: \"%s%s\" 在此檔案中已廢棄 - 僅對 %s 造成影響\n"
 
 #, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
 msgid ""
 "WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "警告: \"%s%s\" 是已廢棄的選項 - 除了對 %s 之外沒有效果\n"
@@ -4171,7 +4176,6 @@ msgid "writing to stdout\n"
 msgstr "寫到標準輸出中\n"
 
 #, c-format
-#| msgid "assuming signed data in `%s'\n"
 msgid "assuming signed data in '%s'\n"
 msgstr "假設被簽署的資料在 '%s'\n"
 

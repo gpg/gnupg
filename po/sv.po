@@ -2215,6 +2215,11 @@ msgstr "importera signaturer som är markerade som endast lokala"
 msgid "repair damage from the pks keyserver during import"
 msgstr "reparera skada från pks-nyckelservern under importering"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "uppdatera inte tillitsdatabasen efter importering"
+
 msgid "do not update the trustdb after import"
 msgstr "uppdatera inte tillitsdatabasen efter importering"
 
@@ -3213,6 +3218,14 @@ msgstr ""
 "Detta kommando kan göra att en annan användaridentitet antas\n"
 "vara den primära identiteten.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Du kan inte ändra giltighetsdatum för en v3-nyckel\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4028,6 +4041,10 @@ msgstr "VARNING: nyckelserverhanteraren från en annan version av GnuPG (%s)\n"
 msgid "keyserver did not send VERSION\n"
 msgstr "nyckelserver skickade inte VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "kommunikationsfel mot nyckelserver: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "ingen nyckelserver är känd (använd flaggan --keyserver)\n"
 
@@ -4051,10 +4068,6 @@ msgstr "tidsgräns överstigen för nyckelserver\n"
 
 msgid "keyserver internal error\n"
 msgstr "internt fel i nyckelserver\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "kommunikationsfel mot nyckelserver: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4235,6 +4248,10 @@ msgid "unknown"
 msgstr "okänd"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Kan inte kontrollera signaturen: %s\n"
 
@@ -4284,6 +4301,11 @@ msgstr "VARNING: använder experimentella sammandragsalgoritmen %s\n"
 msgid "WARNING: digest algorithm %s is deprecated\n"
 msgstr "VARNING: sammandragsalgoritmen %s är föråldrad\n"
 
+#, fuzzy, c-format
+#| msgid "%s signature, digest algorithm %s\n"
+msgid "Note: signatures using the %s algorithm are rejected\n"
+msgstr "%s signatur, sammandragsalgoritm %s\n"
+
 msgid "the IDEA cipher plugin is not present\n"
 msgstr "insticksmodul för IDEA-chiffer är inte installerat\n"
 
@@ -4313,6 +4335,17 @@ msgstr "%s:%u: föråldrad flagga \"%s\" - den har ingen effekt\n"
 
 #, c-format
 msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
+
+#, fuzzy, c-format
+#| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgid "%s:%u: \"%s%s\" is obsolete in this file - it only has effect in %s\n"
+msgstr "%s:%u: föråldrad flagga \"%s\" - den har ingen effekt\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid ""
+"WARNING: \"%s%s\" is an obsolete option - it has no effect except on %s\n"
 msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
 
 msgid "Uncompressed"
@@ -4351,8 +4384,9 @@ msgstr "Ange nytt filnamn"
 msgid "writing to stdout\n"
 msgstr "skriver till standard ut\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "antar att signerad data finns i filen \"%s\"\n"
 
 #, c-format
@@ -4933,11 +4967,6 @@ msgstr "OBSERVERA: signaturnyckeln %s gick ut %s\n"
 #, c-format
 msgid "NOTE: signature key %s has been revoked\n"
 msgstr "OBSERVERA: signaturnyckeln %s har spärrats\n"
-
-#, fuzzy, c-format
-#| msgid "%s signature, digest algorithm %s\n"
-msgid "Note: signatures using the %s algorithm are rejected\n"
-msgstr "%s signatur, sammandragsalgoritm %s\n"
 
 #, c-format
 msgid "assuming bad signature from key %s due to an unknown critical bit\n"

@@ -2207,6 +2207,11 @@ msgstr "importer des signatures marquées comme locales seulement"
 msgid "repair damage from the pks keyserver during import"
 msgstr "réparer les données endommagées du serveur pks pendant l'importation"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "ne pas mettre à jour la base de confiance après l'importation"
+
 msgid "do not update the trustdb after import"
 msgstr "ne pas mettre à jour la base de confiance après l'importation"
 
@@ -3202,6 +3207,14 @@ msgstr ""
 "commande\n"
 "            risque de rendre une autre identité principale par défaut.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Vous ne pouvez pas modifier la date d'expiration d'une clef v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -4026,6 +4039,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "le serveurs de clefs n'a pas envoyé sa VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "erreur de communication avec le serveur de clefs : %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "pas de serveur de clefs connu (utilisez l'option --keyserver)\n"
 
@@ -4053,10 +4070,6 @@ msgstr "le délai d'attente du serveur de clefs a expiré\n"
 
 msgid "keyserver internal error\n"
 msgstr "erreur interne du serveur de clefs\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "erreur de communication avec le serveur de clefs : %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4233,6 +4246,10 @@ msgid "unknown"
 msgstr "inconnu"
 
 #, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
+
+#, c-format
 msgid "Can't check signature: %s\n"
 msgstr "Impossible de vérifier la signature : %s\n"
 
@@ -4370,8 +4387,9 @@ msgstr "Entrez le nouveau nom de fichier"
 msgid "writing to stdout\n"
 msgstr "écriture vers la sortie standard\n"
 
-#, c-format
-msgid "assuming signed data in `%s'\n"
+#, fuzzy, c-format
+#| msgid "assuming signed data in `%s'\n"
+msgid "assuming signed data in '%s'\n"
 msgstr "les données signées sont supposées être dans « %s »\n"
 
 #, c-format
