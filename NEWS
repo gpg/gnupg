@@ -1,5 +1,24 @@
-Noteworthy changes in version 2.0.27 (unreleased)
+Noteworthy changes in version 2.0.27 (2015-02-18)
 -------------------------------------------------
+
+ * gpg: Detect faulty use of --verify on detached signatures.
+
+ * gpg: New import option "keep-ownertrust".
+
+ * gpg: Uses SHA-256 for all signature types also on RSA keys.
+
+ * gpg: Added support for algo names when generating keys using the
+   --command-fd method.
+
+ * gpg: Unless --allow-weak-digest-algos is used the insecure MD5
+   based fingerprints are shown as all zeroe
+
+ * gpg: Fixed DoS based on bogus and overlong key packets.
+
+ * gpg: Better error reporting for keyserver problems.
+
+ * Fixed several bugs related to bogus keyrings and improved some
+   other code.
 
 
 Noteworthy changes in version 2.0.26 (2014-08-12)
