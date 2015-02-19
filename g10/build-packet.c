@@ -171,7 +171,7 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
       lenhdr[0] = nbits >> 8;
       lenhdr[1] = nbits;
       rc = iobuf_write (out, lenhdr, 2);
-      if (!rc)
+      if (!rc && p)
         rc = iobuf_write (out, p, (nbits+7)/8);
     }
   else
@@ -209,7 +209,7 @@ gpg_mpi_write_nohdr (iobuf_t out, gcry_mpi_t a)
       const void *p;
 
       p = gcry_mpi_get_opaque (a, &nbits);
-      rc = iobuf_write (out, p, (nbits+7)/8);
+      rc = p ? iobuf_write (out, p, (nbits+7)/8) : 0;
     }
   else
     rc = gpg_error (GPG_ERR_BAD_MPI);
@@ -393,7 +393,8 @@ do_key (iobuf_t out, int ctb, PKT_public_key *pk)
 
           assert (gcry_mpi_get_flag (pk->pkey[npkey], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (pk->pkey[npkey], &ndatabits);
-          iobuf_write (a, p, (ndatabits+7)/8 );
+          if (p)
+            iobuf_write (a, p, (ndatabits+7)/8 );
         }
       else
         {
