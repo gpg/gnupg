@@ -930,15 +930,15 @@ print_userid (PACKET *pkt)
 
   if (pkt->pkttype != PKT_USER_ID)
     {
-      printf ("ERROR: unexpected packet type %d", pkt->pkttype );
+      es_printf ("ERROR: unexpected packet type %d", pkt->pkttype );
       return;
     }
   if (opt.with_colons)
     {
       if (pkt->pkt.user_id->attrib_data)
-        printf("%u %lu",
-               pkt->pkt.user_id->numattribs,
-               pkt->pkt.user_id->attrib_len);
+        es_printf("%u %lu",
+                  pkt->pkt.user_id->numattribs,
+                  pkt->pkt.user_id->attrib_len);
       else
         es_write_sanitized (es_stdout, pkt->pkt.user_id->name,
                             pkt->pkt.user_id->len, ":", NULL);

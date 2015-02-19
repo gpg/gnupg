@@ -1141,59 +1141,62 @@ update_trusthashtbl( TRUSTREC *tr )
 
 
 void
-tdbio_dump_record( TRUSTREC *rec, FILE *fp  )
+tdbio_dump_record (TRUSTREC *rec, estream_t fp)
 {
     int i;
     ulong rnum = rec->recnum;
 
-    fprintf(fp, "rec %5lu, ", rnum );
+    es_fprintf ( fp, "rec %5lu, ", rnum );
 
     switch( rec->rectype ) {
-      case 0: fprintf(fp, "blank\n");
+      case 0:
+        es_fprintf (fp, "blank\n");
 	break;
-      case RECTYPE_VER: fprintf(fp,
-	    "version, td=%lu, f=%lu, m/c/d=%d/%d/%d tm=%d mcl=%d nc=%lu (%s)\n",
-                                   rec->r.ver.trusthashtbl,
-				   rec->r.ver.firstfree,
-				   rec->r.ver.marginals,
-				   rec->r.ver.completes,
-				   rec->r.ver.cert_depth,
-				   rec->r.ver.trust_model,
-				   rec->r.ver.min_cert_level,
-                                   rec->r.ver.nextcheck,
-				   strtimestamp(rec->r.ver.nextcheck)
-                                 );
+      case RECTYPE_VER:
+        es_fprintf (fp,
+         "version, td=%lu, f=%lu, m/c/d=%d/%d/%d tm=%d mcl=%d nc=%lu (%s)\n",
+                rec->r.ver.trusthashtbl,
+                rec->r.ver.firstfree,
+                rec->r.ver.marginals,
+                rec->r.ver.completes,
+                rec->r.ver.cert_depth,
+                rec->r.ver.trust_model,
+                rec->r.ver.min_cert_level,
+                rec->r.ver.nextcheck,
+                strtimestamp(rec->r.ver.nextcheck)
+                );
 	break;
-      case RECTYPE_FREE: fprintf(fp, "free, next=%lu\n", rec->r.free.next );
+      case RECTYPE_FREE:
+        es_fprintf (fp, "free, next=%lu\n", rec->r.free.next );
 	break;
       case RECTYPE_HTBL:
-	fprintf(fp, "htbl,");
+	es_fprintf (fp, "htbl,");
 	for(i=0; i < ITEMS_PER_HTBL_RECORD; i++ )
-	    fprintf(fp, " %lu", rec->r.htbl.item[i] );
-	putc('\n', fp);
+          es_fprintf (fp, " %lu", rec->r.htbl.item[i] );
+	es_putc ('\n', fp);
 	break;
       case RECTYPE_HLST:
-	fprintf(fp, "hlst, next=%lu,", rec->r.hlst.next );
+	es_fprintf (fp, "hlst, next=%lu,", rec->r.hlst.next );
 	for(i=0; i < ITEMS_PER_HLST_RECORD; i++ )
-	    fprintf(fp, " %lu", rec->r.hlst.rnum[i] );
-	putc('\n', fp);
+          es_fprintf (fp, " %lu", rec->r.hlst.rnum[i] );
+	es_putc ('\n', fp);
 	break;
       case RECTYPE_TRUST:
-	fprintf(fp, "trust ");
+	es_fprintf (fp, "trust ");
 	for(i=0; i < 20; i++ )
-	    fprintf(fp, "%02X", rec->r.trust.fingerprint[i] );
-        fprintf (fp, ", ot=%d, d=%d, vl=%lu\n", rec->r.trust.ownertrust,
-                 rec->r.trust.depth, rec->r.trust.validlist);
+	    es_fprintf (fp, "%02X", rec->r.trust.fingerprint[i] );
+        es_fprintf (fp, ", ot=%d, d=%d, vl=%lu\n", rec->r.trust.ownertrust,
+                    rec->r.trust.depth, rec->r.trust.validlist);
 	break;
       case RECTYPE_VALID:
-	fprintf(fp, "valid ");
+	es_fprintf (fp, "valid ");
 	for(i=0; i < 20; i++ )
-	    fprintf(fp, "%02X", rec->r.valid.namehash[i] );
-        fprintf (fp, ", v=%d, next=%lu\n", rec->r.valid.validity,
-                 rec->r.valid.next);
+          es_fprintf(fp, "%02X", rec->r.valid.namehash[i] );
+        es_fprintf (fp, ", v=%d, next=%lu\n", rec->r.valid.validity,
+                    rec->r.valid.next);
 	break;
       default:
-	fprintf(fp, "unknown type %d\n", rec->rectype );
+	es_fprintf (fp, "unknown type %d\n", rec->rectype );
 	break;
     }
 }

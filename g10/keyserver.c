@@ -1488,12 +1488,12 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
   /* Write global options */
 
   /* for(temp=opt.keyserver_options.other;temp;temp=temp->next) */
-  /*   fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
+  /*   es_fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
 
   /* Write per-keyserver options */
 
   /* for(temp=keyserver->options;temp;temp=temp->next) */
-  /*   fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
+  /*   es_fprintf(spawn->tochild,"OPTION %s\n",temp->d); */
 
   {
     membuf_t mb;

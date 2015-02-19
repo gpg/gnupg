@@ -1068,7 +1068,7 @@ get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
 	{
 	  uid->help_marginal_count=vrec.r.valid.marginal_count;
 	  uid->help_full_count=vrec.r.valid.full_count;
-	  /*  printf("Fetched marginal %d, full %d\n",uid->help_marginal_count,uid->help_full_count); */
+	  /*  es_printf("Fetched marginal %d, full %d\n",uid->help_marginal_count,uid->help_full_count); */
 	  break;
 	}
 
@@ -1197,8 +1197,8 @@ dump_key_array (int depth, struct key_array *keys)
       u32 kid[2];
 
       keyid_from_pk(node->pkt->pkt.public_key, kid);
-      printf ("%d:%08lX%08lX:K::%c::::\n",
-              depth, (ulong)kid[0], (ulong)kid[1], '?');
+      es_printf ("%d:%08lX%08lX:K::%c::::\n",
+                 depth, (ulong)kid[0], (ulong)kid[1], '?');
 
       for (; node; node = node->next)
         {
@@ -1208,15 +1208,15 @@ dump_key_array (int depth, struct key_array *keys)
 
               if (len > 30)
                 len = 30;
-              printf ("%d:%08lX%08lX:U:::%c:::",
-                      depth, (ulong)kid[0], (ulong)kid[1],
-                      (node->flag & 4)? 'f':
-                      (node->flag & 2)? 'm':
-                      (node->flag & 1)? 'q':'-');
+              es_printf ("%d:%08lX%08lX:U:::%c:::",
+                         depth, (ulong)kid[0], (ulong)kid[1],
+                         (node->flag & 4)? 'f':
+                         (node->flag & 2)? 'm':
+                         (node->flag & 1)? 'q':'-');
               es_write_sanitized (es_stdout, node->pkt->pkt.user_id->name,
                                   len, ":", NULL);
-              putchar (':');
-              putchar ('\n');
+              es_putc (':', es_stdout);
+              es_putc ('\n', es_stdout);
             }
         }
     }

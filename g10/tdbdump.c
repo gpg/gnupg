@@ -78,12 +78,12 @@ list_trustdb( const char *username )
       ulong recnum;
       int i;
 
-      printf("TrustDB: %s\n", tdbio_get_dbname() );
+      es_printf ("TrustDB: %s\n", tdbio_get_dbname() );
       for(i=9+strlen(tdbio_get_dbname()); i > 0; i-- )
-        putchar('-');
-      putchar('\n');
+        es_putc ('-', es_stdout);
+      es_putc ('\n', es_stdout);
       for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ )
-        tdbio_dump_record( &rec, stdout );
+        tdbio_dump_record (&rec, es_stdout);
     }
 }
 
@@ -97,23 +97,25 @@ list_trustdb( const char *username )
 void
 export_ownertrust()
 {
-    TRUSTREC rec;
-    ulong recnum;
-    int i;
-    byte *p;
+  TRUSTREC rec;
+  ulong recnum;
+  int i;
+  byte *p;
 
-    init_trustdb();
-    printf(_("# List of assigned trustvalues, created %s\n"
-	     "# (Use \"gpg --import-ownertrust\" to restore them)\n"),
-	   asctimestamp( make_timestamp() ) );
-    for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ ) {
-	if( rec.rectype == RECTYPE_TRUST ) {
-	    if( !rec.r.trust.ownertrust )
-		continue;
-	    p = rec.r.trust.fingerprint;
-	    for(i=0; i < 20; i++, p++ )
-		printf("%02X", *p );
-	    printf(":%u:\n", (unsigned int)rec.r.trust.ownertrust );
+  init_trustdb();
+  es_printf (_("# List of assigned trustvalues, created %s\n"
+               "# (Use \"gpg --import-ownertrust\" to restore them)\n"),
+             asctimestamp( make_timestamp() ) );
+  for (recnum=0; !tdbio_read_record (recnum, &rec, 0); recnum++ )
+    {
+      if (rec.rectype == RECTYPE_TRUST)
+        {
+          if (!rec.r.trust.ownertrust)
+            continue;
+          p = rec.r.trust.fingerprint;
+          for (i=0; i < 20; i++, p++ )
+            es_printf("%02X", *p );
+          es_printf (":%u:\n", (unsigned int)rec.r.trust.ownertrust );
 	}
     }
 }
@@ -122,7 +124,7 @@ export_ownertrust()
 void
 import_ownertrust( const char *fname )
 {
-    FILE *fp;
+    estream_t fp;
     int is_stdin=0;
     char line[256];
     char *p;
@@ -134,24 +136,24 @@ import_ownertrust( const char *fname )
 
     init_trustdb();
     if( iobuf_is_pipe_filename (fname) ) {
-	fp = stdin;
+	fp = es_stdin;
 	fname = "[stdin]";
 	is_stdin = 1;
     }
-    else if( !(fp = fopen( fname, "r" )) ) {
+    else if( !(fp = es_fopen( fname, "r" )) ) {
 	log_error ( _("can't open '%s': %s\n"), fname, strerror(errno) );
 	return;
     }
 
-    if (is_secured_file (fileno (fp)))
+    if (is_secured_file (es_fileno (fp)))
       {
-        fclose (fp);
+        es_fclose (fp);
         gpg_err_set_errno (EPERM);
 	log_error (_("can't open '%s': %s\n"), fname, strerror(errno) );
 	return;
       }
 
-    while( fgets( line, DIM(line)-1, fp ) ) {
+    while (es_fgets (line, DIM(line)-1, fp)) {
 	TRUSTREC rec;
 
 	if( !*line || *line == '#' )
@@ -216,10 +218,10 @@ import_ownertrust( const char *fname )
 	    log_error (_("error finding trust record in '%s': %s\n"),
                        fname, gpg_strerror (rc));
     }
-    if( ferror(fp) )
+    if (es_ferror (fp))
 	log_error ( _("read error in '%s': %s\n"), fname, strerror(errno) );
-    if( !is_stdin )
-	fclose(fp);
+    if (!is_stdin)
+	es_fclose (fp);
 
     if (any)
       {

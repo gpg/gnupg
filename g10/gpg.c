@@ -1038,7 +1038,7 @@ build_list (const char *text, char letter,
 static void
 wrong_args( const char *text)
 {
-  fprintf (stderr, _("usage: %s [options] %s\n"), GPG_NAME, text);
+  es_fprintf (es_stderr, _("usage: %s [options] %s\n"), GPG_NAME, text);
   g10_exit(2);
 }
 
@@ -4021,7 +4021,7 @@ main (int argc, char **argv)
 		mpi_print (es_stdout, generate_elg_prime(
 					     1, atoi(argv[1]),
 					     atoi(argv[2]), NULL,&factors ), 1);
-		putchar('\n');
+		es_putc ('\n', es_stdout);
 		mpi_print (es_stdout, factors[0], 1 ); /* print q */
 	    }
 	    else if( mode == 4 && argc == 3 ) {
@@ -4029,13 +4029,13 @@ main (int argc, char **argv)
 		mpi_print (es_stdout, generate_elg_prime(
 						 0, atoi(argv[1]),
 						 atoi(argv[2]), g, NULL ), 1);
-		putchar('\n');
+		es_putc ('\n', es_stdout);
 		mpi_print (es_stdout, g, 1 );
 		mpi_free (g);
 	    }
 	    else
 		wrong_args("--gen-prime mode bits [qbits] ");
-	    putchar('\n');
+	    es_putc ('\n', es_stdout);
 	}
 #endif
         wrong_args("--gen-prime not yet supported ");
@@ -4064,21 +4064,21 @@ main (int argc, char **argv)
 #endif
                 if (opt.armor) {
                     char *tmp = make_radix64_string (p, n);
-                    fputs (tmp, stdout);
+                    es_fputs (tmp, es_stdout);
                     xfree (tmp);
                     if (n%3 == 1)
-                      putchar ('=');
+                      es_putc ('=', es_stdout);
                     if (n%3)
-                      putchar ('=');
+                      es_putc ('=', es_stdout);
                 } else {
-                    fwrite( p, n, 1, stdout );
+                    es_fwrite( p, n, 1, es_stdout );
                 }
 		xfree(p);
 		if( !endless )
 		    count -= n;
 	    }
             if (opt.armor)
-                putchar ('\n');
+              es_putc ('\n', es_stdout);
 	}
 	break;
 
@@ -4298,7 +4298,7 @@ print_hex (gcry_md_hd_t md, int algo, const char *fname)
 
   if (indent>40)
     {
-      printf("\n");
+      es_printf ("\n");
       indent=0;
     }
 
@@ -4396,24 +4396,22 @@ print_hashline( gcry_md_hd_t md, int algo, const char *fname )
 static void
 print_mds( const char *fname, int algo )
 {
-  FILE *fp;
+  estream_t fp;
   char buf[1024];
   size_t n;
   gcry_md_hd_t md;
 
   if (!fname)
     {
-      fp = stdin;
-#ifdef HAVE_DOSISH_SYSTEM
-      setmode ( fileno(fp) , O_BINARY );
-#endif
+      fp = es_stdin;
+      es_set_binary (fp);
     }
   else
     {
-      fp = fopen (fname, "rb" );
-      if (fp && is_secured_file (fileno (fp)))
+      fp = es_fopen (fname, "rb" );
+      if (fp && is_secured_file (es_fileno (fp)))
         {
-          fclose (fp);
+          es_fclose (fp);
           fp = NULL;
           gpg_err_set_errno (EPERM);
         }
@@ -4444,10 +4442,10 @@ print_mds( const char *fname, int algo )
         gcry_md_enable (md, GCRY_MD_SHA512);
     }
 
-  while ((n=fread (buf, 1, DIM(buf), fp)))
+  while ((n=es_fread (buf, 1, DIM(buf), fp)))
     gcry_md_write (md, buf, n);
 
-  if (ferror(fp))
+  if (es_ferror(fp))
     log_error ("%s: %s\n", fname?fname:"[stdin]", strerror(errno));
   else
     {
@@ -4497,8 +4495,8 @@ print_mds( const char *fname, int algo )
     }
   gcry_md_close (md);
 
-  if (fp != stdin)
-    fclose (fp);
+  if (fp != es_stdin)
+    es_fclose (fp);
 }
 
 

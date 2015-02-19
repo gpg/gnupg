@@ -158,23 +158,23 @@ print_and_check_one_sig_colon (KBNODE keyblock, KBNODE node,
 
   if (sigrc != '?' || print_without_key)
     {
-      printf ("sig:%c::%d:%08lX%08lX:%lu:%lu:",
-	      sigrc, sig->pubkey_algo, (ulong) sig->keyid[0],
-	      (ulong) sig->keyid[1], (ulong) sig->timestamp,
-	      (ulong) sig->expiredate);
+      es_printf ("sig:%c::%d:%08lX%08lX:%lu:%lu:",
+                 sigrc, sig->pubkey_algo, (ulong) sig->keyid[0],
+                 (ulong) sig->keyid[1], (ulong) sig->timestamp,
+                 (ulong) sig->expiredate);
 
       if (sig->trust_depth || sig->trust_value)
-	printf ("%d %d", sig->trust_depth, sig->trust_value);
+	es_printf ("%d %d", sig->trust_depth, sig->trust_value);
 
-      printf (":");
+      es_printf (":");
 
       if (sig->trust_regexp)
 	es_write_sanitized (es_stdout,
 			    sig->trust_regexp, strlen (sig->trust_regexp),
 			    ":", NULL);
 
-      printf ("::%02x%c\n", sig->sig_class,
-	      sig->flags.exportable ? 'x' : 'l');
+      es_printf ("::%02x%c\n", sig->sig_class,
+                 sig->flags.exportable ? 'x' : 'l');
 
       if (opt.show_subpackets)
 	print_subpackets_colon (sig);
@@ -4735,11 +4735,11 @@ ask_revoke_sig (KBNODE keyblock, KBNODE node)
 	printf ("uat:::::::::%u %lu", uid->numattribs, uid->attrib_len);
       else
 	{
-	  printf ("uid:::::::::");
+	  es_printf ("uid:::::::::");
 	  es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
 	}
 
-      printf ("\n");
+      es_printf ("\n");
 
       print_and_check_one_sig_colon (keyblock, node, NULL, NULL, NULL, NULL,
 				     1);

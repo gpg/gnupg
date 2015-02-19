@@ -427,7 +427,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
 
   busy=1;
 
-  /*  printf("looking at %08lX with a sig from %08lX\n",(ulong)pk->keyid[1],
+  /*  es_printf("looking at %08lX with a sig from %08lX\n",(ulong)pk->keyid[1],
       (ulong)sig->keyid[1]); */
 
   /* is the issuer of the sig one of our revokers? */

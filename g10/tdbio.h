@@ -95,7 +95,7 @@ typedef struct trust_record TRUSTREC;
 int tdbio_update_version_record(void);
 int tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile);
 const char *tdbio_get_dbname(void);
-void tdbio_dump_record( TRUSTREC *rec, FILE *fp );
+void tdbio_dump_record( TRUSTREC *rec, estream_t fp );
 int tdbio_read_record( ulong recnum, TRUSTREC *rec, int expected );
 int tdbio_write_record( TRUSTREC *rec );
 int tdbio_db_matches_options(void);

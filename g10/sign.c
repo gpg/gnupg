@@ -1021,7 +1021,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 		  }
                 handle_progress (pfx, inp, sl->d);
 		if( opt.verbose )
-		    fprintf(stderr, " '%s'", sl->d );
+                  log_printf (" '%s'", sl->d );
 		if(opt.textmode)
 		  {
 		    memset( &tfx, 0, sizeof tfx);
@@ -1033,7 +1033,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 		iobuf_close(inp); inp = NULL;
 	    }
 	    if( opt.verbose )
-		putc( '\n', stderr );
+              log_printf ("\n");
 	}
 	else {
 	    /* read, so that the filter can calculate the digest */

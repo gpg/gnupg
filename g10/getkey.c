@@ -116,7 +116,7 @@ print_stats ()
   for (i = 0; i < DIM (lkup_stats); i++)
     {
       if (lkup_stats[i].any)
-	fprintf (stderr,
+	es_fprintf (es_stderr,
 		 "lookup stats: mode=%-2d  ok=%-6d  nokey=%-6d  err=%-6d\n",
 		 i,
 		 lkup_stats[i].okay_count,
