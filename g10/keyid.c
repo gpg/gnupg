@@ -115,14 +115,18 @@ hash_public_key( gcry_md_hd_t md, PKT_public_key *pk )
   if(npkey==0 && pk->pkey[0]
      && gcry_mpi_get_flag (pk->pkey[0], GCRYMPI_FLAG_OPAQUE))
     {
-      gcry_md_write (md, pp[0], nn[0]);
+      if (pp[0])
+        gcry_md_write (md, pp[0], nn[0]);
     }
   else
-    for(i=0; i < npkey; i++ )
-      {
-	gcry_md_write ( md, pp[i], nn[i] );
-	xfree(pp[i]);
-      }
+    {
+      for(i=0; i < npkey; i++ )
+        {
+          if (pp[i])
+            gcry_md_write ( md, pp[i], nn[i] );
+          xfree(pp[i]);
+        }
+    }
 }
 
 static gcry_md_hd_t

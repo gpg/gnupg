@@ -398,7 +398,8 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 
       assert (gcry_mpi_get_flag (sk->skey[npkey], GCRYMPI_FLAG_OPAQUE));
       p = gcry_mpi_get_opaque (sk->skey[npkey], &ndatabits );
-      iobuf_write (a, p, (ndatabits+7)/8 );
+      if (p)
+        iobuf_write (a, p, (ndatabits+7)/8 );
     }
   else if ( sk->is_protected )
     {
@@ -410,7 +411,8 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 
           assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
           p = gcry_mpi_get_opaque (sk->skey[i], &ndatabits);
-          iobuf_write (a, p, (ndatabits+7)/8);
+          if (p)
+            iobuf_write (a, p, (ndatabits+7)/8);
         }
       write_16(a, sk->csum );
     }
