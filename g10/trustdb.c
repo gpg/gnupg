@@ -938,11 +938,13 @@ tdb_check_trustdb_stale (void)
           if (opt.no_auto_check_trustdb)
             {
               pending_check_trustdb = 1;
-              log_info (_("please do a --check-trustdb\n"));
+              if (!opt.quiet)
+                log_info (_("please do a --check-trustdb\n"));
             }
           else
             {
-              log_info (_("checking the trustdb\n"));
+              if (!opt.quiet)
+                log_info (_("checking the trustdb\n"));
               validate_keys (0);
             }
         }
