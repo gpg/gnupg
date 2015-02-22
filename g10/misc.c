@@ -462,7 +462,7 @@ md5_digest_warn (int show)
       log_info (_("WARNING: digest algorithm %s is deprecated\n"),
                 digest_algo_to_string (DIGEST_ALGO_MD5));
       log_info (_("please see %s for more information\n"),
-                "http://www.gnupg.org/faq/weak-digest-algos.html");
+                "https://gnupg.org/faq/weak-digest-algos.html");
       warned = 1;
     }
 }
@@ -477,7 +477,7 @@ not_in_gpg1_notice (void)
     {
       log_info (_("NOTE: This feature is not available in %s\n"), "GnuPG 1.x");
       log_info (_("please see %s for more information\n"),
-                "http://www.gnupg.org/faq/features-not-in-gnupg-1.html");
+                "https://gnupg.org/faq/features-not-in-gnupg-1.html");
       warned = 1;
     }
 }
