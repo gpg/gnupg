@@ -1481,7 +1481,7 @@ ask_key_flags(int algo,int subkey)
 static int
 ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
 {
-  char *answer;
+  char *answer = NULL;
   int algo;
   int dummy_algo;
 
@@ -1512,53 +1512,53 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
     {
       *r_usage = 0;
       *r_subkey_algo = 0;
+      xfree (answer);
       answer = cpr_get ("keygen.algo", _("Your selection? "));
       cpr_kill_prompt ();
-      algo = *answer? atoi(answer): 1;
-      xfree (answer);
-      if ( algo == 1 && !addmode )
+      algo = *answer? atoi (answer) : 1;
+      if ((algo == 1 || !strcmp (answer, "rsa+rsa")) && !addmode)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_subkey_algo = PUBKEY_ALGO_RSA;
           break;
 	}
-      else if (algo == 2 && !addmode)
+      else if ((algo == 2 || !strcmp (answer, "dsa+elg")) && !addmode)
         {
           algo = PUBKEY_ALGO_DSA;
           *r_subkey_algo = PUBKEY_ALGO_ELGAMAL_E;
           break;
 	}
-      else if (algo == 3)
+      else if (algo == 3 || !strcmp (answer, "dsa"))
         {
           algo = PUBKEY_ALGO_DSA;
           *r_usage = PUBKEY_USAGE_SIG;
           break;
 	}
-      else if (algo == 4)
+      else if (algo == 4 || !strcmp (answer, "rsa/s"))
         {
           algo = PUBKEY_ALGO_RSA;
           *r_usage = PUBKEY_USAGE_SIG;
           break;
 	}
-      else if (algo == 5 && addmode)
+      else if ((algo == 5 || !strcmp (answer, "elg")) && addmode)
         {
           algo = PUBKEY_ALGO_ELGAMAL_E;
           *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
-      else if (algo == 6 && addmode)
+      else if ((algo == 6 || !strcmp (answer, "rsa/e")) && addmode)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_usage = PUBKEY_USAGE_ENC;
           break;
 	}
-      else if (algo == 7 && opt.expert)
+      else if ((algo == 7 || !strcmp (answer, "dsa/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_DSA;
           *r_usage = ask_key_flags (algo, addmode);
           break;
 	}
-      else if (algo == 8 && opt.expert)
+      else if ((algo == 8 || !strcmp (answer, "rsa/*")) && opt.expert)
         {
           algo = PUBKEY_ALGO_RSA;
           *r_usage = ask_key_flags (algo, addmode);
@@ -1566,8 +1566,10 @@ ask_algo (int addmode, int *r_subkey_algo, unsigned int *r_usage)
 	}
       else
         tty_printf (_("Invalid selection.\n"));
+
     }
 
+  xfree(answer);
   return algo;
 }
 
