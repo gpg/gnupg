@@ -40,6 +40,8 @@ typedef struct {
 
     /* these fileds must be initialized to zero */
     int no_openpgp_data;    /* output flag: "No valid OpenPGP data found" */
+    int key_failed_code;    /* Error code from the first gpgkkeys_*
+                               "KEY <keyid> FAILED <err>" line.  */
 
     /* the following fields must be initialized to zero */
     int inp_checked;	    /* set if the input has been checked */

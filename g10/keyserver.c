@@ -1040,6 +1040,30 @@ keyserver_retrieval_filter (kbnode_t keyblock, void *opaque)
 }
 
 
+static const char *
+keyserver_errstr (int code)
+{
+  const char *s;
+
+  switch (code)
+    {
+    case KEYSERVER_OK:            s = "success"; break;
+    case KEYSERVER_INTERNAL_ERROR:s = "keyserver helper internal error"; break;
+    case KEYSERVER_NOT_SUPPORTED: s = "keyserver not supported"; break;
+    case KEYSERVER_VERSION_ERROR: s = "keyserver helper version mismatch";break;
+    case KEYSERVER_GENERAL_ERROR: s = "keyserver helper general error"; break;
+    case KEYSERVER_NO_MEMORY:     s = "keyserver helper is out of core"; break;
+    case KEYSERVER_KEY_NOT_FOUND: s = "key not found"; break;
+    case KEYSERVER_KEY_EXISTS:    s = "key exists"; break;
+    case KEYSERVER_KEY_INCOMPLETE:s = "key incomplete (EOF)"; break;
+    case KEYSERVER_UNREACHABLE:   s = "keyserver unreachable"; break;
+    case KEYSERVER_TIMEOUT:       s = "keyserver timeout"; break;
+    default:                      s = "?"; break;
+    }
+  return s;
+}
+
+
 static int
 keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 		int count,int *prog,unsigned char **fpr,size_t *fpr_len,
@@ -1539,8 +1563,11 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	plen--;
       ptr[plen]='\0';
 
-      if(*ptr=='\0')
-	break;
+      /* Stop at the first empty line but not if we are sending keys.
+         In the latter case we won't continue reading later and thus
+         we need to watch out for errors right in this loop.  */
+      if(*ptr=='\0' && action != KS_SEND)
+        break;
 
       if(ascii_strncasecmp(ptr,"VERSION ",8)==0)
 	{
@@ -1561,6 +1588,14 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	}
       else if(ascii_strncasecmp(ptr,"OPTION OUTOFBAND",16)==0)
 	outofband=1; /* Currently the only OPTION */
+      else if (action == KS_SEND
+               && ascii_strncasecmp(ptr,"KEY ",4)==0)
+        {
+          ret = parse_key_failed_line (ptr+4, strlen (ptr+4));
+          break;  /* We stop at the first KEY line so that we won't
+                     run into an EOF which would return an unspecified
+                     error message (due to iobuf_read_line).  */
+        }
     }
 
   if(!gotversion)
@@ -1577,6 +1612,7 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	{
 	  void *stats_handle;
           struct ks_retrieval_filter_arg_s filterarg;
+          int gpgkeys_err;
 
 	  stats_handle=import_new_stats_handle();
 
@@ -1591,14 +1627,21 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	     but we better protect against rogue keyservers. */
           filterarg.desc = desc;
           filterarg.ndesc = count;
+          gpgkeys_err = 0;
 	  import_keys_stream (spawn->fromchild, stats_handle, fpr, fpr_len,
                              (opt.keyserver_options.import_options
                               | IMPORT_NO_SECKEY),
-                              keyserver_retrieval_filter, &filterarg);
+                              keyserver_retrieval_filter, &filterarg,
+                              &gpgkeys_err);
 
 	  import_print_stats(stats_handle);
 	  import_release_stats_handle(stats_handle);
-
+          if (gpgkeys_err)
+            {
+              log_error (_("keyserver communications error: %s\n"),
+                         keyserver_errstr (gpgkeys_err));
+              ret = gpgkeys_err;
+            }
 	  break;
 	}
 
@@ -1618,7 +1661,6 @@ keyserver_spawn(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
  fail:
   xfree(line);
   xfree(searchstr);
-
 
   *prog=exec_finish(spawn);
 
@@ -1644,9 +1686,11 @@ keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
   return G10ERR_KEYSERVER;
 
 #else
-  /* Spawn a handler */
-
+  /* Spawn a handler.  The use of RC and RET is a mess.  We use a
+     kludge to return a suitable error message.  */
   rc=keyserver_spawn(action,list,desc,count,&ret,fpr,fpr_len,keyserver);
+  if (ret == KEYSERVER_INTERNAL_ERROR && rc)
+    ret = rc;
   if(ret)
     {
       switch(ret)
@@ -1674,6 +1718,9 @@ keyserver_work(enum ks_action action,STRLIST list,KEYDB_SEARCH_DESC *desc,
 	case KEYSERVER_TIMEOUT:
 	  log_error(_("keyserver timed out\n"));
 	  break;
+
+        case KEYSERVER_UNREACHABLE:
+          return G10ERR_UNKNOWN_HOST;
 
 	case KEYSERVER_INTERNAL_ERROR:
 	default:
@@ -2127,7 +2174,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
 
       rc=import_keys_stream (key, NULL, fpr, fpr_len,
                              (opt.keyserver_options.import_options
-                              | IMPORT_NO_SECKEY), NULL, NULL);
+                              | IMPORT_NO_SECKEY), NULL, NULL, NULL);
 
       opt.no_armor=armor_status;
 

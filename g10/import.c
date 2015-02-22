@@ -60,7 +60,8 @@ struct stats_s {
 
 static int import( IOBUF inp, const char* fname,struct stats_s *stats,
 		   unsigned char **fpr,size_t *fpr_len,unsigned int options,
-		   import_filter_t filter, void *filter_arg );
+		   import_filter_t filter, void *filter_arg,
+                   int *r_gpgkeys_err);
 static int read_block( IOBUF a, PACKET **pending_pkt, KBNODE *ret_root );
 static void revocation_present(KBNODE keyblock);
 static int import_one(const char *fname, KBNODE keyblock,struct stats_s *stats,
@@ -177,7 +178,8 @@ static int
 import_keys_internal( IOBUF inp, char **fnames, int nnames,
 		      void *stats_handle, unsigned char **fpr, size_t *fpr_len,
 		      unsigned int options,
-		      import_filter_t filter, void *filter_arg)
+		      import_filter_t filter, void *filter_arg,
+                      int *r_gpgkeys_err)
 {
     int i, rc = 0;
     struct stats_s *stats = stats_handle;
@@ -187,7 +189,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 
     if (inp) {
         rc = import (inp, "[stream]", stats, fpr, fpr_len, options,
-                     filter, filter_arg);
+                     filter, filter_arg, r_gpgkeys_err);
     }
     else {
         int once = (!fnames && !nnames);
@@ -208,7 +210,7 @@ import_keys_internal( IOBUF inp, char **fnames, int nnames,
 	    else
 	      {
 	        rc = import (inp2, fname, stats, fpr, fpr_len, options,
-                             NULL, NULL);
+                             NULL, NULL, r_gpgkeys_err);
 	        iobuf_close(inp2);
                 /* Must invalidate that ugly cache to actually close it. */
                 iobuf_ioctl (NULL, 2, 0, (char*)fname);
@@ -240,34 +242,42 @@ import_keys( char **fnames, int nnames,
 	     void *stats_handle, unsigned int options )
 {
   import_keys_internal (NULL, fnames, nnames, stats_handle, NULL, NULL,
-                        options, NULL, NULL);
+                        options, NULL, NULL, NULL);
 }
 
+
+/* Import keys from an open stream.  */
 int
 import_keys_stream( IOBUF inp, void *stats_handle,
 		    unsigned char **fpr, size_t *fpr_len,unsigned int options,
-	            import_filter_t filter, void *filter_arg )
+	            import_filter_t filter, void *filter_arg,
+                    int *r_gpgkeys_err)
 {
   return import_keys_internal (inp, NULL, 0, stats_handle, fpr, fpr_len,
-                               options, filter, filter_arg);
+                               options, filter, filter_arg, r_gpgkeys_err);
 }
 
+
+/* Note: If R_GPGKEYS_ERR is not NULL an error code from the keyserver
+   helpers will be stored there.  */
 static int
-import( IOBUF inp, const char* fname,struct stats_s *stats,
-	unsigned char **fpr,size_t *fpr_len,unsigned int options,
-	import_filter_t filter, void *filter_arg)
+import (IOBUF inp, const char* fname,struct stats_s *stats,
+	unsigned char **fpr, size_t *fpr_len, unsigned int options,
+	import_filter_t filter, void *filter_arg, int *r_gpgkeys_err)
 {
     PACKET *pending_pkt = NULL;
     KBNODE keyblock = NULL;
     int rc = 0;
+    int need_armor = (!opt.no_armor || r_gpgkeys_err);
+    armor_filter_context_t *afx = NULL;
 
     getkey_disable_caches();
 
-    if( !opt.no_armor ) { /* armored reading is not disabled */
-	armor_filter_context_t *afx = new_armor_context ();
+    if (!opt.no_armor || r_gpgkeys_err) {
+        /* armored reading is not disabled or enforced. */
+        afx = new_armor_context ();
 	afx->only_keyblocks = 1;
 	push_armor_filter (afx, inp);
-        release_armor_context (afx);
     }
 
     while( !(rc = read_block( inp, &pending_pkt, &keyblock) )) {
@@ -296,6 +306,11 @@ import( IOBUF inp, const char* fname,struct stats_s *stats,
 	rc = 0;
     else if( rc && rc != G10ERR_INV_KEYRING )
 	log_error( _("error reading `%s': %s\n"), fname, g10_errstr(rc));
+
+    if (afx && r_gpgkeys_err)
+      *r_gpgkeys_err = afx->key_failed_code;
+
+    release_armor_context (afx);
 
     return rc;
 }

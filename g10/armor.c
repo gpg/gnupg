@@ -385,6 +385,32 @@ is_armor_header( byte *line, unsigned len )
 }
 
 
+/* Helper to parse a "KEY <keyid> FAILED <code>" line and return the
+   error code.  LINEPTR points right behind "KEY ".  */
+int
+parse_key_failed_line (const void *lineptr, unsigned int len)
+{
+  const byte *line = lineptr;
+  int code = 0;
+
+  for (; len && !spacep (line); len--, line++)
+    ;
+  for (; len && spacep (line); len--, line++)
+    ;
+  if (len > 7 && !memcmp (line, "FAILED ", 7))
+    {
+      line += 7;
+      len -= 7;
+      for (; len && digitp (line); len--, line++)
+        {
+          code *= 10;
+          code += atoi_1 (line);
+        }
+    }
+
+  return code;
+}
+
 
 /****************
  * Parse a header lines
@@ -505,6 +531,17 @@ check_input( armor_filter_context_t *afx, IOBUF a )
     /* find the armor header */
     while(len) {
 	i = is_armor_header( line, len );
+        if (i == -1 && afx->only_keyblocks
+            && !afx->key_failed_code
+            && len > 4 && !memcmp (line, "KEY ", 4))
+          {
+            /* This is probably input from a keyserver helper and we
+               have not yet seen an error line.  */
+            afx->key_failed_code = parse_key_failed_line (line+4, len-4);
+            log_debug ("armor-keys-failed (%.*s) ->%d\n",
+                       (int)len, line,
+                       afx->key_failed_code);
+          }
 	if( i >= 0 && !(afx->only_keyblocks && i != 1 && i != 5 && i != 6 )) {
 	    hdr_line = i;
 	    if( hdr_line == BEGIN_SIGNED_MSG_IDX ) {
