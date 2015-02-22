@@ -193,7 +193,8 @@ write_fake_data( IOBUF out, MPI a )
 	void *p;
 
 	p = mpi_get_opaque( a, &i );
-	iobuf_write( out, p, i );
+	if (p)
+          iobuf_write( out, p, i );
     }
 }
 
