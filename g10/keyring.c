@@ -400,8 +400,26 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
             rc = G10ERR_INV_KEYRING;
             break;
         }
-	if (pkt->pkttype == PKT_COMPRESSED) {
-	    log_error ("skipped compressed packet in keyring\n");
+
+        /* Filter allowed packets.  */
+        switch (pkt->pkttype){
+          case PKT_PUBLIC_KEY:
+          case PKT_PUBLIC_SUBKEY:
+          case PKT_SECRET_KEY:
+          case PKT_SECRET_SUBKEY:
+          case PKT_USER_ID:
+          case PKT_ATTRIBUTE:
+          case PKT_SIGNATURE:
+            break; /* Allowed per RFC.  */
+          case PKT_RING_TRUST:
+          case PKT_OLD_COMMENT:
+          case PKT_COMMENT:
+          case PKT_GPG_CONTROL:
+            break; /* Allowed by us.  */
+
+          default:
+	    log_error ("skipped packet of type %d in keyring\n",
+                       (int)pkt->pkttype);
 	    free_packet(pkt);
 	    init_packet(pkt);
 	    continue;
@@ -467,7 +485,7 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
     if (rc || !ret_kb)
 	release_kbnode (keyblock);
     else {
-        /*(duplicated form the loop body)*/
+        /*(duplicated from the loop body)*/
         if ( pkt && pkt->pkttype == PKT_RING_TRUST
              && lastnode
              && lastnode->pkt->pkttype == PKT_SIGNATURE
