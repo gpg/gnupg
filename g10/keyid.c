@@ -112,13 +112,17 @@ hash_public_key( MD_HANDLE md, PKT_public_key *pk )
   md_putc( md, pk->pubkey_algo );
 
   if(npkey==0 && pk->pkey[0] && mpi_is_opaque(pk->pkey[0]))
-    md_write(md,pp[0],nn[0]);
+    {
+      if (pp[0])
+        md_write(md,pp[0],nn[0]);
+    }
   else
     for(i=0; i < npkey; i++ )
       {
 	md_putc( md, nb[i]>>8);
 	md_putc( md, nb[i] );
-	md_write( md, pp[i], nn[i] );
+        if (pp[i])
+          md_write( md, pp[i], nn[i] );
 	xfree(pp[i]);
       }
 }

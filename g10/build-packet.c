@@ -356,7 +356,8 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 
 	assert( mpi_is_opaque( sk->skey[npkey] ) );
 	p = mpi_get_opaque( sk->skey[npkey], &ndata );
-	iobuf_write(a, p, ndata );
+        if (p)
+          iobuf_write(a, p, ndata );
     }
     else if( sk->is_protected ) {
         /* The secret key is protected te old v4 way. */
@@ -366,7 +367,8 @@ do_secret_key( IOBUF out, int ctb, PKT_secret_key *sk )
 
             assert (mpi_is_opaque (sk->skey[i]));
             p = mpi_get_opaque (sk->skey[i], &ndata);
-            iobuf_write (a, p, ndata);
+            if (p)
+              iobuf_write (a, p, ndata);
         }
 	write_16(a, sk->csum );
     }
