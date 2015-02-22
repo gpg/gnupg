@@ -155,6 +155,8 @@ curl_easy_setopt(CURL *curl,CURLoption option,...)
       break;
     }
 
+  va_end(ap);
+
   return handle_error(curl,CURLE_OK,NULL);
 }
 
