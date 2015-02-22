@@ -32,6 +32,7 @@
 #include "mpi.h"
 #include "keydb.h"
 #include "i18n.h"
+#include "host2net.h"
 
 #ifdef HAVE_UNSIGNED_TIME_T
 # define INVALID_TIME_CHECK(a) ((a) == (time_t)(-1))
@@ -241,15 +242,8 @@ keystr_from_desc(KEYDB_SEARCH_DESC *desc)
       {
 	u32 keyid[2];
 
-	keyid[0] = (unsigned char)desc->u.fpr[12] << 24
-	  | (unsigned char)desc->u.fpr[13] << 16
-	  | (unsigned char)desc->u.fpr[14] << 8
-	  | (unsigned char)desc->u.fpr[15] ;
-	keyid[1] = (unsigned char)desc->u.fpr[16] << 24
-	  | (unsigned char)desc->u.fpr[17] << 16
-	  | (unsigned char)desc->u.fpr[18] << 8
-	  | (unsigned char)desc->u.fpr[19] ;
-
+	keyid[0] = buf32_to_u32 (desc->u.fpr+12);
+	keyid[1] = buf32_to_u32 (desc->u.fpr+16);
 	return keystr(keyid);
       }
 
@@ -300,8 +294,8 @@ keyid_from_sk( PKT_secret_key *sk, u32 *keyid )
       if(md)
 	{
 	  dp = md_read( md, 0 );
-	  keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	  keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	  keyid[0] = buf32_to_u32 (dp+12);
+	  keyid[1] = buf32_to_u32 (dp+16);
 	  lowbits = keyid[1];
 	  md_close(md);
 	  sk->keyid[0] = keyid[0];
@@ -354,8 +348,8 @@ keyid_from_pk( PKT_public_key *pk, u32 *keyid )
       if(md)
 	{
 	  dp = md_read( md, 0 );
-	  keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	  keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	  keyid[0] = buf32_to_u32 (dp+12);
+	  keyid[1] = buf32_to_u32 (dp+16);
 	  lowbits = keyid[1];
 	  md_close(md);
 	  pk->keyid[0] = keyid[0];
@@ -398,8 +392,8 @@ keyid_from_fingerprint( const byte *fprint, size_t fprint_len, u32 *keyid )
     }
     else {
 	const byte *dp = fprint;
-	keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+	keyid[0] = buf32_to_u32 (dp+12);
+	keyid[1] = buf32_to_u32 (dp+16);
     }
 
     return keyid[1];
@@ -687,8 +681,8 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 	if( !array )
 	    array = xmalloc( len );
 	memcpy(array, dp, len );
-	pk->keyid[0] = dp[12] << 24 | dp[13] << 16 | dp[14] << 8 | dp[15] ;
-	pk->keyid[1] = dp[16] << 24 | dp[17] << 16 | dp[18] << 8 | dp[19] ;
+        pk->keyid[0] = buf32_to_u32 (dp+12);
+        pk->keyid[1] = buf32_to_u32 (dp+16);
 	md_close(md);
     }
 

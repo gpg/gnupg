@@ -295,17 +295,6 @@ checksum_mpi( MPI a )
     return csum;
 }
 
-u32
-buffer_to_u32( const byte *buffer )
-{
-    unsigned long a;
-    a =  *buffer << 24;
-    a |= buffer[1] << 16;
-    a |= buffer[2] << 8;
-    a |= buffer[3];
-    return a;
-}
-
 void
 print_pubkey_algo_note( int algo )
 {
