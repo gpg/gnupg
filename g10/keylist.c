@@ -1580,6 +1580,20 @@ list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
     es_fflush (es_stdout);
 }
 
+
+/* Print an hex digit in ICAO spelling.  */
+static void
+print_icao_hexdigit (estream_t fp, int c)
+{
+  static const char *list[16] = {
+    "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven",
+    "Eight", "Niner", "Alfa", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot"
+  };
+
+  tty_fprintf (fp, "%s", list[c&15]);
+}
+
+
 /*
  * Function to print the finperprint.
  * mode 0: as used in key listings, opt.with_colons is honored
@@ -1675,6 +1689,26 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
 	}
     }
   tty_fprintf (fp, "\n");
+  if (!opt.with_colons && opt.with_icao_spelling)
+    {
+      p = array;
+      tty_fprintf (fp, "%*s\"", (int)strlen(text)+1, "");
+      for (i = 0; i < n; i++, p++)
+        {
+          if (!i)
+            ;
+          else if (!(i%4))
+            tty_fprintf (fp, "\n%*s ", (int)strlen(text)+1, "");
+          else if (!(i%2))
+            tty_fprintf (fp, "  ");
+          else
+            tty_fprintf (fp, " ");
+          print_icao_hexdigit (fp, *p >> 4);
+          tty_fprintf (fp, " ");
+          print_icao_hexdigit (fp, *p & 15);
+        }
+      tty_fprintf (fp, "\"\n");
+    }
 }
 
 /* Print the serial number of an OpenPGP card if available.  */
