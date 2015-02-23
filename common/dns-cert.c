@@ -268,7 +268,6 @@ get_dns_cert (const char *name, estream_t *r_key,
 
           class = buf16_to_u16 (pt);
           pt += 2;
-          class |= *pt++;
 
           if (class != C_IN)
             break;
