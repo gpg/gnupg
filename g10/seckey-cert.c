@@ -91,8 +91,12 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
             u16 csumc = 0;
 
 	    i = pubkey_get_npkey(sk->pubkey_algo);
-	    assert( mpi_is_opaque( sk->skey[i] ) );
-	    p = mpi_get_opaque( sk->skey[i], &ndata );
+	    if (!mpi_is_opaque (sk->skey[i]))
+              p = NULL;
+            else
+              p = mpi_get_opaque (sk->skey[i], &ndata);
+            if (!p)
+              BUG ();
             if ( ndata > 1 )
                 csumc = p[ndata-2] << 8 | p[ndata-1];
 	    data = xmalloc_secure( ndata );
@@ -169,9 +173,12 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                 byte *p;
                 unsigned int ndata;
 
-                assert (mpi_is_opaque (sk->skey[i]));
-                p = mpi_get_opaque (sk->skey[i], &ndata);
-                assert (ndata >= 2);
+                if (!mpi_is_opaque (sk->skey[i]))
+                  p = NULL;
+                else
+                  p = mpi_get_opaque (sk->skey[i], &ndata);
+                if (!p || !(ndata >= 2))
+                  BUG ();
                 assert (ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2);
                 buffer = xmalloc_secure (ndata);
 		cipher_sync (cipher_hd);
