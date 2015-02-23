@@ -2525,6 +2525,29 @@ found:
 }
 
 
+/* Return true if all the search modes are fingerprints.  */
+static int
+search_modes_are_fingerprint (getkey_ctx_t ctx)
+{
+  size_t n, found;
+
+  for (n=found=0; n < ctx->nitems; n++)
+    {
+      switch (ctx->items[n].mode)
+        {
+        case KEYDB_SEARCH_MODE_FPR16:
+        case KEYDB_SEARCH_MODE_FPR20:
+        case KEYDB_SEARCH_MODE_FPR:
+          found++;
+          break;
+        default:
+          break;
+        }
+    }
+  return found && found == ctx->nitems;
+}
+
+
 /* The main function to lookup a key.  On success the found keyblock
    is stored at RET_KEYBLOCK and also in CTX.  If WANT_SECRET is true
    a corresponding secret key is required.  */
@@ -2534,9 +2557,21 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
   int rc;
   int no_suitable_key = 0;
 
-  rc = 0;
-  while (!(rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems, NULL)))
+  for (;;)
     {
+      rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems, NULL);
+      /* Skip over all legacy keys but only if they are not requested
+         by fingerprints.
+         Fixme: The lower level keydb code should actually do that but
+         then it would be harder to report the number of skipped
+         legacy keys during import. */
+      if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
+          && !(ctx->nitems && ctx->items->mode == KEYDB_SEARCH_MODE_FIRST)
+          && !search_modes_are_fingerprint (ctx))
+        continue;
+      if (rc)
+        break;
+
       /* If we are searching for the first key we have to make sure
          that the next iteration does not do an implicit reset.
          This can be triggered by an empty key ring. */
