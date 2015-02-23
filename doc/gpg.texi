@@ -949,12 +949,23 @@ Try to be as quiet as possible.
 @opindex batch
 @opindex no-batch
 Use batch mode.  Never ask, do not allow interactive commands.
-@option{--no-batch} disables this option.  Note that even with a
-filename given on the command line, gpg might still need to read from
-STDIN (in particular if gpg figures that the input is a
-detached signature and no data file has been specified).  Thus if you
-do not want to feed data via STDIN, you should connect STDIN to
-@file{/dev/null}.
+@option{--no-batch} disables this option.  This option is commonly
+used for unattended operations.
+
+WARNING: Unattended operation bears a higher risk of being exposed to
+security attacks.  In particular any unattended use of GnuPG which
+involves the use of secret keys should take care not to provide an
+decryption oracle.  There are several standard pre-cautions against
+being used as an oracle.  For example never return detailed error
+messages or any diagnostics printed by your software to the remote
+site.  Consult with an expert in case of doubt.
+
+Note that even with a filename given on the command line, gpg might
+still need to read from STDIN (in particular if gpg figures that the
+input is a detached signature and no data file has been specified).
+Thus if you do not want to feed data via STDIN, you should connect
+STDIN to @file{/dev/null}.
+
 
 @item --no-tty
 @opindex no-tty
