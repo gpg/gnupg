@@ -794,6 +794,78 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 }
 
 
+/* Print IPGP cert records instead of a standard key listing.  */
+static void
+list_keyblock_pka (kbnode_t keyblock)
+{
+  kbnode_t kbctx;
+  kbnode_t node;
+  PKT_public_key *pk;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
+  char *hexfpr;
+
+  /* Get the keyid from the keyblock.  */
+  node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+  if (!node)
+    {
+      log_error ("Oops; key lost!\n");
+      dump_kbnode (keyblock);
+      return;
+    }
+
+  pk = node->pkt->pkt.public_key;
+
+  es_fprintf (es_stdout, ";; pub  %s/%s %s\n;; ",
+              pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+              keystr_from_pk (pk), datestr_from_pk (pk));
+  print_fingerprint (NULL, pk, 10);
+  hexfpr = hexfingerprint (pk);
+
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+          char *mbox;
+          char *p;
+
+	  if (pk && (uid->is_expired || uid->is_revoked)
+	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
+            continue;
+
+          es_fputs (";; uid  ", es_stdout);
+          print_utf8_buffer (es_stdout, uid->name, uid->len);
+	  es_putc ('\n', es_stdout);
+          mbox = mailbox_from_userid (uid->name);
+          if (mbox && (p = strchr (mbox, '@')))
+            {
+              char hashbuf[20];
+              char *hash;
+              unsigned int len;
+
+              *p++ = 0;
+              es_fprintf (es_stdout, "$ORIGIN _pka.%s.\n", p);
+              gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
+              hash = zb32_encode (hashbuf, 8*20);
+              if (hash)
+                {
+                  len = strlen (hexfpr)/2;
+                  es_fprintf (es_stdout,
+                              "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n",
+                              hash, 6 + len, len, hexfpr);
+                  xfree (hash);
+                }
+            }
+          xfree (mbox);
+	}
+
+    }
+  es_putc ('\n', es_stdout);
+
+  xfree (hexfpr);
+}
+
+
 static void
 list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 {
@@ -1572,7 +1644,12 @@ list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
                void *opaque)
 {
   reorder_keyblock (keyblock);
-  if (opt.with_colons)
+  if (opt.print_pka_records)
+    {
+      if (!secret)
+        list_keyblock_pka (keyblock);
+    }
+  else if (opt.with_colons)
     list_keyblock_colon (keyblock, secret, has_secret, fpr);
   else
     list_keyblock_print (keyblock, secret, fpr, opaque);
@@ -1600,6 +1677,7 @@ print_icao_hexdigit (estream_t fp, int c)
  *      1: print using log_info ()
  *      2: direct use of tty
  *      3: direct use of tty but only primary key.
+ *     10: Same as 0 but with_colons etc is ignored.
  *
  * Modes 1 and 2 will try and print both subkey and primary key
  * fingerprints.  A MODE with bit 7 set is used internally.  If
@@ -1614,6 +1692,15 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
   estream_t fp;
   const char *text;
   int primary = 0;
+  int with_colons = opt.with_colons;
+  int with_icao   = opt.with_icao_spelling;
+
+  if (mode == 10)
+    {
+      mode = 0;
+      with_colons = 0;
+      with_icao = 0;
+    }
 
   if (pk->main_keyid[0] == pk->keyid[0]
       && pk->main_keyid[1] == pk->keyid[1])
@@ -1667,7 +1754,7 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
 
   fingerprint_from_pk (pk, array, &n);
   p = array;
-  if (opt.with_colons && !mode)
+  if (with_colons && !mode)
     {
       es_fprintf (fp, "fpr:::::::::");
       for (i = 0; i < n; i++, p++)
@@ -1689,7 +1776,7 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
 	}
     }
   tty_fprintf (fp, "\n");
-  if (!opt.with_colons && opt.with_icao_spelling)
+  if (!with_colons && with_icao)
     {
       p = array;
       tty_fprintf (fp, "%*s\"", (int)strlen(text)+1, "");

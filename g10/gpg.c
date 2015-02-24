@@ -131,6 +131,7 @@ enum cmd_and_opt_values
     aSendKeys,
     aRecvKeys,
     aLocateKeys,
+    aPrintPKARecords,
     aSearchKeys,
     aRefreshKeys,
     aFetchKeys,
@@ -407,6 +408,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCheckKeys, "check-sigs",N_("list and check key signatures")),
   ARGPARSE_c (oFingerprint, "fingerprint", N_("list keys and fingerprints")),
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
+  ARGPARSE_c (aPrintPKARecords, "print-pka-records", "@"),
   ARGPARSE_c (aKeygen,	    "gen-key",
               N_("generate a new key pair")),
   ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
@@ -2312,6 +2314,11 @@ main (int argc, char **argv)
             set_cmd (&cmd, pargs.r_opt);
             break;
 
+	  case aPrintPKARecords:
+            set_cmd (&cmd, pargs.r_opt);
+            opt.print_pka_records = 1;
+            break;
+
 	  case aKeygen:
 	  case aFullKeygen:
 	  case aEditKey:
@@ -3855,6 +3862,13 @@ main (int argc, char **argv)
 	for (; argc; argc--, argv++)
           add_to_strlist2( &sl, *argv, utf8_strings );
 	public_key_list (ctrl, sl, 1);
+	free_strlist (sl);
+	break;
+      case aPrintPKARecords:
+	sl = NULL;
+	for (; argc; argc--, argv++)
+          add_to_strlist2( &sl, *argv, utf8_strings );
+	public_key_list (ctrl, sl, 0);
 	free_strlist (sl);
 	break;
 
