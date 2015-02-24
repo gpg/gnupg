@@ -76,6 +76,9 @@ test_zb32enc (void)
     { 20, "\x81\x81\x81", "ogya" },
     { 64, "\x81\x81\x81\x81\x81\x81\x81\x81", "ogyadycbogyan" },
     /* More tests.  */
+    { 160, "\x80\x61\x58\x70\xF5\xBA\xD6\x90\x33\x36"
+      /* */"\x86\xD0\xF2\xAD\x85\xAC\x1E\x42\xB3\x67",
+      /* */"oboioh8izmmjyc3so5exfmcfioxrfc58" },
     { 0,  "", "" }
   };
   int tidx;
