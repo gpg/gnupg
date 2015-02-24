@@ -162,9 +162,6 @@ char *optsep(char **stringp);
 char *argsplit(char *string);
 int parse_options(char *str,unsigned int *options,
 		  struct parse_options *opts,int noisy);
-int has_invalid_email_chars (const char *s);
-int is_valid_mailbox (const char *name);
-int is_valid_user_id (const char *uid);
 const char *get_libexecdir (void);
 int path_access(const char *file,int mode);
 
@@ -177,6 +174,13 @@ int pubkey_get_nenc (pubkey_algo_t algo);
 unsigned int pubkey_nbits( int algo, gcry_mpi_t *pkey );
 int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
+
+
+/*-- mailbox.c --*/
+int has_invalid_email_chars (const char *s);
+int is_valid_mailbox (const char *name);
+char *mailbox_from_userid (const char *userid);
+int is_valid_user_id (const char *uid);
 
 
 /*-- status.c --*/

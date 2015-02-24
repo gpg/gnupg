@@ -83,6 +83,7 @@ common_source =  \
 	      textfilter.c	\
 	      progress.c	\
 	      misc.c		\
+	      mailbox.c         \
               rmd160.c rmd160.h \
 	      options.h 	\
 	      openfile.c	\
@@ -154,9 +155,11 @@ gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
 gpgv2_LDFLAGS = $(extra_bin_ldflags)
 
 t_common_ldadd =
-module_tests = t-rmd160
+module_tests = t-rmd160 t-mailbox
 t_rmd160_SOURCES = t-rmd160.c rmd160.c
 t_rmd160_LDADD = $(t_common_ldadd)
+t_mailbox_SOURCES = t-mailbox.c mailbox.c
+t_mailbox_LDADD = $(t_common_ldadd)
 
 
 $(PROGRAMS): $(needed_libs) ../common/libgpgrl.a
