@@ -178,7 +178,7 @@ jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils t-dns-cert \
-	       t-mapstrings t-zb32 t-mbox-util
+	       t-pka t-mapstrings t-zb32 t-mbox-util
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -222,6 +222,7 @@ t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
 t_dns_cert_LDADD = $(t_common_ldadd) $(DNSLIBS)
+t_pka_LDADD = $(t_common_ldadd) $(DNSLIBS)
 t_mapstrings_LDADD = $(t_common_ldadd)
 t_zb32_LDADD = $(t_common_ldadd)
 t_mbox_util_LDADD = $(t_common_ldadd)

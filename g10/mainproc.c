@@ -1498,7 +1498,8 @@ pka_uri_from_sig (PKT_signature *sig)
         {
           char *uri;
 
-          uri = get_pka_info (sig->pka_info->email, sig->pka_info->fpr);
+          uri = get_pka_info (sig->pka_info->email,
+                              sig->pka_info->fpr, sizeof sig->pka_info->fpr);
           if (uri)
             {
               sig->pka_info->valid = 1;

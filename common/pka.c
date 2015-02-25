@@ -33,307 +33,76 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef USE_DNS_PKA
-#include <sys/types.h>
-#ifdef _WIN32
-# ifdef HAVE_WINSOCK2_H
-#  include <winsock2.h>
-# endif
-# include <windows.h>
-#else
-#include <netinet/in.h>
-#include <arpa/nameser.h>
-#include <resolv.h>
-#endif
-#endif /* USE_DNS_PKA */
-#ifdef USE_ADNS
-# include <adns.h>
-#endif
-
 #include "util.h"
-#include "host2net.h"
+#include "mbox-util.h"
+#include "dns-cert.h"
 #include "pka.h"
-
-#ifdef USE_DNS_PKA
-/* Parse the TXT resource record. Format is:
-
-   v=pka1;fpr=a4d94e92b0986ab5ee9dcd755de249965b0358a2;uri=string
-
-   For simplicity white spaces are not allowed.  Because we expect to
-   use a new RRTYPE for this in the future we define the TXT really
-   strict for simplicity: No white spaces, case sensitivity of the
-   names, order must be as given above.  Only URI is optional.
-
-   This function modifies BUFFER.  On success 0 is returned, the 20
-   byte fingerprint stored at FPR and BUFFER contains the URI or an
-   empty string.
-*/
-static int
-parse_txt_record (char *buffer, unsigned char *fpr)
-{
-  char *p, *pend;
-  int i;
-
-  p = buffer;
-  pend = strchr (p, ';');
-  if (!pend)
-    return -1;
-  *pend++ = 0;
-  if (strcmp (p, "v=pka1"))
-    return -1; /* Wrong or missing version. */
-
-  p = pend;
-  pend = strchr (p, ';');
-  if (pend)
-    *pend++ = 0;
-  if (strncmp (p, "fpr=", 4))
-    return -1; /* Missing fingerprint part. */
-  p += 4;
-  for (i=0; i < 20 && hexdigitp (p) && hexdigitp (p+1); i++, p += 2)
-    fpr[i] = xtoi_2 (p);
-  if (i != 20)
-    return -1; /* Fingerprint consists not of exactly 40 hexbytes. */
-
-  p = pend;
-  if (!p || !*p)
-    {
-      *buffer = 0;
-      return 0; /* Success (no URI given). */
-    }
-  if (strncmp (p, "uri=", 4))
-    return -1; /* Unknown part. */
-  p += 4;
-  /* There is an URI, copy it to the start of the buffer. */
-  while (*p)
-    *buffer++ = *p++;
-  *buffer = 0;
-  return 0;
-}
 
 
 /* For the given email ADDRESS lookup the PKA information in the DNS.
 
-   On success the 20 byte SHA-1 fingerprint is stored at FPR and the
-   URI will be returned in an allocated buffer.  Note that the URI
-   might be an zero length string as this information is optional.
-   Caller must xfree the returned string.
+   On success the fingerprint is stored at FPRBUF and the URI will be
+   returned in an allocated buffer.  Note that the URI might be a zero
+   length string as this information is optional.  Caller must xfree
+   the returned string.  FPRBUFLEN gives the size of the expected
+   fingerprint (usually 20).
 
-   On error NULL is returned and the 20 bytes at FPR are not
-   defined. */
+   On error NULL is returned and the FPRBUF is not defined. */
 char *
-get_pka_info (const char *address, unsigned char *fpr)
+get_pka_info (const char *address, void *fprbuf, size_t fprbuflen)
 {
-#ifdef USE_ADNS
-  int rc;
-  adns_state state;
-  const char *domain;
-  char *name;
-  adns_answer *answer = NULL;
-  char *buffer = NULL;
+  char *result = NULL;
+  char *mbox;
+  char *domain;  /* Points to mbox.  */
+  char hashbuf[20];
+  char *hash = NULL;
+  char *name = NULL;
+  unsigned char *fpr = NULL;
+  size_t fpr_len;
+  char *url = NULL;
+  gpg_error_t err;
 
-  domain = strrchr (address, '@');
-  if (!domain || domain == address || !domain[1])
-    return NULL; /* Invalid mail address given.  */
-  name = xtrymalloc (strlen (address) + 5 + 1);
+  mbox = mailbox_from_userid (address);
+  if (!mbox)
+    goto leave;
+  domain = strchr (mbox, '@');
+  if (!domain)
+    goto leave;
+  *domain++ = 0;
+
+  gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
+  hash = zb32_encode (hashbuf, 8*20);
+  if (!hash)
+    goto leave;
+  name = strconcat (hash, "._pka.", domain, NULL);
   if (!name)
-    return NULL;
-  memcpy (name, address, domain - address);
-  strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
+    goto leave;
 
-  rc = adns_init (&state, adns_if_noerrprint, NULL);
-  if (rc)
+  if (get_dns_cert (name, DNS_CERTTYPE_IPGP, NULL, &fpr, &fpr_len, &url))
+    goto leave;
+  if (!fpr)
+    goto leave;
+
+  /* Return the fingerprint.  */
+  if (fpr_len != fprbuflen)
     {
-      log_error ("error initializing adns: %s\n", strerror (errno));
-      xfree (name);
-      return NULL;
+      /* fprintf (stderr, "get_dns_cert failed: fprlen (%zu/%zu)\n", */
+      /*          fpr_len, fprbuflen); */
+      goto leave;
     }
+  memcpy (fprbuf, fpr, fpr_len);
 
-  rc = adns_synchronous (state, name, adns_r_txt, adns_qf_quoteok_query,
-                         &answer);
+  /* We return the URL or an empty string.  */
+  if (!url)
+    url = xtrycalloc (1, 1);
+  result = url;
+  url = NULL;
+
+ leave:
+  xfree (fpr);
+  xfree (url);
   xfree (name);
-  if (rc)
-    {
-      log_error ("DNS query failed: %s\n", strerror (errno));
-      adns_finish (state);
-      return NULL;
-    }
-  if (answer->status != adns_s_ok
-      || answer->type != adns_r_txt || !answer->nrrs)
-    {
-      log_error ("DNS query returned an error: %s (%s)\n",
-                 adns_strerror (answer->status),
-                 adns_errabbrev (answer->status));
-      adns_free (answer);
-      adns_finish (state);
-      return NULL;
-    }
-
-  /* We use a PKA records iff there is exactly one record.  */
-  if (answer->nrrs == 1 && answer->rrs.manyistr[0]->i != -1)
-    {
-      buffer = xtrystrdup (answer->rrs.manyistr[0]->str);
-      if (parse_txt_record (buffer, fpr))
-        {
-          xfree (buffer);
-          buffer = NULL;   /* Not a valid gpg trustdns RR. */
-        }
-    }
-
-  adns_free (answer);
-  adns_finish (state);
-  return buffer;
-
-#else /*!USE_ADNS*/
-  unsigned char answer[PACKETSZ];
-  int anslen;
-  int qdcount, ancount;
-  int rc;
-  unsigned char *p, *pend;
-  const char *domain;
-  char *name;
-  HEADER header;
-
-  domain = strrchr (address, '@');
-  if (!domain || domain == address || !domain[1])
-    return NULL; /* invalid mail address given. */
-
-  name = xtrymalloc (strlen (address) + 5 + 1);
-  if (!name)
-    return NULL;
-  memcpy (name, address, domain - address);
-  strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
-
-  anslen = res_query (name, C_IN, T_TXT, answer, PACKETSZ);
-  xfree (name);
-  if (anslen < sizeof(HEADER))
-    return NULL; /* DNS resolver returned a too short answer. */
-
-  /* Don't despair: A good compiler should optimize this away, as
-     header is just 32 byte and constant at compile time.  It's
-     one way to comply with strict aliasing rules.  */
-  memcpy (&header, answer, sizeof (header));
-
-  if ( (rc=header.rcode) != NOERROR )
-    return NULL; /* DNS resolver returned an error. */
-
-  /* We assume that PACKETSZ is large enough and don't do dynmically
-     expansion of the buffer. */
-  if (anslen > PACKETSZ)
-    return NULL; /* DNS resolver returned a too long answer */
-
-  qdcount = ntohs (header.qdcount);
-  ancount = ntohs (header.ancount);
-
-  if (!ancount)
-    return NULL; /* Got no answer. */
-
-  p = answer + sizeof (HEADER);
-  pend = answer + anslen; /* Actually points directly behind the buffer. */
-
-  while (qdcount-- && p < pend)
-    {
-      rc = dn_skipname (p, pend);
-      if (rc == -1)
-        return NULL;
-      p += rc + QFIXEDSZ;
-    }
-
-  if (ancount > 1)
-    return NULL; /* more than one possible gpg trustdns record - none used. */
-
-  while (ancount-- && p <= pend)
-    {
-      unsigned int type, class, txtlen, n;
-      char *buffer, *bufp;
-
-      rc = dn_skipname (p, pend);
-      if (rc == -1)
-        return NULL;
-      p += rc;
-      if (p >= pend - 10)
-        return NULL; /* RR too short. */
-
-      type = buf16_to_uint (p);
-      p += 2;
-      class = buf16_to_uint (p);
-      p += 2;
-      p += 4;
-      txtlen = buf16_to_uint (p);
-      p += 2;
-
-      if (type != T_TXT || class != C_IN)
-        return NULL; /* Answer does not match the query. */
-
-      buffer = bufp = xmalloc (txtlen + 1);
-      while (txtlen && p < pend)
-        {
-          for (n = *p++, txtlen--; txtlen && n && p < pend; txtlen--, n--)
-            *bufp++ = *p++;
-        }
-      *bufp = 0;
-      if (parse_txt_record (buffer, fpr))
-        {
-          xfree (buffer);
-          return NULL; /* Not a valid gpg trustdns RR. */
-        }
-      return buffer;
-    }
-
-  return NULL;
-#endif /*!USE_ADNS*/
+  xfree (hash);
+  xfree (mbox);
+  return result;
 }
-
-#else /* !USE_DNS_PKA */
-
-/* Dummy version of the function if we can't use the resolver
-   functions. */
-char *
-get_pka_info (const char *address, unsigned char *fpr)
-{
-  (void)address;
-  (void)fpr;
-  return NULL;
-}
-#endif /* !USE_DNS_PKA */
-
-
-#ifdef TEST
-int
-main(int argc,char *argv[])
-{
-  unsigned char fpr[20];
-  char *uri;
-  int i;
-
-  if (argc < 2)
-    {
-      fprintf (stderr, "usage: pka mail-addresses\n");
-      return 1;
-    }
-  argc--;
-  argv++;
-
-  for (; argc; argc--, argv++)
-    {
-      uri = get_pka_info ( *argv, fpr );
-      printf ("%s", *argv);
-      if (uri)
-        {
-          putchar (' ');
-          for (i=0; i < 20; i++)
-            printf ("%02X", fpr[i]);
-          if (*uri)
-            printf (" %s", uri);
-          xfree (uri);
-        }
-      putchar ('\n');
-    }
-  return 0;
-}
-#endif /* TEST */
-
-/*
-Local Variables:
-compile-command: "cc -DUSE_DNS_PKA -DTEST -I.. -I../include -Wall -g -o pka pka.c -lresolv ../tools/no-libgcrypt.o ../jnlib/libjnlib.a"
-End:
-*/

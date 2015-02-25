@@ -29,7 +29,7 @@
 #ifndef GNUPG_COMMON_PKA_H
 #define GNUPG_COMMON_PKA_H
 
-char *get_pka_info (const char *address, unsigned char *fpr);
+char *get_pka_info (const char *address, void *fprbuf, size_t fprbuflen);
 
 
 #endif /*GNUPG_COMMON_PKA_H*/

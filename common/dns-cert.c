@@ -70,7 +70,7 @@
    returns the first CERT found with a supported type; it is expected
    that only one CERT record is used.  If WANT_CERTTYPE is one of the
    supported certtypes only records wih this certtype are considered
-   and the first found is returned.  */
+   and the first found is returned.  R_KEY is optional. */
 gpg_error_t
 get_dns_cert (const char *name, int want_certtype,
               estream_t *r_key,
@@ -84,7 +84,8 @@ get_dns_cert (const char *name, int want_certtype,
   unsigned int ctype;
   int count;
 
-  *r_key = NULL;
+  if (r_key)
+    *r_key = NULL;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;
@@ -129,7 +130,7 @@ get_dns_cert (const char *name, int want_certtype,
 
       if (want_certtype && want_certtype != ctype)
         ; /* Not of the requested certtype.  */
-      else if (ctype == DNS_CERTTYPE_PGP && datalen >= 11)
+      else if (ctype == DNS_CERTTYPE_PGP && datalen >= 11 && r_key)
         {
           /* CERT type is PGP.  Gpg checks for a minimum length of 11,
              thus we do the same.  */
@@ -197,7 +198,8 @@ get_dns_cert (const char *name, int want_certtype,
   int r;
   u16 count;
 
-  *r_key = NULL;
+  if (r_key)
+    *r_key = NULL;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;
@@ -292,7 +294,7 @@ get_dns_cert (const char *name, int want_certtype,
           /* 15 bytes takes us to here */
           if (want_certtype && want_certtype != ctype)
             ; /* Not of the requested certtype.  */
-          else if (ctype == DNS_CERTTYPE_PGP && dlen)
+          else if (ctype == DNS_CERTTYPE_PGP && dlen && r_key)
             {
               /* PGP type */
               *r_key = es_fopenmem_init (0, "rwb", pt, dlen);
@@ -355,7 +357,8 @@ get_dns_cert (const char *name, int want_certtype,
 #endif /*!USE_ADNS */
 #else /* !USE_DNS_CERT */
   (void)name;
-  *r_key = NULL;
+  if (r_key)
+    *r_key = NULL;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;

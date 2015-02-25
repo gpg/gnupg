@@ -1980,7 +1980,7 @@ keyserver_import_pka (ctrl_t ctrl,
   *fpr = xmalloc (20);
   *fpr_len = 20;
 
-  uri = get_pka_info (name, *fpr);
+  uri = get_pka_info (name, *fpr, 20);
   if (uri && *uri)
     {
       /* An URI is available.  Lookup the key. */
