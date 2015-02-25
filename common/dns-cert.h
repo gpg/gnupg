@@ -29,7 +29,24 @@
 #ifndef GNUPG_COMMON_DNS_CERT_H
 #define GNUPG_COMMON_DNS_CERT_H
 
-gpg_error_t get_dns_cert (const char *name, estream_t *r_key,
+
+#define DNS_CERTTYPE_ANY       0 /* Internal catch all type. */
+/* Certificate types according to RFC-4398:  */
+#define DNS_CERTTYPE_PKIX      1 /* X.509 as per PKIX. */
+#define DNS_CERTTYPE_SPKI      2 /* SPKI certificate.  */
+#define DNS_CERTTYPE_PGP       3 /* OpenPGP packet.  */
+#define DNS_CERTTYPE_IPKIX     4 /* The URL of an X.509 data object. */
+#define DNS_CERTTYPE_ISPKI     5 /* The URL of an SPKI certificate.  */
+#define DNS_CERTTYPE_IPGP      6 /* The fingerprint
+                                    and URL of an OpenPGP packet.  */
+#define DNS_CERTTYPE_ACPKIX    7 /* Attribute Certificate.  */
+#define DNS_CERTTYPE_IACPKIX   8 /* The URL of an Attribute Certificate.  */
+#define DNS_CERTTYPE_URI     253 /* URI private.  */
+#define DNS_CERTTYPE_OID     254 /* OID private.  */
+
+
+gpg_error_t get_dns_cert (const char *name, int want_certtype,
+                          estream_t *r_key,
                           unsigned char **r_fpr, size_t *r_fprlen,
                           char **r_url);
 

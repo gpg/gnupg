@@ -54,7 +54,7 @@ main (int argc, char **argv)
 
   printf ("CERT lookup on '%s'\n", name);
 
-  err = get_dns_cert (name, &key, &fpr, &fpr_len, &url);
+  err = get_dns_cert (name, DNS_CERTTYPE_ANY, &key, &fpr, &fpr_len, &url);
   if (err)
     printf ("get_dns_cert failed: %s <%s>\n",
             gpg_strerror (err), gpg_strsource (err));

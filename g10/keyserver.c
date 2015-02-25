@@ -1910,7 +1910,7 @@ keyserver_import_cert (ctrl_t ctrl,
   if(domain)
     *domain='.';
 
-  err = get_dns_cert (look, &key, fpr, fpr_len, &url);
+  err = get_dns_cert (look, DNS_CERTTYPE_ANY, &key, fpr, fpr_len, &url);
   if (err)
     ;
   else if (key)

@@ -60,29 +60,20 @@
 #define my_adns_r_cert 37
 
 
-/* Certificate types according to RFC-4398.  */
-#define CERTTYPE_PKIX      1 /* X.509 as per PKIX. */
-#define CERTTYPE_SPKI      2 /* SPKI certificate.  */
-#define CERTTYPE_PGP       3 /* OpenPGP packet.  */
-#define CERTTYPE_IPKIX     4 /* The URL of an X.509 data object. */
-#define CERTTYPE_ISPKI     5 /* The URL of an SPKI certificate.  */
-#define CERTTYPE_IPGP      6 /* The fingerprint and URL of an OpenPGP packet.*/
-#define CERTTYPE_ACPKIX    7 /* Attribute Certificate.  */
-#define CERTTYPE_IACPKIX   8 /* The URL of an Attribute Certificate.  */
-#define CERTTYPE_URI     253 /* URI private.  */
-#define CERTTYPE_OID     254 /* OID private.  */
-
 
 /* Returns 0 on success or an error code.  If a PGP CERT record was
    found, a new estream with that key will be returned at R_KEY and
    the other return parameters are set to NULL/0.  If an IPGP CERT
    record was found the fingerprint is stored as an allocated block at
    R_FPR and its length at R_FPRLEN; an URL is is allocated as a
-   string and returned at R_URL.  Note that this function returns the
-   first CERT found with a supported type; it is expected that only
-   one CERT record is used. */
+   string and returned at R_URL.  If WANT_CERTTYPE is 0 this function
+   returns the first CERT found with a supported type; it is expected
+   that only one CERT record is used.  If WANT_CERTTYPE is one of the
+   supported certtypes only records wih this certtype are considered
+   and the first found is returned.  */
 gpg_error_t
-get_dns_cert (const char *name, estream_t *r_key,
+get_dns_cert (const char *name, int want_certtype,
+              estream_t *r_key,
               unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
 {
 #ifdef USE_DNS_CERT
@@ -136,7 +127,9 @@ get_dns_cert (const char *name, estream_t *r_key,
       data += 5;
       datalen -= 5;
 
-      if (ctype == CERTTYPE_PGP && datalen >= 11)
+      if (want_certtype && want_certtype != ctype)
+        ; /* Not of the requested certtype.  */
+      else if (ctype == DNS_CERTTYPE_PGP && datalen >= 11)
         {
           /* CERT type is PGP.  Gpg checks for a minimum length of 11,
              thus we do the same.  */
@@ -148,7 +141,7 @@ get_dns_cert (const char *name, estream_t *r_key,
             err = 0;
           goto leave;
         }
-      else if (ctype == CERTTYPE_IPGP && datalen && datalen < 1023
+      else if (ctype == DNS_CERTTYPE_IPGP && datalen && datalen < 1023
                && datalen >= data[0] + 1 && r_fpr && r_fprlen && r_url)
         {
           /* CERT type is IPGP.  We made sure that the data is
@@ -297,8 +290,9 @@ get_dns_cert (const char *name, estream_t *r_key,
           dlen -= 5;
 
           /* 15 bytes takes us to here */
-
-          if (ctype == CERTTYPE_PGP && dlen)
+          if (want_certtype && want_certtype != ctype)
+            ; /* Not of the requested certtype.  */
+          else if (ctype == DNS_CERTTYPE_PGP && dlen)
             {
               /* PGP type */
               *r_key = es_fopenmem_init (0, "rwb", pt, dlen);
@@ -309,7 +303,7 @@ get_dns_cert (const char *name, estream_t *r_key,
                 err = 0;
               goto leave;
             }
-          else if (ctype == CERTTYPE_IPGP
+          else if (ctype == DNS_CERTTYPE_IPGP
                    && dlen && dlen < 1023 && dlen >= pt[0] + 1)
             {
               /* IPGP type */
