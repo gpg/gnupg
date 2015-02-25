@@ -176,13 +176,6 @@ int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
 
 
-/*-- mailbox.c --*/
-int has_invalid_email_chars (const char *s);
-int is_valid_mailbox (const char *name);
-char *mailbox_from_userid (const char *userid);
-int is_valid_user_id (const char *uid);
-
-
 /*-- status.c --*/
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );

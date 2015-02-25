@@ -39,6 +39,7 @@
 #include "keyserver-internal.h"
 #include "photoid.h"
 #include "pka.h"
+#include "mbox-util.h"
 
 
 /* Put an upper limit on nested packets.  The 32 is an arbitrary

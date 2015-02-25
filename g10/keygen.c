@@ -44,6 +44,7 @@
 #include "pkglue.h"
 #include "../common/shareddefs.h"
 #include "host2net.h"
+#include "mbox-util.h"
 
 
 /* The default algorithms.  If you change them remember to change them

@@ -1,4 +1,4 @@
-/* t-mailbox.c - Module test for mailbox.c
+/* t-mbox-util.c - Module test for mbox-util.c
  * Copyright (C) 2015 Werner Koch
  *
  * This file is part of GnuPG.
@@ -22,38 +22,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gpg.h"
 #include "util.h"
-#include "main.h"
+#include "mbox-util.h"
 
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
                                __FILE__,__LINE__, (a));          \
                        exit (1);                                 \
                     } while(0)
-
-
-void *
-gcry_malloc (size_t n)
-{
-  return malloc (n);
-}
-
-
-char *
-gcry_strdup (const char *string)
-{
-  return strdup (string);
-}
-
-
-void
-gcry_free (void *a)
-{
-  if (a)
-    free (a);
-}
-
 
 
 static void

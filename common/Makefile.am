@@ -75,6 +75,7 @@ common_sources = \
 	b64enc.c b64dec.c zb32.c \
 	convert.c \
 	percent.c \
+	mbox-util.c mbox-util.h \
 	miscellaneous.c \
 	xasprintf.c \
 	xreadline.c \
@@ -177,7 +178,7 @@ jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils t-dns-cert \
-	       t-mapstrings t-zb32
+	       t-mapstrings t-zb32 t-mbox-util
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -223,6 +224,7 @@ t_ssh_utils_LDADD = $(t_common_ldadd)
 t_dns_cert_LDADD = $(t_common_ldadd) $(DNSLIBS)
 t_mapstrings_LDADD = $(t_common_ldadd)
 t_zb32_LDADD = $(t_common_ldadd)
+t_mbox_util_LDADD = $(t_common_ldadd)
 
 # http tests
 t_http_SOURCES = t-http.c

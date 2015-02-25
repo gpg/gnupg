@@ -42,6 +42,8 @@
 #include "i18n.h"
 #include "status.h"
 #include "call-agent.h"
+#include "mbox-util.h"
+
 
 static void list_all (int, int);
 static void list_one (strlist_t names, int secret, int mark_secret);

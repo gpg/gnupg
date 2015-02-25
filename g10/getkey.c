@@ -37,7 +37,7 @@
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "host2net.h"
-
+#include "mbox-util.h"
 
 #define MAX_PK_CACHE_ENTRIES   PK_UID_CACHE_SIZE
 #define MAX_UID_CACHE_ENTRIES  PK_UID_CACHE_SIZE
