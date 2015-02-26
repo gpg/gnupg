@@ -1125,12 +1125,26 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
 * GNU extensions to the S2K algorithm
 
-  S2K mode 101 is used to identify these extensions.
-  After the hash algorithm the 3 bytes "GNU" are used to make
-  clear that these are extensions for GNU, the next bytes gives the
-  GNU protection mode - 1000.  Defined modes are:
-  - 1001 :: Do not store the secret part at all.
-  - 1002 :: A stub to access smartcards (not used in 1.2.x)
+  1 octet  - S2K Usage: either 254 or 255.
+  1 octet  - S2K Cipher Algo: 0
+  1 octet  - S2K Specifier: 101
+  3 octets - "GNU"
+  1 octet  - GNU S2K Extension Number.
+
+  If such a GNU extension is used neither an IV nor any kind of
+  checksum is used.  The defined GNU S2K Extension Numbers are:
+
+  - 1 :: Do not store the secret part at all.  No specific data
+         follows.
+
+  - 2 :: A stub to access smartcards.  This data follows:
+         - One octet with the length of the following serial number.
+         - The serial number. Regardless of what the length octet
+           indicates no more than 16 octets are stored.
+
+  Note that gpg stores the GNU S2K Extension Number internally as an
+  S2K Specifier with an offset of 1000.
+
 
 * Keyserver helper message format
 
