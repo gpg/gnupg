@@ -1991,8 +1991,8 @@ keyserver_import_pka (ctrl_t ctrl,
 	  rc = keyserver_import_fprint (ctrl, *fpr, 20, spec);
 	  free_keyserver_spec (spec);
 	}
-      xfree (uri);
     }
+  xfree (uri);
 
   if (rc)
     {
