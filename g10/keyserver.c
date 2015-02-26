@@ -2164,7 +2164,7 @@ keyserver_import_cert(const char *name,unsigned char **fpr,size_t *fpr_len)
   if(domain)
     *domain='.';
 
-  type=get_cert(look,max_cert_size,&key,fpr,fpr_len,&url);
+  type = get_cert (look, 0, max_cert_size, &key, fpr, fpr_len, &url);
   if(type==1)
     {
       int armor_status=opt.no_armor;

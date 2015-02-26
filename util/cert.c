@@ -48,8 +48,8 @@
 /* Returns -1 on error, 0 for no answer, 1 for PGP provided and 2 for
    IPGP provided. */
 int
-get_cert(const char *name,size_t max_size,IOBUF *iobuf,
-	 unsigned char **fpr,size_t *fpr_len,char **url)
+get_cert (const char *name, int want_ipgp, size_t max_size,IOBUF *iobuf,
+          unsigned char **fpr, size_t *fpr_len, char **url)
 {
   unsigned char *answer;
   int r,ret=-1;
@@ -140,7 +140,9 @@ get_cert(const char *name,size_t max_size,IOBUF *iobuf,
 
 	  /* 15 bytes takes us to here */
 
-	  if(ctype==3 && iobuf && dlen)
+          if (want_ipgp && ctype != 6)
+            ; /* Skip non IPGP cert records.  */
+	  else if (ctype==3 && iobuf && dlen)
 	    {
 	      /* PGP type */
 	      *iobuf=iobuf_temp_with_content((char *)pt,dlen);
@@ -216,7 +218,7 @@ main(int argc,char *argv[])
 
   printf("CERT lookup on %s\n",argv[1]);
 
-  rc=get_cert(argv[1],16384,&iobuf,&fpr,&fpr_len,&url);
+  rc=get_cert (argv[1], 0, 16384, &iobuf, &fpr, &fpr_len, &url);
   if(rc==-1)
     printf("error\n");
   else if(rc==0)

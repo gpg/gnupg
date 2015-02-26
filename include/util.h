@@ -244,8 +244,8 @@ char *xtryvasprintf (const char *fmt, va_list arg_ptr);
 char *get_pka_info (const char *address, unsigned char *fpr);
 
 /*-- cert.c --*/
-int get_cert(const char *name,size_t max_size,IOBUF *iobuf,
-	     unsigned char **fpr,size_t *fpr_len,char **url);
+int get_cert (const char *name, int want_ipgp, size_t max_size, IOBUF *iobuf,
+              unsigned char **fpr,size_t *fpr_len,char **url);
 
 /*-- convert.c --*/
 int hex2bin (const char *string, void *buffer, size_t length);
