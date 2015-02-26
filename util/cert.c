@@ -190,8 +190,8 @@ get_cert (const char *name, int want_ipgp, size_t max_size,IOBUF *iobuf,
 #else /* !USE_DNS_CERT */
 
 int
-get_cert(const char *name,size_t max_size,IOBUF *iobuf,
-	 unsigned char **fpr,size_t *fpr_len,char **url)
+get_cert (const char *name, int want_ipgp, size_t max_size,IOBUF *iobuf,
+          unsigned char **fpr, size_t *fpr_len, char **url)
 {
   return -1;
 }
