@@ -52,7 +52,7 @@ static void
 burn_stack (int bytes)
 {
     char buf[128];
-    
+
     wipememory(buf,sizeof buf);
     bytes -= sizeof buf;
     if (bytes > 0)
@@ -322,6 +322,23 @@ sha1_read( SHA1_CONTEXT *hd )
 {
     return hd->buf;
 }
+
+
+/****************
+ * Shortcut functions which puts the hash value of the supplied buffer
+ * into outbuf which must have a size of 20 bytes.
+ */
+void
+sha1_hash_buffer (char *outbuf, const char *buffer, size_t length)
+{
+  SHA1_CONTEXT hd;
+
+  sha1_init (&hd);
+  sha1_write (&hd, (byte*)buffer, length);
+  sha1_final (&hd);
+  memcpy (outbuf, hd.buf, 20);
+}
+
 
 /****************
  * Return some information about the algorithm.  We need algo here to

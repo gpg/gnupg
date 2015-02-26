@@ -157,6 +157,7 @@ void md_stop_debug( MD_HANDLE a );
 	    } while(0)
 
 void rmd160_hash_buffer (char *outbuf, const char *buffer, size_t length);
+void sha1_hash_buffer (char *outbuf, const char *buffer, size_t length);
 
 
 /*-- cipher.c --*/
