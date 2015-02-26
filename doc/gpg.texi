@@ -2019,7 +2019,7 @@ opposite meaning. The options are:
   generally useful unless a shared keyring scheme is being used.
   Defaults to no.
 
-  @item import-keep-ownertrust
+  @item keep-ownertrust
   Normally possible still existing ownertrust values of a key are
   cleared if a key is imported.  This is in general desirable so that
   a formerly deleted key does not automatically gain an ownertrust
