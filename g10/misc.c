@@ -1141,54 +1141,6 @@ unescape_percent_string (const unsigned char *s)
 }
 
 
-/* Check whether the string has characters not valid in an RFC-822
-   address.  To cope with OpenPGP we ignore non-ascii characters
-   so that for example umlauts are legal in an email address.  An
-   OpenPGP user ID must be utf-8 encoded but there is no strict
-   requirement for RFC-822.  Thus to avoid IDNA encoding we put the
-   address verbatim as utf-8 into the user ID under the assumption
-   that mail programs handle IDNA at a lower level and take OpenPGP
-   user IDs as utf-8.  Note that we can't do an utf-8 encoding
-   checking here because in keygen.c this function is called with the
-   native encoding and native to utf-8 encoding is only done  later.  */
-int
-has_invalid_email_chars (const char *s)
-{
-  int at_seen=0;
-  const char *valid_chars=
-    "01234567890_-.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-  for ( ; *s; s++ )
-    {
-      if ( *s & 0x80 )
-        continue; /* We only care about ASCII.  */
-      if ( *s == '@' )
-        at_seen=1;
-      else if ( !at_seen && !( !!strchr( valid_chars, *s ) || *s == '+' ) )
-        return 1;
-      else if ( at_seen && !strchr( valid_chars, *s ) )
-        return 1;
-    }
-  return 0;
-}
-
-
-/* Check whether NAME represents a valid mailbox according to
-   RFC822. Returns true if so. */
-int
-is_valid_mailbox (const char *name)
-{
-  return !( !name
-            || !*name
-            || has_invalid_email_chars (name)
-            || string_count_chr (name,'@') != 1
-            || *name == '@'
-            || name[strlen(name)-1] == '@'
-            || name[strlen(name)-1] == '.'
-            || strstr (name, "..") );
-}
-
-
 /* This is a helper function to load a Windows function from either of
    one DLLs. */
 #ifdef HAVE_W32_SYSTEM
