@@ -60,7 +60,6 @@ get_pka_info (const char *address, void *fprbuf, size_t fprbuflen)
   unsigned char *fpr = NULL;
   size_t fpr_len;
   char *url = NULL;
-  gpg_error_t err;
 
   mbox = mailbox_from_userid (address);
   if (!mbox)
