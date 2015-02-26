@@ -868,7 +868,7 @@ dnl Checks for libraries.
 #                       needs to find this string.  Without
 #                       it "make distcheck" may fail.
 AM_PO_SUBDIRS
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.19.3])
 if test "$try_gettext" = yes; then
   AM_GNU_GETTEXT(,[need-ngettext])
   # gettext requires some extra checks.  These really should be part of

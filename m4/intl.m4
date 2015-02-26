@@ -1,5 +1,5 @@
-# intl.m4 serial 17 (gettext-0.18) - updated by wk 2015-01-19
-dnl Copyright (C) 1995-2009 Free Software Foundation, Inc.
+# intl.m4 serial 27 (gettext-0.19)
+dnl Copyright (C) 1995-2014 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -17,7 +17,7 @@ dnl Authors:
 dnl   Ulrich Drepper <drepper@cygnus.com>, 1995-2000.
 dnl   Bruno Haible <haible@clisp.cons.org>, 2000-2009.
 
-AC_PREREQ([2.52])
+AC_PREREQ([2.60])
 
 dnl Checks for all prerequisites of the intl subdirectory,
 dnl except for INTL_LIBTOOL_SUFFIX_PREFIX (and possibly LIBTOOL), INTLOBJS,
@@ -42,6 +42,8 @@ AC_DEFUN([AM_INTL_SUBDIR],
   AC_REQUIRE([gl_XSIZE])dnl
   AC_REQUIRE([gl_FCNTL_O_FLAGS])dnl
   AC_REQUIRE([gt_INTL_MACOSX])dnl
+  AC_REQUIRE([gl_EXTERN_INLINE])dnl
+  AC_REQUIRE([gt_GL_ATTRIBUTE])dnl
 
   dnl Support for automake's --enable-silent-rules.
   case "$enable_silent_rules" in
@@ -55,21 +57,19 @@ AC_DEFUN([AM_INTL_SUBDIR],
     [AC_DEFINE([ptrdiff_t], [long],
        [Define as the type of the result of subtracting two pointers, if the system doesn't define it.])
     ])
-  AC_CHECK_HEADERS([stddef.h stdlib.h string.h])
+  AC_CHECK_HEADERS([features.h stddef.h stdlib.h string.h])
   AC_CHECK_FUNCS([asprintf fwprintf newlocale putenv setenv setlocale \
     snprintf strnlen wcslen wcsnlen mbrtowc wcrtomb])
 
   dnl Use the _snprintf function only if it is declared (because on NetBSD it
   dnl is defined as a weak alias of snprintf; we prefer to use the latter).
-  gt_CHECK_DECL(_snprintf, [#include <stdio.h>])
-  gt_CHECK_DECL(_snwprintf, [#include <stdio.h>])
+  AC_CHECK_DECLS([_snprintf, _snwprintf], , , [#include <stdio.h>])
 
   dnl Use the *_unlocked functions only if they are declared.
   dnl (because some of them were defined without being declared in Solaris
   dnl 2.5.1 but were removed in Solaris 2.6, whereas we want binaries built
   dnl on Solaris 2.5.1 to run on Solaris 2.6).
-  dnl Don't use AC_CHECK_DECLS because it isn't supported in autoconf-2.13.
-  gt_CHECK_DECL(getc_unlocked, [#include <stdio.h>])
+  AC_CHECK_DECLS([getc_unlocked], , , [#include <stdio.h>])
 
   case $gt_cv_func_printf_posix in
     *yes) HAVE_POSIX_PRINTF=1 ;;
@@ -220,9 +220,10 @@ AC_DEFUN([gt_INTL_SUBDIR_CORE],
   AC_REQUIRE([gt_INTTYPES_PRI])dnl
   AC_REQUIRE([gl_LOCK])dnl
 
-  AC_TRY_LINK(
-    [int foo (int a) { a = __builtin_expect (a, 10); return a == 10 ? 0 : 1; }],
-    [],
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM(
+       [[int foo (int a) { a = __builtin_expect (a, 10); return a == 10 ? 0 : 1; }]],
+       [[]])],
     [AC_DEFINE([HAVE_BUILTIN_EXPECT], [1],
        [Define to 1 if the compiler understands __builtin_expect.])])
 
@@ -235,16 +236,13 @@ AC_DEFUN([gt_INTL_SUBDIR_CORE],
   dnl (because some of them were defined without being declared in Solaris
   dnl 2.5.1 but were removed in Solaris 2.6, whereas we want binaries built
   dnl on Solaris 2.5.1 to run on Solaris 2.6).
-  dnl Don't use AC_CHECK_DECLS because it isn't supported in autoconf-2.13.
-  gt_CHECK_DECL([feof_unlocked], [#include <stdio.h>])
-  gt_CHECK_DECL([fgets_unlocked], [#include <stdio.h>])
+  AC_CHECK_DECLS([feof_unlocked, fgets_unlocked], , , [#include <stdio.h>])
 
   AM_ICONV
 
   dnl intl/plural.c is generated from intl/plural.y. It requires bison,
   dnl because plural.y uses bison specific features. It requires at least
-  dnl bison-1.26 because earlier versions generate a plural.c that doesn't
-  dnl compile.
+  dnl bison-2.7 for %define api.pure.
   dnl bison is only needed for the maintainer (who touches plural.y). But in
   dnl order to avoid separate Makefiles or --enable-maintainer-mode, we put
   dnl the rule in general Makefile. Now, some people carelessly touch the
@@ -261,7 +259,7 @@ changequote(<<,>>)dnl
     ac_prog_version=`$INTLBISON --version 2>&1 | sed -n 's/^.*GNU Bison.* \([0-9]*\.[0-9.]*\).*$/\1/p'`
     case $ac_prog_version in
       '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
-      1.2[6-9]* | 1.[3-9][0-9]* | [2-9].*)
+      2.[7-9]* | [3-9].*)
 changequote([,])dnl
          ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
       *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
@@ -273,22 +271,28 @@ changequote([,])dnl
   fi
 ])
 
-
-dnl gt_CHECK_DECL(FUNC, INCLUDES)
-dnl Check whether a function is declared.
-AC_DEFUN([gt_CHECK_DECL],
-[
-  AC_CACHE_CHECK([whether $1 is declared], [ac_cv_have_decl_$1],
-    [AC_TRY_COMPILE([$2], [
-#ifndef $1
-  char *p = (char *) $1;
+dnl Copies _GL_UNUSED and _GL_ATTRIBUTE_PURE definitions from
+dnl gnulib-common.m4 as a fallback, if the project isn't using Gnulib.
+AC_DEFUN([gt_GL_ATTRIBUTE], [
+  m4_ifndef([gl_[]COMMON],
+    AH_VERBATIM([gt_gl_attribute],
+[/* Define as a marker that can be attached to declarations that might not
+    be used.  This helps to reduce warnings, such as from
+    GCC -Wunused-parameter.  */
+#ifndef _GL_UNUSED
+# if __GNUC__ >= 3 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+#  define _GL_UNUSED __attribute__ ((__unused__))
+# else
+#  define _GL_UNUSED
+# endif
 #endif
-], ac_cv_have_decl_$1=yes, ac_cv_have_decl_$1=no)])
-  if test $ac_cv_have_decl_$1 = yes; then
-    gt_value=1
-  else
-    gt_value=0
-  fi
-  AC_DEFINE_UNQUOTED([HAVE_DECL_]translit($1, [a-z], [A-Z]), [$gt_value],
-    [Define to 1 if you have the declaration of `$1', and to 0 if you don't.])
-])
+
+/* The __pure__ attribute was added in gcc 2.96.  */
+#ifndef _GL_ATTRIBUTE_PURE
+# if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+#  define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
+# else
+#  define _GL_ATTRIBUTE_PURE /* empty */
+# endif
+#endif
+]))])

@@ -1,20 +1,18 @@
 /* Implementation of the internal dcigettext function.
-   Copyright (C) 1995-1999, 2000-2009 Free Software Foundation, Inc.
+   Copyright (C) 1995-1999, 2000-2010, 2012 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Library General Public License as published
-   by the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 2.1 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* Tell glibc's <string.h> to provide a prototype for mempcpy().
    This must come before <config.h> because <config.h> may include
@@ -374,7 +372,7 @@ static const char *get_output_charset (struct binding *domainbinding)
 #endif
 
 
-/* For those loosing systems which don't have `alloca' we have to add
+/* For those losing systems which don't have `alloca' we have to add
    some additional code emulating it.  */
 #ifdef HAVE_ALLOCA
 /* Nothing has to be done.  */
@@ -745,6 +743,11 @@ DCIGETTEXT (const char *domainname, const char *msgid1, const char *msgid2,
 					 msgid1, 1, &retlen);
 #endif
 
+		  /* Resource problems are not fatal, instead we return no
+		     translation.  */
+		  if (__builtin_expect (retval == (char *) -1, 0))
+		    goto return_untranslated;
+
 		  if (retval != NULL)
 		    {
 		      domain = domain->successor[cnt];
@@ -1105,6 +1108,11 @@ _nl_find_msg (struct loaded_l10nfile *domain_file,
 		_nl_find_msg (domain_file, domainbinding, "", 0, &nullentrylen);
 # endif
 
+	      /* Resource problems are fatal.  If we continue onwards we will
+	         only attempt to calloc a new conv_tab and fail later.  */
+	      if (__builtin_expect (nullentry == (char *) -1, 0))
+	        return (char *) -1;
+
 	      if (nullentry != NULL)
 		{
 		  const char *charsetstr;
@@ -1153,7 +1161,8 @@ _nl_find_msg (struct loaded_l10nfile *domain_file,
 #  if HAVE_ICONV
 		      /* When using GNU libc >= 2.2 or GNU libiconv >= 1.5,
 			 we want to use transliteration.  */
-#   if (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) || __GLIBC__ > 2 \
+#   if (((__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) || __GLIBC__ > 2) \
+	&& !defined __UCLIBC__) \
        || _LIBICONV_VERSION >= 0x0105
 		      if (strchr (outcharset, '/') == NULL)
 			{
@@ -1329,7 +1338,7 @@ _nl_find_msg (struct loaded_l10nfile *domain_file,
 							     freemem_size);
 # ifdef _LIBC
 		      if (newmem != NULL)
-			transmem_list = transmem_list->next;
+			transmem_list = newmem;
 		      else
 			{
 			  struct transmem_list *old = transmem_list;
@@ -1344,6 +1353,16 @@ _nl_find_msg (struct loaded_l10nfile *domain_file,
 		      malloc_count = 1;
 		      freemem_size = INITIAL_BLOCK_SIZE;
 		      newmem = (transmem_block_t *) malloc (freemem_size);
+# ifdef _LIBC
+		      if (newmem != NULL)
+			{
+			  /* Add the block to the list of blocks we have to free
+			     at some point.  */
+			  newmem->next = transmem_list;
+			  transmem_list = newmem;
+			}
+		      /* Fall through and return -1.  */
+# endif
 		    }
 		  if (__builtin_expect (newmem == NULL, 0))
 		    {
@@ -1354,11 +1373,6 @@ _nl_find_msg (struct loaded_l10nfile *domain_file,
 		    }
 
 # ifdef _LIBC
-		  /* Add the block to the list of blocks we have to free
-		     at some point.  */
-		  newmem->next = transmem_list;
-		  transmem_list = newmem;
-
 		  freemem = (unsigned char *) newmem->data;
 		  freemem_size -= offsetof (struct transmem_list, data);
 # else

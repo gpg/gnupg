@@ -2,20 +2,18 @@
    Copyright (C) 2009 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2009.
 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Library General Public License as published
-   by the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 2.1 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -856,6 +854,14 @@ libintl_setlocale (int category, const char *locale)
 
           if (setlocale_unixlike (LC_ALL, base_name) == NULL)
             goto fail;
+# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+          /* On native Windows, setlocale(LC_ALL,...) may succeed but set the
+             LC_CTYPE category to an invalid value ("C") when it does not
+             support the specified encoding.  Report a failure instead.  */
+          if (strchr (base_name, '.') != NULL
+              && strcmp (setlocale (LC_CTYPE, NULL), "C") == 0)
+            goto fail;
+# endif
 
           for (i = 0; i < sizeof (categories) / sizeof (categories[0]); i++)
             {
@@ -878,6 +884,7 @@ libintl_setlocale (int category, const char *locale)
             }
 
           /* All steps were successful.  */
+          ++_nl_msg_cat_cntr;
           free (saved_locale);
           return setlocale (LC_ALL, NULL);
 
@@ -889,16 +896,64 @@ libintl_setlocale (int category, const char *locale)
         }
       else
         {
+          char *result;
           const char *name =
             gl_locale_name_environ (category, category_to_name (category));
           if (name == NULL)
             name = gl_locale_name_default ();
 
-          return setlocale_single (category, name);
+          result = setlocale_single (category, name);
+          if (result != NULL)
+            ++_nl_msg_cat_cntr;
+          return result;
         }
     }
   else
-    return setlocale_single (category, locale);
+    {
+# if (defined _WIN32 || defined __WIN32__) && ! defined __CYGWIN__
+      if (category == LC_ALL && locale != NULL && strchr (locale, '.') != NULL)
+        {
+          char *saved_locale;
+
+          /* Back up the old locale.  */
+          saved_locale = setlocale (LC_ALL, NULL);
+          if (saved_locale == NULL)
+            return NULL;
+          saved_locale = strdup (saved_locale);
+          if (saved_locale == NULL)
+            return NULL;
+
+          if (setlocale_unixlike (LC_ALL, locale) == NULL)
+            {
+              free (saved_locale);
+              return NULL;
+            }
+
+          /* On native Windows, setlocale(LC_ALL,...) may succeed but set the
+             LC_CTYPE category to an invalid value ("C") when it does not
+             support the specified encoding.  Report a failure instead.  */
+          if (strcmp (setlocale (LC_CTYPE, NULL), "C") == 0)
+            {
+              if (saved_locale[0] != '\0') /* don't risk an endless recursion */
+                setlocale (LC_ALL, saved_locale);
+              free (saved_locale);
+              return NULL;
+            }
+
+          /* It was really successful.  */
+          ++_nl_msg_cat_cntr;
+          free (saved_locale);
+          return setlocale (LC_ALL, NULL);
+        }
+      else
+# endif
+        {
+          char *result = setlocale_single (category, locale);
+          if (result != NULL)
+            ++_nl_msg_cat_cntr;
+          return result;
+        }
+    }
 }
 
 # if HAVE_NEWLOCALE

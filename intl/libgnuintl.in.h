@@ -1,20 +1,18 @@
 /* Message catalogs for internationalization.
-   Copyright (C) 1995-1997, 2000-2010 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 2000-2012 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Library General Public License as published
-   by the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation; either version 2.1 of the License, or
+   (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-   USA.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #ifndef _LIBINTL_H
 #define _LIBINTL_H 1
@@ -56,7 +54,7 @@ extern "C" {
 
 
 /* Version number: (major<<16) + (minor<<8) + subminor */
-#define LIBINTL_VERSION 0x001201
+#define LIBINTL_VERSION 0x001303
 extern int libintl_version;
 
 
@@ -178,7 +176,7 @@ extern char *dcgettext (const char *__domainname, const char *__msgid,
 #endif
 
 
-/* Similar to `gettext' but select the plural form corresponding to the
+/* Similar to 'gettext' but select the plural form corresponding to the
    number N.  */
 #ifdef _INTL_REDIRECT_INLINE
 extern char *libintl_ngettext (const char *__msgid1, const char *__msgid2,
@@ -199,7 +197,7 @@ extern char *ngettext (const char *__msgid1, const char *__msgid2,
        _INTL_MAY_RETURN_STRING_ARG (1) _INTL_MAY_RETURN_STRING_ARG (2);
 #endif
 
-/* Similar to `dgettext' but select the plural form corresponding to the
+/* Similar to 'dgettext' but select the plural form corresponding to the
    number N.  */
 #ifdef _INTL_REDIRECT_INLINE
 extern char *libintl_dngettext (const char *__domainname, const char *__msgid1,
@@ -221,7 +219,7 @@ extern char *dngettext (const char *__domainname,
        _INTL_MAY_RETURN_STRING_ARG (2) _INTL_MAY_RETURN_STRING_ARG (3);
 #endif
 
-/* Similar to `dcgettext' but select the plural form corresponding to the
+/* Similar to 'dcgettext' but select the plural form corresponding to the
    number N.  */
 #ifdef _INTL_REDIRECT_INLINE
 extern char *libintl_dcngettext (const char *__domainname,
@@ -431,9 +429,11 @@ extern int vswprintf (wchar_t *, size_t, const wchar_t *, va_list);
 /* Support for the locale chosen by the user.  */
 #if (defined __APPLE__ && defined __MACH__) || defined _WIN32 || defined __WIN32__ || defined __CYGWIN__
 
+#ifndef GNULIB_defined_setlocale /* don't override gnulib */
 #undef setlocale
 #define setlocale libintl_setlocale
 extern char *setlocale (int, const char *);
+#endif
 
 #if @HAVE_NEWLOCALE@
 
