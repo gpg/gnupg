@@ -1297,6 +1297,18 @@ ascii_memcasecmp( const char *a, const char *b, size_t n )
     return 0;
 }
 
+/* Lowercase all ASCII characters in S.  */
+char *
+ascii_strlwr (char *s)
+{
+  char *p;
+
+  for (p = s; *p; p++ )
+    if (isascii (*p) && *p >= 'A' && *p <= 'Z')
+      *p |= 0x20;
+
+  return s;
+}
 
 
 /*********************************************

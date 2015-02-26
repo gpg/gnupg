@@ -2229,8 +2229,8 @@ keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
   *fpr=xmalloc(20);
   *fpr_len=20;
 
-  uri = get_pka_info (name, *fpr);
-  if (uri)
+  uri = get_pka_info (name, *fpr, 20);
+  if (uri && *uri)
     {
       struct keyserver_spec *spec;
       spec = parse_keyserver_uri (uri, 1, NULL, 0);
@@ -2239,11 +2239,14 @@ keyserver_import_pka(const char *name,unsigned char **fpr,size_t *fpr_len)
 	  rc=keyserver_import_fprint (*fpr, 20, spec);
 	  free_keyserver_spec (spec);
 	}
-      xfree (uri);
     }
+  xfree (uri);
 
-  if(rc!=0)
-    xfree(*fpr);
+  if (rc)
+    {
+      xfree(*fpr);
+      *fpr = NULL;
+    }
 
   return rc;
 }

@@ -196,6 +196,7 @@ char *string_to_utf8 (const char *string);
 int ascii_isupper (int c);
 int ascii_islower (int c);
 int ascii_memcasecmp( const char *a, const char *b, size_t n);
+char *ascii_strlwr (char *s);
 
 #ifndef HAVE_STPCPY
 char *stpcpy(char *a,const char *b);
@@ -251,7 +252,7 @@ char *xtryvasprintf (const char *fmt, va_list arg_ptr);
 char *strconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 
 /*-- pka.c --*/
-char *get_pka_info (const char *address, unsigned char *fpr);
+char *get_pka_info (const char *address, void *fprbuf, size_t fprbuflen);
 
 /*-- cert.c --*/
 int get_cert (const char *name, int want_ipgp, size_t max_size, IOBUF *iobuf,

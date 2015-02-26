@@ -703,18 +703,13 @@ if test x"$try_dns" = xyes ; then
          use_dns_srv=$enableval,use_dns_srv=yes)
    fi
 
-   AC_ARG_ENABLE(dns-pka,
-      AC_HELP_STRING([--disable-dns-pka],
-   	[disable the use of PKA records in DNS]),
-      use_dns_pka=$enableval,use_dns_pka=yes)
-
    AC_ARG_ENABLE(dns-cert,
       AC_HELP_STRING([--disable-dns-cert],
    	[disable the use of CERT records in DNS]),
       use_dns_cert=$enableval,use_dns_cert=yes)
 fi
 
-if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
+if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   _dns_save_libs=$LIBS
   LIBS=""
   # the double underscore thing is a glibc-ism?
@@ -762,10 +757,6 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
         AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
      fi
 
-     if test x"$use_dns_pka" = xyes ; then
-        AC_DEFINE(USE_DNS_PKA,1,[define to use our experimental DNS PKA])
-     fi
-
      if test x"$use_dns_cert" = xyes ; then
         AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
      fi
@@ -775,7 +766,6 @@ if test x"$use_dns_pka" = xyes || test x"$use_dns_srv" = xyes || test x"$use_dns
      fi
   else
      use_dns_srv=no
-     use_dns_pka=no
      use_dns_cert=no
   fi
 

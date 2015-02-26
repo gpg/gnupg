@@ -3063,10 +3063,8 @@ parse_auto_key_locate(char *options)
       else if(ascii_strcasecmp(tok,"cert")==0)
 	akl->type=AKL_CERT;
 #endif
-#ifdef USE_DNS_PKA
       else if(ascii_strcasecmp(tok,"pka")==0)
 	akl->type=AKL_PKA;
-#endif
       else if((akl->spec=parse_keyserver_uri(tok,1,NULL,0)))
 	akl->type=AKL_SPEC;
       else

@@ -1,5 +1,6 @@
-/* pka.c - DNS Public Key Association RR access
- * Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+/* pka.c - DNS Public Key Association CERT record access
+ * Copyright (C) 1998-2015 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -22,241 +23,237 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifdef USE_DNS_PKA
-# include <sys/types.h>
-# ifdef _WIN32
-#  include <windows.h>
-# else
-#  include <netinet/in.h>
-#  include <arpa/nameser.h>
-#  include <arpa/inet.h>
-#  include <resolv.h>
-   /* Not every installation has gotten around to supporting CERTs yet... */
-#  ifndef T_CERT
-#   define T_CERT 37
-#   ifdef __VMS
-#    include "cert_vms.h"
-#   endif /* def __VMS */
-#  endif
-# endif
-#endif /* USE_DNS_PKA */
+#include <errno.h>
 
 #include "memory.h"
 #include "types.h"
+#include "cipher.h"
 #include "util.h"
 
-
-#ifdef USE_DNS_PKA
-/* Parse the TXT resource record. Format is:
-
-   v=pka1;fpr=a4d94e92b0986ab5ee9dcd755de249965b0358a2;uri=string
-
-   For simplicity white spaces are not allowed.  Because we expect to
-   use a new RRTYPE for this in the future we define the TXT really
-   strict for simplicity: No white spaces, case sensitivity of the
-   names, order must be as given above.  Only URI is optional.
-
-   This function modifies BUFFER.  On success 0 is returned, the 20
-   byte fingerprint stored at FPR and BUFFER contains the URI or an
-   empty string.
-*/
 static int
-parse_txt_record (char *buffer, unsigned char *fpr)
+string_has_ctrl_or_space (const char *string)
 {
-  char *p, *pend;
-  int i;
-
-  p = buffer;
-  pend = strchr (p, ';');
-  if (!pend)
-    return -1;
-  *pend++ = 0;
-  if (strcmp (p, "v=pka1"))
-    return -1; /* Wrong or missing version. */
-
-  p = pend;
-  pend = strchr (p, ';');
-  if (pend)
-    *pend++ = 0;
-  if (strncmp (p, "fpr=", 4))
-    return -1; /* Missing fingerprint part. */
-  p += 4;
-  for (i=0; i < 20 && hexdigitp (p) && hexdigitp (p+1); i++, p += 2)
-    fpr[i] = xtoi_2 (p);
-  if (i != 20)
-    return -1; /* Fingerprint consists not of exactly 40 hexbytes. */
-
-  p = pend;
-  if (!p || !*p)
-    {
-      *buffer = 0;
-      return 0; /* Success (no URI given). */
-    }
-  if (strncmp (p, "uri=", 4))
-    return -1; /* Unknown part. */
-  p += 4;
-  /* There is an URI, copy it to the start of the buffer. */
-  while (*p)
-    *buffer++ = *p++;
-  *buffer = 0;
+  for (; *string; string++ )
+    if (!(*string & 0x80) && *string <= 0x20)
+      return 1;
   return 0;
 }
+
+
+/* Return true if STRING has two consecutive '.' after an '@'
+   sign.  */
+static int
+has_dotdot_after_at (const char *string)
+{
+  string = strchr (string, '@');
+  if (!string)
+    return 0; /* No at-sign.  */
+  string++;
+  return !!strstr (string, "..");
+}
+
+
+/* Return the mailbox (local-part@domain) form a standard user id.
+   Caller must free the result.  Returns NULL if no valid mailbox was
+   found (or we are out of memory). */
+static char *
+mailbox_from_userid (const char *userid)
+{
+  const char *s, *s_end;
+  size_t len;
+  char *result = NULL;
+
+  s = strchr (userid, '<');
+  if (s)
+    {
+      /* Seems to be a standard user id.  */
+      s++;
+      s_end = strchr (s, '>');
+      if (s_end && s_end > s)
+        {
+          len = s_end - s;
+          result = xmalloc (len + 1);
+          strncpy (result, s, len);
+          result[len] = 0;
+          /* Apply some basic checks on the address.  We do not use
+             is_valid_mailbox because those checks are too strict.  */
+          if (string_count_chr (result, '@') != 1  /* Need exactly one '@.  */
+              || *result == '@'           /* local-part missing.  */
+              || result[len-1] == '@'     /* domain missing.  */
+              || result[len-1] == '.'     /* ends with a dot.  */
+              || string_has_ctrl_or_space (result)
+              || has_dotdot_after_at (result))
+            {
+              xfree (result);
+              result = NULL;
+              errno = EINVAL;
+            }
+        }
+      else
+        errno = EINVAL;
+    }
+  else if (is_valid_mailbox (userid))
+    {
+      /* The entire user id is a mailbox.  Return that one.  Note that
+         this fallback method has some restrictions on the valid
+         syntax of the mailbox.  However, those who want weird
+         addresses should know about it and use the regular <...>
+         syntax.  */
+      result = xtrystrdup (userid);
+    }
+  else
+    errno = EINVAL;
+
+  return result? ascii_strlwr (result) : NULL;
+}
+
+
+/* Zooko's base32 variant. See RFC-6189 and
+   http://philzimmermann.com/docs/human-oriented-base-32-encoding.txt
+   Caller must xfree the returned string.  Returns NULL and sets ERRNO
+   on error.  To avoid integer overflow DATALEN is limited to 2^16
+   bytes.  Note, that DATABITS is measured in bits!.  */
+static char *
+zb32_encode (const void *data, unsigned int databits)
+{
+  static char const zb32asc[32] = {'y','b','n','d','r','f','g','8',
+                                   'e','j','k','m','c','p','q','x',
+                                   'o','t','1','u','w','i','s','z',
+                                   'a','3','4','5','h','7','6','9' };
+  const unsigned char *s;
+  char *output, *d;
+  size_t datalen;
+
+  datalen = (databits + 7) / 8;
+  if (datalen > (1 << 16))
+    {
+      errno = EINVAL;
+      return NULL;
+    }
+
+  d = output = xtrymalloc (8 * (datalen / 5)
+                           + 2 * (datalen % 5)
+                           - ((datalen%5)>2)
+                           + 1);
+  if (!output)
+    return NULL;
+
+  /* I use straightforward code.  The compiler should be able to do a
+     better job on optimization than me and it is easier to read.  */
+  for (s = data; datalen >= 5; s += 5, datalen -= 5)
+    {
+      *d++ = zb32asc[((s[0]      ) >> 3)               ];
+      *d++ = zb32asc[((s[0] &   7) << 2) | (s[1] >> 6) ];
+      *d++ = zb32asc[((s[1] &  63) >> 1)               ];
+      *d++ = zb32asc[((s[1] &   1) << 4) | (s[2] >> 4) ];
+      *d++ = zb32asc[((s[2] &  15) << 1) | (s[3] >> 7) ];
+      *d++ = zb32asc[((s[3] & 127) >> 2)               ];
+      *d++ = zb32asc[((s[3] &   3) << 3) | (s[4] >> 5) ];
+      *d++ = zb32asc[((s[4] &  31)     )               ];
+    }
+
+  switch (datalen)
+    {
+    case 4:
+      *d++ = zb32asc[((s[0]      ) >> 3)               ];
+      *d++ = zb32asc[((s[0] &   7) << 2) | (s[1] >> 6) ];
+      *d++ = zb32asc[((s[1] &  63) >> 1)               ];
+      *d++ = zb32asc[((s[1] &   1) << 4) | (s[2] >> 4) ];
+      *d++ = zb32asc[((s[2] &  15) << 1) | (s[3] >> 7) ];
+      *d++ = zb32asc[((s[3] & 127) >> 2)               ];
+      *d++ = zb32asc[((s[3] &   3) << 3)               ];
+      break;
+    case 3:
+      *d++ = zb32asc[((s[0]      ) >> 3)               ];
+      *d++ = zb32asc[((s[0] &   7) << 2) | (s[1] >> 6) ];
+      *d++ = zb32asc[((s[1] &  63) >> 1)               ];
+      *d++ = zb32asc[((s[1] &   1) << 4) | (s[2] >> 4) ];
+      *d++ = zb32asc[((s[2] &  15) << 1)               ];
+      break;
+    case 2:
+      *d++ = zb32asc[((s[0]      ) >> 3)               ];
+      *d++ = zb32asc[((s[0] &   7) << 2) | (s[1] >> 6) ];
+      *d++ = zb32asc[((s[1] &  63) >> 1)               ];
+      *d++ = zb32asc[((s[1] &   1) << 4)               ];
+      break;
+    case 1:
+      *d++ = zb32asc[((s[0]      ) >> 3)               ];
+      *d++ = zb32asc[((s[0] &   7) << 2)               ];
+      break;
+    default:
+      break;
+    }
+  *d = 0;
+
+  /* Need to strip some bytes if not a multiple of 40.  */
+  output[(databits + 5 - 1) / 5] = 0;
+  return output;
+}
+
 
 
 /* For the given email ADDRESS lookup the PKA information in the DNS.
 
-   On success the 20 byte SHA-1 fingerprint is stored at FPR and the
-   URI will be returned in an allocated buffer.  Note that the URI
-   might be an zero length string as this information is optiobnal.
-   Caller must xfree the returned string.
+   On success the fingerprint is stored at FPRBUF and the URI will be
+   returned in an allocated buffer.  Note that the URI might be a zero
+   length string as this information is optional.  Caller must xfree
+   the returned string.  FPRBUFLEN gives the size of the expected
+   fingerprint (usually 20).
 
    On error NULL is returned and the 20 bytes at FPR are not
    defined. */
 char *
-get_pka_info (const char *address, unsigned char *fpr)
+get_pka_info (const char *address, void *fprbuf, size_t fprbuflen)
 {
-  union
+  char *result = NULL;
+  char *mbox;
+  char *domain;  /* Points to mbox.  */
+  char hashbuf[20];
+  char *hash = NULL;
+  char *name = NULL;
+  unsigned char *fpr = NULL;
+  size_t fpr_len;
+  char *url = NULL;
+
+  mbox = mailbox_from_userid (address);
+  if (!mbox)
+    goto leave;
+  domain = strchr (mbox, '@');
+  if (!domain)
+    goto leave;
+  *domain++ = 0;
+
+  sha1_hash_buffer (hashbuf, mbox, strlen (mbox));
+  hash = zb32_encode (hashbuf, 8*20);
+  if (!hash)
+    goto leave;
+  name = strconcat (hash, "._pka.", domain, NULL);
+  if (!name)
+    goto leave;
+  if (get_cert (name, 1, 16384, NULL, &fpr, &fpr_len, &url))
+    goto leave;
+  if (!fpr)
+    goto leave;
+
+  /* Return the fingerprint.  */
+  if (fpr_len != fprbuflen)
     {
-      signed char p[PACKETSZ];
-      HEADER h;
-    } answer;
-  int anslen;
-  int qdcount, ancount;
-  int rc;
-  unsigned char *p, *pend;
-  const char *domain;
-  char *name;
+      /* fprintf (stderr, "get_dns_cert failed: fprlen (%zu/%zu)\n", */
+      /*          fpr_len, fprbuflen); */
+      goto leave;
+    }
+  memcpy (fprbuf, fpr, fpr_len);
+  /* We return the URL or an empty string.  */
+  if (!url)
+    url = xcalloc (1, 1);
+  result = url;
+  url = NULL;
 
-
-  domain = strrchr (address, '@');
-  if (!domain || domain == address || !domain[1])
-    return NULL; /* invalid mail address given. */
-
-  name = malloc (strlen (address) + 5 + 1);
-  memcpy (name, address, domain - address);
-  strcpy (stpcpy (name + (domain-address), "._pka."), domain+1);
-
-  anslen = res_query (name, C_IN, T_TXT, answer.p, PACKETSZ);
+ leave:
+  xfree (fpr);
+  xfree (url);
   xfree (name);
-  if (anslen < sizeof(HEADER))
-    return NULL; /* DNS resolver returned a too short answer. */
-  if ( (rc=answer.h.rcode) != NOERROR )
-    return NULL; /* DNS resolver returned an error. */
-
-  /* We assume that PACKETSZ is large enough and don't do dynmically
-     expansion of the buffer. */
-  if (anslen > PACKETSZ)
-    return NULL; /* DNS resolver returned a too long answer */
-
-  qdcount = ntohs (answer.h.qdcount);
-  ancount = ntohs (answer.h.ancount);
-
-  if (!ancount)
-    return NULL; /* Got no answer. */
-
-  p = answer.p + sizeof (HEADER);
-  pend = answer.p + anslen; /* Actually points directly behind the buffer. */
-
-  while (qdcount-- && p < pend)
-    {
-      rc = dn_skipname (p, pend);
-      if (rc == -1)
-        return NULL;
-      p += rc + QFIXEDSZ;
-    }
-
-  if (ancount > 1)
-    return NULL; /* more than one possible gpg trustdns record - none used. */
-
-  while (ancount-- && p <= pend)
-    {
-      unsigned int type, class, txtlen, n;
-      char *buffer, *bufp;
-
-      rc = dn_skipname (p, pend);
-      if (rc == -1)
-        return NULL;
-      p += rc;
-      if (p >= pend - 10)
-        return NULL; /* RR too short. */
-
-      type = *p++ << 8;
-      type |= *p++;
-      class = *p++ << 8;
-      class |= *p++;
-      p += 4;
-      txtlen = *p++ << 8;
-      txtlen |= *p++;
-      if (type != T_TXT || class != C_IN)
-        return NULL; /* Answer does not match the query. */
-
-      buffer = bufp = xmalloc (txtlen + 1);
-      while (txtlen && p < pend)
-        {
-          for (n = *p++, txtlen--; txtlen && n && p < pend; txtlen--, n--)
-            *bufp++ = *p++;
-        }
-      *bufp = 0;
-      if (parse_txt_record (buffer, fpr))
-        {
-          xfree (buffer);
-          return NULL; /* Not a valid gpg trustdns RR. */
-        }
-      return buffer;
-    }
-
-  return NULL;
+  xfree (hash);
+  xfree (mbox);
+  return result;
 }
-#else /* !USE_DNS_PKA */
-
-/* Dummy version of the function if we can't use the resolver
-   functions. */
-char *
-get_pka_info (const char *address, unsigned char *fpr)
-{
-  return NULL;
-}
-#endif /* !USE_DNS_PKA */
-
-
-#ifdef TEST
-int
-main(int argc,char *argv[])
-{
-  unsigned char fpr[20];
-  char *uri;
-  int i;
-
-  if (argc < 2)
-    {
-      fprintf (stderr, "usage: pka mail-addresses\n");
-      return 1;
-    }
-  argc--;
-  argv++;
-
-  for (; argc; argc--, argv++)
-    {
-      uri = get_pka_info ( *argv, fpr );
-      printf ("%s", *argv);
-      if (uri)
-        {
-          putchar (' ');
-          for (i=0; i < 20; i++)
-            printf ("%02X", fpr[i]);
-          if (*uri)
-            printf (" %s", uri);
-          xfree (uri);
-        }
-      putchar ('\n');
-    }
-  return 0;
-}
-#endif /* TEST */
-
-/*
-Local Variables:
-compile-command: "cc -DUSE_DNS_PKA -DTEST -I.. -I../include -Wall -g -o pka pka.c -lresolv libutil.a"
-End:
-*/
