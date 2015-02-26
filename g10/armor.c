@@ -538,9 +538,6 @@ check_input( armor_filter_context_t *afx, IOBUF a )
             /* This is probably input from a keyserver helper and we
                have not yet seen an error line.  */
             afx->key_failed_code = parse_key_failed_line (line+4, len-4);
-            log_debug ("armor-keys-failed (%.*s) ->%d\n",
-                       (int)len, line,
-                       afx->key_failed_code);
           }
 	if( i >= 0 && !(afx->only_keyblocks && i != 1 && i != 5 && i != 6 )) {
 	    hdr_line = i;
