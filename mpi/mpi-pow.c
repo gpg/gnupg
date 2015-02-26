@@ -344,7 +344,7 @@ mul_mod (mpi_ptr_t xp, mpi_size_t *xsize_p,
      *xsize_p = rsize + ssize;
 }
 
-#define SIZE_B_2I3 ((1 << (5 - 1)) - 1)
+#define SIZE_PRECOMP ((1 << (5 - 1)))
 
 /****************
  * RES = BASE ^ EXPO mod MOD
@@ -375,11 +375,12 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
   mpi_ptr_t bp_marker = NULL;
   mpi_ptr_t ep_marker = NULL;
   mpi_ptr_t xp_marker = NULL;
-  mpi_ptr_t b_2i3[SIZE_B_2I3]; /* Pre-computed array: BASE^3, ^5, ^7, ... */
-  mpi_size_t b_2i3size[SIZE_B_2I3];
+  mpi_ptr_t precomp[SIZE_PRECOMP]; /* Pre-computed array: BASE^1, ^3, ^5, ... */
+  mpi_size_t precomp_size[SIZE_PRECOMP];
   mpi_size_t W;
   mpi_ptr_t base_u;
   mpi_size_t base_u_size;
+  mpi_size_t max_u_size;
 
   esize = expo->nlimbs;
   msize = mod->nlimbs;
@@ -493,7 +494,7 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
 
   /* Main processing.  */
   {
-    mpi_size_t i, j;
+    mpi_size_t i, j, k;
     mpi_ptr_t xp;
     mpi_size_t xsize;
     int c;
@@ -507,32 +508,28 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
     memset( &karactx, 0, sizeof karactx );
     negative_result = (ep[0] & 1) && bsign;
 
-    /* Precompute B_2I3[], BASE^(2 * i + 3), BASE^3, ^5, ^7, ... */
+    /* Precompute PRECOMP[], BASE^(2 * i + 1), BASE^1, ^3, ^5, ... */
     if (W > 1)                  /* X := BASE^2 */
       mul_mod (xp, &xsize, bp, bsize, bp, bsize, mp, msize, &karactx);
-    for (i = 0; i < (1 << (W - 1)) - 1; i++)
-      {                         /* B_2I3[i] = BASE^(2 * i + 3) */
-        if (i == 0)
-          {
-            base_u = bp;
-            base_u_size = bsize;
-          }
-        else
-          {
-            base_u = b_2i3[i-1];
-            base_u_size = b_2i3size[i-1];
-          }
-
+    base_u = precomp[0] = mpi_alloc_limb_space (bsize, esec);
+    base_u_size = max_u_size = precomp_size[0] = bsize;
+    MPN_COPY (precomp[0], bp, bsize);
+    for (i = 1; i < (1 << (W - 1)); i++)
+      {                         /* PRECOMP[i] = BASE^(2 * i + 1) */
         if (xsize >= base_u_size)
           mul_mod (rp, &rsize, xp, xsize, base_u, base_u_size,
                    mp, msize, &karactx);
         else
           mul_mod (rp, &rsize, base_u, base_u_size, xp, xsize,
                    mp, msize, &karactx);
-        b_2i3[i] = mpi_alloc_limb_space (rsize, esec);
-        b_2i3size[i] = rsize;
-        MPN_COPY (b_2i3[i], rp, rsize);
+        base_u = precomp[i] = mpi_alloc_limb_space (rsize, esec);
+        base_u_size = precomp_size[i] = rsize;
+        if (max_u_size < base_u_size)
+          max_u_size = base_u_size;
+        MPN_COPY (precomp[i], rp, rsize);
       }
+
+    base_u = mpi_alloc_limb_space (max_u_size, esec);
 
     i = esize - 1;
 
@@ -619,17 +616,26 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
               rsize = xsize;
             }
 
-          if (e0 == 0)
+          /*
+           *  base_u <= precomp[e0]
+           *  base_u_size <= precomp_size[e0];
+           */
+          base_u_size = 0;
+          for (k = 0; k < (1<< (W - 1)); k++)
             {
-              base_u = bp;
-              base_u_size = bsize;
-            }
-          else
-            {
-              base_u = b_2i3[e0 - 1];
-              base_u_size = b_2i3size[e0 -1];
-            }
+              struct gcry_mpi w, u;
+              w.alloced = w.nlimbs = precomp_size[k];
+              u.alloced = u.nlimbs = precomp_size[k];
+              w.nbits = w.nlimbs * BITS_PER_MPI_LIMB;
+              u.nbits = u.nlimbs * BITS_PER_MPI_LIMB;
+              w.sign = u.sign = 0;
+              w.flags = u.flags = 0;
+              w.d = base_u;
+              u.d = precomp[k];
 
+              mpi_set_cond (&w, &u, k == e0);
+              base_u_size |= (precomp_size[k] & ((mpi_size_t)0 - (k == e0)) );
+            }
           mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
                    mp, msize, &karactx);
           tp = rp; rp = xp; xp = tp;
@@ -655,15 +661,21 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
 
     if (e != 0)
       {
-        if ((e>>1) == 0)
+        base_u_size = 0;
+        for (k = 0; k < (1<< (W - 1)); k++)
           {
-            base_u = bp;
-            base_u_size = bsize;
-          }
-        else
-          {
-            base_u = b_2i3[(e>>1) - 1];
-            base_u_size = b_2i3size[(e>>1) -1];
+            struct gcry_mpi w, u;
+            w.alloced = w.nlimbs = precomp_size[k];
+            u.alloced = u.nlimbs = precomp_size[k];
+            w.nbits = w.nlimbs * BITS_PER_MPI_LIMB;
+            u.nbits = u.nlimbs * BITS_PER_MPI_LIMB;
+            w.sign = u.sign = 0;
+            w.flags = u.flags = 0;
+            w.d = base_u;
+            u.d = precomp[k];
+
+            mpi_set_cond (&w, &u, k == (e>>1));
+            base_u_size |= (precomp_size[k] & ((mpi_size_t)0 - (k == (e>>1))) );
           }
 
         mul_mod (xp, &xsize, rp, rsize, base_u, base_u_size,
@@ -713,8 +725,9 @@ mpi_powm (MPI res, MPI base, MPI expo, MPI mod)
     MPN_NORMALIZE (rp, rsize);
 
     mpihelp_release_karatsuba_ctx (&karactx );
-    for (i = 0; i < (1 << (W - 1)) - 1; i++)
-      mpi_free_limb_space (b_2i3[i]);
+    for (i = 0; i < (1 << (W - 1)); i++)
+      mpi_free_limb_space (precomp[i]);
+    mpi_free_limb_space (base_u);
   }
 
   /* Fixup for negative results.  */
