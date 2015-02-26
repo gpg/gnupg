@@ -112,7 +112,7 @@ static int use_iconv = 0;
 #ifdef _WIN32
 typedef void* iconv_t;
 #ifndef ICONV_CONST
-#define ICONV_CONST const 
+#define ICONV_CONST const
 #endif
 
 iconv_t (* __stdcall iconv_open) (const char *tocode, const char *fromcode);
@@ -126,25 +126,25 @@ int     (* __stdcall iconv_close) (iconv_t cd);
 
 
 #ifdef _WIN32
-static int 
+static int
 load_libiconv (void)
 {
   static int done;
-  
+
   if (!done)
     {
       void *handle;
 
       done = 1; /* Do it right now because we might get called recursivly
                    through gettext.  */
-    
+
       handle = dlopen ("iconv.dll", RTLD_LAZY);
       if (handle)
         {
           iconv_open  = dlsym (handle, "libiconv_open");
           if (iconv_open)
             iconv      = dlsym (handle, "libiconv");
-          if (iconv)    
+          if (iconv)
             iconv_close = dlsym (handle, "libiconv_close");
         }
       if (!handle || !iconv_close)
@@ -161,7 +161,7 @@ load_libiconv (void)
         }
     }
   return iconv_open? 0: -1;
-}    
+}
 #endif /* _WIN32 */
 
 
@@ -625,7 +625,7 @@ set_native_charset( const char *newset )
 #ifdef _WIN32
       if (load_libiconv ())
           return G10ERR_GENERAL;
-#endif /*_WIN32*/      
+#endif /*_WIN32*/
 
       cd = iconv_open (full_newset, "utf-8");
       if (cd == (iconv_t)-1) {
@@ -641,7 +641,7 @@ set_native_charset( const char *newset )
       iconv_close (cd);
       active_charset_name = full_newset;
       no_translation = 0;
-      active_charset = NULL; 
+      active_charset = NULL;
       use_iconv = 1;
     }
 #else /*!USE_GNUPG_ICONV*/
@@ -680,15 +680,15 @@ native_to_utf8( const char *string )
   char *buffer;
   byte *p;
   size_t length=0;
-  
+
   if (no_translation)
     { /* Already utf-8 encoded. */
       buffer = xstrdup (string);
     }
   else if( !active_charset && !use_iconv) /* Shortcut implementation
                                              for Latin-1.  */
-    { 
-      for(s=string; *s; s++ ) 
+    {
+      for(s=string; *s; s++ )
         {
           length++;
           if( *s & 0x80 )
@@ -708,13 +708,13 @@ native_to_utf8( const char *string )
       *p = 0;
     }
   else       /* Need to use a translation table. */
-    { 
+    {
 #ifdef USE_GNUPG_ICONV
       iconv_t cd;
       const char *inptr;
       char *outptr;
       size_t inbytes, outbytes;
-     
+
       cd = iconv_open ("utf-8", active_charset_name);
       if (cd == (iconv_t)-1)
         {
@@ -722,7 +722,7 @@ native_to_utf8( const char *string )
           return native_to_utf8 (string);
         }
 
-      for (s=string; *s; s++ ) 
+      for (s=string; *s; s++ )
         {
           length++;
           if ((*s & 0x80))
@@ -756,7 +756,7 @@ native_to_utf8( const char *string )
       iconv_close (cd);
 
 #else /*!USE_GNUPG_ICONV*/
-      for(s=string; *s; s++ ) 
+      for(s=string; *s; s++ )
         {
           length++;
           if( *s & 0x80 )
@@ -791,7 +791,7 @@ native_to_utf8( const char *string )
  * Convert string, which is in UTF8 to native encoding.  illegal
  * encodings by some "\xnn" and quote all control characters. A
  * character with value DELIM will always be quoted, it must be a
- * vanilla ASCII character.  A DELIM value of -1 is special: it disables 
+ * vanilla ASCII character.  A DELIM value of -1 is special: it disables
  * all quoting of control characters.
  */
 char *
@@ -826,7 +826,7 @@ utf8_to_native( const char *string, size_t length, int delim )
 	    }
 	    if( !nleft ) {
 		if( !(*s & 0x80) ) { /* plain ascii */
-		    if( delim != -1 
+		    if( delim != -1
                         && (*s < 0x20 || *s == 0x7f || *s == delim
                             || (delim && *s=='\\'))) {
 			n++;
@@ -993,7 +993,7 @@ utf8_to_native( const char *string, size_t length, int delim )
             const char *inptr;
             char *outbuf, *outptr;
             size_t inbytes, outbytes;
-            
+
             *p = 0;  /* Terminate the buffer. */
 
             cd = iconv_open (active_charset_name, "utf-8");
@@ -1010,13 +1010,13 @@ utf8_to_native( const char *string, size_t length, int delim )
             inbytes = n - 1;;
             inptr = buffer;
             outbytes = n * MB_LEN_MAX;
-            if (outbytes / MB_LEN_MAX != n) 
+            if (outbytes / MB_LEN_MAX != n)
                 BUG (); /* Actually an overflow. */
             outbuf = outptr = xmalloc (outbytes);
             if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
                         &outptr, &outbytes) == (size_t)-1) {
                 static int shown;
-                
+
                 if (!shown)
                   log_info (_("conversion from `%s' to `%s' failed: %s\n"),
                             "utf-8", active_charset_name, strerror (errno));
@@ -1057,10 +1057,10 @@ char *
 string_to_utf8 (const char *string)
 {
   const char *s;
-  
+
   if (!string)
     return NULL;
-  
+
   /* Due to a bug in old and not so old PGP versions user IDs have
      been copied verbatim into the key.  Thus many users with Umlauts
      et al. in their name will see their names garbled.  Although this
@@ -1076,7 +1076,7 @@ string_to_utf8 (const char *string)
                                          || ((*s & 0xf8) == 0xf0)
                                          || ((*s & 0xfc) == 0xf8)
                                          || ((*s & 0xfe) == 0xfc)) )
-    {  
+    {
       /* Possible utf-8 character followed by continuation byte.
          Although this might still be Latin-1 we better assume that it
          is valid utf-8. */
@@ -1089,7 +1089,7 @@ string_to_utf8 (const char *string)
 
       /* No 0xC3 character in the string; assume that it is Latin-1.  */
 
-      for(s=string; *s; s++ ) 
+      for(s=string; *s; s++ )
         {
           length++;
           if( *s & 0x80 )
@@ -1163,6 +1163,59 @@ xtryvasprintf (const char *fmt, va_list arg_ptr)
   if (rc < 0)
     return NULL;
   return buf;
+}
+
+
+static char *
+do_strconcat (const char *s1, va_list arg_ptr)
+{
+  const char *argv[48];
+  size_t argc;
+  size_t needed;
+  char *buffer, *p;
+
+  argc = 0;
+  argv[argc++] = s1;
+  needed = strlen (s1);
+  while (((argv[argc] = va_arg (arg_ptr, const char *))))
+    {
+      needed += strlen (argv[argc]);
+      if (argc >= DIM (argv)-1)
+        {
+          errno = EINVAL;
+          return NULL;
+        }
+      argc++;
+    }
+  needed++;
+  buffer = xtrymalloc (needed);
+  if (buffer)
+    {
+      for (p = buffer, argc=0; argv[argc]; argc++)
+        p = stpcpy (p, argv[argc]);
+    }
+  return buffer;
+}
+
+
+/* Concatenate the string S1 with all the following strings up to a
+   NULL.  Returns a malloced buffer with the new string or NULL on a
+   malloc error or if too many arguments are given.  */
+char *
+strconcat (const char *s1, ...)
+{
+  va_list arg_ptr;
+  char *result;
+
+  if (!s1)
+    result = xtrystrdup ("");
+  else
+    {
+      va_start (arg_ptr, s1);
+      result = do_strconcat (s1, arg_ptr);
+      va_end (arg_ptr);
+    }
+  return result;
 }
 
 
@@ -1258,13 +1311,13 @@ w32_strerror (int w32_errno)
 {
   static char strerr[256];
   int ec = (int)GetLastError ();
-  
+
   if (w32_errno == 0)
     w32_errno = ec;
   FormatMessage (FORMAT_MESSAGE_FROM_SYSTEM, NULL, w32_errno,
                  MAKELANGID (LANG_NEUTRAL, SUBLANG_DEFAULT),
                  strerr, DIM (strerr)-1, NULL);
-  return strerr;    
+  return strerr;
 }
 #endif /*_WIN32*/
 

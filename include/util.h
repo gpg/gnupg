@@ -28,6 +28,14 @@
 #include "mpi.h"
 #include "compat.h"
 
+/* GCC attributes.  */
+#if __GNUC__ >= 4
+# define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
+#else
+# define GNUPG_GCC_A_SENTINEL(a)
+#endif
+
+
 typedef struct {
      int  *argc;	    /* pointer to argc (value subject to change) */
      char ***argv;	    /* pointer to argv (value subject to change) */
@@ -177,6 +185,8 @@ unsigned int check_trailing_chars( const byte *line, unsigned int len,
                                    const char *trimchars );
 unsigned int check_trailing_ws( const byte *line, unsigned int len );
 int string_count_chr( const char *string, int c );
+int has_invalid_email_chars (const char *s);
+int is_valid_mailbox (const char *name);
 int set_native_charset( const char *newset );
 const char* get_native_charset(void);
 char *native_to_utf8( const char *string );
@@ -238,7 +248,7 @@ int write_w32_registry_string(const char *root, const char *dir,
 char *xasprintf (const char *fmt, ...);
 char *xtryasprintf (const char *fmt, ...);
 char *xtryvasprintf (const char *fmt, va_list arg_ptr);
-
+char *strconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 
 /*-- pka.c --*/
 char *get_pka_info (const char *address, unsigned char *fpr);
