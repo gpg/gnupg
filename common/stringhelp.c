@@ -804,6 +804,18 @@ ascii_tolower (int c)
     return c;
 }
 
+/* Lowercase all ASCII characters in S.  */
+char *
+ascii_strlwr (char *s)
+{
+  char *p = s;
+
+  for (p=s; *p; p++ )
+    if (isascii (*p) && *p >= 'A' && *p <= 'Z')
+      *p |= 0x20;
+
+  return s;
+}
 
 int
 ascii_strcasecmp( const char *a, const char *b )

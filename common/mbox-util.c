@@ -124,8 +124,9 @@ is_valid_mailbox (const char *name)
 
 
 /* Return the mailbox (local-part@domain) form a standard user id.
-   Caller must free the result.  Returns NULL if no valid mailbox was
-   found (or we are out of memory). */
+   All plain ASCII characters in the result are converted to
+   lowercase.  Caller must free the result.  Returns NULL if no valid
+   mailbox was found (or we are out of memory). */
 char *
 mailbox_from_userid (const char *userid)
 {
@@ -176,7 +177,7 @@ mailbox_from_userid (const char *userid)
   else
     errno = EINVAL;
 
-  return result;
+  return result? ascii_strlwr (result): NULL;
 }
 
 

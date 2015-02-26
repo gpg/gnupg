@@ -75,6 +75,7 @@ int ascii_isupper (int c);
 int ascii_islower (int c);
 int ascii_toupper (int c);
 int ascii_tolower (int c);
+char *ascii_strlwr (char *s);
 int ascii_strcasecmp( const char *a, const char *b );
 int ascii_strncasecmp (const char *a, const char *b, size_t n);
 int ascii_memcasecmp( const void *a, const void *b, size_t n );
