@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.4.8\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
-"PO-Revision-Date: 2014-06-23 16:34+0200\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
+"PO-Revision-Date: 2015-02-27 09:04+0100\n"
 "Last-Translator: Walter Koch <koch@u32.de>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1887,6 +1887,9 @@ msgstr "Importiere Signaturen, die als nicht exportfähig markiert sind"
 msgid "repair damage from the pks keyserver during import"
 msgstr "Beseitige Beschädigung durch den Schlüsselserver während des Imports"
 
+msgid "do not clear the ownertrust values during import"
+msgstr "die \"Owner trust\" Werte beim Import nicht löschen"
+
 msgid "do not update the trustdb after import"
 msgstr "ändern Sie die \"Trust\"-Datenbank nach dem Import nicht"
 
@@ -2894,6 +2897,12 @@ msgstr ""
 "WARNUNG: Keine User-ID ist als primär markiert.  Dieser Befehl kann\n"
 "dazu führen, daß eine andere User-ID als primär angesehen wird.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr "WARNUNG: Ihr Unterschlüssel zum Verschlüsseln wird bald verfallen.\n"
+
+msgid "You may want to change its expiration date too.\n"
+msgstr "Bitte erwägen Sie, dessen Verfallsdatum auch zu ändern.\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3673,6 +3682,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "Schlüsselserver sendete VERSION nicht\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "Schlüsselserver-Datenübertragunsfehler: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
 
@@ -3697,10 +3710,6 @@ msgstr "Schlüsselserver-Zeitüberschreitung\n"
 
 msgid "keyserver internal error\n"
 msgstr "interner Fehler Schlüsselserver\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "Schlüsselserver-Datenübertragunsfehler: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3871,6 +3880,10 @@ msgstr "Textmodus"
 
 msgid "unknown"
 msgstr "unbekannt"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr "\"WARNUNG: Keine abgetrennte Signatur; die Datei '%s' wurde NICHT überprüft!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
