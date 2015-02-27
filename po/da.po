@@ -14,7 +14,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-11-04 20:27+0200\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <debian-l10n-danish@lists.debian.org>\n"
@@ -1838,6 +1838,11 @@ msgstr "importer underskrifter som er markeret som local-only"
 msgid "repair damage from the pks keyserver during import"
 msgstr "reparer skade fra pks-nøgleserveren under import"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "opdater ikke trustdb efter import"
+
 msgid "do not update the trustdb after import"
 msgstr "opdater ikke trustdb efter import"
 
@@ -2826,6 +2831,14 @@ msgstr ""
 "ADVARSEL: Intet bruger-id er blevet markeret som primær. Denne kommando\n"
 "        kan medføre at et anden bruger-id bliver den formodede primære.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Du kan ikke ændre udløbsdatoen for en v3-nøgle\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3594,6 +3607,10 @@ msgstr "ADVARSEL: nøgleserverhåndtering fra en anden version af GnuPG (%s)\n"
 msgid "keyserver did not send VERSION\n"
 msgstr "nøgleserver sendte ikke VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "kommunikationsfejl for nøgleserver: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
 
@@ -3617,10 +3634,6 @@ msgstr "nøgleserver fik tidsudløb\n"
 
 msgid "keyserver internal error\n"
 msgstr "nøgleserver fik intern fejl\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "kommunikationsfejl for nøgleserver: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3786,6 +3799,10 @@ msgstr "tekstilstand"
 
 msgid "unknown"
 msgstr "ukendt"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

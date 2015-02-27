@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.4\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:23+0200\n"
 "Last-Translator: Jacobo Tarrio <jtarrio@trasno.net>\n"
 "Language-Team: Galician <gpul-traduccion@ceu.fi.udc.es>\n"
@@ -1878,6 +1878,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "actualiza-la base de datos de confianza"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "actualiza-la base de datos de confianza"
 
@@ -2933,6 +2937,14 @@ msgstr ""
 "AVISO: non se marcou ningún ID de usuario coma primario. Esta orde pode\n"
 "              facer que un ID de usuario diferente se converta no primario.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Non pode cambia-la data de expiración dunha chave v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3734,6 +3746,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "a recepción do servidor de chaves fallou: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 "non hai un servidor de chaves coñecido (empregue a opción --keyserver)\n"
@@ -3760,10 +3776,6 @@ msgstr "erro do servidor de chaves"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "erro do servidor de chaves"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "a recepción do servidor de chaves fallou: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3930,6 +3942,10 @@ msgstr "modo texto"
 
 msgid "unknown"
 msgstr "descoñecido"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

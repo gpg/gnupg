@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.2.2\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:22+0200\n"
 "Last-Translator: Toomas Soome <Toomas.Soome@microlink.ee>\n"
 "Language-Team: Estonian <et@li.org>\n"
@@ -1862,6 +1862,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "uuenda usalduse andmebaasi"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "uuenda usalduse andmebaasi"
 
@@ -2900,6 +2904,14 @@ msgstr ""
 "HOIATUS: ühtegi kasutaja ID pole märgitud primaarseks.  See käsklus võib\n"
 "              põhjustada muu kasutaja ID primaarseks määramist.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "v3 võtme aegumise aega ei saa muuta.\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3684,6 +3696,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "võtmeserverilt lugemine ebaõnnestus: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -3709,10 +3725,6 @@ msgstr "võtmeserveri viga"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "võtmeserveri viga"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "võtmeserverilt lugemine ebaõnnestus: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3879,6 +3891,10 @@ msgstr "tekstimood"
 
 msgid "unknown"
 msgstr "tundmatu"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

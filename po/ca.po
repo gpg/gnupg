@@ -26,7 +26,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.0\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:20+0200\n"
 "Last-Translator: Jordi Mallach <jordi@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -1942,6 +1942,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "actualitza la base de dades de confiança"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "actualitza la base de dades de confiança"
 
@@ -3014,6 +3018,14 @@ msgstr ""
 "      causar que una ID d'usuari diferent esdevinga en la primària "
 "assumida.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "No podeu canviar la data de caducitat de les claus v3\n"
+
 # Photo ID com abans.  ivb
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3825,6 +3837,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "la recepció des del servidor de claus ha fallat: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "no es coneix cap servidor de claus (useu l'opció \"--keyserver\")\n"
 
@@ -3852,10 +3868,6 @@ msgstr "error de servidor de claus"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "error de servidor de claus"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "la recepció des del servidor de claus ha fallat: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -4029,6 +4041,10 @@ msgstr "mode text"
 
 msgid "unknown"
 msgstr "desconeguda"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

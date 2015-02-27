@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.3.92\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:20+0200\n"
 "Last-Translator: Roman Pavlik <rp@tns.cz>\n"
 "Language-Team: Czech <translations.cs@gnupg.cz>\n"
@@ -2825,6 +2825,14 @@ msgstr ""
 "VAROVÁNÍ: žádné uživatelské ID nebylo označeno jako primární.  Tento příkaz\n"
 "              může způsobit, že za primární bude považováno jiné user ID.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nemůžete změnit dobu platnosti klíče verze 3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3589,6 +3597,10 @@ msgstr "VAROVÁNÍ: keyserver handler z jiné verze GnuPG (%s)\n"
 msgid "keyserver did not send VERSION\n"
 msgstr "server klíčů neposlal VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "chyba komunikace se serverem klíčů: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "žadný server klíčů není znám (použíjte volbu --keyserver)\n"
 
@@ -3612,10 +3624,6 @@ msgstr "časový limit pro server klíčů vypršel\n"
 
 msgid "keyserver internal error\n"
 msgstr "interní chyba serveru klíčů\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "chyba komunikace se serverem klíčů: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3787,6 +3795,10 @@ msgstr "textový formát"
 
 msgid "unknown"
 msgstr "neznámý formát"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

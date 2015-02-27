@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.10\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:15+0200\n"
 "Last-Translator: Laurențiu Buzdugan <lbuz@rolix.org>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -1854,6 +1854,11 @@ msgstr "importă semnături marcate ca numai-local"
 msgid "repair damage from the pks keyserver during import"
 msgstr "repară defectele de la serverul de chei pks la import"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "nu actualiza baza de date de încredere după import"
+
 msgid "do not update the trustdb after import"
 msgstr "nu actualiza baza de date de încredere după import"
 
@@ -2847,6 +2852,14 @@ msgstr ""
 "              Această comandă poate cauza ca un alt ID utilizator\n"
 "              să devină ID-ul utilizator primar presupus.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nu puteți schimba data de expirare a unei chei v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3622,6 +3635,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "serverul de chei nu a trimis VERSION (versiune)\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "eroare de comunicare server de chei: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "nici un server de chei cunoscut (folosiți opțiunea --keyserver)\n"
 
@@ -3646,10 +3663,6 @@ msgstr "serverul de chei a epuizat timpul de așteptare (timed out)\n"
 
 msgid "keyserver internal error\n"
 msgstr "eroare internă server de chei\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "eroare de comunicare server de chei: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3814,6 +3827,10 @@ msgstr "modtext"
 
 msgid "unknown"
 msgstr "necunoscut"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

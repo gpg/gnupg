@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2014-11-15 18:41+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <kde-i18n-uk@kde.org>\n"
@@ -2876,6 +2876,14 @@ msgstr ""
 "              цієї команди можна зробити основним інший ідентифікатор "
 "користувача.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Не можна змінювати дату завершення строку дії ключа v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3653,6 +3661,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "сервер ключів не надіслав значення VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "помилка під час обміну даними з сервером ключів: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 "не вказано жодного сервера ключів (скористайтеся параметром --keyserver)\n"
@@ -3677,10 +3689,6 @@ msgstr "перевищення часу очікування даних від �
 
 msgid "keyserver internal error\n"
 msgstr "внутрішня помилка сервера ключів\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "помилка під час обміну даними з сервером ключів: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"

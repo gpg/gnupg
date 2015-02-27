@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2014-11-16 16:08+0100\n"
 "Last-Translator: Milo Casagrande <milo@milo.name>\n"
 "Language-Team: Italian <tp@lists.linux.it>\n"
@@ -31,12 +31,10 @@ msgstr "impossibile generare un numero primo con meno di %d bit\n"
 msgid "no entropy gathering module detected\n"
 msgstr "modulo di raccolta entropia non rilevato\n"
 
-#. Some unexpected open failure.
 #, c-format
 msgid "can't lock `%s': %s\n"
 msgstr "impossibile bloccare \"%s\": %s\n"
 
-#. Show the first message after ~3.75 seconds.
 #, c-format
 msgid "waiting for lock on `%s'...\n"
 msgstr "attesa del blocco su \"%s\"...\n"
@@ -59,9 +57,6 @@ msgstr "nota: il file random_seed è vuoto\n"
 msgid "WARNING: invalid size of random_seed file - not used\n"
 msgstr "ATTENZIONE: dimensioni del file random_seed non valide - non usato\n"
 
-#. On a Unix system that should never happen.  However, I can
-#. imagine this error code on non-inode based systems.
-#. A real read error.
 #, c-format
 msgid "can't read `%s': %s\n"
 msgstr "impossibile leggere \"%s\": %s\n"
@@ -141,9 +136,6 @@ msgstr "la risposta non contiene l'esponente pubblico RSA\n"
 msgid "using default PIN as %s\n"
 msgstr "viene utilizzato come PIN predefinito %s\n"
 
-#. Verification of CHV2 with the default PIN failed,
-#. although the card pretends to have the default PIN set as
-#. CHV2.  We better disable the def_chv2 flag now.
 #, c-format
 msgid "failed to use default PIN as %s: %s - disabling further default use\n"
 msgstr ""
@@ -303,12 +295,6 @@ msgstr "header dell'armatura: "
 msgid "invalid clearsig header\n"
 msgstr "header della firma in chiaro non valido\n"
 
-#. Section 6.2: "Unknown keys should be reported to the user,
-#. but OpenPGP should continue to process the message."  Note
-#. that in a clearsigned message this applies to the signature
-#. part (i.e. "BEGIN PGP SIGNATURE") and not the signed data
-#. ("BEGIN PGP SIGNED MESSAGE").  The only key allowed in the
-#. signed data section is "Hash".
 msgid "unknown armor header: "
 msgstr "header dell'armatura sconosciuto: "
 
@@ -318,7 +304,6 @@ msgstr "firme in chiaro annidate\n"
 msgid "unexpected armor: "
 msgstr "armatura inattesa: "
 
-#. Bad dash-escaping.
 msgid "invalid dash escaped line: "
 msgstr "riga protetta con il trattino non valida: "
 
@@ -366,7 +351,6 @@ msgstr "scheda OpenPGP non disponibile: %s\n"
 msgid "OpenPGP card no. %s detected\n"
 msgstr "rilevata scheda OpenPGP n. %s\n"
 
-#. We don't yet support unattended key generation.
 msgid "can't do this in batch mode\n"
 msgstr "impossibile eseguire in modalità batch\n"
 
@@ -554,7 +538,6 @@ msgstr "   (2) Chiave di cifratura\n"
 msgid "   (3) Authentication key\n"
 msgstr "   (3) Chiave di autenticazione\n"
 
-#. Okay.
 msgid "Invalid selection.\n"
 msgstr "Selezione non valida.\n"
 
@@ -885,7 +868,6 @@ msgstr "in procinto di esportare una sottochiave non protetta\n"
 msgid "failed to unprotect the subkey: %s\n"
 msgstr "rimozione della protezione alla sottochiave non riuscita: %s\n"
 
-#. I hope this warning doesn't confuse people.
 #, c-format
 msgid "WARNING: secret key %s does not have a simple SK checksum\n"
 msgstr ""
@@ -2108,9 +2090,6 @@ msgstr "chiave %s: \"%s\" non cambiata\n"
 msgid "secret key %s: %s\n"
 msgstr "chiave segreta %s: %s\n"
 
-#. We don't allow to import secret keys because that may be used
-#. to put a secret key into the keyring and the user might later
-#. be tricked into signing stuff with that key.
 msgid "importing secret keys not allowed\n"
 msgstr "importazione delle chiavi segrete non consentita\n"
 
@@ -2126,7 +2105,6 @@ msgstr "nessun portachiavi segreto predefinito: %s\n"
 msgid "key %s: secret key imported\n"
 msgstr "chiave %s: chiave segreta importata\n"
 
-#. we can't merge secret keys
 #, c-format
 msgid "key %s: already in secret keyring\n"
 msgstr "chiave %s: già presente nel portachiavi segreto\n"
@@ -2305,8 +2283,6 @@ msgstr "Trovato 1 ID utente senza auto-firma valida\n"
 msgid "%d user IDs without valid self-signatures detected\n"
 msgstr "Trovati %d ID utenti senza auto-firme valide\n"
 
-#. Same string as pkclist.c:do_edit_ownertrust
-#. This string also used in keyedit.c:trustsig_prompt
 msgid ""
 "Please decide how far you trust this user to correctly verify other users' "
 "keys\n"
@@ -2386,8 +2362,6 @@ msgstr ""
 msgid "Do you want to issue a new signature to replace the expired one? (y/N) "
 msgstr "Emettere una nuova firma per sostituire quella scaduta? (s/N) "
 
-#. It's a local sig, and we want to make a
-#. exportable sig.
 #, c-format
 msgid ""
 "Your current signature on \"%s\"\n"
@@ -2569,9 +2543,6 @@ msgstr ""
 "Firma gli ID utente selezionati [* controllare più sotto per i relativi "
 "comandi]"
 
-#. "lsign" and friends will never match since "sign" comes first
-#. and it is a tail match.  They are just here so they show up in
-#. the help menu.
 msgid "sign selected user IDs locally"
 msgstr "Firma localmente gli ID utente selezionati"
 
@@ -2882,6 +2853,14 @@ msgstr ""
 "            potrebbe far diventare un altro ID utente quello primario\n"
 "            predefinito.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Non è possibile modificare la data di scadenza di una chiave v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -2965,9 +2944,6 @@ msgid "cannot appoint a PGP 2.x style key as a designated revoker\n"
 msgstr ""
 "impossibile nominare come revocatore designato una chiave in stile PGP 2.x\n"
 
-#. This actually causes no harm (after all, a key that
-#. designates itself as a revoker is the same as a
-#. regular key), but it's easy enough to check.
 msgid "you cannot appoint a key as its own designated revoker\n"
 msgstr ""
 "impossibile nominare una chiave come revocatore designato di se stessa\n"
@@ -3072,7 +3048,6 @@ msgstr "Creare un certificato di revoca per questa firma? (s/N) "
 msgid "Not signed by you.\n"
 msgstr "Non firmato dalla propria chiave.\n"
 
-#. FIXME: detect duplicates here
 #, c-format
 msgid "You have signed these user IDs on key %s:\n"
 msgstr "Questi ID utente sono stati firmati sulla chiave %s:\n"
@@ -3097,10 +3072,6 @@ msgstr "nessuna chiave segreta\n"
 msgid "user ID \"%s\" is already revoked\n"
 msgstr "l'ID utente \"%s\" è già revocato\n"
 
-#. Okay, this is a problem.  The user ID selfsig was
-#. created in the future, so we need to warn the user and
-#. set our revocation timestamp one second after that so
-#. everything comes out clean.
 #, c-format
 msgid "WARNING: a user ID signature is dated %d seconds in the future\n"
 msgstr "ATTENZIONE: una firma dell'ID utente è datata %d secondi nel futuro\n"
@@ -3543,11 +3514,9 @@ msgstr " Impronta digitale chiave primaria:"
 msgid "      Subkey fingerprint:"
 msgstr "      Impronta digitale della sottochiave:"
 
-#. use tty
 msgid "      Key fingerprint ="
 msgstr "      Impronta digitale della chiave ="
 
-#. Handled elsewhere.
 msgid "      Card serial no. ="
 msgstr "      Numero di serie della scheda="
 
@@ -3676,6 +3645,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "il server di chiavi non ha inviato la VERSIONE\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "errore di comunicazione con server di chiavi: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "nessun server di chiavi conosciuto (usare l'opzione --keyserver)\n"
 
@@ -3701,10 +3674,6 @@ msgstr "time out del server di chiavi\n"
 
 msgid "keyserver internal error\n"
 msgstr "errore interno del server di chiavi\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "errore di comunicazione con server di chiavi: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3827,10 +3796,6 @@ msgstr "               con %s chiave %s\n"
 msgid "Signature made %s using %s key ID %s\n"
 msgstr "Firma eseguita in data %s usando %s, ID chiave %s\n"
 
-#. According to my favorite copy editor, in English
-#. grammar, you say "at" if the key is located on a web
-#. page, but "from" if it is located on a keyserver.  I'm
-#. not going to even try to make two strings here :)
 msgid "Key available at: "
 msgstr "Chiave disponibile presso: "
 
@@ -3874,8 +3839,6 @@ msgstr "modo testo"
 msgid "unknown"
 msgstr "sconosciuto"
 
-#. Not only signature packets in the tree thus this
-#. is not a detached signature.
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
 msgstr ""
@@ -3977,7 +3940,6 @@ msgstr "opzione \"%s\" ambigua\n"
 msgid "unknown option `%s'\n"
 msgstr "opzione \"%s\" sconosciuta\n"
 
-#. do not overwrite
 #, c-format
 msgid "File `%s' exists. "
 msgstr "Il file \"%s\" esiste. "
@@ -4063,14 +4025,12 @@ msgstr "Ripetere la passphrase\n"
 msgid "Enter passphrase\n"
 msgstr "Digitare la passphrase\n"
 
-#. 99 is GPG_ERR_CANCELED.
 msgid "cancelled by user\n"
 msgstr "annullato dall'utente\n"
 
 msgid "can't query passphrase in batch mode\n"
 msgstr "impossibile interrogare la passphrase in modalità batch\n"
 
-#. Read the passphrase from the tty or the command-fd.
 msgid "Enter passphrase: "
 msgstr "Inserire la passphrase: "
 
@@ -4156,8 +4116,6 @@ msgstr "ragione della revoca: "
 msgid "revocation comment: "
 msgstr "commento alla revoca: "
 
-#. A string with valid answers.
-#.
 #. TRANSLATORS: These are the allowed answers in lower and
 #. uppercase.  Below you will find the matching strings which
 #. should be translated accordingly and the letter changed to
@@ -4436,7 +4394,6 @@ msgstr "Forzato l'output con armatura ASCII.\n"
 msgid "make_keysig_packet failed: %s\n"
 msgstr "make_keysig_packet non riuscita: %s\n"
 
-#. and issue a usage notice
 msgid "Revocation certificate created.\n"
 msgstr "Certificato di revoca creato.\n"
 
@@ -4464,7 +4421,6 @@ msgstr "algoritmo di protezione sconosciuto\n"
 msgid "NOTE: This key is not protected!\n"
 msgstr "Nota: questa chiave non è protetta.\n"
 
-#. and issue a usage notice
 msgid ""
 "Revocation certificate created.\n"
 "\n"
@@ -4554,10 +4510,6 @@ msgstr "la chiave %s utilizza un hash non sicuro (%u bit)\n"
 msgid "DSA key %s requires a %u bit or larger hash\n"
 msgstr "la chiave DSA %s richiede un hash di %u bit o più grande\n"
 
-#. Sanity check that the md has a context for the hash that the
-#. sig is expecting.  This can happen if a onepass sig header does
-#. not match the actual sig, and also if the clearsign "Hash:"
-#. header is missing or does not match the actual sig.
 msgid "WARNING: signature digest conflict in message\n"
 msgstr "ATTENZIONE: conflitto del digest delle firme nel messaggio\n"
 
@@ -4718,7 +4670,6 @@ msgstr "impronta digitale non valida"
 msgid "ownertrust value missing"
 msgstr "valore di fiducia del proprietario mancante"
 
-#. error
 #, c-format
 msgid "error finding trust record in `%s': %s\n"
 msgstr "errore nella ricerca del record della fiducia in \"%s\": %s\n"
@@ -5147,7 +5098,6 @@ msgstr "non cifrato"
 msgid "not processed"
 msgstr "non analizzato"
 
-#. the key cannot be used for a specific usage
 msgid "unusable public key"
 msgstr "chiave pubblica inutilizzabile"
 

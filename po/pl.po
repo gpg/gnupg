@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-1.4.18\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2014-11-21 20:41+0100\n"
 "Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -2828,6 +2828,14 @@ msgstr ""
 "             jako główny. Wykonanie tego polecenie może więc spowodować\n"
 "             wyświetlanie innego identyfikatora jako domyślnego głównego.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Nie można zmienić daty ważności klucza w wersji 3.\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3605,6 +3613,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "serwer kluczy nie wysłał VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "błąd łączności z serwerem kluczy: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "brak znanyk serwerów kluczy (użyj opcji --keyserver)\n"
 
@@ -3630,10 +3642,6 @@ msgstr "przekroczenie limitu czasu połączenia z serwerem kluczy\n"
 
 msgid "keyserver internal error\n"
 msgstr "błąd serwera kluczy\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "błąd łączności z serwerem kluczy: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3802,7 +3810,8 @@ msgstr "nieznany"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "UWAGA: to nie jest podpis oddzielony; plik ,,%s'' NIE został sprawdzony!\n"
+msgstr ""
+"UWAGA: to nie jest podpis oddzielony; plik ,,%s'' NIE został sprawdzony!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"

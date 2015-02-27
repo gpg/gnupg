@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.18\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2015-02-12 17:16+0200\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
@@ -2814,6 +2814,14 @@ msgstr ""
 "          привести к тому, что главным станет считаться другой ID "
 "пользователя.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Нельзя изменить срок действия ключа v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3579,6 +3587,10 @@ msgstr "ВНИМАНИЕ: обработчик сервера ключей от 
 msgid "keyserver did not send VERSION\n"
 msgstr "сервер ключей не прислал VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "ошибка связи с сервером ключей: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "не заданы серверы ключей (используйте --keyserver)\n"
 
@@ -3602,10 +3614,6 @@ msgstr "превышено время ожидания сервера ключе
 
 msgid "keyserver internal error\n"
 msgstr "внутренняя ошибка сервера ключей\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "ошибка связи с сервером ключей: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"

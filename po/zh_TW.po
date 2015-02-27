@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.18\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2014-11-21 23:17+0800\n"
 "Last-Translator: Jedi Lin <Jedi@Jedi.org>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -1787,6 +1787,11 @@ msgstr "匯入標記為僅限本機使用的簽章"
 msgid "repair damage from the pks keyserver during import"
 msgstr "匯入時修復來自 pks 金鑰伺服器的損壞"
 
+#, fuzzy
+#| msgid "do not update the trustdb after import"
+msgid "do not clear the ownertrust values during import"
+msgstr "匯入後不要更新信任資料庫"
+
 msgid "do not update the trustdb after import"
 msgstr "匯入後不要更新信任資料庫"
 
@@ -2750,6 +2755,14 @@ msgstr ""
 "警告: 沒有任何使用者 ID 被標示為主要 ID. 這項指令可能會\n"
 "      導致不同的使用者 ID 被當成主要 ID.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "你不能變更 v3 金鑰的使用期限\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3506,6 +3519,10 @@ msgstr "警告: 金鑰伺服器經手程式係來自不同版本的 GnuPG (%s)\n
 msgid "keyserver did not send VERSION\n"
 msgstr "金鑰伺服器並未送出版本 (VERSION)\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "金鑰伺服器通訊錯誤: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"
 
@@ -3529,10 +3546,6 @@ msgstr "金鑰伺服器逾時\n"
 
 msgid "keyserver internal error\n"
 msgstr "金鑰伺服器內部錯誤\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "金鑰伺服器通訊錯誤: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3697,6 +3710,10 @@ msgstr "文字模式"
 
 msgid "unknown"
 msgstr "未知"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

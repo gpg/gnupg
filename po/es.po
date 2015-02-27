@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 1.4.1\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2014-11-23 01:52+0100\n"
 "Last-Translator: Manuel \"Venturi\" Porras Peralta <venturi@openmailbox."
 "org>\n"
@@ -2867,6 +2867,14 @@ msgstr ""
 "       causar que se tome como principal otro identificador de usuario "
 "distinto.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "No puede cambiar la fecha de caducidad de una clave v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3639,6 +3647,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr "el servidor de claves no envió VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "error de comunicación con el servidor de claves: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "no hay servidores de claves conocidos (use opción --keyserver)\n"
 
@@ -3665,10 +3677,6 @@ msgstr "agotado el tiempo de espera para el servidor de claves\n"
 
 msgid "keyserver internal error\n"
 msgstr "error interno del servidor de claves\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "error de comunicación con el servidor de claves: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"

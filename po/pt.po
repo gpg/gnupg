@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: Pedro Morais <morais@kde.org>\n"
 "Language-Team: pt <morais@kde.org>\n"
@@ -1875,6 +1875,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "actualizar a base de dados de confiança"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "actualizar a base de dados de confiança"
 
@@ -2917,6 +2921,14 @@ msgid ""
 "              cause a different user ID to become the assumed primary.\n"
 msgstr ""
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Você não pode modificar a data de validade de uma chave v3\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3711,6 +3723,10 @@ msgstr ""
 msgid "keyserver did not send VERSION\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "A geração de chaves falhou: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr ""
 
@@ -3736,10 +3752,6 @@ msgstr "erro do servidor de chaves"
 #, fuzzy
 msgid "keyserver internal error\n"
 msgstr "erro do servidor de chaves"
-
-#, fuzzy, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "A geração de chaves falhou: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3910,6 +3922,10 @@ msgstr ""
 #, fuzzy
 msgid "unknown"
 msgstr "versão desconhecida"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

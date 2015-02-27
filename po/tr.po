@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.4.1\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:17+0200\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -1824,6 +1824,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "güvence veritabanını günceller"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "güvence veritabanını günceller"
 
@@ -2840,6 +2844,14 @@ msgstr ""
 "       farklı bir kullanıcı kimliğin birincil kullanıcı kimlik olarak\n"
 "       kabul edilmesini sağlayabilirsiniz.\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "Bir v3 anahtarının son kullanma tarihini değiştiremezsiniz\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3621,6 +3633,10 @@ msgstr "UYARI: GnuPG'nin başka bir sürümünün anahtar sunucusu eylemcisi (%s
 msgid "keyserver did not send VERSION\n"
 msgstr "anahtar sunucusu VERSION göndermiyor\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
 
@@ -3644,10 +3660,6 @@ msgstr "anahtar sunucusu zamanaşımına uğradı\n"
 
 msgid "keyserver internal error\n"
 msgstr "anahtar sunucusu iç hatası\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "anahtar sunucusuyla iletişim hatası: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3818,6 +3830,10 @@ msgstr "metinkipi"
 
 msgid "unknown"
 msgstr "bilinmeyen"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

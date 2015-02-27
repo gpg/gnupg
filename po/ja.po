@@ -8,7 +8,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 1.3.92\n"
-"Report-Msgid-Bugs-To: gnupg-i18n@gnupg.org\n"
+"Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2012-08-24 17:25+0200\n"
 "Last-Translator: IIDA Yosiaki <iida@gnu.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -1823,6 +1823,10 @@ msgid "repair damage from the pks keyserver during import"
 msgstr ""
 
 #, fuzzy
+msgid "do not clear the ownertrust values during import"
+msgstr "信用データベースを更新"
+
+#, fuzzy
 msgid "do not update the trustdb after import"
 msgstr "信用データベースを更新"
 
@@ -2821,6 +2825,14 @@ msgstr ""
 "警告: 主たるユーザーIDがありません。このコマンドは、別な\n"
 "              ユーザーIDが主になると仮定する場合があります。\n"
 
+msgid "WARNING: Your encryption subkey expires soon.\n"
+msgstr ""
+
+#, fuzzy
+#| msgid "You can't change the expiration date of a v3 key\n"
+msgid "You may want to change its expiration date too.\n"
+msgstr "v3鍵の有効期限は変更できません\n"
+
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
@@ -3584,6 +3596,10 @@ msgstr "警告: 別版 (%s) のGnuPGの鍵サーバー・ハンドラ\n"
 msgid "keyserver did not send VERSION\n"
 msgstr "鍵サーバーはVERSIONを送信しませんでした\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "鍵サーバー通信エラー: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "既知の鍵サーバーがありません (オプション--keyserverを使いましょう)\n"
 
@@ -3607,10 +3623,6 @@ msgstr "鍵サーバーのタイムアウト\n"
 
 msgid "keyserver internal error\n"
 msgstr "鍵サーバーの内部エラー\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "鍵サーバー通信エラー: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -3777,6 +3789,10 @@ msgstr "テキストモード"
 
 msgid "unknown"
 msgstr "未知の"
+
+#, c-format
+msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
+msgstr ""
 
 #, c-format
 msgid "Can't check signature: %s\n"

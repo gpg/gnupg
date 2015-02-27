@@ -3883,7 +3883,9 @@ msgstr "unbekannt"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr "\"WARNUNG: Keine abgetrennte Signatur; die Datei '%s' wurde NICHT überprüft!\n"
+msgstr ""
+"\"WARNUNG: Keine abgetrennte Signatur; die Datei '%s' wurde NICHT "
+"überprüft!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
