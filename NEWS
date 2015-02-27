@@ -1,7 +1,35 @@
-Noteworthy changes in version 1.4.19 (unreleased)
+Noteworthy changes in version 1.4.19 (2015-02-27)
 -------------------------------------------------
 
- * Fix argument parsing for option --debug-level.
+ * Use ciphertext blinding for Elgamal decryption [CVE-2014-3591].
+   See http://www.cs.tau.ac.il/~tromer/radioexp/ for details.
+
+ * Fixed data-dependent timing variations in modular exponentiation
+   [related to CVE-2015-0837, Last-Level Cache Side-Channel Attacks
+   are Practical].
+
+ * Detect faulty use of --verify on detached signatures.
+
+ * Changed the PKA method to use CERT records and hashed names.
+
+ * New import option "keep-ownertrust".
+
+ * Support algorithm names when generating keys using the --command-fd
+   method.
+
+ * Updated many translations.
+
+ * Updated build system.
+
+ * Fixed a regression in keyserver import
+
+ * Fixed argument parsing for option --debug-level.
+
+ * Fixed DoS based on bogus and overlong key packets.
+
+ * Fixed bugs related to bogus keyrings.
+
+ * The usual minor minor bug fixes.
 
 
 Noteworthy changes in version 1.4.18 (2014-06-30)
@@ -2127,10 +2155,8 @@ Noteworthy changes in version 0.2.3
       is generated on a system without a good random number generator.
 
 
-Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-              2005, 2006, 2007, 2008, 2009, 2010, 2011,
-              2012 Free Software Foundation, Inc.
-Copyright (C) 2013 Werner Koch
+Copyright (C) 1998-2015 Free Software Foundation, Inc.
+Copyright (C) 1997-2015 Werner Koch
 
 This file is free software; as a special exception the author gives
 unlimited permission to copy and/or distribute it, with or without
