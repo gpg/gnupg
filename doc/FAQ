@@ -3,11 +3,11 @@ GnuPG Frequently Asked Questions
 A FAQ is a fast moving target and thus we don't distribute it anymore
 with GnuPG.  You may retrieve the current FAQ in HTML format at
 
-  http://www.gnupg.org/faq/GnuPG-FAQ.html
+  https://gnupg.org/faq/gnupg-faq.html
 
-or in plain text format at the FTP server:
+or in plain text format at
 
-  ftp://ftp.gnupg.org/gcrypt/gnupg/GnuPG-FAQ.txt
+  https://gnupg.org/faq/gnupg-faq.txt
 
 
 
