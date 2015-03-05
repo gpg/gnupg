@@ -27,6 +27,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdarg.h>
+#include <limits.h>
+#include <errno.h>
 
 #include "libjnlib-config.h"
 #include "mischelp.h"
@@ -198,6 +201,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
             s = _("keyword too long");
           else if ( arg->r_opt == ARGPARSE_MISSING_ARG )
             s = _("missing argument");
+          else if ( arg->r_opt == ARGPARSE_INVALID_ARG )
+            s = _("invalid argument");
           else if ( arg->r_opt == ARGPARSE_INVALID_COMMAND )
             s = _("invalid command");
           else if ( arg->r_opt == ARGPARSE_INVALID_ALIAS )
@@ -214,6 +219,8 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
 
           if ( arg->r_opt == ARGPARSE_MISSING_ARG )
             jnlib_log_error (_("missing argument for option \"%.50s\"\n"), s);
+          else if ( arg->r_opt == ARGPARSE_INVALID_ARG )
+            jnlib_log_error (_("invalid argument for option \"%.50s\"\n"), s);
           else if ( arg->r_opt == ARGPARSE_UNEXPECTED_ARG )
             jnlib_log_error (_("option \"%.50s\" does not expect an "
                                "argument\n"), s );
@@ -524,7 +531,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                             p[strlen(p)-1] = 0;
                         }
                       if (!set_opt_arg (arg, opts[idx].flags, p))
-			jnlib_free(buffer);
+                        jnlib_free(buffer);
                     }
                 }
               break;
@@ -966,23 +973,54 @@ arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts)
 }
 
 
-
+/* Returns: -1 on error, 0 for an integer type and 1 for a non integer
+   type argument.  */
 static int
-set_opt_arg(ARGPARSE_ARGS *arg, unsigned flags, char *s)
+set_opt_arg (ARGPARSE_ARGS *arg, unsigned flags, char *s)
 {
   int base = (flags & ARGPARSE_OPT_PREFIX)? 0 : 10;
+  long l;
 
   switch ( (arg->r_type = (flags & ARGPARSE_TYPE_MASK)) )
     {
-    case ARGPARSE_TYPE_INT:
-      arg->r.ret_int = (int)strtol(s,NULL,base);
-      return 0;
     case ARGPARSE_TYPE_LONG:
-      arg->r.ret_long= strtol(s,NULL,base);
+    case ARGPARSE_TYPE_INT:
+      errno = 0;
+      l = strtol (s, NULL, base);
+      if ((l == LONG_MIN || l == LONG_MAX) && errno == ERANGE)
+        {
+          arg->r_opt = ARGPARSE_INVALID_ARG;
+          return -1;
+        }
+      if (arg->r_type == ARGPARSE_TYPE_LONG)
+        arg->r.ret_long = l;
+      else if ( (l < 0 && l < INT_MIN) || l > INT_MAX )
+        {
+          arg->r_opt = ARGPARSE_INVALID_ARG;
+          return -1;
+        }
+      else
+        arg->r.ret_int = (int)l;
       return 0;
+
     case ARGPARSE_TYPE_ULONG:
-      arg->r.ret_ulong= strtoul(s,NULL,base);
+      while (isascii (*s) && isspace(*s))
+        s++;
+      if (*s == '-')
+        {
+          arg->r.ret_ulong = 0;
+          arg->r_opt = ARGPARSE_INVALID_ARG;
+          return -1;
+        }
+      errno = 0;
+      arg->r.ret_ulong = strtoul (s, NULL, base);
+      if (arg->r.ret_ulong == ULONG_MAX && errno == ERANGE)
+        {
+          arg->r_opt = ARGPARSE_INVALID_ARG;
+          return -1;
+        }
       return 0;
+
     case ARGPARSE_TYPE_STRING:
     default:
       arg->r.ret_str = s;

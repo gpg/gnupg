@@ -177,6 +177,7 @@ typedef struct
 #define ARGPARSE_AMBIGUOUS_COMMAND (-9)
 #define ARGPARSE_INVALID_ALIAS     (-10)
 #define ARGPARSE_OUT_OF_CORE       (-11)
+#define ARGPARSE_INVALID_ARG       (-12)
 
 
 int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
