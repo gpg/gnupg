@@ -41,7 +41,7 @@
 static struct {
   const char *name;   /* Standard name.  */
   const char *oidstr; /* IETF formatted OID.  */
-  unsigned int nbits; /* Nominla bit length of the curve.  */
+  unsigned int nbits; /* Nominal bit length of the curve.  */
   const char *alias;  /* NULL or alternative name of the curve.  */
 } oidtable[] = {
 

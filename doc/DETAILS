@@ -192,7 +192,7 @@ described here.
 
 *** Field 15 - S/N of a token
 
-    Used in sec/sbb to print the serial number of a token (internal
+    Used in sec/ssb to print the serial number of a token (internal
     protect mode 1002) or a '#' if that key is a simple stub (internal
     protect mode 1001).  If the option --with-secret is used and a
     secret key is available for the public key, a '+' indicates this.
@@ -204,7 +204,7 @@ described here.
 
 *** Field 17 - Curve name
 
-    For pub, sub, sec, and sbb records this field is used for the ECC
+    For pub, sub, sec, and ssb records this field is used for the ECC
     curve name.
 
 ** Special fields
