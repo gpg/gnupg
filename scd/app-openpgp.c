@@ -1496,7 +1496,7 @@ get_public_key (app_t app, int keyno)
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
     {
       err = gcry_sexp_build (&s_pkey, NULL, "(public-key(rsa(n%b)(e%b)))",
-                             mlen, mbuf, elen, ebuf);
+                             (int)mlen, mbuf, (int)elen, ebuf);
       if (err)
         goto leave;
 
@@ -1518,7 +1518,7 @@ get_public_key (app_t app, int keyno)
 
       err = gcry_sexp_build (&s_pkey, NULL,
                              "(public-key(ecc(curve%s)(q%b)))",
-                             curve_name, mlen, mbuf);
+                             curve_name, (int)mlen, mbuf);
       if (err)
         goto leave;
 
@@ -1541,7 +1541,7 @@ get_public_key (app_t app, int keyno)
 
       err = gcry_sexp_build (&s_pkey, NULL,
                              "(public-key(ecc(curve%s)(flags eddsa)(q%b)))",
-                             curve_name, mlen, mbuf);
+                             curve_name, (int)mlen, mbuf);
       if (err)
         goto leave;
 

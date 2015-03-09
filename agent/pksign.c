@@ -363,12 +363,13 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
               *buf = 0;
             }
 
-          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))", len, buf);
+          rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(rsa(s%b)))",
+                                (int)len, buf);
         }
       else if (is_EdDSA)
         {
           rc = gcry_sexp_build (&s_sig, NULL, "(sig-val(eddsa(r%b)(s%b)))",
-                                len/2, buf, len/2, buf + len/2);
+                                (int)len/2, buf, (int)len/2, buf + len/2);
         }
       else if (is_ECDSA)
         {
