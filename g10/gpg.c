@@ -116,6 +116,7 @@ enum cmd_and_opt_values
     aQuickSignKey,
     aQuickLSignKey,
     aListConfig,
+    aListGcryptConfig,
     aGPGConfList,
     aGPGConfTest,
     aListPackets,
@@ -449,6 +450,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aChangePIN,  "change-pin", N_("change a card's PIN")),
 #endif
   ARGPARSE_c (aListConfig, "list-config", "@"),
+  ARGPARSE_c (aListGcryptConfig, "list-gcrypt-config", "@"),
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@" ),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@" ),
   ARGPARSE_c (aListPackets, "list-packets","@"),
@@ -1578,8 +1580,11 @@ print_algo_names(int (*checker)(int),const char *(*mapper)(int))
 static void
 list_config(char *items)
 {
-  int show_all=(items==NULL);
-  char *name=NULL;
+  int show_all = !items;
+  char *name = NULL;
+  const char *s;
+  struct groupitem *giter;
+  int first, iter;
 
   if(!opt.with_colons)
     return;
@@ -1590,18 +1595,16 @@ list_config(char *items)
 
       if(show_all || ascii_strcasecmp(name,"group")==0)
 	{
-	  struct groupitem *iter;
-
-	  for(iter=opt.grouplist;iter;iter=iter->next)
+	  for (giter = opt.grouplist; giter; giter = giter->next)
 	    {
 	      strlist_t sl;
 
 	      es_fprintf (es_stdout, "cfg:group:");
-	      es_write_sanitized (es_stdout, iter->name, strlen(iter->name),
+	      es_write_sanitized (es_stdout, giter->name, strlen(giter->name),
                                   ":", NULL);
 	      es_putc (':', es_stdout);
 
-	      for(sl=iter->values;sl;sl=sl->next)
+	      for(sl=giter->values; sl; sl=sl->next)
 		{
 		  es_write_sanitized (es_stdout, sl->d, strlen (sl->d),
                                       ":;", NULL);
@@ -1686,20 +1689,31 @@ list_config(char *items)
 	  any=1;
 	}
 
-      if(show_all || ascii_strcasecmp(name,"ccid-reader-id")==0)
+      if (show_all || !ascii_strcasecmp(name,"ccid-reader-id"))
 	{
-#if defined(ENABLE_CARD_SUPPORT) && defined(HAVE_LIBUSB) \
-    && GNUPG_MAJOR_VERSION == 1
+          /* We ignore this for GnuPG 1.4 backward compatibility.  */
+	  any=1;
+	}
 
-          char *p, *p2, *list = ccid_get_reader_list ();
+      if (show_all || !ascii_strcasecmp (name,"curve"))
+	{
+	  es_printf ("cfg:curve:");
+          for (iter=0, first=1; (s = openpgp_enum_curves (&iter)); first=0)
+            es_printf ("%s%s", first?"":";", s);
+	  es_printf ("\n");
+	  any=1;
+	}
 
-          for (p=list; p && (p2 = strchr (p, '\n')); p = p2+1)
+      /* Curve OIDs are rarely useful and thus only printed if requested.  */
+      if (name && !ascii_strcasecmp (name,"curveoid"))
+	{
+	  es_printf ("cfg:curveoid:");
+          for (iter=0, first=1; (s = openpgp_enum_curves (&iter)); first = 0)
             {
-              *p2 = 0;
-              es_printf ("cfg:ccid-reader-id:%s\n", p);
+              s = openpgp_curve_to_oid (s, NULL);
+              es_printf ("%s%s", first?"":";", s? s:"[?]");
             }
-          free (list);
-#endif
+	  es_printf ("\n");
 	  any=1;
 	}
 
@@ -2265,6 +2279,7 @@ main (int argc, char **argv)
 	  {
 	  case aCheckKeys:
 	  case aListConfig:
+	  case aListGcryptConfig:
           case aGPGConfList:
           case aGPGConfTest:
 	  case aListPackets:
@@ -4221,6 +4236,13 @@ main (int argc, char **argv)
 	  xfree(str);
 	}
 	break;
+
+      case aListGcryptConfig:
+        /* Fixme: It would be nice to integrate that with
+           --list-config but unfortunately there is no way yet to have
+           libgcrypt print it to an estream for further parsing.  */
+        gcry_control (GCRYCTL_PRINT_CONFIG, stdout);
+        break;
 
       case aListPackets:
 	opt.list_packets=2;

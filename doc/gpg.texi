@@ -2945,6 +2945,10 @@ source distribution for the details of which configuration items may be
 listed. @option{--list-config} is only usable with
 @option{--with-colons} set.
 
+@item --list-gcrypt-config
+@opindex list-gcrypt-config
+Display various internal configuration parameters of Libgcrypt.
+
 @item --gpgconf-list
 @opindex gpgconf-list
 This command is similar to @option{--list-config} but in general only

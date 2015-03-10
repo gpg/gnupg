@@ -35,6 +35,10 @@
 #define BADOID "1.3.6.1.4.1.11591.2.12242973"
 
 
+static int verbose;
+
+
+
 static void
 test_openpgp_oid_from_str (void)
 {
@@ -184,15 +188,51 @@ test_openpgp_oid_is_ed25519 (void)
 }
 
 
+static void
+test_openpgp_enum_curves (void)
+{
+  int iter = 0;
+  const char *name;
+  int p256 = 0;
+  int p384 = 0;
+  int p521 = 0;
+
+  while ((name = openpgp_enum_curves (&iter)))
+    {
+      if (verbose)
+        printf ("curve: %s\n", name);
+      if (!strcmp (name, "nistp256"))
+        p256++;
+      else if (!strcmp (name, "nistp384"))
+        p384++;
+      else if (!strcmp (name, "nistp521"))
+        p521++;
+    }
+
+  if (p256 != 1 || p384 != 1 || p521 != 1)
+    {
+      /* We can only check the basic RFC-6637 requirements.  */
+      fputs ("standard ECC curve missing\n", stderr);
+      exit (1);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
-  (void)argc;
-  (void)argv;
+  if (argc)
+    { argc--; argv++; }
+  if (argc && !strcmp (argv[0], "--verbose"))
+    {
+      verbose = 1;
+      argc--; argv++;
+    }
 
   test_openpgp_oid_from_str ();
   test_openpgp_oid_to_str ();
   test_openpgp_oid_is_ed25519 ();
+  test_openpgp_enum_curves ();
 
   return 0;
 }

@@ -347,3 +347,41 @@ openpgp_oid_to_curve (const char *oidstr)
 
   return "?";
 }
+
+
+/* Return true if the curve with NAME is supported.  */
+static int
+curve_supported_p (const char *name)
+{
+  int result = 0;
+  gcry_sexp_t keyparms;
+
+  if (!gcry_sexp_build (&keyparms, NULL, "(public-key(ecc(curve %s)))", name))
+    {
+      result = !!gcry_pk_get_curve (keyparms, 0, NULL);
+      gcry_sexp_release (keyparms);
+    }
+  return result;
+}
+
+
+/* Enumerate available and supported OpenPGP curves.  The caller needs
+   to set the integer variable at ITERP to zero and keep on calling
+   this fucntion until NULL is returned.  */
+const char *
+openpgp_enum_curves (int *iterp)
+{
+  int idx = *iterp;
+
+  while (idx >= 0 && idx < DIM (oidtable) && oidtable[idx].name)
+    {
+      if (curve_supported_p (oidtable[idx].name))
+        {
+          *iterp = idx + 1;
+          return oidtable[idx].alias? oidtable[idx].alias : oidtable[idx].name;
+        }
+      idx++;
+    }
+  *iterp = idx;
+  return NULL;
+}

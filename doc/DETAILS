@@ -287,19 +287,22 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
                 semicolons.  The algorithm numbers are as specified in
                 RFC-4880.  Note that in contrast to the --status-fd
                 interface these are _not_ the Libgcrypt identifiers.
+                Using =pubkeyname= prints names instead of numbers.
 
                  : cfg:pubkey:1;2;3;16;17
 
     - cipher :: The third field contains the symmetric ciphers this
                 version of GnuPG supports, separated by semicolons.
                 The cipher numbers are as specified in RFC-4880.
+                Using =ciphername= prints names instead of numbers.
 
                  : cfg:cipher:2;3;4;7;8;9;10
 
     - digest :: The third field contains the digest (hash) algorithms
                 this version of GnuPG supports, separated by
                 semicolons.  The digest numbers are as specified in
-                RFC-4880.
+                RFC-4880.  Using =digestname= prints names instead of
+                numbers.
 
                  : cfg:digest:1;2;3;8;9;10
 
@@ -318,6 +321,12 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
                  : group mynames = paige 0x12345678 joe patti
                would result in:
                  : cfg:group:mynames:patti;joe;0x12345678;paige
+
+    - curve :: The third field contains the curve names this version
+               of GnuPG supports, separated by semicolons. Using
+               =curveoid= prints OIDs instead of numbers.
+
+                 : cfg:curve:ed25519;nistp256;nistp384;nistp521
 
 
 * Format of the --status-fd output
