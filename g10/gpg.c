@@ -132,7 +132,6 @@ enum cmd_and_opt_values
     aSendKeys,
     aRecvKeys,
     aLocateKeys,
-    aPrintPKARecords,
     aSearchKeys,
     aRefreshKeys,
     aFetchKeys,
@@ -383,6 +382,7 @@ enum cmd_and_opt_values
     oAllowWeakDigestAlgos,
     oFakedSystemTime,
     oNoAutostart,
+    oPrintPKARecords,
 
     oNoop
   };
@@ -409,7 +409,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aCheckKeys, "check-sigs",N_("list and check key signatures")),
   ARGPARSE_c (oFingerprint, "fingerprint", N_("list keys and fingerprints")),
   ARGPARSE_c (aListSecretKeys, "list-secret-keys", N_("list secret keys")),
-  ARGPARSE_c (aPrintPKARecords, "print-pka-records", "@"),
   ARGPARSE_c (aKeygen,	    "gen-key",
               N_("generate a new key pair")),
   ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
@@ -712,6 +711,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oFixedListMode, "fixed-list-mode", "@"),
   ARGPARSE_s_n (oLegacyListMode, "legacy-list-mode", "@"),
   ARGPARSE_s_n (oListOnly, "list-only", "@"),
+  ARGPARSE_s_n (oPrintPKARecords, "print-pka-records", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oIgnoreValidFrom,    "ignore-valid-from", "@"),
   ARGPARSE_s_n (oIgnoreCrcError, "ignore-crc-error", "@"),
@@ -2329,11 +2329,6 @@ main (int argc, char **argv)
             set_cmd (&cmd, pargs.r_opt);
             break;
 
-	  case aPrintPKARecords:
-            set_cmd (&cmd, pargs.r_opt);
-            opt.print_pka_records = 1;
-            break;
-
 	  case aKeygen:
 	  case aFullKeygen:
 	  case aEditKey:
@@ -2974,6 +2969,7 @@ main (int argc, char **argv)
 	  case oFastListMode: opt.fast_list_mode = 1; break;
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;
+	  case oPrintPKARecords: opt.print_pka_records = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;
@@ -3877,13 +3873,6 @@ main (int argc, char **argv)
 	for (; argc; argc--, argv++)
           add_to_strlist2( &sl, *argv, utf8_strings );
 	public_key_list (ctrl, sl, 1);
-	free_strlist (sl);
-	break;
-      case aPrintPKARecords:
-	sl = NULL;
-	for (; argc; argc--, argv++)
-          add_to_strlist2( &sl, *argv, utf8_strings );
-	public_key_list (ctrl, sl, 0);
 	free_strlist (sl);
 	break;
 

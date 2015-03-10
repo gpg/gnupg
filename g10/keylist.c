@@ -1647,10 +1647,7 @@ list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
 {
   reorder_keyblock (keyblock);
   if (opt.print_pka_records)
-    {
-      if (!secret)
-        list_keyblock_pka (keyblock);
-    }
+    list_keyblock_pka (keyblock);
   else if (opt.with_colons)
     list_keyblock_colon (keyblock, secret, has_secret, fpr);
   else
