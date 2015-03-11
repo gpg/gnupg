@@ -109,6 +109,7 @@ enum cmd_and_opt_values
     aSignKey,
     aLSignKey,
     aListConfig,
+    aListGcryptConfig,
     aGPGConfList,
     aGPGConfTest,
     aListPackets,
@@ -431,6 +432,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aChangePIN,  "change-pin", N_("change a card's PIN")),
 #endif
   ARGPARSE_c (aListConfig, "list-config", "@"),
+  ARGPARSE_c (aListGcryptConfig, "list-gcrypt-config", "@"),
   ARGPARSE_c (aGPGConfList, "gpgconf-list", "@" ),
   ARGPARSE_c (aGPGConfTest, "gpgconf-test", "@" ),
   ARGPARSE_c (aListPackets, "list-packets","@"),
@@ -2153,6 +2155,7 @@ main (int argc, char **argv)
 	  {
 	  case aCheckKeys:
 	  case aListConfig:
+	  case aListGcryptConfig:
           case aGPGConfList:
           case aGPGConfTest:
 	  case aListPackets:
@@ -4063,6 +4066,13 @@ main (int argc, char **argv)
 	  xfree(str);
 	}
 	break;
+
+      case aListGcryptConfig:
+        /* Fixme: It would be nice to integrate that with
+           --list-config but unfortunately there is no way yet to have
+           libgcrypt print it to an estream for further parsing.  */
+        gcry_control (GCRYCTL_PRINT_CONFIG, stdout);
+        break;
 
       case aListPackets:
 	opt.list_packets=2;
