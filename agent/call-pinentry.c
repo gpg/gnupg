@@ -133,6 +133,34 @@ unlock_pinentry (int rc)
   assuan_context_t ctx = entry_ctx;
   int err;
 
+  if (rc)
+    {
+      if (DBG_ASSUAN)
+        log_debug ("error calling pinentry: %s <%s>\n",
+                   gpg_strerror (rc), gpg_strsource (rc));
+
+      /* Change the source of the error to pinentry so that the final
+         consumer of the error code knows that the problem is with
+         pinentry.  For backward compatibility we do not do that for
+         some common error codes.  */
+      switch (gpg_err_code (rc))
+        {
+        case GPG_ERR_NO_PIN_ENTRY:
+        case GPG_ERR_CANCELED:
+        case GPG_ERR_FULLY_CANCELED:
+        case GPG_ERR_ASS_UNKNOWN_INQUIRE:
+        case GPG_ERR_ASS_TOO_MUCH_DATA:
+        case GPG_ERR_NO_PASSPHRASE:
+        case GPG_ERR_BAD_PASSPHRASE:
+        case GPG_ERR_BAD_PIN:
+          break;
+
+        default:
+          rc = gpg_err_make (GPG_ERR_SOURCE_PINENTRY, gpg_err_code (rc));
+          break;
+        }
+    }
+
   entry_ctx = NULL;
   err = npth_mutex_unlock (&entry_lock);
   if (err)
