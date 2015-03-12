@@ -1,6 +1,7 @@
 /* stringhelp.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2003,
  *               2006, 2007, 2009  Free Software Foundation, Inc.
+ *               2015  g10 Code GmbH
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -142,9 +143,9 @@ char *strconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 /* Ditto, but die on error.  */
 char *xstrconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 
+char **strsplit (char *string, char delim, char replacement, int *count);
 
 /*-- mapstrings.c --*/
 const char *map_static_macro_string (const char *string);
-
 
 #endif /*LIBJNLIB_STRINGHELP_H*/
