@@ -160,7 +160,7 @@ ascii_memistr ( const void *buffer, size_t buflen, const char *sub )
 /* This function is similar to strncpy().  However it won't copy more
    than N - 1 characters and makes sure that a '\0' is appended. With
    N given as 0, nothing will happen.  With DEST given as NULL, memory
-   will be allocated using jnlib_xmalloc (i.e. if it runs out of core
+   will be allocated using xmalloc (i.e. if it runs out of core
    the function terminates).  Returns DES or a pointer to the
    allocated memory.
  */
@@ -172,7 +172,7 @@ mem2str( char *dest , const void *src , size_t n )
 
     if( n ) {
 	if( !dest )
-	    dest = jnlib_xmalloc( n ) ;
+	    dest = xmalloc( n ) ;
 	d = dest;
 	s = src ;
 	for(n--; n && *s; n-- )
@@ -320,10 +320,10 @@ make_basename(const char *filepath, const char *inputpath)
 	    if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
-		return jnlib_xstrdup(filepath);
+		return xstrdup(filepath);
 	      }
 
-    return jnlib_xstrdup(p+1);
+    return xstrdup(p+1);
 #endif
 }
 
@@ -349,11 +349,11 @@ make_dirname(const char *filepath)
 	    if ( !(p=strrchr(filepath, ':')) )
 #endif
 	      {
-		return jnlib_xstrdup(".");
+		return xstrdup(".");
 	      }
 
     dirname_length = p-filepath;
-    dirname = jnlib_xmalloc(dirname_length+1);
+    dirname = xmalloc(dirname_length+1);
     strncpy(dirname, filepath, dirname_length);
     dirname[dirname_length] = 0;
 
@@ -386,9 +386,9 @@ get_pwdir (int xmode, const char *name)
   if (pwd)
     {
       if (xmode)
-        result = jnlib_xstrdup (pwd->pw_dir);
+        result = xstrdup (pwd->pw_dir);
       else
-        result = jnlib_strdup (pwd->pw_dir);
+        result = xtrystrdup (pwd->pw_dir);
     }
 #else /*!HAVE_PWD_H*/
   /* No support at all.  */
@@ -452,10 +452,10 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           char *user;
 
           if (xmode)
-            user = jnlib_xstrdup (first_part+1);
+            user = xstrdup (first_part+1);
           else
             {
-              user = jnlib_strdup (first_part+1);
+              user = xtrystrdup (first_part+1);
               if (!user)
                 return NULL;
             }
@@ -465,7 +465,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
           skip = 1 + strlen (user);
 
           home = home_buffer = get_pwdir (xmode, user);
-          jnlib_free (user);
+          xfree (user);
           if (home)
             n += strlen (home);
           else
@@ -474,13 +474,13 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
     }
 
   if (xmode)
-    name = jnlib_xmalloc (n);
+    name = xmalloc (n);
   else
     {
-      name = jnlib_malloc (n);
+      name = xtrymalloc (n);
       if (!name)
         {
-          jnlib_free (home_buffer);
+          xfree (home_buffer);
           return NULL;
         }
     }
@@ -490,7 +490,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
   else
     p = stpcpy (name, first_part);
 
-  jnlib_free (home_buffer);
+  xfree (home_buffer);
   for (argc=0; argv[argc]; argc++)
     p = stpcpy (stpcpy (p, "/"), argv[argc]);
 
@@ -520,18 +520,18 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
                            strerror (errno));
                   exit(2);
                 }
-              jnlib_free (name);
+              xfree (name);
               return NULL;
             }
           n = strlen (home) + 1 + strlen (name) + 1;
           if (xmode)
-            home_buffer = jnlib_xmalloc (n);
+            home_buffer = xmalloc (n);
           else
             {
-              home_buffer = jnlib_malloc (n);
+              home_buffer = xtrymalloc (n);
               if (!home_buffer)
                 {
-                  jnlib_free (name);
+                  xfree (name);
                   return NULL;
                 }
             }
@@ -543,7 +543,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
               p = home_buffer + (p - name + 1);
             }
           strcpy (stpcpy (stpcpy (p, home), "/"), name);
-          jnlib_free (name);
+          xfree (name);
           name = home_buffer;
           /* Let's do a simple compression to catch the most common
              case of using "." for gpg's --homedir option.  */
@@ -701,7 +701,7 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
   p = save_p;
   n = save_n;
   /* And now make the string */
-  d = buffer = jnlib_xmalloc( buflen );
+  d = buffer = xmalloc( buflen );
   for ( ; n; n--, p++ )
     {
       if (*p < 0x20 || *p == 0x7f || *p == delim || (delim && *p=='\\')) {
@@ -1064,10 +1064,10 @@ do_percent_escape (const char *str, const char *extra, int die)
     if (str[i] == ':' || str[i] == '%' || (extra && strchr (extra, str[i])))
       j++;
   if (die)
-    ptr = jnlib_xmalloc (i + 2 * j + 1);
+    ptr = xmalloc (i + 2 * j + 1);
   else
     {
-      ptr = jnlib_malloc (i + 2 * j + 1);
+      ptr = xtrymalloc (i + 2 * j + 1);
       if (!ptr)
         return NULL;
     }
@@ -1142,7 +1142,7 @@ do_strconcat (const char *s1, va_list arg_ptr)
       argc++;
     }
   needed++;
-  buffer = jnlib_malloc (needed);
+  buffer = xtrymalloc (needed);
   if (buffer)
     {
       for (p = buffer, argc=0; argv[argc]; argc++)
@@ -1162,7 +1162,7 @@ strconcat (const char *s1, ...)
   char *result;
 
   if (!s1)
-    result = jnlib_strdup ("");
+    result = xtrystrdup ("");
   else
     {
       va_start (arg_ptr, s1);
@@ -1181,7 +1181,7 @@ xstrconcat (const char *s1, ...)
   char *result;
 
   if (!s1)
-    result = jnlib_xstrdup ("");
+    result = xstrdup ("");
   else
     {
       va_start (arg_ptr, s1);
