@@ -2,6 +2,7 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
  *               2008, 2009, 2010  Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -48,6 +49,7 @@
 # include <windows.h>
 #endif
 
+#include "util.h"
 #include "libjnlib-config.h"
 #include "utf8conv.h"
 #include "sysutils.h"
@@ -1194,5 +1196,41 @@ xstrconcat (const char *s1, ...)
         fputs ("\nfatal: out of memory\n", stderr);
       exit (2);
     }
+  return result;
+}
+
+/* Split a string into fields at DELIM.  REPLACEMENT is the character
+   to replace the delimiter with (normally: '\0' so that each field is
+   NUL terminated).  The caller is responsible for freeing the result.
+   Note: this function modifies STRING!  If you need the original
+   value, then you should pass a copy to this function.
+
+   If malloc fails, this function returns NULL.  */
+char **
+strsplit (char *string, char delim, char replacement, int *count)
+{
+  int fields = 1;
+  char *t;
+  char **result;
+
+  /* First, count the number of fields.  */
+  for (t = strchr (string, delim); t; t = strchr (t + 1, delim))
+    fields ++;
+
+  result = xtrycalloc (sizeof (*result), (fields + 1));
+  if (! result)
+    return NULL;
+
+  result[0] = string;
+  fields = 1;
+  for (t = strchr (string, delim); t; t = strchr (t + 1, delim))
+    {
+      result[fields ++] = t + 1;
+      *t = replacement;
+    }
+
+  if (count)
+    *count = fields;
+
   return result;
 }

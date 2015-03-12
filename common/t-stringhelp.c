@@ -1,5 +1,6 @@
 /* t-stringhelp.c - Regression tests for stringhelp.c
  * Copyright (C) 2007 Free Software Foundation, Inc.
+ *               2015  g10 Code GmbH
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -478,6 +479,62 @@ test_make_absfilename_try (void)
   xfree (cwd);
 }
 
+static void
+test_strsplit (void)
+{
+  int test_count = 0;
+  void test (const char *s, char delim, char replacement,
+	     const char *fields_expected[])
+  {
+    char *s2;
+    int field_count;
+    char **fields;
+    int field_count_expected;
+    int i;
+
+    /* Count the fields.  */
+    for (field_count_expected = 0;
+	 fields_expected[field_count_expected];
+	 field_count_expected ++)
+      ;
+
+    test_count ++;
+
+    /* We need to copy s since strsplit modifies it in place.  */
+    s2 = xstrdup (s);
+    fields = strsplit (s2, delim, replacement, &field_count);
+
+    if (field_count != field_count_expected)
+      fail (test_count * 1000);
+
+    for (i = 0; i < field_count_expected; i ++)
+      if (strcmp (fields_expected[i], fields[i]) != 0)
+	{
+	  printf ("For field %d, expected '%s', but got '%s'\n",
+		  i, fields_expected[i], fields[i]);
+	  fail (test_count * 1000 + i + 1);
+	}
+
+    xfree (s2);
+  }
+
+  {
+    const char *expected_result[] =
+      { "a", "bc", "cde", "fghi", "jklmn", "", "foo", "", NULL };
+    test ("a:bc:cde:fghi:jklmn::foo:", ':', '\0', expected_result);
+  }
+
+  {
+    const char *expected_result[] =
+      { "!a!bc!!def!", "a!bc!!def!", "bc!!def!", "!def!", "def!", "", NULL };
+    test (",a,bc,,def,", ',', '!', expected_result);
+  }
+
+  {
+    const char *expected_result[] = { "", NULL };
+    test ("", ':', ',', expected_result);
+  }
+}
 
 int
 main (int argc, char **argv)
@@ -491,6 +548,7 @@ main (int argc, char **argv)
   test_xstrconcat ();
   test_make_filename_try ();
   test_make_absfilename_try ();
+  test_strsplit ();
 
   xfree (home_buffer);
   return 0;
