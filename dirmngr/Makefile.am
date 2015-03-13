@@ -27,6 +27,9 @@ if USE_LDAPWRAPPER
 libexec_PROGRAMS = dirmngr_ldap
 endif
 
+noinst_PROGRAMS = $(module_tests)
+TESTS = $(module_tests)
+
 AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
@@ -98,5 +101,15 @@ dirmngr_client_LDFLAGS = $(extra_bin_ldflags)
 no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
 	cat $(top_srcdir)/tools/no-libgcrypt.c > no-libgcrypt.c
 
+
+t_common_src = t-support.h
+# We need libcommontls, because we use the http functions.
+t_common_ldadd = $(libcommontls) $(libcommon) no-libgcrypt.o $(GPG_ERROR_LIBS)
+
+module_tests = t-ldap-parse-uri
+t_ldap_parse_uri_SOURCES = \
+	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
+	$(t_common_src)
+t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd)
 
 $(PROGRAMS) : $(libcommon) $(libcommonpth) $(libcommontls) $(libcommontlsnpth)
