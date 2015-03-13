@@ -1,5 +1,6 @@
 /* strlist.c -  string helpers
  * Copyright (C) 1998, 2000, 2001, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -211,4 +212,17 @@ strlist_pop (strlist_t *list)
     }
 
   return str;
+}
+
+/* Return the first element of the string list HAYSTACK whose string
+   matches NEEDLE.  If no elements match, return NULL.  */
+strlist_t
+strlist_find (strlist_t haystack, const char *needle)
+{
+  for (;
+       haystack;
+       haystack = haystack->next)
+    if (strcmp (haystack->d, needle) == 0)
+      return haystack;
+  return NULL;
 }

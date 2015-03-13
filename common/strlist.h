@@ -55,6 +55,9 @@ strlist_t strlist_prev (strlist_t head, strlist_t node);
 strlist_t strlist_last (strlist_t node);
 char * strlist_pop (strlist_t *list);
 
+strlist_t strlist_find (strlist_t haystack, const char *needle);
+
+
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 
 
