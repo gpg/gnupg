@@ -31,25 +31,6 @@
 #include "ks-action.h"
 
 
-/* Copy all data from IN to OUT.  */
-static gpg_error_t
-copy_stream (estream_t in, estream_t out)
-{
-  char buffer[512];
-  size_t nread;
-
-  while (!es_read (in, buffer, sizeof buffer, &nread))
-    {
-      if (!nread)
-        return 0; /* EOF */
-      if (es_write (out, buffer, nread, NULL))
-        break;
-
-    }
-  return gpg_error_from_syserror ();
-}
-
-
 /* Called by the engine's help functions to print the actual help.  */
 gpg_error_t
 ks_print_help (ctrl_t ctrl, const char *text)
