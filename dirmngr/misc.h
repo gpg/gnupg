@@ -80,6 +80,10 @@ char *host_and_port_from_url (const char *url, int *port);
 /* Create a KSBA reader object and connect it to the estream FP.  */
 gpg_error_t create_estream_ksba_reader (ksba_reader_t *r_reader, estream_t fp);
 
+/* Encode the binary data in {DATA,DATALEN} as ASCII-armored data and
+   stored it as a NUL-terminated string in *R_STRING.  The caller is
+   responsible for freeing *R_STRING.  */
+gpg_error_t armor_data (char **r_string, const void *data, size_t datalen);
 
 
 #endif /* MISC_H */

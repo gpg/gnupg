@@ -1114,64 +1114,6 @@ handle_send_request_error (gpg_error_t err, const char *request,
   return retry;
 }
 
-static gpg_error_t
-armor_data (char **r_string, const void *data, size_t datalen)
-{
-  gpg_error_t err;
-  struct b64state b64state;
-  estream_t fp;
-  long length;
-  char *buffer;
-  size_t nread;
-
-  *r_string = NULL;
-
-  fp = es_fopenmem (0, "rw,samethread");
-  if (!fp)
-    return gpg_error_from_syserror ();
-
-  if ((err=b64enc_start_es (&b64state, fp, "PGP PUBLIC KEY BLOCK"))
-      || (err=b64enc_write (&b64state, data, datalen))
-      || (err = b64enc_finish (&b64state)))
-    {
-      es_fclose (fp);
-      return err;
-    }
-
-  /* FIXME: To avoid the extra buffer allocation estream should
-     provide a function to snatch the internal allocated memory from
-     such a memory stream.  */
-  length = es_ftell (fp);
-  if (length < 0)
-    {
-      err = gpg_error_from_syserror ();
-      es_fclose (fp);
-      return err;
-    }
-
-  buffer = xtrymalloc (length+1);
-  if (!buffer)
-    {
-      err = gpg_error_from_syserror ();
-      es_fclose (fp);
-      return err;
-    }
-
-  es_rewind (fp);
-  if (es_read (fp, buffer, length, &nread))
-    {
-      err = gpg_error_from_syserror ();
-      es_fclose (fp);
-      return err;
-    }
-  buffer[nread] = 0;
-  es_fclose (fp);
-
-  *r_string = buffer;
-  return 0;
-}
-
-
 
 /* Search the keyserver identified by URI for keys matching PATTERN.
    On success R_FP has an open stream to read the data.  */
