@@ -1220,7 +1220,7 @@ ssh_search_control_file (ssh_control_file_t cf,
   /* We need to make sure that HEXGRIP is all uppercase.  The easiest
      way to do this and also check its length is by copying to a
      second buffer. */
-  for (i=0, s=hexgrip; i < 40; s++, i++)
+  for (i=0, s=hexgrip; i < 40 && *s; s++, i++)
     uphexgrip[i] = *s >= 'a'? (*s & 0xdf): *s;
   uphexgrip[i] = 0;
   if (i != 40)
