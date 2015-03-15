@@ -124,14 +124,16 @@ find_tuple (tupledesc_t tupledesc, unsigned int tag, size_t *r_length)
   s_end = s + tupledesc->datalen;
   while (s < s_end)
     {
-      if (s+3 >= s_end || s + 3 < s)
+      /* We use addresses for the overflow check to avoid undefined
+         behaviour.  size_t should work with all flat memory models.  */
+      if ((size_t)s+3 >= (size_t)s_end || (size_t)s + 3 < (size_t)s)
         break;
       t  = s[0] << 8;
       t |= s[1];
       n  = s[2] << 8;
       n |= s[3];
       s += 4;
-      if (s + n > s_end || s + n < s)
+      if ((size_t)s + n > (size_t)s_end || (size_t)s + n < (size_t)s)
         break;
       if (t == tag)
         {
@@ -159,14 +161,14 @@ next_tuple (tupledesc_t tupledesc, unsigned int *r_tag, size_t *r_length)
   s_end = s + tupledesc->datalen;
   s += tupledesc->pos;
   if (s < s_end
-      && !(s+3 >= s_end || s + 3 < s))
+      && !((size_t)s + 3 >= (size_t)s_end || (size_t)s + 3 < (size_t)s))
     {
       t  = s[0] << 8;
       t |= s[1];
       n  = s[2] << 8;
       n |= s[3];
       s += 4;
-      if (!(s + n > s_end || s + n < s))
+      if (!((size_t)s + n > (size_t)s_end || (size_t)s + n < (size_t)s))
         {
           tupledesc->pos = (s + n) - tupledesc->data;
           *r_tag = t;
