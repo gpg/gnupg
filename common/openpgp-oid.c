@@ -192,7 +192,9 @@ openpgp_oid_to_str (gcry_mpi_t a)
 
   valmask = (unsigned long)0xfe << (8 * (sizeof (valmask) - 1));
 
-  if (!a || !gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+  if (!a
+      || !gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE)
+      || !(buf = gcry_mpi_get_opaque (a, &lengthi)))
     {
       gpg_err_set_errno (EINVAL);
       return NULL;
@@ -217,7 +219,7 @@ openpgp_oid_to_str (gcry_mpi_t a)
   string = p = xtrymalloc (length*(1+3)+2+1);
   if (!string)
     return NULL;
-  if (!buf || !length)
+  if (!length)
     {
       *p = 0;
       return string;
