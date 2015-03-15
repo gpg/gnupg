@@ -1269,7 +1269,7 @@ control_pcsc_direct (int slot, pcsc_dword_t ioctl_code,
   long err;
 
   err = pcsc_control (reader_table[slot].pcsc.card, ioctl_code,
-                      cntlbuf, len, buffer, *buflen, buflen);
+                      cntlbuf, len, buffer, buflen? *buflen:0, buflen);
   if (err)
     {
       log_error ("pcsc_control failed: %s (0x%lx)\n",
@@ -1337,14 +1337,18 @@ control_pcsc_wrapped (int slot, pcsc_dword_t ioctl_code,
 
   full_len = len;
 
-  n = *buflen < len ? *buflen : len;
+  if (buflen)
+    n = *buflen < len ? *buflen : len;
+  else
+    n = 0;
   if ((i=readn (slotp->pcsc.rsp_fd, buffer, n, &len)) || len != n)
     {
       log_error ("error receiving PC/SC CONTROL response: %s\n",
                  i? strerror (errno) : "premature EOF");
       goto command_failed;
     }
-  *buflen = n;
+  if (buflen)
+    *buflen = n;
 
   full_len -= len;
   if (full_len)
