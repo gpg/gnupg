@@ -453,6 +453,9 @@ write_symkey_enc (STRING2KEY *symkey_s2k, DEK *symkey_dek, DEK *dek,
  * supplied).  Either FILENAME or FILEFD must be given, but not both.
  * The caller may provide a checked list of public keys in
  * PROVIDED_PKS; if not the function builds a list of keys on its own.
+ *
+ * Note that FILEFD is currently only used by cmd_encrypt in the the
+ * not yet finished server.c.
  */
 int
 encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
@@ -476,7 +479,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   int do_compress;
 
   if (filefd != -1 && filename)
-    return gpg_error (GPG_ERR_INV_ARG);
+    return gpg_error (GPG_ERR_INV_ARG);  /* Both given.  */
 
   do_compress = !!opt.compress_algo;
 
@@ -635,8 +638,9 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   if (!opt.no_literal)
     pt = setup_plaintext_name (filename, inp);
 
-  if (filefd != -1
-      && !iobuf_is_pipe_filename (filename) && *filename && !opt.textmode )
+  /* Get the size of the file if possible, i.e., if it is a real file.  */
+  if (filename && *filename
+      && !iobuf_is_pipe_filename (filename) && !opt.textmode )
     {
       off_t tmpsize;
       int overflow;
