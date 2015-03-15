@@ -975,7 +975,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
 
-	  if (pk && (uid->is_expired || uid->is_revoked)
+	  if ((uid->is_expired || uid->is_revoked)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
 	    {
 	      skip_sigs = 1;
@@ -988,7 +988,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	    dump_attribs (uid, pk);
 
 	  if ((uid->is_revoked || uid->is_expired)
-	      || ((opt.list_options & LIST_SHOW_UID_VALIDITY) && pk))
+	      || (opt.list_options & LIST_SHOW_UID_VALIDITY))
 	    {
 	      const char *validity;
 	      int indent;
@@ -1364,7 +1364,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 	    {
 	      int uid_validity;
 
-	      if (pk && !ulti_hack)
+	      if (!ulti_hack)
 		uid_validity = get_validity_info (pk, uid);
 	      else
 		uid_validity = 'u';
