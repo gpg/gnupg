@@ -718,7 +718,7 @@ cmd_setkeydesc (assuan_context_t ctx, char *line)
   if (p)
     *p = 0; /* We ignore any garbage; we might late use it for other args. */
 
-  if (!desc || !*desc)
+  if (!*desc)
     return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
 
   /* Note, that we only need to replace the + characters and should
@@ -1481,7 +1481,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
             }
         }
     }
-  if (!cacheid || !*cacheid || strlen (cacheid) > 50)
+  if (!*cacheid || strlen (cacheid) > 50)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
   if (!desc)
     return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
@@ -1596,7 +1596,7 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
   p = strchr (cacheid, ' ');
   if (p)
     *p = 0; /* ignore garbage */
-  if (!cacheid || !*cacheid || strlen (cacheid) > 50)
+  if (!*cacheid || strlen (cacheid) > 50)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
   agent_put_cache (cacheid, opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
@@ -1635,7 +1635,7 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
   if (p)
     *p = 0; /* We ignore any garbage -may be later used for other args. */
 
-  if (!desc || !*desc)
+  if (!*desc)
     return set_error (GPG_ERR_ASS_PARAMETER, "no description given");
 
   if (!strcmp (desc, "X"))
@@ -2568,7 +2568,7 @@ cmd_getval (assuan_context_t ctx, char *line)
       if (*p)
         return set_error (GPG_ERR_ASS_PARAMETER, "too many arguments");
     }
-  if (!key || !*key)
+  if (!*key)
     return set_error (GPG_ERR_ASS_PARAMETER, "no key given");
 
 
@@ -2635,7 +2635,7 @@ cmd_putval (assuan_context_t ctx, char *line)
           valuelen = percent_plus_unescape_inplace (value, 0);
         }
     }
-  if (!key || !*key)
+  if (!*key)
     return set_error (GPG_ERR_ASS_PARAMETER, "no key given");
 
 
