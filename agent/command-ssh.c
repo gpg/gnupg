@@ -3117,7 +3117,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
 
   /* Unless the passphrase is empty or the pinentry told us that
      it already did the repetition check, ask to confirm it.  */
-  if (pi->pin && *pi->pin && !pi->repeat_okay)
+  if (*pi->pin && !pi->repeat_okay)
     {
       err = agent_askpin (ctrl, description2, NULL, NULL, pi2);
       if (err == -1)

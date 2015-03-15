@@ -382,7 +382,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
         }
       /* Unless the passphrase is empty or the pinentry told us that
          it already did the repetition check, ask to confirm it.  */
-      if (pi->pin && *pi->pin && !pi->repeat_okay)
+      if (*pi->pin && !pi->repeat_okay)
         {
           err = agent_askpin (ctrl, text2, NULL, NULL, pi2);
           if (err == -1)
