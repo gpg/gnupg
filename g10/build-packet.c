@@ -164,10 +164,28 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
   if (gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
     {
       unsigned int nbits;
-      const void *p;
+      const unsigned char *p;
       unsigned char lenhdr[2];
 
+      /* gcry_log_debugmpi ("a", a); */
       p = gcry_mpi_get_opaque (a, &nbits);
+      if (p)
+        {
+          /* Strip leading zero bits.  */
+          for (; nbits >= 8 && !*p; p++, nbits -= 8)
+            ;
+          if (nbits >= 8 && !(*p & 0x80))
+            if (--nbits >= 7 && !(*p & 0x40))
+              if (--nbits >= 6 && !(*p & 0x20))
+                if (--nbits >= 5 && !(*p & 0x10))
+                  if (--nbits >= 4 && !(*p & 0x08))
+                    if (--nbits >= 3 && !(*p & 0x04))
+                      if (--nbits >= 2 && !(*p & 0x02))
+                        if (--nbits >= 1 && !(*p & 0x01))
+                          --nbits;
+        }
+      /* gcry_log_debug ("   [%u bit]\n", nbits); */
+      /* gcry_log_debughex (" ", p, (nbits+7)/8); */
       lenhdr[0] = nbits >> 8;
       lenhdr[1] = nbits;
       rc = iobuf_write (out, lenhdr, 2);
