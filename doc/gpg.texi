@@ -333,8 +333,9 @@ listed too.
 
 @item --list-packets
 @opindex list-packets
-List only the sequence of packets. This is mainly
-useful for debugging.
+List only the sequence of packets. This is mainly useful for
+debugging.  When used with option @option{--verbose} the actual MPI
+values are dumped and not only their lengths.
 
 
 @item --card-edit

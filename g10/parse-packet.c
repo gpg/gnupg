@@ -112,7 +112,7 @@ read_32 (IOBUF inp)
 /* Read an external representation of an mpi and return the MPI.  The
  * external format is a 16 bit unsigned value stored in network byte
  * order, giving the number of bits for the following integer. The
- * integer is stored with MSB first (left padded with zeroes to align
+ * integer is stored with MSB first (left padded with zero bits to align
  * on a byte boundary).  */
 static gcry_mpi_t
 mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
@@ -177,24 +177,38 @@ set_packet_list_mode (int mode)
 {
   int old = list_mode;
   list_mode = mode;
-  /* FIXME(gcrypt) mpi_print_mode = DBG_MPI; */
-  /* We use stdout print only if invoked by the --list-packets command
+
+  /* We use stdout only if invoked by the --list-packets command
      but switch to stderr in all other cases.  This breaks the
      previous behaviour but that seems to be more of a bug than
      intentional.  I don't believe that any application makes use of
      this long standing annoying way of printing to stdout except when
      doing a --list-packets. If this assumption fails, it will be easy
      to add an option for the listing stream.  Note that we initialize
-     it only once; mainly because some code may switch the option
-     value later back to 1 and we want to have all output to the same
-     stream.
+     it only once; mainly because there is code which switches
+     opt.list_mode back to 1 and we want to have all output to the
+     same stream.  The MPI_PRINT_MODE will be enabled if the
+     corresponding debug flag is set or if we are in --list-packets
+     and --verbose is given.
 
      Using stderr is not actually very clean because it bypasses the
      logging code but it is a special thing anyway.  I am not sure
      whether using log_stream() would be better.  Perhaps we should
-     enable the list mdoe only with a special option. */
+     enable the list mode only with a special option. */
   if (!listfp)
-    listfp = opt.list_packets == 2 ? es_stdout : es_stderr;
+    {
+      if (opt.list_packets == 2)
+        {
+          listfp = es_stdout;
+          if (opt.verbose)
+            mpi_print_mode = 1;
+        }
+      else
+        listfp = es_stderr;
+
+      if (opt.debug && DBG_MPI_VALUE)
+        mpi_print_mode = 1;
+    }
   return old;
 }
 

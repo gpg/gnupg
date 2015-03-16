@@ -1636,7 +1636,8 @@ pubkey_nbits( int algo, gcry_mpi_t *key )
 int
 mpi_print (estream_t fp, gcry_mpi_t a, int mode)
 {
-  int n=0;
+  int n = 0;
+  size_t nwritten;
 
   if (!a)
     return es_fprintf (fp, "[MPI_NULL]");
@@ -1654,19 +1655,19 @@ mpi_print (estream_t fp, gcry_mpi_t a, int mode)
         n += es_fprintf (fp, "[invalid opaque value]");
       else
         {
-          nbits = (nbits + 7)/8;
-          for (; nbits; nbits--, p++)
-            n += es_fprintf (fp, "%02X", *p);
+          if (!es_write_hexstring (fp, p, (nbits + 7)/8, 0, &nwritten))
+            n += nwritten;
         }
     }
   else
     {
       unsigned char *buffer;
+      size_t buflen;
 
-      if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a))
+      if (gcry_mpi_aprint (GCRYMPI_FMT_USG, &buffer, &buflen, a))
         BUG ();
-      es_fputs (buffer, fp);
-      n += strlen (buffer);
+      if (!es_write_hexstring (fp, buffer, buflen, 0, &nwritten))
+        n += nwritten;
       gcry_free (buffer);
     }
   return n;
