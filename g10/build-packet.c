@@ -165,7 +165,7 @@ gpg_mpi_write (iobuf_t out, gcry_mpi_t a)
     {
       unsigned int nbits;
       const void *p;
-      unsigned int lenhdr[2];
+      unsigned char lenhdr[2];
 
       p = gcry_mpi_get_opaque (a, &nbits);
       lenhdr[0] = nbits >> 8;
