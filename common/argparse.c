@@ -1239,6 +1239,14 @@ show_help (ARGPARSE_OPTS *opts, unsigned int flags)
 
   show_version ();
   writestrings (0, "\n", NULL);
+  s = strusage (42);
+  if (s && *s == '1')
+    {
+      s = strusage (40);
+      writestrings (1, s, NULL);
+      if (*s && s[strlen(s)] != '\n')
+        writestrings (1, "\n", NULL);
+    }
   s = strusage(41);
   writestrings (0, s, "\n", NULL);
   if ( opts[0].description )
@@ -1432,6 +1440,14 @@ usage (int level)
     }
   else if (level == 2)
     {
+      p = strusage (42);
+      if (p && *p == '1')
+        {
+          p = strusage (40);
+          writestrings (1, p, NULL);
+          if (*p && p[strlen(p)] != '\n')
+            writestrings (1, "\n", NULL);
+        }
       writestrings (0, strusage(41), "\n", NULL);
       exit (0);
     }
@@ -1455,6 +1471,10 @@ usage (int level)
  *30..39: Additional program info (with LFs)
  *    40: short usage note (with LF)
  *    41: long usage note (with LF)
+ *    42: Flag string:
+ *          First char is '1':
+ *             The short usage notes needs to be printed
+ *             before the long usage note.
  */
 const char *
 strusage( int level )
