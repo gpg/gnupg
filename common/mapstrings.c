@@ -132,7 +132,7 @@ find_macro (const char *string,  const char **begptr,
 
 /* If STRING includes known @FOO@ macros, replace these macros and
    return a new static string.  Warning: STRING must have been
-   allocated statically.  Note that this function allocated memory
+   allocated statically.  Note that this function allocates memory
    which will not be released (similar to gettext).  */
 const char *
 map_static_macro_string (const char *string)
