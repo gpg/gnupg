@@ -1,6 +1,6 @@
 /* [argparse.c wk 17.06.97] Argument Parser for option handling
- * Copyright (C) 1998-2001, 2006-2008, 2012  Free Software Foundation, Inc.
- * Copyright (C) 1997-2001, 2006-2008, 2013 Werner Koch
+ * Copyright (C) 1998-2001, 2006-2008, 2012 Free Software Foundation, Inc.
+ * Copyright (C) 1997-2001, 2006-2008, 2013-2015 Werner Koch
  *
  * This file is part of JNLIB, which is a subsystem of GnuPG.
  *
@@ -29,6 +29,11 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
+/* This file may be used as part of GnuPG or standalone.  A GnuPG
+   build is detected by the presence of the macro GNUPG_MAJOR_VERSION.
+   Some feature are only availalbe in the GnuPG build mode.
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -41,20 +46,114 @@
 #include <limits.h>
 #include <errno.h>
 
-#include "libjnlib-config.h"
-#include "mischelp.h"
-#include "stringhelp.h"
-#include "logging.h"
-#ifdef JNLIB_NEED_UTF8CONV
-#include "utf8conv.h"
-#endif
+#ifdef GNUPG_MAJOR_VERSION
+# include "libjnlib-config.h"
+# include "mischelp.h"
+# include "stringhelp.h"
+# include "logging.h"
+# ifdef JNLIB_NEED_UTF8CONV
+#  include "utf8conv.h"
+# endif
+#endif /*GNUPG_MAJOR_VERSION*/
+
 #include "argparse.h"
+
+/* GnuPG uses GPLv3+ but a standalone version of this defaults to
+   GPLv2+ because that is the license of this file.  Change this if
+   you include it in a program which uses GPLv3.  If you don't want to
+   set a a copyright string for your usage() you may also hardcode it
+   here.  */
+#ifndef GNUPG_MAJOR_VERSION
+
+# define ARGPARSE_GPL_VERSION      2
+# define ARGPARSE_CRIGHT_STR "Copyright (C) YEAR NAME"
+
+#else /* Used by GnuPG  */
+
+# define ARGPARSE_GPL_VERSION      3
+# define ARGPARSE_CRIGHT_STR "Copyright (C) 2015 Free Software Foundation, Inc."
+
+#endif /*GNUPG_MAJOR_VERSION*/
+
+/* Replacements for standalone builds.  */
+#ifndef GNUPG_MAJOR_VERSION
+# ifndef _
+#  define _(a)  (a)
+# endif
+# ifndef DIM
+#  define DIM(v)           (sizeof(v)/sizeof((v)[0]))
+# endif
+# define jnlib_malloc(a)    malloc ((a))
+# define jnlib_realloc(a,b) realloc ((a), (b))
+# define jnlib_strdup(a)    strdup ((a))
+# define jnlib_free(a)      free ((a))
+# define jnlib_log_error    my_log_error
+# define jnlib_log_bug	    my_log_bug
+# define trim_spaces(a)     my_trim_spaces ((a))
+# define map_static_macro_string(a)  (a)
+#endif /*!GNUPG_MAJOR_VERSION*/
+
+
+#define ARGPARSE_STR(v) #v
+#define ARGPARSE_STR2(v) ARGPARSE_STR(v)
+
+
+/* Replacements for standalone builds.  */
+#ifndef GNUPG_MAJOR_VERSION
+static void
+my_log_error (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+
+  va_start (arg_ptr, fmt);
+  fprintf (stderr, "%s: ", strusage (11));
+  vfprintf (stderr, fmt, arg_ptr);
+  va_end (arg_ptr);
+}
+
+static void
+my_log_bug (const char *fmt, ...)
+{
+  va_list arg_ptr ;
+
+  va_start (arg_ptr, fmt);
+  fprintf (stderr, "%s: Ohhhh jeeee: ", strusage (11));
+  vfprintf (stderr, fmt, arg_ptr);
+  va_end (arg_ptr);
+  abort ();
+}
+
+static char *
+my_trim_spaces (char *str)
+{
+  char *string, *p, *mark;
+
+  string = str;
+  /* Find first non space character. */
+  for (p=string; *p && isspace (*(unsigned char*)p) ; p++)
+    ;
+  /* Move characters. */
+  for ((mark = NULL); (*string = *p); string++, p++)
+    if (isspace (*(unsigned char*)p))
+      {
+        if (!mark)
+          mark = string;
+      }
+    else
+      mark = NULL;
+  if (mark)
+    *mark = '\0' ;  /* Remove trailing spaces. */
+
+  return str ;
+}
+
+#endif /*!GNUPG_MAJOR_VERSION*/
 
 
 
 /*********************************
  * @Summary arg_parse
- *  #include <wk/lib.h>
+ *  #include "argparse.h"
  *
  *  typedef struct {
  *	char *argc;		  pointer to argc (value subject to change)
@@ -1367,12 +1466,19 @@ strusage( int level )
 
   switch ( level )
     {
-    case 10: p = ("License GPLv3+: GNU GPL version 3 or later "
-                  "<http://gnu.org/licenses/gpl.html>");
+
+    case 10:
+#if ARGPARSE_GPL_VERSION == 3
+      p = ("License GPLv3+: GNU GPL version 3 or later "
+           "<http://gnu.org/licenses/gpl.html>");
+#else
+      p = ("License GPLv2+: GNU GPL version 2 or later "
+           "<http://gnu.org/licenses/>");
+#endif
       break;
     case 11: p = "foo"; break;
     case 13: p = "0.0"; break;
-    case 14: p = "Copyright (C) 2015 Free Software Foundation, Inc."; break;
+    case 14: p = ARGPARSE_CRIGHT_STR; break;
     case 15: p =
 "This is free software: you are free to change and redistribute it.\n"
 "There is NO WARRANTY, to the extent permitted by law.\n";
@@ -1380,7 +1486,9 @@ strusage( int level )
     case 16: p =
 "This is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 3 of the License, or\n"
+"the Free Software Foundation; either version "
+ARGPARSE_STR2(ARGPARSE_GPL_VERSION)
+" of the License, or\n"
 "(at your option) any later version.\n\n"
 "It is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -1414,7 +1522,7 @@ static struct {
     int myopt;
     int echo;
     int a_long_one;
-}opt;
+} opt;
 
 int
 main(int argc, char **argv)
@@ -1422,7 +1530,7 @@ main(int argc, char **argv)
   ARGPARSE_OPTS opts[] = {
     ARGPARSE_x('v', "verbose", NONE, 0, "Laut sein"),
     ARGPARSE_s_n('e', "echo"   , ("Zeile ausgeben, damit wir sehen, "
-                                  "was wir ein gegeben haben")),
+                                  "was wir eingegeben haben")),
     ARGPARSE_s_n('d', "debug", "Debug\nfalls mal etwas\nschief geht"),
     ARGPARSE_s_s('o', "output", 0 ),
     ARGPARSE_o_s('c', "cross-ref", "cross-reference erzeugen\n" ),
@@ -1430,43 +1538,50 @@ main(int argc, char **argv)
     ARGPARSE_s_n('s', "street","|Straße|set the name of the street to Straße"),
     ARGPARSE_o_i('m', "my-option", 0),
     ARGPARSE_s_n(500, "a-long-option", 0 ),
-    ARGPARSE_end
+    ARGPARSE_end()
   };
-  ARGPARSE_ARGS pargs = { &argc, &argv, 2|4|32 };
-    int i;
+  ARGPARSE_ARGS pargs = { &argc, &argv, (ARGPARSE_FLAG_ALL
+                                         | ARGPARSE_FLAG_MIXED
+                                         | ARGPARSE_FLAG_ONEDASH) };
+  int i;
 
-    while( arg_parse ( &pargs, opts) ) {
-	switch( pargs.r_opt ) {
-	  case -1 : printf( "arg='%s'\n", pargs.r.ret_str); break;
-	  case 'v': opt.verbose++; break;
-	  case 'e': opt.echo++; break;
-	  case 'd': opt.debug++; break;
-	  case 'o': opt.outfile = pargs.r.ret_str; break;
-	  case 'c': opt.crf = pargs.r_type? pargs.r.ret_str:"a.crf"; break;
-	  case 'm': opt.myopt = pargs.r_type? pargs.r.ret_int : 1; break;
-	  case 500: opt.a_long_one++;  break;
-	  default : pargs.err = ARGPARSE_PRINT_WARNING; break;
+  while (arg_parse  (&pargs, opts))
+    {
+      switch (pargs.r_opt)
+        {
+        case ARGPARSE_IS_ARG :
+          printf ("arg='%s'\n", pargs.r.ret_str);
+          break;
+        case 'v': opt.verbose++; break;
+        case 'e': opt.echo++; break;
+        case 'd': opt.debug++; break;
+        case 'o': opt.outfile = pargs.r.ret_str; break;
+        case 'c': opt.crf = pargs.r_type? pargs.r.ret_str:"a.crf"; break;
+        case 'm': opt.myopt = pargs.r_type? pargs.r.ret_int : 1; break;
+        case 500: opt.a_long_one++;  break;
+        default : pargs.err = ARGPARSE_PRINT_WARNING; break;
 	}
     }
-    for(i=0; i < argc; i++ )
-	printf("%3d -> (%s)\n", i, argv[i] );
-    puts("Options:");
-    if( opt.verbose )
-	printf("  verbose=%d\n", opt.verbose );
-    if( opt.debug )
-	printf("  debug=%d\n", opt.debug );
-    if( opt.outfile )
-	printf("  outfile='%s'\n", opt.outfile );
-    if( opt.crf )
-	printf("  crffile='%s'\n", opt.crf );
-    if( opt.myopt )
-	printf("  myopt=%d\n", opt.myopt );
-    if( opt.a_long_one )
-	printf("  a-long-one=%d\n", opt.a_long_one );
-    if( opt.echo       )
-	printf("  echo=%d\n", opt.echo );
-    return 0;
+  for (i=0; i < argc; i++ )
+    printf ("%3d -> (%s)\n", i, argv[i] );
+  puts ("Options:");
+  if (opt.verbose)
+    printf ("  verbose=%d\n", opt.verbose );
+  if (opt.debug)
+    printf ("  debug=%d\n", opt.debug );
+  if (opt.outfile)
+    printf ("  outfile='%s'\n", opt.outfile );
+  if (opt.crf)
+    printf ("  crffile='%s'\n", opt.crf );
+  if (opt.myopt)
+    printf ("  myopt=%d\n", opt.myopt );
+  if (opt.a_long_one)
+    printf ("  a-long-one=%d\n", opt.a_long_one );
+  if (opt.echo)
+    printf ("  echo=%d\n", opt.echo );
+
+  return 0;
 }
-#endif
+#endif /*TEST*/
 
 /**** bottom of file ****/

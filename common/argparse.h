@@ -32,7 +32,6 @@
 #define LIBJNLIB_ARGPARSE_H
 
 #include <stdio.h>
-#include "types.h"
 
 typedef struct
 {
@@ -193,12 +192,12 @@ typedef struct
 #define ARGPARSE_INVALID_ARG       (-12)
 
 
-int arg_parse( ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
-int optfile_parse( FILE *fp, const char *filename, unsigned *lineno,
+int arg_parse (ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
+int optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
 		   ARGPARSE_ARGS *arg, ARGPARSE_OPTS *opts);
-void usage( int level );
-const char *strusage( int level );
-void set_strusage( const char *(*f)( int ) );
+void usage (int level);
+const char *strusage (int level);
+void set_strusage (const char *(*f)( int ));
 void argparse_register_outfnc (int (*fnc)(int, const char *));
 
 #endif /*LIBJNLIB_ARGPARSE_H*/
