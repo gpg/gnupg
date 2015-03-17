@@ -66,7 +66,11 @@ extract_regular (estream_t stream, const char *dirname,
       if (err)
         goto leave;
       n++;
-      nbytes = (n < hdr->nrecords)? RECORDSIZE : (hdr->size % RECORDSIZE);
+      if (n < hdr->nrecords || (hdr->size && !(hdr->size % RECORDSIZE)))
+        nbytes = RECORDSIZE;
+      else
+        nbytes = (hdr->size % RECORDSIZE);
+
       nwritten = es_fwrite (record, 1, nbytes, outfp);
       if (nwritten != nbytes)
         {
