@@ -2,6 +2,7 @@
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -2701,4 +2702,18 @@ http_verify_server_credentials (http_session_t sess)
   (void)sess;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 #endif
+}
+
+/* Return the first query variable with the specified key.  If there
+   is no such variable, return NULL.  */
+struct uri_tuple_s *
+uri_query_lookup (parsed_uri_t uri, const char *key)
+{
+  struct uri_tuple_s *t;
+
+  for (t = uri->query; t; t = t->next)
+    if (strcmp (t->name, key) == 0)
+      return t;
+
+  return NULL;
 }

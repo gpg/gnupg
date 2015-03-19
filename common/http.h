@@ -1,6 +1,7 @@
 /* http.h  -  HTTP protocol handler
  * Copyright (C) 1999, 2000, 2001, 2003, 2006,
  *               2010 Free Software Foundation, Inc.
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -60,6 +61,8 @@ struct parsed_uri_s
   char buffer[1];	/* Buffer which holds a (modified) copy of the URI. */
 };
 typedef struct parsed_uri_s *parsed_uri_t;
+
+extern struct uri_tuple_s *uri_query_lookup (parsed_uri_t uri, const char *key);
 
 typedef enum
   {
