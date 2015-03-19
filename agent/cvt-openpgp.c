@@ -1107,14 +1107,33 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
     {
       if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_OPAQUE))
         {
-          const void *s;
+          const unsigned char *s;
           unsigned int n;
 
           s = gcry_mpi_get_opaque (array[i], &n);
+          if (!s)
+            {
+              s = "";
+              n = 0;
+            }
+          /* Strip leading zero bits.  */
+          for (; n >= 8 && !*s; s++, n -= 8)
+            ;
+          if (n >= 8 && !(*s & 0x80))
+            if (--n >= 7 && !(*s & 0x40))
+              if (--n >= 6 && !(*s & 0x20))
+                if (--n >= 5 && !(*s & 0x10))
+                  if (--n >= 4 && !(*s & 0x08))
+                    if (--n >= 3 && !(*s & 0x04))
+                      if (--n >= 2 && !(*s & 0x02))
+                        if (--n >= 1 && !(*s & 0x01))
+                          --n;
+
           nbits[j] = n;
           n = (n+7)/8;
           narr[j] = n;
-          bufarr[j] = gcry_is_secure (s)? xtrymalloc_secure (n):xtrymalloc (n);
+          bufarr[j] = (gcry_is_secure (s)? xtrymalloc_secure (n?n:1)
+                       /* */             : xtrymalloc (n?n:1));
           if (!bufarr[j])
             {
               err = gpg_error_from_syserror ();
