@@ -1018,9 +1018,10 @@ parse_uri (parsed_uri_t *ret_uri, const char *uri,
 
 /*
  * Parse an URI and put the result into the newly allocated RET_URI.
- * On success the caller must use release_parsed_uri() to releases the
- * resources.  If NO_SCHEME_CHECK is set, the function tries to parse
- * the URL in the same way it would do for an HTTP style URI.
+ * On success the caller must use http_release_parsed_uri() to
+ * releases the resources.  If NO_SCHEME_CHECK is set, the function
+ * tries to parse the URL in the same way it would do for an HTTP
+ * style URI.
  */
 gpg_error_t
 http_parse_uri (parsed_uri_t *ret_uri, const char *uri,
