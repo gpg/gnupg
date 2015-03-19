@@ -1253,7 +1253,8 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
 /* Get the key described key the KEYSPEC string from the keyserver
    identified by URI.  On success R_FP has an open stream to read the
-   data.  */
+   data.  The data will be provided in a format GnuPG can import
+   (either a binary OpenPGP message or an armored one).  */
 gpg_error_t
 ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 {
