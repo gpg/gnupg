@@ -630,7 +630,7 @@ reader_callback (void *cb_value, char *buffer, size_t count,  size_t *nread)
   return 0;
 }
 
-/* Fork and exec the LDAP wrapper and returns a new libksba reader
+/* Fork and exec the LDAP wrapper and return a new libksba reader
    object at READER.  ARGV is a NULL terminated list of arguments for
    the wrapper.  The function returns 0 on success or an error code.
 

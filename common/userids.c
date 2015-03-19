@@ -38,7 +38,7 @@
 
 
 /* Parse the user-id NAME and build a search description for it.
- * Returns 0 on succdess or an error code.  DESC may be NULL to merely
+ * Returns 0 on success or an error code.  DESC may be NULL to merely
  * check the validity of a user-id.
  *
  * Some used rules:

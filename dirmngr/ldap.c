@@ -131,7 +131,7 @@ run_ldap_wrapper (ctrl_t ctrl,
   *reader = NULL;
 
   argc = 0;
-  if (pass)  /* Note, that the password most be the first item.  */
+  if (pass)  /* Note, that the password must be the first item.  */
     {
       argv[argc++] = "--pass";
       argv[argc++] = pass;

@@ -152,7 +152,7 @@ print_fd_and_time (int fd)
 
 
 /* Print LINE for the client identified by C.  Calling this function
-   witgh LINE set to NULL, will flush the internal buffer. */
+   with LINE set to NULL, will flush the internal buffer. */
 static void
 print_line (client_t c, const char *line)
 {

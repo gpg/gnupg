@@ -1799,7 +1799,7 @@ if test x"$use_regex" != xyes ; then
 echo "
         Warning: No regular expression support available.
                  OpenPGP trust signatures won't work.
-                 gpg-check-pattern will not be build.
+                 gpg-check-pattern will not be built.
 "
 fi
 if test "x${gpg_config_script_warn}" != x; then

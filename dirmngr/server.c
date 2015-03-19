@@ -1635,7 +1635,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
   /* No options for now.  */
   line = skip_options (line);
 
-  /* Break the line down into an strlist.  Each pattern is by
+  /* Break the line into a strlist.  Each pattern is by
      definition percent-plus escaped.  However we only support keyids
      and fingerprints and thus the client has no need to apply the
      escaping.  */
@@ -1752,7 +1752,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
     }
 
   /* Ask for the key meta data. Not actually needed for HKP servers
-     but we do it anyway test the client implementaion.  */
+     but we do it anyway to test the client implementaion.  */
   err = assuan_inquire (ctx, "KEYBLOCK_INFO",
                         &info, &infolen, MAX_KEYBLOCK_LENGTH);
   if (err)
@@ -1944,8 +1944,8 @@ reset_notify (assuan_context_t ctx, char *line)
 }
 
 
-/* Startup the server and run the main command loop.  With FD = -1
-   used stdin/stdout. */
+/* Startup the server and run the main command loop.  With FD = -1,
+   use stdin/stdout. */
 void
 start_command_handler (assuan_fd_t fd)
 {

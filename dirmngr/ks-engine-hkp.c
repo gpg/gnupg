@@ -1396,7 +1396,7 @@ put_post_cb (void *opaque, http_t http)
 }
 
 
-/* Send the key in {DATA,DATALEN} to the keyserver identified by  URI.  */
+/* Send the key in {DATA,DATALEN} to the keyserver identified by URI.  */
 gpg_error_t
 ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
 {

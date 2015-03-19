@@ -32,7 +32,7 @@ fpr:::::::::AB059359A3B81F410FCFF97F5CE086B5B5A18FF4:
 #+end_example
 
 The double =--with-fingerprint= prints the fingerprint for the subkeys
-too.  Old versions of gpg used a slighrly different format and required
+too.  Old versions of gpg used a slightly different format and required
 the use of the option =--fixed-list-mode= to conform to the format
 described here.
 

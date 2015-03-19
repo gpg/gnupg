@@ -78,7 +78,7 @@ typedef struct cert_item_s *cert_item_t;
    the first byte of the fingerprint.  */
 static cert_item_t cert_cache[256];
 
-/* This is the global cache_lock variable. In general looking is not
+/* This is the global cache_lock variable. In general locking is not
    needed but it would take extra efforts to make sure that no
    indirect use of npth functions is done, so we simply lock it
    always.  Note: We can't use static initialization, as that is not
@@ -153,7 +153,7 @@ compare_serialno (ksba_sexp_t serial1, ksba_sexp_t serial2 )
 
 
 
-/* Return a malloced canonical S-Expression with the serialnumber
+/* Return a malloced canonical S-Expression with the serial number
    converted from the hex string HEXSN.  Return NULL on memory
    error. */
 ksba_sexp_t

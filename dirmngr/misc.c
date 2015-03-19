@@ -125,7 +125,7 @@ serial_to_buffer (const ksba_sexp_t serial, size_t *length)
 }
 
 
-/* Do an in-place percent unescaping of STRING. Returns STRING. Noet
+/* Do an in-place percent unescaping of STRING. Returns STRING. Note
    that this function does not do a '+'-to-space unescaping.*/
 char *
 unpercent_string (char *string)

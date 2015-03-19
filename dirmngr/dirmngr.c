@@ -251,7 +251,7 @@ static const char *redir_socket_name;
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
 
-/* Only if this flag has been set we will remove the socket file.  */
+/* Only if this flag has been set will we remove the socket file.  */
 static int cleanup_socket;
 
 /* Keep track of the current log file so that we can avoid updating
@@ -1881,8 +1881,8 @@ handle_tick (void)
 }
 
 
-/* Check the nonce on a new connection.  This is a NOP unless we we
-   are using our Unix domain socket emulation under Windows.  */
+/* Check the nonce on a new connection.  This is a NOP unless we are
+   using our Unix domain socket emulation under Windows.  */
 static int
 check_nonce (assuan_fd_t fd, assuan_sock_nonce_t *nonce)
 {

@@ -47,7 +47,7 @@ ldapserver_list_free (ldap_server_t servers)
 
 
 /* Parse a single LDAP server configuration line.  Returns the server
-   or NULL in case of errors.  The configuration lineis assumed to be
+   or NULL in case of errors.  The configuration line is assumed to be
    colon seprated with these fields:
 
    1. field: Hostname
