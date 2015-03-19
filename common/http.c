@@ -1443,7 +1443,8 @@ send_request (http_t hd, const char *httphost, const char *auth,
         }
 
 # if HTTP_USE_NTBTLS
-      err = ntbtls_set_hostname (hd->session->tls_session, server);
+      err = ntbtls_set_hostname (hd->session->tls_session,
+                                 hd->session->servername);
       if (err)
         {
           log_info ("ntbtls_set_hostname failed: %s\n", gpg_strerror (err));
@@ -1452,7 +1453,8 @@ send_request (http_t hd, const char *httphost, const char *auth,
 # elif HTTP_USE_GNUTLS
       rc = gnutls_server_name_set (hd->session->tls_session,
                                    GNUTLS_NAME_DNS,
-                                   server, strlen (server));
+                                   hd->session->servername
+                                   strlen (hd->session->servername));
       if (rc < 0)
         log_info ("gnutls_server_name_set failed: %s\n", gnutls_strerror (rc));
 # endif /*HTTP_USE_GNUTLS*/

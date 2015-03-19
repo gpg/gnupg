@@ -521,6 +521,14 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
   hi = hosttable[idx];
   if (hi->pool)
     {
+      /* Deal with the pool name before selecting a host. */
+      if (r_poolname && hi->cname)
+        {
+          *r_poolname = xtrystrdup (hi->cname);
+          if (!*r_poolname)
+            return gpg_error_from_syserror ();
+        }
+
       /* If the currently selected host is now marked dead, force a
          re-selection .  */
       if (force_reselect)
@@ -536,6 +544,11 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
           if (hi->poolidx == -1)
             {
               log_error ("no alive host found in pool '%s'\n", name);
+              if (r_poolname)
+                {
+                  xfree (*r_poolname);
+                  *r_poolname = NULL;
+                }
               return gpg_error (GPG_ERR_NO_KEYSERVER);
             }
         }
@@ -548,6 +561,11 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
   if (hi->dead)
     {
       log_error ("host '%s' marked as dead\n", hi->name);
+      if (r_poolname)
+        {
+          xfree (*r_poolname);
+          *r_poolname = NULL;
+        }
       return gpg_error (GPG_ERR_NO_KEYSERVER);
     }
 
@@ -562,13 +580,6 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv4;
       if (!hi->v6)
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv6;
-    }
-
-  if (r_poolname && hi->pool && hi->cname)
-    {
-      *r_poolname = xtrystrdup (hi->cname);
-      if (!*r_poolname)
-        return gpg_error_from_syserror ();
     }
 
   *r_host = xtrystrdup (hi->name);
