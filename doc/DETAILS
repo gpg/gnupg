@@ -219,9 +219,9 @@ more arguments in future versions.
 
 
     NEWSIG
-        May be issued right before a signature verification starts.  This
-        is useful to define a context for parsing ERROR status
-        messages.  No arguments are currently defined.
+        Is issued right before a signature verification starts.  This is
+        useful to define a context for parsing ERROR status messages.  No
+        arguments are currently defined.
 
     GOODSIG  <long_keyid_or_fpr>  <username>
 	The signature with the keyid is good.  For each signature only

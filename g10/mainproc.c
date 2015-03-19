@@ -1604,6 +1604,8 @@ check_sig_and_print( CTX c, KBNODE node )
 
   }
 
+  write_status_text (STATUS_NEWSIG, NULL);
+
   /* (Indendation below not yet changed to GNU style.) */
 
     astr = openpgp_pk_algo_name ( sig->pubkey_algo );
