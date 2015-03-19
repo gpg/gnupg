@@ -1670,6 +1670,8 @@ check_sig_and_print (CTX c, kbnode_t node)
       }
   }
 
+  write_status_text (STATUS_NEWSIG, NULL);
+
   astr = openpgp_pk_algo_name ( sig->pubkey_algo );
   if (keystrlen () > 8)
     {
