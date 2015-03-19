@@ -62,7 +62,9 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \
 	ks-action.c ks-action.h ks-engine.h \
-        ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c
+        ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c \
+	ks-engine-ldap.c \
+	ldap-parse-uri.c ldap-parse-uri.h
 
 if USE_LDAP
 dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c w32-ldap-help.h \
@@ -77,6 +79,9 @@ dirmngr_LDADD = $(libcommontlsnpth) $(libcommonpth) \
         $(DNSLIBS) $(LIBASSUAN_LIBS) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(NPTH_LIBS) \
 	$(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(LIBINTL) $(LIBICONV)
+if USE_LDAP
+dirmngr_LDADD += $(ldaplibs)
+endif
 if !USE_LDAPWRAPPER
 dirmngr_LDADD += $(ldaplibs)
 endif
@@ -104,7 +109,8 @@ no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
 
 t_common_src = t-support.h
 # We need libcommontls, because we use the http functions.
-t_common_ldadd = $(libcommontls) $(libcommon) no-libgcrypt.o $(GPG_ERROR_LIBS)
+t_common_ldadd = $(libcommontls) $(libcommon) no-libgcrypt.o \
+	$(GPG_ERROR_LIBS) $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
 
 module_tests = t-ldap-parse-uri
 t_ldap_parse_uri_SOURCES = \

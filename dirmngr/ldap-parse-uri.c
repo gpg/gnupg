@@ -127,7 +127,7 @@ ldap_parse_uri (parsed_uri_t *purip, const char *uri)
 
   len = 0;
 
-#define add(s) ({ if (s) len += strlen (s) + 1; })
+#define add(s) { if (s) len += strlen (s) + 1; }
 
   add (scheme);
   add (host);
@@ -144,27 +144,30 @@ ldap_parse_uri (parsed_uri_t *purip, const char *uri)
 
   buffer = puri->buffer;
 
-#define copy(s)					\
-  ({						\
-    char *copy_result = NULL;			\
-    if (s)					\
-      {						\
-	copy_result = buffer;			\
-	buffer = stpcpy (buffer, s) + 1;	\
-      }						\
-    copy_result;				\
-  })
+#define copy(to, s)				\
+  do						\
+    {						\
+      if (s)					\
+	{					\
+	  to = buffer;				\
+	  buffer = stpcpy (buffer, s) + 1;	\
+	}					\
+    }						\
+  while (0)
 
-  puri->scheme = ascii_strlwr (copy (scheme));
-  puri->host = copy (host);
-  puri->path = copy (dn);
-  puri->auth = copy (bindname);
+  copy (puri->scheme, scheme);
+  /* Make sure the scheme is lower case.  */
+  ascii_strlwr (puri->scheme);
+
+  copy (puri->host, host);
+  copy (puri->path, dn);
+  copy (puri->auth, bindname);
 
   if (password)
     {
       puri->query = calloc (sizeof (*puri->query), 1);
       puri->query->name = "password";
-      puri->query->value = copy (password);
+      copy (puri->query->value, password);
       puri->query->valuelen = strlen (password) + 1;
     }
 

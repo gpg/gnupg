@@ -2,6 +2,7 @@
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
  * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011 g10 Code GmbH
  * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -48,6 +49,7 @@
 #endif
 #include "ks-action.h"
 #include "ks-engine.h"  /* (ks_hkp_print_hosttable) */
+#include "ldap-parse-uri.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable. */
@@ -1524,7 +1526,10 @@ cmd_keyserver (assuan_context_t ctx, char *line)
       item->parsed_uri = NULL;
       strcpy (item->uri, line);
 
-      err = http_parse_uri (&item->parsed_uri, line, 1);
+      if (ldap_uri_p (item->uri))
+	err = ldap_parse_uri (&item->parsed_uri, line);
+      else
+	err = http_parse_uri (&item->parsed_uri, line, 1);
       if (err)
         {
           xfree (item);
@@ -1709,13 +1714,15 @@ static const char hlp_ks_put[] =
   "\n"
   "  INQUIRE KEYBLOCK\n"
   "\n"
-  "The client shall respond with a binary version of the keyblock.  For LDAP\n"
+  "The client shall respond with a binary version of the keyblock (e.g.,\n"
+  "the output of `gpg --export KEYID').  For LDAP\n"
   "keyservers Dirmngr may ask for meta information of the provided keyblock\n"
   "using:\n"
   "\n"
   "  INQUIRE KEYBLOCK_INFO\n"
   "\n"
-  "The client shall respond with a colon delimited info lines";
+  "The client shall respond with a colon delimited info lines (the output\n"
+  "of 'for x in keys sigs; do gpg --list-$x --with-colons KEYID; done').\n";
 static gpg_error_t
 cmd_ks_put (assuan_context_t ctx, char *line)
 {
@@ -1755,7 +1762,7 @@ cmd_ks_put (assuan_context_t ctx, char *line)
     }
 
   /* Send the key.  */
-  err = ks_action_put (ctrl, value, valuelen);
+  err = ks_action_put (ctrl, value, valuelen, info, infolen);
 
  leave:
   xfree (info);

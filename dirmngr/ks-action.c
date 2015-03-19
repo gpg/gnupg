@@ -1,6 +1,7 @@
 /* ks-action.c - OpenPGP keyserver actions
  * Copyright (C) 2011 Free Software Foundation, Inc.
  * Copyright (C) 2011, 2014 Werner Koch
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -29,7 +30,7 @@
 #include "misc.h"
 #include "ks-engine.h"
 #include "ks-action.h"
-
+#include "ldap-parse-uri.h"
 
 /* Called by the engine's help functions to print the actual help.  */
 gpg_error_t
@@ -72,7 +73,11 @@ ks_action_help (ctrl_t ctrl, const char *url)
     }
   else
     {
-      err = http_parse_uri (&parsed_uri, url, 1);
+      if (ldap_uri_p (url))
+	err = ldap_parse_uri (&parsed_uri, url);
+      else
+	err = http_parse_uri (&parsed_uri, url, 1);
+
       if (err)
         return err;
     }
@@ -85,6 +90,8 @@ ks_action_help (ctrl_t ctrl, const char *url)
     err = ks_finger_help (ctrl, parsed_uri);
   if (!err)
     err = ks_kdns_help (ctrl, parsed_uri);
+  if (!err)
+    err = ks_ldap_help (ctrl, parsed_uri);
 
   if (!parsed_uri)
     ks_print_help (ctrl,
@@ -142,10 +149,18 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
      stop at the first error. */
   for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
     {
-      if (uri->parsed_uri->is_http)
+      int is_http = uri->parsed_uri->is_http;
+      int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
+		     || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
+		     || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      if (is_http || is_ldap)
         {
           any_server = 1;
-          err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
+	  if (is_http)
+	    err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
+	  else if (is_ldap)
+	    err = ks_ldap_search (ctrl, uri->parsed_uri, patterns->d, &infp);
+
           if (!err)
             {
               err = copy_stream (infp, outfp);
@@ -185,12 +200,20 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
      Need to think about a better strategy.  */
   for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
     {
-      if (uri->parsed_uri->is_http)
+      int is_http = uri->parsed_uri->is_http;
+      int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
+		     || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
+		     || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      if (is_http || is_ldap)
         {
           any_server = 1;
           for (sl = patterns; !err && sl; sl = sl->next)
             {
-              err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
+	      if (is_http)
+		err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
+	      else
+		err = ks_ldap_get (ctrl, uri->parsed_uri, sl->d, &infp);
+
               if (err)
                 {
                   /* It is possible that a server does not carry a
@@ -282,9 +305,14 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
 
 
 /* Send an OpenPGP key to all keyservers.  The key in {DATA,DATALEN}
-   is expected in OpenPGP binary transport format.  */
+   is expected to be in OpenPGP binary transport format.  The metadata
+   in {INFO,INFOLEN} is in colon-separated format (concretely, it is
+   the output of 'for x in keys sigs; do gpg --list-$x --with-colons
+   KEYID; done'.  This function may modify DATA and INFO.  If this is
+   a problem, then the caller should create a copy.  */
 gpg_error_t
-ks_action_put (ctrl_t ctrl, const void *data, size_t datalen)
+ks_action_put (ctrl_t ctrl, void *data, size_t datalen,
+	       void *info, size_t infolen)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
@@ -293,10 +321,20 @@ ks_action_put (ctrl_t ctrl, const void *data, size_t datalen)
 
   for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
     {
-      if (uri->parsed_uri->is_http)
+      int is_http = uri->parsed_uri->is_http;
+      int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
+		     || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
+		     || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+
+      if (is_http || is_ldap)
         {
           any_server = 1;
-          err = ks_hkp_put (ctrl, uri->parsed_uri, data, datalen);
+	  if (is_http)
+	    err = ks_hkp_put (ctrl, uri->parsed_uri, data, datalen);
+	  else
+	    err = ks_ldap_put (ctrl, uri->parsed_uri, data, datalen,
+			       info, infolen);
+
           if (err)
             {
               first_err = err;

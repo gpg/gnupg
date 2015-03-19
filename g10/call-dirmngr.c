@@ -1,5 +1,6 @@
 /* call-dirmngr.c - GPG operations to the Dirmngr.
  * Copyright (C) 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -585,6 +586,117 @@ gpg_dirmngr_ks_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
 
 
 
+static void
+record_output (estream_t output,
+	       pkttype_t type,
+	       const char *validity,
+	       /* The public key length or -1.  */
+	       int pub_key_length,
+	       /* The public key algo or -1.  */
+	       int pub_key_algo,
+	       /* 2 ulongs or NULL.  */
+	       const u32 *keyid,
+	       /* The creation / expiration date or 0.  */
+	       u32 creation_date,
+	       u32 expiration_date,
+	       const char *userid)
+{
+  const char *type_str = NULL;
+  char *pub_key_length_str = NULL;
+  char *pub_key_algo_str = NULL;
+  char *keyid_str = NULL;
+  char *creation_date_str = NULL;
+  char *expiration_date_str = NULL;
+  char *userid_escaped = NULL;
+
+  switch (type)
+    {
+    case PKT_PUBLIC_KEY:
+      type_str = "pub";
+      break;
+    case PKT_PUBLIC_SUBKEY:
+      type_str = "sub";
+      break;
+    case PKT_USER_ID:
+      type_str = "uid";
+      break;
+    case PKT_SIGNATURE:
+      type_str = "sig";
+      break;
+    default:
+      assert (! "Unhandled type.");
+    }
+
+  if (pub_key_length > 0)
+    pub_key_length_str = xasprintf ("%d", pub_key_length);
+
+  if (pub_key_algo != -1)
+    pub_key_algo_str = xasprintf ("%d", pub_key_algo);
+
+  if (keyid)
+    keyid_str = xasprintf ("%08lX%08lX", (ulong) keyid[0], (ulong) keyid[1]);
+
+  if (creation_date)
+    creation_date_str = xstrdup (colon_strtime (creation_date));
+
+  if (expiration_date)
+    expiration_date_str = xstrdup (colon_strtime (expiration_date));
+
+  /* Quote ':', '%', and any 8-bit characters.  */
+  if (userid)
+    {
+      int r;
+      int w = 0;
+
+      int len = strlen (userid);
+      /* A 100k character limit on the uid should be way more than
+	 enough.  */
+      if (len > 100 * 1024)
+	len = 100 * 1024;
+
+      /* The minimum amount of space that we need.  */
+      userid_escaped = xmalloc (len * 3 + 1);
+
+      for (r = 0; r < len; r++)
+	{
+	  if (userid[r] == ':' || userid[r]== '%' || (userid[r] & 0x80))
+	    {
+	      sprintf (&userid_escaped[w], "%%%02X", (byte) userid[r]);
+	      w += 3;
+	    }
+	  else
+	    userid_escaped[w ++] = userid[r];
+	}
+      userid_escaped[w] = '\0';
+    }
+
+  es_fprintf (output, "%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s:%s\n",
+	      type_str,
+	      validity ?: "",
+	      pub_key_length_str ?: "",
+	      pub_key_algo_str ?: "",
+	      keyid_str ?: "",
+	      creation_date_str ?: "",
+	      expiration_date_str ?: "",
+	      "" /* Certificate S/N */,
+	      "" /* Ownertrust.  */,
+	      userid_escaped ?: "",
+	      "" /* Signature class.  */,
+	      "" /* Key capabilities.  */,
+	      "" /* Issuer certificate fingerprint.  */,
+	      "" /* Flag field.  */,
+	      "" /* S/N of a token.  */,
+	      "" /* Hash algo.  */,
+	      "" /* Curve name.  */);
+
+  xfree (userid_escaped);
+  xfree (expiration_date_str);
+  xfree (creation_date_str);
+  xfree (keyid_str);
+  xfree (pub_key_algo_str);
+  xfree (pub_key_length_str);
+}
+
 /* Handle the KS_PUT inquiries. */
 static gpg_error_t
 ks_put_inq_cb (void *opaque, const char *line)
@@ -607,53 +719,80 @@ ks_put_inq_cb (void *opaque, const char *line)
       if (!fp)
         err = gpg_error_from_syserror ();
 
+      /* Note: the output format for the INFO block follows the colon
+	 format as described in doc/DETAILS.  We don't actually reuse
+	 the functionality from g10/keylist.c to produce the output,
+	 because we don't need all of it and some of it is quite
+	 expensive to generate.
+
+	 The fields are (the starred fields are the ones we need):
+
+	   * Field 1 - Type of record
+           * Field 2 - Validity
+           * Field 3 - Key length
+           * Field 4 - Public key algorithm
+           * Field 5 - KeyID
+           * Field 6 - Creation date
+           * Field 7 - Expiration date
+             Field 8 - Certificate S/N, UID hash, trust signature info
+             Field 9 -  Ownertrust
+	   * Field 10 - User-ID
+             Field 11 - Signature class
+             Field 12 - Key capabilities
+             Field 13 - Issuer certificate fingerprint or other info
+             Field 14 - Flag field
+             Field 15 - S/N of a token
+             Field 16 - Hash algorithm
+             Field 17 - Curve name
+       */
       for (node = parm->keyblock; !err && node; node=node->next)
         {
-          switch(node->pkt->pkttype)
+          switch (node->pkt->pkttype)
             {
             case PKT_PUBLIC_KEY:
             case PKT_PUBLIC_SUBKEY:
               {
                 PKT_public_key *pk = node->pkt->pkt.public_key;
 
+		char validity[3];
+		int i;
+
+		i = 0;
+		if (pk->flags.revoked)
+		  validity[i ++] = 'r';
+		if (pk->has_expired)
+		  validity[i ++] = 'e';
+		validity[i] = '\0';
+
                 keyid_from_pk (pk, NULL);
 
-                es_fprintf (fp, "%s:%08lX%08lX:%u:%u:%u:%u:%s%s:\n",
-                            node->pkt->pkttype==PKT_PUBLIC_KEY? "pub" : "sub",
-                            (ulong)pk->keyid[0], (ulong)pk->keyid[1],
-                            pk->pubkey_algo,
-                            nbits_from_pk (pk),
-                            pk->timestamp,
-                            pk->expiredate,
-                            pk->flags.revoked? "r":"",
-                            pk->has_expired? "e":"");
+		record_output (fp, node->pkt->pkttype, validity,
+			       nbits_from_pk (pk), pk->pubkey_algo,
+			       pk->keyid, pk->timestamp, pk->expiredate,
+			       NULL);
               }
               break;
 
             case PKT_USER_ID:
               {
                 PKT_user_id *uid = node->pkt->pkt.user_id;
-                int r;
 
                 if (!uid->attrib_data)
                   {
-                    es_fprintf (fp, "uid:");
+		    char validity[3];
+		    int i;
 
-                    /* Quote ':', '%', and any 8-bit characters.  */
-                    for (r=0; r < uid->len; r++)
-                      {
-                        if (uid->name[r] == ':'
-                            || uid->name[r]== '%'
-                            || (uid->name[r]&0x80))
-                          es_fprintf (fp, "%%%02X", (byte)uid->name[r]);
-                        else
-                          es_putc (uid->name[r], fp);
-                      }
+		    i = 0;
+		    if (uid->is_revoked)
+		      validity[i ++] = 'r';
+		    if (uid->is_expired)
+		      validity[i ++] = 'e';
+		    validity[i] = '\0';
 
-                    es_fprintf (fp, ":%u:%u:%s%s:\n",
-                                uid->created,uid->expiredate,
-                                uid->is_revoked? "r":"",
-                                uid->is_expired? "e":"");
+		    record_output (fp, node->pkt->pkttype, validity,
+				   -1, -1, NULL,
+				   uid->created, uid->expiredate,
+				   uid->name);
                   }
               }
               break;
@@ -667,12 +806,9 @@ ks_put_inq_cb (void *opaque, const char *line)
                 PKT_signature *sig = node->pkt->pkt.signature;
 
                 if (IS_UID_SIG (sig))
-                  {
-                    es_fprintf (fp, "sig:%08lX%08lX:%X:%u:%u:\n",
-                                (ulong)sig->keyid[0],(ulong)sig->keyid[1],
-                                sig->sig_class, sig->timestamp,
-                                sig->expiredate);
-                  }
+		  record_output (fp, node->pkt->pkttype, NULL,
+				 -1, -1, sig->keyid,
+				 sig->timestamp, sig->expiredate, NULL);
               }
               break;
 
