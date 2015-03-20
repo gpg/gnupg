@@ -1453,7 +1453,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
 # elif HTTP_USE_GNUTLS
       rc = gnutls_server_name_set (hd->session->tls_session,
                                    GNUTLS_NAME_DNS,
-                                   hd->session->servername
+                                   hd->session->servername,
                                    strlen (hd->session->servername));
       if (rc < 0)
         log_info ("gnutls_server_name_set failed: %s\n", gnutls_strerror (rc));
