@@ -29,8 +29,9 @@
 #ifndef GNUPG_COMMON_MBOX_UTIL_H
 #define GNUPG_COMMON_MBOX_UTIL_H
 
-int has_invalid_email_chars (const char *s);
+int has_invalid_email_chars (const void *buffer, size_t length);
 int is_valid_mailbox (const char *name);
+int is_valid_mailbox_mem (const void *buffer, size_t length);
 char *mailbox_from_userid (const char *userid);
 int is_valid_user_id (const char *uid);
 

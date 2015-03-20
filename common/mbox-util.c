@@ -50,6 +50,47 @@ string_count_chr (const char *string, int c)
   return count;
 }
 
+static int
+mem_count_chr (const void *buffer, int c, size_t length)
+{
+  const char *s = buffer;
+  int count;
+
+  for (count=0; length; length--, s++)
+    if (*s == c)
+      count++;
+  return count;
+}
+
+
+/* This is a case-sensitive version of our memistr.  I wonder why no
+   standard function memstr exists but I better do not use the name
+   memstr to avoid future conflicts.  */
+static const char *
+my_memstr (const void *buffer, size_t buflen, const char *sub)
+{
+  const unsigned char *buf = buffer;
+  const unsigned char *t = (const unsigned char *)buf;
+  const unsigned char *s = (const unsigned char *)sub;
+  size_t n = buflen;
+
+  for ( ; n ; t++, n-- )
+    {
+      if (*t == *s)
+        {
+          for (buf = t++, buflen = n--, s++; n && *t ==*s; t++, s++, n--)
+            ;
+          if (!*s)
+            return (const char*)buf;
+          t = (const unsigned char *)buf;
+          s = (const unsigned char *)sub ;
+          n = buflen;
+	}
+    }
+  return NULL;
+}
+
+
 
 static int
 string_has_ctrl_or_space (const char *string)
@@ -74,36 +115,57 @@ has_dotdot_after_at (const char *string)
 }
 
 
-/* Check whether the string has characters not valid in an RFC-822
-   address.  To cope with OpenPGP we ignore non-ascii characters
-   so that for example umlauts are legal in an email address.  An
-   OpenPGP user ID must be utf-8 encoded but there is no strict
-   requirement for RFC-822.  Thus to avoid IDNA encoding we put the
-   address verbatim as utf-8 into the user ID under the assumption
-   that mail programs handle IDNA at a lower level and take OpenPGP
-   user IDs as utf-8.  Note that we can't do an utf-8 encoding
-   checking here because in keygen.c this function is called with the
-   native encoding and native to utf-8 encoding is only done  later.  */
+/* Check whether BUFFER has characters not valid in an RFC-822
+   address.  LENGTH gives the length of BUFFER.
+
+   To cope with OpenPGP we ignore non-ascii characters so that for
+   example umlauts are legal in an email address.  An OpenPGP user ID
+   must be utf-8 encoded but there is no strict requirement for
+   RFC-822.  Thus to avoid IDNA encoding we put the address verbatim
+   as utf-8 into the user ID under the assumption that mail programs
+   handle IDNA at a lower level and take OpenPGP user IDs as utf-8.
+   Note that we can't do an utf-8 encoding checking here because in
+   keygen.c this function is called with the native encoding and
+   native to utf-8 encoding is only done later.  */
 int
-has_invalid_email_chars (const char *s)
+has_invalid_email_chars (const void *buffer, size_t length)
 {
+  const unsigned char *s = buffer;
   int at_seen=0;
   const char *valid_chars=
     "01234567890_-.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  for ( ; *s; s++ )
+  for ( ; length && *s; length--, s++ )
     {
-      if ( (*s & 0x80) )
+      if ((*s & 0x80))
         continue; /* We only care about ASCII.  */
-      if ( *s == '@' )
+      if (*s == '@')
         at_seen=1;
-      else if ( !at_seen && !(strchr (valid_chars, *s)
-                              || strchr ("!#$%&'*+/=?^`{|}~", *s)))
+      else if (!at_seen && !(strchr (valid_chars, *s)
+                             || strchr ("!#$%&'*+/=?^`{|}~", *s)))
         return 1;
-      else if ( at_seen && !strchr( valid_chars, *s ) )
+      else if (at_seen && !strchr (valid_chars, *s))
         return 1;
     }
   return 0;
+}
+
+
+/* Same as is_valid_mailbox (see below) but operates on non-nul
+   terminated buffer.  */
+int
+is_valid_mailbox_mem (const void *name_arg, size_t namelen)
+{
+  const char *name = name_arg;
+
+  return !( !name
+            || !namelen
+            || has_invalid_email_chars (name, namelen)
+            || mem_count_chr (name, '@', namelen) != 1
+            || *name == '@'
+            || name[namelen-1] == '@'
+            || name[namelen-1] == '.'
+            || my_memstr (name, namelen, ".."));
 }
 
 
@@ -112,14 +174,7 @@ has_invalid_email_chars (const char *s)
 int
 is_valid_mailbox (const char *name)
 {
-  return !( !name
-            || !*name
-            || has_invalid_email_chars (name)
-            || string_count_chr (name,'@') != 1
-            || *name == '@'
-            || name[strlen(name)-1] == '@'
-            || name[strlen(name)-1] == '.'
-            || strstr (name, "..") );
+  return name? is_valid_mailbox_mem (name, strlen (name)) : 0;
 }
 
 
