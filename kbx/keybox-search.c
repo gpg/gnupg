@@ -385,8 +385,8 @@ blob_cmp_name (KEYBOXBLOB blob, int idx,
 
 
 /* Compare all email addresses of the subject.  With SUBSTR given as
-   True a substring search is done in the mail address.  If X509
-   states whether thr search is done on an X.509 blob.  */
+   True a substring search is done in the mail address.  The X509 flag
+   indicated whether the search is done on an X.509 blob.  */
 static int
 blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
                int x509)
@@ -440,27 +440,44 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
       off = get32 (buffer+mypos);
       len = get32 (buffer+mypos+4);
       if (off+len > length)
-        return 0; /* error: better stop here out of bounds */
-      if (!x509)
+        return 0; /* error: better stop here - out of bounds */
+      if (x509)
         {
-          /* For OpenPGP we need to forward to the mailbox part.  */
-          for ( ;len && buffer[off] != '<'; len--, off++)
-            ;
+          if (len < 2 || buffer[off] != '<')
+            continue; /* empty name or trailing 0 not stored */
+          len--; /* one back */
+          if ( len < 3 || buffer[off+len] != '>')
+            continue; /* not a proper email address */
+          off++;
+          len--;
         }
-      if (len < 2 || buffer[off] != '<')
-        continue; /* empty name or trailing 0 not stored */
-      len--; /* one back */
-      if ( len < 3 || buffer[off+len] != '>')
-        continue; /* not a proper email address */
-      len--;
+      else /* OpenPGP.  */
+        {
+          /* We need to forward to the mailbox part.  */
+          for ( ; len && buffer[off] != '<'; len--, off++)
+            ;
+          if (len < 2 || buffer[off] != '<')
+            continue; /* empty name or trailing 0 not stored */
+
+          off++; /* Point to first char of the mail address.  */
+          len--;
+
+          /* Search closing '>'.  */
+          for (mypos=off; len && buffer[mypos] != '>'; len--, mypos++)
+            ;
+          if (!len || buffer[mypos] != '>' || off == mypos)
+            continue; /* Not a proper mail address.  */
+          len = mypos - off;
+        }
+
       if (substr)
         {
-          if (ascii_memcasemem (buffer+off+1, len, name, namelen))
+          if (ascii_memcasemem (buffer+off, len, name, namelen))
             return idx+1; /* found */
         }
       else
         {
-          if (len == namelen && !ascii_memcasecmp (buffer+off+1, name, len))
+          if (len == namelen && !ascii_memcasecmp (buffer+off, name, len))
             return idx+1; /* found */
         }
     }
