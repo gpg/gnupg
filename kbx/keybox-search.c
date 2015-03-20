@@ -30,6 +30,7 @@
 #include "keybox-defs.h"
 #include <gcrypt.h>
 #include "host2net.h"
+#include "mbox-util.h"
 
 #define xtoi_1(p)   (*(p) <= '9'? (*(p)- '0'): \
                      *(p) <= 'F'? (*(p)-'A'+10):(*(p)-'a'+10))
@@ -435,6 +436,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
   for (idx=!!x509 ;idx < nuids; idx++)
     {
       size_t mypos = pos;
+      size_t mylen;
 
       mypos += idx*uidinfolen;
       off = get32 (buffer+mypos);
@@ -454,20 +456,32 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
       else /* OpenPGP.  */
         {
           /* We need to forward to the mailbox part.  */
+          mypos = off;
+          mylen = len;
           for ( ; len && buffer[off] != '<'; len--, off++)
             ;
           if (len < 2 || buffer[off] != '<')
-            continue; /* empty name or trailing 0 not stored */
+            {
+              /* Mailbox not explicitly given or too short.  Restore
+                 OFF and LEN and check whether the entire string
+                 resembles a mailbox without the angle brackets.  */
+              off = mypos;
+              len = mylen;
+              if (!is_valid_mailbox_mem (buffer+off, len))
+                continue; /* Not a mail address. */
+            }
+          else /* Seems to be standard user id with mail address.  */
+            {
+              off++; /* Point to first char of the mail address.  */
+              len--;
+              /* Search closing '>'.  */
+              for (mypos=off; len && buffer[mypos] != '>'; len--, mypos++)
+                ;
+              if (!len || buffer[mypos] != '>' || off == mypos)
+                continue; /* Not a proper mail address.  */
+              len = mypos - off;
+            }
 
-          off++; /* Point to first char of the mail address.  */
-          len--;
-
-          /* Search closing '>'.  */
-          for (mypos=off; len && buffer[mypos] != '>'; len--, mypos++)
-            ;
-          if (!len || buffer[mypos] != '>' || off == mypos)
-            continue; /* Not a proper mail address.  */
-          len = mypos - off;
         }
 
       if (substr)
