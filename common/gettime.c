@@ -393,6 +393,108 @@ epoch2isotime (gnupg_isotime_t timebuf, time_t atime)
 }
 
 
+/* This function is a copy of gpgme/src/conversion.c:_gpgme_timegm.
+   If you change it, then update the other one too.  */
+#ifdef HAVE_W32_SYSTEM
+static time_t
+_win32_timegm (struct tm *tm)
+{
+  /* This one is thread safe.  */
+  SYSTEMTIME st;
+  FILETIME ft;
+  unsigned long long cnsecs;
+
+  st.wYear   = tm->tm_year + 1900;
+  st.wMonth  = tm->tm_mon  + 1;
+  st.wDay    = tm->tm_mday;
+  st.wHour   = tm->tm_hour;
+  st.wMinute = tm->tm_min;
+  st.wSecond = tm->tm_sec;
+  st.wMilliseconds = 0; /* Not available.  */
+  st.wDayOfWeek = 0;    /* Ignored.  */
+
+  /* System time is UTC thus the conversion is pretty easy.  */
+  if (!SystemTimeToFileTime (&st, &ft))
+    {
+      gpg_err_set_errno (EINVAL);
+      return (time_t)(-1);
+    }
+
+  cnsecs = (((unsigned long long)ft.dwHighDateTime << 32)
+	    | ft.dwLowDateTime);
+  cnsecs -= 116444736000000000ULL; /* The filetime epoch is 1601-01-01.  */
+  return (time_t)(cnsecs / 10000000ULL);
+}
+#endif
+
+
+/* Parse the string TIMESTAMP into a time_t.  The string may either be
+   seconds since Epoch or in the ISO 8601 format like
+   "20390815T143012".  Returns 0 for an empty string or seconds since
+   Epoch. Leading spaces are skipped. If ENDP is not NULL, it will
+   point to the next non-parsed character in TIMESTRING.
+
+   This function is a copy of
+   gpgme/src/conversion.c:_gpgme_parse_timestamp.  If you change it,
+   then update the other one too.  */
+time_t
+parse_timestamp (const char *timestamp, char **endp)
+{
+  /* Need to skip leading spaces, because that is what strtoul does
+     but not our ISO 8601 checking code. */
+  while (*timestamp && *timestamp== ' ')
+    timestamp++;
+  if (!*timestamp)
+    return 0;
+
+  if (strlen (timestamp) >= 15 && timestamp[8] == 'T')
+    {
+      struct tm buf;
+      int year;
+
+      year = atoi_4 (timestamp);
+      if (year < 1900)
+        return (time_t)(-1);
+
+      if (endp)
+        *endp = (char*)(timestamp + 15);
+
+      /* Fixme: We would better use a configure test to see whether
+         mktime can handle dates beyond 2038. */
+      if (sizeof (time_t) <= 4 && year >= 2038)
+        return (time_t)2145914603; /* 2037-12-31 23:23:23 */
+
+      memset (&buf, 0, sizeof buf);
+      buf.tm_year = year - 1900;
+      buf.tm_mon = atoi_2 (timestamp+4) - 1;
+      buf.tm_mday = atoi_2 (timestamp+6);
+      buf.tm_hour = atoi_2 (timestamp+9);
+      buf.tm_min = atoi_2 (timestamp+11);
+      buf.tm_sec = atoi_2 (timestamp+13);
+
+#ifdef HAVE_W32_SYSTEM
+      return _win32_timegm (&buf);
+#else
+#ifdef HAVE_TIMEGM
+      return timegm (&buf);
+#else
+      {
+        time_t tim;
+
+        putenv ("TZ=UTC");
+        tim = mktime (&buf);
+#ifdef __GNUC__
+#warning fixme: we must somehow reset TZ here.  It is not threadsafe anyway.
+#endif
+        return tim;
+      }
+#endif /* !HAVE_TIMEGM */
+#endif /* !HAVE_W32_SYSTEM */
+    }
+  else
+    return (time_t)strtoul (timestamp, endp, 10);
+}
+
 
 
 u32

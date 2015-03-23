@@ -41,6 +41,7 @@ int    isotime_human_p (const char *string);
 size_t string2isotime (gnupg_isotime_t atime, const char *string);
 time_t isotime2epoch (const char *string);
 void   epoch2isotime (gnupg_isotime_t timebuf, time_t atime);
+time_t parse_timestamp (const char *timestamp, char **endp);
 u32    add_days_to_timestamp (u32 stamp, u16 days);
 const char *strtimevalue (u32 stamp);
 const char *strtimestamp (u32 stamp); /* GMT */
