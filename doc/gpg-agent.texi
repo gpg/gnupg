@@ -295,7 +295,7 @@ debugger.
 
 @item --debug-quick-random
 @opindex debug-quick-random
-This option inhibits the use the very secure random quality level
+This option inhibits the use of the very secure random quality level
 (Libgcrypt’s @code{GCRY_VERY_STRONG_RANDOM}) and degrades all request
 down to standard random quality.  It is only used for testing and
 shall not be used for any production quality keys.  This option is
@@ -485,11 +485,14 @@ debugging purposes.
 
 @item --use-standard-socket
 @itemx --no-use-standard-socket
+@itemx --use-standard-socket-p
 @opindex use-standard-socket
 @opindex no-use-standard-socket
+@opindex use-standard-socket-p
 @ifset gpgtwoone
 Since GnuPG 2.1 the standard socket is always used.  These options
-have no more effect.
+have no more effect.  The command @code{gpg-agent
+--use-standard-socket-p} will thus always return success.
 @end ifset
 @ifclear gpgtwoone
 By enabling this option @command{gpg-agent} will listen on the socket
