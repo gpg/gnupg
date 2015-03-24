@@ -369,10 +369,18 @@ keydb_add_resource (const char *url, unsigned int flags)
     }
 #endif /* !HAVE_DRIVE_LETTERS && !__riscos__ */
 
-  if (*resname != DIRSEP_C )
+  if (*resname != DIRSEP_C
+#ifdef HAVE_W32_SYSTEM
+      && *resname != '/'  /* Fixme: does not handle drive letters.  */
+#endif
+        )
     {
       /* Do tilde expansion etc. */
-      if (strchr(resname, DIRSEP_C) )
+      if (strchr (resname, DIRSEP_C)
+#ifdef HAVE_W32_SYSTEM
+          || strchr (resname, '/')  /* Windows also accepts this.  */
+#endif
+          )
         filename = make_filename (resname, NULL);
       else
         filename = make_filename (opt.homedir, resname, NULL);
