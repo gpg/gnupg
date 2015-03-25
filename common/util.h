@@ -159,6 +159,12 @@
 # define GNUPG_GCC_A_SENTINEL(a)
 #endif
 
+#if __GNUC__ >= 4
+# define GNUPG_GCC_A_USED __attribute__ ((used))
+#else
+# define GNUPG_GCC_A_USED
+#endif
+
 
 /* We need this type even if we are not using libreadline and or we
    did not include libreadline in the current file. */
