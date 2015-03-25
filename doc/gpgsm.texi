@@ -622,7 +622,7 @@ certificates starting with the signer cert.  The default is -2.
 Use the cipher algorithm with the ASN.1 object identifier @var{oid} for
 encryption.  For convenience the strings @code{3DES}, @code{AES} and
 @code{AES256} may be used instead of their OIDs.  The default is
-@code{3DES} (1.2.840.113549.3.7).
+@code{AES} (2.16.840.1.101.3.4.1.2).
 
 @item --digest-algo @code{name}
 Use @code{name} as the message digest algorithm.  Usually this
@@ -1144,7 +1144,7 @@ keygrip with a @samp{&}.
 Use @var{hash-algo} for this CSR or certificate.  The supported hash
 algorithms are: @samp{sha1}, @samp{sha256}, @samp{sha384} and
 @samp{sha512}; they may also be specified with uppercase letters.  The
-default is @samp{sha1}.
+default is @samp{sha256}.
 
 @end table
 
