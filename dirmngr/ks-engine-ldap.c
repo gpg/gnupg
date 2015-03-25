@@ -329,6 +329,7 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
   /* XXX: Should we include disabled / revoke options?  */
   KEYDB_SEARCH_DESC desc;
   char *f = NULL;
+  char *freeme = NULL;
 
   gpg_error_t err = classify_user_id (keyspec, &desc, 1);
   if (err)
@@ -338,31 +339,31 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
     {
     case KEYDB_SEARCH_MODE_EXACT:
       f = xasprintf ("(pgpUserID=%s)",
-		     ldap_escape_filter (desc.u.name));
+		     (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_SUBSTR:
       if (! only_exact)
 	f = xasprintf ("(pgpUserID=*%s*)",
-		       ldap_escape_filter (desc.u.name));
+		       (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_MAIL:
       if (! only_exact)
 	f = xasprintf ("(pgpUserID=*<%s>*)",
-		       ldap_escape_filter (desc.u.name));
+		       (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_MAILSUB:
       if (! only_exact)
 	f = xasprintf ("(pgpUserID=*<*%s*>*)",
-		       ldap_escape_filter (desc.u.name));
+		       (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_MAILEND:
       if (! only_exact)
 	f = xasprintf ("(pgpUserID=*<*%s>*)",
-		       ldap_escape_filter (desc.u.name));
+		       (freeme = ldap_escape_filter (desc.u.name)));
       break;
 
     case KEYDB_SEARCH_MODE_SHORT_KID:
@@ -388,6 +389,8 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
       break;
     }
 
+  xfree (freeme);
+
   if (! f)
     {
       log_error ("Unsupported search mode.\n");
@@ -398,6 +401,8 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
 
   return 0;
 }
+
+
 
 /* Connect to an LDAP server and interrogate it.
 
@@ -1028,6 +1033,11 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   /* Even if we have no results, we want to return a stream.  */
   fp = es_fopenmem(0, "rw");
+  if (!fp)
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
 
   {
     char **vals;
@@ -1052,7 +1062,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     xfree (filter);
     filter = NULL;
 
-    if (err != LDAP_SUCCESS && err != LDAP_SIZELIMIT_EXCEEDED)
+    if (ldap_err != LDAP_SUCCESS && ldap_err != LDAP_SIZELIMIT_EXCEEDED)
       {
 	err = ldap_err_to_gpg_err (ldap_err);
 
@@ -1076,7 +1086,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 	  }
       }
 
-    if (err == LDAP_SIZELIMIT_EXCEEDED)
+    if (ldap_err == LDAP_SIZELIMIT_EXCEEDED)
       {
 	if (count == 1)
 	  log_error ("gpgkeys: search results exceeded server limit."
@@ -1261,6 +1271,8 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   return err;
 }
+
+
 
 /* A modlist describes a set of changes to an LDAP entry.  (An entry
    consists of 1 or more attributes.  Attributes are <name, value>
@@ -1399,9 +1411,12 @@ modlist_dump (LDAPMod **modlist, estream_t output)
   LDAPMod **m;
 
   int opened = 0;
+
   if (! output)
     {
       output = es_fopenmem (0, "rw");
+      if (!output)
+        return NULL;
       opened = 1;
     }
 
@@ -1538,8 +1553,8 @@ modlists_join (LDAPMod ***one, LDAPMod **two)
 static void
 uncescape (char *str)
 {
-  int r = 0;
-  int w = 0;
+  size_t r = 0;
+  size_t w = 0;
 
   char *first = strchr (str, '\\');
   if (! first)
@@ -1551,14 +1566,13 @@ uncescape (char *str)
 
   while (str[r])
     {
-      /* XXX: What to do about bad escapes?  */
+      /* XXX: What to do about bad escapes?
+         XXX: hextobyte already checks the string thus the hexdigitp
+         could be removed. */
       if (str[r] == '\\' && str[r + 1] == 'x'
-	  && (('0' <= str[r + 2] && str[r + 2] <= '9')
-	      || ('a' <= str[r + 2] && str[r + 2] <= 'f')
-	      || ('A' <= str[r + 2] && str[r + 2] <= 'F'))
-	  && (('0' <= str[r + 3] && str[r + 3] <= '9')
-	      || ('a' <= str[r + 3] && str[r + 3] <= 'f')
-	      || ('A' <= str[r + 3] && str[r + 3] <= 'F')))
+          && str[r+2] && str[r+3]
+	  && hexdigitp (str + r + 2)
+	  && hexdigitp (str + r + 3))
 	{
 	  int x = hextobyte (&str[r + 2]);
 	  assert (0 <= x && x <= 0xff);
@@ -1582,8 +1596,6 @@ uncescape (char *str)
 static void
 extract_attributes (LDAPMod ***modlist, char *line)
 {
-  int i;
-
   int field_count;
   char **fields;
 
@@ -1592,8 +1604,7 @@ extract_attributes (LDAPMod ***modlist, char *line)
   int is_pub, is_sub, is_uid, is_sig;
 
   /* Remove trailing whitespace */
-  for (i = strlen (line) - 1; i >= 0 && ascii_isspace (line[i]); i--)
-    line[i] = '\0';
+  trim_trailing_spaces (line);
 
   fields = strsplit (line, ':', '\0', &field_count);
   if (field_count == 1)
@@ -1671,7 +1682,7 @@ extract_attributes (LDAPMod ***modlist, char *line)
 	  char padded[6];
 	  if (val < 99999 && val > 0)
 	    {
-	      sprintf (padded, "%05u", val);
+	      snprintf (padded, sizeof padded, "%05u", val);
 	      size = padded;
 	    }
 	}
@@ -1992,8 +2003,11 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   if (dump)
     {
       estream_t input = modlist_dump (modlist, NULL);
-      copy_stream (input, dump);
-      es_fclose (input);
+      if (input)
+        {
+          copy_stream (input, dump);
+          es_fclose (input);
+        }
     }
 
   /* Going on the assumption that modify operations are more frequent
