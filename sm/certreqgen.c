@@ -611,7 +611,7 @@ create_request (ctrl_t ctrl,
   if (err)
     return err;
 
-  rc = gcry_md_open (&md, GCRY_MD_SHA1, 0);
+  rc = gcry_md_open (&md, GCRY_MD_SHA256, 0);
   if (rc)
     {
       log_error ("md_open failed: %s\n", gpg_strerror (rc));

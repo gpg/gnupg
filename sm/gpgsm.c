@@ -931,7 +931,7 @@ main ( int argc, char **argv)
 
   /* Note: If you change this default cipher algorithm , please
      remember to update the Gpgconflist entry as well.  */
-  opt.def_cipher_algoid = "3DES";  /*des-EDE3-CBC*/
+  opt.def_cipher_algoid = "AES";
 
   opt.homedir = default_homedir ();
 
@@ -1652,7 +1652,7 @@ main ( int argc, char **argv)
 #ifndef HAVE_W32_SYSTEM
         printf ("prefer-system-dirmngr:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
-        printf ("cipher-algo:%lu:\"3DES:\n", GC_OPT_FLAG_DEFAULT);
+        printf ("cipher-algo:%lu:\"AES:\n", GC_OPT_FLAG_DEFAULT);
         printf ("p12-charset:%lu:\n", GC_OPT_FLAG_DEFAULT);
         printf ("default-key:%lu:\n", GC_OPT_FLAG_DEFAULT);
         printf ("encrypt-to:%lu:\n", GC_OPT_FLAG_DEFAULT);
