@@ -807,7 +807,7 @@ create_request (ctrl_t ctrl,
   if (string)
     mdalgo = gcry_md_map_name (string);
   else
-    mdalgo = GCRY_MD_SHA1;
+    mdalgo = GCRY_MD_SHA256;
   rc = gcry_md_open (&md, mdalgo, 0);
   if (rc)
     {

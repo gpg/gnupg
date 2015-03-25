@@ -438,7 +438,7 @@ static int default_include_certs = DEFAULT_INCLUDE_CERTS;
 static int default_validation_model;
 
 /* The default cipher algo.  */
-#define DEFAULT_CIPHER_ALGO "3DES"  /*des-EDE3-CBC*/
+#define DEFAULT_CIPHER_ALGO "AES"
 
 
 static char *build_list (const char *text,
