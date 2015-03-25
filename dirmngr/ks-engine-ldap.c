@@ -49,10 +49,6 @@
 #include "ks-engine.h"
 #include "ldap-parse-uri.h"
 
-#ifdef __riscos__
-# include "util.h"
-#endif
-
 #ifndef HAVE_TIMEGM
 time_t timegm(struct tm *tm);
 #endif
@@ -220,7 +216,7 @@ ldap_to_gpg_err (LDAP *ld)
 #else
   /* We should never get here since the LDAP library should always
      have either ldap_get_option or ld_errno, but just in case... */
-  return GPG_ERR_GENERAL;
+  return GPG_ERR_INTERNAL;
 #endif
 }
 
@@ -265,7 +261,7 @@ tm2ldaptime (struct tm *tm)
   tmp.tm_year += 1900;
   tmp.tm_mon ++;
 
-  sprintf (buf, "%04d%02d%02d%02d%02d%02dZ",
+  snprintf (buf, sizeof buf, "%04d%02d%02d%02d%02d%02dZ",
 	   tmp.tm_year,
 	   tmp.tm_mon,
 	   tmp.tm_mday,
@@ -435,7 +431,7 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
 
    If no LDAP error occured, you still need to check that *basednp is
    valid.  If it is NULL, then the server does not appear to be an
-   OpenPGP Keyserver.  In this case, you also do not need to free
+   OpenPGP Keyserver.  In this case, you also do not need to xfree
    *pgpkeyattrp.  */
 static int
 ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
@@ -476,9 +472,9 @@ ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   ldap_conn = ldap_init (uri->host, uri->port);
   if (! ldap_conn)
     {
+      err = gpg_err_code_from_syserror ();
       log_error ("Failed to open connection to LDAP server (%s://%s:%d)\n",
 		 uri->scheme, uri->host, uri->port);
-      err = gpg_err_code_from_errno (errno);
       goto out;
     }
 
@@ -516,7 +512,7 @@ ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
       /* XXX: We need an option to determine whether to abort if the
 	 certificate is bad or not.  Right now we conservatively
 	 default to checking the certificate and aborting.  */
-      int check_cert = LDAP_OPT_X_TLS_HARD; // LDAP_OPT_X_TLS_NEVER
+      int check_cert = LDAP_OPT_X_TLS_HARD; /* LDAP_OPT_X_TLS_NEVER */
 
       err = ldap_set_option (ldap_conn,
 			     LDAP_OPT_X_TLS_REQUIRE_CERT, &check_cert);
@@ -587,10 +583,13 @@ ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 		  char **vals;
 		  LDAPMessage *si_res;
 
-		  char *object = xasprintf ("cn=pgpServerInfo,%s", context[i]);
-		  err = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
-				       "(objectClass=*)", attr2, 0, &si_res);
-		  free (object);
+                  {
+                    char *object = xasprintf ("cn=pgpServerInfo,%s",
+                                              context[i]);
+                    err = ldap_search_s (ldap_conn, object, LDAP_SCOPE_BASE,
+                                         "(objectClass=*)", attr2, 0, &si_res);
+                    xfree (object);
+                  }
 
 		  if (err == LDAP_SUCCESS)
 		    {
@@ -598,7 +597,7 @@ ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 					      "pgpBaseKeySpaceDN");
 		      if (vals)
 			{
-			  basedn = strdup (vals[0]);
+			  basedn = xtrystrdup (vals[0]);
 			  ldap_value_free (vals);
 			}
 
@@ -649,7 +648,7 @@ ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
 	      vals = ldap_get_values (ldap_conn, si_res, "baseKeySpaceDN");
 	      if (vals)
 		{
-		  basedn = strdup (vals[0]);
+		  basedn = xtrystrdup (vals[0]);
 		  ldap_value_free (vals);
 		}
 
@@ -1361,8 +1360,6 @@ modlist_add (LDAPMod ***modlistp, char *attr, const char *value)
     {
       modlist[nummods]->mod_values = xmalloc (sizeof(char *) * 2);
 
-      /* XXX: Is this the right thing?  Can a UTF8-encoded user ID
-	 have embedded nulls? */
       modlist[nummods]->mod_values[0] = xstrdup (value);
       modlist[nummods]->mod_values[1] = NULL;
     }
@@ -1394,7 +1391,7 @@ modlist_lookup (LDAPMod **modlist, const char *attr)
 
 /* Dump a modlist to a file.  This is useful for debugging.  */
 static estream_t modlist_dump (LDAPMod **modlist, estream_t output)
-  __attribute__ ((used));
+  GNUPG_GCC_A_USED;
 
 static estream_t
 modlist_dump (LDAPMod **modlist, estream_t output)
@@ -1488,14 +1485,14 @@ modlist_free (LDAPMod **modlist)
       if (mod->mod_values)
 	{
 	  for (ptr = mod->mod_values; *ptr; ptr++)
-	    free (*ptr);
+	    xfree (*ptr);
 
-	  free (mod->mod_values);
+	  xfree (mod->mod_values);
 	}
 
-      free (mod);
+      xfree (mod);
     }
-  free (modlist);
+  xfree (modlist);
 }
 
 /* Append two onto the end of one.  Two is not freed, but its pointers
@@ -1633,7 +1630,8 @@ extract_attributes (LDAPMod ***modlist, char *line)
 
   if (is_pub)
     {
-      int disabled = 0, revoked = 0;
+      int disabled = 0;
+      int revoked = 0;
       char *flags;
       for (flags = fields[1]; *flags; flags ++)
 	switch (*flags)

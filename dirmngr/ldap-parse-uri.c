@@ -127,7 +127,7 @@ ldap_parse_uri (parsed_uri_t *purip, const char *uri)
 
   len = 0;
 
-#define add(s) { if (s) len += strlen (s) + 1; }
+#define add(s) do { if (s) len += strlen (s) + 1; } while (0)
 
   add (scheme);
   add (host);
@@ -166,6 +166,11 @@ ldap_parse_uri (parsed_uri_t *purip, const char *uri)
   if (password)
     {
       puri->query = calloc (sizeof (*puri->query), 1);
+      if (!puri->query)
+        {
+          err = gpg_err_code_from_syserror ();
+          goto out;
+        }
       puri->query->name = "password";
       copy (puri->query->value, password);
       puri->query->valuelen = strlen (password) + 1;
@@ -221,7 +226,8 @@ ldap_escape_filter (const char *filter)
 	  case ')':
 	  case '\\':
 	  case '/':
-	    sprintf (&escaped[escaped_i], "%%%02x", filter[filter_i]);
+	    snprintf (&escaped[escaped_i], 4, "%%%02x",
+                     ((const unsigned char *)filter)[filter_i]);
 	    escaped_i += 3;
 	    break;
 
