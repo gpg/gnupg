@@ -1,7 +1,7 @@
 /* ks-action.c - OpenPGP keyserver actions
  * Copyright (C) 2011 Free Software Foundation, Inc.
  * Copyright (C) 2011, 2014 Werner Koch
- * Copyright (C) 2015  g10 Code GmbH
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -105,13 +105,13 @@ ks_action_help (ctrl_t ctrl, const char *url)
 /* Resolve all host names.  This is useful for looking at the status
    of configured keyservers.  */
 gpg_error_t
-ks_action_resolve (ctrl_t ctrl)
+ks_action_resolve (ctrl_t ctrl, uri_item_t keyservers)
 {
   gpg_error_t err = 0;
   int any_server = 0;
   uri_item_t uri;
 
-  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+  for (uri = keyservers; !err && uri; uri = uri->next)
     {
       if (uri->parsed_uri->is_http)
         {
@@ -131,7 +131,8 @@ ks_action_resolve (ctrl_t ctrl)
 /* Search all configured keyservers for keys matching PATTERNS and
    write the result to the provided output stream.  */
 gpg_error_t
-ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
+ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
+		  strlist_t patterns, estream_t outfp)
 {
   gpg_error_t err = 0;
   int any_server = 0;
@@ -147,7 +148,7 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
      errors - it might not be the best idea to ignore an error from
      one server and silently continue with another server.  For now we
      stop at the first error. */
-  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+  for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
       int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
@@ -179,7 +180,8 @@ ks_action_search (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
 /* Get the requested keys (matching PATTERNS) using all configured
    keyservers and write the result to the provided output stream.  */
 gpg_error_t
-ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
+ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
+	       strlist_t patterns, estream_t outfp)
 {
   gpg_error_t err = 0;
   gpg_error_t first_err = 0;
@@ -198,7 +200,7 @@ ks_action_get (ctrl_t ctrl, strlist_t patterns, estream_t outfp)
      keyservers might not all be fully synced thus it is not clear
      whether the first keyserver has the freshest copy of the key.
      Need to think about a better strategy.  */
-  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+  for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
       int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
@@ -311,7 +313,8 @@ ks_action_fetch (ctrl_t ctrl, const char *url, estream_t outfp)
    KEYID; done'.  This function may modify DATA and INFO.  If this is
    a problem, then the caller should create a copy.  */
 gpg_error_t
-ks_action_put (ctrl_t ctrl, void *data, size_t datalen,
+ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
+	       void *data, size_t datalen,
 	       void *info, size_t infolen)
 {
   gpg_error_t err = 0;
@@ -319,7 +322,7 @@ ks_action_put (ctrl_t ctrl, void *data, size_t datalen,
   int any_server = 0;
   uri_item_t uri;
 
-  for (uri = ctrl->keyservers; !err && uri; uri = uri->next)
+  for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
       int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0

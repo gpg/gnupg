@@ -1,8 +1,7 @@
 /* server.c - LDAP and Keyserver access server
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
- * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011 g10 Code GmbH
+ * Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2011, 2015 g10 Code GmbH
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -76,6 +75,9 @@ struct server_local_s
   /* Per-session LDAP servers.  */
   ldap_server_t ldapservers;
 
+  /* Per-session list of keyservers.  */
+  uri_item_t keyservers;
+
   /* If this flag is set to true this dirmngr process will be
      terminated after the end of this session.  */
   int stopme;
@@ -113,12 +115,12 @@ get_ldapservers_from_ctrl (ctrl_t ctrl)
 void
 release_ctrl_keyservers (ctrl_t ctrl)
 {
-  while (ctrl->keyservers)
+  while (ctrl->server_local->keyservers)
     {
-      uri_item_t tmp = ctrl->keyservers->next;
-      http_release_parsed_uri (ctrl->keyservers->parsed_uri);
-      xfree (ctrl->keyservers);
-      ctrl->keyservers = tmp;
+      uri_item_t tmp = ctrl->server_local->keyservers->next;
+      http_release_parsed_uri (ctrl->server_local->keyservers->parsed_uri);
+      xfree (ctrl->server_local->keyservers);
+      ctrl->server_local->keyservers = tmp;
     }
 }
 
@@ -1476,7 +1478,7 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 
   if (resolve_flag)
     {
-      err = ks_action_resolve (ctrl);
+      err = ks_action_resolve (ctrl, ctrl->server_local->keyservers);
       if (err)
         goto leave;
     }
@@ -1540,15 +1542,15 @@ cmd_keyserver (assuan_context_t ctx, char *line)
     release_ctrl_keyservers (ctrl);
   if (add_flag)
     {
-      item->next = ctrl->keyservers;
-      ctrl->keyservers = item;
+      item->next = ctrl->server_local->keyservers;
+      ctrl->server_local->keyservers = item;
     }
 
   if (!add_flag && !clear_flag && !help_flag) /* List configured keyservers.  */
     {
       uri_item_t u;
 
-      for (u=ctrl->keyservers; u; u = u->next)
+      for (u=ctrl->server_local->keyservers; u; u = u->next)
         dirmngr_status (ctrl, "KEYSERVER", u->uri, NULL);
     }
   err = 0;
@@ -1606,7 +1608,8 @@ cmd_ks_search (assuan_context_t ctx, char *line)
     err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
   else
     {
-      err = ks_action_search (ctrl, list, outfp);
+      err = ks_action_search (ctrl, ctrl->server_local->keyservers,
+			      list, outfp);
       es_fclose (outfp);
     }
 
@@ -1667,7 +1670,7 @@ cmd_ks_get (assuan_context_t ctx, char *line)
     err = set_error (GPG_ERR_ASS_GENERAL, "error setting up a data stream");
   else
     {
-      err = ks_action_get (ctrl, list, outfp);
+      err = ks_action_get (ctrl, ctrl->server_local->keyservers, list, outfp);
       es_fclose (outfp);
     }
 
@@ -1762,7 +1765,8 @@ cmd_ks_put (assuan_context_t ctx, char *line)
     }
 
   /* Send the key.  */
-  err = ks_action_put (ctrl, value, valuelen, info, infolen);
+  err = ks_action_put (ctrl, ctrl->server_local->keyservers,
+		       value, valuelen, info, infolen);
 
  leave:
   xfree (info);
