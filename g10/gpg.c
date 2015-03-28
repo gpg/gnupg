@@ -1,6 +1,7 @@
 /* gpg.c - The GnuPG utility (main for gpg)
  * Copyright (C) 1998-2011 Free Software Foundation, Inc.
  * Copyright (C) 1997-2014 Werner Koch
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -2829,7 +2830,13 @@ main (int argc, char **argv)
 		log_error (_("could not parse keyserver URL\n"));
 	      else
 		{
-		  keyserver->next = opt.keyserver;
+		  /* We only support a single keyserver.  Later ones
+		     override earlier ones.  (Since we parse the
+		     config file first and then the command line
+		     arguments, the command line takes
+		     precedence.)  */
+		  if (opt.keyserver)
+		    free_keyserver_spec (opt.keyserver);
 		  opt.keyserver = keyserver;
 		}
 	    }
