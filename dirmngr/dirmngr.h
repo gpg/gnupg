@@ -1,6 +1,6 @@
 /* dirmngr.h - Common definitions for the dirmngr
  * Copyright (C) 2002 Klarälvdalens Datakonsult AB
- * Copyright (C) 2004 g10 Code GmbH
+ * Copyright (C) 2004, 2015 g10 Code GmbH
  * Copyright (C) 2014 Werner Koch
  *
  * This file is part of GnuPG.
@@ -174,7 +174,6 @@ struct server_control_s
                             response. */
 
   int audit_events;  /* Send audit events to client.  */
-  uri_item_t keyservers; /* List of keyservers.  */
 };
 
 
