@@ -94,7 +94,7 @@ ldap_parse_uri (parsed_uri_t *purip, const char *uri)
   if (result != 0)
     {
       log_error ("Unable to parse LDAP uri '%s'\n", uri);
-      err = GPG_ERR_ASS_GENERAL;
+      err = GPG_ERR_GENERAL;
       goto out;
     }
 
