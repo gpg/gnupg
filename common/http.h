@@ -62,7 +62,7 @@ struct parsed_uri_s
 };
 typedef struct parsed_uri_s *parsed_uri_t;
 
-extern struct uri_tuple_s *uri_query_lookup (parsed_uri_t uri, const char *key);
+struct uri_tuple_s *uri_query_lookup (parsed_uri_t uri, const char *key);
 
 typedef enum
   {
