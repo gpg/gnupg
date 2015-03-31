@@ -1961,7 +1961,7 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 	/* The last line is not \n terminated!  Make a copy so we can
 	   add a NUL terminator.  */
 	{
-	  temp = alloca (infolen + 1);
+	  temp = xmalloc (infolen + 1);
 	  memcpy (temp, info, infolen);
 	  info = temp;
 	  newline = (char *) info + infolen;
@@ -1978,7 +1978,10 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
       if (! temp)
 	assert ((char *) info + infolen - 1 == infoend);
       else
-	assert (infolen == -1);
+	{
+	  assert (infolen == -1);
+	  xfree (temp);
+	}
     }
 
   modlist_add (&addlist, "objectClass", "pgpKeyInfo");
