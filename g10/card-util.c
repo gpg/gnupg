@@ -81,7 +81,7 @@ change_pin (int unblock_v2, int allow_admin)
   struct agent_card_info_s info;
   int rc;
 
-  rc = agent_scd_learn (&info);
+  rc = agent_scd_learn (&info, 0);
   if (rc)
     {
       log_error (_("OpenPGP card not available: %s\n"),
@@ -374,7 +374,7 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
   if (serialno && serialnobuflen)
     *serialno = 0;
 
-  rc = agent_scd_learn (&info);
+  rc = agent_scd_learn (&info, 0);
   if (rc)
     {
       if (opt.with_colons)
@@ -1702,7 +1702,7 @@ factory_reset (void)
       but tries to find out something about the card first.
    */
 
-  err = agent_scd_learn (&info);
+  err = agent_scd_learn (&info, 0);
   if (gpg_err_code (err) == GPG_ERR_OBJ_TERM_STATE
       && gpg_err_source (err) == GPG_ERR_SOURCE_SCD)
     termstate = 1;

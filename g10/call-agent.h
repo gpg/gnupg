@@ -77,7 +77,7 @@ struct agent_card_genkey_s {
 void agent_release_card_info (struct agent_card_info_s *info);
 
 /* Return card info. */
-int agent_scd_learn (struct agent_card_info_s *info);
+int agent_scd_learn (struct agent_card_info_s *info, int force);
 
 /* Send an APDU to the card.  */
 gpg_error_t agent_scd_apdu (const char *hexapdu, unsigned int *r_sw);

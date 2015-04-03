@@ -1450,6 +1450,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   char *answer = NULL;
   int redisplay = 1;
   int modified = 0;
+  int sec_shadowing = 0;
   int run_subkey_warnings = 0;
   int toggle;
   int have_commands = !!commands;
@@ -1836,8 +1837,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		if (card_store_subkey (node, xxpk ? xxpk->pubkey_usage : 0))
 		  {
 		    redisplay = 1;
-		    /* Only the secret key has been modified; thus
-                       there is no need to set the modified flag.  */
+		    sec_shadowing = 1;
 		  }
 	      }
 	  }
@@ -1923,7 +1923,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		if (card_store_subkey (node, 0))
 		  {
 		    redisplay = 1;
-		    /* FIXME:sec_modified = 1;*/
+		    sec_shadowing = 1;
 		  }
 	      }
 	    release_kbnode (node);
@@ -2182,7 +2182,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	case cmdQUIT:
 	  if (have_commands)
 	    goto leave;
-	  if (!modified)
+	  if (!modified && !sec_shadowing)
 	    goto leave;
 	  if (!cpr_get_answer_is_yes ("keyedit.save.okay",
 				      _("Save changes? (y/N) ")))
@@ -2204,7 +2204,18 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
                   break;
                 }
 	    }
-	  else
+
+	  if (sec_shadowing)
+	    {
+	      err = agent_scd_learn (NULL, 1);
+	      if (err)
+                {
+                  log_error (_("update failed: %s\n"), gpg_strerror (err));
+                  break;
+                }
+	    }
+
+	  if (!modified && !sec_shadowing)
 	    tty_printf (_("Key not changed so no update needed.\n"));
 
 	  if (update_trust)

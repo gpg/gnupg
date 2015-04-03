@@ -673,7 +673,7 @@ learn_status_cb (void *opaque, const char *line)
 
 /* Call the scdaemon to learn about a smartcard */
 int
-agent_scd_learn (struct agent_card_info_s *info)
+agent_scd_learn (struct agent_card_info_s *info, int force)
 {
   int rc;
   struct default_inq_parm_s parm;
@@ -701,7 +701,8 @@ agent_scd_learn (struct agent_card_info_s *info)
     return rc;
 
   parm.ctx = agent_ctx;
-  rc = assuan_transact (agent_ctx, "LEARN --sendinfo",
+  rc = assuan_transact (agent_ctx,
+                        force ? "LEARN --sendinfo --force" : "LEARN --sendinfo",
                         dummy_data_cb, NULL, default_inq_cb, &parm,
                         learn_status_cb, info);
   /* Also try to get the key attributes.  */
