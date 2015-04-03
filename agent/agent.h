@@ -495,7 +495,7 @@ int agent_card_scd (ctrl_t ctrl, const char *cmdline,
 
 
 /*-- learncard.c --*/
-int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context);
+int agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force);
 
 
 /*-- cvt-openpgp.c --*/

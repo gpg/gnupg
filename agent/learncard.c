@@ -299,7 +299,7 @@ send_cert_back (ctrl_t ctrl, const char *id, void *assuan_context)
 /* Perform the learn operation.  If ASSUAN_CONTEXT is not NULL and
    SEND is true all new certificates are send back via Assuan.  */
 int
-agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context)
+agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context, int force)
 {
   int rc;
 
@@ -399,7 +399,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context)
       for (p=item->hexgrip, i=0; i < 20; p += 2, i++)
         grip[i] = xtoi_2 (p);
 
-      if (!agent_key_available (grip))
+      if (!force && !agent_key_available (grip))
         continue; /* The key is already available. */
 
       /* Unknown key - store it. */
@@ -430,7 +430,7 @@ agent_handle_learn (ctrl_t ctrl, int send, void *assuan_context)
       n = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
       assert (n);
 
-      rc = agent_write_private_key (grip, shdkey, n, 0);
+      rc = agent_write_private_key (grip, shdkey, n, force);
       xfree (shdkey);
       if (rc)
         {

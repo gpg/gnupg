@@ -1655,25 +1655,27 @@ cmd_get_confirmation (assuan_context_t ctx, char *line)
 
 
 static const char hlp_learn[] =
-  "LEARN [--send][--sendinfo]\n"
+  "LEARN [--send] [--sendinfo] [--force]\n"
   "\n"
   "Learn something about the currently inserted smartcard.  With\n"
   "--sendinfo information about the card is returned; with --send\n"
-  "the available certificates are returned as D lines.";
+  "the available certificates are returned as D lines; with --force\n"
+  "private key storage will be updated by the result.";
 static gpg_error_t
 cmd_learn (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
-  int send, sendinfo;
+  int send, sendinfo, force;
 
   send = has_option (line, "--send");
   sendinfo = send? 1 : has_option (line, "--sendinfo");
+  force = has_option (line, "--force");
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
-  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL);
+  err = agent_handle_learn (ctrl, send, sendinfo? ctx : NULL, force);
   return leave_cmd (ctx, err);
 }
 
@@ -2409,12 +2411,10 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   gpg_error_t err = 0;
   unsigned char grip[20];
   gcry_sexp_t s_skey = NULL;
-  gcry_sexp_t s_pkey = NULL;
   unsigned char *keydata;
   size_t keydatalen, timestamplen;
   const char *serialno, *timestamp_str, *id;
   unsigned char *shadow_info = NULL;
-  unsigned char *shdkey;
   time_t timestamp;
 
   if (ctrl->restricted)
@@ -2492,48 +2492,8 @@ cmd_keytocard (assuan_context_t ctx, char *line)
   snprintf (keydata+keydatalen-1, 30, "(10:created-at10:%010lu))", timestamp);
   keydatalen += 10 + 19 - 1;
   err = divert_writekey (ctrl, force, serialno, id, keydata, keydatalen);
-  if (err)
-    {
-      xfree (keydata);
-      goto leave;
-    }
   xfree (keydata);
 
-  err = agent_public_key_from_file (ctrl, grip, &s_pkey);
-  if (err)
-    goto leave;
-
-  shadow_info = make_shadow_info (serialno, id);
-  if (!shadow_info)
-    {
-      err = gpg_error (GPG_ERR_ENOMEM);
-      gcry_sexp_release (s_pkey);
-      goto leave;
-    }
-  keydatalen = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-  keydata = xtrymalloc (keydatalen);
-  if (keydata == NULL)
-    {
-      err = gpg_error_from_syserror ();
-      gcry_sexp_release (s_pkey);
-      goto leave;
-    }
-  gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keydata, keydatalen);
-  gcry_sexp_release (s_pkey);
-  err = agent_shadow_key (keydata, shadow_info, &shdkey);
-  xfree (keydata);
-  xfree (shadow_info);
-  if (err)
-    {
-      log_error ("shadowing the key failed: %s\n", gpg_strerror (err));
-      goto leave;
-    }
-
-  keydatalen = gcry_sexp_canon_len (shdkey, 0, NULL, NULL);
-  err = agent_write_private_key (grip, shdkey, keydatalen, 1);
-  xfree (shdkey);
-
- leave:
   return leave_cmd (ctx, err);
 }
 
