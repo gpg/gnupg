@@ -1828,6 +1828,12 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	byte temp[16];
         size_t snlen = 0;
 
+        if (pktlen < 1)
+          {
+            rc = GPG_ERR_INV_PACKET;
+            goto leave;
+          }
+
 	if( !npkey ) {
 	    sk->skey[0] = gcry_mpi_set_opaque (NULL, read_rest(inp, pktlen, 0),
                                                pktlen*8 );
@@ -1836,7 +1842,9 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 
 	for(i=0; i < npkey; i++ ) {
-	    n = pktlen; sk->skey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen;
+            sk->skey[i] = mpi_read(inp, &n, 0 );
+            pktlen -=n;
 	    if( list_mode ) {
 		fprintf (listfp,   "\tskey[%d]: ", i);
 		mpi_print(listfp, sk->skey[i], mpi_print_mode  );
@@ -1847,7 +1855,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
         if (rc) /* one of the MPIs were bad */
             goto leave;
-	sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+	sk->protect.algo = iobuf_get_noeof(inp);
+        pktlen--;
         sk->protect.sha1chk = 0;
 	if( sk->protect.algo ) {
 	    sk->is_protected = 1;
@@ -1858,12 +1867,15 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 		    goto leave;
 		}
                 sk->protect.sha1chk = (sk->protect.algo == 254);
-		sk->protect.algo = iobuf_get_noeof(inp); pktlen--;
+		sk->protect.algo = iobuf_get_noeof(inp);
+                pktlen--;
 		/* Note that a sk->protect.algo > 110 is illegal, but
 		   I'm not erroring on it here as otherwise there
 		   would be no way to delete such a key. */
-		sk->protect.s2k.mode  = iobuf_get_noeof(inp); pktlen--;
-		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp); pktlen--;
+		sk->protect.s2k.mode  = iobuf_get_noeof(inp);
+                pktlen--;
+		sk->protect.s2k.hash_algo = iobuf_get_noeof(inp);
+                pktlen--;
 		/* check for the special GNU extension */
 		if( is_v4 && sk->protect.s2k.mode == 101 ) {
 		    for(i=0; i < 4 && pktlen; i++, pktlen-- )
@@ -2013,6 +2025,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	    /* ugly; the length is encrypted too, so we read all
 	     * stuff up to the end of the packet into the first
 	     * skey element */
+	    if (pktlen < 2) /* At least two bytes for the length.  */
+	      {
+                rc = GPG_ERR_INV_PACKET;
+                goto leave;
+	      }
 	    sk->skey[npkey] = gcry_mpi_set_opaque (NULL,
                                                    read_rest(inp, pktlen, 0),
                                                    pktlen*8);
@@ -2029,6 +2046,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                         fprintf (listfp,   "\tskey[%d]: [encrypted]\n", i);
                 }
                 else {
+                    if (pktlen < 2) /* At least two bytes for the length.  */
+                      {
+                        rc = GPG_ERR_INV_PACKET;
+                        goto leave;
+	              }
                     n = pktlen;
                     sk->skey[i] = mpi_read(inp, &n, 0 );
                     pktlen -=n;
@@ -2045,7 +2067,13 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
             if (rc)
                 goto leave;
 
-	    sk->csum = read_16(inp); pktlen -= 2;
+            if (pktlen < 2)
+              {
+                rc = GPG_ERR_INV_PACKET;
+                goto leave;
+              }
+	    sk->csum = read_16(inp);
+            pktlen -= 2;
 	    if( list_mode ) {
 		fprintf (listfp, "\tchecksum: %04hx\n", sk->csum);
 	    }
@@ -2057,6 +2085,12 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
     else {
 	PKT_public_key *pk = pkt->pkt.public_key;
 
+        if (pktlen < 1)
+          {
+            rc = GPG_ERR_INV_PACKET;
+            goto leave;
+          }
+
 	if( !npkey ) {
 	    pk->pkey[0] = gcry_mpi_set_opaque ( NULL,
                                                 read_rest(inp, pktlen, 0),
@@ -2066,7 +2100,9 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
 
 	for(i=0; i < npkey; i++ ) {
-	    n = pktlen; pk->pkey[i] = mpi_read(inp, &n, 0 ); pktlen -=n;
+	    n = pktlen;
+            pk->pkey[i] = mpi_read(inp, &n, 0 );
+            pktlen -=n;
 	    if( list_mode ) {
 		fprintf (listfp,   "\tpkey[%d]: ", i);
 		mpi_print(listfp, pk->pkey[i], mpi_print_mode  );
