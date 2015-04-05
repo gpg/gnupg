@@ -2103,6 +2103,12 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
       byte temp[16];
       size_t snlen = 0;
 
+      if (pktlen < 1)
+        {
+          err = gpg_error (GPG_ERR_INV_PACKET);
+          goto leave;
+        }
+
       pk->seckey_info = ski = xtrycalloc (1, sizeof *ski);
       if (!pk->seckey_info)
         {
@@ -2303,6 +2309,12 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
       else if (ski->is_protected)
 	{
+	  if (pktlen < 2) /* At least two bytes for the length.  */
+	    {
+              err = gpg_error (GPG_ERR_INV_PACKET);
+	      goto leave;
+	    }
+
 	  /* Ugly: The length is encrypted too, so we read all stuff
 	   * up to the end of the packet into the first SKEY
 	   * element.  */
@@ -2323,7 +2335,14 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
           /* Not encrypted.  */
 	  for (i = npkey; i < nskey; i++)
 	    {
-              unsigned int n = pktlen;
+              unsigned int n;
+
+              if (pktlen < 2) /* At least two bytes for the length.  */
+                {
+                  err = gpg_error (GPG_ERR_INV_PACKET);
+                  goto leave;
+                }
+              n = pktlen;
               pk->pkey[i] = mpi_read (inp, &n, 0);
               pktlen -= n;
               if (list_mode)
@@ -2339,6 +2358,11 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
 	  if (err)
 	    goto leave;
 
+	  if (pktlen < 2)
+	    {
+              err = gpg_error (GPG_ERR_INV_PACKET);
+	      goto leave;
+	    }
 	  ski->csum = read_16 (inp);
 	  pktlen -= 2;
 	  if (list_mode)
