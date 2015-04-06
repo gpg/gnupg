@@ -273,13 +273,14 @@ struct {
 #define DBG_FILTER_VALUE  8	/* debug internal filter handling */
 #define DBG_IOBUF_VALUE   16	/* debug iobuf stuff */
 #define DBG_MEMORY_VALUE  32	/* debug memory allocation stuff */
-#define DBG_CACHE_VALUE   64	/* debug the cacheing */
+#define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_TRUST_VALUE   256	/* debug the trustdb */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_EXTPROG_VALUE 1024  /* debug external program calls */
 #define DBG_CARD_IO_VALUE 2048  /* debug smart card I/O.  */
 #define DBG_CLOCK_VALUE   4096
+#define DBG_LOOKUP_VALUE  8192	/* debug the kety lookup */
 
 /* Fixme: For now alias this value.  */
 #define DBG_ASSUAN_VALUE  DBG_EXTPROG_VALUE
@@ -296,6 +297,7 @@ struct {
 #define DBG_CARD_IO (opt.debug & DBG_CARD_IO_VALUE)
 #define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
 #define DBG_CLOCK   (opt.debug & DBG_CLOCK_VALUE)
+#define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 
 /* FIXME: We need to check whey we did not put this into opt. */
 #define DBG_MEMORY    memory_debug_mode

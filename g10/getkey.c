@@ -2373,7 +2373,7 @@ finish_lookup (GETKEY_CTX ctx)
 	}
     }
 
-  if (DBG_CACHE)
+  if (DBG_LOOKUP)
     log_debug ("finish_lookup: checking key %08lX (%s)(req_usage=%x)\n",
 	       (ulong) keyid_from_pk (keyblock->pkt->pkt.public_key, NULL),
 	       foundk ? "one" : "all", req_usage);
@@ -2400,43 +2400,43 @@ finish_lookup (GETKEY_CTX ctx)
 	  if (foundk)
 	    nextk = NULL; /* what a hack */
 	  pk = k->pkt->pkt.public_key;
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tchecking subkey %08lX\n",
 		       (ulong) keyid_from_pk (pk, NULL));
 	  if (!pk->flags.valid)
 	    {
-	      if (DBG_CACHE)
+	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey not valid\n");
 	      continue;
 	    }
 	  if (pk->flags.revoked)
 	    {
-	      if (DBG_CACHE)
+	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has been revoked\n");
 	      continue;
 	    }
 	  if (pk->has_expired)
 	    {
-	      if (DBG_CACHE)
+	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey has expired\n");
 	      continue;
 	    }
 	  if (pk->timestamp > curtime && !opt.ignore_valid_from)
 	    {
-	      if (DBG_CACHE)
+	      if (DBG_LOOKUP)
 		log_debug ("\tsubkey not yet valid\n");
 	      continue;
 	    }
 
 	  if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
 	    {
-	      if (DBG_CACHE)
+	      if (DBG_LOOKUP)
 		log_debug ("\tusage does not match: want=%x have=%x\n",
 			   req_usage, pk->pubkey_usage);
 	      continue;
 	    }
 
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tsubkey might be fine\n");
 	  /* In case a key has a timestamp of 0 set, we make sure
 	     that it is used.  A better change would be to compare
@@ -2455,33 +2455,33 @@ finish_lookup (GETKEY_CTX ctx)
   if ((!latest_key && !(ctx->exact && foundk != keyblock)) || req_prim)
     {
       PKT_public_key *pk;
-      if (DBG_CACHE && !foundk && !req_prim)
+      if (DBG_LOOKUP && !foundk && !req_prim)
 	log_debug ("\tno suitable subkeys found - trying primary\n");
       pk = keyblock->pkt->pkt.public_key;
       if (!pk->flags.valid)
 	{
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key not valid\n");
 	}
       else if (pk->flags.revoked)
 	{
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key has been revoked\n");
 	}
       else if (pk->has_expired)
 	{
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key has expired\n");
 	}
       else if (!((pk->pubkey_usage & USAGE_MASK) & req_usage))
 	{
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key usage does not match: "
 		       "want=%x have=%x\n", req_usage, pk->pubkey_usage);
 	}
       else /* Okay.  */
 	{
-	  if (DBG_CACHE)
+	  if (DBG_LOOKUP)
 	    log_debug ("\tprimary key may be used\n");
 	  latest_key = keyblock;
 	  latest_date = pk->timestamp;
@@ -2490,13 +2490,13 @@ finish_lookup (GETKEY_CTX ctx)
 
   if (!latest_key)
     {
-      if (DBG_CACHE)
+      if (DBG_LOOKUP)
 	log_debug ("\tno suitable key found -  giving up\n");
       return 0; /* Not found.  */
     }
 
 found:
-  if (DBG_CACHE)
+  if (DBG_LOOKUP)
     log_debug ("\tusing key %08lX\n",
 	       (ulong) keyid_from_pk (latest_key->pkt->pkt.public_key, NULL));
 

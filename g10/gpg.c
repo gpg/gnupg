@@ -1093,7 +1093,7 @@ set_debug (const char *level)
     opt.debug = DBG_MEMSTAT_VALUE|DBG_TRUST_VALUE|DBG_EXTPROG_VALUE;
   else if (!strcmp (level, "expert")  || (numok && numlvl <= 8))
     opt.debug = (DBG_MEMSTAT_VALUE|DBG_TRUST_VALUE|DBG_EXTPROG_VALUE
-                 |DBG_CACHE_VALUE|DBG_FILTER_VALUE|DBG_PACKET_VALUE);
+                 |DBG_CACHE_VALUE|DBG_LOOKUP|DBG_FILTER_VALUE|DBG_PACKET_VALUE);
   else if (!strcmp (level, "guru") || numok)
     {
       opt.debug = ~0;
@@ -1123,7 +1123,7 @@ set_debug (const char *level)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
               (opt.debug & DBG_PACKET_VALUE )? " packet":"",
               (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
               (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
@@ -1137,7 +1137,8 @@ set_debug (const char *level)
               (opt.debug & DBG_EXTPROG_VALUE)? " extprog":"",
               (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
               (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
-              (opt.debug & DBG_CLOCK_VALUE  )? " clock":"");
+              (opt.debug & DBG_CLOCK_VALUE  )? " clock":"",
+              (opt.debug & DBG_LOOKUP_VALUE )? " lookup":"");
 }
 
 

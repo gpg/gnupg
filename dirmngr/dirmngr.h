@@ -133,21 +133,21 @@ struct
 
 
 #define DBG_X509_VALUE    1	/* debug x.509 parsing */
-#define DBG_LOOKUP_VALUE  2	/* debug lookup details */
 #define DBG_CRYPTO_VALUE  4	/* debug low level crypto */
 #define DBG_MEMORY_VALUE  32	/* debug memory allocation stuff */
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
 #define DBG_ASSUAN_VALUE  1024  /* debug assuan communication */
+#define DBG_LOOKUP_VALUE  8192  /* debug lookup details */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
-#define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 #define DBG_CRYPTO  (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
-#define DBG_ASSUAN   (opt.debug & DBG_ASSUAN_VALUE)
+#define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
+#define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 
 /* A simple list of certificate references. */
 struct cert_ref_s
