@@ -196,7 +196,7 @@ enum cmd_and_opt_values
     oDebug,
     oDebugLevel,
     oDebugAll,
-    oDebugCCIDDriver,
+    oDebugIOLBF,
     oStatusFD,
     oStatusFile,
     oAttributeFD,
@@ -557,6 +557,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_p_u (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
+  ARGPARSE_s_n (oDebugIOLBF, "debug-iolbf", "@"),
   ARGPARSE_s_i (oStatusFD, "status-fd", "@"),
   ARGPARSE_s_s (oStatusFile, "status-file", "@"),
   ARGPARSE_s_i (oAttributeFD, "attribute-fd", "@"),
@@ -2158,6 +2159,8 @@ main (int argc, char **argv)
     while( arg_parse( &pargs, opts) ) {
 	if( pargs.r_opt == oDebug || pargs.r_opt == oDebugAll )
 	    parse_debug++;
+	else if (pargs.r_opt == oDebugIOLBF)
+            es_setvbuf (es_stdout, NULL, _IOLBF, 0);
 	else if( pargs.r_opt == oOptions ) {
 	    /* yes there is one, so we do not try the default one, but
 	     * read the option file when it is encountered at the commandline
@@ -2418,6 +2421,8 @@ main (int argc, char **argv)
 	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
 	  case oDebugAll: opt.debug = ~0; break;
           case oDebugLevel: debug_level = pargs.r.ret_str; break;
+
+          case oDebugIOLBF: break; /* Already set in pre-parse step.  */
 
 	  case oStatusFD:
             set_status_fd ( translate_sys2libc_fd_int (pargs.r.ret_int, 1) );

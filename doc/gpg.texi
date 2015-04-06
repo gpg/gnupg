@@ -2451,6 +2451,11 @@ be given in C syntax (e.g. 0x0042).
 @opindex debug-all
 Set all useful debugging flags.
 
+@item --debug-iolbf
+@opindex debug-iolbf
+Set stdout into line buffered mode.  This option is only honored when
+given on the command line.
+
 @item --faked-system-time @var{epoch}
 @opindex faked-system-time
 This option is only useful for testing; it sets the system time back or
