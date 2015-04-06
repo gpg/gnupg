@@ -82,7 +82,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
   u16 csum;
   gcry_mpi_t a;
 
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_debug ("encode_session_key: encoding %d byte DEK", dek->keylen);
 
   csum = 0;
@@ -116,7 +116,7 @@ encode_session_key (int openpgp_pk_algo, DEK *dek, unsigned int nbits)
       memset (frame+n, i, i); /* Use it as the value of each padded byte.  */
       assert (n+i == nframe);
 
-      if (DBG_CIPHER)
+      if (DBG_CRYPTO)
         log_debug ("encode_session_key: "
                    "[%d] %02x  %02x %02x ...  %02x %02x %02x\n",
                    (int) nframe, frame[0], frame[1], frame[2],

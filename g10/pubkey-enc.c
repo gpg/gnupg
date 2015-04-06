@@ -227,7 +227,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
    * DEK is the encryption key (session key) with length k
    * CSUM
    */
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_printhex ("DEK frame:", frame, nframe);
   n = 0;
 
@@ -333,7 +333,7 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
     }
   if (DBG_CLOCK)
     log_clock ("decryption ready");
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_printhex ("DEK is:", dek->key, dek->keylen);
 
   /* Check that the algo is in the preferences and whether it has expired.  */

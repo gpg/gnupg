@@ -268,7 +268,7 @@ struct {
 
 #define DBG_PACKET_VALUE  1	/* debug packet reading/writing */
 #define DBG_MPI_VALUE	  2	/* debug mpi details */
-#define DBG_CIPHER_VALUE  4	/* debug cipher handling */
+#define DBG_CRYPTO_VALUE  4	/* debug crypto handling */
 				/* (may reveal sensitive data) */
 #define DBG_FILTER_VALUE  8	/* debug internal filter handling */
 #define DBG_IOBUF_VALUE   16	/* debug iobuf stuff */
@@ -287,7 +287,7 @@ struct {
 
 /* Tests for the debugging flags.  */
 #define DBG_PACKET (opt.debug & DBG_PACKET_VALUE)
-#define DBG_CIPHER (opt.debug & DBG_CIPHER_VALUE)
+#define DBG_CRYPTO (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_FILTER (opt.debug & DBG_FILTER_VALUE)
 #define DBG_CACHE  (opt.debug & DBG_CACHE_VALUE)
 #define DBG_TRUST  (opt.debug & DBG_TRUST_VALUE)

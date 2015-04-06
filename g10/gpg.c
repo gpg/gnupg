@@ -1116,7 +1116,7 @@ set_debug (const char *level)
     memory_stat_debug_mode = 1;
   if (opt.debug & DBG_MPI_VALUE)
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 2);
-  if (opt.debug & DBG_CIPHER_VALUE )
+  if (opt.debug & DBG_CRYPTO_VALUE )
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1);
   if (opt.debug & DBG_IOBUF_VALUE )
     iobuf_debug_mode = 1;
@@ -1126,7 +1126,7 @@ set_debug (const char *level)
     log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
               (opt.debug & DBG_PACKET_VALUE )? " packet":"",
               (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
-              (opt.debug & DBG_CIPHER_VALUE )? " cipher":"",
+              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
               (opt.debug & DBG_FILTER_VALUE )? " filter":"",
               (opt.debug & DBG_IOBUF_VALUE  )? " iobuf":"",
               (opt.debug & DBG_MEMORY_VALUE )? " memory":"",

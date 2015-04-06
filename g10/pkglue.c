@@ -263,7 +263,7 @@ pk_encrypt (pubkey_algo_t algo, gcry_mpi_t *resarr, gcry_mpi_t data,
       public = get_mpi_from_sexp (s_ciph, "e", GCRYMPI_FMT_USG);
       gcry_sexp_release (s_ciph);
       s_ciph = NULL;
-      if (DBG_CIPHER)
+      if (DBG_CRYPTO)
         {
           log_debug ("ECDH ephemeral key:");
           gcry_mpi_dump (public);

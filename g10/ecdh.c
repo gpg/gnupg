@@ -76,7 +76,7 @@ pk_ecdh_default_params (unsigned int qbits)
         }
     }
   assert (i < DIM (kek_params_table));
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_printhex ("ECDH KEK params are", kek_params, sizeof(kek_params) );
 
   return gcry_mpi_set_opaque (NULL, kek_params, 4 * 8);
@@ -138,7 +138,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
     memmove (secret_x, secret_x+1, secret_x_size);
     memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
 
-    if (DBG_CIPHER)
+    if (DBG_CRYPTO)
       log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );
   }
 
@@ -158,7 +158,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   kek_params = gcry_mpi_get_opaque (pkey[2], &nbits);
   kek_params_size = (nbits+7)/8;
 
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_printhex ("ecdh KDF params:", kek_params, kek_params_size);
 
   /* Expect 4 bytes  03 01 hash_alg symm_alg.  */
@@ -171,7 +171,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
   kdf_hash_algo = kek_params[2];
   kdf_encr_algo = kek_params[3];
 
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_debug ("ecdh KDF algorithms %s+%s with aeswrap\n",
                openpgp_md_algo_name (kdf_hash_algo),
                openpgp_cipher_algo_name (kdf_encr_algo));
@@ -215,7 +215,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         return err;
       }
 
-    if(DBG_CIPHER)
+    if(DBG_CRYPTO)
       log_printhex ("ecdh KDF message params are:", message, message_size);
   }
 
@@ -251,7 +251,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
     /* We could have allocated more, so clean the tail before returning.  */
     memset (secret_x+secret_x_size, 0, old_size - secret_x_size);
-    if (DBG_CIPHER)
+    if (DBG_CRYPTO)
       log_printhex ("ecdh KEK is:", secret_x, secret_x_size );
   }
 
@@ -317,7 +317,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
             return err;
           }
 
-        if (DBG_CIPHER)
+        if (DBG_CRYPTO)
           log_printhex ("ecdh encrypting  :", in, data_buf_size );
 
         err = gcry_cipher_encrypt (hd, data_buf+1, data_buf_size+8,
@@ -333,7 +333,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
           }
         data_buf[0] = data_buf_size+8;
 
-        if (DBG_CIPHER)
+        if (DBG_CRYPTO)
           log_printhex ("ecdh encrypted to:", data_buf+1, data_buf[0] );
 
         result = gcry_mpi_set_opaque (NULL, data_buf, 8 * (1+data_buf[0]));
@@ -370,7 +370,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
         in = data_buf+data_buf_size;
         data_buf_size = data_buf[0];
 
-        if (DBG_CIPHER)
+        if (DBG_CRYPTO)
           log_printhex ("ecdh decrypting :", data_buf+1, data_buf_size);
 
         err = gcry_cipher_decrypt (hd, in, data_buf_size, data_buf+1,
@@ -386,7 +386,7 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
 
         data_buf_size -= 8;
 
-        if (DBG_CIPHER)
+        if (DBG_CRYPTO)
           log_printhex ("ecdh decrypted to :", in, data_buf_size);
 
         /* Padding is removed later.  */
@@ -420,12 +420,12 @@ gen_k (unsigned nbits)
   gcry_mpi_t k;
 
   k = gcry_mpi_snew (nbits);
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_debug ("choosing a random k of %u bits\n", nbits);
 
   gcry_mpi_randomize (k, nbits-1, GCRY_STRONG_RANDOM);
 
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     {
       unsigned char *buffer;
       if (gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, k))

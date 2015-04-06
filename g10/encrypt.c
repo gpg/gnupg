@@ -621,7 +621,7 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
     }
 
   make_session_key (cfx.dek);
-  if (DBG_CIPHER)
+  if (DBG_CRYPTO)
     log_printhex ("DEK is: ", cfx.dek->key, cfx.dek->keylen );
 
   rc = write_pubkey_enc_from_list (pk_list, cfx.dek, out);
@@ -815,7 +815,7 @@ encrypt_filter (void *opaque, int control,
           efx->cfx.dek->use_mdc = use_mdc (efx->pk_list,efx->cfx.dek->algo);
 
           make_session_key ( efx->cfx.dek );
-          if (DBG_CIPHER)
+          if (DBG_CRYPTO)
             log_printhex ("DEK is: ", efx->cfx.dek->key, efx->cfx.dek->keylen);
 
           rc = write_pubkey_enc_from_list (efx->pk_list, efx->cfx.dek, a);
