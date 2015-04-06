@@ -435,11 +435,11 @@ set_debug (void)
   else if (!strcmp (debug_level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
   else if (!strcmp (debug_level, "basic") || (numok && numlvl <= 2))
-    opt.debug = DBG_ASSUAN_VALUE;
+    opt.debug = DBG_IPC_VALUE;
   else if (!strcmp (debug_level, "advanced") || (numok && numlvl <= 5))
-    opt.debug = DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE;
+    opt.debug = DBG_IPC_VALUE|DBG_COMMAND_VALUE;
   else if (!strcmp (debug_level, "expert") || (numok && numlvl <= 8))
-    opt.debug = (DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE
+    opt.debug = (DBG_IPC_VALUE|DBG_COMMAND_VALUE
                  |DBG_CACHE_VALUE);
   else if (!strcmp (debug_level, "guru") || numok)
     {
@@ -478,7 +478,7 @@ set_debug (void)
               (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
               (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
               (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
-              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
+              (opt.debug & DBG_IPC_VALUE    )? " ipc":"");
 }
 
 
@@ -1952,7 +1952,7 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
   if (!cds->cbData || mapfile[cds->cbData - 1])
     return 0;  /* Ignore empty and non-properly terminated strings.  */
 
-  if (DBG_ASSUAN)
+  if (DBG_IPC)
     {
       npth_protect ();
       log_debug ("ssh map file '%s'", mapfile);
@@ -1960,7 +1960,7 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
   maphd = OpenFileMapping (FILE_MAP_ALL_ACCESS, FALSE, mapfile);
-  if (DBG_ASSUAN)
+  if (DBG_IPC)
     {
       npth_protect ();
       log_debug ("ssh map handle %p\n", maphd);
@@ -1989,7 +1989,7 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
       goto leave;
     }
 
-  if (DBG_ASSUAN)
+  if (DBG_IPC)
     {
       char *sidstr;
 
@@ -2010,7 +2010,7 @@ putty_message_proc (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 
   data = MapViewOfFile (maphd, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-  if (DBG_ASSUAN)
+  if (DBG_IPC)
     log_debug ("ssh IPC buffer at %p\n", data);
   if (!data)
     goto leave;

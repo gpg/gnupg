@@ -146,7 +146,7 @@ struct
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_ASSUAN_VALUE 1024   /* Enable Assuan debugging.  */
+#define DBG_IPC_VALUE     1024  /* Enable Assuan debugging.  */
 
 /* Test macros for the debug option.  */
 #define DBG_COMMAND (opt.debug & DBG_COMMAND_VALUE)
@@ -154,7 +154,7 @@ struct
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
-#define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
+#define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
 
 /* Forward reference for local definitions in command.c.  */
 struct server_local_s;

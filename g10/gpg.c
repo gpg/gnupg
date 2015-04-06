@@ -1136,7 +1136,7 @@ set_debug (const char *level)
               (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
               (opt.debug & DBG_EXTPROG_VALUE)? " extprog":"",
               (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
-              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
+              (opt.debug & DBG_IPC_VALUE    )? " ipc":"",
               (opt.debug & DBG_CLOCK_VALUE  )? " clock":"",
               (opt.debug & DBG_LOOKUP_VALUE )? " lookup":"");
 }

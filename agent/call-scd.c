@@ -366,7 +366,7 @@ start_scd (ctrl_t ctrl)
           {
             memcpy (socket_name, databuf, datalen);
             socket_name[datalen] = 0;
-            if (DBG_ASSUAN)
+            if (DBG_IPC)
               log_debug ("additional connections at '%s'\n", socket_name);
           }
       }

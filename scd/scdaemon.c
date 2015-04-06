@@ -309,11 +309,11 @@ set_debug (const char *level)
   else if (!strcmp (level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
   else if (!strcmp (level, "basic") || (numok && numlvl <= 2))
-    opt.debug = DBG_ASSUAN_VALUE;
+    opt.debug = DBG_IPC_VALUE;
   else if (!strcmp (level, "advanced") || (numok && numlvl <= 5))
-    opt.debug = DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE;
+    opt.debug = DBG_IPC_VALUE|DBG_COMMAND_VALUE;
   else if (!strcmp (level, "expert") || (numok && numlvl <= 8))
-    opt.debug = (DBG_ASSUAN_VALUE|DBG_COMMAND_VALUE
+    opt.debug = (DBG_IPC_VALUE|DBG_COMMAND_VALUE
                  |DBG_CACHE_VALUE|DBG_CARD_IO_VALUE);
   else if (!strcmp (level, "guru") || numok)
     {
@@ -352,7 +352,7 @@ set_debug (const char *level)
               (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
               (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
               (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
-              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"",
+              (opt.debug & DBG_IPC_VALUE    )? " ipc":"",
               (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
               (opt.debug & DBG_READER_VALUE )? " reader":"");
 }

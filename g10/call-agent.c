@@ -43,10 +43,6 @@
 #include "../common/shareddefs.h"
 #include "host2net.h"
 
-#ifndef DBG_ASSUAN
-# define DBG_ASSUAN 1
-#endif
-
 #define CONTROL_D ('D' - 'A' + 1)
 
 
@@ -286,7 +282,7 @@ start_agent (ctrl_t ctrl, int for_card)
                                 opt.agent_program,
                                 opt.lc_ctype, opt.lc_messages,
                                 opt.session_env,
-                                opt.autostart, opt.verbose, DBG_ASSUAN,
+                                opt.autostart, opt.verbose, DBG_IPC,
                                 NULL, NULL);
       if (!opt.autostart && gpg_err_code (rc) == GPG_ERR_NO_AGENT)
         {

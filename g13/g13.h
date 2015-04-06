@@ -70,12 +70,12 @@ struct
 #define DBG_CRYPTO_VALUE    4	/* Debug low level crypto.  */
 #define DBG_MEMORY_VALUE   32	/* Debug memory allocation stuff.  */
 #define DBG_MEMSTAT_VALUE 128	/* Show memory statistics.  */
-#define DBG_ASSUAN_VALUE  1024  /* Debug assuan communication.  */
+#define DBG_IPC_VALUE    1024   /* Debug assuan communication.  */
 
 #define DBG_MOUNT    (opt.debug & DBG_MOUNT_VALUE)
 #define DBG_CRYPTO   (opt.debug & DBG_CRYPTO_VALUE)
 #define DBG_MEMORY   (opt.debug & DBG_MEMORY_VALUE)
-#define DBG_ASSUAN   (opt.debug & DBG_ASSUAN_VALUE)
+#define DBG_IPC      (opt.debug & DBG_IPC_VALUE)
 
 /* Forward declaration for an object defined in server.c.  */
 struct server_local_s;

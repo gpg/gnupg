@@ -135,7 +135,7 @@ unlock_pinentry (int rc)
 
   if (rc)
     {
-      if (DBG_ASSUAN)
+      if (DBG_IPC)
         log_debug ("error calling pinentry: %s <%s>\n",
                    gpg_strerror (rc), gpg_strsource (rc));
 
@@ -351,7 +351,7 @@ start_pinentry (ctrl_t ctrl)
     }
   entry_ctx = ctx;
 
-  if (DBG_ASSUAN)
+  if (DBG_IPC)
     log_debug ("connection to PIN entry established\n");
 
   rc = assuan_transact (entry_ctx,

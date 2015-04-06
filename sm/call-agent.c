@@ -95,7 +95,7 @@ start_agent (ctrl_t ctrl)
                                 opt.agent_program,
                                 opt.lc_ctype, opt.lc_messages,
                                 opt.session_env,
-                                opt.autostart, opt.verbose, DBG_ASSUAN,
+                                opt.autostart, opt.verbose, DBG_IPC,
                                 gpgsm_status2, ctrl);
 
       if (!opt.autostart && gpg_err_code (rc) == GPG_ERR_NO_AGENT)

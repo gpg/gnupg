@@ -138,7 +138,7 @@ struct
 #define DBG_CACHE_VALUE   64	/* debug the caching */
 #define DBG_MEMSTAT_VALUE 128	/* show memory statistics */
 #define DBG_HASHING_VALUE 512	/* debug hashing operations */
-#define DBG_ASSUAN_VALUE  1024  /* debug assuan communication */
+#define DBG_IPC_VALUE     1024  /* debug assuan communication */
 #define DBG_LOOKUP_VALUE  8192  /* debug lookup details */
 
 #define DBG_X509    (opt.debug & DBG_X509_VALUE)
@@ -146,7 +146,7 @@ struct
 #define DBG_MEMORY  (opt.debug & DBG_MEMORY_VALUE)
 #define DBG_CACHE   (opt.debug & DBG_CACHE_VALUE)
 #define DBG_HASHING (opt.debug & DBG_HASHING_VALUE)
-#define DBG_ASSUAN  (opt.debug & DBG_ASSUAN_VALUE)
+#define DBG_IPC     (opt.debug & DBG_IPC_VALUE)
 #define DBG_LOOKUP  (opt.debug & DBG_LOOKUP_VALUE)
 
 /* A simple list of certificate references. */

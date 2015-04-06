@@ -209,7 +209,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
 
   err = start_new_dirmngr (&ctx, GPG_ERR_SOURCE_DEFAULT,
                            opt.homedir, opt.dirmngr_program,
-                           opt.autostart, opt.verbose, DBG_ASSUAN,
+                           opt.autostart, opt.verbose, DBG_IPC,
                            gpgsm_status2, ctrl);
   if (!opt.autostart && gpg_err_code (err) == GPG_ERR_NO_DIRMNGR)
     {

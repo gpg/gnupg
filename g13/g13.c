@@ -260,11 +260,11 @@ set_debug (void)
   else if (!strcmp (debug_level, "none") || (numok && numlvl < 1))
     opt.debug = 0;
   else if (!strcmp (debug_level, "basic") || (numok && numlvl <= 2))
-    opt.debug = DBG_ASSUAN_VALUE|DBG_MOUNT_VALUE;
+    opt.debug = DBG_IPC_VALUE|DBG_MOUNT_VALUE;
   else if (!strcmp (debug_level, "advanced") || (numok && numlvl <= 5))
-    opt.debug = DBG_ASSUAN_VALUE|DBG_MOUNT_VALUE;
+    opt.debug = DBG_IPC_VALUE|DBG_MOUNT_VALUE;
   else if (!strcmp (debug_level, "expert") || (numok && numlvl <= 8))
-    opt.debug = (DBG_ASSUAN_VALUE|DBG_MOUNT_VALUE|DBG_CRYPTO_VALUE);
+    opt.debug = (DBG_IPC_VALUE|DBG_MOUNT_VALUE|DBG_CRYPTO_VALUE);
   else if (!strcmp (debug_level, "guru") || numok)
     {
       opt.debug = ~0;
@@ -294,7 +294,7 @@ set_debug (void)
               (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
               (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
               (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
-              (opt.debug & DBG_ASSUAN_VALUE )? " assuan":"");
+              (opt.debug & DBG_IPC_VALUE    )? " ipc":"");
 }
 
 

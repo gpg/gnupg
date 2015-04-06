@@ -136,7 +136,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
 
   *r_ctx = ctx;
 
-  if (DBG_ASSUAN)
+  if (DBG_IPC)
     log_debug ("connection to GPG established\n");
   return 0;
 }
