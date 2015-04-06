@@ -4152,7 +4152,7 @@ do_generate_keypair (struct para_data_s *para,
             {
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
-              list_keyblock (pub_root, 0, 1, 1, NULL);
+              list_keyblock_direct (pub_root, 0, 1, 1);
             }
 
 

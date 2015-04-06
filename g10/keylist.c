@@ -50,15 +50,29 @@ static void list_one (strlist_t names, int secret, int mark_secret);
 static void locate_one (ctrl_t ctrl, strlist_t names);
 static void print_card_serialno (const char *serialno);
 
-struct sig_stats
+struct keylist_context
 {
-  int inv_sigs;
-  int no_key;
-  int oth_err;
+  int check_sigs;  /* If set signatures shall be verified.  */
+  int inv_sigs;    /* Counter used if CHECK_SIGS is set.  */
+  int no_key;      /* Counter used if CHECK_SIGS is set.  */
+  int oth_err;     /* Counter used if CHECK_SIGS is set.  */
 };
+
+
+static void list_keyblock (kbnode_t keyblock, int secret, int has_secret,
+                           int fpr, struct keylist_context *listctx);
+
 
 /* The stream used to write attribute packets to.  */
 static estream_t attrib_fp;
+
+
+/* Release resources from a keylist context.  */
+static void
+keylist_context_release (struct keylist_context *listctx)
+{
+  (void)listctx; /* Nothing to release.  */
+}
 
 
 /* List the keys.  If list is NULL, all available keys are listed.
@@ -416,9 +430,13 @@ show_notation (PKT_signature * sig, int indent, int mode, int which)
   free_notation (notations);
 }
 
+
 static void
-print_signature_stats (struct sig_stats *s)
+print_signature_stats (struct keylist_context *s)
 {
+  if (!s->check_sigs)
+    return;  /* Signature checking was not requested.  */
+
   if (s->inv_sigs == 1)
     tty_printf (_("1 bad signature\n"));
   else if (s->inv_sigs)
@@ -446,9 +464,11 @@ list_all (int secret, int mark_secret)
   int rc = 0;
   int any_secret;
   const char *lastresname, *resname;
-  struct sig_stats stats;
+  struct keylist_context listctx;
 
-  memset (&stats, 0, sizeof (stats));
+  memset (&listctx, 0, sizeof (listctx));
+  if (opt.check_sigs)
+    listctx.check_sigs = 1;
 
   hd = keydb_new ();
   if (!hd)
@@ -499,7 +519,7 @@ list_all (int secret, int mark_secret)
             }
           merge_keys_and_selfsig (keyblock);
           list_keyblock (keyblock, secret, any_secret, opt.fingerprint,
-                         opt.check_sigs ? &stats : NULL);
+                         &listctx);
         }
       release_kbnode (keyblock);
       keyblock = NULL;
@@ -513,9 +533,10 @@ list_all (int secret, int mark_secret)
               keydb_get_skipped_counter (hd));
 
   if (opt.check_sigs && !opt.with_colons)
-    print_signature_stats (&stats);
+    print_signature_stats (&listctx);
 
-leave:
+ leave:
+  keylist_context_release (&listctx);
   release_kbnode (keyblock);
   keydb_release (hd);
 }
@@ -530,9 +551,11 @@ list_one (strlist_t names, int secret, int mark_secret)
   const char *resname;
   const char *keyring_str = _("Keyring");
   int i;
-  struct sig_stats stats;
+  struct keylist_context listctx;
 
-  memset (&stats, 0, sizeof (stats));
+  memset (&listctx, 0, sizeof (listctx));
+  if (!secret && opt.check_sigs)
+    listctx.check_sigs = 1;
 
   /* fixme: using the bynames function has the disadvantage that we
    * don't know wether one of the names given was not found.  OTOH,
@@ -561,15 +584,16 @@ list_one (strlist_t names, int secret, int mark_secret)
             es_putc ('-', es_stdout);
           es_putc ('\n', es_stdout);
         }
-      list_keyblock (keyblock, secret, mark_secret, opt.fingerprint,
-                     (!secret && opt.check_sigs)? &stats : NULL);
+      list_keyblock (keyblock, secret, mark_secret, opt.fingerprint, &listctx);
       release_kbnode (keyblock);
     }
   while (!getkey_next (ctx, NULL, &keyblock));
   getkey_end (ctx);
 
   if (opt.check_sigs && !opt.with_colons)
-    print_signature_stats (&stats);
+    print_signature_stats (&listctx);
+
+  keylist_context_release (&listctx);
 }
 
 
@@ -580,9 +604,11 @@ locate_one (ctrl_t ctrl, strlist_t names)
   strlist_t sl;
   GETKEY_CTX ctx = NULL;
   KBNODE keyblock = NULL;
-  struct sig_stats stats;
+  struct keylist_context listctx;
 
-  memset (&stats, 0, sizeof (stats));
+  memset (&listctx, 0, sizeof (listctx));
+  if (opt.check_sigs)
+    listctx.check_sigs = 1;
 
   for (sl = names; sl; sl = sl->next)
     {
@@ -596,8 +622,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	{
 	  do
 	    {
-	      list_keyblock (keyblock, 0, 0, opt.fingerprint,
-			     opt.check_sigs ? &stats : NULL);
+	      list_keyblock (keyblock, 0, 0, opt.fingerprint, &listctx);
 	      release_kbnode (keyblock);
 	    }
 	  while (ctx && !get_pubkey_next (ctx, NULL, &keyblock));
@@ -607,7 +632,9 @@ locate_one (ctrl_t ctrl, strlist_t names)
     }
 
   if (opt.check_sigs && !opt.with_colons)
-    print_signature_stats (&stats);
+    print_signature_stats (&listctx);
+
+  keylist_context_release (&listctx);
 }
 
 
@@ -869,13 +896,13 @@ list_keyblock_pka (kbnode_t keyblock)
 
 
 static void
-list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
+list_keyblock_print (KBNODE keyblock, int secret, int fpr,
+                     struct keylist_context *listctx)
 {
   int rc;
   KBNODE kbctx;
   KBNODE node;
   PKT_public_key *pk;
-  struct sig_stats *stats = opaque;
   int skip_sigs = 0;
   int s2k_char;
   char *hexgrip = NULL;
@@ -1103,7 +1130,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 	  int sigrc;
 	  char *sigstr;
 
-	  if (stats)
+	  if (listctx->check_sigs)
 	    {
 	      rc = check_key_signature (keyblock, node, NULL);
 	      switch (gpg_err_code (rc))
@@ -1112,15 +1139,15 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr, void *opaque)
 		  sigrc = '!';
 		  break;
 		case GPG_ERR_BAD_SIGNATURE:
-		  stats->inv_sigs++;
+		  listctx->inv_sigs++;
 		  sigrc = '-';
 		  break;
 		case GPG_ERR_NO_PUBKEY:
 		case GPG_ERR_UNUSABLE_PUBKEY:
-		  stats->no_key++;
+		  listctx->no_key++;
 		  continue;
 		default:
-		  stats->oth_err++;
+		  listctx->oth_err++;
 		  sigrc = '%';
 		  break;
 		}
@@ -1641,9 +1668,9 @@ reorder_keyblock (KBNODE keyblock)
   do_reorder_keyblock (keyblock, 0);
 }
 
-void
+static void
 list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
-               void *opaque)
+               struct keylist_context *listctx)
 {
   reorder_keyblock (keyblock);
   if (opt.print_pka_records)
@@ -1651,9 +1678,21 @@ list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
   else if (opt.with_colons)
     list_keyblock_colon (keyblock, secret, has_secret, fpr);
   else
-    list_keyblock_print (keyblock, secret, fpr, opaque);
+    list_keyblock_print (keyblock, secret, fpr, listctx);
   if (secret)
     es_fflush (es_stdout);
+}
+
+
+/* Public function used by keygen to list a keyblock.  */
+void
+list_keyblock_direct (kbnode_t keyblock, int secret, int has_secret, int fpr)
+{
+  struct keylist_context listctx;
+
+  memset (&listctx, 0, sizeof (listctx));
+  list_keyblock (keyblock, secret, has_secret, fpr, &listctx);
+  keylist_context_release (&listctx);
 }
 
 

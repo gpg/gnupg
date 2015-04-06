@@ -346,8 +346,8 @@ void public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode );
 void secret_key_list (ctrl_t ctrl, strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
-void list_keyblock (kbnode_t keyblock, int secret, int has_secret,
-                    int fpr, void *opaque);
+void list_keyblock_direct (kbnode_t keyblock, int secret, int has_secret,
+                           int fpr);
 void print_fingerprint (estream_t fp, PKT_public_key *pk, int mode);
 void print_revokers (estream_t fp, PKT_public_key *pk);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
