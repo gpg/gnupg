@@ -998,7 +998,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
-      if (node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode)
+      if (node->pkt->pkttype == PKT_USER_ID)
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
 
@@ -1370,7 +1370,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
-      if (node->pkt->pkttype == PKT_USER_ID && !opt.fast_list_mode)
+      if (node->pkt->pkttype == PKT_USER_ID)
 	{
 	  char *str;
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
