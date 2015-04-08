@@ -823,7 +823,7 @@ get_cached_cert (assuan_context_t ctx,
   *r_cert = NULL;
 
   bin2hex (fpr, 20, hexfpr);
-  snprintf (line, DIM(line)-1, "LOOKUP --signle --cache-only 0x%s", hexfpr);
+  snprintf (line, DIM(line)-1, "LOOKUP --single --cache-only 0x%s", hexfpr);
 
   init_membuf (&mb, 4096);
   err = assuan_transact (ctx, line, get_cached_cert_data_cb, &mb,
