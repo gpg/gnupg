@@ -69,7 +69,7 @@ struct parse_info_s {
 
   char *signing_protocol;
   int hashing_level;           /* The nesting level we are hashing. */
-  int hashing;                 
+  int hashing;
   FILE *hash_file;
 
   FILE *sig_file;              /* Signature part with MIME or full
@@ -156,7 +156,7 @@ stpcpy (char *a,const char *b)
   while (*b)
     *a++ = *b++;
   *a = 0;
-  
+
   return (char*)a;
 }
 #endif
@@ -189,7 +189,7 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
           if (dup2 (sig_fd, 0) == -1)
             die ("dup2 stdin failed: %s", strerror (errno));
         }
-      
+
       /* Keep our data fd and format it for gpg/gpgsm use. */
       if (data_fd == -1)
         *data_fd_buf = 0;
@@ -205,7 +205,7 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
           if (dup2 (fd, 1) == -1)
             die ("dup2 stderr failed: %s", strerror (errno));
         }
-      
+
       /* Connect stderr to our pipe. */
       if (rp[1] != 2)
 	{
@@ -237,11 +237,11 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
                 "--",
                 "-", data_fd == -1? NULL : data_fd_buf,
                 NULL);
-      
+
       die ("failed to exec the crypto command: %s", strerror (errno));
     }
 
-  /* Parent. */ 
+  /* Parent. */
   close (rp[1]);
 
   fp = fdopen (rp[0], "r");
@@ -255,7 +255,7 @@ run_gnupg (int smime, int sig_fd, int data_fd, int *close_list)
     {
       if (pos < 9)
         status_buf[pos] = c;
-      else 
+      else
         {
           if (pos == 9)
             {
@@ -342,7 +342,7 @@ verify_signature (struct parse_info_s *info)
 
 
 
-/* Prepare for a multipart/signed. 
+/* Prepare for a multipart/signed.
    FIELD_CTX is the parsed context of the content-type header.*/
 static void
 mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
@@ -387,7 +387,7 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
 }
 
 
-/* Prepare for a multipart/encrypted. 
+/* Prepare for a multipart/encrypted.
    FIELD_CTX is the parsed context of the content-type header.*/
 static void
 mime_encrypted_begin (struct parse_info_s *info, rfc822parse_t msg,
@@ -410,7 +410,7 @@ pkcs7_begin (struct parse_info_s *info, rfc822parse_t msg,
              rfc822parse_field_t field_ctx)
 {
   const char *s;
-  
+
   (void)msg;
 
   s = rfc822parse_query_parameter (field_ctx, "name", 0);
@@ -509,7 +509,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
           s1 = rfc822parse_query_media_type (ctx, &s2);
           if (s1)
             {
-              printf ("h media: %*s%s %s\n", 
+              printf ("h media: %*s%s %s\n",
                       info->nesting_level*2, "", s1, s2);
               if (info->moss_state == 3)
                 {
@@ -549,7 +549,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
             }
           else
             printf ("h media: %*s none\n", info->nesting_level*2, "");
-              
+
           rfc822parse_release_field (ctx);
         }
       else
@@ -573,7 +573,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
       printf ("b up\n");
       if (info->nesting_level)
         info->nesting_level--;
-      else 
+      else
         err ("invalid structure (bad nesting level)");
     }
   else if (event == RFC822PARSE_BOUNDARY || event == RFC822PARSE_LAST_BOUNDARY)
@@ -586,7 +586,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
           info->skip_show = 1;
           printf ("b part\n");
         }
-      else 
+      else
         printf ("b last\n");
 
       if (info->moss_state == 2 && info->nesting_level == info->hashing_level)
@@ -648,7 +648,7 @@ parse_message (FILE *fp)
 
       if (rfc822parse_insert (msg, line, length))
 	die ("parser failed: %s", strerror (errno));
-      
+
       if (info.hashing)
         {
           /* Delay hashing of the CR/LF because the last line ending
@@ -689,7 +689,7 @@ parse_message (FILE *fp)
                 die ("error writing to temporary file: %s", strerror (errno));
             }
         }
-      
+
       if (info.show_boundary)
         {
           if (!opt_no_header)
@@ -727,11 +727,11 @@ parse_message (FILE *fp)
 }
 
 
-int 
+int
 main (int argc, char **argv)
 {
   int last_argc = -1;
- 
+
   if (argc)
     {
       argc--; argv++;
@@ -780,8 +780,8 @@ main (int argc, char **argv)
           opt_no_header = 1;
           argc--; argv++;
         }
-    }          
- 
+    }
+
   if (argc > 1)
     die ("usage: " PGM " [OPTION] [FILE] (try --help for more information)\n");
 
