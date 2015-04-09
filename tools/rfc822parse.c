@@ -808,10 +808,12 @@ parse_field (HDR_LINE hdr)
   s++; /* Move over the colon. */
   for (;;)
     {
-      if (!*s)
+      while (!*s)
 	{
 	  if (!hdr->next || !hdr->next->cont)
-	    break;
+            return tok; /* Ready.  */
+
+          /* Next item is a header continuation line.  */
 	  hdr = hdr->next;
 	  s = hdr->line;
 	}
@@ -824,10 +826,11 @@ parse_field (HDR_LINE hdr)
 	  invalid = 0;
 	  for (s++;; s++)
 	    {
-	      if (!*s)
+	      while (!*s)
 		{
 		  if (!hdr->next || !hdr->next->cont)
 		    break;
+                  /* Next item is a header continuation line.  */
 		  hdr = hdr->next;
 		  s = hdr->line;
 		}
@@ -880,6 +883,7 @@ parse_field (HDR_LINE hdr)
 
 	      if (*s2 || !hdr->next || !hdr->next->cont)
 		break;
+              /* Next item is a header continuation line.  */
 	      hdr = hdr->next;
 	      s = hdr->line;
 	    }
@@ -931,8 +935,7 @@ parse_field (HDR_LINE hdr)
 	  s++;
 	}
     }
-
-  return tok;
+  /*NOTREACHED*/
 
  failure:
   {
