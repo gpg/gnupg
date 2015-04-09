@@ -206,7 +206,7 @@ endif
 # a full installer.
 speedo_w64_spkgs  =
 ifeq ($(WITH_GUI),1)
-speedo_w64_spkgs += ibgpg-error libiconv gettext libassuan gpgex
+speedo_w64_spkgs += libgpg-error libiconv gettext libassuan gpgex
 endif
 
 # Packages which use the gnupg autogen.sh build style
