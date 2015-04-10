@@ -34,7 +34,7 @@ BUILT_SOURCES = audit-events.h status-codes.h
 
 MAINTAINERCLEANFILES = audit-events.h status-codes.h
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl
+AM_CPPFLAGS =
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS)
 

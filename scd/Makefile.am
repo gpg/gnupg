@@ -21,7 +21,7 @@ EXTRA_DIST = ChangeLog-2011 scdaemon-w32info.rc
 
 libexec_PROGRAMS = scdaemon
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
+AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 

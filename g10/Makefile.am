@@ -21,8 +21,7 @@
 EXTRA_DIST = options.skel distsigkey.gpg ChangeLog-2011 gpg-w32info.rc \
 	     gpg.w32-manifest.in
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/common \
-              -I$(top_srcdir)/include -I$(top_srcdir)/intl
+AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 

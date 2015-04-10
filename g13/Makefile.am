@@ -22,7 +22,7 @@ EXTRA_DIST = ChangeLog-2011
 
 bin_PROGRAMS = g13
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
+AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
