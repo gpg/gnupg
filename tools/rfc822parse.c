@@ -829,7 +829,7 @@ parse_field (HDR_LINE hdr)
 	      while (!*s)
 		{
 		  if (!hdr->next || !hdr->next->cont)
-		    break;
+		    goto oparen_out;
                   /* Next item is a header continuation line.  */
 		  hdr = hdr->next;
 		  s = hdr->line;
@@ -852,6 +852,7 @@ parse_field (HDR_LINE hdr)
 	      else if (*s == '\"')
 		in_quote = 1;
 	    }
+        oparen_out:
 	  if (!*s)
 	    ; /* Actually this is an error, but we don't care about it. */
 	  else
