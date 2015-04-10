@@ -439,8 +439,8 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
    OpenPGP Keyserver.  In this case, you also do not need to xfree
    *pgpkeyattrp.  */
 static int
-ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
-	      char **basednp, char **pgpkeyattrp, int *real_ldapp)
+my_ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
+                 char **basednp, char **pgpkeyattrp, int *real_ldapp)
 {
   int err = 0;
 
@@ -455,7 +455,7 @@ ldap_connect (parsed_uri_t uri, LDAP **ldap_connp,
   char *pgpkeyattr = "pgpKey";
   int real_ldap = 0;
 
-  log_debug ("ldap_connect(%s:%d/%s????%s%s%s%s%s)\n",
+  log_debug ("my_ldap_connect(%s:%d/%s????%s%s%s%s%s)\n",
 	     uri->host, uri->port,
 	     uri->path ?: "",
 	     uri->auth ? "bindname=" : "", uri->auth ?: "",
@@ -842,7 +842,7 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
     return (err);
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
-  ldap_err = ldap_connect (uri, &ldap_conn, &basedn, &pgpkeyattr, NULL);
+  ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, &pgpkeyattr, NULL);
   if (ldap_err || !basedn)
     {
       if (ldap_err)
@@ -1021,7 +1021,7 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
     }
 
   /* Make sure we are talking to an OpenPGP LDAP server.  */
-  ldap_err = ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL);
+  ldap_err = my_ldap_connect (uri, &ldap_conn, &basedn, NULL, NULL);
   if (ldap_err || !basedn)
     {
       if (ldap_err)
@@ -1878,7 +1878,8 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
   /* Elide a warning.  */
   (void) ctrl;
 
-  ldap_err = ldap_connect (uri, &ldap_conn, &basedn, &pgpkeyattr, &real_ldap);
+  ldap_err = my_ldap_connect (uri,
+                              &ldap_conn, &basedn, &pgpkeyattr, &real_ldap);
   if (ldap_err || !basedn)
     {
       if (ldap_err)
