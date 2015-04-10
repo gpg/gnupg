@@ -71,6 +71,29 @@ gnupg_get_time ()
 }
 
 
+/* Wrapper around gmtime_r.
+
+   On systems without gmtime_r this implementation works within gnupg
+   because we use only one thread a time.  FIXME: An independent
+   library may use gmtime in one of its own thread (or via
+   npth_enter/npth_leave) - in this case we run into a problem.  The
+   solution would be to use a mutex here.  */
+struct tm *
+gnupg_gmtime (const time_t *timep, struct tm *result)
+{
+#ifdef HAVE_GMTIME_R
+  return gmtime_r (timep, result);
+#else
+  struct tm *tp;
+
+  tp = gmtime (timep);
+  if (tp)
+    memcpy (result, tp, sizeof *result);
+  return tp;
+#endif
+}
+
+
 /* Return the current time (possibly faked) in ISO format. */
 void
 gnupg_get_isotime (gnupg_isotime_t timebuf)
@@ -82,16 +105,15 @@ gnupg_get_isotime (gnupg_isotime_t timebuf)
   else
     {
       struct tm *tp;
-#ifdef HAVE_GMTIME_R
       struct tm tmbuf;
 
-      tp = gmtime_r (&atime, &tmbuf);
-#else
-      tp = gmtime (&atime);
-#endif
-      snprintf (timebuf, 16, "%04d%02d%02dT%02d%02d%02d",
-                1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
-                tp->tm_hour, tp->tm_min, tp->tm_sec);
+      tp = gnupg_gmtime (&atime, &tmbuf);
+      if (!tp)
+        *timebuf = 0;
+      else
+        snprintf (timebuf, 16, "%04d%02d%02dT%02d%02d%02d",
+                  1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
+                  tp->tm_hour, tp->tm_min, tp->tm_sec);
     }
 }
 

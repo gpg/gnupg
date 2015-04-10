@@ -29,6 +29,7 @@
 typedef char gnupg_isotime_t[16];
 
 time_t gnupg_get_time (void);
+struct tm *gnupg_gmtime (const time_t *timep, struct tm *result);
 void   gnupg_get_isotime (gnupg_isotime_t timebuf);
 void   gnupg_set_time (time_t newtime, int freeze);
 int    gnupg_faked_time_p (void);
