@@ -1748,12 +1748,13 @@ extract_attributes (LDAPMod ***modlist, char *line)
 	     Check that first and then if it fails, then try
 	     parse_timestamp.  */
 
-	  if (strptime (create_time, "%Y-%m-%d", &tm))
+	  if (!isodate_human_to_tm (create_time, &tm))
 	    create_time = tm2ldaptime (&tm);
 	  else if ((t = parse_timestamp (create_time, &end)) != (time_t) -1
 		   && *end == '\0')
 	    {
-	      if (! gmtime_r (&t, &tm))
+
+	      if (!gnupg_gmtime (&t, &tm))
 		create_time = NULL;
 	      else
 		create_time = tm2ldaptime (&tm);
@@ -1795,12 +1796,12 @@ extract_attributes (LDAPMod ***modlist, char *line)
 	     Check that first and then if it fails, then try
 	     parse_timestamp.  */
 
-	  if (strptime (expire_time, "%Y-%m-%d", &tm))
+	  if (!isodate_human_to_tm (expire_time, &tm))
 	    expire_time = tm2ldaptime (&tm);
 	  else if ((t = parse_timestamp (expire_time, &end)) != (time_t) -1
 		   && *end == '\0')
 	    {
-	      if (! gmtime_r (&t, &tm))
+	      if (!gnupg_gmtime (&t, &tm))
 		expire_time = NULL;
 	      else
 		expire_time = tm2ldaptime (&tm);
