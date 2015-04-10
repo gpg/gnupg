@@ -110,12 +110,14 @@ no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
 t_common_src = t-support.h
 # We need libcommontls, because we use the http functions.
 t_common_ldadd = $(libcommontls) $(libcommon) no-libgcrypt.o \
-	$(GPG_ERROR_LIBS) $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
+                 $(GPG_ERROR_LIBS) $(NETLIBS) \
+                 $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
+                 $(DNSLIBS) $(LIBINTL) $(LIBICONV)
 
 module_tests = t-ldap-parse-uri
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
-	$(t_common_src)
+        $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd)
 
 $(PROGRAMS) : $(libcommon) $(libcommonpth) $(libcommontls) $(libcommontlsnpth)
