@@ -216,9 +216,11 @@ isotime_p (const char *string)
 /* Scan a string and return true if the string represents the human
    readable format of an ISO time.  This format is:
       yyyy-mm-dd[ hh[:mm[:ss]]]
-   Scanning stops at the second space or at a comma.  */
+   Scanning stops at the second space or at a comma.  If DATE_ONLY is
+   true the time part is not expected and the scanning stops at the
+   first space or at a comma. */
 int
-isotime_human_p (const char *string)
+isotime_human_p (const char *string, int date_only)
 {
   const char *s;
   int i;
@@ -247,6 +249,8 @@ isotime_human_p (const char *string)
     return 1; /* Okay; only date given.  */
   if (!spacep (s))
     return 0;
+  if (date_only)
+    return 1; /* Okay; only date was requested.  */
   s++;
   if (spacep (s))
     return 1; /* Okay, second space stops scanning.  */
@@ -303,7 +307,7 @@ string2isotime (gnupg_isotime_t atime, const char *string)
       atime[15] = 0;
       return 15;
     }
-  if (!isotime_human_p (string))
+  if (!isotime_human_p (string, 0))
     return 0;
   atime[0] = string[0];
   atime[1] = string[1];
@@ -390,6 +394,36 @@ epoch2isotime (gnupg_isotime_t timebuf, time_t atime)
                 1900 + tp->tm_year, tp->tm_mon+1, tp->tm_mday,
                 tp->tm_hour, tp->tm_min, tp->tm_sec);
     }
+}
+
+
+/* Parse a short ISO date string (YYYY-MM-DD) into a TM structure.
+   Returns 0 on success.  */
+int
+isodate_human_to_tm (const char *string, struct tm *t)
+{
+  int year, month, day;
+
+  if (!isotime_human_p (string, 1))
+    return -1;
+
+  year  = atoi_4 (string);
+  month = atoi_2 (string + 5);
+  day   = atoi_2 (string + 8);
+
+  /* Basic checks.  */
+  if (year < 1970 || month < 1 || month > 12 || day < 1 || day > 31)
+    return -1;
+
+  memset (t, 0, sizeof *t);
+  t->tm_sec  = 0;
+  t->tm_min  = 0;
+  t->tm_hour = 0;
+  t->tm_mday = day;
+  t->tm_mon  = month-1;
+  t->tm_year = year - 1900;
+  t->tm_isdst = -1;
+  return 0;
 }
 
 

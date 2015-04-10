@@ -174,6 +174,80 @@ test_string2isotime (void)
 }
 
 
+static void
+test_isodate_human_to_tm (void)
+{
+  struct {
+    const char *string;
+    int okay;
+    int year, mon, mday;
+  } array [] = {
+    { "1970-01-01",      1, 1970,  1,  1 },
+    { "1970-02-01",      1, 1970,  2,  1 },
+    { "1970-12-31",      1, 1970, 12, 31 },
+    { "1971-01-01",      1, 1971,  1,  1 },
+    { "1998-08-15",      1, 1998,  8, 15 },
+    { "2015-04-10",      1, 2015,  4, 10 },
+    { "2015-04-10 11:30",1, 2015,  4, 10 },
+    { "1969-12-31",      0,    0,  0,  0 },
+    { "1900-01-01",      0,    0,  0,  0 },
+    { "",                0,    0,  0,  0 },
+    { "1970-12-32",      0,    0,  0,  0 },
+    { "1970-13-01",      0,    0,  0,  0 },
+    { "1970-01-00",      0,    0,  0,  0 },
+    { "1970-00-01",      0,    0,  0,  0 },
+    { "1970-00-01",      0,    0,  0,  0 },
+    { "1970",            0,    0,  0,  0 },
+    { "1970-01",         0,    0,  0,  0 },
+    { "1970-01-1",       0,    0,  0,  0 },
+    { "1970-1--01",      0,    0,  0,  0 },
+    { "1970-01-01,",     1, 1970,  1,  1 },
+    { "1970-01-01 ",     1, 1970,  1,  1 },
+    { "1970-01-01\t",    1, 1970,  1,  1 },
+    { "1970-01-01;",     0,    0,  0,  0 },
+    { "1970-01-01:",     0,    0,  0,  0 },
+    { "1970_01-01",      0,    0,  0,  0 },
+    { "1970-01_01",      0,    0,  0,  0 },
+    { NULL, 0 }
+  };
+  int idx;
+  int okay;
+  struct tm tmbuf;
+
+  for (idx=0; array[idx].string; idx++)
+    {
+      okay = !isodate_human_to_tm (array[idx].string, &tmbuf);
+      if (okay != array[idx].okay)
+        {
+          fail (idx);
+          if (verbose)
+            fprintf (stderr, "string '%s' expected: %d, got: %d\n",
+                     array[idx].string, (int)array[idx].okay, okay);
+        }
+      else if (!okay)
+        ;
+      else if (tmbuf.tm_year + 1900 != array[idx].year
+               || tmbuf.tm_mon +1   != array[idx].mon
+               || tmbuf.tm_mday     != array[idx].mday)
+        {
+          fail (idx);
+          if (verbose)
+            fprintf (stderr, "string '%s' returned %04d-%02d-%02d\n",
+                     array[idx].string,
+                     tmbuf.tm_year + 1900, tmbuf.tm_mon + 1, tmbuf.tm_mday);
+        }
+      else if (tmbuf.tm_sec || tmbuf.tm_min || tmbuf.tm_hour
+               || tmbuf.tm_isdst != -1)
+        {
+          fail (idx);
+          if (verbose)
+            fprintf (stderr, "string '%s' returned bad time part\n",
+                     array[idx].string);
+        }
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -182,6 +256,7 @@ main (int argc, char **argv)
 
   test_isotime2epoch ();
   test_string2isotime ();
+  test_isodate_human_to_tm ();
 
   return !!errcount;
 }
