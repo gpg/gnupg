@@ -306,7 +306,9 @@ ks_ldap_help (ctrl_t ctrl, parsed_uri_t uri)
     "Supported methods: search, get, put\n";
   gpg_error_t err;
 
-  if (strcmp (uri->scheme, "ldap") == 0
+  if(!uri)
+    err = ks_print_help (ctrl, "  ldap");
+  else if (strcmp (uri->scheme, "ldap") == 0
       || strcmp (uri->scheme, "ldaps") == 0
       || strcmp (uri->scheme, "ldapi") == 0)
     err = ks_print_help (ctrl, data);
