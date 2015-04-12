@@ -26,19 +26,20 @@ dnl is added to the gpg_config_script_warn variable.
 dnl
 AC_DEFUN([AM_PATH_GPG_ERROR],
 [ AC_REQUIRE([AC_CANONICAL_HOST])
+  gpg_error_config_prefix=""
   dnl --with-libgpg-error-prefix=PFX is the preferred name for this option,
   dnl since that is consistent with how our three siblings use the directory/
   dnl package name in --with-$dir_name-prefix=PFX.
   AC_ARG_WITH(libgpg-error-prefix,
-            AC_HELP_STRING([--with-libgpg-error-prefix=PFX],
-                           [prefix where GPG Error is installed (optional)]),
-     gpg_error_config_prefix="$withval", gpg_error_config_prefix="")
+              AC_HELP_STRING([--with-libgpg-error-prefix=PFX],
+                             [prefix where GPG Error is installed (optional)]),
+              [gpg_error_config_prefix="$withval"])
 
   dnl Accept --with-gpg-error-prefix and make it work the same as
   dnl --with-libgpg-error-prefix above, for backwards compatibility,
   dnl but do not document this old, inconsistently-named option.
   AC_ARG_WITH(gpg-error-prefix,,
-     gpg_error_config_prefix="$withval", gpg_error_config_prefix="")
+              [gpg_error_config_prefix="$withval"])
 
   if test x"${GPG_ERROR_CONFIG}" = x ; then
      if test x"${gpg_error_config_prefix}" != x ; then
@@ -63,7 +64,8 @@ AC_DEFUN([AM_PATH_GPG_ERROR],
   min_gpg_error_version=ifelse([$1], ,0.0,$1)
   AC_MSG_CHECKING(for GPG Error - version >= $min_gpg_error_version)
   ok=no
-  if test "$GPG_ERROR_CONFIG" != "no" ; then
+  if test "$GPG_ERROR_CONFIG" != "no" \
+     && test -f "$GPG_ERROR_CONFIG" ; then
     req_major=`echo $min_gpg_error_version | \
                sed 's/\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
     req_minor=`echo $min_gpg_error_version | \
