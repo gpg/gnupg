@@ -482,58 +482,60 @@ test_make_absfilename_try (void)
 static void
 test_strsplit (void)
 {
-  int test_count = 0;
-  void test (const char *s, char delim, char replacement,
-	     const char *fields_expected[])
-  {
-    char *s2;
-    int field_count;
-    char **fields;
-    int field_count_expected;
-    int i;
+  struct {
+    const char *s;
+    char delim;
+    char replacement;
+    const char *fields_expected[10];
+  } tv[] = {
+    {
+      "a:bc:cde:fghi:jklmn::foo:", ':', '\0',
+      { "a", "bc", "cde", "fghi", "jklmn", "", "foo", "", NULL }
+    },
+    {
+      ",a,bc,,def,", ',', '!',
+      { "!a!bc!!def!", "a!bc!!def!", "bc!!def!", "!def!", "def!", "", NULL }
+    },
+    {
+      "", ':', ',',
+      { "", NULL }
+    }
+  };
 
-    /* Count the fields.  */
-    for (field_count_expected = 0;
-	 fields_expected[field_count_expected];
-	 field_count_expected ++)
-      ;
+  int tidx;
 
-    test_count ++;
+  for (tidx = 0; tidx < DIM(tv); tidx++)
+    {
+      char *s2;
+      int field_count;
+      char **fields;
+      int field_count_expected;
+      int i;
 
-    /* We need to copy s since strsplit modifies it in place.  */
-    s2 = xstrdup (s);
-    fields = strsplit (s2, delim, replacement, &field_count);
+      /* Count the fields.  */
+      for (field_count_expected = 0;
+           tv[tidx].fields_expected[field_count_expected];
+           field_count_expected ++)
+        ;
 
-    if (field_count != field_count_expected)
-      fail (test_count * 1000);
+      /* We need to copy s since strsplit modifies it in place.  */
+      s2 = xstrdup (tv[tidx].s);
+      fields = strsplit (s2, tv[tidx].delim, tv[tidx].replacement,
+                         &field_count);
 
-    for (i = 0; i < field_count_expected; i ++)
-      if (strcmp (fields_expected[i], fields[i]) != 0)
-	{
-	  printf ("For field %d, expected '%s', but got '%s'\n",
-		  i, fields_expected[i], fields[i]);
-	  fail (test_count * 1000 + i + 1);
-	}
+      if (field_count != field_count_expected)
+        fail (tidx * 1000);
 
-    xfree (s2);
-  }
+      for (i = 0; i < field_count_expected; i ++)
+        if (strcmp (tv[tidx].fields_expected[i], fields[i]) != 0)
+          {
+            printf ("For field %d, expected '%s', but got '%s'\n",
+                    i, tv[tidx].fields_expected[i], fields[i]);
+            fail (tidx * 1000 + i + 1);
+          }
 
-  {
-    const char *expected_result[] =
-      { "a", "bc", "cde", "fghi", "jklmn", "", "foo", "", NULL };
-    test ("a:bc:cde:fghi:jklmn::foo:", ':', '\0', expected_result);
-  }
-
-  {
-    const char *expected_result[] =
-      { "!a!bc!!def!", "a!bc!!def!", "bc!!def!", "!def!", "def!", "", NULL };
-    test (",a,bc,,def,", ',', '!', expected_result);
-  }
-
-  {
-    const char *expected_result[] = { "", NULL };
-    test ("", ':', ',', expected_result);
-  }
+      xfree (s2);
+    }
 }
 
 int
