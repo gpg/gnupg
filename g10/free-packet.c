@@ -31,6 +31,20 @@
 #include "options.h"
 
 
+/* This is mpi_copy with a fix for opaque MPIs which store a NULL
+   pointer.  This will also be fixed in Libggcrypt 1.7.0.  */
+static gcry_mpi_t
+my_mpi_copy (gcry_mpi_t a)
+{
+  if (a
+      && gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE)
+      && !gcry_mpi_get_opaque (a, NULL))
+    return NULL;
+
+  return gcry_mpi_copy (a);
+}
+
+
 void
 free_symkey_enc( PKT_symkey_enc *enc )
 {
@@ -190,11 +204,11 @@ copy_public_key (PKT_public_key *d, PKT_public_key *s)
   n = pubkey_get_npkey (s->pubkey_algo);
   i = 0;
   if (!n)
-    d->pkey[i++] = mpi_copy (s->pkey[0]);
+    d->pkey[i++] = my_mpi_copy (s->pkey[0]);
   else
     {
       for (; i < n; i++ )
-        d->pkey[i] = mpi_copy( s->pkey[i] );
+        d->pkey[i] = my_mpi_copy (s->pkey[i]);
     }
   for (; i < PUBKEY_MAX_NSKEY; i++)
     d->pkey[i] = NULL;
@@ -237,10 +251,10 @@ copy_signature( PKT_signature *d, PKT_signature *s )
     memcpy( d, s, sizeof *d );
     n = pubkey_get_nsig( s->pubkey_algo );
     if( !n )
-	d->data[0] = mpi_copy(s->data[0]);
+	d->data[0] = my_mpi_copy(s->data[0]);
     else {
 	for(i=0; i < n; i++ )
-	    d->data[i] = mpi_copy( s->data[i] );
+	    d->data[i] = my_mpi_copy( s->data[i] );
     }
     d->pka_info = s->pka_info? cp_pka_info (s->pka_info) : NULL;
     d->hashed = cp_subpktarea (s->hashed);
