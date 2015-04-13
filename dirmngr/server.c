@@ -48,7 +48,9 @@
 #endif
 #include "ks-action.h"
 #include "ks-engine.h"  /* (ks_hkp_print_hosttable) */
-#include "ldap-parse-uri.h"
+#if USE_LDAP
+# include "ldap-parse-uri.h"
+#endif
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable. */
@@ -1530,10 +1532,14 @@ cmd_keyserver (assuan_context_t ctx, char *line)
       item->parsed_uri = NULL;
       strcpy (item->uri, line);
 
+#if USE_LDAP
       if (ldap_uri_p (item->uri))
 	err = ldap_parse_uri (&item->parsed_uri, line);
       else
-	err = http_parse_uri (&item->parsed_uri, line, 1);
+#endif
+	{
+	  err = http_parse_uri (&item->parsed_uri, line, 1);
+	}
       if (err)
         {
           xfree (item);

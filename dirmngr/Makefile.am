@@ -62,13 +62,12 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \
 	ks-action.c ks-action.h ks-engine.h \
-        ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c \
-	ks-engine-ldap.c \
-	ldap-parse-uri.c ldap-parse-uri.h
+	ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c
 
 if USE_LDAP
 dirmngr_SOURCES += ldapserver.h ldapserver.c ldap.c w32-ldap-help.h \
-                   ldap-wrapper.h $(ldap_url) $(extraldap_src)
+                   ldap-wrapper.h ldap-parse-uri.c ldap-parse-uri.h \
+                   ks-engine-ldap.c $(ldap_url) $(extraldap_src)
 ldaplibs = $(LDAPLIBS)
 else
 ldaplibs =
@@ -114,7 +113,12 @@ t_common_ldadd = $(libcommontls) $(libcommon) no-libgcrypt.o \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
                  $(DNSLIBS) $(LIBINTL) $(LIBICONV)
 
-module_tests = t-ldap-parse-uri
+module_tests =
+
+if USE_LDAP
+module_tests += t-ldap-parse-uri
+endif
+
 t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
         $(ldap_url) $(t_common_src)

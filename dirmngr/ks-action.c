@@ -30,7 +30,9 @@
 #include "misc.h"
 #include "ks-engine.h"
 #include "ks-action.h"
-#include "ldap-parse-uri.h"
+#if USE_LDAP
+# include "ldap-parse-uri.h"
+#endif
 
 /* Called by the engine's help functions to print the actual help.  */
 gpg_error_t
@@ -73,10 +75,14 @@ ks_action_help (ctrl_t ctrl, const char *url)
     }
   else
     {
+#if USE_LDAP
       if (ldap_uri_p (url))
 	err = ldap_parse_uri (&parsed_uri, url);
       else
-	err = http_parse_uri (&parsed_uri, url, 1);
+#endif
+	{
+	  err = http_parse_uri (&parsed_uri, url, 1);
+	}
 
       if (err)
         return err;
@@ -90,8 +96,10 @@ ks_action_help (ctrl_t ctrl, const char *url)
     err = ks_finger_help (ctrl, parsed_uri);
   if (!err)
     err = ks_kdns_help (ctrl, parsed_uri);
+#if USE_LDAP
   if (!err)
     err = ks_ldap_help (ctrl, parsed_uri);
+#endif
 
   if (!parsed_uri)
     ks_print_help (ctrl,
@@ -151,16 +159,23 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
   for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
-      int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
-		     || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
-		     || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      int is_ldap = 0;
+#if USE_LDAP
+      is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
+		 || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
+		 || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+#endif
       if (is_http || is_ldap)
         {
           any_server = 1;
-	  if (is_http)
-	    err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
-	  else if (is_ldap)
+#if USE_LDAP
+	  if (is_ldap)
 	    err = ks_ldap_search (ctrl, uri->parsed_uri, patterns->d, &infp);
+	  else
+#endif
+	    {
+	      err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
+	    }
 
           if (!err)
             {
@@ -203,18 +218,27 @@ ks_action_get (ctrl_t ctrl, uri_item_t keyservers,
   for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
-      int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
-		     || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
-		     || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      int is_ldap = 0;
+
+#if USE_LDAP
+      is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
+		 || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
+		 || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+#endif
+
       if (is_http || is_ldap)
         {
           any_server = 1;
           for (sl = patterns; !err && sl; sl = sl->next)
             {
-	      if (is_http)
-		err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
-	      else
+#if USE_LDAP
+	      if (is_ldap)
 		err = ks_ldap_get (ctrl, uri->parsed_uri, sl->d, &infp);
+	      else
+#endif
+		{
+	          err = ks_hkp_get (ctrl, uri->parsed_uri, sl->d, &infp);
+	        }
 
               if (err)
                 {
@@ -322,22 +346,32 @@ ks_action_put (ctrl_t ctrl, uri_item_t keyservers,
   int any_server = 0;
   uri_item_t uri;
 
+  (void) info;
+  (void) infolen;
+
   for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
-      int is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
-		     || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
-		     || strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+      int is_ldap = 0;
+
+#if USE_LDAP
+      is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
+		|| strcmp (uri->parsed_uri->scheme, "ldaps") == 0
+		|| strcmp (uri->parsed_uri->scheme, "ldapi") == 0);
+#endif
 
       if (is_http || is_ldap)
         {
           any_server = 1;
-	  if (is_http)
-	    err = ks_hkp_put (ctrl, uri->parsed_uri, data, datalen);
-	  else
+#if USE_LDAP
+	  if (is_ldap)
 	    err = ks_ldap_put (ctrl, uri->parsed_uri, data, datalen,
 			       info, infolen);
-
+	  else
+#endif
+	    {
+	      err = ks_hkp_put (ctrl, uri->parsed_uri, data, datalen);
+	    }
           if (err)
             {
               first_err = err;
