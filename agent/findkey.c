@@ -463,7 +463,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
   arg.change_required = 0;
   pi->check_cb_arg = &arg;
 
-  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi);
+  rc = agent_askpin (ctrl, desc_text, NULL, NULL, pi, hexgrip, cache_mode);
   if (!rc)
     {
       assert (arg.unprotected_key);

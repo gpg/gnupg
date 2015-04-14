@@ -370,7 +370,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   pi2->check_cb_arg = pi->pin;
 
  next_try:
-  err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
+  err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi, NULL, 0);
   initial_errtext = NULL;
   if (!err)
     {
@@ -384,7 +384,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
          it already did the repetition check, ask to confirm it.  */
       if (*pi->pin && !pi->repeat_okay)
         {
-          err = agent_askpin (ctrl, text2, NULL, NULL, pi2);
+          err = agent_askpin (ctrl, text2, NULL, NULL, pi2, NULL, 0);
           if (err == -1)
             { /* The re-entered one did not match and the user did not
                  hit cancel. */

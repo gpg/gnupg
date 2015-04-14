@@ -270,7 +270,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
 
   if (any_flags)
     {
-      rc = agent_askpin (ctrl, info, prompt, again_text, pi);
+      rc = agent_askpin (ctrl, info, prompt, again_text, pi, NULL, 0);
       again_text = NULL;
       if (!rc && newpin)
         {
@@ -292,7 +292,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
                               is_puk?
                               _("Repeat this PUK"):
                               _("Repeat this PIN")),
-                             prompt, NULL, pi2);
+                             prompt, NULL, pi2, NULL, 0);
           if (!rc && strcmp (pi->pin, pi2->pin))
             {
               again_text = (resetcode?
@@ -316,7 +316,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
                      info? info:"",
                      info? ")":"") < 0)
         desc = NULL;
-      rc = agent_askpin (ctrl, desc?desc:info, prompt, NULL, pi);
+      rc = agent_askpin (ctrl, desc?desc:info, prompt, NULL, pi, NULL, 0);
       xfree (desc);
     }
 

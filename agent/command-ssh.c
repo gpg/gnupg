@@ -3110,7 +3110,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   pi2->check_cb_arg = pi->pin;
 
  next_try:
-  err = agent_askpin (ctrl, description, NULL, initial_errtext, pi);
+  err = agent_askpin (ctrl, description, NULL, initial_errtext, pi, NULL, 0);
   initial_errtext = NULL;
   if (err)
     goto out;
@@ -3119,7 +3119,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
      it already did the repetition check, ask to confirm it.  */
   if (*pi->pin && !pi->repeat_okay)
     {
-      err = agent_askpin (ctrl, description2, NULL, NULL, pi2);
+      err = agent_askpin (ctrl, description2, NULL, NULL, pi2, NULL, 0);
       if (err == -1)
 	{ /* The re-entered one did not match and the user did not
 	     hit cancel. */

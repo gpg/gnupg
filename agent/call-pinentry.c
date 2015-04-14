@@ -737,12 +737,14 @@ close_button_status_cb (void *opaque, const char *line)
 
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
-   numbers. */
+   numbers.  KEYINFO and CACHEMODE are used to tell pinentry something
+   about the key. */
 int
 agent_askpin (ctrl_t ctrl,
               const char *desc_text, const char *prompt_text,
               const char *initial_errtext,
-              struct pin_entry_info_s *pininfo)
+              struct pin_entry_info_s *pininfo,
+              const char *keyinfo, cache_mode_t cache_mode)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -801,6 +803,24 @@ agent_askpin (ctrl_t ctrl,
   rc = start_pinentry (ctrl);
   if (rc)
     return rc;
+
+  /* If we have a KYEINFO string and are normal, user, or ssh cache
+     mode, we tell that the Pinentry so it may use it for own caching
+     purposes.  Most pinentries won't have this implemented and thus
+     we do not error out in this case.  */
+  if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
+                  || cache_mode == CACHE_MODE_USER
+                  || cache_mode == CACHE_MODE_SSH))
+    {
+      snprintf (line, DIM(line)-1, "SETKEYINFO %c/%s",
+                cache_mode == CACHE_MODE_USER? 'u' :
+                cache_mode == CACHE_MODE_SSH? 's' : 'n',
+                keyinfo);
+      rc = assuan_transact (entry_ctx, line,
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
+        return unlock_pinentry (rc);
+    }
 
   snprintf (line, DIM(line)-1, "SETDESC %s", desc_text);
   line[DIM(line)-1] = 0;

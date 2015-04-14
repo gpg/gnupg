@@ -961,7 +961,7 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
           err = try_do_unprotect_cb (pi);
         }
       if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE && !from_native)
-        err = agent_askpin (ctrl, prompt, NULL, NULL, pi);
+        err = agent_askpin (ctrl, prompt, NULL, NULL, pi, NULL, 0);
       skeyidx = pi_arg.skeyidx;
       if (!err && r_passphrase && is_protected)
         {
