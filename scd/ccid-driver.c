@@ -96,6 +96,16 @@
 
 #define DRVNAME "ccid-driver: "
 
+/* Max length of buffer with out CCID message header of 10-byte
+   Sending: 547 for RSA-4096 key import
+        APDU size = 540 (24+4+256+256)
+        commnd + lc + le = 4 + 3 + 0
+   Sending: write data object of cardholder certificate
+        APDU size = 2048
+        commnd + lc + le = 4 + 3 + 0
+   Receiving: 2048 for cardholder certificate
+*/
+#define CCID_MAX_BUF (2048+7+10)
 
 /* Depending on how this source is used we either define our error
    output to go to stderr or to the jnlib based logging functions.  We
@@ -242,7 +252,7 @@ struct ccid_driver_s
   unsigned char t1_nr;
   unsigned char nonnull_nad;
   int max_ifsd;
-  int ifsd;
+  int max_ccid_msglen;
   int ifsc;
   unsigned char apdu_level:2;     /* Reader supports short APDU level
                                      exchange.  With a value of 2 short
@@ -711,7 +721,7 @@ prepare_special_transport (ccid_driver_t handle)
   handle->nonnull_nad = 0;
   handle->auto_ifsd = 0;
   handle->max_ifsd = 32;
-  handle->ifsd = 0;
+  handle->max_ccid_msglen = CCID_MAX_BUF;
   handle->has_pinpad = 0;
   handle->apdu_level = 0;
   switch (handle->id_product)
@@ -743,7 +753,6 @@ parse_ccid_descriptor (ccid_driver_t handle,
   handle->nonnull_nad = 0;
   handle->auto_ifsd = 0;
   handle->max_ifsd = 32;
-  handle->ifsd = 0;
   handle->has_pinpad = 0;
   handle->apdu_level = 0;
   handle->auto_voltage = 0;
@@ -884,6 +893,7 @@ parse_ccid_descriptor (ccid_driver_t handle,
 
   us = convert_le_u32(buf+44);
   DEBUGOUT_1 ("  dwMaxCCIDMsgLen     %5u\n", us);
+  handle->max_ccid_msglen = us;
 
   DEBUGOUT (  "  bClassGetResponse    ");
   if (buf[48] == 0xff)
@@ -2794,109 +2804,101 @@ is_exlen_apdu (const unsigned char *apdu, size_t apdulen)
 /* Helper for ccid_transceive used for APDU level exchanges.  */
 static int
 ccid_transceive_apdu_level (ccid_driver_t handle,
-                            const unsigned char *apdu_buf, size_t apdu_buflen,
+                            const unsigned char *apdu_buf, size_t apdu_len,
                             unsigned char *resp, size_t maxresplen,
                             size_t *nresp)
 {
   int rc;
-  unsigned char send_buffer[10+261+300], recv_buffer[10+261+300];
-  const unsigned char *apdu;
-  size_t apdulen;
-  unsigned char *msg;
+  unsigned char msg[CCID_MAX_BUF];
+  const unsigned char *apdu_p;
+  size_t apdu_part_len;
   size_t msglen;
   unsigned char seqno;
   int bwi = 4;
+  unsigned char chain = 0;
 
-  msg = send_buffer;
-
-  apdu = apdu_buf;
-  apdulen = apdu_buflen;
-  assert (apdulen);
-
-  /* The maximum length for a short APDU T=1 block is 261.  For an
-     extended APDU T=1 block the maximum length 65544; however
-     extended APDU exchange level is not fully supported yet.  */
-  if (apdulen > sizeof (send_buffer) - 10)
+  if (apdu_len == 0 || apdu_len > sizeof (msg) - 10)
     return CCID_DRIVER_ERR_INV_VALUE; /* Invalid length. */
 
-  msg[0] = PC_to_RDR_XfrBlock;
-  msg[5] = 0; /* slot */
-  msg[6] = seqno = handle->seqno++;
-  msg[7] = bwi; /* bBWI */
-  msg[8] = 0; /* RFU */
-  msg[9] = 0; /* RFU */
-  memcpy (msg+10, apdu, apdulen);
-  set_msg_len (msg, apdulen);
-  msglen = 10 + apdulen;
-
-  rc = bulk_out (handle, msg, msglen, 0);
-  if (rc)
-    return rc;
-
-  msg = recv_buffer;
-  rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
-                RDR_to_PC_DataBlock, seqno, 5000, 0);
-  if (rc)
-    return rc;
-
-  if (msg[9] == 1)
+  apdu_p = apdu_buf;
+  while (1)
     {
-      size_t total_msglen = msglen;
-
-      while (1)
+      apdu_part_len = apdu_len;
+      if (apdu_part_len > handle->max_ccid_msglen - 10)
         {
-          unsigned char status;
-
-          msg = recv_buffer + total_msglen;
-
-          msg[0] = PC_to_RDR_XfrBlock;
-          msg[5] = 0; /* slot */
-          msg[6] = seqno = handle->seqno++;
-          msg[7] = bwi; /* bBWI */
-          msg[8] = 0x10;                /* Request next data block */
-          msg[9] = 0;
-          set_msg_len (msg, 0);
-          msglen = 10;
-
-          rc = bulk_out (handle, msg, msglen, 0);
-          if (rc)
-            return rc;
-
-          rc = bulk_in (handle, msg, sizeof recv_buffer - total_msglen, &msglen,
-                        RDR_to_PC_DataBlock, seqno, 5000, 0);
-          if (rc)
-            return rc;
-          status = msg[9];
-          memmove (msg, msg+10, msglen - 10);
-          total_msglen += msglen - 10;
-          if (total_msglen >= sizeof recv_buffer)
-            return CCID_DRIVER_ERR_OUT_OF_CORE;
-
-          if (status == 0x02)
-            break;
+          apdu_part_len = handle->max_ccid_msglen - 10;
+          chain |= 0x01;
         }
 
-      apdu = recv_buffer + 10;
-      apdulen = total_msglen - 10;
+      msg[0] = PC_to_RDR_XfrBlock;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = bwi;
+      msg[8] = chain;
+      msg[9] = 0;
+      memcpy (msg+10, apdu_p, apdu_part_len);
+      set_msg_len (msg, apdu_part_len);
+      msglen = 10 + apdu_part_len;
+
+      rc = bulk_out (handle, msg, msglen, 0);
+      if (rc)
+        return rc;
+
+      apdu_p += apdu_part_len;
+      apdu_len -= apdu_part_len;
+
+      rc = bulk_in (handle, msg, sizeof msg, &msglen,
+                    RDR_to_PC_DataBlock, seqno, 5000, 0);
+      if (rc)
+        return rc;
+
+      if (!(chain & 0x01))
+        break;
+
+      chain = 0x02;
     }
-  else
+
+  apdu_len = 0;
+  while (1)
     {
-      apdu = msg + 10;
-      apdulen = msglen - 10;
+      apdu_part_len = msglen - 10;
+      if (resp && apdu_len + apdu_part_len <= maxresplen)
+        memcpy (resp + apdu_len, msg+10, apdu_part_len);
+      apdu_len += apdu_part_len;
+
+      if (!(msg[9] & 0x01))
+        break;
+
+      msg[0] = PC_to_RDR_XfrBlock;
+      msg[5] = 0; /* slot */
+      msg[6] = seqno = handle->seqno++;
+      msg[7] = bwi;
+      msg[8] = 0x10;                /* Request next data block */
+      msg[9] = 0;
+      set_msg_len (msg, 0);
+      msglen = 10;
+
+      rc = bulk_out (handle, msg, msglen, 0);
+      if (rc)
+        return rc;
+
+      rc = bulk_in (handle, msg, sizeof msg, &msglen,
+                    RDR_to_PC_DataBlock, seqno, 5000, 0);
+      if (rc)
+        return rc;
     }
 
   if (resp)
     {
-      if (apdulen > maxresplen)
+      if (apdu_len > maxresplen)
         {
           DEBUGOUT_2 ("provided buffer too short for received data "
                       "(%u/%u)\n",
-                      (unsigned int)apdulen, (unsigned int)maxresplen);
+                      (unsigned int)apdu_len, (unsigned int)maxresplen);
           return CCID_DRIVER_ERR_INV_VALUE;
         }
 
-      memcpy (resp, apdu, apdulen);
-      *nresp = apdulen;
+      *nresp = apdu_len;
     }
 
   return 0;

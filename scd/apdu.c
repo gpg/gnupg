@@ -3806,9 +3806,9 @@ send_le (int slot, int class, int ins, int p0, int p1,
           apdu[apdulen++] = ins;
           apdu[apdulen++] = p0;
           apdu[apdulen++] = p1;
-          apdu[apdulen++] = 0;  /* Z byte: Extended length marker.  */
-          if (lc >= 0)
+          if (lc > 0)
             {
+              apdu[apdulen++] = 0;  /* Z byte: Extended length marker.  */
               apdu[apdulen++] = ((lc >> 8) & 0xff);
               apdu[apdulen++] = (lc & 0xff);
               memcpy (apdu+apdulen, data, lc);
@@ -3817,6 +3817,8 @@ send_le (int slot, int class, int ins, int p0, int p1,
             }
           if (le != -1)
             {
+              if (lc <= 0)
+                apdu[apdulen++] = 0;  /* Z byte: Extended length marker.  */
               apdu[apdulen++] = ((le >> 8) & 0xff);
               apdu[apdulen++] = (le & 0xff);
             }

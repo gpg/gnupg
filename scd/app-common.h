@@ -67,10 +67,10 @@ struct app_ctx_s {
   size_t serialnolen;      /* Length in octets of serialnumber. */
   const char *apptype;
   unsigned int card_version;
-  int did_chv1;
-  int force_chv1;   /* True if the card does not cache CHV1. */
-  int did_chv2;
-  int did_chv3;
+  unsigned int did_chv1:1;
+  unsigned int force_chv1:1;   /* True if the card does not cache CHV1. */
+  unsigned int did_chv2:1;
+  unsigned int did_chv3:1;
   struct app_local_s *app_local;  /* Local to the application. */
   struct {
     void (*deinit) (app_t app);
