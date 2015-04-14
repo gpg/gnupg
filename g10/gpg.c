@@ -3904,9 +3904,18 @@ main (int argc, char **argv)
 	    generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
 	}
 	else {
-	    if( argc )
-		wrong_args("--gen-key");
-	    generate_keypair (ctrl, 0, NULL, NULL, 0);
+            if (opt.command_fd != -1 && argc)
+              {
+                if( argc > 1 )
+                  wrong_args("--gen-key [parameterfile]");
+
+                opt.batch = 1;
+                generate_keypair (ctrl, 0, argc? *argv : NULL, NULL, 0);
+              }
+            else if (argc)
+              wrong_args ("--gen-key");
+            else
+              generate_keypair (ctrl, 0, NULL, NULL, 0);
 	}
 	break;
 
