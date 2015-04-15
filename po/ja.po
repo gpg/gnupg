@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.0.26\n"
+"Project-Id-Version: GNU gnupg 2.0.27\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-18 11:04+0900\n"
+"PO-Revision-Date: 2015-04-15 13:41+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -3083,21 +3083,18 @@ msgstr ""
 "              ユーザIDが主になると仮定する場合があります。\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "*警告*: 暗号副鍵がもうすぐ期限切れとなります。"
 
-#, fuzzy
-#| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "v3鍵の有効期限は変更できません\n"
+msgstr "有効期限の変更も検討ください。\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
 "versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
-"*警告*: これはPGP2形式の鍵です。フォトIDの追加で、一部のバージョンのPGPで"
-"は、\n"
-"      この鍵を拒否するかもしれません。\n"
+"*警告*: これはPGP2形式の鍵です。フォトIDの追加で、一部のバージョンのPGPでは、\n"
+"        この鍵を拒否するかもしれません。\n"
 
 msgid "Are you sure you still want to add it? (y/N) "
 msgstr "それでも追加したいですか? (y/N) "
