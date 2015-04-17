@@ -177,11 +177,15 @@ default_inq_cb (void *opaque, const char *line)
       else
         {
           char *pw;
+          char buf[32];
 
           if (parm->keyinfo.keyid)
             emit_status_need_passphrase (parm->keyinfo.keyid,
                                          parm->keyinfo.mainkeyid,
                                          parm->keyinfo.pubkey_algo);
+
+          snprintf (buf, sizeof (buf), "%u", 100);
+          write_status_text (STATUS_INQUIRE_MAXLEN, buf);
           pw = cpr_get_hidden ("passphrase.enter", _("Enter passphrase: "));
           cpr_kill_prompt ();
           if (*pw == CONTROL_D && !pw[1])
