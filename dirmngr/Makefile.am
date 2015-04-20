@@ -19,7 +19,7 @@
 
 ## Process this file with automake to produce Makefile.in
 
-EXTRA_DIST = OAUTHORS ONEWS ChangeLog.1 ChangeLog-2011
+EXTRA_DIST = OAUTHORS ONEWS ChangeLog-2011
 
 bin_PROGRAMS = dirmngr dirmngr-client
 
