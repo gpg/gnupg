@@ -112,7 +112,7 @@ static struct parse_options keyserver_opts[]=
 
 static gpg_error_t keyserver_get (ctrl_t ctrl,
                                   KEYDB_SEARCH_DESC *desc, int ndesc,
-                                  struct keyserver_spec *keyserver,
+                                  struct keyserver_spec *override_keyserver,
                                   unsigned char **r_fpr, size_t *r_fprlen);
 static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
                                   struct keyserver_spec *keyserver);
@@ -1394,6 +1394,9 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	    {
 	      struct keyserver_spec *keyserver=desc[i].skipfncvalue;
 
+              if (!opt.quiet)
+                log_info (_("refreshing 1 key from %s\n"), keyserver->uri);
+
 	      /* We use the keyserver structure we parsed out before.
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
@@ -1418,7 +1421,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 
   if(count>0)
     {
-      if(opt.keyserver)
+      if(opt.keyserver && !opt.quiet)
 	{
 	  if(count==1)
 	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver->uri);
@@ -1556,7 +1559,7 @@ static gpg_error_t
 keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
                      int *r_ndesc_used,
                      void *stats_handle,
-                     struct keyserver_spec *keyserver,
+                     struct keyserver_spec *override_keyserver,
                      unsigned char **r_fpr, size_t *r_fprlen)
 
 {
@@ -1672,15 +1675,15 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
           return err;
         }
 
-      if (!quiet && keyserver)
+      if (!quiet && override_keyserver)
         {
-          if (keyserver->host)
+          if (override_keyserver->host)
             log_info (_("requesting key %s from %s server %s\n"),
                       keystr_from_desc (&desc[idx]),
-                      keyserver->scheme, keyserver->host);
+                      override_keyserver->scheme, override_keyserver->host);
           else
             log_info (_("requesting key %s from %s\n"),
-                      keystr_from_desc (&desc[idx]), keyserver->uri);
+                      keystr_from_desc (&desc[idx]), override_keyserver->uri);
         }
     }
 
@@ -1688,7 +1691,8 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
      this is different from NPAT.  */
   *r_ndesc_used = idx;
 
-  err = gpg_dirmngr_ks_get (ctrl, pattern, &datastream, &source);
+  err = gpg_dirmngr_ks_get (ctrl, pattern, override_keyserver,
+                            &datastream, &source);
   for (idx=0; idx < npat; idx++)
     xfree (pattern[idx]);
   xfree (pattern);
@@ -1728,12 +1732,12 @@ keyserver_get_chunk (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
 
 /* Retrieve a key from a keyserver.  The search pattern are in
    (DESC,NDESC).  Allowed search modes are keyid, fingerprint, and
-   exact searches.  KEYSERVER gives an optional override keyserver. If
-   (R_FPR,R_FPRLEN) are not NULL, they may return the fingerprint of a
-   single imported key.  */
+   exact searches.  OVERRIDE_KEYSERVER gives an optional override
+   keyserver. If (R_FPR,R_FPRLEN) are not NULL, they may return the
+   fingerprint of a single imported key.  */
 static gpg_error_t
 keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
-               struct keyserver_spec *keyserver,
+               struct keyserver_spec *override_keyserver,
                unsigned char **r_fpr, size_t *r_fprlen)
 {
   gpg_error_t err;
@@ -1746,7 +1750,7 @@ keyserver_get (ctrl_t ctrl, KEYDB_SEARCH_DESC *desc, int ndesc,
   for (;;)
     {
       err = keyserver_get_chunk (ctrl, desc, ndesc, &ndesc_used, stats_handle,
-                                 keyserver, r_fpr, r_fprlen);
+                                 override_keyserver, r_fpr, r_fprlen);
       if (!err)
         any_good = 1;
       if (err || ndesc_used >= ndesc)

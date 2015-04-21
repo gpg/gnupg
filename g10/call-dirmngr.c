@@ -94,6 +94,9 @@ struct dirmngr_local_s
   /* The active Assuan context. */
   assuan_context_t ctx;
 
+  /* Flag set when the keyserver names have been send.  */
+  int set_keyservers_done;
+
   /* Flag set to true while an operation is running on CTX.  */
   int is_active;
 };
@@ -145,32 +148,9 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
     }
   else if (!err)
     {
-      keyserver_spec_t ksi;
-
       /* Tell the dirmngr that we want to collect audit event. */
       /* err = assuan_transact (agent_ctx, "OPTION audit-events=1", */
       /*                        NULL, NULL, NULL, NULL, NULL, NULL); */
-
-      /* Set all configured keyservers.  We clear existing keyservers
-         so that any keyserver configured in GPG overrides keyservers
-         possibly still configured in Dirmngr for the session (Note
-         that the keyserver list of a session in Dirmngr survives a
-         RESET. */
-      for (ksi = opt.keyserver; !err && ksi; ksi = ksi->next)
-        {
-          char *line;
-
-          line = xtryasprintf ("KEYSERVER%s %s",
-                               ksi == opt.keyserver? " --clear":"", ksi->uri);
-          if (!line)
-            err = gpg_error_from_syserror ();
-          else
-            {
-              err = assuan_transact (ctx, line,
-                                     NULL, NULL, NULL, NULL, NULL, NULL);
-              xfree (line);
-            }
-        }
     }
 
   if (err)
@@ -205,7 +185,42 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
         {
           /* Found an inactive local session - return that.  */
           assert (!dml->is_active);
+
+          /* But first do the per session init if not yet done.  */
+          if (!dml->set_keyservers_done)
+            {
+              keyserver_spec_t ksi;
+
+              /* Set all configured keyservers.  We clear existing
+                 keyservers so that any keyserver configured in GPG
+                 overrides keyservers possibly still configured in Dirmngr
+                 for the session (Note that the keyserver list of a
+                 session in Dirmngr survives a RESET. */
+              for (ksi = opt.keyserver; ksi; ksi = ksi->next)
+                {
+                  char *line;
+
+                  line = xtryasprintf
+                    ("KEYSERVER%s %s",
+                     ksi == opt.keyserver? " --clear":"", ksi->uri);
+                  if (!line)
+                    err = gpg_error_from_syserror ();
+                  else
+                    {
+                      err = assuan_transact (dml->ctx, line, NULL, NULL, NULL,
+                                             NULL, NULL, NULL);
+                      xfree (line);
+                    }
+
+                  if (err)
+                    return err;
+                }
+
+              dml->set_keyservers_done = 1;
+            }
+
           dml->is_active = 1;
+
           *r_ctx = dml->ctx;
           return 0;
         }
@@ -219,6 +234,7 @@ open_context (ctrl_t ctrl, assuan_context_t *r_ctx)
           xfree (dml);
           return err;
         }
+
       /* To be on the nPth thread safe site we need to add it to a
          list; this is far easier than to have a lock for this
          function.  It should not happen anyway but the code is free
@@ -250,6 +266,29 @@ close_context (ctrl_t ctrl, assuan_context_t ctx)
         }
     }
   log_fatal ("closing unknown dirmngr ctx %p\n", ctx);
+}
+
+
+/* Clear the set_keyservers_done flag on context CTX.  */
+static void
+clear_context_flags (ctrl_t ctrl, assuan_context_t ctx)
+{
+  dirmngr_local_t dml;
+
+  if (!ctx)
+    return;
+
+  for (dml = ctrl->dirmngr_local; dml; dml = dml->next)
+    {
+      if (dml->ctx == ctx)
+        {
+          if (!dml->is_active)
+            log_fatal ("clear_context_flags on inactive dirmngr ctx %p\n", ctx);
+          dml->set_keyservers_done = 0;
+          return;
+        }
+    }
+  log_fatal ("clear_context_flags on unknown dirmngr ctx %p\n", ctx);
 }
 
 
@@ -453,6 +492,7 @@ ks_get_data_cb (void *opaque, const void *data, size_t datalen)
    are able to ask for (1000-10-1)/(2+8+1) = 90 keys at once.  */
 gpg_error_t
 gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
+                    keyserver_spec_t override_keyserver,
                     estream_t *r_fp, char **r_source)
 {
   gpg_error_t err;
@@ -474,6 +514,27 @@ gpg_dirmngr_ks_get (ctrl_t ctrl, char **pattern,
   err = open_context (ctrl, &ctx);
   if (err)
     return err;
+
+  /* If we have an override keyserver we first indicate that the next
+     user of the context needs to again setup the global keyservers and
+     them we send the override keyserver.  */
+  if (override_keyserver)
+    {
+      clear_context_flags (ctrl, ctx);
+      line = xtryasprintf ("KEYSERVER --clear %s", override_keyserver->uri);
+      if (!line)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      err = assuan_transact (ctx, line, NULL, NULL, NULL,
+                             NULL, NULL, NULL);
+      if (err)
+        goto leave;
+
+      xfree (line);
+      line = NULL;
+    }
 
   /* Lump all patterns into one string.  */
   init_membuf (&mb, 1024);
