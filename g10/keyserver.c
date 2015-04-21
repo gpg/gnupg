@@ -92,11 +92,11 @@ static struct parse_options keyserver_opts[]=
     /* some of these options are not real - just for the help
        message */
     {"max-cert-size",0,NULL,NULL},  /* MUST be the first in this array! */
+    {"http-proxy", KEYSERVER_HTTP_PROXY, NULL, /* MUST be the second!  */
+     N_("override proxy options set for dirmngr")},
 
     {"include-revoked",0,NULL,N_("include revoked keys in search results")},
     {"include-subkeys",0,NULL,N_("include subkeys when searching by key ID")},
-    {"http-proxy", KEYSERVER_HTTP_PROXY, NULL,
-     N_("override proxy options set for dirmngr")},
     {"timeout", KEYSERVER_TIMEOUT, NULL,
      N_("override timeout options set for dirmngr")},
     {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL,
@@ -124,8 +124,9 @@ static gpg_error_t keyserver_put (ctrl_t ctrl, strlist_t keyspecs,
 
 static size_t max_cert_size=DEFAULT_MAX_CERT_SIZE;
 
+
 static void
-warn_kshelper_option(char *option)
+warn_kshelper_option(char *option, int noisy)
 {
   char *p;
 
@@ -139,9 +140,12 @@ warn_kshelper_option(char *option)
   else if (!strcmp (option, "check-cert")
            || !strcmp (option, "broken-http-proxy"))
     log_info ("keyserver option '%s' is obsolete\n", option);
+  else if (noisy || opt.verbose)
+    log_info ("keyserver option '%s' is unknown\n", option);
 }
 
 
+/* Called from main to parse the args for --keyserver-options.  */
 int
 parse_keyserver_options(char *options)
 {
@@ -150,6 +154,7 @@ parse_keyserver_options(char *options)
   char *max_cert=NULL;
 
   keyserver_opts[0].value=&max_cert;
+  keyserver_opts[1].value=&opt.keyserver_options.http_proxy;
 
   while((tok=optsep(&options)))
     {
@@ -166,7 +171,7 @@ parse_keyserver_options(char *options)
 	{
 	  /* All of the standard options have failed, so the option was
 	     destined for a keyserver plugin as used by GnuPG < 2.1 */
-	  warn_kshelper_option (tok);
+	  warn_kshelper_option (tok, 1);
 	}
     }
 
@@ -259,7 +264,7 @@ parse_keyserver_uri (const char *string,int require_scheme)
       options++;
 
       while((tok=optsep(&options)))
-	warn_kshelper_option (tok);
+	warn_kshelper_option (tok, 0);
     }
 
   /* Get the scheme */

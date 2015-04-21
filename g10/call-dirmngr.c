@@ -148,9 +148,24 @@ create_context (ctrl_t ctrl, assuan_context_t *r_ctx)
     }
   else if (!err)
     {
+      char *line;
+
       /* Tell the dirmngr that we want to collect audit event. */
       /* err = assuan_transact (agent_ctx, "OPTION audit-events=1", */
       /*                        NULL, NULL, NULL, NULL, NULL, NULL); */
+      if (opt.keyserver_options.http_proxy)
+        {
+          line = xtryasprintf ("OPTION http-proxy=%s",
+                               opt.keyserver_options.http_proxy);
+          if (!line)
+            err = gpg_error_from_syserror ();
+          else
+            {
+              err = assuan_transact (ctx, line, NULL, NULL, NULL,
+                                     NULL, NULL, NULL);
+              xfree (line);
+            }
+        }
     }
 
   if (err)
