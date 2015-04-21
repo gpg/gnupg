@@ -2,7 +2,7 @@
  * Copyright (C) 1999, 2001, 2002, 2003, 2004, 2006, 2009, 2010,
  *               2011 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
- * Copyright (C) 2015  g10 Code GmbH
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1394,6 +1394,33 @@ parse_tuple (char *string)
 }
 
 
+/* Return true if STRING is likely "hostname:port" or only "hostname".  */
+static int
+is_hostname_port (const char *string)
+{
+  int colons = 0;
+
+  if (!string || !*string)
+    return 0;
+  for (; *string; string++)
+    {
+      if (*string == ':')
+        {
+          if (colons)
+            return 0;
+          if (!string[1])
+            return 0;
+          colons++;
+        }
+      else if (!colons && strchr (" \t\f\n\v_@[]/", *string))
+        return 0; /* Invalid characters in hostname. */
+      else if (colons && !digitp (string))
+        return 0; /* Not a digit in the port.  */
+    }
+  return 1;
+}
+
+
 /*
  * Send a HTTP request to the server
  * Returns 0 if the request was successful
@@ -1474,8 +1501,26 @@ send_request (http_t hd, const char *httphost, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = parse_uri (&uri, http_proxy, 0,
-                       !!(hd->flags & HTTP_FLAG_FORCE_TLS));
+      err = parse_uri (&uri, http_proxy, 1, 0);
+      if (gpg_err_code (err) == GPG_ERR_INV_URI
+          && is_hostname_port (http_proxy))
+        {
+          /* Retry assuming a "hostname:port" string.  */
+          char *tmpname = strconcat ("http://", http_proxy, NULL);
+          if (tmpname && !parse_uri (&uri, tmpname, 0, 0))
+            err = 0;
+          xfree (tmpname);
+        }
+
+      if (err)
+        ;
+      else if (!strcmp (uri->scheme, "http") || !strcmp (uri->scheme, "socks4"))
+        ;
+      else if (!strcmp (uri->scheme, "socks5h"))
+        err = gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+      else
+        err = gpg_err_make (default_errsource, GPG_ERR_INV_URI);
+
       if (err)
 	{
 	  log_error ("invalid HTTP proxy (%s): %s\n",
