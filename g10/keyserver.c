@@ -91,13 +91,14 @@ static struct parse_options keyserver_opts[]=
   {
     /* some of these options are not real - just for the help
        message */
-    {"max-cert-size",0,NULL,NULL},
+    {"max-cert-size",0,NULL,NULL},  /* MUST be the first in this array! */
+
     {"include-revoked",0,NULL,N_("include revoked keys in search results")},
     {"include-subkeys",0,NULL,N_("include subkeys when searching by key ID")},
-    {"use-temp-files",0,NULL,
-     N_("use temporary files to pass data to keyserver helpers")},
-    {"keep-temp-files",KEYSERVER_KEEP_TEMP_FILES,NULL,
-     N_("do not delete temporary files after using them")},
+    {"http-proxy", KEYSERVER_HTTP_PROXY, NULL,
+     N_("override proxy options set for dirmngr")},
+    {"timeout", KEYSERVER_TIMEOUT, NULL,
+     N_("override timeout options set for dirmngr")},
     {"refresh-add-fake-v3-keyids",KEYSERVER_ADD_FAKE_V3,NULL,
      NULL},
     {"auto-key-retrieve",KEYSERVER_AUTO_KEY_RETRIEVE,NULL,
@@ -155,37 +156,13 @@ parse_keyserver_options(char *options)
       if(tok[0]=='\0')
 	continue;
 
-      /* For backwards compatibility.  1.2.x used honor-http-proxy and
-	 there are a good number of documents published that recommend
-	 it. */
-      if(ascii_strcasecmp(tok,"honor-http-proxy")==0)
-	tok="http-proxy";
-      else if(ascii_strcasecmp(tok,"no-honor-http-proxy")==0)
-	tok="no-http-proxy";
-
       /* We accept quite a few possible options here - some options to
 	 handle specially, the keyserver_options list, and import and
-	 export options that pertain to keyserver operations.  Note
-	 that you must use strncasecmp here as there might be an
-	 =argument attached which will foil the use of strcasecmp. */
+	 export options that pertain to keyserver operations.  */
 
-#ifdef EXEC_TEMPFILE_ONLY
-      if(ascii_strncasecmp(tok,"use-temp-files",14)==0 ||
-	      ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
-	log_info(_("WARNING: keyserver option '%s' is not used"
-		   " on this platform\n"),tok);
-#else
-      if(ascii_strncasecmp(tok,"use-temp-files",14)==0)
-	opt.keyserver_options.options|=KEYSERVER_USE_TEMP_FILES;
-      else if(ascii_strncasecmp(tok,"no-use-temp-files",17)==0)
-	opt.keyserver_options.options&=~KEYSERVER_USE_TEMP_FILES;
-#endif
-      else if(!parse_options(tok,&opt.keyserver_options.options,
-			     keyserver_opts,0)
-	 && !parse_import_options(tok,
-				  &opt.keyserver_options.import_options,0)
-	 && !parse_export_options(tok,
-				  &opt.keyserver_options.export_options,0))
+      if (!parse_options (tok,&opt.keyserver_options.options, keyserver_opts,0)
+          && !parse_import_options(tok,&opt.keyserver_options.import_options,0)
+          && !parse_export_options(tok,&opt.keyserver_options.export_options,0))
 	{
 	  /* All of the standard options have failed, so the option was
 	     destined for a keyserver plugin as used by GnuPG < 2.1 */
@@ -203,6 +180,7 @@ parse_keyserver_options(char *options)
 
   return ret;
 }
+
 
 void
 free_keyserver_spec(struct keyserver_spec *keyserver)

@@ -269,7 +269,7 @@ value to access HTTP servers.
 @item --http-proxy @var{host}[:@var{port}]
 @opindex http-proxy
 Use @var{host} and @var{port} to access HTTP servers.  The use of this
-options overrides the environment variable @env{http_proxy} regardless
+option overrides the environment variable @env{http_proxy} regardless
 whether @option{--honor-http-proxy} has been set.
 
 

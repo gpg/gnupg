@@ -361,8 +361,8 @@ EXTERN_UNLESS_MAIN_MODULE int memory_stat_debug_mode;
 #define VERIFY_PKA_TRUST_INCREASE        (1<<8)
 #define VERIFY_SHOW_PRIMARY_UID_ONLY     (1<<9)
 
-#define KEYSERVER_USE_TEMP_FILES         (1<<0)
-#define KEYSERVER_KEEP_TEMP_FILES        (1<<1)
+#define KEYSERVER_HTTP_PROXY             (1<<0)
+#define KEYSERVER_TIMEOUT                (1<<1)
 #define KEYSERVER_ADD_FAKE_V3            (1<<2)
 #define KEYSERVER_AUTO_KEY_RETRIEVE      (1<<3)
 #define KEYSERVER_HONOR_KEYSERVER_URL    (1<<4)

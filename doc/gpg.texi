@@ -1545,7 +1545,7 @@ need to send keys to more than one server. The keyserver
 @code{hkp://keys.gnupg.net} uses round robin DNS to give a different
 keyserver each time you use it.
 
-@item --keyserver-options @code{name=value1 }
+@item --keyserver-options @code{name=value}
 @opindex keyserver-options
 This is a space or comma delimited string that gives options for the
 keyserver. Options can be prefixed with a `no-' to give the opposite
@@ -1598,20 +1598,20 @@ are available for all keyserver types, some common options are:
   this option is not used with HKP keyservers, as they do not support
   retrieving keys by subkey id.
 
+@ifclear gpgtwoone
   @item use-temp-files
   On most Unix-like platforms, GnuPG communicates with the keyserver
   helper program via pipes, which is the most efficient method. This
   option forces GnuPG to use temporary files to communicate. On some
   platforms (such as Win32 and RISC OS), this option is always enabled.
+@end ifclear
 
+@ifclear gpgtwoone
   @item keep-temp-files
   If using `use-temp-files', do not delete the temp files after using
   them. This option is useful to learn the keyserver communication
   protocol by reading the temporary files.
-
-  @item verbose
-  Tell the keyserver helper program to be more verbose. This option can
-  be repeated multiple times to increase the verbosity level.
+@end ifclear
 
   @item timeout
   Tell the keyserver helper program how long (in seconds) to try and
@@ -1622,9 +1622,13 @@ are available for all keyserver types, some common options are:
   @option{--recv-keys} command as a whole. Defaults to 30 seconds.
 
   @item http-proxy=@code{value}
-  Set the proxy to use for HTTP and HKP keyservers.  This overrides the
-  "http_proxy" environment variable, if any.
-
+  Set the proxy to use for HTTP and HKP keyservers.
+@ifset gpgtwoone
+This overrides any proxy defined in @file{dirmngr.conf}.
+@end ifset
+@ifclear gpgtwoone
+This overrides the "http_proxy" environment variable, if any.
+@end ifclear
 
 @ifclear gpgtwoone
   @item max-cert-size
@@ -1632,26 +1636,42 @@ are available for all keyserver types, some common options are:
   Defaults to 16384 bytes.
 @end ifclear
 
+  @item verbose
+@ifset gpgtwoone
+This option has no more function since GnuPG 2.1.  Use the
+@code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
+Tell the keyserver helper program to be more verbose. This option can
+be repeated multiple times to increase the verbosity level.
+@end ifclear
+
   @item debug
-  Turn on debug output in the keyserver helper program.  Note that the
-  details of debug output depends on which keyserver helper program is
-  being used, and in turn, on any libraries that the keyserver helper
-  program uses internally (libcurl, openldap, etc).
+@ifset gpgtwoone
+This option has no more function since GnuPG 2.1.  Use the
+@code{dirmngr} configuration options instead.
+@end ifset
+@ifclear gpgtwoone
+Turn on debug output in the keyserver helper program.  Note that the
+details of debug output depends on which keyserver helper program is
+being used, and in turn, on any libraries that the keyserver helper
+program uses internally (libcurl, openldap, etc).
+@end ifclear
 
   @item check-cert
 @ifset gpgtwoone
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
+This option has no more function since GnuPG 2.1.  Use the
+@code{dirmngr} configuration options instead.
 @end ifset
 @ifclear gpgtwoone
-  Enable certificate checking if the keyserver presents one (for hkps or
-  ldaps).  Defaults to on.
+Enable certificate checking if the keyserver presents one (for hkps or
+ldaps).  Defaults to on.
 @end ifclear
 
   @item ca-cert-file
 @ifset gpgtwoone
-  This option has no more function since GnuPG 2.1.  Use the
-  @code{dirmngr} configuration options instead.
+This option has no more function since GnuPG 2.1.  Use the
+@code{dirmngr} configuration options instead.
 @end ifset
 @ifclear gpgtwoone
   Provide a certificate store to override the system default.  Only

@@ -34,7 +34,6 @@
 #define KEYSERVER_KEY_EXISTS       7 /* key already exists */
 #define KEYSERVER_KEY_INCOMPLETE   8 /* key incomplete (EOF) */
 #define KEYSERVER_UNREACHABLE      9 /* unable to contact keyserver */
-#define KEYSERVER_TIMEOUT         10 /* timeout while accessing keyserver */
 
 /* Must be 127 due to shell internal magic. */
 #define KEYSERVER_SCHEME_NOT_FOUND 127
