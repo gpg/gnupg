@@ -157,10 +157,6 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
   char *free_this = NULL;
   int redirects_left = 2; /* We allow for 2 redirect levels.  */
 
-#ifndef USE_LDAP
-  (void)ctrl;
-#endif
-
   *reader = NULL;
 
   if (!url)
@@ -202,7 +198,7 @@ crl_fetch (ctrl_t ctrl, const char *url, ksba_reader_t *reader)
         err = http_open_document (&hd, url, NULL,
                                   (opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
                                   |(DBG_LOOKUP? HTTP_FLAG_LOG_RESP:0),
-                                  opt.http_proxy, NULL, NULL, NULL);
+                                  ctrl->http_proxy, NULL, NULL, NULL);
 
       switch ( err? 99999 : http_get_status_code (hd) )
         {

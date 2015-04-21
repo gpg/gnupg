@@ -582,6 +582,7 @@ static gpg_error_t
 option_handler (assuan_context_t ctx, const char *key, const char *value)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
+  gpg_error_t err = 0;
 
   if (!strcmp (key, "force-crl-refresh"))
     {
@@ -593,11 +594,20 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       int i = *value? atoi (value) : 0;
       ctrl->audit_events = i;
     }
+  else if (!strcmp (key, "http-proxy"))
+    {
+      xfree (ctrl->http_proxy);
+      if (!*value || !strcmp (value, "none"))
+        ctrl->http_proxy = NULL;
+      else if (!(ctrl->http_proxy = xtrystrdup (value)))
+        err = gpg_error_from_syserror ();
+    }
   else
-    return gpg_error (GPG_ERR_UNKNOWN_OPTION);
+    err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
-  return 0;
+  return err;
 }
+
 
 static const char hlp_ldapserver[] =
   "LDAPSERVER <data>\n"
@@ -1633,7 +1643,7 @@ static const char hlp_ks_get[] =
   "\n"
   "Get the keys matching PATTERN from the configured OpenPGP keyservers\n"
   "(see command KEYSERVER).  Each pattern should be a keyid, a fingerprint,\n"
-  "or an exact name indicastes by the '=' prefix.";
+  "or an exact name indicated by the '=' prefix.";
 static gpg_error_t
 cmd_ks_get (assuan_context_t ctx, char *line)
 {
@@ -2096,6 +2106,7 @@ start_command_handler (assuan_fd_t fd)
     {
       release_ctrl_ocsp_certs (ctrl);
       xfree (ctrl->server_local);
+      dirmngr_deinit_default_ctrl (ctrl);
       xfree (ctrl);
     }
 }

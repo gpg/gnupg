@@ -166,7 +166,7 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
  once_more:
   err = http_open (&http, HTTP_REQ_POST, url, NULL, NULL,
                    (opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0),
-                   opt.http_proxy, NULL, NULL, NULL);
+                   ctrl->http_proxy, NULL, NULL, NULL);
   if (err)
     {
       log_error (_("error connecting to '%s': %s\n"), url, gpg_strerror (err));

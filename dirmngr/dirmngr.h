@@ -99,7 +99,7 @@ struct
   int disable_http;       /* Do not use HTTP at all.  */
   int disable_ldap;       /* Do not use LDAP at all.  */
   int honor_http_proxy;   /* Honor the http_proxy env variable. */
-  const char *http_proxy; /* Use given HTTP proxy.  */
+  const char *http_proxy; /* The default HTTP proxy.  */
   const char *ldap_proxy; /* Use given LDAP proxy.  */
   int only_ldap_proxy;    /* Only use the LDAP proxy; no fallback.  */
   int ignore_http_dp;     /* Ignore HTTP CRL distribution points.  */
@@ -174,12 +174,14 @@ struct server_control_s
                             response. */
 
   int audit_events;  /* Send audit events to client.  */
+  char *http_proxy;  /* The used http_proxy or NULL.  */
 };
 
 
 /*-- dirmngr.c --*/
 void dirmngr_exit( int );  /* Wrapper for exit() */
 void dirmngr_init_default_ctrl (ctrl_t ctrl);
+void dirmngr_deinit_default_ctrl (ctrl_t ctrl);
 void dirmngr_sighup_action (void);
 
 

@@ -1277,6 +1277,7 @@ main (int argc, char **argv)
           for (; !rc && argc; argc--, argv++)
             rc = crl_cache_load (&ctrlbuf, *argv);
         }
+      dirmngr_deinit_default_ctrl (&ctrlbuf);
     }
   else if (cmd == aFetchCRL)
     {
@@ -1306,6 +1307,7 @@ main (int argc, char **argv)
                        argv[0], gpg_strerror (rc));
           crl_close_reader (reader);
         }
+      dirmngr_deinit_default_ctrl (&ctrlbuf);
     }
   else if (cmd == aFlush)
     {
@@ -1465,9 +1467,18 @@ dirmngr_exit (int rc)
 void
 dirmngr_init_default_ctrl (ctrl_t ctrl)
 {
-  (void)ctrl;
+  if (opt.http_proxy)
+    ctrl->http_proxy = xstrdup (opt.http_proxy);
+}
 
-  /* Nothing for now. */
+
+void
+dirmngr_deinit_default_ctrl (ctrl_t ctrl)
+{
+  if (!ctrl)
+    return;
+  xfree (ctrl->http_proxy);
+  ctrl->http_proxy = NULL;
 }
 
 

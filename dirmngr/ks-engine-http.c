@@ -77,8 +77,8 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
                    url,
                    /* httphost */ NULL,
                    /* fixme: AUTH */ NULL,
-                   0,
-                   /* fixme: proxy*/ NULL,
+                   (opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0),
+                   ctrl->http_proxy,
                    session,
                    NULL,
                    /*FIXME curl->srvtag*/NULL);
