@@ -1586,12 +1586,14 @@ are available for all keyserver types, some common options are:
   keyserver URL, then use that preferred keyserver to refresh the key
   from. In addition, if auto-key-retrieve is set, and the signature
   being verified has a preferred keyserver URL, then use that preferred
-  keyserver to fetch the key from. Defaults to yes.
+  keyserver to fetch the key from. Note that this option introduces a
+  "web bug": The creator of the key can see when the keys is
+  refreshed.  Thus this option is not enabled by default.
 
   @item honor-pka-record
   If auto-key-retrieve is set, and the signature being verified has a
   PKA record, then use the PKA information to fetch the key. Defaults
-  to yes.
+  to "yes".
 
   @item include-subkeys
   When receiving a key, include subkeys as potential targets. Note that
