@@ -27,7 +27,7 @@
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
                                __FILE__,__LINE__, (a));          \
-                     exit (1);                                   \
+    /*exit (1)*/;                                                \
                    } while(0)
 
 
@@ -282,73 +282,74 @@ test_hex2str (void)
   static struct {
     const char *hex;
     const char *str;
+    int len; /* Length of STR.  This may included embedded nuls.  */
     int off;
     int no_alloc_test;
   } tests[] = {
     /* Simple tests.  */
     { "112233445566778899aabbccddeeff1122",
       "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
-      34 },
+      17, 34 },
     { "112233445566778899aabbccddeeff1122 blah",
       "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
-      34 },
+      17, 34 },
     { "112233445566778899aabbccddeeff1122\tblah",
       "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
-      34 },
+      17, 34 },
     { "112233445566778899aabbccddeeff1122\nblah",
       "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
-      34 },
+      17, 34 },
     /* Valid tests yielding an empty string.  */
     { "00",
       "",
-      2 },
+      1, 2 },
     { "00 x",
       "",
-      2 },
+      1, 2 },
     { "",
       "",
-      0 },
+      0, 0 },
     { " ",
       "",
-      0 },
+      0, 0 },
     /* Test trailing Nul feature.  */
-    { "112233445566778899aabbccddeeff112200",
-      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
-      36 },
-    { "112233445566778899aabbccddeeff112200 ",
-      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x22",
-      36 },
+    { "112233445566778899aabbccddeeff1100",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x00",
+      17, 34 },
+    { "112233445566778899aabbccddeeff1100 ",
+      "\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa\xbb\xcc\xdd\xee\xff\x11\x00",
+      17, 34 },
     /* Test buffer size. (buffer is of length 20)  */
     { "6162636465666768696A6b6c6D6e6f70717273",
       "abcdefghijklmnopqrs",
-      38 },
+      19, 38 },
     { "6162636465666768696A6b6c6D6e6f7071727300",
       "abcdefghijklmnopqrs",
-      40 },
+      20, 40 },
     { "6162636465666768696A6b6c6D6e6f7071727374",
       NULL,
-      0, 1 },
+      0, 0, 1 },
     { "6162636465666768696A6b6c6D6e6f707172737400",
       NULL,
-      0, 1 },
+      0, 0, 1 },
     { "6162636465666768696A6b6c6D6e6f707172737475",
       NULL,
-      0, 1 },
+      0, 0, 1 },
 
     /* Invalid tests. */
-    { "112233445566778899aabbccddeeff1122334",      NULL, 0 },
-    { "112233445566778899AABBCCDDEEFF1122334",      NULL, 0 },
-    { "112233445566778899AABBCCDDEEFG11223344",     NULL, 0 },
-    { "0:0112233445566778899aabbccddeeff11223344",  NULL, 0 },
-    { "112233445566778899aabbccddeeff11223344:",    NULL, 0 },
-    { "112233445566778899aabbccddeeff112233445",    NULL, 0 },
-    { "112233445566778899aabbccddeeff1122334455",   NULL, 0, 1 },
-    { "112233445566778899aabbccddeeff11223344blah", NULL, 0 },
-    { "0",    NULL, 0 },
-    { "00:",  NULL, 0 },
-    { "00x",  NULL, 0 },
+    { "112233445566778899aabbccddeeff1122334",      NULL, 0, 0 },
+    { "112233445566778899AABBCCDDEEFF1122334",      NULL, 0, 0 },
+    { "112233445566778899AABBCCDDEEFG11223344",     NULL, 0, 0 },
+    { "0:0112233445566778899aabbccddeeff11223344",  NULL, 0, 0 },
+    { "112233445566778899aabbccddeeff11223344:",    NULL, 0, 0 },
+    { "112233445566778899aabbccddeeff112233445",    NULL, 0, 0 },
+    { "112233445566778899aabbccddeeff1122334455",   NULL, 0, 0, 1 },
+    { "112233445566778899aabbccddeeff11223344blah", NULL, 0, 0 },
+    { "0",    NULL, 0, 0 },
+    { "00:",  NULL, 0, 0 },
+    { "00x",  NULL, 0, 0 },
 
-    { NULL, NULL, 0 }
+    { NULL, NULL, 0, 0 }
   };
 
   int idx;
@@ -369,7 +370,7 @@ test_hex2str (void)
             fail (idx);
           else if (tail - tests[idx].hex != tests[idx].off)
             fail (idx);
-          else if (strlen (buffer) != count)
+          else if (tests[idx].len != count)
             fail (idx);
         }
       else
@@ -400,7 +401,7 @@ test_hex2str (void)
             fail (idx);
           else if (tail - tmpbuf != tests[idx].off)
             fail (idx);
-          else if (strlen (tmpbuf) != count)
+          else if (tests[idx].len != count)
             fail (idx);
         }
       else

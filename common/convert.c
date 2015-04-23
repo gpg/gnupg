@@ -175,21 +175,26 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
 /* Convert HEXSTRING consisting of hex characters into string and
    store that at BUFFER.  HEXSTRING is either delimited by end of
    string or a white space character.  The function makes sure that
-   the resulting string in BUFFER is terminated by a Nul character.
+   the resulting string in BUFFER is terminated by a Nul byte.  Note
+   that the retruned string may include embedded Nul bytes; the extra
+   Nul byte at the end is used to make sure tha the result can always
+   be used as a C-string.
+
    BUFSIZE is the availabe length of BUFFER; if the converted result
-   plus a possible required Nul character does not fit into this
+   plus a possible required extra Nul character does not fit into this
    buffer, the function returns NULL and won't change the existing
-   conent of buffer.  In-place conversion is possible as long as
+   content of BUFFER.  In-place conversion is possible as long as
    BUFFER points to HEXSTRING.
 
-   If BUFFER is NULL and bufsize is 0 the function scans HEXSTRING but
+   If BUFFER is NULL and BUFSIZE is 0 the function scans HEXSTRING but
    does not store anything.  This may be used to find the end of
-   hexstring.
+   HEXSTRING.
 
    On sucess the function returns a pointer to the next character
    after HEXSTRING (which is either end-of-string or a the next white
-   space).  If BUFLEN is not NULL the strlen of buffer is stored
-   there; this will even be done if BUFFER has been passed as NULL. */
+   space).  If BUFLEN is not NULL the number of valid vytes in BUFFER
+   is stored there (an extra Nul byte is not counted); this will even
+   be done if BUFFER has been passed as NULL. */
 const char *
 hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
 {
@@ -203,7 +208,10 @@ hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
   for (s=hexstring, count=0; hexdigitp (s) && hexdigitp (s+1); s += 2, count++)
     ;
   if (*s && (!isascii (*s) || !isspace (*s)) )
-    return NULL;   /* Not followed by Nul or white space.  */
+    {
+      gpg_err_set_errno (EINVAL);
+      return NULL;   /* Not followed by Nul or white space.  */
+    }
   /* We need to append a nul character.  However we don't want that if
      the hexstring already ends with "00".  */
   need_nul = ((s == hexstring) || !(s[-2] == '0' && s[-1] == '0'));
@@ -213,7 +221,10 @@ hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
   if (buffer)
     {
       if (count > bufsize)
-        return NULL; /* Too long.  */
+        {
+          gpg_err_set_errno (EINVAL);
+          return NULL; /* Too long.  */
+        }
 
       for (s=hexstring, idx=0; hexdigitp (s) && hexdigitp (s+1); s += 2)
         ((unsigned char*)buffer)[idx++] = xtoi_2 (s);
@@ -222,7 +233,7 @@ hex2str (const char *hexstring, char *buffer, size_t bufsize, size_t *buflen)
     }
 
   if (buflen)
-    *buflen = count - 1;
+    *buflen = count - need_nul;
   return s;
 }
 
@@ -242,7 +253,6 @@ hex2str_alloc (const char *hexstring, size_t *r_count)
     {
       if (r_count)
         *r_count = 0;
-      gpg_err_set_errno (EINVAL);
       return NULL;
     }
   if (r_count)
