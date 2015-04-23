@@ -26,8 +26,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GNUPG_COMMON_DNS_CERT_H
-#define GNUPG_COMMON_DNS_CERT_H
+#ifndef GNUPG_DIRMNGR_DNS_CERT_H
+#define GNUPG_DIRMNGR_DNS_CERT_H
 
 
 #define DNS_CERTTYPE_ANY       0 /* Internal catch all type. */
@@ -46,10 +46,10 @@
 
 
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
-                          estream_t *r_key,
+                          void **r_key, size_t *r_keylen,
                           unsigned char **r_fpr, size_t *r_fprlen,
                           char **r_url);
 
 
 
-#endif /*GNUPG_COMMON_DNS_CERT_H*/
+#endif /*GNUPG_DIRMNGR_DNS_CERT_H*/

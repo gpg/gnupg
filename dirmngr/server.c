@@ -51,6 +51,8 @@
 #if USE_LDAP
 # include "ldap-parse-uri.h"
 #endif
+#include "dns-cert.h"
+#include "mbox-util.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable. */
@@ -150,13 +152,14 @@ leave_cmd (assuan_context_t ctx, gpg_error_t err)
   return err;
 }
 
-/* A write handler used by es_fopencookie to write assuan data
-   lines.  */
-static ssize_t
-data_line_cookie_write (void *cookie, const void *buffer_arg, size_t size)
+
+/* This is a wrapper around assuan_send_data which makes debugging the
+   output in verbose mode easier.  */
+static gpg_error_t
+data_line_write (assuan_context_t ctx, const void *buffer_arg, size_t size)
 {
-  assuan_context_t ctx = cookie;
   const char *buffer = buffer_arg;
+  gpg_error_t err;
 
   if (opt.verbose && buffer && size)
     {
@@ -169,32 +172,48 @@ data_line_cookie_write (void *cookie, const void *buffer_arg, size_t size)
         {
           p = memchr (buffer, '\n', nbytes);
           n = p ? (p - buffer) + 1 : nbytes;
-          if (assuan_send_data (ctx, buffer, n))
+          err = assuan_send_data (ctx, buffer, n);
+          if (err)
             {
               gpg_err_set_errno (EIO);
-              return -1;
+              return err;
             }
           buffer += n;
           nbytes -= n;
-          if (nbytes && assuan_send_data (ctx, NULL, 0)) /* Flush line. */
+          if (nbytes && (err=assuan_send_data (ctx, NULL, 0))) /* Flush line. */
             {
               gpg_err_set_errno (EIO);
-              return -1;
+              return err;
             }
         }
       while (nbytes);
     }
   else
     {
-      if (assuan_send_data (ctx, buffer, size))
+      err = assuan_send_data (ctx, buffer, size);
+      if (err)
         {
-          gpg_err_set_errno (EIO);
-          return -1;
+          gpg_err_set_errno (EIO);  /* For use by data_line_cookie_write.  */
+          return err;
         }
     }
 
-  return size;
+  return 0;
 }
+
+
+/* A write handler used by es_fopencookie to write assuan data
+   lines.  */
+static ssize_t
+data_line_cookie_write (void *cookie, const void *buffer, size_t size)
+{
+  assuan_context_t ctx = cookie;
+
+  if (data_line_write (ctx, buffer, size))
+    return -1;
+  return (ssize_t)size;
+}
+
 
 static int
 data_line_cookie_close (void *cookie)
@@ -609,6 +628,149 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 }
 
 
+
+static const char hlp_dns_cert[] =
+  "DNS_CERT <subtype> <name>\n"
+  "DNS_CERT --pka <user_id>\n"
+  "\n"
+  "Return the CERT record for <name>.  <subtype> is one of\n"
+  "  *     Return the first record of any supported subtype\n"
+  "  PGP   Return the first record of subtype PGP (3)\n"
+  "  IPGP  Return the first record of subtype IPGP (6)\n"
+  "If the content of a certifciate is available (PGP) it is returned\n"
+  "by data lines.  Fingerprints and URLs are returned via status lines.\n"
+  "In --pka mode the fingerprint and if available an URL is returned.";
+static gpg_error_t
+cmd_dns_cert (assuan_context_t ctx, char *line)
+{
+  /* ctrl_t ctrl = assuan_get_pointer (ctx); */
+  gpg_error_t err = 0;
+  int pka_mode;
+  char *mbox = NULL;
+  char *namebuf = NULL;
+  char *encodedhash = NULL;
+  const char *name;
+  int certtype;
+  char *p;
+  void *key = NULL;
+  size_t keylen;
+  unsigned char *fpr = NULL;
+  size_t fprlen;
+  char *url = NULL;
+
+  pka_mode = has_option (line, "--pka");
+  line = skip_options (line);
+  if (pka_mode)
+    ; /* No need to parse here - we do this later.  */
+  else
+    {
+      p = strchr (line, ' ');
+      if (!p)
+        {
+          err = PARM_ERROR ("missing arguments");
+          goto leave;
+        }
+      *p++ = 0;
+      if (!strcmp (line, "*"))
+        certtype = DNS_CERTTYPE_ANY;
+      else if (!strcmp (line, "IPGP"))
+        certtype = DNS_CERTTYPE_IPGP;
+      else if (!strcmp (line, "PGP"))
+        certtype = DNS_CERTTYPE_PGP;
+      else
+        {
+          err = PARM_ERROR ("unknown subtype");
+          goto leave;
+        }
+      while (spacep (p))
+        p++;
+      line = p;
+      if (!*line)
+        {
+          err = PARM_ERROR ("name missing");
+          goto leave;
+        }
+    }
+
+  if (pka_mode)
+    {
+      char *domain;  /* Points to mbox.  */
+      char hashbuf[20];
+
+      mbox = mailbox_from_userid (line);
+      if (!mbox || !(domain = strchr (mbox, '@')))
+        {
+          err = set_error (GPG_ERR_INV_USER_ID, "no mailbox in user id");
+          goto leave;
+        }
+      *domain++ = 0;
+
+      gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
+      encodedhash = zb32_encode (hashbuf, 8*20);
+      if (!encodedhash)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      namebuf = strconcat (encodedhash, "._pka.", domain, NULL);
+      if (!namebuf)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      name = namebuf;
+      certtype = DNS_CERTTYPE_IPGP;
+    }
+  else
+    name = line;
+
+  err = get_dns_cert (name, certtype, &key, &keylen, &fpr, &fprlen, &url);
+  if (err)
+    goto leave;
+
+  if (key)
+    {
+      err = data_line_write (ctx, key, keylen);
+      if (err)
+        goto leave;
+    }
+
+  if (fpr)
+    {
+      char *tmpstr;
+
+      tmpstr = bin2hex (fpr, fprlen, NULL);
+      if (!tmpstr)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          err = assuan_write_status (ctx, "FPR", tmpstr);
+          xfree (tmpstr);
+        }
+      if (err)
+        goto leave;
+    }
+
+  if (url)
+    {
+      err = assuan_write_status (ctx, "URL", url);
+      if (err)
+        goto leave;
+    }
+
+
+ leave:
+  xfree (key);
+  xfree (fpr);
+  xfree (url);
+  xfree (mbox);
+  xfree (namebuf);
+  xfree (encodedhash);
+  return leave_cmd (ctx, err);
+}
+
+
+
 static const char hlp_ldapserver[] =
   "LDAPSERVER <data>\n"
   "\n"
@@ -1919,6 +2081,7 @@ register_commands (assuan_context_t ctx)
     assuan_handler_t handler;
     const char * const help;
   } table[] = {
+    { "DNS_CERT",   cmd_dns_cert,   hlp_dns_cert },
     { "LDAPSERVER", cmd_ldapserver, hlp_ldapserver },
     { "ISVALID",    cmd_isvalid,    hlp_isvalid },
     { "CHECKCRL",   cmd_checkcrl,   hlp_checkcrl },

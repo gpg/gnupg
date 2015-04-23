@@ -575,3 +575,19 @@ agent_get_keyinfo (ctrl_t ctrl, const char *hexkeygrip, char **r_serialno)
   *r_serialno = NULL;
   return gpg_error (GPG_ERR_NO_SECKEY);
 }
+
+gpg_error_t
+gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
+                     unsigned char **r_fpr, size_t *r_fprlen,
+                     char **r_url)
+{
+  (void)ctrl;
+  (void)userid;
+  if (r_fpr)
+    *r_fpr = NULL;
+  if (r_fprlen)
+    *r_fprlen = 0;
+  if (r_url)
+    *r_url = NULL;
+  return gpg_error (GPG_ERR_NOT_FOUND);
+}

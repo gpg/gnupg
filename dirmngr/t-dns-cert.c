@@ -1,5 +1,5 @@
-/* t-pak.c - Module test for pka.c
- * Copyright (C) 2015 Werner Koch
+/* t-dns-cert.c - Module test for dns-cert.c
+ * Copyright (C) 2011 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -23,16 +23,19 @@
 #include <assert.h>
 
 #include "util.h"
-#include "pka.h"
+#include "dns-cert.h"
 
 
 int
 main (int argc, char **argv)
 {
-  unsigned char fpr[20];
+  gpg_error_t err;
+  unsigned char *fpr;
+  size_t fpr_len;
   char *url;
+  void *key;
+  size_t keylen;
   char const *name;
-  int i;
 
   if (argc)
     {
@@ -41,31 +44,49 @@ main (int argc, char **argv)
     }
 
   if (!argc)
-    name = "wk@gnupg.org";
+    name = "simon.josefsson.org";
   else if (argc == 1)
     name = *argv;
   else
     {
-      fputs ("usage: t-pka [userid]\n", stderr);
+      fputs ("usage: t-dns-cert [name]\n", stderr);
       return 1;
     }
 
-  printf ("User id ...: %s\n", name);
+  printf ("CERT lookup on '%s'\n", name);
 
-  url = get_pka_info (name, fpr, sizeof fpr);
-  printf ("Fingerprint: ");
-  if (url)
+  err = get_dns_cert (name, DNS_CERTTYPE_ANY, &key, &keylen,
+                      &fpr, &fpr_len, &url);
+  if (err)
+    printf ("get_dns_cert failed: %s <%s>\n",
+            gpg_strerror (err), gpg_strsource (err));
+  else if (key)
     {
-      for (i = 0; i < sizeof fpr; i++)
-        printf ("%02X", fpr[i]);
+      printf ("Key found (%u bytes)\n", (unsigned int)keylen);
     }
   else
-    printf ("[not found]");
+    {
+      if (fpr)
+	{
+	  int i;
 
-  putchar ('\n');
+	  printf ("Fingerprint found (%d bytes): ", (int)fpr_len);
+	  for (i = 0; i < fpr_len; i++)
+	    printf ("%02X", fpr[i]);
+	  putchar ('\n');
+	}
+      else
+	printf ("No fingerprint found\n");
 
-  printf ("URL .......: %s\n", (url && *url)? url : "[none]");
+      if (url)
+	printf ("URL found: %s\n", url);
+      else
+	printf ("No URL found\n");
 
+    }
+
+  xfree (key);
+  xfree (fpr);
   xfree (url);
 
   return 0;

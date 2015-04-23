@@ -87,8 +87,6 @@ common_sources = \
 	signal.c \
 	audit.c audit.h \
 	srv.h \
-	dns-cert.c dns-cert.h \
-	pka.c pka.h \
 	localename.c \
 	session-env.c session-env.h \
 	userids.c userids.h \
@@ -177,8 +175,8 @@ if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
 endif
 module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
-	       t-session-env t-openpgp-oid t-ssh-utils t-dns-cert \
-	       t-pka t-mapstrings t-zb32 t-mbox-util
+	       t-session-env t-openpgp-oid t-ssh-utils \
+	       t-mapstrings t-zb32 t-mbox-util
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -221,8 +219,6 @@ t_exechelp_LDADD = $(t_common_ldadd)
 t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
-t_dns_cert_LDADD = $(t_common_ldadd) $(DNSLIBS)
-t_pka_LDADD = $(t_common_ldadd) $(DNSLIBS)
 t_mapstrings_LDADD = $(t_common_ldadd)
 t_zb32_LDADD = $(t_common_ldadd)
 t_mbox_util_LDADD = $(t_common_ldadd)

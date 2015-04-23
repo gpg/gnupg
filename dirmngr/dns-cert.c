@@ -62,7 +62,7 @@
 
 
 /* Returns 0 on success or an error code.  If a PGP CERT record was
-   found, a new estream with that key will be returned at R_KEY and
+   found, the malloced data is returned at (R_KEY, R_KEYLEN) and
    the other return parameters are set to NULL/0.  If an IPGP CERT
    record was found the fingerprint is stored as an allocated block at
    R_FPR and its length at R_FPRLEN; an URL is is allocated as a
@@ -70,10 +70,10 @@
    returns the first CERT found with a supported type; it is expected
    that only one CERT record is used.  If WANT_CERTTYPE is one of the
    supported certtypes only records wih this certtype are considered
-   and the first found is returned.  R_KEY is optional. */
+   and the first found is returned.  (R_KEY,R_KEYLEN) are optional. */
 gpg_error_t
 get_dns_cert (const char *name, int want_certtype,
-              estream_t *r_key,
+              void **r_key, size_t *r_keylen,
               unsigned char **r_fpr, size_t *r_fprlen, char **r_url)
 {
 #ifdef USE_DNS_CERT
@@ -86,6 +86,8 @@ get_dns_cert (const char *name, int want_certtype,
 
   if (r_key)
     *r_key = NULL;
+  if (r_keylen)
+    *r_keylen = 0;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;
@@ -130,16 +132,20 @@ get_dns_cert (const char *name, int want_certtype,
 
       if (want_certtype && want_certtype != ctype)
         ; /* Not of the requested certtype.  */
-      else if (ctype == DNS_CERTTYPE_PGP && datalen >= 11 && r_key)
+      else if (ctype == DNS_CERTTYPE_PGP && datalen >= 11 && r_key && r_keylen)
         {
           /* CERT type is PGP.  Gpg checks for a minimum length of 11,
              thus we do the same.  */
-          *r_key = es_fopenmem_init (0, "rwb", data, datalen);
+          *r_key = xtrymalloc (datalen);
           if (!*r_key)
             err = gpg_err_make (default_errsource,
                                 gpg_err_code_from_syserror ());
           else
-            err = 0;
+            {
+              memcpy (*r_key, data, datalen);
+              *r_keylen = datalen;
+              err = 0;
+            }
           goto leave;
         }
       else if (ctype == DNS_CERTTYPE_IPGP && datalen && datalen < 1023
@@ -200,6 +206,8 @@ get_dns_cert (const char *name, int want_certtype,
 
   if (r_key)
     *r_key = NULL;
+  if (r_keylen)
+    *r_keylen = 0;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;
@@ -294,15 +302,19 @@ get_dns_cert (const char *name, int want_certtype,
           /* 15 bytes takes us to here */
           if (want_certtype && want_certtype != ctype)
             ; /* Not of the requested certtype.  */
-          else if (ctype == DNS_CERTTYPE_PGP && dlen && r_key)
+          else if (ctype == DNS_CERTTYPE_PGP && dlen && r_key && r_keylen)
             {
               /* PGP type */
-              *r_key = es_fopenmem_init (0, "rwb", pt, dlen);
+              *r_key = xtrymalloc (dlen);
               if (!*r_key)
                 err = gpg_err_make (default_errsource,
                                     gpg_err_code_from_syserror ());
               else
-                err = 0;
+                {
+                  memcpy (*r_key, pt, dlen);
+                  *r_keylen = dlen;
+                  err = 0;
+                }
               goto leave;
             }
           else if (ctype == DNS_CERTTYPE_IPGP
@@ -359,6 +371,8 @@ get_dns_cert (const char *name, int want_certtype,
   (void)name;
   if (r_key)
     *r_key = NULL;
+  if (r_keylen)
+    *r_keylen = NULL;
   *r_fpr = NULL;
   *r_fprlen = 0;
   *r_url = NULL;

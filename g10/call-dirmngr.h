@@ -31,6 +31,14 @@ gpg_error_t gpg_dirmngr_ks_fetch (ctrl_t ctrl,
                                   const char *url, estream_t *r_fp);
 gpg_error_t gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen,
                                 kbnode_t keyblock);
+gpg_error_t gpg_dirmngr_dns_cert (ctrl_t ctrl,
+                                  const char *name, const char *certtype,
+                                  estream_t *r_key,
+                                  unsigned char **r_fpr, size_t *r_fprlen,
+                                  char **r_url);
+gpg_error_t gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
+                                 unsigned char **r_fpr, size_t *r_fprlen,
+                                 char **r_url);
 
 
 #endif /*GNUPG_G10_CALL_DIRMNGR_H*/

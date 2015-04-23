@@ -41,8 +41,6 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
-#include "dns-cert.h"
-#include "pka.h"
 #ifdef USE_DNS_SRV
 #include "srv.h"
 #endif
@@ -1897,7 +1895,7 @@ keyserver_import_cert (ctrl_t ctrl,
   if(domain)
     *domain='.';
 
-  err = get_dns_cert (look, DNS_CERTTYPE_ANY, &key, fpr, fpr_len, &url);
+  err = gpg_dirmngr_dns_cert (ctrl, look, "*", &key, fpr, fpr_len, &url);
   if (err)
     ;
   else if (key)
@@ -1957,37 +1955,35 @@ keyserver_import_cert (ctrl_t ctrl,
 
 /* Import key pointed to by a PKA record. Return the requested
    fingerprint in fpr. */
-int
-keyserver_import_pka (ctrl_t ctrl,
-                      const char *name,unsigned char **fpr,size_t *fpr_len)
+gpg_error_t
+keyserver_import_pka (ctrl_t ctrl, const char *name,
+                      unsigned char **fpr, size_t *fpr_len)
 {
-  char *uri;
-  int rc = GPG_ERR_NO_PUBKEY;
+  gpg_error_t err;
+  char *url;
 
-  *fpr = xmalloc (20);
-  *fpr_len = 20;
-
-  uri = get_pka_info (name, *fpr, 20);
-  if (uri && *uri)
+  err = gpg_dirmngr_get_pka (ctrl, name, fpr, fpr_len, &url);
+  if (url && *url && fpr && fpr_len)
     {
-      /* An URI is available.  Lookup the key. */
+      /* An URL is available.  Lookup the key. */
       struct keyserver_spec *spec;
-      spec = parse_keyserver_uri (uri, 1);
+      spec = parse_keyserver_uri (url, 1);
       if (spec)
 	{
-	  rc = keyserver_import_fprint (ctrl, *fpr, 20, spec);
+	  err = keyserver_import_fprint (ctrl, *fpr, *fpr_len, spec);
 	  free_keyserver_spec (spec);
 	}
     }
-  xfree (uri);
+  xfree (url);
 
-  if (rc)
+  if (err)
     {
       xfree(*fpr);
       *fpr = NULL;
+      *fpr_len = 0;
     }
 
-  return rc;
+  return err;
 }
 
 

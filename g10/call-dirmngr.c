@@ -78,6 +78,16 @@ struct ks_put_parm_s
 };
 
 
+/* Parameter structure used with the DNS_CERT command.  */
+struct dns_cert_parm_s
+{
+  estream_t memfp;
+  unsigned char *fpr;
+  size_t fprlen;
+  char *url;
+};
+
+
 /* Data used to associate an session with dirmngr contexts.  We can't
    use a simple one to one mapping because we sometimes need two
    connections to the dirmngr; for example while doing a listing and
@@ -954,6 +964,231 @@ gpg_dirmngr_ks_put (ctrl_t ctrl, void *data, size_t datalen, kbnode_t keyblock)
   err = assuan_transact (ctx, "KS_PUT", NULL, NULL,
                          ks_put_inq_cb, &parm, NULL, NULL);
 
+  close_context (ctrl, ctx);
+  return err;
+}
+
+
+
+/* Data callback for the DNS_CERT command. */
+static gpg_error_t
+dns_cert_data_cb (void *opaque, const void *data, size_t datalen)
+{
+  struct dns_cert_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+  size_t nwritten;
+
+  if (!data)
+    return 0;  /* Ignore END commands.  */
+  if (!parm->memfp)
+    return 0;  /* Data is not required.  */
+
+  if (es_write (parm->memfp, data, datalen, &nwritten))
+    err = gpg_error_from_syserror ();
+
+  return err;
+}
+
+
+/* Status callback for the DNS_CERT command.  */
+static gpg_error_t
+dns_cert_status_cb (void *opaque, const char *line)
+{
+  struct dns_cert_parm_s *parm = opaque;
+  gpg_error_t err = 0;
+  const char *s;
+  size_t nbytes;
+
+  if ((s = has_leading_keyword (line, "FPR")))
+    {
+      char *buf;
+
+      if (!(buf = xtrystrdup (s)))
+        err = gpg_error_from_syserror ();
+      else if (parm->fpr)
+        err = gpg_error (GPG_ERR_DUP_KEY);
+      else if (!hex2str (buf, buf, strlen (buf)+1, &nbytes))
+        err = gpg_error_from_syserror ();
+      else if (nbytes < 20)
+        err = gpg_error (GPG_ERR_TOO_SHORT);
+      else
+        {
+          parm->fpr = xtrymalloc (nbytes);
+          if (!parm->fpr)
+            err = gpg_error_from_syserror ();
+          else
+            memcpy (parm->fpr, buf, (parm->fprlen = nbytes));
+        }
+      xfree (buf);
+    }
+  else if ((s = has_leading_keyword (line, "URL")) && *s)
+    {
+      if (parm->url)
+        err = gpg_error (GPG_ERR_DUP_KEY);
+      else if (!(parm->fpr = xtrymalloc (nbytes)))
+        err = gpg_error_from_syserror ();
+      else
+        memcpy (parm->fpr, line, (parm->fprlen = nbytes));
+    }
+
+  return err;
+}
+
+/* Ask the dirmngr for a DNS CERT record.  Depending on the found
+   subtypes different return values are set:
+
+   - For a PGP subtype a new estream with that key will be returned at
+     R_KEY and the other return parameters are set to NULL/0.
+
+   - For an IPGP subtype the fingerprint is stored as a malloced block
+     at (R_FPR,R_FPRLEN).  If an URL is available it is stored as a
+     malloced string at R_URL; NULL is stored if there is no URL.
+
+   If CERTTYPE is DNS_CERTTYPE_ANY this function returns the first
+   CERT record found with a supported type; it is expected that only
+   one CERT record is used.  If CERTTYPE is one of the supported
+   certtypes, only records with this certtype are considered and the
+   first one found is returned.  All R_* args are optional. */
+gpg_error_t
+gpg_dirmngr_dns_cert (ctrl_t ctrl, const char *name, const char *certtype,
+                      estream_t *r_key,
+                      unsigned char **r_fpr, size_t *r_fprlen,
+                      char **r_url)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct dns_cert_parm_s parm;
+  char *line = NULL;
+
+  memset (&parm, 0, sizeof parm);
+  if (r_key)
+    *r_key = NULL;
+  if (r_fpr)
+    *r_fpr = NULL;
+  if (r_fprlen)
+    *r_fprlen = 0;
+  if (r_url)
+    *r_url = NULL;
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  line = es_bsprintf ("DNS_CERT %s %s", certtype, name);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+    }
+
+  parm.memfp = es_fopenmem (0, "rwb");
+  if (!parm.memfp)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  err = assuan_transact (ctx, line, dns_cert_data_cb, &parm,
+                         NULL, NULL, dns_cert_status_cb, &parm);
+  if (err)
+    goto leave;
+
+  if (r_key)
+    {
+      es_rewind (parm.memfp);
+      *r_key = parm.memfp;
+      parm.memfp = NULL;
+    }
+
+  if (r_fpr && parm.fpr)
+    {
+      *r_fpr = parm.fpr;
+      parm.fpr = NULL;
+    }
+  if (r_fprlen)
+    *r_fprlen = parm.fprlen;
+
+  if (r_url && parm.url)
+    {
+      *r_url = parm.url;
+      parm.url = NULL;
+    }
+
+ leave:
+  xfree (parm.fpr);
+  xfree (parm.url);
+  es_fclose (parm.memfp);
+  xfree (line);
+  close_context (ctrl, ctx);
+  return err;
+}
+
+
+/* Ask the dirmngr for PKA info.  On success the retrieved fingerprint
+   is returned in a malloced buffer at R_FPR and its length is stored
+   at R_FPRLEN.  If an URL is available it is stored as a malloced
+   string at R_URL.  On error all return values are set to NULL/0.  */
+gpg_error_t
+gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
+                     unsigned char **r_fpr, size_t *r_fprlen,
+                     char **r_url)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct dns_cert_parm_s parm;
+  char *line = NULL;
+
+  memset (&parm, 0, sizeof parm);
+  if (r_fpr)
+    *r_fpr = NULL;
+  if (r_fprlen)
+    *r_fprlen = 0;
+  if (r_url)
+    *r_url = NULL;
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  line = es_bsprintf ("DNS_CERT --pka -- %s", userid);
+  if (!line)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+  if (strlen (line) + 2 >= ASSUAN_LINELENGTH)
+    {
+      err = gpg_error (GPG_ERR_TOO_LARGE);
+      goto leave;
+    }
+
+  err = assuan_transact (ctx, line, dns_cert_data_cb, &parm,
+                         NULL, NULL, dns_cert_status_cb, &parm);
+  if (err)
+    goto leave;
+
+  if (r_fpr && parm.fpr)
+    {
+      *r_fpr = parm.fpr;
+      parm.fpr = NULL;
+    }
+  if (r_fprlen)
+    *r_fprlen = parm.fprlen;
+
+  if (r_url && parm.url)
+    {
+      *r_url = parm.url;
+      parm.url = NULL;
+    }
+
+ leave:
+  xfree (parm.fpr);
+  xfree (parm.url);
+  xfree (line);
   close_context (ctrl, ctx);
   return err;
 }

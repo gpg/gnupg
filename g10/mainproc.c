@@ -38,9 +38,8 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "photoid.h"
-#include "pka.h"
 #include "mbox-util.h"
-
+#include "call-dirmngr.h"
 
 /* Put an upper limit on nested packets.  The 32 is an arbitrary
    value, a much lower should actually be sufficient.  */
@@ -1487,7 +1486,7 @@ get_pka_address (PKT_signature *sig)
    be retrieved for the signature we merely return it; if not we go
    out and try to get that DNS record. */
 static const char *
-pka_uri_from_sig (PKT_signature *sig)
+pka_uri_from_sig (CTX c, PKT_signature *sig)
 {
   if (!sig->flags.pka_tried)
     {
@@ -1496,17 +1495,28 @@ pka_uri_from_sig (PKT_signature *sig)
       sig->pka_info = get_pka_address (sig);
       if (sig->pka_info)
         {
-          char *uri;
+          char *url;
+          unsigned char *fpr;
+          size_t fprlen;
 
-          uri = get_pka_info (sig->pka_info->email,
-                              sig->pka_info->fpr, sizeof sig->pka_info->fpr);
-          if (uri)
+          if (!gpg_dirmngr_get_pka (c->ctrl, sig->pka_info->email,
+                                    &fpr, &fprlen, &url))
             {
-              sig->pka_info->valid = 1;
-              if (!*uri)
-                xfree (uri);
-              else
-                sig->pka_info->uri = uri;
+              if (fpr && fprlen == sizeof sig->pka_info->fpr)
+                {
+                  memcpy (sig->pka_info->fpr, fpr, fprlen);
+                  if (url)
+                    {
+                      sig->pka_info->valid = 1;
+                      if (!*url)
+                        xfree (url);
+                      else
+                        sig->pka_info->uri = url;
+                      url = NULL;
+                    }
+                }
+              xfree (fpr);
+              xfree (url);
             }
         }
     }
@@ -1734,7 +1744,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       && (opt.keyserver_options.options & KEYSERVER_AUTO_KEY_RETRIEVE)
       && (opt.keyserver_options.options & KEYSERVER_HONOR_PKA_RECORD))
     {
-      const char *uri = pka_uri_from_sig (sig);
+      const char *uri = pka_uri_from_sig (c, sig);
 
       if (uri)
         {
@@ -1997,7 +2007,7 @@ check_sig_and_print (CTX c, kbnode_t node)
       if (!rc)
         {
           if ((opt.verify_options & VERIFY_PKA_LOOKUPS))
-            pka_uri_from_sig (sig); /* Make sure PKA info is available. */
+            pka_uri_from_sig (c, sig); /* Make sure PKA info is available. */
           rc = check_signatures_trust (sig);
         }
 

@@ -61,6 +61,7 @@ dirmngr_SOURCES = dirmngr.c dirmngr.h server.c crlcache.c crlfetch.c	\
 	certcache.c certcache.h \
 	cdb.h cdblib.c misc.c dirmngr-err.h  \
 	ocsp.c ocsp.h validate.c validate.h  \
+	dns-cert.c dns-cert.h \
 	ks-action.c ks-action.h ks-engine.h \
 	ks-engine-hkp.c ks-engine-http.c ks-engine-finger.c ks-engine-kdns.c
 
@@ -113,7 +114,7 @@ t_common_ldadd = $(libcommontls) $(libcommon) no-libgcrypt.o \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
                  $(DNSLIBS) $(LIBINTL) $(LIBICONV)
 
-module_tests =
+module_tests = t-dns-cert
 
 if USE_LDAP
 module_tests += t-ldap-parse-uri
@@ -123,5 +124,8 @@ t_ldap_parse_uri_SOURCES = \
 	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd)
+
+t_dns_cert_SOURCES = t-dns-cert.c dns-cert.c
+t_dns_cert_LDADD   = $(t_common_ldadd)
 
 $(PROGRAMS) : $(libcommon) $(libcommonpth) $(libcommontls) $(libcommontlsnpth)

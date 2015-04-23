@@ -141,8 +141,7 @@ gpgv2_SOURCES = gpgv.c           \
 # here, even that it is not used by gpg.  A proper solution would
 # either to split up libkeybox.a or to use a separate keybox daemon.
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
-         $(ZLIBS) $(DNSLIBS) \
-         $(LIBINTL) $(CAPLIBS) $(NETLIBS)
+         $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
 gpg2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
