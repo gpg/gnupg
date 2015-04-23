@@ -171,7 +171,7 @@ endif
 #
 # Module tests
 #
-t_jnlib_src = t-support.c t-support.h
+t_jnlib_src = t-support.h
 jnlib_tests = t-stringhelp t-timestuff
 if HAVE_W32_SYSTEM
 jnlib_tests += t-w32-reg
