@@ -570,12 +570,12 @@ log_set_prefix (const char *text, unsigned int flags)
       prefix_buffer[sizeof (prefix_buffer)-1] = 0;
     }
 
-  with_prefix = (flags & JNLIB_LOG_WITH_PREFIX);
-  with_time = (flags & JNLIB_LOG_WITH_TIME);
-  with_pid  = (flags & JNLIB_LOG_WITH_PID);
-  running_detached = (flags & JNLIB_LOG_RUN_DETACHED);
+  with_prefix = (flags & GPGRT_LOG_WITH_PREFIX);
+  with_time = (flags & GPGRT_LOG_WITH_TIME);
+  with_pid  = (flags & GPGRT_LOG_WITH_PID);
+  running_detached = (flags & GPGRT_LOG_RUN_DETACHED);
 #ifdef HAVE_W32_SYSTEM
-  no_registry = (flags & JNLIB_LOG_NO_REGISTRY);
+  no_registry = (flags & GPGRT_LOG_NO_REGISTRY);
 #endif
 }
 
@@ -587,16 +587,16 @@ log_get_prefix (unsigned int *flags)
     {
       *flags = 0;
       if (with_prefix)
-        *flags |= JNLIB_LOG_WITH_PREFIX;
+        *flags |= GPGRT_LOG_WITH_PREFIX;
       if (with_time)
-        *flags |= JNLIB_LOG_WITH_TIME;
+        *flags |= GPGRT_LOG_WITH_TIME;
       if (with_pid)
-        *flags |= JNLIB_LOG_WITH_PID;
+        *flags |= GPGRT_LOG_WITH_PID;
       if (running_detached)
-        *flags |= JNLIB_LOG_RUN_DETACHED;
+        *flags |= GPGRT_LOG_RUN_DETACHED;
 #ifdef HAVE_W32_SYSTEM
       if (no_registry)
-        *flags |= JNLIB_LOG_NO_REGISTRY;
+        *flags |= GPGRT_LOG_NO_REGISTRY;
 #endif
     }
   return prefix_buffer;
@@ -657,11 +657,11 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
     }
 
   es_flockfile (logstream);
-  if (missing_lf && level != JNLIB_LOG_CONT)
+  if (missing_lf && level != GPGRT_LOG_CONT)
     es_putc_unlocked ('\n', logstream );
   missing_lf = 0;
 
-  if (level != JNLIB_LOG_CONT)
+  if (level != GPGRT_LOG_CONT)
     { /* Note this does not work for multiple line logging as we would
        * need to print to a buffer first */
       if (with_time && !force_prefixes)
@@ -699,14 +699,14 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
 
   switch (level)
     {
-    case JNLIB_LOG_BEGIN: break;
-    case JNLIB_LOG_CONT: break;
-    case JNLIB_LOG_INFO: break;
-    case JNLIB_LOG_WARN: break;
-    case JNLIB_LOG_ERROR: break;
-    case JNLIB_LOG_FATAL: es_fputs_unlocked ("Fatal: ",logstream ); break;
-    case JNLIB_LOG_BUG:   es_fputs_unlocked ("Ohhhh jeeee: ", logstream); break;
-    case JNLIB_LOG_DEBUG: es_fputs_unlocked ("DBG: ", logstream ); break;
+    case GPGRT_LOG_BEGIN: break;
+    case GPGRT_LOG_CONT: break;
+    case GPGRT_LOG_INFO: break;
+    case GPGRT_LOG_WARN: break;
+    case GPGRT_LOG_ERROR: break;
+    case GPGRT_LOG_FATAL: es_fputs_unlocked ("Fatal: ",logstream ); break;
+    case GPGRT_LOG_BUG:   es_fputs_unlocked ("Ohhhh jeeee: ", logstream); break;
+    case GPGRT_LOG_DEBUG: es_fputs_unlocked ("DBG: ", logstream ); break;
     default:
       es_fprintf_unlocked (logstream,"[Unknown log level %d]: ", level);
       break;
@@ -722,14 +722,14 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
         missing_lf = 1;
     }
 
-  if (level == JNLIB_LOG_FATAL)
+  if (level == GPGRT_LOG_FATAL)
     {
       if (missing_lf)
         es_putc_unlocked ('\n', logstream);
       es_funlockfile (logstream);
       exit (2);
     }
-  else if (level == JNLIB_LOG_BUG)
+  else if (level == GPGRT_LOG_BUG)
     {
       if (missing_lf)
         es_putc_unlocked ('\n', logstream );
@@ -785,7 +785,7 @@ log_info (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (JNLIB_LOG_INFO, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_INFO, 0, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -796,7 +796,7 @@ log_error (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (JNLIB_LOG_ERROR, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_ERROR, 0, fmt, arg_ptr);
   va_end (arg_ptr);
   /* Protect against counter overflow.  */
   if (errorcount < 30000)
@@ -810,7 +810,7 @@ log_fatal (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (JNLIB_LOG_FATAL, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_FATAL, 0, fmt, arg_ptr);
   va_end (arg_ptr);
   abort (); /* Never called; just to make the compiler happy.  */
 }
@@ -822,7 +822,7 @@ log_bug (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (JNLIB_LOG_BUG, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_BUG, 0, fmt, arg_ptr);
   va_end (arg_ptr);
   abort (); /* Never called; just to make the compiler happy.  */
 }
@@ -834,7 +834,7 @@ log_debug (const char *fmt, ...)
   va_list arg_ptr ;
 
   va_start (arg_ptr, fmt);
-  do_logv (JNLIB_LOG_DEBUG, 0, fmt, arg_ptr);
+  do_logv (GPGRT_LOG_DEBUG, 0, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -845,7 +845,7 @@ log_printf (const char *fmt, ...)
   va_list arg_ptr;
 
   va_start (arg_ptr, fmt);
-  do_logv (fmt ? JNLIB_LOG_CONT : JNLIB_LOG_BEGIN, 0, fmt, arg_ptr);
+  do_logv (fmt ? GPGRT_LOG_CONT : GPGRT_LOG_BEGIN, 0, fmt, arg_ptr);
   va_end (arg_ptr);
 }
 
@@ -855,7 +855,7 @@ log_printf (const char *fmt, ...)
 void
 log_flush (void)
 {
-  do_log_ignore_arg (JNLIB_LOG_CONT, NULL);
+  do_log_ignore_arg (GPGRT_LOG_CONT, NULL);
 }
 
 
@@ -923,14 +923,14 @@ log_clock (const char *string)
 void
 bug_at( const char *file, int line, const char *func )
 {
-  log_log (JNLIB_LOG_BUG, ("... this is a bug (%s:%d:%s)\n"), file, line, func);
+  log_log (GPGRT_LOG_BUG, ("... this is a bug (%s:%d:%s)\n"), file, line, func);
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #else
 void
 bug_at( const char *file, int line )
 {
-  log_log (JNLIB_LOG_BUG, _("you found a bug ... (%s:%d)\n"), file, line);
+  log_log (GPGRT_LOG_BUG, _("you found a bug ... (%s:%d)\n"), file, line);
   abort (); /* Never called; just to make the compiler happy.  */
 }
 #endif

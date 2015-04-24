@@ -1040,9 +1040,9 @@ main (int argc, char **argv)
       if (logfile)
         {
           log_set_file (logfile);
-          log_set_prefix (NULL, (JNLIB_LOG_WITH_PREFIX
-                                 |JNLIB_LOG_WITH_TIME
-                                 |JNLIB_LOG_WITH_PID));
+          log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                                 |GPGRT_LOG_WITH_TIME
+                                 |GPGRT_LOG_WITH_PID));
           current_logfile = xstrdup (logfile);
         }
 
@@ -1211,7 +1211,7 @@ main (int argc, char **argv)
             }
 
           log_get_prefix (&oldflags);
-          log_set_prefix (NULL, oldflags | JNLIB_LOG_RUN_DETACHED);
+          log_set_prefix (NULL, oldflags | GPGRT_LOG_RUN_DETACHED);
           opt.running_detached = 1;
 
           if (chdir("/"))
@@ -1825,7 +1825,7 @@ housekeeping_thread (void *arg)
 }
 
 
-#if JNLIB_GCC_HAVE_PUSH_PRAGMA
+#if GPGRT_GCC_HAVE_PUSH_PRAGMA
 # pragma GCC push_options
 # pragma GCC optimize ("no-strict-overflow")
 #endif
@@ -1845,7 +1845,7 @@ time_for_housekeeping_p (time_t curtime)
     }
   return 0;
 }
-#if JNLIB_GCC_HAVE_PUSH_PRAGMA
+#if GPGRT_GCC_HAVE_PUSH_PRAGMA
 # pragma GCC pop_options
 #endif
 

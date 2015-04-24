@@ -183,7 +183,7 @@ main (int argc, char **argv )
   early_system_init ();
   set_strusage (my_strusage);
   log_set_prefix ("dirmngr-client",
-                  JNLIB_LOG_WITH_PREFIX);
+                  GPGRT_LOG_WITH_PREFIX);
 
   /* For W32 we need to initialize the socket subsystem.  Becuase we
      don't use Pth we need to do this explicit. */

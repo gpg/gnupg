@@ -81,11 +81,11 @@ start_new_dirmngr (assuan_context_t *r_ctx,
 gpg_error_t print_assuan_status (assuan_context_t ctx,
                                  const char *keyword,
                                  const char *format,
-                                 ...) JNLIB_GCC_A_PRINTF(3,4);
+                                 ...) GPGRT_GCC_A_PRINTF(3,4);
 gpg_error_t vprint_assuan_status (assuan_context_t ctx,
                                   const char *keyword,
                                   const char *format,
-                                  va_list arg_ptr) JNLIB_GCC_A_PRINTF(3,0);
+                                  va_list arg_ptr) GPGRT_GCC_A_PRINTF(3,0);
 
 
 #endif /*GNUPG_COMMON_ASSHELP_H*/

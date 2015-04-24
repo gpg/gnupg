@@ -245,7 +245,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
 
 #ifdef USE_LDAPWRAPPER
   set_strusage (my_strusage);
-  log_set_prefix ("dirmngr_ldap", JNLIB_LOG_WITH_PREFIX);
+  log_set_prefix ("dirmngr_ldap", GPGRT_LOG_WITH_PREFIX);
 
   /* Setup I18N and common subsystems. */
   i18n_init();
@@ -297,7 +297,7 @@ ldap_wrapper_main (char **argv, estream_t outstream)
           {
             unsigned int oldflags;
             log_get_prefix (&oldflags);
-            log_set_prefix (NULL, oldflags | JNLIB_LOG_WITH_PID);
+            log_set_prefix (NULL, oldflags | GPGRT_LOG_WITH_PID);
           }
           break;
 

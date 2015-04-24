@@ -114,7 +114,7 @@ main (int argc, char **argv)
   setmode( fileno(stdin), O_BINARY );
   setmode( fileno(stdout), O_BINARY );
 #endif
-  log_set_prefix ("gpgsplit", JNLIB_LOG_WITH_PREFIX);
+  log_set_prefix ("gpgsplit", GPGRT_LOG_WITH_PREFIX);
   set_strusage (my_strusage);
 
   pargs.argc = &argc;

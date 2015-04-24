@@ -44,14 +44,14 @@ my_gcry_logger (void *dummy, int level, const char *fmt, va_list arg_ptr)
   /* Map the log levels.  */
   switch (level)
     {
-    case GCRY_LOG_CONT: level = JNLIB_LOG_CONT; break;
-    case GCRY_LOG_INFO: level = JNLIB_LOG_INFO; break;
-    case GCRY_LOG_WARN: level = JNLIB_LOG_WARN; break;
-    case GCRY_LOG_ERROR:level = JNLIB_LOG_ERROR; break;
-    case GCRY_LOG_FATAL:level = JNLIB_LOG_FATAL; break;
-    case GCRY_LOG_BUG:  level = JNLIB_LOG_BUG; break;
-    case GCRY_LOG_DEBUG:level = JNLIB_LOG_DEBUG; break;
-    default:            level = JNLIB_LOG_ERROR; break;
+    case GCRY_LOG_CONT: level = GPGRT_LOG_CONT; break;
+    case GCRY_LOG_INFO: level = GPGRT_LOG_INFO; break;
+    case GCRY_LOG_WARN: level = GPGRT_LOG_WARN; break;
+    case GCRY_LOG_ERROR:level = GPGRT_LOG_ERROR; break;
+    case GCRY_LOG_FATAL:level = GPGRT_LOG_FATAL; break;
+    case GCRY_LOG_BUG:  level = GPGRT_LOG_BUG; break;
+    case GCRY_LOG_DEBUG:level = GPGRT_LOG_DEBUG; break;
+    default:            level = GPGRT_LOG_ERROR; break;
     }
   log_logv (level, fmt, arg_ptr);
 }

@@ -72,11 +72,11 @@ struct audit_ctx_s
 
 
 static void writeout_para (audit_ctx_t ctx,
-                           const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
+                           const char *format, ...) GPGRT_GCC_A_PRINTF(2,3);
 static void writeout_li (audit_ctx_t ctx, const char *oktext,
-                         const char *format, ...) JNLIB_GCC_A_PRINTF(3,4);
+                         const char *format, ...) GPGRT_GCC_A_PRINTF(3,4);
 static void writeout_rem (audit_ctx_t ctx,
-                          const char *format, ...) JNLIB_GCC_A_PRINTF(2,3);
+                          const char *format, ...) GPGRT_GCC_A_PRINTF(2,3);
 
 
 /* Add NAME to the list of help tags.  NAME needs to be a const string

@@ -1155,7 +1155,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
           if (err)
             log_log ((gpg_err_code (err) == GPG_ERR_CANCELED
                       || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
-                     ? JNLIB_LOG_INFO : JNLIB_LOG_ERROR,
+                     ? GPGRT_LOG_INFO : GPGRT_LOG_ERROR,
                      _("key %s: error changing passphrase: %s\n"),
                        keystr_with_sub (keyid, subid),
                        gpg_strerror (err));

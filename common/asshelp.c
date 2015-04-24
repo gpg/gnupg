@@ -85,7 +85,7 @@ my_libassuan_log_handler (assuan_context_t ctx, void *hook,
     return 0; /* Assuan debugging is not enabled.  */
 
   if (msg)
-    log_string (JNLIB_LOG_DEBUG, msg);
+    log_string (GPGRT_LOG_DEBUG, msg);
 
   return 1;
 }

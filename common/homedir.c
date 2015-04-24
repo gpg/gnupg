@@ -268,7 +268,7 @@ check_portable_app (const char *dir)
           {
             unsigned int flags;
             log_get_prefix (&flags);
-            log_set_prefix (NULL, (flags | JNLIB_LOG_NO_REGISTRY));
+            log_set_prefix (NULL, (flags | GPGRT_LOG_NO_REGISTRY));
           }
           /* FIXME: We should read the file to detect special flags
              and print a warning if we don't understand them  */

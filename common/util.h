@@ -363,9 +363,9 @@ const char *gnupg_messages_locale_name (void);
 void setup_libgcrypt_logging (void);
 
 /* Same as estream_asprintf but die on memory failure.  */
-char *xasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
+char *xasprintf (const char *fmt, ...) GPGRT_GCC_A_PRINTF(1,2);
 /* This is now an alias to estream_asprintf.  */
-char *xtryasprintf (const char *fmt, ...) JNLIB_GCC_A_PRINTF(1,2);
+char *xtryasprintf (const char *fmt, ...) GPGRT_GCC_A_PRINTF(1,2);
 
 /* Replacement for gcry_cipher_algo_name.  */
 const char *gnupg_cipher_algo_name (int algo);

@@ -681,7 +681,7 @@ main (int argc, char **argv )
   /* Please note that we may running SUID(ROOT), so be very CAREFUL
      when adding any stuff between here and the call to INIT_SECMEM()
      somewhere after the option parsing */
-  log_set_prefix (GPG_AGENT_NAME, JNLIB_LOG_WITH_PREFIX|JNLIB_LOG_WITH_PID);
+  log_set_prefix (GPG_AGENT_NAME, GPGRT_LOG_WITH_PREFIX|GPGRT_LOG_WITH_PID);
 
   /* Make sure that our subsystems are ready.  */
   i18n_init ();
@@ -1071,9 +1071,9 @@ main (int argc, char **argv )
   if (logfile)
     {
       log_set_file (logfile);
-      log_set_prefix (NULL, (JNLIB_LOG_WITH_PREFIX
-                             |JNLIB_LOG_WITH_TIME
-                             |JNLIB_LOG_WITH_PID));
+      log_set_prefix (NULL, (GPGRT_LOG_WITH_PREFIX
+                             | GPGRT_LOG_WITH_TIME
+                             | GPGRT_LOG_WITH_PID));
       current_logfile = xstrdup (logfile);
     }
 
@@ -1303,7 +1303,7 @@ main (int argc, char **argv )
             }
 
           log_get_prefix (&oldflags);
-          log_set_prefix (NULL, oldflags | JNLIB_LOG_RUN_DETACHED);
+          log_set_prefix (NULL, oldflags | GPGRT_LOG_RUN_DETACHED);
           opt.running_detached = 1;
         }
 
@@ -1659,7 +1659,7 @@ create_server_socket (char *name, int primary,
          server is not yet operational; this would lead to a hang.  */
       if (primary && !check_for_running_agent (1))
         {
-          log_set_prefix (NULL, JNLIB_LOG_WITH_PREFIX);
+          log_set_prefix (NULL, GPGRT_LOG_WITH_PREFIX);
           log_set_file (NULL);
           log_error (_("a gpg-agent is already running - "
                        "not starting a new one\n"));
