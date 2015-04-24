@@ -19,7 +19,7 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
-             audit-events.h status-codes.h README.jnlib ChangeLog.jnlib \
+             audit-events.h status-codes.h ChangeLog.jnlib \
 	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico tls-ca.pem
 
 noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a \

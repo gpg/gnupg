@@ -1,9 +1,9 @@
 /* dynload.h - Wrapper functions for run-time dynamic loading
  *      Copyright (C) 2003, 2010 Free Software Foundation, Inc.
  *
- * This file is part of JNLIB, which is a subsystem of GnuPG.
+ * This file is part of GnuPG.
  *
- * JNLIB is free software; you can redistribute it and/or modify it
+ * GnuPG is free software; you can redistribute it and/or modify it
  * under the terms of either
  *
  *   - the GNU Lesser General Public License as published by the Free
@@ -18,7 +18,7 @@
  *
  * or both in parallel, as here.
  *
- * JNLIB is distributed in the hope that it will be useful, but
+ * GnuPG is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
@@ -28,8 +28,8 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBJNLIB_DYNLOAD_H
-#define LIBJNLIB_DYNLOAD_H
+#ifndef GNUPG_COMMON_DYNLOAD_H
+#define GNUPG_COMMON_DYNLOAD_H
 
 #ifndef __MINGW32__
 # include <dlfcn.h>
@@ -94,4 +94,4 @@ dlclose (void * hd)
   return -1;
 }
 # endif /*__MINGW32__*/
-#endif /*LIBJNLIB_DYNLOAD_H*/
+#endif /*GNUPG_COMMON_DYNLOAD_H*/

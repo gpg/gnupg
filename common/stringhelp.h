@@ -3,9 +3,9 @@
  *               2006, 2007, 2009  Free Software Foundation, Inc.
  *               2015  g10 Code GmbH
  *
- * This file is part of JNLIB, which is a subsystem of GnuPG.
+ * This file is part of GnuPG.
  *
- * JNLIB is free software; you can redistribute it and/or modify it
+ * GnuPG is free software; you can redistribute it and/or modify it
  * under the terms of either
  *
  *   - the GNU Lesser General Public License as published by the Free
@@ -20,7 +20,7 @@
  *
  * or both in parallel, as here.
  *
- * JNLIB is distributed in the hope that it will be useful, but
+ * GnuPG is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
@@ -30,8 +30,8 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBJNLIB_STRINGHELP_H
-#define LIBJNLIB_STRINGHELP_H
+#ifndef GNUPG_COMMON_STRINGHELP_H
+#define GNUPG_COMMON_STRINGHELP_H
 
 #include "types.h"
 
@@ -148,4 +148,4 @@ char **strsplit (char *string, char delim, char replacement, int *count);
 /*-- mapstrings.c --*/
 const char *map_static_macro_string (const char *string);
 
-#endif /*LIBJNLIB_STRINGHELP_H*/
+#endif /*GNUPG_COMMON_STRINGHELP_H*/

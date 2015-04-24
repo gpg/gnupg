@@ -5,6 +5,9 @@
 	commit log, and generate a top-level ChangeLog file from logs at
 	"make dist".  See doc/HACKING for details.
 
+	[Update 2015-04-24: README.jnlib has been removed and all
+	 references to JNLIB, except for this file, have been removed.]
+
 2010-03-10  Werner Koch  <wk@g10code.com>
 
 	See gnupg/common/ChangeLog for newer changes.

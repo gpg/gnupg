@@ -1,9 +1,9 @@
 /* strlist.h
  *	Copyright (C) 1998, 2000, 2001, 2006 Free Software Foundation, Inc.
  *
- * This file is part of JNLIB, which is a subsystem of GnuPG.
+ * This file is part of GnuPG.
  *
- * JNLIB is free software; you can redistribute it and/or modify it
+ * GnuPG is free software; you can redistribute it and/or modify it
  * under the terms of either
  *
  *   - the GNU Lesser General Public License as published by the Free
@@ -18,7 +18,7 @@
  *
  * or both in parallel, as here.
  *
- * JNLIB is distributed in the hope that it will be useful, but
+ * GnuPG is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
@@ -28,8 +28,8 @@
  * if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LIBJNLIB_STRLIST_H
-#define LIBJNLIB_STRLIST_H
+#ifndef GNUPG_COMMON_STRLIST_H
+#define GNUPG_COMMON_STRLIST_H
 
 struct string_list
 {
@@ -61,4 +61,4 @@ strlist_t strlist_find (strlist_t haystack, const char *needle);
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 
 
-#endif /*LIBJNLIB_STRLIST_H*/
+#endif /*GNUPG_COMMON_STRLIST_H*/

@@ -2,9 +2,9 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
  *               2009, 2010 Free Software Foundation, Inc.
  *
- * This file is part of JNLIB, which is a subsystem of GnuPG.
+ * This file is part of GnuPG.
  *
- * JNLIB is free software; you can redistribute it and/or modify it
+ * GnuPG is free software; you can redistribute it and/or modify it
  * under the terms of either
  *
  *   - the GNU Lesser General Public License as published by the Free
@@ -19,7 +19,7 @@
  *
  * or both in parallel, as here.
  *
- * JNLIB is distributed in the hope that it will be useful, but
+ * GnuPG is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
