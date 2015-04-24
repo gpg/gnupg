@@ -37,8 +37,7 @@
 #include <signal.h>
 #include <npth.h>
 
-#define JNLIB_NEED_LOG_LOGV
-#define JNLIB_NEED_AFLOCAL
+#define GNUPG_COMMON_NEED_AFLOCAL
 #include "scdaemon.h"
 #include <ksba.h>
 #include <gcrypt.h>

@@ -50,8 +50,7 @@
 #endif /*HTTP_USE_GNUTLS*/
 
 
-#define JNLIB_NEED_LOG_LOGV
-#define JNLIB_NEED_AFLOCAL
+#define GNUPG_COMMON_NEED_AFLOCAL
 #include "dirmngr.h"
 
 #include <assuan.h>

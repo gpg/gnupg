@@ -37,7 +37,6 @@
 #include <locale.h>
 #endif
 
-#define JNLIB_NEED_LOG_LOGV
 #include "i18n.h"
 #include "util.h"
 #include "exechelp.h"

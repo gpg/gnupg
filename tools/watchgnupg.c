@@ -49,7 +49,7 @@
 #define BUGREPORT_LINE ""
 #endif
 #if !defined(SUN_LEN) || !defined(PF_LOCAL) || !defined(AF_LOCAL)
-#define JNLIB_NEED_AFLOCAL
+#define GNUPG_COMMON_NEED_AFLOCAL
 #include "../common/mischelp.h"
 #endif
 

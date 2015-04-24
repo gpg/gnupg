@@ -27,7 +27,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#define JNLIB_NEED_LOG_LOGV
 #include "scdaemon.h"
 #include <gcrypt.h>
 

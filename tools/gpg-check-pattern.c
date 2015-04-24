@@ -40,8 +40,6 @@
 #include <regex.h>
 #include <ctype.h>
 
-
-#define JNLIB_NEED_LOG_LOGV
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"

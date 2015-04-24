@@ -28,8 +28,6 @@
 #include <stdarg.h>
 #include <assert.h>
 
-#define JNLIB_NEED_LOG_LOGV /* We need log_logv. */
-
 #include "gpgsm.h"
 #include <gcrypt.h>
 #include <ksba.h>

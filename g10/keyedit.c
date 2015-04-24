@@ -31,7 +31,6 @@
 # include <readline/readline.h>
 #endif
 
-#define JNLIB_NEED_LOG_LOGV
 #include "gpg.h"
 #include "options.h"
 #include "packet.h"

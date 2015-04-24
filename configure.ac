@@ -527,9 +527,6 @@ AH_BOTTOM([
 /* Tell Libgcrypt not to include deprecated definitions.  */
 #define GCRYPT_NO_DEPRECATED 1
 
-/* We use jnlib, so tell other modules about it.  */
-#define HAVE_JNLIB_LOGGING 1
-
 /* Our HTTP code is used in estream mode.  */
 #define HTTP_USE_ESTREAM 1
 
@@ -1174,7 +1171,8 @@ fi
 AC_MSG_NOTICE([checking for header files])
 AC_HEADER_STDC
 AC_CHECK_HEADERS([string.h unistd.h langinfo.h termio.h locale.h getopt.h \
-                  pty.h utmp.h pwd.h inttypes.h signal.h sys/select.h])
+                  pty.h utmp.h pwd.h inttypes.h signal.h sys/select.h     \
+                  signal.h])
 AC_HEADER_TIME
 
 
@@ -1255,6 +1253,10 @@ AC_CHECK_FUNCS([gettimeofday getrusage getrlimit setrlimit clock_gettime])
 AC_CHECK_FUNCS([atexit raise getpagesize strftime nl_langinfo setlocale])
 AC_CHECK_FUNCS([waitpid wait4 sigaction sigprocmask pipe getaddrinfo])
 AC_CHECK_FUNCS([ttyname rand ftello fsync stat lstat])
+AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
+                memrchr isascii timegm getrusage setrlimit stat setlocale   \
+                flockfile funlockfile fopencookie funopen getpwnam getpwuid \
+                getenv inet_pton strpbrk])
 
 if test "$have_android_system" = yes; then
    # On Android ttyname is a stub but prints an error message.
@@ -1268,17 +1270,6 @@ AC_CHECK_TYPES([struct sigaction, sigset_t],,,[#include <signal.h>])
 if test $ac_cv_func_mmap != yes -a $mmap_needed = yes; then
   AC_MSG_ERROR([[Sorry, the current implemenation requires mmap.]])
 fi
-
-#
-# These are needed by the jnlib parts in common.
-# Note:  We already checked pwd.h.
-AC_CHECK_HEADERS([signal.h])
-AC_CHECK_FUNCS([memicmp stpcpy strsep strlwr strtoul memmove stricmp strtol \
-                memrchr isascii timegm getrusage setrlimit stat setlocale   \
-                flockfile funlockfile fopencookie funopen getpwnam getpwuid \
-                getenv inet_pton strpbrk])
-# end jnlib checks.
-
 
 #
 # W32 specific test

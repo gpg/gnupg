@@ -44,7 +44,6 @@
 #endif
 
 /* For log_logv(), asctimestamp(), gnupg_get_time ().  */
-#define JNLIB_NEED_LOG_LOGV
 #include "util.h"
 #include "i18n.h"
 #include "exechelp.h"

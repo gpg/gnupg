@@ -26,9 +26,7 @@
 #include <gcrypt.h>
 #include "../common/logging.h"
 
-/* Try to write error message using the standard log mechanism.  The
-   current implementation requires that the HAVE_JNLIB_LOGGING is also
-   defined. */
+/* Try to write error message using the standard gnupg log mechanism.  */
 #define SPWQ_USE_LOGGING  1
 
 /* Memory allocation functions used by the implementation.  Note, that

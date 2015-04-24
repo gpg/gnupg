@@ -40,7 +40,7 @@
 #include <locale.h>
 #endif
 
-#define JNLIB_NEED_AFLOCAL
+#define GNUPG_COMMON_NEED_AFLOCAL
 #include "../common/mischelp.h"
 #ifdef HAVE_W32_SYSTEM
 #include "../common/w32-afunix.h"
@@ -49,10 +49,6 @@
 
 #define SIMPLE_PWQUERY_IMPLEMENTATION 1
 #include "simple-pwquery.h"
-
-#if defined(SPWQ_USE_LOGGING) && !defined(HAVE_JNLIB_LOGGING)
-# undef SPWQ_USE_LOGGING
-#endif
 
 #ifndef _
 #define _(a) (a)

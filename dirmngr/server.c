@@ -30,7 +30,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define JNLIB_NEED_LOG_LOGV
 #include "dirmngr.h"
 #include <assuan.h>
 

@@ -56,7 +56,7 @@
 #include <assert.h>
 
 
-#define JNLIB_NEED_AFLOCAL 1
+#define GNUPG_COMMON_NEED_AFLOCAL 1
 #include "util.h"
 #include "i18n.h"
 #include "common-defs.h"

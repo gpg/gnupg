@@ -44,7 +44,6 @@
 # include <windows.h>  /* To initialize the sockets.  fixme */
 #endif
 
-#define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
 #include "simple-pwquery.h"
 #include "i18n.h"

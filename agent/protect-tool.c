@@ -38,7 +38,6 @@
 #include <fcntl.h> /* for setmode() */
 #endif
 
-#define JNLIB_NEED_LOG_LOGV
 #include "agent.h"
 #include "i18n.h"
 #include "get-passphrase.h"

@@ -108,12 +108,10 @@
 #define CCID_MAX_BUF (2048+7+10)
 
 /* Depending on how this source is used we either define our error
-   output to go to stderr or to the jnlib based logging functions.  We
-   use the latter when GNUPG_MAJOR_VERSION is defines or when both,
-   GNUPG_SCD_MAIN_HEADER and HAVE_JNLIB_LOGGING are defined.
-*/
-#if defined(GNUPG_MAJOR_VERSION) \
-    || (defined(GNUPG_SCD_MAIN_HEADER) && defined(HAVE_JNLIB_LOGGING))
+   output to go to stderr or to the GnuPG based logging functions.  We
+   use the latter when GNUPG_MAJOR_VERSION or GNUPG_SCD_MAIN_HEADER
+   are defined.  */
+#if defined(GNUPG_MAJOR_VERSION) || defined(GNUPG_SCD_MAIN_HEADER)
 
 #if defined(GNUPG_SCD_MAIN_HEADER)
 #  include GNUPG_SCD_MAIN_HEADER

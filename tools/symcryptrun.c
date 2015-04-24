@@ -86,7 +86,6 @@
 #endif
 #include <gpg-error.h>
 
-#define JNLIB_NEED_LOG_LOGV
 #include "i18n.h"
 #include "../common/util.h"
 #include "../common/init.h"

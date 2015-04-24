@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#define JNLIB_NEED_LOG_LOGV
 #include "util.h"
 #include "iobuf.h"
 #include "i18n.h"

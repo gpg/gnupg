@@ -49,8 +49,7 @@
 #endif
 #include <npth.h>
 
-#define JNLIB_NEED_LOG_LOGV
-#define JNLIB_NEED_AFLOCAL
+#define GNUPG_COMMON_NEED_AFLOCAL
 #include "agent.h"
 #include <assuan.h> /* Malloc hooks  and socket wrappers. */
 
