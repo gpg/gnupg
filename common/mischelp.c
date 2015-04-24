@@ -42,20 +42,11 @@
 #endif /*!HAVE_W32_SYSTEM*/
 #include <errno.h>
 
-#include "libjnlib-config.h"
+#include "util.h"
+#include "common-defs.h"
 #include "stringhelp.h"
 #include "utf8conv.h"
 #include "mischelp.h"
-
-
-/* Because we can't use our jnlib_free macro in inline functions we
-   provide this wrapper.  */
-void
-_jnlib_free (void *p)
-{
-  if (p)
-    jnlib_free (p);
-}
 
 
 /* Check whether the files NAME1 and NAME2 are identical.  This is for
@@ -81,7 +72,7 @@ same_file_p (const char *name1, const char *name2)
           file1 = CreateFile (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
         else
           file1 = INVALID_HANDLE_VALUE;
-        jnlib_free (wname);
+        xfree (wname);
       }
 #else
       file1 = CreateFile (name1, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -97,7 +88,7 @@ same_file_p (const char *name1, const char *name2)
               file2 = CreateFile (wname, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
             else
               file2 = INVALID_HANDLE_VALUE;
-            jnlib_free (wname);
+            xfree (wname);
           }
 #else
           file2 = CreateFile (name2, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
@@ -159,7 +150,7 @@ timegm (struct tm *tm)
   /* System time is UTC thus the conversion is pretty easy.  */
   if (!SystemTimeToFileTime (&st, &ft))
     {
-      jnlib_set_errno (EINVAL);
+      gpg_err_set_errno (EINVAL);
       return (time_t)(-1);
     }
 

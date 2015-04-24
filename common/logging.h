@@ -33,15 +33,9 @@
 #define LIBJNLIB_LOGGING_H
 
 #include <stdio.h>
+#include <stdarg.h>
 #include "mischelp.h"
 #include "w32help.h"
-
-/* Flag values for log_set_prefix. */
-#define JNLIB_LOG_WITH_PREFIX  1
-#define JNLIB_LOG_WITH_TIME    2
-#define JNLIB_LOG_WITH_PID     4
-#define JNLIB_LOG_RUN_DETACHED 256
-#define JNLIB_LOG_NO_REGISTRY  512
 
 int  log_get_errorcount (int clear);
 void log_inc_errorcount (void);
@@ -62,10 +56,14 @@ estream_t log_get_stream (void);
 # define BUG() bug_at( __FILE__ , __LINE__ )
 #endif
 
-/* To avoid mandatory inclusion of stdarg and other stuff, do it only
-   if explicitly requested to do so. */
-#ifdef JNLIB_NEED_LOG_LOGV
-#include <stdarg.h>
+/* Flag values for log_set_prefix. */
+#define JNLIB_LOG_WITH_PREFIX  1
+#define JNLIB_LOG_WITH_TIME    2
+#define JNLIB_LOG_WITH_PID     4
+#define JNLIB_LOG_RUN_DETACHED 256
+#define JNLIB_LOG_NO_REGISTRY  512
+
+/* Log levels as used by log_log.  */
 enum jnlib_log_levels {
     JNLIB_LOG_BEGIN,
     JNLIB_LOG_CONT,
@@ -79,7 +77,6 @@ enum jnlib_log_levels {
 void log_log (int level, const char *fmt, ...) JNLIB_GCC_A_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
 void log_string (int level, const char *string);
-#endif /*JNLIB_NEED_LOG_LOGV*/
 
 
 void log_bug( const char *fmt, ... )	JNLIB_GCC_A_NR_PRINTF(1,2);

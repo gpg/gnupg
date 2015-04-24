@@ -27,8 +27,8 @@ noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a \
 if !HAVE_W32CE_SYSTEM
 noinst_LIBRARIES += libsimple-pwquery.a
 endif
-noinst_PROGRAMS = $(jnlib_tests) $(module_tests) $(module_maint_tests)
-TESTS = $(jnlib_tests) $(module_tests)
+noinst_PROGRAMS = $(module_tests) $(module_maint_tests)
+TESTS = $(module_tests)
 
 BUILT_SOURCES = audit-events.h status-codes.h
 
@@ -40,8 +40,10 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(KSBA_CFLAGS)
 
 include $(top_srcdir)/am/cmacros.am
 
-jnlib_sources = \
-	libjnlib-config.h \
+
+common_sources = \
+	common-defs.h \
+	util.h i18n.c i18n.h \
 	types.h host2net.h dynload.h w32help.h \
 	mapstrings.c stringhelp.c stringhelp.h \
 	strlist.c strlist.h \
@@ -49,16 +51,7 @@ jnlib_sources = \
 	argparse.c argparse.h \
 	logging.c logging.h  \
 	dotlock.c dotlock.h  \
-        mischelp.c mischelp.h
-
-if HAVE_W32_SYSTEM
-jnlib_sources += w32-reg.c w32-afunix.c w32-afunix.h
-endif
-
-
-common_sources = \
-	common-defs.h \
-	util.h i18n.c i18n.h \
+        mischelp.c mischelp.h \
 	status.c status.h\
 	shareddefs.h \
 	openpgpdefs.h \
@@ -95,6 +88,10 @@ common_sources = \
 	agent-opt.c \
 	helpfile.c
 
+if HAVE_W32_SYSTEM
+common_sources += w32-reg.c w32-afunix.c w32-afunix.h
+endif
+
 # Sources possible requiring a TLS library are put into a separate
 # conveince library.
 tls_sources = \
@@ -118,13 +115,13 @@ without_npth_sources = \
         get-passphrase.c get-passphrase.h
 
 
-libcommon_a_SOURCES = $(jnlib_sources) $(common_sources) $(without_npth_sources)
+libcommon_a_SOURCES = $(common_sources) $(without_npth_sources)
 if USE_DNS_SRV
 libcommon_a_SOURCES += srv.c
 endif
 libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_NPTH=1
 
-libcommonpth_a_SOURCES = $(jnlib_sources) $(common_sources)
+libcommonpth_a_SOURCES = $(common_sources)
 if USE_DNS_SRV
 libcommonpth_a_SOURCES += srv.c
 endif
@@ -169,16 +166,15 @@ endif
 #
 # Module tests
 #
-t_jnlib_src = t-support.h
-jnlib_tests = t-stringhelp t-timestuff
-if HAVE_W32_SYSTEM
-jnlib_tests += t-w32-reg
-endif
-module_tests = t-convert t-percent t-gettime t-sysutils t-sexputil \
+module_tests = t-stringhelp t-timestuff \
+               t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
 	       t-mapstrings t-zb32 t-mbox-util
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
+endif
+if HAVE_W32_SYSTEM
+module_tests += t-w32-reg
 endif
 
 if MAINTAINER_MODE
@@ -187,6 +183,7 @@ else
 module_maint_tests =
 endif
 
+t_extra_src = t-support.h
 
 t_common_cflags = $(KSBA_CFLAGS) $(LIBGCRYPT_CFLAGS) \
                   $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
@@ -195,19 +192,13 @@ t_common_ldadd = libcommon.a \
 	         $(LIBINTL) $(LIBICONV)
 
 
-# jnlib tests
-t_stringhelp_SOURCES = t-stringhelp.c $(t_jnlib_src)
+# Common tests
+t_stringhelp_SOURCES = t-stringhelp.c $(t_extra_src)
 t_stringhelp_LDADD = $(t_common_ldadd)
 
-t_timestuff_SOURCES = t-timestuff.c $(t_jnlib_src)
+t_timestuff_SOURCES = t-timestuff.c $(t_extra_src)
 t_timestuff_LDADD = $(t_common_ldadd)
 
-if HAVE_W32_SYSTEM
-t_w32_reg_SOURCES = t-w32-reg.c $(t_jnlib_src)
-t_w32_reg_LDADD   = $(t_common_ldadd)
-endif
-
-# common tests
 t_convert_LDADD = $(t_common_ldadd)
 t_percent_LDADD = $(t_common_ldadd)
 t_gettime_LDADD = $(t_common_ldadd)
@@ -222,6 +213,12 @@ t_ssh_utils_LDADD = $(t_common_ldadd)
 t_mapstrings_LDADD = $(t_common_ldadd)
 t_zb32_LDADD = $(t_common_ldadd)
 t_mbox_util_LDADD = $(t_common_ldadd)
+
+# System specific test
+if HAVE_W32_SYSTEM
+t_w32_reg_SOURCES = t-w32-reg.c $(t_extra_src)
+t_w32_reg_LDADD   = $(t_common_ldadd)
+endif
 
 # http tests
 t_http_SOURCES = t-http.c

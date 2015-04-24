@@ -20,6 +20,17 @@
 #ifndef GNUPG_COMMON_COMMON_DEFS_H
 #define GNUPG_COMMON_COMMON_DEFS_H
 
+
+/* Dummy replacement for getenv.  */
+#ifndef HAVE_GETENV
+#define getenv(a)  (NULL)
+#endif
+
+#ifdef HAVE_W32CE_SYSTEM
+#define getpid() GetCurrentProcessId ()
+#endif
+
+
 /*-- ttyio.c --*/
 void tty_private_set_rl_hooks (void (*init_stream) (FILE *),
                                void (*set_completer) (rl_completion_func_t*),

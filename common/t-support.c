@@ -128,9 +128,7 @@ gcry_free (void *a)
 
 /* Stubs for gpg-error functions required because some compilers do
    not eliminate the supposed-to-be-unused-inline-functions and thus
-   require functions called from these inline fucntions.  Although we
-   do not use gpg-error, gpg-error.h may get included via gcrypt.h if
-   it happens to be used used in libjnlib-config.h.  */
+   require functions called from these inline functions.  */
 #ifndef GPG_ERROR_H /* Don't do this if gpg-error.h has been included.  */
 int
 gpg_err_code_from_errno (int err)

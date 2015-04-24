@@ -56,9 +56,10 @@
 #include <assert.h>
 
 
-#define JNLIB_NEED_LOG_LOGV 1
 #define JNLIB_NEED_AFLOCAL 1
-#include "libjnlib-config.h"
+#include "util.h"
+#include "i18n.h"
+#include "common-defs.h"
 #include "logging.h"
 
 #ifdef HAVE_W32_SYSTEM
@@ -261,7 +262,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           void *addrbuf = NULL;
 #endif /*HAVE_INET_PTON*/
 
-          addrstr = jnlib_malloc (strlen (name) + 1);
+          addrstr = xtrymalloc (strlen (name) + 1);
           if (!addrstr)
             addrlen = 0; /* This indicates an error.  */
           else if (*name == '[')
@@ -271,7 +272,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
               p = strchr (addrstr, ']');
               if (!p || p[1] != ':' || !parse_portno (p+2, &port))
                 {
-                  jnlib_set_errno (EINVAL);
+                  gpg_err_set_errno (EINVAL);
                   addrlen = 0;
                 }
               else
@@ -289,7 +290,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
                   srvr_addr = (struct sockaddr *)&srvr_addr_in6;
                   addrlen = sizeof srvr_addr_in6;
 #else
-                  jnlib_set_errno (EAFNOSUPPORT);
+                  gpg_err_set_errno (EAFNOSUPPORT);
                   addrlen = 0;
 #endif
                 }
@@ -301,7 +302,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
               p = strchr (addrstr, ':');
               if (!p || !parse_portno (p+1, &port))
                 {
-                  jnlib_set_errno (EINVAL);
+                  gpg_err_set_errno (EINVAL);
                   addrlen = 0;
                 }
               else
@@ -334,7 +335,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
 #endif /*!HAVE_INET_PTON*/
             }
 
-          jnlib_free (addrstr);
+          xfree (addrstr);
         }
 
       cookie->fd = addrlen? socket (pf, SOCK_STREAM, 0) : -1;
@@ -425,7 +426,7 @@ fun_closer (void *cookie_arg)
 
   if (cookie->fd != -1 && cookie->fd != 2)
     sock_close (cookie->fd);
-  jnlib_free (cookie);
+  xfree (cookie);
   log_socket = -1;
   return 0;
 }
@@ -487,7 +488,7 @@ set_file_fd (const char *name, int fd)
   /* The xmalloc below is justified because we can expect that this
      function is called only during initialization and there is no
      easy way out of this error condition.  */
-  cookie = jnlib_xmalloc (sizeof *cookie + (name? strlen (name):0));
+  cookie = xmalloc (sizeof *cookie + (name? strlen (name):0));
   strcpy (cookie->name, name? name:"");
   cookie->quiet = 0;
   cookie->is_socket = 0;
@@ -648,7 +649,7 @@ do_logv (int level, int ignore_arg_ptr, const char *fmt, va_list arg_ptr)
              : read_w32_registry_string (NULL, GNUPG_REGISTRY_DIR,
                                          "DefaultLogFile"));
       log_set_file (tmp && *tmp? tmp : NULL);
-      jnlib_free (tmp);
+      xfree (tmp);
 #else
       log_set_file (NULL); /* Make sure a log stream has been set.  */
 #endif

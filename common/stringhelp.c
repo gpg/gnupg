@@ -50,7 +50,7 @@
 #endif
 
 #include "util.h"
-#include "libjnlib-config.h"
+#include "common-defs.h"
 #include "utf8conv.h"
 #include "sysutils.h"
 #include "stringhelp.h"
@@ -427,7 +427,7 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
         {
           if (xmode)
             BUG ();
-          jnlib_set_errno (EINVAL);
+          gpg_err_set_errno (EINVAL);
           return NULL;
         }
       argc++;
@@ -1136,7 +1136,7 @@ do_strconcat (const char *s1, va_list arg_ptr)
       needed += strlen (argv[argc]);
       if (argc >= DIM (argv)-1)
         {
-          jnlib_set_errno (EINVAL);
+          gpg_err_set_errno (EINVAL);
           return NULL;
         }
       argc++;

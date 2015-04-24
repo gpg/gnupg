@@ -310,7 +310,8 @@
 #endif
 
 #ifdef GNUPG_MAJOR_VERSION
-# include "libjnlib-config.h"
+# include "util.h"
+# include "common-defs.h"
 # include "stringhelp.h"  /* For stpcpy and w32_strerror. */
 #endif
 #ifdef HAVE_W32CE_SYSTEM
@@ -334,19 +335,17 @@
 /* In GnuPG we use wrappers around the malloc fucntions.  If they are
    not defined we assume that this code is used outside of GnuPG and
    fall back to the regular malloc functions.  */
-#ifndef jnlib_malloc
-# define jnlib_malloc(a)     malloc ((a))
-# define jnlib_calloc(a,b)   calloc ((a), (b))
-# define jnlib_free(a)	     free ((a))
+#ifndef xtrymalloc
+# define xtrymalloc(a)     malloc ((a))
+# define xtrycalloc(a,b)   calloc ((a), (b))
+# define xfree(a)	   free ((a))
 #endif
 
-/* Wrapper to set ERRNO.  */
-#ifndef jnlib_set_errno
-# ifdef HAVE_W32CE_SYSTEM
-#  define jnlib_set_errno(e)  gpg_err_set_errno ((e))
-# else
-#  define jnlib_set_errno(e)  do { errno = (e); } while (0)
-# endif
+/* Wrapper to set ERRNO (required for W32CE).  */
+#ifdef GPG_ERROR_VERSION
+#  define my_set_errno(e)  gpg_err_set_errno ((e))
+#else
+#  define my_set_errno(e)  do { errno = (e); } while (0)
 #endif
 
 /* Gettext macro replacement.  */
@@ -488,7 +487,7 @@ read_lockfile (dotlock_t h, int *same_node )
   expected_len = 10 + 1 + h->nodename_len + 1;
   if ( expected_len >= sizeof buffer_space)
     {
-      buffer = jnlib_malloc (expected_len);
+      buffer = xtrymalloc (expected_len);
       if (!buffer)
         return -1;
     }
@@ -501,8 +500,8 @@ read_lockfile (dotlock_t h, int *same_node )
       my_info_2 ("error opening lockfile '%s': %s\n",
                  h->lockname, strerror(errno) );
       if (buffer != buffer_space)
-        jnlib_free (buffer);
-      jnlib_set_errno (e); /* Need to return ERRNO here. */
+        xfree (buffer);
+      my_set_errno (e); /* Need to return ERRNO here. */
       return -1;
     }
 
@@ -518,8 +517,8 @@ read_lockfile (dotlock_t h, int *same_node )
           my_info_1 ("error reading lockfile '%s'\n", h->lockname );
           close (fd);
           if (buffer != buffer_space)
-            jnlib_free (buffer);
-          jnlib_set_errno (0); /* Do not return an inappropriate ERRNO. */
+            xfree (buffer);
+          my_set_errno (0); /* Do not return an inappropriate ERRNO. */
           return -1;
         }
       p += res;
@@ -532,8 +531,8 @@ read_lockfile (dotlock_t h, int *same_node )
     {
       my_info_1 ("invalid size of lockfile '%s'\n", h->lockname);
       if (buffer != buffer_space)
-        jnlib_free (buffer);
-      jnlib_set_errno (0); /* Better don't return an inappropriate ERRNO. */
+        xfree (buffer);
+      my_set_errno (0); /* Better don't return an inappropriate ERRNO. */
       return -1;
     }
 
@@ -543,8 +542,8 @@ read_lockfile (dotlock_t h, int *same_node )
     {
       my_error_2 ("invalid pid %d in lockfile '%s'\n", pid, h->lockname);
       if (buffer != buffer_space)
-        jnlib_free (buffer);
-      jnlib_set_errno (0);
+        xfree (buffer);
+      my_set_errno (0);
       return -1;
     }
 
@@ -554,7 +553,7 @@ read_lockfile (dotlock_t h, int *same_node )
     *same_node = 1;
 
   if (buffer != buffer_space)
-    jnlib_free (buffer);
+    xfree (buffer);
   return pid;
 }
 #endif /*HAVE_POSIX_SYSTEM */
@@ -578,7 +577,7 @@ use_hardlinks_p (const char *tname)
     return -1;
   nlink = (unsigned int)sb.st_nlink;
 
-  lname = jnlib_malloc (strlen (tname) + 1 + 1);
+  lname = xtrymalloc (strlen (tname) + 1 + 1);
   if (!lname)
     return -1;
   strcpy (lname, tname);
@@ -595,7 +594,7 @@ use_hardlinks_p (const char *tname)
     res = 1;   /* No hardlink support.  */
 
   unlink (lname);
-  jnlib_free (lname);
+  xfree (lname);
   return res;
 }
 #endif /*HAVE_POSIX_SYSTEM */
@@ -640,12 +639,12 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   all_lockfiles = h;
 
   tnamelen = dirpartlen + 6 + 30 + strlen(nodename) + 10 + 1;
-  h->tname = jnlib_malloc (tnamelen + 1);
+  h->tname = xtrymalloc (tnamelen + 1);
   if (!h->tname)
     {
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
-      jnlib_free (h);
+      xfree (h);
       return NULL;
     }
   h->nodename_len = strlen (nodename);
@@ -657,7 +656,7 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
 
   do
     {
-      jnlib_set_errno (0);
+      my_set_errno (0);
       fd = open (h->tname, O_WRONLY|O_CREAT|O_EXCL,
                  S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
     }
@@ -669,8 +668,8 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       UNLOCK_all_lockfiles ();
       my_error_2 (_("failed to create temporary file '%s': %s\n"),
                   h->tname, strerror(errno));
-      jnlib_free (h->tname);
-      jnlib_free (h);
+      xfree (h->tname);
+      xfree (h);
       return NULL;
     }
   if ( write (fd, pidstr, 11 ) != 11 )
@@ -702,14 +701,14 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
       goto write_failed;
     }
 
-  h->lockname = jnlib_malloc (strlen (file_to_lock) + 6 );
+  h->lockname = xtrymalloc (strlen (file_to_lock) + 6 );
   if (!h->lockname)
     {
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
       unlink (h->tname);
-      jnlib_free (h->tname);
-      jnlib_free (h);
+      xfree (h->tname);
+      xfree (h);
       return NULL;
     }
   strcpy (stpcpy (h->lockname, file_to_lock), EXTSEP_S "lock");
@@ -726,8 +725,8 @@ dotlock_create_unix (dotlock_t h, const char *file_to_lock)
   if ( fd != -1 )
     close (fd);
   unlink (h->tname);
-  jnlib_free (h->tname);
-  jnlib_free (h);
+  xfree (h->tname);
+  xfree (h);
   return NULL;
 }
 #endif /*HAVE_POSIX_SYSTEM*/
@@ -746,12 +745,12 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
   h->next = all_lockfiles;
   all_lockfiles = h;
 
-  h->lockname = jnlib_malloc ( strlen (file_to_lock) + 6 );
+  h->lockname = xtrymalloc ( strlen (file_to_lock) + 6 );
   if (!h->lockname)
     {
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
-      jnlib_free (h);
+      xfree (h);
       return NULL;
     }
   strcpy (stpcpy(h->lockname, file_to_lock), EXTSEP_S "lock");
@@ -775,7 +774,7 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
                               NULL, OPEN_ALWAYS, 0, NULL);
     else
       h->lockhd = INVALID_HANDLE_VALUE;
-    jnlib_free (wname);
+    xfree (wname);
 #else
     h->lockhd = CreateFile (h->lockname,
                             GENERIC_READ|GENERIC_WRITE,
@@ -788,8 +787,8 @@ dotlock_create_w32 (dotlock_t h, const char *file_to_lock)
       all_lockfiles = h->next;
       UNLOCK_all_lockfiles ();
       my_error_2 (_("can't create '%s': %s\n"), h->lockname, w32_strerror (-1));
-      jnlib_free (h->lockname);
-      jnlib_free (h);
+      xfree (h->lockname);
+      xfree (h);
       return NULL;
     }
   return h;
@@ -835,11 +834,11 @@ dotlock_create (const char *file_to_lock, unsigned int flags)
 
   if (flags)
     {
-      jnlib_set_errno (EINVAL);
+      my_set_errno (EINVAL);
       return NULL;
     }
 
-  h = jnlib_calloc (1, sizeof *h);
+  h = xtrycalloc (1, sizeof *h);
   if (!h)
     return NULL;
   h->extra_fd = -1;
@@ -890,7 +889,7 @@ dotlock_destroy_unix (dotlock_t h)
     unlink (h->lockname);
   if (h->tname && !h->use_o_excl)
     unlink (h->tname);
-  jnlib_free (h->tname);
+  xfree (h->tname);
 }
 #endif /*HAVE_POSIX_SYSTEM*/
 
@@ -943,9 +942,9 @@ dotlock_destroy (dotlock_t h)
 #else /* !HAVE_DOSISH_SYSTEM */
       dotlock_destroy_unix (h);
 #endif /* HAVE_DOSISH_SYSTEM */
-      jnlib_free (h->lockname);
+      xfree (h->lockname);
     }
-  jnlib_free(h);
+  xfree(h);
 }
 
 
@@ -972,7 +971,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
 
       do
         {
-          jnlib_set_errno (0);
+          my_set_errno (0);
           fd = open (h->lockname, O_WRONLY|O_CREAT|O_EXCL,
                      S_IRUSR|S_IRGRP|S_IROTH|S_IWUSR );
         }
@@ -1101,7 +1100,7 @@ dotlock_take_unix (dotlock_t h, long timeout)
       goto again;
     }
 
-  jnlib_set_errno (EACCES);
+  my_set_errno (EACCES);
   return -1;
 }
 #endif /*HAVE_POSIX_SYSTEM*/

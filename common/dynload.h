@@ -46,7 +46,7 @@ dlopen (const char *name, int flag)
 #ifdef HAVE_W32CE_SYSTEM
   wchar_t *wname = utf8_to_wchar (name);
   hd = wname? LoadLibrary (wname) : NULL;
-  _jnlib_free (wname);
+  xfree (wname);
 #else
   hd = LoadLibrary (name);
 #endif
@@ -62,7 +62,7 @@ dlsym (void *hd, const char *sym)
 #ifdef HAVE_W32CE_SYSTEM
       wchar_t *wsym = utf8_to_wchar (sym);
       void *fnc = wsym? GetProcAddress (hd, wsym) : NULL;
-      _jnlib_free (wsym);
+      xfree (wsym);
 #else
       void *fnc = GetProcAddress (hd, sym);
 #endif

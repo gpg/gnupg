@@ -47,13 +47,13 @@
 #include <errno.h>
 
 #ifdef GNUPG_MAJOR_VERSION
-# include "libjnlib-config.h"
+# include "util.h"
+# include "common-defs.h"
+# include "i18n.h"
 # include "mischelp.h"
 # include "stringhelp.h"
 # include "logging.h"
-# ifdef JNLIB_NEED_UTF8CONV
-#  include "utf8conv.h"
-# endif
+# include "utf8conv.h"
 #endif /*GNUPG_MAJOR_VERSION*/
 
 #include "argparse.h"
@@ -83,13 +83,13 @@
 # ifndef DIM
 #  define DIM(v)           (sizeof(v)/sizeof((v)[0]))
 # endif
-# define jnlib_malloc(a)    malloc ((a))
-# define jnlib_realloc(a,b) realloc ((a), (b))
-# define jnlib_strdup(a)    strdup ((a))
-# define jnlib_free(a)      free ((a))
-# define jnlib_log_error    my_log_error
-# define jnlib_log_bug	    my_log_bug
-# define trim_spaces(a)     my_trim_spaces ((a))
+# define xtrymalloc(a)    malloc ((a))
+# define xtryrealloc(a,b) realloc ((a), (b))
+# define xtrystrdup(a)    strdup ((a))
+# define xfree(a)         free ((a))
+# define log_error        my_log_error
+# define log_bug	  my_log_bug
+# define trim_spaces(a)   my_trim_spaces ((a))
 # define map_static_macro_string(a)  (a)
 #endif /*!GNUPG_MAJOR_VERSION*/
 
@@ -343,7 +343,7 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
       arg->err = 0;
       arg->flags |= 1<<15; /* Mark as initialized.  */
       if ( *arg->argc < 0 )
-        jnlib_log_bug ("invalid argument for arg_parse\n");
+        log_bug ("invalid argument for arg_parse\n");
     }
 
 
@@ -372,29 +372,28 @@ initialize( ARGPARSE_ARGS *arg, const char *filename, unsigned *lineno )
             s = _("out of core");
           else
             s = _("invalid option");
-          jnlib_log_error ("%s:%u: %s\n", filename, *lineno, s);
+          log_error ("%s:%u: %s\n", filename, *lineno, s);
 	}
       else
         {
           s = arg->internal.last? arg->internal.last:"[??]";
 
           if ( arg->r_opt == ARGPARSE_MISSING_ARG )
-            jnlib_log_error (_("missing argument for option \"%.50s\"\n"), s);
+            log_error (_("missing argument for option \"%.50s\"\n"), s);
           else if ( arg->r_opt == ARGPARSE_INVALID_ARG )
-            jnlib_log_error (_("invalid argument for option \"%.50s\"\n"), s);
+            log_error (_("invalid argument for option \"%.50s\"\n"), s);
           else if ( arg->r_opt == ARGPARSE_UNEXPECTED_ARG )
-            jnlib_log_error (_("option \"%.50s\" does not expect an "
-                               "argument\n"), s );
+            log_error (_("option \"%.50s\" does not expect an argument\n"), s);
           else if ( arg->r_opt == ARGPARSE_INVALID_COMMAND )
-            jnlib_log_error (_("invalid command \"%.50s\"\n"), s);
+            log_error (_("invalid command \"%.50s\"\n"), s);
           else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_OPTION )
-            jnlib_log_error (_("option \"%.50s\" is ambiguous\n"), s);
+            log_error (_("option \"%.50s\" is ambiguous\n"), s);
           else if ( arg->r_opt == ARGPARSE_AMBIGUOUS_COMMAND )
-            jnlib_log_error (_("command \"%.50s\" is ambiguous\n"),s );
+            log_error (_("command \"%.50s\" is ambiguous\n"),s );
           else if ( arg->r_opt == ARGPARSE_OUT_OF_CORE )
-            jnlib_log_error ("%s\n", _("out of core\n"));
+            log_error ("%s\n", _("out of core\n"));
           else
-            jnlib_log_error (_("invalid option \"%.50s\"\n"), s);
+            log_error (_("invalid option \"%.50s\"\n"), s);
 	}
       if (arg->err != ARGPARSE_PRINT_WARNING)
         exit (2);
@@ -418,7 +417,7 @@ store_alias( ARGPARSE_ARGS *arg, char *name, char *value )
   (void)name;
   (void)value;
 #if 0
-    ALIAS_DEF a = jnlib_xmalloc( sizeof *a );
+    ALIAS_DEF a = xmalloc( sizeof *a );
     a->name = name;
     a->value = value;
     a->next = (ALIAS_DEF)arg->internal.aliases;
@@ -500,7 +499,7 @@ ignore_invalid_option_add (ARGPARSE_ARGS *arg, FILE *fp)
           name[namelen] = 0;
           if (!ignore_invalid_option_p (arg, name))
             {
-              item = jnlib_malloc (sizeof *item + namelen);
+              item = xtrymalloc (sizeof *item + namelen);
               if (!item)
                 return 1;
               strcpy (item->name, name);
@@ -524,7 +523,7 @@ ignore_invalid_option_clear (ARGPARSE_ARGS *arg)
   for (item = arg->internal.iio_list; item; item = tmpitem)
     {
       tmpitem = item->next;
-      jnlib_free (item);
+      xfree (item);
     }
   arg->internal.iio_list = NULL;
 }
@@ -655,7 +654,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
 			}
                       if (!p || !*p)
                         {
-                          jnlib_free (buffer);
+                          xfree (buffer);
                           arg->r_opt = ARGPARSE_INVALID_ALIAS;
                         }
                       else
@@ -673,7 +672,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                   if (!buffer)
                     {
                       keyword[i] = 0;
-                      buffer = jnlib_strdup (keyword);
+                      buffer = xtrystrdup (keyword);
                       if (!buffer)
                         arg->r_opt = ARGPARSE_OUT_OF_CORE;
 		    }
@@ -692,7 +691,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                             p[strlen(p)-1] = 0;
                         }
                       if (!set_opt_arg (arg, opts[idx].flags, p))
-                        jnlib_free(buffer);
+                        xfree (buffer);
                     }
                 }
               break;
@@ -782,7 +781,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                   char *tmp;
                   size_t tmplen = buflen + 50;
 
-                  tmp = jnlib_realloc (buffer, tmplen);
+                  tmp = xtryrealloc (buffer, tmplen);
                   if (tmp)
                     {
                       buflen = tmplen;
@@ -791,7 +790,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
                     }
                   else
                     {
-                      jnlib_free (buffer);
+                      xfree (buffer);
                       arg->r_opt = ARGPARSE_OUT_OF_CORE;
                       break;
                     }
@@ -802,7 +801,7 @@ optfile_parse (FILE *fp, const char *filename, unsigned *lineno,
           else
             {
               size_t tmplen = DIM(keyword) + 50;
-              buffer = jnlib_malloc (tmplen);
+              buffer = xtrymalloc (tmplen);
               if (buffer)
                 {
                   buflen = tmplen;
@@ -1200,9 +1199,7 @@ long_opt_strlen( ARGPARSE_OPTS *o )
   if ( o->description && *o->description == '|' )
     {
       const char *s;
-#ifdef JNLIB_NEED_UTF8CONV
       int is_utf8 = is_native_utf8 ();
-#endif
 
       s=o->description+1;
       if ( *s != '=' )
@@ -1211,9 +1208,7 @@ long_opt_strlen( ARGPARSE_OPTS *o )
          continuation bytes (10xxxxxx) if we are on a native utf8
          terminal. */
       for (; *s && *s != '|'; s++ )
-#ifdef JNLIB_NEED_UTF8CONV
         if ( is_utf8 && (*s&0xc0) != 0x80 )
-#endif
           n++;
     }
   return n;

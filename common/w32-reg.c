@@ -41,7 +41,8 @@
 #endif
 #include <windows.h>
 
-#include "libjnlib-config.h"
+#include "util.h"
+#include "common-defs.h"
 #include "utf8conv.h"
 #include "w32help.h"
 
@@ -95,17 +96,17 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
     {
       if (root)
         {
-          jnlib_free (wdir);
+          xfree (wdir);
           return NULL; /* No need for a RegClose, so return immediately. */
         }
       /* It seems to be common practise to fall back to HKLM. */
       if (RegOpenKeyEx (HKEY_LOCAL_MACHINE, wdir, 0, KEY_READ, &key_handle) )
         {
-          jnlib_free (wdir);
+          xfree (wdir);
           return NULL; /* Still no need for a RegClose. */
         }
     }
-  jnlib_free (wdir);
+  xfree (wdir);
 
   if (name)
     {
@@ -119,12 +120,12 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   nbytes = 2;
   if (RegQueryValueEx (key_handle, wname, 0, NULL, NULL, &nbytes))
     goto leave;
-  result = jnlib_malloc ((n1=nbytes+2));
+  result = xtrymalloc ((n1=nbytes+2));
   if (!result)
     goto leave;
   if (RegQueryValueEx (key_handle, wname, 0, &type, result, &n1))
     {
-      jnlib_free (result);
+      xfree (result);
       result = NULL;
       goto leave;
     }
@@ -134,11 +135,11 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
     {
       wchar_t *tmp = (void*)result;
       result = wchar_to_utf8 (tmp);
-      jnlib_free (tmp);
+      xfree (tmp);
     }
 
  leave:
-  jnlib_free (wname);
+  xfree (wname);
   RegCloseKey (key_handle);
   return result;
 #else /*!HAVE_W32CE_SYSTEM*/
@@ -161,12 +162,12 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
   nbytes = 1;
   if (RegQueryValueEx( key_handle, name, 0, NULL, NULL, &nbytes ) )
     goto leave;
-  result = jnlib_malloc ((n1=nbytes+1));
+  result = xtrymalloc ((n1=nbytes+1));
   if (!result)
     goto leave;
   if (RegQueryValueEx( key_handle, name, 0, &type, result, &n1 ))
     {
-      jnlib_free (result);
+      xfree (result);
       result = NULL;
       goto leave;
     }
@@ -176,46 +177,46 @@ read_w32_registry_string (const char *root, const char *dir, const char *name)
       char *tmp;
 
       n1 += 1000;
-      tmp = jnlib_malloc (n1+1);
+      tmp = xtrymalloc (n1+1);
       if (!tmp)
         goto leave;
       nbytes = ExpandEnvironmentStrings (result, tmp, n1);
       if (nbytes && nbytes > n1)
         {
-          jnlib_free (tmp);
+          xfree (tmp);
           n1 = nbytes;
-          tmp = jnlib_malloc (n1 + 1);
+          tmp = xtrymalloc (n1 + 1);
           if (!tmp)
             goto leave;
           nbytes = ExpandEnvironmentStrings (result, tmp, n1);
           if (nbytes && nbytes > n1)
             {
               /* Oops - truncated, better don't expand at all.  */
-              jnlib_free (tmp);
+              xfree (tmp);
               goto leave;
             }
           tmp[nbytes] = 0;
-          jnlib_free (result);
+          xfree (result);
           result = tmp;
         }
       else if (nbytes)
         {
           /* Okay, reduce the length.  */
           tmp[nbytes] = 0;
-          jnlib_free (result);
-          result = jnlib_malloc (strlen (tmp)+1);
+          xfree (result);
+          result = xtrymalloc (strlen (tmp)+1);
           if (!result)
             result = tmp;
             else
               {
                 strcpy (result, tmp);
-                jnlib_free (tmp);
+                xfree (tmp);
               }
         }
       else
         {
           /* Error - don't expand.  */
-          jnlib_free (tmp);
+          xfree (tmp);
         }
     }
 

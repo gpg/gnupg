@@ -42,7 +42,9 @@
 # include <iconv.h>
 #endif
 
-#include "libjnlib-config.h"
+#include "util.h"
+#include "common-defs.h"
+#include "i18n.h"
 #include "stringhelp.h"
 #include "utf8conv.h"
 
@@ -318,7 +320,7 @@ native_to_utf8 (const char *orig_string)
   if (no_translation)
     {
       /* Already utf-8 encoded. */
-      buffer = jnlib_xstrdup (orig_string);
+      buffer = xstrdup (orig_string);
     }
   else if (!use_iconv)
     {
@@ -329,7 +331,7 @@ native_to_utf8 (const char *orig_string)
 	  if (*s & 0x80)
 	    length++;
 	}
-      buffer = jnlib_xmalloc (length + 1);
+      buffer = xmalloc (length + 1);
       for (p = (unsigned char *)buffer, s = string; *s; s++)
 	{
 	  if ( (*s & 0x80 ))
@@ -363,7 +365,7 @@ native_to_utf8 (const char *orig_string)
           if ((*s & 0x80))
             length += 5; /* We may need up to 6 bytes for the utf8 output. */
         }
-      buffer = jnlib_xmalloc (length + 1);
+      buffer = xmalloc (length + 1);
 
       inptr = string;
       inbytes = strlen (string);
@@ -606,7 +608,7 @@ do_utf8_to_native (const char *string, size_t length, int delim,
       if (!buffer)
 	{
           /* Allocate the buffer after the first pass. */
-	  buffer = p = jnlib_xmalloc (n + 1);
+	  buffer = p = xmalloc (n + 1);
 	}
       else if (with_iconv)
         {
@@ -622,7 +624,7 @@ do_utf8_to_native (const char *string, size_t length, int delim,
           if (cd == (iconv_t)-1)
             {
               handle_iconv_error (active_charset_name, "utf-8", 1);
-              jnlib_free (buffer);
+              xfree (buffer);
               return utf8_to_native (string, length, delim);
             }
 
@@ -634,7 +636,7 @@ do_utf8_to_native (const char *string, size_t length, int delim,
           outbytes = n * MB_LEN_MAX;
           if (outbytes / MB_LEN_MAX != n)
             BUG (); /* Actually an overflow. */
-          outbuf = outptr = jnlib_xmalloc (outbytes);
+          outbuf = outptr = xmalloc (outbytes);
           if ( iconv (cd, (ICONV_CONST char **)&inptr, &inbytes,
                       &outptr, &outbytes) == (size_t)-1)
             {
@@ -645,9 +647,9 @@ do_utf8_to_native (const char *string, size_t length, int delim,
                           "utf-8", active_charset_name, strerror (errno));
               shown = 1;
               /* Didn't worked out.  Try again but without iconv.  */
-              jnlib_free (buffer);
+              xfree (buffer);
               buffer = NULL;
-              jnlib_free (outbuf);
+              xfree (outbuf);
               outbuf = do_utf8_to_native (string, length, delim, 0);
             }
             else /* Success.  */
@@ -656,7 +658,7 @@ do_utf8_to_native (const char *string, size_t length, int delim,
                 /* We could realloc the buffer now but I doubt that it
                    makes much sense given that it will get freed
                    anyway soon after.  */
-                jnlib_free (buffer);
+                xfree (buffer);
               }
           iconv_close (cd);
           return outbuf;
@@ -726,19 +728,19 @@ wchar_to_utf8 (const wchar_t *string)
   n = WideCharToMultiByte (CP_UTF8, 0, string, -1, NULL, 0, NULL, NULL);
   if (n < 0)
     {
-      jnlib_set_errno (EINVAL);
+      gpg_err_set_errno (EINVAL);
       return NULL;
     }
 
-  result = jnlib_malloc (n+1);
+  result = xtrymalloc (n+1);
   if (!result)
     return NULL;
 
   n = WideCharToMultiByte (CP_UTF8, 0, string, -1, result, n, NULL, NULL);
   if (n < 0)
     {
-      jnlib_free (result);
-      jnlib_set_errno (EINVAL);
+      xfree (result);
+      gpg_err_set_errno (EINVAL);
       result = NULL;
     }
   return result;
@@ -759,25 +761,25 @@ utf8_to_wchar (const char *string)
   n = MultiByteToWideChar (CP_UTF8, 0, string, -1, NULL, 0);
   if (n < 0)
     {
-      jnlib_set_errno (EINVAL);
+      gpg_err_set_errno (EINVAL);
       return NULL;
     }
 
   nbytes = (size_t)(n+1) * sizeof(*result);
   if (nbytes / sizeof(*result) != (n+1))
     {
-      jnlib_set_errno (ENOMEM);
+      gpg_err_set_errno (ENOMEM);
       return NULL;
     }
-  result = jnlib_malloc (nbytes);
+  result = xtrymalloc (nbytes);
   if (!result)
     return NULL;
 
   n = MultiByteToWideChar (CP_UTF8, 0, string, -1, result, n);
   if (n < 0)
     {
-      free (result);
-      jnlib_set_errno (EINVAL);
+      xfree (result);
+      gpg_err_set_errno (EINVAL);
       result = NULL;
     }
   return result;
