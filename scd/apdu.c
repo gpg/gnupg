@@ -1870,7 +1870,8 @@ open_pcsc_reader_direct (const char *portstr)
   long err;
   int slot;
   char *list = NULL;
-  pcsc_dword_t nreader, listlen;
+  char *rdrname = NULL;
+  pcsc_dword_t nreader;
   char *p;
 
   slot = new_reader_slot ();
@@ -1917,24 +1918,27 @@ open_pcsc_reader_direct (const char *portstr)
       return -1;
     }
 
-  listlen = nreader;
   p = list;
   while (nreader)
     {
       if (!*p && !p[1])
         break;
-      if (*p)
-        log_info ("detected reader `%s'\n", p);
+      log_info ("detected reader `%s'\n", p);
       if (nreader < (strlen (p)+1))
         {
           log_error ("invalid response from pcsc_list_readers\n");
           break;
         }
+      if (!rdrname && portstr && !strncmp (p, portstr, strlen (portstr)))
+        rdrname = p;
       nreader -= strlen (p)+1;
       p += strlen (p) + 1;
     }
 
-  reader_table[slot].rdrname = xtrymalloc (strlen (portstr? portstr : list)+1);
+  if (!rdrname)
+    rdrname = list;
+
+  reader_table[slot].rdrname = xtrystrdup (rdrname);
   if (!reader_table[slot].rdrname)
     {
       log_error ("error allocating memory for reader name\n");
@@ -1943,7 +1947,6 @@ open_pcsc_reader_direct (const char *portstr)
       unlock_slot (slot);
       return -1;
     }
-  strcpy (reader_table[slot].rdrname, portstr? portstr : list);
   xfree (list);
   list = NULL;
 

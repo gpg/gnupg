@@ -406,8 +406,9 @@ static void
 handle_open (unsigned char *argbuf, size_t arglen)
 {
   long err;
-  const char * portstr;
+  const char *portstr;
   char *list = NULL;
+  char *rdrname = NULL;
   pcsc_dword_t nreader, atrlen;
   char *p;
   pcsc_dword_t card_state, card_protocol;
@@ -416,7 +417,10 @@ handle_open (unsigned char *argbuf, size_t arglen)
   /* Make sure there is only the port string */
   if (arglen != strlen ((char*)argbuf))
     bad_request ("OPEN");
-  portstr = (char*)argbuf;
+  if (arglen == 0)
+    portstr = NULL;
+  else
+    portstr = (char*)argbuf;
 
   if (driver_is_open)
     {
@@ -466,17 +470,21 @@ handle_open (unsigned char *argbuf, size_t arglen)
           fprintf (stderr, PGM": invalid response from pcsc_list_readers\n");
           break;
         }
+      if (!rdrname && portstr && !strncmp (p, portstr, strlen (portstr)))
+        rdrname = p;
       nreader -= strlen (p)+1;
       p += strlen (p) + 1;
     }
 
-  current_rdrname = malloc (strlen (portstr && *portstr? portstr:list)+1);
+  if (!rdrname)
+    rdrname = list;
+
+  current_rdrname = strdup (rdrname);
   if (!current_rdrname)
     {
       fprintf (stderr, PGM": error allocating memory for reader name\n");
       exit (1);
     }
-  strcpy (current_rdrname, portstr && *portstr? portstr:list);
   free (list);
 
   err = pcsc_connect (pcsc_context,
