@@ -452,11 +452,14 @@ cmp_public_keys( PKT_public_key *a, PKT_public_key *b )
 	return -1;
 
     n = pubkey_get_npkey( b->pubkey_algo );
-    if( !n )
-	return -1; /* can't compare due to unknown algorithm */
-    for(i=0; i < n; i++ ) {
-	if( mpi_cmp( a->pkey[i], b->pkey[i] ) )
-	    return -1;
+    if( !n ) { /* unknown algorithm, rest is in opaque MPI */
+	if( mpi_cmp( a->pkey[0], b->pkey[0] ) )
+	    return -1; /* can't compare due to unknown algorithm */
+    } else {
+	for(i=0; i < n; i++ ) {
+	    if( mpi_cmp( a->pkey[i], b->pkey[i] ) )
+		return -1;
+	}
     }
 
     return 0;
@@ -479,11 +482,14 @@ cmp_secret_keys( PKT_secret_key *a, PKT_secret_key *b )
 	return -1;
 
     n = pubkey_get_npkey( b->pubkey_algo );
-    if( !n )
-	return -1; /* can't compare due to unknown algorithm */
-    for(i=0; i < n; i++ ) {
-	if( mpi_cmp( a->skey[i], b->skey[i] ) )
+    if( !n ) { /* unknown algorithm, rest is in opaque MPI */
+	if( mpi_cmp( a->skey[0], b->skey[0] ) )
 	    return -1;
+    } else {
+	for(i=0; i < n; i++ ) {
+	    if( mpi_cmp( a->skey[i], b->skey[i] ) )
+		return -1;
+	}
     }
 
     return 0;
