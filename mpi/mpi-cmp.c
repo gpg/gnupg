@@ -20,6 +20,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "mpi-internal.h"
 
 int
@@ -48,6 +49,21 @@ mpi_cmp( MPI u, MPI v )
 {
     mpi_size_t usize, vsize;
     int cmp;
+
+    if (mpi_is_opaque (u) || mpi_is_opaque (v))
+      {
+	if (mpi_is_opaque (u) && !mpi_is_opaque (v))
+	  return -1;
+	if (!mpi_is_opaque (u) && mpi_is_opaque (v))
+	  return 1;
+	if (!u->nbits && !v->nbits)
+	  return 0; /* Empty buffers are identical.  */
+	if (u->nbits < v->nbits)
+	  return -1;
+	if (u->nbits > v->nbits)
+	  return 1;
+	return memcmp (u->d, v->d, u->nbits);
+      }
 
     mpi_normalize( u );
     mpi_normalize( v );
