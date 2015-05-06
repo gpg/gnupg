@@ -187,14 +187,19 @@ speedo_spkgs += \
 endif
 endif
 
+ifeq ($(TARGETOS),w32)
+
+speedo_spkgs += pinentry
+ifeq ($(WITH_GUI),1)
+speedo_spkgs += gpa gpgex
+endif
+
+else
 
 ifeq ($(WITH_GUI),1)
-speedo_spkgs += \
-	pinentry gpa
-ifeq ($(TARGETOS),w32)
-speedo_spkgs += \
-	gpgex
+speedo_spkgs += pinentry gpa
 endif
+
 endif
 
 
@@ -437,13 +442,18 @@ speedo_pkg_gpgme_configure = \
 	LDFLAGS=-L$(idir)/lib
 endif
 
-speedo_pkg_pinentry_configure = \
-	--disable-pinentry-qt --disable-pinentry-qt4 --disable-pinentry-gtk \
-	--enable-pinentry-gtk2 \
-	--with-glib-prefix=$(idir) --with-gtk-prefix=$(idir) \
+
+ifeq ($(TARGETOS),w32)
+speedo_pkg_pinentry_configure = --disable-pinentry-gtk2
+else
+speedo_pkg_pinentry_configure = --enable-pinentry-gtk2
+endif
+speedo_pkg_pinentry_configure += \
+        --disable-pinentry-qt4 \
 	CPPFLAGS=-I$(idir)/include   \
 	LDFLAGS=-L$(idir)/lib        \
 	CXXFLAGS=-static-libstdc++
+
 
 speedo_pkg_gpa_configure = \
         --with-libiconv-prefix=$(idir) --with-libintl-prefix=$(idir) \

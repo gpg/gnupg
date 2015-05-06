@@ -816,12 +816,10 @@ Section "-gtk+" SEC_gtk_
 SectionEnd
 !endif
 
-!ifdef WITH_GUI
 Section "-pinentry" SEC_pinentry
   SetOutPath "$INSTDIR\bin"
-  File /oname=pinentry.exe "bin/pinentry-gtk-2.exe"
+  File /oname=pinentry-basic.exe "bin/pinentry-w32.exe"
 SectionEnd
-!endif
 
 !ifdef WITH_GUI
 Section "gpa" SEC_gpa
@@ -933,11 +931,9 @@ Section "-un.gpa"
 SectionEnd
 !endif
 
-!ifdef WITH_GUI
 Section "-un.pinentry"
-  Delete "$INSTDIR\bin\pinentry.exe"
+  Delete "$INSTDIR\bin\pinentry-basic.exe"
 SectionEnd
-!endif
 
 !ifdef WITH_GUI
 Section "-un.gtk+"
