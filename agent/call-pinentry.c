@@ -47,8 +47,8 @@
 
 
 /* Because access to the pinentry must be serialized (it is and shall
-   be a global mutual dialog) we should better timeout further
-   requests after some time.  2 minutes seem to be a reasonable
+   be a global mutually exclusive dialog) we better timeout pending
+   requests after some time.  1 minute seem to be a reasonable
    time. */
 #define LOCK_TIMEOUT  (1*60)
 
@@ -279,8 +279,8 @@ start_pinentry (ctrl_t ctrl)
       log_error ("error flushing pending output: %s\n", strerror (errno));
       /* At least Windows XP fails here with EBADF.  According to docs
          and Wine an fflush(NULL) is the same as _flushall.  However
-         the Wime implementaion does not flush stdin,stdout and stderr
-         - see above.  Lets try to ignore the error. */
+         the Wine implementaion does not flush stdin,stdout and stderr
+         - see above.  Let's try to ignore the error. */
 #ifndef HAVE_W32_SYSTEM
       return unlock_pinentry (tmperr);
 #endif
@@ -490,7 +490,7 @@ start_pinentry (ctrl_t ctrl)
 }
 
 
-/* Returns True is the pinentry is currently active. If WAITSECONDS is
+/* Returns True if the pinentry is currently active. If WAITSECONDS is
    greater than zero the function will wait for this many seconds
    before returning.  */
 int
@@ -564,7 +564,7 @@ all_digitsp( const char *s)
 /* Return a new malloced string by unescaping the string S.  Escaping
    is percent escaping and '+'/space mapping.  A binary Nul will
    silently be replaced by a 0xFF.  Function returns NULL to indicate
-   an out of memory status.  PArsing stops at the end of the string or
+   an out of memory status.  Parsing stops at the end of the string or
    a white space character. */
 static char *
 unescape_passphrase_string (const unsigned char *s)
@@ -747,7 +747,7 @@ pinentry_status_cb (void *opaque, const char *line)
 
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
-   numbers.  KEYINFO and CACHEMODE are used to tell pinentry something
+   numbers.  KEYINFO and CACHE_MODE are used to tell pinentry something
    about the key. */
 int
 agent_askpin (ctrl_t ctrl,
