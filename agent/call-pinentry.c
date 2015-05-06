@@ -727,7 +727,7 @@ pinentry_status_cb (void *opaque, const char *line)
   if ((args = has_leading_keyword (line, "BUTTON_INFO")))
     {
       if (!strcmp (args, "close"))
-        *flag = PINENTRY_STATUS_CLOSE_BUTTON;
+        *flag |= PINENTRY_STATUS_CLOSE_BUTTON;
     }
   else if (has_leading_keyword (line, "PIN_REPEATED"))
     {
