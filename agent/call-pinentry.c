@@ -710,11 +710,16 @@ setup_qualitybar (void)
   return 0;
 }
 
+enum
+  {
+    PINENTRY_STATUS_CLOSE_BUTTON = 1 << 0,
+    PINENTRY_STATUS_PIN_REPEATED = 1 << 8
+  };
 
 /* Check the button_info line for a close action.  Also check for the
    PIN_REPEATED flag.  */
 static gpg_error_t
-close_button_status_cb (void *opaque, const char *line)
+pinentry_status_cb (void *opaque, const char *line)
 {
   unsigned int *flag = opaque;
   const char *args;
@@ -722,11 +727,11 @@ close_button_status_cb (void *opaque, const char *line)
   if ((args = has_leading_keyword (line, "BUTTON_INFO")))
     {
       if (!strcmp (args, "close"))
-        *flag = 1;
+        *flag = PINENTRY_STATUS_CLOSE_BUTTON;
     }
   else if (has_leading_keyword (line, "PIN_REPEATED"))
     {
-      *flag |= 256;
+      *flag |= PINENTRY_STATUS_PIN_REPEATED;
     }
 
   return 0;
@@ -752,7 +757,7 @@ agent_askpin (ctrl_t ctrl,
   const char *errtext = NULL;
   int is_pin = 0;
   int saveflag;
-  unsigned int close_button;
+  unsigned int pinentry_status;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -901,10 +906,10 @@ agent_askpin (ctrl_t ctrl,
 
       saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
       assuan_begin_confidential (entry_ctx);
-      close_button = 0;
+      pinentry_status = 0;
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                             inq_quality, entry_ctx,
-                            close_button_status_cb, &close_button);
+                            pinentry_status_cb, &pinentry_status);
       assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
       /* Most pinentries out in the wild return the old Assuan error code
          for canceled which gets translated to an assuan Cancel error and
@@ -916,7 +921,8 @@ agent_askpin (ctrl_t ctrl,
 
       /* Change error code in case the window close button was clicked
          to cancel the operation.  */
-      if ((close_button & 1) && gpg_err_code (rc) == GPG_ERR_CANCELED)
+      if ((pinentry_status & PINENTRY_STATUS_CLOSE_BUTTON)
+	  && gpg_err_code (rc) == GPG_ERR_CANCELED)
         rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
@@ -954,7 +960,8 @@ agent_askpin (ctrl_t ctrl,
 
       if (!errtext)
         {
-          if (pininfo->with_repeat && (close_button & 256))
+          if (pininfo->with_repeat
+	      && (pinentry_status & PINENTRY_STATUS_PIN_REPEATED))
             pininfo->repeat_okay = 1;
           return unlock_pinentry (0); /* okay, got a PIN or passphrase */
         }
@@ -978,7 +985,7 @@ agent_get_passphrase (ctrl_t ctrl,
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   int saveflag;
-  unsigned int close_button;
+  unsigned int pinentry_status;
 
   *retpass = NULL;
   if (opt.batch)
@@ -1055,10 +1062,10 @@ agent_get_passphrase (ctrl_t ctrl,
 
   saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
   assuan_begin_confidential (entry_ctx);
-  close_button = 0;
+  pinentry_status = 0;
   rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
                         inq_quality, entry_ctx,
-                        close_button_status_cb, &close_button);
+                        pinentry_status_cb, &pinentry_status);
   assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
   /* Most pinentries out in the wild return the old Assuan error code
      for canceled which gets translated to an assuan Cancel error and
@@ -1067,7 +1074,8 @@ agent_get_passphrase (ctrl_t ctrl,
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_CANCELED);
   /* Change error code in case the window close button was clicked
      to cancel the operation.  */
-  if ((close_button & 1) && gpg_err_code (rc) == GPG_ERR_CANCELED)
+  if ((pinentry_status & PINENTRY_STATUS_CLOSE_BUTTON)
+      && gpg_err_code (rc) == GPG_ERR_CANCELED)
     rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
   if (rc)
