@@ -463,7 +463,7 @@ keyid_from_fingerprint( const byte *fprint, size_t fprint_len, u32 *keyid )
       int rc;
 
       memset (&pk, 0, sizeof pk);
-      rc = get_pubkey_byfprint (&pk, fprint, fprint_len);
+      rc = get_pubkey_byfprint (&pk, NULL, fprint, fprint_len);
       if( rc )
         {
           log_error("Oops: keyid_from_fingerprint: no pubkey\n");

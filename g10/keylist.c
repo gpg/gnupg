@@ -170,7 +170,7 @@ print_seckey_info (PKT_public_key *pk)
    the tty output interface is used, otherwise output is directted to
    the given stream.  */
 void
-print_pubkey_info (estream_t fp, PKT_public_key * pk)
+print_pubkey_info (estream_t fp, PKT_public_key *pk)
 {
   u32 keyid[2];
   char *p;
@@ -187,7 +187,8 @@ print_pubkey_info (estream_t fp, PKT_public_key * pk)
 
   if (fp)
     tty_printf ("\n");
-  tty_fprintf (fp, "pub  %s/%s %s %s\n",
+  tty_fprintf (fp, "%s  %s/%s %s %s\n",
+               pk->flags.primary? "pub":"sub",
                pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
                keystr (keyid), datestr_from_pk (pk), p);
   xfree (p);
@@ -205,6 +206,7 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
   char *serialno;
   int s2k_char;
   char pkstrbuf[PUBKEY_STRING_SIZE];
+  int indent;
 
   for (node = keyblock; node; node = node->next)
     {
@@ -226,18 +228,18 @@ print_card_key_info (estream_t fp, kbnode_t keyblock)
           else
             s2k_char = '#';  /* Key not found.  */
 
-          tty_fprintf (fp, "%s%c  %s/%s  ",
+          tty_fprintf (fp, "%s%c  %s/%s  %n",
                        node->pkt->pkttype == PKT_PUBLIC_KEY ? "sec" : "ssb",
                        s2k_char,
                        pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-                       keystr_from_pk (pk));
+                       keystr_from_pk (pk),
+                       &indent);
           tty_fprintf (fp, _("created: %s"), datestr_from_pk (pk));
           tty_fprintf (fp, "  ");
           tty_fprintf (fp, _("expires: %s"), expirestr_from_pk (pk));
           if (serialno)
             {
-              tty_fprintf (fp, "\n                      ");
-              tty_fprintf (fp, _("card-no: "));
+              tty_fprintf (fp, "\n%*s%s", indent, "", _("card-no: "));
               if (strlen (serialno) == 32
                   && !strncmp (serialno, "D27600012401", 12))
                 {

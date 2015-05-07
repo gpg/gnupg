@@ -968,16 +968,25 @@ get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr)
 }
 
 
-/* Search for a key with the given fingerprint.
+/* Search for a key with the given fingerprint.  The caller need to
+ * prove an allocated public key object at PK.  If R_KEYBLOCK is not
+ * NULL the entire keyblock is stored there and the caller needs to
+ * call release_kbnode() on it.  Note that this function does an exact
+ * search and thus the public key stored at PK may be a copy of a
+ * subkey.
+ *
  * FIXME:
  * We should replace this with the _byname function.  This can be done
  * by creating a userID conforming to the unified fingerprint style.
  */
 int
-get_pubkey_byfprint (PKT_public_key * pk,
+get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
 		     const byte * fprint, size_t fprint_len)
 {
   int rc;
+
+  if (r_keyblock)
+    *r_keyblock = NULL;
 
   if (fprint_len == 20 || fprint_len == 16)
     {
@@ -994,7 +1003,14 @@ get_pubkey_byfprint (PKT_public_key * pk,
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
       rc = lookup (&ctx, &kb, 0);
       if (!rc && pk)
-	pk_from_block (&ctx, pk, kb);
+        {
+          pk_from_block (&ctx, pk, kb);
+          if (r_keyblock)
+            {
+              *r_keyblock = kb;
+              kb = NULL;
+            }
+        }
       release_kbnode (kb);
       get_pubkey_end (&ctx);
     }

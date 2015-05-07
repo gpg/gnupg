@@ -366,6 +366,7 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
 {
   struct agent_card_info_s info;
   PKT_public_key *pk = xcalloc (1, sizeof *pk);
+  kbnode_t keyblock = NULL;
   int rc;
   unsigned int uval;
   const unsigned char *thefpr;
@@ -587,41 +588,17 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
       /* If the fingerprint is all 0xff, the key has no asssociated
          OpenPGP certificate.  */
       if ( thefpr && !fpr_is_ff (thefpr)
-           && !get_pubkey_byfprint (pk, thefpr, 20))
+           && !get_pubkey_byfprint (pk, &keyblock, thefpr, 20))
         {
-          kbnode_t keyblock = NULL;
-
           print_pubkey_info (fp, pk);
-
-#if GNUPG_MAJOR_VERSION == 1
-          if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
+          if (keyblock)
             print_card_key_info (fp, keyblock);
-          else if ( !get_keyblock_byfprint (&keyblock, thefpr, 20) )
-            {
-              release_kbnode (keyblock);
-              keyblock = NULL;
-
-              if (!auto_create_card_key_stub (info.serialno,
-                                              info.fpr1valid? info.fpr1:NULL,
-                                              info.fpr2valid? info.fpr2:NULL,
-                                              info.fpr3valid? info.fpr3:NULL))
-                {
-                  if ( !get_seckeyblock_byfprint (&keyblock, thefpr, 20) )
-                    print_card_key_info (fp, keyblock);
-                }
-            }
-
-#else /* GNUPG_MAJOR_VERSION != 1 */
-          if (!get_keyblock_byfprint (&keyblock, thefpr, 20))
-            print_card_key_info (fp, keyblock);
-#endif /* GNUPG_MAJOR_VERSION != 1 */
-
-          release_kbnode (keyblock);
         }
       else
         tty_fprintf (fp, "[none]\n");
     }
 
+  release_kbnode (keyblock);
   free_public_key (pk);
   agent_release_card_info (&info);
 }

@@ -291,7 +291,7 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	else
 	  {
 	    pk2 = xmalloc_clear (sizeof *pk2);
-	    rc = get_pubkey_byfprint (pk2,
+	    rc = get_pubkey_byfprint (pk2, NULL,
                                       pk->revkey[i].fpr, MAX_FINGERPRINT_LEN);
 	  }
 
