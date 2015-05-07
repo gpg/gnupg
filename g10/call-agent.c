@@ -1626,7 +1626,7 @@ keyinfo_status_cb (void *opaque, const char *line)
   char **serialno = opaque;
   const char *s, *s2;
 
-  if ((s = has_leading_keyword (line, "KEYINFO ")) && !*serialno)
+  if ((s = has_leading_keyword (line, "KEYINFO")) && !*serialno)
     {
       s = strchr (s, ' ');
       if (s && s[1] == 'T' && s[2] == ' ' && s[3])
