@@ -29,6 +29,8 @@ int keyring_is_writable (void *token);
 
 KEYRING_HANDLE keyring_new (void *token);
 void keyring_release (KEYRING_HANDLE hd);
+void keyring_push_found_state (KEYRING_HANDLE hd);
+void keyring_pop_found_state (KEYRING_HANDLE hd);
 const char *keyring_get_resource_name (KEYRING_HANDLE hd);
 int keyring_lock (KEYRING_HANDLE hd, int yes);
 int keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb);

@@ -1,5 +1,6 @@
 /* keyring.c - keyring file handling
- * Copyright (C) 2001, 2004, 2009, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2010 Free Software Foundation, Inc.
+ * Copyright (C) 1997-2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -83,7 +84,7 @@ struct keyring_handle
     size_t pk_no;
     size_t uid_no;
     unsigned int n_packets; /*used for delete and update*/
-  } found;
+  } found, saved_found;
   struct {
     char *name;
     char *pattern;
@@ -276,6 +277,25 @@ keyring_release (KEYRING_HANDLE hd)
     xfree (hd->word_match.pattern);
     iobuf_close (hd->current.iobuf);
     xfree (hd);
+}
+
+
+/* Save the current found state in HD for later retrieval by
+   keybox_pop_found_state.  Only one state may be saved.  */
+void
+keyring_push_found_state (KEYRING_HANDLE hd)
+{
+  hd->saved_found = hd->found;
+  hd->found.kr = NULL;
+}
+
+
+/* Restore the saved found state in HD.  */
+void
+keyring_pop_found_state (KEYRING_HANDLE hd)
+{
+  hd->found = hd->saved_found;
+  hd->saved_found.kr = NULL;
 }
 
 

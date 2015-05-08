@@ -136,6 +136,8 @@ gpg_error_t keydb_add_resource (const char *url, unsigned int flags);
 KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
 void keydb_disable_caching (KEYDB_HANDLE hd);
+void keydb_push_found_state (KEYDB_HANDLE hd);
+void keydb_pop_found_state (KEYDB_HANDLE hd);
 const char *keydb_get_resource_name (KEYDB_HANDLE hd);
 gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
 gpg_error_t keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb);

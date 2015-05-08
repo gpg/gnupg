@@ -1,7 +1,6 @@
 /* keydb.c - key database dispatcher
- * Copyright (C) 2001, 2002, 2003, 2004, 2005,
- *               2008, 2009, 2011, 2013 Free Software Foundation, Inc.
- * Coyrright (C) 2013 Werner Koch
+ * Copyright (C) 2001-2013 Free Software Foundation, Inc.
+ * Coyrright (C) 2001-2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -67,6 +66,7 @@ struct keydb_handle
 {
   int locked;
   int found;
+  int saved_found;
   unsigned long skipped_long_blobs;
   int no_caching;
   int current;
@@ -542,6 +542,7 @@ keydb_new (void)
 
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
+  hd->saved_found = -1;
 
   assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
@@ -741,6 +742,64 @@ unlock_all (KEYDB_HANDLE hd)
 }
 
 
+
+/* Push the last found state if any.  */
+void
+keydb_push_found_state (KEYDB_HANDLE hd)
+{
+  if (!hd)
+    return;
+
+  if (hd->found < 0 || hd->found >= hd->used)
+    {
+      hd->saved_found = -1;
+      return;
+    }
+
+  switch (hd->active[hd->found].type)
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYRING:
+      keyring_push_found_state (hd->active[hd->found].u.kr);
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      keybox_push_found_state (hd->active[hd->found].u.kb);
+      break;
+    }
+
+  hd->saved_found = hd->found;
+  hd->found = -1;
+}
+
+
+/* Pop the last found state.  */
+void
+keydb_pop_found_state (KEYDB_HANDLE hd)
+{
+  if (!hd)
+    return;
+
+  hd->found = hd->saved_found;
+  hd->saved_found = -1;
+  if (hd->found < 0 || hd->found >= hd->used)
+    return;
+
+  switch (hd->active[hd->found].type)
+    {
+    case KEYDB_RESOURCE_TYPE_NONE:
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYRING:
+      keyring_pop_found_state (hd->active[hd->found].u.kr);
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYBOX:
+      keybox_pop_found_state (hd->active[hd->found].u.kb);
+      break;
+    }
+}
+
+
+
 static gpg_error_t
 parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
                       const u32 *sigstatus, kbnode_t *r_keyblock)
