@@ -1181,7 +1181,7 @@ change_passphrase (ctrl_t ctrl, kbnode_t keyblock)
  * Note:  This function does not work if there is more than one user ID.
  */
 static int
-fix_keyblock (KBNODE keyblock)
+fix_key_signature_order (KBNODE keyblock)
 {
   KBNODE node, last, subkey;
   int fixed = 0;
@@ -1218,6 +1218,27 @@ fix_keyblock (KBNODE keyblock)
     }
 
   return fixed;
+}
+
+
+/* Fix various problems in the keyblock.  Returns true if the keyblock
+   was changed.  Note that a pointer to the keyblock must be given and
+   the function may change it (i.e. replacing the first node).  */
+static int
+fix_keyblock (kbnode_t *keyblockp)
+{
+  int changed = 0;
+
+  if (fix_key_signature_order (*keyblockp))
+    changed++;
+  if (collapse_uids (keyblockp))
+    changed++;
+  reorder_keyblock (*keyblockp);
+  /* If we modified the keyblock, make sure the flags are right. */
+  if (changed)
+    merge_keys_and_selfsig (*keyblockp);
+
+  return changed;
 }
 
 
@@ -1482,15 +1503,9 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
       log_error (_("key \"%s\" not found: %s\n"), username, gpg_strerror (err));
       goto leave;
     }
-  if (fix_keyblock (keyblock))
+
+  if (fix_keyblock (&keyblock))
     modified++;
-  if (collapse_uids (&keyblock))
-    modified++;
-  reorder_keyblock (keyblock);
-  /* We modified the keyblock, so let's make sure the flags are
-     right. */
-  if (modified)
-    merge_keys_and_selfsig (keyblock);
 
   /* See whether we have a matching secret key.  */
   if (seckey_check)
@@ -2316,11 +2331,6 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
       log_error (_("key \"%s\" not found: %s\n"), fpr, gpg_strerror (err));
       goto leave;
     }
-  if (fix_keyblock (keyblock))
-    modified++;
-  if (collapse_uids (&keyblock))
-    modified++;
-  reorder_keyblock (keyblock);
 
   /* Check that the primary fingerprint has been given. */
   {
@@ -2349,9 +2359,8 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
       }
   }
 
-  /* If we modified the keyblock, make sure the flags are right. */
-  if (modified)
-    merge_keys_and_selfsig (keyblock);
+  if (fix_keyblock (&keyblock))
+    modified++;
 
   /* Give some info in verbose.  */
   if (opt.verbose)
