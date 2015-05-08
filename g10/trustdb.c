@@ -2445,7 +2445,7 @@ validate_keys (int interactive)
         ;
 
       /* Store the calculated valididation status somewhere */
-      if (opt.verbose > 1)
+      if (opt.verbose > 1 && DBG_TRUST)
         dump_key_array (depth, keys);
 
       for (kar=keys; kar->keyblock; kar++)
