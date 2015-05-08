@@ -47,7 +47,7 @@ struct try_unprotect_arg_s
   const unsigned char *protected_key;
   unsigned char *unprotected_key;
   int change_required; /* Set by the callback to indicate that the
-                          user should chnage the passphrase.  */
+                          user should change the passphrase.  */
 };
 
 
@@ -469,6 +469,8 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
       assert (arg.unprotected_key);
       if (arg.change_required)
         {
+          /* The callback told as that the user should change their
+             passphrase.  Present the dialog to do.  */
           size_t canlen, erroff;
           gcry_sexp_t s_skey;
 
@@ -499,6 +501,7 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
         }
       else
         {
+          /* Passphrase is fine.  */
           agent_put_cache (hexgrip, cache_mode, pi->pin,
                            lookup_ttl? lookup_ttl (hexgrip) : 0);
           agent_store_cache_hit (hexgrip);
