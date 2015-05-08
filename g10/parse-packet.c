@@ -2906,7 +2906,7 @@ parse_gpg_control (IOBUF inp, int pkttype, unsigned long pktlen,
     goto skipit;  /* Definitely too large.  We skip it to avoid an
                      overflow in the malloc.  */
   if (list_mode)
-    puts ("- gpg control packet");
+    es_fputs ("- gpg control packet", listfp);
 
   packet->pkt.gpg_control = xmalloc (sizeof *packet->pkt.gpg_control
 				     + pktlen - 1);
