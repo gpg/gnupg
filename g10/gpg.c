@@ -116,6 +116,7 @@ enum cmd_and_opt_values
     aLSignKey,
     aQuickSignKey,
     aQuickLSignKey,
+    aQuickAddUid,
     aListConfig,
     aListGcryptConfig,
     aGPGConfList,
@@ -414,6 +415,8 @@ static ARGPARSE_OPTS opts[] = {
               N_("generate a new key pair")),
   ARGPARSE_c (aQuickKeygen, "quick-gen-key" ,
               N_("quickly generate a new key pair")),
+  ARGPARSE_c (aQuickAddUid,  "quick-adduid",
+              N_("quickly add a new user-id")),
   ARGPARSE_c (aFullKeygen,  "full-gen-key" ,
               N_("full featured key pair generation")),
   ARGPARSE_c (aGenRevoke, "gen-revoke",N_("generate a revocation certificate")),
@@ -2327,6 +2330,7 @@ main (int argc, char **argv)
 	  case aLSignKey:
 	  case aStore:
 	  case aQuickKeygen:
+	  case aQuickAddUid:
 	  case aExportOwnerTrust:
 	  case aImportOwnerTrust:
           case aRebuildKeydbCaches:
@@ -3604,6 +3608,7 @@ main (int argc, char **argv)
       case aDeleteSecretKeys:
       case aDeleteSecretAndPublicKeys:
       case aQuickKeygen:
+      case aQuickAddUid:
       case aFullKeygen:
       case aKeygen:
       case aImport:
@@ -3922,6 +3927,18 @@ main (int argc, char **argv)
               wrong_args("--full-gen-key");
 	    generate_keypair (ctrl, 1, NULL, NULL, 0);
 	}
+	break;
+
+      case aQuickAddUid:
+        {
+          const char *uid, *newuid;
+
+          if (argc != 2)
+            wrong_args ("--quick-adduid USER-ID NEW-USER-ID");
+          uid = *argv++; argc--;
+          newuid = *argv++; argc--;
+          keyedit_quick_adduid (ctrl, uid, newuid);
+        }
 	break;
 
       case aFastImport:

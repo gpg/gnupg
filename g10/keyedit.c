@@ -1,7 +1,6 @@
-/* keyedit.c - keyedit stuff
- * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
- *               2008, 2009, 2010 Free Software Foundation, Inc.
- * Copyright (C) 2013, 2014 Werner Koch
+/* keyedit.c - Edit properties of a key
+ * Copyright (C) 1998-2010 Free Software Foundation, Inc.
+ * Copyright (C) 1998-2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -59,7 +58,8 @@ static void show_key_with_all_names (estream_t fp,
                                      int nowarn);
 static void show_key_and_fingerprint (KBNODE keyblock);
 static void subkey_expire_warning (kbnode_t keyblock);
-static int menu_adduid (KBNODE keyblock, int photo, const char *photo_name);
+static int menu_adduid (KBNODE keyblock, int photo, const char *photo_name,
+                        const char *uidstr);
 static void menu_deluid (KBNODE pub_keyblock);
 static int menu_delsig (KBNODE pub_keyblock);
 static int menu_clean (KBNODE keyblock, int self_only);
@@ -1757,7 +1757,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  photo = 1;
 	  /* fall through */
 	case cmdADDUID:
-	  if (menu_adduid (keyblock, photo, arg_string))
+	  if (menu_adduid (keyblock, photo, arg_string, NULL))
 	    {
 	      update_trust = 1;
 	      redisplay = 1;
@@ -2285,6 +2285,93 @@ leave:
     }
   else
     write_status_text (STATUS_SUCCESS, "keyedit.passwd");
+}
+
+
+/* Unattended adding of a new keyid.  USERNAME specifies the
+   key. NEWUID is the new user id to add to the key.  */
+void
+keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
+{
+  gpg_error_t err;
+  KEYDB_HANDLE kdbhd = NULL;
+  KEYDB_SEARCH_DESC desc;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
+  char *uidstring = NULL;
+
+  uidstring = xstrdup (newuid);
+  trim_spaces (uidstring);
+  if (!*uidstring)
+    {
+      log_error ("%s\n", gpg_strerror (GPG_ERR_INV_USER_ID));
+      goto leave;
+    }
+
+#ifdef HAVE_W32_SYSTEM
+  /* See keyedit_menu for why we need this.  */
+  check_trustdb_stale ();
+#endif
+
+  /* Search the key; we don't want the whole getkey stuff here.  */
+  kdbhd = keydb_new ();
+  err = classify_user_id (username, &desc, 1);
+  if (!err)
+    err = keydb_search (kdbhd, &desc, 1, NULL);
+  if (!err)
+    {
+      err = keydb_get_keyblock (kdbhd, &keyblock);
+      if (err)
+        {
+          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+      /* Now with the keyblock retrieved, search again to detect an
+         ambiguous specification.  We need to save the found state so
+         that we can do an update later.  */
+      keydb_push_found_state (kdbhd);
+      err = keydb_search (kdbhd, &desc, 1, NULL);
+      if (!err)
+        err = gpg_error (GPG_ERR_AMBIGUOUS_NAME);
+      else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        err = 0;
+      keydb_pop_found_state (kdbhd);
+
+      if (!err)
+        {
+          /* We require the secret primary key to add a UID.  */
+          node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
+          if (!node)
+            BUG ();
+          err = agent_probe_secret_key (ctrl, node->pkt->pkt.public_key);
+        }
+    }
+  if (err)
+    {
+      log_error (_("secret key \"%s\" not found: %s\n"),
+                 username, gpg_strerror (err));
+      goto leave;
+    }
+
+  fix_keyblock (&keyblock);
+
+  if (menu_adduid (keyblock, 0, NULL, uidstring))
+    {
+      err = keydb_update_keyblock (kdbhd, keyblock);
+      if (err)
+        {
+          log_error (_("update failed: %s\n"), gpg_strerror (err));
+          goto leave;
+        }
+
+      if (update_trust)
+        revalidation_mark ();
+    }
+
+ leave:
+  xfree (uidstring);
+  release_kbnode (keyblock);
+  keydb_release (kdbhd);
 }
 
 
@@ -3225,11 +3312,15 @@ subkey_expire_warning (kbnode_t keyblock)
 
 
 /*
- * Ask for a new user id, add the self-signature and update the keyblock.
- * Return true if there is a new user id
+ * Ask for a new user id, add the self-signature, and update the
+ * keyblock.  If UIDSTRING is not NULL the user ID is generated
+ * unattended using that string.  UIDSTRING is expected to be utf-8
+ * encoded and white space trimmed.  Returns true if there is a new
+ * user id.
  */
 static int
-menu_adduid (KBNODE pub_keyblock, int photo, const char *photo_name)
+menu_adduid (kbnode_t pub_keyblock, int photo, const char *photo_name,
+             const char *uidstring)
 {
   PKT_user_id *uid;
   PKT_public_key *pk = NULL;
@@ -3238,6 +3329,9 @@ menu_adduid (KBNODE pub_keyblock, int photo, const char *photo_name)
   KBNODE node;
   KBNODE pub_where = NULL;
   gpg_error_t err;
+
+  if (photo && uidstring)
+    return 0;  /* Not allowed.  */
 
   for (node = pub_keyblock; node; pub_where = node, node = node->next)
     {
@@ -3291,9 +3385,13 @@ menu_adduid (KBNODE pub_keyblock, int photo, const char *photo_name)
       uid = generate_photo_id (pk, photo_name);
     }
   else
-    uid = generate_user_id (pub_keyblock);
+    uid = generate_user_id (pub_keyblock, uidstring);
   if (!uid)
-    return 0;
+    {
+      if (uidstring)
+        log_error ("%s", _("Such a user ID already exists on this key!\n"));
+      return 0;
+    }
 
   err = make_keysig_packet (&sig, pk, uid, NULL, pk, 0x13, 0, 0, 0,
                             keygen_add_std_prefs, pk, NULL);

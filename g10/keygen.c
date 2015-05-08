@@ -2446,6 +2446,24 @@ uid_from_string (const char *string)
 }
 
 
+/* Return true if the user id UID already exists in the keyblock.  */
+static int
+uid_already_in_keyblock (kbnode_t keyblock, const char *uid)
+{
+  PKT_user_id *uidpkt = uid_from_string (uid);
+  kbnode_t node;
+  int result = 0;
+
+  for (node=keyblock; node && !result; node=node->next)
+    if (!is_deleted_kbnode (node)
+        && node->pkt->pkttype == PKT_USER_ID
+        && !cmp_user_ids (uidpkt, node->pkt->pkt.user_id))
+      result = 1;
+  free_user_id (uidpkt);
+  return result;
+}
+
+
 /* Ask for a user ID.  With a MODE of 1 an extra help prompt is
    printed for use during a new key creation.  If KEYBLOCK is not NULL
    the function prevents the creation of an already existing user
@@ -2583,17 +2601,11 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 
         if (!fail && keyblock)
           {
-            PKT_user_id *uidpkt = uid_from_string (uid);
-            KBNODE node;
-
-            for (node=keyblock; node && !fail; node=node->next)
-              if (!is_deleted_kbnode (node)
-                  && node->pkt->pkttype == PKT_USER_ID
-                  && !cmp_user_ids (uidpkt, node->pkt->pkt.user_id))
-		fail = 1;
-            if (fail)
-              tty_printf (_("Such a user ID already exists on this key!\n"));
-            free_user_id (uidpkt);
+            if (uid_already_in_keyblock (keyblock, uid))
+              {
+                tty_printf (_("Such a user ID already exists on this key!\n"));
+                fail = 1;
+              }
           }
 
 	for(;;) {
@@ -2767,16 +2779,32 @@ do_create (int algo, unsigned int nbits, const char *curve, KBNODE pub_root,
 
 /* Generate a new user id packet or return NULL if canceled.  If
    KEYBLOCK is not NULL the function prevents the creation of an
-   already existing user ID.  */
+   already existing user ID.  If UIDSTR is not NULL the user is not
+   asked but UIDSTR is used to create the user id packet; if the user
+   id already exists NULL is returned.  UIDSTR is expected to be utf-8
+   encoded and should have already been checked for a valid length
+   etc.  */
 PKT_user_id *
-generate_user_id (KBNODE keyblock)
+generate_user_id (KBNODE keyblock, const char *uidstr)
 {
+  PKT_user_id *uid;
   char *p;
 
-  p = ask_user_id (1, 1, keyblock);
-  if (!p)
-    return NULL;  /* Canceled. */
-  return uid_from_string (p);
+  if (uidstr)
+    {
+      if (uid_already_in_keyblock (keyblock, uidstr))
+        return NULL;  /* Already exists.  */
+      uid = uid_from_string (uidstr);
+    }
+  else
+    {
+      p = ask_user_id (1, 1, keyblock);
+      if (!p)
+        return NULL;  /* Canceled. */
+      uid = uid_from_string (p);
+      xfree (p);
+    }
+  return uid;
 }
 
 

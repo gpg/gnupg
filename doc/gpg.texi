@@ -568,7 +568,7 @@ This section explains the main commands for key management
 @ifset gpgtwoone
 @item --quick-gen-key @code{user-id}
 @opindex quick-gen-key
-This is simple command to generate a standard key with one user id.
+This is a simple command to generate a standard key with one user id.
 In contrast to @option{--gen-key} the key is generated directly
 without the need to answer a bunch of prompts.  Unless the option
 @option{--yes} is given, the key creation will be canceled if the
@@ -943,6 +943,16 @@ This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.
 Its intended use is to help unattended key signing by utilizing a list
 of verified fingerprints.
+@end ifset
+
+@ifset gpgtwoone
+@item --quick-adduid  @var{user-id} @var{new-user-id}
+@opindex quick-adduid
+This command adds a new user id to an existing key.  In contrast to
+the interactive sub-command @code{adduid} of @option{--edit-key} the
+@var{new-user-id} is added verbatim with only leading and trailing
+white space removed, it is expected to be UTF-8 encoded, and no checks
+on its form are applied.
 @end ifset
 
 @item --passwd @var{user_id}
