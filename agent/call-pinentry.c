@@ -424,7 +424,7 @@ start_pinentry (ctrl_t ctrl)
   {
     /* Provide a few default strings for use by the pinentries.  This
        may help a pinentry to avoid implementing localization code.  */
-    static struct { const char *key, *value; } tbl[] = {
+    static struct { const char *key, *value; int mode; } tbl[] = {
       /* TRANSLATORS: These are labels for buttons etc used in
          Pinentries.  An underscore indicates that the next letter
          should be used as an accelerator.  Double the underscore for
@@ -432,7 +432,14 @@ start_pinentry (ctrl_t ctrl)
          the second vertical bar.  */
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
+      { "yes",    N_("|pinentry-label|_Yes") },
+      { "no",     N_("|pinentry-label|_No") },
       { "prompt", N_("|pinentry-label|PIN:") },
+      { "pwmngr", N_("|pinentry-label|_Save in password manager") },
+      { "cf-visi",N_("Do you really want to make your "
+                     "passphrase visible on the screen?") },
+      { "tt-visi",N_("|pinentry-tt|Make passphrase visible") },
+      { "tt-hide",N_("|pinentry-tt|Hide passphrase") },
       { NULL, NULL}
     };
     char *optstr;
