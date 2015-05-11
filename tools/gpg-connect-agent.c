@@ -499,8 +499,8 @@ arithmetic_op (int operator, const char *operands)
      percent ARGS
      percent+ ARGS
            Escape the args using the percent style.  Tabs, formfeeds,
-           linefeeds and carriage returns are also escaped.
-           "percent+" also maps spaces to plus characters.
+           linefeeds, carriage return, and the plus sign are also
+           escaped.  "percent+" also maps spaces to plus characters.
 
      errcode ARG
            Assuming ARG is an integer, return the gpg-error code.
@@ -592,12 +592,12 @@ get_var_ext (const char *name)
   else if ( (s - name) == 7 && !strncmp (name, "percent", 7))
     {
       s++;
-      result = percent_escape (s, "\t\r\n\f\v");
+      result = percent_escape (s, "+\t\r\n\f\v");
     }
   else if ( (s - name) == 8 && !strncmp (name, "percent+", 8))
     {
       s++;
-      result = percent_escape (s, "\t\r\n\f\v");
+      result = percent_escape (s, "+\t\r\n\f\v");
       for (p=result; *p; p++)
         if (*p == ' ')
           *p = '+';
