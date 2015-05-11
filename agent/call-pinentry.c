@@ -147,7 +147,7 @@ agent_reset_query (ctrl_t ctrl)
    disconnect that pinentry - we do this after the unlock so that a
    stalled pinentry does not block other threads.  Fixme: We should
    have a timeout in Assuan for the disconnect operation. */
-static int 
+static int
 unlock_pinentry (int rc)
 {
   assuan_context_t ctx = entry_ctx;
@@ -185,7 +185,7 @@ atfork_cb (void *opaque, int where)
     {
       int iterator = 0;
       const char *name, *assname, *value;
-      
+
       gcry_control (GCRYCTL_TERM_SECMEM);
 
       while ((name = session_env_list_stdenvnames (&iterator, &assname)))
@@ -194,7 +194,7 @@ atfork_cb (void *opaque, int where)
              ones which do have an assuan name but are conveyed using
              environment variables, update the environment of the
              forked process.  */
-          if (!assname 
+          if (!assname
               || !strcmp (name, "XAUTHORITY")
               || !strcmp (name, "PINENTRY_USER_DATA"))
             {
@@ -260,12 +260,12 @@ start_pinentry (ctrl_t ctrl)
   entry_owner = ctrl;
 
   if (entry_ctx)
-    return 0; 
+    return 0;
 
   if (opt.verbose)
     log_info ("starting a new PIN Entry\n");
 
-#ifdef HAVE_W32_SYSTEM      
+#ifdef HAVE_W32_SYSTEM
   fflush (stdout);
   fflush (stderr);
 #endif
@@ -310,7 +310,7 @@ start_pinentry (ctrl_t ctrl)
     }
   else
     argv[1] = NULL;
-  
+
   i=0;
   if (!opt.running_detached)
     {
@@ -346,7 +346,7 @@ start_pinentry (ctrl_t ctrl)
   if (DBG_ASSUAN)
     log_debug ("connection to PIN entry established\n");
 
-  rc = assuan_transact (entry_ctx, 
+  rc = assuan_transact (entry_ctx,
                         opt.no_grab? "OPTION no-grab":"OPTION grab",
                         NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
@@ -431,7 +431,7 @@ start_pinentry (ctrl_t ctrl)
   {
     /* Provide a few default strings for use by the pinentries.  This
        may help a pinentry to avoid implementing localization code.  */
-    static struct { const char *key, *value; } tbl[] = {
+    static struct { const char *key, *value; int mode; } tbl[] = {
       /* TRANSLATORS: These are labels for buttons etc used in
          Pinentries.  An underscore indicates that the next letter
          should be used as an accelerator.  Double the underscore for
@@ -439,8 +439,14 @@ start_pinentry (ctrl_t ctrl)
          the second vertical bar.  */
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
+      { "yes",    N_("|pinentry-label|_Yes") },
+      { "no",     N_("|pinentry-label|_No") },
       { "prompt", N_("|pinentry-label|PIN:") },
       { "pwmngr", N_("|pinentry-label|_Save in password manager") },
+      { "cf-visi",N_("Do you really want to make your "
+                     "passphrase visible on the screen?") },
+      { "tt-visi",N_("|pinentry-tt|Make passphrase visible") },
+      { "tt-hide",N_("|pinentry-tt|Hide passphrase") },
       { NULL, NULL}
     };
     char *optstr;
@@ -460,7 +466,7 @@ start_pinentry (ctrl_t ctrl)
       }
   }
 
-  
+
   /* Tell the pinentry the name of a file it shall touch after having
      messed with the tty.  This is optional and only supported by
      newer pinentries and thus we do no error checking. */
@@ -472,7 +478,7 @@ start_pinentry (ctrl_t ctrl)
   if (tmpstr)
     {
       char *optstr;
-      
+
       if (asprintf (&optstr, "OPTION touch-file=%s", tmpstr ) < 0 )
         ;
       else
@@ -488,7 +494,7 @@ start_pinentry (ctrl_t ctrl)
      it will send the pid back and we will use an inquire to notify
      our client.  The client may answer the inquiry either with END or
      with CAN to cancel the pinentry. */
-  rc = assuan_transact (entry_ctx, "GETINFO pid", 
+  rc = assuan_transact (entry_ctx, "GETINFO pid",
                         getinfo_pid_cb, &pinentry_pid,
                         NULL, NULL, NULL, NULL);
   if (rc)
@@ -574,7 +580,7 @@ all_digitsp( const char *s)
   for (; *s && *s >= '0' && *s <= '9'; s++)
     ;
   return !*s;
-}  
+}
 
 
 /* Return a new malloced string by unescaping the string S.  Escaping
@@ -593,7 +599,7 @@ unescape_passphrase_string (const unsigned char *s)
   while (*s && !spacep (s))
     {
       if (*s == '%' && s[1] && s[2])
-        { 
+        {
           s++;
           *d = xtoi_2 (s);
           if (!*d)
@@ -609,7 +615,7 @@ unescape_passphrase_string (const unsigned char *s)
       else
         *d++ = *s++;
     }
-  *d = 0; 
+  *d = 0;
   return buffer;
 }
 
@@ -651,7 +657,7 @@ inq_quality (void *opaque, const char *line)
       line += 7;
       while (*line == ' ')
         line++;
-      
+
       pin = unescape_passphrase_string (line);
       if (!pin)
         rc = gpg_error_from_syserror ();
@@ -683,7 +689,7 @@ setup_qualitybar (void)
   char line[ASSUAN_LINELENGTH];
   char *tmpstr, *tmpstr2;
   const char *tooltip;
-  
+
   /* TRANSLATORS: This string is displayed by Pinentry as the label
      for the quality bar.  */
   tmpstr = try_percent_escape (_("Quality:"), "\t\r\n\f\v");
@@ -696,7 +702,7 @@ setup_qualitybar (void)
     ; /* Ignore Unknown Command from old Pinentry versions.  */
   else if (rc)
     return rc;
-  
+
   tmpstr2 = gnupg_get_help_string ("pinentry.qualitybar.tooltip", 0);
   if (tmpstr2)
     tooltip = tmpstr2;
@@ -833,7 +839,7 @@ agent_askpin (ctrl_t ctrl,
     }
 
   if (initial_errtext)
-    { 
+    {
       snprintf (line, DIM(line)-1, "SETERROR %s", initial_errtext);
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line,
@@ -850,7 +856,7 @@ agent_askpin (ctrl_t ctrl,
       parm.buffer = (unsigned char*)pininfo->pin;
 
       if (errtext)
-        { 
+        {
           /* TRANSLATORS: The string is appended to an error message in
              the pinentry.  The %s is the actual error message, the
              two %d give the current and maximum number of tries. */
@@ -928,7 +934,7 @@ agent_askpin (ctrl_t ctrl,
 
 /* Ask for the passphrase using the supplied arguments.  The returned
    passphrase needs to be freed by the caller.  */
-int 
+int
 agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
                       const char *errtext, int with_qualitybar,
@@ -942,7 +948,7 @@ agent_get_passphrase (ctrl_t ctrl,
 
   *retpass = NULL;
   if (opt.batch)
-    return gpg_error (GPG_ERR_BAD_PASSPHRASE); 
+    return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 
   rc = start_pinentry (ctrl);
   if (rc)
@@ -1035,9 +1041,9 @@ agent_get_passphrase (ctrl_t ctrl,
    displayed to allow the user to easily return a GPG_ERR_CANCELED.
    if the Pinentry does not support this, the user can still cancel by
    closing the Pinentry window.  */
-int 
+int
 agent_get_confirmation (ctrl_t ctrl,
-                        const char *desc, const char *ok, 
+                        const char *desc, const char *ok,
                         const char *notok, int with_cancel)
 {
   int rc;
@@ -1111,7 +1117,7 @@ agent_get_confirmation (ctrl_t ctrl,
    text OK_BTN (which may be NULL to use the default of "OK") and waut
    for the user to hit this button.  The return value is not
    relevant.  */
-int 
+int
 agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
 {
   int rc;
@@ -1145,7 +1151,7 @@ agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn)
       if (rc)
         return unlock_pinentry (rc);
     }
-  
+
   rc = assuan_transact (entry_ctx, "CONFIRM --one-button", NULL, NULL, NULL,
                         NULL, NULL, NULL);
   if (rc && gpg_err_source (rc) && gpg_err_code (rc) == GPG_ERR_ASS_CANCELED)
@@ -1165,7 +1171,7 @@ popup_message_thread (void *arg)
      allow the use of old Pinentries.  Those old Pinentries will then
      show an additional Cancel button but that is mostly a visual
      annoyance. */
-  assuan_transact (entry_ctx, "CONFIRM --one-button", 
+  assuan_transact (entry_ctx, "CONFIRM --one-button",
                    NULL, NULL, NULL, NULL, NULL, NULL);
   popup_finished = 1;
   return NULL;
@@ -1178,7 +1184,7 @@ popup_message_thread (void *arg)
    as the message is not anymore required because the message is
    system modal and all other attempts to use the pinentry will fail
    (after a timeout). */
-int 
+int
 agent_popup_message_start (ctrl_t ctrl, const char *desc, const char *ok_btn)
 {
   int rc;
@@ -1239,7 +1245,7 @@ agent_popup_message_stop (ctrl_t ctrl)
   if (!popup_tid || !entry_ctx)
     {
       log_debug ("agent_popup_message_stop called with no active popup\n");
-      return; 
+      return;
     }
 
   pid = assuan_get_pid (entry_ctx);
@@ -1254,7 +1260,7 @@ agent_popup_message_stop (ctrl_t ctrl)
 	   && pid != 0)
     {
       HANDLE process = (HANDLE) pid;
-      
+
       /* Arbitrary error code.  */
       TerminateProcess (process, 1);
     }
