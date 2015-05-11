@@ -408,23 +408,26 @@ start_pinentry (ctrl_t ctrl)
     }
 
 
-  /* Indicate to the pinentry that it may read from an external cache.
+  if (opt.allow_external_cache)
+    {
+      /* Indicate to the pinentry that it may read from an external cache.
 
-     It is essential that the pinentry respect this.  If the cached
-     password is not up to date and retry == 1, then, using a version
-     of GPG Agent that doesn't support this, won't issue another pin
-     request and the user won't get a chance to correct the
-     password.  */
-  rc = assuan_transact (entry_ctx, "OPTION allow-external-password-cache",
-			NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
-    return unlock_pinentry (rc);
+         It is essential that the pinentry respect this.  If the
+         cached password is not up to date and retry == 1, then, using
+         a version of GPG Agent that doesn't support this, won't issue
+         another pin request and the user won't get a chance to
+         correct the password.  */
+      rc = assuan_transact (entry_ctx, "OPTION allow-external-password-cache",
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return unlock_pinentry (rc);
+    }
 
 
   {
     /* Provide a few default strings for use by the pinentries.  This
        may help a pinentry to avoid implementing localization code.  */
-    static struct { const char *key, *value; int mode; } tbl[] = {
+    static struct { const char *key, *value; int what; } tbl[] = {
       /* TRANSLATORS: These are labels for buttons etc used in
          Pinentries.  An underscore indicates that the next letter
          should be used as an accelerator.  Double the underscore for
@@ -435,7 +438,7 @@ start_pinentry (ctrl_t ctrl)
       { "yes",    N_("|pinentry-label|_Yes") },
       { "no",     N_("|pinentry-label|_No") },
       { "prompt", N_("|pinentry-label|PIN:") },
-      { "pwmngr", N_("|pinentry-label|_Save in password manager") },
+      { "pwmngr", N_("|pinentry-label|_Save in password manager"), 1 },
       { "cf-visi",N_("Do you really want to make your "
                      "passphrase visible on the screen?") },
       { "tt-visi",N_("|pinentry-tt|Make passphrase visible") },
@@ -448,6 +451,8 @@ start_pinentry (ctrl_t ctrl)
 
     for (idx=0; tbl[idx].key; idx++)
       {
+        if (!opt.allow_external_cache && tbl[idx].what == 1)
+          continue;  /* No need for it.  */
         s = _(tbl[idx].value);
         if (*s == '|' && (s2=strchr (s+1,'|')))
           s = s2+1;

@@ -119,6 +119,7 @@ enum cmd_and_opt_values
   oNoAllowMarkTrusted,
   oAllowPresetPassphrase,
   oAllowLoopbackPinentry,
+  oNoAllowExternalCache,
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
@@ -168,6 +169,10 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oDisableScdaemon, "disable-scdaemon",
                 /* */             N_("do not use the SCdaemon") ),
   ARGPARSE_s_n (oDisableCheckOwnSocket, "disable-check-own-socket", "@"),
+
+  ARGPARSE_s_s (oExtraSocket, "extra-socket",
+                /* */       N_("|NAME|accept some commands via NAME")),
+
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
 
   ARGPARSE_s_n (oBatch,      "batch",        "@"),
@@ -200,6 +205,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_n (oIgnoreCacheForSigning, "ignore-cache-for-signing",
                 /* */    N_("do not use the PIN cache when signing")),
+  ARGPARSE_s_n (oNoAllowExternalCache,  "no-allow-external-cache",
+                /* */    N_("disallow the use of an external password cache")),
   ARGPARSE_s_n (oNoAllowMarkTrusted, "no-allow-mark-trusted",
                 /* */    N_("disallow clients to mark keys as \"trusted\"")),
   ARGPARSE_s_n (oAllowMarkTrusted,   "allow-mark-trusted", "@"),
@@ -207,6 +214,7 @@ static ARGPARSE_OPTS opts[] = {
                 /* */                    N_("allow presetting passphrase")),
   ARGPARSE_s_n (oAllowLoopbackPinentry, "allow-loopback-pinentry",
                                    N_("allow caller to override the pinentry")),
+
   ARGPARSE_s_n (oSSHSupport,   "enable-ssh-support", N_("enable ssh support")),
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
 #ifdef HAVE_W32_SYSTEM
@@ -215,7 +223,6 @@ static ARGPARSE_OPTS opts[] = {
                 /* */           "@"
 #endif
                 ),
-  ARGPARSE_s_s (oExtraSocket, "extra-socket", "@"),
 
   /* Dummy options for backward compatibility.  */
   ARGPARSE_o_s (oWriteEnvFile, "write-env-file", "@"),
@@ -557,6 +564,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.enable_passhrase_history = 0;
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
+      opt.allow_external_cache = 1;
       opt.disable_scdaemon = 0;
       disable_check_own_socket = 0;
       return 1;
@@ -622,6 +630,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
 
     case oAllowLoopbackPinentry: opt.allow_loopback_pinentry = 1; break;
+
+    case oNoAllowExternalCache: opt.allow_external_cache = 0;
+      break;
 
     default:
       return 0; /* not handled */
@@ -1055,6 +1066,8 @@ main (int argc, char **argv )
       es_printf ("no-grab:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("ignore-cache-for-signing:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      es_printf ("no-allow-external-cache:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("no-allow-mark-trusted:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);

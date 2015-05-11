@@ -128,6 +128,11 @@ struct
      pinentry-mode=loopback is allowed.  */
   int allow_loopback_pinentry;
 
+  /* Allow the use of an external password cache.  If this option is
+     enabled (which is the default) we send an option to Pinentry
+     to allow it to enable such a cache.  */
+  int allow_external_cache;
+
   int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
   int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
 

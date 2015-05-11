@@ -377,6 +377,19 @@ Allow clients to use the loopback pinentry features; see the option
 @option{pinentry-mode} for details.
 @end ifset
 
+@ifset gpgtwoone
+@item --no-allow-external-cache
+@opindex no-allow-external-cache
+Tell Pinentry not to enable features which use an external cache for
+passphrases.
+
+Some desktop environments prefer to unlock all
+credentials with one master password and may have installed a Pinentry
+which employs an additional external cache to implement such a policy.
+By using this option the Pinentry is advised not to make use of such a
+cache and instead always ask the user for the requested passphrase.
+@end ifset
+
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
 This option will let @command{gpg-agent} bypass the passphrase cache for all
@@ -762,6 +775,7 @@ again.  Only certain options are honored: @code{quiet},
 @code{debug-pinentry},
 @code{no-grab}, @code{pinentry-program}, @code{default-cache-ttl},
 @code{max-cache-ttl}, @code{ignore-cache-for-signing},
+@code{no-allow-external-cache},
 @code{no-allow-mark-trusted}, @code{disable-scdaemon}, and
 @code{disable-check-own-socket}.  @code{scdaemon-program} is also
 supported but due to the current implementation, which calls the
