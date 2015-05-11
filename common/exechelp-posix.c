@@ -36,6 +36,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
@@ -113,6 +116,13 @@ get_max_fds (void)
 
   if (max_fds == -1)
     max_fds = 256;  /* Arbitrary limit.  */
+
+  /* AIX returns INT32_MAX instead of a proper value.  We assume that
+     this is always an error and use an arbitrary limit.  */
+#ifdef INT32_MAX
+  if (max_fds == INT32_MAX)
+    max_fds = 256;
+#endif
 
   return max_fds;
 }
