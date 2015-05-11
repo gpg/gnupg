@@ -332,7 +332,7 @@ start_pinentry (ctrl_t ctrl)
      easier to read.  We might want to add a new debug option to enable
      pinentry logging.  */
 #ifdef ASSUAN_NO_LOGGING
-  assuan_set_flag (ctx, ASSUAN_NO_LOGGING, 1);
+  assuan_set_flag (ctx, ASSUAN_NO_LOGGING, !opt.debug_pinentry);
 #endif
 
   /* Connect to the pinentry and perform initial handshaking.  Note

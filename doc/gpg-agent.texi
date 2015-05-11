@@ -301,6 +301,12 @@ down to standard random quality.  It is only used for testing and
 shall not be used for any production quality keys.  This option is
 only effective when given on the command line.
 
+@item --debug-pinentry
+@opindex debug-pinentry
+This option enables extra debug information pertaining to the
+Pinentry.  As of now it is only useful when used along with
+@code{--debug 1024}.
+
 @item --no-detach
 @opindex no-detach
 Don't detach the process from the console.  This is mainly useful for
@@ -753,6 +759,7 @@ This signal flushes all cached passphrases and if the program has been
 started with a configuration file, the configuration file is read
 again.  Only certain options are honored: @code{quiet},
 @code{verbose}, @code{debug}, @code{debug-all}, @code{debug-level},
+@code{debug-pinentry},
 @code{no-grab}, @code{pinentry-program}, @code{default-cache-ttl},
 @code{max-cache-ttl}, @code{ignore-cache-for-signing},
 @code{no-allow-mark-trusted}, @code{disable-scdaemon}, and

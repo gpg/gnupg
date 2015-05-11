@@ -67,6 +67,9 @@ struct
   char *startup_lc_ctype;
   char *startup_lc_messages;
 
+  /* Enable pinentry debugging (--debug 1024 should also be used).  */
+  int debug_pinentry;
+
   /* Filename of the program to start as pinentry.  */
   const char *pinentry_program;
 

@@ -79,6 +79,7 @@ enum cmd_and_opt_values
   oDebugLevel,
   oDebugWait,
   oDebugQuickRandom,
+  oDebugPinentry,
   oNoGreeting,
   oNoOptions,
   oHomedir,
@@ -154,6 +155,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
   ARGPARSE_s_i (oDebugWait,"  debug-wait",  "@"),
   ARGPARSE_s_n (oDebugQuickRandom, "debug-quick-random", "@"),
+  ARGPARSE_s_n (oDebugPinentry, "debug-pinentry", "@"),
 
   ARGPARSE_s_n (oNoDetach,  "no-detach", N_("do not detach from the console")),
   ARGPARSE_s_n (oNoGrab,    "no-grab",   N_("do not grab keyboard and mouse")),
@@ -539,6 +541,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.verbose = 0;
       opt.debug = 0;
       opt.no_grab = 0;
+      opt.debug_pinentry = 0;
       opt.pinentry_program = NULL;
       opt.pinentry_touch_file = NULL;
       opt.scdaemon_program = NULL;
@@ -567,6 +570,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oDebug: opt.debug |= pargs->r.ret_ulong; break;
     case oDebugAll: opt.debug = ~0; break;
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
+    case oDebugPinentry: opt.debug_pinentry = 1; break;
 
     case oLogFile:
       if (!reread)
