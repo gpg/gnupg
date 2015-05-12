@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-01-09 12:51+0100\n"
+"PO-Revision-Date: 2015-05-12 13:19+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -33,8 +33,28 @@ msgstr "_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Abbrechen"
 
+msgid "|pinentry-label|_Yes"
+msgstr "_Ja"
+
+msgid "|pinentry-label|_No"
+msgstr "_Nein"
+
 msgid "|pinentry-label|PIN:"
 msgstr "PIN:"
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr "Im Passwordmanager _speichern"
+
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr ""
+"Möchten Sie die eingegebene Passphrase wirklich auf dem Bildschirm sichtbar "
+"machen?"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr "Die Passphrase sichtbar machen"
+
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Passphrase unsichtbar machen"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -330,6 +350,9 @@ msgstr "|PGM|Benutze PGM als SCdaemon"
 msgid "do not use the SCdaemon"
 msgstr "Den SCdaemon-basierten Kartenzugriff nicht nutzen"
 
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAME|Einige Kommandos über NAME annehmen"
+
 msgid "ignore requests to change the TTY"
 msgstr "Ignoriere Anfragen, das TTY zu wechseln"
 
@@ -341,6 +364,9 @@ msgstr "|N|Lasse PINs im Cache nach N Sekunden verfallen"
 
 msgid "do not use the PIN cache when signing"
 msgstr "Benutze PINs im Cache nicht beim Signieren"
+
+msgid "disallow the use of an external password cache"
+msgstr "Verbiete die Verwendung eines externen Passwordmanagers"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "Verbiete Aufrufern Schlüssel als \"vertrauenswürdig\" zu markieren"
@@ -1701,6 +1727,9 @@ msgstr "Ein neues Schlüsselpaar erzeugen"
 
 msgid "quickly generate a new key pair"
 msgstr "Schnell ein neues Schlüsselpaar erzeugen"
+
+msgid "quickly add a new user-id"
+msgstr "Schnell eine neue User-ID anfügen"
 
 msgid "full featured key pair generation"
 msgstr "Ein neues Schlüsselpaar erzeugen (alle Optionen)"
@@ -3179,6 +3208,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "Geheimer Schlüssel \"%s\" nicht gefunden: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" ist kein Fingerabdruck\n"
 
@@ -3297,6 +3330,9 @@ msgstr "Wollen Sie ihn immer noch hinzufügen? (j/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Sie können einem PGP2-artigen Schlüssel keine Foto-ID hinzufügen.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Solch eine User-ID ist bereits für den Schlüssel vorhanden!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Diese korrekte Beglaubigung entfernen? (j/N/q)"
@@ -3812,9 +3848,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Bitte keine Emailadressen als Namen oder Kommentar verwenden\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "Solch eine User-ID ist bereits für den Schlüssel vorhanden!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4047,19 +4080,17 @@ msgstr "%lu Schlüssel gepuffert (%lu Beglaubigungen)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: Schlüsselbund erstellt\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr "In Dirmngr gesetzte Proxy Optionen ersetzen"
+
 msgid "include revoked keys in search results"
 msgstr "Widerrufene Schlüssel in den Suchergebnissen aufführen"
 
 msgid "include subkeys when searching by key ID"
 msgstr "Unterschlüssel in der Suche über Schlüssel-IDs aufführen"
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-"verwende temporäre Dateien, um Daten an die Schlüsselserverhilfsprogramme zu "
-"geben"
-
-msgid "do not delete temporary files after using them"
-msgstr "Temporäre Dateien nach Nutzung nicht löschen"
+msgid "override timeout options set for dirmngr"
+msgstr "In Dirmngr gesetzte Zeitüberschreitungsoptionen ersetzen"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "Schlüssel für die Signaturprüfung automatisch holen"
@@ -4070,12 +4101,6 @@ msgstr ""
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "Die im Schlüssel enthaltenen PKA-Daten beim Schlüsselholen beachten"
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"WARNUNG: Schlüsselserver-Option `%s' wird auf dieser Plattform nicht "
-"verwendet\n"
 
 msgid "disabled"
 msgstr "abgeschaltet"
@@ -4092,12 +4117,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" ist keine Schlüssel-ID: überspringe\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "WARNUNG: Schlüssel %s kann per %s nicht aktualisiert werden: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "ein Schlüssel wird per %s aktualisiert\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "WARNUNG: Schlüssel %s kann per %s nicht aktualisiert werden: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4928,10 +4953,6 @@ msgstr ""
 "vermeiden, wurde ein Doppelpunkt direkt vor den 5 Spiegelstrichen\n"
 "unten eingefügt.  Vor dem Import dieses Widerrufszertifikats\n"
 "entfernen Sie bitte dieses Doppelpunkt mittels eines Texteditors."
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "Geheimer Schlüssel \"%s\" nicht gefunden: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Ein Widerrufszertifikat für diesen Schlüssel erzeugen? (j/N) "
@@ -7140,7 +7161,7 @@ msgid "add new servers discovered in CRL distribution points to serverlist"
 msgstr "Füge neue Server aus den CRL Distribution Points der Serverliste hinzu"
 
 msgid "|N|set LDAP timeout to N seconds"
-msgstr "|N|Setze das LDAP Timeout auf N Sekunden"
+msgstr "|N|Setze die LDAP Zeitüberschreitung auf N Sekunden"
 
 msgid "|URL|use OCSP responder at URL"
 msgstr "|URL|Benutze den OCSP Responder mit dieser URL"
@@ -8045,6 +8066,19 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "verwende temporäre Dateien, um Daten an die Schlüsselserverhilfsprogramme "
+#~ "zu geben"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "Temporäre Dateien nach Nutzung nicht löschen"
+
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "WARNUNG: Schlüsselserver-Option `%s' wird auf dieser Plattform nicht "
+#~ "verwendet\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "Der Name des Sockets ist zu lang\n"
