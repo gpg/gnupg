@@ -18,7 +18,7 @@
  */
 
 
-/* This utility prints an RFC8222, possible MIME structured, message
+/* This utility prints an RFC822, possible MIME structured, message
    in an annotated format with the first column having an indicator
    for the content of the line.  Several options are available to
    scrutinize the message.  S/MIME and OpenPGP support is included. */
@@ -64,7 +64,7 @@ struct parse_info_s {
 
   int is_pkcs7;                /* Old style S/MIME message. */
 
-  int moss_state;              /* State of PGP/MIME or S/MIME parsing.  */
+  int smfm_state;              /* State of PGP/MIME or S/MIME parsing.  */
   int is_smime;                /* This is S/MIME and not PGP/MIME. */
 
   char *signing_protocol;
@@ -358,11 +358,11 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
       printf ("h signed.protocol: %s\n", s);
       if (!strcmp (s, "application/pgp-signature"))
         {
-          if (info->moss_state)
+          if (info->smfm_state)
             err ("note: ignoring nested PGP/MIME or S/MIME signature");
           else
             {
-              info->moss_state = 1;
+              info->smfm_state = 1;
               info->is_smime = 0;
               free (info->signing_protocol);
               info->signing_protocol = xstrdup (s);
@@ -371,11 +371,11 @@ mime_signed_begin (struct parse_info_s *info, rfc822parse_t msg,
       else if (!strcmp (s, "application/pkcs7-signature")
                || !strcmp (s, "application/x-pkcs7-signature"))
         {
-          if (info->moss_state)
+          if (info->smfm_state)
             err ("note: ignoring nested PGP/MIME or S/MIME signature");
           else
             {
-              info->moss_state = 1;
+              info->smfm_state = 1;
               info->is_smime = 1;
               free (info->signing_protocol);
               info->signing_protocol = xstrdup (s);
@@ -475,12 +475,12 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
       /* We need to check here whether to start collecting signed data
          because attachments might come without header lines and thus
          we won't see the BEGIN_HEADER event.  */
-      if (info->moss_state == 1)
+      if (info->smfm_state == 1)
         {
           printf ("c begin_hash\n");
           info->hashing = 1;
           info->hashing_level = info->nesting_level;
-          info->moss_state++;
+          info->smfm_state++;
 
           if (opt_crypto)
             {
@@ -511,7 +511,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
             {
               printf ("h media: %*s%s %s\n",
                       info->nesting_level*2, "", s1, s2);
-              if (info->moss_state == 3)
+              if (info->smfm_state == 3)
                 {
                   char *buf = xmalloc (strlen (s1) + strlen (s2) + 2);
                   strcpy (stpcpy (stpcpy (buf, s1), "/"), s2);
@@ -523,7 +523,7 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
                   else
                     {
                       printf ("c begin_signature\n");
-                      info->moss_state++;
+                      info->smfm_state++;
                       if (opt_crypto)
                         {
                           assert (!info->sig_file);
@@ -589,13 +589,13 @@ message_cb (void *opaque, rfc822parse_event_t event, rfc822parse_t msg)
       else
         printf ("b last\n");
 
-      if (info->moss_state == 2 && info->nesting_level == info->hashing_level)
+      if (info->smfm_state == 2 && info->nesting_level == info->hashing_level)
         {
           printf ("c end_hash\n");
-          info->moss_state++;
+          info->smfm_state++;
           info->hashing = 0;
         }
-      else if (info->moss_state == 4)
+      else if (info->smfm_state == 4)
         {
           printf ("c end_signature\n");
           info->verify_now = 1;
@@ -677,7 +677,7 @@ parse_message (FILE *fp)
               info.hash_file = NULL;
               fclose (info.sig_file);
               info.sig_file = NULL;
-              info.moss_state = 0;
+              info.smfm_state = 0;
               info.is_smime = 0;
               info.is_pkcs7 = 0;
             }
