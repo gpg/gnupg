@@ -59,8 +59,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Zrušit"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Zrušit"
+
+#, fuzzy
+#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Opravdu chcete trvale smazat tajný klíč OpenPGP:"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "nesprávné heslo"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -343,6 +371,11 @@ msgstr "|PROGRAM|použít PROGRAM jako SCdaemon program"
 msgid "do not use the SCdaemon"
 msgstr "nepoužívat SCdémona"
 
+#, fuzzy
+#| msgid "|NAME|connect to host NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NÁZEV|připojí se ke strojí NÁZEV"
+
 msgid "ignore requests to change the TTY"
 msgstr "ignorovat požadavky na změnu TTY"
 
@@ -354,6 +387,11 @@ msgstr "|N|zahodit zapamatované PINy po N sekundách"
 
 msgid "do not use the PIN cache when signing"
 msgstr "nepoužívat paměť PINů na podepisování"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "nedovolit opakovat stará hesla"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "nedovolit klientům označovat klíče za „důvěryhodné“"
@@ -1697,6 +1735,11 @@ msgid "generate a new key pair"
 msgstr "vytvořit nový pár klíčů"
 
 msgid "quickly generate a new key pair"
+msgstr "rychle vytvořit nový pár klíčů"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "rychle vytvořit nový pár klíčů"
 
 msgid "full featured key pair generation"
@@ -3152,6 +3195,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Klíč nebyl změněn, takže není potřeba jej aktualizovat.\n"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "tajný klíč „%s“ nenalezen: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "„%s“ není otisk\n"
 
@@ -3268,6 +3315,9 @@ msgstr "Jste si jistý, že jej chcete stále přidat? (a/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Neměli by jste přidávat fotografický ID k PGP2 klíči.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Smazat tento dobrý podpis? (a/N/u)"
@@ -3773,9 +3823,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Do pole jméno nebo komentář nepište, prosím, e-mailovou adresu.\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "Takový identifikátor uživatele již u tohoto klíče existuje!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4010,17 +4057,17 @@ msgstr "%lu klíčů uloženo v keši (%lu podpisů)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: soubor klíčů (keyring) vytvořen\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "zahrnout do výsledku hledání odvolané klíče"
 
 msgid "include subkeys when searching by key ID"
 msgstr "zahrnout podklíče, když se hledá podle ID klíče"
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr "používat dočasné soubory na přenos dat k modulům pro servery klíčů"
-
-msgid "do not delete temporary files after using them"
-msgstr "nemazat dočasné soubory po jejich použití"
+msgid "override timeout options set for dirmngr"
+msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "automaticky získávat klíče při ověřování podpisů"
@@ -4030,10 +4077,6 @@ msgstr "respektovat URL upřednostňovaných serverů klíčů daného klíče"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "respektovat PKA záznamy klíče při získávání klíčů"
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr "VAROVÁNÍ: volba „%s“ pro server klíčů není na této platformě účinná\n"
 
 msgid "disabled"
 msgstr "zneplatněn"
@@ -4050,12 +4093,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "„%s“ není ID klíče: přeskočeno\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "VAROVÁNÍ: nelze aktualizovat klíč %s prostřednictvím %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "aktualizuji 1 klíč z %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "VAROVÁNÍ: nelze aktualizovat klíč %s prostřednictvím %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4845,10 +4888,6 @@ msgstr ""
 "Aby se zabránilo nechtěnému použití tohoto souboru, před 5 pomlček byla\n"
 "vložena dvojtečka. Před použitím tohoto revokačního certifikátu odstraňte\n"
 "tuto dvojtečku textovým editorem."
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "tajný klíč „%s“ nenalezen: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Vytvořit pro tento klíč revokační certifikát? (a/N) "
@@ -7902,6 +7941,16 @@ msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
 
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr "používat dočasné soubory na přenos dat k modulům pro servery klíčů"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "nemazat dočasné soubory po jejich použití"
+
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "VAROVÁNÍ: volba „%s“ pro server klíčů není na této platformě účinná\n"
+
 #~ msgid "name of socket too long\n"
 #~ msgstr "název socketu je příliš dlouhý\n"
 
@@ -9150,9 +9199,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "chyba při vytváření souboru"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "nesprávné heslo"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmus veřejného klíče není implementován"

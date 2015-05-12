@@ -45,8 +45,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Haluatko varmasti poistaa valitut avaimet? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "väärä salasana"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -342,6 +363,11 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "päivitä luottamustietokanta"
 
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NIMI|aseta päätteen merkistöksi NIMI"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -353,6 +379,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "virhe luotaessa salasanaa: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1793,6 +1823,11 @@ msgstr "luo uusi avainpari"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "luo uusi avainpari"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "luo uusi avainpari"
 
 msgid "full featured key pair generation"
@@ -3336,6 +3371,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Päivitystä ei tarvita, koska avain ei ole muuttunut.\n"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "salaista avainta \"%s\" ei löydy: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "virhe: sormenjälki on väärä\n"
 
@@ -3460,6 +3499,9 @@ msgstr "Haluatko edelleen varmasti lisätä sen? (k/E) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Et voi lisätä valokuvaa PGP2-muodon avaimeen.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Poistetaanko tämä kelvollinen allekirjoitus? (k/E/l)"
@@ -3993,9 +4035,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Älä syötä sähköpostiosoitetta nimen tai huomautuksen paikalle\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4237,16 +4276,16 @@ msgstr "käsiteltiin %lu avainta (%lu allekirjoitusta)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: avainrengas luotu\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4258,12 +4297,6 @@ msgstr "annettu allekirjoituskäytännön URL on virheellinen\n"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"VAROITUS: asetukset tiedostossa \"%s\" eivät ole käytössä vielä tässä "
-"ajossa\n"
 
 #, fuzzy
 msgid "disabled"
@@ -4281,12 +4314,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "VAROITUS: tilapäistiedostoa (%s) \"%s\" ei voi poistaa: %s\n"
-
-#, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "pyydetään avainta %08lX kohteesta %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "VAROITUS: tilapäistiedostoa (%s) \"%s\" ei voi poistaa: %s\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5115,10 +5148,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "salaista avainta \"%s\" ei löydy: %s\n"
 
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -8284,6 +8313,12 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "VAROITUS: asetukset tiedostossa \"%s\" eivät ole käytössä vielä tässä "
+#~ "ajossa\n"
+
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "gpg-agent ei ole käytettävissä tässä istunnossa\n"
 
@@ -9136,9 +9171,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "virhe tiedostoa luotaessa"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "väärä salasana"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "julkisen avaimen algoritmi ei ole käytössä"

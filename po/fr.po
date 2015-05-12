@@ -32,8 +32,37 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Annuler"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|Code personnel :"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Annuler"
+
+#, fuzzy
+#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr ""
+"Voulez-vous vraiment supprimer de façon permanente la clef secrète OpenPGP :"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "phrase de passe incorrecte"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -324,6 +353,11 @@ msgstr "|PROG|utiliser PROG comme SCdaemon"
 msgid "do not use the SCdaemon"
 msgstr "ne pas utiliser le SCdaemon"
 
+#, fuzzy
+#| msgid "|NAME|connect to host NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NOM|se connecter à l'hôte NOM"
+
 msgid "ignore requests to change the TTY"
 msgstr "ignorer les demandes de modification du TTY"
 
@@ -335,6 +369,11 @@ msgstr "|N|oublier les codes personnels après N secondes"
 
 msgid "do not use the PIN cache when signing"
 msgstr "ne pas utiliser le cache de code pour signer"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "ne pas autoriser la réutilisation d'anciennes phrases secrètes"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "ne pas marquer les clefs comme de confiance"
@@ -1707,6 +1746,11 @@ msgid "generate a new key pair"
 msgstr "générer une nouvelle paire de clefs"
 
 msgid "quickly generate a new key pair"
+msgstr "générer rapidement une nouvelle paire de clefs"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "générer rapidement une nouvelle paire de clefs"
 
 msgid "full featured key pair generation"
@@ -3187,6 +3231,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "La clef n'a pas été modifiée donc la mise à jour est inutile.\n"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "clef secrète « %s » introuvable : %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "« %s » n’est pas une empreinte\n"
 
@@ -3304,6 +3352,9 @@ msgstr "Voulez-vous vraiment toujours l'ajouter ? (o/N) "
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr ""
 "Vous ne devriez pas ajouter de photo d'identité à une clef de type PGP 2.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Cette identité existe déjà pour cette clef.\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Supprimer cette bonne signature ? (o/N/q)"
@@ -3826,9 +3877,6 @@ msgstr ""
 "Ne mettez pas d'adresse électronique dans le nom réel ou dans le "
 "commentaire\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "Cette identité existe déjà pour cette clef.\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4070,19 +4118,17 @@ msgstr "%lu clefs mises en cache (%lu signatures)\n"
 msgid "%s: keyring created\n"
 msgstr "%s : porte-clefs créé\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "inclure les clefs révoquées dans les résultats de recherche"
 
 msgid "include subkeys when searching by key ID"
 msgstr "inclure les sous-clefs en cherchant par identifiant de clef"
 
-msgid "use temporary files to pass data to keyserver helpers"
+msgid "override timeout options set for dirmngr"
 msgstr ""
-"utiliser des fichiers temporaires pour passer les données aux assistants de\n"
-"serveurs de clefs"
-
-msgid "do not delete temporary files after using them"
-msgstr "ne pas supprimer les fichiers temporaires après les avoir utilisés"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "récupérer les clefs automatiquement en vérifiant les signatures"
@@ -4094,12 +4140,6 @@ msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 "respecter l'enregistrement PKA positionné sur une clef en récupérant les "
 "clefs"
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"Attention : l'option de serveur de clefs « %s » n'est pas\n"
-"            utilisée sur cette plateforme\n"
 
 msgid "disabled"
 msgstr "désactivée"
@@ -4116,14 +4156,14 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "« %s » n'est pas un identifiant de clef : ignoré\n"
 
 #, c-format
+msgid "refreshing 1 key from %s\n"
+msgstr "rafraîchissement d'une clef à partir de %s\n"
+
+#, c-format
 msgid "WARNING: unable to refresh key %s via %s: %s\n"
 msgstr ""
 "Attention : impossible de rafraîchir la clef %s\n"
 "            avec %s : %s\n"
-
-#, c-format
-msgid "refreshing 1 key from %s\n"
-msgstr "rafraîchissement d'une clef à partir de %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4953,10 +4993,6 @@ msgstr ""
 "deux-points a été inséré avant les cinq tirets suivants.\n"
 "Supprimez ce deux-points avec un éditeur de texte avant\n"
 "d’utiliser ce certificat de révocation."
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "clef secrète « %s » introuvable : %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Faut-il créer un certificat de révocation pour cette clef ? (o/N) "
@@ -8139,6 +8175,20 @@ msgstr ""
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
 
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "utiliser des fichiers temporaires pour passer les données aux assistants "
+#~ "de\n"
+#~ "serveurs de clefs"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "ne pas supprimer les fichiers temporaires après les avoir utilisés"
+
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "Attention : l'option de serveur de clefs « %s » n'est pas\n"
+#~ "            utilisée sur cette plateforme\n"
+
 #~ msgid "name of socket too long\n"
 #~ msgstr "nom de socket trop long\n"
 
@@ -9034,9 +9084,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "erreur de création de fichier"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "phrase de passe incorrecte"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algorithme de clef publique non implémenté"

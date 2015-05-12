@@ -35,8 +35,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|取消 (_C)"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|個人識別碼 (PIN):"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|取消 (_C)"
+
+#, fuzzy
+#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "你是否真的想要永久刪除 OpenPGP 私鑰:"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "請輸入新密語"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -309,6 +337,11 @@ msgstr "|PGM|使用 PGM 做為 SCdaemon 程式"
 msgid "do not use the SCdaemon"
 msgstr "不要使用 SCdaemon"
 
+#, fuzzy
+#| msgid "|NAME|connect to host NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|名稱|連線至位於指定名稱的主機"
+
 msgid "ignore requests to change the TTY"
 msgstr "忽略變更 TTY 的要求"
 
@@ -320,6 +353,11 @@ msgstr "|N|讓快取住的個人識別碼 (PIN) 在 N 秒後到期"
 
 msgid "do not use the PIN cache when signing"
 msgstr "簽署時不要使用個人識別碼 (PIN) 快取"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "不允許重複使用舊密語"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "不允許用戶端將金鑰標記為 \"已信任\""
@@ -1635,6 +1673,11 @@ msgid "generate a new key pair"
 msgstr "產生新的金鑰對"
 
 msgid "quickly generate a new key pair"
+msgstr "快速產生新的金鑰對"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "快速產生新的金鑰對"
 
 msgid "full featured key pair generation"
@@ -3055,6 +3098,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "金鑰沒有變更所以不需要更新.\n"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "找不到私鑰 \"%s\": %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\" 不是指紋\n"
 
@@ -3172,6 +3219,9 @@ msgstr "你確定仍然想要增加嗎? (y/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "你不可以把照片 ID 增加到 PGP2 型態的金鑰裡.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "這把金鑰上已經有這樣子的使用者 ID 了!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "刪除這份完好的簽章嗎? (y/N/q)"
@@ -3675,9 +3725,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "請不要把電子郵件地址放進你的真實姓名或註釋裡\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "這把金鑰上已經有這樣子的使用者 ID 了!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -3903,17 +3950,17 @@ msgstr "已檢查 %lu 把金鑰 (共 %lu 份簽章)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: 鑰匙圈已建立\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "在搜尋結果中也包含已撤銷的金鑰"
 
 msgid "include subkeys when searching by key ID"
 msgstr "以金鑰 ID 搜尋時也搜尋子鑰"
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr "用暫存檔來將資料遞送給金鑰伺服器協助程式"
-
-msgid "do not delete temporary files after using them"
-msgstr "使用暫存檔後不要加以刪除"
+msgid "override timeout options set for dirmngr"
+msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "驗證簽章時自動取回金鑰"
@@ -3923,10 +3970,6 @@ msgstr "尊重金鑰上所設定的偏好金鑰伺服器 URL"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "取回金鑰時尊重金鑰所設定的 PKA 記錄"
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr "警告: 金鑰伺服器選項 '%s' 並未用於此平台\n"
 
 msgid "disabled"
 msgstr "已停用"
@@ -3943,12 +3986,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" 並非金鑰 ID: 跳過中\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "警告: 無法更新金鑰 %s 於 %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "更新 1 份金鑰中 (從 %s )\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "警告: 無法更新金鑰 %s 於 %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4724,10 +4767,6 @@ msgstr ""
 "為了避免意外誤用此檔案, 底下五個破折號前面多插了一個冒號.\n"
 "真的要使用這份撤銷憑證前, 請先用文字編輯器把那個冒號移除,\n"
 "撤銷憑證才能使用."
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "找不到私鑰 \"%s\": %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "要為這把金鑰建立一份撤銷憑證嗎? (y/N) "
@@ -7709,6 +7748,15 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr "用暫存檔來將資料遞送給金鑰伺服器協助程式"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "使用暫存檔後不要加以刪除"
+
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr "警告: 金鑰伺服器選項 '%s' 並未用於此平台\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "socket 名稱太長\n"

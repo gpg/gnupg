@@ -50,8 +50,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Segur que voleu crear una clau de signatura i xifratge? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "la contrasenya és invàlida"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -351,6 +373,11 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "actualitza la base de dades de confiança"
 
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NOM|el joc de caràcters serà NOM"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -362,6 +389,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "error en la creació de la contrasenya: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1852,6 +1883,11 @@ msgstr "genera un nou parell de claus"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "genera un nou parell de claus"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "genera un nou parell de claus"
 
 msgid "full featured key pair generation"
@@ -3433,6 +3469,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "La clau no ha canviat, per tant no cal actualització.\n"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "error: l'empremta digital és invàlida\n"
 
@@ -3563,6 +3603,9 @@ msgstr "Esteu segur que encara voleu afegir-lo? (s/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "No podeu afegir un photo ID a una clau d'estil PGP2.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 # Aquesta i les següents no haurien de portar (s/N/q) i no (y/N/q)?  ivb
 # Hmm. Sí... (s/N/x) jm
@@ -4103,9 +4146,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "No inclogueu l'adreça ni en el camp *nom* ni en el camp *comentari*\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 # xX? ivb
 # Hmm... sí. jm
 #. TRANSLATORS: These are the allowed answers in
@@ -4356,16 +4396,16 @@ msgstr "s'han comprovat %lu claus (%lu signatures)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: s'ha creat l'anell\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4377,11 +4417,6 @@ msgstr "la URL de política de signatura donada no és vàlida\n"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"AVÍS: les opcions en «%s» encara no estan actives durant aquesta execució\n"
 
 #, fuzzy
 msgid "disabled"
@@ -4399,12 +4434,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: no és un ID vàlid\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "AVÍS: no s'ha pogut eliminar el fitxer temporal (%s) «%s»: %s\n"
-
-#, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "s'està sol·licitant la clau %08lX de %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "AVÍS: no s'ha pogut eliminar el fitxer temporal (%s) «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5248,10 +5283,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -8478,6 +8509,12 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "AVÍS: les opcions en «%s» encara no estan actives durant aquesta "
+#~ "execució\n"
+
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "gpg-agent no està disponible en aquesta sessió\n"
 
@@ -9348,9 +9385,6 @@ msgstr ""
 #~ msgid "file create error"
 #~ msgstr "error en la creació del fitxer"
 
-#~ msgid "invalid passphrase"
-#~ msgstr "la contrasenya és invàlida"
-
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "l'algoritme de clau pública no és implementat"
 
@@ -10089,9 +10123,6 @@ msgstr ""
 
 #~ msgid "%s: error checking key: %s\n"
 #~ msgstr "%s: error en la comprovació de la clau: %s\n"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "Segur que voleu crear una clau de signatura i xifratge? "
 
 #~ msgid "Do you really need such a large keysize? "
 #~ msgstr "Realment necessiteu una clau tan llarga? "

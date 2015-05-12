@@ -31,8 +31,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Σίγουρα θέλετε να διαγραφούν τα επιλεγμένα κλειδιά; "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "μη έγκυρη φράση κλειδί"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -328,6 +349,11 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "ανανέωση της βάσης δεδομένων εμπιστοσύνης"
 
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|ΟΝΟΜΑ|καθορισμός του σετ χαρακτήρων τερματικού σε ΟΝΟΜΑ"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -339,6 +365,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1785,6 +1815,11 @@ msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "δημιουργία ενός νέου ζεύγους κλειδιών"
 
 msgid "full featured key pair generation"
@@ -3342,6 +3377,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Το κλειδί δεν άλλαξε οπότε δεν χρειάζεται ενημέρωση.\n"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "το μυστικό κλειδί `%s' δε βρέθηκε: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "σφάλμα: μη έγκυρο αποτύπωμα\n"
 
@@ -3466,6 +3505,9 @@ msgstr "Σίγουρα ακόμα θέλετε να το προσθέσετε; (y/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Δεν μπορείτε να προσθέσετε μια photo ID σε ένα κλειδί τύπου PGP2.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Διαγραφή αυτής της καλής υπογραφής; (y/N/q)"
@@ -4004,9 +4046,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Παρακαλώ μην τοποθετείτε την διεύθυνση email στο όνομα ή στο σχόλιο\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4252,16 +4291,16 @@ msgstr "%lu κλειδιά έχουν ελεγχθεί (%lu υπογραφές)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: κλειδοθήκη δημιουργήθηκε\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4273,11 +4312,6 @@ msgstr "το URL πολιτικής υπογραφής που δόθηκε δεν είναι έγκυρο\n"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"ΠΡΟΕΙΔΟΠΟΙΗΣΗ: οι επιλογες στο `%s' δεν είναι ενεργές σε αυτή την εκτέλεση\n"
 
 #, fuzzy
 msgid "disabled"
@@ -4295,12 +4329,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "αίτηση κλειδιού %08lX από το %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: αδυναμία διαγραφής tempfile (%s) `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5125,10 +5159,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "το μυστικό κλειδί `%s' δε βρέθηκε: %s\n"
 
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -8300,6 +8330,12 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "ΠΡΟΕΙΔΟΠΟΙΗΣΗ: οι επιλογες στο `%s' δεν είναι ενεργές σε αυτή την "
+#~ "εκτέλεση\n"
+
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "ο gpg-agent δεν είναι διαθέσιμος σε αυτή τη συνεδρία\n"
 
@@ -9156,9 +9192,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "σφάλμα δημιουργίας αρχείου"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "μη έγκυρη φράση κλειδί"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "μη υλοποιημένος αλγόριθμος δημοσίου κλειδιού"

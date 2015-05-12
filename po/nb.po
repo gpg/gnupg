@@ -33,8 +33,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vil du virkelig slette den valgte nøkkelen? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "ugyldig passfrase"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -338,6 +360,10 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "ikke oppdatér tillitsdatabasen etter import"
 
+#, fuzzy
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAVN|kryptere for NAVN"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -349,6 +375,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "feil ved opprettelse av passfrase: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1743,6 +1773,11 @@ msgstr "generere et nytt nøkkelpar"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "generere et nytt nøkkelpar"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "generere et nytt nøkkelpar"
 
 msgid "full featured key pair generation"
@@ -3232,6 +3267,10 @@ msgstr "oppdatering mislyktes: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøkkelen ble ikke endret, så ingen oppdatering er nødvendig.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "hemmelig nøkkel «%s» ble ikke funnet: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3346,6 +3385,9 @@ msgid "Are you sure you still want to add it? (y/N) "
 msgstr "Er du sikker på at du vil legge den til? (j/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
+msgstr ""
+
+msgid "Such a user ID already exists on this key!\n"
 msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
@@ -3859,9 +3901,6 @@ msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Vennligst ikke putt epostadressen inn i fullt navn eller i kommentaren\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4112,16 +4151,16 @@ msgstr "%lu nøkler cachet (%lu signaturer)\n"
 msgid "%s: keyring created\n"
 msgstr ""
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4132,12 +4171,6 @@ msgstr ""
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"ADVARSEL: nøkkelserver-valget «%s» er ikke i bruk på denne plattformen\n"
 
 msgid "disabled"
 msgstr "utkoblet"
@@ -4154,12 +4187,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "ADVARSEL: klarte ikke å oppfriske nøkkel %s via %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "oppfrisker 1 nøkkel fra %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "ADVARSEL: klarte ikke å oppfriske nøkkel %s via %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4965,10 +4998,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "hemmelig nøkkel «%s» ble ikke funnet: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Lage et opphevingssertifikat for denne nøkkelen? (j/N) "
@@ -8108,6 +8137,12 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "ADVARSEL: nøkkelserver-valget «%s» er ikke i bruk på denne plattformen\n"
+
+#, fuzzy
 #~ msgid "use a standard location for the socket"
 #~ msgstr "sette en notasjon for de valgte brukeridene"
 
@@ -8575,9 +8610,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "feil ved opprettelse av fil"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "ugyldig passfrase"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "uimplementert pubkey-algoritme"

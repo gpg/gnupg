@@ -33,8 +33,36 @@ msgstr "|entrada de pin-etiqueta|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|entrada de pin-etiqueta|_Cancelar"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|entrada de pin-etiqueta|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|entrada de pin-etiqueta|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|entrada de pin-etiqueta|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|entrada de pin-etiqueta|_Cancelar"
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "¿De verdad quiere crear una clave de firma y cifrado? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "frase contraseña incorrecta"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -366,6 +394,11 @@ msgstr "|PGM|usar PCM como programa SCdaemon"
 msgid "do not use the SCdaemon"
 msgstr "no usar SCdaemon"
 
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NOMBRE|conectar al socket Assuan NOMBRE"
+
 msgid "ignore requests to change the TTY"
 msgstr "ignorar peticiones de cambiar el TTY"
 
@@ -377,6 +410,11 @@ msgstr "|N|los PINs en la caché expiran en N segundos"
 
 msgid "do not use the PIN cache when signing"
 msgstr "no usar el caché de PINs al firmar"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "no permite reusar antiguas frases contraseña"
 
 #, fuzzy
 #| msgid "allow clients to mark keys as \"trusted\""
@@ -1818,6 +1856,11 @@ msgstr "genera un nuevo par de claves"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "genera un nuevo par de claves"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "genera un nuevo par de claves"
 
 msgid "full featured key pair generation"
@@ -3332,6 +3375,10 @@ msgstr "actualización fallida: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Clave sin cambios, no se necesita actualización.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "clave secreta \"%s\" no encontrada: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3456,6 +3503,9 @@ msgstr "¿Está seguro de querer añadirla? (s/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "No puede añadir un ID fotográfico a una clave tipo PGP2.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "¡Ese ID de usuario ya existe en esta clave!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "¿Borrar esta firma correcta? (s/N/q)"
@@ -3974,9 +4024,6 @@ msgstr ""
 "Por favor no ponga la dirección de correo-e en el nombre real o en el "
 "comentario\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "¡Ese ID de usuario ya existe en esta clave!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4223,19 +4270,17 @@ msgstr "%lu claves memorizadas (%lu firmas)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: anillo creado\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "incluir claves revocadas en resultados de la búsqueda"
 
 msgid "include subkeys when searching by key ID"
 msgstr "incluir subclaves al buscar por ID de clave"
 
-msgid "use temporary files to pass data to keyserver helpers"
+msgid "override timeout options set for dirmngr"
 msgstr ""
-"usar ficheros temporales para pasar datos a los ayudantes delservidor de "
-"claves"
-
-msgid "do not delete temporary files after using them"
-msgstr "no borrar ficheros temporales tras usarlos"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "recuperar automáticamente claves al verificar firmas"
@@ -4245,13 +4290,6 @@ msgstr "usar la URL de servidor de claves preferido presente en la clave"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "usar el registro PKA presente en una clave al recuperar claves"
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"AVISO: las opciones de servidor de claves `%s' no se usan en esta "
-"plataforma\n"
 
 msgid "disabled"
 msgstr "deshabilitado"
@@ -4268,12 +4306,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" no es un identificador de clave válido: omitido\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "AVISO: no se puede renovar la clave %s a traves de %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "renovando 1 clave de %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "AVISO: no se puede renovar la clave %s a traves de %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5093,10 +5131,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "clave secreta \"%s\" no encontrada: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "¿Crear un certificado de revocación para esta clave? (s/N) "
@@ -8507,6 +8541,21 @@ msgstr ""
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
 
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "usar ficheros temporales para pasar datos a los ayudantes delservidor de "
+#~ "claves"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "no borrar ficheros temporales tras usarlos"
+
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "AVISO: las opciones de servidor de claves `%s' no se usan en esta "
+#~ "plataforma\n"
+
 #~ msgid "name of socket too long\n"
 #~ msgstr "nombre de socket demasiado largo\n"
 
@@ -9452,9 +9501,6 @@ msgstr ""
 #~ msgid "file create error"
 #~ msgstr "error al crear fichero"
 
-#~ msgid "invalid passphrase"
-#~ msgstr "frase contraseña incorrecta"
-
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmo de clave pública no implementado"
 
@@ -10189,9 +10235,6 @@ msgstr ""
 
 #~ msgid "%s: error checking key: %s\n"
 #~ msgstr "%s: error comprobando la clave: %s\n"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "¿De verdad quiere crear una clave de firma y cifrado? "
 
 #~ msgid "Do you really need such a large keysize? "
 #~ msgstr "¿De verdad necesita una clave tan grande? "

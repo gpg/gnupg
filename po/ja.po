@@ -34,8 +34,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_キャンセル"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_キャンセル"
+
+#, fuzzy
+#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "選択したOpenPGP秘密鍵を本当に永久に削除しますか? (y/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "新しいパスフレーズを入力してください"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -315,6 +343,11 @@ msgstr "|PGM|PGMをSCdaemonプログラムとして使う"
 msgid "do not use the SCdaemon"
 msgstr "SCdaemonを使わない"
 
+#, fuzzy
+#| msgid "|NAME|connect to host NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAME|ホストNAMEに接続する"
+
 msgid "ignore requests to change the TTY"
 msgstr "TTYの変更要求を無視する"
 
@@ -326,6 +359,11 @@ msgstr "|N|N秒後に保持したPINを無効とする"
 
 msgid "do not use the PIN cache when signing"
 msgstr "署名に対してPINの保持を使わない"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "古いパスフレーズを再使用することを認めない"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "クライアントが鍵に\"trusted\"マークをつけることを認めない"
@@ -1648,6 +1686,11 @@ msgid "generate a new key pair"
 msgstr "新しい鍵ペアを生成"
 
 msgid "quickly generate a new key pair"
+msgstr "すばやく新しい鍵ペアを生成"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "すばやく新しい鍵ペアを生成"
 
 msgid "full featured key pair generation"
@@ -3069,6 +3112,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "鍵は無変更なので更新は不要です。\n"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "\"%s\"はフィンガープリントではありません\n"
 
@@ -3185,6 +3232,9 @@ msgstr "それでも追加したいですか? (y/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "PGP2形式の鍵にはフォトIDを追加できません。\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "そういったユーザIDはすでにこの鍵に存在しています!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "この正しい署名を削除しますか? (y/N/q)"
@@ -3689,9 +3739,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "電子メールのアドレスを本名やコメントに入れないように\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "そういったユーザIDはすでにこの鍵に存在しています!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -3920,17 +3967,17 @@ msgstr "%lu個の鍵をキャッシュ済 (%lu個の署名)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: 鍵リングができました\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "失効した鍵を検索結果に含める"
 
 msgid "include subkeys when searching by key ID"
 msgstr "key IDによる検索に副鍵も含める"
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr "キーサーバ・ヘルパーにデータを与える際、一時ファイルを使う"
-
-msgid "do not delete temporary files after using them"
-msgstr "一時ファイルを使用後、それを削除しない"
+msgid "override timeout options set for dirmngr"
+msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "署名の検証時に自動的に鍵を取得する"
@@ -3940,11 +3987,6 @@ msgstr "鍵に設定される優先鍵サーバURLを与える"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "鍵に設定されたPKAレコードを鍵の取得時に与える"
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"*警告*: 鍵サーバのオプション'%s'は、このプラットホームでは使われません\n"
 
 msgid "disabled"
 msgstr "使用禁止"
@@ -3961,12 +4003,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\"鍵IDではありません: スキップします\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "*警告*: 鍵%sを%s経由で回復できません: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "1本の鍵を%sから回復\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "*警告*: 鍵%sを%s経由で回復できません: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4749,10 +4791,6 @@ msgstr ""
 "このファイルを誤って使うのを避けるため、以下ではコロンが5つのダッシュの前に挿"
 "入されます。\n"
 "この失効証明書を使う前にはテクスト・エディタでこのコロンを削除してください。"
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "この鍵に対する失効証明書を作成しますか? (y/N) "
@@ -7766,6 +7804,16 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr "キーサーバ・ヘルパーにデータを与える際、一時ファイルを使う"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "一時ファイルを使用後、それを削除しない"
+
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "*警告*: 鍵サーバのオプション'%s'は、このプラットホームでは使われません\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "ソケット名が長すぎます\n"

@@ -34,8 +34,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "您真的想要删除选定的密钥吗？(y/N)"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "无效的密码"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -338,6 +360,10 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "导入后不更新信任度数据库"
 
+#, fuzzy
+msgid "|NAME|accept some commands via NAME"
+msgstr "|某甲|为收件者“某甲”加密"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -349,6 +375,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "生成密码的时候发生错误：%s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1752,6 +1782,11 @@ msgstr "生成一副新的密钥对"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "生成一副新的密钥对"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "生成一副新的密钥对"
 
 msgid "full featured key pair generation"
@@ -3241,6 +3276,10 @@ msgstr "更新失败：%s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "密钥没有变动所以不需要更新。\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "找不到私钥“%s”：%s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3361,6 +3400,9 @@ msgstr "您确定仍然想要增加吗？(y/N)"
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "您不可以把照片标识增加到 PGP2 样式的密钥里。\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "删除这个完好的签名吗？(y/N/q)"
@@ -3876,9 +3918,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "请不要把电子邮件地址放进您的真实姓名或注释里\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4118,17 +4157,17 @@ msgstr "缓存了 %lu 把密钥(%lu 份签名)\n"
 msgid "%s: keyring created\n"
 msgstr "%s：钥匙环已建立\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "在搜索结果中包含已吊销的密钥"
 
 msgid "include subkeys when searching by key ID"
 msgstr "按钥匙号搜索时包含子钥"
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr "向公钥服务器辅助程序传递数据时使用临时文件"
-
-msgid "do not delete temporary files after using them"
-msgstr "不删除使用过的临时文件"
+msgid "override timeout options set for dirmngr"
+msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "验证签名时自动下载密钥"
@@ -4138,11 +4177,6 @@ msgstr "使用密钥中指定的首选公钥服务器 URL"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "获取密钥时使用密钥上的 PKA 记录"
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr "警告：公钥服务器选项‘%s’在此平台上没有被使用\n"
 
 msgid "disabled"
 msgstr "已禁用"
@@ -4159,12 +4193,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "“%s”不是一个用户标识：跳过\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "警告：无法更新密钥 %s，通过 %s：%s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "1 个密钥正从 %s 得到更新\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "警告：无法更新密钥 %s，通过 %s：%s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4960,10 +4994,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "找不到私钥“%s”：%s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "要为这把密钥建立一份吊销证书吗？(y/N)"
@@ -8124,6 +8154,17 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr "向公钥服务器辅助程序传递数据时使用临时文件"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "不删除使用过的临时文件"
+
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr "警告：公钥服务器选项‘%s’在此平台上没有被使用\n"
+
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "gpg-agent 在此次舍话中无法使用\n"
 
@@ -8959,9 +9000,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "文件建立错误"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "无效的密码"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "未实现的公钥算法"

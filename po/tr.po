@@ -32,8 +32,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Seçili anahtarları gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Yeni anahtar parolasını giriniz"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -341,6 +363,11 @@ msgstr "[UYG|Akıllı kart uygulaması olarak UYG kullanılır"
 msgid "do not use the SCdaemon"
 msgstr "Akıllı kart süreci kullanılmaz"
 
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|İSİM|Assuan soketi İSİMe bağlanır"
+
 msgid "ignore requests to change the TTY"
 msgstr "TTY değiştirme istekleri yoksayılır"
 
@@ -352,6 +379,11 @@ msgstr "|N|arabellekteki PINler N saniyede zamanaşımına uğrar"
 
 msgid "do not use the PIN cache when signing"
 msgstr "imzalarken PIN arabelleği kullanılmaz"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "eski anahtar parolalarının yeniden kullanılmasına izin vermez"
 
 #, fuzzy
 #| msgid "allow clients to mark keys as \"trusted\""
@@ -1775,6 +1807,11 @@ msgstr "yeni bir anahtar çifti üretir"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "yeni bir anahtar çifti üretir"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "yeni bir anahtar çifti üretir"
 
 msgid "full featured key pair generation"
@@ -3324,6 +3361,10 @@ msgstr "güncelleme başarısız: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Güncelleme gereği olmadığından anahtar değişmedi.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "gizli anahtar \"%s\" yok: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3452,6 +3493,9 @@ msgstr "Onu yine de eklemek istiyor musunuz? (e/H veya y/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "PGP2 tarzı bir anahtara bir foto kimliği ekleyemeyebilirsiniz.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Bu doğru imza silinsin mi? (e/H/k veya y/N/k)"
@@ -3989,9 +4033,6 @@ msgid "Please don't put the email address into the real name or the comment\n"
 msgstr ""
 "Lütfen E-posta adresinizi Adı ve Soyadı veya Açıklama alanı içine koymayın\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4243,6 +4284,9 @@ msgstr "%lu anahtar arabelleklendi (%lu imza)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: anahtar zinciri oluşturuldu\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "yürürlükten kaldırılan anahtarlar arama sonuçlarına dahil edilir"
 
@@ -4250,12 +4294,8 @@ msgid "include subkeys when searching by key ID"
 msgstr ""
 "anahtar kimliğine göre arama yapılırken yardımcı anahtarlar dahil edilir"
 
-msgid "use temporary files to pass data to keyserver helpers"
+msgid "override timeout options set for dirmngr"
 msgstr ""
-"anahtar sunucusu yardımcılarına veri aktaracak geçici dosyalar kullanılır"
-
-msgid "do not delete temporary files after using them"
-msgstr "geçici dosyaları kullandıktan sonra silmez"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "imzaları doğrularken anahtarları özdevinimli olarak alır"
@@ -4265,11 +4305,6 @@ msgstr "tercihli anahtar sunucusunun adresini adrese atar"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "anahtarları alırken PKA kaydını bir anahtara atar"
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr "UYARI: anahtar sunucusu seçeneği `%s' bu platformda kullanımda değil\n"
 
 msgid "disabled"
 msgstr "iptal edildi"
@@ -4286,12 +4321,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" bir anahtar kimliği değil: atlanıyor\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "UYARI: %s anahtarı %s üzerinden tazelenemiyor: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "1 anahtar %s adresinden tazeleniyor\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "UYARI: %s anahtarı %s üzerinden tazelenemiyor: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5119,10 +5154,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "gizli anahtar \"%s\" yok: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr ""
@@ -8513,6 +8544,19 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "anahtar sunucusu yardımcılarına veri aktaracak geçici dosyalar kullanılır"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "geçici dosyaları kullandıktan sonra silmez"
+
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "UYARI: anahtar sunucusu seçeneği `%s' bu platformda kullanımda değil\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "soketin ismi çok uzun\n"

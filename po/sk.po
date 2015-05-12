@@ -32,8 +32,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Skutoène chcete zmaza» vybrané kµúèe? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "nesprávne heslo"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -329,6 +350,11 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "aktualizova» databázu dôvery"
 
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|MENO|nastav znakovú sadu terminálu na MENO"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -340,6 +366,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "chyba pri vytváraní hesla: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1782,6 +1812,11 @@ msgstr "vytvori» nový pár kµúèov"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "vytvori» nový pár kµúèov"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "vytvori» nový pár kµúèov"
 
 msgid "full featured key pair generation"
@@ -3339,6 +3374,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "kµúè nebol zmenený, tak¾e nie je potrebné ho aktualizova».\n"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "tajný kµúè `%s' nebol nájdený: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "chyba: neplatný odtlaèok\n"
 
@@ -3463,6 +3502,9 @@ msgstr "Ste si istý, ¾e ho chcete stále prida»? (a/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Nemali by ste pridáva» fotografické ID k PGP2 kµúèu.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Zmaza» tento dobrý podpis? (a/N/u)"
@@ -3990,9 +4032,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Do poµa meno alebo komentár nepí¹te, prosím, e-mailovú adresu.\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4234,16 +4273,16 @@ msgstr "%lu kµúèov skontrolovaných (%lu podpisov)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: súbor kµúèov (keyring) vytvorený\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4255,10 +4294,6 @@ msgstr "zadané URL pre podpisovú politiku je neplatné\n"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr "VAROVANIE: nastavenie v `%s' e¹te nie je aktívne\n"
 
 #, fuzzy
 msgid "disabled"
@@ -4276,12 +4311,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr ""
 
 #, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "VAROVANIE: nemô¾em vymaza» doèasný súbor (%s) `%s': %s\n"
-
-#, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "VAROVANIE: nemô¾em vymaza» doèasný súbor (%s) `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5103,10 +5138,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "tajný kµúè `%s' nebol nájdený: %s\n"
 
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -8273,6 +8304,10 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr "VAROVANIE: nastavenie v `%s' e¹te nie je aktívne\n"
+
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "gpg-agent nie je v tomto sedení dostupný\n"
 
@@ -9115,9 +9150,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "chyba pri vytváraní súboru"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "nesprávne heslo"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmus verejného kµúèa nie je implementovaný"

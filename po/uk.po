@@ -33,8 +33,36 @@ msgstr "_Гаразд"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Скасувати"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "_Гаразд"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "_Гаразд"
+
 msgid "|pinentry-label|PIN:"
 msgstr "Пінкод:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "_Скасувати"
+
+#, fuzzy
+#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Справді хочете остаточно вилучити закритий ключ OpenPGP:"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Вкажіть новий пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -320,6 +348,11 @@ msgstr "використовувати вказану програму SCdaemon"
 msgid "do not use the SCdaemon"
 msgstr "не використовувати SCdaemon"
 
+#, fuzzy
+#| msgid "|NAME|connect to host NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAME|встановити з’єднання з вузлом за вказаною назвою"
+
 msgid "ignore requests to change the TTY"
 msgstr "ігнорувати запити щодо зміни TTY"
 
@@ -331,6 +364,11 @@ msgstr "вважати кешовані пінкоди за вказану кі�
 
 msgid "do not use the PIN cache when signing"
 msgstr "не використовувати кеш пін-кодів для підписування"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "не дозволяти повторне використання старих паролів"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "заборонити клієнтам позначати ключі як надійні"
@@ -1682,6 +1720,11 @@ msgid "generate a new key pair"
 msgstr "створити пару ключів"
 
 msgid "quickly generate a new key pair"
+msgstr "швидке створення пари ключів"
+
+#, fuzzy
+#| msgid "quickly generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "швидке створення пари ключів"
 
 msgid "full featured key pair generation"
@@ -3164,6 +3207,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Ключ не змінено, отже оновлення непотрібне.\n"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "закритий ключ «%s» не знайдено: %s\n"
+
+#, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "«%s» не є відбитком\n"
 
@@ -3283,6 +3330,9 @@ msgstr "Ви справді бажаєте додати його? (y/N або т
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Не можна додавати фотоідентифікатор до ключа у форматі PGP2.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "У цьому ключі вже існує такий ідентифікатор користувача!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Вилучити цей дійсний підпис? (y/N/q або т/Н/в)"
@@ -3799,9 +3849,6 @@ msgstr ""
 "Будь ласка, не використовуйте адресу електронної пошти у полях справжнього "
 "імені або коментаря\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "У цьому ключі вже існує такий ідентифікатор користувача!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4036,19 +4083,17 @@ msgstr "кешовано %lu ключів (%lu підписів)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: створено сховище ключів\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "включити до результатів пошуку відкликані ключі"
 
 msgid "include subkeys when searching by key ID"
 msgstr "включити підключі до пошуку за ідентифікатором ключа"
 
-msgid "use temporary files to pass data to keyserver helpers"
+msgid "override timeout options set for dirmngr"
 msgstr ""
-"використовувати тимчасові файли для передавання даних до допоміжних програм "
-"сервера ключів"
-
-msgid "do not delete temporary files after using them"
-msgstr "не вилучати тимчасові файли після їхнього використання"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "автоматично отримувати ключі під час перевірки підписів"
@@ -4059,11 +4104,6 @@ msgstr "брати до уваги адресу основного сервер�
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
 "брати до уваги запис PKA, встановлений у ключі під час отримання ключів"
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"УВАГА: параметр сервера ключів «%s» не використовується на цій платформі\n"
 
 msgid "disabled"
 msgstr "вимкнено"
@@ -4080,12 +4120,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "«%s» не є ідентифікатором ключа: пропускаємо\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "УВАГА: не вдалося оновити ключ %s за допомогою %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "оновлюємо 1 ключ з %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "УВАГА: не вдалося оновити ключ %s за допомогою %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -4888,10 +4928,6 @@ msgstr ""
 "Щоб уникнути випадкового використання цього файла, перед п’ятьма\n"
 "дефісами нижче додано двокрапку. Вилучіть цю двокрапку у текстовому\n"
 "редакторі, перш ніж скористатися цим сертифікатом відкликання."
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "закритий ключ «%s» не знайдено: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Створити сертифікат відкликання для цього ключа? (y/N або т/Н) "
@@ -7976,6 +8012,18 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "використовувати тимчасові файли для передавання даних до допоміжних "
+#~ "програм сервера ключів"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "не вилучати тимчасові файли після їхнього використання"
+
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "УВАГА: параметр сервера ключів «%s» не використовується на цій платформі\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "назва сокета є надто довгою\n"

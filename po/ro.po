@@ -33,8 +33,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Doriþi într-adevãr sã ºtergeþi cheile selectate? (d/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "frazã-parolã invalidã"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -340,6 +362,11 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "actualizeazã baza de date de încredere"
 
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NUME|seteazã charset-ul pentru terminal ca NUME"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -351,6 +378,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "eroare la crearea frazei-parolã: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1772,6 +1803,11 @@ msgstr "genereazã o nouã perechi de chei"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "genereazã o nouã perechi de chei"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "genereazã o nouã perechi de chei"
 
 msgid "full featured key pair generation"
@@ -3314,6 +3350,10 @@ msgstr "actualizarea a eºuat: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Cheia nu a fost schimbatã aºa cã nici o actualizare a fost necesarã.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "cheia secretã \"%s\" nu a fost gãsitã: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3440,6 +3480,9 @@ msgstr "Sunteþi încã sigur(ã) cã doriþi sã o adãugaþi? (d/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Nu puteþi adãuga o pozã ID la o cheie stil PGP2.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "ªtergeþi aceastã semnãturã bunã? (d/N/t)"
@@ -3960,9 +4003,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Vã rugãm nu puneþi adresa de email în numele real sau comentariu\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4209,16 +4249,16 @@ msgstr "%lu chei puse în cache (%lu semnãturi)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: inelul de chei creat\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4230,13 +4270,6 @@ msgstr "Introduceþi URL-ul serverului de chei preferat: "
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr ""
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"AVERTISMENT: opþiunile serverului de chei `%s' nu sunt folosite pe aceastã "
-"platformã\n"
 
 msgid "disabled"
 msgstr "deactivat(ã)"
@@ -4253,12 +4286,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" nu este un ID de cheie: sãrit\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "reactualizez 1 cheie de la %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5083,10 +5116,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "cheia secretã \"%s\" nu a fost gãsitã: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Creaþi un certificat de revocare pentru aceastã cheie? (d/N) "
@@ -8286,6 +8315,13 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "AVERTISMENT: opþiunile serverului de chei `%s' nu sunt folosite pe "
+#~ "aceastã platformã\n"
+
 #~ msgid "gpg-agent is not available in this session\n"
 #~ msgstr "gpg-agent nu este disponibil în aceastã sesiune\n"
 
@@ -9197,9 +9233,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "eroare creare fiºier"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "frazã-parolã invalidã"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritm pubkey neimplementat"

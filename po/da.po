@@ -38,8 +38,36 @@ msgstr "_O.k."
 msgid "|pinentry-label|_Cancel"
 msgstr "_Afbryd"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "_O.k."
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "_O.k."
+
 msgid "|pinentry-label|PIN:"
 msgstr "PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "_Afbryd"
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vil du virkelig slette de valgte nøgler? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Indtast ny adgangsfrase"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -352,6 +380,11 @@ msgstr "|PGM|brug PGM som SCdaemon-program"
 msgid "do not use the SCdaemon"
 msgstr "brug ikke SCdaemon'en"
 
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAME|forbind til Assuansokkel NAVN"
+
 msgid "ignore requests to change the TTY"
 msgstr "ignorer forespørgsler om at ændre TTY'en"
 
@@ -363,6 +396,11 @@ msgstr "|N|udløb mellemlagrede PIN'er efter N sekunder"
 
 msgid "do not use the PIN cache when signing"
 msgstr "brug ikke PIN-mellemlageret når der underskrives"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "tillad ikke genbrug af gamle adgangsfraser"
 
 #, fuzzy
 #| msgid "allow clients to mark keys as \"trusted\""
@@ -1790,6 +1828,11 @@ msgstr "opret et nyt nøglepar"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "opret et nyt nøglepar"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "opret et nyt nøglepar"
 
 msgid "full featured key pair generation"
@@ -3308,6 +3351,10 @@ msgstr "opdatering mislykkedes: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Nøgle ikke ændret så ingen opdatering krævet.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3433,6 +3480,9 @@ msgstr "Er du sikker på, at du stadig ønsker at tilføje den? (j/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Du må ikke tilføje et billed-id til en nøgle i PGP2-stil.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Sådant et bruger-id findes allerede på denne nøgle!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Slet denne gode underskrift? (j/N/a)"
@@ -3958,9 +4008,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Placer ikke e-post-adressen i fødselsnavnet eller kommentaren\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "Sådant et bruger-id findes allerede på denne nøgle!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4207,17 +4254,17 @@ msgstr "%lu nøgler mellemlagret (%lu underskrifter)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: nøglering oprettet\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "inkluder tilbagekaldte nøgler i søgeresultater"
 
 msgid "include subkeys when searching by key ID"
 msgstr "inkluder undernøgler når der søges efter nøgle-id"
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr "brug midlertidige filer til at sende data til nøgleserverhjælpere"
-
-msgid "do not delete temporary files after using them"
-msgstr "slet ikke midlertidige filer efter at de er blevet brugt"
+msgid "override timeout options set for dirmngr"
+msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "hent automatisk nøgler når der verificeres underskrifter"
@@ -4227,11 +4274,6 @@ msgstr "overhold den foretrukne nøglerserveradresse angivet på nøglen"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "overhold PKA-posten angivet på en nøgle når der hentes nøgler"
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr "ADVARSEL: nøgleserverindstilling »%s« bruges ikke på denne platform\n"
 
 msgid "disabled"
 msgstr "deaktiveret"
@@ -4248,12 +4290,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "»%s« er ikke et nøgle-id: udelader\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "ADVARSEL: Kan ikke opdatere nøgle %s via %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "opdaterer 1 nøgle fra %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "ADVARSEL: Kan ikke opdatere nøgle %s via %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5081,10 +5123,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Opret et tilbagekaldscertifikat for denne nøgle? (j/N) "
@@ -8446,6 +8484,18 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr "brug midlertidige filer til at sende data til nøgleserverhjælpere"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "slet ikke midlertidige filer efter at de er blevet brugt"
+
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "ADVARSEL: nøgleserverindstilling »%s« bruges ikke på denne platform\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "sokkelnavnet er for langt\n"

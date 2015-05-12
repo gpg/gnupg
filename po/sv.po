@@ -48,8 +48,36 @@ msgstr "_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Avbryt"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "PIN-kod:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "_Avbryt"
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vill du verkligen ta bort de valda nycklarna? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Ange ny lösenfras"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -365,6 +393,11 @@ msgstr "|PRG|använd PRG som SCdaemon-programmet"
 msgid "do not use the SCdaemon"
 msgstr "använd inte SCdaemon"
 
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAMN|anslut till Assuan-uttaget NAMN"
+
 msgid "ignore requests to change the TTY"
 msgstr "ignorera begäran om att ändra TTY"
 
@@ -376,6 +409,11 @@ msgstr "|N|låt mellanlagrade PIN-koder gå ut efter N sekunder"
 
 msgid "do not use the PIN cache when signing"
 msgstr "använd inte mellanlagring av PIN-kod vid signering"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "tillåt inte återanvändning av gamla lösenfraser"
 
 # Antar att värdet inte ska översättas.
 #, fuzzy
@@ -1823,6 +1861,11 @@ msgstr "generera ett nytt nyckelpar"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "generera ett nytt nyckelpar"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "generera ett nytt nyckelpar"
 
 msgid "full featured key pair generation"
@@ -3369,6 +3412,10 @@ msgstr "uppdateringen misslyckades: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Nyckeln är oförändrad så det behövs ingen uppdatering.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "hemliga nyckeln \"%s\" hittades inte: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3496,6 +3543,9 @@ msgstr "Vill du verkligen fortfarande lägga till den? (j/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Du kan inte lägga till ett foto-id till en nyckel av PGP 2-typ.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "En sådan användaridentitet finns redan på denna nyckel!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Vill du radera denna korrekta signatur? (j/N/a)"
@@ -4029,9 +4079,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Ange inte e-postadressen som namn eller kommentar\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "En sådan användaridentitet finns redan på denna nyckel!\n"
-
 # Ej solklart vad förkortningarna står för
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
@@ -4282,18 +4329,17 @@ msgstr "%lu nycklar mellanlagrade (%lu signaturer)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: nyckelring skapad\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "inkludera spärrade nycklar i sökresultatet"
 
 msgid "include subkeys when searching by key ID"
 msgstr "inkludera undernycklar vid sökning efter nyckel-id"
 
-msgid "use temporary files to pass data to keyserver helpers"
+msgid "override timeout options set for dirmngr"
 msgstr ""
-"använd temporärfiler för att skicka data till nyckelserverns hjälpprogram"
-
-msgid "do not delete temporary files after using them"
-msgstr "ta inte bort temporärfiler efter de använts"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "hämta automatiskt nycklar vid validering av signaturer"
@@ -4303,12 +4349,6 @@ msgstr "respektera föredragen nyckelserver-url inställd i nyckeln"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "respektera PKA-posten inställd på en nyckel när nycklar hämtas"
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"VARNING: nyckelserverflaggan \"%s\" används inte på den här plattformen\n"
 
 msgid "disabled"
 msgstr "inaktiverad"
@@ -4325,12 +4365,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "\"%s\" inte ett nyckel-id: hoppar över\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "VARNING: kunde inte uppdatera nyckeln %s via %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "uppdaterar 1 nyckel från %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "VARNING: kunde inte uppdatera nyckeln %s via %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5176,10 +5216,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "hemliga nyckeln \"%s\" hittades inte: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Skapa ett spärrcertifikat för denna nyckel? (j/N) "
@@ -8583,6 +8619,19 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "använd temporärfiler för att skicka data till nyckelserverns hjälpprogram"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "ta inte bort temporärfiler efter de använts"
+
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "VARNING: nyckelserverflaggan \"%s\" används inte på den här plattformen\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "namnet på uttaget är för långt\n"

@@ -31,8 +31,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Æu vi vere volas krei subskriban kaj æifran þlosilon? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "nevalida pasfrazo"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -329,6 +351,11 @@ msgstr ""
 msgid "do not use the SCdaemon"
 msgstr "aktualigi la fido-datenaron"
 
+#, fuzzy
+#| msgid "|NAME|set terminal charset to NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NOMO|difini NOMOn kiel la signaron de la terminalo"
+
 msgid "ignore requests to change the TTY"
 msgstr ""
 
@@ -340,6 +367,10 @@ msgstr ""
 
 msgid "do not use the PIN cache when signing"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr ""
@@ -1773,6 +1804,11 @@ msgstr "krei novan þlosilparon"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "krei novan þlosilparon"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "krei novan þlosilparon"
 
 msgid "full featured key pair generation"
@@ -3332,6 +3368,10 @@ msgid "Key not changed so no update needed.\n"
 msgstr "Þlosilo ne þanøita, do aktualigo ne necesas.\n"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
+
+#, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
 msgstr "%s: nevalida dosiero-versio %d\n"
 
@@ -3453,6 +3493,9 @@ msgstr "Æu vi estas certa, ke vi ankoraý volas aldoni øin? (j/n) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Ne eblas aldoni foto-identigilon al PGP2-stila þlosilo.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr ""
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Æu forviþi æi tiun bonan subskribon? (j/N/f)"
@@ -3984,9 +4027,6 @@ msgstr ""
 msgid "Please don't put the email address into the real name or the comment\n"
 msgstr "Bonvolu ne meti la retadreson en la veran nomon aý la komenton\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr ""
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4234,16 +4274,16 @@ msgstr "%lu þlosiloj kontrolitaj (%lu subskriboj)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: þlosilaro kreita\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr ""
 
 msgid "include subkeys when searching by key ID"
 msgstr ""
 
-msgid "use temporary files to pass data to keyserver helpers"
-msgstr ""
-
-msgid "do not delete temporary files after using them"
+msgid "override timeout options set for dirmngr"
 msgstr ""
 
 msgid "automatically retrieve keys when verifying signatures"
@@ -4254,10 +4294,6 @@ msgid "honor the preferred keyserver URL set on the key"
 msgstr "la donita gvidlinia URL por subskriboj ne validas\n"
 
 msgid "honor the PKA record set on a key when retrieving keys"
-msgstr ""
-
-#, c-format
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
 msgstr ""
 
 #, fuzzy
@@ -4276,12 +4312,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr "%s: ne valida þlosilidentigilo\n"
 
 #, fuzzy, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
-
-#, fuzzy, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "petas la þlosilon %08lX de HKP-þlosilservilo %s ...\n"
+
+#, fuzzy, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "Averto: malsekura posedeco sur %s \"%s\"\n"
 
 #, fuzzy, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5093,10 +5129,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "þlosilo '%s' ne trovita: %s\n"
 
 #, fuzzy
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -9011,9 +9043,6 @@ msgstr ""
 #~ msgid "file create error"
 #~ msgstr "eraro æe kreo de dosiero"
 
-#~ msgid "invalid passphrase"
-#~ msgstr "nevalida pasfrazo"
-
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "nerealigita publikþlosila metodo"
 
@@ -9894,9 +9923,6 @@ msgstr ""
 
 #~ msgid "For info see http://www.gnupg.org"
 #~ msgstr "Por informoj vidu http://www.gnupg.org"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "Æu vi vere volas krei subskriban kaj æifran þlosilon? "
 
 #~ msgid "can't lock keyring `%s': %s\n"
 #~ msgstr "ne povas þlosi la þlosilaron '%s': %s\n"

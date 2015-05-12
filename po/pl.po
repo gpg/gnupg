@@ -33,8 +33,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Anuluj"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Anuluj"
+
+#, fuzzy
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Czy na pewno chcesz usun±æ wybrane klucze? (t/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Wprowad¼ nowe has³o"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -343,6 +371,11 @@ msgstr "|PGM|u¿ycie PGM jako programu SCdaemon"
 msgid "do not use the SCdaemon"
 msgstr "nie u¿ywanie SCdaemona"
 
+#, fuzzy
+#| msgid "|NAME|connect to Assuan socket NAME"
+msgid "|NAME|accept some commands via NAME"
+msgstr "|NAZWA|po³±czenie z gniazdem Assuan o tej nazwie"
+
 msgid "ignore requests to change the TTY"
 msgstr "ignorowanie ¿±dañ zmiany TTY"
 
@@ -354,6 +387,11 @@ msgstr "|N|przedawnienie pamiêtanych PIN-ów po N sekundach"
 
 msgid "do not use the PIN cache when signing"
 msgstr "nie u¿ywanie pamiêci PIN-ów przy podpisywaniu"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "nie zezwalanie na ponowne u¿ycie starych hase³"
 
 #, fuzzy
 #| msgid "allow clients to mark keys as \"trusted\""
@@ -1775,6 +1813,11 @@ msgstr "generacja nowej pary kluczy"
 #, fuzzy
 #| msgid "generate a new key pair"
 msgid "quickly generate a new key pair"
+msgstr "generacja nowej pary kluczy"
+
+#, fuzzy
+#| msgid "generate a new key pair"
+msgid "quickly add a new user-id"
 msgstr "generacja nowej pary kluczy"
 
 msgid "full featured key pair generation"
@@ -3324,6 +3367,10 @@ msgstr "zapis zmian nie powiód³ siê: %s\n"
 msgid "Key not changed so no update needed.\n"
 msgstr "Klucz nie zosta³ zmieniony wiêc zapis zmian nie jest konieczny.\n"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "klucz prywatny ,,%s'' nie zosta³ odnaleziony: %s\n"
+
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
 msgid "\"%s\" is not a fingerprint\n"
@@ -3449,6 +3496,9 @@ msgstr "Czy dalej chcesz je dodaæ? (t/N) "
 
 msgid "You may not add a photo ID to a PGP2-style key.\n"
 msgstr "Do klucza dla PGP 2.x nie mo¿na dodaæ zdjêcia.\n"
+
+msgid "Such a user ID already exists on this key!\n"
+msgstr "Taki identyfikator u¿ytkownika ju¿ istnieje na tym kluczu!\n"
 
 msgid "Delete this good signature? (y/N/q)"
 msgstr "Usun±æ ten poprawny podpis? (t/N/w) "
@@ -3972,9 +4022,6 @@ msgstr ""
 "Nie nale¿y umieszczaæ adresu poczty elektronicznej w polu nazwiska czy\n"
 "komentarza.\n"
 
-msgid "Such a user ID already exists on this key!\n"
-msgstr "Taki identyfikator u¿ytkownika ju¿ istnieje na tym kluczu!\n"
-
 #. TRANSLATORS: These are the allowed answers in
 #. lower and uppercase.  Below you will find the matching
 #. string which should be translated accordingly and the
@@ -4229,19 +4276,17 @@ msgstr "%lu kluczy zbuforowano (%lu podpisów)\n"
 msgid "%s: keyring created\n"
 msgstr "%s: zbiór kluczy utworzony\n"
 
+msgid "override proxy options set for dirmngr"
+msgstr ""
+
 msgid "include revoked keys in search results"
 msgstr "w³±czenie uniewa¿nionych kluczy do wyników wyszukiwania"
 
 msgid "include subkeys when searching by key ID"
 msgstr "w³±czenie podkluczy przy poszukiwaniu po ID klucza"
 
-msgid "use temporary files to pass data to keyserver helpers"
+msgid "override timeout options set for dirmngr"
 msgstr ""
-"u¿ycie plików tymczasowych do przekazywania danych do modu³ów obs³ugi "
-"serwera kluczy"
-
-msgid "do not delete temporary files after using them"
-msgstr "nie usuwanie plików tymczasowych po u¿yciu ich"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "automatyczne pobieranie kluczy przy sprawdzaniu podpisów"
@@ -4251,13 +4296,6 @@ msgstr "honorowanie URL-a preferowanego serwera kluczy ustawionego w kluczu"
 
 msgid "honor the PKA record set on a key when retrieving keys"
 msgstr "honorowanie rekordu PKA ustawionego w kluczu przy pobieraniu kluczy"
-
-#, fuzzy, c-format
-#| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
-msgid "WARNING: keyserver option '%s' is not used on this platform\n"
-msgstr ""
-"OSTRZE¯ENIE: opcja serwera kluczy ,,%s'' nie jest u¿ywana na tej "
-"platformie.\n"
 
 msgid "disabled"
 msgstr "wy³±czony"
@@ -4274,12 +4312,12 @@ msgid "\"%s\" not a key ID: skipping\n"
 msgstr ",,%s'' nie jest identyfikatorem klucza - pominiêto\n"
 
 #, c-format
-msgid "WARNING: unable to refresh key %s via %s: %s\n"
-msgstr "OSTRZE¯ENIE: nie mo¿na od¶wie¿yæ klucza %s przez %s: %s\n"
-
-#, c-format
 msgid "refreshing 1 key from %s\n"
 msgstr "od¶wie¿anie 1 klucza z %s\n"
+
+#, c-format
+msgid "WARNING: unable to refresh key %s via %s: %s\n"
+msgstr "OSTRZE¯ENIE: nie mo¿na od¶wie¿yæ klucza %s przez %s: %s\n"
 
 #, c-format
 msgid "refreshing %d keys from %s\n"
@@ -5102,10 +5140,6 @@ msgid ""
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
 msgstr ""
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "klucz prywatny ,,%s'' nie zosta³ odnaleziony: %s\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Stworzyæ certyfikat uniewa¿nienia tego klucza? (t/N) "
@@ -8480,6 +8514,21 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "use temporary files to pass data to keyserver helpers"
+#~ msgstr ""
+#~ "u¿ycie plików tymczasowych do przekazywania danych do modu³ów obs³ugi "
+#~ "serwera kluczy"
+
+#~ msgid "do not delete temporary files after using them"
+#~ msgstr "nie usuwanie plików tymczasowych po u¿yciu ich"
+
+#, fuzzy
+#~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"
+#~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
+#~ msgstr ""
+#~ "OSTRZE¯ENIE: opcja serwera kluczy ,,%s'' nie jest u¿ywana na tej "
+#~ "platformie.\n"
 
 #~ msgid "name of socket too long\n"
 #~ msgstr "nazwa gniazda zbyt d³uga\n"
