@@ -61,6 +61,7 @@ help:
 	@echo 'You may append INSTALL_PREFIX=<dir> for native builds.'
 	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
 	@echo 'Prepend TARGET with "this-" to build from the source tarball.'
+	@echo 'Use SELFCHECK=0 for a non-released version.'
 	@echo 'Use CUSTOM_SWDB=1 for an already downloaded swdb.lst.'
 
 SPEEDOMAKE := $(MAKE) -f $(SPEEDO_MK) UPD_SWDB=1
@@ -118,6 +119,9 @@ CUSTOM_SWDB=0
 
 # Set to 1 to really download the swdb.
 UPD_SWDB=0
+
+# Set to 0 to skip the GnuPG version self-check
+SELFCHECK=1
 
 # Set to the location of the directory with tarballs of
 # external packages.
@@ -230,6 +234,9 @@ getswdb_options = --skip-download --skip-verify
 else
 getswdb_options =
 endif
+ifeq ($(SELFCHECK),0)
+getswdb_options += --skip-selfcheck
+endif
 ifeq ($(UPD_SWDB),1)
 SWDB := $(shell $(topsrc)/build-aux/getswdb.sh $(getswdb_options) && echo okay)
 ifeq ($(strip $(SWDB)),)
@@ -239,7 +246,9 @@ endif
 endif
 
 # Version numbers of the released packages
-gnupg_ver = $(shell cat $(topsrc)/VERSION)
+gnupg_ver_this = $(shell cat $(topsrc)/VERSION)
+
+gnupg_ver        := $(shell awk '$$1=="gnupg21_ver" {print $$2}' swdb.lst)
 
 libgpg_error_ver := $(shell awk '$$1=="libgpg_error_ver" {print $$2}' swdb.lst)
 libgpg_error_sha1:= $(shell awk '$$1=="libgpg_error_sha1" {print $$2}' swdb.lst)
@@ -278,7 +287,7 @@ adns_ver  := $(shell awk '$$1=="adns_ver" {print $$2}' swdb.lst)
 adns_sha1 := $(shell awk '$$1=="adns_sha1" {print $$2}' swdb.lst)
 
 $(info Information from the version database)
-$(info GnuPG ..........: $(gnupg_ver))
+$(info GnuPG ..........: $(gnupg_ver) (building $(gnupg_ver_this)))
 $(info Libgpg-error ...: $(libgpg_error_ver))
 $(info Npth ...........: $(npth_ver))
 $(info Libgcrypt ......: $(libgcrypt_ver))

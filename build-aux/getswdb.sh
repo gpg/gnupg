@@ -33,10 +33,11 @@ usage()
 Usage: $(basename $0) [OPTIONS]
 Get the online version of the GnuPG software version database
 Options:
-    --skip-download  Assume download has already been done.
-    --skip-verify    Do not check signatures
-    --find-sha1sum   Print the name of the sha1sum utility
-    --help           Print this help.
+    --skip-download    Assume download has already been done.
+    --skip-verify      Do not check signatures
+    --skip-selfcheck   Do not check GnuPG version
+    --find-sha1sum     Print the name of the sha1sum utility
+    --help             Print this help.
 EOF
     exit $1
 }
@@ -46,6 +47,7 @@ EOF
 #
 skip_download=no
 skip_verify=no
+skip_selfcheck=no
 find_sha1sum=no
 while test $# -gt 0; do
     case "$1" in
@@ -67,6 +69,9 @@ while test $# -gt 0; do
             ;;
         --skip-verify)
             skip_verify=yes
+            ;;
+        --skip-selfcheck)
+            skip_selfcheck=yes
             ;;
         --find-sha1sum)
             find_sha1sum=yes
@@ -151,15 +156,17 @@ fi
 # Check that the online version of GnuPG is not less than this version
 # to help detect rollback attacks.
 #
-gnupg_ver=$(awk '$1=="gnupg21_ver" {print $2;exit}' swdb.lst)
-if [ -z "$gnupg_ver" ]; then
-    echo "GnuPG 2.1 version missing in swdb.lst!" >&2
-    exit 1
-fi
-gnupg_ver_num=$(echo "$gnupg_ver" | cvtver)
-if [ $(( $gnupg_ver_num >= $version_num )) = 0 ]; then
-    echo "GnuPG version in swdb.lst is less than this version!" >&2
-    echo "  This version: $version" >&2
-    echo "  SWDB version: $gnupg_ver" >&2
-    exit 1
+if [ $skip_selfcheck = no ]; then
+  gnupg_ver=$(awk '$1=="gnupg21_ver" {print $2;exit}' swdb.lst)
+  if [ -z "$gnupg_ver" ]; then
+      echo "GnuPG 2.1 version missing in swdb.lst!" >&2
+      exit 1
+  fi
+  gnupg_ver_num=$(echo "$gnupg_ver" | cvtver)
+  if [ $(( $gnupg_ver_num >= $version_num )) = 0 ]; then
+      echo "GnuPG version in swdb.lst is less than this version!" >&2
+      echo "  This version: $version" >&2
+      echo "  SWDB version: $gnupg_ver" >&2
+      exit 1
+  fi
 fi
