@@ -21,13 +21,21 @@ Content:
 1. Important Notes
 ==================
 
+This is the core part of the GnuPG system as used by several other
+frontend programs.  This installer does not provide any graphical
+frontend and thus almost everything needs to be done on the command
+line.  However, a small native Windows GUI tool is included which is
+used by GnuPG to ask for passphrases.  It provides only the basic
+functionality and is installed under the name "pinentry-basic.exe".
+Other software using this core component may install a different
+version of such a tool under the name "pinentry.exe" or configure the
+gpg-agent to use that version.
+
 See https://gnupg.org for latest news.  HowTo documents and manuals
 can be found there but some have also been installed on your machine.
 
-Developing GnuPG and keeping it in a healthy state is a full time job
-for at least two experienced developers.  We currently do not have the
-financial resources to even fully pay one person.  To change that
-please consider to donate at https://gnupg.org/donate/ .
+Development and maintenance of GnuPG is mostly financed by donations;
+please see https://gnupg.org/donate/ for details.
 
 
 2. Record of Changes

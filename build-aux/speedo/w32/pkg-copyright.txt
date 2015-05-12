@@ -3,9 +3,9 @@ description of each individual package.  [Compiled by wk FIXME]
 
 GnuPG is
 
-  Copyright (C) 1997-1998, 2013-2014 Werner Koch
-  Copyright (C) 1998-2013 Free Software Foundation, Inc.
-  Copyright (C) 2003-2013 g10 Code GmbH
+  Copyright (C) 1997-2015 Werner Koch
+  Copyright (C) 1994-2015 Free Software Foundation, Inc.
+  Copyright (C) 2003-2015 g10 Code GmbH
   Copyright (C) 2002 Klarälvdalens Datakonsult AB
   Copyright (C) 1995-1997, 2000-2007 Ulrich Drepper <drepper@gnu.ai.mit.edu>
   Copyright (C) 1994 X Consortium
@@ -33,30 +33,6 @@ GnuPG is
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
   02110-1301, USA
-
-
-GPA is
-
-  Copyright (C) 2000-2002 G-N-U GmbH (http://www.g-n-u.de)
-  Copyright (C) 2002-2003 Miguel Coca.
-  Copyright (C) 2005, 2006, 2008, 2012, 2014 g10 Code GmbH.
-  Copyright (C) 1998-2000 Free Software Foundation, Inc.
-  Copyright (C) 2000-2001 Werner Koch
-  Copyright (C) 2000-2002 Timo Schulz
-
-  GPA is free software; you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 3 of the License, or
-  (at your option) any later version.
-
-  GPA is distributed in the hope that it will be useful, but WITHOUT
-  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
-  License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, see <http://www.gnu.org/licenses/>.
-
 
 GPGME is
 
@@ -92,43 +68,6 @@ LIBGPG-ERROR is
 
   You should have received a copy of the GNU Lesser General Public License
   along with this program; if not, see <http://www.gnu.org/licenses/>.
-
-
-GLIB is
-
-  Copyright (C) 1995-1997  Peter Mattis, Spencer Kimball and Josh MacDonald
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
-
-  Modified by the GLib Team and others 1997-2000.  See the AUTHORS
-  file for a list of people on the GLib Team.  See the ChangeLog
-  files for a list of changes.  These files are distributed with
-  GLib at ftp://ftp.gtk.org/pub/gtk/.
-
-
-Pthreads-win32 is
-
-  Copyright(C) 1998 John E. Bossom
-  Copyright(C) 1999,2002 Pthreads-win32 contributors
-
-  Most of this is work available under the GNU Lesser General Public
-  License as published by the Free Software Foundation version 2.1 of
-  the License.  The detailed terms are given in the file COPYING in
-  the source distribution; that very file may not be modified and thus
-  it is not possible to include it here.
 
 
 NSIS is
