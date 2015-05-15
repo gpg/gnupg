@@ -5,13 +5,13 @@ Noteworthy changes in version 2.1.5 (unreleased)
 Noteworthy changes in version 2.1.4 (2015-05-12)
 ------------------------------------------------
 
- * gpg: Add command --quick-adduid to non-interacitivly add a new user
+ * gpg: Add command --quick-adduid to non-interactively add a new user
    id to an existing key.
 
  * gpg: Do no enable honor-keyserver-url by default.  Make it work if
    enabled.
 
- * gpg: Display the serial number in the --card-staus output again.
+ * gpg: Display the serial number in the --card-status output again.
 
  * agent: Support for external password managers.
    Add option --no-allow-external-cache.

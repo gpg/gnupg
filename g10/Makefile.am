@@ -25,7 +25,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
+# We need KSBA_CFLAGS because that is included by keybox.h.  See also
+# comments below for libksba.
+AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS) \
+            $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 needed_libs = ../kbx/libkeybox.a $(libcommon)
 

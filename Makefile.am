@@ -47,13 +47,6 @@ EXTRA_DIST = build-aux/config.rpath build-aux/potomo autogen.sh autogen.rc \
 
 DISTCLEANFILES = g10defs.h
 
-if BUILD_GPGSM
-kbx = kbx
-else
-kbx =
-endif
-
-
 if BUILD_GPG
 gpg = g10
 else
@@ -101,7 +94,7 @@ else
 tests =
 endif
 
-SUBDIRS = m4 common ${kbx} \
+SUBDIRS = m4 common kbx \
           ${gpg} ${sm} ${agent} ${scd} ${g13} ${dirmngr} \
           ${tools} po ${doc} ${tests}
 
