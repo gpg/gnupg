@@ -10,3 +10,4 @@ eddsa-sample-1-pub.asc An Ed25519 sample key.
 eddsa-sample-1-sec.asc Ditto, but as protected secret keyblock.
 dda252ebb8ebe1af-1.asc rsa4096 key 1
 dda252ebb8ebe1af-2.asc rsa4096 key 2 with a long keyid collision.
+whats-new-in-2.1.asc   Collection of sample keys.
