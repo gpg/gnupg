@@ -500,7 +500,19 @@ get_seckey( PKT_secret_key *sk, u32 *keyid )
     ctx.req_usage = sk->req_usage;
     rc = lookup( &ctx, &kb, 1 );
     if ( !rc ) {
+        u32 skid[2];
+
         sk_from_block ( &ctx, sk, kb );
+        keyid_from_sk ( sk, skid );
+        /*
+         * Make sure it's exact match of keyid.
+         * If not, it's secret subkey with no public key.
+         */
+        if (!(keyid[0] == skid[0] && keyid[1] == skid[1])) {
+          log_error (_("key %s: secret key without public key"
+                       " - skipped\n"), keystr(keyid));
+          rc = G10ERR_NO_PUBKEY;
+        }
     }
     get_seckey_end( &ctx );
     release_kbnode ( kb );
