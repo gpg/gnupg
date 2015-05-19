@@ -374,7 +374,8 @@ int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
 int agent_popup_message_start (ctrl_t ctrl,
                                const char *desc, const char *ok_btn);
 void agent_popup_message_stop (ctrl_t ctrl);
-
+int agent_clear_passphrase (ctrl_t ctrl,
+			    const char *keyinfo, cache_mode_t cache_mode);
 
 /*-- cache.c --*/
 void initialize_module_cache (void);

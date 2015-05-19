@@ -1416,3 +1416,29 @@ agent_popup_message_stop (ctrl_t ctrl)
   /* Now we can close the connection. */
   unlock_pinentry (0);
 }
+
+int
+agent_clear_passphrase (ctrl_t ctrl,
+			const char *keyinfo, cache_mode_t cache_mode)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  if (! (keyinfo && (cache_mode == CACHE_MODE_NORMAL
+		     || cache_mode == CACHE_MODE_USER
+		     || cache_mode == CACHE_MODE_SSH)))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  rc = start_pinentry (ctrl);
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "CLEARPASSPHRASE %c/%s",
+	    cache_mode == CACHE_MODE_USER? 'u' :
+	    cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	    keyinfo);
+  rc = assuan_transact (entry_ctx, line,
+			NULL, NULL, NULL, NULL, NULL, NULL);
+
+  return unlock_pinentry (rc);
+}

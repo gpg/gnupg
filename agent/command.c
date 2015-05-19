@@ -1602,6 +1602,10 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
 
   agent_put_cache (cacheid, opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER,
                    NULL, 0);
+
+  agent_clear_passphrase (ctrl, cacheid,
+			  opt_normal ? CACHE_MODE_NORMAL : CACHE_MODE_USER);
+
   return 0;
 }
 
