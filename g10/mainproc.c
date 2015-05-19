@@ -406,12 +406,10 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
           c->dek = NULL;
 	}
     }
-  else if (is_ELGAMAL(enc->pubkey_algo)
-           || enc->pubkey_algo == PUBKEY_ALGO_DSA
-           || enc->pubkey_algo == PUBKEY_ALGO_ECDSA
-           || enc->pubkey_algo == PUBKEY_ALGO_EDDSA
+  else if (enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
            || enc->pubkey_algo == PUBKEY_ALGO_ECDH
-           || is_RSA (enc->pubkey_algo)
+           || enc->pubkey_algo == PUBKEY_ALGO_RSA
+           || enc->pubkey_algo == PUBKEY_ALGO_RSA_E
            || enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL)
     {
       /* Note that we also allow type 20 Elgamal keys for decryption.
