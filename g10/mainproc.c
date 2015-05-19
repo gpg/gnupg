@@ -401,9 +401,9 @@ proc_pubkey_enc( CTX c, PACKET *pkt )
 	    xfree(c->dek); c->dek = NULL;
 	}
     }
-    else if( is_ELGAMAL(enc->pubkey_algo)
-             || enc->pubkey_algo == PUBKEY_ALGO_DSA
-             || is_RSA(enc->pubkey_algo)
+    else if( enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL_E
+             || enc->pubkey_algo == PUBKEY_ALGO_RSA
+             || enc->pubkey_algo == PUBKEY_ALGO_RSA_E
              || (RFC2440 && enc->pubkey_algo == PUBKEY_ALGO_ELGAMAL)) {
       /* Note that we also allow type 20 Elgamal keys for decryption.
          There are still a couple of those keys in active use as a
