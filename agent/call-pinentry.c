@@ -1015,7 +1015,8 @@ agent_askpin (ctrl_t ctrl,
 int
 agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
-                      const char *errtext, int with_qualitybar)
+                      const char *errtext, int with_qualitybar,
+		      const char *keyinfo, cache_mode_t cache_mode)
 {
 
   int rc;
@@ -1058,6 +1059,26 @@ agent_get_passphrase (ctrl_t ctrl,
 
   if (!prompt)
     prompt = desc && strstr (desc, "PIN")? "PIN": _("Passphrase");
+
+
+  /* If we have a KEYINFO string and are normal, user, or ssh cache
+     mode, we tell that the Pinentry so it may use it for own caching
+     purposes.  Most pinentries won't have this implemented and thus
+     we do not error out in this case.  */
+  if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
+                  || cache_mode == CACHE_MODE_USER
+                  || cache_mode == CACHE_MODE_SSH))
+    snprintf (line, DIM(line)-1, "SETKEYINFO %c/%s",
+	      cache_mode == CACHE_MODE_USER? 'u' :
+	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	      keyinfo);
+  else
+    snprintf (line, DIM(line)-1, "SETKEYINFO --clear");
+
+  rc = assuan_transact (entry_ctx, line,
+			NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
+    return unlock_pinentry (rc);
 
 
   if (desc)

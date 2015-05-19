@@ -1519,7 +1519,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
     next_try:
       rc = agent_get_passphrase (ctrl, &response, desc, prompt,
                                  repeat_errtext? repeat_errtext:errtext,
-                                 opt_qualbar);
+                                 opt_qualbar, cacheid, CACHE_MODE_USER);
       xfree (repeat_errtext);
       repeat_errtext = NULL;
       if (!rc)
@@ -1536,7 +1536,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
               char *response2;
 
               rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
-                                         errtext, 0);
+                                         errtext, 0,
+					 cacheid, CACHE_MODE_USER);
               if (rc)
                 break;
               if (strcmp (response2, response))
