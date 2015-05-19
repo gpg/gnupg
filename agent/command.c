@@ -1269,8 +1269,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 
     next_try:
       rc = agent_get_passphrase (ctrl, &response, desc, prompt,
-                                 repeat_errtext? repeat_errtext:errtext,
-                                 opt_qualbar);
+				 repeat_errtext? repeat_errtext:errtext,
+				 opt_qualbar, cacheid, CACHE_MODE_USER);
       xfree (repeat_errtext);
       repeat_errtext = NULL;
       if (!rc)
@@ -1287,7 +1287,8 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
               char *response2;
 
               rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
-                                         errtext, 0);
+                                         errtext, 0,
+					 cacheid, CACHE_MODE_USER);
               if (rc)
                 break;
               if (strcmp (response2, response))
@@ -1329,6 +1330,7 @@ static const char hlp_clear_passphrase[] =
 static gpg_error_t
 cmd_clear_passphrase (assuan_context_t ctx, char *line)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   char *cacheid = NULL;
   char *p;
 
@@ -1343,6 +1345,9 @@ cmd_clear_passphrase (assuan_context_t ctx, char *line)
     return set_error (GPG_ERR_ASS_PARAMETER, "invalid length of cacheID");
 
   agent_put_cache (cacheid, CACHE_MODE_USER, NULL, 0);
+
+  agent_clear_passphrase (ctrl, cacheid, CACHE_MODE_USER);
+
   return 0;
 }
 

@@ -114,6 +114,7 @@ enum cmd_and_opt_values
   oAllowMarkTrusted,
   oNoAllowMarkTrusted,
   oAllowPresetPassphrase,
+  oNoAllowExternalCache,
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
@@ -198,6 +199,8 @@ static ARGPARSE_OPTS opts[] = {
       "@"
 #endif
   },
+  { oNoAllowExternalCache, "no-allow-external-cache", 0,
+            N_("disallow the use of an external password cache") },
   { oWriteEnvFile, "write-env-file", 2|8,
             N_("|FILE|write environment settings also to FILE")},
   {0}
@@ -509,6 +512,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.disable_scdaemon = 0;
+      opt.allow_external_cache = 1;
       return 1;
     }
 
@@ -570,6 +574,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oNoAllowMarkTrusted: opt.allow_mark_trusted = 0; break;
 
     case oAllowPresetPassphrase: opt.allow_preset_passphrase = 1; break;
+
+    case oNoAllowExternalCache: opt.allow_external_cache = 0;
+      break;
 
     default:
       return 0; /* not handled */
@@ -968,6 +975,8 @@ main (int argc, char **argv )
       printf ("ignore-cache-for-signing:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("no-allow-mark-trusted:%lu:\n",
+              GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      printf ("no-allow-external-cache:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       printf ("disable-scdaemon:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);

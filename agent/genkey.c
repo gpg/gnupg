@@ -321,7 +321,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     pi2->check_cb_arg = pi->pin;
 
   next_try:
-    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
+    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi, NULL, 0);
     initial_errtext = NULL;
     if (!rc)
       {
@@ -333,7 +333,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
           }
         if (pi->pin && *pi->pin)
           {
-            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
+            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2, NULL, 0);
             if (rc == -1)
               { /* The re-entered one did not match and the user did not
                    hit cancel. */
@@ -443,7 +443,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
     pi2->check_cb_arg = pi->pin;
 
   next_try:
-    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi);
+    rc = agent_askpin (ctrl, text1, NULL, initial_errtext, pi, NULL, 0);
     initial_errtext = NULL;
     if (!rc)
       {
@@ -456,7 +456,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
         /* Unless the passphrase is empty, ask to confirm it.  */
         if (pi->pin && *pi->pin)
           {
-            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2);
+            rc = agent_askpin (ctrl, text2, NULL, NULL, pi2, NULL, 0);
             if (rc == -1)
               { /* The re-entered one did not match and the user did not
                    hit cancel. */

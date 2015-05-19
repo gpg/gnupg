@@ -352,6 +352,19 @@ start_pinentry (ctrl_t ctrl)
   if (rc)
     return unlock_pinentry (rc);
 
+
+  /* Indicate to the pinentry that it may read from an external cache.
+
+     It is essential that the pinentry respect this.  If the cached
+     password is not up to date and retry == 1, then, using a version
+     of GPG Agent that doesn't support this, won't issue another pin
+     request and the user won't get a chance to correct the
+     password.  */
+  rc = assuan_transact (entry_ctx, "OPTION allow-external-password-cache",
+			NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+    return unlock_pinentry (rc);
+
   value = session_env_getenv (ctrl->session_env, "GPG_TTY");
   if (value)
     {
@@ -399,6 +412,22 @@ start_pinentry (ctrl_t ctrl)
 	return unlock_pinentry (rc);
     }
 
+  if (opt.allow_external_cache)
+    {
+      /* Indicate to the pinentry that it may read from an external cache.
+
+         It is essential that the pinentry respect this.  If the
+         cached password is not up to date and retry == 1, then, using
+         a version of GPG Agent that doesn't support this, won't issue
+         another pin request and the user won't get a chance to
+         correct the password.  */
+      rc = assuan_transact (entry_ctx, "OPTION allow-external-password-cache",
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return unlock_pinentry (rc);
+    }
+
+
   {
     /* Provide a few default strings for use by the pinentries.  This
        may help a pinentry to avoid implementing localization code.  */
@@ -411,6 +440,7 @@ start_pinentry (ctrl_t ctrl)
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
       { "prompt", N_("|pinentry-label|PIN:") },
+      { "pwmngr", N_("|pinentry-label|_Save in password manager") },
       { NULL, NULL}
     };
     char *optstr;
@@ -700,15 +730,36 @@ setup_qualitybar (void)
 }
 
 
+enum
+  {
+    PINENTRY_STATUS_PASSWORD_FROM_CACHE = 1 << 9
+  };
+
+/* Check the button_info line for a close action.  Also check for the
+   PIN_REPEATED flag.  */
+static gpg_error_t
+pinentry_status_cb (void *opaque, const char *line)
+{
+  unsigned int *flag = opaque;
+
+  if (strcmp (line, "PASSWORD_FROM_CACHE") == 0)
+    {
+      *flag |= PINENTRY_STATUS_PASSWORD_FROM_CACHE;
+    }
+
+  return 0;
+}
 
 /* Call the Entry and ask for the PIN.  We do check for a valid PIN
    number here and repeat it as long as we have invalid formed
-   numbers. */
+   numbers.  KEYINFO and CACHEMODE are used to tell pinentry something
+   about the key. */
 int
 agent_askpin (ctrl_t ctrl,
               const char *desc_text, const char *prompt_text,
               const char *initial_errtext,
-              struct pin_entry_info_s *pininfo)
+              struct pin_entry_info_s *pininfo,
+              const char *keyinfo, cache_mode_t cache_mode)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -716,6 +767,7 @@ agent_askpin (ctrl_t ctrl,
   const char *errtext = NULL;
   int is_pin = 0;
   int saveflag;
+  unsigned int pinentry_status;
 
   if (opt.batch)
     return 0; /* fixme: we should return BAD PIN */
@@ -737,6 +789,25 @@ agent_askpin (ctrl_t ctrl,
   rc = start_pinentry (ctrl);
   if (rc)
     return rc;
+
+  /* If we have a KEYINFO string and are normal, user, or ssh cache
+     mode, we tell that the Pinentry so it may use it for own caching
+     purposes.  Most pinentries won't have this implemented and thus
+     we do not error out in this case.  */
+  if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
+                  || cache_mode == CACHE_MODE_USER
+                  || cache_mode == CACHE_MODE_SSH))
+    snprintf (line, DIM(line)-1, "SETKEYINFO %c/%s",
+	      cache_mode == CACHE_MODE_USER? 'u' :
+	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	      keyinfo);
+  else
+    snprintf (line, DIM(line)-1, "SETKEYINFO --clear");
+
+  rc = assuan_transact (entry_ctx, line,
+			NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
+    return unlock_pinentry (rc);
 
   snprintf (line, DIM(line)-1, "SETDESC %s", desc_text);
   line[DIM(line)-1] = 0;
@@ -792,11 +863,13 @@ agent_askpin (ctrl_t ctrl,
             return unlock_pinentry (rc);
           errtext = NULL;
         }
-      
+
       saveflag = assuan_get_flag (entry_ctx, ASSUAN_CONFIDENTIAL);
       assuan_begin_confidential (entry_ctx);
+      pinentry_status = 0;
       rc = assuan_transact (entry_ctx, "GETPIN", getpin_cb, &parm,
-                            inq_quality, entry_ctx, NULL, NULL);
+                            inq_quality, entry_ctx,
+			    pinentry_status_cb, &pinentry_status);
       assuan_set_flag (entry_ctx, ASSUAN_CONFIDENTIAL, saveflag);
       /* Most pinentries out in the wild return the old Assuan error code
          for canceled which gets translated to an assuan Cancel error and
@@ -840,6 +913,11 @@ agent_askpin (ctrl_t ctrl,
 
       if (!errtext)
         return unlock_pinentry (0); /* okay, got a PIN or passphrase */
+
+      if ((pinentry_status & PINENTRY_STATUS_PASSWORD_FROM_CACHE))
+	/* The password was read from the cache.  Don't count this
+	   against the retry count.  */
+	pininfo->failed_tries --;
     }
 
   return unlock_pinentry (gpg_error (pininfo->min_digits? GPG_ERR_BAD_PIN
@@ -849,11 +927,12 @@ agent_askpin (ctrl_t ctrl,
 
 
 /* Ask for the passphrase using the supplied arguments.  The returned
-   passphrase needs to be freed by the caller. */
+   passphrase needs to be freed by the caller.  */
 int 
 agent_get_passphrase (ctrl_t ctrl,
                       char **retpass, const char *desc, const char *prompt,
-                      const char *errtext, int with_qualitybar)
+                      const char *errtext, int with_qualitybar,
+		      const char *keyinfo, cache_mode_t cache_mode)
 {
 
   int rc;
@@ -871,6 +950,26 @@ agent_get_passphrase (ctrl_t ctrl,
 
   if (!prompt)
     prompt = desc && strstr (desc, "PIN")? "PIN": _("Passphrase");
+
+
+  /* If we have a KEYINFO string and are normal, user, or ssh cache
+     mode, we tell that the Pinentry so it may use it for own caching
+     purposes.  Most pinentries won't have this implemented and thus
+     we do not error out in this case.  */
+  if (keyinfo && (cache_mode == CACHE_MODE_NORMAL
+                  || cache_mode == CACHE_MODE_USER
+                  || cache_mode == CACHE_MODE_SSH))
+    snprintf (line, DIM(line)-1, "SETKEYINFO %c/%s",
+	      cache_mode == CACHE_MODE_USER? 'u' :
+	      cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	      keyinfo);
+  else
+    snprintf (line, DIM(line)-1, "SETKEYINFO --clear");
+
+  rc = assuan_transact (entry_ctx, line,
+			NULL, NULL, NULL, NULL, NULL, NULL);
+  if (rc && gpg_err_code (rc) != GPG_ERR_ASS_UNKNOWN_CMD)
+    return unlock_pinentry (rc);
 
 
   if (desc)
@@ -1185,3 +1284,28 @@ agent_popup_message_stop (ctrl_t ctrl)
 }
 
 
+int
+agent_clear_passphrase (ctrl_t ctrl,
+			const char *keyinfo, cache_mode_t cache_mode)
+{
+  int rc;
+  char line[ASSUAN_LINELENGTH];
+
+  if (! (keyinfo && (cache_mode == CACHE_MODE_NORMAL
+		     || cache_mode == CACHE_MODE_USER
+		     || cache_mode == CACHE_MODE_SSH)))
+    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+
+  rc = start_pinentry (ctrl);
+  if (rc)
+    return rc;
+
+  snprintf (line, DIM(line)-1, "CLEARPASSPHRASE %c/%s",
+	    cache_mode == CACHE_MODE_USER? 'u' :
+	    cache_mode == CACHE_MODE_SSH? 's' : 'n',
+	    keyinfo);
+  rc = assuan_transact (entry_ctx, line,
+			NULL, NULL, NULL, NULL, NULL, NULL);
+
+  return unlock_pinentry (rc);
+}

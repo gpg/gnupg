@@ -104,6 +104,12 @@ struct
   int ignore_cache_for_signing;
   int allow_mark_trusted;
   int allow_preset_passphrase;
+
+  /* Allow the use of an external password cache.  If this option is
+     enabled (which is the default) we send an option to Pinentry
+     to allow it to enable such a cache.  */
+  int allow_external_cache;
+
   int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
   int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
   int ssh_support;   /* Enable ssh-agent emulation.  */
@@ -273,16 +279,20 @@ int pinentry_active_p (ctrl_t ctrl, int waitseconds);
 int agent_askpin (ctrl_t ctrl,
                   const char *desc_text, const char *prompt_text,
                   const char *inital_errtext,
-                  struct pin_entry_info_s *pininfo);
+                  struct pin_entry_info_s *pininfo,
+                  const char *keyinfo, cache_mode_t cache_mode);
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
-                          const char *errtext, int with_qualitybar);
+                          const char *errtext, int with_qualitybar,
+			  const char *keyinfo, cache_mode_t cache_mode);
 int agent_get_confirmation (ctrl_t ctrl, const char *desc, const char *ok,
 			    const char *notokay, int with_cancel);
 int agent_show_message (ctrl_t ctrl, const char *desc, const char *ok_btn);
 int agent_popup_message_start (ctrl_t ctrl,
                                const char *desc, const char *ok_btn);
 void agent_popup_message_stop (ctrl_t ctrl);
+int agent_clear_passphrase (ctrl_t ctrl,
+			    const char *keyinfo, cache_mode_t cache_mode);
 
 
 /*-- cache.c --*/
