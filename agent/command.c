@@ -1495,7 +1495,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   if (!strcmp (desc, "X"))
     desc = NULL;
 
-  pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_NORMAL) : NULL;
+  pw = cacheid ? agent_get_cache (cacheid, CACHE_MODE_USER) : NULL;
   if (pw)
     {
       rc = send_back_passphrase (ctx, opt_data, pw);
