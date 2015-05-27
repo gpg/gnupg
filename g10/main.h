@@ -379,11 +379,6 @@ int hash_datafile_by_fd ( gcry_md_hd_t md, gcry_md_hd_t md2, int data_fd,
                           int textmode );
 PKT_plaintext *setup_plaintext_name(const char *filename,IOBUF iobuf);
 
-/*-- signal.c --*/
-void init_signals(void);
-void block_all_signals(void);
-void unblock_all_signals(void);
-
 /*-- server.c --*/
 int gpg_server (ctrl_t);
 gpg_error_t gpg_proxy_pinentry_notify (ctrl_t ctrl,

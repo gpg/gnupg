@@ -378,10 +378,10 @@ tdbio_end_transaction()
 	else
 	    is_locked = 1;
     }
-    block_all_signals();
+    gnupg_block_all_signals();
     in_transaction = 0;
     rc = tdbio_sync();
-    unblock_all_signals();
+    gnupg_unblock_all_signals();
     if( !opt.lock_once ) {
 	if( !dotlock_release (lockhandle) )
 	    is_locked = 0;
