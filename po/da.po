@@ -2,7 +2,7 @@
 # Copyright (C) 2012 Free Software Foundation, Inc.
 # Birger Langkjer, <birger.langkjer@image.dk>, 2000.
 # Kenneth Christiansen, kenneth@ripen.dk, 2000.
-# Joe Hansen, <joedalton2@yahoo.dk>, 2012.
+# Joe Hansen, <joedalton2@yahoo.dk>, 2012, 2014.
 #
 # deadlock -> baglås
 # ownertrust -> ejertroværdighed (pålidelighed, tillid)
@@ -1841,7 +1841,7 @@ msgstr "reparer skade fra pks-nøgleserveren under import"
 #, fuzzy
 #| msgid "do not update the trustdb after import"
 msgid "do not clear the ownertrust values during import"
-msgstr "opdater ikke trustdb efter import"
+msgstr "ryd ikke ejerskabsværdierne under import"
 
 msgid "do not update the trustdb after import"
 msgstr "opdater ikke trustdb efter import"
@@ -1966,10 +1966,10 @@ msgstr "nøgle %s: ingen bruger-id\n"
 #, fuzzy, c-format
 #| msgid "skipped \"%s\": %s\n"
 msgid "key %s: %s\n"
-msgstr "udelod »%s«: %s\n"
+msgstr "nøgle %s: %s\n"
 
 msgid "rejected by import filter"
-msgstr ""
+msgstr "afvist af importfilter"
 
 #, c-format
 msgid "key %s: PKS subkey corruption repaired\n"
@@ -2069,7 +2069,7 @@ msgstr "nøgle %s: »%s« ikke ændret\n"
 #, fuzzy, c-format
 #| msgid "secret key \"%s\" not found: %s\n"
 msgid "secret key %s: %s\n"
-msgstr "hemmelig nøgle »%s« blev ikke fundet: %s\n"
+msgstr "hemmelig nøgle %s: %s\n"
 
 msgid "importing secret keys not allowed\n"
 msgstr "import af hemmelige nøgler er ikke tilladt\n"
@@ -3802,7 +3802,7 @@ msgstr "ukendt"
 
 #, c-format
 msgid "WARNING: not a detached signature; file '%s' was NOT verified!\n"
-msgstr ""
+msgstr "ADVARSEL: Ikke en frakoblet underskrift; filen »%s« blev IKKE verificeret!\n"
 
 #, c-format
 msgid "Can't check signature: %s\n"
