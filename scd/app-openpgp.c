@@ -2755,7 +2755,7 @@ build_ecc_privkey_template (app_t app, int keyno,
   datalen = 0;
   tp = privkey;
 
-  tp += add_tlv (tp, 0x91, ecc_d_len); /* Tag 0x91??? */
+  tp += add_tlv (tp, 0x92, ecc_d_len);
   datalen += ecc_d_len;
 
   privkey_len = tp - privkey;
