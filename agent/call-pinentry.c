@@ -353,18 +353,6 @@ start_pinentry (ctrl_t ctrl)
     return unlock_pinentry (rc);
 
 
-  /* Indicate to the pinentry that it may read from an external cache.
-
-     It is essential that the pinentry respect this.  If the cached
-     password is not up to date and retry == 1, then, using a version
-     of GPG Agent that doesn't support this, won't issue another pin
-     request and the user won't get a chance to correct the
-     password.  */
-  rc = assuan_transact (entry_ctx, "OPTION allow-external-password-cache",
-			NULL, NULL, NULL, NULL, NULL, NULL);
-  if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
-    return unlock_pinentry (rc);
-
   value = session_env_getenv (ctrl->session_env, "GPG_TTY");
   if (value)
     {
