@@ -1,5 +1,20 @@
-Noteworthy changes in version 2.0.28 (unreleased)
+Noteworthy changes in version 2.0.28 (2015-06-02)
 -------------------------------------------------
+
+ * agent: Added support for an external password manager.
+
+ * gpg: New command --list-gcrypt-config.
+
+ * gpg: Issue NEWSIG status lines during signature verification.
+
+ * gpgsm: The default hash algo for a CSR is now SHA-256 and the
+   default encryption algo is AES-128.
+
+ * scdaemon: Allow PC/SC reader selection by partial name match.
+
+ * gpgtar: Fix extracting files with a size of a multiple of 512.
+
+ * Fixed several other bugs.
 
  * Libgcrypt 1.5 is now required.
 
