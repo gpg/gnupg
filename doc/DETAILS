@@ -463,7 +463,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 *** DECRYPTION_OKAY
     The decryption process succeeded.  This means, that either the
     correct secret key has been used or the correct passphrase for a
-    conventional encrypted message was given.  The program itself may
+    symmetric encrypted message was given.  The program itself may
     return an errorcode because it may not be possible to verify a
     signature for some reasons.
 
