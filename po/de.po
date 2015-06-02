@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-02-18 12:52+0100\n"
+"PO-Revision-Date: 2015-06-02 13:13+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -33,8 +33,28 @@ msgstr "_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Abbrechen"
 
+msgid "|pinentry-label|_Yes"
+msgstr "_Ja"
+
+msgid "|pinentry-label|_No"
+msgstr "_Nein"
+
 msgid "|pinentry-label|PIN:"
 msgstr "PIN:"
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr "Im Passwordmanager _speichern"
+
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr ""
+"Möchten Sie die eingegebene Passphrase wirklich auf dem Bildschirm sichtbar "
+"machen?"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr "Die Passphrase sichtbar machen"
+
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Passphrase unsichtbar machen"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -364,6 +384,9 @@ msgstr "Die ssh-agent Komponente anschalten"
 
 msgid "enable putty support"
 msgstr "Die Pageant Komponente anschalten"
+
+msgid "disallow the use of an external password cache"
+msgstr "Verbiete die Verwendung eines externen Passwordmanagers"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|DATEI|Schreibe die Umgebungsvariablen auf DATEI"
@@ -1522,6 +1545,11 @@ msgid "[User ID not found]"
 msgstr "[User-ID nicht gefunden]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr ""
+"Schlüssel %s: geheimer Schlüssel ohne öffentlichen Schlüssel - übersprungen\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "`%s' automatisch via %s geholt\n"
 
@@ -1545,11 +1573,6 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "der Unterschlüssel %s wird anstelle des Hauptschlüssels %s verwendet\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr ""
-"Schlüssel %s: geheimer Schlüssel ohne öffentlichen Schlüssel - übersprungen\n"
 
 msgid "make a signature"
 msgstr "Eine Signatur erzeugen"
@@ -5366,6 +5389,9 @@ msgstr "Schlüsselwort ist zu lang"
 msgid "missing argument"
 msgstr "Fehlendes Argument"
 
+msgid "invalid argument"
+msgstr "Ungültiges Argument"
+
 msgid "invalid command"
 msgstr "Ungültiger Befehl"
 
@@ -5381,6 +5407,10 @@ msgstr "Ungültige Option"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "Fehlendes Argument für Option \"%.50s\"\n"
+
+#, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "Ungültiges Argument für Option \"%.50s\"\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
