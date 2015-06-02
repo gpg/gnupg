@@ -40,7 +40,6 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
           int *canceled )
 {
     gpg_error_t err;
-    byte *buffer;
     u16 csum=0;
     int i, res;
     size_t nbytes;
@@ -116,10 +115,13 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
             p = gcry_mpi_get_opaque ( sk->skey[i], &ndatabits );
             ndata = (ndatabits+7)/8;
 
-            if ( ndata > 1 )
+            if ( ndata > 1 && p )
                 csumc = p[ndata-2] << 8 | p[ndata-1];
 	    data = xmalloc_secure ( ndata );
-	    gcry_cipher_decrypt ( cipher_hd, data, ndata, p, ndata );
+            if (p)
+              gcry_cipher_decrypt ( cipher_hd, data, ndata, p, ndata );
+            else
+              memset (data, 0, ndata);
 	    gcry_mpi_release (sk->skey[i]); sk->skey[i] = NULL ;
 
 	    p = data;
@@ -129,7 +131,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                    attack */
                 sk->csum = 0;
                 csum = 1;
-                if( ndata < 20 ) 
+                if( ndata < 20 )
                     log_error("not enough bytes for SHA-1 checksum\n");
                 else {
                     gcry_md_hd_t h;
@@ -139,7 +141,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                     gcry_md_write (h, data, ndata - 20);
                     gcry_md_final (h);
                     if (!memcmp (gcry_md_read (h, DIGEST_ALGO_SHA1),
-                                 data + ndata - 20, 20) ) 
+                                 data + ndata - 20, 20) )
                       {
                         /* Digest does match.  We have to keep the old
                            style checksum in sk->csum, so that the
@@ -147,7 +149,7 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
                            This test gets used when we are adding new
                            keys. */
                         sk->csum = csum = checksum (data, ndata-20);
-                      } 
+                      }
                     gcry_md_close (h);
                 }
             }
@@ -197,21 +199,28 @@ do_check( PKT_secret_key *sk, const char *tryagain_text, int mode,
 
                 assert (gcry_mpi_get_flag (sk->skey[i], GCRYMPI_FLAG_OPAQUE));
                 p = gcry_mpi_get_opaque (sk->skey[i], &ndatabits);
-                ndata = (ndatabits+7)/8;
-                assert (ndata >= 2);
-                assert (ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2);
-                buffer = xmalloc_secure (ndata);
-		gcry_cipher_sync (cipher_hd);
-                buffer[0] = p[0];
-                buffer[1] = p[1];
-                gcry_cipher_decrypt (cipher_hd, buffer+2, ndata-2,
-                                     p+2, ndata-2);
-                csum += checksum (buffer, ndata);
-                gcry_mpi_release (sk->skey[i]);
+                if (!p)
+                  err = -1;
+                else
+                  {
+                    byte *buffer;
 
-		err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
-				     buffer, ndata, &ndata );
-		xfree (buffer);
+                    ndata = (ndatabits+7)/8;
+                    assert (ndata >= 2);
+                    assert (ndata == ((p[0] << 8 | p[1]) + 7)/8 + 2);
+                    buffer = xmalloc_secure (ndata);
+                    gcry_cipher_sync (cipher_hd);
+                    buffer[0] = p[0];
+                    buffer[1] = p[1];
+                    gcry_cipher_decrypt (cipher_hd, buffer+2, ndata-2,
+                                         p+2, ndata-2);
+                    csum += checksum (buffer, ndata);
+                    gcry_mpi_release (sk->skey[i]);
+
+                    err = gcry_mpi_scan( &sk->skey[i], GCRYMPI_FMT_PGP,
+                                         buffer, ndata, &ndata );
+                    xfree (buffer);
+                  }
                 if (err)
                   {
                     /* Checksum was okay, but not correctly
@@ -346,11 +355,11 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 
 	if ( openpgp_cipher_test_algo ( sk->protect.algo ) ) {
             /* Unsupport protection algorithm. */
-            rc = gpg_error (GPG_ERR_CIPHER_ALGO); 
+            rc = gpg_error (GPG_ERR_CIPHER_ALGO);
         }
 	else {
 	    print_cipher_algo_note( sk->protect.algo );
-	    
+
 	    if ( openpgp_cipher_open (&cipher_hd, sk->protect.algo,
 				      GCRY_CIPHER_MODE_CFB,
 				      (GCRY_CIPHER_SECURE
@@ -399,10 +408,10 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    p += narr[j];
 		    xfree(bufarr[j]);
 		}
-                
+
                 if (opt.simple_sk_checksum) {
                     log_info (_("generating the deprecated 16-bit checksum"
-                              " for secret key protection\n")); 
+                              " for secret key protection\n"));
                     csum = checksum( data, ndata-2);
                     sk->csum = csum;
                     *p++ =	csum >> 8;
@@ -458,7 +467,7 @@ protect_secret_key( PKT_secret_key *sk, DEK *dek )
 		    gcry_cipher_encrypt (cipher_hd, data+2, nbytes,
                                          buffer, nbytes);
 		    xfree( buffer );
-                    
+
                     gcry_mpi_release (sk->skey[i]);
                     sk->skey[i] = gcry_mpi_set_opaque (NULL,
                                                        data, (nbytes+2)*8 );
