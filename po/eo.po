@@ -31,8 +31,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Æu vi vere volas krei subskriban kaj æifran þlosilon? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "nevalida pasfrazo"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -361,6 +383,10 @@ msgstr "ne realigita"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "ne realigita"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1557,6 +1583,10 @@ msgstr "tro da registroj en pk-staplo - malþaltas\n"
 msgid "[User ID not found]"
 msgstr "[Uzantidentigilo ne trovita]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1580,10 +1610,6 @@ msgstr "estas sekreta þlosilo por la publika þlosilo \"%s\"!\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "uzas flankan þlosilon %08lX anstataý la æefa þlosilo %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5446,6 +5472,11 @@ msgid "missing argument"
 msgstr "nevalida argumento"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "nevalida kiraso"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "malkongruaj komandoj\n"
 
@@ -5464,6 +5495,10 @@ msgstr "nevalida kiraso"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "nevalida kiraso"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7448,9 +7483,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "nevalida paketo"
 
-#~ msgid "invalid armor"
-#~ msgstr "nevalida kiraso"
-
 #~ msgid "no such user id"
 #~ msgstr "uzantidentigilo ne ekzistas"
 
@@ -7474,9 +7506,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "eraro æe kreo de dosiero"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "nevalida pasfrazo"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "nerealigita publikþlosila metodo"
@@ -8394,9 +8423,6 @@ msgstr ""
 
 #~ msgid "For info see http://www.gnupg.org"
 #~ msgstr "Por informoj vidu http://www.gnupg.org"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "Æu vi vere volas krei subskriban kaj æifran þlosilon? "
 
 #~ msgid "can't lock keyring `%s': %s\n"
 #~ msgstr "ne povas þlosi la þlosilaron '%s': %s\n"

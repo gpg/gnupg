@@ -34,8 +34,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "您真的要吊销选定的子钥吗？(y/N)"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "无效的密码"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -370,6 +392,10 @@ msgstr "未被支持"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "未被支持"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "生成密码的时候发生错误：%s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1517,6 +1543,10 @@ msgid "[User ID not found]"
 msgstr "[找不到用户标识]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "密钥 %s：无相应公钥的私钥――已跳过\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "自动获取‘%s’，通过 %s\n"
 
@@ -1539,10 +1569,6 @@ msgstr "公钥 %s 没有相对应的私钥――忽略\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "使用子钥 %s 而非主钥 %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "密钥 %s：无相应公钥的私钥――已跳过\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5190,6 +5216,11 @@ msgid "missing argument"
 msgstr "无效的参数"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "无效的 ASCII 封装格式"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "仅供管理员使用的命令\n"
 
@@ -5208,6 +5239,10 @@ msgstr "无效的列表选项\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "无效的列表选项\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7220,9 +7255,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "无效包"
 
-#~ msgid "invalid armor"
-#~ msgstr "无效的 ASCII 封装格式"
-
 #~ msgid "no such user id"
 #~ msgstr "没有这个用户标识"
 
@@ -7243,9 +7275,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "文件建立错误"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "无效的密码"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "未实现的公钥算法"

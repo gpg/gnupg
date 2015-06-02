@@ -50,8 +50,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Segur que voleu crear una clau de signatura i xifratge? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "la contrasenya és invàlida"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -390,6 +412,10 @@ msgstr "no és suportat"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "no és suportat"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "error en la creació de la contrasenya: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1623,6 +1649,10 @@ msgstr ""
 msgid "[User ID not found]"
 msgstr "[No s'ha trobat l'id d'usuari]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "clau %08lX: clau secreta sense clau pública - es descarta\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1648,10 +1678,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "s'usarà la clau secundària %08lX en lloc de la primària %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "clau %08lX: clau secreta sense clau pública - es descarta\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5625,6 +5651,11 @@ msgid "missing argument"
 msgstr "l'argument és invàlid"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "l'armadura és invàlida"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "les ordres entren en conflicte\n"
 
@@ -5647,6 +5678,10 @@ msgstr "opcions d'importació no vàlides\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opcions d'importació no vàlides\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7726,9 +7761,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "el paquet és invàlid"
 
-#~ msgid "invalid armor"
-#~ msgstr "l'armadura és invàlida"
-
 #~ msgid "no such user id"
 #~ msgstr "no s'ha trobat l'id de l'usuari"
 
@@ -7752,9 +7784,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "error en la creació del fitxer"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "la contrasenya és invàlida"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "l'algoritme de clau pública no és implementat"
@@ -8519,9 +8548,6 @@ msgstr ""
 
 #~ msgid "%s: error checking key: %s\n"
 #~ msgstr "%s: error en la comprovació de la clau: %s\n"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "Segur que voleu crear una clau de signatura i xifratge? "
 
 #~ msgid "Do you really need such a large keysize? "
 #~ msgstr "Realment necessiteu una clau tan llarga? "

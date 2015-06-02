@@ -32,8 +32,32 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr ""
+"Seçili yardımcı anahtarları gerçekten yürürlükten kaldırmak istiyor musunuz? "
+"(e/H ya da y/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Yeni anahtar parolasını giriniz"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -356,6 +380,11 @@ msgstr "ssh-agent öykünümü etkinleşir"
 
 msgid "enable putty support"
 msgstr ""
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "eski anahtar parolalarının yeniden kullanılmasına izin vermez"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|DOSYA|ortam ayarlarını ayrıca DOSYAya da yazar"
@@ -1496,6 +1525,10 @@ msgid "[User ID not found]"
 msgstr "[Kullanıcı kimliği yok]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "anahtar %s: genel anahtarsız gizli anahtar - atlandı\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "`%s' %s üzerinden özdevinimli olarak alındı\n"
 
@@ -1519,10 +1552,6 @@ msgstr ""
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "yardımcı anahtar %s, asıl anahtar %s yerine kullanılıyor\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "anahtar %s: genel anahtarsız gizli anahtar - atlandı\n"
 
 msgid "make a signature"
 msgstr "bir imza yapar"
@@ -5317,6 +5346,11 @@ msgstr "anahtar sözcük çok uzun"
 msgid "missing argument"
 msgstr "eksik değiştirge"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "değer hatalı\n"
+
 msgid "invalid command"
 msgstr "geçersiz komut"
 
@@ -5331,6 +5365,11 @@ msgstr "geçersiz seçenek"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "\"%.50s\" seçeneği için değiştirge eksik\n"
 
 #, c-format

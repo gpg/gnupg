@@ -29,8 +29,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Valóban visszavonja a kijelölt kulcsokat? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "érvénytelen jelszó"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -358,6 +379,10 @@ msgstr "nem támogatott"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "nem támogatott"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1552,6 +1577,10 @@ msgstr "Túl sok bejegyzés van a nyilvánoskulcs-gyorsítótárban - letiltom.\n"
 msgid "[User ID not found]"
 msgstr "[ismeretlen kulcs]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1578,10 +1607,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "A %08lX másodlagos kulcsot használjuk a %08lX elsõdleges helyett.\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "%08lX kulcs: titkos kulcs nyilvános kulcs nélkül - kihagytam.\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5446,6 +5471,11 @@ msgid "missing argument"
 msgstr "érvénytelen argumentum"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "érvénytelen páncél"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "Egymásnak ellentmondó parancsok!\n"
 
@@ -5464,6 +5494,10 @@ msgstr "Érvénytelen import opciók!\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "Érvénytelen import opciók!\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7497,9 +7531,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "érvénytelen csomag"
 
-#~ msgid "invalid armor"
-#~ msgstr "érvénytelen páncél"
-
 #~ msgid "no such user id"
 #~ msgstr "nincs ilyen felhasználói azonosító"
 
@@ -7523,9 +7554,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "állománylétrehozási hiba"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "érvénytelen jelszó"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "nem megvalósított nyilvános kulcsú algoritmus"

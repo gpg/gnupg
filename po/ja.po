@@ -33,8 +33,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_キャンセル"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_キャンセル"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "選択した副鍵を本当に失効しますか? (y/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "新しいパスフレーズを入力してください"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -347,6 +375,11 @@ msgstr "sshサポートを有効にする"
 
 msgid "enable putty support"
 msgstr "puttyサポートを有効にする"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "古いパスフレーズを再使用することを認めない"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|FILEに環境変数の設定も書き出す"
@@ -1469,6 +1502,10 @@ msgid "[User ID not found]"
 msgstr "[ユーザIDが見つかりません]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "鍵%s: 公開鍵のない秘密鍵です - スキップします\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "「%s」を %s から自動取得\n"
 
@@ -1490,10 +1527,6 @@ msgstr "公開副鍵%sにたいする秘密副鍵がありません - 無視\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "副鍵%s(主鍵%sではなく)を用います\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "鍵%s: 公開鍵のない秘密鍵です - スキップします\n"
 
 msgid "make a signature"
 msgstr "署名を作成"
@@ -3093,7 +3126,8 @@ msgid ""
 "versions\n"
 "         of PGP to reject this key.\n"
 msgstr ""
-"*警告*: これはPGP2形式の鍵です。フォトIDの追加で、一部のバージョンのPGPでは、\n"
+"*警告*: これはPGP2形式の鍵です。フォトIDの追加で、一部のバージョンのPGPで"
+"は、\n"
 "        この鍵を拒否するかもしれません。\n"
 
 msgid "Are you sure you still want to add it? (y/N) "
@@ -5146,6 +5180,11 @@ msgstr "キーワードが長すぎます"
 msgid "missing argument"
 msgstr "引数ありません"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "無効な値\n"
+
 msgid "invalid command"
 msgstr "無効なコマンド"
 
@@ -5160,6 +5199,11 @@ msgstr "無効なオプション"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "オプション\"%.50s\"に引数がありません\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"に引数がありません\n"
 
 #, c-format

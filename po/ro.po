@@ -33,8 +33,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Doriþi într-adevãr sã revocaþi subcheile selectate? (d/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "frazã-parolã invalidã"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -372,6 +394,10 @@ msgstr "nu este suportat(ã)"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "nu este suportat(ã)"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "eroare la crearea frazei-parolã: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1542,6 +1568,10 @@ msgid "[User ID not found]"
 msgstr "[ID utilizator nu a fost gãsit]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "cheia %s: cheie secretã fãrã cheie publicã - sãritã\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
@@ -1564,10 +1594,6 @@ msgstr "nici o subcheie secretã pentru subcheia publicã %s - ignoratã\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "folosim subcheia %s în loc de cheia primarã %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "cheia %s: cheie secretã fãrã cheie publicã - sãritã\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5354,6 +5380,11 @@ msgid "missing argument"
 msgstr "argument invalid"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armurã invalidã"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "Comandã numai-administrare\n"
 
@@ -5372,6 +5403,10 @@ msgstr "opþiuni enumerare invalide\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opþiuni enumerare invalide\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7449,9 +7484,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "pachet invalid"
 
-#~ msgid "invalid armor"
-#~ msgstr "armurã invalidã"
-
 #~ msgid "no such user id"
 #~ msgstr "nu existã acest id utilizator"
 
@@ -7475,9 +7507,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "eroare creare fiºier"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "frazã-parolã invalidã"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritm pubkey neimplementat"

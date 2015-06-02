@@ -48,8 +48,36 @@ msgstr "_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Avbryt"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "PIN-kod:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "_Avbryt"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vill du verkligen spärra de valda undernycklarna? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Ange ny lösenfras"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -381,6 +409,11 @@ msgstr "aktivera ssh-agent-emulering"
 
 msgid "enable putty support"
 msgstr ""
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "tillåt inte återanvändning av gamla lösenfraser"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FIL|skriv även miljöinställningar till FIL"
@@ -1533,6 +1566,10 @@ msgid "[User ID not found]"
 msgstr "[Användaridentiteten hittades inte]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "hämtade \"%s\" automatiskt via %s\n"
 
@@ -1555,10 +1592,6 @@ msgstr "ingen hemlig undernyckel för publika undernyckeln %s - hoppar över\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "använder undernyckeln %s istället för primära nyckeln %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "nyckel %s: hemlig nyckel utan publik nyckel - hoppades över\n"
 
 msgid "make a signature"
 msgstr "skapa en signatur"
@@ -5393,6 +5426,11 @@ msgstr "nyckelordet är för långt"
 msgid "missing argument"
 msgstr "argument saknas"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "ogiltigt värde\n"
+
 msgid "invalid command"
 msgstr "ogiltigt kommando"
 
@@ -5407,6 +5445,11 @@ msgstr "ogiltig flagga"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "argument för flaggan \"%.50s\" saknas\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argument för flaggan \"%.50s\" saknas\n"
 
 #, c-format

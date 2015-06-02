@@ -31,8 +31,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Σίγουρα θέλετε να ανακληθούν τα επιλεγμένα κλειδιά; "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "μη έγκυρη φράση κλειδί"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -361,6 +382,10 @@ msgstr "δεν υποστηρίζεται"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "δεν υποστηρίζεται"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1568,6 +1593,10 @@ msgstr "πάρα πολλές καταχωρήσεις στη pk cache - απενεργοποιήθηκε\n"
 msgid "[User ID not found]"
 msgstr "[User id δεν βρέθηκε]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1592,10 +1621,6 @@ msgstr "κανένα μυστικό υποκλειδί για το δημόσιο υποκλειδί %08lX - αγνόηση\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "χρήση του δευτερεύοντος κλειδιού %08lX αντί του πρωτεύοντος %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "κλειδί %08lX: μυστικό κλειδί χωρίς δημόσιο - παραλείφθηκε\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5495,6 +5520,11 @@ msgid "missing argument"
 msgstr "μη έγκυρο όρισμα"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "μη έγκυρη θωράκιση"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "συγκρουόμενες εντολές\n"
 
@@ -5513,6 +5543,10 @@ msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "μη έγκυρες επιλογές ειγαγωγής\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7554,9 +7588,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "μη έγκυρο πακέτο"
 
-#~ msgid "invalid armor"
-#~ msgstr "μη έγκυρη θωράκιση"
-
 #~ msgid "no such user id"
 #~ msgstr "άγνωστη ταυτότητα χρήστη (user id)"
 
@@ -7580,9 +7611,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "σφάλμα δημιουργίας αρχείου"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "μη έγκυρη φράση κλειδί"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "μη υλοποιημένος αλγόριθμος δημοσίου κλειδιού"

@@ -29,8 +29,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vuoi davvero revocare le chiavi selezionate? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "passphrase non valida"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -358,6 +379,10 @@ msgstr "non gestito"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "non gestito"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "errore nella creazione della passhprase: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1565,6 +1590,10 @@ msgstr "troppe voci nella pk cache - disabilitata\n"
 msgid "[User ID not found]"
 msgstr "[User ID non trovato]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "chiave %08lX: chiave segreta senza chiave pubblica - saltata\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1589,10 +1618,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "uso la chiave secondaria %08lX invece della chiave primaria %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "chiave %08lX: chiave segreta senza chiave pubblica - saltata\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5484,6 +5509,11 @@ msgid "missing argument"
 msgstr "argomento non valido"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armatura non valida"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "comandi in conflitto\n"
 
@@ -5503,6 +5533,10 @@ msgstr "opzioni di importazione non valide\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opzioni di importazione non valide\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7555,9 +7589,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "pacchetto non valido"
 
-#~ msgid "invalid armor"
-#~ msgstr "armatura non valida"
-
 #~ msgid "no such user id"
 #~ msgstr "l'user id non esiste"
 
@@ -7581,9 +7612,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "errore durante la creazione del file"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "passphrase non valida"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmo della chiave pubblica non implementato"

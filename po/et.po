@@ -29,8 +29,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Kas te tõesti soovite valitud võtmeid tühistada? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "vigane parool"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -358,6 +379,10 @@ msgstr "ei ole toetatud"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "ei ole toetatud"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "viga parooli loomisel: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1556,6 +1581,10 @@ msgstr "avalike võtmete puhvris on liiga palju võtmeid - blokeerin\n"
 msgid "[User ID not found]"
 msgstr "[Kasutaja id puudub]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1581,10 +1610,6 @@ msgstr "avalikul alamvõtmel %08lX puudub salajane alamvõti - ignoreerin\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "kasutan sekundaarset võtit %08lX primaarse võtme %08lX asemel\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "võti %08lX: salajane võti avaliku võtmeta - jätsin vahele\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5414,6 +5439,11 @@ msgid "missing argument"
 msgstr "vigane argument"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "vigane pakend"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "vastuolulised käsud\n"
 
@@ -5432,6 +5462,10 @@ msgstr "vigased impordi võtmed\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "vigased impordi võtmed\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7451,9 +7485,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "vigane pakett"
 
-#~ msgid "invalid armor"
-#~ msgstr "vigane pakend"
-
 #~ msgid "no such user id"
 #~ msgstr "sellist kasutaja id pole"
 
@@ -7477,9 +7508,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "viga faili loomisel"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "vigane parool"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "realiseerimata avaliku võtme algoritm"

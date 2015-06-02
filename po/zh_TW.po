@@ -35,8 +35,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|取消 (_C)"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|個人識別碼 (PIN):"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|取消 (_C)"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "你真的想要撤銷所選的子鑰嗎? (y/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "無效的密語"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -341,6 +369,11 @@ msgstr "啟用 ssh 支援"
 
 msgid "enable putty support"
 msgstr "啟用 putty 支援"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "不允許重複使用舊密語"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|檔案|將環境設定也寫至指定檔案"
@@ -1449,6 +1482,10 @@ msgid "[User ID not found]"
 msgstr "[找不到使用者 ID]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "金鑰 %s: 祇有私鑰而沒有公鑰 - 已跳過\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "已自動取回 `%s' (經由 %s )\n"
 
@@ -1470,10 +1507,6 @@ msgstr "公鑰 %s 沒有相對應的私鑰 - 正在忽略\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "使用子鑰 %s 來替換主鑰 %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "金鑰 %s: 祇有私鑰而沒有公鑰 - 已跳過\n"
 
 msgid "make a signature"
 msgstr "建立簽章"
@@ -5103,6 +5136,11 @@ msgstr "關鍵字太長"
 msgid "missing argument"
 msgstr "無效的引數"
 
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "無效的封裝"
+
 msgid "invalid command"
 msgstr "無效的指令"
 
@@ -5117,6 +5155,11 @@ msgstr "無效的選項"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "\"%.50s\" 選項遺失了引數\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "\"%.50s\" 選項遺失了引數\n"
 
 #, c-format
@@ -7038,9 +7081,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "無效的封包"
 
-#~ msgid "invalid armor"
-#~ msgstr "無效的封裝"
-
 #~ msgid "no such user id"
 #~ msgstr "沒有這個使用者 ID"
 
@@ -7058,9 +7098,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "檔案建立錯誤"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "無效的密語"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "尚未實做的公鑰演算法"

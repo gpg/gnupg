@@ -54,8 +54,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Annuleren"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|Pincode:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Annuleren"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Wilt U de geselecteerde subsleutels echt intrekken? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "ongeldige wachtwoordzin"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -385,6 +413,11 @@ msgstr "ssh-ondersteuning mogelijk maken"
 
 msgid "enable putty support"
 msgstr "putty-ondersteuning mogelijk maken"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "laat het opnieuw gebruiken van oude wachtwoordzinnen niet toe"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|BESTAND|schrijf omgevingsinstellingen ook weg naar BESTAND"
@@ -1543,6 +1576,10 @@ msgid "[User ID not found]"
 msgstr "[Gebruikers-ID niet gevonden]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "sleutel %s: geheime sleutel zonder publieke sleutel - overgeslagen\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "`%s' automatisch opgehaald via %s\n"
 
@@ -1565,10 +1602,6 @@ msgstr "geen geheime subsleutel voor publieke subsleutel %s - overgeslagen\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "subsleutel %s wordt gebruikt in plaats van primaire sleutel %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "sleutel %s: geheime sleutel zonder publieke sleutel - overgeslagen\n"
 
 msgid "make a signature"
 msgstr "maak een ondertekening"
@@ -5449,6 +5482,11 @@ msgstr "sleutelwoord is te lang"
 msgid "missing argument"
 msgstr "ontbrekende parameter"
 
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "ongeldig harnas"
+
 msgid "invalid command"
 msgstr "ongeldig commando"
 
@@ -5463,6 +5501,11 @@ msgstr "ongeldige optie"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "ontbrekende parameter voor optie \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "ontbrekende parameter voor optie \"%.50s\"\n"
 
 #, c-format
@@ -7467,9 +7510,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "ongeldig pakket"
 
-#~ msgid "invalid armor"
-#~ msgstr "ongeldig harnas"
-
 #~ msgid "no such user id"
 #~ msgstr "een dergelijk gebruikers-id bestaat niet"
 
@@ -7490,9 +7530,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "fout bij het aanmaken van het bestand"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "ongeldige wachtwoordzin"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "niet geïmplementeerd algoritme voor de publieke sleutel"

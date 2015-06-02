@@ -33,8 +33,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vil du virkelig oppheve de valgte undernøklene? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "ugyldig passfrase"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -366,6 +388,10 @@ msgstr ""
 
 msgid "enable putty support"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "feil ved opprettelse av passfrase: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1515,6 +1541,10 @@ msgid "[User ID not found]"
 msgstr "[Brukerid ikke funnet]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "nøkkel %s: hemmelig nøkkel uten offentlig nøkkel - hoppet over\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
@@ -1537,10 +1567,6 @@ msgstr "ingen hemmelig undernøkkel for offentlig undernøkkel %s - ignorerer\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "bruker undernøkkel %s i stedet for primærnøkkel %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "nøkkel %s: hemmelig nøkkel uten offentlig nøkkel - hoppet over\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5206,6 +5232,11 @@ msgid "missing argument"
 msgstr "ugydig argument"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "ugyldig beskyttelse"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "Admin-reservert kommando\n"
 
@@ -5224,6 +5255,10 @@ msgstr "ugyldige listevalg\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "ugyldige listevalg\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -6998,9 +7033,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "ugyldig pakke"
 
-#~ msgid "invalid armor"
-#~ msgstr "ugyldig beskyttelse"
-
 #~ msgid "no such user id"
 #~ msgstr "det finnes ingen slik brukerid"
 
@@ -7018,9 +7050,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "feil ved opprettelse av fil"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "ugyldig passfrase"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "uimplementert pubkey-algoritme"

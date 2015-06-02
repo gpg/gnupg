@@ -52,8 +52,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Zrušit"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Zrušit"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Opravdu chcete revokovat vybrané podklíče? (a/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "nesprávné heslo"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -379,6 +407,11 @@ msgstr "zapnout podporu pro OpenSSH"
 
 msgid "enable putty support"
 msgstr "zapnout podporu pro PuTTY"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "nedovolit opakovat stará hesla"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|SOUBOR|zapsat nastavení prostředí též do SOUBORU"
@@ -1510,6 +1543,10 @@ msgid "[User ID not found]"
 msgstr "[ID uživatele nenalezeno]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "klíč %s: tajný klíč bez klíče veřejného – přeskočeno\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "„%s“ automaticky získáno přes %s\n"
 
@@ -1532,10 +1569,6 @@ msgstr "neexistuje tajný podklíč pro veřejný klíč %s – ignorováno\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "používám podklíč %s místo primárního klíče %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "klíč %s: tajný klíč bez klíče veřejného – přeskočeno\n"
 
 msgid "make a signature"
 msgstr "vytvořit podpis"
@@ -5263,6 +5296,11 @@ msgstr "klíčové slovo je příliš dlouhé"
 msgid "missing argument"
 msgstr "postrádám argument"
 
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "neplatný způsob reprezentace v ASCII"
+
 msgid "invalid command"
 msgstr "neplatný příkaz"
 
@@ -5277,6 +5315,11 @@ msgstr "neplatný parametr"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "postrádám argument u volby „%.50s“\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "postrádám argument u volby „%.50s“\n"
 
 #, c-format
@@ -8360,9 +8403,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "neplatný paket"
 
-#~ msgid "invalid armor"
-#~ msgstr "neplatný způsob reprezentace v ASCII"
-
 #~ msgid "no such user id"
 #~ msgstr "neexistuje uživatel s tímto id"
 
@@ -8383,9 +8423,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "chyba při vytváření souboru"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "nesprávné heslo"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmus veřejného klíče není implementován"

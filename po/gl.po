@@ -29,8 +29,30 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "¿Seguro que quere crear unha chave para asinar e cifrar? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "contrasinal incorrecto"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -361,6 +383,10 @@ msgstr "non está soportado"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "non está soportado"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "erro ao crea-lo contrasinal: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1568,6 +1594,10 @@ msgstr "demasiadas entradas na caché de chaves públicas - desactivada\n"
 msgid "[User ID not found]"
 msgstr "[Non se atopou o id de usuario]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "chave %08lX: chave secreta sen chave pública - omitida\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1593,10 +1623,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "emprégase a chave secundaria %08lX no canto da primaria %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "chave %08lX: chave secreta sen chave pública - omitida\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5482,6 +5508,11 @@ msgid "missing argument"
 msgstr "argumento non válido"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armadura non válida"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "comandos conflictivos\n"
 
@@ -5500,6 +5531,10 @@ msgstr "opcións de importación non válidas\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opcións de importación non válidas\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7560,9 +7595,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "paquete non válido"
 
-#~ msgid "invalid armor"
-#~ msgstr "armadura non válida"
-
 #~ msgid "no such user id"
 #~ msgstr "non hai tal id de usuario"
 
@@ -7586,9 +7618,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "erro de creación de ficheiro"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "contrasinal incorrecto"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmo de chave pública non implementado"
@@ -8431,9 +8460,6 @@ msgstr ""
 
 #~ msgid "%s: error checking key: %s\n"
 #~ msgstr "%s: erro ao verifica-la chave: %s\n"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "¿Seguro que quere crear unha chave para asinar e cifrar? "
 
 #~ msgid "Do you really need such a large keysize? "
 #~ msgstr "¿Está seguro de precisar un tamaño de chave tan grande? "

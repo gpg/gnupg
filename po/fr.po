@@ -32,8 +32,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Annuler"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|Code personnel :"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Annuler"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Voulez-vous vraiment révoquer les sous-clefs sélectionnées ? (o/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "phrase de passe incorrecte"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -360,6 +388,11 @@ msgstr "activer la prise en charge de SSH"
 
 msgid "enable putty support"
 msgstr "activer la prise en charge de putty"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "ne pas autoriser la réutilisation d'anciennes phrases secrètes"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FICHIER|écrire aussi les réglages d'env. dans FICHIER"
@@ -1523,6 +1556,10 @@ msgid "[User ID not found]"
 msgstr "[identité introuvable]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "clef %s : clef secrète sans clef publique — ignorée\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "« %s » automatiquement récupéré par %s\n"
 
@@ -1548,10 +1585,6 @@ msgid "using subkey %s instead of primary key %s\n"
 msgstr ""
 "utilisation de la sous-clef %s à la place de la clef\n"
 "principale %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "clef %s : clef secrète sans clef publique — ignorée\n"
 
 msgid "make a signature"
 msgstr "faire une signature"
@@ -5396,6 +5429,11 @@ msgstr "mot-clef trop long"
 msgid "missing argument"
 msgstr "argument manquant"
 
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armure incorrecte"
+
 msgid "invalid command"
 msgstr "commande incorrecte"
 
@@ -5410,6 +5448,11 @@ msgstr "option incorrecte"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "argument manquant pour l'option « %.50s »\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "argument manquant pour l'option « %.50s »\n"
 
 #, c-format
@@ -7381,9 +7424,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "paquet incorrect"
 
-#~ msgid "invalid armor"
-#~ msgstr "armure incorrecte"
-
 #~ msgid "no such user id"
 #~ msgstr "cette identité n'existe pas"
 
@@ -7404,9 +7444,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "erreur de création de fichier"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "phrase de passe incorrecte"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algorithme de clef publique non implémenté"

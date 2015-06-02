@@ -37,8 +37,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Cancelar"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Cancelar"
+
+#, fuzzy
+#| msgid "Do you really want to create a sign and encrypt key? "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "¿De verdad quiere crear una clave de firma y cifrado? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "frase contraseña incorrecta"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -377,6 +405,11 @@ msgstr "permitir emulación de ssh-agent"
 
 msgid "enable putty support"
 msgstr "no disponible"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "no permite reusar antiguas frases contraseña"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FICHERO|escribir variables de entorno también en FICHERO"
@@ -1522,6 +1555,10 @@ msgid "[User ID not found]"
 msgstr "[ID de usuario no encontrado]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "clave %s: clave secreta sin clave pública - omitida\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "recuperado automáticamente `%s' vía %s\n"
 
@@ -1543,10 +1580,6 @@ msgstr "no hay subclave secreta para la subclave pública %s - ignorada\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "usando subclave %s en vez de clave primaria %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "clave %s: clave secreta sin clave pública - omitida\n"
 
 msgid "make a signature"
 msgstr "crea una firma"
@@ -5274,6 +5307,11 @@ msgstr "palabra clave demasiado larga"
 msgid "missing argument"
 msgstr "falta el parámetro"
 
+#, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armadura inválida"
+
 msgid "invalid command"
 msgstr "orden inválida"
 
@@ -5288,6 +5326,11 @@ msgstr "opción inválida"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "falta parámetro para la opción \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "falta parámetro para la opción \"%.50s\"\n"
 
 #, c-format
@@ -7337,9 +7380,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "paquete inválido"
 
-#~ msgid "invalid armor"
-#~ msgstr "armadura inválida"
-
 #~ msgid "no such user id"
 #~ msgstr "no existe el ID de usuario"
 
@@ -7363,9 +7403,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "error al crear fichero"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "frase contraseña incorrecta"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmo de clave pública no implementado"
@@ -8125,9 +8162,6 @@ msgstr ""
 
 #~ msgid "%s: error checking key: %s\n"
 #~ msgstr "%s: error comprobando la clave: %s\n"
-
-#~ msgid "Do you really want to create a sign and encrypt key? "
-#~ msgstr "¿De verdad quiere crear una clave de firma y cifrado? "
 
 #~ msgid "Do you really need such a large keysize? "
 #~ msgstr "¿De verdad necesita una clave tan grande? "

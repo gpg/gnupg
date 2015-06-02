@@ -34,8 +34,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Anda ingin membatalkan kunci terpilih ini? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "passphrase tidak valid"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -363,6 +384,10 @@ msgstr "tidak didukung"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "tidak didukung"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "kesalahan penciptaan passphrase: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1560,6 +1585,10 @@ msgstr "terlalu banyak masukan dalam pk cache - ditiadakan\n"
 msgid "[User ID not found]"
 msgstr "[User id tidak ditemukan]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1583,10 +1612,6 @@ msgstr "tidak ada subkey rahasia untuk subkey publik %08lX. diabaikan\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "menggunakan kunci sekunder %08lX bukannya kunci primer %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "kunci %08lX: kunci rahasia tanpa kunci publik - dilewati\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5443,6 +5468,11 @@ msgid "missing argument"
 msgstr "argumen tidak valid"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "armor tidak valid"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "perintah saling konflik\n"
 
@@ -5461,6 +5491,10 @@ msgstr "opsi impor tidak valid\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "opsi impor tidak valid\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7498,9 +7532,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "paket tidak valid"
 
-#~ msgid "invalid armor"
-#~ msgstr "armor tidak valid"
-
 #~ msgid "no such user id"
 #~ msgstr "tidak ada user id tsb"
 
@@ -7524,9 +7555,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "kesalahan buat file"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "passphrase tidak valid"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritma pubkey belum diimplementasikan"

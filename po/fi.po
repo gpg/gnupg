@@ -45,8 +45,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Haluatko varmasti mitätöidä valitut avaimet? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "väärä salasana"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -374,6 +395,10 @@ msgstr "ei tuettu"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "ei tuettu"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "virhe luotaessa salasanaa: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1573,6 +1598,12 @@ msgstr "pk-välimuistissa on liian monta kohdetta - poistettu käytöstä\n"
 msgid "[User ID not found]"
 msgstr "[Käyttäjätunnusta ei löytynyt]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr ""
+"avain %08lX: salaisella avaimella ei ole vastaavaa \n"
+"julkista avainta - ohitetaan\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1598,12 +1629,6 @@ msgstr "ei salaista aliavainta julkiselle aliavaimelle %08lX - ohitetaan\n"
 msgid "using subkey %s instead of primary key %s\n"
 msgstr ""
 "käytetään toissijaista avainta %08lX ensisijaisen avaimen %08lX sijasta\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr ""
-"avain %08lX: salaisella avaimella ei ole vastaavaa \n"
-"julkista avainta - ohitetaan\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5478,6 +5503,11 @@ msgid "missing argument"
 msgstr "virheellinen argumentti"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "virheellinen ascii-koodaus"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "ristiriitainen komento\n"
 
@@ -5496,6 +5526,10 @@ msgstr "virheelliset tuontivalitsimet\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "virheelliset tuontivalitsimet\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7537,9 +7571,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "virheellinen paketti"
 
-#~ msgid "invalid armor"
-#~ msgstr "virheellinen ascii-koodaus"
-
 #~ msgid "no such user id"
 #~ msgstr "käyttäjätunnusta ei löydy"
 
@@ -7563,9 +7594,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "virhe tiedostoa luotaessa"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "väärä salasana"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "julkisen avaimen algoritmi ei ole käytössä"

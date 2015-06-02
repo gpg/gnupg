@@ -33,8 +33,36 @@ msgstr "_Гаразд"
 msgid "|pinentry-label|_Cancel"
 msgstr "_Скасувати"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "_Гаразд"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "_Гаразд"
+
 msgid "|pinentry-label|PIN:"
 msgstr "Пінкод:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "_Скасувати"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Ви справді бажаєте відкликати позначені підключі? (y/N або т/Н) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Вкажіть новий пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -362,6 +390,11 @@ msgstr "увімкнути підтримку ssh"
 
 msgid "enable putty support"
 msgstr "увімкнути підтримку putty"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "не дозволяти повторне використання старих паролів"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "записати параметри середовища і до файла"
@@ -1511,6 +1544,10 @@ msgid "[User ID not found]"
 msgstr "[Ідентифікатор не знайдено]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "ключ %s: закритий ключ без відкритого ключа — пропущено\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "автоматично отримано «%s» за допомогою %s\n"
 
@@ -1534,10 +1571,6 @@ msgstr "немає закритого підключа для відкритог
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "використовуємо підключ %s замість основного ключа %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "ключ %s: закритий ключ без відкритого ключа — пропущено\n"
 
 msgid "make a signature"
 msgstr "створити підпис"
@@ -5322,6 +5355,11 @@ msgstr "занадто довге ключове слово"
 msgid "missing argument"
 msgstr "не вистачає аргументу"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "некоректне значення\n"
+
 msgid "invalid command"
 msgstr "некоректна команда"
 
@@ -5336,6 +5374,11 @@ msgstr "некоректний параметр"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "не вказано аргументу до параметра «%.50s»\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "не вказано аргументу до параметра «%.50s»\n"
 
 #, c-format

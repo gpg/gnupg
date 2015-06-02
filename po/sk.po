@@ -32,8 +32,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Skutoène chcete revokova» vybrané kµúèe? "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "nesprávne heslo"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -361,6 +382,10 @@ msgstr "nepodporované"
 #| msgid "not supported"
 msgid "enable putty support"
 msgstr "nepodporované"
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "chyba pri vytváraní hesla: %s\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1560,6 +1585,10 @@ msgstr "príli¹ veµa polo¾iek v bufferi verejných kµúèov - vypnuté\n"
 msgid "[User ID not found]"
 msgstr "[User id not found]"
 
+#, fuzzy, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "kµúè %08lX: tajný kµúè bez verejného kµúèa - preskoèené\n"
+
 #, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
@@ -1585,10 +1614,6 @@ msgstr "existuje tajný kµúè pre tento verejný kµúè %08lX!\n"
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "pou¾ívam sekundárny kµúè %08lX namiesto primárneho kµúèa %08lX\n"
-
-#, fuzzy, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "kµúè %08lX: tajný kµúè bez verejného kµúèa - preskoèené\n"
 
 #, fuzzy
 msgid "make a signature"
@@ -5462,6 +5487,11 @@ msgid "missing argument"
 msgstr "neplatný argument"
 
 #, fuzzy
+#| msgid "invalid armor"
+msgid "invalid argument"
+msgstr "neplatný spôsob reprezentácie v ASCII"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "konfliktné príkazy\n"
 
@@ -5480,6 +5510,10 @@ msgstr "neplatný parameter pre import\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "neplatný parameter pre import\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -7516,9 +7550,6 @@ msgstr ""
 #~ msgid "invalid packet"
 #~ msgstr "neplatný paket"
 
-#~ msgid "invalid armor"
-#~ msgstr "neplatný spôsob reprezentácie v ASCII"
-
 #~ msgid "no such user id"
 #~ msgstr "u¾ívateµ s týmto id neexistuje"
 
@@ -7542,9 +7573,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "chyba pri vytváraní súboru"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "nesprávne heslo"
 
 #~ msgid "unimplemented pubkey algorithm"
 #~ msgstr "algoritmus verejného kµúèa nie je implementovaný"

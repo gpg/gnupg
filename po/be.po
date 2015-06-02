@@ -30,8 +30,29 @@ msgstr ""
 msgid "|pinentry-label|_Cancel"
 msgstr ""
 
+msgid "|pinentry-label|_Yes"
+msgstr ""
+
+msgid "|pinentry-label|_No"
+msgstr ""
+
 msgid "|pinentry-label|PIN:"
 msgstr ""
+
+msgid "|pinentry-label|_Save in password manager"
+msgstr ""
+
+#, fuzzy
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "паказаць сьпіс ключоў і ID карыстальнікаў"
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "invalid passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "нерэчаісны пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -350,6 +371,10 @@ msgstr ""
 
 msgid "enable putty support"
 msgstr ""
+
+#, fuzzy
+msgid "disallow the use of an external password cache"
+msgstr "Паўтарыце пароль\n"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr ""
@@ -1503,6 +1528,10 @@ msgid "[User ID not found]"
 msgstr ""
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr ""
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr ""
 
@@ -1525,10 +1554,6 @@ msgstr ""
 #, fuzzy, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "%s: немагчыма стварыць тэчку: %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr ""
 
 #, fuzzy
 msgid "make a signature"
@@ -5131,6 +5156,10 @@ msgid "missing argument"
 msgstr ""
 
 #, fuzzy
+msgid "invalid argument"
+msgstr "паказаць ключы й адбіткі пальцаў"
+
+#, fuzzy
 msgid "invalid command"
 msgstr "несумяшчальныя загады\n"
 
@@ -5149,6 +5178,10 @@ msgstr "недапушчальныя выбары імпартаваньня\n"
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "invalid argument for option \"%.50s\"\n"
+msgstr "недапушчальныя выбары імпартаваньня\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
@@ -6736,9 +6769,6 @@ msgstr ""
 
 #~ msgid "file create error"
 #~ msgstr "памылка стварэньня файла"
-
-#~ msgid "invalid passphrase"
-#~ msgstr "нерэчаісны пароль"
 
 #~ msgid "file close error"
 #~ msgstr "памылка зачыненьня файла"

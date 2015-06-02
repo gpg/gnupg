@@ -39,8 +39,36 @@ msgstr "_O.k."
 msgid "|pinentry-label|_Cancel"
 msgstr "_Afbryd"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "_O.k."
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "_O.k."
+
 msgid "|pinentry-label|PIN:"
 msgstr "PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "_Afbryd"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Vil du virkelig tilbagekalde de valgte undernøgler? (j/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Indtast ny adgangsfrase"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -364,6 +392,11 @@ msgstr "aktiver ssh-understøttelse"
 
 msgid "enable putty support"
 msgstr "aktiver putty-understøttelse"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "tillad ikke genbrug af gamle adgangsfraser"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FIL|skriv også miljøindstillinger til FIL"
@@ -1498,6 +1531,10 @@ msgid "[User ID not found]"
 msgstr "[Bruger-id blev ikke fundet]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "nøgle %s: hemmelig nøgle uden offentlig nøgle - udeladt\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "hentede automatisk »%s« via %s\n"
 
@@ -1519,10 +1556,6 @@ msgstr "ingen hemmelig undernøgle for offentlig undernøgle %s - ignorerer\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "bruger undernøgle %s i stedet for primær nøgle %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "nøgle %s: hemmelig nøgle uden offentlig nøgle - udeladt\n"
 
 msgid "make a signature"
 msgstr "opret en underskrift"
@@ -5247,6 +5280,11 @@ msgstr "nøgleord er for langt"
 msgid "missing argument"
 msgstr "manglende parameter"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "ugyldig værdi\n"
+
 msgid "invalid command"
 msgstr "ugyldig kommando"
 
@@ -5261,6 +5299,11 @@ msgstr "ugyldig indstilling"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "manglende parameter for indstilling »%.50s«\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "manglende parameter for indstilling »%.50s«\n"
 
 #, c-format

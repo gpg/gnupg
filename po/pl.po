@@ -33,8 +33,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Anuluj"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|_Anuluj"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Czy na pewno chcesz unieważnić wybrane podklucze? (t/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Wprowadź nowe hasło"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -356,6 +384,11 @@ msgstr "włączenie obsługi ssh"
 
 msgid "enable putty support"
 msgstr "włączenie obsługi putty"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "nie zezwalanie na ponowne użycie starych haseł"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|PLIK|zapis ustawień środowiska także do PLIKU"
@@ -1485,6 +1518,10 @@ msgid "[User ID not found]"
 msgstr "[brak identyfikatora użytkownika]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "klucz %s: klucz tajny bez klucza jawnego - pominięty\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "automatycznie pobrano `%s' poprzez %s\n"
 
@@ -1507,10 +1544,6 @@ msgstr "brak prywatnego odpowiednika podklucza publicznego %s - pominięty\n"
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "używany jest podklucz %s zamiast klucza głównego %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "klucz %s: klucz tajny bez klucza jawnego - pominięty\n"
 
 msgid "make a signature"
 msgstr "złożenie podpisu"
@@ -5285,6 +5318,11 @@ msgstr "słowo kluczowe zbyt długie"
 msgid "missing argument"
 msgstr "brak argumentu"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "niepoprawna wartość\n"
+
 msgid "invalid command"
 msgstr "błędne polecenie"
 
@@ -5299,6 +5337,11 @@ msgstr "błędna opcja"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "brak argumentu dla opcji ,,%.50s''\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "brak argumentu dla opcji ,,%.50s''\n"
 
 #, c-format
