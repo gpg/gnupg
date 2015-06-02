@@ -3473,7 +3473,7 @@ sense.  Although OpenPGP works with time intervals, GnuPG uses an
 absolute value internally and thus the last year we can represent is
 2105.
 
-@item  Ceation-Date: @var{iso-date}
+@item Creation-Date: @var{iso-date}
 Set the creation date of the key as stored in the key information and
 which is also part of the fingerprint calculation.  Either a date like
 "1986-04-26" or a full timestamp like "19860426T042640" may be used.
