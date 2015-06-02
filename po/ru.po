@@ -36,8 +36,36 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|Отмена (_C)"
 
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_Yes"
+msgstr "|pinentry-label|_OK"
+
+#, fuzzy
+#| msgid "|pinentry-label|_OK"
+msgid "|pinentry-label|_No"
+msgstr "|pinentry-label|_OK"
+
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
+
+#, fuzzy
+#| msgid "|pinentry-label|_Cancel"
+msgid "|pinentry-label|_Save in password manager"
+msgstr "|pinentry-label|Отмена (_C)"
+
+#, fuzzy
+#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
+msgid "Do you really want to make your passphrase visible on the screen?"
+msgstr "Вы действительно хотите отозвать выбранные подключи? (y/N) "
+
+msgid "|pinentry-tt|Make passphrase visible"
+msgstr ""
+
+#, fuzzy
+#| msgid "Enter new passphrase"
+msgid "|pinentry-tt|Hide passphrase"
+msgstr "Введите новую фразу-пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -362,6 +390,11 @@ msgstr "включить поддержку ssh"
 
 msgid "enable putty support"
 msgstr "включить поддержку putty"
+
+#, fuzzy
+#| msgid "do not allow the reuse of old passphrases"
+msgid "disallow the use of an external password cache"
+msgstr "не разрешать повторное использование старых фраз-паролей"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|сохранить состояние среды также в файл FILE"
@@ -1490,6 +1523,10 @@ msgid "[User ID not found]"
 msgstr "[ID пользователя не найден]"
 
 #, c-format
+msgid "key %s: secret key without public key - skipped\n"
+msgstr "ключ %s: закрытый ключ без открытого ключа - пропущен\n"
+
+#, c-format
 msgid "automatically retrieved `%s' via %s\n"
 msgstr "автоматически получили `%s' через %s\n"
 
@@ -1512,10 +1549,6 @@ msgstr "нет закрытого подключа для открытого п�
 #, c-format
 msgid "using subkey %s instead of primary key %s\n"
 msgstr "использую подключ %s вместо главного ключа %s\n"
-
-#, c-format
-msgid "key %s: secret key without public key - skipped\n"
-msgstr "ключ %s: закрытый ключ без открытого ключа - пропущен\n"
 
 msgid "make a signature"
 msgstr "создать подпись"
@@ -3935,6 +3968,10 @@ msgstr "ВНИМАНИЕ: обработчик сервера ключей от 
 msgid "keyserver did not send VERSION\n"
 msgstr "сервер ключей не прислал VERSION\n"
 
+#, c-format
+msgid "keyserver communications error: %s\n"
+msgstr "ошибка связи с сервером ключей: %s\n"
+
 msgid "no keyserver known (use option --keyserver)\n"
 msgstr "не заданы серверы ключей (используйте --keyserver)\n"
 
@@ -3958,10 +3995,6 @@ msgstr "превышено время ожидания сервера ключе
 
 msgid "keyserver internal error\n"
 msgstr "внутренняя ошибка сервера ключей\n"
-
-#, c-format
-msgid "keyserver communications error: %s\n"
-msgstr "ошибка связи с сервером ключей: %s\n"
 
 #, c-format
 msgid "\"%s\" not a key ID: skipping\n"
@@ -5236,6 +5269,11 @@ msgstr "ключевое слово слишком длинное"
 msgid "missing argument"
 msgstr "пропущен аргумент"
 
+#, fuzzy
+#| msgid "invalid value\n"
+msgid "invalid argument"
+msgstr "недопустимое значение\n"
+
 msgid "invalid command"
 msgstr "недопустимая команда"
 
@@ -5250,6 +5288,11 @@ msgstr "недопустимый параметр"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
+msgstr "не хватает аргумента для параметра \"%.50s\"\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "invalid argument for option \"%.50s\"\n"
 msgstr "не хватает аргумента для параметра \"%.50s\"\n"
 
 #, c-format
