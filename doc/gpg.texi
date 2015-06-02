@@ -2266,9 +2266,9 @@ to consider (e.g. @option{--symmetric}).
 @item --s2k-cipher-algo @code{name}
 @opindex s2k-cipher-algo
 Use @code{name} as the cipher algorithm used to protect secret keys.
-The default cipher is CAST5. This cipher is also used for
-conventional encryption if @option{--personal-cipher-preferences} and
-@option{--cipher-algo} is not given.
+The default cipher is CAST5. This cipher is also used for symmetric
+encryption with a passphrase if @option{--personal-cipher-preferences}
+and @option{--cipher-algo} is not given.
 
 @item --s2k-digest-algo @code{name}
 @opindex s2k-digest-algo
@@ -2281,7 +2281,7 @@ Selects how passphrases are mangled. If @code{n} is 0 a plain
 passphrase (which is not recommended) will be used, a 1 adds a salt to
 the passphrase and a 3 (the default) iterates the whole process a
 number of times (see --s2k-count).  Unless @option{--rfc1991} is used,
-this mode is also used for conventional encryption.
+this mode is also used for symmetric encryption with a passphrase.
 
 @item --s2k-count @code{n}
 @opindex s2k-count

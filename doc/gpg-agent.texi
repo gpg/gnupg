@@ -1177,7 +1177,7 @@ Replaced by a single @code{@@}
 @subsection Ask for a passphrase
 
 This function is usually used to ask for a passphrase to be used for
-conventional encryption, but may also be used by programs which need
+symmetric encryption, but may also be used by programs which need
 special handling of passphrases.  This command uses a syntax which helps
 clients to use the agent with minimum effort.
 

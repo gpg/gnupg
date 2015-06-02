@@ -434,9 +434,9 @@ more arguments in future versions.
     DECRYPTION_OKAY
 	The decryption process succeeded.  This means, that either the
 	correct secret key has been used or the correct passphrase
-	for a conventional encrypted message was given.  The program
-	itself may return an errorcode because it may not be possible to
-	verify a signature for some reasons.
+	for a symmetric with passphrase encrypted message was given.
+        The program itself may return an errorcode because it may not
+        be possible to verify a signature for some reasons.
 
     NO_PUBKEY  <long keyid>
     NO_SECKEY  <long keyid>
