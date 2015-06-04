@@ -1487,34 +1487,36 @@ tdbio_read_record (ulong recnum, TRUSTREC *rec, int expected)
         {
           log_error (_("%s: not a trustdb file\n"), db_name );
           err = gpg_error (GPG_ERR_TRUSTDB);
-          /* FIXME ^ */
         }
-      p += 2; /* skip "gpg" */
-      rec->r.ver.version  = *p++;
-      rec->r.ver.marginals = *p++;
-      rec->r.ver.completes = *p++;
-      rec->r.ver.cert_depth = *p++;
-      rec->r.ver.trust_model = *p++;
-      rec->r.ver.min_cert_level = *p++;
-      p += 2;
-      rec->r.ver.created  = buf32_to_ulong(p); p += 4;
-      rec->r.ver.nextcheck = buf32_to_ulong(p); p += 4;
-      p += 4;
-      p += 4;
-      rec->r.ver.firstfree =buf32_to_ulong(p); p += 4;
-      p += 4;
-      rec->r.ver.trusthashtbl =buf32_to_ulong(p); p += 4;
-      if (recnum)
+      else
         {
-          log_error( _("%s: version record with recnum %lu\n"), db_name,
-                     (ulong)recnum );
-          err = gpg_error (GPG_ERR_TRUSTDB);
-	}
-      else if (rec->r.ver.version != 3)
-        {
-          log_error( _("%s: invalid file version %d\n"), db_name,
-                     rec->r.ver.version );
-          err = gpg_error (GPG_ERR_TRUSTDB);
+          p += 2; /* skip "gpg" */
+          rec->r.ver.version  = *p++;
+          rec->r.ver.marginals = *p++;
+          rec->r.ver.completes = *p++;
+          rec->r.ver.cert_depth = *p++;
+          rec->r.ver.trust_model = *p++;
+          rec->r.ver.min_cert_level = *p++;
+          p += 2;
+          rec->r.ver.created  = buf32_to_ulong(p); p += 4;
+          rec->r.ver.nextcheck = buf32_to_ulong(p); p += 4;
+          p += 4;
+          p += 4;
+          rec->r.ver.firstfree =buf32_to_ulong(p); p += 4;
+          p += 4;
+          rec->r.ver.trusthashtbl =buf32_to_ulong(p); p += 4;
+          if (recnum)
+            {
+              log_error( _("%s: version record with recnum %lu\n"), db_name,
+                         (ulong)recnum );
+              err = gpg_error (GPG_ERR_TRUSTDB);
+            }
+          else if (rec->r.ver.version != 3)
+            {
+              log_error( _("%s: invalid file version %d\n"), db_name,
+                         rec->r.ver.version );
+              err = gpg_error (GPG_ERR_TRUSTDB);
+            }
         }
       break;
 
