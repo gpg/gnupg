@@ -1245,10 +1245,9 @@ drop_from_hashtable (ulong table, byte *key, int keylen, ulong recnum)
  * the result in REC.  The return value of CMP() should be True if the
  * record is the desired one.
  *
- * Return: -1 if not found, 0 if found or another error code.
- * FIXME: Use GPG_ERR_NOT_FOUND instead of -1.
+ * Return: 0 if found, GPG_ERR_NOT_FOUND, or another error code.
  */
-static int
+static gpg_error_t
 lookup_hashtable (ulong table, const byte *key, size_t keylen,
 		  int (*cmpfnc)(const void*, const TRUSTREC *),
                   const void *cmpdata, TRUSTREC *rec )
@@ -1271,7 +1270,7 @@ lookup_hashtable (ulong table, const byte *key, size_t keylen,
 
   item = rec->r.htbl.item[msb % ITEMS_PER_HTBL_RECORD];
   if (!item)
-    return -1; /* Not found. */
+    return gpg_error (GPG_ERR_NOT_FOUND);
 
   rc = tdbio_read_record (item, rec, 0);
   if (rc)
@@ -1327,14 +1326,14 @@ lookup_hashtable (ulong table, const byte *key, size_t keylen,
 		}
 	    }
           else
-            return -1; /* not found */
+            return gpg_error (GPG_ERR_NOT_FOUND);
 	}
     }
 
   if ((*cmpfnc)(cmpdata, rec))
     return 0; /* really found */
 
-  return -1; /* no: not found */
+  return gpg_error (GPG_ERR_NOT_FOUND); /* no: not found */
 }
 
 
@@ -1805,10 +1804,9 @@ cmp_trec_fpr ( const void *fpr, const TRUSTREC *rec )
  * Given a 20 byte FINGERPRINT search its trust record and return
  * that at REC.
  *
- * Return: -1 if not found, 0 if found or another error code.
- * FIXME: Use GPG_ERR_NOT_FOUND instead of -1.
+ * Return: 0 if found, GPG_ERR_NOT_FOUND, or another error code.
  */
-int
+gpg_error_t
 tdbio_search_trust_byfpr (const byte *fingerprint, TRUSTREC *rec)
 {
   int rc;
@@ -1824,10 +1822,9 @@ tdbio_search_trust_byfpr (const byte *fingerprint, TRUSTREC *rec)
  * Given a primary public key object PK search its trust record and
  * return that at REC.
  *
- * Return: -1 if not found, 0 if found or another error code.
- * FIXME: Use GPG_ERR_NOT_FOUND instead of -1.
+ * Return: 0 if found, GPG_ERR_NOT_FOUND, or another error code.
  */
-int
+gpg_error_t
 tdbio_search_trust_bypk (PKT_public_key *pk, TRUSTREC *rec)
 {
   byte fingerprint[MAX_FINGERPRINT_LEN];

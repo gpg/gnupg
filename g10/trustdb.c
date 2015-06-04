@@ -598,12 +598,11 @@ read_trust_record (PKT_public_key *pk, TRUSTREC *rec)
 
   init_trustdb();
   rc = tdbio_search_trust_bypk (pk, rec);
-  if (rc == -1)
-    return -1; /* no record yet */
   if (rc)
     {
-      log_error ("trustdb: searching trust record failed: %s\n",
-                 gpg_strerror (rc));
+      if (gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
+        log_error ("trustdb: searching trust record failed: %s\n",
+                   gpg_strerror (rc));
       return rc;
     }
 
@@ -625,18 +624,18 @@ unsigned int
 tdb_get_ownertrust ( PKT_public_key *pk)
 {
   TRUSTREC rec;
-  int rc;
+  gpg_error_t err;
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return TRUST_UNKNOWN;
 
-  rc = read_trust_record (pk, &rec);
-  if (rc == -1)
+  err = read_trust_record (pk, &rec);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     return TRUST_UNKNOWN; /* no record yet */
-  if (rc)
+  if (err)
     {
       tdbio_invalid ();
-      return rc; /* actually never reached */
+      return TRUST_UNKNOWN; /* actually never reached */
     }
 
   return rec.r.trust.ownertrust;
@@ -647,18 +646,18 @@ unsigned int
 tdb_get_min_ownertrust (PKT_public_key *pk)
 {
   TRUSTREC rec;
-  int rc;
+  gpg_error_t err;
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return TRUST_UNKNOWN;
 
-  rc = read_trust_record (pk, &rec);
-  if (rc == -1)
+  err = read_trust_record (pk, &rec);
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     return TRUST_UNKNOWN; /* no record yet */
-  if (rc)
+  if (err)
     {
       tdbio_invalid ();
-      return rc; /* actually never reached */
+      return TRUST_UNKNOWN; /* actually never reached */
     }
 
   return rec.r.trust.min_ownertrust;
@@ -673,13 +672,13 @@ void
 tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
 {
   TRUSTREC rec;
-  int rc;
+  gpg_error_t err;
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return;
 
-  rc = read_trust_record (pk, &rec);
-  if (!rc)
+  err = read_trust_record (pk, &rec);
+  if (!err)
     {
       if (DBG_TRUST)
         log_debug ("update ownertrust from %u to %u\n",
@@ -692,7 +691,7 @@ tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
           do_sync ();
         }
     }
-  else if (rc == -1)
+  else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     { /* no record yet - create a new one */
       size_t dummy;
 
@@ -707,7 +706,7 @@ tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust )
       write_record (&rec);
       tdb_revalidation_mark ();
       do_sync ();
-      rc = 0;
+      err = 0;
     }
   else
     {
@@ -720,21 +719,22 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
 {
   PKT_public_key *pk;
   TRUSTREC rec;
-  int rc;
+  gpg_error_t err;
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return;
 
   pk = xmalloc_clear (sizeof *pk);
-  rc = get_pubkey (pk, kid);
-  if (rc)
+  err = get_pubkey (pk, kid);
+  if (err)
     {
-      log_error(_("public key %s not found: %s\n"),keystr(kid),gpg_strerror (rc));
+      log_error (_("public key %s not found: %s\n"),
+                 keystr (kid), gpg_strerror (err));
       return;
     }
 
-  rc = read_trust_record (pk, &rec);
-  if (!rc)
+  err = read_trust_record (pk, &rec);
+  if (!err)
     {
       if (DBG_TRUST)
         log_debug ("key %08lX%08lX: update min_ownertrust from %u to %u\n",
@@ -749,7 +749,7 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
           do_sync ();
         }
     }
-  else if (rc == -1)
+  else if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     { /* no record yet - create a new one */
       size_t dummy;
 
@@ -764,7 +764,7 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
       write_record (&rec);
       tdb_revalidation_mark ();
       do_sync ();
-      rc = 0;
+      err = 0;
     }
   else
     {
@@ -773,21 +773,24 @@ update_min_ownertrust (u32 *kid, unsigned int new_trust )
 }
 
 
-/* Clear the ownertrust and min_ownertrust values.  Return true if a
-   change actually happened. */
+/*
+ * Clear the ownertrust and min_ownertrust values.
+ *
+ * Return: True if a change actually happened.
+ */
 int
 tdb_clear_ownertrusts (PKT_public_key *pk)
 {
   TRUSTREC rec;
-  int rc;
+  gpg_error_t err;
 
   init_trustdb ();
 
   if (trustdb_args.no_trustdb && opt.trust_model == TM_ALWAYS)
     return 0;
 
-  rc = read_trust_record (pk, &rec);
-  if (!rc)
+  err = read_trust_record (pk, &rec);
+  if (!err)
     {
       if (DBG_TRUST)
 	{
@@ -806,7 +809,7 @@ tdb_clear_ownertrusts (PKT_public_key *pk)
           return 1;
         }
     }
-  else if (rc != -1)
+  else if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
     {
       tdbio_invalid ();
     }
@@ -821,22 +824,23 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
                  int depth, int validity)
 {
   TRUSTREC trec, vrec;
-  int rc;
+  gpg_error_t err;
   ulong recno;
 
   namehash_from_uid(uid);
 
-  rc = read_trust_record (pk, &trec);
-  if (rc && rc != -1)
+  err = read_trust_record (pk, &trec);
+  if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
     {
       tdbio_invalid ();
       return;
     }
-  if (rc == -1) /* no record yet - create a new one */
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
+      /* No record yet - create a new one. */
       size_t dummy;
 
-      rc = 0;
+      err = 0;
       memset (&trec, 0, sizeof trec);
       trec.recnum = tdbio_new_recnum ();
       trec.rectype = RECTYPE_TRUST;
@@ -881,7 +885,7 @@ update_validity (PKT_public_key *pk, PKT_user_id *uid,
 int
 tdb_cache_disabled_value (PKT_public_key *pk)
 {
-  int rc;
+  gpg_error_t err;
   TRUSTREC trec;
   int disabled = 0;
 
@@ -893,16 +897,19 @@ tdb_cache_disabled_value (PKT_public_key *pk)
   if (trustdb_args.no_trustdb)
     return 0;  /* No trustdb => not disabled.  */
 
-  rc = read_trust_record (pk, &trec);
-  if (rc && rc != -1)
+  err = read_trust_record (pk, &trec);
+  if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
     {
       tdbio_invalid ();
       goto leave;
     }
-  if (rc == -1) /* no record found, so assume not disabled */
-    goto leave;
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+    {
+      /* No record found, so assume not disabled.  */
+      goto leave;
+    }
 
-  if (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED)
+  if ((trec.r.trust.ownertrust & TRUST_FLAG_DISABLED))
     disabled = 1;
 
   /* Cache it for later so we don't need to look at the trustdb every
@@ -911,7 +918,7 @@ tdb_cache_disabled_value (PKT_public_key *pk)
   pk->flags.disabled_valid = 1;
 
  leave:
-   return disabled;
+  return disabled;
 }
 
 
@@ -960,7 +967,7 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
                        PKT_public_key *main_pk)
 {
   TRUSTREC trec, vrec;
-  int rc;
+  gpg_error_t err;
   ulong recno;
   unsigned int validity;
 
@@ -983,19 +990,20 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
       goto leave;
     }
 
-  rc = read_trust_record (main_pk, &trec);
-  if (rc && rc != -1)
+  err = read_trust_record (main_pk, &trec);
+  if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
     {
       tdbio_invalid ();
       return 0;
     }
-  if (rc == -1) /* no record found */
+  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     {
+      /* No record found.  */
       validity = TRUST_UNKNOWN;
       goto leave;
     }
 
-  /* loop over all user IDs */
+  /* Loop over all user IDs */
   recno = trec.r.trust.validlist;
   validity = 0;
   while (recno)
@@ -1057,7 +1065,7 @@ get_validity_counts (PKT_public_key *pk, PKT_user_id *uid)
 
   init_trustdb ();
 
-  if(read_trust_record (pk, &trec)!=0)
+  if(read_trust_record (pk, &trec))
     return;
 
   /* loop over all user IDs */
