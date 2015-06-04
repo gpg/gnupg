@@ -61,11 +61,11 @@ write_record( TRUSTREC *rec )
 }
 
 
-/****************
- * Dump the entire trustdb or only the entries of one key.
+/*
+ * Dump the entire trustdb to FP or only the entries of one key.
  */
 void
-list_trustdb (const char *username)
+list_trustdb (estream_t fp, const char *username)
 {
   TRUSTREC rec;
 
@@ -78,12 +78,12 @@ list_trustdb (const char *username)
       ulong recnum;
       int i;
 
-      es_printf ("TrustDB: %s\n", tdbio_get_dbname() );
-      for(i=9+strlen(tdbio_get_dbname()); i > 0; i-- )
-        es_putc ('-', es_stdout);
-      es_putc ('\n', es_stdout);
-      for(recnum=0; !tdbio_read_record( recnum, &rec, 0); recnum++ )
-        tdbio_dump_record (&rec, es_stdout);
+      es_fprintf (fp, "TrustDB: %s\n", tdbio_get_dbname ());
+      for (i = 9 + strlen (tdbio_get_dbname()); i > 0; i-- )
+        es_fputc ('-', fp);
+      es_putc ('\n', fp);
+      for (recnum=0; !tdbio_read_record (recnum, &rec, 0); recnum++)
+        tdbio_dump_record (&rec, fp);
     }
 }
 

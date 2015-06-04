@@ -1132,7 +1132,8 @@ upd_hashtable (ulong table, byte *key, int keylen, ulong newrecnum)
         {
           log_error ("hashtbl %lu: %lu/%d points to an invalid record %lu\n",
                      table, hashrec, (msb % ITEMS_PER_HTBL_RECORD), item);
-          list_trustdb (NULL);  /*FIXME: Bad - prints to stdout!!! */
+          if (opt.verbose > 1)
+            list_trustdb (es_stderr, NULL);
           return GPG_ERR_TRUSTDB;
 	}
     }

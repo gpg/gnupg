@@ -141,7 +141,7 @@ void tdb_update_ownertrust (PKT_public_key *pk, unsigned int new_trust);
 int tdb_clear_ownertrusts (PKT_public_key *pk);
 
 /*-- tdbdump.c --*/
-void list_trustdb(const char *username);
+void list_trustdb (estream_t fp, const char *username);
 void export_ownertrust(void);
 void import_ownertrust(const char *fname);
 

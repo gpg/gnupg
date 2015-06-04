@@ -4167,10 +4167,10 @@ main (int argc, char **argv)
 #ifndef NO_TRUST_MODELS
       case aListTrustDB:
 	if( !argc )
-	    list_trustdb(NULL);
+          list_trustdb (es_stdout, NULL);
 	else {
 	    for( ; argc; argc--, argv++ )
-		list_trustdb( *argv );
+              list_trustdb (es_stdout, *argv );
 	}
 	break;
 
