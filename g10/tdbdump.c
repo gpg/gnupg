@@ -46,8 +46,8 @@
 		      (x) >= 'A' && (x) <= 'F' ? ((x)-'A'+10) : ((x)-'a'+10))
 
 
-/****************
- * Wirte a record but die on error
+/*
+ * Write a record; die on error.
  */
 static void
 write_record( TRUSTREC *rec )
@@ -65,7 +65,7 @@ write_record( TRUSTREC *rec )
  * Dump the entire trustdb or only the entries of one key.
  */
 void
-list_trustdb( const char *username )
+list_trustdb (const char *username)
 {
   TRUSTREC rec;
 
