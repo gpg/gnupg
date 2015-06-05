@@ -4046,6 +4046,7 @@ do_decipher (app_t app, const char *keyidstr,
   int exmode, le_value;
   unsigned char *fixbuf = NULL;
   int padind = 0;
+  int fixuplen = 0;
 
   if (!keyidstr || !*keyidstr || !indatalen)
     return gpg_error (GPG_ERR_INV_VALUE);
@@ -4092,8 +4093,6 @@ do_decipher (app_t app, const char *keyidstr,
 
   if (app->app_local->keyattr[1].key_type == KEY_TYPE_RSA)
     {
-      int fixuplen;
-
       /* We might encounter a couple of leading zeroes in the
          cryptogram.  Due to internal use of MPIs these leading zeroes
          are stripped.  However the OpenPGP card expects exactly 128
@@ -4146,7 +4145,26 @@ do_decipher (app_t app, const char *keyidstr,
         }
     }
   else if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC)
-    padind = -1;
+    {
+      fixuplen = 7;
+      fixbuf = xtrymalloc (fixuplen + indatalen);
+      if (!fixbuf)
+        return gpg_error_from_syserror ();
+
+      /* Build 'Cipher DO' */
+      fixbuf[0] = '\xa6';
+      fixbuf[1] = (char)(indatalen+5);
+      fixbuf[2] = '\x7f';
+      fixbuf[3] = '\x49';
+      fixbuf[4] = (char)(indatalen+2);
+      fixbuf[5] = '\x86';
+      fixbuf[6] = (char)indatalen;
+      memcpy (fixbuf+fixuplen, indata, indatalen);
+      indata = fixbuf;
+      indatalen = fixuplen + indatalen;
+
+      padind = -1;
+    }
   else
     return gpg_error (GPG_ERR_INV_VALUE);
 
