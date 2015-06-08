@@ -56,7 +56,7 @@ struct session_environment_s
 };
 
 
-/* A list of environment vribales we pass from the actual user
+/* A list of environment variables we pass from the actual user
   (e.g. gpgme) down to the pinentry.  We do not handle the locale
   settings because they do not only depend on envvars.  */
 static struct
@@ -74,6 +74,8 @@ static struct
                                     modules (eg "scim-bridge").  */
   { "QT_IM_MODULE" },            /* Used by Qt to select qt input
                                       modules (eg "xim").  */
+  { "INSIDE_EMACS" },            /* Set by Emacs before running a
+                                    process.  */
   { "PINENTRY_USER_DATA", "pinentry-user-data"}
                                  /* Used for communication with
                                     non-standard Pinentries.  */
