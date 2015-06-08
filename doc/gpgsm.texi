@@ -165,20 +165,12 @@ use @samp{--help} to get a list of supported operations.
 @table @gnupgtabopt
 @item --gen-key
 @opindex gen-key
-@ifclear gpgtwoone
--This command allows the creation of a certificate signing request.  It
--is commonly used along with the @option{--output} option to save the
--created CSR into a file.  If used with the @option{--batch} a parameter
--file is used to create the CSR.
-@end ifclear
-@ifset gpgtwoone
 This command allows the creation of a certificate signing request or a
 self-signed certificate.  It is commonly used along with the
 @option{--output} option to save the created CSR or certificate into a
 file.  If used with the @option{--batch} a parameter file is used to
 create the CSR or certificate and it is further possible to create
 non-self-signed certificates.
-@end ifset
 
 @item --list-keys
 @itemx -k
@@ -266,7 +258,6 @@ informational lines are prepended to the output.  Note, that the PKCS#12
 format is not very secure and this command is only provided if there is
 no other way to exchange the private key. (@pxref{option --p12-charset})
 
-@ifset gpgtwoone
 @item --export-secret-key-p8 @var{key-id}
 @itemx --export-secret-key-raw @var{key-id}
 @opindex export-secret-key-p8
@@ -277,7 +268,6 @@ PKCS#1 format; the @code{...-p8} command exports in PKCS#8 format.
 When used with the @code{--armor} option a few informational lines are
 prepended to the output.  These commands are useful to prepare a key
 for use on a TLS server.
-@end ifset
 
 @item --import [@var{files}]
 @opindex import
@@ -361,11 +351,6 @@ Specify an agent program to be used for secret key operations.  The
 default value is determined by running the command @command{gpgconf}.
 Note that the pipe symbol (@code{|}) is used for a regression test
 suite hack and may thus not be used in the file name.
-@ifclear gpgtwoone
-This is only used
-as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
-set or a running agent cannot be connected.
-@end ifclear
 
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
@@ -594,12 +579,10 @@ certificate.
 Include the keygrip in standard key listings.  Note that the keygrip is
 always listed in --with-colons mode.
 
-@ifset gpgtwoone
 @item --with-secret
 @opindex with-secret
 Include info about the presence of a secret key in public key listings
 done with @code{--with-colons}.
-@end ifset
 
 @end table
 
@@ -906,10 +889,6 @@ other programs of this software too.
 @item S.gpg-agent
 @cindex S.gpg-agent
 If this file exists
-@ifclear gpgtwoone
-and the environment variable @env{GPG_AGENT_INFO} is
-not set,
-@end ifclear
 @command{gpgsm} will first try to connect to this socket for
 accessing @command{gpg-agent} before starting a new @command{gpg-agent}
 instance.  Under Windows this socket (which in reality be a plain file
@@ -999,12 +978,6 @@ this is a missing certificate.
 
 @node CSR and certificate creation
 @subsection CSR and certificate creation
-
-@ifclear gpgtwoone
-@strong{Please notice}: The immediate creation of certificates is only
-supported by GnuPG version 2.1 or later.  With a 2.0 version you may
-only create a CSR.
-@end ifclear
 
 The command @option{--gen-key} may be used along with the option
 @option{--batch} to either create a certificate signing request (CSR)

@@ -52,10 +52,8 @@ section entitled ``Copying''.
 * gpg2: (gnupg).           OpenPGP encryption and signing tool.
 * gpgsm: (gnupg).          S/MIME encryption and signing tool.
 * gpg-agent: (gnupg).      The secret key daemon.
-@ifset gpgtwoone
 * dirmngr: (gnupg).        X.509 CRL and OCSP server.
 * dirmngr-client: (gnupg). X.509 CRL and OCSP client.
-@end ifset
 @end direntry
 
 
@@ -127,9 +125,7 @@ the administration and the architecture.
 * Installation::        A short installation guide.
 
 * Invoking GPG-AGENT::  How to launch the secret key daemon.
-@ifset gpgtwoone
 * Invoking DIRMNGR::    How to launch the CRL and OCSP daemon.
-@end ifset
 * Invoking GPG::        Using the OpenPGP protocol.
 * Invoking GPGSM::      Using the S/MIME protocol.
 * Invoking SCDAEMON::   How to handle Smartcards.
@@ -161,9 +157,7 @@ the administration and the architecture.
 @include instguide.texi
 
 @include gpg-agent.texi
-@ifset gpgtwoone
 @include dirmngr.texi
-@end ifset
 @include gpg.texi
 @include gpgsm.texi
 @include scdaemon.texi

@@ -3,10 +3,6 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
-@c Note that we use this texinfo file for all GnuPG-2 branches.
-@c The macro "gpgtwoone" controls parts which are only
-@c valid for GnuPG 2.1 and later.
-
 @node Invoking GPG
 @chapter Invoking GPG
 @cindex GPG command options
@@ -15,13 +11,7 @@
 
 @c Begin algorithm defaults
 
-@ifclear gpgtwoone
-@set DEFSYMENCALGO CAST5
-@end ifclear
-
-@ifset gpgtwoone
 @set DEFSYMENCALGO AES128
-@end ifset
 
 @c End algorithm defaults
 
@@ -407,15 +397,9 @@ an additional signing subkey on a dedicated machine and then using
 this command to export the key without the primary key to the main
 machine.
 
-@ifset gpgtwoone
 GnuPG may ask you to enter the passphrase for the key.  This is
 required because the internal protection method of the secret key is
 different from the one specified by the OpenPGP protocol.
-@end ifset
-@ifclear gpgtwoone
-See the option @option{--simple-sk-checksum} if you want to import an
-exported secret key into ancient OpenPGP implementations.
-@end ifclear
 
 @item --import
 @itemx --fast-import
@@ -565,7 +549,6 @@ This section explains the main commands for key management
 
 @table @gnupgtabopt
 
-@ifset gpgtwoone
 @item --quick-gen-key @code{user-id}
 @opindex quick-gen-key
 This is a simple command to generate a standard key with one user id.
@@ -586,20 +569,17 @@ the passphrase options (@option{--passphrase},
 supplied passphrase is used for the new key and the agent does not ask
 for it.  To create a key without any protection @code{--passphrase ''}
 may be used.
-@end ifset
 
 @item --gen-key
 @opindex gen-key
 Generate a new key pair using teh current default parameters.  This is
 the standard command to create a new key.
 
-@ifset gpgtwoone
 @item --full-gen-key
 @opindex gen-key
 Generate a new key pair with dialogs for all options.  This is an
 extended version of @option{--gen-key}.
 
-@end ifset
 There is also a feature which allows you to create keys in batch
 mode. See the the manual section ``Unattended key generation'' on how
 to use this.
@@ -925,7 +905,6 @@ Signs a public key with your secret key but marks it as
 non-exportable. This is a shortcut version of the subcommand "lsign"
 from @option{--edit-key}.
 
-@ifset gpgtwoone
 @item --quick-sign-key @code{fpr} [@code{names}]
 @itemx --quick-lsign-key @code{fpr} [@code{names}]
 @opindex quick-sign-key
@@ -943,9 +922,7 @@ This command uses reasonable defaults and thus does not provide the
 full flexibility of the "sign" subcommand from @option{--edit-key}.
 Its intended use is to help unattended key signing by utilizing a list
 of verified fingerprints.
-@end ifset
 
-@ifset gpgtwoone
 @item --quick-adduid  @var{user-id} @var{new-user-id}
 @opindex quick-adduid
 This command adds a new user id to an existing key.  In contrast to
@@ -953,7 +930,6 @@ the interactive sub-command @code{adduid} of @option{--edit-key} the
 @var{new-user-id} is added verbatim with only leading and trailing
 white space removed, it is expected to be UTF-8 encoded, and no checks
 on its form are applied.
-@end ifset
 
 @item --passwd @var{user_id}
 @opindex passwd
@@ -1271,13 +1247,8 @@ use the specified keyring alone, use @option{--keyring} along with
 
 @item --secret-keyring @code{file}
 @opindex secret-keyring
-@ifset gpgtwoone
 This is an obsolete option and ignored.  All secret keys are stored in
 the @file{private-keys-v1.d} directory below the GnuPG home directory.
-@end ifset
-@ifclear gpgtwoone
-Same as @option{--keyring} but for the secret keyrings.
-@end ifclear
 
 @item --primary-keyring @code{file}
 @opindex primary-keyring
@@ -1610,21 +1581,6 @@ are available for all keyserver types, some common options are:
   this option is not used with HKP keyservers, as they do not support
   retrieving keys by subkey id.
 
-@ifclear gpgtwoone
-  @item use-temp-files
-  On most Unix-like platforms, GnuPG communicates with the keyserver
-  helper program via pipes, which is the most efficient method. This
-  option forces GnuPG to use temporary files to communicate. On some
-  platforms (such as Win32 and RISC OS), this option is always enabled.
-@end ifclear
-
-@ifclear gpgtwoone
-  @item keep-temp-files
-  If using `use-temp-files', do not delete the temp files after using
-  them. This option is useful to learn the keyserver communication
-  protocol by reading the temporary files.
-@end ifclear
-
   @item timeout
   Tell the keyserver helper program how long (in seconds) to try and
   perform a keyserver action before giving up. Note that performing
@@ -1635,64 +1591,23 @@ are available for all keyserver types, some common options are:
 
   @item http-proxy=@code{value}
   Set the proxy to use for HTTP and HKP keyservers.
-@ifset gpgtwoone
-This overrides any proxy defined in @file{dirmngr.conf}.
-@end ifset
-@ifclear gpgtwoone
-This overrides the "http_proxy" environment variable, if any.
-@end ifclear
-
-@ifclear gpgtwoone
-  @item max-cert-size
-  When retrieving a key via DNS CERT, only accept keys up to this size.
-  Defaults to 16384 bytes.
-@end ifclear
+  This overrides any proxy defined in @file{dirmngr.conf}.
 
   @item verbose
-@ifset gpgtwoone
-This option has no more function since GnuPG 2.1.  Use the
-@code{dirmngr} configuration options instead.
-@end ifset
-@ifclear gpgtwoone
-Tell the keyserver helper program to be more verbose. This option can
-be repeated multiple times to increase the verbosity level.
-@end ifclear
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
 
   @item debug
-@ifset gpgtwoone
-This option has no more function since GnuPG 2.1.  Use the
-@code{dirmngr} configuration options instead.
-@end ifset
-@ifclear gpgtwoone
-Turn on debug output in the keyserver helper program.  Note that the
-details of debug output depends on which keyserver helper program is
-being used, and in turn, on any libraries that the keyserver helper
-program uses internally (libcurl, openldap, etc).
-@end ifclear
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
 
   @item check-cert
-@ifset gpgtwoone
-This option has no more function since GnuPG 2.1.  Use the
-@code{dirmngr} configuration options instead.
-@end ifset
-@ifclear gpgtwoone
-Enable certificate checking if the keyserver presents one (for hkps or
-ldaps).  Defaults to on.
-@end ifclear
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
 
   @item ca-cert-file
-@ifset gpgtwoone
-This option has no more function since GnuPG 2.1.  Use the
-@code{dirmngr} configuration options instead.
-@end ifset
-@ifclear gpgtwoone
-  Provide a certificate store to override the system default.  Only
-  necessary if check-cert is enabled, and the keyserver is using a
-  certificate that is not present in a system default certificate list.
-
-  Note that depending on the SSL library that the keyserver helper is
-  built with, this may actually be a directory or a file.
-@end ifclear
+  This option has no more function since GnuPG 2.1.  Use the
+  @code{dirmngr} configuration options instead.
 
 @end table
 
@@ -1709,20 +1624,6 @@ key signer (defaults to 3)
 @item --max-cert-depth @code{n}
 @opindex max-cert-depth
 Maximum depth of a certification chain (default is 5).
-
-@ifclear gpgtwoone
-@item --simple-sk-checksum
-@opindex simple-sk-checksum
-Secret keys are integrity protected by using a SHA-1 checksum. This
-method is part of the upcoming enhanced OpenPGP specification but
-GnuPG already uses it as a countermeasure against certain attacks.
-Old applications don't understand this new format, so this option may
-be used to switch back to the old behaviour. Using this option bears
-a security risk. Note that using this option only takes effect when
-the secret key is encrypted - the simplest way to make this happen is
-to change the passphrase on the key (even changing it to the same
-value is acceptable).
-@end ifclear
 
 @item --no-sig-cache
 @opindex no-sig-cache
@@ -1767,20 +1668,13 @@ default value is determined by running @command{gpgconf} with the
 option @option{--list-dirs}.  Note that the pipe symbol (@code{|}) is
 used for a regression test suite hack and may thus not be used in the
 file name.
-@ifclear gpgtwoone
-This is only used
-as a fallback when the environment variable @code{GPG_AGENT_INFO} is not
-set or a running agent cannot be connected.
-@end ifclear
 
-@ifset gpgtwoone
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
 Specify a dirmngr program to be used for keyserver access.  The
 default value is @file{/usr/sbin/dirmngr}.  This is only used as a
 fallback when the environment variable @code{DIRMNGR_INFO} is not set or
 a running dirmngr cannot be connected.
-@end ifset
 
 @item --no-autostart
 @opindex no-autostart
@@ -1969,7 +1863,6 @@ Remove all entries from the @option{--group} list.
 Use @var{name} as the key to sign with. Note that this option overrides
 @option{--default-key}.
 
-@ifset gpgtwoone
 @item --try-secret-key @var{name}
 @opindex try-secret-key
 For hidden recipients GPG needs to know the keys to use for trial
@@ -1981,7 +1874,6 @@ the long keyid to avoid ambiguities.  Note that gpg-agent might pop up a
 pinentry for a lot keys to do the trial decryption.  If you want to stop
 all further trial decryption you may use close-window button instead of
 the cancel button.
-@end ifset
 
 @item --try-all-secrets
 @opindex try-all-secrets
@@ -2112,15 +2004,13 @@ opposite meaning. The options are:
 
   @c Since GnuPG 2.1 gpg-agent manages the secret key and thus the
   @c export-reset-subkey-passwd hack is not anymore justified.  Such use
-  @c cases need to be implemented using a specialized secret key export
+  @c cases may be implemented using a specialized secret key export
   @c tool.
-@ifclear gpgtwoone
-  @item export-reset-subkey-passwd
-  When using the @option{--export-secret-subkeys} command, this option resets
-  the passphrases for all exported subkeys to empty. This is useful
-  when the exported subkey is to be used on an unattended machine where
-  a passphrase doesn't necessarily make sense. Defaults to no.
-@end ifclear
+  @c @item export-reset-subkey-passwd
+  @c When using the @option{--export-secret-subkeys} command, this option resets
+  @c the passphrases for all exported subkeys to empty. This is useful
+  @c when the exported subkey is to be used on an unattended machine where
+  @c a passphrase doesn't necessarily make sense. Defaults to no.
 
   @item export-clean
   Compact (remove all signatures from) user IDs on the key being
@@ -2161,21 +2051,17 @@ listing mode and print all timestamps as seconds since 1970-01-01.
 Since GnuPG 2.0.10, this mode is always used and thus this option is
 obsolete; it does not harm to use it though.
 
-@ifset gpgtwoone
 @item --legacy-list-mode
 @opindex legacy-list-mode
 Revert to the pre-2.1 public key list mode.  This only affects the
 human readable output and not the machine interface
 (i.e. @code{--with-colons}).  Note that the legacy format does not
 allow to convey suitable information for elliptic curves.
-@end ifset
 
 @item --with-fingerprint
 @opindex with-fingerprint
 Same as the command @option{--fingerprint} but changes only the format
 of the output and may be used together with another command.
-
-@ifset gpgtwoone
 
 @item --with-icao-spelling
 @opindex with-icao-spelling
@@ -2189,8 +2075,6 @@ Include the keygrip in the key listings.
 @opindex with-secret
 Include info about the presence of a secret key in public key listings
 done with @code{--with-colons}.
-
-@end ifset
 
 @end table
 
@@ -2214,34 +2098,11 @@ platforms that have different line ending conventions (UNIX-like to Mac,
 Mac to Windows, etc). @option{--no-textmode} disables this option, and
 is the default.
 
-@ifclear gpgtwoone
-@item --force-v3-sigs
-@itemx --no-force-v3-sigs
-@opindex force-v3-sigs
-OpenPGP states that an implementation should generate v4 signatures
-but PGP versions 5 through 7 only recognize v4 signatures on key
-material. This option forces v3 signatures for signatures on data.
-Note that this option implies @option{--no-ask-sig-expire}, and unsets
-@option{--sig-policy-url}, @option{--sig-notation}, and
-@option{--sig-keyserver-url}, as these features cannot be used with v3
-signatures.  @option{--no-force-v3-sigs} disables this option.
-Defaults to no.
-
-@item --force-v4-certs
-@itemx --no-force-v4-certs
-@opindex force-v4-certs
-Always use v4 key signatures even on v3 keys. This option also
-changes the default hash algorithm for v3 RSA keys from MD5 to SHA-1.
-@option{--no-force-v4-certs} disables this option.
-@end ifclear
-
-@ifset gpgtwoone
 @item --force-v3-sigs
 @itemx --no-force-v3-sigs
 @item --force-v4-certs
 @itemx --no-force-v4-certs
 These options are obsolete and have no effect since GnuPG 2.1.
-@end ifset
 
 @item --force-mdc
 @opindex force-mdc
@@ -2397,12 +2258,7 @@ compression algorithms none and ZIP. This also disables
 --throw-keyids, and making signatures with signing subkeys as PGP 6
 does not understand signatures made by signing subkeys.
 
-@ifclear gpgtwoone
-This option implies @option{--disable-mdc --escape-from-lines --force-v3-sigs}.
-@end ifclear
-@ifset gpgtwoone
 This option implies @option{--disable-mdc --escape-from-lines}.
-@end ifset
 
 @item --pgp7
 @opindex pgp7
@@ -2761,7 +2617,6 @@ avoid it.
 Note that this passphrase is only used if the option @option{--batch}
 has also been given.  This is different from GnuPG version 1.x.
 
-@ifset gpgtwoone
 @item --pinentry-mode @code{mode}
 @opindex pinentry-mode
 Set the pinentry mode to @code{mode}.  Allowed values for @code{mode}
@@ -2779,7 +2634,6 @@ are:
   Redirect Pinentry queries to the caller.  Note that in contrast to
   Pinentry the user is not prompted again if he enters a bad password.
 @end table
-@end ifset
 
 @item --command-fd @code{n}
 @opindex command-fd
@@ -3102,26 +2956,19 @@ files; They all live in in the current home directory (@pxref{option
   @item ~/.gnupg/pubring.gpg.lock
   The lock file for the public keyring.
 
-@ifset gpgtwoone
   @item ~/.gnupg/pubring.kbx
   The public keyring using a different format.  This file is sharred
   with @command{gpgsm}.  You should backup this file.
 
   @item ~/.gnupg/pubring.kbx.lock
   The lock file for @file{pubring.kbx}.
-@end ifset
 
   @item ~/.gnupg/secring.gpg
-@ifclear gpgtwoone
-  The secret keyring.  You should backup this file.
-@end ifclear
-@ifset gpgtwoone
   A secret keyring as used by GnuPG versions before 2.1.  It is not
   used by GnuPG 2.1 and later.
 
   @item ~/.gnupg/.gpg-v21-migrated
-  File indicating that a migration to GnuPG 2.1 has taken place.
-@end ifset
+  File indicating that a migration to GnuPG 2.1 has been done.
 
   @item ~/.gnupg/trustdb.gpg
   The trust database.  There is no need to backup this file; it is better
@@ -3166,18 +3013,7 @@ Operation is further controlled by a few environment variables:
   If set directory used instead of "~/.gnupg".
 
   @item GPG_AGENT_INFO
-@ifset gpgtwoone
   This variable was used by GnuPG versions before 2.1
-@end ifset
-@ifclear gpgtwoone
-  Used to locate the gpg-agent.
-
-  The value consists of 3 colon delimited fields: The first is the path
-  to the Unix Domain Socket, the second the PID of the gpg-agent and the
-  protocol version which should be set to 1. When starting the gpg-agent
-  as described in its documentation, this variable is set to the correct
-  value. The option @option{--gpg-agent-info} can be used to override it.
-@end ifclear
 
   @item PINENTRY_USER_DATA
   This value is passed via gpg-agent to pinentry.  It is useful to convey
@@ -3409,17 +3245,7 @@ control statements must be given. For GnuPG 2.1 and later
 
 @item %ask-passphrase
 @itemx %no-ask-passphrase
-@ifclear gpgtwoone
-Enable (or disable) a mode where the command @option{passphrase} is
-ignored and instead the usual passphrase dialog is used.  This does
-not make sense for batch key generation; however the unattended key
-generation feature is also used by GUIs and this feature relinquishes
-the GUI from implementing its own passphrase entry code.  These are
-global control statements and affect all future key generations.
-@end ifclear
-@ifset gpgtwoone
 This option is a no-op for GnuPG 2.1 and later.
-@end ifset
 
 @item %no-protection
 Using this option allows the creation of keys without any passphrase

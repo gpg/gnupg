@@ -2,10 +2,6 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
-@c Note that we use this texinfo file for all versions of GnuPG:
-@c 2.0 and 2.1.  The macro "gpgtwoone" controls parts which are only
-@c valid for GnuPG 2.1 and later.
-
 
 @node Invoking GPG-AGENT
 @chapter Invoking GPG-AGENT
@@ -52,7 +48,6 @@ independently from any protocol.  It is used as a backend for
 @command{gpg} and @command{gpgsm} as well as for a couple of other
 utilities.
 
-@ifset gpgtwoone
 The agent is automatically started on demand by @command{gpg},
 @command{gpgsm}, @command{gpgconf}, or @command{gpg-connect-agent}.
 Thus there is no reason to start it manually.  In case you want to use
@@ -61,51 +56,6 @@ the included Secure Shell Agent you may start the agent using:
 @example
 gpg-connect-agent /bye
 @end example
-@end ifset
-
-@ifclear gpgtwoone
-@noindent
-The usual way to run the agent is from the @code{~/.xsession} file:
-
-@example
-eval $(gpg-agent --daemon)
-@end example
-@noindent
-If you don't use an X server, you can also put this into your regular
-startup file @code{~/.profile} or @code{.bash_profile}.  It is best not
-to run multiple instance of the @command{gpg-agent}, so you should make
-sure that only one is running: @command{gpg-agent} uses an environment
-variable to inform clients about the communication parameters. You can
-write the content of this environment variable to a file so that you can
-test for a running agent.  Here is an example using Bourne shell syntax:
-
-@smallexample
-gpg-agent --daemon --enable-ssh-support \
-          --write-env-file "$@{HOME@}/.gpg-agent-info"
-@end smallexample
-
-This code should only be run once per user session to initially fire up
-the agent.  In the example the optional support for the included Secure
-Shell agent is enabled and the information about the agent is written to
-a file in the HOME directory.  Note that by running gpg-agent without
-arguments you may test whether an agent is already running; however such
-a test may lead to a race condition, thus it is not suggested.
-
-@noindent
-The second script needs to be run for each interactive session:
-
-@smallexample
-if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
-  . "$@{HOME@}/.gpg-agent-info"
-  export GPG_AGENT_INFO
-  export SSH_AUTH_SOCK
-fi
-@end smallexample
-
-@noindent
-It reads the data out of the file and exports the variables.  If you
-don't use Secure Shell, you don't need the last two export statements.
-@end ifclear
 
 @noindent
 You should always add the following lines to your @code{.bashrc} or
@@ -175,17 +125,11 @@ default mode is to create a socket and listen for commands there.
 @opindex daemon
 Start the gpg-agent as a daemon; that is, detach it from the console
 and run it in the background.
-@ifclear gpgtwoone
-Because @command{gpg-agent} prints out
-important information required for further use, a common way of
-invoking gpg-agent is: @code{eval $(gpg-agent --daemon)} to setup the
-environment variables.  The option @option{--write-env-file} is
-another way commonly used to do this.
-@end ifclear
-Yet another way is creating
-a new process as a child of gpg-agent: @code{gpg-agent --daemon
-/bin/sh}.  This way you get a new shell with the environment setup
-properly; if you exit from this shell, gpg-agent terminates as well.
+
+As an alternative you may create a new process as a child of
+gpg-agent: @code{gpg-agent --daemon /bin/sh}.  This way you get a new
+shell with the environment setup properly; after you exit from this
+shell, gpg-agent terminates within a few seconds.
 @end table
 
 @mansect options
@@ -323,23 +267,6 @@ shell or the C-shell respectively.  The default is to guess it based on
 the environment variable @code{SHELL} which is correct in almost all
 cases.
 
-@ifclear gpgtwoone
-@item --write-env-file @var{file}
-@opindex write-env-file
-Often it is required to connect to the agent from a process not being an
-inferior of @command{gpg-agent} and thus the environment variable with
-the socket name is not available.  To help setting up those variables in
-other sessions, this option may be used to write the information into
-@var{file}.  If @var{file} is not specified the default name
-@file{$@{HOME@}/.gpg-agent-info} will be used.  The format is suitable
-to be evaluated by a Bourne shell like in this simple example:
-
-@example
-eval $(cat @var{file})
-eval $(cut -d= -f 1 < @var{file} | xargs echo export)
-@end example
-@end ifclear
-
 
 @item --no-grab
 @opindex no-grab
@@ -369,15 +296,12 @@ accept Root-CA keys.
 This option allows the use of @command{gpg-preset-passphrase} to seed the
 internal cache of @command{gpg-agent} with passphrases.
 
-@ifset gpgtwoone
 @anchor{option --allow-loopback-pinentry}
 @item --allow-loopback-pinentry
 @opindex allow-loopback-pinentry
 Allow clients to use the loopback pinentry features; see the option
 @option{pinentry-mode} for details.
-@end ifset
 
-@ifset gpgtwoone
 @item --no-allow-external-cache
 @opindex no-allow-external-cache
 Tell Pinentry not to enable features which use an external cache for
@@ -388,7 +312,6 @@ credentials with one master password and may have installed a Pinentry
 which employs an additional external cache to implement such a policy.
 By using this option the Pinentry is advised not to make use of such a
 cache and instead always ask the user for the requested passphrase.
-@end ifset
 
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
@@ -492,7 +415,6 @@ Do not make use of the scdaemon tool.  This option has the effect of
 disabling the ability to do smartcard operations.  Note, that enabling
 this option at runtime does not kill an already forked scdaemon.
 
-@ifset gpgtwoone
 @item --disable-check-own-socket
 @opindex disable-check-own-socket
 @command{gpg-agent} employs a periodic self-test to detect a stolen
@@ -500,7 +422,6 @@ socket.  This usually means a second instance of @command{gpg-agent}
 has taken over the socket and @command{gpg-agent} will then terminate
 itself.  This option may be used to disable this self-test for
 debugging purposes.
-@end ifset
 
 @item --use-standard-socket
 @itemx --no-use-standard-socket
@@ -508,30 +429,9 @@ debugging purposes.
 @opindex use-standard-socket
 @opindex no-use-standard-socket
 @opindex use-standard-socket-p
-@ifset gpgtwoone
 Since GnuPG 2.1 the standard socket is always used.  These options
 have no more effect.  The command @code{gpg-agent
 --use-standard-socket-p} will thus always return success.
-@end ifset
-@ifclear gpgtwoone
-By enabling this option @command{gpg-agent} will listen on the socket
-named @file{S.gpg-agent}, located in the home directory, and not create
-a random socket below a temporary directory.  Tools connecting to
-@command{gpg-agent} should first try to connect to the socket given in
-environment variable @var{GPG_AGENT_INFO} and then fall back to this
-socket.  This option may not be used if the home directory is mounted on
-a remote file system which does not support special files like fifos or
-sockets.
-
-Note, that @option{--use-standard-socket} is the default on
-Windows systems.
-
-The default may be changed at build time.  It is
-possible to test at runtime whether the agent has been configured for
-use with the standard socket by issuing the command @command{gpg-agent
---use-standard-socket-p} which returns success if the standard socket
-option has been enabled.
-@end ifclear
 
 @item --display @var{string}
 @itemx --ttyname @var{string}
@@ -810,7 +710,6 @@ This signal is used for internal purposes.
 @node Agent Examples
 @section Examples
 
-@ifset gpgtwoone
 It is important to set the GPG_TTY environment variable in
 your login shell, for example in the @file{~/.bashrc} init script:
 
@@ -831,45 +730,7 @@ if [ "$@{gnupg_SSH_AUTH_SOCK_by:-0@}" -ne $$ ]; then
 fi
 @end example
 @end cartouche
-@end ifset
 
-@ifclear gpgtwoone
-The usual way to invoke @command{gpg-agent} is
-
-@example
-$ eval $(gpg-agent --daemon)
-@end example
-
-An alternative way is by replacing @command{ssh-agent} with
-@command{gpg-agent}.  If for example @command{ssh-agent} is started as
-part of the Xsession initialization, you may simply replace
-@command{ssh-agent} by a script like:
-
-@cartouche
-@example
-#!/bin/sh
-
-exec /usr/local/bin/gpg-agent --enable-ssh-support --daemon \
-      --write-env-file $@{HOME@}/.gpg-agent-info "$@@"
-@end example
-@end cartouche
-
-@noindent
-and add something like (for Bourne shells)
-
-@cartouche
-@example
-  if [ -f "$@{HOME@}/.gpg-agent-info" ]; then
-    . "$@{HOME@}/.gpg-agent-info"
-    export GPG_AGENT_INFO
-    export SSH_AUTH_SOCK
-  fi
-@end example
-@end cartouche
-
-@noindent
-to your shell initialization file (e.g. @file{~/.bashrc}).
-@end ifclear
 
 @c
 @c  Assuan Protocol
@@ -881,21 +742,8 @@ to your shell initialization file (e.g. @file{~/.bashrc}).
 Note: this section does only document the protocol, which is used by
 GnuPG components; it does not deal with the ssh-agent protocol.
 
-@ifset gpgtwoone
 The @command{gpg-agent} daemon is started on demand by the GnuPG
 components.
-@end ifset
-@ifclear gpgtwoone
-The @command{gpg-agent} should be started by the login shell and set an
-environment variable to tell clients about the socket to be used.
-Clients should deny to access an agent with a socket name which does
-not match its own configuration.  An application may choose to start
-an instance of the gpg-agent if it does not figure that any has been
-started; it should not do this if a gpg-agent is running but not
-usable.  Because @command{gpg-agent} can only be used in background mode, no
-special command line option is required to activate the use of the
-protocol.
-@end ifclear
 
 To identify a key we use a thing called keygrip which is the SHA-1 hash
 of an canonical encoded S-Expression of the public key as used in
@@ -905,13 +753,11 @@ certificate is that it will be possible to use the same keypair for
 different protocols, thereby saving space on the token used to keep the
 secret keys.
 
-@ifset gpgtwoone
 The @command{gpg-agent} may send status messages during a command or when
 returning from a command to inform a client about the progress or result of an
 operation.  For example, the @var{INQUIRE_MAXLEN} status message may be sent
 during a server inquire to inform the client of the maximum usable length of
 the inquired data (which should not be exceeded).
-@end ifset
 
 @menu
 * Agent PKDECRYPT::       Decrypting a session key
@@ -922,9 +768,7 @@ the inquired data (which should not be exceeded).
 * Agent ISTRUSTED::       Importing a Root Certificate
 * Agent GET_PASSPHRASE::  Ask for a passphrase
 * Agent CLEAR_PASSPHRASE:: Expire a cached passphrase
-@ifset gpgtwoone
 * Agent PRESET_PASSPHRASE:: Set a passphrase for a keygrip
-@end ifset
 * Agent GET_CONFIRMATION:: Ask for confirmation
 * Agent HAVEKEY::         Check whether a key is available
 * Agent LEARN::           Register a smartcard
@@ -1104,12 +948,7 @@ option allows to choose the storage location.  To get the secret key out
 of the PSE, a special export tool has to be used.
 
 @example
-@ifset gpgtwoone
    GENKEY [--no-protection] [--preset] [<cache_nonce>]
-@end ifset
-@ifclear gpgtwoone
-   GENKEY
-@end ifclear
 @end example
 
 Invokes the key generation process and the server will then inquire
@@ -1155,7 +994,6 @@ Here is an example session:
 @end smallexample
 @end cartouche
 
-@ifset gpgtwoone
 The @option{--no-protection} option may be used to prevent prompting for a
 passphrase to protect the secret key while leaving the secret key unprotected.
 The @option{--preset} option may be used to add the passphrase to the cache
@@ -1167,7 +1005,6 @@ keyword @code{NEWPASSWD} to retrieve that passphrase.  This option
 takes precedence over @option{--no-protection}; however if the client
 sends a empty (zero-length) passphrase, this is identical to
 @option{--no-protection}.
-@end ifset
 
 @node Agent IMPORT
 @subsection Importing a Secret Key
@@ -1334,22 +1171,13 @@ function returns with OK even when there is no cached passphrase.
 Use this command to remove a cached passphrase.
 
 @example
-@ifset gpgtwoone
   CLEAR_PASSPHRASE [--mode=normal] <cache_id>
-@end ifset
-@ifclear gpgtwoone
-  CLEAR_PASSPHRASE <cache_id>
-@end ifclear
 @end example
 
-@ifset gpgtwoone
 The @option{--mode=normal} option can be used to clear a @var{cache_id} that
 was set by gpg-agent.
-@end ifset
 
 
-
-@ifset gpgtwoone
 @node Agent PRESET_PASSPHRASE
 @subsection Set a passphrase for a keygrip
 
@@ -1368,9 +1196,6 @@ The @var{timeout} parameter keeps the passphrase cached for the specified
 number of seconds. A value of @code{-1} means infinate while @code{0} means
 the default (currently only a timeout of -1 is allowed, which means to never
 expire it).
-@end ifset
-
-
 
 
 @node Agent GET_CONFIRMATION
@@ -1425,21 +1250,13 @@ option given the certificates are send back.
 @subsection Change a Passphrase
 
 @example
-@ifset gpgtwoone
   PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] @var{keygrip}
-@end ifset
-@ifclear gpgtwoone
-  PASSWD @var{keygrip}
-@end ifclear
 @end example
 
 This command is used to interactively change the passphrase of the key
-identified by the hex string @var{keygrip}.
-
-@ifset gpgtwoone
-The @option{--preset} option may be used to add the new passphrase to the
-cache using the default cache parameters.
-@end ifset
+identified by the hex string @var{keygrip}.  The @option{--preset}
+option may be used to add the new passphrase to the cache using the
+default cache parameters.
 
 
 @node Agent UPDATESTARTUPTTY
@@ -1540,7 +1357,6 @@ See Assuan command @code{PKSIGN}.
 This does not need any value.  It is used to enable the
 PINENTRY_LAUNCHED inquiry.
 
-@ifset gpgtwoone
 @item pinentry-mode
 This option is used to change the operation mode of the pinentry.  The
 following values are defined:
@@ -1564,16 +1380,12 @@ following values are defined:
   Use the @xref{option --allow-loopback-pinentry}.
 
   @end table
-@end ifset
 
-@ifset gpgtwoone
 @item cache-ttl-opt-preset
 This option sets the cache TTL for new entries created by GENKEY and
 PASSWD commands when using the @option{--preset} option.  It it is not
 used a default value is used.
-@end ifset
 
-@ifset gpgtwoone
 @item s2k-count
 Instead of using the standard S2K count (which is computed on the
 fly), the given S2K count is used for new keys or when changing the
@@ -1581,7 +1393,6 @@ passphrase of a key.  Values below 65536 are considered to be 0.  This
 option is valid for the entire session or until reset to 0.  This
 option is useful if the key is later used on boxes which are either
 much slower or faster than the actual box.
-@end ifset
 
 @end table
 

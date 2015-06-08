@@ -16,9 +16,7 @@ GnuPG comes with a couple of smaller tools:
 * gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
-@ifset gpgtwoone
 * dirmngr-client::        How to use the Dirmngr client tool.
-@end ifset
 * gpgparsemail::          Parse a mail message into an annotated format
 * symcryptrun::           Call a simple symmetric encryption tool.
 * gpg-zip::               Encrypt or sign files into an archive.
@@ -305,7 +303,6 @@ Reload all or the given component. This is basically the same as sending
 a SIGHUP to the component.  Components which don't support reloading are
 ignored.
 
-@ifset gpgtwoone
 @item --launch [@var{component}]
 @opindex launch
 If the @var{component} is not already running, start it.
@@ -320,7 +317,6 @@ Kill the given component.  Components which support killing are
 gpg-agent and scdaemon.  Components which don't support reloading are
 ignored.  Note that as of now reload and kill have the same effect for
 scdaemon.
-@end ifset
 
 @end table
 
@@ -1210,7 +1206,6 @@ option @option{--list-dirs}.  Note that the pipe symbol (@code{|}) is
 used for a regression test suite hack and may thus not be used in the
 file name.
 
-@ifset gpgtwoone
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
 Specify the directory manager (keyserver client) program to be started
@@ -1221,7 +1216,6 @@ option @option{--dirmngr}.
 @opindex dirmngr
 Connect to a running directory manager (keyserver client) instead of
 to the gpg-agent.  If a dirmngr is not running, start it.
-@end ifset
 
 @item -S
 @itemx --raw-socket @var{name}
@@ -1487,7 +1481,6 @@ Print a list of available control commands.
 @include see-also-note.texi
 @end ifset
 
-@ifset gpgtwoone
 @c
 @c   DIRMNGR-CLIENT
 @c
@@ -1648,7 +1641,7 @@ Squid's @option{external_acl_type} option.
 @command{gpgsm}(1)
 @include see-also-note.texi
 @end ifset
-@end ifset
+
 
 @c
 @c   GPGPARSEMAIL

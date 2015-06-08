@@ -103,7 +103,6 @@ used.  Using the keyserver debug option as in
 is thus often helpful.  Note that the actual output depends on the
 backend and may change from release to release.
 
-@ifset gpgtwoone
 @item Logging on WindowsCE
 
 For development, the best logging method on WindowsCE is the use of
@@ -113,7 +112,6 @@ on the given port. (@pxref{option watchgnupg --tcp}).  For in the field
 tests it is better to make use of the logging facility provided by the
 @command{gpgcedev} driver (part of libassuan); this is enabled by using
 a log file name of @file{GPG2:}. (@pxref{option --log-file}).
-@end ifset
 
 @end itemize
 
