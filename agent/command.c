@@ -2756,6 +2756,7 @@ static const char hlp_getinfo[] =
   "  ssh_socket_name - Return the name of the ssh socket.\n"
   "  scd_running - Return OK if the SCdaemon is already running.\n"
   "  s2k_count   - Return the calibrated S2K count.\n"
+  "  std_env_names   - List the names of the standard environment.\n"
   "  std_session_env - List the standard session environment.\n"
   "  std_startup_env - List the standard startup environment.\n"
   "  cmd_has_option\n"
@@ -2848,6 +2849,21 @@ cmd_getinfo (assuan_context_t ctx, char *line)
   else if (!strcmp (line, "scd_running"))
     {
       rc = agent_scd_check_running ()? 0 : gpg_error (GPG_ERR_GENERAL);
+    }
+  else if (!strcmp (line, "std_env_names"))
+    {
+      int iterator;
+      const char *name;
+
+      iterator = 0;
+      while ((name = session_env_list_stdenvnames (&iterator, NULL)))
+        {
+          rc = assuan_send_data (ctx, name, strlen (name)+1);
+          if (!rc)
+            rc = assuan_send_data (ctx, NULL, 0);
+          if (rc)
+            break;
+        }
     }
   else if (!strcmp (line, "std_session_env")
            || !strcmp (line, "std_startup_env"))
