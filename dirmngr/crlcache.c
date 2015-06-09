@@ -479,7 +479,9 @@ check_dir_version (estream_t *fpadr, const char *fname,
   if (lineerr)
     return lineerr;
 
-  if (strtol (line+2, NULL, 10) != DBDIRVERSION)
+  /* The !line catches the case of an empty DIR file.  We handle this
+     the same as a non-matching version.  */
+  if (!line || strtol (line+2, NULL, 10) != DBDIRVERSION)
     {
       if (!created && cleanup_on_mismatch)
         {
