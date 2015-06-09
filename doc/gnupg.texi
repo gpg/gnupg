@@ -1,7 +1,7 @@
 \input texinfo                      @c -*-texinfo-*-
 @c %**start of header
 @setfilename gnupg.info
-@include version.texi
+@include defs.inc
 @settitle Using the GNU Privacy Guard
 
 @c A couple of macros with no effect on texinfo

@@ -29,7 +29,7 @@ configured @command{gnupg} using:
 @end example
 
 This is to make sure that system wide configuration files are searched
-in the directory @file{/etc/gnupg} and variable data below @file{/var};
+in the directory @file{/etc} and variable data below @file{/var};
 the default would be to also install them below @file{/usr/local} where
 the binaries get installed.  If you selected to use the
 @option{--prefix=/} you obviously don't need those option as they are

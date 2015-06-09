@@ -2,6 +2,7 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@include defs.inc
 
 @node Invoking GPG-AGENT
 @chapter Invoking GPG-AGENT
@@ -75,8 +76,8 @@ Please make sure that a proper pinentry program has been installed
 under the default filename (which is system dependent) or use the
 option @option{pinentry-program} to specify the full name of that program.
 It is often useful to install a symbolic link from the actual used
-pinentry (e.g. @file{/usr/bin/pinentry-gtk}) to the expected
-one (e.g. @file{/usr/bin/pinentry}).
+pinentry (e.g. @file{@value{BINDIR}/pinentry-gtk}) to the expected
+one (e.g. @file{@value{BINDIR}/pinentry}).
 
 @manpause
 @noindent
@@ -580,7 +581,7 @@ It might even be advisable to change the permissions to read-only so
 that this file can't be changed inadvertently.
 
 As a special feature a line @code{include-default} will include a global
-list of trusted certificates (e.g. @file{/etc/gnupg/trustlist.txt}).
+list of trusted certificates (e.g. @file{@value{SYSCONFDIR}/trustlist.txt}).
 This global list is also used if the local list is not available.
 
 It is possible to add further flags after the @code{S} for use by the
@@ -647,7 +648,7 @@ implicitly added to this list; i.e. there is no need to list them.
 @end table
 
 Note that on larger installations, it is useful to put predefined
-files into the directory @file{/etc/skel/.gnupg/} so that newly created
+files into the directory @file{@value{SYSCONFSKELDIR}} so that newly created
 users start up with a working configuration.  For existing users the
 a small helper script is provided to create these files (@pxref{addgnupghome}).
 

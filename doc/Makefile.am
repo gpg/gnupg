@@ -17,6 +17,10 @@
 
 ## Process this file with automake to produce Makefile.in
 
+AM_CPPFLAGS =
+
+include $(top_srcdir)/am/cmacros.am
+
 examples = examples/README examples/scd-event examples/trustlist.txt \
 	   examples/gpgconf.conf examples/pwpattern.list
 
@@ -32,12 +36,12 @@ EXTRA_DIST = samplekeys.asc mksamplekeys \
 	     gnupg-logo.eps gnupg-logo.pdf gnupg-logo.png gnupg-logo-tr.png\
              gnupg-card-architecture.eps gnupg-card-architecture.png \
              gnupg-card-architecture.pdf \
-             FAQ gnupg7.texi \
+             FAQ gnupg7.texi mkdefsinc.c defsincdate \
              opt-homedir.texi see-also-note.texi specify-user-id.texi \
 	     gpgv.texi yat2m.c ChangeLog-2011 whats-new-in-2.1.txt
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
-                gnupg-card-architecture.pdf
+                gnupg-card-architecture.pdf defsincdate
 
 info_TEXINFOS = gnupg.texi
 
@@ -75,13 +79,17 @@ man_MANS = $(myman_pages) gnupg.7
 watchgnupg_SOURCE = gnupg.texi
 
 
-CLEANFILES = yat2m
+CLEANFILES = yat2m mkdefsinc defs.inc
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
 		 $(myman_pages) gnupg.7
 
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
+
+mkdefsinc: mkdefsinc.c Makefile ../config.h
+	$(CC_FOR_BUILD) -I. -I.. -I$(srcdir) $(AM_CPPFLAGS) \
+                        -o $@ $(srcdir)/mkdefsinc.c
 
 
 .fig.png:
@@ -97,7 +105,7 @@ yat2m: yat2m.c
 	fig2dev -L pdf `test -f '$<' || echo '$(srcdir)/'`$< $@
 
 
-yat2m-stamp: $(myman_sources)
+yat2m-stamp: $(myman_sources) defs.inc
 	@rm -f yat2m-stamp.tmp
 	@touch yat2m-stamp.tmp
 	for file in $(myman_sources) ; do \
@@ -107,7 +115,7 @@ yat2m-stamp: $(myman_sources)
 
 yat2m-stamp: yat2m
 
-$(myman_pages) gnupg.7 : yat2m-stamp
+$(myman_pages) gnupg.7 : yat2m-stamp defs.inc
 	@if test -f $@; then :; else \
             trap 'rm -rf yat2m-stamp yat2m-lock' 1 2 13 15; \
                if mkdir yat2m-lock 2>/dev/null; then \
@@ -120,11 +128,20 @@ $(myman_pages) gnupg.7 : yat2m-stamp
                fi; \
              fi
 
-# Make sure that gnupg.texi is touched if any other source file has
-# been modified.  This is required so that the version.texi magic
-# updates the release date.
-gnupg.texi : $(gnupg_TEXINFOS)
-	touch $(srcdir)/gnupg.texi
+dist-hook: defsincdate
+
+defsincdate: $(gnupg_TEXINFOS)
+	: >defsincdate ; \
+	if test -d $(top_srcdir)/.git; then \
+	  (cd $(srcdir) && git log -1 --format='%ct' \
+               -- $(gnupg_TEXINFOS) 2>/dev/null) >>defsincdate; \
+	fi
+
+defs.inc : defsincdate Makefile mkdefsinc
+	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
+	./mkdefsinc -C $(srcdir) --date "`cat $$incd 2>/dev/null`" \
+	    $(gnupg_TEXINFOS) >$@
+
 
 online: gnupg.html gnupg.pdf
 	set -e; \

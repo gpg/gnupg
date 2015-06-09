@@ -1367,7 +1367,7 @@ parse_file (const char *fname, FILE *fp, char **section_name, int in_pause)
                 }
 
               if (!incfp)
-                err ("can't open include file '%s':%s",
+                err ("can't open include file '%s': %s",
                      incname, strerror (errno));
               else
                 {

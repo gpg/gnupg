@@ -18,6 +18,8 @@
 
 localedir = $(datadir)/locale
 
+# NB: AM_CFLAGS may also be used by tools running on the build
+# platform to create source files.
 AM_CPPFLAGS += -DLOCALEDIR=\"$(localedir)\"
 
 if ! HAVE_DOSISH_SYSTEM

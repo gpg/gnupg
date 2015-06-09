@@ -2,6 +2,8 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@include defs.inc
+
 @node Invoking SCDAEMON
 @chapter Invoking the SCDAEMON
 @cindex SCDAEMON command options
@@ -469,8 +471,8 @@ make much sense expect for system services, but in this case no
 regular user accounts are hosted on the machine.
 
 A client connects to the SC-Daemon by connecting to the socket named
-@file{/var/run/scdaemon/socket}, configuration information is read from
-@var{/etc/scdaemon.conf}
+@file{@value{LOCALRUNDIR}/scdaemon/socket}, configuration information
+is read from @var{@value{SYSCONFDIR}/scdaemon.conf}
 
 Each connection acts as one session, SC-Daemon takes care of
 synchronizing access to a token between sessions.

@@ -18,5 +18,5 @@ empty file name @file{gpgconf.ctl} in the same directory as the tool
 directory; or, if @file{gpgconf.exe} has been installed directly below
 a directory named @file{bin}, its parent directory.  You also need to
 make sure that the following directories exist and are writable:
-@file{ROOT/home} for the GnuPG home and @file{ROOT/var/cache/gnupg}
+@file{ROOT/home} for the GnuPG home and @file{ROOT@value{LOCALCACHEDIR}}
 for internal cache files.

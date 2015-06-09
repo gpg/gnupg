@@ -2,6 +2,8 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file GnuPG.texi.
 
+@include defs.inc
+
 @node Helper Tools
 @chapter Helper Tools
 

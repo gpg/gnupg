@@ -3,6 +3,8 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@include defs.inc
+
 @node Invoking DIRMNGR
 @chapter Invoking DIRMNGR
 @cindex DIRMNGR command options
@@ -143,8 +145,8 @@ running mode:
 @table @asis
 
 @item With @code{--daemon} given on the commandline
-the directory named @file{/etc/gnupg} is used for configuration files
-and @file{/var/cache/gnupg} for cached CRLs.
+the directory named @file{@value{SYSCONFDIR}} is used for configuration files
+and @file{@value{LOCALCACHEDIR}} for cached CRLs.
 
 @item Without @code{--daemon} given on the commandline
 the directory named @file{.gnupg} directly below the home directory
@@ -456,7 +458,7 @@ These certificates are first tried before going
 out to the net to look for them.  These certificates must also be
 @acronym{DER} encoded and suffixed with @file{.crt} or @file{.der}.
 
-@item /var/run/gnupg
+@item @value{LOCALRUNDIR}
 This directory is only used in the deprecated system daemon mode.  It
 keeps the socket file for accessing @command{dirmngr} services.  The
 name of the socket file will be @file{S.dirmngr}.  Make sure that this
@@ -465,7 +467,7 @@ the socket file and that eligible users may read and write to that
 socket.
 
 @item ~/.gnupg/crls.d
-@itemx /var/cache/gnupg/crls.d
+@itemx @value{LOCALCACHEDIR}/crls.d
 The first directory is used to store cached CRLs.  The @file{crls.d}
 part will be created by dirmngr if it does not exists but you need to
 make sure that the upper directory exists.  The second directory is

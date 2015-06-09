@@ -2,6 +2,8 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@include defs.inc
+
 @node Invoking GPGSM
 @chapter Invoking GPGSM
 @cindex GPGSM command options
@@ -355,7 +357,7 @@ suite hack and may thus not be used in the file name.
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
 Specify a dirmngr program to be used for @acronym{CRL} checks.  The
-default value is @file{/usr/sbin/dirmngr}.  This is only used as a
+default value is @file{@value{BINDIR}/dirmngr}.  This is only used as a
 fallback when the environment variable @code{DIRMNGR_INFO} is not set or
 a running dirmngr cannot be connected.
 
@@ -819,7 +821,7 @@ mean that the certificate is trusted; in general the certificates listed
 in this file need to be listed also in @file{trustlist.txt}.
 
 This is a global file an installed in the data directory
-(e.g. @file{/usr/share/gnupg/qualified.txt}).  GnuPG installs a suitable
+(e.g. @file{@value{DATADIR}/qualified.txt}).  GnuPG installs a suitable
 file with root certificates as used in Germany.  As new Root-CA
 certificates may be issued over time, these entries may need to be
 updated; new distributions of this software should come with an updated
@@ -844,9 +846,9 @@ This is plain text file with a few help entries used with
 @command{gpg} and @command{gpgsm}.  The standard file has English help
 texts; to install localized versions use filenames like @file{help.LL.txt}
 with LL denoting the locale.  GnuPG comes with a set of predefined help
-files in the data directory (e.g. @file{/usr/share/gnupg/help.de.txt})
+files in the data directory (e.g. @file{@value{DATADIR}/gnupg/help.de.txt})
 and allows overriding of any help item by help files stored in the
-system configuration directory (e.g. @file{/etc/gnupg/help.de.txt}).
+system configuration directory (e.g. @file{@value{SYSCONFDIR}/help.de.txt}).
 For a reference of the help file's syntax, please see the installed
 @file{help.txt} file.
 
@@ -857,7 +859,7 @@ This file is a collection of common certificates used to populated a
 newly created @file{pubring.kbx}.  An administrator may replace this
 file with a custom one.  The format is a concatenation of PEM encoded
 X.509 certificates.  This global file is installed in the data directory
-(e.g. @file{/usr/share/gnupg/com-certs.pem}).
+(e.g. @file{@value{DATADIR}/com-certs.pem}).
 
 @end table
 

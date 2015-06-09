@@ -6,6 +6,8 @@
 @c This is included by tools.texi.
 @c
 
+@include defs.inc
+
 @c Begin GnuPG 1.x specific stuff
 @ifset gpgone
 @macro gpgvname

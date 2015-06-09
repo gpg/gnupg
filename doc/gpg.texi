@@ -3,18 +3,13 @@
 @c This is part of the GnuPG manual.
 @c For copying conditions, see the file gnupg.texi.
 
+@include defs.inc
+
 @node Invoking GPG
 @chapter Invoking GPG
 @cindex GPG command options
 @cindex command options
 @cindex options, GPG command
-
-@c Begin algorithm defaults
-
-@set DEFSYMENCALGO AES128
-
-@c End algorithm defaults
-
 
 @macro gpgname
 gpg2
@@ -180,7 +175,7 @@ decrypted via a secret key or a passphrase).
 @itemx -c
 @opindex symmetric
 Encrypt with a symmetric cipher using a passphrase. The default
-symmetric cipher used is @value{DEFSYMENCALGO}, but may be chosen with the
+symmetric cipher used is @value{GPGSYMENCALGO}, but may be chosen with the
 @option{--cipher-algo} option. This option may be combined with
 @option{--sign} (for a signed and symmetrically encrypted message),
 @option{--encrypt} (for a message that may be decrypted via a secret key
@@ -1672,7 +1667,7 @@ file name.
 @item --dirmngr-program @var{file}
 @opindex dirmngr-program
 Specify a dirmngr program to be used for keyserver access.  The
-default value is @file{/usr/sbin/dirmngr}.  This is only used as a
+default value is @file{@value{BINDIR}/dirmngr}.  This is only used as a
 fallback when the environment variable @code{DIRMNGR_INFO} is not set or
 a running dirmngr cannot be connected.
 
@@ -2152,7 +2147,7 @@ to consider (e.g. @option{--symmetric}).
 @item --s2k-cipher-algo @code{name}
 @opindex s2k-cipher-algo
 Use @code{name} as the cipher algorithm used to protect secret keys.
-The default cipher is @value{DEFSYMENCALGO}. This cipher is also used
+The default cipher is @value{GPGSYMENCALGO}. This cipher is also used
 for symmetric encryption with a passphrase if
 @option{--personal-cipher-preferences} and @option{--cipher-algo} is
 not given.
@@ -2939,8 +2934,8 @@ current home directory (@pxref{option --homedir}).
 
 @c man:.RE
 Note that on larger installations, it is useful to put predefined files
-into the directory @file{/etc/skel/.gnupg/} so that newly created users
-start up with a working configuration.
+into the directory @file{@value{SYSCONFSKELDIR}} so that
+newly created users start up with a working configuration.
 For existing users a small
 helper script is provided to create these files (@pxref{addgnupghome}).
 
@@ -2993,10 +2988,10 @@ files; They all live in in the current home directory (@pxref{option
   You should backup all files in this directory and take care to keep
   this backup closed away.
 
-  @item /usr[/local]/share/gnupg/options.skel
+  @item @value{DATADIR}/options.skel
   The skeleton options file.
 
-  @item /usr[/local]/lib/gnupg/
+  @item @value{LIBDIR}/
   Default location for extensions.
 
 @end table
