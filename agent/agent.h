@@ -133,6 +133,10 @@ struct
      to allow it to enable such a cache.  */
   int allow_external_cache;
 
+  /* If this global option is true, the Assuan option of Pinentry
+     allow-emacs-prompt is allowed.  */
+  int allow_emacs_pinentry;
+
   int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
   int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
 

@@ -423,6 +423,16 @@ start_pinentry (ctrl_t ctrl)
         return unlock_pinentry (rc);
     }
 
+  if (opt.allow_emacs_pinentry)
+    {
+      /* Indicate to the pinentry that it may read passphrase through
+	 Emacs minibuffer, if possible.  */
+      rc = assuan_transact (entry_ctx, "OPTION allow-emacs-prompt",
+                            NULL, NULL, NULL, NULL, NULL, NULL);
+      if (rc && gpg_err_code (rc) != GPG_ERR_UNKNOWN_OPTION)
+        return unlock_pinentry (rc);
+    }
+
 
   {
     /* Provide a few default strings for use by the pinentries.  This

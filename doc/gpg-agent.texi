@@ -314,6 +314,12 @@ which employs an additional external cache to implement such a policy.
 By using this option the Pinentry is advised not to make use of such a
 cache and instead always ask the user for the requested passphrase.
 
+@item --allow-emacs-pinentry
+@opindex allow-emacs-pinentry
+Tell Pinentry to allow features to divert the passphrase entry to a
+running Emacs instance.  How this is exactly handled depends on the
+version of the used Pinentry.
+
 @item --ignore-cache-for-signing
 @opindex ignore-cache-for-signing
 This option will let @command{gpg-agent} bypass the passphrase cache for all
@@ -676,7 +682,7 @@ again.  Only certain options are honored: @code{quiet},
 @code{debug-pinentry},
 @code{no-grab}, @code{pinentry-program}, @code{default-cache-ttl},
 @code{max-cache-ttl}, @code{ignore-cache-for-signing},
-@code{no-allow-external-cache},
+@code{no-allow-external-cache}, @code{allow-emacs-pinentry},
 @code{no-allow-mark-trusted}, @code{disable-scdaemon}, and
 @code{disable-check-own-socket}.  @code{scdaemon-program} is also
 supported but due to the current implementation, which calls the

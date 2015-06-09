@@ -120,6 +120,7 @@ enum cmd_and_opt_values
   oAllowPresetPassphrase,
   oAllowLoopbackPinentry,
   oNoAllowExternalCache,
+  oAllowEmacsPinentry,
   oKeepTTY,
   oKeepDISPLAY,
   oSSHSupport,
@@ -214,6 +215,8 @@ static ARGPARSE_OPTS opts[] = {
                 /* */                    N_("allow presetting passphrase")),
   ARGPARSE_s_n (oAllowLoopbackPinentry, "allow-loopback-pinentry",
                                    N_("allow caller to override the pinentry")),
+  ARGPARSE_s_n (oAllowEmacsPinentry,  "allow-emacs-pinentry",
+                /* */    N_("allow passphrase to be prompted through Emacs")),
 
   ARGPARSE_s_n (oSSHSupport,   "enable-ssh-support", N_("enable ssh support")),
   ARGPARSE_s_n (oPuttySupport, "enable-putty-support",
@@ -565,6 +568,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.ignore_cache_for_signing = 0;
       opt.allow_mark_trusted = 1;
       opt.allow_external_cache = 1;
+      opt.allow_emacs_pinentry = 0;
       opt.disable_scdaemon = 0;
       disable_check_own_socket = 0;
       return 1;
@@ -632,6 +636,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oAllowLoopbackPinentry: opt.allow_loopback_pinentry = 1; break;
 
     case oNoAllowExternalCache: opt.allow_external_cache = 0;
+      break;
+
+    case oAllowEmacsPinentry: opt.allow_emacs_pinentry = 1;
       break;
 
     default:
@@ -1079,6 +1086,8 @@ main (int argc, char **argv )
       es_printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
       es_printf ("allow-loopback-pinentry:%lu:\n",
+                 GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      es_printf ("allow-emacs-pinentry:%lu:\n",
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
 
       agent_exit (0);
