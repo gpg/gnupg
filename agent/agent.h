@@ -147,6 +147,12 @@ struct
      that we use a hack for cleanup handling in gpg-agent.c: If the
      value is less than 2 the name has not yet been malloced. */
   int extra_socket;
+
+  /* This global options indicates the use of an extra socket for web
+     browsers. Note that we use a hack for cleanup handling in
+     gpg-agent.c: If the value is less than 2 the name has not yet
+     been malloced. */
+  int browser_socket;
 } opt;
 
 
@@ -188,7 +194,9 @@ struct server_control_s
     gnupg_fd_t fd;
   } thread_startup;
 
-  /* Flag indicating the connection is run in restricted mode.  */
+  /* Flag indicating the connection is run in restricted mode.
+     A value of 1 if used for --extra-socket,
+     a value of 2 is used for --browser-socket.  */
   int restricted;
 
   /* Private data of the server (command.c). */

@@ -112,6 +112,7 @@ enum cmd_and_opt_values
   oUseStandardSocket,
   oNoUseStandardSocket,
   oExtraSocket,
+  oBrowserSocket,
   oFakedSystemTime,
 
   oIgnoreCacheForSigning,
@@ -173,6 +174,8 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_s_s (oExtraSocket, "extra-socket",
                 /* */       N_("|NAME|accept some commands via NAME")),
+
+  ARGPARSE_s_s (oBrowserSocket, "browser-socket", "@"),
 
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
 
@@ -304,6 +307,10 @@ static char *redir_socket_name;
 static char *socket_name_extra;
 static char *redir_socket_name_extra;
 
+/* Name of the optional browser socket used for native gpg-agent requests.  */
+static char *socket_name_browser;
+static char *redir_socket_name_browser;
+
 /* Name of the communication socket used for ssh-agent-emulation.  */
 static char *socket_name_ssh;
 static char *redir_socket_name_ssh;
@@ -312,6 +319,7 @@ static char *redir_socket_name_ssh;
    POSIX systems). */
 static assuan_sock_nonce_t socket_nonce;
 static assuan_sock_nonce_t socket_nonce_extra;
+static assuan_sock_nonce_t socket_nonce_browser;
 static assuan_sock_nonce_t socket_nonce_ssh;
 
 
@@ -357,6 +365,7 @@ static void agent_deinit_default_ctrl (ctrl_t ctrl);
 
 static void handle_connections (gnupg_fd_t listen_fd,
                                 gnupg_fd_t listen_fd_extra,
+                                gnupg_fd_t listen_fd_browser,
                                 gnupg_fd_t listen_fd_ssh);
 static void check_own_socket (void);
 static int check_for_running_agent (int silent);
@@ -532,6 +541,8 @@ cleanup (void)
   remove_socket (socket_name, redir_socket_name);
   if (opt.extra_socket > 1)
     remove_socket (socket_name_extra, redir_socket_name_extra);
+  if (opt.browser_socket > 1)
+    remove_socket (socket_name_browser, redir_socket_name_browser);
   remove_socket (socket_name_ssh, redir_socket_name_ssh);
 }
 
@@ -925,6 +936,11 @@ main (int argc, char **argv )
           socket_name_extra = pargs.r.ret_str;
           break;
 
+        case oBrowserSocket:
+          opt.browser_socket = 1;  /* (1 = points into argv)  */
+          socket_name_browser = pargs.r.ret_str;
+          break;
+
         case oDebugQuickRandom:
           /* Only used by the first stage command line parser.  */
           break;
@@ -1141,6 +1157,7 @@ main (int argc, char **argv )
     { /* Regular server mode */
       gnupg_fd_t fd;
       gnupg_fd_t fd_extra = GNUPG_INVALID_FD;
+      gnupg_fd_t fd_browser = GNUPG_INVALID_FD;
       gnupg_fd_t fd_ssh = GNUPG_INVALID_FD;
       pid_t pid;
 
@@ -1167,6 +1184,15 @@ main (int argc, char **argv )
           fd_extra = create_server_socket (socket_name_extra, 0,
                                            &redir_socket_name_extra,
                                            &socket_nonce_extra);
+        }
+
+      if (opt.browser_socket)
+        {
+          socket_name_browser = create_socket_name (socket_name_browser, 0);
+          opt.browser_socket = 2; /* Indicate that it has been malloced.  */
+          fd_browser = create_server_socket (socket_name_browser, 0,
+                                             &redir_socket_name_browser,
+                                             &socket_nonce_browser);
         }
 
       if (opt.ssh_support)
@@ -1240,6 +1266,8 @@ main (int argc, char **argv )
                                the child should do this from now on */
 	  if (opt.extra_socket)
 	    *socket_name_extra = 0;
+	  if (opt.browser_socket)
+	    *socket_name_browser = 0;
 	  if (opt.ssh_support)
 	    *socket_name_ssh = 0;
 
@@ -1350,7 +1378,7 @@ main (int argc, char **argv )
 #endif /*!HAVE_W32_SYSTEM*/
 
       log_info ("%s %s started\n", strusage(11), strusage(13) );
-      handle_connections (fd, fd_extra, fd_ssh);
+      handle_connections (fd, fd_extra, fd_browser, fd_ssh);
       assuan_sock_close (fd);
     }
 
@@ -2184,6 +2212,17 @@ start_connection_thread_extra (void *arg)
 }
 
 
+/* This is the browser socket connection thread's main function.  */
+static void *
+start_connection_thread_browser (void *arg)
+{
+  ctrl_t ctrl = arg;
+
+  ctrl->restricted = 2;
+  return start_connection_thread (ctrl);
+}
+
+
 /* This is the ssh connection thread's main function.  */
 static void *
 start_connection_thread_ssh (void *arg)
@@ -2214,6 +2253,7 @@ start_connection_thread_ssh (void *arg)
 static void
 handle_connections (gnupg_fd_t listen_fd,
                     gnupg_fd_t listen_fd_extra,
+                    gnupg_fd_t listen_fd_browser,
                     gnupg_fd_t listen_fd_ssh)
 {
   npth_attr_t tattr;
@@ -2236,9 +2276,10 @@ handle_connections (gnupg_fd_t listen_fd,
     void *(*func) (void *arg);
     gnupg_fd_t l_fd;
   } listentbl[] = {
-    { "std",  start_connection_thread_std   },
-    { "extra",start_connection_thread_extra },
-    { "ssh",  start_connection_thread_ssh   }
+    { "std",     start_connection_thread_std   },
+    { "extra",   start_connection_thread_extra },
+    { "browser", start_connection_thread_browser },
+    { "ssh",    start_connection_thread_ssh   }
   };
 
 
@@ -2296,6 +2337,12 @@ handle_connections (gnupg_fd_t listen_fd,
       if (FD2INT (listen_fd_extra) > nfd)
         nfd = FD2INT (listen_fd_extra);
     }
+  if (listen_fd_browser != GNUPG_INVALID_FD)
+    {
+      FD_SET ( FD2INT(listen_fd_browser), &fdset);
+      if (FD2INT (listen_fd_browser) > nfd)
+        nfd = FD2INT (listen_fd_browser);
+    }
   if (listen_fd_ssh != GNUPG_INVALID_FD)
     {
       FD_SET ( FD2INT(listen_fd_ssh), &fdset);
@@ -2305,7 +2352,8 @@ handle_connections (gnupg_fd_t listen_fd,
 
   listentbl[0].l_fd = listen_fd;
   listentbl[1].l_fd = listen_fd_extra;
-  listentbl[2].l_fd = listen_fd_ssh;
+  listentbl[2].l_fd = listen_fd_browser;
+  listentbl[3].l_fd = listen_fd_ssh;
 
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
