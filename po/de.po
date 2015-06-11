@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-05-12 13:19+0200\n"
+"PO-Revision-Date: 2015-06-11 13:03+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -376,6 +376,9 @@ msgstr "Erlaube ein \"preset\" von Passphrases"
 
 msgid "allow caller to override the pinentry"
 msgstr "Aufrufer darf das Pinentry ersetzen"
+
+msgid "allow passphrase to be prompted through Emacs"
+msgstr "Erlaube die Eingabe einer Passphrase über Emacs"
 
 msgid "enable ssh support"
 msgstr "SSH Unterstützung einschalten"
@@ -5183,6 +5186,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "\"Trust-DB\": sync fehlgeschlagen: %s\n"
 
 #, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "Datei `%s' konnte nicht gesperrt werden\n"
+
+#, c-format
+msgid "can't lock '%s'\n"
+msgstr "'%s' kann nicht gesperrt werden\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb Satz %lu: lseek fehlgeschlagen: %s\n"
 
@@ -5200,14 +5211,6 @@ msgstr "kann aus `%s' nicht zugreifen: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Verzeichnis existiert nicht!\n"
-
-#, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "Datei `%s' konnte nicht gesperrt werden\n"
-
-#, c-format
-msgid "can't lock '%s'\n"
-msgstr "'%s' kann nicht gesperrt werden\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
