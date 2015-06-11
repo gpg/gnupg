@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-02-12 17:17+0000\n"
+"PO-Revision-Date: 2015-05-23 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -36,36 +36,28 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|Отмена (_C)"
 
-#, fuzzy
 #| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|Да (_Y)"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|Нет (_N)"
 
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
 
-#, fuzzy
 #| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
-msgstr "|pinentry-label|Отмена (_C)"
+msgstr "|pinentry-label|Сохранить в диспетчере паролей (_S)"
 
-#, fuzzy
-#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgid "Do you really want to make your passphrase visible on the screen?"
-msgstr "Вы действительно хотите навсегда удалить закрытый ключ OpenPGP:"
+msgstr "Вы действительно хотите, чтобы фраза-пароль была видна на экране?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr ""
+msgstr "|pinentry-tt|Показывать фразу-пароль"
 
-#, fuzzy
-#| msgid "Enter new passphrase"
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "Введите новую фразу-пароль"
+msgstr "pinentry-tt|Скрывать фразу-пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -355,10 +347,8 @@ msgstr "|PGM|использовать программу PGM как демон �
 msgid "do not use the SCdaemon"
 msgstr "не использовать демон криптографических карт"
 
-#, fuzzy
-#| msgid "|NAME|connect to host NAME"
 msgid "|NAME|accept some commands via NAME"
-msgstr "|NAME|подключиться к хосту NAME"
+msgstr "|NAME|принимать некоторые команды по NAME"
 
 msgid "ignore requests to change the TTY"
 msgstr "игнорировать запросы смены терминала"
@@ -372,10 +362,8 @@ msgstr "|N|сбрасывать запомненный PIN через N секу
 msgid "do not use the PIN cache when signing"
 msgstr "не использовать запомненный PIN при подписывании"
 
-#, fuzzy
-#| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
-msgstr "не разрешать повторное использование старых фраз-паролей"
+msgstr "не позволять пользоваться внешней памятью паролей"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "не позволять клиентам помечать ключи как \"доверенные\""
@@ -1708,10 +1696,8 @@ msgstr "создать новую пару ключей"
 msgid "quickly generate a new key pair"
 msgstr "быстро создать новую пару ключей"
 
-#, fuzzy
-#| msgid "quickly generate a new key pair"
 msgid "quickly add a new user-id"
-msgstr "быстро создать новую пару ключей"
+msgstr "быстро добавить новый ID пользователя"
 
 msgid "full featured key pair generation"
 msgstr "создание полноценной пары ключей"
@@ -4019,7 +4005,7 @@ msgid "%s: keyring created\n"
 msgstr "%s: таблица ключей создана\n"
 
 msgid "override proxy options set for dirmngr"
-msgstr ""
+msgstr "переназначить настройки промежуточного сервера для dirmngr"
 
 msgid "include revoked keys in search results"
 msgstr "включить в результаты поиска отозванные ключи"
@@ -4028,7 +4014,7 @@ msgid "include subkeys when searching by key ID"
 msgstr "искать по ID ключа, включая подключи"
 
 msgid "override timeout options set for dirmngr"
-msgstr ""
+msgstr "переназначить настройки времени ожидания для dirmngr"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "автоматически получать ключи при проверке подписей"
