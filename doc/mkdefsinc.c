@@ -31,6 +31,16 @@
    values are not valid for the build platform but we need some values
    nevertheless.  */
 #include "config.h"
+/* When building for Windows some -D macros are not available.  We
+   provide replacements here.  */
+#ifdef HAVE_W32_SYSTEM
+# define GNUPG_BINDIR        "INSTDIR/bin"
+# define GNUPG_LIBEXECDIR    "INSTDIR/bin"
+# define GNUPG_LIBDIR        "INSTDIR/lib/" PACKAGE_NAME
+# define GNUPG_DATADIR       "INSTDIR/share/" PACKAGE_NAME
+# define GNUPG_SYSCONFDIR    "APPDATA/GNU/etc/" PACKAGE_NAME
+# define GNUPG_LOCALSTATEDIR "APPDATA/GNU"
+#endif /*HAVE_W32_SYSTEM*/
 
 
 static int verbose;
