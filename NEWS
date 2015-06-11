@@ -1,5 +1,15 @@
-Noteworthy changes in version 2.1.5 (unreleased)
+Noteworthy changes in version 2.1.5 (2015-06-11)
 ------------------------------------------------
+
+ * Support for an external passphrase cache.
+
+ * Support for the forthcoming version 3 OpenPGP smartcard.
+
+ * Manuals now show the actual used file names.
+
+ * Prepared for improved integration with Emacs.
+
+ * Code cleanups and minor bug fixes.
 
 
 Noteworthy changes in version 2.1.4 (2015-05-12)
