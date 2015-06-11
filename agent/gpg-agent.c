@@ -2166,15 +2166,8 @@ putty_message_thread (void *arg)
 
 
 static void *
-start_connection_thread (ctrl_t ctrl)
+do_start_connection_thread (ctrl_t ctrl)
 {
-  if (check_nonce (ctrl, &socket_nonce))
-    {
-      log_error ("handler 0x%lx nonce check FAILED\n",
-                 (unsigned long) npth_self());
-      return NULL;
-    }
-
   agent_init_default_ctrl (ctrl);
   if (opt.verbose)
     log_info (_("handler 0x%lx for fd %d started\n"),
@@ -2197,7 +2190,14 @@ start_connection_thread_std (void *arg)
 {
   ctrl_t ctrl = arg;
 
-  return start_connection_thread (ctrl);
+  if (check_nonce (ctrl, &socket_nonce))
+    {
+      log_error ("handler 0x%lx nonce check FAILED\n",
+                 (unsigned long) npth_self());
+      return NULL;
+    }
+
+  return do_start_connection_thread (ctrl);
 }
 
 
@@ -2207,8 +2207,15 @@ start_connection_thread_extra (void *arg)
 {
   ctrl_t ctrl = arg;
 
+  if (check_nonce (ctrl, &socket_nonce_extra))
+    {
+      log_error ("handler 0x%lx nonce check FAILED\n",
+                 (unsigned long) npth_self());
+      return NULL;
+    }
+
   ctrl->restricted = 1;
-  return start_connection_thread (ctrl);
+  return do_start_connection_thread (ctrl);
 }
 
 
@@ -2218,8 +2225,15 @@ start_connection_thread_browser (void *arg)
 {
   ctrl_t ctrl = arg;
 
+  if (check_nonce (ctrl, &socket_nonce_browser))
+    {
+      log_error ("handler 0x%lx nonce check FAILED\n",
+                 (unsigned long) npth_self());
+      return NULL;
+    }
+
   ctrl->restricted = 2;
-  return start_connection_thread (ctrl);
+  return do_start_connection_thread (ctrl);
 }
 
 
