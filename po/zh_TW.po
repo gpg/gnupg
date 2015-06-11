@@ -368,6 +368,9 @@ msgstr "允許預先設定密語"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "啟用 ssh 支援"
 
@@ -4969,6 +4972,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信任資料庫: 同步化失敗: %s\n"
 
 #, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "無法為 '%s' 建立鎖定\n"
+
+#, c-format
+msgid "can't lock '%s'\n"
+msgstr "無法鎖定 '%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信任資料庫記錄 %lu: 本機搜尋失敗: %s\n"
 
@@ -4986,14 +4997,6 @@ msgstr "無法存取 '%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: 目錄不存在!\n"
-
-#, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "無法為 '%s' 建立鎖定\n"
-
-#, c-format
-msgid "can't lock '%s'\n"
-msgstr "無法鎖定 '%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

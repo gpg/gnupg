@@ -390,6 +390,9 @@ msgstr "生成密码的时候发生错误：%s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5199,6 +5202,16 @@ msgstr "读取‘%s’错误：%s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "信任度数据库：同步失败：%s\n"
 
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
+msgstr "不能为‘%s’创建锁定\n"
+
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
+msgstr "无法锁定‘%s’\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信任度数据库记录 %lu：lseek 失败：%s\n"
@@ -5218,16 +5231,6 @@ msgstr "无法存取‘%s’：%s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s：目录不存在！\n"
-
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
-msgid "can't create lock for '%s'\n"
-msgstr "不能为‘%s’创建锁定\n"
-
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
-msgid "can't lock '%s'\n"
-msgstr "无法锁定‘%s’\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

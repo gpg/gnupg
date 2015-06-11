@@ -374,6 +374,9 @@ msgstr "パスフレーズの事前設定を認める"
 msgid "allow caller to override the pinentry"
 msgstr "pinentryより優先してパスフレーズ入力を認める"
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "sshサポートを有功にする"
 
@@ -5000,6 +5003,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信用データベース: 同期に失敗しました: %s\n"
 
 #, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "'%s'のロックを作成できません\n"
+
+#, c-format
+msgid "can't lock '%s'\n"
+msgstr "'%s'がロックできません\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信用データベース レコード%lu: シークに失敗しました: %s\n"
 
@@ -5017,14 +5028,6 @@ msgstr "'%s'にアクセスできません: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ディレクトリがありません!\n"
-
-#, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "'%s'のロックを作成できません\n"
-
-#, c-format
-msgid "can't lock '%s'\n"
-msgstr "'%s'がロックできません\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

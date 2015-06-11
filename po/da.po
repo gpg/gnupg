@@ -413,6 +413,9 @@ msgstr "tillad forhåndsindstilling af adgangsfrase"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
@@ -5347,6 +5350,16 @@ msgstr "læsefejl i »%s«: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: synkronisering mislykkedes: %s\n"
 
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
+msgstr "kan ikke oprette lås for »%s«\n"
+
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
+msgstr "kan ikke låse »%s«\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek mislykkedes: %s\n"
@@ -5366,16 +5379,6 @@ msgstr "kan ikke tilgå »%s«: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: mappe findes ikke!\n"
-
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
-msgid "can't create lock for '%s'\n"
-msgstr "kan ikke oprette lås for »%s«\n"
-
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
-msgid "can't lock '%s'\n"
-msgstr "kan ikke låse »%s«\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

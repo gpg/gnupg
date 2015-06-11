@@ -393,6 +393,9 @@ msgstr "eroare la crearea frazei-parolã: %s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5339,6 +5342,16 @@ msgstr "eroare citire în `%s': %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sincronizarea a eºuat: %s\n"
 
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
+msgstr "nu pot crea încuietoare (lock) pentru `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
+msgstr "nu pot încuia (lock) `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek a eºuat: %s\n"
@@ -5358,16 +5371,6 @@ msgstr "nu pot accesa `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: directorul nu existã!\n"
-
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
-msgid "can't create lock for '%s'\n"
-msgstr "nu pot crea încuietoare (lock) pentru `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
-msgid "can't lock '%s'\n"
-msgstr "nu pot încuia (lock) `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -378,6 +378,9 @@ msgstr "viga parooli loomisel: %s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5322,6 +5325,14 @@ msgstr "viga lugemisel: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync ebaõnnestus: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "`%s' ei õnnestu luua: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock '%s'\n"
+msgstr "`%s' ei õnnestu avada\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb kirje %lu: lseek ebaõnnestus: %s\n"
@@ -5340,14 +5351,6 @@ msgstr "`%s' ei õnnestu sulgeda: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: kataloogi ei ole!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "`%s' ei õnnestu luua: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock '%s'\n"
-msgstr "`%s' ei õnnestu avada\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

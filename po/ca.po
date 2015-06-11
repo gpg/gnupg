@@ -404,6 +404,9 @@ msgstr "error en la creació de la contrasenya: %s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 # Gènere?  Nombre?  ivb
 # Werner FIXME: please add translator comment saying *what* is
 # uncompressed so we know the gender. jm
@@ -5517,6 +5520,14 @@ msgstr "error de lectura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de dades de confiança: no s'ha pogut sincronitzar: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "no es pot crear el directori «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock '%s'\n"
+msgstr "no s'ha pogut obrir «%s»\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "reg de la base de dades de confiança %lu: ha fallat lseek: %s\n"
@@ -5538,14 +5549,6 @@ msgstr "no s'ha pogut tancar «%s»: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: el directori no existeix!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "no es pot crear el directori «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock '%s'\n"
-msgstr "no s'ha pogut obrir «%s»\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

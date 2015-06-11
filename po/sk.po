@@ -381,6 +381,9 @@ msgstr "chyba pri vytváraní hesla: %s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5366,6 +5369,14 @@ msgstr "chyba pri èítaní: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "databáza dôvery: synchronizácia zlyhala %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "nemô¾em vytvori» `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock '%s'\n"
+msgstr "nemo¾no otvori» `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "záznam v databáze dôvery %lu: lseek() sa nepodaril: %s\n"
@@ -5384,14 +5395,6 @@ msgstr "nemô¾em zavrie» `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresár neexistuje!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "nemô¾em vytvori» `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock '%s'\n"
-msgstr "nemo¾no otvori» `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

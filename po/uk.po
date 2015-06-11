@@ -379,6 +379,9 @@ msgstr "дозволити попереднє встановлення паро�
 msgid "allow caller to override the pinentry"
 msgstr "дозволити функції виклику перевизначати pinentry"
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "увімкнути підтримку ssh"
 
@@ -5153,6 +5156,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: помилка синхронізації: %s\n"
 
 #, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "не вдалося створити блокування для «%s»\n"
+
+#, c-format
+msgid "can't lock '%s'\n"
+msgstr "не вдалося заблокувати «%s»\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "запис trustdb %lu: помилка lseek: %s\n"
 
@@ -5170,14 +5181,6 @@ msgstr "немає доступу до «%s»: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: каталогу не існує!\n"
-
-#, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "не вдалося створити блокування для «%s»\n"
-
-#, c-format
-msgid "can't lock '%s'\n"
-msgstr "не вдалося заблокувати «%s»\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

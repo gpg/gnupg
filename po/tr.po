@@ -396,6 +396,9 @@ msgstr "anahtar parolasının önceden atanmasına izin verilir"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
@@ -5382,6 +5385,16 @@ msgstr "`%s' için okuma hatası: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "güvence veritabanı: eşzamanlama başarısız: %s\n"
 
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
+msgstr "`%s' için kilit oluşturulamıyor\n"
+
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
+msgstr "`%s' kiltlenemedi\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "güvence veritabanı %lu kaydı: erişim başarısız: %s\n"
@@ -5401,16 +5414,6 @@ msgstr "'%s' erişilemiyor: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dizin yok!\n"
-
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
-msgid "can't create lock for '%s'\n"
-msgstr "`%s' için kilit oluşturulamıyor\n"
-
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
-msgid "can't lock '%s'\n"
-msgstr "`%s' kiltlenemedi\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -380,6 +380,9 @@ msgstr "σφάλμα στη δημιουργία της φράσης κλειδί: %s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5390,6 +5393,14 @@ msgstr "σφάλμα ανάγνωσης: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync απέτυχε: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock '%s'\n"
+msgstr "αδυναμία πρόσβασης του `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: αποτυχία lseek: %s\n"
@@ -5408,14 +5419,6 @@ msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ο φάκελος δεν υπάρχει!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "αδυναμία δημιουργίας του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock '%s'\n"
-msgstr "αδυναμία πρόσβασης του `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -427,6 +427,9 @@ msgstr "permitir preestablecer frase contraseña"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
@@ -5355,6 +5358,16 @@ msgstr "error de lectura `%s': %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de datos de confianza: fallo sincronización: %s\n"
 
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
+msgstr "no se puede crear el bloqueo para `%s'\n"
+
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
+msgstr "no se puede bloquear `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "registro base de datos de confianza %lu: lseek fallido: %s\n"
@@ -5375,16 +5388,6 @@ msgstr "no se puede acceder a `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡el directorio no existe!\n"
-
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
-msgid "can't create lock for '%s'\n"
-msgstr "no se puede crear el bloqueo para `%s'\n"
-
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
-msgid "can't lock '%s'\n"
-msgstr "no se puede bloquear `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

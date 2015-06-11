@@ -378,6 +378,9 @@ msgstr "Hiba a jelszó létrehozásakor: %s.\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5352,6 +5355,14 @@ msgstr "Olvasási hiba: %s.\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "Bizalmi adatbázis: szinkronizáció sikertelen: %s.\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "can't lock '%s'\n"
+msgstr "Nem tudom megnyitni %s-t!\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "Bizalmi adatbázis %lu. rekord: lseek sikertelen: %s.\n"
@@ -5370,14 +5381,6 @@ msgstr "Nem tudom bezárni a(z) \"%s\" állományt: %s.\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Könyvtár nem létezik!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
-
-#, fuzzy, c-format
-msgid "can't lock '%s'\n"
-msgstr "Nem tudom megnyitni %s-t!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -384,6 +384,9 @@ msgstr "permettre de préconfigurer la phrase secrète"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 msgid "enable ssh support"
 msgstr "activer la prise en charge de SSH"
 
@@ -5226,6 +5229,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "base de confiance : échec de synchronisation : %s\n"
 
 #, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "impossible de créer un verrou pour « %s »\n"
+
+#, c-format
+msgid "can't lock '%s'\n"
+msgstr "impossible de verrouiller « %s »\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "enregistrement de base de confiance %lu : échec de lseek : %s\n"
 
@@ -5244,14 +5255,6 @@ msgstr "impossible d'accéder à « %s » : %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s : le répertoire n'existe pas.\n"
-
-#, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "impossible de créer un verrou pour « %s »\n"
-
-#, c-format
-msgid "can't lock '%s'\n"
-msgstr "impossible de verrouiller « %s »\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

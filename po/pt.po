@@ -383,6 +383,9 @@ msgstr "erro na criação da frase secreta: %s\n"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "not supported"
 msgid "enable ssh support"
@@ -5352,6 +5355,14 @@ msgstr "armadura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de dados de confiança: sincronização falhou: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for '%s'\n"
+msgstr "impossível criar `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock '%s'\n"
+msgstr "impossível abrir `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "base de dados de confiança rec %lu: lseek falhou: %s\n"
@@ -5370,14 +5381,6 @@ msgstr "impossível fechar `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: diretoria inexistente!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for '%s'\n"
-msgstr "impossível criar `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock '%s'\n"
-msgstr "impossível abrir `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

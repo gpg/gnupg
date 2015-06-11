@@ -427,6 +427,9 @@ msgstr "tillåt förinställning av lösenfras"
 msgid "allow caller to override the pinentry"
 msgstr ""
 
+msgid "allow passphrase to be prompted through Emacs"
+msgstr ""
+
 #, fuzzy
 #| msgid "enable ssh-agent emulation"
 msgid "enable ssh support"
@@ -5446,6 +5449,17 @@ msgstr "läsfel i \"%s\":  %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "tillitsdatabas: synkronisering misslyckades: %s\n"
 
+#, fuzzy, c-format
+#| msgid "can't create lock for `%s'\n"
+msgid "can't create lock for '%s'\n"
+msgstr "kan inte skapa lås för \"%s\"\n"
+
+# se förra kommentaren
+#, fuzzy, c-format
+#| msgid "can't lock `%s'\n"
+msgid "can't lock '%s'\n"
+msgstr "kan inte låsa \"%s\"\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "tillitsdatabasposten %lu: lseek misslyckades: %s\n"
@@ -5465,17 +5479,6 @@ msgstr "kan inte komma åt \"%s\": %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalogen finns inte!\n"
-
-#, fuzzy, c-format
-#| msgid "can't create lock for `%s'\n"
-msgid "can't create lock for '%s'\n"
-msgstr "kan inte skapa lås för \"%s\"\n"
-
-# se förra kommentaren
-#, fuzzy, c-format
-#| msgid "can't lock `%s'\n"
-msgid "can't lock '%s'\n"
-msgstr "kan inte låsa \"%s\"\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
