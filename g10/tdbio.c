@@ -94,7 +94,33 @@ static int in_transaction;
 static void open_db(void);
 static void migrate_from_v2 (void);
 
+static int
+take_write_lock (void)
+{
+  if (!lockhandle)
+    lockhandle = dotlock_create (db_name, 0);
+  if (!lockhandle)
+    log_fatal ( _("can't create lock for '%s'\n"), db_name );
 
+  if (!is_locked)
+    {
+      if (dotlock_take (lockhandle, -1) )
+        log_fatal ( _("can't lock '%s'\n"), db_name );
+      else
+        is_locked = 1;
+      return 0;
+    }
+  else
+    return 1;
+}
+
+static void
+release_write_lock (void)
+{
+  if (!opt.lock_once)
+    if (!dotlock_release (lockhandle))
+      is_locked = 0;
+}
 
 /*************************************
  ************* record cache **********
@@ -247,12 +273,7 @@ put_record_into_cache( ulong recno, const char *data )
 	int n = dirty_count / 5; /* discard some dirty entries */
 	if( !n )
 	    n = 1;
-	if( !is_locked ) {
-	    if (dotlock_take (lockhandle, -1))
-		log_fatal("can't acquire lock - giving up\n");
-	    else
-		is_locked = 1;
-	}
+        take_write_lock ();
 	for( unused = NULL, r = cache_list; r; r = r->next ) {
 	    if( r->flags.used && r->flags.dirty ) {
 		int rc = write_cache_item( r );
@@ -266,10 +287,7 @@ put_record_into_cache( ulong recno, const char *data )
 		    break;
 	    }
 	}
-	if( !opt.lock_once ) {
-	    if (!dotlock_release (lockhandle))
-		is_locked = 0;
-	}
+        release_write_lock ();
 	assert( unused );
 	r = unused;
 	r->flags.used = 1;
@@ -308,13 +326,9 @@ tdbio_sync()
     if( !cache_is_dirty )
 	return 0;
 
-    if( !is_locked ) {
-	if (dotlock_take (lockhandle, -1))
-	    log_fatal("can't acquire lock - giving up\n");
-	else
-	    is_locked = 1;
-	did_lock = 1;
-    }
+    if (!take_write_lock ())
+        did_lock = 1;
+
     for( r = cache_list; r; r = r->next ) {
 	if( r->flags.used && r->flags.dirty ) {
 	    int rc = write_cache_item( r );
@@ -323,10 +337,8 @@ tdbio_sync()
 	}
     }
     cache_is_dirty = 0;
-    if( did_lock && !opt.lock_once ) {
-	if (!dotlock_release (lockhandle))
-	    is_locked = 0;
-    }
+    if (did_lock)
+        release_write_lock ();
 
     return 0;
 }
@@ -363,20 +375,12 @@ tdbio_end_transaction()
 
     if( !in_transaction )
 	log_bug("tdbio: no active transaction\n");
-    if( !is_locked ) {
-	if (dotlock_take (lockhandle, -1))
-	    log_fatal("can't acquire lock - giving up\n");
-	else
-	    is_locked = 1;
-    }
+    take_write_lock ();
     block_all_signals();
     in_transaction = 0;
     rc = tdbio_sync();
     unblock_all_signals();
-    if( !opt.lock_once ) {
-	if (!dotlock_release (lockhandle))
-	    is_locked = 0;
-    }
+    release_write_lock ();
     return rc;
 }
 
@@ -474,6 +478,7 @@ int
 tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 {
     char *fname;
+    struct stat statbuf;
     static int initialized = 0;
 
     if( !initialized ) {
@@ -495,12 +500,25 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
     else
       fname = xstrdup (new_dbname);
 
+    xfree (db_name);
+    db_name = fname;
+
+    /*
+     * Quick check for (likely) case where there is trustdb.gpg
+     * already.  This check is not required in theory, but it helps in
+     * practice, avoiding costly operations of preparing and taking
+     * the lock.
+     */
+    if (stat (fname, &statbuf) == 0 && statbuf.st_size > 0)
+      /* OK, we have the valid trustdb.gpg already.  */
+      return 0;
+
+    take_write_lock ();
+
     if( access( fname, R_OK ) ) {
-	if( errno != ENOENT ) {
-	    log_error( _("can't access `%s': %s\n"), fname, strerror(errno) );
-	    xfree(fname);
-	    return G10ERR_TRUSTDB;
-	}
+        if( errno != ENOENT )
+            log_fatal( _("can't access '%s': %s\n"), fname, strerror(errno) );
+
 	if (!create)
           *r_nofile = 1;
         else {
@@ -519,16 +537,6 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 	    }
 	    *p = DIRSEP_C;
 
-	    xfree(db_name);
-	    db_name = fname;
-#ifdef __riscos__
-	    if( !lockhandle )
-                lockhandle = dotlock_create (db_name, 0);
-	    if( !lockhandle )
-		log_fatal( _("can't create lock for `%s'\n"), db_name );
-            if (dotlock_take (lockhandle, -1))
-                log_fatal( _("can't lock `%s'\n"), db_name );
-#endif /* __riscos__ */
 	    oldmask=umask(077);
             if (is_secured_filename (fname)) {
                 fp = NULL;
@@ -544,13 +552,6 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 	    if( db_fd == -1 )
 		log_fatal( _("can't open `%s': %s\n"), db_name, strerror(errno) );
 
-#ifndef __riscos__
-	    if( !lockhandle )
-                lockhandle = dotlock_create (db_name, 0);
-	    if( !lockhandle )
-		log_fatal( _("can't create lock for `%s'\n"), db_name );
-#endif /* !__riscos__ */
-
             rc = create_version_record ();
 	    if( rc )
 		log_fatal( _("%s: failed to create version record: %s"),
@@ -561,12 +562,10 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 
 	    if( !opt.quiet )
 		log_info(_("%s: trustdb created\n"), db_name);
-
-	    return 0;
 	}
     }
-    xfree(db_name);
-    db_name = fname;
+
+    release_write_lock ();
     return 0;
 }
 
@@ -588,14 +587,6 @@ open_db()
 
   assert( db_fd == -1 );
 
-  if (!lockhandle )
-    lockhandle = dotlock_create (db_name, 0);
-  if (!lockhandle )
-    log_fatal( _("can't create lock for `%s'\n"), db_name );
-#ifdef __riscos__
-  if (dotlock_take (lockhandle, -1))
-    log_fatal( _("can't lock `%s'\n"), db_name );
-#endif /* __riscos__ */
   db_fd = open (db_name, O_RDWR | MY_O_BINARY );
   if (db_fd == -1 && (errno == EACCES
 #ifdef EROFS
