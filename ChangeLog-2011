@@ -1183,13 +1183,13 @@
 
 2002-10-19  Werner Koch  <wk@gnupg.org>
 
-	* configure.ac: Bumped version number to 1.9.0-cvs.
+	* configure.ac: Bumped version number to GnuPG 1.9.0-cvs.
 
         NewPG (Aegypten project) to GnuPG merge.
 
 2002-09-20  Werner Koch  <wk@gnupg.org>
 
-	Released 0.9.2.
+	Released NewPG 0.9.2.
 
 2002-09-05  Neal H. Walfield  <neal@g10code.de>
 
@@ -1203,14 +1203,14 @@
 
 2002-08-23  Werner Koch  <wk@gnupg.org>
 
-	Released 0.9.1.
+	Released NewPG 0.9.1.
 
 	* acinclude.m4 (AM_PATH_LIBGCRYPT): Updated from Libgcrypt.
 	(AM_PATH_OPENSC): Strip non-digits from the micro version.
 
 2002-08-21  Werner Koch  <wk@gnupg.org>
 
-	Released 0.9.0.
+	Released NewPG 0.9.0.
 
 	* configure.ac: Changed the default homedir to .gnupg.
 	* README-alpha: Removed.
@@ -1226,7 +1226,7 @@
 
 2002-08-10  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.10.
+	Released NewPG 0.3.10.
 
 	* configure.ac (NEED_LIBKSBA_VERSION): Require 0.4.4. Add support
 	for gettext.
@@ -1237,7 +1237,7 @@
 
 2002-07-01  Werner Koch  <wk@gnupg.org>
 
-        Released 0.3.9.
+        Released NewPG 0.3.9.
 
 	* README: Short note on how to export in pkcs-12 format.
 
@@ -1254,7 +1254,7 @@
 
 2002-06-25  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.8.
+	Released NewPG 0.3.8.
 
 	* configure.ac (NEED_LIBGCRYPT_VERSION): Set to 1.1.8.
 
@@ -1264,7 +1264,7 @@
 
 2002-06-04  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.7.
+	Released NewPG 0.3.7.
 
 2002-05-21  Werner Koch  <wk@gnupg.org>
 
@@ -1277,7 +1277,7 @@
 
 2002-05-03  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.6.
+	Released NewPG 0.3.6.
 
 2002-04-25  Werner Koch  <wk@gnupg.org>
 
@@ -1289,7 +1289,7 @@
 
 2002-04-15  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.5.
+	Released NewPG 0.3.5.
 
 	* NEWS: Started to describe release notes.
 
@@ -1297,11 +1297,11 @@
 
 2002-04-01  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.4.
+	Released NewPG 0.3.4.
 
 2002-03-18  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.3.
+	Released NewPG 0.3.3.
 
 2002-03-08  Werner Koch  <wk@gnupg.org>
 
@@ -1309,11 +1309,11 @@
 
 2002-03-06  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.2.
+	Released NewPG 0.3.2.
 
 2002-03-04  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.1.
+	Released NewPG 0.3.1.
 
 	* README: Explained some options and files.
 
@@ -1335,7 +1335,7 @@
 
 2002-02-07  Werner Koch  <wk@gnupg.org>
 
-	Released 0.3.0.
+	Released NewPG 0.3.0.
 
 	* configure.ac: Require libgcrypt 1.1.6.
 
@@ -1361,7 +1361,7 @@
 
 2001-12-18  Werner Koch  <wk@gnupg.org>
 
-	Released 0.0.0.
+	Released NewPG 0.0.0.
 
 2001-12-17  Werner Koch  <wk@gnupg.org>
 
