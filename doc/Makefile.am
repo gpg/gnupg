@@ -41,7 +41,7 @@ EXTRA_DIST = samplekeys.asc mksamplekeys \
 	     gpgv.texi yat2m.c ChangeLog-2011 whats-new-in-2.1.txt
 
 BUILT_SOURCES = gnupg-card-architecture.eps gnupg-card-architecture.png \
-                gnupg-card-architecture.pdf defsincdate
+                gnupg-card-architecture.pdf defsincdate defs.inc
 
 info_TEXINFOS = gnupg.texi
 
