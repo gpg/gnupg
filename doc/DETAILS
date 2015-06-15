@@ -924,212 +924,131 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
 
   The TrustDB is built from fixed length records, where the first byte
   describes the record type.  All numeric values are stored in network
-  byte order. The length of each record is 40 bytes. The first record
-  of the DB is always of type 1 and this is the only record of this
-  type.
+  byte order.  The length of each record is 40 bytes.  The first
+  record of the DB is always of type 1 and this is the only record of
+  this type.
 
-  FIXME:  The layout changed, document it here.
-#+begin_example
-  Record type 0:
-  --------------
-    Unused record, can be reused for any purpose.
+  The record types: directory(2), key(3), uid(4), pref(5), sigrec(6),
+  and shadow directory(8) are not anymore used by version 2 of the
+  TrustDB.
 
-  Record type 1:
-  --------------
-    Version information for this TrustDB.  This is always the first
-    record of the DB and the only one with type 1.
-     1 byte value 1
-     3 bytes 'gpg'  magic value
-     1 byte Version of the TrustDB (2)
-     1 byte marginals needed
-     1 byte completes needed
-     1 byte max_cert_depth
-	    The three items are used to check whether the cached
-	    validity value from the dir record can be used.
-     1 u32  locked flags [not used]
-     1 u32  timestamp of trustdb creation
-     1 u32  timestamp of last modification which may affect the validity
-	    of keys in the trustdb.  This value is checked against the
-	    validity timestamp in the dir records.
-     1 u32  timestamp of last validation [currently not used]
-	    (Used to keep track of the time, when this TrustDB was checked
-	     against the pubring)
-     1 u32  record number of keyhashtable [currently not used]
-     1 u32  first free record
-     1 u32  record number of shadow directory hash table [currently not used]
-	    It does not make sense to combine this table with the key table
-	    because the keyid is not in every case a part of the fingerprint.
-     1 u32  record number of the trusthashtbale
+** Record type 0
 
+   Unused record or deleted, can be reused for any purpose.  Such
+   records should in general not exist because deleted records are of
+   type 254 and kept in a linked list.
 
-  Record type 2: (directory record)
-  --------------
-    Informations about a public key certificate.
-    These are static values which are never changed without user interaction.
+** Version info (RECTYPE_VER, 1)
 
-     1 byte value 2
-     1 byte  reserved
-     1 u32   LID     .	(This is simply the record number of this record.)
-     1 u32   List of key-records (the first one is the primary key)
-     1 u32   List of uid-records
-     1 u32   cache record
-     1 byte  ownertrust
-     1 byte  dirflag
-     1 byte  maximum validity of all the user ids
-     1 u32   time of last validity check.
-     1 u32   Must check when this time has been reached.
-	     (0 = no check required)
+   Version information for this TrustDB.  This is always the first
+   record of the DB and the only one of this type.
+
+   - 1 u8 :: Record type (value: 1).
+   - 3 byte :: Magic value ("gpg")
+   - 1 u8 :: TrustDB version (value: 2).
+   - 1 u8 :: =marginals=. How many marginal trusted keys are required.
+   - 1 u8 :: =completes=. How many completely trusted keys are
+             required.
+   - 1 u8 :: =max_cert_depth=.  How deep is the WoT evaluated.  Along
+             with =marginals= and =completes=, this value is used to
+             check whether the cached validity value from a [FIXME
+             dir] record can be used.
+   - 1 u8 :: =trust_model=
+   - 1 u8 :: =min_cert_level=
+   - 2 byte :: Not used
+   - 1 u32 :: =created=. Timestamp of trustdb creation.
+   - 1 u32 :: =nextcheck=. Timestamp of last modification which may
+              affect the validity of keys in the trustdb.  This value
+              is checked against the validity timestamp in the dir
+              records.
+   - 1 u32 :: =reserved=.  Not used.
+   - 1 u32 :: =reserved2=. Not used.
+   - 1 u32 :: =firstfree=. Number of the record with the head record
+              of the RECTYPE_FREE linked list.
+   - 1 u32 :: =reserved3=. Not used.
+   - 1 u32 :: =trusthashtbl=. Record number of the trusthashtable.
 
 
-  Record type 3:  (key record)
-  --------------
-    Informations about a primary public key.
-    (This is mainly used to lookup a trust record)
+** Hash table (RECTYPE_HTBL, 10)
 
-     1 byte value 3
-     1 byte  reserved
-     1 u32   LID
-     1 u32   next   - next key record
-     7 bytes reserved
-     1 byte  keyflags
-     1 byte  pubkey algorithm
-     1 byte  length of the fingerprint (in bytes)
-     20 bytes fingerprint of the public key
-	      (This is the value we use to identify a key)
+   Due to the fact that we use fingerprints to lookup keys, we can
+   implement quick access by some simple hash methods, and avoid the
+   overhead of gdbm.  A property of fingerprints is that they can be
+   used directly as hash values.  What we use is a dynamic multilevel
+   architecture, which combines hash tables, record lists, and linked
+   lists.
 
-  Record type 4: (uid record)
-  --------------
-    Informations about a userid
-    We do not store the userid but the hash value of the userid because that
-    is sufficient.
+   This record is a hash table of 256 entries with the property that
+   all these records are stored consecutively to make one big
+   table. The hash value is simple the 1st, 2nd, ... byte of the
+   fingerprint (depending on the indirection level).
 
-     1 byte value 4
-     1 byte reserved
-     1 u32  LID  points to the directory record.
-     1 u32  next   next userid
-     1 u32  pointer to preference record
-     1 u32  siglist  list of valid signatures
-     1 byte uidflags
-     1 byte validity of the key calculated over this user id
-     20 bytes ripemd160 hash of the username.
+   - 1 u8 :: Record type (value: 10).
+   - 1 u8 :: Reserved
+   - n u32 :: =recnum=.  A table with the hash table items fitting into
+              this record.  =n= depends on the record length:
+              $n=(reclen-2)/4$ which yields 9 for oure current record
+              length of 40 bytes.
 
+   The total number of hash table records to form the table is:
+   $m=(256+n-1)/n$.  This is 29 for our record length of 40.
 
-  Record type 5: (pref record)
-  --------------
-    This record type is not anymore used.
+   To look up a key we use the first byte of the fingerprint to get
+   the recnum from this hash table and then look up the addressed
+   record:
 
-     1 byte value 5
-     1 byte   reserved
-     1 u32  LID; points to the directory record (and not to the uid record!).
-	    (or 0 for standard preference record)
-     1 u32  next
-     30 byte preference data
-
-  Record type 6  (sigrec)
-  -------------
-    Used to keep track of key signatures. Self-signatures are not
-    stored.  If a public key is not in the DB, the signature points to
-    a shadow dir record, which in turn has a list of records which
-    might be interested in this key (and the signature record here
-    is one).
-
-     1 byte   value 6
-     1 byte   reserved
-     1 u32    LID	    points back to the dir record
-     1 u32    next   next sigrec of this uid or 0 to indicate the
-		     last sigrec.
-     6 times
-	1 u32  Local_id of signatures dir or shadow dir record
-	1 byte Flag: Bit 0 = checked: Bit 1 is valid (we have a real
-			     directory record for this)
-			 1 = valid is set (but may be revoked)
+   - If that record is another hash table, we use 2nd byte to index
+     that hash table and so on;
+   - if that record is a hash list, we walk all entries until we find
+     a matching one; or
+   - if that record is a key record, we compare the fingerprint to
+     decide whether it is the requested key;
 
 
+** Hash list (RECTYPE_HLST, 11)
 
-  Record type 8: (shadow directory record)
-  --------------
-    This record is used to reserve a LID for a public key.  We
-    need this to create the sig records of other keys, even if we
-    do not yet have the public key of the signature.
-    This record (the record number to be more precise) will be reused
-    as the dir record when we import the real public key.
+   See hash table above on how it is used.  It may also be used for
+   other purposes.
 
-     1 byte value 8
-     1 byte  reserved
-     1 u32   LID      (This is simply the record number of this record.)
-     2 u32   keyid
-     1 byte  pubkey algorithm
-     3 byte reserved
-     1 u32   hintlist	A list of records which have references to
-			this key.  This is used for fast access to
-			signature records which are not yet checked.
-			Note, that this is only a hint and the actual records
-			may not anymore hold signature records for that key
-			but that the code cares about this.
-    18 byte reserved
+   - 1 u8 :: Record type (value: 11).
+   - 1 u8 :: Reserved.
+   - 1 u32 :: =next=.  Record number of the next hash list record or 0
+              if none.
+   - n u32 :: =rnum=.  Array with record numbers to values.  With
+              $n=(reclen-5)/5$ and our record length of 40, n is 7.
 
+** Trust record (RECTYPE_TRUST, 12)
 
+   - 1 u8 :: Record type (value: 12).
+   - 1 u8 :: Reserved.
+   - 20 byte :: =fingerprint=.
+   - 1 u8 :: =ownertrust=.
+   - 1 u8 :: =depth=.
+   - 1 u8 :: =min_ownertrust=.
+   - 1 byte :: Not used.
+   - 1 u32 :: =validlist=.
+   - 10 byte :: Not used.
 
-  Record Type 10 (hash table)
-  --------------
-    Due to the fact that we use fingerprints to lookup keys, we can
-    implement quick access by some simple hash methods, and avoid
-    the overhead of gdbm.  A property of fingerprints is that they can be
-    used directly as hash values.  (They can be considered as strong
-    random numbers.)
-      What we use is a dynamic multilevel architecture, which combines
-    hashtables, record lists, and linked lists.
+** Validity record (RECTYPE_VALID, 13)
 
-    This record is a hashtable of 256 entries; a special property
-    is that all these records are stored consecutively to make one
-    big table. The hash value is simple the 1st, 2nd, ... byte of
-    the fingerprint (depending on the indirection level).
+   - 1 u8 :: Record type (value: 13).
+   - 1 u8 :: Reserved.
+   - 20 byte :: =namehash=.
+   - 1 u8 :: =validity=
+   - 1 u32 :: =next=.
+   - 1 u8 :: =full_count=.
+   - 1 u8 :: =marginal_count=.
+   - 11 byte :: Not used.
 
-    When used to hash shadow directory records, a different table is used
-    and indexed by the keyid.
+** Free record (RECTYPE_FREE, 254)
 
-     1 byte value 10
-     1 byte reserved
-     n u32  recnum; n depends on the record length:
-	    n = (reclen-2)/4  which yields 9 for the current record length
-	    of 40 bytes.
+   All these records form a linked list of unused records in the TrustDB.
 
-    the total number of such record which makes up the table is:
-	 m = (256+n-1) / n
-    which is 29 for a record length of 40.
-
-    To look up a key we use the first byte of the fingerprint to get
-    the recnum from this hashtable and look up the addressed record:
-       - If this record is another hashtable, we use 2nd byte
-	 to index this hash table and so on.
-       - if this record is a hashlist, we walk all entries
-	 until we found one a matching one.
-       - if this record is a key record, we compare the
-	 fingerprint and to decide whether it is the requested key;
-
-
-  Record type 11 (hash list)
-  --------------
-    see hash table for an explanation.
-    This is also used for other purposes.
-
-    1 byte value 11
-    1 byte reserved
-    1 u32  next 	 next hash list record
-    n times		 n = (reclen-5)/5
-	1 u32  recnum
-
-    For the current record length of 40, n is 7
-
-
-
-  Record type 254 (free record)
-  ---------------
-    All these records form a linked list of unused records.
-     1 byte  value 254
-     1 byte  reserved (0)
-     1 u32   next_free
-#+end_example
+   - 1 u8 :: Record type (value: 254)
+   - 1 u8 :: Reserved.
+   - 1 u32 :: =next=.  Record number of the next rcord of this type.
+              The record number to the head of this linked list is
+              stored in the version info record.
 
 
 * GNU extensions to the S2K algorithm
