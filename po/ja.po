@@ -7,7 +7,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.0.27\n"
+"Project-Id-Version: GNU gnupg 2.0.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
 "PO-Revision-Date: 2015-06-02 13:05+0200\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
@@ -33,41 +33,31 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_キャンセル"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|_Yes"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|_No"
 
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
 
-#, fuzzy
-#| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
-msgstr "|pinentry-label|_キャンセル"
+msgstr "|pinentry-label|_パスワードマネージャに保存する"
 
-#, fuzzy
-#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgid "Do you really want to make your passphrase visible on the screen?"
-msgstr "選択した副鍵を本当に失効しますか? (y/N) "
+msgstr "本当に画面にパスフレーズを見えるようにしますか?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr ""
+msgstr "|pinentry-tt|パスフレーズを見えるようにする"
 
-#, fuzzy
-#| msgid "Enter new passphrase"
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "新しいパスフレーズを入力してください"
+msgstr "|pinentry-tt|パスフレーズを隠す"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
 msgid "Quality:"
-msgstr "品質: %s"
+msgstr "品質:"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry when
 #. hovering over the quality bar.  Please use an appropriate
@@ -376,10 +366,8 @@ msgstr "sshサポートを有効にする"
 msgid "enable putty support"
 msgstr "puttyサポートを有効にする"
 
-#, fuzzy
-#| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
-msgstr "古いパスフレーズを再使用することを認めない"
+msgstr "外部のパスワードキャッシュの使用を認めない"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|FILEに環境変数の設定も書き出す"
@@ -5178,12 +5166,10 @@ msgid "keyword too long"
 msgstr "キーワードが長すぎます"
 
 msgid "missing argument"
-msgstr "引数ありません"
+msgstr "引数がありません"
 
-#, fuzzy
-#| msgid "invalid value\n"
 msgid "invalid argument"
-msgstr "無効な値\n"
+msgstr "無効な引数\n"
 
 msgid "invalid command"
 msgstr "無効なコマンド"
@@ -5201,10 +5187,9 @@ msgstr "無効なオプション"
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "オプション\"%.50s\"に引数がありません\n"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
+#, c-format
 msgid "invalid argument for option \"%.50s\"\n"
-msgstr "オプション\"%.50s\"に引数がありません\n"
+msgstr "オプション\"%.50s\"に無効な引数です\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
