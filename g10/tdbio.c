@@ -100,12 +100,12 @@ take_write_lock (void)
   if (!lockhandle)
     lockhandle = dotlock_create (db_name, 0);
   if (!lockhandle)
-    log_fatal ( _("can't create lock for '%s'\n"), db_name );
+    log_fatal ( _("can't create lock for `%s'\n"), db_name );
 
   if (!is_locked)
     {
       if (dotlock_take (lockhandle, -1) )
-        log_fatal ( _("can't lock '%s'\n"), db_name );
+        log_fatal ( _("can't lock `%s'\n"), db_name );
       else
         is_locked = 1;
       return 0;
@@ -517,7 +517,7 @@ tdbio_set_dbname( const char *new_dbname, int create, int *r_nofile)
 
     if( access( fname, R_OK ) ) {
         if( errno != ENOENT )
-            log_fatal( _("can't access '%s': %s\n"), fname, strerror(errno) );
+            log_fatal( _("can't access `%s': %s\n"), fname, strerror(errno) );
 
 	if (!create)
           *r_nofile = 1;
