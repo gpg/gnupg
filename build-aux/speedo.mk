@@ -91,7 +91,8 @@ git-w32-installer: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 installer
 
 this-w32-installer: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 installer
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 \
+	                                           CUSTOM_SWDB=1 installer
 
 w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=release WITH_GUI=0 dist-source
@@ -100,7 +101,8 @@ git-w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 dist-source
 
 this-w32-source: check-tools
-	$(SPEEDOMAKE) TARGETOS=w32    WHAT=git     WITH_GUI=0 dist-source
+	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 \
+	                                           CUSTOM_SWDB=1 dist-source
 
 
 # Set this to "git" to build from git,
@@ -1058,7 +1060,7 @@ dist-source: all
              --anchored --exclude './PLAY' . ;\
 	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vc \
               --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
-	     PLAY/stamps/stamp-*-00-unpack PLAY/src ;\
+	     PLAY/stamps/stamp-*-00-unpack PLAY/src swdb.lst swdb.lst.sig ;\
          xz "$$tarname" ;\
 	)
 
