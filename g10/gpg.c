@@ -3531,6 +3531,13 @@ main (int argc, char **argv)
       }
     FREE_STRLIST(nrings);
 
+    if (opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
+      /* In loopback mode, never ask for the password multiple
+	 times.  */
+      {
+	opt.passphrase_repeat = 0;
+      }
+
     if (cmd == aGPGConfTest)
       g10_exit(0);
 
