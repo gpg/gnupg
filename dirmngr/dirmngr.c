@@ -297,7 +297,7 @@ union int_and_ptr_u
 
 /* The key used to store the current file descriptor in the thread
    local storage.  We use this in conjunction with the
-   log_set_pid_suffix_cb feature..  */
+   log_set_pid_suffix_cb feature.  */
 #ifndef HAVE_W32_SYSTEM
 static int my_tlskey_current_fd;
 #endif
@@ -611,6 +611,7 @@ pid_suffix_callback (unsigned long *r_suffix)
 {
   union int_and_ptr_u value;
 
+  memset (&value, 0, sizeof value);
   value.aptr = npth_getspecific (my_tlskey_current_fd);
   *r_suffix = value.aint;
   return (*r_suffix != -1);  /* Use decimal representation.  */
@@ -1915,6 +1916,7 @@ start_connection_thread (void *arg)
   union int_and_ptr_u argval;
   gnupg_fd_t fd;
 
+  memset (&argval, 0, sizeof argval);
   argval.aptr = arg;
   fd = argval.afd;
 
@@ -2054,12 +2056,14 @@ handle_connections (assuan_fd_t listen_fd)
               union int_and_ptr_u argval;
 	      npth_t thread;
 
+              memset (&argval, 0, sizeof argval);
               argval.afd = fd;
               snprintf (threadname, sizeof threadname-1,
                         "conn fd=%d", FD2INT(fd));
               threadname[sizeof threadname -1] = 0;
 
-              ret = npth_create (&thread, &tattr, start_connection_thread, argval.aptr);
+              ret = npth_create (&thread, &tattr,
+                                 start_connection_thread, argval.aptr);
 	      if (ret)
                 {
                   log_error ("error spawning connection handler: %s\n",
