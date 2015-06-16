@@ -259,25 +259,11 @@ ldap_wrapper_thread (void *dummy)
   struct timespec abstime;
   struct timespec curtime;
   struct timespec timeout;
-  int saved_errno;
-  fd_set fdset, read_fdset;
+  fd_set fdset;
   int ret;
   time_t exptime;
 
   (void)dummy;
-
-  FD_ZERO (&fdset);
-  nfds = -1;
-  for (ctx = wrapper_list; ctx; ctx = ctx->next)
-    {
-      if (ctx->log_fd != -1)
-	{
-	  FD_SET (ctx->log_fd, &fdset);
-	  if (ctx->log_fd > nfds)
-	    nfds = ctx->log_fd;
-	}
-    }
-  nfds++;
 
   npth_clock_gettime (&abstime);
   abstime.tv_sec += TIMERTICK_INTERVAL;
@@ -286,37 +272,41 @@ ldap_wrapper_thread (void *dummy)
     {
       int any_action = 0;
 
-      /* POSIX says that fd_set should be implemented as a structure,
-         thus a simple assignment is fine to copy the entire set.  */
-      read_fdset = fdset;
-
       npth_clock_gettime (&curtime);
       if (!(npth_timercmp (&curtime, &abstime, <)))
 	{
 	  /* Inactivity is checked below.  Nothing else to do.  */
-	  // handle_tick ();
 	  npth_clock_gettime (&abstime);
 	  abstime.tv_sec += TIMERTICK_INTERVAL;
 	}
       npth_timersub (&abstime, &curtime, &timeout);
 
+      FD_ZERO (&fdset);
+      nfds = -1;
+      for (ctx = wrapper_list; ctx; ctx = ctx->next)
+        {
+          if (ctx->log_fd != -1)
+            {
+              FD_SET (ctx->log_fd, &fdset);
+              if (ctx->log_fd > nfds)
+                nfds = ctx->log_fd;
+            }
+        }
+      nfds++;
+
       /* FIXME: For Windows, we have to use a reader thread on the
 	 pipe that signals an event (and a npth_select_ev variant).  */
-      ret = npth_pselect (nfds + 1, &read_fdset, NULL, NULL, &timeout, NULL);
-      saved_errno = errno;
-
-      if (ret == -1 && saved_errno != EINTR)
+      ret = npth_pselect (nfds + 1, &fdset, NULL, NULL, &timeout, NULL);
+      if (ret == -1)
 	{
-          log_error (_("npth_select failed: %s - waiting 1s\n"),
-                     strerror (saved_errno));
-          npth_sleep (1);
+          if (errno != EINTR)
+            {
+              log_error (_("npth_select failed: %s - waiting 1s\n"),
+                         strerror (errno));
+              npth_sleep (1);
+            }
           continue;
 	}
-
-      if (ret <= 0)
-	/* Interrupt or timeout.  Will be handled when calculating the
-	   next timeout.  */
-	continue;
 
       /* All timestamps before exptime should be considered expired.  */
       exptime = time (NULL);
@@ -331,10 +321,15 @@ ldap_wrapper_thread (void *dummy)
       for (ctx = wrapper_list; ctx; ctx = ctx->next)
         {
           /* Check whether there is any logging to be done. */
-          if (nfds && ctx->log_fd != -1 && FD_ISSET (ctx->log_fd, &read_fdset))
+          if (nfds && ctx->log_fd != -1 && FD_ISSET (ctx->log_fd, &fdset))
             {
               if (read_log_data (ctx))
-                any_action = 1;
+                {
+                  ksba_reader_release (ctx->reader);
+                  ctx->reader = NULL;
+                  SAFE_CLOSE (ctx->log_fd);
+                  any_action = 1;
+                }
             }
 
           /* Check whether the process is still running.  */
