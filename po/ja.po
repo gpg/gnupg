@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.1\n"
+"Project-Id-Version: gnupg 2.1.5\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-12-17 09:43+0900\n"
+"PO-Revision-Date: 2015-06-16 12:46+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -32,43 +32,33 @@ msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
 msgid "|pinentry-label|_Cancel"
-msgstr "|pinentry-label|_キャンセル"
+msgstr "|pinentry-label|キャンセル(_C)"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|_Yes"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|_No"
 
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
 
-#, fuzzy
-#| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
-msgstr "|pinentry-label|_キャンセル"
+msgstr "|pinentry-label|パスワードマネージャに保管(_S)"
 
-#, fuzzy
-#| msgid "Do you really want to permanently delete the OpenPGP secret key:"
 msgid "Do you really want to make your passphrase visible on the screen?"
-msgstr "選択したOpenPGP秘密鍵を本当に永久に削除しますか? (y/N) "
+msgstr "本当に画面にパスフレーズを見えるようにしますか?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr ""
+msgstr "|pinentry-tt|パスフレーズを見えるようにする"
 
-#, fuzzy
-#| msgid "Enter new passphrase"
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "新しいパスフレーズを入力してください"
+msgstr "|pinentry-tt|パスフレーズを隠す"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
 msgid "Quality:"
-msgstr "品質: %s"
+msgstr "品質:"
 
 #. TRANSLATORS: This string is a tooltip, shown by pinentry when
 #. hovering over the quality bar.  Please use an appropriate
@@ -343,10 +333,8 @@ msgstr "|PGM|PGMをSCdaemonプログラムとして使う"
 msgid "do not use the SCdaemon"
 msgstr "SCdaemonを使わない"
 
-#, fuzzy
-#| msgid "|NAME|connect to host NAME"
 msgid "|NAME|accept some commands via NAME"
-msgstr "|NAME|ホストNAMEに接続する"
+msgstr "|NAME|NAMEからのコマンドを受け付ける"
 
 msgid "ignore requests to change the TTY"
 msgstr "TTYの変更要求を無視する"
@@ -360,10 +348,8 @@ msgstr "|N|N秒後に保持したPINを無効とする"
 msgid "do not use the PIN cache when signing"
 msgstr "署名に対してPINの保持を使わない"
 
-#, fuzzy
-#| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
-msgstr "古いパスフレーズを再使用することを認めない"
+msgstr "外部のパスワードキャッシュの使用を認めない"
 
 msgid "disallow clients to mark keys as \"trusted\""
 msgstr "クライアントが鍵に\"trusted\"マークをつけることを認めない"
@@ -375,7 +361,7 @@ msgid "allow caller to override the pinentry"
 msgstr "pinentryより優先してパスフレーズ入力を認める"
 
 msgid "allow passphrase to be prompted through Emacs"
-msgstr ""
+msgstr "Emacsを通じてパスフレーズを催促することを認める"
 
 msgid "enable ssh support"
 msgstr "sshサポートを有功にする"
@@ -974,7 +960,7 @@ msgid "keyword too long"
 msgstr "キーワードが長すぎます"
 
 msgid "missing argument"
-msgstr "引数ありません"
+msgstr "引数がありません"
 
 msgid "invalid argument"
 msgstr "無効な引数"
@@ -1691,10 +1677,8 @@ msgstr "新しい鍵ペアを生成"
 msgid "quickly generate a new key pair"
 msgstr "すばやく新しい鍵ペアを生成"
 
-#, fuzzy
-#| msgid "quickly generate a new key pair"
 msgid "quickly add a new user-id"
-msgstr "すばやく新しい鍵ペアを生成"
+msgstr "すばやく新しいユーザIDを追加"
 
 msgid "full featured key pair generation"
 msgstr "全機能の鍵ペアを生成"
@@ -3971,7 +3955,7 @@ msgid "%s: keyring created\n"
 msgstr "%s: 鍵リングができました\n"
 
 msgid "override proxy options set for dirmngr"
-msgstr ""
+msgstr "dirmngrのプロキシ・オプション設定を押し切る"
 
 msgid "include revoked keys in search results"
 msgstr "失効した鍵を検索結果に含める"
@@ -3980,7 +3964,7 @@ msgid "include subkeys when searching by key ID"
 msgstr "key IDによる検索に副鍵も含める"
 
 msgid "override timeout options set for dirmngr"
-msgstr ""
+msgstr "dirmngrのタイムアウト・オプション設定を押し切る"
 
 msgid "automatically retrieve keys when verifying signatures"
 msgstr "署名の検証時に自動的に鍵を取得する"
