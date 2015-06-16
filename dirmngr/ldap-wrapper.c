@@ -234,7 +234,7 @@ read_log_data (struct wrapper_context_s *ctx)
     {
       if (n < 0)
         log_error (_("error reading log from ldap wrapper %d: %s\n"),
-                   ctx->pid, strerror (errno));
+                   (int)ctx->pid, strerror (errno));
       print_log_line (ctx, NULL);
       SAFE_CLOSE (ctx->log_fd);
       return 1;
