@@ -328,13 +328,17 @@ control this behaviour but this command line option takes precedence.
 
 @item --default-cache-ttl @var{n}
 @opindex default-cache-ttl
-Set the time a cache entry is valid to @var{n} seconds.  The default is
-600 seconds.
+Set the time a cache entry is valid to @var{n} seconds.  The default
+is 600 seconds.  Each time a cache entry is accessed, the entry's
+timer is reset.  To set an entry's maximum lifetime, use
+@command{max-cache-ttl}.
 
 @item --default-cache-ttl-ssh @var{n}
 @opindex default-cache-ttl
 Set the time a cache entry used for SSH keys is valid to @var{n}
-seconds.  The default is 1800 seconds.
+seconds.  The default is 1800 seconds.  Each time a cache entry is
+accessed, the entry's timer is reset.  To set an entry's maximum
+lifetime, use @command{max-cache-ttl-ssh}.
 
 @item --max-cache-ttl @var{n}
 @opindex max-cache-ttl
