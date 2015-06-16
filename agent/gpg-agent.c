@@ -677,12 +677,6 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 static void
 finalize_rereadable_options (void)
 {
-  /* It would be too surprising if the max-cache-ttl is lower than the
-     default-cache-ttl - thus we silently correct that.  */
-  if (opt.def_cache_ttl > opt.max_cache_ttl)
-    opt.max_cache_ttl = opt.def_cache_ttl;
-  if (opt.def_cache_ttl_ssh > opt.max_cache_ttl_ssh)
-    opt.max_cache_ttl_ssh = opt.def_cache_ttl_ssh;
 }
 
 
