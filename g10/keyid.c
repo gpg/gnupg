@@ -670,7 +670,7 @@ fingerprint_from_pk( PKT_public_key *pk, byte *array, size_t *ret_len )
 
   if ( pk->version < 4 )
     {
-      if ( is_RSA(pk->pubkey_algo) && opt.flags.allow_weak_digest_algos)
+      if (is_RSA(pk->pubkey_algo))
         {
           /* RSA in version 3 packets is special. */
           gcry_md_hd_t md;

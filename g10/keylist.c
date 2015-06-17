@@ -1590,6 +1590,14 @@ print_fingerprint (PKT_public_key *pk, PKT_secret_key *sk, int mode )
         putc ('\n', fp);
     else
         tty_printf ("\n");
+
+    if (n==16 && !opt.with_colons && !opt.flags.allow_weak_digest_algos)
+      {
+        if (fp)
+          fprintf (fp, _("WARNING: a PGP-2 fingerprint is not safe\n"));
+        else
+          tty_printf (_("WARNING: a PGP-2 fingerprint is not safe\n"));
+      }
 }
 
 /* Print the serial number of an OpenPGP card if available. */
