@@ -1013,19 +1013,6 @@ deprecated_command (const char *name)
 
 
 void
-obsolete_option (const char *configname, unsigned int configlineno,
-                 const char *name)
-{
-  if(configname)
-    log_info (_("%s:%u: obsolete option \"%s\" - it has no effect\n"),
-              configname, configlineno, name);
-  else
-    log_info (_("WARNING: \"%s%s\" is an obsolete option - it has no effect\n"),
-              "--", name);
-}
-
-
-void
 obsolete_scdaemon_option (const char *configname, unsigned int configlineno,
                           const char *name)
 {

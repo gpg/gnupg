@@ -908,8 +908,10 @@ main (int argc, char **argv )
         case oXauthority: default_xauthority = xstrdup (pargs.r.ret_str);
           break;
 
-        case oUseStandardSocket:   /* dummy */ break;
-        case oNoUseStandardSocket: /* dummy */ break;
+        case oUseStandardSocket:
+        case oNoUseStandardSocket:
+          obsolete_option (configname, configlineno, "use-standard-socket");
+          break;
 
         case oFakedSystemTime:
           {
@@ -945,7 +947,9 @@ main (int argc, char **argv )
           /* Only used by the first stage command line parser.  */
           break;
 
-        case oWriteEnvFile: /* dummy */ break;
+        case oWriteEnvFile:
+          obsolete_option (configname, configlineno, "write-env-file");
+          break;
 
         default : pargs.err = configfp? 1:2; break;
 	}

@@ -370,6 +370,9 @@ char *xtryasprintf (const char *fmt, ...) GPGRT_GCC_A_PRINTF(1,2);
 /* Replacement for gcry_cipher_algo_name.  */
 const char *gnupg_cipher_algo_name (int algo);
 
+void obsolete_option (const char *configname, unsigned int configlineno,
+                      const char *name);
+
 const char *print_fname_stdout (const char *s);
 const char *print_fname_stdin (const char *s);
 void print_utf8_buffer3 (estream_t fp, const void *p, size_t n,

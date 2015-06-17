@@ -104,6 +104,7 @@ setup_libgcrypt_logging (void)
   gcry_set_outofcore_handler (my_gcry_outofcore_handler, NULL);
 }
 
+
 /* A wrapper around gcry_cipher_algo_name to return the string
    "AES-128" instead of "AES".  Given that we have an alias in
    libgcrypt for it, it does not harm to too much to return this other
@@ -119,6 +120,19 @@ gnupg_cipher_algo_name (int algo)
   if (!strcmp (s, "AES"))
     s = "AES128";
   return s;
+}
+
+
+void
+obsolete_option (const char *configname, unsigned int configlineno,
+                 const char *name)
+{
+  if (configname)
+    log_info (_("%s:%u: obsolete option \"%s\" - it has no effect\n"),
+              configname, configlineno, name);
+  else
+    log_info (_("WARNING: \"%s%s\" is an obsolete option - it has no effect\n"),
+              "--", name);
 }
 
 
