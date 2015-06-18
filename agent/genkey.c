@@ -1,5 +1,6 @@
 /* genkey.c - Generate a keypair
  * Copyright (C) 2002, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -174,10 +175,12 @@ take_this_one_anyway (ctrl_t ctrl, const char *desc)
 
 /* Check whether the passphrase PW is suitable. Returns 0 if the
    passphrase is suitable and true if it is not and the user should be
-   asked to provide a different one.  If SILENT is set, no message are
-   displayed.  */
+   asked to provide a different one.  If FAILED_CONSTRAINT is set, a
+   message describing the problem is returned in
+   *FAILED_CONSTRAINT.  */
 int
-check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
+check_passphrase_constraints (ctrl_t ctrl, const char *pw,
+			      char **failed_constraint)
 {
   gpg_error_t err = 0;
   unsigned int minlen = opt.min_passphrase_len;
@@ -200,11 +203,16 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
                             "Please confirm that you do not want to "
                             "have any protection on your key."));
 
-      if (silent)
-        return gpg_error (GPG_ERR_INV_PASSPHRASE);
+      err = 1;
+      if (failed_constraint)
+	{
+	  if (opt.enforce_passphrase_constraints)
+	    *failed_constraint = xstrdup (desc);
+	  else
+	    err = take_this_one_anyway2 (ctrl, desc,
+					 _("Yes, protection is not needed"));
+	}
 
-      err = take_this_one_anyway2 (ctrl, desc,
-                                   _("Yes, protection is not needed"));
       goto leave;
     }
 
@@ -212,7 +220,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
      in in silent mode which returns immediately.  */
   if (utf8_charcount (pw) < minlen )
     {
-      if (silent)
+      if (!failed_constraint)
         {
           err = gpg_error (GPG_ERR_INV_PASSPHRASE);
           goto leave;
@@ -231,7 +239,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
 
   if (nonalpha_count (pw) < minnonalpha )
     {
-      if (silent)
+      if (!failed_constraint)
         {
           err = gpg_error (GPG_ERR_INV_PASSPHRASE);
           goto leave;
@@ -257,7 +265,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
   if (*pw && opt.check_passphrase_pattern &&
       check_passphrase_pattern (ctrl, pw))
     {
-      if (silent)
+      if (!failed_constraint)
         {
           err = gpg_error (GPG_ERR_INV_PASSPHRASE);
           goto leave;
@@ -273,7 +281,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
         }
     }
 
-  if (msg1 || msg2 || msg3)
+  if (failed_constraint && (msg1 || msg2 || msg3))
     {
       char *msg;
       size_t n;
@@ -295,9 +303,14 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent)
       if (n > 3 && !strcmp (msg + n - 3, "%0A"))
         msg[n-3] = 0;
 
-      /* Show error messages.  */
-      err = take_this_one_anyway (ctrl, msg);
-      xfree (msg);
+      err = 1;
+      if (opt.enforce_passphrase_constraints)
+	*failed_constraint = msg;
+      else
+	{
+	  err = take_this_one_anyway (ctrl, msg);
+	  xfree (msg);
+	}
     }
 
  leave:
@@ -333,7 +346,8 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
   gpg_error_t err;
   const char *text1 = prompt;
   const char *text2 = _("Please re-enter this passphrase");
-  const char *initial_errtext = NULL;
+  char *initial_errtext = NULL;
+  int initial_errtext_do_free = 0;
   struct pin_entry_info_s *pi, *pi2;
 
   *r_passphrase = NULL;
@@ -371,11 +385,17 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 
  next_try:
   err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi, NULL, 0);
+  if (initial_errtext_do_free)
+    {
+      xfree (initial_errtext);
+      initial_errtext_do_free = 0;
+    }
   initial_errtext = NULL;
   if (!err)
     {
-      if (check_passphrase_constraints (ctrl, pi->pin, 0))
+      if (check_passphrase_constraints (ctrl, pi->pin, &initial_errtext))
         {
+	  initial_errtext_do_free = 1;
           pi->failed_tries = 0;
           pi2->failed_tries = 0;
           goto next_try;

@@ -1,5 +1,6 @@
 /* agent.h - Global definitions for the agent
  * Copyright (C) 2001, 2002, 2003, 2005, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -412,7 +413,8 @@ int agent_pkdecrypt (ctrl_t ctrl, const char *desc_text,
                      membuf_t *outbuf, int *r_padding);
 
 /*-- genkey.c --*/
-int check_passphrase_constraints (ctrl_t ctrl, const char *pw, int silent);
+int check_passphrase_constraints (ctrl_t ctrl, const char *pw,
+				  char **failed_constraint);
 gpg_error_t agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
                                       char **r_passphrase);
 int agent_genkey (ctrl_t ctrl, const char *cache_nonce,

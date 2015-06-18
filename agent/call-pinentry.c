@@ -675,7 +675,7 @@ inq_quality (void *opaque, const char *line)
       else
         {
           percent = estimate_passphrase_quality (pin);
-          if (check_passphrase_constraints (NULL, pin, 1))
+          if (check_passphrase_constraints (NULL, pin, NULL))
             percent = -percent;
           snprintf (numbuf, sizeof numbuf, "%d", percent);
           rc = assuan_send_data (ctx, numbuf, strlen (numbuf));

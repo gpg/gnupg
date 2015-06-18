@@ -1,6 +1,7 @@
 /* command.c - gpg-agent command handler
  * Copyright (C) 2001-2011 Free Software Foundation, Inc.
  * Copyright (C) 2001-2013 Werner Koch
+ * Copyright (C) 2015 g10 Code GmbH.
  *
  * This file is part of GnuPG.
  *
@@ -1438,7 +1439,7 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
   char *p;
   int opt_data, opt_check, opt_no_ask, opt_qualbar;
   int opt_repeat = 0;
-  char *repeat_errtext = NULL;
+  char *entry_errtext = NULL;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
@@ -1522,15 +1523,16 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
 
     next_try:
       rc = agent_get_passphrase (ctrl, &response, desc, prompt,
-                                 repeat_errtext? repeat_errtext:errtext,
+                                 entry_errtext? entry_errtext:errtext,
                                  opt_qualbar, cacheid, CACHE_MODE_USER);
-      xfree (repeat_errtext);
-      repeat_errtext = NULL;
+      xfree (entry_errtext);
+      entry_errtext = NULL;
       if (!rc)
         {
           int i;
 
-          if (opt_check && check_passphrase_constraints (ctrl, response, 0))
+          if (opt_check
+	      && check_passphrase_constraints (ctrl, response, &entry_errtext))
             {
               xfree (response);
               goto next_try;
@@ -1548,9 +1550,9 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
                 {
                   xfree (response2);
                   xfree (response);
-                  repeat_errtext = try_percent_escape
+                  entry_errtext = try_percent_escape
                     (_("does not match - try again"), NULL);
-                  if (!repeat_errtext)
+                  if (!entry_errtext)
                     {
                       rc = gpg_error_from_syserror ();
                       break;
