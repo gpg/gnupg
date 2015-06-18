@@ -2525,6 +2525,9 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
       issuername_uri =  ksba_name_get_uri (issuername, 0);
       ksba_name_release (issuername); issuername = NULL;
 
+      /* Close the reader.  */
+      crl_close_reader (reader);
+      reader = NULL;
     }
   if (gpg_err_code (err) == GPG_ERR_EOF)
     err = 0;
@@ -2535,11 +2538,8 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
       if (opt.verbose)
         log_info ("no distribution point - trying issuer name\n");
 
-      if (reader)
-        {
-          crl_close_reader (reader);
-          reader = NULL;
-        }
+      crl_close_reader (reader);
+      reader = NULL;
 
       issuer = ksba_cert_get_issuer (cert, 0);
       if (!issuer)
@@ -2571,8 +2571,7 @@ crl_cache_reload_crl (ctrl_t ctrl, ksba_cert_t cert)
     }
 
  leave:
-  if (reader)
-    crl_close_reader (reader);
+  crl_close_reader (reader);
   xfree (distpoint_uri);
   xfree (issuername_uri);
   ksba_name_release (distpoint);

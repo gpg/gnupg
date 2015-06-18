@@ -325,8 +325,6 @@ ldap_wrapper_thread (void *dummy)
             {
               if (read_log_data (ctx))
                 {
-                  ksba_reader_release (ctx->reader);
-                  ctx->reader = NULL;
                   SAFE_CLOSE (ctx->log_fd);
                   any_action = 1;
                 }
