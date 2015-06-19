@@ -980,6 +980,9 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  if (DBG_CLOCK)
+    log_clock ("keydb_get_keybock enter");
+
   if (keyblock_cache.state == KEYBLOCK_CACHE_FILLED)
     {
       iobuf_seek (keyblock_cache.iobuf, 0);
@@ -990,6 +993,9 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
                                   ret_kb);
       if (err)
         keyblock_cache_clear ();
+      if (DBG_CLOCK)
+        log_clock (err? "keydb_get_keyblock leave (cached, failed)"
+                      : "keydb_get_keyblock leave (cached)");
       return err;
     }
 
@@ -1037,6 +1043,9 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
   if (keyblock_cache.state != KEYBLOCK_CACHE_FILLED)
     keyblock_cache_clear ();
 
+  if (DBG_CLOCK)
+    log_clock (err? "keydb_get_keyblock leave (failed)"
+               : "keydb_get_keyblock leave");
   return err;
 }
 
