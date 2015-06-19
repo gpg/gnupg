@@ -851,19 +851,26 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       kek = NULL;
     }
 
-  while (!(err = keydb_search (kdbhd, desc, ndesc, &descindex)))
+  for (;;)
     {
       int skip_until_subkey = 0;
       u32 keyid[2];
       PKT_public_key *pk;
 
+      err = keydb_search (kdbhd, desc, ndesc, &descindex);
       if (!users)
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
+      if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
+        continue;  /* Skip PGP2 keys.  */
+      if (err)
+        break;
 
       /* Read the keyblock. */
       release_kbnode (keyblock);
       keyblock = NULL;
       err = keydb_get_keyblock (kdbhd, &keyblock);
+      if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
+        continue;  /* Skip PGP2 keys.  */
       if (err)
         {
           log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
