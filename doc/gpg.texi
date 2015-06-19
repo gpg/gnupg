@@ -2320,6 +2320,8 @@ a numeric value or by a keyword:
   All of the debug messages you can get. A value greater than 8 may be
   used instead of the keyword.  The creation of hash tracing files is
   only enabled if the keyword is used.
+  @item help
+  List all available debug flags (see @option{debug}) and stop.
 @end table
 
 How these messages are mapped to the actual debugging flags is not

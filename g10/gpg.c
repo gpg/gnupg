@@ -1084,8 +1084,27 @@ set_opt_session_env (const char *name, const char *value)
 static void
 set_debug (const char *level)
 {
+  static struct { unsigned short val; const char *name; } flags [] = {
+    { DBG_PACKET_VALUE , "packet" },
+    { DBG_MPI_VALUE    , "mpi" },
+    { DBG_CRYPTO_VALUE , "crypto" },
+    { DBG_FILTER_VALUE , "filter" },
+    { DBG_IOBUF_VALUE  , "iobuf" },
+    { DBG_MEMORY_VALUE , "memory" },
+    { DBG_CACHE_VALUE  , "cache" },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_TRUST_VALUE  , "trust" },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_CARD_IO_VALUE, "cardio" },
+    { DBG_IPC_VALUE    , "ipc" },
+    { DBG_CLOCK_VALUE  , "clock" },
+    { DBG_LOOKUP_VALUE , "lookup"},
+    { DBG_EXTPROG_VALUE, "extprog" },
+    { 0, NULL }
+  };
   int numok = (level && digitp (level));
   int numlvl = numok? atoi (level) : 0;
+  int i;
 
   if (!level)
     ;
@@ -1108,10 +1127,26 @@ set_debug (const char *level)
       if (numok)
         opt.debug &= ~(DBG_HASHING_VALUE);
     }
+  else if (!strcmp (level, "help"))
+    {
+      es_printf ("Available debug flags:\n");
+      for (i=0; flags[i].name; i++)
+        es_printf (" %5hu %s\n", flags[i].val, flags[i].name);
+      g10_exit (0);
+    }
   else
     {
-      log_error (_("invalid debug-level '%s' given\n"), level);
-      g10_exit (2);
+      for (i=0; flags[i].name; i++)
+        if (!strcmp (level, flags[i].name))
+          {
+            opt.debug |= flags[i].val;
+            break;
+          }
+      if (!flags[i].name)
+        {
+          log_error (_("invalid debug-level '%s' given\n"), level);
+          g10_exit (2);
+        }
     }
 
   if (opt.debug & DBG_MEMORY_VALUE )
@@ -1127,22 +1162,13 @@ set_debug (const char *level)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
-              (opt.debug & DBG_PACKET_VALUE )? " packet":"",
-              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
-              (opt.debug & DBG_FILTER_VALUE )? " filter":"",
-              (opt.debug & DBG_IOBUF_VALUE  )? " iobuf":"",
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
-              (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
-              (opt.debug & DBG_TRUST_VALUE  )? " trust":"",
-              (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
-              (opt.debug & DBG_EXTPROG_VALUE)? " extprog":"",
-              (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
-              (opt.debug & DBG_IPC_VALUE    )? " ipc":"",
-              (opt.debug & DBG_CLOCK_VALUE  )? " clock":"",
-              (opt.debug & DBG_LOOKUP_VALUE )? " lookup":"");
+    {
+      log_info ("enabled debug flags:");
+      for (i=0; flags[i].name; i++)
+        if ((opt.debug & flags[i].val))
+          log_printf (" %s", flags[i].name);
+      log_printf ("\n");
+    }
 }
 
 
