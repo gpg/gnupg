@@ -4361,8 +4361,10 @@ g10_exit( int rc )
   gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
   if (DBG_CLOCK)
     log_clock ("stop");
+
   if ( (opt.debug & DBG_MEMSTAT_VALUE) )
     {
+      keydb_dump_stats ();
       gcry_control (GCRYCTL_DUMP_MEMORY_STATS);
       gcry_control (GCRYCTL_DUMP_RANDOM_STATS);
     }

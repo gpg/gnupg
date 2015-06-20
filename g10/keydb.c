@@ -75,6 +75,24 @@ struct keydb_handle
 };
 
 
+/* This object is used to keep a list of keyids in a linked list.  */
+typedef struct kid_list_s
+{
+  struct kid_list_s *next;
+  u32 kid[2];
+} *kid_list_t;
+
+/* To avoid looking up a key by keyid where we know that it does not
+   yet exist, we keep a table of keyids where a search resulted in
+   not-found.  This improves the --list-sigs and --check-sigs commands
+   substantively.  To avoid extra complexity we clear the entire table
+   on any inert or update operation.  The array is indexed by the
+   LSByte of the keyid.  N_KID_NOT_FOUND_TABLE is the nu,ber of keys
+   in the table.  */
+static kid_list_t kid_not_found_table[256];
+static unsigned int n_kid_not_found_table;
+
+
 /* This is a simple cache used to return the last result of a
    successful fingerprint search.  This works only for keybox resources
    because (due to lack of a copy_keyblock function) we need to store
@@ -98,6 +116,61 @@ struct {
 
 static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
+
+
+/* Return true if the keyid KID is in the table of keyids whcih were
+   not found in a previous searches.  */
+static int
+kid_not_found_p (u32 *kid)
+{
+  kid_list_t k;
+
+  for (k = kid_not_found_table[kid[0] % 256]; k; k = k->next)
+    if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
+      return 1;
+  return 0;
+}
+
+
+/* Put the keyid KID into the table of keyids whcih were not found in
+   previous searches.  Note that there is no check whether the keyid
+   is already in the table, thus kid_not_found_p() should be used prior.  */
+static void
+kid_not_found_insert (u32 *kid)
+{
+  kid_list_t k;
+
+  k = xmalloc (sizeof *k);
+  k->kid[0] = kid[0];
+  k->kid[1] = kid[1];
+  k->next = kid_not_found_table[kid[0]%256];
+  kid_not_found_table[kid[0]%256] = k;
+  n_kid_not_found_table++;
+}
+
+
+/* Flush the entire table of keyids whche were not found in previous
+   searches.  */
+static void
+kid_not_found_flush (void)
+{
+  kid_list_t k, knext;
+  int i;
+
+  if (!n_kid_not_found_table)
+    return;
+
+  for (i=0; i < DIM(kid_not_found_table); i++)
+    {
+      for (k = kid_not_found_table[i]; k; k = knext)
+        {
+          knext = k->next;
+          xfree (k);
+        }
+      kid_not_found_table[i] = NULL;
+    }
+  n_kid_not_found_table = 0;
+}
 
 
 static void
@@ -529,6 +602,12 @@ keydb_add_resource (const char *url, unsigned int flags)
 }
 
 
+void
+keydb_dump_stats (void)
+{
+  if (n_kid_not_found_table)
+    log_info ("keydb: kid_not_found_table: total: %u\n", n_kid_not_found_table);
+}
 
 
 KEYDB_HANDLE
@@ -1151,6 +1230,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  kid_not_found_flush ();
   keyblock_cache_clear ();
 
   if (hd->found < 0 || hd->found >= hd->used)
@@ -1204,6 +1284,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  kid_not_found_flush ();
   keyblock_cache_clear ();
 
   if (opt.dry_run)
@@ -1266,6 +1347,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
+  kid_not_found_flush ();
   keyblock_cache_clear ();
 
   if (hd->found < 0 || hd->found >= hd->used)
@@ -1509,6 +1591,15 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_CACHE)
     dump_search_desc (hd, "keydb_search", desc, ndesc);
 
+
+  if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
+      && kid_not_found_p (desc[0].u.kid))
+    {
+      if (DBG_CLOCK)
+        log_clock ("keydb_search leave (not found, cached)");
+      return gpg_error (GPG_ERR_NOT_FOUND);
+    }
+
   /* NB: If one of the exact search modes below is used in a loop to
      walk over all keys (with the same fingerprint) the caching must
      have been disabled for the handle.  */
@@ -1565,6 +1656,12 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     {
       keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
       memcpy (keyblock_cache.fpr, desc[0].u.fpr, 20);
+    }
+
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
+      && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
+    {
+      kid_not_found_insert (desc[0].u.kid);
     }
 
   if (DBG_CLOCK)

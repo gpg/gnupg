@@ -132,6 +132,7 @@ union pref_hint
 #define KEYDB_RESOURCE_FLAG_READONLY 8  /* Open in read only mode.  */
 
 gpg_error_t keydb_add_resource (const char *url, unsigned int flags);
+void        keydb_dump_stats (void);
 
 KEYDB_HANDLE keydb_new (void);
 void keydb_release (KEYDB_HANDLE hd);
@@ -153,6 +154,7 @@ gpg_error_t keydb_search_first (KEYDB_HANDLE hd);
 gpg_error_t keydb_search_next (KEYDB_HANDLE hd);
 gpg_error_t keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
 gpg_error_t keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr);
+
 
 /*-- pkclist.c --*/
 void show_revocation_reason( PKT_public_key *pk, int mode );
