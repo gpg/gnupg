@@ -53,6 +53,7 @@ static void print_card_serialno (const char *serialno);
 struct keylist_context
 {
   int check_sigs;  /* If set signatures shall be verified.  */
+  int good_sigs;   /* Counter used if CHECK_SIGS is set.  */
   int inv_sigs;    /* Counter used if CHECK_SIGS is set.  */
   int no_key;      /* Counter used if CHECK_SIGS is set.  */
   int oth_err;     /* Counter used if CHECK_SIGS is set.  */
@@ -439,19 +440,25 @@ print_signature_stats (struct keylist_context *s)
   if (!s->check_sigs)
     return;  /* Signature checking was not requested.  */
 
+  if (s->good_sigs == 1)
+    log_info (_("1 good signature\n"));
+  else if (s->good_sigs)
+    log_info (_("%d good signatures\n"), s->good_sigs);
+
   if (s->inv_sigs == 1)
-    tty_printf (_("1 bad signature\n"));
+    log_info (_("1 bad signature\n"));
   else if (s->inv_sigs)
-    tty_printf (_("%d bad signatures\n"), s->inv_sigs);
+    log_info (_("%d bad signatures\n"), s->inv_sigs);
+
   if (s->no_key == 1)
-    tty_printf (_("1 signature not checked due to a missing key\n"));
+    log_info (_("1 signature not checked due to a missing key\n"));
   else if (s->no_key)
-    tty_printf (_("%d signatures not checked due to missing keys\n"),
-		s->no_key);
+    log_info (_("%d signatures not checked due to missing keys\n"), s->no_key);
+
   if (s->oth_err == 1)
-    tty_printf (_("1 signature not checked due to an error\n"));
+    log_info (_("1 signature not checked due to an error\n"));
   else if (s->oth_err)
-    tty_printf (_("%d signatures not checked due to errors\n"), s->oth_err);
+    log_info (_("%d signatures not checked due to errors\n"), s->oth_err);
 }
 
 
@@ -1138,6 +1145,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
 	      switch (gpg_err_code (rc))
 		{
 		case 0:
+		  listctx->good_sigs++;
 		  sigrc = '!';
 		  break;
 		case GPG_ERR_BAD_SIGNATURE:
