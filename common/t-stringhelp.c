@@ -538,6 +538,146 @@ test_strsplit (void)
     }
 }
 
+
+
+static void
+test_strtokenize (void)
+{
+  struct {
+    const char *s;
+    const char *delim;
+    const char *fields_expected[10];
+  } tv[] = {
+    {
+      "", ":",
+      { "", NULL }
+    },
+    {
+      "a", ":",
+      { "a", NULL }
+    },
+    {
+      ":", ":",
+      { "", "", NULL }
+    },
+    {
+      "::", ":",
+      { "", "", "", NULL }
+    },
+    {
+      "a:b:c", ":",
+      { "a", "b", "c", NULL }
+    },
+    {
+      "a:b:", ":",
+      { "a", "b", "", NULL }
+    },
+    {
+      "a:b", ":",
+      { "a", "b", NULL }
+    },
+    {
+      "aa:b:cd", ":",
+      { "aa", "b", "cd", NULL }
+    },
+    {
+      "aa::b:cd", ":",
+      { "aa", "", "b", "cd", NULL }
+    },
+    {
+      "::b:cd", ":",
+      { "", "", "b", "cd", NULL }
+    },
+    {
+      "aa:   : b:cd ", ":",
+      { "aa", "", "b", "cd", NULL }
+    },
+    {
+      "  aa:   : b:  cd ", ":",
+      { "aa", "", "b", "cd", NULL }
+    },
+    {
+      "  ", ":",
+      { "", NULL }
+    },
+    {
+      "  :", ":",
+      { "", "", NULL }
+    },
+    {
+      "  : ", ":",
+      { "", "", NULL }
+    },
+    {
+      ": ", ":",
+      { "", "", NULL }
+    },
+    {
+      ": x ", ":",
+      { "", "x", NULL }
+    },
+    {
+      "a:bc:cde:fghi:jklmn::foo:", ":",
+      { "a", "bc", "cde", "fghi", "jklmn", "", "foo", "", NULL }
+    },
+    {
+      ",a,bc,,def,", ",",
+      { "", "a", "bc", "", "def", "", NULL }
+    },
+    {
+      " a ", " ",
+      { "", "a", "", NULL }
+    },
+    {
+      " ", " ",
+      { "", "", NULL }
+    },
+    {
+      "", " ",
+      { "", NULL }
+    }
+  };
+
+  int tidx;
+
+  for (tidx = 0; tidx < DIM(tv); tidx++)
+    {
+      char **fields;
+      int field_count;
+      int field_count_expected;
+      int i;
+
+      for (field_count_expected = 0;
+           tv[tidx].fields_expected[field_count_expected];
+           field_count_expected ++)
+        ;
+
+      fields = strtokenize (tv[tidx].s, tv[tidx].delim);
+      if (!fields)
+        fail (tidx * 1000);
+      else
+        {
+          for (field_count = 0; fields[field_count]; field_count++)
+            ;
+          if (field_count != field_count_expected)
+            fail (tidx * 1000);
+          else
+            {
+              for (i = 0; i < field_count_expected; i++)
+                if (strcmp (tv[tidx].fields_expected[i], fields[i]))
+                  {
+                    printf ("For field %d, expected '%s', but got '%s'\n",
+                            i, tv[tidx].fields_expected[i], fields[i]);
+                    fail (tidx * 1000 + i + 1);
+                  }
+            }
+          }
+
+      xfree (fields);
+    }
+}
+
+
 int
 main (int argc, char **argv)
 {
@@ -551,6 +691,7 @@ main (int argc, char **argv)
   test_make_filename_try ();
   test_make_absfilename_try ();
   test_strsplit ();
+  test_strtokenize ();
 
   xfree (home_buffer);
   return 0;

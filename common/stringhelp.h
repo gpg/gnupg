@@ -145,6 +145,10 @@ char *xstrconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
 
 char **strsplit (char *string, char delim, char replacement, int *count);
 
+/* Tokenize STRING using the set of delimiters in DELIM.  */
+char **strtokenize (const char *string, const char *delim);
+
+
 /*-- mapstrings.c --*/
 const char *map_static_macro_string (const char *string);
 
