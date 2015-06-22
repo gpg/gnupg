@@ -80,17 +80,17 @@ typedef struct kid_list_s
 {
   struct kid_list_s *next;
   u32 kid[2];
+  int state;  /* True if found.  */
 } *kid_list_t;
 
 /* To avoid looking up a key by keyid where we know that it does not
-   yet exist, we keep a table of keyids where a search resulted in
-   not-found.  This improves the --list-sigs and --check-sigs commands
-   substantively.  To avoid extra complexity we clear the entire table
-   on any inert or update operation.  The array is indexed by the
-   LSByte of the keyid.  N_KID_NOT_FOUND_TABLE is the nu,ber of keys
-   in the table.  */
-static kid_list_t kid_not_found_table[256];
-static unsigned int n_kid_not_found_table;
+   yet exist, we keep a table of keyids with search results.  This
+   improves the --list-sigs and --check-sigs commands substantively.
+   To avoid extra complexity we clear the entire table on any insert
+   or update operation.  The array is indexed by the LSB of the keyid.
+   KID_FOUND_TABLE_COUNT gives the number of keys in the table.  */
+static kid_list_t kid_found_table[256];
+static unsigned int kid_found_table_count;
 
 
 /* This is a simple cache used to return the last result of a
@@ -118,34 +118,54 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
-/* Return true if the keyid KID is in the table of keyids whcih were
-   not found in a previous searches.  */
+/* Checkwhether the keyid KID is in the table of found or not found
+   keyids.
+
+   Returns:
+     0 - Keyid not in table
+     1 - Keyid in table because not found in a previous search
+     2 - Keyid in table because found in a previous search
+ */
 static int
 kid_not_found_p (u32 *kid)
 {
   kid_list_t k;
 
-  for (k = kid_not_found_table[kid[0] % 256]; k; k = k->next)
+  for (k = kid_found_table[kid[0] % 256]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
-      return 1;
+      {
+        if (DBG_CACHE)
+          log_debug ("keydb: kid_not_found_p (%08lx%08lx) => %s\n",
+                     (ulong)kid[0], (ulong)kid[1],
+                     k->state? "false (found)": "true");
+        return k->state? 2 : 1;
+      }
+
+  if (DBG_CACHE)
+    log_debug ("keydb: kid_not_found_p (%08lx%08lx) => false\n",
+               (ulong)kid[0], (ulong)kid[1]);
   return 0;
 }
 
 
-/* Put the keyid KID into the table of keyids whcih were not found in
+/* Put the keyid KID into the table of keyids with their find states of
    previous searches.  Note that there is no check whether the keyid
    is already in the table, thus kid_not_found_p() should be used prior.  */
 static void
-kid_not_found_insert (u32 *kid)
+kid_not_found_insert (u32 *kid, int found)
 {
   kid_list_t k;
 
+  if (DBG_CACHE)
+    log_debug ("keydb: kid_not_found_insert (%08lx%08lx, %d)\n",
+               (ulong)kid[0], (ulong)kid[1], found);
   k = xmalloc (sizeof *k);
   k->kid[0] = kid[0];
   k->kid[1] = kid[1];
-  k->next = kid_not_found_table[kid[0]%256];
-  kid_not_found_table[kid[0]%256] = k;
-  n_kid_not_found_table++;
+  k->state = found;
+  k->next = kid_found_table[kid[0]%256];
+  kid_found_table[kid[0]%256] = k;
+  kid_found_table_count++;
 }
 
 
@@ -157,19 +177,22 @@ kid_not_found_flush (void)
   kid_list_t k, knext;
   int i;
 
-  if (!n_kid_not_found_table)
+  if (DBG_CACHE)
+    log_debug ("keydb: kid_not_found_flush\n");
+
+  if (!kid_found_table_count)
     return;
 
-  for (i=0; i < DIM(kid_not_found_table); i++)
+  for (i=0; i < DIM(kid_found_table); i++)
     {
-      for (k = kid_not_found_table[i]; k; k = knext)
+      for (k = kid_found_table[i]; k; k = knext)
         {
           knext = k->next;
           xfree (k);
         }
-      kid_not_found_table[i] = NULL;
+      kid_found_table[i] = NULL;
     }
-  n_kid_not_found_table = 0;
+  kid_found_table_count = 0;
 }
 
 
@@ -605,8 +628,8 @@ keydb_add_resource (const char *url, unsigned int flags)
 void
 keydb_dump_stats (void)
 {
-  if (n_kid_not_found_table)
-    log_info ("keydb: kid_not_found_table: total: %u\n", n_kid_not_found_table);
+  if (kid_found_table_count)
+    log_info ("keydb: kid_not_found_table: total: %u\n", kid_found_table_count);
 }
 
 
@@ -1578,6 +1601,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               size_t ndesc, size_t *descindex)
 {
   gpg_error_t rc;
+  int once_found = 0;
 
   if (descindex)
     *descindex = 0; /* Make sure it is always set on return.  */
@@ -1592,8 +1616,14 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     dump_search_desc (hd, "keydb_search", desc, ndesc);
 
 
+  /* Note that we track the found state in the table to cope with the
+     case that a initial search found the key and the next search
+     (without a reset) did not found the key.  Without keeping the
+     found state we would falsely claim that the key has not been
+     found.  Actually this is quite common because we need to check
+     for ambgious keyids.  */
   if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
-      && kid_not_found_p (desc[0].u.kid))
+      && (once_found = kid_not_found_p (desc[0].u.kid)) == 1 )
     {
       if (DBG_CLOCK)
         log_clock ("keydb_search leave (not found, cached)");
@@ -1658,10 +1688,11 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       memcpy (keyblock_cache.fpr, desc[0].u.fpr, 20);
     }
 
-  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
-      && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
+  if ((!rc || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+      && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
+      && !once_found)
     {
-      kid_not_found_insert (desc[0].u.kid);
+      kid_not_found_insert (desc[0].u.kid, !rc);
     }
 
   if (DBG_CLOCK)
