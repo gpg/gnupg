@@ -29,6 +29,7 @@
 
 #include <config.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <errno.h>
 
 #include "util.h"
@@ -393,4 +394,84 @@ gnupg_compare_version (const char *a, const char *b)
           || (a_major == b_major && a_minor == b_minor
               && a_micro == b_micro
               && strcmp (a_plvl, b_plvl) >= 0));
+}
+
+
+
+/* Parse an --debug style argument.  We allow the use of number values
+ * in the usual C notation or a string with comma separated keywords.
+ *
+ * Returns: 0 on success or -1 and ERRNO set on error.  On success the
+ *          supplied variable is updated by the parsed flags.
+ *
+ * If STRING is NULL the enabled debug flags are printed.
+ */
+int
+parse_debug_flag (const char *string, unsigned int *debugvar,
+                  const struct debug_flags_s *flags)
+
+{
+  unsigned long result = 0;
+  int i, j;
+
+  if (!string)
+    {
+      if (debugvar)
+        {
+          log_info ("enabled debug flags:");
+          for (i=0; flags[i].name; i++)
+            if ((*debugvar & flags[i].flag))
+              log_printf (" %s", flags[i].name);
+          log_printf ("\n");
+        }
+      return 0;
+    }
+
+  while (spacep (string))
+    string++;
+  if (*string == '-')
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  if (!strcmp (string, "?") || !strcmp (string, "help"))
+    {
+      log_info ("available debug flags:\n");
+      for (i=0; flags[i].name; i++)
+        log_info (" %5u %s\n", flags[i].flag, flags[i].name);
+      exit (0);
+    }
+  else if (digitp (string))
+    {
+      errno = 0;
+      result = strtoul (string, NULL, 0);
+      if (result == ULONG_MAX && errno == ERANGE)
+        return -1;
+    }
+  else
+    {
+      char **words;
+      words = strtokenize (string, ",");
+      if (!words)
+        return -1;
+      for (i=0; words[i]; i++)
+        {
+          if (*words[i])
+            {
+              for (j=0; flags[j].name; j++)
+                if (!strcmp (words[i], flags[j].name))
+                  {
+                    result |= flags[j].flag;
+                    break;
+                  }
+              if (!flags[j].name)
+                log_info (_("unknown debug flag '%s' ignored\n"), words[i]);
+            }
+        }
+      xfree (words);
+    }
+
+  *debugvar |= result;
+  return 0;
 }

@@ -389,6 +389,14 @@ int match_multistr (const char *multistr,const char *match);
 
 int gnupg_compare_version (const char *a, const char *b);
 
+struct debug_flags_s
+{
+  unsigned int flag;
+  const char *name;
+};
+int parse_debug_flag (const char *string, unsigned int *debugvar,
+                      const struct debug_flags_s *flags);
+
 
 /*-- Simple replacement functions. */
 
