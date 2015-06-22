@@ -3355,6 +3355,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   size_t dummy_nresp;
   int testmode;
   int cherry_mode = 0;
+  int add_zero = 0;
   int enable_varlen = 0;
 
   testmode = !resp && !nresp;
@@ -3396,7 +3397,7 @@ ccid_transceive_secure (ccid_driver_t handle,
       enable_varlen = 1;
       break;
     case VENDOR_CHERRY:
-      pininfo->maxlen = 25;
+      pininfo->maxlen = 15;
       enable_varlen = 1;
       /* The CHERRY XX44 keyboard echos an asterisk for each entered
          character on the keyboard channel.  We use a special variant
@@ -3405,6 +3406,7 @@ ccid_transceive_secure (ccid_driver_t handle,
          Lc byte to the APDU.  It seems that it will be replaced with
          the actual length instead of being appended before the APDU
          is send to the card. */
+      add_zero = 1;
       if (handle->id_product != CHERRY_ST2000)
         cherry_mode = 1;
       break;
@@ -3527,7 +3529,7 @@ ccid_transceive_secure (ccid_driver_t handle,
   msg[msglen++] = apdu_buf[1]; /* INS */
   msg[msglen++] = apdu_buf[2]; /* P1 */
   msg[msglen++] = apdu_buf[3]; /* P2 */
-  if (cherry_mode)
+  if (add_zero)
     msg[msglen++] = 0;
   else if (pininfo->fixedlen != 0)
     {

@@ -1784,8 +1784,12 @@ pcsc_vendor_specific_init (int slot)
               reader_table[slot].is_spr532 = 1;
               reader_table[slot].pinpad_varlen_supported = 1;
             }
-          else if (strstr (reader_table[slot].rdrname, "ST-2xxx")
-                   || strstr (reader_table[slot].rdrname, "cyberJack")
+          else if (strstr (reader_table[slot].rdrname, "ST-2xxx"))
+            {
+              reader_table[slot].pcsc.pinmax = 15;
+              reader_table[slot].pinpad_varlen_supported = 1;
+            }
+          else if (strstr (reader_table[slot].rdrname, "cyberJack")
                    || strstr (reader_table[slot].rdrname, "DIGIPASS")
                    || strstr (reader_table[slot].rdrname, "Gnuk")
                    || strstr (reader_table[slot].rdrname, "KAAN"))
@@ -1850,8 +1854,12 @@ pcsc_vendor_specific_init (int slot)
       reader_table[slot].is_spr532 = 1;
       reader_table[slot].pinpad_varlen_supported = 1;
     }
-  else if ((vendor == 0x046a && product == 0x003e)  /* Cherry ST-2xxx */
-           || vendor == 0x0c4b /* Tested with Reiner cyberJack GO */
+  else if (vendor == 0x046a && product == 0x003e) /* Cherry ST-2xxx */
+    {
+      reader_table[slot].pcsc.pinmax = 15;
+      reader_table[slot].pinpad_varlen_supported = 1;
+    }
+  else if (vendor == 0x0c4b /* Tested with Reiner cyberJack GO */
            || vendor == 0x1a44 /* Tested with Vasco DIGIPASS 920 */
            || vendor == 0x234b /* Tested with FSIJ Gnuk Token */
            || vendor == 0x0d46 /* Tested with KAAN Advanced??? */)
