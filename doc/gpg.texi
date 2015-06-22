@@ -2320,8 +2320,6 @@ a numeric value or by a keyword:
   All of the debug messages you can get. A value greater than 8 may be
   used instead of the keyword.  The creation of hash tracing files is
   only enabled if the keyword is used.
-  @item help
-  List all available debug flags (see @option{debug}) and stop.
 @end table
 
 How these messages are mapped to the actual debugging flags is not
@@ -2330,8 +2328,10 @@ however carefully selected to best aid in debugging.
 
 @item --debug @var{flags}
 @opindex debug
-Set debugging flags. All flags are or-ed and @var{flags} may
-be given in C syntax (e.g. 0x0042).
+Set debugging flags. All flags are or-ed and @var{flags} may be given
+in C syntax (e.g. 0x0042) or as a comma separated list of flag names.
+To get a list of all supported flags the single word "help" can be
+used.
 
 @item --debug-all
 @opindex debug-all

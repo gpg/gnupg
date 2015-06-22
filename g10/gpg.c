@@ -557,7 +557,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oDisplayCharset, "charset", "@"),
   ARGPARSE_s_s (oOptions, "options", "@"),
 
-  ARGPARSE_p_u (oDebug, "debug", "@"),
+  ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_n (oDebugIOLBF, "debug-iolbf", "@"),
@@ -820,6 +820,28 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_PACKET_VALUE , "packet"  },
+    { DBG_MPI_VALUE    , "mpi"     },
+    { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_FILTER_VALUE , "filter"  },
+    { DBG_IOBUF_VALUE  , "iobuf"   },
+    { DBG_MEMORY_VALUE , "memory"  },
+    { DBG_CACHE_VALUE  , "cache"   },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_TRUST_VALUE  , "trust"   },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_CARD_IO_VALUE, "cardio"  },
+    { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CLOCK_VALUE  , "clock"   },
+    { DBG_LOOKUP_VALUE , "lookup"  },
+    { DBG_EXTPROG_VALUE, "extprog" },
+    { 0, NULL }
+  };
+
+
 #ifdef ENABLE_SELINUX_HACKS
 #define ALWAYS_ADD_KEYRINGS 1
 #else
@@ -1077,6 +1099,7 @@ set_opt_session_env (const char *name, const char *value)
                gpg_strerror (err));
 }
 
+
 /* Setup the debugging.  With a LEVEL of NULL only the active debug
    flags are propagated to the subsystems.  With LEVEL set, a specific
    set of debug flags is set; thus overriding all flags already
@@ -1084,24 +1107,6 @@ set_opt_session_env (const char *name, const char *value)
 static void
 set_debug (const char *level)
 {
-  static struct { unsigned short val; const char *name; } flags [] = {
-    { DBG_PACKET_VALUE , "packet" },
-    { DBG_MPI_VALUE    , "mpi" },
-    { DBG_CRYPTO_VALUE , "crypto" },
-    { DBG_FILTER_VALUE , "filter" },
-    { DBG_IOBUF_VALUE  , "iobuf" },
-    { DBG_MEMORY_VALUE , "memory" },
-    { DBG_CACHE_VALUE  , "cache" },
-    { DBG_MEMSTAT_VALUE, "memstat" },
-    { DBG_TRUST_VALUE  , "trust" },
-    { DBG_HASHING_VALUE, "hashing" },
-    { DBG_CARD_IO_VALUE, "cardio" },
-    { DBG_IPC_VALUE    , "ipc" },
-    { DBG_CLOCK_VALUE  , "clock" },
-    { DBG_LOOKUP_VALUE , "lookup"},
-    { DBG_EXTPROG_VALUE, "extprog" },
-    { 0, NULL }
-  };
   int numok = (level && digitp (level));
   int numlvl = numok? atoi (level) : 0;
   int i;
@@ -1127,26 +1132,10 @@ set_debug (const char *level)
       if (numok)
         opt.debug &= ~(DBG_HASHING_VALUE);
     }
-  else if (!strcmp (level, "help"))
-    {
-      es_printf ("Available debug flags:\n");
-      for (i=0; flags[i].name; i++)
-        es_printf (" %5hu %s\n", flags[i].val, flags[i].name);
-      g10_exit (0);
-    }
   else
     {
-      for (i=0; flags[i].name; i++)
-        if (!strcmp (level, flags[i].name))
-          {
-            opt.debug |= flags[i].val;
-            break;
-          }
-      if (!flags[i].name)
-        {
-          log_error (_("invalid debug-level '%s' given\n"), level);
-          g10_exit (2);
-        }
+      log_error (_("invalid debug-level '%s' given\n"), level);
+      g10_exit (2);
     }
 
   if (opt.debug & DBG_MEMORY_VALUE )
@@ -1162,13 +1151,7 @@ set_debug (const char *level)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    {
-      log_info ("enabled debug flags:");
-      for (i=0; flags[i].name; i++)
-        if ((opt.debug & flags[i].val))
-          log_printf (" %s", flags[i].name);
-      log_printf ("\n");
-    }
+    parse_debug_flag (NULL, &opt.debug, debug_flags);
 }
 
 
@@ -2447,7 +2430,14 @@ main (int argc, char **argv)
 	    opt.list_options|=LIST_SHOW_KEYRING;
 	    break;
 
-	  case oDebug: opt.debug |= pargs.r.ret_ulong; break;
+	  case oDebug:
+            if (parse_debug_flag (pargs.r.ret_str, &opt.debug, debug_flags))
+              {
+                pargs.r_opt = ARGPARSE_INVALID_ARG;
+                pargs.err = ARGPARSE_PRINT_ERROR;
+              }
+            break;
+
 	  case oDebugAll: opt.debug = ~0; break;
           case oDebugLevel: debug_level = pargs.r.ret_str; break;
 
