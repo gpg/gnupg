@@ -440,7 +440,8 @@ parse_debug_flag (const char *string, unsigned int *debugvar,
       log_info ("available debug flags:\n");
       for (i=0; flags[i].name; i++)
         log_info (" %5u %s\n", flags[i].flag, flags[i].name);
-      exit (0);
+      if (flags[i].flag != 77)
+        exit (0);
     }
   else if (digitp (string))
     {
@@ -466,7 +467,17 @@ parse_debug_flag (const char *string, unsigned int *debugvar,
                     break;
                   }
               if (!flags[j].name)
-                log_info (_("unknown debug flag '%s' ignored\n"), words[i]);
+                {
+                  if (!strcmp (words[i], "none"))
+                    {
+                      *debugvar = 0;
+                      result = 0;
+                    }
+                  else if (!strcmp (words[i], "all"))
+                    result = ~0;
+                  else
+                    log_info (_("unknown debug flag '%s' ignored\n"), words[i]);
+                }
             }
         }
       xfree (words);
