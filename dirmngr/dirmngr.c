@@ -219,7 +219,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
   ARGPARSE_s_u (oFakedSystemTime, "faked-system-time", "@"), /*(epoch time)*/
-  ARGPARSE_p_u (oDebug,    "debug", "@"),
+  ARGPARSE_s_s (oDebug,    "debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_i (oGnutlsDebug, "gnutls-debug", "@"),
   ARGPARSE_s_i (oGnutlsDebug, "tls-debug", "@"),
@@ -236,6 +236,20 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_end ()
 };
+
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_X509_VALUE   , "x509"    },
+    { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_MEMORY_VALUE , "memory"  },
+    { DBG_CACHE_VALUE  , "cache"   },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_LOOKUP_VALUE , "lookup"  },
+    { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
+  };
 
 #define DEFAULT_MAX_REPLIES 10
 #define DEFAULT_LDAP_TIMEOUT 100 /* arbitrary large timeout */
@@ -441,6 +455,9 @@ set_debug (void)
       gnutls_global_set_log_level (opt_gnutls_debug);
     }
 #endif /*HTTP_USE_GNUTLS*/
+
+  if (opt.debug)
+    parse_debug_flag (NULL, &opt.debug, debug_flags);
 }
 
 
@@ -508,7 +525,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     {
     case oQuiet:   opt.quiet = 1; break;
     case oVerbose: opt.verbose++; break;
-    case oDebug:   opt.debug |= pargs->r.ret_ulong; break;
+    case oDebug:
+      parse_debug_flag (pargs->r.ret_str, &opt.debug, debug_flags);
+      break;
     case oDebugAll: opt.debug = ~0; break;
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
     case oGnutlsDebug: opt_gnutls_debug = pargs->r.ret_int; break;
@@ -866,9 +885,6 @@ main (int argc, char **argv)
         case oVerbose: opt.verbose++; break;
         case oBatch: opt.batch=1; break;
 
-        case oDebug: opt.debug |= pargs.r.ret_ulong; break;
-        case oDebugAll: opt.debug = ~0; break;
-        case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;
 
         case oOptions:

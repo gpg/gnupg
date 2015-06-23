@@ -118,7 +118,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oSh,	"sh", N_("sh-style command output")),
   ARGPARSE_s_n (oCsh,	"csh", N_("csh-style command output")),
   ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
-  ARGPARSE_p_u (oDebug,	"debug", "@"),
+  ARGPARSE_s_s (oDebug,	"debug", "@"),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level" ,
                 N_("|LEVEL|set the debugging level to LEVEL")),
@@ -159,6 +159,23 @@ static ARGPARSE_OPTS opts[] = {
 
   ARGPARSE_end ()
 };
+
+
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_COMMAND_VALUE, "command"  },
+    { DBG_MPI_VALUE    , "mpi"     },
+    { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_MEMORY_VALUE , "memory"  },
+    { DBG_CACHE_VALUE  , "cache"   },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_IPC_VALUE    , "ipc"     },
+    { DBG_CARD_IO_VALUE, "cardio"  },
+    { DBG_READER_VALUE , "reader"  },
+    { 0, NULL }
+  };
 
 
 /* The card driver we use by default for PC/SC.  */
@@ -343,17 +360,7 @@ set_debug (const char *level)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s%s%s\n",
-              (opt.debug & DBG_COMMAND_VALUE)? " command":"",
-              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
-              (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
-              (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
-              (opt.debug & DBG_IPC_VALUE    )? " ipc":"",
-              (opt.debug & DBG_CARD_IO_VALUE)? " cardio":"",
-              (opt.debug & DBG_READER_VALUE )? " reader":"");
+    parse_debug_flag (NULL, &opt.debug, debug_flags);
 }
 
 
@@ -536,7 +543,13 @@ main (int argc, char **argv )
         case oVerbose: opt.verbose++; break;
         case oBatch: opt.batch=1; break;
 
-        case oDebug: opt.debug |= pargs.r.ret_ulong; break;
+        case oDebug:
+          if (parse_debug_flag (pargs.r.ret_str, &opt.debug, debug_flags))
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
         case oDebugAll: opt.debug = ~0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
         case oDebugWait: debug_wait = pargs.r.ret_int; break;

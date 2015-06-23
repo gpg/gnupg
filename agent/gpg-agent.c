@@ -153,7 +153,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oCsh,	  "csh",       N_("csh-style command output")),
   ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
 
-  ARGPARSE_s_u (oDebug,	     "debug",       "@"),
+  ARGPARSE_s_s (oDebug,	     "debug",       "@"),
   ARGPARSE_s_n (oDebugAll,   "debug-all",   "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level", "@"),
   ARGPARSE_s_i (oDebugWait,"  debug-wait",  "@"),
@@ -237,6 +237,22 @@ static ARGPARSE_OPTS opts[] = {
 
   {0} /* End of list */
 };
+
+
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_COMMAND_VALUE, "command"  },
+    { DBG_MPI_VALUE    , "mpi"     },
+    { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_MEMORY_VALUE , "memory"  },
+    { DBG_CACHE_VALUE  , "cache"   },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_IPC_VALUE    , "ipc"     },
+    { 77, NULL } /* 77 := Do not exit on "help" or "?".  */
+  };
+
 
 
 #define DEFAULT_CACHE_TTL     (10*60)  /* 10 minutes */
@@ -490,15 +506,7 @@ set_debug (void)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s\n",
-              (opt.debug & DBG_COMMAND_VALUE)? " command":"",
-              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
-              (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
-              (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
-              (opt.debug & DBG_IPC_VALUE    )? " ipc":"");
+    parse_debug_flag (NULL, &opt.debug, debug_flags);
 }
 
 
@@ -590,7 +598,9 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oQuiet: opt.quiet = 1; break;
     case oVerbose: opt.verbose++; break;
 
-    case oDebug: opt.debug |= pargs->r.ret_ulong; break;
+    case oDebug:
+      parse_debug_flag (pargs->r.ret_str, &opt.debug, debug_flags);
+      break;
     case oDebugAll: opt.debug = ~0; break;
     case oDebugLevel: debug_level = pargs->r.ret_str; break;
     case oDebugPinentry: opt.debug_pinentry = 1; break;

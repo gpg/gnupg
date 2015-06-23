@@ -323,7 +323,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|SPEC|use this keyserver to lookup keys")),
   ARGPARSE_s_s (oOptions, "options", N_("|FILE|read options from FILE")),
 
-  ARGPARSE_p_u (oDebug, "debug", "@"),
+  ARGPARSE_s_s (oDebug, "debug", "@"),
   ARGPARSE_s_s (oDebugLevel, "debug-level",
                 N_("|LEVEL|set the debugging level to LEVEL")),
   ARGPARSE_s_n (oDebugAll, "debug-all", "@"),
@@ -406,6 +406,19 @@ static ARGPARSE_OPTS opts[] = {
 };
 
 
+/* The list of supported debug flags.  */
+static struct debug_flags_s debug_flags [] =
+  {
+    { DBG_X509_VALUE   , "x509"    },
+    { DBG_MPI_VALUE    , "mpi"     },
+    { DBG_CRYPTO_VALUE , "crypto"  },
+    { DBG_MEMORY_VALUE , "memory"  },
+    { DBG_CACHE_VALUE  , "cache"   },
+    { DBG_MEMSTAT_VALUE, "memstat" },
+    { DBG_HASHING_VALUE, "hashing" },
+    { DBG_IPC_VALUE    , "ipc"     },
+    { 0, NULL }
+  };
 
 
 /* Global variable to keep an error count. */
@@ -706,15 +719,7 @@ set_debug (void)
   gcry_control (GCRYCTL_SET_VERBOSITY, (int)opt.verbose);
 
   if (opt.debug)
-    log_info ("enabled debug flags:%s%s%s%s%s%s%s%s\n",
-              (opt.debug & DBG_X509_VALUE   )? " x509":"",
-              (opt.debug & DBG_MPI_VALUE    )? " mpi":"",
-              (opt.debug & DBG_CRYPTO_VALUE )? " crypto":"",
-              (opt.debug & DBG_MEMORY_VALUE )? " memory":"",
-              (opt.debug & DBG_CACHE_VALUE  )? " cache":"",
-              (opt.debug & DBG_MEMSTAT_VALUE)? " memstat":"",
-              (opt.debug & DBG_HASHING_VALUE)? " hashing":"",
-              (opt.debug & DBG_IPC_VALUE    )? " ipc":"" );
+    parse_debug_flag (NULL, &opt.debug, debug_flags);
 }
 
 
@@ -1243,7 +1248,13 @@ main ( int argc, char **argv)
 
         case oKeyring: append_to_strlist (&nrings, pargs.r.ret_str); break;
 
-        case oDebug: debug_value |= pargs.r.ret_ulong; break;
+        case oDebug:
+          if (parse_debug_flag (pargs.r.ret_str, &debug_value, debug_flags))
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
         case oDebugAll: debug_value = ~0; break;
         case oDebugNone: debug_value = 0; break;
         case oDebugLevel: debug_level = pargs.r.ret_str; break;
