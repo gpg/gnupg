@@ -2290,8 +2290,16 @@ pcsc_pinpad_verify (int slot, int class, int ins, int p0, int p1,
   int sw;
   unsigned char *pin_verify;
   int len = PIN_VERIFY_STRUCTURE_SIZE + pininfo->fixedlen;
-  unsigned char result[2];
-  pcsc_dword_t resultlen = 2;
+  /*
+   * The result buffer is only expected to have two-byte result on
+   * return.  However, some implementation uses this buffer for lower
+   * layer too and it assumes that there is enough space for lower
+   * layer communication.  Such an implementation fails for TPDU
+   * readers with "insufficient buffer", as it needs header and
+   * trailer.  Six is the number for header + result + trailer (TPDU).
+   */
+  unsigned char result[6];
+  pcsc_dword_t resultlen = 6;
   int no_lc;
 
   if (!reader_table[slot].atrlen
@@ -2365,8 +2373,8 @@ pcsc_pinpad_modify (int slot, int class, int ins, int p0, int p1,
   int sw;
   unsigned char *pin_modify;
   int len = PIN_MODIFY_STRUCTURE_SIZE + 2 * pininfo->fixedlen;
-  unsigned char result[2];
-  pcsc_dword_t resultlen = 2;
+  unsigned char result[6];      /* See the comment at pinpad_verify.  */
+  pcsc_dword_t resultlen = 6;
   int no_lc;
 
   if (!reader_table[slot].atrlen
