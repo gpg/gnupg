@@ -1110,8 +1110,9 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
       return gpg_error (GPG_ERR_ENOMEM);;
     }
 
-  if (ephemeral)
-    keydb_set_ephemeral (kh, 1);
+  /* Set the ephemeral flag so that the search looks at all
+     records.  */
+  keydb_set_ephemeral (kh, 1);
 
   rc = lock_all (kh);
   if (rc)
@@ -1125,12 +1126,29 @@ keydb_store_cert (ksba_cert_t cert, int ephemeral, int *existed)
         {
           if (existed)
             *existed = 1;
+          if (!ephemeral)
+            {
+              /* Remove ephemeral flags from existing certificate to "store"
+                 it permanently. */
+              rc = keydb_set_cert_flags (cert, 1, KEYBOX_FLAG_BLOB, 0,
+                                         KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
+              if (rc)
+                {
+                  log_error ("clearing ephemeral flag failed: %s\n",
+                             gpg_strerror (rc));
+                  return rc;
+                }
+            }
           return 0; /* okay */
         }
       log_error (_("problem looking for existing certificate: %s\n"),
                  gpg_strerror (rc));
       return rc;
     }
+
+  /* Reset the ephemeral flag if not requested.  */
+  if (!ephemeral)
+    keydb_set_ephemeral (kh, 0);
 
   rc = keydb_locate_writable (kh, 0);
   if (rc)
