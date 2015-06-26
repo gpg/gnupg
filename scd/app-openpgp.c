@@ -1,6 +1,6 @@
 /* app-openpgp.c - The OpenPGP card application.
  * Copyright (C) 2003, 2004, 2005, 2007, 2008,
- *               2009, 2013, 2014 Free Software Foundation, Inc.
+ *               2009, 2013, 2014, 2015 Free Software Foundation, Inc.
  *
  * This file is part of GnuPG.
  *
@@ -114,6 +114,9 @@ static struct {
   { 0x0103, 0,    0, 0, 0, 0, 0, 0, "Private DO 3"},
   { 0x0104, 0,    0, 0, 0, 0, 0, 0, "Private DO 4"},
   { 0x7F21, 1,    0, 1, 0, 0, 0, 1, "Cardholder certificate"},
+  /* V3.0 */
+  { 0x7F74, 0,    0, 1, 0, 0, 0, 0, "General Feature Management"},
+  { 0x00D5, 0,    0, 1, 0, 0, 0, 0, "AES key data"},
   { 0 }
 };
 
@@ -195,13 +198,15 @@ struct app_local_s {
   struct
   {
     unsigned int is_v2:1;              /* This is a v2.0 compatible card.  */
+    unsigned int sm_supported:1;       /* Secure Messaging is supported.  */
     unsigned int get_challenge:1;
     unsigned int key_import:1;
     unsigned int change_force_chv:1;
     unsigned int private_dos:1;
     unsigned int algo_attr_change:1;   /* Algorithm attributes changeable.  */
-    unsigned int sm_supported:1;       /* Secure Messaging is supported.  */
-    unsigned int sm_aes128:1;          /* Use AES-128 for SM.  */
+    unsigned int has_decrypt:1;        /* Support symmetric decryption.  */
+    unsigned int has_button:1;
+    unsigned int sm_algo:2;            /* Symmetric crypto algo for SM.  */
     unsigned int max_certlen_3:16;
     unsigned int max_get_challenge:16; /* Maximum size for get_challenge.  */
     unsigned int max_cmd_data:16;      /* Maximum data size for a command.  */
@@ -1057,7 +1062,8 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
       char tmp[110];
 
       snprintf (tmp, sizeof tmp,
-                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d sm=%d si=%u",
+                "gc=%d ki=%d fc=%d pd=%d mcl3=%u aac=%d "
+                "sm=%d si=%u dec=%d bt=%d",
                 app->app_local->extcap.get_challenge,
                 app->app_local->extcap.key_import,
                 app->app_local->extcap.change_force_chv,
@@ -1065,9 +1071,12 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                 app->app_local->extcap.max_certlen_3,
                 app->app_local->extcap.algo_attr_change,
                 (app->app_local->extcap.sm_supported
-                 ? (app->app_local->extcap.sm_aes128? 7 : 2)
+                 ? (app->app_local->extcap.sm_algo == 0? 2 :
+                    (app->app_local->extcap.sm_algo == 1? 7 : 9))
                  : 0),
-                app->app_local->status_indicator);
+                app->app_local->status_indicator,
+                app->app_local->extcap.has_decrypt,
+                app->app_local->extcap.has_button);
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
     }
@@ -2119,6 +2128,7 @@ do_setattr (app_t app, const char *name,
     { "SM-KEY-ENC",   0x00D1, 3, 0, 1 },
     { "SM-KEY-MAC",   0x00D2, 3, 0, 1 },
     { "KEY-ATTR",     0,      0, 3, 1 },
+    { "AESKEY",       0x00D5, 3, 0, 1 },
     { NULL, 0 }
   };
   int exmode;
@@ -4302,13 +4312,16 @@ show_caps (struct app_local_s *s)
   log_info ("Algo-Attr-Change: %s\n", s->extcap.algo_attr_change? "yes":"no");
   log_info ("SM-Support .....: %s", s->extcap.sm_supported? "yes":"no");
   if (s->extcap.sm_supported)
-    log_printf (" (%s)", s->extcap.sm_aes128? "AES-128":"3DES");
+    log_printf (" (%s)", s->extcap.sm_algo==2? "3DES":
+                (s->extcap.sm_algo==2? "AES-128" : "AES-256"));
   log_info ("Max-Cert3-Len ..: %u\n", s->extcap.max_certlen_3);
   log_info ("Max-Cmd-Data ...: %u\n", s->extcap.max_cmd_data);
   log_info ("Max-Rsp-Data ...: %u\n", s->extcap.max_rsp_data);
   log_info ("Cmd-Chaining ...: %s\n", s->cardcap.cmd_chaining?"yes":"no");
   log_info ("Ext-Lc-Le ......: %s\n", s->cardcap.ext_lc_le?"yes":"no");
   log_info ("Status Indicator: %02X\n", s->status_indicator);
+  log_info ("Symmetric crypto: %s\n", s->extcap.has_decrypt? "yes":"no");
+  log_info ("Button..........: %s\n", s->extcap.has_button? "yes":"no");
 
   log_info ("GnuPG-No-Sync ..: %s\n",  s->flags.no_sync? "yes":"no");
   log_info ("GnuPG-Def-PW2 ..: %s\n",  s->flags.def_chv2? "yes":"no");
@@ -4568,11 +4581,12 @@ app_select_openpgp (app_t app)
           app->app_local->extcap.change_force_chv = !!(*buffer & 0x10);
           app->app_local->extcap.private_dos      = !!(*buffer & 0x08);
           app->app_local->extcap.algo_attr_change = !!(*buffer & 0x04);
+          app->app_local->extcap.has_decrypt      = !!(*buffer & 0x02);
         }
       if (buflen >= 10)
         {
           /* Available with v2 cards.  */
-          app->app_local->extcap.sm_aes128     = (buffer[1] == 1);
+          app->app_local->extcap.sm_algo = buffer[1];
           app->app_local->extcap.max_get_challenge
                                                = (buffer[2] << 8 | buffer[3]);
           app->app_local->extcap.max_certlen_3 = (buffer[4] << 8 | buffer[5]);
@@ -4585,6 +4599,12 @@ app_select_openpgp (app_t app)
          CHANGE_FORCE_CHV bit but allow it anyway. */
       if (app->card_version <= 0x0100 && manufacturer == 1)
         app->app_local->extcap.change_force_chv = 1;
+
+      /* Check optional DO of "General Feature Management" for button.  */
+      relptr = get_one_do (app, 0x7f74, &buffer, &buflen, NULL);
+      if (relptr)
+        /* It must be: 03 81 01 20 */
+        app->app_local->extcap.has_button = 1;
 
       parse_login_data (app);
 
