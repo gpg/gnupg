@@ -610,7 +610,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
   if (list_mode)
     es_fprintf (listfp, "# off=%lu ctb=%02x tag=%d hlen=%d plen=%lu%s%s\n",
                 (unsigned long)pos, ctb, pkttype, hdrlen, pktlen,
-                partial? " partial":"",
+                partial? (new_ctb ? " partial" : " indeterminate") :"",
                 new_ctb? " new-ctb":"");
 
   pkt->pkttype = pkttype;
