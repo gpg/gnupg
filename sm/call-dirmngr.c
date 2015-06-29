@@ -198,7 +198,7 @@ start_dirmngr_ext (ctrl_t ctrl, assuan_context_t *ctx_r)
   gpg_error_t err;
   assuan_context_t ctx;
 
-  if (opt.disable_dirmngr)
+  if (opt.disable_dirmngr || ctrl->offline)
     return gpg_error (GPG_ERR_NO_DIRMNGR);
 
   if (*ctx_r)

@@ -2067,6 +2067,7 @@ gpgsm_init_default_ctrl (struct server_control_s *ctrl)
   ctrl->include_certs = default_include_certs;
   ctrl->use_ocsp = opt.enable_ocsp;
   ctrl->validation_model = default_validation_model;
+  ctrl->offline = opt.disable_dirmngr;
 }
 
 

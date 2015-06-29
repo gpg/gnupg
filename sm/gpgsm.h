@@ -201,6 +201,7 @@ struct server_control_s
   int validation_model; /* 0 := standard model (shell),
                            1 := chain model,
                            2 := STEED model. */
+  int offline;        /* If true gpgsm won't do any network access.  */
 };
 
 

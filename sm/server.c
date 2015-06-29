@@ -309,6 +309,16 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
     {
       ctrl->server_local->no_encrypt_to = 1;
     }
+  else if (!strcmp (key, "offline"))
+    {
+      /* We ignore this option if gpgsm has been started with
+         --disable-dirmngr (which also sets offline).  */
+      if (!opt.disable_dirmngr)
+        {
+          int i = *value? !!atoi (value) : 1;
+          ctrl->offline = i;
+        }
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
@@ -1093,10 +1103,12 @@ static const char hlp_getinfo[] =
   "  pid         - Return the process id of the server.\n"
   "  agent-check - Return success if the agent is running.\n"
   "  cmd_has_option CMD OPT\n"
-  "              - Returns OK if the command CMD implements the option OPT.";
+  "              - Returns OK if the command CMD implements the option OPT.\n"
+  "  offline     - Returns OK if the conenction is in offline mode.";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   int rc = 0;
 
   if (!strcmp (line, "version"))
@@ -1113,7 +1125,6 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "agent-check"))
     {
-      ctrl_t ctrl = assuan_get_pointer (ctx);
       rc = gpgsm_agent_send_nop (ctrl);
     }
   else if (!strncmp (line, "cmd_has_option", 14)
@@ -1147,6 +1158,10 @@ cmd_getinfo (assuan_context_t ctx, char *line)
                 }
             }
         }
+    }
+  else if (!strcmp (line, "offline"))
+    {
+      rc = ctrl->offline? 0 : gpg_error (GPG_ERR_GENERAL);
     }
   else
     rc = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

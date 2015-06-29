@@ -957,7 +957,7 @@ is_cert_still_valid (ctrl_t ctrl, int force_ocsp, int lm, estream_t fp,
 {
   gpg_error_t err;
 
-  if (opt.no_crl_check && !ctrl->use_ocsp)
+  if (ctrl->offline || (opt.no_crl_check && !ctrl->use_ocsp))
     {
       audit_log_ok (ctrl->audit, AUDIT_CRL_CHECK,
                     gpg_error (GPG_ERR_NOT_ENABLED));
@@ -1749,9 +1749,9 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
       if (opt.no_policy_check)
         log_info ("policies not checked due to %s option\n",
                   "--disable-policy-checks");
-      if (opt.no_crl_check && !ctrl->use_ocsp)
+      if (ctrl->offline || (opt.no_crl_check && !ctrl->use_ocsp))
         log_info ("CRLs not checked due to %s option\n",
-                  "--disable-crl-checks");
+                  ctrl->offline ? "offline" : "--disable-crl-checks");
     }
 
   if (!rc)

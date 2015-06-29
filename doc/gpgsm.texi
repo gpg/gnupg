@@ -462,6 +462,7 @@ will not have on your local keybox), the operator can tell both your IP
 address and the time when you verified the signature.
 
 
+@anchor{gpgsm-option --validation-model}
 @item --validation-model @var{name}
 @opindex validation-model
 This option changes the default validation model.  The only possible
@@ -554,6 +555,7 @@ may be given (@pxref{how-to-specify-a-user-id}).
 Write output to @var{file}.  The default is to write it to stdout.
 
 
+@anchor{gpgsm-option --with-key-data}
 @item --with-key-data
 @opindex with-key-data
 Displays extra information with the @code{--list-keys} commands.  Especially
@@ -561,6 +563,7 @@ a line tagged @code{grp} is printed which tells you the keygrip of a
 key.  This string is for example used as the file name of the
 secret key.
 
+@anchor{gpgsm-option --with-validation}
 @item --with-validation
 @opindex with-validation
 When doing a key listing, do a full validation check for each key and
@@ -1152,7 +1155,9 @@ Assuan manual for details.
 * GPGSM EXPORT::          Export certificates.
 * GPGSM IMPORT::          Import certificates.
 * GPGSM DELETE::          Delete certificates.
+* GPGSM GETAUDITLOG::     Retrieve an audit log.
 * GPGSM GETINFO::         Information about the process
+* GPGSM OPTION::          Session options.
 @end menu
 
 
@@ -1342,6 +1347,7 @@ may be issued as a progress indicator.
 
 @node GPGSM LISTKEYS
 @subsection List available keys
+@anchor{gpgsm-cmd listkeys}
 
 To list the keys in the internal database or using an external key
 provider, the command:
@@ -1441,6 +1447,23 @@ this requires that the usual escape quoting rules are done.
 The certificates must be specified unambiguously otherwise an error is
 returned.
 
+@node GPGSM GETAUDITLOG
+@subsection Retrieve an audit log.
+@anchor{gpgsm-cmd getauditlog}
+
+This command is used to retrieve an audit log.
+
+@example
+GETAUDITLOG [--data] [--html]
+@end example
+
+If @option{--data} is used, the audit log is send using D-lines
+instead of being sent to the file descriptor given by an OUTPUT
+command.  If @option{--html} is used, the output is formated as an
+XHTML block. This is designed to be incorporated into a HTML
+document.
+
+
 @node GPGSM GETINFO
 @subsection  Return information about the process
 
@@ -1457,10 +1480,113 @@ Return the version of the program.
 @item pid
 Return the process id of the process.
 @item agent-check
-Return success if the agent is running.
+Return OK if the agent is running.
 @item cmd_has_option @var{cmd} @var{opt}
-Return success if the command @var{cmd} implements the option @var{opt}.
+Return OK if the command @var{cmd} implements the option @var{opt}.
 The leading two dashes usually used with @var{opt} shall not be given.
+@item offline
+Return OK if the connection is in offline mode.  This may be either
+due to a @code{OPTION offline=1} or due to @command{gpgsm} being
+started with option @option{--disable-dirmngr}.
+@end table
+
+@node GPGSM OPTION
+@subsection  Session options.
+
+The standard Assuan option handler supports these options.
+
+@example
+OPTION @var{name}[=@var{value}]
+@end example
+
+These @var{name}s are recognized:
+
+@table @code
+
+@item putenv
+Change the session's environment to be passed via gpg-agent to
+Pinentry.  @var{value} is a string of the form
+@code{<KEY>[=[<STRING>]]}.  If only @code{<KEY>} is given the
+environment variable @code{<KEY>} is removed from the session
+environment, if @code{<KEY>=} is given that environment variable is
+set to the empty string, and if @code{<STRING>} is given it is set to
+that string.
+
+@item display
+Set the session environment variable @code{DISPLAY} is set to @var{value}.
+@item ttyname
+Set the session environment variable @code{GPG_TTY} is set to @var{value}.
+@item ttytype
+Set the session environment variable @code{TERM} is set to @var{value}.
+@item lc-ctype
+Set the session environment variable @code{LC_CTYPE} is set to @var{value}.
+@item lc-messages
+Set the session environment variable @code{LC_MESSAGES} is set to @var{value}.
+@item xauthority
+Set the session environment variable @code{XAUTHORITY} is set to @var{value}.
+@item pinentry-user-data
+Set the session environment variable @code{PINENTRY_USER_DATA} is set
+to @var{value}.
+
+@item include-certs
+This option overrides the command line option
+@option{--include-certs}.  A @var{value} of -2 includes all
+certificates except for the root certificate, -1 includes all
+certicates, 0 does not include any certicates, 1 includes only the
+signers certicate and all other positive values include up to
+@var{value} certificates starting with the signer cert.
+
+@item list-mode
+@xref{gpgsm-cmd listkeys}.
+
+@item list-to-output
+If @var{value} is true the output of the list commands
+(@pxref{gpgsm-cmd listkeys}) is written to the file descriptor set
+with the last OUTPUT command.  If @var{value} is false the output is
+written via data lines; this is the default.
+
+@item with-validation
+If @var{value} is true for each listed certificate the validation
+status is printed.  This may result in the download of a CRL or the
+user being asked about the trustworthiness of a root certificate.  The
+default is given by a command line option (@pxref{gpgsm-option
+--with-validation}).
+
+
+@item with-secret
+If @var{value} is true certificates with a corresponding private key
+are marked by the list commands.
+
+@item validation-model
+This option overrides the command line option
+@option{validation-model} for the session.
+(@pxref{gpgsm-option --validation-model}.)
+
+@item with-key-data
+This option globally enables the command line option
+@option{--with-key-data}.  (@pxref{gpgsm-option --with-key-data}.)
+
+@item enable-audit-log
+If @var{value} is true data to write an audit log is gathered.
+(@pxref{gpgsm-cmd getauditlog}.)
+
+@item allow-pinentry-notify
+If this option is used notifications about the launch of a Pinentry
+are passed back to the client.
+
+@item with-ephemeral-keys
+If @var{value} is true ephemeral certificates are included in the
+output of the list commands.
+
+@item no-encrypt-to
+If this option is used all keys set by the command line option
+@option{--encrypt-to} are ignored.
+
+@item offline
+If @var{value} is true or @var{value} is not given all network access
+is disabled for this session.  This is the same as the command line
+option @option{--disable-dirmngr}.
+
 @end table
 
 @mansect see also
