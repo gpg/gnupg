@@ -374,7 +374,7 @@ static int active_connections;
  */
 
 static char *create_socket_name (char *standard_name, int with_homedir);
-static gnupg_fd_t create_server_socket (char *name, int primary,
+static gnupg_fd_t create_server_socket (char *name, int primary, int cygwin,
                                         char **r_redir_name,
                                         assuan_sock_nonce_t *nonce);
 static void create_directories (void);
@@ -1185,14 +1185,14 @@ main (int argc, char **argv )
 
       /* Create the sockets.  */
       socket_name = create_socket_name (GPG_AGENT_SOCK_NAME, 1);
-      fd = create_server_socket (socket_name, 1,
+      fd = create_server_socket (socket_name, 1, 0,
                                  &redir_socket_name, &socket_nonce);
 
       if (opt.extra_socket)
         {
           socket_name_extra = create_socket_name (socket_name_extra, 0);
           opt.extra_socket = 2; /* Indicate that it has been malloced.  */
-          fd_extra = create_server_socket (socket_name_extra, 0,
+          fd_extra = create_server_socket (socket_name_extra, 0, 0,
                                            &redir_socket_name_extra,
                                            &socket_nonce_extra);
         }
@@ -1201,7 +1201,7 @@ main (int argc, char **argv )
         {
           socket_name_browser = create_socket_name (socket_name_browser, 0);
           opt.browser_socket = 2; /* Indicate that it has been malloced.  */
-          fd_browser = create_server_socket (socket_name_browser, 0,
+          fd_browser = create_server_socket (socket_name_browser, 0, 0,
                                              &redir_socket_name_browser,
                                              &socket_nonce_browser);
         }
@@ -1209,7 +1209,7 @@ main (int argc, char **argv )
       if (ssh_support)
         {
           socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME, 1);
-          fd_ssh = create_server_socket (socket_name_ssh, 0,
+          fd_ssh = create_server_socket (socket_name_ssh, 0, 1,
                                          &redir_socket_name_ssh,
                                          &socket_nonce_ssh);
         }
@@ -1645,9 +1645,10 @@ create_socket_name (char *standard_name, int with_homedir)
    function needs to be used for the regular socket first (indicated
    by PRIMARY) and only then for the extra and the ssh sockets.  If
    the socket has been redirected the name of the real socket is
-   stored as a malloced string at R_REDIR_NAME.  */
+   stored as a malloced string at R_REDIR_NAME.  If CYGWIN is set a
+   Cygwin compatible socket is created (Windows only). */
 static gnupg_fd_t
-create_server_socket (char *name, int primary,
+create_server_socket (char *name, int primary, int cygwin,
                       char **r_redir_name, assuan_sock_nonce_t *nonce)
 {
   struct sockaddr *addr;
@@ -1666,6 +1667,13 @@ create_server_socket (char *name, int primary,
       *name = 0; /* Inhibit removal of the socket by cleanup(). */
       agent_exit (2);
     }
+
+#if ASSUAN_VERSION_NUMBER >= 0x020300 /* >= 2.3.0 */
+  if (cygwin)
+    assuan_sock_set_flag (fd, "cygwin", 1);
+#else
+  (void)cygwin;
+#endif
 
   unaddr = xmalloc (sizeof *unaddr);
   addr = (struct sockaddr*)unaddr;

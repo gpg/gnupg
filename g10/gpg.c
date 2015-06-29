@@ -1109,7 +1109,6 @@ set_debug (const char *level)
 {
   int numok = (level && digitp (level));
   int numlvl = numok? atoi (level) : 0;
-  int i;
 
   if (!level)
     ;
