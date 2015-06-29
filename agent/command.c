@@ -1691,10 +1691,13 @@ cmd_learn (assuan_context_t ctx, char *line)
 
 
 static const char hlp_passwd[] =
-  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset] <hexkeygrip>\n"
+  "PASSWD [--cache-nonce=<c>] [--passwd-nonce=<s>] [--preset]\n"
+  "       [--verify] <hexkeygrip>\n"
   "\n"
-  "Change the passphrase/PIN for the key identified by keygrip in LINE. When\n"
-  "--preset is used then the new passphrase will be added to the cache.\n";
+  "Change the passphrase/PIN for the key identified by keygrip in LINE.  If\n"
+  "--preset is used then the new passphrase will be added to the cache.\n"
+  "If --verify is used the command asks for the passphrase and verifies\n"
+  "that the passphrase valid.\n";
 static gpg_error_t
 cmd_passwd (assuan_context_t ctx, char *line)
 {
@@ -1708,13 +1711,14 @@ cmd_passwd (assuan_context_t ctx, char *line)
   unsigned char *shadow_info = NULL;
   char *passphrase = NULL;
   char *pend;
-  int opt_preset;
+  int opt_preset, opt_verify;
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
   opt_preset = has_option (line, "--preset");
   cache_nonce = option_value (line, "--cache-nonce");
+  opt_verify = has_option (line, "--verify");
   if (cache_nonce)
     {
       for (pend = cache_nonce; *pend && !spacep (pend); pend++)
@@ -1753,7 +1757,9 @@ cmd_passwd (assuan_context_t ctx, char *line)
     goto leave;
 
   ctrl->in_passwd++;
-  err = agent_key_from_file (ctrl, cache_nonce, ctrl->server_local->keydesc,
+  err = agent_key_from_file (ctrl,
+                             opt_verify? NULL : cache_nonce,
+                             ctrl->server_local->keydesc,
                              grip, &shadow_info, CACHE_MODE_IGNORE, NULL,
                              &s_skey, &passphrase);
   if (err)
@@ -1762,6 +1768,10 @@ cmd_passwd (assuan_context_t ctx, char *line)
     {
       log_error ("changing a smartcard PIN is not yet supported\n");
       err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+    }
+  else if (opt_verify)
+    {
+      /* All done.  */
     }
   else
     {
