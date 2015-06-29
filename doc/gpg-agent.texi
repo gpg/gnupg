@@ -478,7 +478,9 @@ remote machine.
 
 @anchor{option --enable-ssh-support}
 @item --enable-ssh-support
+@itemx --enable-putty-support
 @opindex enable-ssh-support
+@opindex enable-putty-support
 
 Enable the OpenSSH Agent protocol.
 
@@ -521,6 +523,12 @@ gpg-connect-agent /bye
 @end smallexample
 
 Adding the @option{--verbose} shows the progress of starting the agent.
+
+The @option{--enable-putty-support} is only available under Windows
+and allows the use of gpg-agent with the ssh implementation
+@command{putty}.  This is similar to the regular ssh-agent support but
+makes use of Windows message queue as required by @command{putty}.
+
 
 @end table
 

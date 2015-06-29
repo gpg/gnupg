@@ -280,6 +280,9 @@ static struct debug_flags_s debug_flags [] =
 #endif
 
 
+/* Flag indicating that the ssh-agent subsystem has been enabled.  */
+static int ssh_support;
+
 #ifdef HAVE_W32_SYSTEM
 /* Flag indicating that support for Putty has been enabled.  */
 static int putty_support;
@@ -935,11 +938,12 @@ main (int argc, char **argv )
         case oKeepTTY: opt.keep_tty = 1; break;
         case oKeepDISPLAY: opt.keep_display = 1; break;
 
-	case oSSHSupport:  opt.ssh_support = 1; break;
+	case oSSHSupport:
+          ssh_support = 1;
+          break;
         case oPuttySupport:
 #        ifdef HAVE_W32_SYSTEM
           putty_support = 1;
-          opt.ssh_support = 1;
 #        endif
           break;
 
@@ -1110,10 +1114,9 @@ main (int argc, char **argv )
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
       es_printf ("disable-scdaemon:%lu:\n",
               GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
+      es_printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
 #ifdef HAVE_W32_SYSTEM
       es_printf ("enable-putty-support:%lu:\n", GC_OPT_FLAG_NONE);
-#else
-      es_printf ("enable-ssh-support:%lu:\n", GC_OPT_FLAG_NONE);
 #endif
       es_printf ("allow-loopback-pinentry:%lu:\n",
                  GC_OPT_FLAG_NONE|GC_OPT_FLAG_RUNTIME);
@@ -1209,7 +1212,7 @@ main (int argc, char **argv )
                                              &socket_nonce_browser);
         }
 
-      if (opt.ssh_support)
+      if (ssh_support)
         {
           socket_name_ssh = create_socket_name (GPG_AGENT_SSH_SOCK_NAME, 1);
           fd_ssh = create_server_socket (socket_name_ssh, 0,
@@ -1258,7 +1261,7 @@ main (int argc, char **argv )
 #endif /*HAVE_SIGPROCMASK*/
 
           /* Create the SSH info string if enabled. */
-	  if (opt.ssh_support)
+	  if (ssh_support)
 	    {
 	      if (asprintf (&infostr_ssh_sock, "SSH_AUTH_SOCK=%s",
 			    socket_name_ssh) < 0)
@@ -1282,13 +1285,13 @@ main (int argc, char **argv )
 	    *socket_name_extra = 0;
 	  if (opt.browser_socket)
 	    *socket_name_browser = 0;
-	  if (opt.ssh_support)
+	  if (ssh_support)
 	    *socket_name_ssh = 0;
 
           if (argc)
             { /* Run the program given on the commandline.  */
-              if (opt.ssh_support && (putenv (infostr_ssh_sock)
-                                      || putenv (infostr_ssh_valid)))
+              if (ssh_support && (putenv (infostr_ssh_sock)
+                                  || putenv (infostr_ssh_valid)))
                 {
                   log_error ("failed to set environment: %s\n",
                              strerror (errno) );
@@ -1314,7 +1317,7 @@ main (int argc, char **argv )
                  shell's eval to set it */
               if (csh_style)
                 {
-		  if (opt.ssh_support)
+		  if (ssh_support)
 		    {
 		      *strchr (infostr_ssh_sock, '=') = ' ';
 		      es_printf ("setenv %s;\n", infostr_ssh_sock);
@@ -1322,13 +1325,13 @@ main (int argc, char **argv )
                 }
               else
                 {
-		  if (opt.ssh_support)
+		  if (ssh_support)
 		    {
 		      es_printf ("%s; export SSH_AUTH_SOCK;\n",
                                  infostr_ssh_sock);
 		    }
                 }
-	      if (opt.ssh_support)
+	      if (ssh_support)
 		{
 		  xfree (infostr_ssh_sock);
 		  xfree (infostr_ssh_valid);

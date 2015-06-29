@@ -140,9 +140,6 @@ struct
   int keep_tty;      /* Don't switch the TTY (for pinentry) on request */
   int keep_display;  /* Don't switch the DISPLAY (for pinentry) on request */
 
-  /* This global option enables the ssh-agent subsystem.  */
-  int ssh_support;
-
   /* This global options indicates the use of an extra socket. Note
      that we use a hack for cleanup handling in gpg-agent.c: If the
      value is less than 2 the name has not yet been malloced. */
