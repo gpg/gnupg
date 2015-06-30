@@ -93,6 +93,23 @@ appear in the ChangeLog.
   need.  If you really need to do it, use a separate commit for such a
   change.
 
+** Commit log keywords
+
+  - GnuPG-bug-id :: Values are comma or space delimited bug numbers
+                    from bug.gnupg.org pertaining to this commit.
+  - Debian-bug-id :: Same as above but from the Debian bug tracker.
+  - CVE-id :: CVE id number pertaining to this commit.
+  - Regression-due-to :: Commit id of the regression fixed by this commit.
+  - Fixes-commit :: Commit id this commit fixes.
+  - Reported-by :: Value is a name or mail address of a bug reporte.
+  - Suggested-by :: Value is a name or mail address of someone how
+                    suggested this change.
+  - Co-authored-by :: Name or mail address of a co-author
+  - Some-comments-by :: Name or mail address of the author of
+                        additional comments (commit log or code).
+  - Proofread-by :: Sometimes used by translation commits.
+  - Signed-off-by :: Name or mail address of the developer
+
 * Windows
 ** How to build an installer for Windows
 
@@ -175,13 +192,11 @@ appear in the ChangeLog.
 
 ** Detailed Roadmap
 
-  This list of file is not up to date!
+  This list of files is not up to date!
 
   - g10/gpg.c :: Main module with option parsing and all the stuff you
-                 have to do on startup.  Also has the exout handler
-                 and some helper functions.
-
-  - g10/sign.c :: Create signature and optionally encrypt
+                 have to do on startup.  Also has the exit handler and
+                 some helper functions.
 
   - g10/parse-packet.c ::
   - g10/build-packet.c ::
@@ -190,22 +205,21 @@ appear in the ChangeLog.
   - g10/getkey.c   :: Key selection code
   - g10/pkclist.c  :: Build a list of public keys
   - g10/skclist.c  :: Build a list of secret keys
-  - g10/ringedit.c :: Keyring I/O
+  - g10/keyring.c  :: Keyring access functions
   - g10/keydb.h    ::
 
-  - g10/keyid.c	:: Helper functions to get the keyid, fingerprint etc.
+  - g10/keyid.c	  :: Helper functions to get the keyid, fingerprint etc.
 
-
-  - g10/trustdb.c ::
+  - g10/trustdb.c :: Web-of-Trust computations
   - g10/trustdb.h ::
-  - g10/tdbdump.c :: Management of the trustdb.gpg
-  - g10/tdbio.c   ::
-  - g10/tdbio.h   :: I/O handling for the trustdb.gpg
+  - g10/tdbdump.c :: Export/import/list the trustdb.gpg
+  - g10/tdbio.c   :: I/O handling for the trustdb.gpg
+  - g10/tdbio.h   ::
 
   - g10/compress.c :: Filter to handle compression
   - g10/filter.h   :: Declarations for all filter functions
   - g10/delkey.c   :: Delete a key
-  - g10/kbnode.c   :: Helper for the KBNODE linked list
+  - g10/kbnode.c   :: Helper for the kbnode_t linked list
   - g10/main.h     :: Prototypes and some constants
   - g10/mainproc.c :: Message processing
   - g10/armor.c    :: Ascii armor filter
@@ -216,33 +230,28 @@ appear in the ChangeLog.
   - g10/options.h  :: Structure with all the command line options
                       and related constants
   - g10/openfile.c :: Create/Open Files
-  - g10/hkp.h      :: Keyserver access
-  - g10/hkp.c      :: Ditto.
+  - g10/keyserver.h :: Keyserver access dispatcher.
   - g10/packet.h   :: Defintion of OpenPGP structures.
   - g10/passphrase.c :: Passphrase handling code
 
-  - g10/pubkey-enc.c ::
-  - g10/seckey-cert.c ::
-  - g10/seskey.c     ::
-  - g10/import.c     ::
-  - g10/export.c     ::
-  - g10/comment.c    ::
-  - g10/status.c     ::
-  - g10/status.h     ::
-  - g10/sign.c       ::
-  - g10/plaintext.c  ::
-  - g10/encr-data.c  ::
-  - g10/encode.c     ::
-  - g10/revoke.c     ::
-  - g10/keylist.c    ::
-  - g10/sig-check.c  ::
-  - g10/signal.c     ::
-  - g10/helptext.c   ::
-  - g10/verify.c     ::
-  - g10/decrypt.c    ::
-  - g10/keyedit.c    ::
-  - g10/dearmor.c    ::
-  - g10/keygen.c     ::
+  - g10/pubkey-enc.c :: Process a public key encoded packet.
+  - g10/seckey-cert.c :: Not anymore used
+  - g10/seskey.c     :: Make sesssion keys etc.
+  - g10/import.c     :: Import keys into our key storage.
+  - g10/export.c     :: Export keys to the OpenPGP format.
+  - g10/sign.c       :: Create signature and optionally encrypt.
+  - g10/plaintext.c  :: Process plaintext packets.
+  - g10/decrypt-data.c :: Decrypt an encrypted data packet
+  - g10/encrypt.c    :: Main encryption driver
+  - g10/revoke.c     :: Create recovation certificates.
+  - g10/keylist.c    :: Print information about OpenPGP keys
+  - g10/sig-check.c  :: Check a signature
+  - g10/helptext.c   :: Show online help texts
+  - g10/verify.c     :: Verify signed data.
+  - g10/decrypt.c    :: Decrypt and verify data.
+  - g10/keyedit.c    :: Edit properties of a key.
+  - g10/dearmor.c    :: Armor utility.
+  - g10/keygen.c     :: Generate a key pair
 
 ** Memory allocation
 
@@ -263,7 +272,7 @@ Use only the functions:
  - xfree
 
 
-The *secure versions allocated memory in the secure memory. That is,
+The *secure versions allocate memory in the secure memory.  That is,
 swapping out of this memory is avoided and is gets overwritten on
 free.  Use this for passphrases, session keys and other sensitive
 material.  This memory set aside for secure memory is linited to a few
@@ -294,7 +303,7 @@ worry about this.  When it sees a compressed packet it pushes the
 uncompress filter and the next read byte is one which has already been
 uncompressed by this filter. Same goes for enciphered packet,
 plaintext packets and so on.  The file g10/encode.c might be a good
-staring point to see how it is used - actually this is the other way:
+starting point to see how it is used - actually this is the other way:
 constructing messages using pushed filters but it may be easier to
 understand.
 
