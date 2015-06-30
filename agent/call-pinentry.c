@@ -442,7 +442,8 @@ start_pinentry (ctrl_t ctrl)
          Pinentries.  An underscore indicates that the next letter
          should be used as an accelerator.  Double the underscore for
          a literal one.  The actual to be translated text starts after
-         the second vertical bar.  */
+         the second vertical bar.  Note that gpg-agent has been set to
+         utf-8 so that the strings are in the expected encoding.  */
       { "ok",     N_("|pinentry-label|_OK") },
       { "cancel", N_("|pinentry-label|_Cancel") },
       { "yes",    N_("|pinentry-label|_Yes") },
