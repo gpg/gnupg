@@ -153,6 +153,14 @@
 
 
 /* GCC attributes.  */
+#ifndef GNUPG_GCC_ATTR_FORMAT_ARG
+#if __GNUC__ >= 3 /* Actually 2.8 but testing the major is easier.  */
+# define GNUPG_GCC_ATTR_FORMAT_ARG(a)  __attribute__ ((__format_arg__ (a)))
+#else
+# define GNUPG_GCC_ATTR_FORMAT_ARG(a)
+#endif
+#endif
+
 #if __GNUC__ >= 4
 # define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
 #else

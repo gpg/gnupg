@@ -271,8 +271,9 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
           goto leave;
         }
 
-      msg3 = xtrystrdup (L_("A passphrase may not be a known term or match%0A"
-                            "certain pattern."));
+      msg3 = xtryasprintf
+        (L_("A passphrase may not be a known term or match%%0A"
+            "certain pattern."));
       if (!msg3)
         {
           err = gpg_error_from_syserror ();

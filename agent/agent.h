@@ -301,6 +301,10 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
    the connection.  The macro LunderscoreIMPL is used by i18n to
    actually define the inline function when needed.  */
 #define L_(a) agent_Lunderscore (ctrl, (a))
+#define LunderscorePROTO                                            \
+  static inline const char *agent_Lunderscore (ctrl_t ctrl,         \
+                                               const char *string)  \
+    GNUPG_GCC_ATTR_FORMAT_ARG(2);
 #define LunderscoreIMPL                                         \
   static inline const char *                                    \
   agent_Lunderscore (ctrl_t ctrl, const char *string)           \
