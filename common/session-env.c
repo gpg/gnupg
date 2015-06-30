@@ -72,6 +72,8 @@ static struct
                                       modules (eg "@im=SCIM").  */
   { "GTK_IM_MODULE" },           /* Used by gtk to select gtk input
                                     modules (eg "scim-bridge").  */
+  { "DBUS_SESSION_BUS_ADDRESS" },/* Used by GNOME3 to talk to gcr over
+                                    dbus */
   { "QT_IM_MODULE" },            /* Used by Qt to select qt input
                                       modules (eg "xim").  */
   { "INSIDE_EMACS" },            /* Set by Emacs before running a
