@@ -2804,14 +2804,14 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       gcry_sexp_release (key);
       if (err)
         goto out;
-      prompt = xtryasprintf (_("An ssh process requested the use of key%%0A"
-                               "  %s%%0A"
-                               "  (%s)%%0A"
-                               "Do you want to allow this?"),
+      prompt = xtryasprintf (L_("An ssh process requested the use of key%%0A"
+                                "  %s%%0A"
+                                "  (%s)%%0A"
+                                "Do you want to allow this?"),
                              fpr, comment? comment:"");
       xfree (fpr);
       gcry_free (comment);
-      err = agent_get_confirmation (ctrl, prompt, _("Allow"), _("Deny"), 0);
+      err = agent_get_confirmation (ctrl, prompt, L_("Allow"), L_("Deny"), 0);
       xfree (prompt);
       if (err)
         goto out;
@@ -2820,8 +2820,8 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   /* Create signature.  */
   ctrl->use_auth_call = 1;
   err = agent_pksign_do (ctrl, NULL,
-                         _("Please enter the passphrase "
-                           "for the ssh key%%0A  %F%%0A  (%c)"),
+                         L_("Please enter the passphrase "
+                            "for the ssh key%%0A  %F%%0A  (%c)"),
                          &signature_sexp,
                          CACHE_MODE_SSH, ttl_from_sshcontrol,
                          hash, hashlen);
@@ -3059,7 +3059,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   unsigned char *buffer = NULL;
   size_t buffer_n;
   char *description = NULL;
-  const char *description2 = _("Please re-enter this passphrase");
+  const char *description2 = L_("Please re-enter this passphrase");
   char *comment = NULL;
   char *key_fpr = NULL;
   const char *initial_errtext = NULL;
@@ -3083,11 +3083,11 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
     goto out;
 
   if ( asprintf (&description,
-                 _("Please enter a passphrase to protect"
-                   " the received secret key%%0A"
-                   "   %s%%0A"
-                   "   %s%%0A"
-                   "within gpg-agent's key storage"),
+                 L_("Please enter a passphrase to protect"
+                    " the received secret key%%0A"
+                    "   %s%%0A"
+                    "   %s%%0A"
+                    "within gpg-agent's key storage"),
                  key_fpr, comment ? comment : "") < 0)
     {
       err = gpg_error_from_syserror ();
@@ -3123,7 +3123,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       if (err == -1)
 	{ /* The re-entered one did not match and the user did not
 	     hit cancel. */
-	  initial_errtext = _("does not match - try again");
+	  initial_errtext = L_("does not match - try again");
 	  goto next_try;
 	}
     }

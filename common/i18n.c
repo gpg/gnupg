@@ -113,3 +113,15 @@ i18n_utf8 (const char *string)
   i18n_switchback (saved);
   return result;
 }
+
+
+/* A variant of gettext which allows to specify the local to use for
+   translating the message.  The function assumes that utf-8 is used
+   for the encoding.  FIXME: The locale back and forth switching is
+   likely very expensive, thus we should consider to implement our own
+   cache here.  */
+const char *
+i18n_localegettext (const char *lc_messages, const char *string)
+{
+  return _(string);
+}

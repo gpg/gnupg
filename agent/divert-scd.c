@@ -89,9 +89,9 @@ ask_for_card (ctrl_t ctrl, const unsigned char *shadow_info, char **r_kid)
                     "%s:%%0A%%0A"
                     "  \"%.*s\"",
                         no_card
-                        ? _("Please insert the card with serial number")
-                        : _("Please remove the current card and "
-                            "insert the one with serial number"),
+                        ? L_("Please insert the card with serial number")
+                        : L_("Please remove the current card and "
+                             "insert the one with serial number"),
                     want_sn_displen, want_sn) < 0)
             {
               rc = out_of_core ();
@@ -201,19 +201,19 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
       for (s=info+1; s < ends; s++)
         {
           if (*s == 'A')
-            prompt = _("Admin PIN");
+            prompt = L_("Admin PIN");
           else if (*s == 'P')
             {
               /* TRANSLATORS: A PUK is the Personal Unblocking Code
                  used to unblock a PIN. */
-              prompt = _("PUK");
+              prompt = L_("PUK");
               is_puk = 1;
             }
           else if (*s == 'N')
             newpin = 1;
           else if (*s == 'R')
             {
-              prompt = _("Reset Code");
+              prompt = L_("Reset Code");
               resetcode = 1;
             }
         }
@@ -239,7 +239,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
               char *desc;
 
               if ( asprintf (&desc,
-                             _("%s%%0A%%0AUse the reader's pinpad for input."),
+                             L_("%s%%0A%%0AUse the reader's pinpad for input."),
                              info) < 0 )
                 rc = gpg_error_from_syserror ();
               else
@@ -288,18 +288,18 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
           pi2->max_tries = 1;
           rc = agent_askpin (ctrl,
                              (resetcode?
-                              _("Repeat this Reset Code"):
+                              L_("Repeat this Reset Code"):
                               is_puk?
-                              _("Repeat this PUK"):
-                              _("Repeat this PIN")),
+                              L_("Repeat this PUK"):
+                              L_("Repeat this PIN")),
                              prompt, NULL, pi2, NULL, 0);
           if (!rc && strcmp (pi->pin, pi2->pin))
             {
               again_text = (resetcode?
-                            N_("Reset Code not correctly repeated; try again"):
+                            L_("Reset Code not correctly repeated; try again"):
                             is_puk?
-                            N_("PUK not correctly repeated; try again"):
-                            N_("PIN not correctly repeated; try again"));
+                            L_("PUK not correctly repeated; try again"):
+                            L_("PIN not correctly repeated; try again"));
               xfree (pi2);
               xfree (pi);
               goto again;
@@ -311,7 +311,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
     {
       char *desc;
       if ( asprintf (&desc,
-                     _("Please enter the PIN%s%s%s to unlock the card"),
+                     L_("Please enter the PIN%s%s%s to unlock the card"),
                      info? " (":"",
                      info? info:"",
                      info? ")":"") < 0)

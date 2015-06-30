@@ -42,6 +42,12 @@ void i18n_init (void);
 char *i18n_switchto_utf8 (void);
 void i18n_switchback (char *saved_codeset);
 const char *i18n_utf8 (const char *string);
+const char *i18n_localegettext (const char *lc_messages, const char *string);
+
+/* If a module wants a local L_() fucntion we define it here.  */
+#ifdef LunderscoreIMPL
+LunderscoreIMPL
+#endif
 
 
 #endif /*GNUPG_COMMON_I18N_H*/

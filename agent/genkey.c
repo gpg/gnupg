@@ -155,13 +155,13 @@ take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
 
   if (opt.enforce_passphrase_constraints)
     {
-      err = agent_show_message (ctrl, desc, _("Enter new passphrase"));
+      err = agent_show_message (ctrl, desc, L_("Enter new passphrase"));
       if (!err)
         err = gpg_error (GPG_ERR_CANCELED);
     }
   else
     err = agent_get_confirmation (ctrl, desc,
-                                  anyway_btn, _("Enter new passphrase"), 0);
+                                  anyway_btn, L_("Enter new passphrase"), 0);
   return err;
 }
 
@@ -169,7 +169,7 @@ take_this_one_anyway2 (ctrl_t ctrl, const char *desc, const char *anyway_btn)
 static int
 take_this_one_anyway (ctrl_t ctrl, const char *desc)
 {
-  return take_this_one_anyway2 (ctrl, desc, _("Take this one anyway"));
+  return take_this_one_anyway2 (ctrl, desc, L_("Take this one anyway"));
 }
 
 
@@ -196,12 +196,12 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
   if (!*pw)
     {
       const char *desc = (opt.enforce_passphrase_constraints?
-                          _("You have not entered a passphrase!%0A"
-                            "An empty passphrase is not allowed.") :
-                          _("You have not entered a passphrase - "
-                            "this is in general a bad idea!%0A"
-                            "Please confirm that you do not want to "
-                            "have any protection on your key."));
+                          L_("You have not entered a passphrase!%0A"
+                             "An empty passphrase is not allowed.") :
+                          L_("You have not entered a passphrase - "
+                             "this is in general a bad idea!%0A"
+                             "Please confirm that you do not want to "
+                             "have any protection on your key."));
 
       err = 1;
       if (failed_constraint)
@@ -210,7 +210,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
 	    *failed_constraint = xstrdup (desc);
 	  else
 	    err = take_this_one_anyway2 (ctrl, desc,
-					 _("Yes, protection is not needed"));
+					 L_("Yes, protection is not needed"));
 	}
 
       goto leave;
@@ -271,9 +271,8 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
           goto leave;
         }
 
-      msg3 = xtryasprintf
-        (_("A passphrase may not be a known term or match%%0A"
-           "certain pattern."));
+      msg3 = xtrystrdup (L_("A passphrase may not be a known term or match%0A"
+                            "certain pattern."));
       if (!msg3)
         {
           err = gpg_error_from_syserror ();
@@ -287,7 +286,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
       size_t n;
 
       msg = strconcat
-        (_("Warning: You have entered an insecure passphrase."),
+        (L_("Warning: You have entered an insecure passphrase."),
          "%0A%0A",
          msg1? msg1 : "", msg1? "%0A" : "",
          msg2? msg2 : "", msg2? "%0A" : "",
@@ -345,9 +344,8 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 {
   gpg_error_t err;
   const char *text1 = prompt;
-  const char *text2 = _("Please re-enter this passphrase");
+  const char *text2 = L_("Please re-enter this passphrase");
   char *initial_errtext = NULL;
-  int initial_errtext_do_free = 0;
   struct pin_entry_info_s *pi, *pi2;
 
   *r_passphrase = NULL;
@@ -385,17 +383,12 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 
  next_try:
   err = agent_askpin (ctrl, text1, NULL, initial_errtext, pi, NULL, 0);
-  if (initial_errtext_do_free)
-    {
-      xfree (initial_errtext);
-      initial_errtext_do_free = 0;
-    }
+  xfree (initial_errtext);
   initial_errtext = NULL;
   if (!err)
     {
       if (check_passphrase_constraints (ctrl, pi->pin, &initial_errtext))
         {
-	  initial_errtext_do_free = 1;
           pi->failed_tries = 0;
           pi2->failed_tries = 0;
           goto next_try;
@@ -408,8 +401,10 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
           if (err == -1)
             { /* The re-entered one did not match and the user did not
                  hit cancel. */
-              initial_errtext = _("does not match - try again");
-              goto next_try;
+              initial_errtext = xtrystrdup (L_("does not match - try again"));
+              if (initial_errtext)
+                goto next_try;
+              err = gpg_error_from_syserror ();
             }
         }
     }
@@ -421,6 +416,8 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
       if (!*r_passphrase)
         err = gpg_error_from_syserror ();
     }
+
+  xfree (initial_errtext);
   xfree (pi);
   return err;
 }
@@ -467,8 +464,8 @@ agent_genkey (ctrl_t ctrl, const char *cache_nonce,
   else
     {
       rc = agent_ask_new_passphrase (ctrl,
-                                     _("Please enter the passphrase to%0A"
-                                       "protect your new key"),
+                                     L_("Please enter the passphrase to%0A"
+                                        "protect your new key"),
                                      &passphrase_buffer);
       if (rc)
         return rc;
@@ -593,7 +590,7 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey,
           *passphrase_addr = NULL;
         }
       err = agent_ask_new_passphrase (ctrl,
-                                      _("Please enter the new passphrase"),
+                                      L_("Please enter the new passphrase"),
                                       &pass);
       if (!err)
         err = store_key (s_skey, pass, 1, ctrl->s2k_count);

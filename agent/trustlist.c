@@ -651,16 +651,16 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
                    plain % sign, you need to encode it as "%%25".  The
                    "%s" gets replaced by the name as stored in the
                    certificate. */
-                _("Do you ultimately trust%%0A"
-                  "  \"%s\"%%0A"
-                  "to correctly certify user certificates?"),
+                L_("Do you ultimately trust%%0A"
+                   "  \"%s\"%%0A"
+                   "to correctly certify user certificates?"),
                 nameformatted);
   if (!desc)
     {
       xfree (nameformatted);
       return out_of_core ();
     }
-  err = agent_get_confirmation (ctrl, desc, _("Yes"), _("No"), 1);
+  err = agent_get_confirmation (ctrl, desc, L_("Yes"), L_("No"), 1);
   xfree (desc);
   if (!err)
     yes_i_trust = 1;
@@ -694,10 +694,10 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
             "%%25".  The second "%s" gets replaced by a hexdecimal
             fingerprint string whereas the first one receives the name
             as stored in the certificate. */
-         _("Please verify that the certificate identified as:%%0A"
-           "  \"%s\"%%0A"
-           "has the fingerprint:%%0A"
-           "  %s"), nameformatted, fprformatted);
+         L_("Please verify that the certificate identified as:%%0A"
+            "  \"%s\"%%0A"
+            "has the fingerprint:%%0A"
+            "  %s"), nameformatted, fprformatted);
       if (!desc)
         {
           xfree (fprformatted);
@@ -708,7 +708,7 @@ agent_marktrusted (ctrl_t ctrl, const char *name, const char *fpr, int flag)
       /* TRANSLATORS: "Correct" is the label of a button and intended
          to be hit if the fingerprint matches the one of the CA.  The
          other button is "the default "Cancel" of the Pinentry. */
-      err = agent_get_confirmation (ctrl, desc, _("Correct"), _("Wrong"), 1);
+      err = agent_get_confirmation (ctrl, desc, L_("Correct"), L_("Wrong"), 1);
       xfree (desc);
       if (gpg_err_code (err) == GPG_ERR_NOT_CONFIRMED)
         yes_i_trust = 0;

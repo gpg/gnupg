@@ -464,7 +464,7 @@ start_pinentry (ctrl_t ctrl)
       {
         if (!opt.allow_external_cache && tbl[idx].what == 1)
           continue;  /* No need for it.  */
-        s = _(tbl[idx].value);
+        s = L_(tbl[idx].value);
         if (*s == '|' && (s2=strchr (s+1,'|')))
           s = s2+1;
         if (asprintf (&optstr, "OPTION default-%s=%s", tbl[idx].key, s) < 0 )
@@ -695,7 +695,7 @@ inq_quality (void *opaque, const char *line)
 
 /* Helper for agent_askpin and agent_get_passphrase.  */
 static int
-setup_qualitybar (void)
+setup_qualitybar (ctrl_t ctrl)
 {
   int rc;
   char line[ASSUAN_LINELENGTH];
@@ -704,7 +704,7 @@ setup_qualitybar (void)
 
   /* TRANSLATORS: This string is displayed by Pinentry as the label
      for the quality bar.  */
-  tmpstr = try_percent_escape (_("Quality:"), "\t\r\n\f\v");
+  tmpstr = try_percent_escape (L_("Quality:"), "\t\r\n\f\v");
   snprintf (line, DIM(line)-1, "SETQUALITYBAR %s", tmpstr? tmpstr:"");
   line[DIM(line)-1] = 0;
   xfree (tmpstr);
@@ -726,7 +726,7 @@ setup_qualitybar (void)
          tooltip is limited to about 900 characters.  If you do not
          translate this entry, a default english text (see source)
          will be used. */
-      tooltip =  _("pinentry.qualitybar.tooltip");
+      tooltip =  L_("pinentry.qualitybar.tooltip");
       if (!strcmp ("pinentry.qualitybar.tooltip", tooltip))
         tooltip = ("The quality of the text entered above.\n"
                    "Please ask your administrator for "
@@ -836,11 +836,11 @@ agent_askpin (ctrl_t ctrl,
   if (!pininfo || pininfo->max_length < 1)
     return gpg_error (GPG_ERR_INV_VALUE);
   if (!desc_text && pininfo->min_digits)
-    desc_text = _("Please enter your PIN, so that the secret key "
-                  "can be unlocked for this session");
+    desc_text = L_("Please enter your PIN, so that the secret key "
+                   "can be unlocked for this session");
   else if (!desc_text)
-    desc_text = _("Please enter your passphrase, so that the secret key "
-                  "can be unlocked for this session");
+    desc_text = L_("Please enter your passphrase, so that the secret key "
+                   "can be unlocked for this session");
 
   if (prompt_text)
     is_pin = !!strstr (prompt_text, "PIN");
@@ -877,7 +877,7 @@ agent_askpin (ctrl_t ctrl,
     return unlock_pinentry (rc);
 
   snprintf (line, DIM(line)-1, "SETPROMPT %s",
-            prompt_text? prompt_text : is_pin? "PIN:" : "Passphrase:");
+            prompt_text? prompt_text : is_pin? L_("PIN:") : L_("Passphrase:"));
   line[DIM(line)-1] = 0;
   rc = assuan_transact (entry_ctx, line, NULL, NULL, NULL, NULL, NULL, NULL);
   if (rc)
@@ -888,7 +888,7 @@ agent_askpin (ctrl_t ctrl,
      to the pinentry.  */
   if (pininfo->with_qualitybar && opt.min_passphrase_len )
     {
-      rc = setup_qualitybar ();
+      rc = setup_qualitybar (ctrl);
       if (rc)
         return unlock_pinentry (rc);
     }
@@ -906,7 +906,7 @@ agent_askpin (ctrl_t ctrl,
   if (pininfo->with_repeat)
     {
       snprintf (line, DIM(line)-1, "SETREPEATERROR %s",
-                _("does not match - try again"));
+                L_("does not match - try again"));
       line[DIM(line)-1] = 0;
       rc = assuan_transact (entry_ctx, line,
                             NULL, NULL, NULL, NULL, NULL, NULL);
@@ -927,7 +927,7 @@ agent_askpin (ctrl_t ctrl,
           /* TRANSLATORS: The string is appended to an error message in
              the pinentry.  The %s is the actual error message, the
              two %d give the current and maximum number of tries. */
-          snprintf (line, DIM(line)-1, _("SETERROR %s (try %d of %d)"),
+          snprintf (line, DIM(line)-1, L_("SETERROR %s (try %d of %d)"),
                     errtext, pininfo->failed_tries+1, pininfo->max_tries);
           line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line,
@@ -939,7 +939,7 @@ agent_askpin (ctrl_t ctrl,
 
       if (pininfo->with_repeat)
         {
-          snprintf (line, DIM(line)-1, "SETREPEAT %s", _("Repeat:"));
+          snprintf (line, DIM(line)-1, "SETREPEAT %s", L_("Repeat:"));
           line[DIM(line)-1] = 0;
           rc = assuan_transact (entry_ctx, line,
                                 NULL, NULL, NULL, NULL, NULL, NULL);
@@ -969,8 +969,8 @@ agent_askpin (ctrl_t ctrl,
         rc = gpg_err_make (gpg_err_source (rc), GPG_ERR_FULLY_CANCELED);
 
       if (gpg_err_code (rc) == GPG_ERR_ASS_TOO_MUCH_DATA)
-        errtext = is_pin? _("PIN too long")
-                        : _("Passphrase too long");
+        errtext = is_pin? L_("PIN too long")
+                        : L_("Passphrase too long");
       else if (rc)
         return unlock_pinentry (rc);
 
@@ -978,12 +978,12 @@ agent_askpin (ctrl_t ctrl,
         {
           /* do some basic checks on the entered PIN. */
           if (!all_digitsp (pininfo->pin))
-            errtext = _("Invalid characters in PIN");
+            errtext = L_("Invalid characters in PIN");
           else if (pininfo->max_digits
                    && strlen (pininfo->pin) > pininfo->max_digits)
-            errtext = _("PIN too long");
+            errtext = L_("PIN too long");
           else if (strlen (pininfo->pin) < pininfo->min_digits)
-            errtext = _("PIN too short");
+            errtext = L_("PIN too short");
         }
 
       if (!errtext && pininfo->check_cb)
@@ -995,8 +995,7 @@ agent_askpin (ctrl_t ctrl,
             errtext = pininfo->cb_errtext;
           else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
                    || gpg_err_code (rc) == GPG_ERR_BAD_PIN)
-            errtext = (is_pin? _("Bad PIN")
-                       : _("Bad Passphrase"));
+            errtext = (is_pin? L_("Bad PIN") : L_("Bad Passphrase"));
           else if (rc)
             return unlock_pinentry (rc);
         }
@@ -1069,7 +1068,7 @@ agent_get_passphrase (ctrl_t ctrl,
     return rc;
 
   if (!prompt)
-    prompt = desc && strstr (desc, "PIN")? "PIN": _("Passphrase");
+    prompt = desc && strstr (desc, "PIN")? L_("PIN:"): L_("Passphrase:");
 
 
   /* If we have a KEYINFO string and are normal, user, or ssh cache
@@ -1109,7 +1108,7 @@ agent_get_passphrase (ctrl_t ctrl,
 
   if (with_qualitybar && opt.min_passphrase_len)
     {
-      rc = setup_qualitybar ();
+      rc = setup_qualitybar (ctrl);
       if (rc)
         return unlock_pinentry (rc);
     }

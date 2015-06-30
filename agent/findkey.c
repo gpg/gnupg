@@ -115,6 +115,7 @@ static int
 try_unprotect_cb (struct pin_entry_info_s *pi)
 {
   struct try_unprotect_arg_s *arg = pi->check_cb_arg;
+  ctrl_t ctrl = arg->ctrl;
   size_t dummy;
   gpg_error_t err;
   gnupg_isotime_t now, protected_at, tmptime;
@@ -123,18 +124,18 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
   assert (!arg->unprotected_key);
 
   arg->change_required = 0;
-  err = agent_unprotect (arg->ctrl, arg->protected_key, pi->pin, protected_at,
+  err = agent_unprotect (ctrl, arg->protected_key, pi->pin, protected_at,
                          &arg->unprotected_key, &dummy);
   if (err)
     return err;
-  if (!opt.max_passphrase_days || arg->ctrl->in_passwd)
+  if (!opt.max_passphrase_days || ctrl->in_passwd)
     return 0;  /* No regular passphrase change required.  */
 
   if (!*protected_at)
     {
       /* No protection date known - must force passphrase change.  */
-      desc = xtrystrdup (_("Note: This passphrase has never been changed.%0A"
-                           "Please change it now."));
+      desc = xtrystrdup (L_("Note: This passphrase has never been changed.%0A"
+                            "Please change it now."));
       if (!desc)
         return gpg_error_from_syserror ();
     }
@@ -149,8 +150,8 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
         {
           /* Passphrase "expired".  */
           desc = xtryasprintf
-            (_("This passphrase has not been changed%%0A"
-               "since %.4s-%.2s-%.2s.  Please change it now."),
+            (L_("This passphrase has not been changed%%0A"
+                "since %.4s-%.2s-%.2s.  Please change it now."),
              protected_at, protected_at+4, protected_at+6);
           if (!desc)
             return gpg_error_from_syserror ();
@@ -162,16 +163,16 @@ try_unprotect_cb (struct pin_entry_info_s *pi)
       /* Change required.  */
       if (opt.enforce_passphrase_constraints)
         {
-          err = agent_get_confirmation (arg->ctrl, desc,
-                                        _("Change passphrase"), NULL, 0);
+          err = agent_get_confirmation (ctrl, desc,
+                                        L_("Change passphrase"), NULL, 0);
           if (!err)
             arg->change_required = 1;
         }
       else
         {
-          err = agent_get_confirmation (arg->ctrl, desc,
-                                        _("Change passphrase"),
-                                        _("I'll change it later"), 0);
+          err = agent_get_confirmation (ctrl, desc,
+                                        L_("Change passphrase"),
+                                        L_("I'll change it later"), 0);
           if (!err)
             arg->change_required = 1;
           else if (gpg_err_code (err) == GPG_ERR_CANCELED
@@ -1257,8 +1258,8 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
         if (!desc_text)
           {
             default_desc = xtryasprintf
-              ("Do you really want to delete the key identified by keygrip%%0A"
-               "  %s%%0A  %%C%%0A?", hexgrip);
+           (L_("Do you really want to delete the key identified by keygrip%%0A"
+               "  %s%%0A  %%C%%0A?"), hexgrip);
             desc_text = default_desc;
           }
 
@@ -1281,7 +1282,7 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
           goto leave;
 
         err = agent_get_confirmation (ctrl, desc_text_final,
-                                      _("Delete key"), _("No"), 0);
+                                      L_("Delete key"), L_("No"), 0);
         if (err)
           goto leave;
 
@@ -1292,10 +1293,10 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
               {
                 err = agent_get_confirmation
                   (ctrl,
-                   _("Warning: This key is also listed for use with SSH!\n"
-                     "Deleting the key might remove your ability to "
-                     "access remote machines."),
-                   _("Delete key"), _("No"), 0);
+                   L_("Warning: This key is also listed for use with SSH!\n"
+                      "Deleting the key might remove your ability to "
+                      "access remote machines."),
+                   L_("Delete key"), L_("No"), 0);
                 if (err)
                   goto leave;
               }

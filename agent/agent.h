@@ -295,6 +295,21 @@ cache_mode_t;
 typedef int (*lookup_ttl_t)(const char *hexgrip);
 
 
+/* This is a special version of the usual _() gettext macro.  It
+   assumes a server connection control variable with the name "ctrl"
+   and uses that to translate a string according to the locale set for
+   the connection.  The macro LunderscoreIMPL is used by i18n to
+   actually define the inline function when needed.  */
+#define L_(a) agent_Lunderscore (ctrl, (a))
+#define LunderscoreIMPL                                         \
+  static inline const char *                                    \
+  agent_Lunderscore (ctrl_t ctrl, const char *string)           \
+  {                                                             \
+    return ctrl? i18n_localegettext (ctrl->lc_messages, string) \
+      /*     */: gettext (string);                              \
+  }
+
+
 /*-- gpg-agent.c --*/
 void agent_exit (int rc) GPGRT_GCC_A_NR; /* Also implemented in other tools */
 gpg_error_t agent_copy_startup_env (ctrl_t ctrl);
