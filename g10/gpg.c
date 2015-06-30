@@ -1876,7 +1876,7 @@ parse_list_options(char *str)
      compile everywhere, so fill in the show-sig-subpackets argument
      here.  Note that if the parse_options array changes, we'll have
      to change the subscript here. */
-  lopts[12].value=&subpackets;
+  lopts[13].value=&subpackets;
 
   if(parse_options(str,&opt.list_options,lopts,1))
     {
