@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-06-11 13:03+0200\n"
+"PO-Revision-Date: 2015-07-01 13:04+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -26,7 +26,8 @@ msgstr "Die Sperre für das Pinentry kann nicht gesetzt werden: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "_OK"
 
@@ -87,6 +88,12 @@ msgstr ""
 "Bitte geben Sie Ihre Passphrase ein, so daß der geheime Schlüssel benutzt "
 "werden kann."
 
+msgid "PIN:"
+msgstr "PIN:"
+
+msgid "Passphrase:"
+msgstr "Passphrase:"
+
 msgid "does not match - try again"
 msgstr "Keine Übereinstimmung - bitte nochmal versuchen."
 
@@ -117,9 +124,6 @@ msgstr "Falsche PIN!"
 
 msgid "Bad Passphrase"
 msgstr "Falsche Passphrase!"
-
-msgid "Passphrase"
-msgstr "Passphrase"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -558,9 +562,6 @@ msgstr ""
 "Die Eingabe der Passphrase bzw. der PIN\n"
 "wird benötigt, um diese Aktion auszuführen."
 
-msgid "Passphrase:"
-msgstr "Passphrase:"
-
 msgid "cancelled\n"
 msgstr "Vom Benutzer abgebrochen\n"
 
@@ -669,6 +670,14 @@ msgstr "Die Passphrase ändern"
 
 msgid "I'll change it later"
 msgstr "Ich werde sie später ändern"
+
+#, c-format
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr ""
+"Möchten Sie den Schlüssel mit dem \"Keygrip\"%%0A  %s%%0A  %%C%%0Awirklich "
+"entfernen?"
 
 msgid "Delete key"
 msgstr "Schlüssel löschen"
@@ -811,6 +820,18 @@ msgstr ""
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "Kein Speicher mehr vorhanden, als %lu Byte zugewiesen werden sollten"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: Die Option \"%s\" is veraltet - sie hat keine Wirkung\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr "Unbekanntes Debug Flag '%s' wird ignoriert\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -4036,6 +4057,13 @@ msgstr "Entscheidender Beglaubigungs-\"Notation\": "
 msgid "Signature notation: "
 msgstr "Beglaubigungs-\"Notation\": "
 
+msgid "1 good signature\n"
+msgstr "1 korrekte Signatur\n"
+
+#, c-format
+msgid "%d good signatures\n"
+msgstr "%d korrekte Signaturen\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
@@ -4395,14 +4423,6 @@ msgstr "Bitte benutzen Sie stattdessen \"%s%s\".\n"
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr ""
 "WARNUNG: \"%s\" ist ein nicht ratsamer Befehl - verwenden Sie ihn nicht.\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: Die Option \"%s\" is veraltet - sie hat keine Wirkung\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "WARNUNG: \"%s%s\" ist eine veraltete Option - sie hat keine Wirkung.\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -8069,6 +8089,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Passphrase"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""
