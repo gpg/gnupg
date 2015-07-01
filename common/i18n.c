@@ -1,5 +1,6 @@
 /* i18n.c - gettext initialization
- *	Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2007, 2010 Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of either
@@ -35,6 +36,37 @@
 
 #include "util.h"
 #include "i18n.h"
+
+
+/* An object to store pointers to static strings and there static
+   translation.  A linked list is not optimal but given that we only
+   have a few dozen messages it should be acceptable. */
+struct msg_cache_s
+{
+  struct msg_cache_s *next;
+  const char *key;
+  const char *value;
+};
+
+/* A object to store an lc_messages string and a link to the cache
+   object.  */
+struct msg_cache_heads_s
+{
+  struct msg_cache_heads_s *next;
+  struct msg_cache_s *cache;
+  char lc_messages[1];
+};
+
+/* Out static cache of translated messages.  We need this because
+   there is no gettext API to return a translation depending on the
+   locale.  Switching the locale for each access to a translatable
+   string seems to be too expensive.  Note that this is used only for
+   strings in gpg-agent which are passed to Pinentry.  All other
+   strings are using the regular gettext interface.  Note that we can
+   never release this memory because consumers take the result as
+   static strings.  */
+static struct msg_cache_heads_s *msgcache;
+
 
 
 void
@@ -117,11 +149,79 @@ i18n_utf8 (const char *string)
 
 /* A variant of gettext which allows to specify the local to use for
    translating the message.  The function assumes that utf-8 is used
-   for the encoding.  FIXME: The locale back and forth switching is
-   likely very expensive, thus we should consider to implement our own
-   cache here.  */
+   for the encoding.  */
 const char *
 i18n_localegettext (const char *lc_messages, const char *string)
 {
+#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)             \
+  && !defined(USE_SIMPLE_GETTEXT) && defined(ENABLE_NLS)
+  const char *result = NULL;
+  char *saved = NULL;
+  struct msg_cache_heads_s *mh;
+  struct msg_cache_s *mc;
+
+  if (!lc_messages)
+    goto leave;
+
+  /* Lookup in the cache.  */
+  for (mh = msgcache; mh; mh = mh->next)
+    if (!strcmp (mh->lc_messages, lc_messages))
+      break;
+  if (mh)
+    {
+      /* A cache entry for this local exists - find the string.
+         Because the system is designed for static strings it is
+         sufficient to compare the pointers.  */
+      for (mc = mh->cache; mc; mc = mc->next)
+        if (mc->key == string)
+          {
+            /* Cache hit.  */
+            result = mc->value;
+            goto leave;
+          }
+    }
+
+  /* Cached miss.  Change the locale, translate, reset locale.  */
+  saved = setlocale (LC_MESSAGES, NULL);
+  if (!saved)
+    goto leave;
+  saved = xtrystrdup (saved);
+  if (!saved)
+    goto leave;
+  if (!setlocale (LC_MESSAGES, lc_messages))
+    goto leave;
+
+  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+  result = gettext (string);
+  setlocale (LC_MESSAGES, saved);
+  bindtextdomain (PACKAGE_GT, LOCALEDIR);
+
+  /* Cache the result.  */
+  if (!mh)
+    {
+      /* First use of this locale - create an entry.  */
+      mh = xtrymalloc (sizeof *mh + strlen (lc_messages));
+      if (!mh)
+        goto leave;
+      strcpy (mh->lc_messages, lc_messages);
+      mh->cache = NULL;
+      mh->next = msgcache;
+      msgcache = mh;
+    }
+  mc = xtrymalloc (sizeof *mc);
+  if (!mc)
+    goto leave;
+  mc->key = string;
+  mc->value = result;
+  mc->next = mh->cache;
+  mh->cache = mc;
+
+ leave:
+  xfree (saved);
+  return result? result : _(string);
+
+#else /*!(HAVE_SETLOCALE && LC_MESSAGES ...)*/
+  (void)lc_messages;
   return _(string);
+#endif /*!(HAVE_SETLOCALE && LC_MESSAGES ...)*/
 }
