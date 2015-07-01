@@ -1,5 +1,31 @@
-Noteworthy changes in version 2.1.6 (unreleased)
+Noteworthy changes in version 2.1.6 (2015-07-01)
 ------------------------------------------------
+
+ * agent: New option --verify for the PASSWD command.
+
+ * gpgsm: Add command option "offline" as an alternative to
+   --disable-dirmngr.
+
+ * gpg: Do not prompt multiple times for a password in pinentry
+   loopback mode.
+
+ * Allow the use of debug category names with --debug.
+
+ * Using gpg-agent and gpg/gpgsm with different locales will now show
+   the correct translations in Pinentry.
+
+ * gpg: Improve speed of --list-sigs and --check-sigs.
+
+ * gpg: Make --list-options show-sig-subpackets work again.
+
+ * gpg: Fix an export problem for old keyrings with PGP-2 keys.
+
+ * scd: Support PIN-pads on more readers.
+
+ * dirmngr: Properly cleanup zombie LDAP helper processes and avoid
+   hangs on dirmngr shutdown.
+
+ * Various other bug fixes.
 
 
 Noteworthy changes in version 2.1.5 (2015-06-11)
