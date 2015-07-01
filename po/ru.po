@@ -1,4 +1,4 @@
-# Copyright (C)2006 Free Software Foundation, Inc.
+# Copyright (C) 2015 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GnuPG package.
 # Maxim Britov <maxim.britov@gmail.com>, 2006.
 #              !-- no such user (2011-01-11)
@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-05-23 17:17+0000\n"
+"PO-Revision-Date: 2015-06-25 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -55,7 +55,7 @@ msgid "|pinentry-tt|Make passphrase visible"
 msgstr "|pinentry-tt|Показывать фразу-пароль"
 
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "pinentry-tt|Скрывать фразу-пароль"
+msgstr "|pinentry-tt|Скрывать фразу-пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -373,7 +373,7 @@ msgid "allow caller to override the pinentry"
 msgstr "разрешить клиентам замещать собой pinentry"
 
 msgid "allow passphrase to be prompted through Emacs"
-msgstr ""
+msgstr "разрешить ввод фразы-пароля через Emacs"
 
 msgid "enable ssh support"
 msgstr "включить поддержку ssh"
@@ -793,6 +793,10 @@ msgstr "выход за предел безопасной памяти при р
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "выход за границы при размещении %lu байтов"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr "неизвестный отладочный флаг '%s' игнорируется\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
