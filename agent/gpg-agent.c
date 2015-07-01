@@ -1183,6 +1183,11 @@ main (int argc, char **argv )
         gnupg_unsetenv ("DISPLAY");
 #endif
 
+      /* Remove the INSIDE_EMACS variable so that a pinentry does not
+         always try to interact with Emacs.  The variable is set when
+         a client requested this using an OPTION command.  */
+      gnupg_unsetenv ("INSIDE_EMACS");
+
       /* Create the sockets.  */
       socket_name = create_socket_name (GPG_AGENT_SOCK_NAME, 1);
       fd = create_server_socket (socket_name, 1, 0,
