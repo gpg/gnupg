@@ -41,7 +41,8 @@ msgstr "misslyckades med att ta kontroll över PIN-inmatningslåset: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "_OK"
 
@@ -111,6 +112,12 @@ msgid ""
 msgstr ""
 "Ange din lösenfras så att den hemliga nyckeln kan låsas upp för denna session"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Lösenfras:"
+
 msgid "does not match - try again"
 msgstr "stämmer inte överens - försök igen"
 
@@ -142,9 +149,6 @@ msgstr "Felaktig PIN-kod"
 
 msgid "Bad Passphrase"
 msgstr "Felaktig lösenfras"
-
-msgid "Passphrase"
-msgstr "Lösenfras"
 
 # Skyddssammandraget låter underligt
 # Kontrollsumma?
@@ -631,9 +635,6 @@ msgstr ""
 "Ange lösenfrasen eller PIN-koden som\n"
 "behövs för att färdigställa denna åtgärd."
 
-msgid "Passphrase:"
-msgstr "Lösenfras:"
-
 msgid "cancelled\n"
 msgstr "avbruten\n"
 
@@ -745,6 +746,13 @@ msgstr "ändra lösenfras"
 
 msgid "I'll change it later"
 msgstr "Jag ändrar den senare"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Vill du verkligen ta bort de valda nycklarna? (j/N) "
 
 #, fuzzy
 #| msgid "enable key"
@@ -894,6 +902,19 @@ msgstr "slut på kärna i säkert minne vid allokering av %lu byte"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "slut på kärna vid allokering av %lu byte"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: föråldrad flagga \"%s\" - den har ingen effekt\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
@@ -4283,6 +4304,16 @@ msgstr "Kritisk signaturnotation: "
 msgid "Signature notation: "
 msgstr "Signaturnotation: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 felaktig signatur\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d felaktiga signaturer\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4652,15 +4683,6 @@ msgstr "Använd \"%s%s\" istället\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "VARNING: \"%s\" är ett föråldrat kommando - använd det inte\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: föråldrad flagga \"%s\" - den har ingen effekt\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "VARNING: \"%s\" är en föråldrad flagga - den har ingen effekt\n"
 
 #, fuzzy, c-format
 #| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -8622,6 +8644,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Lösenfras"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

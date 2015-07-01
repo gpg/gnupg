@@ -26,7 +26,8 @@ msgstr "no pude conseguir el bloqueo de entrada de pin: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|entrada de pin-etiqueta|_OK"
 
@@ -91,6 +92,21 @@ msgstr ""
 "Por favor introduzca la frase contraseña para desbloquear la clave secreta "
 "de esta sesión"
 
+msgid "PIN:"
+msgstr ""
+
+# ¿Por qué no frase de paso?
+# Porque todo el mundo sabe lo que es una contraseña
+# y una "frase de paso" no. Soy consciente de que se
+# traduce igual password y passphrase pero el contexto
+# permite saber de lo que se está hablando.
+# No sé, no sé.
+# ¿Por qué los ingleses entonces sí que saben lo que es un "passphrase"?
+# ¿Es que son más listos? :-)
+#
+msgid "Passphrase:"
+msgstr "Frase contraseña:"
+
 msgid "does not match - try again"
 msgstr "no coincide - reinténtelo"
 
@@ -130,18 +146,6 @@ msgstr "PIN incorrecto"
 #
 msgid "Bad Passphrase"
 msgstr "Frase contraseña errónea"
-
-# ¿Por qué no frase de paso?
-# Porque todo el mundo sabe lo que es una contraseña
-# y una "frase de paso" no. Soy consciente de que se
-# traduce igual password y passphrase pero el contexto
-# permite saber de lo que se está hablando.
-# No sé, no sé.
-# ¿Por qué los ingleses entonces sí que saben lo que es un "passphrase"?
-# ¿Es que son más listos? :-)
-#
-msgid "Passphrase"
-msgstr "Frase contraseña"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -632,18 +636,6 @@ msgstr ""
 "Por favor introduzca la frase contraseña o PIN\n"
 "necesarios para completar esta operación."
 
-# ¿Por qué no frase de paso?
-# Porque todo el mundo sabe lo que es una contraseña
-# y una "frase de paso" no. Soy consciente de que se
-# traduce igual password y passphrase pero el contexto
-# permite saber de lo que se está hablando.
-# No sé, no sé.
-# ¿Por qué los ingleses entonces sí que saben lo que es un "passphrase"?
-# ¿Es que son más listos? :-)
-#
-msgid "Passphrase:"
-msgstr "Frase contraseña:"
-
 msgid "cancelled\n"
 msgstr "cancelado\n"
 
@@ -754,6 +746,13 @@ msgstr "Cambia la frase contraseña"
 
 msgid "I'll change it later"
 msgstr "La cambiaré más tarde"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "¿De verdad quiere borrar las claves seleccionadas? (s/N) "
 
 #, fuzzy
 #| msgid "enable key"
@@ -902,6 +901,19 @@ msgstr "agotado nucleo de memoria segura reservando %lu bytes"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "error de memoria reservando %lu bytes"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: opción obsoleta \"%s\" - no tiene efecto\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "ATENCIÓN: \"%s\" es una opción obsoleta - no tiene efecto\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
@@ -4224,6 +4236,16 @@ msgstr "Notación de firmas críticas: "
 msgid "Signature notation: "
 msgstr "Notación de firma: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 firma incorrecta\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d firmas incorrectas\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4582,15 +4604,6 @@ msgstr "por favor use \"%s%s\" en su lugar\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "ATENCIÓN: \"%s\" es una orden obsoleta - no la use\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: opción obsoleta \"%s\" - no tiene efecto\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "ATENCIÓN: \"%s\" es una opción obsoleta - no tiene efecto\n"
 
 #, fuzzy, c-format
 #| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -8543,6 +8556,18 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+# ¿Por qué no frase de paso?
+# Porque todo el mundo sabe lo que es una contraseña
+# y una "frase de paso" no. Soy consciente de que se
+# traduce igual password y passphrase pero el contexto
+# permite saber de lo que se está hablando.
+# No sé, no sé.
+# ¿Por qué los ingleses entonces sí que saben lo que es un "passphrase"?
+# ¿Es que son más listos? :-)
+#
+#~ msgid "Passphrase"
+#~ msgstr "Frase contraseña"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

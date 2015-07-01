@@ -27,7 +27,8 @@ msgstr "无法存储指纹：%s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr ""
 
@@ -85,6 +86,13 @@ msgid ""
 "this session"
 msgstr "请输入密码：这是一个秘密的句子 \n"
 
+msgid "PIN:"
+msgstr ""
+
+#, fuzzy
+msgid "Passphrase:"
+msgstr "错误的密码"
+
 msgid "does not match - try again"
 msgstr ""
 
@@ -119,10 +127,6 @@ msgstr "损坏的多精度整数(MPI)"
 
 #, fuzzy
 msgid "Bad Passphrase"
-msgstr "错误的密码"
-
-#, fuzzy
-msgid "Passphrase"
 msgstr "错误的密码"
 
 #, fuzzy, c-format
@@ -580,10 +584,6 @@ msgid ""
 msgstr "请输入密码：这是一个秘密的句子 \n"
 
 #, fuzzy
-msgid "Passphrase:"
-msgstr "错误的密码"
-
-#, fuzzy
 msgid "cancelled\n"
 msgstr "已取消"
 
@@ -682,6 +682,13 @@ msgstr "更改密码"
 
 msgid "I'll change it later"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "您真的想要删除选定的密钥吗？(y/N)"
 
 #, fuzzy
 #| msgid "enable key"
@@ -826,6 +833,18 @@ msgstr ""
 
 #, c-format
 msgid "out of core while allocating %lu bytes"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "警告：“%s”选项已不建议使用\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, c-format
@@ -4110,6 +4129,16 @@ msgstr "关键签名注记："
 msgid "Signature notation: "
 msgstr "签名注记："
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 个损坏的签名\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d 个损坏的签名\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4469,14 +4498,6 @@ msgstr "请以“%s%s”代替\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "警告：“%s”命令已不建议使用——不要使用它\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "警告：“%s”选项已不建议使用\n"
 
 #, fuzzy, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -8156,6 +8177,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Passphrase"
+#~ msgstr "错误的密码"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "向公钥服务器辅助程序传递数据时使用临时文件"

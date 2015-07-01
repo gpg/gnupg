@@ -25,7 +25,8 @@ msgstr "impossible d'obtenir le verrou pinentry : %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
@@ -94,6 +95,12 @@ msgstr ""
 "Veuillez entrer votre phrase secrète, afin de débloquer la clef secrète "
 "pendant cette session"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Phrase secrète :"
+
 msgid "does not match - try again"
 msgstr "ne correspond pas — veuillez réessayer"
 
@@ -124,9 +131,6 @@ msgstr "Mauvais code personnel"
 
 msgid "Bad Passphrase"
 msgstr "Mauvaise phrase secrète"
-
-msgid "Passphrase"
-msgstr "Phrase secrète"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -291,7 +295,8 @@ msgstr[1] ""
 "Une phrase secrète devrait contenir au moins %u chiffres%%0Aou caractères "
 "spéciaux."
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
 "Une phrase secrète ne devrait ni être un mot commun,%%0Ani correspondre à un "
@@ -570,9 +575,6 @@ msgstr ""
 "Veuillez entrer la phrase secrète ou le code personnel\n"
 "nécessaires pour terminer cette opération."
 
-msgid "Passphrase:"
-msgstr "Phrase secrète :"
-
 msgid "cancelled\n"
 msgstr "annulé\n"
 
@@ -677,6 +679,13 @@ msgstr "Modifier la phrase secrète"
 
 msgid "I'll change it later"
 msgstr "Je la modifierai plus tard"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Voulez-vous vraiment supprimer les clefs sélectionnées ? (o/N) "
 
 msgid "Delete key"
 msgstr "Supprimer la clef"
@@ -820,6 +829,18 @@ msgstr "hors limite de la mémoire sécurisée lors de l'allocation de %lu octe
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "hors limite lors de l'allocation de %lu octets"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s : %u : option « %s » obsolète — non prise en compte\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "Attention : « %s%s » est une option obsolète — non prise en compte\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -4074,6 +4095,16 @@ msgstr "Notation de signature critique : "
 msgid "Signature notation: "
 msgstr "Notation de signature : "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 mauvaise signature\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d mauvaises signatures\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "Attention : %lu clefs ignorées en raison de leur grande taille\n"
@@ -4435,14 +4466,6 @@ msgstr "veuillez plutôt utiliser « %s%s »\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "Attention : « %s » est une commande déconseillée — ne l'utilisez pas\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s : %u : option « %s » obsolète — non prise en compte\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "Attention : « %s%s » est une option obsolète — non prise en compte\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -8177,6 +8200,9 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Phrase secrète"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

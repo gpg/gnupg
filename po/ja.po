@@ -27,7 +27,8 @@ msgstr "pinentryのロックの獲得に失敗しました: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
@@ -83,6 +84,12 @@ msgstr ""
 "あなたのパスフレーズを入力してください(このセッションで秘密鍵のロックを解除す"
 "るために使われます)"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "パスフレーズ:"
+
 msgid "does not match - try again"
 msgstr "一致しません - もう一度"
 
@@ -113,9 +120,6 @@ msgstr "不正なPINです"
 
 msgid "Bad Passphrase"
 msgstr "パスフレーズが不正です"
-
-msgid "Passphrase"
-msgstr "パスフレーズ"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -271,7 +275,8 @@ msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] "パスフレーズは最低でも%u文字の数字か特殊文字を含むべきです。"
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
 "パスフレーズには、よく知られている用語や特定のパターンにマッチするものは%%0A"
@@ -539,9 +544,6 @@ msgstr ""
 "パスフレーズまたはPINを入力してください。\n"
 "この操作を完了するのに必要です。"
 
-msgid "Passphrase:"
-msgstr "パスフレーズ:"
-
 msgid "cancelled\n"
 msgstr "キャンセルされました\n"
 
@@ -642,6 +644,13 @@ msgstr "パスフレーズを変更する"
 
 msgid "I'll change it later"
 msgstr "後で変更する"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "選択した鍵を本当に削除しますか? (y/N) "
 
 msgid "Delete key"
 msgstr "鍵を削除する"
@@ -781,6 +790,20 @@ msgstr "%luバイトの確保においてセキュア・メモリが足りませ
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "%luバイトの確保においてメモリが足りません"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr ""
+"%s:%u: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr ""
+"*警告*: \"%s%s\"は、使われなくなったオプションです - なんの効果もありません\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -3907,6 +3930,16 @@ msgstr "クリティカルな署名注釈: "
 msgid "Signature notation: "
 msgstr "署名注釈: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "不正な署名1個\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "不正な署名%d個\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "*警告*: %lu 鍵がその大きさのためスキップされました\n"
@@ -4255,16 +4288,6 @@ msgstr "\"%s%s\"を代わりに使ってください\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "*警告*: \"%s\" は、廃止されているコマンドです - 使わないでください\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr ""
-"%s:%u: \"%s\"は、使われなくなったオプションです - なんの効果もありません\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr ""
-"*警告*: \"%s%s\"は、使われなくなったオプションです - なんの効果もありません\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -7791,6 +7814,9 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "パスフレーズ"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "キーサーバ・ヘルパーにデータを与える際、一時ファイルを使う"

@@ -52,7 +52,8 @@ msgstr "získání zámku pinetry se nezdařilo: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
@@ -118,6 +119,12 @@ msgid ""
 msgstr ""
 "Prosím, zadejte vaše heslo, aby pro tuto relaci mohl být odemknut tajný klíč"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Heslo:"
+
 msgid "does not match - try again"
 msgstr "neshodují se – zkuste to znovu"
 
@@ -148,9 +155,6 @@ msgstr "Špatný PIN"
 
 msgid "Bad Passphrase"
 msgstr "Špatné heslo"
-
-msgid "Passphrase"
-msgstr "Heslo"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -310,7 +314,8 @@ msgstr[1] "Heslo by mělo obsahovat alespoň %u číslice nebo %%0Azvláštní z
 msgstr[2] ""
 "Heslo by mělo obsahovat alespoň %u číslic nebo %%0Azvláštních znaků."
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
 "Heslo by nemělo být známým slovem nebo se shodovat%%0As určitým vzorem."
@@ -583,9 +588,6 @@ msgstr ""
 "Prosím, vložte heslo nebo PIN\n"
 "potřebný pro dokončení této operace."
 
-msgid "Passphrase:"
-msgstr "Heslo:"
-
 msgid "cancelled\n"
 msgstr "zrušeno\n"
 
@@ -685,6 +687,13 @@ msgstr "Změnit heslo"
 
 msgid "I'll change it later"
 msgstr "Změním jej později"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Opravdu chcete smazat vybrané klíče? (a/N) "
 
 msgid "Delete key"
 msgstr "Smazat klíč"
@@ -826,6 +835,18 @@ msgstr "při pokusu alokovat %lu bajtů došla bezpečná paměť"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "při pokusu alokovat %lu bajtů došla paměť"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: zastaralý parametr „%s“ – neúčinkuje\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -4013,6 +4034,16 @@ msgstr "Kritická podepisovací notace: "
 msgid "Signature notation: "
 msgstr "Podepisovací notace: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 špatný podpis\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d špatných podpisů\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "Pozor: %lu klíč(ů) přeskočen(o) kvůli jejich přílišné velikosti\n"
@@ -4368,14 +4399,6 @@ msgstr "použijte místo něj „%s%s“ \n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "VAROVÁNÍ: používání příkaz „%s“ se nedoporučuje - nepoužívejte jej\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: zastaralý parametr „%s“ – neúčinkuje\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "VAROVÁNÍ: „%s%s“ je zastaralý parametr – neúčinkuje\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -7943,6 +7966,9 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Heslo"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "používat dočasné soubory na přenos dat k modulům pro servery klíčů"

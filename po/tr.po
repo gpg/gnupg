@@ -25,7 +25,8 @@ msgstr "PIN giriş kilidi edinilemedi: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr ""
 
@@ -85,6 +86,12 @@ msgstr ""
 "Lütfen anahtar parolanızı giriniz, böylelikle bu oturumda bu gizli anahtar "
 "kilitsiz olabilecek"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Anahtar Parolası:"
+
 msgid "does not match - try again"
 msgstr "aynı değiller - tekrar deneyin"
 
@@ -115,9 +122,6 @@ msgstr "PIN hatalı"
 
 msgid "Bad Passphrase"
 msgstr "Anahtar Parolası hatalı"
-
-msgid "Passphrase"
-msgstr "Anahtar Parolası"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -598,9 +602,6 @@ msgstr ""
 "Lütfen bu işlemi tamamlamak için gereken\n"
 "PIN'i veya anahtar parolasını giriniz."
 
-msgid "Passphrase:"
-msgstr "Anahtar Parolası:"
-
 msgid "cancelled\n"
 msgstr "iptal edildi\n"
 
@@ -711,6 +712,13 @@ msgstr "Anahtar parolasını değiştir"
 
 msgid "I'll change it later"
 msgstr "Sonra değiştireceğim"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Seçili anahtarları gerçekten silmek istiyor musunuz? (e/H ya da y/N) "
 
 #, fuzzy
 #| msgid "enable key"
@@ -859,6 +867,19 @@ msgstr "%lu bayt ayrılırken güvenli bellekte nüve dışına çıkıldı"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "%lu bayt ayrılırken nüve dışına çıkıldı"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: eskimiş seçenek \"%s\" - artık etkisiz\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
@@ -4238,6 +4259,16 @@ msgstr "Kritik imza simgelemi: "
 msgid "Signature notation: "
 msgstr "imza simgelemi: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 kötü imza\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d kötü imza\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4600,15 +4631,6 @@ msgstr "lütfen yerine \"%s%s\" kullanınız\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "UYARI: \"%s\" komutu artık önerilmiyor - kullanmayın onu\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: eskimiş seçenek \"%s\" - artık etkisiz\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "UYARI: \"%s\" seçeneği eskidi - artık etkisiz\n"
 
 #, fuzzy, c-format
 #| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -8547,6 +8569,9 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Anahtar Parolası"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

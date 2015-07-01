@@ -28,7 +28,8 @@ msgstr "個人識別碼項目鎖定獲取失敗: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
@@ -92,6 +93,12 @@ msgid ""
 "this session"
 msgstr "請輸入你的密語以便在此階段作業中解開私鑰"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "密語:"
+
 msgid "does not match - try again"
 msgstr "前後不一致 - 請再試一次"
 
@@ -122,9 +129,6 @@ msgstr "不良的個人識別碼 (PIN)"
 
 msgid "Bad Passphrase"
 msgstr "不良的密語"
-
-msgid "Passphrase"
-msgstr "密語"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -277,7 +281,8 @@ msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] "密語至少得要含有 %u 個數字或%%0A特別字符."
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr "密語不得含有已知的詞彙, 亦不得與%%0A確知的模式吻合."
 
@@ -544,9 +549,6 @@ msgstr ""
 "請輸入完成這項操作所需的\n"
 "密語或個人識別碼 (PIN)."
 
-msgid "Passphrase:"
-msgstr "密語:"
-
 msgid "cancelled\n"
 msgstr "已取消\n"
 
@@ -643,6 +645,13 @@ msgstr "更改密語"
 
 msgid "I'll change it later"
 msgstr "我稍後再變更"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "你真的想要刪除所選的金鑰嗎? (y/N) "
 
 msgid "Delete key"
 msgstr "刪除金鑰"
@@ -782,6 +791,18 @@ msgstr "在安全記憶體配置 %lu 位元組時超出核心"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "配置 %lu 位元組時超出核心"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: 廢棄的 \"%s\" 選項 - 沒有任何影響\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -3905,6 +3926,16 @@ msgstr "關鍵簽章註記: "
 msgid "Signature notation: "
 msgstr "簽章註記: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 份損壞的簽章\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d 份損壞的簽章\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "警告: %lu 把金鑰因尺寸太大已跳過\n"
@@ -4253,14 +4284,6 @@ msgstr "請改以 \"%s%s\" 代替\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "警告: \"%s\" 是個棄而不顧的指令 - 別再用了\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: 廢棄的 \"%s\" 選項 - 沒有任何影響\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "警告: \"%s%s\" 是已廢棄的選項 - 沒有效果\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -7751,6 +7774,9 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "密語"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "用暫存檔來將資料遞送給金鑰伺服器協助程式"

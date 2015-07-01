@@ -26,7 +26,8 @@ msgstr "не вдалося встановити блокування запис
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "_Гаразд"
 
@@ -94,6 +95,12 @@ msgstr ""
 "Будь ласка, вкажіть ваш пароль, щоб ключ можна було розблокувати для цього "
 "сеансу"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Пароль:"
+
 msgid "does not match - try again"
 msgstr "паролі не збігаються, повторіть спробу"
 
@@ -124,9 +131,6 @@ msgstr "Помилковий пінкод"
 
 msgid "Bad Passphrase"
 msgstr "Помилковий пароль"
-
-msgid "Passphrase"
-msgstr "Пароль"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -286,7 +290,8 @@ msgstr[0] "У паролі має бути принаймні %u цифра аб
 msgstr[1] "У паролі має бути принаймні %u цифри або%%0Aспеціальних символи."
 msgstr[2] "У паролі має бути принаймні %u цифр або%%0Aспеціальних символів."
 
-#, c-format
+#, fuzzy, c-format
+#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
 "Паролем не повинно бути слово зі словника або слово%%0A, що відповідає "
@@ -559,9 +564,6 @@ msgstr ""
 "Будь ласка, вкажіть пароль або пінкод,\n"
 "потрібні для завершення цієї дії."
 
-msgid "Passphrase:"
-msgstr "Пароль:"
-
 msgid "cancelled\n"
 msgstr "скасовано\n"
 
@@ -665,6 +667,13 @@ msgstr "Змінити пароль"
 
 msgid "I'll change it later"
 msgstr "Я зміню його пізніше"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Справді бажаєте вилучити вибрані ключі? (y/N або т/Н) "
 
 msgid "Delete key"
 msgstr "Вилучити ключ"
@@ -808,6 +817,18 @@ msgstr ""
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "вихід за межі області під час спроби отримання %lu байтів"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: застарілий параметр «%s» — він не працюватиме\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "УВАГА: «%s%s» є застарілим параметром — він не працюватиме\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -4039,6 +4060,16 @@ msgstr "Критична примітка підпису: "
 msgid "Signature notation: "
 msgstr "Примітка підпису: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 помилковий підпис\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d помилкових підписів\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "Попередження: %lu ключів пропущено через їхній надто великий розмір\n"
@@ -4398,14 +4429,6 @@ msgstr "будь ласка, скористайтеся «%s%s»\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "УВАГА: «%s» вважається застарілою командою — не користуйтеся нею\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: застарілий параметр «%s» — він не працюватиме\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "УВАГА: «%s%s» є застарілим параметром — він не працюватиме\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -8015,6 +8038,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Пароль"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

@@ -26,7 +26,8 @@ msgstr "am eºuat sã stochez amprenta: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr ""
 
@@ -85,6 +86,13 @@ msgid ""
 msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
+msgid "PIN:"
+msgstr ""
+
+#, fuzzy
+msgid "Passphrase:"
+msgstr "frazã-parolã incorectã"
+
 msgid "does not match - try again"
 msgstr ""
 
@@ -119,10 +127,6 @@ msgstr "MPI incorect"
 
 #, fuzzy
 msgid "Bad Passphrase"
-msgstr "frazã-parolã incorectã"
-
-#, fuzzy
-msgid "Passphrase"
 msgstr "frazã-parolã incorectã"
 
 #, fuzzy, c-format
@@ -585,10 +589,6 @@ msgstr ""
 "Vã rugãm introduceþi fraza-parolã; aceasta este o propoziþie secretã \n"
 
 #, fuzzy
-msgid "Passphrase:"
-msgstr "frazã-parolã incorectã"
-
-#, fuzzy
 msgid "cancelled\n"
 msgstr "anulatã"
 
@@ -687,6 +687,13 @@ msgstr "schimbã fraza-parolã"
 
 msgid "I'll change it later"
 msgstr ""
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Doriþi într-adevãr sã ºtergeþi cheile selectate? (d/N) "
 
 #, fuzzy
 #| msgid "enable key"
@@ -832,6 +839,18 @@ msgstr ""
 
 #, c-format
 msgid "out of core while allocating %lu bytes"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "AVERTISMENT: \"%s\" este o opþiune învechitã\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, c-format
@@ -4203,6 +4222,16 @@ msgstr "Notare semnãturã criticã: "
 msgid "Signature notation: "
 msgstr "Notare semnãturã: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 semnãturã incorectã\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d semnãturi incorecte\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4565,14 +4594,6 @@ msgstr "vã rugãm folosiþi \"%s%s\" în loc\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "AVERTISMENT: \"%s\" este o comandã învechitã - nu o folosiþi\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "AVERTISMENT: \"%s\" este o opþiune învechitã\n"
 
 #, fuzzy, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -8317,6 +8338,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Passphrase"
+#~ msgstr "frazã-parolã incorectã"
 
 #, fuzzy
 #~| msgid "WARNING: keyserver option `%s' is not used on this platform\n"

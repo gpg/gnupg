@@ -29,7 +29,8 @@ msgstr "сбой при блокировке для ввода PIN: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
@@ -86,6 +87,12 @@ msgstr ""
 "Введите фразу-пароль, чтобы сделать закрытый ключ доступным на протяжении "
 "этого сеанса"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Фраза-пароль:"
+
 msgid "does not match - try again"
 msgstr "не подходит - попробуйте еще раз"
 
@@ -116,9 +123,6 @@ msgstr "Неверный PIN"
 
 msgid "Bad Passphrase"
 msgstr "Неверная фраза-пароль"
-
-msgid "Passphrase"
-msgstr "Фраза-пароль"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -550,9 +554,6 @@ msgstr ""
 "Введите фразу-пароль или PIN,\n"
 "необходимые для выполнения данной операции."
 
-msgid "Passphrase:"
-msgstr "Фраза-пароль:"
-
 msgid "cancelled\n"
 msgstr "отменено\n"
 
@@ -654,6 +655,13 @@ msgstr "Сменить фразу-пароль"
 
 msgid "I'll change it later"
 msgstr "Сменю позже"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Вы действительно хотите удалить выбранные ключи? (y/N) "
 
 msgid "Delete key"
 msgstr "Удалить ключ"
@@ -793,6 +801,14 @@ msgstr "выход за предел безопасной памяти при р
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "выход за границы при размещении %lu байтов"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: устаревший параметр \"%s\" - игнорируется\n"
+
+#, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "Внимание: параметр \"%s%s\" устарел - он игнорируется\n"
 
 #, c-format
 msgid "unknown debug flag '%s' ignored\n"
@@ -3962,6 +3978,16 @@ msgstr "Критическое примечание к подписи: "
 msgid "Signature notation: "
 msgstr "Примечание к подписи: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 плохая подпись\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d плохих подписей\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr "Внимание: %lu ключей пропущено из-за большого размера\n"
@@ -4315,14 +4341,6 @@ msgstr "используйте вместо этого \"%s%s\"\n"
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr ""
 "Внимание: команда \"%s\" не рекомендуется к употреблению - не применяйте ее\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: устаревший параметр \"%s\" - игнорируется\n"
-
-#, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "Внимание: параметр \"%s%s\" устарел - он игнорируется\n"
 
 #, c-format
 msgid "%s:%u: \"%s\" is obsolete in this file - it only has effect in %s\n"
@@ -7905,6 +7923,9 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Фраза-пароль"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "передавать данные в сервер с помощью временных файлов"

@@ -26,7 +26,8 @@ msgstr "nie uda³o siê uzyskaæ blokady pinentry: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "|pinentry-label|_OK"
 
@@ -91,6 +92,12 @@ msgid ""
 msgstr ""
 "Proszê wprowadziæ swoje has³o, ¿eby odblokowaæ klucz tajny dla tej sesji"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Has³o:"
+
 msgid "does not match - try again"
 msgstr "nie pasuj± - proszê spróbowaæ jeszcze raz"
 
@@ -121,9 +128,6 @@ msgstr "Niepoprawny PIN"
 
 msgid "Bad Passphrase"
 msgstr "Niepoprawne has³o"
-
-msgid "Passphrase"
-msgstr "Has³o"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -601,9 +605,6 @@ msgstr ""
 "Proszê wprowadziæ has³o lub PIN\n"
 "Potrzebny do zakoñczenia tej operacji."
 
-msgid "Passphrase:"
-msgstr "Has³o:"
-
 msgid "cancelled\n"
 msgstr "anulowano\n"
 
@@ -712,6 +713,13 @@ msgstr "Zmiana has³a"
 
 msgid "I'll change it later"
 msgstr "Zmieniê je pó¼niej"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Czy na pewno chcesz usun±æ wybrane klucze? (t/N) "
 
 #, fuzzy
 #| msgid "enable key"
@@ -860,6 +868,19 @@ msgstr "brak miejsca w bezpiecznej pamiêci podczas przydzielania %lu bajtów"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "brak miejsca podczas przydzielania %lu bajtów"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: przestarza³a opcja ,,%s'' - nie ma efektu\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "OSTRZE¯ENIE: ,,%s'' jest przestarza³± opcj± - nie ma efektu\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
@@ -4230,6 +4251,16 @@ msgstr "Krytyczne adnotacje podpisu: "
 msgid "Signature notation: "
 msgstr "Adnotacje podpisu: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 niepoprawny podpis\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d niepoprawnych podpisów\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4593,15 +4624,6 @@ msgstr "w jej miejsce nale¿y u¿yæ ,,%s%s''\n"
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr ""
 "OSTRZE¯ENIE: ,,%s'' jest przestarza³ym poleceniem - nie nale¿y go u¿ywaæ\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: przestarza³a opcja ,,%s'' - nie ma efektu\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "OSTRZE¯ENIE: ,,%s'' jest przestarza³± opcj± - nie ma efektu\n"
 
 #, fuzzy, c-format
 #| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -8517,6 +8539,9 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Has³o"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr ""

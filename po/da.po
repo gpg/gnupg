@@ -31,7 +31,8 @@ msgstr "kunne ikke indhente pinentry-lås: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr "_O.k."
 
@@ -102,6 +103,12 @@ msgstr ""
 "Indtast din adgangsfrase, så at den hemmelige nøgle kan låses op for denne "
 "session"
 
+msgid "PIN:"
+msgstr ""
+
+msgid "Passphrase:"
+msgstr "Adgangsfrase:"
+
 msgid "does not match - try again"
 msgstr "matcher ikke - prøv igen"
 
@@ -132,9 +139,6 @@ msgstr "Ugyldig PIN"
 
 msgid "Bad Passphrase"
 msgstr "Ugyldig adgangsfrase"
-
-msgid "Passphrase"
-msgstr "Adgangsfrase"
 
 #, c-format
 msgid "ssh keys greater than %d bits are not supported\n"
@@ -614,9 +618,6 @@ msgstr ""
 "Indtast venligst adgangsfrasen eller PIN'en\n"
 "krævet for at færdiggøre denne handling."
 
-msgid "Passphrase:"
-msgstr "Adgangsfrase:"
-
 msgid "cancelled\n"
 msgstr "afbrudt\n"
 
@@ -726,6 +727,13 @@ msgstr "Ændr adgangsfrasen"
 
 msgid "I'll change it later"
 msgstr "Jeg ændrer den senere"
+
+#, fuzzy, c-format
+#| msgid "Do you really want to delete the selected keys? (y/N) "
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "Vil du virkelig slette de valgte nøgler? (j/N) "
 
 #, fuzzy
 #| msgid "enable key"
@@ -874,6 +882,19 @@ msgstr "ikke nok kerne i sikker hukommelse under allokering af %lu byte"
 #, c-format
 msgid "out of core while allocating %lu bytes"
 msgstr "ikke nok kerne under allokering af %lu byte"
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr "%s:%u: forældet indstilling »%s« - den har ingen effekt\n"
+
+#, fuzzy, c-format
+#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
+msgstr ""
 
 #, fuzzy, c-format
 #| msgid "no running gpg-agent - starting one\n"
@@ -4208,6 +4229,16 @@ msgstr "Kritisk underskriftnotation: "
 msgid "Signature notation: "
 msgstr "Underskriftsnotation: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 ugyldig underskrift\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d ugyldige underskrifter\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4568,15 +4599,6 @@ msgstr "brug venligst »%s%s« i stedet for\n"
 #, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
 msgstr "ADVARSEL: »%s« er en forældet kommando - brug den ikke\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr "%s:%u: forældet indstilling »%s« - den har ingen effekt\n"
-
-#, fuzzy, c-format
-#| msgid "WARNING: \"%s\" is an obsolete option - it has no effect\n"
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
-msgstr "ADVARSEL: »%s« er en forældet indstilling - den har ingen effekt\n"
 
 #, fuzzy, c-format
 #| msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
@@ -8487,6 +8509,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "Passphrase"
+#~ msgstr "Adgangsfrase"
 
 #~ msgid "use temporary files to pass data to keyserver helpers"
 #~ msgstr "brug midlertidige filer til at sende data til nøgleserverhjælpere"

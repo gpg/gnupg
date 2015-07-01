@@ -22,7 +22,8 @@ msgstr "non se puido inicializa-la base de datos de confianzas: %s\n"
 #. Pinentries.  An underscore indicates that the next letter
 #. should be used as an accelerator.  Double the underscore for
 #. a literal one.  The actual to be translated text starts after
-#. the second vertical bar.
+#. the second vertical bar.  Note that gpg-agent has been set to
+#. utf-8 so that the strings are in the expected encoding.
 msgid "|pinentry-label|_OK"
 msgstr ""
 
@@ -79,6 +80,13 @@ msgid ""
 "this session"
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
+msgid "PIN:"
+msgstr ""
+
+#, fuzzy
+msgid "Passphrase:"
+msgstr "contrasinal erróneo"
+
 msgid "does not match - try again"
 msgstr ""
 
@@ -113,10 +121,6 @@ msgstr "MPI erróneo"
 
 #, fuzzy
 msgid "Bad Passphrase"
-msgstr "contrasinal erróneo"
-
-#, fuzzy
-msgid "Passphrase"
 msgstr "contrasinal erróneo"
 
 #, fuzzy, c-format
@@ -570,10 +574,6 @@ msgid ""
 msgstr "Por favor, introduza o contrasinal; esta é unha frase secreta \n"
 
 #, fuzzy
-msgid "Passphrase:"
-msgstr "contrasinal erróneo"
-
-#, fuzzy
 msgid "cancelled\n"
 msgstr "Cancelar"
 
@@ -672,6 +672,12 @@ msgstr "cambia-lo contrasinal"
 
 msgid "I'll change it later"
 msgstr ""
+
+#, fuzzy, c-format
+msgid ""
+"Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
+"%%0A?"
+msgstr "¿Seguro de que quere borra-las chaves seleccionadas? "
 
 #, fuzzy
 msgid "Delete key"
@@ -817,6 +823,18 @@ msgstr ""
 
 #, c-format
 msgid "out of core while allocating %lu bytes"
+msgstr ""
+
+#, c-format
+msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
+msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
+
+#, c-format
+msgid "unknown debug flag '%s' ignored\n"
 msgstr ""
 
 #, c-format
@@ -4245,6 +4263,16 @@ msgstr "Notación de sinaturas críticas: "
 msgid "Signature notation: "
 msgstr "Notación de sinaturas: "
 
+#, fuzzy
+#| msgid "1 bad signature\n"
+msgid "1 good signature\n"
+msgstr "1 sinatura errónea\n"
+
+#, fuzzy, c-format
+#| msgid "%d bad signatures\n"
+msgid "%d good signatures\n"
+msgstr "%d sinaturas erróneas\n"
+
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
 msgstr ""
@@ -4612,14 +4640,6 @@ msgstr "empregue \"%s%s\" no seu canto\n"
 
 #, fuzzy, c-format
 msgid "WARNING: \"%s\" is a deprecated command - do not use it\n"
-msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
-
-#, c-format
-msgid "%s:%u: obsolete option \"%s\" - it has no effect\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "WARNING: \"%s%s\" is an obsolete option - it has no effect\n"
 msgstr "AVISO: \"%s\" é unha opción a extinguir\n"
 
 #, fuzzy, c-format
@@ -8340,6 +8360,10 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Passphrase"
+#~ msgstr "contrasinal erróneo"
 
 #, fuzzy
 #~ msgid "WARNING: keyserver option '%s' is not used on this platform\n"
