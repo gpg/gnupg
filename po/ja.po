@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.5\n"
+"Project-Id-Version: gnupg 2.1.6\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-06-16 12:46+0900\n"
+"PO-Revision-Date: 2015-07-02 12:21+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -85,7 +85,7 @@ msgstr ""
 "るために使われます)"
 
 msgid "PIN:"
-msgstr ""
+msgstr "PIN:"
 
 msgid "Passphrase:"
 msgstr "パスフレーズ:"
@@ -275,8 +275,7 @@ msgid_plural ""
 "A passphrase should contain at least %u digits or%%0Aspecial characters."
 msgstr[0] "パスフレーズは最低でも%u文字の数字か特殊文字を含むべきです。"
 
-#, fuzzy, c-format
-#| msgid "A passphrase may not be a known term or match%%0Acertain pattern."
+#, c-format
 msgid "A passphrase may not be a known term or match%%0Acertain pattern."
 msgstr ""
 "パスフレーズには、よく知られている用語や特定のパターンにマッチするものは%%0A"
@@ -645,12 +644,13 @@ msgstr "パスフレーズを変更する"
 msgid "I'll change it later"
 msgstr "後で変更する"
 
-#, fuzzy, c-format
-#| msgid "Do you really want to delete the selected keys? (y/N) "
+#, c-format
 msgid ""
 "Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
 "%%0A?"
-msgstr "選択した鍵を本当に削除しますか? (y/N) "
+msgstr ""
+"本当にこの鍵: keygrip%%0A  %s%%0A  %%C"
+"%%0Aを削除しますか?"
 
 msgid "Delete key"
 msgstr "鍵を削除する"
@@ -803,7 +803,7 @@ msgstr ""
 
 #, c-format
 msgid "unknown debug flag '%s' ignored\n"
-msgstr ""
+msgstr "未知のdebugフラグ'%s'は無視されました\n"
 
 #, c-format
 msgid "no running gpg-agent - starting '%s'\n"
@@ -3930,15 +3930,12 @@ msgstr "クリティカルな署名注釈: "
 msgid "Signature notation: "
 msgstr "署名注釈: "
 
-#, fuzzy
-#| msgid "1 bad signature\n"
 msgid "1 good signature\n"
-msgstr "不正な署名1個\n"
+msgstr "正しい署名1個\n"
 
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
+#, c-format
 msgid "%d good signatures\n"
-msgstr "不正な署名%d個\n"
+msgstr "正しい署名%d個\n"
 
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
