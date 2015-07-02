@@ -4101,7 +4101,10 @@ do_decipher (app_t app, const char *keyidstr,
   if (rc)
     return rc;
 
-  if (app->app_local->keyattr[1].key_type == KEY_TYPE_RSA)
+  if (indatalen == 16 + 1 || indatalen == 32 + 1)
+    /* PSO:DECIPHER with symmetric key.  */
+    padind = -1;
+  else if (app->app_local->keyattr[1].key_type == KEY_TYPE_RSA)
     {
       /* We might encounter a couple of leading zeroes in the
          cryptogram.  Due to internal use of MPIs these leading zeroes
