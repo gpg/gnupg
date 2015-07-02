@@ -7,18 +7,17 @@ actually been done this way to get a certificate from CAcert to be used
 on a real server.  It has only been tested with this CA, but there
 shouldn't be any problem to run this against any other CA.
 
-Before you start, make sure that gpg-agent is running.  As there is no
-need for a configuration file, you may simply enter:
+We start by generating an X.509 certificate signing request. As there
+is no need for a configuration file, you may simply enter:
 
 @cartouche
 @example
-  $ gpgsm-gencert.sh >a.p10
-  Key type
-   [1] RSA
-   [2] Existing key
-   [3] Direct from card
-  Your selection: 1
-  You selected: RSA
+  $ gpgsm --gen-key >example.com.cert-req.pem
+  Please select what kind of key you want:
+     (1) RSA
+     (2) Existing key
+     (3) Existing key from card
+  Your selection? 1
 @end example
 @end cartouche
 
@@ -32,39 +31,36 @@ Let's continue:
 
 @cartouche
 @example
-  Key length
-   [1] 1024
-   [2] 2048
-  Your selection: 1
-  You selected: 1024
+  What keysize do you want? (2048)
+  Requested keysize is 2048 bits
 @end example
 @end cartouche
 
-The script offers  two common key sizes. With the current setup of
-CAcert, it does not make much sense to use a 2k key; their policies need
-to be revised anyway (a CA root key valid for 30 years is not really
-serious).
+Hitting enter chooses the default RSA key size of 2048 bits.  Smaller
+keys are too weak on the modern Internet.  If you choose a larger
+(stronger) key, your server will need to do more work.
 
 @cartouche
 @example
-  Key usage
-   [1] sign, encrypt
-   [2] sign
-   [3] encrypt
-  Your selection: 1
-  You selected: sign, encrypt
+  Possible actions for a RSA key:
+     (1) sign, encrypt
+     (2) sign
+     (3) encrypt
+  Your selection? 1
 @end example
 @end cartouche
 
-We want to sign and encrypt using this key. This is just a suggestion
-and the CA may actually assign other key capabilities.
+Selecting ``sign'' enables use of the key for Diffie-Hellman key
+exchange mechanisms (DHE and ECDHE) in TLS, which are preferred
+because they offer forward secrecy.  Selecting ``encrypt'' enables RSA
+key exchange mechanisms, which are still common in some places.
+Selecting both enables both key exchange mechanisms.
 
 Now for some real data:
 
 @cartouche
 @example
-  Name (DN)
-  > CN=kerckhoffs.g10code.com
+  Enter the X.509 subject name: CN=example.com
 @end example
 @end cartouche
 
@@ -74,13 +70,13 @@ server names later.
 
 @cartouche
 @example
-  E-Mail addresses (end with an empty line)
+  E-Mail addresses (end with an empty line):
   > 
 @end example
 @end cartouche
 
-We don't need email addresses in a server certificate and CAcert would
-anyway ignore such a request. Thus just hit enter.
+We don't need email addresses in a TLS server certificate and CAcert
+would anyway ignore such a request. Thus just hit enter.
 
 If you want to create a client certificate for email encryption, this
 would be the place to enter your mail address
@@ -89,22 +85,21 @@ however the CA may not accept them all or reject the entire request.
 
 @cartouche
 @example
-  DNS Names (optional; end with an empty line)
-  > www.g10code.com
-  DNS Names (optional; end with an empty line)
-  > ftp.g10code.com
-  DNS Names (optional; end with an empty line)
+  Enter DNS names (optional; end with an empty line):
+  > example.com
+  > www.example.com
   > 
 @end example
 @end cartouche
 
-Here I entered the names of the servers which actually run on the
-machine given in the DN above. The browser will accept a certificate for
-any of these names. As usual the CA must approve all of these names.
+Here I entered the names of the services which the machine actually
+provides.  You almost always want to include the canonical name here
+too. The browser will accept a certificate for any of these names. As
+usual the CA must approve all of these names.
 
 @cartouche
 @example
-  URIs (optional; end with an empty line)
+  URIs (optional; end with an empty line):
   >
 @end example
 @end cartouche
@@ -112,25 +107,30 @@ any of these names. As usual the CA must approve all of these names.
 It is possible to insert arbitrary URIs into a certificate; for a server
 certificate this does not make sense.
 
+@cartouche
+@example
+  Create self-signed certificate? (y/N)
+@end example
+@end cartouche
+
+Since we are creating a certificate signing request, and not a full
+certificate, we answer no here, or just hit enter for the default.
+
 We have now entered all required information and @command{gpgsm} will
 display what it has gathered and ask whether to create the certificate
 request:
 
 @cartouche
 @example
-  Parameters for certificate request to create:
-       1	Key-Type: RSA
-       2	Key-Length: 1024
-       3	Key-Usage: sign, encrypt
-       4	Name-DN: CN=kerckhoffs.g10code.com
-       5	Name-DNS: www.g10code.com
-       6	Name-DNS: ftp.g10code.com
-  
-  Really create such a CSR?
-   [1] yes
-   [2] no
-  Your selection: 1
-  You selected: yes
+  These parameters are used:
+      Key-Type: RSA
+      Key-Length: 2048
+      Key-Usage: sign, encrypt
+      Name-DN: CN=example.com
+      Name-DNS: example.com
+      Name-DNS: www.example.com
+
+  Proceed with creation? (y/N) y
 @end example
 @end cartouche
 
@@ -146,6 +146,7 @@ When it is ready, you should see the final notice:
 @cartouche
 @example
   gpgsm: certificate request created
+  Ready.  You should now send this request to your CA.
 @end example
 @end cartouche
 
@@ -153,17 +154,22 @@ Now, you may look at the created request:
 
 @cartouche
 @example
-  $ cat a.p10
+  $ cat example.com.cert-req.pem
   -----BEGIN CERTIFICATE REQUEST-----
-  MIIBnzCCAQgCAQAwITEfMB0GA1UEAxMWa2VyY2tob2Zmcy5nMTBjb2RlLmNvbTCB
-  nzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA5h+uKRenpvbe+BnMY6siPO50LVyg
-  HtB7kr+YISlPJ5JAFO12yQFz9Y0sBLHbjR+V+TOawwP1dZhGjlgnEBkMdWKuEBlS
-  wFTALLX78GAyvAYAmPqSPDEYXkMECyUXVX/bbGI1bY8Y2OGy4w4D+v7e+xD2NBkm
-  Bj5cNy+YMbGVldECAwEAAaA+MDwGCSqGSIb3DQEJDjEvMC0wKwYDVR0RBCQwIoIP
-  d3d3LmcxMGNvZGUuY29tgg9mdHAuZzEwY29kZS5jb20wDQYJKoZIhvcNAQEFBQAD
-  gYEAzBRIi8KTfKyebOlMtDN6oDYBOv+r9A4w3u/Z1ikjffaiN1Bmd2o9Ez9KXKHA
-  IezLeSEA/rGUPN5Ur5qIJnRNQ8xrS+iLftr8msWQSZppVnA/vnqMrtqBUpitqAr0
-  eYBmt1Uem2Y3UFABrKPglv2xzgGkrKX6AqmFoOnJWQ0QcTw=
+  MIIClTCCAX0CAQAwFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3
+  DQEBAQUAA4IBDwAwggEKAoIBAQDP1QEcbTvOLLCX4gAoOzH9AW7jNOMj7OSOL0uW
+  h2bCdkK5YVpnX212Z6COTC3ZG0pJiCeGt1TbbDJUlTa4syQ6JXavjK66N8ASZsyC
+  Rwcl0m6hbXp541t1dbgt2VgeGk25okWw3j+brw6zxLD2TnthJxOatID0lDIG47HW
+  GqzZmA6WHbIBIONmGnReIHTpPAPCDm92vUkpKG1xLPszuRmsQbwEl870W/FHrsvm
+  DPvVUUSdIvTV9NuRt7/WY6G4nPp9QlIuTf1ESPzIuIE91gKPdrRCAx0yuT708S1n
+  xCv3ETQ/bKPoAQ67eE3mPBqkcVwv9SE/2/36Lz06kAizRgs5AgMBAAGgOjA4Bgkq
+  hkiG9w0BCQ4xKzApMCcGA1UdEQQgMB6CC2V4YW1wbGUuY29tgg93d3cuZXhhbXBs
+  ZS5jb20wDQYJKoZIhvcNAQELBQADggEBAEWD0Qqz4OENLYp6yyO/KqF0ig9FDsLN
+  b5/R+qhms5qlhdB5+Dh+j693Sj0UgbcNKc6JT86IuBqEBZmRCJuXRoKoo5aMS1cJ
+  hXga7N9IA3qb4VBUzBWvlL92U2Iptr/cEbikFlYZF2Zv3PBv8RfopVlI3OLbKV9D
+  bJJTt/6kuoydXKo/Vx4G0DFzIKNdFdJk86o/Ziz8NOs9JjZxw9H9VY5sHKFM5LKk
+  VcLwnnLRlNjBGB+9VK/Tze575eG0cJomTp7UGIB+1xzIQVAhUZOizRDv9tHDeaK3
+  k+tUhV0kuJcYHucpJycDSrP/uAY5zuVJ0rs2QSjdnav62YrRgEsxJrU=
   -----END CERTIFICATE REQUEST-----
   $
 @end example
@@ -189,26 +195,7 @@ followed by a Ctrl-D
 @example
   -----BEGIN CERTIFICATE-----
   MIIEIjCCAgqgAwIBAgIBTDANBgkqhkiG9w0BAQQFADBUMRQwEgYDVQQKEwtDQWNl
-  cnQgSW5jLjEeMBwGA1UECxMVaHR0cDovL3d3dy5DQWNlcnQub3JnMRwwGgYDVQQD
-  ExNDQWNlcnQgQ2xhc3MgMyBSb290MB4XDTA1MTAyODE2MjA1MVoXDTA3MTAyODE2
-  MjA1MVowITEfMB0GA1UEAxMWa2VyY2tob2Zmcy5nMTBjb2RlLmNvbTCBnzANBgkq
-  hkiG9w0BAQEFAAOBjQAwgYkCgYEA5h+uKRenpvbe+BnMY6siPO50LVygHtB7kr+Y
-  ISlPJ5JAFO12yQFz9Y0sBLHbjR+V+TOawwP1dZhGjlgnEBkMdWKuEBlSwFTALLX7
-  8GAyvAYAmPqSPDEYXkMECyUXVX/bbGI1bY8Y2OGy4w4D+v7e+xD2NBkmBj5cNy+Y
-  MbGVldECAwEAAaOBtTCBsjAMBgNVHRMBAf8EAjAAMDQGA1UdJQQtMCsGCCsGAQUF
-  BwMCBggrBgEFBQcDAQYJYIZIAYb4QgQBBgorBgEEAYI3CgMDMAsGA1UdDwQEAwIF
-  oDAyBggrBgEFBQcBAQQmMCQwIgYIKwYBBQUHMAGGFmh0dHA6Ly9vY3NwLmNhY2Vy
-  dC5vcmcwKwYDVR0RBCQwIoIPd3d3LmcxMGNvZGUuY29tgg9mdHAuZzEwY29kZS5j
-  b20wDQYJKoZIhvcNAQEEBQADggIBAAj5XAHCtzQR8PV6PkQBgZqUCbcfxGO/ZIp9
-  aIT6J2z0Jo1OZI6KmConbqnZG9WyDlV5P7msQXW/Z9nBfoj4KSmNR8G/wtb8ClJn
-  W8s75+K3ZLq1UgEyxBDrS7GjtbVaj7gsfZsuiQzxmk9lbl1gbkpJ3VEMjwVCTMlM
-  fpjp8etyPhUZqOZaoKVaq//KTOsjhPMwz7TcfOkHvXketPrWTcefJQU7NKLH16D3
-  mZAwnBxp3P51H6E6VG8AoJO8xCBuVwsbXKEf/FW+tmKG9pog6CaZQ9WibROTtnKj
-  NJjSBsrUk5C+JowO/EyZRGm6R1tlok8iFXj+2aimyeBqDcxozNmFgh9F3S5u0wK0
-  6cfYgkPVMHxgwV3f3Qh+tJkgLExN7KfO9hvpZqAh+CLQtxVmvpxEVEXKR6nwBI5U
-  BaseulvVy3wUfg2daPkG17kDDBzQlsWC0BRF8anH+FWSrvseC3nS0a9g3sXF1Ic3
-  gIqeAMhkant1Ac3RR6YCWtJKr2rcQNdDAxXK35/gUSQNCi9dclEzoOgjziuA1Mha
-  94jYcvGKcwThn0iITVS5hOsCfaySBLxTzfIruLbPxXlpWuCW/6I/7YyivppKgEZU
+   [...]
   rUTFlNElRXCwIl0YcJkIaYYqWf7+A/aqYJCi8+51usZwMy3Jsq3hJ6MA3h1BgwZs
   Rtct3tIX
   -----END CERTIFICATE-----
@@ -229,19 +216,19 @@ To see the content of your certificate, you may now enter:
 
 @cartouche
 @example
-  $ gpgsm -K kerckhoffs.g10code.com
+  $ gpgsm -K example.com
   /home/foo/.gnupg/pubring.kbx
   ---------------------------
   Serial number: 4C
          Issuer: /CN=CAcert Class 3 Root/OU=http:\x2f\x2fwww.[...]
-        Subject: /CN=kerckhoffs.g10code.com
-            aka: (dns-name www.g10code.com)
-            aka: (dns-name ftp.g10code.com)
-       validity: 2005-10-28 16:20:51 through 2007-10-28 16:20:51
-       key type: 1024 bit RSA
+        Subject: /CN=example.com
+            aka: (dns-name example.com)
+            aka: (dns-name www.example.com)
+       validity: 2015-07-01 16:20:51 through 2016-07-01 16:20:51
+       key type: 2048 bit RSA
       key usage: digitalSignature keyEncipherment
   ext key usage: clientAuth (suggested), serverAuth (suggested), [...]
-    fingerprint: 0F:9C:27:B2:DA:05:5F:CB:33:19:D8:E9:65:B9:BD:4F:B1:98:CC:57
+    fingerprint: 0F:9C:27:B2:DA:05:5F:CB:33:D8:19:E9:65:B9:4F:BD:B1:98:CC:57
 @end example
 @end cartouche
 
@@ -256,7 +243,7 @@ certificate. To create such a file, run:
 
 @cartouche
 @example
-  $ gpgsm --export-secret-key-p12 -a >kerckhoffs-cert.pem
+  $ gpgsm --export-secret-key-p12 -a >example.com-cert.pem
 @end example
 @end cartouche
 
@@ -266,12 +253,12 @@ certificate as well as the private key:
 
 @cartouche
 @example
-  $ cat kerckhoffs-cert.pem
+  $ cat example-cert.pem
   Issuer ...: /CN=CAcert Class 3 Root/OU=http:\x2f\x2fwww.CA[...]
   Serial ...: 4C
-  Subject ..: /CN=kerckhoffs.g10code.com
-      aka ..: (dns-name www.g10code.com)
-      aka ..: (dns-name ftp.g10code.com)
+  Subject ..: /CN=example.com
+      aka ..: (dns-name example.com)
+      aka ..: (dns-name www.example.com)
   
   -----BEGIN PKCS12-----
   MIIHlwIBAzCCB5AGCSqGSIb37QdHAaCCB4EEggd9MIIHeTk1BJ8GCSqGSIb3DQEu

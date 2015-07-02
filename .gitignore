@@ -67,7 +67,6 @@ doc/gpg-zip.1
 doc/gpg2.1
 doc/gpgconf.1
 doc/gpgparsemail.1
-doc/gpgsm-gencert.sh.1
 doc/gpgsm.1
 doc/gpgv2.1
 doc/scdaemon.1

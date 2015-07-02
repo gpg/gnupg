@@ -15,7 +15,6 @@ GnuPG comes with a couple of smaller tools:
 * addgnupghome::          Create .gnupg home directories.
 * gpgconf::               Modify .gnupg home directories.
 * applygnupgdefaults::    Run gpgconf for all users.
-* gpgsm-gencert.sh::      Generate an X.509 certificate request.
 * gpg-preset-passphrase:: Put a passphrase into the cache.
 * gpg-connect-agent::     Communicate with a running agent.
 * dirmngr-client::        How to use the Dirmngr client tool.
@@ -998,42 +997,6 @@ the configuration files and bypass gpgconf.
 @example
 applygnupgdefaults
 @end example
-
-
-@c
-@c    GPGSM-GENCERT.SH
-@c
-@node gpgsm-gencert.sh
-@section Generate an X.509 certificate request
-@manpage gpgsm-gencert.sh.1
-@ifset manverb
-.B gpgsm-gencert.sh
-\- Generate an X.509 certificate request
-@end ifset
-
-@mansect synopsis
-@ifset manverb
-.B  gpgsm-gencert.sh
-@end ifset
-
-@mansect description
-This is a simple tool to interactively generate a certificate request
-which will be printed to stdout.
-
-@manpause
-@noindent
-@command{gpgsm-gencert.sh} is invoked as:
-
-@samp{gpgsm-cencert.sh}
-
-@mansect see also
-@ifset isman
-@command{gpgsm}(1),
-@command{gpg-agent}(1),
-@command{scdaemon}(1)
-@end ifset
-@include see-also-note.texi
-
 
 
 @c

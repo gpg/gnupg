@@ -18,7 +18,7 @@
 
 EXTRA_DIST = \
 	Manifest watchgnupg.c \
-	addgnupghome applygnupgdefaults gpgsm-gencert.sh \
+	addgnupghome applygnupgdefaults \
 	lspgpot mail-signed-keys convert-from-106 sockprox.c \
 	ccidmon.c ChangeLog-2011 gpg-connect-agent-w32info.rc
 
@@ -34,7 +34,6 @@ AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(GPG_ERROR_CFLAGS) $(LIBASSUAN_CFLAGS)
 
 sbin_SCRIPTS = addgnupghome applygnupgdefaults
 
-bin_SCRIPTS = gpgsm-gencert.sh
 if HAVE_USTAR
 # bin_SCRIPTS += gpg-zip
 noinst_SCRIPTS = gpg-zip

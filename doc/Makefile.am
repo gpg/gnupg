@@ -71,7 +71,7 @@ myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 dirmngr.8 scdaemon.1 gpgv2.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
-		gpgsm-gencert.sh.1 applygnupgdefaults.8 gpg-zip.1 \
+		applygnupgdefaults.8 gpg-zip.1 \
 		dirmngr-client.1
 
 man_MANS = $(myman_pages) gnupg.7
