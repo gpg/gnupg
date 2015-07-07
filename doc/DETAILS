@@ -408,12 +408,15 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - <sig-class>
     - [ <primary-key-fpr> ]
 
-    This status indicates that the signature is good. This is the same
-    as GOODSIG but has the fingerprint as the argument. Both status
-    lines are emitted for a good signature.  All arguments here are on
-    one long line.  sig-timestamp is the signature creation time in
-    seconds after the epoch. expire-timestamp is the signature
-    expiration time in seconds after the epoch (zero means "does not
+    This status indicates that the signature is cryptographically
+    valid. This similar to GOODSIG or EXPSIG or EXPKEYSIG or REVSIG
+    (depending on the date and the state of the signature and signing
+    key) but has the fingerprint as the argument. Multiple status
+    lines (VALIDSIG and the other appropriate *SIG status) are emitted
+    for a valid signature.  All arguments here are on one long line.
+    sig-timestamp is the signature creation time in seconds after the
+    epoch. expire-timestamp is the signature expiration time in
+    seconds after the epoch (zero means "does not
     expire"). sig-version, pubkey-algo, hash-algo, and sig-class (a
     2-byte hex value) are all straight from the signature packet.
     PRIMARY-KEY-FPR is the fingerprint of the primary key or identical
@@ -421,8 +424,8 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     key without running gpg again for this purpose.
 
     The primary-key-fpr parameter is used for OpenPGP and not
-    class is not defined for CMS and currently set to 0 and 00.
     available for CMS signatures.  The sig-version as well as the sig
+    class is not defined for CMS and currently set to 0 and 00.
 
     Note, that *-TIMESTAMP may either be a number of seconds since
     Epoch or an ISO 8601 string which can be detected by the presence
