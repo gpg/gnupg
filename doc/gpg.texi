@@ -2943,7 +2943,7 @@ helper script is provided to create these files (@pxref{addgnupghome}).
 
 For internal purposes @command{@gpgname} creates and maintains a few other
 files; They all live in in the current home directory (@pxref{option
---homedir}).  Only the @command{@gpgname} may modify these files.
+--homedir}).  Only the @command{@gpgname} program may modify these files.
 
 
 @table @file
