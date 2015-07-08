@@ -2086,8 +2086,8 @@ parse_key (IOBUF inp, int pkttype, unsigned long pktlen,
                    || algorithm == PUBKEY_ALGO_ECDH) && i==0)
                 {
                   char *curve = openpgp_oid_to_str (pk->pkey[0]);
-                  es_fprintf (listfp, " %s (%s)",
-                              openpgp_oid_to_curve (curve), curve);
+                  const char *name = openpgp_oid_to_curve (curve);
+                  es_fprintf (listfp, " %s (%s)", name?name:"", curve);
                   xfree (curve);
                 }
               es_putc ('\n', listfp);

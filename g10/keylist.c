@@ -1092,7 +1092,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
             {
               char *curve = openpgp_oid_to_str (pk2->pkey[0]);
               const char *name = openpgp_oid_to_curve (curve);
-              if (!*name || *name == '?')
+              if (!name)
                 name = curve;
               es_fprintf (es_stdout, " %s", name);
               xfree (curve);
@@ -1359,7 +1359,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
     {
       char *curve = openpgp_oid_to_str (pk->pkey[0]);
       const char *name = openpgp_oid_to_curve (curve);
-      if (!*name || *name == '?')
+      if (!name)
         name = curve;
       es_fputs (name, es_stdout);
       xfree (curve);
@@ -1488,7 +1488,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
             {
               char *curve = openpgp_oid_to_str (pk->pkey[0]);
               const char *name = openpgp_oid_to_curve (curve);
-              if (!*name || *name == '?')
+              if (!name)
                 name = curve;
               es_fputs (name, es_stdout);
               xfree (curve);

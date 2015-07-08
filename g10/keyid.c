@@ -121,7 +121,7 @@ pubkey_string (PKT_public_key *pk, char *buffer, size_t bufsize)
       char *curve = openpgp_oid_to_str (pk->pkey[0]);
       const char *name = openpgp_oid_to_curve (curve);
 
-      if (*name && *name != '?')
+      if (name)
         snprintf (buffer, bufsize, "%s", name);
       else if (curve)
         snprintf (buffer, bufsize, "E_%s", curve);
