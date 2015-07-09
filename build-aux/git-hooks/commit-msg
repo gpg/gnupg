@@ -86,11 +86,17 @@ sub check_msg($$)
   2 <= @line && length $line[1]
     and return 'second line must be empty';
 
+  # See git-commit(1), this is the --cleanup=scissors option. Everything
+  # after and including this line gets ignored.
+  my $marker = '# ------------------------ >8 ------------------------';
+
   # Limit line length to allow for the ChangeLog's leading TAB.
   foreach my $line (@line)
     {
       72 < length $line && $line =~ /^[^#]/
         and return 'line longer than 72 characters';
+
+      last if $line eq $marker;
     }
 
   return '';
