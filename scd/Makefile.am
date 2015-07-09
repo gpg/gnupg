@@ -49,22 +49,3 @@ scdaemon_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
 	$(LIBUSB_LIBS) $(GPG_ERROR_LIBS) \
         $(LIBINTL) $(DL_LIBS) $(NETLIBS) $(LIBICONV) $(resource_objs)
-
-# Removed for now: We need to decide whether it makes sense to
-# continue it at all, given that gpg has now all required
-# functionality.
-#sc_copykeys_SOURCES = \
-#	sc-copykeys.c scdaemon.h \
-#	apdu.c apdu.h \
-#	ccid-driver.c ccid-driver.h \
-#	iso7816.c iso7816.h \
-#	atr.c atr.h \
-#	app.c app-common.h app-help.c $(card_apps)
-#
-#sc_copykeys_LDADD = \
-#	../common/libcommon.a \
-#	../common/libsimple-pwquery.a \
-#	$(LIBGCRYPT_LIBS) $(KSBA_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
-#	 $(LIBUSB_LIBS) \
-#        -lgpg-error @LIBINTL@ @DL_LIBS@
-#
