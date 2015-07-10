@@ -300,6 +300,7 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
    and uses that to translate a string according to the locale set for
    the connection.  The macro LunderscoreIMPL is used by i18n to
    actually define the inline function when needed.  */
+#ifdef ENABLE_NLS
 #define L_(a) agent_Lunderscore (ctrl, (a))
 #define LunderscorePROTO                                            \
   static inline const char *agent_Lunderscore (ctrl_t ctrl,         \
@@ -312,6 +313,9 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
     return ctrl? i18n_localegettext (ctrl->lc_messages, string) \
       /*     */: gettext (string);                              \
   }
+#else
+#define L_(a) (a)
+#endif
 
 
 /*-- gpg-agent.c --*/
