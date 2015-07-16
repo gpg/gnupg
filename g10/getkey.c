@@ -3098,6 +3098,9 @@ get_ctx_handle(GETKEY_CTX ctx)
 static void
 free_akl(struct akl *akl)
 {
+  if (! akl)
+    return;
+
   if(akl->spec)
     free_keyserver_spec(akl->spec);
 
