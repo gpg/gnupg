@@ -68,6 +68,7 @@
 #include "app-common.h"
 #include "tlv.h"
 #include "host2net.h"
+#include "openpgpdefs.h"
 
 
 /* A table describing the DOs of the card.  */
@@ -748,13 +749,13 @@ static unsigned char
 get_algo_byte (int keynumber, key_type_t key_type)
 {
   if (key_type == KEY_TYPE_ECC && keynumber != 1)
-    return 19;
+    return PUBKEY_ALGO_ECDSA;
   else if (key_type == KEY_TYPE_ECC && keynumber == 1)
-    return 18;
+    return PUBKEY_ALGO_ECDH;
   else if (key_type == KEY_TYPE_EDDSA)
-    return 22;
+    return PUBKEY_ALGO_EDDSA;
   else
-    return 1;  /* RSA */
+    return PUBKEY_ALGO_RSA;
 }
 
 #define MAX_ARGS_STORE_FPR 3
@@ -977,7 +978,9 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int number)
       get_ecc_key_parameters (app->app_local->keyattr[number].ecc.curve,
                               &n_bits, &curve_oid);
       snprintf (buffer, sizeof buffer, "%d %d %u %s",
-                number+1, number==1? 18: 19, n_bits, curve_oid);
+                number+1,
+                number==1? PUBKEY_ALGO_ECDH: PUBKEY_ALGO_ECDSA,
+                n_bits, curve_oid);
     }
   else if (app->app_local->keyattr[number].key_type == KEY_TYPE_EDDSA)
     {
@@ -1071,8 +1074,9 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                 app->app_local->extcap.max_certlen_3,
                 app->app_local->extcap.algo_attr_change,
                 (app->app_local->extcap.sm_supported
-                 ? (app->app_local->extcap.sm_algo == 0? 2 :
-                    (app->app_local->extcap.sm_algo == 1? 7 : 9))
+                 ? (app->app_local->extcap.sm_algo == 0? CIPHER_ALGO_3DES :
+                    (app->app_local->extcap.sm_algo == 1?
+                     CIPHER_ALGO_AES : CIPHER_ALGO_AES256))
                  : 0),
                 app->app_local->status_indicator,
                 app->app_local->extcap.has_decrypt,
@@ -2832,7 +2836,7 @@ change_keyattr (app_t app, int keyno, unsigned int nbits,
   relptr = get_one_do (app, 0xC1+keyno, &buffer, &buflen, NULL);
   if (!relptr)
     return gpg_error (GPG_ERR_CARD);
-  if (buflen < 6 || buffer[0] != 1)
+  if (buflen < 6 || buffer[0] != PUBKEY_ALGO_RSA)
     {
       /* Attriutes too short or not an RSA key.  */
       xfree (relptr);
@@ -2899,8 +2903,8 @@ change_keyattr_from_string (app_t app,
     err = gpg_error (GPG_ERR_INV_DATA);
   else if (keyno < 1 || keyno > 3)
     err = gpg_error (GPG_ERR_INV_ID);
-  else if (algo != 1)
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO); /* Not RSA.  */
+  else if (algo != PUBKEY_ALGO_RSA)
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
   else if (nbits < 1024)
     err = gpg_error (GPG_ERR_TOO_SHORT);
   else
@@ -4433,7 +4437,7 @@ parse_algorithm_attribute (app_t app, int keyno)
 
   if (opt.verbose)
     log_info ("Key-Attr-%s ..: ", desc[keyno]);
-  if (*buffer == 1 && (buflen == 5 || buflen == 6))
+  if (*buffer == PUBKEY_ALGO_RSA && (buflen == 5 || buflen == 6))
     {
       app->app_local->keyattr[keyno].rsa.n_bits = (buffer[1]<<8 | buffer[2]);
       app->app_local->keyattr[keyno].rsa.e_bits = (buffer[3]<<8 | buffer[4]);
@@ -4457,7 +4461,7 @@ parse_algorithm_attribute (app_t app, int keyno)
            app->app_local->keyattr[keyno].rsa.format == RSA_CRT?  "crt"  :
            app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N?"crt+n":"?");
     }
-  else if (*buffer == 18 || *buffer == 19) /* ECDH or ECDSA */
+  else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA)
     {
       app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
       app->app_local->keyattr[keyno].ecc.curve
@@ -4467,7 +4471,7 @@ parse_algorithm_attribute (app_t app, int keyno)
           ("ECC, curve=%s\n",
            get_curve_name (app->app_local->keyattr[keyno].ecc.curve));
     }
-  else if (*buffer == 22) /* EdDSA */
+  else if (*buffer == PUBKEY_ALGO_EDDSA)
     {
       app->app_local->keyattr[keyno].key_type = KEY_TYPE_EDDSA;
       app->app_local->keyattr[keyno].eddsa.curve
