@@ -66,7 +66,8 @@
 #include "iso7816.h"
 #include "app-common.h"
 #include "tlv.h"
-#include "../include/host2net.h"
+#include "host2net.h"
+#include "cipher.h"
 
 
 /* A table describing the DOs of the card.  */
@@ -854,6 +855,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int number)
   assert (number >=0 && number < DIM(app->app_local->keyattr));
 
   /* We only support RSA thus the algo identifier is fixed to 1.  */
+  /* Note that PUBKEY_ALGO_RSA == 1 */
   snprintf (buffer, sizeof buffer, "%d 1 %u %u %d",
             number+1,
             app->app_local->keyattr[number].n_bits,
@@ -940,7 +942,7 @@ do_getattr (app_t app, ctrl_t ctrl, const char *name)
                 app->app_local->extcap.max_certlen_3,
                 app->app_local->extcap.algo_attr_change,
                 (app->app_local->extcap.sm_supported
-                 ? (app->app_local->extcap.sm_aes128? 7 : 2)
+                 ? (app->app_local->extcap.sm_aes128? CIPHER_ALGO_AES : CIPHER_ALGO_3DES)
                  : 0));
       send_status_info (ctrl, table[idx].name, tmp, strlen (tmp), NULL, 0);
       return 0;
@@ -2543,7 +2545,7 @@ change_keyattr (app_t app, int keyno, unsigned int nbits,
   relptr = get_one_do (app, 0xC1+keyno, &buffer, &buflen, NULL);
   if (!relptr)
     return gpg_error (GPG_ERR_CARD);
-  if (buflen < 6 || buffer[0] != 1)
+  if (buflen < 6 || buffer[0] != PUBKEY_ALGO_RSA)
     {
       /* Attriutes too short or not an RSA key.  */
       xfree (relptr);
@@ -2610,8 +2612,8 @@ change_keyattr_from_string (app_t app,
     err = gpg_error (GPG_ERR_INV_DATA);
   else if (keyno < 1 || keyno > 3)
     err = gpg_error (GPG_ERR_INV_ID);
-  else if (algo != 1)
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO); /* Not RSA.  */
+  else if (algo != PUBKEY_ALGO_RSA)
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
   else if (nbits < 1024)
     err = gpg_error (GPG_ERR_TOO_SHORT);
   else
@@ -3833,7 +3835,7 @@ parse_algorithm_attribute (app_t app, int keyno)
 
   if (opt.verbose)
     log_info ("Key-Attr-%s ..: ", desc[keyno]);
-  if (*buffer == 1 && (buflen == 5 || buflen == 6))
+  if (*buffer == PUBKEY_ALGO_RSA && (buflen == 5 || buflen == 6))
     {
       app->app_local->keyattr[keyno].n_bits = (buffer[1]<<8 | buffer[2]);
       app->app_local->keyattr[keyno].e_bits = (buffer[3]<<8 | buffer[4]);

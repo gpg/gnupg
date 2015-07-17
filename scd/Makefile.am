@@ -25,7 +25,7 @@ endif
 
 EXTRA_DIST = ChangeLog-2011 scdaemon-w32info.rc
 
-AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common
+AM_CPPFLAGS = -I$(top_srcdir)/gl -I$(top_srcdir)/intl -I$(top_srcdir)/common -I$(top_srcdir)/include
 
 include $(top_srcdir)/am/cmacros.am
 
