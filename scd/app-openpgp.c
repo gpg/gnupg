@@ -57,12 +57,12 @@
 #include "options.h"
 #include "errors.h"
 #include "memory.h"
-#include "util.h"
 #include "cardglue.h"
 #else /* GNUPG_MAJOR_VERSION != 1 */
 #include "scdaemon.h"
 #endif /* GNUPG_MAJOR_VERSION != 1 */
 
+#include "util.h"
 #include "i18n.h"
 #include "iso7816.h"
 #include "app-common.h"
@@ -2818,54 +2818,25 @@ build_ecc_privkey_template (app_t app, int keyno,
 /* Helper for do_writekley to change the size of a key.  Not ethat
    this deletes the entire key without asking.  */
 static gpg_error_t
-change_keyattr (app_t app, int keyno, unsigned int nbits,
+change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
                 gpg_error_t (*pincb)(void*, const char *, char **),
                 void *pincb_arg)
 {
   gpg_error_t err;
-  unsigned char *buffer;
-  size_t buflen;
-  void *relptr;
 
   assert (keyno >=0 && keyno <= 2);
-
-  if (nbits > 4096)
-    return gpg_error (GPG_ERR_TOO_LARGE);
-
-  /* Read the current attributes into a buffer.  */
-  relptr = get_one_do (app, 0xC1+keyno, &buffer, &buflen, NULL);
-  if (!relptr)
-    return gpg_error (GPG_ERR_CARD);
-  if (buflen < 6 || buffer[0] != PUBKEY_ALGO_RSA)
-    {
-      /* Attriutes too short or not an RSA key.  */
-      xfree (relptr);
-      return gpg_error (GPG_ERR_CARD);
-    }
-
-  /* We only change n_bits and don't touch anything else.  Before we
-     do so, we round up NBITS to a sensible way in the same way as
-     gpg's key generation does it.  This may help to sort out problems
-     with a few bits too short keys.  */
-  nbits = ((nbits + 31) / 32) * 32;
-  buffer[1] = (nbits >> 8);
-  buffer[2] = nbits;
 
   /* Prepare for storing the key.  */
   err = verify_chv3 (app, pincb, pincb_arg);
   if (err)
-    {
-      xfree (relptr);
-      return err;
-    }
+    return err;
 
   /* Change the attribute.  */
-  err = iso7816_put_data (app->slot, 0, 0xC1+keyno, buffer, buflen);
-  xfree (relptr);
+  err = iso7816_put_data (app->slot, 0, 0xC1+keyno, buf, buflen);
   if (err)
-    log_error ("error changing size of key %d to %u bits\n", keyno+1, nbits);
+    log_error ("error changing key attribute (key=%d)\n", keyno+1);
   else
-    log_info ("size of key %d changed to %u bits\n", keyno+1, nbits);
+    log_info ("key attribute changed (key=%d)\n", keyno+1);
   flush_cache (app);
   parse_algorithm_attribute (app, keyno);
   app->did_chv1 = 0;
@@ -2875,18 +2846,21 @@ change_keyattr (app_t app, int keyno, unsigned int nbits,
 }
 
 
-/* Helper to process an setattr command for name KEY-ATTR.  It expects
-   a string "--force <keyno> <algo> <nbits>" in (VALUE,VALUELEN).  */
+/* Helper to process an setattr command for name KEY-ATTR.
+   In (VALUE,VALUELEN), it expects following string:
+        RSA: "--force <keyno> <algo> <nbits>"
+        ECC: "--force <keyno> <algo> <curvename>"
+  */
 static gpg_error_t
 change_keyattr_from_string (app_t app,
                             gpg_error_t (*pincb)(void*, const char *, char **),
                             void *pincb_arg,
                             const void *value, size_t valuelen)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   char *string;
   int keyno, algo;
-  unsigned int nbits;
+  int n = 0;
 
   /* VALUE is expected to be a string but not guaranteed to be
      terminated.  Thus copy it to an allocated buffer first. */
@@ -2899,17 +2873,91 @@ change_keyattr_from_string (app_t app,
   /* Because this function deletes the key we require the string
      "--force" in the data to make clear that something serious might
      happen.  */
-  if (sscanf (string, " --force %d %d %u", &keyno, &algo, &nbits) != 3)
-    err = gpg_error (GPG_ERR_INV_DATA);
-  else if (keyno < 1 || keyno > 3)
-    err = gpg_error (GPG_ERR_INV_ID);
-  else if (algo != PUBKEY_ALGO_RSA)
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-  else if (nbits < 1024)
-    err = gpg_error (GPG_ERR_TOO_SHORT);
-  else
-    err = change_keyattr (app, keyno-1, nbits, pincb, pincb_arg);
+  sscanf (string, " --force %d %d %n", &keyno, &algo, &n);
+  if (n < 13)
+    {
+      err = gpg_error (GPG_ERR_INV_DATA);
+      goto leave;
+    }
 
+  if (keyno < 1 || keyno > 3)
+    err = gpg_error (GPG_ERR_INV_ID);
+  else if (algo == PUBKEY_ALGO_RSA)
+    {
+      unsigned int nbits;
+
+      errno = 0;
+      nbits = strtoul (string+n, NULL, 10);
+      if (errno)
+        err = gpg_error (GPG_ERR_INV_DATA);
+      else if (nbits < 1024)
+        err = gpg_error (GPG_ERR_TOO_SHORT);
+      else if (nbits > 4096)
+        err = gpg_error (GPG_ERR_TOO_LARGE);
+      else
+        {
+          unsigned char *buf;
+          size_t buflen;
+          void *relptr;
+
+          /* Read the current attributes into a buffer.  */
+          relptr = get_one_do (app, 0xC1+keyno, &buf, &buflen, NULL);
+          if (!relptr)
+            {
+              err = gpg_error (GPG_ERR_CARD);
+              goto leave;
+            }
+          if (buflen < 6 || buf[0] != PUBKEY_ALGO_RSA)
+            {
+              /* Attriutes too short or not an RSA key.  */
+              xfree (relptr);
+              err = gpg_error (GPG_ERR_CARD);
+              goto leave;
+            }
+
+          /* We only change n_bits and don't touch anything else.  Before we
+             do so, we round up NBITS to a sensible way in the same way as
+             gpg's key generation does it.  This may help to sort out problems
+             with a few bits too short keys.  */
+          nbits = ((nbits + 31) / 32) * 32;
+          buf[1] = (nbits >> 8);
+          buf[2] = nbits;
+          err = change_keyattr (app, keyno-1, buf, buflen, pincb, pincb_arg);
+          xfree (relptr);
+        }
+    }
+  else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
+           || algo == PUBKEY_ALGO_EDDSA)
+    {
+      const char *oidstr;
+
+      oidstr = openpgp_curve_to_oid (string+n, NULL);
+      if (!oidstr)
+        err = gpg_error (GPG_ERR_INV_DATA);
+      else
+        {
+          gcry_mpi_t m;
+
+          err = openpgp_oid_from_str (oidstr, &m);
+          if (!err)
+            {
+              unsigned int len;
+              const unsigned char *buf = gcry_mpi_get_opaque (m, &len);
+
+              /* We have enough room at STRING.  */
+              len = buf[0];
+              string[0] = algo;
+              memcpy (string+1, buf+1, len++);
+              err = change_keyattr (app, keyno-1, string, len,
+                                    pincb, pincb_arg);
+              gcry_mpi_release (m);
+            }
+        }
+    }
+  else
+    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+
+ leave:
   xfree (string);
   return err;
 }
@@ -3032,14 +3080,6 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   if (opt.verbose)
     log_info ("RSA modulus size is %u bits (%u bytes)\n",
               nbits, (unsigned int)rsa_n_len);
-  if (nbits && nbits != maxbits
-      && app->app_local->extcap.algo_attr_change)
-    {
-      /* Try to switch the key to a new length.  */
-      err = change_keyattr (app, keyno, nbits, pincb, pincb_arg);
-      if (!err)
-        maxbits = app->app_local->keyattr[keyno].rsa.n_bits;
-    }
   if (nbits != maxbits)
     {
       log_error (_("RSA modulus missing or not of size %d bits\n"),
