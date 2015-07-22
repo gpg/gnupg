@@ -493,7 +493,13 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
 
   xfree (home_buffer);
   for (argc=0; argv[argc]; argc++)
-    p = stpcpy (stpcpy (p, "/"), argv[argc]);
+    {
+      /* Avoid a leading double slash if the first part was "/".  */
+      if (!argc && name[0] == '/' && !name[1])
+        p = stpcpy (p, argv[argc]);
+      else
+        p = stpcpy (stpcpy (p, "/"), argv[argc]);
+    }
 
   if (want_abs)
     {
@@ -543,7 +549,13 @@ do_make_filename (int xmode, const char *first_part, va_list arg_ptr)
               memcpy (home_buffer, p, p - name + 1);
               p = home_buffer + (p - name + 1);
             }
-          strcpy (stpcpy (stpcpy (p, home), "/"), name);
+
+          /* Avoid a leading double slash if the cwd is "/".  */
+          if (home[0] == '/' && !home[1])
+            strcpy (stpcpy (p, "/"), name);
+          else
+            strcpy (stpcpy (stpcpy (p, home), "/"), name);
+
           xfree (name);
           name = home_buffer;
           /* Let's do a simple compression to catch the most common
