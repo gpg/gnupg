@@ -44,6 +44,17 @@ Fix type in a comment
 The marker line here is important; without it the first line would
 appear in the ChangeLog.
 
+If you exceptionally need to have longer lines in a commit log you may
+do this after this scissor line:
+#+begin_example
+# ------------------------ >8 ------------------------
+#+end_example
+(hash, blank, 24 dashes, blank, scissor, blank, 24 dashes).
+Note that such a comment will be removed if the git commit option
+=--cleanup=scissor= is used.
+
+
+
 ** License policy
 
   GnuPG is licensed under the GPLv3+ with some files under a mixed
