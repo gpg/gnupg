@@ -2848,7 +2848,7 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
 
 /* Helper to process an setattr command for name KEY-ATTR.
    In (VALUE,VALUELEN), it expects following string:
-        RSA: "--force <keyno> <algo> <nbits>"
+        RSA: "--force <keyno> <algo> rsa<nbits>"
         ECC: "--force <keyno> <algo> <curvename>"
   */
 static gpg_error_t
@@ -2887,7 +2887,7 @@ change_keyattr_from_string (app_t app,
       unsigned int nbits;
 
       errno = 0;
-      nbits = strtoul (string+n, NULL, 10);
+      nbits = strtoul (string+n+3, NULL, 10);
       if (errno)
         err = gpg_error (GPG_ERR_INV_DATA);
       else if (nbits < 1024)
@@ -2984,6 +2984,13 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   size_t template_len;
   unsigned char fprbuf[20];
   u32 created_at = 0;
+
+  if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_RSA)
+    {
+      log_error (_("unsupported algorithm: %s"), "RSA");
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
 
   last_depth1 = depth;
   while (!(err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen))
@@ -3519,10 +3526,7 @@ do_writekey (app_t app, ctrl_t ctrl,
     goto leave;
   if (tok && toklen == 3 && memcmp ("rsa", tok, toklen) == 0)
     err = rsa_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
-  else if (tok
-           && ((toklen == 3 && memcmp ("ecc", tok, toklen) == 0)
-               || (toklen == 4 && memcmp ("ecdh", tok, toklen) == 0)
-               || (toklen == 5 && memcmp ("ecdsa", tok, toklen) == 0)))
+  else if (tok && toklen == 3 && memcmp ("ecc", tok, toklen) == 0)
     err = ecc_writekey (app, pincb, pincb_arg, keyno, buf, buflen, depth);
   else
     {

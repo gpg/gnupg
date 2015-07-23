@@ -1332,7 +1332,7 @@ do_change_keysize (int keyno, unsigned int nbits)
   gpg_error_t err;
   char args[100];
 
-  snprintf (args, sizeof args, "--force %d 1 %u", keyno+1, nbits);
+  snprintf (args, sizeof args, "--force %d 1 rsa%u", keyno+1, nbits);
   err = agent_scd_setattr ("KEY-ATTR", args, strlen (args), NULL);
   if (err)
     log_error (_("error changing size of key %d to %u bits: %s\n"),
