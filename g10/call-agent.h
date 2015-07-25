@@ -55,7 +55,10 @@ struct agent_card_info_s
   int chvretry[3];   /* Allowed retries for the CHV; 0 = blocked. */
   struct {           /* Array with key attributes.  */
     int algo;              /* Algorithm identifier.  */
-    unsigned int nbits;    /* Supported keysize.  */
+    union {
+      unsigned int nbits;  /* Supported keysize.  */
+      const char *curve;   /* Name of curve.  */
+    };
   } key_attr[3];
   struct {
     unsigned int ki:1;     /* Key import available.  */

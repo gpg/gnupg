@@ -645,14 +645,32 @@ learn_status_cb (void *opaque, const char *line)
     }
   else if (keywordlen == 8 && !memcmp (keyword, "KEY-ATTR", keywordlen))
     {
-      int keyno, algo, nbits;
+      int keyno = 0;
+      int algo = PUBKEY_ALGO_RSA;
+      int n = 0;
 
-      sscanf (line, "%d %d %d", &keyno, &algo, &nbits);
+      sscanf (line, "%d %d %n", &keyno, &algo, &n);
       keyno--;
-      if (keyno >= 0 && keyno < DIM (parm->key_attr))
+      if (keyno < 0 || keyno >= DIM (parm->key_attr))
+        return 0;
+
+      parm->key_attr[keyno].algo = algo;
+      if (algo == PUBKEY_ALGO_RSA)
+        parm->key_attr[keyno].nbits = strtoul (line+n+3, NULL, 10);
+      else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
+               || algo == PUBKEY_ALGO_EDDSA)
         {
-          parm->key_attr[keyno].algo = algo;
-          parm->key_attr[keyno].nbits = nbits;
+          const char *curve;
+
+          i = 0;
+          do
+            {
+              curve = openpgp_enum_curves (&i);
+              if (!strcmp (curve, line+n))
+                break;
+            }
+          while (curve != NULL);
+          parm->key_attr[keyno].curve = curve;
         }
     }
   else if (keywordlen == 12 && !memcmp (keyword, "PRIVATE-DO-", 11)

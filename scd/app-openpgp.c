@@ -126,7 +126,6 @@ static struct {
 typedef enum
   {
     KEY_TYPE_ECC,
-    KEY_TYPE_EDDSA,
     KEY_TYPE_RSA,
   }
 key_type_t;
@@ -142,18 +141,6 @@ typedef enum
     RSA_CRT_N
   }
 rsa_key_format_t;
-
-
-/* Elliptic Curves.  */
-enum
-  {
-    CURVE_NIST_P256,
-    CURVE_NIST_P384,
-    CURVE_NIST_P521,
-    CURVE_SEC_P256K1,
-    CURVE_ED25519,
-    CURVE_UNKNOWN,
-  };
 
 
 /* One cache item for DOs.  */
@@ -241,15 +228,14 @@ struct app_local_s {
         rsa_key_format_t format;
       } rsa;
       struct {
-        int curve;
+        const char *oid;
+        int flags;
       } ecc;
-      struct {
-        int curve;
-      } eddsa;
     };
    } keyattr[3];
 };
 
+#define ECC_FLAG_EDDSA (1 << 0)
 
 
 /***** Local prototypes  *****/
@@ -745,25 +731,12 @@ parse_login_data (app_t app)
 }
 
 
-static unsigned char
-get_algo_byte (int keynumber, key_type_t key_type)
-{
-  if (key_type == KEY_TYPE_ECC && keynumber != 1)
-    return PUBKEY_ALGO_ECDSA;
-  else if (key_type == KEY_TYPE_ECC && keynumber == 1)
-    return PUBKEY_ALGO_ECDH;
-  else if (key_type == KEY_TYPE_EDDSA)
-    return PUBKEY_ALGO_EDDSA;
-  else
-    return PUBKEY_ALGO_RSA;
-}
-
 #define MAX_ARGS_STORE_FPR 3
 
 /* Note, that FPR must be at least 20 bytes. */
 static gpg_error_t
 store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
-           key_type_t key_type, ...)
+           int algo, ...)
 {
   unsigned int n, nbits;
   unsigned char *buffer, *p;
@@ -776,21 +749,17 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
   int i;
 
   n = 6;    /* key packet version, 4-byte timestamps, and algorithm */
-  if (keynumber == 1 && key_type == KEY_TYPE_ECC)
+  if (algo == PUBKEY_ALGO_ECDH)
     argc = 3;
   else
     argc = 2;
 
-  va_start (ap, key_type);
+  va_start (ap, algo);
   for (i = 0; i < argc; i++)
     {
       m[i] = va_arg (ap, const unsigned char *);
       mlen[i] = va_arg (ap, size_t);
-      if (key_type != KEY_TYPE_EDDSA)
-        /* strip off leading zeroes */
-        for (; mlen[i] && !*m[i]; mlen[i]--, m[i]++)
-          ;
-      if (key_type == KEY_TYPE_RSA || i == 1)
+      if (algo == PUBKEY_ALGO_RSA || i == 1)
         n += 2;
       n += mlen[i];
     }
@@ -808,11 +777,11 @@ store_fpr (app_t app, int keynumber, u32 timestamp, unsigned char *fpr,
   *p++ = timestamp >> 16;
   *p++ = timestamp >>  8;
   *p++ = timestamp;
-  *p++ = get_algo_byte (keynumber, key_type);
+  *p++ = algo;
 
   for (i = 0; i < argc; i++)
     {
-      if (key_type == KEY_TYPE_RSA || i == 1)
+      if (algo == PUBKEY_ALGO_RSA || i == 1)
         {
           nbits = count_bits (m[i], mlen[i]);
           *p++ = nbits >> 8;
@@ -924,70 +893,25 @@ send_key_data (ctrl_t ctrl, const char *name,
 
 
 static void
-get_ecc_key_parameters (int curve, int *r_n_bits, const char **r_curve_oid)
-{
-  if (curve == CURVE_NIST_P256)
-    {
-      *r_n_bits = 256;
-      *r_curve_oid = "1.2.840.10045.3.1.7";
-    }
-  else if (curve == CURVE_NIST_P384)
-    {
-      *r_n_bits = 384;
-      *r_curve_oid = "1.3.132.0.34";
-    }
-  else if (curve == CURVE_NIST_P521)
-    {
-      *r_n_bits = 521;
-      *r_curve_oid = "1.3.132.0.35";
-    }
-  else if (curve == CURVE_SEC_P256K1)
-    {
-      *r_n_bits = 256;
-      *r_curve_oid = "1.3.132.0.10";
-    }
-  else if (curve == CURVE_ED25519)
-    {
-      *r_n_bits = 255;
-      *r_curve_oid = "1.3.6.1.4.1.11591.15.1";
-    }
-  else
-    {
-      *r_n_bits = 0;
-      *r_curve_oid = "1.3.6.1.4.1.11591.2.12242973"; /* gnu.gnupg.badoid */
-    }
-}
-
-static void
-send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int number)
+send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
 {
   char buffer[200];
-  int n_bits;
-  const char *curve_oid;
 
-  assert (number >=0 && number < DIM(app->app_local->keyattr));
+  assert (keyno >=0 && keyno < DIM(app->app_local->keyattr));
 
-  if (app->app_local->keyattr[number].key_type == KEY_TYPE_RSA)
-    snprintf (buffer, sizeof buffer, "%d 1 %u %u %d",
-              number+1,
-              app->app_local->keyattr[number].rsa.n_bits,
-              app->app_local->keyattr[number].rsa.e_bits,
-              app->app_local->keyattr[number].rsa.format);
-  else if (app->app_local->keyattr[number].key_type == KEY_TYPE_ECC)
+  if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
+    snprintf (buffer, sizeof buffer, "%d 1 rsa%u %u %d",
+              keyno+1,
+              app->app_local->keyattr[keyno].rsa.n_bits,
+              app->app_local->keyattr[keyno].rsa.e_bits,
+              app->app_local->keyattr[keyno].rsa.format);
+  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
     {
-      get_ecc_key_parameters (app->app_local->keyattr[number].ecc.curve,
-                              &n_bits, &curve_oid);
-      snprintf (buffer, sizeof buffer, "%d %d %u %s",
-                number+1,
-                number==1? PUBKEY_ALGO_ECDH: PUBKEY_ALGO_ECDSA,
-                n_bits, curve_oid);
-    }
-  else if (app->app_local->keyattr[number].key_type == KEY_TYPE_EDDSA)
-    {
-      get_ecc_key_parameters (app->app_local->keyattr[number].eddsa.curve,
-                              &n_bits, &curve_oid);
-      snprintf (buffer, sizeof buffer, "%d 22 %u %s",
-                number+1, n_bits, curve_oid);
+      snprintf (buffer, sizeof buffer, "%d %d %s",
+                keyno+1,
+                app->app_local->keyattr[keyno].ecc.flags? PUBKEY_ALGO_EDDSA:
+                (keyno==1? PUBKEY_ALGO_ECDH: PUBKEY_ALGO_ECDSA),
+                openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid));
     }
   else
     snprintf (buffer, sizeof buffer, "0 0 UNKNOWN");
@@ -1295,24 +1219,6 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
 #endif /*GNUPG_MAJOR_VERSION > 1*/
 
 
-static const char *
-get_curve_name (int curve)
-{
-  if (curve == CURVE_NIST_P256)
-    return "NIST P-256";
-  else if (curve == CURVE_NIST_P384)
-    return "NIST P-384";
-  else if (curve == CURVE_NIST_P521)
-    return "NIST P-521";
-  else if (curve == CURVE_SEC_P256K1)
-    return "secp256k1";
-  else if (curve == CURVE_ED25519)
-    return "Ed25519";
-  else
-    return "unknown";
-}
-
-
 /* Get the public key for KEYNO and store it as an S-expresion with
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
@@ -1480,7 +1386,9 @@ get_public_key (app_t app, int keyno)
       goto leave;
     }
   /* Prepend numbers with a 0 if needed.  */
-  if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_EDDSA
+  if ((app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA
+       || (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
+           && !app->app_local->keyattr[keyno].ecc.flags))
       && mlen && (*m & 0x80))
     {
       *mbuf = 0;
@@ -1526,35 +1434,12 @@ get_public_key (app_t app, int keyno)
     }
   else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
     {
-      const char *curve_name
-        = get_curve_name (app->app_local->keyattr[keyno].ecc.curve);
-
       err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(curve%s)(q%b)))",
-                             curve_name, (int)mlen, mbuf);
-      if (err)
-        goto leave;
-
-      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-
-      keybuf = xtrymalloc (len);
-      if (!keybuf)
-        {
-          gcry_sexp_release (s_pkey);
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
-      gcry_sexp_release (s_pkey);
-    }
-  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_EDDSA)
-    {
-      const char *curve_name
-        = get_curve_name (app->app_local->keyattr[keyno].eddsa.curve);
-
-      err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(curve%s)(flags eddsa)(q%b)))",
-                             curve_name, (int)mlen, mbuf);
+                             "(public-key(ecc(curve%s)%s(q%b)))",
+                             openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid),
+                             app->app_local->keyattr[keyno].ecc.flags?
+                             "(flags eddsa)" : "",
+                             (int)mlen, mbuf);
       if (err)
         goto leave;
 
@@ -3256,7 +3141,7 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       goto leave;
     }
 
-  err = store_fpr (app, keyno, created_at, fprbuf, KEY_TYPE_RSA,
+  err = store_fpr (app, keyno, created_at, fprbuf, PUBKEY_ALGO_RSA,
                    rsa_n, rsa_n_len, rsa_e, rsa_e_len);
   if (err)
     goto leave;
@@ -3280,11 +3165,10 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   const unsigned char *ecc_q = NULL;
   const unsigned char *ecc_d = NULL;
   size_t ecc_q_len, ecc_d_len;
-  unsigned char *template = NULL;
-  size_t template_len;
-  unsigned char fprbuf[20];
   u32 created_at = 0;
-  int curve = CURVE_UNKNOWN;
+  const char *oidstr = NULL;
+  int flag_eddsa = 0;
+  int algo;
 
   /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
      curve = "NIST P-256" */
@@ -3306,21 +3190,30 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
       if (tok && toklen == 5 && !memcmp (tok, "curve", 5))
         {
+          unsigned char *curve;
+
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
 
-          if (tok && toklen == 10 && !memcmp (tok, "NIST P-256", 10))
-            curve = CURVE_NIST_P256;
-          else if (tok && toklen == 9 && !memcmp (tok, "secp256k1", 9))
-            curve = CURVE_SEC_P256K1;
-          else if (tok && toklen == 7 && !memcmp (tok, "Ed25519", 7))
-            curve = CURVE_ED25519;
-          else
+          curve = xtrymalloc (toklen+1);
+          if (!curve)
             {
-              log_error (_("unsupported curve\n"));
-              err = gpg_error (GPG_ERR_INV_VALUE);
+              err = gpg_error_from_syserror ();
               goto leave;
             }
+
+          memcpy (curve, tok, toklen);
+          curve[toklen] = 0;
+          oidstr = openpgp_curve_to_oid (curve, NULL);
+          xfree (curve);
+        }
+      else if (tok && toklen == 5 && !memcmp (tok, "flags", 5))
+        {
+          if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
+            goto leave;
+
+          if (tok && toklen == 5 && !memcmp (tok, "eddsa", 5))
+            flag_eddsa = 1;
         }
       else if (tok && toklen == 1)
         {
@@ -3340,7 +3233,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
             }
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
-          if (tok && buf2 && curve != CURVE_ED25519)
+          if (tok && buf2 && !flag_eddsa)
             /* It's MPI.  Strip off leading zero bytes and save. */
             for (;toklen && !*tok; toklen--, tok++)
               ;
@@ -3391,9 +3284,30 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
   /* Check that we have all parameters and that they match the card
      description. */
+  if (!oidstr)
+    {
+      log_error (_("unsupported curve\n"));
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
   if (!created_at)
     {
       log_error (_("creation timestamp missing\n"));
+      err = gpg_error (GPG_ERR_INV_VALUE);
+      goto leave;
+    }
+  if (flag_eddsa && keyno != 1)
+    algo = PUBKEY_ALGO_EDDSA;
+  else if (keyno == 1)
+    algo = PUBKEY_ALGO_ECDH;
+  else
+    algo = PUBKEY_ALGO_ECDSA;
+
+  if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_ECC
+      || app->app_local->keyattr[keyno].ecc.oid != oidstr
+      || app->app_local->keyattr[keyno].ecc.flags != flag_eddsa)
+    {
+      log_error ("key attribute on card doesn't match\n");
       err = gpg_error (GPG_ERR_INV_VALUE);
       goto leave;
     }
@@ -3411,6 +3325,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
     {
       /* Build the private key template as described in section 4.3.3.7 of
          the OpenPGP card specs version 2.0.  */
+      unsigned char *template;
+      size_t template_len;
       int exmode;
 
       err = build_ecc_privkey_template (app, keyno,
@@ -3422,7 +3338,10 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       /* Prepare for storing the key.  */
       err = verify_chv3 (app, pincb, pincb_arg);
       if (err)
-        goto leave;
+        {
+          xfree (template);
+          goto leave;
+        }
 
       /* Store the key. */
       if (app->app_local->cardcap.ext_lc_le && template_len > 254)
@@ -3433,32 +3352,41 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         exmode = 0;
       err = iso7816_put_data_odd (app->slot, exmode, 0x3fff,
                                   template, template_len);
+      xfree (template);
     }
   else
-    return gpg_error (GPG_ERR_NOT_SUPPORTED);
+    err = gpg_error (GPG_ERR_NOT_SUPPORTED);
 
   if (err)
     {
       log_error (_("failed to store the key: %s\n"), gpg_strerror (err));
       goto leave;
     }
+  else
+    {
+      gcry_mpi_t oid;
+      const unsigned char *oidbuf;
+      size_t oid_len;
+      unsigned char fprbuf[20];
 
-  err = store_fpr (app, keyno, created_at, fprbuf,
-                   curve == CURVE_ED25519 ? KEY_TYPE_EDDSA : KEY_TYPE_ECC,
-                   curve == CURVE_ED25519 ?
-                   "\x09\x2b\x06\x01\x04\x01\xda\x47\x0f\x01"
-                   : curve == CURVE_NIST_P256 ?
-                   "\x08\x2a\x86\x48\xce\x3d\x03\x01\x07"
-                   : "\x05\x2b\x81\x04\x00\x0a",
-                   (size_t)(curve == CURVE_ED25519 ? 10
-                            : curve == CURVE_NIST_P256? 9 : 6),
-                   ecc_q, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
-  if (err)
-    goto leave;
+      err = openpgp_oid_from_str (oidstr, &oid);
+      if (err)
+        goto leave;
 
+      oidbuf = gcry_mpi_get_opaque (oid, &oid_len);
+      if (!oidbuf)
+        {
+          err = gpg_error_from_syserror ();
+          gcry_mpi_release (oid);
+          goto leave;
+        }
+      err = store_fpr (app, keyno, created_at, fprbuf, algo,
+                   oidbuf, oid_len, ecc_q, ecc_q_len,
+                   "\x03\x01\x08\x07", (size_t)4);
+      gcry_mpi_release (oid);
+    }
 
  leave:
-  xfree (template);
   return err;
 }
 
@@ -3661,7 +3589,7 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   send_status_info (ctrl, "KEY-CREATED-AT",
                     numbuf, (size_t)strlen(numbuf), NULL, 0);
 
-  rc = store_fpr (app, keyno, (u32)created_at, fprbuf, KEY_TYPE_RSA,
+  rc = store_fpr (app, keyno, (u32)created_at, fprbuf, PUBKEY_ALGO_RSA,
                   m, mlen, e, elen);
   if (rc)
     goto leave;
@@ -4014,18 +3942,21 @@ do_auth (app_t app, const char *keyidstr,
       && indatalen > 101) /* For a 2048 bit key. */
     return gpg_error (GPG_ERR_INV_VALUE);
 
-  if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC
-      && (indatalen == 51 || indatalen == 67 || indatalen == 83))
+  if (app->app_local->keyattr[2].key_type == KEY_TYPE_ECC)
     {
-      const char *p = (const char *)indata + 19;
-      indata = p;
-      indatalen -= 19;
-    }
-  else if (app->app_local->keyattr[2].key_type == KEY_TYPE_EDDSA)
-    {
-      const char *p = (const char *)indata + 15;
-      indata = p;
-      indatalen -= 15;
+      if (!app->app_local->keyattr[2].ecc.flags
+          && (indatalen == 51 || indatalen == 67 || indatalen == 83))
+        {
+          const char *p = (const char *)indata + 19;
+          indata = p;
+          indatalen -= 19;
+        }
+      else
+        {
+          const char *p = (const char *)indata + 15;
+          indata = p;
+          indatalen -= 15;
+        }
     }
 
   /* Check whether an OpenPGP card of any version has been requested. */
@@ -4429,25 +4360,25 @@ parse_historical (struct app_local_s *apploc,
 }
 
 
-static int
-parse_ecc_curve (const unsigned char *buffer, size_t buflen)
+static const char *
+ecc_oid (unsigned char *buf, size_t buflen)
 {
-  int curve;
+  gcry_mpi_t oid;
+  char *oidstr;
+  const char *result;
 
-  if (buflen == 5 && buffer[5] == 0x22)
-    curve = CURVE_NIST_P384;
-  else if (buflen == 5 && buffer[5] == 0x23)
-    curve = CURVE_NIST_P521;
-  else if (buflen == 8)
-    curve = CURVE_NIST_P256;
-  else if (buflen == 5 && buffer[5] == 0x0a)
-    curve = CURVE_SEC_P256K1;
-  else if (buflen == 9)
-    curve = CURVE_ED25519;
-  else
-    curve = CURVE_UNKNOWN;
+  oid = gcry_mpi_set_opaque (NULL, buf, buflen * 8);
+  if (!oid)
+    return NULL;
 
-  return curve;
+  oidstr = openpgp_oid_to_str (oid);
+  gcry_mpi_release (oid);
+  if (!oidstr)
+    return NULL;
+
+  result = openpgp_curve_to_oid (oidstr, NULL);
+  xfree (oidstr);
+  return result;
 }
 
 
@@ -4505,25 +4436,16 @@ parse_algorithm_attribute (app_t app, int keyno)
            app->app_local->keyattr[keyno].rsa.format == RSA_CRT?  "crt"  :
            app->app_local->keyattr[keyno].rsa.format == RSA_CRT_N?"crt+n":"?");
     }
-  else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA)
+  else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA
+           || *buffer == PUBKEY_ALGO_EDDSA)
     {
       app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
-      app->app_local->keyattr[keyno].ecc.curve
-        = parse_ecc_curve (buffer + 1, buflen - 1);
+      app->app_local->keyattr[keyno].ecc.oid = ecc_oid (buffer + 1, buflen - 1);
+      app->app_local->keyattr[keyno].ecc.flags = (*buffer == PUBKEY_ALGO_EDDSA);
       if (opt.verbose)
         log_printf
-          ("ECC, curve=%s\n",
-           get_curve_name (app->app_local->keyattr[keyno].ecc.curve));
-    }
-  else if (*buffer == PUBKEY_ALGO_EDDSA)
-    {
-      app->app_local->keyattr[keyno].key_type = KEY_TYPE_EDDSA;
-      app->app_local->keyattr[keyno].eddsa.curve
-        = parse_ecc_curve (buffer + 1, buflen - 1);
-      if (opt.verbose)
-        log_printf
-          ("EdDSA, curve=%s\n",
-           get_curve_name (app->app_local->keyattr[keyno].eddsa.curve));
+          ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.oid,
+           app->app_local->keyattr[keyno].ecc.flags ? " (eddsa)": "");
     }
   else if (opt.verbose)
     log_printhex ("", buffer, buflen);

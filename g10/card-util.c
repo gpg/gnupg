@@ -471,9 +471,14 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
 
       es_fprintf (fp, "forcepin:%d:::\n", !info.chv1_cached);
       for (i=0; i < DIM (info.key_attr); i++)
-        if (info.key_attr[0].algo)
+        if (info.key_attr[0].algo == PUBKEY_ALGO_RSA)
           es_fprintf (fp, "keyattr:%d:%d:%u:\n", i+1,
                       info.key_attr[i].algo, info.key_attr[i].nbits);
+        else if (info.key_attr[i].algo == PUBKEY_ALGO_ECDH
+                 || info.key_attr[i].algo == PUBKEY_ALGO_ECDSA
+                 || info.key_attr[i].algo == PUBKEY_ALGO_EDDSA)
+          es_fprintf (fp, "keyattr:%d:%d:%s:\n", i+1,
+                      info.key_attr[i].algo, info.key_attr[i].curve);
       es_fprintf (fp, "maxpinlen:%d:%d:%d:\n",
                   info.chvmaxlen[0], info.chvmaxlen[1], info.chvmaxlen[2]);
       es_fprintf (fp, "pinretry:%d:%d:%d:\n",
@@ -553,12 +558,12 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
         {
           tty_fprintf (fp,    "Key attributes ...:");
           for (i=0; i < DIM (info.key_attr); i++)
-            tty_fprintf (fp, " %u%c",
-                         info.key_attr[i].nbits,
-                         info.key_attr[i].algo == 1? 'R':
-                         info.key_attr[i].algo == 17? 'D':
-                         info.key_attr[i].algo == 18? 'e':
-                         info.key_attr[i].algo == 19? 'E': '?');
+            if (info.key_attr[i].algo == PUBKEY_ALGO_RSA)
+              tty_fprintf (fp, " rsa%u", info.key_attr[i].nbits);
+            else if (info.key_attr[i].algo == PUBKEY_ALGO_ECDH
+                     || info.key_attr[i].algo == PUBKEY_ALGO_ECDSA
+                     || info.key_attr[i].algo == PUBKEY_ALGO_EDDSA)
+              tty_fprintf (fp, " %s", info.key_attr[i].curve);
           tty_fprintf (fp, "\n");
         }
       tty_fprintf (fp,    "Max. PIN lengths .: %d %d %d\n",
