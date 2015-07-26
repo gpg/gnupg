@@ -241,7 +241,7 @@ int  gpgsm_parse_validation_model (const char *model);
 /*-- server.c --*/
 void gpgsm_server (certlist_t default_recplist);
 gpg_error_t gpgsm_status (ctrl_t ctrl, int no, const char *text);
-gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...) GNUPG_GCC_A_SENTINEL(0);
+gpg_error_t gpgsm_status2 (ctrl_t ctrl, int no, ...) GPGRT_ATTR_SENTINEL(0);
 gpg_error_t gpgsm_status_with_err_code (ctrl_t ctrl, int no, const char *text,
                                         gpg_err_code_t ec);
 gpg_error_t gpgsm_proxy_pinentry_notify (ctrl_t ctrl,

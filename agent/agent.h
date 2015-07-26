@@ -319,7 +319,8 @@ typedef int (*lookup_ttl_t)(const char *hexgrip);
 
 
 /*-- gpg-agent.c --*/
-void agent_exit (int rc) GPGRT_GCC_A_NR; /* Also implemented in other tools */
+void agent_exit (int rc)
+                GPGRT_ATTR_NORETURN; /* Also implemented in other tools */
 gpg_error_t agent_copy_startup_env (ctrl_t ctrl);
 const char *get_agent_socket_name (void);
 const char *get_agent_ssh_socket_name (void);
@@ -332,10 +333,10 @@ int map_pk_openpgp_to_gcry (int openpgp_algo);
 /*-- command.c --*/
 gpg_error_t agent_inq_pinentry_launched (ctrl_t ctrl, unsigned long pid);
 gpg_error_t agent_write_status (ctrl_t ctrl, const char *keyword, ...)
-     GNUPG_GCC_A_SENTINEL(0);
+     GPGRT_ATTR_SENTINEL(0);
 gpg_error_t agent_print_status (ctrl_t ctrl, const char *keyword,
                                 const char *format, ...)
-     GPGRT_GCC_A_PRINTF(3,4);
+     GPGRT_ATTR_PRINTF(3,4);
 void bump_key_eventcounter (void);
 void bump_card_eventcounter (void);
 void start_command_handler (ctrl_t, gnupg_fd_t, gnupg_fd_t);

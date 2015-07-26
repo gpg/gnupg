@@ -1404,7 +1404,7 @@ modlist_lookup (LDAPMod **modlist, const char *attr)
 
 /* Dump a modlist to a file.  This is useful for debugging.  */
 static estream_t modlist_dump (LDAPMod **modlist, estream_t output)
-  GNUPG_GCC_A_USED;
+  GPGRT_ATTR_USED;
 
 static estream_t
 modlist_dump (LDAPMod **modlist, estream_t output)

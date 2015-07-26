@@ -48,8 +48,9 @@ int log_test_fd (int fd);
 int  log_get_fd(void);
 estream_t log_get_stream (void);
 
-#ifdef GPGRT_GCC_M_FUNCTION
-  void bug_at( const char *file, int line, const char *func ) GPGRT_GCC_A_NR;
+#ifdef GPGRT_HAVE_MACRO_FUNCTION
+  void bug_at (const char *file, int line, const char *func)
+               GPGRT_ATTR_NORETURN;
 # define BUG() bug_at( __FILE__ , __LINE__, __FUNCTION__ )
 #else
   void bug_at( const char *file, int line );
@@ -74,17 +75,17 @@ enum jnlib_log_levels {
     GPGRT_LOG_BUG,
     GPGRT_LOG_DEBUG
 };
-void log_log (int level, const char *fmt, ...) GPGRT_GCC_A_PRINTF(2,3);
+void log_log (int level, const char *fmt, ...) GPGRT_ATTR_PRINTF(2,3);
 void log_logv (int level, const char *fmt, va_list arg_ptr);
 void log_string (int level, const char *string);
 
 
-void log_bug( const char *fmt, ... )	GPGRT_GCC_A_NR_PRINTF(1,2);
-void log_fatal( const char *fmt, ... )	GPGRT_GCC_A_NR_PRINTF(1,2);
-void log_error( const char *fmt, ... )	GPGRT_GCC_A_PRINTF(1,2);
-void log_info( const char *fmt, ... )	GPGRT_GCC_A_PRINTF(1,2);
-void log_debug( const char *fmt, ... )	GPGRT_GCC_A_PRINTF(1,2);
-void log_printf( const char *fmt, ... ) GPGRT_GCC_A_PRINTF(1,2);
+void log_bug (const char *fmt, ...)    GPGRT_ATTR_NR_PRINTF(1,2);
+void log_fatal (const char *fmt, ...)  GPGRT_ATTR_NR_PRINTF(1,2);
+void log_error (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
+void log_info (const char *fmt, ...)   GPGRT_ATTR_PRINTF(1,2);
+void log_debug (const char *fmt, ...)  GPGRT_ATTR_PRINTF(1,2);
+void log_printf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 void log_flush (void);
 
 /* Print a hexdump of BUFFER.  With TEXT passes as NULL print just the

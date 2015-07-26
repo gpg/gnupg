@@ -48,27 +48,32 @@ time_t timegm (struct tm *tm);
 #define DIMof(type,member)   DIM(((type *)0)->member)
 
 
-#undef GPGRT_GCC_HAVE_PUSH_PRAGMA
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
-# define GPGRT_GCC_M_FUNCTION 1  /* __FUNCTION__ macro is available.  */
-# define GPGRT_GCC_A_NR 	     __attribute__ ((noreturn))
-# if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4 )
-#   define GPGRT_GCC_HAVE_PUSH_PRAGMA 1
-#   define GPGRT_GCC_A_PRINTF( f, a ) \
-                    __attribute__ ((format (__gnu_printf__,f,a)))
-#   define GPGRT_GCC_A_NR_PRINTF( f, a ) \
-		    __attribute__ ((noreturn, format (__gnu_printf__,f,a)))
-# else
-#   define GPGRT_GCC_A_PRINTF( f, a )  __attribute__ ((format (printf,f,a)))
-#   define GPGRT_GCC_A_NR_PRINTF( f, a ) \
-			    __attribute__ ((noreturn, format (printf,f,a)))
-# endif
-#else
-# define GPGRT_GCC_A_NR
-# define GPGRT_GCC_A_PRINTF( f, a )
-# define GPGRT_GCC_A_NR_PRINTF( f, a )
-#endif
+/* Replacements for macros not available with libgpg-error < 1.20.  */
+#ifndef GPGRT_GCC_VERSION
 
+# undef GPGRT_HAVE_PRAGMA_GCC_PUSH
+# if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 5 )
+#  define GPGRT_HAVE_MACRO_FUNCTION 1  /* __FUNCTION__ macro is available.  */
+#  define GPGRT_ATTR_NORETURN  __attribute__ ((noreturn))
+#  if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4 )
+#    define GPGRT_HAVE_PRAGMA_GCC_PUSH 1
+#    define GPGRT_ATTR_PRINTF(f,a) \
+                  __attribute__ ((format (__gnu_printf__,f,a)))
+#    define GPGRT_ATTR_NR_PRINTF(f,a) \
+                  __attribute__ ((noreturn, format (__gnu_printf__,f,a)))
+#  else
+#    define GPGRT_ATTR_PRINTF(f, a) \
+                  __attribute__ ((format (printf,f,a)))
+#    define GPGRT_ATTR_NR_PRINTF(f, a) \
+                  __attribute__ ((noreturn, format (printf,f,a)))
+#  endif
+# else
+#  define GPGRT_ATTR_NORETURN
+#  define GPGRT_ATTR_PRINTF( f, a )
+#  define GPGRT_ATTR_NR_PRINTF( f, a )
+# endif
+
+#endif /*Older libgpg-error.  */
 
 /* To avoid that a compiler optimizes certain memset calls away, these
    macros may be used instead. */

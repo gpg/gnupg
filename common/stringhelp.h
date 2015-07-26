@@ -52,11 +52,11 @@ size_t length_sans_trailing_ws (const unsigned char *line, size_t len);
 
 char *make_basename(const char *filepath, const char *inputpath);
 char *make_dirname(const char *filepath);
-char *make_filename( const char *first_part, ... ) GNUPG_GCC_A_SENTINEL(0);
-char *make_filename_try (const char *first_part, ... ) GNUPG_GCC_A_SENTINEL(0);
-char *make_absfilename (const char *first_part, ...) GNUPG_GCC_A_SENTINEL(0);
+char *make_filename( const char *first_part, ... ) GPGRT_ATTR_SENTINEL(0);
+char *make_filename_try (const char *first_part, ... ) GPGRT_ATTR_SENTINEL(0);
+char *make_absfilename (const char *first_part, ...) GPGRT_ATTR_SENTINEL(0);
 char *make_absfilename_try (const char *first_part,
-                            ...) GNUPG_GCC_A_SENTINEL(0);
+                            ...) GPGRT_ATTR_SENTINEL(0);
 int compare_filenames( const char *a, const char *b );
 
 int hextobyte (const char *s);
@@ -139,9 +139,9 @@ char *try_percent_escape (const char *str, const char *extra);
 /* Concatenate the string S1 with all the following strings up to a
    NULL.  Returns a malloced buffer with the new string or NULL on a
    malloc error or if too many arguments are given.  */
-char *strconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
+char *strconcat (const char *s1, ...) GPGRT_ATTR_SENTINEL(0);
 /* Ditto, but die on error.  */
-char *xstrconcat (const char *s1, ...) GNUPG_GCC_A_SENTINEL(0);
+char *xstrconcat (const char *s1, ...) GPGRT_ATTR_SENTINEL(0);
 
 char **strsplit (char *string, char delim, char replacement, int *count);
 

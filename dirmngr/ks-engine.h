@@ -26,7 +26,7 @@
 /*-- ks-action.c --*/
 gpg_error_t ks_print_help (ctrl_t ctrl, const char *text);
 gpg_error_t ks_printf_help (ctrl_t ctrl, const char *format,
-                            ...) GPGRT_GCC_A_PRINTF(2,3);
+                            ...) GPGRT_ATTR_PRINTF(2,3);
 
 /*-- ks-engine-hkp.c --*/
 gpg_error_t ks_hkp_resolve (ctrl_t ctrl, parsed_uri_t uri);

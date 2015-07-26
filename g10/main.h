@@ -182,7 +182,7 @@ void write_status_error (const char *where, gpg_error_t err);
 void write_status_errcode (const char *where, int errcode);
 void write_status_text ( int no, const char *text );
 void write_status_strings (int no, const char *text,
-                           ...) GNUPG_GCC_A_SENTINEL(0);
+                           ...) GPGRT_ATTR_SENTINEL(0);
 void write_status_buffer ( int no,
                            const char *buffer, size_t len, int wrap );
 void write_status_text_and_buffer ( int no, const char *text,

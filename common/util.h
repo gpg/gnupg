@@ -152,26 +152,30 @@
 #define snprintf gpgrt_snprintf
 
 
-/* GCC attributes.  */
-#ifndef GNUPG_GCC_ATTR_FORMAT_ARG
-#if __GNUC__ >= 3 /* Actually 2.8 but testing the major is easier.  */
-# define GNUPG_GCC_ATTR_FORMAT_ARG(a)  __attribute__ ((__format_arg__ (a)))
-#else
-# define GNUPG_GCC_ATTR_FORMAT_ARG(a)
-#endif
-#endif
+/* Replacements for macros not available with libgpg-error < 1.20.  */
+#ifndef GPGRT_GCC_VERSION
 
-#if __GNUC__ >= 4
-# define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
-#else
-# define GNUPG_GCC_A_SENTINEL(a)
-#endif
+# ifndef GPGRT_ATTR_FORMAT_ARG
+# if __GNUC__ >= 3 /* Actually 2.8 but testing the major is easier.  */
+#  define GPGRT_ATTR_FORMAT_ARG(a)  __attribute__ ((__format_arg__ (a)))
+# else
+#  define GPGRT_ATTR_FORMAT_ARG(a)
+# endif
+# endif
 
-#if __GNUC__ >= 4
-# define GNUPG_GCC_A_USED __attribute__ ((used))
-#else
-# define GNUPG_GCC_A_USED
-#endif
+# if __GNUC__ >= 4
+#  define GPGRT_ATTR_SENTINEL(a) __attribute__ ((sentinel(a)))
+# else
+#  define GPGRT_ATTR_SENTINEL(a)
+# endif
+
+# if __GNUC__ >= 4
+#  define GPGRT_ATTR_USED __attribute__ ((used))
+# else
+#  define GPGRT_ATTR_USED
+# endif
+
+#endif /*libgpg-error < 1.20 */
 
 
 /* We need this type even if we are not using libreadline and or we
@@ -371,9 +375,9 @@ const char *gnupg_messages_locale_name (void);
 void setup_libgcrypt_logging (void);
 
 /* Same as estream_asprintf but die on memory failure.  */
-char *xasprintf (const char *fmt, ...) GPGRT_GCC_A_PRINTF(1,2);
+char *xasprintf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 /* This is now an alias to estream_asprintf.  */
-char *xtryasprintf (const char *fmt, ...) GPGRT_GCC_A_PRINTF(1,2);
+char *xtryasprintf (const char *fmt, ...) GPGRT_ATTR_PRINTF(1,2);
 
 /* Replacement for gcry_cipher_algo_name.  */
 const char *gnupg_cipher_algo_name (int algo);

@@ -114,13 +114,13 @@
 #endif
 
 
-/* Some GCC attributes.  Note that we use also define some in
-   mischelp.h, but this header and types.h are not always included.
-   Should eventually be put into one file (e.g. nlib-common.h).  */
-#if __GNUC__ >= 4
-# define GNUPG_GCC_A_SENTINEL(a) __attribute__ ((sentinel(a)))
-#else
-# define GNUPG_GCC_A_SENTINEL(a)
+/* Some GCC attributes.  These are replacements for libgpg-error < 1.20.  */
+#ifndef GPGRT_GCC_VERSION
+# if __GNUC__ >= 4
+#  define GPGRT_ATTR_SENTINEL(a) __attribute__ ((sentinel(a)))
+# else
+#  define GPGRT_ATTR_SENTINEL(a)
+# endif
 #endif
 
 #endif /*GNUPG_COMMON_TYPES_H*/

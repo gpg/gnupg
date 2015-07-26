@@ -55,7 +55,7 @@ void clear_membuf (membuf_t *mb, size_t amount);
 void put_membuf  (membuf_t *mb, const void *buf, size_t len);
 void put_membuf_str (membuf_t *mb, const char *string);
 void put_membuf_printf (membuf_t *mb, const char *format,
-                        ...) GPGRT_GCC_A_PRINTF(2,3);
+                        ...) GPGRT_ATTR_PRINTF(2,3);
 void *get_membuf (membuf_t *mb, size_t *len);
 void *get_membuf_shrink (membuf_t *mb, size_t *len);
 const void *peek_membuf (membuf_t *mb, size_t *len);
