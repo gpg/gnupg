@@ -3366,6 +3366,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
     {
       gcry_mpi_t oid;
       const unsigned char *oidbuf;
+      unsigned int n;
       size_t oid_len;
       unsigned char fprbuf[20];
 
@@ -3373,7 +3374,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       if (err)
         goto leave;
 
-      oidbuf = gcry_mpi_get_opaque (oid, &oid_len);
+      oidbuf = gcry_mpi_get_opaque (oid, &n);
+      oid_len = n;
       if (!oidbuf)
         {
           err = gpg_error_from_syserror ();
