@@ -587,7 +587,13 @@ proc_parameters (ctrl_t ctrl,
 
 
 /* Parameters are checked, the key pair has been created.  Now
-   generate the request and write it out */
+   generate the request and write it out.
+
+   Note: We use SHA-1 here because Libksba hash a shortcut to use
+   assume that if SIG_VAL uses as algo the string "rsa".  To fix that
+   we would need to replace that string by an appropriate OID.  We
+   leave this change for 2.1.
+ */
 static int
 create_request (ctrl_t ctrl,
                 struct para_data_s *para,
@@ -597,6 +603,7 @@ create_request (ctrl_t ctrl,
 {
   ksba_certreq_t cr;
   gpg_error_t err;
+  int hashalgo = GCRY_MD_SHA1;
   gcry_md_hd_t md;
   ksba_stop_reason_t stopreason;
   int rc = 0;
@@ -611,7 +618,7 @@ create_request (ctrl_t ctrl,
   if (err)
     return err;
 
-  rc = gcry_md_open (&md, GCRY_MD_SHA256, 0);
+  rc = gcry_md_open (&md, hashalgo, 0);
   if (rc)
     {
       log_error ("md_open failed: %s\n", gpg_strerror (rc));
@@ -792,10 +799,10 @@ create_request (ctrl_t ctrl,
 
           if (carddirect)
             rc = gpgsm_scd_pksign (ctrl, carddirect, NULL,
-                                     gcry_md_read(md, GCRY_MD_SHA1),
-                                     gcry_md_get_algo_dlen (GCRY_MD_SHA1),
-                                     GCRY_MD_SHA1,
-                                     &sigval, &siglen);
+                                   gcry_md_read (md, hashalgo),
+                                   gcry_md_get_algo_dlen (hashalgo),
+                                   hashalgo,
+                                   &sigval, &siglen);
           else
             {
               char *orig_codeset;
@@ -808,9 +815,9 @@ create_request (ctrl_t ctrl,
                    " more.\n"));
               i18n_switchback (orig_codeset);
               rc = gpgsm_agent_pksign (ctrl, hexgrip, desc,
-                                       gcry_md_read(md, GCRY_MD_SHA1),
-                                       gcry_md_get_algo_dlen (GCRY_MD_SHA1),
-                                       GCRY_MD_SHA1,
+                                       gcry_md_read(md, hashalgo),
+                                       gcry_md_get_algo_dlen (hashalgo),
+                                       hashalgo,
                                        &sigval, &siglen);
               xfree (desc);
             }
