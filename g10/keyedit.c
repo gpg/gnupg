@@ -1366,8 +1366,7 @@ static struct
     N_("change the expiration date for the key or selected subkeys")},
   { "primary", cmdPRIMARY, KEYEDIT_NOT_SK | KEYEDIT_NEED_SK,
     N_("flag the selected user ID as primary")},
-  { "toggle", cmdTOGGLE, KEYEDIT_NEED_SK,
-    N_("toggle between the secret and public key listings")},
+  { "toggle", cmdTOGGLE, KEYEDIT_NEED_SK, NULL},  /* Dummy command.  */
   { "t", cmdTOGGLE, KEYEDIT_NEED_SK, NULL},
   { "pref", cmdPREF, KEYEDIT_NOT_SK, N_("list preferences (expert)")},
   { "showpref", cmdSHOWPREF, KEYEDIT_NOT_SK, N_("list preferences (verbose)")},
@@ -1472,7 +1471,6 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
   int modified = 0;
   int sec_shadowing = 0;
   int run_subkey_warnings = 0;
-  int toggle;
   int have_commands = !!commands;
 
   if (opt.command_fd != -1)
@@ -1515,8 +1513,6 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	tty_printf (_("Secret key is available.\n"));
     }
 
-  toggle = 0;
-
   /* Main command loop.  */
   for (;;)
     {
@@ -1529,6 +1525,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 
       if (redisplay && !quiet)
 	{
+          /* Show using flags: with_revoker, with_subkeys.  */
 	  show_key_with_all_names (NULL, keyblock, 0, 1, 0, 1, 0, 0);
 	  tty_printf ("\n");
 	  redisplay = 0;
@@ -1614,13 +1611,6 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  if ((cmds[i].flags & KEYEDIT_NEED_SK) && !have_seckey)
 	    {
 	      tty_printf (_("Need the secret key to do this.\n"));
-	      cmd = cmdNOP;
-	    }
-	  else if (((cmds[i].flags & KEYEDIT_NOT_SK) && have_seckey && toggle)
-		   || ((cmds[i].flags & KEYEDIT_ONLY_SK) && have_seckey
-		       && !toggle))
-	    {
-	      tty_printf (_("Please use the command \"toggle\" first.\n"));
 	      cmd = cmdNOP;
 	    }
 	  else
@@ -1743,7 +1733,6 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
              where we worked with a secret and a public keyring.  It
              is not necessary anymore but we keep this command for the
              sake of scripts using it.  */
-	  toggle = !toggle;
 	  redisplay = 1;
 	  break;
 
