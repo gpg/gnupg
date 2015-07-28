@@ -38,8 +38,16 @@
 #include "i18n.h"
 
 
-/* An object to store pointers to static strings and there static
-   translation.  A linked list is not optimal but given that we only
+#undef USE_MSGCACHE
+#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES) \
+   && !defined(USE_SIMPLE_GETTEXT) && defined(ENABLE_NLS)
+# define USE_MSGCACHE 1
+#endif
+
+
+#ifdef USE_MSGCACHE
+/* An object to store pointers to static strings and their static
+   translations.  A linked list is not optimal but given that we only
    have a few dozen messages it should be acceptable. */
 struct msg_cache_s
 {
@@ -67,6 +75,7 @@ struct msg_cache_heads_s
    static strings.  */
 static struct msg_cache_heads_s *msgcache;
 
+#endif /*USE_MSGCACHE*/
 
 
 void
@@ -153,8 +162,7 @@ i18n_utf8 (const char *string)
 const char *
 i18n_localegettext (const char *lc_messages, const char *string)
 {
-#if defined(HAVE_SETLOCALE) && defined(LC_MESSAGES)             \
-  && !defined(USE_SIMPLE_GETTEXT) && defined(ENABLE_NLS)
+#if USE_MSGCACHE
   const char *result = NULL;
   char *saved = NULL;
   struct msg_cache_heads_s *mh;
@@ -220,8 +228,10 @@ i18n_localegettext (const char *lc_messages, const char *string)
   xfree (saved);
   return result? result : _(string);
 
-#else /*!(HAVE_SETLOCALE && LC_MESSAGES ...)*/
+#else /*!USE_MSGCACHE*/
+
   (void)lc_messages;
   return _(string);
-#endif /*!(HAVE_SETLOCALE && LC_MESSAGES ...)*/
+
+#endif /*!USE_MSGCACHE*/
 }
