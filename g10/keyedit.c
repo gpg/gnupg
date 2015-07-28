@@ -51,7 +51,7 @@ static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
 static void show_names (estream_t fp, KBNODE keyblock, PKT_public_key * pk,
 			unsigned int flag, int with_prefs);
-static void show_key_with_all_names (estream_t fp,
+static void show_key_with_all_names (ctrl_t ctrl, estream_t fp,
                                      KBNODE keyblock, int only_marked,
 				     int with_revoker, int with_fpr,
 				     int with_subkeys, int with_prefs,
@@ -508,7 +508,7 @@ trustsig_prompt (byte * trust_value, byte * trust_depth, char **regexp)
  * function won't ask the user and use sensible defaults.
  */
 static int
-sign_uids (estream_t fp,
+sign_uids (ctrl_t ctrl, estream_t fp,
            kbnode_t keyblock, strlist_t locusr, int *ret_modified,
 	   int local, int nonrevocable, int trust, int interactive,
            int quick)
@@ -804,7 +804,7 @@ sign_uids (estream_t fp,
 
       /* Ask whether we really should sign these user id(s). */
       tty_fprintf (fp, "\n");
-      show_key_with_all_names (fp, keyblock, 1, 0, 1, 0, 0, 0);
+      show_key_with_all_names (ctrl, fp, keyblock, 1, 0, 1, 0, 0, 0);
       tty_fprintf (fp, "\n");
 
       if (primary_pk->expiredate && !selfsig)
@@ -1526,7 +1526,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
       if (redisplay && !quiet)
 	{
           /* Show using flags: with_revoker, with_subkeys.  */
-	  show_key_with_all_names (NULL, keyblock, 0, 1, 0, 1, 0, 0);
+	  show_key_with_all_names (ctrl, NULL, keyblock, 0, 1, 0, 1, 0, 0);
 	  tty_printf ("\n");
 	  redisplay = 0;
 	}
@@ -1719,7 +1719,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		break;
 	      }
 
-	    sign_uids (NULL, keyblock, locusr, &modified,
+	    sign_uids (ctrl, NULL, keyblock, locusr, &modified,
 		       localsig, nonrevokesig, trustsig, interactive, 0);
 	  }
 	  break;
@@ -2065,7 +2065,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	      break;
 	    }
 
-	  show_key_with_all_names (NULL, keyblock, 0, 0, 0, 1, 0, 0);
+	  show_key_with_all_names (ctrl, NULL, keyblock, 0, 0, 0, 1, 0, 0);
 	  tty_printf ("\n");
 	  if (edit_ownertrust (find_kbnode (keyblock,
 					    PKT_PUBLIC_KEY)->pkt->pkt.
@@ -2441,7 +2441,7 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   /* Give some info in verbose.  */
   if (opt.verbose)
     {
-      show_key_with_all_names (es_stdout, keyblock, 0,
+      show_key_with_all_names (ctrl, es_stdout, keyblock, 0,
                                1/*with_revoker*/, 1/*with_fingerprint*/,
                                0, 0, 1);
       es_fflush (es_stdout);
@@ -2451,7 +2451,7 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   if (pk->flags.revoked)
     {
       if (!opt.verbose)
-        show_key_with_all_names (es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+        show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       log_error ("%s%s", _("Key is revoked."), _("  Unable to sign.\n"));
       goto leave;
     }
@@ -2482,14 +2482,14 @@ keyedit_quick_sign (ctrl_t ctrl, const char *fpr, strlist_t uids,
   if (uids && !any)
     {
       if (!opt.verbose)
-        show_key_with_all_names (es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
+        show_key_with_all_names (ctrl, es_stdout, keyblock, 0, 0, 0, 0, 0, 1);
       es_fflush (es_stdout);
       log_error ("%s  %s", _("No matching user IDs."), _("Nothing to sign.\n"));
       goto leave;
     }
 
   /* Sign. */
-  sign_uids (es_stdout, keyblock, locusr, &modified, local, 0, 0, 0, 1);
+  sign_uids (ctrl, es_stdout, keyblock, locusr, &modified, local, 0, 0, 0, 1);
   es_fflush (es_stdout);
 
   if (modified)
@@ -2715,12 +2715,13 @@ show_prefs (PKT_user_id * uid, PKT_signature * selfsig, int verbose)
    opt.with_colons is used.  It prints all available data in a easy to
    parse format and does not translate utf8 */
 static void
-show_key_with_all_names_colon (estream_t fp, kbnode_t keyblock)
+show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 {
   KBNODE node;
   int i, j, ulti_hack = 0;
   byte pk_version = 0;
   PKT_public_key *primary = NULL;
+  int have_seckey;
 
   if (!fp)
     fp = es_stdout;
@@ -2741,9 +2742,13 @@ show_key_with_all_names_colon (estream_t fp, kbnode_t keyblock)
 	    }
 
 	  keyid_from_pk (pk, keyid);
+          have_seckey = !agent_probe_secret_key (ctrl, pk);
 
-	  es_fputs (node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub:" : "sub:",
-                    fp);
+          if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+            es_fputs (have_seckey? "sec:" : "pub:", fp);
+          else
+            es_fputs (have_seckey? "ssb:" : "sub:", fp);
+
 	  if (!pk->flags.valid)
 	    es_putc ('i', fp);
 	  else if (pk->flags.revoked)
@@ -2934,20 +2939,23 @@ show_names (estream_t fp,
  * tty (ignored in with-colons mode).
  */
 static void
-show_key_with_all_names (estream_t fp,
+show_key_with_all_names (ctrl_t ctrl, estream_t fp,
                          KBNODE keyblock, int only_marked, int with_revoker,
 			 int with_fpr, int with_subkeys, int with_prefs,
                          int nowarn)
 {
-  KBNODE node;
+  gpg_error_t err;
+  kbnode_t node;
   int i;
   int do_warn = 0;
+  int have_seckey = 0;
+  char *serialno = NULL;
   PKT_public_key *primary = NULL;
   char pkstrbuf[PUBKEY_STRING_SIZE];
 
   if (opt.with_colons)
     {
-      show_key_with_all_names_colon (fp, keyblock);
+      show_key_with_all_names_colon (ctrl, fp, keyblock);
       return;
     }
 
@@ -3025,13 +3033,33 @@ show_key_with_all_names (estream_t fp,
 	    }
 
 	  keyid_from_pk (pk, NULL);
-	  tty_fprintf (fp, "%s%c %s/%s",
-		      node->pkt->pkttype == PKT_PUBLIC_KEY ? "pub" :
-		      node->pkt->pkttype == PKT_PUBLIC_SUBKEY ? "sub" :
-		      node->pkt->pkttype == PKT_SECRET_KEY ? "sec" : "ssb",
-		      (node->flag & NODFLG_SELKEY) ? '*' : ' ',
-                      pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-		      keystr (pk->keyid));
+
+          xfree (serialno);
+          serialno = NULL;
+          {
+            char *hexgrip;
+
+            err = hexkeygrip_from_pk (pk, &hexgrip);
+            if (err)
+              {
+                log_error ("error computing a keygrip: %s\n",
+                           gpg_strerror (err));
+                have_seckey = 0;
+              }
+            else
+              have_seckey = !agent_get_keyinfo (ctrl, hexgrip, &serialno);
+            xfree (hexgrip);
+          }
+
+	  tty_fprintf
+            (fp, "%s%c %s/%s",
+             node->pkt->pkttype == PKT_PUBLIC_KEY && have_seckey? "sec" :
+             node->pkt->pkttype == PKT_PUBLIC_KEY ?               "pub" :
+             have_seckey ?                                        "ssb" :
+                                                                  "sub",
+             (node->flag & NODFLG_SELKEY) ? '*' : ' ',
+             pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+             keystr (pk->keyid));
 
           if (opt.legacy_list_mode)
             tty_fprintf (fp, "  ");
@@ -3050,10 +3078,30 @@ show_key_with_all_names (estream_t fp,
 	  tty_fprintf (fp, _("usage: %s"), usagestr_from_pk (pk, 1));
 	  tty_fprintf (fp, "\n");
 
-	  if (pk->seckey_info
+          if (serialno)
+            {
+              /* The agent told us that a secret key is available and
+                 that it has been stored on a card.  */
+	      tty_fprintf (fp, "%*s%s", opt.legacy_list_mode? 21:5, "",
+                           _("card-no: "));
+              if (strlen (serialno) == 32
+                  && !strncmp (serialno, "D27600012401", 12))
+                {
+                  /* This is an OpenPGP card.  Print the relevant part.  */
+                  /* Example: D2760001240101010001000003470000 */
+                  /*                          xxxxyyyyyyyy     */
+                  tty_fprintf (fp, "%.*s %.*s\n",
+                               4, serialno+16, 8, serialno+20);
+                }
+              else
+                tty_fprintf (fp, "%s\n", serialno);
+
+            }
+	  else if (pk->seckey_info
               && pk->seckey_info->is_protected
               && pk->seckey_info->s2k.mode == 1002)
 	    {
+              /* FIXME: Check wether this code path is still used.  */
 	      tty_fprintf (fp, "%*s%s", opt.legacy_list_mode? 21:5, "",
                            _("card-no: "));
 	      if (pk->seckey_info->ivlen == 16
@@ -3125,13 +3173,17 @@ show_key_with_all_names (estream_t fp,
     tty_fprintf (fp, _("Please note that the shown key validity"
                        " is not necessarily correct\n"
                        "unless you restart the program.\n"));
+
+  xfree (serialno);
 }
 
 
 /* Display basic key information.  This function is suitable to show
    information on the key without any dependencies on the trustdb or
    any other internal GnuPG stuff.  KEYBLOCK may either be a public or
-   a secret key.*/
+   a secret key.  This function may be called with KEYBLOCK containing
+   secret keys and thus the printing of "pub" vs. "sec" does only
+   depend on the packet type and not by checking with gpg-agent.  */
 void
 show_basic_key_info (KBNODE keyblock)
 {
