@@ -613,6 +613,26 @@ dirmngr_user_socket_name (void)
 static const char *
 get_default_pinentry_name (int reset)
 {
+  static struct {
+    const char *(*rfnc)(void);
+    const char *name;
+  } names[] = {
+    /* The first entry is what we return in case we found no
+       other pinentry.  */
+    { gnupg_bindir, DIRSEP_S "pinentry" EXEEXT_S },
+#ifdef HAVE_W32_SYSTEM
+    /* Try Gpg4win directory (with bin and without.) */
+    { w32_rootdir, "\\..\\Gpg4win\\bin\\pinentry.exe" },
+    { w32_rootdir, "\\..\\Gpg4win\\pinentry.exe" },
+    /* Try old Gpgwin directory.  */
+    { w32_rootdir, "\\..\\GNU\\GnuPG\\pinentry.exe" },
+    /* Try a Pinentry from the common GNU dir.  */
+    { w32_rootdir, "\\..\\GNU\\bin\\pinentry.exe" },
+#endif
+    /* Last chance is a pinentry-basic (which comes with the
+       GnuPG 2.1 Windows installer).  */
+    { gnupg_bindir, DIRSEP_S "pinentry-basic" EXEEXT_S }
+  };
   static char *name;
 
   if (reset)
@@ -623,22 +643,27 @@ get_default_pinentry_name (int reset)
 
   if (!name)
     {
-      name = xstrconcat (gnupg_bindir (),
-                         DIRSEP_S "pinentry" EXEEXT_S, NULL);
-      if (access (name, F_OK) && errno == ENOENT)
+      int i;
+
+      for (i=0; i < DIM(names); i++)
         {
           char *name2;
-          name2 = xstrconcat (gnupg_bindir (),
-                              DIRSEP_S "pinentry-basic" EXEEXT_S, NULL);
-          if (access (name2, F_OK))
-            xfree (name2); /* Does not exist.  */
-          else /* Switch to pinentry-basic.  */
+
+          name2 = xstrconcat (names[i].rfnc (), names[i].name, NULL);
+          if (!access (name2, F_OK))
             {
+              /* Use that pinentry.  */
               xfree (name);
               name = name2;
+              break;
             }
+          if (!i) /* Store the first as fallback return.  */
+            name = name2;
+          else
+            xfree (name2);
         }
     }
+
   return name;
 }
 

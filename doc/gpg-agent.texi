@@ -403,6 +403,17 @@ installation dependent.  With the default configuration the name of
 the default pinentry is @file{pinentry}; if that file does not exist
 but a @file{pinentry-basic} exist the latter is used.
 
+On a Windows platform the default is to use the first existing program
+from this list:
+@file{bin\pinentry.exe},
+@file{..\Gpg4win\bin\pinentry.exe},
+@file{..\Gpg4win\pinentry.exe},
+@file{..\GNU\GnuPG\pinentry.exe},
+@file{..\GNU\bin\pinentry.exe},
+@file{bin\pinentry-basic.exe}
+where the file names are relative to the GnuPG installation directory.
+
+
 @item --pinentry-touch-file @var{filename}
 @opindex pinentry-touch-file
 By default the filename of the socket gpg-agent is listening for
