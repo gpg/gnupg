@@ -818,7 +818,7 @@ create a signature of any type desired.
 
   @item toggle
   @opindex keyedit:toggle
-  Toggle between public and secret key listing.
+  This is dummy command which exists only for backward compatibility.
 
   @item clean
   @opindex keyedit:clean
