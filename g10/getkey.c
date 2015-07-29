@@ -2633,7 +2633,8 @@ found:
       *ret_keyblock = ctx->keyblock; /* Return the keyblock.  */
       ctx->keyblock = NULL;
     }
-  else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && no_suitable_key)
+  else if ((gpg_err_code (rc) == GPG_ERR_NOT_FOUND
+            || gpg_err_code (rc) == GPG_ERR_LEGACY_KEY) && no_suitable_key)
     rc = want_secret? GPG_ERR_UNUSABLE_SECKEY : GPG_ERR_UNUSABLE_PUBKEY;
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = want_secret? GPG_ERR_NO_SECKEY : GPG_ERR_NO_PUBKEY;
