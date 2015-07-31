@@ -2621,6 +2621,11 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
       /* Release resources and continue search. */
       release_kbnode (ctx->keyblock);
       ctx->keyblock = NULL;
+      /* We need to disable the caching so that for an exact key search we
+         won't get the result back from the cache and thus end up in an
+         endless loop.  Disabling this here is sufficient because although
+         the result may have been cached, if won't be used then.  */
+      keydb_disable_caching (ctx->kr_handle);
     }
 
 found:
