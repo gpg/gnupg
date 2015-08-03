@@ -71,8 +71,8 @@ Note that such a comment will be removed if the git commit option
   file "DCO".  (Except for a slight wording change, this DCO is
   identical to the one used by the Linux kernel.)
 
-  If your want to contribute code or documentation to GnuPG and you
-  didn't signed a copyright assignment with the FSF in the past, you
+  If you want to contribute code or documentation to GnuPG and you
+  didn't sign a copyright assignment with the FSF in the past, you
   need to take these simple steps:
 
   - Decide which mail address you want to use.  Please have your real
