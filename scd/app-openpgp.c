@@ -4386,7 +4386,7 @@ ecc_oid (unsigned char *buf, size_t buflen)
 
   memcpy (oidbuf+1, buf, buflen);
   oidbuf[0] = buflen;
-  oid = gcry_mpi_set_opaque (NULL, buf, buflen * 8);
+  oid = gcry_mpi_set_opaque (NULL, oidbuf, (buflen+1) * 8);
   if (!oid)
     {
       xfree (oidbuf);
