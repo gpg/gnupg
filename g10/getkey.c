@@ -3058,8 +3058,14 @@ have_secret_key_with_kid (u32 *keyid)
   desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
   desc.u.kid[0] = keyid[0];
   desc.u.kid[1] = keyid[1];
-  while (!result && !(err = keydb_search (kdbhd, &desc, 1, NULL)))
+  while (!result)
     {
+      err = keydb_search (kdbhd, &desc, 1, NULL);
+      if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
+        continue;
+      if (err)
+        break;
+
       err = keydb_get_keyblock (kdbhd, &keyblock);
       if (err)
         {
@@ -3085,6 +3091,7 @@ have_secret_key_with_kid (u32 *keyid)
 	}
       release_kbnode (keyblock);
     }
+
   keydb_release (kdbhd);
   return result;
 }
