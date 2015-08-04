@@ -1753,10 +1753,17 @@ keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
 gpg_error_t
 keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
 {
+  gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FPR;
   memcpy (desc.u.fpr, fpr, MAX_FINGERPRINT_LEN);
-  return keydb_search (hd, &desc, 1, NULL);
+  do
+    {
+      err = keydb_search (hd, &desc, 1, NULL);
+    }
+  while (gpg_err_code (err) == GPG_ERR_LEGACY_KEY);
+
+  return err;
 }
