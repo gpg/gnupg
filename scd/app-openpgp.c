@@ -914,7 +914,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
                 openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid));
     }
   else
-    snprintf (buffer, sizeof buffer, "0 0 UNKNOWN");
+    snprintf (buffer, sizeof buffer, "%d 0 0 UNKNOWN", keyno+1);
 
   send_status_direct (ctrl, keyword, buffer);
 }
@@ -1434,11 +1434,15 @@ get_public_key (app_t app, int keyno)
     }
   else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
     {
-      err = gcry_sexp_build (&s_pkey, NULL,
-                             "(public-key(ecc(curve%s)%s(q%b)))",
-                             openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid),
-                             app->app_local->keyattr[keyno].ecc.flags?
-                             "(flags eddsa)" : "",
+      char *format;
+
+      if (!app->app_local->keyattr[keyno].ecc.flags)
+        format = "(public-key(ecc(curve%s)(q%b)))";
+      else
+        format = "(public-key(ecc(curve%s)(flags eddsa)(q%b)))";
+
+      err = gcry_sexp_build (&s_pkey, NULL, format,
+                 openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid),
                              (int)mlen, mbuf);
       if (err)
         goto leave;
@@ -3375,7 +3379,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         goto leave;
 
       oidbuf = gcry_mpi_get_opaque (oid, &n);
-      oid_len = n;
+      oid_len = (n+7)/8;
       if (!oidbuf)
         {
           err = gpg_error_from_syserror ();
@@ -3383,8 +3387,8 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
           goto leave;
         }
       err = store_fpr (app, keyno, created_at, fprbuf, algo,
-                   oidbuf, oid_len, ecc_q, ecc_q_len,
-                   "\x03\x01\x08\x07", (size_t)4);
+                       oidbuf, oid_len, ecc_q, ecc_q_len,
+                       "\x03\x01\x08\x07", (size_t)4);
       gcry_mpi_release (oid);
     }
 
@@ -4362,16 +4366,32 @@ parse_historical (struct app_local_s *apploc,
 }
 
 
+/*
+ * Check if the OID in an DER encoding is available by GnuPG/libgcrypt,
+ * and return the constant string in dotted decimal form.
+ * Return NULL if not available.
+ * The constant string is not allocated dynamically, never free it.
+ */
 static const char *
 ecc_oid (unsigned char *buf, size_t buflen)
 {
   gcry_mpi_t oid;
   char *oidstr;
   const char *result;
+  unsigned char *oidbuf;
 
+  oidbuf = xtrymalloc (buflen + 1);
+  if (!oidbuf)
+    return NULL;
+
+  memcpy (oidbuf+1, buf, buflen);
+  oidbuf[0] = buflen;
   oid = gcry_mpi_set_opaque (NULL, buf, buflen * 8);
   if (!oid)
-    return NULL;
+    {
+      xfree (oidbuf);
+      return NULL;
+    }
 
   oidstr = openpgp_oid_to_str (oid);
   gcry_mpi_release (oid);
@@ -4441,13 +4461,20 @@ parse_algorithm_attribute (app_t app, int keyno)
   else if (*buffer == PUBKEY_ALGO_ECDH || *buffer == PUBKEY_ALGO_ECDSA
            || *buffer == PUBKEY_ALGO_EDDSA)
     {
-      app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
-      app->app_local->keyattr[keyno].ecc.oid = ecc_oid (buffer + 1, buflen - 1);
-      app->app_local->keyattr[keyno].ecc.flags = (*buffer == PUBKEY_ALGO_EDDSA);
-      if (opt.verbose)
-        log_printf
-          ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.oid,
-           app->app_local->keyattr[keyno].ecc.flags ? " (eddsa)": "");
+      const char *oid = ecc_oid (buffer + 1, buflen - 1);
+
+      if (!oid)
+        log_printhex ("Curve with OID not supported: ", buffer+1, buflen-1);
+      else
+        {
+          app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
+          app->app_local->keyattr[keyno].ecc.oid = oid;
+          app->app_local->keyattr[keyno].ecc.flags = (*buffer == PUBKEY_ALGO_EDDSA);
+          if (opt.verbose)
+            log_printf
+              ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.oid,
+               app->app_local->keyattr[keyno].ecc.flags ? " (eddsa)": "");
+        }
     }
   else if (opt.verbose)
     log_printhex ("", buffer, buflen);
