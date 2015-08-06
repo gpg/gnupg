@@ -1087,18 +1087,6 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
                   pubkey_string (pk2, pkstrbuf, sizeof pkstrbuf),
 		  keystr_from_pk (pk2), datestr_from_pk (pk2));
 
-          if (pk2->pubkey_algo == PUBKEY_ALGO_ECDSA
-              || pk2->pubkey_algo == PUBKEY_ALGO_EDDSA
-              || pk2->pubkey_algo == PUBKEY_ALGO_ECDH)
-            {
-              char *curve = openpgp_oid_to_str (pk2->pkey[0]);
-              const char *name = openpgp_oid_to_curve (curve, 0);
-              if (!name)
-                name = curve;
-              es_fprintf (es_stdout, " %s", name);
-              xfree (curve);
-            }
-
           if ((opt.list_options & LIST_SHOW_USAGE))
             {
               es_fprintf (es_stdout, " [%s]", usagestr_from_pk (pk2, 0));
