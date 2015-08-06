@@ -1414,7 +1414,7 @@ transfer_secret_keys (ctrl_t ctrl, struct stats_s *stats, kbnode_t sec_keyblock,
             err = gpg_error_from_syserror ();
           else
             {
-              const char *curvename = openpgp_oid_to_curve (curvestr);
+              const char *curvename = openpgp_oid_to_curve (curvestr, 1);
               err = gcry_sexp_build (&curve, NULL, "(curve %s)",
                                      curvename?curvename:curvestr);
               xfree (curvestr);

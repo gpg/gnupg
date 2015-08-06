@@ -333,10 +333,10 @@ openpgp_curve_to_oid (const char *name, unsigned int *r_nbits)
 
 
 /* Map an OpenPGP OID to the Libgcrypt curve NAME.  Returns NULL for
-   unknown curve names.  We prefer an alias name here which is more
-   suitable for printing.  */
+   unknown curve names.  Unless CANON is set we prefer an alias name
+   here which is more suitable for printing.  */
 const char *
-openpgp_oid_to_curve (const char *oidstr)
+openpgp_oid_to_curve (const char *oidstr, int canon)
 {
   int i;
 
@@ -345,7 +345,7 @@ openpgp_oid_to_curve (const char *oidstr)
 
   for (i=0; oidtable[i].name; i++)
     if (!strcmp (oidtable[i].oidstr, oidstr))
-      return oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
+      return !canon && oidtable[i].alias? oidtable[i].alias : oidtable[i].name;
 
   return NULL;
 }

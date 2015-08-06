@@ -911,7 +911,7 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
                 keyno+1,
                 app->app_local->keyattr[keyno].ecc.flags? PUBKEY_ALGO_EDDSA:
                 (keyno==1? PUBKEY_ALGO_ECDH: PUBKEY_ALGO_ECDSA),
-                openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid));
+                openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 0));
     }
   else
     snprintf (buffer, sizeof buffer, "%d 0 0 UNKNOWN", keyno+1);
@@ -1442,7 +1442,7 @@ get_public_key (app_t app, int keyno)
         format = "(public-key(ecc(curve%s)(flags eddsa)(q%b)))";
 
       err = gcry_sexp_build (&s_pkey, NULL, format,
-                 openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid),
+                openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 1),
                              (int)mlen, mbuf);
       if (err)
         goto leave;
