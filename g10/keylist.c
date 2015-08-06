@@ -1031,7 +1031,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
 
 	      validity = uid_trust_string_fixed (pk, uid);
 	      indent =
-		(keystrlen () + 9) -
+		(keystrlen () + (opt.legacy_list_mode? 9:11)) -
 		atoi (uid_trust_string_fixed (NULL, NULL));
 
 	      if (indent < 0 || indent > 40)
@@ -1040,7 +1040,8 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
 	      es_fprintf (es_stdout, "uid%*s%s ", indent, "", validity);
 	    }
 	  else
-	    es_fprintf (es_stdout, "uid%*s", (int) keystrlen () + 10, "");
+	    es_fprintf (es_stdout, "uid%*s",
+                        (int) keystrlen () + (opt.legacy_list_mode? 10:12), "");
 
 	  print_utf8_buffer (es_stdout, uid->name, uid->len);
 	  es_putc ('\n', es_stdout);

@@ -1031,7 +1031,9 @@ list_node (CTX c, kbnode_t node)
                     es_printf ("%s:::::::::",
                                node->pkt->pkt.user_id->attrib_data?"uat":"uid");
                   else
-                    es_printf ("uid%*s", 28, "" );
+                    es_printf ("uid%*s",
+                               (int)keystrlen ()+(opt.legacy_list_mode? 9:11),
+                               "" );
                   print_userid (node->pkt);
                   if (opt.with_colons)
                     es_putc (':', es_stdout);
