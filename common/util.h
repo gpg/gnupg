@@ -322,6 +322,7 @@ size_t percent_unescape_inplace (char *string, int nulrepl);
 gpg_error_t openpgp_oid_from_str (const char *string, gcry_mpi_t *r_mpi);
 char *openpgp_oid_to_str (gcry_mpi_t a);
 int openpgp_oid_is_ed25519 (gcry_mpi_t a);
+int openpgp_oid_is_crv25519 (gcry_mpi_t a);
 const char *openpgp_curve_to_oid (const char *name, unsigned int *r_nbits);
 const char *openpgp_oid_to_curve (const char *oid, int canon);
 const char *openpgp_enum_curves (int *idxp);

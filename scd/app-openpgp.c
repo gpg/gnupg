@@ -235,7 +235,7 @@ struct app_local_s {
    } keyattr[3];
 };
 
-#define ECC_FLAG_EDDSA (1 << 0)
+#define ECC_FLAG_DJB_TWEAK (1 << 0)
 
 
 /***** Local prototypes  *****/
@@ -909,8 +909,9 @@ send_key_attr (ctrl_t ctrl, app_t app, const char *keyword, int keyno)
     {
       snprintf (buffer, sizeof buffer, "%d %d %s",
                 keyno+1,
-                app->app_local->keyattr[keyno].ecc.flags? PUBKEY_ALGO_EDDSA:
-                (keyno==1? PUBKEY_ALGO_ECDH: PUBKEY_ALGO_ECDSA),
+                keyno==1? PUBKEY_ALGO_ECDH :
+                app->app_local->keyattr[keyno].ecc.flags?
+                PUBKEY_ALGO_EDDSA : PUBKEY_ALGO_ECDSA,
                 openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 0));
     }
   else
@@ -1378,59 +1379,52 @@ get_public_key (app_t app, int keyno)
 	}
     }
 
-
-  mbuf = xtrymalloc ( mlen + 1);
+  mbuf = xtrymalloc (mlen + 1);
   if (!mbuf)
     {
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  /* Prepend numbers with a 0 if needed.  */
+
   if ((app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA
        || (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
            && !app->app_local->keyattr[keyno].ecc.flags))
       && mlen && (*m & 0x80))
-    {
+    {               /* Prepend numbers with a 0 if needed for MPI.  */
       *mbuf = 0;
+      memcpy (mbuf+1, m, mlen);
+      mlen++;
+    }
+  else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC
+           && app->app_local->keyattr[keyno].ecc.flags)
+    {               /* Prepend 0x40 prefix.  */
+      *mbuf = 0x40;
       memcpy (mbuf+1, m, mlen);
       mlen++;
     }
   else
     memcpy (mbuf, m, mlen);
 
-  ebuf = xtrymalloc ( elen + 1);
-  if (!ebuf)
-    {
-      err = gpg_error_from_syserror ();
-      goto leave;
-    }
-  /* Prepend numbers with a 0 if needed.  */
-  if (elen && (*e & 0x80))
-    {
-      *ebuf = 0;
-      memcpy (ebuf+1, e, elen);
-      elen++;
-    }
-  else
-    memcpy (ebuf, e, elen);
-
   if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_RSA)
     {
-      err = gcry_sexp_build (&s_pkey, NULL, "(public-key(rsa(n%b)(e%b)))",
-                             (int)mlen, mbuf, (int)elen, ebuf);
-      if (err)
-        goto leave;
-
-      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-      keybuf = xtrymalloc (len);
-      if (!keybuf)
+      ebuf = xtrymalloc (elen + 1);
+      if (!ebuf)
         {
-          gcry_sexp_release (s_pkey);
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
-      gcry_sexp_release (s_pkey);
+      /* Prepend numbers with a 0 if needed.  */
+      if (elen && (*e & 0x80))
+        {
+          *ebuf = 0;
+          memcpy (ebuf+1, e, elen);
+          elen++;
+        }
+      else
+        memcpy (ebuf, e, elen);
+
+      err = gcry_sexp_build (&s_pkey, NULL, "(public-key(rsa(n%b)(e%b)))",
+                             (int)mlen, mbuf, (int)elen, ebuf);
     }
   else if (app->app_local->keyattr[keyno].key_type == KEY_TYPE_ECC)
     {
@@ -1438,32 +1432,32 @@ get_public_key (app_t app, int keyno)
 
       if (!app->app_local->keyattr[keyno].ecc.flags)
         format = "(public-key(ecc(curve%s)(q%b)))";
+      else if (keyno == 1)
+        format = "(public-key(ecc(curve%s)(flags djb-tweak)(q%b)))";
       else
         format = "(public-key(ecc(curve%s)(flags eddsa)(q%b)))";
 
       err = gcry_sexp_build (&s_pkey, NULL, format,
                 openpgp_oid_to_curve (app->app_local->keyattr[keyno].ecc.oid, 1),
                              (int)mlen, mbuf);
-      if (err)
-        goto leave;
-
-      len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
-
-      keybuf = xtrymalloc (len);
-      if (!keybuf)
-        {
-          gcry_sexp_release (s_pkey);
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
-      gcry_sexp_release (s_pkey);
     }
   else
+    err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+
+  if (err)
+    goto leave;
+
+  len = gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, NULL, 0);
+
+  keybuf = xtrymalloc (len);
+  if (!keybuf)
     {
-      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      gcry_sexp_release (s_pkey);
+      err = gpg_error_from_syserror ();
       goto leave;
     }
+  gcry_sexp_sprint (s_pkey, GCRYSEXP_FMT_CANON, keybuf, len);
+  gcry_sexp_release (s_pkey);
 
   app->app_local->pk[keyno].key = (unsigned char*)keybuf;
   app->app_local->pk[keyno].keylen = len - 1; /* Decrement for trailing '\0' */
@@ -3171,7 +3165,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   size_t ecc_q_len, ecc_d_len;
   u32 created_at = 0;
   const char *oidstr = NULL;
-  int flag_eddsa = 0;
+  int flag_djb_tweak = 0;
   int algo;
 
   /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
@@ -3216,8 +3210,12 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
 
-          if (tok && toklen == 5 && !memcmp (tok, "eddsa", 5))
-            flag_eddsa = 1;
+          if (tok)
+            {
+              if ((toklen == 5 && !memcmp (tok, "eddsa", 5))
+                  || (toklen == 9 && !memcmp (tok, "djb-tweak", 9)))
+                flag_djb_tweak = 1;
+            }
         }
       else if (tok && toklen == 1)
         {
@@ -3237,7 +3235,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
             }
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
-          if (tok && buf2 && !flag_eddsa)
+          if (tok && buf2 && !flag_djb_tweak)
             /* It's MPI.  Strip off leading zero bytes and save. */
             for (;toklen && !*tok; toklen--, tok++)
               ;
@@ -3300,7 +3298,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       err = gpg_error (GPG_ERR_INV_VALUE);
       goto leave;
     }
-  if (flag_eddsa && keyno != 1)
+  if (flag_djb_tweak && keyno != 1)
     algo = PUBKEY_ALGO_EDDSA;
   else if (keyno == 1)
     algo = PUBKEY_ALGO_ECDH;
@@ -3309,7 +3307,7 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
 
   if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_ECC
       || app->app_local->keyattr[keyno].ecc.oid != oidstr
-      || app->app_local->keyattr[keyno].ecc.flags != flag_eddsa)
+      || app->app_local->keyattr[keyno].ecc.flags != flag_djb_tweak)
     {
       log_error ("key attribute on card doesn't match\n");
       err = gpg_error (GPG_ERR_INV_VALUE);
@@ -4469,11 +4467,18 @@ parse_algorithm_attribute (app_t app, int keyno)
         {
           app->app_local->keyattr[keyno].key_type = KEY_TYPE_ECC;
           app->app_local->keyattr[keyno].ecc.oid = oid;
-          app->app_local->keyattr[keyno].ecc.flags = (*buffer == PUBKEY_ALGO_EDDSA);
+          if (*buffer == PUBKEY_ALGO_EDDSA
+              || (*buffer == PUBKEY_ALGO_ECDH
+                  && !strcmp (app->app_local->keyattr[keyno].ecc.oid,
+                              "1.3.6.1.4.1.3029.1.5.1")))
+            app->app_local->keyattr[keyno].ecc.flags = ECC_FLAG_DJB_TWEAK;
+          else
+            app->app_local->keyattr[keyno].ecc.flags = 0;
           if (opt.verbose)
             log_printf
               ("ECC, curve=%s%s\n", app->app_local->keyattr[keyno].ecc.oid,
-               app->app_local->keyattr[keyno].ecc.flags ? " (eddsa)": "");
+               !app->app_local->keyattr[keyno].ecc.flags ? "":
+               keyno==1? " (djb-tweak)": " (eddsa)");
         }
     }
   else if (opt.verbose)

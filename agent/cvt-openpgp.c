@@ -83,14 +83,25 @@ get_keygrip (int pubkey_algo, const char *curve, gcry_mpi_t *pkey,
     case GCRY_PK_ECC:
       if (!curve)
         err = gpg_error (GPG_ERR_BAD_SECKEY);
-      else if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
-        err = gcry_sexp_build (&s_pkey, NULL,
-                               "(public-key(ecc(curve %s)(flags eddsa)(q%m)))",
-                               "Ed25519", pkey[0]);
       else
-        err = gcry_sexp_build (&s_pkey, NULL,
-                               "(public-key(ecc(curve %s)(q%m)))",
-                               curve, pkey[0]);
+        {
+          const char *format;
+
+          if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
+            {
+              format = "(public-key(ecc(curve %s)(flags eddsa)(q%m)))";
+              curve = "Ed25519";
+            }
+          else if (!strcmp (curve, openpgp_curve_to_oid ("Curve25519", NULL)))
+            {
+              format = "(public-key(ecc(curve %s)(flags djb-tweak)(q%m)))";
+              curve = "Curve25519";
+            }
+          else
+            format = "(public-key(ecc(curve %s)(q%m)))";
+
+          err = gcry_sexp_build (&s_pkey, NULL, format, curve, pkey[0]);
+        }
       break;
 
     default:
@@ -146,19 +157,27 @@ convert_secret_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
     case GCRY_PK_ECC:
       if (!curve)
         err = gpg_error (GPG_ERR_BAD_SECKEY);
-      else if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
-        {
-          /* Do not store the OID as name but the real name and the
-             EdDSA flag.  */
-          err = gcry_sexp_build (&s_skey, NULL,
-                                 "(private-key(ecc(curve%s)(flags eddsa)"
-                                 "(q%m)(d%m)))",
-                                 "Ed25519", skey[0], skey[1]);
-        }
       else
-        err = gcry_sexp_build (&s_skey, NULL,
-                               "(private-key(ecc(curve%s)(q%m)(d%m)))",
-                               curve, skey[0], skey[1]);
+        {
+          const char *format;
+
+          if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
+            {
+              /* Do not store the OID as name but the real name and the
+                 EdDSA flag.  */
+              format = "(private-key(ecc(curve %s)(flags eddsa)(q%m)(d%m)))";
+              curve = "Ed25519";
+            }
+          else if (!strcmp (curve, openpgp_curve_to_oid ("Curve25519", NULL)))
+            {
+              format = "(private-key(ecc(curve %s)(flags djb-tweak)(q%m)(d%m)))";
+              curve = "Curve25519";
+            }
+          else
+            format = "(private-key(ecc(curve %s)(q%m)(d%m)))";
+
+          err = gcry_sexp_build (&s_skey, NULL, format, curve, skey[0], skey[1]);
+        }
       break;
 
     default:
@@ -216,22 +235,30 @@ convert_transfer_key (gcry_sexp_t *r_key, int pubkey_algo, gcry_mpi_t *skey,
     case GCRY_PK_ECC:
       if (!curve)
         err = gpg_error (GPG_ERR_BAD_SECKEY);
-      else if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
-        {
-          /* Do not store the OID as name but the real name and the
-             EdDSA flag.  */
-          err = gcry_sexp_build
-            (&s_skey, NULL,
-             "(protected-private-key(ecc(curve%s)(flags eddsa)(q%m)"
-             "(protected openpgp-native%S)))",
-             "Ed25519", skey[0], transfer_key);
-        }
       else
-        err = gcry_sexp_build
-          (&s_skey, NULL,
-           "(protected-private-key(ecc(curve%s)(q%m)"
-           "(protected openpgp-native%S)))",
-           curve, skey[0], transfer_key);
+        {
+          const char *format;
+
+          if (!strcmp (curve, openpgp_curve_to_oid ("Ed25519", NULL)))
+            {
+              /* Do not store the OID as name but the real name and the
+                 EdDSA flag.  */
+              format = "(protected-private-key(ecc(curve %s)(flags eddsa)(q%m)"
+                "(protected openpgp-native%S)))";
+              curve = "Ed25519";
+            }
+          else if (!strcmp (curve, openpgp_curve_to_oid ("Curve25519", NULL)))
+            {
+              format = "(protected-private-key(ecc(curve %s)(flags djb-tweak)(q%m)"
+                "(protected openpgp-native%S)))";
+              curve = "Curve25519";
+            }
+          else
+              format = "(protected-private-key(ecc(curve %s)(q%m)"
+                "(protected openpgp-native%S)))";
+
+          err = gcry_sexp_build (&s_skey, NULL, format, curve, skey[0], transfer_key);
+        }
       break;
 
     default:

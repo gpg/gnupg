@@ -134,9 +134,12 @@ pk_ecdh_encrypt_with_shared_point (int is_encrypt, gcry_mpi_t shared_mpi,
       }
 
     secret_x_size = (nbits+7)/8;
-    assert (nbytes > secret_x_size);
-    memmove (secret_x, secret_x+1, secret_x_size);
-    memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
+    assert (nbytes >= secret_x_size);
+    if ((nbytes & 1))
+      /* Remove the "04" prefix of non-compressed format.  */
+      memmove (secret_x, secret_x+1, secret_x_size);
+    if (nbytes - secret_x_size)
+      memset (secret_x+secret_x_size, 0, nbytes-secret_x_size);
 
     if (DBG_CRYPTO)
       log_printhex ("ECDH shared secret X is:", secret_x, secret_x_size );

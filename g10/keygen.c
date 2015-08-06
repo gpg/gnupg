@@ -1520,6 +1520,13 @@ gen_ecc (int algo, const char *curve, kbnode_t pub_root,
        (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
          && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
         " transient-key" : ""));
+  else if (algo == PUBKEY_ALGO_ECDH && !strcmp (curve, "Curve25519"))
+    keyparms = xtryasprintf
+      ("(genkey(ecc(curve %zu:%s)(flags djb-tweak comp%s)))",
+       strlen (curve), curve,
+       (((keygen_flags & KEYGEN_FLAG_TRANSIENT_KEY)
+         && (keygen_flags & KEYGEN_FLAG_NO_PROTECTION))?
+        " transient-key" : ""));
   else
     keyparms = xtryasprintf
       ("(genkey(ecc(curve %zu:%s)(flags nocomp%s)))",
@@ -2125,7 +2132,7 @@ ask_keysize (int algo, unsigned int primary_keysize)
    function may adjust.  Returns a malloced string with the name of
    the curve.  BOTH tells that gpg creates a primary and subkey. */
 static char *
-ask_curve (int *algo, int both)
+ask_curve (int *algo, int *subkey_algo)
 {
   struct {
     const char *name;
@@ -2176,7 +2183,7 @@ ask_curve (int *algo, int both)
         continue;
       if (!gcry_pk_get_curve (keyparms, 0, NULL))
         continue;
-      if (both && curves[idx].fix_curve)
+      if (subkey_algo && curves[idx].fix_curve)
         {
           /* Both Curve 25519 keys are to be created.  Check that
              Libgcrypt also supports the real Curve25519.  */
@@ -2241,6 +2248,11 @@ ask_curve (int *algo, int both)
           if ((*algo == PUBKEY_ALGO_ECDSA || *algo == PUBKEY_ALGO_EDDSA)
               && curves[idx].fix_curve)
             {
+              if (subkey_algo && *subkey_algo == PUBKEY_ALGO_ECDSA)
+                {
+                  *subkey_algo = PUBKEY_ALGO_EDDSA;
+                  result = xstrdup ("Ed25519");
+                }
               *algo = PUBKEY_ALGO_EDDSA;
               result = xstrdup ("Ed25519");
             }
@@ -3672,7 +3684,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
               || algo == PUBKEY_ALGO_EDDSA
               || algo == PUBKEY_ALGO_ECDH)
             {
-              curve = ask_curve (&algo, both);
+              curve = ask_curve (&algo, &subkey_algo);
               r = xmalloc_clear( sizeof *r + 20 );
               r->key = pKEYTYPE;
               sprintf( r->u.value, "%d", algo);
@@ -3743,7 +3755,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
               || algo == PUBKEY_ALGO_EDDSA
               || algo == PUBKEY_ALGO_ECDH)
             {
-              curve = ask_curve (&algo, 0);
+              curve = ask_curve (&algo, NULL);
               nbits = 0;
               r = xmalloc_clear (sizeof *r + strlen (curve));
               r->key = pKEYCURVE;
@@ -4292,7 +4304,7 @@ generate_subkeypair (ctrl_t ctrl, kbnode_t keyblock)
   else if (algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA
            || algo == PUBKEY_ALGO_ECDH)
-    curve = ask_curve (&algo, 0);
+    curve = ask_curve (&algo, NULL);
   else
     nbits = ask_keysize (algo, 0);
 

@@ -45,6 +45,7 @@ static struct {
   const char *alias;  /* NULL or alternative name of the curve.  */
 } oidtable[] = {
 
+  { "Curve25519",      "1.3.6.1.4.1.3029.1.5.1", 255, "crv25519" },
   { "Ed25519",         "1.3.6.1.4.1.11591.15.1", 255, "ed25519" },
 
   { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
@@ -64,6 +65,10 @@ static struct {
 /* The OID for Curve Ed25519 in OpenPGP format.  */
 static const char oid_ed25519[] =
   { 0x09, 0x2b, 0x06, 0x01, 0x04, 0x01, 0xda, 0x47, 0x0f, 0x01 };
+
+/* The OID for Curve25519 in OpenPGP format.  */
+static const char oid_crv25519[] =
+  { 0x0a, 0x2b, 0x06, 0x01, 0x04, 0x01, 0x97, 0x55, 0x01, 0x05, 0x01 };
 
 
 /* Helper for openpgp_oid_from_str.  */
@@ -290,6 +295,22 @@ openpgp_oid_is_ed25519 (gcry_mpi_t a)
           && !memcmp (buf, oid_ed25519, DIM (oid_ed25519)));
 }
 
+
+int
+openpgp_oid_is_crv25519 (gcry_mpi_t a)
+{
+  const unsigned char *buf;
+  unsigned int nbits;
+  size_t n;
+
+  if (!a || !gcry_mpi_get_flag (a, GCRYMPI_FLAG_OPAQUE))
+    return 0;
+
+  buf = gcry_mpi_get_opaque (a, &nbits);
+  n = (nbits+7)/8;
+  return (n == DIM (oid_crv25519)
+          && !memcmp (buf, oid_crv25519, DIM (oid_crv25519)));
+}
 
 
 /* Map the Libgcrypt ECC curve NAME to an OID.  If R_NBITS is not NULL

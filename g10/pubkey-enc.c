@@ -250,8 +250,8 @@ get_it (PKT_pubkey_enc *enc, DEK *dek, PKT_public_key *sk, u32 *keyid)
       if(err)
         goto leave;
 
-      /* Reuse NFRAME, which size is sufficient to include the session key.  */
-      err = gcry_mpi_print (GCRYMPI_FMT_USG, frame, nframe, &nframe, decoded);
+      xfree (frame);
+      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, &frame, &nframe, decoded);
       mpi_release (decoded);
       if (err)
         goto leave;
