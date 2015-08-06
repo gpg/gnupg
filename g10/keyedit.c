@@ -56,7 +56,8 @@ static void show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 				     int with_revoker, int with_fpr,
 				     int with_subkeys, int with_prefs,
                                      int nowarn);
-static void show_key_and_fingerprint (KBNODE keyblock);
+static void show_key_and_fingerprint (kbnode_t keyblock, int with_subkeys);
+static void show_key_and_grip (kbnode_t keyblock);
 static void subkey_expire_warning (kbnode_t keyblock);
 static int menu_adduid (KBNODE keyblock, int photo, const char *photo_name,
                         const char *uidstr);
@@ -1305,7 +1306,7 @@ enum cmdids
   cmdSHOWPREF,
   cmdSETPREF, cmdPREFKS, cmdNOTATION, cmdINVCMD, cmdSHOWPHOTO, cmdUPDTRUST,
   cmdCHKTRUST, cmdADDCARDKEY, cmdKEYTOCARD, cmdBKUPTOCARD, cmdCHECKBKUPKEY,
-  cmdCLEAN, cmdMINIMIZE, cmdNOP
+  cmdCLEAN, cmdMINIMIZE, cmdGRIP, cmdNOP
 };
 
 static struct
@@ -1322,6 +1323,7 @@ static struct
   { "help", cmdHELP, 0, N_("show this help")},
   { "?", cmdHELP, 0, NULL},
   { "fpr", cmdFPR, 0, N_("show key fingerprint")},
+  { "grip", cmdGRIP, 0, N_("show the keygrip")},
   { "list", cmdLIST, 0, N_("list key and user IDs")},
   { "l", cmdLIST, 0, NULL},
   { "uid", cmdSELUID, 0, N_("select user ID N")},
@@ -1644,7 +1646,13 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdFPR:
-	  show_key_and_fingerprint (keyblock);
+	  show_key_and_fingerprint
+            (keyblock, (*arg_string == '*'
+                        && (!arg_string[1] || spacep (arg_string + 1))));
+	  break;
+
+	case cmdGRIP:
+	  show_key_and_grip (keyblock);
 	  break;
 
 	case cmdSELUID:
@@ -3235,10 +3243,11 @@ show_basic_key_info (KBNODE keyblock)
     }
 }
 
+
 static void
-show_key_and_fingerprint (KBNODE keyblock)
+show_key_and_fingerprint (kbnode_t keyblock, int with_subkeys)
 {
-  KBNODE node;
+  kbnode_t node;
   PKT_public_key *pk = NULL;
   char pkstrbuf[PUBKEY_STRING_SIZE];
 
@@ -3262,6 +3271,56 @@ show_key_and_fingerprint (KBNODE keyblock)
   tty_printf ("\n");
   if (pk)
     print_fingerprint (NULL, pk, 2);
+  if (with_subkeys)
+    {
+      for (node = keyblock; node; node = node->next)
+        {
+          if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+            {
+              pk = node->pkt->pkt.public_key;
+              tty_printf ("sub   %s/%s %s [%s]\n",
+                          pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                          keystr_from_pk(pk),
+                          datestr_from_pk (pk),
+                          usagestr_from_pk (pk, 0));
+
+              print_fingerprint (NULL, pk, 4);
+            }
+        }
+    }
+}
+
+
+/* Show a listing of the primary and its subkeys along with their
+   keygrips.  */
+static void
+show_key_and_grip (kbnode_t keyblock)
+{
+  kbnode_t node;
+  PKT_public_key *pk = NULL;
+  char pkstrbuf[PUBKEY_STRING_SIZE];
+  char *hexgrip;
+
+  for (node = keyblock; node; node = node->next)
+    {
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY
+          || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
+        {
+          pk = node->pkt->pkt.public_key;
+          tty_printf ("%s   %s/%s %s [%s]\n",
+                      node->pkt->pkttype == PKT_PUBLIC_KEY? "pub":"sub",
+                      pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                      keystr_from_pk(pk),
+                      datestr_from_pk (pk),
+                      usagestr_from_pk (pk, 0));
+
+          if (!hexkeygrip_from_pk (pk, &hexgrip))
+            {
+              tty_printf ("      Keygrip: %s\n", hexgrip);
+              xfree (hexgrip);
+            }
+        }
+    }
 }
 
 

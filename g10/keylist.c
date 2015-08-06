@@ -1726,6 +1726,7 @@ print_icao_hexdigit (estream_t fp, int c)
  *      1: print using log_info ()
  *      2: direct use of tty
  *      3: direct use of tty but only primary key.
+ *      4: direct use of tty but only subkey.
  *     10: Same as 0 but with_colons etc is ignored.
  *
  * Modes 1 and 2 will try and print both subkey and primary key
@@ -1784,7 +1785,7 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
     {
       fp = override_fp; /* Use tty or given stream.  */
       if (primary)
-	/* TRANSLATORS: this should fit into 24 bytes to that the
+	/* TRANSLATORS: this should fit into 24 bytes so that the
 	 * fingerprint data is properly aligned with the user ID */
 	text = _(" Primary key fingerprint:");
       else
@@ -1794,6 +1795,11 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
     {
       fp = override_fp; /* Use tty or given stream.  */
       text = _("      Key fingerprint =");
+    }
+  else if (mode == 4)
+    {
+      fp = override_fp; /* Use tty or given stream.  */
+      text = _("      Subkey fingerprint:");
     }
   else
     {
