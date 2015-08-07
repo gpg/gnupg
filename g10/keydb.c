@@ -434,6 +434,7 @@ keydb_add_resource (const char *url, unsigned int flags)
   int create;
   int read_only = !!(flags&KEYDB_RESOURCE_FLAG_READONLY);
   int is_default = !!(flags&KEYDB_RESOURCE_FLAG_DEFAULT);
+  int is_gpgvdef = !!(flags&KEYDB_RESOURCE_FLAG_GPGVDEF);
   int rc = 0;
   KeydbResourceType rt = KEYDB_RESOURCE_TYPE_NONE;
   void *token;
@@ -516,6 +517,23 @@ keydb_add_resource (const char *url, unsigned int flags)
                 strcpy (filename+filenamelen-4, ".gpg");
             }
 	}
+      else if (!pass && is_gpgvdef
+               && filenamelen > 4 && !strcmp (filename+filenamelen-4, ".kbx"))
+        {
+          /* Not found but gpgv's default "trustedkeys.kbx" file has
+             been requested.  We did not found it so now check whether
+             a "trustedkeys.gpg" file exists and use that instead.  */
+          KeydbResourceType rttmp;
+
+          strcpy (filename+filenamelen-4, ".gpg");
+          rttmp = rt_from_file (filename, &found, &openpgp_flag);
+          if (found
+              && ((rttmp == KEYDB_RESOURCE_TYPE_KEYBOX && openpgp_flag)
+                  || (rttmp == KEYDB_RESOURCE_TYPE_KEYRING)))
+            rt = rttmp;
+          else /* Restore filename */
+            strcpy (filename+filenamelen-4, ".kbx");
+        }
       else if (!pass
                && is_default && create
                && filenamelen > 4 && !strcmp (filename+filenamelen-4, ".gpg"))

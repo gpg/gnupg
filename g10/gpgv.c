@@ -205,8 +205,9 @@ main( int argc, char **argv )
 
   /* Note: We open all keyrings in read-only mode.  */
   if (!nrings)  /* No keyring given: use default one. */
-    keydb_add_resource ("trustedkeys" EXTSEP_S GPGEXT_GPG,
-                        KEYDB_RESOURCE_FLAG_READONLY);
+    keydb_add_resource ("trustedkeys" EXTSEP_S "kbx",
+                        (KEYDB_RESOURCE_FLAG_READONLY
+                         |KEYDB_RESOURCE_FLAG_GPGVDEF));
   for (sl = nrings; sl; sl = sl->next)
     keydb_add_resource (sl->d, KEYDB_RESOURCE_FLAG_READONLY);
 

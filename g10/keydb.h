@@ -130,6 +130,7 @@ union pref_hint
 #define KEYDB_RESOURCE_FLAG_PRIMARY  2  /* The primary resource.  */
 #define KEYDB_RESOURCE_FLAG_DEFAULT  4  /* The default one.  */
 #define KEYDB_RESOURCE_FLAG_READONLY 8  /* Open in read only mode.  */
+#define KEYDB_RESOURCE_FLAG_GPGVDEF 16  /* Default file for gpgv.  */
 
 gpg_error_t keydb_add_resource (const char *url, unsigned int flags);
 void        keydb_dump_stats (void);
