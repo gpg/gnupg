@@ -1219,14 +1219,18 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 
 
 /* Delete the key with GRIP from the disk after having asked for
-   confirmation using DESC_TEXT.  Common error codes are:
+   confirmation using DESC_TEXT.  If FORCE is set the fucntion won't
+   require a confirmation via Pinentry or warns if the key is also
+   used by ssh.
+
+   Common error codes are:
      GPG_ERR_NO_SECKEY
      GPG_ERR_KEY_ON_CARD
      GPG_ERR_NOT_CONFIRMED
 */
 gpg_error_t
 agent_delete_key (ctrl_t ctrl, const char *desc_text,
-                  const unsigned char *grip)
+                  const unsigned char *grip, int force)
 {
   gpg_error_t err;
   gcry_sexp_t s_skey = NULL;
@@ -1253,57 +1257,57 @@ agent_delete_key (ctrl_t ctrl, const char *desc_text,
     case PRIVATE_KEY_CLEAR:
     case PRIVATE_KEY_OPENPGP_NONE:
     case PRIVATE_KEY_PROTECTED:
-      {
-        bin2hex (grip, 20, hexgrip);
-        if (!desc_text)
-          {
-            default_desc = xtryasprintf
-           (L_("Do you really want to delete the key identified by keygrip%%0A"
-               "  %s%%0A  %%C%%0A?"), hexgrip);
-            desc_text = default_desc;
-          }
-
-        /* Note, that we will take the comment as a C string for
-           display purposes; i.e. all stuff beyond a Nul character is
-           ignored.  */
+      bin2hex (grip, 20, hexgrip);
+      if (!force)
         {
-          gcry_sexp_t comment_sexp;
+          if (!desc_text)
+            {
+              default_desc = xtryasprintf
+          (L_("Do you really want to delete the key identified by keygrip%%0A"
+              "  %s%%0A  %%C%%0A?"), hexgrip);
+              desc_text = default_desc;
+            }
 
-          comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
-          if (comment_sexp)
-            comment = gcry_sexp_nth_string (comment_sexp, 1);
-          gcry_sexp_release (comment_sexp);
-        }
-
-	if (desc_text)
-          err = modify_description (desc_text, comment? comment:"", s_skey,
-                                    &desc_text_final);
-	if (err)
-          goto leave;
-
-        err = agent_get_confirmation (ctrl, desc_text_final,
-                                      L_("Delete key"), L_("No"), 0);
-        if (err)
-          goto leave;
-
-        cf = ssh_open_control_file ();
-        if (cf)
+          /* Note, that we will take the comment as a C string for
+             display purposes; i.e. all stuff beyond a Nul character is
+             ignored.  */
           {
-            if (!ssh_search_control_file (cf, hexgrip, NULL, NULL, NULL))
-              {
-                err = agent_get_confirmation
-                  (ctrl,
-                   L_("Warning: This key is also listed for use with SSH!\n"
-                      "Deleting the key might remove your ability to "
-                      "access remote machines."),
-                   L_("Delete key"), L_("No"), 0);
-                if (err)
-                  goto leave;
-              }
+            gcry_sexp_t comment_sexp;
+
+            comment_sexp = gcry_sexp_find_token (s_skey, "comment", 0);
+            if (comment_sexp)
+              comment = gcry_sexp_nth_string (comment_sexp, 1);
+            gcry_sexp_release (comment_sexp);
           }
 
-        err = remove_key_file (grip);
-      }
+          if (desc_text)
+            err = modify_description (desc_text, comment? comment:"", s_skey,
+                                      &desc_text_final);
+          if (err)
+            goto leave;
+
+          err = agent_get_confirmation (ctrl, desc_text_final,
+                                        L_("Delete key"), L_("No"), 0);
+          if (err)
+            goto leave;
+
+          cf = ssh_open_control_file ();
+          if (cf)
+            {
+              if (!ssh_search_control_file (cf, hexgrip, NULL, NULL, NULL))
+                {
+                  err = agent_get_confirmation
+                    (ctrl,
+                     L_("Warning: This key is also listed for use with SSH!\n"
+                        "Deleting the key might remove your ability to "
+                        "access remote machines."),
+                     L_("Delete key"), L_("No"), 0);
+                  if (err)
+                    goto leave;
+                }
+            }
+        }
+      err = remove_key_file (grip);
       break;
 
     case PRIVATE_KEY_SHADOWED:

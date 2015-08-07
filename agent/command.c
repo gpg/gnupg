@@ -2388,27 +2388,29 @@ cmd_export_key (assuan_context_t ctx, char *line)
 
 
 static const char hlp_delete_key[] =
-  "DELETE_KEY <hexstring_with_keygrip>\n"
+  "DELETE_KEY [--force] <hexstring_with_keygrip>\n"
   "\n"
   "Delete a secret key from the key store.\n"
-  "As safeguard the agent asks the user for confirmation.\n";
+  "Unless --force is used the agent asks the user for confirmation.\n";
 static gpg_error_t
 cmd_delete_key (assuan_context_t ctx, char *line)
 {
   ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
+  int force;
   unsigned char grip[20];
 
   if (ctrl->restricted)
     return leave_cmd (ctx, gpg_error (GPG_ERR_FORBIDDEN));
 
+  force = has_option (line, "--force");
   line = skip_options (line);
 
   err = parse_keygrip (ctx, line, grip);
   if (err)
     goto leave;
 
-  err = agent_delete_key (ctrl, ctrl->server_local->keydesc, grip);
+  err = agent_delete_key (ctrl, ctrl->server_local->keydesc, grip, force );
   if (err)
     goto leave;
 

@@ -386,7 +386,7 @@ gpg_error_t agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
                                       int *r_keytype,
                                       unsigned char **r_shadow_info);
 gpg_error_t agent_delete_key (ctrl_t ctrl, const char *desc_text,
-                              const unsigned char *grip);
+                              const unsigned char *grip, int force);
 
 /*-- call-pinentry.c --*/
 void initialize_module_call_pinentry (void);
