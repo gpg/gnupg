@@ -45,7 +45,7 @@ static struct {
   const char *alias;  /* NULL or alternative name of the curve.  */
 } oidtable[] = {
 
-  { "Curve25519",      "1.3.6.1.4.1.3029.1.5.1", 255, "crv25519" },
+  { "Curve25519",      "1.3.6.1.4.1.3029.1.5.1", 255, "cv25519" },
   { "Ed25519",         "1.3.6.1.4.1.11591.15.1", 255, "ed25519" },
 
   { "NIST P-256",      "1.2.840.10045.3.1.7",    256, "nistp256" },
