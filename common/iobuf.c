@@ -138,6 +138,13 @@ typedef struct
 #define OP_MIN_PARTIAL_CHUNK	  512
 #define OP_MIN_PARTIAL_CHUNK_2POW 9
 
+enum
+  {
+    BLOCK_FILTER_INPUT=1,
+    BLOCK_FILTER_OUTPUT=2,
+    BLOCK_FILTER_TEMP=3
+  };
+
 /* The context we use for the block filter (used to handle OpenPGP
    length information header).  */
 typedef struct
@@ -994,7 +1001,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
 	log_debug ("init block_filter %p\n", a);
       if (a->partial)
 	a->count = 0;
-      else if (a->use == 1)
+      else if (a->use == BLOCK_FILTER_INPUT)
 	a->count = a->size = 0;
       else
 	a->count = a->size;	/* force first length bytes */
@@ -1008,7 +1015,7 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
     }
   else if (control == IOBUFCTRL_FREE)
     {
-      if (a->use == 2)
+      if (a->use == BLOCK_FILTER_OUTPUT)
 	{			/* write the end markers */
 	  if (a->partial)
 	    {
@@ -1096,16 +1103,23 @@ iobuf_print_chain (iobuf_t a)
   return 0;
 }
 
-/****************
- * Allocate a new io buffer, with no function assigned.
- * Use is the desired usage: 1 for input, 2 for output, 3 for temp buffer
- * BUFSIZE is a suggested buffer size.
+/* Allocate a new io buffer, with no function assigned.
+
+   USE is the desired usage: BLOCK_FILTER_INPUT for input,
+   BLOCK_FILTER_OUTPUT for output, or BLOCK_FILTER_TEMP for a temp
+   buffer.
+
+   BUFSIZE is a suggested buffer size.
  */
 iobuf_t
 iobuf_alloc (int use, size_t bufsize)
 {
   iobuf_t a;
   static int number = 0;
+
+  assert (use == BLOCK_FILTER_INPUT
+	  || use == BLOCK_FILTER_OUTPUT
+	  || use == BLOCK_FILTER_TEMP);
 
   a = xcalloc (1, sizeof *a);
   a->use = use;
@@ -1137,7 +1151,7 @@ iobuf_close (iobuf_t a)
   for (; a && !rc; a = a2)
     {
       a2 = a->chain;
-      if (a->use == 2 && (rc = iobuf_flush (a)))
+      if (a->use == BLOCK_FILTER_OUTPUT && (rc = iobuf_flush (a)))
 	log_error ("iobuf_flush failed on close: %s\n", gpg_strerror (rc));
 
       if (DBG_IOBUF)
@@ -1167,7 +1181,7 @@ iobuf_cancel (iobuf_t a)
   char *remove_name = NULL;
 #endif
 
-  if (a && a->use == 2)
+  if (a && a->use == BLOCK_FILTER_OUTPUT)
     {
       s = iobuf_get_real_fname (a);
       if (s && *s)
@@ -1610,7 +1624,7 @@ iobuf_push_filter2 (iobuf_t a,
   if (a->directfp)
     BUG ();
 
-  if (a->use == 2 && (rc = iobuf_flush (a)))
+  if (a->use == BLOCK_FILTER_OUTPUT && (rc = iobuf_flush (a)))
     return rc;
 
   if (a->subno >= MAX_NESTING_FILTER)
@@ -1635,10 +1649,11 @@ iobuf_push_filter2 (iobuf_t a,
   a->filter_ov = NULL;
   a->filter_ov_owner = 0;
   a->filter_eof = 0;
-  if (a->use == 3)
-    a->use = 2;			/* make a write stream from a temp stream */
+  if (a->use == BLOCK_FILTER_TEMP)
+    /* make a write stream from a temp stream */
+    a->use = BLOCK_FILTER_OUTPUT;
 
-  if (a->use == 2)
+  if (a->use == BLOCK_FILTER_OUTPUT)
     {				/* allocate a fresh buffer for the
                                    original stream */
       b->d.buf = xmalloc (a->d.size);
@@ -1717,7 +1732,7 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
     log_bug ("pop_filter(): filter function not found\n");
 
   /* flush this stream if it is an output stream */
-  if (a->use == 2 && (rc = iobuf_flush (b)))
+  if (a->use == BLOCK_FILTER_OUTPUT && (rc = iobuf_flush (b)))
     {
       log_error ("iobuf_flush failed in pop_filter: %s\n", gpg_strerror (rc));
       return rc;
@@ -1776,7 +1791,7 @@ underflow (iobuf_t a)
   int rc;
 
   assert (a->d.start == a->d.len);
-  if (a->use == 3)
+  if (a->use == BLOCK_FILTER_TEMP)
     return -1;			/* EOF because a temp buffer can't do an underflow */
 
   if (a->filter_eof)
@@ -1838,7 +1853,7 @@ underflow (iobuf_t a)
 /*  	    if( a->no == 1 ) */
 /*                   log_hexdump ("     data:", a->d.buf, len); */
 	}
-      if (a->use == 1 && rc == -1)
+      if (a->use == BLOCK_FILTER_INPUT && rc == -1)
 	{			/* EOF: we can remove the filter */
 	  size_t dummy_len = 0;
 
@@ -1900,7 +1915,7 @@ iobuf_flush (iobuf_t a)
   if (a->directfp)
     return 0;
 
-  if (a->use == 3)
+  if (a->use == BLOCK_FILTER_TEMP)
     {				/* increase the temp buffer */
       unsigned char *newbuf;
       size_t newsize = a->d.size + IOBUF_BUFFER_SIZE;
@@ -1915,7 +1930,7 @@ iobuf_flush (iobuf_t a)
       a->d.size = newsize;
       return 0;
     }
-  else if (a->use != 2)
+  else if (a->use != BLOCK_FILTER_OUTPUT)
     log_bug ("flush on non-output iobuf\n");
   else if (!a->filter)
     log_bug ("iobuf_flush: no filter\n");
@@ -2331,7 +2346,7 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	}
       clearerr (fp);
     }
-  else if (a->use != 3)  /* Not a temp stream.  */
+  else if (a->use != BLOCK_FILTER_TEMP)
     {
       for (; a; a = a->chain)
 	{
@@ -2358,8 +2373,9 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	}
 #endif
     }
-  if (a->use != 3)
-    a->d.len = 0;	/* Discard the buffer  unless it is a temp stream.  */
+  /* Discard the buffer unless it is a temp stream.  */
+  if (a->use != BLOCK_FILTER_TEMP)
+    a->d.len = 0;
   a->d.start = 0;
   a->nbytes = 0;
   a->nlimit = 0;
@@ -2438,11 +2454,11 @@ iobuf_set_partial_block_mode (iobuf_t a, size_t len)
 {
   block_filter_ctx_t *ctx = xcalloc (1, sizeof *ctx);
 
-  assert (a->use == 1 || a->use == 2);
+  assert (a->use == BLOCK_FILTER_INPUT || a->use == BLOCK_FILTER_OUTPUT);
   ctx->use = a->use;
   if (!len)
     {
-      if (a->use == 1)
+      if (a->use == BLOCK_FILTER_INPUT)
 	log_debug ("pop_filter called in set_partial_block_mode"
 		   " - please report\n");
       pop_filter (a, block_filter, NULL);
