@@ -1069,6 +1069,20 @@ block_filter (void *opaque, int control, iobuf_t chain, byte * buffer,
   return rc;
 }
 
+static const char *
+iobuf_desc (iobuf_t a)
+{
+  size_t dummy_len = 0;
+  const char *desc = "?";
+
+  if (! a || ! a->filter)
+    return desc;
+
+  a->filter (a->filter_ov, IOBUFCTRL_DESC, NULL,
+	     (byte *) & desc, &dummy_len);
+
+  return desc;
+}
 
 static void
 print_chain (iobuf_t a)
@@ -1077,15 +1091,9 @@ print_chain (iobuf_t a)
     return;
   for (; a; a = a->chain)
     {
-      size_t dummy_len = 0;
-      const char *desc = "[none]";
-
-      if (a->filter)
-	a->filter (a->filter_ov, IOBUFCTRL_DESC, NULL,
-		   (byte *) & desc, &dummy_len);
 
       log_debug ("iobuf chain: %d.%d '%s' filter_eof=%d start=%d len=%d\n",
-		 a->no, a->subno, desc?desc:"?", a->filter_eof,
+		 a->no, a->subno, iobuf_desc (a), a->filter_eof,
 		 (int) a->d.start, (int) a->d.len);
     }
 }
@@ -1136,8 +1144,9 @@ iobuf_close (iobuf_t a)
 	log_error ("iobuf_flush failed on close: %s\n", gpg_strerror (rc));
 
       if (DBG_IOBUF)
-	log_debug ("iobuf-%d.%d: close '%s'\n", a->no, a->subno,
-                   a->desc?a->desc:"?");
+	log_debug ("iobuf-%d.%d: close '%s'\n",
+		   a->no, a->subno, iobuf_desc (a));
+
       if (a->filter && (rc = a->filter (a->filter_ov, IOBUFCTRL_FREE,
 					a->chain, NULL, &dummy_len)))
 	log_error ("IOBUFCTRL_FREE failed on close: %s\n", gpg_strerror (rc));
@@ -1322,7 +1331,6 @@ iobuf_open (const char *fname)
     a->real_fname = xstrdup (fname);
   a->filter = file_filter;
   a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: open '%s' fd=%d\n",
@@ -1351,7 +1359,6 @@ do_iobuf_fdopen (int fd, const char *mode, int keep_open)
   sprintf (fcx->fname, "[fd %d]", fd);
   a->filter = file_filter;
   a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: fdopen%s '%s'\n",
@@ -1392,7 +1399,6 @@ iobuf_esopen (estream_t estream, const char *mode, int keep_open)
   sprintf (fcx->fname, "[fd %p]", estream);
   a->filter = file_es_filter;
   a->filter_ov = fcx;
-  file_es_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_es_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: esopen%s '%s'\n",
@@ -1417,7 +1423,6 @@ iobuf_sockopen (int fd, const char *mode)
   sprintf (scx->fname, "[sock %d]", fd);
   a->filter = sock_filter;
   a->filter_ov = scx;
-  sock_filter (scx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   sock_filter (scx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: sockopen '%s'\n", a->no, a->subno, scx->fname);
@@ -1461,11 +1466,10 @@ iobuf_create (const char *fname, int mode700)
     a->real_fname = xstrdup (fname);
   a->filter = file_filter;
   a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: create '%s'\n", a->no, a->subno,
-               a->desc?a->desc:"?");
+    log_debug ("iobuf-%d.%d: create '%s'\n",
+	       a->no, a->subno, iobuf_desc (a));
 
   return a;
 }
@@ -1490,11 +1494,10 @@ iobuf_openrw (const char *fname)
   a->real_fname = xstrdup (fname);
   a->filter = file_filter;
   a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &len);
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: openrw '%s'\n", a->no, a->subno,
-               a->desc?a->desc:"?");
+    log_debug ("iobuf-%d.%d: openrw '%s'\n",
+	       a->no, a->subno, iobuf_desc (a));
 
   return a;
 }
@@ -1510,8 +1513,7 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
          anymore.  */
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl '%s' keep_open=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1,
-                   a && a->desc ? a->desc : "?",
+		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a),
 		   intval);
       for (; a; a = a->chain)
 	if (!a->chain && a->filter == file_filter)
@@ -1545,8 +1547,7 @@ iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
     {
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: ioctl '%s' no_cache=%d\n",
-		   a ? a->no : -1, a ? a->subno : -1,
-                   a && a->desc? a->desc : "?",
+		   a ? a->no : -1, a ? a->subno : -1, iobuf_desc (a),
 		   intval);
       for (; a; a = a->chain)
 	if (!a->chain && a->filter == file_filter)
@@ -1661,12 +1662,11 @@ iobuf_push_filter2 (iobuf_t a,
   a->filter_ov_owner = rel_ov;
 
   a->subno = b->subno + 1;
-  f (ov, IOBUFCTRL_DESC, NULL, (byte *) & a->desc, &dummy_len);
 
   if (DBG_IOBUF)
     {
-      log_debug ("iobuf-%d.%d: push '%s'\n", a->no, a->subno,
-                 a->desc?a->desc:"?");
+      log_debug ("iobuf-%d.%d: push '%s'\n",
+		 a->no, a->subno, iobuf_desc (a));
       print_chain (a);
     }
 
@@ -1690,8 +1690,8 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
   int rc = 0;
 
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: pop '%s'\n", a->no, a->subno,
-               a->desc?a->desc:"?");
+    log_debug ("iobuf-%d.%d: pop '%s'\n",
+	       a->no, a->subno, iobuf_desc (a));
   if (!a->filter)
     {				/* this is simple */
       b = a->chain;
@@ -1778,7 +1778,7 @@ underflow (iobuf_t a)
 	  iobuf_t b = a->chain;
 	  if (DBG_IOBUF)
 	    log_debug ("iobuf-%d.%d: pop '%s' in underflow\n",
-		       a->no, a->subno, a->desc?a->desc:"?");
+		       a->no, a->subno, iobuf_desc (a));
 	  xfree (a->d.buf);
 	  xfree (a->real_fname);
 	  memcpy (a, b, sizeof *a);
@@ -1828,7 +1828,6 @@ underflow (iobuf_t a)
 	      a->filter_ov = NULL;
 	    }
 	  a->filter = NULL;
-	  a->desc = NULL;
 	  a->filter_ov = NULL;
 	  a->filter_eof = 1;
 	  if (!len && a->chain)

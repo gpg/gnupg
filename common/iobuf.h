@@ -99,7 +99,6 @@ struct iobuf_struct
   iobuf_t chain;		/* Next iobuf used for i/o if any
                                    (passed to filter) */
   int no, subno;
-  const char *desc;
 };
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
