@@ -76,7 +76,6 @@ struct iobuf_struct
   off_t nbytes;			/* Used together with nlimit. */
   off_t ntotal;			/* Total bytes read (position of stream). */
   int nofast;			/* Used by the iobuf_get (). */
-  void *directfp;
   struct
   {
     size_t size;		/* Allocated size */

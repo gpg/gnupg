@@ -1129,15 +1129,6 @@ iobuf_close (iobuf_t a)
   size_t dummy_len = 0;
   int rc = 0;
 
-  if (a && a->directfp)
-    {
-      fclose (a->directfp);
-      xfree (a->real_fname);
-      if (DBG_IOBUF)
-	log_debug ("iobuf_close -> %p\n", a->directfp);
-      return 0;
-    }
-
   for (; a && !rc; a = a2)
     {
       a2 = a->chain;
@@ -1614,9 +1605,6 @@ iobuf_push_filter2 (iobuf_t a,
   size_t dummy_len = 0;
   int rc = 0;
 
-  if (a->directfp)
-    BUG ();
-
   if (a->use == IOBUF_OUTPUT && (rc = iobuf_flush (a)))
     return rc;
 
@@ -1700,9 +1688,6 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
   iobuf_t b;
   size_t dummy_len = 0;
   int rc = 0;
-
-  if (a->directfp)
-    BUG ();
 
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: pop '%s'\n", a->no, a->subno,
@@ -1814,22 +1799,6 @@ underflow (iobuf_t a)
       return -1;
     }
 
-  if (a->directfp)
-    {
-      FILE *fp = a->directfp;
-
-      len = fread (a->d.buf, 1, a->d.size, fp);
-      if (len < a->d.size)
-	{
-	  if (ferror (fp))
-	    a->error = gpg_error_from_syserror ();
-	}
-      a->d.len = len;
-      a->d.start = 0;
-      return len ? a->d.buf[a->d.start++] : -1;
-    }
-
-
   if (a->filter)
     {
       len = a->d.size;
@@ -1903,9 +1872,6 @@ iobuf_flush (iobuf_t a)
 {
   size_t len;
   int rc;
-
-  if (a->directfp)
-    return 0;
 
   if (a->use == IOBUF_TEMP)
     {				/* increase the temp buffer */
@@ -2057,9 +2023,6 @@ iobuf_writebyte (iobuf_t a, unsigned int c)
 {
   int rc;
 
-  if (a->directfp)
-    BUG ();
-
   if (a->d.len == a->d.size)
     if ((rc=iobuf_flush (a)))
       return rc;
@@ -2075,9 +2038,6 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 {
   const unsigned char *buf = (const unsigned char *)buffer;
   int rc;
-
-  if (a->directfp)
-    BUG ();
 
   do
     {
@@ -2185,16 +2145,6 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
   if (overflow)
     *overflow = 0;
 
-  if ( a->directfp )
-    {
-      FILE *fp = a->directfp;
-
-      if ( !fstat(fileno(fp), &st) )
-        return st.st_size;
-      log_error("fstat() failed: %s\n", strerror(errno) );
-      return 0;
-    }
-
   /* Hmmm: file_filter may have already been removed */
   for ( ; a; a = a->chain )
     if ( !a->chain && a->filter == file_filter )
@@ -2262,9 +2212,6 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
 int
 iobuf_get_fd (iobuf_t a)
 {
-  if (a->directfp)
-    return fileno ( (FILE*)a->directfp );
-
   for ( ; a; a = a->chain )
     if (!a->chain && a->filter == file_filter)
       {
@@ -2328,17 +2275,7 @@ iobuf_seek (iobuf_t a, off_t newpos)
 {
   file_filter_ctx_t *b = NULL;
 
-  if (a->directfp)
-    {
-      FILE *fp = a->directfp;
-      if (fseeko (fp, newpos, SEEK_SET))
-	{
-	  log_error ("can't seek: %s\n", strerror (errno));
-	  return -1;
-	}
-      clearerr (fp);
-    }
-  else if (a->use != IOBUF_TEMP)
+  if (a->use != IOBUF_TEMP)
     {
       for (; a; a = a->chain)
 	{
