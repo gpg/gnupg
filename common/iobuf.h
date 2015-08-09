@@ -97,9 +97,6 @@ struct iobuf_struct
                                    (passed to filter) */
   int no, subno;
   const char *desc;
-  void *opaque;			/* Can be used to hold any information
-                                   this value is copied to all
-                                   instances */
 };
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE

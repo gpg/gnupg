@@ -1,6 +1,7 @@
 /* iobuf.c  -  File Handling for OpenPGP.
  * Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2006, 2007, 2008,
  *               2009, 2010, 2011  Free Software Foundation, Inc.
+ * Copyright (C) 2015  g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -1117,7 +1118,6 @@ iobuf_alloc (int use, size_t bufsize)
   a->d.size = bufsize;
   a->no = ++number;
   a->subno = 0;
-  a->opaque = NULL;
   a->real_fname = NULL;
   return a;
 }
@@ -1666,7 +1666,6 @@ iobuf_push_filter2 (iobuf_t a,
   a->nofast &= ~1;
   /* make a link from the new stream to the original stream */
   a->chain = b;
-  a->opaque = b->opaque;
 
   /* setup the function on the new stream */
   a->filter = f;
