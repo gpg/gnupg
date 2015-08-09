@@ -55,6 +55,13 @@ typedef enum
     IOBUF_IOCTL_FSYNC            = 4  /* Uses ptrval.  */
   } iobuf_ioctl_t;
 
+enum
+  {
+    IOBUF_INPUT=1,
+    IOBUF_OUTPUT=2,
+    IOBUF_TEMP=3
+  };
+
 
 typedef struct iobuf_struct *iobuf_t;
 typedef struct iobuf_struct *IOBUF;  /* Compatibility with gpg 1.4. */
@@ -62,7 +69,9 @@ typedef struct iobuf_struct *IOBUF;  /* Compatibility with gpg 1.4. */
 /* fixme: we should hide most of this stuff */
 struct iobuf_struct
 {
-  int use;			/* 1 input , 2 output, 3 temp */
+  /* The type of filter.  Either IOBUF_INPUT, IOBUF_OUTPUT or
+     IOBUF_TEMP.  */
+  int use;
   off_t nlimit;
   off_t nbytes;			/* Used together with nlimit. */
   off_t ntotal;			/* Total bytes read (position of stream). */
@@ -184,6 +193,8 @@ void iobuf_skip_rest (iobuf_t a, unsigned long n, int partial);
 
 #define iobuf_get_temp_buffer(a) ( (a)->d.buf )
 #define iobuf_get_temp_length(a) ( (a)->d.len )
-#define iobuf_is_temp(a)	 ( (a)->use == 3 )
+
+/* Whether the filter uses an in-memory buffer.  */
+#define iobuf_is_temp(a)	 ( (a)->use == IOBUF_TEMP )
 
 #endif /*GNUPG_COMMON_IOBUF_H*/
