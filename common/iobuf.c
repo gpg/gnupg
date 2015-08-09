@@ -1651,7 +1651,7 @@ iobuf_push_filter2 (iobuf_t a,
   /* disable nlimit for the new stream */
   a->ntotal = b->ntotal + b->nbytes;
   a->nlimit = a->nbytes = 0;
-  a->nofast &= ~1;
+  a->nofast = 0;
   /* make a link from the new stream to the original stream */
   a->chain = b;
 
@@ -2124,9 +2124,9 @@ void
 iobuf_set_limit (iobuf_t a, off_t nlimit)
 {
   if (nlimit)
-    a->nofast |= 1;
+    a->nofast = 1;
   else
-    a->nofast &= ~1;
+    a->nofast = 0;
   a->nlimit = nlimit;
   a->ntotal += a->nbytes;
   a->nbytes = 0;
@@ -2308,7 +2308,7 @@ iobuf_seek (iobuf_t a, off_t newpos)
   a->d.start = 0;
   a->nbytes = 0;
   a->nlimit = 0;
-  a->nofast &= ~1;
+  a->nofast = 0;
   a->ntotal = newpos;
   a->error = 0;
   /* remove filters, but the last */

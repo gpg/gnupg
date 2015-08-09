@@ -75,7 +75,11 @@ struct iobuf_struct
   off_t nlimit;
   off_t nbytes;			/* Used together with nlimit. */
   off_t ntotal;			/* Total bytes read (position of stream). */
-  int nofast;			/* Used by the iobuf_get (). */
+
+  /* Whether we need to read from the filter one byte at a time or
+     whether we can do bulk reads.  We need to read one byte at a time
+     if a limit (set via iobuf_set_limit) is active.  */
+  int nofast;
   struct
   {
     size_t size;		/* Allocated size */
