@@ -123,7 +123,6 @@ iobuf_t iobuf_fdopen_nc (int fd, const char *mode);
 iobuf_t iobuf_esopen (estream_t estream, const char *mode, int keep_open);
 iobuf_t iobuf_sockopen (int fd, const char *mode);
 iobuf_t iobuf_create (const char *fname, int mode700);
-iobuf_t iobuf_append (const char *fname);
 iobuf_t iobuf_openrw (const char *fname);
 int iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval);
 int iobuf_close (iobuf_t iobuf);
@@ -137,7 +136,6 @@ int iobuf_push_filter2 (iobuf_t a,
 				  byte * buf, size_t * len), void *ov,
 			int rel_ov);
 int iobuf_flush (iobuf_t a);
-void iobuf_clear_eof (iobuf_t a);
 #define iobuf_set_error(a)    do { (a)->error = 1; } while(0)
 #define iobuf_error(a)	      ((a)->error)
 
@@ -148,7 +146,6 @@ int iobuf_seek (iobuf_t a, off_t newpos);
 
 int iobuf_readbyte (iobuf_t a);
 int iobuf_read (iobuf_t a, void *buf, unsigned buflen);
-void iobuf_unread (iobuf_t a, const unsigned char *buf, unsigned int buflen);
 unsigned iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 			  unsigned *length_of_buffer, unsigned *max_length);
 int iobuf_peek (iobuf_t a, byte * buf, unsigned buflen);
