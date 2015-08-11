@@ -409,7 +409,7 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - [ <primary-key-fpr> ]
 
     This status indicates that the signature is cryptographically
-    valid. This similar to GOODSIG or EXPSIG or EXPKEYSIG or REVSIG
+    valid. This is similar to GOODSIG, EXPSIG, EXPKEYSIG, or REVKEYSIG
     (depending on the date and the state of the signature and signing
     key) but has the fingerprint as the argument. Multiple status
     lines (VALIDSIG and the other appropriate *SIG status) are emitted
