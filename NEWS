@@ -1,7 +1,27 @@
-Noteworthy changes in version 2.1.7 (unreleased)
+Noteworthy changes in version 2.1.7 (2015-08-11)
 ------------------------------------------------
 
- * dropped deprecated gpgsm-gencert.sh
+ * gpg: Support encryption with Curve25519 if Libgcrypt 1.7 is used.
+
+ * gpg: In the --edit-key menu: Removed the need for "toggle", changed
+   how secret keys are indicated, new commands "fpr *" and "grip".
+
+ * gpg: More fixes related to legacy keys in a keyring.
+
+ * gpgv: Does now also work with a "trustedkeys.kbx" file.
+
+ * scd: Support some feature from the OpenPGP card 3.0 specs.
+
+ * scd: Improved ECC support
+
+ * agent: New option --force for the DELETE_KEY command.
+
+ * w32: Look for the Pinentry at more places.
+
+ * Dropped deprecated gpgsm-gencert.sh
+
+ * Various other bug fixes.
+
 
 Noteworthy changes in version 2.1.6 (2015-07-01)
 ------------------------------------------------
