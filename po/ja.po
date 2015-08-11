@@ -648,9 +648,7 @@ msgstr "後で変更する"
 msgid ""
 "Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
 "%%0A?"
-msgstr ""
-"本当にこの鍵: keygrip%%0A  %s%%0A  %%C"
-"%%0Aを削除しますか?"
+msgstr "本当にこの鍵: keygrip%%0A  %s%%0A  %%C%%0Aを削除しますか?"
 
 msgid "Delete key"
 msgstr "鍵を削除する"
@@ -2896,6 +2894,11 @@ msgstr "保存して終了"
 msgid "show key fingerprint"
 msgstr "鍵のフィンガープリントを表示"
 
+#, fuzzy
+#| msgid "Enter the keygrip: "
+msgid "show the keygrip"
+msgstr "keygripを入力: "
+
 msgid "list key and user IDs"
 msgstr "鍵とユーザIDの一覧"
 
@@ -2956,9 +2959,6 @@ msgstr "鍵または選択した副鍵の有効期限を変更する"
 msgid "flag the selected user ID as primary"
 msgstr "選択したユーザIDを主にする"
 
-msgid "toggle between the secret and public key listings"
-msgstr "秘密鍵と公開鍵の一覧の反転"
-
 msgid "list preferences (expert)"
 msgstr "優先指定の一覧 (エキスパート)"
 
@@ -3009,9 +3009,6 @@ msgstr "秘密鍵が使用できます。\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "この実行には秘密鍵がいります。\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "まず\"toggle\"コマンドを使ってください。\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -3950,7 +3947,7 @@ msgstr "主鍵のフィンガープリント:"
 msgid "     Subkey fingerprint:"
 msgstr "副鍵のフィンガープリント:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "主鍵のフィンガープリント:"
@@ -7811,6 +7808,12 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "秘密鍵と公開鍵の一覧の反転"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "まず\"toggle\"コマンドを使ってください。\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "パスフレーズ"

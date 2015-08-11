@@ -3126,6 +3126,10 @@ msgstr "salveazã ºi terminã"
 msgid "show key fingerprint"
 msgstr "afiºeazã amprenta cheii"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "Notare semnãturã: "
+
 msgid "list key and user IDs"
 msgstr "enumerã chei ºi ID-uri utilizator"
 
@@ -3188,9 +3192,6 @@ msgstr "schimbã data de expirare pentru cheia sau subcheile selectate"
 msgid "flag the selected user ID as primary"
 msgstr "marcheazã ID-ul utilizator selectat ca primar"
 
-msgid "toggle between the secret and public key listings"
-msgstr "comutã între listele de chei secrete ºi publice"
-
 msgid "list preferences (expert)"
 msgstr "enumerã preferinþele (expert)"
 
@@ -3245,9 +3246,6 @@ msgstr "Cheia secretã este disponibilã.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Aveþi nevoie de cheia secretã pentru a face aceasta.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Vã rugãm folosiþi mai întâi comanda \"toggle\".\n"
 
 #, fuzzy
 #| msgid ""
@@ -4245,7 +4243,7 @@ msgstr "Amprentã cheie primarã:"
 msgid "     Subkey fingerprint:"
 msgstr "     Amprentã subcheie:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr " Amprentã cheie primarã:"
@@ -8338,6 +8336,12 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "comutã între listele de chei secrete ºi publice"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Vã rugãm folosiþi mai întâi comanda \"toggle\".\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

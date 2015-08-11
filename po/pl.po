@@ -3138,6 +3138,11 @@ msgstr "zapis zmian i wyj¶cie"
 msgid "show key fingerprint"
 msgstr "okazanie odcisku klucza"
 
+#, fuzzy
+#| msgid "Enter the keygrip: "
+msgid "show the keygrip"
+msgstr "Uchwyt klucza: "
+
 msgid "list key and user IDs"
 msgstr "lista kluczy i identyfikatorów u¿ytkownika"
 
@@ -3204,9 +3209,6 @@ msgstr "zmiana daty wyga¶niêcia dla klucza lub wybranych podkluczy"
 msgid "flag the selected user ID as primary"
 msgstr "oznaczenie wybranego identyfikatora u¿ytkownika jako g³ównego"
 
-msgid "toggle between the secret and public key listings"
-msgstr "prze³±czenie pomiêdzy listami kluczy tajnych i publicznych"
-
 msgid "list preferences (expert)"
 msgstr "ustawienia (zaawansowane)"
 
@@ -3263,9 +3265,6 @@ msgstr "Dostêpny jest klucz tajny.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Do wykonania tej operacji potrzebny jest klucz tajny.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Najpierw trzeba u¿yæ polecenia \"prze³\".\n"
 
 #, fuzzy
 #| msgid ""
@@ -4274,7 +4273,7 @@ msgstr "Odcisk klucza g³ównego:"
 msgid "     Subkey fingerprint:"
 msgstr "      Odcisk podklucza:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr " Odcisk klucza g³ównego:"
@@ -8539,6 +8538,12 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "prze³±czenie pomiêdzy listami kluczy tajnych i publicznych"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Najpierw trzeba u¿yæ polecenia \"prze³\".\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Has³o"

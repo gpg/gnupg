@@ -3121,6 +3121,10 @@ msgstr "gravar e sair"
 msgid "show key fingerprint"
 msgstr "mostra impressão digital"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "Notação de assinatura: "
+
 msgid "list key and user IDs"
 msgstr "lista chave e identificadores de utilizadores"
 
@@ -3192,10 +3196,6 @@ msgstr "Você não pode modificar a data de validade de uma chave v3\n"
 msgid "flag the selected user ID as primary"
 msgstr "seleccionar o identificador do utilizador como primário"
 
-#, fuzzy
-msgid "toggle between the secret and public key listings"
-msgstr "alterna entre listagem de chave secreta e pública"
-
 msgid "list preferences (expert)"
 msgstr "lista preferências (perito)"
 
@@ -3257,9 +3257,6 @@ msgstr "Chave secreta disponível.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "A chave secreta é necessária para fazer isto.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Por favor utilize o comando \"toggle\" primeiro.\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -4264,7 +4261,7 @@ msgstr "Impressão da chave primária:"
 msgid "     Subkey fingerprint:"
 msgstr "      Impressão da subchave:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "Impressão da chave primária:"
@@ -8314,6 +8311,13 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "alterna entre listagem de chave secreta e pública"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Por favor utilize o comando \"toggle\" primeiro.\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

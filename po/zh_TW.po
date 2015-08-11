@@ -2897,6 +2897,11 @@ msgstr "儲存並離開"
 msgid "show key fingerprint"
 msgstr "顯示金鑰指紋"
 
+#, fuzzy
+#| msgid "Enter the keygrip: "
+msgid "show the keygrip"
+msgstr "請輸入金鑰鑰柄: "
+
 msgid "list key and user IDs"
 msgstr "列出金鑰和使用者 ID"
 
@@ -2957,9 +2962,6 @@ msgstr "變更金鑰或所選子鑰的使用期限"
 msgid "flag the selected user ID as primary"
 msgstr "把所選的使用者 ID 標為主要"
 
-msgid "toggle between the secret and public key listings"
-msgstr "在私鑰清單和公鑰清單間切換"
-
 msgid "list preferences (expert)"
 msgstr "列出偏好 (專家模式)"
 
@@ -3010,9 +3012,6 @@ msgstr "私鑰可用.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "要有私鑰纔能這麼做.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "請先使用 \"toggle\" 指令.\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -3949,7 +3948,7 @@ msgstr "               主鑰指紋:"
 msgid "     Subkey fingerprint:"
 msgstr "               子鑰指紋:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "                主鑰指紋:"
@@ -7774,6 +7773,12 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "在私鑰清單和公鑰清單間切換"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "請先使用 \"toggle\" 指令.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "密語"

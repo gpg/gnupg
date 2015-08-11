@@ -3063,6 +3063,10 @@ msgstr "保存并离开"
 msgid "show key fingerprint"
 msgstr "显示密钥指纹"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "输入注记："
+
 msgid "list key and user IDs"
 msgstr "列出密钥和用户标识"
 
@@ -3123,9 +3127,6 @@ msgstr "变更密钥或所选子钥的使用期限"
 msgid "flag the selected user ID as primary"
 msgstr "将所选的用户标识设为首选用户标识"
 
-msgid "toggle between the secret and public key listings"
-msgstr "在私钥和公钥清单间切换"
-
 msgid "list preferences (expert)"
 msgstr "列出首选项(专家模式)"
 
@@ -3176,9 +3177,6 @@ msgstr "私钥可用。\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "要有私钥才能这么做。\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "请先使用“toggle”指令。\n"
 
 #, fuzzy
 #| msgid ""
@@ -4152,7 +4150,7 @@ msgstr "主钥指纹："
 msgid "     Subkey fingerprint:"
 msgstr "子钥指纹："
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr " 主钥指纹："
@@ -8177,6 +8175,12 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "在私钥和公钥清单间切换"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "请先使用“toggle”指令。\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

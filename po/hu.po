@@ -3111,6 +3111,10 @@ msgstr "mentés és kilépés"
 msgid "show key fingerprint"
 msgstr "megmutatja az ujjlenyomatot"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "Aláírás-jelölés: "
+
 msgid "list key and user IDs"
 msgstr "kilistázza a kulcs- és felhasználóazonosítókat"
 
@@ -3181,10 +3185,6 @@ msgstr "Nem változtathatja meg egy v3 kulcs lejárati dátumát!\n"
 msgid "flag the selected user ID as primary"
 msgstr "felhasználóazonosító megjelölése elsõdlegesként"
 
-#, fuzzy
-msgid "toggle between the secret and public key listings"
-msgstr "váltás a titkos és a nyilvános kulcs listázása között"
-
 msgid "list preferences (expert)"
 msgstr "preferenciák listázása (szakértõ)"
 
@@ -3244,9 +3244,6 @@ msgstr "Titkos kulcs rendelkezésre áll.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Ehhez szükség van a titkos kulcsra.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Kérem, használja elõbb a \"toggle\" parancsot!\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -4252,7 +4249,7 @@ msgstr "Elsõdlegeskulcs-ujjlenyomat:"
 msgid "     Subkey fingerprint:"
 msgstr "         Alkulcsujjlenyomat:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "Elsõdlegeskulcs-ujjlenyomat:"
@@ -8308,6 +8305,13 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "váltás a titkos és a nyilvános kulcs listázása között"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Kérem, használja elõbb a \"toggle\" parancsot!\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

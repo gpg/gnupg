@@ -3126,6 +3126,10 @@ msgstr "kaydet ve çık"
 msgid "show key fingerprint"
 msgstr "parmakizini gösterir"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "Simgelemi giriniz: "
+
 msgid "list key and user IDs"
 msgstr "anahtarı ve kullanıcı kimliğini gösterir"
 
@@ -3190,9 +3194,6 @@ msgstr ""
 msgid "flag the selected user ID as primary"
 msgstr "seçili kullanıcı kimliğini asıl olarak imler"
 
-msgid "toggle between the secret and public key listings"
-msgstr "genel ve gizli anahtar listeleri arasında yer değiştirir"
-
 msgid "list preferences (expert)"
 msgstr "tercihleri listeler (uzman)"
 
@@ -3249,9 +3250,6 @@ msgstr "Gizli anahtar mevcut.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Bunu yapmak için gizli anahtar gerekli.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 
 #, fuzzy
 #| msgid ""
@@ -4282,7 +4280,7 @@ msgstr "Birincil anahtar parmak izi:"
 msgid "     Subkey fingerprint:"
 msgstr "Yardımcı anahtar parmak izi:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "Birincil anahtar parmak izi:"
@@ -8569,6 +8567,12 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "genel ve gizli anahtar listeleri arasında yer değiştirir"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "lütfen önce \"seçmece\" komutunu kullanın.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Anahtar Parolası"

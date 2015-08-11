@@ -2993,6 +2993,11 @@ msgstr "зберегти і вийти"
 msgid "show key fingerprint"
 msgstr "показати відбиток ключа"
 
+#, fuzzy
+#| msgid "Enter the keygrip: "
+msgid "show the keygrip"
+msgstr "Вкажіть keygrip: "
+
 msgid "list key and user IDs"
 msgstr "показати список ключів та ідентифікаторів користувача"
 
@@ -3057,9 +3062,6 @@ msgstr "змінити дату завершення строку дії клю�
 msgid "flag the selected user ID as primary"
 msgstr "позначити вибраний ідентифікатор користувача як основний"
 
-msgid "toggle between the secret and public key listings"
-msgstr "перемкнутися між списками закритих і відкритих ключів"
-
 msgid "list preferences (expert)"
 msgstr "список переваг (експертний)"
 
@@ -3116,9 +3118,6 @@ msgstr "Доступний закритий ключ.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Для цього потрібен закритий ключ.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Скористайтеся спочатку командою «toggle».\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -4083,7 +4082,7 @@ msgstr "Основний відбиток ключа:"
 msgid "     Subkey fingerprint:"
 msgstr "      Відбиток підключа:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "Відбиток основного ключа:"
@@ -8038,6 +8037,12 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "перемкнутися між списками закритих і відкритих ключів"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Скористайтеся спочатку командою «toggle».\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Пароль"

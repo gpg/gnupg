@@ -3128,6 +3128,10 @@ msgstr "skribi kaj fini"
 msgid "show key fingerprint"
 msgstr "montri fingrospuron"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "Subskribo-notacio: "
+
 msgid "list key and user IDs"
 msgstr "listigi þlosilojn kaj uzantidentigilojn"
 
@@ -3199,10 +3203,6 @@ msgstr "Vi ne povas þanøi la daton de eksvalidiøo de v3-þlosilo\n"
 msgid "flag the selected user ID as primary"
 msgstr "marku uzantidentigilon kiel æefan"
 
-#, fuzzy
-msgid "toggle between the secret and public key listings"
-msgstr "de sekreta aý publika listo iri al la alia"
-
 msgid "list preferences (expert)"
 msgstr "listigi preferojn (spertula)"
 
@@ -3262,9 +3262,6 @@ msgstr "Sekreta þlosilo estas havebla.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Bezonas la sekretan þlosilon por fari tion.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Bonvolu uzi la komandon \"toggle\" unue.\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -4268,7 +4265,7 @@ msgstr "listigi þlosilojn kaj fingroþpurojn"
 msgid "     Subkey fingerprint:"
 msgstr "     Þlosilo-fingrospuro ="
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 #, fuzzy
 msgid " Primary key fingerprint:"
@@ -8305,6 +8302,13 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "de sekreta aý publika listo iri al la alia"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Bonvolu uzi la komandon \"toggle\" unue.\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

@@ -3217,6 +3217,10 @@ msgstr "desa i ix"
 msgid "show key fingerprint"
 msgstr "mostra empremta"
 
+#, fuzzy
+msgid "show the keygrip"
+msgstr "Notació de signatura: "
+
 msgid "list key and user IDs"
 msgstr "llista claus i ID"
 
@@ -3296,10 +3300,6 @@ msgstr "No podeu canviar la data de caducitat de les claus v3\n"
 msgid "flag the selected user ID as primary"
 msgstr "marca l'ID d'usuari com a primari"
 
-#, fuzzy
-msgid "toggle between the secret and public key listings"
-msgstr "canvia entre el llistat de claus secretes i públiques"
-
 msgid "list preferences (expert)"
 msgstr "llista les preferències (expert)"
 
@@ -3363,9 +3363,6 @@ msgstr "La clau secreta està disponible.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Cal la clau secreta per a fer açò.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Useu l'ordre «toggle» abans.\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -4390,7 +4387,7 @@ msgstr "Empremtes digital de la clau primària:"
 msgid "     Subkey fingerprint:"
 msgstr "     Empremta digital de la subclau:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr " Empremta digital de la clau primària:"
@@ -8531,6 +8528,13 @@ msgid ""
 "Syntax: gpg-check-pattern [options] patternfile\n"
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
+
+#, fuzzy
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "canvia entre el llistat de claus secretes i públiques"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Useu l'ordre «toggle» abans.\n"
 
 #, fuzzy
 #~ msgid "Passphrase"

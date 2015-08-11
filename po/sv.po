@@ -3189,6 +3189,11 @@ msgstr "spara och avsluta"
 msgid "show key fingerprint"
 msgstr "visa nyckelns fingeravtryck"
 
+#, fuzzy
+#| msgid "Enter the keygrip: "
+msgid "show the keygrip"
+msgstr "Ange nyckelhashen: "
+
 msgid "list key and user IDs"
 msgstr "lista nycklar och användaridentiteter"
 
@@ -3250,9 +3255,6 @@ msgstr "ändra utgångsdatumet för nyckeln eller valda undernycklar"
 msgid "flag the selected user ID as primary"
 msgstr "flagga vald användaridentitet som primär"
 
-msgid "toggle between the secret and public key listings"
-msgstr "växla mellan att lista hemliga och publika nycklar"
-
 msgid "list preferences (expert)"
 msgstr "lista inställningar (expertläge)"
 
@@ -3309,9 +3311,6 @@ msgstr "Den hemliga nyckeln finns tillgänglig.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Den hemliga nyckeln behövs för att göra detta.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Använd kommandot \"toggle\" först.\n"
 
 #, fuzzy
 #| msgid ""
@@ -4327,7 +4326,7 @@ msgstr "Primära nyckelns fingeravtryck:"
 msgid "     Subkey fingerprint:"
 msgstr "   Undernyckelns fingeravtryck:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr "Primära nyckelns fingeravtryck:"
@@ -8644,6 +8643,12 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "växla mellan att lista hemliga och publika nycklar"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Använd kommandot \"toggle\" först.\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Lösenfras"

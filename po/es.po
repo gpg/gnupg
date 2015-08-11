@@ -3153,6 +3153,11 @@ msgstr "graba y sale"
 msgid "show key fingerprint"
 msgstr "muestra huella dactilar de la clave"
 
+#, fuzzy
+#| msgid "Enter the keygrip: "
+msgid "show the keygrip"
+msgstr "Introduzca keygrip: "
+
 msgid "list key and user IDs"
 msgstr "lista clave e identificadores de usuario"
 
@@ -3213,9 +3218,6 @@ msgstr "cambiar la fecha de caducidad para la clave o subclaves seleccionadas"
 msgid "flag the selected user ID as primary"
 msgstr "marcar ID de usuario seleccionado como primario"
 
-msgid "toggle between the secret and public key listings"
-msgstr "cambiar entre lista de claves secretas y públicas"
-
 msgid "list preferences (expert)"
 msgstr "mostrar preferencias (experto)"
 
@@ -3266,9 +3268,6 @@ msgstr "Clave secreta disponible.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Se necesita la clave secreta para hacer esto.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Por favor use la orden \"cambia\" primero.\n"
 
 #, fuzzy
 #| msgid ""
@@ -4259,7 +4258,7 @@ msgstr "Huellas dactilares de la clave primaria:"
 msgid "     Subkey fingerprint:"
 msgstr "     Huella de subclave:"
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr " Huella clave primaria:"
@@ -8556,6 +8555,12 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr "cambiar entre lista de claves secretas y públicas"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Por favor use la orden \"cambia\" primero.\n"
 
 # ¿Por qué no frase de paso?
 # Porque todo el mundo sabe lo que es una contraseña
