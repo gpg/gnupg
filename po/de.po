@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-07-01 13:04+0200\n"
+"PO-Revision-Date: 2015-08-11 13:52+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -2994,6 +2994,9 @@ msgstr "speichern und Menü verlassen"
 msgid "show key fingerprint"
 msgstr "Fingerabdruck des Schlüssels anzeigen"
 
+msgid "show the keygrip"
+msgstr "\"Keygrip\" des Schlüssels anzeigen"
+
 msgid "list key and user IDs"
 msgstr "Schlüssel und User-IDs auflisten"
 
@@ -3055,9 +3058,6 @@ msgstr ""
 msgid "flag the selected user ID as primary"
 msgstr "User-ID als Haupt-User-ID kennzeichnen"
 
-msgid "toggle between the secret and public key listings"
-msgstr "Umschalten zwischen dem Auflisten geheimer und öffentlicher Schlüssel"
-
 msgid "list preferences (expert)"
 msgstr "Liste der Voreinstellungen (für Experten)"
 
@@ -3113,9 +3113,6 @@ msgstr "Geheimer Schlüssel ist vorhanden.\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "Hierzu wird der geheime Schlüssel benötigt.\n"
-
-msgid "Please use the command \"toggle\" first.\n"
-msgstr "Bitte verwenden sie zunächst den Befehl \"toggle\"\n"
 
 msgid ""
 "* The 'sign' command may be prefixed with an 'l' for local signatures "
@@ -4077,7 +4074,7 @@ msgstr "Haupt-Fingerabdruck  ="
 msgid "     Subkey fingerprint:"
 msgstr "Unter-Fingerabdruck  ="
 
-#. TRANSLATORS: this should fit into 24 bytes to that the
+#. TRANSLATORS: this should fit into 24 bytes so that the
 #. * fingerprint data is properly aligned with the user ID
 msgid " Primary key fingerprint:"
 msgstr " Haupt-Fingerabdruck  ="
@@ -8089,6 +8086,13 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "toggle between the secret and public key listings"
+#~ msgstr ""
+#~ "Umschalten zwischen dem Auflisten geheimer und öffentlicher Schlüssel"
+
+#~ msgid "Please use the command \"toggle\" first.\n"
+#~ msgstr "Bitte verwenden sie zunächst den Befehl \"toggle\"\n"
 
 #~ msgid "Passphrase"
 #~ msgstr "Passphrase"
