@@ -36,6 +36,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <npth.h>
+#ifdef HAVE_PRCTL
+# include <sys/prctl.h>
+#endif
 
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "scdaemon.h"
@@ -443,6 +446,12 @@ main (int argc, char **argv )
   npth_t pipecon_handler;
 
   early_system_init ();
+
+#if defined(HAVE_PRCTL) && defined(PR_SET_DUMPABLE)
+  /* Disable ptrace on Linux without sgid bit */
+  prctl(PR_SET_DUMPABLE, 0);
+#endif
+
   set_strusage (my_strusage);
   gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
   /* Please note that we may running SUID(ROOT), so be very CAREFUL

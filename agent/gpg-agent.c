@@ -48,6 +48,9 @@
 # include <signal.h>
 #endif
 #include <npth.h>
+#ifdef HAVE_PRCTL
+# include <sys/prctl.h>
+#endif
 
 #define GNUPG_COMMON_NEED_AFLOCAL
 #include "agent.h"
@@ -1012,6 +1015,11 @@ main (int argc, char **argv )
   struct assuan_malloc_hooks malloc_hooks;
 
   early_system_init ();
+
+#if defined(HAVE_PRCTL) && defined(PR_SET_DUMPABLE)
+  /* Disable ptrace on Linux without sgid bit */
+  prctl(PR_SET_DUMPABLE, 0);
+#endif
 
   /* Before we do anything else we save the list of currently open
      file descriptors and the signal mask.  This info is required to

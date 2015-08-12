@@ -1395,7 +1395,7 @@ AC_CHECK_FUNCS([atexit canonicalize_file_name clock_gettime ctermid  \
                 ftruncate funlockfile getaddrinfo getenv getpagesize \
                 getpwnam getpwuid getrlimit getrusage gettimeofday   \
                 gmtime_r inet_ntop inet_pton isascii lstat memicmp   \
-                memmove memrchr mmap nl_langinfo pipe raise rand     \
+                memmove memrchr mmap nl_langinfo pipe prctl raise rand \
                 setenv setlocale setrlimit sigaction sigprocmask     \
                 stat stpcpy strcasecmp strerror strftime stricmp     \
                 strlwr strncasecmp strpbrk strsep strtol strtoul     \
