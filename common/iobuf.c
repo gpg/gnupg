@@ -161,7 +161,7 @@ block_filter_ctx_t;
 static int special_names_enabled;
 
 /* Local prototypes.  */
-static int underflow (iobuf_t a);
+static int underflow (iobuf_t a, int clear_pending_eof);
 static int translate_file_handle (int fd, int for_write);
 
 
@@ -1762,7 +1762,7 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
  * the first byte or -1 on EOF.
  */
 static int
-underflow (iobuf_t a)
+underflow (iobuf_t a, int clear_pending_eof)
 {
   size_t len;
   int rc;
@@ -1792,6 +1792,9 @@ underflow (iobuf_t a)
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: underflow: eof (pending eof)\n",
 		   a->no, a->subno);
+      if (! clear_pending_eof)
+	return -1;
+
       if (a->chain)
 	/* A filter follows this one.  Free this filter.  */
 	{
@@ -1865,7 +1868,7 @@ underflow (iobuf_t a)
 	  a->filter = NULL;
 	  a->filter_eof = 1;
 
-	  if (a->d.len == 0 && a->chain)
+	  if (clear_pending_eof && a->d.len == 0 && a->chain)
 	    /* We don't need to keep this filter around at all:
 
 	         - we got an EOF
@@ -1967,7 +1970,7 @@ iobuf_readbyte (iobuf_t a)
     {
       c = a->d.buf[a->d.start++];
     }
-  else if ((c = underflow (a)) == -1)
+  else if ((c = underflow (a, 1)) == -1)
     return -1;			/* EOF */
 
   a->nbytes++;
@@ -2017,7 +2020,7 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 	}
       if (n < buflen)
 	{
-	  if ((c = underflow (a)) == -1)
+	  if ((c = underflow (a, 1)) == -1)
 	    {
 	      a->nbytes += n;
 	      return n ? n : -1 /*EOF*/;
@@ -2034,29 +2037,42 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 
 
 
-/****************
- * Have a look at the iobuf.
- * NOTE: This only works in special cases.
- */
 int
 iobuf_peek (iobuf_t a, byte * buf, unsigned buflen)
 {
   int n = 0;
 
-  if (a->filter_eof)
-    return -1;
+  assert (buflen > 0);
+  assert (a->use == IOBUF_INPUT);
 
-  if (!(a->d.start < a->d.len))
+  if (buflen > a->d.size)
+    /* We can't peek more than we can buffer.  */
+    buflen = a->d.size;
+
+  /* Try to fill the internal buffer with enough data to satisfy the
+     request.  */
+  while (buflen > a->d.len - a->d.start)
     {
-      if (underflow (a) == -1)
-	return -1;
-      /* And unget this character. */
+      if (underflow (a, 0) == -1)
+	/* EOF.  We can't read any more.  */
+	break;
+
+      /* Underflow consumes the first character (it's the return
+	 value).  unget() it by resetting the "file position".  */
       assert (a->d.start == 1);
       a->d.start = 0;
     }
 
-  for (n = 0; n < buflen && (a->d.start + n) < a->d.len; n++, buf++)
-    *buf = a->d.buf[n];
+  n = a->d.len - a->d.start;
+  if (n > buflen)
+    n = buflen;
+
+  if (n == 0)
+    /* EOF.  */
+    return -1;
+
+  memcpy (buf, &a->d.buf[a->d.start], n);
+
   return n;
 }
 
