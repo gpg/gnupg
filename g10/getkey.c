@@ -1414,6 +1414,7 @@ get_seckeyblock_byfprint (KBNODE *ret_keyblock, const byte *fprint,
     return G10ERR_GENERAL; /* Oops */
 
   memset (&ctx, 0, sizeof ctx);
+  ctx.exact = 1 ;
   ctx.not_allocated = 1;
   ctx.kr_handle = keydb_new (1);
   ctx.nitems = 1;
