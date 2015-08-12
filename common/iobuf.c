@@ -2423,45 +2423,66 @@ iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
   unsigned maxlen = *max_length;
   char *p;
 
-  if (!buffer)
-    {				/* must allocate a new buffer */
-      length = 256;
-      buffer = xmalloc (length);
+  /* The code assumes that we have space for at least a newline and a
+     NUL character in the buffer.  This requires at least 2 bytes.  We
+     don't complicate the code by handling the stupid corner case, but
+     simply assert that it can't happen.  */
+  assert (length >= 2 || maxlen >= 2);
+
+  if (!buffer || length <= 1)
+    /* must allocate a new buffer */
+    {
+      length = 256 <= maxlen ? 256 : maxlen;
+      buffer = xrealloc (buffer, length);
       *addr_of_buffer = (unsigned char *)buffer;
       *length_of_buffer = length;
     }
 
-  length -= 3;			/* reserve 3 bytes (cr,lf,eol) */
   p = buffer;
   while ((c = iobuf_get (a)) != -1)
     {
-      if (nbytes == length)
-	{			/* increase the buffer */
-	  if (length > maxlen)
-	    {			/* this is out limit */
-	      /* skip the rest of the line */
-	      while (c != '\n' && (c = iobuf_get (a)) != -1)
-		;
-	      *p++ = '\n';	/* always append a LF (we have reserved space) */
-	      nbytes++;
-	      *max_length = 0;	/* indicate truncation */
-	      break;
-	    }
-	  length += 3;		/* correct for the reserved byte */
-	  length += length < 1024 ? 256 : 1024;
-	  buffer = xrealloc (buffer, length);
-	  *addr_of_buffer = (unsigned char *)buffer;
-	  *length_of_buffer = length;
-	  length -= 3;		/* and reserve again */
-	  p = buffer + nbytes;
-	}
       *p++ = c;
       nbytes++;
       if (c == '\n')
 	break;
-    }
-  *p = 0;			/* make sure the line is a string */
 
+      if (nbytes == length - 1)
+	/* We don't have enough space to add a \n and a \0.  Increase
+	   the buffer size.  */
+	{
+	  if (length == maxlen)
+	    /* We reached the buffer's size limit!  */
+	    {
+	      /* Skip the rest of the line.  */
+	      while (c != '\n' && (c = iobuf_get (a)) != -1)
+		;
+
+	      /* p is pointing at the last byte in the buffer.  We
+		 always terminate the line with "\n\0" so overwrite
+		 the previous byte with a \n.  */
+	      assert (p > buffer);
+	      p[-1] = '\n';
+
+	      /* Indicate truncation.  */
+	      *max_length = 0;
+	      break;
+	    }
+
+	  length += length < 1024 ? 256 : 1024;
+	  if (length > maxlen)
+	    length = maxlen;
+
+	  buffer = xrealloc (buffer, length);
+	  *addr_of_buffer = (unsigned char *)buffer;
+	  *length_of_buffer = length;
+	  p = buffer + nbytes;
+	}
+    }
+  /* Add the terminating NUL.  */
+  *p = 0;
+
+  /* Return the number of characters written to the buffer including
+     the newline, but not including the terminating NUL.  */
   return nbytes;
 }
 

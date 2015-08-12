@@ -169,7 +169,7 @@ endif
 module_tests = t-stringhelp t-timestuff \
                t-convert t-percent t-gettime t-sysutils t-sexputil \
 	       t-session-env t-openpgp-oid t-ssh-utils \
-	       t-mapstrings t-zb32 t-mbox-util
+	       t-mapstrings t-zb32 t-mbox-util t-iobuf
 if !HAVE_W32CE_SYSTEM
 module_tests += t-exechelp
 endif
@@ -213,6 +213,7 @@ t_ssh_utils_LDADD = $(t_common_ldadd)
 t_mapstrings_LDADD = $(t_common_ldadd)
 t_zb32_LDADD = $(t_common_ldadd)
 t_mbox_util_LDADD = $(t_common_ldadd)
+t_iobuf_LDADD = $(t_common_ldadd)
 
 # System specific test
 if HAVE_W32_SYSTEM

@@ -31,6 +31,9 @@
 #ifndef GNUPG_COMMON_IOBUF_H
 #define GNUPG_COMMON_IOBUF_H
 
+/* For estream_t.  */
+#include <gpg-error.h>
+
 #include "../common/types.h"
 #include "../common/sysutils.h"
 

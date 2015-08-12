@@ -1,0 +1,188 @@
+#include <config.h>
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
+#include <stdlib.h>
+
+#include "iobuf.h"
+
+static int
+every_other_filter (void *opaque, int control,
+		    iobuf_t chain, byte *buf, size_t *len)
+{
+  (void) opaque;
+
+  if (control == IOBUFCTRL_DESC)
+    {
+      *(char **) buf = "every_other_filter";
+    }
+  if (control == IOBUFCTRL_UNDERFLOW)
+    {
+      int c = iobuf_readbyte (chain);
+      int c2;
+      if (c == -1)
+	c2 = -1;
+      else
+	c2 = iobuf_readbyte (chain);
+
+      // printf ("Discarding %d (%c); return %d (%c)\n", c, c, c2, c2);
+
+      if (c2 == -1)
+	{
+	  *len = 0;
+	  return -1;
+	}
+
+      *buf = c2;
+      *len = 1;
+
+      return 0;
+    }
+
+  return 0;
+}
+
+int
+main (int argc, char *argv[])
+{
+  (void) argc;
+  (void) argv;
+
+  /* A simple test to make sure filters work.  We use a static buffer
+     and then add a filter in front of it that returns every other
+     character.  */
+  {
+    char *content = "0123456789abcdefghijklm";
+    iobuf_t iobuf;
+    int c;
+    int n;
+    int rc;
+
+    iobuf = iobuf_temp_with_content (content, strlen (content));
+    rc = iobuf_push_filter (iobuf, every_other_filter, NULL);
+    assert (rc == 0);
+
+    n = 0;
+    while ((c = iobuf_readbyte (iobuf)) != -1)
+      {
+	// printf ("%d: %c\n", n + 1, (char) c);
+	assert (content[2 * n + 1] == c);
+	n ++;
+      }
+    // printf ("Got EOF after reading %d bytes (content: %d)\n",
+    // n, strlen (content));
+    assert (n == strlen (content) / 2);
+
+    iobuf_close (iobuf);
+  }
+
+  /* A simple test to check buffering.  Make sure that when we add a
+     filter to a pipeline, any buffered data gets processed by the */
+  {
+    char *content = "0123456789abcdefghijklm";
+    iobuf_t iobuf;
+    int c;
+    int n;
+    int rc;
+    int i;
+
+    iobuf = iobuf_temp_with_content (content, strlen (content));
+
+    n = 0;
+    for (i = 0; i < 10; i ++)
+      {
+	c = iobuf_readbyte (iobuf);
+	assert (content[i] == c);
+	n ++;
+      }
+
+    rc = iobuf_push_filter (iobuf, every_other_filter, NULL);
+    assert (rc == 0);
+
+    while ((c = iobuf_readbyte (iobuf)) != -1)
+      {
+	// printf ("%d: %c\n", n + 1, (char) c);
+	assert (content[2 * (n - 5) + 1] == c);
+	n ++;
+      }
+    assert (n == 10 + (strlen (content) - 10) / 2);
+  }
+
+
+  /* A simple test to check that iobuf_read_line works.  */
+  {
+    /* - 3 characters plus new line
+       - 4 characters plus new line
+       - 5 characters plus new line
+       - 5 characters, no new line
+     */
+    char *content = "abc\ndefg\nhijkl\nmnopq";
+    iobuf_t iobuf;
+    byte *buffer;
+    unsigned size;
+    unsigned max_len;
+    int n;
+
+    iobuf = iobuf_temp_with_content (content, strlen(content));
+
+    /* We read a line with 3 characters plus a newline.  If we
+       allocate a buffer that is 5 bytes long, then no reallocation
+       should be required.  */
+    size = 5;
+    buffer = malloc (size);
+    assert (buffer);
+    max_len = 100;
+    n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
+    assert (n == 4);
+    assert (strcmp (buffer, "abc\n") == 0);
+    assert (size == 5);
+    assert (max_len == 100);
+    free (buffer);
+
+    /* We now read a line with 4 characters plus a newline.  This
+       requires 6 bytes of storage.  We pass a buffer that is 5 bytes
+       large and we allow the buffer to be grown.  */
+    size = 5;
+    buffer = malloc (size);
+    max_len = 100;
+    n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
+    assert (n == 5);
+    assert (strcmp (buffer, "defg\n") == 0);
+    assert (size >= 6);
+    /* The string shouldn't have been truncated (max_len == 0).  */
+    assert (max_len == 100);
+    free (buffer);
+
+    /* We now read a line with 5 characters plus a newline.  This
+       requires 7 bytes of storage.  We pass a buffer that is 5 bytes
+       large and we don't allow the buffer to be grown.  */
+    size = 5;
+    buffer = malloc (size);
+    max_len = 5;
+    n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
+    assert (n == 4);
+    /* Note: the string should still have a trailing \n.  */
+    assert (strcmp (buffer, "hij\n") == 0);
+    assert (size == 5);
+    /* The string should have been truncated (max_len == 0).  */
+    assert (max_len == 0);
+    free (buffer);
+
+    /* We now read a line with 6 characters without a newline.  This
+       requires 7 bytes of storage.  We pass a NULL buffer and we
+       don't allow the buffer to be grown larger than 5 bytes.  */
+    size = 5;
+    buffer = NULL;
+    max_len = 5;
+    n = iobuf_read_line (iobuf, &buffer, &size, &max_len);
+    assert (n == 4);
+    /* Note: the string should still have a trailing \n.  */
+    assert (strcmp (buffer, "mno\n") == 0);
+    assert (size == 5);
+    /* The string should have been truncated (max_len == 0).  */
+    assert (max_len == 0);
+    free (buffer);
+  }
+
+  return 0;
+}
