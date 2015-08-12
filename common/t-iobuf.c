@@ -42,6 +42,58 @@ every_other_filter (void *opaque, int control,
   return 0;
 }
 
+struct content_filter_state
+{
+  int pos;
+  int len;
+  const char *buffer;
+};
+
+static struct content_filter_state *
+content_filter_new (const char *buffer)
+{
+  struct content_filter_state *state
+    = malloc (sizeof (struct content_filter_state));
+
+  state->pos = 0;
+  state->len = strlen (buffer);
+  state->buffer = buffer;
+
+  return state;
+}
+
+static int
+content_filter (void *opaque, int control,
+		iobuf_t chain, byte *buf, size_t *len)
+{
+  struct content_filter_state *state = opaque;
+
+  (void) chain;
+
+  if (control == IOBUFCTRL_UNDERFLOW)
+    {
+      int remaining = state->len - state->pos;
+      int toread = *len;
+      assert (toread > 0);
+
+      if (toread > remaining)
+	toread = remaining;
+
+      if (toread == 0)
+	return -1;
+
+      memcpy (buf, &state->buffer[state->pos], toread);
+
+      state->pos += toread;
+
+      *len = toread;
+
+      return 0;
+    }
+
+  return 0;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -182,6 +234,47 @@ main (int argc, char *argv[])
     /* The string should have been truncated (max_len == 0).  */
     assert (max_len == 0);
     free (buffer);
+  }
+
+  {
+    /* - 3 characters plus new line
+       - 4 characters plus new line
+       - 5 characters plus new line
+       - 5 characters, no new line
+     */
+    char *content = "abcdefghijklmnopq";
+    char *content2 = "0123456789";
+    iobuf_t iobuf;
+    int rc;
+    int c;
+    int n;
+    int lastc = 0;
+
+    iobuf = iobuf_temp_with_content (content, strlen(content));
+    rc = iobuf_push_filter (iobuf,
+			    content_filter, content_filter_new (content2));
+    assert (rc == 0);
+
+    n = 0;
+    while (1)
+      {
+	c = iobuf_readbyte (iobuf);
+	if (c == -1 && lastc == -1)
+	  {
+	    printf("Two EOFs in a row.  Done.\n");
+	    break;
+	  }
+
+	lastc = c;
+
+	if (c == -1)
+	  printf("After %d bytes, got EOF.\n", n);
+	else
+	  {
+	    n ++;
+	    printf ("%d: '%c' (%d)\n", n, c, c);
+	  }
+      }
   }
 
   return 0;
