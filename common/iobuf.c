@@ -1234,7 +1234,7 @@ iobuf_temp_with_content (const char *buffer, size_t length)
   iobuf_t a;
   int i;
 
-  a = iobuf_alloc (IOBUF_TEMP, length);
+  a = iobuf_alloc (IOBUF_INPUT, length);
   /* memcpy (a->d.buf, buffer, length); */
   for (i=0; i < length; i++)
     a->d.buf[i] = buffer[i];
