@@ -118,8 +118,6 @@ int  iobuf_is_pipe_filename (const char *fname);
 iobuf_t iobuf_alloc (int use, size_t bufsize);
 iobuf_t iobuf_temp (void);
 iobuf_t iobuf_temp_with_content (const char *buffer, size_t length);
-iobuf_t iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname,
-                               const char *mode);
 iobuf_t iobuf_open (const char *fname);
 iobuf_t iobuf_fdopen (int fd, const char *mode);
 iobuf_t iobuf_fdopen_nc (int fd, const char *mode);

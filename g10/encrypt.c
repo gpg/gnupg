@@ -510,14 +510,17 @@ encrypt_crypt (ctrl_t ctrl, int filefd, const char *filename,
   /* Prepare iobufs. */
 #ifdef HAVE_W32_SYSTEM
   if (filefd == -1)
-    inp = iobuf_open_fd_or_name (GNUPG_INVALID_FD, filename, "rb");
+    inp = iobuf_open (filename);
   else
     {
       inp = NULL;
       gpg_err_set_errno (ENOSYS);
     }
 #else
-  inp = iobuf_open_fd_or_name (filefd, filename, "rb");
+  if (filefd == GNUPG_INVALID_FD)
+    inp = iobuf_open (filename);
+  else
+    inp = iobuf_fdopen_nc (FD2INT(filefd), "rb");
 #endif
   if (inp)
     iobuf_ioctl (inp, IOBUF_IOCTL_NO_CACHE, 1, NULL);

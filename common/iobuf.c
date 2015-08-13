@@ -1301,23 +1301,6 @@ iobuf_is_pipe_filename (const char *fname)
 }
 
 
-/* Either open the file specified by the file descriptor FD or - if FD
-   is -1, the file with name FNAME.  As of now MODE is assumed to be
-   "rb" if FNAME is used.  In contrast to iobuf_fdopen the file
-   descriptor FD will not be closed during an iobuf_close.  */
-iobuf_t
-iobuf_open_fd_or_name (gnupg_fd_t fd, const char *fname, const char *mode)
-{
-  iobuf_t a;
-
-  if (fd == GNUPG_INVALID_FD)
-    a = iobuf_open (fname);
-  else
-    a = iobuf_fdopen_nc (FD2INT(fd), mode);
-  return a;
-}
-
-
 /****************
  * Create a head iobuf for reading from a file
  * returns: NULL if an error occures and sets errno
