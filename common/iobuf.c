@@ -164,6 +164,18 @@ static int special_names_enabled;
 static int underflow (iobuf_t a, int clear_pending_eof);
 static int translate_file_handle (int fd, int for_write);
 
+/* Sends any pending data to the filter's FILTER function.  Note: this
+   works on the filter and not on the whole pipeline.  That is,
+   iobuf_flush doesn't necessarily cause data to be written to any
+   underlying file; it just causes any data buffered at the filter A
+   to be sent to A's filter function.
+
+   If A is a IOBUF_TEMP filter, then this also enlarges the buffer by
+   IOBUF_BUFFER_SIZE.
+
+   May only be called on an IOBUF_OUTPUT or IOBUF_TEMP filters.  */
+static int filter_flush (iobuf_t a);
+
 
 
 /* This is a replacement for strcmp.  Under W32 it does not
@@ -1143,8 +1155,8 @@ iobuf_close (iobuf_t a)
 
       a_chain = a->chain;
 
-      if (a->use == IOBUF_OUTPUT && (rc = iobuf_flush (a)))
-	log_error ("iobuf_flush failed on close: %s\n", gpg_strerror (rc));
+      if (a->use == IOBUF_OUTPUT && (rc = filter_flush (a)))
+	log_error ("filter_flush failed on close: %s\n", gpg_strerror (rc));
 
       if (DBG_IOBUF)
 	log_debug ("iobuf-%d.%d: close '%s'\n",
@@ -1614,7 +1626,7 @@ iobuf_push_filter2 (iobuf_t a,
   size_t dummy_len = 0;
   int rc = 0;
 
-  if (a->use == IOBUF_OUTPUT && (rc = iobuf_flush (a)))
+  if (a->use == IOBUF_OUTPUT && (rc = filter_flush (a)))
     return rc;
 
   if (a->subno >= MAX_NESTING_FILTER)
@@ -1717,9 +1729,9 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
     log_bug ("pop_filter(): filter function not found\n");
 
   /* flush this stream if it is an output stream */
-  if (a->use == IOBUF_OUTPUT && (rc = iobuf_flush (b)))
+  if (a->use == IOBUF_OUTPUT && (rc = filter_flush (b)))
     {
-      log_error ("iobuf_flush failed in pop_filter: %s\n", gpg_strerror (rc));
+      log_error ("filter_flush failed in pop_filter: %s\n", gpg_strerror (rc));
       return rc;
     }
   /* and tell the filter to free it self */
@@ -1923,36 +1935,33 @@ underflow (iobuf_t a, int clear_pending_eof)
 }
 
 
-int
-iobuf_flush (iobuf_t a)
+static int
+filter_flush (iobuf_t a)
 {
   size_t len;
   int rc;
 
   if (a->use == IOBUF_TEMP)
     {				/* increase the temp buffer */
-      unsigned char *newbuf;
       size_t newsize = a->d.size + IOBUF_BUFFER_SIZE;
 
       if (DBG_IOBUF)
 	log_debug ("increasing temp iobuf from %lu to %lu\n",
 		   (ulong) a->d.size, (ulong) newsize);
-      newbuf = xmalloc (newsize);
-      memcpy (newbuf, a->d.buf, a->d.len);
-      xfree (a->d.buf);
-      a->d.buf = newbuf;
+
+      a->d.buf = xrealloc (a->d.buf, newsize);
       a->d.size = newsize;
       return 0;
     }
   else if (a->use != IOBUF_OUTPUT)
     log_bug ("flush on non-output iobuf\n");
   else if (!a->filter)
-    log_bug ("iobuf_flush: no filter\n");
+    log_bug ("filter_flush: no filter\n");
   len = a->d.len;
   rc = a->filter (a->filter_ov, IOBUFCTRL_FLUSH, a->chain, a->d.buf, &len);
   if (!rc && len != a->d.len)
     {
-      log_info ("iobuf_flush did not write all!\n");
+      log_info ("filter_flush did not write all!\n");
       rc = GPG_ERR_INTERNAL;
     }
   else if (rc)
@@ -2093,7 +2102,7 @@ iobuf_writebyte (iobuf_t a, unsigned int c)
   int rc;
 
   if (a->d.len == a->d.size)
-    if ((rc=iobuf_flush (a)))
+    if ((rc=filter_flush (a)))
       return rc;
 
   assert (a->d.len < a->d.size);
@@ -2122,7 +2131,7 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 	}
       if (buflen)
 	{
-	  rc = iobuf_flush (a);
+	  rc = filter_flush (a);
           if (rc)
 	    return rc;
 	}

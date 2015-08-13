@@ -138,7 +138,6 @@ int iobuf_push_filter2 (iobuf_t a,
 			int (*f) (void *opaque, int control, iobuf_t chain,
 				  byte * buf, size_t * len), void *ov,
 			int rel_ov);
-int iobuf_flush (iobuf_t a);
 #define iobuf_set_error(a)    do { (a)->error = 1; } while(0)
 #define iobuf_error(a)	      ((a)->error)
 
