@@ -1133,13 +1133,16 @@ iobuf_alloc (int use, size_t bufsize)
 int
 iobuf_close (iobuf_t a)
 {
-  iobuf_t a2;
+  iobuf_t a_chain;
   size_t dummy_len = 0;
   int rc = 0;
 
-  for (; a && !rc; a = a2)
+  for (; a; a = a_chain)
     {
-      a2 = a->chain;
+      int rc2 = 0;
+
+      a_chain = a->chain;
+
       if (a->use == IOBUF_OUTPUT && (rc = iobuf_flush (a)))
 	log_error ("iobuf_flush failed on close: %s\n", gpg_strerror (rc));
 
@@ -1147,9 +1150,14 @@ iobuf_close (iobuf_t a)
 	log_debug ("iobuf-%d.%d: close '%s'\n",
 		   a->no, a->subno, iobuf_desc (a));
 
-      if (a->filter && (rc = a->filter (a->filter_ov, IOBUFCTRL_FREE,
-					a->chain, NULL, &dummy_len)))
+      if (a->filter && (rc2 = a->filter (a->filter_ov, IOBUFCTRL_FREE,
+					 a->chain, NULL, &dummy_len)))
 	log_error ("IOBUFCTRL_FREE failed on close: %s\n", gpg_strerror (rc));
+      if (! rc && rc2)
+	/* Whoops!  An error occured.  Save it in RC if we haven't
+	   already recorded an error.  */
+	rc = rc2;
+
       xfree (a->real_fname);
       if (a->d.buf)
 	{
