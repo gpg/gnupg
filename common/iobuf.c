@@ -1300,13 +1300,9 @@ iobuf_is_pipe_filename (const char *fname)
   return check_special_filename (fname) != -1;
 }
 
-
-/****************
- * Create a head iobuf for reading from a file
- * returns: NULL if an error occures and sets errno
- */
-iobuf_t
-iobuf_open (const char *fname)
+static iobuf_t
+do_open (const char *fname, int special_filenames,
+	 int use, const char *opentype, int mode700)
 {
   iobuf_t a;
   gnupg_fd_t fp;
@@ -1315,17 +1311,38 @@ iobuf_open (const char *fname)
   int print_only = 0;
   int fd;
 
-  if (!fname || (*fname == '-' && !fname[1]))
+  if (special_filenames
+      /* NULL or '-'.  */
+      && (!fname || (*fname == '-' && !fname[1])))
     {
-      fp = FD_FOR_STDIN;
-      fname = "[stdin]";
+      if (use == IOBUF_INPUT)
+	{
+	  fp = FD_FOR_STDIN;
+	  fname = "[stdin]";
+	}
+      else
+	{
+	  fp = FD_FOR_STDOUT;
+	  fname = "[stdout]";
+	}
       print_only = 1;
     }
-  else if ((fd = check_special_filename (fname)) != -1)
-    return iobuf_fdopen (translate_file_handle (fd, 0), "rb");
-  else if ((fp = fd_cache_open (fname, "rb")) == GNUPG_INVALID_FD)
+  else if (!fname)
     return NULL;
-  a = iobuf_alloc (IOBUF_INPUT, IOBUF_BUFFER_SIZE);
+  else if (special_filenames && (fd = check_special_filename (fname)) != -1)
+    return iobuf_fdopen (translate_file_handle (fd, use == IOBUF_INPUT ? 0 : 1),
+			 opentype);
+  else
+    {
+      if (use == IOBUF_INPUT)
+	fp = fd_cache_open (fname, opentype);
+      else
+	fp = direct_open (fname, opentype, mode700);
+      if (fp == GNUPG_INVALID_FD)
+	return NULL;
+    }
+
+  a = iobuf_alloc (use, IOBUF_BUFFER_SIZE);
   fcx = xmalloc (sizeof *fcx + strlen (fname));
   fcx->fp = fp;
   fcx->print_only_name = print_only;
@@ -1336,10 +1353,32 @@ iobuf_open (const char *fname)
   a->filter_ov = fcx;
   file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
   if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: open '%s' fd=%d\n",
-	       a->no, a->subno, fname, FD2INT (fcx->fp));
+    log_debug ("iobuf-%d.%d: open '%s' desc=%s fd=%d\n",
+	       a->no, a->subno, fname, iobuf_desc (a), FD2INT (fcx->fp));
 
   return a;
+}
+
+/****************
+ * Create a head iobuf for reading from a file
+ * returns: NULL if an error occures and sets errno
+ */
+iobuf_t
+iobuf_open (const char *fname)
+{
+  return do_open (fname, 1, IOBUF_INPUT, "rb", 0);
+}
+
+iobuf_t
+iobuf_create (const char *fname, int mode700)
+{
+  return do_open (fname, 1, IOBUF_OUTPUT, "wb", mode700);
+}
+
+iobuf_t
+iobuf_openrw (const char *fname)
+{
+  return do_open (fname, 0, IOBUF_OUTPUT, "r+b", 0);
 }
 
 
@@ -1435,76 +1474,6 @@ iobuf_sockopen (int fd, const char *mode)
 #endif
   return a;
 }
-
-/****************
- * Create an iobuf for writing to a file; the file will be created.
- * With MODE700 set the file is created with that mode (Unix only).
- */
-iobuf_t
-iobuf_create (const char *fname, int mode700)
-{
-  iobuf_t a;
-  gnupg_fd_t fp;
-  file_filter_ctx_t *fcx;
-  size_t len;
-  int print_only = 0;
-  int fd;
-
-  if (!fname || (*fname == '-' && !fname[1]))
-    {
-      fp = FD_FOR_STDOUT;
-      fname = "[stdout]";
-      print_only = 1;
-    }
-  else if ((fd = check_special_filename (fname)) != -1)
-    return iobuf_fdopen (translate_file_handle (fd, 1), "wb");
-  else if ((fp = direct_open (fname, "wb", mode700)) == GNUPG_INVALID_FD)
-    return NULL;
-  a = iobuf_alloc (IOBUF_OUTPUT, IOBUF_BUFFER_SIZE);
-  fcx = xmalloc (sizeof *fcx + strlen (fname));
-  fcx->fp = fp;
-  fcx->print_only_name = print_only;
-  strcpy (fcx->fname, fname);
-  if (!print_only)
-    a->real_fname = xstrdup (fname);
-  a->filter = file_filter;
-  a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
-  if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: create '%s'\n",
-	       a->no, a->subno, iobuf_desc (a));
-
-  return a;
-}
-
-
-iobuf_t
-iobuf_openrw (const char *fname)
-{
-  iobuf_t a;
-  gnupg_fd_t fp;
-  file_filter_ctx_t *fcx;
-  size_t len;
-
-  if (!fname)
-    return NULL;
-  else if ((fp = direct_open (fname, "r+b", 0)) == GNUPG_INVALID_FD)
-    return NULL;
-  a = iobuf_alloc (IOBUF_OUTPUT, IOBUF_BUFFER_SIZE);
-  fcx = xmalloc (sizeof *fcx + strlen (fname));
-  fcx->fp = fp;
-  strcpy (fcx->fname, fname);
-  a->real_fname = xstrdup (fname);
-  a->filter = file_filter;
-  a->filter_ov = fcx;
-  file_filter (fcx, IOBUFCTRL_INIT, NULL, NULL, &len);
-  if (DBG_IOBUF)
-    log_debug ("iobuf-%d.%d: openrw '%s'\n",
-	       a->no, a->subno, iobuf_desc (a));
-
-  return a;
-}
-
 
 int
 iobuf_ioctl (iobuf_t a, iobuf_ioctl_t cmd, int intval, void *ptrval)
