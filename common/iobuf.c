@@ -2123,8 +2123,20 @@ iobuf_write_temp (iobuf_t a, iobuf_t temp)
 size_t
 iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 {
-  size_t n = a->d.len;
+  size_t n;
 
+  while (1)
+    {
+      int rc = filter_flush (a);
+      if (rc)
+	log_bug ("Flushing iobuf %d.%d (%s) from iobuf_temp_to_buffer failed.  Ignoring.\n",
+		 a->no, a->subno, iobuf_desc (a));
+      if (! a->chain)
+	break;
+      a = a->chain;
+    }
+
+  n = a->d.len;
   if (n > buflen)
     n = buflen;
   memcpy (buffer, a->d.buf, n);
