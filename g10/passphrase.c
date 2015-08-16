@@ -533,6 +533,14 @@ passphrase_to_dek_ext (u32 *keyid, int pubkey_algo,
 	  s2k_cacheid = s2k_cacheidbuf;
 	}
 
+      if (opt.pinentry_mode == PINENTRY_MODE_LOOPBACK)
+        {
+          char buf[32];
+
+          snprintf (buf, sizeof (buf), "%u", 100);
+          write_status_text (STATUS_INQUIRE_MAXLEN, buf);
+        }
+
       /* Divert to the gpg-agent. */
       pw = passphrase_get (keyid, mode == 2, s2k_cacheid,
                            (mode == 2 || mode == 4)? opt.passphrase_repeat : 0,
