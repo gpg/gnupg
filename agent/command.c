@@ -1541,6 +1541,9 @@ cmd_get_passphrase (assuan_context_t ctx, char *line)
             {
               char *response2;
 
+              if (ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+                break;
+
               rc = agent_get_passphrase (ctrl, &response2, desc2, prompt,
                                          errtext, 0,
 					 cacheid, CACHE_MODE_USER);

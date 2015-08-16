@@ -189,6 +189,9 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
   char *msg2 = NULL;
   char *msg3 = NULL;
 
+  if (ctrl && ctrl->pinentry_mode == PINENTRY_MODE_LOOPBACK)
+    return 0;
+
   if (!pw)
     pw = "";
 
