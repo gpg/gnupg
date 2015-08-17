@@ -133,9 +133,9 @@ typedef struct
 } sock_filter_ctx_t;
 #endif /*HAVE_W32_SYSTEM*/
 
-/* The first partial length header block must be of size 512
- * to make it easier (and efficienter) we use a min. block size of 512
- * for all chunks (but the last one) */
+/* The first partial length header block must be of size 512 to make
+ * it easier (and more efficient) we use a min. block size of 512 for
+ * all chunks (but the last one) */
 #define OP_MIN_PARTIAL_CHUNK	  512
 #define OP_MIN_PARTIAL_CHUNK_2POW 9
 
@@ -156,8 +156,8 @@ block_filter_ctx_t;
 
 
 /* Global flag to tell whether special file names are enabled.  See
-   gpg.c for an explanation of these file names.  FIXME: it does not
-   belong into the iobuf subsystem. */
+   gpg.c for an explanation of these file names.  FIXME: This does not
+   belong in the iobuf subsystem. */
 static int special_names_enabled;
 
 /* Local prototypes.  */
@@ -401,7 +401,7 @@ fd_cache_close (const char *fname, gnupg_fd_t fp)
 }
 
 /*
- * Do an direct_open on FNAME but first try to reuse one from the fd_cache
+ * Do a direct_open on FNAME but first try to reuse one from the fd_cache
  */
 static gnupg_fd_t
 fd_cache_open (const char *fname, const char *mode)
@@ -440,30 +440,6 @@ fd_cache_open (const char *fname, const char *mode)
 }
 
 
-/****************
- * Read data from a file into buf which has an allocated length of *LEN.
- * return the number of read bytes in *LEN. OPAQUE is the FILE * of
- * the stream. A is not used.
- * control may be:
- * IOBUFCTRL_INIT: called just before the function is linked into the
- *		   list of function. This can be used to prepare internal
- *		   data structures of the function.
- * IOBUFCTRL_FREE: called just before the function is removed from the
- *		    list of functions and can be used to release internal
- *		    data structures or close a file etc.
- * IOBUFCTRL_UNDERFLOW: called by iobuf_underflow to fill the buffer
- *		    with new stuff. *RET_LEN is the available size of the
- *		    buffer, and should be set to the number of bytes
- *		    which were put into the buffer. The function
- *		    returns 0 to indicate success, -1 on EOF and
- *		    GPG_ERR_xxxxx for other errors.
- *
- * IOBUFCTRL_FLUSH: called by iobuf_flush() to write out the collected stuff.
- *		    *RET_LAN is the number of bytes in BUF.
- *
- * IOBUFCTRL_CANCEL: send to all filters on behalf of iobuf_cancel.  The
- *		    filter may take appropriate action on this message.
- */
 static int
 file_filter (void *opaque, int control, iobuf_t chain, byte * buf,
 	     size_t * ret_len)
@@ -1117,13 +1093,6 @@ iobuf_print_chain (iobuf_t a)
   return 0;
 }
 
-/* Allocate a new io buffer, with no function assigned.
-
-   USE is the desired usage: IOBUF_INPUT for input, IOBUF_OUTPUT for
-   output, or IOBUF_TEMP for a temp buffer.
-
-   BUFSIZE is a suggested buffer size.
- */
 iobuf_t
 iobuf_alloc (int use, size_t bufsize)
 {
@@ -1233,19 +1202,10 @@ iobuf_cancel (iobuf_t a)
 }
 
 
-/****************
- * create a temporary iobuf, which can be used to collect stuff
- * in an iobuf and later be written by iobuf_write_temp() to another
- * iobuf.
- */
 iobuf_t
-iobuf_temp ()
+iobuf_temp (void)
 {
-  iobuf_t a;
-
-  a = iobuf_alloc (IOBUF_TEMP, IOBUF_BUFFER_SIZE);
-
-  return a;
+  return iobuf_alloc (IOBUF_TEMP, IOBUF_BUFFER_SIZE);
 }
 
 iobuf_t
@@ -1290,8 +1250,6 @@ check_special_filename (const char *fname)
 }
 
 
-/* This fucntion returns true if FNAME indicates a PIPE (stdout or
-   stderr) or a special file name if those are enabled. */
 int
 iobuf_is_pipe_filename (const char *fname)
 {
@@ -1359,10 +1317,6 @@ do_open (const char *fname, int special_filenames,
   return a;
 }
 
-/****************
- * Create a head iobuf for reading from a file
- * returns: NULL if an error occures and sets errno
- */
 iobuf_t
 iobuf_open (const char *fname)
 {
@@ -1410,8 +1364,6 @@ do_iobuf_fdopen (int fd, const char *mode, int keep_open)
 }
 
 
-/* Create a head iobuf for reading or writing from/to a file Returns:
- * NULL and sets ERRNO if an error occured.  */
 iobuf_t
 iobuf_fdopen (int fd, const char *mode)
 {
@@ -1587,11 +1539,51 @@ iobuf_push_filter2 (iobuf_t a,
       return GPG_ERR_BAD_DATA;
     }
 
-  /* make a copy of the current stream, so that
-   * A is the new stream and B the original one.
-   * The contents of the buffers are transferred to the
-   * new stream.
-   */
+  /* We want to create a new filter and put it in front of A.  A
+     simple implementation would do:
+
+       b = iobuf_alloc (...);
+       b->chain = a;
+       return a;
+
+     This is a bit problematic: A is the head of the pipeline and
+     there are potentially many pointers to it.  Requiring the caller
+     to update all of these pointers is a burden.
+
+     An alternative implementation would add a level of indirection.
+     For instance, we could use a pipeline object, which contains a
+     pointer to the first filter in the pipeline.  This is not what we
+     do either.
+
+     Instead, we allocate a new buffer (B) and copy the first filter's
+     state into that and use the initial buffer (A) for the new
+     filter.  One limitation of this approach is that it is not
+     practical to maintain a pointer to a specific filter's state.
+
+     Before:
+
+           A
+           |
+           v 0x100               0x200
+           +----------+          +----------+
+           | filter x |--------->| filter y |---->....
+           +----------+          +----------+
+
+     After:           B
+                      |
+                      v 0x300
+                      +----------+
+           A          | filter x |
+           |          +----------+
+           v 0x100    ^          v 0x200
+           +----------+          +----------+
+           | filter w |          | filter y |---->....
+           +----------+          +----------+
+
+     Note: filter x's address changed from 0x100 to 0x300, but A still
+     points to the head of the pipeline.
+  */
+
   b = xmalloc (sizeof *b);
   memcpy (b, a, sizeof *b);
   /* fixme: it is stupid to keep a copy of the name at every level
@@ -1938,9 +1930,6 @@ filter_flush (iobuf_t a)
 }
 
 
-/****************
- * Read a byte from the iobuf; returns -1 on EOF
- */
 int
 iobuf_readbyte (iobuf_t a)
 {
@@ -1955,6 +1944,9 @@ iobuf_readbyte (iobuf_t a)
     }
   else if ((c = underflow (a, 1)) == -1)
     return -1;			/* EOF */
+
+  /* Note: if underflow doesn't return EOF, then it returns the first
+     byte that was read and advances a->d.start appropriately.  */
 
   a->nbytes++;
   return c;
@@ -1990,6 +1982,7 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
   do
     {
       if (n < buflen && a->d.start < a->d.len)
+	/* Drain the buffer.  */
 	{
 	  unsigned size = a->d.len - a->d.start;
 	  if (size > buflen - n)
@@ -2002,8 +1995,13 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 	    buf += size;
 	}
       if (n < buflen)
+	/* Draining the internal buffer didn't fill BUFFER.  Call
+	   underflow to read more data into the filter's internal
+	   buffer.  */
 	{
 	  if ((c = underflow (a, 1)) == -1)
+	    /* EOF.  If we managed to read something, don't return EOF
+	       now.  */
 	    {
 	      a->nbytes += n;
 	      return n ? n : -1 /*EOF*/;
@@ -2120,9 +2118,6 @@ iobuf_writestr (iobuf_t a, const char *buf)
 
 
 
-/****************
- * copy the contents of TEMP to A.
- */
 int
 iobuf_write_temp (iobuf_t a, iobuf_t temp)
 {
@@ -2131,9 +2126,6 @@ iobuf_write_temp (iobuf_t a, iobuf_t temp)
   return iobuf_write (a, temp->d.buf, temp->d.len);
 }
 
-/****************
- * copy the contents of the temp io stream to BUFFER.
- */
 size_t
 iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 {
@@ -2158,12 +2150,6 @@ iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 }
 
 
-/****************
- * Call this function to terminate processing of the temp stream
- * without closing it.	This removes all filters from the stream
- * makes sure that iobuf_get_temp_{buffer,length}() returns correct
- * values.
- */
 void
 iobuf_flush_temp (iobuf_t temp)
 {
@@ -2172,10 +2158,6 @@ iobuf_flush_temp (iobuf_t temp)
 }
 
 
-/****************
- * Set a limit on how many bytes may be read from the input stream A.
- * Setting the limit to 0 disables this feature.
- */
 void
 iobuf_set_limit (iobuf_t a, off_t nlimit)
 {
@@ -2190,9 +2172,6 @@ iobuf_set_limit (iobuf_t a, off_t nlimit)
 
 
 
-/* Return the length of an open file A.  IF OVERFLOW is not NULL it
-   will be set to true if the file is larger than what off_t can cope
-   with.  The function return 0 on error or on overflow condition.  */
 off_t
 iobuf_get_filelength (iobuf_t a, int *overflow)
 {
@@ -2263,8 +2242,6 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
 }
 
 
-/* Return the file descriptor of the underlying file or -1 if it is
-   not available.  */
 int
 iobuf_get_fd (iobuf_t a)
 {
@@ -2281,10 +2258,6 @@ iobuf_get_fd (iobuf_t a)
 }
 
 
-
-/****************
- * Tell the file position, where the next read will take place
- */
 off_t
 iobuf_tell (iobuf_t a)
 {
@@ -2322,10 +2295,6 @@ fseeko (FILE * stream, off_t newpos, int whence)
 }
 #endif
 
-/****************
- * This is a very limited implementation. It simply discards all internal
- * buffering and removes all filters but the first one.
- */
 int
 iobuf_seek (iobuf_t a, off_t newpos)
 {
@@ -2367,6 +2336,16 @@ iobuf_seek (iobuf_t a, off_t newpos)
   a->nofast = 0;
   a->ntotal = newpos;
   a->error = 0;
+
+  /* It is impossible for A->CHAIN to be non-NULL.  If A is an INPUT
+     or OUTPUT buffer, then we find the last filter, which is defined
+     as A->CHAIN being NULL.  If A is a TEMP filter, then A must be
+     the only filter in the pipe: when iobuf_push_filter adds a filter
+     to the front of a pipeline, it sets the new filter to be an
+     OUTPUT filter if the pipeline is an OUTPUT or TEMP pipeline and
+     to be an INPUT filter if the pipeline is an INPUT pipeline.
+     Thus, only the last filter in a TEMP pipeline can be a */
+
   /* remove filters, but the last */
   if (a->chain)
     log_debug ("pop_filter called in iobuf_seek - please report\n");
@@ -2381,11 +2360,6 @@ iobuf_seek (iobuf_t a, off_t newpos)
 
 
 
-/****************
- * Retrieve the real filename.  This is the filename actually used on
- * disk and not a made up one.  Returns NULL if no real filename is
- * available.
- */
 const char *
 iobuf_get_real_fname (iobuf_t a)
 {
@@ -2404,9 +2378,6 @@ iobuf_get_real_fname (iobuf_t a)
 }
 
 
-/****************
- * Retrieve the filename.  This name should only be used in diagnostics.
- */
 const char *
 iobuf_get_fname (iobuf_t a)
 {
@@ -2419,7 +2390,6 @@ iobuf_get_fname (iobuf_t a)
   return NULL;
 }
 
-/* Same as iobuf_get_fname but never returns NULL.  */
 const char *
 iobuf_get_fname_nonnull (iobuf_t a)
 {
@@ -2446,6 +2416,14 @@ iobuf_set_partial_block_mode (iobuf_t a, size_t len)
       if (a->use == IOBUF_INPUT)
 	log_debug ("pop_filter called in set_partial_block_mode"
 		   " - please report\n");
+      /* XXX: This pop_filter doesn't make sense.  Since we haven't
+	 actually added the filter to the pipeline yet, why are we
+	 popping anything?  Moreover, since we don't report an error,
+	 the caller won't directly see an error.  I think that it
+	 would be better to push the filter and set a->error to
+	 GPG_ERR_BAD_DATA, but Werner thinks it's impossible for len
+	 to be 0 (but he doesn't want to remove the check just in
+	 case).  */
       pop_filter (a, block_filter, NULL);
     }
   else
@@ -2459,16 +2437,6 @@ iobuf_set_partial_block_mode (iobuf_t a, size_t len)
 
 
 
-/****************
- * Same as fgets() but if the buffer is too short a larger one will
- * be allocated up to some limit *max_length.
- * A line is considered a byte stream ending in a LF.
- * Returns the length of the line. EOF is indicated by a line of
- * length zero. The last LF may be missing due to an EOF.
- * is max_length is zero on return, the line has been truncated.
- *
- * Note: The buffer is allocated with enough space to append a CR,LF,EOL
- */
 unsigned int
 iobuf_read_line (iobuf_t a, byte ** addr_of_buffer,
 		 unsigned *length_of_buffer, unsigned *max_length)
