@@ -2114,11 +2114,13 @@ iobuf_writestr (iobuf_t a, const char *buf)
 
 
 int
-iobuf_write_temp (iobuf_t a, iobuf_t temp)
+iobuf_write_temp (iobuf_t dest, iobuf_t source)
 {
-  while (temp->chain)
-    pop_filter (temp, temp->filter, NULL);
-  return iobuf_write (a, temp->d.buf, temp->d.len);
+  assert (source->use == IOBUF_OUTPUT || source->use == IOBUF_TEMP);
+  assert (dest->use == IOBUF_OUTPUT || dest->use == IOBUF_TEMP);
+
+  iobuf_flush_temp (source);
+  return iobuf_write (dest, source->d.buf, source->d.len);
 }
 
 size_t
