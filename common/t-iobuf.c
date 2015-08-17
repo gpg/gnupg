@@ -6,6 +6,8 @@
 
 #include "iobuf.h"
 
+/* Return every other byte.  In particular, reads two bytes, returns
+   the second one.  */
 static int
 every_other_filter (void *opaque, int control,
 		    iobuf_t chain, byte *buf, size_t *len)
@@ -37,6 +39,36 @@ every_other_filter (void *opaque, int control,
       *len = 1;
 
       return 0;
+    }
+
+  return 0;
+}
+
+static int
+double_filter (void *opaque, int control,
+	       iobuf_t chain, byte *buf, size_t *len)
+{
+  (void) opaque;
+
+  if (control == IOBUFCTRL_DESC)
+    {
+      * (char **) buf = "double_filter";
+    }
+  if (control == IOBUFCTRL_FLUSH)
+    {
+      int i;
+
+      for (i = 0; i < *len; i ++)
+	{
+	  int rc;
+
+	  rc = iobuf_writebyte (chain, buf[i]);
+	  if (rc)
+	    return rc;
+	  rc = iobuf_writebyte (chain, buf[i]);
+	  if (rc)
+	    return rc;
+	}
     }
 
   return 0;
@@ -261,20 +293,86 @@ main (int argc, char *argv[])
 	c = iobuf_readbyte (iobuf);
 	if (c == -1 && lastc == -1)
 	  {
-	    printf("Two EOFs in a row.  Done.\n");
+	    // printf("Two EOFs in a row.  Done.\n");
+	    assert (n == 44);
 	    break;
 	  }
 
 	lastc = c;
 
 	if (c == -1)
-	  printf("After %d bytes, got EOF.\n", n);
+	  {
+	    // printf("After %d bytes, got EOF.\n", n);
+	    assert (n == 27 || n == 44);
+	  }
 	else
 	  {
 	    n ++;
-	    printf ("%d: '%c' (%d)\n", n, c, c);
+	    // printf ("%d: '%c' (%d)\n", n, c, c);
 	  }
       }
+  }
+
+  /* Write some data to a temporary filter.  Push a new filter.  The
+     already written data should not be processed by the new
+     filter.  */
+  {
+    iobuf_t iobuf;
+    int rc;
+    char *content = "0123456789";
+    char *content2 = "abc";
+    char buffer[4096];
+    int n;
+
+    iobuf = iobuf_temp ();
+    assert (iobuf);
+
+    rc = iobuf_write (iobuf, content, strlen (content));
+    assert (rc == 0);
+
+    rc = iobuf_push_filter (iobuf, double_filter, NULL);
+    assert (rc == 0);
+
+    /* Include a NUL.  */
+    rc = iobuf_write (iobuf, content2, strlen (content2) + 1);
+    assert (rc == 0);
+
+    n = iobuf_temp_to_buffer (iobuf, buffer, sizeof (buffer));
+    printf ("Got %d bytes\n", n);
+    printf ("buffer: `");
+    fwrite (buffer, n, 1, stdout);
+    fputc ('\'', stdout);
+    fputc ('\n', stdout);
+
+    assert (n == strlen (content) + 2 * (strlen (content2) + 1));
+    assert (strcmp (buffer, "0123456789aabbcc") == 0);
+  }
+
+  {
+    iobuf_t iobuf;
+    int rc;
+    char *content = "0123456789";
+    int n;
+    int c;
+    char buffer[strlen (content)];
+
+    iobuf = iobuf_temp_with_content (content, strlen (content));
+    assert (iobuf);
+
+    rc = iobuf_push_filter (iobuf, every_other_filter, NULL);
+    assert (rc == 0);
+    rc = iobuf_push_filter (iobuf, every_other_filter, NULL);
+    assert (rc == 0);
+
+    for (n = 0; (c = iobuf_get (iobuf)) != -1; n ++)
+      {
+	// printf ("%d: `%c'\n", n, c);
+	buffer[n] = c;
+      }
+
+    assert (n == 2);
+    assert (buffer[0] == '3');
+    assert (buffer[1] == '7');
   }
 
   return 0;

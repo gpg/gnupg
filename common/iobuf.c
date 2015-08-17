@@ -1607,20 +1607,21 @@ iobuf_push_filter2 (iobuf_t a,
     /* make a write stream from a temp stream */
     a->use = IOBUF_OUTPUT;
 
-  if (a->use == IOBUF_OUTPUT)
-    {				/* allocate a fresh buffer for the
-                                   original stream */
-      b->d.buf = xmalloc (a->d.size);
-      b->d.len = 0;
-      b->d.start = 0;
-    }
-  else
-    {				/* allocate a fresh buffer for the new
-                                   stream */
-      a->d.buf = xmalloc (a->d.size);
-      a->d.len = 0;
-      a->d.start = 0;
-    }
+  /* The new filter (A) gets a new buffer.
+
+     If the pipeline is an output or temp pipeline, then giving the
+     buffer to the new filter means that data that was written before
+     the filter was pushed gets sent to the filter.  That's clearly
+     wrong.
+
+     If the pipeline is an input pipeline, then giving the buffer to
+     the new filter (A) means that data that has read from (B), but
+     not yet read from the pipeline won't be processed by the new
+     filter (A)!  That's certainly not what we want.  */
+  a->d.buf = xmalloc (a->d.size);
+  a->d.len = 0;
+  a->d.start = 0;
+
   /* disable nlimit for the new stream */
   a->ntotal = b->ntotal + b->nbytes;
   a->nlimit = a->nbytes = 0;
