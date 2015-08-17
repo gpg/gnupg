@@ -1992,10 +1992,12 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 		return -1;	/* eof */
 	      break;
 	    }
-	  else if (buf)
-	    *buf = c;
+
 	  if (buf)
-	    buf++;
+	    {
+	      *buf = c;
+	      buf++;
+	    }
 	}
       return n;
     }
@@ -2220,80 +2222,85 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
     *overflow = 0;
 
   /* Hmmm: file_filter may have already been removed */
-  for ( ; a; a = a->chain )
-    if ( !a->chain && a->filter == file_filter )
-      {
-        file_filter_ctx_t *b = a->filter_ov;
-        gnupg_fd_t fp = b->fp;
+  for ( ; a->chain; a = a->chain )
+    ;
+
+  if (a->filter != file_filter)
+    return 0;
+
+  {
+    file_filter_ctx_t *b = a->filter_ov;
+    gnupg_fd_t fp = b->fp;
 
 #if defined(HAVE_W32_SYSTEM)
-        ulong size;
-        static int (* __stdcall get_file_size_ex) (void *handle,
-                                                   LARGE_INTEGER *r_size);
-        static int get_file_size_ex_initialized;
+    ulong size;
+    static int (* __stdcall get_file_size_ex) (void *handle,
+					       LARGE_INTEGER *r_size);
+    static int get_file_size_ex_initialized;
 
-        if (!get_file_size_ex_initialized)
-          {
-            void *handle;
+    if (!get_file_size_ex_initialized)
+      {
+	void *handle;
 
-            handle = dlopen ("kernel32.dll", RTLD_LAZY);
-            if (handle)
-              {
-                get_file_size_ex = dlsym (handle, "GetFileSizeEx");
-                if (!get_file_size_ex)
-                  dlclose (handle);
-              }
-            get_file_size_ex_initialized = 1;
-          }
-
-        if (get_file_size_ex)
-          {
-            /* This is a newer system with GetFileSizeEx; we use this
-               then because it seem that GetFileSize won't return a
-               proper error in case a file is larger than 4GB. */
-            LARGE_INTEGER exsize;
-
-            if (get_file_size_ex (fp, &exsize))
-              {
-                if (!exsize.u.HighPart)
-                  return exsize.u.LowPart;
-                if (overflow)
-                  *overflow = 1;
-                return 0;
-              }
-          }
-        else
-          {
-            if ((size=GetFileSize (fp, NULL)) != 0xffffffff)
-              return size;
-          }
-        log_error ("GetFileSize for handle %p failed: %s\n",
-                   fp, w32_strerror (0));
-#else
-        if ( !fstat (FD2INT (fp), &st) )
-          return st.st_size;
-        log_error("fstat() failed: %s\n", strerror(errno) );
-#endif
-        break/*the for loop*/;
+	handle = dlopen ("kernel32.dll", RTLD_LAZY);
+	if (handle)
+	  {
+	    get_file_size_ex = dlsym (handle, "GetFileSizeEx");
+	    if (!get_file_size_ex)
+	      dlclose (handle);
+	  }
+	get_file_size_ex_initialized = 1;
       }
 
-    return 0;
+    if (get_file_size_ex)
+      {
+	/* This is a newer system with GetFileSizeEx; we use this
+	   then because it seem that GetFileSize won't return a
+	   proper error in case a file is larger than 4GB. */
+	LARGE_INTEGER exsize;
+
+	if (get_file_size_ex (fp, &exsize))
+	  {
+	    if (!exsize.u.HighPart)
+	      return exsize.u.LowPart;
+	    if (overflow)
+	      *overflow = 1;
+	    return 0;
+	  }
+      }
+    else
+      {
+	if ((size=GetFileSize (fp, NULL)) != 0xffffffff)
+	  return size;
+      }
+    log_error ("GetFileSize for handle %p failed: %s\n",
+	       fp, w32_strerror (0));
+#else
+    if ( !fstat (FD2INT (fp), &st) )
+      return st.st_size;
+    log_error("fstat() failed: %s\n", strerror(errno) );
+#endif
+  }
+
+  return 0;
 }
 
 
 int
 iobuf_get_fd (iobuf_t a)
 {
-  for ( ; a; a = a->chain )
-    if (!a->chain && a->filter == file_filter)
-      {
-        file_filter_ctx_t *b = a->filter_ov;
-        gnupg_fd_t fp = b->fp;
+  for (; a->chain; a = a->chain)
+    ;
 
-        return FD2INT (fp);
-      }
+  if (a->filter != file_filter)
+    return -1;
 
-  return -1;
+  {
+    file_filter_ctx_t *b = a->filter_ov;
+    gnupg_fd_t fp = b->fp;
+
+    return FD2INT (fp);
+  }
 }
 
 
@@ -2341,16 +2348,15 @@ iobuf_seek (iobuf_t a, off_t newpos)
 
   if (a->use != IOBUF_TEMP)
     {
-      for (; a; a = a->chain)
-	{
-	  if (!a->chain && a->filter == file_filter)
-	    {
-	      b = a->filter_ov;
-	      break;
-	    }
-	}
-      if (!a)
+      /* Find the last filter in the pipeline.  */
+      for (; a->chain; a = a->chain)
+	;
+
+      if (a->filter != file_filter)
 	return -1;
+
+      b = a->filter_ov;
+
 #ifdef HAVE_W32_SYSTEM
       if (SetFilePointer (b->fp, newpos, NULL, FILE_BEGIN) == 0xffffffff)
 	{
