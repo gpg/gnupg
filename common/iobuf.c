@@ -1100,6 +1100,11 @@ iobuf_alloc (int use, size_t bufsize)
   static int number = 0;
 
   assert (use == IOBUF_INPUT || use == IOBUF_OUTPUT || use == IOBUF_TEMP);
+  if (bufsize == 0)
+    {
+      log_bug ("iobuf_alloc() passed a bufsize of 0!\n");
+      bufsize = IOBUF_BUFFER_SIZE;
+    }
 
   a = xcalloc (1, sizeof *a);
   a->use = use;
@@ -1935,6 +1940,14 @@ iobuf_readbyte (iobuf_t a)
 {
   int c;
 
+  if (a->use != IOBUF_INPUT)
+    {
+      log_bug ("iobuf_readbyte called on a non-INPUT pipeline!\n");
+      return -1;
+    }
+
+  assert (a->d.start <= a->d.len);
+
   if (a->nlimit && a->nbytes >= a->nlimit)
     return -1;			/* forced EOF */
 
@@ -1944,6 +1957,8 @@ iobuf_readbyte (iobuf_t a)
     }
   else if ((c = underflow (a, 1)) == -1)
     return -1;			/* EOF */
+
+  assert (a->d.start <= a->d.len);
 
   /* Note: if underflow doesn't return EOF, then it returns the first
      byte that was read and advances a->d.start appropriately.  */
@@ -1958,6 +1973,13 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
 {
   unsigned char *buf = (unsigned char *)buffer;
   int c, n;
+
+  if (a->use != IOBUF_INPUT)
+    {
+      log_bug ("iobuf_read called on a non-INPUT pipeline!\n");
+      return -1;
+    }
+  assert (a->use == IOBUF_INPUT);
 
   if (a->nlimit)
     {
@@ -2065,6 +2087,12 @@ iobuf_writebyte (iobuf_t a, unsigned int c)
 {
   int rc;
 
+  if (a->use == IOBUF_INPUT)
+    {
+      log_bug ("iobuf_writebyte called on an input pipeline!\n");
+      return -1;
+    }
+
   if (a->d.len == a->d.size)
     if ((rc=filter_flush (a)))
       return rc;
@@ -2080,6 +2108,12 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 {
   const unsigned char *buf = (const unsigned char *)buffer;
   int rc;
+
+  if (a->use == IOBUF_INPUT)
+    {
+      log_bug ("iobuf_write called on an input pipeline!\n");
+      return -1;
+    }
 
   do
     {
@@ -2108,6 +2142,12 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 int
 iobuf_writestr (iobuf_t a, const char *buf)
 {
+  if (a->use == IOBUF_INPUT)
+    {
+      log_bug ("iobuf_writestr called on an input pipeline!\n");
+      return -1;
+    }
+
   return iobuf_write (a, buf, strlen (buf));
 }
 
@@ -2150,6 +2190,8 @@ iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 void
 iobuf_flush_temp (iobuf_t temp)
 {
+  if (temp->use == IOBUF_INPUT)
+    log_bug ("iobuf_writestr called on an input pipeline!\n");
   while (temp->chain)
     pop_filter (temp, temp->filter, NULL);
 }
