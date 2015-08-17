@@ -1604,8 +1604,21 @@ iobuf_push_filter2 (iobuf_t a,
   a->filter_ov_owner = 0;
   a->filter_eof = 0;
   if (a->use == IOBUF_TEMP)
-    /* make a write stream from a temp stream */
-    a->use = IOBUF_OUTPUT;
+    /* A TEMP filter buffers any data sent to it; it does not forward
+       any data down the pipeline.  If we add a new filter to the
+       pipeline, it shouldn't also buffer data.  It should send it
+       downstream to be buffered.  Thus, the correct type for a filter
+       added in front of an IOBUF_TEMP filter is IOBUF_OUPUT, not
+       IOBUF_TEMP.  */
+    {
+      a->use = IOBUF_OUTPUT;
+
+      /* When pipeline is written to, the temp buffer's size is
+	 increased accordingly.  We don't need to allocate a 10 MB
+	 buffer for a non-terminal filter.  Just use the default
+	 size.  */
+      a->d.size = IOBUF_BUFFER_SIZE;
+    }
 
   /* The new filter (A) gets a new buffer.
 
