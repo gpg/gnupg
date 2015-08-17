@@ -29,9 +29,6 @@ extern "C" {
 #include "../common/iobuf.h"
 #include "keybox-search-desc.h"
 
-#define KEYBOX_WITH_X509 1
-
-
 #ifdef KEYBOX_WITH_X509
 # include <ksba.h>
 #endif

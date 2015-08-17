@@ -26,7 +26,7 @@ include $(top_srcdir)/am/cmacros.am
 
 AM_CFLAGS = $(LIBGCRYPT_CFLAGS) $(KSBA_CFLAGS)
 
-noinst_LIBRARIES = libkeybox.a
+noinst_LIBRARIES = libkeybox.a libkeybox509.a
 bin_PROGRAMS = kbxutil
 
 if HAVE_W32CE_SYSTEM
@@ -48,11 +48,17 @@ common_sources = \
 
 
 libkeybox_a_SOURCES = $(common_sources)
+libkeybox509_a_SOURCES = $(common_sources)
+
+libkeybox_a_CFLAGS = $(AM_CFLAGS)
+libkeybox509_a_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
+
 
 # We need W32SOCKLIBS because the init subsystem code in libcommon
 # requires it - although we don't actually need it.  It is easier
 # to do it this way.
 kbxutil_SOURCES = kbxutil.c $(common_sources)
+kbxutil_CFLAGS = $(AM_CFLAGS) -DKEYBOX_WITH_X509=1
 kbxutil_LDADD   = ../common/libcommon.a \
                   $(KSBA_LIBS) $(LIBGCRYPT_LIBS) $(extra_libs) \
                   $(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV) $(W32SOCKLIBS)

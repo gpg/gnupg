@@ -611,6 +611,9 @@ has_keygrip (KEYBOXBLOB blob, const unsigned char *grip)
 #ifdef KEYBOX_WITH_X509
   if (blob_get_type (blob) == KEYBOX_BLOBTYPE_X509)
     return blob_x509_has_grip (blob, grip);
+#else
+  (void)blob;
+  (void)grip;
 #endif
   return 0;
 }
