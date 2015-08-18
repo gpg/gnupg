@@ -2,6 +2,7 @@
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2009, 2010 Free Software Foundation, Inc.
  * Copyright (C) 2014 Werner Koch
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -109,11 +110,18 @@ read_32 (IOBUF inp)
 }
 
 
-/* Read an external representation of an mpi and return the MPI.  The
- * external format is a 16 bit unsigned value stored in network byte
- * order, giving the number of bits for the following integer. The
- * integer is stored with MSB first (left padded with zero bits to align
- * on a byte boundary).  */
+/* Read an external representation of an MPI and return the MPI.  The
+   external format is a 16-bit unsigned value stored in network byte
+   order giving the number of bits for the following integer.  The
+   integer is stored MSB first and is left padded with zero bits to
+   align on a byte boundary.
+
+   The caller must set *RET_NREAD to the maximum number of bytes to
+   read from the pipeline INP.  This function sets *RET_NREAD to be
+   the number of bytes actually read from the pipeline.
+
+   If SECURE is true, the integer is stored in secure memory
+   (allocated using gcry_xmalloc_secure).  */
 static gcry_mpi_t
 mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
 {
@@ -150,10 +158,15 @@ mpi_read (iobuf_t inp, unsigned int *ret_nread, int secure)
   p[1] = c2;
   for (i = 0; i < nbytes; i++)
     {
-      p[i + 2] = iobuf_get (inp) & 0xff;
       if (nread == nmax)
-        goto overflow;
-      nread++;
+	goto overflow;
+
+      c = iobuf_get (inp);
+      if (c == -1)
+	goto leave;
+
+      p[i + 2] = c;
+      nread ++;
     }
 
   if (gcry_mpi_scan (&a, GCRYMPI_FMT_PGP, buf, nread, &nread))
