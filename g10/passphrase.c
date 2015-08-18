@@ -195,6 +195,7 @@ agent_send_all_options (assuan_context_t ctx)
   char *dft_display = NULL;
   const char *dft_ttyname = NULL;
   char *dft_ttytype = NULL;
+  char *dbus_session_address = NULL;
   char *old_lc = NULL;
   char *dft_lc = NULL;
   int rc = 0;
@@ -204,6 +205,14 @@ agent_send_all_options (assuan_context_t ctx)
     {
       if (agent_send_option (ctx, "display",
                              opt.display ? opt.display : dft_display))
+        return -1;
+    }
+
+  dbus_session_address = getenv ("DBUS_SESSION_BUS_ADDRESS");
+  if (dbus_session_address)
+    {
+      if (agent_send_option (ctx, "putenv=DBUS_SESSION_BUS_ADDRESS",
+                             dbus_session_address))
         return -1;
     }
 
