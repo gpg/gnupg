@@ -789,7 +789,7 @@ copy_packet (IOBUF inp, IOBUF out, int pkttype,
 
   if (partial)
     {
-      while ((n = iobuf_read (inp, buf, 100)) != -1)
+      while ((n = iobuf_read (inp, buf, sizeof (buf))) != -1)
 	if ((rc = iobuf_write (out, buf, n)))
 	  return rc;		/* write error */
     }
@@ -797,7 +797,7 @@ copy_packet (IOBUF inp, IOBUF out, int pkttype,
     {
       log_debug ("copy_packet: compressed!\n");
       /* compressed packet, copy till EOF */
-      while ((n = iobuf_read (inp, buf, 100)) != -1)
+      while ((n = iobuf_read (inp, buf, sizeof (buf))) != -1)
 	if ((rc = iobuf_write (out, buf, n)))
 	  return rc;		/* write error */
     }
@@ -805,7 +805,7 @@ copy_packet (IOBUF inp, IOBUF out, int pkttype,
     {
       for (; pktlen; pktlen -= n)
 	{
-	  n = pktlen > 100 ? 100 : pktlen;
+	  n = pktlen > sizeof (buf) ? sizeof (buf) : pktlen;
 	  n = iobuf_read (inp, buf, n);
 	  if (n == -1)
 	    return gpg_error (GPG_ERR_EOF);
