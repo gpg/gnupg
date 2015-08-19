@@ -88,6 +88,7 @@ static int parse_mdc (IOBUF inp, int pkttype, unsigned long pktlen,
 static int parse_gpg_control (IOBUF inp, int pkttype, unsigned long pktlen,
 			      PACKET * packet, int partial);
 
+/* Read a 16-bit value in MSB order (big endian) from an iobuf.  */
 static unsigned short
 read_16 (IOBUF inp)
 {
@@ -98,6 +99,7 @@ read_16 (IOBUF inp)
 }
 
 
+/* Read a 32-bit value in MSB order (big endian) from an iobuf.  */
 static unsigned long
 read_32 (IOBUF inp)
 {
@@ -226,6 +228,8 @@ set_packet_list_mode (int mode)
 }
 
 
+/* If OPT.VERBOSE is set, print a warning that the algorithm ALGO is
+   not suitable for signing and encryption.  */
 static void
 unknown_pubkey_warning (int algo)
 {
@@ -258,12 +262,6 @@ unknown_pubkey_warning (int algo)
 }
 
 
-/* Parse a packet and return it in packet structure.
- * Returns: 0 := valid packet in pkt
- *	   -1 := no more packets
- *	   >0 := error
- * Note: The function may return an error and a partly valid packet;
- * caller must free this packet.   */
 #ifdef DEBUG_PARSE_PACKET
 int
 dbg_parse_packet (IOBUF inp, PACKET *pkt, const char *dbg_f, int dbg_l)
@@ -437,12 +435,33 @@ skip_some_packets (IOBUF inp, unsigned n)
 #endif /*!DEBUG_PARSE_PACKET*/
 
 
-/*
- * Parse packet.  Stores 1 at SKIP 1 if the packet should be skipped;
- * this is the case if either ONLYKEYPKTS is set and the parsed packet
- * isn't a key packet or the packet-type is 0, indicating deleted
- * stuff.  If OUT is not NULL, a special copymode is used.
- */
+/* Parse a packet and save it in *PKT.
+
+   If OUT is not NULL and the packet is valid (its type is not 0),
+   then the header, the initial length field and the packet's contents
+   are written to OUT.  In this case, the packet is not saved in *PKT.
+
+   ONLYKEYPKTS is a simple packet filter.  If ONLYKEYPKTS is set to 1,
+   then only public subkey packets, public key packets, private subkey
+   packets and private key packets are parsed.  The rest are skipped
+   (i.e., the header and the contents are read from the pipeline and
+   discarded).  If ONLYKEYPKTS is set to 2, then in addition to the
+   above 4 types of packets, user id packets are also accepted.
+
+   DO_SKIP is a more coarse grained filter.  Unless ONLYKEYPKTS is set
+   to 2 and the packet is a user id packet, all packets are skipped.
+
+   Finally, if a packet is invalid (it's type is 0), it is skipped.
+
+   If a packet is skipped and SKIP is not NULL, then *SKIP is set to
+   1.
+
+   Note: ONLYKEYPKTS and DO_SKIP are only respected if OUT is NULL,
+   i.e., the packets are not simply being copied.
+
+   If RETPOS is not NULL, then the position of INP (as returned by
+   iobuf_tell) is saved there before any data is read from INP.
+  */
 static int
 parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
        int *skip, IOBUF out, int do_skip
@@ -470,6 +489,8 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
   else
     pos = 0; /* (silence compiler warning) */
 
+  /* The first byte of a packet is the so-called tag.  The highest bit
+     must be set.  */
   if ((ctb = iobuf_get (inp)) == -1)
     {
       rc = -1;
@@ -477,17 +498,31 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
     }
   hdrlen = 0;
   hdr[hdrlen++] = ctb;
+
   if (!(ctb & 0x80))
     {
       log_error ("%s: invalid packet (ctb=%02x)\n", iobuf_where (inp), ctb);
       rc = gpg_error (GPG_ERR_INV_PACKET);
       goto leave;
     }
+
+  /* Immediately following the header is the length.  There are two
+     formats: the old format and the new format.  If bit 6 (where the
+     least significant bit is bit 0) is set in the tag, then we are
+     dealing with a new format packet.  Otherwise, it is an old format
+     packet.  */
   pktlen = 0;
   new_ctb = !!(ctb & 0x40);
   if (new_ctb)
     {
+      /* Get the packet's type.  This is encoded in the 6 least
+	 significant bits of the tag.  */
       pkttype = ctb & 0x3f;
+
+      /* Extract the packet's length.  New format packets have 4 ways
+	 to encode the packet length.  The value of the first byte
+	 determines the encoding and partially determines the length.
+	 See section 4.2.2 of RFC 4880 for details.  */
       if ((c = iobuf_get (inp)) == -1)
 	{
 	  log_error ("%s: 1st length byte missing\n", iobuf_where (inp));
@@ -539,7 +574,7 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
               break;
 
             default:
-              log_error ("%s: partial length for invalid"
+              log_error ("%s: partial length invalid for"
                          " packet type %d\n", iobuf_where (inp), pkttype);
               rc = gpg_error (GPG_ERR_INV_PACKET);
               goto leave;
@@ -548,8 +583,13 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
 
     }
   else
+    /* This is an old format packet.  */
     {
+      /* Extract the packet's type.  This is encoded in bits 2-5.  */
       pkttype = (ctb >> 2) & 0xf;
+
+      /* The type of length encoding is encoded in bits 0-1 of the
+	 tag.  */
       lenbytes = ((ctb & 3) == 3) ? 0 : (1 << (ctb & 3));
       if (!lenbytes)
 	{
@@ -594,9 +634,13 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
     }
 
   if (with_uid && pkttype == PKT_USER_ID)
+    /* If ONLYKEYPKTS is set to 2, then we never skip user id packets,
+       even if DO_SKIP is set.  */
     ;
   else if (do_skip
+	   /* type==0 is not allowed.  This is an invalid packet.  */
 	   || !pkttype
+	   /* When ONLYKEYPKTS is set, we don't skip keys.  */
 	   || (onlykeypkts && pkttype != PKT_PUBLIC_SUBKEY
 	       && pkttype != PKT_PUBLIC_KEY
 	       && pkttype != PKT_SECRET_SUBKEY && pkttype != PKT_SECRET_KEY))
@@ -686,12 +730,13 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
       rc = parse_marker (inp, pkttype, pktlen);
       break;
     default:
+      /* Unknown packet.  Skip it.  */
       skip_packet (inp, pkttype, pktlen, partial);
       break;
     }
 
  leave:
-  /* FIXME: Do we leak in case of an error?  */
+  /* FIXME: We leak in case of an error (see the xmalloc's above).  */
   if (!rc && iobuf_error (inp))
     rc = GPG_ERR_INV_KEYRING;
 
@@ -720,6 +765,20 @@ dump_hex_line (int c, int *i)
 }
 
 
+/* Copy the contents of a packet from the pipeline IN to the pipeline
+   OUT.
+
+   The header and length have already been read from INP and the
+   decoded values are given as PKGTYPE and PKTLEN.
+
+   If the packet is a partial body length packet (RFC 4880, Section
+   4.2.2.4), then iobuf_set_partial_block_mode should already have
+   been called on INP and PARTIAL should be set.
+
+   If PARTIAL is set or PKTLEN is 0 and PKTTYPE is PKT_COMPRESSED,
+   copy until the first EOF is encountered on INP.
+
+   Returns 0 on success and an error code if an error occurs.  */
 static int
 copy_packet (IOBUF inp, IOBUF out, int pkttype,
 	     unsigned long pktlen, int partial)
@@ -758,6 +817,9 @@ copy_packet (IOBUF inp, IOBUF out, int pkttype,
 }
 
 
+/* Skip an unknown packet.  PKTTYPE is the packet's type, PKTLEN is
+   the length of the packet's content and PARTIAL is whether partial
+   body length encoding in used (in this case PKTLEN is ignored).  */
 static void
 skip_packet (IOBUF inp, int pkttype, unsigned long pktlen, int partial)
 {
@@ -792,8 +854,9 @@ skip_packet (IOBUF inp, int pkttype, unsigned long pktlen, int partial)
 
 
 /* Read PKTLEN bytes form INP and return them in a newly allocated
-   buffer.  In case of an error NULL is returned and a error messages
-   printed.  */
+   buffer.  In case of an error (including reading fewer than PKTLEN
+   bytes from INP before EOF is returned), NULL is returned and an
+   error message is logged.  */
 static void *
 read_rest (IOBUF inp, size_t pktlen)
 {
@@ -1124,6 +1187,12 @@ parse_pubkeyenc (IOBUF inp, int pkttype, unsigned long pktlen,
 }
 
 
+/* Dump a subpacket to LISTFP.  BUFFER contains the subpacket in
+   question and points to the type field in the subpacket header (not
+   the start of the header).  TYPE is the subpacket's type with the
+   critical bit cleared.  CRITICAL is the value of the CRITICAL bit.
+   BUFLEN is the length of the buffer and LENGTH is the length of the
+   subpacket according to the subpacket's header.  */
 static void
 dump_sig_subpkt (int hashed, int type, int critical,
 		 const byte * buffer, size_t buflen, size_t length)
@@ -1560,7 +1629,11 @@ enum_sig_subpkt (const subpktarea_t * pktbuf, sigsubpkttype_t reqtype,
       buflen -= n;
     }
   if (reqtype == SIGSUBPKT_TEST_CRITICAL)
-    return buffer;  /* Used as True to indicate that there is no. */
+    /* Returning NULL means we found a subpacket with the critical bit
+       set that we dn't grok.  We've iterated over all the subpackets
+       and haven't found such a packet so we need to return a non-NULL
+       value.  */
+    return buffer;
 
   /* Critical bit we don't understand. */
   if (start)
