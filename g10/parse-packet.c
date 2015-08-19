@@ -549,16 +549,28 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
         }
       else if (c == 255)
         {
-          pktlen = (unsigned long)(hdr[hdrlen++] = iobuf_get_noeof (inp)) << 24;
-          pktlen |= (hdr[hdrlen++] = iobuf_get_noeof (inp)) << 16;
-          pktlen |= (hdr[hdrlen++] = iobuf_get_noeof (inp)) << 8;
-          if ((c = iobuf_get (inp)) == -1)
+	  int i;
+	  int eof = 0;
+	  char value[4];
+
+	  for (i = 0; i < 4; i ++)
+	    if ((value[i] = hdr[hdrlen++] = iobuf_get (inp)) == -1)
+	      {
+		eof = 1;
+		break;
+	      }
+
+	  if (eof)
             {
               log_error ("%s: 4 byte length invalid\n", iobuf_where (inp));
               rc = gpg_error (GPG_ERR_INV_PACKET);
               goto leave;
             }
-          pktlen |= (hdr[hdrlen++] = c);
+
+	  pktlen = (((unsigned long) value[0] << 24)
+		    | ((unsigned long) value[1] << 16)
+		    | ((unsigned long) value[2] << 8)
+		    | ((unsigned long) value[3]));
         }
       else /* Partial body length.  */
         {
@@ -611,7 +623,14 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
 	  for (; lenbytes; lenbytes--)
 	    {
 	      pktlen <<= 8;
-	      pktlen |= hdr[hdrlen++] = iobuf_get_noeof (inp);
+	      c = iobuf_get (inp);
+	      if (c == -1)
+		{
+		  log_error ("%s: length invalid\n", iobuf_where (inp));
+		  rc = gpg_error (GPG_ERR_INV_PACKET);
+		  goto leave;
+		}
+	      pktlen |= hdr[hdrlen++] = c;
 	    }
 	}
     }
