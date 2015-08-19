@@ -1585,14 +1585,13 @@ parse_sig_subpkt (const subpktarea_t * buffer, sigsubpkttype_t reqtype,
 
 
 const byte *
-parse_sig_subpkt2 (PKT_signature * sig, sigsubpkttype_t reqtype,
-		   size_t * ret_n)
+parse_sig_subpkt2 (PKT_signature * sig, sigsubpkttype_t reqtype)
 {
   const byte *p;
 
-  p = parse_sig_subpkt (sig->hashed, reqtype, ret_n);
+  p = parse_sig_subpkt (sig->hashed, reqtype, NULL);
   if (!p)
-    p = parse_sig_subpkt (sig->unhashed, reqtype, ret_n);
+    p = parse_sig_subpkt (sig->unhashed, reqtype, NULL);
   return p;
 }
 
@@ -1767,7 +1766,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	       && opt.verbose)
 	log_info ("signature packet without timestamp\n");
 
-      p = parse_sig_subpkt2 (sig, SIGSUBPKT_ISSUER, NULL);
+      p = parse_sig_subpkt2 (sig, SIGSUBPKT_ISSUER);
       if (p)
 	{
 	  sig->keyid[0] = buf32_to_u32 (p);
@@ -1821,7 +1820,7 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
          unhashed area.  In theory, anyway, we should never see this
          packet off of a local keyring. */
 
-      p = parse_sig_subpkt2 (sig, SIGSUBPKT_EXPORTABLE, NULL);
+      p = parse_sig_subpkt2 (sig, SIGSUBPKT_EXPORTABLE);
       if (p && *p == 0)
 	sig->flags.exportable = 0;
 

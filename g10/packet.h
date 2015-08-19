@@ -457,8 +457,7 @@ const byte *parse_sig_subpkt ( const subpktarea_t *buffer,
                                sigsubpkttype_t reqtype,
                                size_t *ret_n );
 const byte *parse_sig_subpkt2 ( PKT_signature *sig,
-                                sigsubpkttype_t reqtype,
-                                size_t *ret_n );
+                                sigsubpkttype_t reqtype);
 int parse_one_sig_subpkt( const byte *buffer, size_t n, int type );
 void parse_revkeys(PKT_signature *sig);
 int parse_attribute_subpkts(PKT_user_id *uid);
