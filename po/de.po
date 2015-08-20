@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-08-11 13:52+0200\n"
+"PO-Revision-Date: 2015-08-20 16:27+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -4704,7 +4704,7 @@ msgid "Your decision? "
 msgstr "Ihre Auswahl? "
 
 msgid "Do you really want to set this key to ultimate trust? (y/N) "
-msgstr "Wollen Sie diesem Schlüssel wirklich uneingeschränkt vertrauen? (j/N) "
+msgstr "Wollen Sie diesem Schlüssel wirklich ultimativ vertrauen? (j/N) "
 
 msgid "Certificates leading to an ultimately trusted key:\n"
 msgstr "Zertifikate führen zu einem letztlich vertrauenswürdigen Schlüssel:\n"
@@ -5331,7 +5331,7 @@ msgstr ""
 
 #, c-format
 msgid "key %s marked as ultimately trusted\n"
-msgstr "Schlüssel %s ist als uneingeschränkt vertrauenswürdig gekennzeichnet\n"
+msgstr "Schlüssel %s ist als ultimativ vertrauenswürdig gekennzeichnet\n"
 
 #, c-format
 msgid "trust record %lu, req type %d: read failed: %s\n"
@@ -5390,12 +5390,11 @@ msgid "%d keys processed (%d validity counts cleared)\n"
 msgstr "%d Schlüssel verarbeitet (%d Validity Zähler gelöscht)\n"
 
 msgid "no ultimately trusted keys found\n"
-msgstr "keine uneingeschränkt vertrauenswürdigen Schlüssel gefunden\n"
+msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
 
 #, c-format
 msgid "public key of ultimately trusted key %s not found\n"
-msgstr ""
-"öff. Schlüssel des uneingeschränkt vertrautem Schlüssel %s nicht gefunden\n"
+msgstr "öff. Schlüssel des ultimativ vertrautem Schlüssel %s nicht gefunden\n"
 
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
@@ -5413,6 +5412,53 @@ msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr ""
 "\"Trust-DB\"-Versions-Satz kann nicht geändert werden: Schreiben "
 "fehlgeschlagen: %s\n"
+
+msgid "undefined"
+msgstr "unbestimmt"
+
+msgid "never"
+msgstr "niemals"
+
+msgid "marginal"
+msgstr "marginal"
+
+msgid "full"
+msgstr "vollständig"
+
+msgid "ultimate"
+msgstr "ultimativ"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "13"
+
+msgid "[ revoked]"
+msgstr "[ widerrufen]"
+
+msgid "[ expired]"
+msgstr "[  verfallen]"
+
+msgid "[ unknown]"
+msgstr "[  unbekannt]"
+
+msgid "[  undef ]"
+msgstr "[undefiniert]"
+
+msgid "[marginal]"
+msgstr "[   marginal]"
+
+msgid "[  full  ]"
+msgstr "[vollständig]"
+
+msgid "[ultimate]"
+msgstr "[  ultimativ]"
 
 msgid ""
 "the signature could not be verified.\n"
@@ -8222,45 +8268,6 @@ msgstr ""
 #~ msgid "deleting secret key not implemented\n"
 #~ msgstr "Löschen des geheimen Schlüssel ist nicht implementiert\n"
 
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "10"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[widerrufen]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[verfall.]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[  unbek.]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[  undef.]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[marginal]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[ vollst.]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[ uneing.]"
-
-#~ msgid "undefined"
-#~ msgstr "unbestimmt"
-
-#~ msgid "never"
-#~ msgstr "niemals"
-
-#~ msgid "marginal"
-#~ msgstr "marginal"
-
-#~ msgid "full"
-#~ msgstr "vollständig"
-
-#~ msgid "ultimate"
-#~ msgstr "uneingeschränkt"
-
 #~ msgid "usage: gpgconf [options] "
 #~ msgstr "Aufruf: gpgconf [Optionen] "
 
@@ -8645,10 +8652,9 @@ msgstr ""
 #~ "ultimately trusted\n"
 #~ msgstr ""
 #~ "Um das Web-of-Trust aufzubauen muß GnuPG wissen, welchen Schlüsseln\n"
-#~ "uneingeschränkt vertraut wird. Das sind üblicherweise die Schlüssel\n"
+#~ "ultimativ vertraut wird. Das sind üblicherweise die Schlüssel\n"
 #~ "auf deren geheimen Schlüssel Sie Zugruff haben.\n"
-#~ "Antworten Sie mit \"yes\" um diesen Schlüssel uneingeschränkt zu "
-#~ "vertrauen\n"
+#~ "Antworten Sie mit \"yes\" um diesen Schlüssel ultimativ zu vertrauen\n"
 
 #~ msgid "If you want to use this untrusted key anyway, answer \"yes\"."
 #~ msgstr ""

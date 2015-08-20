@@ -7,12 +7,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # GnuPG is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 
@@ -41,9 +41,9 @@ um das "Netz des Vertrauens" aufzubauen.  Dieses hat nichts mit dem
 
 .gpg.edit_ownertrust.set_ultimate.okay
 Um das Web-of-Trust aufzubauen muß GnuPG wissen, welchen Schlüsseln
-uneingeschränkt vertraut wird. Das sind üblicherweise die Schlüssel
+ultimativ vertraut wird. Das sind üblicherweise die Schlüssel
 auf deren geheimen Schlüssel Sie Zugruff haben.
-Antworten Sie mit "yes" um diesen Schlüssel uneingeschränkt zu vertrauen
+Antworten Sie mit "yes" um diesen Schlüssel ultimativ zu vertrauen
 
 .
 
@@ -74,7 +74,7 @@ unterschrieben werden kann.
 .gpg.keygen.algo.rsa_se
 Normalerweise ist es nicht gut, denselben Schlüssel zum unterschreiben
 und verschlüsseln zu nutzen.  Dieses Verfahren sollte in speziellen
-Anwendungsgebiten benutzt werden.  Bitte lassen Sie sich zuerst von 
+Anwendungsgebiten benutzt werden.  Bitte lassen Sie sich zuerst von
 einem Sicherheistexperten beraten.
 .
 
@@ -138,7 +138,7 @@ sicherstellen, daß der Schlüssel demjenigen gehört, der in der User-ID genann
 ist. Für Dritte ist es hilfreich zu wissen, wie gut diese Zuordnung überprüft
 wurde.
 
-"0" zeigt, daß Sie keine bestimmte Aussage über die Sorgfalt der 
+"0" zeigt, daß Sie keine bestimmte Aussage über die Sorgfalt der
     Schlüsselzuordnung machen.
 
 "1" Sie glauben, daß der Schlüssel der benannten Person gehört,
@@ -224,7 +224,7 @@ Eigenbeglaubigungen werden um eine Sekunde vorgestellt.
 .
 
 .gpg.passphrase.enter
-Bitte geben Sie die Passphrase ein. Dies ist ein geheimer Satz 
+Bitte geben Sie die Passphrase ein. Dies ist ein geheimer Satz
 
 .
 
