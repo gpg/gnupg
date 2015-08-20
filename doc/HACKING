@@ -32,11 +32,31 @@ TAB, will not exceed 80 columns.  If you want to add text which shall
 not be copied to the ChangeLog, separate it by a line consisting of
 two dashes at the begin of a line.
 
-Typo fixes and documentation updates don't need a ChangeLog Entry,
+The one-line summary usually starts with a keyword to identify the
+mainly affected subsystem.  If more than one keyword is required the
+are delimited by a comma (e.g. =scd,w32:=). Commonly found keywords
+are
+
+ - agent   :: The gpg-agent component
+ - ssh     :: The ssh-agent part of the agent
+ - common  :: Code in common
+ - iobuf   :: The IOBUF system in common
+ - gpg     :: The gpg or gpgv components
+ - gpgsm   :: The gpgsm component
+ - scd     :: The scdaemon component
+ - ccid    :: The CCID driver in scdaemon
+ - dirmngr :: The dirmngr component
+ - w32     :: Windows related code
+ - po      :: Translations
+ - build   :: Changes to the build system
+ - speedo  :: Speedo build system specific changes
+ - doc     :: Documentation changes
+
+Typo fixes and documentation updates don't need a ChangeLog entry;
 thus you would use a commit message like
 
 #+begin_example
-Fix type in a comment
+Fix typo in a comment
 
 --
 #+end_example
@@ -52,7 +72,6 @@ do this after this scissor line:
 (hash, blank, 24 dashes, blank, scissor, blank, 24 dashes).
 Note that such a comment will be removed if the git commit option
 =--cleanup=scissor= is used.
-
 
 
 ** License policy
@@ -103,6 +122,12 @@ Note that such a comment will be removed if the git commit option
   the existing code as an example.  Do no re-indent code without a
   need.  If you really need to do it, use a separate commit for such a
   change.
+
+  - C99 syntax should not be used; stick to C90.
+  - Please do not use C++ =//= style comments.
+  - Try to fit lines into 80 columns.
+  - Ignore signed/unsigned pointer mismatches
+  - No arithmetic on void pointers; cast to char* first.
 
 ** Commit log keywords
 
@@ -155,7 +180,6 @@ Note that such a comment will be removed if the git commit option
    speedo.mk has the versions of the tarballs and the branch names of
    the git repositories.  In case of problems, don't hesitate to ask
    on the gnupg-devel mailing for help.
-
 
 * Debug hints
 

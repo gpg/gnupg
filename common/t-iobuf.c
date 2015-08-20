@@ -27,7 +27,7 @@ every_other_filter (void *opaque, int control,
       else
 	c2 = iobuf_readbyte (chain);
 
-      // printf ("Discarding %d (%c); return %d (%c)\n", c, c, c2, c2);
+      /* printf ("Discarding %d (%c); return %d (%c)\n", c, c, c2, c2); */
 
       if (c2 == -1)
 	{
@@ -149,12 +149,12 @@ main (int argc, char *argv[])
     n = 0;
     while ((c = iobuf_readbyte (iobuf)) != -1)
       {
-	// printf ("%d: %c\n", n + 1, (char) c);
+	/* printf ("%d: %c\n", n + 1, (char) c); */
 	assert (content[2 * n + 1] == c);
 	n ++;
       }
-    // printf ("Got EOF after reading %d bytes (content: %d)\n",
-    // n, strlen (content));
+    /* printf ("Got EOF after reading %d bytes (content: %d)\n", */
+    /*         n, strlen (content)); */
     assert (n == strlen (content) / 2);
 
     iobuf_close (iobuf);
@@ -185,7 +185,7 @@ main (int argc, char *argv[])
 
     while ((c = iobuf_readbyte (iobuf)) != -1)
       {
-	// printf ("%d: %c\n", n + 1, (char) c);
+	/* printf ("%d: %c\n", n + 1, (char) c); */
 	assert (content[2 * (n - 5) + 1] == c);
 	n ++;
       }
@@ -293,7 +293,7 @@ main (int argc, char *argv[])
 	c = iobuf_readbyte (iobuf);
 	if (c == -1 && lastc == -1)
 	  {
-	    // printf("Two EOFs in a row.  Done.\n");
+	    /* printf("Two EOFs in a row.  Done.\n");  */
 	    assert (n == 44);
 	    break;
 	  }
@@ -302,13 +302,13 @@ main (int argc, char *argv[])
 
 	if (c == -1)
 	  {
-	    // printf("After %d bytes, got EOF.\n", n);
+	    /* printf("After %d bytes, got EOF.\n", n); */
 	    assert (n == 27 || n == 44);
 	  }
 	else
 	  {
 	    n ++;
-	    // printf ("%d: '%c' (%d)\n", n, c, c);
+	    /* printf ("%d: '%c' (%d)\n", n, c, c); */
 	  }
       }
   }
@@ -366,7 +366,7 @@ main (int argc, char *argv[])
 
     for (n = 0; (c = iobuf_get (iobuf)) != -1; n ++)
       {
-	// printf ("%d: `%c'\n", n, c);
+	/* printf ("%d: `%c'\n", n, c);  */
 	buffer[n] = c;
       }
 
