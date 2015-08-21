@@ -336,6 +336,10 @@ dbg_copy_all_packets (IOBUF inp, IOBUF out, const char *dbg_f, int dbg_l)
 {
   PACKET pkt;
   int skip, rc = 0;
+
+  if (! out)
+    log_bug ("copy_all_packets: OUT may not be NULL.\n");
+
   do
     {
       init_packet (&pkt);
@@ -351,6 +355,10 @@ copy_all_packets (IOBUF inp, IOBUF out)
 {
   PACKET pkt;
   int skip, rc = 0;
+
+  if (! out)
+    log_bug ("copy_all_packets: OUT may not be NULL.\n");
+
   do
     {
       init_packet (&pkt);
