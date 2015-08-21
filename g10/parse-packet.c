@@ -1750,13 +1750,19 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 
   if (!is_v4)
     {
+      if (pktlen == 0)
+	goto underflow;
       md5_len = iobuf_get_noeof (inp);
       pktlen--;
     }
+  if (pktlen == 0)
+    goto underflow;
   sig->sig_class = iobuf_get_noeof (inp);
   pktlen--;
   if (!is_v4)
     {
+      if (pktlen < 12)
+	goto underflow;
       sig->timestamp = read_32 (inp);
       pktlen -= 4;
       sig->keyid[0] = read_32 (inp);
@@ -1764,6 +1770,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
       sig->keyid[1] = read_32 (inp);
       pktlen -= 4;
     }
+  if (pktlen < 2)
+    goto underflow;
   sig->pubkey_algo = iobuf_get_noeof (inp);
   pktlen--;
   sig->digest_algo = iobuf_get_noeof (inp);
@@ -1772,8 +1780,12 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
   sig->flags.revocable = 1;
   if (is_v4) /* Read subpackets.  */
     {
+      if (pktlen < 2)
+	goto underflow;
       n = read_16 (inp);
       pktlen -= 2;  /* Length of hashed data. */
+      if (pktlen < n)
+	goto underflow;
       if (n > 10000)
 	{
 	  log_error ("signature packet: hashed data too long\n");
@@ -1798,8 +1810,12 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	    }
 	  pktlen -= n;
 	}
+      if (pktlen < 2)
+	goto underflow;
       n = read_16 (inp);
       pktlen -= 2;  /* Length of unhashed data.  */
+      if (pktlen < n)
+	goto underflow;
       if (n > 10000)
 	{
 	  log_error ("signature packet: unhashed data too long\n");
@@ -1826,15 +1842,8 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
 	}
     }
 
-  if (pktlen < 5)  /* Sanity check.  */
-    {
-      log_error ("packet(%d) too short\n", pkttype);
-      if (list_mode)
-        es_fputs (":signature packet: [too short]\n", listfp);
-      rc = GPG_ERR_INV_PACKET;
-      goto leave;
-    }
-
+  if (pktlen < 2)
+    goto underflow;
   sig->digest_start[0] = iobuf_get_noeof (inp);
   pktlen--;
   sig->digest_start[1] = iobuf_get_noeof (inp);
@@ -1981,6 +1990,15 @@ parse_signature (IOBUF inp, int pkttype, unsigned long pktlen,
  leave:
   iobuf_skip_rest (inp, pktlen, 0);
   return rc;
+
+ underflow:
+  log_error ("packet(%d) too short\n", pkttype);
+  if (list_mode)
+    es_fputs (":signature packet: [too short]\n", listfp);
+
+  iobuf_skip_rest (inp, pktlen, 0);
+
+  return GPG_ERR_INV_PACKET;
 }
 
 
