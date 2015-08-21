@@ -2397,7 +2397,7 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 	    {
 	      u32 keyid[2];
 
-	      keyid_from_fingerprint(sig->revkey[idx]->fpr,
+	      keyid_from_fingerprint(sig->revkey[idx].fpr,
 				     MAX_FINGERPRINT_LEN,keyid);
 
 	      for(inode=keyblock->next;inode;inode=inode->next)
@@ -2416,7 +2416,7 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
                          itself? */
 		      int rc;
 
-		      rc=get_pubkey_byfprint_fast (NULL,sig->revkey[idx]->fpr,
+		      rc=get_pubkey_byfprint_fast (NULL,sig->revkey[idx].fpr,
                                                    MAX_FINGERPRINT_LEN);
 		      if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY
                           || gpg_err_code (rc) == GPG_ERR_UNUSABLE_PUBKEY)
@@ -2432,13 +2432,13 @@ revocation_present (ctrl_t ctrl, kbnode_t keyblock)
 					 " fetching revocation key %s\n"),
 				       tempkeystr,keystr(keyid));
 			      keyserver_import_fprint (ctrl,
-                                                       sig->revkey[idx]->fpr,
+                                                       sig->revkey[idx].fpr,
                                                        MAX_FINGERPRINT_LEN,
                                                        opt.keyserver);
 
 			      /* Do we have it now? */
 			      rc=get_pubkey_byfprint_fast (NULL,
-						     sig->revkey[idx]->fpr,
+						     sig->revkey[idx].fpr,
 						     MAX_FINGERPRINT_LEN);
 			    }
 

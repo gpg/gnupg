@@ -720,7 +720,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
      ANYLOCALFIRST is set if the search order has the local method
      before any other or if "local" is used first by default.  This
-     makes sure that if a RETCTX is used it gets only set if a local
+     makes sure that if a RETCTX is used it is only set if a local
      search has precedence over the other search methods and only then
      a followup call to get_pubkey_next shall succeed.  */
   if (!no_akl)
@@ -1606,7 +1606,7 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 
 		      for (i = 0; i < sig->numrevkeys; i++)
 			memcpy (&pk->revkey[pk->numrevkeys++],
-				sig->revkey[i],
+				&sig->revkey[i],
 				sizeof (struct revocation_key));
 		    }
 

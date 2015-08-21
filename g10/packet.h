@@ -167,7 +167,7 @@ typedef struct
   byte    trust_depth;
   byte    trust_value;
   const byte *trust_regexp;
-  struct revocation_key **revkey;
+  struct revocation_key *revkey;
   int numrevkeys;
   pka_info_t *pka_info;      /* Malloced PKA data or NULL if not
                                 available.  See also flags.pka_tried. */

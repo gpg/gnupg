@@ -1711,25 +1711,31 @@ parse_sig_subpkt2 (PKT_signature * sig, sigsubpkttype_t reqtype)
 void
 parse_revkeys (PKT_signature * sig)
 {
-  struct revocation_key *revkey;
+  const byte *revkey;
   int seq = 0;
   size_t len;
 
   if (sig->sig_class != 0x1F)
     return;
 
-  while ((revkey =
-	  (struct revocation_key *) enum_sig_subpkt (sig->hashed,
-						     SIGSUBPKT_REV_KEY,
-						     &len, &seq, NULL)))
+  while ((revkey = enum_sig_subpkt (sig->hashed, SIGSUBPKT_REV_KEY,
+				    &len, &seq, NULL)))
     {
-      if (len == sizeof (struct revocation_key)
-          && (revkey->class & 0x80))  /* 0x80 bit must be set.  */
+      if (/* The only valid length is 22 bytes.  See RFC 4880
+	     5.2.3.15.  */
+	  len == 22
+	  /* 0x80 bit must be set on the class.  */
+          && (revkey[0] & 0x80))
 	{
 	  sig->revkey = xrealloc (sig->revkey,
-				  sizeof (struct revocation_key *) *
+				  sizeof (struct revocation_key) *
 				  (sig->numrevkeys + 1));
-	  sig->revkey[sig->numrevkeys] = revkey;
+
+	  /* Copy the individual fields.  */
+	  sig->revkey[sig->numrevkeys].class = revkey[0];
+	  sig->revkey[sig->numrevkeys].algid = revkey[1];
+	  memcpy (sig->revkey[sig->numrevkeys].fpr, &revkey[2], 20);
+
 	  sig->numrevkeys++;
 	}
     }

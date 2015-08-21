@@ -1011,7 +1011,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   int i;
 
                   for (i=0;i<node->pkt->pkt.signature->numrevkeys;i++)
-                    if ( (node->pkt->pkt.signature->revkey[i]->class & 0x40))
+                    if ( (node->pkt->pkt.signature->revkey[i].class & 0x40))
                       break;
 
                   if (i < node->pkt->pkt.signature->numrevkeys)

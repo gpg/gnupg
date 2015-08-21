@@ -383,11 +383,11 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 		    for(j=0;j<signode->pkt->pkt.signature->numrevkeys;j++)
 		      {
 			if(pk->revkey[i].class==
-			   signode->pkt->pkt.signature->revkey[j]->class &&
+			   signode->pkt->pkt.signature->revkey[j].class &&
 			   pk->revkey[i].algid==
-			   signode->pkt->pkt.signature->revkey[j]->algid &&
+			   signode->pkt->pkt.signature->revkey[j].algid &&
 			   memcmp(pk->revkey[i].fpr,
-				  signode->pkt->pkt.signature->revkey[j]->fpr,
+				  signode->pkt->pkt.signature->revkey[j].fpr,
 				  MAX_FINGERPRINT_LEN)==0)
 			  {
 			    revkey=signode->pkt->pkt.signature;
