@@ -272,7 +272,7 @@ dbg_parse_packet (IOBUF inp, PACKET *pkt, const char *dbg_f, int dbg_l)
     {
       rc = parse (inp, pkt, 0, NULL, &skip, NULL, 0, "parse", dbg_f, dbg_l);
     }
-  while (skip);
+  while (skip && ! rc);
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
@@ -285,7 +285,7 @@ parse_packet (IOBUF inp, PACKET * pkt)
     {
       rc = parse (inp, pkt, 0, NULL, &skip, NULL, 0);
     }
-  while (skip);
+  while (skip && ! rc);
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
@@ -308,7 +308,7 @@ dbg_search_packet (IOBUF inp, PACKET * pkt, off_t * retpos, int with_uid,
 	parse (inp, pkt, with_uid ? 2 : 1, retpos, &skip, NULL, 0, "search",
 	       dbg_f, dbg_l);
     }
-  while (skip);
+  while (skip && ! rc);
   return rc;
 }
 #else /*!DEBUG_PARSE_PACKET*/
@@ -321,7 +321,7 @@ search_packet (IOBUF inp, PACKET * pkt, off_t * retpos, int with_uid)
     {
       rc = parse (inp, pkt, with_uid ? 2 : 1, retpos, &skip, NULL, 0);
     }
-  while (skip);
+  while (skip && ! rc);
   return rc;
 }
 #endif /*!DEBUG_PARSE_PACKET*/
