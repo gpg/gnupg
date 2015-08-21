@@ -643,7 +643,14 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
 	}
     }
 
-  if (pktlen == (unsigned long) (-1))
+  /* Sometimes the decompressing layer enters an error state in which
+     it simply outputs 0xff for every byte read.  If we have a stream
+     of 0xff bytes, then it will be detected as a new format packet
+     with type 63 and a 4-byte encoded length that is 4G-1.  Since
+     packets with type 63 are private and we use them as a control
+     packet, which won't be 4 GB, we reject such packets as
+     invalid.  */
+  if (pkttype == 63 && pktlen == 0xFFFFFFFF)
     {
       /* With some probability this is caused by a problem in the
        * the uncompressing layer - in some error cases it just loops

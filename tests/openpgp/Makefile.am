@@ -38,7 +38,7 @@ TESTS = version.test mds.test \
 	armdetachm.test detachm.test genkey1024.test \
 	conventional.test conventional-mdc.test \
 	multisig.test verify.test armor.test \
-	import.test ecc.test finish.test
+	import.test ecc.test 4gb-packet.test finish.test
 
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
@@ -46,7 +46,7 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc \
              gpg.conf.tmpl gpg-agent.conf.tmpl \
 	     bug537-test.data.asc bug894-test.asc \
-	     bug1223-good.asc bug1223-bogus.asc
+	     bug1223-good.asc bug1223-bogus.asc 4gb-packet.asc
 
 data_files = data-500 data-9000 data-32000 data-80000 plain-large
 
