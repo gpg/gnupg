@@ -654,6 +654,17 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
 
   if (out && pkttype)
     {
+      /* This type of copying won't work if the packet uses a partial
+	 body length.  (In other words, this only works if HDR is
+	 actually the length.)  Currently, no callers require this
+	 functionality so we just log this as an error.  */
+      if (partial)
+	{
+	  log_error ("parse: Can't copy partial packet.  Aborting.\n");
+	  rc = gpg_error (GPG_ERR_INV_PACKET);
+	  goto leave;
+	}
+
       rc = iobuf_write (out, hdr, hdrlen);
       if (!rc)
 	rc = copy_packet (inp, out, pkttype, pktlen, partial);
