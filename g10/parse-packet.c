@@ -558,27 +558,20 @@ parse (IOBUF inp, PACKET * pkt, int onlykeypkts, off_t * retpos,
       else if (c == 255)
         {
 	  int i;
-	  int eof = 0;
 	  char value[4];
 
 	  for (i = 0; i < 4; i ++)
-	    if ((value[i] = hdr[hdrlen++] = iobuf_get (inp)) == -1)
-	      {
-		eof = 1;
-		break;
-	      }
-
-	  if (eof)
             {
-              log_error ("%s: 4 byte length invalid\n", iobuf_where (inp));
-              rc = gpg_error (GPG_ERR_INV_PACKET);
-              goto leave;
+              if ((c = iobuf_get (inp)) == -1)
+                {
+                  log_error ("%s: 4 byte length invalid\n", iobuf_where (inp));
+                  rc = gpg_error (GPG_ERR_INV_PACKET);
+                  goto leave;
+                }
+              value[i] = hdr[hdrlen++] = c;
             }
 
-	  pktlen = (((unsigned long) value[0] << 24)
-		    | ((unsigned long) value[1] << 16)
-		    | ((unsigned long) value[2] << 8)
-		    | ((unsigned long) value[3]));
+	  pktlen = buf32_to_ulong (value);
         }
       else /* Partial body length.  */
         {
