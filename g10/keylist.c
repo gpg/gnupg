@@ -626,6 +626,9 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	{
 	  if (gpg_err_code (rc) != GPG_ERR_NO_PUBKEY)
 	    log_error ("error reading key: %s\n", gpg_strerror (rc));
+          else if (opt.verbose)
+            log_info (_("key \"%s\" not found: %s\n"),
+                      sl->d, gpg_strerror (rc));
 	}
       else
 	{
