@@ -59,8 +59,9 @@
 
 /* The same goes for OpenPGP keyblocks, but here we need to allow for
    much longer blocks; a 200k keyblock is not too unusual for keys
-   with a lot of signatures (e.g. 0x5b0358a2).  */
-#define MAX_KEYBLOCK_LENGTH (512*1024)
+   with a lot of signatures (e.g. 0x5b0358a2).  9C31503C6D866396 even
+   has 770 KiB as of 2015-08-23.  */
+#define MAX_KEYBLOCK_LENGTH (1024*1024)
 
 
 #define PARM_ERROR(t) assuan_set_error (ctx, \
