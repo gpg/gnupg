@@ -5394,7 +5394,7 @@ msgstr "keine ultimativ vertrauenswürdigen Schlüssel gefunden\n"
 
 #, c-format
 msgid "public key of ultimately trusted key %s not found\n"
-msgstr "öff. Schlüssel des ultimativ vertrautem Schlüssel %s nicht gefunden\n"
+msgstr "öff. Schlüssel des ultimativ vertrauten Schlüssel %s nicht gefunden\n"
 
 #, c-format
 msgid "%d marginal(s) needed, %d complete(s) needed, %s trust model\n"
