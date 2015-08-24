@@ -681,13 +681,15 @@ cmd_import (assuan_context_t ctx, char *line)
 
 
 static const char hlp_export[] =
-  "EXPORT [--data [--armor|--base64]] [--] <pattern>\n"
+  "EXPORT [--data [--armor|--base64]] [--secret [--(raw|pkcs12)] [--] <pattern>\n"
   "\n"
   "Export the certificates selected by PATTERN.  With --data the output\n"
   "is returned using Assuan D lines; the default is to use the sink given\n"
   "by the last \"OUTPUT\" command.  The options --armor or --base64 encode \n"
   "the output using the PEM respective a plain base-64 format; the default\n"
-  "is a binary format which is only suitable for a single certificate.";
+  "is a binary format which is only suitable for a single certificate.\n"
+  "With --secret the secret key is exported using the PKCS#8 format,\n"
+  "with --raw using PKCS#1, and with --pkcs12 as full PKCS#12 container.";
 static gpg_error_t
 cmd_export (assuan_context_t ctx, char *line)
 {
@@ -695,14 +697,22 @@ cmd_export (assuan_context_t ctx, char *line)
   char *p;
   strlist_t list, sl;
   int use_data;
+  int opt_secret;
+  int opt_raw = 0;
+  int opt_pkcs12 = 0;
 
   use_data = has_option (line, "--data");
-
   if (use_data)
     {
       /* We need to override any possible setting done by an OUTPUT command. */
       ctrl->create_pem = has_option (line, "--armor");
       ctrl->create_base64 = has_option (line, "--base64");
+    }
+  opt_secret = has_option (line, "--secret");
+  if (opt_secret)
+    {
+      opt_raw = has_option (line, "--raw");
+      opt_pkcs12 = has_option (line, "--pkcs12");
     }
 
   line = skip_options (line);
@@ -730,6 +740,14 @@ cmd_export (assuan_context_t ctx, char *line)
         }
     }
 
+  if (opt_secret)
+    {
+      if (!list || !*list->d)
+        return set_error (GPG_ERR_NO_DATA, "No key given");
+      if (list->next)
+        return set_error (GPG_ERR_TOO_MANY, "Only one key allowed");
+  }
+
   if (use_data)
     {
       estream_t stream;
@@ -741,7 +759,11 @@ cmd_export (assuan_context_t ctx, char *line)
           return set_error (GPG_ERR_ASS_GENERAL,
                             "error setting up a data stream");
         }
-      gpgsm_export (ctrl, list, stream);
+      if (opt_secret)
+        gpgsm_p12_export (ctrl, list->d, stream,
+                          opt_raw? 2 : opt_pkcs12 ? 0 : 1);
+      else
+        gpgsm_export (ctrl, list, stream);
       es_fclose (stream);
     }
   else
@@ -761,7 +783,11 @@ cmd_export (assuan_context_t ctx, char *line)
           return set_error (gpg_err_code_from_syserror (), "fdopen() failed");
         }
 
-      gpgsm_export (ctrl, list, out_fp);
+      if (opt_secret)
+        gpgsm_p12_export (ctrl, list->d, out_fp,
+                          opt_raw? 2 : opt_pkcs12 ? 0 : 1);
+      else
+        gpgsm_export (ctrl, list, out_fp);
       es_fclose (out_fp);
     }
 
