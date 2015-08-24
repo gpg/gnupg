@@ -918,10 +918,10 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       struct pin_entry_info_s *pi;
       struct try_do_unprotect_arg_s pi_arg;
 
-      pi = xtrycalloc_secure (1, sizeof (*pi) + 100);
+      pi = xtrycalloc_secure (1, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
       if (!pi)
         return gpg_error_from_syserror ();
-      pi->max_length = 100;
+      pi->max_length = MAX_PASSPHRASE_LEN + 1;
       pi->min_digits = 0;  /* We want a real passphrase.  */
       pi->max_digits = 16;
       pi->max_tries = 3;

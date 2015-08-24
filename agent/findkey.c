@@ -450,10 +450,10 @@ unprotect (ctrl_t ctrl, const char *cache_nonce, const char *desc_text,
         }
     }
 
-  pi = gcry_calloc_secure (1, sizeof (*pi) + 100);
+  pi = gcry_calloc_secure (1, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
   if (!pi)
     return gpg_error_from_syserror ();
-  pi->max_length = 100;
+  pi->max_length = MAX_PASSPHRASE_LEN + 1;
   pi->min_digits = 0;  /* we want a real passphrase */
   pi->max_digits = 16;
   pi->max_tries = 3;

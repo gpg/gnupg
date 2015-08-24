@@ -3094,17 +3094,17 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       goto out;
     }
 
-  pi = gcry_calloc_secure (2, sizeof (*pi) + 100 + 1);
+  pi = gcry_calloc_secure (2, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
   if (!pi)
     {
       err = gpg_error_from_syserror ();
       goto out;
     }
-  pi2 = pi + (sizeof *pi + 100 + 1);
-  pi->max_length = 100;
+  pi2 = pi + (sizeof *pi + MAX_PASSPHRASE_LEN + 1);
+  pi->max_length = MAX_PASSPHRASE_LEN + 1;
   pi->max_tries = 1;
   pi->with_repeat = 1;
-  pi2->max_length = 100;
+  pi2->max_length = MAX_PASSPHRASE_LEN + 1;
   pi2->max_tries = 1;
   pi2->check_cb = reenter_compare_cb;
   pi2->check_cb_arg = pi->pin;

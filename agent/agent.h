@@ -47,6 +47,11 @@
 /* Maximum length of a digest.  */
 #define MAX_DIGEST_LEN 64
 
+/* The maximum length of a passphrase (in bytes).  Note: this is
+   further contrained by the Assuan line length (and any other text on
+   the same line).  However, the Assuan line length is 1k bytes so
+   this shouldn't be a problem in practice.  */
+#define MAX_PASSPHRASE_LEN 255
 
 
 /* A large struct name "opt" to keep global flags */

@@ -374,13 +374,13 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 	return err;
     }
 
-  pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
-  pi2 = pi + (sizeof *pi + 100);
-  pi->max_length = 100;
+  pi = gcry_calloc_secure (2, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
+  pi2 = pi + (sizeof *pi + MAX_PASSPHRASE_LEN + 1);
+  pi->max_length = MAX_PASSPHRASE_LEN + 1;
   pi->max_tries = 3;
   pi->with_qualitybar = 1;
   pi->with_repeat = 1;
-  pi2->max_length = 100;
+  pi2->max_length = MAX_PASSPHRASE_LEN + 1;
   pi2->max_tries = 3;
   pi2->check_cb = reenter_compare_cb;
   pi2->check_cb_arg = pi->pin;
