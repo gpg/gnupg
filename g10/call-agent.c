@@ -318,9 +318,12 @@ start_agent (ctrl_t ctrl, int for_card)
                                NULL, NULL, NULL, NULL, NULL, NULL);
               xfree (tmp);
               if (rc)
-                log_error ("setting pinentry mode '%s' failed: %s\n",
-                           str_pinentry_mode (opt.pinentry_mode),
-                           gpg_strerror (rc));
+                {
+                  log_error ("setting pinentry mode '%s' failed: %s\n",
+                             str_pinentry_mode (opt.pinentry_mode),
+                             gpg_strerror (rc));
+                  write_status_error ("set_pinentry_mode", rc);
+                }
             }
 
           check_hijacking (agent_ctx);

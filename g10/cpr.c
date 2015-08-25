@@ -183,7 +183,7 @@ write_status_text (int no, const char *text)
   write_status_strings (no, text, NULL);
 }
 
-/* Wrte an ERROR status line using a full gpg-error error value.  */
+/* Write an ERROR status line using a full gpg-error error value.  */
 void
 write_status_error (const char *where, gpg_error_t err)
 {
@@ -206,6 +206,20 @@ write_status_errcode (const char *where, int errcode)
 
   es_fprintf (statusfp, "[GNUPG:] %s %s %u\n",
               get_status_string (STATUS_ERROR), where, gpg_err_code (errcode));
+  if (es_fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
+
+/* Write a FAILURE status line.  */
+void
+write_status_failure (const char *where, gpg_error_t err)
+{
+  if (!statusfp || !status_currently_allowed (STATUS_FAILURE))
+    return;  /* Not enabled or allowed. */
+
+  es_fprintf (statusfp, "[GNUPG:] %s %s %u\n",
+              get_status_string (STATUS_FAILURE), where, err);
   if (es_fflush (statusfp) && opt.exit_on_status_write_error)
     g10_exit (0);
 }

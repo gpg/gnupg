@@ -180,6 +180,7 @@ int  is_status_enabled ( void );
 void write_status ( int no );
 void write_status_error (const char *where, gpg_error_t err);
 void write_status_errcode (const char *where, int errcode);
+void write_status_failure (const char *where, gpg_error_t err);
 void write_status_text ( int no, const char *text );
 void write_status_strings (int no, const char *text,
                            ...) GPGRT_ATTR_SENTINEL(0);

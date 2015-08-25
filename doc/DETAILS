@@ -823,9 +823,17 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     numerical error code and an underscore; e.g.: "151011327_EOF".
 
 *** SUCCESS [<location>]
-    Postive confirimation that an operation succeeded.  <location> is
-    optional but if given should not contain spaces.  Used only with a
-    few commands.
+    Postive confirmation that an operation succeeded.  It is used
+    similar to ISO-C's EXIT_SUCCESS.  <location> is optional but if
+    given should not contain spaces.  Used only with a few commands.
+
+*** FAILURE <location> <error_code>
+    This is the counterpart to SUCCESS and used to indicate a program
+    failure.  It is used similar to ISO-C's EXIT_FAILURE but allows to
+    convey more information, in particular an gpg-error error code.
+    That numerical error code may optionally have a suffix made of an
+    underscore and a string with an error symbol like "151011327_EOF".
+    A dash may be used instead of <location>.
 
 *** BADARMOR
     The ASCII armor is corrupted.  No arguments yet.

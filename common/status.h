@@ -126,9 +126,10 @@ enum
 
     STATUS_ERROR,
     STATUS_SUCCESS,
+    STATUS_FAILURE,
 
-    STATUS_INQUIRE_MAXLEN,
-};
+    STATUS_INQUIRE_MAXLEN
+  };
 
 
 const char *get_status_string (int code);

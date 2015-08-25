@@ -3661,15 +3661,21 @@ main (int argc, char **argv)
 	if( argc > 1 )
 	    wrong_args(_("--store [filename]"));
 	if( (rc = encrypt_store(fname)) )
+          {
+            write_status_failure ("store", rc);
 	    log_error ("storing '%s' failed: %s\n",
                        print_fname_stdin(fname),gpg_strerror (rc) );
+          }
 	break;
       case aSym: /* encrypt the given file only with the symmetric cipher */
 	if( argc > 1 )
 	    wrong_args(_("--symmetric [filename]"));
 	if( (rc = encrypt_symmetric(fname)) )
+          {
+            write_status_failure ("symencrypt", rc);
             log_error (_("symmetric encryption of '%s' failed: %s\n"),
                         print_fname_stdin(fname),gpg_strerror (rc) );
+          }
 	break;
 
       case aEncr: /* encrypt the given file */
@@ -3680,8 +3686,11 @@ main (int argc, char **argv)
 	    if( argc > 1 )
 	      wrong_args(_("--encrypt [filename]"));
 	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 0, NULL, -1)) )
-	      log_error("%s: encryption failed: %s\n",
-			print_fname_stdin(fname), gpg_strerror (rc) );
+              {
+                write_status_failure ("encrypt", rc);
+                log_error("%s: encryption failed: %s\n",
+                          print_fname_stdin(fname), gpg_strerror (rc) );
+              }
 	  }
 	break;
 
@@ -3701,8 +3710,11 @@ main (int argc, char **argv)
 	else
 	  {
 	    if( (rc = encrypt_crypt (ctrl, -1, fname, remusr, 1, NULL, -1)) )
-	      log_error("%s: encryption failed: %s\n",
-			print_fname_stdin(fname), gpg_strerror (rc) );
+              {
+                write_status_failure ("encrypt", rc);
+                log_error ("%s: encryption failed: %s\n",
+                           print_fname_stdin(fname), gpg_strerror (rc) );
+              }
 	  }
 	break;
 
@@ -3720,8 +3732,11 @@ main (int argc, char **argv)
 		strcpy(sl->d, fname);
 	    }
 	}
-	if( (rc = sign_file (ctrl, sl, detached_sig, locusr, 0, NULL, NULL)) )
-	    log_error("signing failed: %s\n", gpg_strerror (rc) );
+	if ((rc = sign_file (ctrl, sl, detached_sig, locusr, 0, NULL, NULL)))
+          {
+            write_status_failure ("sign", rc);
+	    log_error ("signing failed: %s\n", gpg_strerror (rc) );
+          }
 	free_strlist(sl);
 	break;
 
@@ -3735,8 +3750,11 @@ main (int argc, char **argv)
 	else
 	    sl = NULL;
 	if ((rc = sign_file (ctrl, sl, detached_sig, locusr, 1, remusr, NULL)))
+          {
+            write_status_failure ("sign-encrypt", rc);
 	    log_error("%s: sign+encrypt failed: %s\n",
 		      print_fname_stdin(fname), gpg_strerror (rc) );
+          }
 	free_strlist(sl);
 	break;
 
@@ -3760,8 +3778,11 @@ main (int argc, char **argv)
 	      sl = NULL;
 	    if ((rc = sign_file (ctrl, sl, detached_sig, locusr,
                                  2, remusr, NULL)))
-	      log_error("%s: symmetric+sign+encrypt failed: %s\n",
-			print_fname_stdin(fname), gpg_strerror (rc) );
+              {
+                write_status_failure ("sign-encrypt", rc);
+                log_error("%s: symmetric+sign+encrypt failed: %s\n",
+                          print_fname_stdin(fname), gpg_strerror (rc) );
+              }
 	    free_strlist(sl);
 	  }
 	break;
@@ -3771,19 +3792,26 @@ main (int argc, char **argv)
 	    wrong_args(_("--sign --symmetric [filename]"));
 	rc = sign_symencrypt_file (fname, locusr);
         if (rc)
+          {
+            write_status_failure ("sign-symencrypt", rc);
 	    log_error("%s: sign+symmetric failed: %s\n",
                       print_fname_stdin(fname), gpg_strerror (rc) );
+          }
 	break;
 
       case aClearsign: /* make a clearsig */
 	if( argc > 1 )
 	    wrong_args(_("--clearsign [filename]"));
 	if( (rc = clearsign_file(fname, locusr, NULL)) )
+          {
+            write_status_failure ("sign", rc);
 	    log_error("%s: clearsign failed: %s\n",
                       print_fname_stdin(fname), gpg_strerror (rc) );
+          }
 	break;
 
       case aVerify:
+        rc = 0;
 	if (multifile)
 	  {
 	    if ((rc = verify_files (ctrl, argc, argv)))
@@ -3794,6 +3822,8 @@ main (int argc, char **argv)
 	    if ((rc = verify_signatures (ctrl, argc, argv)))
 	      log_error("verify signatures failed: %s\n", gpg_strerror (rc) );
 	  }
+        if (rc)
+          write_status_failure ("verify", rc);
 	break;
 
       case aDecrypt:
@@ -3804,7 +3834,10 @@ main (int argc, char **argv)
 	    if( argc > 1 )
 	      wrong_args(_("--decrypt [filename]"));
 	    if( (rc = decrypt_message (ctrl, fname) ))
-	      log_error("decrypt_message failed: %s\n", gpg_strerror (rc) );
+              {
+                write_status_failure ("decrypt", rc);
+                log_error("decrypt_message failed: %s\n", gpg_strerror (rc) );
+              }
 	  }
 	break;
 
@@ -3998,11 +4031,21 @@ main (int argc, char **argv)
 	if(rc)
 	  {
 	    if(cmd==aSendKeys)
-	      log_error(_("keyserver send failed: %s\n"),gpg_strerror (rc));
+              {
+                write_status_failure ("send-keys", rc);
+                log_error(_("keyserver send failed: %s\n"),gpg_strerror (rc));
+              }
 	    else if(cmd==aRecvKeys)
-	      log_error(_("keyserver receive failed: %s\n"),gpg_strerror (rc));
+              {
+                write_status_failure ("recv-keys", rc);
+                log_error (_("keyserver receive failed: %s\n"),
+                           gpg_strerror (rc));
+              }
 	    else
-	      log_error(_("key export failed: %s\n"),gpg_strerror (rc));
+              {
+                write_status_failure ("export", rc);
+                log_error (_("key export failed: %s\n"), gpg_strerror (rc));
+              }
 	  }
 	free_strlist(sl);
 	break;
@@ -4013,7 +4056,10 @@ main (int argc, char **argv)
 	  append_to_strlist2 (&sl, *argv, utf8_strings);
 	rc = keyserver_search (ctrl, sl);
 	if (rc)
-	  log_error (_("keyserver search failed: %s\n"), gpg_strerror (rc));
+          {
+            write_status_failure ("search-keys", rc);
+            log_error (_("keyserver search failed: %s\n"), gpg_strerror (rc));
+          }
 	free_strlist (sl);
 	break;
 
@@ -4023,7 +4069,10 @@ main (int argc, char **argv)
 	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc = keyserver_refresh (ctrl, sl);
 	if(rc)
-	  log_error(_("keyserver refresh failed: %s\n"),gpg_strerror (rc));
+          {
+            write_status_failure ("refresh-keys", rc);
+            log_error (_("keyserver refresh failed: %s\n"),gpg_strerror (rc));
+          }
 	free_strlist(sl);
 	break;
 
@@ -4033,7 +4082,10 @@ main (int argc, char **argv)
 	    append_to_strlist2( &sl, *argv, utf8_strings );
 	rc = keyserver_fetch (ctrl, sl);
 	if(rc)
-	  log_error("key fetch failed: %s\n",gpg_strerror (rc));
+          {
+            write_status_failure ("fetch-keys", rc);
+            log_error ("key fetch failed: %s\n",gpg_strerror (rc));
+          }
 	free_strlist(sl);
 	break;
 
@@ -4074,7 +4126,10 @@ main (int argc, char **argv)
 	    wrong_args("--dearmor [file]");
 	rc = dearmor_file( argc? *argv: NULL );
 	if( rc )
-	    log_error(_("dearmoring failed: %s\n"), gpg_strerror (rc));
+          {
+            write_status_failure ("dearmor", rc);
+            log_error (_("dearmoring failed: %s\n"), gpg_strerror (rc));
+          }
 	break;
 
       case aEnArmor:
@@ -4082,7 +4137,10 @@ main (int argc, char **argv)
 	    wrong_args("--enarmor [file]");
 	rc = enarmor_file( argc? *argv: NULL );
 	if( rc )
-	    log_error(_("enarmoring failed: %s\n"), gpg_strerror (rc));
+          {
+            write_status_failure ("enarmor", rc);
+	    log_error (_("enarmoring failed: %s\n"), gpg_strerror (rc));
+          }
 	break;
 
 
@@ -4274,7 +4332,7 @@ main (int argc, char **argv)
         else if (argc == 1)
             change_pin (atoi (*argv),1);
         else
-        wrong_args ("--change-pin [no]");
+            wrong_args ("--change-pin [no]");
         break;
 #endif /* ENABLE_CARD_SUPPORT*/
 
@@ -4328,7 +4386,11 @@ main (int argc, char **argv)
 	    }
 	    rc = proc_packets (ctrl, NULL, a );
 	    if( rc )
-		log_error("processing message failed: %s\n", gpg_strerror (rc));
+              {
+                write_status_failure ("-", rc);
+                log_error ("processing message failed: %s\n",
+                           gpg_strerror (rc));
+              }
 	    iobuf_close(a);
 	}
 	break;
