@@ -1041,6 +1041,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
                                          NULL);
 	      if (rc)
 		{
+                  write_status_error ("keysig", rc);
 		  log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 		  goto leave;
 		}
@@ -3497,6 +3498,7 @@ menu_adduid (kbnode_t pub_keyblock, int photo, const char *photo_name,
                             keygen_add_std_prefs, pk, NULL);
   if (err)
     {
+      write_status_error ("keysig", err);
       log_error ("signing failed: %s\n", gpg_strerror (err));
       free_user_id (uid);
       return 0;
@@ -3881,6 +3883,7 @@ menu_addrevoker (ctrl_t ctrl, kbnode_t pub_keyblock, int sensitive)
 			   keygen_add_revkey, &revkey, NULL);
   if (rc)
     {
+      write_status_error ("keysig", rc);
       log_error ("signing failed: %s\n", gpg_strerror (rc));
       goto fail;
     }
@@ -5172,6 +5175,7 @@ reloop:			/* (must use this, because we are modifing the list) */
       free_public_key (signerkey);
       if (rc)
 	{
+          write_status_error ("keysig", rc);
 	  log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 	  release_revocation_reason_info (reason);
 	  return changed;
@@ -5263,6 +5267,7 @@ menu_revuid (KBNODE pub_keyblock)
 				     sign_mk_attrib, &attrib, NULL);
 	    if (rc)
 	      {
+                write_status_error ("keysig", rc);
 		log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 		goto leave;
 	      }
@@ -5327,6 +5332,7 @@ menu_revkey (KBNODE pub_keyblock)
 			   revocation_reason_build_cb, reason, NULL);
   if (rc)
     {
+      write_status_error ("keysig", rc);
       log_error (_("signing failed: %s\n"), gpg_strerror (rc));
       goto scram;
     }
@@ -5388,6 +5394,7 @@ menu_revsubkey (KBNODE pub_keyblock)
                                    NULL);
 	  if (rc)
 	    {
+              write_status_error ("keysig", rc);
 	      log_error (_("signing failed: %s\n"), gpg_strerror (rc));
 	      release_revocation_reason_info (reason);
 	      return changed;
