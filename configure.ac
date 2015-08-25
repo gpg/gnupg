@@ -1636,7 +1636,16 @@ BUILD_FILEVERSION=`echo "${BUILD_VERSION}" | tr . ,`
 AC_SUBST(BUILD_VERSION)
 AC_SUBST(BUILD_FILEVERSION)
 
-BUILD_TIMESTAMP=`date -u +%Y-%m-%dT%H:%M+0000 2>/dev/null || date`
+AC_ARG_ENABLE([build-timestamp],
+  AC_HELP_STRING([--enable-build-timestamp],
+                 [set an explicit build timestamp for reproducibility.
+                  (default is the current time in ISO-8601 format)]),
+     [if test "$enableval" = "yes"; then
+        BUILD_TIMESTAMP=`date -u +%Y-%m-%dT%H:%M+0000 2>/dev/null || date`
+      else
+        BUILD_TIMESTAMP="$enableval"
+      fi],
+     [BUILD_TIMESTAMP="<none>"])
 AC_SUBST(BUILD_TIMESTAMP)
 AC_DEFINE_UNQUOTED(BUILD_TIMESTAMP, "$BUILD_TIMESTAMP",
                    [The time this package was configured for a build])
