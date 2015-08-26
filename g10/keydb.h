@@ -235,6 +235,10 @@ int get_pubkey_byfprint_fast (PKT_public_key *pk,
 int get_keyblock_byfprint( KBNODE *ret_keyblock, const byte *fprint,
 						 size_t fprint_len );
 
+/* Return whether a secret key is available for the public key with
+   key id KEYID.  Note: this is just a fast check and does not tell us
+   whether the secret key is valid; this check merely indicates
+   whether there is some secret key with the specified key id.  */
 int have_secret_key_with_kid (u32 *keyid);
 
 gpg_error_t get_seckey_byname (PKT_public_key *pk, const char *name);

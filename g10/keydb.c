@@ -74,23 +74,32 @@ struct keydb_handle
   struct resource_item active[MAX_KEYDB_RESOURCES];
 };
 
+/* Looking up keys is expensive.  To hide the cost, we cache whether
+   keys exist in the key database.  Then, if we know a key does not
+   exist, we don't have to spend time looking it up.  This
+   particularly helps the --list-sigs and --check-sigs commands.
 
-/* This object is used to keep a list of keyids in a linked list.  */
-typedef struct kid_list_s
+   The cache stores the results in a hash using separate chaining.
+   Concretely: we use the LSB of the keyid to index the hash table and
+   each bucket consists of a linked list of entries.  An entry
+   consists of the 64-bit key id.  If a key id is not in the cache,
+   then we don't know whether it is in the DB or not.
+
+   To simplify the cache consistency protocol, we simply flush the
+   whole cache whenever a key is inserted or updated.  */
+
+#define KID_NOT_FOUND_CACHE_BUCKETS 256
+static struct kid_not_found_cache_bucket *
+  kid_not_found_cache[KID_NOT_FOUND_CACHE_BUCKETS];
+
+/* The total number of entries in the hash table.  */
+static unsigned int kid_not_found_cache_count;
+
+struct kid_not_found_cache_bucket
 {
-  struct kid_list_s *next;
+  struct kid_not_found_cache_bucket *next;
   u32 kid[2];
-  int state;  /* True if found.  */
-} *kid_list_t;
-
-/* To avoid looking up a key by keyid where we know that it does not
-   yet exist, we keep a table of keyids with search results.  This
-   improves the --list-sigs and --check-sigs commands substantively.
-   To avoid extra complexity we clear the entire table on any insert
-   or update operation.  The array is indexed by the LSB of the keyid.
-   KID_FOUND_TABLE_COUNT gives the number of keys in the table.  */
-static kid_list_t kid_found_table[256];
-static unsigned int kid_found_table_count;
+};
 
 
 /* This is a simple cache used to return the last result of a
@@ -118,81 +127,84 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
-/* Checkwhether the keyid KID is in the table of found or not found
-   keyids.
+/* Check whether the keyid KID is in key id is definately not in the
+   database.
 
    Returns:
-     0 - Keyid not in table
-     1 - Keyid in table because not found in a previous search
-     2 - Keyid in table because found in a previous search
- */
+
+     0 - Indeterminate: the key id is not in the cache; we don't know
+         whether the key is in the database or not.  If you want a
+         definitive answer, you'll need to perform a lookup.
+
+     1 - There is definitely no key with this key id in the database.
+         We searched for a key with this key id previously, but we
+         didn't find it in the database.  */
 static int
 kid_not_found_p (u32 *kid)
 {
-  kid_list_t k;
+  struct kid_not_found_cache_bucket *k;
 
-  for (k = kid_found_table[kid[0] % 256]; k; k = k->next)
+  for (k = kid_not_found_cache[kid[0] % KID_NOT_FOUND_CACHE_BUCKETS]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       {
         if (DBG_CACHE)
-          log_debug ("keydb: kid_not_found_p (%08lx%08lx) => %s\n",
-                     (ulong)kid[0], (ulong)kid[1],
-                     k->state? "false (found)": "true");
-        return k->state? 2 : 1;
+          log_debug ("keydb: kid_not_found_p (%08lx%08lx) => not in DB\n",
+                     (ulong)kid[0], (ulong)kid[1]);
+        return 1;
       }
 
   if (DBG_CACHE)
-    log_debug ("keydb: kid_not_found_p (%08lx%08lx) => false\n",
+    log_debug ("keydb: kid_not_found_p (%08lx%08lx) => indeterminate\n",
                (ulong)kid[0], (ulong)kid[1]);
   return 0;
 }
 
 
-/* Put the keyid KID into the table of keyids with their find states of
-   previous searches.  Note that there is no check whether the keyid
-   is already in the table, thus kid_not_found_p() should be used prior.  */
+/* Insert the keyid KID into the kid_not_found_cache.  FOUND is whether
+   the key is in the key database or not.
+
+   Note this function does not check whether the key id is already in
+   the cache.  As such, kid_not_found_p() should be called first.  */
 static void
-kid_not_found_insert (u32 *kid, int found)
+kid_not_found_insert (u32 *kid)
 {
-  kid_list_t k;
+  struct kid_not_found_cache_bucket *k;
 
   if (DBG_CACHE)
-    log_debug ("keydb: kid_not_found_insert (%08lx%08lx, %d)\n",
-               (ulong)kid[0], (ulong)kid[1], found);
+    log_debug ("keydb: kid_not_found_insert (%08lx%08lx)\n",
+               (ulong)kid[0], (ulong)kid[1]);
   k = xmalloc (sizeof *k);
   k->kid[0] = kid[0];
   k->kid[1] = kid[1];
-  k->state = found;
-  k->next = kid_found_table[kid[0]%256];
-  kid_found_table[kid[0]%256] = k;
-  kid_found_table_count++;
+  k->next = kid_not_found_cache[kid[0] % KID_NOT_FOUND_CACHE_BUCKETS];
+  kid_not_found_cache[kid[0] % KID_NOT_FOUND_CACHE_BUCKETS] = k;
+  kid_not_found_cache_count++;
 }
 
 
-/* Flush the entire table of keyids whche were not found in previous
-   searches.  */
+/* Flush kid found cache.  */
 static void
 kid_not_found_flush (void)
 {
-  kid_list_t k, knext;
+  struct kid_not_found_cache_bucket *k, *knext;
   int i;
 
   if (DBG_CACHE)
     log_debug ("keydb: kid_not_found_flush\n");
 
-  if (!kid_found_table_count)
+  if (!kid_not_found_cache_count)
     return;
 
-  for (i=0; i < DIM(kid_found_table); i++)
+  for (i=0; i < DIM(kid_not_found_cache); i++)
     {
-      for (k = kid_found_table[i]; k; k = knext)
+      for (k = kid_not_found_cache[i]; k; k = knext)
         {
           knext = k->next;
           xfree (k);
         }
-      kid_found_table[i] = NULL;
+      kid_not_found_cache[i] = NULL;
     }
-  kid_found_table_count = 0;
+  kid_not_found_cache_count = 0;
 }
 
 
@@ -210,9 +222,9 @@ keyblock_cache_clear (void)
 /* Handle the creation of a keyring or a keybox if it does not yet
    exist.  Take into account that other processes might have the
    keyring/keybox already locked.  This lock check does not work if
-   the directory itself is not yet available.  If is IS_BOX is true
-   the filename is expected to be a keybox.  If FORCE_CREATE is true
-   the keyring or keybox shall be created.  */
+   the directory itself is not yet available.  If IS_BOX is true the
+   filename is expected to refer to a keybox.  If FORCE_CREATE is true
+   the keyring or keybox will be created.  */
 static int
 maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 {
@@ -646,8 +658,9 @@ keydb_add_resource (const char *url, unsigned int flags)
 void
 keydb_dump_stats (void)
 {
-  if (kid_found_table_count)
-    log_info ("keydb: kid_not_found_table: total: %u\n", kid_found_table_count);
+  if (kid_not_found_cache_count)
+    log_info ("keydb: kid_not_found_cache: total: %u\n",
+	      kid_not_found_cache_count);
 }
 
 
@@ -1619,7 +1632,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               size_t ndesc, size_t *descindex)
 {
   gpg_error_t rc;
-  int once_found = 0;
+  int already_in_cache = 0;
 
   if (descindex)
     *descindex = 0; /* Make sure it is always set on return.  */
@@ -1634,14 +1647,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     dump_search_desc (hd, "keydb_search", desc, ndesc);
 
 
-  /* Note that we track the found state in the table to cope with the
-     case that a initial search found the key and the next search
-     (without a reset) did not found the key.  Without keeping the
-     found state we would falsely claim that the key has not been
-     found.  Actually this is quite common because we need to check
-     for ambgious keyids.  */
   if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
-      && (once_found = kid_not_found_p (desc[0].u.kid)) == 1 )
+      && (already_in_cache = kid_not_found_p (desc[0].u.kid)) == 1 )
     {
       if (DBG_CLOCK)
         log_clock ("keydb_search leave (not found, cached)");
@@ -1706,12 +1713,10 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       memcpy (keyblock_cache.fpr, desc[0].u.fpr, 20);
     }
 
-  if ((!rc || gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
       && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
-      && !once_found)
-    {
-      kid_not_found_insert (desc[0].u.kid, !rc);
-    }
+      && !already_in_cache)
+    kid_not_found_insert (desc[0].u.kid);
 
   if (DBG_CLOCK)
     log_clock (rc? "keydb_search leave (not found)"
