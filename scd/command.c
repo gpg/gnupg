@@ -59,7 +59,7 @@
 #define set_error(e,t) assuan_set_error (ctx, gpg_error (e), (t))
 
 
-/* Macro to flag a removed card.  ENODEV is also tested to catch teh
+/* Macro to flag a removed card.  ENODEV is also tested to catch the
    case of a removed reader.  */
 #define TEST_CARD_REMOVAL(c,r)                              \
        do {                                                 \

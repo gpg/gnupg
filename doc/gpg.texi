@@ -567,7 +567,7 @@ may be used.
 
 @item --gen-key
 @opindex gen-key
-Generate a new key pair using teh current default parameters.  This is
+Generate a new key pair using the current default parameters.  This is
 the standard command to create a new key.
 
 @item --full-gen-key
