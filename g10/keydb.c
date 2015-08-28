@@ -1439,11 +1439,9 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
  * resource.
  */
 gpg_error_t
-keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved)
+keydb_locate_writable (KEYDB_HANDLE hd)
 {
   gpg_error_t rc;
-
-  (void)reserved;
 
   if (!hd)
     return GPG_ERR_INV_ARG;

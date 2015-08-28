@@ -145,7 +145,7 @@ gpg_error_t keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb);
 gpg_error_t keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
 gpg_error_t keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb);
 gpg_error_t keydb_delete_keyblock (KEYDB_HANDLE hd);
-gpg_error_t keydb_locate_writable (KEYDB_HANDLE hd, const char *reserved);
+gpg_error_t keydb_locate_writable (KEYDB_HANDLE hd);
 void keydb_rebuild_caches (int noisy);
 unsigned long keydb_get_skipped_counter (KEYDB_HANDLE hd);
 gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);

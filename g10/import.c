@@ -1073,7 +1073,7 @@ import_one (ctrl_t ctrl,
     {
       KEYDB_HANDLE hd = keydb_new ();
 
-      rc = keydb_locate_writable (hd, NULL);
+      rc = keydb_locate_writable (hd);
       if (rc)
         {
           log_error (_("no writable keyring found: %s\n"), gpg_strerror (rc));
