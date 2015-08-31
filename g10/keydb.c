@@ -64,18 +64,37 @@ static void *primary_keyring=NULL;
 
 struct keydb_handle
 {
+  /* When we locked all of the resources in ACTIVE (using keyring_lock
+     / keybox_lock, as appropriate).  */
   int locked;
+
+  /* The index into ACTIVE of the resources in which the last search
+     result was found.  Initially -1.  */
   int found;
+
+  /* Initially -1 (invalid).  This is used to save a search result and
+     later restore it as the selected result.  */
   int saved_found;
+
+  /* The number of skipped long blobs since the last search
+     (keydb_search_reset).  */
   unsigned long skipped_long_blobs;
+
+  /* If set, this disables the use of the keyblock cache.  */
   int no_caching;
 
   /* Whether the next search will be from the beginning of the
      database (and thus consider all records).  */
   int is_reset;
 
+  /* The "file position."  In our case, this is index of the current
+     resource in ACTIVE.  */
   int current;
-  int used;   /* Number of items in ACTIVE. */
+
+  /* The number of resources in ACTIVE.  */
+  int used;
+
+  /* Copy of ALL_RESOURCES when keydb_new is called.  */
   struct resource_item active[MAX_KEYDB_RESOURCES];
 };
 
@@ -187,7 +206,7 @@ kid_not_found_insert (u32 *kid)
 }
 
 
-/* Flush kid found cache.  */
+/* Flush the kid not found cache.  */
 static void
 kid_not_found_flush (void)
 {
@@ -229,7 +248,9 @@ keyblock_cache_clear (void)
    keyring/keybox already locked.  This lock check does not work if
    the directory itself is not yet available.  If IS_BOX is true the
    filename is expected to refer to a keybox.  If FORCE_CREATE is true
-   the keyring or keybox will be created.  */
+   the keyring or keybox will be created.
+
+   Return 0 if it is okay to access the specified file.  */
 static int
 maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 {
@@ -392,10 +413,15 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 }
 
 
-/* Helper for keydb_add_resource.  Opens FILENAME to figures out the
-   resource type.  Returns the resource type and a flag at R_NOTFOUND
-   indicating whether FILENAME could be opened at all.  If the openpgp
-   flag is set in a keybox header, R_OPENPGP will be set to true.  */
+/* Helper for keydb_add_resource.  Opens FILENAME to figure out the
+   resource type.
+
+   Returns the specified file's likely type.  If the file does not
+   exist, returns KEYDB_RESOURCE_TYPE_NONE and sets *R_FOUND to 0.
+   Otherwise, tries to figure out the file's type.  This is either
+   KEYDB_RESOURCE_TYPE_KEYBOX, KEYDB_RESOURCE_TYPE_KEYRING or
+   KEYDB_RESOURCE_TYPE_KEYNONE.  If the file is a keybox and it has
+   the OpenPGP flag set, then R_OPENPGP is also set.  */
 static KeydbResourceType
 rt_from_file (const char *filename, int *r_found, int *r_openpgp)
 {
@@ -436,17 +462,14 @@ rt_from_file (const char *filename, int *r_found, int *r_openpgp)
 }
 
 
-/*
- * Register a resource (keyring or aeybox).  The first keyring or
- * keybox which is added by this function is created if it does not
- * exist.  FLAGS are a combination of the KEYDB_RESOURCE_FLAG_
- * constants as defined in keydb.h.
- */
 gpg_error_t
 keydb_add_resource (const char *url, unsigned int flags)
 {
+  /* Whether we have successfully registered a resource.  */
   static int any_registered;
+  /* The file named by the URL (i.e., without the prototype).  */
   const char *resname = url;
+
   char *filename = NULL;
   int create;
   int read_only = !!(flags&KEYDB_RESOURCE_FLAG_READONLY);
@@ -459,11 +482,6 @@ keydb_add_resource (const char *url, unsigned int flags)
   /* Create the resource if it is the first registered one.  */
   create = (!read_only && !any_registered);
 
-  /* Do we have an URL?
-   *	gnupg-ring:filename  := this is a plain keyring.
-   *	gnupg-kbx:filename   := this is a keybox file.
-   *	filename := See what is is, but create as plain keyring.
-   */
   if (strlen (resname) > 11 && !strncmp( resname, "gnupg-ring:", 11) )
     {
       rt = KEYDB_RESOURCE_TYPE_KEYRING;
@@ -750,9 +768,6 @@ keydb_release (KEYDB_HANDLE hd)
 }
 
 
-/* Set a flag on handle to not use cached results.  This is required
-   for updating a keyring and for key listins.  Fixme: Using a new
-   parameter for keydb_new might be a better solution.  */
 void
 keydb_disable_caching (KEYDB_HANDLE hd)
 {
@@ -761,14 +776,6 @@ keydb_disable_caching (KEYDB_HANDLE hd)
 }
 
 
-/*
- * Return the name of the current resource.  This is function first
- * looks for the last found found, then for the current search
- * position, and last returns the first available resource.  The
- * returned string is only valid as long as the handle exists.  This
- * function does only return NULL if no handle is specified, in all
- * other error cases an empty string is returned.
- */
 const char *
 keydb_get_resource_name (KEYDB_HANDLE hd)
 {
@@ -882,7 +889,6 @@ unlock_all (KEYDB_HANDLE hd)
 
 
 
-/* Push the last found state if any.  */
 void
 keydb_push_found_state (KEYDB_HANDLE hd)
 {
@@ -912,7 +918,6 @@ keydb_push_found_state (KEYDB_HANDLE hd)
 }
 
 
-/* Pop the last found state.  */
 void
 keydb_pop_found_state (KEYDB_HANDLE hd)
 {
@@ -1103,12 +1108,6 @@ parse_keyblock_image (iobuf_t iobuf, int pk_no, int uid_no,
 }
 
 
-/*
- * Return the last found keyring.  Caller must free it.
- * The returned keyblock has the kbode flag bit 0 set for the node with
- * the public key used to locate the keyblock or flag bit 1 set for
- * the user ID node.
- */
 gpg_error_t
 keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 {
@@ -1279,9 +1278,6 @@ build_keyblock_image (kbnode_t keyblock, iobuf_t *r_iobuf, u32 **r_sigstatus)
 }
 
 
-/*
- * Update the current keyblock with the keyblock KB
- */
 gpg_error_t
 keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
@@ -1332,9 +1328,6 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 }
 
 
-/*
- * Insert a new KB into one of the resources.
- */
 gpg_error_t
 keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 {
@@ -1396,9 +1389,6 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
 }
 
 
-/*
- * Delete the current keyblock.
- */
 gpg_error_t
 keydb_delete_keyblock (KEYDB_HANDLE hd)
 {
@@ -1439,11 +1429,6 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
 
 
 
-/*
- * Locate the default writable key resource, so that the next
- * operation (which is only relevant for inserts) will be done on this
- * resource.
- */
 gpg_error_t
 keydb_locate_writable (KEYDB_HANDLE hd)
 {
@@ -1496,9 +1481,6 @@ keydb_locate_writable (KEYDB_HANDLE hd)
   return gpg_error (GPG_ERR_NOT_FOUND);
 }
 
-/*
- * Rebuild the caches of all key resources.
- */
 void
 keydb_rebuild_caches (int noisy)
 {
@@ -1528,7 +1510,6 @@ keydb_rebuild_caches (int noisy)
 }
 
 
-/* Return the number of skipped blocks since the last search reset.  */
 unsigned long
 keydb_get_skipped_counter (KEYDB_HANDLE hd)
 {
@@ -1536,9 +1517,6 @@ keydb_get_skipped_counter (KEYDB_HANDLE hd)
 }
 
 
-/*
- * Start the next search on this handle right at the beginning
- */
 gpg_error_t
 keydb_search_reset (KEYDB_HANDLE hd)
 {
@@ -1626,18 +1604,13 @@ dump_search_desc (KEYDB_HANDLE hd, const char *text,
 }
 
 
-/*
- * Search through all keydb resources, starting at the current
- * position, for a keyblock which contains one of the keys described
- * in the DESC array.  Returns GPG_ERR_NOT_FOUND if no matching
- * keyring was found.
- */
 gpg_error_t
 keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               size_t ndesc, size_t *descindex)
 {
   gpg_error_t rc;
   int was_reset = hd->is_reset;
+  /* If an entry is already in the cache, then don't add it again.  */
   int already_in_cache = 0;
 
   if (descindex)
@@ -1732,8 +1705,6 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
 }
 
 
-/* Note that in contrast to using keydb_search in search first mode,
-   this function skips legacy keys.  */
 gpg_error_t
 keydb_search_first (KEYDB_HANDLE hd)
 {
@@ -1753,8 +1724,6 @@ keydb_search_first (KEYDB_HANDLE hd)
 }
 
 
-/* Note that in contrast to using keydb_search in search next mode,
-   this fucntion skips legacy keys.  */
 gpg_error_t
 keydb_search_next (KEYDB_HANDLE hd)
 {
