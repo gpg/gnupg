@@ -62,6 +62,28 @@ static struct resource_item all_resources[MAX_KEYDB_RESOURCES];
 static int used_resources;
 static void *primary_keyring=NULL;
 
+
+/* This is a simple cache used to return the last result of a
+   successful fingerprint search.  This works only for keybox resources
+   because (due to lack of a copy_keyblock function) we need to store
+   an image of the keyblock which is fortunately instantly available
+   for keyboxes.  */
+enum keyblock_cache_states {
+  KEYBLOCK_CACHE_EMPTY,
+  KEYBLOCK_CACHE_PREPARED,
+  KEYBLOCK_CACHE_FILLED
+};
+
+struct keyblock_cache {
+  enum keyblock_cache_states state;
+  byte fpr[MAX_FINGERPRINT_LEN];
+  iobuf_t iobuf; /* Image of the keyblock.  */
+  u32 *sigstatus;
+  int pk_no;
+  int uid_no;
+};
+
+
 struct keydb_handle
 {
   /* When we locked all of the resources in ACTIVE (using keyring_lock
@@ -94,6 +116,10 @@ struct keydb_handle
   /* The number of resources in ACTIVE.  */
   int used;
 
+  /* Cache of the last found and parsed key block (only used for
+     keyboxes, not keyrings).  */
+  struct keyblock_cache keyblock_cache;
+
   /* Copy of ALL_RESOURCES when keydb_new is called.  */
   struct resource_item active[MAX_KEYDB_RESOURCES];
 };
@@ -124,27 +150,6 @@ struct kid_not_found_cache_bucket
   struct kid_not_found_cache_bucket *next;
   u32 kid[2];
 };
-
-
-/* This is a simple cache used to return the last result of a
-   successful fingerprint search.  This works only for keybox resources
-   because (due to lack of a copy_keyblock function) we need to store
-   an image of the keyblock which is fortunately instantly available
-   for keyboxes.  */
-enum keyblock_cache_states {
-  KEYBLOCK_CACHE_EMPTY,
-  KEYBLOCK_CACHE_PREPARED,
-  KEYBLOCK_CACHE_FILLED
-};
-
-struct {
-  enum keyblock_cache_states state;
-  byte fpr[MAX_FINGERPRINT_LEN];
-  iobuf_t iobuf; /* Image of the keyblock.  */
-  u32 *sigstatus;
-  int pk_no;
-  int uid_no;
-} keyblock_cache;
 
 
 static int lock_all (KEYDB_HANDLE hd);
@@ -233,13 +238,13 @@ kid_not_found_flush (void)
 
 
 static void
-keyblock_cache_clear (void)
+keyblock_cache_clear (struct keydb_handle *hd)
 {
-  keyblock_cache.state = KEYBLOCK_CACHE_EMPTY;
-  xfree (keyblock_cache.sigstatus);
-  keyblock_cache.sigstatus = NULL;
-  iobuf_close (keyblock_cache.iobuf);
-  keyblock_cache.iobuf = NULL;
+  hd->keyblock_cache.state = KEYBLOCK_CACHE_EMPTY;
+  xfree (hd->keyblock_cache.sigstatus);
+  hd->keyblock_cache.sigstatus = NULL;
+  iobuf_close (hd->keyblock_cache.iobuf);
+  hd->keyblock_cache.iobuf = NULL;
 }
 
 
@@ -1124,23 +1129,23 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
   if (DBG_CLOCK)
     log_clock ("keydb_get_keybock enter");
 
-  if (keyblock_cache.state == KEYBLOCK_CACHE_FILLED)
+  if (hd->keyblock_cache.state == KEYBLOCK_CACHE_FILLED)
     {
-      err = iobuf_seek (keyblock_cache.iobuf, 0);
+      err = iobuf_seek (hd->keyblock_cache.iobuf, 0);
       if (err)
 	{
 	  log_error ("keydb_get_keyblock: failed to rewind iobuf for cache\n");
-	  keyblock_cache_clear ();
+	  keyblock_cache_clear (hd);
 	}
       else
 	{
-	  err = parse_keyblock_image (keyblock_cache.iobuf,
-				      keyblock_cache.pk_no,
-				      keyblock_cache.uid_no,
-				      keyblock_cache.sigstatus,
+	  err = parse_keyblock_image (hd->keyblock_cache.iobuf,
+				      hd->keyblock_cache.pk_no,
+				      hd->keyblock_cache.uid_no,
+				      hd->keyblock_cache.sigstatus,
 				      ret_kb);
 	  if (err)
-	    keyblock_cache_clear ();
+	    keyblock_cache_clear (hd);
 	  if (DBG_CLOCK)
 	    log_clock (err? "keydb_get_keyblock leave (cached, failed)"
 		       : "keydb_get_keyblock leave (cached)");
@@ -1171,13 +1176,13 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
           {
             err = parse_keyblock_image (iobuf, pk_no, uid_no, sigstatus,
                                         ret_kb);
-            if (!err && keyblock_cache.state == KEYBLOCK_CACHE_PREPARED)
+            if (!err && hd->keyblock_cache.state == KEYBLOCK_CACHE_PREPARED)
               {
-                keyblock_cache.state     = KEYBLOCK_CACHE_FILLED;
-                keyblock_cache.sigstatus = sigstatus;
-                keyblock_cache.iobuf     = iobuf;
-                keyblock_cache.pk_no     = pk_no;
-                keyblock_cache.uid_no    = uid_no;
+                hd->keyblock_cache.state     = KEYBLOCK_CACHE_FILLED;
+                hd->keyblock_cache.sigstatus = sigstatus;
+                hd->keyblock_cache.iobuf     = iobuf;
+                hd->keyblock_cache.pk_no     = pk_no;
+                hd->keyblock_cache.uid_no    = uid_no;
               }
             else
               {
@@ -1189,8 +1194,8 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
       break;
     }
 
-  if (keyblock_cache.state != KEYBLOCK_CACHE_FILLED)
-    keyblock_cache_clear ();
+  if (hd->keyblock_cache.state != KEYBLOCK_CACHE_FILLED)
+    keyblock_cache_clear (hd);
 
   if (DBG_CLOCK)
     log_clock (err? "keydb_get_keyblock leave (failed)"
@@ -1298,7 +1303,7 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
     return gpg_error (GPG_ERR_INV_ARG);
 
   kid_not_found_flush ();
-  keyblock_cache_clear ();
+  keyblock_cache_clear (hd);
 
   if (hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
@@ -1349,7 +1354,7 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
     return gpg_error (GPG_ERR_INV_ARG);
 
   kid_not_found_flush ();
-  keyblock_cache_clear ();
+  keyblock_cache_clear (hd);
 
   if (opt.dry_run)
     return 0;
@@ -1409,7 +1414,7 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
   kid_not_found_flush ();
-  keyblock_cache_clear ();
+  keyblock_cache_clear (hd);
 
   if (hd->found < 0 || hd->found >= hd->used)
     return gpg_error (GPG_ERR_VALUE_NOT_FOUND);
@@ -1497,8 +1502,6 @@ keydb_rebuild_caches (int noisy)
 {
   int i, rc;
 
-  keyblock_cache_clear ();
-
   for (i=0; i < used_resources; i++)
     {
       if (!keyring_is_writable (all_resources[i].token))
@@ -1537,7 +1540,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
   if (!hd)
     return gpg_error (GPG_ERR_INV_ARG);
 
-  keyblock_cache_clear ();
+  keyblock_cache_clear (hd);
 
   if (DBG_CLOCK)
     log_clock ("keydb_search_reset");
@@ -1652,8 +1655,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       && ndesc == 1
       && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
           || desc[0].mode == KEYDB_SEARCH_MODE_FPR)
-      && keyblock_cache.state  == KEYBLOCK_CACHE_FILLED
-      && !memcmp (keyblock_cache.fpr, desc[0].u.fpr, 20))
+      && hd->keyblock_cache.state  == KEYBLOCK_CACHE_FILLED
+      && !memcmp (hd->keyblock_cache.fpr, desc[0].u.fpr, 20))
     {
       /* (DESCINDEX is already set).  */
       if (DBG_CLOCK)
@@ -1694,14 +1697,14 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         ? gpg_error (GPG_ERR_NOT_FOUND)
         : rc);
 
-  keyblock_cache_clear ();
+  keyblock_cache_clear (hd);
   if (!hd->no_caching
       && !rc
       && ndesc == 1 && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
                         || desc[0].mode == KEYDB_SEARCH_MODE_FPR))
     {
-      keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
-      memcpy (keyblock_cache.fpr, desc[0].u.fpr, 20);
+      hd->keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
+      memcpy (hd->keyblock_cache.fpr, desc[0].u.fpr, 20);
     }
 
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
