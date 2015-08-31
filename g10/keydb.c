@@ -692,6 +692,7 @@ keydb_new (void)
 {
   KEYDB_HANDLE hd;
   int i, j;
+  int die = 0;
 
   if (DBG_CLOCK)
     log_clock ("keydb_new");
@@ -702,7 +703,7 @@ keydb_new (void)
   hd->is_reset = 1;
 
   assert (used_resources <= MAX_KEYDB_RESOURCES);
-  for (i=j=0; i < used_resources; i++)
+  for (i=j=0; ! die && i < used_resources; i++)
     {
       switch (all_resources[i].type)
         {
@@ -712,10 +713,8 @@ keydb_new (void)
           hd->active[j].type   = all_resources[i].type;
           hd->active[j].token  = all_resources[i].token;
           hd->active[j].u.kr = keyring_new (all_resources[i].token);
-          if (!hd->active[j].u.kr) {
-            xfree (hd);
-            return NULL; /* fixme: release all previously allocated handles*/
-          }
+          if (!hd->active[j].u.kr)
+	    die = 1;
           j++;
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
@@ -723,10 +722,7 @@ keydb_new (void)
           hd->active[j].token  = all_resources[i].token;
           hd->active[j].u.kb   = keybox_new_openpgp (all_resources[i].token, 0);
           if (!hd->active[j].u.kb)
-            {
-              xfree (hd);
-              return NULL; /* fixme: release all previously allocated handles*/
-            }
+	    die = 1;
           j++;
           break;
         }
@@ -734,6 +730,13 @@ keydb_new (void)
   hd->used = j;
 
   active_handles++;
+
+  if (die)
+    {
+      keydb_release (hd);
+      hd = NULL;
+    }
+
   return hd;
 }
 
