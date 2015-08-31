@@ -1964,6 +1964,11 @@ ssh_key_to_blob (gcry_sexp_t sexp, int with_secret,
               err = gpg_error (GPG_ERR_INV_SEXP);
               goto out;
             }
+          if (*p_elems == 'q')
+            { /* Remove the prefix 0x40.  */
+              data++;
+              datalen--;
+            }
           err = stream_write_string (stream, data, datalen);
           if (err)
             goto out;
