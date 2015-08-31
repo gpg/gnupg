@@ -1731,6 +1731,10 @@ keydb_search_first (KEYDB_HANDLE hd)
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
+  err = keydb_search_reset (hd);
+  if (err)
+    return err;
+
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
   err = keydb_search (hd, &desc, 1, NULL);
