@@ -291,10 +291,16 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         gcry_mpi_release (frame);
       }
 
-    if (!rc && !opt.no_sig_create_check) {
+    if (!rc
+#if GCRYPT_VERSION_NUMBER >= 0x010700 /* Libgcrypt >= 1.7 */
+        && is_DSA (sk->pubkey_algo)
+#endif /* Libgcrypt >= 1.7 */
+        )
+      {
         /* Check that the signature verification worked and nothing is
-         * fooling us e.g. by a bug in the signature create
-         * code or by deliberately introduced faults. */
+         * fooling us e.g. by a bug in the signature creation code or by
+         * deliberately introduced faults.  Libgcrypt 1.7 includes
+         * this check for RSA and thus we don't need it in that case.  */
         PKT_public_key *pk = xmalloc_clear (sizeof *pk);
 
         if( get_pubkey( pk, sig->keyid ) )
@@ -312,6 +318,7 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
                          g10_errstr (rc));
         free_public_key (pk);
     }
+
     if( rc )
 	log_error(_("signing failed: %s\n"), g10_errstr(rc) );
     else {

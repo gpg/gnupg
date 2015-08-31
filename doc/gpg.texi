@@ -1719,12 +1719,7 @@ can be done if someone else has write access to your public keyring.
 
 @item --no-sig-create-check
 @opindex no-sig-create-check
-GnuPG normally verifies each signature right after creation to protect
-against bugs and hardware malfunctions which could leak out bits from
-the secret key. This extra verification needs some time (about 115%
-for DSA keys), and so this option can be used to disable it.
-However, due to the fact that the signature creation needs manual
-interaction, this performance penalty does not matter in most settings.
+This option is obsolete.  It has no function.
 
 @item --auto-check-trustdb
 @itemx --no-auto-check-trustdb
