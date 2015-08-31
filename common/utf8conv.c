@@ -127,12 +127,10 @@ handle_iconv_error (const char *to, const char *from, int use_fallback)
 
   if (use_fallback)
     {
-      /* To avoid further error messages we fallback to Latin-1 for the
-         native encoding.  This is justified as one can expect that on a
-         utf-8 enabled system nl_langinfo() will work and thus we won't
-         never get to here.  Thus Latin-1 seems to be a reasonable
-         default.  */
-      active_charset_name = "iso-8859-1";
+      /* To avoid further error messages we fallback to UTF-8 for the
+         native encoding.  Nowadays this seems to be the best bet in
+         case of errors from iconv or nl_langinfo.  */
+      active_charset_name = "utf-8";
       no_translation = 0;
       use_iconv = 0;
     }
