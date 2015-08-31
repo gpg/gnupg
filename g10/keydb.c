@@ -69,6 +69,11 @@ struct keydb_handle
   int saved_found;
   unsigned long skipped_long_blobs;
   int no_caching;
+
+  /* Whether the next search will be from the beginning of the
+     database (and thus consider all records).  */
+  int is_reset;
+
   int current;
   int used;   /* Number of items in ACTIVE. */
   struct resource_item active[MAX_KEYDB_RESOURCES];
@@ -676,6 +681,7 @@ keydb_new (void)
   hd = xmalloc_clear (sizeof *hd);
   hd->found = -1;
   hd->saved_found = -1;
+  hd->is_reset = 1;
 
   assert (used_resources <= MAX_KEYDB_RESOURCES);
   for (i=j=0; i < used_resources; i++)
@@ -1568,6 +1574,7 @@ keydb_search_reset (KEYDB_HANDLE hd)
           break;
         }
     }
+  hd->is_reset = 1;
   return rc;
 }
 
@@ -1630,6 +1637,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               size_t ndesc, size_t *descindex)
 {
   gpg_error_t rc;
+  int was_reset = hd->is_reset;
   int already_in_cache = 0;
 
   if (descindex)
@@ -1696,6 +1704,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       else if (!rc)
         hd->found = hd->current;
     }
+  hd->is_reset = 0;
 
   rc = ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
         ? gpg_error (GPG_ERR_NOT_FOUND)
@@ -1712,7 +1721,7 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
 
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
-      && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
+      && ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID && was_reset
       && !already_in_cache)
     kid_not_found_insert (desc[0].u.kid);
 
