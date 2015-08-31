@@ -337,7 +337,6 @@ enum cmd_and_opt_values
     oFixedListMode,
     oLegacyListMode,
     oNoSigCache,
-    oNoSigCreateCheck,
     oAutoCheckTrustDB,
     oNoAutoCheckTrustDB,
     oPreservePermissions,
@@ -727,7 +726,6 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oAutoKeyRetrieve, "auto-key-retrieve", "@"),
   ARGPARSE_s_n (oNoAutoKeyRetrieve, "no-auto-key-retrieve", "@"),
   ARGPARSE_s_n (oNoSigCache,         "no-sig-cache", "@"),
-  ARGPARSE_s_n (oNoSigCreateCheck,   "no-sig-create-check", "@"),
   ARGPARSE_s_n (oMergeOnly,	  "merge-only", "@" ),
   ARGPARSE_s_n (oAllowSecretKeyImport, "allow-secret-key-import", "@"),
   ARGPARSE_s_n (oTryAllSecrets,  "try-all-secrets", "@"),
@@ -2990,7 +2988,6 @@ main (int argc, char **argv)
             }
             break;
           case oNoSigCache: opt.no_sig_cache = 1; break;
-          case oNoSigCreateCheck: opt.no_sig_create_check = 1; break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
 	  case oNoAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid=0; break;
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;

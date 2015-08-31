@@ -294,8 +294,13 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 
   /* Check that the signature verification worked and nothing is
    * fooling us e.g. by a bug in the signature create code or by
-   * deliberately introduced faults.  */
-  if (!err && !opt.no_sig_create_check)
+   * deliberately introduced faults.  Because Libgcrypt 1.7 does this
+   * for RSA internally there is no need to do it here again.  */
+  if (!err
+#if GCRYPT_VERSION_NUMBER >= 0x010700 /* Libgcrypt >= 1.7 */
+        && !is_RSA (pksk->pubkey_algo)
+#endif /* Libgcrypt >= 1.7 */
+      )
     {
       PKT_public_key *pk = xmalloc_clear (sizeof *pk);
 
