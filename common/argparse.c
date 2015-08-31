@@ -123,6 +123,13 @@ my_log_bug (const char *fmt, ...)
   abort ();
 }
 
+/* Return true if the native charset is utf-8.  */
+static int
+is_native_utf8 (void)
+{
+  return 1;
+}
+
 static char *
 my_trim_spaces (char *str)
 {
