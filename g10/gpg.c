@@ -336,7 +336,6 @@ enum cmd_and_opt_values
     oNoExpensiveTrustChecks,
     oFixedListMode,
     oNoSigCache,
-    oNoSigCreateCheck,
     oAutoCheckTrustDB,
     oNoAutoCheckTrustDB,
     oPreservePermissions,
@@ -673,7 +672,7 @@ static ARGPARSE_OPTS opts[] = {
     { oAutoKeyRetrieve, "auto-key-retrieve", 0, "@" },
     { oNoAutoKeyRetrieve, "no-auto-key-retrieve", 0, "@" },
     { oNoSigCache,         "no-sig-cache", 0, "@" },
-    { oNoSigCreateCheck,   "no-sig-create-check", 0, "@" },
+    { oNoop,               "no-sig-create-check", 0, "@" },
     { oAutoCheckTrustDB, "auto-check-trustdb", 0, "@"},
     { oNoAutoCheckTrustDB, "no-auto-check-trustdb", 0, "@"},
     { oMergeOnly,	  "merge-only", 0, "@" },
@@ -2716,7 +2715,6 @@ main (int argc, char **argv )
 		disable_pubkey_algo( string_to_pubkey_algo(pargs.r.ret_str) );
 		break;
           case oNoSigCache: opt.no_sig_cache = 1; break;
-          case oNoSigCreateCheck: opt.no_sig_create_check = 1; break;
 	  case oAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid = 1; break;
 	  case oNoAllowNonSelfsignedUID: opt.allow_non_selfsigned_uid=0; break;
 	  case oAllowFreeformUID: opt.allow_freeform_uid = 1; break;

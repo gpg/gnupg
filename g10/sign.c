@@ -291,10 +291,11 @@ do_sign( PKT_secret_key *sk, PKT_signature *sig,
         mpi_free(frame);
       }
 
-    if (!rc && !opt.no_sig_create_check) {
-        /* check that the signature verification worked and nothing is
-         * fooling us e.g. by a bug in the signature create
-         * code or by deliberately introduced faults. */
+    if (!rc && is_DSA (sk->pubkey_algo)) {
+        /* Check that the signature verification worked and nothing is
+         * fooling us e.g. by a bug in the signature create code or by
+         * deliberately introduced faults.  We don't do this for RSA
+         * because that is done at a lower layer.  */
         PKT_public_key *pk = xmalloc_clear (sizeof *pk);
 
         if( get_pubkey( pk, sig->keyid ) )

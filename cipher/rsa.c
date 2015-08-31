@@ -452,6 +452,9 @@ int
 rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
 {
     RSA_secret_key sk;
+    RSA_public_key pk;
+    MPI cres;
+    int rc;
 
     if( algo != 1 && algo != 3 )
 	return G10ERR_PUBKEY_ALGO;
@@ -465,7 +468,15 @@ rsa_sign( int algo, MPI *resarr, MPI data, MPI *skey )
     resarr[0] = mpi_alloc( mpi_get_nlimbs( sk.n ) );
     secret( resarr[0], data, &sk );
 
-    return 0;
+    /* Check for a failure in secret().  */
+    cres = mpi_alloc ( mpi_nlimb_hint_from_nbits (160) );
+    pk.n = sk.n;
+    pk.e = sk.e;
+    public (cres, resarr[0], &pk);
+    rc = mpi_cmp (cres, data)? G10ERR_BAD_SIGN : 0;
+    mpi_free (cres);
+
+    return rc;
 }
 
 int
