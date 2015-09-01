@@ -111,15 +111,14 @@ content_filter (void *opaque, int control,
       if (toread > remaining)
 	toread = remaining;
 
-      if (toread == 0)
-	return -1;
-
       memcpy (buf, &state->buffer[state->pos], toread);
 
       state->pos += toread;
 
       *len = toread;
 
+      if (toread == 0)
+	return -1;
       return 0;
     }
 
@@ -269,10 +268,8 @@ main (int argc, char *argv[])
   }
 
   {
-    /* - 3 characters plus new line
-       - 4 characters plus new line
-       - 5 characters plus new line
-       - 5 characters, no new line
+    /* - 10 characters, EOF
+       - 17 characters, EOF
      */
     char *content = "abcdefghijklmnopq";
     char *content2 = "0123456789";
@@ -294,7 +291,7 @@ main (int argc, char *argv[])
 	if (c == -1 && lastc == -1)
 	  {
 	    /* printf("Two EOFs in a row.  Done.\n");  */
-	    assert (n == 44);
+	    assert (n == 27);
 	    break;
 	  }
 
@@ -303,7 +300,7 @@ main (int argc, char *argv[])
 	if (c == -1)
 	  {
 	    /* printf("After %d bytes, got EOF.\n", n); */
-	    assert (n == 27 || n == 44);
+	    assert (n == 10 || n == 27);
 	  }
 	else
 	  {
