@@ -55,7 +55,6 @@ struct getkey_ctx_s
   KBNODE found_key;	 /* Pointer into some keyblock. */
   strlist_t extra_list;	 /* Will be freed when releasing the context.  */
   int req_usage;
-  int req_algo;
   KEYDB_HANDLE kr_handle;
   int not_allocated;
   int nitems;
@@ -392,7 +391,6 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
     ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
     ctx.items[0].u.kid[0] = keyid[0];
     ctx.items[0].u.kid[1] = keyid[1];
-    ctx.req_algo = pk->req_algo;
     ctx.req_usage = pk->req_usage;
     rc = lookup (&ctx, &kb, 0);
     if (!rc)
@@ -524,7 +522,6 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
-  ctx.req_algo = pk->req_algo;
   ctx.req_usage = pk->req_usage;
   err = lookup (&ctx, &keyblock, 1);
   if (!err)
@@ -661,7 +658,6 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 
   if (pk)
     {
-      ctx->req_algo = pk->req_algo;
       ctx->req_usage = pk->req_usage;
     }
 

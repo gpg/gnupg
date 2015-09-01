@@ -273,7 +273,6 @@ typedef struct
   byte    pubkey_algo;    /* algorithm used for public key scheme */
   byte    pubkey_usage;   /* for now only used to pass it to getkey() */
   byte    req_usage;      /* hack to pass a request to getkey() */
-  byte    req_algo;       /* Ditto */
   u32     has_expired;    /* set to the expiration date if expired */
   u32     main_keyid[2];  /* keyid of the primary key */
   u32     keyid[2];	    /* calculated by keyid_from_pk() */
