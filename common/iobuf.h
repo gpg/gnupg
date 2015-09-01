@@ -118,7 +118,7 @@ typedef enum
     IOBUF_IOCTL_FSYNC            = 4  /* Uses ptrval.  */
   } iobuf_ioctl_t;
 
-enum
+enum iobuf_use
   {
     /* Pipeline is in input mode.  The data flows from the end to the
        beginning.  That is, when reading from the pipeline, the first
@@ -143,7 +143,7 @@ struct iobuf_struct
 {
   /* The type of filter.  Either IOBUF_INPUT, IOBUF_OUTPUT or
      IOBUF_TEMP.  */
-  int use;
+  enum iobuf_use use;
 
   /* nlimit can be changed using iobuf_set_limit.  If non-zero, it is
      the number of additional bytes that can be read from the filter
