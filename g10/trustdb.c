@@ -99,20 +99,22 @@ release_key_items (struct key_item *k)
     }
 }
 
+#define KEY_HASH_TABLE_SIZE 1024
+
 /*
- * For fast keylook up we need a hash table.  Each byte of a KeyIDs
+ * For fast keylook up we need a hash table.  Each byte of a KeyID
  * should be distributed equally over the 256 possible values (except
  * for v3 keyIDs but we consider them as not important here). So we
- * can just use 10 bits to index a table of 1024 key items.
- * Possible optimization: Don not use key_items but other hash_table when the
- * duplicates lists gets too large.
+ * can just use 10 bits to index a table of KEY_HASH_TABLE_SIZE key items.
+ * Possible optimization: Do not use key_items but other hash_table when the
+ * duplicates lists get too large.
  */
 static KeyHashTable
 new_key_hash_table (void)
 {
   struct key_item **tbl;
 
-  tbl = xmalloc_clear (1024 * sizeof *tbl);
+  tbl = xmalloc_clear (KEY_HASH_TABLE_SIZE * sizeof *tbl);
   return tbl;
 }
 
@@ -123,7 +125,7 @@ release_key_hash_table (KeyHashTable tbl)
 
   if (!tbl)
     return;
-  for (i=0; i < 1024; i++)
+  for (i=0; i < KEY_HASH_TABLE_SIZE; i++)
     release_key_items (tbl[i]);
   xfree (tbl);
 }
@@ -136,7 +138,7 @@ test_key_hash_table (KeyHashTable tbl, u32 *kid)
 {
   struct key_item *k;
 
-  for (k = tbl[(kid[1] & 0x03ff)]; k; k = k->next)
+  for (k = tbl[(kid[1] % KEY_HASH_TABLE_SIZE)]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       return 1;
   return 0;
@@ -148,17 +150,18 @@ test_key_hash_table (KeyHashTable tbl, u32 *kid)
 static void
 add_key_hash_table (KeyHashTable tbl, u32 *kid)
 {
+  int i = kid[1] % KEY_HASH_TABLE_SIZE;
   struct key_item *k, *kk;
 
-  for (k = tbl[(kid[1] & 0x03ff)]; k; k = k->next)
+  for (k = tbl[i]; k; k = k->next)
     if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
       return; /* already in table */
 
   kk = new_key_item ();
   kk->kid[0] = kid[0];
   kk->kid[1] = kid[1];
-  kk->next = tbl[(kid[1] & 0x03ff)];
-  tbl[(kid[1] & 0x03ff)] = kk;
+  kk->next = tbl[i];
+  tbl[i] = kk;
 }
 
 /*
