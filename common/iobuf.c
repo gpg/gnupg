@@ -170,10 +170,10 @@ static int translate_file_handle (int fd, int for_write);
    underlying file; it just causes any data buffered at the filter A
    to be sent to A's filter function.
 
-   If A is a IOBUF_TEMP filter, then this also enlarges the buffer by
-   IOBUF_BUFFER_SIZE.
+   If A is a IOBUF_OUTPUT_TEMP filter, then this also enlarges the
+   buffer by IOBUF_BUFFER_SIZE.
 
-   May only be called on an IOBUF_OUTPUT or IOBUF_TEMP filters.  */
+   May only be called on an IOBUF_OUTPUT or IOBUF_OUTPUT_TEMP filters.  */
 static int filter_flush (iobuf_t a);
 
 
@@ -1099,7 +1099,8 @@ iobuf_alloc (int use, size_t bufsize)
   iobuf_t a;
   static int number = 0;
 
-  assert (use == IOBUF_INPUT || use == IOBUF_OUTPUT || use == IOBUF_TEMP);
+  assert (use == IOBUF_INPUT
+	  || use == IOBUF_OUTPUT || use == IOBUF_OUTPUT_TEMP);
   if (bufsize == 0)
     {
       log_bug ("iobuf_alloc() passed a bufsize of 0!\n");
@@ -1210,7 +1211,7 @@ iobuf_cancel (iobuf_t a)
 iobuf_t
 iobuf_temp (void)
 {
-  return iobuf_alloc (IOBUF_TEMP, IOBUF_BUFFER_SIZE);
+  return iobuf_alloc (IOBUF_OUTPUT_TEMP, IOBUF_BUFFER_SIZE);
 }
 
 iobuf_t
@@ -1273,6 +1274,8 @@ do_open (const char *fname, int special_filenames,
   size_t len = 0;
   int print_only = 0;
   int fd;
+
+  assert (use == IOBUF_INPUT || use == IOBUF_OUTPUT);
 
   if (special_filenames
       /* NULL or '-'.  */
@@ -1600,13 +1603,13 @@ iobuf_push_filter2 (iobuf_t a,
   a->filter_ov = NULL;
   a->filter_ov_owner = 0;
   a->filter_eof = 0;
-  if (a->use == IOBUF_TEMP)
+  if (a->use == IOBUF_OUTPUT_TEMP)
     /* A TEMP filter buffers any data sent to it; it does not forward
        any data down the pipeline.  If we add a new filter to the
        pipeline, it shouldn't also buffer data.  It should send it
        downstream to be buffered.  Thus, the correct type for a filter
-       added in front of an IOBUF_TEMP filter is IOBUF_OUPUT, not
-       IOBUF_TEMP.  */
+       added in front of an IOBUF_OUTPUT_TEMP filter is IOBUF_OUPUT, not
+       IOBUF_OUTPUT_TEMP.  */
     {
       a->use = IOBUF_OUTPUT;
 
@@ -1675,6 +1678,12 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: pop '%s'\n",
 	       a->no, a->subno, iobuf_desc (a));
+  if (a->use == IOBUF_OUTPUT_TEMP)
+    {
+      /* This should be the last filter in the pipeline.  */
+      assert (! a->chain);
+      return 0;
+    }
   if (!a->filter)
     {				/* this is simple */
       b = a->chain;
@@ -1904,7 +1913,7 @@ filter_flush (iobuf_t a)
   size_t len;
   int rc;
 
-  if (a->use == IOBUF_TEMP)
+  if (a->use == IOBUF_OUTPUT_TEMP)
     {				/* increase the temp buffer */
       size_t newsize = a->d.size + IOBUF_BUFFER_SIZE;
 
@@ -1940,7 +1949,7 @@ iobuf_readbyte (iobuf_t a)
 {
   int c;
 
-  if (a->use != IOBUF_INPUT)
+  if (a->use == IOBUF_OUTPUT || a->use == IOBUF_OUTPUT_TEMP)
     {
       log_bug ("iobuf_readbyte called on a non-INPUT pipeline!\n");
       return -1;
@@ -1974,12 +1983,11 @@ iobuf_read (iobuf_t a, void *buffer, unsigned int buflen)
   unsigned char *buf = (unsigned char *)buffer;
   int c, n;
 
-  if (a->use != IOBUF_INPUT)
+  if (a->use == IOBUF_OUTPUT || a->use == IOBUF_OUTPUT_TEMP)
     {
       log_bug ("iobuf_read called on a non-INPUT pipeline!\n");
       return -1;
     }
-  assert (a->use == IOBUF_INPUT);
 
   if (a->nlimit)
     {
@@ -2158,8 +2166,8 @@ iobuf_writestr (iobuf_t a, const char *buf)
 int
 iobuf_write_temp (iobuf_t dest, iobuf_t source)
 {
-  assert (source->use == IOBUF_OUTPUT || source->use == IOBUF_TEMP);
-  assert (dest->use == IOBUF_OUTPUT || dest->use == IOBUF_TEMP);
+  assert (source->use == IOBUF_OUTPUT || source->use == IOBUF_OUTPUT_TEMP);
+  assert (dest->use == IOBUF_OUTPUT || dest->use == IOBUF_OUTPUT_TEMP);
 
   iobuf_flush_temp (source);
   return iobuf_write (dest, source->d.buf, source->d.len);
@@ -2346,7 +2354,7 @@ iobuf_seek (iobuf_t a, off_t newpos)
 {
   file_filter_ctx_t *b = NULL;
 
-  if (a->use != IOBUF_TEMP)
+  if (a->use == IOBUF_OUTPUT || a->use == IOBUF_INPUT)
     {
       /* Find the last filter in the pipeline.  */
       for (; a->chain; a = a->chain)
@@ -2372,8 +2380,8 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	}
 #endif
     }
-  /* Discard the buffer unless it is a temp stream.  */
-  if (a->use != IOBUF_TEMP)
+  /* Discard the buffer it is not a temp stream.  */
+  if (a->use != IOBUF_OUTPUT_TEMP)
     a->d.len = 0;
   a->d.start = 0;
   a->nbytes = 0;

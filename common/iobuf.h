@@ -58,13 +58,14 @@
    in the iobuf_t.
 
    A pipeline can only be used for reading (IOBUF_INPUT) or for
-   writing (IOBUF_OUTPUT / IOBUF_TEMP).  When reading, data flows from
-   the last filter towards the first.  That is, the user calls
-   iobuf_read(), the module reads from the first filter, which gets
-   its input from the second filter, etc.  When writing, data flows
-   from the first filter towards the last.  In this case, when the
-   user calls iobuf_write(), the data is written to the first filter,
-   which writes the transformed data to the second filter, etc.
+   writing (IOBUF_OUTPUT / IOBUF_OUTPUT_TEMP).  When reading, data
+   flows from the last filter towards the first.  That is, the user
+   calls iobuf_read(), the module reads from the first filter, which
+   gets its input from the second filter, etc.  When writing, data
+   flows from the first filter towards the last.  In this case, when
+   the user calls iobuf_write(), the data is written to the first
+   filter, which writes the transformed data to the second filter,
+   etc.
 
    An iobuf_t contains some state about the filter.  For instance, it
    indicates if the filter has already returned EOF (filter_eof) and
@@ -131,7 +132,7 @@ enum iobuf_use
     IOBUF_OUTPUT=2,
     /* Pipeline is in output mode.  The last filter in the pipeline is
        a temporary buffer that grows as necessary.  */
-    IOBUF_TEMP=3
+    IOBUF_OUTPUT_TEMP
   };
 
 
@@ -142,7 +143,7 @@ typedef struct iobuf_struct *IOBUF;  /* Compatibility with gpg 1.4. */
 struct iobuf_struct
 {
   /* The type of filter.  Either IOBUF_INPUT, IOBUF_OUTPUT or
-     IOBUF_TEMP.  */
+     IOBUF_OUTPUT_TEMP.  */
   enum iobuf_use use;
 
   /* nlimit can be changed using iobuf_set_limit.  If non-zero, it is
@@ -273,7 +274,7 @@ int  iobuf_is_pipe_filename (const char *fname);
    create a new primary source or primary sink, i.e., the last filter
    in the pipeline.
 
-   USE is IOBUF_INPUT, IOBUF_OUTPUT or IOBUF_TEMP.
+   USE is IOBUF_INPUT, IOBUF_OUTPUT or IOBUF_OUTPUT_TEMP.
 
    BUFSIZE is the desired internal buffer size (that is, the size of
    the typical read / write request).  */
@@ -437,7 +438,7 @@ int iobuf_print_chain (iobuf_t a);
 void iobuf_set_limit (iobuf_t a, off_t nlimit);
 
 /* Returns the number of bytes that have been read from the pipeline.
-   Note: the result is undefined for IOBUF_OUTPUT and IOBUF_TEMP
+   Note: the result is undefined for IOBUF_OUTPUT and IOBUF_OUTPUT_TEMP
    pipelines!  */
 off_t iobuf_tell (iobuf_t a);
 
@@ -604,6 +605,6 @@ void iobuf_skip_rest (iobuf_t a, unsigned long n, int partial);
 #define iobuf_get_temp_length(a) ( (a)->d.len )
 
 /* Whether the filter uses an in-memory buffer.  */
-#define iobuf_is_temp(a)	 ( (a)->use == IOBUF_TEMP )
+#define iobuf_is_temp(a)	 ( (a)->use == IOBUF_OUTPUT_TEMP )
 
 #endif /*GNUPG_COMMON_IOBUF_H*/
