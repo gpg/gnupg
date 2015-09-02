@@ -335,11 +335,13 @@ main (int argc, char *argv[])
     assert (rc == 0);
 
     n = iobuf_temp_to_buffer (iobuf, buffer, sizeof (buffer));
+#if 0
     printf ("Got %d bytes\n", n);
     printf ("buffer: `");
     fwrite (buffer, n, 1, stdout);
     fputc ('\'', stdout);
     fputc ('\n', stdout);
+#endif
 
     assert (n == strlen (content) + 2 * (strlen (content2) + 1));
     assert (strcmp (buffer, "0123456789aabbcc") == 0);
