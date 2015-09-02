@@ -1126,18 +1126,26 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
 
   if (keyblock_cache.state == KEYBLOCK_CACHE_FILLED)
     {
-      iobuf_seek (keyblock_cache.iobuf, 0);
-      err = parse_keyblock_image (keyblock_cache.iobuf,
-                                  keyblock_cache.pk_no,
-                                  keyblock_cache.uid_no,
-                                  keyblock_cache.sigstatus,
-                                  ret_kb);
+      err = iobuf_seek (keyblock_cache.iobuf, 0);
       if (err)
-        keyblock_cache_clear ();
-      if (DBG_CLOCK)
-        log_clock (err? "keydb_get_keyblock leave (cached, failed)"
-                      : "keydb_get_keyblock leave (cached)");
-      return err;
+	{
+	  log_error ("keydb_get_keyblock: failed to rewind iobuf for cache\n");
+	  keyblock_cache_clear ();
+	}
+      else
+	{
+	  err = parse_keyblock_image (keyblock_cache.iobuf,
+				      keyblock_cache.pk_no,
+				      keyblock_cache.uid_no,
+				      keyblock_cache.sigstatus,
+				      ret_kb);
+	  if (err)
+	    keyblock_cache_clear ();
+	  if (DBG_CLOCK)
+	    log_clock (err? "keydb_get_keyblock leave (cached, failed)"
+		       : "keydb_get_keyblock leave (cached)");
+	  return err;
+	}
     }
 
   if (hd->found < 0 || hd->found >= hd->used)
