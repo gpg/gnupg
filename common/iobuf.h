@@ -124,12 +124,15 @@ enum iobuf_use
     /* Pipeline is in input mode.  The data flows from the end to the
        beginning.  That is, when reading from the pipeline, the first
        filter gets its input from the second filter, etc.  */
-    IOBUF_INPUT=1,
+    IOBUF_INPUT,
+    /* Pipeline is in input mode.  The last filter in the pipeline is
+       a temporary buffer from which the data is "read".  */
+    IOBUF_INPUT_TEMP,
     /* Pipeline is in output mode.  The data flows from the beginning
        to the end.  That is, when writing to the pipeline, the user
        writes to the first filter, which transforms the data and sends
        it to the second filter, etc.  */
-    IOBUF_OUTPUT=2,
+    IOBUF_OUTPUT,
     /* Pipeline is in output mode.  The last filter in the pipeline is
        a temporary buffer that grows as necessary.  */
     IOBUF_OUTPUT_TEMP
@@ -274,7 +277,8 @@ int  iobuf_is_pipe_filename (const char *fname);
    create a new primary source or primary sink, i.e., the last filter
    in the pipeline.
 
-   USE is IOBUF_INPUT, IOBUF_OUTPUT or IOBUF_OUTPUT_TEMP.
+   USE is IOBUF_INPUT, IOBUF_INPUT_TEMP, IOBUF_OUTPUT or
+   IOBUF_OUTPUT_TEMP.
 
    BUFSIZE is the desired internal buffer size (that is, the size of
    the typical read / write request).  */

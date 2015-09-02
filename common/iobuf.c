@@ -1099,7 +1099,7 @@ iobuf_alloc (int use, size_t bufsize)
   iobuf_t a;
   static int number = 0;
 
-  assert (use == IOBUF_INPUT
+  assert (use == IOBUF_INPUT || use == IOBUF_INPUT_TEMP
 	  || use == IOBUF_OUTPUT || use == IOBUF_OUTPUT_TEMP);
   if (bufsize == 0)
     {
@@ -1220,7 +1220,8 @@ iobuf_temp_with_content (const char *buffer, size_t length)
   iobuf_t a;
   int i;
 
-  a = iobuf_alloc (IOBUF_INPUT, length);
+  a = iobuf_alloc (IOBUF_INPUT_TEMP, length);
+  assert (length == a->d.size);
   /* memcpy (a->d.buf, buffer, length); */
   for (i=0; i < length; i++)
     a->d.buf[i] = buffer[i];
@@ -1619,6 +1620,12 @@ iobuf_push_filter2 (iobuf_t a,
 	 size.  */
       a->d.size = IOBUF_BUFFER_SIZE;
     }
+  else if (a->use == IOBUF_INPUT_TEMP)
+    /* Same idea as above.  */
+    {
+      a->use = IOBUF_INPUT;
+      a->d.size = IOBUF_BUFFER_SIZE;
+    }
 
   /* The new filter (A) gets a new buffer.
 
@@ -1678,7 +1685,7 @@ pop_filter (iobuf_t a, int (*f) (void *opaque, int control,
   if (DBG_IOBUF)
     log_debug ("iobuf-%d.%d: pop '%s'\n",
 	       a->no, a->subno, iobuf_desc (a));
-  if (a->use == IOBUF_OUTPUT_TEMP)
+  if (a->use == IOBUF_INPUT_TEMP || a->use == IOBUF_OUTPUT_TEMP)
     {
       /* This should be the last filter in the pipeline.  */
       assert (! a->chain);
@@ -1764,6 +1771,11 @@ underflow (iobuf_t a, int clear_pending_eof)
 	       a->no, a->subno,
 	       (int) a->d.size, (int) (a->d.len - a->d.start),
 	       (int) (a->d.size - (a->d.len - a->d.start)));
+
+  if (a->use == IOBUF_INPUT_TEMP)
+    /* By definition, there isn't more data to read into the
+       buffer.  */
+    return -1;
 
   assert (a->use == IOBUF_INPUT);
 
@@ -2056,7 +2068,7 @@ iobuf_peek (iobuf_t a, byte * buf, unsigned buflen)
   int n = 0;
 
   assert (buflen > 0);
-  assert (a->use == IOBUF_INPUT);
+  assert (a->use == IOBUF_INPUT || a->use == IOBUF_INPUT_TEMP);
 
   if (buflen > a->d.size)
     /* We can't peek more than we can buffer.  */
@@ -2097,7 +2109,7 @@ iobuf_writebyte (iobuf_t a, unsigned int c)
 {
   int rc;
 
-  if (a->use == IOBUF_INPUT)
+  if (a->use == IOBUF_INPUT || a->use == IOBUF_INPUT_TEMP)
     {
       log_bug ("iobuf_writebyte called on an input pipeline!\n");
       return -1;
@@ -2119,7 +2131,7 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
   const unsigned char *buf = (const unsigned char *)buffer;
   int rc;
 
-  if (a->use == IOBUF_INPUT)
+  if (a->use == IOBUF_INPUT || a->use == IOBUF_INPUT_TEMP)
     {
       log_bug ("iobuf_write called on an input pipeline!\n");
       return -1;
@@ -2152,7 +2164,7 @@ iobuf_write (iobuf_t a, const void *buffer, unsigned int buflen)
 int
 iobuf_writestr (iobuf_t a, const char *buf)
 {
-  if (a->use == IOBUF_INPUT)
+  if (a->use == IOBUF_INPUT || a->use == IOBUF_INPUT_TEMP)
     {
       log_bug ("iobuf_writestr called on an input pipeline!\n");
       return -1;
@@ -2200,7 +2212,7 @@ iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
 void
 iobuf_flush_temp (iobuf_t temp)
 {
-  if (temp->use == IOBUF_INPUT)
+  if (temp->use == IOBUF_INPUT || temp->use == IOBUF_INPUT_TEMP)
     log_bug ("iobuf_writestr called on an input pipeline!\n");
   while (temp->chain)
     pop_filter (temp, temp->filter, NULL);
@@ -2379,10 +2391,9 @@ iobuf_seek (iobuf_t a, off_t newpos)
 	  return -1;
 	}
 #endif
+      /* Discard the buffer it is not a temp stream.  */
+      a->d.len = 0;
     }
-  /* Discard the buffer it is not a temp stream.  */
-  if (a->use != IOBUF_OUTPUT_TEMP)
-    a->d.len = 0;
   a->d.start = 0;
   a->nbytes = 0;
   a->nlimit = 0;
@@ -2409,10 +2420,6 @@ iobuf_seek (iobuf_t a, off_t newpos)
 }
 
 
-
-
-
-
 const char *
 iobuf_get_real_fname (iobuf_t a)
 {
@@ -2429,7 +2436,6 @@ iobuf_get_real_fname (iobuf_t a)
 
   return NULL;
 }
-
 
 const char *
 iobuf_get_fname (iobuf_t a)
@@ -2462,7 +2468,6 @@ iobuf_set_partial_block_mode (iobuf_t a, size_t len)
 {
   block_filter_ctx_t *ctx = xcalloc (1, sizeof *ctx);
 
-  assert (a->use == IOBUF_INPUT || a->use == IOBUF_OUTPUT);
   ctx->use = a->use;
   if (!len)
     {
