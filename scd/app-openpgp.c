@@ -2729,6 +2729,43 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
 }
 
 
+static gpg_error_t
+change_rsa_keyattr (app_t app, int keyno, unsigned int nbits,
+                    gpg_error_t (*pincb)(void*, const char *, char **),
+                    void *pincb_arg)
+{
+  gpg_error_t err = 0;
+  unsigned char *buf;
+  size_t buflen;
+  void *relptr;
+
+  /* Read the current attributes into a buffer.  */
+  relptr = get_one_do (app, 0xC1+keyno, &buf, &buflen, NULL);
+  if (!relptr)
+    err = gpg_error (GPG_ERR_CARD);
+  else if (buflen < 6 || buf[0] != PUBKEY_ALGO_RSA)
+    {
+      /* Attriutes too short or not an RSA key.  */
+      xfree (relptr);
+      err = gpg_error (GPG_ERR_CARD);
+    }
+  else
+    {
+      /* We only change n_bits and don't touch anything else.  Before we
+         do so, we round up NBITS to a sensible way in the same way as
+         gpg's key generation does it.  This may help to sort out problems
+         with a few bits too short keys.  */
+      nbits = ((nbits + 31) / 32) * 32;
+      buf[1] = (nbits >> 8);
+      buf[2] = nbits;
+      err = change_keyattr (app, keyno, buf, buflen, pincb, pincb_arg);
+      xfree (relptr);
+    }
+
+  return err;
+}
+
+
 /* Helper to process an setattr command for name KEY-ATTR.
    In (VALUE,VALUELEN), it expects following string:
         RSA: "--force <key> <algo> rsa<nbits>"
@@ -2779,36 +2816,7 @@ change_keyattr_from_string (app_t app,
       else if (nbits > 4096)
         err = gpg_error (GPG_ERR_TOO_LARGE);
       else
-        {
-          unsigned char *buf;
-          size_t buflen;
-          void *relptr;
-
-          /* Read the current attributes into a buffer.  */
-          relptr = get_one_do (app, 0xC1+keyno, &buf, &buflen, NULL);
-          if (!relptr)
-            {
-              err = gpg_error (GPG_ERR_CARD);
-              goto leave;
-            }
-          if (buflen < 6 || buf[0] != PUBKEY_ALGO_RSA)
-            {
-              /* Attriutes too short or not an RSA key.  */
-              xfree (relptr);
-              err = gpg_error (GPG_ERR_CARD);
-              goto leave;
-            }
-
-          /* We only change n_bits and don't touch anything else.  Before we
-             do so, we round up NBITS to a sensible way in the same way as
-             gpg's key generation does it.  This may help to sort out problems
-             with a few bits too short keys.  */
-          nbits = ((nbits + 31) / 32) * 32;
-          buf[1] = (nbits >> 8);
-          buf[2] = nbits;
-          err = change_keyattr (app, keyno, buf, buflen, pincb, pincb_arg);
-          xfree (relptr);
-        }
+        err = change_rsa_keyattr (app, keyno, nbits, pincb, pincb_arg);
     }
   else if (algo == PUBKEY_ALGO_ECDH || algo == PUBKEY_ALGO_ECDSA
            || algo == PUBKEY_ALGO_EDDSA)
@@ -2971,6 +2979,14 @@ rsa_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   if (opt.verbose)
     log_info ("RSA modulus size is %u bits (%u bytes)\n",
               nbits, (unsigned int)rsa_n_len);
+  if (nbits && nbits != maxbits
+      && app->app_local->extcap.algo_attr_change)
+    {
+      /* Try to switch the key to a new length.  */
+      err = change_rsa_keyattr (app, keyno, nbits, pincb, pincb_arg);
+      if (!err)
+        maxbits = app->app_local->keyattr[keyno].rsa.n_bits;
+    }
   if (nbits != maxbits)
     {
       log_error (_("RSA modulus missing or not of size %d bits\n"),
@@ -3327,9 +3343,22 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       || app->app_local->keyattr[keyno].ecc.oid != oidstr
       || app->app_local->keyattr[keyno].ecc.flags != flag_djb_tweak)
     {
-      log_error ("key attribute on card doesn't match\n");
-      err = gpg_error (GPG_ERR_INV_VALUE);
-      goto leave;
+      if (app->app_local->extcap.algo_attr_change)
+        {
+          unsigned char keyattr[oid_len];
+
+          keyattr[0] = algo;
+          memcpy (keyattr+1, oidbuf+1, oid_len-1);
+          err = change_keyattr (app, keyno, keyattr, oid_len, pincb, pincb_arg);
+          if (err)
+            goto leave;
+        }
+      else
+        {
+          log_error ("key attribute on card doesn't match\n");
+          err = gpg_error (GPG_ERR_INV_VALUE);
+          goto leave;
+        }
     }
 
   if (opt.verbose)
