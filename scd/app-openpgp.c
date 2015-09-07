@@ -1224,7 +1224,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
    not mean a key is available; this is soley indicated by the
-   presence of the app->app_local->pk[KEYNO-1].key field.
+   presence of the app->app_local->pk[KEYNO].key field.
 
    Note that GnuPG 1.x does not need this and it would be too time
    consuming to send it just for the fun of it. However, given that we
@@ -1246,9 +1246,8 @@ get_public_key (app_t app, int keyno)
   gcry_sexp_t s_pkey;
   size_t len;
 
-  if (keyno < 1 || keyno > 3)
+  if (keyno < 0 || keyno > 2)
     return gpg_error (GPG_ERR_INV_ID);
-  keyno--;
 
   /* Already cached? */
   if (app->app_local->pk[keyno].read_done)
@@ -1475,11 +1474,12 @@ get_public_key (app_t app, int keyno)
 
 
 
-/* Send the KEYPAIRINFO back. KEYNO needs to be in the range [1,3].
+/* Send the KEYPAIRINFO back. KEY needs to be in the range [1,3].
    This is used by the LEARN command. */
 static gpg_error_t
-send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
+send_keypair_info (app_t app, ctrl_t ctrl, int key)
 {
+  int keyno = key - 1;
   gpg_error_t err = 0;
   /* Note that GnuPG 1.x does not need this and it would be too time
      consuming to send it just for the fun of it. */
@@ -1492,19 +1492,19 @@ send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
   if (err)
     goto leave;
 
-  assert (keyno >= 1 && keyno <= 3);
-  if (!app->app_local->pk[keyno-1].key)
+  assert (keyno >= 0 && keyno <= 2);
+  if (!app->app_local->pk[keyno].key)
     goto leave; /* No such key - ignore. */
 
-  err = keygrip_from_canon_sexp (app->app_local->pk[keyno-1].key,
-                                 app->app_local->pk[keyno-1].keylen,
+  err = keygrip_from_canon_sexp (app->app_local->pk[keyno].key,
+                                 app->app_local->pk[keyno].keylen,
                                  grip);
   if (err)
     goto leave;
 
   bin2hex (grip, 20, gripstr);
 
-  sprintf (idbuf, "OPENPGP.%d", keyno);
+  sprintf (idbuf, "OPENPGP.%d", keyno+1);
   send_status_info (ctrl, "KEYPAIRINFO",
                     gripstr, 40,
                     idbuf, strlen (idbuf),
@@ -1567,11 +1567,11 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   unsigned char *buf;
 
   if (!strcmp (keyid, "OPENPGP.1"))
-    keyno = 1;
+    keyno = 0;
   else if (!strcmp (keyid, "OPENPGP.2"))
-    keyno = 2;
+    keyno = 1;
   else if (!strcmp (keyid, "OPENPGP.3"))
-    keyno = 3;
+    keyno = 2;
   else
     return gpg_error (GPG_ERR_INV_ID);
 
@@ -1579,10 +1579,10 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   if (err)
     return err;
 
-  buf = app->app_local->pk[keyno-1].key;
+  buf = app->app_local->pk[keyno].key;
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
-  *pklen = app->app_local->pk[keyno-1].keylen;;
+  *pklen = app->app_local->pk[keyno].keylen;;
   *pk = xtrymalloc (*pklen);
   if (!*pk)
     {
@@ -2731,8 +2731,8 @@ change_keyattr (app_t app, int keyno, const unsigned char *buf, size_t buflen,
 
 /* Helper to process an setattr command for name KEY-ATTR.
    In (VALUE,VALUELEN), it expects following string:
-        RSA: "--force <keyno> <algo> rsa<nbits>"
-        ECC: "--force <keyno> <algo> <curvename>"
+        RSA: "--force <key> <algo> rsa<nbits>"
+        ECC: "--force <key> <algo> <curvename>"
   */
 static gpg_error_t
 change_keyattr_from_string (app_t app,
@@ -2742,7 +2742,7 @@ change_keyattr_from_string (app_t app,
 {
   gpg_error_t err = 0;
   char *string;
-  int keyno, algo;
+  int key, keyno, algo;
   int n = 0;
 
   /* VALUE is expected to be a string but not guaranteed to be
@@ -2756,14 +2756,15 @@ change_keyattr_from_string (app_t app,
   /* Because this function deletes the key we require the string
      "--force" in the data to make clear that something serious might
      happen.  */
-  sscanf (string, " --force %d %d %n", &keyno, &algo, &n);
+  sscanf (string, " --force %d %d %n", &key, &algo, &n);
   if (n < 13)
     {
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
     }
 
-  if (keyno < 1 || keyno > 3)
+  keyno = key - 1;
+  if (keyno < 0 || keyno > 2)
     err = gpg_error (GPG_ERR_INV_ID);
   else if (algo == PUBKEY_ALGO_RSA)
     {
@@ -2805,7 +2806,7 @@ change_keyattr_from_string (app_t app,
           nbits = ((nbits + 31) / 32) * 32;
           buf[1] = (nbits >> 8);
           buf[2] = nbits;
-          err = change_keyattr (app, keyno-1, buf, buflen, pincb, pincb_arg);
+          err = change_keyattr (app, keyno, buf, buflen, pincb, pincb_arg);
           xfree (relptr);
         }
     }
@@ -2813,29 +2814,29 @@ change_keyattr_from_string (app_t app,
            || algo == PUBKEY_ALGO_EDDSA)
     {
       const char *oidstr;
+      gcry_mpi_t oid;
+      const unsigned char *oidbuf;
+      size_t oid_len;
 
       oidstr = openpgp_curve_to_oid (string+n, NULL);
       if (!oidstr)
-        err = gpg_error (GPG_ERR_INV_DATA);
-      else
         {
-          gcry_mpi_t m;
-
-          err = openpgp_oid_from_str (oidstr, &m);
-          if (!err)
-            {
-              unsigned int len;
-              const unsigned char *buf = gcry_mpi_get_opaque (m, &len);
-
-              /* We have enough room at STRING.  */
-              len = buf[0];
-              string[0] = algo;
-              memcpy (string+1, buf+1, len++);
-              err = change_keyattr (app, keyno-1, string, len,
-                                    pincb, pincb_arg);
-              gcry_mpi_release (m);
-            }
+          err = gpg_error (GPG_ERR_INV_DATA);
+          goto leave;
         }
+
+      err = openpgp_oid_from_str (oidstr, &oid);
+      if (err)
+        goto leave;
+
+      oidbuf = gcry_mpi_get_opaque (oid, &n);
+      oid_len = (n+7)/8;
+
+      /* We have enough room at STRING.  */
+      string[0] = algo;
+      memcpy (string+1, oidbuf+1, oid_len-1);
+      err = change_keyattr (app, keyno, string, oid_len, pincb, pincb_arg);
+      gcry_mpi_release (oid);
     }
   else
     err = gpg_error (GPG_ERR_PUBKEY_ALGO);
@@ -3167,6 +3168,11 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   const char *oidstr = NULL;
   int flag_djb_tweak = 0;
   int algo;
+  gcry_mpi_t oid;
+  const unsigned char *oidbuf = NULL;
+  unsigned int n;
+  size_t oid_len;
+  unsigned char fprbuf[20];
 
   /* (private-key(ecc(curve%s)(q%m)(d%m))(created-at%d)):
      curve = "NIST P-256" */
@@ -3305,6 +3311,18 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
   else
     algo = PUBKEY_ALGO_ECDSA;
 
+  err = openpgp_oid_from_str (oidstr, &oid);
+  if (err)
+    goto leave;
+  oidbuf = gcry_mpi_get_opaque (oid, &n);
+  oid_len = (n+7)/8;
+  if (!oidbuf)
+    {
+      err = gpg_error_from_syserror ();
+      gcry_mpi_release (oid);
+      goto leave;
+    }
+
   if (app->app_local->keyattr[keyno].key_type != KEY_TYPE_ECC
       || app->app_local->keyattr[keyno].ecc.oid != oidstr
       || app->app_local->keyattr[keyno].ecc.flags != flag_djb_tweak)
@@ -3364,33 +3382,13 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
       log_error (_("failed to store the key: %s\n"), gpg_strerror (err));
       goto leave;
     }
-  else
-    {
-      gcry_mpi_t oid;
-      const unsigned char *oidbuf;
-      unsigned int n;
-      size_t oid_len;
-      unsigned char fprbuf[20];
 
-      err = openpgp_oid_from_str (oidstr, &oid);
-      if (err)
-        goto leave;
-
-      oidbuf = gcry_mpi_get_opaque (oid, &n);
-      oid_len = (n+7)/8;
-      if (!oidbuf)
-        {
-          err = gpg_error_from_syserror ();
-          gcry_mpi_release (oid);
-          goto leave;
-        }
-      err = store_fpr (app, keyno, created_at, fprbuf, algo,
-                       oidbuf, oid_len, ecc_q, ecc_q_len,
-                       "\x03\x01\x08\x07", (size_t)4);
-      gcry_mpi_release (oid);
-    }
+  err = store_fpr (app, keyno, created_at, fprbuf, algo, oidbuf, oid_len,
+                   ecc_q, ecc_q_len, "\x03\x01\x08\x07", (size_t)4);
 
  leave:
+  if (oidbuf)
+    gcry_mpi_release (oid);
   return err;
 }
 
@@ -3486,16 +3484,15 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   unsigned char *buffer = NULL;
   size_t buflen, keydatalen, mlen, elen;
   time_t created_at;
-  int keyno = atoi (keynostr);
+  int keyno = atoi (keynostr) - 1;
   int force = (flags & 1);
   time_t start_at;
   int exmode;
   int le_value;
   unsigned int keybits;
 
-  if (keyno < 1 || keyno > 3)
+  if (keyno < 0 || keyno > 2)
     return gpg_error (GPG_ERR_INV_ID);
-  keyno--;
 
   /* We flush the cache to increase the traffic before a key
      generation.  This _might_ help a card to gather more entropy. */
@@ -3645,7 +3642,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   size_t buflen, n;
   int rc, i;
 
-  assert (keyno >= 1 && keyno <= 3);
+  assert (keyno >= 0 && keyno <= 2);
 
   rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0, 0);
   if (rc)
@@ -3660,7 +3657,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
       log_error (_("error reading fingerprint DO\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
-  fpr += (keyno-1)*20;
+  fpr += keyno*20;
   for (i=0; i < 20; i++)
     if (sha1fpr[i] != fpr[i])
       {
@@ -3679,7 +3676,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
    gpg has not been updated.  If there is no fingerprint we assume
    that this is okay. */
 static gpg_error_t
-check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
+check_against_given_fingerprint (app_t app, const char *fpr, int key)
 {
   unsigned char tmp[20];
   const char *s;
@@ -3696,7 +3693,7 @@ check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
 
   for (s=fpr, n=0; n < 20; s += 2, n++)
         tmp[n] = xtoi_2 (s);
-  return compare_fingerprint (app, keyno, tmp);
+  return compare_fingerprint (app, key-1, tmp);
 }
 
 
