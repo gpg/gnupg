@@ -1162,7 +1162,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
    not mean a key is available; this is soley indicated by the
-   presence of the app->app_local->pk[KEYNO-1].key field.
+   presence of the app->app_local->pk[KEYNO].key field.
 
    Note that GnuPG 1.x does not need this and it would be too time
    consuming to send it just for the fun of it. However, given that we
@@ -1181,9 +1181,8 @@ get_public_key (app_t app, int keyno)
   char *keybuf = NULL;
   char *keybuf_p;
 
-  if (keyno < 1 || keyno > 3)
+  if (keyno < 0 || keyno > 2)
     return gpg_error (GPG_ERR_INV_ID);
-  keyno--;
 
   /* Already cached? */
   if (app->app_local->pk[keyno].read_done)
@@ -1369,11 +1368,12 @@ get_public_key (app_t app, int keyno)
 
 
 
-/* Send the KEYPAIRINFO back. KEYNO needs to be in the range [1,3].
+/* Send the KEYPAIRINFO back. KEY needs to be in the range [1,3].
    This is used by the LEARN command. */
 static gpg_error_t
-send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
+send_keypair_info (app_t app, ctrl_t ctrl, int key)
 {
+  int keyno = key - 1;
   gpg_error_t err = 0;
   /* Note that GnuPG 1.x does not need this and it would be too time
      consuming to send it just for the fun of it. */
@@ -1386,19 +1386,19 @@ send_keypair_info (app_t app, ctrl_t ctrl, int keyno)
   if (err)
     goto leave;
 
-  assert (keyno >= 1 && keyno <= 3);
-  if (!app->app_local->pk[keyno-1].key)
+  assert (keyno >= 0 && keyno <= 2);
+  if (!app->app_local->pk[keyno].key)
     goto leave; /* No such key - ignore. */
 
-  err = keygrip_from_canon_sexp (app->app_local->pk[keyno-1].key,
-                                 app->app_local->pk[keyno-1].keylen,
+  err = keygrip_from_canon_sexp (app->app_local->pk[keyno].key,
+                                 app->app_local->pk[keyno].keylen,
                                  grip);
   if (err)
     goto leave;
 
   bin2hex (grip, 20, gripstr);
 
-  sprintf (idbuf, "OPENPGP.%d", keyno);
+  sprintf (idbuf, "OPENPGP.%d", keyno+1);
   send_status_info (ctrl, "KEYPAIRINFO",
                     gripstr, 40,
                     idbuf, strlen (idbuf),
@@ -1461,11 +1461,11 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   unsigned char *buf;
 
   if (!strcmp (keyid, "OPENPGP.1"))
-    keyno = 1;
+    keyno = 0;
   else if (!strcmp (keyid, "OPENPGP.2"))
-    keyno = 2;
+    keyno = 1;
   else if (!strcmp (keyid, "OPENPGP.3"))
-    keyno = 3;
+    keyno = 2;
   else
     return gpg_error (GPG_ERR_INV_ID);
 
@@ -1473,10 +1473,10 @@ do_readkey (app_t app, const char *keyid, unsigned char **pk, size_t *pklen)
   if (err)
     return err;
 
-  buf = app->app_local->pk[keyno-1].key;
+  buf = app->app_local->pk[keyno].key;
   if (!buf)
     return gpg_error (GPG_ERR_NO_PUBKEY);
-  *pklen = app->app_local->pk[keyno-1].keylen;;
+  *pklen = app->app_local->pk[keyno].keylen;;
   *pk = xtrymalloc (*pklen);
   if (!*pk)
     {
@@ -2610,14 +2610,18 @@ change_keyattr_from_string (app_t app,
      happen.  */
   if (sscanf (string, " --force %d %d %u", &keyno, &algo, &nbits) != 3)
     err = gpg_error (GPG_ERR_INV_DATA);
-  else if (keyno < 1 || keyno > 3)
-    err = gpg_error (GPG_ERR_INV_ID);
-  else if (algo != PUBKEY_ALGO_RSA)
-    err = gpg_error (GPG_ERR_PUBKEY_ALGO);
-  else if (nbits < 1024)
-    err = gpg_error (GPG_ERR_TOO_SHORT);
-  else
-    err = change_keyattr (app, keyno-1, nbits, pincb, pincb_arg);
+  keyno = keyno - 1;
+  if (!err)
+    {
+      if (keyno < 0 || keyno > 2)
+        err = gpg_error (GPG_ERR_INV_ID);
+      else if (algo != PUBKEY_ALGO_RSA)
+        err = gpg_error (GPG_ERR_PUBKEY_ALGO);
+      else if (nbits < 1024)
+        err = gpg_error (GPG_ERR_TOO_SHORT);
+      else
+        err = change_keyattr (app, keyno, nbits, pincb, pincb_arg);
+    }
 
   xfree (string);
   return err;
@@ -3002,16 +3006,15 @@ do_genkey (app_t app, ctrl_t ctrl,  const char *keynostr, unsigned int flags,
   unsigned char *buffer = NULL;
   size_t buflen, keydatalen, mlen, elen;
   time_t created_at;
-  int keyno = atoi (keynostr);
+  int keyno = atoi (keynostr) - 1;
   int force = (flags & 1);
   time_t start_at;
   int exmode;
   int le_value;
   unsigned int keybits;
 
-  if (keyno < 1 || keyno > 3)
+  if (keyno < 0 || keyno > 2)
     return gpg_error (GPG_ERR_INV_ID);
-  keyno--;
 
   /* We flush the cache to increase the traffic before a key
      generation.  This _might_ help a card to gather more entropy. */
@@ -3161,7 +3164,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
   size_t buflen, n;
   int rc, i;
 
-  assert (keyno >= 1 && keyno <= 3);
+  assert (keyno >= 0 && keyno <= 2);
 
   rc = get_cached_data (app, 0x006E, &buffer, &buflen, 0, 0);
   if (rc)
@@ -3176,7 +3179,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
       log_error (_("error reading fingerprint DO\n"));
       return gpg_error (GPG_ERR_GENERAL);
     }
-  fpr += (keyno-1)*20;
+  fpr += keyno*20;
   for (i=0; i < 20; i++)
     if (sha1fpr[i] != fpr[i])
       {
@@ -3195,7 +3198,7 @@ compare_fingerprint (app_t app, int keyno, unsigned char *sha1fpr)
    gpg has not been updated.  If there is no fingerprint we assume
    that this is okay. */
 static gpg_error_t
-check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
+check_against_given_fingerprint (app_t app, const char *fpr, int key)
 {
   unsigned char tmp[20];
   const char *s;
@@ -3212,7 +3215,7 @@ check_against_given_fingerprint (app_t app, const char *fpr, int keyno)
 
   for (s=fpr, n=0; n < 20; s += 2, n++)
         tmp[n] = xtoi_2 (s);
-  return compare_fingerprint (app, keyno, tmp);
+  return compare_fingerprint (app, key-1, tmp);
 }
 
 
