@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.0.10\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-02-14 17:16+0000\n"
+"PO-Revision-Date: 2015-06-25 17:16+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -36,36 +36,26 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|Отмена (_C)"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|Да (_Y)"
 
-#, fuzzy
-#| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|Нет (_N)"
 
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|PIN:"
 
-#, fuzzy
-#| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
-msgstr "|pinentry-label|Отмена (_C)"
+msgstr "|pinentry-label|Сохранить в диспетчере паролей (_S)"
 
-#, fuzzy
-#| msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgid "Do you really want to make your passphrase visible on the screen?"
-msgstr "Вы действительно хотите отозвать выбранные подключи? (y/N) "
+msgstr "Вы действительно хотите, чтобы фраза-пароль была видна на экране?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr ""
+msgstr "|pinentry-tt|Показывать фразу-пароль"
 
-#, fuzzy
-#| msgid "Enter new passphrase"
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "Введите новую фразу-пароль"
+msgstr "|pinentry-tt|Скрывать фразу-пароль"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -391,10 +381,8 @@ msgstr "включить поддержку ssh"
 msgid "enable putty support"
 msgstr "включить поддержку putty"
 
-#, fuzzy
-#| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
-msgstr "не разрешать повторное использование старых фраз-паролей"
+msgstr "не позволять пользоваться внешней памятью паролей"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|FILE|сохранить состояние среды также в файл FILE"
@@ -3844,6 +3832,10 @@ msgstr "       Отпечаток подключа:"
 msgid "      Key fingerprint ="
 msgstr "      Отпечаток ключа ="
 
+#, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "ВНИМАНИЕ: отпечаток PGP-2 не безопасен\n"
+
 msgid "      Card serial no. ="
 msgstr " серийный номер карты ="
 
@@ -5269,10 +5261,8 @@ msgstr "ключевое слово слишком длинное"
 msgid "missing argument"
 msgstr "пропущен аргумент"
 
-#, fuzzy
-#| msgid "invalid value\n"
 msgid "invalid argument"
-msgstr "недопустимое значение\n"
+msgstr "недопустимый аргумент"
 
 msgid "invalid command"
 msgstr "недопустимая команда"
@@ -5290,10 +5280,9 @@ msgstr "недопустимый параметр"
 msgid "missing argument for option \"%.50s\"\n"
 msgstr "не хватает аргумента для параметра \"%.50s\"\n"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
+#, c-format
 msgid "invalid argument for option \"%.50s\"\n"
-msgstr "не хватает аргумента для параметра \"%.50s\"\n"
+msgstr "недопустимый аргумент для параметра \"%.50s\"\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
