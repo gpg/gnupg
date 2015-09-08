@@ -303,6 +303,20 @@ write_status_begin_signing (gcry_md_hd_t md)
 }
 
 
+/* Write a FAILURE status line.  */
+void
+write_status_failure (const char *where, gpg_error_t err)
+{
+  if (!statusfp || !status_currently_allowed (STATUS_FAILURE))
+    return;  /* Not enabled or allowed. */
+
+  fprintf (statusfp, "[GNUPG:] %s %s %u\n",
+           get_status_string (STATUS_FAILURE), where, err);
+  if (fflush (statusfp) && opt.exit_on_status_write_error)
+    g10_exit (0);
+}
+
+
 static int
 myread(int fd, void *buf, size_t count)
 {
