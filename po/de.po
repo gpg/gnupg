@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.0.18\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-06-02 13:13+0200\n"
+"PO-Revision-Date: 2015-09-08 15:57+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -3915,6 +3915,10 @@ msgstr " Unter-Fingerabdruck  ="
 msgid "      Key fingerprint ="
 msgstr "  Schl.-Fingerabdruck ="
 
+#, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "WARNUNG: Ein PGP-2 Fingerabdruck ist unsicher\n"
+
 msgid "      Card serial no. ="
 msgstr "      Kartenseriennr. ="
 
@@ -5102,6 +5106,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "\"Trust-DB\": sync fehlgeschlagen: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "Datei `%s' konnte nicht gesperrt werden\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "'%s' kann nicht gesperrt werden\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb Satz %lu: lseek fehlgeschlagen: %s\n"
 
@@ -5119,14 +5131,6 @@ msgstr "kann aus `%s' nicht zugreifen: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Verzeichnis existiert nicht!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "Datei `%s' konnte nicht gesperrt werden\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "'%s' kann nicht gesperrt werden\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
