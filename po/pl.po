@@ -3882,6 +3882,11 @@ msgstr "       Odcisk podklucza:"
 msgid "      Key fingerprint ="
 msgstr "       Odcisk klucza ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "OSTRZEŻENIE: użycie eksperymentalnego algorytmu skrótu %s\n"
+
 msgid "      Card serial no. ="
 msgstr "    Nr seryjny karty ="
 
@@ -5038,6 +5043,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "baza zaufania: synchronizacja nie powiodła się %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nie można utworzyć blokady dla ,,%s''\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "nie można zablokować ,,%s''\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "baza zaufania, wpis %lu: funkcja lseek() nie powiodła się: %s\n"
 
@@ -5055,14 +5068,6 @@ msgstr "nie można dostać się do ,,%s'': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalog nie istnieje!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nie można utworzyć blokady dla ,,%s''\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "nie można zablokować ,,%s''\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

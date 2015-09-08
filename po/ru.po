@@ -4979,6 +4979,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "таблица доверия: сбой синхронизации: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "невозможно создать блокировку для `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "невозможно заблокировать `%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "таблица доверия, запись %lu: сбой lseek: %s\n"
 
@@ -4996,14 +5004,6 @@ msgstr "нет доступа к `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: каталог не существует!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "невозможно создать блокировку для `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "невозможно заблокировать `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

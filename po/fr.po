@@ -3942,6 +3942,11 @@ msgstr " Empreinte de sous-clef :"
 msgid "      Key fingerprint ="
 msgstr " Empreinte de la clef ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "Attention : utilisation de l'algorithme expérimental de hachage %s\n"
+
 msgid "      Card serial no. ="
 msgstr " Nº de série de carte ="
 
@@ -5137,6 +5142,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "base de confiance : échec de synchronisation : %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "impossible de créer un verrou pour « %s »\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "impossible de verrouiller « %s »\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "enregistrement de base de confiance %lu : échec de lseek : %s\n"
 
@@ -5155,14 +5168,6 @@ msgstr "impossible d'accéder à « %s » : %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s : le répertoire n'existe pas.\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "impossible de créer un verrou pour « %s »\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "impossible de verrouiller « %s »\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

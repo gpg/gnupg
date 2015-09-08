@@ -3915,6 +3915,13 @@ msgstr "       Відбиток підключа:"
 msgid "      Key fingerprint ="
 msgstr "      Відбиток ключа ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr ""
+"УВАГА: використовуємо експериментальний алгоритм обчислення контрольних сум "
+"%s\n"
+
 msgid "      Card serial no. ="
 msgstr "Серійний номер картки ="
 
@@ -5074,6 +5081,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: помилка синхронізації: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "не вдалося створити блокування для «%s»\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "не вдалося заблокувати «%s»\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "запис trustdb %lu: помилка lseek: %s\n"
 
@@ -5091,14 +5106,6 @@ msgstr "немає доступу до «%s»: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: каталогу не існує!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "не вдалося створити блокування для «%s»\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "не вдалося заблокувати «%s»\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

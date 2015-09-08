@@ -4026,6 +4026,10 @@ msgstr "     Þlosilo-fingrospuro ="
 msgid "      Key fingerprint ="
 msgstr "     Þlosilo-fingrospuro ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "%s-subskribo de: %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5186,6 +5190,14 @@ msgstr "kiraso: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "fido-datenaro: sync malsukcesis: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "ne povas krei '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "ne povas malfermi '%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "fido-datenaro loko %lu: lseek malsukcesis: %s\n"
@@ -5204,14 +5216,6 @@ msgstr "ne povas fermi '%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dosierujo ne ekzistas!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "ne povas krei '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "ne povas malfermi '%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

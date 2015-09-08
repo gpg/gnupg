@@ -4030,6 +4030,10 @@ msgstr "     Impronta digitale della subchiave:"
 msgid "      Key fingerprint ="
 msgstr "     Impronta digitale ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "Firma %s, algoritmo di digest %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5222,6 +5226,14 @@ msgstr "errore di lettura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync fallita: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "impossibile creare `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "impossibile aprire `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek fallita: %s\n"
@@ -5240,14 +5252,6 @@ msgstr "impossibile chiudere `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: la directory non esiste!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "impossibile creare `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "impossibile aprire `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

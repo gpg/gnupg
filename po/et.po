@@ -3994,6 +3994,10 @@ msgstr "     Alamvõtme sõrmejälg:"
 msgid "      Key fingerprint ="
 msgstr "     Võtme sõrmejälg ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "%s allkiri, sõnumilühendi algoritm %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5153,6 +5157,14 @@ msgstr "viga lugemisel: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync ebaõnnestus: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "`%s' ei õnnestu luua: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "`%s' ei õnnestu avada\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb kirje %lu: lseek ebaõnnestus: %s\n"
@@ -5171,14 +5183,6 @@ msgstr "`%s' ei õnnestu sulgeda: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: kataloogi ei ole!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "`%s' ei õnnestu luua: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "`%s' ei õnnestu avada\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

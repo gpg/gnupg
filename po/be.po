@@ -3782,6 +3782,10 @@ msgstr ""
 msgid "      Key fingerprint ="
 msgstr "паказаць ключы й адбіткі пальцаў"
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "нерэчаісны хэш-альгарытм \"%s\"\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -4876,6 +4880,14 @@ msgstr "памылка чытаньня файла"
 msgid "trustdb: sync failed: %s\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "%s: немагчыма стварыць тэчку: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "немагчыма адкрыць \"%s\"\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
@@ -4894,14 +4906,6 @@ msgstr "немагчыма адкрыць %s: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr ""
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "%s: немагчыма стварыць тэчку: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "немагчыма адкрыць \"%s\"\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

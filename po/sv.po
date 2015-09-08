@@ -3950,6 +3950,11 @@ msgstr "   Undernyckelns fingeravtryck:"
 msgid "      Key fingerprint ="
 msgstr "Nyckelns fingeravtryck ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "VARNING: använder experimentella sammandragsalgoritmen %s\n"
+
 msgid "      Card serial no. ="
 msgstr "       Kortets serienr ="
 
@@ -5129,6 +5134,15 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "tillitsdatabas: synkronisering misslyckades: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan inte skapa lås för \"%s\"\n"
+
+# se förra kommentaren
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan inte låsa \"%s\"\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "tillitsdatabasposten %lu: lseek misslyckades: %s\n"
 
@@ -5146,15 +5160,6 @@ msgstr "kan inte komma åt \"%s\": %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: katalogen finns inte!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan inte skapa lås för \"%s\"\n"
-
-# se förra kommentaren
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan inte låsa \"%s\"\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

@@ -3856,6 +3856,11 @@ msgstr "  Undernøglefingeraftryk:"
 msgid "      Key fingerprint ="
 msgstr "    Nøglefingeraftryk ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "ADVARSEL: bruger eksperimentel sammendragsalgoritme %s\n"
+
 msgid "      Card serial no. ="
 msgstr "   Serielnr. for kort ="
 
@@ -5000,6 +5005,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: synkronisering mislykkedes: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan ikke oprette lås for »%s«\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan ikke låse »%s«\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek mislykkedes: %s\n"
 
@@ -5017,14 +5030,6 @@ msgstr "kan ikke tilgå »%s«: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: mappe findes ikke!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan ikke oprette lås for »%s«\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan ikke låse »%s«\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

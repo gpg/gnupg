@@ -4017,6 +4017,10 @@ msgstr "     Fingerprint subkunci ="
 msgid "      Key fingerprint ="
 msgstr "     Fingerprint kunci ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "%s signature, algoritma digest %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5182,6 +5186,14 @@ msgstr "kesalahan pembacaan: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: gagal sync: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "tidak dapat membuat %s: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "tidak dapat membuka `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek gagal: %s\n"
@@ -5200,14 +5212,6 @@ msgstr "tidak dapat menutup `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: direktori tidak ada!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "tidak dapat membuat %s: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "tidak dapat membuka `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

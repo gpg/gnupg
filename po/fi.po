@@ -4030,6 +4030,11 @@ msgstr "      Aliavaimen sormenjälki:"
 msgid "      Key fingerprint ="
 msgstr "     Avaimen sormenjälki ="
 
+# Ensimmäinen %s on binary, textmode tai unknown, ks. alla
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "%sallekirjoitus, tiivistealgoritmi %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5216,6 +5221,14 @@ msgstr "lukuvirhe: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: synkronointi epäonnistui: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "tiedostoa \"%s\" ei voi avata\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek epäonnistui: %s\n"
@@ -5234,14 +5247,6 @@ msgstr "tiedostoa \"%s\" ei voi sulkea: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: hakemistoa ei ole olemassa!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "tiedostoa \"%s\" ei voi luoda: %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "tiedostoa \"%s\" ei voi avata\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

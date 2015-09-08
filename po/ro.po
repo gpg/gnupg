@@ -3940,6 +3940,11 @@ msgstr "      Amprentã subcheie:"
 msgid "      Key fingerprint ="
 msgstr "      Amprentã cheie ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "AVERTISMENT: folosesc algoritmul rezumat experimental %s\n"
+
 msgid "      Card serial no. ="
 msgstr "      Card nr. serie ="
 
@@ -5095,6 +5100,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sincronizarea a eºuat: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nu pot crea încuietoare (lock) pentru `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "nu pot încuia (lock) `%s'\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: lseek a eºuat: %s\n"
 
@@ -5112,14 +5125,6 @@ msgstr "nu pot accesa `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: directorul nu existã!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nu pot crea încuietoare (lock) pentru `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "nu pot încuia (lock) `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

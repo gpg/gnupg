@@ -3775,6 +3775,11 @@ msgstr "副鍵フィンガー・プリント:"
 msgid "      Key fingerprint ="
 msgstr "   フィンガー・プリント ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "*警告*: 実験的ダイジェスト・アルゴリズム %sを使用\n"
+
 msgid "      Card serial no. ="
 msgstr "   カード・シリアル番号 ="
 
@@ -4891,6 +4896,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信用データベース: 同期に失敗しました: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "「%s」のロックを作成できません\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "「%s」がロックできません\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信用データベース レコード%lu: シークに失敗しました: %s\n"
 
@@ -4908,14 +4921,6 @@ msgstr "「%s」にアクセスできません: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ディレクトリがありません!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "「%s」のロックを作成できません\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "「%s」がロックできません\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

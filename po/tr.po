@@ -3912,6 +3912,11 @@ msgstr "Yardımcı anahtar parmak izi:"
 msgid "      Key fingerprint ="
 msgstr "     Anahtar parmakizi ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "UYARI: deneysel %s özet algoritması kullanılıyor\n"
+
 msgid "      Card serial no. ="
 msgstr "      Kart seri no. ="
 
@@ -5065,6 +5070,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "güvence veritabanı: eşzamanlama başarısız: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "`%s' için kilit oluşturulamıyor\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "`%s' kiltlenemedi\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "güvence veritabanı %lu kaydı: erişim başarısız: %s\n"
 
@@ -5082,14 +5095,6 @@ msgstr "'%s' erişilemiyor: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: dizin yok!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "`%s' için kilit oluşturulamıyor\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "`%s' kiltlenemedi\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

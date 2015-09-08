@@ -3987,6 +3987,11 @@ msgstr "       Vingerafdruk van de subsleutel:"
 msgid "      Key fingerprint ="
 msgstr "      Vingerafdruk van de sleutel ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "WAARSCHUWING: er wordt een experimenteel hashalgoritme %s gebruikt\n"
+
 msgid "      Card serial no. ="
 msgstr "         Serienummer van de kaart ="
 
@@ -5187,6 +5192,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "betrouwbaarheidsdatabank (trustdb): synchronisatie mislukt: %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan geen grendel maken voor `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan `%s' niet vergrendelen\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
 "betrouwbaarheidsdatabank (trustdb): element %lu: lseek is mislukt: %s\n"
@@ -5207,14 +5220,6 @@ msgstr "krijg geen toegang tot `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: map bestaat niet!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan geen grendel maken voor `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan `%s' niet vergrendelen\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

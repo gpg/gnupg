@@ -4044,6 +4044,10 @@ msgstr "     Pegada dactilar da sub-chave:"
 msgid "      Key fingerprint ="
 msgstr "     Pegada dactilar ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "Sinatura %s, algoritmo de resumo %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5219,6 +5223,14 @@ msgstr "erro de lectura: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "base de datos de confianza: fallou a sincronización: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "non se pode crear `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "non se puido abrir `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "rexistro da base de datos de confianza %lu: lseek fallou: %s\n"
@@ -5238,14 +5250,6 @@ msgstr "non se pode pechar `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ¡o directorio non existe!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "non se pode crear `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "non se puido abrir `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

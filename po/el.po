@@ -4047,6 +4047,10 @@ msgstr "      Αποτύπωμα υποκλειδιού:"
 msgid "      Key fingerprint ="
 msgstr "     Αποτύπωμα κλειδιού ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "%s υπογραφή, αλγόριθμος περίληψης %s\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5231,6 +5235,14 @@ msgstr "σφάλμα ανάγνωσης: %s\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "trustdb: sync απέτυχε: %s\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "αδυναμία δημιουργίας του `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "αδυναμία πρόσβασης του `%s'\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "trustdb rec %lu: αποτυχία lseek: %s\n"
@@ -5249,14 +5261,6 @@ msgstr "αδυναμία κλεισίματος του `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: ο φάκελος δεν υπάρχει!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "αδυναμία δημιουργίας του `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "αδυναμία πρόσβασης του `%s'\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

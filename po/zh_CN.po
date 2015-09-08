@@ -3835,6 +3835,11 @@ msgstr " 子钥指纹："
 msgid "      Key fingerprint ="
 msgstr "密钥指纹 ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "警告：使用试验性质的散列算法 %s\n"
+
 msgid "      Card serial no. ="
 msgstr "卡序列号 ="
 
@@ -4934,6 +4939,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "信任度数据库：同步失败：%s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "不能为‘%s’创建锁定\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "无法锁定‘%s’\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "信任度数据库记录 %lu：lseek 失败：%s\n"
 
@@ -4951,14 +4964,6 @@ msgstr "无法存取‘%s’：%s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s：目录不存在！\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "不能为‘%s’创建锁定\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "无法锁定‘%s’\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

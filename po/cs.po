@@ -3873,6 +3873,11 @@ msgstr "          Otisk podklíče:"
 msgid "      Key fingerprint ="
 msgstr "          Otisk klíče ="
 
+#, fuzzy, c-format
+#| msgid "WARNING: using experimental digest algorithm %s\n"
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "VAROVÁNÍ: používám experimentální hashovací algoritmus %s\n"
+
 msgid "      Card serial no. ="
 msgstr "  Sériové číslo karty ="
 
@@ -5016,6 +5021,14 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "databáze důvěry: synchronizace selhala %s\n"
 
 #, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "nemohu vytvořit zámek pro  „%s“\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "nelze zamknout „%s“\n"
+
+#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "záznam v databázi důvěry %lu: lseek() se nepodařil: %s\n"
 
@@ -5033,14 +5046,6 @@ msgstr "nemohu otevřít „%s“: %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: adresář neexistuje!\n"
-
-#, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "nemohu vytvořit zámek pro  „%s“\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "nelze zamknout „%s“\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"

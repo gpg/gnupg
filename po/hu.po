@@ -4003,6 +4003,10 @@ msgstr "         Alkulcsujjlenyomat:"
 msgid "      Key fingerprint ="
 msgstr " Kulcs ujjlenyomata ="
 
+#, fuzzy, c-format
+msgid "WARNING: a PGP-2 fingerprint is not safe\n"
+msgstr "%s aláírás, %s kivonatoló algoritmus.\n"
+
 msgid "      Card serial no. ="
 msgstr ""
 
@@ -5184,6 +5188,14 @@ msgstr "Olvasási hiba: %s.\n"
 msgid "trustdb: sync failed: %s\n"
 msgstr "Bizalmi adatbázis: szinkronizáció sikertelen: %s.\n"
 
+#, fuzzy, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
+
+#, fuzzy, c-format
+msgid "can't lock `%s'\n"
+msgstr "Nem tudom megnyitni %s-t!\n"
+
 #, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr "Bizalmi adatbázis %lu. rekord: lseek sikertelen: %s.\n"
@@ -5202,14 +5214,6 @@ msgstr "Nem tudom bezárni a(z) \"%s\" állományt: %s.\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: Könyvtár nem létezik!\n"
-
-#, fuzzy, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "Nem tudom létrehozni a(z) \"%s\" állományt: %s.\n"
-
-#, fuzzy, c-format
-msgid "can't lock `%s'\n"
-msgstr "Nem tudom megnyitni %s-t!\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
