@@ -1,5 +1,17 @@
-Noteworthy changes in version 2.0.29 (unreleased)
+Noteworthy changes in version 2.0.29 (2015-09-08)
 -------------------------------------------------
+
+ * gpg: Print a PGP-2 fingerprint again instead of a row of "0".
+
+ * gpg: Fixed a race condition from multiple several "gpg --verify".
+
+ * gpg: Print FAILURE status lines to help GPGME.
+
+ * gpgsm: Fixed a regression in CSR generation.
+
+ * scdaemon: Fixed problems with some pinpads.
+
+ * Fixed a few other bugs.
 
 
 Noteworthy changes in version 2.0.28 (2015-06-02)
