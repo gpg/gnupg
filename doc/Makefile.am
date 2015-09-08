@@ -140,8 +140,8 @@ online: gnupg.html gnupg.pdf
         if echo "@PACKAGE_VERSION@" | grep -- "-git" >/dev/null; then \
 	  dashdevel="-devel" ; \
 	else \
-          rsync -v gnupg.pdf $${user}@$${webhost}:webspace/manuals/ ; \
+          scp gnupg.pdf $${user}@$${webhost}:webspace/manuals/gnupg-2.0.pdf ; \
         fi ; \
 	cd gnupg.html ; \
         rsync -vr --exclude='.git' .  \
-	  $${user}@$${webhost}:webspace/manuals/gnupg$${dashdevel}/
+	  $${user}@$${webhost}:webspace/manuals/gnupg-2.0$${dashdevel}/
