@@ -3180,7 +3180,7 @@ msgstr "Seleccione el tipo de clave deseado:\n"
 
 #, c-format
 msgid "   (%d) RSA and RSA (default)\n"
-msgstr "   (%d) DSA y ElGamal (por defecto)\n"
+msgstr "   (%d) RSA y RSA (por defecto)\n"
 
 #, c-format
 msgid "   (%d) DSA and Elgamal\n"
