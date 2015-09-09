@@ -51,7 +51,6 @@ struct getkey_ctx_s
 {
   int exact;
   int want_secret;       /* The caller requested only secret keys.  */
-  strlist_t extra_list;	 /* Will be freed when releasing the context.  */
   int req_usage;
   KEYDB_HANDLE kr_handle;
   int not_allocated;
@@ -911,23 +910,10 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
       *retctx = NULL;
     }
 
-  if (retctx && *retctx)
-    {
-      assert (!(*retctx)->extra_list);
-      (*retctx)->extra_list = namelist;
-    }
-  else
-    free_strlist (namelist);
+  free_strlist (namelist);
   return rc;
 }
 
-
-int
-get_pubkey_bynames (GETKEY_CTX * retctx, PKT_public_key * pk,
-		    strlist_t names, KBNODE * ret_keyblock)
-{
-  return key_byname (retctx, names, pk, 0, 1, ret_keyblock, NULL);
-}
 
 int
 get_pubkey_next (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE * ret_keyblock)
@@ -1277,7 +1263,6 @@ getkey_end (getkey_ctx_t ctx)
   if (ctx)
     {
       keydb_release (ctx->kr_handle);
-      free_strlist (ctx->extra_list);
       if (!ctx->not_allocated)
 	xfree (ctx);
     }
