@@ -51,7 +51,6 @@ struct getkey_ctx_s
 {
   int exact;
   int want_secret;       /* The caller requested only secret keys.  */
-  KBNODE found_key;	 /* Pointer into some keyblock. */
   strlist_t extra_list;	 /* Will be freed when releasing the context.  */
   int req_usage;
   KEYDB_HANDLE kr_handle;
@@ -104,7 +103,9 @@ static user_id_db_t user_id_db;
 static int uid_cache_entries;	/* Number of entries in uid cache. */
 
 static void merge_selfsigs (kbnode_t keyblock);
-static int lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret);
+static int lookup (getkey_ctx_t ctx,
+		   kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
+		   int want_secret);
 
 #if 0
 static void
@@ -334,9 +335,12 @@ getkey_disable_caches ()
 
 
 static void
-pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock)
+pk_from_block (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE keyblock,
+	       KBNODE found_key)
 {
-  KBNODE a = ctx->found_key ? ctx->found_key : keyblock;
+  KBNODE a = found_key ? found_key : keyblock;
+
+  (void) ctx;
 
   assert (a->pkt->pkttype == PKT_PUBLIC_KEY
 	  || a->pkt->pkttype == PKT_PUBLIC_SUBKEY);
@@ -382,6 +386,7 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
   {
     struct getkey_ctx_s ctx;
     KBNODE kb = NULL;
+    KBNODE found_key = NULL;
     memset (&ctx, 0, sizeof ctx);
     ctx.exact = 1; /* Use the key ID exactly as given.  */
     ctx.not_allocated = 1;
@@ -391,10 +396,10 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
     ctx.items[0].u.kid[0] = keyid[0];
     ctx.items[0].u.kid[1] = keyid[1];
     ctx.req_usage = pk->req_usage;
-    rc = lookup (&ctx, &kb, 0);
+    rc = lookup (&ctx, &kb, &found_key, 0);
     if (!rc)
       {
-	pk_from_block (&ctx, pk, kb);
+	pk_from_block (&ctx, pk, kb, found_key);
       }
     get_pubkey_end (&ctx);
     release_kbnode (kb);
@@ -492,7 +497,7 @@ get_pubkeyblock (u32 * keyid)
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
-  rc = lookup (&ctx, &keyblock, 0);
+  rc = lookup (&ctx, &keyblock, NULL, 0);
   get_pubkey_end (&ctx);
 
   return rc ? NULL : keyblock;
@@ -512,6 +517,7 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   gpg_error_t err;
   struct getkey_ctx_s ctx;
   kbnode_t keyblock = NULL;
+  kbnode_t found_key = NULL;
 
   memset (&ctx, 0, sizeof ctx);
   ctx.exact = 1; /* Use the key ID exactly as given.  */
@@ -522,10 +528,10 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
   ctx.req_usage = pk->req_usage;
-  err = lookup (&ctx, &keyblock, 1);
+  err = lookup (&ctx, &keyblock, &found_key, 1);
   if (!err)
     {
-      pk_from_block (&ctx, pk, keyblock);
+      pk_from_block (&ctx, pk, keyblock, found_key);
     }
   get_pubkey_end (&ctx);
   release_kbnode (keyblock);
@@ -599,6 +605,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
   strlist_t r;
   GETKEY_CTX ctx;
   KBNODE help_kb = NULL;
+  KBNODE found_key = NULL;
 
   if (retctx)
     {
@@ -660,10 +667,10 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
       ctx->req_usage = pk->req_usage;
     }
 
-  rc = lookup (ctx, ret_kb, want_secret);
+  rc = lookup (ctx, ret_kb, &found_key, want_secret);
   if (!rc && pk)
     {
-      pk_from_block (ctx, pk, *ret_kb);
+      pk_from_block (ctx, pk, *ret_kb, found_key);
     }
 
   release_kbnode (help_kb);
@@ -945,6 +952,7 @@ get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr)
   gpg_error_t err;
   struct getkey_ctx_s ctx;
   kbnode_t kb = NULL;
+  kbnode_t found_key = NULL;
 
   memset (&ctx, 0, sizeof ctx);
   ctx.exact = 1;
@@ -953,9 +961,9 @@ get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr)
   ctx.nitems = 1;
   ctx.items[0].mode = KEYDB_SEARCH_MODE_FPR;
   memcpy (ctx.items[0].u.fpr, fpr, MAX_FINGERPRINT_LEN);
-  err = lookup (&ctx, &kb, 0);
+  err = lookup (&ctx, &kb, &found_key, 0);
   if (!err && pk)
-    pk_from_block (&ctx, pk, kb);
+    pk_from_block (&ctx, pk, kb, found_key);
   release_kbnode (kb);
   get_pubkey_end (&ctx);
 
@@ -987,6 +995,7 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
     {
       struct getkey_ctx_s ctx;
       KBNODE kb = NULL;
+      KBNODE found_key = NULL;
 
       memset (&ctx, 0, sizeof ctx);
       ctx.exact = 1;
@@ -996,10 +1005,10 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
       ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
 	: KEYDB_SEARCH_MODE_FPR20;
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-      rc = lookup (&ctx, &kb, 0);
+      rc = lookup (&ctx, &kb, &found_key, 0);
       if (!rc && pk)
         {
-          pk_from_block (&ctx, pk, kb);
+          pk_from_block (&ctx, pk, kb, found_key);
           if (r_keyblock)
             {
               *r_keyblock = kb;
@@ -1083,7 +1092,7 @@ get_keyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
                            ? KEYDB_SEARCH_MODE_FPR16
                            : KEYDB_SEARCH_MODE_FPR20);
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-      rc = lookup (&ctx, ret_keyblock, 0);
+      rc = lookup (&ctx, ret_keyblock, NULL, 0);
       get_pubkey_end (&ctx);
     }
   else
@@ -1135,6 +1144,7 @@ get_seckey_byfprint (PKT_public_key *pk, const byte * fprint, size_t fprint_len)
     {
       struct getkey_ctx_s ctx;
       kbnode_t kb = NULL;
+      kbnode_t found_key = NULL;
 
       memset (&ctx, 0, sizeof ctx);
       ctx.exact = 1;
@@ -1144,9 +1154,9 @@ get_seckey_byfprint (PKT_public_key *pk, const byte * fprint, size_t fprint_len)
       ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
 	: KEYDB_SEARCH_MODE_FPR20;
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-      err = lookup (&ctx, &kb, 1);
+      err = lookup (&ctx, &kb, &found_key, 1);
       if (!err && pk)
-	pk_from_block (&ctx, pk, kb);
+	pk_from_block (&ctx, pk, kb, found_key);
       release_kbnode (kb);
       get_pubkey_end (&ctx);
     }
@@ -1176,7 +1186,7 @@ get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
   ctx.items[0].mode = (fprint_len == 16
 		       ? KEYDB_SEARCH_MODE_FPR16 : KEYDB_SEARCH_MODE_FPR20);
   memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-  err = lookup (&ctx, ret_keyblock, 1);
+  err = lookup (&ctx, ret_keyblock, NULL, 1);
   get_pubkey_end (&ctx);
 
   return err;
@@ -1244,6 +1254,7 @@ gpg_error_t
 getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
 {
   int rc; /* Fixme:  Make sure this is proper gpg_error */
+  KBNODE found_key = NULL;
 
   /* We need to disable the caching so that for an exact key search we
      won't get the result back from the cache and thus end up in an
@@ -1251,9 +1262,9 @@ getkey_next (getkey_ctx_t ctx, PKT_public_key *pk, kbnode_t *ret_keyblock)
      the result has been cached, if won't be used then.  */
   keydb_disable_caching (ctx->kr_handle);
 
-  rc = lookup (ctx, ret_keyblock, ctx->want_secret);
+  rc = lookup (ctx, ret_keyblock, &found_key, ctx->want_secret);
   if (!rc && pk && ret_keyblock)
-    pk_from_block (ctx, pk, *ret_keyblock);
+    pk_from_block (ctx, pk, *ret_keyblock, found_key);
 
   return rc;
 }
@@ -2336,7 +2347,7 @@ merge_selfsigs (KBNODE keyblock)
  * CTX ist the keyblock we are investigating, if FOUNDK is not NULL this
  * is the key we actually found by looking at the keyid or a fingerprint and
  * may either point to the primary or one of the subkeys.  */
-static int
+static KBNODE
 finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 {
   KBNODE k;
@@ -2355,8 +2366,6 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
   u32 curtime = make_timestamp ();
 
   assert (keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
-
-  ctx->found_key = NULL;
 
   if (ctx->exact)
     {
@@ -2501,7 +2510,7 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
     {
       if (DBG_LOOKUP)
 	log_debug ("\tno suitable key found -  giving up\n");
-      return 0; /* Not found.  */
+      return NULL; /* Not found.  */
     }
 
 found:
@@ -2517,8 +2526,6 @@ found:
       pk->user_id = scopy_user_id (foundu);
     }
 
-  ctx->found_key = latest_key;
-
   if (latest_key != keyblock && opt.verbose)
     {
       char *tempkeystr =
@@ -2530,7 +2537,7 @@ found:
 
   cache_user_id (keyblock);
 
-  return 1; /* Found.  */
+  return latest_key ? latest_key : keyblock; /* Found.  */
 }
 
 
@@ -2561,11 +2568,13 @@ search_modes_are_fingerprint (getkey_ctx_t ctx)
    is stored at RET_KEYBLOCK and also in CTX.  If WANT_SECRET is true
    a corresponding secret key is required.  */
 static int
-lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
+lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
+	int want_secret)
 {
   int rc;
   int no_suitable_key = 0;
   KBNODE keyblock = NULL;
+  KBNODE found_key = NULL;
 
   for (;;)
     {
@@ -2603,7 +2612,8 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
        * merge_selfsigs.  For secret keys, premerge transferred the
        * keys to the keyblock.  */
       merge_selfsigs (keyblock);
-      if (finish_lookup (ctx, keyblock))
+      found_key = finish_lookup (ctx, keyblock);
+      if (found_key)
 	{
 	  no_suitable_key = 0;
 	  goto found;
@@ -2640,6 +2650,14 @@ found:
     rc = want_secret? GPG_ERR_NO_SECKEY : GPG_ERR_NO_PUBKEY;
 
   release_kbnode (keyblock);
+
+  if (ret_found_key)
+    {
+      if (! rc)
+	*ret_found_key = found_key;
+      else
+	*ret_found_key = NULL;
+    }
 
   return rc;
 }
