@@ -54,14 +54,19 @@
 #include "mbox-util.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
-   something reasonable. */
-#define MAX_CERT_LENGTH (8*1024)
+   something reasonable.  The DoS was actually only an issue back when
+   Dirmngr was a system service and not a user service. */
+#define MAX_CERT_LENGTH (16*1024)
 
 /* The same goes for OpenPGP keyblocks, but here we need to allow for
    much longer blocks; a 200k keyblock is not too unusual for keys
    with a lot of signatures (e.g. 0x5b0358a2).  9C31503C6D866396 even
-   has 770 KiB as of 2015-08-23.  */
-#define MAX_KEYBLOCK_LENGTH (1024*1024)
+   has 770 KiB as of 2015-08-23.  To avoid adding a runtime option we
+   now use 20MiB which should really be enough.  Well, a key with
+   several pictures could be larger (the parser as a 18MiB limit for
+   attribute packets) but it won't be nice to the keyservers to send
+   them such large blobs.  */
+#define MAX_KEYBLOCK_LENGTH (20*1024*1024)
 
 
 #define PARM_ERROR(t) assuan_set_error (ctx, \
