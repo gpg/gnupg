@@ -1,4 +1,4 @@
-# Dutch translations for gnupg package.
+# Dutch translations for package gnupg2.
 # Copyright (C) 2006 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gnupg package.
 # Automatically generated, 2006.
@@ -24,20 +24,21 @@
 # When output to an ASCII terminal, the single quotation marks are
 # transliterated to apostrophes, and the double quotation marks are
 # transliterated to 0x22.
-# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2014.
+# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2014, 2015.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.0.27\n"
+"Project-Id-Version: gnupg 2.0.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-24 21:22+0100\n"
+"PO-Revision-Date: 2015-06-07 16:56+0200\n"
 "Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
-"Language-Team: Dutch <debian-l10n-dutch@lists.debian.org>\n"
+"Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Gtranslator 2.91.6\n"
 
 #, c-format
 msgid "failed to acquire the pinentry lock: %s\n"
@@ -54,36 +55,31 @@ msgstr "|pinentry-label|_OK"
 msgid "|pinentry-label|_Cancel"
 msgstr "|pinentry-label|_Annuleren"
 
-#, fuzzy
 #| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_Yes"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|_Ja"
 
-#, fuzzy
 #| msgid "|pinentry-label|_OK"
 msgid "|pinentry-label|_No"
-msgstr "|pinentry-label|_OK"
+msgstr "|pinentry-label|_Nee"
 
 msgid "|pinentry-label|PIN:"
 msgstr "|pinentry-label|Pincode:"
 
-#, fuzzy
 #| msgid "|pinentry-label|_Cancel"
 msgid "|pinentry-label|_Save in password manager"
-msgstr "|pinentry-label|_Annuleren"
+msgstr "|pinentry-label|_Bewaren in de wachtwoordmanager"
 
-#, fuzzy
 #| msgid "Do you really want to revoke the selected subkeys? (y/N) "
 msgid "Do you really want to make your passphrase visible on the screen?"
-msgstr "Wilt U de geselecteerde subsleutels echt intrekken? (j/N) "
+msgstr "Wilt U uw wachtwoordzin echt zichtbaar maken op het scherm?"
 
 msgid "|pinentry-tt|Make passphrase visible"
-msgstr ""
+msgstr "|pinentry-tt|Wachtwoordzin zichtbaar maken"
 
-#, fuzzy
 #| msgid "invalid passphrase"
 msgid "|pinentry-tt|Hide passphrase"
-msgstr "ongeldige wachtwoordzin"
+msgstr "|pinentry-tt|Wachtwoordzin verbergen"
 
 #. TRANSLATORS: This string is displayed by Pinentry as the label
 #. for the quality bar.
@@ -414,10 +410,9 @@ msgstr "ssh-ondersteuning mogelijk maken"
 msgid "enable putty support"
 msgstr "putty-ondersteuning mogelijk maken"
 
-#, fuzzy
 #| msgid "do not allow the reuse of old passphrases"
 msgid "disallow the use of an external password cache"
-msgstr "laat het opnieuw gebruiken van oude wachtwoordzinnen niet toe"
+msgstr "het gebruik van een externe wachtwoordcache niet toestaan"
 
 msgid "|FILE|write environment settings also to FILE"
 msgstr "|BESTAND|schrijf omgevingsinstellingen ook weg naar BESTAND"
@@ -435,7 +430,7 @@ msgid ""
 "Syntax: gpg-agent [options] [command [args]]\n"
 "Secret key management for GnuPG\n"
 msgstr ""
-"Syntaxis:  gpg-agent [opties] [opdracht [parameters]]\n"
+"Syntaxis:  gpg-agent [opties] [opdracht [argumenten]]\n"
 "Beheer van geheime sleutels van GnuPG\n"
 
 #, c-format
@@ -580,7 +575,7 @@ msgid ""
 "Syntax: gpg-protect-tool [options] [args]\n"
 "Secret key maintenance tool\n"
 msgstr ""
-"Syntaxis: gpg-protect-tool [opties] [parameters]\n"
+"Syntaxis: gpg-protect-tool [opties] [argumenten]\n"
 "Hulpmiddel voor het onderhoud van de geheime sleutels\n"
 
 msgid "Please enter the passphrase to unprotect the PKCS#12 object."
@@ -3133,7 +3128,7 @@ msgid "You must select exactly one key.\n"
 msgstr "U moet exact één sleutel selecteren.\n"
 
 msgid "Command expects a filename argument\n"
-msgstr "Commando verwacht een bestandsnaam als parameter\n"
+msgstr "Commando verwacht een bestandsnaam als argument\n"
 
 #, c-format
 msgid "Can't open `%s': %s\n"
@@ -3284,12 +3279,11 @@ msgstr ""
 "              veronderstelde primaire ID worden.\n"
 
 msgid "WARNING: Your encryption subkey expires soon.\n"
-msgstr ""
+msgstr "Waarschuwing: Uw subsleutel voor versleutelen vervalt weldra.\n"
 
-#, fuzzy
 #| msgid "You can't change the expiration date of a v3 key\n"
 msgid "You may want to change its expiration date too.\n"
-msgstr "U kunt de vervaldatum van een v3-sleutel niet veranderen\n"
+msgstr "Misschien wilt u ook zijn vervaldatum wijzigen.\n"
 
 msgid ""
 "WARNING: This is a PGP2-style key.  Adding a photo ID may cause some "
@@ -3986,11 +3980,6 @@ msgstr "       Vingerafdruk van de subsleutel:"
 
 msgid "      Key fingerprint ="
 msgstr "      Vingerafdruk van de sleutel ="
-
-#, fuzzy, c-format
-#| msgid "WARNING: using experimental digest algorithm %s\n"
-msgid "WARNING: a PGP-2 fingerprint is not safe\n"
-msgstr "WAARSCHUWING: er wordt een experimenteel hashalgoritme %s gebruikt\n"
 
 msgid "      Card serial no. ="
 msgstr "         Serienummer van de kaart ="
@@ -4953,7 +4942,7 @@ msgid "(Probably you want to select %d here)\n"
 msgstr "(Wellicht wilt u hier %d kiezen)\n"
 
 msgid "Enter an optional description; end it with an empty line:\n"
-msgstr "Voer een facultatieve beschrijving in; beëindig met een lege regel:\n"
+msgstr "Voer een optionele beschrijving in; beëindig met een lege regel:\n"
 
 #, c-format
 msgid "Reason for revocation: %s\n"
@@ -5192,14 +5181,6 @@ msgid "trustdb: sync failed: %s\n"
 msgstr "betrouwbaarheidsdatabank (trustdb): synchronisatie mislukt: %s\n"
 
 #, c-format
-msgid "can't create lock for `%s'\n"
-msgstr "kan geen grendel maken voor `%s'\n"
-
-#, c-format
-msgid "can't lock `%s'\n"
-msgstr "kan `%s' niet vergrendelen\n"
-
-#, c-format
 msgid "trustdb rec %lu: lseek failed: %s\n"
 msgstr ""
 "betrouwbaarheidsdatabank (trustdb): element %lu: lseek is mislukt: %s\n"
@@ -5220,6 +5201,14 @@ msgstr "krijg geen toegang tot `%s': %s\n"
 #, c-format
 msgid "%s: directory does not exist!\n"
 msgstr "%s: map bestaat niet!\n"
+
+#, c-format
+msgid "can't create lock for `%s'\n"
+msgstr "kan geen grendel maken voor `%s'\n"
+
+#, c-format
+msgid "can't lock `%s'\n"
+msgstr "kan `%s' niet vergrendelen\n"
 
 #, c-format
 msgid "%s: failed to create version record: %s"
@@ -5476,7 +5465,7 @@ msgid "can't open fd %d: %s\n"
 msgstr "kan bestandsindicator %d niet openen: %s\n"
 
 msgid "argument not expected"
-msgstr "onverwachte parameter"
+msgstr "onverwacht argument"
 
 msgid "read error"
 msgstr "leesfout"
@@ -5485,12 +5474,11 @@ msgid "keyword too long"
 msgstr "sleutelwoord is te lang"
 
 msgid "missing argument"
-msgstr "ontbrekende parameter"
+msgstr "ontbrekend argument"
 
-#, fuzzy
 #| msgid "invalid armor"
 msgid "invalid argument"
-msgstr "ongeldig harnas"
+msgstr "ongeldig argument"
 
 msgid "invalid command"
 msgstr "ongeldig commando"
@@ -5506,16 +5494,16 @@ msgstr "ongeldige optie"
 
 #, c-format
 msgid "missing argument for option \"%.50s\"\n"
-msgstr "ontbrekende parameter voor optie \"%.50s\"\n"
+msgstr "ontbrekend argument voor optie \"%.50s\"\n"
 
-#, fuzzy, c-format
+#, c-format
 #| msgid "missing argument for option \"%.50s\"\n"
 msgid "invalid argument for option \"%.50s\"\n"
-msgstr "ontbrekende parameter voor optie \"%.50s\"\n"
+msgstr "ontbrekend argument voor optie \"%.50s\"\n"
 
 #, c-format
 msgid "option \"%.50s\" does not expect an argument\n"
-msgstr "optie \"%.50s\" verwacht geen parameter\n"
+msgstr "optie \"%.50s\" verwacht geen argument\n"
 
 #, c-format
 msgid "invalid command \"%.50s\"\n"
@@ -6667,7 +6655,7 @@ msgstr ""
 
 #, c-format
 msgid "option \"%s\" requires a program and optional arguments\n"
-msgstr "optie \"%s\" vereist een programma en facultatieve parameters\n"
+msgstr "optie \"%s\" vereist een programma en optionele argumenten\n"
 
 #, c-format
 msgid "option \"%s\" ignored due to \"%s\"\n"
@@ -6859,13 +6847,13 @@ msgid "usage: gpgconf [options] "
 msgstr "gebruik: gpgconf [opties] "
 
 msgid "Need one component argument"
-msgstr "Een component als parameter is vereist"
+msgstr "Een component als argument is vereist"
 
 msgid "Component not found"
 msgstr "Component niet gevonden"
 
 msgid "No argument allowed"
-msgstr "Een parameter is niet toegelaten"
+msgstr "Een argument is niet toegelaten"
 
 msgid ""
 "@\n"
