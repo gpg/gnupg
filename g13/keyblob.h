@@ -115,12 +115,14 @@
 /* A EncFS based backend.  This requires a whole directory which
    includes the encrypted files.  Metadata is not encrypted.  */
 
+#define CONTTYPE_DM_CRYPT   2
+/* A DM-Crypt based backend.  */
+
 
 #define CONTTYPE_TRUECRYPT  21571
 /* A Truecrypt (www.truecrypt.org) based container.  Due to the design
    of truecrypt this requires a second datafile because it is not
-   possible to to prepend a truecrypt container with our keyblob.  */
-
+   possible to prepend a truecrypt container with our keyblob.  */
 
 
 

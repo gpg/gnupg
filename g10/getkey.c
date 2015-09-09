@@ -2602,7 +2602,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
         goto skip; /* No secret key available.  */
 
       /* Warning: node flag bits 0 and 1 should be preserved by
-       * merge_selfsigs.  For secret keys, premerge did tranfer the
+       * merge_selfsigs.  For secret keys, premerge transferred the
        * keys to the keyblock.  */
       merge_selfsigs (ctx->keyblock);
       if (finish_lookup (ctx))
@@ -2617,10 +2617,11 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
       /* Release resources and continue search. */
       release_kbnode (ctx->keyblock);
       ctx->keyblock = NULL;
-      /* We need to disable the caching so that for an exact key search we
-         won't get the result back from the cache and thus end up in an
-         endless loop.  Disabling this here is sufficient because although
-         the result may have been cached, if won't be used then.  */
+      /* We need to disable the caching so that for an exact key
+         search we won't get the result back from the cache and thus
+         end up in an endless loop.  Disabling the cache here at this
+         point is sufficient because even a cached result won't be
+         used after a call to keydb_disable_caching.  */
       keydb_disable_caching (ctx->kr_handle);
     }
 
