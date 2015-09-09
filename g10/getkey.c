@@ -1,6 +1,7 @@
 /* getkey.c -  Get a key from the database
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2008, 2010  Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -50,7 +51,6 @@ struct getkey_ctx_s
 {
   int exact;
   int want_secret;       /* The caller requested only secret keys.  */
-  KBNODE keyblock;
   KBPOS kbpos;
   KBNODE found_key;	 /* Pointer into some keyblock. */
   strlist_t extra_list;	 /* Will be freed when releasing the context.  */
@@ -2339,9 +2339,8 @@ merge_selfsigs (KBNODE keyblock)
  * is the key we actually found by looking at the keyid or a fingerprint and
  * may either point to the primary or one of the subkeys.  */
 static int
-finish_lookup (GETKEY_CTX ctx)
+finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 {
-  KBNODE keyblock = ctx->keyblock;
   KBNODE k;
   KBNODE foundk = NULL;
   PKT_user_id *foundu = NULL;
@@ -2568,6 +2567,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 {
   int rc;
   int no_suitable_key = 0;
+  KBNODE keyblock = NULL;
 
   for (;;)
     {
@@ -2590,7 +2590,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
       if (ctx->nitems && ctx->items->mode == KEYDB_SEARCH_MODE_FIRST)
 	ctx->items->mode = KEYDB_SEARCH_MODE_NEXT;
 
-      rc = keydb_get_keyblock (ctx->kr_handle, &ctx->keyblock);
+      rc = keydb_get_keyblock (ctx->kr_handle, &keyblock);
       if (rc)
 	{
 	  log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
@@ -2598,14 +2598,14 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 	  goto skip;
 	}
 
-      if (want_secret && agent_probe_any_secret_key (NULL, ctx->keyblock))
+      if (want_secret && agent_probe_any_secret_key (NULL, keyblock))
         goto skip; /* No secret key available.  */
 
       /* Warning: node flag bits 0 and 1 should be preserved by
        * merge_selfsigs.  For secret keys, premerge transferred the
        * keys to the keyblock.  */
-      merge_selfsigs (ctx->keyblock);
-      if (finish_lookup (ctx))
+      merge_selfsigs (keyblock);
+      if (finish_lookup (ctx, keyblock))
 	{
 	  no_suitable_key = 0;
 	  goto found;
@@ -2615,8 +2615,8 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, int want_secret)
 
     skip:
       /* Release resources and continue search. */
-      release_kbnode (ctx->keyblock);
-      ctx->keyblock = NULL;
+      release_kbnode (keyblock);
+      keyblock = NULL;
       /* We need to disable the caching so that for an exact key
          search we won't get the result back from the cache and thus
          end up in an endless loop.  Disabling the cache here at this
@@ -2632,8 +2632,8 @@ found:
 
   if (!rc)
     {
-      *ret_keyblock = ctx->keyblock; /* Return the keyblock.  */
-      ctx->keyblock = NULL;
+      *ret_keyblock = keyblock; /* Return the keyblock.  */
+      keyblock = NULL;
     }
   else if ((gpg_err_code (rc) == GPG_ERR_NOT_FOUND
             || gpg_err_code (rc) == GPG_ERR_LEGACY_KEY) && no_suitable_key)
@@ -2641,8 +2641,7 @@ found:
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = want_secret? GPG_ERR_NO_SECKEY : GPG_ERR_NO_PUBKEY;
 
-  release_kbnode (ctx->keyblock);
-  ctx->keyblock = NULL;
+  release_kbnode (keyblock);
 
   return rc;
 }
