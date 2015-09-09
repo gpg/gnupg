@@ -51,7 +51,6 @@ struct getkey_ctx_s
 {
   int exact;
   int want_secret;       /* The caller requested only secret keys.  */
-  KBPOS kbpos;
   KBNODE found_key;	 /* Pointer into some keyblock. */
   strlist_t extra_list;	 /* Will be freed when releasing the context.  */
   int req_usage;
@@ -1266,7 +1265,6 @@ getkey_end (getkey_ctx_t ctx)
 {
   if (ctx)
     {
-      memset (&ctx->kbpos, 0, sizeof ctx->kbpos);
       keydb_release (ctx->kr_handle);
       free_strlist (ctx->extra_list);
       if (!ctx->not_allocated)
