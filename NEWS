@@ -1,5 +1,28 @@
-Noteworthy changes in version 2.1.8 (unreleased)
+Noteworthy changes in version 2.1.8 (2015-09-10)
 ------------------------------------------------
+
+ * gpg: Sending very large keys to the keyservers works again.
+
+ * gpg: Validity strings in key listings are now again translatable.
+
+ * gpg: Emit FAILURE status lines to help GPGME.
+
+ * gpg: Does not anymore link to Libksba to reduce dependencies.
+
+ * gpgsm: Export of secret keys via Assuan is now possible.
+
+ * agent: Raise the maximum passphrase length from 100 to 255 bytes.
+
+ * agent: Fix regression using EdDSA keys with ssh.
+
+ * Does not anymore use a build timestamp by default.
+
+ * The fallback encoding for broken locale settings changed
+   from Latin-1 to UTF-8.
+
+ * Many code cleanups and improved internal documentation.
+
+ * Various minor bug fixes.
 
 
 Noteworthy changes in version 2.1.7 (2015-08-11)
