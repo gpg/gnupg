@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU gnupg 2.0.28\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-06-16 12:51+0900\n"
+"PO-Revision-Date: 2015-09-10 11:02+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -3775,10 +3775,9 @@ msgstr "副鍵フィンガー・プリント:"
 msgid "      Key fingerprint ="
 msgstr "   フィンガー・プリント ="
 
-#, fuzzy, c-format
-#| msgid "WARNING: using experimental digest algorithm %s\n"
+#, c-format
 msgid "WARNING: a PGP-2 fingerprint is not safe\n"
-msgstr "*警告*: 実験的ダイジェスト・アルゴリズム %sを使用\n"
+msgstr "*警告*: PGP-2のフィンガー・プリントは安全ではありません\n"
 
 msgid "      Card serial no. ="
 msgstr "   カード・シリアル番号 ="
