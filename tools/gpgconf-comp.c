@@ -1064,7 +1064,7 @@ scdaemon_runtime_change (void)
 {
   gpg_error_t err;
   const char *pgmname;
-  const char *argv[6];
+  const char *argv[7];
   pid_t pid;
 
   /* We use "GETINFO app_running" to see whether the agent is already
@@ -1077,8 +1077,9 @@ scdaemon_runtime_change (void)
   argv[1] = "GETINFO scd_running";
   argv[2] = "/if ${! $?}";
   argv[3] = "scd killscd";
-  argv[4] = "/end";
-  argv[5] = NULL;
+  argv[4] = "scd bye";
+  argv[5] = "/end";
+  argv[6] = NULL;
 
   err = gnupg_spawn_process_fd (pgmname, argv, -1, -1, -1, &pid);
   if (!err)
