@@ -5193,6 +5193,61 @@ msgstr "深度: %d  有效: %3d  已簽署: %3d  信任: %d-, %dq, %dn, %dm, %df
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "無法更新信任資料庫版本記錄: 寫入失敗: %s\n"
 
+msgid "undefined"
+msgstr ""
+
+#, fuzzy
+#| msgid "never     "
+msgid "never"
+msgstr "永遠不過期"
+
+msgid "marginal"
+msgstr ""
+
+msgid "full"
+msgstr ""
+
+msgid "ultimate"
+msgstr ""
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr ""
+
+#, fuzzy
+#| msgid "revoked"
+msgid "[ revoked]"
+msgstr "已撤銷"
+
+#, fuzzy
+#| msgid "expired"
+msgid "[ expired]"
+msgstr "已過期"
+
+#, fuzzy
+#| msgid "unknown"
+msgid "[ unknown]"
+msgstr "未知"
+
+msgid "[  undef ]"
+msgstr ""
+
+msgid "[marginal]"
+msgstr ""
+
+msgid "[  full  ]"
+msgstr ""
+
+msgid "[ultimate]"
+msgstr ""
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"

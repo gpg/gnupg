@@ -5566,6 +5566,57 @@ msgstr ""
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "trust record %lu, tipe %d: gagal menulis: %s\n"
 
+msgid "undefined"
+msgstr ""
+
+#, fuzzy
+msgid "never"
+msgstr "tidak pernah..."
+
+msgid "marginal"
+msgstr ""
+
+msgid "full"
+msgstr ""
+
+msgid "ultimate"
+msgstr ""
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr ""
+
+#, fuzzy
+msgid "[ revoked]"
+msgstr "[revoked] "
+
+#, fuzzy
+msgid "[ expired]"
+msgstr "[expired] "
+
+#, fuzzy
+msgid "[ unknown]"
+msgstr "tidak dikenal"
+
+msgid "[  undef ]"
+msgstr ""
+
+msgid "[marginal]"
+msgstr ""
+
+msgid "[  full  ]"
+msgstr ""
+
+msgid "[ultimate]"
+msgstr ""
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8596,22 +8647,6 @@ msgstr ""
 #~ msgstr ""
 #~ "anda hanya dapat clearsign dengan kunci bergaya PGP 2.x saat dalam mode --"
 #~ "pgp2\n"
-
-#, fuzzy
-#~ msgid "[ revoked]"
-#~ msgstr "[revoked] "
-
-#, fuzzy
-#~ msgid "[ expired]"
-#~ msgstr "[expired] "
-
-#, fuzzy
-#~ msgid "[ unknown]"
-#~ msgstr "tidak dikenal"
-
-#, fuzzy
-#~ msgid "never"
-#~ msgstr "tidak pernah..."
 
 #, fuzzy
 #~ msgid "Usage: scdaemon [options] (-h for help)"

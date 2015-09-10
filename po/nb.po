@@ -5431,6 +5431,53 @@ msgstr ""
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr ""
 
+msgid "undefined"
+msgstr ""
+
+msgid "never"
+msgstr ""
+
+msgid "marginal"
+msgstr ""
+
+msgid "full"
+msgstr ""
+
+msgid "ultimate"
+msgstr ""
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr ""
+
+msgid "[ revoked]"
+msgstr "[ opphevet]"
+
+msgid "[ expired]"
+msgstr "[ utgått]"
+
+msgid "[ unknown]"
+msgstr "[ ukjent]"
+
+msgid "[  undef ]"
+msgstr "[ udef ]"
+
+msgid "[marginal]"
+msgstr ""
+
+msgid "[  full  ]"
+msgstr ""
+
+msgid "[ultimate]"
+msgstr ""
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8337,18 +8384,6 @@ msgstr ""
 
 #~ msgid "Invalid passphrase; please try again"
 #~ msgstr "Ugyldig passfrase; vennligst prøv igjen"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[ opphevet]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[ utgått]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[ ukjent]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[ udef ]"
 
 #, fuzzy
 #~ msgid "Usage: scdaemon [options] (-h for help)"

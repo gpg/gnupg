@@ -5337,6 +5337,57 @@ msgstr ""
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "nelze aktualizovat záznam v databázi důvěry: chyba při zápisu: %s\n"
 
+msgid "undefined"
+msgstr "nedefinována"
+
+msgid "never"
+msgstr "žádná"
+
+msgid "marginal"
+msgstr "částečná"
+
+msgid "full"
+msgstr "plná"
+
+msgid "ultimate"
+msgstr "absolutní"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+#, fuzzy
+#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr ""
+"14 fixní délka na kterou se překládá see trustdb.c:uid_trust_string_fixed"
+
+msgid "[ revoked]"
+msgstr "[ revokován  ]"
+
+# TODO: use context to distinguish gender
+msgid "[ expired]"
+msgstr "[ prošlý(á)  ]"
+
+msgid "[ unknown]"
+msgstr "[  neznámá   ]"
+
+msgid "[  undef ]"
+msgstr "[nedefinovaná]"
+
+msgid "[marginal]"
+msgstr "[  částečná  ]"
+
+msgid "[  full  ]"
+msgstr "[    plná    ]"
+
+msgid "[ultimate]"
+msgstr "[  absolutní ]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8640,47 +8691,6 @@ msgstr ""
 #~ msgstr ""
 #~ "v módu --pgp2 můžete vytvářet jen čitelné podpisy s klíči formátu PGP-2."
 #~ "x\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr ""
-#~ "14 fixní délka na kterou se překládá see trustdb.c:uid_trust_string_fixed"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[ revokován  ]"
-
-# TODO: use context to distinguish gender
-#~ msgid "[ expired]"
-#~ msgstr "[ prošlý(á)  ]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[  neznámá   ]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[nedefinovaná]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[  částečná  ]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[    plná    ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[  absolutní ]"
-
-#~ msgid "undefined"
-#~ msgstr "nedefinována"
-
-#~ msgid "never"
-#~ msgstr "žádná"
-
-#~ msgid "marginal"
-#~ msgstr "částečná"
-
-#~ msgid "full"
-#~ msgstr "plná"
-
-#~ msgid "ultimate"
-#~ msgstr "absolutní"
 
 #~ msgid " - probably dead - removing lock"
 #~ msgstr " – asi mrtvý – odstraňuji zámek"

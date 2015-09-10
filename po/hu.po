@@ -5577,6 +5577,57 @@ msgstr ""
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "%lu bizalmi rekord, %d típus: írás sikertelen: %s.\n"
 
+msgid "undefined"
+msgstr ""
+
+#, fuzzy
+msgid "never"
+msgstr "soha      "
+
+msgid "marginal"
+msgstr ""
+
+msgid "full"
+msgstr ""
+
+msgid "ultimate"
+msgstr ""
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr ""
+
+#, fuzzy
+msgid "[ revoked]"
+msgstr "[visszavont] "
+
+#, fuzzy
+msgid "[ expired]"
+msgstr "[lejárt]     "
+
+#, fuzzy
+msgid "[ unknown]"
+msgstr "Ismeretlen módú"
+
+msgid "[  undef ]"
+msgstr ""
+
+msgid "[marginal]"
+msgstr ""
+
+msgid "[  full  ]"
+msgstr ""
+
+msgid "[ultimate]"
+msgstr ""
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8604,22 +8655,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Olvasható szöveget PGP 2.x stílusú kulccsal csak --pgp2 módban írhat "
 #~ "alá!\n"
-
-#, fuzzy
-#~ msgid "[ revoked]"
-#~ msgstr "[visszavont] "
-
-#, fuzzy
-#~ msgid "[ expired]"
-#~ msgstr "[lejárt]     "
-
-#, fuzzy
-#~ msgid "[ unknown]"
-#~ msgstr "Ismeretlen módú"
-
-#, fuzzy
-#~ msgid "never"
-#~ msgstr "soha      "
 
 #, fuzzy
 #~ msgid "Usage: scdaemon [options] (-h for help)"

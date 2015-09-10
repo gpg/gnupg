@@ -5590,6 +5590,55 @@ msgstr ""
 "no se puede actualizar el registro de la versión de la base de datos\n"
 "de confianza: fallo de escritura: %s\n"
 
+msgid "undefined"
+msgstr "no definido"
+
+msgid "never"
+msgstr "nunca"
+
+msgid "marginal"
+msgstr "dudosa"
+
+msgid "full"
+msgstr "total"
+
+msgid "ultimate"
+msgstr "absoluta"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+#, fuzzy
+#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "13 no apto para supersticiosos"
+
+msgid "[ revoked]"
+msgstr "[  revocada ]"
+
+msgid "[ expired]"
+msgstr "[  caducada ]"
+
+msgid "[ unknown]"
+msgstr "[desconocida]"
+
+msgid "[  undef ]"
+msgstr "[no definida]"
+
+msgid "[marginal]"
+msgstr "[   dudosa  ]"
+
+msgid "[  full  ]"
+msgstr "[   total   ]"
+
+msgid "[ultimate]"
+msgstr "[  absoluta ]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8872,45 +8921,6 @@ msgstr ""
 #~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 #~ msgstr ""
 #~ "sólo puede firmar en claro con claves PGP 2.x estando en modo --pgp2\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "13 no apto para supersticiosos"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[  revocada ]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[  caducada ]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[desconocida]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[no definida]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[   dudosa  ]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[   total   ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[  absoluta ]"
-
-#~ msgid "undefined"
-#~ msgstr "no definido"
-
-#~ msgid "never"
-#~ msgstr "nunca"
-
-#~ msgid "marginal"
-#~ msgstr "dudosa"
-
-#~ msgid "full"
-#~ msgstr "total"
-
-#~ msgid "ultimate"
-#~ msgstr "absoluta"
 
 #~ msgid " - probably dead - removing lock"
 #~ msgstr " - probablemente muerto - suprimiendo el bloqueo"

@@ -5574,6 +5574,55 @@ msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr ""
 "nu pot actualiza înregistrare versiunii trustdb: scrierea a eºuat: %s\n"
 
+msgid "undefined"
+msgstr "nedefinitã"
+
+msgid "never"
+msgstr "niciodatã"
+
+msgid "marginal"
+msgstr "marginal"
+
+msgid "full"
+msgstr "deplinã"
+
+msgid "ultimate"
+msgstr "supremã"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+#, fuzzy
+#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "10 traducãtor vezi trustdb.c:uid_trust_string_fixed"
+
+msgid "[ revoked]"
+msgstr "[revocatã]"
+
+msgid "[ expired]"
+msgstr "[expiratã] "
+
+msgid "[ unknown]"
+msgstr "[necunoscutã]"
+
+msgid "[  undef ]"
+msgstr "[  nedef ]"
+
+msgid "[marginal]"
+msgstr "[marginal]"
+
+msgid "[  full  ]"
+msgstr "[ deplinã]"
+
+msgid "[ultimate]"
+msgstr "[ supremã]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8635,45 +8684,6 @@ msgstr ""
 #~ msgid ""
 #~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 #~ msgstr "puteþi semna-în-clar cu chei stil PGP 2.x în modul --pgp2\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "10 traducãtor vezi trustdb.c:uid_trust_string_fixed"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[revocatã]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[expiratã] "
-
-#~ msgid "[ unknown]"
-#~ msgstr "[necunoscutã]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[  nedef ]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[marginal]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[ deplinã]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[ supremã]"
-
-#~ msgid "undefined"
-#~ msgstr "nedefinitã"
-
-#~ msgid "never"
-#~ msgstr "niciodatã"
-
-#~ msgid "marginal"
-#~ msgstr "marginal"
-
-#~ msgid "full"
-#~ msgstr "deplinã"
-
-#~ msgid "ultimate"
-#~ msgstr "supremã"
 
 #, fuzzy
 #~ msgid "Usage: scdaemon [options] (-h for help)"

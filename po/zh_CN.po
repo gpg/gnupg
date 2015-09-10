@@ -5431,6 +5431,55 @@ msgstr ""
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "无法更新信任度数据库版本记录：写入失败：%s\n"
 
+msgid "undefined"
+msgstr "未定义"
+
+msgid "never"
+msgstr "从不"
+
+msgid "marginal"
+msgstr "勉强"
+
+msgid "full"
+msgstr "完全"
+
+msgid "ultimate"
+msgstr "绝对"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+#, fuzzy
+#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
+
+msgid "[ revoked]"
+msgstr "[已吊销]"
+
+msgid "[ expired]"
+msgstr "[已过期]"
+
+msgid "[ unknown]"
+msgstr "[ 未知 ]"
+
+msgid "[  undef ]"
+msgstr "[未定义]"
+
+msgid "[marginal]"
+msgstr "[ 勉强 ]"
+
+msgid "[  full  ]"
+msgstr "[ 完全 ]"
+
+msgid "[ultimate]"
+msgstr "[ 绝对 ]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8460,45 +8509,6 @@ msgstr ""
 #~ msgid ""
 #~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 #~ msgstr "您在 --pgp2 模式下只能够使用 PGP 2.x 样式的密钥来做明文签名\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "10 translator see trustdb.c:uid_trust_string_fixed"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[已吊销]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[已过期]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[ 未知 ]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[未定义]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[ 勉强 ]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[ 完全 ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[ 绝对 ]"
-
-#~ msgid "undefined"
-#~ msgstr "未定义"
-
-#~ msgid "never"
-#~ msgstr "从不"
-
-#~ msgid "marginal"
-#~ msgstr "勉强"
-
-#~ msgid "full"
-#~ msgstr "完全"
-
-#~ msgid "ultimate"
-#~ msgstr "绝对"
 
 #, fuzzy
 #~ msgid "Usage: scdaemon [options] (-h for help)"

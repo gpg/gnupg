@@ -5611,6 +5611,55 @@ msgstr ""
 "nie mo¿na uaktualniæ rekordu wersji bazy zaufania: zapis nie powiód³ siê: "
 "%s\n"
 
+msgid "undefined"
+msgstr "nieokre¶lone"
+
+msgid "never"
+msgstr "nigdy"
+
+msgid "marginal"
+msgstr "marginalne"
+
+msgid "full"
+msgstr "pe³ne"
+
+msgid "ultimate"
+msgstr "absolutne"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+#, fuzzy
+#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "17"
+
+msgid "[ revoked]"
+msgstr "[  uniewa¿niony ]"
+
+msgid "[ expired]"
+msgstr "[przeterminowany]"
+
+msgid "[ unknown]"
+msgstr "[    nieznane   ]"
+
+msgid "[  undef ]"
+msgstr "[  nieokre¶lone ]"
+
+msgid "[marginal]"
+msgstr "[   marginalne  ]"
+
+msgid "[  full  ]"
+msgstr "[      pe³ne    ]"
+
+msgid "[ultimate]"
+msgstr "[    absolutne   ]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8840,45 +8889,6 @@ msgstr ""
 #~ "you can only clearsign with PGP 2.x style keys while in --pgp2 mode\n"
 #~ msgstr ""
 #~ "w trybie --pgp2 mo¿na podpisywaæ tylko za pomoc± kluczy z wersji 2.x\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "17"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[  uniewa¿niony ]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[przeterminowany]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[    nieznane   ]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[  nieokre¶lone ]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[   marginalne  ]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[      pe³ne    ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[    absolutne   ]"
-
-#~ msgid "undefined"
-#~ msgstr "nieokre¶lone"
-
-#~ msgid "never"
-#~ msgstr "nigdy"
-
-#~ msgid "marginal"
-#~ msgstr "marginalne"
-
-#~ msgid "full"
-#~ msgstr "pe³ne"
-
-#~ msgid "ultimate"
-#~ msgstr "absolutne"
 
 #~ msgid " - probably dead - removing lock"
 #~ msgstr " - prawdopodobnie martwy - usuwanie blokady"

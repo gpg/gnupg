@@ -5587,6 +5587,55 @@ msgstr ""
 msgid "unable to update trustdb version record: write failed: %s\n"
 msgstr "kan ikke opdatere trustdb-versionspost: skrivning mislykkedes: %s\n"
 
+msgid "undefined"
+msgstr "ej defineret"
+
+msgid "never"
+msgstr "aldrig"
+
+msgid "marginal"
+msgstr "marginal"
+
+msgid "full"
+msgstr "fuld"
+
+msgid "ultimate"
+msgstr "ultimativ"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+#, fuzzy
+#| msgid "10 translator see trustdb.c:uid_trust_string_fixed"
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "10 oversætter se trustdb.c:uid_trust_string_fixed"
+
+msgid "[ revoked]"
+msgstr "[   tilb.]"
+
+msgid "[ expired]"
+msgstr "[ udløbet]"
+
+msgid "[ unknown]"
+msgstr "[  ukendt]"
+
+msgid "[  undef ]"
+msgstr "[  ej def]"
+
+msgid "[marginal]"
+msgstr "[marginal]"
+
+msgid "[  full  ]"
+msgstr "[  fuld  ]"
+
+msgid "[ultimate]"
+msgstr "[ ultim. ]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8812,45 +8861,6 @@ msgstr ""
 #~ msgstr ""
 #~ "du kan kun clearsign med nøgler i PGP 2.x-stil mens du er i tilstanden --"
 #~ "pgp2\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "10 oversætter se trustdb.c:uid_trust_string_fixed"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[   tilb.]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[ udløbet]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[  ukendt]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[  ej def]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[marginal]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[  fuld  ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[ ultim. ]"
-
-#~ msgid "undefined"
-#~ msgstr "ej defineret"
-
-#~ msgid "never"
-#~ msgstr "aldrig"
-
-#~ msgid "marginal"
-#~ msgstr "marginal"
-
-#~ msgid "full"
-#~ msgstr "fuld"
-
-#~ msgid "ultimate"
-#~ msgstr "ultimativ"
 
 #~ msgid " - probably dead - removing lock"
 #~ msgstr " - sikkert død - fjerner lås"

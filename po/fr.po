@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2014-11-01 19:04-0400\n"
+"PO-Revision-Date: 2015-09-10 16:22+0200\n"
 "Last-Translator: David Prévot <david@tilapin.org>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -5464,6 +5464,53 @@ msgstr ""
 "impossible de mettre à jour l'enregistrement de version de la\n"
 "base de confiance : échec d'écriture : %s\n"
 
+msgid "undefined"
+msgstr "indéfinie"
+
+msgid "never"
+msgstr "jamais"
+
+msgid "marginal"
+msgstr "marginale"
+
+msgid "full"
+msgstr "totale"
+
+msgid "ultimate"
+msgstr "ultime"
+
+#. TRANSLATORS: these strings are similar to those in
+#. trust_value_to_string(), but are a fixed length.  This is needed to
+#. make attractive information listings where columns line up
+#. properly.  The value "10" should be the length of the strings you
+#. choose to translate to.  This is the length in printable columns.
+#. It gets passed to atoi() so everything after the number is
+#. essentially a comment and need not be translated.  Either key and
+#. uid are both NULL, or neither are NULL.
+msgid "10 translator see trust.c:uid_trust_string_fixed"
+msgstr "11 le traducteur a bien lu ce qu'il fallait :)"
+
+msgid "[ revoked]"
+msgstr "[ révoquée]"
+
+msgid "[ expired]"
+msgstr "[ expirée ]"
+
+msgid "[ unknown]"
+msgstr "[ inconnue]"
+
+msgid "[  undef ]"
+msgstr "[indéfinie]"
+
+msgid "[marginal]"
+msgstr "[marginale]"
+
+msgid "[  full  ]"
+msgstr "[  totale ]"
+
+msgid "[ultimate]"
+msgstr "[  ultime ]"
+
 msgid ""
 "the signature could not be verified.\n"
 "Please remember that the signature file (.sig or .asc)\n"
@@ -8370,45 +8417,6 @@ msgstr ""
 
 #~ msgid "deleting secret key not implemented\n"
 #~ msgstr "la suppression de clef secrète n'est pas implémentée\n"
-
-#~ msgid "10 translator see trustdb.c:uid_trust_string_fixed"
-#~ msgstr "11 le traducteur a bien lu ce qu'il fallait :)"
-
-#~ msgid "[ revoked]"
-#~ msgstr "[ révoquée]"
-
-#~ msgid "[ expired]"
-#~ msgstr "[ expirée ]"
-
-#~ msgid "[ unknown]"
-#~ msgstr "[ inconnue]"
-
-#~ msgid "[  undef ]"
-#~ msgstr "[indéfinie]"
-
-#~ msgid "[marginal]"
-#~ msgstr "[marginale]"
-
-#~ msgid "[  full  ]"
-#~ msgstr "[  totale ]"
-
-#~ msgid "[ultimate]"
-#~ msgstr "[  ultime ]"
-
-#~ msgid "undefined"
-#~ msgstr "indéfinie"
-
-#~ msgid "never"
-#~ msgstr "jamais"
-
-#~ msgid "marginal"
-#~ msgstr "marginale"
-
-#~ msgid "full"
-#~ msgstr "totale"
-
-#~ msgid "ultimate"
-#~ msgstr "ultime"
 
 #~ msgid "Usage: scdaemon [options] (-h for help)"
 #~ msgstr "Utilisation : scdaemon [options] (-h pour l'aide)"
