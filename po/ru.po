@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GnuPG 2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-06-25 17:17+0000\n"
+"PO-Revision-Date: 2015-08-12 17:17+0000\n"
 "Last-Translator: Ineiev <ineiev@gnu.org>\n"
 "Language-Team: Russian <gnupg-ru@gnupg.org>\n"
 "Language: ru\n"
@@ -88,7 +88,7 @@ msgstr ""
 "этого сеанса"
 
 msgid "PIN:"
-msgstr ""
+msgstr "PIN:"
 
 msgid "Passphrase:"
 msgstr "Фраза-пароль:"
@@ -656,12 +656,12 @@ msgstr "Сменить фразу-пароль"
 msgid "I'll change it later"
 msgstr "Сменю позже"
 
-#, fuzzy, c-format
-#| msgid "Do you really want to delete the selected keys? (y/N) "
+#, c-format
 msgid ""
 "Do you really want to delete the key identified by keygrip%%0A  %s%%0A  %%C"
 "%%0A?"
-msgstr "Вы действительно хотите удалить выбранные ключи? (y/N) "
+msgstr ""
+"Вы действительно хотите удалить ключ с кодом%%0A  %s%%0A  %%C%%0A?"
 
 msgid "Delete key"
 msgstr "Удалить ключ"
@@ -2932,10 +2932,8 @@ msgstr "сохранить и выйти"
 msgid "show key fingerprint"
 msgstr "показать отпечаток ключа"
 
-#, fuzzy
-#| msgid "Enter the keygrip: "
 msgid "show the keygrip"
-msgstr "Введите код ключа:"
+msgstr "показать код ключа"
 
 msgid "list key and user IDs"
 msgstr "вывести список ключей и ID пользователя"
@@ -3977,15 +3975,12 @@ msgstr "Критическое примечание к подписи: "
 msgid "Signature notation: "
 msgstr "Примечание к подписи: "
 
-#, fuzzy
-#| msgid "1 bad signature\n"
 msgid "1 good signature\n"
-msgstr "1 плохая подпись\n"
+msgstr "1 хорошая подпись\n"
 
-#, fuzzy, c-format
-#| msgid "%d bad signatures\n"
+#, c-format
 msgid "%d good signatures\n"
-msgstr "%d плохих подписей\n"
+msgstr "%d хороших подписей\n"
 
 #, c-format
 msgid "Warning: %lu key(s) skipped due to their large size\n"
