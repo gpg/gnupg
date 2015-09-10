@@ -80,8 +80,11 @@ do_test (int argc, char *argv[])
     ABORT ("1E42B367 has no user id packet");
   uid2 = kb2->pkt->pkt.user_id->name;
 
-  printf ("user id for DBFC6AD9: %s\n", uid1);
-  printf ("user id for 1E42B367: %s\n", uid2);
+  if (verbose)
+    {
+      printf ("user id for DBFC6AD9: %s\n", uid1);
+      printf ("user id for 1E42B367: %s\n", uid2);
+    }
 
   TEST_P ("cache consistency", strcmp (uid1, uid2) != 0);
 }

@@ -18,6 +18,9 @@
  */
 
 #include <config.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "gpg.h"
 
 /* A unit test consists of one or more tests.  Tests can be broken
@@ -37,6 +40,10 @@ static int test_groups_failed;
 static int tests;
 /* The total number of tests that failed.  */
 static int tests_failed;
+
+/* Flag to request verbose diagnostics.  This is set if the envvar
+   "verbose" exists and is not the empty string.  */
+static int verbose;
 
 #define TEST_GROUP(description)	     \
   do {				     \
@@ -92,7 +99,7 @@ static int tests_failed;
     int tests_failed_pre = tests_failed;		\
     CHECK(description, test, expected);			\
     if (tests_failed_pre != tests_failed)		\
-      exit (1);						\
+      exit_tests (1);					\
   } while (0)
 
 /* Call this if something went wrong.  */
@@ -102,19 +109,22 @@ static int tests_failed;
     if (message)				\
       printf (" %s\n", (message));		\
 						\
-    exit(1);					\
+    exit_tests (1);				\
   } while (0)
 
 /* You need to fill this function in.  */
 static void do_test (int argc, char *argv[]);
 
+
+/* Print stats and call the real exit.  If FORCE is set use
+   EXIT_FAILURE even if no test has failed.  */
 static void
-print_results (void)
+exit_tests (int force)
 {
   if (tests_failed == 0)
     {
       printf ("All %d tests passed.\n", tests);
-      exit (0);
+      exit (!!force);
     }
   else
     {
@@ -124,7 +134,6 @@ print_results (void)
 	printf (" (%d of %d groups)",
 		test_groups_failed, test_groups);
       printf ("\n");
-
       exit (1);
     }
 }
@@ -132,10 +141,16 @@ print_results (void)
 int
 main (int argc, char *argv[])
 {
+  const char *s;
+
   (void) test_group;
 
-  do_test (argc, argv);
-  atexit (print_results);
+  s = getenv ("verbose");
+  if (s && *s)
+    verbose = 1;
 
-  return tests_failed == 0;
+  do_test (argc, argv);
+  exit_tests (0);
+
+  return !!tests_failed;
 }
