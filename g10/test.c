@@ -20,6 +20,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "gpg.h"
 
@@ -137,6 +138,35 @@ exit_tests (int force)
       exit (1);
     }
 }
+
+
+/* Prepend FNAME with the srcdir environment variable's value and
+   return a malloced filename.  Caller must release the returned
+   string using test_free.  */
+char *
+prepend_srcdir (const char *fname)
+{
+  static const char *srcdir;
+  char *result;
+
+  if (!srcdir && !(srcdir = getenv ("srcdir")))
+    srcdir = ".";
+
+  result = malloc (strlen (srcdir) + 1 + strlen (fname) + 1);
+  strcpy (result, srcdir);
+  strcat (result, "/");
+  strcat (result, fname);
+  return result;
+}
+
+
+void
+test_free (void *a)
+{
+  if (a)
+    free (a);
+}
+
 
 int
 main (int argc, char *argv[])

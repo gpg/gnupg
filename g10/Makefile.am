@@ -19,9 +19,9 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = options.skel distsigkey.gpg ChangeLog-2011 gpg-w32info.rc \
-	     gpg.w32-manifest.in test.c
+	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx
 
-AM_CPPFLAGS = -I$(top_srcdir)/common -DSOURCE_DIR="\"$(srcdir)\""
+AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 

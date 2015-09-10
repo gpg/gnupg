@@ -30,11 +30,14 @@ do_test (int argc, char *argv[])
   KBNODE kb1, kb2;
   char *uid1;
   char *uid2;
+  char *fname;
 
   (void) argc;
   (void) argv;
 
-  rc = keydb_add_resource (SOURCE_DIR "/t-keydb-keyring.kbx", 0);
+  fname = prepend_srcdir ("t-keydb-keyring.kbx");
+  rc = keydb_add_resource (fname, 0);
+  test_free (fname);
   if (rc)
     ABORT ("Failed to open keyring.");
 
