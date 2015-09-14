@@ -1148,7 +1148,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       for (n=any_skip?0:ndesc; n < ndesc; n++)
         {
           if (desc[n].skipfnc
-              && desc[n].skipfnc (desc[n].skipfncvalue, aki, uid))
+              && desc[n].skipfnc (desc[n].skipfncvalue, aki, uid_no))
             break;
         }
       if (n == ndesc)

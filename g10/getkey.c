@@ -543,10 +543,11 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
 
 
 static int
-skip_unusable (void *dummy, u32 * keyid, PKT_user_id * uid)
+skip_unusable (void *dummy, u32 * keyid, int uid_no)
 {
   int unusable = 0;
   KBNODE keyblock;
+  PKT_public_key *pk;
 
   (void) dummy;
 
@@ -557,28 +558,38 @@ skip_unusable (void *dummy, u32 * keyid, PKT_user_id * uid)
       goto leave;
     }
 
+  pk = keyblock->pkt->pkt.public_key;
+
   /* Is the user ID in question revoked/expired? */
-  if (uid)
+  if (uid_no)
     {
       KBNODE node;
+      int uids_seen = 0;
 
       for (node = keyblock; node; node = node->next)
 	{
 	  if (node->pkt->pkttype == PKT_USER_ID)
 	    {
-	      if (cmp_user_ids (uid, node->pkt->pkt.user_id) == 0
-		  && (node->pkt->pkt.user_id->is_revoked
-		      || node->pkt->pkt.user_id->is_expired))
-		{
-		  unusable = 1;
-		  break;
-		}
+	      PKT_user_id *user_id = node->pkt->pkt.user_id;
+
+	      uids_seen ++;
+	      if (uids_seen != uid_no)
+		continue;
+
+	      if (user_id->is_revoked || user_id->is_expired)
+		unusable = 1;
+
+	      break;
 	    }
 	}
+
+      /* If UID_NO is non-zero, then the keyblock better have at least
+	 that many UIDs.  */
+      assert (uids_seen == uid_no);
     }
 
   if (!unusable)
-    unusable = pk_is_disabled (keyblock->pkt->pkt.public_key);
+    unusable = pk_is_disabled (pk);
 
 leave:
   release_kbnode (keyblock);

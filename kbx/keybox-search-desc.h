@@ -57,7 +57,13 @@ typedef struct gpg_pkt_user_id_s *gpg_pkt_user_id_t;
 struct keydb_search_desc
 {
   KeydbSearchMode mode;
-  int (*skipfnc)(void *, u32 *, gpg_pkt_user_id_t);
+  /* Callback used to filter results.  The first parameter is
+     SKIPFUNCVALUE.  The second is the keyid.  The third is the
+     1-based index of the UID packet that matched the search criteria
+     (or 0, if none).
+
+     Return non-zero if the result should be skipped.  */
+  int (*skipfnc)(void *, u32 *, int);
   void *skipfncvalue;
   const unsigned char *sn;
   int snlen;  /* -1 := sn is a hex string */

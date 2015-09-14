@@ -1010,8 +1010,8 @@ keybox_search (KEYBOX_HANDLE hd, KEYBOX_SEARCH_DESC *desc, size_t ndesc,
 
           if (desc[n].skipfnc
               && blob_get_first_keyid (blob, kid)
-              && desc[n].skipfnc (desc[n].skipfncvalue, kid, NULL))
-            break;
+	      && desc[n].skipfnc (desc[n].skipfncvalue, kid, uid_no))
+		break;
         }
       if (n == ndesc)
         break; /* got it */
