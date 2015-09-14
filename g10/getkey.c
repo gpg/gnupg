@@ -1048,42 +1048,6 @@ get_seckey_default (PKT_public_key *pk)
 }
 
 
-
-/* Search for a key with the given fingerprint.
- * FIXME:
- * We should replace this with the _byname function.  This can be done
- * by creating a userID conforming to the unified fingerprint style.   */
-gpg_error_t
-get_seckey_byfprint (PKT_public_key *pk, const byte * fprint, size_t fprint_len)
-{
-  gpg_error_t err;
-
-  if (fprint_len == 20 || fprint_len == 16)
-    {
-      struct getkey_ctx_s ctx;
-      kbnode_t kb = NULL;
-      kbnode_t found_key = NULL;
-
-      memset (&ctx, 0, sizeof ctx);
-      ctx.exact = 1;
-      ctx.not_allocated = 1;
-      ctx.kr_handle = keydb_new ();
-      ctx.nitems = 1;
-      ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
-	: KEYDB_SEARCH_MODE_FPR20;
-      memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-      err = lookup (&ctx, &kb, &found_key, 1);
-      if (!err && pk)
-	pk_from_block (&ctx, pk, kb, found_key);
-      release_kbnode (kb);
-      getkey_end (&ctx);
-    }
-  else
-    err = gpg_error (GPG_ERR_BUG);
-  return err;
-}
-
-
 /* Search for a secret key with the given fingerprint and return the
    complete keyblock which may have more than only this key.  Return
    an error if no corresponding secret key is available.  */
