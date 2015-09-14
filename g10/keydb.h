@@ -421,9 +421,6 @@ int have_secret_key_with_kid (u32 *keyid);
 
 gpg_error_t get_seckey_default (PKT_public_key *pk);
 
-gpg_error_t get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
-                                      const byte *fprint, size_t fprint_len);
-
 gpg_error_t getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
                             strlist_t names, int want_secret,
                             kbnode_t *ret_keyblock);

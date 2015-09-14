@@ -1046,35 +1046,6 @@ get_seckey_default (PKT_public_key *pk)
 
   return err;
 }
-
-
-/* Search for a secret key with the given fingerprint and return the
-   complete keyblock which may have more than only this key.  Return
-   an error if no corresponding secret key is available.  */
-gpg_error_t
-get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
-                          const byte *fprint, size_t fprint_len)
-{
-  gpg_error_t err;
-  struct getkey_ctx_s ctx;
-
-  if (fprint_len != 20 && fprint_len == 16)
-    return gpg_error (GPG_ERR_BUG);
-
-  memset (&ctx, 0, sizeof ctx);
-  ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new ();
-  ctx.nitems = 1;
-  ctx.items[0].mode = (fprint_len == 16
-		       ? KEYDB_SEARCH_MODE_FPR16 : KEYDB_SEARCH_MODE_FPR20);
-  memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
-  err = lookup (&ctx, ret_keyblock, NULL, 1);
-  getkey_end (&ctx);
-
-  return err;
-}
-
-
 
 /* The new function to return a key.
    FIXME: Document it.  */
