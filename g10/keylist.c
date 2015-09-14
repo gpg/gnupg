@@ -579,7 +579,7 @@ list_one (strlist_t names, int secret, int mark_secret)
   if (rc)
     {
       log_error ("error reading key: %s\n", gpg_strerror (rc));
-      get_pubkey_end (ctx);
+      getkey_end (ctx);
       return;
     }
 
@@ -638,7 +638,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	      release_kbnode (keyblock);
 	    }
 	  while (ctx && !getkey_next (ctx, NULL, &keyblock));
-	  get_pubkey_end (ctx);
+	  getkey_end (ctx);
 	  ctx = NULL;
 	}
     }

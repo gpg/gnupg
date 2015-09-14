@@ -400,7 +400,7 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
       {
 	pk_from_block (&ctx, pk, kb, found_key);
       }
-    get_pubkey_end (&ctx);
+    getkey_end (&ctx);
     release_kbnode (kb);
   }
   if (!rc)
@@ -497,7 +497,7 @@ get_pubkeyblock (u32 * keyid)
   ctx.items[0].u.kid[0] = keyid[0];
   ctx.items[0].u.kid[1] = keyid[1];
   rc = lookup (&ctx, &keyblock, NULL, 0);
-  get_pubkey_end (&ctx);
+  getkey_end (&ctx);
 
   return rc ? NULL : keyblock;
 }
@@ -532,7 +532,7 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
     {
       pk_from_block (&ctx, pk, keyblock, found_key);
     }
-  get_pubkey_end (&ctx);
+  getkey_end (&ctx);
   release_kbnode (keyblock);
 
   if (!err)
@@ -694,7 +694,7 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 	  *ret_kdbhd = ctx->kr_handle;
 	  ctx->kr_handle = NULL;
 	}
-      get_pubkey_end (ctx);
+      getkey_end (ctx);
     }
 
   return rc;
@@ -792,7 +792,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      did_key_byname = 1;
 	      if (retctx)
 		{
-		  get_pubkey_end (*retctx);
+		  getkey_end (*retctx);
 		  *retctx = NULL;
 		}
 	      add_to_strlist (&namelist, name);
@@ -892,7 +892,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    {
 	      if (retctx)
 		{
-		  get_pubkey_end (*retctx);
+		  getkey_end (*retctx);
 		  *retctx = NULL;
 		}
 	      rc = key_byname (anylocalfirst ? retctx : NULL,
@@ -917,19 +917,12 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 
   if (rc && retctx)
     {
-      get_pubkey_end (*retctx);
+      getkey_end (*retctx);
       *retctx = NULL;
     }
 
   free_strlist (namelist);
   return rc;
-}
-
-
-void
-get_pubkey_end (GETKEY_CTX ctx)
-{
-  getkey_end (ctx);
 }
 
 
@@ -956,7 +949,7 @@ get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr)
   if (!err && pk)
     pk_from_block (&ctx, pk, kb, found_key);
   release_kbnode (kb);
-  get_pubkey_end (&ctx);
+  getkey_end (&ctx);
 
   return err;
 }
@@ -1007,7 +1000,7 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
             }
         }
       release_kbnode (kb);
-      get_pubkey_end (&ctx);
+      getkey_end (&ctx);
     }
   else
     rc = GPG_ERR_GENERAL; /* Oops */
@@ -1084,7 +1077,7 @@ get_keyblock_byfprint (KBNODE * ret_keyblock, const byte * fprint,
                            : KEYDB_SEARCH_MODE_FPR20);
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
       rc = lookup (&ctx, ret_keyblock, NULL, 0);
-      get_pubkey_end (&ctx);
+      getkey_end (&ctx);
     }
   else
     rc = GPG_ERR_GENERAL; /* Oops */
@@ -1149,7 +1142,7 @@ get_seckey_byfprint (PKT_public_key *pk, const byte * fprint, size_t fprint_len)
       if (!err && pk)
 	pk_from_block (&ctx, pk, kb, found_key);
       release_kbnode (kb);
-      get_pubkey_end (&ctx);
+      getkey_end (&ctx);
     }
   else
     err = gpg_error (GPG_ERR_BUG);
@@ -1178,7 +1171,7 @@ get_seckeyblock_byfprint (kbnode_t *ret_keyblock,
 		       ? KEYDB_SEARCH_MODE_FPR16 : KEYDB_SEARCH_MODE_FPR20);
   memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
   err = lookup (&ctx, ret_keyblock, NULL, 1);
-  get_pubkey_end (&ctx);
+  getkey_end (&ctx);
 
   return err;
 }
