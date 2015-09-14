@@ -962,14 +962,12 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
       memcpy (ctx.items[0].u.fpr, fprint, fprint_len);
       rc = lookup (&ctx, &kb, &found_key, 0);
       if (!rc && pk)
-        {
-          pk_from_block (&ctx, pk, kb, found_key);
-          if (r_keyblock)
-            {
-              *r_keyblock = kb;
-              kb = NULL;
-            }
-        }
+	pk_from_block (&ctx, pk, kb, found_key);
+      if (!rc && r_keyblock)
+	{
+	  *r_keyblock = kb;
+	  kb = NULL;
+	}
       release_kbnode (kb);
       getkey_end (&ctx);
     }
