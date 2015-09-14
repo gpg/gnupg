@@ -127,7 +127,7 @@ show_revocation_reason( PKT_public_key *pk, int mode )
 
     /* get the keyblock */
     fingerprint_from_pk( pk, fingerprint, &fingerlen );
-    rc = get_keyblock_byfprint( &keyblock, fingerprint, fingerlen );
+    rc = get_pubkey_byfprint(NULL, &keyblock, fingerprint, fingerlen);
     if( rc ) { /* that should never happen */
 	log_debug( "failed to get the keyblock\n");
 	return;
