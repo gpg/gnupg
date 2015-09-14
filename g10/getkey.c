@@ -926,35 +926,6 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 }
 
 
-/* Search for a key with the given standard fingerprint.  In contrast
- * to get_pubkey_byfprint we assume a right padded fingerprint of the
- * standard length.  PK may be NULL to only put the result into the
- * internal caches.  */
-gpg_error_t
-get_pubkey_byfpr (PKT_public_key *pk, const byte *fpr)
-{
-  gpg_error_t err;
-  struct getkey_ctx_s ctx;
-  kbnode_t kb = NULL;
-  kbnode_t found_key = NULL;
-
-  memset (&ctx, 0, sizeof ctx);
-  ctx.exact = 1;
-  ctx.not_allocated = 1;
-  ctx.kr_handle = keydb_new ();
-  ctx.nitems = 1;
-  ctx.items[0].mode = KEYDB_SEARCH_MODE_FPR;
-  memcpy (ctx.items[0].u.fpr, fpr, MAX_FINGERPRINT_LEN);
-  err = lookup (&ctx, &kb, &found_key, 0);
-  if (!err && pk)
-    pk_from_block (&ctx, pk, kb, found_key);
-  release_kbnode (kb);
-  getkey_end (&ctx);
-
-  return err;
-}
-
-
 /* Search for a key with the given fingerprint.  The caller need to
  * prove an allocated public key object at PK.  If R_KEYBLOCK is not
  * NULL the entire keyblock is stored there and the caller needs to
@@ -2897,7 +2868,8 @@ get_user_id_byfpr (const byte *fpr, size_t *rn)
 	    }
 	}
     }
-  while (++pass < 2 && !get_pubkey_byfpr (NULL, fpr));
+  while (++pass < 2
+	 && !get_pubkey_byfprint (NULL, NULL, fpr, MAX_FINGERPRINT_LEN));
   p = xstrdup (user_id_not_found_utf8 ());
   *rn = strlen (p);
   return p;
