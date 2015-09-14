@@ -186,10 +186,6 @@ static struct debug_flags_s debug_flags [] =
 /* The timer tick interval used by the idle task.  */
 #define TIMERTICK_INTERVAL_SEC     (1)
 
-
-/* Global variable to keep an error count. */
-int g13_errors_seen = 0;
-
 /* It is possible that we are currently running under setuid permissions.  */
 static int maybe_setuid = 1;
 
@@ -204,11 +200,14 @@ static int shutdown_pending;
 static npth_t idle_task_thread;
 
 
+/* The container type as specified on the command line.  */
+static int cmdline_conttype;
+
+
 
 static void set_cmd (enum cmd_and_opt_values *ret_cmd,
                      enum cmd_and_opt_values new_cmd );
 
-static void emergency_cleanup (void);
 static void start_idle_task (void);
 static void join_idle_task (void);
 
@@ -374,7 +373,7 @@ main ( int argc, char **argv)
 
   may_coredump = disable_core_dumps ();
 
-  gnupg_init_signals (0, emergency_cleanup);
+  g13_init_signals ();
 
   dotlock_create (NULL, 0); /* Register locking cleanup.  */
 
@@ -646,13 +645,8 @@ main ( int argc, char **argv)
   /* Setup the debug flags for all subsystems.  */
   set_debug ();
 
-  /* Install a regular exit handler to make real sure that the secure
-     memory gets wiped out.  */
-  if (atexit (emergency_cleanup))
-    {
-      log_error ("atexit failed\n");
-      g13_exit (2);
-    }
+  /* Install emergency cleanup handler.  */
+  g13_install_emergency_cleanup ();
 
   /* Terminate if we found any error until now.  */
   if (log_get_errorcount(0))
@@ -761,36 +755,11 @@ main ( int argc, char **argv)
 }
 
 
-/* Note: This function is used by signal handlers!. */
-static void
-emergency_cleanup (void)
-{
-  gcry_control (GCRYCTL_TERM_SECMEM );
-}
-
-
-void
-g13_exit (int rc)
-{
-  gcry_control (GCRYCTL_UPDATE_RANDOM_SEED_FILE);
-  if (opt.debug & DBG_MEMSTAT_VALUE)
-    {
-      gcry_control( GCRYCTL_DUMP_MEMORY_STATS );
-      gcry_control( GCRYCTL_DUMP_RANDOM_STATS );
-    }
-  if (opt.debug)
-    gcry_control (GCRYCTL_DUMP_SECMEM_STATS );
-  emergency_cleanup ();
-  rc = rc? rc : log_get_errorcount(0)? 2 : g13_errors_seen? 1 : 0;
-  exit (rc);
-}
-
-
 /* Store defaults into the per-connection CTRL object.  */
 void
 g13_init_default_ctrl (struct server_control_s *ctrl)
 {
-  ctrl->conttype = CONTTYPE_ENCFS;
+  ctrl->conttype = cmdline_conttype? cmdline_conttype : CONTTYPE_ENCFS;
 }
 
 

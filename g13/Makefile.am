@@ -30,6 +30,7 @@ AM_CFLAGS =  $(LIBGCRYPT_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 
 g13_SOURCES = \
 	g13.c g13.h \
+	g13-common.c g13-common.h \
 	keyblob.h \
 	utils.c utils.h \
 	server.c server.h \

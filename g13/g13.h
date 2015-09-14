@@ -20,62 +20,8 @@
 #ifndef G13_H
 #define G13_H
 
-#ifdef GPG_ERR_SOURCE_DEFAULT
-#error GPG_ERR_SOURCE_DEFAULT already defined
-#endif
-#define GPG_ERR_SOURCE_DEFAULT  GPG_ERR_SOURCE_G13
-#include <gpg-error.h>
+#include "g13-common.h"
 
-#include "../common/util.h"
-#include "../common/status.h"
-#include "../common/session-env.h"
-
-/* A large struct named "opt" to keep global flags.  */
-struct
-{
-  unsigned int debug; /* Debug flags (DBG_foo_VALUE).  */
-  int verbose;        /* Verbosity level.  */
-  int quiet;          /* Be as quiet as possible.  */
-  int dry_run;        /* Don't change any persistent data.  */
-
-  const char *homedir;         /* Configuration directory name.  */
-  const char *config_filename; /* Name of the used config file.  */
-
-  /* Filename of the AGENT program.  */
-  const char *agent_program;
-
-  /* Filename of the GPG program.  Unless set via an program option it
-     is initialzed at the first engine startup to the standard gpg
-     filename.  */
-  const char *gpg_program;
-
-  /* Environment variables passed along to the engine.  */
-  char *display;
-  char *ttyname;
-  char *ttytype;
-  char *lc_ctype;
-  char *lc_messages;
-  char *xauthority;
-  char *pinentry_user_data;
-  session_env_t session_env;
-
-  /* Name of the output file - FIXME: what is this?  */
-  const char *outfile;
-
-} opt;
-
-
-/* Debug values and macros.  */
-#define DBG_MOUNT_VALUE     1	/* Debug mount or device stuff. */
-#define DBG_CRYPTO_VALUE    4	/* Debug low level crypto.  */
-#define DBG_MEMORY_VALUE   32	/* Debug memory allocation stuff.  */
-#define DBG_MEMSTAT_VALUE 128	/* Show memory statistics.  */
-#define DBG_IPC_VALUE    1024   /* Debug assuan communication.  */
-
-#define DBG_MOUNT    (opt.debug & DBG_MOUNT_VALUE)
-#define DBG_CRYPTO   (opt.debug & DBG_CRYPTO_VALUE)
-#define DBG_MEMORY   (opt.debug & DBG_MEMORY_VALUE)
-#define DBG_IPC      (opt.debug & DBG_IPC_VALUE)
 
 /* Forward declaration for an object defined in server.c.  */
 struct server_local_s;
@@ -100,13 +46,7 @@ struct server_control_s
 };
 
 
-
 /*-- g13.c --*/
-void g13_exit (int rc);
 void g13_init_default_ctrl (struct server_control_s *ctrl);
-
-/*-- server.c (commonly used, thus declared here) --*/
-gpg_error_t g13_status (ctrl_t ctrl, int no, ...) GPGRT_ATTR_SENTINEL(0);
-
 
 #endif /*G13_H*/

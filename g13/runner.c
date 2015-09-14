@@ -470,7 +470,7 @@ runner_cancel (runner_t runner)
     {
       runner->canceled = 1;  /* Mark that we canceled this one already.  */
       /* FIXME: This does only work if the thread emits status lines.  We
-         need to change the trhead to wait on an event.  */
+         need to change the thread to wait on an event.  */
       runner->cancel_flag = 1;
       /* For now we use the brutal way and kill the process. */
       gnupg_kill_process (runner->pid);
