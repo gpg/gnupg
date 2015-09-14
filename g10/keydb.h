@@ -419,7 +419,7 @@ int get_pubkey_byfprint_fast (PKT_public_key *pk,
    whether there is some secret key with the specified key id.  */
 int have_secret_key_with_kid (u32 *keyid);
 
-gpg_error_t get_seckey_byname (PKT_public_key *pk, const char *name);
+gpg_error_t get_seckey_default (PKT_public_key *pk);
 
 gpg_error_t get_seckey_byfprint (PKT_public_key *pk,
                                  const byte *fprint, size_t fprint_len);

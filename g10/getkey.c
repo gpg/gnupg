@@ -1029,19 +1029,14 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
  * the default key.  This functions checks that a corresponding secret
  * key is available.  With no secret key it does not succeeed. */
 gpg_error_t
-get_seckey_byname (PKT_public_key *pk, const char *name)
+get_seckey_default (PKT_public_key *pk)
 {
   gpg_error_t err;
   strlist_t namelist = NULL;
   int include_unusable = 1;
 
-  /* If we have no name, try to use the default secret key.  If we
-     have no default, we'll use the first usable one. */
-
-  if (!name && opt.def_secret_key && *opt.def_secret_key)
+  if (opt.def_secret_key && *opt.def_secret_key)
     add_to_strlist (&namelist, opt.def_secret_key);
-  else if (name)
-    add_to_strlist (&namelist, name);
   else
     include_unusable = 0;
 

@@ -714,7 +714,7 @@ default_recipient(void)
     if( !opt.def_recipient_self )
 	return NULL;
     pk = xmalloc_clear( sizeof *pk );
-    i = get_seckey_byname (pk, NULL);
+    i = get_seckey_default (pk);
     if( i ) {
 	free_public_key( pk );
 	return NULL;
