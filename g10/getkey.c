@@ -926,12 +926,6 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 }
 
 
-int
-get_pubkey_next (GETKEY_CTX ctx, PKT_public_key * pk, KBNODE * ret_keyblock)
-{
-  return gpg_err_code (getkey_next (ctx, pk, ret_keyblock));
-}
-
 void
 get_pubkey_end (GETKEY_CTX ctx)
 {

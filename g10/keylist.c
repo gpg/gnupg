@@ -637,7 +637,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	      list_keyblock (keyblock, 0, 0, opt.fingerprint, &listctx);
 	      release_kbnode (keyblock);
 	    }
-	  while (ctx && !get_pubkey_next (ctx, NULL, &keyblock));
+	  while (ctx && !getkey_next (ctx, NULL, &keyblock));
 	  get_pubkey_end (ctx);
 	  ctx = NULL;
 	}
