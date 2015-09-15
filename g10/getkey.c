@@ -2942,17 +2942,20 @@ have_secret_key_with_kid (u32 *keyid)
       for (node = keyblock; node; node = node->next)
 	{
           /* Bit 0 of the flags is set if the search found the key
-             using that key or subkey.  */
+             using that key or subkey.  Note: a search will only ever
+             match a single key or subkey.  */
 	  if ((node->flag & 1))
             {
               assert (node->pkt->pkttype == PKT_PUBLIC_KEY
                       || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
-              if (!agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
-                {
-                  result = 1;
-                  break;
-                }
+              if (agent_probe_secret_key (NULL, node->pkt->pkt.public_key) == 0)
+		/* Not available.  */
+		result = 1;
+	      else
+		result = 0;
+
+	      break;
 	    }
 	}
       release_kbnode (keyblock);
