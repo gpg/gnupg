@@ -7,9 +7,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU gnupg 2.0.28\n"
+"Project-Id-Version: GNU gnupg 2.0.29\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-09-10 11:02+0900\n"
+"PO-Revision-Date: 2015-09-15 15:14+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -5081,7 +5081,7 @@ msgid "undefined"
 msgstr "未定義"
 
 msgid "never"
-msgstr "無期限"
+msgstr "断じてなし"
 
 msgid "marginal"
 msgstr "まぁまぁ"
