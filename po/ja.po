@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.6\n"
+"Project-Id-Version: gnupg 2.1.8\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-07-02 12:21+0900\n"
+"PO-Revision-Date: 2015-09-15 15:12+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -2894,10 +2894,8 @@ msgstr "保存して終了"
 msgid "show key fingerprint"
 msgstr "鍵のフィンガープリントを表示"
 
-#, fuzzy
-#| msgid "Enter the keygrip: "
 msgid "show the keygrip"
-msgstr "keygripを入力: "
+msgstr "keygripを表示"
 
 msgid "list key and user IDs"
 msgstr "鍵とユーザIDの一覧"
@@ -5206,21 +5204,19 @@ msgstr ""
 "た: %s\n"
 
 msgid "undefined"
-msgstr ""
+msgstr "未定義"
 
-#, fuzzy
-#| msgid "never     "
 msgid "never"
-msgstr "無期限    "
+msgstr "断じてなし"
 
 msgid "marginal"
-msgstr ""
+msgstr "まぁまぁ"
 
 msgid "full"
-msgstr ""
+msgstr "充分"
 
 msgid "ultimate"
-msgstr ""
+msgstr "究極"
 
 #. TRANSLATORS: these strings are similar to those in
 #. trust_value_to_string(), but are a fixed length.  This is needed to
@@ -5231,34 +5227,28 @@ msgstr ""
 #. essentially a comment and need not be translated.  Either key and
 #. uid are both NULL, or neither are NULL.
 msgid "10 translator see trust.c:uid_trust_string_fixed"
-msgstr ""
+msgstr "10 translator see trust.c:uid_trust_string_fixed"
 
-#, fuzzy
-#| msgid "revoked"
 msgid "[ revoked]"
-msgstr "失効"
+msgstr "[  失効  ]"
 
-#, fuzzy
-#| msgid "expired"
 msgid "[ expired]"
-msgstr "期限切れ"
+msgstr "[期限切れ]"
 
-#, fuzzy
-#| msgid "unknown"
 msgid "[ unknown]"
-msgstr "不明の"
+msgstr "[ 不明 ]"
 
 msgid "[  undef ]"
-msgstr ""
+msgstr "[ 未定義 ]"
 
 msgid "[marginal]"
-msgstr ""
+msgstr "[まぁまぁ]"
 
 msgid "[  full  ]"
-msgstr ""
+msgstr "[ 充分 ]"
 
 msgid "[ultimate]"
-msgstr ""
+msgstr "[ 究極 ]"
 
 msgid ""
 "the signature could not be verified.\n"
