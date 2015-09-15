@@ -2437,7 +2437,8 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
          then it would be harder to report the number of skipped
          legacy keys during import. */
       if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
-          && !(ctx->nitems && ctx->items->mode == KEYDB_SEARCH_MODE_FIRST)
+          && !(ctx->nitems && (ctx->items->mode == KEYDB_SEARCH_MODE_FIRST
+			       || ctx->items->mode == KEYDB_SEARCH_MODE_NEXT))
           && !search_modes_are_fingerprint (ctx))
         continue;
       if (rc)
