@@ -562,7 +562,11 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   release_kbnode (keyblock);
 
   if (!err)
-    err = agent_probe_secret_key (/*ctrl*/NULL, pk);
+    {
+      err = agent_probe_secret_key (/*ctrl*/NULL, pk);
+      if (err)
+	release_public_key_parts (pk);
+    }
 
   return err;
 }
