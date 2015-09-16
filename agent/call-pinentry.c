@@ -475,6 +475,21 @@ start_pinentry (ctrl_t ctrl)
       }
   }
 
+  /* Tell the pinentry that we would prefer that the given character
+     is used as the invisible character by the entry widget.  */
+  if (opt.pinentry_invisible_char)
+    {
+      char *optstr;
+      if ((optstr = xtryasprintf ("OPTION invisible-char=%s",
+                                  opt.pinentry_invisible_char)))
+        {
+          assuan_transact (entry_ctx, optstr, NULL, NULL, NULL, NULL, NULL,
+                           NULL);
+          /* We ignore errors because this is just a fancy thing and
+             older pinentries do not support this feature.  */
+          xfree (optstr);
+        }
+    }
 
   /* Tell the pinentry the name of a file it shall touch after having
      messed with the tty.  This is optional and only supported by

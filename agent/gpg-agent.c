@@ -92,6 +92,7 @@ enum cmd_and_opt_values
 
   oPinentryProgram,
   oPinentryTouchFile,
+  oPinentryInvisibleChar,
   oDisplay,
   oTTYname,
   oTTYtype,
@@ -166,6 +167,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPinentryProgram, "pinentry-program",
                 /* */             N_("|PGM|use PGM as the PIN-Entry program")),
   ARGPARSE_s_s (oPinentryTouchFile, "pinentry-touch-file", "@"),
+  ARGPARSE_s_s (oPinentryInvisibleChar, "pinentry-invisible-char", "@"),
   ARGPARSE_s_s (oScdaemonProgram, "scdaemon-program",
                 /* */             N_("|PGM|use PGM as the SCdaemon program") ),
   ARGPARSE_s_n (oDisableScdaemon, "disable-scdaemon",
@@ -576,6 +578,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
       opt.debug_pinentry = 0;
       opt.pinentry_program = NULL;
       opt.pinentry_touch_file = NULL;
+      xfree (opt.pinentry_invisible_char);
+      opt.pinentry_invisible_char = NULL;
       opt.scdaemon_program = NULL;
       opt.def_cache_ttl = DEFAULT_CACHE_TTL;
       opt.def_cache_ttl_ssh = DEFAULT_CACHE_TTL_SSH;
@@ -624,6 +628,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
 
     case oPinentryProgram: opt.pinentry_program = pargs->r.ret_str; break;
     case oPinentryTouchFile: opt.pinentry_touch_file = pargs->r.ret_str; break;
+    case oPinentryInvisibleChar:
+      xfree (opt.pinentry_invisible_char);
+      opt.pinentry_invisible_char = xtrystrdup (pargs->r.ret_str); break;
+      break;
     case oScdaemonProgram: opt.scdaemon_program = pargs->r.ret_str; break;
     case oDisableScdaemon: opt.disable_scdaemon = 1; break;
     case oDisableCheckOwnSocket: disable_check_own_socket = 1; break;

@@ -86,9 +86,13 @@ struct
 
   int no_grab;         /* Don't let the pinentry grab the keyboard */
 
-  /* The name of the file pinentry shall tocuh before exiting.  If
-     this is not set the filoe name of the standard socket is used. */
+  /* The name of the file pinentry shall touch before exiting.  If
+     this is not set the file name of the standard socket is used. */
   const char *pinentry_touch_file;
+
+  /* A string where the first character is used by the pinentry as a
+     custom invisible character.  */
+  char *pinentry_invisible_char;
 
   /* The default and maximum TTL of cache entries. */
   unsigned long def_cache_ttl;     /* Default. */

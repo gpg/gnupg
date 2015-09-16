@@ -396,6 +396,12 @@ user may not bypass this check.
 @opindex enable-passphrase-history
 This option does nothing yet.
 
+@item --pinentry-invisible-char @var{char}
+@opindex pinentry-invisible-char
+This option asks the Pinentry to use @var{char} for displaying hidden
+characters.  @var{char} must be one character UTF-8 string.  A
+Pinentry may or may not honor this request.
+
 @item --pinentry-program @var{filename}
 @opindex pinentry-program
 Use program @var{filename} as the PIN entry.  The default is
@@ -703,7 +709,10 @@ started with a configuration file, the configuration file is read
 again.  Only certain options are honored: @code{quiet},
 @code{verbose}, @code{debug}, @code{debug-all}, @code{debug-level},
 @code{debug-pinentry},
-@code{no-grab}, @code{pinentry-program}, @code{default-cache-ttl},
+@code{no-grab},
+@code{pinentry-program},
+@code{pinentry-invisible-char},
+@code{default-cache-ttl},
 @code{max-cache-ttl}, @code{ignore-cache-for-signing},
 @code{no-allow-external-cache}, @code{allow-emacs-pinentry},
 @code{no-allow-mark-trusted}, @code{disable-scdaemon}, and
