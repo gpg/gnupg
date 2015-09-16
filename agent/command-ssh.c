@@ -580,8 +580,9 @@ stream_read_string (estream_t stream, unsigned int secure,
 
 
 /* Read a binary string from STREAM and store it as an opaque MPI at
-   R_MPI.  Depending on SECURE use secure memory.  If the string is
-   too large for key material return an error.  */
+   R_MPI, adding 0x40 (this is the prefix for EdDSA key in OpenPGP).
+   Depending on SECURE use secure memory.  If the string is too large
+   for key material return an error.  */
 static gpg_error_t
 stream_read_blob (estream_t stream, unsigned int secure, gcry_mpi_t *r_mpi)
 {
@@ -607,9 +608,9 @@ stream_read_blob (estream_t stream, unsigned int secure, gcry_mpi_t *r_mpi)
 
   /* Allocate space.  */
   if (secure)
-    buffer = xtrymalloc_secure (length? length:1);
+    buffer = xtrymalloc_secure (length+1);
   else
-    buffer = xtrymalloc (length?length:1);
+    buffer = xtrymalloc (length+1);
   if (!buffer)
     {
       err = gpg_error_from_syserror ();
@@ -617,11 +618,12 @@ stream_read_blob (estream_t stream, unsigned int secure, gcry_mpi_t *r_mpi)
     }
 
   /* Read data.  */
-  err = stream_read_data (stream, buffer, length);
+  err = stream_read_data (stream, buffer + 1, length);
   if (err)
     goto leave;
 
-  *r_mpi = gcry_mpi_set_opaque (NULL, buffer, 8*length);
+  buffer[0] = 0x40;
+  *r_mpi = gcry_mpi_set_opaque (NULL, buffer, 8*(length+1));
   buffer = NULL;
 
  leave:
