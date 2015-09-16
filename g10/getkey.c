@@ -592,8 +592,12 @@ skip_unusable (void *dummy, u32 * keyid, int uid_no)
 
   pk = keyblock->pkt->pkt.public_key;
 
-  /* Is the user ID in question revoked/expired? */
-  if (uid_no)
+  /* Is the key revoked or expired?  */
+  if (pk->flags.revoked || pk->has_expired)
+    unusable = 1;
+
+  /* Is the user ID in question revoked or expired? */
+  if (!unusable && uid_no)
     {
       KBNODE node;
       int uids_seen = 0;
