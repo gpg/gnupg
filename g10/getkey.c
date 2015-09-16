@@ -437,7 +437,10 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
 
     for (ce = pk_cache; ce; ce = ce->next)
       {
-	if (ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1])
+	if (ce->keyid[0] == keyid[0] && ce->keyid[1] == keyid[1]
+	    /* Only consider primary keys.  */
+	    && ce->pk->keyid[0] == ce->pk->main_keyid[0]
+	    && ce->pk->keyid[1] == ce->pk->main_keyid[1])
 	  {
 	    if (pk)
 	      copy_public_key (pk, ce->pk);
@@ -463,9 +466,10 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
     }
 
   assert (keyblock && keyblock->pkt
-          && (keyblock->pkt->pkttype == PKT_PUBLIC_KEY
-              || keyblock->pkt->pkttype == PKT_PUBLIC_SUBKEY));
+          && keyblock->pkt->pkttype == PKT_PUBLIC_KEY);
 
+  /* We return the primary key.  If KEYID matched a subkey, then we
+     return an error.  */
   keyid_from_pk (keyblock->pkt->pkt.public_key, pkid);
   if (keyid[0] == pkid[0] && keyid[1] == pkid[1])
     copy_public_key (pk, keyblock->pkt->pkt.public_key);
