@@ -1769,7 +1769,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    int n1;
 
 	    if (!(n1 = count_selected_uids (keyblock)))
-	      tty_printf (_("You must select at least one user ID (use the 'uid' command).\n"));
+              {
+                tty_printf (_("You must select at least one user ID.\n"));
+                if (!opt.expert)
+                  tty_printf (_("(Use the '%s' command.)\n"), "uid");
+              }
 	    else if (real_uids_left (keyblock) < 1)
 	      tty_printf (_("You can't delete the last user ID!\n"));
 	    else if (cpr_get_answer_is_yes
@@ -1789,7 +1793,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    int n1;
 
 	    if (!(n1 = count_selected_uids (keyblock)))
-	      tty_printf (_("You must select at least one user ID (use the 'uid' command).\n"));
+              {
+                tty_printf (_("You must select at least one user ID.\n"));
+                if (!opt.expert)
+                  tty_printf (_("(Use the '%s' command.)\n"), "uid");
+              }
 	    else if (menu_delsig (keyblock))
 	      {
 		/* No redisplay here, because it may scroll away some
@@ -1949,7 +1957,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    int n1;
 
 	    if (!(n1 = count_selected_keys (keyblock)))
-	      tty_printf (_("You must select at least one key (use the 'key' command).\n"));
+              {
+                tty_printf (_("You must select at least one key.\n"));
+                if (!opt.expert)
+                  tty_printf (_("(Use the '%s' command.)\n"), "key");
+              }
 	    else if (!cpr_get_answer_is_yes
                      ("keyedit.remove.subkey.okay",
                       n1 > 1 ? _("Do you really want to delete the "
@@ -1985,7 +1997,11 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    int n1;
 
 	    if (!(n1 = count_selected_uids (keyblock)))
-	      tty_printf (_("You must select at least one user ID (use the 'uid' command).\n"));
+              {
+                tty_printf (_("You must select at least one user ID.\n"));
+                if (!opt.expert)
+                  tty_printf (_("(Use the '%s' command.)\n"), "uid");
+              }
 	    else if (cpr_get_answer_is_yes
                      ("keyedit.revoke.uid.okay",
                       n1 > 1 ? _("Really revoke all selected user IDs? (y/N) ")
