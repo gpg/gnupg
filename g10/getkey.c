@@ -1536,7 +1536,15 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 
   signode = NULL;
   sigdate = 0; /* Helper variable to find the latest signature.  */
-  for (k = keyblock; k && k->pkt->pkttype != PKT_USER_ID; k = k->next)
+
+  /* According to Section 11.1 of RFC 4880, the public key comes first
+     and is immediately followed by any signature packets that modify
+     it.  */
+  for (k = keyblock;
+       k && k->pkt->pkttype != PKT_USER_ID
+	 && k->pkt->pkttype != PKT_ATTRIBUTE
+	 && k->pkt->pkttype != PKT_PUBLIC_SUBKEY;
+       k = k->next)
     {
       if (k->pkt->pkttype == PKT_SIGNATURE)
 	{
@@ -1694,11 +1702,16 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
       }
 
   /* Second pass: Look at the self-signature of all user IDs.  */
+
+  /* According to RFC 4880 section 11.1, user id and attribute packets
+     are in the second section, after the public key packet and before
+     the subkey packets.  */
   signode = uidnode = NULL;
   sigdate = 0; /* Helper variable to find the latest signature in one UID. */
   for (k = keyblock; k && k->pkt->pkttype != PKT_PUBLIC_SUBKEY; k = k->next)
     {
-      if (k->pkt->pkttype == PKT_USER_ID)
+      if (k->pkt->pkttype == PKT_USER_ID || k->pkt->pkttype == PKT_ATTRIBUTE)
+	/* New user id packet.  */
 	{
 	  if (uidnode && signode)
 	    /* Apply the data from the most recent self-signed packet
@@ -1707,7 +1720,12 @@ merge_selfsigs_main (KBNODE keyblock, int *r_revoked,
 	      fixup_uidnode (uidnode, signode, keytimestamp);
 	      pk->flags.valid = 1;
 	    }
-	  uidnode = k;
+	  /* Clear SIGNODE.  The only relevant self-signed data for
+	     UIDNODE follows it.  */
+	  if (k->pkt->pkttype == PKT_USER_ID)
+	    uidnode = k;
+	  else
+	    uidnode = NULL;
 	  signode = NULL;
 	  sigdate = 0;
 	}
