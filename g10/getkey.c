@@ -2413,19 +2413,32 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 
   latest_date = 0;
   latest_key = NULL;
-  /* Do not look at subkeys if a certification key is requested.  */
-  if ((!foundk || foundk->pkt->pkttype == PKT_PUBLIC_SUBKEY) && !req_prim)
+  /* Set latest_key to the latest (the one with the most recent
+     timestamp) good (valid, not revoked, not expired, etc.) subkey.
+
+     Don't bother if we are only looking for a primary key or we need
+     an exact match and the exact match is not a subkey.  */
+  if (req_prim || (foundk && foundk->pkt->pkttype != PKT_PUBLIC_SUBKEY))
+    ;
+  else
     {
       KBNODE nextk;
+
       /* Either start a loop or check just this one subkey.  */
       for (k = foundk ? foundk : keyblock; k; k = nextk)
 	{
 	  PKT_public_key *pk;
-	  nextk = k->next;
+
+	  if (foundk)
+	    /* If FOUNDK is not NULL, then only consider that exact
+	       key, i.e., don't iterate.  */
+	    nextk = NULL;
+	  else
+	    nextk = k->next;
+
 	  if (k->pkt->pkttype != PKT_PUBLIC_SUBKEY)
 	    continue;
-	  if (foundk)
-	    nextk = NULL; /* what a hack */
+
 	  pk = k->pkt->pkt.public_key;
 	  if (DBG_LOOKUP)
 	    log_debug ("\tchecking subkey %08lX\n",
@@ -2477,9 +2490,17 @@ finish_lookup (GETKEY_CTX ctx, KBNODE keyblock)
 	}
     }
 
-  /* Okay now try the primary key unless we want an exact
-   * key ID match on a subkey */
-  if ((!latest_key && !(ctx->exact && foundk != keyblock)) || req_prim)
+  /* Check if the primary key is ok (valid, not revoke, not expire,
+     matches requested usage) if:
+
+       - we didn't find an appropriate subkey and we're not doing an
+         exact search,
+
+       - we're doing an exact match and the exact match was the
+         primary key, or,
+
+       - we're just considering the primary key.  */
+  if ((!latest_key && !ctx->exact) || foundk == keyblock || req_prim)
     {
       PKT_public_key *pk;
       if (DBG_LOOKUP && !foundk && !req_prim)
