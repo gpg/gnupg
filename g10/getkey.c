@@ -2893,20 +2893,6 @@ parse_auto_key_locate (char *options)
 }
 
 
-/* Return true if a secret key or secret subkey is available for one
-   of the public keys in KEYBLOCK.  */
-int
-have_any_secret_key (ctrl_t ctrl, kbnode_t keyblock)
-{
-  kbnode_t node;
-
-  for (node = keyblock; node; node = node->next)
-    if ((node->pkt->pkttype == PKT_PUBLIC_KEY
-         || node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
-        && !agent_probe_secret_key (ctrl, node->pkt->pkt.public_key))
-      return 1;
-  return 0;
-}
 
 
 /* Return true if a secret key is available for the public key with
