@@ -107,6 +107,9 @@
 */
 #define CCID_MAX_BUF (2048+7+10)
 
+/* CCID command timeout.  OpenPGPcard v2.1 requires timeout of 13 seconds.  */
+#define CCID_CMD_TIMEOUT (13*1000)
+
 /* Depending on how this source is used we either define our error
    output to go to stderr or to the GnuPG based logging functions.  We
    use the latter when GNUPG_MAJOR_VERSION or GNUPG_SCD_MAIN_HEADER
@@ -2846,7 +2849,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
       apdu_len -= apdu_part_len;
 
       rc = bulk_in (handle, msg, sizeof msg, &msglen,
-                    RDR_to_PC_DataBlock, seqno, 5000, 0);
+                    RDR_to_PC_DataBlock, seqno, CCID_CMD_TIMEOUT, 0);
       if (rc)
         return rc;
 
@@ -2881,7 +2884,7 @@ ccid_transceive_apdu_level (ccid_driver_t handle,
         return rc;
 
       rc = bulk_in (handle, msg, sizeof msg, &msglen,
-                    RDR_to_PC_DataBlock, seqno, 5000, 0);
+                    RDR_to_PC_DataBlock, seqno, CCID_CMD_TIMEOUT, 0);
       if (rc)
         return rc;
     }
@@ -3090,7 +3093,7 @@ ccid_transceive (ccid_driver_t handle,
       msg = recv_buffer;
       rc = bulk_in (handle, msg, sizeof recv_buffer, &msglen,
                     via_escape? RDR_to_PC_Escape : RDR_to_PC_DataBlock,
-                    seqno, 5000, 0);
+                    seqno, CCID_CMD_TIMEOUT, 0);
       if (rc)
         return rc;
 
