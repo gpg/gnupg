@@ -140,6 +140,7 @@ enum cmd_and_opt_values {
   oLDAPWrapperProgram,
   oHTTPWrapperProgram,
   oIgnoreCertExtension,
+  oUseTor,
   aTest
 };
 
@@ -215,6 +216,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
                 N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
 
+  ARGPARSE_s_n (oUseTor, "use-tor", N_("route all network traffic via TOR")),
 
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
@@ -518,6 +520,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
         }
       FREE_STRLIST (opt.ignored_cert_extensions);
       http_register_tls_ca (NULL);
+      /* We do not allow resetting of opt.use_tor at runtime.  */
       return 1;
     }
 
@@ -579,6 +582,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oIgnoreCertExtension:
       add_to_strlist (&opt.ignored_cert_extensions, pargs->r.ret_str);
       break;
+
+    case oUseTor: opt.use_tor = 1; break;
 
     default:
       return 0; /* Not handled. */
@@ -1405,6 +1410,7 @@ main (int argc, char **argv)
       /* Note: The next one is to fix a typo in gpgconf - should be
          removed eventually. */
       es_printf ("ignore-ocsp-servic-url:%lu:\n", flags | GC_OPT_FLAG_NONE);
+      es_printf ("use-tor:%lu:\n", flags | GC_OPT_FLAG_NONE);
     }
   cleanup ();
   return !!rc;

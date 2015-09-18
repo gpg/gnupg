@@ -93,6 +93,7 @@ struct
   int system_service;   /* We are running as W32 service (implies daemon).  */
   int system_daemon;    /* We are running in system daemon mode.  */
   int running_detached; /* We are running in detached mode.  */
+  int use_tor;          /* TOR mode has been enabled.  */
 
   int force;          /* Force loading outdated CRLs. */
 

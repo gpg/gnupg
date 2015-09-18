@@ -626,6 +626,12 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
       else if (!(ctrl->http_proxy = xtrystrdup (value)))
         err = gpg_error_from_syserror ();
     }
+  else if (!strcmp (key, "honor-keyserver-url-used"))
+    {
+      /* Return an error if we are running in TOR mode.  */
+      if (opt.use_tor)
+        err = gpg_error (GPG_ERR_FORBIDDEN);
+    }
   else
     err = gpg_error (GPG_ERR_UNKNOWN_OPTION);
 
@@ -695,6 +701,12 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
           err = PARM_ERROR ("name missing");
           goto leave;
         }
+    }
+
+  if (opt.use_tor)
+    {
+      err = gpg_error (GPG_ERR_FORBIDDEN);
+      goto leave;
     }
 
   if (pka_mode)
@@ -1970,7 +1982,7 @@ static const char hlp_getinfo[] =
   "\n"
   "version     - Return the version of the program.\n"
   "pid         - Return the process id of the server.\n"
-  "\n"
+  "tor         - Return OK if running in TOR mode\n"
   "socket_name - Return the name of the socket.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2000,6 +2012,10 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         err = assuan_send_data (ctx, s, strlen (s));
       else
         err = gpg_error (GPG_ERR_NO_DATA);
+    }
+  else if (!strcmp (line, "tor"))
+    {
+      err = opt.use_tor? 0:set_error (GPG_ERR_GENERAL, "TOR mode not enabled");
     }
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");

@@ -965,7 +965,9 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
                    request,
                    httphost,
                    /* fixme: AUTH */ NULL,
-                   (httpflags | (opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)),
+                   (httpflags
+                    |(opt.honor_http_proxy? HTTP_FLAG_TRY_PROXY:0)
+                    |(opt.use_tor? HTTP_FLAG_FORCE_TOR:0)),
                    ctrl->http_proxy,
                    session,
                    NULL,
