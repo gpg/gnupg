@@ -221,3 +221,13 @@ strlist_find (strlist_t haystack, const char *needle)
       return haystack;
   return NULL;
 }
+
+int
+strlist_length (strlist_t list)
+{
+  int i;
+  for (i = 0; list; list = list->next)
+    i ++;
+
+  return i;
+}
