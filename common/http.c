@@ -747,6 +747,12 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
 
   *r_hd = NULL;
 
+  if ((flags & HTTP_FLAG_FORCE_TOR))
+    {
+      log_error ("TOR support is not yet available\n");
+      return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+    }
+
   /* Create the handle. */
   hd = xtrycalloc (1, sizeof *hd);
   if (!hd)
@@ -1451,6 +1457,12 @@ send_request (http_t hd, const char *httphost, const char *auth,
       return gpg_err_make (default_errsource, GPG_ERR_INTERNAL);
     }
 #endif /*USE_TLS*/
+
+  if ((hd->flags & HTTP_FLAG_FORCE_TOR))
+    {
+      log_error ("TOR support is not yet available\n");
+      return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+    }
 
   server = *hd->uri->host ? hd->uri->host : "localhost";
   port = hd->uri->port ? hd->uri->port : 80;
