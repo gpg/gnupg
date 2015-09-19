@@ -838,15 +838,13 @@ convert_from_openpgp_main (ctrl_t ctrl, gcry_sexp_t s_pgp,
       value = gcry_sexp_nth_data (list, ++idx, &valuelen);
       if (!value || !valuelen)
         goto bad_seckey;
-      if (is_enc || curve)
+      if (is_enc)
         {
-          /* Encrypted parameters and ECC parameters need or can be
-             stored as opaque.  */
+          /* Encrypted parameters need to be stored as opaque.  */
           skey[skeyidx] = gcry_mpi_set_opaque_copy (NULL, value, valuelen*8);
           if (!skey[skeyidx])
             goto outofmem;
-          if (is_enc)
-            gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
+          gcry_mpi_set_flag (skey[skeyidx], GCRYMPI_FLAG_USER1);
         }
       else
         {
@@ -1114,55 +1112,14 @@ apply_protection (gcry_mpi_t *array, int npkey, int nskey,
   ndata = 20; /* Space for the SHA-1 checksum.  */
   for (i = npkey, j = 0; i < nskey; i++, j++ )
     {
-      if (gcry_mpi_get_flag (array[i], GCRYMPI_FLAG_OPAQUE))
+      err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
+      if (err)
         {
-          const unsigned char *s;
-          unsigned int n;
-
-          s = gcry_mpi_get_opaque (array[i], &n);
-          if (!s)
-            {
-              s = "";
-              n = 0;
-            }
-          /* Strip leading zero bits.  */
-          for (; n >= 8 && !*s; s++, n -= 8)
-            ;
-          if (n >= 8 && !(*s & 0x80))
-            if (--n >= 7 && !(*s & 0x40))
-              if (--n >= 6 && !(*s & 0x20))
-                if (--n >= 5 && !(*s & 0x10))
-                  if (--n >= 4 && !(*s & 0x08))
-                    if (--n >= 3 && !(*s & 0x04))
-                      if (--n >= 2 && !(*s & 0x02))
-                        if (--n >= 1 && !(*s & 0x01))
-                          --n;
-
-          nbits[j] = n;
-          n = (n+7)/8;
-          narr[j] = n;
-          bufarr[j] = (gcry_is_secure (s)? xtrymalloc_secure (n?n:1)
-                       /* */             : xtrymalloc (n?n:1));
-          if (!bufarr[j])
-            {
-              err = gpg_error_from_syserror ();
-              for (i = 0; i < j; i++)
-                xfree (bufarr[i]);
-              return err;
-            }
-          memcpy (bufarr[j], s, n);
+          for (i = 0; i < j; i++)
+            xfree (bufarr[i]);
+          return err;
         }
-      else
-        {
-          err = gcry_mpi_aprint (GCRYMPI_FMT_USG, bufarr+j, narr+j, array[i]);
-          if (err)
-            {
-              for (i = 0; i < j; i++)
-                xfree (bufarr[i]);
-              return err;
-            }
-          nbits[j] = gcry_mpi_get_nbits (array[i]);
-        }
+      nbits[j] = gcry_mpi_get_nbits (array[i]);
       ndata += 2 + narr[j];
     }
 
@@ -1317,53 +1274,13 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
   else if (!strcmp (name, "ecc"))
     {
       algoname = "ecc";
-      format = "/qd?";
+      format = "qd?";
       npkey = 1;
       nskey = 2;
       curve = gcry_sexp_find_token (list, "curve", 0);
       flags = gcry_sexp_find_token (list, "flags", 0);
       err = gcry_sexp_extract_param (list, NULL, format,
                                      array+0, array+1, NULL);
-      if (flags)
-        {
-          gcry_sexp_t param = gcry_sexp_find_token (flags, "param", 0);
-          if (param)
-            {
-              gcry_sexp_release (param);
-              array[6] = array[0];
-              array[7] = array[1];
-              err = gcry_sexp_extract_param (list, NULL, "pabgnh?",
-                                             array+0, array+1, array+2, array+3,
-                                             array+4, array+5, NULL);
-              if (array[5] == NULL)
-                {
-                  array[5] = GCRYMPI_CONST_ONE;
-                  npkey += 6;
-                  nskey += 6;
-                }
-              format = "pabgnhqd?";
-            }
-        }
-    }
-  else if (!strcmp (name, "ecdsa"))
-    {
-      algoname = "ecdsa";
-      format = "pabgnqd?";
-      npkey = 6;
-      nskey = 7;
-      err = gcry_sexp_extract_param (list, NULL, format,
-                                     array+0, array+1, array+2, array+3,
-                                     array+4, array+5, array+6, NULL);
-    }
-  else if (!strcmp (name, "ecdh"))
-    {
-      algoname = "ecdh";
-      format = "pabgnqd?";
-      npkey = 6;
-      nskey= 7;
-      err = gcry_sexp_extract_param (list, NULL, format,
-                                     array+0, array+1, array+2, array+3,
-                                     array+4, array+5, array+6, NULL);
     }
   else
     {
@@ -1381,12 +1298,7 @@ extract_private_key (gcry_sexp_t s_key, int req_private_key_data,
     {
       *r_algoname = algoname;
       if (r_elems)
-        {
-          if (format[0] == '/') /* It is opaque data qualifier, skip it.  */
-            *r_elems = format+1;
-          else
-            *r_elems = format;
-        }
+        *r_elems = format;
       *r_npkey = npkey;
       if (r_nskey)
         *r_nskey = nskey;
