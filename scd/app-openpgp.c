@@ -3243,11 +3243,12 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
         {
           const unsigned char **buf2;
           size_t *buf2len;
+          int native = flag_djb_tweak;
 
           switch (*tok)
             {
             case 'q': buf2 = &ecc_q; buf2len = &ecc_q_len; break;
-            case 'd': buf2 = &ecc_d; buf2len = &ecc_d_len; break;
+            case 'd': buf2 = &ecc_d; buf2len = &ecc_d_len; native = 0; break;
             default: buf2 = NULL;  buf2len = NULL; break;
             }
           if (buf2 && *buf2)
@@ -3257,13 +3258,16 @@ ecc_writekey (app_t app, gpg_error_t (*pincb)(void*, const char *, char **),
             }
           if ((err = parse_sexp (&buf, &buflen, &depth, &tok, &toklen)))
             goto leave;
-          if (tok && buf2 && !flag_djb_tweak)
-            /* It's MPI.  Strip off leading zero bytes and save. */
-            for (;toklen && !*tok; toklen--, tok++)
-              ;
+          if (tok && buf2)
+            {
+              if (!native)
+                /* Strip off leading zero bytes and save. */
+                for (;toklen && !*tok; toklen--, tok++)
+                  ;
 
-          *buf2 = tok;
-          *buf2len = toklen;
+              *buf2 = tok;
+              *buf2len = toklen;
+            }
         }
       /* Skip until end of list. */
       last_depth2 = depth;
