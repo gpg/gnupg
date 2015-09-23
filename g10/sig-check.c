@@ -60,10 +60,18 @@ signature_check (PKT_signature *sig, gcry_md_hd_t digest)
 
 int
 signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
-		  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
+		  int *r_expired, int *r_revoked, PKT_public_key *pk )
 {
-    PKT_public_key *pk = xmalloc_clear( sizeof *pk );
     int rc=0;
+    int pk_internal;
+
+    if (pk)
+      pk_internal = 0;
+    else
+      {
+	pk_internal = 1;
+	pk = xmalloc_clear( sizeof *pk );
+      }
 
     if ( (rc=openpgp_md_test_algo(sig->digest_algo)) )
       ; /* We don't have this digest. */
@@ -91,7 +99,7 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
         if(r_expiredate)
 	  *r_expiredate = pk->expiredate;
 
-	rc = do_check( pk, sig, digest, r_expired, r_revoked, ret_pk );
+	rc = do_check( pk, sig, digest, r_expired, r_revoked, NULL );
 
 	/* Check the backsig.  This is a 0x19 signature from the
 	   subkey on the primary key.  The idea here is that it should
@@ -122,7 +130,15 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	  }
       }
 
-    free_public_key( pk );
+    if (pk_internal || rc)
+      {
+	release_public_key_parts (pk);
+	if (pk_internal)
+	  xfree (pk);
+	else
+	  /* Be very sure that the caller doesn't try to use *PK.  */
+	  memset (pk, 0, sizeof (*pk));
+      }
 
     if( !rc && sig->sig_class < 2 && is_status_enabled() ) {
 	/* This signature id works best with DLP algorithms because
