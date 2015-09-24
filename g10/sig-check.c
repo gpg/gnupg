@@ -34,12 +34,6 @@
 #include "options.h"
 #include "pkglue.h"
 
-/* Context used by the compare function. */
-struct cmp_help_context_s
-{
-  PKT_signature *sig;
-  gcry_md_hd_t md;
-};
 
 
 
