@@ -1513,7 +1513,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
       if (proxy)
 	http_proxy = proxy;
 
-      err = parse_uri (&uri, http_proxy, 1, 0);
+      err = parse_uri (&uri, http_proxy, 0, 0);
       if (gpg_err_code (err) == GPG_ERR_INV_URI
           && is_hostname_port (http_proxy))
         {
