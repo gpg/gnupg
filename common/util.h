@@ -125,6 +125,10 @@
 # define GPG_ERR_LDAP_ASSERTION_FAILED      890
 # define GPG_ERR_LDAP_PROX_AUTH_DENIED      891
 #endif /*GPG_ERROR_VERSION_NUMBER < 0x011300*/
+#if GPG_ERROR_VERSION_NUMBER < 0x011500  /* 1.21 */
+# define GPG_ERR_TRUE                       255
+# define GPG_ERR_FALSE                      256
+#endif
 
 /* Hash function used with libksba. */
 #define HASH_FNC ((void (*)(void *, const void*,size_t))gcry_md_write)
