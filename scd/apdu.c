@@ -3216,8 +3216,8 @@ apdu_enum_reader (int slot, int *used)
 int
 apdu_connect (int slot)
 {
-  int sw;
-  unsigned int status;
+  int sw = 0;
+  unsigned int status = 0;
 
   if (slot < 0 || slot >= MAX_READER || !reader_table[slot].used )
     return SW_HOST_NO_DRIVER;
@@ -3234,15 +3234,15 @@ apdu_connect (int slot)
           unlock_slot (slot);
         }
     }
-  else
-    sw = 0;
 
   /* We need to call apdu_get_status_internal, so that the last-status
      machinery gets setup properly even if a card is inserted while
      scdaemon is fired up and apdu_get_status has not yet been called.
      Without that we would force a reset of the card with the next
      call to apdu_get_status.  */
-  apdu_get_status_internal (slot, 1, 1, &status, NULL);
+  if (!sw)
+    sw = apdu_get_status_internal (slot, 1, 1, &status, NULL);
+
   if (sw)
     ;
   else if (!(status & APDU_CARD_PRESENT))
