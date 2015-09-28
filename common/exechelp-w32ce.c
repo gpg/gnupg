@@ -502,7 +502,7 @@ gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
                      gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t infp,
+                     estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
                      pid_t *pid)

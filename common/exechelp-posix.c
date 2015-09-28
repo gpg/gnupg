@@ -313,6 +313,7 @@ gnupg_create_outbound_pipe (int filedes[2])
 
 static gpg_error_t
 create_pipe_and_estream (int filedes[2], estream_t *r_fp,
+                         int outbound, int nonblock,
                          gpg_err_source_t errsource)
 {
   gpg_error_t err;
@@ -326,7 +327,10 @@ create_pipe_and_estream (int filedes[2], estream_t *r_fp,
       return err;
     }
 
-  *r_fp = es_fdopen (filedes[0], "r");
+  if (outbound)
+    *r_fp = es_fdopen (filedes[0], nonblock? "r,nonblock" : "r");
+  else
+    *r_fp = es_fdopen (filedes[1], nonblock? "w,nonblock" : "w");
   if (!*r_fp)
     {
       err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
@@ -347,53 +351,70 @@ gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
                      gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t infp,
+                     estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
                      pid_t *pid)
 {
   gpg_error_t err;
-  int infd = -1;
+  int inpipe[2] = {-1, -1};
   int outpipe[2] = {-1, -1};
   int errpipe[2] = {-1, -1};
+  estream_t infp = NULL;
   estream_t outfp = NULL;
   estream_t errfp = NULL;
+  int nonblock = !!(flags & GNUPG_SPAWN_NONBLOCK);
 
-  (void)flags; /* Currently not used.  */
-
+  if (r_infp)
+    *r_infp = NULL;
   if (r_outfp)
     *r_outfp = NULL;
   if (r_errfp)
     *r_errfp = NULL;
   *pid = (pid_t)(-1); /* Always required.  */
 
-  if (infp)
+  if (r_infp)
     {
-      es_fflush (infp);
-      es_rewind (infp);
-      infd = es_fileno (infp);
-      if (infd == -1)
-        return gpg_err_make (errsource, GPG_ERR_INV_VALUE);
-    }
-
-  if (r_outfp)
-    {
-      err = create_pipe_and_estream (outpipe, &outfp, errsource);
+      err = create_pipe_and_estream (inpipe, &infp, 0, nonblock, errsource);
       if (err)
         return err;
     }
 
-  if (r_errfp)
+  if (r_outfp)
     {
-      err = create_pipe_and_estream (errpipe, &errfp, errsource);
+      err = create_pipe_and_estream (outpipe, &outfp, 1, nonblock, errsource);
       if (err)
         {
+          if (infp)
+            es_fclose (infp);
+          else if (inpipe[1] != -1)
+            close (inpipe[1]);
+          if (inpipe[0] != -1)
+            close (inpipe[0]);
+
+          return err;
+        }
+    }
+
+  if (r_errfp)
+    {
+      err = create_pipe_and_estream (errpipe, &errfp, 1, nonblock, errsource);
+      if (err)
+        {
+          if (infp)
+            es_fclose (infp);
+          else if (inpipe[1] != -1)
+            close (inpipe[1]);
+          if (inpipe[0] != -1)
+            close (inpipe[0]);
+
           if (outfp)
             es_fclose (outfp);
           else if (outpipe[0] != -1)
             close (outpipe[0]);
           if (outpipe[1] != -1)
             close (outpipe[1]);
+
           return err;
         }
     }
@@ -404,6 +425,13 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     {
       err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
       log_error (_("error forking process: %s\n"), gpg_strerror (err));
+
+      if (infp)
+        es_fclose (infp);
+      else if (inpipe[1] != -1)
+        close (inpipe[1]);
+      if (inpipe[0] != -1)
+        close (inpipe[0]);
 
       if (outfp)
         es_fclose (outfp);
@@ -427,16 +455,20 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       gcry_control (GCRYCTL_TERM_SECMEM);
       es_fclose (outfp);
       es_fclose (errfp);
-      do_exec (pgmname, argv, infd, outpipe[1], errpipe[1], preexec);
+      do_exec (pgmname, argv, inpipe[0], outpipe[1], errpipe[1], preexec);
       /*NOTREACHED*/
     }
 
   /* This is the parent. */
+  if (inpipe[0] != -1)
+    close (inpipe[0]);
   if (outpipe[1] != -1)
     close (outpipe[1]);
   if (errpipe[1] != -1)
     close (errpipe[1]);
 
+  if (r_infp)
+    *r_infp = infp;
   if (r_outfp)
     *r_outfp = outfp;
   if (r_errfp)

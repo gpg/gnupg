@@ -346,7 +346,7 @@ gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
                      gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t infp,
+                     estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
                      pid_t *pid)
@@ -363,9 +363,10 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   STARTUPINFO si;
   int cr_flags;
   char *cmdline;
-  HANDLE inhandle = INVALID_HANDLE_VALUE;
+  HANDLE inpipe[2]  = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
   HANDLE outpipe[2] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
   HANDLE errpipe[2] = {INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE};
+  estream_t infp = NULL;
   estream_t outfp = NULL;
   estream_t errfp = NULL;
   HANDLE nullhd[3] = {INVALID_HANDLE_VALUE,
@@ -374,6 +375,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   int i;
   es_syshd_t syshd;
 
+  if (r_infp)
+    *r_infp = NULL;
   if (r_outfp)
     *r_outfp = NULL;
   if (r_errfp)
@@ -382,29 +385,26 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
 
   if (infp)
     {
-      es_fflush (infp);
-      es_rewind (infp);
-      es_syshd (infp, &syshd);
-      switch (syshd.type)
+      if (create_inheritable_pipe (inpipe, 0))
         {
-        case ES_SYSHD_FD:
-          inhandle = (HANDLE)_get_osfhandle (syshd.u.fd);
-          break;
-        case ES_SYSHD_SOCK:
-          inhandle = (HANDLE)_get_osfhandle (syshd.u.sock);
-          break;
-        case ES_SYSHD_HANDLE:
-          inhandle = syshd.u.handle;
-          break;
-        default:
-          inhandle = INVALID_HANDLE_VALUE;
-          break;
+          err = gpg_err_make (errsource, GPG_ERR_GENERAL);
+          log_error (_("error creating a pipe: %s\n"), gpg_strerror (err));
+          return err;
         }
-      if (inhandle == INVALID_HANDLE_VALUE)
-        return gpg_err_make (errsource, GPG_ERR_INV_VALUE);
-      /* FIXME: In case we can't get a system handle (e.g. due to
-         es_fopencookie we should create a piper and a feeder
-         thread.  */
+
+      syshd.type = ES_SYSHD_HANDLE;
+      syshd.u.handle = inpipe[1];
+      infp = es_sysopen (&syshd, "w");
+      if (!infp)
+        {
+          err = gpg_err_make (errsource, gpg_err_code_from_syserror ());
+          log_error (_("error creating a stream for a pipe: %s\n"),
+                     gpg_strerror (err));
+          CloseHandle (inpipe[0]);
+          CloseHandle (inpipe[1]);
+          inpipe[0] = inpipe[1] = INVALID_HANDLE_VALUE;
+          return err;
+        }
     }
 
   if (r_outfp)
@@ -427,6 +427,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
           CloseHandle (outpipe[0]);
           CloseHandle (outpipe[1]);
           outpipe[0] = outpipe[1] = INVALID_HANDLE_VALUE;
+          if (infp)
+            es_fclose (infp);
+          else if (inpipe[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (outpipe[1]);
+          if (inpipe[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (inpipe[0]);
           return err;
         }
     }
@@ -457,6 +463,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
             CloseHandle (outpipe[0]);
           if (outpipe[1] != INVALID_HANDLE_VALUE)
             CloseHandle (outpipe[1]);
+          if (infp)
+            es_fclose (infp);
+          else if (inpipe[1] != INVALID_HANDLE_VALUE)
+            CloseHandle (outpipe[1]);
+          if (inpipe[0] != INVALID_HANDLE_VALUE)
+            CloseHandle (inpipe[0]);
           return err;
         }
     }
@@ -471,7 +483,7 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   if (err)
     return err;
 
-  if (inhandle != INVALID_HANDLE_VALUE)
+  if (inpipe[0] != INVALID_HANDLE_VALUE)
     nullhd[0] = w32_open_null (0);
   if (outpipe[1] != INVALID_HANDLE_VALUE)
     nullhd[1] = w32_open_null (0);
@@ -486,12 +498,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   si.cb = sizeof (si);
   si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
   si.wShowWindow = DEBUG_W32_SPAWN? SW_SHOW : SW_MINIMIZE;
-  si.hStdInput  =   inhandle == INVALID_HANDLE_VALUE? nullhd[0] : inhandle;
+  si.hStdInput  = inpipe[0]  == INVALID_HANDLE_VALUE? nullhd[0] : inpipe[0];
   si.hStdOutput = outpipe[1] == INVALID_HANDLE_VALUE? nullhd[1] : outpipe[1];
   si.hStdError  = errpipe[1] == INVALID_HANDLE_VALUE? nullhd[2] : errpipe[1];
 
   cr_flags = (CREATE_DEFAULT_ERROR_MODE
-              | ((flags & 128)? DETACHED_PROCESS : 0)
+              | ((flags & GNUPG_SPAWN_DETACHED)? DETACHED_PROCESS : 0)
               | GetPriorityClass (GetCurrentProcess ())
               | CREATE_SUSPENDED);
 /*   log_debug ("CreateProcess, path='%s' cmdline='%s'\n", pgmname, cmdline); */
@@ -509,6 +521,12 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
     {
       log_error ("CreateProcess failed: %s\n", w32_strerror (-1));
       xfree (cmdline);
+      if (infp)
+        es_fclose (infp);
+      else if (inpipe[1] != INVALID_HANDLE_VALUE)
+        CloseHandle (outpipe[1]);
+      if (inpipe[0] != INVALID_HANDLE_VALUE)
+        CloseHandle (inpipe[0]);
       if (outfp)
         es_fclose (outfp);
       else if (outpipe[0] != INVALID_HANDLE_VALUE)
@@ -532,6 +550,8 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
       CloseHandle (nullhd[i]);
 
   /* Close the inherited ends of the pipes.  */
+  if (inpipe[0] != INVALID_HANDLE_VALUE)
+    CloseHandle (inpipe[0]);
   if (outpipe[1] != INVALID_HANDLE_VALUE)
     CloseHandle (outpipe[1]);
   if (errpipe[1] != INVALID_HANDLE_VALUE)
@@ -546,13 +566,15 @@ gnupg_spawn_process (const char *pgmname, const char *argv[],
   /* Fixme: For unknown reasons AllowSetForegroundWindow returns an
      invalid argument error if we pass it the correct processID.  As a
      workaround we use -1 (ASFW_ANY).  */
-  if ( (flags & 64) )
+  if ((flags & GNUPG_SPAWN_RUN_ASFW))
     gnupg_allow_set_foregound_window ((pid_t)(-1)/*pi.dwProcessId*/);
 
   /* Process has been created suspended; resume it now. */
   ResumeThread (pi.hThread);
   CloseHandle (pi.hThread);
 
+  if (r_infp)
+    *r_infp = infp;
   if (r_outfp)
     *r_outfp = outfp;
   if (r_errfp)

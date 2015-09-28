@@ -59,17 +59,22 @@ gpg_error_t gnupg_create_inbound_pipe (int filedes[2]);
    inheritable.  */
 gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
 
+#define GNUPG_SPAWN_NONBLOCK   16
+#define GNUPG_SPAWN_RUN_ASFW   64
+#define GNUPG_SPAWN_DETACHED  128
 
-/* Fork and exec the PGMNAME.  If INFP is NULL connect /dev/null to
-   stdin of the new process; if it is not NULL connect the file
-   descriptor retrieved from INFP to stdin.  If R_OUTFP is NULL
-   connect stdout of the new process to /dev/null; if it is not NULL
-   store the address of a pointer to a new estream there.  If R_ERRFP
-   is NULL connect stderr of the new process to /dev/null; if it is
-   not NULL store the address of a pointer to a new estream there.  On
-   success the pid of the new process is stored at PID.  On error -1
-   is stored at PID and if R_OUTFP or R_ERRFP are not NULL, NULL is
-   stored there.
+
+/* Fork and exec the program PGMNAME.
+
+   If R_INFP is NULL connect stdin of the new process to /dev/null; if
+   it is not NULL store the address of a pointer to a new estream
+   there. If R_OUTFP is NULL connect stdout of the new process to
+   /dev/null; if it is not NULL store the address of a pointer to a
+   new estream there.  If R_ERRFP is NULL connect stderr of the new
+   process to /dev/null; if it is not NULL store the address of a
+   pointer to a new estream there.  On success the pid of the new
+   process is stored at PID.  On error -1 is stored at PID and if
+   R_OUTFP or R_ERRFP are not NULL, NULL is stored there.
 
    The arguments for the process are expected in the NULL terminated
    array ARGV.  The program name itself should not be included there.
@@ -81,12 +86,21 @@ gpg_error_t gnupg_create_outbound_pipe (int filedes[2]);
 
    FLAGS is a bit vector:
 
-   Bit 7: If set the process will be started as a background process.
+   GNUPG_SPAWN_NONBLOCK
+          If set the two output streams are created in non-blocking
+          mode and the input stream is switched to non-blocking mode.
+          This is merely a convenience feature because the caller
+          could do the same with gpgrt_set_nonblock.  Does not yet
+          work for Windows.
+
+   GNUPG_SPAWN_DETACHED
+          If set the process will be started as a background process.
           This flag is only useful under W32 (but not W32CE) systems,
           so that no new console is created and pops up a console
           window when starting the server.  Does not work on W32CE.
 
-   Bit 6: On W32 (but not on W32CE) run AllowSetForegroundWindow for
+   GNUPG_SPAWN_RUN_ASFW
+          On W32 (but not on W32CE) run AllowSetForegroundWindow for
           the child.  Note that due to unknown problems this actually
           allows SetForegroundWindow for all childs of this process.
 
@@ -95,7 +109,7 @@ gpg_error_t
 gnupg_spawn_process (const char *pgmname, const char *argv[],
                      gpg_err_source_t errsource,
                      void (*preexec)(void), unsigned int flags,
-                     estream_t infp,
+                     estream_t *r_infp,
                      estream_t *r_outfp,
                      estream_t *r_errfp,
                      pid_t *pid);
