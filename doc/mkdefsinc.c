@@ -31,9 +31,15 @@
    values are not valid for the build platform but we need some values
    nevertheless.  */
 #include "config.h"
-/* When building for Windows some -D macros are not available.  We
-   provide replacements here.  */
+/* When building for Windows the -D macros do not have appropriate
+   values.  We provide replacements here.  */
 #ifdef HAVE_W32_SYSTEM
+# undef  GNUPG_BINDIR
+# undef  GNUPG_LIBEXECDIR
+# undef  GNUPG_LIBDIR
+# undef  GNUPG_DATADIR
+# undef  GNUPG_SYSCONFDIR
+# undef  GNUPG_LOCALSTATEDIR
 # define GNUPG_BINDIR        "INSTDIR/bin"
 # define GNUPG_LIBEXECDIR    "INSTDIR/bin"
 # define GNUPG_LIBDIR        "INSTDIR/lib/" PACKAGE_NAME
