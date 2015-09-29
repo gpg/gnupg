@@ -86,7 +86,8 @@ common_sources = \
 	openpgp-oid.c \
 	ssh-utils.c ssh-utils.h \
 	agent-opt.c \
-	helpfile.c
+	helpfile.c \
+	mkdir_p.c mkdir_p.h
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-afunix.c w32-afunix.h
