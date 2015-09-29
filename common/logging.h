@@ -34,6 +34,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <gpg-error.h>
 #include "mischelp.h"
 #include "w32help.h"
 
