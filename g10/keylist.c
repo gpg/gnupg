@@ -164,12 +164,14 @@ print_pubkey_info (FILE *fp, PKT_public_key *pk)
     p=get_user_id_native(keyid);
 
   if (fp)
-    fprintf (fp, "pub  %4u%c/%s %s %s\n",
+    fprintf (fp, "%s  %4u%c/%s %s %s\n",
+             pk->is_primary? "pub":"sub",
              nbits_from_pk (pk),
              pubkey_letter (pk->pubkey_algo),
              keystr(keyid), datestr_from_pk (pk), p);
   else
-    tty_printf ("\npub  %4u%c/%s %s %s\n",
+    tty_printf ("\n%s  %4u%c/%s %s %s\n",
+                pk->is_primary? "pub":"sub",
                 nbits_from_pk (pk), pubkey_letter (pk->pubkey_algo),
                 keystr(keyid), datestr_from_pk (pk), p);
 
