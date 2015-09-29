@@ -290,10 +290,12 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                  const void *overridedata, size_t overridedatalen)
 {
   gcry_sexp_t s_skey = NULL, s_sig = NULL;
+  gcry_sexp_t s_hash = NULL;
   unsigned char *shadow_info = NULL;
   unsigned int rc = 0;		/* FIXME: gpg-error? */
   const unsigned char *data;
   int datalen;
+  int check_signature = 0;
 
   if (overridedata)
     {
@@ -352,6 +354,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       if (is_RSA)
         {
+          check_signature = 1;
           if (*buf & 0x80)
             {
               len++;
@@ -431,8 +434,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
   else
     {
       /* No smartcard, but a private key */
-      gcry_sexp_t s_hash = NULL;
-      int dsaalgo;
+      int dsaalgo = 0;
 
       /* Put the hash into a sexp */
       if (agent_is_eddsa_key (s_skey))
@@ -454,6 +456,10 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       if (rc)
         goto leave;
 
+      if (dsaalgo == 0 && GCRYPT_VERSION_NUMBER < 0x010700)
+        /* It's RSA and Libgcrypt < 1.7 */
+        check_signature = 1;
+
       if (DBG_CRYPTO)
         {
           gcry_log_debugsxp ("skey", s_skey);
@@ -462,7 +468,6 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
       /* sign */
       rc = gcry_pk_sign (&s_sig, s_hash, s_skey);
-      gcry_sexp_release (s_hash);
       if (rc)
         {
           log_error ("signing failed: %s\n", gpg_strerror (rc));
@@ -473,11 +478,42 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
         gcry_log_debugsxp ("rslt", s_sig);
     }
 
+  /* Check that the signature verification worked and nothing is
+   * fooling us e.g. by a bug in the signature create code or by
+   * deliberately introduced faults.  Because Libgcrypt 1.7 does this
+   * for RSA internally there is no need to do it here again.  */
+  if (check_signature)
+    {
+      if (s_hash == NULL)
+        {
+          if (ctrl->digest.algo == MD_USER_TLS_MD5SHA1)
+            rc = do_encode_raw_pkcs1 (data, datalen,
+                                      gcry_pk_get_nbits (s_skey),
+                                      &s_hash);
+          else
+            rc = do_encode_md (data, datalen,
+                               ctrl->digest.algo,
+                               &s_hash,
+                               ctrl->digest.raw_value);
+        }
+
+      rc = gcry_pk_verify (s_sig, s_hash, s_skey);
+
+      if (rc)
+        {
+          log_error (_("checking created signature failed: %s\n"),
+                     gpg_strerror (rc));
+          gcry_sexp_release (s_sig);
+          s_sig = NULL;
+        }
+    }
+
  leave:
 
   *signature_sexp = s_sig;
 
   gcry_sexp_release (s_skey);
+  gcry_sexp_release (s_hash);
   xfree (shadow_info);
 
   return rc;

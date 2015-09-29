@@ -229,7 +229,6 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
 	 gcry_md_hd_t md, int mdalgo, const char *cache_nonce)
 {
   gpg_error_t err;
-  gcry_mpi_t frame;
   byte *dp;
   char *hexgrip;
 
@@ -291,35 +290,6 @@ do_sign (PKT_public_key *pksk, PKT_signature *sig,
       gcry_sexp_release (s_sigval);
     }
   xfree (hexgrip);
-
-  /* Check that the signature verification worked and nothing is
-   * fooling us e.g. by a bug in the signature create code or by
-   * deliberately introduced faults.  Because Libgcrypt 1.7 does this
-   * for RSA internally there is no need to do it here again.  */
-  if (!err
-#if GCRYPT_VERSION_NUMBER >= 0x010700 /* Libgcrypt >= 1.7 */
-        && !is_RSA (pksk->pubkey_algo)
-#endif /* Libgcrypt >= 1.7 */
-      )
-    {
-      PKT_public_key *pk = xmalloc_clear (sizeof *pk);
-
-      if (get_pubkey (pk, sig->keyid ))
-        err = gpg_error (GPG_ERR_NO_PUBKEY);
-      else
-        {
-          frame = encode_md_value (pk, md, sig->digest_algo );
-          if (!frame)
-            err = gpg_error (GPG_ERR_GENERAL);
-          else
-            err = pk_verify (pk->pubkey_algo, frame, sig->data, pk->pkey);
-          gcry_mpi_release (frame);
-        }
-      if (err)
-        log_error (_("checking created signature failed: %s\n"),
-                   gpg_strerror (err));
-      free_public_key (pk);
-    }
 
   if (err)
     log_error (_("signing failed: %s\n"), gpg_strerror (err));
