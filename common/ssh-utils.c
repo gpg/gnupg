@@ -196,6 +196,8 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
               err = gpg_err_make (default_errsource, GPG_ERR_INV_SEXP);
               goto leave;
             }
+          blob++;
+          bloblen--;
           lenbuf[0] = bloblen >> 24;
           lenbuf[1] = bloblen >> 16;
           lenbuf[2] = bloblen >>  8;

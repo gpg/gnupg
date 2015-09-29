@@ -163,6 +163,25 @@ static struct { const char *key; const char *fpr; } sample_keys[] = {
     ")", /* Passphrase="abc" */
     "1e:a6:94:ab:bd:81:73:5f:22:bc:0e:c7:89:f6:68:df"
   },
+  { /* OpenSSH 6.7p1 generated key:  */
+    "(protected-private-key "
+    "(ecc "
+    "(curve Ed25519)"
+    "(flags eddsa)"
+    "(q #40A3577AA7830C50EBC15B538E9505DB2F0D2FFCD57EA477DD83dcaea530f3c277#)"
+    "(protected openpgp-s2k3-sha1-aes-cbc "
+    "("
+    "(sha1 #FA8123F1A37CBC1F# \"3812352\")"
+    "#7671C7387E2DD931CC62C35CBBE08A28#)"
+    "#75e928f4698172b61dffe9ef2ada1d3473f690f3879c5386e2717e5b2fa46884"
+    "b189ee409827aab0ff37f62996e040b5fa7e75fc4d8152c8734e2e648dff90c9"
+    "e8c3e39ea7485618d05c34b1b74ff59676e9a3d932245cc101b5904777a09f86#)"
+    "(protected-at \"20150928T050210\")"
+    ")"
+    "(comment \"eddsa w/o comment\")"
+    ")", /* Passphrase="abc" */
+    "f1:fa:c8:a6:40:bb:b9:a1:65:d7:62:65:ac:26:78:0e"
+  },
   {
     NULL,
     NULL
