@@ -1230,7 +1230,7 @@ strsplit (char *string, char delim, char replacement, int *count)
   for (t = strchr (string, delim); t; t = strchr (t + 1, delim))
     fields ++;
 
-  result = xtrycalloc (sizeof (*result), (fields + 1));
+  result = xtrycalloc ((fields + 1), sizeof (*result));
   if (! result)
     return NULL;
 
