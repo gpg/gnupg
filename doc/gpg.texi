@@ -660,7 +660,8 @@ create a signature of any type desired.
 
   @item check
   @opindex keyedit:check
-  Check the signatures on all selected user IDs.
+  Check the signatures on all selected user IDs.  With the extra
+  option @code{selfsig} only self-signatures are shown.
 
   @item adduid
   @opindex keyedit:adduid

@@ -185,13 +185,15 @@ print_and_check_one_sig_colon (KBNODE keyblock, KBNODE node,
 
 
 /*
- * Print information about a signature, check it and return true
- * if the signature is okay. NODE must be a signature packet.
+ * Print information about a signature, check it and return true if
+ * the signature is okay.  NODE must be a signature packet.  With
+ * EXTENDED set all possible signature list options will always be
+ * printed.
  */
 static int
 print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 			 int *inv_sigs, int *no_key, int *oth_err,
-			 int *is_selfsig, int print_without_key)
+			 int *is_selfsig, int print_without_key, int extended)
 {
   PKT_signature *sig = node->pkt->pkt.signature;
   int rc, sigrc;
@@ -241,9 +243,10 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 		  sig->flags.expired ? 'X' : ' ',
 		  (sig->trust_depth > 9) ? 'T' : (sig->trust_depth >
 						  0) ? '0' +
-		  sig->trust_depth : ' ', keystr (sig->keyid),
+		  sig->trust_depth : ' ',
+                  keystr (sig->keyid),
 		  datestr_from_sig (sig));
-      if (opt.list_options & LIST_SHOW_SIG_EXPIRE)
+      if ((opt.list_options & LIST_SHOW_SIG_EXPIRE) || extended )
 	tty_printf (" %s", expirestr_from_sig (sig));
       tty_printf ("  ");
       if (sigrc == '%')
@@ -253,6 +256,8 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
       else if (*is_selfsig)
 	{
 	  tty_printf (is_rev ? _("[revocation]") : _("[self-signature]"));
+          if (extended && sig->flags.chosen_selfsig)
+            tty_printf ("*");
 	}
       else
 	{
@@ -267,17 +272,20 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
 	}
       tty_printf ("\n");
 
-      if (sig->flags.policy_url && (opt.list_options & LIST_SHOW_POLICY_URLS))
+      if (sig->flags.policy_url
+          && ((opt.list_options & LIST_SHOW_POLICY_URLS) || extended))
 	show_policy_url (sig, 3, 0);
 
-      if (sig->flags.notation && (opt.list_options & LIST_SHOW_NOTATIONS))
+      if (sig->flags.notation
+          && ((opt.list_options & LIST_SHOW_NOTATIONS) || extended))
 	show_notation (sig, 3, 0,
 		       ((opt.
 			 list_options & LIST_SHOW_STD_NOTATIONS) ? 1 : 0) +
 		       ((opt.
 			 list_options & LIST_SHOW_USER_NOTATIONS) ? 2 : 0));
 
-      if (sig->flags.pref_ks && (opt.list_options & LIST_SHOW_KEYSERVER_URLS))
+      if (sig->flags.pref_ks
+          && ((opt.list_options & LIST_SHOW_KEYSERVER_URLS) || extended))
 	show_keyserver_url (sig, 3, 0);
     }
 
@@ -291,7 +299,7 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
  * Returns true if error found.
  */
 static int
-check_all_keysigs (KBNODE keyblock, int only_selected)
+check_all_keysigs (KBNODE keyblock, int only_selected, int only_selfsigs)
 {
   KBNODE kbctx;
   KBNODE node;
@@ -302,10 +310,16 @@ check_all_keysigs (KBNODE keyblock, int only_selected)
   int mis_selfsig = 0;
   int selected = !only_selected;
   int anyuid = 0;
+  u32 keyid[2];
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
-      if (node->pkt->pkttype == PKT_USER_ID)
+      if (node->pkt->pkttype == PKT_PUBLIC_KEY)
+        {
+          if (only_selfsigs)
+            keyid_from_pk (node->pkt->pkt.public_key, keyid);
+        }
+      else if (node->pkt->pkttype == PKT_USER_ID)
 	{
 	  PKT_user_id *uid = node->pkt->pkt.user_id;
 
@@ -327,9 +341,14 @@ check_all_keysigs (KBNODE keyblock, int only_selected)
 		   || node->pkt->pkt.signature->sig_class == 0x30))
 	{
 	  int selfsig;
+          PKT_signature *sig = node->pkt->pkt.signature;
 
-	  if (print_and_check_one_sig (keyblock, node, &inv_sigs,
-				       &no_key, &oth_err, &selfsig, 0))
+          if (only_selfsigs
+              && !(keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1]))
+            ;  /* Not a selfsig but we want only selfsigs - skip.  */
+	  else if (print_and_check_one_sig (keyblock, node, &inv_sigs,
+                                            &no_key, &oth_err, &selfsig,
+                                            0, only_selfsigs))
 	    {
 	      if (selfsig)
 		has_selfsig = 1;
@@ -1679,7 +1698,8 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	  break;
 
 	case cmdCHECK:
-	  check_all_keysigs (keyblock, count_selected_uids (keyblock));
+	  check_all_keysigs (keyblock, count_selected_uids (keyblock),
+                             !strcmp (arg_string, "selfsig"));
 	  break;
 
 	case cmdSIGN:
@@ -3601,7 +3621,7 @@ menu_delsig (KBNODE pub_keyblock)
 	  else
 	    valid = print_and_check_one_sig (pub_keyblock, node,
 					     &inv_sig, &no_key, &other_err,
-					     &selfsig, 1);
+					     &selfsig, 1, 0);
 
 	  if (valid)
 	    {
