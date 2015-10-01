@@ -2835,7 +2835,8 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl, int confirm)
   char *key_fpr = NULL;
   const char *initial_errtext = NULL;
   unsigned int i;
-  struct pin_entry_info_s *pi = NULL, *pi2;
+  struct pin_entry_info_s *pi = NULL;
+  struct pin_entry_info_s *pi2 = NULL;
 
   err = ssh_key_grip (key, key_grip_raw);
   if (err)
@@ -2866,16 +2867,21 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl, int confirm)
       goto out;
     }
 
-  pi = gcry_calloc_secure (2, sizeof (*pi) + 100 + 1);
+  pi = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
   if (!pi)
     {
       err = gpg_error_from_syserror ();
       goto out;
     }
-  pi2 = pi + (sizeof *pi + 100 + 1);
-  pi->max_length = 100;
+  pi->max_length = 100 + 1;
   pi->max_tries = 1;
-  pi2->max_length = 100;
+  pi2 = gcry_calloc_secure (1, sizeof (*pi2) + 100 + 1);
+  if (!pi2)
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
+  pi2->max_length = 100 + 1;
   pi2->max_tries = 1;
   pi2->check_cb = reenter_compare_cb;
   pi2->check_cb_arg = pi->pin;
@@ -2920,6 +2926,9 @@ ssh_identity_register (ctrl_t ctrl, gcry_sexp_t key, int ttl, int confirm)
 
 
  out:
+  if (pi2 && pi2->max_length)
+    wipememory (pi2->pin, pi2->max_length);
+  xfree (pi2);
   if (pi && pi->max_length)
     wipememory (pi->pin, pi->max_length);
   xfree (pi);

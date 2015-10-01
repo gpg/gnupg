@@ -310,12 +310,12 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     const char *text2 = _("Please re-enter this passphrase");
     const char *initial_errtext = NULL;
 
-    pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
-    pi2 = pi + (sizeof *pi + 100);
-    pi->max_length = 100;
+    pi = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
+    pi->max_length = 100 + 1;
     pi->max_tries = 3;
     pi->with_qualitybar = 1;
-    pi2->max_length = 100;
+    pi2 = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
+    pi2->max_length = 100 + 1;
     pi2->max_tries = 3;
     pi2->check_cb = reenter_compare_cb;
     pi2->check_cb_arg = pi->pin;
@@ -345,13 +345,15 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     if (rc)
       {
         xfree (pi);
+        xfree (pi2);
         return rc;
       }
 
     if (!*pi->pin)
       {
         xfree (pi);
-        pi = NULL; /* User does not want a passphrase. */
+        xfree (pi2);
+        pi = pi2 = NULL; /* User does not want a passphrase. */
       }
   }
 
@@ -361,6 +363,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
     {
       log_error ("key generation failed: %s\n", gpg_strerror (rc));
       xfree (pi);
+      xfree (pi2);
       return rc;
     }
 
@@ -371,6 +374,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
       log_error ("key generation failed: invalid return value\n");
       gcry_sexp_release (s_key);
       xfree (pi);
+      xfree (pi2);
       return gpg_error (GPG_ERR_INV_DATA);
     }
   s_public = gcry_sexp_find_token (s_key, "public-key", 0);
@@ -380,6 +384,7 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
       gcry_sexp_release (s_private);
       gcry_sexp_release (s_key);
       xfree (pi);
+      xfree (pi2);
       return gpg_error (GPG_ERR_INV_DATA);
     }
   gcry_sexp_release (s_key); s_key = NULL;
@@ -388,7 +393,8 @@ agent_genkey (ctrl_t ctrl, const char *keyparam, size_t keyparamlen,
   if (DBG_CRYPTO)
     log_debug ("storing private key\n");
   rc = store_key (s_private, pi? pi->pin:NULL, 0);
-  xfree (pi); pi = NULL;
+  xfree (pi);
+  xfree (pi2);
   gcry_sexp_release (s_private);
   if (rc)
     {
@@ -432,12 +438,12 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
     const char *text2 = _("Please re-enter this passphrase");
     const char *initial_errtext = NULL;
 
-    pi = gcry_calloc_secure (2, sizeof (*pi) + 100);
-    pi2 = pi + (sizeof *pi + 100);
-    pi->max_length = 100;
+    pi = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
+    pi->max_length = 100 + 1;
     pi->max_tries = 3;
     pi->with_qualitybar = 1;
-    pi2->max_length = 100;
+    pi2 = gcry_calloc_secure (1, sizeof (*pi) + 100 + 1);
+    pi2->max_length = 100 + 1;
     pi2->max_tries = 3;
     pi2->check_cb = reenter_compare_cb;
     pi2->check_cb_arg = pi->pin;
@@ -468,17 +474,20 @@ agent_protect_and_store (ctrl_t ctrl, gcry_sexp_t s_skey)
     if (rc)
       {
         xfree (pi);
+        xfree (pi2);
         return rc;
       }
 
     if (!*pi->pin)
       {
         xfree (pi);
-        pi = NULL; /* User does not want a passphrase. */
+        xfree (pi2);
+        pi = pi2 = NULL; /* User does not want a passphrase. */
       }
   }
 
   rc = store_key (s_skey, pi? pi->pin:NULL, 1);
   xfree (pi);
+  xfree (pi2);
   return rc;
 }
