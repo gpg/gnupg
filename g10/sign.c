@@ -1477,7 +1477,7 @@ make_keysig_packet (PKT_signature **ret_sig, PKT_public_key *pk,
  *
  * TODO: Merge this with make_keysig_packet.
  */
-int
+gpg_error_t
 update_keysig_packet( PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
@@ -1488,7 +1488,7 @@ update_keysig_packet( PKT_signature **ret_sig,
                       void *opaque)
 {
     PKT_signature *sig;
-    int rc = 0;
+    gpg_error_t rc = 0;
     int digest_algo;
     gcry_md_hd_t md;
 
@@ -1524,11 +1524,19 @@ update_keysig_packet( PKT_signature **ret_sig,
 
     /* ... but we won't make a timestamp earlier than the existing
        one. */
-    while(sig->timestamp<=orig_sig->timestamp)
-      {
-	gnupg_sleep (1);
-	sig->timestamp=make_timestamp();
-      }
+    {
+      int tmout = 0;
+      while(sig->timestamp<=orig_sig->timestamp)
+        {
+          if (++tmout > 5 && !opt.ignore_time_conflict)
+            {
+              rc = gpg_error (GPG_ERR_TIME_CONFLICT);
+              goto leave;
+            }
+          gnupg_sleep (1);
+          sig->timestamp=make_timestamp();
+        }
+    }
 
     /* Note that already expired sigs will remain expired (with a
        duration of 1) since build-packet.c:build_sig_subpkt_from_sig
@@ -1550,6 +1558,7 @@ update_keysig_packet( PKT_signature **ret_sig,
 	rc = complete_sig (sig, pksk, md, NULL);
     }
 
+ leave:
     gcry_md_close (md);
     if( rc )
 	free_seckey_enc (sig);

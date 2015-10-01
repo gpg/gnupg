@@ -663,7 +663,7 @@ int make_keysig_packet( PKT_signature **ret_sig, PKT_public_key *pk,
 			int (*mksubpkt)(PKT_signature *, void *),
 			void *opaque,
                         const char *cache_nonce);
-int update_keysig_packet( PKT_signature **ret_sig,
+gpg_error_t update_keysig_packet (PKT_signature **ret_sig,
                       PKT_signature *orig_sig,
                       PKT_public_key *pk,
                       PKT_user_id *uid,
