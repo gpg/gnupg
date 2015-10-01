@@ -46,6 +46,7 @@
 #include "i18n.h"
 #include "keyserver-internal.h"
 #include "call-agent.h"
+#include "host2net.h"
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
@@ -287,6 +288,22 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
       if (sig->flags.pref_ks
           && ((opt.list_options & LIST_SHOW_KEYSERVER_URLS) || extended))
 	show_keyserver_url (sig, 3, 0);
+
+      if (extended)
+        {
+          PKT_public_key *pk = keyblock->pkt->pkt.public_key;
+          const unsigned char *s;
+          u32 expire;
+
+          s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL);
+          if (s && *s)
+            tty_printf ("             [primary]\n");
+
+          s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_KEY_EXPIRE, NULL);
+          if (s && buf32_to_u32 (s))
+            tty_printf ("             [expires: %s]\n",
+                        isotimestamp (pk->timestamp + buf32_to_u32 (s)));
+        }
     }
 
   return (sigrc == '!');
