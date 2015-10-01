@@ -374,8 +374,16 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
 	return err;
     }
 
-  pi = gcry_calloc_secure (2, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
-  pi2 = pi + (sizeof *pi + MAX_PASSPHRASE_LEN + 1);
+  pi = gcry_calloc_secure (1, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
+  if (!pi)
+    return gpg_error_from_syserror ();
+  pi2 = gcry_calloc_secure (1, sizeof (*pi2) + MAX_PASSPHRASE_LEN + 1);
+  if (!pi2)
+    {
+      err = gpg_error_from_syserror ();
+      xfree (pi2);
+      return err;
+    }
   pi->max_length = MAX_PASSPHRASE_LEN + 1;
   pi->max_tries = 3;
   pi->with_qualitybar = 1;
@@ -422,6 +430,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
     }
 
   xfree (initial_errtext);
+  xfree (pi2);
   xfree (pi);
   return err;
 }

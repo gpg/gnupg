@@ -3070,7 +3070,8 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   char *comment = NULL;
   char *key_fpr = NULL;
   const char *initial_errtext = NULL;
-  struct pin_entry_info_s *pi = NULL, *pi2;
+  struct pin_entry_info_s *pi = NULL;
+  struct pin_entry_info_s *pi2 = NULL;
 
   err = ssh_key_grip (key, key_grip_raw);
   if (err)
@@ -3101,13 +3102,18 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       goto out;
     }
 
-  pi = gcry_calloc_secure (2, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
+  pi = gcry_calloc_secure (1, sizeof (*pi) + MAX_PASSPHRASE_LEN + 1);
   if (!pi)
     {
       err = gpg_error_from_syserror ();
       goto out;
     }
-  pi2 = pi + (sizeof *pi + MAX_PASSPHRASE_LEN + 1);
+  pi2 = gcry_calloc_secure (1, sizeof (*pi2) + MAX_PASSPHRASE_LEN + 1);
+  if (!pi2)
+    {
+      err = gpg_error_from_syserror ();
+      goto out;
+    }
   pi->max_length = MAX_PASSPHRASE_LEN + 1;
   pi->max_tries = 1;
   pi->with_repeat = 1;
@@ -3155,6 +3161,9 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
 
 
  out:
+  if (pi2 && pi2->max_length)
+    wipememory (pi2->pin, pi2->max_length);
+  xfree (pi2);
   if (pi && pi->max_length)
     wipememory (pi->pin, pi->max_length);
   xfree (pi);
