@@ -326,11 +326,12 @@ start_scd (ctrl_t ctrl)
     }
   no_close_list[i] = ASSUAN_INVALID_FD;
 
-  /* Connect to the pinentry and perform initial handshaking.  Use
-     detached flag (128) so that under W32 SCDAEMON does not show up a
+  /* Connect to the scdaemon and perform initial handshaking.  Use
+     detached flag so that under Windows SCDAEMON does not show up a
      new window.  */
   rc = assuan_pipe_connect (ctx, opt.scdaemon_program, argv,
-			    no_close_list, atfork_cb, NULL, 128);
+			    no_close_list, atfork_cb, NULL,
+                            ASSUAN_PIPE_CONNECT_DETACHED);
   if (rc)
     {
       log_error ("can't connect to the SCdaemon: %s\n",
