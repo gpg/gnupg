@@ -383,7 +383,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
           int n_v6, n_v4;
 
           /* First figure out whether this is a pool.  For a pool we
-             use a different strategy than for a plains erver: We use
+             use a different strategy than for a plain server: We use
              the canonical name of the pool as the virtual host along
              with the IP addresses.  If it is not a pool, we use the
              specified name. */
@@ -512,7 +512,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
               xfree (reftbl);
               return err;
             }
-          qsort (reftbl, refidx, sizeof *reftbl, sort_hostpool);
+          qsort (hi->pool, refidx, sizeof *reftbl, sort_hostpool);
         }
       else
         xfree (reftbl);
