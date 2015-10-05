@@ -1626,7 +1626,65 @@ cmd_validate (assuan_context_t ctx, char *line)
   return leave_cmd (ctx, err);
 }
 
+
 
+/* Parse an keyserver URI and store it in a new uri item which is
+   returned at R_ITEM.  On error return an error code.  */
+static gpg_error_t
+make_keyserver_item (const char *uri, uri_item_t *r_item)
+{
+  gpg_error_t err;
+  uri_item_t item;
+
+  *r_item = NULL;
+  item = xtrymalloc (sizeof *item + strlen (uri));
+  if (!item)
+    return gpg_error_from_syserror ();
+
+  item->next = NULL;
+  item->parsed_uri = NULL;
+  strcpy (item->uri, uri);
+
+#if USE_LDAP
+  if (ldap_uri_p (item->uri))
+    err = ldap_parse_uri (&item->parsed_uri, uri);
+  else
+#endif
+    {
+      err = http_parse_uri (&item->parsed_uri, uri, 1);
+    }
+
+  if (err)
+    xfree (item);
+  else
+    *r_item = item;
+  return err;
+}
+
+
+/* If no keyserver is stored in CTRL but a global keyserver has been
+   set, put that global keyserver into CTRL.  We need use this
+   function to help migrate from the old gpg based keyserver
+   configuration to the new dirmngr based configuration.  */
+static gpg_error_t
+ensure_keyserver (ctrl_t ctrl)
+{
+  gpg_error_t err;
+  uri_item_t item;
+
+  if (ctrl->server_local->keyservers)
+    return 0; /* Already set for this session.  */
+  if (!opt.keyserver)
+    return 0; /* No global option set.  */
+
+  err = make_keyserver_item (opt.keyserver, &item);
+  if (!err)
+    ctrl->server_local->keyservers = item;
+
+  return err;
+}
+
+
 static const char hlp_keyserver[] =
   "KEYSERVER [<options>] [<uri>|<host>]\n"
   "Options are:\n"
@@ -1671,7 +1729,9 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 
   if (resolve_flag)
     {
-      err = ks_action_resolve (ctrl, ctrl->server_local->keyservers);
+      err = ensure_keyserver (ctrl);
+      if (!err)
+        err = ks_action_resolve (ctrl, ctrl->server_local->keyservers);
       if (err)
         goto leave;
     }
@@ -1711,29 +1771,9 @@ cmd_keyserver (assuan_context_t ctx, char *line)
 
   if (add_flag)
     {
-      item = xtrymalloc (sizeof *item + strlen (line));
-      if (!item)
-        {
-          err = gpg_error_from_syserror ();
-          goto leave;
-        }
-      item->next = NULL;
-      item->parsed_uri = NULL;
-      strcpy (item->uri, line);
-
-#if USE_LDAP
-      if (ldap_uri_p (item->uri))
-	err = ldap_parse_uri (&item->parsed_uri, line);
-      else
-#endif
-	{
-	  err = http_parse_uri (&item->parsed_uri, line, 1);
-	}
+      err = make_keyserver_item (line, &item);
       if (err)
-        {
-          xfree (item);
-          goto leave;
-        }
+        goto leave;
     }
   if (clear_flag)
     release_ctrl_keyservers (ctrl);
@@ -1743,9 +1783,19 @@ cmd_keyserver (assuan_context_t ctx, char *line)
       ctrl->server_local->keyservers = item;
     }
 
-  if (!add_flag && !clear_flag && !help_flag) /* List configured keyservers.  */
+  if (!add_flag && !clear_flag && !help_flag)
     {
+      /* List configured keyservers.  However, we first add a global
+         keyserver. */
       uri_item_t u;
+
+      err = ensure_keyserver (ctrl);
+      if (err)
+        {
+          assuan_set_error (ctx, err,
+                            "Bad keyserver configuration in dirmngr.conf");
+          goto leave;
+        }
 
       for (u=ctrl->server_local->keyservers; u; u = u->next)
         dirmngr_status (ctrl, "KEYSERVER", u->uri, NULL);
@@ -1798,6 +1848,10 @@ cmd_ks_search (assuan_context_t ctx, char *line)
           list = sl;
         }
     }
+
+  err = ensure_keyserver (ctrl);
+  if (err)
+    goto leave;
 
   /* Setup an output stream and perform the search.  */
   outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
@@ -1861,6 +1915,10 @@ cmd_ks_get (assuan_context_t ctx, char *line)
         }
     }
 
+  err = ensure_keyserver (ctrl);
+  if (err)
+    goto leave;
+
   /* Setup an output stream and perform the get.  */
   outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
   if (!outfp)
@@ -1891,6 +1949,10 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
   /* No options for now.  */
   line = skip_options (line);
 
+  err = ensure_keyserver (ctrl);
+  if (err)
+    goto leave;
+
   /* Setup an output stream and perform the get.  */
   outfp = es_fopencookie (ctx, "w", data_line_cookie_functions);
   if (!outfp)
@@ -1901,6 +1963,7 @@ cmd_ks_fetch (assuan_context_t ctx, char *line)
       es_fclose (outfp);
     }
 
+ leave:
   return leave_cmd (ctx, err);
 }
 
@@ -1935,6 +1998,10 @@ cmd_ks_put (assuan_context_t ctx, char *line)
 
   /* No options for now.  */
   line = skip_options (line);
+
+  err = ensure_keyserver (ctrl);
+  if (err)
+    goto leave;
 
   /* Ask for the key material.  */
   err = assuan_inquire (ctx, "KEYBLOCK",

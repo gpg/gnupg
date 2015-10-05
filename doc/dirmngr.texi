@@ -242,6 +242,25 @@ This options is not yet functional!  It will eventually switch GnuPG
 into a TOR mode to route all network access via TOR (an anonymity
 network).
 
+@item --keyserver @code{name}
+@opindex keyserver
+Use @code{name} as your keyserver.  This is the server that @command{gpg}
+communicates with to receive keys, send keys, and search for
+keys.  The format of the @code{name} is a URI:
+`scheme:[//]keyservername[:port]' The scheme is the type of keyserver:
+"hkp" for the HTTP (or compatible) keyservers, "ldap" for the LDAP
+keyservers, or "mailto" for the Graff email keyserver. Note that your
+particular installation of GnuPG may have other keyserver types
+available as well. Keyserver schemes are case-insensitive. After the
+keyserver name, optional keyserver configuration options may be
+provided. These are the same as the global @option{--keyserver-options}
+from below, but apply only to this particular keyserver.
+
+Most keyservers synchronize with each other, so there is generally no
+need to send keys to more than one server. The keyserver
+@code{hkp://keys.gnupg.net} uses round robin DNS to give a different
+keyserver each time you use it.
+
 @item --disable-ldap
 @opindex disable-ldap
 Entirely disables the use of LDAP.

@@ -130,6 +130,8 @@ struct
                                        considered valid after thisUpdate. */
   unsigned int ocsp_current_period; /* Seconds a response is considered
                                        current after nextUpdate. */
+
+  char *keyserver;    /* Malloced string with the default keyserver.  */
 } opt;
 
 
