@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-08-20 16:27+0200\n"
+"PO-Revision-Date: 2015-10-05 11:17+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -701,6 +701,10 @@ msgstr "%s-Schlüssel verwendet ein unsicheres (%u-Bit) Hashverfahren\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 "Ein %zu-Bit Hashverfahren ist für einen %u-Bit %s Schlüssel nicht möglich\n"
+
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "Prüfung der erstellten Signatur ist fehlgeschlagen: %s\n"
 
 msgid "secret key parts are not available\n"
 msgstr "Teile des geheimen Schlüssels sind nicht vorhanden\n"
@@ -3146,6 +3150,10 @@ msgstr "Dieser Befehl ist im %s-Modus nicht erlaubt.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Zumindestens eine User-ID muß ausgewählt werden.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr "(Benutze den '%s' Befehl.)\n"
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Die letzte User-ID kann nicht gelöscht werden!\n"
 
@@ -5124,10 +5132,6 @@ msgstr ""
 "(zu groß). Verwende \"unerweiterte\".\n"
 
 #, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "Prüfung der erstellten Signatur ist fehlgeschlagen: %s\n"
-
-#, c-format
 msgid "%s/%s signature from: \"%s\"\n"
 msgstr "%s/%s Signatur von: \"%s\"\n"
 
@@ -7033,6 +7037,9 @@ msgstr "Fehler beim Holen von `%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "Fehler beim Holen von `%s': HTTP Status %u\n"
 
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "CRL Zugriff ist im TOR Modus nicht möglich\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "Zertifikatsuche ist nicht möglich da %s abgeschaltet ist\n"
@@ -7240,6 +7247,9 @@ msgstr "|N|Nicht mehr als N Angaben in einer Anfrage zurückgeben"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
+
+msgid "route all network traffic via TOR"
+msgstr "Netzzugriff nur über TOR"
 
 msgid ""
 "@\n"
@@ -7533,6 +7543,9 @@ msgstr "Fehler beim Lesen vom Responder: %s\n"
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Antwort vom Server zu lang; die Grenze sind %d Bytes\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "OCSP Anfrage ist im TOR Modus nicht möglich\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "OCSP Anfrage nicht möglich da HTTP abgeschaltet ist\n"
@@ -7885,6 +7898,9 @@ msgstr "Optionen zum Einstellen der Ausgabeformate"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
 
+msgid "Options controlling the use of TOR"
+msgstr "Optionen zur Benutzung von TOR"
+
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration für HTTP Server"
 
@@ -7912,8 +7928,8 @@ msgstr "Smartcard Daemon"
 msgid "GPG for S/MIME"
 msgstr "GPG für S/MIME"
 
-msgid "Directory Manager"
-msgstr "Directory Manager"
+msgid "Key Acquirer"
+msgstr "Schlüsselzugriff"
 
 msgid "PIN and Passphrase Entry"
 msgstr "PIN und Passphrase Eingabe"
@@ -8132,6 +8148,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "Directory Manager"
+#~ msgstr "Directory Manager"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr ""
