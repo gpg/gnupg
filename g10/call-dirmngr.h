@@ -21,6 +21,7 @@
 
 void gpg_dirmngr_deinit_session_data (ctrl_t ctrl);
 
+gpg_error_t gpg_dirmngr_ks_list (ctrl_t ctrl, char **r_keyserver);
 gpg_error_t gpg_dirmngr_ks_search (ctrl_t ctrl, const char *searchstr,
                                    gpg_error_t (*cb)(void*, int, char *),
                                    void *cb_value);

@@ -1504,6 +1504,9 @@ ignored if the option --with-colons is used.
 
 @item --keyserver @code{name}
 @opindex keyserver
+This option is deprecated - please use the @option{--keyserver} in
+@file{dirmngr.conf} instead.
+
 Use @code{name} as your keyserver. This is the server that
 @option{--recv-keys}, @option{--send-keys}, and @option{--search-keys}
 will communicate with to receive keys from, send keys to, and search for
@@ -1586,6 +1589,7 @@ are available for all keyserver types, some common options are:
   @option{--recv-keys} command as a whole. Defaults to 30 seconds.
 
   @item http-proxy=@code{value}
+  This options is deprecated.
   Set the proxy to use for HTTP and HKP keyservers.
   This overrides any proxy defined in @file{dirmngr.conf}.
 

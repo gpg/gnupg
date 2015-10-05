@@ -1357,10 +1357,12 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 /* Note this is different than the original HKP refresh.  It allows
    usernames to refresh only part of the keyring. */
 
-int
+gpg_error_t
 keyserver_refresh (ctrl_t ctrl, strlist_t users)
 {
-  int rc,count,numdesc,fakev3=0;
+  gpg_error_t err;
+  int count, numdesc;
+  int fakev3 = 0;
   KEYDB_SEARCH_DESC *desc;
   unsigned int options=opt.keyserver_options.import_options;
 
@@ -1381,9 +1383,9 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	 ascii_strcasecmp(opt.keyserver->scheme,"mailto")==0))
     fakev3=1;
 
-  rc=keyidlist(users,&desc,&numdesc,fakev3);
-  if(rc)
-    return rc;
+  err = keyidlist (users, &desc, &numdesc, fakev3);
+  if (err)
+    return err;
 
   count=numdesc;
   if(count>0)
@@ -1403,11 +1405,11 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 	      /* We use the keyserver structure we parsed out before.
 		 Note that a preferred keyserver without a scheme://
 		 will be interpreted as hkp:// */
-	      rc = keyserver_get (ctrl, &desc[i], 1, keyserver, NULL, NULL);
-	      if(rc)
+	      err = keyserver_get (ctrl, &desc[i], 1, keyserver, NULL, NULL);
+	      if (err)
 		log_info(_("WARNING: unable to refresh key %s"
 			   " via %s: %s\n"),keystr_from_desc(&desc[i]),
-			 keyserver->uri,gpg_strerror (rc));
+			 keyserver->uri,gpg_strerror (err));
 	      else
 		{
 		  /* We got it, so mark it as NONE so we don't try and
@@ -1424,16 +1426,22 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
 
   if(count>0)
     {
-      if(opt.keyserver && !opt.quiet)
-	{
-	  if(count==1)
-	    log_info(_("refreshing 1 key from %s\n"),opt.keyserver->uri);
-	  else
-	    log_info(_("refreshing %d keys from %s\n"),
-		     count,opt.keyserver->uri);
-	}
+      char *tmpuri;
 
-      rc=keyserver_get (ctrl, desc, numdesc, NULL, NULL, NULL);
+      err = gpg_dirmngr_ks_list (ctrl, &tmpuri);
+      if (!err)
+        {
+          if (!opt.quiet)
+            {
+              if(count==1)
+                log_info(_("refreshing 1 key from %s\n"), tmpuri);
+              else
+                log_info(_("refreshing %d keys from %s\n"), count, tmpuri);
+            }
+          xfree (tmpuri);
+
+          err = keyserver_get (ctrl, desc, numdesc, NULL, NULL, NULL);
+        }
     }
 
   xfree(desc);
@@ -1445,7 +1453,7 @@ keyserver_refresh (ctrl_t ctrl, strlist_t users)
   if(!(opt.keyserver_options.import_options&IMPORT_FAST))
     check_or_update_trustdb ();
 
-  return rc;
+  return err;
 }
 
 
@@ -1462,12 +1470,6 @@ keyserver_search (ctrl_t ctrl, strlist_t tokens)
 
   if (!tokens)
     return 0;  /* Return success if no patterns are given.  */
-
-  if (!opt.keyserver)
-    {
-      log_error (_("no keyserver known (use option --keyserver)\n"));
-      return gpg_error (GPG_ERR_NO_KEYSERVER);
-    }
 
   /* Write global options */
 

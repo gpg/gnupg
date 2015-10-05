@@ -724,8 +724,8 @@ static gc_option_t gc_options_gpg[] =
    { "Keyserver",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Configuration for Keyservers") },
-   { "keyserver", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
-     "gnupg", N_("|URL|use keyserver at URL"),
+   { "keyserver", GC_OPT_FLAG_NONE, GC_LEVEL_EXPERT,
+     "gnupg", N_("|URL|use keyserver at URL"), /* Deprecated - use dirmngr */
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
    { "allow-pka-lookup", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
      "gnupg", N_("allow PKA lookups (DNS requests)"),
@@ -733,8 +733,6 @@ static gc_option_t gc_options_gpg[] =
    { "auto-key-locate", GC_OPT_FLAG_NONE, GC_LEVEL_ADVANCED,
      "gnupg", N_("|MECHANISMS|use MECHANISMS to locate keys by mail address"),
      GC_ARG_TYPE_STRING, GC_BACKEND_GPG },
-
-
 
 
    GC_OPTION_NULL
@@ -914,6 +912,13 @@ static gc_option_t gc_options_dirmngr[] =
    { "use-tor", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      "dirmngr", "route all network traffic via TOR",
       GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
+
+   { "Keyserver",
+     GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
+     "gnupg", N_("Configuration for Keyservers") },
+   { "keyserver", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+     "gnupg", N_("|URL|use keyserver at URL"),
+     GC_ARG_TYPE_STRING, GC_BACKEND_DIRMNGR },
 
    { "HTTP",
      GC_OPT_FLAG_GROUP, GC_LEVEL_ADVANCED,

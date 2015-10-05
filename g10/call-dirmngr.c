@@ -44,6 +44,7 @@
 /* Parameter structure used to gather status info.  */
 struct ks_status_parm_s
 {
+  const char *keyword; /* Look for this keyword or NULL for "SOURCE". */
   char *source;
 };
 
@@ -334,7 +335,7 @@ clear_context_flags (ctrl_t ctrl, assuan_context_t ctx)
 
 
 
-/* Status callback for ks_get and ks_search.  */
+/* Status callback for ks_list, ks_get and ks_search.  */
 static gpg_error_t
 ks_status_cb (void *opaque, const char *line)
 {
@@ -342,7 +343,7 @@ ks_status_cb (void *opaque, const char *line)
   gpg_error_t err = 0;
   const char *s;
 
-  if ((s = has_leading_keyword (line, "SOURCE")))
+  if ((s = has_leading_keyword (line, parm->keyword? parm->keyword : "SOURCE")))
     {
       if (!parm->source)
         {
@@ -352,6 +353,44 @@ ks_status_cb (void *opaque, const char *line)
         }
     }
 
+  return err;
+}
+
+
+
+/* Run the "KEYSERVER" command to return the name of the used
+   keyserver at R_KEYSERVER.  */
+gpg_error_t
+gpg_dirmngr_ks_list (ctrl_t ctrl, char **r_keyserver)
+{
+  gpg_error_t err;
+  assuan_context_t ctx;
+  struct ks_status_parm_s stparm;
+
+  memset (&stparm, 0, sizeof stparm);
+  stparm.keyword = "KEYSERVER";
+  *r_keyserver = NULL;
+
+  err = open_context (ctrl, &ctx);
+  if (err)
+    return err;
+
+  err = assuan_transact (ctx, "KEYSERVER", NULL, NULL,
+                         NULL, NULL, ks_status_cb, &stparm);
+  if (err)
+    goto leave;
+  if (!stparm.source)
+    {
+      err = gpg_error (GPG_ERR_NO_KEYSERVER);
+      goto leave;
+    }
+
+  *r_keyserver = stparm.source;
+  stparm.source = NULL;
+
+ leave:
+  xfree (stparm.source);
+  close_context (ctrl, ctx);
   return err;
 }
 
