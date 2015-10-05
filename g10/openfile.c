@@ -375,10 +375,11 @@ open_sigfile (const char *sigfilename, progress_filter_context_t *pfx)
 
 
 /****************
- * Copy the option file skeleton to the given directory.
+ * Copy the option file skeleton for NAME to the given directory.
+ * Returns true if the new option file has any option.
  */
-static void
-copy_options_file (const char *destdir)
+static int
+copy_options_file (const char *destdir, const char *name)
 {
   const char *datadir = gnupg_datadir ();
   char *fname;
@@ -390,10 +391,9 @@ copy_options_file (const char *destdir)
   int any_option = 0;
 
   if (opt.dry_run)
-    return;
+    return 0;
 
-  fname = xmalloc (strlen(datadir) + strlen(destdir) + 15);
-  strcpy (stpcpy(fname, datadir), DIRSEP_S "gpg-conf" SKELEXT);
+  fname = xstrconcat (datadir, DIRSEP_S, name, "-conf", SKELEXT, NULL);
   src = fopen (fname, "r");
   if (src && is_secured_file (fileno (src)))
     {
@@ -405,9 +405,10 @@ copy_options_file (const char *destdir)
     {
       log_info (_("can't open '%s': %s\n"), fname, strerror(errno));
       xfree(fname);
-      return;
+      return 0;
     }
-  strcpy (stpcpy (fname, destdir), DIRSEP_S GPGEXT_GPG EXTSEP_S "conf");
+  xfree (fname);
+  fname = xstrconcat (destdir, DIRSEP_S, name, EXTSEP_S, "conf", NULL);
 
   oldmask = umask (077);
   if (is_secured_filename (fname))
@@ -424,7 +425,7 @@ copy_options_file (const char *destdir)
       log_info (_("can't create '%s': %s\n"), fname, strerror(errno) );
       fclose (src);
       xfree (fname);
-      return;
+      return 0;
     }
 
   while ((c = getc (src)) != EOF)
@@ -455,11 +456,8 @@ copy_options_file (const char *destdir)
   fclose (src);
 
   log_info (_("new configuration file '%s' created\n"), fname);
-  if (any_option)
-    log_info (_("WARNING: options in '%s'"
-                " are not yet active during this run\n"),
-              fname);
   xfree (fname);
+  return any_option;
 }
 
 
@@ -492,7 +490,15 @@ try_make_homedir (const char *fname)
                     fname, strerror(errno) );
       else if (!opt.quiet )
         log_info ( _("directory '%s' created\n"), fname );
-      copy_options_file( fname );
+
+      /* Note that we also copy a dirmngr.conf file here.  This is
+         because gpg is likely the first invoked tool and thus creates
+         the directory.  */
+      copy_options_file (fname, DIRMNGR_NAME);
+      if (copy_options_file (fname, GPG_NAME))
+        log_info (_("WARNING: options in '%s'"
+                    " are not yet active during this run\n"),
+                  fname);
     }
 }
 

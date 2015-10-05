@@ -95,39 +95,9 @@ require-cross-certification
 
 #lock-once
 
-# GnuPG can send and receive keys to and from a keyserver.  These
-# servers can be HKP, email, or LDAP (if GnuPG is built with LDAP
-# support).
-#
-# Example HKP keyservers:
-#      hkp://keys.gnupg.net
-#
-# Example LDAP keyservers:
-#      ldap://pgp.surfnet.nl:11370
-#
-# Regular URL syntax applies, and you can set an alternate port
-# through the usual method:
-#      hkp://keyserver.example.net:22742
-#
-# If you have problems connecting to a HKP server through a buggy http
-# proxy, you can use keyserver option broken-http-proxy (see below),
-# but first you should make sure that you have read the man page
-# regarding proxies (keyserver option honor-http-proxy)
-#
-# Most users just set the name and type of their preferred keyserver.
-# Note that most servers (with the notable exception of
-# ldap://keyserver.pgp.com) synchronize changes with each other.  Note
-# also that a single server name may actually point to multiple
-# servers via DNS round-robin.  hkp://keys.gnupg.net is an example of
-# such a "server", which spreads the load over a number of physical
-# servers.  To see the IP address of the server actually used, you may use
-# the "--keyserver-options debug".
-
-keyserver hkp://keys.gnupg.net
-#keyserver http://http-keys.gnupg.net
-#keyserver mailto:pgp-public-keys@keys.nl.pgp.net
 
 # Common options for keyserver functions:
+# (Note that the --keyserver option has been moved to dirmngr.conf)
 #
 # include-disabled = when searching, include keys marked as "disabled"
 #                    on the keyserver (not all keyservers support this).
