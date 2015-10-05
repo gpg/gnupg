@@ -911,7 +911,7 @@ static gc_option_t gc_options_dirmngr[] =
    { "TOR",
      GC_OPT_FLAG_GROUP, GC_LEVEL_BASIC,
      "gnupg", N_("Options controlling the use of TOR") },
-   { "use-tor", GC_OPT_FLAG_NONE, GC_LEVEL_BASIC,
+   { "use-tor", GC_OPT_FLAG_NONE, GC_LEVEL_INVISIBLE,
      "dirmngr", "route all network traffic via TOR",
       GC_ARG_TYPE_NONE, GC_BACKEND_DIRMNGR },
 

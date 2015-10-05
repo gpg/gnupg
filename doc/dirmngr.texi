@@ -236,6 +236,12 @@ sufficient.
 Enabling this option forces loading of expired CRLs; this is only
 useful for debugging.
 
+@item --use-tor
+@opindex use-tor
+This options is not yet functional!  It will eventually switch GnuPG
+into a TOR mode to route all network access via TOR (an anonymity
+network).
+
 @item --disable-ldap
 @opindex disable-ldap
 Entirely disables the use of LDAP.

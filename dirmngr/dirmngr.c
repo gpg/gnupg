@@ -960,6 +960,14 @@ main (int argc, char **argv)
   log_info ("NOTE: this is a development version!\n");
 #endif
 
+  if (opt.use_tor)
+    {
+      log_info ("WARNING: ***************************************\n");
+      log_info ("WARNING: TOR mode (--use-tor) DOES NOT YET WORK!\n");
+      log_info ("WARNING: ***************************************\n");
+    }
+
+
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
     {
