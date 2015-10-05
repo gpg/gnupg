@@ -1063,12 +1063,10 @@ agent_get_passphrase (ctrl_t ctrl,
         {
 	  size_t size;
 	  size_t len = ASSUAN_LINELENGTH/2;
-	  unsigned char *buffer = gcry_malloc_secure (len);
+	  unsigned char *buffer;
 
 	  rc = pinentry_loopback(ctrl, "PASSPHRASE", &buffer, &size, len);
-	  if (rc)
-	    xfree(buffer);
-	  else
+	  if (!rc)
 	    {
 	      buffer[size] = 0;
 	      *retpass = buffer;
