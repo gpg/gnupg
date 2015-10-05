@@ -83,7 +83,9 @@ sample_keys = samplekeys/ecc-sample-1-pub.asc \
 	      samplekeys/eddsa-sample-1-sec.asc \
 	      samplekeys/dda252ebb8ebe1af-1.asc \
 	      samplekeys/dda252ebb8ebe1af-2.asc \
-	      samplekeys/whats-new-in-2.1.asc
+	      samplekeys/whats-new-in-2.1.asc \
+	      samplekeys/e2e-p256-1-clr.asc \
+	      samplekeys/e2e-p256-1-prt.asc
 
 EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)

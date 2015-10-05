@@ -11,3 +11,5 @@ eddsa-sample-1-sec.asc Ditto, but as protected secret keyblock.
 dda252ebb8ebe1af-1.asc rsa4096 key 1
 dda252ebb8ebe1af-2.asc rsa4096 key 2 with a long keyid collision.
 whats-new-in-2.1.asc   Collection of sample keys.
+e2e-p256-1-clr.asc     Google End-end-End test key (no protection)
+e2e-p256-1-prt.asc     Ditto, but protected with passphrase "a".
