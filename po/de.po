@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-10-05 11:17+0200\n"
+"PO-Revision-Date: 2015-10-06 12:50+0200\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -5227,7 +5227,7 @@ msgstr "trustdb Transaktion zu groß\n"
 
 #, c-format
 msgid "can't access '%s': %s\n"
-msgstr "kann aus `%s' nicht zugreifen: %s\n"
+msgstr "kann auf `%s' nicht zugreifen: %s\n"
 
 #, c-format
 msgid "%s: directory does not exist!\n"
