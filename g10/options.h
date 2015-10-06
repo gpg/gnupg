@@ -240,6 +240,7 @@ struct
       AKL_LOCAL,
       AKL_CERT,
       AKL_PKA,
+      AKL_DANE,
       AKL_LDAP,
       AKL_KEYSERVER,
       AKL_SPEC

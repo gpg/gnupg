@@ -1103,7 +1103,10 @@ dns_cert_status_cb (void *opaque, const char *line)
    CERT record found with a supported type; it is expected that only
    one CERT record is used.  If CERTTYPE is one of the supported
    certtypes, only records with this certtype are considered and the
-   first one found is returned.  All R_* args are optional. */
+   first one found is returned.  All R_* args are optional.
+
+   If CERTTYPE is NULL the DANE method is used to fetch the key.
+ */
 gpg_error_t
 gpg_dirmngr_dns_cert (ctrl_t ctrl, const char *name, const char *certtype,
                       estream_t *r_key,
@@ -1129,7 +1132,7 @@ gpg_dirmngr_dns_cert (ctrl_t ctrl, const char *name, const char *certtype,
   if (err)
     return err;
 
-  line = es_bsprintf ("DNS_CERT %s %s", certtype, name);
+  line = es_bsprintf ("DNS_CERT %s %s", certtype? certtype : "--dane", name);
   if (!line)
     {
       err = gpg_error_from_syserror ();

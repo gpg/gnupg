@@ -898,7 +898,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	    case AKL_CERT:
 	      mechanism = "DNS CERT";
 	      glo_ctrl.in_auto_key_retrieve++;
-	      rc = keyserver_import_cert (ctrl, name, &fpr, &fpr_len);
+	      rc = keyserver_import_cert (ctrl, name, 0, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
@@ -906,6 +906,13 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      mechanism = "PKA";
 	      glo_ctrl.in_auto_key_retrieve++;
 	      rc = keyserver_import_pka (ctrl, name, &fpr, &fpr_len);
+	      glo_ctrl.in_auto_key_retrieve--;
+	      break;
+
+	    case AKL_DANE:
+	      mechanism = "DANE";
+	      glo_ctrl.in_auto_key_retrieve++;
+	      rc = keyserver_import_cert (ctrl, name, 1, &fpr, &fpr_len);
 	      glo_ctrl.in_auto_key_retrieve--;
 	      break;
 
@@ -3060,6 +3067,8 @@ parse_auto_key_locate (char *options)
 #endif
       else if (ascii_strcasecmp (tok, "pka") == 0)
 	akl->type = AKL_PKA;
+      else if (ascii_strcasecmp (tok, "dane") == 0)
+	akl->type = AKL_DANE;
       else if ((akl->spec = parse_keyserver_uri (tok, 1)))
 	akl->type = AKL_SPEC;
       else

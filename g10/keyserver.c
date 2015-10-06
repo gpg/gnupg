@@ -1881,30 +1881,34 @@ keyserver_fetch (ctrl_t ctrl, strlist_t urilist)
 }
 
 
-/* Import key in a CERT or pointed to by a CERT */
+/* Import key in a CERT or pointed to by a CERT.  In DANE_MODE fetch
+   the certificate using the DANE method.  */
 int
-keyserver_import_cert (ctrl_t ctrl,
-                       const char *name,unsigned char **fpr,size_t *fpr_len)
+keyserver_import_cert (ctrl_t ctrl, const char *name, int dane_mode,
+                       unsigned char **fpr,size_t *fpr_len)
 {
   gpg_error_t err;
-  char *domain,*look,*url;
+  char *look,*url;
   estream_t key;
 
+  look = xstrdup(name);
 
-  look=xstrdup(name);
+  if (!dane_mode)
+    {
+      char *domain = strrchr (look,'@');
+      if (domain)
+        *domain='.';
+    }
 
-  domain=strrchr(look,'@');
-  if(domain)
-    *domain='.';
-
-  err = gpg_dirmngr_dns_cert (ctrl, look, "*", &key, fpr, fpr_len, &url);
+  err = gpg_dirmngr_dns_cert (ctrl, look, dane_mode? NULL : "*",
+                              &key, fpr, fpr_len, &url);
   if (err)
     ;
   else if (key)
     {
       int armor_status=opt.no_armor;
 
-      /* CERTs are always in binary format */
+      /* CERTs and DANE records are always in binary format */
       opt.no_armor=1;
 
       err = import_keys_es_stream (ctrl, key, NULL, fpr, fpr_len,

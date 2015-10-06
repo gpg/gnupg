@@ -1463,6 +1463,10 @@ mechanisms, in the order they are to be tried:
   @item pka
   Locate a key using DNS PKA.
 
+  @item dane
+  Locate a key using DANE, as specified
+  in draft-ietf-dane-openpgpkey-05.txt.
+
   @item ldap
   Using DNS Service Discovery, check the domain in question for any LDAP
   keyservers to use.  If this fails, attempt to locate the key using the
