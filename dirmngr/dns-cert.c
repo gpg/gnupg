@@ -53,7 +53,7 @@
 /* Not every installation has gotten around to supporting CERTs
    yet... */
 #ifndef T_CERT
-#define T_CERT 37
+# define T_CERT 37
 #endif
 
 /* ADNS has no support for CERT yet. */
@@ -69,7 +69,7 @@
    string and returned at R_URL.  If WANT_CERTTYPE is 0 this function
    returns the first CERT found with a supported type; it is expected
    that only one CERT record is used.  If WANT_CERTTYPE is one of the
-   supported certtypes only records wih this certtype are considered
+   supported certtypes only records with this certtype are considered
    and the first found is returned.  (R_KEY,R_KEYLEN) are optional. */
 gpg_error_t
 get_dns_cert (const char *name, int want_certtype,
@@ -282,83 +282,85 @@ get_dns_cert (const char *name, int want_certtype,
           dlen = buf16_to_u16 (pt);
           pt += 2;
 
-          /* We asked for CERT and got something else - might be a
-             CNAME, so loop around again. */
-          if (type != T_CERT)
+          /* Check the type and parse.  */
+          if (type == T_CERT)
             {
-              pt += dlen;
-              continue;
-            }
+              /* We got a CERT type.   */
+              ctype = buf16_to_u16 (pt);
+              pt += 2;
 
-          /* The CERT type */
-          ctype = buf16_to_u16 (pt);
-          pt += 2;
+              /* Skip the CERT key tag and algo which we don't need. */
+              pt += 3;
 
-          /* Skip the CERT key tag and algo which we don't need. */
-          pt += 3;
+              dlen -= 5;
 
-          dlen -= 5;
-
-          /* 15 bytes takes us to here */
-          if (want_certtype && want_certtype != ctype)
-            ; /* Not of the requested certtype.  */
-          else if (ctype == DNS_CERTTYPE_PGP && dlen && r_key && r_keylen)
-            {
-              /* PGP type */
-              *r_key = xtrymalloc (dlen);
-              if (!*r_key)
-                err = gpg_err_make (default_errsource,
-                                    gpg_err_code_from_syserror ());
-              else
+              /* 15 bytes takes us to here */
+              if (want_certtype && want_certtype != ctype)
+                ; /* Not of the requested certtype.  */
+              else if (ctype == DNS_CERTTYPE_PGP && dlen && r_key && r_keylen)
                 {
-                  memcpy (*r_key, pt, dlen);
-                  *r_keylen = dlen;
+                  /* PGP type */
+                  *r_key = xtrymalloc (dlen);
+                  if (!*r_key)
+                    err = gpg_err_make (default_errsource,
+                                        gpg_err_code_from_syserror ());
+                  else
+                    {
+                      memcpy (*r_key, pt, dlen);
+                      *r_keylen = dlen;
+                      err = 0;
+                    }
+                  goto leave;
+                }
+              else if (ctype == DNS_CERTTYPE_IPGP
+                       && dlen && dlen < 1023 && dlen >= pt[0] + 1)
+                {
+                  /* IPGP type */
+                  *r_fprlen = pt[0];
+                  if (*r_fprlen)
+                    {
+                      *r_fpr = xtrymalloc (*r_fprlen);
+                      if (!*r_fpr)
+                        {
+                          err = gpg_err_make (default_errsource,
+                                              gpg_err_code_from_syserror ());
+                          goto leave;
+                        }
+                      memcpy (*r_fpr, &pt[1], *r_fprlen);
+                    }
+                  else
+                    *r_fpr = NULL;
+
+                  if (dlen > *r_fprlen + 1)
+                    {
+                      *r_url = xtrymalloc (dlen - (*r_fprlen + 1) + 1);
+                      if (!*r_fpr)
+                        {
+                          err = gpg_err_make (default_errsource,
+                                              gpg_err_code_from_syserror ());
+                          xfree (*r_fpr);
+                          *r_fpr = NULL;
+                          goto leave;
+                        }
+                      memcpy (*r_url, &pt[*r_fprlen + 1],
+                              dlen - (*r_fprlen + 1));
+                      (*r_url)[dlen - (*r_fprlen + 1)] = '\0';
+                    }
+                  else
+                    *r_url = NULL;
+
                   err = 0;
+                  goto leave;
                 }
-              goto leave;
+
+              /* No subtype matches, so continue with the next answer. */
+              pt += dlen;
             }
-          else if (ctype == DNS_CERTTYPE_IPGP
-                   && dlen && dlen < 1023 && dlen >= pt[0] + 1)
+          else
             {
-              /* IPGP type */
-              *r_fprlen = pt[0];
-              if (*r_fprlen)
-                {
-                  *r_fpr = xtrymalloc (*r_fprlen);
-                  if (!*r_fpr)
-                    {
-                      err = gpg_err_make (default_errsource,
-                                          gpg_err_code_from_syserror ());
-                      goto leave;
-                    }
-                  memcpy (*r_fpr, &pt[1], *r_fprlen);
-                }
-              else
-                *r_fpr = NULL;
-
-              if (dlen > *r_fprlen + 1)
-                {
-                  *r_url = xtrymalloc (dlen - (*r_fprlen + 1) + 1);
-                  if (!*r_fpr)
-                    {
-                      err = gpg_err_make (default_errsource,
-                                          gpg_err_code_from_syserror ());
-                      xfree (*r_fpr);
-                      *r_fpr = NULL;
-                      goto leave;
-                    }
-                  memcpy (*r_url, &pt[*r_fprlen + 1], dlen - (*r_fprlen + 1));
-                  (*r_url)[dlen - (*r_fprlen + 1)] = '\0';
-                }
-              else
-                *r_url = NULL;
-
-              err = 0;
-              goto leave;
+              /* Not a requested type - might be a CNAME. Try next item.  */
+              pt += dlen;
             }
-
-          /* Neither type matches, so go around to the next answer. */
-          pt += dlen;
         }
     }
 
