@@ -56,6 +56,6 @@ keyserver hkp://keys.gnupg.net
 # used for the connection.  Enter the full name of a file with the
 # root certificates here.  If that file is in PEM format a ".pem"
 # suffix is expected.  This option may be given multiple times to add
-# more root certificates.
+# more root certificates.  Tilde expansion is supported.
 
 #hkp-cacert /path/to/CA/sks-keyservers.netCA.pem

@@ -433,7 +433,7 @@ Use the root certificates in @var{file} for verification of the TLS
 certificates used with @code{hkps} (keyserver access over TLS).  If
 the file is in PEM format a suffix of @code{.pem} is expected for
 @var{file}.  This option may be given multiple times to add more
-root certificates.
+root certificates.  Tilde expansion is supported.
 
 @end table
 
