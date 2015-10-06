@@ -291,6 +291,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 {
   gcry_sexp_t s_skey = NULL, s_sig = NULL;
   gcry_sexp_t s_hash = NULL;
+  gcry_sexp_t s_pkey = NULL;
   unsigned char *shadow_info = NULL;
   unsigned int rc = 0;		/* FIXME: gpg-error? */
   const unsigned char *data;
@@ -330,6 +331,13 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
       int is_RSA = 0;
       int is_ECDSA = 0;
       int is_EdDSA = 0;
+
+      rc = agent_public_key_from_file (ctrl, ctrl->keygrip, &s_pkey);
+      if (rc)
+        {
+          log_error ("failed to read the public key\n");
+          goto leave;
+        }
 
       if (agent_is_eddsa_key (s_skey))
         is_EdDSA = 1;
@@ -497,7 +505,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
                                ctrl->digest.raw_value);
         }
 
-      rc = gcry_pk_verify (s_sig, s_hash, s_skey);
+      rc = gcry_pk_verify (s_sig, s_hash, s_pkey? s_pkey: s_skey);
 
       if (rc)
         {
@@ -512,6 +520,7 @@ agent_pksign_do (ctrl_t ctrl, const char *cache_nonce,
 
   *signature_sexp = s_sig;
 
+  gcry_sexp_release (s_pkey);
   gcry_sexp_release (s_skey);
   gcry_sexp_release (s_hash);
   xfree (shadow_info);
