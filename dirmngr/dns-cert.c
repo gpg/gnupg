@@ -99,7 +99,11 @@ get_dns_cert (const char *name, int want_certtype,
       return err;
     }
 
-  if (adns_synchronous (state, name, (adns_r_unknown | my_adns_r_cert),
+  if (adns_synchronous (state, name,
+                        (adns_r_unknown
+                         | (want_certtype < DNS_CERTTYPE_RRBASE
+                            ? my_adns_r_cert
+                            : (want_certtype - DNS_CERTTYPE_RRBASE))),
                         adns_qf_quoteok_query, &answer))
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
@@ -121,6 +125,26 @@ get_dns_cert (const char *name, int want_certtype,
     {
       int datalen = answer->rrs.byteblock[count].len;
       const unsigned char *data = answer->rrs.byteblock[count].data;
+
+      /* First check for our generic RR hack.  */
+      if (datalen
+          && want_certtype >= DNS_CERTTYPE_RRBASE
+          && ((want_certtype - DNS_CERTTYPE_RRBASE)
+              == (answer->type & ~adns_r_unknown)))
+        {
+          /* Found the requested record - return it.  */
+          *r_key = xtrymalloc (datalen);
+          if (!*r_key)
+            err = gpg_err_make (default_errsource,
+                                gpg_err_code_from_syserror ());
+          else
+            {
+              memcpy (*r_key, data, datalen);
+              *r_keylen = datalen;
+              err = 0;
+            }
+          goto leave;
+        }
 
       if (datalen < 5)
         continue;  /* Truncated CERT record - skip.  */
@@ -219,7 +243,11 @@ get_dns_cert (const char *name, int want_certtype,
 
   err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
 
-  r = res_query (name, C_IN, T_CERT, answer, 65536);
+  r = res_query (name, C_IN,
+                 (want_certtype < DNS_CERTTYPE_RRBASE
+                  ? T_CERT
+                  : (want_certtype - DNS_CERTTYPE_RRBASE)),
+                 answer, 65536);
   /* Not too big, not too small, no errors and at least 1 answer. */
   if (r >= sizeof (HEADER) && r <= 65536
       && (((HEADER *) answer)->rcode) == NOERROR
@@ -283,7 +311,28 @@ get_dns_cert (const char *name, int want_certtype,
           pt += 2;
 
           /* Check the type and parse.  */
-          if (type == T_CERT)
+          if (want_certtype >= DNS_CERTTYPE_RRBASE
+              && type == (want_certtype - DNS_CERTTYPE_RRBASE)
+              && r_key)
+            {
+              *r_key = xtrymalloc (dlen);
+              if (!*r_key)
+                err = gpg_err_make (default_errsource,
+                                    gpg_err_code_from_syserror ());
+              else
+                {
+                  memcpy (*r_key, pt, dlen);
+                  *r_keylen = dlen;
+                  err = 0;
+                }
+              goto leave;
+            }
+          else if (want_certtype >= DNS_CERTTYPE_RRBASE)
+            {
+              /* We did not found the requested RR.  */
+              pt += dlen;
+            }
+          else if (type == T_CERT)
             {
               /* We got a CERT type.   */
               ctype = buf16_to_u16 (pt);

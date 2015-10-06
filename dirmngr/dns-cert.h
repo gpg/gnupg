@@ -43,7 +43,9 @@
 #define DNS_CERTTYPE_IACPKIX   8 /* The URL of an Attribute Certificate.  */
 #define DNS_CERTTYPE_URI     253 /* URI private.  */
 #define DNS_CERTTYPE_OID     254 /* OID private.  */
-
+/* Hacks for our implementation.  */
+#define DNS_CERTTYPE_RRBASE 1024 /* Base of special constants.  */
+#define DNS_CERTTYPE_RR61   (DNS_CERTTYPE_RRBASE + 61)
 
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
