@@ -643,6 +643,7 @@ option_handler (assuan_context_t ctx, const char *key, const char *value)
 static const char hlp_dns_cert[] =
   "DNS_CERT <subtype> <name>\n"
   "DNS_CERT --pka <user_id>\n"
+  "DNS_CERT --dane <user_id>\n"
   "\n"
   "Return the CERT record for <name>.  <subtype> is one of\n"
   "  *     Return the first record of any supported subtype\n"
@@ -650,13 +651,14 @@ static const char hlp_dns_cert[] =
   "  IPGP  Return the first record of subtype IPGP (6)\n"
   "If the content of a certifciate is available (PGP) it is returned\n"
   "by data lines.  Fingerprints and URLs are returned via status lines.\n"
-  "In --pka mode the fingerprint and if available an URL is returned.";
+  "In --pka mode the fingerprint and if available an URL is returned.\n"
+  "In --dane mode the key is returned from RR type 61";
 static gpg_error_t
 cmd_dns_cert (assuan_context_t ctx, char *line)
 {
   /* ctrl_t ctrl = assuan_get_pointer (ctx); */
   gpg_error_t err = 0;
-  int pka_mode;
+  int pka_mode, dane_mode;
   char *mbox = NULL;
   char *namebuf = NULL;
   char *encodedhash = NULL;
@@ -670,8 +672,16 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
   char *url = NULL;
 
   pka_mode = has_option (line, "--pka");
+  dane_mode = has_option (line, "--dane");
   line = skip_options (line);
-  if (pka_mode)
+
+  if (pka_mode && dane_mode)
+    {
+      err = PARM_ERROR ("either --pka or --dane may be given");
+      goto leave;
+    }
+
+  if (pka_mode || dane_mode)
     ; /* No need to parse here - we do this later.  */
   else
     {
@@ -709,11 +719,14 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
       goto leave;
     }
 
-  if (pka_mode)
+  if (pka_mode || dane_mode)
     {
-      char *domain;  /* Points to mbox.  */
-      char hashbuf[20];
+      char *domain;     /* Points to mbox.  */
+      char hashbuf[32]; /* For SHA-1 and SHA-256. */
 
+      /* We lowercase ascii characters but the DANE I-D does not allow
+         this.  FIXME: Check after the release of the RFC whether to
+         change this.  */
       mbox = mailbox_from_userid (line);
       if (!mbox || !(domain = strchr (mbox, '@')))
         {
@@ -722,21 +735,45 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
         }
       *domain++ = 0;
 
-      gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
-      encodedhash = zb32_encode (hashbuf, 8*20);
-      if (!encodedhash)
+      if (pka_mode)
         {
-          err = gpg_error_from_syserror ();
-          goto leave;
+          gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
+          encodedhash = zb32_encode (hashbuf, 8*20);
+          if (!encodedhash)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          namebuf = strconcat (encodedhash, "._pka.", domain, NULL);
+          if (!namebuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          name = namebuf;
+          certtype = DNS_CERTTYPE_IPGP;
         }
-      namebuf = strconcat (encodedhash, "._pka.", domain, NULL);
-      if (!namebuf)
+      else
         {
-          err = gpg_error_from_syserror ();
-          goto leave;
+          /* Note: The hash is truncated to 28 bytes and we lowercase
+             the result only for aesthetic reasons.  */
+          gcry_md_hash_buffer (GCRY_MD_SHA256, hashbuf, mbox, strlen (mbox));
+          encodedhash = bin2hex (hashbuf, 28, NULL);
+          if (!encodedhash)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          ascii_strlwr (encodedhash);
+          namebuf = strconcat (encodedhash, "._openpgpkey.", domain, NULL);
+          if (!namebuf)
+            {
+              err = gpg_error_from_syserror ();
+              goto leave;
+            }
+          name = namebuf;
+          certtype = DNS_CERTTYPE_RR61;
         }
-      name = namebuf;
-      certtype = DNS_CERTTYPE_IPGP;
     }
   else
     name = line;
