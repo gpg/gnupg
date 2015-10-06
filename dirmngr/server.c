@@ -2120,6 +2120,7 @@ cmd_killdirmngr (assuan_context_t ctx, char *line)
   if (!err)
     {
       ctrl->server_local->stopme = 1;
+      assuan_set_flag (ctx, ASSUAN_FORCE_CLOSE, 1);
       err = gpg_error (GPG_ERR_EOF);
     }
   return err;
@@ -2141,14 +2142,12 @@ cmd_reloaddirmngr (assuan_context_t ctx, char *line)
     {
 #ifndef HAVE_W32_SYSTEM
       {
-        gpg_err_code_t ec;
-        assuan_peercred_t cred;
+        gpg_error_t err;
 
-        ec = gpg_err_code (assuan_get_peercred (ctx, &cred));
-        if (!ec && cred->uid)
-          ec = GPG_ERR_EPERM; /* Only root may terminate.  */
-        if (ec)
-          return set_error (ec, "no permission to reload this process");
+        err = check_owner_permission (ctx,
+                                      "no permission to reload this process");
+        if (err)
+          return err;
       }
 #endif
     }
