@@ -1,7 +1,7 @@
 /* export.c - Export keys in the OpenPGP defined format.
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004,
  *               2005, 2010 Free Software Foundation, Inc.
- * Copyright (C) 2014  Werner Koch
+ * Copyright (C) 1998-2015  Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -52,7 +52,6 @@ static int do_export_stream (ctrl_t ctrl, iobuf_t out,
                              strlist_t users, int secret,
                              kbnode_t *keyblock_out, unsigned int options,
 			     int *any);
-static int build_sexp (iobuf_t out, PACKET *pkt, int *indent);
 
 
 int
@@ -70,8 +69,6 @@ parse_export_options(char *str,unsigned int *options,int noisy)
        N_("remove unusable parts from key during export")},
       {"export-minimal",EXPORT_MINIMAL|EXPORT_CLEAN,NULL,
        N_("remove as much as possible from key during export")},
-      {"export-sexp-format",EXPORT_SEXP_FORMAT, NULL,
-       N_("export keys in an S-expression based format")},
       /* Aliases for backward compatibility */
       {"include-local-sigs",EXPORT_LOCAL_SIGS,NULL,NULL},
       {"include-attributes",EXPORT_ATTRIBUTES,NULL,NULL},
@@ -172,17 +169,13 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
 int
 export_seckeys (ctrl_t ctrl, strlist_t users )
 {
-  /* Use only relevant options for the secret key. */
-  unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
-  return do_export (ctrl, users, 1, options);
+  return do_export (ctrl, users, 1, 0);
 }
 
 int
 export_secsubkeys (ctrl_t ctrl, strlist_t users )
 {
-  /* Use only relevant options for the secret key. */
-  unsigned int options = (opt.export_options & EXPORT_SEXP_FORMAT);
-  return do_export (ctrl, users, 2, options);
+  return do_export (ctrl, users, 2, 0);
 }
 
 
@@ -205,7 +198,8 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
   if (rc)
     return rc;
 
-  if (!(options & EXPORT_SEXP_FORMAT))
+  /* We don't want an Armor for DANE format.  */
+  if (!(options & EXPORT_DANE_FORMAT))
     {
       if ( opt.armor )
         {
@@ -760,7 +754,7 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
    export options to apply.  If KEYBLOCK_OUT is not NULL, AND the exit
    code is zero, a pointer to the first keyblock found and exported
    will be stored at this address; no other keyblocks are exported in
-   this case.  The caller must free it the returned keyblock.  If any
+   this case.  The caller must free the returned keyblock.  If any
    key has been exported true is stored at ANY. */
 static int
 do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
@@ -775,7 +769,6 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   subkey_list_t subkey_list = NULL;  /* Track already processed subkeys. */
   KEYDB_HANDLE kdbhd;
   strlist_t sl;
-  int indent = 0;
   gcry_cipher_hd_t cipherhd = NULL;
   char *cache_nonce = NULL;
 
@@ -1114,10 +1107,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                         ski->iv[ski->ivlen] = xtoi_2 (s);
                     }
 
-                  if ((options&EXPORT_SEXP_FORMAT))
-                    err = build_sexp (out, node->pkt, &indent);
-                  else
-                    err = build_packet (out, node->pkt);
+                  err = build_packet (out, node->pkt);
                 }
               else if (!err)
                 {
@@ -1172,10 +1162,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                   if (err)
                     goto unwraperror;
 
-                  if ((options&EXPORT_SEXP_FORMAT))
-                    err = build_sexp (out, node->pkt, &indent);
-                  else
-                    err = build_packet (out, node->pkt);
+                  err = build_packet (out, node->pkt);
                   goto unwraperror_leave;
 
                 unwraperror:
@@ -1212,10 +1199,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
             }
           else
             {
-              if ((options&EXPORT_SEXP_FORMAT))
-                err = build_sexp (out, node->pkt, &indent);
-              else
-                err = build_packet (out, node->pkt);
+              err = build_packet (out, node->pkt);
             }
 
           if (err)
@@ -1229,24 +1213,11 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
             *any = 1;
 	}
 
-      if ((options&EXPORT_SEXP_FORMAT) && indent)
-        {
-          for (; indent; indent--)
-            iobuf_put (out, ')');
-          iobuf_put (out, '\n');
-        }
-
       if (keyblock_out)
         {
           *keyblock_out = keyblock;
           break;
         }
-    }
-  if ((options&EXPORT_SEXP_FORMAT) && indent)
-    {
-      for (; indent; indent--)
-        iobuf_put (out, ')');
-      iobuf_put (out, '\n');
     }
   if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
     err = 0;
@@ -1262,140 +1233,4 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   if( !*any )
     log_info(_("WARNING: nothing exported\n"));
   return err;
-}
-
-
-
-/* static int */
-/* write_sexp_line (iobuf_t out, int *indent, const char *text) */
-/* { */
-/*   int i; */
-
-/*   for (i=0; i < *indent; i++) */
-/*     iobuf_put (out, ' '); */
-/*   iobuf_writestr (out, text); */
-/*   return 0; */
-/* } */
-
-/* static int */
-/* write_sexp_keyparm (iobuf_t out, int *indent, const char *name, gcry_mpi_t a) */
-/* { */
-/*   int rc; */
-/*   unsigned char *buffer; */
-
-/*   write_sexp_line (out, indent, "("); */
-/*   iobuf_writestr (out, name); */
-/*   iobuf_writestr (out, " #"); */
-
-/*   rc = gcry_mpi_aprint (GCRYMPI_FMT_HEX, &buffer, NULL, a); */
-/*   assert (!rc); */
-/*   iobuf_writestr (out, buffer); */
-/*   iobuf_writestr (out, "#)"); */
-/*   gcry_free (buffer); */
-/*   return 0; */
-/* } */
-
-static int
-build_sexp_seckey (iobuf_t out, PACKET *pkt, int *indent)
-{
-  (void)out;
-  (void)pkt;
-  (void)indent;
-
-  /* FIXME: Not yet implemented.  */
-  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
-  /* PKT_secret_key *sk = pkt->pkt.secret_key; */
-  /* char tmpbuf[100]; */
-
-  /* if (pkt->pkttype == PKT_SECRET_KEY) */
-  /*   { */
-  /*     iobuf_writestr (out, "(openpgp-key\n"); */
-  /*     (*indent)++; */
-  /*   } */
-  /* else */
-  /*   { */
-  /*     iobuf_writestr (out, " (subkey\n"); */
-  /*     (*indent)++; */
-  /*   } */
-  /* (*indent)++; */
-  /* write_sexp_line (out, indent, "(private-key\n"); */
-  /* (*indent)++; */
-  /* if (is_RSA (sk->pubkey_algo) && !sk->is_protected) */
-  /*   { */
-  /*     write_sexp_line (out, indent, "(rsa\n"); */
-  /*     (*indent)++; */
-  /*     write_sexp_keyparm (out, indent, "n", sk->skey[0]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "e", sk->skey[1]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "d", sk->skey[2]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "p", sk->skey[3]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "q", sk->skey[4]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "u", sk->skey[5]);  */
-  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
-  /*     (*indent)--; */
-  /*   } */
-  /* else if (sk->pubkey_algo == PUBKEY_ALGO_DSA && !sk->is_protected) */
-  /*   { */
-  /*     write_sexp_line (out, indent, "(dsa\n"); */
-  /*     (*indent)++; */
-  /*     write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "q", sk->skey[1]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "x", sk->skey[4]); */
-  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
-  /*     (*indent)--; */
-  /*   } */
-  /* else if (sk->pubkey_algo == PUBKEY_ALGO_ECDSA && !sk->is_protected) */
-  /*   { */
-  /*     write_sexp_line (out, indent, "(ecdsa\n"); */
-  /*     (*indent)++;  */
-  /*     write_sexp_keyparm (out, indent, "c", sk->skey[0]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "q", sk->skey[6]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "d", sk->skey[7]); */
-  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
-  /*     (*indent)--; */
-  /*   } */
-  /* else if (is_ELGAMAL (sk->pubkey_algo) && !sk->is_protected) */
-  /*   { */
-  /*     write_sexp_line (out, indent, "(elg\n"); */
-  /*     (*indent)++; */
-  /*     write_sexp_keyparm (out, indent, "p", sk->skey[0]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "g", sk->skey[2]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "y", sk->skey[3]); iobuf_put (out,'\n'); */
-  /*     write_sexp_keyparm (out, indent, "x", sk->skey[4]); */
-  /*     iobuf_put (out,')'); iobuf_put (out,'\n'); */
-  /*     (*indent)--; */
-  /*   } */
-  /* write_sexp_line (out, indent,  "(attrib\n"); (*indent)++; */
-  /* sprintf (tmpbuf, "(created \"%lu\"", (unsigned long)sk->timestamp); */
-  /* write_sexp_line (out, indent, tmpbuf); */
-  /* iobuf_put (out,')'); (*indent)--; /\* close created *\/ */
-  /* iobuf_put (out,')'); (*indent)--; /\* close attrib *\/ */
-  /* iobuf_put (out,')'); (*indent)--; /\* close private-key *\/ */
-  /* if (pkt->pkttype != PKT_SECRET_KEY) */
-  /*   iobuf_put (out,')'), (*indent)--; /\* close subkey *\/ */
-  /* iobuf_put (out,'\n'); */
-
-  /* return 0; */
-}
-
-
-/* For some packet types we write them in a S-expression format.  This
-   is still EXPERIMENTAL and subject to change.  */
-static int
-build_sexp (iobuf_t out, PACKET *pkt, int *indent)
-{
-  int rc;
-
-  switch (pkt->pkttype)
-    {
-    case PKT_SECRET_KEY:
-    case PKT_SECRET_SUBKEY:
-      rc = build_sexp_seckey (out, pkt, indent);
-      break;
-    default:
-      rc = 0;
-      break;
-    }
-  return rc;
 }
