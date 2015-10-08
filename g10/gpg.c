@@ -3949,7 +3949,7 @@ main (int argc, char **argv)
         if (argc != 1 )
           wrong_args("--gen-key user-id");
         username = make_username (fname);
-        quick_generate_keypair (username);
+        quick_generate_keypair (ctrl, username);
         xfree (username);
         break;
 

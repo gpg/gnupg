@@ -45,8 +45,9 @@
 #include "mbox-util.h"
 
 
-static void list_all (int, int);
-static void list_one (strlist_t names, int secret, int mark_secret);
+static void list_all (ctrl_t, int, int);
+static void list_one (ctrl_t ctrl,
+                      strlist_t names, int secret, int mark_secret);
 static void locate_one (ctrl_t ctrl, strlist_t names);
 static void print_card_serialno (const char *serialno);
 
@@ -60,7 +61,8 @@ struct keylist_context
 };
 
 
-static void list_keyblock (kbnode_t keyblock, int secret, int has_secret,
+static void list_keyblock (ctrl_t ctrl,
+                           kbnode_t keyblock, int secret, int has_secret,
                            int fpr, struct keylist_context *listctx);
 
 
@@ -131,9 +133,9 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
   if (locate_mode)
     locate_one (ctrl, list);
   else if (!list)
-    list_all (0, opt.with_secret);
+    list_all (ctrl, 0, opt.with_secret);
   else
-    list_one (list, 0, opt.with_secret);
+    list_one (ctrl, list, 0, opt.with_secret);
 }
 
 
@@ -145,9 +147,9 @@ secret_key_list (ctrl_t ctrl, strlist_t list)
   check_trustdb_stale ();
 
   if (!list)
-    list_all (1, 0);
+    list_all (ctrl, 1, 0);
   else				/* List by user id */
-    list_one (list, 1, 0);
+    list_one (ctrl, list, 1, 0);
 }
 
 void
@@ -466,7 +468,7 @@ print_signature_stats (struct keylist_context *s)
    MARK_SECRET is true secret keys are indicated in a public key
    listing.  */
 static void
-list_all (int secret, int mark_secret)
+list_all (ctrl_t ctrl, int secret, int mark_secret)
 {
   KEYDB_HANDLE hd;
   KBNODE keyblock = NULL;
@@ -527,7 +529,7 @@ list_all (int secret, int mark_secret)
                 }
             }
           merge_keys_and_selfsig (keyblock);
-          list_keyblock (keyblock, secret, any_secret, opt.fingerprint,
+          list_keyblock (ctrl, keyblock, secret, any_secret, opt.fingerprint,
                          &listctx);
         }
       release_kbnode (keyblock);
@@ -552,7 +554,7 @@ list_all (int secret, int mark_secret)
 
 
 static void
-list_one (strlist_t names, int secret, int mark_secret)
+list_one (ctrl_t ctrl, strlist_t names, int secret, int mark_secret)
 {
   int rc = 0;
   KBNODE keyblock = NULL;
@@ -593,7 +595,8 @@ list_one (strlist_t names, int secret, int mark_secret)
             es_putc ('-', es_stdout);
           es_putc ('\n', es_stdout);
         }
-      list_keyblock (keyblock, secret, mark_secret, opt.fingerprint, &listctx);
+      list_keyblock (ctrl,
+                     keyblock, secret, mark_secret, opt.fingerprint, &listctx);
       release_kbnode (keyblock);
     }
   while (!getkey_next (ctx, NULL, &keyblock));
@@ -634,7 +637,7 @@ locate_one (ctrl_t ctrl, strlist_t names)
 	{
 	  do
 	    {
-	      list_keyblock (keyblock, 0, 0, opt.fingerprint, &listctx);
+	      list_keyblock (ctrl, keyblock, 0, 0, opt.fingerprint, &listctx);
 	      release_kbnode (keyblock);
 	    }
 	  while (ctx && !getkey_next (ctx, NULL, &keyblock));
@@ -837,7 +840,7 @@ dump_attribs (const PKT_user_id *uid, PKT_public_key *pk)
 
 /* Print IPGP cert records instead of a standard key listing.  */
 static void
-list_keyblock_pka (kbnode_t keyblock)
+list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
 {
   kbnode_t kbctx;
   kbnode_t node;
@@ -1671,12 +1674,13 @@ reorder_keyblock (KBNODE keyblock)
 }
 
 static void
-list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
+list_keyblock (ctrl_t ctrl,
+               KBNODE keyblock, int secret, int has_secret, int fpr,
                struct keylist_context *listctx)
 {
   reorder_keyblock (keyblock);
   if (opt.print_pka_records)
-    list_keyblock_pka (keyblock);
+    list_keyblock_pka (ctrl, keyblock);
   else if (opt.with_colons)
     list_keyblock_colon (keyblock, secret, has_secret, fpr);
   else
@@ -1688,12 +1692,13 @@ list_keyblock (KBNODE keyblock, int secret, int has_secret, int fpr,
 
 /* Public function used by keygen to list a keyblock.  */
 void
-list_keyblock_direct (kbnode_t keyblock, int secret, int has_secret, int fpr)
+list_keyblock_direct (ctrl_t ctrl,
+                      kbnode_t keyblock, int secret, int has_secret, int fpr)
 {
   struct keylist_context listctx;
 
   memset (&listctx, 0, sizeof (listctx));
-  list_keyblock (keyblock, secret, has_secret, fpr, &listctx);
+  list_keyblock (ctrl, keyblock, secret, has_secret, fpr, &listctx);
   keylist_context_release (&listctx);
 }
 

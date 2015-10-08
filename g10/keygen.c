@@ -135,7 +135,7 @@ static byte zip_prefs[MAX_PREFS];
 static int nzip_prefs;
 static int mdc_available,ks_modify;
 
-static void do_generate_keypair( struct para_data_s *para,
+static void do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 				 struct output_control_s *outctrl, int card );
 static int write_keyblock (iobuf_t out, kbnode_t node);
 static gpg_error_t gen_card_key (int algo, int keyno, int is_primary,
@@ -3036,7 +3036,7 @@ get_parameter_revkey( struct para_data_s *para, enum para_name key )
 }
 
 static int
-proc_parameter_file( struct para_data_s *para, const char *fname,
+proc_parameter_file (ctrl_t ctrl, struct para_data_s *para, const char *fname,
                      struct output_control_s *outctrl, int card )
 {
   struct para_data_s *r;
@@ -3222,7 +3222,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
       append_to_parameter (para, r);
     }
 
-  do_generate_keypair( para, outctrl, card );
+  do_generate_keypair (ctrl, para, outctrl, card );
   return 0;
 }
 
@@ -3233,7 +3233,7 @@ proc_parameter_file( struct para_data_s *para, const char *fname,
  * Note, that string parameters are expected to be in UTF-8
  */
 static void
-read_parameter_file( const char *fname )
+read_parameter_file (ctrl_t ctrl, const char *fname )
 {
     static struct { const char *name;
 		    enum para_name key;
@@ -3328,7 +3328,7 @@ read_parameter_file( const char *fname )
                 outctrl.keygen_flags |= KEYGEN_FLAG_TRANSIENT_KEY;
 	    else if( !ascii_strcasecmp( keyword, "%commit" ) ) {
 		outctrl.lnr = lnr;
-		if (proc_parameter_file( para, fname, &outctrl, 0 ))
+		if (proc_parameter_file (ctrl, para, fname, &outctrl, 0 ))
                   print_status_key_not_created
                     (get_parameter_value (para, pHANDLE));
 		release_parameter_list( para );
@@ -3384,7 +3384,7 @@ read_parameter_file( const char *fname )
 
 	if( keywords[i].key == pKEYTYPE && para ) {
 	    outctrl.lnr = lnr;
-	    if (proc_parameter_file( para, fname, &outctrl, 0 ))
+	    if (proc_parameter_file (ctrl, para, fname, &outctrl, 0 ))
               print_status_key_not_created
                 (get_parameter_value (para, pHANDLE));
 	    release_parameter_list( para );
@@ -3414,7 +3414,7 @@ read_parameter_file( const char *fname )
     }
     else if( para ) {
 	outctrl.lnr = lnr;
-	if (proc_parameter_file( para, fname, &outctrl, 0 ))
+	if (proc_parameter_file (ctrl, para, fname, &outctrl, 0 ))
           print_status_key_not_created (get_parameter_value (para, pHANDLE));
     }
 
@@ -3479,7 +3479,7 @@ quickgen_set_para (struct para_data_s *para, int for_subkey,
  * Unattended generation of a standard key.
  */
 void
-quick_generate_keypair (const char *uid)
+quick_generate_keypair (ctrl_t ctrl, const char *uid)
 {
   gpg_error_t err;
   struct para_data_s *para = NULL;
@@ -3569,7 +3569,7 @@ quick_generate_keypair (const char *uid)
       para = r;
     }
 
-  proc_parameter_file (para, "[internal]", &outctrl, 0);
+  proc_parameter_file (ctrl, para, "[internal]", &outctrl, 0);
  leave:
   release_parameter_list (para);
 }
@@ -3613,7 +3613,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
 
   if (opt.batch)
     {
-      read_parameter_file( fname );
+      read_parameter_file (ctrl, fname);
       return;
     }
 
@@ -3841,7 +3841,7 @@ generate_keypair (ctrl_t ctrl, int full, const char *fname,
   r->next = para;
   para = r;
 
-  proc_parameter_file (para, "[internal]", &outctrl, !!card_serialno);
+  proc_parameter_file (ctrl, para, "[internal]", &outctrl, !!card_serialno);
   release_parameter_list (para);
 }
 
@@ -3958,7 +3958,7 @@ start_tree(KBNODE *tree)
 
 
 static void
-do_generate_keypair (struct para_data_s *para,
+do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
 		     struct output_control_s *outctrl, int card)
 {
   gpg_error_t err;
@@ -4192,7 +4192,7 @@ do_generate_keypair (struct para_data_s *para,
             {
               tty_printf (_("public and secret key created and signed.\n") );
               tty_printf ("\n");
-              list_keyblock_direct (pub_root, 0, 1, 1);
+              list_keyblock_direct (ctrl, pub_root, 0, 1, 1);
             }
 
 

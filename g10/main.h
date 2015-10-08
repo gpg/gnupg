@@ -256,7 +256,7 @@ void show_basic_key_info (KBNODE keyblock);
 u32 parse_expire_string(const char *string);
 u32 ask_expire_interval(int object,const char *def_expire);
 u32 ask_expiredate(void);
-void quick_generate_keypair (const char *uid);
+void quick_generate_keypair (ctrl_t ctrl, const char *uid);
 void generate_keypair (ctrl_t ctrl, int full, const char *fname,
                        const char *card_serialno, int card_backup_key);
 int keygen_set_std_prefs (const char *string,int personal);
@@ -347,8 +347,8 @@ void public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode );
 void secret_key_list (ctrl_t ctrl, strlist_t list );
 void print_subpackets_colon(PKT_signature *sig);
 void reorder_keyblock (KBNODE keyblock);
-void list_keyblock_direct (kbnode_t keyblock, int secret, int has_secret,
-                           int fpr);
+void list_keyblock_direct (ctrl_t ctrl, kbnode_t keyblock, int secret,
+                           int has_secret, int fpr);
 void print_fingerprint (estream_t fp, PKT_public_key *pk, int mode);
 void print_revokers (estream_t fp, PKT_public_key *pk);
 void show_policy_url(PKT_signature *sig,int indent,int mode);
