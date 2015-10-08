@@ -847,6 +847,9 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
   PKT_public_key *pk;
   char pkstrbuf[PUBKEY_STRING_SIZE];
   char *hexfpr;
+  char *hexkeyblock = NULL;
+  unsigned int hexkeyblocklen;
+  const char *s;
 
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
@@ -859,11 +862,55 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
 
   pk = node->pkt->pkt.public_key;
 
-  es_fprintf (es_stdout, ";; pub  %s/%s %s\n;; ",
+  /* First print an overview of the key with all userids.  */
+  es_fprintf (es_stdout, ";; pub  %s/%s %s\n;;",
               pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
               keystr_from_pk (pk), datestr_from_pk (pk));
   print_fingerprint (NULL, pk, 10);
+  for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
+    {
+      if (node->pkt->pkttype == PKT_USER_ID)
+	{
+	  PKT_user_id *uid = node->pkt->pkt.user_id;
+
+	  if (pk && (uid->is_expired || uid->is_revoked)
+	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
+            continue;
+
+          es_fputs (";; uid  ", es_stdout);
+          print_utf8_buffer (es_stdout, uid->name, uid->len);
+          es_putc ('\n', es_stdout);
+        }
+    }
+
+
   hexfpr = hexfingerprint (pk);
+  if (opt.print_dane_records)
+    {
+      kbnode_t dummy_keyblock;
+      void *data;
+      size_t datalen;
+      gpg_error_t err;
+
+      /* We do not have an export fucntion which allows to pass a
+         keyblock, thus we need to search the key again.  */
+      err = export_pubkey_buffer (ctrl, hexfpr,
+                                  EXPORT_DANE_FORMAT,
+                                  &dummy_keyblock, &data, &datalen);
+      release_kbnode (dummy_keyblock);
+      if (!err)
+        {
+          hexkeyblocklen = datalen;
+          hexkeyblock = bin2hex (data, datalen, NULL);
+          if (!hexkeyblock)
+            err = gpg_error_from_syserror ();
+          xfree (data);
+          ascii_strlwr (hexkeyblock);
+        }
+      if (err)
+        log_error (_("skipped \"%s\": %s\n"), hexfpr, gpg_strerror (err));
+
+    }
 
   for (kbctx = NULL; (node = walk_kbnode (keyblock, &kbctx, 0));)
     {
@@ -877,27 +924,57 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
 	      && !(opt.list_options & LIST_SHOW_UNUSABLE_UIDS))
             continue;
 
-          es_fputs (";; uid  ", es_stdout);
-          print_utf8_buffer (es_stdout, uid->name, uid->len);
-	  es_putc ('\n', es_stdout);
           mbox = mailbox_from_userid (uid->name);
           if (mbox && (p = strchr (mbox, '@')))
             {
-              char hashbuf[20];
+              char hashbuf[32];
               char *hash;
               unsigned int len;
 
               *p++ = 0;
-              es_fprintf (es_stdout, "$ORIGIN _pka.%s.\n", p);
-              gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf, mbox, strlen (mbox));
-              hash = zb32_encode (hashbuf, 8*20);
-              if (hash)
+              if (opt.print_pka_records)
                 {
-                  len = strlen (hexfpr)/2;
-                  es_fprintf (es_stdout,
-                              "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n",
-                              hash, 6 + len, len, hexfpr);
-                  xfree (hash);
+                  es_fprintf (es_stdout, "$ORIGIN _pka.%s.\n; %s\n; ",
+                              p, hexfpr);
+                  print_utf8_buffer (es_stdout, uid->name, uid->len);
+                  es_putc ('\n', es_stdout);
+                  gcry_md_hash_buffer (GCRY_MD_SHA1, hashbuf,
+                                       mbox, strlen (mbox));
+                  hash = zb32_encode (hashbuf, 8*20);
+                  if (hash)
+                    {
+                      len = strlen (hexfpr)/2;
+                      es_fprintf (es_stdout,
+                                  "%s TYPE37 \\# %u 0006 0000 00 %02X %s\n",
+                                  hash, 6 + len, len, hexfpr);
+                      xfree (hash);
+                    }
+                }
+              if (opt.print_dane_records && hexkeyblock)
+                {
+                  es_fprintf (es_stdout, "$ORIGIN _openpgpkey.%s.\n; %s\n; ",
+                              p, hexfpr);
+                  print_utf8_buffer (es_stdout, uid->name, uid->len);
+                  es_putc ('\n', es_stdout);
+                  gcry_md_hash_buffer (GCRY_MD_SHA256, hashbuf,
+                                       mbox, strlen (mbox));
+                  hash = bin2hex (hashbuf, 28, NULL);
+                  if (hash)
+                    {
+                      ascii_strlwr (hash);
+                      es_fprintf (es_stdout, "%s TYPE61 \\# %u (\n",
+                                  hash, hexkeyblocklen);
+                      xfree (hash);
+                      s = hexkeyblock;
+                      for (;;)
+                        {
+                          es_fprintf (es_stdout, "\t%.64s\n", s);
+                          if (strlen (s) < 64)
+                            break;
+                          s += 64;
+                        }
+                      es_fputs ("\t)\n", es_stdout);
+                    }
                 }
             }
           xfree (mbox);
@@ -906,6 +983,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
     }
   es_putc ('\n', es_stdout);
 
+  xfree (hexkeyblock);
   xfree (hexfpr);
 }
 
@@ -1679,7 +1757,7 @@ list_keyblock (ctrl_t ctrl,
                struct keylist_context *listctx)
 {
   reorder_keyblock (keyblock);
-  if (opt.print_pka_records)
+  if (opt.print_pka_records || opt.print_dane_records)
     list_keyblock_pka (ctrl, keyblock);
   else if (opt.with_colons)
     list_keyblock_colon (keyblock, secret, has_secret, fpr);

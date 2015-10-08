@@ -74,6 +74,7 @@ struct
   int fingerprint; /* list fingerprints */
   int list_sigs;   /* list signatures */
   int print_pka_records;
+  int print_dane_records;
   int no_armor;
   int list_packets; /* list-packets mode: 1=normal, 2=invoked by command*/
   int def_cipher_algo;

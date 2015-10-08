@@ -592,3 +592,17 @@ gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
     *r_url = NULL;
   return gpg_error (GPG_ERR_NOT_FOUND);
 }
+
+gpg_error_t
+export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
+                      kbnode_t *r_keyblock, void **r_data, size_t *r_datalen)
+{
+  (void)ctrl;
+  (void)keyspec;
+  (void)options;
+
+  *r_keyblock = NULL;
+  *r_data = NULL;
+  *r_datalen = 0;
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}

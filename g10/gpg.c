@@ -384,6 +384,7 @@ enum cmd_and_opt_values
     oFakedSystemTime,
     oNoAutostart,
     oPrintPKARecords,
+    oPrintDANERecords,
 
     oNoop
   };
@@ -716,6 +717,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oLegacyListMode, "legacy-list-mode", "@"),
   ARGPARSE_s_n (oListOnly, "list-only", "@"),
   ARGPARSE_s_n (oPrintPKARecords, "print-pka-records", "@"),
+  ARGPARSE_s_n (oPrintDANERecords, "print-dane-records", "@"),
   ARGPARSE_s_n (oIgnoreTimeConflict, "ignore-time-conflict", "@"),
   ARGPARSE_s_n (oIgnoreValidFrom,    "ignore-valid-from", "@"),
   ARGPARSE_s_n (oIgnoreCrcError, "ignore-crc-error", "@"),
@@ -2998,6 +3000,7 @@ main (int argc, char **argv)
 	  case oFixedListMode: /* Dummy */ break;
           case oLegacyListMode: opt.legacy_list_mode = 1; break;
 	  case oPrintPKARecords: opt.print_pka_records = 1; break;
+	  case oPrintDANERecords: opt.print_dane_records = 1; break;
 	  case oListOnly: opt.list_only=1; break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  case oIgnoreValidFrom: opt.ignore_valid_from = 1; break;

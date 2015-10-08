@@ -198,15 +198,11 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
   if (rc)
     return rc;
 
-  /* We don't want an Armor for DANE format.  */
-  if (!(options & EXPORT_DANE_FORMAT))
+  if ( opt.armor )
     {
-      if ( opt.armor )
-        {
-          afx = new_armor_context ();
-          afx->what = secret? 5 : 1;
-          push_armor_filter (afx, out);
-        }
+      afx = new_armor_context ();
+      afx->what = secret? 5 : 1;
+      push_armor_filter (afx, out);
     }
 
   rc = do_export_stream (ctrl, out, users, secret, NULL, options, &any );
@@ -775,6 +771,11 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   *any = 0;
   init_packet (&pkt);
   kdbhd = keydb_new ();
+
+  /* For the DANE format override the options.  */
+  if ((options & EXPORT_DANE_FORMAT))
+    options = (EXPORT_DANE_FORMAT | EXPORT_MINIMAL | EXPORT_CLEAN);
+
 
   if (!users)
     {
