@@ -3,12 +3,22 @@
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either
  *
- * GnuPG is distributed in the hope that it will be useful,
+ *   - the GNU Lesser General Public License as published by the Free
+ *     Software Foundation; either version 3 of the License, or (at
+ *     your option) any later version.
+ *
+ * or
+ *
+ *   - the GNU General Public License as published by the Free
+ *     Software Foundation; either version 2 of the License, or (at
+ *     your option) any later version.
+ *
+ * or both in parallel, as here.
+ *
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -23,28 +33,30 @@
 #include <assert.h>
 #include <stdarg.h>
 
-#include "mkdir_p.h"
+#include "util.h"
 #include "stringhelp.h"
 #include "logging.h"
-#include "util.h"
+#include "sysutils.h"
+#include "mkdir_p.h"
 
-#define DEBUG 0
 
-int
+gpg_error_t
 amkdir_p (char **directory_components)
 {
+  gpg_error_t err = 0;
   int count;
   char **dirs;
   int i;
-  int rc = 0;
 
   for (count = 0; directory_components[count]; count ++)
     ;
 
-  if (DEBUG)
-    log_debug ("%s: %d directory components.\n", __func__, count);
+  /* log_debug ("%s: %d directory components.\n", __func__, count); */
 
-  dirs = xcalloc (count, sizeof (char *));
+  dirs = xtrycalloc (count, sizeof (char *));
+  if (!dirs)
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+
   for (i = 0; directory_components[i]; i ++)
     {
       if (i == 0)
@@ -52,41 +64,39 @@ amkdir_p (char **directory_components)
       else
 	dirs[i] = make_filename (dirs[i - 1], directory_components[i], NULL);
 
-      if (DEBUG)
-	log_debug ("%s: Directory %d: `%s'.\n", __func__, i, dirs[i]);
+      /* log_debug ("%s: Directory %d: `%s'.\n", __func__, i, dirs[i]); */
     }
 
   for (i = count - 1; i >= 0; i --)
     {
       struct stat s;
 
-      if (DEBUG)
-	log_debug ("%s: stat(%s)\n", __func__, dirs[i]);
+      /* log_debug ("%s: stat(%s)\n", __func__, dirs[i]); */
 
-      rc = stat (dirs[i], &s);
-      if (rc == 0 && ! S_ISDIR (s.st_mode))
-	{
-	  if (DEBUG)
-	    log_debug ("%s: %s exists, but is not a directory!\n",
-		       __func__, dirs[i]);
-	  rc = gpg_error (GPG_ERR_ENOTDIR);
-	  goto out;
-	}
-      else if (rc == 0)
-	{
-	  /* Got a directory.  */
-	  if (DEBUG)
-	    log_debug ("%s: %s exists and is a directory!\n",
-		       __func__, dirs[i]);
-	  break;
-	}
+      if (!stat (dirs[i], &s))
+        {
+          if ( ! S_ISDIR (s.st_mode))
+            {
+              /* log_debug ("%s: %s exists, but is not a directory!\n", */
+              /*            __func__, dirs[i]); */
+              err = gpg_err_make (default_errsource, GPG_ERR_ENOTDIR);
+              goto out;
+            }
+          else
+            {
+              /* Got a directory.  */
+              /* log_debug ("%s: %s exists and is a directory!\n",  */
+              /*            __func__, dirs[i]); */
+              err = 0;
+              break;
+            }
+        }
       else if (errno == ENOENT)
 	/* This directory does not exist yet.  Continue walking up the
 	   hierarchy.  */
 	{
-	  if (DEBUG)
-	    log_debug ("%s: %s does not exist!\n",
-		       __func__, dirs[i]);
+          /* log_debug ("%s: %s does not exist!\n", */
+          /*            __func__, dirs[i]); */
 	  continue;
 	}
       else
@@ -94,10 +104,9 @@ amkdir_p (char **directory_components)
 	   (we return this above), which means that a component of the
 	   path prefix is not a directory.  */
 	{
-	  if (DEBUG)
-	    log_debug ("%s: stat(%s) => %s!\n",
-		       __func__, dirs[i], strerror (errno));
-	  rc = gpg_error_from_syserror ();
+          /* log_debug ("%s: stat(%s) => %s!\n", */
+          /*            __func__, dirs[i], strerror (errno)); */
+	  err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 	  goto out;
 	}
     }
@@ -108,13 +117,11 @@ amkdir_p (char **directory_components)
 
   for (; i < count; i ++)
     {
-      if (DEBUG)
-	log_debug ("Creating directory: %s\n", dirs[i]);
+      /* log_debug ("Creating directory: %s\n", dirs[i]); */
 
-      rc = mkdir (dirs[i], S_IRUSR | S_IWUSR | S_IXUSR);
-      if (rc)
+      if (gnupg_mkdir (dirs[i], "-rwx"))
 	{
-	  rc = gpg_error_from_syserror ();
+	  err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 	  goto out;
 	}
     }
@@ -124,20 +131,24 @@ amkdir_p (char **directory_components)
     xfree (dirs[i]);
   xfree (dirs);
 
-  if (DEBUG)
-    log_debug ("%s: Returning %s\n", __func__, gpg_strerror (rc));
+  /* log_debug ("%s: Returning %s\n", __func__, gpg_strerror (rc)); */
 
-  return rc;
+  return err;
 }
 
-int
+
+gpg_error_t
 mkdir_p (char *directory_component, ...)
 {
   va_list ap;
+  gpg_error_t err = 0;
   int i;
   int space = 1;
-  char **dirs = xmalloc (space * sizeof (char *));
-  int rc;
+  char **dirs;
+
+  dirs = xtrymalloc (space * sizeof (char *));
+  if (!dirs)
+    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 
   dirs[0] = directory_component;
 
@@ -146,16 +157,26 @@ mkdir_p (char *directory_component, ...)
     {
       if (i == space)
 	{
+          char **tmp_dirs;
+
 	  space = 2 * space;
-	  dirs = xrealloc (dirs, space * sizeof (char *));
+	  tmp_dirs = xtryrealloc (dirs, space * sizeof (char *));
+          if (!tmp_dirs)
+            {
+              err = gpg_err_make (default_errsource,
+                                  gpg_err_code_from_syserror ());
+              break;
+            }
+          dirs = tmp_dirs;
 	}
       dirs[i] = va_arg (ap, char *);
     }
   va_end (ap);
 
-  rc = amkdir_p (dirs);
+  if (!err)
+    err = amkdir_p (dirs);
 
   xfree (dirs);
 
-  return rc;
+  return err;
 }

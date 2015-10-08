@@ -3,12 +3,22 @@
  *
  * This file is part of GnuPG.
  *
- * GnuPG is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+ * This file is free software; you can redistribute it and/or modify
+ * it under the terms of either
  *
- * GnuPG is distributed in the hope that it will be useful,
+ *   - the GNU Lesser General Public License as published by the Free
+ *     Software Foundation; either version 3 of the License, or (at
+ *     your option) any later version.
+ *
+ * or
+ *
+ *   - the GNU General Public License as published by the Free
+ *     Software Foundation; either version 2 of the License, or (at
+ *     your option) any later version.
+ *
+ * or both in parallel, as here.
+ *
+ * This file is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -29,7 +39,7 @@
    first try to create the directory "foo/bar" and then the directory
    "foo/bar/xyzzy".  On success returns 0, otherwise an error code is
    returned.  */
-int mkdir_p (char *directory_component, ...) GPGRT_ATTR_SENTINEL(0);
+gpg_error_t mkdir_p (char *directory_component, ...) GPGRT_ATTR_SENTINEL(0);
 
 /* Like mkdir_p, but DIRECTORY_COMPONENTS is a NULL terminated
    array, e.g.:
@@ -37,6 +47,6 @@ int mkdir_p (char *directory_component, ...) GPGRT_ATTR_SENTINEL(0);
      char **dirs = { "foo", "bar", NULL };
      amkdir_p (dirs);
  */
-int amkdir_p (char **directory_components);
+gpg_error_t amkdir_p (char **directory_components);
 
 #endif

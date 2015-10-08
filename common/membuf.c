@@ -33,9 +33,8 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include "membuf.h"
-
 #include "util.h"
+#include "membuf.h"
 
 
 /* A simple implementation of a dynamic buffer.  Use init_membuf() to
