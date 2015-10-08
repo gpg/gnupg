@@ -36,7 +36,7 @@ amkdir_p (char **directory_components)
   int count;
   char **dirs;
   int i;
-  int rc;
+  int rc = 0;
 
   for (count = 0; directory_components[count]; count ++)
     ;

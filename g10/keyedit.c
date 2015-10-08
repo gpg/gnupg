@@ -293,7 +293,6 @@ print_and_check_one_sig (KBNODE keyblock, KBNODE node,
         {
           PKT_public_key *pk = keyblock->pkt->pkt.public_key;
           const unsigned char *s;
-          u32 expire;
 
           s = parse_sig_subpkt (sig->hashed, SIGSUBPKT_PRIMARY_UID, NULL);
           if (s && *s)
