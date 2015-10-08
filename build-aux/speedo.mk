@@ -57,6 +57,7 @@ help:
 	@echo '  native-gui     Ditto but with pinentry and GPA'
 	@echo '  w32-installer  Build a Windows installer'
 	@echo '  w32-source     Pack a source archive'
+	@echo '  w32-release    Build a Windows release'
 	@echo
 	@echo 'You may append INSTALL_PREFIX=<dir> for native builds.'
 	@echo 'Prepend TARGET with "git-" to build from GIT repos.'
@@ -103,6 +104,11 @@ git-w32-source: check-tools
 this-w32-source: check-tools
 	$(SPEEDOMAKE) TARGETOS=w32    WHAT=this    WITH_GUI=0 \
 	                                           CUSTOM_SWDB=1 dist-source
+
+w32-release: check-tools
+	$(SPEEDOMAKE) TARGETOS=w32 WHAT=release    WITH_GUI=0 SELFCHECK=0 \
+                                                   installer-from-source
+
 
 
 # Set this to "git" to build from git,
@@ -1050,7 +1056,7 @@ clean-speedo:
 # {{{
 ifeq ($(TARGETOS),w32)
 
-dist-source: all
+dist-source: installer
 	for i in 00 01 02 03; do sleep 1;touch PLAY/stamps/stamp-*-${i}-*;done
 	(set -e;\
 	 tarname="$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar" ;\
@@ -1061,6 +1067,7 @@ dist-source: all
 	 tar --totals -rf "$$tarname" --exclude-backups --exclude-vc \
               --transform='s,^,$(INST_NAME)-$(INST_VERSION)/,' \
 	     PLAY/stamps/stamp-*-00-unpack PLAY/src swdb.lst swdb.lst.sig ;\
+	 [ -f "$$tarname".xz ] && rm "$$tarname".xz;\
          xz "$$tarname" ;\
 	)
 
@@ -1111,6 +1118,18 @@ installer: all w32_insthelpers $(w32src)/inst-options.ini $(bdir)/README.txt
 		    -DPROD_VERSION=$(INST_PROD_VERSION) \
 		    $(extra_installer_options) $(w32src)/inst.nsi
 	@echo "Ready: $(idir)/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe"
+
+# Build the installer from the source tarball.
+installer-from-source: dist-source
+	(set -e;\
+	 [ -d PLAY-release ] && rm -rf PLAY-release; \
+	 mkdir PLAY-release;\
+	 cd PLAY-release; \
+	 tar xJf "../$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).tar.xz";\
+	 cd $(INST_NAME)-$(INST_VERSION); \
+         $(MAKE) -f build-aux/speedo.mk this-w32-installer SELFCHECK=0;\
+	 mv "PLAY/inst/$(INST_NAME)-$(INST_VERSION)_$(BUILD_DATESTR).exe" ../.. ;\
+	)
 
 endif
 # }}} W32
