@@ -257,7 +257,8 @@ struct pin_entry_info_s
   int with_qualitybar; /* Set if the quality bar should be displayed.  */
   int with_repeat;  /* Request repetition of the passphrase.  */
   int repeat_okay;  /* Repetition worked. */
-  int (*check_cb)(struct pin_entry_info_s *); /* CB used to check the PIN */
+  gpg_error_t (*check_cb)(struct pin_entry_info_s *); /* CB used to check
+                                                         the PIN */
   void *check_cb_arg;  /* optional argument which might be of use in the CB */
   const char *cb_errtext; /* used by the cb to display a specific error */
   size_t max_length;   /* Allocated length of the buffer PIN. */
@@ -402,11 +403,11 @@ void initialize_module_call_pinentry (void);
 void agent_query_dump_state (void);
 void agent_reset_query (ctrl_t ctrl);
 int pinentry_active_p (ctrl_t ctrl, int waitseconds);
-int agent_askpin (ctrl_t ctrl,
-                  const char *desc_text, const char *prompt_text,
-                  const char *inital_errtext,
-                  struct pin_entry_info_s *pininfo,
-                  const char *keyinfo, cache_mode_t cache_mode);
+gpg_error_t agent_askpin (ctrl_t ctrl,
+                          const char *desc_text, const char *prompt_text,
+                          const char *inital_errtext,
+                          struct pin_entry_info_s *pininfo,
+                          const char *keyinfo, cache_mode_t cache_mode);
 int agent_get_passphrase (ctrl_t ctrl, char **retpass,
                           const char *desc, const char *prompt,
                           const char *errtext, int with_qualitybar,

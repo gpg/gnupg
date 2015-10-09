@@ -3040,14 +3040,14 @@ ssh_key_to_protected_buffer (gcry_sexp_t key, const char *passphrase,
 
 /* Callback function to compare the first entered PIN with the one
    currently being entered. */
-static int
+static gpg_error_t
 reenter_compare_cb (struct pin_entry_info_s *pi)
 {
   const char *pin1 = pi->check_cb_arg;
 
   if (!strcmp (pin1, pi->pin))
     return 0; /* okay */
-  return -1;
+  return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 }
 
 
@@ -3133,7 +3133,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
   if (*pi->pin && !pi->repeat_okay)
     {
       err = agent_askpin (ctrl, description2, NULL, NULL, pi2, NULL, 0);
-      if (err == -1)
+      if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
 	{ /* The re-entered one did not match and the user did not
 	     hit cancel. */
 	  initial_errtext = L_("does not match - try again");

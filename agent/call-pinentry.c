@@ -127,8 +127,8 @@ agent_reset_query (ctrl_t ctrl)
    disconnect that pinentry - we do this after the unlock so that a
    stalled pinentry does not block other threads.  Fixme: We should
    have a timeout in Assuan for the disconnect operation. */
-static int
-unlock_pinentry (int rc)
+static gpg_error_t
+unlock_pinentry (gpg_error_t rc)
 {
   assuan_context_t ctx = entry_ctx;
   int err;
@@ -229,7 +229,7 @@ getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
    that this function must always be used to aquire the lock for the
    pinentry - we will serialize _all_ pinentry calls.
  */
-static int
+static gpg_error_t
 start_pinentry (ctrl_t ctrl)
 {
   int rc = 0;
@@ -709,7 +709,7 @@ inq_quality (void *opaque, const char *line)
 
 
 /* Helper for agent_askpin and agent_get_passphrase.  */
-static int
+static gpg_error_t
 setup_qualitybar (ctrl_t ctrl)
 {
   int rc;
@@ -801,14 +801,14 @@ pinentry_status_cb (void *opaque, const char *line)
    number here and repeat it as long as we have invalid formed
    numbers.  KEYINFO and CACHE_MODE are used to tell pinentry something
    about the key. */
-int
+gpg_error_t
 agent_askpin (ctrl_t ctrl,
               const char *desc_text, const char *prompt_text,
               const char *initial_errtext,
               struct pin_entry_info_s *pininfo,
               const char *keyinfo, cache_mode_t cache_mode)
 {
-  int rc;
+  gpg_error_t rc;
   char line[ASSUAN_LINELENGTH];
   struct entry_parm_s parm;
   const char *errtext = NULL;
@@ -1006,7 +1006,8 @@ agent_askpin (ctrl_t ctrl,
           /* More checks by utilizing the optional callback. */
           pininfo->cb_errtext = NULL;
           rc = pininfo->check_cb (pininfo);
-          if (rc == -1 && pininfo->cb_errtext)
+          if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
+              && pininfo->cb_errtext)
             errtext = pininfo->cb_errtext;
           else if (gpg_err_code (rc) == GPG_ERR_BAD_PASSPHRASE
                    || gpg_err_code (rc) == GPG_ERR_BAD_PIN)

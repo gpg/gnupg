@@ -111,7 +111,7 @@ agent_write_private_key (const unsigned char *grip,
 
 /* Callback function to try the unprotection from the passphrase query
    code. */
-static int
+static gpg_error_t
 try_unprotect_cb (struct pin_entry_info_s *pi)
 {
   struct try_unprotect_arg_s *arg = pi->check_cb_arg;

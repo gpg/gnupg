@@ -657,7 +657,7 @@ do_unprotect (const char *passphrase,
 
 /* Callback function to try the unprotection from the passphrase query
    code.  */
-static int
+static gpg_error_t
 try_do_unprotect_cb (struct pin_entry_info_s *pi)
 {
   gpg_error_t err;

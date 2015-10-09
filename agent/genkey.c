@@ -326,14 +326,14 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
 
 /* Callback function to compare the first entered PIN with the one
    currently being entered. */
-static int
+static gpg_error_t
 reenter_compare_cb (struct pin_entry_info_s *pi)
 {
   const char *pin1 = pi->check_cb_arg;
 
   if (!strcmp (pin1, pi->pin))
     return 0; /* okay */
-  return -1;
+  return gpg_error (GPG_ERR_BAD_PASSPHRASE);
 }
 
 
@@ -410,7 +410,7 @@ agent_ask_new_passphrase (ctrl_t ctrl, const char *prompt,
       if (*pi->pin && !pi->repeat_okay)
         {
           err = agent_askpin (ctrl, text2, NULL, NULL, pi2, NULL, 0);
-          if (err == -1)
+          if (gpg_err_code (err) == GPG_ERR_BAD_PASSPHRASE)
             { /* The re-entered one did not match and the user did not
                  hit cancel. */
               initial_errtext = xtrystrdup (L_("does not match - try again"));
