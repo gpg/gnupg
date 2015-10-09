@@ -1064,15 +1064,9 @@ agent_get_passphrase (ctrl_t ctrl,
         {
 	  size_t size;
 	  size_t len = ASSUAN_LINELENGTH/2;
-	  unsigned char *buffer;
 
-	  rc = pinentry_loopback(ctrl, "PASSPHRASE", &buffer, &size, len);
-	  if (!rc)
-	    {
-	      buffer[size] = 0;
-	      *retpass = buffer;
-	    }
-	  return rc;
+	  return pinentry_loopback (ctrl, "PASSPHRASE",
+				    (unsigned char **)retpass, &size, len);
         }
       return gpg_error (GPG_ERR_NO_PIN_ENTRY);
     }
