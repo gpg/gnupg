@@ -830,7 +830,7 @@ agent_askpin (ctrl_t ctrl,
 
 	  *pininfo->pin = 0; /* Reset the PIN. */
 	  rc = pinentry_loopback(ctrl, "PASSPHRASE", &passphrase, &size,
-		  pininfo->max_length);
+		  pininfo->max_length - 1);
 	  if (rc)
 	    return rc;
 
