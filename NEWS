@@ -1,5 +1,30 @@
-Noteworthy changes in version 2.1.9 (unreleased)
+Noteworthy changes in version 2.1.9 (2015-10-09)
 ------------------------------------------------
+
+ * gpg: Allow fetching keys via OpenPGP DANE (--auto-key-locate).  New
+   option --print-dane-records.
+
+ * gpg: Fix for a problem with PGP-2 keys in a keyring.
+
+ * gpg: Fail with an error instead of a warning if a modern cipher
+   algorithm is used without a MDC.
+
+ * agent: New option --pinentry-invisible-char.
+
+ * agent: Always do a RSA signature verification after creation.
+
+ * agent: Fix a regression in ssh-add-ing Ed25519 keys.
+
+ * agent: Fix ssh fingerprint computation for nistp384 and EdDSA.
+
+ * agent: Fix crash during passprase entry on some platforms.
+
+ * scd: Change timeout to fix problems with some 2.1 cards.
+
+ * dirmngr: Displayed name is now Key Acquirer.
+
+ * dirmngr: Add option --keyserver.  Deprecate that option for gpg.
+   Install a dirmngr.conf file from a skeleton for new installations.
 
 
 Noteworthy changes in version 2.1.8 (2015-09-10)
