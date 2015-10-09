@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.0.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2013-04-24 09:47+0200\n"
+"PO-Revision-Date: 2015-10-09 17:10+0200\n"
 "Last-Translator: Jaime Suárez <jaime.suma@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "Language: es\n"
@@ -4058,15 +4058,11 @@ msgstr "¿Cambia (N)ombre, (C)omentario, (D)irección o (S)alir? "
 msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgstr "¿Cambia (N)ombre, (C)omentario, (D)irección o (V)ale/(S)alir? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (Q)uit? "
 msgid "Change (N)ame, (E)mail, or (Q)uit? "
-msgstr "¿Cambia (N)ombre, (C)omentario, (D)irección o (S)alir? "
+msgstr "¿Cambia (N)ombre, (D)irección o (S)alir? "
 
-#, fuzzy
-#| msgid "Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? "
 msgid "Change (N)ame, (E)mail, or (O)kay/(Q)uit? "
-msgstr "¿Cambia (N)ombre, (C)omentario, (D)irección o (V)ale/(S)alir? "
+msgstr "¿Cambia (N)ombre, (D)irección o (V)ale/(S)alir? "
 
 msgid "Please correct the error first\n"
 msgstr "Por favor corrija primero el error.\n"
