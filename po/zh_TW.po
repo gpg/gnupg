@@ -674,6 +674,10 @@ msgstr "金鑰 %s 使用不安全 (%u 位元) 的雜湊\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "%zu 位元的雜湊對 %u 位元的 %s 金鑰無效\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "檢查已建立的簽章時出錯: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "私鑰部分無法取用\n"
 
@@ -1614,9 +1618,6 @@ msgstr "匯出時從金鑰中移除無法使用的部分"
 
 msgid "remove as much as possible from key during export"
 msgstr "匯出時盡可能地從金鑰中移除"
-
-msgid "export keys in an S-expression based format"
-msgstr "匯出金鑰成以 S-表示式形式的格式"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "不允許匯出私鑰\n"
@@ -3043,6 +3044,10 @@ msgstr "在 %s 模式中不允許使用這個指令.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "你至少得選擇一個使用者 ID.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "你不能刪除最後一個使用者 ID!\n"
 
@@ -3942,6 +3947,10 @@ msgstr "警告: %lu 把金鑰因尺寸太大已跳過\n"
 msgid "Keyring"
 msgstr "鑰匙圈"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "已跳過 \"%s\": %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "               主鑰指紋:"
 
@@ -4030,15 +4039,15 @@ msgstr "警告: 無法更新金鑰 %s 於 %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "更新 %d 份金鑰中 (從 %s )\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "在金鑰伺服器上找不到金鑰 \"%s\"\n"
 
 msgid "key not found on keyserver\n"
 msgstr "在金鑰伺服器上找不到金鑰\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "沒有已知的金鑰伺服器 (使用 --keyserver 選項)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4047,10 +4056,6 @@ msgstr "正在請求金鑰 %s 自 %s 伺服器 %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "正在請求金鑰 %s 自 %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "已跳過 \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4118,11 +4123,11 @@ msgstr "假定 %s 為加密過的資料\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "IDEA 編密法不可用, 我們樂觀地試著改以 %s 代替\n"
 
-msgid "decryption okay\n"
-msgstr "解密成功\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "警告: 訊息未受到完整的保護\n"
+
+msgid "decryption okay\n"
+msgstr "解密成功\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "警告: 加密過的訊息已經被變造了!\n"
@@ -4919,10 +4924,6 @@ msgid ""
 "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
 "unexpanded.\n"
 msgstr "警告: 偏好金鑰伺服器 URL 的 %% 無法擴張 (太大了). 現在使用未擴張的.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "檢查已建立的簽章時出錯: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -6740,6 +6741,11 @@ msgstr "取回 '%s' 時出錯: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "取回 '%s' 時出錯: http 狀態 %u\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "不可能存取 CRL 因已停用 %s\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "不可能進行憑證搜尋, 因為已停用 %s\n"
@@ -6945,6 +6951,9 @@ msgstr "|N|單次查詢不要傳回超過 N 筆項目"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|檔案|在 HKP over TLS 的指定檔案中使用 CA 憑證"
+
+msgid "route all network traffic via TOR"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -7235,6 +7244,11 @@ msgstr "從回應程式讀取時出錯: %s\n"
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "來自伺服器的回應太大; 上限是 %d 位元組\n"
+
+#, fuzzy
+#| msgid "OCSP request not possible due to disabled HTTP\n"
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "因為已經停用 HTTP 而不可能有 OCSP 請求\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "因為已經停用 HTTP 而不可能有 OCSP 請求\n"
@@ -7581,6 +7595,11 @@ msgstr "控制著輸出格式的選項"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "控制著互動及強制執行的選項"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "控制著安全性的選項"
+
 msgid "Configuration for HTTP servers"
 msgstr "HTTP 伺服器組態"
 
@@ -7608,8 +7627,8 @@ msgstr "智慧卡服務"
 msgid "GPG for S/MIME"
 msgstr "S/MIME 版 GPG"
 
-msgid "Directory Manager"
-msgstr "目錄總管"
+msgid "Key Acquirer"
+msgstr ""
 
 msgid "PIN and Passphrase Entry"
 msgstr "個人識別碼及密語項目"
@@ -7828,6 +7847,12 @@ msgid ""
 msgstr ""
 "語法: gpg-check-pattern [選項] 樣式檔案\n"
 "用樣式檔案來檢查由標準輸入給定的密語\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "匯出金鑰成以 S-表示式形式的格式"
+
+#~ msgid "Directory Manager"
+#~ msgstr "目錄總管"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "在私鑰清單和公鑰清單間切換"

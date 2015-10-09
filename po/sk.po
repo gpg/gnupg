@@ -700,6 +700,10 @@ msgstr ""
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "tajné èasti kµúèa nie sú dostupné\n"
 
@@ -1737,9 +1741,6 @@ msgid "remove unusable parts from key during export"
 msgstr "nepou¾iteµný tajný kµúè"
 
 msgid "remove as much as possible from key during export"
-msgstr ""
-
-msgid "export keys in an S-expression based format"
 msgstr ""
 
 #, fuzzy
@@ -3298,6 +3299,10 @@ msgstr "Tento príkaz nie je v módoch %s dovolený.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Musíte vybra» aspoò jedno id u¾ívateµa.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Nemô¾ete zmaza» posledné id u¾ívateµa!\n"
 
@@ -4260,6 +4265,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "súbor kµúèov (keyring)"
 
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "preskoèený `%s': %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Primárny fingerprint kµúèa:"
 
@@ -4350,9 +4359,6 @@ msgstr "VAROVANIE: nemô¾em vymaza» doèasný súbor (%s) `%s': %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
@@ -4361,6 +4367,9 @@ msgstr "kµúè `%s' nebol nájdený: %s\n"
 msgid "key not found on keyserver\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
 
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
@@ -4368,10 +4377,6 @@ msgstr "po¾adujem kµúè %08lX z %s\n"
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "po¾adujem kµúè %08lX z %s\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "preskoèený `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4445,11 +4450,11 @@ msgstr ""
 "algoritmus IDEA nie je dostupný; optimisticky sa ho pokúsime nahradi» "
 "algoritmom %s\n"
 
-msgid "decryption okay\n"
-msgstr "de¹ifrovanie o.k.\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROVANIE: správa nemá ochranu integrity\n"
+
+msgid "decryption okay\n"
+msgstr "de¹ifrovanie o.k.\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "VAROVANIE: so za¹ifrovanou správou bolo manipulované!\n"
@@ -5301,10 +5306,6 @@ msgid ""
 msgstr ""
 "VAROVANIE: nemô¾em %%-expandova» URL politiky (príli¹ dlhé). Pou¾ité "
 "neexpandované.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "kontrola vytvoreného podpisu sa nepodarila: %s\n"
 
 #, fuzzy, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7224,6 +7225,10 @@ msgstr "chyba pri vytváraní `%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "chyba pri èítaní `%s': %s\n"
 
+#, fuzzy
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "kµúè `%s' nebol nájdený: %s\n"
+
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
@@ -7445,6 +7450,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7755,6 +7763,9 @@ msgstr "chyba pri èítaní `%s': %s\n"
 
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to TOR mode\n"
 msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -8121,6 +8132,9 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
+msgid "Options controlling the use of TOR"
+msgstr ""
+
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8148,7 +8162,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy

@@ -699,6 +699,10 @@ msgstr ""
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "verificação da assinatura criada falhou: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "partes da chave secreta não disponíveis\n"
 
@@ -1733,9 +1737,6 @@ msgid "remove unusable parts from key during export"
 msgstr "chave secreta não utilizável"
 
 msgid "remove as much as possible from key during export"
-msgstr ""
-
-msgid "export keys in an S-expression based format"
 msgstr ""
 
 #, fuzzy
@@ -3286,6 +3287,10 @@ msgstr "Este comando não é permitido no modo %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Você precisa selecionar pelo menos um ID de utilizador.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Você não pode remover o último ID de utilizador!\n"
 
@@ -4255,6 +4260,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Porta-chaves"
 
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "ignorado `%s': %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Impressão da chave primária:"
 
@@ -4345,9 +4354,6 @@ msgstr "AVISO: dono pouco seguro em %s \"%s\"\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "a pedir a chave %08lX de %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "chave `%s' não encontrada: %s\n"
@@ -4356,6 +4362,9 @@ msgstr "chave `%s' não encontrada: %s\n"
 msgid "key not found on keyserver\n"
 msgstr "chave `%s' não encontrada: %s\n"
 
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "a pedir a chave %08lX de %s\n"
@@ -4363,10 +4372,6 @@ msgstr "a pedir a chave %08lX de %s\n"
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "a pedir a chave %08lX de %s\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "ignorado `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4437,11 +4442,11 @@ msgstr "a assumir dados cifrados %s\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "Cifra IDEO não disponível, a tentar utilizar %s em substituição\n"
 
-msgid "decryption okay\n"
-msgstr "decifragem correcta\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVISO: a mensagem não tinha a sua integridade protegida\n"
+
+msgid "decryption okay\n"
+msgstr "decifragem correcta\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "CUIDADO: a mensagem cifrada foi manipulada!\n"
@@ -5291,10 +5296,6 @@ msgid ""
 msgstr ""
 "AVISO: impossível expandir-%% a url de política (demasiado grande).\n"
 "A utilizar não expandida.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "verificação da assinatura criada falhou: %s\n"
 
 #, fuzzy, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7210,6 +7211,10 @@ msgstr "erro ao criar `%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "erro na leitura de `%s': %s\n"
 
+#, fuzzy
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "chave `%s' não encontrada: %s\n"
+
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "chave `%s' não encontrada: %s\n"
@@ -7431,6 +7436,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7742,6 +7750,9 @@ msgstr "erro na leitura de `%s': %s\n"
 
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to TOR mode\n"
 msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -8109,6 +8120,9 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
+msgid "Options controlling the use of TOR"
+msgstr ""
+
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8136,7 +8150,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy

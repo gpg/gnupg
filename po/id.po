@@ -700,6 +700,10 @@ msgstr ""
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "Gagal memeriksa signature yang dibuat: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "bagian kunci rahasia tidak tersedia\n"
 
@@ -1734,9 +1738,6 @@ msgid "remove unusable parts from key during export"
 msgstr "kunci rahasia tidak dapat dipakai"
 
 msgid "remove as much as possible from key during export"
-msgstr ""
-
-msgid "export keys in an S-expression based format"
 msgstr ""
 
 #, fuzzy
@@ -3278,6 +3279,10 @@ msgstr "Perintah ini tidak dibolehkan saat dalam mode %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Anda harus memilih minimum satu ID user.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Anda tidak dapat menghapus ID user terakhir!\n"
 
@@ -4247,6 +4252,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Keyring"
 
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "melewati `%s': %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Fingerprint kunci primer:"
 
@@ -4337,9 +4346,6 @@ msgstr "PERINGATAN: tidak dapat menghapus file temp (%s) `%s': %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "meminta kunci %08lX dari %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
@@ -4348,6 +4354,9 @@ msgstr "kunci '%s' tidak ditemukan: %s\n"
 msgid "key not found on keyserver\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
 
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "meminta kunci %08lX dari %s\n"
@@ -4355,10 +4364,6 @@ msgstr "meminta kunci %08lX dari %s\n"
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "meminta kunci %08lX dari %s\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "melewati `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4428,11 +4433,11 @@ msgstr "asumsikan %s data terenkripsi\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "Cipher IDEA tidak tersedia, secara optimis berusaha menggunakan %s\n"
 
-msgid "decryption okay\n"
-msgstr "dekripsi lancar\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "PERINGATAN: integritas pesan tidak terlindungi\n"
+
+msgid "decryption okay\n"
+msgstr "dekripsi lancar\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "PERINGATAN: pesan terenkripsi telah dimanipulasi!\n"
@@ -5280,10 +5285,6 @@ msgid ""
 msgstr ""
 "PERINGATAN: tidak dapat melakukan %%-expand policy url (terlalu besar).  "
 "Menggunakan yang tidak expand.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "Gagal memeriksa signature yang dibuat: %s\n"
 
 #, fuzzy, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7196,6 +7197,10 @@ msgstr "kesalahan penciptaan : `%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "kesalahan membaca `%s': %s\n"
 
+#, fuzzy
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "kunci '%s' tidak ditemukan: %s\n"
+
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "kunci '%s' tidak ditemukan: %s\n"
@@ -7417,6 +7422,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7726,6 +7734,9 @@ msgstr "kesalahan membaca `%s': %s\n"
 
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to TOR mode\n"
 msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -8092,6 +8103,9 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
+msgid "Options controlling the use of TOR"
+msgstr ""
+
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8119,7 +8133,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy

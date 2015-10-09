@@ -743,6 +743,10 @@ msgstr "Klucz %s u¿ywa niebezpiecznego (%u-bitowego) skrótu\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "skrót %u-bitowy nie jest poprawny dla %u-bitowego klucza %s\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "sprawdzenie z³o¿onego podpisu nie powiod³o siê: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "tajne czê¶ci klucza s± niedostêpne\n"
 
@@ -1747,9 +1751,6 @@ msgstr "usuniêcie bezu¿ytecznych czê¶ci z klucza przy eksporcie"
 
 msgid "remove as much as possible from key during export"
 msgstr "usuniêcie jak najwiêkszej czê¶ci klucza przy eksporcie"
-
-msgid "export keys in an S-expression based format"
-msgstr "eksport kluczy w formacie opartym na S-wyra¿eniach"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "eksport kluczy tajnych nie jest dozwolony\n"
@@ -3306,6 +3307,10 @@ msgstr "To polecenie nie jest dostêpne w trybie %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Musisz wybraæ co najmniej jeden identyfikator u¿ytkownika.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Nie mo¿esz usun±æ ostatniego identyfikatora u¿ytkownika!\n"
 
@@ -4267,6 +4272,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Zbiór kluczy"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "pominiêty ,,%s'': %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Odcisk klucza g³ównego:"
 
@@ -4356,15 +4365,15 @@ msgstr "OSTRZE¯ENIE: nie mo¿na od¶wie¿yæ klucza %s przez %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "od¶wie¿anie %d kluczy z %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "brak znanyk serwerów kluczy (u¿yj opcji --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "klucz ,,%s'' nie zosta³ odnaleziony na serwerze kluczy\n"
 
 msgid "key not found on keyserver\n"
 msgstr "klucz nie zosta³ odnaleziony na serwerze kluczy\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "brak znanyk serwerów kluczy (u¿yj opcji --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4373,10 +4382,6 @@ msgstr "zapytanie o klucz %s z serwera %s %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "zapytanie o klucz %s z %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "pominiêty ,,%s'': %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4446,11 +4451,11 @@ msgstr "przyjmuj±c ¿e dane zosta³y zaszyfrowane za pomoc± %s\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "szyfr IDEA nie jest dostêpny, próba u¿ycia %s zamiast niego\n"
 
-msgid "decryption okay\n"
-msgstr "odszyfrowanie poprawne\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "OSTRZE¯ENIE: wiadomo¶æ nie by³a zabezpieczona przed manipulacj±\n"
+
+msgid "decryption okay\n"
+msgstr "odszyfrowanie poprawne\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "OSTRZE¯ENIE: zaszyfrowana wiadomo¶æ by³a manipulowana!\n"
@@ -5315,10 +5320,6 @@ msgid ""
 msgstr ""
 "OSTRZE¯ENIE: nie mo¿na rozwin±æ znaczników %% w URL-u preferowanego\n"
 "           serwera kluczy (jest zbyt d³ugi). U¿yty zostanie nie rozwiniêty.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "sprawdzenie z³o¿onego podpisu nie powiod³o siê: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7317,6 +7318,11 @@ msgstr "b³±d odtwarzania ,,%s'' poprzez %s: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "b³±d uruchamiania ,,%s'': kod wyj¶cia %d\n"
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "nie znaleziono certyfikatu ,,%s'': %s\n"
+
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "certificate search not possible due to disabled %s\n"
@@ -7568,6 +7574,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7914,6 +7923,9 @@ msgstr "b³±d odczytu z %s: %s\n"
 #| msgid "Error: Private DO too long (limit is %d characters).\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "B³±d: prywatne DO zbyt d³ugie (limit to %d znaków).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8321,6 +8333,11 @@ msgstr "Opcje steruj±ce formatem wyj¶cia"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Opcje steruj±ce interaktywno¶ci± i wymuszaniem"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Opcje steruj±ce bezpieczeñstwem"
+
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguracja dla serwerów HTTP"
 
@@ -8348,7 +8365,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy
@@ -8587,6 +8604,9 @@ msgid ""
 msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "eksport kluczy w formacie opartym na S-wyra¿eniach"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "prze³±czenie pomiêdzy listami kluczy tajnych i publicznych"

@@ -716,6 +716,10 @@ msgstr ""
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "verificarea semnãturii create a eºuat: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "pãrþi ale cheii secrete nu sunt disponibile\n"
 
@@ -1734,9 +1738,6 @@ msgid "remove unusable parts from key during export"
 msgstr "cheie secretã de nefolosit"
 
 msgid "remove as much as possible from key during export"
-msgstr ""
-
-msgid "export keys in an S-expression based format"
 msgstr ""
 
 msgid "exporting secret keys not allowed\n"
@@ -3286,6 +3287,10 @@ msgstr "Aceastã comandã nu este permisã în modul %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Trebuie mai întâi sã selectaþi cel puþin un ID utilizator.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Nu puteþi ºterge ultimul ID utilizator!\n"
 
@@ -4237,6 +4242,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Inel de chei"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "sãritã \"%s\": %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Amprentã cheie primarã:"
 
@@ -4327,15 +4336,15 @@ msgstr "AVERTISMENT: nu pot reactualiza cheia %s via %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "reactualizez %d chei de la %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "nici un server de chei cunoscut (folosiþi opþiunea --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "cheia \"%s\" nu a fost gãsitã pe serverul de chei\n"
 
 msgid "key not found on keyserver\n"
 msgstr "cheia nu a fost gãsitã pe serverul de chei\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "nici un server de chei cunoscut (folosiþi opþiunea --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4344,10 +4353,6 @@ msgstr "cer cheia %s de la serverul %s %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "cer cheia %s de la %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "sãritã \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4416,11 +4421,11 @@ msgstr "presupunem date cifrate %s\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "cifru IDEA indisponibil, vom încerca sã folosim %s în loc\n"
 
-msgid "decryption okay\n"
-msgstr "decriptare OK\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "AVERTISMENT: mesajul nu a avut integritatea protejatã\n"
+
+msgid "decryption okay\n"
+msgstr "decriptare OK\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVERTISMENT: mesajul cifrat a fost manipulat!\n"
@@ -5280,10 +5285,6 @@ msgid ""
 msgstr ""
 "AVERTISMENT: nu pot %%-expanda URL-ul serverului de chei (prea mare).  Îl "
 "folosesc neexpandat.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "verificarea semnãturii create a eºuat: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7216,6 +7217,10 @@ msgstr "eroare la creearea `%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "eroare la citire `%s': %s\n"
 
+#, fuzzy
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "cheia secretã \"%s\" nu a fost gãsitã: %s\n"
+
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "cheia secretã \"%s\" nu a fost gãsitã: %s\n"
@@ -7440,6 +7445,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7764,6 +7772,9 @@ msgstr "eroare la citire `%s': %s\n"
 #| msgid "Error: Private DO too long (limit is %d characters).\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Eroare DO personal pre lung (limita este de %d caractere).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8132,6 +8143,9 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
+msgid "Options controlling the use of TOR"
+msgstr ""
+
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8159,7 +8173,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy

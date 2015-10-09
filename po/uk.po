@@ -697,6 +697,10 @@ msgstr "Ключ %s використовує недостатньо міцний
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "%zu-бітовий хеш не є коректним для %u-бітового ключа %s\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "невдала спроба перевірити створений підпис: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "закриті частини ключа недоступні\n"
 
@@ -1659,9 +1663,6 @@ msgstr "вилучити невикористовувані частини кл�
 
 msgid "remove as much as possible from key during export"
 msgstr "вилучити максимум частин з ключа під час експортування"
-
-msgid "export keys in an S-expression based format"
-msgstr "експортувати ключі у форматі, заснованому на S-виразах"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "експортування закритих ключів заборонено\n"
@@ -3149,6 +3150,10 @@ msgstr "Цією командою не можна користуватися у 
 msgid "You must select at least one user ID.\n"
 msgstr "Вам слід вибрати принаймні один ідентифікатор користувача.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Не можна вилучати останній ідентифікатор користувача!\n"
 
@@ -4076,6 +4081,10 @@ msgstr "Попередження: %lu ключів пропущено через
 msgid "Keyring"
 msgstr "Сховище ключів"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "пропущено «%s»: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Основний відбиток ключа:"
 
@@ -4164,16 +4173,16 @@ msgstr "УВАГА: не вдалося оновити ключ %s за допо
 msgid "refreshing %d keys from %s\n"
 msgstr "оновлюємо %d ключів з %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-"не вказано жодного сервера ключів (скористайтеся параметром --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "ключ «%s» не знайдено на сервері ключів\n"
 
 msgid "key not found on keyserver\n"
 msgstr "ключ не знайдено на сервері ключів\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+"не вказано жодного сервера ключів (скористайтеся параметром --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4182,10 +4191,6 @@ msgstr "надсилаємо запит щодо ключа %s до %s серв�
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "надсилаємо запит щодо ключа %s з %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "пропущено «%s»: %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4257,11 +4262,11 @@ msgstr "припускаємо, що дані зашифровано %s\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "Шифр IDEA недоступний, спробуємо скористатися замість нього %s\n"
 
-msgid "decryption okay\n"
-msgstr "розшифровано\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "УВАГА: цілісність повідомлення не захищено\n"
+
+msgid "decryption okay\n"
+msgstr "розшифровано\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "УВАГА: зашифроване повідомлення було змінено!\n"
@@ -5097,10 +5102,6 @@ msgid ""
 msgstr ""
 "УВАГА: не вдалося виконати %%-розгортання адреси основного сервера ключів "
 "(занадто велика). Використовуємо нерозгорнутою.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "невдала спроба перевірити створений підпис: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -6985,6 +6986,11 @@ msgstr "помилка отримання «%s»: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "помилка отримання «%s»: стан http %u\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "Доступ до CRL неможливий через вимкнений %s\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "пошук сертифікатів неможливий через вимкнений %s\n"
@@ -7194,6 +7200,9 @@ msgstr "|N|повертати не більше за вказану кількі
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|ФАЙЛ|використовувати сертифікати CA з файла ФАЙЛ для HKP крізь TLS"
+
+msgid "route all network traffic via TOR"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -7488,6 +7497,11 @@ msgstr "помилка під час спроби читання даних з �
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "занадто об’ємна відповідь від сервера; верхня межа — %d байтів\n"
+
+#, fuzzy
+#| msgid "OCSP request not possible due to disabled HTTP\n"
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "запит за допомогою OCSP неможливий через вимикання протоколу HTTP\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "запит за допомогою OCSP неможливий через вимикання протоколу HTTP\n"
@@ -7838,6 +7852,11 @@ msgstr "Параметри керування форматом виведенн�
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Параметри керування інтерактивністю та примусом"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Параметри керування захистом"
+
 msgid "Configuration for HTTP servers"
 msgstr "Налаштування для серверів HTTP"
 
@@ -7865,8 +7884,8 @@ msgstr "Фонова служба карток пам’яті"
 msgid "GPG for S/MIME"
 msgstr "GPG для S/MIME"
 
-msgid "Directory Manager"
-msgstr "Керування каталогом"
+msgid "Key Acquirer"
+msgstr ""
 
 msgid "PIN and Passphrase Entry"
 msgstr "Введення пінкодів і паролів"
@@ -8086,6 +8105,12 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметри] файл_шаблонів\n"
 "Перевірити пароль, вказаний у stdin, за допомогою файла_шаблонів\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "експортувати ключі у форматі, заснованому на S-виразах"
+
+#~ msgid "Directory Manager"
+#~ msgstr "Керування каталогом"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "перемкнутися між списками закритих і відкритих ключів"

@@ -695,6 +695,10 @@ msgstr ""
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "salajase võtme komponendid ei ole kättesaadavad\n"
 
@@ -1733,9 +1737,6 @@ msgid "remove unusable parts from key during export"
 msgstr "mittekasutatav salajane võti"
 
 msgid "remove as much as possible from key during export"
-msgstr ""
-
-msgid "export keys in an S-expression based format"
 msgstr ""
 
 #, fuzzy
@@ -3274,6 +3275,10 @@ msgstr "See käsklus ei ole %s moodis lubatud.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Te peate valima vähemalt ühe kasutaja ID.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Viimast kasutaja ID ei saa kustutada!\n"
 
@@ -4232,6 +4237,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Võtmehoidla"
 
+#, fuzzy, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "`%s' jätsin vahele: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Primaarse võtme sõrmejälg:"
 
@@ -4322,9 +4331,6 @@ msgstr "HOIATUS: ei saa kustutada ajutist faili (%s) `%s': %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "küsin võtit %08lX võtmeserverist %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
 #, fuzzy, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "võtit '%s' ei leitud: %s\n"
@@ -4333,6 +4339,9 @@ msgstr "võtit '%s' ei leitud: %s\n"
 msgid "key not found on keyserver\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "requesting key %s from %s server %s\n"
 msgstr "küsin võtit %08lX võtmeserverist %s\n"
@@ -4340,10 +4349,6 @@ msgstr "küsin võtit %08lX võtmeserverist %s\n"
 #, fuzzy, c-format
 msgid "requesting key %s from %s\n"
 msgstr "küsin võtit %08lX võtmeserverist %s\n"
-
-#, fuzzy, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "`%s' jätsin vahele: %s\n"
 
 #, fuzzy, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4413,11 +4418,11 @@ msgstr "eeldan %s krüpteeritud andmeid\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "IDEA ¨iffer pole saadaval, loodan kasutada selle asemel %s\n"
 
-msgid "decryption okay\n"
-msgstr "lahtikrüpteerimine õnnestus\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "HOIATUS: teate kooskõlalisus ei ole tagatud\n"
+
+msgid "decryption okay\n"
+msgstr "lahtikrüpteerimine õnnestus\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "HOIATUS: krüpteeritud teadet on muudetud!\n"
@@ -5260,10 +5265,6 @@ msgid ""
 msgstr ""
 "HOIATUS: poliisi urli %%-asendus ebaõnnestus (liiga suur). Kasutan "
 "kompaktset.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "Loodud allkirja ei õnnestu kontrollida: %s\n"
 
 #, fuzzy, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7175,6 +7176,10 @@ msgstr "viga `%s' loomisel: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
+#, fuzzy
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "võtit '%s' ei leitud: %s\n"
+
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "võtit '%s' ei leitud: %s\n"
@@ -7396,6 +7401,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7705,6 +7713,9 @@ msgstr "viga `%s' lugemisel: %s\n"
 
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
+msgstr ""
+
+msgid "OCSP request not possible due to TOR mode\n"
 msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -8071,6 +8082,9 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
+msgid "Options controlling the use of TOR"
+msgstr ""
+
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -8098,7 +8112,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy

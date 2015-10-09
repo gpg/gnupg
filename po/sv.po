@@ -776,6 +776,10 @@ msgstr "%s-nyckeln använder en osäker hash (%u bitar)\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "en %u-bitars hash är inte giltig för en %u-bitars %s-nyckel\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "kontroll av den skapade signaturen misslyckades: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "de hemliga nyckeldelarna är inte tillgängliga\n"
 
@@ -1794,9 +1798,6 @@ msgstr "ta bort oanvändbara delar från nyckeln under exportering"
 
 msgid "remove as much as possible from key during export"
 msgstr "ta bort så mycket som möjligt från nyckeln under exportering"
-
-msgid "export keys in an S-expression based format"
-msgstr "exportera nycklar i ett S-uttrycksbaserat format"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "export av hemliga nycklar tillåts inte\n"
@@ -3352,6 +3353,10 @@ msgstr "Detta kommando är inte tillåtet när du är i %s-läge.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Du måste välja åtminstone en användaridentitet.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Du kan inte ta bort den sista användaridentiteten!\n"
 
@@ -4320,6 +4325,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Nyckelring"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "hoppade över \"%s\": %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Primära nyckelns fingeravtryck:"
 
@@ -4409,15 +4418,15 @@ msgstr "VARNING: kunde inte uppdatera nyckeln %s via %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "uppdaterar %d nycklar från %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "ingen nyckelserver är känd (använd flaggan --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "nyckeln \"%s\" hittades inte på nyckelservern\n"
 
 msgid "key not found on keyserver\n"
 msgstr "nyckeln hittades inte på nyckelservern\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "ingen nyckelserver är känd (använd flaggan --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4426,10 +4435,6 @@ msgstr "begär nyckeln %s från %s-servern %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "begär nyckeln %s från %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "hoppade över \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4502,12 +4507,12 @@ msgstr ""
 "IDEA-chiffer är inte tillgängligt. Försöker optimistiskt att använda %s "
 "istället\n"
 
-msgid "decryption okay\n"
-msgstr "dekrypteringen lyckades\n"
-
 # Äldre krypteringalgoritmer skapar ingen mdc dvs. "minisignatur" som skyddar mot att delar av den krypterade texten byts ut/tas bort. Alla nya 128-bitars algoritmer använder mdc: AES, AES192, AES256, BLOWFISH.
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VARNING: detta meddelande var inte integritetsskyddat\n"
+
+msgid "decryption okay\n"
+msgstr "dekrypteringen lyckades\n"
 
 # Meddelandet innebär alltså att kontrollen av mdc visade att meddelandet förändrats/manipulerats sedan det krypterades. Block kan ha tagits bort eller bytts ut.
 msgid "WARNING: encrypted message has been manipulated!\n"
@@ -5387,10 +5392,6 @@ msgid ""
 msgstr ""
 "VARNING: kunde inte %%-expandera url för föredragen nyckelserver (för "
 "stor).  Använder oexpanderad.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "kontroll av den skapade signaturen misslyckades: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7428,6 +7429,11 @@ msgstr "fel vid hämtning av \"%s\" via %s: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "fel vid körning av \"%s\": avslutsstatus %d\n"
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "certifikatet \"%s\" hittades inte: %s\n"
+
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "certificate search not possible due to disabled %s\n"
@@ -7678,6 +7684,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 # inställningar istället för flaggor?
@@ -8028,6 +8037,9 @@ msgstr "fel vid läsning från %s: %s\n"
 #| msgid "Error: Private DO too long (limit is %d characters).\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Fel: Privat DO för långt (gränsen är %d tecken).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8433,6 +8445,11 @@ msgstr "Flaggor som kontrollerar formatet på utdata"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Flaggor som kontrollerar interaktivitet och framtvingande"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Flaggor som kontrollerar säkerheten"
+
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration för HTTP-servrar"
 
@@ -8460,7 +8477,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy
@@ -8701,6 +8718,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [flaggor] mönsterfil\n"
 "Kontrollera en lösenfras angiven på standard in mot mönsterfilen\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "exportera nycklar i ett S-uttrycksbaserat format"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "växla mellan att lista hemliga och publika nycklar"

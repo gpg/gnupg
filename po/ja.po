@@ -671,6 +671,10 @@ msgstr "%s 鍵は安全でない(%uビット)ハッシュを使用していま�
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "%zuビットのハッシュは%uビットの%s鍵には無効です\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "作成された署名の検査に失敗しました: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "秘密部分が得られません\n"
 
@@ -1562,7 +1566,8 @@ msgstr "遠隔プログラムの実行は、サポートしていません\n"
 msgid ""
 "external program calls are disabled due to unsafe options file permissions\n"
 msgstr ""
-"オプション・ファイルの許可モードが安全ではないので、外部プログラムの呼出しは禁止となります。\n"
+"オプション・ファイルの許可モードが安全ではないので、外部プログラムの呼出しは"
+"禁止となります。\n"
 
 msgid "this platform requires temporary files when calling external programs\n"
 msgstr ""
@@ -1612,9 +1617,6 @@ msgstr "エクスポートの際、利用できない部分を除去する"
 
 msgid "remove as much as possible from key during export"
 msgstr "エクスポートの際、できるだけ除去する"
-
-msgid "export keys in an S-expression based format"
-msgstr "S式ベースのフォーマットで鍵をエクスポートする"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "秘密鍵のエクスポートは認められません\n"
@@ -1893,8 +1895,7 @@ msgstr "*警告*: homedir '%s'の安全でない上位ディレクトリ所有\n
 msgid ""
 "WARNING: unsafe enclosing directory ownership on configuration file '%s'\n"
 msgstr ""
-"*警告*: コンフィグレーション・ファイル'%s'の安全でない上位ディレクトリ所有"
-"\n"
+"*警告*: コンフィグレーション・ファイル'%s'の安全でない上位ディレクトリ所有\n"
 
 #, c-format
 msgid "WARNING: unsafe enclosing directory ownership on extension '%s'\n"
@@ -3037,6 +3038,10 @@ msgstr "%sモードでこのコマンドは禁止です。\n"
 msgid "You must select at least one user ID.\n"
 msgstr "ユーザIDを少なくともひとつ選択してください。\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "最後のユーザIDは削除できません!\n"
 
@@ -3783,8 +3788,8 @@ msgid ""
 "Please enter a passphrase to protect the off-card backup of the new "
 "encryption key."
 msgstr ""
-"パスフレーズを入力してください。これは新しく作られる暗号化鍵のカード外のバック"
-"アップを保護するものです。"
+"パスフレーズを入力してください。これは新しく作られる暗号化鍵のカード外のバッ"
+"クアップを保護するものです。"
 
 msgid "passphrase not correctly repeated; try again"
 msgstr "パスフレーズをちゃんと繰り返していません。再入力してください"
@@ -3936,6 +3941,10 @@ msgstr "*警告*: %lu 鍵がその大きさのためスキップされました\
 msgid "Keyring"
 msgstr "鍵リング"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "\"%s\"をスキップしました: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr " 主鍵フィンガープリント:"
 
@@ -4023,15 +4032,15 @@ msgstr "*警告*: 鍵%sを%s経由で更新できません: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "%d本の鍵を%sから更新\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "鍵\"%s\"が鍵サーバに見つかりません\n"
 
 msgid "key not found on keyserver\n"
 msgstr "鍵が鍵サーバに見つかりません\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "既知の鍵サーバがありません (オプション--keyserverを使いましょう)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4040,10 +4049,6 @@ msgstr "鍵%sを%sからサーバ%sに要求\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "鍵%sを%sに要求\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "\"%s\"をスキップしました: %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4111,11 +4116,11 @@ msgstr "%s暗号化済みデータを仮定\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "IDEA暗号方式は利用不能なので、楽天的ですが%sで代用しようとしています\n"
 
-msgid "decryption okay\n"
-msgstr "復号に成功\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "*警告*: メッセージの完全性は保護されていません\n"
+
+msgid "decryption okay\n"
+msgstr "復号に成功\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "*警告*: 暗号化されたメッセージは改竄されています!\n"
@@ -4920,10 +4925,6 @@ msgid ""
 "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
 "unexpanded.\n"
 msgstr "*警告*: 優先鍵サーバURLを%%拡張不能 (大きすぎ)。拡張せずに使用。\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "作成された署名の検査に失敗しました: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -6760,6 +6761,11 @@ msgstr "'%s'を取得する際のエラー: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "'%s'の取得エラー: httpステイタス %u\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "CRLアクセスは停止された%sのため不可能です\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "禁止されているため、証明書の探索ができません: %s\n"
@@ -6966,6 +6972,9 @@ msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
+
+msgid "route all network traffic via TOR"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -7256,6 +7265,11 @@ msgstr "応答からの読み込みエラー: %s\n"
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "サーバからの応答がが長すぎます (上限%dバイト)。\n"
+
+#, fuzzy
+#| msgid "OCSP request not possible due to disabled HTTP\n"
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "HTTPが停止されているためOCSPリクエストが不可能です\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "HTTPが停止されているためOCSPリクエストが不可能です\n"
@@ -7603,6 +7617,11 @@ msgstr "出力フォーマットを制御するオプション"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "インタラクティビティと強制を制御するオプション"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "セキュリティを制御するオプション"
+
 msgid "Configuration for HTTP servers"
 msgstr "HTTPサーバのコンフィグレーション"
 
@@ -7630,8 +7649,8 @@ msgstr "スマートカード・デーモン"
 msgid "GPG for S/MIME"
 msgstr "S/MIME のためのGPG"
 
-msgid "Directory Manager"
-msgstr "ディレクトリ・マネージャ"
+msgid "Key Acquirer"
+msgstr ""
 
 msgid "PIN and Passphrase Entry"
 msgstr "PINとパスフレーズの入力"
@@ -7850,6 +7869,12 @@ msgid ""
 msgstr ""
 "形式: gpg-check-pattern [オプション] パターンファイル\n"
 "パターンファイルに対して標準入力のパスフレーズを確認する\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "S式ベースのフォーマットで鍵をエクスポートする"
+
+#~ msgid "Directory Manager"
+#~ msgstr "ディレクトリ・マネージャ"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "秘密鍵と公開鍵の一覧の反転"

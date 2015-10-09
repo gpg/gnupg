@@ -700,6 +700,10 @@ msgstr ""
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr ""
+
 msgid "secret key parts are not available\n"
 msgstr ""
 
@@ -1704,9 +1708,6 @@ msgid "remove unusable parts from key during export"
 msgstr ""
 
 msgid "remove as much as possible from key during export"
-msgstr ""
-
-msgid "export keys in an S-expression based format"
 msgstr ""
 
 msgid "exporting secret keys not allowed\n"
@@ -3209,6 +3210,10 @@ msgstr "Denne kommandoen er ikke tillatt i %s-modus.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Du må velge minst en brukerid.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Du kan ikke slette den siste brukeriden!\n"
 
@@ -4140,6 +4145,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Nøkkelknippe"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "hoppet over «%s»: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Fingeravtrykk for primærnøkkel:"
 
@@ -4229,15 +4238,15 @@ msgstr "ADVARSEL: klarte ikke å oppfriske nøkkel %s via %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "oppfrisker %d nøkler fra %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr ""
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "nøkkelen «%s» ble ikke funnet på nøkkelserveren\n"
 
 msgid "key not found on keyserver\n"
 msgstr "nøkkelen ble ikke funnet på nøkkelserver\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr ""
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4246,10 +4255,6 @@ msgstr "ber om nøkkelen %s fra %s server %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "ber om nøkkel %s fra %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "hoppet over «%s»: %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4320,10 +4325,10 @@ msgstr ""
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 
-msgid "decryption okay\n"
+msgid "WARNING: message was not integrity protected\n"
 msgstr ""
 
-msgid "WARNING: message was not integrity protected\n"
+msgid "decryption okay\n"
 msgstr ""
 
 msgid "WARNING: encrypted message has been manipulated!\n"
@@ -5148,10 +5153,6 @@ msgstr ""
 msgid ""
 "WARNING: unable to %%-expand preferred keyserver URL (too large).  Using "
 "unexpanded.\n"
-msgstr ""
-
-#, c-format
-msgid "checking created signature failed: %s\n"
 msgstr ""
 
 #, c-format
@@ -7051,6 +7052,10 @@ msgstr "feil ved lesing av «%s»: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "feil ved lesing av «%s»: %s\n"
 
+#, fuzzy
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "hemmelig nøkkel «%s» ble ikke funnet: %s\n"
+
 #, fuzzy, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "hemmelig nøkkel «%s» ble ikke funnet: %s\n"
@@ -7271,6 +7276,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7589,6 +7597,9 @@ msgstr "feil ved lesing av «%s»: %s\n"
 #| msgid "Error: Private DO too long (limit is %d characters).\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Feil: Privat DO for lang (grensa går ved %d tegn).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -7952,6 +7963,9 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
+msgid "Options controlling the use of TOR"
+msgstr ""
+
 msgid "Configuration for HTTP servers"
 msgstr ""
 
@@ -7979,7 +7993,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy

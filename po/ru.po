@@ -683,6 +683,10 @@ msgstr "%s ключ использует небезопасный (%u бит) х
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "%zu-битный хэш недопустим для %u-битного ключа %s\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "сбой проверки созданной подписи: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "закрытая часть ключа недоступна\n"
 
@@ -1629,9 +1633,6 @@ msgstr "удалить при экспорте непригодные части
 
 msgid "remove as much as possible from key during export"
 msgstr "при экспорте удалить из ключа как можно больше"
-
-msgid "export keys in an S-expression based format"
-msgstr "экспортировать ключи в формате на основе S-выражений"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "экспорт закрытых ключей не разрешен\n"
@@ -3077,6 +3078,10 @@ msgstr "Данная команда в режиме %s недопустима.\n
 msgid "You must select at least one user ID.\n"
 msgstr "Вы должны выбрать хотя бы один ID пользователя.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Вы не можете удалить последний ID пользователя!\n"
 
@@ -3988,6 +3993,10 @@ msgstr "Внимание: %lu ключей пропущено из-за боль
 msgid "Keyring"
 msgstr "Таблица ключей"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "пропущено \"%s\": %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Отпечаток главного ключа:"
 
@@ -4075,15 +4084,15 @@ msgstr "Внимание: невозможно обновить ключ %s с %
 msgid "refreshing %d keys from %s\n"
 msgstr "обновление %d ключей из %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "не заданы серверы ключей (используйте --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "ключ \"%s\" не найден на сервере ключей\n"
 
 msgid "key not found on keyserver\n"
 msgstr "ключ не найден на сервере ключей\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "не заданы серверы ключей (используйте --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4092,10 +4101,6 @@ msgstr "запрашиваю ключ %s с сервера %s %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "получение ключа %s с %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "пропущено \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4163,11 +4168,11 @@ msgstr "предполагаются данные, зашифрованные п
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "шифр IDEA недоступен, попробую вместо него %s\n"
 
-msgid "decryption okay\n"
-msgstr "расшифровано нормально\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "Внимание: целостность сообщения не защищена\n"
+
+msgid "decryption okay\n"
+msgstr "расшифровано нормально\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "Внимание: зашифрованное сообщение было изменено!\n"
@@ -4988,10 +4993,6 @@ msgid ""
 msgstr ""
 "Внимание: невозможно развернуть %% в URL предпочтительного сервера ключей "
 "(слишком длинный). Использую неразвернутым.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "сбой проверки созданной подписи: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -6869,6 +6870,13 @@ msgstr "ошибка получения '%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "ошибка получения '%s': статус HTTP %u\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr ""
+"Доступ к списку отозванных сертификатов невозможен\n"
+"из-за того, что не задействуется %s\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "поиск сертификата невозможен из-за того, что не задействуется %s\n"
@@ -7082,6 +7090,9 @@ msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 "|FILE|использовать сертификаты удостоверяющего центра из файла FILE для HKP "
 "по TLS"
+
+msgid "route all network traffic via TOR"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -7372,6 +7383,11 @@ msgstr "ошибка чтения из ответчика: %s\n"
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "слишком длинный ответ сервера; предел - %d байт\n"
+
+#, fuzzy
+#| msgid "OCSP request not possible due to disabled HTTP\n"
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "запрос OCSP невозможен из-за отключения HTTP\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "запрос OCSP невозможен из-за отключения HTTP\n"
@@ -7723,6 +7739,11 @@ msgstr "Параметры, управляющие форматом вывода
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Параметры, управляющие интерактивностью и принудительными действиями"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Параметры, управляющие безопасностью"
+
 msgid "Configuration for HTTP servers"
 msgstr "Настройки серверов HTTP"
 
@@ -7750,8 +7771,8 @@ msgstr "Демон криптографических карт"
 msgid "GPG for S/MIME"
 msgstr "GPG для S/MIME"
 
-msgid "Directory Manager"
-msgstr "Управление каталогами"
+msgid "Key Acquirer"
+msgstr ""
 
 msgid "PIN and Passphrase Entry"
 msgstr "Ввод PIN и фраз-паролей"
@@ -7971,6 +7992,12 @@ msgid ""
 msgstr ""
 "Синтаксис: gpg-check-pattern [параметры] файл_образцов\n"
 "Проверить фразу-пароль, поступающую из stdin, по файлу образцов\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "экспортировать ключи в формате на основе S-выражений"
+
+#~ msgid "Directory Manager"
+#~ msgstr "Управление каталогами"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "переключение между просмотром открытых и закрытых ключей"

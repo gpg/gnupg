@@ -716,6 +716,10 @@ msgstr "%s klíč používá nebezpečný (%ubitový) hash\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "%zubitový hash není platný pro %ubitový %s klíč\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "kontrola vytvořeného podpisu se nepodařila: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "tajné části klíče nejsou dostupné\n"
 
@@ -1675,9 +1679,6 @@ msgstr "odstranit nepoužitelné části z klíče při exportu"
 
 msgid "remove as much as possible from key during export"
 msgstr "odstranit při exportu z klíče vše, co lze"
-
-msgid "export keys in an S-expression based format"
-msgstr "exportovat klíče ve formátu postaveném na S-výrazech"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "exportování tajného klíče není povoleno\n"
@@ -3138,6 +3139,10 @@ msgstr "Tento příkaz není v módů %s dovolený.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Musíte vybrat alespoň jeden id uživatele.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Nemůžete smazat poslední id uživatele!\n"
 
@@ -4050,6 +4055,10 @@ msgstr "Pozor: %lu klíč(ů) přeskočen(o) kvůli jejich přílišné velikost
 msgid "Keyring"
 msgstr "Soubor klíčů (keyring)"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "přeskočen „%s“: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Otisk primárního klíče:"
 
@@ -4137,15 +4146,15 @@ msgstr "VAROVÁNÍ: nelze aktualizovat klíč %s prostřednictvím %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "aktualizuji %d klíčů z %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "žádný server klíčů není znám (použijte volbu --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "klíč „%s“ nebyl na serveru klíčů nalezen\n"
 
 msgid "key not found on keyserver\n"
 msgstr "klíč nebyl na serveru klíčů nalezen\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "žádný server klíčů není znám (použijte volbu --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4154,10 +4163,6 @@ msgstr "požaduji klíč %s ze %s server %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "požaduji klíč %s z %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "přeskočen „%s“: %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4229,11 +4234,11 @@ msgstr ""
 "algoritmus IDEA není dostupný; optimisticky se jej pokusíme nahradit "
 "algoritmem %s\n"
 
-msgid "decryption okay\n"
-msgstr "dešifrování o.k.\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "VAROVÁNÍ: zpráva nebyla chráněna proti porušení její integrity\n"
+
+msgid "decryption okay\n"
+msgstr "dešifrování o.k.\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "VAROVÁNÍ: se zašifrovanou zprávou bylo manipulováno!\n"
@@ -5054,10 +5059,6 @@ msgid ""
 msgstr ""
 "VAROVÁNÍ: nemohu %%-expandovat URL preferovaného keyservery (příliš dlouhé). "
 "Použity neexpandované.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "kontrola vytvořeného podpisu se nepodařila: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -6926,6 +6927,12 @@ msgstr "chyba při získávání „%s“: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "chyba při získávání „%s“: status HTTP je %u\n"
 
+# Poslední argument je název protokolu
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "Přístup k CRL není možný kvůli vypnutému %s\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "dohledání certifikátu nemožné kvůli vypnutému %s\n"
@@ -7131,6 +7138,9 @@ msgstr "|N|nevrací více jak N položek na jeden dotaz"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
+
+msgid "route all network traffic via TOR"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -7422,6 +7432,11 @@ msgstr "chyba při čtení z odpovídače: %s\n"
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "odpověď serveru je příliš velká, limit je %d bajtů\n"
+
+#, fuzzy
+#| msgid "OCSP request not possible due to disabled HTTP\n"
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "OCSP dotaz není možný, protože HTTP je zakázáno\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "OCSP dotaz není možný, protože HTTP je zakázáno\n"
@@ -7769,6 +7784,11 @@ msgstr "Volby ovlivňující podobu výstupu"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Volby ovlivňující interaktivitu a vymáhání"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Volby ovlivňující bezpečnost"
+
 msgid "Configuration for HTTP servers"
 msgstr "Nastavení HTTP serverů"
 
@@ -7796,8 +7816,8 @@ msgstr "Démon pro čipové karty"
 msgid "GPG for S/MIME"
 msgstr "GPG pro S/MIME"
 
-msgid "Directory Manager"
-msgstr "Správce adresářů"
+msgid "Key Acquirer"
+msgstr ""
 
 msgid "PIN and Passphrase Entry"
 msgstr "Zadávání kódu PIN a hesla"
@@ -8016,6 +8036,12 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "exportovat klíče ve formátu postaveném na S-výrazech"
+
+#~ msgid "Directory Manager"
+#~ msgstr "Správce adresářů"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "přepnout mezi výpisem seznamu tajných a veřejných klíčů"

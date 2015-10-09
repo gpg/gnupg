@@ -711,6 +711,10 @@ msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr ""
 "un hachage de %1$zu bits n'est pas valable pour une clef %3$s de %2$u bits\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "échec de vérification de la signature créée : %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "des parties de la clef secrète ne sont pas disponibles\n"
 
@@ -1683,9 +1687,6 @@ msgstr "supprimer les parties inutilisables de la clef pendant l'exportation"
 
 msgid "remove as much as possible from key during export"
 msgstr "supprimer autant que possible de la clef pendant l'exportation"
-
-msgid "export keys in an S-expression based format"
-msgstr "exporter les clefs dans un format basé sur une expression symbolique"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "il est interdit d'exporter les clefs secrètes\n"
@@ -3170,6 +3171,10 @@ msgstr "Cette commande n'est pas permise en mode %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Vous devez sélectionner au moins une identité.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Vous ne pouvez pas supprimer la dernière identité.\n"
 
@@ -4110,6 +4115,10 @@ msgstr "Attention : %lu clefs ignorées en raison de leur grande taille\n"
 msgid "Keyring"
 msgstr "Porte-clefs"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "« %s » a été ignorée : %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Empreinte de clef principale :"
 
@@ -4201,15 +4210,15 @@ msgstr ""
 msgid "refreshing %d keys from %s\n"
 msgstr "rafraîchissement de %d clefs à partir de %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "pas de serveur de clefs connu (utilisez l'option --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "clef « %s » introuvable sur le serveur de clefs\n"
 
 msgid "key not found on keyserver\n"
 msgstr "clef introuvable sur le serveur de clefs\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "pas de serveur de clefs connu (utilisez l'option --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4218,10 +4227,6 @@ msgstr "demande de la clef %s sur le serveur %s %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "requête de la clef %s sur %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "« %s » a été ignorée : %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4293,11 +4298,11 @@ msgstr ""
 "L'algorithme IDEA n'est pas disponible, essai avec %s\n"
 "qui fonctionnera peut-être avec un peu de chance\n"
 
-msgid "decryption okay\n"
-msgstr "le déchiffrement a réussi\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "Attention : l'intégrité du message n'était pas protégée\n"
+
+msgid "decryption okay\n"
+msgstr "le déchiffrement a réussi\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "Attention : le message chiffré a été manipulé.\n"
@@ -5169,10 +5174,6 @@ msgstr ""
 "Attention : impossible de faire une expansion à base de %% de\n"
 "            l'URL du serveur de clef favori (chaîne trop grande).\n"
 "            Utilisation de la version non expansée.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "échec de vérification de la signature créée : %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7124,6 +7125,13 @@ msgstr "erreur de récupération de « %s » : %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "erreur de récupération de « %s » : état HTTP %u\n"
 
+#, fuzzy
+#| msgid "CRL access not possible due to disabled %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr ""
+"accès à la liste de révocations de certificat impossible car %s est "
+"désactivé\n"
+
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
 msgstr "recherche de certificats impossible car %s est désactivé\n"
@@ -7343,6 +7351,9 @@ msgstr "|N|ne pas renvoyer plus de N éléments dans une requête"
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|FICHIER|utiliser les certificats de CA dans FICHIER pour HKP par TLS"
+
+msgid "route all network traffic via TOR"
+msgstr ""
 
 msgid ""
 "@\n"
@@ -7638,6 +7649,11 @@ msgstr "erreur de lecture du répondeur : %s\n"
 #, c-format
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "réponse trop grande du serveur ; limitée à %d octets.\n"
+
+#, fuzzy
+#| msgid "OCSP request not possible due to disabled HTTP\n"
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr "requête OCSP impossible car HTTP est désactivé\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "requête OCSP impossible car HTTP est désactivé\n"
@@ -7997,6 +8013,11 @@ msgstr "Options contrôlant le format de sortie"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Options contrôlant l'interactivité et la mise en application"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Options contrôlant la sécurité"
+
 msgid "Configuration for HTTP servers"
 msgstr "Configuration pour les serveurs HTTP"
 
@@ -8024,8 +8045,8 @@ msgstr "Démon de carte à puce"
 msgid "GPG for S/MIME"
 msgstr "GPG pour S/MIME"
 
-msgid "Directory Manager"
-msgstr "Gestionnaire de répertoires"
+msgid "Key Acquirer"
+msgstr ""
 
 msgid "PIN and Passphrase Entry"
 msgstr "Entrée de code personnel et de phrase secrète"
@@ -8245,6 +8266,13 @@ msgstr ""
 "Syntaxe : gpg-check-pattern [options] ficmotif\n"
 "Vérifier une phrase secrète donnée sur l'entrée standard par rapport à "
 "ficmotif\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr ""
+#~ "exporter les clefs dans un format basé sur une expression symbolique"
+
+#~ msgid "Directory Manager"
+#~ msgstr "Gestionnaire de répertoires"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr ""

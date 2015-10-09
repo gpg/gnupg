@@ -757,6 +757,10 @@ msgstr "%s-nøglen bruger en usikker (%u bit) hash\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "en %u-bit-hash er ikke gyldig for en %u-bit %s-nøgle\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "kontrol af oprettet underskrift mislykkedes: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "hemmelige nøgledele er ikke tilgængelige\n"
 
@@ -1763,9 +1767,6 @@ msgstr "fjern nøgledele der ikke kan bruges under eksport"
 
 msgid "remove as much as possible from key during export"
 msgstr "fjern så meget som muligt fra nøglen under eksport"
-
-msgid "export keys in an S-expression based format"
-msgstr "eksporter nøgler i et S-udtryksbaseret format"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "eksport af hemmelige nøgler er ikke tilladt\n"
@@ -3296,6 +3297,10 @@ msgstr "Denne kommando er ikke tilladt i tilstanden %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Du skal vælge mindst en bruger-id.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Du kan ikke slette den sidste bruger-id!\n"
 
@@ -4248,6 +4253,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Nøglering"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "udelod »%s«: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Primær nøglefingeraftryk:"
 
@@ -4337,15 +4346,15 @@ msgstr "ADVARSEL: Kan ikke opdatere nøgle %s via %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "opdaterer %d nøgler fra %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "nøgle »%s« blev ikke fundet på nøgleserver\n"
 
 msgid "key not found on keyserver\n"
 msgstr "nøgle blev ikke fundet på nøgleserver\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "ingen kendt nøgleserver (brug tilvalget --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4354,10 +4363,6 @@ msgstr "anmoder om nøgle %s fra %s server %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "anmoder om nøgle %s fra %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "udelod »%s«: %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4427,11 +4432,11 @@ msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "IDEA-chiffer utilgængelig, forsøger optimistisk at bruge %s i stedet for\n"
 
-msgid "decryption okay\n"
-msgstr "afkryptering okay\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ADVARSEL: besked var ikke integritetsbeskyttet\n"
+
+msgid "decryption okay\n"
+msgstr "afkryptering okay\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ADVARSEL: krypteret besked er blevet manipuleret!\n"
@@ -5293,10 +5298,6 @@ msgid ""
 msgstr ""
 "ADVARSEL: kan ikke %%-udvide foretrukken nøgleserveradresse (for stor). "
 "Bruger uden udvidelse.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "kontrol af oprettet underskrift mislykkedes: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7294,6 +7295,11 @@ msgstr "fejl ved indhentelse af »%s« via %s: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "fejl ved kørsel af »%s«: afslutningsstatus %d\n"
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "certifikat »%s« blev ikke fundet: %s\n"
+
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "certificate search not possible due to disabled %s\n"
@@ -7544,6 +7550,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7890,6 +7899,9 @@ msgstr "fejl ved læsning fra %s: %s\n"
 #| msgid "Error: Private DO too long (limit is %d characters).\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Fejl: Privat DO er for lang (begrænsningen er %d tegn).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8294,6 +8306,11 @@ msgstr "Tilvalg der kontrollerer formatet for resultatet"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Tilvalg der kontrollerer interaktiviteten og tvang"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Tilvalg der kontrollerer sikkerheden"
+
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration for HTTP-servere"
 
@@ -8321,7 +8338,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy
@@ -8560,6 +8577,9 @@ msgid ""
 msgstr ""
 "Syntaks: gpg-check-pattern [tilvalg] mønsterfil\n"
 "Kontroller en adgangsfrase angivet på stdin mod mønsterfilen\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "eksporter nøgler i et S-udtryksbaseret format"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "skift mellem hemmelig og offentlig nøglevisning"

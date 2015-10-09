@@ -776,6 +776,10 @@ msgstr "la clave %s usa un hash inseguro (de %u bits)\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "un hash de %u bits no vale para %u bits de la clave %s\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "la comprobación de la firma creada falló: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "las partes de la clave privada no están disponibles\n"
 
@@ -1782,9 +1786,6 @@ msgstr "borrar partes inutilizables de la clave al exportar"
 
 msgid "remove as much as possible from key during export"
 msgstr "borrar tanto como sea posible de la clave al exportar"
-
-msgid "export keys in an S-expression based format"
-msgstr "exportar claves en formato basado en una expresión S"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "no se permite exportar claves secretas\n"
@@ -3307,6 +3308,10 @@ msgstr "Esta orden no se permite en modo %s.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "Debe seleccionar por lo menos un identificador de usuario.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "¡No puede borrar el último identificador de usuario!\n"
 
@@ -4248,6 +4253,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Anillo de claves"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "omitido \"%s\": %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Huellas dactilares de la clave primaria:"
 
@@ -4337,15 +4346,15 @@ msgstr "AVISO: no se puede renovar la clave %s a traves de %s: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "renovando %d claves desde %s\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "no hay servidores de claves conocidos (use opción --keyserver)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "clave \"%s\" no encontrada en el servidor\n"
 
 msgid "key not found on keyserver\n"
 msgstr "clave no encontrada en el servidor\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "no hay servidores de claves conocidos (use opción --keyserver)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4354,10 +4363,6 @@ msgstr "solicitando clave %s de %s servidor %s\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "solicitando clave %s de %s\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "omitido \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4427,11 +4432,11 @@ msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "cifrado IDEA no disponible, confiadamente intentamos usar %s en su lugar\n"
 
-msgid "decryption okay\n"
-msgstr "descifrado correcto\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "ATENCIÓN: la intgridad del mensaje no está protegida\n"
+
+msgid "decryption okay\n"
+msgstr "descifrado correcto\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "ATENCIÓN: ¡el mensaje cifrado ha sido manipulado!\n"
@@ -5286,10 +5291,6 @@ msgid ""
 msgstr ""
 "AVISO: no puedo expandir el %% de la URL del servidor de claves\n"
 "preferido. Se usa sin expandir.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "la comprobación de la firma creada falló: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7310,6 +7311,11 @@ msgstr "error recuperando `%s' vía %s: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "error ejecutando `%s': código de finalización %d\n"
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "certificado `%s' no encontrado: %s\n"
+
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "certificate search not possible due to disabled %s\n"
@@ -7561,6 +7567,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 # ordenes -> órdenes
@@ -7914,6 +7923,9 @@ msgstr "error leyendo de %s: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 "Error: los datos privados son demasiado largos (límite de %d caracteres).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8319,6 +8331,11 @@ msgstr "Opciones que controlan el formato de la salida"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Opciones que controlan la interactividad y obligación"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Opciones que controlan la seguridad"
+
 msgid "Configuration for HTTP servers"
 msgstr "Configuración de servidores HTTP"
 
@@ -8346,7 +8363,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 # ¿Por qué no frase de paso?
@@ -8600,6 +8617,9 @@ msgstr ""
 "Sintaxis: gpg-check-pattern [opciones] fichero_de_patrones\n"
 "Compara frase contraseña dada en entrada estándar con un fichero de "
 "patrones\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "exportar claves en formato basado en una expresión S"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "cambiar entre lista de claves secretas y públicas"

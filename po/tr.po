@@ -742,6 +742,10 @@ msgstr "%s anahtarı, güvensiz bir çittirim (%u bitlik) kullanıyor\n"
 msgid "a %zu bit hash is not valid for a %u bit %s key\n"
 msgstr "%u bitlik çittirim %u bitlik %s anahtarı için geçersiz\n"
 
+#, c-format
+msgid "checking created signature failed: %s\n"
+msgstr "oluşturulan imzanın denetimi başarısız: %s\n"
+
 msgid "secret key parts are not available\n"
 msgstr "gizli anahtar parçaları kullanım dışı\n"
 
@@ -1741,9 +1745,6 @@ msgstr "ihraç sırasında anahtardan kullanışsız parçalar kaldırılır"
 
 msgid "remove as much as possible from key during export"
 msgstr "ihraç sırasında anahtardan mümkün olduğunca çok şey kaldırılır"
-
-msgid "export keys in an S-expression based format"
-msgstr "anahtarları bir S ifadesine dayalı biçimde ihraceder"
 
 msgid "exporting secret keys not allowed\n"
 msgstr "gizli anahtarların ihracına izin verilmez\n"
@@ -3290,6 +3291,10 @@ msgstr "%s kipindeyken bu komut kullanılamaz.\n"
 msgid "You must select at least one user ID.\n"
 msgstr "En az bir kullanıcı kimliği seçmelisiniz.\n"
 
+#, c-format
+msgid "(Use the '%s' command.)\n"
+msgstr ""
+
 msgid "You can't delete the last user ID!\n"
 msgstr "Son kullanıcı kimliğini silemezsiniz!\n"
 
@@ -4274,6 +4279,10 @@ msgstr ""
 msgid "Keyring"
 msgstr "Anahtar zinciri"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "\"%s\" atlandı: %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Birincil anahtar parmak izi:"
 
@@ -4364,15 +4373,15 @@ msgstr "UYARI: %s anahtarı %s üzerinden tazelenemiyor: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "%d anahtar %s adresinden tazeleniyor\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "anahtar \"%s\" anahtar sunucusunda yok\n"
 
 msgid "key not found on keyserver\n"
 msgstr "anahtar, anahtar sunucusunda yok\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "bilinen bir anahtar sunucusu yok (--keyserver seçeneğini kullanın)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4381,10 +4390,6 @@ msgstr "%1$s anahtarı %3$s sunucusunun %2$s adresinden isteniyor\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "%s anahtarı %s adresinden isteniyor\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "\"%s\" atlandı: %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4456,11 +4461,11 @@ msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr ""
 "IDEA şifre kullanışsız, iyimserlikle yerine %s kullanılmaya çalışılıyor\n"
 
-msgid "decryption okay\n"
-msgstr "Şifre çözme tamam\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr "UYARI: ileti bütünlük korumalı değildi\n"
+
+msgid "decryption okay\n"
+msgstr "Şifre çözme tamam\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "UYARI: şifreli ileti tahrip edilmiş!\n"
@@ -5326,10 +5331,6 @@ msgid ""
 msgstr ""
 "UYARI: tercih edilen anahtar sunucu adresi için %%lik uzatma imkansız\n"
 "(çok büyük). Uzatılmadan kullanılıyor.\n"
-
-#, c-format
-msgid "checking created signature failed: %s\n"
-msgstr "oluşturulan imzanın denetimi başarısız: %s\n"
 
 #, c-format
 msgid "%s/%s signature from: \"%s\"\n"
@@ -7344,6 +7345,11 @@ msgstr "`%s' %s üzerinden alınırken hata: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "`%s' çalışırken hata: çıkış durumu: %d\n"
 
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "CRL access not possible due to TOR mode\n"
+msgstr "sertifika \"%s\" yok: %s\n"
+
 #, fuzzy, c-format
 #| msgid "certificate `%s' not found: %s\n"
 msgid "certificate search not possible due to disabled %s\n"
@@ -7595,6 +7601,9 @@ msgid "|N|do not return more than N items in one query"
 msgstr ""
 
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
+msgstr ""
+
+msgid "route all network traffic via TOR"
 msgstr ""
 
 #, fuzzy
@@ -7941,6 +7950,9 @@ msgstr "%s okunurken hata: %s\n"
 #| msgid "Error: Private DO too long (limit is %d characters).\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Hata: Özel DO çok uzun (sınır: %d karakter).\n"
+
+msgid "OCSP request not possible due to TOR mode\n"
+msgstr ""
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8348,6 +8360,11 @@ msgstr "Çıktı biçimini denetleyen seçenekler"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Etkileşimliliği ve zorlamayı denetleyen seçenekler"
 
+#, fuzzy
+#| msgid "Options controlling the security"
+msgid "Options controlling the use of TOR"
+msgstr "Güvenliği denetleyen seçenekler"
+
 msgid "Configuration for HTTP servers"
 msgstr "HTTP sunucuları için yapılandırma"
 
@@ -8375,7 +8392,7 @@ msgstr ""
 msgid "GPG for S/MIME"
 msgstr ""
 
-msgid "Directory Manager"
+msgid "Key Acquirer"
 msgstr ""
 
 #, fuzzy
@@ -8616,6 +8633,9 @@ msgstr ""
 "Kullanım: gpg-check-pattern [seçenekler] örüntüdosyası\n"
 "Standart girdiden verilen anahtar parolasını örüntü dosyasıyla "
 "karşılaştırır\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "anahtarları bir S ifadesine dayalı biçimde ihraceder"
 
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "genel ve gizli anahtar listeleri arasında yer değiştirir"

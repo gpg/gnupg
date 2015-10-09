@@ -1671,9 +1671,6 @@ msgstr "Unbrauchbare Teile des Schlüssel während des Exports entfernen"
 msgid "remove as much as possible from key during export"
 msgstr "Während des Exports soviel wie möglich vom Schlüssel entfernen"
 
-msgid "export keys in an S-expression based format"
-msgstr "Exportiere Schlüssel in einem auf S-Ausdrücken basierenden Format"
-
 msgid "exporting secret keys not allowed\n"
 msgstr "Exportieren geheimer Schlüssel ist nicht erlaubt\n"
 
@@ -4076,6 +4073,10 @@ msgstr "WARNUNG: %lu Schlüssel übersprungen, da sie zu groß sind\n"
 msgid "Keyring"
 msgstr "Schlüsselbund"
 
+#, c-format
+msgid "skipped \"%s\": %s\n"
+msgstr "übersprungen \"%s\": %s\n"
+
 msgid "Primary key fingerprint:"
 msgstr "Haupt-Fingerabdruck  ="
 
@@ -4164,15 +4165,15 @@ msgstr "WARNUNG: Schlüssel %s kann per %s nicht aktualisiert werden: %s\n"
 msgid "refreshing %d keys from %s\n"
 msgstr "%d Schlüssel werden per %s aktualisiert\n"
 
-msgid "no keyserver known (use option --keyserver)\n"
-msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
-
 #, c-format
 msgid "key \"%s\" not found on keyserver\n"
 msgstr "Schlüssel \"%s\" wurde auf dem Schlüsselserver nicht gefunden\n"
 
 msgid "key not found on keyserver\n"
 msgstr "Schlüssel wurde auf dem Schlüsselserver nicht gefunden\n"
+
+msgid "no keyserver known (use option --keyserver)\n"
+msgstr "Kein Schlüsselserver bekannt (Option --keyserver verwenden)\n"
 
 #, c-format
 msgid "requesting key %s from %s server %s\n"
@@ -4181,10 +4182,6 @@ msgstr "fordere Schlüssel %s von %s-Server %s an\n"
 #, c-format
 msgid "requesting key %s from %s\n"
 msgstr "fordere Schlüssel %s von %s an\n"
-
-#, c-format
-msgid "skipped \"%s\": %s\n"
-msgstr "übersprungen \"%s\": %s\n"
 
 #, c-format
 msgid "sending key %s to %s server %s\n"
@@ -4254,12 +4251,12 @@ msgstr "vermutlich %s-verschlüsselte Daten\n"
 msgid "IDEA cipher unavailable, optimistically attempting to use %s instead\n"
 msgstr "IDEA-Verschlüsselung nicht verfügbar; versucht wird stattdessen %s\n"
 
-msgid "decryption okay\n"
-msgstr "Entschlüsselung erfolgreich\n"
-
 msgid "WARNING: message was not integrity protected\n"
 msgstr ""
 "WARNUNG: Botschaft wurde nicht integritätsgeschützt (integrity protected)\n"
+
+msgid "decryption okay\n"
+msgstr "Entschlüsselung erfolgreich\n"
 
 msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "WARNUNG: Verschlüsselte Botschaft ist manipuliert worden!\n"
@@ -8148,6 +8145,9 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "export keys in an S-expression based format"
+#~ msgstr "Exportiere Schlüssel in einem auf S-Ausdrücken basierenden Format"
 
 #~ msgid "Directory Manager"
 #~ msgstr "Directory Manager"
