@@ -101,8 +101,8 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
 
 
 /* We try very hard to use a MDC */
-static int
-use_mdc(PK_LIST pk_list,int algo)
+int
+use_mdc (pk_list_t pk_list,int algo)
 {
   /* RFC-2440 don't has MDC */
   if (RFC2440)

@@ -31,5 +31,14 @@ for ciph in `all_cipher_algos`; do
     cmp z y || error "$ciph/$i: mismatch"
   done
 done
-
 progress_end
+
+#info Checking sign+symencrypt
+for i in $plain_files $data_files; do
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k -cs -o x --yes $i
+    echo "Hier spricht HAL" | $GPG --passphrase-fd 0 $s2k     -o y --yes x
+    cmp $i y || error "$i: mismatch in sign+symenc"
+done
+
+
+# eof

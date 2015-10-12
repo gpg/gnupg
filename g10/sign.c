@@ -1261,12 +1261,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
         goto leave;
     }
 
-    /* We have no way to tell if the recipient can handle messages
-       with an MDC, so this defaults to no.  Perhaps in a few years,
-       this can be defaulted to yes.  Note that like regular
-       encrypting, --force-mdc overrides --disable-mdc. */
-    if(opt.force_mdc)
-      cfx.dek->use_mdc=1;
+    cfx.dek->use_mdc = use_mdc (NULL, cfx.dek->algo);
 
     /* now create the outfile */
     rc = open_outfile (-1, fname, opt.armor? 1:0, 0, &out);
@@ -1309,7 +1304,11 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
 
     /* Push the compress filter */
     if (default_compress_algo())
-      push_compress_filter(out,&zfx,default_compress_algo());
+      {
+        if (cfx.dek && cfx.dek->use_mdc)
+          zfx.new_ctb = 1;
+        push_compress_filter (out, &zfx,default_compress_algo() );
+      }
 
     /* Write the one-pass signature packets */
     /*(current filters: zip - encrypt - armor)*/
