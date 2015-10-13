@@ -8,9 +8,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gnupg 2.1.8\n"
+"Project-Id-Version: gnupg 2.1.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-09-15 15:12+0900\n"
+"PO-Revision-Date: 2015-10-13 11:32+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -3040,7 +3040,7 @@ msgstr "ユーザIDを少なくともひとつ選択してください。\n"
 
 #, c-format
 msgid "(Use the '%s' command.)\n"
-msgstr ""
+msgstr "('%s'コマンドを使用してください。)\n"
 
 msgid "You can't delete the last user ID!\n"
 msgstr "最後のユーザIDは削除できません!\n"
@@ -6761,10 +6761,8 @@ msgstr "'%s'を取得する際のエラー: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "'%s'の取得エラー: httpステイタス %u\n"
 
-#, fuzzy
-#| msgid "CRL access not possible due to disabled %s\n"
 msgid "CRL access not possible due to TOR mode\n"
-msgstr "CRLアクセスは停止された%sのため不可能です\n"
+msgstr "CRLアクセスはTORモードのため不可能です\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -6974,7 +6972,7 @@ msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
 
 msgid "route all network traffic via TOR"
-msgstr ""
+msgstr "ネットワーク・トラフィックをすべてTOR経由にする"
 
 msgid ""
 "@\n"
@@ -7266,10 +7264,8 @@ msgstr "応答からの読み込みエラー: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "サーバからの応答がが長すぎます (上限%dバイト)。\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to disabled HTTP\n"
 msgid "OCSP request not possible due to TOR mode\n"
-msgstr "HTTPが停止されているためOCSPリクエストが不可能です\n"
+msgstr "TORモードのためOCSPリクエストが不可能です\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "HTTPが停止されているためOCSPリクエストが不可能です\n"
@@ -7617,10 +7613,8 @@ msgstr "出力フォーマットを制御するオプション"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "インタラクティビティと強制を制御するオプション"
 
-#, fuzzy
-#| msgid "Options controlling the security"
 msgid "Options controlling the use of TOR"
-msgstr "セキュリティを制御するオプション"
+msgstr "TORの使用を制御するオプション"
 
 msgid "Configuration for HTTP servers"
 msgstr "HTTPサーバのコンフィグレーション"
@@ -7650,7 +7644,7 @@ msgid "GPG for S/MIME"
 msgstr "S/MIME のためのGPG"
 
 msgid "Key Acquirer"
-msgstr ""
+msgstr "キー取得プログラム"
 
 msgid "PIN and Passphrase Entry"
 msgstr "PINとパスフレーズの入力"
