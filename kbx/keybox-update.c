@@ -603,7 +603,7 @@ keybox_set_flags (KEYBOX_HANDLE hd, int what, int idx, unsigned int value)
 
   ec = 0;
   if (fseeko (fp, off, SEEK_SET))
-    ec = gpg_error_from_syserror ();
+    ec = gpg_err_code_from_syserror ();
   else
     {
       unsigned char tmp[4];

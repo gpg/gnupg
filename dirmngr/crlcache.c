@@ -994,7 +994,7 @@ hash_dbfile (const char *fname, unsigned char *md5buffer)
   char *buffer;
   size_t n;
   gcry_md_hd_t md5;
-  gpg_err_code_t err;
+  gpg_error_t err;
 
   buffer = xtrymalloc (65536);
   fp = buffer? es_fopen (fname, "rb") : NULL;
