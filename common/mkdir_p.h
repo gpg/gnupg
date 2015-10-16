@@ -39,7 +39,7 @@
    first try to create the directory "foo/bar" and then the directory
    "foo/bar/xyzzy".  On success returns 0, otherwise an error code is
    returned.  */
-gpg_error_t mkdir_p (char *directory_component, ...) GPGRT_ATTR_SENTINEL(0);
+gpg_error_t gnupg_mkdir_p (const char *directory_component, ...) GPGRT_ATTR_SENTINEL(0);
 
 /* Like mkdir_p, but DIRECTORY_COMPONENTS is a NULL terminated
    array, e.g.:
@@ -47,6 +47,6 @@ gpg_error_t mkdir_p (char *directory_component, ...) GPGRT_ATTR_SENTINEL(0);
      char **dirs = { "foo", "bar", NULL };
      amkdir_p (dirs);
  */
-gpg_error_t amkdir_p (char **directory_components);
+gpg_error_t gnupg_amkdir_p (const char **directory_components);
 
 #endif

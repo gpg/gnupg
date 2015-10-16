@@ -41,7 +41,7 @@
 
 
 gpg_error_t
-amkdir_p (char **directory_components)
+gnupg_amkdir_p (const char **directory_components)
 {
   gpg_error_t err = 0;
   int count;
@@ -138,7 +138,7 @@ amkdir_p (char **directory_components)
 
 
 gpg_error_t
-mkdir_p (char *directory_component, ...)
+gnupg_mkdir_p (const char *directory_component, ...)
 {
   va_list ap;
   gpg_error_t err = 0;
@@ -174,7 +174,7 @@ mkdir_p (char *directory_component, ...)
   va_end (ap);
 
   if (!err)
-    err = amkdir_p (dirs);
+    err = gnupg_amkdir_p (dirs);
 
   xfree (dirs);
 
