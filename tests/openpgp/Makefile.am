@@ -38,7 +38,8 @@ TESTS = version.test mds.test \
 	armdetachm.test detachm.test genkey1024.test \
 	conventional.test conventional-mdc.test \
 	multisig.test verify.test armor.test \
-	import.test ecc.test 4gb-packet.test finish.test
+	import.test ecc.test 4gb-packet.test tofu.test \
+	finish.test
 
 
 TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
@@ -46,7 +47,9 @@ TEST_FILES = pubring.asc secring.asc plain-1o.asc plain-2o.asc plain-3o.asc \
 	     pubring.pkr.asc secring.skr.asc secdemo.asc pubdemo.asc \
              gpg.conf.tmpl gpg-agent.conf.tmpl \
 	     bug537-test.data.asc bug894-test.asc \
-	     bug1223-good.asc bug1223-bogus.asc 4gb-packet.asc
+	     bug1223-good.asc bug1223-bogus.asc 4gb-packet.asc \
+	     tofu-keys.asc tofu-keys-secret.asc \
+	     tofu-2183839A-1.txt tofu-BC15C85A-1.txt tofu-EE37CF96-1.txt
 
 data_files = data-500 data-9000 data-32000 data-80000 plain-large
 
@@ -95,10 +98,10 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     *.test.log gpg_dearmor gpg.conf gpg-agent.conf S.gpg-agent \
 	     pubring.gpg pubring.gpg~ pubring.kbx pubring.kbx~ \
 	     secring.gpg pubring.pkr secring.skr \
-	     gnupg-test.stop random_seed gpg-agent.log
+	     gnupg-test.stop random_seed gpg-agent.log tofu.db
 
 clean-local:
-	-rm -rf private-keys-v1.d openpgp-revocs.d
+	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d
 
 
 # We need to depend on a couple of programs so that the tests don't

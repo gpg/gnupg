@@ -206,6 +206,10 @@ described here.
 
     For pub, sub, sec, and ssb records this field is used for the ECC
     curve name.
+*** Field 18 - TOFU Policy
+
+    This is the TOFU policy.  It is either good, bad, unknown, ask or
+    auto.  This is only shows for uid records.
 
 ** Special fields
 

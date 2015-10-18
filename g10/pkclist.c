@@ -37,6 +37,7 @@
 #include "status.h"
 #include "photoid.h"
 #include "i18n.h"
+#include "tofu.h"
 
 #define CONTROL_D ('D' - 'A' + 1)
 
@@ -507,13 +508,13 @@ do_we_trust_pre( PKT_public_key *pk, unsigned int trustlevel )
 
 /****************
  * Check whether we can trust this signature.
- * Returns: Error if we shall not trust this signatures.
+ * Returns an error code if we should not trust this signature.
  */
 int
 check_signatures_trust( PKT_signature *sig )
 {
   PKT_public_key *pk = xmalloc_clear( sizeof *pk );
-  unsigned int trustlevel;
+  unsigned int trustlevel = TRUST_UNKNOWN;
   int rc=0;
 
   rc = get_pubkey( pk, sig->keyid );
@@ -537,7 +538,7 @@ check_signatures_trust( PKT_signature *sig )
     log_info(_("WARNING: this key might be revoked (revocation key"
 	       " not present)\n"));
 
-  trustlevel = get_validity (pk, NULL);
+  trustlevel = get_validity (pk, NULL, sig, 1);
 
   if ( (trustlevel & TRUST_FLAG_REVOKED) )
     {
@@ -829,7 +830,7 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
     }
 
   /* Key found and usable.  Check validity. */
-  trustlevel = get_validity (pk, pk->user_id);
+  trustlevel = get_validity (pk, pk->user_id, NULL, 1);
   if ( (trustlevel & TRUST_FLAG_DISABLED) )
     {
       /* Key has been disabled. */
@@ -1114,7 +1115,7 @@ build_pk_list (ctrl_t ctrl,
                 { /* Check validity of this key. */
                   int trustlevel;
 
-                  trustlevel = get_validity (pk, pk->user_id);
+                  trustlevel = get_validity (pk, pk->user_id, NULL, 1);
                   if ( (trustlevel & TRUST_FLAG_DISABLED) )
                     {
                       tty_printf (_("Public key is disabled.\n") );

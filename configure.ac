@@ -780,6 +780,12 @@ DL_LIBS=$LIBS
 AC_SUBST(DL_LIBS)
 LIBS="$gnupg_dlopen_save_libs"
 
+# Checks for g10
+
+PKG_CHECK_MODULES(SQLITE3, sqlite3)
+AC_SUBST(SQLITE3_CFLAGS)
+AC_SUBST(SQLITE3_LIBS)
+
 # Checks for g13
 
 AC_PATH_PROG(ENCFS, encfs, /usr/bin/encfs)

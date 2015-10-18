@@ -851,6 +851,7 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
   PKT_signature *sig;
   gcry_md_hd_t md = NULL;
   gcry_md_hd_t md2 = NULL;
+  gcry_md_hd_t md_good = NULL;
   int algo, rc;
 
   assert (node->pkt->pkttype == PKT_SIGNATURE);
@@ -926,8 +927,21 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
     return GPG_ERR_SIG_CLASS;
 
   rc = signature_check2 (sig, md, NULL, is_expkey, is_revkey, NULL);
-  if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
-    rc = signature_check2 (sig, md2, NULL, is_expkey, is_revkey, NULL);
+  if (! rc)
+    md_good = md;
+  else if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
+    {
+      rc = signature_check2 (sig, md2, NULL, is_expkey, is_revkey, NULL);
+      if (! rc)
+	md_good = md2;
+    }
+
+  if (md_good)
+    {
+      unsigned char *buffer = gcry_md_read (md_good, 0);
+      sig->digest_len = gcry_md_get_algo_dlen (map_md_openpgp_to_gcry (algo));
+      memcpy (sig->digest, buffer, sig->digest_len);
+    }
 
   gcry_md_close (md);
   gcry_md_close (md2);
@@ -1848,9 +1862,10 @@ check_sig_and_print (CTX c, kbnode_t node)
 
           assert (pk);
 
-          /* Get it before we print anything to avoid interrupting the
-             output with the "please do a --check-trustdb" line. */
-          valid = get_validity (pk, un->pkt->pkt.user_id);
+	  /* Since this is just informational, don't actually ask the
+	     user to update any trust information.  (Note: we register
+	     the signature later.)  */
+          valid = get_validity (pk, un->pkt->pkt.user_id, NULL, 0);
 
           keyid_str[17] = 0; /* cut off the "[uncertain]" part */
 
@@ -1939,8 +1954,11 @@ check_sig_and_print (CTX c, kbnode_t node)
                   else if (un->pkt->pkt.user_id->is_expired)
                     valid = _("expired");
                   else
+		    /* Since this is just informational, don't
+		       actually ask the user to update any trust
+		       information.  */
                     valid = (trust_value_to_string
-                             (get_validity (pk, un->pkt->pkt.user_id)));
+                             (get_validity (pk, un->pkt->pkt.user_id, sig, 0)));
                   log_printf (" [%s]\n",valid);
                 }
               else

@@ -152,7 +152,7 @@ uid_trust_string_fixed (PKT_public_key *key, PKT_user_id *uid)
     return                         _("[ expired]");
   else if(key)
     {
-      switch (get_validity(key,uid)&TRUST_MASK)
+      switch (get_validity (key, uid, NULL, 0) & TRUST_MASK)
         {
         case TRUST_UNKNOWN:   return _("[ unknown]");
         case TRUST_EXPIRED:   return _("[ expired]");
@@ -298,7 +298,8 @@ check_or_update_trustdb (void)
  * otherwise, a reasonable value for the entire key is returned.
  */
 unsigned int
-get_validity (PKT_public_key *pk, PKT_user_id *uid)
+get_validity (PKT_public_key *pk, PKT_user_id *uid, PKT_signature *sig,
+	      int may_ask)
 {
   int rc;
   unsigned int validity;
@@ -330,7 +331,7 @@ get_validity (PKT_public_key *pk, PKT_user_id *uid)
 #ifdef NO_TRUST_MODELS
   validity = TRUST_UNKNOWN;
 #else
-  validity = tdb_get_validity_core (pk, uid, main_pk);
+  validity = tdb_get_validity_core (pk, uid, main_pk, sig, may_ask);
 #endif
 
  leave:
@@ -359,7 +360,7 @@ get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
   if (!pk)
     return '?';  /* Just in case a NULL PK is passed.  */
 
-  trustlevel = get_validity (pk, uid);
+  trustlevel = get_validity (pk, uid, NULL, 0);
   if ((trustlevel & TRUST_FLAG_REVOKED))
     return 'r';
   return trust_letter (trustlevel);
@@ -374,7 +375,7 @@ get_validity_string (PKT_public_key *pk, PKT_user_id *uid)
   if (!pk)
     return "err";  /* Just in case a NULL PK is passed.  */
 
-  trustlevel = get_validity (pk, uid);
+  trustlevel = get_validity (pk, uid, NULL, 0);
   if ((trustlevel & TRUST_FLAG_REVOKED))
     return _("revoked");
   return trust_value_to_string (trustlevel);

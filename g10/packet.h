@@ -175,6 +175,11 @@ typedef struct
   subpktarea_t *unhashed;    /* Ditto for unhashed data. */
   byte digest_start[2];      /* First 2 bytes of the digest. */
   gcry_mpi_t  data[PUBKEY_MAX_NSIG];
+  /* The message digest and its length (in bytes).  Note the maximum
+     digest length is 512 bits (64 bytes).  If DIGEST_LEN is 0, then
+     the digest's value has not been saved here.  */
+  byte digest[512 / 8];
+  int digest_len;
 } PKT_signature;
 
 #define ATTRIB_IMAGE 1

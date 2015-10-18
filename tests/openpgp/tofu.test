@@ -1,0 +1,245 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+# set -x
+
+KEYS="2183839A BC15C85A EE37CF96"
+
+# Make sure $srcdir is set.
+if test "x$srcdir" = x
+then
+    echo srcdir environment variable not set!
+    exit 1
+fi
+
+# Make sure $GNUPGHOME is set.
+if test "x$GNUPGHOME" = x
+then
+    echo "GNUPGHOME not set."
+    exit 1
+fi
+
+# Import the test keys.
+$GPG --import $srcdir/tofu-keys.asc
+
+# Make sure the keys are imported.
+for k in $KEYS
+do
+    if ! $GPG --list-keys $k >/dev/null 2>&1
+    then
+	echo Missing key $k
+	exit 1
+    fi
+done
+
+format=auto
+
+debug()
+{
+    echo "$@" >&2
+}
+
+debug_exec()
+{
+    debug "Running GNUPGHOME=$GNUPGHOME $@"
+    ${@:+"$@"}
+}
+
+# $1 is the keyid of the policy to lookup.  Any remaining arguments
+# are simply passed to GPG.
+#
+# This function only supports keys with a single user id.
+getpolicy()
+{
+    keyid=$1
+    if test x$keyid = x
+    then
+	echo No keyid supplied!
+	exit 1
+    fi
+    shift
+
+    policy=$(debug_exec $GPG --tofu-db-format=$format --trust-model=tofu \
+		  --with-colons $@ --list-keys "$keyid" \
+		    | awk -F: '/^uid:/ { print $18 }')
+    if test $(echo "$policy" | wc -l) -ne 1
+    then
+	echo "Got: $policy" >&2
+	echo "error"
+    else
+	case $policy in
+	    auto|good|unknown|bad|ask) echo $policy ;;
+	    *) echo "error" ;;
+	esac
+    fi
+}
+
+# $1 is the key id
+# $2 is the expected policy
+# The rest are additional options to pass to gpg.
+checkpolicy()
+{
+    debug
+    debug "checkpolicy($@)"
+
+    keyid=$1
+    shift
+    expected_policy=$1
+    shift
+    policy=$(getpolicy "$keyid" ${@:+"$@"})
+    if test "x$policy" != "x$expected_policy"
+    then
+	echo "$keyid: Expected policy to be \`$expected_policy', but got \`$policy'."
+	exit 1
+    fi
+}
+
+# $1 is the keyid of the trust level to lookup.  Any remaining
+# arguments are simply passed to GPG.
+#
+# This function only supports keys with a single user id.
+gettrust()
+{
+    keyid=$1
+    if test x$keyid = x
+    then
+	echo No keyid supplied!
+	exit 1
+    fi
+    shift
+
+    trust=$(debug_exec $GPG --tofu-db-format=$format --trust-model=tofu \
+		 --with-colons $@ --list-keys "$keyid" \
+		    | awk -F: '/^pub:/ { print $2 }')
+    if test $(echo "$trust" | wc -l) -ne 1
+    then
+	echo "error"
+    else
+	case $trust in
+	    [oidreqnmfuws-]) echo $trust ;;
+	    *) echo "Bad trust value: $trust" >&2; echo "error" ;;
+	esac
+    fi
+}
+
+# $1 is the key id
+# $2 is the expected trust level
+# The rest are additional options to pass to gpg.
+checktrust()
+{
+    debug
+    debug "checktrust($@)"
+
+    keyid=$1
+    shift
+    expected_trust=$1
+    shift
+    trust=$(gettrust "$keyid" ${@:+"$@"})
+    if test "x$trust" != "x$expected_trust"
+    then
+	echo "$keyid: Expected trust to be \`$expected_trust', but got \`$trust'."
+	exit 1
+    fi
+}
+
+# Set key $1's policy to $2.  Any remaining arguments are passed as
+# options to gpg.
+setpolicy()
+{
+    debug
+    debug "setpolicy($@)"
+
+    keyid=$1
+    shift
+    policy=$1
+    shift
+
+    debug_exec $GPG --tofu-db-format=$format \
+	 --trust-model=tofu ${@:+"$@"} --tofu-policy $policy $keyid
+}
+
+for format in split flat
+do
+    debug
+    debug "Testing with db format $format"
+
+    # Carefully remove the TOFU db.
+    test -e $GNUPGHOME/tofu.db && rm $GNUPGHOME/tofu.db
+    test -e $GNUPGHOME/tofu.d/email && rm -r $GNUPGHOME/tofu.d/email
+    test -e $GNUPGHOME/tofu.d/key && rm -r $GNUPGHOME/tofu.d/key
+    # This will fail if the directory is not empty.
+    test -e $GNUPGHOME/tofu.d && rmdir $GNUPGHOME/tofu.d
+
+    # Verify a message.  There should be no conflict and the trust policy
+    # should be set to auto.
+    debug_exec $GPG --tofu-db-format=$format --trust-model=tofu \
+	 --verify $srcdir/tofu-2183839A-1.txt
+
+    checkpolicy 2183839A auto
+
+    trust=$(gettrust 2183839A)
+    debug "default trust = $trust"
+    if test "x$trust" != xm
+    then
+	echo "Wrong default trust.  Got: \`$trust', expected \`m'"
+	exit 1
+    fi
+
+    # Trust should be derived lazily.  Thus, if the policy is set to auto
+    # and we change --tofu-default-policy, then the trust should change as
+    # well.  Try it.
+    checktrust 2183839A f --tofu-default-policy=good
+    checktrust 2183839A - --tofu-default-policy=unknown
+    checktrust 2183839A n --tofu-default-policy=bad
+
+    # Change the policy to something other than auto and make sure the
+    # policy and the trust are correct.
+    for policy in good unknown bad
+    do
+	if test $policy = good
+	then
+	    expected_trust='f'
+	elif test $policy = unknown
+	then
+	    expected_trust='-'
+	else
+	    expected_trust='n'
+	fi
+
+	debug
+	debug "Setting TOFU policy to $policy"
+	setpolicy 2183839A $policy
+
+	# Since we have a fixed policy, the trust level shouldn't
+	# change if we change the default policy.
+	for default_policy in auto good unknown bad ask
+	do
+	    checkpolicy 2183839A $policy --tofu-default-policy=$default_policy
+	    checktrust 2183839A $expected_trust \
+		       --tofu-default-policy=$default_policy
+	done
+    done
+
+    # BC15C85A conflicts with 2183839A.  On conflict, this will set
+    # BC15C85A to ask.  If 2183839A is auto (it's not, it's bad), then
+    # it will be set to ask.
+    debug_exec $GPG --tofu-db-format=$format --trust-model=tofu \
+	 --verify $srcdir/tofu-BC15C85A-1.txt
+    checkpolicy BC15C85A ask
+    checkpolicy 2183839A bad
+
+    # EE37CF96 conflicts with 2183839A and BC15C85A.  We change
+    # BC15C85A's policy to auto and leave 2183839A's policy at bad.
+    # This conflict should cause BC15C85A's policy to be changed to
+    # ask (since it is auto), but not affect 2183839A's policy.
+    setpolicy BC15C85A auto
+    checkpolicy BC15C85A auto
+    debug_exec $GPG --tofu-db-format=$format --trust-model=tofu \
+	 --verify $srcdir/tofu-EE37CF96-1.txt
+    checkpolicy BC15C85A ask
+    checkpolicy 2183839A bad
+    checkpolicy EE37CF96 ask
+done
+
+exit 0

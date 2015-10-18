@@ -59,6 +59,7 @@
 #include "gc-opt-flags.h"
 #include "asshelp.h"
 #include "call-dirmngr.h"
+#include "tofu.h"
 #include "../common/init.h"
 #include "../common/shareddefs.h"
 
@@ -162,6 +163,7 @@ enum cmd_and_opt_values
     aChangePIN,
     aPasswd,
     aServer,
+    aTOFUPolicy,
 
     oTextmode,
     oNoTextmode,
@@ -385,6 +387,8 @@ enum cmd_and_opt_values
     oNoAutostart,
     oPrintPKARecords,
     oPrintDANERecords,
+    oTOFUDefaultPolicy,
+    oTOFUDBFormat,
 
     oNoop
   };
@@ -475,6 +479,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aPrimegen, "gen-prime", "@" ),
   ARGPARSE_c (aGenRandom,"gen-random", "@" ),
   ARGPARSE_c (aServer,   "server",  N_("run in server mode")),
+  ARGPARSE_c (aTOFUPolicy, "tofu-policy",
+	      N_("|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)")),
 
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
@@ -670,6 +676,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oDefCertLevel, "default-cert-check-level", "@"), /* old */
   ARGPARSE_s_n (oAlwaysTrust, "always-trust", "@"),
   ARGPARSE_s_s (oTrustModel, "trust-model", "@"),
+  ARGPARSE_s_s (oTOFUDefaultPolicy, "tofu-default-policy", "@"),
+  ARGPARSE_s_s (oTOFUDBFormat, "tofu-db-format", "@"),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oForYourEyesOnly, "for-your-eyes-only", "@"),
   ARGPARSE_s_n (oNoForYourEyesOnly, "no-for-your-eyes-only", "@"),
@@ -1939,6 +1947,10 @@ parse_trust_model(const char *model)
     opt.trust_model=TM_ALWAYS;
   else if(ascii_strcasecmp(model,"direct")==0)
     opt.trust_model=TM_DIRECT;
+  else if(ascii_strcasecmp(model,"tofu")==0)
+    opt.trust_model=TM_TOFU;
+  else if(ascii_strcasecmp(model,"tofu+pgp")==0)
+    opt.trust_model=TM_TOFU_PGP;
   else if(ascii_strcasecmp(model,"auto")==0)
     opt.trust_model=TM_AUTO;
   else
@@ -1946,6 +1958,41 @@ parse_trust_model(const char *model)
 }
 #endif /*NO_TRUST_MODELS*/
 
+static int
+parse_tofu_policy (const char *policy)
+{
+  if (ascii_strcasecmp (policy, "auto") == 0)
+    return TOFU_POLICY_AUTO;
+  else if (ascii_strcasecmp (policy, "good") == 0)
+    return TOFU_POLICY_GOOD;
+  else if (ascii_strcasecmp (policy, "unknown") == 0)
+    return TOFU_POLICY_UNKNOWN;
+  else if (ascii_strcasecmp (policy, "bad") == 0)
+    return TOFU_POLICY_BAD;
+  else if (ascii_strcasecmp (policy, "ask") == 0)
+    return TOFU_POLICY_ASK;
+  else
+    {
+      log_error (_("unknown TOFU policy '%s'\n"), policy);
+      g10_exit (1);
+    }
+}
+
+static int
+parse_tofu_db_format (const char *db_format)
+{
+  if (ascii_strcasecmp (db_format, "auto") == 0)
+    return TOFU_DB_AUTO;
+  else if (ascii_strcasecmp (db_format, "split") == 0)
+    return TOFU_DB_SPLIT;
+  else if (ascii_strcasecmp (db_format, "flat") == 0)
+    return TOFU_DB_FLAT;
+  else
+    {
+      log_error (_("unknown TOFU DB format '%s'\n"), db_format);
+      g10_exit (1);
+    }
+}
 
 /* This fucntion called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
@@ -2150,6 +2197,8 @@ main (int argc, char **argv)
 #else
     opt.trust_model = TM_AUTO;
 #endif
+    opt.tofu_default_policy = TOFU_POLICY_AUTO;
+    opt.tofu_db_format = TOFU_DB_AUTO;
     opt.mangle_dos_filenames = 0;
     opt.min_cert_level = 2;
     set_screen_dimensions ();
@@ -2372,6 +2421,10 @@ main (int argc, char **argv)
             opt.batch = 1;
             break;
 
+          case aTOFUPolicy:
+            set_cmd (&cmd, pargs.r_opt);
+            break;
+
 	  case oArmor: opt.armor = 1; opt.no_armor=0; break;
 	  case oOutput: opt.outfile = pargs.r.ret_str; break;
 	  case oMaxOutput: opt.max_output = pargs.r.ret_ulong; break;
@@ -2553,6 +2606,12 @@ main (int argc, char **argv)
 	    parse_trust_model(pargs.r.ret_str);
 	    break;
 #endif /*!NO_TRUST_MODELS*/
+	  case oTOFUDefaultPolicy:
+	    opt.tofu_default_policy = parse_tofu_policy (pargs.r.ret_str);
+	    break;
+	  case oTOFUDBFormat:
+	    opt.tofu_db_format = parse_tofu_db_format (pargs.r.ret_str);
+	    break;
 
 	  case oForceOwnertrust:
 	    log_info(_("Note: %s is not for normal use!\n"),
@@ -4350,6 +4409,87 @@ main (int argc, char **argv)
            libgcrypt print it to an estream for further parsing.  */
         gcry_control (GCRYCTL_PRINT_CONFIG, stdout);
         break;
+
+      case aTOFUPolicy:
+	{
+	  int policy;
+	  int i;
+	  KEYDB_HANDLE hd;
+
+	  if (argc < 2)
+	    wrong_args("--tofu-policy POLICY KEYID [KEYID...]");
+
+	  policy = parse_tofu_policy (argv[0]);
+
+	  hd = keydb_new ();
+	  if (! hd)
+	    {
+	      log_error (_("Failed to open the keyring DB.\n"));
+	      g10_exit (1);
+	    }
+
+	  for (i = 1; i < argc; i ++)
+	    {
+	      KEYDB_SEARCH_DESC desc;
+	      kbnode_t kb;
+
+	      rc = classify_user_id (argv[i], &desc, 0);
+	      if (rc)
+		{
+		  log_error (_("Failed to parse '%s'.\n"), argv[i]);
+		  g10_exit (1);
+		}
+
+	      if (! (desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
+		     || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
+		     || desc.mode == KEYDB_SEARCH_MODE_FPR16
+		     || desc.mode == KEYDB_SEARCH_MODE_FPR20
+		     || desc.mode == KEYDB_SEARCH_MODE_FPR
+		     || desc.mode == KEYDB_SEARCH_MODE_KEYGRIP))
+		{
+		  log_error (_("'%s' does not appear to be a valid"
+			       " key id, fingerprint or key grip.\n"),
+			     argv[i]);
+		  g10_exit (1);
+		}
+
+	      rc = keydb_search_reset (hd);
+	      if (rc)
+		{
+		  log_error (_("Failed to reset keyring handle.\n"));
+		  g10_exit (1);
+		}
+
+	      rc = keydb_search (hd, &desc, 1, NULL);
+	      if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
+		{
+		  log_error (_("Key '%s' is not available\n"), argv[i]);
+		  g10_exit (1);
+		}
+	      else if (rc)
+		{
+		  log_error (_("Failed to find key '%s'\n"), argv[i]);
+		  g10_exit (1);
+		}
+
+	      rc = keydb_get_keyblock (hd, &kb);
+	      if (rc)
+		{
+		  log_error (_("Failed to read key '%s' from the keyring\n"),
+			     argv[i]);
+		  g10_exit (1);
+		}
+
+	      merge_keys_and_selfsig (kb);
+
+	      if (tofu_set_policy (kb, policy))
+		g10_exit (1);
+	    }
+
+	  keydb_release (hd);
+
+	}
+	break;
 
       case aListPackets:
 	opt.list_packets=2;

@@ -40,6 +40,7 @@
 #include "i18n.h"
 #include "tdbio.h"
 #include "trustdb.h"
+#include "tofu.h"
 
 
 typedef struct key_item **KeyHashTable; /* see new_key_hash_table() */
@@ -379,6 +380,8 @@ trust_model_string(void)
     case TM_CLASSIC:  return "classic";
     case TM_PGP:      return "PGP";
     case TM_EXTERNAL: return "external";
+    case TM_TOFU:     return "TOFU";
+    case TM_TOFU_PGP: return "TOFU+PGP";
     case TM_ALWAYS:   return "always";
     case TM_DIRECT:   return "direct";
     default:          return "unknown";
@@ -963,16 +966,21 @@ tdb_check_trustdb_stale (void)
 
 /*
  * Return the validity information for PK.  This is the core of
- * get_validity.
+ * get_validity.  If SIG is not NULL, then the trust is being
+ * evaluated in the context of the provided signature.  This is used
+ * by the TOFU code to record statistics.
  */
 unsigned int
 tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
-                       PKT_public_key *main_pk)
+                       PKT_public_key *main_pk,
+		       PKT_signature *sig,
+		       int may_ask)
 {
   TRUSTREC trec, vrec;
   gpg_error_t err;
   ulong recno;
-  unsigned int validity;
+  unsigned int tofu_validity = TRUST_UNKNOWN;
+  unsigned int validity = TRUST_UNKNOWN;
 
   init_trustdb ();
 
@@ -993,60 +1001,146 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
       goto leave;
     }
 
-  err = read_trust_record (main_pk, &trec);
-  if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+  if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
-      tdbio_invalid ();
-      return 0;
-    }
-  if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
-    {
-      /* No record found.  */
-      validity = TRUST_UNKNOWN;
-      goto leave;
-    }
+      kbnode_t user_id_node;
+      int user_ids = 0;
+      int user_ids_expired = 0;
 
-  /* Loop over all user IDs */
-  recno = trec.r.trust.validlist;
-  validity = 0;
-  while (recno)
-    {
-      read_record (recno, &vrec, RECTYPE_VALID);
+      char fingerprint[MAX_FINGERPRINT_LEN];
+      size_t fingerprint_len = sizeof (fingerprint);
 
-      if(uid)
+      fingerprint_from_pk (main_pk, fingerprint, &fingerprint_len);
+      assert (fingerprint_len == sizeof (fingerprint));
+
+      /* If the caller didn't supply a user id then iterate over all
+	 uids.  */
+      if (! uid)
+	user_id_node = get_pubkeyblock (main_pk->keyid);
+
+      while (uid
+	     || (user_id_node = find_next_kbnode (user_id_node, PKT_USER_ID)))
 	{
-	  /* If a user ID is given we return the validity for that
-	     user ID ONLY.  If the namehash is not found, then there
-	     is no validity at all (i.e. the user ID wasn't
-	     signed). */
-	  if(memcmp(vrec.r.valid.namehash,uid->namehash,20)==0)
+	  unsigned int tl;
+	  PKT_user_id *user_id;
+
+	  if (uid)
+	    user_id = uid;
+	  else
+	    user_id = user_id_node->pkt->pkt.user_id;
+
+	  if (user_id->is_revoked || user_id->is_expired)
+	    /* If the user id is revoked or expired, then skip it.  */
 	    {
-	      validity=(vrec.r.valid.validity & TRUST_MASK);
-	      break;
+	      char *s;
+	      if (user_id->is_revoked && user_id->is_expired)
+		s = "revoked and expired";
+	      else if (user_id->is_revoked)
+		s = "revoked";
+	      else
+		s = "expire";
+
+	      log_info ("TOFU: Ignoring %s user id (%s)\n", s, user_id->name);
+
+	      continue;
 	    }
+
+	  user_ids ++;
+
+	  if (sig)
+	    tl = tofu_register (fingerprint, user_id->name,
+				sig->digest, sig->digest_len,
+				sig->timestamp, "unknown",
+				may_ask);
+	  else
+	    tl = tofu_get_validity (fingerprint, user_id->name, may_ask);
+
+	  if (tl == TRUST_EXPIRED)
+	    user_ids_expired ++;
+	  else if (tl == TRUST_UNDEFINED || tl == TRUST_UNKNOWN)
+	    ;
+	  else if (tl == TRUST_NEVER)
+	    tofu_validity = TRUST_NEVER;
+	  else
+	    {
+	      assert (tl == TRUST_MARGINAL
+		      || tl == TRUST_FULLY
+		      || tl == TRUST_ULTIMATE);
+
+	      if (tl > tofu_validity)
+		/* XXX: We we really want the max?  */
+		tofu_validity = tl;
+	    }
+
+	  if (uid)
+	    /* If the caller specified a user id, then we stop
+	       now.  */
+	    break;
+	}
+    }
+
+  if (opt.trust_model == TM_TOFU_PGP
+      || opt.trust_model == TM_CLASSIC
+      || opt.trust_model == TM_PGP)
+    {
+      err = read_trust_record (main_pk, &trec);
+      if (err && gpg_err_code (err) != GPG_ERR_NOT_FOUND)
+	{
+	  tdbio_invalid ();
+	  return 0;
+	}
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+	{
+	  /* No record found.  */
+	  validity = TRUST_UNKNOWN;
+	  goto leave;
+	}
+
+      /* Loop over all user IDs */
+      recno = trec.r.trust.validlist;
+      validity = 0;
+      while (recno)
+	{
+	  read_record (recno, &vrec, RECTYPE_VALID);
+
+	  if(uid)
+	    {
+	      /* If a user ID is given we return the validity for that
+		 user ID ONLY.  If the namehash is not found, then
+		 there is no validity at all (i.e. the user ID wasn't
+		 signed). */
+	      if(memcmp(vrec.r.valid.namehash,uid->namehash,20)==0)
+		{
+		  validity=(vrec.r.valid.validity & TRUST_MASK);
+		  break;
+		}
+	    }
+	  else
+	    {
+	      /* If no user ID is given, we take the maximum validity
+		 over all user IDs */
+	      if (validity < (vrec.r.valid.validity & TRUST_MASK))
+		validity = (vrec.r.valid.validity & TRUST_MASK);
+	    }
+
+	  recno = vrec.r.valid.next;
+	}
+
+      if ((trec.r.trust.ownertrust & TRUST_FLAG_DISABLED))
+	{
+	  validity |= TRUST_FLAG_DISABLED;
+	  pk->flags.disabled = 1;
 	}
       else
-	{
-	  /* If no namehash is given, we take the maximum validity
-	     over all user IDs */
-	  if ( validity < (vrec.r.valid.validity & TRUST_MASK) )
-	    validity = (vrec.r.valid.validity & TRUST_MASK);
-	}
-
-      recno = vrec.r.valid.next;
+	pk->flags.disabled = 0;
+      pk->flags.disabled_valid = 1;
     }
-
-  if ( (trec.r.trust.ownertrust & TRUST_FLAG_DISABLED) )
-    {
-      validity |= TRUST_FLAG_DISABLED;
-      pk->flags.disabled = 1;
-    }
-  else
-    pk->flags.disabled = 0;
-  pk->flags.disabled_valid = 1;
 
  leave:
-  if (pending_check_trustdb)
+  validity = tofu_wot_trust_combine (tofu_validity, validity);
+
+  if (opt.trust_model != TM_TOFU
+      && pending_check_trustdb)
     validity |= TRUST_FLAG_PENDING_CHECK;
 
   return validity;

@@ -525,6 +525,12 @@ Use the source, Luke :-). The output format is still subject to change.
 Pack or unpack an arbitrary input into/from an OpenPGP ASCII armor.
 This is a GnuPG extension to OpenPGP and in general not very useful.
 
+@item --tofu-set-policy @code{auto|good|unknown|bad|ask}  @code{key...}
+@opindex tofu-set-policy
+Set the TOFU policy for all the bindings associated with the specified
+keys.  For more information about the meaning of the policies,
+@pxref{trust-model-tofu}.  The keys may be specified either by their
+fingerprint (preferred) or their keyid.
 
 @c @item --server
 @c @opindex server
@@ -1408,7 +1414,7 @@ don't want to keep your secret keys (or one of them)
 online but still want to be able to check the validity of a given
 recipient's or signator's key.
 
-@item --trust-model @code{pgp|classic|direct|always|auto}
+@item --trust-model @code{pgp|classic|tofu|tofu+pgp|direct|always|auto}
 @opindex trust-model
 Set what trust model GnuPG should follow. The models are:
 
@@ -1423,6 +1429,65 @@ Set what trust model GnuPG should follow. The models are:
   @item classic
   @opindex trust-mode:classic
   This is the standard Web of Trust as introduced by PGP 2.
+
+  @item tofu
+  @opindex trust-mode:tofu
+  @anchor{trust-model-tofu}
+  TOFU stands for Trust On First Use.  In this trust model, the first
+  time a key is seen, it is memorized.  If later another key is seen
+  with a user id with the same email address, a warning is displayed
+  indicating that there is a conflict and that the key might be a
+  forgery and an attempt at a man-in-the-middle attack.
+
+  Because a potential attacker is able to control the email address
+  and thereby circumvent the conflict detection algorithm by using an
+  email address that is similar in appearance to a trusted email
+  address, whenever a message is verified, statistics about the number
+  of messages signed with the key are shown.  In this way, a user can
+  easily identify attacks using fake keys for regular correspondents.
+
+  When compared with the Web of Trust, TOFU offers significantly
+  weaker security guarantees.  In particular, TOFU only helps ensure
+  consistency (that is, that the binding between a key and email
+  address doesn't change).  A major advantage of TOFU is that it
+  requires little maintenance to use correctly.  To use the web of
+  trust properly, you need to actively sign keys and mark users as
+  trusted introducers.  This is a time-consuming process and anecdotal
+  evidence suggests that even security-conscious users rarely take the
+  time to do this thoroughly and instead rely on an ad-hoc TOFU
+  process.
+
+  In the TOFU model, policies are associated with bindings between
+  keys and email addresses (which are extracted from user ids and
+  normalized).  There are five policies, which can be set manually
+  using the @option{--tofu-policy} option.  The default policy can be
+  set using the @option{--tofu-default-policy} policy.
+
+  The TOFU policies are: @code{auto}, @code{good}, @code{unknown},
+  @code{bad} and @code{ask}.  The @code{auto} policy is used by
+  default (unless overridden by @option{--tofu-default-policy}) and
+  marks a binding as marginally trusted.  The @code{good},
+  @code{unknown} and @code{bad} policies mark a binding as fully
+  trusted, as having unknown trust or as having trust never,
+  respectively.  The @code{unknown} policy is useful for just using
+  TOFU to detect conflicts, but to never assign positive trust to a
+  binding.  The final policy, @code{ask} prompts the user to indicate
+  the binding's trust.  If batch mode is enabled (or input is
+  inappropriate in the context), then the user is not prompted and the
+  @code{undefined} trust level is returned.
+
+  @item tofu+pgp
+  @opindex trust-mode:tofu+pgp
+  This trust model combines TOFU with the Web of Trust.  This is done
+  by computing the trust level for each model and then taking the
+  maximum trust level where the trust levels are ordered as follows:
+  @code{unknown < undefined < marginal < fully < ultimate < expired <
+  never}.
+
+  By setting @option{--tofu-default-policy=unknown}, this model can be
+  used to implement the web of trust with TOFU's conflict detection
+  algorithm, but without its assignment of positive trust values,
+  which some security-conscious users don't like.
 
   @item direct
   @opindex trust-mode:direct
@@ -1624,6 +1689,30 @@ key signer (defaults to 1).
 @opindex marginals-needed
 Number of marginally trusted users to introduce a new
 key signer (defaults to 3)
+
+@item --tofu-default-policy @code{auto|good|unknown|bad|ask}
+@opindex tofu-default-policy
+The default TOFU policy (defaults to @code{auto}).  For more
+information about the meaning of this option, @xref{trust-model-tofu}.
+
+@item --tofu-db-format @code{auto|split|flat}
+@opindex tofu-default-policy
+The format for the TOFU DB.
+
+The split file format splits the data across many DBs under the
+@code{tofu.d} directory (one per email address and one per key).  This
+makes it easier to automatically synchronize the data using a tool
+such as Unison (@url{https://www.cis.upenn.edu/~bcpierce/unison/}),
+since the individual files change rarely.
+
+The flat file format keeps all of the data in the single file
+@code{tofu.db}.  This format results in better performance.
+
+If set to auto (which is the default), GnuPG will first check for the
+existence of @code{tofu.d} and @code{tofu.db}.  If one of these
+exists, the corresponding format is used.  If neither or both of these
+exist, then GnuPG defaults to the @code{split} format.  In the latter
+case, a warning is emitted.
 
 @item --max-cert-depth @code{n}
 @opindex max-cert-depth

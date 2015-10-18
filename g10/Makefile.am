@@ -26,7 +26,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/common
 
 include $(top_srcdir)/am/cmacros.am
 
-AM_CFLAGS = $(LIBGCRYPT_CFLAGS) \
+AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
             $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
 needed_libs = ../kbx/libkeybox.a $(libcommon)
@@ -126,7 +126,8 @@ gpg2_SOURCES  = gpg.c		\
 	      call-agent.c call-agent.h \
 	      trust.c $(trust_source) \
 	      $(card_source) \
-	      exec.c exec.h
+	      exec.c exec.h \
+	      tofu.h tofu.c
 
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \
@@ -141,7 +142,7 @@ gpgv2_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
-gpg2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
+gpg2_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpg2_LDFLAGS = $(extra_bin_ldflags)

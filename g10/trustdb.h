@@ -86,7 +86,8 @@ void revalidation_mark (void);
 void check_trustdb_stale (void);
 void check_or_update_trustdb (void);
 
-unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid);
+unsigned int get_validity (PKT_public_key *pk, PKT_user_id *uid,
+			   PKT_signature *sig, int may_ask);
 int get_validity_info (PKT_public_key *pk, PKT_user_id *uid);
 const char *get_validity_string (PKT_public_key *pk, PKT_user_id *uid);
 
@@ -120,7 +121,8 @@ void tdb_check_or_update (void);
 int tdb_cache_disabled_value (PKT_public_key *pk);
 
 unsigned int tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
-                                    PKT_public_key *main_pk);
+                                    PKT_public_key *main_pk,
+				    PKT_signature *sig, int may_ask);
 
 void list_trust_path( const char *username );
 int enum_cert_paths( void **context, ulong *lid,

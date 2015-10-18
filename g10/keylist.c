@@ -43,6 +43,7 @@
 #include "status.h"
 #include "call-agent.h"
 #include "mbox-util.h"
+#include "tofu.h"
 
 
 static void list_all (ctrl_t, int, int);
@@ -99,7 +100,8 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
 	es_fprintf (es_stdout, "o");
       if (trust_model != opt.trust_model)
 	es_fprintf (es_stdout, "t");
-      if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC)
+      if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
+	  || opt.trust_model == TM_TOFU_PGP)
 	{
 	  if (marginals != opt.marginals_needed)
 	    es_fprintf (es_stdout, "m");
@@ -1067,7 +1069,7 @@ list_keyblock_print (KBNODE keyblock, int secret, int fpr,
      include, but it looks sort of confusing in the listing... */
   if (opt.list_options & LIST_SHOW_VALIDITY)
     {
-      int validity = get_validity (pk, NULL);
+      int validity = get_validity (pk, NULL, NULL, 0);
       es_fprintf (es_stdout, " [%s]", trust_value_to_string (validity));
     }
 #endif
@@ -1438,6 +1440,7 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
       xfree (curve);
     }
   es_putc (':', es_stdout);		/* End of field 17. */
+  es_putc (':', es_stdout);		/* End of field 18. */
   es_putc ('\n', es_stdout);
 
   print_revokers (es_stdout, pk);
@@ -1495,6 +1498,14 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 	    es_fprintf (es_stdout, "%u %lu", uid->numattribs, uid->attrib_len);
 	  else
 	    es_write_sanitized (es_stdout, uid->name, uid->len, ":", NULL);
+	  es_fprintf (es_stdout, "::::::::");
+	  if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
+	    {
+	      enum tofu_policy policy;
+	      if (! tofu_get_policy (pk, uid, &policy)
+		  && policy != TOFU_POLICY_NONE)
+		es_fprintf (es_stdout, "%s", tofu_policy_str (policy));
+	    }
 	  es_putc (':', es_stdout);
 	  es_putc ('\n', es_stdout);
 	}

@@ -104,10 +104,13 @@ get_validity_info (PKT_public_key *pk, PKT_user_id *uid)
 }
 
 unsigned int
-get_validity (PKT_public_key *pk, PKT_user_id *uid)
+get_validity (PKT_public_key *pk, PKT_user_id *uid, PKT_signature *sig,
+	      int may_ask)
 {
   (void)pk;
   (void)uid;
+  (void)sig;
+  (void)may_ask;
   return 0;
 }
 
@@ -424,4 +427,27 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
   *r_data = NULL;
   *r_datalen = 0;
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
+
+enum tofu_policy
+  {
+    tofu_policy
+  };
+
+gpg_error_t
+tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
+		 enum tofu_policy *policy)
+{
+  (void)pk;
+  (void)user_id;
+  (void)policy;
+  return gpg_error (GPG_ERR_GENERAL);
+}
+
+const char *
+tofu_policy_str (enum tofu_policy policy)
+{
+  (void)policy;
+
+  return "unknown";
 }

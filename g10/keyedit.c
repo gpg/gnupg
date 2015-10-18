@@ -47,6 +47,7 @@
 #include "keyserver-internal.h"
 #include "call-agent.h"
 #include "host2net.h"
+#include "tofu.h"
 
 static void show_prefs (PKT_user_id * uid, PKT_signature * selfsig,
 			int verbose);
@@ -2927,6 +2928,14 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	  if ((node->flag & NODFLG_MARK_A))
 	    es_putc ('m', fp);
 	  es_putc (':', fp);
+	  if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
+	    {
+	      enum tofu_policy policy;
+	      if (! tofu_get_policy (primary, uid, &policy)
+		  && policy != TOFU_POLICY_NONE)
+		es_fprintf (fp, "%s", tofu_policy_str (policy));
+	    }
+	  es_putc (':', fp);
 	  es_putc ('\n', fp);
 	}
     }
@@ -3042,7 +3051,8 @@ show_key_with_all_names (ctrl_t ctrl, estream_t fp,
 
 	      /* Show a warning once */
 	      if (!did_warn
-		  && (get_validity (pk, NULL) & TRUST_FLAG_PENDING_CHECK))
+		  && (get_validity (pk, NULL, NULL, 0)
+		      & TRUST_FLAG_PENDING_CHECK))
 		{
 		  did_warn = 1;
 		  do_warn = 1;
@@ -5334,7 +5344,7 @@ menu_revuid (KBNODE pub_keyblock)
 		/* If the trustdb has an entry for this key+uid then the
 		   trustdb needs an update. */
 		if (!update_trust
-		    && (get_validity (pk, uid) & TRUST_MASK) >=
+		    && (get_validity (pk, uid, NULL, 0) & TRUST_MASK) >=
 		    TRUST_UNDEFINED)
 		  update_trust = 1;
 #endif /*!NO_TRUST_MODELS*/
