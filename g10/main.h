@@ -69,6 +69,12 @@ struct groupitem
   struct groupitem *next;
 };
 
+struct weakhash
+{
+  enum gcry_md_algos algo;
+  struct weakhash *next;
+};
+
 
 /*-- gpg.c --*/
 extern int g10_errors_seen;
@@ -82,6 +88,7 @@ void print_pubkey_algo_note (pubkey_algo_t algo);
 void print_cipher_algo_note (cipher_algo_t algo);
 void print_digest_algo_note (digest_algo_t algo);
 void print_md5_rejected_note (void);
+void additional_weak_digest (const char* digestname);
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );

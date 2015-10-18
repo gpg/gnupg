@@ -307,6 +307,10 @@ print_cipher_algo_note (cipher_algo_t algo)
 void
 print_digest_algo_note (digest_algo_t algo)
 {
+  int deprecated = 0;
+  const enum gcry_md_algos galgo = map_md_openpgp_to_gcry (algo);
+  const struct weakhash *weak;
+
   if(algo >= 100 && algo <= 110)
     {
       static int warn=0;
@@ -315,14 +319,21 @@ print_digest_algo_note (digest_algo_t algo)
 	  warn=1;
           es_fflush (es_stdout);
 	  log_info (_("WARNING: using experimental digest algorithm %s\n"),
-                    gcry_md_algo_name (algo));
+                    gcry_md_algo_name (galgo));
 	}
     }
-  else if(algo==DIGEST_ALGO_MD5)
+  else if(algo == DIGEST_ALGO_MD5)
+    deprecated = 1;
+  else
+      for (weak = opt.additional_weak_digests; weak != NULL; weak = weak->next)
+        if (weak->algo == galgo)
+          deprecated = 1;
+
+  if (deprecated)
     {
       es_fflush (es_stdout);
       log_info (_("WARNING: digest algorithm %s is deprecated\n"),
-                gcry_md_algo_name (algo));
+                gcry_md_algo_name (galgo));
     }
 }
 
@@ -1675,4 +1686,38 @@ ecdsa_qbits_from_Q (unsigned int qbits)
   qbits -= qbits%8;
   qbits /= 2;
   return qbits;
+}
+
+
+/* Ignore signatures and certifications made over certain digest
+ * algorithms by default, MD5 is considered weak.  This allows users
+ * to deprecate support for other algorithms as well.
+ */
+void
+additional_weak_digest (const char* digestname)
+{
+  struct weakhash *weak = NULL;
+  const enum gcry_md_algos algo = string_to_digest_algo(digestname);
+
+  if (algo == GCRY_MD_MD5)
+    return; /* MD5 is always considered weak, no need to add it.  */
+
+  if (algo == GCRY_MD_NONE)
+    {
+      log_error(_("Unknown weak digest '%s'\n"), digestname);
+      return;
+    }
+
+  /* Check to ensure it's not already present.  */
+  for (weak = opt.additional_weak_digests; weak != NULL; weak = weak->next)
+    {
+      if (algo == weak->algo)
+        return;
+    }
+
+  /* Add it to the head of the list.  */
+  weak = xmalloc(sizeof(*weak));
+  weak->algo = algo;
+  weak->next = opt.additional_weak_digests;
+  opt.additional_weak_digests = weak;
 }

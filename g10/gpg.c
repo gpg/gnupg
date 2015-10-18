@@ -389,6 +389,7 @@ enum cmd_and_opt_values
     oPrintDANERecords,
     oTOFUDefaultPolicy,
     oTOFUDBFormat,
+    oWeakDigest,
 
     oNoop
   };
@@ -749,6 +750,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oPersonalCompressPreferences,
                                          "personal-compress-preferences", "@"),
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
+  ARGPARSE_s_s (oWeakDigest, "weak-digest","@"),
 
   /* Aliases.  I constantly mistype these, and assume other people do
      as well. */
@@ -2208,6 +2210,7 @@ main (int argc, char **argv)
     set_homedir (default_homedir ());
     opt.passphrase_repeat = 1;
     opt.emit_version = 1; /* Limit to the major number.  */
+    opt.additional_weak_digests = NULL;
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;
@@ -3124,6 +3127,9 @@ main (int argc, char **argv)
 	    break;
           case oAgentProgram: opt.agent_program = pargs.r.ret_str;  break;
           case oDirmngrProgram: opt.dirmngr_program = pargs.r.ret_str; break;
+          case oWeakDigest:
+	    additional_weak_digest(pargs.r.ret_str);
+	    break;
 
           case oDisplay:
             set_opt_session_env ("DISPLAY", pargs.r.ret_str);

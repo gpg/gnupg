@@ -61,6 +61,7 @@ enum cmd_and_opt_values {
   oStatusFD,
   oLoggerFD,
   oHomedir,
+  oWeakDigest,
   aTest
 };
 
@@ -78,6 +79,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|FD|write status info to this FD")),
   ARGPARSE_s_i (oLoggerFD, "logger-fd", "@"),
   ARGPARSE_s_s (oHomedir, "homedir", "@"),
+  ARGPARSE_s_s (oWeakDigest, "weak-digest", "@"),
 
   ARGPARSE_end ()
 };
@@ -192,6 +194,9 @@ main( int argc, char **argv )
           log_set_fd (translate_sys2libc_fd_int (pargs.r.ret_int, 1));
           break;
         case oHomedir: opt.homedir = pargs.r.ret_str; break;
+        case oWeakDigest:
+          additional_weak_digest(pargs.r.ret_str);
+          break;
         case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
         default : pargs.err = ARGPARSE_PRINT_ERROR; break;
 	}

@@ -274,15 +274,18 @@ do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
 {
     gcry_mpi_t result = NULL;
     int rc = 0;
+    const struct weakhash *weak;
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
 
-    if (sig->digest_algo == GCRY_MD_MD5
-        && !opt.flags.allow_weak_digest_algos)
+    if (!opt.flags.allow_weak_digest_algos)
       {
-        print_md5_rejected_note ();
-        return GPG_ERR_DIGEST_ALGO;
+        if (sig->digest_algo == GCRY_MD_MD5)
+          return GPG_ERR_DIGEST_ALGO;
+        for (weak = opt.additional_weak_digests; weak; weak = weak->next)
+          if (sig->digest_algo == weak->algo)
+            return GPG_ERR_DIGEST_ALGO;
       }
 
     /* Make sure the digest algo is enabled (in case of a detached
