@@ -2096,6 +2096,8 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   unsigned long c;
   int already_verified = 0;
 
+  sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
+
   dbs = opendbs ();
   if (! dbs)
     {
@@ -2128,8 +2130,6 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
     }
 
   /* Save the observed signature in the DB.  */
-  sig_digest = make_radix64_string (sig_digest_bin, sig_digest_bin_len);
-
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
     {

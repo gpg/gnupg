@@ -1003,7 +1003,7 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
 
   if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
-      kbnode_t user_id_node;
+      kbnode_t user_id_node = NULL; /* Silence -Wmaybe-uninitialized.  */
       int user_ids = 0;
       int user_ids_expired = 0;
 
