@@ -53,16 +53,21 @@ gnupg_amkdir_p (const char **directory_components)
 
   /* log_debug ("%s: %d directory components.\n", __func__, count); */
 
-  dirs = xtrycalloc (count, sizeof (char *));
+  dirs = xtrycalloc (count, sizeof *dirs);
   if (!dirs)
     return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
 
   for (i = 0; directory_components[i]; i ++)
     {
       if (i == 0)
-	dirs[i] = directory_components[i];
+	dirs[i] = xtrystrdup (directory_components[i]);
       else
-	dirs[i] = make_filename (dirs[i - 1], directory_components[i], NULL);
+	dirs[i] = make_filename_try (dirs[i-1], directory_components[i], NULL);
+      if (!dirs[i])
+        {
+          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+          goto out;
+        }
 
       /* log_debug ("%s: Directory %d: `%s'.\n", __func__, i, dirs[i]); */
     }
@@ -127,7 +132,7 @@ gnupg_amkdir_p (const char **directory_components)
     }
 
  out:
-  for (i = 1; i < count; i ++)
+  for (i = 0; i < count; i ++)
     xfree (dirs[i]);
   xfree (dirs);
 
@@ -144,7 +149,7 @@ gnupg_mkdir_p (const char *directory_component, ...)
   gpg_error_t err = 0;
   int i;
   int space = 1;
-  char **dirs;
+  const char **dirs;
 
   dirs = xtrymalloc (space * sizeof (char *));
   if (!dirs)
@@ -157,7 +162,7 @@ gnupg_mkdir_p (const char *directory_component, ...)
     {
       if (i == space)
 	{
-          char **tmp_dirs;
+          const char **tmp_dirs;
 
 	  space = 2 * space;
 	  tmp_dirs = xtryrealloc (dirs, space * sizeof (char *));
