@@ -1676,7 +1676,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	    if (choice)
 	      {
 		int c = ((size_t) choice - (size_t) choices) / 2;
-		assert (0 <= c && c <= 3);
+		assert (0 <= c && c <= 4);
 
 		switch (c)
 		  {
