@@ -21,7 +21,7 @@
 #ifndef DIRMNGR_KS_ENGINE_H
 #define DIRMNGR_KS_ENGINE_H 1
 
-#include "../common/http.h"
+#include "http.h"
 
 /*-- ks-action.c --*/
 gpg_error_t ks_print_help (ctrl_t ctrl, const char *text);

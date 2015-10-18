@@ -20,10 +20,9 @@
 
 EXTRA_DIST = mkstrtable.awk exaudit.awk exstatus.awk ChangeLog-2011 \
              audit-events.h status-codes.h ChangeLog.jnlib \
-	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico tls-ca.pem
+	     ChangeLog-2011.include w32info-rc.h.in gnupg.ico
 
-noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a \
-                   libcommontls.a libcommontlsnpth.a
+noinst_LIBRARIES = libcommon.a libcommonpth.a libgpgrl.a
 if !HAVE_W32CE_SYSTEM
 noinst_LIBRARIES += libsimple-pwquery.a
 endif
@@ -93,12 +92,6 @@ if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-afunix.c w32-afunix.h
 endif
 
-# Sources possible requiring a TLS library are put into a separate
-# conveince library.
-tls_sources = \
-	http.c http.h
-
-
 # To make the code easier to read we have split home some code into
 # separate source files.
 if HAVE_W32_SYSTEM
@@ -127,12 +120,6 @@ if USE_DNS_SRV
 libcommonpth_a_SOURCES += srv.c
 endif
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
-
-libcommontls_a_SOURCES = $(tls_sources)
-libcommontls_a_CFLAGS = $(AM_CFLAGS) $(LIBGNUTLS_CFLAGS) -DWITHOUT_NPTH=1
-
-libcommontlsnpth_a_SOURCES = $(tls_sources)
-libcommontlsnpth_a_CFLAGS = $(AM_CFLAGS) $(LIBGNUTLS_CFLAGS) $(NPTH_CFLAGS)
 
 if !HAVE_W32CE_SYSTEM
 libsimple_pwquery_a_SOURCES = \
@@ -179,7 +166,7 @@ module_tests += t-w32-reg
 endif
 
 if MAINTAINER_MODE
-module_maint_tests = t-helpfile t-b64 t-http
+module_maint_tests = t-helpfile t-b64
 else
 module_maint_tests =
 endif
@@ -222,11 +209,5 @@ t_w32_reg_SOURCES = t-w32-reg.c $(t_extra_src)
 t_w32_reg_LDADD   = $(t_common_ldadd)
 endif
 
-# http tests
-t_http_SOURCES = t-http.c
-t_http_CFLAGS  = $(t_common_cflags) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS)
-t_http_LDADD   = libcommontls.a $(t_common_ldadd) \
-	         $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
-
 # All programs should depend on the created libs.
-$(PROGRAMS) : libcommon.a libcommonpth.a libcommontls.a libcommontlsnpth.a
+$(PROGRAMS) : libcommon.a libcommonpth.a

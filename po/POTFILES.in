@@ -15,7 +15,6 @@ agent/cvt-openpgp.c
 common/exechelp-posix.c
 common/exechelp-w32.c
 common/exechelp-w32ce.c
-common/http.c
 common/simple-pwquery.c
 common/sysutils.c
 common/yesno.c
@@ -110,6 +109,7 @@ dirmngr/crlfetch.c
 dirmngr/dirmngr-client.c
 dirmngr/dirmngr.c
 dirmngr/dirmngr_ldap.c
+dirmngr/http.c
 dirmngr/ldap-wrapper-ce.c
 dirmngr/ldap-wrapper.c
 dirmngr/ldap.c

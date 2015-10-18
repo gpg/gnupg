@@ -33,7 +33,7 @@
 #include "../common/membuf.h"
 #include "../common/sysutils.h" /* (gnupg_fd_t) */
 #include "../common/i18n.h"
-#include "../common/http.h"     /* (parsed_uri_t) */
+#include "http.h"     /* (parsed_uri_t) */
 
 /* This objects keeps information about a particular LDAP server and
    is used as item of a single linked list of servers. */
