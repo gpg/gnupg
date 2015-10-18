@@ -56,7 +56,11 @@ enum tofu_policy
        binding (by selecting accept once or reject once).  The next
        time we see this binding, we should ask the user what to
        do.  */
-    TOFU_POLICY_ASK = 5
+    TOFU_POLICY_ASK = 5,
+
+
+    /* Privat evalue used only within tofu.c.  */
+    _tofu_GET_POLICY_ERROR = 100
   };
 
 /* Return a string representation of a trust policy.  Returns "???" if

@@ -82,6 +82,39 @@ struct db
   char name[1];
 };
 
+/* The grouping parameters when collecting signature statistics.  */
+
+/* If a message is signed a couple of hours in the future, just assume
+   some clock skew.  */
+#define TIME_AGO_FUTURE_IGNORE (2 * 60 * 60)
+#if 0
+#  define TIME_AGO_UNIT_SMALL 60
+#  define TIME_AGO_UNIT_SMALL_NAME _("minute")
+#  define TIME_AGO_UNIT_SMALL_NAME_PLURAL _("minutes")
+#  define TIME_AGO_MEDIUM_THRESHOLD (60 * TIME_AGO_UNIT_SMALL)
+#  define TIME_AGO_UNIT_MEDIUM (60 * 60)
+#  define TIME_AGO_UNIT_MEDIUM_NAME _("hour")
+#  define TIME_AGO_UNIT_MEDIUM_NAME_PLURAL _("hours")
+#  define TIME_AGO_LARGE_THRESHOLD (24 * 60 * TIME_AGO_UNIT_SMALL)
+#  define TIME_AGO_UNIT_LARGE (24 * 60 * 60)
+#  define TIME_AGO_UNIT_LARGE_NAME _("day")
+#  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("days")
+#else
+#  define TIME_AGO_UNIT_SMALL (24 * 60 * 60)
+#  define TIME_AGO_UNIT_SMALL_NAME _("day")
+#  define TIME_AGO_UNIT_SMALL_NAME_PLURAL _("days")
+#  define TIME_AGO_MEDIUM_THRESHOLD (4 * TIME_AGO_UNIT_SMALL)
+#  define TIME_AGO_UNIT_MEDIUM (7 * 24 * 60 * 60)
+#  define TIME_AGO_UNIT_MEDIUM_NAME _("week")
+#  define TIME_AGO_UNIT_MEDIUM_NAME_PLURAL _("weeks")
+#  define TIME_AGO_LARGE_THRESHOLD (28 * TIME_AGO_UNIT_SMALL)
+#  define TIME_AGO_UNIT_LARGE (30 * 24 * 60 * 60)
+#  define TIME_AGO_UNIT_LARGE_NAME _("month")
+#  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("months")
+#endif
+
+
+
 const char *
 tofu_policy_str (enum tofu_policy policy)
 {
@@ -647,8 +680,9 @@ opendbs (void)
 	return NULL;
     }
   else
-    /* Create a dummy entry so that we have a handle.  */
-    ;
+    {
+      /* Create a dummy entry so that we have a handle.  */
+    }
 
   dbs = xmalloc_clear (sizeof (*dbs));
   dbs->db = db;
@@ -1058,37 +1092,6 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
   return 0;
 }
 
-/* The grouping parameters when collecting signature statistics.  */
-
-/* If a message is signed a couple of hours in the future, just assume
-   some clock skew.  */
-#define TIME_AGO_FUTURE_IGNORE (2 * 60 * 60)
-#if 0
-#  define TIME_AGO_UNIT_SMALL 60
-#  define TIME_AGO_UNIT_SMALL_NAME _("minute")
-#  define TIME_AGO_UNIT_SMALL_NAME_PLURAL _("minutes")
-#  define TIME_AGO_MEDIUM_THRESHOLD (60 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_MEDIUM (60 * 60)
-#  define TIME_AGO_UNIT_MEDIUM_NAME _("hour")
-#  define TIME_AGO_UNIT_MEDIUM_NAME_PLURAL _("hours")
-#  define TIME_AGO_LARGE_THRESHOLD (24 * 60 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_LARGE (24 * 60 * 60)
-#  define TIME_AGO_UNIT_LARGE_NAME _("day")
-#  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("days")
-#else
-#  define TIME_AGO_UNIT_SMALL (24 * 60 * 60)
-#  define TIME_AGO_UNIT_SMALL_NAME _("day")
-#  define TIME_AGO_UNIT_SMALL_NAME_PLURAL _("days")
-#  define TIME_AGO_MEDIUM_THRESHOLD (4 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_MEDIUM (7 * 24 * 60 * 60)
-#  define TIME_AGO_UNIT_MEDIUM_NAME _("week")
-#  define TIME_AGO_UNIT_MEDIUM_NAME_PLURAL _("weeks")
-#  define TIME_AGO_LARGE_THRESHOLD (28 * TIME_AGO_UNIT_SMALL)
-#  define TIME_AGO_UNIT_LARGE (30 * 24 * 60 * 60)
-#  define TIME_AGO_UNIT_LARGE_NAME _("month")
-#  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("months")
-#endif
-
 /* Convert from seconds to time units.
 
    Note: T should already be a multiple of TIME_AGO_UNIT_SMALL or
@@ -1128,11 +1131,9 @@ time_ago_unit (signed long t)
 }
 
 
-#define GET_POLICY_ERROR 100
-
 /* Return the policy for the binding <FINGERPRINT, EMAIL> (email has
    already been normalized) and any conflict information in *CONFLICT
-   if CONFLICT is not NULL.  Returns GET_POLICY_ERROR if an error
+   if CONFLICT is not NULL.  Returns _tofu_GET_POLICY_ERROR if an error
    occurs.  */
 static enum tofu_policy
 get_policy (struct db *dbs, const char *fingerprint, const char *email,
@@ -1143,18 +1144,11 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
   char *err = NULL;
   strlist_t strlist = NULL;
   char *tail = NULL;
-  enum tofu_policy policy = GET_POLICY_ERROR;
-
-  assert (GET_POLICY_ERROR != TOFU_POLICY_NONE
-	  && GET_POLICY_ERROR != TOFU_POLICY_AUTO
-	  && GET_POLICY_ERROR != TOFU_POLICY_GOOD
-	  && GET_POLICY_ERROR != TOFU_POLICY_UNKNOWN
-	  && GET_POLICY_ERROR != TOFU_POLICY_BAD
-	  && GET_POLICY_ERROR != TOFU_POLICY_ASK);
+  enum tofu_policy policy = _tofu_GET_POLICY_ERROR;
 
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
-    return GET_POLICY_ERROR;
+    return _tofu_GET_POLICY_ERROR;
 
   /* Check if the <FINGERPRINT, EMAIL> binding is known
      (TOFU_POLICY_NONE cannot appear in the DB.  Thus, if POLICY is
@@ -1209,7 +1203,7 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
     {
       log_error (_("TOFU DB is corrupted.  Invalid value for policy (%d).\n"),
 		 policy);
-      policy = GET_POLICY_ERROR;
+      policy = _tofu_GET_POLICY_ERROR;
       goto out;
     }
 
@@ -1226,7 +1220,7 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
     }
 
  out:
-  assert (policy == GET_POLICY_ERROR
+  assert (policy == _tofu_GET_POLICY_ERROR
 	  || policy == TOFU_POLICY_NONE
 	  || policy == TOFU_POLICY_AUTO
 	  || policy == TOFU_POLICY_GOOD
@@ -1239,12 +1233,10 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
   return policy;
 }
 
-#define GET_TRUST_ERROR 100
-
 /* Return the trust level (TRUST_NEVER, etc.) for the binding
    <FINGERPRINT, EMAIL> (email is already normalized).  If no policy
    is registered, returns TOFU_POLICY_NONE.  If an error occurs,
-   returns GET_TRUST_ERROR.
+   returns _tofu_GET_TRUST_ERROR.
 
    USER_ID is the unadultered user id.
 
@@ -1270,19 +1262,19 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
   if (opt.batch)
     may_ask = 0;
 
-  /* Make sure GET_TRUST_ERROR isn't equal to any of the trust
+  /* Make sure _tofu_GET_TRUST_ERROR isn't equal to any of the trust
      levels.  */
-  assert (GET_TRUST_ERROR != TRUST_UNKNOWN
-	  && GET_TRUST_ERROR != TRUST_EXPIRED
-	  && GET_TRUST_ERROR != TRUST_UNDEFINED
-	  && GET_TRUST_ERROR != TRUST_NEVER
-	  && GET_TRUST_ERROR != TRUST_MARGINAL
-	  && GET_TRUST_ERROR != TRUST_FULLY
-	  && GET_TRUST_ERROR != TRUST_ULTIMATE);
+  assert (_tofu_GET_TRUST_ERROR != TRUST_UNKNOWN
+	  && _tofu_GET_TRUST_ERROR != TRUST_EXPIRED
+	  && _tofu_GET_TRUST_ERROR != TRUST_UNDEFINED
+	  && _tofu_GET_TRUST_ERROR != TRUST_NEVER
+	  && _tofu_GET_TRUST_ERROR != TRUST_MARGINAL
+	  && _tofu_GET_TRUST_ERROR != TRUST_FULLY
+	  && _tofu_GET_TRUST_ERROR != TRUST_ULTIMATE);
 
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
-    return GET_TRUST_ERROR;
+    return _tofu_GET_TRUST_ERROR;
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
   if (policy == TOFU_POLICY_AUTO)
@@ -1322,8 +1314,8 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	 below.  */
       break;
 
-    case GET_POLICY_ERROR:
-      trust_level = GET_TRUST_ERROR;
+    case _tofu_GET_POLICY_ERROR:
+      trust_level = _tofu_GET_TRUST_ERROR;
       goto out;
 
     default:
@@ -1388,7 +1380,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	{
 	  log_error (_("error setting TOFU binding's trust level to %s\n"),
 		       "auto");
-	  trust_level = GET_TRUST_ERROR;
+	  trust_level = _tofu_GET_TRUST_ERROR;
 	  goto out;
 	}
 
@@ -1710,7 +1702,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 				    policy, 0) != 0)
 		  /* If there's an error registering the
 		     binding, don't save the signature.  */
-		  trust_level = GET_TRUST_ERROR;
+		  trust_level = _tofu_GET_TRUST_ERROR;
 
 		break;
 	      }
@@ -1893,6 +1885,12 @@ show_statistics (struct db *dbs, const char *fingerprint,
 		  first_seen_ago -= minutes * MIN_SECS;
 		}
 	      seconds = first_seen_ago;
+
+#undef MIN_SECS
+#undef HOUR_SECS
+#undef DAY_SECS
+#undef MONTH_SECS
+#undef YEAR_SECS
 
 	      if (years)
 		{
@@ -2122,7 +2120,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   /* It's necessary to get the trust so that we are certain that the
      binding has been registered.  */
   trust_level = get_trust (dbs, fingerprint, email, user_id, may_ask);
-  if (trust_level == GET_TRUST_ERROR)
+  if (trust_level == _tofu_GET_TRUST_ERROR)
     /* An error.  */
     {
       trust_level = TRUST_UNKNOWN;
@@ -2327,7 +2325,7 @@ tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
   email = email_from_user_id (user_id);
 
   trust_level = get_trust (dbs, fingerprint, email, user_id, may_ask);
-  if (trust_level == GET_TRUST_ERROR)
+  if (trust_level == _tofu_GET_TRUST_ERROR)
     /* An error.  */
     trust_level = TRUST_UNDEFINED;
 
@@ -2466,7 +2464,7 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
   xfree (fingerprint);
   closedbs (dbs);
 
-  if (*policy == GET_POLICY_ERROR)
+  if (*policy == _tofu_GET_POLICY_ERROR)
     return gpg_error (GPG_ERR_GENERAL);
   return 0;
 }
