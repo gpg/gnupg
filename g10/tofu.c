@@ -2248,6 +2248,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   xfree (fingerprint);
   if (dbs)
     closedbs (dbs);
+  xfree (sig_digest);
 
   return trust_level;
 }
