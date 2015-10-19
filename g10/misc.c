@@ -339,7 +339,7 @@ print_digest_algo_note (digest_algo_t algo)
 
 
 void
-print_md5_rejected_note (void)
+print_digest_rejected_note (enum gcry_md_algos algo)
 {
   static int shown;
 
@@ -348,7 +348,7 @@ print_md5_rejected_note (void)
       es_fflush (es_stdout);
       log_info
         (_("Note: signatures using the %s algorithm are rejected\n"),
-         "MD5");
+         gcry_md_algo_name(algo));
       shown = 1;
     }
 }
