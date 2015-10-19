@@ -109,7 +109,7 @@ no-libgcrypt.c : $(top_srcdir)/tools/no-libgcrypt.c
 
 
 t_common_src = t-support.h
-t_common_ldadd = $(libcommon) no-libgcrypt.o \
+t_common_ldadd = $(libcommon) no-libgcrypt.o $(LIBASSUAN_LIBS) \
                  $(GPG_ERROR_LIBS) $(NETLIBS) \
                  $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) \
                  $(DNSLIBS) $(LIBINTL) $(LIBICONV)

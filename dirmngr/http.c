@@ -94,6 +94,7 @@
 # include <gnutls/x509.h>
 #endif /*HTTP_USE_GNUTLS*/
 
+#include <assuan.h>  /* We need the socket wrapper.  */
 
 #include "util.h"
 #include "i18n.h"
@@ -119,12 +120,14 @@ struct srventry
 
 #ifdef USE_NPTH
 # define my_select(a,b,c,d,e)  npth_select ((a), (b), (c), (d), (e))
-# define my_connect(a,b,c)     npth_connect ((a), (b), (c))
 # define my_accept(a,b,c)      npth_accept ((a), (b), (c))
+# define my_unprotect()        npth_unprotect ()
+# define my_protect()          npth_protect ()
 #else
 # define my_select(a,b,c,d,e)  select ((a), (b), (c), (d), (e))
-# define my_connect(a,b,c)     connect ((a), (b), (c))
 # define my_accept(a,b,c)      accept ((a), (b), (c))
+# define my_unprotect()        do { } while(0)
+# define my_protect()          do { } while(0)
 #endif
 
 #ifdef HAVE_W32_SYSTEM
@@ -181,9 +184,9 @@ static gpg_error_t send_request (http_t hd, const char *httphost,
 static char *build_rel_path (parsed_uri_t uri);
 static gpg_error_t parse_response (http_t hd);
 
-static int connect_server (const char *server, unsigned short port,
-                           unsigned int flags, const char *srvtag,
-                           int *r_host_not_found);
+static assuan_fd_t connect_server (const char *server, unsigned short port,
+                                   unsigned int flags, const char *srvtag,
+                                   int *r_host_not_found);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
 static ssize_t cookie_read (void *cookie, void *buffer, size_t size);
@@ -194,8 +197,8 @@ static int cookie_close (void *cookie);
 /* A socket object used to a allow ref counting of sockets.  */
 struct my_socket_s
 {
-  int fd;       /* The actual socket - shall never be -1.  */
-  int refcount; /* Number of references to this socket.  */
+  assuan_fd_t fd; /* The actual socket - shall never be ASSUAN_INVALID_FD.  */
+  int refcount;   /* Number of references to this socket.  */
 };
 typedef struct my_socket_s *my_socket_t;
 
@@ -338,7 +341,7 @@ init_sockets (void)
 /* Create a new socket object.  Returns NULL and closes FD if not
    enough memory is available.  */
 static my_socket_t
-_my_socket_new (int lnr, int fd)
+_my_socket_new (int lnr, assuan_fd_t fd)
 {
   my_socket_t so;
 
@@ -346,7 +349,7 @@ _my_socket_new (int lnr, int fd)
   if (!so)
     {
       int save_errno = errno;
-      sock_close (fd);
+      assuan_sock_close (fd);
       gpg_err_set_errno (save_errno);
       return NULL;
     }
@@ -389,7 +392,7 @@ _my_socket_unref (int lnr, my_socket_t so,
         {
           if (preclose)
             preclose (preclosearg);
-          sock_close (so->fd);
+          assuan_sock_close (so->fd);
           xfree (so);
         }
     }
@@ -740,7 +743,6 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
                   unsigned int flags, const char *srvtag)
 {
   gpg_error_t err = 0;
-  int sock;
   http_t hd;
   cookie_t cookie;
   int hnf;
@@ -761,22 +763,26 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
   hd->flags = flags;
 
   /* Connect.  */
-  sock = connect_server (server, port, hd->flags, srvtag, &hnf);
-  if (sock == -1)
-    {
-      err = gpg_err_make (default_errsource,
-                          (hnf? GPG_ERR_UNKNOWN_HOST
-                              : gpg_err_code_from_syserror ()));
-      xfree (hd);
-      return err;
-    }
-  hd->sock = my_socket_new (sock);
-  if (!hd->sock)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      xfree (hd);
-      return err;
-    }
+  {
+    assuan_fd_t sock;
+
+    sock = connect_server (server, port, hd->flags, srvtag, &hnf);
+    if (sock == ASSUAN_INVALID_FD)
+      {
+        err = gpg_err_make (default_errsource,
+                            (hnf? GPG_ERR_UNKNOWN_HOST
+                             : gpg_err_code_from_syserror ()));
+        xfree (hd);
+        return err;
+      }
+    hd->sock = my_socket_new (sock);
+    if (!hd->sock)
+      {
+        err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+        xfree (hd);
+        return err;
+      }
+  }
 
   /* Setup estreams for reading and writing.  */
   cookie = xtrycalloc (1, sizeof *cookie);
@@ -1560,7 +1566,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
                              hd->flags, srvtag, &hnf);
       save_errno = errno;
       http_release_parsed_uri (uri);
-      if (sock == -1)
+      if (sock == ASSUAN_INVALID_FD)
         gpg_err_set_errno (save_errno);
     }
   else
@@ -1568,7 +1574,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
       sock = connect_server (server, port, hd->flags, srvtag, &hnf);
     }
 
-  if (sock == -1)
+  if (sock == ASSUAN_INVALID_FD)
     {
       xfree (proxy_authstr);
       return gpg_err_make (default_errsource,
@@ -2183,11 +2189,11 @@ start_server ()
 
 /* Actually connect to a server.  Returns the file descriptor or -1 on
    error.  ERRNO is set on error. */
-static int
+static assuan_fd_t
 connect_server (const char *server, unsigned short port,
                 unsigned int flags, const char *srvtag, int *r_host_not_found)
 {
-  int sock = -1;
+  assuan_fd_t sock = ASSUAN_INVALID_FD;
   int srvcount = 0;
   int hostfound = 0;
   int anyhostaddr = 0;
@@ -2197,6 +2203,7 @@ connect_server (const char *server, unsigned short port,
 #ifdef HAVE_W32_SYSTEM
   unsigned long inaddr;
 #endif
+  int ret;
 
   *r_host_not_found = 0;
 #ifdef HAVE_W32_SYSTEM
@@ -2213,21 +2220,24 @@ connect_server (const char *server, unsigned short port,
 
       memset(&addr,0,sizeof(addr));
 
-      sock = socket(AF_INET,SOCK_STREAM,0);
-      if ( sock==INVALID_SOCKET )
+      sock = assuan_sock_socket (AF_INET, SOCK_STREAM, 0);
+      if (sock == ASSUAN_INVALID_FD)
 	{
-	  log_error("error creating socket: ec=%d\n",(int)WSAGetLastError());
-	  return -1;
+	  log_error ("error creating socket: %s\n", strerror (errno));
+	  return ASSUAN_INVALID_FD;
 	}
 
       addr.sin_family = AF_INET;
       addr.sin_port = htons(port);
       memcpy (&addr.sin_addr,&inaddr,sizeof(inaddr));
 
-      if (!my_connect (sock,(struct sockaddr *)&addr,sizeof(addr)) )
+      my_unprotect ();
+      ret = assuan_sock_connect (sock,(struct sockaddr *)&addr,sizeof(addr));
+      my_protect ();
+      if (!ret)
 	return sock;
-      sock_close(sock);
-      return -1;
+      assuan_sock_close (sock);
+      return ASSUAN_INVALID_FD;
     }
 #endif /*HAVE_W32_SYSTEM*/
 
@@ -2284,21 +2294,25 @@ connect_server (const char *server, unsigned short port,
           if (ai->ai_family == AF_INET6 && (flags & HTTP_FLAG_IGNORE_IPv6))
             continue;
 
-          if (sock != -1)
-            sock_close (sock);
-          sock = socket (ai->ai_family, ai->ai_socktype, ai->ai_protocol);
-          if (sock == -1)
+          if (sock != ASSUAN_INVALID_FD)
+            assuan_sock_close (sock);
+          sock = assuan_sock_new (ai->ai_family, ai->ai_socktype,
+                                  ai->ai_protocol);
+          if (sock == ASSUAN_INVALID_FD)
             {
               int save_errno = errno;
               log_error ("error creating socket: %s\n", strerror (errno));
               freeaddrinfo (res);
               xfree (serverlist);
               errno = save_errno;
-              return -1;
+              return ASSUAN_INVALID_FD;
             }
 
           anyhostaddr = 1;
-          if (my_connect (sock, ai->ai_addr, ai->ai_addrlen))
+          my_unprotect ();
+          ret = assuan_sock_connect (sock, ai->ai_addr, ai->ai_addrlen);
+          my_protect ();
+          if (ret)
             last_errno = errno;
           else
             connected = 1;
@@ -2321,14 +2335,14 @@ connect_server (const char *server, unsigned short port,
         continue;
       hostfound = 1;
 
-      if (sock != -1)
-        sock_close (sock);
-      sock = socket (host->h_addrtype, SOCK_STREAM, 0);
-      if (sock == -1)
+      if (sock != ASSUAN_INVALID_FD)
+        assuan_sock_close (sock);
+      sock = assuan_sock_new (host->h_addrtype, SOCK_STREAM, 0);
+      if (sock == ASSUAN_INVALID_FD)
         {
           log_error ("error creating socket: %s\n", strerror (errno));
           xfree (serverlist);
-          return -1;
+          return ASSUAN_INVALID_FD;
         }
 
       addr.sin_family = host->h_addrtype;
@@ -2337,7 +2351,7 @@ connect_server (const char *server, unsigned short port,
 	  log_error ("unknown address family for '%s'\n",
                      serverlist[srv].target);
           xfree (serverlist);
-	  return -1;
+	  return ASSUAN_INVALID_FD;
 	}
       addr.sin_port = htons (serverlist[srv].port);
       if (host->h_length != 4)
@@ -2345,7 +2359,7 @@ connect_server (const char *server, unsigned short port,
           log_error ("illegal address length for '%s'\n",
                      serverlist[srv].target);
           xfree (serverlist);
-          return -1;
+          return ASSUAN_INVALID_FD;
         }
 
       /* Try all A records until one responds. */
@@ -2353,7 +2367,11 @@ connect_server (const char *server, unsigned short port,
         {
           anyhostaddr = 1;
           memcpy (&addr.sin_addr, host->h_addr_list[i], host->h_length);
-          if (my_connect (sock, (struct sockaddr *) &addr, sizeof (addr)))
+          my_unprotect ();
+          ret = assuan_sock_connect (sock,
+                                     (struct sockaddr *) &addr, sizeof (addr));
+          my_protect ();
+          if (ret)
             last_errno = errno;
           else
             {
@@ -2386,10 +2404,10 @@ connect_server (const char *server, unsigned short port,
         }
       if (!hostfound || (hostfound && !anyhostaddr))
         *r_host_not_found = 1;
-      if (sock != -1)
-	sock_close (sock);
+      if (sock != ASSUAN_INVALID_FD)
+	assuan_sock_close (sock);
       gpg_err_set_errno (last_errno);
-      return -1;
+      return ASSUAN_INVALID_FD;
     }
   return sock;
 }
