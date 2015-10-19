@@ -225,7 +225,7 @@ write_cache_item (CACHE_CTRL r)
  *
  * Returns: 0 on success or an error code.
  */
-int
+static int
 put_record_into_cache (ulong recno, const char *data)
 {
   CACHE_CTRL r, unused;
