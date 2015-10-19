@@ -181,7 +181,7 @@ int mpi_print (estream_t stream, gcry_mpi_t a, int mode);
 unsigned int ecdsa_qbits_from_Q (unsigned int qbits);
 
 
-/*-- status.c --*/
+/*-- cpr.c --*/
 void set_status_fd ( int fd );
 int  is_status_enabled ( void );
 void write_status ( int no );
@@ -239,10 +239,22 @@ int clearsign_file( const char *fname, strlist_t locusr, const char *outfile );
 int sign_symencrypt_file (const char *fname, strlist_t locusr);
 
 /*-- sig-check.c --*/
+
+/* SIG is a revocation signature.  Check if any of PK's designated
+   revokers generated it.  If so, return 0.  Note: this function
+   (correctly) doesn't care if the designated revoker is revoked.  */
 int check_revocation_keys (PKT_public_key *pk, PKT_signature *sig);
+/* Check that the backsig BACKSIG from the subkey SUB_PK to its
+   primary key MAIN_PK is valid.  */
 int check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
 		  PKT_signature *backsig);
-int check_key_signature( KBNODE root, KBNODE node, int *is_selfsig );
+/* Check that the signature SIG over a key (e.g., a key binding or a
+   key revocation) is valid.  (To check signatures over data, use
+   check_signature.)  */
+int check_key_signature( KBNODE root, KBNODE sig, int *is_selfsig );
+/* Like check_key_signature, but with the ability to specify some
+   additional parameters and get back additional information.  See the
+   documentation for the implementation for details.  */
 int check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 			  PKT_public_key *ret_pk, int *is_selfsig,
 			  u32 *r_expiredate, int *r_expired );

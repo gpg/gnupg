@@ -40,18 +40,50 @@ static int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 				int *r_expired, int *r_revoked,
 				PKT_public_key *ret_pk);
 
-
-/****************
- * Check the signature which is contained in SIG.
- * The MD_HANDLE should be currently open, so that this function
- * is able to append some data, before finalizing the digest.
- */
+/* Check a signature.  This is shorthand for check_signature2 with
+   the unnamed arguments passed as NULL.  */
 int
 check_signature (PKT_signature *sig, gcry_md_hd_t digest)
 {
     return check_signature2 (sig, digest, NULL, NULL, NULL, NULL);
 }
 
+/* Check a signature.
+
+   Looks up the public key that created the signature (SIG->KEYID)
+   from the key db.  Makes sure that the signature is valid (it was
+   not created prior to the key, the public key was created in the
+   past, and the signature does not include any unsupported critical
+   features), finishes computing the hash of the signature data, and
+   checks that the signature verifies the digest.  If the key that
+   generated the signature is a subkey, this function also verifies
+   that there is a valid backsig from the subkey to the primary key.
+   Finally, if status fd is enabled and the signature class is 0x00 or
+   0x01, then a STATUS_SIG_ID is emitted on the status fd.
+
+   SIG is the signature to check.
+
+   DIGEST contains a valid hash context that already includes the
+   signed data.  This function adds the relevant meta-data from the
+   signature packet to compute the final hash.  (See Section 5.2 of
+   RFC 4880: "The concatenation of the data being signed and the
+   signature data from the version number through the hashed subpacket
+   data (inclusive) is hashed.")
+
+   If R_EXPIREDATE is not NULL, R_EXPIREDATE is set to the key's
+   expiry.
+
+   If R_EXPIRED is not NULL, *R_EXPIRED is set to 1 if PK has expired
+   (0 otherwise).  Note: PK being expired does not cause this function
+   to fail.
+
+   If R_REVOKED is not NULL, *R_REVOKED is set to 1 if PK has been
+   revoked (0 otherwise).  Note: PK being revoked does not cause this
+   function to fail.
+
+   If PK is not NULL, the public key is saved in *PK on success.
+
+   Returns 0 on success.  An error code otherwise.  */
 int
 check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key *pk )
@@ -204,6 +236,23 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 }
 
 
+/* The signature SIG was generated with the public key PK.  Check
+   whether the signature is valid in the following sense:
+
+     - Make sure the public key was created before the signature was
+       generated.
+
+     - Make sure the public key was created in the past
+
+     - Check whether PK has expired (set *R_EXPIRED to 1 if so and 0
+       otherwise)
+
+     - Check whether PK has been revoked (set *R_REVOKED to 1 if so
+       and 0 otherwise).
+
+   If either of the first two tests fail, returns an error code.
+   Otherwise returns 0.  (Thus, this function doesn't fail if the
+   public key is expired or revoked.)  */
 static int
 check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
 				   int *r_expired, int *r_revoked)
@@ -268,6 +317,35 @@ check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
 }
 
 
+/* Finish generating a signature and check it.  Concretely: make sure
+   that the signature is valid (it was not created prior to the key,
+   the public key was created in the past, and the signature does not
+   include any unsupported critical features), finish computing the
+   digest by adding the relevant data from the signature packet, and
+   check that the signature verifies the digest.
+
+   DIGEST contains a hash context, which has already hashed the signed
+   data.  This function adds the relevant meta-data from the signature
+   packet to compute the final hash.  (See Section 5.2 of RFC 4880:
+   "The concatenation of the data being signed and the signature data
+   from the version number through the hashed subpacket data
+   (inclusive) is hashed.")
+
+   SIG is the signature to check.
+
+   PK is the public key used to generate the signature.
+
+   If R_EXPIRED is not NULL, *R_EXPIRED is set to 1 if PK has expired
+   (0 otherwise).  Note: PK being expired does not cause this function
+   to fail.
+
+   If R_REVOKED is not NULL, *R_REVOKED is set to 1 if PK has been
+   revoked (0 otherwise).  Note: PK being revoked does not cause this
+   function to fail.
+
+   If RET_PK is not NULL, PK is copied into RET_PK on success.
+
+   Returns 0 on success.  An error code other.  */
 static int
 check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 		     gcry_md_hd_t digest,
@@ -330,7 +408,7 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 	  gcry_md_putc (digest, 0);
 	  n = 6;
 	}
-	/* add some magic */
+	/* add some magic per Section 5.2.4 of RFC 4880.  */
 	buf[0] = sig->version;
 	buf[1] = 0xff;
 	buf[2] = n >> 24;
@@ -341,9 +419,12 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
     }
     gcry_md_final( digest );
 
+    /* Convert the digest to an MPI.  */
     result = encode_md_value (pk, digest, sig->digest_algo );
     if (!result)
         return GPG_ERR_GENERAL;
+
+    /* Verify the signature.  */
     rc = pk_verify( pk->pubkey_algo, result, sig->data, pk->pkey );
     gcry_mpi_release (result);
 
@@ -361,7 +442,8 @@ check_signature_end (PKT_public_key *pk, PKT_signature *sig,
 }
 
 
-
+/* Add a uid node to a hash context.  See section 5.2.4, paragraph 4
+   of RFC 4880.  */
 static void
 hash_uid_node( KBNODE unode, gcry_md_hd_t md, PKT_signature *sig )
 {
@@ -411,24 +493,37 @@ cache_sig_result ( PKT_signature *sig, int result )
     }
 }
 
-/* Check the revocation keys to see if any of them have revoked our
-   pk.  sig is the revocation sig.  pk is the key it is on.  This code
-   will need to be modified if gpg ever becomes multi-threaded.  Note
-   that this guarantees that a designated revocation sig will never be
-   considered valid unless it is actually valid, as well as being
-   issued by a revocation key in a valid direct signature.  Note also
-   that this is written so that a revoked revoker can still issue
-   revocations: i.e. If A revokes B, but A is revoked, B is still
-   revoked.  I'm not completely convinced this is the proper behavior,
-   but it matches how PGP does it. -dms */
+/* SIG is a key revocation signature.  Check if this signature was
+   generated by any of the public key PK's designated revokers.
 
-/* Returns 0 if sig is valid (i.e. pk is revoked), non-0 if not
-   revoked.  It is important that GPG_ERR_NO_PUBKEY is only returned
-   when a revocation signature is from a valid revocation key
-   designated in a revkey subpacket, but the revocation key itself
-   isn't present. */
+     PK is the public key that SIG allegedly revokes.
+
+     SIG is the revocation signature to check.
+
+   This function avoids infinite recursion, which can happen if two
+   keys are designed revokers for each other and they revoke each
+   other.  This is done by observing that if a key A is revoked by key
+   B we still consider the revocation to be valid even if B is
+   revoked.  Thus, we don't need to determine whether B is revoked to
+   determine whether A has been revoked by B, we just need to check
+   the signature.
+
+   Returns 0 if sig is valid (i.e. pk is revoked), non-0 if not
+   revoked.  We are careful to make sure that GPG_ERR_NO_PUBKEY is
+   only returned when a revocation signature is from a valid
+   revocation key designated in a revkey subpacket, but the revocation
+   key itself isn't present.  */
+
+/* XXX: This code will need to be modified if gpg ever becomes
+   multi-threaded.  Note that this guarantees that a designated
+   revocation sig will never be considered valid unless it is actually
+   valid, as well as being issued by a revocation key in a valid
+   direct signature.  Note also that this is written so that a revoked
+   revoker can still issue revocations: i.e. If A revokes B, but A is
+   revoked, B is still revoked.  I'm not completely convinced this is
+   the proper behavior, but it matches how PGP does it. -dms */
 int
-check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
+check_revocation_keys (PKT_public_key *pk, PKT_signature *sig)
 {
   static int busy=0;
   int i;
@@ -437,6 +532,30 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
   assert(IS_KEY_REV(sig));
   assert((sig->keyid[0]!=pk->keyid[0]) || (sig->keyid[0]!=pk->keyid[1]));
 
+  /* Avoid infinite recursion.  Consider the following:
+
+       - We want to check if A is revoked.
+
+       - C is a designated revoker for B and has revoked B.
+
+       - B is a designated revoker for A and has revoked A.
+
+     When checking if A is revoked (in merge_selfsigs_main), we
+     observe that A has a designed revoker.  As such, we call this
+     function.  This function sees that there is a valid revocation
+     signature, which is signed by B.  It then calls check_signature()
+     to verify that the signature is good.  To check the sig, we need
+     to lookup B.  Looking up B means calling merge_selfsigs_main,
+     which checks whether B is revoked, which calls this function to
+     see if B was revoked by some key.
+
+     In this case, the added level of indirection doesn't hurt.  It
+     just means a bit more work.  However, if C == A, then we'd end up
+     in a loop.  But, it doesn't make sense to look up C anyways: even
+     if B is revoked, we conservatively consider a valid revocation
+     signed by B to revoke A.  Since this is the only place where this
+     type of recursion can occur, we simply cause this function to
+     fail if it is entered recursively.  */
   if (busy)
     {
       /* Return an error (i.e. not revoked), but mark the pk as
@@ -457,17 +576,22 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
   else
       for(i=0;i<pk->numrevkeys;i++)
 	{
+	  /* The revoker's keyid.  */
           u32 keyid[2];
 
           keyid_from_fingerprint(pk->revkey[i].fpr,MAX_FINGERPRINT_LEN,keyid);
 
           if(keyid[0]==sig->keyid[0] && keyid[1]==sig->keyid[1])
+	    /* The signature was generated by a designated revoker.
+	       Verify the signature.  */
 	    {
               gcry_md_hd_t md;
 
               if (gcry_md_open (&md, sig->digest_algo, 0))
                 BUG ();
               hash_public_key(md,pk);
+	      /* Note: check_signature only checks that the signature
+		 is good.  It does not fail if the key is revoked.  */
               rc=check_signature(sig,md);
 	      cache_sig_result(sig,rc);
               gcry_md_close (md);
@@ -480,21 +604,24 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
   return rc;
 }
 
-/* Backsigs (0x19) have the same format as binding sigs (0x18), but
+/* Check that the backsig BACKSIG from the subkey SUB_PK to its
+   primary key MAIN_PK is valid.
+
+   Backsigs (0x19) have the same format as binding sigs (0x18), but
    this function is simpler than check_key_signature in a few ways.
    For example, there is no support for expiring backsigs since it is
    questionable what such a thing actually means.  Note also that the
    sig cache check here, unlike other sig caches in GnuPG, is not
    persistent. */
 int
-check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
-	      PKT_signature *backsig)
+check_backsig (PKT_public_key *main_pk,PKT_public_key *sub_pk,
+	       PKT_signature *backsig)
 {
   gcry_md_hd_t md;
   int rc;
 
   /* Always check whether the algorithm is available.  Although
-     gcry_md_open woyuld throw an error, some libgcrypt versions will
+     gcry_md_open would throw an error, some libgcrypt versions will
      print a debug message in that case too. */
   if ((rc=openpgp_md_test_algo (backsig->digest_algo)))
     return rc;
@@ -516,27 +643,53 @@ check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
 }
 
 
-/****************
- * check the signature pointed to by NODE. This is a key signature.
- * If the function detects a self-signature, it uses the PK from
- * ROOT and does not read any public key.
- */
+/* Check that a signature over a key is valid.  This is a
+   specialization of check_key_signature2 with the unnamed parameters
+   passed as NULL.  See the documentation for that function for more
+   details.  */
 int
-check_key_signature( KBNODE root, KBNODE node, int *is_selfsig )
+check_key_signature (KBNODE root, KBNODE node, int *is_selfsig)
 {
-  return check_key_signature2(root, node, NULL, NULL, is_selfsig, NULL, NULL );
+  return check_key_signature2 (root, node, NULL, NULL, is_selfsig, NULL, NULL);
 }
 
-/* If check_pk is set, then use it to check the signature in node
-   rather than getting it from root or the keydb.  If ret_pk is set,
-   fill in the public key that was used to verify the signature.
-   ret_pk is only meaningful when the verification was successful. */
+/* Check that a signature over a key (e.g., a key revocation, key
+   binding, user id certification, etc.) is valid.  If the function
+   detects a self-signature, it uses the public key from the specified
+   key block and does not bother looking up the key specified in the
+   signature packet.
+
+   ROOT is a keyblock.
+
+   NODE references a signature packet that appears in the keyblock
+   that should be verified.
+
+   If CHECK_PK is set, the specified key is sometimes preferred for
+   verifying signatures.  See the implementation for details.
+
+   If RET_PK is not NULL, the public key that successfully verified
+   the signature is copied into *RET_PK.
+
+   If IS_SELFSIG is not NULL, *IS_SELFSIG is set to 1 if NODE is a
+   self-signature.
+
+   If R_EXPIREDATE is not NULL, *R_EXPIREDATE is set to the expiry
+   date.
+
+   If R_EXPIRED is not NULL, *R_EXPIRED is set to 1 if PK has been
+   expired (0 otherwise).  Note: PK being revoked does not cause this
+   function to fail.
+
+
+   If OPT.NO_SIG_CACHE is not set, this function will first check if
+   the result of a previous verification is already cached in the
+   signature packet's data structure.  */
 /* TODO: add r_revoked here as well.  It has the same problems as
    r_expiredate and r_expired and the cache. */
 int
-check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
-		      PKT_public_key *ret_pk, int *is_selfsig,
-		      u32 *r_expiredate, int *r_expired )
+check_key_signature2(KBNODE root, KBNODE node, PKT_public_key *check_pk,
+		     PKT_public_key *ret_pk, int *is_selfsig,
+		     u32 *r_expiredate, int *r_expired )
 {
     gcry_md_hd_t md;
     PKT_public_key *pk;
@@ -668,6 +821,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    hash_public_key( md, pk );
 	    hash_uid_node( unode, md, sig );
 	    if( keyid[0] == sig->keyid[0] && keyid[1] == sig->keyid[1] )
+	      /* The primary key is the signing key.  */
 	      {
 		if( is_selfsig )
 		  *is_selfsig = 1;
