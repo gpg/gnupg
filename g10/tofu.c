@@ -1634,12 +1634,12 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	if (strcmp (text, "TOFU detected a binding conflict") == 0)
 	  /* No translation.  Use the English text.  */
 	  text =
-	    "Normally, there is only a single key associated with an email"
-	    "address.  However, people sometimes generate a new key if"
-	    "their key is too old or they think it might be compromised."
-	    "Alternatively, a new key may indicate a man-in-the-middle attack!"
-	    "Before accepting this key, you should talk to or call the person"
-	    "to make sure this new key is legitimate.";
+	    "Normally, there is only a single key associated with an email "
+	    "address.  However, people sometimes generate a new key if "
+	    "their key is too old or they think it might be compromised.  "
+	    "Alternatively, a new key may indicate a man-in-the-middle"
+	    "attack!  Before accepting this key, you should talk to or "
+	    "call the person to make sure this new key is legitimate.";
 	es_fprintf (fp, "\n%s\n", text);
       }
 
