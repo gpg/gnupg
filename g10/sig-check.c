@@ -1,6 +1,7 @@
 /* sig-check.c -  Check a signature
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003,
  *               2004, 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -34,12 +35,11 @@
 #include "options.h"
 #include "pkglue.h"
 
+static int check_signature_end (PKT_public_key *pk, PKT_signature *sig,
+				gcry_md_hd_t digest,
+				int *r_expired, int *r_revoked,
+				PKT_public_key *ret_pk);
 
-
-
-static int do_check( PKT_public_key *pk, PKT_signature *sig,
-                     gcry_md_hd_t digest,
-		     int *r_expired, int *r_revoked, PKT_public_key *ret_pk);
 
 /****************
  * Check the signature which is contained in SIG.
@@ -47,13 +47,13 @@ static int do_check( PKT_public_key *pk, PKT_signature *sig,
  * is able to append some data, before finalizing the digest.
  */
 int
-signature_check (PKT_signature *sig, gcry_md_hd_t digest)
+check_signature (PKT_signature *sig, gcry_md_hd_t digest)
 {
-    return signature_check2( sig, digest, NULL, NULL, NULL, NULL );
+    return check_signature2 (sig, digest, NULL, NULL, NULL, NULL);
 }
 
 int
-signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
+check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		  int *r_expired, int *r_revoked, PKT_public_key *pk )
 {
     int rc=0;
@@ -93,14 +93,14 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
         if(r_expiredate)
 	  *r_expiredate = pk->expiredate;
 
-	rc = do_check( pk, sig, digest, r_expired, r_revoked, NULL );
+	rc = check_signature_end (pk, sig, digest, r_expired, r_revoked, NULL);
 
 	/* Check the backsig.  This is a 0x19 signature from the
 	   subkey on the primary key.  The idea here is that it should
 	   not be possible for someone to "steal" subkeys and claim
 	   them as their own.  The attacker couldn't actually use the
 	   subkey, but they could try and claim ownership of any
-	   signaures issued by it. */
+	   signatures issued by it. */
 	if(rc==0 && !pk->flags.primary && pk->flags.backsig < 2)
 	  {
 	    if (!pk->flags.backsig)
@@ -205,8 +205,8 @@ signature_check2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 
 
 static int
-do_check_messages( PKT_public_key *pk, PKT_signature *sig,
-		   int *r_expired, int *r_revoked )
+check_signature_metadata_validity (PKT_public_key *pk, PKT_signature *sig,
+				   int *r_expired, int *r_revoked)
 {
     u32 cur_time;
 
@@ -269,14 +269,16 @@ do_check_messages( PKT_public_key *pk, PKT_signature *sig,
 
 
 static int
-do_check( PKT_public_key *pk, PKT_signature *sig, gcry_md_hd_t digest,
-	  int *r_expired, int *r_revoked, PKT_public_key *ret_pk )
+check_signature_end (PKT_public_key *pk, PKT_signature *sig,
+		     gcry_md_hd_t digest,
+		     int *r_expired, int *r_revoked, PKT_public_key *ret_pk)
 {
     gcry_mpi_t result = NULL;
     int rc = 0;
     const struct weakhash *weak;
 
-    if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
+    if ((rc = check_signature_metadata_validity (pk, sig,
+						 r_expired, r_revoked)))
         return rc;
 
     if (!opt.flags.allow_weak_digest_algos)
@@ -466,7 +468,7 @@ check_revocation_keys(PKT_public_key *pk,PKT_signature *sig)
               if (gcry_md_open (&md, sig->digest_algo, 0))
                 BUG ();
               hash_public_key(md,pk);
-              rc=signature_check(sig,md);
+              rc=check_signature(sig,md);
 	      cache_sig_result(sig,rc);
               gcry_md_close (md);
 	      break;
@@ -505,7 +507,7 @@ check_backsig(PKT_public_key *main_pk,PKT_public_key *sub_pk,
     {
       hash_public_key(md,main_pk);
       hash_public_key(md,sub_pk);
-      rc=do_check(sub_pk,backsig,md,NULL,NULL,NULL);
+      rc = check_signature_end (sub_pk, backsig, md, NULL, NULL, NULL);
       cache_sig_result(backsig,rc);
       gcry_md_close(md);
     }
@@ -570,7 +572,8 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    }
 	    /* BUG: This is wrong for non-self-sigs.. needs to be the
 	       actual pk */
-	    if((rc=do_check_messages(pk,sig,r_expired,NULL)))
+	    if((rc = check_signature_metadata_validity (pk, sig,
+							r_expired, NULL)))
 	      return rc;
             return sig->flags.valid? 0 : gpg_error (GPG_ERR_BAD_SIGNATURE);
         }
@@ -593,7 +596,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	    if (gcry_md_open (&md, algo, 0 ))
               BUG ();
 	    hash_public_key( md, pk );
-	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
+	    rc = check_signature_end (pk, sig, md, r_expired, NULL, ret_pk);
 	    cache_sig_result ( sig, rc );
 	    gcry_md_close(md);
 	  }
@@ -606,7 +609,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
               BUG ();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
+	    rc = check_signature_end (pk, sig, md, r_expired, NULL, ret_pk);
             cache_sig_result ( sig, rc );
 	    gcry_md_close(md);
 	}
@@ -633,7 +636,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
               BUG ();
 	    hash_public_key( md, pk );
 	    hash_public_key( md, snode->pkt->pkt.public_key );
-	    rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
+	    rc = check_signature_end (pk, sig, md, r_expired, NULL, ret_pk);
             cache_sig_result ( sig, rc );
 	    gcry_md_close(md);
 	}
@@ -649,7 +652,7 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
         if (gcry_md_open (&md, algo, 0 ))
           BUG ();
 	hash_public_key( md, pk );
-	rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
+	rc = check_signature_end (pk, sig, md, r_expired, NULL, ret_pk);
         cache_sig_result ( sig, rc );
 	gcry_md_close(md);
     }
@@ -668,12 +671,17 @@ check_key_signature2( KBNODE root, KBNODE node, PKT_public_key *check_pk,
 	      {
 		if( is_selfsig )
 		  *is_selfsig = 1;
-		rc = do_check( pk, sig, md, r_expired, NULL, ret_pk );
+		rc = check_signature_end (pk, sig, md, r_expired, NULL, ret_pk);
 	      }
 	    else if (check_pk)
-	      rc=do_check(check_pk,sig,md,r_expired,NULL,ret_pk);
+	      /* The caller specified a key.  Try that.  */
+	      rc = check_signature_end (check_pk, sig, md,
+					r_expired, NULL, ret_pk);
 	    else
-	      rc=signature_check2(sig,md,r_expiredate,r_expired,NULL,ret_pk);
+	      /* Look up the key.  XXX: Could it be that the key is
+		 not is not in this keyblock?  */
+	      rc = check_signature2 (sig, md, r_expiredate, r_expired,
+				     NULL, ret_pk);
 
             cache_sig_result ( sig, rc );
 	    gcry_md_close(md);

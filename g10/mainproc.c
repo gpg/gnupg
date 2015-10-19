@@ -873,7 +873,7 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
         }
       else /* detached signature */
         {
-          /* signature_check() will enable the md. */
+          /* check_signature() will enable the md. */
           if (gcry_md_open (&md, 0, 0 ))
             BUG ();
         }
@@ -892,7 +892,7 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
       else /* detached signature */
         {
           log_debug ("Do we really need this here?");
-          /* signature_check() will enable the md*/
+          /* check_signature() will enable the md*/
           if (gcry_md_open (&md, 0, 0 ))
             BUG ();
           if (gcry_md_open (&md2, 0, 0 ))
@@ -926,12 +926,14 @@ do_check_sig (CTX c, kbnode_t node, int *is_selfsig,
   else
     return GPG_ERR_SIG_CLASS;
 
-  rc = signature_check2 (sig, md, NULL, is_expkey, is_revkey, NULL);
+  /* We only get here if we are checking the signature of a binary
+     (0x00) or text document (0x01).  */
+  rc = check_signature2 (sig, md, NULL, is_expkey, is_revkey, NULL);
   if (! rc)
     md_good = md;
   else if (gpg_err_code (rc) == GPG_ERR_BAD_SIGNATURE && md2)
     {
-      rc = signature_check2 (sig, md2, NULL, is_expkey, is_revkey, NULL);
+      rc = check_signature2 (sig, md2, NULL, is_expkey, is_revkey, NULL);
       if (! rc)
 	md_good = md2;
     }

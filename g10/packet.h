@@ -638,8 +638,8 @@ int cmp_user_ids( PKT_user_id *a, PKT_user_id *b );
 
 
 /*-- sig-check.c --*/
-int signature_check( PKT_signature *sig, gcry_md_hd_t digest );
-int signature_check2( PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
+int check_signature( PKT_signature *sig, gcry_md_hd_t digest );
+int check_signature2( PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 		      int *r_expired, int *r_revoked, PKT_public_key *ret_pk );
 
 
