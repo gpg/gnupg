@@ -753,7 +753,9 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
     {
       int mode;
 
+#if ASSUAN_VERSION_NUMBER >= 0x020300 /* >= 2.3.0 */
       if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
+#endif
         {
           log_error ("TOR support is not available\n");
           return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);

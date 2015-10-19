@@ -470,7 +470,9 @@ set_tor_mode (void)
 {
   if (opt.use_tor)
     {
+#if ASSUAN_VERSION_NUMBER >= 0x020300 /* >= 2.3.0 */
       if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
+#endif
         {
           log_error ("error enabling TOR mode: %s\n", strerror (errno));
           log_info ("(is your Libassuan recent enough?)\n");
