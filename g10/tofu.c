@@ -1450,7 +1450,10 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	es_fprintf (fp, _("The binding %s is NOT known.  "), binding);
 	binding_shown = 1;
       }
-    else if (policy == TOFU_POLICY_ASK && conflict)
+    else if (policy == TOFU_POLICY_ASK
+	     /* If there the conflict is with itself, then don't
+		display this message.  */
+	     && conflict && strcmp (conflict, fingerprint) != 0)
       {
 	es_fprintf (fp,
 		    _("%s raised a conflict with this binding.  Since this"
@@ -1718,11 +1721,22 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
  out:
   if (change_conflicting_to_ask)
     {
-      rc = sqlite3_exec_printf
-	(db, NULL, NULL, &err,
-	 "update bindings set policy = %d, conflict = %Q"
-	 " where email = %Q and fingerprint != %Q and policy = %d;",
-	 TOFU_POLICY_ASK, fingerprint, email, fingerprint, TOFU_POLICY_AUTO);
+      if (! may_ask)
+	/* If we weren't allowed to ask, also update this key as
+	   conflicting with itself.  */
+	rc = sqlite3_exec_printf
+	  (db, NULL, NULL, &err,
+	   "update bindings set policy = %d, conflict = %Q"
+	   " where email = %Q"
+	   "  and (policy = %d or (policy = %d and fingerprint = %Q));",
+	   TOFU_POLICY_ASK, fingerprint, email, TOFU_POLICY_AUTO,
+	   TOFU_POLICY_ASK, fingerprint);
+      else
+	rc = sqlite3_exec_printf
+	  (db, NULL, NULL, &err,
+	   "update bindings set policy = %d, conflict = %Q"
+	   " where email = %Q and fingerprint != %Q and policy = %d;",
+	   TOFU_POLICY_ASK, fingerprint, email, fingerprint, TOFU_POLICY_AUTO);
       if (rc)
 	{
 	  log_error (_("error changing TOFU policy: %s\n"), err);
