@@ -466,6 +466,20 @@ set_debug (void)
 
 
 static void
+set_tor_mode (void)
+{
+  if (opt.use_tor)
+    {
+      if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
+        {
+          log_error ("error enabling TOR mode: %s\n", strerror (errno));
+          log_info ("(is your Libassuan recent enough?)\n");
+        }
+    }
+}
+
+
+static void
 wrong_args (const char *text)
 {
   es_fprintf (es_stderr, _("usage: %s [options] "), DIRMNGR_NAME);
@@ -985,10 +999,9 @@ main (int argc, char **argv)
   if (opt.use_tor)
     {
       log_info ("WARNING: ***************************************\n");
-      log_info ("WARNING: TOR mode (--use-tor) DOES NOT YET WORK!\n");
+      log_info ("WARNING: TOR mode (--use-tor) MAY NOT FULLY WORK!\n");
       log_info ("WARNING: ***************************************\n");
     }
-
 
   /* Print a warning if an argument looks like an option.  */
   if (!opt.quiet && !(pargs.flags & ARGPARSE_FLAG_STOP_SEEN))
@@ -1018,6 +1031,7 @@ main (int argc, char **argv)
     }
 
   set_debug ();
+  set_tor_mode ();
 
   /* Get LDAP server list from file. */
 #if USE_LDAP
@@ -1783,6 +1797,7 @@ reread_configuration (void)
   fclose (fp);
 
   set_debug ();
+  set_tor_mode ();
 }
 
 

@@ -751,8 +751,13 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
 
   if ((flags & HTTP_FLAG_FORCE_TOR))
     {
-      log_error ("TOR support is not yet available\n");
-      return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+      int mode;
+
+      if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
+        {
+          log_error ("TOR support is not available\n");
+          return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+        }
     }
 
   /* Create the handle. */
@@ -1466,8 +1471,13 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
   if ((hd->flags & HTTP_FLAG_FORCE_TOR))
     {
-      log_error ("TOR support is not yet available\n");
-      return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+      int mode;
+
+      if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
+        {
+          log_error ("TOR support is not available\n");
+          return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
+        }
     }
 
   server = *hd->uri->host ? hd->uri->host : "localhost";
