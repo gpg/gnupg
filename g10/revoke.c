@@ -195,7 +195,7 @@ export_minimal_pk(IOBUF out,KBNODE keyblock,
  * Generate a revocation certificate for UNAME via a designated revoker
  */
 int
-gen_desig_revoke( const char *uname, strlist_t locusr )
+gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 {
     int rc = 0;
     armor_filter_context_t *afx;
@@ -312,6 +312,13 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	      tty_printf(_("(This is a sensitive revocation key)\n"));
 	    tty_printf("\n");
 
+	    rc = agent_probe_secret_key (ctrl, pk2);
+	    if (rc)
+	      {
+		tty_printf (_("Secret key is not available.\n"));
+		continue;
+	      }
+
 	    if( !cpr_get_answer_is_yes("gen_desig_revoke.okay",
          _("Create a designated revocation certificate for this key? (y/N) ")))
 	      continue;
@@ -319,10 +326,6 @@ gen_desig_revoke( const char *uname, strlist_t locusr )
 	    /* get the reason for the revocation (this is always v4) */
 	    reason = ask_revocation_reason( 1, 0, 1 );
 	    if( !reason )
-	      continue;
-
-	    rc = -1;/*FIXME: check_secret_key (pk2, 0 );*/
-	    if (rc)
 	      continue;
 
 	    if( !opt.armor )

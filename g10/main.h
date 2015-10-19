@@ -356,7 +356,7 @@ int enarmor_file( const char *fname );
 struct revocation_reason_info;
 int gen_standard_revoke (PKT_public_key *psk, const char *cache_nonce);
 int gen_revoke( const char *uname );
-int gen_desig_revoke( const char *uname, strlist_t locusr);
+int gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr);
 int revocation_reason_build_cb( PKT_signature *sig, void *opaque );
 struct revocation_reason_info *
 		ask_revocation_reason( int key_rev, int cert_rev, int hint );

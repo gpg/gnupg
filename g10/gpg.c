@@ -4179,11 +4179,11 @@ main (int argc, char **argv)
 	break;
 
       case aDesigRevoke:
-	if( argc != 1 )
-	    wrong_args("--desig-revoke user-id");
-	username =  make_username(*argv);
-	gen_desig_revoke( username, locusr );
-	xfree( username );
+	if (argc != 1)
+	    wrong_args ("--desig-revoke user-id");
+	username = make_username (*argv);
+	gen_desig_revoke (ctrl, username, locusr);
+	xfree (username);
 	break;
 
       case aDeArmor:
