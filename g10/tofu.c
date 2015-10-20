@@ -1468,10 +1468,10 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	     && conflict && strcmp (conflict, fingerprint) != 0)
       {
 	es_fprintf (fp,
-		    _("The key %s raised a conflict with this binding.  Since"
-                      " this binding's policy was 'auto', it was changed to "
-                      "'ask'.  "),
-		    conflict);
+		    _("The key %s raised a conflict with this binding (%s)."
+                      "  Since this binding's policy was 'auto', it was"
+                      "changed to 'ask'.  "),
+		    conflict, binding);
 	binding_shown = 1;
       }
     es_fprintf (fp,
