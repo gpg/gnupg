@@ -2930,10 +2930,12 @@ show_key_with_all_names_colon (ctrl_t ctrl, estream_t fp, kbnode_t keyblock)
 	  es_putc (':', fp);
 	  if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
 	    {
+#ifdef USE_TOFU
 	      enum tofu_policy policy;
 	      if (! tofu_get_policy (primary, uid, &policy)
 		  && policy != TOFU_POLICY_NONE)
 		es_fprintf (fp, "%s", tofu_policy_str (policy));
+#endif /*USE_TOFU*/
 	    }
 	  es_putc (':', fp);
 	  es_putc ('\n', fp);

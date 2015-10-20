@@ -106,4 +106,4 @@ gpg_error_t tofu_set_policy_by_keyid (u32 *keyid, enum tofu_policy policy);
 gpg_error_t tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
 			     enum tofu_policy *policy);
 
-#endif
+#endif /*G10_TOFU_H*/

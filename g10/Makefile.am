@@ -56,6 +56,12 @@ else
 trust_source = trustdb.c trustdb.h tdbdump.c tdbio.c tdbio.h
 endif
 
+if USE_TOFU
+tofu_source = tofu.h tofu.c
+else
+tofu_source =
+endif
+
 
 if HAVE_W32_SYSTEM
 resource_objs += gpg-w32info.o
@@ -124,10 +130,9 @@ gpg2_SOURCES  = gpg.c		\
 	      call-dirmngr.c call-dirmngr.h \
 	      photoid.c photoid.h \
 	      call-agent.c call-agent.h \
-	      trust.c $(trust_source) \
+	      trust.c $(trust_source) $(tofu_source) \
 	      $(card_source) \
-	      exec.c exec.h \
-	      tofu.h tofu.c
+	      exec.c exec.h
 
 gpgv2_SOURCES = gpgv.c           \
 	      $(common_source)  \

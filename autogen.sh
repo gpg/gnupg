@@ -311,6 +311,7 @@ if [ "$myhost" = "w32" ]; then
     $tsdir/configure --enable-maintainer-mode ${SILENT} \
              --prefix=${w32root}  \
              --host=${host} --build=${build} SYSROOT=${w32root} \
+             PKG_CONFIG_LIBDIR=${w32root} \
              ${configure_opts} ${extraoptions} "$@"
     rc=$?
     exit $rc

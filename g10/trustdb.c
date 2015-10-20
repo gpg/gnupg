@@ -1001,6 +1001,7 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
       goto leave;
     }
 
+#ifdef USE_TOFU
   if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
       kbnode_t user_id_node = NULL; /* Silence -Wmaybe-uninitialized.  */
@@ -1078,6 +1079,7 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
 	    break;
 	}
     }
+#endif /*USE_TOFU*/
 
   if (opt.trust_model == TM_TOFU_PGP
       || opt.trust_model == TM_CLASSIC
@@ -1137,7 +1139,18 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
     }
 
  leave:
+#ifdef USE_TOFU
   validity = tofu_wot_trust_combine (tofu_validity, validity);
+#else /*!USE_TOFU*/
+  validity &= TRUST_MASK;
+
+  if (validity == TRUST_NEVER)
+    /* TRUST_NEVER trumps everything else.  */
+    validity |= TRUST_NEVER;
+  if (validity == TRUST_EXPIRED)
+    /* TRUST_EXPIRED trumps everything but TRUST_NEVER.  */
+    validity |= TRUST_EXPIRED;
+#endif /*!USE_TOFU*/
 
   if (opt.trust_model != TM_TOFU
       && pending_check_trustdb)

@@ -1949,10 +1949,12 @@ parse_trust_model(const char *model)
     opt.trust_model=TM_ALWAYS;
   else if(ascii_strcasecmp(model,"direct")==0)
     opt.trust_model=TM_DIRECT;
+#ifdef USE_TOFU
   else if(ascii_strcasecmp(model,"tofu")==0)
     opt.trust_model=TM_TOFU;
   else if(ascii_strcasecmp(model,"tofu+pgp")==0)
     opt.trust_model=TM_TOFU_PGP;
+#endif /*USE_TOFU*/
   else if(ascii_strcasecmp(model,"auto")==0)
     opt.trust_model=TM_AUTO;
   else
@@ -1963,6 +1965,7 @@ parse_trust_model(const char *model)
 static int
 parse_tofu_policy (const char *policy)
 {
+#ifdef USE_TOFU
   if (ascii_strcasecmp (policy, "auto") == 0)
     return TOFU_POLICY_AUTO;
   else if (ascii_strcasecmp (policy, "good") == 0)
@@ -1974,6 +1977,7 @@ parse_tofu_policy (const char *policy)
   else if (ascii_strcasecmp (policy, "ask") == 0)
     return TOFU_POLICY_ASK;
   else
+#endif /*USE_TOFU*/
     {
       log_error (_("unknown TOFU policy '%s'\n"), policy);
       g10_exit (1);
@@ -1983,6 +1987,7 @@ parse_tofu_policy (const char *policy)
 static int
 parse_tofu_db_format (const char *db_format)
 {
+#ifdef USE_TOFU
   if (ascii_strcasecmp (db_format, "auto") == 0)
     return TOFU_DB_AUTO;
   else if (ascii_strcasecmp (db_format, "split") == 0)
@@ -1990,6 +1995,7 @@ parse_tofu_db_format (const char *db_format)
   else if (ascii_strcasecmp (db_format, "flat") == 0)
     return TOFU_DB_FLAT;
   else
+#endif /*USE_TOFU*/
     {
       log_error (_("unknown TOFU DB format '%s'\n"), db_format);
       g10_exit (1);
@@ -4417,6 +4423,7 @@ main (int argc, char **argv)
         break;
 
       case aTOFUPolicy:
+#ifdef USE_TOFU
 	{
 	  int policy;
 	  int i;
@@ -4487,7 +4494,6 @@ main (int argc, char **argv)
 		}
 
 	      merge_keys_and_selfsig (kb);
-
 	      if (tofu_set_policy (kb, policy))
 		g10_exit (1);
 	    }
@@ -4495,6 +4501,7 @@ main (int argc, char **argv)
 	  keydb_release (hd);
 
 	}
+#endif /*USE_TOFU*/
 	break;
 
       case aListPackets:

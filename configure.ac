@@ -69,6 +69,7 @@ NEED_NPTH_VERSION=0.91
 
 NEED_GNUTLS_VERSION=3.0
 
+NEED_SQLITE_VERSION=3.7
 
 development_version=mym4_isbeta
 PACKAGE=$PACKAGE_NAME
@@ -91,6 +92,7 @@ have_libassuan=no
 have_ksba=no
 have_ntbtls=no
 have_gnutls=no
+have_sqlite=no
 have_npth=no
 have_libusb=no
 have_adns=no
@@ -100,6 +102,7 @@ use_zip=yes
 use_bzip2=yes
 use_exec=yes
 use_trust_models=yes
+use_tofu=yes
 card_support=yes
 use_ccid_driver=yes
 dirmngr_auto_start=yes
@@ -246,6 +249,14 @@ if test "$use_trust_models" = no ; then
     AC_DEFINE(NO_TRUST_MODELS, 1,
              [Define to include only trust-model always])
 fi
+
+AC_MSG_CHECKING([whether to enable TOFU])
+AC_ARG_ENABLE(tofu,
+                AC_HELP_STRING([--disable-tofu],
+                               [disable the TOFU trust model]),
+              use_tofu=$enableval, use_tofu=yes)
+AC_MSG_RESULT($use_tofu)
+
 
 
 #
@@ -780,11 +791,39 @@ DL_LIBS=$LIBS
 AC_SUBST(DL_LIBS)
 LIBS="$gnupg_dlopen_save_libs"
 
+
 # Checks for g10
 
-PKG_CHECK_MODULES(SQLITE3, sqlite3)
-AC_SUBST(SQLITE3_CFLAGS)
-AC_SUBST(SQLITE3_LIBS)
+AC_ARG_ENABLE(sqlite,
+                AC_HELP_STRING([--disable-sqlite],
+                               [disable the use of SQLITE]),
+              try_sqlite=$enableval, try_sqlite=yes)
+
+if test x"$use_tofu" = xyes ; then
+  if test x"$try_sqlite" = xyes ; then
+    PKG_CHECK_MODULES([SQLITE3], [sqlite3 >= $NEED_SQLITE_VERSION],
+                                 [have_sqlite=yes],
+                                 [have_sqlite=no])
+  fi
+  if test "$have_sqlite" = "yes"; then
+    :
+    AC_SUBST([SQLITE3_CFLAGS])
+    AC_SUBST([SQLITE3_LIBS])
+  else
+    use_tofu=no
+    tmp=$(echo "$SQLITE3_PKG_ERRORS" | tr '\n' '\v' | sed 's/\v/\n*** /g')
+    AC_MSG_WARN([[
+***
+*** Building without SQLite support - TOFU disabled
+***
+*** $tmp]])
+  fi
+fi
+
+if test x"$use_tofu" = xyes ; then
+    AC_DEFINE(USE_TOFU, 1, [Enable to build the TOFU code])
+fi
+
 
 # Checks for g13
 
@@ -1547,7 +1586,8 @@ AM_CONDITIONAL(BUILD_SYMCRYPTRUN, test "$build_symcryptrun" = "yes")
 AM_CONDITIONAL(BUILD_GPGTAR,      test "$build_gpgtar" = "yes")
 
 AM_CONDITIONAL(ENABLE_CARD_SUPPORT, test "$card_support" = yes)
-AM_CONDITIONAL(NO_TRUST_MODELS, test "$use_trust_models" = no)
+AM_CONDITIONAL(NO_TRUST_MODELS,     test "$use_trust_models" = no)
+AM_CONDITIONAL(USE_TOFU,            test "$use_tofu" = yes)
 
 AM_CONDITIONAL(RUN_GPG_TESTS,
                test x$cross_compiling = xno -a "$build_gpg" = yes )
@@ -1800,6 +1840,7 @@ echo "
         LDAP support:        $gnupg_have_ldap
         DNS SRV support:     $use_dns_srv
         TLS support:         $use_tls_library
+        TOFU support:        $use_tofu
 "
 if test x"$use_regex" != xyes ; then
 echo "

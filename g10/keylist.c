@@ -1501,10 +1501,12 @@ list_keyblock_colon (KBNODE keyblock, int secret, int has_secret, int fpr)
 	  es_fprintf (es_stdout, "::::::::");
 	  if (opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
 	    {
+#ifdef USE_TOFU
 	      enum tofu_policy policy;
 	      if (! tofu_get_policy (pk, uid, &policy)
 		  && policy != TOFU_POLICY_NONE)
 		es_fprintf (es_stdout, "%s", tofu_policy_str (policy));
+#endif /*USE_TOFU*/
 	    }
 	  es_putc (':', es_stdout);
 	  es_putc ('\n', es_stdout);
