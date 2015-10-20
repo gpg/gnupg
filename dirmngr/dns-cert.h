@@ -47,6 +47,7 @@
 #define DNS_CERTTYPE_RRBASE 1024 /* Base of special constants.  */
 #define DNS_CERTTYPE_RR61   (DNS_CERTTYPE_RRBASE + 61)
 
+gpg_error_t enable_dns_tormode (void);
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
                           unsigned char **r_fpr, size_t *r_fprlen,

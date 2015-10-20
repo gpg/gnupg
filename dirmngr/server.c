@@ -713,8 +713,9 @@ cmd_dns_cert (assuan_context_t ctx, char *line)
         }
     }
 
-  if (opt.use_tor)
+  if (opt.use_tor && enable_dns_tormode ())
     {
+      /* TOR mode is requested but the DNS code can't enable it.  */
       err = gpg_error (GPG_ERR_FORBIDDEN);
       goto leave;
     }

@@ -948,6 +948,16 @@ if test "$with_adns" != "no"; then
                              [have_adns=yes],
                              [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
                              [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
+
+  AC_MSG_CHECKING([if adns supports adns_if_tormode])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+    #include <adns.h>
+    adns_initflags flags = adns_if_tormode;
+  ]],[])],[adns_if_tormode=yes],[adns_if_tormode=no])
+  AC_MSG_RESULT($adns_if_tormode)
+  if test x"$adns_if_tormode" = xyes; then
+    AC_DEFINE(HAVE_ADNS_IF_TORMODE,1,[define if adns_if_tormode is available])
+  fi
 fi
 if test "$have_adns" = "yes"; then
   ADNSLIBS="-ladns"
@@ -970,24 +980,40 @@ AC_ARG_ENABLE(dns-cert,
 if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   _dns_save_libs=$LIBS
   LIBS=""
-  # the double underscore thing is a glibc-ism?
-  AC_SEARCH_LIBS(res_query,resolv bind,,
-                 AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
-  AC_SEARCH_LIBS(dn_expand,resolv bind,,
-                 AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
-  AC_SEARCH_LIBS(dn_skipname,resolv bind,,
-                 AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no))
 
-  if test x"$have_resolver" != xno ; then
+  if test x"$have_adns" = xyes ; then
+    # We prefer ADNS.
+    DNSLIBS="$ADNSLIBS"
+    AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
 
-    # Make sure that the BIND 4 resolver interface is workable before
-    # enabling any code that calls it.  At some point I'll rewrite the
-    # code to use the BIND 8 resolver API.
-    # We might also want to use adns instead.  Problem with ADNS is that
-    # it does not support v6.
+    if test x"$use_dns_srv" = xyes ; then
+        AC_DEFINE(USE_DNS_SRV,1)
+    fi
 
-    AC_MSG_CHECKING([whether the resolver is usable])
-    AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
+    if test x"$use_dns_cert" = xyes ; then
+        AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
+    fi
+  else
+    # With no ADNS find the system resolver.
+
+    # the double underscore thing is a glibc-ism?
+    AC_SEARCH_LIBS(res_query,resolv bind,,
+                   AC_SEARCH_LIBS(__res_query,resolv bind,,have_resolver=no))
+    AC_SEARCH_LIBS(dn_expand,resolv bind,,
+                   AC_SEARCH_LIBS(__dn_expand,resolv bind,,have_resolver=no))
+    AC_SEARCH_LIBS(dn_skipname,resolv bind,,
+                   AC_SEARCH_LIBS(__dn_skipname,resolv bind,,have_resolver=no))
+
+    if test x"$have_resolver" != xno ; then
+
+      # Make sure that the BIND 4 resolver interface is workable before
+      # enabling any code that calls it.  At some point I'll rewrite the
+      # code to use the BIND 8 resolver API.
+      # We might also want to use adns instead.  Problem with ADNS is that
+      # it does not support v6.
+
+      AC_MSG_CHECKING([whether the resolver is usable])
+      AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
 #include <resolv.h>]],
@@ -996,15 +1022,15 @@ if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   dn_skipname(0,0);
   dn_expand(0,0,0,0,0);
 ]])],have_resolver=yes,have_resolver=no)
-    AC_MSG_RESULT($have_resolver)
+      AC_MSG_RESULT($have_resolver)
 
-    # This is Apple-specific and somewhat bizarre as they changed the
-    # define in bind 8 for some reason.
+      # This is Apple-specific and somewhat bizarre as they changed the
+      # define in bind 8 for some reason.
 
-    if test x"$have_resolver" != xyes ; then
-       AC_MSG_CHECKING(
+      if test x"$have_resolver" != xyes ; then
+         AC_MSG_CHECKING(
              [whether I can make the resolver usable with BIND_8_COMPAT])
-       AC_LINK_IFELSE([AC_LANG_PROGRAM([[#define BIND_8_COMPAT
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([[#define BIND_8_COMPAT
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>
@@ -1013,42 +1039,28 @@ if test x"$use_dns_srv" = xyes || test x"$use_dns_cert" = xyes; then
   res_query("foo.bar",C_IN,T_A,answer,PACKETSZ);
   dn_skipname(0,0); dn_expand(0,0,0,0,0);
 ]])],[have_resolver=yes ; need_compat=yes])
-       AC_MSG_RESULT($have_resolver)
+         AC_MSG_RESULT($have_resolver)
+      fi
     fi
-  fi
 
-  if test x"$have_resolver" = xyes ; then
-     DNSLIBS=$LIBS
+    if test x"$have_resolver" = xyes ; then
+      DNSLIBS=$LIBS
 
-     if test x"$use_dns_srv" = xyes ; then
-        AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
-     fi
+      if test x"$use_dns_srv" = xyes ; then
+         AC_DEFINE(USE_DNS_SRV,1,[define to use DNS SRV])
+      fi
 
-     if test x"$use_dns_cert" = xyes ; then
+      if test x"$use_dns_cert" = xyes ; then
         AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
-     fi
+      fi
 
-     if test x"$need_compat" = xyes ; then
+      if test x"$need_compat" = xyes ; then
         AC_DEFINE(BIND_8_COMPAT,1,[an Apple OSXism])
-     fi
-  else
-     # If we have no resolver library but ADNS (e.g. under W32) enable the
-     # code parts which can be used with ADNS.
-     if test x"$have_adns" = xyes ; then
-        DNSLIBS="$ADNSLIBS"
-        AC_DEFINE(USE_ADNS,1,[Use ADNS as resolver library.])
-
-        if test x"$use_dns_srv" = xyes ; then
-           AC_DEFINE(USE_DNS_SRV,1)
-        fi
-
-        if test x"$use_dns_cert" = xyes ; then
-           AC_DEFINE(USE_DNS_CERT,1,[define to use DNS CERT])
-        fi
-     else
-        use_dns_srv=no
-        use_dns_cert=no
-     fi
+      fi
+    else
+      use_dns_srv=no
+      use_dns_cert=no
+    fi
   fi
 
   LIBS=$_dns_save_libs

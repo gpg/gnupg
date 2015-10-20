@@ -59,7 +59,22 @@
 /* ADNS has no support for CERT yet. */
 #define my_adns_r_cert 37
 
+/* If set Tor mode shall be used.  */
+static int tor_mode;
 
+/* Sets the module in TOR mode.  Returns 0 is this is possible or an
+   error code.  */
+gpg_error_t
+enable_dns_tormode (void)
+{
+#if defined(USE_DNS_CERT) && defined(USE_ADNS)
+# if HAVE_ADNS_IF_TORMODE
+   tor_mode = 1;
+   return 0;
+# endif
+#endif
+  return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+}
 
 /* Returns 0 on success or an error code.  If a PGP CERT record was
    found, the malloced data is returned at (R_KEY, R_KEYLEN) and
@@ -92,7 +107,9 @@ get_dns_cert (const char *name, int want_certtype,
   *r_fprlen = 0;
   *r_url = NULL;
 
-  if (adns_init (&state, adns_if_noerrprint, NULL))
+  if (tor_mode? adns_init_strcfg (&state, adns_if_noerrprint|adns_if_tormode,
+                                  NULL, "nameserver 8.8.8.8")
+      /*    */: adns_init (&state, adns_if_noerrprint, NULL))
     {
       err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
       log_error ("error initializing adns: %s\n", strerror (errno));
