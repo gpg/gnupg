@@ -2005,14 +2005,16 @@ show_statistics (struct db *dbs, const char *fingerprint,
 		 directly internationalize that text so that we can
 		 tweak it without breaking translations.  */
 	      text = _("TOFU: few signatures %s");
-	      if (strcmp (text, "TOFU: few signatures %s") == 0)
+	      if (strcmp (text, "TOFU: few signatures %d %s %s") == 0)
 		text =
-		  "Warning: if this value is unexpectedly low, this might "
-		  "indicate that this key is a forgery!  Carefully examine "
-		  "the email address for small variations (e.g., additional "
-		  "white space).  If the key is suspect, then use '%s' to "
-		  "mark the key as being bad.\n";
-	      log_info (text, set_policy_command);
+		  "Warning: if you think you've seen more than %d %s "
+		  "signed by this key, then this key might be a forgery!  "
+		  "Carefully examine the email address for small variations "
+		  "(e.g., additional white space).  If the key is suspect, "
+		  "then use '%s' to mark it as being bad.\n";
+	      log_info (text,
+			messages, messages == 1 ? _("message") : _("message"),
+			set_policy_command);
 	      free (set_policy_command);
 	    }
 	}
