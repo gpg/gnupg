@@ -65,7 +65,7 @@ ks_http_fetch (ctrl_t ctrl, const char *url, estream_t *r_fp)
   estream_t fp = NULL;
   char *request_buffer = NULL;
 
-  err = http_session_new (&session, NULL);
+  err = http_session_new (&session, NULL, NULL);
   if (err)
     goto leave;
   http_session_set_log_cb (session, cert_log_cb);

@@ -562,7 +562,8 @@ http_session_release (http_session_t sess)
 /* Create a new session object which is currently used to enable TLS
    support.  It may eventually allow reusing existing connections.  */
 gpg_error_t
-http_session_new (http_session_t *r_session, const char *tls_priority)
+http_session_new (http_session_t *r_session, const char *tls_priority,
+                  const char *intended_hostname)
 {
   gpg_error_t err;
   http_session_t sess;
@@ -600,6 +601,34 @@ http_session_new (http_session_t *r_session, const char *tls_priority)
         goto leave;
       }
 
+    /* If the user has not specified a CA list, and they are looking
+     * for the hkps pool from sks-keyservers.net, then default to
+     * Kristian's certificate authority:  */
+    if (!tls_ca_certlist
+        && intended_hostname
+        && !ascii_strcasecmp (intended_hostname,
+                              "hkps.pool.sks-keyservers.net"))
+      {
+        char *pemname = make_filename_try (gnupg_datadir (),
+                                           "sks-keyservers.netCA.pem", NULL);
+        if (!pemname)
+          {
+            err = gpg_error_from_syserror ();
+            log_error ("setting CA from file '%s' failed: %s\n",
+                       pemname, gpg_strerror (err));
+          }
+        else
+          {
+            rc = gnutls_certificate_set_x509_trust_file
+              (sess->certcred, pemname, GNUTLS_X509_FMT_PEM);
+            if (rc < 0)
+              log_info ("setting CA from file '%s' failed: %s\n",
+                        pemname, gnutls_strerror (rc));
+            xfree (pemname);
+          }
+      }
+
+    /* Add configured certificates to the session.  */
     for (sl = tls_ca_certlist; sl; sl = sl->next)
       {
         rc = gnutls_certificate_set_x509_trust_file

@@ -98,7 +98,8 @@ void http_register_tls_callback (gpg_error_t (*cb)(http_t,http_session_t,int));
 void http_register_tls_ca (const char *fname);
 
 gpg_error_t http_session_new (http_session_t *r_session,
-                              const char *tls_priority);
+                              const char *tls_priority,
+                              const char *intended_hostname);
 http_session_t http_session_ref (http_session_t sess);
 void http_session_release (http_session_t sess);
 

@@ -20,6 +20,7 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST = OAUTHORS ONEWS ChangeLog-2011 tls-ca.pem
+dist_pkgdata_DATA = sks-keyservers.netCA.pem
 
 bin_PROGRAMS = dirmngr dirmngr-client
 
