@@ -1061,27 +1061,39 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
     }
   i ++;
 
-  tail = NULL;
-  errno = 0;
-  time_ago = strtol (argv[i], &tail, 0);
-  if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
+  if (! argv[i])
+    time_ago = 0;
+  else
     {
-      /* Abort.  */
-      log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
-		 __func__, argv[i], tail);
-      return 1;
+      tail = NULL;
+      errno = 0;
+      time_ago = strtol (argv[i], &tail, 0);
+      if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
+        {
+          /* Abort.  */
+          log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
+                     __func__, argv[i], tail);
+          return 1;
+        }
     }
   i ++;
 
-  tail = NULL;
-  errno = 0;
-  count = strtoul (argv[i], &tail, 0);
-  if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
+  /* If time_ago is NULL, then we had no messages, but we still have a
+     single row, which count(*) turns into 1.  */
+  if (! argv[i - 1])
+    count = 0;
+  else
     {
-      /* Abort.  */
-      log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
-		 __func__, argv[i], tail);
-      return 1;
+      tail = NULL;
+      errno = 0;
+      count = strtoul (argv[i], &tail, 0);
+      if (errno || ! (strcmp (tail, ".0") == 0 || *tail == '\0'))
+        {
+          /* Abort.  */
+          log_error ("%s: Error converting %s to an integer (tail = '%s')\n",
+                     __func__, argv[i], tail);
+          return 1;
+        }
     }
   i ++;
 
@@ -1551,10 +1563,12 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
        "         else round(delta / %d) * %d\n"
        "        end time_ago,\n"
        "        delta time_ago_raw\n"
-       "       from (select *,\n"
-       "              cast(strftime('%%s','now') - sig_time as real) delta\n"
-       "             from signatures) ss\n"
-       "       left join bindings on ss.binding = bindings.oid)\n"
+       "       from bindings\n"
+       "       left join\n"
+       "         (select *,\n"
+       "            cast(strftime('%%s','now') - sig_time as real) delta\n"
+       "           from signatures) ss\n"
+       "        on ss.binding = bindings.oid)\n"
        " where email = %Q\n"
        " group by fingerprint, time_ago\n"
        /* Make sure the current key is first.  */
