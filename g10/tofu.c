@@ -574,7 +574,7 @@ getdb (struct db *dbs, const char *name, enum db_type type)
       {
 	log_error (_("unable to create directory %s/%s/%s/%s"),
 		   opt.homedir, "tofu.d", type_str, prefix);
-	g10_exit (1);
+        goto out;
       }
 
     name_db = xstrconcat (name_sanitized, ".db", NULL);
