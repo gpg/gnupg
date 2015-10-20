@@ -2232,7 +2232,7 @@ connect_server (const char *server, unsigned short port,
 
       memset(&addr,0,sizeof(addr));
 
-      sock = assuan_sock_socket (AF_INET, SOCK_STREAM, 0);
+      sock = assuan_sock_new (AF_INET, SOCK_STREAM, 0);
       if (sock == ASSUAN_INVALID_FD)
 	{
 	  log_error ("error creating socket: %s\n", strerror (errno));
