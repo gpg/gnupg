@@ -60,7 +60,7 @@ gnupg_amkdir_p (const char **directory_components)
   for (i = 0; directory_components[i]; i ++)
     {
       if (i == 0)
-	dirs[i] = xtrystrdup (directory_components[i]);
+	dirs[i] = make_filename_try (directory_components[i], NULL);
       else
 	dirs[i] = make_filename_try (dirs[i-1], directory_components[i], NULL);
       if (!dirs[i])
