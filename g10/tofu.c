@@ -2018,7 +2018,7 @@ show_statistics (struct db *dbs, const char *fingerprint,
 	      /* TRANSLATORS: translate the below text.  We don't
 		 directly internationalize that text so that we can
 		 tweak it without breaking translations.  */
-	      text = _("TOFU: few signatures %s");
+	      text = _("TOFU: few signatures %d %s %s");
 	      if (strcmp (text, "TOFU: few signatures %d %s %s") == 0)
 		text =
 		  "Warning: if you think you've seen more than %d %s "
