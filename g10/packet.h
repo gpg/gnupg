@@ -621,7 +621,6 @@ void free_notation(struct notation *notation);
 void free_symkey_enc( PKT_symkey_enc *enc );
 void free_pubkey_enc( PKT_pubkey_enc *enc );
 void free_seckey_enc( PKT_signature *enc );
-int  digest_algo_from_sig( PKT_signature *sig );
 void release_public_key_parts( PKT_public_key *pk );
 void free_public_key( PKT_public_key *key );
 void free_attributes(PKT_user_id *uid);
