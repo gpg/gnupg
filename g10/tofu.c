@@ -248,6 +248,15 @@ initdb (sqlite3 *db, enum db_type type)
   unsigned long int count;
   int version = -1;
 
+  rc = sqlite3_exec (db, "begin transaction;", NULL, NULL, &err);
+  if (rc)
+    {
+      log_error (_("error beginning transaction on TOFU database: %s\n"),
+		 err);
+      sqlite3_free (err);
+      return 1;
+    }
+
   /* If the DB has no tables, then assume this is a new DB that needs
      to be initialized.  */
   rc = sqlite3_exec (db,
@@ -258,7 +267,7 @@ initdb (sqlite3 *db, enum db_type type)
       log_error (_("error querying TOFU DB's available tables: %s\n"),
 		 err);
       sqlite3_free (err);
-      return 1;
+      goto out;
     }
   else if (count != 0)
     /* Assume that the DB is already initialized.  Make sure the
@@ -270,21 +279,22 @@ initdb (sqlite3 *db, enum db_type type)
 	/* Happy, happy, joy, joy.  */
 	{
 	  sqlite3_free (err);
-	  return 0;
+          rc = 0;
+          goto out;
 	}
       else if (rc == SQLITE_ABORT && version == -1)
 	/* Unsupported version.  */
 	{
 	  /* An error message was already displayed.  */
 	  sqlite3_free (err);
-	  return 1;
+          goto out;
 	}
       else if (rc)
 	/* Some error.  */
 	{
 	  log_error (_("error determining TOFU DB's version: %s\n"), err);
 	  sqlite3_free (err);
-	  return 1;
+          goto out;
 	}
       else
 	/* Unexpected success.  This can only happen if there are no
@@ -292,17 +302,9 @@ initdb (sqlite3 *db, enum db_type type)
 	{
 	  log_error (_("error determining TOFU DB's version: %s\n"),
 		     "select returned 0, but expected ABORT");
-	  return 1;
+          rc = 1;
+          goto out;
 	}
-    }
-
-  rc = sqlite3_exec (db, "begin transaction;", NULL, NULL, &err);
-  if (rc)
-    {
-      log_error (_("error beginning transaction on TOFU database: %s\n"),
-		 err);
-      sqlite3_free (err);
-      return 1;
     }
 
   /* Create the version table.  */
