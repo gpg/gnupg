@@ -30,19 +30,18 @@
 
 #include <config.h>
 #include <sys/types.h>
-#ifdef USE_DNS_CERT
-# ifdef HAVE_W32_SYSTEM
-#  ifdef HAVE_WINSOCK2_H
-#   include <winsock2.h>
-#  endif
-#  include <windows.h>
-# else
-#  include <netinet/in.h>
-#  include <arpa/nameser.h>
-#  include <resolv.h>
+#ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
 # endif
-# include <string.h>
+# include <windows.h>
+#else
+# include <netinet/in.h>
+# include <arpa/nameser.h>
+# include <resolv.h>
+# include <netdb.h>
 #endif
+#include <string.h>
 #ifdef USE_ADNS
 # include <adns.h>
 #endif
@@ -76,6 +75,142 @@ enable_dns_tormode (void)
 #endif
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
+
+/* Free an addressinfo linked list as returned by resolve_dns_name.  */
+void
+free_dns_addrinfo (dns_addrinfo_t ai)
+{
+  while (ai)
+    {
+      dns_addrinfo_t next = ai->next;
+      xfree (ai);
+      ai = next;
+    }
+}
+
+
+/* Resolve a name using the standard system function.  */
+static gpg_error_t
+resolve_name_standard (const char *name, unsigned short port,
+                       int want_family, int want_socktype,
+                       dns_addrinfo_t *r_dai, char **r_canonname)
+{
+  gpg_error_t err = 0;
+  dns_addrinfo_t daihead = NULL;
+  dns_addrinfo_t dai;
+  struct addrinfo *aibuf = NULL;
+  struct addrinfo hints, *ai;
+  char portstr[21];
+  int ret;
+
+  *r_dai = NULL;
+  if (r_canonname)
+    *r_canonname = NULL;
+
+  memset (&hints, 0, sizeof hints);
+  hints.ai_family = want_family;
+  hints.ai_socktype = want_socktype;
+  if (r_canonname)
+    hints.ai_flags = AI_CANONNAME;
+
+  if (port)
+    snprintf (portstr, sizeof portstr, "%hu", port);
+  else
+    *portstr = 0;
+
+  /* We can't use the the AI_IDN flag because that does the conversion
+     using the current locale.  However, GnuPG always used UTF-8.  To
+     support IDN we would need to make use of the libidn API.  */
+  ret = getaddrinfo (name, *portstr? portstr : NULL, &hints, &aibuf);
+  if (ret)
+    {
+      aibuf = NULL;
+      switch (ret)
+        {
+        case EAI_AGAIN:     err = gpg_error (GPG_ERR_EAGAIN); break;
+        case EAI_BADFLAGS:  err = gpg_error (GPG_ERR_INV_FLAG); break;
+        case EAI_FAIL:      err = gpg_error (GPG_ERR_SERVER_FAILED); break;
+        case EAI_MEMORY:    err = gpg_error (GPG_ERR_ENOMEM); break;
+        case EAI_NODATA:    err = gpg_error (GPG_ERR_NO_DATA); break;
+        case EAI_NONAME:    err = gpg_error (GPG_ERR_NO_NAME); break;
+        case EAI_SERVICE:   err = gpg_error (GPG_ERR_NOT_SUPPORTED); break;
+        case EAI_ADDRFAMILY:err = gpg_error (GPG_ERR_EADDRNOTAVAIL); break;
+        case EAI_FAMILY:    err = gpg_error (GPG_ERR_EAFNOSUPPORT); break;
+        case EAI_SOCKTYPE:  err = gpg_error (GPG_ERR_ESOCKTNOSUPPORT); break;
+        case EAI_SYSTEM:    err = gpg_error_from_syserror (); break;
+        default:            err = gpg_error (GPG_ERR_UNKNOWN_ERRNO); break;
+        }
+      goto leave;
+    }
+
+  if (r_canonname && aibuf && aibuf->ai_canonname)
+    {
+      *r_canonname = xtrystrdup (aibuf->ai_canonname);
+      if (!*r_canonname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  for (ai = aibuf; ai; ai = ai->ai_next)
+    {
+      if (ai->ai_family != AF_INET6 && ai->ai_family != AF_INET)
+        continue;
+
+      dai = xtrymalloc (sizeof *dai + ai->ai_addrlen - 1);
+      dai->family = ai->ai_family;
+      dai->socktype = ai->ai_socktype;
+      dai->protocol = ai->ai_protocol;
+      dai->addrlen = ai->ai_addrlen;
+      memcpy (dai->addr, ai->ai_addr, ai->ai_addrlen);
+      dai->next = daihead;
+      daihead = dai;
+    }
+
+ leave:
+  if (aibuf)
+    freeaddrinfo (aibuf);
+  if (err)
+    {
+      if (r_canonname)
+        {
+          xfree (*r_canonname);
+          *r_canonname = NULL;
+        }
+      free_dns_addrinfo (daihead);
+    }
+  else
+    *r_dai = daihead;
+  return err;
+}
+
+
+/* This a wrapper around getaddrinfo with slighly different semantics.
+   NAME is the name to resolve.
+   PORT is the requested port or 0.
+   WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.
+   WANT_SOCKETTYPE is either SOCK_STREAM or SOCK_DGRAM.
+
+   On success the result is stored in a linked list with the head
+   stored at the address R_AI; the caller must call gpg_addrinfo_free
+   on this.  If R_CANONNAME is not NULL the official name of the host
+   is stored there as a malloced string; if that name is not available
+   NULL is stored.  */
+gpg_error_t
+resolve_dns_name (const char *name, unsigned short port,
+                  int want_family, int want_socktype,
+                  dns_addrinfo_t *r_ai, char **r_canonname)
+{
+#ifdef USE_ADNS_disabled_for_now
+  return resolve_name_adns (name, port, want_family, want_socktype,
+                            r_ai, r_canonname);
+#else
+  return resolve_name_standard (name, port, want_family, want_socktype,
+                                r_ai, r_canonname);
+#endif
+}
+
 
 /* Returns 0 on success or an error code.  If a PGP CERT record was
    found, the malloced data is returned at (R_KEY, R_KEYLEN) and

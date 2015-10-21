@@ -30,6 +30,16 @@
 #ifndef GNUPG_DIRMNGR_DNS_STUFF_H
 #define GNUPG_DIRMNGR_DNS_STUFF_H
 
+#ifdef HAVE_W32_SYSTEM
+# ifdef HAVE_WINSOCK2_H
+#  include <winsock2.h>
+# endif
+# include <windows.h>
+#else
+# include <sys/types.h>
+# include <sys/socket.h>
+#endif
+
 
 #define DNS_CERTTYPE_ANY       0 /* Internal catch all type. */
 /* Certificate types according to RFC-4398:  */
@@ -48,9 +58,30 @@
 #define DNS_CERTTYPE_RRBASE 1024 /* Base of special constants.  */
 #define DNS_CERTTYPE_RR61   (DNS_CERTTYPE_RRBASE + 61)
 
+struct dns_addrinfo_s;
+typedef struct dns_addrinfo_s *dns_addrinfo_t;
+struct dns_addrinfo_s
+{
+  dns_addrinfo_t next;
+  int family;
+  int socktype;
+  int protocol;
+  int addrlen;
+  struct sockaddr addr[1];
+};
+
+
+
 /* Calling this function switches the DNS code into Tor mode if
    possibe.  Return 0 on success.  */
 gpg_error_t enable_dns_tormode (void);
+
+void free_dns_addrinfo (dns_addrinfo_t ai);
+
+/* Provide function similar to getaddrinfo.  */
+gpg_error_t resolve_dns_name (const char *name, unsigned short port,
+                              int want_family, int want_socktype,
+                              dns_addrinfo_t *r_dai, char **r_canonname);
 
 /* Return a CERT record or an arbitray RR.  */
 gpg_error_t get_dns_cert (const char *name, int want_certtype,

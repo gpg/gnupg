@@ -22,73 +22,168 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#ifndef HAVE_W32_SYSTEM
+# include <netdb.h>
+#endif
 
 #include "util.h"
 #include "dns-stuff.h"
+
+#define PGM "t-dns-stuff"
+
+static int verbose;
+static int debug;
+
 
 
 int
 main (int argc, char **argv)
 {
+  int last_argc = -1;
   gpg_error_t err;
-  unsigned char *fpr;
-  size_t fpr_len;
-  char *url;
-  void *key;
-  size_t keylen;
+  int opt_cert = 0;
   char const *name;
 
+  gpgrt_init ();
   if (argc)
+    { argc--; argv++; }
+  while (argc && last_argc != argc )
     {
-      argc--;
-      argv++;
+      last_argc = argc;
+      if (!strcmp (*argv, "--"))
+        {
+          argc--; argv++;
+          break;
+        }
+      else if (!strcmp (*argv, "--help"))
+        {
+          fputs ("usage: " PGM " [HOST]\n"
+                 "Options:\n"
+                 "  --verbose         print timings etc.\n"
+                 "  --debug           flyswatter\n"
+                 "  --cert            lookup a CERT RR\n"
+                 , stdout);
+          exit (0);
+        }
+      else if (!strcmp (*argv, "--verbose"))
+        {
+          verbose++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--debug"))
+        {
+          verbose += 2;
+          debug++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cert"))
+        {
+          opt_cert = 1;
+          argc--; argv++;
+        }
+      else if (!strncmp (*argv, "--", 2))
+        {
+          fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
+          exit (1);
+        }
     }
 
   if (!argc)
-    name = "simon.josefsson.org";
+    {
+      opt_cert = 1;
+      name = "simon.josefsson.org";
+    }
   else if (argc == 1)
     name = *argv;
   else
     {
-      fputs ("usage: t-dns-stuff [name]\n", stderr);
-      return 1;
+      fprintf (stderr, PGM ": too many host names given\n");
+      exit (1);
     }
 
-  printf ("CERT lookup on '%s'\n", name);
-
-  err = get_dns_cert (name, DNS_CERTTYPE_ANY, &key, &keylen,
-                      &fpr, &fpr_len, &url);
-  if (err)
-    printf ("get_dns_cert failed: %s <%s>\n",
-            gpg_strerror (err), gpg_strsource (err));
-  else if (key)
+  if (opt_cert)
     {
-      printf ("Key found (%u bytes)\n", (unsigned int)keylen);
+      unsigned char *fpr;
+      size_t fpr_len;
+      char *url;
+      void *key;
+      size_t keylen;
+
+      printf ("CERT lookup on '%s'\n", name);
+
+      err = get_dns_cert (name, DNS_CERTTYPE_ANY, &key, &keylen,
+                          &fpr, &fpr_len, &url);
+      if (err)
+        printf ("get_dns_cert failed: %s <%s>\n",
+                gpg_strerror (err), gpg_strsource (err));
+      else if (key)
+        {
+          printf ("Key found (%u bytes)\n", (unsigned int)keylen);
+        }
+      else
+        {
+          if (fpr)
+            {
+              int i;
+
+              printf ("Fingerprint found (%d bytes): ", (int)fpr_len);
+              for (i = 0; i < fpr_len; i++)
+                printf ("%02X", fpr[i]);
+              putchar ('\n');
+            }
+          else
+            printf ("No fingerprint found\n");
+
+          if (url)
+            printf ("URL found: %s\n", url);
+          else
+            printf ("No URL found\n");
+
+        }
+
+      xfree (key);
+      xfree (fpr);
+      xfree (url);
     }
-  else
+  else /* Standard lookup.  */
     {
-      if (fpr)
-	{
-	  int i;
+      char *cname;
+      dns_addrinfo_t aibuf, ai;
+      int ret;
+      char hostbuf[1025];
 
-	  printf ("Fingerprint found (%d bytes): ", (int)fpr_len);
-	  for (i = 0; i < fpr_len; i++)
-	    printf ("%02X", fpr[i]);
-	  putchar ('\n');
-	}
-      else
-	printf ("No fingerprint found\n");
+      printf ("Lookup on '%s'\n", name);
 
-      if (url)
-	printf ("URL found: %s\n", url);
-      else
-	printf ("No URL found\n");
+      err = resolve_dns_name (name, 0, 0, SOCK_STREAM, &aibuf, &cname);
+      if (err)
+        {
+          fprintf (stderr, PGM": resolving '%s' failed: %s\n",
+                   name, gpg_strerror (err));
+          exit (1);
+        }
 
+      if (cname)
+        printf ("cname: %s\n", cname);
+      for (ai = aibuf; ai; ai = ai->next)
+        {
+          printf ("%s %3d %3d   ",
+                  ai->family == AF_INET6? "inet6" :
+                  ai->family == AF_INET?  "inet4" : "?    ",
+                  ai->socktype, ai->protocol);
+
+          ret = getnameinfo (ai->addr, ai->addrlen,
+                             hostbuf, sizeof hostbuf,
+                             NULL, 0,
+                             NI_NUMERICHOST);
+          if (ret)
+            printf ("[getnameinfo failed: %s]\n", gai_strerror (ret));
+          else
+            printf ("%s\n", hostbuf);
+        }
+      xfree (cname);
+      free_dns_addrinfo (aibuf);
     }
 
-  xfree (key);
-  xfree (fpr);
-  xfree (url);
 
   return 0;
 }
