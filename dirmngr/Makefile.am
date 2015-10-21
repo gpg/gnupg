@@ -128,7 +128,7 @@ endif
 
 
 # http tests
-t_http_SOURCES = t-http.c http.c
+t_http_SOURCES = t-http.c http.c dns-stuff.c
 t_http_CFLAGS  = -DWITHOUT_NPTH=1 \
 	         $(LIBGCRYPT_CFLAGS) $(NTBTLS_CFLAGS) $(LIBGNUTLS_CFLAGS) \
                  $(GPG_ERROR_CFLAGS)
@@ -136,7 +136,8 @@ t_http_LDADD   = $(t_common_ldadd) \
 	         $(NTBTLS_LIBS) $(LIBGNUTLS_LIBS) $(DNSLIBS)
 
 t_ldap_parse_uri_SOURCES = \
-	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h http.c \
+	t-ldap-parse-uri.c ldap-parse-uri.c ldap-parse-uri.h \
+        http.c dns-stuff.c \
         $(ldap_url) $(t_common_src)
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd)

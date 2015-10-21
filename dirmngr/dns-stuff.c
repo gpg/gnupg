@@ -46,6 +46,10 @@
 # include <adns.h>
 #endif
 
+#if !defined(HAVE_GETADDRINFO) && !defined(USE_ADNS)
+# error Either getaddrinfo or the ADNS libary is required.
+#endif
+
 #include "util.h"
 #include "host2net.h"
 #include "dns-stuff.h"
