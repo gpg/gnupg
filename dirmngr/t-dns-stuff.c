@@ -1,5 +1,6 @@
-/* t-dns-cert.c - Module test for dns-cert.c
+/* t-dns-cert.c - Module test for dns-stuff.c
  * Copyright (C) 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2011, 2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -23,7 +24,7 @@
 #include <assert.h>
 
 #include "util.h"
-#include "dns-cert.h"
+#include "dns-stuff.h"
 
 
 int
@@ -49,7 +50,7 @@ main (int argc, char **argv)
     name = *argv;
   else
     {
-      fputs ("usage: t-dns-cert [name]\n", stderr);
+      fputs ("usage: t-dns-stuff [name]\n", stderr);
       return 1;
     }
 

@@ -1,7 +1,8 @@
-/* dns-cert.c - DNS CERT code (rfc-4398)
+/* dns-stuff.c - DNS related code including CERT RR (rfc-4398)
  * Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+ * Copyright (C) 2005, 2006, 2009, 2015 Werner Koch
  *
- * This file is part of GNUPG.
+ * This file is part of GnuPG.
  *
  * This file is free software; you can redistribute it and/or modify
  * it under the terms of either
@@ -48,7 +49,7 @@
 
 #include "util.h"
 #include "host2net.h"
-#include "dns-cert.h"
+#include "dns-stuff.h"
 
 /* Not every installation has gotten around to supporting CERTs
    yet... */

@@ -1,5 +1,6 @@
-/* dns-cert.h - DNS CERT definition
+/* dns-stuff.c - DNS related code including CERT RR (rfc-4398)
  * Copyright (C) 2006 Free Software Foundation, Inc.
+ * Copyright (C) 2006, 2015 Werner Koch
  *
  * This file is part of GnuPG.
  *
@@ -26,8 +27,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GNUPG_DIRMNGR_DNS_CERT_H
-#define GNUPG_DIRMNGR_DNS_CERT_H
+#ifndef GNUPG_DIRMNGR_DNS_STUFF_H
+#define GNUPG_DIRMNGR_DNS_STUFF_H
 
 
 #define DNS_CERTTYPE_ANY       0 /* Internal catch all type. */
@@ -47,7 +48,11 @@
 #define DNS_CERTTYPE_RRBASE 1024 /* Base of special constants.  */
 #define DNS_CERTTYPE_RR61   (DNS_CERTTYPE_RRBASE + 61)
 
+/* Calling this function switches the DNS code into Tor mode if
+   possibe.  Return 0 on success.  */
 gpg_error_t enable_dns_tormode (void);
+
+/* Return a CERT record or an arbitray RR.  */
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
                           unsigned char **r_fpr, size_t *r_fprlen,
@@ -55,4 +60,4 @@ gpg_error_t get_dns_cert (const char *name, int want_certtype,
 
 
 
-#endif /*GNUPG_DIRMNGR_DNS_CERT_H*/
+#endif /*GNUPG_DIRMNGR_DNS_STUFF_H*/

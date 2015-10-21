@@ -50,7 +50,7 @@
 #if USE_LDAP
 # include "ldap-parse-uri.h"
 #endif
-#include "dns-cert.h"
+#include "dns-stuff.h"
 #include "mbox-util.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
