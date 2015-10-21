@@ -1579,7 +1579,8 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
              since we don't accept a regexp on the sig unless it's a
              trust sig. */
           if (kr && (!kr->trust_regexp
-                     || opt.trust_model != TM_PGP
+                     || !(opt.trust_model == TM_PGP
+                          || opt.trust_model == TM_TOFU_PGP)
                      || (uidnode
                          && check_regexp(kr->trust_regexp,
                                          uidnode->pkt->pkt.user_id->name))))
@@ -1589,7 +1590,8 @@ validate_one_keyblock (KBNODE kb, struct key_item *klist,
                  lesser trust sig or value.  I could make a decent
                  argument for any of these cases, but this seems to be
                  what PGP does, and I'd like to be compatible. -dms */
-              if (opt.trust_model == TM_PGP
+              if ((opt.trust_model == TM_PGP
+                   || opt.trust_model == TM_TOFU_PGP)
                   && sig->trust_depth
                   && pk->trust_timestamp <= sig->timestamp)
 		{
