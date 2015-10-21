@@ -111,6 +111,8 @@ void clean_key (kbnode_t keyblock, int noisy, int self_only,
 /*-- trustdb.c --*/
 void tdb_register_trusted_keyid (u32 *keyid);
 void tdb_register_trusted_key (const char *string);
+/* Returns whether KID is on the list of ultimately trusted keys.  */
+int tdb_keyid_is_utk (u32 *kid);
 void check_trustdb (void);
 void update_trustdb (void);
 int setup_trustdb( int level, const char *dbname );

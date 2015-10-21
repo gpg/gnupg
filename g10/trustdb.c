@@ -229,13 +229,8 @@ add_utk (u32 *kid)
 {
   struct key_item *k;
 
-  for (k = utk_list; k; k = k->next)
-    {
-      if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
-        {
-          return 0;
-        }
-    }
+  if (tdb_keyid_is_utk (kid))
+    return 0;
 
   k = new_key_item ();
   k->kid[0] = kid[0];
@@ -317,6 +312,18 @@ verify_own_keys(void)
   return;
 }
 
+/* Returns whether KID is on the list of ultimately trusted keys.  */
+int
+tdb_keyid_is_utk (u32 *kid)
+{
+  struct key_item *k;
+
+  for (k = utk_list; k; k = k->next)
+    if (k->kid[0] == kid[0] && k->kid[1] == kid[1])
+      return 1;
+
+  return 0;
+}
 
 /*********************************************
  *********** TrustDB stuff *******************
