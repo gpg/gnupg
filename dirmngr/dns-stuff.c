@@ -62,7 +62,7 @@
 /* If set Tor mode shall be used.  */
 static int tor_mode;
 
-/* Sets the module in TOR mode.  Returns 0 is this is possible or an
+/* Sets the module in Tor mode.  Returns 0 is this is possible or an
    error code.  */
 gpg_error_t
 enable_dns_tormode (void)

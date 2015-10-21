@@ -757,7 +757,7 @@ http_raw_connect (http_t *r_hd, const char *server, unsigned short port,
       if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
 #endif
         {
-          log_error ("TOR support is not available\n");
+          log_error ("Tor support is not available\n");
           return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
         }
     }
@@ -1479,7 +1479,7 @@ send_request (http_t hd, const char *httphost, const char *auth,
       if (assuan_sock_get_flag (ASSUAN_INVALID_FD, "tor-mode", &mode) || !mode)
 #endif
         {
-          log_error ("TOR support is not available\n");
+          log_error ("Tor support is not available\n");
           return gpg_err_make (default_errsource, GPG_ERR_NOT_IMPLEMENTED);
         }
     }

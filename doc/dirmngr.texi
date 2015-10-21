@@ -238,8 +238,8 @@ useful for debugging.
 
 @item --use-tor
 @opindex use-tor
-This option switches Dirmngr and thus GnuPG into ``TOR mode'' to route
-all network access via TOR (an anonymity network).  WARNING: As of now
+This option switches Dirmngr and thus GnuPG into ``Tor mode'' to route
+all network access via Tor (an anonymity network).  WARNING: As of now
 this still leaks the DNS queries; e.g. to lookup the hosts in a
 keyserver pool.  Certain other features are disabled if this mode is
 active.

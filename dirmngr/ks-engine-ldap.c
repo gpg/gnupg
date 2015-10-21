@@ -838,8 +838,8 @@ ks_ldap_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec,
 
   if (opt.use_tor)
     {
-      /* For now we do not support LDAP over TOR.  */
-      log_error (_("LDAP access not possible due to TOR mode\n"));
+      /* For now we do not support LDAP over Tor.  */
+      log_error (_("LDAP access not possible due to Tor mode\n"));
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
@@ -1021,8 +1021,8 @@ ks_ldap_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   if (opt.use_tor)
     {
-      /* For now we do not support LDAP over TOR.  */
-      log_error (_("LDAP access not possible due to TOR mode\n"));
+      /* For now we do not support LDAP over Tor.  */
+      log_error (_("LDAP access not possible due to Tor mode\n"));
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
@@ -1897,8 +1897,8 @@ ks_ldap_put (ctrl_t ctrl, parsed_uri_t uri,
 
   if (opt.use_tor)
     {
-      /* For now we do not support LDAP over TOR.  */
-      log_error (_("LDAP access not possible due to TOR mode\n"));
+      /* For now we do not support LDAP over Tor.  */
+      log_error (_("LDAP access not possible due to Tor mode\n"));
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 

@@ -218,7 +218,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
                 N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
 
-  ARGPARSE_s_n (oUseTor, "use-tor", N_("route all network traffic via TOR")),
+  ARGPARSE_s_n (oUseTor, "use-tor", N_("route all network traffic via Tor")),
 
   ARGPARSE_s_s (oSocketName, "socket-name", "@"),  /* Only for debugging.  */
 
@@ -474,7 +474,7 @@ set_tor_mode (void)
       if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
 #endif
         {
-          log_error ("error enabling TOR mode: %s\n", strerror (errno));
+          log_error ("error enabling Tor mode: %s\n", strerror (errno));
           log_info ("(is your Libassuan recent enough?)\n");
         }
     }
@@ -1001,7 +1001,7 @@ main (int argc, char **argv)
   if (opt.use_tor)
     {
       log_info ("WARNING: ***************************************\n");
-      log_info ("WARNING: TOR mode (--use-tor) MAY NOT FULLY WORK!\n");
+      log_info ("WARNING: Tor mode (--use-tor) MAY NOT FULLY WORK!\n");
       log_info ("WARNING: ***************************************\n");
     }
 

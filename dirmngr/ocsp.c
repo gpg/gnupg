@@ -134,9 +134,9 @@ do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
 
   if (opt.use_tor)
     {
-      /* For now we do not allow OCSP via TOR due to possible privacy
+      /* For now we do not allow OCSP via Tor due to possible privacy
          concerns.  Needs further research.  */
-      log_error (_("OCSP request not possible due to TOR mode\n"));
+      log_error (_("OCSP request not possible due to Tor mode\n"));
       return gpg_error (GPG_ERR_NOT_SUPPORTED);
     }
 
