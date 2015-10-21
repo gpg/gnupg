@@ -25,6 +25,9 @@
 
 /* Forward declaration for an object defined in server.c.  */
 struct server_local_s;
+/* Forward declaration for an object defined in call-syshelp.c.  */
+struct call_syshelp_s;
+
 
 /* Session control object.  This object is passed down to most
    functions.  The default values for it are set by
@@ -34,6 +37,7 @@ struct server_control_s
   int no_server;      /* We are not running under server control */
   int  status_fd;     /* Only for non-server mode */
   struct server_local_s *server_local;
+  struct call_syshelp_s *syshelp_local;
 
   int agent_seen;     /* Flag indicating that the gpg-agent has been
                          accessed.  */
@@ -47,6 +51,7 @@ struct server_control_s
 
 
 /*-- g13.c --*/
-void g13_init_default_ctrl (struct server_control_s *ctrl);
+void g13_init_default_ctrl (ctrl_t ctrl);
+void g13_deinit_default_ctrl (ctrl_t ctrl);
 
 #endif /*G13_H*/

@@ -23,7 +23,8 @@
 #include "../common/membuf.h"
 #include "utils.h"  /* For tupledesc_t */
 
-int         be_is_supported_conttype (int conttype);
+int be_parse_conttype_name (const char *name);
+int be_is_supported_conttype (int conttype);
 gpg_error_t be_get_detached_name (int conttype, const char *fname,
                                   char **r_name, int *r_isdir);
 gpg_error_t be_create_new_keys (int conttype, membuf_t *mb);

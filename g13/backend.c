@@ -41,6 +41,38 @@ no_such_backend (int conttype)
 }
 
 
+/* Parse NAME and return the corresponding content type.  If the name
+   is not known, a error message is printed and zero returned.  If
+   NAME is NULL the supported backend types are listed and 0 is
+   returned. */
+int
+be_parse_conttype_name (const char *name)
+{
+  static struct { const char *name; int conttype; } names[] = {
+    { "encfs",    CONTTYPE_ENCFS },
+    { "dm-crypt", CONTTYPE_DM_CRYPT }
+  };
+  int i;
+
+  if (!name)
+    {
+      log_info ("Known backend types:\n");
+      for (i=0; i < DIM (names); i++)
+        log_info ("    %s\n", names[i].name);
+      return 0;
+    }
+
+  for (i=0; i < DIM (names); i++)
+    {
+      if (!strcmp (names[i].name, name))
+        return names[i].conttype;
+    }
+
+  log_error ("invalid backend type '%s' given\n", name);
+  return 0;
+}
+
+
 /* Return true if CONTTYPE is supported by us.  */
 int
 be_is_supported_conttype (int conttype)
@@ -74,6 +106,9 @@ be_get_detached_name (int conttype, const char *fname,
     {
     case CONTTYPE_ENCFS:
       return be_encfs_get_detached_name (fname, r_name, r_isdir);
+
+    case CONTTYPE_DM_CRYPT:
+      return 0;
 
     default:
       return no_such_backend (conttype);
