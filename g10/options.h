@@ -24,6 +24,7 @@
 #include <types.h>
 #include "main.h"
 #include "packet.h"
+#include "tofu.h"
 #include "../common/session-env.h"
 
 #ifndef EXTERN_UNLESS_MAIN_MODULE
@@ -125,9 +126,7 @@ struct
     {
       TOFU_DB_AUTO=0, TOFU_DB_SPLIT, TOFU_DB_FLAT
     } tofu_db_format;
-  /* TOFU_BINDING_BAD, TOFU_BINDING_ASK, TOFU_BINDING_AUTO, or
-     TOFU_BINDING_GOOD.  */
-  int tofu_default_policy;
+  enum tofu_policy tofu_default_policy;
   int force_ownertrust;
   enum
     {

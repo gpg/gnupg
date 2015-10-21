@@ -615,11 +615,6 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
-enum tofu_policy
-  {
-    tofu_policy
-  };
-
 gpg_error_t
 tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
