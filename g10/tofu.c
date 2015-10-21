@@ -516,7 +516,7 @@ opendb (char *filename, enum db_type type)
 
    TYPE must be either DB_MAIL or DB_KEY.  In the combined format, the
    combined DB is always returned.  */
-static sqlite3 *
+static struct db *
 getdb (struct db *dbs, const char *name, enum db_type type)
 {
   struct db *t = NULL;
@@ -539,7 +539,7 @@ getdb (struct db *dbs, const char *name, enum db_type type)
     {
       assert (dbs->db);
       assert (! dbs->next);
-      return dbs->db;
+      return dbs;
     }
   else
     /* When using the split format the first entry on the DB list is a
@@ -608,7 +608,7 @@ getdb (struct db *dbs, const char *name, enum db_type type)
 
   if (! t)
     return NULL;
-  return t->db;
+  return t;
 }
 
 
@@ -793,7 +793,7 @@ static gpg_error_t
 record_binding (struct db *dbs, const char *fingerprint, const char *email,
 		const char *user_id, enum tofu_policy policy, int show_old)
 {
-  sqlite3 *db_email = NULL, *db_key = NULL;
+  struct db *db_email = NULL, *db_key = NULL;
   int rc;
   char *err = NULL;
   enum tofu_policy policy_old = TOFU_POLICY_NONE;
@@ -820,7 +820,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
       if (! db_key)
 	return gpg_error (GPG_ERR_GENERAL);
 
-      rc = sqlite3_exec (db_email, "begin transaction;", NULL, NULL, &err);
+      rc = sqlite3_exec (db_email->db, "begin transaction;", NULL, NULL, &err);
       if (rc)
 	{
 	  log_error (_("error beginning transaction on TOFU %s database: %s\n"),
@@ -829,7 +829,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
 	  return gpg_error (GPG_ERR_GENERAL);
 	}
 
-      rc = sqlite3_exec (db_key, "begin transaction;", NULL, NULL, &err);
+      rc = sqlite3_exec (db_key->db, "begin transaction;", NULL, NULL, &err);
       if (rc)
 	{
 	  log_error (_("error beginning transaction on TOFU %s database: %s\n"),
@@ -845,7 +845,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
        there is a failure.  */
     {
       rc = sqlite3_exec_printf
-	(db_email, get_single_long_cb, &policy_old, &err,
+	(db_email->db, get_single_long_cb, &policy_old, &err,
 	 "select policy from bindings where fingerprint = %Q and email = %Q",
 	 fingerprint, email);
       if (rc)
@@ -876,7 +876,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
     goto out;
 
   rc = sqlite3_exec_printf
-    (db_email, NULL, NULL, &err,
+    (db_email->db, NULL, NULL, &err,
      "insert or replace into bindings\n"
      " (oid, fingerprint, email, user_id, time, policy)\n"
      " values (\n"
@@ -902,7 +902,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
       assert (opt.tofu_db_format == TOFU_DB_SPLIT);
 
       rc = sqlite3_exec_printf
-	(db_key, NULL, NULL, &err,
+	(db_key->db, NULL, NULL, &err,
 	 "insert or replace into bindings\n"
 	 " (oid, fingerprint, email, user_id)\n"
 	 " values (\n"
@@ -930,7 +930,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
     {
       int rc2;
 
-      rc2 = sqlite3_exec_printf (db_key, NULL, NULL, &err,
+      rc2 = sqlite3_exec_printf (db_key->db, NULL, NULL, &err,
 				 rc ? "rollback;" : "end transaction;");
       if (rc2)
 	{
@@ -940,7 +940,7 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
 	}
 
     out_revert_one:
-      rc2 = sqlite3_exec_printf (db_email, NULL, NULL, &err,
+      rc2 = sqlite3_exec_printf (db_email->db, NULL, NULL, &err,
 				 rc ? "rollback;" : "end transaction;");
       if (rc2)
 	{
@@ -1157,7 +1157,7 @@ static enum tofu_policy
 get_policy (struct db *dbs, const char *fingerprint, const char *email,
 	    char **conflict)
 {
-  sqlite3 *db;
+  struct db *db;
   int rc;
   char *err = NULL;
   strlist_t strlist = NULL;
@@ -1173,7 +1173,7 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
      still TOFU_POLICY_NONE after executing the query, then the
      result set was empty.)  */
   rc = sqlite3_exec_printf
-    (db, strings_collect_cb, &strlist, &err,
+    (db->db, strings_collect_cb, &strlist, &err,
      "select policy, conflict from bindings\n"
      " where fingerprint = %Q and email = %Q",
      fingerprint, email);
@@ -1267,7 +1267,7 @@ static enum tofu_policy
 get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
-  sqlite3 *db;
+  struct db *db;
   enum tofu_policy policy;
   char *conflict = NULL;
   int rc;
@@ -1415,7 +1415,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
      also be returned.  Thus, if the result set is empty, then this is
      a new binding.  */
   rc = sqlite3_exec_printf
-    (db, strings_collect_cb, &bindings_with_this_email, &err,
+    (db->db, strings_collect_cb, &bindings_with_this_email, &err,
      "select distinct fingerprint from bindings where email = %Q;",
      email);
   if (rc)
@@ -1544,7 +1544,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
     /* Find other user ids associated with this key and whether the
        bindings are marked as good or bad.  */
     {
-      sqlite3 *db_key;
+      struct db *db_key;
 
       if (opt.tofu_db_format == TOFU_DB_SPLIT)
 	/* In the split format, we need to search in the fingerprint
@@ -1557,7 +1557,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
       if (db_key)
 	{
 	  rc = sqlite3_exec_printf
-	    (db_key, strings_collect_cb, &other_user_ids, &err,
+	    (db_key->db, strings_collect_cb, &other_user_ids, &err,
 	     "select user_id, %s from bindings where fingerprint = %Q;",
 	     opt.tofu_db_format == TOFU_DB_SPLIT ? "email" : "policy",
 	     fingerprint);
@@ -1606,7 +1606,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
        embedded in the signature (column 'sig_time') or the time that
        we first verified the signature (column 'time').  */
     rc = sqlite3_exec_printf
-      (db, signature_stats_collect_cb, &stats, &err,
+      (db->db, signature_stats_collect_cb, &stats, &err,
        "select fingerprint, policy, time_ago, count(*)\n"
        " from (select bindings.*,\n"
        "        case\n"
@@ -1798,7 +1798,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	/* If we weren't allowed to ask, also update this key as
 	   conflicting with itself.  */
 	rc = sqlite3_exec_printf
-	  (db, NULL, NULL, &err,
+	  (db->db, NULL, NULL, &err,
 	   "update bindings set policy = %d, conflict = %Q"
 	   " where email = %Q"
 	   "  and (policy = %d or (policy = %d and fingerprint = %Q));",
@@ -1806,7 +1806,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	   TOFU_POLICY_ASK, fingerprint);
       else
 	rc = sqlite3_exec_printf
-	  (db, NULL, NULL, &err,
+	  (db->db, NULL, NULL, &err,
 	   "update bindings set policy = %d, conflict = %Q"
 	   " where email = %Q and fingerprint != %Q and policy = %d;",
 	   TOFU_POLICY_ASK, fingerprint, email, fingerprint, TOFU_POLICY_AUTO);
@@ -1829,7 +1829,7 @@ show_statistics (struct db *dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 const char *sig_exclude)
 {
-  sqlite3 *db;
+  struct db *db;
   int rc;
   strlist_t strlist = NULL;
   char *err = NULL;
@@ -1839,7 +1839,7 @@ show_statistics (struct db *dbs, const char *fingerprint,
     return;
 
   rc = sqlite3_exec_printf
-    (db, strings_collect_cb, &strlist, &err,
+    (db->db, strings_collect_cb, &strlist, &err,
      "select count (*), strftime('%%s','now') - min (signatures.time)\n"
      " from signatures\n"
      " left join bindings on signatures.binding = bindings.oid\n"
@@ -2175,7 +2175,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 	       time_t sig_time, const char *origin, int may_ask)
 {
   struct db *dbs;
-  sqlite3 *db;
+  struct db *db;
   char *fingerprint = NULL;
   char *email = NULL;
   char *err = NULL;
@@ -2228,7 +2228,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
-  rc = sqlite3_exec (db, "begin transaction;", NULL, NULL, &err);
+  rc = sqlite3_exec (db->db, "begin transaction;", NULL, NULL, &err);
   if (rc)
     {
       log_error (_("error beginning transaction on TOFU database: %s\n"), err);
@@ -2239,7 +2239,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   /* If we've already seen this signature before, then don't add
      it again.  */
   rc = sqlite3_exec_printf
-    (db, get_single_unsigned_long_cb, &c, &err,
+    (db->db, get_single_unsigned_long_cb, &c, &err,
      "select count (*)\n"
      " from signatures left join bindings\n"
      "  on signatures.binding = bindings.oid\n"
@@ -2282,7 +2282,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
       assert (c == 0);
 
       rc = sqlite3_exec_printf
-	(db, NULL, NULL, &err,
+	(db->db, NULL, NULL, &err,
 	 "insert into signatures\n"
 	 " (binding, sig_digest, origin, sig_time, time)\n"
 	 " values\n"
@@ -2302,9 +2302,9 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   /* It only matters whether we abort or commit the transaction
      (so long as we do something) if we execute the insert.  */
   if (rc)
-    rc = sqlite3_exec (db, "rollback;", NULL, NULL, &err);
+    rc = sqlite3_exec (db->db, "rollback;", NULL, NULL, &err);
   else
-    rc = sqlite3_exec (db, "commit transaction;", NULL, NULL, &err);
+    rc = sqlite3_exec (db->db, "commit transaction;", NULL, NULL, &err);
   if (rc)
     {
       log_error (_("error ending transaction on TOFU database: %s\n"), err);
