@@ -459,9 +459,11 @@ init_trustdb ()
       opt.trust_model=tdbio_read_model();
 
       /* Sanity check this ;) */
-      if(opt.trust_model!=TM_CLASSIC
-	 && opt.trust_model!=TM_PGP
-	 && opt.trust_model!=TM_EXTERNAL)
+      if(opt.trust_model != TM_CLASSIC
+	 && opt.trust_model != TM_PGP
+	 && opt.trust_model != TM_TOFU_PGP
+	 && opt.trust_model != TM_TOFU
+	 && opt.trust_model != TM_EXTERNAL)
 	{
 	  log_info(_("unable to use unknown trust model (%d) - "
 		     "assuming %s trust model\n"),opt.trust_model,"PGP");
@@ -472,7 +474,8 @@ init_trustdb ()
 	log_info(_("using %s trust model\n"),trust_model_string());
     }
 
-  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+  if (opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC
+      || opt.trust_model == TM_TOFU || opt.trust_model == TM_TOFU_PGP)
     {
       /* Verify the list of ultimately trusted keys and move the
 	 --trusted-keys list there as well. */
@@ -494,7 +497,8 @@ void
 check_trustdb ()
 {
   init_trustdb();
-  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+  if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
+      || opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU)
     {
       if (opt.batch && !opt.answer_yes)
 	{
@@ -530,7 +534,8 @@ void
 update_trustdb()
 {
   init_trustdb();
-  if(opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC)
+  if (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
+      || opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU)
     validate_keys (1);
   else
     log_info (_("no need for a trustdb update with '%s' trust model\n"),
@@ -946,7 +951,8 @@ tdb_check_trustdb_stale (void)
     return;  /* No trustdb => can't be stale.  */
 
   if (!did_nextcheck
-      && (opt.trust_model==TM_PGP || opt.trust_model==TM_CLASSIC))
+      && (opt.trust_model == TM_PGP || opt.trust_model == TM_CLASSIC
+          || opt.trust_model == TM_TOFU_PGP || opt.trust_model == TM_TOFU))
     {
       ulong scheduled;
 
@@ -1937,6 +1943,11 @@ validate_keys (int interactive)
       release_kbnode (keyblock);
       do_sync ();
     }
+
+  if (opt.trust_model == TM_TOFU)
+    /* In the TOFU trust model, we only need to save the ultimately
+       trusted keys.  */
+    goto leave;
 
   klist = utk_list;
 
