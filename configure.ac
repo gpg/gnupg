@@ -114,7 +114,7 @@ GNUPG_BUILD_PROGRAM(gpgsm, yes)
 # The agent is a required part and can't be disabled anymore.
 build_agent=yes
 GNUPG_BUILD_PROGRAM(scdaemon, yes)
-GNUPG_BUILD_PROGRAM(g13, yes)
+GNUPG_BUILD_PROGRAM(g13, no)
 GNUPG_BUILD_PROGRAM(dirmngr, yes)
 GNUPG_BUILD_PROGRAM(tools, yes)
 GNUPG_BUILD_PROGRAM(doc, yes)
