@@ -38,6 +38,7 @@
 #include "dirmngr.h"
 #include "misc.h"
 #include "userids.h"
+#include "dns-stuff.h"
 #include "ks-engine.h"
 
 /* Substitutes for missing Mingw macro.  The EAI_SYSTEM mechanism
@@ -240,7 +241,7 @@ select_random_host (int *table)
    0 on success or an EAI error code.  True is stored at R_ISNUMERIC
    if HOST has a numeric IP address. */
 static int
-my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen,
+my_getnameinfo (dns_addrinfo_t ai, char *host, size_t hostlen,
                 int numeric, int *r_isnumeric)
 {
   int ec;
@@ -254,7 +255,7 @@ my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen,
   if (numeric)
     ec = EAI_NONAME;
   else
-    ec = getnameinfo (ai->ai_addr, ai->ai_addrlen,
+    ec = getnameinfo (ai->addr, ai->addrlen,
                       host, hostlen, NULL, 0, NI_NAMEREQD);
 
   if (!ec && *host == '[')
@@ -262,14 +263,14 @@ my_getnameinfo (struct addrinfo *ai, char *host, size_t hostlen,
   else if (ec == EAI_NONAME)
     {
       p = host;
-      if (ai->ai_family == AF_INET6)
+      if (ai->family == AF_INET6)
         {
           *p++ = '[';
           hostlen -= 2;
         }
-      ec = getnameinfo (ai->ai_addr, ai->ai_addrlen,
+      ec = getnameinfo (ai->addr, ai->addrlen,
                         p, hostlen, NULL, 0, NI_NUMERICHOST);
-      if (!ec && ai->ai_family == AF_INET6)
+      if (!ec && ai->family == AF_INET6)
         strcat (host, "]");
 
       *r_isnumeric = 1;
@@ -347,11 +348,12 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
   if (idx == -1)
     {
       /* We never saw this host.  Allocate a new entry.  */
-      struct addrinfo hints, *aibuf, *ai;
+      dns_addrinfo_t aibuf, ai;
       int *reftbl;
       size_t reftblsize;
       int refidx;
       int is_pool = 0;
+      char *cname;
 
       reftblsize = 100;
       reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
@@ -370,15 +372,13 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
 
       /* Find all A records for this entry and put them into the pool
          list - if any.  */
-      memset (&hints, 0, sizeof (hints));
-      hints.ai_family = AF_UNSPEC;
-      hints.ai_socktype = SOCK_STREAM;
-      hints.ai_flags = AI_CANONNAME;
-      /* We can't use the the AI_IDN flag because that does the
-         conversion using the current locale.  However, GnuPG always
-         used UTF-8.  To support IDN we would need to make use of the
-         libidn API.  */
-      if (!getaddrinfo (name, NULL, &hints, &aibuf))
+      err = resolve_dns_name (name, 0, 0, SOCK_STREAM, &aibuf, &cname);
+      if (err)
+        {
+          log_error ("resolving '%s' failed: %s\n", name, gpg_strerror (err));
+          err = 0;
+        }
+      else
         {
           int n_v6, n_v4;
 
@@ -388,19 +388,22 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
              with the IP addresses.  If it is not a pool, we use the
              specified name. */
           n_v6 = n_v4 = 0;
-          for (ai = aibuf; ai; ai = ai->ai_next)
+          for (ai = aibuf; ai; ai = ai->next)
             {
-              if (ai->ai_family != AF_INET6)
+              if (ai->family != AF_INET6)
                 n_v6++;
-              else if (ai->ai_family != AF_INET)
+              else if (ai->family != AF_INET)
                 n_v4++;
             }
           if (n_v6 > 1 || n_v4 > 1)
             is_pool = 1;
-          if (is_pool && aibuf->ai_canonname)
-            hi->cname = xtrystrdup (aibuf->ai_canonname);
+          if (is_pool && cname)
+            {
+              hi->cname = cname;
+              cname = NULL;
+            }
 
-          for (ai = aibuf; ai; ai = ai->ai_next)
+          for (ai = aibuf; ai; ai = ai->next)
             {
               char tmphost[NI_MAXHOST + 2];
               int tmpidx;
@@ -408,7 +411,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
               int ec;
               int i;
 
-              if (ai->ai_family != AF_INET && ai->ai_family != AF_INET6)
+              if (ai->family != AF_INET && ai->family != AF_INET6)
                 continue;
 
               dirmngr_tick (ctrl);
@@ -474,13 +477,13 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                                       gai_strerror (ec));
                         }
 
-                      if (ai->ai_family == AF_INET6)
+                      if (ai->family == AF_INET6)
                         {
                           hosttable[tmpidx]->v6 = 1;
                           xfree (hosttable[tmpidx]->v6addr);
                           hosttable[tmpidx]->v6addr = ipaddr;
                         }
-                      else if (ai->ai_family == AF_INET)
+                      else if (ai->family == AF_INET)
                         {
                           hosttable[tmpidx]->v4 = 1;
                           xfree (hosttable[tmpidx]->v4addr);
@@ -497,9 +500,11 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                     }
                 }
             }
-          freeaddrinfo (aibuf);
         }
       reftbl[refidx] = -1;
+      xfree (cname);
+      free_dns_addrinfo (aibuf);
+
       if (refidx && is_pool)
         {
           assert (!hi->pool);
