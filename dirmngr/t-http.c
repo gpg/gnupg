@@ -243,6 +243,9 @@ main (int argc, char **argv)
   if (!cafile)
     cafile = prepend_srcdir ("tls-ca.pem");
 
+  /* http.c makes use of the assuan socket wrapper.  */
+  assuan_sock_init ();
+
 #if HTTP_USE_NTBTLS
 
   (void)err;

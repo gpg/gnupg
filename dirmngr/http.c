@@ -98,6 +98,7 @@
 
 #include "util.h"
 #include "i18n.h"
+#include "dns-stuff.h"
 #include "http.h"
 #ifdef USE_DNS_SRV
 # include "srv.h"
@@ -2213,6 +2214,7 @@ static assuan_fd_t
 connect_server (const char *server, unsigned short port,
                 unsigned int flags, const char *srvtag, int *r_host_not_found)
 {
+  gpg_error_t err;
   assuan_fd_t sock = ASSUAN_INVALID_FD;
   int srvcount = 0;
   int hostfound = 0;
@@ -2293,36 +2295,36 @@ connect_server (const char *server, unsigned short port,
       srvcount = 1;
     }
 
-#ifdef HAVE_GETADDRINFO
   connected = 0;
   for (srv=0; srv < srvcount && !connected; srv++)
     {
-      struct addrinfo hints, *res, *ai;
-      char portstr[35];
+      dns_addrinfo_t aibuf, ai;
 
-      snprintf (portstr, sizeof portstr, "%hu", port);
-      memset (&hints, 0, sizeof (hints));
-      hints.ai_socktype = SOCK_STREAM;
-      if (getaddrinfo (serverlist[srv].target, portstr, &hints, &res))
-        continue; /* Not found - try next one. */
+      err = resolve_dns_name (serverlist[srv].target, port, 0, SOCK_STREAM,
+                              &aibuf, NULL);
+      if (err)
+        {
+          log_info ("resolving '%s' failed: %s\n",
+                    serverlist[srv].target, gpg_strerror (err));
+          continue; /* Not found - try next one. */
+        }
       hostfound = 1;
 
-      for (ai = res; ai && !connected; ai = ai->ai_next)
+      for (ai = aibuf; ai && !connected; ai = ai->next)
         {
-          if (ai->ai_family == AF_INET && (flags & HTTP_FLAG_IGNORE_IPv4))
+          if (ai->family == AF_INET && (flags & HTTP_FLAG_IGNORE_IPv4))
             continue;
-          if (ai->ai_family == AF_INET6 && (flags & HTTP_FLAG_IGNORE_IPv6))
+          if (ai->family == AF_INET6 && (flags & HTTP_FLAG_IGNORE_IPv6))
             continue;
 
           if (sock != ASSUAN_INVALID_FD)
             assuan_sock_close (sock);
-          sock = assuan_sock_new (ai->ai_family, ai->ai_socktype,
-                                  ai->ai_protocol);
+          sock = assuan_sock_new (ai->family, ai->socktype, ai->protocol);
           if (sock == ASSUAN_INVALID_FD)
             {
               int save_errno = errno;
               log_error ("error creating socket: %s\n", strerror (errno));
-              freeaddrinfo (res);
+              free_dns_addrinfo (aibuf);
               xfree (serverlist);
               errno = save_errno;
               return ASSUAN_INVALID_FD;
@@ -2330,77 +2332,15 @@ connect_server (const char *server, unsigned short port,
 
           anyhostaddr = 1;
           my_unprotect ();
-          ret = assuan_sock_connect (sock, ai->ai_addr, ai->ai_addrlen);
+          ret = assuan_sock_connect (sock, ai->addr, ai->addrlen);
           my_protect ();
           if (ret)
             last_errno = errno;
           else
             connected = 1;
         }
-      freeaddrinfo (res);
+      free_dns_addrinfo (aibuf);
     }
-#else /* !HAVE_GETADDRINFO */
-  connected = 0;
-  for (srv=0; srv < srvcount && !connected; srv++)
-    {
-      int i;
-      struct hostent *host = NULL;
-      struct sockaddr_in addr;
-
-      /* Note: This code is not thread-safe.  */
-
-      memset (&addr, 0, sizeof (addr));
-      host = gethostbyname (serverlist[srv].target);
-      if (!host)
-        continue;
-      hostfound = 1;
-
-      if (sock != ASSUAN_INVALID_FD)
-        assuan_sock_close (sock);
-      sock = assuan_sock_new (host->h_addrtype, SOCK_STREAM, 0);
-      if (sock == ASSUAN_INVALID_FD)
-        {
-          log_error ("error creating socket: %s\n", strerror (errno));
-          xfree (serverlist);
-          return ASSUAN_INVALID_FD;
-        }
-
-      addr.sin_family = host->h_addrtype;
-      if (addr.sin_family != AF_INET)
-	{
-	  log_error ("unknown address family for '%s'\n",
-                     serverlist[srv].target);
-          xfree (serverlist);
-	  return ASSUAN_INVALID_FD;
-	}
-      addr.sin_port = htons (serverlist[srv].port);
-      if (host->h_length != 4)
-        {
-          log_error ("illegal address length for '%s'\n",
-                     serverlist[srv].target);
-          xfree (serverlist);
-          return ASSUAN_INVALID_FD;
-        }
-
-      /* Try all A records until one responds. */
-      for (i = 0; host->h_addr_list[i] && !connected; i++)
-        {
-          anyhostaddr = 1;
-          memcpy (&addr.sin_addr, host->h_addr_list[i], host->h_length);
-          my_unprotect ();
-          ret = assuan_sock_connect (sock,
-                                     (struct sockaddr *) &addr, sizeof (addr));
-          my_protect ();
-          if (ret)
-            last_errno = errno;
-          else
-            {
-              connected = 1;
-              break;
-            }
-        }
-    }
-#endif /* !HAVE_GETADDRINFO */
 
   xfree (serverlist);
 
