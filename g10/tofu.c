@@ -1295,6 +1295,58 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
     return _tofu_GET_TRUST_ERROR;
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
+  if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
+    /* See if the key is ultimately trusted.  If so, we're done.  */
+    {
+      int i, j;
+      char keyid[17];
+      KEYDB_SEARCH_DESC desc;
+
+      /* We need to convert the fingerprint as a string to a long
+         keyid.
+
+         FINGERPRINT has the form:
+
+           362D 3527 F53A AD19 71AA  FDE6 5885 9975 EE37 CF96
+                                          -------------------
+
+         The last 16 characters are the long keyid.
+      */
+      assert (strlen (fingerprint) > 4 * 4 + 3);
+      for (i = strlen (fingerprint) - (4 * 4 + 3), j = 0; j < 16; i ++, j ++)
+        {
+          if (fingerprint[i] == ' ')
+            i ++;
+          keyid[j] = fingerprint[i];
+        }
+      keyid[j] = 0;
+
+      rc = classify_user_id (keyid, &desc, 1);
+      if (rc || desc.mode != KEYDB_SEARCH_MODE_LONG_KID)
+        {
+          log_error (_("'%s' is not a valid long keyID\n"), keyid);
+          return _tofu_GET_TRUST_ERROR;
+        }
+
+      if (tdb_keyid_is_utk (desc.u.kid))
+        {
+          if (policy == TOFU_POLICY_NONE)
+            {
+              if (record_binding (dbs, fingerprint, email, user_id,
+                                  TOFU_POLICY_AUTO, 0) != 0)
+                {
+                  log_error (_("error setting TOFU binding's trust level to %s\n"),
+                             "auto");
+                  trust_level = _tofu_GET_TRUST_ERROR;
+                  goto out;
+                }
+            }
+
+          trust_level = TRUST_ULTIMATE;
+          goto out;
+        }
+    }
+
   if (policy == TOFU_POLICY_AUTO)
     {
       policy = opt.tofu_default_policy;
@@ -2261,7 +2313,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
     }
 
  die:
-  if (may_ask)
+  if (may_ask && trust_level != TRUST_ULTIMATE)
     /* It's only appropriate to show the statistics in an interactive
        context.  */
     show_statistics (dbs, fingerprint, email, user_id,
@@ -2367,7 +2419,7 @@ tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
     /* An error.  */
     trust_level = TRUST_UNDEFINED;
 
-  if (may_ask)
+  if (may_ask && trust_level != TRUST_ULTIMATE)
     show_statistics (dbs, fingerprint, email, user_id, NULL);
 
  die:
