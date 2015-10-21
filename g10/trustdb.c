@@ -2097,7 +2097,8 @@ validate_keys (int interactive)
  leave:
   keydb_release (kdb);
   release_key_array (keys);
-  release_key_items (klist);
+  if (klist != utk_list)
+    release_key_items (klist);
   release_key_hash_table (full_trust);
   release_key_hash_table (used);
   release_key_hash_table (stored);
