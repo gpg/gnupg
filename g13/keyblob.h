@@ -20,7 +20,8 @@
 #ifndef G13_KEYBLOB_H
 #define G13_KEYBLOB_H
 
-/* The header block is the actual core of G13.  Here is the format:
+/* The setup area (header block) is the actual core of G13.  Here is
+   the format:
 
    u8   Packet type.  Value is 61 (0x3d).
    u8   Constant value 255 (0xff).
@@ -29,7 +30,7 @@
           u8   Version.  Value is 1.
           u8   reserved
           u8   reserved
-          u8   OS Flag:  reserved, should be 0.
+          u8   OS Flag:  0 = unspecified, 1 = Linux
           u32  Length of the entire header.  This includes all bytes
                starting at the packet type and ending with the last
                padding byte of the header.
@@ -37,9 +38,9 @@
           u8   Number of copies of this header at the end of the
                container (usually 0).
           b6   reserved
-   n bytes: OpenPGP encrypted and optionally signed message.
-   n bytes: CMS encrypted and optionally signed packet.  Such a CMS
-            packet will be enclosed in a a private flagged OpenPGP
+   n bytes: OpenPGP encrypted and optionally signed keyblob.
+   n bytes: CMS encrypted and optionally signed keyblob.  Such a CMS
+            packet will be enclosed in a private flagged OpenPGP
             packet.  Either the OpenPGP encrypted packet as described
             above, the CMS encrypted or both packets must exist.  The
             encapsulation packet has this structure:
@@ -54,6 +55,8 @@
                 u32  Length of the following structure
                 b10  Value: "GnuPG/PAD\x00".
                 b(n) Padding stuff.
+                     (repeat the above value
+                      or if the remaining N < 10, all 0x00).
             Given this structure the minimum padding is 16 bytes.
 
    n bytes: File system container.
@@ -76,6 +79,14 @@
 /* Indicates that the actual storage is not in the same file as the
    keyblob.  If a value is given it is expected to be the GUID of the
    partition.  */
+
+#define KEYBLOB_TAG_CREATED  3
+/* This is an ISO 8601 time string with the date the container was
+   created.  */
+
+#define KEYBLOB_TAG_ALGOSTR 10
+/* For a dm-crypt container this is the used algorithm string.  For
+   example: "aes-cbc-essiv:sha256".  */
 
 #define KEYBLOB_TAG_KEYNO  16
 /* This tag indicates a new key.  The value is a 4 byte big endian
@@ -105,8 +116,14 @@
    The value is the key used for MACing.  */
 
 
+#define KEYBLOB_TAG_HDRCOPY 21
+/* The value of this tag is a copy of the setup area prefix header
+   block (packet 61 with marker "GnuPG/G13\x00".  We use it to allow
+   signing of that cleartext data.  */
+
+
 #define KEYBLOB_TAG_FILLER   0xffff
-/* This tag may be used for alignment and padding porposes.  The value
+/* This tag may be used for alignment and padding purposes.  The value
    has no meaning.  */
 
 

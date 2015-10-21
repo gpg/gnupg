@@ -43,6 +43,8 @@
 #include "create.h"
 #include "mount.h"
 #include "mountinfo.h"
+#include "backend.h"
+#include "call-syshelp.h"
 
 
 enum cmd_and_opt_values {
@@ -73,6 +75,7 @@ enum cmd_and_opt_values {
 
   oAgentProgram,
   oGpgProgram,
+  oType,
 
   oDisplay,
   oTTYname,
@@ -114,6 +117,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_group (301, N_("@\nOptions:\n ")),
 
   ARGPARSE_s_s (oRecipient, "recipient", N_("|USER-ID|encrypt for USER-ID")),
+  ARGPARSE_s_s (oType, "type", N_("|NAME|use container format NAME")),
 
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
@@ -570,6 +574,19 @@ main ( int argc, char **argv)
           add_to_strlist (&recipients, pargs.r.ret_str);
           break;
 
+        case oType:
+          if (!strcmp (pargs.r.ret_str, "help"))
+            {
+              be_parse_conttype_name (NULL);
+              g13_exit (0);
+            }
+          cmdline_conttype = be_parse_conttype_name (pargs.r.ret_str);
+          if (!cmdline_conttype)
+            {
+              pargs.r_opt = ARGPARSE_INVALID_ARG;
+              pargs.err = ARGPARSE_PRINT_ERROR;
+            }
+          break;
 
         default:
           pargs.err = configfp? ARGPARSE_PRINT_WARNING:ARGPARSE_PRINT_ERROR;
@@ -756,6 +773,8 @@ main ( int argc, char **argv)
       break;
     }
 
+  g13_deinit_default_ctrl (&ctrl);
+
   if (!err)
     join_idle_task ();
 
@@ -767,9 +786,17 @@ main ( int argc, char **argv)
 
 /* Store defaults into the per-connection CTRL object.  */
 void
-g13_init_default_ctrl (struct server_control_s *ctrl)
+g13_init_default_ctrl (ctrl_t ctrl)
 {
   ctrl->conttype = cmdline_conttype? cmdline_conttype : CONTTYPE_ENCFS;
+}
+
+
+/* Release remaining resources allocated in the CTRL object.  */
+void
+g13_deinit_default_ctrl (ctrl_t ctrl)
+{
+  call_syshelp_release (ctrl);
 }
 
 

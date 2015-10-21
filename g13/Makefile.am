@@ -21,6 +21,7 @@
 EXTRA_DIST = ChangeLog-2011
 
 bin_PROGRAMS = g13
+sbin_PROGRAMS = g13-syshelp
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 
@@ -37,6 +38,7 @@ g13_SOURCES = \
 	create.c create.h \
 	mount.c mount.h \
 	mountinfo.c mountinfo.h \
+	call-syshelp.c call-syshelp.h \
 	runner.c runner.h \
 	backend.c backend.h \
 	be-encfs.c be-encfs.h \
@@ -44,4 +46,19 @@ g13_SOURCES = \
 
 g13_LDADD = $(libcommonpth) \
 	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) $(NPTH_LIBS) \
+	$(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
+
+
+g13_syshelp_SOURCES = \
+	g13-syshelp.c g13-syshelp.h \
+	g13-common.c g13-common.h \
+	keyblob.h \
+	utils.c utils.h \
+	sh-cmd.c \
+	sh-exectool.c \
+	sh-blockdev.c \
+	sh-dmcrypt.c
+
+g13_syshelp_LDADD = $(libcommon) \
+	$(LIBGCRYPT_LIBS) $(LIBASSUAN_LIBS) \
 	$(GPG_ERROR_LIBS) $(LIBINTL) $(LIBICONV)
