@@ -400,20 +400,28 @@ _my_socket_unref (int lnr, my_socket_t so,
 #define my_socket_unref(a,b,c) _my_socket_unref (__LINE__,(a),(b),(c))
 
 
-#if defined (USE_NPTH) && defined(HTTP_USE_GNUTLS)
+#ifdef HTTP_USE_GNUTLS
 static ssize_t
-my_npth_read (gnutls_transport_ptr_t ptr, void *buffer, size_t size)
+my_gnutls_read (gnutls_transport_ptr_t ptr, void *buffer, size_t size)
 {
   my_socket_t sock = ptr;
+#if USE_NPTH
   return npth_read (sock->fd, buffer, size);
+#else
+  return read (sock->fd, buffer, size);
+#endif
 }
 static ssize_t
-my_npth_write (gnutls_transport_ptr_t ptr, const void *buffer, size_t size)
+my_gnutls_write (gnutls_transport_ptr_t ptr, const void *buffer, size_t size)
 {
   my_socket_t sock = ptr;
+#if USE_NPTH
   return npth_write (sock->fd, buffer, size);
+#else
+  return write (sock->fd, buffer, size);
+#endif
 }
-#endif /*USE_NPTH && HTTP_USE_GNUTLS*/
+#endif /*HTTP_USE_GNUTLS*/
 
 
 
@@ -1641,12 +1649,10 @@ send_request (http_t hd, const char *httphost, const char *auth,
 
       my_socket_ref (hd->sock);
       gnutls_transport_set_ptr (hd->session->tls_session, hd->sock);
-#ifdef USE_NPTH
       gnutls_transport_set_pull_function (hd->session->tls_session,
-                                          my_npth_read);
+                                          my_gnutls_read);
       gnutls_transport_set_push_function (hd->session->tls_session,
-                                          my_npth_write);
-#endif
+                                          my_gnutls_write);
 
       do
         {
