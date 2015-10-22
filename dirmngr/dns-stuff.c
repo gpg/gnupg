@@ -219,6 +219,29 @@ resolve_dns_name (const char *name, unsigned short port,
 }
 
 
+#ifdef USE_ADNS
+/* Init ADNS and store the new state at R_STATE.  Returns 0 on
+   success; prints an error message and returns an error code on
+   failure.  */
+static gpg_error_t
+my_adns_init (adns_state *r_state)
+{
+  gpg_error_t err;
+
+  if (tor_mode? adns_init_strcfg (r_state,
+                                  adns_if_noerrprint|adns_if_tormode,
+                                  NULL, "nameserver 8.8.8.8")
+      /*    */: adns_init (r_state, adns_if_noerrprint, NULL))
+    {
+      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+      log_error ("error initializing adns: %s\n", gpg_strerror (err));
+      return err;
+    }
+  return 0;
+}
+#endif /*USE_ADNS*/
+
+
 /* Returns 0 on success or an error code.  If a PGP CERT record was
    found, the malloced data is returned at (R_KEY, R_KEYLEN) and
    the other return parameters are set to NULL/0.  If an IPGP CERT
@@ -250,14 +273,9 @@ get_dns_cert (const char *name, int want_certtype,
   *r_fprlen = 0;
   *r_url = NULL;
 
-  if (tor_mode? adns_init_strcfg (&state, adns_if_noerrprint|adns_if_tormode,
-                                  NULL, "nameserver 8.8.8.8")
-      /*    */: adns_init (&state, adns_if_noerrprint, NULL))
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      log_error ("error initializing adns: %s\n", strerror (errno));
-      return err;
-    }
+  err = my_adns_init (&state);
+  if (err)
+    return err;
 
   if (adns_synchronous (state, name,
                         (adns_r_unknown
@@ -620,12 +638,8 @@ getsrv (const char *name,struct srventry **list)
     adns_state state;
     adns_answer *answer = NULL;
 
-    rc = adns_init (&state, adns_if_noerrprint, NULL);
-    if (rc)
-      {
-        log_error ("error initializing adns: %s\n", strerror (errno));
-        return -1;
-      }
+    if (my_adns_init (&state))
+      return -1;
 
     rc = adns_synchronous (state, name, adns_r_srv, adns_qf_quoteok_query,
                            &answer);
@@ -681,6 +695,10 @@ getsrv (const char *name,struct srventry **list)
     unsigned char *pt, *emsg;
     int r;
     u16 dlen;
+
+    /* Do not allow a query using the standard resolver in Tor mode.  */
+    if (tor_mode)
+      return -1;
 
     r = res_query (name, C_IN, T_SRV, answer, sizeof answer);
     if (r < sizeof (HEADER) || r > sizeof answer)

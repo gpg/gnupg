@@ -42,6 +42,7 @@ main (int argc, char **argv)
   int last_argc = -1;
   gpg_error_t err;
   int any_options = 0;
+  int opt_tor = 0;
   int opt_cert = 0;
   int opt_srv = 0;
   char const *name = NULL;
@@ -64,6 +65,7 @@ main (int argc, char **argv)
                  "Options:\n"
                  "  --verbose         print timings etc.\n"
                  "  --debug           flyswatter\n"
+                 "  --use-tor         use Tor\n"
                  "  --cert            lookup a CERT RR\n"
                  "  --srv             lookup a SRV RR\n"
                  , stdout);
@@ -78,6 +80,11 @@ main (int argc, char **argv)
         {
           verbose += 2;
           debug++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--use-tor"))
+        {
+          opt_tor = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--cert"))
@@ -108,6 +115,17 @@ main (int argc, char **argv)
     {
       fprintf (stderr, PGM ": none or too many host names given\n");
       exit (1);
+    }
+
+  if (opt_tor)
+    {
+      err = enable_dns_tormode ();
+      if (err)
+        {
+          fprintf (stderr, "error switching into Tor mode: %s\n",
+                   gpg_strerror (err));
+          exit (1);
+        }
     }
 
   if (opt_cert)
