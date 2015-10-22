@@ -71,18 +71,13 @@ struct dns_addrinfo_s
 };
 
 
-
-#ifndef MAXDNAME
-#define MAXDNAME 1025
-#endif
-
 struct srventry
 {
   unsigned short priority;
   unsigned short weight;
   unsigned short port;
   int run_count;
-  char target[MAXDNAME];
+  char target[1025];
 };
 
 

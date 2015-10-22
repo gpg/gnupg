@@ -2251,13 +2251,23 @@ connect_server (const char *server, unsigned short port,
   if (srvtag)
     {
       /* We're using SRV, so append the tags. */
-      if (1+strlen (srvtag) + 6 + strlen (server) + 1 <= MAXDNAME)
+      if (1 + strlen (srvtag) + 6 + strlen (server) + 1
+          <= DIMof (struct srventry, target))
 	{
-	  char srvname[MAXDNAME];
+	  char *srvname = xtrymalloc (DIMof (struct srventry, target));
 
-	  stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
-                           "._tcp."), server);
-	  srvcount = getsrv (srvname, &serverlist);
+          if (!srvname) /* Out of core */
+            {
+              serverlist = NULL;
+              srvcount = 0;
+            }
+          else
+            {
+              stpcpy (stpcpy (stpcpy (stpcpy (srvname,"_"), srvtag),
+                              "._tcp."), server);
+              srvcount = getsrv (srvname, &serverlist);
+              xfree (srvname);
+            }
 	}
     }
 #else
@@ -2273,8 +2283,8 @@ connect_server (const char *server, unsigned short port,
       if (!serverlist)
         return -1; /* Out of core.  */
       serverlist->port = port;
-      strncpy (serverlist->target, server, MAXDNAME);
-      serverlist->target[MAXDNAME-1] = '\0';
+      strncpy (serverlist->target, server, DIMof (struct srventry, target));
+      serverlist->target[DIMof (struct srventry, target)-1] = '\0';
       srvcount = 1;
     }
 

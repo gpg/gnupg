@@ -651,7 +651,7 @@ getsrv (const char *name,struct srventry **list)
         struct srventry *srv = NULL;
         struct srventry *newlist;
 
-        if (strlen (answer->rrs.srvha[count].ha.host) >= MAXDNAME)
+        if (strlen (answer->rrs.srvha[count].ha.host) >= sizeof srv->target)
           {
             log_info ("hostname in SRV record too long - skipped\n");
             continue;
@@ -747,7 +747,7 @@ getsrv (const char *name,struct srventry **list)
         /* Get the name.  2782 doesn't allow name compression, but
            dn_expand still works to pull the name out of the
            packet. */
-        rc = dn_expand(answer,emsg,pt,srv->target,MAXDNAME);
+        rc = dn_expand(answer,emsg,pt,srv->target, sizeof srv->target);
         if (rc == 1 && srv->target[0] == 0) /* "." */
           {
             xfree(*list);
