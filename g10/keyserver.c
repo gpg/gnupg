@@ -41,9 +41,6 @@
 #include "trustdb.h"
 #include "keyserver-internal.h"
 #include "util.h"
-#ifdef USE_DNS_SRV
-#include "srv.h"
-#endif
 #include "membuf.h"
 #include "call-dirmngr.h"
 
@@ -2029,6 +2026,7 @@ keyserver_import_ldap (ctrl_t ctrl,
 #ifdef USE_DNS_SRV
   snprintf(srvname,MAXDNAME,"_pgpkey-ldap._tcp.%s",domain);
 
+  FIXME("network related - move to dirmngr or drop the code");
   srvcount=getsrv(srvname,&srvlist);
 
   for(i=0;i<srvcount;i++)

@@ -41,10 +41,13 @@ main (int argc, char **argv)
 {
   int last_argc = -1;
   gpg_error_t err;
+  int any_options = 0;
   int opt_cert = 0;
-  char const *name;
+  int opt_srv = 0;
+  char const *name = NULL;
 
   gpgrt_init ();
+  log_set_prefix (PGM, GPGRT_LOG_WITH_PREFIX);
   if (argc)
     { argc--; argv++; }
   while (argc && last_argc != argc )
@@ -62,6 +65,7 @@ main (int argc, char **argv)
                  "  --verbose         print timings etc.\n"
                  "  --debug           flyswatter\n"
                  "  --cert            lookup a CERT RR\n"
+                 "  --srv             lookup a SRV RR\n"
                  , stdout);
           exit (0);
         }
@@ -78,7 +82,12 @@ main (int argc, char **argv)
         }
       else if (!strcmp (*argv, "--cert"))
         {
-          opt_cert = 1;
+          any_options = opt_cert = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--srv"))
+        {
+          any_options = opt_srv = 1;
           argc--; argv++;
         }
       else if (!strncmp (*argv, "--", 2))
@@ -88,7 +97,7 @@ main (int argc, char **argv)
         }
     }
 
-  if (!argc)
+  if (!argc && !any_options)
     {
       opt_cert = 1;
       name = "simon.josefsson.org";
@@ -97,7 +106,7 @@ main (int argc, char **argv)
     name = *argv;
   else
     {
-      fprintf (stderr, PGM ": too many host names given\n");
+      fprintf (stderr, PGM ": none or too many host names given\n");
       exit (1);
     }
 
@@ -144,6 +153,24 @@ main (int argc, char **argv)
       xfree (key);
       xfree (fpr);
       xfree (url);
+    }
+  else if (opt_srv)
+    {
+      struct srventry *srv;
+      int rc,i;
+
+      rc=getsrv("_hkp._tcp.wwwkeys.pgp.net",&srv);
+      printf("Count=%d\n\n",rc);
+      for(i=0;i<rc;i++)
+        {
+          printf("priority=%hu\n",srv[i].priority);
+          printf("weight=%hu\n",srv[i].weight);
+          printf("port=%hu\n",srv[i].port);
+          printf("target=%s\n",srv[i].target);
+          printf("\n");
+        }
+
+      xfree(srv);
     }
   else /* Standard lookup.  */
     {

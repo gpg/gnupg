@@ -78,7 +78,6 @@ common_sources = \
 	exechelp.h \
 	signal.c \
 	audit.c audit.h \
-	srv.h \
 	localename.c \
 	session-env.c session-env.h \
 	userids.c userids.h \
@@ -110,15 +109,9 @@ without_npth_sources = \
 
 
 libcommon_a_SOURCES = $(common_sources) $(without_npth_sources)
-if USE_DNS_SRV
-libcommon_a_SOURCES += srv.c
-endif
 libcommon_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) -DWITHOUT_NPTH=1
 
 libcommonpth_a_SOURCES = $(common_sources)
-if USE_DNS_SRV
-libcommonpth_a_SOURCES += srv.c
-endif
 libcommonpth_a_CFLAGS = $(AM_CFLAGS) $(LIBASSUAN_CFLAGS) $(NPTH_CFLAGS)
 
 if !HAVE_W32CE_SYSTEM

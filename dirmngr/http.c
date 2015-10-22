@@ -100,23 +100,6 @@
 #include "i18n.h"
 #include "dns-stuff.h"
 #include "http.h"
-#ifdef USE_DNS_SRV
-# include "srv.h"
-#else /*!USE_DNS_SRV*/
-  /* If we are not compiling with SRV record support we provide stub
-     data structures. */
-# ifndef MAXDNAME
-#  define MAXDNAME 1025
-# endif
-struct srventry
-{
-  unsigned short priority;
-  unsigned short weight;
-  unsigned short port;
-  int run_count;
-  char target[MAXDNAME];
-};
-#endif/*!USE_DNS_SRV*/
 
 
 #ifdef USE_NPTH

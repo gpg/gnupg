@@ -72,6 +72,20 @@ struct dns_addrinfo_s
 
 
 
+#ifndef MAXDNAME
+#define MAXDNAME 1025
+#endif
+
+struct srventry
+{
+  unsigned short priority;
+  unsigned short weight;
+  unsigned short port;
+  int run_count;
+  char target[MAXDNAME];
+};
+
+
 /* Calling this function switches the DNS code into Tor mode if
    possibe.  Return 0 on success.  */
 gpg_error_t enable_dns_tormode (void);
@@ -89,6 +103,7 @@ gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           unsigned char **r_fpr, size_t *r_fprlen,
                           char **r_url);
 
+int getsrv (const char *name,struct srventry **list);
 
 
 #endif /*GNUPG_DIRMNGR_DNS_STUFF_H*/
