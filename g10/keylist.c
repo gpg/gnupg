@@ -132,12 +132,16 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
      which is associated with the inode of a deleted file.  */
   check_trustdb_stale ();
 
+  tofu_begin_batch_update ();
+
   if (locate_mode)
     locate_one (ctrl, list);
   else if (!list)
     list_all (ctrl, 0, opt.with_secret);
   else
     list_one (ctrl, list, 0, opt.with_secret);
+
+  tofu_end_batch_update ();
 }
 
 

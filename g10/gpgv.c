@@ -632,3 +632,13 @@ tofu_policy_str (enum tofu_policy policy)
 
   return "unknown";
 }
+
+void
+tofu_begin_batch_update (void)
+{
+}
+
+void
+tofu_end_batch_update (void)
+{
+}

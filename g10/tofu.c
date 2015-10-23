@@ -86,9 +86,11 @@ struct db
 
   struct
   {
-    sqlite3_stmt *begin_transaction;
-    sqlite3_stmt *end_transaction;
-    sqlite3_stmt *rollback;
+    sqlite3_stmt *savepoint_batch;
+    sqlite3_stmt *savepoint_batch_commit;
+
+    sqlite3_stmt *savepoint_inner;
+    sqlite3_stmt *savepoint_inner_commit;
 
     sqlite3_stmt *record_binding_get_old_policy;
     sqlite3_stmt *record_binding_update;
@@ -101,16 +103,34 @@ struct db
     sqlite3_stmt *register_insert;
   } s;
 
-
 #if DEBUG_TOFU_CACHE
   int hits;
 #endif
+
+  int batch_update;
 
   /* If TYPE is DB_COMBINED, this is "".  Otherwise, it is either the
      fingerprint (type == DB_KEY) or the normalized email address
      (type == DB_EMAIL).  */
   char name[1];
 };
+
+static struct db *db_cache;
+static int db_cache_count;
+#define DB_CACHE_ENTRIES 16
+
+static void tofu_cache_dump (struct db *db) GPGRT_ATTR_USED;
+
+static void
+tofu_cache_dump (struct db *db)
+{
+  log_info ("Connection %p:\n", db);
+  for (; db; db = db->next)
+    log_info ("  %s: %sbatch mode\n", db->name, db->batch_update ? "" : "NOT ");
+  log_info ("Cache:\n");
+  for (db = db_cache; db; db = db->next)
+    log_info ("  %s: %sbatch mode\n", db->name, db->batch_update ? "" : "NOT ");
+}
 
 #define STRINGIFY(s) STRINGIFY2(s)
 #define STRINGIFY2(s) #s
@@ -400,7 +420,160 @@ sqlite3_stepx (sqlite3 *db,
 
   return rc;
 }
+
+static int batch_update;
 
+/* Start a transaction on DB.  */
+static gpg_error_t
+begin_transaction (struct db *db, int only_batch)
+{
+  int rc;
+  char *err = NULL;
+
+  /* XXX: In split mode, this can end in deadlock.
+
+     Consider: we have two gpg processes running simultaneously and
+     they each want to lock DB A and B, but in different orders.  This
+     will be automatically resolved by causing one of them to return
+     EBUSY and aborting.
+
+     A more intelligent approach would be to commit and retake the
+     batch transaction.  This requires a list of all DBs that are
+     currently in batch mode.  */
+
+  if (batch_update && ! db->batch_update)
+    {
+      rc = sqlite3_stepx (db->db, &db->s.savepoint_batch,
+                          NULL, NULL, &err,
+                          "savepoint batch;", SQLITE_ARG_END);
+      if (rc)
+        {
+          log_error
+            (_("error beginning %s transaction on TOFU database '%s': %s\n"),
+             "batch", *db->name ? db->name : "combined", err);
+          sqlite3_free (err);
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+
+      db->batch_update = 1;
+    }
+
+  if (only_batch)
+    return 0;
+
+  rc = sqlite3_stepx (db->db, &db->s.savepoint_inner,
+                      NULL, NULL, &err,
+                      "savepoint inner;", SQLITE_ARG_END);
+  if (rc)
+    {
+      log_error
+        (_("error beginning %s transaction on TOFU database '%s': %s\n"),
+         "inner", *db->name ? db->name : "combined", err);
+      sqlite3_free (err);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  return 0;
+}
+
+/* Commit a transaction.  If ONLY_BATCH is 1, then this only ends the
+   batch transaction if we have left batch mode.  If ONLY_BATCH is 2,
+   this ends any open batch transaction even if we are still in batch
+   mode.  */
+static gpg_error_t
+end_transaction (struct db *db, int only_batch)
+{
+  int rc;
+  char *err = NULL;
+
+  if ((! batch_update || only_batch == 2) && db->batch_update)
+    /* The batch transaction is still in open, but we left batch
+       mode.  */
+    {
+      db->batch_update = 0;
+
+      rc = sqlite3_stepx (db->db, &db->s.savepoint_batch_commit,
+                          NULL, NULL, &err,
+                          "release batch;", SQLITE_ARG_END);
+      if (rc)
+        {
+          log_error
+            (_("error committing %s transaction on TOFU database '%s': %s\n"),
+             "batch", *db->name ? db->name : "combined", err);
+          sqlite3_free (err);
+          return gpg_error (GPG_ERR_GENERAL);
+        }
+
+      /* Releasing an outer transaction releases an open inner
+         transactions.  We're done.  */
+      return 0;
+    }
+
+  if (only_batch)
+    return 0;
+
+  rc = sqlite3_stepx (db->db, &db->s.savepoint_inner_commit,
+                      NULL, NULL, &err,
+                      "release inner;", SQLITE_ARG_END);
+  if (rc)
+    {
+      log_error
+        (_("error committing %s transaction on TOFU database '%s': %s\n"),
+         "inner", *db->name ? db->name : "combined", err);
+      sqlite3_free (err);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  return 0;
+}
+
+static gpg_error_t
+rollback_transaction (struct db *db)
+{
+  int rc;
+  char *err = NULL;
+
+  if (db->batch_update)
+    /* Just undo the most recent update; don't revert any progress
+       made by the batch transaction.  */
+    rc = sqlite3_exec (db->db, "rollback to inner;", NULL, NULL, &err);
+  else
+    /* Rollback the whole she-bang.  */
+    rc = sqlite3_exec (db->db, "rollback;", NULL, NULL, &err);
+
+  if (rc)
+    {
+      log_error
+        (_("error rolling back inner transaction on TOFU database '%s': %s\n"),
+         *db->name ? db->name : "combined", err);
+      sqlite3_free (err);
+      return gpg_error (GPG_ERR_GENERAL);
+    }
+
+  return 0;
+}
+
+void
+tofu_begin_batch_update (void)
+{
+  batch_update ++;
+}
+
+void
+tofu_end_batch_update (void)
+{
+  assert (batch_update > 0);
+  batch_update --;
+
+  if (batch_update == 0)
+    {
+      struct db *db;
+
+      for (db = db_cache; db; db = db->next)
+        end_transaction (db, 1);
+    }
+}
+
 /* Collect results of a select count (*) ...; style query.  Aborts if
    the argument is not a valid integer (or real of the form X.0).  */
 static int
@@ -652,7 +825,7 @@ initdb (sqlite3 *db, enum db_type type)
     }
   else
     {
-      rc = sqlite3_exec (db, "commit transaction;", NULL, NULL, &err);
+      rc = sqlite3_exec (db, "end transaction;", NULL, NULL, &err);
       if (rc)
 	{
 	  log_error (_("error committing transaction on TOFU DB: %s\n"),
@@ -735,10 +908,6 @@ link_db (struct db **head, struct db *db)
   db->prevp = head;
   *head = db;
 }
-
-static struct db *db_cache;
-static int db_cache_count;
-#define DB_CACHE_ENTRIES 16
 
 /* Return a database handle.  <type, name> describes the required
    database.  If there is a cached handle in DBS, that handle is
@@ -889,7 +1058,10 @@ closedb (struct db *db)
       assert (db->name[0]);
     }
 
-  for (statements = &db->s.begin_transaction;
+  if (db->batch_update)
+    end_transaction (db, 2);
+
+  for (statements = (void *) &db->s;
        (void *) statements < (void *) &(&db->s)[1];
        statements ++)
     sqlite3_finalize (*statements);
@@ -983,7 +1155,14 @@ closedbs (struct dbs *dbs)
 
       /* Find the last DB.  */
       for (db = dbs->db, count = 1; db->next; db = db->next, count ++)
-        ;
+        {
+          /* When we leave batch mode we leave batch mode on any
+             cached connections.  */
+          if (! batch_update)
+            assert (! db->batch_update);
+        }
+      if (! batch_update)
+        assert (! db->batch_update);
 
       /* Join the two lists.  */
       db->next = db_cache;
@@ -1084,28 +1263,21 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
       if (! db_key)
 	return gpg_error (GPG_ERR_GENERAL);
 
-      rc = sqlite3_stepx (db_email->db, &db_email->s.begin_transaction,
-                          NULL, NULL, &err,
-                          "begin transaction;", SQLITE_ARG_END);
+      rc = begin_transaction (db_email, 0);
       if (rc)
-	{
-	  log_error (_("error beginning transaction on TOFU %s database: %s\n"),
-		     "email", err);
-	  sqlite3_free (err);
-	  return gpg_error (GPG_ERR_GENERAL);
-	}
+        return gpg_error (GPG_ERR_GENERAL);
 
-      rc = sqlite3_stepx (db_key->db, &db_key->s.begin_transaction,
-                          NULL, NULL, &err,
-                          "begin transaction;", SQLITE_ARG_END);
+      rc = begin_transaction (db_key, 0);
       if (rc)
-	{
-	  log_error (_("error beginning transaction on TOFU %s database: %s\n"),
-		     "key", err);
-	  sqlite3_free (err);
-	  goto out_revert_one;
-	}
+        goto out_revert_one;
     }
+  else
+    {
+      rc = begin_transaction (db_email, 1);
+      if (rc)
+        return gpg_error (GPG_ERR_GENERAL);
+    }
+
 
   if (show_old)
     /* Get the old policy.  Since this is just for informational
@@ -1206,13 +1378,9 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
       int rc2;
 
       if (rc)
-        rc2 = sqlite3_stepx (db_key->db, &db_key->s.rollback,
-                             NULL, NULL, &err,
-                             "rollback;", SQLITE_ARG_END);
+        rc2 = rollback_transaction (db_key);
       else
-        rc2 = sqlite3_stepx (db_key->db, &db_key->s.end_transaction,
-                             NULL, NULL, &err,
-                             "end transaction;", SQLITE_ARG_END);
+        rc2 = end_transaction (db_key, 0);
       if (rc2)
 	{
 	  log_error (_("error ending transaction on TOFU database: %s\n"),
@@ -1222,13 +1390,9 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 
     out_revert_one:
       if (rc)
-        rc2 = sqlite3_stepx (db_email->db, &db_email->s.rollback,
-                             NULL, NULL, &err,
-                             "rollback;", SQLITE_ARG_END);
+        rc2 = rollback_transaction (db_email);
       else
-        rc2 = sqlite3_stepx (db_email->db, &db_email->s.end_transaction,
-                             NULL, NULL, &err,
-                             "end transaction;", SQLITE_ARG_END);
+        rc2 = end_transaction (db_email, 0);
       if (rc2)
 	{
 	  log_error (_("error ending transaction on TOFU database: %s\n"),
@@ -2524,15 +2688,9 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
-  rc = sqlite3_stepx (db->db, &db->s.begin_transaction,
-                      NULL, NULL, &err, "begin transaction;",
-                      SQLITE_ARG_END);
+  rc = begin_transaction (db, 0);
   if (rc)
-    {
-      log_error (_("error beginning transaction on TOFU database: %s\n"), err);
-      sqlite3_free (err);
-      goto die;
-    }
+    goto die;
 
   /* If we've already seen this signature before, then don't add
      it again.  */
@@ -2607,11 +2765,9 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   /* It only matters whether we abort or commit the transaction
      (so long as we do something) if we execute the insert.  */
   if (rc)
-    rc = sqlite3_stepx (db->db, &db->s.rollback, NULL, NULL, &err,
-                        "rollback;", SQLITE_ARG_END);
+    rc = rollback_transaction (db);
   else
-    rc = sqlite3_stepx (db->db, &db->s.end_transaction, NULL, NULL, &err,
-                        "end transaction;", SQLITE_ARG_END);
+    rc = end_transaction (db, 0);
   if (rc)
     {
       log_error (_("error ending transaction on TOFU database: %s\n"), err);
