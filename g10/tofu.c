@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <assert.h>
+#include <stdarg.h>
 #include <sqlite3.h>
 
 #include "gpg.h"
@@ -40,6 +41,12 @@
 #include "mkdir_p.h"
 
 #include "tofu.h"
+
+#define DEBUG_TOFU_CACHE 0
+#if DEBUG_TOFU_CACHE
+static int prepares_saved;
+static int queries;
+#endif
 
 /* The TOFU data can be saved in two different formats: either in a
    single combined database (opt.tofu_db_format == TOFU_DB_FLAT) or in
@@ -71,16 +78,42 @@ enum db_type
 struct db
 {
   struct db *next;
+  struct db **prevp;
 
   enum db_type type;
 
   sqlite3 *db;
+
+  struct
+  {
+    sqlite3_stmt *begin_transaction;
+    sqlite3_stmt *end_transaction;
+    sqlite3_stmt *rollback;
+
+    sqlite3_stmt *record_binding_get_old_policy;
+    sqlite3_stmt *record_binding_update;
+    sqlite3_stmt *record_binding_update2;
+    sqlite3_stmt *get_policy_select_policy_and_conflict;
+    sqlite3_stmt *get_trust_bindings_with_this_email;
+    sqlite3_stmt *get_trust_gather_other_user_ids;
+    sqlite3_stmt *get_trust_gather_other_keys;
+    sqlite3_stmt *register_already_seen;
+    sqlite3_stmt *register_insert;
+  } s;
+
+
+#if DEBUG_TOFU_CACHE
+  int hits;
+#endif
 
   /* If TYPE is DB_COMBINED, this is "".  Otherwise, it is either the
      fingerprint (type == DB_KEY) or the normalized email address
      (type == DB_EMAIL).  */
   char name[1];
 };
+
+#define STRINGIFY(s) STRINGIFY2(s)
+#define STRINGIFY2(s) #s
 
 /* The grouping parameters when collecting signature statistics.  */
 
@@ -187,6 +220,186 @@ sqlite3_exec_printf (sqlite3 *db,
   return rc;
 }
 
+enum sqlite_arg_type
+  {
+    SQLITE_ARG_END = 0xdead001,
+    SQLITE_ARG_INT,
+    SQLITE_ARG_LONG_LONG,
+    SQLITE_ARG_STRING
+  };
+
+static int
+sqlite3_stepx (sqlite3 *db,
+               sqlite3_stmt **stmtp,
+               int (*callback) (void*,int,char**,char**),
+               void *cookie,
+               char **errmsg,
+               const char *sql, ...)
+{
+  int rc;
+  int err = 0;
+  sqlite3_stmt *stmt = NULL;
+
+  va_list va;
+  int args;
+  enum sqlite_arg_type t;
+  int i;
+
+  int cols;
+  /* Names of the columns.  We initialize this lazily to avoid the
+     overhead in case the query doesn't return any results.  */
+  const char **azColName = 0;
+  int callback_initialized = 0;
+
+  const char **azVals = 0;
+
+  callback_initialized = 0;
+
+  if (stmtp && *stmtp)
+    {
+      stmt = *stmtp;
+
+      /* Make sure this statement is associated with the supplied db.  */
+      assert (db == sqlite3_db_handle (stmt));
+
+#if DEBUG_TOFU_CACHE
+      prepares_saved ++;
+#endif
+    }
+  else
+    {
+      rc = sqlite3_prepare_v2 (db, sql, -1, &stmt, NULL);
+      if (rc)
+        log_fatal ("failed to prepare SQL: %s", sql);
+
+      if (stmtp)
+        *stmtp = stmt;
+    }
+
+#if DEBUG_TOFU_CACHE
+  queries ++;
+#endif
+
+  args = sqlite3_bind_parameter_count (stmt);
+  va_start (va, sql);
+  if (args)
+    {
+      for (i = 1; i <= args; i ++)
+        {
+          t = va_arg (va, enum sqlite_arg_type);
+          switch (t)
+            {
+            case SQLITE_ARG_INT:
+              {
+                int value = va_arg (va, int);
+                err = sqlite3_bind_int (stmt, i, value);
+                break;
+              }
+            case SQLITE_ARG_LONG_LONG:
+              {
+                long long value = va_arg (va, long long);
+                err = sqlite3_bind_int64 (stmt, i, value);
+                break;
+              }
+            case SQLITE_ARG_STRING:
+              {
+                char *text = va_arg (va, char *);
+                err = sqlite3_bind_text (stmt, i, text, -1, SQLITE_STATIC);
+                break;
+              }
+            default:
+              /* Internal error.  Likely corruption.  */
+              log_fatal ("Bad value for parameter type %d.\n", t);
+            }
+
+          if (err)
+            {
+              log_fatal ("Error binding parameter %d\n", i);
+              goto out;
+            }
+        }
+
+    }
+  t = va_arg (va, enum sqlite_arg_type);
+  assert (t == SQLITE_ARG_END);
+  va_end (va);
+
+  for (;;)
+    {
+      rc = sqlite3_step (stmt);
+
+      if (rc != SQLITE_ROW)
+        /* No more data (SQLITE_DONE) or an error occured.  */
+        break;
+
+      if (! callback)
+        continue;
+
+      if (! callback_initialized)
+        {
+          cols = sqlite3_column_count (stmt);
+          azColName = xmalloc (2 * cols * sizeof (const char *) + 1);
+
+          for (i = 0; i < cols; i ++)
+            azColName[i] = sqlite3_column_name (stmt, i);
+
+          callback_initialized = 1;
+        }
+
+      azVals = &azColName[cols];
+      for (i = 0; i < cols; i ++)
+        {
+          azVals[i] = sqlite3_column_text (stmt, i);
+          if (! azVals[i] && sqlite3_column_type (stmt, i) != SQLITE_NULL)
+            /* Out of memory.  */
+            {
+              err = SQLITE_NOMEM;
+              break;
+            }
+        }
+
+      if (callback (cookie, cols, (char **) azVals, (char **) azColName))
+        /* A non-zero result means to abort.  */
+        {
+          err = SQLITE_ABORT;
+          break;
+        }
+    }
+
+ out:
+  xfree (azColName);
+
+  if (stmtp)
+    rc = sqlite3_reset (stmt);
+  else
+    rc = sqlite3_finalize (stmt);
+  if (rc == SQLITE_OK && err)
+    /* Local error.  */
+    {
+      rc = err;
+      if (errmsg)
+        {
+          const char *e = sqlite3_errstr (err);
+          size_t l = strlen (e) + 1;
+          *errmsg = sqlite3_malloc (l);
+          if (! *errmsg)
+            log_fatal ("Out of memory.\n");
+          memcpy (*errmsg, e, l);
+        }
+    }
+  else if (rc != SQLITE_OK && errmsg)
+    /* Error reported by sqlite.  */
+    {
+      const char * e = sqlite3_errmsg (db);
+      size_t l = strlen (e) + 1;
+      *errmsg = sqlite3_malloc (l);
+      if (! *errmsg)
+        log_fatal ("Out of memory.\n");
+      memcpy (*errmsg, e, l);
+    }
+
+  return rc;
+}
 
 /* Collect results of a select count (*) ...; style query.  Aborts if
    the argument is not a valid integer (or real of the form X.0).  */
@@ -451,8 +664,6 @@ initdb (sqlite3 *db, enum db_type type)
     }
 }
 
-static sqlite3 *combined_db;
-
 /* Open and initialize a low-level TOFU database.  Returns NULL on
    failure.  This function should not normally be directly called to
    get a database handle.  Instead, use getdb().  */
@@ -467,9 +678,6 @@ opendb (char *filename, enum db_type type)
     {
       assert (! filename);
       assert (type == DB_COMBINED);
-
-      if (combined_db)
-	return combined_db;
 
       filename = make_filename (opt.homedir, "tofu.db", NULL);
       filename_free = 1;
@@ -502,11 +710,35 @@ opendb (char *filename, enum db_type type)
       db = NULL;
     }
 
-  if (opt.tofu_db_format == TOFU_DB_FLAT)
-    combined_db = db;
-
   return db;
 }
+
+struct dbs
+{
+  struct db *db;
+};
+
+static void
+unlink_db (struct db *db)
+{
+  *db->prevp = db->next;
+  if (db->next)
+    db->next->prevp = db->prevp;
+}
+
+static void
+link_db (struct db **head, struct db *db)
+{
+  db->next = *head;
+  if (db->next)
+    db->next->prevp = &db->next;
+  db->prevp = head;
+  *head = db;
+}
+
+static struct db *db_cache;
+static int db_cache_count;
+#define DB_CACHE_ENTRIES 16
 
 /* Return a database handle.  <type, name> describes the required
    database.  If there is a cached handle in DBS, that handle is
@@ -517,108 +749,165 @@ opendb (char *filename, enum db_type type)
    TYPE must be either DB_MAIL or DB_KEY.  In the combined format, the
    combined DB is always returned.  */
 static struct db *
-getdb (struct db *dbs, const char *name, enum db_type type)
+getdb (struct dbs *dbs, const char *name, enum db_type type)
 {
   struct db *t = NULL;
-  sqlite3 *sqlitedb = NULL;
   char *name_sanitized = NULL;
+  int count;
   char *filename = NULL;
-  int i;
+  int need_link = 1;
+  sqlite3 *sqlitedb = NULL;
 
+  assert (dbs);
   assert (name);
   assert (type == DB_EMAIL || type == DB_KEY);
 
-  assert (dbs);
-  /* The first entry is always for the combined DB.  */
-  assert (dbs->type == DB_COMBINED);
-  assert (! dbs->name[0]);
-
   if (opt.tofu_db_format == TOFU_DB_FLAT)
-    /* When using the flat format, we only have a single combined
-       DB.  */
+    /* When using the flat format, we only have a single DB, the
+       combined DB.  */
     {
-      assert (dbs->db);
-      assert (! dbs->next);
-      return dbs;
+      if (dbs->db)
+        {
+          assert (dbs->db->type == DB_COMBINED);
+          assert (! dbs->db->next);
+          return dbs->db;
+        }
+
+      type = DB_COMBINED;
     }
-  else
-    /* When using the split format the first entry on the DB list is a
-       dummy entry.  */
-    assert (! dbs->db);
 
-  /* We have the split format.  */
-
-  /* Only allow alpha-numeric characters in the filename.  */
-  name_sanitized = xstrdup (name);
-  for (i = 0; name[i]; i ++)
+  if (type != DB_COMBINED)
+    /* Only allow alpha-numeric characters in the name.  */
     {
-      char c = name_sanitized[i];
-      if (! (('a' <= c && c <= 'z')
-	     || ('A' <= c && c <= 'Z')
-	     || ('0' <= c && c <= '9')))
-	name_sanitized[i] = '_';
+      int i;
+
+      name_sanitized = xstrdup (name);
+      for (i = 0; name[i]; i ++)
+        {
+          char c = name_sanitized[i];
+          if (! (('a' <= c && c <= 'z')
+                 || ('A' <= c && c <= 'Z')
+                 || ('0' <= c && c <= '9')))
+            name_sanitized[i] = '_';
+        }
     }
 
   /* See if the DB is cached.  */
-  for (t = dbs->next; t; t = t->next)
-    if (type == t->type && strcmp (t->name, name_sanitized) == 0)
-      goto out;
-
-  /* Open the DB.  The filename has the form:
-
-       tofu.d/TYPE/PREFIX/NAME.db
-
-     We use a short prefix to try to avoid having many files in a
-     single directory.  */
-  {
-    char *type_str = type == DB_EMAIL ? "email" : "key";
-    char prefix[3] = { name_sanitized[0], name_sanitized[1], 0 };
-    char *name_db;
-
-    /* Make the directory.  */
-    if (gnupg_mkdir_p (opt.homedir, "tofu.d", type_str, prefix, NULL) != 0)
+  for (t = dbs->db; t; t = t->next)
+    if (t->type == type
+        && (type == DB_COMBINED || strcmp (t->name, name_sanitized) == 0))
       {
-	log_error (_("unable to create directory %s/%s/%s/%s"),
-		   opt.homedir, "tofu.d", type_str, prefix);
+        need_link = 0;
         goto out;
       }
 
-    name_db = xstrconcat (name_sanitized, ".db", NULL);
-    filename = make_filename
-      (opt.homedir, "tofu.d", type_str, prefix, name_db, NULL);
-    xfree (name_db);
-  }
+  for (t = db_cache, count = 0; t; t = t->next, count ++)
+    if (type == t->type
+        && (type == DB_COMBINED || strcmp (t->name, name_sanitized) == 0))
+      {
+        unlink_db (t);
+        db_cache_count --;
+        goto out;
+      }
+
+  assert (db_cache_count == count);
+
+  if (type == DB_COMBINED)
+    filename = NULL;
+  else
+    {
+      /* Open the DB.  The filename has the form:
+
+         tofu.d/TYPE/PREFIX/NAME.db
+
+         We use a short prefix to try to avoid having many files in a
+         single directory.  */
+      {
+        char *type_str = type == DB_EMAIL ? "email" : "key";
+        char prefix[3] = { name_sanitized[0], name_sanitized[1], 0 };
+        char *name_db;
+
+        /* Make the directory.  */
+        if (gnupg_mkdir_p (opt.homedir, "tofu.d", type_str, prefix, NULL) != 0)
+          {
+            log_error (_("unable to create directory %s/%s/%s/%s"),
+                       opt.homedir, "tofu.d", type_str, prefix);
+            goto out;
+          }
+
+        name_db = xstrconcat (name_sanitized, ".db", NULL);
+        filename = make_filename
+          (opt.homedir, "tofu.d", type_str, prefix, name_db, NULL);
+        xfree (name_db);
+      }
+    }
 
   sqlitedb = opendb (filename, type);
   if (! sqlitedb)
     goto out;
 
-  t = xmalloc (sizeof (struct db) + strlen (name_sanitized));
+  t = xmalloc_clear (sizeof (struct db)
+                     + (name_sanitized ? strlen (name_sanitized) : 0));
   t->type = type;
   t->db = sqlitedb;
-  strcpy (t->name, name_sanitized);
-
-  /* Insert it immediately after the first element.  */
-  t->next = dbs->next;
-  dbs->next = t;
+  if (name_sanitized)
+    strcpy (t->name, name_sanitized);
 
  out:
+  if (t && need_link)
+    link_db (&dbs->db, t);
+
+#if DEBUG_TOFU_CACHE
+  if (t)
+    t->hits ++;
+#endif
+
   xfree (filename);
   xfree (name_sanitized);
-
-  if (! t)
-    return NULL;
   return t;
+}
+
+static void
+closedb (struct db *db)
+{
+  sqlite3_stmt **statements;
+
+  if (opt.tofu_db_format == TOFU_DB_FLAT)
+    /* If we are using the flat format, then there is only ever the
+       combined DB.  */
+    assert (! db->next);
+
+  if (db->type == DB_COMBINED)
+    {
+      assert (opt.tofu_db_format == TOFU_DB_FLAT);
+      assert (! db->name[0]);
+    }
+  else
+    {
+      assert (opt.tofu_db_format == TOFU_DB_SPLIT);
+      assert (db->type != DB_COMBINED);
+      assert (db->name[0]);
+    }
+
+  for (statements = &db->s.begin_transaction;
+       (void *) statements < (void *) &(&db->s)[1];
+       statements ++)
+    sqlite3_finalize (*statements);
+
+  sqlite3_close (db->db);
+
+#if DEBUG_TOFU_CACHE
+  log_debug ("Freeing db.  Used %d times.\n", db->hits);
+#endif
+
+  xfree (db);
 }
 
 
 /* Create a new DB meta-handle.  Returns NULL on error.  */
-static struct db *
+static struct dbs *
 opendbs (void)
 {
-  sqlite3 *db = NULL;
-  struct db *dbs;
-
   if (opt.tofu_db_format == TOFU_DB_AUTO)
     {
       char *filename = make_filename (opt.homedir, "tofu.db", NULL);
@@ -679,88 +968,63 @@ opendbs (void)
 	}
     }
 
-  if (opt.tofu_db_format == TOFU_DB_FLAT)
-    {
-      db = opendb (NULL, DB_COMBINED);
-      if (! db)
-	return NULL;
-    }
-  else
-    {
-      /* Create a dummy entry so that we have a handle.  */
-    }
-
-  dbs = xmalloc_clear (sizeof (*dbs));
-  dbs->db = db;
-  dbs->type = DB_COMBINED;
-
-  return dbs;
+  return xmalloc_clear (sizeof (struct dbs));
 }
 
 /* Release all of the resources associated with a DB meta-handle.  */
 static void
-closedbs (struct db *dbs)
+closedbs (struct dbs *dbs)
 {
-  struct db *db;
-  struct db *n;
-
-  /* The first entry is always the combined DB.  */
-  assert (dbs->type == DB_COMBINED);
-  if (opt.tofu_db_format == TOFU_DB_FLAT)
+  if (dbs->db)
     {
-      /* If we are using the flat format, then there is only ever the
-	 combined DB.  */
-      assert (! dbs->next);
-      assert (dbs->db);
-      assert (dbs->db == combined_db);
+      struct db *old_head = db_cache;
+      struct db *db;
+      int count;
+
+      /* Find the last DB.  */
+      for (db = dbs->db, count = 1; db->next; db = db->next, count ++)
+        ;
+
+      /* Join the two lists.  */
+      db->next = db_cache;
+      if (db_cache)
+        db_cache->prevp = &db->next;
+
+      /* Update the (new) first element.  */
+      db_cache = dbs->db;
+      dbs->db->prevp = &db_cache;
+
+      db_cache_count += count;
+
+      /* Make sure that we don't have too many DBs on DB_CACHE.  If
+         so, free some.  */
+      if (db_cache_count > DB_CACHE_ENTRIES)
+        {
+          /* We need to find the (DB_CACHE_ENTRIES + 1)th entry.  It
+             is easy to skip the first COUNT entries since we still
+             have a handle on the old head.  */
+          int skip = DB_CACHE_ENTRIES - count;
+          while (-- skip > 0)
+            old_head = old_head->next;
+
+          *old_head->prevp = NULL;
+
+          while (old_head)
+            {
+              db = old_head->next;
+              closedb (old_head);
+              old_head = db;
+              db_cache_count --;
+            }
+        }
     }
-  else
-    /* In the split format, the combined record is just a place holder
-       so that we have a stable handle.  */
-    assert (! dbs->db);
 
-  for (db = dbs; db; db = n)
-    {
-      n = db->next;
+  xfree (dbs);
 
-      if (combined_db && db->db == combined_db)
-	{
-	  assert (opt.tofu_db_format == TOFU_DB_FLAT);
-	  assert (dbs == db);
-	  assert (db->type == DB_COMBINED);
-	  assert (! db->name[0]);
-	}
-      else if (db->db)
-	/* Not the dummy entry.  */
-	{
-	  if (dbs == db)
-	    /* The first entry.  */
-	    {
-	      assert (opt.tofu_db_format == TOFU_DB_FLAT);
-	      assert (db->type == DB_COMBINED);
-	      assert (! db->name[0]);
-	    }
-	  else
-	    /* Not the first entry.  */
-	    {
-	      assert (opt.tofu_db_format == TOFU_DB_SPLIT);
-	      assert (db->type != DB_COMBINED);
-	      assert (db->name[0]);
-	    }
-
-	  sqlite3_close (db->db);
-	}
-      else
-	/* The dummy entry.  */
-	{
-	  assert (opt.tofu_db_format == TOFU_DB_SPLIT);
-	  assert (dbs == db);
-	  assert (db->type == DB_COMBINED);
-	  assert (! db->name[0]);
-	}
-
-      xfree (db);
-    }
+#if DEBUG_TOFU_CACHE
+  log_debug ("Queries: %d (prepares saved: %d)\n",
+             queries, prepares_saved);
+#endif
 }
 
 
@@ -790,7 +1054,7 @@ get_single_long_cb (void *cookie, int argc, char **argv, char **azColName)
 
    If SHOW_OLD is set, the binding's old policy is displayed.  */
 static gpg_error_t
-record_binding (struct db *dbs, const char *fingerprint, const char *email,
+record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 		const char *user_id, enum tofu_policy policy, int show_old)
 {
   struct db *db_email = NULL, *db_key = NULL;
@@ -820,7 +1084,9 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
       if (! db_key)
 	return gpg_error (GPG_ERR_GENERAL);
 
-      rc = sqlite3_exec (db_email->db, "begin transaction;", NULL, NULL, &err);
+      rc = sqlite3_stepx (db_email->db, &db_email->s.begin_transaction,
+                          NULL, NULL, &err,
+                          "begin transaction;", SQLITE_ARG_END);
       if (rc)
 	{
 	  log_error (_("error beginning transaction on TOFU %s database: %s\n"),
@@ -829,7 +1095,9 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
 	  return gpg_error (GPG_ERR_GENERAL);
 	}
 
-      rc = sqlite3_exec (db_key->db, "begin transaction;", NULL, NULL, &err);
+      rc = sqlite3_stepx (db_key->db, &db_key->s.begin_transaction,
+                          NULL, NULL, &err,
+                          "begin transaction;", SQLITE_ARG_END);
       if (rc)
 	{
 	  log_error (_("error beginning transaction on TOFU %s database: %s\n"),
@@ -844,10 +1112,12 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
        purposes, there is no need to start a transaction or to die if
        there is a failure.  */
     {
-      rc = sqlite3_exec_printf
-	(db_email->db, get_single_long_cb, &policy_old, &err,
-	 "select policy from bindings where fingerprint = %Q and email = %Q",
-	 fingerprint, email);
+      rc = sqlite3_stepx
+	(db_email->db, &db_email->s.record_binding_get_old_policy,
+         get_single_long_cb, &policy_old, &err,
+	 "select policy from bindings where fingerprint = ? and email = ?",
+	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+         SQLITE_ARG_END);
       if (rc)
 	{
 	  log_debug ("TOFU: Error reading from binding database"
@@ -875,17 +1145,20 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
     /* Nothing to do.  */
     goto out;
 
-  rc = sqlite3_exec_printf
-    (db_email->db, NULL, NULL, &err,
+  rc = sqlite3_stepx
+    (db_email->db, &db_email->s.record_binding_update, NULL, NULL, &err,
      "insert or replace into bindings\n"
      " (oid, fingerprint, email, user_id, time, policy)\n"
      " values (\n"
      /* If we don't explicitly reuse the OID, then SQLite will
 	reallocate a new one.  We just need to search for the OID
 	based on the fingerprint and email since they are unique.  */
-     "  (select oid from bindings where fingerprint = %Q and email = %Q),\n"
-     "  %Q, %Q, %Q, strftime('%%s','now'), %d);",
-     fingerprint, email, fingerprint, email, user_id, policy);
+     "  (select oid from bindings where fingerprint = ? and email = ?),\n"
+     "  ?, ?, ?, strftime('%s','now'), ?);",
+     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+     SQLITE_ARG_STRING, user_id, SQLITE_ARG_INT, (int) policy,
+     SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error updating TOFU binding database"
@@ -901,17 +1174,19 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
     {
       assert (opt.tofu_db_format == TOFU_DB_SPLIT);
 
-      rc = sqlite3_exec_printf
-	(db_key->db, NULL, NULL, &err,
+      rc = sqlite3_stepx
+	(db_key->db, &db_key->s.record_binding_update2, NULL, NULL, &err,
 	 "insert or replace into bindings\n"
 	 " (oid, fingerprint, email, user_id)\n"
 	 " values (\n"
 	 /* If we don't explicitly reuse the OID, then SQLite will
 	    reallocate a new one.  We just need to search for the OID
 	    based on the fingerprint and email since they are unique.  */
-	 "  (select oid from bindings where fingerprint = %Q and email = %Q),\n"
-	 "  %Q, %Q, %Q);",
-	 fingerprint, email, fingerprint, email, user_id);
+	 "  (select oid from bindings where fingerprint = ? and email = ?),\n"
+	 "  ?, ?, ?);",
+	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+         SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+         SQLITE_ARG_STRING, user_id, SQLITE_ARG_END);
       if (rc)
 	{
 	  log_error (_("error updating TOFU binding database"
@@ -930,8 +1205,14 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
     {
       int rc2;
 
-      rc2 = sqlite3_exec_printf (db_key->db, NULL, NULL, &err,
-				 rc ? "rollback;" : "end transaction;");
+      if (rc)
+        rc2 = sqlite3_stepx (db_key->db, &db_key->s.rollback,
+                             NULL, NULL, &err,
+                             "rollback;", SQLITE_ARG_END);
+      else
+        rc2 = sqlite3_stepx (db_key->db, &db_key->s.end_transaction,
+                             NULL, NULL, &err,
+                             "end transaction;", SQLITE_ARG_END);
       if (rc2)
 	{
 	  log_error (_("error ending transaction on TOFU database: %s\n"),
@@ -940,8 +1221,14 @@ record_binding (struct db *dbs, const char *fingerprint, const char *email,
 	}
 
     out_revert_one:
-      rc2 = sqlite3_exec_printf (db_email->db, NULL, NULL, &err,
-				 rc ? "rollback;" : "end transaction;");
+      if (rc)
+        rc2 = sqlite3_stepx (db_email->db, &db_email->s.rollback,
+                             NULL, NULL, &err,
+                             "rollback;", SQLITE_ARG_END);
+      else
+        rc2 = sqlite3_stepx (db_email->db, &db_email->s.end_transaction,
+                             NULL, NULL, &err,
+                             "end transaction;", SQLITE_ARG_END);
       if (rc2)
 	{
 	  log_error (_("error ending transaction on TOFU database: %s\n"),
@@ -1154,7 +1441,7 @@ time_ago_unit (signed long t)
    if CONFLICT is not NULL.  Returns _tofu_GET_POLICY_ERROR if an error
    occurs.  */
 static enum tofu_policy
-get_policy (struct db *dbs, const char *fingerprint, const char *email,
+get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
 	    char **conflict)
 {
   struct db *db;
@@ -1172,11 +1459,13 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
      (TOFU_POLICY_NONE cannot appear in the DB.  Thus, if POLICY is
      still TOFU_POLICY_NONE after executing the query, then the
      result set was empty.)  */
-  rc = sqlite3_exec_printf
-    (db->db, strings_collect_cb, &strlist, &err,
-     "select policy, conflict from bindings\n"
-     " where fingerprint = %Q and email = %Q",
-     fingerprint, email);
+  rc = sqlite3_stepx (db->db, &db->s.get_policy_select_policy_and_conflict,
+                      strings_collect_cb, &strlist, &err,
+                      "select policy, conflict from bindings\n"
+                      " where fingerprint = ? and email = ?",
+                      SQLITE_ARG_STRING, fingerprint,
+                      SQLITE_ARG_STRING, email,
+                      SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error reading from TOFU database"
@@ -1264,7 +1553,7 @@ get_policy (struct db *dbs, const char *fingerprint, const char *email,
    conflicting binding's policy to TOFU_POLICY_ASK.  In either case,
    we return TRUST_UNDEFINED.  */
 static enum tofu_policy
-get_trust (struct db *dbs, const char *fingerprint, const char *email,
+get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
   struct db *db;
@@ -1408,16 +1697,17 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
           (need to check for a conflict).
    */
 
-  /* Look for conflicts.  This is need in all 3 cases.
+  /* Look for conflicts.  This is needed in all 3 cases.
 
      Get the fingerprints of any bindings that share the email
      address.  Note: if the binding in question is in the DB, it will
      also be returned.  Thus, if the result set is empty, then this is
      a new binding.  */
-  rc = sqlite3_exec_printf
-    (db->db, strings_collect_cb, &bindings_with_this_email, &err,
-     "select distinct fingerprint from bindings where email = %Q;",
-     email);
+  rc = sqlite3_stepx
+    (db->db, &db->s.get_trust_bindings_with_this_email,
+     strings_collect_cb, &bindings_with_this_email, &err,
+     "select distinct fingerprint from bindings where email = ?;",
+     SQLITE_ARG_STRING, email, SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error reading from TOFU database"
@@ -1556,11 +1846,13 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 
       if (db_key)
 	{
-	  rc = sqlite3_exec_printf
-	    (db_key->db, strings_collect_cb, &other_user_ids, &err,
-	     "select user_id, %s from bindings where fingerprint = %Q;",
-	     opt.tofu_db_format == TOFU_DB_SPLIT ? "email" : "policy",
-	     fingerprint);
+	  rc = sqlite3_stepx
+	    (db_key->db, &db_key->s.get_trust_gather_other_user_ids,
+             strings_collect_cb, &other_user_ids, &err,
+             opt.tofu_db_format == TOFU_DB_SPLIT
+	     ? "select user_id, email from bindings where fingerprint = ?;"
+	     : "select user_id, policy from bindings where fingerprint = ?;",
+	     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_END);
 	  if (rc)
 	    {
 	      log_error (_("error gathering other user ids: %s.\n"), err);
@@ -1605,8 +1897,9 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
     /* XXX: When generating the statistics, do we want the time
        embedded in the signature (column 'sig_time') or the time that
        we first verified the signature (column 'time').  */
-    rc = sqlite3_exec_printf
-      (db->db, signature_stats_collect_cb, &stats, &err,
+    rc = sqlite3_stepx
+      (db->db, &db->s.get_trust_gather_other_keys,
+       signature_stats_collect_cb, &stats, &err,
        "select fingerprint, policy, time_ago, count(*)\n"
        " from (select bindings.*,\n"
        "        case\n"
@@ -1615,27 +1908,30 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 	  small, medium or large units?  (Note: whatever we do, we
 	  keep the value in seconds.  Then when we group, everything
 	  that rounds to the same number of seconds is grouped.)  */
-       "         when delta < -%d then -1\n"
-       "         when delta < %d then max(0, round(delta / %d) * %d)\n"
-       "         when delta < %d then round(delta / %d) * %d\n"
-       "         else round(delta / %d) * %d\n"
+       "         when delta < -("STRINGIFY (TIME_AGO_FUTURE_IGNORE)") then -1\n"
+       "         when delta < ("STRINGIFY (TIME_AGO_MEDIUM_THRESHOLD)")\n"
+       "          then max(0,\n"
+       "                   round(delta / ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+       "               * ("STRINGIFY (TIME_AGO_UNIT_SMALL)"))\n"
+       "         when delta < ("STRINGIFY (TIME_AGO_LARGE_THRESHOLD)")\n"
+       "          then round(delta / ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)"))\n"
+       "               * ("STRINGIFY (TIME_AGO_UNIT_MEDIUM)")\n"
+       "         else round(delta / ("STRINGIFY (TIME_AGO_UNIT_LARGE)"))\n"
+       "              * ("STRINGIFY (TIME_AGO_UNIT_LARGE)")\n"
        "        end time_ago,\n"
        "        delta time_ago_raw\n"
        "       from bindings\n"
        "       left join\n"
        "         (select *,\n"
-       "            cast(strftime('%%s','now') - sig_time as real) delta\n"
+       "            cast(strftime('%s','now') - sig_time as real) delta\n"
        "           from signatures) ss\n"
        "        on ss.binding = bindings.oid)\n"
-       " where email = %Q\n"
+       " where email = ?\n"
        " group by fingerprint, time_ago\n"
        /* Make sure the current key is first.  */
-       " order by fingerprint = %Q asc, fingerprint desc, time_ago desc;\n",
-       TIME_AGO_FUTURE_IGNORE,
-       TIME_AGO_MEDIUM_THRESHOLD, TIME_AGO_UNIT_SMALL, TIME_AGO_UNIT_SMALL,
-       TIME_AGO_LARGE_THRESHOLD, TIME_AGO_UNIT_MEDIUM, TIME_AGO_UNIT_MEDIUM,
-       TIME_AGO_UNIT_LARGE, TIME_AGO_UNIT_LARGE,
-       email, fingerprint);
+       " order by fingerprint = ? asc, fingerprint desc, time_ago desc;\n",
+       SQLITE_ARG_STRING, email, SQLITE_ARG_STRING, fingerprint,
+       SQLITE_ARG_END);
     if (rc)
       {
 	strlist_t strlist_iter;
@@ -1825,7 +2121,7 @@ get_trust (struct db *dbs, const char *fingerprint, const char *email,
 }
 
 static void
-show_statistics (struct db *dbs, const char *fingerprint,
+show_statistics (struct dbs *dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
 		 const char *sig_exclude)
 {
@@ -2174,7 +2470,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 	       const byte *sig_digest_bin, int sig_digest_bin_len,
 	       time_t sig_time, const char *origin, int may_ask)
 {
-  struct db *dbs;
+  struct dbs *dbs;
   struct db *db;
   char *fingerprint = NULL;
   char *email = NULL;
@@ -2228,7 +2524,9 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 
   /* We do a query and then an insert.  Make sure they are atomic
      by wrapping them in a transaction.  */
-  rc = sqlite3_exec (db->db, "begin transaction;", NULL, NULL, &err);
+  rc = sqlite3_stepx (db->db, &db->s.begin_transaction,
+                      NULL, NULL, &err, "begin transaction;",
+                      SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error beginning transaction on TOFU database: %s\n"), err);
@@ -2238,14 +2536,18 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 
   /* If we've already seen this signature before, then don't add
      it again.  */
-  rc = sqlite3_exec_printf
-    (db->db, get_single_unsigned_long_cb, &c, &err,
+  rc = sqlite3_stepx
+    (db->db, &db->s.register_already_seen,
+     get_single_unsigned_long_cb, &c, &err,
      "select count (*)\n"
      " from signatures left join bindings\n"
      "  on signatures.binding = bindings.oid\n"
-     " where fingerprint = %Q and email = %Q and sig_time = 0x%lx\n"
-     "  and sig_digest = %Q",
-     fingerprint, email, (unsigned long) sig_time, sig_digest);
+     " where fingerprint = ? and email = ? and sig_time = ?\n"
+     "  and sig_digest = ?",
+     SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+     SQLITE_ARG_LONG_LONG, (long long) sig_time,
+     SQLITE_ARG_STRING, sig_digest,
+     SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error reading from signatures database"
@@ -2281,15 +2583,18 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 
       assert (c == 0);
 
-      rc = sqlite3_exec_printf
-	(db->db, NULL, NULL, &err,
+      rc = sqlite3_stepx
+	(db->db, &db->s.register_insert, NULL, NULL, &err,
 	 "insert into signatures\n"
 	 " (binding, sig_digest, origin, sig_time, time)\n"
 	 " values\n"
 	 " ((select oid from bindings\n"
-	 "    where fingerprint = %Q and email = %Q),\n"
-	 "  %Q, %Q, 0x%lx, strftime('%%s', 'now'));",
-	 fingerprint, email, sig_digest, origin, (unsigned long) sig_time);
+	 "    where fingerprint = ? and email = ?),\n"
+	 "  ?, ?, ?, strftime('%s', 'now'));",
+	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
+         SQLITE_ARG_STRING, sig_digest, SQLITE_ARG_STRING, origin,
+         SQLITE_ARG_LONG_LONG, (long long) sig_time,
+         SQLITE_ARG_END);
       if (rc)
 	{
 	  log_error (_("error updating TOFU DB"
@@ -2302,9 +2607,11 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   /* It only matters whether we abort or commit the transaction
      (so long as we do something) if we execute the insert.  */
   if (rc)
-    rc = sqlite3_exec (db->db, "rollback;", NULL, NULL, &err);
+    rc = sqlite3_stepx (db->db, &db->s.rollback, NULL, NULL, &err,
+                        "rollback;", SQLITE_ARG_END);
   else
-    rc = sqlite3_exec (db->db, "commit transaction;", NULL, NULL, &err);
+    rc = sqlite3_stepx (db->db, &db->s.end_transaction, NULL, NULL, &err,
+                        "end transaction;", SQLITE_ARG_END);
   if (rc)
     {
       log_error (_("error ending transaction on TOFU database: %s\n"), err);
@@ -2392,7 +2699,7 @@ int
 tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
 		   int may_ask)
 {
-  struct db *dbs;
+  struct dbs *dbs;
   char *fingerprint = NULL;
   char *email = NULL;
   int trust_level = TRUST_UNDEFINED;
@@ -2441,7 +2748,7 @@ tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
 gpg_error_t
 tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
 {
-  struct db *dbs;
+  struct dbs *dbs;
   PKT_public_key *pk;
   char fingerprint_bin[MAX_FINGERPRINT_LEN];
   size_t fingerprint_bin_len = sizeof (fingerprint_bin);
@@ -2524,7 +2831,7 @@ gpg_error_t
 tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
 {
-  struct db *dbs;
+  struct dbs *dbs;
   char fingerprint_bin[MAX_FINGERPRINT_LEN];
   size_t fingerprint_bin_len = sizeof (fingerprint_bin);
   char *fingerprint;
