@@ -307,7 +307,6 @@ print_cipher_algo_note (cipher_algo_t algo)
 void
 print_digest_algo_note (digest_algo_t algo)
 {
-  int deprecated = 0;
   const enum gcry_md_algos galgo = map_md_openpgp_to_gcry (algo);
   const struct weakhash *weak;
 
@@ -322,34 +321,38 @@ print_digest_algo_note (digest_algo_t algo)
                     gcry_md_algo_name (galgo));
 	}
     }
-  else if(algo == DIGEST_ALGO_MD5)
-    deprecated = 1;
   else
-      for (weak = opt.additional_weak_digests; weak != NULL; weak = weak->next)
+      for (weak = opt.weak_digests; weak != NULL; weak = weak->next)
         if (weak->algo == galgo)
-          deprecated = 1;
-
-  if (deprecated)
-    {
-      es_fflush (es_stdout);
-      log_info (_("WARNING: digest algorithm %s is deprecated\n"),
-                gcry_md_algo_name (galgo));
-    }
+          {
+            es_fflush (es_stdout);
+            log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+                      gcry_md_algo_name (galgo));
+          }
 }
 
 
 void
 print_digest_rejected_note (enum gcry_md_algos algo)
 {
-  static int shown;
+  struct weakhash* weak;
+  int show = 1;
+  for (weak = opt.weak_digests; weak; weak = weak->next)
+    if (weak->algo == algo)
+      {
+        if (weak->rejection_shown)
+          show = 0;
+        else
+          weak->rejection_shown = 1;
+        break;
+      }
 
-  if (!shown)
+  if (show)
     {
       es_fflush (es_stdout);
       log_info
         (_("Note: signatures using the %s algorithm are rejected\n"),
          gcry_md_algo_name(algo));
-      shown = 1;
     }
 }
 
@@ -1699,9 +1702,6 @@ additional_weak_digest (const char* digestname)
   struct weakhash *weak = NULL;
   const enum gcry_md_algos algo = string_to_digest_algo(digestname);
 
-  if (algo == GCRY_MD_MD5)
-    return; /* MD5 is always considered weak, no need to add it.  */
-
   if (algo == GCRY_MD_NONE)
     {
       log_error(_("Unknown weak digest '%s'\n"), digestname);
@@ -1709,15 +1709,14 @@ additional_weak_digest (const char* digestname)
     }
 
   /* Check to ensure it's not already present.  */
-  for (weak = opt.additional_weak_digests; weak != NULL; weak = weak->next)
-    {
-      if (algo == weak->algo)
-        return;
-    }
+  for (weak = opt.weak_digests; weak; weak = weak->next)
+    if (algo == weak->algo)
+      return;
 
   /* Add it to the head of the list.  */
   weak = xmalloc(sizeof(*weak));
   weak->algo = algo;
-  weak->next = opt.additional_weak_digests;
-  opt.additional_weak_digests = weak;
+  weak->rejection_shown = 0;
+  weak->next = opt.weak_digests;
+  opt.weak_digests = weak;
 }

@@ -2216,7 +2216,8 @@ main (int argc, char **argv)
     set_homedir (default_homedir ());
     opt.passphrase_repeat = 1;
     opt.emit_version = 1; /* Limit to the major number.  */
-    opt.additional_weak_digests = NULL;
+    opt.weak_digests = NULL;
+    additional_weak_digest("MD5");
 
     /* Check whether we have a config file on the command line.  */
     orig_argc = argc;

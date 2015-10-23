@@ -169,11 +169,13 @@ main( int argc, char **argv )
   opt.batch = 1;
 
   opt.homedir = default_homedir ();
+  opt.weak_digests = NULL;
 
   tty_no_terminal(1);
   tty_batchmode(1);
   dotlock_disable ();
   gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
+  additional_weak_digest("MD5");
 
   pargs.argc = &argc;
   pargs.argv = &argv;

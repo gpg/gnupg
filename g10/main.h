@@ -72,6 +72,7 @@ struct groupitem
 struct weakhash
 {
   enum gcry_md_algos algo;
+  int rejection_shown;
   struct weakhash *next;
 };
 
