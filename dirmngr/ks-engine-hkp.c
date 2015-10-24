@@ -234,52 +234,6 @@ select_random_host (int *table)
 }
 
 
-/* Simplified version of getnameinfo which also returns a numeric
-   hostname inside of brackets.  The caller should provide a buffer
-   for HOST which is 2 bytes larger than the largest hostname.  If
-   NUMERIC is true the returned value is numeric IP address.  Returns
-   0 on success or an EAI error code.  True is stored at R_ISNUMERIC
-   if HOST has a numeric IP address. */
-static int
-my_getnameinfo (dns_addrinfo_t ai, char *host, size_t hostlen,
-                int numeric, int *r_isnumeric)
-{
-  int ec;
-  char *p;
-
-  *r_isnumeric = 0;
-
-  if (hostlen < 5)
-    return EAI_OVERFLOW;
-
-  if (numeric)
-    ec = EAI_NONAME;
-  else
-    ec = getnameinfo (ai->addr, ai->addrlen,
-                      host, hostlen, NULL, 0, NI_NAMEREQD);
-
-  if (!ec && *host == '[')
-    ec = EAI_FAIL;  /* A name may never start with a bracket.  */
-  else if (ec == EAI_NONAME)
-    {
-      p = host;
-      if (ai->family == AF_INET6)
-        {
-          *p++ = '[';
-          hostlen -= 2;
-        }
-      ec = getnameinfo (ai->addr, ai->addrlen,
-                        p, hostlen, NULL, 0, NI_NUMERICHOST);
-      if (!ec && ai->family == AF_INET6)
-        strcat (host, "]");
-
-      *r_isnumeric = 1;
-    }
-
-  return ec;
-}
-
-
 /* Map the host name NAME to the actual to be used host name.  This
    allows us to manage round robin DNS names.  We use our own strategy
    to choose one of the hosts.  For example we skip those hosts which
@@ -373,10 +327,10 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
 
           for (ai = aibuf; ai; ai = ai->next)
             {
-              char tmphost[NI_MAXHOST + 2];
+              gpg_error_t tmperr;
+              char *tmphost;
               int tmpidx;
-              int is_numeric;
-              int ec;
+              int is_numeric = 0;
               int i;
 
               if (ai->family != AF_INET && ai->family != AF_INET6)
@@ -387,37 +341,35 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
               if (!is_pool && !is_ip_address (name))
                 {
                   /* This is a hostname but not a pool.  Use the name
-                     as given without going through getnameinfo.  */
-                  if (strlen (name)+1 > sizeof tmphost)
-                    {
-                      ec = EAI_SYSTEM;
-                      gpg_err_set_errno (EINVAL);
-                    }
+                     as given without going through resolve_dns_addr.  */
+                  tmphost = xtrystrdup (name);
+                  if (!tmphost)
+                    tmperr = gpg_error_from_syserror ();
                   else
-                    {
-                      ec = 0;
-                      strcpy (tmphost, name);
-                    }
-                  is_numeric = 0;
+                    tmperr = 0;
                 }
               else
-                ec = my_getnameinfo (ai, tmphost, sizeof tmphost,
-                                     0, &is_numeric);
-
-              if (ec)
                 {
-                  log_info ("getnameinfo failed while checking '%s': %s\n",
-                            name, gai_strerror (ec));
+                  tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
+                                             DNS_WITHBRACKET, &tmphost);
+                  if (tmphost && is_ip_address (tmphost))
+                    is_numeric = 1;
+                }
+
+              if (tmperr)
+                {
+                  log_info ("resolve_dns_addr failed while checking '%s': %s\n",
+                            name, gpg_strerror (tmperr));
                 }
               else if (refidx+1 >= reftblsize)
                 {
-                  log_error ("getnameinfo returned for '%s': '%s'"
-                            " [index table full - ignored]\n", name, tmphost);
+                  log_error ("resolve_dns_addr for '%s': '%s'"
+                             " [index table full - ignored]\n", name, tmphost);
                 }
               else
                 {
                   tmpidx = find_hostinfo (tmphost);
-                  log_info ("getnameinfo returned for '%s': '%s'%s\n",
+                  log_info ("resolve_dns_addr for '%s': '%s'%s\n",
                             name, tmphost,
                             tmpidx == -1? "" : " [already known]");
 
@@ -436,13 +388,19 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
 
                       if (!is_numeric)
                         {
-                          ec = my_getnameinfo (ai, tmphost, sizeof tmphost,
-                                               1, &is_numeric);
-                          if (!ec && !(ipaddr = xtrystrdup (tmphost)))
-                            ec = EAI_SYSTEM;
-                          if (ec)
-                            log_info ("getnameinfo failed: %s\n",
-                                      gai_strerror (ec));
+                          xfree (tmphost);
+                          tmperr = resolve_dns_addr (ai->addr, ai->addrlen,
+                                                     (DNS_NUMERICHOST
+                                                      | DNS_WITHBRACKET),
+                                                     &tmphost);
+                          if (tmperr)
+                            log_info ("resolve_dns_addr failed: %s\n",
+                                      gpg_strerror (tmperr));
+                          else
+                            {
+                              ipaddr = tmphost;
+                              tmphost = NULL;
+                            }
                         }
 
                       if (ai->family == AF_INET6)
@@ -467,6 +425,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                         reftbl[refidx++] = tmpidx;
                     }
                 }
+              xfree (tmphost);
             }
         }
       reftbl[refidx] = -1;

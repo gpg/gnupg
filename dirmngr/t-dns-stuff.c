@@ -225,7 +225,7 @@ main (int argc, char **argv)
                                    | (opt_bracket? DNS_WITHBRACKET:0)),
                                   &host);
           if (err)
-            printf ("[getnameinfo failed: %s]", gpg_strerror (err));
+            printf ("[resolve_dns_addr failed: %s]", gpg_strerror (err));
           else
             {
               printf ("%s", host);
@@ -236,7 +236,7 @@ main (int argc, char **argv)
                                   (opt_bracket? DNS_WITHBRACKET:0),
                                   &host);
           if (err)
-            printf ("[getnameinfo failed (2): %s]", gpg_strerror (err));
+            printf ("[resolve_dns_addr failed (2): %s]", gpg_strerror (err));
           else
             {
               if (!is_ip_address (host))
