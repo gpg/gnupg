@@ -146,8 +146,9 @@ resolve_name_standard (const char *name, unsigned short port,
   memset (&hints, 0, sizeof hints);
   hints.ai_family = want_family;
   hints.ai_socktype = want_socktype;
+  hints.ai_flags = AI_ADDRCONFIG;
   if (r_canonname)
-    hints.ai_flags = AI_CANONNAME;
+    hints.ai_flags |= AI_CANONNAME;
 
   if (port)
     snprintf (portstr, sizeof portstr, "%hu", port);
