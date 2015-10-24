@@ -22,9 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#ifndef HAVE_W32_SYSTEM
-# include <netdb.h>
-#endif
+
 
 #include "util.h"
 #include "dns-stuff.h"
@@ -45,6 +43,7 @@ main (int argc, char **argv)
   int opt_tor = 0;
   int opt_cert = 0;
   int opt_srv = 0;
+  int opt_bracket = 0;
   char const *name = NULL;
 
   gpgrt_init ();
@@ -66,6 +65,7 @@ main (int argc, char **argv)
                  "  --verbose         print timings etc.\n"
                  "  --debug           flyswatter\n"
                  "  --use-tor         use Tor\n"
+                 "  --bracket         enclose v6 addresses in brackets\n"
                  "  --cert            lookup a CERT RR\n"
                  "  --srv             lookup a SRV RR\n"
                  , stdout);
@@ -85,6 +85,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--use-tor"))
         {
           opt_tor = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--bracket"))
+        {
+          opt_bracket = 1;
           argc--; argv++;
         }
       else if (!strcmp (*argv, "--cert"))
@@ -194,8 +199,7 @@ main (int argc, char **argv)
     {
       char *cname;
       dns_addrinfo_t aibuf, ai;
-      int ret;
-      char hostbuf[1025];
+      char *host;
 
       printf ("Lookup on '%s'\n", name);
 
@@ -216,14 +220,30 @@ main (int argc, char **argv)
                   ai->family == AF_INET?  "inet4" : "?    ",
                   ai->socktype, ai->protocol);
 
-          ret = getnameinfo (ai->addr, ai->addrlen,
-                             hostbuf, sizeof hostbuf,
-                             NULL, 0,
-                             NI_NUMERICHOST);
-          if (ret)
-            printf ("[getnameinfo failed: %s]\n", gai_strerror (ret));
+          err = resolve_dns_addr (ai->addr, ai->addrlen,
+                                  (DNS_NUMERICHOST
+                                   | (opt_bracket? DNS_WITHBRACKET:0)),
+                                  &host);
+          if (err)
+            printf ("[getnameinfo failed: %s]", gpg_strerror (err));
           else
-            printf ("%s\n", hostbuf);
+            {
+              printf ("%s", host);
+              xfree (host);
+            }
+
+          err = resolve_dns_addr (ai->addr, ai->addrlen,
+                                  (opt_bracket? DNS_WITHBRACKET:0),
+                                  &host);
+          if (err)
+            printf ("[getnameinfo failed (2): %s]", gpg_strerror (err));
+          else
+            {
+              if (!is_ip_address (host))
+                printf ("  (%s)", host);
+              xfree (host);
+            }
+          putchar ('\n');
         }
       xfree (cname);
       free_dns_addrinfo (aibuf);

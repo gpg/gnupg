@@ -54,6 +54,11 @@
 #include "host2net.h"
 #include "dns-stuff.h"
 
+
+#if AF_UNSPEC != 0
+# error AF_UNSPEC does not have the value 0
+#endif
+
 /* Not every installation has gotten around to supporting SRVs or
    CERTs yet... */
 #ifndef T_SRV
@@ -96,6 +101,30 @@ free_dns_addrinfo (dns_addrinfo_t ai)
 }
 
 
+static gpg_error_t
+map_eai_to_gpg_error (int ec)
+{
+  gpg_error_t err;
+
+  switch (ec)
+    {
+    case EAI_AGAIN:     err = gpg_error (GPG_ERR_EAGAIN); break;
+    case EAI_BADFLAGS:  err = gpg_error (GPG_ERR_INV_FLAG); break;
+    case EAI_FAIL:      err = gpg_error (GPG_ERR_SERVER_FAILED); break;
+    case EAI_MEMORY:    err = gpg_error (GPG_ERR_ENOMEM); break;
+    case EAI_NODATA:    err = gpg_error (GPG_ERR_NO_DATA); break;
+    case EAI_NONAME:    err = gpg_error (GPG_ERR_NO_NAME); break;
+    case EAI_SERVICE:   err = gpg_error (GPG_ERR_NOT_SUPPORTED); break;
+    case EAI_ADDRFAMILY:err = gpg_error (GPG_ERR_EADDRNOTAVAIL); break;
+    case EAI_FAMILY:    err = gpg_error (GPG_ERR_EAFNOSUPPORT); break;
+    case EAI_SOCKTYPE:  err = gpg_error (GPG_ERR_ESOCKTNOSUPPORT); break;
+    case EAI_SYSTEM:    err = gpg_error_from_syserror (); break;
+    default:            err = gpg_error (GPG_ERR_UNKNOWN_ERRNO); break;
+    }
+  return err;
+}
+
+
 /* Resolve a name using the standard system function.  */
 static gpg_error_t
 resolve_name_standard (const char *name, unsigned short port,
@@ -132,21 +161,7 @@ resolve_name_standard (const char *name, unsigned short port,
   if (ret)
     {
       aibuf = NULL;
-      switch (ret)
-        {
-        case EAI_AGAIN:     err = gpg_error (GPG_ERR_EAGAIN); break;
-        case EAI_BADFLAGS:  err = gpg_error (GPG_ERR_INV_FLAG); break;
-        case EAI_FAIL:      err = gpg_error (GPG_ERR_SERVER_FAILED); break;
-        case EAI_MEMORY:    err = gpg_error (GPG_ERR_ENOMEM); break;
-        case EAI_NODATA:    err = gpg_error (GPG_ERR_NO_DATA); break;
-        case EAI_NONAME:    err = gpg_error (GPG_ERR_NO_NAME); break;
-        case EAI_SERVICE:   err = gpg_error (GPG_ERR_NOT_SUPPORTED); break;
-        case EAI_ADDRFAMILY:err = gpg_error (GPG_ERR_EADDRNOTAVAIL); break;
-        case EAI_FAMILY:    err = gpg_error (GPG_ERR_EAFNOSUPPORT); break;
-        case EAI_SOCKTYPE:  err = gpg_error (GPG_ERR_ESOCKTNOSUPPORT); break;
-        case EAI_SYSTEM:    err = gpg_error_from_syserror (); break;
-        default:            err = gpg_error (GPG_ERR_UNKNOWN_ERRNO); break;
-        }
+      err = map_eai_to_gpg_error (ret);
       goto leave;
     }
 
@@ -193,6 +208,66 @@ resolve_name_standard (const char *name, unsigned short port,
 }
 
 
+/* Resolve an address using the standard system function.  */
+static gpg_error_t
+resolve_addr_standard (const struct sockaddr *addr, int addrlen,
+                       unsigned int flags, char **r_name)
+{
+  gpg_error_t err;
+  int ec;
+  char *buffer, *p;
+  int buflen;
+
+  *r_name = NULL;
+
+  buflen = NI_MAXHOST;
+  buffer = xtrymalloc (buflen + 2 + 1);
+  if (!buffer)
+    return gpg_error_from_syserror ();
+
+  if ((flags & DNS_NUMERICHOST) || tor_mode)
+    ec = EAI_NONAME;
+  else
+    ec = getnameinfo (addr, addrlen, buffer, buflen, NULL, 0, NI_NAMEREQD);
+
+  if (!ec && *buffer == '[')
+    ec = EAI_FAIL;  /* A name may never start with a bracket.  */
+  else if (ec == EAI_NONAME)
+    {
+      p = buffer;
+      if (addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+        {
+          *p++ = '[';
+          buflen -= 2;
+        }
+      ec = getnameinfo (addr, addrlen, p, buflen, NULL, 0, NI_NUMERICHOST);
+      if (!ec && addr->sa_family == AF_INET6 && (flags & DNS_WITHBRACKET))
+        strcat (buffer, "]");
+    }
+
+  if (ec)
+    err = map_eai_to_gpg_error (ec);
+  else
+    {
+      p = xtryrealloc (buffer, strlen (buffer)+1);
+      if (!p)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          buffer = p;
+          err = 0;
+        }
+    }
+
+  if (err)
+    xfree (buffer);
+  else
+    *r_name = buffer;
+
+  return err;
+}
+
+
 /* This a wrapper around getaddrinfo with slighly different semantics.
    NAME is the name to resolve.
    PORT is the requested port or 0.
@@ -216,6 +291,85 @@ resolve_dns_name (const char *name, unsigned short port,
   return resolve_name_standard (name, port, want_family, want_socktype,
                                 r_ai, r_canonname);
 #endif
+}
+
+
+gpg_error_t
+resolve_dns_addr (const struct sockaddr *addr, int addrlen,
+                  unsigned int flags, char **r_name)
+{
+#ifdef USE_ADNS_disabled_for_now
+  return resolve_addr_adns (addr, addrlen, flags, r_name);
+#else
+  return resolve_addr_standard (addr, addrlen, flags, r_name);
+#endif
+}
+
+
+/* Check whether NAME is an IP address.  Returns true if it is either
+   an IPv6 or IPv4 numerical address.  */
+int
+is_ip_address (const char *name)
+{
+  const char *s;
+  int ndots, dblcol, n;
+
+  if (*name == '[')
+    return 1; /* yes: A legal DNS name may not contain this character;
+                 this mut be bracketed v6 address.  */
+  if (*name == '.')
+    return 0; /* No.  A leading dot is not a valid IP address.  */
+
+  /* Check whether this is a v6 address.  */
+  ndots = n = dblcol = 0;
+  for (s=name; *s; s++)
+    {
+      if (*s == ':')
+        {
+          ndots++;
+          if (s[1] == ':')
+            {
+              ndots++;
+              if (dblcol)
+                return 0; /* No: Only one "::" allowed.  */
+              dblcol++;
+              if (s[1])
+                s++;
+            }
+          n = 0;
+        }
+      else if (*s == '.')
+        goto legacy;
+      else if (!strchr ("0123456789abcdefABCDEF", *s))
+        return 0; /* No: Not a hex digit.  */
+      else if (++n > 4)
+        return 0; /* To many digits in a group.  */
+    }
+  if (ndots > 7)
+    return 0; /* No: Too many colons.  */
+  else if (ndots > 1)
+    return 1; /* Yes: At least 2 colons indicate an v6 address.  */
+
+ legacy:
+  /* Check whether it is legacy IP address.  */
+  ndots = n = 0;
+  for (s=name; *s; s++)
+    {
+      if (*s == '.')
+        {
+          if (s[1] == '.')
+            return 0; /* No:  Douple dot. */
+          if (atoi (s+1) > 255)
+            return 0; /* No:  Ipv4 byte value too large.  */
+          ndots++;
+          n = 0;
+        }
+      else if (!strchr ("0123456789", *s))
+        return 0; /* No: Not a digit.  */
+      else if (++n > 3)
+        return 0; /* No: More than 3 digits.  */
+    }
+  return !!(ndots == 3);
 }
 
 

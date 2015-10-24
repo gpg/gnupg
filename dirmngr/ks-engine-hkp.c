@@ -280,38 +280,6 @@ my_getnameinfo (dns_addrinfo_t ai, char *host, size_t hostlen,
 }
 
 
-/* Check whether NAME is an IP address.  */
-static int
-is_ip_address (const char *name)
-{
-  int ndots, n;
-
-  if (*name == '[')
-    return 1;
-  /* Check whether it is legacy IP address.  */
-  if (*name == '.')
-    return 0; /* No.  */
-  ndots = n = 0;
-  for (; *name; name++)
-    {
-      if (*name == '.')
-        {
-          if (name[1] == '.')
-            return 0; /* No. */
-          if (atoi (name+1) > 255)
-            return 0; /* Value too large.  */
-          ndots++;
-          n = 0;
-        }
-      else if (!strchr ("012345678", *name))
-        return 0; /* Not a digit.  */
-      else if (++n > 3)
-        return 0; /* More than 3 digits.  */
-    }
-  return !!(ndots == 3);
-}
-
-
 /* Map the host name NAME to the actual to be used host name.  This
    allows us to manage round robin DNS names.  We use our own strategy
    to choose one of the hosts.  For example we skip those hosts which

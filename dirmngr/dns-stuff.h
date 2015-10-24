@@ -40,7 +40,16 @@
 # include <sys/socket.h>
 #endif
 
+/*
+ * Flags used with resolve_dns_addr.
+ */
+#define DNS_NUMERICHOST        1  /* Force numeric output format.  */
+#define DNS_WITHBRACKET        2  /* Put brackets around numeric v6
+                                     addresses.  */
 
+/*
+ * Constants for use with get_dns_cert.
+ */
 #define DNS_CERTTYPE_ANY       0 /* Internal catch all type. */
 /* Certificate types according to RFC-4398:  */
 #define DNS_CERTTYPE_PKIX      1 /* X.509 as per PKIX. */
@@ -57,6 +66,8 @@
 /* Hacks for our implementation.  */
 #define DNS_CERTTYPE_RRBASE 1024 /* Base of special constants.  */
 #define DNS_CERTTYPE_RR61   (DNS_CERTTYPE_RRBASE + 61)
+
+
 
 struct dns_addrinfo_s;
 typedef struct dns_addrinfo_s *dns_addrinfo_t;
@@ -87,16 +98,24 @@ gpg_error_t enable_dns_tormode (void);
 
 void free_dns_addrinfo (dns_addrinfo_t ai);
 
-/* Provide function similar to getaddrinfo.  */
+/* Function similar to getaddrinfo.  */
 gpg_error_t resolve_dns_name (const char *name, unsigned short port,
                               int want_family, int want_socktype,
                               dns_addrinfo_t *r_dai, char **r_canonname);
+
+/* Function similar to getnameinfo.  */
+gpg_error_t resolve_dns_addr (const struct sockaddr *addr, int addrlen,
+                              unsigned int flags, char **r_name);
+
+/* Return true if NAME is a numerical IP address.  */
+int is_ip_address (const char *name);
 
 /* Return a CERT record or an arbitray RR.  */
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
                           unsigned char **r_fpr, size_t *r_fprlen,
                           char **r_url);
+
 
 int getsrv (const char *name,struct srventry **list);
 
