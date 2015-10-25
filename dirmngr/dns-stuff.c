@@ -163,7 +163,29 @@ resolve_name_standard (const char *name, unsigned short port,
     {
       aibuf = NULL;
       err = map_eai_to_gpg_error (ret);
-      goto leave;
+      if (gpg_err_code (err) == GPG_ERR_NO_NAME)
+        {
+          /* There seems to be a bug in the glibc getaddrinfo function
+             if the CNAME points to a long list of A and AAAA records
+             in which case the function return NO_NAME.  Let's do the
+             CNAME redirection again.  */
+          char *cname;
+
+          if (get_dns_cname (name, &cname))
+            goto leave; /* Still no success.  */
+
+          ret = getaddrinfo (cname, *portstr? portstr : NULL, &hints, &aibuf);
+          xfree (cname);
+          if (ret)
+            {
+              aibuf = NULL;
+              err = map_eai_to_gpg_error (ret);
+              goto leave;
+            }
+          err = 0; /* Yep, now it worked.  */
+        }
+      else
+        goto leave;
     }
 
   if (r_canonname && aibuf && aibuf->ai_canonname)
@@ -1011,3 +1033,112 @@ getsrv (const char *name,struct srventry **list)
   return -1;
 }
 #endif /*USE_DNS_SRV*/
+
+
+gpg_error_t
+get_dns_cname (const char *name, char **r_cname)
+{
+  gpg_error_t err;
+  int rc;
+
+  *r_cname = NULL;
+
+#ifdef USE_ADNS
+  {
+    adns_state state;
+    adns_answer *answer = NULL;
+
+    if (my_adns_init (&state))
+      return gpg_error (GPG_ERR_GENERAL);
+
+    rc = adns_synchronous (state, name, adns_r_cname, adns_qf_quoteok_query,
+                           &answer);
+    if (rc)
+      {
+        err = gpg_error_from_syserror ();
+        log_error ("DNS query failed: %s\n", gpg_strerror (err));
+        adns_finish (state);
+        return err;
+      }
+    if (answer->status != adns_s_ok
+        || answer->type != adns_r_cname || answer->nrrs != 1)
+      {
+        err = gpg_error (GPG_ERR_GENERAL);
+        log_error ("DNS query returned an error or no records: %s (%s)\n",
+                   adns_strerror (answer->status),
+                   adns_errabbrev (answer->status));
+        adns_free (answer);
+        adns_finish (state);
+        return err;
+      }
+    *r_cname = xtrystrdup (answer->rrs.str[0]);
+    if (!*r_cname)
+      err = gpg_error_from_syserror ();
+    else
+      err = 0;
+
+    adns_free (answer);
+    adns_finish (state);
+    return err;
+  }
+#else /*!USE_ADNS*/
+  {
+    unsigned char answer[2048];
+    HEADER *header = (HEADER *)answer;
+    unsigned char *pt, *emsg;
+    int r;
+    char *cname;
+    int cnamesize = 1025;
+    u16 count;
+
+    /* Do not allow a query using the standard resolver in Tor mode.  */
+    if (tor_mode)
+      return -1;
+
+    r = res_query (name, C_IN, T_CERT, answer, sizeof answer);
+    if (r < sizeof (HEADER) || r > sizeof answer)
+      return gpg_error (GPG_ERR_SERVER_FAILED);
+    if (header->rcode != NOERROR || !(count=ntohs (header->ancount)))
+      return gpg_error (GPG_ERR_NO_NAME); /* Error or no record found.  */
+    if (count != 1)
+      return gpg_error (GPG_ERR_SERVER_FAILED);
+
+    emsg = &answer[r];
+    pt = &answer[sizeof(HEADER)];
+    rc = dn_skipname (pt, emsg);
+    if (rc == -1)
+      return gpg_error (GPG_ERR_SERVER_FAILED);
+
+    pt += rc + QFIXEDSZ;
+    if (pt >= emsg)
+      return gpg_error (GPG_ERR_SERVER_FAILED);
+
+    rc = dn_skipname (pt, emsg);
+    if (rc == -1)
+      return gpg_error (GPG_ERR_SERVER_FAILED);
+    pt += rc + 2 + 2 + 4;
+    if (pt+2 >= emsg)
+      return gpg_error (GPG_ERR_SERVER_FAILED);
+    pt += 2;  /* Skip rdlen */
+
+    cname = xtrymalloc (cnamesize);
+    if (!cname)
+      return gpg_error_from_syserror ();
+
+    rc = dn_expand (answer, emsg, pt, cname, cnamesize -1);
+    if (rc == -1)
+      {
+        xfree (cname);
+        return gpg_error (GPG_ERR_SERVER_FAILED);
+      }
+    *r_cname = xtryrealloc (cname, strlen (cname)+1);
+    if (!*r_cname)
+      {
+        err = gpg_error_from_syserror ();
+        xfree (cname);
+        return err;
+      }
+    return 0;
+  }
+#endif /*!USE_ADNS*/
+}

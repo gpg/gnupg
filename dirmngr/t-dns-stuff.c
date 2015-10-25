@@ -44,6 +44,7 @@ main (int argc, char **argv)
   int opt_cert = 0;
   int opt_srv = 0;
   int opt_bracket = 0;
+  int opt_cname = 0;
   char const *name = NULL;
 
   gpgrt_init ();
@@ -68,6 +69,7 @@ main (int argc, char **argv)
                  "  --bracket         enclose v6 addresses in brackets\n"
                  "  --cert            lookup a CERT RR\n"
                  "  --srv             lookup a SRV RR\n"
+                 "  --cname           lookup a CNAME RR\n"
                  , stdout);
           exit (0);
         }
@@ -100,6 +102,11 @@ main (int argc, char **argv)
       else if (!strcmp (*argv, "--srv"))
         {
           any_options = opt_srv = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--cname"))
+        {
+          any_options = opt_cname = 1;
           argc--; argv++;
         }
       else if (!strncmp (*argv, "--", 2))
@@ -176,6 +183,22 @@ main (int argc, char **argv)
       xfree (key);
       xfree (fpr);
       xfree (url);
+    }
+  else if (opt_cname)
+    {
+      char *cname;
+
+      printf ("CNAME lookup on '%s'\n", name);
+      err = get_dns_cname (name, &cname);
+      if (err)
+        printf ("get_dns_cname failed: %s <%s>\n",
+                gpg_strerror (err), gpg_strsource (err));
+      else
+        {
+          printf ("CNAME found: '%s'\n", cname);
+        }
+
+      xfree (cname);
     }
   else if (opt_srv)
     {

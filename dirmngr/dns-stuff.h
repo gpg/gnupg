@@ -110,6 +110,9 @@ gpg_error_t resolve_dns_addr (const struct sockaddr *addr, int addrlen,
 /* Return true if NAME is a numerical IP address.  */
 int is_ip_address (const char *name);
 
+/* Get the canonical name for NAME.  */
+gpg_error_t get_dns_cname (const char *name, char **r_cname);
+
 /* Return a CERT record or an arbitray RR.  */
 gpg_error_t get_dns_cert (const char *name, int want_certtype,
                           void **r_key, size_t *r_keylen,
