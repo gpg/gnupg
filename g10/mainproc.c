@@ -1838,7 +1838,8 @@ check_sig_and_print (CTX c, kbnode_t node)
       snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX [uncertain] ",
                 (ulong)sig->keyid[0], (ulong)sig->keyid[1]);
 
-      /* Find and print the primary user ID.  */
+      /* Find and print the primary user ID along with the
+         "Good|Expired|Bad signature" line.  */
       for (un=keyblock; un; un = un->next)
         {
           int valid;
@@ -1866,8 +1867,13 @@ check_sig_and_print (CTX c, kbnode_t node)
 
 	  /* Since this is just informational, don't actually ask the
 	     user to update any trust information.  (Note: we register
-	     the signature later.)  */
-          valid = get_validity (pk, un->pkt->pkt.user_id, NULL, 0);
+	     the signature later.)  Because print_good_bad_signature
+	     does not print a LF we need to compute the validity
+	     before calling that function.  */
+          if ((opt.verify_options & VERIFY_SHOW_UID_VALIDITY))
+            valid = get_validity (pk, un->pkt->pkt.user_id, NULL, 0);
+          else
+            valid = 0; /* Not used.  */
 
           keyid_str[17] = 0; /* cut off the "[uncertain]" part */
 
@@ -1878,11 +1884,17 @@ check_sig_and_print (CTX c, kbnode_t node)
           else
             log_printf ("\n");
 
+          /* Get a string description of the algo for informational
+             output we want to print later.  It is convenient to do it
+             here because we already have the right public key. */
           pubkey_string (pk, pkstrbuf, sizeof pkstrbuf);
           count++;
 	}
 
-      if (!count)  /* Just in case that we have no valid textual userid */
+      /* In case we did not found a valid valid textual userid above
+         we print the first user id packet or a "[?]" instead along
+         with the "Good|Expired|Bad signature" line.  */
+      if (!count)
         {
           /* Try for an invalid textual userid */
           for (un=keyblock; un; un = un->next)
@@ -1927,11 +1939,12 @@ check_sig_and_print (CTX c, kbnode_t node)
                    || un->pkt->pkt.user_id->is_expired)
                   && !(opt.verify_options & VERIFY_SHOW_UNUSABLE_UIDS))
                 continue;
-              /* Only skip textual primaries */
+              /* Skip textual primary user ids which we printed above. */
               if (un->pkt->pkt.user_id->is_primary
                   && !un->pkt->pkt.user_id->attrib_data )
                 continue;
 
+              /* If this user id has attribute data, print that.  */
               if (un->pkt->pkt.user_id->attrib_data)
                 {
                   dump_attribs (un->pkt->pkt.user_id, pk);
@@ -1969,6 +1982,7 @@ check_sig_and_print (CTX c, kbnode_t node)
 	}
       release_kbnode( keyblock );
 
+      /* For good signatures print notation data.  */
       if (!rc)
         {
           if ((opt.verify_options & VERIFY_SHOW_POLICY_URLS))
@@ -1990,9 +2004,9 @@ check_sig_and_print (CTX c, kbnode_t node)
             show_notation (sig, 0, 2, 0);
         }
 
+      /* For good signatures print the VALIDSIG status line.  */
       if (!rc && is_status_enabled ())
         {
-          /* Print a status response with the fingerprint. */
           PKT_public_key *vpk = xmalloc_clear (sizeof *vpk);
 
           if (!get_pubkey (vpk, sig->keyid))
@@ -2040,6 +2054,9 @@ check_sig_and_print (CTX c, kbnode_t node)
           free_public_key (vpk);
 	}
 
+      /* For good signatures compute and print the trust information.
+         Note that in the Tofu trust model this may ask the user on
+         how to resolve a conflict.  */
       if (!rc)
         {
           if ((opt.verify_options & VERIFY_PKA_LOOKUPS))
@@ -2047,6 +2064,7 @@ check_sig_and_print (CTX c, kbnode_t node)
           rc = check_signatures_trust (sig);
         }
 
+      /* Print extra information about the signature.  */
       if (sig->flags.expired)
         {
           log_info (_("Signature expired %s\n"), asctimestamp(sig->expiredate));
@@ -2063,6 +2081,7 @@ check_sig_and_print (CTX c, kbnode_t node)
                   *pkstrbuf?_(", key algorithm "):"",
                   pkstrbuf);
 
+      /* Print final warnings.  */
       if (!rc && !c->signed_data.used)
         {
           /* Signature is basically good but we test whether the
