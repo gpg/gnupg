@@ -2212,6 +2212,32 @@ connect_server (const char *server, unsigned short port,
   init_sockets ();
 #endif /*Windows*/
 
+  /* Onion addresses require special treatment.  */
+  if (is_onion_address (server))
+    {
+#ifdef ASSUAN_SOCK_TOR
+
+      my_unprotect ();
+      sock = assuan_sock_connect_byname (server, port, 0, NULL,
+                                         ASSUAN_SOCK_TOR);
+      my_protect ();
+
+      if (sock == ASSUAN_INVALID_FD)
+        {
+          if (errno == EHOSTUNREACH)
+            *r_host_not_found = 1;
+          log_error ("can't connect to '%s': %s\n", server, strerror (errno));
+        }
+      return sock;
+
+#else /*!ASSUAN_SOCK_TOR*/
+
+      gpg_err_set_errno (ENETUNREACH);
+      return -1; /* Out of core.  */
+
+#endif /*!HASSUAN_SOCK_TOR*/
+    }
+
 #ifdef USE_DNS_SRV
   /* Do the SRV thing */
   if (srvtag)

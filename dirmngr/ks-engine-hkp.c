@@ -80,6 +80,7 @@ struct hostinfo_s
   int poolidx;       /* Index into POOL with the used host.  -1 if not set.  */
   unsigned int v4:1; /* Host supports AF_INET.  */
   unsigned int v6:1; /* Host supports AF_INET6.  */
+  unsigned int onion:1;/* NAME is an onion (Tor HS) address.  */
   unsigned int dead:1; /* Host is currently unresponsive.  */
   time_t died_at;    /* The time the host was marked dead.  If this is
                         0 the host has been manually marked dead.  */
@@ -124,6 +125,7 @@ create_new_hostinfo (const char *name)
   hi->lastfail = (time_t)(-1);
   hi->v4 = 0;
   hi->v6 = 0;
+  hi->onion = 0;
   hi->dead = 0;
   hi->died_at = 0;
   hi->cname = NULL;
@@ -267,7 +269,15 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
 
   /* See whether the host is in our table.  */
   idx = find_hostinfo (name);
-  if (idx == -1)
+  if (idx == -1 && is_onion_address (name))
+    {
+      idx = create_new_hostinfo (name);
+      if (idx == -1)
+        return gpg_error_from_syserror ();
+      hi = hosttable[idx];
+      hi->onion = 1;
+    }
+  else if (idx == -1)
     {
       /* We never saw this host.  Allocate a new entry.  */
       dns_addrinfo_t aibuf, ai;
@@ -512,6 +522,11 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv4;
       if (!hi->v6)
         *r_httpflags |= HTTP_FLAG_IGNORE_IPv6;
+
+      /* Note that we do not set the HTTP_FLAG_FORCE_TOR for onion
+         addresses because the http module detects this itself.  This
+         also allows us to use an onion address without Tor mode being
+         enabled.  */
     }
 
   *r_host = xtrystrdup (hi->name);
@@ -683,7 +698,9 @@ ks_hkp_print_hosttable (ctrl_t ctrl)
         else
           diedstr = died = NULL;
         err = ks_printf_help (ctrl, "%3d %s %s %s %s%s%s%s%s%s%s%s\n",
-                              idx, hi->v6? "6":" ", hi->v4? "4":" ",
+                              idx,
+                              hi->onion? "O" : hi->v6? "6":" ",
+                              hi->v4? "4":" ",
                               hi->dead? "d":" ",
                               hi->name,
                               hi->v6addr? " v6=":"",

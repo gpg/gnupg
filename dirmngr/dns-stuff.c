@@ -403,6 +403,20 @@ is_ip_address (const char *name)
 }
 
 
+/* Return true if NAME is an onion address.  */
+int
+is_onion_address (const char *name)
+{
+  size_t len;
+
+  len = name? strlen (name) : 0;
+  if (len < 8 || strcmp (name + len - 6, ".onion"))
+    return 0;
+  /* Note that we require at least 2 characters before the suffix.  */
+  return 1;  /* Yes.  */
+}
+
+
 #ifdef USE_ADNS
 /* Init ADNS and store the new state at R_STATE.  Returns 0 on
    success; prints an error message and returns an error code on

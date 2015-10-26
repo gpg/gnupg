@@ -110,6 +110,9 @@ gpg_error_t resolve_dns_addr (const struct sockaddr *addr, int addrlen,
 /* Return true if NAME is a numerical IP address.  */
 int is_ip_address (const char *name);
 
+/* Return true if NAME is an onion address.  */
+int is_onion_address (const char *name);
+
 /* Get the canonical name for NAME.  */
 gpg_error_t get_dns_cname (const char *name, char **r_cname);
 
