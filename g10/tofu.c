@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <sched.h>
 #include <sqlite3.h>
 
 #include "gpg.h"
@@ -422,6 +423,9 @@ sqlite3_stepx (sqlite3 *db,
 }
 
 static int batch_update;
+static time_t batch_update_started;
+
+static gpg_error_t end_transaction (struct db *db, int only_batch);
 
 /* Start a transaction on DB.  */
 static gpg_error_t
@@ -429,6 +433,29 @@ begin_transaction (struct db *db, int only_batch)
 {
   int rc;
   char *err = NULL;
+
+  if (batch_update && batch_update_started != gnupg_get_time ())
+    /* We've been in batch update mode for a while (on average, more
+       than 500 ms).  To prevent starving other gpg processes, we drop
+       and retake the batch lock.
+
+       Note: if we wanted higher resolution, we could use
+       npth_clock_gettime.  */
+    {
+      struct db *t;
+
+      for (t = db_cache; t; t = t->next)
+        if (t->batch_update)
+          end_transaction (t, 1);
+      for (t = db; t; t = t->next)
+        if (t->batch_update)
+          end_transaction (t, 1);
+
+      batch_update_started = gnupg_get_time ();
+
+      /* Yield to allow another process a chance to run.  */
+      sched_yield ();
+    }
 
   /* XXX: In split mode, this can end in deadlock.
 
@@ -556,6 +583,9 @@ rollback_transaction (struct db *db)
 void
 tofu_begin_batch_update (void)
 {
+  if (! batch_update)
+    batch_update_started = gnupg_get_time ();
+
   batch_update ++;
 }
 
