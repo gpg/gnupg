@@ -132,7 +132,9 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
      which is associated with the inode of a deleted file.  */
   check_trustdb_stale ();
 
+#ifdef USE_TOFU
   tofu_begin_batch_update ();
+#endif
 
   if (locate_mode)
     locate_one (ctrl, list);
@@ -141,7 +143,9 @@ public_key_list (ctrl_t ctrl, strlist_t list, int locate_mode)
   else
     list_one (ctrl, list, 0, opt.with_secret);
 
+#ifdef USE_TOFU
   tofu_end_batch_update ();
+#endif
 }
 
 
