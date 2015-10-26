@@ -289,9 +289,24 @@ sqlite3_stepx (sqlite3 *db,
     }
   else
     {
-      rc = sqlite3_prepare_v2 (db, sql, -1, &stmt, NULL);
+      const char *tail = NULL;
+
+      rc = sqlite3_prepare_v2 (db, sql, -1, &stmt, &tail);
       if (rc)
         log_fatal ("failed to prepare SQL: %s", sql);
+
+      /* We can only process a single statement.  */
+      if (tail)
+        {
+          while (*tail == ' ' || *tail == ';')
+            tail ++;
+
+          if (*tail)
+            log_fatal
+              ("sqlite3_stepx can only process a single SQL statement."
+               "  Second statement starts with: '%s'\n",
+               tail);
+        }
 
       if (stmtp)
         *stmtp = stmt;
