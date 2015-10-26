@@ -59,6 +59,11 @@
 # error AF_UNSPEC does not have the value 0
 #endif
 
+/* Windows does not support tge AI_ADDRCONFIG flag - use zero instead.  */
+#ifndef AI_ADDRCONFIG
+# define AI_ADDRCONFIG 0
+#endif
+
 /* Not every installation has gotten around to supporting SRVs or
    CERTs yet... */
 #ifndef T_SRV
@@ -115,10 +120,12 @@ map_eai_to_gpg_error (int ec)
     case EAI_NODATA:    err = gpg_error (GPG_ERR_NO_DATA); break;
     case EAI_NONAME:    err = gpg_error (GPG_ERR_NO_NAME); break;
     case EAI_SERVICE:   err = gpg_error (GPG_ERR_NOT_SUPPORTED); break;
-    case EAI_ADDRFAMILY:err = gpg_error (GPG_ERR_EADDRNOTAVAIL); break;
     case EAI_FAMILY:    err = gpg_error (GPG_ERR_EAFNOSUPPORT); break;
     case EAI_SOCKTYPE:  err = gpg_error (GPG_ERR_ESOCKTNOSUPPORT); break;
+#ifndef HAVE_W32_SYSTEM
+    case EAI_ADDRFAMILY:err = gpg_error (GPG_ERR_EADDRNOTAVAIL); break;
     case EAI_SYSTEM:    err = gpg_error_from_syserror (); break;
+#endif
     default:            err = gpg_error (GPG_ERR_UNKNOWN_ERRNO); break;
     }
   return err;

@@ -2205,46 +2205,12 @@ connect_server (const char *server, unsigned short port,
   int srv, connected;
   int last_errno = 0;
   struct srventry *serverlist = NULL;
-#ifdef HAVE_W32_SYSTEM
-  unsigned long inaddr;
-#endif
   int ret;
 
   *r_host_not_found = 0;
-#ifdef HAVE_W32_SYSTEM
-
-#ifndef HTTP_NO_WSASTARTUP
+#if defined(HAVE_W32_SYSTEM) && !defined(HTTP_NO_WSASTARTUP)
   init_sockets ();
-#endif
-  /* Win32 gethostbyname doesn't handle IP addresses internally, so we
-     try inet_addr first on that platform only. */
-  inaddr = inet_addr(server);
-  if ( inaddr != INADDR_NONE )
-    {
-      struct sockaddr_in addr;
-
-      memset(&addr,0,sizeof(addr));
-
-      sock = assuan_sock_new (AF_INET, SOCK_STREAM, 0);
-      if (sock == ASSUAN_INVALID_FD)
-	{
-	  log_error ("error creating socket: %s\n", strerror (errno));
-	  return ASSUAN_INVALID_FD;
-	}
-
-      addr.sin_family = AF_INET;
-      addr.sin_port = htons(port);
-      memcpy (&addr.sin_addr,&inaddr,sizeof(inaddr));
-
-      my_unprotect ();
-      ret = assuan_sock_connect (sock,(struct sockaddr *)&addr,sizeof(addr));
-      my_protect ();
-      if (!ret)
-	return sock;
-      assuan_sock_close (sock);
-      return ASSUAN_INVALID_FD;
-    }
-#endif /*HAVE_W32_SYSTEM*/
+#endif /*Windows*/
 
 #ifdef USE_DNS_SRV
   /* Do the SRV thing */
