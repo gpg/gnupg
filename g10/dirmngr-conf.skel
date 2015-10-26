@@ -29,6 +29,9 @@
 # Example HKP keyservers:
 #      hkp://keys.gnupg.net
 #
+# Example HKP keyserver using a Tor hidden service
+#      hkp://dyh2j3qyrirn43iw.onion
+#
 # Example HKPS keyservers (see --hkp-cacert below):
 #       hkps://hkps.pool.sks-keyservers.net
 #
