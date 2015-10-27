@@ -376,6 +376,7 @@ enum cmd_and_opt_values
     oDisableDSA2,
     oAllowMultipleMessages,
     oNoAllowMultipleMessages,
+    oAllowWeakDigestAlgos,
 
     oNoop
   };
@@ -725,6 +726,7 @@ static ARGPARSE_OPTS opts[] = {
     { oDisableDSA2, "disable-dsa2", 0, "@"},
     { oAllowMultipleMessages, "allow-multiple-messages", 0, "@"},
     { oNoAllowMultipleMessages, "no-allow-multiple-messages", 0, "@"},
+    { oAllowWeakDigestAlgos, "allow-weak-digest-algos", 0, "@"},
 
     /* These two are aliases to help users of the PGP command line
        product use gpg with minimal pain.  Many commands are common
@@ -2876,6 +2878,10 @@ main (int argc, char **argv )
 	    opt.flags.allow_multiple_messages=0;
 	    break;
 
+          case oAllowWeakDigestAlgos:
+            opt.flags.allow_weak_digest_algos = 1;
+            break;
+
 	  case oNoop: break;
 
 	  default : pargs.err = configfp? 1:2; break;
@@ -3043,6 +3049,7 @@ main (int argc, char **argv )
 	    opt.pgp2_workarounds = 1;
 	    opt.ask_sig_expire = 0;
 	    opt.ask_cert_expire = 0;
+            opt.flags.allow_weak_digest_algos = 1;
 	    xfree(def_digest_string);
 	    def_digest_string = xstrdup("md5");
 	    xfree(s2k_digest_string);
