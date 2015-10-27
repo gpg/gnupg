@@ -377,6 +377,7 @@ enum cmd_and_opt_values
     oAllowMultipleMessages,
     oNoAllowMultipleMessages,
     oAllowWeakDigestAlgos,
+    oWeakDigest,
 
     oNoop
   };
@@ -689,6 +690,7 @@ static ARGPARSE_OPTS opts[] = {
     { oPersonalCipherPreferences,  "personal-cipher-preferences", 2, "@"},
     { oPersonalDigestPreferences,  "personal-digest-preferences", 2, "@"},
     { oPersonalCompressPreferences,  "personal-compress-preferences", 2, "@"},
+    { oWeakDigest,  "weak-digest", 2, "@"},
     /* Aliases.  I constantly mistype these, and assume other people
        do as well. */
     { oPersonalCipherPreferences, "personal-cipher-prefs", 2, "@"},
@@ -1923,6 +1925,8 @@ main (int argc, char **argv )
 #endif
     opt.disable_keypad = 1;  /* No keypad support; use gpg2 instead.  */
 #endif /*ENABLE_CARD_SUPPORT*/
+    opt.weak_digests = NULL;
+    additional_weak_digest("MD5");
 
     /* check whether we have a config file on the commandline */
     orig_argc = argc;
@@ -2793,6 +2797,9 @@ main (int argc, char **argv )
           case oDisplay: opt.display = pargs.r.ret_str; break;
           case oTTYname: opt.ttyname = pargs.r.ret_str; break;
           case oTTYtype: opt.ttytype = pargs.r.ret_str; break;
+          case oWeakDigest:
+	    additional_weak_digest(pargs.r.ret_str);
+	    break;
           case oLCctype: opt.lc_ctype = pargs.r.ret_str; break;
           case oLCmessages: opt.lc_messages = pargs.r.ret_str; break;
 	  case oGroup: add_group(pargs.r.ret_str); break;

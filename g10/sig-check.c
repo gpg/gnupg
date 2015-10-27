@@ -239,25 +239,24 @@ do_check( PKT_public_key *pk, PKT_signature *sig, MD_HANDLE digest,
 {
     MPI result = NULL;
     int rc=0;
+    struct weakhash *weak;
 
     if( (rc=do_check_messages(pk,sig,r_expired,r_revoked)) )
         return rc;
 
-    if (sig->digest_algo == DIGEST_ALGO_MD5
-        && !opt.flags.allow_weak_digest_algos)
-      {
-        static int shown;
-
-        if (!shown)
+    if (!opt.flags.allow_weak_digest_algos)
+      for (weak = opt.weak_digests; weak; weak = weak->next)
+        if (sig->digest_algo == weak->algo)
           {
-            log_info
-              (_("Note: signatures using the %s algorithm are rejected\n"),
-               "MD5");
-            shown = 1;
+            if (!weak->rejection_shown)
+              {
+                log_info
+                  (_("Note: signatures using the %s algorithm are rejected\n"),
+                   digest_algo_to_string(sig->digest_algo));
+                weak->rejection_shown = 1;
+              }
+            return G10ERR_DIGEST_ALGO;
           }
-
-        return G10ERR_DIGEST_ALGO;
-      }
 
     /* make sure the digest algo is enabled (in case of a detached signature)*/
     md_enable( digest, sig->digest_algo );

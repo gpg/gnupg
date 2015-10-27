@@ -332,6 +332,8 @@ print_cipher_algo_note( int algo )
 void
 print_digest_algo_note( int algo )
 {
+  const struct weakhash *weak;
+
   if(algo >= 100 && algo <= 110)
     {
       static int warn=0;
@@ -342,8 +344,11 @@ print_digest_algo_note( int algo )
 		   digest_algo_to_string(algo));
 	}
     }
-  else if(algo==DIGEST_ALGO_MD5)
-    md5_digest_warn (1);
+  else
+      for (weak = opt.weak_digests; weak; weak = weak->next)
+        if (weak->algo == algo)
+          log_info (_("WARNING: digest algorithm %s is deprecated\n"),
+                    digest_algo_to_string(algo));
 }
 
 /* Return a string which is used as a kind of process ID */
@@ -1310,3 +1315,32 @@ path_access(const char *file,int mode)
 }
 #endif /*ndef __VMS*/
 
+
+/* Ignore signatures and certifications made over certain digest
+ * algorithms.  This allows users to deprecate support for algorithms
+ * they are not willing to rely on.
+ */
+void
+additional_weak_digest (const char* digestname)
+{
+  struct weakhash *weak = NULL;
+  const int algo = string_to_digest_algo(digestname);
+
+  if (algo == 0)
+    {
+      log_error(_("Unknown weak digest '%s'\n"), digestname);
+      return;
+    }
+
+  /* Check to ensure it's not already present.  */
+  for (weak = opt.weak_digests; weak != NULL; weak = weak->next)
+    if (algo == weak->algo)
+      return;
+
+  /* Add it to the head of the list.  */
+  weak = xmalloc(sizeof(*weak));
+  weak->algo = algo;
+  weak->rejection_shown = 0;
+  weak->next = opt.weak_digests;
+  opt.weak_digests = weak;
+}

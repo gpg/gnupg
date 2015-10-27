@@ -60,6 +60,7 @@ enum cmd_and_opt_values { aNull = 0,
     oStatusFD,
     oLoggerFD,
     oHomedir,
+    oWeakDigest,
 aTest };
 
 
@@ -75,6 +76,7 @@ static ARGPARSE_OPTS opts[] = {
     { oStatusFD, "status-fd" ,1, N_("|FD|write status info to this FD") },
     { oLoggerFD, "logger-fd",1, "@" },
     { oHomedir, "homedir", 2, "@" },   /* defaults to "~/.gnupg" */
+    { oWeakDigest, "weak-digest", 2, "@" },   /* defaults to "~/.gnupg" */
 
 {0} };
 
@@ -143,6 +145,7 @@ main( int argc, char **argv )
     opt.keyserver_options.options|=KEYSERVER_AUTO_KEY_RETRIEVE;
     opt.trust_model = TM_ALWAYS;
     opt.batch = 1;
+    opt.weak_digests = NULL;
 
     opt.homedir = default_homedir ();
 
@@ -151,6 +154,7 @@ main( int argc, char **argv )
     dotlock_disable ();
 
     set_native_charset (NULL); /* Try to auto set the character set */
+    additional_weak_digest("MD5");
 
     pargs.argc = &argc;
     pargs.argv = &argv;
@@ -164,6 +168,7 @@ main( int argc, char **argv )
 	  case oStatusFD: set_status_fd( pargs.r.ret_int ); break;
 	  case oLoggerFD: log_set_logfile( NULL, pargs.r.ret_int ); break;
 	  case oHomedir: opt.homedir = pargs.r.ret_str; break;
+	  case oWeakDigest: additional_weak_digest(pargs.r.ret_str); break;
 	  case oIgnoreTimeConflict: opt.ignore_time_conflict = 1; break;
 	  default : pargs.err = 2; break;
 	}

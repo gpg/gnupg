@@ -60,6 +60,14 @@ struct groupitem
   struct groupitem *next;
 };
 
+struct weakhash
+{
+  int algo;
+  int rejection_shown;
+  struct weakhash *next;
+};
+
+
 /*-- gpg.c --*/
 extern int g10_errors_seen;
 
@@ -71,6 +79,7 @@ extern int g10_errors_seen;
 void print_pubkey_algo_note( int algo );
 void print_cipher_algo_note( int algo );
 void print_digest_algo_note( int algo );
+void additional_weak_digest (const char* digestname);
 
 /*-- armor.c --*/
 char *make_radix64_string( const byte *data, size_t len );

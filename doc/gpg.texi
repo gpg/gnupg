@@ -2610,9 +2610,20 @@ message was tampered with intentionally by an attacker.
 
 @item --allow-weak-digest-algos
 @opindex allow-weak-digest-algos
-Signatures made with the broken MD5 algorithm are normally rejected
-with an ``invalid digest algorithm'' message.  This option allows the
-verification of signatures made with such weak algorithms.
+Signatures made with known-weak digest algorithms are normally
+rejected with an ``invalid digest algorithm'' message.  This option
+allows the verification of signatures made with such weak algorithms.
+MD5 is the only digest algorithm considered weak by default.  See also
+@option{--weak-digest} to reject other digest algorithms.
+
+@item --weak-digest @code{name}
+@opindex weak-digest
+Treat the specified digest algorithm as weak.  Signatures made over
+weak digests algorithms are normally rejected. This option can be
+supplied multiple times if multiple algorithms should be considered
+weak.  See also @option{--allow-weak-digest-algos} to disable
+rejection of weak digests.  MD5 is always considered weak, and does
+not need to be listed explicitly.
 
 
 @item --no-default-keyring

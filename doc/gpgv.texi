@@ -115,6 +115,14 @@ checks into warnings.
 
 @include opt-homedir.texi
 
+@item --weak-digest @code{name}
+@opindex weak-digest
+Treat the specified digest algorithm as weak.  Signatures made over
+weak digests algorithms are normally rejected. This option can be
+supplied multiple times if multiple algorithms should be considered
+weak.  MD5 is always considered weak, and does not need to be listed
+explicitly.
+
 @end table
 
 @mansect return value
