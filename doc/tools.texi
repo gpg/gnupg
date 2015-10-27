@@ -1500,7 +1500,7 @@ The return value of this command is
 
 @item 0
 The certificate under question is valid; i.e. there is a valid CRL
-available and it is not listed tehre or teh OCSP request returned that
+available and it is not listed there or the OCSP request returned that
 that certificate is valid.
 
 @item 1

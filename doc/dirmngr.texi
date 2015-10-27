@@ -1002,7 +1002,7 @@ as a binary blob.
 @c
 @c Here we may encounter a recursive situation:
 @c @code{validate_cert_chain} needs to look at other certificates and
-@c also at CRLs to check whether tehse other certificates and well, the
+@c also at CRLs to check whether these other certificates and well, the
 @c CRL issuer certificate itself are not revoked.  FIXME: We need to make
 @c sure that @code{validate_cert_chain} does not try to lookup the CRL we
 @c are currently processing. This would be a catch-22 and may indicate a

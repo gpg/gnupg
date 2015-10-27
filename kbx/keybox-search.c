@@ -171,7 +171,7 @@ _keybox_get_flag_location (const unsigned char *buffer, size_t length,
 
 
 
-/* Return one of the flags WHAT in VALUE from teh blob BUFFER of
+/* Return one of the flags WHAT in VALUE from the blob BUFFER of
    LENGTH bytes.  Return 0 on success or an raw error code. */
 static gpg_err_code_t
 get_flag_from_image (const unsigned char *buffer, size_t length,

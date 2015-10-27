@@ -2654,7 +2654,7 @@
 	to the control struct so that they are per connection.
 	* gpg-agent.c (agent_init_default_ctrl): New.
 	(main): Assign those command line options to new default_* variables.
-	Reset DISPLAY in server mode so that tehre is no implicit default.
+	Reset DISPLAY in server mode so that there is no implicit default.
 	* command.c (start_command_handler): Initialize and deinitialize
 	the control values.
 	(option_handler): Work on the ctrl values and not on the opt.
