@@ -1978,7 +1978,7 @@ static const char hlp_keywrap_key[] =
   "mechanism or not used at all if the key is a pre-shared key.  In any\n"
   "case wrapping the import and export of keys is a requirement for\n"
   "certain cryptographic validations and thus useful.  The key persists\n"
-  "a RESET command but may be cleared using the option --clear.\n"
+  "until a RESET command but may be cleared using the option --clear.\n"
   "\n"
   "Supported modes are:\n"
   "  --import  - Return a key to import a key into gpg-agent\n"
