@@ -1099,7 +1099,7 @@ give the opposite meaning.  The options are:
   @item show-uid-validity
   @opindex list-options:show-uid-validity
   Display the calculated validity of user IDs during key listings.
-  Defaults to no.
+  Defaults to yes.
 
   @item show-unusable-uids
   @opindex list-options:show-unusable-uids
@@ -1144,7 +1144,7 @@ the opposite meaning. The options are:
 
   @item show-policy-urls
   @opindex verify-options:show-policy-urls
-  Show policy URLs in the signature being verified. Defaults to no.
+  Show policy URLs in the signature being verified. Defaults to yes.
 
   @item show-notations
   @itemx show-std-notations
@@ -1158,12 +1158,12 @@ the opposite meaning. The options are:
   @item show-keyserver-urls
   @opindex verify-options:show-keyserver-urls
   Show any preferred keyserver URL in the signature being verified.
-  Defaults to no.
+  Defaults to yes.
 
   @item show-uid-validity
   @opindex verify-options:show-uid-validity
   Display the calculated validity of the user IDs on the key that issued
-  the signature. Defaults to no.
+  the signature. Defaults to yes.
 
   @item show-unusable-uids
   @opindex verify-options:show-unusable-uids
