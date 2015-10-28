@@ -205,15 +205,14 @@ main (int argc, char **argv)
       struct srventry *srv;
       int rc,i;
 
-      rc=getsrv("_hkp._tcp.wwwkeys.pgp.net",&srv);
-      printf("Count=%d\n\n",rc);
+      rc=getsrv (name? name : "_hkp._tcp.wwwkeys.pgp.net", &srv);
+      printf("Count=%d\n",rc);
       for(i=0;i<rc;i++)
         {
-          printf("priority=%hu\n",srv[i].priority);
-          printf("weight=%hu\n",srv[i].weight);
-          printf("port=%hu\n",srv[i].port);
+          printf("priority=%-8hu  ",srv[i].priority);
+          printf("weight=%-8hu  ",srv[i].weight);
+          printf("port=%-5hu  ",srv[i].port);
           printf("target=%s\n",srv[i].target);
-          printf("\n");
         }
 
       xfree(srv);

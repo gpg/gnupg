@@ -42,6 +42,7 @@
 # include <netdb.h>
 #endif
 #include <string.h>
+#include <unistd.h>
 #ifdef USE_ADNS
 # include <adns.h>
 #endif
@@ -1103,9 +1104,16 @@ getsrv (const char *name,struct srventry **list)
 
   /* Run the RFC-2782 weighting algorithm.  We don't need very high
      quality randomness for this, so regular libc srand/rand is
-     sufficient.  Fixme: It is a bit questionaly to reinitalize srand
-     - better use a gnupg fucntion for this.  */
-  srand(time(NULL)*getpid());
+     sufficient.  */
+
+  {
+    static int done;
+    if (!done)
+      {
+        done = 1;
+        srand (time (NULL)*getpid());
+      }
+  }
 
   for (i=0; i < srvcount; i++)
     {
