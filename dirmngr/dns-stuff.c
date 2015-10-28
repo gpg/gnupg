@@ -54,12 +54,12 @@
 #include "host2net.h"
 #include "dns-stuff.h"
 
-
+/* We allow the use of 0 instead of AF_UNSPEC - check this assumption.  */
 #if AF_UNSPEC != 0
 # error AF_UNSPEC does not have the value 0
 #endif
 
-/* Windows does not support tge AI_ADDRCONFIG flag - use zero instead.  */
+/* Windows does not support the AI_ADDRCONFIG flag - use zero instead.  */
 #ifndef AI_ADDRCONFIG
 # define AI_ADDRCONFIG 0
 #endif
@@ -132,6 +132,129 @@ map_eai_to_gpg_error (int ec)
 }
 
 
+#ifdef USE_ADNS
+/* Init ADNS and store the new state at R_STATE.  Returns 0 on
+   success; prints an error message and returns an error code on
+   failure.  */
+static gpg_error_t
+my_adns_init (adns_state *r_state)
+{
+  gpg_error_t err;
+
+  if (tor_mode? adns_init_strcfg (r_state,
+                                  adns_if_noerrprint|adns_if_tormode,
+                                  NULL, "nameserver 8.8.8.8")
+      /*    */: adns_init (r_state, adns_if_noerrprint, NULL))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("error initializing adns: %s\n", gpg_strerror (err));
+      return err;
+    }
+  return 0;
+}
+#endif /*USE_ADNS*/
+
+
+#ifdef USE_ADNS
+/* Resolve a name using the ADNS library.  See resolve_dns_name for
+   the description.  */
+static gpg_error_t
+resolve_name_adns (const char *name, unsigned short port,
+                   int want_family, int want_socktype,
+                   dns_addrinfo_t *r_dai, char **r_canonname)
+{
+  gpg_error_t err = 0;
+  dns_addrinfo_t daihead = NULL;
+  dns_addrinfo_t dai;
+  adns_state state;
+  adns_answer *answer = NULL;
+  int count;
+
+  *r_dai = NULL;
+  if (r_canonname)
+    *r_canonname = NULL;
+
+  if (want_socktype != SOCK_STREAM && want_socktype != SOCK_DGRAM)
+    return gpg_error (GPG_ERR_ESOCKTNOSUPPORT);
+
+  err = my_adns_init (&state);
+  if (err)
+    return err;
+
+  if (adns_synchronous (state, name, adns_r_addr,
+                        adns_qf_quoteok_query, &answer))
+    {
+      err = gpg_error_from_syserror ();
+      log_error ("DNS query failed: %s\n", gpg_strerror (err));
+      goto leave;
+    }
+
+  err = gpg_error (GPG_ERR_NOT_FOUND);
+  if (answer->status != adns_s_ok || answer->type != adns_r_addr)
+    {
+      log_error ("DNS query returned an error: %s (%s)\n",
+                 adns_strerror (answer->status),
+                 adns_errabbrev (answer->status));
+      goto leave;
+    }
+
+  if (r_canonname && answer->cname)
+    {
+      *r_canonname = xtrystrdup (answer->cname);
+      if (!*r_canonname)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
+  for (count = 0; count < answer->nrrs; count++)
+    {
+      int len;
+      adns_rr_addr *addr;
+
+      len  = answer->rrs.addr[count].len;
+      addr = &answer->rrs.addr[count];
+      if (addr->addr.sa.sa_family != AF_INET6
+          && addr->addr.sa.sa_family != AF_INET)
+        continue;
+
+      dai = xtrymalloc (sizeof *dai + len - 1);
+      if (!dai)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      dai->family = addr->addr.sa.sa_family;
+      dai->socktype = want_socktype == SOCK_STREAM? SOCK_STREAM : SOCK_DGRAM;
+      dai->protocol = want_socktype == SOCK_STREAM? IPPROTO_TCP : IPPROTO_UDP;
+      dai->addrlen = len;
+      memcpy (dai->addr, &addr->addr.sa, len);
+      dai->next = daihead;
+      daihead = dai;
+      err = 0;
+    }
+
+ leave:
+  adns_free (answer);
+  adns_finish (state);
+  if (err)
+    {
+      if (r_canonname)
+        {
+          xfree (*r_canonname);
+          *r_canonname = NULL;
+        }
+      free_dns_addrinfo (daihead);
+    }
+  else
+    *r_dai = daihead;
+  return err;
+}
+#endif /*USE_ADNS*/
+
+
+#ifndef USE_ADNS
 /* Resolve a name using the standard system function.  */
 static gpg_error_t
 resolve_name_standard (const char *name, unsigned short port,
@@ -236,6 +359,7 @@ resolve_name_standard (const char *name, unsigned short port,
     *r_dai = daihead;
   return err;
 }
+#endif /*!USE_ADNS*/
 
 
 /* Resolve an address using the standard system function.  */
@@ -314,7 +438,7 @@ resolve_dns_name (const char *name, unsigned short port,
                   int want_family, int want_socktype,
                   dns_addrinfo_t *r_ai, char **r_canonname)
 {
-#ifdef USE_ADNS_disabled_for_now
+#ifdef USE_ADNS
   return resolve_name_adns (name, port, want_family, want_socktype,
                             r_ai, r_canonname);
 #else
@@ -417,29 +541,6 @@ is_onion_address (const char *name)
 }
 
 
-#ifdef USE_ADNS
-/* Init ADNS and store the new state at R_STATE.  Returns 0 on
-   success; prints an error message and returns an error code on
-   failure.  */
-static gpg_error_t
-my_adns_init (adns_state *r_state)
-{
-  gpg_error_t err;
-
-  if (tor_mode? adns_init_strcfg (r_state,
-                                  adns_if_noerrprint|adns_if_tormode,
-                                  NULL, "nameserver 8.8.8.8")
-      /*    */: adns_init (r_state, adns_if_noerrprint, NULL))
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      log_error ("error initializing adns: %s\n", gpg_strerror (err));
-      return err;
-    }
-  return 0;
-}
-#endif /*USE_ADNS*/
-
-
 /* Returns 0 on success or an error code.  If a PGP CERT record was
    found, the malloced data is returned at (R_KEY, R_KEYLEN) and
    the other return parameters are set to NULL/0.  If an IPGP CERT
@@ -482,7 +583,7 @@ get_dns_cert (const char *name, int want_certtype,
                             : (want_certtype - DNS_CERTTYPE_RRBASE))),
                         adns_qf_quoteok_query, &answer))
     {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+      err = gpg_error_from_syserror ();
       /* log_error ("DNS query failed: %s\n", strerror (errno)); */
       adns_finish (state);
       return err;
@@ -492,11 +593,11 @@ get_dns_cert (const char *name, int want_certtype,
       /* log_error ("DNS query returned an error: %s (%s)\n", */
       /*            adns_strerror (answer->status), */
       /*            adns_errabbrev (answer->status)); */
-      err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
+      err = gpg_error (GPG_ERR_NOT_FOUND);
       goto leave;
     }
 
-  err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
+  err = gpg_error (GPG_ERR_NOT_FOUND);
   for (count = 0; count < answer->nrrs; count++)
     {
       int datalen = answer->rrs.byteblock[count].len;
@@ -511,8 +612,7 @@ get_dns_cert (const char *name, int want_certtype,
           /* Found the requested record - return it.  */
           *r_key = xtrymalloc (datalen);
           if (!*r_key)
-            err = gpg_err_make (default_errsource,
-                                gpg_err_code_from_syserror ());
+            err = gpg_error_from_syserror ();
           else
             {
               memcpy (*r_key, data, datalen);
@@ -538,8 +638,7 @@ get_dns_cert (const char *name, int want_certtype,
              thus we do the same.  */
           *r_key = xtrymalloc (datalen);
           if (!*r_key)
-            err = gpg_err_make (default_errsource,
-                                gpg_err_code_from_syserror ());
+            err = gpg_error_from_syserror ();
           else
             {
               memcpy (*r_key, data, datalen);
@@ -560,8 +659,7 @@ get_dns_cert (const char *name, int want_certtype,
               *r_fpr = xtrymalloc (*r_fprlen);
               if (!*r_fpr)
                 {
-                  err = gpg_err_make (default_errsource,
-                                      gpg_err_code_from_syserror ());
+                  err = gpg_error_from_syserror ();
                   goto leave;
                 }
               memcpy (*r_fpr, data + 1, *r_fprlen);
@@ -574,8 +672,7 @@ get_dns_cert (const char *name, int want_certtype,
               *r_url = xtrymalloc (datalen - (*r_fprlen + 1) + 1);
               if (!*r_url)
                 {
-                  err = gpg_err_make (default_errsource,
-                                      gpg_err_code_from_syserror ());
+                  err = gpg_error_from_syserror ();
                   xfree (*r_fpr);
                   *r_fpr = NULL;
                   goto leave;
@@ -615,10 +712,9 @@ get_dns_cert (const char *name, int want_certtype,
   /* Allocate a 64k buffer which is the limit for an DNS response.  */
   answer = xtrymalloc (65536);
   if (!answer)
-    return gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+    return gpg_error_from_syserror ();
 
-  err = gpg_err_make (default_errsource, GPG_ERR_NOT_FOUND);
-
+  err = gpg_error (GPG_ERR_NOT_FOUND);
   r = res_query (name, C_IN,
                  (want_certtype < DNS_CERTTYPE_RRBASE
                   ? T_CERT
@@ -641,7 +737,7 @@ get_dns_cert (const char *name, int want_certtype,
       rc = dn_skipname (pt, emsg);
       if (rc == -1)
         {
-          err = gpg_err_make (default_errsource, GPG_ERR_INV_OBJ);
+          err = gpg_error (GPG_ERR_INV_OBJ);
           goto leave;
         }
       pt += rc + QFIXEDSZ;
@@ -659,7 +755,7 @@ get_dns_cert (const char *name, int want_certtype,
           rc = dn_skipname (pt, emsg);  /* the name we just queried for */
           if (rc == -1)
             {
-              err = gpg_err_make (default_errsource, GPG_ERR_INV_OBJ);
+              err = gpg_error (GPG_ERR_INV_OBJ);
               goto leave;
             }
 
@@ -693,8 +789,7 @@ get_dns_cert (const char *name, int want_certtype,
             {
               *r_key = xtrymalloc (dlen);
               if (!*r_key)
-                err = gpg_err_make (default_errsource,
-                                    gpg_err_code_from_syserror ());
+                err = gpg_error_from_syserror ();
               else
                 {
                   memcpy (*r_key, pt, dlen);
@@ -727,8 +822,7 @@ get_dns_cert (const char *name, int want_certtype,
                   /* PGP type */
                   *r_key = xtrymalloc (dlen);
                   if (!*r_key)
-                    err = gpg_err_make (default_errsource,
-                                        gpg_err_code_from_syserror ());
+                    err = gpg_error_from_syserror ();
                   else
                     {
                       memcpy (*r_key, pt, dlen);
@@ -747,8 +841,7 @@ get_dns_cert (const char *name, int want_certtype,
                       *r_fpr = xtrymalloc (*r_fprlen);
                       if (!*r_fpr)
                         {
-                          err = gpg_err_make (default_errsource,
-                                              gpg_err_code_from_syserror ());
+                          err = gpg_error_from_syserror ();
                           goto leave;
                         }
                       memcpy (*r_fpr, &pt[1], *r_fprlen);
@@ -761,8 +854,7 @@ get_dns_cert (const char *name, int want_certtype,
                       *r_url = xtrymalloc (dlen - (*r_fprlen + 1) + 1);
                       if (!*r_fpr)
                         {
-                          err = gpg_err_make (default_errsource,
-                                              gpg_err_code_from_syserror ());
+                          err = gpg_error_from_syserror ();
                           xfree (*r_fpr);
                           *r_fpr = NULL;
                           goto leave;
@@ -804,7 +896,7 @@ get_dns_cert (const char *name, int want_certtype,
   *r_fprlen = 0;
   *r_url = NULL;
 
-  return gpg_err_make (default_errsource, GPG_ERR_NOT_SUPPORTED);
+  return gpg_error (GPG_ERR_NOT_SUPPORTED);
 #endif
 }
 
