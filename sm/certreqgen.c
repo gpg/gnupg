@@ -917,38 +917,53 @@ create_request (ctrl_t ctrl,
 
   /* Set key usage flags.  */
   use = get_parameter_uint (para, pKEYUSAGE);
-  if (use == GCRY_PK_USAGE_SIGN)
+  if (use)
     {
-      /* For signing only we encode the bits:
-         KSBA_KEYUSAGE_DIGITAL_SIGNATURE
-         KSBA_KEYUSAGE_NON_REPUDIATION */
-      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
-                                        "\x03\x02\x06\xC0", 4);
-    }
-  else if (use == GCRY_PK_USAGE_ENCR)
-    {
-      /* For encrypt only we encode the bits:
-         KSBA_KEYUSAGE_KEY_ENCIPHERMENT
-         KSBA_KEYUSAGE_DATA_ENCIPHERMENT */
-      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
-                                        "\x03\x02\x04\x30", 4);
-    }
-  else if (use == GCRY_PK_USAGE_CERT)
-    {
-      /* For certify only we encode the bits:
-         KSBA_KEYUSAGE_KEY_CERT_SIGN
-         KSBA_KEYUSAGE_CRL_SIGN */
-      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1,
-                                        "\x03\x02\x01\x06", 4);
-    }
-  else
-    err = 0; /* Both or none given: don't request one. */
-  if (err)
-    {
-      log_error ("error setting the key usage: %s\n",
-                 gpg_strerror (err));
-      rc = err;
-      goto leave;
+      unsigned int mask, pos;
+      unsigned char der[4];
+
+      der[0] = 0x03;
+      der[1] = 0x02;
+      der[2] = 0;
+      der[3] = 0;
+      if ((use & GCRY_PK_USAGE_SIGN))
+        {
+          /* For signing only we encode the bits:
+             KSBA_KEYUSAGE_DIGITAL_SIGNATURE
+             KSBA_KEYUSAGE_NON_REPUDIATION  = 0b11 -> 0b11000000 */
+          der[3] |= 0xc0;
+        }
+      if ((use & GCRY_PK_USAGE_ENCR))
+        {
+          /* For encrypt only we encode the bits:
+             KSBA_KEYUSAGE_KEY_ENCIPHERMENT
+             KSBA_KEYUSAGE_DATA_ENCIPHERMENT = 0b1100 -> 0b00110000 */
+          der[3] |= 0x30;
+        }
+      if ((use & GCRY_PK_USAGE_CERT))
+        {
+          /* For certify only we encode the bits:
+             KSBA_KEYUSAGE_KEY_CERT_SIGN
+             KSBA_KEYUSAGE_CRL_SIGN      = 0b1100000 -> 0b00000110 */
+          der[3] |= 0x06;
+        }
+
+      /* Count number of unused bits.  */
+      for (mask=1, pos=0; pos < 8 * sizeof mask; pos++, mask <<= 1)
+        {
+          if ((der[3] & mask))
+            break;
+          der[2]++;
+        }
+
+      err = ksba_certreq_add_extension (cr, oidstr_keyUsage, 1, der, 4);
+      if (err)
+        {
+          log_error ("error setting the key usage: %s\n",
+                     gpg_strerror (err));
+          rc = err;
+          goto leave;
+        }
     }
 
 
