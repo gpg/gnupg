@@ -57,7 +57,7 @@ trust_source = trustdb.c trustdb.h tdbdump.c tdbio.c tdbio.h
 endif
 
 if USE_TOFU
-tofu_source = tofu.h tofu.c
+tofu_source = tofu.h tofu.c sqlite.c sqlite.h
 else
 tofu_source =
 endif
