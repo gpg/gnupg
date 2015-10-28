@@ -1702,7 +1702,8 @@ crl_parse_insert (ctrl_t ctrl, ksba_crl_t crl,
         {
         case KSBA_SR_BEGIN_ITEMS:
           {
-            if (start_sig_check (crl, &md, &algo ))
+            err = start_sig_check (crl, &md, &algo);
+            if (err)
               goto failure;
 
             err = ksba_crl_get_update_times (crl, thisupdate, nextupdate);
