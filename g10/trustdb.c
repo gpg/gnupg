@@ -1729,9 +1729,8 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
     }
   if (rc)
     {
-      log_error ("keydb_search_first failed: %s\n", gpg_strerror (rc));
-      xfree (keys);
-      return NULL;
+      log_error ("keydb_search(first) failed: %s\n", gpg_strerror (rc));
+      goto die;
     }
 
   desc.mode = KEYDB_SEARCH_MODE_NEXT; /* change mode */
@@ -1746,8 +1745,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       if (rc)
         {
           log_error ("keydb_get_keyblock failed: %s\n", gpg_strerror (rc));
-          xfree (keys);
-          return NULL;
+	  goto die;
         }
 
       if ( keyblock->pkt->pkttype != PKT_PUBLIC_KEY)
@@ -1804,12 +1802,16 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     {
       log_error ("keydb_search_next failed: %s\n", gpg_strerror (rc));
-      xfree (keys);
-      return NULL;
+      goto die;
     }
 
   keys[nkeys].keyblock = NULL;
   return keys;
+
+ die:
+  keys[nkeys].keyblock = NULL;
+  release_key_array (keys);
+  return NULL;
 }
 
 /* Caller must sync */
