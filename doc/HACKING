@@ -123,11 +123,51 @@ Note that such a comment will be removed if the git commit option
   need.  If you really need to do it, use a separate commit for such a
   change.
 
-  - C99 syntax should not be used; stick to C90.
+  - Only certain C99 features may be used (see below); in general
+    stick to C90.
   - Please do not use C++ =//= style comments.
   - Try to fit lines into 80 columns.
   - Ignore signed/unsigned pointer mismatches
   - No arithmetic on void pointers; cast to char* first.
+  - We use our own printf style functions like =es_printf=, and
+    =es_asprintf= which implement most C99 features with the exception
+    of =wchar_t= (which should anyway not be used).  Please always use
+    them and do not resort to those provided by libc.  The rationale
+    for using them is that we know that the format specifiers work on
+    all platforms and that we do not need to chase platform dependent
+    bugs.
+  - It is common to have a label named "leave" for a function's
+    cleanup and return code.  This helps with freeing memory and is a
+    convenient location to set a breakpoint for debugging.
+  - Always use xfree() instead of free().  If it is not easy to see
+    that the freed variable is not anymore used, explicitly set the
+    variable to NULL.
+  - Init function local variables only if needed so that the compiler
+    can do a better job in detecting uninitialized variables which may
+    indicate a problem with the code.
+  - Never init static or file local variables to 0 to make sure they
+    end up in BSS.
+  - Use --enable-maintainer-mode with configure.
+
+*** C99 language features
+
+  In GnuPG 2.x, but *not in 1.4* and not in most libraries, a limited
+  set of C99 features may be used:
+
+  - Variadic macros:
+    : #define foo(a,...)  bar(a, __VA_ARGS__)
+
+  - The predefined macro =__func__=:
+    : log_debug ("%s: Problem with foo\n", __func__);
+
+  - Variable declaration inside a for():
+    : for (int i = 0; i < 5; ++)
+    :   bar (i);
+
+  Although we usually make use of the =u16=, =u32=, and =u64= types,
+  it is also possible to include =<stdint.h>= and use =int16_t=,
+  =int32_t=, =int64_t=, =uint16_t=, =uint32_t=, and =uint64_t=.  But do
+  not use =int8_t= or =uint8_t=.
 
 ** Commit log keywords
 
