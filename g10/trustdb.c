@@ -2106,6 +2106,8 @@ validate_keys (int interactive)
   release_key_hash_table (stored);
   if (!rc && !quit) /* mark trustDB as checked */
     {
+      int rc2;
+
       if (next_expire == 0xffffffff || next_expire < start_time )
         tdbio_write_nextcheck (0);
       else
@@ -2115,11 +2117,12 @@ validate_keys (int interactive)
                     strtimestamp (next_expire));
         }
 
-      if(tdbio_update_version_record()!=0)
+      rc2 = tdbio_update_version_record ();
+      if (rc2)
 	{
-	  log_error(_("unable to update trustdb version record: "
-		      "write failed: %s\n"), gpg_strerror (rc));
-	  tdbio_invalid();
+	  log_error (_("unable to update trustdb version record: "
+                       "write failed: %s\n"), gpg_strerror (rc2));
+	  tdbio_invalid ();
 	}
 
       do_sync ();
