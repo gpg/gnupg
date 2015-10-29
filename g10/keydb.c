@@ -1701,7 +1701,8 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (!hd->no_caching
       && !rc
       && ndesc == 1 && (desc[0].mode == KEYDB_SEARCH_MODE_FPR20
-                        || desc[0].mode == KEYDB_SEARCH_MODE_FPR))
+                        || desc[0].mode == KEYDB_SEARCH_MODE_FPR)
+      && hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX)
     {
       hd->keyblock_cache.state = KEYBLOCK_CACHE_PREPARED;
       memcpy (hd->keyblock_cache.fpr, desc[0].u.fpr, 20);
