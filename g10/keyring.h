@@ -36,7 +36,6 @@ int keyring_lock (KEYRING_HANDLE hd, int yes);
 int keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb);
 int keyring_update_keyblock (KEYRING_HANDLE hd, KBNODE kb);
 int keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb);
-int keyring_locate_writable (KEYRING_HANDLE hd);
 int keyring_delete_keyblock (KEYRING_HANDLE hd);
 int keyring_search_reset (KEYRING_HANDLE hd);
 int keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
