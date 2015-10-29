@@ -37,6 +37,7 @@
 #include "../kbx/keybox.h"
 #include "keydb.h"
 #include "i18n.h"
+#include "kdb.h"
 
 static int active_handles;
 
@@ -44,7 +45,8 @@ typedef enum
   {
     KEYDB_RESOURCE_TYPE_NONE = 0,
     KEYDB_RESOURCE_TYPE_KEYRING,
-    KEYDB_RESOURCE_TYPE_KEYBOX
+    KEYDB_RESOURCE_TYPE_KEYBOX,
+    KEYDB_RESOURCE_TYPE_KEYDB
   } KeydbResourceType;
 #define MAX_KEYDB_RESOURCES 40
 
@@ -54,6 +56,7 @@ struct resource_item
   union {
     KEYRING_HANDLE kr;
     KEYBOX_HANDLE kb;
+    KDB_HANDLE kdb;
   } u;
   void *token;
 };
@@ -251,13 +254,14 @@ keyblock_cache_clear (struct keydb_handle *hd)
 /* Handle the creation of a keyring or a keybox if it does not yet
    exist.  Take into account that other processes might have the
    keyring/keybox already locked.  This lock check does not work if
-   the directory itself is not yet available.  If IS_BOX is true the
-   filename is expected to refer to a keybox.  If FORCE_CREATE is true
-   the keyring or keybox will be created.
+   the directory itself is not yet available.  RT is the type of
+   resource being created.  If FORCE_CREATE is true the keyring or
+   keybox will be created.
 
    Return 0 if it is okay to access the specified file.  */
 static int
-maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
+maybe_create_resource (char *filename, KeydbResourceType rt,
+                             int force_create)
 {
   dotlock_t lockhd = NULL;
   IOBUF iobuf;
@@ -361,12 +365,25 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
   if (!iobuf)
     {
       rc = gpg_error_from_syserror ();
-      if (is_box)
-        log_error (_("error creating keybox '%s': %s\n"),
-                   filename, gpg_strerror (rc));
-      else
-        log_error (_("error creating keyring '%s': %s\n"),
-                   filename, gpg_strerror (rc));
+      switch (rt)
+        {
+        case KEYDB_RESOURCE_TYPE_NONE:
+          log_fatal ("Bad value for resource type: %d\n", rt);
+          break;
+
+        case KEYDB_RESOURCE_TYPE_KEYRING:
+          log_error (_("error creating keyring '%s': %s\n"),
+                     filename, gpg_strerror (rc));
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          log_error (_("error creating keybox '%s': %s\n"),
+                     filename, gpg_strerror (rc));
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          log_error (_("error creating keydb '%s': %s\n"),
+                     filename, gpg_strerror (rc));
+          break;
+        }
       goto leave;
     }
 
@@ -376,7 +393,7 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
 
   /* Make sure that at least one record is in a new keybox file, so
      that the detection magic will work the next time it is used.  */
-  if (is_box)
+  if (rt == KEYDB_RESOURCE_TYPE_KEYBOX)
     {
       FILE *fp = fopen (filename, "w");
       if (!fp)
@@ -388,22 +405,29 @@ maybe_create_keyring_or_box (char *filename, int is_box, int force_create)
         }
       if (rc)
         {
-          if (is_box)
-            log_error (_("error creating keybox '%s': %s\n"),
-                       filename, gpg_strerror (rc));
-          else
-            log_error (_("error creating keyring '%s': %s\n"),
-                       filename, gpg_strerror (rc));
+          log_error (_("error creating keybox '%s': %s\n"),
+                     filename, gpg_strerror (rc));
           goto leave;
         }
     }
 
   if (!opt.quiet)
     {
-      if (is_box)
-        log_info (_("keybox '%s' created\n"), filename);
-      else
-        log_info (_("keyring '%s' created\n"), filename);
+      switch (rt)
+        {
+        case KEYDB_RESOURCE_TYPE_NONE:
+          log_fatal ("Bad value for resource type: %d\n", rt);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYRING:
+          log_info (_("keyring '%s' created\n"), filename);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYBOX:
+          log_info (_("keybox '%s' created\n"), filename);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          log_info (_("keydb '%s' created\n"), filename);
+          break;
+        }
     }
 
   rc = 0;
@@ -445,6 +469,8 @@ rt_from_file (const char *filename, int *r_found, int *r_openpgp)
         {
           if (magic == 0x13579ace || magic == 0xce9a5713)
             ; /* GDBM magic - not anymore supported. */
+          else if (memcmp (&magic, "SQLi", 4) == 0)
+            rt = KEYDB_RESOURCE_TYPE_KEYDB;
           else if (fread (&verbuf, 4, 1, fp) == 1
                    && verbuf[0] == 1
                    && fread (&magic, 4, 1, fp) == 1
@@ -559,6 +585,11 @@ keydb_add_resource (const char *url, unsigned int flags)
       rt = KEYDB_RESOURCE_TYPE_KEYBOX;
       resname += 10;
     }
+  else if (strlen (resname) > 10 && !strncmp (resname, "gnupg-kdb:", 10) )
+    {
+      rt = KEYDB_RESOURCE_TYPE_KEYDB;
+      resname += 10;
+    }
 #if !defined(HAVE_DRIVE_LETTERS) && !defined(__riscos__)
   else if (strchr (resname, ':'))
     {
@@ -662,7 +693,8 @@ keydb_add_resource (const char *url, unsigned int flags)
       goto leave;
 
     case KEYDB_RESOURCE_TYPE_KEYRING:
-      rc = maybe_create_keyring_or_box (filename, 0, create);
+      rc = maybe_create_resource (filename, KEYDB_RESOURCE_TYPE_KEYRING,
+                                  create);
       if (rc)
         goto leave;
 
@@ -692,7 +724,8 @@ keydb_add_resource (const char *url, unsigned int flags)
 
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       {
-        rc = maybe_create_keyring_or_box (filename, 1, create);
+        rc = maybe_create_resource (filename, KEYDB_RESOURCE_TYPE_KEYBOX,
+                                    create);
         if (rc)
           goto leave;
 
@@ -724,6 +757,36 @@ keydb_add_resource (const char *url, unsigned int flags)
             /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
             /*   primary_keyring = token; */
           }
+      }
+      break;
+
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      {
+        rc = maybe_create_resource (filename, KEYDB_RESOURCE_TYPE_KEYDB, create);
+        if (rc)
+          goto leave;
+
+        rc = kdb_register_file (filename, read_only, &token);
+        if (rc == 0)
+          {
+            if (used_resources >= MAX_KEYDB_RESOURCES)
+              rc = gpg_error (GPG_ERR_RESOURCE_LIMIT);
+            else
+              {
+                /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
+                /*   primary_keyring = token; */
+                all_resources[used_resources].type = rt;
+                all_resources[used_resources].u.kb = NULL; /* Not used here */
+                all_resources[used_resources].token = token;
+
+                used_resources++;
+              }
+          }
+
+        /* XXX: How to mark this as a primary if it was already
+           registered.  */
+        /* if ((flags & KEYDB_RESOURCE_FLAG_PRIMARY)) */
+        /*   primary_keyring = token; */
       }
       break;
 
@@ -792,6 +855,14 @@ keydb_new (void)
 	    die = 1;
           j++;
           break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          hd->active[j].type   = all_resources[i].type;
+          hd->active[j].token  = all_resources[i].token;
+          hd->active[j].u.kdb  = kdb_new (all_resources[i].token);
+          if (!hd->active[j].u.kdb)
+	    die = 1;
+          j++;
+          break;
         }
     }
   hd->used = j;
@@ -830,6 +901,9 @@ keydb_release (KEYDB_HANDLE hd)
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           keybox_release (hd->active[i].u.kb);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          kdb_release (hd->active[i].u.kdb);
           break;
         }
     }
@@ -873,6 +947,9 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       s = keybox_get_resource_name (hd->active[idx].u.kb);
       break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      s = kdb_get_resource_name (hd->active[idx].u.kdb);
+      break;
     }
 
   return s? s: "";
@@ -904,6 +981,9 @@ lock_all (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           rc = keybox_lock (hd->active[i].u.kb, 1);
           break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          rc = kdb_lock (hd->active[i].u.kdb, 1);
+          break;
         }
     }
 
@@ -921,6 +1001,9 @@ lock_all (KEYDB_HANDLE hd)
               break;
             case KEYDB_RESOURCE_TYPE_KEYBOX:
               rc = keybox_lock (hd->active[i].u.kb, 0);
+              break;
+            case KEYDB_RESOURCE_TYPE_KEYDB:
+              rc = kdb_lock (hd->active[i].u.kdb, 0);
               break;
             }
         }
@@ -952,6 +1035,9 @@ unlock_all (KEYDB_HANDLE hd)
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           keybox_lock (hd->active[i].u.kb, 0);
           break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          kdb_lock (hd->active[i].u.kdb, 0);
+          break;
         }
     }
   hd->locked = 0;
@@ -981,6 +1067,9 @@ keydb_push_found_state (KEYDB_HANDLE hd)
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       keybox_push_found_state (hd->active[hd->found].u.kb);
       break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      kdb_push_found_state (hd->active[hd->found].u.kdb);
+      break;
     }
 
   hd->saved_found = hd->found;
@@ -1008,6 +1097,9 @@ keydb_pop_found_state (KEYDB_HANDLE hd)
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       keybox_pop_found_state (hd->active[hd->found].u.kb);
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      kdb_pop_found_state (hd->active[hd->found].u.kdb);
       break;
     }
 }
@@ -1254,6 +1346,23 @@ keydb_get_keyblock (KEYDB_HANDLE hd, KBNODE *ret_kb)
           }
       }
       break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      {
+        iobuf_t iobuf;
+        u32 *sigstatus;
+        int pk_no, uid_no;
+
+        err = kdb_get_keyblock (hd->active[hd->found].u.kdb, &iobuf,
+                                &pk_no, &uid_no, &sigstatus);
+        if (!err)
+          {
+            err = parse_keyblock_image (iobuf, pk_no, uid_no, sigstatus,
+                                        ret_kb);
+            xfree (sigstatus);
+            iobuf_close (iobuf);
+          }
+        break;
+      }
     }
 
   if (hd->keyblock_cache.state != KEYBLOCK_CACHE_FILLED)
@@ -1399,6 +1508,20 @@ keydb_update_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
           }
       }
       break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      {
+        iobuf_t iobuf;
+
+        err = build_keyblock_image (kb, &iobuf, NULL);
+        if (!err)
+          {
+            err = kdb_update_keyblock (hd->active[hd->found].u.kdb, kb,
+                                       iobuf_get_temp_buffer (iobuf),
+                                       iobuf_get_temp_length (iobuf));
+            iobuf_close (iobuf);
+          }
+      }
+      break;
     }
 
   unlock_all (hd);
@@ -1460,6 +1583,23 @@ keydb_insert_keyblock (KEYDB_HANDLE hd, kbnode_t kb)
           }
       }
       break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      {
+        iobuf_t iobuf;
+        u32 *sigstatus;
+
+        err = build_keyblock_image (kb, &iobuf, &sigstatus);
+        if (!err)
+          {
+            err = kdb_insert_keyblock (hd->active[idx].u.kdb, kb,
+                                       iobuf_get_temp_buffer (iobuf),
+                                       iobuf_get_temp_length (iobuf),
+                                       sigstatus);
+            xfree (sigstatus);
+            iobuf_close (iobuf);
+          }
+      }
+      break;
     }
 
   unlock_all (hd);
@@ -1498,6 +1638,9 @@ keydb_delete_keyblock (KEYDB_HANDLE hd)
       break;
     case KEYDB_RESOURCE_TYPE_KEYBOX:
       rc = keybox_delete (hd->active[hd->found].u.kb);
+      break;
+    case KEYDB_RESOURCE_TYPE_KEYDB:
+      rc = kdb_delete (hd->active[hd->found].u.kdb);
       break;
     }
 
@@ -1553,6 +1696,10 @@ keydb_locate_writable (KEYDB_HANDLE hd)
           if (keybox_is_writable (hd->active[hd->current].token))
             return 0; /* found (hd->current is set to it) */
           break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          if (kdb_is_writable (hd->active[hd->current].token))
+            return 0; /* found (hd->current is set to it) */
+          break;
         }
     }
 
@@ -1579,6 +1726,9 @@ keydb_rebuild_caches (int noisy)
                        gpg_strerror (rc));
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
+          /* N/A.  */
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
           /* N/A.  */
           break;
         }
@@ -1625,6 +1775,9 @@ keydb_search_reset (KEYDB_HANDLE hd)
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
           rc = keybox_search_reset (hd->active[i].u.kb);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          rc = kdb_search_reset (hd->active[i].u.kdb);
           break;
         }
     }
@@ -1716,6 +1869,10 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
                                 ndesc, KEYBOX_BLOBTYPE_PGP,
                                 descindex, &hd->skipped_long_blobs);
           while (rc == GPG_ERR_LEGACY_KEY);
+          break;
+        case KEYDB_RESOURCE_TYPE_KEYDB:
+          rc = kdb_search (hd->active[hd->current].u.kdb, desc,
+                           ndesc, descindex);
           break;
         }
 

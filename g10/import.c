@@ -1154,6 +1154,9 @@ import_one (ctrl_t ctrl,
           goto leave;
         }
 
+      assert (strcmp (keystr_from_pk(keyblock_orig->pkt->pkt.public_key),
+                      keystr_from_pk(pk)) == 0);
+
       /* Make sure the original direct key sigs are all sane.  */
       n_sigs_cleaned = fix_bad_direct_key_sigs (keyblock_orig, keyid);
       if (n_sigs_cleaned)

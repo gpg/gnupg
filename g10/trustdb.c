@@ -1716,7 +1716,8 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
   desc.skipfnc = search_skipfnc;
   desc.skipfncvalue = full_trust;
   rc = keydb_search (hd, &desc, 1, NULL);
-  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND
+      || gpg_err_code (rc) == GPG_ERR_EOF)
     {
       keys[nkeys].keyblock = NULL;
       return keys;
