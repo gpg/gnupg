@@ -59,7 +59,7 @@ sqlite3_exec_printf (sqlite3 *db,
 int
 sqlite3_stepx (sqlite3 *db,
                sqlite3_stmt **stmtp,
-               int (*callback) (void*,int,char**,char**),
+               sqlite3_stepx_callback callback,
                void *cookie,
                char **errmsg,
                const char *sql, ...)
@@ -150,6 +150,13 @@ sqlite3_stepx (sqlite3 *db,
                 err = sqlite3_bind_text (stmt, i, text, -1, SQLITE_STATIC);
                 break;
               }
+            case SQLITE_ARG_BLOB:
+              {
+                char *blob = va_arg (va, void *);
+                long long length = va_arg (va, long long);
+                err = sqlite3_bind_blob (stmt, i, blob, length, SQLITE_STATIC);
+                break;
+              }
             default:
               /* Internal error.  Likely corruption.  */
               log_fatal ("Bad value for parameter type %d.\n", t);
@@ -201,7 +208,7 @@ sqlite3_stepx (sqlite3 *db,
             }
         }
 
-      if (callback (cookie, cols, (char **) azVals, (char **) azColName))
+      if (callback (cookie, cols, (char **) azVals, (char **) azColName, stmt))
         /* A non-zero result means to abort.  */
         {
           err = SQLITE_ABORT;

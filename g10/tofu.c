@@ -418,6 +418,14 @@ get_single_unsigned_long_cb (void *cookie, int argc, char **argv,
   return 0;
 }
 
+static int
+get_single_unsigned_long_cb2 (void *cookie, int argc, char **argv,
+			     char **azColName, sqlite3_stmt *stmt)
+{
+  (void) stmt;
+  return get_single_unsigned_long_cb (cookie, argc, argv, azColName);
+}
+
 /* We expect a single integer column whose name is "version".  COOKIE
    must point to an int.  This function always aborts.  On error or a
    if the version is bad, sets *VERSION to -1.  */
@@ -1050,6 +1058,13 @@ get_single_long_cb (void *cookie, int argc, char **argv, char **azColName)
   return 0;
 }
 
+static int
+get_single_long_cb2 (void *cookie, int argc, char **argv, char **azColName,
+                     sqlite3_stmt *stmt)
+{
+  (void) stmt;
+  return get_single_long_cb (cookie, argc, argv, azColName);
+}
 
 /* Record (or update) a trust policy about a (possibly new)
    binding.
@@ -1109,7 +1124,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
     {
       rc = sqlite3_stepx
 	(db_email->db, &db_email->s.record_binding_get_old_policy,
-         get_single_long_cb, &policy_old, &err,
+         get_single_long_cb2, &policy_old, &err,
 	 "select policy from bindings where fingerprint = ? and email = ?",
 	 SQLITE_ARG_STRING, fingerprint, SQLITE_ARG_STRING, email,
          SQLITE_ARG_END);
@@ -1261,6 +1276,15 @@ strings_collect_cb (void *cookie, int argc, char **argv, char **azColName)
   return 0;
 }
 
+static int
+strings_collect_cb2 (void *cookie, int argc, char **argv, char **azColName,
+                     sqlite3_stmt *stmt)
+{
+  (void) stmt;
+  return strings_collect_cb (cookie, argc, argv, azColName);
+
+}
+
 /* Auxiliary data structure to collect statistics about
    signatures.  */
 struct signature_stats
@@ -1316,7 +1340,7 @@ signature_stats_prepend (struct signature_stats **statsp,
      <fingerprint, policy, time ago, count>.  */
 static int
 signature_stats_collect_cb (void *cookie, int argc, char **argv,
-			    char **azColName)
+			    char **azColName, sqlite3_stmt *stmt)
 {
   struct signature_stats **statsp = cookie;
   char *tail;
@@ -1326,6 +1350,7 @@ signature_stats_collect_cb (void *cookie, int argc, char **argv,
   unsigned long count;
 
   (void) azColName;
+  (void) stmt;
 
   i ++;
 
@@ -1447,7 +1472,7 @@ get_policy (struct dbs *dbs, const char *fingerprint, const char *email,
      still TOFU_POLICY_NONE after executing the query, then the
      result set was empty.)  */
   rc = sqlite3_stepx (db->db, &db->s.get_policy_select_policy_and_conflict,
-                      strings_collect_cb, &strlist, &err,
+                      strings_collect_cb2, &strlist, &err,
                       "select policy, conflict from bindings\n"
                       " where fingerprint = ? and email = ?",
                       SQLITE_ARG_STRING, fingerprint,
@@ -1692,7 +1717,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
      a new binding.  */
   rc = sqlite3_stepx
     (db->db, &db->s.get_trust_bindings_with_this_email,
-     strings_collect_cb, &bindings_with_this_email, &err,
+     strings_collect_cb2, &bindings_with_this_email, &err,
      "select distinct fingerprint from bindings where email = ?;",
      SQLITE_ARG_STRING, email, SQLITE_ARG_END);
   if (rc)
@@ -1835,7 +1860,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	{
 	  rc = sqlite3_stepx
 	    (db_key->db, &db_key->s.get_trust_gather_other_user_ids,
-             strings_collect_cb, &other_user_ids, &err,
+             strings_collect_cb2, &other_user_ids, &err,
              opt.tofu_db_format == TOFU_DB_SPLIT
 	     ? "select user_id, email from bindings where fingerprint = ?;"
 	     : "select user_id, policy from bindings where fingerprint = ?;",
@@ -2519,7 +2544,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
      it again.  */
   rc = sqlite3_stepx
     (db->db, &db->s.register_already_seen,
-     get_single_unsigned_long_cb, &c, &err,
+     get_single_unsigned_long_cb2, &c, &err,
      "select count (*)\n"
      " from signatures left join bindings\n"
      "  on signatures.binding = bindings.oid\n"

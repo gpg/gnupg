@@ -27,7 +27,10 @@ enum sqlite_arg_type
     SQLITE_ARG_END = 0xdead001,
     SQLITE_ARG_INT,
     SQLITE_ARG_LONG_LONG,
-    SQLITE_ARG_STRING
+    SQLITE_ARG_STRING,
+    /* This takes two arguments: the blob as a void * and the length
+       of the blob as a long long.  */
+    SQLITE_ARG_BLOB
   };
 
 
@@ -36,9 +39,22 @@ int sqlite3_exec_printf (sqlite3 *db,
                          char **errmsg,
                          const char *sql, ...);
 
+typedef int (*sqlite3_stepx_callback) (void *cookie,
+                                       /* number of columns.  */
+                                       int cols,
+                                       /* columns as text.  */
+                                       char **values,
+                                       /* column names.  */
+                                       char **names,
+                                       /* The prepared statement so
+                                          that it is possible to use
+                                          something like
+                                          sqlite3_column_blob().  */
+                                       sqlite3_stmt *statement);
+
 int sqlite3_stepx (sqlite3 *db,
                    sqlite3_stmt **stmtp,
-                   int (*callback) (void*,int,char**,char**),
+                   sqlite3_stepx_callback callback,
                    void *cookie,
                    char **errmsg,
                    const char *sql, ...);
