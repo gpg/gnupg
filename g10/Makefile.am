@@ -29,7 +29,7 @@ include $(top_srcdir)/am/cmacros.am
 AM_CFLAGS = $(SQLITE3_CFLAGS) $(LIBGCRYPT_CFLAGS) \
             $(LIBASSUAN_CFLAGS) $(GPG_ERROR_CFLAGS)
 
-needed_libs = ../kbx/libkeybox.a $(libcommon)
+needed_libs = ../kbx/libkeybox.a $(libcommon) $(SQLITE3_LIBS)
 
 bin_PROGRAMS = gpg2
 if !HAVE_W32CE_SYSTEM
@@ -57,7 +57,7 @@ trust_source = trustdb.c trustdb.h tdbdump.c tdbio.c tdbio.h
 endif
 
 if USE_TOFU
-tofu_source = tofu.h tofu.c sqlite.c sqlite.h
+tofu_source = tofu.h tofu.c
 else
 tofu_source =
 endif
@@ -101,7 +101,9 @@ common_source =  \
 	      sig-check.c	\
 	      keylist.c 	\
 	      pkglue.c pkglue.h \
-	      ecdh.c
+	      ecdh.c            \
+	      kdb.c kdb.h       \
+	      sqlite.c sqlite.h
 
 gpg2_SOURCES  = gpg.c		\
 	      server.c          \
@@ -147,7 +149,7 @@ gpgv2_SOURCES = gpgv.c           \
 
 LDADD =  $(needed_libs) ../common/libgpgrl.a \
          $(ZLIBS) $(LIBINTL) $(CAPLIBS) $(NETLIBS)
-gpg2_LDADD = $(LDADD) $(SQLITE3_LIBS) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
+gpg2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(LIBREADLINE) \
              $(LIBASSUAN_LIBS) $(GPG_ERROR_LIBS) \
 	     $(LIBICONV) $(resource_objs) $(extra_sys_libs)
 gpg2_LDFLAGS = $(extra_bin_ldflags)
