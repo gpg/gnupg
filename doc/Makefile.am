@@ -65,7 +65,7 @@ myman_sources = gnupg7.texi gpg.texi gpgsm.texi gpg-agent.texi \
 myman_pages   = gpg2.1 gpgsm.1 gpg-agent.1 scdaemon.1 gpgv2.1 \
                 watchgnupg.1 gpgconf.1 addgnupghome.8 gpg-preset-passphrase.1 \
 		gpg-connect-agent.1 gpgparsemail.1 symcryptrun.1 \
-		gpgsm-gencert.sh.1 applygnupgdefaults.8 gpg-zip.1
+		gpgsm-gencert.sh.1 applygnupgdefaults.8
 
 man_MANS = $(myman_pages)
 noinst_MANS = gnupg.7
@@ -76,7 +76,7 @@ watchgnupg_SOURCE = gnupg.texi
 CLEANFILES = yat2m faq.txt
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
-		 $(myman_pages) gnupg.7
+		 $(myman_pages) gpg-zip.1 gnupg.7
 
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
