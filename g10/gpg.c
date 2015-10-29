@@ -2580,7 +2580,10 @@ main (int argc, char **argv)
 	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
 	  case oDefRecipient:
             if( *pargs.r.ret_str )
-              opt.def_recipient = make_username(pargs.r.ret_str);
+	      {
+		xfree (opt.def_recipient);
+		opt.def_recipient = make_username(pargs.r.ret_str);
+	      }
             break;
 	  case oDefRecipientSelf:
             xfree(opt.def_recipient); opt.def_recipient = NULL;
