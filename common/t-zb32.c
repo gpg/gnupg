@@ -30,17 +30,21 @@
 #include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
+#ifdef HAVE_DOSISH_SYSTEM
+# include <fcntl.h>
+#endif
 
-#include "util.h"
+#include "zb32.h"
+#include "t-support.h"
 
-#define pass()  do { ; } while(0)
-#define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
-                               __FILE__,__LINE__, (a));          \
-                     errcount++;                                 \
-                   } while(0)
+#define PGM "t-zb32"
 
+static int verbose;
+static int debug;
 static int errcount;
 
 
@@ -89,8 +93,8 @@ test_zb32enc (void)
       output = zb32_encode (tests[tidx].data, tests[tidx].datalen);
       if (!output)
         {
-          fprintf (stderr, "%s:%d: error encoding test %d: %s\n",
-                   __FILE__, __LINE__, tidx, strerror (errno));
+          fprintf (stderr, PGM": error encoding test %d: %s\n",
+                   tidx, strerror (errno));
           exit (1);
         }
       /* puts (output); */
@@ -101,13 +105,201 @@ test_zb32enc (void)
 }
 
 
+/* Read the file FNAME or stdin if FNAME is NULL and return a malloced
+   buffer with the content.  R_LENGTH received the length of the file.
+   Print a diagnostic and returns NULL on error.  */
+static char *
+read_file (const char *fname, size_t *r_length)
+{
+  FILE *fp;
+  char *buf;
+  size_t buflen;
+
+  if (!fname)
+    {
+      size_t nread, bufsize = 0;
+
+      fp = stdin;
+#ifdef HAVE_DOSISH_SYSTEM
+      setmode (fileno(fp) , O_BINARY );
+#endif
+      buf = NULL;
+      buflen = 0;
+#define NCHUNK 8192
+      do
+        {
+          bufsize += NCHUNK;
+          if (!buf)
+            buf = xmalloc (bufsize);
+          else
+            buf = xrealloc (buf, bufsize);
+
+          nread = fread (buf+buflen, 1, NCHUNK, fp);
+          if (nread < NCHUNK && ferror (fp))
+            {
+              fprintf (stderr, PGM": error reading '[stdin]': %s\n",
+                       strerror (errno));
+              xfree (buf);
+              return NULL;
+            }
+          buflen += nread;
+        }
+      while (nread == NCHUNK);
+#undef NCHUNK
+
+    }
+  else
+    {
+      struct stat st;
+
+      fp = fopen (fname, "rb");
+      if (!fp)
+        {
+          fprintf (stderr, PGM": can't open '%s': %s\n",
+                   fname, strerror (errno));
+          return NULL;
+        }
+
+      if (fstat (fileno(fp), &st))
+        {
+          fprintf (stderr, PGM": can't stat '%s': %s\n",
+                   fname, strerror (errno));
+          fclose (fp);
+          return NULL;
+        }
+
+      buflen = st.st_size;
+      buf = xmalloc (buflen+1);
+      if (fread (buf, buflen, 1, fp) != 1)
+        {
+          fprintf (stderr, PGM": error reading '%s': %s\n",
+                   fname, strerror (errno));
+          fclose (fp);
+          xfree (buf);
+          return NULL;
+        }
+      fclose (fp);
+    }
+
+  *r_length = buflen;
+  return buf;
+}
+
+
+/* Debug helper to encode or decode to/from zb32.  */
+static void
+endecode_file (const char *fname, int decode)
+{
+  char *buffer;
+  size_t buflen;
+  char *result;
+
+  if (decode)
+    {
+      fprintf (stderr, PGM": decode mode has not yet been implemented\n");
+      errcount++;
+      return;
+    }
+
+#ifdef HAVE_DOSISH_SYSTEM
+  if (decode)
+    setmode (fileno (stdout), O_BINARY);
+#endif
+
+
+  buffer = read_file (fname, &buflen);
+  if (!buffer)
+    {
+      errcount++;
+      return;
+    }
+
+  result = zb32_encode (buffer, 8 * buflen);
+  if (!result)
+    {
+      fprintf (stderr, PGM": error encoding data: %s\n", strerror (errno));
+      errcount++;
+      xfree (buffer);
+      return;
+    }
+
+  fputs (result, stdout);
+  putchar ('\n');
+
+  xfree (result);
+  xfree (buffer);
+}
+
+
 int
 main (int argc, char **argv)
 {
-  (void)argc;
-  (void)argv;
+  int last_argc = -1;
+  int opt_endecode = 0;
 
-  test_zb32enc ();
+  no_exit_on_fail = 1;
+
+  if (argc)
+    { argc--; argv++; }
+  while (argc && last_argc != argc )
+    {
+      last_argc = argc;
+      if (!strcmp (*argv, "--"))
+        {
+          argc--; argv++;
+          break;
+        }
+      else if (!strcmp (*argv, "--help"))
+        {
+          fputs ("usage: " PGM " [FILE]\n"
+                 "Options:\n"
+                 "  --verbose         Print timings etc.\n"
+                 "  --debug           Flyswatter\n"
+                 "  --encode          Encode FILE or stdin\n"
+                 "  --decode          Decode FILE or stdin\n"
+                 , stdout);
+          exit (0);
+        }
+      else if (!strcmp (*argv, "--verbose"))
+        {
+          verbose++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--debug"))
+        {
+          verbose += 2;
+          debug++;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--encode"))
+        {
+          opt_endecode = 1;
+          argc--; argv++;
+        }
+      else if (!strcmp (*argv, "--decode"))
+        {
+          opt_endecode = -1;
+          argc--; argv++;
+        }
+      else if (!strncmp (*argv, "--", 2))
+        {
+          fprintf (stderr, PGM ": unknown option '%s'\n", *argv);
+          exit (1);
+        }
+    }
+
+  if (argc > 1)
+    {
+      fprintf (stderr, PGM ": to many arguments given\n");
+      exit (1);
+    }
+
+  if (opt_endecode)
+    {
+      endecode_file (argc? *argv : NULL, (opt_endecode < 0));
+    }
+  else
+    test_zb32enc ();
 
   return !!errcount;
 }

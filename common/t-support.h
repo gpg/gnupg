@@ -69,8 +69,15 @@ void  gcry_free (void *a);
 #define pass()  do { ; } while(0)
 #define fail(a)  do { fprintf (stderr, "%s:%d: test %d failed\n",\
                                __FILE__,__LINE__, (a));          \
-                     exit (1);                                   \
+                      errcount++;                                \
+                      if (!no_exit_on_fail)                      \
+                         exit (1);                               \
                    } while(0)
+
+/* If this flag is set the fail macro does not call exit.  */
+static int no_exit_on_fail;
+/* Error counter.  */
+static int errcount;
 
 
 #endif /*GNUPG_COMMON_T_SUPPORT_H*/

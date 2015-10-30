@@ -192,7 +192,10 @@ t_session_env_LDADD = $(t_common_ldadd)
 t_openpgp_oid_LDADD = $(t_common_ldadd)
 t_ssh_utils_LDADD = $(t_common_ldadd)
 t_mapstrings_LDADD = $(t_common_ldadd)
+
+t_zb32_SOURCES = t-zb32.c $(t_extra_src)
 t_zb32_LDADD = $(t_common_ldadd)
+
 t_mbox_util_LDADD = $(t_common_ldadd)
 t_iobuf_LDADD = $(t_common_ldadd)
 
