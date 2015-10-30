@@ -67,6 +67,7 @@
 #include "options.h"
 #include "call-agent.h"
 #include "i18n.h"
+#include "zb32.h"
 
 #include <assert.h>
 

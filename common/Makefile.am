@@ -64,7 +64,7 @@ common_sources = \
 	homedir.c \
 	gettime.c gettime.h \
 	yesno.c \
-	b64enc.c b64dec.c zb32.c \
+	b64enc.c b64dec.c zb32.c zb32.h \
 	convert.c \
 	percent.c \
 	mbox-util.c mbox-util.h \

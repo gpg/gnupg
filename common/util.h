@@ -274,11 +274,6 @@ gpg_error_t b64dec_proc (struct b64state *state, void *buffer, size_t length,
                          size_t *r_nbytes);
 gpg_error_t b64dec_finish (struct b64state *state);
 
-
-/*-- zb32.c --*/
-char *zb32_encode (const void *data, unsigned int databits);
-
-
 /*-- sexputil.c */
 char *canon_sexp_to_string (const unsigned char *canon, size_t canonlen);
 void log_printcanon (const char *text,

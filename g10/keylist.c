@@ -43,6 +43,7 @@
 #include "status.h"
 #include "call-agent.h"
 #include "mbox-util.h"
+#include "zb32.h"
 #include "tofu.h"
 
 

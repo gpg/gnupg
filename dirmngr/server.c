@@ -52,6 +52,7 @@
 #endif
 #include "dns-stuff.h"
 #include "mbox-util.h"
+#include "zb32.h"
 
 /* To avoid DoS attacks we limit the size of a certificate to
    something reasonable.  The DoS was actually only an issue back when
