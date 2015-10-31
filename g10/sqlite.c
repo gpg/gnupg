@@ -105,7 +105,7 @@ sqlite3_stepx (sqlite3 *db,
       /* We can only process a single statement.  */
       if (tail)
         {
-          while (*tail == ' ' || *tail == ';')
+          while (*tail == ' ' || *tail == ';' || *tail == '\n')
             tail ++;
 
           if (*tail)
