@@ -1771,7 +1771,7 @@ import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
               err = transfer_secret_keys (ctrl, stats, keyblock, batch);
               if (gpg_err_code (err) == GPG_ERR_NOT_PROCESSED)
                 {
-                  /* TRANSLATORS: For smarcard, each private key on
+                  /* TRANSLATORS: For smartcard, each private key on
                      host has a reference (stub) to a smartcard and
                      actual private key data is stored on the card.  A
                      single smartcard can have up to three private key
@@ -1781,8 +1781,8 @@ import_secret_one (ctrl_t ctrl, const char *fname, kbnode_t keyblock,
                      suggested to run 'gpg --card-status', then,
                      references to a card will be automatically
                      created again.  */
-                  log_info (_("To migrate secring.gpg, with each smartcard, run:"
-                              "gpg --card-status"));
+                  log_info (_("To migrate '%s', with each smartcard, "
+                              "run: %s\n"), "secring.gpg", "gpg --card-status");
                   err = 0;
                 }
               if (!err)
