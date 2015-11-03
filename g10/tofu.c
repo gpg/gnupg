@@ -1876,7 +1876,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
         char *conflict_pp = fingerprint_format (conflict);
 	es_fprintf (fp,
 		    _("The key %s raised a conflict with this binding (%s)."
-                      "  Since this binding's policy was 'auto', it was"
+                      "  Since this binding's policy was 'auto', it was "
                       "changed to 'ask'.  "),
 		    conflict_pp, binding);
         xfree (conflict_pp);
@@ -2069,7 +2069,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	    "Normally, there is only a single key associated with an email "
 	    "address.  However, people sometimes generate a new key if "
 	    "their key is too old or they think it might be compromised.  "
-	    "Alternatively, a new key may indicate a man-in-the-middle"
+	    "Alternatively, a new key may indicate a man-in-the-middle "
 	    "attack!  Before accepting this key, you should talk to or "
 	    "call the person to make sure this new key is legitimate.";
 	es_fprintf (fp, "\n%s\n", text);
