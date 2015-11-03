@@ -167,9 +167,56 @@ tofu_cache_dump (struct db *db)
 #  define TIME_AGO_UNIT_LARGE_NAME _("month")
 #  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("months")
 #endif
+
+static char *
+fingerprint_str (const byte *fingerprint_bin)
+{
+  char *fingerprint = bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, NULL);
+  if (! fingerprint)
+    log_fatal ("Out of memory.\n");
+  return fingerprint;
+}
 
+/* Pretty print a MAX_FINGERPRINT_LEN-byte binary fingerprint into a
+   malloc'd string.  */
+static char *
+fingerprint_format (const byte *fingerprint)
+{
+  char *fingerprint_pretty;
+  int space = (/* The characters and the NUL.  */
+	       2 * MAX_FINGERPRINT_LEN + 1
+	       /* After every fourth character, we add a space (except
+		  the last).  */
+	       + 2 * MAX_FINGERPRINT_LEN / 4 - 1
+	       /* Half way through we add a second space.  */
+	       + 1);
+  int i;
+  int j;
 
+  if (strlen (fingerprint) != 2 * MAX_FINGERPRINT_LEN)
+    {
+      log_info (_("Fingerprint with unexpected length (%zd chars)\n"),
+                strlen (fingerprint));
+      return xstrdup (fingerprint);
+    }
 
+  fingerprint_pretty = xmalloc (space);
+
+  for (i = 0, j = 0; i < MAX_FINGERPRINT_LEN * 2; i ++)
+    {
+      if (i && i % 4 == 0)
+	fingerprint_pretty[j ++] = ' ';
+      if (i == MAX_FINGERPRINT_LEN * 2 / 2)
+	fingerprint_pretty[j ++] = ' ';
+
+      fingerprint_pretty[j ++] = fingerprint[i];
+    }
+  fingerprint_pretty[j ++] = 0;
+  assert (j == space);
+
+  return fingerprint_pretty;
+}
+
 const char *
 tofu_policy_str (enum tofu_policy policy)
 {
@@ -1074,6 +1121,7 @@ static gpg_error_t
 record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 		const char *user_id, enum tofu_policy policy, int show_old)
 {
+  char *fingerprint_pp = fingerprint_format (fingerprint);
   struct db *db_email = NULL, *db_key = NULL;
   int rc;
   char *err = NULL;
@@ -1132,7 +1180,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 	{
 	  log_debug ("TOFU: Error reading from binding database"
 		     " (reading policy for <%s, %s>): %s\n",
-		     fingerprint, email, err);
+		     fingerprint_pp, email, err);
 	  sqlite3_free (err);
 	}
     }
@@ -1142,12 +1190,12 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
       if (policy_old != TOFU_POLICY_NONE)
 	log_debug ("Changing TOFU trust policy for binding <%s, %s>"
 		   " from %s to %s.\n",
-		   fingerprint, email,
+		   fingerprint_pp, email,
 		   tofu_policy_str (policy_old),
 		   tofu_policy_str (policy));
       else
 	log_debug ("Set TOFU trust policy for binding <%s, %s> to %s.\n",
-		   fingerprint, email,
+		   fingerprint_pp, email,
 		   tofu_policy_str (policy));
     }
 
@@ -1173,7 +1221,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
     {
       log_error (_("error updating TOFU binding database"
 		   " (inserting <%s, %s> = %s): %s\n"),
-		 fingerprint, email, tofu_policy_str (policy),
+		 fingerprint_pp, email, tofu_policy_str (policy),
 		 err);
       sqlite3_free (err);
       goto out;
@@ -1201,7 +1249,7 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 	{
 	  log_error (_("error updating TOFU binding database"
 		       " (inserting <%s, %s>): %s\n"),
-		     fingerprint, email, err);
+		     fingerprint_pp, email, err);
 	  sqlite3_free (err);
 	  goto out;
 	}
@@ -1238,6 +1286,8 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 	  sqlite3_free (err);
 	}
     }
+
+  xfree (fingerprint_pp);
 
   if (rc)
     return gpg_error (GPG_ERR_GENERAL);
@@ -1568,6 +1618,7 @@ static enum tofu_policy
 get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	   const char *user_id, int may_ask)
 {
+  char *fingerprint_pp;
   struct db *db;
   enum tofu_policy policy;
   char *conflict = NULL;
@@ -1595,38 +1646,33 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
   if (! db)
     return _tofu_GET_TRUST_ERROR;
 
+  fingerprint_pp = fingerprint_format (fingerprint);
+
   policy = get_policy (dbs, fingerprint, email, &conflict);
   if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
     /* See if the key is ultimately trusted.  If so, we're done.  */
     {
-      int i, j;
-      char keyid[17];
+      const char *keyid;
       KEYDB_SEARCH_DESC desc;
 
       /* We need to convert the fingerprint as a string to a long
          keyid.
 
-         FINGERPRINT has the form:
+         FINGERPRINT is stored as follows:
 
-           362D 3527 F53A AD19 71AA  FDE6 5885 9975 EE37 CF96
-                                          -------------------
+           362D3527F53AAD1971AAFDE658859975EE37CF96
+                                -------------------
 
          The last 16 characters are the long keyid.
       */
-      assert (strlen (fingerprint) > 4 * 4 + 3);
-      for (i = strlen (fingerprint) - (4 * 4 + 3), j = 0; j < 16; i ++, j ++)
-        {
-          if (fingerprint[i] == ' ')
-            i ++;
-          keyid[j] = fingerprint[i];
-        }
-      keyid[j] = 0;
+      assert (strlen (fingerprint) > 4 * 4);
+      keyid = &fingerprint[strlen (fingerprint) - 16];
 
       rc = classify_user_id (keyid, &desc, 1);
       if (rc || desc.mode != KEYDB_SEARCH_MODE_LONG_KID)
         {
           log_error (_("'%s' is not a valid long keyID\n"), keyid);
-          return _tofu_GET_TRUST_ERROR;
+          goto out;
         }
 
       if (tdb_keyid_is_utk (desc.u.kid))
@@ -1653,7 +1699,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
       policy = opt.tofu_default_policy;
       if (DBG_TRUST)
 	log_debug ("TOFU: binding <%s, %s>'s policy is auto (default: %s).\n",
-		   fingerprint, email,
+		   fingerprint_pp, email,
 		   tofu_policy_str (opt.tofu_default_policy));
     }
   switch (policy)
@@ -1666,7 +1712,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	 We don't need to ask the user anything.  */
       if (DBG_TRUST)
 	log_debug ("TOFU: Known binding <%s, %s>'s policy: %s\n",
-		   fingerprint, email, tofu_policy_str (policy));
+		   fingerprint_pp, email, tofu_policy_str (policy));
       trust_level = tofu_policy_to_trust_level (policy);
       goto out;
 
@@ -1745,7 +1791,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
       if (DBG_TRUST)
 	log_debug ("TOFU: New binding <%s, %s>, no conflict.\n",
-		   email, fingerprint);
+		   email, fingerprint_pp);
 
       if (record_binding (dbs, fingerprint, email, user_id,
 			  TOFU_POLICY_AUTO, 0) != 0)
@@ -1814,7 +1860,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
     if (! fp)
       log_fatal ("Error creating memory stream\n");
 
-    binding = xasprintf ("<%s, %s>", fingerprint, email);
+    binding = xasprintf ("<%s, %s>", fingerprint_pp, email);
     binding_shown = 0;
 
     if (policy == TOFU_POLICY_NONE)
@@ -1827,11 +1873,13 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 		display this message.  */
 	     && conflict && strcmp (conflict, fingerprint) != 0)
       {
+        char *conflict_pp = fingerprint_format (conflict);
 	es_fprintf (fp,
 		    _("The key %s raised a conflict with this binding (%s)."
                       "  Since this binding's policy was 'auto', it was"
                       "changed to 'ask'.  "),
-		    conflict, binding);
+		    conflict_pp, binding);
+        xfree (conflict_pp);
 	binding_shown = 1;
       }
     es_fprintf (fp,
@@ -1979,13 +2027,16 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	    if (! key || strcmp (key, stats_iter->fingerprint) != 0)
 	      {
 		int this_key;
+                char *key_pp;
 		key = stats_iter->fingerprint;
 		this_key = strcmp (key, fingerprint) == 0;
+                key_pp = fingerprint_format (key);
 		if (this_key)
-		  es_fprintf (fp, _("  %s (this key):"), key);
+		  es_fprintf (fp, _("  %s (this key):"), key_pp);
 		else
 		  es_fprintf (fp, _("  %s (policy: %s):"),
-			      key, tofu_policy_str (stats_iter->policy));
+			      key_pp, tofu_policy_str (stats_iter->policy));
+                xfree (key_pp);
 		es_fprintf (fp, "\n");
 	      }
 
@@ -2128,6 +2179,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 
   xfree (conflict);
   free_strlist (bindings_with_this_email);
+  xfree (fingerprint_pp);
 
   return trust_level;
 }
@@ -2138,6 +2190,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 		 const char *sig_exclude)
 {
   struct db *db;
+  char *fingerprint_pp;
   int rc;
   strlist_t strlist = NULL;
   char *err = NULL;
@@ -2145,6 +2198,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
   db = getdb (dbs, email, DB_EMAIL);
   if (! db)
     return;
+
+  fingerprint_pp = fingerprint_format (fingerprint);
 
   rc = sqlite3_exec_printf
     (db->db, strings_collect_cb, &strlist, &err,
@@ -2169,7 +2224,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 
   if (! strlist)
     log_info (_("Have never verified a message signed by key %s!\n"),
-	      fingerprint);
+              fingerprint_pp);
   else
     {
       char *tail = NULL;
@@ -2206,8 +2261,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	}
 
       if (messages == -1 || first_seen_ago == 0)
-	log_info (_("Failed to collect signature statistics for \"%s\" (key %s)\n"),
-		  user_id, fingerprint);
+        log_info (_("Failed to collect signature statistics for \"%s\" (key %s)\n"),
+                  user_id, fingerprint_pp);
       else
 	{
 	  enum tofu_policy policy = get_policy (dbs, fingerprint, email, NULL);
@@ -2219,10 +2274,10 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	    log_fatal ("error creating memory stream\n");
 
 	  if (messages == 0)
-	    es_fprintf (fp,
-			_("Verified 0 messages signed by \"%s\""
-			  " (key: %s, policy %s)."),
-			user_id, fingerprint, tofu_policy_str (policy));
+            es_fprintf (fp,
+                        _("Verified 0 messages signed by \"%s\""
+                          " (key: %s, policy %s)."),
+                        user_id, fingerprint_pp, tofu_policy_str (policy));
 	  else
 	    {
 	      int years = 0;
@@ -2244,7 +2299,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 			  _("Verified %ld messages signed by \"%s\""
 			    " (key: %s, policy: %s) in the past "),
 			  messages, user_id,
-			  fingerprint, tofu_policy_str (policy));
+			  fingerprint_pp, tofu_policy_str (policy));
 
 	      /* It would be nice to use a macro to do this, but gettext
 		 works on the unpreprocessed code.  */
@@ -2402,6 +2457,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 
  out:
   free_strlist (strlist);
+  xfree (fingerprint_pp);
 
   return;
 }
@@ -2420,42 +2476,6 @@ email_from_user_id (const char *user_id)
     email = ascii_strlwr (xstrdup (user_id));
 
   return email;
-}
-
-/* Pretty print a MAX_FINGERPRINT_LEN-byte binary fingerprint into a
-   malloc'd string.  */
-static char *
-fingerprint_pp (const byte *fingerprint_bin)
-{
-  char fingerprint[MAX_FINGERPRINT_LEN * 2 + 1];
-  char *fingerprint_pretty;
-  int space = (/* The characters and the NUL.  */
-	       sizeof (fingerprint)
-	       /* After every fourth character, we add a space (except
-		  the last).  */
-	       + (sizeof (fingerprint) - 1) / 4 - 1
-	       /* Half way through we add a second space.  */
-	       + 1);
-  int i;
-  int j;
-
-  bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
-
-  fingerprint_pretty = xmalloc (space);
-
-  for (i = 0, j = 0; i < MAX_FINGERPRINT_LEN * 2; i ++)
-    {
-      if (i && i % 4 == 0)
-	fingerprint_pretty[j ++] = ' ';
-      if (i == MAX_FINGERPRINT_LEN * 2 / 2)
-	fingerprint_pretty[j ++] = ' ';
-
-      fingerprint_pretty[j ++] = fingerprint[i];
-    }
-  fingerprint_pretty[j ++] = 0;
-  assert (j == space);
-
-  return fingerprint_pretty;
 }
 
 /* Register the signature with the binding <FINGERPRINT_BIN, USER_ID>.
@@ -2485,6 +2505,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
   struct dbs *dbs;
   struct db *db;
   char *fingerprint = NULL;
+  char *fingerprint_pp = NULL;
   char *email = NULL;
   char *err = NULL;
   int rc;
@@ -2502,7 +2523,8 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
       goto die;
     }
 
-  fingerprint = fingerprint_pp (fingerprint_bin);
+  fingerprint = fingerprint_str (fingerprint_bin);
+  fingerprint_pp = fingerprint_format (fingerprint);
 
   if (! *user_id)
     {
@@ -2568,7 +2590,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
     log_debug ("SIGNATURES DB contains duplicate records"
 	       " <key: %s, %s, time: 0x%lx, sig: %s, %s>."
 	       "  Please report.\n",
-	       fingerprint, email, (unsigned long) sig_time,
+	       fingerprint_pp, email, (unsigned long) sig_time,
 	       sig_digest, origin);
   else if (c == 1)
     {
@@ -2576,7 +2598,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
       if (DBG_TRUST)
 	log_debug ("Already observed the signature"
 		   " <key: %s, %s, time: 0x%lx, sig: %s, %s>\n",
-		   fingerprint, email, (unsigned long) sig_time,
+		   fingerprint_pp, email, (unsigned long) sig_time,
 		   sig_digest, origin);
     }
   else
@@ -2585,7 +2607,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
     {
       if (DBG_TRUST)
 	log_debug ("TOFU: Saving signature <%s, %s, %s>\n",
-		   fingerprint, email, sig_digest);
+		   fingerprint_pp, email, sig_digest);
 
       assert (c == 0);
 
@@ -2631,6 +2653,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
 		     already_verified ? NULL : sig_digest);
 
   xfree (email);
+  xfree (fingerprint_pp);
   xfree (fingerprint);
   if (dbs)
     closedbs (dbs);
@@ -2715,7 +2738,7 @@ tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
       goto die;
     }
 
-  fingerprint = fingerprint_pp (fingerprint_bin);
+  fingerprint = fingerprint_str (fingerprint_bin);
 
   if (! *user_id)
     {
@@ -2778,7 +2801,7 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
   fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
   assert (fingerprint_bin_len == sizeof (fingerprint_bin));
 
-  fingerprint = fingerprint_pp (fingerprint_bin);
+  fingerprint = fingerprint_str (fingerprint_bin);
 
   for (; kb; kb = kb->next)
     {
@@ -2855,7 +2878,7 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
   fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
   assert (fingerprint_bin_len == sizeof (fingerprint_bin));
 
-  fingerprint = fingerprint_pp (fingerprint_bin);
+  fingerprint = fingerprint_str (fingerprint_bin);
 
   email = email_from_user_id (user_id->name);
 
