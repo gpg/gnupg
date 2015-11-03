@@ -173,7 +173,8 @@ fingerprint_str (const byte *fingerprint_bin)
 {
   char *fingerprint = bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, NULL);
   if (! fingerprint)
-    log_fatal ("Out of memory.\n");
+    log_fatal ("bin2hex failed: %s\n",
+               gpg_strerror (gpg_error_from_syserror()));
   return fingerprint;
 }
 
@@ -195,7 +196,7 @@ fingerprint_format (const byte *fingerprint)
 
   if (strlen (fingerprint) != 2 * MAX_FINGERPRINT_LEN)
     {
-      log_info (_("Fingerprint with unexpected length (%zd chars)\n"),
+      log_info (_("Fingerprint with unexpected length (%zu chars)\n"),
                 strlen (fingerprint));
       return xstrdup (fingerprint);
     }
@@ -995,7 +996,8 @@ opendbs (void)
 
       if (have_tofu_db && have_tofu_d)
 	{
-	  log_info (_("Warning: Home directory contains both tofu.db and tofu.d.  Using split format for TOFU DB.\n"));
+	  log_info (_("Warning: Home directory contains both tofu.db"
+                      " and tofu.d.  Using split format for TOFU DB.\n"));
 	  opt.tofu_db_format = TOFU_DB_SPLIT;
 	}
       else if (have_tofu_db)
@@ -1682,8 +1684,8 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
               if (record_binding (dbs, fingerprint, email, user_id,
                                   TOFU_POLICY_AUTO, 0) != 0)
                 {
-                  log_error (_("error setting TOFU binding's trust level to %s\n"),
-                             "auto");
+                  log_error (_("error setting TOFU binding's trust level"
+                               " to %s\n"), "auto");
                   trust_level = _tofu_GET_TRUST_ERROR;
                   goto out;
                 }
@@ -2248,7 +2250,8 @@ time_ago_str (long long int t)
 
   fp = es_fopenmem (0, "rw,samethread");
   if (! fp)
-    log_fatal ("error creating memory stream\n");
+    log_fatal ("error creating memory stream: %s\n",
+               gpg_strerror (gpg_error_from_syserror()));
 
   if (years)
     {
@@ -2263,7 +2266,7 @@ time_ago_str (long long int t)
   if ((first == -1 || i - first <= 3) && months)
     {
       if (count)
-        es_fprintf (fp, _(", "));
+        es_fprintf (fp, ", ");
 
       if (months > 1)
         es_fprintf (fp, _("%d months"), months);
@@ -2276,7 +2279,7 @@ time_ago_str (long long int t)
   if ((first == -1 || i - first <= 3) && count < 2 && days)
     {
       if (count)
-        es_fprintf (fp, _(", "));
+        es_fprintf (fp, ", ");
 
       if (days > 1)
         es_fprintf (fp, _("%d days"), days);
@@ -2289,7 +2292,7 @@ time_ago_str (long long int t)
   if ((first == -1 || i - first <= 3) && count < 2 && hours)
     {
       if (count)
-        es_fprintf (fp, _(", "));
+        es_fprintf (fp, ", ");
 
       if (hours > 1)
         es_fprintf (fp, _("%d hours"), hours);
@@ -2302,7 +2305,7 @@ time_ago_str (long long int t)
   if ((first == -1 || i - first <= 3) && count < 2 && minutes)
     {
       if (count)
-        es_fprintf (fp, _(", "));
+        es_fprintf (fp, ", ");
 
       if (minutes > 1)
         es_fprintf (fp, _("%d minutes"), minutes);
@@ -2315,7 +2318,7 @@ time_ago_str (long long int t)
   if ((first == -1 || i - first <= 3) && count < 2)
     {
       if (count)
-        es_fprintf (fp, _(", "));
+        es_fprintf (fp, ", ");
 
       if (seconds > 1)
         es_fprintf (fp, _("%d seconds"), seconds);
@@ -2423,7 +2426,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	}
 
       if (messages == -1 || first_seen_ago == 0)
-        log_info (_("Failed to collect signature statistics for \"%s\" (key %s)\n"),
+        log_info (_("Failed to collect signature statistics"
+                    " for \"%s\" (key %s)\n"),
                   user_id, fingerprint_pp);
       else
 	{
@@ -2475,9 +2479,11 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	      const char *text;
 
 	      if (messages == 0)
-		log_info (_("Warning: we've have yet to see a message signed by this key!\n"));
+		log_info (_("Warning: we've have yet to see"
+                            " a message signed by this key!\n"));
 	      else if (messages == 1)
-		log_info (_("Warning: we've only seen a single message signed by this key!\n"));
+		log_info (_("Warning: we've only seen a"
+                            " single message signed by this key!\n"));
 
 	      set_policy_command =
 		xasprintf ("gpg --tofu-policy bad \"%s\"", fingerprint);
@@ -2515,10 +2521,12 @@ email_from_user_id (const char *user_id)
 {
   char *email = mailbox_from_userid (user_id);
   if (! email)
-    /* Hmm, no email address was provided.  Just take the lower-case
-       version of the whole user id.  It could be a hostname, for
-       instance.  */
-    email = ascii_strlwr (xstrdup (user_id));
+    {
+      /* Hmm, no email address was provided or we are out of core.  Just
+         take the lower-case version of the whole user id.  It could be
+         a hostname, for instance.  */
+      email = ascii_strlwr (xstrdup (user_id));
+    }
 
   return email;
 }
@@ -2787,7 +2795,8 @@ tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
 
   if (! *user_id)
     {
-      log_debug ("user id is empty.  Can't get TOFU validity for this binding.\n");
+      log_debug ("user id is empty."
+                 "  Can't get TOFU validity for this binding.\n");
       goto die;
     }
 
