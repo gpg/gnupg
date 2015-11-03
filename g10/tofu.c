@@ -2184,6 +2184,152 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
   return trust_level;
 }
 
+static char *
+time_ago_str (long long int t)
+{
+  estream_t fp;
+  int years = 0;
+  int months = 0;
+  int days = 0;
+  int hours = 0;
+  int minutes = 0;
+  int seconds = 0;
+
+  /* The number of units that we've printed so far.  */
+  int count = 0;
+  /* The first unit that we printed (year = 0, month = 1,
+     etc.).  */
+  int first = -1;
+  /* The current unit.  */
+  int i = 0;
+
+  char *str;
+
+  /* It would be nice to use a macro to do this, but gettext
+     works on the unpreprocessed code.  */
+#define MIN_SECS (60)
+#define HOUR_SECS (60 * MIN_SECS)
+#define DAY_SECS (24 * HOUR_SECS)
+#define MONTH_SECS (30 * DAY_SECS)
+#define YEAR_SECS (365 * DAY_SECS)
+
+  if (t > YEAR_SECS)
+    {
+      years = t / YEAR_SECS;
+      t -= years * YEAR_SECS;
+    }
+  if (t > MONTH_SECS)
+    {
+      months = t / MONTH_SECS;
+      t -= months * MONTH_SECS;
+    }
+  if (t > DAY_SECS)
+    {
+      days = t / DAY_SECS;
+      t -= days * DAY_SECS;
+    }
+  if (t > HOUR_SECS)
+    {
+      hours = t / HOUR_SECS;
+      t -= hours * HOUR_SECS;
+    }
+  if (t > MIN_SECS)
+    {
+      minutes = t / MIN_SECS;
+      t -= minutes * MIN_SECS;
+    }
+  seconds = t;
+
+#undef MIN_SECS
+#undef HOUR_SECS
+#undef DAY_SECS
+#undef MONTH_SECS
+#undef YEAR_SECS
+
+  fp = es_fopenmem (0, "rw,samethread");
+  if (! fp)
+    log_fatal ("error creating memory stream\n");
+
+  if (years)
+    {
+      if (years > 1)
+        es_fprintf (fp, _("%d years"), years);
+      else
+        es_fprintf (fp, _("%d year"), years);
+      count ++;
+      first = i;
+    }
+  i ++;
+  if ((first == -1 || i - first <= 3) && months)
+    {
+      if (count)
+        es_fprintf (fp, _(", "));
+
+      if (months > 1)
+        es_fprintf (fp, _("%d months"), months);
+      else
+        es_fprintf (fp, _("%d month"), months);
+      count ++;
+      first = i;
+    }
+  i ++;
+  if ((first == -1 || i - first <= 3) && count < 2 && days)
+    {
+      if (count)
+        es_fprintf (fp, _(", "));
+
+      if (days > 1)
+        es_fprintf (fp, _("%d days"), days);
+      else
+        es_fprintf (fp, _("%d day"), days);
+      count ++;
+      first = i;
+    }
+  i ++;
+  if ((first == -1 || i - first <= 3) && count < 2 && hours)
+    {
+      if (count)
+        es_fprintf (fp, _(", "));
+
+      if (hours > 1)
+        es_fprintf (fp, _("%d hours"), hours);
+      else
+        es_fprintf (fp, _("%d hour"), hours);
+      count ++;
+      first = i;
+    }
+  i ++;
+  if ((first == -1 || i - first <= 3) && count < 2 && minutes)
+    {
+      if (count)
+        es_fprintf (fp, _(", "));
+
+      if (minutes > 1)
+        es_fprintf (fp, _("%d minutes"), minutes);
+      else
+        es_fprintf (fp, _("%d minute"), minutes);
+      count ++;
+      first = i;
+    }
+  i ++;
+  if ((first == -1 || i - first <= 3) && count < 2)
+    {
+      if (count)
+        es_fprintf (fp, _(", "));
+
+      if (seconds > 1)
+        es_fprintf (fp, _("%d seconds"), seconds);
+      else
+        es_fprintf (fp, _("%d second"), seconds);
+    }
+
+  es_fputc (0, fp);
+  if (es_fclose_snatch (fp, (void **) &str, NULL))
+    log_fatal ("error snatching memory stream\n");
+
+  return str;
+}
+
 static void
 show_statistics (struct dbs *dbs, const char *fingerprint,
 		 const char *email, const char *user_id,
@@ -2203,7 +2349,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 
   rc = sqlite3_exec_printf
     (db->db, strings_collect_cb, &strlist, &err,
-     "select count (*), strftime('%%s','now') - min (signatures.time)\n"
+     "select count (*), strftime('%%s','now') - min (signatures.time),\n"
+     "  strftime('%%s','now') - max (signatures.time)\n"
      " from signatures\n"
      " left join bindings on signatures.binding = bindings.oid\n"
      " where fingerprint = %Q and email = %Q and sig_digest %s%s%s;",
@@ -2231,7 +2378,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
       signed long messages;
       signed long first_seen_ago;
 
-      assert (strlist_length (strlist) == 2);
+      assert (strlist_length (strlist) == 3);
 
       errno = 0;
       messages = strtol (strlist->d, &tail, 0);
@@ -2253,7 +2400,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	  if (errno || *tail != '\0')
 	    /* Abort.  */
 	    {
-	      log_debug ("%s:%d: Cound't convert %s (first_seen) to an int: %s.\n",
+	      log_debug ("%s:%d: Couldn't convert %s (first_seen) to an int: %s.\n",
 			 __func__, __LINE__,
 			 strlist->next->d, strerror (errno));
 	      first_seen_ago = 0;
@@ -2280,149 +2427,25 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
                         user_id, fingerprint_pp, tofu_policy_str (policy));
 	  else
 	    {
-	      int years = 0;
-	      int months = 0;
-	      int days = 0;
-	      int hours = 0;
-	      int minutes = 0;
-	      int seconds = 0;
-
-	      /* The number of units that we've printed so far.  */
-	      int count = 0;
-	      /* The first unit that we printed (year = 0, month = 1,
-		 etc.).  */
-	      int first = -1;
-	      /* The current unit.  */
-	      int i = 0;
+              char *first_seen_ago_str = time_ago_str (first_seen_ago);
 
 	      es_fprintf (fp,
 			  _("Verified %ld messages signed by \"%s\""
-			    " (key: %s, policy: %s) in the past "),
+			    " (key: %s, policy: %s) in the past %s."),
 			  messages, user_id,
-			  fingerprint_pp, tofu_policy_str (policy));
+			  fingerprint_pp, tofu_policy_str (policy),
+                          first_seen_ago_str);
 
-	      /* It would be nice to use a macro to do this, but gettext
-		 works on the unpreprocessed code.  */
-#define MIN_SECS (60)
-#define HOUR_SECS (60 * MIN_SECS)
-#define DAY_SECS (24 * HOUR_SECS)
-#define MONTH_SECS (30 * DAY_SECS)
-#define YEAR_SECS (365 * DAY_SECS)
 
-	      if (first_seen_ago > YEAR_SECS)
-		{
-		  years = first_seen_ago / YEAR_SECS;
-		  first_seen_ago -= years * YEAR_SECS;
-		}
-	      if (first_seen_ago > MONTH_SECS)
-		{
-		  months = first_seen_ago / MONTH_SECS;
-		  first_seen_ago -= months * MONTH_SECS;
-		}
-	      if (first_seen_ago > DAY_SECS)
-		{
-		  days = first_seen_ago / DAY_SECS;
-		  first_seen_ago -= days * DAY_SECS;
-		}
-	      if (first_seen_ago > HOUR_SECS)
-		{
-		  hours = first_seen_ago / HOUR_SECS;
-		  first_seen_ago -= hours * HOUR_SECS;
-		}
-	      if (first_seen_ago > MIN_SECS)
-		{
-		  minutes = first_seen_ago / MIN_SECS;
-		  first_seen_ago -= minutes * MIN_SECS;
-		}
-	      seconds = first_seen_ago;
-
-#undef MIN_SECS
-#undef HOUR_SECS
-#undef DAY_SECS
-#undef MONTH_SECS
-#undef YEAR_SECS
-
-	      if (years)
-		{
-		  if (years > 1)
-		    es_fprintf (fp, _("%d years"), years);
-		  else
-		    es_fprintf (fp, _("%d year"), years);
-		  count ++;
-		  first = i;
-		}
-	      i ++;
-	      if ((first == -1 || i - first <= 3) && months)
-		{
-		  if (count)
-		    es_fprintf (fp, _(", "));
-
-		  if (months > 1)
-		    es_fprintf (fp, _("%d months"), months);
-		  else
-		    es_fprintf (fp, _("%d month"), months);
-		  count ++;
-		  first = i;
-		}
-	      i ++;
-	      if ((first == -1 || i - first <= 3) && count < 2 && days)
-		{
-		  if (count)
-		    es_fprintf (fp, _(", "));
-
-		  if (days > 1)
-		    es_fprintf (fp, _("%d days"), days);
-		  else
-		    es_fprintf (fp, _("%d day"), days);
-		  count ++;
-		  first = i;
-		}
-	      i ++;
-	      if ((first == -1 || i - first <= 3) && count < 2 && hours)
-		{
-		  if (count)
-		    es_fprintf (fp, _(", "));
-
-		  if (hours > 1)
-		    es_fprintf (fp, _("%d hours"), hours);
-		  else
-		    es_fprintf (fp, _("%d hour"), hours);
-		  count ++;
-		  first = i;
-		}
-	      i ++;
-	      if ((first == -1 || i - first <= 3) && count < 2 && minutes)
-		{
-		  if (count)
-		    es_fprintf (fp, _(", "));
-
-		  if (minutes > 1)
-		    es_fprintf (fp, _("%d minutes"), minutes);
-		  else
-		    es_fprintf (fp, _("%d minute"), minutes);
-		  count ++;
-		  first = i;
-		}
-	      i ++;
-	      if ((first == -1 || i - first <= 3) && count < 2)
-		{
-		  if (count)
-		    es_fprintf (fp, _(", "));
-
-		  if (seconds > 1)
-		    es_fprintf (fp, _("%d seconds"), seconds);
-		  else
-		    es_fprintf (fp, _("%d second"), seconds);
-		}
-
-	      es_fprintf (fp, _("."));
-	    }
+              xfree (first_seen_ago_str);
+            }
 
 	  es_fputc (0, fp);
 	  if (es_fclose_snatch (fp, (void **) &msg, NULL))
 	    log_fatal ("error snatching memory stream\n");
 
 	  log_info ("%s\n", msg);
+          xfree (msg);
 
 	  if (policy == TOFU_POLICY_AUTO && messages < 10)
 	    {
