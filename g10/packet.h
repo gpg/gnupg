@@ -652,7 +652,7 @@ int check_signature2 (PKT_signature *sig, gcry_md_hd_t digest,
 
 
 /*-- pubkey-enc.c --*/
-gpg_error_t get_session_key (PKT_pubkey_enc *k, DEK *dek);
+gpg_error_t get_session_key (ctrl_t ctrl, PKT_pubkey_enc *k, DEK *dek);
 gpg_error_t get_override_session_key (DEK *dek, const char *string);
 
 /*-- compress.c --*/

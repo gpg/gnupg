@@ -1,6 +1,7 @@
 /* options.h
  * Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
  *               2007, 2010, 2011 Free Software Foundation, Inc.
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -87,7 +88,7 @@ struct
   int compress_level;
   int bz2_compress_level;
   int bz2_decompress_lowmem;
-  const char *def_secret_key;
+  strlist_t def_secret_key;
   char *def_recipient;
   int def_recipient_self;
   strlist_t secret_keys_to_try;

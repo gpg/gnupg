@@ -106,7 +106,7 @@ struct mainproc_context
 
 
 /*** Local prototypes.  ***/
-static int do_proc_packets (CTX c, iobuf_t a);
+static int do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a);
 static void list_node (CTX c, kbnode_t node);
 static void proc_tree (CTX c, kbnode_t node);
 static int literals_seen;
@@ -366,7 +366,7 @@ proc_symkey_enc (CTX c, PACKET *pkt)
 
 
 static void
-proc_pubkey_enc (CTX c, PACKET *pkt)
+proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
 {
   PKT_pubkey_enc *enc;
   int result = 0;
@@ -428,7 +428,7 @@ proc_pubkey_enc (CTX c, PACKET *pkt)
           else
             {
               c->dek = xmalloc_secure_clear (sizeof *c->dek);
-              if ((result = get_session_key (enc, c->dek)))
+              if ((result = get_session_key (ctrl, enc, c->dek)))
                 {
                   /* Error: Delete the DEK. */
                   xfree (c->dek);
@@ -1195,7 +1195,7 @@ proc_packets (ctrl_t ctrl, void *anchor, iobuf_t a )
 
   c->ctrl = ctrl;
   c->anchor = anchor;
-  rc = do_proc_packets (c, a);
+  rc = do_proc_packets (ctrl, c, a);
   xfree (c);
 
   return rc;
@@ -1218,7 +1218,7 @@ proc_signature_packets (ctrl_t ctrl, void *anchor, iobuf_t a,
   c->signed_data.used = !!signedfiles;
 
   c->sigfilename = sigfilename;
-  rc = do_proc_packets ( c, a );
+  rc = do_proc_packets (ctrl, c, a);
 
   /* If we have not encountered any signature we print an error
      messages, send a NODATA status back and return an error code.
@@ -1261,7 +1261,7 @@ proc_signature_packets_by_fd (ctrl_t ctrl,
   c->signed_data.data_names = NULL;
   c->signed_data.used = (signed_data_fd != -1);
 
-  rc = do_proc_packets ( c, a );
+  rc = do_proc_packets (ctrl, c, a);
 
   /* If we have not encountered any signature we print an error
      messages, send a NODATA status back and return an error code.
@@ -1294,7 +1294,7 @@ proc_encryption_packets (ctrl_t ctrl, void *anchor, iobuf_t a )
   c->ctrl = ctrl;
   c->anchor = anchor;
   c->encrypt_only = 1;
-  rc = do_proc_packets (c, a);
+  rc = do_proc_packets (ctrl, c, a);
   xfree (c);
   return rc;
 }
@@ -1320,7 +1320,7 @@ check_nesting (CTX c)
 
 
 static int
-do_proc_packets (CTX c, iobuf_t a)
+do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
 {
   PACKET *pkt;
   int rc = 0;
@@ -1352,7 +1352,7 @@ do_proc_packets (CTX c, iobuf_t a)
         {
           switch (pkt->pkttype)
             {
-            case PKT_PUBKEY_ENC:    proc_pubkey_enc (c, pkt); break;
+            case PKT_PUBKEY_ENC:    proc_pubkey_enc (ctrl, c, pkt); break;
             case PKT_SYMKEY_ENC:    proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC: proc_encrypted (c, pkt); break;
@@ -1396,7 +1396,7 @@ do_proc_packets (CTX c, iobuf_t a)
 
             case PKT_SIGNATURE:   newpkt = add_signature (c, pkt); break;
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
-            case PKT_PUBKEY_ENC:  proc_pubkey_enc (c, pkt); break;
+            case PKT_PUBKEY_ENC:  proc_pubkey_enc (ctrl, c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC: proc_encrypted (c, pkt); break;
             case PKT_PLAINTEXT:   proc_plaintext (c, pkt); break;
@@ -1422,7 +1422,7 @@ do_proc_packets (CTX c, iobuf_t a)
               break;
             case PKT_USER_ID:     newpkt = add_user_id (c, pkt); break;
             case PKT_SIGNATURE:   newpkt = add_signature (c, pkt); break;
-            case PKT_PUBKEY_ENC:  proc_pubkey_enc (c, pkt); break;
+            case PKT_PUBKEY_ENC:  proc_pubkey_enc (ctrl, c, pkt); break;
             case PKT_SYMKEY_ENC:  proc_symkey_enc (c, pkt); break;
             case PKT_ENCRYPTED:
             case PKT_ENCRYPTED_MDC: proc_encrypted (c, pkt); break;

@@ -1121,17 +1121,93 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
   return 0;
 }
 
+static const char *
+parse_def_secret_key (ctrl_t ctrl)
+{
+  KEYDB_HANDLE hd = NULL;
+  strlist_t t;
+  static int warned;
+
+  for (t = opt.def_secret_key; t; t = t->next)
+    {
+      gpg_error_t err;
+      KEYDB_SEARCH_DESC desc;
+      KBNODE kb;
+
+      err = classify_user_id (t->d, &desc, 1);
+      if (err)
+        {
+          log_error (_("Invalid value ('%s') for --default-key.\n"),
+                     t->d);
+          continue;
+        }
+
+      if (! (desc.mode == KEYDB_SEARCH_MODE_LONG_KID
+             || desc.mode == KEYDB_SEARCH_MODE_FPR16
+             || desc.mode == KEYDB_SEARCH_MODE_FPR20
+             || desc.mode == KEYDB_SEARCH_MODE_FPR)
+          && ! warned)
+        log_info (_("Warning: value '%s' for --default-key"
+                    " should be a long keyid or a fingerprint.\n"),
+                  t->d);
+
+      if (! hd)
+        hd = keydb_new ();
+      else
+        keydb_search_reset (hd);
+
+      err = keydb_search (hd, &desc, 1, NULL);
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        continue;
+
+      if (err)
+        {
+          log_error (_("Error reading from keyring: %s.\n"),
+                     gpg_strerror (err));
+          t = NULL;
+          break;
+        }
+
+      err = keydb_get_keyblock (hd, &kb);
+      if (err)
+        {
+          log_error (_("error reading keyblock: %s\n"),
+                     gpg_strerror (err));
+          continue;
+        }
+
+      err = agent_probe_secret_key (ctrl, kb->pkt->pkt.public_key);
+      release_kbnode (kb);
+      if (! err)
+        {
+          if (! warned)
+            log_debug (_("Using %s as default secret key.\n"), t->d);
+          break;
+        }
+    }
+
+  warned = 1;
+
+  if (hd)
+    keydb_release (hd);
+
+  if (t)
+    return t->d;
+  return NULL;
+}
 
 /* For documentation see keydb.h.  */
 gpg_error_t
-get_seckey_default (PKT_public_key *pk)
+get_seckey_default (ctrl_t ctrl, PKT_public_key *pk)
 {
   gpg_error_t err;
   strlist_t namelist = NULL;
   int include_unusable = 1;
 
-  if (opt.def_secret_key && *opt.def_secret_key)
-    add_to_strlist (&namelist, opt.def_secret_key);
+
+  const char *def_secret_key = parse_def_secret_key (ctrl);
+  if (def_secret_key)
+    add_to_strlist (&namelist, def_secret_key);
   else
     include_unusable = 0;
 
@@ -1154,15 +1230,19 @@ getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
 
 /* For documentation see keydb.h.  */
 gpg_error_t
-getkey_byname (getkey_ctx_t *retctx, PKT_public_key *pk,
+getkey_byname (ctrl_t ctrl, getkey_ctx_t *retctx, PKT_public_key *pk,
                const char *name, int want_secret, kbnode_t *ret_keyblock)
 {
   gpg_error_t err;
   strlist_t namelist = NULL;
   int with_unusable = 1;
+  const char *def_secret_key = NULL;
 
-  if (want_secret && !name && opt.def_secret_key && *opt.def_secret_key)
-    add_to_strlist (&namelist, opt.def_secret_key);
+  if (want_secret && !name)
+    def_secret_key = parse_def_secret_key (ctrl);
+
+  if (want_secret && !name && def_secret_key)
+    add_to_strlist (&namelist, def_secret_key);
   else if (name)
     add_to_strlist (&namelist, name);
   else
@@ -2737,7 +2817,7 @@ found:
 
 /* For documentation see keydb.h.  */
 gpg_error_t
-enum_secret_keys (void **context, PKT_public_key *sk)
+enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *sk)
 {
   gpg_error_t err = 0;
   const char *name;
@@ -2783,8 +2863,7 @@ enum_secret_keys (void **context, PKT_public_key *sk)
               switch (c->state)
                 {
                 case 0: /* First try to use the --default-key.  */
-                  if (opt.def_secret_key && *opt.def_secret_key)
-                    name = opt.def_secret_key;
+                  name = parse_def_secret_key (ctrl);
                   c->state = 1;
                   break;
 
@@ -2810,7 +2889,7 @@ enum_secret_keys (void **context, PKT_public_key *sk)
             }
           while (!name || !*name);
 
-          err = getkey_byname (NULL, NULL, name, 1, &c->keyblock);
+          err = getkey_byname (ctrl, NULL, NULL, name, 1, &c->keyblock);
           if (err)
             {
               /* getkey_byname might return a keyblock even in the

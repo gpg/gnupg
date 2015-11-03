@@ -702,7 +702,7 @@ key_present_in_pk_list(PK_LIST pk_list, PKT_public_key *pk)
  * Return a malloced string with a default recipient if there is any
  */
 static char *
-default_recipient(void)
+default_recipient(ctrl_t ctrl)
 {
     PKT_public_key *pk;
     byte fpr[MAX_FINGERPRINT_LEN+1];
@@ -715,7 +715,7 @@ default_recipient(void)
     if( !opt.def_recipient_self )
 	return NULL;
     pk = xmalloc_clear( sizeof *pk );
-    i = get_seckey_default (pk);
+    i = get_seckey_default (ctrl, pk);
     if( i ) {
 	free_public_key( pk );
 	return NULL;
@@ -1010,7 +1010,7 @@ build_pk_list (ctrl_t ctrl,
 
       if (pk_list)
         any_recipients = 1;
-      def_rec = default_recipient();
+      def_rec = default_recipient(ctrl);
       have_def_rec = !!def_rec;
       if ( !have_def_rec )
         tty_printf(_("You did not specify a user ID. (you may use \"-r\")\n"));
@@ -1153,7 +1153,7 @@ build_pk_list (ctrl_t ctrl,
           pk = NULL;
         }
     }
-  else if ( !any_recipients && (def_rec = default_recipient()) )
+  else if ( !any_recipients && (def_rec = default_recipient(ctrl)) )
     {
       /* We are in batch mode and have only a default recipient. */
       pk = xmalloc_clear( sizeof *pk );

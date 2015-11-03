@@ -769,7 +769,7 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
-    if( (rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_SIG )) )
+    if( (rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG )) )
 	goto leave;
 
     if (encryptflag
@@ -1057,7 +1057,8 @@ sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
  * make a clear signature. note that opt.armor is not needed
  */
 int
-clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
+clearsign_file (ctrl_t ctrl,
+                const char *fname, strlist_t locusr, const char *outfile )
 {
     armor_filter_context_t *afx;
     progress_filter_context_t *pfx;
@@ -1080,7 +1081,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
 
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
-    if( (rc=build_sk_list( locusr, &sk_list, PUBKEY_USAGE_SIG )) )
+    if( (rc=build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG )) )
 	goto leave;
 
     /* prepare iobufs */
@@ -1191,7 +1192,7 @@ clearsign_file( const char *fname, strlist_t locusr, const char *outfile )
  * FIXME: Far too much code is duplicated - revamp the whole file.
  */
 int
-sign_symencrypt_file (const char *fname, strlist_t locusr)
+sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr)
 {
     armor_filter_context_t *afx;
     progress_filter_context_t *pfx;
@@ -1224,7 +1225,7 @@ sign_symencrypt_file (const char *fname, strlist_t locusr)
 
     /* Note: In the old non-agent version the following call used to
        unprotect the secret key.  This is now done on demand by the agent.  */
-    rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_SIG);
+    rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_SIG);
     if (rc)
 	goto leave;
 

@@ -364,8 +364,8 @@ void warn_missing_aes_from_pklist (PK_LIST pk_list);
 /*-- skclist.c --*/
 int  random_is_faked (void);
 void release_sk_list( SK_LIST sk_list );
-gpg_error_t  build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list,
-                            unsigned use);
+gpg_error_t build_sk_list (ctrl_t ctrl, strlist_t locusr,
+                           SK_LIST *ret_sk_list, unsigned use);
 
 /*-- passphrase.h --*/
 unsigned char encode_s2k_iterations (int iterations);
@@ -605,7 +605,7 @@ int have_secret_key_with_kid (u32 *keyid);
 
    This function returns the first match.  Additional results can be
    returned using getkey_next.  */
-gpg_error_t get_seckey_default (PKT_public_key *pk);
+gpg_error_t get_seckey_default (ctrl_t ctrl, PKT_public_key *pk);
 
 /* Search for keys matching some criteria.
 
@@ -686,7 +686,8 @@ gpg_error_t getkey_bynames (getkey_ctx_t *retctx, PKT_public_key *pk,
 
    FIXME: We also have the get_pubkey_byname function which has a
    different semantic.  Should be merged with this one.  */
-gpg_error_t getkey_byname (getkey_ctx_t *retctx, PKT_public_key *pk,
+gpg_error_t getkey_byname (ctrl_t ctrl,
+                           getkey_ctx_t *retctx, PKT_public_key *pk,
                            const char *name, int want_secret,
                            kbnode_t *ret_keyblock);
 
@@ -748,7 +749,7 @@ KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
      if (gpg_err_code (err) != GPG_ERR_EOF)
        ; // An error occured.
  */
-gpg_error_t enum_secret_keys (void **context, PKT_public_key *pk);
+gpg_error_t enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *pk);
 
 /* Set the mainkey_id fields for all keys in KEYBLOCK.  This is
    usually done by merge_selfsigs but at some places we only need the

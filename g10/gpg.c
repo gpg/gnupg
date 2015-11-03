@@ -2577,7 +2577,9 @@ main (int argc, char **argv)
 	  case oTrustDBName: trustdb_name = pargs.r.ret_str; break;
 
 #endif /*!NO_TRUST_MODELS*/
-	  case oDefaultKey: opt.def_secret_key = pargs.r.ret_str; break;
+	  case oDefaultKey:
+            add_to_strlist (&opt.def_secret_key, pargs.r.ret_str);
+            break;
 	  case oDefRecipient:
             if( *pargs.r.ret_str )
 	      {
@@ -3865,7 +3867,7 @@ main (int argc, char **argv)
       case aSignSym: /* sign and conventionally encrypt the given file */
 	if (argc > 1)
 	    wrong_args(_("--sign --symmetric [filename]"));
-	rc = sign_symencrypt_file (fname, locusr);
+	rc = sign_symencrypt_file (ctrl, fname, locusr);
         if (rc)
           {
             write_status_failure ("sign-symencrypt", rc);
@@ -3877,7 +3879,7 @@ main (int argc, char **argv)
       case aClearsign: /* make a clearsig */
 	if( argc > 1 )
 	    wrong_args(_("--clearsign [filename]"));
-	if( (rc = clearsign_file(fname, locusr, NULL)) )
+	if( (rc = clearsign_file (ctrl, fname, locusr, NULL)) )
           {
             write_status_failure ("sign", rc);
 	    log_error("%s: clearsign failed: %s\n",

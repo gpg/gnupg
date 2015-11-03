@@ -386,8 +386,9 @@ keyserver_import_ldap (const char *name)
  * No encryption here but mainproc links to these functions.
  */
 gpg_error_t
-get_session_key (PKT_pubkey_enc *k, DEK *dek)
+get_session_key (ctrl_t ctrl, PKT_pubkey_enc *k, DEK *dek)
 {
+  (void)ctrl;
   (void)k;
   (void)dek;
   return GPG_ERR_GENERAL;

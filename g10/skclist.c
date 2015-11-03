@@ -114,7 +114,8 @@ is_duplicated_entry (strlist_t list, strlist_t item)
 
 
 gpg_error_t
-build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
+build_sk_list (ctrl_t ctrl,
+               strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
 {
   gpg_error_t err;
   SK_LIST sk_list = NULL;
@@ -125,7 +126,7 @@ build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
 
       pk = xmalloc_clear (sizeof *pk);
       pk->req_usage = use;
-      if ((err = getkey_byname (NULL, pk, NULL, 1, NULL)))
+      if ((err = getkey_byname (ctrl, NULL, pk, NULL, 1, NULL)))
 	{
 	  free_public_key (pk);
 	  pk = NULL;
@@ -182,7 +183,7 @@ build_sk_list (strlist_t locusr, SK_LIST *ret_sk_list, unsigned int use)
 	    }
 	  pk = xmalloc_clear (sizeof *pk);
 	  pk->req_usage = use;
-          if ((err = getkey_byname (NULL, pk, locusr->d, 1, NULL)))
+          if ((err = getkey_byname (ctrl, NULL, pk, locusr->d, 1, NULL)))
 	    {
 	      free_public_key (pk);
 	      pk = NULL;

@@ -993,6 +993,10 @@ in the option file.
 Use @var{name} as the default key to sign with. If this option is not
 used, the default key is the first key found in the secret keyring.
 Note that @option{-u} or @option{--local-user} overrides this option.
+This option may be given multiple times.  In this case, the last key
+for which a secret key is available is used.  If there is no secret
+key available for any of the specified values, GnuPG will not emit an
+error message but continue as if this option wasn't given.
 
 @item --default-recipient @var{name}
 @opindex default-recipient

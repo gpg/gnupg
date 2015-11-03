@@ -236,8 +236,9 @@ int complete_sig (PKT_signature *sig, PKT_public_key *pksk, gcry_md_hd_t md,
                   const char *cache_nonce);
 int sign_file (ctrl_t ctrl, strlist_t filenames, int detached, strlist_t locusr,
 	       int do_encrypt, strlist_t remusr, const char *outfile );
-int clearsign_file( const char *fname, strlist_t locusr, const char *outfile );
-int sign_symencrypt_file (const char *fname, strlist_t locusr);
+int clearsign_file (ctrl_t ctrl,
+                    const char *fname, strlist_t locusr, const char *outfile);
+int sign_symencrypt_file (ctrl_t ctrl, const char *fname, strlist_t locusr);
 
 /*-- sig-check.c --*/
 

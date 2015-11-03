@@ -72,7 +72,7 @@ is_algo_in_prefs (kbnode_t keyblock, preftype_t type, int algo)
  * which should have been allocated in secure memory by the caller.
  */
 gpg_error_t
-get_session_key (PKT_pubkey_enc * k, DEK * dek)
+get_session_key (ctrl_t ctrl, PKT_pubkey_enc * k, DEK * dek)
 {
   PKT_public_key *sk = NULL;
   int rc;
@@ -102,7 +102,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
         {
           free_public_key (sk);
           sk = xmalloc_clear (sizeof *sk);
-          rc = enum_secret_keys (&enum_context, sk);
+          rc = enum_secret_keys (ctrl, &enum_context, sk);
           if (rc)
             {
               rc = GPG_ERR_NO_SECKEY;
@@ -127,7 +127,7 @@ get_session_key (PKT_pubkey_enc * k, DEK * dek)
           else if (gpg_err_code (rc) == GPG_ERR_FULLY_CANCELED)
             break; /* Don't try any more secret keys.  */
         }
-      enum_secret_keys (&enum_context, NULL);  /* free context */
+      enum_secret_keys (ctrl, &enum_context, NULL);  /* free context */
     }
 
 leave:

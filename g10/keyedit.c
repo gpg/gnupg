@@ -565,7 +565,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
    * why to sign keys using a subkey.  Implementation of USAGE_CERT
    * is just a hack in getkey.c and does not mean that a subkey
    * marked as certification capable will be used. */
-  rc = build_sk_list (locusr, &sk_list, PUBKEY_USAGE_CERT);
+  rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_CERT);
   if (rc)
     goto leave;
 
@@ -2319,7 +2319,7 @@ keyedit_passwd (ctrl_t ctrl, const char *username)
       err = gpg_error_from_syserror ();
       goto leave;
     }
-  err = getkey_byname (NULL, pk, username, 1, &keyblock);
+  err = getkey_byname (ctrl, NULL, pk, username, 1, &keyblock);
   if (err)
     goto leave;
 

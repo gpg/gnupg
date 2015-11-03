@@ -248,7 +248,7 @@ gen_desig_revoke (ctrl_t ctrl, const char *uname, strlist_t locusr)
 
     if(locusr)
       {
-	rc=build_sk_list(locusr, &sk_list, PUBKEY_USAGE_CERT);
+	rc = build_sk_list (ctrl, locusr, &sk_list, PUBKEY_USAGE_CERT);
 	if(rc)
 	  goto leave;
       }
