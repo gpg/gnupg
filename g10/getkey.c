@@ -1121,7 +1121,7 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
   return 0;
 }
 
-static const char *
+const char *
 parse_def_secret_key (ctrl_t ctrl)
 {
   KEYDB_HANDLE hd = NULL;

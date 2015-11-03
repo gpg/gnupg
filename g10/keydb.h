@@ -582,6 +582,10 @@ int get_pubkey_byfprint_fast (PKT_public_key *pk,
    with the specified key id.  */
 int have_secret_key_with_kid (u32 *keyid);
 
+/* Parse the --default-key parameter.  Returns the last key (in terms
+   of when the option is given) that is available.  */
+const char *parse_def_secret_key (ctrl_t ctrl);
+
 /* Look up a secret key.
 
    If PK is not NULL, the public key of the first result is returned

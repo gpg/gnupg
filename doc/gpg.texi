@@ -1916,6 +1916,11 @@ recipients given either by use of @option{--recipient} or by the asked user id.
 No trust checking is performed for these user ids and even disabled
 keys can be used.
 
+@item --encrypt-to-default-key
+@opindex encrypt-to-default-key
+If the default secret key is taken from @option{--default-key}, then
+also encrypt to that key.
+
 @item --no-encrypt-to
 @opindex no-encrypt-to
 Disable the use of all @option{--encrypt-to} and

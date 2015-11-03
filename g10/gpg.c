@@ -303,6 +303,7 @@ enum cmd_and_opt_values
     oEncryptTo,
     oHiddenEncryptTo,
     oNoEncryptTo,
+    oEncryptToDefaultKey,
     oLoggerFD,
     oLoggerFile,
     oUtf8Strings,
@@ -500,6 +501,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oEncryptTo,      "encrypt-to", "@"),
   ARGPARSE_s_n (oNoEncryptTo, "no-encrypt-to", "@"),
   ARGPARSE_s_s (oHiddenEncryptTo, "hidden-encrypt-to", "@"),
+  ARGPARSE_s_n (oEncryptToDefaultKey, "encrypt-to-default-key", "@"),
   ARGPARSE_s_s (oLocalUser, "local-user",
                 N_("|USER-ID|use USER-ID to sign or decrypt")),
 
@@ -2776,6 +2778,9 @@ main (int argc, char **argv)
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
 	    sl->flags = 1|2;
 	    break;
+          case oEncryptToDefaultKey:
+            opt.encrypt_to_default_key = 1;
+            break;
 	  case oRecipient: /* store the recipient */
 	    add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
             any_explicit_recipient = 1;
@@ -3725,6 +3730,20 @@ main (int argc, char **argv)
         break;
       default:
         break;
+      }
+
+    if (opt.encrypt_to_default_key)
+      {
+        const char *default_key = parse_def_secret_key (ctrl);
+        if (default_key)
+          {
+            sl = add_to_strlist2 (&remusr, default_key, utf8_strings);
+            sl->flags = 1;
+          }
+        else if (opt.def_secret_key)
+          log_info (_("--encrypt-to-default-key specified, but no valid default keys specified.\n"));
+        else
+          log_info (_("--encrypt-to-default-key specified, but --default-key not specified.\n"));
       }
 
     /* The command dispatcher.  */

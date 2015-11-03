@@ -175,6 +175,7 @@ struct
   int no_mdc_warn;
   char *temp_dir;
   int no_encrypt_to;
+  int encrypt_to_default_key;
   int interactive;
   struct notation *sig_notations;
   struct notation *cert_notations;
