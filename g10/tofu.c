@@ -2377,6 +2377,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
       char *tail = NULL;
       signed long messages;
       signed long first_seen_ago;
+      signed long most_recent_seen_ago;
 
       assert (strlist_length (strlist) == 3);
 
@@ -2392,7 +2393,10 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 
       if (messages == 0 && *strlist->next->d == '\0')
 	/* min(NULL) => NULL => "".  */
-	first_seen_ago = -1;
+        {
+          first_seen_ago = -1;
+          most_recent_seen_ago = -1;
+        }
       else
 	{
 	  errno = 0;
@@ -2404,6 +2408,17 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 			 __func__, __LINE__,
 			 strlist->next->d, strerror (errno));
 	      first_seen_ago = 0;
+	    }
+
+	  errno = 0;
+	  most_recent_seen_ago = strtol (strlist->next->next->d, &tail, 0);
+	  if (errno || *tail != '\0')
+	    /* Abort.  */
+	    {
+	      log_debug ("%s:%d: Couldn't convert %s (most_recent_seen) to an int: %s.\n",
+			 __func__, __LINE__,
+			 strlist->next->next->d, strerror (errno));
+	      most_recent_seen_ago = 0;
 	    }
 	}
 
@@ -2428,6 +2443,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	  else
 	    {
               char *first_seen_ago_str = time_ago_str (first_seen_ago);
+              char *most_recent_seen_ago_str =
+                time_ago_str (most_recent_seen_ago);
 
 	      es_fprintf (fp,
 			  _("Verified %ld messages signed by \"%s\""
@@ -2436,8 +2453,13 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 			  fingerprint_pp, tofu_policy_str (policy),
                           first_seen_ago_str);
 
+              if (messages > 1)
+                es_fprintf (fp,
+                            _("  The most recent message was verified %s ago."),
+                            most_recent_seen_ago_str);
 
               xfree (first_seen_ago_str);
+              xfree (most_recent_seen_ago_str);
             }
 
 	  es_fputc (0, fp);
