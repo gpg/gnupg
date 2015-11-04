@@ -3503,6 +3503,9 @@ main (int argc, char **argv)
 	  case aSign:
 	    cmdname="--sign";
 	    break;
+	  case aSignEncr:
+	    cmdname="--sign --encrypt";
+	    break;
 	  case aClearsign:
 	    cmdname="--clearsign";
 	    break;
