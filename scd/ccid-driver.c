@@ -1878,6 +1878,11 @@ writen (int fd, const void *buf, size_t nbytes)
   return 0;
 }
 
+#if defined(ENXIO) && !defined(LIBUSB_PATH_MAX) && defined(__GNU_LIBRARY__)
+#define LIBUSB_ERRNO_NO_SUCH_DEVICE ENXIO       /* libusb-compat */
+#elif defined(ENODEV)
+#define LIBUSB_ERRNO_NO_SUCH_DEVICE ENODEV      /* Original libusb */
+#endif
 
 /* Write a MSG of length MSGLEN to the designated bulk out endpoint.
    Returns 0 on success. */
@@ -1952,26 +1957,26 @@ bulk_out (ccid_driver_t handle, unsigned char *msg, size_t msglen,
                            5000 /* ms timeout */);
       if (rc == msglen)
         return 0;
-#ifdef ENODEV
-      if (rc == -(ENODEV))
+#ifdef LIBUSB_ERRNO_NO_SUCH_DEVICE
+      if (rc == -(LIBUSB_ERRNO_NO_SUCH_DEVICE))
         {
           /* The Linux libusb returns a negative error value.  Catch
              the most important one.  */
-          errno = ENODEV;
+          errno = LIBUSB_ERRNO_NO_SUCH_DEVICE;
           rc = -1;
         }
-#endif /*ENODEV*/
+#endif /*LIBUSB_ERRNO_NO_SUCH_DEVICE*/
 
       if (rc == -1)
         {
           DEBUGOUT_1 ("usb_bulk_write error: %s\n", strerror (errno));
-#ifdef ENODEV
-          if (errno == ENODEV)
+#ifdef LIBUSB_ERRNO_NO_SUCH_DEVICE
+          if (errno == LIBUSB_ERRNO_NO_SUCH_DEVICE)
             {
               handle->enodev_seen = 1;
               return CCID_DRIVER_ERR_NO_READER;
             }
-#endif /*ENODEV*/
+#endif /*LIBUSB_ERRNO_NO_SUCH_DEVICE*/
         }
       else
         DEBUGOUT_1 ("usb_bulk_write failed: %d\n", rc);
