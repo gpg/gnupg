@@ -2793,8 +2793,8 @@ change_keyattr_from_string (app_t app,
   /* Because this function deletes the key we require the string
      "--force" in the data to make clear that something serious might
      happen.  */
-  sscanf (string, " --force %d %d %n", &key, &algo, &n);
-  if (n < 13)
+  sscanf (string, "--force %d %d %n", &key, &algo, &n);
+  if (n < 12)
     {
       err = gpg_error (GPG_ERR_INV_DATA);
       goto leave;
