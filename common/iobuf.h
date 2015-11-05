@@ -552,6 +552,14 @@ int iobuf_write_temp (iobuf_t dest, iobuf_t source);
    BUFFER.  Returns the number of bytes actually copied.  */
 size_t iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen);
 
+/* Copies the data from the input iobuf SOURCE to the output iobuf
+   DEST until either an error is encountered or EOF is reached.
+   Returns the number of bytes successfully written.  If an error
+   occured, then any buffered bytes are not returned to SOURCE and are
+   effectively lost.  To check if an error occured, use
+   iobuf_error.  */
+size_t iobuf_copy (iobuf_t dest, iobuf_t source);
+
 /* Return the size of any underlying file.  This only works with
    file_filter based pipelines.
 

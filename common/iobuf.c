@@ -2208,6 +2208,41 @@ iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen)
   return n;
 }
 
+/* Copies the data from the input iobuf SOURCE to the output iobuf
+   DEST until either an error is encountered or EOF is reached.
+   Returns the number of bytes copies.  */
+size_t
+iobuf_copy (iobuf_t dest, iobuf_t source)
+{
+  char *temp;
+  /* Use a 1 MB buffer.  */
+  const size_t temp_size = 1024 * 1024;
+
+  size_t nread;
+  size_t nwrote = 0;
+  int err;
+
+  assert (source->use == IOBUF_INPUT || source->use == IOBUF_INPUT_TEMP);
+  assert (dest->use == IOBUF_OUTPUT || source->use == IOBUF_OUTPUT_TEMP);
+
+  temp = xmalloc (temp_size);
+  while (1)
+    {
+      nread = iobuf_read (source, temp, temp_size);
+      if (nread == -1)
+        /* EOF.  */
+        break;
+
+      err = iobuf_write (dest, temp, nread);
+      if (err)
+        break;
+      nwrote += nread;
+    }
+  xfree (temp);
+
+  return nwrote;
+}
+
 
 void
 iobuf_flush_temp (iobuf_t temp)
