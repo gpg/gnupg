@@ -248,7 +248,7 @@ main (int argc, char **argv)
   int algorithm_id;
   pkdbuf_t *pkdbuf;
   size_t pkdbuf_n;
-  char *command;
+  char *command = NULL;
   FILE *fp;
   int ret;
   gcry_error_t err;
@@ -263,21 +263,50 @@ main (int argc, char **argv)
   algorithm_id = 0;  /* (avoid cc warning) */
   identifier = NULL; /* (avoid cc warning) */
 
-  assert (argc == 2);
+  if (argc != 2)
+    {
+      fprintf (stderr, "Usage: %s KEYID\n", argv[0]);
+      exit (1);
+    }
+  if (strcmp (argv[1], "--help") == 0)
+    {
+      fprintf (stderr, "Usage: %s KEYID\n", argv[0]);
+      fprintf (stderr, "\n");
+      fprintf (stderr,
+               "Convert a gpg key to a format appropriate for inclusion in an\n"
+               "ssh authorized_keys file.\n");
+      exit (0);
+    }
 
   keyid = argv[1];
 
-  ret = asprintf (&command,
-		  "gpg --list-keys --with-colons --with-key-data '%s'",
-		  keyid);
-  assert (ret > 0);
+  asprintf (&command,
+            "gpg2 --list-keys --with-colons --with-key-data '%s'",
+            keyid);
+  if (! command)
+    {
+      fprintf (stderr, "Out of memory.\n");
+      exit (1);
+    }
 
   fp = popen (command, "r");
-  assert (fp);
+  if (! fp)
+    {
+      fprintf (stderr, "Failed to running: '%s'\n", command);
+      exit (1);
+    }
 
   err = retrieve_key_material (fp, keyid, &algorithm_id, &pkdbuf, &pkdbuf_n);
-  assert (! err);
-  assert ((algorithm_id == 1) || (algorithm_id == 17));
+  if (err)
+    {
+      fprintf (stderr, "Error looking up key: %s\n", gpg_strerror (err));
+      exit (1);
+    }
+  if (! ((algorithm_id == 1) || (algorithm_id == 17)))
+    {
+      fprintf (stderr, "Unsupported algorithm: %d\n", algorithm_id);
+      exit (1);
+    }
 
   if (algorithm_id == 1)
     {
