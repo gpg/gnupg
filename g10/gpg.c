@@ -391,6 +391,7 @@ enum cmd_and_opt_values
     oTOFUDefaultPolicy,
     oTOFUDBFormat,
     oWeakDigest,
+    oUnwrap,
 
     oNoop
   };
@@ -753,6 +754,7 @@ static ARGPARSE_OPTS opts[] = {
                                          "personal-compress-preferences", "@"),
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest","@"),
+  ARGPARSE_s_n (oUnwrap, "unwrap", "@"),
 
   /* Aliases.  I constantly mistype these, and assume other people do
      as well. */
@@ -3147,6 +3149,9 @@ main (int argc, char **argv)
           case oWeakDigest:
 	    additional_weak_digest(pargs.r.ret_str);
 	    break;
+          case oUnwrap:
+            opt.unwrap_encryption = 1;
+            break;
 
           case oDisplay:
             set_opt_session_env ("DISPLAY", pargs.r.ret_str);

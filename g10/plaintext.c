@@ -40,53 +40,29 @@
 #include "i18n.h"
 
 
-/* Handle a plaintext packet.  If MFX is not NULL, update the MDs
- * Note: We should have used the filter stuff here, but we have to add
- * some easy mimic to set a read limit, so we calculate only the bytes
- * from the plaintext.  */
-int
-handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
-		  int nooutput, int clearsig)
+/* Get the output filename.  On success, the actual filename that is
+   used is set in *FNAMEP and a filepointer is returned in *FP.
+
+   EMBEDDED_NAME AND EMBEDDED_NAMELEN are normally stored in a
+   plaintext packet.  EMBEDDED_NAMELEN should not include any NUL
+   terminator (EMBEDDED_NAME does not need to be NUL terminated).
+
+   DATA is the iobuf containing the input data.  We just use it to get
+   the input file's filename.
+
+   On success, the caller is responsible for calling xfree on *FNAMEP
+   and calling es_close on *FPP.  */
+gpg_error_t
+get_output_file (const byte *embedded_name, int embedded_namelen,
+                 iobuf_t data, char **fnamep, estream_t *fpp)
 {
+  gpg_error_t err = 0;
   char *fname = NULL;
   estream_t fp = NULL;
-  static off_t count = 0;
-  int err = 0;
-  int c;
-  int convert = (pt->mode == 't' || pt->mode == 'u');
-#ifdef __riscos__
-  int filetype = 0xfff;
-#endif
-
-  /* Let people know what the plaintext info is. This allows the
-     receiving program to try and do something different based on the
-     format code (say, recode UTF-8 to local). */
-  if (!nooutput && is_status_enabled ())
-    {
-      char status[50];
-
-      /* Better make sure that stdout has been flushed in case the
-         output will be written to it.  This is to make sure that no
-         not-yet-flushed stuff will be written after the plaintext
-         status message.  */
-      es_fflush (es_stdout);
-
-      snprintf (status, sizeof status,
-                "%X %lu ", (byte) pt->mode, (ulong) pt->timestamp);
-      write_status_text_and_buffer (STATUS_PLAINTEXT,
-				    status, pt->name, pt->namelen, 0);
-
-      if (!pt->is_partial)
-	{
-	  snprintf (status, sizeof status, "%lu", (ulong) pt->len);
-	  write_status_text (STATUS_PLAINTEXT_LENGTH, status);
-	}
-    }
+  int nooutput = 0;
 
   /* Create the filename as C string.  */
-  if (nooutput)
-    ;
-  else if (opt.outfp)
+  if (opt.outfp)
     {
       fname = xtrystrdup ("[FP]");
       if (!fname)
@@ -104,16 +80,17 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
           goto leave;
         }
     }
-  else if (pt->namelen == 8 && !memcmp (pt->name, "_CONSOLE", 8))
+  else if (embedded_namelen == 8 && !memcmp (embedded_name, "_CONSOLE", 8))
     {
       log_info (_("data not saved; use option \"--output\" to save it\n"));
       nooutput = 1;
     }
   else if (!opt.flags.use_embedded_filename)
     {
-      fname = make_outfile_name (iobuf_get_real_fname (pt->buf));
+      if (data)
+        fname = make_outfile_name (iobuf_get_real_fname (data));
       if (!fname)
-	fname = ask_outfile_name (pt->name, pt->namelen);
+	fname = ask_outfile_name (embedded_name, embedded_namelen);
       if (!fname)
 	{
 	  err = gpg_error (GPG_ERR_GENERAL);	/* Can't create file. */
@@ -121,7 +98,7 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
 	}
     }
   else
-    fname = utf8_to_native (pt->name, pt->namelen, 0);
+    fname = utf8_to_native (embedded_name, embedded_namelen, 0);
 
   if (nooutput)
     ;
@@ -205,13 +182,78 @@ handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
       /* If there's a ,xxx extension in the embedded filename,
          use that, else check whether the user input (in fname)
          has a ,xxx appended, then use that in preference */
-      if ((c = riscos_get_filetype_from_string (pt->name, pt->namelen)) != -1)
+      if ((c = riscos_get_filetype_from_string (embedded_name,
+                                                embedded_namelen)) != -1)
 	filetype = c;
       if ((c = riscos_get_filetype_from_string (fname, strlen (fname))) != -1)
 	filetype = c;
       riscos_set_filetype_by_number (fname, filetype);
     }
 #endif /* __riscos__ */
+
+ leave:
+  if (err)
+    {
+      if (fp && fp != es_stdout && fp != opt.outfp)
+        es_fclose (fp);
+      xfree (fname);
+      return err;
+    }
+
+  *fnamep = fname;
+  *fpp = fp;
+  return 0;
+}
+
+/* Handle a plaintext packet.  If MFX is not NULL, update the MDs
+ * Note: We should have used the filter stuff here, but we have to add
+ * some easy mimic to set a read limit, so we calculate only the bytes
+ * from the plaintext.  */
+int
+handle_plaintext (PKT_plaintext * pt, md_filter_context_t * mfx,
+		  int nooutput, int clearsig)
+{
+  char *fname = NULL;
+  estream_t fp = NULL;
+  static off_t count = 0;
+  int err = 0;
+  int c;
+  int convert = (pt->mode == 't' || pt->mode == 'u');
+#ifdef __riscos__
+  int filetype = 0xfff;
+#endif
+
+  /* Let people know what the plaintext info is. This allows the
+     receiving program to try and do something different based on the
+     format code (say, recode UTF-8 to local). */
+  if (!nooutput && is_status_enabled ())
+    {
+      char status[50];
+
+      /* Better make sure that stdout has been flushed in case the
+         output will be written to it.  This is to make sure that no
+         not-yet-flushed stuff will be written after the plaintext
+         status message.  */
+      es_fflush (es_stdout);
+
+      snprintf (status, sizeof status,
+                "%X %lu ", (byte) pt->mode, (ulong) pt->timestamp);
+      write_status_text_and_buffer (STATUS_PLAINTEXT,
+				    status, pt->name, pt->namelen, 0);
+
+      if (!pt->is_partial)
+	{
+	  snprintf (status, sizeof status, "%lu", (ulong) pt->len);
+	  write_status_text (STATUS_PLAINTEXT_LENGTH, status);
+	}
+    }
+
+  if (! nooutput)
+    {
+      err = get_output_file (pt->name, pt->namelen, pt->buf, &fname, &fp);
+      if (err)
+        goto leave;
+    }
 
   if (!pt->is_partial)
     {

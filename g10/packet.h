@@ -663,6 +663,8 @@ int handle_compressed (ctrl_t ctrl, void *ctx, PKT_compressed *cd,
 int decrypt_data (ctrl_t ctrl, void *ctx, PKT_encrypted *ed, DEK *dek );
 
 /*-- plaintext.c --*/
+gpg_error_t get_output_file (const byte *embedded_name, int embedded_namelen,
+                             iobuf_t data, char **fnamep, estream_t *fpp);
 int handle_plaintext( PKT_plaintext *pt, md_filter_context_t *mfx,
 					int nooutput, int clearsig );
 int ask_for_detached_datafile( gcry_md_hd_t md, gcry_md_hd_t md2,

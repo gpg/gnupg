@@ -221,7 +221,38 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
   else
     iobuf_push_filter ( ed->buf, decode_filter, dfx );
 
-  proc_packets (ctrl, procctx, ed->buf );
+  if (opt.unwrap_encryption)
+    {
+      char *filename;
+      estream_t fp;
+      rc = get_output_file ("", 0, ed->buf, &filename, &fp);
+      if (! rc)
+        {
+          iobuf_t output = iobuf_esopen (fp, "w", 0);
+          armor_filter_context_t *afx = NULL;
+
+          if (opt.armor)
+            {
+              afx = new_armor_context ();
+              push_armor_filter (afx, output);
+            }
+
+          iobuf_copy (output, ed->buf);
+          if ((rc = iobuf_error (ed->buf)))
+            log_error (_("error reading: %s\n"),
+                       filename, gpg_strerror (rc));
+          else if ((rc = iobuf_error (output)))
+            log_error (_("error writing output ('%s'): %s\n"),
+                       filename, gpg_strerror (rc));
+
+          iobuf_close (output);
+          if (afx)
+            release_armor_context (afx);
+        }
+    }
+  else
+    proc_packets (ctrl, procctx, ed->buf );
+
   ed->buf = NULL;
   if (dfx->eof_seen > 1 )
     rc = gpg_error (GPG_ERR_INV_PACKET);
