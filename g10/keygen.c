@@ -2536,7 +2536,10 @@ ask_user_id (int mode, int full, KBNODE keyblock)
 		    break;
 
 		if( strpbrk( aname, "<>" ) )
+                  {
 		    tty_printf(_("Invalid character in name\n"));
+		    tty_printf(_("The characters < and > may not appear in name\n"));
+                  }
 		else if( digitp(aname) )
 		    tty_printf(_("Name may not start with a digit\n"));
 		else if( strlen(aname) < 5 )
