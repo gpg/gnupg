@@ -2081,6 +2081,159 @@ get_default_configname (void)
   return configname;
 }
 
+gpg_error_t
+check_user_ids (strlist_t *sp,
+                int warn_possibly_ambiguous,
+                int error_if_not_found)
+{
+  strlist_t s = *sp;
+  strlist_t s2 = NULL;
+  strlist_t t;
+
+  gpg_error_t rc = 0;
+  gpg_error_t err;
+
+  KEYDB_HANDLE hd = NULL;
+
+  if (! s)
+    return 0;
+
+  for (t = s; t; t = t->next)
+    {
+      const char *option;
+
+      KEYDB_SEARCH_DESC desc;
+      KBNODE kb;
+      PKT_public_key *pk;
+      char fingerprint_bin[MAX_FINGERPRINT_LEN];
+      size_t fingerprint_bin_len = sizeof (fingerprint_bin);
+      char fingerprint[2 * MAX_FINGERPRINT_LEN + 1];
+
+
+      switch (t->flags >> 2)
+        {
+        case oDefaultKey: option = "--default-key"; break;
+        case oEncryptTo: option = "--encrypt-to"; break;
+        case oHiddenEncryptTo: option = "--hidden-encrypt-to"; break;
+        case oEncryptToDefaultKey: option = "--encrypt-to-default-key"; break;
+        case oRecipient: option = "--recipient"; break;
+        case oHiddenRecipient: option = "--hidden-recipient"; break;
+        case oLocalUser: option = "--local-user"; break;
+        default: log_bug ("Unsupport option: %d\n", t->flags >> 2);
+        }
+
+      err = classify_user_id (t->d, &desc, 1);
+      if (err)
+        {
+          if (! rc)
+            rc = err;
+
+          log_error (_("Invalid value ('%s')."), t->d);
+          if (!opt.quiet)
+            log_info (_("(check argument of option '%s')\n"), option);
+          continue;
+        }
+
+      if (warn_possibly_ambiguous
+          && ! (desc.mode == KEYDB_SEARCH_MODE_LONG_KID
+                || desc.mode == KEYDB_SEARCH_MODE_FPR16
+                || desc.mode == KEYDB_SEARCH_MODE_FPR20
+                || desc.mode == KEYDB_SEARCH_MODE_FPR))
+        log_info (_("Warning: value '%s' for %s"
+                    " should be a long keyid or a fingerprint.\n"),
+                  t->d, option);
+
+      if (! hd)
+        hd = keydb_new ();
+      else
+        keydb_search_reset (hd);
+
+      err = keydb_search (hd, &desc, 1, NULL);
+      if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
+        {
+          if (error_if_not_found)
+            {
+              if (! rc)
+                rc = err;
+
+              log_error (_("no such key corresponding to '%s'\n"), t->d);
+              if (!opt.quiet)
+                log_info (_("(check argument of option '%s')\n"), option);
+            }
+          continue;
+        }
+      if (err)
+        {
+          if (! rc)
+            rc = err;
+
+          log_error (_("error looking up '%s' in keyring: %s.\n"),
+                     t->d, gpg_strerror (err));
+          break;
+        }
+
+      err = keydb_get_keyblock (hd, &kb);
+      if (err)
+        {
+          if (! rc)
+            rc = err;
+
+          log_error (_("error reading key block for '%s': %s\n"),
+                     t->d, gpg_strerror (err));
+          continue;
+        }
+
+      pk = kb->pkt->pkt.public_key;
+      fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
+      assert (fingerprint_bin_len == sizeof (fingerprint_bin));
+      bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
+      add_to_strlist (&s2, fingerprint);
+      s2->flags = s->flags;
+
+      release_kbnode (kb);
+
+      /* Continue the search.  */
+      err = keydb_search (hd, &desc, 1, NULL);
+      if (! (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+             || gpg_err_code (err) == GPG_ERR_EOF))
+        {
+          char fingerprint_bin2[MAX_FINGERPRINT_LEN];
+          size_t fingerprint_bin2_len = sizeof (fingerprint_bin2);
+          char fingerprint2[2 * MAX_FINGERPRINT_LEN + 1];
+
+          log_error (_("Error: the key specification '%s' is ambiguous.\n"),
+                     t->d);
+          if (!opt.quiet)
+            log_info (_("(check argument of option '%s')\n"), option);
+
+          err = keydb_get_keyblock (hd, &kb);
+          if (err)
+            log_error (_("error reading key block for '%s': %s.\n"),
+                       t->d, gpg_strerror (err));
+          else
+            {
+              pk = kb->pkt->pkt.public_key;
+              fingerprint_from_pk (pk, fingerprint_bin2, &fingerprint_bin2_len);
+              assert (fingerprint_bin2_len == sizeof (fingerprint_bin2));
+              bin2hex (fingerprint_bin2, MAX_FINGERPRINT_LEN, fingerprint2);
+
+              log_error ("'%s' matches at least: %s and %s.\n",
+                         t->d, fingerprint, fingerprint2);
+
+              release_kbnode (kb);
+            }
+        }
+    }
+
+  strlist_rev (&s2);
+
+  if (hd)
+    keydb_release (hd);
+
+  free_strlist (s);
+  *sp = s2;
+  return rc;
+}
 
 int
 main (int argc, char **argv)
@@ -2582,7 +2735,8 @@ main (int argc, char **argv)
 
 #endif /*!NO_TRUST_MODELS*/
 	  case oDefaultKey:
-            add_to_strlist (&opt.def_secret_key, pargs.r.ret_str);
+            sl = add_to_strlist (&opt.def_secret_key, pargs.r.ret_str);
+            sl->flags = (pargs.r_opt << 2);
             break;
 	  case oDefRecipient:
             if( *pargs.r.ret_str )
@@ -2774,22 +2928,23 @@ main (int argc, char **argv)
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = 1;
+	    sl->flags = (pargs.r_opt << 2) | 1;
 	    break;
 	  case oHiddenEncryptTo: /* store the recipient in the second list */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = 1|2;
+	    sl->flags = (pargs.r_opt << 2) | 1|2;
 	    break;
           case oEncryptToDefaultKey:
             opt.encrypt_to_default_key = 1;
             break;
 	  case oRecipient: /* store the recipient */
-	    add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
+	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
+	    sl->flags = (pargs.r_opt << 2);
             any_explicit_recipient = 1;
 	    break;
 	  case oHiddenRecipient: /* store the recipient with a flag */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = 2;
+	    sl->flags = (pargs.r_opt << 2) | 2;
             any_explicit_recipient = 1;
 	    break;
 
@@ -2832,7 +2987,8 @@ main (int argc, char **argv)
 	  case oAskCertLevel: opt.ask_cert_level = 1; break;
 	  case oNoAskCertLevel: opt.ask_cert_level = 0; break;
 	  case oLocalUser: /* store the local users */
-	    add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
+	    sl = add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
+            sl->flags = (pargs.r_opt << 2);
 	    break;
 	  case oCompress:
 	    /* this is the -z command line option */
@@ -3740,19 +3896,33 @@ main (int argc, char **argv)
         break;
       }
 
-    if (opt.encrypt_to_default_key)
-      {
-        const char *default_key = parse_def_secret_key (ctrl);
-        if (default_key)
-          {
-            sl = add_to_strlist2 (&remusr, default_key, utf8_strings);
-            sl->flags = 1;
-          }
-        else if (opt.def_secret_key)
-          log_info (_("--encrypt-to-default-key specified, but no valid default keys specified.\n"));
-        else
-          log_info (_("--encrypt-to-default-key specified, but --default-key not specified.\n"));
-      }
+    {
+      int have_def_secret_key = opt.def_secret_key != NULL;
+
+      rc = check_user_ids (&locusr, 1, 1);
+      if (rc)
+        g10_exit (1);
+      rc = check_user_ids (&remusr, 0, 1);
+      if (rc)
+        g10_exit (1);
+      rc = check_user_ids (&opt.def_secret_key, 1, 0);
+      if (rc)
+        g10_exit (1);
+
+      if (opt.encrypt_to_default_key)
+        {
+          const char *default_key = parse_def_secret_key (ctrl);
+          if (default_key)
+            {
+              sl = add_to_strlist2 (&remusr, default_key, utf8_strings);
+              sl->flags = (oEncryptToDefaultKey << 2) | 1;
+            }
+          else if (have_def_secret_key)
+            log_info (_("--encrypt-to-default-key specified, but no valid default keys specified.\n"));
+          else
+            log_info (_("--encrypt-to-default-key specified, but --default-key not specified.\n"));
+        }
+    }
 
     /* The command dispatcher.  */
     switch( cmd )

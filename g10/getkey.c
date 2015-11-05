@@ -1142,15 +1142,6 @@ parse_def_secret_key (ctrl_t ctrl)
           continue;
         }
 
-      if (! (desc.mode == KEYDB_SEARCH_MODE_LONG_KID
-             || desc.mode == KEYDB_SEARCH_MODE_FPR16
-             || desc.mode == KEYDB_SEARCH_MODE_FPR20
-             || desc.mode == KEYDB_SEARCH_MODE_FPR)
-          && ! warned)
-        log_info (_("Warning: value '%s' for --default-key"
-                    " should be a long keyid or a fingerprint.\n"),
-                  t->d);
-
       if (! hd)
         hd = keydb_new ();
       else
