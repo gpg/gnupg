@@ -1913,6 +1913,8 @@ gpg-zip --list-archive test1
 @end ifset
 
 @mansect description
+This tool is deprecated and will be removed soon.
+
 @command{gpgkey2ssh} emits the public key of an OpenPGP RSA or DSA key
 in a format readable by OpenSSH clients and servers.
 
