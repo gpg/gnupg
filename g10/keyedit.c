@@ -1,6 +1,7 @@
 /* keyedit.c - Edit properties of a key
  * Copyright (C) 1998-2010 Free Software Foundation, Inc.
  * Copyright (C) 1998-2015 Werner Koch
+ * Copyright (C) 2015 g10 Code GmbH
  *
  * This file is part of GnuPG.
  *
@@ -614,7 +615,16 @@ sign_uids (ctrl_t ctrl, estream_t fp,
                   user = utf8_to_native (uidnode->pkt->pkt.user_id->name,
                                          uidnode->pkt->pkt.user_id->len, 0);
 
-		  if (uidnode->pkt->pkt.user_id->is_revoked)
+                  if (opt.only_sign_text_ids
+                      && uidnode->pkt->pkt.user_id->attribs)
+                    {
+                      tty_fprintf (fp, _("Skipping User ID \"%s\","
+                                         " which is not a text ID.\n"),
+                                   user);
+                      uidnode->flag &= ~NODFLG_MARK_A;
+                      uidnode = NULL;
+                    }
+		  else if (uidnode->pkt->pkt.user_id->is_revoked)
 		    {
 		      tty_fprintf (fp, _("User ID \"%s\" is revoked."), user);
 
@@ -1742,21 +1752,31 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 		  }
 	      }
 
-	    if (count_uids (keyblock) > 1 && !count_selected_uids (keyblock)
-		&& !cpr_get_answer_is_yes ("keyedit.sign_all.okay",
-					   _("Really sign all user IDs?"
-					     " (y/N) ")))
-	      {
-		if (opt.interactive)
-		  interactive = 1;
-		else
-		  {
-		    tty_printf (_("Hint: Select the user IDs to sign\n"));
-		    have_commands = 0;
-		    break;
-		  }
+	    if (count_uids (keyblock) > 1 && !count_selected_uids (keyblock))
+              {
+                int result;
+                if (opt.only_sign_text_ids)
+                  result = cpr_get_answer_is_yes
+                    ("keyedit.sign_all.okay",
+                     _("Really sign all user IDs? (y/N) "));
+                else
+                  result = cpr_get_answer_is_yes
+                    ("keyedit.sign_all.okay",
+                     _("Really sign all text user IDs? (y/N) "));
 
-	      }
+                if (! result)
+                  {
+                    if (opt.interactive)
+                      interactive = 1;
+                    else
+                      {
+                        tty_printf (_("Hint: Select the user IDs to sign\n"));
+                        have_commands = 0;
+                        break;
+                      }
+
+                  }
+              }
 	    /* What sort of signing are we doing? */
 	    if (!parse_sign_type
 		(answer, &localsig, &nonrevokesig, &trustsig))

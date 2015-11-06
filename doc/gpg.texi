@@ -650,6 +650,10 @@ and "t" (for trust) may be freely mixed and prefixed to "sign" to
 create a signature of any type desired.
 @c man:.RE
 
+If the option @option{--only-sign-text-ids} is specified, then any
+non-text based user ids (e.g., photo IDs) will not be selected for
+signing.
+
 @table @asis
 
   @item delsig

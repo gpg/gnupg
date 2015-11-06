@@ -392,6 +392,7 @@ enum cmd_and_opt_values
     oTOFUDBFormat,
     oWeakDigest,
     oUnwrap,
+    oOnlySignTextIDs,
 
     oNoop
   };
@@ -755,6 +756,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oFakedSystemTime, "faked-system-time", "@"),
   ARGPARSE_s_s (oWeakDigest, "weak-digest","@"),
   ARGPARSE_s_n (oUnwrap, "unwrap", "@"),
+  ARGPARSE_s_n (oOnlySignTextIDs, "only-sign-text-ids", "@"),
 
   /* Aliases.  I constantly mistype these, and assume other people do
      as well. */
@@ -3307,6 +3309,9 @@ main (int argc, char **argv)
 	    break;
           case oUnwrap:
             opt.unwrap_encryption = 1;
+            break;
+          case oOnlySignTextIDs:
+            opt.only_sign_text_ids = 1;
             break;
 
           case oDisplay:
