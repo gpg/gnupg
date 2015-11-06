@@ -35,6 +35,9 @@
 #error The regression tests should not include with gcrypt.h
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #ifdef HAVE_W32CE_SYSTEM
 #include <gpg-error.h>  /* Defines strerror.  */
 #endif
