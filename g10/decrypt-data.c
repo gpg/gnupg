@@ -239,7 +239,7 @@ decrypt_data (ctrl_t ctrl, void *procctx, PKT_encrypted *ed, DEK *dek)
 
           iobuf_copy (output, ed->buf);
           if ((rc = iobuf_error (ed->buf)))
-            log_error (_("error reading: %s\n"),
+            log_error (_("error reading: %s: %s\n"),
                        filename, gpg_strerror (rc));
           else if ((rc = iobuf_error (output)))
             log_error (_("error writing output ('%s'): %s\n"),
