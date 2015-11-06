@@ -89,11 +89,15 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
   /* Skip leading and trailing spaces.  */
   for(s = name; *s && spacep (s); s++ )
     ;
-  if (s[strlen(s) - 1] == ' ')
+  if (*s && spacep (s + strlen(s) - 1))
     {
-      s2 = xstrdup (s);
-      while (s2[strlen(s2) - 1] == ' ')
-        s2[strlen(s2) - 1] = 0;
+      s2 = xtrystrdup (s);
+      if (!s2)
+        {
+          rc = gpg_error_from_syserror ();
+          goto out;
+        }
+      trim_trailing_spaces (s2);
       s = s2;
     }
 
