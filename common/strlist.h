@@ -58,6 +58,7 @@ char * strlist_pop (strlist_t *list);
 strlist_t strlist_find (strlist_t haystack, const char *needle);
 int strlist_length (strlist_t list);
 
+strlist_t strlist_rev (strlist_t *haystack);
 
 #define FREE_STRLIST(a) do { free_strlist((a)); (a) = NULL ; } while(0)
 

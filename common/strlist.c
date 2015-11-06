@@ -231,3 +231,22 @@ strlist_length (strlist_t list)
 
   return i;
 }
+
+/* Reverse the list *LIST in place.  */
+strlist_t
+strlist_rev (strlist_t *list)
+{
+  strlist_t l = *list;
+  strlist_t lrev = NULL;
+
+  while (l)
+    {
+      strlist_t tail = l->next;
+      l->next = lrev;
+      lrev = l;
+      l = tail;
+    }
+
+  *list = lrev;
+  return lrev;
+}
