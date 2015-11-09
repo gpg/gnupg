@@ -1542,7 +1542,8 @@ ccid_vendor_specific_init (ccid_driver_t handle)
 /* Open the reader with the internal number READERNO and return a
    pointer to be used as handle in HANDLE.  Returns 0 on success. */
 int
-ccid_open_reader (ccid_driver_t *handle, const char *readerid)
+ccid_open_reader (ccid_driver_t *handle, const char *readerid,
+                  const char **rdrname_p)
 {
   int rc = 0;
   struct usb_device *dev = NULL;
@@ -1661,6 +1662,9 @@ ccid_open_reader (ccid_driver_t *handle, const char *readerid)
       free (*handle);
       *handle = NULL;
     }
+  else
+    if (rdrname_p)
+      *rdrname_p = (*handle)->rid;
 
   return rc;
 }
@@ -3735,7 +3739,7 @@ main (int argc, char **argv)
         break;
     }
 
-  rc = ccid_open_reader (&ccid, argc? *argv:NULL);
+  rc = ccid_open_reader (&ccid, argc? *argv:NULL, NULL);
   if (rc)
     return 1;
 

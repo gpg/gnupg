@@ -2466,6 +2466,7 @@ static int
 close_ccid_reader (int slot)
 {
   ccid_close_reader (reader_table[slot].ccid.handle);
+  reader_table[slot].rdrname = NULL;
   reader_table[slot].used = 0;
   return 0;
 }
@@ -2619,7 +2620,8 @@ open_ccid_reader (const char *portstr)
     return -1;
   slotp = reader_table + slot;
 
-  err = ccid_open_reader (&slotp->ccid.handle, portstr);
+  err = ccid_open_reader (&slotp->ccid.handle, portstr,
+                          (const char **)&slotp->rdrname);
   if (err)
     {
       slotp->used = 0;
@@ -4325,4 +4327,11 @@ apdu_send_direct (int slot, size_t extended_length,
     log_printhex ("      dump: ", *retbuf, *retbuflen);
 
   return 0;
+}
+
+
+const char *
+apdu_get_reader_name (int slot)
+{
+  return reader_table[slot].rdrname;
 }

@@ -134,6 +134,6 @@ int apdu_send_direct (int slot, size_t extended_length,
                       const unsigned char *apdudata, size_t apdudatalen,
                       int handle_more,
                       unsigned char **retbuf, size_t *retbuflen);
-
+const char *apdu_get_reader_name (int slot);
 
 #endif /*APDU_H*/

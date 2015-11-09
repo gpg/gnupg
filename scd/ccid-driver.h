@@ -111,7 +111,8 @@ typedef struct ccid_driver_s *ccid_driver_t;
 
 int ccid_set_debug_level (int level);
 char *ccid_get_reader_list (void);
-int ccid_open_reader (ccid_driver_t *handle, const char *readerid);
+int ccid_open_reader (ccid_driver_t *handle, const char *readerid,
+                      const char **rdrname_p);
 int ccid_set_progress_cb (ccid_driver_t handle,
                           void (*cb)(void *, const char *, int, int, int),
                           void *cb_arg);

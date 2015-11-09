@@ -387,6 +387,11 @@ card_status (estream_t fp, char *serialno, size_t serialnobuflen)
     }
 
   if (opt.with_colons)
+    es_fprintf (fp, "Reader:%s:", info.reader? info.reader : "");
+  else
+    tty_fprintf (fp, "Reader ...........: %s\n",
+                 info.reader? info.reader : "[none]");
+  if (opt.with_colons)
     es_fprintf (fp, "AID:%s:", info.serialno? info.serialno : "");
   else
     tty_fprintf (fp, "Application ID ...: %s\n",

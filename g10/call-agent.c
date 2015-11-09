@@ -480,6 +480,7 @@ agent_release_card_info (struct agent_card_info_s *info)
   if (!info)
     return;
 
+  xfree (info->reader); info->reader = NULL;
   xfree (info->serialno); info->serialno = NULL;
   xfree (info->apptype); info->apptype = NULL;
   xfree (info->disp_name); info->disp_name = NULL;
@@ -509,7 +510,12 @@ learn_status_cb (void *opaque, const char *line)
   while (spacep (line))
     line++;
 
-  if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
+  if (keywordlen == 6 && !memcmp (keyword, "READER", keywordlen))
+    {
+      xfree (parm->reader);
+      parm->reader = unescape_status_string (line);
+    }
+  else if (keywordlen == 8 && !memcmp (keyword, "SERIALNO", keywordlen))
     {
       xfree (parm->serialno);
       parm->serialno = store_serialno (line);

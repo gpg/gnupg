@@ -667,8 +667,17 @@ cmd_learn (assuan_context_t ctx, char *line)
      knows about this card */
   if (!only_keypairinfo)
     {
+      int slot;
+      const char *reader;
       char *serial;
       time_t stamp;
+
+      slot = vreader_slot (ctrl->server_local->vreader_idx);
+      reader = apdu_get_reader_name (slot);
+      if (!reader)
+        return out_of_core ();
+      send_status_direct (ctrl, "READER", reader);
+      /* No need to free the string of READER.  */
 
       rc = app_get_serial_and_stamp (ctrl->app_ctx, &serial, &stamp);
       if (rc)
