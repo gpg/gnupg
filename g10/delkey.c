@@ -201,7 +201,10 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
                     firsterr = err;
                   if (gpg_err_code (err) == GPG_ERR_CANCELED
                       || gpg_err_code (err) == GPG_ERR_FULLY_CANCELED)
-                    break;
+		    {
+		      write_status_error ("delete_key.secret", err);
+		      break;
+		    }
                 }
 
             }
