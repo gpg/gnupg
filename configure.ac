@@ -943,12 +943,8 @@ AC_ARG_WITH(adns,
                LDFLAGS="${LDFLAGS} -L$withval/lib"
              fi])
 if test "$with_adns" != "no"; then
-  AC_CHECK_HEADERS(adns.h,
-                AC_CHECK_LIB(adns, adns_free,
-                             [have_adns=yes],
-                             [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}]),
-                             [CPPFLAGS=${_cppflags} LDFLAGS=${_ldflags}])
-
+  AC_CHECK_HEADERS(adns.h,AC_CHECK_LIB(adns, adns_init_strcfg,[have_adns=yes]))
+  AC_CHECK_FUNCS(adns_free)
   AC_MSG_CHECKING([if adns supports adns_if_tormode])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
     #include <adns.h>
@@ -959,6 +955,8 @@ if test "$with_adns" != "no"; then
     AC_DEFINE(HAVE_ADNS_IF_TORMODE,1,[define if adns_if_tormode is available])
   fi
 fi
+CPPFLAGS=${_cppflags}
+LDFLAGS=${_ldflags}
 if test "$have_adns" = "yes"; then
   ADNSLIBS="-ladns"
 fi

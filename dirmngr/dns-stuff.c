@@ -65,6 +65,11 @@
 # define AI_ADDRCONFIG 0
 #endif
 
+/* Provide a replacement function for older ADNS versions.  */
+#ifndef HAVE_ADNS_FREE
+# define adns_free(a) free ((a))
+#endif
+
 /* Not every installation has gotten around to supporting SRVs or
    CERTs yet... */
 #ifndef T_SRV
