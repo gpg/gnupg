@@ -85,17 +85,32 @@
 /* If set Tor mode shall be used.  */
 static int tor_mode;
 
+/* A string to hold the credentials presented to Tor.  */
+#ifdef USE_ADNS
+static char tor_credentials[50];
+#endif
+
 /* Sets the module in Tor mode.  Returns 0 is this is possible or an
    error code.  */
 gpg_error_t
-enable_dns_tormode (void)
+enable_dns_tormode (int new_circuit)
 {
 #if defined(USE_DNS_CERT) && defined(USE_ADNS)
 # if HAVE_ADNS_IF_TORMODE
+   if (!*tor_credentials || new_circuit)
+     {
+       static unsigned int counter;
+
+       gpgrt_snprintf (tor_credentials, sizeof tor_credentials,
+                       "dirmngr-%lu:p%u",
+                       (unsigned long)getpid (), counter);
+       counter++;
+     }
    tor_mode = 1;
    return 0;
 # endif
 #endif
+
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
 
@@ -145,14 +160,35 @@ map_eai_to_gpg_error (int ec)
 static gpg_error_t
 my_adns_init (adns_state *r_state)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
+  int ret;
 
-  if (tor_mode? adns_init_strcfg (r_state,
-                                  adns_if_noerrprint|adns_if_tormode,
-                                  NULL, "nameserver 8.8.8.8")
-      /*    */: adns_init (r_state, adns_if_noerrprint, NULL))
+  if (tor_mode)
     {
-      err = gpg_error_from_syserror ();
+      char *cfgstr;
+
+      cfgstr = xtryasprintf ("nameserver %s\n"
+                             "options adns_tormode adns_sockscred:%s",
+                             "8.8.8.8", tor_credentials);
+      if (!cfgstr)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          ret = adns_init_strcfg (r_state, adns_if_noerrprint, NULL, cfgstr);
+          if (ret)
+            err = gpg_error_from_errno (ret);
+          xfree (cfgstr);
+        }
+    }
+  else
+    {
+      ret = adns_init (r_state, adns_if_noerrprint, NULL);
+      if (ret)
+        err = gpg_error_from_errno (ret);
+    }
+
+  if (err)
+    {
       log_error ("error initializing adns: %s\n", gpg_strerror (err));
       return err;
     }
@@ -175,6 +211,9 @@ resolve_name_adns (const char *name, unsigned short port,
   adns_state state;
   adns_answer *answer = NULL;
   int count;
+
+  (void)port;
+  (void)want_family;
 
   *r_dai = NULL;
   if (r_canonname)

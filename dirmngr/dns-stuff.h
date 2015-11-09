@@ -94,7 +94,7 @@ struct srventry
 
 /* Calling this function switches the DNS code into Tor mode if
    possibe.  Return 0 on success.  */
-gpg_error_t enable_dns_tormode (void);
+gpg_error_t enable_dns_tormode (int new_circuit);
 
 void free_dns_addrinfo (dns_addrinfo_t ai);
 
