@@ -466,8 +466,8 @@ init_trustdb ()
 	 && opt.trust_model != TM_EXTERNAL)
 	{
 	  log_info(_("unable to use unknown trust model (%d) - "
-		     "assuming %s trust model\n"),opt.trust_model,"tofu+pgp");
-	  opt.trust_model = TM_TOFU_PGP;
+		     "assuming %s trust model\n"),opt.trust_model,"pgp");
+	  opt.trust_model = TM_PGP;
 	}
 
       if(opt.verbose)
