@@ -1014,9 +1014,9 @@ opendbs (void)
 	}
       else
 	{
-	  opt.tofu_db_format = TOFU_DB_SPLIT;
+	  opt.tofu_db_format = TOFU_DB_FLAT;
 	  if (DBG_TRUST)
-	    log_debug ("Using split format for TOFU DB.\n");
+	    log_debug ("Using flat format for TOFU DB.\n");
 	}
     }
 
