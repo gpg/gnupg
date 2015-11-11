@@ -943,6 +943,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   int need_uid, need_words, need_keyid, need_fpr, any_skip;
   int pk_no, uid_no;
   int initial_skip;
+  int scanned_from_start;
   int use_offtbl;
   PKT_user_id *uid = NULL;
   PKT_public_key *pk = NULL;
@@ -1045,6 +1046,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   main_offset = 0;
   pk_no = uid_no = 0;
   initial_skip = 1; /* skip until we see the start of a keyblock */
+  scanned_from_start = iobuf_tell (hd->current.iobuf) == 0;
   while (!(rc=search_packet (hd->current.iobuf, &pkt, &offset, need_uid)))
     {
       byte afp[MAX_FINGERPRINT_LEN];
@@ -1080,7 +1082,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           if (need_keyid)
             keyid_from_pk (pk, aki);
 
-          if (use_offtbl && !kr_offtbl_ready)
+          if (use_offtbl && !kr_offtbl_ready && scanned_from_start)
             update_offset_hash_table (kr_offtbl, aki, main_offset);
         }
       else if (pkt.pkttype == PKT_USER_ID)
@@ -1168,7 +1170,7 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       hd->current.eof = 1;
       /* if we scanned all keyrings, we are sure that
        * all known key IDs are in our offtbl, mark that. */
-      if (use_offtbl && !kr_offtbl_ready)
+      if (use_offtbl && !kr_offtbl_ready && scanned_from_start)
         {
           KR_NAME kr;
 
