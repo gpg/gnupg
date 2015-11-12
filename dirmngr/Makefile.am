@@ -142,6 +142,7 @@ t_ldap_parse_uri_SOURCES = \
 t_ldap_parse_uri_CFLAGS = -DWITHOUT_NPTH=1
 t_ldap_parse_uri_LDADD = $(ldaplibs) $(t_common_ldadd) $(DNSLIBS)
 
+t_dns_stuff_CFLAGS = -DWITHOUT_NPTH=1
 t_dns_stuff_SOURCES = t-dns-stuff.c dns-stuff.c
 t_dns_stuff_LDADD   = $(t_common_ldadd) $(DNSLIBS)
 

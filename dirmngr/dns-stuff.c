@@ -51,9 +51,24 @@
 # error Either getaddrinfo or the ADNS libary is required.
 #endif
 
+#ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
+# undef USE_NPTH
+#endif
+#ifdef USE_NPTH
+# include <npth.h>
+#endif
+
 #include "util.h"
 #include "host2net.h"
 #include "dns-stuff.h"
+
+#ifdef USE_NPTH
+# define my_unprotect()        npth_unprotect ()
+# define my_protect()          npth_protect ()
+#else
+# define my_unprotect()        do { } while(0)
+# define my_protect()          do { } while(0)
+#endif
 
 /* We allow the use of 0 instead of AF_UNSPEC - check this assumption.  */
 #if AF_UNSPEC != 0
@@ -231,6 +246,7 @@ resolve_name_adns (const char *name, unsigned short port,
                    dns_addrinfo_t *r_dai, char **r_canonname)
 {
   gpg_error_t err = 0;
+  int ret;
   dns_addrinfo_t daihead = NULL;
   dns_addrinfo_t dai;
   adns_state state;
@@ -251,8 +267,11 @@ resolve_name_adns (const char *name, unsigned short port,
   if (err)
     return err;
 
-  if (adns_synchronous (state, name, adns_r_addr,
-                        adns_qf_quoteok_query, &answer))
+  my_unprotect ();
+  ret = adns_synchronous (state, name, adns_r_addr,
+                          adns_qf_quoteok_query, &answer);
+  my_protect ();
+  if (ret)
     {
       err = gpg_error_from_syserror ();
       log_error ("DNS query failed: %s\n", gpg_strerror (err));
@@ -629,6 +648,7 @@ get_dns_cert (const char *name, int want_certtype,
 #ifdef USE_DNS_CERT
 #ifdef USE_ADNS
   gpg_error_t err;
+  int ret;
   adns_state state;
   adns_answer *answer = NULL;
   unsigned int ctype;
@@ -646,12 +666,15 @@ get_dns_cert (const char *name, int want_certtype,
   if (err)
     return err;
 
-  if (adns_synchronous (state, name,
-                        (adns_r_unknown
-                         | (want_certtype < DNS_CERTTYPE_RRBASE
-                            ? my_adns_r_cert
-                            : (want_certtype - DNS_CERTTYPE_RRBASE))),
-                        adns_qf_quoteok_query, &answer))
+  my_unprotect ();
+  ret = adns_synchronous (state, name,
+                          (adns_r_unknown
+                           | (want_certtype < DNS_CERTTYPE_RRBASE
+                              ? my_adns_r_cert
+                              : (want_certtype - DNS_CERTTYPE_RRBASE))),
+                          adns_qf_quoteok_query, &answer);
+  my_protect ();
+  if (ret)
     {
       err = gpg_error_from_syserror ();
       /* log_error ("DNS query failed: %s\n", strerror (errno)); */
@@ -1001,8 +1024,10 @@ getsrv (const char *name,struct srventry **list)
     if (my_adns_init (&state))
       return -1;
 
+    my_unprotect ();
     rc = adns_synchronous (state, name, adns_r_srv, adns_qf_quoteok_query,
                            &answer);
+    my_protect ();
     if (rc)
       {
         log_error ("DNS query failed: %s\n", strerror (errno));
@@ -1241,8 +1266,10 @@ get_dns_cname (const char *name, char **r_cname)
     if (my_adns_init (&state))
       return gpg_error (GPG_ERR_GENERAL);
 
+    my_unprotect ();
     rc = adns_synchronous (state, name, adns_r_cname, adns_qf_quoteok_query,
                            &answer);
+    my_protect ();
     if (rc)
       {
         err = gpg_error_from_syserror ();
