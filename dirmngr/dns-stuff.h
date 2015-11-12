@@ -96,6 +96,12 @@ struct srventry
    possibe.  Return 0 on success.  */
 gpg_error_t enable_dns_tormode (int new_circuit);
 
+/* Change the default IP address of the nameserver to IPADDR.  The
+   address needs to be a numerical IP address and will be used for the
+   next DNS query.  Note that this is only used in Tor mode.  */
+void set_dns_nameserver (const char *ipaddr);
+
+
 void free_dns_addrinfo (dns_addrinfo_t ai);
 
 /* Function similar to getaddrinfo.  */

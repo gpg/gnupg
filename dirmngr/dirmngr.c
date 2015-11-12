@@ -68,6 +68,7 @@
 #endif
 #include "../common/init.h"
 #include "gc-opt-flags.h"
+#include "dns-stuff.h"
 
 /* The plain Windows version uses the windows service system.  For
    example to start the service you may use "sc start dirmngr".
@@ -142,6 +143,7 @@ enum cmd_and_opt_values {
   oIgnoreCertExtension,
   oUseTor,
   oKeyServer,
+  oNameServer,
   aTest
 };
 
@@ -214,6 +216,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_i (oMaxReplies, "max-replies",
                 N_("|N|do not return more than N items in one query")),
 
+  ARGPARSE_s_s (oNameServer, "nameserver", "@"),
   ARGPARSE_s_s (oKeyServer, "keyserver", "@"),
   ARGPARSE_s_s (oHkpCaCert, "hkp-cacert",
                 N_("|FILE|use the CA certificates in FILE for HKP over TLS")),
@@ -621,6 +624,10 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oKeyServer:
       xfree (opt.keyserver);
       opt.keyserver = *pargs->r.ret_str? xtrystrdup (pargs->r.ret_str) : NULL;
+      break;
+
+    case oNameServer:
+      set_dns_nameserver (pargs->r.ret_str);
       break;
 
     default:

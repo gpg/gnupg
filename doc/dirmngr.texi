@@ -244,11 +244,11 @@ this still leaks the DNS queries; e.g. to lookup the hosts in a
 keyserver pool.  Certain other features are disabled if this mode is
 active.
 
-@item --keyserver @code{name}
+@item --keyserver @var{name}
 @opindex keyserver
-Use @code{name} as your keyserver.  This is the server that @command{gpg}
+Use @var{name} as your keyserver.  This is the server that @command{gpg}
 communicates with to receive keys, send keys, and search for
-keys.  The format of the @code{name} is a URI:
+keys.  The format of the @var{name} is a URI:
 `scheme:[//]keyservername[:port]' The scheme is the type of keyserver:
 "hkp" for the HTTP (or compatible) keyservers, "ldap" for the LDAP
 keyservers, or "mailto" for the Graff email keyserver. Note that your
@@ -262,6 +262,16 @@ Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver
 @code{hkp://keys.gnupg.net} uses round robin DNS to give a different
 keyserver each time you use it.
+
+
+@item --nameserver @var{ipaddr}
+@opindex nameserver
+In ``Tor mode'' Dirmngr uses a public resolver via Tor to resolve DNS
+names.  If the default public resolver, which is @code{8.8.8.8}, shall
+not be used a different one can be given using this option.  Note that
+a numerical IP address must be given (IPv6 or IPv4) and that no error
+checking is done for @var{ipaddr}.  DNS queries in Tor mode do only
+work if GnuPG as been build with ADNS support.
 
 @item --disable-ldap
 @opindex disable-ldap

@@ -82,8 +82,17 @@
 /* ADNS has no support for CERT yet. */
 #define my_adns_r_cert 37
 
+
+/* The default nameserver used with ADNS in Tor mode.  */
+#define DEFAULT_NAMESERVER "8.8.8.8"
+
+
 /* If set Tor mode shall be used.  */
 static int tor_mode;
+
+/* A string with the nameserver IP address used with Tor.
+  (40 should be sufficient for v6 but we add some extra for a scope.) */
+static char tor_nameserver[40+20];
 
 /* A string to hold the credentials presented to Tor.  */
 #ifdef USE_ADNS
@@ -113,6 +122,19 @@ enable_dns_tormode (int new_circuit)
 
   return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 }
+
+
+/* Change the default IP address of the nameserver to IPADDR.  The
+   address needs to be a numerical IP address and will be used for the
+   next DNS query.  Note that this is only used in Tor mode.  */
+void
+set_dns_nameserver (const char *ipaddr)
+{
+  strncpy (tor_nameserver, ipaddr? ipaddr : DEFAULT_NAMESERVER,
+           sizeof tor_nameserver -1);
+  tor_nameserver[sizeof tor_nameserver -1] = 0;
+}
+
 
 /* Free an addressinfo linked list as returned by resolve_dns_name.  */
 void
@@ -167,14 +189,17 @@ my_adns_init (adns_state *r_state)
     {
       char *cfgstr;
 
+      if (!*tor_nameserver)
+        set_dns_nameserver (NULL);
+
       cfgstr = xtryasprintf ("nameserver %s\n"
                              "options adns_tormode adns_sockscred:%s",
-                             "8.8.8.8", tor_credentials);
+                             tor_nameserver, tor_credentials);
       if (!cfgstr)
         err = gpg_error_from_syserror ();
       else
         {
-          ret = adns_init_strcfg (r_state, adns_if_noerrprint, NULL, cfgstr);
+          ret = adns_init_strcfg (r_state, adns_if_debug /*adns_if_noerrprint*/, NULL, cfgstr);
           if (ret)
             err = gpg_error_from_errno (ret);
           xfree (cfgstr);
