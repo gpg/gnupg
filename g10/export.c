@@ -46,14 +46,28 @@ struct subkey_list_s
 typedef struct subkey_list_s *subkey_list_t;
 
 
-static int do_export (ctrl_t ctrl,
-                      strlist_t users, int secret, unsigned int options );
+/* An object to track statistics for export operations.  */
+struct export_stats_s
+{
+  ulong count;            /* Number of processed keys.        */
+  ulong secret_count;     /* Number of secret keys seen.      */
+  ulong exported;         /* Number of actual exported keys.  */
+};
+
+
+/* Local prototypes.  */
+static int do_export (ctrl_t ctrl, strlist_t users, int secret,
+                      unsigned int options, export_stats_t stats);
 static int do_export_stream (ctrl_t ctrl, iobuf_t out,
                              strlist_t users, int secret,
                              kbnode_t *keyblock_out, unsigned int options,
-			     int *any);
+			     export_stats_t stats, int *any);
+
+
 
 
+/* Option parser for export options.  See parse_options fro
+   details.  */
 int
 parse_export_options(char *str,unsigned int *options,int noisy)
 {
@@ -85,39 +99,102 @@ parse_export_options(char *str,unsigned int *options,int noisy)
 }
 
 
-/****************
- * Export the public keys (to standard out or --output).
- * Depending on opt.armor the output is armored.
- * options are defined in main.h.
- * If USERS is NULL, the complete ring will be exported.  */
-int
-export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options )
+/* Create a new export stats object initialized to zero.  On error
+   returns NULL and sets ERRNO.  */
+export_stats_t
+export_new_stats (void)
 {
-  return do_export (ctrl, users, 0, options );
+  export_stats_t stats;
+
+  return xtrycalloc (1, sizeof *stats);
 }
 
-/****************
- * Export to an already opened stream; return -1 if no keys have
- * been exported
- */
-int
-export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
-		       kbnode_t *keyblock_out, unsigned int options )
-{
-  int any, rc;
 
-  rc = do_export_stream (ctrl, out, users, 0, keyblock_out, options, &any);
-  if (!rc && !any)
-    rc = -1;
-  return rc;
+/* Release an export stats object.  */
+void
+export_release_stats (export_stats_t stats)
+{
+  xfree (stats);
+}
+
+
+/* Print export statistics using the status interface.  */
+void
+export_print_stats (export_stats_t stats)
+{
+  if (!stats)
+    return;
+
+  if (is_status_enabled ())
+    {
+      char buf[15*20];
+
+      snprintf (buf, sizeof buf, "%lu %lu %lu",
+		stats->count,
+		stats->secret_count,
+		stats->exported );
+      write_status_text (STATUS_EXPORT_RES, buf);
+    }
 }
 
 
 /*
- * Export a single key into a memory buffer.
+ * Export public keys (to stdout or to --output FILE).
+ *
+ * Depending on opt.armor the output is armored.  OPTIONS are defined
+ * in main.h.  If USERS is NULL, all keys will be exported.  STATS is
+ * either an export stats object for update or NULL.
+ *
+ * This function is the core of "gpg --export".
+ */
+int
+export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
+                export_stats_t stats)
+{
+  return do_export (ctrl, users, 0, options, stats);
+}
+
+
+/*
+ * Export secret keys (to stdout or to --output FILE).
+ *
+ * Depending on opt.armor the output is armored.  If USERS is NULL,
+ * all secret keys will be exported.  STATS is either an export stats
+ * object for update or NULL.
+ *
+ * This function is the core of "gpg --export-secret-keys".
+ */
+int
+export_seckeys (ctrl_t ctrl, strlist_t users, export_stats_t stats)
+{
+  return do_export (ctrl, users, 1, 0, stats);
+}
+
+
+/*
+ * Export secret sub keys (to stdout or to --output FILE).
+ *
+ * This is the same as export_seckeys but replaces the primary key by
+ * a stub key.  Depending on opt.armor the output is armored.  If
+ * USERS is NULL, all secret subkeys will be exported.  STATS is
+ * either an export stats object for update or NULL.
+ *
+ * This function is the core of "gpg --export-secret-subkeys".
+ */
+int
+export_secsubkeys (ctrl_t ctrl, strlist_t users, export_stats_t stats)
+{
+  return do_export (ctrl, users, 2, 0, stats);
+}
+
+
+/*
+ * Export a single key into a memory buffer.  STATS is either an
+ * export stats object for update or NULL.
  */
 gpg_error_t
 export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
+                      export_stats_t stats,
                       kbnode_t *r_keyblock, void **r_data, size_t *r_datalen)
 {
   gpg_error_t err;
@@ -134,7 +211,8 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
     return gpg_error_from_syserror ();
 
   iobuf = iobuf_temp ();
-  err = do_export_stream (ctrl, iobuf, helplist, 0, r_keyblock, options, &any);
+  err = do_export_stream (ctrl, iobuf, helplist, 0, r_keyblock, options,
+                          stats, &any);
   if (!err && !any)
     err = gpg_error (GPG_ERR_NOT_FOUND);
   if (!err)
@@ -166,26 +244,14 @@ export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
 }
 
 
-int
-export_seckeys (ctrl_t ctrl, strlist_t users )
-{
-  return do_export (ctrl, users, 1, 0);
-}
-
-int
-export_secsubkeys (ctrl_t ctrl, strlist_t users )
-{
-  return do_export (ctrl, users, 2, 0);
-}
-
-
 /* Export the keys identified by the list of strings in USERS.  If
    Secret is false public keys will be exported.  With secret true
    secret keys will be exported; in this case 1 means the entire
    secret keyblock and 2 only the subkeys.  OPTIONS are the export
    options to apply.  */
 static int
-do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
+do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options,
+           export_stats_t stats)
 {
   IOBUF out = NULL;
   int any, rc;
@@ -205,7 +271,7 @@ do_export (ctrl_t ctrl, strlist_t users, int secret, unsigned int options )
       push_armor_filter (afx, out);
     }
 
-  rc = do_export_stream (ctrl, out, users, secret, NULL, options, &any );
+  rc = do_export_stream (ctrl, out, users, secret, NULL, options, stats, &any);
 
   if ( rc || !any )
     iobuf_cancel (out);
@@ -754,7 +820,8 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
    key has been exported true is stored at ANY. */
 static int
 do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
-		  kbnode_t *keyblock_out, unsigned int options, int *any)
+		  kbnode_t *keyblock_out, unsigned int options,
+                  export_stats_t stats, int *any)
 {
   gpg_error_t err = 0;
   PACKET pkt;
@@ -767,7 +834,10 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   strlist_t sl;
   gcry_cipher_hd_t cipherhd = NULL;
   char *cache_nonce = NULL;
+  struct export_stats_s dummystats;
 
+  if (!stats)
+    stats = &dummystats;
   *any = 0;
   init_packet (&pkt);
   kdbhd = keydb_new ();
@@ -877,6 +947,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           log_error ("public key packet not found in keyblock - skipped\n");
           continue;
         }
+      stats->count++;
       setup_main_keyids (keyblock);  /* gpg_format_keydesc needs it.  */
       pk = node->pkt->pkt.public_key;
       keyid_from_pk (pk, keyid);
@@ -906,6 +977,7 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                         "not yet supported - skipped\n", keystr (keyid));
               continue;
             }
+          stats->secret_count++;
         }
 
       /* Always do the cleaning on the public key part if requested.
@@ -1109,6 +1181,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                     }
 
                   err = build_packet (out, node->pkt);
+                  if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
+                    stats->exported++;
                 }
               else if (!err)
                 {
@@ -1164,6 +1238,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
                     goto unwraperror;
 
                   err = build_packet (out, node->pkt);
+                  if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
+                    stats->exported++;
                   goto unwraperror_leave;
 
                 unwraperror:
@@ -1201,7 +1277,10 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
           else
             {
               err = build_packet (out, node->pkt);
+              if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
+                stats->exported++;
             }
+
 
           if (err)
             {

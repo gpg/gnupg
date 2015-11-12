@@ -768,6 +768,16 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - <not_imported>
     - <skipped_v3_keys>
 
+*** EXPORT_RES <args>
+
+    Final statistics on export process (this is one long line). The
+    args are a list of unsigned numbers separated by white space:
+
+    - <count>
+    - <secret_count>
+    - <exported>
+
+
 ** Smartcard related
 *** CARDCTRL <what> [<serialno>]
     This is used to control smartcard operations.  Defined values for

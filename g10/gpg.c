@@ -4306,7 +4306,12 @@ main (int argc, char **argv)
 	else if( cmd == aRecvKeys )
             rc = keyserver_import (ctrl, sl );
 	else
-            rc = export_pubkeys (ctrl, sl, opt.export_options);
+          {
+            export_stats_t stats = export_new_stats ();
+            rc = export_pubkeys (ctrl, sl, opt.export_options, stats);
+            export_print_stats (stats);
+            export_release_stats (stats);
+          }
 	if(rc)
 	  {
 	    if(cmd==aSendKeys)
@@ -4372,7 +4377,12 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	export_seckeys (ctrl, sl);
+        {
+          export_stats_t stats = export_new_stats ();
+          export_seckeys (ctrl, sl, stats);
+          export_print_stats (stats);
+          export_release_stats (stats);
+        }
 	free_strlist(sl);
 	break;
 
@@ -4380,7 +4390,12 @@ main (int argc, char **argv)
 	sl = NULL;
 	for( ; argc; argc--, argv++ )
 	    add_to_strlist2( &sl, *argv, utf8_strings );
-	export_secsubkeys (ctrl, sl);
+        {
+          export_stats_t stats = export_new_stats ();
+          export_secsubkeys (ctrl, sl, stats);
+          export_print_stats (stats);
+          export_release_stats (stats);
+        }
 	free_strlist(sl);
 	break;
 

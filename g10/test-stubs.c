@@ -418,11 +418,13 @@ gpg_dirmngr_get_pka (ctrl_t ctrl, const char *userid,
 
 gpg_error_t
 export_pubkey_buffer (ctrl_t ctrl, const char *keyspec, unsigned int options,
+                      export_stats_t stats,
                       kbnode_t *r_keyblock, void **r_data, size_t *r_datalen)
 {
   (void)ctrl;
   (void)keyspec;
   (void)options;
+  (void)stats;
 
   *r_keyblock = NULL;
   *r_data = NULL;

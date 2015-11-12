@@ -339,16 +339,25 @@ int collapse_uids( KBNODE *keyblock );
 
 
 /*-- export.c --*/
+struct export_stats_s;
+typedef struct export_stats_s *export_stats_t;
+
+export_stats_t export_new_stats (void);
+void export_release_stats (export_stats_t stats);
+void export_print_stats (export_stats_t stats);
+
 int parse_export_options(char *str,unsigned int *options,int noisy);
-int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options );
-int export_pubkeys_stream (ctrl_t ctrl, iobuf_t out, strlist_t users,
-			   kbnode_t *keyblock_out, unsigned int options );
+
+int export_pubkeys (ctrl_t ctrl, strlist_t users, unsigned int options,
+                    export_stats_t stats);
+int export_seckeys (ctrl_t ctrl, strlist_t users, export_stats_t stats);
+int export_secsubkeys (ctrl_t ctrl, strlist_t users, export_stats_t stats);
+
 gpg_error_t export_pubkey_buffer (ctrl_t ctrl, const char *keyspec,
                                   unsigned int options,
+                                  export_stats_t stats,
                                   kbnode_t *r_keyblock,
                                   void **r_data, size_t *r_datalen);
-int export_seckeys (ctrl_t ctrl, strlist_t users);
-int export_secsubkeys (ctrl_t ctrl, strlist_t users);
 
 /*-- dearmor.c --*/
 int dearmor_file( const char *fname );
