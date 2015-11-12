@@ -768,6 +768,11 @@ pkd:0:1024:B665B1435F4C2 .... FF26ABB:
     - <not_imported>
     - <skipped_v3_keys>
 
+*** EXPORTED  <fingerprint>
+    The key with <fingerprint> has been exported.  The fingerprint is
+    the fingerprint of the primary key even if the primary key has
+    been replaced by a stub key during secret key export.
+
 *** EXPORT_RES <args>
 
     Final statistics on export process (this is one long line). The

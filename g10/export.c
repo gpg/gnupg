@@ -809,6 +809,22 @@ transfer_format_to_openpgp (gcry_sexp_t s_pgp, PKT_public_key *pk)
   goto leave;
 }
 
+
+/* Print an "EXPORTED" status line.  PK is the primary public key.  */
+static void
+print_status_exported (PKT_public_key *pk)
+{
+  char *hexfpr;
+
+  if (!is_status_enabled ())
+    return;
+
+  hexfpr = hexfingerprint (pk);
+  write_status_text (STATUS_EXPORTED, hexfpr? hexfpr : "[?]");
+  xfree (hexfpr);
+}
+
+
 /* Export the keys identified by the list of strings in USERS to the
    stream OUT.  If Secret is false public keys will be exported.  With
    secret true secret keys will be exported; in this case 1 means the
@@ -1182,7 +1198,10 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 
                   err = build_packet (out, node->pkt);
                   if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                    stats->exported++;
+                    {
+                      stats->exported++;
+                      print_status_exported (node->pkt->pkt.public_key);
+                    }
                 }
               else if (!err)
                 {
@@ -1239,7 +1258,10 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
 
                   err = build_packet (out, node->pkt);
                   if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                    stats->exported++;
+                    {
+                      stats->exported++;
+                      print_status_exported (node->pkt->pkt.public_key);
+                    }
                   goto unwraperror_leave;
 
                 unwraperror:
@@ -1278,7 +1300,10 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
             {
               err = build_packet (out, node->pkt);
               if (!err && node->pkt->pkttype == PKT_PUBLIC_KEY)
-                stats->exported++;
+                {
+                  stats->exported++;
+                  print_status_exported (node->pkt->pkt.public_key);
+                }
             }
 
 
