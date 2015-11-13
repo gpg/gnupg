@@ -77,6 +77,10 @@ struct getkey_ctx_s
      released using getkey_end()).  */
   int not_allocated;
 
+  /* This variable is used as backing store for strings which have
+     their address used in ITEMS.  */
+  strlist_t extra_list;
+
   /* Part of the search criteria: The low-level search specification
      as passed to keydb_search.  */
   int nitems;
@@ -1028,7 +1032,14 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
       *retctx = NULL;
     }
 
-  free_strlist (namelist);
+  if (retctx && *retctx)
+    {
+      assert (!(*retctx)->extra_list);
+      (*retctx)->extra_list = namelist;
+    }
+  else
+    free_strlist (namelist);
+
   return rc;
 }
 
@@ -1279,6 +1290,7 @@ getkey_end (getkey_ctx_t ctx)
   if (ctx)
     {
       keydb_release (ctx->kr_handle);
+      free_strlist (ctx->extra_list);
       if (!ctx->not_allocated)
 	xfree (ctx);
     }
