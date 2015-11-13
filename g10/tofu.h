@@ -71,14 +71,14 @@ const char *tofu_policy_str (enum tofu_policy policy);
    (e.g., TRUST_BAD) in light of the current configuration.  */
 int tofu_policy_to_trust_level (enum tofu_policy policy);
 
-/* Register the binding <FINGERPRINT, USER_ID> and the signature
+/* Register the binding <PK, USER_ID> and the signature
    described by SIGS_DIGEST and SIG_TIME, which it generated.  Origin
    describes where the signed data came from, e.g., "email:claws"
    (default: "unknown").  If MAY_ASK is 1, then this function may
    interact with the user in the case of a conflict or if the
    binding's policy is ask.  This function returns the binding's trust
    level.  If an error occurs, it returns TRUST_UNKNOWN.  */
-int tofu_register (const byte *fingerprint, const char *user_id,
+int tofu_register (PKT_public_key *pk, const char *user_id,
 		   const byte *sigs_digest, int sigs_digest_len,
 		   time_t sig_time, const char *origin, int may_ask);
 
@@ -88,11 +88,10 @@ int tofu_register (const byte *fingerprint, const char *user_id,
 int tofu_wot_trust_combine (int tofu, int wot);
 
 /* Determine the validity (TRUST_NEVER, etc.) of the binding
-   <FINGERPRINT, USER_ID>.  If MAY_ASK is 1, then this function may
+   <PK, USER_ID>.  If MAY_ASK is 1, then this function may
    interact with the user.  If not, TRUST_UNKNOWN is returned.  If an
    error occurs, TRUST_UNDEFINED is returned.  */
-int tofu_get_validity (const byte *fingerprint, const char *user_id,
-		       int may_ask);
+int tofu_get_validity (PKT_public_key *pk, const char *user_id, int may_ask);
 
 /* Set the policy for all non-revoked user ids in the keyblock KB to
    POLICY.  */

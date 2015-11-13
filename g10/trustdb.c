@@ -1021,12 +1021,6 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
       int user_ids = 0;
       int user_ids_expired = 0;
 
-      char fingerprint[MAX_FINGERPRINT_LEN];
-      size_t fingerprint_len = sizeof (fingerprint);
-
-      fingerprint_from_pk (main_pk, fingerprint, &fingerprint_len);
-      assert (fingerprint_len == sizeof (fingerprint));
-
       /* If the caller didn't supply a user id then iterate over all
 	 uids.  */
       if (! uid)
@@ -1062,12 +1056,12 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
 	  user_ids ++;
 
 	  if (sig)
-	    tl = tofu_register (fingerprint, user_id->name,
+	    tl = tofu_register (main_pk, user_id->name,
 				sig->digest, sig->digest_len,
 				sig->timestamp, "unknown",
 				may_ask);
 	  else
-	    tl = tofu_get_validity (fingerprint, user_id->name, may_ask);
+	    tl = tofu_get_validity (main_pk, user_id->name, may_ask);
 
 	  if (tl == TRUST_EXPIRED)
 	    user_ids_expired ++;

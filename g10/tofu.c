@@ -168,15 +168,6 @@ tofu_cache_dump (struct db *db)
 #  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("months")
 #endif
 
-static char *
-fingerprint_str (const byte *fingerprint_bin)
-{
-  char *fingerprint = bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, NULL);
-  if (! fingerprint)
-    log_fatal ("bin2hex failed: %s\n",
-               gpg_strerror (gpg_error_from_syserror()));
-  return fingerprint;
-}
 
 /* Pretty print a MAX_FINGERPRINT_LEN-byte binary fingerprint into a
    malloc'd string.  */
@@ -2543,8 +2534,8 @@ email_from_user_id (const char *user_id)
   return email;
 }
 
-/* Register the signature with the binding <FINGERPRINT_BIN, USER_ID>.
-   FINGERPRINT must be MAX_FINGERPRINT_LEN bytes long.
+/* Register the signature with the binding <fingerprint, USER_ID>.
+   The fingerprint is taken from the primary key packet PK.
 
    SIG_DIGEST_BIN is the binary representation of the message's
    digest.  SIG_DIGEST_BIN_LEN is its length.
@@ -2563,7 +2554,7 @@ email_from_user_id (const char *user_id)
    This function returns the binding's trust level on return.  If an
    error occurs, this function returns TRUST_UNKNOWN.  */
 int
-tofu_register (const byte *fingerprint_bin, const char *user_id,
+tofu_register (PKT_public_key *pk, const char *user_id,
 	       const byte *sig_digest_bin, int sig_digest_bin_len,
 	       time_t sig_time, const char *origin, int may_ask)
 {
@@ -2588,7 +2579,7 @@ tofu_register (const byte *fingerprint_bin, const char *user_id,
       goto die;
     }
 
-  fingerprint = fingerprint_str (fingerprint_bin);
+  fingerprint = hexfingerprint (pk);
   fingerprint_pp = fingerprint_format (fingerprint);
 
   if (! *user_id)
@@ -2780,7 +2771,7 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
 /* Return the validity (TRUST_NEVER, etc.) of the binding
    <FINGERPRINT, USER_ID>.
 
-   FINGERPRINT must be a MAX_FINGERPRINT_LEN-byte fingerprint.
+   PK is the primary key packet.
 
    If MAY_ASK is 1 and the policy is TOFU_POLICY_ASK, then the user
    will be prompted to choose a different policy.  If MAY_ASK is 0 and
@@ -2788,7 +2779,7 @@ tofu_wot_trust_combine (int tofu_base, int wot_base)
 
    Returns TRUST_UNDEFINED if an error occurs.  */
 int
-tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
+tofu_get_validity (PKT_public_key *pk, const char *user_id,
 		   int may_ask)
 {
   struct dbs *dbs;
@@ -2803,7 +2794,7 @@ tofu_get_validity (const byte *fingerprint_bin, const char *user_id,
       goto die;
     }
 
-  fingerprint = fingerprint_str (fingerprint_bin);
+  fingerprint = hexfingerprint (pk);
 
   if (! *user_id)
     {
@@ -2843,8 +2834,6 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
 {
   struct dbs *dbs;
   PKT_public_key *pk;
-  char fingerprint_bin[MAX_FINGERPRINT_LEN];
-  size_t fingerprint_bin_len = sizeof (fingerprint_bin);
   char *fingerprint = NULL;
 
   assert (kb->pkt->pkttype == PKT_PUBLIC_KEY);
@@ -2864,10 +2853,7 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
 	 && pk->main_keyid[1] == pk->keyid[1]))
     log_bug ("%s: Passed a subkey, but expecting a primary key.\n", __func__);
 
-  fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
-  assert (fingerprint_bin_len == sizeof (fingerprint_bin));
-
-  fingerprint = fingerprint_str (fingerprint_bin);
+  fingerprint = hexfingerprint (pk);
 
   for (; kb; kb = kb->next)
     {
@@ -2925,8 +2911,6 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
 		 enum tofu_policy *policy)
 {
   struct dbs *dbs;
-  char fingerprint_bin[MAX_FINGERPRINT_LEN];
-  size_t fingerprint_bin_len = sizeof (fingerprint_bin);
   char *fingerprint;
   char *email;
 
@@ -2941,10 +2925,7 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
-  assert (fingerprint_bin_len == sizeof (fingerprint_bin));
-
-  fingerprint = fingerprint_str (fingerprint_bin);
+  fingerprint = hexfingerprint (pk);
 
   email = email_from_user_id (user_id->name);
 
