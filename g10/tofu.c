@@ -1654,30 +1654,42 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
   if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
     /* See if the key is ultimately trusted.  If so, we're done.  */
     {
-      const char *keyid;
-      KEYDB_SEARCH_DESC desc;
+      PKT_public_key *pk;
+      u32 kid[2];
+      char fpr_bin[MAX_FINGERPRINT_LEN+1];
+      size_t fpr_bin_len;
 
-      /* We need to convert the fingerprint as a string to a long
-         keyid.
-
-         FINGERPRINT is stored as follows:
-
-           362D3527F53AAD1971AAFDE658859975EE37CF96
-                                -------------------
-
-         The last 16 characters are the long keyid.
-      */
-      assert (strlen (fingerprint) > 4 * 4);
-      keyid = &fingerprint[strlen (fingerprint) - 16];
-
-      rc = classify_user_id (keyid, &desc, 1);
-      if (rc || desc.mode != KEYDB_SEARCH_MODE_LONG_KID)
+      if (!hex2str (fingerprint, fpr_bin, sizeof fpr_bin, &fpr_bin_len))
         {
-          log_error (_("'%s' is not a valid long keyID\n"), keyid);
-          goto out;
+          log_error ("error converting fingerprint: %s\n",
+                     gpg_strerror (gpg_error_from_syserror ()));
+          return _tofu_GET_TRUST_ERROR;
         }
 
-      if (tdb_keyid_is_utk (desc.u.kid))
+      /* We need to lookup the key by fingerprint again so that we can
+         properly extract the keyid.  Extracting direct from the
+         fingerprint works only for v4 keys and would assume that
+         there is no collision in the low 64 bit.  We can't guarantee
+         the latter in case the Tofu DB is used with a different
+         keyring.  In any case the UTK stuff needs to be changed to
+         use only fingerprints.  */
+      pk = xtrycalloc (1, sizeof *pk);
+      if (!pk)
+         {
+           log_error (_("out of core\n"));
+           return _tofu_GET_TRUST_ERROR;
+         }
+      rc = get_pubkey_byfprint_fast (pk, fpr_bin, fpr_bin_len);
+      if (rc)
+        {
+          log_error (_("public key %s not found: %s\n"),
+                     fingerprint, gpg_strerror (rc));
+          return _tofu_GET_TRUST_ERROR;
+        }
+      keyid_from_pk (pk, kid);
+      free_public_key (pk);
+
+      if (tdb_keyid_is_utk (kid))
         {
           if (policy == TOFU_POLICY_NONE)
             {
