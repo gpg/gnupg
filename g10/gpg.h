@@ -43,6 +43,10 @@
    Warning: At some places we still use 20 instead of this macro. */
 #define MAX_FINGERPRINT_LEN 20
 
+/* The maximum length of a formatted fingerprint as returned by
+   format_hexfingerprint().  */
+#define MAX_FORMATTED_FINGERPRINT_LEN 50
+
 
 /*
    Forward declarations.

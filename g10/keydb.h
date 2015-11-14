@@ -809,7 +809,9 @@ const char *colon_datestr_from_pk (PKT_public_key *pk);
 const char *colon_datestr_from_sig (PKT_signature *sig);
 const char *colon_expirestr_from_sig (PKT_signature *sig);
 byte *fingerprint_from_pk( PKT_public_key *pk, byte *buf, size_t *ret_len );
-char *hexfingerprint (PKT_public_key *pk);
+char *hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen);
+char *format_hexfingerprint (const char *fingerprint,
+                             char *buffer, size_t buflen);
 gpg_error_t keygrip_from_pk (PKT_public_key *pk, unsigned char *array);
 gpg_error_t hexkeygrip_from_pk (PKT_public_key *pk, char **r_grip);
 

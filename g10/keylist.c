@@ -895,7 +895,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
     }
 
 
-  hexfpr = hexfingerprint (pk);
+  hexfpr = hexfingerprint (pk, NULL, 0);
   if (opt.print_dane_records)
     {
       kbnode_t dummy_keyblock;
@@ -1833,8 +1833,9 @@ print_icao_hexdigit (estream_t fp, int c)
 void
 print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
 {
-  byte array[MAX_FINGERPRINT_LEN], *p;
-  size_t i, n;
+  char hexfpr[2*MAX_FINGERPRINT_LEN+1];
+  char *p;
+  size_t i;
   estream_t fp;
   const char *text;
   int primary = 0;
@@ -1903,47 +1904,33 @@ print_fingerprint (estream_t override_fp, PKT_public_key *pk, int mode)
       text = _("      Key fingerprint =");
     }
 
-  fingerprint_from_pk (pk, array, &n);
-  p = array;
+  hexfingerprint (pk, hexfpr, sizeof hexfpr);
   if (with_colons && !mode)
     {
-      es_fprintf (fp, "fpr:::::::::");
-      for (i = 0; i < n; i++, p++)
-	es_fprintf (fp, "%02X", *p);
-      es_putc (':', fp);
+      es_fprintf (fp, "fpr:::::::::%s:", hexfpr);
     }
   else
     {
-      tty_fprintf (fp, "%s", text);
-      if (n == 20)
-	{
-	  for (i = 0; i < n; i++, i++, p += 2)
-            tty_fprintf (fp, "%s %02X%02X", i==10? " ":"", *p, p[1]);
-	}
-      else
-	{
-	  for (i = 0; i < n; i++, p++)
-            tty_fprintf (fp, "%s %02X", (i && !(i % 8))? " ":"", *p);
-	}
+      char fmtfpr[MAX_FORMATTED_FINGERPRINT_LEN + 1];
+      format_hexfingerprint (hexfpr, fmtfpr, sizeof fmtfpr);
+      tty_fprintf (fp, "%s %s", text, fmtfpr);
     }
   tty_fprintf (fp, "\n");
   if (!with_colons && with_icao)
     {
-      p = array;
+      ;
       tty_fprintf (fp, "%*s\"", (int)strlen(text)+1, "");
-      for (i = 0; i < n; i++, p++)
+      for (i = 0, p = hexfpr; *p; i++, p++)
         {
           if (!i)
             ;
-          else if (!(i%4))
+          else if (!(i%8))
             tty_fprintf (fp, "\n%*s ", (int)strlen(text)+1, "");
-          else if (!(i%2))
+          else if (!(i%4))
             tty_fprintf (fp, "  ");
           else
             tty_fprintf (fp, " ");
-          print_icao_hexdigit (fp, *p >> 4);
-          tty_fprintf (fp, " ");
-          print_icao_hexdigit (fp, *p & 15);
+          print_icao_hexdigit (fp, xtoi_1 (p));
         }
       tty_fprintf (fp, "\"\n");
     }

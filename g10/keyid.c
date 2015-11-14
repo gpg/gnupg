@@ -704,18 +704,81 @@ fingerprint_from_pk (PKT_public_key *pk, byte *array, size_t *ret_len)
 
 
 /* Return an allocated buffer with the fingerprint of PK formatted as
-   a plain hexstring.  */
+   a plain hexstring.  If BUFFER is NULL the result is a malloc'd
+   string.  If BUFFER is not NULL the result will be copied into this
+   buffer.  In the latter case BUFLEN describes the length of the
+   buffer; if this is too short the function terminates the process.
+   Returns a malloc'ed string or BUFFER.  A suitable length for BUFFER
+   is (2*MAX_FINGERPRINT_LEN + 1). */
 char *
-hexfingerprint (PKT_public_key *pk)
+hexfingerprint (PKT_public_key *pk, char *buffer, size_t buflen)
 {
   unsigned char fpr[MAX_FINGERPRINT_LEN];
   size_t len;
-  char *result;
 
   fingerprint_from_pk (pk, fpr, &len);
-  result = xmalloc (2 * len + 1);
-  bin2hex (fpr, len, result);
-  return result;
+  if (!buffer)
+    buffer = xmalloc (2 * len + 1);
+  else if (buflen < 2*len+1)
+    log_fatal ("%s: buffer too short (%zu)\n", __func__, buflen);
+  bin2hex (fpr, len, buffer);
+  return buffer;
+}
+
+
+/* Pretty print a hex fingerprint.  If BUFFER is NULL the result is a
+   malloc'd string.  If BUFFER is not NULL the result will be copied
+   into this buffer.  In the latter case BUFLEN describes the length
+   of the buffer; if this is too short the function terminates the
+   process.  Returns a malloc'ed string or BUFFER.  A suitable length
+   for BUFFER is (MAX_FORMATTED_FINGERPRINT_LEN + 1).  */
+char *
+format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
+{
+  int hexlen = strlen (fingerprint);
+  int space;
+  int i, j;
+
+  if (hexlen == 40)  /* v4 fingerprint */
+    {
+      space = (/* The characters and the NUL.  */
+	       40 + 1
+	       /* After every fourth character, we add a space (except
+		  the last).  */
+	       + 40 / 4 - 1
+	       /* Half way through we add a second space.  */
+	       + 1);
+    }
+  else  /* Other fingerprint versions - print as is.  */
+    {
+      space = hexlen + 1;
+    }
+
+  if (!buffer)
+    buffer = xmalloc (space);
+  else if (buflen < space)
+    log_fatal ("%s: buffer too short (%zu)\n", __func__, buflen);
+
+  if (hexlen == 40)  /* v4 fingerprint */
+    {
+      for (i = 0, j = 0; i < 40; i ++)
+        {
+          if (i && i % 4 == 0)
+            buffer[j ++] = ' ';
+          if (i == 40 / 2)
+            buffer[j ++] = ' ';
+
+          buffer[j ++] = fingerprint[i];
+        }
+      buffer[j ++] = 0;
+      assert (j == space);
+    }
+  else
+    {
+      strcpy (buffer, fingerprint);
+    }
+
+  return buffer;
 }
 
 

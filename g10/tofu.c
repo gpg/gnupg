@@ -167,48 +167,9 @@ tofu_cache_dump (struct db *db)
 #  define TIME_AGO_UNIT_LARGE_NAME _("month")
 #  define TIME_AGO_UNIT_LARGE_NAME_PLURAL _("months")
 #endif
+
 
 
-/* Pretty print a MAX_FINGERPRINT_LEN-byte binary fingerprint into a
-   malloc'd string.  */
-static char *
-fingerprint_format (const byte *fingerprint)
-{
-  char *fingerprint_pretty;
-  int space = (/* The characters and the NUL.  */
-	       2 * MAX_FINGERPRINT_LEN + 1
-	       /* After every fourth character, we add a space (except
-		  the last).  */
-	       + 2 * MAX_FINGERPRINT_LEN / 4 - 1
-	       /* Half way through we add a second space.  */
-	       + 1);
-  int i;
-  int j;
-
-  if (strlen (fingerprint) != 2 * MAX_FINGERPRINT_LEN)
-    {
-      log_info (_("Fingerprint with unexpected length (%zu chars)\n"),
-                strlen (fingerprint));
-      return xstrdup (fingerprint);
-    }
-
-  fingerprint_pretty = xmalloc (space);
-
-  for (i = 0, j = 0; i < MAX_FINGERPRINT_LEN * 2; i ++)
-    {
-      if (i && i % 4 == 0)
-	fingerprint_pretty[j ++] = ' ';
-      if (i == MAX_FINGERPRINT_LEN * 2 / 2)
-	fingerprint_pretty[j ++] = ' ';
-
-      fingerprint_pretty[j ++] = fingerprint[i];
-    }
-  fingerprint_pretty[j ++] = 0;
-  assert (j == space);
-
-  return fingerprint_pretty;
-}
-
 const char *
 tofu_policy_str (enum tofu_policy policy)
 {
@@ -1114,7 +1075,7 @@ static gpg_error_t
 record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
 		const char *user_id, enum tofu_policy policy, int show_old)
 {
-  char *fingerprint_pp = fingerprint_format (fingerprint);
+  char *fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
   struct db *db_email = NULL, *db_key = NULL;
   int rc;
   char *err = NULL;
@@ -1639,7 +1600,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
   if (! db)
     return _tofu_GET_TRUST_ERROR;
 
-  fingerprint_pp = fingerprint_format (fingerprint);
+  fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   policy = get_policy (dbs, fingerprint, email, &conflict);
   if (policy == TOFU_POLICY_AUTO || policy == TOFU_POLICY_NONE)
@@ -1878,7 +1839,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 		display this message.  */
 	     && conflict && strcmp (conflict, fingerprint) != 0)
       {
-        char *conflict_pp = fingerprint_format (conflict);
+        char *conflict_pp = format_hexfingerprint (conflict, NULL, 0);
 	es_fprintf (fp,
 		    _("The key %s raised a conflict with this binding (%s)."
                       "  Since this binding's policy was 'auto', it was "
@@ -2035,7 +1996,7 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
                 char *key_pp;
 		key = stats_iter->fingerprint;
 		this_key = strcmp (key, fingerprint) == 0;
-                key_pp = fingerprint_format (key);
+                key_pp = format_hexfingerprint (key, NULL, 0);
 		if (this_key)
 		  es_fprintf (fp, _("  %s (this key):"), key_pp);
 		else
@@ -2351,7 +2312,7 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
   if (! db)
     return;
 
-  fingerprint_pp = fingerprint_format (fingerprint);
+  fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   rc = sqlite3_exec_printf
     (db->db, strings_collect_cb, &strlist, &err,
@@ -2579,8 +2540,8 @@ tofu_register (PKT_public_key *pk, const char *user_id,
       goto die;
     }
 
-  fingerprint = hexfingerprint (pk);
-  fingerprint_pp = fingerprint_format (fingerprint);
+  fingerprint = hexfingerprint (pk, NULL, 0);
+  fingerprint_pp = format_hexfingerprint (fingerprint, NULL, 0);
 
   if (! *user_id)
     {
@@ -2794,7 +2755,7 @@ tofu_get_validity (PKT_public_key *pk, const char *user_id,
       goto die;
     }
 
-  fingerprint = hexfingerprint (pk);
+  fingerprint = hexfingerprint (pk, NULL, 0);
 
   if (! *user_id)
     {
@@ -2853,7 +2814,7 @@ tofu_set_policy (kbnode_t kb, enum tofu_policy policy)
 	 && pk->main_keyid[1] == pk->keyid[1]))
     log_bug ("%s: Passed a subkey, but expecting a primary key.\n", __func__);
 
-  fingerprint = hexfingerprint (pk);
+  fingerprint = hexfingerprint (pk, NULL, 0);
 
   for (; kb; kb = kb->next)
     {
@@ -2925,7 +2886,7 @@ tofu_get_policy (PKT_public_key *pk, PKT_user_id *user_id,
       return gpg_error (GPG_ERR_GENERAL);
     }
 
-  fingerprint = hexfingerprint (pk);
+  fingerprint = hexfingerprint (pk, NULL, 0);
 
   email = email_from_user_id (user_id->name);
 

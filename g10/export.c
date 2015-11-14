@@ -819,7 +819,7 @@ print_status_exported (PKT_public_key *pk)
   if (!is_status_enabled ())
     return;
 
-  hexfpr = hexfingerprint (pk);
+  hexfpr = hexfingerprint (pk, NULL, 0);
   write_status_text (STATUS_EXPORTED, hexfpr? hexfpr : "[?]");
   xfree (hexfpr);
 }
