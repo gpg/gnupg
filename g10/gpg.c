@@ -2124,6 +2124,12 @@ check_user_ids (strlist_t *sp,
         default: log_bug ("Unsupport option: %d\n", t->flags >> 2);
         }
 
+      if (DBG_LOOKUP)
+        {
+          log_debug ("\n");
+          log_debug ("%s: Checking %s=%s\n", __func__, option, t->d);
+        }
+
       err = classify_user_id (t->d, &desc, 1);
       if (err)
         {
@@ -2153,6 +2159,9 @@ check_user_ids (strlist_t *sp,
       err = keydb_search (hd, &desc, 1, NULL);
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
         {
+          if (DBG_LOOKUP)
+            log_debug ("%s: '%s' not found.\n", __func__, t->d);
+
           if (error_if_not_found)
             {
               if (! rc)
@@ -2195,6 +2204,9 @@ check_user_ids (strlist_t *sp,
       release_kbnode (kb);
 
       /* Continue the search.  */
+      if (DBG_LOOKUP)
+        log_debug ("%s: Check for duplicates for %s='%s'\n",
+                   __func__, option, t->d);
       err = keydb_search (hd, &desc, 1, NULL);
       if (! err)
         /* Another result!  */

@@ -1692,7 +1692,16 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   while ((rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
          && hd->current >= 0 && hd->current < hd->used)
     {
-      switch (hd->active[hd->current].type)
+      if (DBG_LOOKUP)
+        log_debug ("%s: searching %s (resource %d of %d)\n",
+                   __func__,
+                   hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYRING
+                   ? "keyring"
+                   : (hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX
+                      ? "keybox" : "unknown type"),
+                   hd->current, hd->used);
+
+       switch (hd->active[hd->current].type)
         {
         case KEYDB_RESOURCE_TYPE_NONE:
           BUG(); /* we should never see it here */
@@ -1707,6 +1716,17 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
                               descindex, &hd->skipped_long_blobs);
           break;
         }
+
+      if (DBG_LOOKUP)
+        log_debug ("%s: searched %s (resource %d of %d) => %s\n",
+                   __func__,
+                   hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYRING
+                   ? "keyring"
+                   : (hd->active[hd->current].type == KEYDB_RESOURCE_TYPE_KEYBOX
+                      ? "keybox" : "unknown type"),
+                   hd->current, hd->used,
+                   rc == -1 ? "EOF" : gpg_strerror (rc));
+
       if (rc == -1 || gpg_err_code (rc) == GPG_ERR_EOF)
         {
           /* EOF -> switch to next resource */

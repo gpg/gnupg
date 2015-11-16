@@ -699,29 +699,51 @@ prepare_search (KEYRING_HANDLE hd)
         /* If the last key was a legacy key, we simply ignore the error so that
            we can easily use search_next.  */
         if (gpg_err_code (hd->current.error) == GPG_ERR_LEGACY_KEY)
+          {
+            if (DBG_LOOKUP)
+              log_debug ("%s: last error was GPG_ERR_LEGACY_KEY, clearing\n",
+                         __func__);
             hd->current.error = 0;
+          }
         else
+          {
+            if (DBG_LOOKUP)
+              log_debug ("%s: returning last error: %s\n",
+                         __func__, gpg_strerror (hd->current.error));
             return hd->current.error; /* still in error state */
+          }
     }
 
     if (hd->current.kr && !hd->current.eof) {
         if ( !hd->current.iobuf )
+          {
+            if (DBG_LOOKUP)
+              log_debug ("%s: missing iobuf!\n", __func__);
             return GPG_ERR_GENERAL; /* Position invalid after a modify.  */
+          }
         return 0; /* okay */
     }
 
     if (!hd->current.kr && hd->current.eof)
+      {
+        if (DBG_LOOKUP)
+          log_debug ("%s: EOF!\n", __func__);
         return -1; /* still EOF */
+      }
 
     if (!hd->current.kr) { /* start search with first keyring */
         hd->current.kr = hd->resource;
         if (!hd->current.kr) {
+          if (DBG_LOOKUP)
+            log_debug ("%s: keyring not available!\n", __func__);
             hd->current.eof = 1;
             return -1; /* keyring not available */
         }
         assert (!hd->current.iobuf);
     }
     else { /* EOF */
+        if (DBG_LOOKUP)
+          log_debug ("%s: EOF\n", __func__);
         iobuf_close (hd->current.iobuf);
         hd->current.iobuf = NULL;
         hd->current.kr = NULL;
@@ -988,22 +1010,44 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         }
     }
 
+  if (DBG_LOOKUP)
+    log_debug ("%s: need_uid = %d; need_words = %d; need_keyid = %d; need_fpr = %d; any_skip = %d\n",
+               __func__, need_uid, need_words, need_keyid, need_fpr, any_skip);
+
   rc = prepare_search (hd);
   if (rc)
-    return rc;
+    {
+      if (DBG_LOOKUP)
+        log_debug ("%s: prepare_search failed: %s (%d)\n",
+                   __func__, gpg_strerror (rc), gpg_err_code (rc));
+      return rc;
+    }
 
   use_offtbl = !!kr_offtbl;
   if (!use_offtbl)
-    ;
+    {
+      if (DBG_LOOKUP)
+        log_debug ("%s: no offset table.\n", __func__);
+    }
   else if (!kr_offtbl_ready)
-    need_keyid = 1;
+    {
+      if (DBG_LOOKUP)
+        log_debug ("%s: initializing offset table. (need_keyid: %d => 1)\n",
+                   __func__, need_keyid);
+      need_keyid = 1;
+    }
   else if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID)
     {
       struct off_item *oi;
 
+      if (DBG_LOOKUP)
+        log_debug ("%s: look up by long key id, checking cache\n", __func__);
+
       oi = lookup_offset_hash_table (kr_offtbl, desc[0].u.kid);
       if (!oi)
         { /* We know that we don't have this key */
+          if (DBG_LOOKUP)
+            log_debug ("%s: cache says not present\n", __func__);
           hd->found.kr = NULL;
           hd->current.eof = 1;
           return -1;
@@ -1047,6 +1091,9 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   pk_no = uid_no = 0;
   initial_skip = 1; /* skip until we see the start of a keyblock */
   scanned_from_start = iobuf_tell (hd->current.iobuf) == 0;
+  if (DBG_LOOKUP)
+    log_debug ("%s: %ssearching from start of resource.\n",
+               __func__, scanned_from_start ? "" : "not ");
   while (!(rc=search_packet (hd->current.iobuf, &pkt, &offset, need_uid)))
     {
       byte afp[MAX_FINGERPRINT_LEN];
@@ -1143,6 +1190,10 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       free_packet (&pkt);
       continue;
     found:
+      if (DBG_LOOKUP)
+        log_debug ("%s: packet starting at offset %zx matched descriptor %zd\n",
+                   __func__, offset, n);
+
       /* Record which desc we matched on.  Note this value is only
 	 meaningful if this function returns with no errors. */
       if(descindex)
@@ -1151,7 +1202,12 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         {
           if (desc[n].skipfnc
               && desc[n].skipfnc (desc[n].skipfncvalue, aki, uid_no))
-            break;
+            {
+              if (DBG_LOOKUP)
+                log_debug ("%s: skipping match: desc %zd's skip function returned TRUE\n",
+                           __func__, n);
+              break;
+            }
         }
       if (n == ndesc)
         goto real_found;
@@ -1160,6 +1216,8 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
  real_found:
   if (!rc)
     {
+      if (DBG_LOOKUP)
+        log_debug ("%s: returing success\n", __func__);
       hd->found.offset = main_offset;
       hd->found.kr = hd->current.kr;
       hd->found.pk_no = pk? pk_no : 0;
@@ -1167,6 +1225,9 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
     }
   else if (rc == -1)
     {
+      if (DBG_LOOKUP)
+        log_debug ("%s: no matches (EOF)\n", __func__);
+
       hd->current.eof = 1;
       /* if we scanned all keyrings, we are sure that
        * all known key IDs are in our offtbl, mark that. */
@@ -1195,7 +1256,12 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
         }
     }
   else
-    hd->current.error = rc;
+    {
+      if (DBG_LOOKUP)
+        log_debug ("%s: error encountered during search: %s (%d)\n",
+                   __func__, gpg_strerror (rc), rc);
+      hd->current.error = rc;
+    }
 
   free_packet(&pkt);
   set_packet_list_mode(save_mode);
