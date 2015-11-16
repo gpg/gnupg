@@ -2196,8 +2196,8 @@ check_user_ids (strlist_t *sp,
 
       /* Continue the search.  */
       err = keydb_search (hd, &desc, 1, NULL);
-      if (! (gpg_err_code (err) == GPG_ERR_NOT_FOUND
-             || gpg_err_code (err) == GPG_ERR_EOF))
+      if (! err)
+        /* Another result!  */
         {
           char fingerprint_bin2[MAX_FINGERPRINT_LEN];
           size_t fingerprint_bin2_len = sizeof (fingerprint_bin2);
@@ -2207,6 +2207,9 @@ check_user_ids (strlist_t *sp,
                      t->d);
           if (!opt.quiet)
             log_info (_("(check argument of option '%s')\n"), option);
+
+          if (! rc)
+            rc = GPG_ERR_CONFLICT;
 
           err = keydb_get_keyblock (hd, &kb);
           if (err)
@@ -2224,6 +2227,15 @@ check_user_ids (strlist_t *sp,
 
               release_kbnode (kb);
             }
+        }
+      else if (! (gpg_err_code (err) == GPG_ERR_NOT_FOUND
+                  || gpg_err_code (err) == GPG_ERR_EOF))
+        /* An error (other than "not found").  */
+        {
+          log_error (_("Error reading from keyring: %s\n"),
+                     gpg_strerror (err));
+          if (! rc)
+            rc = err;
         }
     }
 
