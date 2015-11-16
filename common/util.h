@@ -221,7 +221,7 @@ extern gpg_err_source_t default_errsource;
 
 /* Convenience function to return a gpg-error code for memory
    allocation failures.  This function makes sure that an error will
-   be returned even if accidently ERRNO is not set.  */
+   be returned even if accidentally ERRNO is not set.  */
 static inline gpg_error_t
 out_of_core (void)
 {

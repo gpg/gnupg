@@ -49,7 +49,7 @@
    The possible exit status codes:
 
    0	Success
-   1	Some error occured
+   1	Some error occurred
    2	No valid passphrase was provided
    3	The operation was canceled by the user
 

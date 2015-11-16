@@ -529,7 +529,7 @@ open_card (ctrl_t ctrl, const char *apptype)
 static const char hlp_serialno[] =
   "SERIALNO [<apptype>]\n"
   "\n"
-  "Return the serial number of the card using a status reponse.  This\n"
+  "Return the serial number of the card using a status response.  This\n"
   "function should be used to check for the presence of a card.\n"
   "\n"
   "If APPTYPE is given, an application of that type is selected and an\n"
@@ -1147,7 +1147,7 @@ static const char hlp_getattr[] =
   "returned through status message, see the LEARN command for details.\n"
   "\n"
   "However, the current implementation assumes that Name is not escaped;\n"
-  "this works as long as noone uses arbitrary escaping. \n"
+  "this works as long as no one uses arbitrary escaping. \n"
   "\n"
   "Note, that this function may even be used on a locked card.";
 static gpg_error_t
@@ -1185,7 +1185,7 @@ static const char hlp_setattr[] =
   "application.  NAME and VALUE must be percent and '+' escaped.\n"
   "\n"
   "However, the current implementation assumes that NAME is not\n"
-  "escaped; this works as long as noone uses arbitrary escaping.\n"
+  "escaped; this works as long as no one uses arbitrary escaping.\n"
   "\n"
   "A PIN will be requested for most NAMEs.  See the corresponding\n"
   "setattr function of the actually used application (app-*.c) for\n"
@@ -1487,7 +1487,7 @@ static const char hlp_passwd[] =
   "PASSWD [--reset] [--nullpin] <chvno>\n"
   "\n"
   "Change the PIN or, if --reset is given, reset the retry counter of\n"
-  "the card holder verfication vector CHVNO.  The option --nullpin is\n"
+  "the card holder verification vector CHVNO.  The option --nullpin is\n"
   "used for TCOS cards to set the initial PIN.  The format of CHVNO\n"
   "depends on the card application.";
 static gpg_error_t
@@ -1837,7 +1837,7 @@ static const char hlp_apdu[] =
   "  S CARD-ATR 3BFA1300FF813180450031C173C00100009000B1\n"
   "\n"
   "Using the option --more handles the card status word MORE_DATA\n"
-  "(61xx) and concatenates all reponses to one block.\n"
+  "(61xx) and concatenates all responses to one block.\n"
   "\n"
   "Using the option \"--exlen\" the returned APDU may use extended\n"
   "length up to N bytes.  If N is not given a default value is used\n"

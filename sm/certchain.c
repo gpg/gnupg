@@ -1784,7 +1784,7 @@ do_validate_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t checktime_arg,
           /* Note that it is possible for the last certificate in the
              chain (i.e. our target certificate) that it has not yet
              been stored in the keybox and thus the flag can't be set.
-             We ignore this error becuase it will later be stored
+             We ignore this error because it will later be stored
              anyway.  */
           err = keydb_set_cert_flags (ci->cert, 1, KEYBOX_FLAG_BLOB, 0,
                                       KEYBOX_FLAG_BLOB_EPHEMERAL, 0);
@@ -2079,7 +2079,7 @@ get_regtp_ca_info (ctrl_t ctrl, ksba_cert_t cert, int *chainlen)
      until we have found the root.  Because we are only interested in
      German Bundesnetzagentur (former RegTP) derived certificates 3
      levels are enough.  (The German signature law demands a 3 tier
-     hierachy; thus there is only one CA between the EE and the Root
+     hierarchy; thus there is only one CA between the EE and the Root
      CA.)  */
   memset (&array, 0, sizeof array);
 

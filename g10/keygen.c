@@ -1284,7 +1284,7 @@ do_create_from_keygrip (ctrl_t ctrl, int algo, const char *hexkeygrip,
 }
 
 
-/* Common code for the key generation fucntion gen_xxx.  */
+/* Common code for the key generation function gen_xxx.  */
 static int
 common_gen (const char *keyparms, int algo, const char *algoelem,
             kbnode_t pub_root, u32 timestamp, u32 expireval, int is_subkey,

@@ -3569,7 +3569,7 @@ ssh_request_process (ctrl_t ctrl, estream_t stream_sock)
  out:
 
   if (err && es_feof (stream_sock))
-    log_error ("error occured while processing request: %s\n",
+    log_error ("error occurred while processing request: %s\n",
 	       gpg_strerror (err));
 
   if (send_err)

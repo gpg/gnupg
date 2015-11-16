@@ -514,7 +514,7 @@ rfc822parse_finish (rfc822parse_t msg)
  * part.
  *
  * WHICH gives the mode:
- *  -1 := Take the last occurence
+ *  -1 := Take the last occurrence
  *   n := Take the n-th  one.
  *
  * Returns a newly allocated buffer or NULL on error.  errno is set in
@@ -954,7 +954,7 @@ parse_field (HDR_LINE hdr)
  * Find and parse a header field.
  * WHICH indicates what to do if there are multiple instance of the same
  * field (like "Received"); the following value are defined:
- *  -1 := Take the last occurence
+ *  -1 := Take the last occurrence
  *   0 := Reserved
  *   n := Take the n-th one.
  * Returns a handle for further operations on the parse context of the field

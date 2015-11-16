@@ -119,7 +119,7 @@ encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
 
 
 /* Write a new file under the name FILENAME with the keyblob and an
-   appropriate header.  This fucntion is called with a lock file in
+   appropriate header.  This function is called with a lock file in
    place and after checking that the filename does not exists.  */
 static gpg_error_t
 write_keyblob (const char *filename,

@@ -189,7 +189,7 @@ atfork_cb (void *opaque, int where)
 /* Fork off the SCdaemon if this has not already been done.  Lock the
    daemon and make sure that a proper context has been setup in CTRL.
    This function might also lock the daemon, which means that the
-   caller must call unlock_scd after this fucntion has returned
+   caller must call unlock_scd after this function has returned
    success and the actual Assuan transaction been done. */
 static int
 start_scd (ctrl_t ctrl)

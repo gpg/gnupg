@@ -98,7 +98,7 @@ register_secured_file (const char *fname)
   struct stat buf;
   struct secured_file_item *sf;
 
-  /* Note that we stop immediatley if something goes wrong here. */
+  /* Note that we stop immediately if something goes wrong here. */
   if (stat (fname, &buf))
     log_fatal (_("fstat of '%s' failed in %s: %s\n"), fname,
                "register_secured_file", strerror (errno));
@@ -498,7 +498,7 @@ openpgp_cipher_blocklen (cipher_algo_t algo)
 }
 
 /****************
- * Wrapper around the libgcrypt function with additonal checks on
+ * Wrapper around the libgcrypt function with additional checks on
  * the OpenPGP contraints for the algo ID.
  */
 int
@@ -862,7 +862,7 @@ pct_expando(const char *string,struct expando_args *args)
 
 	    case 'f': /* Fingerprint of key being signed */
 	    case 'p': /* Fingerprint of the primary key making the signature. */
-	    case 'g': /* Fingerprint of thge key making the signature.  */
+	    case 'g': /* Fingerprint of the key making the signature.  */
 	      {
 		byte array[MAX_FINGERPRINT_LEN];
 		size_t len;
@@ -1074,7 +1074,7 @@ string_to_digest_algo (const char *string)
 {
   int val;
 
-  /* FIXME: We should make use of our wrapper fucntion and not assume
+  /* FIXME: We should make use of our wrapper function and not assume
      that there is a 1 to 1 mapping between OpenPGP and Libgcrypt.  */
   val = gcry_md_map_name (string);
   if (!val && string && (string[0]=='H' || string[0]=='h'))

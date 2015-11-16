@@ -986,7 +986,7 @@ get_pubkey_byname (ctrl_t ctrl, GETKEY_CTX * retctx, PKT_public_key * pk,
 	      add_to_strlist (&namelist, fpr_string);
 	    }
 	  else if (!rc && !fpr && !did_key_byname)
-	    /* The acquisition method said no failure occured, but it
+	    /* The acquisition method said no failure occurred, but it
 	       didn't return a fingerprint.  That's a failure.  */
 	    {
 	      no_fingerprint = 1;
@@ -2297,7 +2297,7 @@ merge_selfsigs_subkey (KBNODE keyblock, KBNODE subnode)
 
       if (backsig)
 	{
-	  /* At ths point, backsig contains the most recent 0x19 sig.
+	  /* At this point, backsig contains the most recent 0x19 sig.
 	     Let's see if it is good. */
 
 	  /* 2==valid, 1==invalid, 0==didn't check */

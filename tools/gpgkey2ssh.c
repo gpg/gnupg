@@ -75,7 +75,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid, int *algorithm_id,
   id = 0;
 
   /* Loop over all records until we have found the subkey
-     corresponsing to the fingerprint. Inm general the first record
+     corresponding to the fingerprint. In general the first record
      should be the pub record, but we don't rely on that.  Given that
      we only need to look at one key, it is sufficient to compare the
      keyid so that we don't need to look at "fpr" records. */

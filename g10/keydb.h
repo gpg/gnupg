@@ -288,7 +288,7 @@ unsigned long keydb_get_skipped_counter (KEYDB_HANDLE hd);
    so that the next search starts at the beginning of the database
    (the start of the first resource).
 
-   Returns 0 on success and an error code if an error occured.
+   Returns 0 on success and an error code if an error occurred.
    (Currently, this function always returns 0 if HD is valid.)  */
 gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
 
@@ -305,7 +305,7 @@ gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
 
    If no key matches the search description, returns
    GPG_ERR_NOT_FOUND.  If there was a match, returns 0.  If an error
-   occured, returns an error code.
+   occurred, returns an error code.
 
    The returned key is considered to be selected and the raw data can,
    for instance, be returned by calling keydb_get_keyblock().  */
@@ -437,7 +437,7 @@ void getkey_disable_caches(void);
    occurs.
 
    If the data was not read from the cache, then the self-signed data
-   has definately been merged into the public key using
+   has definitely been merged into the public key using
    merge_selfsigs.  */
 int get_pubkey( PKT_public_key *pk, u32 *keyid );
 
@@ -751,7 +751,7 @@ KEYDB_HANDLE get_ctx_handle(GETKEY_CTX ctx);
      free_public_key (sk);
 
      if (gpg_err_code (err) != GPG_ERR_EOF)
-       ; // An error occured.
+       ; // An error occurred.
  */
 gpg_error_t enum_secret_keys (ctrl_t ctrl, void **context, PKT_public_key *pk);
 

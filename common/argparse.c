@@ -851,7 +851,7 @@ find_long_option( ARGPARSE_ARGS *arg,
     /* Would be better if we can do a binary search, but it is not
        possible to reorder our option table because we would mess
        up our help strings - What we can do is: Build a nice option
-       lookup table wehn this function is first invoked */
+       lookup table when this function is first invoked */
     if( !*keyword )
 	return -1;
     for(i=0; opts[i].short_opt; i++ )

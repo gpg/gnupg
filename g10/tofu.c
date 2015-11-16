@@ -573,7 +573,7 @@ initdb (sqlite3 *db, enum db_type type)
          latter binding, we warn the user about the conflict and ask
          for a policy decision about the new binding.  We also change
          the old binding's policy to ask if it was auto.  So that we
-         know why this occured, we also set conflict to 0xbaddecaf.
+         know why this occurred, we also set conflict to 0xbaddecaf.
   */
   if (type == DB_EMAIL || type == DB_COMBINED)
     rc = sqlite3_exec_printf

@@ -1987,7 +1987,7 @@ check_nonce (assuan_fd_t fd, assuan_sock_nonce_t *nonce)
 }
 
 
-/* Helper to call a connection's main fucntion. */
+/* Helper to call a connection's main function. */
 static void *
 start_connection_thread (void *arg)
 {

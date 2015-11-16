@@ -799,7 +799,7 @@ gnupg_release_process (pid_t pid)
 }
 
 
-/* Spawn a new process and immediatley detach from it.  The name of
+/* Spawn a new process and immediately detach from it.  The name of
    the program to exec is PGMNAME and its arguments are in ARGV (the
    programname is automatically passed as first argument).
    Environment strings in ENVP are set.  An error is returned if

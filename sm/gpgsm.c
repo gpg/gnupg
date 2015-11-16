@@ -214,7 +214,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_c (aExport, "export", N_("export certificates")),
 
   /* We use -raw and not -p1 for pkcs#1 secret key export so that it
-     won't accidently be used in case -p12 was intended.  */
+     won't accidentally be used in case -p12 was intended.  */
   ARGPARSE_c (aExportSecretKeyP12, "export-secret-key-p12", "@"),
   ARGPARSE_c (aExportSecretKeyP8,  "export-secret-key-p8", "@"),
   ARGPARSE_c (aExportSecretKeyRaw, "export-secret-key-raw", "@"),
@@ -1487,7 +1487,7 @@ main ( int argc, char **argv)
     log_info (_("WARNING: program may create a core file!\n"));
 
 /*   if (opt.qualsig_approval && !opt.quiet) */
-/*     log_info (_("This software has offically been approved to " */
+/*     log_info (_("This software has officially been approved to " */
 /*                 "create and verify\n" */
 /*                 "qualified signatures according to German law.\n")); */
 
@@ -1524,7 +1524,7 @@ main ( int argc, char **argv)
 
   set_debug ();
 
-  /* Although we alwasy use gpgsm_exit, we better install a regualr
+  /* Although we always use gpgsm_exit, we better install a regualr
      exit handler so that at least the secure memory gets wiped
      out. */
   if (atexit (emergency_cleanup))

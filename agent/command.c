@@ -2585,7 +2585,7 @@ static const char hlp_putval[] =
   "\n"
   "KEY is an an arbitrary symbol with the same syntax rules as keys\n"
   "for shell environment variables.  PERCENT_ESCAPED_VALUE is the\n"
-  "corresponsing value; they should be similar to the values of\n"
+  "corresponding value; they should be similar to the values of\n"
   "envronment variables but gpg-agent does not enforce any\n"
   "restrictions.  If that value is not given any value under that KEY\n"
   "is removed from this special environment.";

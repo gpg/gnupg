@@ -165,7 +165,7 @@ struct my_opt_s
   unsigned int alarm_timeout; /* And for the alarm based timeout.  */
   int multi;
 
-  estream_t outstream;    /* Send output to thsi stream.  */
+  estream_t outstream;    /* Send output to this stream.  */
 
   /* Note that we can't use const for the strings because ldap_* are
      not defined that way.  */

@@ -785,7 +785,7 @@ format_hexfingerprint (const char *fingerprint, char *buffer, size_t buflen)
 
 /* Return the so called KEYGRIP which is the SHA-1 hash of the public
    key parameters expressed as an canoncial encoded S-Exp.  ARRAY must
-   be 20 bytes long.  Returns 0 on sucess or an error code.  */
+   be 20 bytes long.  Returns 0 on success or an error code.  */
 gpg_error_t
 keygrip_from_pk (PKT_public_key *pk, unsigned char *array)
 {

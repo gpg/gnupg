@@ -160,7 +160,7 @@ destroy_wrapper (struct wrapper_context_s *ctx)
 
 /* Print the content of LINE to thye log stream but make sure to only
    print complete lines.  Using NULL for LINE will flush any pending
-   output.  LINE may be modified by this fucntion. */
+   output.  LINE may be modified by this function. */
 static void
 print_log_line (struct wrapper_context_s *ctx, char *line)
 {

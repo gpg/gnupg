@@ -597,7 +597,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
           break;  /* Okay: a self-signed certicate is an end-point. */
         }
 
-      /* To avoid loops, we use an arbitary limit on the length of
+      /* To avoid loops, we use an arbitrary limit on the length of
          the chain. */
       depth++;
       if (depth > maxdepth)
@@ -757,7 +757,7 @@ validate_cert_chain (ctrl_t ctrl, ksba_cert_t cert, ksba_isotime_t r_exptime,
          here because this does not seem to make much sense.  This
          might become a recursive process and we should better cache
          our validity results to avoid double work.  Far worse a
-         catch-22 may happen for an improper setup hierachy and we
+         catch-22 may happen for an improper setup hierarchy and we
          need a way to break up such a deadlock. */
       err = check_revocations (ctrl, chain);
     }

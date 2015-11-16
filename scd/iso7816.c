@@ -291,7 +291,7 @@ iso7816_verify_kp (int slot, int chvno, pininfo_t *pininfo)
 }
 
 /* Perform a VERIFY command on SLOT using the card holder verification
-   vector CHVNO with a CHV of lenght CHVLEN.  Returns 0 on success. */
+   vector CHVNO with a CHV of length CHVLEN.  Returns 0 on success. */
 gpg_error_t
 iso7816_verify (int slot, int chvno, const char *chv, size_t chvlen)
 {

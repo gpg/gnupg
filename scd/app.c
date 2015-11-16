@@ -915,7 +915,7 @@ app_genkey (app_t app, ctrl_t ctrl, const char *keynostr, unsigned int flags,
 }
 
 
-/* Perform a GET CHALLENGE operation.  This fucntion is special as it
+/* Perform a GET CHALLENGE operation.  This function is special as it
    directly accesses the card without any application specific
    wrapper. */
 gpg_error_t

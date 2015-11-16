@@ -226,7 +226,7 @@ getinfo_pid_cb (void *opaque, const void *buffer, size_t length)
 }
 
 /* Fork off the pin entry if this has not already been done.  Note,
-   that this function must always be used to aquire the lock for the
+   that this function must always be used to acquire the lock for the
    pinentry - we will serialize _all_ pinentry calls.
  */
 static gpg_error_t

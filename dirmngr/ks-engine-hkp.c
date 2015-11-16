@@ -101,7 +101,7 @@ struct hostinfo_s
 static hostinfo_t *hosttable;
 static int hosttable_size;
 
-/* The number of host slots we initally allocate for HOSTTABLE.  */
+/* The number of host slots we initially allocate for HOSTTABLE.  */
 #define INITIAL_HOSTTABLE_SIZE 10
 
 

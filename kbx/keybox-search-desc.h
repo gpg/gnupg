@@ -70,7 +70,7 @@ struct keydb_search_desc
   union {
     const char *name;
     unsigned char fpr[24];
-    u32 kid[2]; /* Note that this is in native endianess.  */
+    u32 kid[2]; /* Note that this is in native endianness.  */
     unsigned char grip[20];
   } u;
   int exact;    /* Use exactly this key ('!' suffix in gpg).  */

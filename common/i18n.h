@@ -53,7 +53,7 @@ const char *i18n_utf8 (const char *string);
 const char *i18n_localegettext (const char *lc_messages, const char *string)
                                 GNUPG_GCC_ATTR_FORMAT_ARG(2);
 
-/* If a module wants a local L_() fucntion we define it here.  */
+/* If a module wants a local L_() function we define it here.  */
 #ifdef LunderscoreIMPL
 LunderscorePROTO
 LunderscoreIMPL

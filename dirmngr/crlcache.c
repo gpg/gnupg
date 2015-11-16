@@ -859,7 +859,7 @@ update_dir (crl_cache_t cache)
                  field, thus we can compare it pretty easily. */
               *endp = 0;
               e = find_entry ( cache->entries, fieldp);
-              *endp = ':'; /* Restore orginal line. */
+              *endp = ':'; /* Restore original line. */
               if (e && e->deleted)
                 {
                   /* Marked for deletion, so don't write it. */
@@ -1212,7 +1212,7 @@ find_entry (crl_cache_entry_t first, const char *issuer_hash)
 }
 
 
-/* Create a new CRL cache. This fucntion is usually called only once.
+/* Create a new CRL cache. This function is usually called only once.
    never fail. */
 void
 crl_cache_init(void)

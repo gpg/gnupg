@@ -1219,7 +1219,7 @@ agent_key_info_from_file (ctrl_t ctrl, const unsigned char *grip,
 
 
 /* Delete the key with GRIP from the disk after having asked for
-   confirmation using DESC_TEXT.  If FORCE is set the fucntion won't
+   confirmation using DESC_TEXT.  If FORCE is set the function won't
    require a confirmation via Pinentry or warns if the key is also
    used by ssh.
 

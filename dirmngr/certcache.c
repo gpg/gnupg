@@ -331,7 +331,7 @@ put_cert (ksba_cert_t cert, int is_loaded, int is_trusted, void *fpr_buffer)
 /* Load certificates from the directory DIRNAME.  All certificates
    matching the pattern "*.crt" or "*.der"  are loaded.  We assume that
    certificates are DER encoded and not PEM encapsulated. The cache
-   should be in a locked state when calling this fucntion.  */
+   should be in a locked state when calling this function.  */
 static gpg_error_t
 load_certs_from_dir (const char *dirname, int are_trusted)
 {
@@ -687,7 +687,7 @@ get_cert_bysubject (const char *subject_dn, unsigned int seq)
 
 
 
-/* Return a value decribing the the class of PATTERN.  The offset of
+/* Return a value describing the the class of PATTERN.  The offset of
    the actual string to be used for the comparison is stored at
    R_OFFSET.  The offset of the serialnumer is stored at R_SN_OFFSET. */
 static enum pattern_class

@@ -1485,7 +1485,7 @@ agent_deinit_default_ctrl (ctrl_t ctrl)
 
 /* Because the ssh protocol does not send us information about the
    current TTY setting, we use this function to use those from startup
-   or those explictly set.  This is also used for the restricted mode
+   or those explicitly set.  This is also used for the restricted mode
    where we ignore requests to change the environment.  */
 gpg_error_t
 agent_copy_startup_env (ctrl_t ctrl)

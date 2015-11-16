@@ -686,7 +686,7 @@ static int
 ct_get_status (int slot, unsigned int *status)
 {
   (void)slot;
-  /* The status we returned is wrong but we don't care becuase ctAPI
+  /* The status we returned is wrong but we don't care because ctAPI
      is not anymore required.  */
   *status = APDU_CARD_USABLE|APDU_CARD_PRESENT|APDU_CARD_ACTIVE;
   return 0;
@@ -2035,7 +2035,7 @@ open_pcsc_reader_wrapped (const char *portstr)
   int err;
   unsigned int dummy_status;
 
-  /* Note that we use the constant and not the fucntion because this
+  /* Note that we use the constant and not the function because this
      code won't be be used under Windows.  */
   const char *wrapperpgm = GNUPG_LIBEXECDIR "/gnupg-pcsc-wrapper";
 
@@ -3158,7 +3158,7 @@ apdu_open_reader (const char *portstr)
    with remote readers only.  Note that the supplied CLOSEFNC will
    only be called once and the slot will not be valid afther this.
 
-   If PORTSTR is NULL we default to the first availabe port.
+   If PORTSTR is NULL we default to the first available port.
 */
 int
 apdu_open_remote_reader (const char *portstr,
@@ -4052,7 +4052,7 @@ send_le (int slot, int class, int ins, int p0, int p1,
    The return value is the status word or -1 for an invalid SLOT or
    other non card related error.  If RETBUF is not NULL, it will
    receive an allocated buffer with the returned data.  The length of
-   that data will be put into *RETBUFLEN.  The caller is reponsible
+   that data will be put into *RETBUFLEN.  The caller is responsible
    for releasing the buffer even in case of errors.  */
 int
 apdu_send_le(int slot, int extended_mode,
@@ -4075,7 +4075,7 @@ apdu_send_le(int slot, int extended_mode,
    return value is the status word or -1 for an invalid SLOT or other
    non card related error.  If RETBUF is not NULL, it will receive an
    allocated buffer with the returned data.  The length of that data
-   will be put into *RETBUFLEN.  The caller is reponsible for
+   will be put into *RETBUFLEN.  The caller is responsible for
    releasing the buffer even in case of errors.  */
 int
 apdu_send (int slot, int extended_mode,

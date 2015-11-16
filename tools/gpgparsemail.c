@@ -624,7 +624,7 @@ parse_message (FILE *fp)
   if (!msg)
     die ("can't open parser: %s", strerror (errno));
 
-  /* Fixme: We should not use fgets becuase it can't cope with
+  /* Fixme: We should not use fgets because it can't cope with
      embedded nul characters. */
   while (fgets (line, sizeof (line), fp))
     {

@@ -55,7 +55,7 @@
 
 /* Use a dummy value for LC_MESSAGES in case it is not defined.  This
    works because we always test for HAVE_LC_MESSAGES and the core
-   fucntion takes the category as a string as well.  */
+   function takes the category as a string as well.  */
 #ifndef HAVE_LC_MESSAGES
 #define LC_MESSAGES 0
 #endif

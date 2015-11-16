@@ -273,7 +273,7 @@ parse_tag (unsigned char const **buffer, size_t *size, struct tag_info *ti)
                         -- two bytes in INPUT.
 
    Create a new buffer with the content of that octet string.  INPUT
-   is the orginal buffer with a length as stored at LENGTH.  Returns
+   is the original buffer with a length as stored at LENGTH.  Returns
    NULL on error or a new malloced buffer with the length of this new
    buffer stored at LENGTH and the number of bytes parsed from input
    are added to the value stored at INPUT_CONSUMED.  INPUT_CONSUMED is
@@ -679,7 +679,7 @@ parse_bag_encrypted_data (const unsigned char *buffer, size_t length,
   unsigned char *plain = NULL;
   int bad_pass = 0;
   unsigned char *cram_buffer = NULL;
-  size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
+  size_t consumed = 0; /* Number of bytes consumed from the original buffer. */
   int is_3des = 0;
   int is_pbes2 = 0;
   gcry_mpi_t *result = NULL;
@@ -1193,7 +1193,7 @@ parse_bag_data (const unsigned char *buffer, size_t length, int startoffset,
   gcry_mpi_t *result = NULL;
   int result_count, i;
   unsigned char *cram_buffer = NULL;
-  size_t consumed = 0; /* Number of bytes consumed from the orginal buffer. */
+  size_t consumed = 0; /* Number of bytes consumed from the original buffer. */
   int is_pbes2 = 0;
 
   where = "start";

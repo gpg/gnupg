@@ -903,7 +903,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
       size_t datalen;
       gpg_error_t err;
 
-      /* We do not have an export fucntion which allows to pass a
+      /* We do not have an export function which allows to pass a
          keyblock, thus we need to search the key again.  */
       err = export_pubkey_buffer (ctrl, hexfpr,
                                   EXPORT_DANE_FORMAT, NULL,

@@ -481,7 +481,7 @@ int search_packet( iobuf_t inp, PACKET *pkt, off_t *retpos, int with_uid );
    reached.
 
    Returns -1 when end of file is reached or an error code, if an
-   error occured.  (Note: this function never returns 0, because it
+   error occurred.  (Note: this function never returns 0, because it
    effectively keeps going until it gets an EOF.)  */
 int copy_all_packets( iobuf_t inp, iobuf_t out );
 
@@ -578,7 +578,7 @@ const byte *parse_sig_subpkt2 ( PKT_signature *sig,
    constraints.
 
    Returns 0 if the size is acceptable.  Returns -2 if the buffer is
-   definately too short.  To check for an error, check whether the
+   definitely too short.  To check for an error, check whether the
    return value is less than 0.  */
 int parse_one_sig_subpkt( const byte *buffer, size_t n, int type );
 

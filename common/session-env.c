@@ -97,7 +97,7 @@ static size_t lastallocatedarraysize;
 
 /* Return the names of standard environment variables one after the
    other.  The caller needs to set the value at the address of
-   ITERATOR initally to 0 and then call this function until it returns
+   ITERATOR initially to 0 and then call this function until it returns
    NULL.  */
 const char *
 session_env_list_stdenvnames (int *iterator, const char **r_assname)

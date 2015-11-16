@@ -390,7 +390,7 @@ curve_supported_p (const char *name)
 
 /* Enumerate available and supported OpenPGP curves.  The caller needs
    to set the integer variable at ITERP to zero and keep on calling
-   this fucntion until NULL is returned.  */
+   this function until NULL is returned.  */
 const char *
 openpgp_enum_curves (int *iterp)
 {

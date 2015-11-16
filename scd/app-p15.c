@@ -276,7 +276,7 @@ typedef struct aodf_object_s *aodf_object_t;
 struct app_local_s
 {
   /* The home DF. Note, that we don't yet support a multilevel
-     hierachy.  Thus we assume this is directly below the MF.  */
+     hierarchy.  Thus we assume this is directly below the MF.  */
   unsigned short home_df;
 
   /* The type of the card. */

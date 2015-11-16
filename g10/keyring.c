@@ -1215,7 +1215,7 @@ create_tmp_file (const char *template,
 
 # ifdef USE_ONLY_8DOT3
   /* Here is another Windoze bug?:
-   * you cant rename("pubring.gpg.tmp", "pubring.gpg");
+   * you can't rename("pubring.gpg.tmp", "pubring.gpg");
    * but	rename("pubring.gpg.tmp", "pubring.aaa");
    * works.  So we replace .gpg by .bak or .tmp
    */

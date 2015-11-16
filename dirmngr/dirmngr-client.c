@@ -185,7 +185,7 @@ main (int argc, char **argv )
   log_set_prefix ("dirmngr-client",
                   GPGRT_LOG_WITH_PREFIX);
 
-  /* For W32 we need to initialize the socket subsystem.  Becuase we
+  /* For W32 we need to initialize the socket subsystem.  Because we
      don't use Pth we need to do this explicit. */
 #ifdef HAVE_W32_SYSTEM
  {

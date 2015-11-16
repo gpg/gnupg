@@ -502,7 +502,7 @@ do_get( const char *prompt, int hidden )
     do {
 #ifdef HAVE_W32CE_SYSTEM
       /* Using getchar is not a correct solution but for now it
-         doesn't matter becuase we have no real console at all.  We
+         doesn't matter because we have no real console at all.  We
          should rework this as soon as we have switched this entire
          module to estream.  */
         c = getchar();

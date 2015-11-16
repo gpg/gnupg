@@ -184,7 +184,7 @@ gpgsm_is_in_qualified_list (ctrl_t ctrl, ksba_cert_t cert, char *country)
 
 /* We know that CERT is a qualified certificate.  Ask the user for
    consent to actually create a signature using this certificate.
-   Returns: 0 for yes, GPG_ERR_CANCEL for no or any otehr error
+   Returns: 0 for yes, GPG_ERR_CANCEL for no or any other error
    code. */
 gpg_error_t
 gpgsm_qualified_consent (ctrl_t ctrl, ksba_cert_t cert)

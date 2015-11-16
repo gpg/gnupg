@@ -258,7 +258,7 @@ handle_taskbar (void *ctx)
 
 /* This function initializes the Window system and sets up the taskbar
    icon.  We only have very limited GUI support just to give the
-   taskbar icon a little bit of life.  This fucntion is called once to
+   taskbar icon a little bit of life.  This function is called once to
    fire up the icon.  */
 int
 w32_setup_taskbar (void)

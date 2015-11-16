@@ -267,7 +267,7 @@ struct http_context_s
 };
 
 
-/* The global callback for the verification fucntion.  */
+/* The global callback for the verification function.  */
 static gpg_error_t (*tls_callback) (http_t, http_session_t, int);
 
 /* The list of files with trusted CA certificates.  */

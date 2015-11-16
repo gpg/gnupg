@@ -228,7 +228,7 @@ keybox_set_ephemeral (KEYBOX_HANDLE hd, int yes)
 
 
 /* Close the file of the resource identified by HD.  For consistent
-   results this fucntion closes the files of all handles pointing to
+   results this function closes the files of all handles pointing to
    the resource identified by HD.  */
 void
 _keybox_close_file (KEYBOX_HANDLE hd)

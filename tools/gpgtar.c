@@ -341,7 +341,7 @@ write_record (estream_t stream, const void *record)
 
 
 /* Return true if FP is an unarmored OpenPGP message.  Note that this
-   fucntion reads a few bytes from FP but pushes them back.  */
+   function reads a few bytes from FP but pushes them back.  */
 #if 0
 static int
 openpgp_message_p (estream_t fp)

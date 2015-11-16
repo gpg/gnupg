@@ -83,7 +83,7 @@ read_response (estream_t fp, unsigned char **r_buffer, size_t *r_buflen)
           return err;
         }
       if ( !(nread == bufsize-nbytes && !es_feof (fp)))
-        { /* Response succesfully received. */
+        { /* Response successfully received. */
           nbytes += nread;
           *r_buffer = buffer;
           *r_buflen = nbytes;
@@ -116,7 +116,7 @@ read_response (estream_t fp, unsigned char **r_buffer, size_t *r_buflen)
 
 /* Construct an OCSP request, send it to the configured OCSP responder
    and parse the response. On success the OCSP context may be used to
-   further process the reponse. */
+   further process the response. */
 static gpg_error_t
 do_ocsp_request (ctrl_t ctrl, ksba_ocsp_t ocsp, gcry_md_hd_t md,
                  const char *url, ksba_cert_t cert, ksba_cert_t issuer_cert)

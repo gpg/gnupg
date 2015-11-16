@@ -540,7 +540,7 @@ base64_finish_write (struct writer_cb_parm_s *parm)
 
 
 /* Create a reader for the given file descriptor.  Depending on the
-   control information an input decoding is automagically choosen.
+   control information an input decoding is automagically chosen.
    The function returns a Base64Context object which must be passed to
    the gpgme_destroy_reader function.  The created KsbaReader object
    is also returned, but the caller must not call the
@@ -621,7 +621,7 @@ gpgsm_destroy_reader (Base64Context ctx)
 
 /* Create a writer for the given STREAM.  Depending on
    the control information an output encoding is automagically
-   choosen.  The function returns a Base64Context object which must be
+   chosen.  The function returns a Base64Context object which must be
    passed to the gpgme_destroy_writer function.  The created
    KsbaWriter object is also returned, but the caller must not call
    the ksba_reader_release function on it. */

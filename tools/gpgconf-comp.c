@@ -1271,7 +1271,7 @@ gc_component_reload (int component)
 
 /* More or less Robust version of dgettext.  It has the side effect of
    switching the codeset to utf-8 because this is what we want to
-   output.  In theory it is posible to keep the orginal code set and
+   output.  In theory it is posible to keep the original code set and
    switch back for regular disgnostic output (redefine "_(" for that)
    but given the natur of this tool, being something invoked from
    other pograms, it does not make much sense.  */
@@ -3300,7 +3300,7 @@ gc_component_change_options (int component, estream_t in, estream_t out)
       int i;
       int saved_errno = errno;
 
-      /* An error occured or a dry-run is requested.  */
+      /* An error occurred or a dry-run is requested.  */
       for (i = 0; i < GC_BACKEND_NR; i++)
 	{
 	  if (src_filename[i])

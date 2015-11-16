@@ -164,7 +164,7 @@ audit_release (audit_ctx_t ctx)
 
 
 /* Set the type for the audit operation.  If CTX is NULL, this is a
-   dummy fucntion.  */
+   dummy function.  */
 void
 audit_set_type (audit_ctx_t ctx, audit_type_t type)
 {

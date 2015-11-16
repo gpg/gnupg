@@ -239,7 +239,7 @@ start_dirmngr (ctrl_t ctrl)
   dirmngr_ctx_locked = 1;
 
   err = start_dirmngr_ext (ctrl, &dirmngr_ctx);
-  /* We do not check ERR but the existance of a context because the
+  /* We do not check ERR but the existence of a context because the
      error might come from a failed command send to the dirmngr.
      Fixme: Why don't we close the drimngr context if we encountered
      an error in prepare_dirmngr?  */

@@ -36,7 +36,7 @@
    buffer will be returned.  The caller should provide RESULT of at
    least strlen(STRING)/2 bytes.  There is no error detection, the
    parsing stops at the first non hex character.  With RESULT given as
-   NULL, the fucntion does only return the size of the buffer which
+   NULL, the function does only return the size of the buffer which
    would be needed.  */
 size_t
 unhexify (unsigned char *result, const char *string)

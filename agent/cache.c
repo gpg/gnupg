@@ -167,7 +167,7 @@ new_data (const char *string, struct secret_data_s **r_data)
 
   /* We pad the data to 32 bytes so that it get more complicated
      finding something out by watching allocation patterns.  This is
-     usally not possible but we better assume nothing about our secure
+     usually not possible but we better assume nothing about our secure
      storage provider.  To support the AESWRAP mode we need to add 8
      extra bytes as well. */
   total = (length + 8) + 32 - ((length+8) % 32);

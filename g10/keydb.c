@@ -156,7 +156,7 @@ static int lock_all (KEYDB_HANDLE hd);
 static void unlock_all (KEYDB_HANDLE hd);
 
 
-/* Check whether the keyid KID is in key id is definately not in the
+/* Check whether the keyid KID is in key id is definitely not in the
    database.
 
    Returns:

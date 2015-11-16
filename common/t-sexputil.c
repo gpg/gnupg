@@ -79,7 +79,7 @@ test_make_canon_sexp_from_rsa_pk (void)
     size_t elen;
     unsigned char *result;
     size_t resultlen;
-    gpg_err_code_t reverr;  /* Expected error from the reverse fucntion.  */
+    gpg_err_code_t reverr;  /* Expected error from the reverse function.  */
   } tests[] = {
     {
       "\x82\xB4\x12\x48\x08\x48\xC0\x76\xAA\x8E\xF1\xF8\x7F\x5E\x9B\x89"

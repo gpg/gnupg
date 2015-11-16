@@ -48,7 +48,7 @@
 #endif
 
 #if !defined(HAVE_GETADDRINFO) && !defined(USE_ADNS)
-# error Either getaddrinfo or the ADNS libary is required.
+# error Either getaddrinfo or the ADNS library is required.
 #endif
 
 #ifdef WITHOUT_NPTH /* Give the Makefile a chance to build without Pth.  */
@@ -511,7 +511,7 @@ resolve_addr_standard (const struct sockaddr *addr, int addrlen,
 }
 
 
-/* This a wrapper around getaddrinfo with slighly different semantics.
+/* This a wrapper around getaddrinfo with slightly different semantics.
    NAME is the name to resolve.
    PORT is the requested port or 0.
    WANT_FAMILY is either 0 (AF_UNSPEC), AF_INET6, or AF_INET4.

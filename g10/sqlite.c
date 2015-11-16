@@ -179,7 +179,7 @@ sqlite3_stepx (sqlite3 *db,
       rc = sqlite3_step (stmt);
 
       if (rc != SQLITE_ROW)
-        /* No more data (SQLITE_DONE) or an error occured.  */
+        /* No more data (SQLITE_DONE) or an error occurred.  */
         break;
 
       if (! callback)

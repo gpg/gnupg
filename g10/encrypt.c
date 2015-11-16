@@ -85,7 +85,7 @@ encrypt_seskey (DEK *dek, DEK **seskey, byte *enckey)
   buf[0] = (*seskey)->algo;
   memcpy( buf + 1, (*seskey)->key, (*seskey)->keylen );
 
-  /* We only pass already checked values to the following fucntion,
+  /* We only pass already checked values to the following function,
      thus we consider any failure as fatal.  */
   if (openpgp_cipher_open (&hd, dek->algo, GCRY_CIPHER_MODE_CFB, 1))
     BUG ();

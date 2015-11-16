@@ -116,7 +116,7 @@ struct
   int skip_verify;
   int skip_hidden_recipients;
 
-  /* TM_CLASSIC must be zero to accomodate trustdbs generated before
+  /* TM_CLASSIC must be zero to accommodate trustdbs generated before
      we started storing the trust model inside the trustdb. */
   enum
     {

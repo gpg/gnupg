@@ -2321,7 +2321,7 @@ ccid_poll (ccid_driver_t handle)
     }
   else if (msg[0] == RDR_to_PC_HardwareError)
     {
-      DEBUGOUT ("hardware error occured\n");
+      DEBUGOUT ("hardware error occurred\n");
     }
   else
     {
@@ -3136,7 +3136,7 @@ ccid_transceive (ccid_driver_t handle,
             }
 
           if (!!(tpdu[1] & 0x40) != handle->t1_nr)
-            { /* Reponse does not match our sequence number. */
+            { /* Response does not match our sequence number. */
               msg = send_buffer;
               tpdu = msg + hdrlen;
               tpdu[0] = nad_byte;
@@ -3563,7 +3563,7 @@ ccid_transceive_secure (ccid_driver_t handle,
       handle->t1_ns ^= 1;
 
       if (!!(tpdu[1] & 0x40) != handle->t1_nr)
-        { /* Reponse does not match our sequence number. */
+        { /* Response does not match our sequence number. */
           DEBUGOUT ("I-block with wrong seqno received\n");
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
@@ -3603,7 +3603,7 @@ ccid_transceive_secure (ccid_driver_t handle,
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }
       else if (!!(tpdu[1] & 0x10) == handle->t1_ns)
-        { /* Reponse does not match our sequence number. */
+        { /* Response does not match our sequence number. */
           DEBUGOUT ("R-block with wrong seqno received on more bit\n");
           return CCID_DRIVER_ERR_CARD_IO_ERROR;
         }

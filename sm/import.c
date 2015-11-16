@@ -747,7 +747,7 @@ parse_p12 (ctrl_t ctrl, ksba_reader_t reader, struct stats_s *stats)
       goto leave;
     }
 
-  /* GnuPG 2.0.4 accidently created binary P12 files with the string
+  /* GnuPG 2.0.4 accidentally created binary P12 files with the string
      "The passphrase is %s encoded.\n\n" prepended to the ASN.1 data.
      We fix that here.  */
   if (p12buflen > 29 && !memcmp (p12buffer, "The passphrase is ", 18))

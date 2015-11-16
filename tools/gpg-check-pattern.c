@@ -319,7 +319,7 @@ get_regerror (int errcode, regex_t *compiled)
 
 /* Parse the pattern given in the memory aread DATA/DATALEN and return
    a new pattern array.  The end of the array is indicated by a NULL
-   entry.  On error an error message is printed and the fucntion
+   entry.  On error an error message is printed and the function
    returns NULL.  Note that the function modifies DATA and assumes
    that data is nul terminated (even if this is one byte past
    DATALEN).  */
@@ -446,7 +446,7 @@ match_p (const char *string, pattern_t *patarray)
 }
 
 
-/* Actual processing of the input.  This fucntion does not return an
+/* Actual processing of the input.  This function does not return an
    error code but exits as soon as a match has been found.  */
 static void
 process (FILE *fp, pattern_t *patarray)

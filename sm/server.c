@@ -425,7 +425,7 @@ static const char hlp_signer[] =
   "used, the signing will then not be done for this key.  If the policy\n"
   "is not to sign at all if not all signer keys are valid, the client\n"
   "has to take care of this.  All SIGNER commands are cumulative until\n"
-  "a RESET but they are *not* reset by an SIGN command becuase it can\n"
+  "a RESET but they are *not* reset by an SIGN command because it can\n"
   "be expected that set of signers are used for more than one sign\n"
   "operation.";
 static gpg_error_t

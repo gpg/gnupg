@@ -45,7 +45,7 @@ ftello (FILE *stream)
 
 
 
-/* Read a block at the current postion and return it in r_blob.
+/* Read a block at the current position and return it in r_blob.
    r_blob may be NULL to simply skip the current block.  */
 int
 _keybox_read_blob2 (KEYBOXBLOB *r_blob, FILE *fp, int *skipped_deleted)

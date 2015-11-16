@@ -335,7 +335,7 @@ hash_algo_from_sigval (const unsigned char *sigval)
   if (sskip (&s, &depth) || depth)
     return 0; /* Invalid S-expression.  */
   if (*s != '(')
-    return 0; /* No futher list.  */
+    return 0; /* No further list.  */
   /* Check whether this is (hash ALGO).  */
   s++;
   n = snext (&s);

@@ -31,7 +31,7 @@
 #include "main.h"
 #include "options.h"
 
-/* FIXME: Better chnage the fucntion name because mpi_ is used by
+/* FIXME: Better change the function name because mpi_ is used by
    gcrypt macros.  */
 gcry_mpi_t
 get_mpi_from_sexp (gcry_sexp_t sexp, const char *item, int mpifmt)

@@ -224,7 +224,7 @@ getpin_cb (void *opaque, const char *info, char *buf, size_t maxbuf)
     log_debug ("pin_cb called without proper PIN info hack\n");
 
   /* If BUF has been passed as NULL, we are in pinpad mode: The
-     callback opens the popup and immediatley returns. */
+     callback opens the popup and immediately returns. */
   if (!buf)
     {
       if (maxbuf == 0) /* Close the pinentry. */

@@ -1887,7 +1887,7 @@ validate_keys (int interactive)
   u32 start_time, next_expire;
 
   /* Make sure we have all sigs cached.  TODO: This is going to
-     require some architectual re-thinking, as it is agonizingly slow.
+     require some architectural re-thinking, as it is agonizingly slow.
      Perhaps combine this with reset_trust_records(), or only check
      the caches on keys that are actually involved in the web of
      trust. */

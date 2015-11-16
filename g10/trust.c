@@ -294,7 +294,7 @@ check_or_update_trustdb (void)
 
 /*
  * Return the validity information for PK.  If the namehash is not
- * NULL, the validity of the corresponsing user ID is returned,
+ * NULL, the validity of the corresponding user ID is returned,
  * otherwise, a reasonable value for the entire key is returned.
  */
 unsigned int
@@ -641,7 +641,7 @@ clean_sigs_from_uid (kbnode_t keyblock, kbnode_t uidnode,
    compacted.  To "compact" a user ID, we simply remove ALL signatures
    except the self-sig that caused the user ID to be remove-worthy.
    We don't actually remove the user ID packet itself since it might
-   be ressurected in a later merge.  Note that this function requires
+   be resurrected in a later merge.  Note that this function requires
    that the caller has already done a merge_keys_and_selfsig().
 
    TODO: change the import code to allow importing a uid with only a

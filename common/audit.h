@@ -174,7 +174,7 @@ typedef enum
 
     AUDIT_ROOT_TRUSTED,  /* cert, err */
     /* Tells whether the root certificate is trusted.  This event is
-       emmited durcing chain validation.  */
+       emitted during chain validation.  */
 
     AUDIT_CRL_CHECK, /* err */
     /* Tells the status of a CRL or OCSP check.  */

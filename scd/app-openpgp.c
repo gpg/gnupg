@@ -1223,7 +1223,7 @@ retrieve_key_material (FILE *fp, const char *hexkeyid,
 /* Get the public key for KEYNO and store it as an S-expresion with
    the APP handle.  On error that field gets cleared.  If we already
    know about the public key we will just return.  Note that this does
-   not mean a key is available; this is soley indicated by the
+   not mean a key is available; this is solely indicated by the
    presence of the app->app_local->pk[KEYNO].key field.
 
    Note that GnuPG 1.x does not need this and it would be too time
@@ -1548,7 +1548,7 @@ do_learn_status (app_t app, ctrl_t ctrl, unsigned int flags)
   send_keypair_info (app, ctrl, 2);
   send_keypair_info (app, ctrl, 3);
   /* Note: We do not send the Cardholder Certificate, because that is
-     relativly long and for OpenPGP applications not really needed.  */
+     relatively long and for OpenPGP applications not really needed.  */
   return 0;
 }
 
@@ -1675,7 +1675,7 @@ check_pinpad_request (app_t app, pininfo_t *pininfo, int admin_pin)
 }
 
 
-/* Verify a CHV either using using the pinentry or if possibile by
+/* Verify a CHV either using using the pinentry or if possible by
    using a pinpad.  PINCB and PINCB_ARG describe the usual callback
    for the pinentry.  CHVNO must be either 1 or 2. SIGCOUNT is only
    used with CHV1.  PINVALUE is the address of a pointer which will
@@ -4632,7 +4632,7 @@ app_select_openpgp (app_t app)
         }
       xfree (relptr);
 
-      /* Some of the first cards accidently don't set the
+      /* Some of the first cards accidentally don't set the
          CHANGE_FORCE_CHV bit but allow it anyway. */
       if (app->card_version <= 0x0100 && manufacturer == 1)
         app->app_local->extcap.change_force_chv = 1;

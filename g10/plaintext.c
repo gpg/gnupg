@@ -165,7 +165,7 @@ get_output_file (const byte *embedded_name, int embedded_namelen,
     ;
   else
     {
-      /* Note: riscos stuff is not expected to wrok anymore.  If we
+      /* Note: riscos stuff is not expected to work anymore.  If we
          want to port it again to riscos we should do most of the suff
          in estream.  FIXME: Consider to remove all riscos special
          cases.  */

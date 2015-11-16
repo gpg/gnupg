@@ -204,7 +204,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
      avoids the ugly mix of fd and estream code.  */
 
   /* Note that we always try to reconnect to the socket but print
-     error messages only the first time an error occured.  If
+     error messages only the first time an error occurred.  If
      RUNNING_DETACHED is set we don't fall back to stderr and even do
      not print any error messages.  This is needed because detached
      processes often close stderr and by writing to file descriptor 2

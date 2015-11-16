@@ -70,7 +70,7 @@ hex2bin (const char *string, void *buffer, size_t length)
 /* Convert STRING consisting of hex characters into its binary representation
    and store that at BUFFER.  BUFFER needs to be of LENGTH bytes.  The
    function check that the STRING will convert exactly to LENGTH
-   bytes. Colons inbetween the hex digits are allowed, if one colon
+   bytes. Colons between the hex digits are allowed, if one colon
    has been given a colon is expected very 2 characters. The string
    is delimited by either end of string or a white space character.
    The function returns -1 on error or the length of the parsed
@@ -180,7 +180,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
    Nul byte at the end is used to make sure tha the result can always
    be used as a C-string.
 
-   BUFSIZE is the availabe length of BUFFER; if the converted result
+   BUFSIZE is the available length of BUFFER; if the converted result
    plus a possible required extra Nul character does not fit into this
    buffer, the function returns NULL and won't change the existing
    content of BUFFER.  In-place conversion is possible as long as
@@ -190,7 +190,7 @@ bin2hexcolon (const void *buffer, size_t length, char *stringbuf)
    does not store anything.  This may be used to find the end of
    HEXSTRING.
 
-   On sucess the function returns a pointer to the next character
+   On success the function returns a pointer to the next character
    after HEXSTRING (which is either end-of-string or a the next white
    space).  If BUFLEN is not NULL the number of valid vytes in BUFFER
    is stored there (an extra Nul byte is not counted); this will even

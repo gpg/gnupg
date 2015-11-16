@@ -216,7 +216,7 @@ findkey_locale (const char *key, const char *locname,
      /usr/share/gnupg/help.txt
 
    Here LL denotes the two digit language code of the current locale.
-   If ONLY_CURRENT_LOCALE is set, the fucntion won;t fallback to the
+   If ONLY_CURRENT_LOCALE is set, the function won't fallback to the
    english valiant ("help.txt") unless that locale has been requested.
 
    The help file needs to be encoded in UTF-8, lines with a '#' in the

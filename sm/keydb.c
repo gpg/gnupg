@@ -478,7 +478,7 @@ keydb_get_resource_name (KEYDB_HANDLE hd)
   return s? s: "";
 }
 
-/* Switch the handle into ephemeral mode and return the orginal value. */
+/* Switch the handle into ephemeral mode and return the original value. */
 int
 keydb_set_ephemeral (KEYDB_HANDLE hd, int yes)
 {

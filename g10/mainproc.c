@@ -387,7 +387,7 @@ proc_pubkey_enc (ctrl_t ctrl, CTX c, PACKET *pkt)
          to the Libgcrypt defined one.  This is due a chicken-egg
          problem: We need to have code in Libgcrypt for a new
          algorithm so to implement a proposed new algorithm before the
-         IANA will finally assign an OpenPGP indentifier.  */
+         IANA will finally assign an OpenPGP identifier.  */
       snprintf (buf, sizeof buf, "%08lX%08lX %d 0",
 		(ulong)enc->keyid[0], (ulong)enc->keyid[1], enc->pubkey_algo);
       write_status_text (STATUS_ENC_TO, buf);
@@ -1091,7 +1091,7 @@ list_node (CTX c, kbnode_t node)
     {
 
       log_debug ("FIXME: No way to print secret key packets here\n");
-      /* fixme: We may use a fucntion to turn a secret key packet into
+      /* fixme: We may use a function to turn a secret key packet into
          a public key one and use that here.  */
     }
   else if (node->pkt->pkttype == PKT_SIGNATURE)
@@ -1442,7 +1442,7 @@ do_proc_packets (ctrl_t ctrl, CTX c, iobuf_t a)
        * I used it.  Adding the MDC check here is a hack.
        * The right solution is to initiate another context for encrypted
        * packet and not to reuse the current one ...  It works right
-       * when there is a compression packet inbetween which adds just
+       * when there is a compression packet between which adds just
        * an extra layer.
        * Hmmm: Rewrite this whole module here??
        */

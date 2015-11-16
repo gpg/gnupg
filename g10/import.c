@@ -1638,7 +1638,7 @@ sec_to_pub_keyblock (kbnode_t sec_keyblock)
 /****************
  * Ditto for secret keys.  Handling is simpler than for public keys.
  * We allow secret key importing only when allow is true, this is so
- * that a secret key can not be imported accidently and thereby tampering
+ * that a secret key can not be imported accidentally and thereby tampering
  * with the trust calculation.
  */
 static int

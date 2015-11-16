@@ -1293,7 +1293,7 @@ dotlock_remove_lockfiles (void)
   dotlock_t h, h2;
 
   /* First set the lockfiles list to NULL so that for example
-     dotlock_release is ware that this fucntion is currently
+     dotlock_release is aware that this function is currently
      running.  */
   LOCK_all_lockfiles ();
   h = all_lockfiles;

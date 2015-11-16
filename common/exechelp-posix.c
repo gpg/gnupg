@@ -171,7 +171,7 @@ close_all_fds (int first, int *except)
 /* Returns an array with all currently open file descriptors.  The end
    of the array is marked by -1.  The caller needs to release this
    array using the *standard free* and not with xfree.  This allow the
-   use of this fucntion right at startup even before libgcrypt has
+   use of this function right at startup even before libgcrypt has
    been initialized.  Returns NULL on error and sets ERRNO
    accordingly.  */
 int *

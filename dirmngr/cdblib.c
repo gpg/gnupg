@@ -696,7 +696,7 @@ make_find (struct cdb_make *cdbmp,
 {
   struct cdb_rl *rl = cdbmp->cdb_rec[hval&255];
   int r, i;
-  int seeked = 0;
+  int sought = 0;
   while(rl) {
     for(i = rl->cnt - 1; i >= 0; --i) { /* search backward */
       if (rl->rec[i].hval != hval)
@@ -711,7 +711,7 @@ make_find (struct cdb_make *cdbmp,
           return -1;
         cdbmp->cdb_bpos = cdbmp->cdb_buf;
       }
-      seeked = 1;
+      sought = 1;
       r = match(cdbmp->cdb_fd, rl->rec[i].rpos, key, klen);
       if (!r)
 	continue;
@@ -725,7 +725,7 @@ make_find (struct cdb_make *cdbmp,
     }
     rl = rl->next;
   }
-  if (seeked && lseek(cdbmp->cdb_fd, cdbmp->cdb_dpos, SEEK_SET) < 0)
+  if (sought && lseek(cdbmp->cdb_fd, cdbmp->cdb_dpos, SEEK_SET) < 0)
     return -1;
   return 0;
 }

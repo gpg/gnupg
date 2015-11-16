@@ -433,10 +433,10 @@ keyspec_to_ldap_filter (const char *keyspec, char **filter, int only_exact)
 
    If this function successfully interrogated the server, it returns
    0.  If there was an LDAP error, it returns the LDAP error code.  If
-   an error occured, *basednp, etc., are undefined (and don't need to
+   an error occurred, *basednp, etc., are undefined (and don't need to
    be freed.)
 
-   If no LDAP error occured, you still need to check that *basednp is
+   If no LDAP error occurred, you still need to check that *basednp is
    valid.  If it is NULL, then the server does not appear to be an
    OpenPGP Keyserver.  In this case, you also do not need to xfree
    *pgpkeyattrp.  */
@@ -1616,7 +1616,7 @@ extract_attributes (LDAPMod ***modlist, char *line)
 
   fields = strsplit (line, ':', '\0', &field_count);
   if (field_count == 1)
-    /* We only have a single field.  There is definately nothing to
+    /* We only have a single field.  There is definitely nothing to
        do.  */
     goto out;
 

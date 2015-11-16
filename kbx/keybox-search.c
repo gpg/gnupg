@@ -431,7 +431,7 @@ blob_cmp_mail (KEYBOXBLOB blob, const char *name, size_t namelen, int substr,
   if (namelen < 1)
     return 0;
 
-  /* Note that for X.509 we start at index 1 becuase index 0 is used
+  /* Note that for X.509 we start at index 1 because index 0 is used
      for the issuer name.  */
   for (idx=!!x509 ;idx < nuids; idx++)
     {

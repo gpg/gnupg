@@ -426,7 +426,7 @@ int iobuf_push_filter2 (iobuf_t a,
    IOBUF_DEBUG_MODE is not 0.  */
 int iobuf_print_chain (iobuf_t a);
 
-/* Indicate that some error occured on the specified filter.  */
+/* Indicate that some error occurred on the specified filter.  */
 #define iobuf_set_error(a)    do { (a)->error = 1; } while(0)
 
 /* Return any pending error on filter A.  */
@@ -458,7 +458,7 @@ off_t iobuf_tell (iobuf_t a);
      That is, data is appended to the buffer and the seek does not
      cause the size of the buffer to grow.
 
-   If no error occured, then any limit previous set by
+   If no error occurred, then any limit previous set by
    iobuf_set_limit() is cleared.  Further, any error on the filter
    (the file filter or the temp filter) is cleared.
 
@@ -555,8 +555,8 @@ size_t iobuf_temp_to_buffer (iobuf_t a, byte * buffer, size_t buflen);
 /* Copies the data from the input iobuf SOURCE to the output iobuf
    DEST until either an error is encountered or EOF is reached.
    Returns the number of bytes successfully written.  If an error
-   occured, then any buffered bytes are not returned to SOURCE and are
-   effectively lost.  To check if an error occured, use
+   occurred, then any buffered bytes are not returned to SOURCE and are
+   effectively lost.  To check if an error occurred, use
    iobuf_error.  */
 size_t iobuf_copy (iobuf_t dest, iobuf_t source);
 

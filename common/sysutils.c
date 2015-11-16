@@ -267,7 +267,7 @@ check_permissions(const char *path,int extension,int checkonly)
 #endif
 
 
-/* Wrapper around the usual sleep fucntion.  This one won't wake up
+/* Wrapper around the usual sleep function.  This one won't wake up
    before the sleep time has really elapsed.  When build with Pth it
    merely calls pth_sleep and thus suspends only the current
    thread. */
@@ -446,7 +446,7 @@ gnupg_tmpfile (void)
    some folks close them before an exec and the next file we open will
    get one of them assigned and thus any output (i.e. diagnostics) end
    up in that file (e.g. the trustdb).  Not actually a gpg problem as
-   this will hapen with almost all utilities when called in a wrong
+   this will happen with almost all utilities when called in a wrong
    way.  However we try to minimize the damage here and raise
    awareness of the problem.
 

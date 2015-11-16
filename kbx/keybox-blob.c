@@ -54,7 +54,7 @@
 
 ** The OpenPGP and X.509 blobs
 
-   The OpenPGP and X.509 blobs are very similiar, things which are
+   The OpenPGP and X.509 blobs are very similar, things which are
    X.509 specific are noted like [X.509: xxx]
 
    - u32  Length of this blob (including these 4 bytes)

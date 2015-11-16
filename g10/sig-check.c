@@ -176,7 +176,7 @@ check_signature2 (PKT_signature *sig, gcry_md_hd_t digest, u32 *r_expiredate,
 	 * like this feature here.
          *
          * Note that before 2.0.10, we used RIPE-MD160 for the hash
-         * and accidently didn't include the timestamp and algorithm
+         * and accidentally didn't include the timestamp and algorithm
          * information in the hash.  Given that this feature is not
          * commonly used and that a replay attacks detection should
          * not solely be based on this feature (because it does not

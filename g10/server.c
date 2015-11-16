@@ -257,7 +257,7 @@ cmd_recipient (assuan_context_t ctx, char *line)
    then not be done for this key.  If the policy is not to sign at all
    if not all signer keys are valid, the client has to take care of
    this.  All SIGNER commands are cumulative until a RESET but they
-   are *not* reset by an SIGN command becuase it can be expected that
+   are *not* reset by an SIGN command because it can be expected that
    set of signers are used for more than one sign operation.
 
    Note that this command returns an INV_RECP status which is a bit

@@ -113,7 +113,7 @@ do_show_revocation_reason( PKT_signature *sig )
 void
 show_revocation_reason( PKT_public_key *pk, int mode )
 {
-    /* Hmmm, this is not so easy becuase we have to duplicate the code
+    /* Hmmm, this is not so easy because we have to duplicate the code
      * used in the trustbd to calculate the keyflags.  We need to find
      * a clean way to check revocation certificates on keys and
      * signatures.  And there should be no duplicate code.  Because we
@@ -1076,7 +1076,7 @@ build_pk_list (ctrl_t ctrl,
             }
 
           /* Do group expand here too.  The trick here is to continue
-             the loop if any expansion occured.  The code above will
+             the loop if any expansion occurred.  The code above will
              then list all expanded keys. */
           if (expand_id(answer,&backlog,0))
             continue;

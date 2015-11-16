@@ -2008,7 +2008,7 @@ parse_tofu_db_format (const char *db_format)
     }
 }
 
-/* This fucntion called to initialized a new control object.  It is
+/* This function called to initialized a new control object.  It is
    assumed that this object has been zeroed out before calling this
    function. */
 static void
@@ -3579,7 +3579,7 @@ main (int argc, char **argv)
     /* Do these after the switch(), so they can override settings. */
     if(PGP6)
       {
-        /* That does not anymore work becuase we have no more support
+        /* That does not anymore work because we have no more support
            for v3 signatures.  */
 	opt.disable_mdc=1;
 	opt.escape_from=1;

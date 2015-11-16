@@ -578,7 +578,7 @@ store_serialno (const char *line)
 }
 
 
-/* Callback for the gpgsm_agent_serialno fucntion.  */
+/* Callback for the gpgsm_agent_serialno function.  */
 static gpg_error_t
 scd_serialno_status_cb (void *opaque, const char *line)
 {
@@ -630,7 +630,7 @@ gpgsm_agent_scd_serialno (ctrl_t ctrl, char **r_serialno)
 
 
 
-/* Callback for the gpgsm_agent_serialno fucntion.  */
+/* Callback for the gpgsm_agent_serialno function.  */
 static gpg_error_t
 scd_keypairinfo_status_cb (void *opaque, const char *line)
 {

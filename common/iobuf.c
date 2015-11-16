@@ -1141,7 +1141,7 @@ iobuf_close (iobuf_t a)
 					 a->chain, NULL, &dummy_len)))
 	log_error ("IOBUFCTRL_FREE failed on close: %s\n", gpg_strerror (rc));
       if (! rc && rc2)
-	/* Whoops!  An error occured.  Save it in RC if we haven't
+	/* Whoops!  An error occurred.  Save it in RC if we haven't
 	   already recorded an error.  */
 	rc = rc2;
 

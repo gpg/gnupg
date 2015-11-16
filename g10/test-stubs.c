@@ -54,7 +54,7 @@ g10_exit( int rc )
 
 
 /* Stub:
- * We have to override the trustcheck from pkclist.c becuase
+ * We have to override the trustcheck from pkclist.c because
  * this utility assumes that all keys in the keyring are trustworthy
  */
 int

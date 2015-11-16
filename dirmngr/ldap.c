@@ -382,7 +382,7 @@ parse_one_pattern (const char *pattern)
   return result;
 }
 
-/* Take the string STRING and escape it accoring to the URL rules.
+/* Take the string STRING and escape it according to the URL rules.
    Retun a newly allocated string. */
 static char *
 escape4url (const char *string)
@@ -512,7 +512,7 @@ start_default_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
 }
 
 
-/* Prepare an LDAP query to return certificates maching PATTERNS using
+/* Prepare an LDAP query to return certificates matching PATTERNS using
    the SERVER.  This function returns an error code or 0 and a CONTEXT
    on success. */
 gpg_error_t

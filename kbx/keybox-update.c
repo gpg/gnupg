@@ -80,7 +80,7 @@ create_tmp_file (const char *template,
 
 # ifdef USE_ONLY_8DOT3
   /* Here is another Windoze bug?:
-   * you cant rename("pubring.kbx.tmp", "pubring.kbx");
+   * you can't rename("pubring.kbx.tmp", "pubring.kbx");
    * but	rename("pubring.kbx.tmp", "pubring.aaa");
    * works.  So we replace ".kbx" by ".kb_" or ".k__".  Note that we
    * can't use ".bak" and ".tmp", because these suffixes are used by

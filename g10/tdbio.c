@@ -87,7 +87,7 @@ static int cache_entries;
 static int cache_is_dirty;
 
 
-/* An object to pass infomation to cmp_krec_fpr. */
+/* An object to pass information to cmp_krec_fpr. */
 struct cmp_krec_fpr_struct
 {
   int pubkey_algo;
@@ -95,7 +95,7 @@ struct cmp_krec_fpr_struct
   int fprlen;
 };
 
-/* An object used to pass infomation to cmp_[s]dir. */
+/* An object used to pass information to cmp_[s]dir. */
 struct cmp_xdir_struct
 {
   int pubkey_algo;
@@ -446,7 +446,7 @@ tdbio_sync()
 /*
  * Simple transactions system:
  * Everything between begin_transaction and end/cancel_transaction
- * is not immediatly written but at the time of end_transaction.
+ * is not immediately written but at the time of end_transaction.
  *
  * NOTE: The transaction code is disabled in the 1.2 branch, as it is
  * not yet used.
