@@ -378,7 +378,11 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                 }
               else
                 {
-                  tmpidx = find_hostinfo (tmphost);
+                  if (!is_pool && is_ip_address (name))
+                    /* Update the original entry.  */
+                    tmpidx = idx;
+                  else
+                    tmpidx = find_hostinfo (tmphost);
                   log_info ("resolve_dns_addr for '%s': '%s'%s\n",
                             name, tmphost,
                             tmpidx == -1? "" : " [already known]");
