@@ -1362,7 +1362,7 @@ get_public_key (app_t app, int keyno)
   xfree (buffer);
   xfree (mbuf);
   xfree (ebuf);
-  return 0;
+  return err;
 }
 #endif /* GNUPG_MAJOR_VERSION > 1 */
 
