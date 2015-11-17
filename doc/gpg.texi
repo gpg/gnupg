@@ -613,7 +613,7 @@ line.
 
   @item key @code{n}
   @opindex keyedit:key
-  Toggle selection of subkey with index @code{n}.
+  Toggle selection of subkey with index @code{n} or key ID @code{n}.
   Use @code{*} to select all and @code{0} to deselect all.
 
   @item sign

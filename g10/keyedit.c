@@ -77,7 +77,7 @@ static int menu_set_keyserver_url (const char *url, KBNODE pub_keyblock);
 static int menu_set_notation (const char *string, KBNODE pub_keyblock);
 static int menu_select_uid (KBNODE keyblock, int idx);
 static int menu_select_uid_namehash (KBNODE keyblock, const char *namehash);
-static int menu_select_key (KBNODE keyblock, int idx);
+static int menu_select_key (KBNODE keyblock, int idx, char *p);
 static int count_uids (KBNODE keyblock);
 static int count_uids_with_flag (KBNODE keyblock, unsigned flag);
 static int count_keys_with_flag (KBNODE keyblock, unsigned flag);
@@ -1719,7 +1719,7 @@ keyedit_menu (ctrl_t ctrl, const char *username, strlist_t locusr,
 	    if (*arg_string == '*'
 		&& (!arg_string[1] || spacep (arg_string + 1)))
 	      arg_number = -1;	/* Select all. */
-	    if (menu_select_key (keyblock, arg_number))
+	    if (menu_select_key (keyblock, arg_number, p))
 	      redisplay = 1;
 	  }
 	  break;
@@ -4888,10 +4888,67 @@ menu_select_uid_namehash (KBNODE keyblock, const char *namehash)
  * Returns: True if the selection changed.
  */
 static int
-menu_select_key (KBNODE keyblock, int idx)
+menu_select_key (KBNODE keyblock, int idx, char *p)
 {
   KBNODE node;
-  int i;
+  int i, j;
+  int is_hex_digits = strlen (p) >= 8;
+
+  if (is_hex_digits)
+    {
+      for (i = 0, j = 0; p[i]; i ++)
+        if (('0' <= p[i] && p[i] <= '9')
+            || ('A' <= p[i] && p[i] <= 'F')
+            || ('a' <= p[i] && p[i] <= 'f'))
+          {
+            p[j] = toupper (p[i]);
+            j ++;
+          }
+        else if (p[i] == ' ')
+          /* Skip spaces.  */
+          {
+          }
+        else
+          {
+            is_hex_digits = 0;
+            break;
+          }
+      if (is_hex_digits)
+        /* In case we skipped some spaces, add a new NUL terminator.  */
+        {
+          p[j] = 0;
+          /* If we skipped some spaces, make sure that we still have
+             at least 8 characters.  */
+          is_hex_digits = strlen (p) >= 8;
+        }
+    }
+
+  if (is_hex_digits)
+    {
+      int found_one = 0;
+      for (node = keyblock; node; node = node->next)
+	if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
+	    || node->pkt->pkttype == PKT_SECRET_SUBKEY)
+          {
+            char fp[2*MAX_FINGERPRINT_LEN + 1];
+            hexfingerprint (node->pkt->pkt.public_key, fp, sizeof (fp));
+            if (strcmp (&fp[strlen (fp) - strlen (p)], p) == 0)
+              {
+		if ((node->flag & NODFLG_SELKEY))
+		  node->flag &= ~NODFLG_SELKEY;
+		else
+		  node->flag |= NODFLG_SELKEY;
+
+                found_one = 1;
+              }
+          }
+
+      if (found_one)
+        return 1;
+
+      tty_printf (_("No subkey with keyid %s\n"), p);
+      return 0;
+    }
 
   if (idx == -1)		/* Select all.  */
     {
