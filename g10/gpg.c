@@ -2209,7 +2209,7 @@ check_user_ids (strlist_t *sp,
             log_info (_("(check argument of option '%s')\n"), option);
 
           if (! rc)
-            rc = GPG_ERR_CONFLICT;
+            rc = GPG_ERR_AMBIGUOUS_NAME;
 
           err = keydb_get_keyblock (hd, &kb);
           if (err)
