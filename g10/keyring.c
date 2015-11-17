@@ -1202,6 +1202,9 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
       free_packet (&pkt);
       continue;
     found:
+      if (rc)
+        goto real_found;
+
       if (DBG_LOOKUP)
         log_debug ("%s: packet starting at offset %zx matched descriptor %zd\n",
                    __func__, offset, n);
