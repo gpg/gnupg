@@ -274,6 +274,53 @@ v3_keyid (gcry_mpi_t a, u32 *ki)
 }
 
 
+const char *
+format_keyid (u32 *keyid, int format, char *buffer, int len)
+{
+  char tmp[KEYID_STR_SIZE];
+  if (! buffer)
+    buffer = tmp;
+
+  if (format == KF_DEFAULT)
+    format = opt.keyid_format;
+  if (format == KF_DEFAULT)
+    format = KF_0xLONG;
+
+  switch (format)
+    {
+    case KF_SHORT:
+      snprintf (buffer, len, "%08lX", (ulong)keyid[1]);
+      break;
+
+    case KF_LONG:
+      if (keyid[0])
+	snprintf (buffer, len, "%08lX%08lX",
+                  (ulong)keyid[0], (ulong)keyid[1]);
+      else
+	snprintf (buffer, len, "%08lX", (ulong)keyid[1]);
+      break;
+
+    case KF_0xSHORT:
+      snprintf (buffer, len, "0x%08lX", (ulong)keyid[1]);
+      break;
+
+    case KF_0xLONG:
+      if(keyid[0])
+	snprintf (buffer, len, "0x%08lX%08lX",
+                  (ulong)keyid[0],(ulong)keyid[1]);
+      else
+	snprintf (buffer, len, "0x%08lX", (ulong)keyid[1]);
+      break;
+
+    default:
+      BUG();
+    }
+
+  if (buffer == tmp)
+    return xstrdup (buffer);
+  return buffer;
+}
+
 size_t
 keystrlen(void)
 {
@@ -301,38 +348,7 @@ const char *
 keystr (u32 *keyid)
 {
   static char keyid_str[KEYID_STR_SIZE];
-
-  switch (opt.keyid_format)
-    {
-    case KF_SHORT:
-      snprintf (keyid_str, sizeof keyid_str, "%08lX", (ulong)keyid[1]);
-      break;
-
-    case KF_LONG:
-      if (keyid[0])
-	snprintf (keyid_str, sizeof keyid_str, "%08lX%08lX",
-                  (ulong)keyid[0], (ulong)keyid[1]);
-      else
-	snprintf (keyid_str, sizeof keyid_str, "%08lX", (ulong)keyid[1]);
-      break;
-
-    case KF_0xSHORT:
-      snprintf (keyid_str, sizeof keyid_str, "0x%08lX", (ulong)keyid[1]);
-      break;
-
-    case KF_0xLONG:
-      if(keyid[0])
-	snprintf (keyid_str, sizeof keyid_str, "0x%08lX%08lX",
-                  (ulong)keyid[0],(ulong)keyid[1]);
-      else
-	snprintf (keyid_str, sizeof keyid_str, "0x%08lX", (ulong)keyid[1]);
-      break;
-
-    default:
-      BUG();
-    }
-
-  return keyid_str;
+  return format_keyid (keyid, opt.keyid_format, keyid_str, sizeof (keyid_str));
 }
 
 
