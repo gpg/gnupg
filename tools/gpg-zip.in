@@ -94,7 +94,8 @@ while test $# -gt 0 ; do
       exit 0
       ;;
     --gpg)
-      GPG=$1
+      GPG=$2
+      shift
       shift
       ;;
     --gpg-args)
@@ -103,7 +104,8 @@ while test $# -gt 0 ; do
       shift
       ;;
     --tar)
-      TAR=$1
+      TAR=$2
+      shift
       shift
       ;;
     --tar-args)
@@ -126,8 +128,8 @@ while test $# -gt 0 ; do
 done
 
 if test x$create = xyes ; then
-#   echo "$TAR -cf - "$@" | $GPG --set-filename x.tar $gpg_args" 1>&2
-   $TAR -cf - "$@" | $GPG --set-filename x.tar $gpg_args
+#   echo "$TAR $tar_args -cf - "$@" | $GPG --set-filename x.tar $gpg_args" 1>&2
+   $TAR $tar_args -cf - "$@" | $GPG --set-filename x.tar $gpg_args
 elif test x$list = xyes ; then
 #   echo "cat \"$1\" | $GPG $gpg_args | $TAR $tar_args -tf -" 1>&2
    cat "$1" | $GPG $gpg_args | $TAR $tar_args -tf -
