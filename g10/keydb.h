@@ -133,6 +133,10 @@ union pref_hint
 #define KEYDB_RESOURCE_FLAG_READONLY 8  /* Open in read only mode.  */
 #define KEYDB_RESOURCE_FLAG_GPGVDEF 16  /* Default file for gpgv.  */
 
+/* Format a search term for debugging output.  The caller must free
+   the result.  */
+char *keydb_search_desc_dump (struct keydb_search_desc *desc);
+
 /* Register a resource (keyring or keybox).  The first keyring or
    keybox that is added using this function is created if it does not
    already exist and the KEYDB_RESOURCE_FLAG_READONLY is not set.

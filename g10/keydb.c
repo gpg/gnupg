@@ -465,8 +465,70 @@ rt_from_file (const char *filename, int *r_found, int *r_openpgp)
 
   return rt;
 }
+
+char *
+keydb_search_desc_dump (struct keydb_search_desc *desc)
+{
+  char b[MAX_FORMATTED_FINGERPRINT_LEN + 1];
+  char fpr[MAX_FINGERPRINT_LEN + 1];
 
-
+  switch (desc->mode)
+    {
+    case KEYDB_SEARCH_MODE_EXACT:
+      return xasprintf ("EXACT: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_SUBSTR:
+      return xasprintf ("SUBSTR: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_MAIL:
+      return xasprintf ("MAIL: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_MAILSUB:
+      return xasprintf ("MAILSUB: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_MAILEND:
+      return xasprintf ("MAILEND: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_WORDS:
+      return xasprintf ("WORDS: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_SHORT_KID:
+      return xasprintf ("SHORT_KID: '%s'",
+                        format_keyid (desc->u.kid, KF_SHORT, b, sizeof (b)));
+    case KEYDB_SEARCH_MODE_LONG_KID:
+      return xasprintf ("LONG_KID: '%s'",
+                        format_keyid (desc->u.kid, KF_LONG, b, sizeof (b)));
+    case KEYDB_SEARCH_MODE_FPR16:
+      bin2hex (desc->u.fpr, 16, fpr);
+      return xasprintf ("FPR16: '%s'",
+                        format_hexfingerprint (fpr, b, sizeof (b)));
+    case KEYDB_SEARCH_MODE_FPR20:
+      bin2hex (desc->u.fpr, 20, fpr);
+      return xasprintf ("FPR20: '%s'",
+                        format_hexfingerprint (fpr, b, sizeof (b)));
+    case KEYDB_SEARCH_MODE_FPR:
+      bin2hex (desc->u.fpr, 20, fpr);
+      return xasprintf ("FPR: '%s'",
+                        format_hexfingerprint (fpr, b, sizeof (b)));
+    case KEYDB_SEARCH_MODE_ISSUER:
+      return xasprintf ("ISSUER: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_ISSUER_SN:
+      return xasprintf ("ISSUER_SN: '%*s'",
+                        (int) (desc->snlen == -1
+                               ? strlen (desc->sn) : desc->snlen),
+                        desc->sn);
+    case KEYDB_SEARCH_MODE_SN:
+      return xasprintf ("SN: '%*s'",
+                        (int) (desc->snlen == -1
+                               ? strlen (desc->sn) : desc->snlen),
+                        desc->sn);
+    case KEYDB_SEARCH_MODE_SUBJECT:
+      return xasprintf ("SUBJECT: '%s'", desc->u.name);
+    case KEYDB_SEARCH_MODE_KEYGRIP:
+      return xasprintf ("KEYGRIP: %s", desc->u.grip);
+    case KEYDB_SEARCH_MODE_FIRST:
+      return xasprintf ("FIRST");
+    case KEYDB_SEARCH_MODE_NEXT:
+      return xasprintf ("NEXT");
+    default:
+      return xasprintf ("Bad search mode (%d)", desc->mode);
+    }
+}
+
 gpg_error_t
 keydb_add_resource (const char *url, unsigned int flags)
 {
@@ -1571,57 +1633,11 @@ keydb_search_reset (KEYDB_HANDLE hd)
 }
 
 
-static void
-dump_search_desc (KEYDB_HANDLE hd, const char *text,
-                  KEYDB_SEARCH_DESC *desc, size_t ndesc)
-{
-  int n;
-  const char *s;
-
-  for (n=0; n < ndesc; n++)
-    {
-      switch (desc[n].mode)
-        {
-        case KEYDB_SEARCH_MODE_NONE:      s = "none";      break;
-        case KEYDB_SEARCH_MODE_EXACT:     s = "exact";     break;
-        case KEYDB_SEARCH_MODE_SUBSTR:    s = "substr";    break;
-        case KEYDB_SEARCH_MODE_MAIL:      s = "mail";      break;
-        case KEYDB_SEARCH_MODE_MAILSUB:   s = "mailsub";   break;
-        case KEYDB_SEARCH_MODE_MAILEND:   s = "mailend";   break;
-        case KEYDB_SEARCH_MODE_WORDS:     s = "words";     break;
-        case KEYDB_SEARCH_MODE_SHORT_KID: s = "short_kid"; break;
-        case KEYDB_SEARCH_MODE_LONG_KID:  s = "long_kid";  break;
-        case KEYDB_SEARCH_MODE_FPR16:     s = "fpr16";     break;
-        case KEYDB_SEARCH_MODE_FPR20:     s = "fpr20";     break;
-        case KEYDB_SEARCH_MODE_FPR:       s = "fpr";       break;
-        case KEYDB_SEARCH_MODE_ISSUER:    s = "issuer";    break;
-        case KEYDB_SEARCH_MODE_ISSUER_SN: s = "issuer_sn"; break;
-        case KEYDB_SEARCH_MODE_SN:        s = "sn";        break;
-        case KEYDB_SEARCH_MODE_SUBJECT:   s = "subject";   break;
-        case KEYDB_SEARCH_MODE_KEYGRIP:   s = "keygrip";   break;
-        case KEYDB_SEARCH_MODE_FIRST:     s = "first";     break;
-        case KEYDB_SEARCH_MODE_NEXT:      s = "next";      break;
-        default:                          s = "?";         break;
-        }
-      if (!n)
-        log_debug ("%s: mode=%s  (hd=%p)", text, s, hd);
-      else
-        log_debug ("%*s  mode=%s", (int)strlen (text), "", s);
-      if (desc[n].mode == KEYDB_SEARCH_MODE_LONG_KID)
-        log_printf (" %08lX%08lX", (unsigned long)desc[n].u.kid[0],
-                    (unsigned long)desc[n].u.kid[1]);
-      else if (desc[n].mode == KEYDB_SEARCH_MODE_SHORT_KID)
-        log_printf (" %08lX", (unsigned long)desc[n].u.kid[1]);
-      else if (desc[n].mode == KEYDB_SEARCH_MODE_SUBSTR)
-        log_printf (" '%s'", desc[n].u.name);
-    }
-}
-
-
 gpg_error_t
 keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
               size_t ndesc, size_t *descindex)
 {
+  int i;
   gpg_error_t rc;
   int was_reset = hd->is_reset;
   /* If an entry is already in the cache, then don't add it again.  */
@@ -1636,8 +1652,16 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_CLOCK)
     log_clock ("keydb_search enter");
 
-  if (DBG_CACHE)
-    dump_search_desc (hd, "keydb_search", desc, ndesc);
+  if (DBG_LOOKUP)
+    {
+      log_debug ("%s: %zd search descriptions:\n", __func__, ndesc);
+      for (i = 0; i < ndesc; i ++)
+        {
+          char *t = keydb_search_desc_dump (&desc[i]);
+          log_debug ("%s   %d: %s\n", __func__, i, t);
+          xfree (t);
+        }
+    }
 
 
   if (ndesc == 1 && desc[0].mode == KEYDB_SEARCH_MODE_LONG_KID
