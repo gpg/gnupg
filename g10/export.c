@@ -940,8 +940,6 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       err = keydb_search (kdbhd, desc, ndesc, &descindex);
       if (!users)
         desc[0].mode = KEYDB_SEARCH_MODE_NEXT;
-      if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
-        continue;  /* Skip PGP2 keys.  */
       if (err)
         break;
 
@@ -949,8 +947,6 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
       release_kbnode (keyblock);
       keyblock = NULL;
       err = keydb_get_keyblock (kdbhd, &keyblock);
-      if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
-        continue;  /* Skip PGP2 keys.  */
       if (err)
         {
           log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));

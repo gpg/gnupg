@@ -2679,39 +2679,12 @@ found:
 }
 
 
-/* Return true if all the search modes are fingerprints.  */
-static int
-search_modes_are_fingerprint (getkey_ctx_t ctx)
-{
-  size_t n, found;
-
-  for (n=found=0; n < ctx->nitems; n++)
-    {
-      switch (ctx->items[n].mode)
-        {
-        case KEYDB_SEARCH_MODE_FPR16:
-        case KEYDB_SEARCH_MODE_FPR20:
-        case KEYDB_SEARCH_MODE_FPR:
-          found++;
-          break;
-        default:
-          break;
-        }
-    }
-  return found && found == ctx->nitems;
-}
-
-
 /* A high-level function to lookup keys.
 
    This function builds on top of the low-level keydb API.  It first
    searches the database using the description stored in CTX->ITEMS,
    then it filters the results using CTX and, finally, if WANT_SECRET
    is set, it ignores any keys for which no secret key is available.
-
-   Note: this function skips any legacy keys unless the search mode is
-   KEYDB_SEARCH_MODE_FIRST or KEYDB_SEARCH_MODE_NEXT or we are
-   searching by fingerprint.
 
    Unlike the low-level search functions, this function also merges
    all of the self-signed data into the keys, subkeys and user id
@@ -2730,18 +2703,6 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
   for (;;)
     {
       rc = keydb_search (ctx->kr_handle, ctx->items, ctx->nitems, NULL);
-
-      /* Skip over all legacy keys unless we are iterating over all
-	 keys in the DB or the key was requested by its fingerprint.
-
-         Fixme: The lower level keydb code should actually do that but
-         then it would be harder to report the number of skipped
-         legacy keys during import. */
-      if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY
-          && !(ctx->nitems && (ctx->items->mode == KEYDB_SEARCH_MODE_FIRST
-			       || ctx->items->mode == KEYDB_SEARCH_MODE_NEXT))
-          && !search_modes_are_fingerprint (ctx))
-        continue;
       if (rc)
         break;
 
@@ -2789,8 +2750,7 @@ lookup (getkey_ctx_t ctx, kbnode_t *ret_keyblock, kbnode_t *ret_found_key,
     }
 
 found:
-  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND
-      && gpg_err_code (rc) != GPG_ERR_LEGACY_KEY)
+  if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     log_error ("keydb_search failed: %s\n", gpg_strerror (rc));
 
   if (!rc)
@@ -2798,8 +2758,7 @@ found:
       *ret_keyblock = keyblock; /* Return the keyblock.  */
       keyblock = NULL;
     }
-  else if ((gpg_err_code (rc) == GPG_ERR_NOT_FOUND
-            || gpg_err_code (rc) == GPG_ERR_LEGACY_KEY) && no_suitable_key)
+  else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND && no_suitable_key)
     rc = want_secret? GPG_ERR_UNUSABLE_SECKEY : GPG_ERR_UNUSABLE_PUBKEY;
   else if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     rc = want_secret? GPG_ERR_NO_SECKEY : GPG_ERR_NO_PUBKEY;
@@ -3207,8 +3166,6 @@ have_secret_key_with_kid (u32 *keyid)
   while (!result)
     {
       err = keydb_search (kdbhd, &desc, 1, NULL);
-      if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
-        continue;
       if (err)
         break;
 

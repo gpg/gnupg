@@ -429,7 +429,8 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
               }
             else
               /* Upper layer needs to handle this.  */
-              ;
+              {
+              }
             break;
           }
 	if (rc) {
@@ -967,7 +968,7 @@ compare_name (int mode, const char *name, const char *uid, size_t uidlen)
  */
 int
 keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
-		size_t ndesc, size_t *descindex)
+		size_t ndesc, size_t *descindex, int ignore_legacy)
 {
   int rc;
   PACKET pkt;
@@ -1106,10 +1107,19 @@ keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
   if (DBG_LOOKUP)
     log_debug ("%s: %ssearching from start of resource.\n",
                __func__, scanned_from_start ? "" : "not ");
-  while (!(rc=search_packet (hd->current.iobuf, &pkt, &offset, need_uid)))
+  while (1)
     {
       byte afp[MAX_FINGERPRINT_LEN];
       size_t an;
+
+      rc = search_packet (hd->current.iobuf, &pkt, &offset, need_uid);
+      if (ignore_legacy && gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
+        {
+          free_packet (&pkt);
+          continue;
+        }
+      if (rc)
+        break;
 
       if (pkt.pkttype == PKT_PUBLIC_KEY  || pkt.pkttype == PKT_SECRET_KEY)
         {
@@ -1486,8 +1496,8 @@ keyring_rebuild_cache (void *token,int noisy)
 
   for (;;)
     {
-      rc = keyring_search (hd, &desc, 1, NULL);
-      if (rc && gpg_err_code (rc) != GPG_ERR_LEGACY_KEY)
+      rc = keyring_search (hd, &desc, 1, NULL, 0);
+      if (rc)
         break;  /* ready.  */
 
       desc.mode = KEYDB_SEARCH_MODE_NEXT;

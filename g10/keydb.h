@@ -296,7 +296,8 @@ unsigned long keydb_get_skipped_counter (KEYDB_HANDLE hd);
    (Currently, this function always returns 0 if HD is valid.)  */
 gpg_error_t keydb_search_reset (KEYDB_HANDLE hd);
 
-/* Search the database for keys matching the search description.
+/* Search the database for keys matching the search description.  If
+   the DB contains any legacy keys, these are silently ignored.
 
    DESC is an array of search terms with NDESC entries.  The search
    terms are or'd together.  That is, the next entry in the DB that
@@ -338,7 +339,7 @@ gpg_error_t keydb_search_next (KEYDB_HANDLE hd);
 gpg_error_t keydb_search_kid (KEYDB_HANDLE hd, u32 *kid);
 
 /* This is a convenience function for searching for keys with a long
-   (20 byte) fingerprint.  This function ignores legacy keys.
+   (20 byte) fingerprint.
 
    Note: this function resumes searching where the last search left
    off.  If you want to search the whole database, then you need to

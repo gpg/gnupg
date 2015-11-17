@@ -1732,9 +1732,6 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
     {
       PKT_public_key *pk;
 
-      if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
-        continue;
-
       rc = keydb_get_keyblock (hd, &keyblock);
       if (rc)
         {
@@ -1790,8 +1787,7 @@ validate_key_list (KEYDB_HANDLE hd, KeyHashTable full_trust,
       release_kbnode (keyblock);
       keyblock = NULL;
     }
-  while (!(rc = keydb_search (hd, &desc, 1, NULL))
-         || gpg_err_code (rc) == GPG_ERR_LEGACY_KEY);
+  while (!(rc = keydb_search (hd, &desc, 1, NULL)));
 
   if (rc && gpg_err_code (rc) != GPG_ERR_NOT_FOUND)
     {

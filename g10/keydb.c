@@ -1708,12 +1708,14 @@ keydb_search (KEYDB_HANDLE hd, KEYDB_SEARCH_DESC *desc,
           break;
         case KEYDB_RESOURCE_TYPE_KEYRING:
           rc = keyring_search (hd->active[hd->current].u.kr, desc,
-                               ndesc, descindex);
+                               ndesc, descindex, 1);
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
-          rc = keybox_search (hd->active[hd->current].u.kb, desc,
-                              ndesc, KEYBOX_BLOBTYPE_PGP,
-                              descindex, &hd->skipped_long_blobs);
+          do
+            rc = keybox_search (hd->active[hd->current].u.kb, desc,
+                                ndesc, KEYBOX_BLOBTYPE_PGP,
+                                descindex, &hd->skipped_long_blobs);
+          while (rc == GPG_ERR_LEGACY_KEY);
           break;
         }
 
@@ -1776,28 +1778,18 @@ keydb_search_first (KEYDB_HANDLE hd)
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
-  err = keydb_search (hd, &desc, 1, NULL);
-  if (gpg_err_code (err) == GPG_ERR_LEGACY_KEY)
-    err = keydb_search_next (hd);
-  return err;
+  return keydb_search (hd, &desc, 1, NULL);
 }
 
 
 gpg_error_t
 keydb_search_next (KEYDB_HANDLE hd)
 {
-  gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
-  do
-    {
-      memset (&desc, 0, sizeof desc);
-      desc.mode = KEYDB_SEARCH_MODE_NEXT;
-      err = keydb_search (hd, &desc, 1, NULL);
-    }
-  while (gpg_err_code (err) == GPG_ERR_LEGACY_KEY);
-
-  return err;
+  memset (&desc, 0, sizeof desc);
+  desc.mode = KEYDB_SEARCH_MODE_NEXT;
+  return keydb_search (hd, &desc, 1, NULL);
 }
 
 gpg_error_t
@@ -1815,17 +1807,10 @@ keydb_search_kid (KEYDB_HANDLE hd, u32 *kid)
 gpg_error_t
 keydb_search_fpr (KEYDB_HANDLE hd, const byte *fpr)
 {
-  gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
 
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FPR;
   memcpy (desc.u.fpr, fpr, MAX_FINGERPRINT_LEN);
-  do
-    {
-      err = keydb_search (hd, &desc, 1, NULL);
-    }
-  while (gpg_err_code (err) == GPG_ERR_LEGACY_KEY);
-
-  return err;
+  return keydb_search (hd, &desc, 1, NULL);
 }

@@ -39,7 +39,7 @@ int keyring_insert_keyblock (KEYRING_HANDLE hd, KBNODE kb);
 int keyring_delete_keyblock (KEYRING_HANDLE hd);
 int keyring_search_reset (KEYRING_HANDLE hd);
 int keyring_search (KEYRING_HANDLE hd, KEYDB_SEARCH_DESC *desc,
-		    size_t ndesc, size_t *descindex);
+		    size_t ndesc, size_t *descindex, int skip_legacy);
 int keyring_rebuild_cache (void *token,int noisy);
 
 #endif /*GPG_KEYRING_H*/
