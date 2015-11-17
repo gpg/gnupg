@@ -20,7 +20,8 @@
 
 EXTRA_DIST = options.skel dirmngr-conf.skel distsigkey.gpg \
 	     ChangeLog-2011 gpg-w32info.rc \
-	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx
+	     gpg.w32-manifest.in test.c t-keydb-keyring.kbx \
+	     t-keydb-get-keyblock.gpg
 
 AM_CPPFLAGS = -I$(top_srcdir)/common
 
@@ -157,11 +158,15 @@ gpgv2_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) \
 gpgv2_LDFLAGS = $(extra_bin_ldflags)
 
 t_common_ldadd =
-module_tests = t-rmd160 t-keydb
+module_tests = t-rmd160 t-keydb t-keydb-get-keyblock
 t_rmd160_SOURCES = t-rmd160.c rmd160.c
 t_rmd160_LDADD = $(t_common_ldadd)
 t_keydb_SOURCES = t-keydb.c test-stubs.c $(common_source)
 t_keydb_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
+	      $(LIBICONV) $(t_common_ldadd)
+t_keydb_get_keyblock_SOURCES = t-keydb-get-keyblock.c test-stubs.c \
+	      $(common_source)
+t_keydb_get_keyblock_LDADD = $(LDADD) $(LIBGCRYPT_LIBS) $(GPG_ERROR_LIBS) \
 	      $(LIBICONV) $(t_common_ldadd)
 
 

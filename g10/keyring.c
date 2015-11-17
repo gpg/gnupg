@@ -419,7 +419,19 @@ keyring_get_keyblock (KEYRING_HANDLE hd, KBNODE *ret_kb)
 	    continue;
 	}
         if (gpg_err_code (rc) == GPG_ERR_LEGACY_KEY)
-          break;  /* Upper layer needs to handle this.  */
+          {
+            if (in_cert)
+              /* It is not this key that is problematic, but the
+                 following key.  */
+              {
+                rc = 0;
+                hd->found.n_packets --;
+              }
+            else
+              /* Upper layer needs to handle this.  */
+              ;
+            break;
+          }
 	if (rc) {
             log_error ("keyring_get_keyblock: read error: %s\n",
                        gpg_strerror (rc) );
