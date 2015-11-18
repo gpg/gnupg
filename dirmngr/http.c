@@ -511,6 +511,27 @@ http_register_tls_ca (const char *fname)
 }
 
 
+#ifdef USE_TLS
+/* Free the TLS session associated with SESS, if any.  */
+static void
+close_tls_session (http_session_t sess)
+{
+  if (sess->tls_session)
+    {
+# ifdef HTTP_USE_GNUTLS
+      my_socket_t sock = gnutls_transport_get_ptr (sess->tls_session);
+      my_socket_unref (sock, NULL, NULL);
+      gnutls_deinit (sess->tls_session);
+      if (sess->certcred)
+        gnutls_certificate_free_credentials (sess->certcred);
+# endif /*HTTP_USE_GNUTLS*/
+      xfree (sess->servername);
+      sess->tls_session = NULL;
+    }
+}
+#endif /*USE_TLS*/
+
+
 /* Release a session.  Take care not to release it while it is being
    used by a http context object.  */
 static void
@@ -527,17 +548,7 @@ session_unref (int lnr, http_session_t sess)
     return;
 
 #ifdef USE_TLS
-# ifdef HTTP_USE_GNUTLS
-  if (sess->tls_session)
-    {
-      my_socket_t sock = gnutls_transport_get_ptr (sess->tls_session);
-      my_socket_unref (sock, NULL, NULL);
-      gnutls_deinit (sess->tls_session);
-    }
-  if (sess->certcred)
-    gnutls_certificate_free_credentials (sess->certcred);
-# endif /*HTTP_USE_GNUTLS*/
-  xfree (sess->servername);
+  close_tls_session (sess);
 #endif /*USE_TLS*/
 
   xfree (sess);
@@ -2447,6 +2458,13 @@ cookie_read (void *cookie, void *buffer, size_t size)
             }
           if (nread == GNUTLS_E_REHANDSHAKE)
             goto again; /* A client is allowed to just ignore this request. */
+          if (nread == GNUTLS_E_PREMATURE_TERMINATION)
+            {
+              /* The server terminated the connection.  Close the TLS
+                 session, and indicate EOF using a short read.  */
+              close_tls_session (c->session);
+              return 0;
+            }
           log_info ("TLS network read failed: %s\n", gnutls_strerror (nread));
           gpg_err_set_errno (EIO);
           return -1;
