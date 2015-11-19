@@ -92,6 +92,7 @@ struct hostinfo_s
   char *v6addr;      /* A string with the v6 IP address of the host.
                         NULL if NAME has a numeric IP address or no v6
                         address is available.  */
+  unsigned short port; /* The port used by the host, 0 if unknown.  */
   char name[1];      /* The hostname.  */
 };
 
@@ -131,6 +132,7 @@ create_new_hostinfo (const char *name)
   hi->cname = NULL;
   hi->v4addr = NULL;
   hi->v6addr = NULL;
+  hi->port = 0;
 
   /* Add it to the hosttable. */
   for (idx=0; idx < hosttable_size; idx++)
@@ -256,10 +258,13 @@ arecords_is_pool (dns_addrinfo_t aibuf)
 }
 
 
-/* Add the host AI under the NAME into the HOSTTABLE.  Updates the
-   given reference table.  */
+/* Add the host AI under the NAME into the HOSTTABLE.  If PORT is not
+   zero, it specifies which port to use to talk to the host.  If NAME
+   specifies a pool (as indicated by IS_POOL), update the given
+   reference table accordingly.  */
 static void
-add_host (const char *name, const dns_addrinfo_t ai, int is_pool,
+add_host (const char *name, int is_pool,
+          const dns_addrinfo_t ai, unsigned short port,
           int *reftbl, size_t reftblsize, int *refidx)
 {
   gpg_error_t tmperr;
@@ -322,6 +327,9 @@ add_host (const char *name, const dns_addrinfo_t ai, int is_pool,
         {
           char *ipaddr = NULL;
 
+          if (port)
+            hosttable[tmpidx]->port = port;
+
           if (!is_numeric)
             {
               xfree (tmphost);
@@ -371,13 +379,16 @@ add_host (const char *name, const dns_addrinfo_t ai, int is_pool,
    failed for some time and we stick to one host for a time
    independent of DNS retry times.  If FORCE_RESELECT is true a new
    host is always selected.  The selected host is stored as a malloced
-   string at R_HOST; on error NULL is stored.  If R_HTTPFLAGS is not
+   string at R_HOST; on error NULL is stored.  If we know the port
+   used by the selected host, a string representation is written to
+   R_PORTSTR, otherwise it is left untouched.  If R_HTTPFLAGS is not
    NULL it will receive flags which are to be passed to http_open.  If
    R_POOLNAME is not NULL a malloced name of the pool is stored or
    NULL if it is not a pool. */
 static gpg_error_t
 map_host (ctrl_t ctrl, const char *name, int force_reselect,
-          char **r_host, unsigned int *r_httpflags, char **r_poolname)
+          char **r_host, char *r_portstr,
+          unsigned int *r_httpflags, char **r_poolname)
 {
   gpg_error_t err = 0;
   hostinfo_t hi;
@@ -465,7 +476,8 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
               if (err)
                 continue;
               dirmngr_tick (ctrl);
-              add_host (name, ai, is_pool, reftbl, reftblsize, &refidx);
+              add_host (name, is_pool, ai, srvs[i].port,
+                        reftbl, reftblsize, &refidx);
             }
 
           xfree (srvs);
@@ -499,7 +511,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
                 continue;
               dirmngr_tick (ctrl);
 
-              add_host (name, ai, is_pool, reftbl, reftblsize, &refidx);
+              add_host (name, is_pool, ai, 0, reftbl, reftblsize, &refidx);
             }
         }
       reftbl[refidx] = -1;
@@ -604,6 +616,9 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         }
       return err;
     }
+  if (hi->port)
+    snprintf (r_portstr, 6 /* five digits and the sentinel */,
+              "%hu", hi->port);
   return 0;
 }
 
@@ -855,16 +870,24 @@ make_host_part (ctrl_t ctrl,
 
   *r_hostport = NULL;
 
+  portstr[0] = 0;
+  err = map_host (ctrl, host, force_reselect,
+                  &hostname, portstr, r_httpflags, r_poolname);
+  if (err)
+    return err;
+
   /* Map scheme and port.  */
   if (!strcmp (scheme, "hkps") || !strcmp (scheme,"https"))
     {
       scheme = "https";
-      strcpy (portstr, "443");
+      if (! *portstr)
+        strcpy (portstr, "443");
     }
   else /* HKP or HTTP.  */
     {
       scheme = "http";
-      strcpy (portstr, "11371");
+      if (! *portstr)
+        strcpy (portstr, "11371");
     }
   if (port)
     snprintf (portstr, sizeof portstr, "%hu", port);
@@ -872,11 +895,6 @@ make_host_part (ctrl_t ctrl,
     {
       /*fixme_do_srv_lookup ()*/
     }
-
-  err = map_host (ctrl, host, force_reselect,
-                  &hostname, r_httpflags, r_poolname);
-  if (err)
-    return err;
 
   *r_hostport = strconcat (scheme, "://", hostname, ":", portstr, NULL);
   xfree (hostname);
