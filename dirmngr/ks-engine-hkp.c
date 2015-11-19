@@ -415,6 +415,9 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
       int refidx;
       int is_pool = 0;
       char *cname;
+      char *srvrecord;
+      struct srventry *srvs;
+      int srvscount;
 
       reftblsize = 100;
       reftbl = xtrymalloc (reftblsize * sizeof *reftbl);
@@ -431,6 +434,43 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         }
       hi = hosttable[idx];
 
+      /* Check for SRV records.  */
+      asprintf (&srvrecord, "_hkp._tcp.%s", name);
+      if (srvrecord == NULL)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (reftbl);
+          return err;
+        }
+
+      srvscount = getsrv (srvrecord, &srvs);
+      xfree (srvrecord);
+      if (srvscount < 0)
+        {
+          err = gpg_error_from_syserror ();
+          xfree (reftbl);
+          return err;
+        }
+
+      if (srvscount > 0)
+        {
+          int i;
+          is_pool = srvscount > 1;
+
+          for (i = 0; i < srvscount; i++)
+            {
+              err = resolve_dns_name (srvs[i].target, 0,
+                                      AF_UNSPEC, SOCK_STREAM,
+                                      &ai, &cname);
+              if (err)
+                continue;
+              dirmngr_tick (ctrl);
+              add_host (name, ai, is_pool, reftbl, reftblsize, &refidx);
+            }
+
+          xfree (srvs);
+        }
+
       /* Find all A records for this entry and put them into the pool
          list - if any.  */
       err = resolve_dns_name (name, 0, 0, SOCK_STREAM, &aibuf, &cname);
@@ -446,7 +486,7 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
              the canonical name of the pool as the virtual host along
              with the IP addresses.  If it is not a pool, we use the
              specified name. */
-          is_pool = arecords_is_pool (aibuf);
+          is_pool |= arecords_is_pool (aibuf);
           if (is_pool && cname)
             {
               hi->cname = cname;
