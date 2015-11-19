@@ -1512,6 +1512,7 @@ crl_cache_cert_isvalid (ctrl_t ctrl, ksba_cert_t cert,
       break;
     case CRL_CACHE_DONTKNOW:
       err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
+      break;
     case CRL_CACHE_CANTUSE:
       err = gpg_error (GPG_ERR_NO_CRL_KNOWN);
       break;
