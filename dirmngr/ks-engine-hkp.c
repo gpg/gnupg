@@ -236,6 +236,26 @@ select_random_host (int *table)
 }
 
 
+/* Figure out if a set of DNS records looks like a pool.  */
+static int
+arecords_is_pool (dns_addrinfo_t aibuf)
+{
+  dns_addrinfo_t ai;
+  int n_v6, n_v4;
+
+  n_v6 = n_v4 = 0;
+  for (ai = aibuf; ai; ai = ai->next)
+    {
+      if (ai->family != AF_INET6)
+        n_v6++;
+      else if (ai->family != AF_INET)
+        n_v4++;
+    }
+
+  return n_v6 > 1 || n_v4 > 1;
+}
+
+
 /* Map the host name NAME to the actual to be used host name.  This
    allows us to manage round robin DNS names.  We use our own strategy
    to choose one of the hosts.  For example we skip those hosts which
@@ -312,23 +332,12 @@ map_host (ctrl_t ctrl, const char *name, int force_reselect,
         }
       else
         {
-          int n_v6, n_v4;
-
           /* First figure out whether this is a pool.  For a pool we
              use a different strategy than for a plain server: We use
              the canonical name of the pool as the virtual host along
              with the IP addresses.  If it is not a pool, we use the
              specified name. */
-          n_v6 = n_v4 = 0;
-          for (ai = aibuf; ai; ai = ai->next)
-            {
-              if (ai->family != AF_INET6)
-                n_v6++;
-              else if (ai->family != AF_INET)
-                n_v4++;
-            }
-          if (n_v6 > 1 || n_v4 > 1)
-            is_pool = 1;
+          is_pool = arecords_is_pool (aibuf);
           if (is_pool && cname)
             {
               hi->cname = cname;
