@@ -704,7 +704,7 @@ void
 clean_one_uid (kbnode_t keyblock, kbnode_t uidnode, int noisy, int self_only,
                int *uids_cleaned, int *sigs_cleaned)
 {
-  int dummy;
+  int dummy = 0;
 
   assert (keyblock->pkt->pkttype==PKT_PUBLIC_KEY);
   assert (uidnode->pkt->pkttype==PKT_USER_ID);
