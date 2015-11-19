@@ -398,7 +398,7 @@ static gpg_error_t
 istrusted_internal (ctrl_t ctrl, const char *fpr, int *r_disabled,
                     int already_locked)
 {
-  gpg_error_t err;
+  gpg_error_t err = 0;
   int locked = already_locked;
   trustitem_t *ti;
   size_t len;
