@@ -525,8 +525,9 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
   const char *user;
   const char *pass;
   const char *base;
-  const char *argv[50];
+  char *argv[50];
   int argc;
+  int argc_malloced;
   char portbuf[30], timeoutbuf[30];
 
 
@@ -583,6 +584,8 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       argv[argc++] = user;
     }
 
+  /* All entries in argv from this index on are malloc'ed.  */
+  argc_malloced = argc;
 
   for (; patterns; patterns = patterns->next)
     {
@@ -602,8 +605,8 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
         {
           log_error (_("start_cert_fetch: invalid pattern '%s'\n"),
                      patterns->d);
-          /* fixme: cleanup argv.  */
-          return gpg_error (GPG_ERR_INV_USER_ID);
+          err = gpg_error (GPG_ERR_INV_USER_ID);
+          goto leave;
         }
       if ((sl->flags & 1))
         err = make_url (&url, sl->d, "objectClass=*");
@@ -611,17 +614,17 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
         err = make_url (&url, base, sl->d);
       free_strlist (sl);
       if (err)
-        {
-          /* fixme: cleanup argv. */
-          return err;
-        }
+        goto leave;
       argv[argc++] = url;
     }
   argv[argc] = NULL;
 
   *context = xtrycalloc (1, sizeof **context);
   if (!*context)
-    return gpg_error_from_errno (errno);
+    {
+      err = gpg_error_from_errno (errno);
+      goto leave;
+    }
 
   err = ldap_wrapper (ctrl, &(*context)->reader, argv);
 
@@ -631,6 +634,9 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       *context = NULL;
     }
 
+ leave:
+  for (; argc_malloced < argc; argc_malloced++)
+    xfree (argv[argc_malloced]);
   return err;
 }
 
