@@ -90,7 +90,7 @@ struct hostinfo_s
                         NULL if NAME has a numeric IP address or no v4
                         address is available.  */
   char *v6addr;      /* A string with the v6 IP address of the host.
-                        NULL if NAME has a numeric IP address or no v4
+                        NULL if NAME has a numeric IP address or no v6
                         address is available.  */
   char name[1];      /* The hostname.  */
 };
