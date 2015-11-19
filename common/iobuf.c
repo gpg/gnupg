@@ -1391,7 +1391,7 @@ iobuf_esopen (estream_t estream, const char *mode, int keep_open)
 {
   iobuf_t a;
   file_es_filter_ctx_t *fcx;
-  size_t len;
+  size_t len = 0;
 
   a = iobuf_alloc (strchr (mode, 'w') ? IOBUF_OUTPUT : IOBUF_INPUT,
 		   IOBUF_BUFFER_SIZE);
