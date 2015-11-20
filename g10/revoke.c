@@ -614,8 +614,12 @@ gen_revoke (const char *uname)
     rc = keydb_search (kdbhd, &desc, 1, NULL);
   if (rc)
     {
-      log_error (_("secret key \"%s\" not found: %s\n"),
-                 uname, gpg_strerror (rc));
+      if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+        log_error (_("no secret key matches the search term \"%s\"\n"),
+                     uname);
+      else
+        log_error (_("error looking up secret key \"%s\": %s\n"),
+                   uname, gpg_strerror (rc));
       goto leave;
     }
 
