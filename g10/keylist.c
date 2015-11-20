@@ -163,20 +163,31 @@ secret_key_list (ctrl_t ctrl, strlist_t list)
     list_one (ctrl, list, 1, 0);
 }
 
-void
-print_seckey_info (PKT_public_key *pk)
+char *
+format_seckey_info (PKT_public_key *pk)
 {
   u32 keyid[2];
   char *p;
   char pkstrbuf[PUBKEY_STRING_SIZE];
+  char *info;
 
   keyid_from_pk (pk, keyid);
   p = get_user_id_native (keyid);
 
-  tty_printf ("\nsec  %s/%s %s %s\n",
-              pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
-	      keystr (keyid), datestr_from_pk (pk), p);
+  info = xtryasprintf ("sec  %s/%s %s %s",
+                       pubkey_string (pk, pkstrbuf, sizeof pkstrbuf),
+                       keystr (keyid), datestr_from_pk (pk), p);
 
+  xfree (p);
+
+  return info;
+}
+
+void
+print_seckey_info (PKT_public_key *pk)
+{
+  char *p = format_seckey_info (pk);
+  tty_printf ("\n%s\n", p);
   xfree (p);
 }
 
