@@ -630,6 +630,47 @@ gen_revoke (const char *uname)
       goto leave;
     }
 
+  rc = keydb_search (kdbhd, &desc, 1, NULL);
+  if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
+    /* Not ambiguous.  */
+    {
+    }
+  else if (rc == 0)
+    /* Ambiguous.  */
+    {
+      char *info;
+
+      log_error (_("'%s' matches multiple secret keys:\n"), uname);
+
+      info = format_seckey_info (keyblock->pkt->pkt.public_key);
+      log_error ("  %s\n", info);
+      xfree (info);
+      release_kbnode (keyblock);
+
+      rc = keydb_get_keyblock (kdbhd, &keyblock);
+      while (! rc)
+        {
+          info = format_seckey_info (keyblock->pkt->pkt.public_key);
+          log_error ("  %s\n", info);
+          xfree (info);
+          release_kbnode (keyblock);
+          keyblock = NULL;
+
+          rc = keydb_search (kdbhd, &desc, 1, NULL);
+          if (! rc)
+            rc = keydb_get_keyblock (kdbhd, &keyblock);
+        }
+
+      rc = GPG_ERR_AMBIGUOUS_NAME;
+
+      goto leave;
+    }
+  else
+    {
+      log_error (_("error searching the keyring: %s\n"), gpg_strerror (rc));
+      goto leave;
+    }
+
   /* Get the keyid from the keyblock.  */
   node = find_kbnode (keyblock, PKT_PUBLIC_KEY);
   if (!node)
