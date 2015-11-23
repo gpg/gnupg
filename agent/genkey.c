@@ -221,7 +221,7 @@ check_passphrase_constraints (ctrl_t ctrl, const char *pw,
 
   /* Now check the constraints and collect the error messages unless
      in in silent mode which returns immediately.  */
-  if (utf8_charcount (pw) < minlen )
+  if (utf8_charcount (pw, -1) < minlen )
     {
       if (!failed_constraint)
         {

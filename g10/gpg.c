@@ -1043,7 +1043,7 @@ build_list (const char *text, char letter,
   if (maybe_setuid)
     gcry_control (GCRYCTL_INIT_SECMEM, 0, 0);  /* Drop setuid. */
 
-  indent = utf8_charcount (text);
+  indent = utf8_charcount (text, -1);
   len = 0;
   init_membuf (&mb, 512);
 

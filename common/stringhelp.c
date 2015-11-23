@@ -746,16 +746,30 @@ sanitize_buffer (const void *p_arg, size_t n, int delim)
 
 /* Given a string containing an UTF-8 encoded text, return the number
    of characters in this string.  It differs from strlen in that it
-   only counts complete UTF-8 characters.  Note, that this function
-   does not take combined characters into account.  */
+   only counts complete UTF-8 characters.  SIZE is the maximum length
+   of the string in bytes.  If SIZE is -1, then a NUL character is
+   taken to be the end of the string.  Note, that this function does
+   not take combined characters into account.  */
 size_t
-utf8_charcount (const char *s)
+utf8_charcount (const char *s, int len)
 {
   size_t n;
 
+  if (len == 0)
+    return 0;
+
   for (n=0; *s; s++)
-    if ( (*s&0xc0) != 0x80 ) /* Exclude continuation bytes: 10xxxxxx */
-      n++;
+    {
+      if ( (*s&0xc0) != 0x80 ) /* Exclude continuation bytes: 10xxxxxx */
+        n++;
+
+      if (len != -1)
+        {
+          len --;
+          if (len == 0)
+            break;
+        }
+    }
 
   return n;
 }
