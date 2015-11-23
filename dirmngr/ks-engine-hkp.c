@@ -246,9 +246,9 @@ arecords_is_pool (dns_addrinfo_t aibuf)
   n_v6 = n_v4 = 0;
   for (ai = aibuf; ai; ai = ai->next)
     {
-      if (ai->family != AF_INET6)
+      if (ai->family == AF_INET6)
         n_v6++;
-      else if (ai->family != AF_INET)
+      else if (ai->family == AF_INET)
         n_v4++;
     }
 
