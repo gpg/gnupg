@@ -820,6 +820,8 @@ if test x"$use_tofu" = xyes ; then
   fi
 fi
 
+AM_CONDITIONAL(SQLITE3, test "$have_sqlite" = "yes")
+
 if test x"$use_tofu" = xyes ; then
     AC_DEFINE(USE_TOFU, 1, [Enable to build the TOFU code])
 fi

@@ -25,6 +25,12 @@ required_pgms = ../../g10/gpg2 ../../agent/gpg-agent \
 
 TESTS_ENVIRONMENT = GNUPGHOME=$(abs_builddir) GPG_AGENT_INFO= LC_ALL=C
 
+if SQLITE3
+sqlite3_dependent_tests = tofu.test
+else
+sqlite3_dependent_tests =
+endif
+
 # Note: version.test needs to be the first test to run and finish.test
 # the last one
 TESTS = version.test mds.test \
@@ -38,7 +44,8 @@ TESTS = version.test mds.test \
 	armdetachm.test detachm.test genkey1024.test \
 	conventional.test conventional-mdc.test \
 	multisig.test verify.test armor.test \
-	import.test ecc.test 4gb-packet.test tofu.test \
+	import.test ecc.test 4gb-packet.test \
+	$(sqlite3_dependent_tests) \
 	finish.test
 
 
