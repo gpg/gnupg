@@ -36,6 +36,7 @@
 #include "../common/stringhelp.h"
 #include "../common/mischelp.h"
 #include "../common/strlist.h"
+#include "../common/asshelp.h"
 
 #include "i18n.h"
 #include "util.h"
@@ -89,7 +90,6 @@ static struct
   int quiet;
   int verbose;
   const char *dirmngr_program;
-  int force_pipe_server;
   int force_default_responder;
   int pem;
   int escaped_pem; /* PEM is additional percent encoded.  */
@@ -117,7 +117,6 @@ static unsigned char asctobin[256]; /* runtime initialized */
 
 
 /* Prototypes.  */
-static assuan_context_t start_dirmngr (int only_daemon);
 static gpg_error_t read_certificate (const char *fname,
                                      unsigned char **rbuf, size_t *rbuflen);
 static gpg_error_t do_check (assuan_context_t ctx,
@@ -291,9 +290,21 @@ main (int argc, char **argv )
       exit (2);
     }
 
-  ctx = start_dirmngr (1);
-  if (!ctx)
-    exit (2);
+  err = start_new_dirmngr (&ctx,
+                           GPG_ERR_SOURCE_DEFAULT,
+                           default_homedir (),
+                           opt.dirmngr_program
+                             ? opt.dirmngr_program
+                             : gnupg_module_name (GNUPG_MODULE_NAME_DIRMNGR),
+                           ! cmd_ping,
+                           opt.verbose,
+                           0,
+                           NULL, NULL);
+  if (err)
+    {
+      log_error (_("can't connect to the dirmngr: %s\n"), gpg_strerror (err));
+      exit (2);
+    }
 
   if (cmd_ping)
     ;
@@ -428,131 +439,6 @@ data_cb (void *opaque, const void *buffer, size_t length)
                    gpg_strerror (err));
     }
   return 0;
-}
-
-
-/* Try to connect to the dirmngr via socket or fork it off and work by
-   pipes.  Handle the server's initial greeting */
-static assuan_context_t
-start_dirmngr (int only_daemon)
-{
-  int rc;
-  char *infostr, *p;
-  assuan_context_t ctx;
-  int try_default = 0;
-
-  infostr = opt.force_pipe_server? NULL : getenv (DIRMNGR_INFO_NAME);
-  if (only_daemon && (!infostr || !*infostr))
-    {
-      if (dirmngr_user_socket_name ())
-        infostr = xstrdup (dirmngr_user_socket_name ());
-      else
-        infostr = xstrdup (dirmngr_sys_socket_name ());
-      try_default = 1;
-    }
-
-  rc = assuan_new (&ctx);
-  if (rc)
-    {
-      log_error (_("failed to allocate assuan context: %s\n"),
-                 gpg_strerror (rc));
-      return NULL;
-    }
-
-  if (!infostr || !*infostr)
-    {
-      const char *pgmname;
-      const char *argv[3];
-      assuan_fd_t no_close_list[3];
-      int i;
-
-      if (only_daemon)
-        {
-          log_error (_("apparently no running dirmngr\n"));
-          return NULL;
-        }
-
-      if (opt.verbose)
-        log_info (_("no running dirmngr - starting one\n"));
-
-      if (!opt.dirmngr_program || !*opt.dirmngr_program)
-        opt.dirmngr_program = "./dirmngr";
-      if ( !(pgmname = strrchr (opt.dirmngr_program, '/')))
-        pgmname = opt.dirmngr_program;
-      else
-        pgmname++;
-
-      argv[0] = pgmname;
-      argv[1] = "--server";
-      argv[2] = NULL;
-
-      i=0;
-      if (log_get_fd () != -1)
-        no_close_list[i++] = assuan_fd_from_posix_fd (log_get_fd ());
-      no_close_list[i++] = assuan_fd_from_posix_fd (es_fileno (es_stderr));
-      no_close_list[i] = ASSUAN_INVALID_FD;
-
-      /* Connect to the agent and perform initial handshaking.  */
-      rc = assuan_pipe_connect (ctx, opt.dirmngr_program, argv,
-                                no_close_list, NULL, NULL, 0);
-    }
-  else /* Connect to a daemon.  */
-    {
-      int prot;
-      int pid;
-
-      infostr = xstrdup (infostr);
-      if (!try_default && *infostr)
-        {
-          if ( !(p = strchr (infostr, ':')) || p == infostr)
-            {
-              log_error (_("malformed %s environment variable\n"),
-                         DIRMNGR_INFO_NAME);
-              xfree (infostr);
-              if (only_daemon)
-                return NULL;
-              /* Try again by starting a new instance.  */
-              opt.force_pipe_server = 1;
-              return start_dirmngr (0);
-            }
-          *p++ = 0;
-          pid = atoi (p);
-          while (*p && *p != ':')
-            p++;
-          prot = *p? atoi (p+1) : 0;
-          if (prot != 1)
-            {
-              log_error (_("dirmngr protocol version %d is not supported\n"),
-                         prot);
-              xfree (infostr);
-              if (only_daemon)
-                return NULL;
-              opt.force_pipe_server = 1;
-              return start_dirmngr (0);
-            }
-        }
-      else
-        pid = -1;
-
-      rc = assuan_socket_connect (ctx, infostr, pid, 0);
-      xfree (infostr);
-      if (gpg_err_code(rc) == GPG_ERR_ASS_CONNECT_FAILED && !only_daemon)
-        {
-          log_error (_("can't connect to the dirmngr - trying fall back\n"));
-          opt.force_pipe_server = 1;
-          return start_dirmngr (0);
-        }
-    }
-
-  if (rc)
-    {
-      assuan_release (ctx);
-      log_error (_("can't connect to the dirmngr: %s\n"),
-                 gpg_strerror (rc));
-      return NULL;
-    }
-
-  return ctx;
 }
 
 

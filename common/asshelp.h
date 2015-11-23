@@ -34,6 +34,7 @@
 #include <gpg-error.h>
 
 #include "session-env.h"
+#include "util.h"
 
 /*-- asshelp.c --*/
 
