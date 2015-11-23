@@ -1086,10 +1086,10 @@ getsrv (const char *name,struct srventry **list)
       return -1;
 
     r = res_query (name, C_IN, T_SRV, answer, sizeof answer);
-    if (r < sizeof (HEADER) || r > sizeof answer)
-      return -1;
     if (header->rcode != NOERROR || !(count=ntohs (header->ancount)))
       return 0; /* Error or no record found.  */
+    if (r < sizeof (HEADER) || r > sizeof answer)
+      return -1;
 
     emsg = &answer[r];
     pt = &answer[sizeof(HEADER)];
