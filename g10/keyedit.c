@@ -4892,8 +4892,9 @@ menu_select_key (KBNODE keyblock, int idx, char *p)
 {
   KBNODE node;
   int i, j;
-  int is_hex_digits = strlen (p) >= 8;
+  int is_hex_digits;
 
+  is_hex_digits = p && strlen (p) >= 8;
   if (is_hex_digits)
     {
       for (i = 0, j = 0; p[i]; i ++)
