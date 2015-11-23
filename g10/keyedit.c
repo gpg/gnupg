@@ -4003,8 +4003,23 @@ menu_expire (KBNODE pub_keyblock)
   n1 = count_selected_keys (pub_keyblock);
   if (n1 > 1)
     {
-      tty_printf (_("Please select at most one subkey.\n"));
-      return 0;
+      char *s = xtryasprintf (_("Are you sure you want to change the"
+                                " expiration time %d subkeys? (y/N) "), n1);
+      int s_need_free;
+      if (s)
+        s_need_free = 0;
+      else
+        {
+          s = _("Are you sure you want to change the"
+                " expiration time for multiple subkeys? (y/N) ");
+          s_need_free = 0;
+        }
+
+      rc = cpr_get_answer_is_yes ("keyedit.expire_multiple_subkeys.okay", s);
+      if (s_need_free)
+        xfree (s);
+      if (! rc)
+	return 0;
     }
   else if (n1)
     tty_printf (_("Changing expiration time for a subkey.\n"));
@@ -4029,11 +4044,15 @@ menu_expire (KBNODE pub_keyblock)
 	  keyid_from_pk (main_pk, keyid);
 	  main_pk->expiredate = expiredate;
 	}
-      else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
-	       && (node->flag & NODFLG_SELKEY))
+      else if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY)
 	{
-	  sub_pk = node->pkt->pkt.public_key;
-	  sub_pk->expiredate = expiredate;
+          if (node->flag & NODFLG_SELKEY)
+            {
+              sub_pk = node->pkt->pkt.public_key;
+              sub_pk->expiredate = expiredate;
+            }
+          else
+            sub_pk = NULL;
 	}
       else if (node->pkt->pkttype == PKT_USER_ID)
 	uid = node->pkt->pkt.user_id;
