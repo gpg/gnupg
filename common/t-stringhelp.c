@@ -677,6 +677,142 @@ test_strtokenize (void)
     }
 }
 
+static char *
+stresc (char *s)
+{
+  char *p;
+  int l = strlen (s) + 1;
+
+  for (p = s; *p; p ++)
+    if (*p == '\n')
+      l ++;
+
+  p = xmalloc (l);
+  for (l = 0; *s; s ++, l ++)
+    {
+      if (*s == ' ')
+        p[l] = '_';
+      else if (*p == '\n')
+        {
+          p[l ++] = '\\';
+          p[l ++] = 'n';
+          p[l] = '\n';
+        }
+      else
+        p[l] = *s;
+    }
+  p[l] = *s;
+
+  return p;
+}
+
+static void
+test_format_text (void)
+{
+  struct test
+  {
+    int target_cols, max_cols;
+    char *input;
+    char *expected;
+  };
+
+  struct test tests[] = {
+    {
+      10, 12,
+      "",
+      "",
+    },
+    {
+      10, 12,
+      " ",
+      "",
+    },
+    {
+      10, 12,
+      "  ",
+      "",
+    },
+    {
+      10, 12,
+      " \n ",
+      " \n",
+    },
+    {
+      10, 12,
+      " \n  \n ",
+      " \n  \n",
+    },
+    {
+      10, 12,
+      "0123456789 0123456789 0",
+      "0123456789\n0123456789\n0",
+    },
+    {
+      10, 12,
+      "   0123456789   0123456789   0  ",
+      "   0123456789\n0123456789\n0",
+    },
+    {
+      10, 12,
+      "01 34 67 90 23 56  89 12 45 67 89 1",
+      "01 34 67\n90 23 56\n89 12 45\n67 89 1"
+    },
+    {
+      10, 12,
+      "01 34 67 90 23 56  89 12 45 67 89 1",
+      "01 34 67\n90 23 56\n89 12 45\n67 89 1"
+    },
+    {
+      72, 80,
+      "Warning: if you think you've seen more than 10 messages "
+      "signed by this key, then this key might be a forgery!  "
+      "Carefully examine the email address for small variations "
+      "(e.g., additional white space).  If the key is suspect, "
+      "then use 'gpg --tofu-policy bad \"FINGERPRINT\"' to mark it as being bad.\n",
+      "Warning: if you think you've seen more than 10 messages signed by this\n"
+      "key, then this key might be a forgery!  Carefully examine the email\n"
+      "address for small variations (e.g., additional white space).  If the key\n"
+      "is suspect, then use 'gpg --tofu-policy bad \"FINGERPRINT\"' to mark it as\n"
+      "being bad.\n"
+
+    },
+    {
+      72, 80,
+      "Normally, there is only a single key associated with an email "
+      "address.  However, people sometimes generate a new key if "
+      "their key is too old or they think it might be compromised.  "
+      "Alternatively, a new key may indicate a man-in-the-middle "
+      "attack!  Before accepting this key, you should talk to or "
+      "call the person to make sure this new key is legitimate.",
+      "Normally, there is only a single key associated with an email "
+      "address.\nHowever, people sometimes generate a new key if "
+      "their key is too old or\nthey think it might be compromised.  "
+      "Alternatively, a new key may indicate\na man-in-the-middle "
+      "attack!  Before accepting this key, you should talk\nto or "
+      "call the person to make sure this new key is legitimate.",
+    }
+  };
+
+  int i;
+  int failed = 0;
+
+  for (i = 0; i < sizeof (tests) / sizeof (tests[0]); i ++)
+    {
+      struct test *test = &tests[i];
+      char *result =
+        format_text (test->input, 0, test->target_cols, test->max_cols);
+      if (strcmp (result, test->expected) != 0)
+        {
+          printf ("%s: Test #%d failed.\nExpected: '%s'\nResult: '%s'\n",
+                  __func__, i + 1, stresc (test->expected), stresc (result));
+          failed ++;
+        }
+      xfree (result);
+    }
+
+  if (failed)
+    fail(0);
+}
 
 int
 main (int argc, char **argv)
@@ -692,6 +828,7 @@ main (int argc, char **argv)
   test_make_absfilename_try ();
   test_strsplit ();
   test_strtokenize ();
+  test_format_text ();
 
   xfree (home_buffer);
   return 0;

@@ -2038,7 +2038,9 @@ get_trust (struct dbs *dbs, const char *fingerprint, const char *email,
 	    "Alternatively, a new key may indicate a man-in-the-middle "
 	    "attack!  Before accepting this key, you should talk to or "
 	    "call the person to make sure this new key is legitimate.";
+        text = format_text (text, 0, 72, 80);
 	es_fprintf (fp, "\n%s\n", text);
+        xfree (text);
       }
 
     es_fputc ('\n', fp);
@@ -2440,7 +2442,8 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 	  if (policy == TOFU_POLICY_AUTO && messages < 10)
 	    {
 	      char *set_policy_command;
-	      const char *text;
+	      char *text;
+              char *tmp;
 
 	      if (messages == 0)
 		log_info (_("Warning: we've have yet to see"
@@ -2462,9 +2465,14 @@ show_statistics (struct dbs *dbs, const char *fingerprint,
 		  "Carefully examine the email address for small variations "
 		  "(e.g., additional white space).  If the key is suspect, "
 		  "then use '%s' to mark it as being bad.\n";
-	      log_info (text,
-			messages, messages == 1 ? _("message") : _("message"),
-			set_policy_command);
+              tmp = xasprintf
+                (text,
+                 messages, messages == 1 ? _("message") : _("message"),
+                 set_policy_command);
+              text = format_text (tmp, 0, 72, 80);
+              xfree (tmp);
+	      log_info ("%s", text);
+              xfree (text);
 	      free (set_policy_command);
 	    }
 	}

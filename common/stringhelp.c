@@ -1327,3 +1327,132 @@ strtokenize (const char *string, const char *delim)
 
   return result;
 }
+
+char *
+format_text (char *text, int in_place, int target_cols, int max_cols)
+{
+  const int do_debug = 0;
+
+  /* The character under consideration.  */
+  char *p;
+  /* The start of the current line.  */
+  char *line;
+  /* The last space that we saw.  */
+  char *last_space = NULL;
+  int last_space_cols = 0;
+  int copied_last_space = 0;
+
+  if (! in_place)
+    text = xstrdup (text);
+
+  p = line = text;
+  while (1)
+    {
+      /* The number of columns including any trailing space.  */
+      int cols;
+
+      p = p + strcspn (p, "\n ");
+      if (! p)
+        /* P now points to the NUL character.  */
+        p = &text[strlen (text)];
+
+      if (*p == '\n')
+        /* Pass through any newlines.  */
+        {
+          p ++;
+          line = p;
+          last_space = NULL;
+          last_space_cols = 0;
+          copied_last_space = 1;
+          continue;
+        }
+
+      /* Have a space or a NUL.  Note: we don't count the trailing
+         space.  */
+      cols = utf8_charcount (line, (uintptr_t) p - (uintptr_t) line);
+      if (cols < target_cols)
+        {
+          if (! *p)
+            /* Nothing left to break.  */
+            break;
+
+          last_space = p;
+          last_space_cols = cols;
+          p ++;
+          /* Skip any immediately following spaces.  If we break:
+             "... foo bar ..." between "foo" and "bar" then we want:
+             "... foo\nbar ...", which means that the left space has
+             to be the first space after foo, not the last space
+             before bar.  */
+          while (*p == ' ')
+            p ++;
+        }
+      else
+        {
+          int cols_with_left_space;
+          int cols_with_right_space;
+          int left_penalty;
+          int right_penalty;
+
+          cols_with_left_space = last_space_cols;
+          cols_with_right_space = cols;
+
+          if (do_debug)
+            log_debug ("Breaking: '%.*s'\n",
+                       (int) ((uintptr_t) p - (uintptr_t) line), line);
+
+          /* The number of columns away from TARGET_COLS.  We prefer
+             to underflow than to overflow.  */
+          left_penalty = target_cols - cols_with_left_space;
+          right_penalty = 2 * (cols_with_right_space - target_cols);
+
+          if (cols_with_right_space > max_cols)
+            /* Add a large penalty for each column that exceeds
+               max_cols.  */
+            right_penalty += 4 * (cols_with_right_space - max_cols);
+
+          if (do_debug)
+            log_debug ("Left space => %d cols (penalty: %d); right space => %d cols (penalty: %d)\n",
+                       cols_with_left_space, left_penalty,
+                       cols_with_right_space, right_penalty);
+          if (last_space_cols && left_penalty <= right_penalty)
+            /* Prefer the left space.  */
+            {
+              if (do_debug)
+                log_debug ("Breaking at left space.\n");
+              p = last_space;
+            }
+          else
+            {
+              if (do_debug)
+                log_debug ("Breaking at right space.\n");
+            }
+
+          if (! *p)
+            break;
+
+          *p = '\n';
+          p ++;
+          if (*p == ' ')
+            {
+              int spaces;
+              for (spaces = 1; p[spaces] == ' '; spaces ++)
+                ;
+              memmove (p, &p[spaces], strlen (&p[spaces]) + 1);
+            }
+          line = p;
+          last_space = NULL;
+          last_space_cols = 0;
+          copied_last_space = 0;
+        }
+    }
+
+  /* Chop off any trailing space.  */
+  while (text[strlen (text) - 1] == ' ')
+    text[strlen (text) - 1] = '\0';
+  /* If we inserted the trailing newline, then remove it.  */
+  if (! copied_last_space && text[strlen (text) - 1] == '\n')
+    text[strlen (text) - 1] = '\0';
+
+  return text;
+}

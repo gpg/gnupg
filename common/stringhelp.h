@@ -148,6 +148,11 @@ char **strsplit (char *string, char delim, char replacement, int *count);
 /* Tokenize STRING using the set of delimiters in DELIM.  */
 char **strtokenize (const char *string, const char *delim);
 
+/* Format a string so that it fits within about TARGET_COLS columns.
+   If IN_PLACE is 0, then TEXT is copied to a new buffer, which is
+   returned.  Otherwise, TEXT is modified in place and returned.
+   Normally, target_cols will be 72 and max_cols is 80.  */
+char *format_text (char *text, int in_place, int target_cols, int max_cols);
 
 /*-- mapstrings.c --*/
 const char *map_static_macro_string (const char *string);
