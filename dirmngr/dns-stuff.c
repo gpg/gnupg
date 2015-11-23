@@ -253,7 +253,6 @@ resolve_name_adns (const char *name, unsigned short port,
   adns_answer *answer = NULL;
   int count;
 
-  (void)port;
   (void)want_family;
 
   *r_dai = NULL;
@@ -319,6 +318,7 @@ resolve_name_adns (const char *name, unsigned short port,
       dai->protocol = want_socktype == SOCK_STREAM? IPPROTO_TCP : IPPROTO_UDP;
       dai->addrlen = len;
       memcpy (dai->addr, &addr->addr.sa, len);
+      ((struct sockaddr_in *) dai->addr)->sin_port = htons (port);
       dai->next = daihead;
       daihead = dai;
       err = 0;
