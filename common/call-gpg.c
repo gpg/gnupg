@@ -321,11 +321,11 @@ start_reader (int fd, membuf_t *mb, npth_t *r_thread, gpg_error_t *err_addr)
 
 
  */
-gpg_error_t
-gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
-                  const void *plain, size_t plainlen,
-                  strlist_t keys,
-                  void **r_ciph, size_t *r_ciphlen)
+static gpg_error_t
+_gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
+              const void *plain, size_t plainlen,
+              strlist_t keys,
+              membuf_t *reader_mb)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
@@ -334,16 +334,9 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
   npth_t writer_thread = (npth_t)0;
   npth_t reader_thread = (npth_t)0;
   gpg_error_t writer_err, reader_err;
-  membuf_t reader_mb;
   char line[ASSUAN_LINELENGTH];
   strlist_t sl;
   int ret;
-
-  *r_ciph = NULL;
-  *r_ciphlen = 0;
-
-  /* Init the memory buffer to receive the encrypted stuff.  */
-  init_membuf (&reader_mb, 4096);
 
   /* Create two pipes.  */
   err = gnupg_create_outbound_pipe (outbound_fds);
@@ -371,7 +364,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
 
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
-  err = start_reader (inbound_fds[0], &reader_mb,
+  err = start_reader (inbound_fds[0], reader_mb,
                       &reader_thread, &reader_err);
   if (err)
     return err;
@@ -431,16 +424,6 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
       goto leave;
     }
 
-  /* Return the data.  */
-  *r_ciph = get_membuf (&reader_mb, r_ciphlen);
-  if (!*r_ciph)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error while storing the data in the reader thread: %s\n",
-                 gpg_strerror (err));
-      goto leave;
-    }
-
  leave:
   /* FIXME: Not valid, as npth_t is an opaque type.  */
   if (reader_thread)
@@ -456,20 +439,54 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
   if (inbound_fds[1] != -1)
     close (inbound_fds[1]);
   release_gpg (ctx);
-  xfree (get_membuf (&reader_mb, NULL));
   return err;
 }
 
+gpg_error_t
+gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
+                  const void *plain, size_t plainlen,
+                  strlist_t keys,
+                  void **r_ciph, size_t *r_ciphlen)
+{
+  gpg_error_t err;
+  membuf_t reader_mb;
+
+  *r_ciph = NULL;
+  *r_ciphlen = 0;
+
+  /* Init the memory buffer to receive the encrypted stuff.  */
+  init_membuf (&reader_mb, 4096);
+
+  err = _gpg_encrypt (ctrl, gpg_program,
+                      plain, plainlen,
+                      keys,
+                      &reader_mb);
+
+  if (! err)
+    {
+      /* Return the data.  */
+      *r_ciph = get_membuf (&reader_mb, r_ciphlen);
+      if (!*r_ciph)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error while storing the data in the reader thread: %s\n",
+                     gpg_strerror (err));
+        }
+    }
+
+  xfree (get_membuf (&reader_mb, NULL));
+  return err;
+}
 
 
 /* Call GPG to decrypt a block of data.
 
 
  */
-gpg_error_t
-gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
-                  const void *ciph, size_t ciphlen,
-                  void **r_plain, size_t *r_plainlen)
+static gpg_error_t
+_gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
+              const void *ciph, size_t ciphlen,
+              membuf_t *reader_mb)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
@@ -478,14 +495,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
   npth_t writer_thread = (npth_t)0;
   npth_t reader_thread = (npth_t)0;
   gpg_error_t writer_err, reader_err;
-  membuf_t reader_mb;
   int ret;
-
-  *r_plain = NULL;
-  *r_plainlen = 0;
-
-  /* Init the memory buffer to receive the encrypted stuff.  */
-  init_membuf_secure (&reader_mb, 1024);
 
   /* Create two pipes.  */
   err = gnupg_create_outbound_pipe (outbound_fds);
@@ -513,7 +523,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
 
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
-  err = start_reader (inbound_fds[0], &reader_mb,
+  err = start_reader (inbound_fds[0], reader_mb,
                       &reader_thread, &reader_err);
   if (err)
     return err;
@@ -560,16 +570,6 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
       goto leave;
     }
 
-  /* Return the data.  */
-  *r_plain = get_membuf (&reader_mb, r_plainlen);
-  if (!*r_plain)
-    {
-      err = gpg_error_from_syserror ();
-      log_error ("error while storing the data in the reader thread: %s\n",
-                 gpg_strerror (err));
-      goto leave;
-    }
-
  leave:
   if (reader_thread)
     npth_detach (reader_thread);
@@ -584,6 +584,39 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
   if (inbound_fds[1] != -1)
     close (inbound_fds[1]);
   release_gpg (ctx);
+  return err;
+}
+
+gpg_error_t
+gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
+                  const void *ciph, size_t ciphlen,
+                  void **r_plain, size_t *r_plainlen)
+{
+  gpg_error_t err;
+  membuf_t reader_mb;
+
+  *r_plain = NULL;
+  *r_plainlen = 0;
+
+  /* Init the memory buffer to receive the encrypted stuff.  */
+  init_membuf_secure (&reader_mb, 1024);
+
+  err = _gpg_decrypt (ctrl, gpg_program,
+                      ciph, ciphlen,
+                      &reader_mb);
+
+  if (! err)
+    {
+      /* Return the data.  */
+      *r_plain = get_membuf (&reader_mb, r_plainlen);
+      if (!*r_plain)
+        {
+          err = gpg_error_from_syserror ();
+          log_error ("error while storing the data in the reader thread: %s\n",
+                     gpg_strerror (err));
+        }
+    }
+
   xfree (get_membuf (&reader_mb, NULL));
   return err;
 }
