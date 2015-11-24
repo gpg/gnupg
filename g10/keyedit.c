@@ -4916,15 +4916,20 @@ menu_select_key (KBNODE keyblock, int idx, char *p)
   is_hex_digits = p && strlen (p) >= 8;
   if (is_hex_digits)
     {
+      /* Skip initial spaces.  */
+      while (spacep (p))
+        p ++;
+      /* If the id starts with 0x accept and ignore it.  */
+      if (p[0] == '0' && p[1] == 'x')
+        p += 2;
+
       for (i = 0, j = 0; p[i]; i ++)
-        if (('0' <= p[i] && p[i] <= '9')
-            || ('A' <= p[i] && p[i] <= 'F')
-            || ('a' <= p[i] && p[i] <= 'f'))
+        if (hexdigitp (&p[i]))
           {
             p[j] = toupper (p[i]);
             j ++;
           }
-        else if (p[i] == ' ')
+        else if (spacep (&p[i]))
           /* Skip spaces.  */
           {
           }
@@ -4939,7 +4944,13 @@ menu_select_key (KBNODE keyblock, int idx, char *p)
           p[j] = 0;
           /* If we skipped some spaces, make sure that we still have
              at least 8 characters.  */
-          is_hex_digits = strlen (p) >= 8;
+          is_hex_digits = (/* Short keyid.  */
+                           strlen (p) == 8
+                           /* Long keyid.  */
+                           || strlen (p) == 16
+                           /* Fingerprints are (currently) 32 or 40
+                              characters.  */
+                           || strlen (p) >= 32);
         }
     }
 
@@ -4950,14 +4961,32 @@ menu_select_key (KBNODE keyblock, int idx, char *p)
 	if (node->pkt->pkttype == PKT_PUBLIC_SUBKEY
 	    || node->pkt->pkttype == PKT_SECRET_SUBKEY)
           {
-            char fp[2*MAX_FINGERPRINT_LEN + 1];
-            hexfingerprint (node->pkt->pkt.public_key, fp, sizeof (fp));
-            if (strcmp (&fp[strlen (fp) - strlen (p)], p) == 0)
+            int match = 0;
+            if (strlen (p) == 8 || strlen (p) == 16)
               {
-		if ((node->flag & NODFLG_SELKEY))
-		  node->flag &= ~NODFLG_SELKEY;
-		else
-		  node->flag |= NODFLG_SELKEY;
+                u32 kid[2];
+                char kid_str[17];
+                keyid_from_pk (node->pkt->pkt.public_key, kid);
+                format_keyid (kid, strlen (p) == 8 ? KF_SHORT : KF_LONG,
+                              kid_str, sizeof (kid_str));
+
+                if (strcmp (p, kid_str) == 0)
+                  match = 1;
+              }
+            else
+              {
+                char fp[2*MAX_FINGERPRINT_LEN + 1];
+                hexfingerprint (node->pkt->pkt.public_key, fp, sizeof (fp));
+                if (strcmp (fp, p) == 0)
+                  match = 1;
+              }
+
+            if (match)
+              {
+                if ((node->flag & NODFLG_SELKEY))
+                  node->flag &= ~NODFLG_SELKEY;
+                else
+                  node->flag |= NODFLG_SELKEY;
 
                 found_one = 1;
               }
