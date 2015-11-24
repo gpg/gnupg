@@ -34,7 +34,7 @@
 #include "backend.h"
 #include "utils.h"
 #include "../common/sysutils.h"
-#include "call-gpg.h"
+#include "../common/call-gpg.h"
 #include "mountinfo.h"
 #include "runner.h"
 #include "host2net.h"
@@ -202,7 +202,7 @@ decrypt_keyblob (ctrl_t ctrl, const void *enckeyblob, size_t enckeybloblen,
   gpg_error_t err;
 
   /* FIXME:  For now we only implement OpenPGP.  */
-  err = gpg_decrypt_blob (ctrl, enckeyblob, enckeybloblen,
+  err = gpg_decrypt_blob (ctrl, opt.gpg_program, enckeyblob, enckeybloblen,
                           r_keyblob, r_keybloblen);
 
   return err;

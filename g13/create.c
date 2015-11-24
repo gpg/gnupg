@@ -33,7 +33,7 @@
 #include "keyblob.h"
 #include "backend.h"
 #include "utils.h"
-#include "call-gpg.h"
+#include "../common/call-gpg.h"
 
 /* Create a new blob with all the session keys and other meta
    information which are to be stored encrypted in the crypto
@@ -111,7 +111,7 @@ encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
   gpg_error_t err;
 
   /* FIXME:  For now we only implement OpenPGP.  */
-  err = gpg_encrypt_blob (ctrl, keyblob, keybloblen, keys,
+  err = gpg_encrypt_blob (ctrl, opt.gpg_program, keyblob, keybloblen, keys,
                           r_encblob, r_encbloblen);
 
   return err;

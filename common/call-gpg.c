@@ -18,27 +18,29 @@
  */
 
 #include <config.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <time.h>
+
 #include <assert.h>
-#include <npth.h>
-
-#include "g13.h"
 #include <assuan.h>
-#include "i18n.h"
-#include "call-gpg.h"
-#include "utils.h"
-#include "../common/exechelp.h"
+#include <errno.h>
+#include <npth.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
 
+#include "call-gpg.h"
+#include "exechelp.h"
+#include "i18n.h"
+#include "logging.h"
+#include "membuf.h"
+#include "util.h"
 
 
 /* Fire up a new GPG.  Handle the server's initial greeting.  Returns
    0 on success and stores the assuan context at R_CTX.  */
 static gpg_error_t
-start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
+start_gpg (ctrl_t ctrl, const char *gpg_program,
+           int input_fd, int output_fd, assuan_context_t *r_ctx)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
@@ -60,15 +62,12 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
     }
 
   /* The first time we are used, intialize the gpg_program variable.  */
-  if ( !opt.gpg_program || !*opt.gpg_program )
-    opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
-
-  if (opt.verbose)
-    log_info (_("no running gpg - starting '%s'\n"), opt.gpg_program);
+  if ( !gpg_program || !*gpg_program )
+    gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
 
   /* Compute argv[0].  */
-  if ( !(pgmname = strrchr (opt.gpg_program, '/')))
-    pgmname = opt.gpg_program;
+  if ( !(pgmname = strrchr (gpg_program, '/')))
+    pgmname = gpg_program;
   else
     pgmname++;
 
@@ -82,8 +81,6 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
   i = 0;
   argv[i++] = pgmname;
   argv[i++] = "--server";
-  if ((opt.debug & 1024))
-    argv[i++] = "--debug=1024";
   argv[i++] = "-z";
   argv[i++] = "0";
   argv[i++] = "--trust-model";
@@ -101,7 +98,7 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
   no_close_list[i] = -1;
 
   /* Connect to GPG and perform initial handshaking.  */
-  err = assuan_pipe_connect (ctx, opt.gpg_program, argv, no_close_list,
+  err = assuan_pipe_connect (ctx, gpg_program, argv, no_close_list,
 			     NULL, NULL, 0);
   if (err)
     {
@@ -135,9 +132,6 @@ start_gpg (ctrl_t ctrl, int input_fd, int output_fd, assuan_context_t *r_ctx)
     }
 
   *r_ctx = ctx;
-
-  if (DBG_IPC)
-    log_debug ("connection to GPG established\n");
   return 0;
 }
 
@@ -328,8 +322,10 @@ start_reader (int fd, membuf_t *mb, npth_t *r_thread, gpg_error_t *err_addr)
 
  */
 gpg_error_t
-gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
-                  strlist_t keys, void **r_ciph, size_t *r_ciphlen)
+gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
+                  const void *plain, size_t plainlen,
+                  strlist_t keys,
+                  void **r_ciph, size_t *r_ciphlen)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
@@ -360,7 +356,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
     }
 
   /* Start GPG and send the INPUT and OUTPUT commands.  */
-  err = start_gpg (ctrl, outbound_fds[0], inbound_fds[1], &ctx);
+  err = start_gpg (ctrl, gpg_program, outbound_fds[0], inbound_fds[1], &ctx);
   if (err)
     goto leave;
   close (outbound_fds[0]); outbound_fds[0] = -1;
@@ -471,7 +467,8 @@ gpg_encrypt_blob (ctrl_t ctrl, const void *plain, size_t plainlen,
 
  */
 gpg_error_t
-gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
+gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
+                  const void *ciph, size_t ciphlen,
                   void **r_plain, size_t *r_plainlen)
 {
   gpg_error_t err;
@@ -501,7 +498,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const void *ciph, size_t ciphlen,
     }
 
   /* Start GPG and send the INPUT and OUTPUT commands.  */
-  err = start_gpg (ctrl, outbound_fds[0], inbound_fds[1], &ctx);
+  err = start_gpg (ctrl, gpg_program, outbound_fds[0], inbound_fds[1], &ctx);
   if (err)
     goto leave;
   close (outbound_fds[0]); outbound_fds[0] = -1;

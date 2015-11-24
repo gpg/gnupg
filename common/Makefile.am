@@ -86,7 +86,8 @@ common_sources = \
 	agent-opt.c \
 	helpfile.c \
 	mkdir_p.c mkdir_p.h \
-	strlist.c strlist.h
+	strlist.c strlist.h \
+	call-gpg.c call-gpg.h
 
 if HAVE_W32_SYSTEM
 common_sources += w32-reg.c w32-afunix.c w32-afunix.h
