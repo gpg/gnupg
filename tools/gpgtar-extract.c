@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "i18n.h"
+#include "../common/call-gpg.h"
 #include "../common/sysutils.h"
 #include "gpgtar.h"
 
@@ -265,10 +266,11 @@ create_directory (const char *dirprefix)
 
 
 void
-gpgtar_extract (const char *filename)
+gpgtar_extract (const char *filename, int decrypt)
 {
   gpg_error_t err;
   estream_t stream;
+  estream_t cipher_stream = NULL;
   tar_header_t header = NULL;
   const char *dirprefix = NULL;
   char *dirname = NULL;
@@ -291,6 +293,24 @@ gpgtar_extract (const char *filename)
 
   if (stream == es_stdin)
     es_set_binary (es_stdin);
+
+  if (decrypt)
+    {
+      cipher_stream = stream;
+      stream = es_fopenmem (0, "rwb");
+      if (! stream)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      err = gpg_decrypt_stream (NULL, NULL, cipher_stream, stream);
+      if (err)
+        goto leave;
+
+      err = es_fseek (stream, 0, SEEK_SET);
+      if (err)
+        goto leave;
+    }
 
   if (filename)
     {
@@ -340,5 +360,7 @@ gpgtar_extract (const char *filename)
   xfree (dirname);
   if (stream != es_stdin)
     es_fclose (stream);
+  if (stream != cipher_stream)
+    es_fclose (cipher_stream);
   return;
 }

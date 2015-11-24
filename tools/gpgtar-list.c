@@ -26,6 +26,7 @@
 
 #include "i18n.h"
 #include "gpgtar.h"
+#include "../common/call-gpg.h"
 
 
 
@@ -267,10 +268,11 @@ print_header (tar_header_t header, estream_t out)
 /* List the tarball FILENAME or, if FILENAME is NULL, the tarball read
    from stdin.  */
 void
-gpgtar_list (const char *filename)
+gpgtar_list (const char *filename, int decrypt)
 {
   gpg_error_t err;
   estream_t stream;
+  estream_t cipher_stream = NULL;
   tar_header_t header;
 
   if (filename)
@@ -292,6 +294,24 @@ gpgtar_list (const char *filename)
   if (stream == es_stdin)
     es_set_binary (es_stdin);
 
+  if (decrypt)
+    {
+      cipher_stream = stream;
+      stream = es_fopenmem (0, "rwb");
+      if (! stream)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      err = gpg_decrypt_stream (NULL, NULL, cipher_stream, stream);
+      if (err)
+        goto leave;
+
+      err = es_fseek (stream, 0, SEEK_SET);
+      if (err)
+        goto leave;
+    }
+
   for (;;)
     {
       header = read_header (stream);
@@ -311,6 +331,8 @@ gpgtar_list (const char *filename)
   xfree (header);
   if (stream != es_stdin)
     es_fclose (stream);
+  if (stream != cipher_stream)
+    es_fclose (cipher_stream);
   return;
 }
 

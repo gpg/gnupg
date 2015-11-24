@@ -27,7 +27,9 @@
    gpg.  So here we go.  */
 
 #include <config.h>
+#include <assuan.h>
 #include <errno.h>
+#include <npth.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -100,13 +102,6 @@ static ARGPARSE_OPTS opts[] = {
 
 
 
-static void tar_and_encrypt (char **inpattern);
-static void decrypt_and_untar (const char *fname);
-static void decrypt_and_list (const char *fname);
-
-
-
-
 /* Print usage information and and provide strings for help. */
 static const char *
 my_strusage( int level )
@@ -156,6 +151,7 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
   *ret_cmd = cmd;
 }
 
+ASSUAN_SYSTEM_NPTH_IMPL;
 
 
 /* gpgtar main. */
@@ -179,6 +175,11 @@ main (int argc, char **argv)
   /* Make sure that our subsystems are ready.  */
   i18n_init();
   init_common_subsystems (&argc, &argv);
+  npth_init ();
+  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
+  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
+  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
+  assuan_sock_init ();
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -203,7 +204,17 @@ main (int argc, char **argv)
           set_cmd (&cmd, pargs.r_opt);
 	  break;
 
+        case oRecipient:
+          add_to_strlist (&opt.recipients, pargs.r.ret_str);
+          break;
+
+        case oUser:
+          log_info ("note: ignoring option --user\n");
+          opt.user = pargs.r.ret_str;
+          break;
+
         case oSymmetric:
+          log_info ("note: ignoring option --symmetric\n");
           set_cmd (&cmd, aEncrypt);
           opt.symmetric = 1;
           break;
@@ -237,6 +248,10 @@ main (int argc, char **argv)
           log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
+  if (opt.verbose > 1)
+    opt.debug_level = 1024;
+  setup_libassuan_logging (&opt.debug_level);
+
   switch (cmd)
     {
     case aList:
@@ -247,10 +262,7 @@ main (int argc, char **argv)
         log_info ("note: ignoring option --set-filename\n");
       if (files_from)
         log_info ("note: ignoring option --files-from\n");
-      if (skip_crypto)
-        gpgtar_list (fname);
-      else
-        decrypt_and_list (fname);
+      gpgtar_list (fname, !skip_crypto);
       break;
 
     case aEncrypt:
@@ -259,10 +271,7 @@ main (int argc, char **argv)
         usage (1);
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
-      if (skip_crypto)
-        gpgtar_create (null_names? NULL :argv);
-      else
-        tar_and_encrypt (null_names? NULL : argv);
+      gpgtar_create (null_names? NULL :argv, !skip_crypto);
       break;
 
     case aDecrypt:
@@ -273,10 +282,7 @@ main (int argc, char **argv)
       if (files_from)
         log_info ("note: ignoring option --files-from\n");
       fname = argc ? *argv : NULL;
-      if (skip_crypto)
-        gpgtar_extract (fname);
-      else
-        decrypt_and_untar (fname);
+      gpgtar_extract (fname, !skip_crypto);
       break;
 
     default:
@@ -378,31 +384,3 @@ openpgp_message_p (estream_t fp)
   return 0;
 }
 #endif
-
-
-
-
-static void
-tar_and_encrypt (char **inpattern)
-{
-  (void)inpattern;
-  log_error ("tar_and_encrypt has not yet been implemented\n");
-}
-
-
-
-static void
-decrypt_and_untar (const char *fname)
-{
-  (void)fname;
-  log_error ("decrypt_and_untar has not yet been implemented\n");
-}
-
-
-
-static void
-decrypt_and_list (const char *fname)
-{
-  (void)fname;
-  log_error ("decrypt_and_list has not yet been implemented\n");
-}

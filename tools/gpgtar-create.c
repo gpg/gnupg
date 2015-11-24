@@ -36,6 +36,7 @@
 #include <assert.h>
 
 #include "i18n.h"
+#include "../common/call-gpg.h"
 #include "../common/sysutils.h"
 #include "gpgtar.h"
 
@@ -740,13 +741,14 @@ write_eof_mark (estream_t stream)
    INPATTERN is NULL take the pattern as null terminated strings from
    stdin.  */
 void
-gpgtar_create (char **inpattern)
+gpgtar_create (char **inpattern, int encrypt)
 {
   gpg_error_t err = 0;
   struct scanctrl_s scanctrl_buffer;
   scanctrl_t scanctrl = &scanctrl_buffer;
   tar_header_t hdr, *start_tail;
   estream_t outstream = NULL;
+  estream_t cipher_stream = NULL;
   int eof_seen = 0;
 
   if (!inpattern)
@@ -863,6 +865,17 @@ gpgtar_create (char **inpattern)
   if (outstream == es_stdout)
     es_set_binary (es_stdout);
 
+  if (encrypt)
+    {
+      cipher_stream = outstream;
+      outstream = es_fopenmem (0, "rwb");
+      if (! outstream)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+    }
+
   for (hdr = scanctrl->flist; hdr; hdr = hdr->next)
     {
       err = write_file (outstream, hdr);
@@ -870,6 +883,22 @@ gpgtar_create (char **inpattern)
         goto leave;
     }
   err = write_eof_mark (outstream);
+  if (err)
+    goto leave;
+
+  if (encrypt)
+    {
+      err = es_fseek (outstream, 0, SEEK_SET);
+      if (err)
+        goto leave;
+
+      err = gpg_encrypt_stream (NULL, NULL,
+                                outstream,
+                                opt.recipients,
+                                cipher_stream);
+      if (err)
+        goto leave;
+    }
 
  leave:
   if (!err)
@@ -879,6 +908,11 @@ gpgtar_create (char **inpattern)
       else
         err = es_fflush (outstream);
       outstream = NULL;
+      if (cipher_stream != es_stdout)
+        err = es_fclose (cipher_stream);
+      else
+        err = es_fflush (cipher_stream);
+      cipher_stream = NULL;
     }
   if (err)
     {
@@ -886,6 +920,8 @@ gpgtar_create (char **inpattern)
                  es_fname_get (outstream), gpg_strerror (err));
       if (outstream && outstream != es_stdout)
         es_fclose (outstream);
+      if (cipher_stream && cipher_stream != es_stdout)
+        es_fclose (cipher_stream);
       if (opt.outfile)
         gnupg_remove (opt.outfile);
     }

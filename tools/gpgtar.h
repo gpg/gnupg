@@ -21,13 +21,17 @@
 #define GPGTAR_H
 
 #include "../common/util.h"
+#include "../common/strlist.h"
 
 /* We keep all global options in the structure OPT.  */
 struct
 {
   int verbose;
+  unsigned int debug_level;
   int quiet;
   const char *outfile;
+  strlist_t recipients;
+  const char *user;
   int symmetric;
   const char *filename;
 } opt;
@@ -111,13 +115,13 @@ gpg_error_t read_record (estream_t stream, void *record);
 gpg_error_t write_record (estream_t stream, const void *record);
 
 /*-- gpgtar-create.c --*/
-void gpgtar_create (char **inpattern);
+void gpgtar_create (char **inpattern, int encrypt);
 
 /*-- gpgtar-extract.c --*/
-void gpgtar_extract (const char *filename);
+void gpgtar_extract (const char *filename, int decrypt);
 
 /*-- gpgtar-list.c --*/
-void gpgtar_list (const char *filename);
+void gpgtar_list (const char *filename, int decrypt);
 tar_header_t gpgtar_read_header (estream_t stream);
 void gpgtar_print_header (tar_header_t header, estream_t out);
 

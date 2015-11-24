@@ -142,9 +142,9 @@ gpgtar_SOURCES = \
 	gpgtar-extract.c \
 	gpgtar-list.c \
 	no-libgcrypt.c
-gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(PTH_CFLAGS)
-#gpgtar_LDADD = $(commonpth_libs) $(PTH_LIBS) $(GPG_ERROR_LIBS)
-gpgtar_LDADD = $(common_libs) $(GPG_ERROR_LIBS) \
+gpgtar_CFLAGS = $(GPG_ERROR_CFLAGS) $(NPTH_CFLAGS) $(LIBASSUAN_CFLAGS)
+gpgtar_LDADD = $(libcommonpth) $(GPG_ERROR_LIBS) \
+               $(NPTH_LIBS) $(LIBASSUAN_LIBS) \
                $(LIBINTL) $(NETLIBS) $(LIBICONV) $(W32SOCKLIBS)
 
 
