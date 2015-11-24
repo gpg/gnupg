@@ -20,6 +20,8 @@
 #ifndef G13_CALL_GPG_H
 #define G13_CALL_GPG_H
 
+#include <gpg-error.h>
+
 #include "strlist.h"
 
 typedef struct server_control_s *ctrl_t;
@@ -28,10 +30,18 @@ gpg_error_t gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
                               const void *plain, size_t plainlen,
                               strlist_t keys,
                               void **r_ciph, size_t *r_ciphlen);
+
+gpg_error_t gpg_encrypt_stream (ctrl_t ctrl, const char *gpg_program,
+				estream_t plain_stream,
+				strlist_t keys,
+				estream_t cipher_stream);
+
 gpg_error_t gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
 			      const void *ciph, size_t ciphlen,
                               void **r_plain, size_t *r_plainlen);
 
-
+gpg_error_t gpg_decrypt_stream (ctrl_t ctrl, const char *gpg_program,
+				estream_t cipher_stream,
+				estream_t plain_stream);
 
 #endif /*G13_CALL_GPG_H*/

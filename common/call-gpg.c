@@ -151,6 +151,7 @@ struct writer_thread_parms
   int fd;
   const void *data;
   size_t datalen;
+  estream_t stream;
   gpg_error_t *err_addr;
 };
 
@@ -159,9 +160,27 @@ struct writer_thread_parms
 static void *
 writer_thread_main (void *arg)
 {
+  gpg_error_t err = 0;
   struct writer_thread_parms *parm = arg;
-  const char *buffer = parm->data;
-  size_t length = parm->datalen;
+  char _buffer[4096];
+  char *buffer;
+  size_t length;
+
+  if (parm->stream)
+    {
+      buffer = _buffer;
+      err = es_read (parm->stream, buffer, sizeof _buffer, &length);
+      if (err)
+        {
+          log_error ("reading stream failed: %s\n", gpg_strerror (err));
+          goto leave;
+        }
+    }
+  else
+    {
+      buffer = (char *) parm->data;
+      length = parm->datalen;
+    }
 
   while (length)
     {
@@ -172,13 +191,33 @@ writer_thread_main (void *arg)
         {
           if (errno == EINTR)
             continue;
-          *parm->err_addr = gpg_error_from_syserror ();
+          err = gpg_error_from_syserror ();
           break; /* Write error.  */
         }
       length -= nwritten;
-      buffer += nwritten;
+
+      if (parm->stream)
+        {
+          if (length == 0)
+            {
+              err = es_read (parm->stream, buffer, sizeof _buffer, &length);
+              if (err)
+                {
+                  log_error ("reading stream failed: %s\n",
+                             gpg_strerror (err));
+                  break;
+                }
+              if (length == 0)
+                /* We're done.  */
+                break;
+            }
+        }
+      else
+        buffer += nwritten;
     }
 
+ leave:
+  *parm->err_addr = err;
   if (close (parm->fd))
     log_error ("closing writer fd %d failed: %s\n", parm->fd, strerror (errno));
   xfree (parm);
@@ -192,7 +231,7 @@ writer_thread_main (void *arg)
    variable to receive a possible write error after the thread has
    finished.  */
 static gpg_error_t
-start_writer (int fd, const void *data, size_t datalen,
+start_writer (int fd, const void *data, size_t datalen, estream_t stream,
               npth_t *r_thread, gpg_error_t *err_addr)
 {
   gpg_error_t err;
@@ -210,6 +249,7 @@ start_writer (int fd, const void *data, size_t datalen,
   parm->fd = fd;
   parm->data = data;
   parm->datalen = datalen;
+  parm->stream = stream;
   parm->err_addr = err_addr;
 
   npth_attr_init (&tattr);
@@ -239,6 +279,7 @@ struct reader_thread_parms
 {
   int fd;
   membuf_t *mb;
+  estream_t stream;
   gpg_error_t *err_addr;
 };
 
@@ -247,6 +288,7 @@ struct reader_thread_parms
 static void *
 reader_thread_main (void *arg)
 {
+  gpg_error_t err = 0;
   struct reader_thread_parms *parm = arg;
   char buffer[4096];
   int nread;
@@ -257,13 +299,33 @@ reader_thread_main (void *arg)
         {
           if (errno == EINTR)
             continue;
-          *parm->err_addr = gpg_error_from_syserror ();
+          err = gpg_error_from_syserror ();
           break;  /* Read error.  */
         }
 
-      put_membuf (parm->mb, buffer, nread);
+      if (parm->stream)
+        {
+          const char *p = buffer;
+          size_t nwritten;
+          while (nread)
+            {
+              err = es_write (parm->stream, p, nread, &nwritten);
+              if (err)
+                {
+                  log_error ("writing stream failed: %s\n",
+                             gpg_strerror (err));
+                  goto leave;
+                }
+              nread -= nwritten;
+              p += nwritten;
+            }
+        }
+      else
+        put_membuf (parm->mb, buffer, nread);
     }
 
+ leave:
+  *parm->err_addr = err;
   if (close (parm->fd))
     log_error ("closing reader fd %d failed: %s\n", parm->fd, strerror (errno));
   xfree (parm);
@@ -276,7 +338,8 @@ reader_thread_main (void *arg)
    is stored at R_TID.  After the thread has finished an error from
    the thread will be stored at ERR_ADDR.  */
 static gpg_error_t
-start_reader (int fd, membuf_t *mb, npth_t *r_thread, gpg_error_t *err_addr)
+start_reader (int fd, membuf_t *mb, estream_t stream,
+              npth_t *r_thread, gpg_error_t *err_addr)
 {
   gpg_error_t err;
   struct reader_thread_parms *parm;
@@ -292,6 +355,7 @@ start_reader (int fd, membuf_t *mb, npth_t *r_thread, gpg_error_t *err_addr)
     return gpg_error_from_syserror ();
   parm->fd = fd;
   parm->mb = mb;
+  parm->stream = stream;
   parm->err_addr = err_addr;
 
   npth_attr_init (&tattr);
@@ -324,8 +388,10 @@ start_reader (int fd, membuf_t *mb, npth_t *r_thread, gpg_error_t *err_addr)
 static gpg_error_t
 _gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
               const void *plain, size_t plainlen,
+              estream_t plain_stream,
               strlist_t keys,
-              membuf_t *reader_mb)
+              membuf_t *reader_mb,
+              estream_t cipher_stream)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
@@ -337,6 +403,11 @@ _gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
   char line[ASSUAN_LINELENGTH];
   strlist_t sl;
   int ret;
+
+  /* Make sure that either the stream interface xor the buffer
+     interface is used.  */
+  assert ((plain == NULL) != (plain_stream == NULL));
+  assert ((reader_mb == NULL) != (cipher_stream == NULL));
 
   /* Create two pipes.  */
   err = gnupg_create_outbound_pipe (outbound_fds);
@@ -356,7 +427,7 @@ _gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
   close (inbound_fds[1]); inbound_fds[1] = -1;
 
   /* Start a writer thread to feed the INPUT command of the server.  */
-  err = start_writer (outbound_fds[1], plain, plainlen,
+  err = start_writer (outbound_fds[1], plain, plainlen, plain_stream,
                       &writer_thread, &writer_err);
   if (err)
     return err;
@@ -364,7 +435,7 @@ _gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
 
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
-  err = start_reader (inbound_fds[0], reader_mb,
+  err = start_reader (inbound_fds[0], reader_mb, cipher_stream,
                       &reader_thread, &reader_err);
   if (err)
     return err;
@@ -458,9 +529,9 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
   init_membuf (&reader_mb, 4096);
 
   err = _gpg_encrypt (ctrl, gpg_program,
-                      plain, plainlen,
+                      plain, plainlen, NULL,
                       keys,
-                      &reader_mb);
+                      &reader_mb, NULL);
 
   if (! err)
     {
@@ -478,6 +549,17 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
   return err;
 }
 
+gpg_error_t
+gpg_encrypt_stream (ctrl_t ctrl, const char *gpg_program,
+                    estream_t plain_stream,
+                    strlist_t keys,
+                    estream_t cipher_stream)
+{
+  return _gpg_encrypt (ctrl, gpg_program,
+                       NULL, 0, plain_stream,
+                       keys,
+                       NULL, cipher_stream);
+}
 
 /* Call GPG to decrypt a block of data.
 
@@ -486,7 +568,9 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
 static gpg_error_t
 _gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
               const void *ciph, size_t ciphlen,
-              membuf_t *reader_mb)
+              estream_t cipher_stream,
+              membuf_t *reader_mb,
+              estream_t plain_stream)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
@@ -496,6 +580,11 @@ _gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
   npth_t reader_thread = (npth_t)0;
   gpg_error_t writer_err, reader_err;
   int ret;
+
+  /* Make sure that either the stream interface xor the buffer
+     interface is used.  */
+  assert ((ciph == NULL) != (cipher_stream == NULL));
+  assert ((reader_mb == NULL) != (plain_stream == NULL));
 
   /* Create two pipes.  */
   err = gnupg_create_outbound_pipe (outbound_fds);
@@ -515,7 +604,7 @@ _gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
   close (inbound_fds[1]); inbound_fds[1] = -1;
 
   /* Start a writer thread to feed the INPUT command of the server.  */
-  err = start_writer (outbound_fds[1], ciph, ciphlen,
+  err = start_writer (outbound_fds[1], ciph, ciphlen, cipher_stream,
                       &writer_thread, &writer_err);
   if (err)
     return err;
@@ -523,7 +612,7 @@ _gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
 
   /* Start a reader thread to eat from the OUTPUT command of the
      server.  */
-  err = start_reader (inbound_fds[0], reader_mb,
+  err = start_reader (inbound_fds[0], reader_mb, plain_stream,
                       &reader_thread, &reader_err);
   if (err)
     return err;
@@ -602,8 +691,8 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
   init_membuf_secure (&reader_mb, 1024);
 
   err = _gpg_decrypt (ctrl, gpg_program,
-                      ciph, ciphlen,
-                      &reader_mb);
+                      ciph, ciphlen, NULL,
+                      &reader_mb, NULL);
 
   if (! err)
     {
@@ -619,4 +708,14 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
 
   xfree (get_membuf (&reader_mb, NULL));
   return err;
+}
+
+gpg_error_t
+gpg_decrypt_stream (ctrl_t ctrl, const char *gpg_program,
+                    estream_t cipher_stream,
+                    estream_t plain_stream)
+{
+  return _gpg_decrypt (ctrl, gpg_program,
+                       NULL, 0, cipher_stream,
+                       NULL, plain_stream);
 }
