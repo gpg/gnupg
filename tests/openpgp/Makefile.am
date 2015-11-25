@@ -46,6 +46,7 @@ TESTS = version.test mds.test \
 	multisig.test verify.test armor.test \
 	import.test ecc.test 4gb-packet.test \
 	$(sqlite3_dependent_tests) \
+	gpgtar.test \
 	finish.test
 
 
@@ -108,7 +109,7 @@ CLEANFILES = prepared.stamp x y yy z out err  $(data_files) \
 	     gnupg-test.stop random_seed gpg-agent.log tofu.db
 
 clean-local:
-	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d
+	-rm -rf private-keys-v1.d openpgp-revocs.d tofu.d gpgtar.d
 
 
 # We need to depend on a couple of programs so that the tests don't

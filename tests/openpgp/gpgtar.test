@@ -1,0 +1,59 @@
+#!/bin/sh
+
+#set -x
+
+# Make sure $srcdir is set.
+if test "x$srcdir" = x
+then
+    echo srcdir environment variable not set!
+    exit 1
+fi
+
+. $srcdir/defs.inc || exit 3
+
+set -e
+
+# Make sure $GNUPGHOME is set.
+if test "x$GNUPGHOME" = x
+then
+    echo "GNUPGHOME not set."
+    exit 1
+fi
+
+TESTFILES="$plain_files $data_files"
+
+TESTDIR=gpgtar.d
+FILELIST="${TESTDIR}/filelist"
+GPG=../../g10/gpg2
+GPGTAR="../../tools/gpgtar"
+GPGZIP="sh ../../tools/gpg-zip --gpg-args --trust-model=always"
+
+for TOOL in "$GPGTAR" "$GPGZIP"
+do
+    rm -rf -- "${TESTDIR}"
+    mkdir "${TESTDIR}"
+
+    $TOOL --gpg "$GPG" --encrypt --recipient "$usrname2" \
+	  --output "${TESTDIR}/test.tar.pgp" $TESTFILES
+
+    $TOOL --gpg "$GPG" --list-archive "${TESTDIR}/test.tar.pgp" >"$FILELIST"
+    for F in $TESTFILES
+    do
+	grep -qe "\\b${F}\\b" "$FILELIST"
+    done
+
+    EXTRACT_FLAGS="--directory=${TESTDIR}"
+    if [ "$TOOL" = "$GPGZIP" ]
+    then
+	EXTRACT_FLAGS="--tar-args $EXTRACT_FLAGS"
+    fi
+    $TOOL --gpg "$GPG" $EXTRACT_FLAGS --decrypt "${TESTDIR}/test.tar.pgp"
+    for F in $TESTFILES
+    do
+	diff -q "$F" "${TESTDIR}/$F"
+    done
+done
+
+# Success!
+
+exit 0
