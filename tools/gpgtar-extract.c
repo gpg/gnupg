@@ -312,31 +312,36 @@ gpgtar_extract (const char *filename, int decrypt)
         goto leave;
     }
 
-  if (filename)
+  if (opt.directory)
+    dirname = xtrystrdup (opt.directory);
+  else
     {
-      dirprefix = strrchr (filename, '/');
-      if (dirprefix)
-        dirprefix++;
-      else
-        dirprefix = filename;
-    }
-  else if (opt.filename)
-    {
-      dirprefix = strrchr (opt.filename, '/');
-      if (dirprefix)
-        dirprefix++;
-      else
-        dirprefix = opt.filename;
-    }
+      if (filename)
+        {
+          dirprefix = strrchr (filename, '/');
+          if (dirprefix)
+            dirprefix++;
+          else
+            dirprefix = filename;
+        }
+      else if (opt.filename)
+        {
+          dirprefix = strrchr (opt.filename, '/');
+          if (dirprefix)
+            dirprefix++;
+          else
+            dirprefix = opt.filename;
+        }
 
-  if (!dirprefix || !*dirprefix)
-    dirprefix = "GPGARCH";
+      if (!dirprefix || !*dirprefix)
+        dirprefix = "GPGARCH";
 
-  dirname = create_directory (dirprefix);
-  if (!dirname)
-    {
-      err = gpg_error (GPG_ERR_GENERAL);
-      goto leave;
+      dirname = create_directory (dirprefix);
+      if (!dirname)
+        {
+          err = gpg_error (GPG_ERR_GENERAL);
+          goto leave;
+        }
     }
 
   if (opt.verbose)

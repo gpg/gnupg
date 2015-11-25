@@ -58,6 +58,7 @@ enum cmd_and_opt_values
     oRecipient	= 'r',
     oUser       = 'u',
     oOutput	= 'o',
+    oDirectory  = 'C',
     oQuiet      = 'q',
     oVerbose	= 'v',
     oFilesFrom  = 'T',
@@ -89,6 +90,8 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oUser, "local-user",
                 N_("|USER-ID|use USER-ID to sign or decrypt")),
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
+  ARGPARSE_s_s (oDirectory, "directory",
+                N_("|DIRECTORY|extract files into DIRECTORY")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
@@ -194,6 +197,7 @@ main (int argc, char **argv)
       switch (pargs.r_opt)
         {
         case oOutput:    opt.outfile = pargs.r.ret_str; break;
+        case oDirectory: opt.directory = pargs.r.ret_str; break;
         case oSetFilename: opt.filename = pargs.r.ret_str; break;
 	case oQuiet:     opt.quiet = 1; break;
         case oVerbose:   opt.verbose++; break;

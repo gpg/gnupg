@@ -35,6 +35,7 @@ struct
   const char *user;
   int symmetric;
   const char *filename;
+  const char *directory;
 } opt;
 
 
