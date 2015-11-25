@@ -38,6 +38,7 @@
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"
+#include "../common/asshelp.h"
 #include "../common/openpgpdefs.h"
 #include "../common/init.h"
 
@@ -158,6 +159,7 @@ ASSUAN_SYSTEM_NPTH_IMPL;
 int
 main (int argc, char **argv)
 {
+  gpg_error_t err;
   ARGPARSE_ARGS pargs;
   const char *fname;
   int no_more_options = 0;
@@ -262,7 +264,9 @@ main (int argc, char **argv)
         log_info ("note: ignoring option --set-filename\n");
       if (files_from)
         log_info ("note: ignoring option --files-from\n");
-      gpgtar_list (fname, !skip_crypto);
+      err = gpgtar_list (fname, !skip_crypto);
+      if (err && log_get_errorcount (0) == 0)
+        log_error ("listing archive failed: %s\n", gpg_strerror (err));
       break;
 
     case aEncrypt:
@@ -271,7 +275,9 @@ main (int argc, char **argv)
         usage (1);
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
-      gpgtar_create (null_names? NULL :argv, !skip_crypto);
+      err = gpgtar_create (null_names? NULL :argv, !skip_crypto);
+      if (err && log_get_errorcount (0) == 0)
+        log_error ("creating archive failed: %s\n", gpg_strerror (err));
       break;
 
     case aDecrypt:
@@ -282,7 +288,9 @@ main (int argc, char **argv)
       if (files_from)
         log_info ("note: ignoring option --files-from\n");
       fname = argc ? *argv : NULL;
-      gpgtar_extract (fname, !skip_crypto);
+      err = gpgtar_extract (fname, !skip_crypto);
+      if (err && log_get_errorcount (0) == 0)
+        log_error ("extracting archive failed: %s\n", gpg_strerror (err));
       break;
 
     default:

@@ -740,7 +740,7 @@ write_eof_mark (estream_t stream)
 /* Create a new tarball using the names in the array INPATTERN.  If
    INPATTERN is NULL take the pattern as null terminated strings from
    stdin.  */
-void
+gpg_error_t
 gpgtar_create (char **inpattern, int encrypt)
 {
   gpg_error_t err = 0;
@@ -903,16 +903,19 @@ gpgtar_create (char **inpattern, int encrypt)
  leave:
   if (!err)
     {
+      gpg_error_t first_err;
       if (outstream != es_stdout)
-        err = es_fclose (outstream);
+        first_err = es_fclose (outstream);
       else
-        err = es_fflush (outstream);
+        first_err = es_fflush (outstream);
       outstream = NULL;
       if (cipher_stream != es_stdout)
         err = es_fclose (cipher_stream);
       else
         err = es_fflush (cipher_stream);
       cipher_stream = NULL;
+      if (! err)
+        err = first_err;
     }
   if (err)
     {
@@ -931,4 +934,5 @@ gpgtar_create (char **inpattern, int encrypt)
       scanctrl->flist = hdr->next;
       xfree (hdr);
     }
+  return err;
 }

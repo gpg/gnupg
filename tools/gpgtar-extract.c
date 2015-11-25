@@ -265,7 +265,7 @@ create_directory (const char *dirprefix)
 
 
 
-void
+gpg_error_t
 gpgtar_extract (const char *filename, int decrypt)
 {
   gpg_error_t err;
@@ -285,7 +285,7 @@ gpgtar_extract (const char *filename, int decrypt)
         {
           err = gpg_error_from_syserror ();
           log_error ("error opening '%s': %s\n", filename, gpg_strerror (err));
-          return;
+          return err;
         }
     }
   else
@@ -344,11 +344,12 @@ gpgtar_extract (const char *filename, int decrypt)
 
   for (;;)
     {
-      header = gpgtar_read_header (stream);
-      if (!header)
+      err = gpgtar_read_header (stream, &header);
+      if (err || header == NULL)
         goto leave;
 
-      if (extract (stream, dirname, header))
+      err = extract (stream, dirname, header);
+      if (err)
         goto leave;
       xfree (header);
       header = NULL;
@@ -362,5 +363,5 @@ gpgtar_extract (const char *filename, int decrypt)
     es_fclose (stream);
   if (stream != cipher_stream)
     es_fclose (cipher_stream);
-  return;
+  return err;
 }

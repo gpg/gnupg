@@ -115,14 +115,14 @@ gpg_error_t read_record (estream_t stream, void *record);
 gpg_error_t write_record (estream_t stream, const void *record);
 
 /*-- gpgtar-create.c --*/
-void gpgtar_create (char **inpattern, int encrypt);
+gpg_error_t gpgtar_create (char **inpattern, int encrypt);
 
 /*-- gpgtar-extract.c --*/
-void gpgtar_extract (const char *filename, int decrypt);
+gpg_error_t gpgtar_extract (const char *filename, int decrypt);
 
 /*-- gpgtar-list.c --*/
-void gpgtar_list (const char *filename, int decrypt);
-tar_header_t gpgtar_read_header (estream_t stream);
+gpg_error_t gpgtar_list (const char *filename, int decrypt);
+gpg_error_t gpgtar_read_header (estream_t stream, tar_header_t *r_header);
 void gpgtar_print_header (tar_header_t header, estream_t out);
 
 

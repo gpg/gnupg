@@ -169,10 +169,11 @@ parse_header (const void *record, const char *filename)
 
 
 /* Read the next block, assming it is a tar header.  Returns a header
-   object on success or NULL one error.  In case of an error an error
+   object on success in R_HEADER, or an error.  If the stream is
+   consumed, R_HEADER is set to NULL.  In case of an error an error
    message has been printed.  */
-static tar_header_t
-read_header (estream_t stream)
+static gpg_error_t
+read_header (estream_t stream, tar_header_t *r_header)
 {
   gpg_error_t err;
   char record[RECORDSIZE];
@@ -180,7 +181,7 @@ read_header (estream_t stream)
 
   err = read_record (stream, record);
   if (err)
-    return NULL;
+    return err;
 
   for (i=0; i < RECORDSIZE && !record[i]; i++)
     ;
@@ -190,8 +191,8 @@ read_header (estream_t stream)
          end of archive mark.  */
       err = read_record (stream, record);
       if (err)
-        return NULL;
-      
+        return err;
+
       for (i=0; i < RECORDSIZE && !record[i]; i++)
         ;
       if (i != RECORDSIZE)
@@ -200,11 +201,13 @@ read_header (estream_t stream)
       else
         {
           /* End of archive - FIXME: we might want to check for garbage.  */
-          return NULL;
+          *r_header = NULL;
+          return 0;
         }
     }
 
-  return parse_header (record, es_fname_get (stream));
+  *r_header = parse_header (record, es_fname_get (stream));
+  return *r_header ? 0 : gpg_error_from_syserror ();
 }
 
 
@@ -267,13 +270,13 @@ print_header (tar_header_t header, estream_t out)
 
 /* List the tarball FILENAME or, if FILENAME is NULL, the tarball read
    from stdin.  */
-void
+gpg_error_t
 gpgtar_list (const char *filename, int decrypt)
 {
   gpg_error_t err;
   estream_t stream;
   estream_t cipher_stream = NULL;
-  tar_header_t header;
+  tar_header_t header = NULL;
 
   if (filename)
     {
@@ -285,7 +288,7 @@ gpgtar_list (const char *filename, int decrypt)
         {
           err = gpg_error_from_syserror ();
           log_error ("error opening '%s': %s\n", filename, gpg_strerror (err));
-          return;
+          return err;
         }
     }
   else
@@ -314,12 +317,12 @@ gpgtar_list (const char *filename, int decrypt)
 
   for (;;)
     {
-      header = read_header (stream);
-      if (!header)
+      err = read_header (stream, &header);
+      if (err || header == NULL)
         goto leave;
-      
+
       print_header (header, es_stdout);
-      
+
       if (skip_data (stream, header))
         goto leave;
       xfree (header);
@@ -333,14 +336,13 @@ gpgtar_list (const char *filename, int decrypt)
     es_fclose (stream);
   if (stream != cipher_stream)
     es_fclose (cipher_stream);
-  return;
+  return err;
 }
 
-tar_header_t
-gpgtar_read_header (estream_t stream)
+gpg_error_t
+gpgtar_read_header (estream_t stream, tar_header_t *r_header)
 {
-  /*FIXME: Change to return an error code.  */
-  return read_header (stream);
+  return read_header (stream, r_header);
 }
 
 void
