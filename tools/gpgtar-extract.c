@@ -303,7 +303,7 @@ gpgtar_extract (const char *filename, int decrypt)
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      err = gpg_decrypt_stream (NULL, NULL, cipher_stream, stream);
+      err = gpg_decrypt_stream (NULL, opt.gpg_program, cipher_stream, stream);
       if (err)
         goto leave;
 

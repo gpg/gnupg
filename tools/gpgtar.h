@@ -29,6 +29,7 @@ struct
   int verbose;
   unsigned int debug_level;
   int quiet;
+  const char *gpg_program;
   const char *outfile;
   strlist_t recipients;
   const char *user;

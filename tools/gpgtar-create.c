@@ -892,7 +892,8 @@ gpgtar_create (char **inpattern, int encrypt)
       if (err)
         goto leave;
 
-      err = gpg_encrypt_stream (NULL, NULL,
+      err = gpg_encrypt_stream (NULL,
+                                opt.gpg_program,
                                 outstream,
                                 opt.recipients,
                                 cipher_stream);

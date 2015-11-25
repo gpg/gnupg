@@ -64,6 +64,7 @@ enum cmd_and_opt_values
     oNoVerbose	= 500,
 
     aSignEncrypt,
+    oGpgProgram,
     oSkipCrypto,
     oOpenPGP,
     oCMS,
@@ -90,6 +91,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
+  ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_n (oSkipCrypto, "skip-crypto", N_("skip the crypto processing")),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_s (oFilesFrom, "files-from",
@@ -219,6 +221,10 @@ main (int argc, char **argv)
           log_info ("note: ignoring option --symmetric\n");
           set_cmd (&cmd, aEncrypt);
           opt.symmetric = 1;
+          break;
+
+        case oGpgProgram:
+          opt.gpg_program = pargs.r.ret_str;
           break;
 
         case oSkipCrypto:
