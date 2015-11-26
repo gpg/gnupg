@@ -105,13 +105,9 @@
 #ifdef USE_NPTH
 # define my_select(a,b,c,d,e)  npth_select ((a), (b), (c), (d), (e))
 # define my_accept(a,b,c)      npth_accept ((a), (b), (c))
-# define my_unprotect()        npth_unprotect ()
-# define my_protect()          npth_protect ()
 #else
 # define my_select(a,b,c,d,e)  select ((a), (b), (c), (d), (e))
 # define my_accept(a,b,c)      accept ((a), (b), (c))
-# define my_unprotect()        do { } while(0)
-# define my_protect()          do { } while(0)
 #endif
 
 #ifdef HAVE_W32_SYSTEM
@@ -2228,11 +2224,8 @@ connect_server (const char *server, unsigned short port,
     {
 #ifdef ASSUAN_SOCK_TOR
 
-      my_unprotect ();
       sock = assuan_sock_connect_byname (server, port, 0, NULL,
                                          ASSUAN_SOCK_TOR);
-      my_protect ();
-
       if (sock == ASSUAN_INVALID_FD)
         {
           if (errno == EHOSTUNREACH)
@@ -2327,9 +2320,7 @@ connect_server (const char *server, unsigned short port,
             }
 
           anyhostaddr = 1;
-          my_unprotect ();
           ret = assuan_sock_connect (sock, ai->addr, ai->addrlen);
-          my_protect ();
           if (ret)
             last_errno = errno;
           else
