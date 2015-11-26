@@ -160,18 +160,78 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
 ASSUAN_SYSTEM_NPTH_IMPL;
 
 
+/* Global flags.  */
+enum cmd_and_opt_values cmd = 0;
+int skip_crypto = 0;
+const char *files_from = NULL;
+int null_names = 0;
+
+
+/* Command line parsing.  */
+static void
+parse_arguments (ARGPARSE_ARGS *pargs)
+{
+  int no_more_options = 0;
+
+  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, opts))
+    {
+      switch (pargs->r_opt)
+        {
+        case oOutput:    opt.outfile = pargs->r.ret_str; break;
+        case oDirectory: opt.directory = pargs->r.ret_str; break;
+        case oSetFilename: opt.filename = pargs->r.ret_str; break;
+	case oQuiet:     opt.quiet = 1; break;
+        case oVerbose:   opt.verbose++; break;
+        case oNoVerbose: opt.verbose = 0; break;
+        case oFilesFrom: files_from = pargs->r.ret_str; break;
+        case oNull: null_names = 1; break;
+
+	case aList:
+        case aDecrypt:
+        case aEncrypt:
+        case aSign:
+          set_cmd (&cmd, pargs->r_opt);
+	  break;
+
+        case oRecipient:
+          add_to_strlist (&opt.recipients, pargs->r.ret_str);
+          break;
+
+        case oUser:
+          log_info ("note: ignoring option --user\n");
+          opt.user = pargs->r.ret_str;
+          break;
+
+        case oSymmetric:
+          log_info ("note: ignoring option --symmetric\n");
+          set_cmd (&cmd, aEncrypt);
+          opt.symmetric = 1;
+          break;
+
+        case oGpgProgram:
+          opt.gpg_program = pargs->r.ret_str;
+          break;
+
+        case oSkipCrypto:
+          skip_crypto = 1;
+          break;
+
+        case oOpenPGP: /* Dummy option for now.  */ break;
+        case oCMS:     /* Dummy option for now.  */ break;
+
+        default: pargs->err = 2; break;
+	}
+    }
+}
+
+
 /* gpgtar main. */
 int
 main (int argc, char **argv)
 {
   gpg_error_t err;
-  ARGPARSE_ARGS pargs;
   const char *fname;
-  int no_more_options = 0;
-  enum cmd_and_opt_values cmd = 0;
-  int skip_crypto = 0;
-  const char *files_from = NULL;
-  int null_names = 0;
+  ARGPARSE_ARGS pargs;
 
   assert (sizeof (struct ustar_raw_header) == 512);
 
@@ -192,55 +252,7 @@ main (int argc, char **argv)
   pargs.argc  = &argc;
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, &pargs, opts))
-    {
-      switch (pargs.r_opt)
-        {
-        case oOutput:    opt.outfile = pargs.r.ret_str; break;
-        case oDirectory: opt.directory = pargs.r.ret_str; break;
-        case oSetFilename: opt.filename = pargs.r.ret_str; break;
-	case oQuiet:     opt.quiet = 1; break;
-        case oVerbose:   opt.verbose++; break;
-        case oNoVerbose: opt.verbose = 0; break;
-        case oFilesFrom: files_from = pargs.r.ret_str; break;
-        case oNull: null_names = 1; break;
-
-	case aList:
-        case aDecrypt:
-        case aEncrypt:
-        case aSign:
-          set_cmd (&cmd, pargs.r_opt);
-	  break;
-
-        case oRecipient:
-          add_to_strlist (&opt.recipients, pargs.r.ret_str);
-          break;
-
-        case oUser:
-          log_info ("note: ignoring option --user\n");
-          opt.user = pargs.r.ret_str;
-          break;
-
-        case oSymmetric:
-          log_info ("note: ignoring option --symmetric\n");
-          set_cmd (&cmd, aEncrypt);
-          opt.symmetric = 1;
-          break;
-
-        case oGpgProgram:
-          opt.gpg_program = pargs.r.ret_str;
-          break;
-
-        case oSkipCrypto:
-          skip_crypto = 1;
-          break;
-
-        case oOpenPGP: /* Dummy option for now.  */ break;
-        case oCMS:     /* Dummy option for now.  */ break;
-
-        default: pargs.err = 2; break;
-	}
-    }
+  parse_arguments (&pargs);
 
   if ((files_from && !null_names) || (!files_from && null_names))
     log_error ("--files-from and --null may only be used in conjunction\n");
