@@ -42,12 +42,8 @@ do
 	grep -qe "\\b${F}\\b" "$FILELIST"
     done
 
-    EXTRACT_FLAGS="--directory=${TESTDIR}"
-    if [ "$TOOL" = "$GPGZIP" ]
-    then
-	EXTRACT_FLAGS="--tar-args $EXTRACT_FLAGS"
-    fi
-    $TOOL --gpg "$GPG" $EXTRACT_FLAGS --decrypt "${TESTDIR}/test.tar.pgp"
+    $TOOL --gpg "$GPG" --tar-args --directory="${TESTDIR}" \
+          --decrypt "${TESTDIR}/test.tar.pgp"
     for F in $TESTFILES
     do
 	diff -q "$F" "${TESTDIR}/$F"

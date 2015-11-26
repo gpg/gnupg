@@ -28,6 +28,7 @@
 
 #include <config.h>
 #include <assuan.h>
+#include <ctype.h>
 #include <errno.h>
 #include <npth.h>
 #include <stdio.h>
@@ -41,6 +42,7 @@
 #include "../common/asshelp.h"
 #include "../common/openpgpdefs.h"
 #include "../common/init.h"
+#include "../common/strlist.h"
 
 #include "gpgtar.h"
 
@@ -70,7 +72,10 @@ enum cmd_and_opt_values
     oOpenPGP,
     oCMS,
     oSetFilename,
-    oNull
+    oNull,
+
+    /* Compatibility with gpg-zip.  */
+    oTarArgs,
   };
 
 
@@ -90,18 +95,35 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_s (oUser, "local-user",
                 N_("|USER-ID|use USER-ID to sign or decrypt")),
   ARGPARSE_s_s (oOutput, "output", N_("|FILE|write output to FILE")),
-  ARGPARSE_s_s (oDirectory, "directory",
-                N_("|DIRECTORY|extract files into DIRECTORY")),
   ARGPARSE_s_n (oVerbose, "verbose", N_("verbose")),
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_n (oSkipCrypto, "skip-crypto", N_("skip the crypto processing")),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
+  ARGPARSE_s_n (oOpenPGP, "openpgp", "@"),
+  ARGPARSE_s_n (oCMS, "cms", "@"),
+
+  ARGPARSE_group (302, N_("@\nTar options:\n ")),
+
+  ARGPARSE_s_s (oDirectory, "directory",
+                N_("|DIRECTORY|extract files into DIRECTORY")),
   ARGPARSE_s_s (oFilesFrom, "files-from",
                 N_("|FILE|get names to create from FILE")),
   ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
-  ARGPARSE_s_n (oOpenPGP, "openpgp", "@"),
-  ARGPARSE_s_n (oCMS, "cms", "@"),
+
+  ARGPARSE_s_s (oTarArgs, "tar-args", "@"),
+
+  ARGPARSE_end ()
+};
+
+
+/* The list of commands and options for tar that we understand. */
+static ARGPARSE_OPTS tar_opts[] = {
+  ARGPARSE_s_s (oDirectory, "directory",
+                N_("|DIRECTORY|extract files into DIRECTORY")),
+  ARGPARSE_s_s (oFilesFrom, "files-from",
+                N_("|FILE|get names to create from FILE")),
+  ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
 
   ARGPARSE_end ()
 };
@@ -156,6 +178,105 @@ set_cmd (enum cmd_and_opt_values *ret_cmd, enum cmd_and_opt_values new_cmd)
 
   *ret_cmd = cmd;
 }
+
+/* Shell-like argument splitting.
+
+   For compatibility with gpg-zip we accept arguments for GnuPG and
+   tar given as a string argument to '--gpg-args' and '--tar-args'.
+   gpg-zip was implemented as a Bourne Shell script, and therefore, we
+   need to split the string the same way the shell would.  */
+static int
+shell_parse_stringlist (const char *str, strlist_t *r_list)
+{
+  strlist_t list = NULL;
+  const char *s = str;
+  char quoted = 0;
+  char arg[1024];
+  char *p = arg;
+#define addchar(c) \
+  do { if (p - arg + 2 < sizeof arg) *p++ = (c); else return 1; } while (0)
+#define addargument()                           \
+  do {                                          \
+    if (p > arg)                                \
+      {                                         \
+        *p = 0;                                 \
+        append_to_strlist (&list, arg);         \
+        p = arg;                                \
+      }                                         \
+  } while (0)
+
+#define unquoted	0
+#define singlequote	'\''
+#define doublequote	'"'
+
+  for (; *s; s++)
+    {
+      switch (quoted)
+        {
+        case unquoted:
+          if (isspace (*s))
+            addargument ();
+          else if (*s == singlequote || *s == doublequote)
+            quoted = *s;
+          else
+            addchar (*s);
+          break;
+
+        case singlequote:
+          if (*s == singlequote)
+            quoted = unquoted;
+          else
+            addchar (*s);
+          break;
+
+        case doublequote:
+          assert (s > str || !"cannot be quoted at first char");
+          if (*s == doublequote && *(s - 1) != '\\')
+            quoted = unquoted;
+          else
+            addchar (*s);
+          break;
+
+        default:
+          assert (! "reached");
+        }
+    }
+
+  /* Append the last argument.  */
+  addargument ();
+
+#undef doublequote
+#undef singlequote
+#undef unquoted
+#undef addargument
+#undef addchar
+  *r_list = list;
+  return 0;
+}
+
+
+/* Like shell_parse_stringlist, but returns an argv vector
+   instead of a strlist.  */
+static int
+shell_parse_argv (const char *s, int *r_argc, char ***r_argv)
+{
+  int i;
+  strlist_t list;
+
+  if (shell_parse_stringlist (s, &list))
+    return 1;
+
+  *r_argc = strlist_length (list);
+  *r_argv = xtrycalloc (*r_argc, sizeof **r_argv);
+  if (*r_argv == NULL)
+    return 1;
+
+  for (i = 0; list; i++)
+    (*r_argv)[i] = list->d, list = list->next;
+  return 0;
+}
+
+/* Define Assuan hooks for NPTH.  */
 
 ASSUAN_SYSTEM_NPTH_IMPL;
 
@@ -169,11 +290,11 @@ int null_names = 0;
 
 /* Command line parsing.  */
 static void
-parse_arguments (ARGPARSE_ARGS *pargs)
+parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 {
   int no_more_options = 0;
 
-  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, opts))
+  while (!no_more_options && optfile_parse (NULL, NULL, NULL, pargs, popts))
     {
       switch (pargs->r_opt)
         {
@@ -219,6 +340,27 @@ parse_arguments (ARGPARSE_ARGS *pargs)
         case oOpenPGP: /* Dummy option for now.  */ break;
         case oCMS:     /* Dummy option for now.  */ break;
 
+        case oTarArgs:;
+          int tar_argc;
+          char **tar_argv;
+
+          if (shell_parse_argv (pargs->r.ret_str, &tar_argc, &tar_argv))
+            log_error ("failed to parse tar arguments '%s'\n",
+                       pargs->r.ret_str);
+          else
+            {
+              ARGPARSE_ARGS tar_args;
+              tar_args.argc = &tar_argc;
+              tar_args.argv = &tar_argv;
+              tar_args.flags = ARGPARSE_FLAG_ARG0;
+              parse_arguments (&tar_args, tar_opts);
+              if (tar_args.err)
+                log_error ("unsupported tar arguments '%s'\n",
+                           pargs->r.ret_str);
+              pargs->err = tar_args.err;
+            }
+          break;
+
         default: pargs->err = 2; break;
 	}
     }
@@ -252,7 +394,7 @@ main (int argc, char **argv)
   pargs.argc  = &argc;
   pargs.argv  = &argv;
   pargs.flags = ARGPARSE_FLAG_KEEP;
-  parse_arguments (&pargs);
+  parse_arguments (&pargs, opts);
 
   if ((files_from && !null_names) || (!files_from && null_names))
     log_error ("--files-from and --null may only be used in conjunction\n");
