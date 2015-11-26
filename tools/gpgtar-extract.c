@@ -53,7 +53,10 @@ extract_regular (estream_t stream, const char *dirname,
   else
     err = 0;
 
-  outfp = es_fopen (fname, "wb");
+  if (opt.dry_run)
+    outfp = es_fopenmem (0, "wb");
+  else
+    outfp = es_fopen (fname, "wb");
   if (!outfp)
     {
       err = gpg_error_from_syserror ();
@@ -120,7 +123,7 @@ extract_directory (const char *dirname, tar_header_t hdr)
 
  /* Note that we don't need to care about EEXIST because we always
      extract into a new hierarchy.  */
-  if (gnupg_mkdir (fname, "-rwx------"))
+  if (! opt.dry_run && gnupg_mkdir (fname, "-rwx------"))
     {
       err = gpg_error_from_syserror ();
       if (gpg_err_code (err) == GPG_ERR_ENOENT)

@@ -77,6 +77,9 @@ enum cmd_and_opt_values
     /* Compatibility with gpg-zip.  */
     oGpgArgs,
     oTarArgs,
+
+    /* Debugging.  */
+    oDryRun,
   };
 
 
@@ -100,6 +103,7 @@ static ARGPARSE_OPTS opts[] = {
   ARGPARSE_s_n (oQuiet,	"quiet",  N_("be somewhat more quiet")),
   ARGPARSE_s_s (oGpgProgram, "gpg", "@"),
   ARGPARSE_s_n (oSkipCrypto, "skip-crypto", N_("skip the crypto processing")),
+  ARGPARSE_s_n (oDryRun, "dry-run", N_("do not make any changes")),
   ARGPARSE_s_s (oSetFilename, "set-filename", "@"),
   ARGPARSE_s_n (oOpenPGP, "openpgp", "@"),
   ARGPARSE_s_n (oCMS, "cms", "@"),
@@ -375,6 +379,10 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
                            pargs->r.ret_str);
               pargs->err = tar_args.err;
             }
+          break;
+
+        case oDryRun:
+          opt.dry_run = 1;
           break;
 
         default: pargs->err = 2; break;
