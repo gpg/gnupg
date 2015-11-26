@@ -580,10 +580,10 @@ main ( int argc, char **argv)
   /* XXX Construct GPG arguments.  */
   {
     strlist_t last;
-    last = strlist_append (&opt.gpg_arguments, "-z");
-    last = strlist_append (&last, "0");
-    last = strlist_append (&last, "--trust-model");
-    last = strlist_append (&last, "always");
+    last = append_to_strlist (&opt.gpg_arguments, "-z");
+    last = append_to_strlist (&last, "0");
+    last = append_to_strlist (&last, "--trust-model");
+    last = append_to_strlist (&last, "always");
     (void) last;
   }
 
