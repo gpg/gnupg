@@ -1328,6 +1328,11 @@ strtokenize (const char *string, const char *delim)
   return result;
 }
 
+
+/* Format a string so that it fits within about TARGET_COLS columns.
+   If IN_PLACE is 0, then TEXT is copied to a new buffer, which is
+   returned.  Otherwise, TEXT is modified in place and returned.
+   Normally, target_cols will be 72 and max_cols is 80.  */
 char *
 format_text (char *text, int in_place, int target_cols, int max_cols)
 {
@@ -1448,10 +1453,9 @@ format_text (char *text, int in_place, int target_cols, int max_cols)
     }
 
   /* Chop off any trailing space.  */
-  while (text[strlen (text) - 1] == ' ')
-    text[strlen (text) - 1] = '\0';
+  trim_trailing_chars (text, strlen (text), " ");
   /* If we inserted the trailing newline, then remove it.  */
-  if (! copied_last_space && text[strlen (text) - 1] == '\n')
+  if (! copied_last_space && *text && text[strlen (text) - 1] == '\n')
     text[strlen (text) - 1] = '\0';
 
   return text;
