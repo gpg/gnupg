@@ -111,7 +111,9 @@ encrypt_keyblob (ctrl_t ctrl, void *keyblob, size_t keybloblen,
   gpg_error_t err;
 
   /* FIXME:  For now we only implement OpenPGP.  */
-  err = gpg_encrypt_blob (ctrl, opt.gpg_program, keyblob, keybloblen, keys,
+  err = gpg_encrypt_blob (ctrl, opt.gpg_program, opt.gpg_arguments,
+                          keyblob, keybloblen,
+                          keys,
                           r_encblob, r_encbloblen);
 
   return err;

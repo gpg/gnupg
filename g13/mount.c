@@ -202,7 +202,8 @@ decrypt_keyblob (ctrl_t ctrl, const void *enckeyblob, size_t enckeybloblen,
   gpg_error_t err;
 
   /* FIXME:  For now we only implement OpenPGP.  */
-  err = gpg_decrypt_blob (ctrl, opt.gpg_program, enckeyblob, enckeybloblen,
+  err = gpg_decrypt_blob (ctrl, opt.gpg_program, opt.gpg_arguments,
+                          enckeyblob, enckeybloblen,
                           r_keyblob, r_keybloblen);
 
   return err;

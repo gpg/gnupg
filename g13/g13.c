@@ -577,6 +577,16 @@ main ( int argc, char **argv)
 	}
     }
 
+  /* XXX Construct GPG arguments.  */
+  {
+    strlist_t last;
+    last = strlist_append (&opt.gpg_arguments, "-z");
+    last = strlist_append (&last, "0");
+    last = strlist_append (&last, "--trust-model");
+    last = strlist_append (&last, "always");
+    (void) last;
+  }
+
   if (configfp)
     {
       fclose (configfp);

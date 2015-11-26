@@ -30,6 +30,7 @@
 #include "../common/util.h"
 #include "../common/status.h"
 #include "../common/session-env.h"
+#include "../common/strlist.h"
 
 
 /* Debug values and macros.  */
@@ -64,6 +65,9 @@ struct
      is initialzed at the first engine startup to the standard gpg
      filename.  */
   const char *gpg_program;
+
+  /* GPG arguments.  XXX: Currently it is not possible to set them.  */
+  strlist_t gpg_arguments;
 
   /* Environment variables passed along to the engine.  */
   char *display;

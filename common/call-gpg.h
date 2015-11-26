@@ -26,21 +26,29 @@
 
 typedef struct server_control_s *ctrl_t;
 
-gpg_error_t gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
+gpg_error_t gpg_encrypt_blob (ctrl_t ctrl,
+			      const char *gpg_program,
+			      strlist_t gpg_arguments,
                               const void *plain, size_t plainlen,
                               strlist_t keys,
                               void **r_ciph, size_t *r_ciphlen);
 
-gpg_error_t gpg_encrypt_stream (ctrl_t ctrl, const char *gpg_program,
+gpg_error_t gpg_encrypt_stream (ctrl_t ctrl,
+				const char *gpg_program,
+				strlist_t gpg_arguments,
 				estream_t plain_stream,
 				strlist_t keys,
 				estream_t cipher_stream);
 
-gpg_error_t gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
+gpg_error_t gpg_decrypt_blob (ctrl_t ctrl,
+			      const char *gpg_program,
+			      strlist_t gpg_arguments,
 			      const void *ciph, size_t ciphlen,
                               void **r_plain, size_t *r_plainlen);
 
-gpg_error_t gpg_decrypt_stream (ctrl_t ctrl, const char *gpg_program,
+gpg_error_t gpg_decrypt_stream (ctrl_t ctrl,
+				const char *gpg_program,
+				strlist_t gpg_arguments,
 				estream_t cipher_stream,
 				estream_t plain_stream);
 

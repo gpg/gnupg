@@ -33,19 +33,20 @@
 #include "i18n.h"
 #include "logging.h"
 #include "membuf.h"
+#include "strlist.h"
 #include "util.h"
 
 
 /* Fire up a new GPG.  Handle the server's initial greeting.  Returns
    0 on success and stores the assuan context at R_CTX.  */
 static gpg_error_t
-start_gpg (ctrl_t ctrl, const char *gpg_program,
+start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
            int input_fd, int output_fd, assuan_context_t *r_ctx)
 {
   gpg_error_t err;
   assuan_context_t ctx = NULL;
   const char *pgmname;
-  const char *argv[10];
+  const char **argv;
   int no_close_list[5];
   int i;
   char line[ASSUAN_LINELENGTH];
@@ -78,13 +79,17 @@ start_gpg (ctrl_t ctrl, const char *gpg_program,
       return err;
     }
 
+  argv = xtrycalloc (strlist_length (gpg_arguments) + 3, sizeof *argv);
+  if (argv == NULL)
+    {
+      err = gpg_error_from_syserror ();
+      return err;
+    }
   i = 0;
   argv[i++] = pgmname;
   argv[i++] = "--server";
-  argv[i++] = "-z";
-  argv[i++] = "0";
-  argv[i++] = "--trust-model";
-  argv[i++] = "always";
+  for (; gpg_arguments; gpg_arguments = gpg_arguments->next)
+    argv[i++] = gpg_arguments->d;
   argv[i++] = NULL;
 
   i = 0;
@@ -386,7 +391,9 @@ start_reader (int fd, membuf_t *mb, estream_t stream,
 
  */
 static gpg_error_t
-_gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
+_gpg_encrypt (ctrl_t ctrl,
+              const char *gpg_program,
+              strlist_t gpg_arguments,
               const void *plain, size_t plainlen,
               estream_t plain_stream,
               strlist_t keys,
@@ -420,7 +427,8 @@ _gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
     }
 
   /* Start GPG and send the INPUT and OUTPUT commands.  */
-  err = start_gpg (ctrl, gpg_program, outbound_fds[0], inbound_fds[1], &ctx);
+  err = start_gpg (ctrl, gpg_program, gpg_arguments,
+                   outbound_fds[0], inbound_fds[1], &ctx);
   if (err)
     goto leave;
   close (outbound_fds[0]); outbound_fds[0] = -1;
@@ -514,7 +522,9 @@ _gpg_encrypt (ctrl_t ctrl, const char *gpg_program,
 }
 
 gpg_error_t
-gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
+gpg_encrypt_blob (ctrl_t ctrl,
+                  const char *gpg_program,
+                  strlist_t gpg_arguments,
                   const void *plain, size_t plainlen,
                   strlist_t keys,
                   void **r_ciph, size_t *r_ciphlen)
@@ -528,7 +538,7 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
   /* Init the memory buffer to receive the encrypted stuff.  */
   init_membuf (&reader_mb, 4096);
 
-  err = _gpg_encrypt (ctrl, gpg_program,
+  err = _gpg_encrypt (ctrl, gpg_program, gpg_arguments,
                       plain, plainlen, NULL,
                       keys,
                       &reader_mb, NULL);
@@ -550,12 +560,14 @@ gpg_encrypt_blob (ctrl_t ctrl, const char *gpg_program,
 }
 
 gpg_error_t
-gpg_encrypt_stream (ctrl_t ctrl, const char *gpg_program,
+gpg_encrypt_stream (ctrl_t ctrl,
+                    const char *gpg_program,
+                    strlist_t gpg_arguments,
                     estream_t plain_stream,
                     strlist_t keys,
                     estream_t cipher_stream)
 {
-  return _gpg_encrypt (ctrl, gpg_program,
+  return _gpg_encrypt (ctrl, gpg_program, gpg_arguments,
                        NULL, 0, plain_stream,
                        keys,
                        NULL, cipher_stream);
@@ -566,7 +578,9 @@ gpg_encrypt_stream (ctrl_t ctrl, const char *gpg_program,
 
  */
 static gpg_error_t
-_gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
+_gpg_decrypt (ctrl_t ctrl,
+              const char *gpg_program,
+              strlist_t gpg_arguments,
               const void *ciph, size_t ciphlen,
               estream_t cipher_stream,
               membuf_t *reader_mb,
@@ -597,7 +611,8 @@ _gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
     }
 
   /* Start GPG and send the INPUT and OUTPUT commands.  */
-  err = start_gpg (ctrl, gpg_program, outbound_fds[0], inbound_fds[1], &ctx);
+  err = start_gpg (ctrl, gpg_program, gpg_arguments,
+                   outbound_fds[0], inbound_fds[1], &ctx);
   if (err)
     goto leave;
   close (outbound_fds[0]); outbound_fds[0] = -1;
@@ -677,7 +692,9 @@ _gpg_decrypt (ctrl_t ctrl, const char *gpg_program,
 }
 
 gpg_error_t
-gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
+gpg_decrypt_blob (ctrl_t ctrl,
+                  const char *gpg_program,
+                  strlist_t gpg_arguments,
                   const void *ciph, size_t ciphlen,
                   void **r_plain, size_t *r_plainlen)
 {
@@ -690,7 +707,7 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
   /* Init the memory buffer to receive the encrypted stuff.  */
   init_membuf_secure (&reader_mb, 1024);
 
-  err = _gpg_decrypt (ctrl, gpg_program,
+  err = _gpg_decrypt (ctrl, gpg_program, gpg_arguments,
                       ciph, ciphlen, NULL,
                       &reader_mb, NULL);
 
@@ -711,11 +728,13 @@ gpg_decrypt_blob (ctrl_t ctrl, const char *gpg_program,
 }
 
 gpg_error_t
-gpg_decrypt_stream (ctrl_t ctrl, const char *gpg_program,
+gpg_decrypt_stream (ctrl_t ctrl,
+                    const char *gpg_program,
+                    strlist_t gpg_arguments,
                     estream_t cipher_stream,
                     estream_t plain_stream)
 {
-  return _gpg_decrypt (ctrl, gpg_program,
+  return _gpg_decrypt (ctrl, gpg_program, gpg_arguments,
                        NULL, 0, cipher_stream,
                        NULL, plain_stream);
 }
