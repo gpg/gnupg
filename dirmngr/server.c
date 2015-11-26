@@ -2121,7 +2121,13 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     }
   else if (!strcmp (line, "tor"))
     {
-      err = opt.use_tor? 0:set_error (GPG_ERR_GENERAL, "Tor mode not enabled");
+      if (opt.use_tor)
+        {
+          err = 0;
+          assuan_set_okay_line (ctx, " - Tor mode is enabled");
+        }
+      else
+        err = set_error (GPG_ERR_FALSE, "Tor mode is NOT enabled");
     }
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
