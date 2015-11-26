@@ -25,24 +25,30 @@ TESTFILES="$plain_files $data_files"
 TESTDIR=gpgtar.d
 FILELIST="${TESTDIR}/filelist"
 GPG=../../g10/gpg2
+GPGARGS="--trust-model=always"
+
 GPGTAR="../../tools/gpgtar"
-GPGZIP="sh ../../tools/gpg-zip --gpg-args --trust-model=always"
+GPGZIP="sh ../../tools/gpg-zip"
 
 for TOOL in "$GPGTAR" "$GPGZIP"
 do
     rm -rf -- "${TESTDIR}"
     mkdir "${TESTDIR}"
 
-    $TOOL --gpg "$GPG" --encrypt --recipient "$usrname2" \
+    $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" \
+          --encrypt --recipient "$usrname2" \
 	  --output "${TESTDIR}/test.tar.pgp" $TESTFILES
 
-    $TOOL --gpg "$GPG" --list-archive "${TESTDIR}/test.tar.pgp" >"$FILELIST"
+    $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" \
+          --list-archive "${TESTDIR}/test.tar.pgp" \
+          >"$FILELIST"
     for F in $TESTFILES
     do
 	grep -qe "\\b${F}\\b" "$FILELIST"
     done
 
-    $TOOL --gpg "$GPG" --tar-args --directory="${TESTDIR}" \
+    $TOOL --gpg "$GPG"  --gpg-args "$GPGARGS" \
+          --tar-args --directory="${TESTDIR}" \
           --decrypt "${TESTDIR}/test.tar.pgp"
     for F in $TESTFILES
     do

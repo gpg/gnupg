@@ -30,6 +30,7 @@ struct
   unsigned int debug_level;
   int quiet;
   const char *gpg_program;
+  strlist_t gpg_arguments;
   const char *outfile;
   strlist_t recipients;
   const char *user;

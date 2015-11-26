@@ -75,6 +75,7 @@ enum cmd_and_opt_values
     oNull,
 
     /* Compatibility with gpg-zip.  */
+    oGpgArgs,
     oTarArgs,
   };
 
@@ -111,6 +112,7 @@ static ARGPARSE_OPTS opts[] = {
                 N_("|FILE|get names to create from FILE")),
   ARGPARSE_s_n (oNull, "null", N_("-T reads null-terminated names")),
 
+  ARGPARSE_s_s (oGpgArgs, "gpg-args", "@"),
   ARGPARSE_s_s (oTarArgs, "tar-args", "@"),
 
   ARGPARSE_end ()
@@ -339,6 +341,20 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
 
         case oOpenPGP: /* Dummy option for now.  */ break;
         case oCMS:     /* Dummy option for now.  */ break;
+
+        case oGpgArgs:;
+          strlist_t list;
+          if (shell_parse_stringlist (pargs->r.ret_str, &list))
+            log_error ("failed to parse gpg arguments '%s'\n",
+                       pargs->r.ret_str);
+          else
+            {
+              if (opt.gpg_arguments)
+                strlist_last (opt.gpg_arguments)->next = list;
+              else
+                opt.gpg_arguments = list;
+            }
+          break;
 
         case oTarArgs:;
           int tar_argc;
