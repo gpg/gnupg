@@ -520,33 +520,54 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
                        strlist_t patterns, const ldap_server_t server)
 {
   gpg_error_t err;
-  const char *host;
+  char *proxy = NULL;
+  char *host = NULL;
   int port;
-  const char *user;
-  const char *pass;
+  char *user = NULL;
+  char *pass = NULL;
   const char *base;
   char *argv[50];
-  int argc;
-  int argc_malloced;
+  int argc = 0;
+  int argc_malloced = 0;
   char portbuf[30], timeoutbuf[30];
 
 
   *context = NULL;
+
+  if (opt.ldap_proxy && !(proxy = xtrystrdup (opt.ldap_proxy)))
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
   if (server)
     {
-      host = server->host;
+      if (server->host && !(host = xtrystrdup (server->host)))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       port = server->port;
-      user = server->user;
-      pass = server->pass;
+      if (server->user && !(user = xtrystrdup (server->user)))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      if (server->pass && !(pass = xtrystrdup (server->pass)))
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
       base = server->base;
+
     }
   else /* Use a default server. */
     return gpg_error (GPG_ERR_NOT_IMPLEMENTED);
 
+
   if (!base)
     base = "";
 
-  argc = 0;
   if (pass) /* Note: Must be the first item. */
     {
       argv[argc++] = "--pass";
@@ -558,14 +579,14 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
   argv[argc++] = "--multi";
   if (opt.ldaptimeout)
     {
-      sprintf (timeoutbuf, "%u", opt.ldaptimeout);
+      snprintf (timeoutbuf, sizeof timeoutbuf, "%u", opt.ldaptimeout);
       argv[argc++] = "--timeout";
       argv[argc++] = timeoutbuf;
     }
   if (opt.ldap_proxy)
     {
       argv[argc++] = "--proxy";
-      argv[argc++] = opt.ldap_proxy;
+      argv[argc++] = proxy;
     }
   if (host)
     {
@@ -574,7 +595,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
     }
   if (port)
     {
-      sprintf (portbuf, "%d", port);
+      snprintf (portbuf, sizeof portbuf, "%d", port);
       argv[argc++] = "--port";
       argv[argc++] = portbuf;
     }
@@ -626,7 +647,7 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
       goto leave;
     }
 
-  err = ldap_wrapper (ctrl, &(*context)->reader, argv);
+  err = ldap_wrapper (ctrl, &(*context)->reader, (const char**)argv);
 
   if (err)
     {
@@ -637,6 +658,10 @@ start_cert_fetch_ldap (ctrl_t ctrl, cert_fetch_context_t *context,
  leave:
   for (; argc_malloced < argc; argc_malloced++)
     xfree (argv[argc_malloced]);
+  xfree (proxy);
+  xfree (host);
+  xfree (user);
+  xfree (pass);
   return err;
 }
 
