@@ -4003,22 +4003,10 @@ menu_expire (KBNODE pub_keyblock)
   n1 = count_selected_keys (pub_keyblock);
   if (n1 > 1)
     {
-      char *s = xtryasprintf (_("Are you sure you want to change the"
-                                " expiration time %d subkeys? (y/N) "), n1);
-      int s_need_free;
-      if (s)
-        s_need_free = 0;
-      else
-        {
-          s = _("Are you sure you want to change the"
-                " expiration time for multiple subkeys? (y/N) ");
-          s_need_free = 0;
-        }
-
-      rc = cpr_get_answer_is_yes ("keyedit.expire_multiple_subkeys.okay", s);
-      if (s_need_free)
-        xfree (s);
-      if (! rc)
+      if (!cpr_get_answer_is_yes
+          ("keyedit.expire_multiple_subkeys.okay",
+           _("Are you sure you want to change the"
+             " expiration time for multiple subkeys? (y/N) ")))
 	return 0;
     }
   else if (n1)
