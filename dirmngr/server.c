@@ -2123,8 +2123,25 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       if (opt.use_tor)
         {
-          err = 0;
-          assuan_set_okay_line (ctx, " - Tor mode is enabled");
+#if ASSUAN_VERSION_NUMBER >= 0x020402
+          /* Check whether we can connect to the proxy.  We use a
+             special feature introduced with libassuan 2.4.2.  */
+          int sock = assuan_sock_connect_byname (NULL, 0, 0, NULL,
+                                                 ASSUAN_SOCK_TOR);
+          if (sock == ASSUAN_INVALID_FD)
+            {
+              err = assuan_write_status
+                (ctx, "NO_TOR",
+                 errno == ECONNREFUSED? "Tor not running" : strerror (errno));
+            }
+          else
+            {
+              assuan_sock_close (sock);
+              err = 0;
+            }
+          if (!err)
+#endif /* Libassuan >= 2.4.2 */
+            assuan_set_okay_line (ctx, "- Tor mode is enabled");
         }
       else
         err = set_error (GPG_ERR_FALSE, "Tor mode is NOT enabled");
