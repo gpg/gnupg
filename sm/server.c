@@ -55,8 +55,8 @@ struct server_local_s {
 
 
 /* Cookie definition for assuan data line output.  */
-static ssize_t data_line_cookie_write (void *cookie,
-                                       const void *buffer, size_t size);
+static gpgrt_ssize_t data_line_cookie_write (void *cookie,
+                                             const void *buffer, size_t size);
 static int data_line_cookie_close (void *cookie);
 static es_cookie_io_functions_t data_line_cookie_functions =
   {
@@ -129,7 +129,7 @@ has_option (const char *line, const char *name)
 
 /* A write handler used by es_fopencookie to write assuan data
    lines.  */
-static ssize_t
+static gpgrt_ssize_t
 data_line_cookie_write (void *cookie, const void *buffer, size_t size)
 {
   assuan_context_t ctx = cookie;
@@ -140,7 +140,7 @@ data_line_cookie_write (void *cookie, const void *buffer, size_t size)
       return -1;
     }
 
-  return size;
+  return (gpgrt_ssize_t)size;
 }
 
 static int

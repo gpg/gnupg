@@ -169,8 +169,9 @@ static assuan_fd_t connect_server (const char *server, unsigned short port,
                                    int *r_host_not_found);
 static gpg_error_t write_server (int sock, const char *data, size_t length);
 
-static ssize_t cookie_read (void *cookie, void *buffer, size_t size);
-static ssize_t cookie_write (void *cookie, const void *buffer, size_t size);
+static gpgrt_ssize_t cookie_read (void *cookie, void *buffer, size_t size);
+static gpgrt_ssize_t cookie_write (void *cookie,
+                                   const void *buffer, size_t size);
 static int cookie_close (void *cookie);
 
 
@@ -2415,7 +2416,7 @@ write_server (int sock, const char *data, size_t length)
 
 
 /* Read handler for estream.  */
-static ssize_t
+static gpgrt_ssize_t
 cookie_read (void *cookie, void *buffer, size_t size)
 {
   cookie_t c = cookie;
@@ -2497,11 +2498,11 @@ cookie_read (void *cookie, void *buffer, size_t size)
         c->content_length = 0;
     }
 
-  return nread;
+  return (gpgrt_ssize_t)nread;
 }
 
 /* Write handler for estream.  */
-static ssize_t
+static gpgrt_ssize_t
 cookie_write (void *cookie, const void *buffer_arg, size_t size)
 {
   const char *buffer = buffer_arg;
@@ -2550,7 +2551,7 @@ cookie_write (void *cookie, const void *buffer_arg, size_t size)
         nwritten = size;
     }
 
-  return nwritten;
+  return (gpgrt_ssize_t)nwritten;
 }
 
 

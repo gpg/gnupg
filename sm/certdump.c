@@ -652,7 +652,7 @@ struct format_name_cookie
 };
 
 /* The writer function for the memory stream. */
-static ssize_t
+static gpgrt_ssize_t
 format_name_writer (void *cookie, const void *buffer, size_t size)
 {
   struct format_name_cookie *c = cookie;
@@ -696,7 +696,7 @@ format_name_writer (void *cookie, const void *buffer, size_t size)
   c->len += size;
   p[c->len] = 0; /* Terminate string. */
 
-  return (ssize_t)size;
+  return (gpgrt_ssize_t)size;
 }
 
 

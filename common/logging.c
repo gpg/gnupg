@@ -195,7 +195,7 @@ parse_portno (const char *str, unsigned short *r_port)
 }
 
 
-static ssize_t
+static gpgrt_ssize_t
 fun_writer (void *cookie_arg, const void *buffer, size_t size)
 {
   struct fun_cookie_s *cookie = cookie_arg;
@@ -391,11 +391,11 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
           DWORD nwritten;
 
           WriteFile ((HANDLE)cookie->fd, buffer, size, &nwritten, NULL);
-          return (ssize_t)size; /* Okay.  */
+          return (gpgrt_ssize_t)size; /* Okay.  */
         }
 #endif
       if (!writen (cookie->fd, buffer, size, cookie->is_socket))
-        return (ssize_t)size; /* Okay. */
+        return (gpgrt_ssize_t)size; /* Okay. */
     }
 
   if (!running_detached && cookie->fd != -1
@@ -415,7 +415,7 @@ fun_writer (void *cookie_arg, const void *buffer, size_t size)
       log_socket = -1;
     }
 
-  return (ssize_t)size;
+  return (gpgrt_ssize_t)size;
 }
 
 
