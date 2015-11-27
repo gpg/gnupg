@@ -1178,7 +1178,9 @@ main (int argc, char **argv )
       gnupg_fd_t fd_extra = GNUPG_INVALID_FD;
       gnupg_fd_t fd_browser = GNUPG_INVALID_FD;
       gnupg_fd_t fd_ssh = GNUPG_INVALID_FD;
+#ifndef HAVE_W32_SYSTEM
       pid_t pid;
+#endif
 
       /* Remove the DISPLAY variable so that a pinentry does not
          default to a specific display.  There is still a default
@@ -1237,7 +1239,6 @@ main (int argc, char **argv )
 #ifdef HAVE_W32_SYSTEM
       (void)csh_style;
       (void)nodetach;
-      pid = getpid ();
 #else /*!HAVE_W32_SYSTEM*/
       pid = fork ();
       if (pid == (pid_t)-1)

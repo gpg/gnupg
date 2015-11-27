@@ -992,8 +992,15 @@ tdb_get_validity_core (PKT_public_key *pk, PKT_user_id *uid,
   TRUSTREC trec, vrec;
   gpg_error_t err;
   ulong recno;
+#ifdef USE_TOFU
   unsigned int tofu_validity = TRUST_UNKNOWN;
+#endif
   unsigned int validity = TRUST_UNKNOWN;
+
+#ifndef USE_TOFU
+  (void)sig;
+  (void)may_ask;
+#endif
 
   init_trustdb ();
 

@@ -38,7 +38,7 @@
 #include <unistd.h>
 
 /* We can easiliy replace this code by the socket wrappers from libassuan.  */
-#warning Please do not use this module anymore
+#warning Remove this code; it is only used on w32 by symcryptrun.
 
 #define DIRSEP_C '\\'
 

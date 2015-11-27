@@ -717,6 +717,8 @@ setup_qualitybar (ctrl_t ctrl)
   char *tmpstr, *tmpstr2;
   const char *tooltip;
 
+  (void)ctrl;
+
   /* TRANSLATORS: This string is displayed by Pinentry as the label
      for the quality bar.  */
   tmpstr = try_percent_escape (L_("Quality:"), "\t\r\n\f\v");

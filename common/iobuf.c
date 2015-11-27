@@ -267,6 +267,7 @@ direct_open (const char *fname, const char *mode, int mode700)
   unsigned long da, cd, sm;
   HANDLE hfile;
 
+  (void)mode700;
   /* Note, that we do not handle all mode combinations */
 
   /* According to the ReactOS source it seems that open() of the
@@ -2271,8 +2272,6 @@ iobuf_set_limit (iobuf_t a, off_t nlimit)
 off_t
 iobuf_get_filelength (iobuf_t a, int *overflow)
 {
-  struct stat st;
-
   if (overflow)
     *overflow = 0;
 
@@ -2330,11 +2329,15 @@ iobuf_get_filelength (iobuf_t a, int *overflow)
       }
     log_error ("GetFileSize for handle %p failed: %s\n",
 	       fp, w32_strerror (0));
-#else
-    if ( !fstat (FD2INT (fp), &st) )
-      return st.st_size;
-    log_error("fstat() failed: %s\n", strerror(errno) );
-#endif
+#else /*!HAVE_W32_SYSTEM*/
+    {
+      struct stat st;
+
+      if ( !fstat (FD2INT (fp), &st) )
+        return st.st_size;
+      log_error("fstat() failed: %s\n", strerror(errno) );
+    }
+#endif /*!HAVE_W32_SYSTEM*/
   }
 
   return 0;

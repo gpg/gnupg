@@ -870,7 +870,7 @@ list_keyblock_pka (ctrl_t ctrl, kbnode_t keyblock)
   char pkstrbuf[PUBKEY_STRING_SIZE];
   char *hexfpr;
   char *hexkeyblock = NULL;
-  unsigned int hexkeyblocklen;
+  unsigned int hexkeyblocklen = 0;  /* Init to avoid -Wmaybe-uninitialized. */
   const char *s;
 
   /* Get the keyid from the keyblock.  */
