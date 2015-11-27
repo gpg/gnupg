@@ -347,38 +347,42 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
         case oCMS:     /* Dummy option for now.  */ break;
 
         case oGpgArgs:;
-          strlist_t list;
-          if (shell_parse_stringlist (pargs->r.ret_str, &list))
-            log_error ("failed to parse gpg arguments '%s'\n",
-                       pargs->r.ret_str);
-          else
-            {
-              if (opt.gpg_arguments)
-                strlist_last (opt.gpg_arguments)->next = list;
-              else
-                opt.gpg_arguments = list;
-            }
+          {
+            strlist_t list;
+            if (shell_parse_stringlist (pargs->r.ret_str, &list))
+              log_error ("failed to parse gpg arguments '%s'\n",
+                         pargs->r.ret_str);
+            else
+              {
+                if (opt.gpg_arguments)
+                  strlist_last (opt.gpg_arguments)->next = list;
+                else
+                  opt.gpg_arguments = list;
+              }
+          }
           break;
 
         case oTarArgs:;
-          int tar_argc;
-          char **tar_argv;
+          {
+            int tar_argc;
+            char **tar_argv;
 
-          if (shell_parse_argv (pargs->r.ret_str, &tar_argc, &tar_argv))
-            log_error ("failed to parse tar arguments '%s'\n",
-                       pargs->r.ret_str);
-          else
-            {
-              ARGPARSE_ARGS tar_args;
-              tar_args.argc = &tar_argc;
-              tar_args.argv = &tar_argv;
-              tar_args.flags = ARGPARSE_FLAG_ARG0;
-              parse_arguments (&tar_args, tar_opts);
-              if (tar_args.err)
-                log_error ("unsupported tar arguments '%s'\n",
-                           pargs->r.ret_str);
-              pargs->err = tar_args.err;
-            }
+            if (shell_parse_argv (pargs->r.ret_str, &tar_argc, &tar_argv))
+              log_error ("failed to parse tar arguments '%s'\n",
+                         pargs->r.ret_str);
+            else
+              {
+                ARGPARSE_ARGS tar_args;
+                tar_args.argc = &tar_argc;
+                tar_args.argv = &tar_argv;
+                tar_args.flags = ARGPARSE_FLAG_ARG0;
+                parse_arguments (&tar_args, tar_opts);
+                if (tar_args.err)
+                  log_error ("unsupported tar arguments '%s'\n",
+                             pargs->r.ret_str);
+                pargs->err = tar_args.err;
+              }
+          }
           break;
 
         case oDryRun:
