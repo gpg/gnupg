@@ -47,7 +47,7 @@ start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
   assuan_context_t ctx = NULL;
   const char *pgmname;
   const char **argv;
-  int no_close_list[5];
+  assuan_fd_t no_close_list[5];
   int i;
   char line[ASSUAN_LINELENGTH];
 
@@ -100,7 +100,7 @@ start_gpg (ctrl_t ctrl, const char *gpg_program, strlist_t gpg_arguments,
     no_close_list[i++] = assuan_fd_from_posix_fd (input_fd);
   if (output_fd != -1)
     no_close_list[i++] = assuan_fd_from_posix_fd (output_fd);
-  no_close_list[i] = -1;
+  no_close_list[i] = ASSUAN_INVALID_FD;
 
   /* Connect to GPG and perform initial handshaking.  */
   err = assuan_pipe_connect (ctx, gpg_program, argv, no_close_list,
