@@ -684,6 +684,7 @@ proc_texi_cmd (FILE *fp, const char *command, const char *rest, size_t len,
   } cmdtbl[] = {
     { "command", 0, "\\fB", "\\fR" },
     { "code",    0, "\\fB", "\\fR" },
+    { "url",     0, "\\fB", "\\fR" },
     { "sc",      0, "\\fB", "\\fR" },
     { "var",     0, "\\fI", "\\fR" },
     { "samp",    0, "\\(aq", "\\(aq"  },
