@@ -1,5 +1,5 @@
 /* yat2m.c - Yet Another Texi 2 Man converter
- *	Copyright (C) 2005, 2013 g10 Code GmbH
+ *	Copyright (C) 2005, 2013, 2015 g10 Code GmbH
  *      Copyright (C) 2006, 2008, 2011 Free Software Foundation, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -120,6 +120,7 @@ static int quiet;
 static int debug;
 static const char *opt_source;
 static const char *opt_release;
+static const char *opt_date;
 static const char *opt_select;
 static const char *opt_include;
 static int opt_store;
@@ -323,8 +324,12 @@ isodatestring (void)
 {
   static char buffer[11+5];
   struct tm *tp;
-  time_t atime = time (NULL);
+  time_t atime;
 
+  if (opt_date && *opt_date)
+    atime = strtoul (opt_date, NULL, 10);
+  else
+    atime = time (NULL);
   if (atime < 0)
     strcpy (buffer, "????" "-??" "-??");
   else
@@ -1466,13 +1471,14 @@ main (int argc, char **argv)
                 "Extract man pages from a Texinfo source.\n\n"
                 "  --source NAME    use NAME as source field\n"
                 "  --release STRING use STRING as the release field\n"
+                "  --date EPOCH     use EPOCH as publication date\n"
                 "  --store          write output using @manpage name\n"
                 "  --select NAME    only output pages with @manpage NAME\n"
                 "  --verbose        enable extra informational output\n"
                 "  --debug          enable additional debug output\n"
                 "  --help           display this help and exit\n"
                 "  -I DIR           also search in include DIR\n"
-                "  -D gpgone        the only useable define\n\n"
+                "  -D gpgone        the only usable define\n\n"
                 "With no FILE, or when FILE is -, read standard input.\n\n"
                 "Report bugs to <bugs@g10code.com>.");
           exit (0);
@@ -1516,6 +1522,15 @@ main (int argc, char **argv)
           if (argc)
             {
               opt_release = *argv;
+              argc--; argv++;
+            }
+        }
+      else if (!strcmp (*argv, "--date"))
+        {
+          argc--; argv++;
+          if (argc)
+            {
+              opt_date = *argv;
               argc--; argv++;
             }
         }
