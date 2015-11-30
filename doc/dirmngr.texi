@@ -255,8 +255,8 @@ keyservers, or "mailto" for the Graff email keyserver. Note that your
 particular installation of GnuPG may have other keyserver types
 available as well. Keyserver schemes are case-insensitive. After the
 keyserver name, optional keyserver configuration options may be
-provided. These are the same as the global @option{--keyserver-options}
-from below, but apply only to this particular keyserver.
+provided.  These are the same as the @option{--keyserver-options} of
+@command{gpg}, but apply only to this particular keyserver.
 
 Most keyservers synchronize with each other, so there is generally no
 need to send keys to more than one server. The keyserver
