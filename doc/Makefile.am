@@ -82,7 +82,7 @@ watchgnupg_SOURCE = gnupg.texi
 CLEANFILES = yat2m mkdefsinc defs.inc
 
 DISTCLEANFILES = gnupg.tmp gnupg.ops yat2m-stamp.tmp yat2m-stamp \
-		 $(myman_pages) gpg-zip.1 gnupg.7
+		 $(myman_pages) gpg-zip.1 gpgkey2ssh.1 gnupg.7
 
 yat2m: yat2m.c
 	$(CC_FOR_BUILD) -o $@ $(srcdir)/yat2m.c
