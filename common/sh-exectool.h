@@ -20,6 +20,8 @@
 #ifndef GNUPG_COMMON_SH_EXECTOOL_H
 #define GNUPG_COMMON_SH_EXECTOOL_H
 
+#include <gpg-error.h>
+
 /* Run the program PGMNAME with the command line arguments given in
    the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
    will be fed to stdin of the process.  stderr is logged using
@@ -31,5 +33,14 @@
 gpg_error_t sh_exec_tool (const char *pgmname, const char *argv[],
 			  const char *input_string,
 			  char **result, size_t *resultlen);
+
+/* Run the program PGMNAME with the command line arguments given in
+   the NULL terminates array ARGV.  If INPUT is not NULL it will be
+   fed to stdin of the process.  stderr is logged using log_info and
+   the process' stdout is written to OUTPUT.  On error a diagnostic is
+   printed, and an error code returned.  */
+gpg_error_t sh_exec_tool_stream (const char *pgmname, const char *argv[],
+				 estream_t input,
+				 estream_t output);
 
 #endif /* GNUPG_COMMON_SH_EXECTOOL_H */

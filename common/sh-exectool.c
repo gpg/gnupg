@@ -24,13 +24,16 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <assert.h>
+#include <gpg-error.h>
 
 #include <assuan.h>
 #include "i18n.h"
 #include "logging.h"
 #include "membuf.h"
+#include "mischelp.h"
 #include "exechelp.h"
 #include "sysutils.h"
+#include "util.h"
 
 typedef struct
 {
@@ -113,56 +116,109 @@ read_and_log_stderr (read_and_log_buffer_t *state, es_poll_t *fderr)
     }
 }
 
+
 
-static gpg_error_t
-read_stdout (membuf_t *mb, es_poll_t *fdout, const char *pgmname)
+/* A buffer to copy from one stream to another.  */
+struct copy_buffer
 {
-  gpg_error_t err = 0;
-  int c;
+  char buffer[4096];
+  char *writep;
+  size_t nread;
+};
 
-  for (;;)
+
+/* Initialize a copy buffer.  */
+static void
+copy_buffer_init (struct copy_buffer *c)
+{
+  c->writep = c->buffer;
+  c->nread = 0;
+}
+
+
+/* Securely wipe a copy buffer.  */
+static void
+copy_buffer_shred (struct copy_buffer *c)
+{
+  wipememory (c->buffer, sizeof c->buffer);
+  c->writep = NULL;
+  c->nread = ~0U;
+}
+
+
+/* Copy data from SOURCE to SINK using copy buffer C.  */
+static gpg_error_t
+copy_buffer_do_copy (struct copy_buffer *c, estream_t source, estream_t sink)
+{
+  gpg_error_t err;
+  size_t nwritten;
+
+  if (c->nread == 0)
     {
-      c = es_fgetc (fdout->stream);
-      if (c == EOF)
+      c->writep = c->buffer;
+      err = es_read (source, c->buffer, sizeof c->buffer, &c->nread);
+      if (err)
         {
-          if (es_feof (fdout->stream))
-            {
-              fdout->ignore = 1; /* Ready.  */
-            }
-          else if (es_ferror (fdout->stream))
-            {
-              err = gpg_error_from_syserror ();
-              log_error ("error reading stdout of '%s': %s\n",
-                         pgmname, gpg_strerror (err));
-              fdout->ignore = 1; /* Disable.  */
-            }
+          if (errno == EAGAIN)
+            return 0;	/* We will just retry next time.  */
 
-          break;
+          return gpg_error_from_syserror ();
         }
-      else
-        {
-          char buf[1];
-          *buf = c;
-          put_membuf (mb, buf, 1);
-        }
+
+      assert (c->nread <= sizeof c->buffer);
     }
+
+  if (c->nread == 0)
+    return 0;	/* Done copying.  */
+
+  err = es_write (sink, c->writep, c->nread, &nwritten);
+  if (err)
+    {
+      if (errno == EAGAIN)
+        return 0;	/* We will just retry next time.  */
+
+      return gpg_error_from_syserror ();
+    }
+
+  assert (nwritten <= c->nread);
+  c->writep += nwritten;
+  c->nread -= nwritten;
+  assert (c->writep - c->buffer <= sizeof c->buffer);
+
+  if (es_fflush (sink) && errno != EAGAIN)
+    err = gpg_error_from_syserror ();
 
   return err;
 }
 
 
+/* Flush the remaining data to SINK.  */
+static gpg_error_t
+copy_buffer_flush (struct copy_buffer *c, estream_t sink)
+{
+  gpg_error_t err;
+
+  while (c->nread > 0)
+    {
+      err = copy_buffer_do_copy (c, NULL, sink);
+      if (err)
+        return err;
+    }
+
+  return 0;
+}
+
+
+
 /* Run the program PGMNAME with the command line arguments given in
-   the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
-   will be fed to stdin of the process.  stderr is logged using
-   log_info and the process' stdout is returned in a newly malloced
-   buffer RESULT with the length stored at RESULTLEN if not given as
-   NULL.  A hidden Nul is appended to the output.  On error NULL is
-   stored at RESULT, a diagnostic is printed, and an error code
-   returned.  */
+   the NULL terminates array ARGV.  If INPUT is not NULL it will be
+   fed to stdin of the process.  stderr is logged using log_info and
+   the process' stdout is written to OUTPUT.  On error a diagnostic is
+   printed, and an error code returned.  */
 gpg_error_t
-sh_exec_tool (const char *pgmname, const char *argv[],
-              const char *input_string,
-              char **result, size_t *resultlen)
+sh_exec_tool_stream (const char *pgmname, const char *argv[],
+                     estream_t input,
+                     estream_t output)
 {
   gpg_error_t err;
   pid_t pid;
@@ -171,19 +227,16 @@ sh_exec_tool (const char *pgmname, const char *argv[],
   es_poll_t fds[3];
   int count;
   read_and_log_buffer_t fderrstate;
-  membuf_t fdout_mb;
-  size_t len, nwritten;
+  struct copy_buffer cpbuf[2];
 
-  *result = NULL;
-  if (resultlen)
-    *resultlen = 0;
   memset (fds, 0, sizeof fds);
   memset (&fderrstate, 0, sizeof fderrstate);
-  init_membuf (&fdout_mb, 4096);
+  copy_buffer_init (&cpbuf[0]);
+  copy_buffer_init (&cpbuf[1]);
 
   err = gnupg_spawn_process (pgmname, argv, GPG_ERR_SOURCE_DEFAULT,
                              NULL, GNUPG_SPAWN_NONBLOCK,
-                             input_string? &infp : NULL,
+                             input? &infp : NULL,
                              &outfp, &errfp, &pid);
   if (err)
     {
@@ -195,7 +248,7 @@ sh_exec_tool (const char *pgmname, const char *argv[],
 
   fds[0].stream = infp;
   fds[0].want_write = 1;
-  if (!input_string)
+  if (!input)
     fds[0].ignore = 1;
   fds[1].stream = outfp;
   fds[1].want_read = 1;
@@ -221,53 +274,50 @@ sh_exec_tool (const char *pgmname, const char *argv[],
 
       if (fds[0].got_write)
         {
-          len = strlen (input_string);
-          log_debug ("writing '%s'\n", input_string);
-          if (es_write (fds[0].stream, input_string, len, &nwritten))
-	    {
-              if (errno != EAGAIN)
+          err = copy_buffer_do_copy (&cpbuf[0], input, fds[0].stream);
+          if (err)
+            {
+              log_error ("error feeding data to '%s': %s\n",
+                         pgmname, gpg_strerror (err));
+              goto leave;
+            }
+
+          if (es_feof (input))
+            {
+              err = copy_buffer_flush (&cpbuf[0], fds[0].stream);
+              if (err)
                 {
-                  err = gpg_error_from_syserror ();
-                  log_error ("error writing '%s': %s\n",
+                  log_error ("error feeding data to '%s': %s\n",
                              pgmname, gpg_strerror (err));
                   goto leave;
                 }
-              else
-                log_debug ("  .. EAGAIN\n");
-            }
-          else
-            {
-              assert (nwritten <= len);
-              input_string += nwritten;
-	    }
 
-          if (es_fflush (fds[0].stream) && errno != EAGAIN)
-            {
-              err = gpg_error_from_syserror ();
-              log_error ("error writing '%s' (flush): %s\n",
-                         pgmname, gpg_strerror (err));
-              if (gpg_err_code (err) == GPG_ERR_EPIPE && !*input_string)
-                {
-                  /* fixme: How can we tell whether estream has
-                     pending bytes after a HUP - which is an
-                     error?  */
-                }
-              else
-                goto leave;
-            }
-          if (!*input_string)
-            {
               fds[0].ignore = 1; /* ready.  */
               es_fclose (infp); infp = NULL;
             }
         }
 
       if (fds[1].got_read)
-        read_stdout (&fdout_mb, fds + 1, pgmname); /* FIXME: Add error
-                                                      handling.  */
+        {
+          err = copy_buffer_do_copy (&cpbuf[1], fds[1].stream, output);
+          if (err)
+            {
+              log_error ("error reading data from '%s': %s\n",
+                         pgmname, gpg_strerror (err));
+              goto leave;
+            }
+        }
+
       if (fds[2].got_read)
         read_and_log_stderr (&fderrstate, fds + 2);
+    }
 
+  err = copy_buffer_flush (&cpbuf[1], output);
+  if (err)
+    {
+      log_error ("error reading data from '%s': %s\n",
+                 pgmname, gpg_strerror (err));
+      goto leave;
     }
 
   read_and_log_stderr (&fderrstate, NULL); /* Flush.  */
@@ -280,17 +330,7 @@ sh_exec_tool (const char *pgmname, const char *argv[],
 
  leave:
   if (err)
-    {
-      gnupg_kill_process (pid);
-      xfree (get_membuf (&fdout_mb, NULL));
-    }
-  else
-    {
-      put_membuf (&fdout_mb, "", 1); /* Make sure it is a string.  */
-      *result = get_membuf (&fdout_mb, resultlen);
-      if (!*result)
-        err = gpg_error_from_syserror ();
-    }
+    gnupg_kill_process (pid);
 
   es_fclose (infp);
   es_fclose (outfp);
@@ -299,5 +339,85 @@ sh_exec_tool (const char *pgmname, const char *argv[],
     gnupg_wait_process (pgmname, pid, 1, NULL);
   gnupg_release_process (pid);
 
+  copy_buffer_shred (&cpbuf[0]);
+  copy_buffer_shred (&cpbuf[1]);
+  return err;
+}
+
+
+/* A dummy free function to pass to 'es_mopen'.  */
+static void
+nop_free (void *ptr)
+{
+  (void) ptr;
+}
+
+/* Run the program PGMNAME with the command line arguments given in
+   the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
+   will be fed to stdin of the process.  stderr is logged using
+   log_info and the process' stdout is returned in a newly malloced
+   buffer RESULT with the length stored at RESULTLEN if not given as
+   NULL.  A hidden Nul is appended to the output.  On error NULL is
+   stored at RESULT, a diagnostic is printed, and an error code
+   returned.  */
+gpg_error_t
+sh_exec_tool (const char *pgmname, const char *argv[],
+              const char *input_string,
+              char **result, size_t *resultlen)
+{
+  gpg_error_t err;
+  estream_t input = NULL;
+  estream_t output;
+  size_t len;
+  size_t nread;
+
+  *result = NULL;
+  if (resultlen)
+    *resultlen = 0;
+
+  if (input_string)
+    {
+      len = strlen (input_string);
+      input = es_mopen ((char *) input_string, len, len,
+                        0 /* don't grow */, NULL, nop_free, "rb");
+      if (! input)
+        return gpg_error_from_syserror ();
+    }
+
+  output = es_fopenmem (0, "wb");
+  if (! output)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = sh_exec_tool_stream (pgmname, argv, input, output);
+  if (err)
+    goto leave;
+
+  len = es_ftello (output);
+  err = es_fseek (output, 0, SEEK_SET);
+  if (err)
+    goto leave;
+
+  *result = xtrymalloc (len);
+  if (*result == NULL)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
+  err = es_read (output, *result, len, &nread);
+  if (! err)
+    {
+      assert (nread == len || !"short read on memstream");
+      if (resultlen)
+        *resultlen = len;
+    }
+
+ leave:
+  if (input)
+    es_fclose (input);
+  es_fclose (output);
   return err;
 }
