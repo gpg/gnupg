@@ -36,7 +36,7 @@
 #include <assert.h>
 
 #include "i18n.h"
-#include "../common/call-gpg.h"
+#include "../common/sh-exectool.h"
 #include "../common/sysutils.h"
 #include "gpgtar.h"
 
@@ -888,16 +888,40 @@ gpgtar_create (char **inpattern, int encrypt)
 
   if (encrypt)
     {
+      int i;
+      strlist_t arg;
+      const char **argv;
+
       err = es_fseek (outstream, 0, SEEK_SET);
       if (err)
         goto leave;
 
-      err = gpg_encrypt_stream (NULL,
-                                opt.gpg_program,
-                                opt.gpg_arguments,
-                                outstream,
-                                opt.recipients,
-                                cipher_stream);
+      argv = xtrycalloc (strlist_length (opt.gpg_arguments)
+                         + 2 * strlist_length (opt.recipients)
+                         + 2,
+                         sizeof *argv);
+      if (argv == NULL)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      i = 0;
+      argv[i++] = "--encrypt";
+      for (arg = opt.recipients; arg; arg = arg->next)
+        {
+          argv[i++] = "--recipient";
+          argv[i++] = arg->d;
+        }
+      for (arg = opt.gpg_arguments; arg; arg = arg->next)
+        argv[i++] = arg->d;
+      argv[i++] = NULL;
+      assert (i == strlist_length (opt.gpg_arguments)
+              + 2 * strlist_length (opt.recipients)
+              + 2);
+
+      err = sh_exec_tool_stream (opt.gpg_program, argv,
+                                 outstream, cipher_stream);
+      xfree (argv);
       if (err)
         goto leave;
     }

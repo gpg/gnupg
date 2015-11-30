@@ -26,7 +26,7 @@
 
 #include "i18n.h"
 #include "gpgtar.h"
-#include "../common/call-gpg.h"
+#include "../common/sh-exectool.h"
 
 
 
@@ -299,6 +299,10 @@ gpgtar_list (const char *filename, int decrypt)
 
   if (decrypt)
     {
+      int i;
+      strlist_t arg;
+      const char **argv;
+
       cipher_stream = stream;
       stream = es_fopenmem (0, "rwb");
       if (! stream)
@@ -306,8 +310,24 @@ gpgtar_list (const char *filename, int decrypt)
           err = gpg_error_from_syserror ();
           goto leave;
         }
-      err = gpg_decrypt_stream (NULL, opt.gpg_program, opt.gpg_arguments,
-                                cipher_stream, stream);
+
+      argv = xtrycalloc (strlist_length (opt.gpg_arguments) + 2,
+                         sizeof *argv);
+      if (argv == NULL)
+        {
+          err = gpg_error_from_syserror ();
+          goto leave;
+        }
+      i = 0;
+      argv[i++] = "--decrypt";
+      for (arg = opt.gpg_arguments; arg; arg = arg->next)
+        argv[i++] = arg->d;
+      argv[i++] = NULL;
+      assert (i == strlist_length (opt.gpg_arguments) + 2);
+
+      err = sh_exec_tool_stream (opt.gpg_program, argv,
+                                 cipher_stream, stream);
+      xfree (argv);
       if (err)
         goto leave;
 

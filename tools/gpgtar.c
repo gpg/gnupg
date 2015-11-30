@@ -27,7 +27,6 @@
    gpg.  So here we go.  */
 
 #include <config.h>
-#include <assuan.h>
 #include <ctype.h>
 #include <errno.h>
 #include <npth.h>
@@ -39,7 +38,6 @@
 #include "util.h"
 #include "i18n.h"
 #include "sysutils.h"
-#include "../common/asshelp.h"
 #include "../common/openpgpdefs.h"
 #include "../common/init.h"
 #include "../common/strlist.h"
@@ -282,11 +280,6 @@ shell_parse_argv (const char *s, int *r_argc, char ***r_argv)
   return 0;
 }
 
-/* Define Assuan hooks for NPTH.  */
-
-ASSUAN_SYSTEM_NPTH_IMPL;
-
-
 /* Global flags.  */
 enum cmd_and_opt_values cmd = 0;
 int skip_crypto = 0;
@@ -412,11 +405,6 @@ main (int argc, char **argv)
   /* Make sure that our subsystems are ready.  */
   i18n_init();
   init_common_subsystems (&argc, &argv);
-  npth_init ();
-  assuan_set_assuan_log_prefix (log_get_prefix (NULL));
-  assuan_set_gpg_err_source (GPG_ERR_SOURCE_DEFAULT);
-  assuan_set_system_hooks (ASSUAN_SYSTEM_NPTH);
-  assuan_sock_init ();
 
   /* Parse the command line. */
   pargs.argc  = &argc;
@@ -442,9 +430,11 @@ main (int argc, char **argv)
           log_info (_("NOTE: '%s' is not considered an option\n"), argv[i]);
     }
 
+  if (! opt.gpg_program)
+    opt.gpg_program = gnupg_module_name (GNUPG_MODULE_NAME_GPG);
+
   if (opt.verbose > 1)
     opt.debug_level = 1024;
-  setup_libassuan_logging (&opt.debug_level);
 
   switch (cmd)
     {
