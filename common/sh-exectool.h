@@ -1,0 +1,35 @@
+/* sh-exectool.h - Utility functions to execute a helper tool
+ * Copyright (C) 2015 g10 Code GmbH
+ *
+ * This file is part of GnuPG.
+ *
+ * GnuPG is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * GnuPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef GNUPG_COMMON_SH_EXECTOOL_H
+#define GNUPG_COMMON_SH_EXECTOOL_H
+
+/* Run the program PGMNAME with the command line arguments given in
+   the NULL terminates array ARGV.  If INPUT_STRING is not NULL it
+   will be fed to stdin of the process.  stderr is logged using
+   log_info and the process' stdout is returned in a newly malloced
+   buffer RESULT with the length stored at RESULTLEN if not given as
+   NULL.  A hidden Nul is appended to the output.  On error NULL is
+   stored at RESULT, a diagnostic is printed, and an error code
+   returned.  */
+gpg_error_t sh_exec_tool (const char *pgmname, const char *argv[],
+			  const char *input_string,
+			  char **result, size_t *resultlen);
+
+#endif /* GNUPG_COMMON_SH_EXECTOOL_H */

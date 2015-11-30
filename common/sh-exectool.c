@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "g13-syshelp.h"
 #include <assuan.h>
 #include "i18n.h"
+#include "logging.h"
 #include "membuf.h"
 #include "exechelp.h"
 #include "sysutils.h"
