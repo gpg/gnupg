@@ -25,35 +25,65 @@ TESTFILES="$plain_files $data_files"
 TESTDIR=gpgtar.d
 FILELIST="${TESTDIR}/filelist"
 GPG=../../g10/gpg2
-GPGARGS="--trust-model=always"
+GPGARGS="$opt_always --no-permission-warning"
 
 GPGTAR="../../tools/gpgtar"
 GPGZIP="sh ../../tools/gpg-zip"
 
-for TOOL in "$GPGTAR" "$GPGZIP"
-do
+# Create, inspect, and extract an archive with the given options.
+#
+# $1 the tool to test
+# $2 options used to create the archive
+# $3 options used to inspect the archive
+# $4 options used to extract the archive
+do_test()
+{
+  (
+    TOOL="$1"
+    CREATE_FLAGS="$2"
+    INSPECT_FLAGS="$3"
+    EXTRACT_FLAGS="$4"
+
     rm -rf -- "${TESTDIR}"
     mkdir "${TESTDIR}"
 
-    $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" \
-          --encrypt --recipient "$usrname2" \
+    $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" $CREATE_FLAGS \
 	  --output "${TESTDIR}/test.tar.pgp" $TESTFILES
 
-    $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" \
-          --list-archive "${TESTDIR}/test.tar.pgp" \
+    $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" $INSPECT_FLAGS \
+          "${TESTDIR}/test.tar.pgp" \
           >"$FILELIST"
     for F in $TESTFILES
     do
 	grep -qe "\\b${F}\\b" "$FILELIST"
     done
 
-    $TOOL --gpg "$GPG"  --gpg-args "$GPGARGS" \
+    $TOOL --gpg "$GPG"  --gpg-args "$GPGARGS" $EXTRACT_FLAGS \
           --tar-args --directory="${TESTDIR}" \
-          --decrypt "${TESTDIR}/test.tar.pgp"
+          "${TESTDIR}/test.tar.pgp"
     for F in $TESTFILES
     do
 	diff -q "$F" "${TESTDIR}/$F"
     done
+  )
+}
+
+for TOOL in "$GPGTAR" "$GPGZIP"
+do
+    do_test "$TOOL" \
+	    "--encrypt --recipient $usrname2" \
+	    "--list-archive" \
+	    "--decrypt"
+
+    do_test "$TOOL" \
+	    "--encrypt --recipient $usrname2 --sign --local-user $usrname3" \
+	    "--list-archive" \
+	    "--decrypt"
+
+    do_test "$TOOL" \
+	    "--sign --local-user $usrname3" \
+	    "--list-archive" \
+	    "--decrypt"
 done
 
 # Success!

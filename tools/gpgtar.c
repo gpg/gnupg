@@ -318,7 +318,6 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
 
         case oUser:
-          log_info ("note: ignoring option --user\n");
           opt.user = pargs->r.ret_str;
           break;
 
@@ -452,12 +451,17 @@ main (int argc, char **argv)
       break;
 
     case aEncrypt:
+    case aSign:
+    case aSignEncrypt:
       if ((!argc && !null_names)
           || (argc && null_names))
         usage (1);
       if (opt.filename)
         log_info ("note: ignoring option --set-filename\n");
-      err = gpgtar_create (null_names? NULL :argv, !skip_crypto);
+      err = gpgtar_create (null_names? NULL :argv,
+                           !skip_crypto
+                           && (cmd == aEncrypt || cmd == aSignEncrypt),
+                           cmd == aSign || cmd == aSignEncrypt);
       if (err && log_get_errorcount (0) == 0)
         log_error ("creating archive failed: %s\n", gpg_strerror (err));
       break;

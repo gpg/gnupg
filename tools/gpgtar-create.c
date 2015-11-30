@@ -741,7 +741,7 @@ write_eof_mark (estream_t stream)
    INPATTERN is NULL take the pattern as null terminated strings from
    stdin.  */
 gpg_error_t
-gpgtar_create (char **inpattern, int encrypt)
+gpgtar_create (char **inpattern, int encrypt, int sign)
 {
   gpg_error_t err = 0;
   struct scanctrl_s scanctrl_buffer;
@@ -865,7 +865,7 @@ gpgtar_create (char **inpattern, int encrypt)
   if (outstream == es_stdout)
     es_set_binary (es_stdout);
 
-  if (encrypt)
+  if (encrypt || sign)
     {
       cipher_stream = outstream;
       outstream = es_fopenmem (0, "rwb");
@@ -886,7 +886,7 @@ gpgtar_create (char **inpattern, int encrypt)
   if (err)
     goto leave;
 
-  if (encrypt)
+  if (encrypt || sign)
     {
       int i;
       strlist_t arg;
@@ -898,7 +898,7 @@ gpgtar_create (char **inpattern, int encrypt)
 
       argv = xtrycalloc (strlist_length (opt.gpg_arguments)
                          + 2 * strlist_length (opt.recipients)
-                         + 2,
+                         + 1 + !!encrypt + !!sign + 2 * !!opt.user,
                          sizeof *argv);
       if (argv == NULL)
         {
@@ -906,7 +906,15 @@ gpgtar_create (char **inpattern, int encrypt)
           goto leave;
         }
       i = 0;
-      argv[i++] = "--encrypt";
+      if (encrypt)
+        argv[i++] = "--encrypt";
+      if (sign)
+        argv[i++] = "--sign";
+      if (opt.user)
+        {
+          argv[i++] = "--local-user";
+          argv[i++] = opt.user;
+        }
       for (arg = opt.recipients; arg; arg = arg->next)
         {
           argv[i++] = "--recipient";
@@ -917,7 +925,7 @@ gpgtar_create (char **inpattern, int encrypt)
       argv[i++] = NULL;
       assert (i == strlist_length (opt.gpg_arguments)
               + 2 * strlist_length (opt.recipients)
-              + 2);
+              + 1 + !!encrypt + !!sign + 2 * !!opt.user);
 
       err = sh_exec_tool_stream (opt.gpg_program, argv,
                                  outstream, cipher_stream);
