@@ -108,8 +108,10 @@ mkdefsinc: mkdefsinc.c Makefile ../config.h
 yat2m-stamp: $(myman_sources) defs.inc
 	@rm -f yat2m-stamp.tmp
 	@touch yat2m-stamp.tmp
+	incd="`test -f defsincdate || echo '$(srcdir)/'`defsincdate"; \
 	for file in $(myman_sources) ; do \
               ./yat2m $(YAT2M_OPTIONS) --store \
+                  --date "`cat $$incd 2>/dev/null`" \
 	          `test -f '$$file' || echo '$(srcdir)/'`$$file ; done
 	@mv -f yat2m-stamp.tmp $@
 
