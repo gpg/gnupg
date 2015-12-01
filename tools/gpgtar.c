@@ -322,7 +322,6 @@ parse_arguments (ARGPARSE_ARGS *pargs, ARGPARSE_OPTS *popts)
           break;
 
         case oSymmetric:
-          log_info ("note: ignoring option --symmetric\n");
           set_cmd (&cmd, aEncrypt);
           opt.symmetric = 1;
           break;

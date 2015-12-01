@@ -896,9 +896,16 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
       if (err)
         goto leave;
 
+      /* '--encrypt' may be combined with '--symmetric', but 'encrypt'
+         is set either way.  Clear it if no recipients are specified.
+         XXX: Fix command handling.  */
+       if (opt.symmetric && opt.recipients == NULL)
+         encrypt = 0;
+
       argv = xtrycalloc (strlist_length (opt.gpg_arguments)
                          + 2 * strlist_length (opt.recipients)
-                         + 1 + !!encrypt + !!sign + 2 * !!opt.user,
+                         + 1 + !!encrypt + !!sign + 2 * !!opt.user
+                         + !!opt.symmetric,
                          sizeof *argv);
       if (argv == NULL)
         {
@@ -915,6 +922,8 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
           argv[i++] = "--local-user";
           argv[i++] = opt.user;
         }
+      if (opt.symmetric)
+        argv[i++] = "--symmetric";
       for (arg = opt.recipients; arg; arg = arg->next)
         {
           argv[i++] = "--recipient";
@@ -925,7 +934,8 @@ gpgtar_create (char **inpattern, int encrypt, int sign)
       argv[i++] = NULL;
       assert (i == strlist_length (opt.gpg_arguments)
               + 2 * strlist_length (opt.recipients)
-              + 1 + !!encrypt + !!sign + 2 * !!opt.user);
+              + 1 + !!encrypt + !!sign + 2 * !!opt.user
+              + !!opt.symmetric);
 
       err = sh_exec_tool_stream (opt.gpg_program, argv,
                                  outstream, cipher_stream);

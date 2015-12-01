@@ -24,6 +24,7 @@ TESTFILES="$plain_files $data_files"
 
 TESTDIR=gpgtar.d
 FILELIST="${TESTDIR}/filelist"
+PPFILE="${TESTDIR}/passphrase"
 GPG=../../g10/gpg2
 GPGARGS="$opt_always --no-permission-warning"
 
@@ -46,6 +47,7 @@ do_test()
 
     rm -rf -- "${TESTDIR}"
     mkdir "${TESTDIR}"
+    echo frob >"$PPFILE"
 
     $TOOL --gpg "$GPG" --gpg-args "$GPGARGS" $CREATE_FLAGS \
 	  --output "${TESTDIR}/test.tar.pgp" $TESTFILES
@@ -69,6 +71,7 @@ do_test()
 }
 
 for TOOL in "$GPGTAR" "$GPGZIP"
+#for TOOL in "$GPGZIP"
 do
     do_test "$TOOL" \
 	    "--encrypt --recipient $usrname2" \
@@ -84,6 +87,11 @@ do
 	    "--sign --local-user $usrname3" \
 	    "--list-archive" \
 	    "--decrypt"
+
+    do_test "$TOOL" \
+	    "--gpg-args --passphrase-file=$PPFILE --symmetric" \
+	    "--gpg-args --passphrase-file=$PPFILE --list-archive" \
+	    "--gpg-args --passphrase-file=$PPFILE --decrypt"
 done
 
 # Success!
