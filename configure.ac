@@ -108,6 +108,8 @@ use_ccid_driver=yes
 dirmngr_auto_start=yes
 use_tls_library=no
 large_secmem=no
+show_tor_support=no
+
 
 GNUPG_BUILD_PROGRAM(gpg, yes)
 GNUPG_BUILD_PROGRAM(gpgsm, yes)
@@ -755,8 +757,27 @@ AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
 if test "$have_libassuan" = "yes"; then
   AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
                      [version of the libassuan library])
+  # Starting with 2.4.1 we have Tor support in Libassuan.  */
+  ok=no
+  if test "$libassuan_version_major" -gt "2"; then
+    ok=yes
+  else
+    if test "$libassuan_version_major" -eq "2"; then
+      if test "$libassuan_version_minor" -gt "4"; then
+        ok=yes
+      else
+        if test "$libassuan_version_minor" -eq "4"; then
+          if test "$libassuan_version_micro" -ge "1"; then
+            ok=yes
+          fi
+        fi
+      fi
+    fi
+  fi
+  if test $ok = yes ;then
+    show_tor_support="only .onion"
+  fi
 fi
-
 
 
 #
@@ -955,6 +976,9 @@ if test "$with_adns" != "no"; then
   AC_MSG_RESULT($adns_if_tormode)
   if test x"$adns_if_tormode" = xyes; then
     AC_DEFINE(HAVE_ADNS_IF_TORMODE,1,[define if adns_if_tormode is available])
+    if test "$show_tor_support" != "no"; then
+      show_tor_support=yes
+    fi
   fi
 fi
 CPPFLAGS=${_cppflags}
@@ -1853,6 +1877,7 @@ echo "
         DNS SRV support:     $use_dns_srv
         TLS support:         $use_tls_library
         TOFU support:        $use_tofu
+        Tor support:         $show_tor_support
 "
 if test x"$use_regex" != xyes ; then
 echo "
