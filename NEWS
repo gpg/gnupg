@@ -1,6 +1,60 @@
 Noteworthy changes in version 2.1.10 (unreleased)
 -------------------------------------------------
 
+ * gpg: New trust models "tofu" and "tofu+pgp".
+
+ * gpg: New command --tofu-policy.  New options --tofu-default-policy
+   and --tofu-db-format.
+
+ * gpg: New option --weak-digest to specify hash algorithms which
+   should be considered weak.
+
+ * gpg: Allow the use of multiple --default-key options; take the last
+   available key.
+
+ * gpg: New option --encrypt-to-default-key.
+
+ * gpg: New option --unwrap to only strip the encryption layer.
+
+ * gpg: New option --only-sign-text-ids to exclude photo IDs from key
+   signing.
+
+ * gpg: Check for ambigious or non-matching key specification of
+   command line options.
+
+ * gpg: Show the used card reader with --card-status.
+
+ * gpg: Print export statistics and an EXPORTED status line.
+
+ * gpg: Allow selecting subkeys by keyid in --edit-key.
+
+ * gpg: Allow updating the expiration time of multiple subkeys at
+   once.
+
+ * dirmngr: New option --use-tor.  For full support this requires
+   libassuan version 2.4.1 and a patched version of libadns
+   (e.g. adns-1.4-g10-7 as used by the standard Windows installer).
+
+ * dirmngr: New option --nameserver to specify the nameserver used in
+   Tor mode.
+
+ * dirmngr: Keyservers may again be specified by IP address.
+
+ * dirmngr: Fixed problems in resolving keyserver pools.
+
+ * dirmngr: Fixed handling of premature termination of TLS streams so
+   that large numbers of keys can be refreshed via hkps.
+
+ * gpg: Fixed a regression in --locate-key since 2.1.9.
+
+ * gpg: Fixed another bug for keyrings with legacy keys.
+
+ * gpgsm: Allow combinations of usage flags in --gen-key.
+
+ * Make tilde expansion work with most options.
+
+ * Many other cleanups and bug fixes.
+
 
 Noteworthy changes in version 2.1.9 (2015-10-09)
 ------------------------------------------------
