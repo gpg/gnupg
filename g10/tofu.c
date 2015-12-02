@@ -563,8 +563,7 @@ initdb (sqlite3 *db, enum db_type type)
 
        TIME: The time this binding was first observed.
 
-       POLICY: The trust policy (-1, 0, 1, or 2; see the
-         documentation for TOFU_POLICY_BAD, etc. above).
+       POLICY: The trust policy (TOFU_POLICY_BAD, etc. as an integer).
 
        CONFLICT is either NULL or a fingerprint.  Assume that we have
          a binding <0xdeadbeef, foo@example.com> and then we observe
