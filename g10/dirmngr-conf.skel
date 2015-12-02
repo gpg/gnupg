@@ -49,7 +49,12 @@
 # servers via DNS round-robin.  hkp://keys.gnupg.net is an example of
 # such a "server", which spreads the load over a number of physical
 # servers.
+#
+# If exactly two keyservers are configured and only one is a Tor hidden
+# service, Dirmngr selects the keyserver to use depending on whether
+# Tor is locally running or not (on a per session base).
 
+keyserver hkp://dyh2j3qyrirn43iw.onion
 keyserver hkp://keys.gnupg.net
 
 # --hkp-cacert FILENAME

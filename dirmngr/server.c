@@ -91,6 +91,9 @@ struct server_local_s
   /* If this flag is set to true this dirmngr process will be
      terminated after the end of this session.  */
   int stopme;
+
+  /* State variable private to is_tor_running.  */
+  int tor_state;
 };
 
 
@@ -120,6 +123,18 @@ get_ldapservers_from_ctrl (ctrl_t ctrl)
     return NULL;
 }
 
+/* Release an uri_item_t list.  */
+static void
+release_uri_item_list (uri_item_t list)
+{
+  while (list)
+    {
+      uri_item_t tmp = list->next;
+      http_release_parsed_uri (list->parsed_uri);
+      xfree (list);
+      list = tmp;
+    }
+}
 
 /* Release all configured keyserver info from CTRL.  */
 void
@@ -128,13 +143,8 @@ release_ctrl_keyservers (ctrl_t ctrl)
   if (! ctrl->server_local)
     return;
 
-  while (ctrl->server_local->keyservers)
-    {
-      uri_item_t tmp = ctrl->server_local->keyservers->next;
-      http_release_parsed_uri (ctrl->server_local->keyservers->parsed_uri);
-      xfree (ctrl->server_local->keyservers);
-      ctrl->server_local->keyservers = tmp;
-    }
+  release_uri_item_list (ctrl->server_local->keyservers);
+  ctrl->server_local->keyservers = NULL;
 }
 
 
@@ -332,6 +342,38 @@ skip_options (char *line)
         line++;
     }
   return line;
+}
+
+
+/* This fucntion returns true if a Tor server is running.  The sattus
+   is cached for the current conenction.  */
+static int
+is_tor_running (ctrl_t ctrl)
+{
+#if ASSUAN_VERSION_NUMBER >= 0x020402
+  /* Check whether we can connect to the proxy.  We use a
+     special feature introduced with libassuan 2.4.2.  */
+
+  if (!ctrl || !ctrl->server_local)
+    return 0; /* Ooops.  */
+
+  if (!ctrl->server_local->tor_state)
+    {
+      assuan_fd_t sock;
+
+      sock = assuan_sock_connect_byname (NULL, 0, 0, NULL, ASSUAN_SOCK_TOR);
+      if (sock == ASSUAN_INVALID_FD)
+        ctrl->server_local->tor_state = -1; /* Not running.  */
+      else
+        {
+          assuan_sock_close (sock);
+          ctrl->server_local->tor_state = 1; /* Running.  */
+        }
+    }
+  return (ctrl->server_local->tor_state > 0);
+#else /* Libassuan < 2.4.2 */
+  return 0;  /* We don't know.  */
+#endif
 }
 
 
@@ -1710,15 +1752,74 @@ ensure_keyserver (ctrl_t ctrl)
 {
   gpg_error_t err;
   uri_item_t item;
+  uri_item_t onion_items = NULL;
+  uri_item_t plain_items = NULL;
+  uri_item_t ui;
+  strlist_t sl;
 
   if (ctrl->server_local->keyservers)
     return 0; /* Already set for this session.  */
   if (!opt.keyserver)
     return 0; /* No global option set.  */
 
-  err = make_keyserver_item (opt.keyserver, &item);
-  if (!err)
-    ctrl->server_local->keyservers = item;
+  for (sl = opt.keyserver; sl; sl = sl->next)
+    {
+      err = make_keyserver_item (sl->d, &item);
+      if (err)
+        goto leave;
+      if (item->parsed_uri->onion)
+        {
+          item->next = onion_items;
+          onion_items = item;
+        }
+      else
+        {
+          item->next = plain_items;
+          plain_items = item;
+        }
+    }
+
+  /* Decide which to use.  Note that the sesssion has no keyservers
+     yet set. */
+  if (onion_items && !onion_items->next && plain_items && !plain_items->next)
+    {
+      /* If there is just one onion and one plain keyserver given, we take
+         only one depending on whether Tor is running or not.  */
+      if (is_tor_running (ctrl))
+        {
+          ctrl->server_local->keyservers = onion_items;
+          onion_items = NULL;
+        }
+      else
+        {
+          ctrl->server_local->keyservers = plain_items;
+          plain_items = NULL;
+        }
+    }
+  else if (!is_tor_running (ctrl))
+    {
+      /* Tor is not running.  It does not make sense to add Onion
+         addresses.  */
+      ctrl->server_local->keyservers = plain_items;
+      plain_items = NULL;
+    }
+  else
+    {
+      /* In all other cases add all keyservers.  */
+      ctrl->server_local->keyservers = onion_items;
+      onion_items = NULL;
+      for (ui = ctrl->server_local->keyservers; ui && ui->next; ui = ui->next)
+        ;
+      if (ui)
+        ui->next = plain_items;
+      else
+        ctrl->server_local->keyservers = plain_items;
+      plain_items = NULL;
+    }
+
+ leave:
+  release_uri_item_list (onion_items);
+  release_uri_item_list (plain_items);
 
   return err;
 }
@@ -2093,6 +2194,7 @@ static const char hlp_getinfo[] =
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
 {
+  ctrl_t ctrl = assuan_get_pointer (ctx);
   gpg_error_t err;
 
   if (!strcmp (line, "version"))
@@ -2123,24 +2225,11 @@ cmd_getinfo (assuan_context_t ctx, char *line)
     {
       if (opt.use_tor)
         {
-#if ASSUAN_VERSION_NUMBER >= 0x020402
-          /* Check whether we can connect to the proxy.  We use a
-             special feature introduced with libassuan 2.4.2.  */
-          assuan_fd_t sock = assuan_sock_connect_byname (NULL, 0, 0, NULL,
-                                                         ASSUAN_SOCK_TOR);
-          if (sock == ASSUAN_INVALID_FD)
-            {
-              err = assuan_write_status
-                (ctx, "NO_TOR",
-                 errno == ECONNREFUSED? "Tor not running" : strerror (errno));
-            }
+          if (!is_tor_running (ctrl))
+            err = assuan_write_status (ctx, "NO_TOR", "Tor not running");
           else
-            {
-              assuan_sock_close (sock);
-              err = 0;
-            }
+            err = 0;
           if (!err)
-#endif /* Libassuan >= 2.4.2 */
             assuan_set_okay_line (ctx, "- Tor mode is enabled");
         }
       else
@@ -2398,12 +2487,15 @@ start_command_handler (assuan_fd_t fd)
         }
     }
 
+
 #if USE_LDAP
   ldap_wrapper_connection_cleanup (ctrl);
 
   ldapserver_list_free (ctrl->server_local->ldapservers);
 #endif /*USE_LDAP*/
   ctrl->server_local->ldapservers = NULL;
+
+  release_ctrl_keyservers (ctrl);
 
   ctrl->server_local->assuan_ctx = NULL;
   assuan_release (ctx);

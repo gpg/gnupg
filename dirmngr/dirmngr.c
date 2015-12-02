@@ -541,8 +541,7 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
         }
       FREE_STRLIST (opt.ignored_cert_extensions);
       http_register_tls_ca (NULL);
-      xfree (opt.keyserver);
-      opt.keyserver = NULL;
+      FREE_STRLIST (opt.keyserver);
       /* Note: We do not allow resetting of opt.use_tor at runtime.  */
       return 1;
     }
@@ -622,8 +621,8 @@ parse_rereadable_options (ARGPARSE_ARGS *pargs, int reread)
     case oUseTor: opt.use_tor = 1; break;
 
     case oKeyServer:
-      xfree (opt.keyserver);
-      opt.keyserver = *pargs->r.ret_str? xtrystrdup (pargs->r.ret_str) : NULL;
+      if (*pargs->r.ret_str)
+        add_to_strlist (&opt.keyserver, pargs->r.ret_str);
       break;
 
     case oNameServer:
