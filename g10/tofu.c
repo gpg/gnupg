@@ -1079,7 +1079,10 @@ record_binding (struct dbs *dbs, const char *fingerprint, const char *email,
   struct db *db_email = NULL, *db_key = NULL;
   int rc;
   char *err = NULL;
-  enum tofu_policy policy_old = TOFU_POLICY_NONE;
+  /* policy_old needs to be a long and not an enum tofu_policy,
+     because we pass it by reference to get_single_long_cb2, which
+     expects a long.  */
+  long policy_old = TOFU_POLICY_NONE;
 
   if (! (policy == TOFU_POLICY_AUTO
 	 || policy == TOFU_POLICY_GOOD
