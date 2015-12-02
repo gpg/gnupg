@@ -1,0 +1,55 @@
+#!/bin/sh
+
+. $srcdir/defs.inc || exit 3
+
+# set -x
+
+# Make sure $srcdir is set.
+if test "x$srcdir" = x
+then
+    echo srcdir environment variable not set!
+    exit 1
+fi
+
+# Import the sample key
+#
+# pub   1024R/8BC90111 2015-12-02
+#       Key fingerprint = E657 FB60 7BB4 F21C 90BB  6651 BC06 7AF2 8BC9 0111
+# uid       [ultimate] Barrett Brown <barrett@example.org>
+# sub   1024R/3E880CFF 2015-12-02 (encryption)
+# sub   1024R/F5F77B83 2015-12-02 (signing)
+# sub   1024R/45117079 2015-12-02 (encryption)
+# sub   1024R/1EA97479 2015-12-02 (signing)
+info "Importing public key."
+if $GPG --import $srcdir/samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc
+then
+    :
+else
+    error "$k: import failed"
+fi
+
+# By default, the most recent, valid signing subkey (1EA97479).
+for x in 8BC90111 3E880CFF F5F77B83 45117079 1EA97479
+do
+    if ! echo | $GPG -s -u "$x" | $GPG --verify --status-fd=1 \
+            | grep -q 'VALIDSIG 5FBA84ACE02DCB17DA3DFF6BBCA43C441EA97479'
+    then
+        echo | $GPG -s -u "$x" | $GPG --verify --status-fd=2
+        error "Unexpected key used for signing (not the signing subkey, specified \"$x\")."
+        exit 1
+    fi
+done
+
+# But, if we request a particular signing key, we should get it.
+for x in 8BC90111 F5F77B83 1EA97479
+do
+    if ! echo | $GPG -s -u "$x!" | $GPG --verify --status-fd=1 \
+            | grep -q "VALIDSIG [0-9A-F]*$x "
+    then
+        echo | $GPG -s -u "$x!" | $GPG --verify --status-fd=2
+        error "Unexpected key used for signing (specified: \"$x!\")."
+        exit 1
+    fi
+done
+
+exit 0

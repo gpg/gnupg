@@ -2196,18 +2196,45 @@ check_user_ids (strlist_t *sp,
         }
 
       pk = kb->pkt->pkt.public_key;
-      fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
-      assert (fingerprint_bin_len == sizeof (fingerprint_bin));
-      bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
       if ((desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
            || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
            || desc.mode == KEYDB_SEARCH_MODE_FPR16
            || desc.mode == KEYDB_SEARCH_MODE_FPR20)
           && strchr (t->d, '!'))
+        /* Exact search.  In this case we want to set FINGERPRINT not
+           to the primary key, but the key (primary or sub) that
+           matched the search criteria.  Note: there will always be
+           exactly one match.  */
         {
-          int i = strlen (fingerprint);
+          kbnode_t n = kb;
+          PKT_public_key *match = NULL;
+          int i;
+
+          do
+            {
+              if ((n->flag & 1))
+                /* The matched node.  */
+                {
+                  assert (! match);
+                  match = n->pkt->pkt.public_key;
+                }
+            }
+          while ((n = find_next_kbnode (n, PKT_PUBLIC_SUBKEY)));
+          assert (match);
+
+          fingerprint_from_pk (match, fingerprint_bin, &fingerprint_bin_len);
+          assert (fingerprint_bin_len == sizeof (fingerprint_bin));
+          bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
+
+          i = strlen (fingerprint);
           fingerprint[i] = '!';
           fingerprint[i + 1] = '\0';
+        }
+      else
+        {
+          fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
+          assert (fingerprint_bin_len == sizeof (fingerprint_bin));
+          bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
         }
 
       add_to_strlist (&s2, fingerprint);

@@ -46,7 +46,7 @@ TESTS = version.test mds.test \
 	multisig.test verify.test armor.test \
 	import.test ecc.test 4gb-packet.test \
 	$(sqlite3_dependent_tests) \
-	gpgtar.test \
+	gpgtar.test use-exact-key.test \
 	finish.test
 
 
@@ -81,7 +81,12 @@ priv_keys = privkeys/50B2D4FA4122C212611048BC5FC31BD44393626E.asc \
 	    privkeys/C905D0AB6AE9655C5A35975939997BBF3325D6DD.asc \
 	    privkeys/B2BAA7144303DF19BB6FDE23781DD3FDD97918D4.asc \
 	    privkeys/CF60965BF51F67CF80DECE853E0D2D343468571D.asc \
-	    privkeys/DF00E361D34F80868D06879AC21D7A7D4E4FAD76.asc
+	    privkeys/DF00E361D34F80868D06879AC21D7A7D4E4FAD76.asc \
+	    privkeys/00FE67F28A52A8AA08FFAED20AF832DA916D1985.asc \
+	    privkeys/1DF48228FEFF3EC2481B106E0ACA8C465C662CC5.asc \
+	    privkeys/A2832820DC9F40751BDCD375BB0945BA33EC6B4C.asc \
+	    privkeys/ADE710D74409777B7729A7653373D820F67892E0.asc \
+	    privkeys/CEFC51AF91F68A2904FBFF62C4F075A4785B803F.asc
 
 
 sample_keys = samplekeys/ecc-sample-1-pub.asc \
@@ -96,7 +101,8 @@ sample_keys = samplekeys/ecc-sample-1-pub.asc \
 	      samplekeys/dda252ebb8ebe1af-2.asc \
 	      samplekeys/whats-new-in-2.1.asc \
 	      samplekeys/e2e-p256-1-clr.asc \
-	      samplekeys/e2e-p256-1-prt.asc
+	      samplekeys/e2e-p256-1-prt.asc \
+	      samplekeys/E657FB607BB4F21C90BB6651BC067AF28BC90111.asc
 
 EXTRA_DIST = defs.inc pinentry.sh $(TESTS) $(TEST_FILES) ChangeLog-2011 \
 	     mkdemodirs signdemokey $(priv_keys) $(sample_keys)
