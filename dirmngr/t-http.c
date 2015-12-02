@@ -323,6 +323,11 @@ main (int argc, char **argv)
             }
           putchar ('\n');
         }
+      printf ("Flags :%s%s%s%s\n",
+              uri->is_http? " http":"",
+              uri->opaque?  " opaque":"",
+              uri->v6lit?   " v6lit":"",
+              uri->onion?   " onion":"");
       printf ("TLS   : %s\n",
               uri->use_tls? "yes":
               (my_http_flags&HTTP_FLAG_FORCE_TLS)? "forced" : "no");

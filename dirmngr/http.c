@@ -1086,6 +1086,7 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
   uri->is_http = 0;
   uri->opaque = 0;
   uri->v6lit = 0;
+  uri->onion = 0;
 
   /* A quick validity check. */
   if (strspn (p, VALID_URI_CHARS) != n)
@@ -1172,48 +1173,53 @@ do_parse_uri (parsed_uri_t uri, int only_local_part,
         {
           uri->opaque = 1;
           uri->path = p;
+          if (is_onion_address (uri->path))
+            uri->onion = 1;
           return 0;
         }
 
     } /* End global URI part. */
 
-  /* Parse the pathname part */
-  if (!p || !*p)
-    return 0;  /* We don't have a path.  Okay. */
-
-  /* TODO: Here we have to check params. */
-
-  /* Do we have a query part? */
-  if ((p2 = strchr (p, '?')))
-    *p2++ = 0;
-
-  uri->path = p;
-  if ((n = remove_escapes (p)) < 0)
-    return GPG_ERR_BAD_URI;
-  if (n != strlen (p))
-    return GPG_ERR_BAD_URI;	/* Path includes a Nul. */
-  p = p2 ? p2 : NULL;
-
-  if (!p || !*p)
-    return 0; /* We don't have a query string.  Okay. */
-
-  /* Now parse the query string. */
-  tail = &uri->query;
-  for (;;)
+  /* Parse the pathname part if any.  */
+  if (p && *p)
     {
-      uri_tuple_t elem;
+      /* TODO: Here we have to check params. */
 
-      if ((p2 = strchr (p, '&')))
-	*p2++ = 0;
-      if (!(elem = parse_tuple (p)))
-	return GPG_ERR_BAD_URI;
-      *tail = elem;
-      tail = &elem->next;
+      /* Do we have a query part? */
+      if ((p2 = strchr (p, '?')))
+        *p2++ = 0;
 
-      if (!p2)
-	break; /* Ready. */
-      p = p2;
+      uri->path = p;
+      if ((n = remove_escapes (p)) < 0)
+        return GPG_ERR_BAD_URI;
+      if (n != strlen (p))
+        return GPG_ERR_BAD_URI;	/* Path includes a Nul. */
+      p = p2 ? p2 : NULL;
+
+      /* Parse a query string if any.  */
+      if (p && *p)
+        {
+          tail = &uri->query;
+          for (;;)
+            {
+              uri_tuple_t elem;
+
+              if ((p2 = strchr (p, '&')))
+                *p2++ = 0;
+              if (!(elem = parse_tuple (p)))
+                return GPG_ERR_BAD_URI;
+              *tail = elem;
+              tail = &elem->next;
+
+              if (!p2)
+                break; /* Ready. */
+              p = p2;
+            }
+        }
     }
+
+  if (is_onion_address (uri->host))
+    uri->onion = 1;
 
   return 0;
 }

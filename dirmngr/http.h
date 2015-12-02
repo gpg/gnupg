@@ -52,6 +52,7 @@ struct parsed_uri_s
   unsigned int use_tls:1; /* Whether TLS should be used. */
   unsigned int opaque:1;/* Unknown scheme; PATH has the rest.  */
   unsigned int v6lit:1; /* Host was given as a literal v6 address.  */
+  unsigned int onion:1; /* .onion address given.  */
   char *auth;           /* username/password for basic auth.  */
   char *host; 	        /* Host (converted to lowercase). */
   unsigned short port;  /* Port (always set if the host is set). */
