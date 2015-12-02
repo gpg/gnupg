@@ -4114,7 +4114,8 @@ do_decipher (app_t app, const char *keyidstr,
   if (rc)
     return rc;
 
-  if (indatalen == 16 + 1 || indatalen == 32 + 1)
+  if (indatalen == 16 + 1 || indatalen == 32 + 1
+      && ((char *)indata)[0] == 0x02)
     /* PSO:DECIPHER with symmetric key.  */
     padind = -1;
   else if (app->app_local->keyattr[1].key_type == KEY_TYPE_RSA)
@@ -4172,6 +4173,16 @@ do_decipher (app_t app, const char *keyidstr,
     }
   else if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC)
     {
+      if (app->app_local->keyattr[1].ecc.flags
+          && (indatalen%2))
+        { /*
+           * Skip the prefix.  It may be 0x40 (in new format), or MPI
+           * head of 0x00 (in old format).
+           */
+          indata++;
+          indatalen--;
+        }
+
       fixuplen = 7;
       fixbuf = xtrymalloc (fixuplen + indatalen);
       if (!fixbuf)
@@ -4211,6 +4222,20 @@ do_decipher (app_t app, const char *keyidstr,
                          indata, indatalen, le_value, padind,
                          outdata, outdatalen);
   xfree (fixbuf);
+  if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC
+      && app->app_local->keyattr[1].ecc.flags)
+    { /* Add the prefix 0x40 */
+      fixbuf = xtrymalloc (*outdatalen + 1);
+      if (!fixbuf)
+        {
+          xfree (outdata);
+          return gpg_error_from_syserror ();
+        }
+      xfree (outdata);
+      outdata = fixbuf;
+      outdata[0] = 0x40;
+      *outdatalen = *outdatalen + 1;
+    }
 
   if (gpg_err_code (rc) == GPG_ERR_CARD /* actual SW is 0x640a */
       && app->app_local->manufacturer == 5
