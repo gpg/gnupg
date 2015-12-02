@@ -1682,17 +1682,12 @@ create_server_socket (char *name, int primary, int cygwin,
       agent_exit (2);
     }
 
-#if ASSUAN_VERSION_NUMBER >= 0x020300 /* >= 2.3.0 */
   if (cygwin)
     assuan_sock_set_flag (fd, "cygwin", 1);
-#else
-  (void)cygwin;
-#endif
 
   unaddr = xmalloc (sizeof *unaddr);
   addr = (struct sockaddr*)unaddr;
 
-#if ASSUAN_VERSION_NUMBER >= 0x020104 /* >= 2.1.4 */
   {
     int redirected;
 
@@ -1713,17 +1708,6 @@ create_server_socket (char *name, int primary, int cygwin,
           log_info ("redirecting socket '%s' to '%s'\n", name, *r_redir_name);
       }
   }
-#else /* Assuan < 2.1.4 */
-  memset (unaddr, 0, sizeof *unaddr);
-  unaddr->sun_family = AF_UNIX;
-  if (strlen (name) + 1 >= sizeof (unaddr->sun_path))
-    {
-      log_error (_("socket name '%s' is too long\n"), name);
-      *name = 0; /* Inhibit removal of the socket by cleanup(). */
-      agent_exit (2);
-    }
-  strcpy (unaddr->sun_path, name);
-#endif /* Assuan < 2.1.4 */
 
   len = SUN_LEN (unaddr);
   rc = assuan_sock_bind (fd, addr, len);

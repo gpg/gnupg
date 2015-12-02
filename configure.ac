@@ -55,7 +55,7 @@ NEED_LIBGCRYPT_API=1
 NEED_LIBGCRYPT_VERSION=1.6.0
 
 NEED_LIBASSUAN_API=2
-NEED_LIBASSUAN_VERSION=2.1.0
+NEED_LIBASSUAN_VERSION=2.4.1
 
 NEED_KSBA_API=1
 NEED_KSBA_VERSION=1.2.0
@@ -757,26 +757,7 @@ AM_PATH_LIBASSUAN("$NEED_LIBASSUAN_API:$NEED_LIBASSUAN_VERSION",
 if test "$have_libassuan" = "yes"; then
   AC_DEFINE_UNQUOTED(GNUPG_LIBASSUAN_VERSION, "$libassuan_version",
                      [version of the libassuan library])
-  # Starting with 2.4.1 we have Tor support in Libassuan.  */
-  ok=no
-  if test "$libassuan_version_major" -gt "2"; then
-    ok=yes
-  else
-    if test "$libassuan_version_major" -eq "2"; then
-      if test "$libassuan_version_minor" -gt "4"; then
-        ok=yes
-      else
-        if test "$libassuan_version_minor" -eq "4"; then
-          if test "$libassuan_version_micro" -ge "1"; then
-            ok=yes
-          fi
-        fi
-      fi
-    fi
-  fi
-  if test $ok = yes ;then
-    show_tor_support="only .onion"
-  fi
+  show_tor_support="only .onion"
 fi
 
 

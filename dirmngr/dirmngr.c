@@ -473,9 +473,7 @@ set_tor_mode (void)
 {
   if (opt.use_tor)
     {
-#if ASSUAN_VERSION_NUMBER >= 0x020300 /* >= 2.3.0 */
       if (assuan_sock_set_flag (ASSUAN_INVALID_FD, "tor-mode", 1))
-#endif
         {
           log_error ("error enabling Tor mode: %s\n", strerror (errno));
           log_info ("(is your Libassuan recent enough?)\n");
@@ -1135,7 +1133,6 @@ main (int argc, char **argv)
           dirmngr_exit (1);
         }
 
-#if ASSUAN_VERSION_NUMBER >= 0x020104 /* >= 2.1.4 */
       {
         int redirected;
 
@@ -1159,16 +1156,6 @@ main (int argc, char **argv)
                         socket_name, redir_socket_name);
           }
       }
-#else /* Assuan < 2.1.4 */
-      memset (&serv_addr, 0, sizeof serv_addr);
-      serv_addr.sun_family = AF_UNIX;
-      if (strlen (socket_name)+1 >= sizeof serv_addr.sun_path )
-        {
-          log_error (_("socket name '%s' is too long\n"), socket_name);
-          dirmngr_exit (1);
-        }
-      strcpy (serv_addr.sun_path, socket_name);
-#endif /* Assuan < 2.1.4 */
 
       len = SUN_LEN (&serv_addr);
 
