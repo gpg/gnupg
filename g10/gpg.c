@@ -2109,7 +2109,8 @@ check_user_ids (strlist_t *sp,
       PKT_public_key *pk;
       char fingerprint_bin[MAX_FINGERPRINT_LEN];
       size_t fingerprint_bin_len = sizeof (fingerprint_bin);
-      char fingerprint[2 * MAX_FINGERPRINT_LEN + 1];
+      /* We also potentially need a ! at the end.  */
+      char fingerprint[2 * MAX_FINGERPRINT_LEN + 1 + 1];
 
 
       switch (t->flags >> 2)
@@ -2198,6 +2199,17 @@ check_user_ids (strlist_t *sp,
       fingerprint_from_pk (pk, fingerprint_bin, &fingerprint_bin_len);
       assert (fingerprint_bin_len == sizeof (fingerprint_bin));
       bin2hex (fingerprint_bin, MAX_FINGERPRINT_LEN, fingerprint);
+      if ((desc.mode == KEYDB_SEARCH_MODE_SHORT_KID
+           || desc.mode == KEYDB_SEARCH_MODE_LONG_KID
+           || desc.mode == KEYDB_SEARCH_MODE_FPR16
+           || desc.mode == KEYDB_SEARCH_MODE_FPR20)
+          && strchr (t->d, '!'))
+        {
+          int i = strlen (fingerprint);
+          fingerprint[i] = '!';
+          fingerprint[i + 1] = '\0';
+        }
+
       add_to_strlist (&s2, fingerprint);
       s2->flags = s->flags;
 

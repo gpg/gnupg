@@ -282,7 +282,9 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
       if (desc->exact)
         hexlength--; /* Remove the bang.  */
 
-      if ((hexlength == 8 && s[hexlength] == 0)
+      if ((hexlength == 8
+           && (s[hexlength] == 0
+               || (s[hexlength] == '!' && s[hexlength + 1] == 0)))
           || (!hexprefix && hexlength == 9 && *s == '0'))
         {
           /* Short keyid.  */
@@ -291,7 +293,9 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
           desc->u.kid[1] = strtoul( s, NULL, 16 );
           mode = KEYDB_SEARCH_MODE_SHORT_KID;
         }
-      else if ((hexlength == 16 && s[hexlength] == 0)
+      else if ((hexlength == 16
+                && (s[hexlength] == 0
+                    || (s[hexlength] == '!' && s[hexlength + 1] == 0)))
                || (!hexprefix && hexlength == 17 && *s == '0'))
         {
           /* Long keyid.  */
@@ -303,7 +307,9 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
           desc->u.kid[1] = strtoul (s+8, NULL, 16);
           mode = KEYDB_SEARCH_MODE_LONG_KID;
         }
-      else if ((hexlength == 32 && s[hexlength] == 0)
+      else if ((hexlength == 32
+                && (s[hexlength] == 0
+                    || (s[hexlength] == '!' && s[hexlength + 1] == 0)))
                || (!hexprefix && hexlength == 33 && *s == '0'))
         {
           /* MD5 fingerprint.  */
@@ -323,7 +329,9 @@ classify_user_id (const char *name, KEYDB_SEARCH_DESC *desc, int openpgp_hack)
             }
           mode = KEYDB_SEARCH_MODE_FPR16;
         }
-      else if ((hexlength == 40 && s[hexlength] == 0)
+      else if ((hexlength == 40
+                && (s[hexlength] == 0
+                    || (s[hexlength] == '!' && s[hexlength + 1] == 0)))
                || (!hexprefix && hexlength == 41 && *s == '0'))
         {
           /* SHA1/RMD160 fingerprint.  */
