@@ -1568,6 +1568,10 @@ msgstr "kµúè `%s' nebol nájdený: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "chyba pri èítaní bloku kµúèa: %s\n"
 
+#, fuzzy, c-format
+msgid "key \"%s\" not found\n"
+msgstr "kµúè `%s' nebol nájdený: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(pokiaµ neurèíte kµúè jeho fingerprintom)\n"
 
@@ -1779,6 +1783,19 @@ msgstr "chyba pri vytváraní `%s': %s\n"
 msgid "No fingerprint"
 msgstr "vypísa» fingerprint"
 
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "tajný kµúè `%s' nebol nájdený: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "neplatný parameter pre import\n"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|MENO|pou¾i MENO ako implicitný tajný kµúè"
+
 # c-format
 #, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -1911,6 +1928,9 @@ msgid "print message digests"
 msgstr "|algo [súbory]|vypí¹ hash"
 
 msgid "run in server mode"
+msgstr ""
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2122,10 +2142,47 @@ msgstr "uká¾ v ktorom súbore kµúèov je vypísaný kµúè"
 msgid "show expiration dates during signature listings"
 msgstr "V súbore tajných kµúèov chýba zodpovedajúci podpis\n"
 
+#, fuzzy
+msgid "available TOFU policies:\n"
+msgstr "nastavi» kµúè ako neplatný (disable)"
+
+#, fuzzy, c-format
+msgid "unknown TOFU policy '%s'\n"
+msgstr "neznámy implicitný adresát `%s'\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "neznámy implicitný adresát `%s'\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "POZNÁMKA: starý implicitný súbor s mo¾nos»ami `%s ignorovaný'\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr ""
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "chyba pri vytváraní súboru kµúèov (keyring)`%s': %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2333,6 +2390,14 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VAROVANIE: daný adresát (-r) bez pou¾itia ¹ifrovania s verejným kµúèom\n"
 
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "neplatný hashovací algoritmus `%s'\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "neplatný hashovací algoritmus `%s'\n"
+
 msgid "--store [filename]"
 msgstr "--store [meno súboru]"
 
@@ -2432,6 +2497,14 @@ msgstr "kódovanie do ASCII formátu zlyhalo: %s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "neplatný hashovací algoritmus `%s'\n"
+
+#, fuzzy, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "chyba pri vytváraní hesla: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[meno súboru]"
@@ -2738,6 +2811,20 @@ msgstr "zapisujem tajný kµúè do `%s'\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "kµúè %08lX: tajný kµúè bez verejného kµúèa %d - preskoèené\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2871,6 +2958,10 @@ msgstr "súbor kµúèov (keyring) `%s' vytvorený\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "chyba pri vytváraní `%s': %s\n"
 
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
+msgstr "chyba pri èítaní `%s': %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "zlyhalo obnovenie vyrovnávacej pamäti kµúèov: %s\n"
@@ -2937,6 +3028,10 @@ msgid ""
 msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
+msgstr ""
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
 msgstr ""
 
 #, c-format
@@ -3285,6 +3380,10 @@ msgstr "Kµúè revokovaný."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Skutoène podpísa» v¹etky id u¾ívateµa? "
 
+#, fuzzy
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Skutoène podpísa» v¹etky id u¾ívateµa? "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Nápoveda: Vyberte id u¾ívateµa na podpísanie\n"
 
@@ -3395,10 +3494,6 @@ msgstr "aktualizácia zlyhala: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "kµúè nebol zmenený, tak¾e nie je potrebné ho aktualizova».\n"
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "tajný kµúè `%s' nebol nájdený: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3609,8 +3704,10 @@ msgid ""
 msgstr "Ste si istý, ¾e chcete oznaèi» tento kµúè ako revokovací? (a/N): "
 
 #, fuzzy
-msgid "Please select at most one subkey.\n"
-msgstr "Prosím, vyberte najviac jeden sekundárny kµúè.\n"
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr "Ste si istý, ¾e chcete oznaèi» tento kµúè ako revokovací? (a/N): "
 
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
@@ -3662,6 +3759,10 @@ msgstr "Neexistuje identifikátor u¾ívateµa s indexom %d\n"
 
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
+msgstr "Neexistuje identifikátor u¾ívateµa s indexom %d\n"
+
+#, fuzzy, c-format
+msgid "No subkey with key ID '%s'.\n"
 msgstr "Neexistuje identifikátor u¾ívateµa s indexom %d\n"
 
 #, fuzzy, c-format
@@ -4018,6 +4119,10 @@ msgstr "Meno a priezvisko: "
 
 msgid "Invalid character in name\n"
 msgstr "Neplatný znak ve mene\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "Meno nemô¾e zaèína» èíslicou\n"
@@ -4460,10 +4565,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "VAROVANIE: so za¹ifrovanou správou bolo manipulované!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "de¹ifrovanie zlyhalo: %s\n"
 
@@ -4661,6 +4762,10 @@ msgstr "neznámy implicitný adresát `%s'\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown weak digest '%s'\n"
+msgstr "neznáma trieda podpisu"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -5130,6 +5235,11 @@ msgid "(This is a sensitive revocation key)\n"
 msgstr "(Toto je citlivý revokaèný kµúè)\n"
 
 #, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "Tajný kµúè je dostupný.\n"
+
+#, fuzzy
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Vytvori» pre tento podpis revokaèný certifikát? "
 
@@ -5162,6 +5272,17 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found\n"
+msgstr "tajný kµúè `%s' nebol nájdený: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 #, fuzzy
@@ -7226,7 +7347,7 @@ msgid "error retrieving '%s': http status %u\n"
 msgstr "chyba pri èítaní `%s': %s\n"
 
 #, fuzzy
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "kµúè `%s' nebol nájdený: %s\n"
 
 #, fuzzy, c-format
@@ -7297,6 +7418,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "nemô¾em sa pripoji» k `%s': %s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "aktualizácia zlyhala: %s\n"
@@ -7333,32 +7459,6 @@ msgstr "nemô¾em pou¾i» príkaz stat na `%s': %s\n"
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "chyba pri zápise do súboru tajných kµúèov `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "%s: nepodarilo sa vytvori» hashovaciu tabuµku: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-msgid "no running dirmngr - starting one\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "malformed %s environment variable\n"
-msgstr "zlý formát premennej prostredia GPG_AGENT_INFO\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "gpg-agent protokol verzie %d nie je podporovaný\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "nemô¾em sa pripoji» k `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7452,7 +7552,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7765,8 +7865,9 @@ msgstr "chyba pri èítaní `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "kµúè `%s' nebol nájdený: %s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -7922,6 +8023,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "nemô¾em vytvori» `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: nepodarilo sa vytvori» hashovaciu tabuµku: %s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -8132,7 +8237,7 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr ""
 
 msgid "Configuration for HTTP servers"
@@ -8390,6 +8495,36 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "nemô¾em otvori» súbor kµúèov"
+
+#, fuzzy
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "nemô¾em otvori» `%s': %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "neplatná hodnota\n"
+
+#, fuzzy
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "chyba pri èítaní bloku tajného kµúèa `%s': %s\n"
+
+#, fuzzy
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Prosím, vyberte najviac jeden sekundárny kµúè.\n"
+
+#, fuzzy
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "zlý formát premennej prostredia GPG_AGENT_INFO\n"
+
+#, fuzzy
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "gpg-agent protokol verzie %d nie je podporovaný\n"
+
+#, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "prepnú» medzi vypísaním zoznamu tajných a verejných kµúèov"
 
@@ -8565,10 +8700,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Skutoène to chcete urobi»? "
-
-#, fuzzy
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "chyba pri èítaní bloku tajného kµúèa `%s': %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Prosím, odstráòte výber z tajných kµúèov.\n"
@@ -9200,9 +9331,6 @@ msgstr ""
 
 #~ msgid "unknown cipher algorithm"
 #~ msgstr "neznámy ¹ifrovací algoritmus"
-
-#~ msgid "can't open the keyring"
-#~ msgstr "nemô¾em otvori» súbor kµúèov"
 
 #~ msgid "invalid packet"
 #~ msgstr "neplatný paket"

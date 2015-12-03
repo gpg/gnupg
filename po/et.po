@@ -1562,6 +1562,10 @@ msgstr "võtit '%s' ei leitud: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "viga võtmebloki lugemisel: %s\n"
 
+#, fuzzy, c-format
+msgid "key \"%s\" not found\n"
+msgstr "võtit '%s' ei leitud: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(kui te just ei määra võtit sõrmejäljega)\n"
 
@@ -1776,6 +1780,19 @@ msgid "No fingerprint"
 msgstr "näita sõrmejälge"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "salajast võtit `%s' ei leitud: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "vigased impordi võtmed\n"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|NIMI|kasuta NIME vaikimisi salajase võtmena"
+
+#, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Vigane võti %08lX muudeti kehtivaks võtme --allow-non-selfsigned-uid "
@@ -1907,6 +1924,9 @@ msgid "print message digests"
 msgstr "|algo [failid]|trüki teatelühendid"
 
 msgid "run in server mode"
+msgstr ""
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2110,10 +2130,47 @@ msgstr "näita millisesse võtmehoidlasse näidatud võti kuulub"
 msgid "show expiration dates during signature listings"
 msgstr "Vastavat allkirja salajaste võtmete hoidlas pole\n"
 
+#, fuzzy
+msgid "available TOFU policies:\n"
+msgstr "blokeeri võti"
+
+#, fuzzy, c-format
+msgid "unknown TOFU policy '%s'\n"
+msgstr "tundmatu vaikimisi saaja `%s'\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "tundmatu vaikimisi saaja `%s'\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "MÄRKUS: ignoreerin vana vaikimisi võtmete faili `%s'\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr ""
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "viga võtmehoidla `%s' loomisel: %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2321,6 +2378,14 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "HOIATUS: määrati saajad (-r) aga ei kasutata avaliku võtme krüptograafiat\n"
 
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "vigane räsialgoritm `%s'\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "vigane räsialgoritm `%s'\n"
+
 msgid "--store [filename]"
 msgstr "--store [failinimi]"
 
@@ -2416,6 +2481,14 @@ msgstr "pakendamine ebaõnnestus: %s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "vigane räsialgoritm `%s'\n"
+
+#, fuzzy, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "viga parooli loomisel: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[failinimi]"
@@ -2721,6 +2794,20 @@ msgstr "kirjutan salajase võtme faili `%s'\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "võti %08lX: salajane võti vigase ¨ifriga %d - jätsin vahele\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2850,6 +2937,10 @@ msgstr "võtmehoidla `%s' on loodud\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "viga `%s' loomisel: %s\n"
 
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
+msgstr "viga `%s' lugemisel: %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "võtmehoidla vahemälu uuesti loomine ebaõnnestus: %s\n"
@@ -2915,6 +3006,10 @@ msgid ""
 msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
+msgstr ""
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
 msgstr ""
 
 #, c-format
@@ -3261,6 +3356,10 @@ msgstr "Võti on tühistatud."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Kas allkirjastan tõesti kõik kasutaja IDd? "
 
+#, fuzzy
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Kas allkirjastan tõesti kõik kasutaja IDd? "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Vihje: Valige allkirjastamiseks kasutaja\n"
 
@@ -3371,10 +3470,6 @@ msgstr "uuendamine ebaõnnestus: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "Võtit ei muudetud, seega pole uuendamist vaja.\n"
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "salajast võtit `%s' ei leitud: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3586,8 +3681,11 @@ msgstr ""
 "Olete kindel, et soovite seda võtit seada määratud tühistajaks? (j/E): "
 
 #, fuzzy
-msgid "Please select at most one subkey.\n"
-msgstr "palun valige ülimalt üks sekundaarne võti.\n"
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr ""
+"Olete kindel, et soovite seda võtit seada määratud tühistajaks? (j/E): "
 
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
@@ -3639,6 +3737,10 @@ msgstr "Kasutaja ID numbriga %d puudub\n"
 
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
+msgstr "Kasutaja ID numbriga %d puudub\n"
+
+#, fuzzy, c-format
+msgid "No subkey with key ID '%s'.\n"
 msgstr "Kasutaja ID numbriga %d puudub\n"
 
 #, fuzzy, c-format
@@ -3993,6 +4095,10 @@ msgstr "Pärisnimi: "
 
 msgid "Invalid character in name\n"
 msgstr "Lubamatu sümbol nimes\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "Nimi ei või alata numbriga\n"
@@ -4428,10 +4534,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "HOIATUS: krüpteeritud teadet on muudetud!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "lahtikrüpteerimine ebaõnnestus: %s\n"
 
@@ -4626,6 +4728,10 @@ msgstr "tundmatu vaikimisi saaja `%s'\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown weak digest '%s'\n"
+msgstr "tundmatu allkirja klass"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -5091,6 +5197,11 @@ msgid "(This is a sensitive revocation key)\n"
 msgstr "(See on tundlik tühistamise võti)\n"
 
 #, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "Salajane võti on kasutatav.\n"
+
+#, fuzzy
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Loon sellele võtmele tühistamise sertifikaadi? "
 
@@ -5125,6 +5236,17 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found\n"
+msgstr "salajast võtit `%s' ei leitud: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 #, fuzzy
@@ -7177,7 +7299,7 @@ msgid "error retrieving '%s': http status %u\n"
 msgstr "viga `%s' lugemisel: %s\n"
 
 #, fuzzy
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "võtit '%s' ei leitud: %s\n"
 
 #, fuzzy, c-format
@@ -7248,6 +7370,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "uuendamine ebaõnnestus: %s\n"
@@ -7284,32 +7411,6 @@ msgstr "ei õnnestu lugeda `%s' atribuute: %s\n"
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "viga salajase võtme võtmehoidlasse `%s' kirjutamisel: %s\n"
-
-#, fuzzy, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "%s: paisktabeli loomine ebaõnnestus: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-msgid "no running dirmngr - starting one\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "malformed %s environment variable\n"
-msgstr "vigane GPG_AGENT_INFO keskkonnamuutuja\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "gpg-agendi protokolli versioon %d ei ole toetatud\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "ei õnnestu luua ühendust serveriga `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7403,7 +7504,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7715,8 +7816,9 @@ msgstr "viga `%s' lugemisel: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "võtit '%s' ei leitud: %s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -7872,6 +7974,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "`%s' ei õnnestu luua: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: paisktabeli loomine ebaõnnestus: %s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -8082,7 +8188,7 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr ""
 
 msgid "Configuration for HTTP servers"
@@ -8340,6 +8446,36 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "võtmehoidlat ei õnnestu avada"
+
+#, fuzzy
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "`%s' ei õnnestu avada: %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "vigane väärtus\n"
+
+#, fuzzy
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "viga salajase võtmebloki `%s' lugemisel: %s\n"
+
+#, fuzzy
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "palun valige ülimalt üks sekundaarne võti.\n"
+
+#, fuzzy
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "vigane GPG_AGENT_INFO keskkonnamuutuja\n"
+
+#, fuzzy
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "gpg-agendi protokolli versioon %d ei ole toetatud\n"
+
+#, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "lülita salajaste või avalike võtmete loendi vahel"
 
@@ -8512,10 +8648,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Kas te tõesti soovite seda teha? "
-
-#, fuzzy
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "viga salajase võtmebloki `%s' lugemisel: %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Palun eemaldage salajastelt võtmetelt valikud.\n"
@@ -9133,9 +9265,6 @@ msgstr ""
 
 #~ msgid "unknown cipher algorithm"
 #~ msgstr "tundmatu ¨ifri algoritm"
-
-#~ msgid "can't open the keyring"
-#~ msgstr "võtmehoidlat ei õnnestu avada"
 
 #~ msgid "invalid packet"
 #~ msgstr "vigane pakett"

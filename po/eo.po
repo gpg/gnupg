@@ -1572,6 +1572,10 @@ msgstr "þlosilo '%s' ne trovita: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "eraro dum legado de þlosilbloko: %s\n"
 
+#, fuzzy, c-format
+msgid "key \"%s\" not found\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr ""
 
@@ -1774,6 +1778,19 @@ msgid "No fingerprint"
 msgstr "Fingrospuro:"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "nevalida kiraso"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|NOMO|uzi NOMOn kiel la implicitan sekretan þlosilon"
+
+#, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Nevalida þlosilo %08lX validigita per --always-trust\n"
 
@@ -1903,6 +1920,9 @@ msgid "print message digests"
 msgstr "|metodo [dosieroj]|presi mesaøo-kompendiojn"
 
 msgid "run in server mode"
+msgstr ""
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2107,9 +2127,46 @@ msgstr "montri, en kiu þlosilaro estas listigita þlosilo"
 msgid "show expiration dates during signature listings"
 msgstr "Mankas responda subskribo en sekreta þlosilaro\n"
 
+#, fuzzy
+msgid "available TOFU policies:\n"
+msgstr "malþalti þlosilon"
+
+#, fuzzy, c-format
+msgid "unknown TOFU policy '%s'\n"
+msgstr "nekonata implicita ricevonto '%s'\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "nekonata implicita ricevonto '%s'\n"
+
 #, fuzzy, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTO: mankas implicita opcio-dosiero '%s'\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr ""
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "eraro dum kreado de þlosilaro '%s': %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2325,6 +2382,14 @@ msgstr "malsukcesis doni komencajn valorojn al fido-datenaro: %s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "nevalida kompendi-metodo '%s'\n"
+
 msgid "--store [filename]"
 msgstr "--store [dosiero]"
 
@@ -2420,6 +2485,14 @@ msgstr "enkirasigo malsukcesis: %s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "nevalida kompendi-metodo '%s'\n"
+
+#, fuzzy, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "eraro dum kreado de pasfrazo: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[dosiero]"
@@ -2723,6 +2796,20 @@ msgstr "skribas sekretan þlosilon al '%s'\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "þlosilo %08lX: sekreta þlosilo sen publika þlosilo - ignorita\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2850,6 +2937,10 @@ msgstr "þlosilaro '%s' kreita\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "eraro dum kreado de '%s': %s\n"
 
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
+msgstr "eraro dum legado de '%s': %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "malsukcesis rekonstrui þlosilaran staplon: %s\n"
@@ -2915,6 +3006,10 @@ msgid ""
 msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
+msgstr ""
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
 msgstr ""
 
 #, fuzzy, c-format
@@ -3279,6 +3374,10 @@ msgstr "Þlosilo estas revokita.\n"
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Æu vere subskribi æiujn uzantidentigilojn? "
 
+#, fuzzy
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Æu vere subskribi æiujn uzantidentigilojn? "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Sugesto: Elekti la uzantidentigilojn por subskribi\n"
 
@@ -3389,10 +3488,6 @@ msgstr "aktualigo malsukcesis: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "Þlosilo ne þanøita, do aktualigo ne necesas.\n"
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "þlosilo '%s' ne trovita: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3602,8 +3697,10 @@ msgid ""
 msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
 #, fuzzy
-msgid "Please select at most one subkey.\n"
-msgstr "Bonvolu elekti maksimume unu flankan þlosilon.\n"
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr "Æu vi estas certa, ke vi ankoraý volas subskribi øin?\n"
 
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
@@ -3655,6 +3752,10 @@ msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
+msgstr "Mankas uzantidentigilo kun indekso %d\n"
+
+#, fuzzy, c-format
+msgid "No subkey with key ID '%s'.\n"
 msgstr "Mankas uzantidentigilo kun indekso %d\n"
 
 #, fuzzy, c-format
@@ -4013,6 +4114,10 @@ msgstr "Vera nomo: "
 
 msgid "Invalid character in name\n"
 msgstr "Nevalida signo en nomo\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "Nomo ne povas komenciøi per cifero\n"
@@ -4459,10 +4564,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVERTO: æifrita mesaøo estis manipulita!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "malæifrado malsukcesis: %s\n"
 
@@ -4657,6 +4758,10 @@ msgstr "nekonata implicita ricevonto '%s'\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown weak digest '%s'\n"
+msgstr "nekonata klaso de subskribo"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -5120,6 +5225,11 @@ msgid "(This is a sensitive revocation key)\n"
 msgstr ""
 
 #, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "Sekreta þlosilo estas havebla.\n"
+
+#, fuzzy
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Æu krei revokatestilon por æi tiu subskribo? (j/N)"
 
@@ -5153,6 +5263,17 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 #, fuzzy
@@ -7207,7 +7328,7 @@ msgid "error retrieving '%s': http status %u\n"
 msgstr "eraro dum legado de '%s': %s\n"
 
 #, fuzzy
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "þlosilo '%s' ne trovita: %s\n"
 
 #, fuzzy, c-format
@@ -7279,6 +7400,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "ne povas konektiøi al '%s': %s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "aktualigo malsukcesis: %s\n"
@@ -7315,32 +7441,6 @@ msgstr "ne povas stat-i '%s': %s\n"
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "eraro dum skribado de sekreta þlosilaro '%s': %s\n"
-
-#, fuzzy, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "%s: malsukcesis krei haktabelon: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-msgid "no running dirmngr - starting one\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "malformed %s environment variable\n"
-msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "protokolversio %d de gpg-agent ne estas uzebla\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "ne povas konektiøi al '%s': %s\n"
 
 #, fuzzy, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7434,7 +7534,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7744,8 +7844,9 @@ msgstr "eraro dum legado de '%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "þlosilo '%s' ne trovita: %s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -7901,6 +8002,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "ne povas krei '%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: malsukcesis krei haktabelon: %s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -8111,7 +8216,7 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr ""
 
 msgid "Configuration for HTTP servers"
@@ -8368,6 +8473,36 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "ne povas malfermi la þlosilaron"
+
+#, fuzzy
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "ne povas malfermi '%s': %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "nevalida valoro\n"
+
+#, fuzzy
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "eraro dum legado de sekreta þlosilbloko '%s': %s\n"
+
+#, fuzzy
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Bonvolu elekti maksimume unu flankan þlosilon.\n"
+
+#, fuzzy
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "malbona valoro de la media variablo GPG_AGENT_INFO\n"
+
+#, fuzzy
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "protokolversio %d de gpg-agent ne estas uzebla\n"
+
+#, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "de sekreta aý publika listo iri al la alia"
 
@@ -8524,10 +8659,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Æu vi vere volas fari tion? "
-
-#, fuzzy
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "eraro dum legado de sekreta þlosilbloko '%s': %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Bonvolu malelekti la sekretajn þlosilojn.\n"
@@ -9095,9 +9226,6 @@ msgstr ""
 
 #~ msgid "unknown cipher algorithm"
 #~ msgstr "nekonata æifrad-metodo"
-
-#~ msgid "can't open the keyring"
-#~ msgstr "ne povas malfermi la þlosilaron"
 
 #~ msgid "invalid packet"
 #~ msgstr "nevalida paketo"

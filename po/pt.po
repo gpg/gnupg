@@ -1568,6 +1568,10 @@ msgstr "chave `%s' não encontrada: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "erro na leitura do bloco de chave: %s\n"
 
+#, fuzzy, c-format
+msgid "key \"%s\" not found\n"
+msgstr "chave `%s' não encontrada: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(a não ser que escolha a chave pela sua impressão digital)\n"
 
@@ -1776,6 +1780,19 @@ msgid "No fingerprint"
 msgstr "mostra impressão digital"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "chave `%s' não encontrada: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "opções de importação inválidas\n"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|NOME|usar NOME como chave secreta por omissão"
+
+#, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "Chave inválida %08lX tornada válida por --allow-non-selfsigned-uid\n"
 
@@ -1905,6 +1922,9 @@ msgid "print message digests"
 msgstr "|algo [ficheiros]|imprimir \"digests\" de mensagens"
 
 msgid "run in server mode"
+msgstr ""
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2112,10 +2132,47 @@ msgstr "mostrar em que porta-chave a chave está"
 msgid "show expiration dates during signature listings"
 msgstr "Nenhuma assinatura correspondente no porta-chaves secreto\n"
 
+#, fuzzy
+msgid "available TOFU policies:\n"
+msgstr "desactiva uma chave"
+
+#, fuzzy, c-format
+msgid "unknown TOFU policy '%s'\n"
+msgstr "destinatário por omissão desconhecido `%s'\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "destinatário por omissão desconhecido `%s'\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTA: o ficheiro antigo de opções por omissão `%s' foi ignorado\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr ""
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "erro ao criar porta-chaves `%s': %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2325,6 +2382,14 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVISO: destinatários (-r) dados sem utilizar uma cifra de chave pública\n"
 
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "algoritmo de dispersão inválido `%s'\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "algoritmo de dispersão inválido `%s'\n"
+
 msgid "--store [filename]"
 msgstr "--store [nome_do_ficheiro]"
 
@@ -2420,6 +2485,14 @@ msgstr "criação de armadura falhou: %s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "algoritmo de dispersão inválido `%s'\n"
+
+#, fuzzy, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "erro na criação da frase secreta: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[nome_do_ficheiro]"
@@ -2725,6 +2798,20 @@ msgstr "a escrever chave privada para `%s'\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "chave %08lX: chave secreta com cifra inválida %d - ignorada\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2858,6 +2945,10 @@ msgstr "porta-chaves `%s' criado\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "erro ao criar `%s': %s\n"
 
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
+msgstr "erro na leitura de `%s': %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "falha ao criar 'cache' do porta-chaves: %s\n"
@@ -2923,6 +3014,10 @@ msgid ""
 msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
+msgstr ""
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
 msgstr ""
 
 #, c-format
@@ -3273,6 +3368,10 @@ msgstr "A chave está revogada."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Realmente assinar todos os IDs de utilizador? "
 
+#, fuzzy
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Realmente assinar todos os IDs de utilizador? "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Sugestão: Selecione os IDs de utilizador para assinar\n"
 
@@ -3384,10 +3483,6 @@ msgstr "actualização falhou: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "Chave não alterada, nenhuma actualização é necessária.\n"
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "chave `%s' não encontrada: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3598,8 +3693,10 @@ msgid ""
 msgstr "não pode escolher uma chave como revogadora de si mesmo\n"
 
 #, fuzzy
-msgid "Please select at most one subkey.\n"
-msgstr "Por favor seleccione no máximo uma chave secundária.\n"
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr "não pode escolher uma chave como revogadora de si mesmo\n"
 
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
@@ -3651,6 +3748,10 @@ msgstr "Nenhum ID de utilizador com índice %d\n"
 
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
+msgstr "Nenhum ID de utilizador com índice %d\n"
+
+#, fuzzy, c-format
+msgid "No subkey with key ID '%s'.\n"
 msgstr "Nenhum ID de utilizador com índice %d\n"
 
 #, fuzzy, c-format
@@ -4009,6 +4110,10 @@ msgstr "Nome completo: "
 
 msgid "Invalid character in name\n"
 msgstr "Caracter inválido no nome\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "O nome não pode começar com um dígito\n"
@@ -4452,10 +4557,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "CUIDADO: a mensagem cifrada foi manipulada!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "decifragem falhou: %s\n"
 
@@ -4655,6 +4756,10 @@ msgstr "destinatário por omissão desconhecido `%s'\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown weak digest '%s'\n"
+msgstr "classe de assinatura desconhecida"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -5123,6 +5228,11 @@ msgid "(This is a sensitive revocation key)\n"
 msgstr ""
 
 #, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "Chave secreta disponível.\n"
+
+#, fuzzy
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Gerar um certificado de revogação para esta assinatura? (s/N)"
 
@@ -5156,6 +5266,17 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found\n"
+msgstr "chave `%s' não encontrada: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 #, fuzzy
@@ -7212,7 +7333,7 @@ msgid "error retrieving '%s': http status %u\n"
 msgstr "erro na leitura de `%s': %s\n"
 
 #, fuzzy
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "chave `%s' não encontrada: %s\n"
 
 #, fuzzy, c-format
@@ -7283,6 +7404,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "impossível ligar a `%s': %s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "actualização falhou: %s\n"
@@ -7319,32 +7445,6 @@ msgstr "impossível 'stat' a `%s': %s\n"
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "erro ao escrever no porta-chaves secreto `%s': %s\n"
-
-#, fuzzy, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "%s: falha ao criar tabela de dispersão: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-msgid "no running dirmngr - starting one\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "malformed %s environment variable\n"
-msgstr "variável de ambiente GPG_AGENT_INFO inválida\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "a versão %d do protocolo gpg-agent não é suportada\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "impossível ligar a `%s': %s\n"
 
 #, fuzzy, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7438,7 +7538,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7752,8 +7852,9 @@ msgstr "erro na leitura de `%s': %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "chave `%s' não encontrada: %s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -7908,6 +8009,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "impossível criar `%s': %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: falha ao criar tabela de dispersão: %s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -8120,7 +8225,7 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr ""
 
 msgid "Configuration for HTTP servers"
@@ -8377,6 +8482,36 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "não é possível abrir o porta-chaves"
+
+#, fuzzy
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "impossível abrir `%s': %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "valor inválido\n"
+
+#, fuzzy
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "erro na leitura do bloco de chave secreto `%s': %s\n"
+
+#, fuzzy
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Por favor seleccione no máximo uma chave secundária.\n"
+
+#, fuzzy
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "variável de ambiente GPG_AGENT_INFO inválida\n"
+
+#, fuzzy
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "a versão %d do protocolo gpg-agent não é suportada\n"
+
+#, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "alterna entre listagem de chave secreta e pública"
 
@@ -8542,10 +8677,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Você quer realmente fazer isso? "
-
-#, fuzzy
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "erro na leitura do bloco de chave secreto `%s': %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Por favor remova as selecções das chaves secretas.\n"
@@ -9160,9 +9291,6 @@ msgstr ""
 
 #~ msgid "unknown cipher algorithm"
 #~ msgstr "algoritmo de criptografia desconhecido"
-
-#~ msgid "can't open the keyring"
-#~ msgstr "não é possível abrir o porta-chaves"
 
 #~ msgid "invalid packet"
 #~ msgstr "pacote inválido"

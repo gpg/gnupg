@@ -1555,6 +1555,11 @@ msgstr "密钥‘%s’找不到：%s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "读取密钥区块时发生错误：%s\n"
 
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "key \"%s\" not found\n"
+msgstr "密钥‘%s’找不到：%s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(除非您用指纹指定密钥)\n"
 
@@ -1754,6 +1759,19 @@ msgid "No fingerprint"
 msgstr "CA 指纹："
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "找不到私钥“%s”：%s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "无效的列表选项\n"
+
+#, fuzzy, c-format
+#| msgid "unusable secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "不可用的私钥"
+
+#, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr "--allow-non-selfsigned-uid 使无效密钥 %s 生效\n"
 
@@ -1882,6 +1900,9 @@ msgid "print message digests"
 msgstr "|算法 [文件]|使用指定的散列算法打印报文散列值"
 
 msgid "run in server mode"
+msgstr ""
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2099,10 +2120,48 @@ msgstr "列出密钥时显示钥匙环的名称"
 msgid "show expiration dates during signature listings"
 msgstr "列出签名时显示过期日期"
 
+#, fuzzy
+msgid "available TOFU policies:\n"
+msgstr "禁用密钥"
+
+#, fuzzy, c-format
+#| msgid "unknown option `%s'\n"
+msgid "unknown TOFU policy '%s'\n"
+msgstr "未知的选项 '%s'\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "未知的选项 '%s'\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "注意：旧式的默认配置文件‘%s’已被忽略\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr ""
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "建立钥匙环‘%s’时发生错误：%s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2305,6 +2364,14 @@ msgstr "初始化信任度数据库失败：%s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "警告：给定了收件人(-r)但并未使用公钥加密\n"
 
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "无效的‘%s’散列算法\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "无效的‘%s’散列算法\n"
+
 msgid "--store [filename]"
 msgstr "--store [文件名]"
 
@@ -2399,6 +2466,14 @@ msgstr "进行 ASCII 封装失败：%s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "无效的‘%s’散列算法\n"
+
+#, fuzzy, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "取得当前密钥信息时出错：%s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[文件名]"
@@ -2702,6 +2777,20 @@ msgstr "不允许导入私钥\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "密钥 %s：私钥使用了无效的加密算法 %d――已跳过\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "密钥 %s：没有公钥――无法应用吊销证书\n"
@@ -2833,6 +2922,10 @@ msgstr "钥匙环‘%s’已建立\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "密钥块资源‘%s’：%s\n"
 
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
+msgstr "‘%s’中出错：%s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "重新建立钥匙环缓存失败： %s\n"
@@ -2899,6 +2992,10 @@ msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
 msgstr "请输入这份签名的限制域，如果没有请按回车。\n"
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
+msgstr ""
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
@@ -3202,6 +3299,11 @@ msgstr "密钥已被吊销。"
 msgid "Really sign all user IDs? (y/N) "
 msgstr "真的为所有的用户标识签名吗？(y/N)"
 
+#, fuzzy
+#| msgid "Really sign all user IDs? (y/N) "
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "真的为所有的用户标识签名吗？(y/N)"
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "提示：选择要添加签名的用户标识\n"
 
@@ -3300,10 +3402,6 @@ msgstr "更新失败：%s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "密钥没有变动所以不需要更新。\n"
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "找不到私钥“%s”：%s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3511,8 +3609,13 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "您确定要将这把密钥设为指定吊销者吗？(y/N)："
 
-msgid "Please select at most one subkey.\n"
-msgstr "请至多选择一个子钥。\n"
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr "您确定要将这把密钥设为指定吊销者吗？(y/N)："
 
 msgid "Changing expiration time for a subkey.\n"
 msgstr "将要变更子钥的使用期限。\n"
@@ -3560,6 +3663,11 @@ msgstr "没有索引为 %d 的用户标识\n"
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "没有散列值为 %s 的用户标识\n"
+
+#, fuzzy, c-format
+#| msgid "No subkey with index %d\n"
+msgid "No subkey with key ID '%s'.\n"
+msgstr "没有索引为 %d 的子钥\n"
 
 #, c-format
 msgid "No subkey with index %d\n"
@@ -3906,6 +4014,10 @@ msgstr "真实姓名："
 
 msgid "Invalid character in name\n"
 msgstr "姓名含有无效的字符\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "姓名不可以用数字开头\n"
@@ -4338,10 +4450,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "警告：加密过的报文已经变造！\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "解密失败：%s\n"
 
@@ -4536,6 +4644,11 @@ msgstr "未知的选项 '%s'\n"
 #| msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr "DSA 需要散列值长度为 8 位的倍数\n"
+
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "unknown weak digest '%s'\n"
+msgstr "未知的签名类型‘%s’\n"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -4987,6 +5100,11 @@ msgstr "将被吊销，吊销者：\n"
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(这是一把敏感的吊销密钥)\n"
 
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "私钥可用。\n"
+
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "要为这把密钥建立一份指定吊销者证书吗？(y/N)"
 
@@ -5020,6 +5138,18 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key \"%s\" not found\n"
+msgstr "找不到私钥“%s”：%s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -7063,7 +7193,7 @@ msgid "error retrieving '%s': http status %u\n"
 msgstr "读取‘%s’时出错：%s\n"
 
 #, fuzzy
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "找不到私钥“%s”：%s\n"
 
 #, fuzzy, c-format
@@ -7134,6 +7264,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "无法连接至‘%s’：%s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "更新失败：%s\n"
@@ -7171,32 +7306,6 @@ msgstr "无法获得文件‘%s’的信息： %s\n"
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "写入私钥钥匙环‘%s’时发生错误： %s\n"
-
-#, fuzzy, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "%s：建立散列表失败：%s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-msgid "no running dirmngr - starting one\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "malformed %s environment variable\n"
-msgstr "GPG_AGENT_INFO 环境变量格式错误\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "不支持 gpg-agent 协议版本 %d\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "无法连接至‘%s’：%s\n"
 
 #, fuzzy, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7291,7 +7400,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7614,8 +7723,9 @@ msgstr "读取‘%s’时出错：%s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "错误：个人 DO 太长(至多 %d 个字符)。\n"
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "找不到私钥“%s”：%s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -7772,6 +7882,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "不能创建备份文件‘%s’：%s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s：建立散列表失败：%s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -7982,7 +8096,7 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr ""
 
 msgid "Configuration for HTTP servers"
@@ -8239,6 +8353,36 @@ msgid ""
 "Check a passphrase given on stdin against the patternfile\n"
 msgstr ""
 
+#, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "无法打开钥匙环"
+
+#, fuzzy
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "无法打开‘%s’：%s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "无效的数值\n"
+
+#, fuzzy
+#~| msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "读取私钥区块“%s”时出错：%s\n"
+
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "请至多选择一个子钥。\n"
+
+#, fuzzy
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "GPG_AGENT_INFO 环境变量格式错误\n"
+
+#, fuzzy
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "不支持 gpg-agent 协议版本 %d\n"
+
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "在私钥和公钥清单间切换"
 
@@ -8403,9 +8547,6 @@ msgstr ""
 
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "您真的想要这么做吗？(y/N)"
-
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "读取私钥区块“%s”时出错：%s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "请从私钥中删除选择。\n"
@@ -9033,9 +9174,6 @@ msgstr ""
 #~ msgid "checksum error"
 #~ msgstr "校验和错误"
 
-#~ msgid "can't open the keyring"
-#~ msgstr "无法打开钥匙环"
-
 #~ msgid "invalid packet"
 #~ msgstr "无效包"
 
@@ -9113,9 +9251,6 @@ msgstr ""
 
 #~ msgid "unusable public key"
 #~ msgstr "不可用的公钥"
-
-#~ msgid "unusable secret key"
-#~ msgstr "不可用的私钥"
 
 #~ msgid "keyserver error"
 #~ msgstr "公钥服务器错误"

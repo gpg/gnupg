@@ -1517,6 +1517,11 @@ msgstr "klíč „%s“ nenalezen: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "chyba při čtení bloku klíče: %s\n"
 
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "key \"%s\" not found\n"
+msgstr "klíč „%s“ nenalezen: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(dokud neurčíte klíč jeho otiskem)\n"
 
@@ -1711,6 +1716,20 @@ msgstr "chyba při získávání „%s“ přes %s: %s\n"
 msgid "No fingerprint"
 msgstr "Chybí otisk"
 
+#, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "tajný klíč „%s“ nenalezen: %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "postrádám argument u volby „%.50s“\n"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|NÁZEV|použít NÁZEV jako implicitní tajný klíč"
+
 # c-format
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -1832,6 +1851,9 @@ msgstr "vypsat hash zprávy"
 
 msgid "run in server mode"
 msgstr "pracovat v režimu serveru"
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgstr ""
 
 msgid "create ascii armored output"
 msgstr "vytvoř výstup zakódovaný pomocí ASCII"
@@ -2033,9 +2055,50 @@ msgstr "ukazovat název souboru s klíči při výpisu klíčů"
 msgid "show expiration dates during signature listings"
 msgstr "ukazovat data expirace během výpisu podpisů"
 
+#, fuzzy
+#| msgid "Available keys:\n"
+msgid "available TOFU policies:\n"
+msgstr "Dostupné klíče:\n"
+
+#, fuzzy, c-format
+#| msgid "unknown option '%s'\n"
+msgid "unknown TOFU policy '%s'\n"
+msgstr "neznámá volba „%s“\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "unknown command '%s'\n"
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "neznámý příkaz „%s“\n"
+
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "Poznámka: starý implicitní soubor s možnostmi „%s“ ignorován\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "option \"%.50s\" is ambiguous\n"
+msgid "key specification '%s' is ambiguous\n"
+msgstr "volba „%.50s“ není jednoznačná\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring '%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "chyba při vytváření souboru klíčů (keyring) „%s“: %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2234,6 +2297,16 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "VAROVÁNÍ: specifikován adresát (-r) bez použití šifrování s veřejným klíčem\n"
 
+#, fuzzy, c-format
+#| msgid "line %d: invalid date given\n"
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "řádek %d: zadáno neplatné datum\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid date given\n"
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "řádek %d: zadáno neplatné datum\n"
+
 msgid "--store [filename]"
 msgstr "--store [jméno souboru]"
 
@@ -2325,6 +2398,15 @@ msgstr "kódování do ASCII formátu selhalo: %s\n"
 #, c-format
 msgid "invalid hash algorithm '%s'\n"
 msgstr "neplatný hashovací algoritmus „%s“\n"
+
+#, fuzzy, c-format
+#| msgid "error loading certificate '%s': %s\n"
+msgid "error parsing key specification '%s': %s\n"
+msgstr "chyba při zavádění certifikátu „%s“: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[jméno souboru]"
@@ -2625,6 +2707,20 @@ msgstr "import tajných klíčů není povolen\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klíč %s: tajný klíč s neplatnou šifrou %d – přeskočeno\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr "klíč %s: chybí veřejný klíč – nemohu aplikovat revokační certifikát\n"
@@ -2751,6 +2847,11 @@ msgstr "soubor klíčů (keyring) „%s“ vytvořen\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "zdroj bloku klíče „%s“: %s\n"
 
+#, fuzzy, c-format
+#| msgid "error opening '%s': %s\n"
+msgid "error opening key DB: %s\n"
+msgstr "chyba při otevírání „%s“: %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "selhalo obnovení vyrovnávací paměti klíčů: %s\n"
@@ -2821,6 +2922,10 @@ msgid "Please enter a domain to restrict this signature, or enter for none.\n"
 msgstr ""
 "Prosím vložte doménu, pro kterou je podpis omezen nebo stiskněte enter pro "
 "podpis bez omezení na doménu.\n"
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
+msgstr ""
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
@@ -3125,6 +3230,11 @@ msgstr "Klíč revokován."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Opravdu podepsat všechny id uživatele? (a/N) "
 
+#, fuzzy
+#| msgid "Really sign all user IDs? (y/N) "
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Opravdu podepsat všechny id uživatele? (a/N) "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Nápověda: Vyberte id uživatele k podepsání\n"
 
@@ -3221,10 +3331,6 @@ msgstr "aktualizace selhala: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "Klíč nebyl změněn, takže není potřeba jej aktualizovat.\n"
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "tajný klíč „%s“ nenalezen: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3424,8 +3530,13 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Jste si jistí, že tento klíč chcete pověřit revokací? (a/N) "
 
-msgid "Please select at most one subkey.\n"
-msgstr "Prosím, vyberte nejvýše jeden podklíč.\n"
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr "Jste si jistí, že tento klíč chcete pověřit revokací? (a/N) "
 
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Měním dobu expirace podklíče.\n"
@@ -3473,6 +3584,11 @@ msgstr "Neexistuje identifikátor uživatele s indexem %d\n"
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Neexistuje uživatelské ID s hashem %s\n"
+
+#, fuzzy, c-format
+#| msgid "No subkey with index %d\n"
+msgid "No subkey with key ID '%s'.\n"
+msgstr "Neexistuje podklíč s indexem %d\n"
 
 #, c-format
 msgid "No subkey with index %d\n"
@@ -3815,6 +3931,10 @@ msgstr "Jméno a příjmení: "
 
 msgid "Invalid character in name\n"
 msgstr "Neplatný znak ve jméně\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "Jméno nemůže začínat číslicí\n"
@@ -4244,10 +4364,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "VAROVÁNÍ: se zašifrovanou zprávou bylo manipulováno!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr "vymazané heslo zapamatované pro ID: %s\n"
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "dešifrování selhalo: %s\n"
 
@@ -4436,6 +4552,11 @@ msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
 "U veřejného klíče ECDSA se očekává, že v kódování SEC bude délka násobkem 8 "
 "bitů\n"
+
+#, fuzzy, c-format
+#| msgid "Unknown signature type '%s'\n"
+msgid "unknown weak digest '%s'\n"
+msgstr "Neznámý typ podpisu „%s“\n"
 
 #, c-format
 msgid "File '%s' exists. "
@@ -4880,6 +5001,11 @@ msgstr "Revokován:\n"
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(Toto je citlivý revokační klíč)\n"
 
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "Tajný klíč je dostupný.\n"
+
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Vytvořit pro tento klíč pověřený revokační certifikát? (a/N)"
 
@@ -4918,6 +5044,18 @@ msgstr ""
 "Aby se zabránilo nechtěnému použití tohoto souboru, před 5 pomlček byla\n"
 "vložena dvojtečka. Před použitím tohoto revokačního certifikátu odstraňte\n"
 "tuto dvojtečku textovým editorem."
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key \"%s\" not found\n"
+msgstr "tajný klíč „%s“ nenalezen: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
+msgstr ""
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Vytvořit pro tento klíč revokační certifikát? (a/N) "
@@ -6930,7 +7068,7 @@ msgstr "chyba při získávání „%s“: status HTTP je %u\n"
 # Poslední argument je název protokolu
 #, fuzzy
 #| msgid "CRL access not possible due to disabled %s\n"
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "Přístup k CRL není možný kvůli vypnutému %s\n"
 
 #, c-format
@@ -6996,6 +7134,10 @@ msgid "certificate too large to make any sense\n"
 msgstr "certifikát je příliš velký, než aby dával smysl\n"
 
 #, c-format
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "k dirmngr se nelze připojit: %s\n"
+
+#, c-format
 msgid "lookup failed: %s\n"
 msgstr "hledání selhalo: %s\n"
 
@@ -7027,31 +7169,6 @@ msgstr "obdržen status: „%s“\n"
 #, c-format
 msgid "error writing base64 encoding: %s\n"
 msgstr "chyba při zápisu kódování base64: %s\n"
-
-#, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "alokace kontextu assuan selhala: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr "dirmngr zjevně neběží\n"
-
-msgid "no running dirmngr - starting one\n"
-msgstr "žádný dirmngr neběží – jeden bude spuštěn\n"
-
-#, c-format
-msgid "malformed %s environment variable\n"
-msgstr "špatně utvořená proměnná prostředí %s\n"
-
-#, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "verze %d protokolu dirmngr není podporována\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr "k dirmngr se nelze připojit – zkusí se náhradní postup\n"
-
-#, c-format
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "k dirmngr se nelze připojit: %s\n"
 
 #, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7139,7 +7256,7 @@ msgstr "|N|nevrací více jak N položek na jeden dotaz"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|SOUBOR|pro HKP přes TLS použije certifikáty CA ze SOUBORU"
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 msgid ""
@@ -7435,7 +7552,7 @@ msgstr "odpověď serveru je příliš velká, limit je %d bajtů\n"
 
 #, fuzzy
 #| msgid "OCSP request not possible due to disabled HTTP\n"
-msgid "OCSP request not possible due to TOR mode\n"
+msgid "OCSP request not possible due to Tor mode\n"
 msgstr "OCSP dotaz není možný, protože HTTP je zakázáno\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
@@ -7588,6 +7705,10 @@ msgstr "max_replies (max. odpovědí) %d překročeno\n"
 #, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "řídící strukturu nelze alokovat: %s\n"
+
+#, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "alokace kontextu assuan selhala: %s\n"
 
 #, c-format
 msgid "failed to initialize the server: %s\n"
@@ -7786,7 +7907,7 @@ msgstr "Volby ovlivňující interaktivitu a vymáhání"
 
 #, fuzzy
 #| msgid "Options controlling the security"
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr "Volby ovlivňující bezpečnost"
 
 msgid "Configuration for HTTP servers"
@@ -8036,6 +8157,47 @@ msgid ""
 msgstr ""
 "Syntaxe: gpg-check-pattern [volby] soubor_se_vzorem\n"
 "Prověří heslo zadané na vstupu proti souboru se vzory\n"
+
+#~ msgid "cleared passphrase cached with ID: %s\n"
+#~ msgstr "vymazané heslo zapamatované pro ID: %s\n"
+
+#, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "nemohu otevřít soubor klíčů"
+
+#, fuzzy
+#~| msgid "failed to open '%s': %s\n"
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "„%s“ nebylo možné otevřít: %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "neplatná hodnota\n"
+
+#, fuzzy
+#~| msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "chyba při čtení bloku tajného klíče „%s“: %s\n"
+
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Prosím, vyberte nejvýše jeden podklíč.\n"
+
+#~ msgid "apparently no running dirmngr\n"
+#~ msgstr "dirmngr zjevně neběží\n"
+
+#~ msgid "no running dirmngr - starting one\n"
+#~ msgstr "žádný dirmngr neběží – jeden bude spuštěn\n"
+
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "špatně utvořená proměnná prostředí %s\n"
+
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "verze %d protokolu dirmngr není podporována\n"
+
+#~ msgid "can't connect to the dirmngr - trying fall back\n"
+#~ msgstr "k dirmngr se nelze připojit – zkusí se náhradní postup\n"
 
 #~ msgid "export keys in an S-expression based format"
 #~ msgstr "exportovat klíče ve formátu postaveném na S-výrazech"
@@ -8588,9 +8750,6 @@ msgstr ""
 
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Opravdu to chcete udělat? (a/N) "
-
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "chyba při čtení bloku tajného klíče „%s“: %s\n"
 
 #~ msgid "update secret failed: %s\n"
 #~ msgstr "aktualizace tajného klíče selhala: %s\n"
@@ -9245,9 +9404,6 @@ msgstr ""
 
 #~ msgid "checksum error"
 #~ msgstr "chyba kontrolního součtu"
-
-#~ msgid "can't open the keyring"
-#~ msgstr "nemohu otevřít soubor klíčů"
 
 #~ msgid "invalid packet"
 #~ msgstr "neplatný paket"

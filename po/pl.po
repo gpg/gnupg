@@ -1581,6 +1581,11 @@ msgstr "klucz ,,%s'' nie zosta³ odnaleziony: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "b³±d odczytu bloku kluczy: %s\n"
 
+#, fuzzy, c-format
+#| msgid "key \"%s\" not found: %s\n"
+msgid "key \"%s\" not found\n"
+msgstr "klucz ,,%s'' nie zosta³ odnaleziony: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(chyba, ¿e klucz zostaje wybrany przez podanie odcisku)\n"
 
@@ -1788,6 +1793,20 @@ msgid "No fingerprint"
 msgstr "Brak odcisku"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "klucz prywatny ,,%s'' nie zosta³ odnaleziony: %s\n"
+
+#, fuzzy, c-format
+#| msgid "missing argument for option \"%.50s\"\n"
+msgid "(check argument of option '%s')\n"
+msgstr "brak argumentu dla opcji ,,%.50s''\n"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|NAZWA|u¿ycie NAZWY jako domy¶lnego klucza tajnego"
+
+#, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Opcja --allow-non-selfsigned-uid wymusi³a uznanie za poprawny klucza %s.\n"
@@ -1914,6 +1933,9 @@ msgstr "wypisanie skrótów wiadomo¶ci"
 
 msgid "run in server mode"
 msgstr "uruchomienie w trybie serwera"
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgstr ""
 
 msgid "create ascii armored output"
 msgstr "opakowanie ASCII pliku wynikowego"
@@ -2148,10 +2170,51 @@ msgstr "pokazywanie nazwy zbioru kluczy na listach kluczy"
 msgid "show expiration dates during signature listings"
 msgstr "pokazywanie dat wyga¶niêcia przy wypisywaniu podpisów"
 
+#, fuzzy
+#| msgid "Available keys:\n"
+msgid "available TOFU policies:\n"
+msgstr "Dostêpne klucze:\n"
+
+#, fuzzy, c-format
+#| msgid "unknown option `%s'\n"
+msgid "unknown TOFU policy '%s'\n"
+msgstr "nieznana opcja ,,%s''\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "unknown command `%s'\n"
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "nieznane polecenie ,,%s''\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "UWAGA: stary domy¶lny plik opcji ,,%s'' zosta³ zignorowany\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "option \"%.50s\" is ambiguous\n"
+msgid "key specification '%s' is ambiguous\n"
+msgstr "opcja ,,%.50s'' jest niejednoznaczna\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "b³±d tworzenia zbioru kluczy `%s': %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2360,6 +2423,16 @@ msgstr "inicjowanie Bazy Zaufania nie powiod³o siê: %s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "OSTRZE¯ENIE: podano adresatów (-r) w dzia³aniu które ich nie dotyczy\n"
 
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "linia %d: niew³a¶ciwy algorytm\n"
+
+#, fuzzy, c-format
+#| msgid "line %d: invalid algorithm\n"
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "linia %d: niew³a¶ciwy algorytm\n"
+
 msgid "--store [filename]"
 msgstr "--store [plik]"
 
@@ -2453,6 +2526,15 @@ msgstr "opakowywanie ASCII nie powiod³o siê: %s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "niew³a¶ciwy algorytm skrótu ,,%s''\n"
+
+#, fuzzy, c-format
+#| msgid "error storing certificate: %s\n"
+msgid "error parsing key specification '%s': %s\n"
+msgstr "b³±d zapisywania certyfikatu: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[nazwa pliku]"
@@ -2758,6 +2840,20 @@ msgstr "wczytywanie kluczy tajnych nie jest dozwolone\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "klucz %s: klucz tajny z b³êdnym szyfrem %d - pominiêty\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2895,6 +2991,11 @@ msgstr "zbiór kluczy ,,%s'' zosta³ utworzony\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "zasób bloku klucza `%s': %s\n"
 
+#, fuzzy, c-format
+#| msgid "error opening `%s': %s\n"
+msgid "error opening key DB: %s\n"
+msgstr "b³±d podczas otwierania ,,%s'': %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "nie powiod³a siê odbudowa bufora bazy: %s\n"
@@ -2963,6 +3064,10 @@ msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
 msgstr "Proszê wpisaæ domenê ograniczaj±c± ten podpis lub Enter dla ¿adnej.\n"
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
+msgstr ""
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
@@ -3292,6 +3397,11 @@ msgstr "Klucz uniewa¿niony."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Czy na pewno podpisaæ wszystkie identyfikatory u¿ytkownika? (t/N) "
 
+#, fuzzy
+#| msgid "Really sign all user IDs? (y/N) "
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Czy na pewno podpisaæ wszystkie identyfikatory u¿ytkownika? (t/N) "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Podpowied¼: wybierz identyfikatory u¿ytkownika do podpisania.\n"
 
@@ -3394,10 +3504,6 @@ msgstr "zapis zmian nie powiód³ siê: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "Klucz nie zosta³ zmieniony wiêc zapis zmian nie jest konieczny.\n"
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "klucz prywatny ,,%s'' nie zosta³ odnaleziony: %s\n"
 
 #, fuzzy, c-format
 #| msgid "invalid fingerprint"
@@ -3606,8 +3712,13 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "Czy na pewno chcesz wyznaczyæ ten klucz jako uniewa¿niaj±cy? (t/N) "
 
-msgid "Please select at most one subkey.\n"
-msgstr "Proszê wybraæ najwy¿ej jeden podklucz.\n"
+#, fuzzy
+#| msgid ""
+#| "Are you sure you want to appoint this key as a designated revoker? (y/N) "
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr "Czy na pewno chcesz wyznaczyæ ten klucz jako uniewa¿niaj±cy? (t/N) "
 
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Zmiana daty wa¿no¶ci podklucza.\n"
@@ -3656,6 +3767,11 @@ msgstr "Brak identyfikatora u¿ytkownika o numerze %d.\n"
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Brak identyfikatora u¿ytkownika o skrócie %s\n"
+
+#, fuzzy, c-format
+#| msgid "No subkey with index %d\n"
+msgid "No subkey with key ID '%s'.\n"
+msgstr "Brak podklucza o numerze %d.\n"
 
 #, c-format
 msgid "No subkey with index %d\n"
@@ -4011,6 +4127,10 @@ msgstr "Imiê i nazwisko: "
 
 msgid "Invalid character in name\n"
 msgstr "Niew³a¶ciwy znak w imieniu lub nazwisku\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "Imiê lub nazwisko nie mo¿e zaczynaæ siê od cyfry\n"
@@ -4461,10 +4581,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "OSTRZE¯ENIE: zaszyfrowana wiadomo¶æ by³a manipulowana!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr "wyczyszczono has³o zapamiêtane z ID: %s\n"
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "b³±d odszyfrowywania: %s\n"
 
@@ -4665,6 +4781,11 @@ msgstr "nieznana opcja ,,%s''\n"
 #| msgid "DSA requires the hash length to be a multiple of 8 bits\n"
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr "DSA wymaga d³ugo¶ci skrótu bêd±cego wielokrotno¶ci± 8 bitów\n"
+
+#, fuzzy, c-format
+#| msgid "Unknown signature type `%s'\n"
+msgid "unknown weak digest '%s'\n"
+msgstr "Nieznany rodzaj podpisu ,,%s''\n"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -5135,6 +5256,11 @@ msgstr "Zostanie uniewa¿niony przez:\n"
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(to jest czu³y klucz uniewa¿niaj±cy)\n"
 
+#, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "Dostêpny jest klucz tajny.\n"
+
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Stworzyæ certyfikat uniewa¿nienia tego klucza? (t/N) "
 
@@ -5168,6 +5294,18 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "secret key \"%s\" not found: %s\n"
+msgid "secret key \"%s\" not found\n"
+msgstr "klucz prywatny ,,%s'' nie zosta³ odnaleziony: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 msgid "Create a revocation certificate for this key? (y/N) "
@@ -7320,7 +7458,7 @@ msgstr "b³±d uruchamiania ,,%s'': kod wyj¶cia %d\n"
 
 #, fuzzy
 #| msgid "certificate `%s' not found: %s\n"
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "nie znaleziono certyfikatu ,,%s'': %s\n"
 
 #, fuzzy, c-format
@@ -7401,6 +7539,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "nie mo¿na siê po³±czyæ z ,,%s'': %s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "zapis zmian nie powiód³ siê: %s\n"
@@ -7441,36 +7584,6 @@ msgstr ""
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "b³±d podczas zapisu zbioru kluczy tajnych ,,%s'': %s\n"
-
-#, fuzzy, c-format
-#| msgid "failed to create stream from socket: %s\n"
-msgid "failed to allocate assuan context: %s\n"
-msgstr "nie uda³o siê utworzyæ strumienia z gniazda: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-#, fuzzy
-#| msgid "no running dirmngr - starting `%s'\n"
-msgid "no running dirmngr - starting one\n"
-msgstr "dirmngr nie dzia³a - uruchamianie ,,%s''\n"
-
-#, fuzzy, c-format
-#| msgid "malformed DIRMNGR_INFO environment variable\n"
-msgid "malformed %s environment variable\n"
-msgstr "z³y format zmiennej ¶rodowiskowej DIRMNGR_INFO\n"
-
-#, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "wersja %d protoko³u dirmngr nie jest obs³ugiwana\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr "nie mo¿na po³±czyæ siê z dirmngr - próba fallbacku\n"
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "nie mo¿na siê po³±czyæ z ,,%s'': %s\n"
 
 #, fuzzy, c-format
 #| msgid "unsupported algorithm: %s"
@@ -7576,7 +7689,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7924,8 +8037,10 @@ msgstr "b³±d odczytu z %s: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "B³±d: prywatne DO zbyt d³ugie (limit to %d znaków).\n"
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+#| msgid "certificate `%s' not found: %s\n"
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "nie znaleziono certyfikatu ,,%s'': %s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8107,6 +8222,11 @@ msgstr ""
 #| msgid "cannot allocate outfile string: %s\n"
 msgid "can't allocate control structure: %s\n"
 msgstr "nie mo¿na przydzieliæ ³añcucha pliku wyj¶ciowego: %s\n"
+
+#, fuzzy, c-format
+#| msgid "failed to create stream from socket: %s\n"
+msgid "failed to allocate assuan context: %s\n"
+msgstr "nie uda³o siê utworzyæ strumienia z gniazda: %s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -8335,7 +8455,7 @@ msgstr "Opcje steruj±ce interaktywno¶ci± i wymuszaniem"
 
 #, fuzzy
 #| msgid "Options controlling the security"
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr "Opcje steruj±ce bezpieczeñstwem"
 
 msgid "Configuration for HTTP servers"
@@ -8605,6 +8725,48 @@ msgstr ""
 "Sk³adnia: gpg-check-pattern [opcje] plik-wzorców\n"
 "Sprawdzanie has³a ze standardowego wej¶cia wzglêdem pliku wzorców\n"
 
+#~ msgid "cleared passphrase cached with ID: %s\n"
+#~ msgstr "wyczyszczono has³o zapamiêtane z ID: %s\n"
+
+#, fuzzy
+#~| msgid "failed to store the key: %s\n"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "nie powiód³ siê zapis klucza: %s\n"
+
+#, fuzzy
+#~| msgid "failed to open `%s': %s\n"
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "nie uda³o siê otworzyæ ,,%s'': %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "niepoprawna warto¶æ\n"
+
+#, fuzzy
+#~| msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "b³±d odczytu bloku klucza tajnego ,,%s'': %s\n"
+
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Proszê wybraæ najwy¿ej jeden podklucz.\n"
+
+#, fuzzy
+#~| msgid "no running dirmngr - starting `%s'\n"
+#~ msgid "no running dirmngr - starting one\n"
+#~ msgstr "dirmngr nie dzia³a - uruchamianie ,,%s''\n"
+
+#, fuzzy
+#~| msgid "malformed DIRMNGR_INFO environment variable\n"
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "z³y format zmiennej ¶rodowiskowej DIRMNGR_INFO\n"
+
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "wersja %d protoko³u dirmngr nie jest obs³ugiwana\n"
+
+#~ msgid "can't connect to the dirmngr - trying fall back\n"
+#~ msgstr "nie mo¿na po³±czyæ siê z dirmngr - próba fallbacku\n"
+
 #~ msgid "export keys in an S-expression based format"
 #~ msgstr "eksport kluczy w formacie opartym na S-wyra¿eniach"
 
@@ -8782,9 +8944,6 @@ msgstr ""
 
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Czy na pewno chcesz to zrobiæ? (t/N) "
-
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "b³±d odczytu bloku klucza tajnego ,,%s'': %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Proszê usun±æ znacznik wyboru z kluczy prywatnych.\n"

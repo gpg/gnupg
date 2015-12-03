@@ -1628,6 +1628,10 @@ msgstr "no s'ha trobat la clau «%s»: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "s'ha produït un error en llegir el bloc de claus: %s\n"
 
+#, fuzzy, c-format
+msgid "key \"%s\" not found\n"
+msgstr "no s'ha trobat la clau «%s»: %s\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(a no ser que especifiqueu la clau per la empremta digital)\n"
 
@@ -1850,6 +1854,19 @@ msgid "No fingerprint"
 msgstr "Empremta digital:"
 
 #, fuzzy, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "opcions d'importació no vàlides\n"
+
+#, fuzzy, c-format
+#| msgid "|NAME|use NAME as default secret key"
+msgid "using \"%s\" as default secret key\n"
+msgstr "|NOM|usa NOM com a clau secreta predeterminada"
+
+#, fuzzy, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "La clau invàlida %08lX s'ha fet vàlida amb --allow-non-selfsigned-uid\n"
@@ -1982,6 +1999,9 @@ msgid "print message digests"
 msgstr "|algo [fitxers]|imprimeix resums de missatges"
 
 msgid "run in server mode"
+msgstr ""
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
 msgstr ""
 
 msgid "create ascii armored output"
@@ -2197,10 +2217,47 @@ msgstr "mostra en quin anell de claus està una clau llistada"
 msgid "show expiration dates during signature listings"
 msgstr "No hi ha cap signatura corresponent en l'anell secret\n"
 
+#, fuzzy
+msgid "available TOFU policies:\n"
+msgstr "desactiva una clau"
+
+#, fuzzy, c-format
+msgid "unknown TOFU policy '%s'\n"
+msgstr "el destinatari predeterminat és desconegut «%s»\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "el destinatari predeterminat és desconegut «%s»\n"
+
 #, fuzzy, c-format
 #| msgid "NOTE: old default options file `%s' ignored\n"
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "NOTA: es descarta el fitxer d'opcions predeterminades antic «%s»\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr ""
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr ""
+
+#, fuzzy, c-format
+#| msgid "error creating keyring `%s': %s\n"
+msgid "error searching the keyring: %s\n"
+msgstr "error en crear l'anell «%s»: %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2412,6 +2469,14 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "AVÍS: s'han donat destinataris (-r) sense usar xifratge de clau pública\n"
 
+#, fuzzy, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "l'algoritme de dispersió és invàlid «%s»\n"
+
+#, fuzzy, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "l'algoritme de dispersió és invàlid «%s»\n"
+
 msgid "--store [filename]"
 msgstr "--store [nom_del_fitxer]"
 
@@ -2507,6 +2572,14 @@ msgstr "no s'ha pogut crear l'armadura: %s\n"
 #| msgid "invalid hash algorithm `%s'\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "l'algoritme de dispersió és invàlid «%s»\n"
+
+#, fuzzy, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "error en la creació de la contrasenya: %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
 
 msgid "[filename]"
 msgstr "[nom_del_fitxer]"
@@ -2812,6 +2885,20 @@ msgstr "s'està escrivint la clau secreta a «%s»\n"
 msgid "key %s: secret key with invalid cipher %d - skipped\n"
 msgstr "clau %08lX: clau secreta amb xifrat %d no vàlid - es descarta\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+
 #, fuzzy, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2955,6 +3042,10 @@ msgstr "s'ha creat l'anell «%s»\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "error en crear «%s»: %s\n"
 
+#, fuzzy, c-format
+msgid "error opening key DB: %s\n"
+msgstr "error en la lectura de «%s»: %s\n"
+
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "no s'ha pogut reconstruir la memòria cau de l'anell: %s\n"
@@ -3019,6 +3110,10 @@ msgid ""
 msgstr ""
 
 msgid "Please enter a domain to restrict this signature, or enter for none.\n"
+msgstr ""
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
 msgstr ""
 
 #, c-format
@@ -3379,6 +3474,10 @@ msgstr "La clau està revocada."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Realment voleu signar tots els ID d'usuari? "
 
+#, fuzzy
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Realment voleu signar tots els ID d'usuari? "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Pista: Trieu els ID d'usuari que voleu signar\n"
 
@@ -3490,10 +3589,6 @@ msgstr "ha fallat l'actualització: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "La clau no ha canviat, per tant no cal actualització.\n"
-
-#, fuzzy, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
 #, fuzzy, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3716,8 +3811,11 @@ msgstr ""
 "Esteu segur que voleu nominar aquesta clau com a revocador designat? (s/N): "
 
 #, fuzzy
-msgid "Please select at most one subkey.\n"
-msgstr "Per favor, seleccioneu com a molt una clau secundària.\n"
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr ""
+"Esteu segur que voleu nominar aquesta clau com a revocador designat? (s/N): "
 
 #, fuzzy
 msgid "Changing expiration time for a subkey.\n"
@@ -3770,6 +3868,10 @@ msgstr "No hi ha cap ID amb l'índex %d\n"
 
 #, fuzzy, c-format
 msgid "No user ID with hash %s\n"
+msgstr "No hi ha cap ID amb l'índex %d\n"
+
+#, fuzzy, c-format
+msgid "No subkey with key ID '%s'.\n"
 msgstr "No hi ha cap ID amb l'índex %d\n"
 
 #, fuzzy, c-format
@@ -4132,6 +4234,10 @@ msgstr "Nom i cognoms: "
 
 msgid "Invalid character in name\n"
 msgstr "Hi ha un caràcter invàlid en el camp *nom*\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr ""
 
 msgid "Name may not start with a digit\n"
 msgstr "El nom no pot començar amb un dígit\n"
@@ -4583,10 +4689,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "AVÍS: el missatge xifrat ha estat manipulat!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr ""
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "ha fallat el desxifratge: %s\n"
 
@@ -4787,6 +4889,10 @@ msgstr "el destinatari predeterminat és desconegut «%s»\n"
 
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
+
+#, fuzzy, c-format
+msgid "unknown weak digest '%s'\n"
+msgstr "la classe de signatura és desconeguda"
 
 #, fuzzy, c-format
 #| msgid "File `%s' exists. "
@@ -5275,6 +5381,11 @@ msgid "(This is a sensitive revocation key)\n"
 msgstr "(Aquesta és una clau de revocació sensible)\n"
 
 #, fuzzy
+#| msgid "Secret key is available.\n"
+msgid "Secret key is not available.\n"
+msgstr "La clau secreta està disponible.\n"
+
+#, fuzzy
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "Voleu crear un certificat de revocació per a aquesta clau? "
 
@@ -5307,6 +5418,17 @@ msgid ""
 "To avoid an accidental use of this file, a colon has been inserted\n"
 "before the 5 dashes below.  Remove this colon with a text editor\n"
 "before making use of this revocation certificate."
+msgstr ""
+
+#, fuzzy, c-format
+msgid "secret key \"%s\" not found\n"
+msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
 msgstr ""
 
 #, fuzzy
@@ -7419,7 +7541,7 @@ msgid "error retrieving '%s': http status %u\n"
 msgstr "error en la lectura de «%s»: %s\n"
 
 #, fuzzy
-msgid "CRL access not possible due to TOR mode\n"
+msgid "CRL access not possible due to Tor mode\n"
 msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
 #, fuzzy, c-format
@@ -7492,6 +7614,11 @@ msgid "certificate too large to make any sense\n"
 msgstr ""
 
 #, fuzzy, c-format
+#| msgid "can't connect to `%s': %s\n"
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "no s'ha pogut connectar amb «%s»: %s\n"
+
+#, fuzzy, c-format
 #| msgid "update failed: %s\n"
 msgid "lookup failed: %s\n"
 msgstr "ha fallat l'actualització: %s\n"
@@ -7528,32 +7655,6 @@ msgstr "no es pot fer stat de «%s»: %s\n"
 #| msgid "error writing secret keyring `%s': %s\n"
 msgid "error writing base64 encoding: %s\n"
 msgstr "s'ha produït un error mentre s'escrivia l'anell secret «%s»: %s\n"
-
-#, fuzzy, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "%s: no s'ha pogut crear la taula de dispersió: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr ""
-
-msgid "no running dirmngr - starting one\n"
-msgstr ""
-
-#, fuzzy, c-format
-msgid "malformed %s environment variable\n"
-msgstr "la variable d'entorn GPG_AGENT_INFO és malformada\n"
-
-#, fuzzy, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "la versió %d del protocol de gpg-agent no està suportada\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr ""
-
-#, fuzzy, c-format
-#| msgid "can't connect to `%s': %s\n"
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "no s'ha pogut connectar amb «%s»: %s\n"
 
 # Suportats? ivb
 # A Softcatalà diuen molt «implementat». jm
@@ -7652,7 +7753,7 @@ msgstr ""
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr ""
 
-msgid "route all network traffic via TOR"
+msgid "route all network traffic via Tor"
 msgstr ""
 
 #, fuzzy
@@ -7970,8 +8071,9 @@ msgstr "error en la lectura de «%s»: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr ""
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr ""
+#, fuzzy
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "no s'ha trobat la clau secreta «%s»: %s\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr ""
@@ -8127,6 +8229,10 @@ msgstr ""
 #, fuzzy, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "no s'ha pogut crear «%s»: %s\n"
+
+#, fuzzy, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "%s: no s'ha pogut crear la taula de dispersió: %s\n"
 
 #, fuzzy, c-format
 #| msgid "failed to initialize the TrustDB: %s\n"
@@ -8337,7 +8443,7 @@ msgstr ""
 msgid "Options controlling the interactivity and enforcement"
 msgstr ""
 
-msgid "Options controlling the use of TOR"
+msgid "Options controlling the use of Tor"
 msgstr ""
 
 msgid "Configuration for HTTP servers"
@@ -8595,6 +8701,36 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+#~| msgid "can't open the keyring"
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "no s'ha pogut obrir l'anell"
+
+#, fuzzy
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "no s'ha pogut obrir «%s»: %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "el valor no és vàlid\n"
+
+#, fuzzy
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "error en llegir el bloc de claus secretes «%s»: %s\n"
+
+#, fuzzy
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Per favor, seleccioneu com a molt una clau secundària.\n"
+
+#, fuzzy
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "la variable d'entorn GPG_AGENT_INFO és malformada\n"
+
+#, fuzzy
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "la versió %d del protocol de gpg-agent no està suportada\n"
+
+#, fuzzy
 #~ msgid "toggle between the secret and public key listings"
 #~ msgstr "canvia entre el llistat de claus secretes i públiques"
 
@@ -8779,10 +8915,6 @@ msgstr ""
 #, fuzzy
 #~ msgid "Do you really want to do this? (y/N) "
 #~ msgstr "Esteu segur de voler fer açò? "
-
-#, fuzzy
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "error en llegir el bloc de claus secretes «%s»: %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Per favor, elimineu les seleccions de les claus secretes.\n"
@@ -9434,9 +9566,6 @@ msgstr ""
 
 #~ msgid "unknown cipher algorithm"
 #~ msgstr "l'algoritme de xifratge és desconegut"
-
-#~ msgid "can't open the keyring"
-#~ msgstr "no s'ha pogut obrir l'anell"
 
 #~ msgid "invalid packet"
 #~ msgstr "el paquet és invàlid"
