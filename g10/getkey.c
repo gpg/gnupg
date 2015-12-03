@@ -1148,8 +1148,10 @@ parse_def_secret_key (ctrl_t ctrl)
       err = classify_user_id (t->d, &desc, 1);
       if (err)
         {
-          log_error (_("Invalid value ('%s') for --default-key.\n"),
-                     t->d);
+          log_error (_("secret key \"%s\" not found: %s\n"),
+                     t->d, gpg_strerror (err));
+          if (!opt.quiet)
+            log_info (_("(check argument of option '%s')\n"), "--default-key");
           continue;
         }
 
@@ -1164,8 +1166,7 @@ parse_def_secret_key (ctrl_t ctrl)
 
       if (err)
         {
-          log_error (_("Error reading from keyring: %s.\n"),
-                     gpg_strerror (err));
+          log_error (_("key \"%s\" not found: %s\n"), t->d, gpg_strerror (err));
           t = NULL;
           break;
         }
@@ -1183,7 +1184,7 @@ parse_def_secret_key (ctrl_t ctrl)
       if (! err)
         {
           if (! warned)
-            log_debug (_("Using %s as default secret key.\n"), t->d);
+            log_info (_("using \"%s\" as default secret key\n"), t->d);
           break;
         }
     }

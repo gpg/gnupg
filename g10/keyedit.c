@@ -618,7 +618,7 @@ sign_uids (ctrl_t ctrl, estream_t fp,
                   if (opt.only_sign_text_ids
                       && uidnode->pkt->pkt.user_id->attribs)
                     {
-                      tty_fprintf (fp, _("Skipping User ID \"%s\","
+                      tty_fprintf (fp, _("Skipping user ID \"%s\","
                                          " which is not a text ID.\n"),
                                    user);
                       uidnode->flag &= ~NODFLG_MARK_A;
@@ -4983,7 +4983,7 @@ menu_select_key (KBNODE keyblock, int idx, char *p)
       if (found_one)
         return 1;
 
-      tty_printf (_("No subkey with keyid %s\n"), p);
+      tty_printf (_("No subkey with key ID '%s'.\n"), p);
       return 0;
     }
 

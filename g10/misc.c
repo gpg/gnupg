@@ -1705,7 +1705,7 @@ additional_weak_digest (const char* digestname)
 
   if (algo == GCRY_MD_NONE)
     {
-      log_error(_("Unknown weak digest '%s'\n"), digestname);
+      log_error (_("unknown weak digest '%s'\n"), digestname);
       return;
     }
 

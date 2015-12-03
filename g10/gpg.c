@@ -2083,7 +2083,8 @@ get_default_configname (void)
   return configname;
 }
 
-gpg_error_t
+
+static gpg_error_t
 check_user_ids (strlist_t *sp,
                 int warn_possibly_ambiguous,
                 int error_if_not_found)
@@ -2137,7 +2138,8 @@ check_user_ids (strlist_t *sp,
           if (! rc)
             rc = err;
 
-          log_error (_("Invalid value ('%s')."), t->d);
+          log_error (_("key \"%s\" not found: %s\n"),
+                       t->d, gpg_strerror (err));
           if (!opt.quiet)
             log_info (_("(check argument of option '%s')\n"), option);
           continue;
@@ -2148,8 +2150,8 @@ check_user_ids (strlist_t *sp,
                 || desc.mode == KEYDB_SEARCH_MODE_FPR16
                 || desc.mode == KEYDB_SEARCH_MODE_FPR20
                 || desc.mode == KEYDB_SEARCH_MODE_FPR))
-        log_info (_("Warning: value '%s' for %s"
-                    " should be a long keyid or a fingerprint.\n"),
+        log_info (_("Warning: value '%s' for option '%s'"
+                    " should be a long key ID or a fingerprint\n"),
                   t->d, option);
 
       if (! hd)
@@ -2168,7 +2170,8 @@ check_user_ids (strlist_t *sp,
               if (! rc)
                 rc = err;
 
-              log_error (_("no such key corresponding to '%s'\n"), t->d);
+              log_error (_("key \"%s\" not found: %s\n"),
+                         t->d, gpg_strerror (err));
               if (!opt.quiet)
                 log_info (_("(check argument of option '%s')\n"), option);
             }
@@ -2179,8 +2182,7 @@ check_user_ids (strlist_t *sp,
           if (! rc)
             rc = err;
 
-          log_error (_("error looking up '%s' in keyring: %s.\n"),
-                     t->d, gpg_strerror (err));
+          log_error (_("key \"%s\" not found: %s\n"), t->d, gpg_strerror (err));
           break;
         }
 
@@ -2190,8 +2192,7 @@ check_user_ids (strlist_t *sp,
           if (! rc)
             rc = err;
 
-          log_error (_("error reading key block for '%s': %s\n"),
-                     t->d, gpg_strerror (err));
+          log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
           continue;
         }
 
@@ -2254,8 +2255,7 @@ check_user_ids (strlist_t *sp,
           size_t fingerprint_bin2_len = sizeof (fingerprint_bin2);
           char fingerprint2[2 * MAX_FINGERPRINT_LEN + 1];
 
-          log_error (_("Error: the key specification '%s' is ambiguous.\n"),
-                     t->d);
+          log_error (_("key specification '%s' is ambiguous\n"), t->d);
           if (!opt.quiet)
             log_info (_("(check argument of option '%s')\n"), option);
 
@@ -2264,8 +2264,7 @@ check_user_ids (strlist_t *sp,
 
           err = keydb_get_keyblock (hd, &kb);
           if (err)
-            log_error (_("error reading key block for '%s': %s.\n"),
-                       t->d, gpg_strerror (err));
+            log_error (_("error reading keyblock: %s\n"), gpg_strerror (err));
           else
             {
               pk = kb->pkt->pkt.public_key;
@@ -2273,8 +2272,12 @@ check_user_ids (strlist_t *sp,
               assert (fingerprint_bin2_len == sizeof (fingerprint_bin2));
               bin2hex (fingerprint_bin2, MAX_FINGERPRINT_LEN, fingerprint2);
 
-              log_error ("'%s' matches at least: %s and %s.\n",
-                         t->d, fingerprint, fingerprint2);
+              /* TRANSLATORS: The %s prints a key specification which
+                 for example has been given at the command line.  Two
+                 lines with fingerprints are printed after this message.  */
+              log_info (_("'%s' matches at least:\n"), t->d);
+              log_info ("  %s\n", fingerprint);
+              log_info ("  %s\n", fingerprint2);
 
               release_kbnode (kb);
             }
@@ -2283,7 +2286,7 @@ check_user_ids (strlist_t *sp,
                   || gpg_err_code (err) == GPG_ERR_EOF))
         /* An error (other than "not found").  */
         {
-          log_error (_("Error reading from keyring: %s\n"),
+          log_error (_("error searching the keyring: %s\n"),
                      gpg_strerror (err));
           if (! rc)
             rc = err;
@@ -2299,6 +2302,7 @@ check_user_ids (strlist_t *sp,
   *sp = s2;
   return rc;
 }
+
 
 int
 main (int argc, char **argv)
@@ -3986,9 +3990,11 @@ main (int argc, char **argv)
               sl->flags = (oEncryptToDefaultKey << 2) | 1;
             }
           else if (have_def_secret_key)
-            log_info (_("--encrypt-to-default-key specified, but no valid default keys specified.\n"));
+            log_info (_("option '%s' given, but no valid default keys given\n"),
+                      "--encrypt-to-default-key");
           else
-            log_info (_("--encrypt-to-default-key specified, but --default-key not specified.\n"));
+            log_info (_("option '%s' given, but option '%s' not given\n"),
+                      "--encrypt-to-default-key", "--default-key");
         }
     }
 
@@ -4735,7 +4741,8 @@ main (int argc, char **argv)
 	      rc = classify_user_id (argv[i], &desc, 0);
 	      if (rc)
 		{
-		  log_error (_("Failed to parse '%s'.\n"), argv[i]);
+		  log_error (_("error parsing key specification '%s': %s\n"),
+                             argv[i], gpg_strerror (rc));
 		  g10_exit (1);
 		}
 
@@ -4747,7 +4754,7 @@ main (int argc, char **argv)
 		     || desc.mode == KEYDB_SEARCH_MODE_KEYGRIP))
 		{
 		  log_error (_("'%s' does not appear to be a valid"
-			       " key id, fingerprint or key grip.\n"),
+			       " key ID, fingerprint or keygrip\n"),
 			     argv[i]);
 		  g10_exit (1);
 		}
@@ -4755,27 +4762,26 @@ main (int argc, char **argv)
 	      rc = keydb_search_reset (hd);
 	      if (rc)
 		{
-		  log_error (_("Failed to reset keyring handle.\n"));
+                  /* This should not happen, thus no need to tranalate
+                     the string.  */
+                  log_error ("keydb_search_reset failed: %s\n",
+                             gpg_strerror (rc));
 		  g10_exit (1);
 		}
 
 	      rc = keydb_search (hd, &desc, 1, NULL);
-	      if (gpg_err_code (rc) == GPG_ERR_NO_PUBKEY)
+	      if (rc)
 		{
-		  log_error (_("Key '%s' is not available\n"), argv[i]);
-		  g10_exit (1);
-		}
-	      else if (rc)
-		{
-		  log_error (_("Failed to find key '%s'\n"), argv[i]);
+		  log_error (_("key \"%s\" not found: %s\n"), argv[i],
+                             gpg_strerror (rc));
 		  g10_exit (1);
 		}
 
 	      rc = keydb_get_keyblock (hd, &kb);
 	      if (rc)
 		{
-		  log_error (_("Failed to read key '%s' from the keyring\n"),
-			     argv[i]);
+		  log_error (_("error reading keyblock: %s\n"),
+                             gpg_strerror (rc));
 		  g10_exit (1);
 		}
 

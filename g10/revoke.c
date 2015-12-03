@@ -615,10 +615,9 @@ gen_revoke (const char *uname)
   if (rc)
     {
       if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
-        log_error (_("no secret key matches the search term \"%s\"\n"),
-                     uname);
+        log_error (_("secret key \"%s\" not found\n"), uname);
       else
-        log_error (_("error looking up secret key \"%s\": %s\n"),
+        log_error (_("secret key \"%s\" not found: %s\n"),
                    uname, gpg_strerror (rc));
       goto leave;
     }
@@ -640,6 +639,9 @@ gen_revoke (const char *uname)
     {
       char *info;
 
+      /* TRANSLATORS: The %s prints a key specification which
+         for example has been given at the command line.  Several lines
+         lines with secret key infos are printed after this message.  */
       log_error (_("'%s' matches multiple secret keys:\n"), uname);
 
       info = format_seckey_info (keyblock->pkt->pkt.public_key);
@@ -651,7 +653,7 @@ gen_revoke (const char *uname)
       while (! rc)
         {
           info = format_seckey_info (keyblock->pkt->pkt.public_key);
-          log_error ("  %s\n", info);
+          log_info ("  %s\n", info);
           xfree (info);
           release_kbnode (keyblock);
           keyblock = NULL;
