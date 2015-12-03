@@ -2177,8 +2177,7 @@ check_user_ids (strlist_t *sp,
               if (! rc)
                 rc = err;
 
-              log_error (_("key \"%s\" not found: %s\n"),
-                         t->d, gpg_strerror (err));
+              log_error (_("key \"%s\" not found\n"), t->d);
               if (!opt.quiet)
                 log_info (_("(check argument of option '%s')\n"), option);
             }

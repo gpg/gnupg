@@ -116,7 +116,7 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
   if (secret && !have_secret_key_with_kid (keyid))
     {
       err = gpg_error (GPG_ERR_NOT_FOUND);
-      log_error (_("key \"%s\" not found: %s\n"), username, gpg_strerror (err));
+      log_error (_("key \"%s\" not found\n"), username);
       write_status_text (STATUS_DELETE_PROBLEM, "1");
       goto leave;
     }
