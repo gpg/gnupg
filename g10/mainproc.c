@@ -646,8 +646,9 @@ proc_encrypted (CTX c, PACKET *pkt)
       if (gpg_err_code (result) == GPG_ERR_BAD_KEY
           && *c->dek->s2k_cacheid != '\0')
         {
-          log_debug (_("cleared passphrase cached with ID: %s\n"),
-                     c->dek->s2k_cacheid);
+          if (opt.debug)
+            log_debug ("cleared passphrase cached with ID: %s\n",
+                       c->dek->s2k_cacheid);
           passphrase_clear_cache (NULL, c->dek->s2k_cacheid, 0);
         }
       glo_ctrl.lasterr = result;

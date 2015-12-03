@@ -498,7 +498,7 @@ start_new_gpg_agent (assuan_context_t *r_ctx,
     }
 
   if (debug && !did_success_msg)
-    log_debug (_("connection to agent established\n"));
+    log_debug ("connection to agent established\n");
 
   err = assuan_transact (ctx, "RESET",
                          NULL, NULL, NULL, NULL, NULL, NULL);
@@ -694,7 +694,7 @@ start_new_dirmngr (assuan_context_t *r_ctx,
     }
 
   if (debug && !did_success_msg)
-    log_debug (_("connection to the dirmngr established\n"));
+    log_debug ("connection to the dirmngr established\n");
 
   *r_ctx = ctx;
   return 0;
