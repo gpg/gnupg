@@ -4114,10 +4114,12 @@ do_decipher (app_t app, const char *keyidstr,
   if (rc)
     return rc;
 
-  if (indatalen == 16 + 1 || indatalen == 32 + 1
+  if ((indatalen == 16 + 1 || indatalen == 32 + 1)
       && ((char *)indata)[0] == 0x02)
-    /* PSO:DECIPHER with symmetric key.  */
-    padind = -1;
+    {
+      /* PSO:DECIPHER with symmetric key.  */
+      padind = -1;
+    }
   else if (app->app_local->keyattr[1].key_type == KEY_TYPE_RSA)
     {
       /* We might encounter a couple of leading zeroes in the
@@ -4179,7 +4181,7 @@ do_decipher (app_t app, const char *keyidstr,
            * Skip the prefix.  It may be 0x40 (in new format), or MPI
            * head of 0x00 (in old format).
            */
-          indata++;
+          indata = (const char *)indata + 1;
           indatalen--;
         }
 
@@ -4231,9 +4233,10 @@ do_decipher (app_t app, const char *keyidstr,
           xfree (outdata);
           return gpg_error_from_syserror ();
         }
+      fixbuf[0] = 0x40;
+      memcpy (fixbuf+1, *outdata, *outdatalen);
       xfree (outdata);
-      outdata = fixbuf;
-      outdata[0] = 0x40;
+      *outdata = fixbuf;
       *outdatalen = *outdatalen + 1;
     }
 
