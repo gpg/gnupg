@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg-2.1.0\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-10-06 12:50+0200\n"
+"PO-Revision-Date: 2015-12-03 17:23+0100\n"
 "Last-Translator: Werner Koch <wk@gnupg.org>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -1502,6 +1502,10 @@ msgstr "Schlüssel \"%s\" nicht gefunden: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "Fehler beim Lesen des Schlüsselblocks: %s\n"
 
+#, c-format
+msgid "key \"%s\" not found\n"
+msgstr "Schlüssel \"%s\" nicht gefunden\n"
+
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(es sei denn, Sie geben den Schlüssel mittels Fingerprint an)\n"
 
@@ -1703,6 +1707,18 @@ msgid "No fingerprint"
 msgstr "Kein Fingerabdruck vorhanden"
 
 #, c-format
+msgid "secret key \"%s\" not found: %s\n"
+msgstr "Geheimer Schlüssel \"%s\" nicht gefunden: %s\n"
+
+#, c-format
+msgid "(check argument of option '%s')\n"
+msgstr "(Prüfe das Argument der Option '%s')\n"
+
+#, c-format
+msgid "using \"%s\" as default secret key\n"
+msgstr "\"%s\" wird als voreingestellter geheimer Schlüssel benutzt\n"
+
+#, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
 msgstr ""
 "Ungültiger Schlüssel %s, gültig gemacht per --allow-non-selfsigned-uid\n"
@@ -1821,6 +1837,11 @@ msgstr "Hashwerte für die Dateien ausgeben"
 
 msgid "run in server mode"
 msgstr "Im Server Modus ausführen"
+
+msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
+msgstr ""
+"|WERT|Setze die TOFU-Politik für einen Schlüssel (good, unknown, bad, ask, "
+"auto)"
 
 msgid "create ascii armored output"
 msgstr "Ausgabe mit ASCII-Hülle versehen"
@@ -2019,9 +2040,46 @@ msgstr "Anzeigen des Schlüsselbundes, in dem ein Schlüssel drin ist"
 msgid "show expiration dates during signature listings"
 msgstr "Das Ablaufdatum mit den Signaturen anlisten"
 
+msgid "available TOFU policies:\n"
+msgstr "Vorhandene TOFU Regeln:\n"
+
+#, c-format
+msgid "unknown TOFU policy '%s'\n"
+msgstr "Unbekannte TOFU Regel '%s'\n"
+
+msgid "(use \"help\" to list choices)\n"
+msgstr "(\"help\" um mögliche Werte anzuzeigen)\n"
+
+#, c-format
+msgid "unknown TOFU DB format '%s'\n"
+msgstr "Unbekanntes TOFU DB Format '%s'\n"
+
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
 msgstr "Hinweis: Alte voreingestellte Optionendatei '%s' wurde ignoriert\n"
+
+#, c-format
+msgid ""
+"Warning: value '%s' for option '%s' should be a long key ID or a "
+"fingerprint\n"
+msgstr ""
+"WARNUNG: Der Wert '%s' der Option '%s' sollte eine lange Schlüssel-ID\n"
+"oder ein Fingerabdruck sein\n"
+
+#, c-format
+msgid "key specification '%s' is ambiguous\n"
+msgstr "Schlüsselangabe '%s' ist mehrdeutig\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Two
+#. lines with fingerprints are printed after this message.
+#, c-format
+msgid "'%s' matches at least:\n"
+msgstr "'%s' paßt mindest auf:\n"
+
+#, c-format
+msgid "error searching the keyring: %s\n"
+msgstr "Fehler beim Suchen im Schlüsselbund: %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2223,6 +2281,14 @@ msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr ""
 "WARNUNG: Empfänger (-r) angegeben ohne Verwendung von Public-Key-Verfahren\n"
 
+#, c-format
+msgid "option '%s' given, but no valid default keys given\n"
+msgstr "Option '%s' ohne gültige Standardschlüssel angegeben\n"
+
+#, c-format
+msgid "option '%s' given, but option '%s' not given\n"
+msgstr "Option '%s' ohne Verwendung der Option '%s' angegeben\n"
+
 msgid "--store [filename]"
 msgstr "--store [Dateiname]"
 
@@ -2318,6 +2384,16 @@ msgstr "Anbringen der ASCII-Hülle ist fehlgeschlagen: %s\n"
 #, c-format
 msgid "invalid hash algorithm '%s'\n"
 msgstr "Ungültiges Hashverfahren '%s'\n"
+
+#, c-format
+msgid "error parsing key specification '%s': %s\n"
+msgstr "Fehler in der Schlüsselangabe '%s': %s\n"
+
+#, c-format
+msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
+msgstr ""
+"'%s\" sieht nicht nach einer gültigen Schlüssel-ID, einem Fingerabdruck oder "
+"einem \"Keygrip\" aus\n"
 
 msgid "[filename]"
 msgstr "[Dateiname]"
@@ -2618,6 +2694,21 @@ msgstr ""
 "Schlüssel %s: geheimer Schlüssel mit ungültiger Verschlüsselung %d - "
 "übersprungen\n"
 
+#. TRANSLATORS: For smartcard, each private key on
+#. host has a reference (stub) to a smartcard and
+#. actual private key data is stored on the card.  A
+#. single smartcard can have up to three private key
+#. data.  Importing private key stub is always
+#. skipped in 2.1, and it returns
+#. GPG_ERR_NOT_PROCESSED.  Instead, user should be
+#. suggested to run 'gpg --card-status', then,
+#. references to a card will be automatically
+#. created again.
+#, c-format
+msgid "To migrate '%s', with each smartcard, run: %s\n"
+msgstr ""
+"Um '%s' zu migrieren sollte für jede Smartcard \"%s\" aufgerufen werden.\n"
+
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
 msgstr ""
@@ -2751,6 +2842,10 @@ msgid "keyblock resource '%s': %s\n"
 msgstr "Schlüsselblockhilfsmittel`%s': %s\n"
 
 #, c-format
+msgid "error opening key DB: %s\n"
+msgstr "Fehler beim Öffnen der Schlüsseldatenbank: %s\n"
+
+#, c-format
 msgid "failed to rebuild keyring cache: %s\n"
 msgstr "Schlüsselbund-Cache konnte nicht neu erzeugt werden: %s\n"
 
@@ -2821,6 +2916,10 @@ msgid "Please enter a domain to restrict this signature, or enter for none.\n"
 msgstr ""
 "Geben Sie bitte eine Domain ein, um die Signatur einzuschränken\n"
 "oder nur die Eingabetaste für keine Domain\n"
+
+#, c-format
+msgid "Skipping user ID \"%s\", which is not a text ID.\n"
+msgstr "Überspringe User-ID \"%s\" da es keine textbasierte ID ist.\n"
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
@@ -3133,6 +3232,9 @@ msgstr "Schlüssel wurde widerrufen."
 msgid "Really sign all user IDs? (y/N) "
 msgstr "Wirklich alle User-IDs beglaubigen? (j/N) "
 
+msgid "Really sign all text user IDs? (y/N) "
+msgstr "Wirklich alle textbasierten User-IDs beglaubigen? (j/N) "
+
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "Tip: Wählen Sie die User-IDs, die beglaubigt werden sollen\n"
 
@@ -3232,10 +3334,6 @@ msgstr "Änderung fehlgeschlagen: %s\n"
 
 msgid "Key not changed so no update needed.\n"
 msgstr "Schlüssel ist nicht geändert worden, also ist kein Speichern nötig.\n"
-
-#, c-format
-msgid "secret key \"%s\" not found: %s\n"
-msgstr "Geheimer Schlüssel \"%s\" nicht gefunden: %s\n"
 
 #, c-format
 msgid "\"%s\" is not a fingerprint\n"
@@ -3445,8 +3543,11 @@ msgstr ""
 "Möchten Sie diesen Schlüssel wirklich als vorgesehenen Widerrufer festlegen? "
 "(j/N): "
 
-msgid "Please select at most one subkey.\n"
-msgstr "Bitte wählen Sie höchstens einen Unterschlüssel aus.\n"
+msgid ""
+"Are you sure you want to change the expiration time for multiple subkeys? (y/"
+"N) "
+msgstr ""
+"Möchten Sie wirklich die Verfallsdaten aller Unterschlüssel ändern? (j/N): "
 
 msgid "Changing expiration time for a subkey.\n"
 msgstr "Ändern des Verfallsdatums des Unterschlüssels.\n"
@@ -3496,6 +3597,10 @@ msgstr "Keine User-ID mit Index %d\n"
 #, c-format
 msgid "No user ID with hash %s\n"
 msgstr "Keine User-ID mit Hash %s\n"
+
+#, c-format
+msgid "No subkey with key ID '%s'.\n"
+msgstr "Kein Unterschlüssel mit Schlüssel-ID '%s'.\n"
 
 #, c-format
 msgid "No subkey with index %d\n"
@@ -3838,6 +3943,10 @@ msgstr "Ihr Name (\"Vorname Nachname\"): "
 
 msgid "Invalid character in name\n"
 msgstr "Ungültiges Zeichen im Namen\n"
+
+#, c-format
+msgid "The characters '%s' and '%s' may not appear in name\n"
+msgstr "Die Zeichen '%s' und '%s' dürfen in einem Namen nicht vorkommen\n"
 
 msgid "Name may not start with a digit\n"
 msgstr "Der Name darf nicht mit einer Ziffer beginnen.\n"
@@ -4262,10 +4371,6 @@ msgid "WARNING: encrypted message has been manipulated!\n"
 msgstr "WARNUNG: Verschlüsselte Botschaft ist manipuliert worden!\n"
 
 #, c-format
-msgid "cleared passphrase cached with ID: %s\n"
-msgstr "Passphrase aus dem Cache gelöscht.  Cache ID: %s\n"
-
-#, c-format
 msgid "decryption failed: %s\n"
 msgstr "Entschlüsselung fehlgeschlagen: %s\n"
 
@@ -4461,6 +4566,10 @@ msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr ""
 "Der öffentliche ECDSA Schlüssel muß ein Vielfaches von 8 Bit als Länge "
 "haben\n"
+
+#, c-format
+msgid "unknown weak digest '%s'\n"
+msgstr "Unbekanntes schwache Hashverfahren '%s'\n"
 
 #, c-format
 msgid "File '%s' exists. "
@@ -4936,6 +5045,9 @@ msgstr "Schlüssel soll widerrufen werden von:\n"
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(Dies ist ein \"sensitiver\" Widerrufsschlüssel)\n"
 
+msgid "Secret key is not available.\n"
+msgstr "Geheimer Schlüssel ist nicht vorhanden.\n"
+
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr ""
 "Ein vorgesehenes Widerrufszertifikat für diesen Schlüssel erzeugen? (j/N) "
@@ -4978,6 +5090,17 @@ msgstr ""
 "vermeiden, wurde ein Doppelpunkt direkt vor den 5 Spiegelstrichen\n"
 "unten eingefügt.  Vor dem Import dieses Widerrufszertifikats\n"
 "entfernen Sie bitte dieses Doppelpunkt mittels eines Texteditors."
+
+#, c-format
+msgid "secret key \"%s\" not found\n"
+msgstr "Geheimer Schlüssel \"%s\" nicht gefunden\n"
+
+#. TRANSLATORS: The %s prints a key specification which
+#. for example has been given at the command line.  Several lines
+#. lines with secret key infos are printed after this message.
+#, c-format
+msgid "'%s' matches multiple secret keys:\n"
+msgstr "'%s' trifft auf mehrere geheime Schlüssel zu:\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "Ein Widerrufszertifikat für diesen Schlüssel erzeugen? (j/N) "
@@ -7034,8 +7157,8 @@ msgstr "Fehler beim Holen von `%s': %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "Fehler beim Holen von `%s': HTTP Status %u\n"
 
-msgid "CRL access not possible due to TOR mode\n"
-msgstr "CRL Zugriff ist im TOR Modus nicht möglich\n"
+msgid "CRL access not possible due to Tor mode\n"
+msgstr "CRL Zugriff ist im Tor Modus nicht möglich\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -7102,6 +7225,10 @@ msgid "certificate too large to make any sense\n"
 msgstr "Zertifikat ist zu groß um Sinnvoll zu sein\n"
 
 #, c-format
+msgid "can't connect to the dirmngr: %s\n"
+msgstr "Verbindung zum Dirmngr nicht möglich: %s\n"
+
+#, c-format
 msgid "lookup failed: %s\n"
 msgstr "Aufsuchen fehlgeschlagen: %s\n"
 
@@ -7133,31 +7260,6 @@ msgstr "Erhielt Status: `%s'\n"
 #, c-format
 msgid "error writing base64 encoding: %s\n"
 msgstr "Fehler beim Schreiben der Base-64 Darstellung: %s\n"
-
-#, c-format
-msgid "failed to allocate assuan context: %s\n"
-msgstr "Fehler beim Bereitstellen eines Assuan Kontext: %s\n"
-
-msgid "apparently no running dirmngr\n"
-msgstr "Offensichtlich ist kein Dirmngr vorhanden\n"
-
-msgid "no running dirmngr - starting one\n"
-msgstr "Dirmngr läuft nicht - ein neuer wird gestartet\n"
-
-#, c-format
-msgid "malformed %s environment variable\n"
-msgstr "Fehlerhafte %s Variable\n"
-
-#, c-format
-msgid "dirmngr protocol version %d is not supported\n"
-msgstr "Dirmngr Protocol Version %d wird nicht unterstützt\n"
-
-msgid "can't connect to the dirmngr - trying fall back\n"
-msgstr "Verbindung zum Dirmngr nicht möglich - Rückfallmethode wird versucht\n"
-
-#, c-format
-msgid "can't connect to the dirmngr: %s\n"
-msgstr "Verbindung zum Dirmngr nicht möglich: %s\n"
 
 #, c-format
 msgid "unsupported inquiry '%s'\n"
@@ -7245,8 +7347,8 @@ msgstr "|N|Nicht mehr als N Angaben in einer Anfrage zurückgeben"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|DATEI|Benutze die CA Zertifikate in DATEI für HKP über TLS"
 
-msgid "route all network traffic via TOR"
-msgstr "Netzzugriff nur über TOR"
+msgid "route all network traffic via Tor"
+msgstr "Netzzugriff nur über Tor"
 
 msgid ""
 "@\n"
@@ -7541,8 +7643,8 @@ msgstr "Fehler beim Lesen vom Responder: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "Antwort vom Server zu lang; die Grenze sind %d Bytes\n"
 
-msgid "OCSP request not possible due to TOR mode\n"
-msgstr "OCSP Anfrage ist im TOR Modus nicht möglich\n"
+msgid "OCSP request not possible due to Tor mode\n"
+msgstr "OCSP Anfrage ist im Tor Modus nicht möglich\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "OCSP Anfrage nicht möglich da HTTP abgeschaltet ist\n"
@@ -7694,6 +7796,10 @@ msgstr "max_replies %d überschritten\n"
 #, c-format
 msgid "can't allocate control structure: %s\n"
 msgstr "Fehler beim Erzeugen der Kontrollstruktur: %s\n"
+
+#, c-format
+msgid "failed to allocate assuan context: %s\n"
+msgstr "Fehler beim Bereitstellen eines Assuan Kontext: %s\n"
 
 #, c-format
 msgid "failed to initialize the server: %s\n"
@@ -7895,8 +8001,8 @@ msgstr "Optionen zum Einstellen der Ausgabeformate"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "Optionen zur Einstellung der Interaktivität und Geltendmachung"
 
-msgid "Options controlling the use of TOR"
-msgstr "Optionen zur Benutzung von TOR"
+msgid "Options controlling the use of Tor"
+msgstr "Optionen zur Benutzung von Tor"
 
 msgid "Configuration for HTTP servers"
 msgstr "Konfiguration für HTTP Server"
@@ -8145,6 +8251,47 @@ msgid ""
 msgstr ""
 "Syntax: gpg-check-pattern [optionen] Musterdatei\n"
 "Die von stdin gelesene Passphrase gegen die Musterdatei prüfen\n"
+
+#~ msgid "cleared passphrase cached with ID: %s\n"
+#~ msgstr "Passphrase aus dem Cache gelöscht.  Cache ID: %s\n"
+
+#, fuzzy
+#~ msgid "Failed to open the keyring DB.\n"
+#~ msgstr "Fehler beim Öffnen der Schlüsseldatenbank.\n"
+
+#, fuzzy
+#~| msgid "failed to open '%s': %s\n"
+#~ msgid "Failed to parse '%s'.\n"
+#~ msgstr "Datei `%s' kann nicht geöffnet werden: %s\n"
+
+#, fuzzy
+#~| msgid "invalid value\n"
+#~ msgid "invalid value '%s'\n"
+#~ msgstr "Ungültiger Wert.\n"
+
+#, fuzzy
+#~| msgid "error reading secret keyblock \"%s\": %s\n"
+#~ msgid "error looking up secret key \"%s\": %s\n"
+#~ msgstr "Fehler beim Lesen des geheimen Schlüsselblocks \"%s\": %s\n"
+
+#~ msgid "Please select at most one subkey.\n"
+#~ msgstr "Bitte wählen Sie höchstens einen Unterschlüssel aus.\n"
+
+#~ msgid "apparently no running dirmngr\n"
+#~ msgstr "Offensichtlich ist kein Dirmngr vorhanden\n"
+
+#~ msgid "no running dirmngr - starting one\n"
+#~ msgstr "Dirmngr läuft nicht - ein neuer wird gestartet\n"
+
+#~ msgid "malformed %s environment variable\n"
+#~ msgstr "Fehlerhafte %s Variable\n"
+
+#~ msgid "dirmngr protocol version %d is not supported\n"
+#~ msgstr "Dirmngr Protocol Version %d wird nicht unterstützt\n"
+
+#~ msgid "can't connect to the dirmngr - trying fall back\n"
+#~ msgstr ""
+#~ "Verbindung zum Dirmngr nicht möglich - Rückfallmethode wird versucht\n"
 
 #~ msgid "export keys in an S-expression based format"
 #~ msgstr "Exportiere Schlüssel in einem auf S-Ausdrücken basierenden Format"
@@ -8510,9 +8657,6 @@ msgstr ""
 
 #~ msgid "Key is protected.\n"
 #~ msgstr "Schlüssel ist geschützt.\n"
-
-#~ msgid "error reading secret keyblock \"%s\": %s\n"
-#~ msgstr "Fehler beim Lesen des geheimen Schlüsselblocks \"%s\": %s\n"
 
 #~ msgid "Please remove selections from the secret keys.\n"
 #~ msgstr "Bitte entfernen Sie die Auswahl von den geheimen Schlüsseln.\n"
