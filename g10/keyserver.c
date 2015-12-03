@@ -1346,7 +1346,10 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 
  leave:
   if(rc)
-    xfree(*klist);
+    {
+      xfree(*klist);
+      *klist = NULL;
+    }
   xfree(desc);
   keydb_release(kdbhd);
   release_kbnode(keyblock);
