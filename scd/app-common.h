@@ -44,11 +44,6 @@ struct app_ctx_s {
      operations the particular function pointer is set to NULL */
   unsigned int ref_count;
 
-  /* Flag indicating that a reset has been done for that application
-     and that this context is merely lingering and just should not be
-     reused.  */
-  int no_reuse;            
-
   /* Used reader slot. */
   int slot;     
 

@@ -3136,7 +3136,13 @@ apdu_close_reader (int slot)
     return SW_HOST_NO_DRIVER;
   sw = apdu_disconnect (slot);
   if (sw)
-    return sw;
+    {
+      /*
+       * When the reader/token was removed it might come here.
+       * It should go through to call CLOSE_READER even if we got an error.
+       */
+      log_debug ("apdu_close_reader => 0x%x (apdu_disconnect)\n", sw);
+    }
   if (reader_table[slot].close_reader)
     return reader_table[slot].close_reader (slot);
   return SW_HOST_NOT_SUPPORTED;
