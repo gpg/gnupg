@@ -42,7 +42,11 @@ do_test (int argc, char *argv[])
     ABORT ("Failed to open keyring.");
 
   hd1 = keydb_new ();
+  if (!hd1)
+    ABORT ("");
   hd2 = keydb_new ();
+  if (!hd2)
+    ABORT ("");
 
   rc = classify_user_id ("2689 5E25 E844 6D44 A26D  8FAF 2F79 98F3 DBFC 6AD9",
 			 &desc1, 0);

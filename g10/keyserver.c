@@ -1190,10 +1190,13 @@ keyserver_import_keyid (ctrl_t ctrl,
 static int
 keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
 {
-  int rc=0,ndesc,num=100;
-  KBNODE keyblock=NULL,node;
+  int rc = 0;
+  int num = 100;
+  kbnode_t keyblock = NULL;
+  kbnode_t node;
   KEYDB_HANDLE kdbhd;
-  KEYDB_SEARCH_DESC *desc;
+  int ndesc;
+  KEYDB_SEARCH_DESC *desc = NULL;
   strlist_t sl;
 
   *count=0;
@@ -1201,6 +1204,11 @@ keyidlist(strlist_t users,KEYDB_SEARCH_DESC **klist,int *count,int fakev3)
   *klist=xmalloc(sizeof(KEYDB_SEARCH_DESC)*num);
 
   kdbhd = keydb_new ();
+  if (!kdbhd)
+    {
+      rc = gpg_error_from_syserror ();
+      goto leave;
+    }
   keydb_disable_caching (kdbhd);  /* We are looping the search.  */
 
   if(!users)

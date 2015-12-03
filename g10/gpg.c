@@ -2155,7 +2155,14 @@ check_user_ids (strlist_t *sp,
                   t->d, option);
 
       if (! hd)
-        hd = keydb_new ();
+        {
+          hd = keydb_new ();
+          if (!hd)
+            {
+              rc = gpg_error_from_syserror ();
+              break;
+            }
+        }
       else
         keydb_search_reset (hd);
 
@@ -2295,8 +2302,7 @@ check_user_ids (strlist_t *sp,
 
   strlist_rev (&s2);
 
-  if (hd)
-    keydb_release (hd);
+  keydb_release (hd);
 
   free_strlist (s);
   *sp = s2;
@@ -4728,10 +4734,7 @@ main (int argc, char **argv)
 
 	  hd = keydb_new ();
 	  if (! hd)
-	    {
-	      log_error (_("Failed to open the keyring DB.\n"));
-	      g10_exit (1);
-	    }
+            g10_exit (1);
 
 	  for (i = 1; i < argc; i ++)
 	    {

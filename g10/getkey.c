@@ -424,6 +424,11 @@ get_pubkey (PKT_public_key * pk, u32 * keyid)
     ctx.exact = 1; /* Use the key ID exactly as given.  */
     ctx.not_allocated = 1;
     ctx.kr_handle = keydb_new ();
+    if (!ctx.kr_handle)
+      {
+        rc = gpg_error_from_syserror ();
+        goto leave;
+      }
     ctx.nitems = 1;
     ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
     ctx.items[0].u.kid[0] = keyid[0];
@@ -482,6 +487,8 @@ get_pubkey_fast (PKT_public_key * pk, u32 * keyid)
 #endif
 
   hd = keydb_new ();
+  if (!hd)
+    return gpg_error_from_syserror ();
   rc = keydb_search_kid (hd, keyid);
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
@@ -528,6 +535,8 @@ get_pubkeyblock (u32 * keyid)
   /* No need to set exact here because we want the entire block.  */
   ctx.not_allocated = 1;
   ctx.kr_handle = keydb_new ();
+  if (!ctx.kr_handle)
+    return NULL;
   ctx.nitems = 1;
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
@@ -552,6 +561,8 @@ get_seckey (PKT_public_key *pk, u32 *keyid)
   ctx.exact = 1; /* Use the key ID exactly as given.  */
   ctx.not_allocated = 1;
   ctx.kr_handle = keydb_new ();
+  if (!ctx.kr_handle)
+    return gpg_error_from_syserror ();
   ctx.nitems = 1;
   ctx.items[0].mode = KEYDB_SEARCH_MODE_LONG_KID;
   ctx.items[0].u.kid[0] = keyid[0];
@@ -748,6 +759,13 @@ key_byname (GETKEY_CTX *retctx, strlist_t namelist,
 
   ctx->want_secret = want_secret;
   ctx->kr_handle = keydb_new ();
+  if (!ctx->kr_handle)
+    {
+      rc = gpg_error_from_syserror ();
+      getkey_end (ctx);
+      return rc;
+    }
+
   if (!ret_kb)
     ret_kb = &help_kb;
 
@@ -1068,6 +1086,9 @@ get_pubkey_byfprint (PKT_public_key *pk, kbnode_t *r_keyblock,
       ctx.exact = 1;
       ctx.not_allocated = 1;
       ctx.kr_handle = keydb_new ();
+      if (!ctx.kr_handle)
+        return gpg_error_from_syserror ();
+
       ctx.nitems = 1;
       ctx.items[0].mode = fprint_len == 16 ? KEYDB_SEARCH_MODE_FPR16
 	: KEYDB_SEARCH_MODE_FPR20;
@@ -1106,6 +1127,9 @@ get_pubkey_byfprint_fast (PKT_public_key * pk,
     fprbuf[i++] = 0;
 
   hd = keydb_new ();
+  if (!hd)
+    return gpg_error_from_syserror ();
+
   rc = keydb_search_fpr (hd, fprbuf);
   if (gpg_err_code (rc) == GPG_ERR_NOT_FOUND)
     {
@@ -1156,9 +1180,14 @@ parse_def_secret_key (ctrl_t ctrl)
         }
 
       if (! hd)
-        hd = keydb_new ();
+        {
+          hd = keydb_new ();
+          if (!hd)
+            return NULL;
+        }
       else
         keydb_search_reset (hd);
+
 
       err = keydb_search (hd, &desc, 1, NULL);
       if (gpg_err_code (err) == GPG_ERR_NOT_FOUND)
@@ -3148,7 +3177,11 @@ parse_auto_key_locate (char *options)
 }
 
 
-/* For documentation see keydb.h.  */
+/* Returns true if a secret key is available for the public key with
+   key id KEYID; returns false if not.  This function ignores legacy
+   keys.  Note: this is just a fast check and does not tell us whether
+   the secret key is valid; this check merely indicates whether there
+   is some secret key with the specified key id.  */
 int
 have_secret_key_with_kid (u32 *keyid)
 {
@@ -3160,6 +3193,8 @@ have_secret_key_with_kid (u32 *keyid)
   int result = 0;
 
   kdbhd = keydb_new ();
+  if (!kdbhd)
+    return 0;
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_LONG_KID;
   desc.u.kid[0] = keyid[0];
@@ -3187,9 +3222,8 @@ have_secret_key_with_kid (u32 *keyid)
               assert (node->pkt->pkttype == PKT_PUBLIC_KEY
                       || node->pkt->pkttype == PKT_PUBLIC_SUBKEY);
 
-              if (agent_probe_secret_key (NULL, node->pkt->pkt.public_key) == 0)
-		/* Not available.  */
-		result = 1;
+              if (!agent_probe_secret_key (NULL, node->pkt->pkt.public_key))
+		result = 1; /* Secret key available.  */
 	      else
 		result = 0;
 

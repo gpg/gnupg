@@ -1071,7 +1071,11 @@ import_one (ctrl_t ctrl,
     }
   else if (rc )  /* Insert this key. */
     {
-      KEYDB_HANDLE hd = keydb_new ();
+      KEYDB_HANDLE hd;
+
+      hd = keydb_new ();
+      if (!hd)
+        return gpg_error_from_syserror ();
 
       rc = keydb_locate_writable (hd);
       if (rc)
@@ -1136,6 +1140,11 @@ import_one (ctrl_t ctrl,
       /* Now read the original keyblock again so that we can use
          that handle for updating the keyblock.  */
       hd = keydb_new ();
+      if (!hd)
+        {
+          rc = gpg_error_from_syserror ();
+          goto leave;
+        }
       keydb_disable_caching (hd);
       rc = keydb_search_fpr (hd, fpr2);
       if (rc )
@@ -1846,6 +1855,12 @@ import_revoke_cert( const char *fname, kbnode_t node, struct stats_s *stats )
 
   /* Read the original keyblock. */
   hd = keydb_new ();
+  if (!hd)
+    {
+      rc = gpg_error_from_syserror ();
+      goto leave;
+    }
+
   {
     byte afp[MAX_FINGERPRINT_LEN];
     size_t an;

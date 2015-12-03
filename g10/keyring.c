@@ -250,7 +250,7 @@ keyring_is_writable (void *token)
 
 
 /* Create a new handle for the resource associated with TOKEN.
-
+   On error NULL is returned and ERRNO is set.
    The returned handle must be released using keyring_release (). */
 KEYRING_HANDLE
 keyring_new (void *token)
@@ -260,7 +260,9 @@ keyring_new (void *token)
 
   assert (resource);
 
-  hd = xmalloc_clear (sizeof *hd);
+  hd = xtrycalloc (1, sizeof *hd);
+  if (!hd)
+    return hd;
   hd->resource = resource;
   active_handles++;
   return hd;
@@ -1487,6 +1489,8 @@ keyring_rebuild_cache (void *token,int noisy)
   ulong count = 0, sigcount = 0;
 
   hd = keyring_new (token);
+  if (!hd)
+    return gpg_error_from_syserror ();
   memset (&desc, 0, sizeof desc);
   desc.mode = KEYDB_SEARCH_MODE_FIRST;
 

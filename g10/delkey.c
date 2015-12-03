@@ -65,6 +65,8 @@ do_delete_key( const char *username, int secret, int force, int *r_sec_avail )
   *r_sec_avail = 0;
 
   hd = keydb_new ();
+  if (!hd)
+    return gpg_error_from_syserror ();
 
   /* Search the userid.  */
   err = classify_user_id (username, &desc, 1);

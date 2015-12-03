@@ -754,17 +754,26 @@ keydb_dump_stats (void)
 }
 
 
+/* Create a new database handle.  A database handle is similar to a
+   file handle: it contains a local file position.  This is used when
+   searching: subsequent searches resume where the previous search
+   left off.  To rewind the position, use keydb_search_reset().  This
+   function returns NULL on error, sets ERRNO, and prints an error
+   diagnostic. */
 KEYDB_HANDLE
 keydb_new (void)
 {
   KEYDB_HANDLE hd;
   int i, j;
   int die = 0;
+  int reterrno;
 
   if (DBG_CLOCK)
     log_clock ("keydb_new");
 
-  hd = xmalloc_clear (sizeof *hd);
+  hd = xtrycalloc (1, sizeof *hd);
+  if (!hd)
+    goto leave;
   hd->found = -1;
   hd->saved_found = -1;
   hd->is_reset = 1;
@@ -781,7 +790,10 @@ keydb_new (void)
           hd->active[j].token  = all_resources[i].token;
           hd->active[j].u.kr = keyring_new (all_resources[i].token);
           if (!hd->active[j].u.kr)
-	    die = 1;
+            {
+              reterrno = errno;
+              die = 1;
+            }
           j++;
           break;
         case KEYDB_RESOURCE_TYPE_KEYBOX:
@@ -789,7 +801,10 @@ keydb_new (void)
           hd->active[j].token  = all_resources[i].token;
           hd->active[j].u.kb   = keybox_new_openpgp (all_resources[i].token, 0);
           if (!hd->active[j].u.kb)
-	    die = 1;
+            {
+              reterrno = errno;
+              die = 1;
+            }
           j++;
           break;
         }
@@ -801,8 +816,14 @@ keydb_new (void)
   if (die)
     {
       keydb_release (hd);
+      gpg_err_set_errno (reterrno);
       hd = NULL;
     }
+
+ leave:
+  if (!hd)
+    log_error (_("error opening key DB: %s\n"),
+               gpg_strerror (gpg_error_from_syserror()));
 
   return hd;
 }

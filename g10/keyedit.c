@@ -2386,6 +2386,12 @@ keyedit_quick_adduid (ctrl_t ctrl, const char *username, const char *newuid)
 
   /* Search the key; we don't want the whole getkey stuff here.  */
   kdbhd = keydb_new ();
+  if (!kdbhd)
+    {
+      err = gpg_error_from_syserror ();
+      goto leave;
+    }
+
   err = classify_user_id (username, &desc, 1);
   if (!err)
     err = keydb_search (kdbhd, &desc, 1, NULL);

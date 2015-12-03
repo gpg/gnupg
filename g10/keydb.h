@@ -186,10 +186,8 @@ gpg_error_t keydb_add_resource (const char *url, unsigned int flags);
 /* Dump some statistics to the log.  */
 void keydb_dump_stats (void);
 
-/* Create a new database handle.  A database handle is similar to a
-   file handle: it contains a local file position.  This is used when
-   searching: subsequent searches resume where the previous search
-   left off.  To rewind the position, use keydb_search_reset().  */
+/* Create a new database handle.  Returns NULL on error, sets ERRNO,
+   and prints an error diagnostic. */
 KEYDB_HANDLE keydb_new (void);
 
 /* Free all resources owned by the database handle.  */
@@ -580,11 +578,8 @@ int get_pubkey_byfprint (PKT_public_key *pk,  kbnode_t *r_keyblock,
 int get_pubkey_byfprint_fast (PKT_public_key *pk,
                               const byte *fprint, size_t fprint_len);
 
-/* Return whether a secret key is available for the public key with
-   key id KEYID.  This function ignores legacy keys.  Note: this is
-   just a fast check and does not tell us whether the secret key is
-   valid; this check merely indicates whether there is some secret key
-   with the specified key id.  */
+/* Returns true if a secret key is available for the public key with
+   key id KEYID.  */
 int have_secret_key_with_kid (u32 *keyid);
 
 /* Parse the --default-key parameter.  Returns the last key (in terms

@@ -857,6 +857,8 @@ do_export_stream (ctrl_t ctrl, iobuf_t out, strlist_t users, int secret,
   *any = 0;
   init_packet (&pkt);
   kdbhd = keydb_new ();
+  if (!kdbhd)
+    return gpg_error_from_syserror ();
 
   /* For the DANE format override the options.  */
   if ((options & EXPORT_DANE_FORMAT))

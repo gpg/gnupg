@@ -1896,13 +1896,16 @@ validate_keys (int interactive)
      trust. */
   keydb_rebuild_caches(0);
 
+  kdb = keydb_new ();
+  if (!kdb)
+    return gpg_error_from_syserror ();
+
   start_time = make_timestamp ();
   next_expire = 0xffffffff; /* set next expire to the year 2106 */
   stored = new_key_hash_table ();
   used = new_key_hash_table ();
   full_trust = new_key_hash_table ();
 
-  kdb = keydb_new ();
   reset_trust_records();
 
   /* Fixme: Instead of always building a UTK list, we could just build it

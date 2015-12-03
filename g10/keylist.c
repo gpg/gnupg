@@ -505,7 +505,7 @@ list_all (ctrl_t ctrl, int secret, int mark_secret)
 
   hd = keydb_new ();
   if (!hd)
-    rc = gpg_error (GPG_ERR_GENERAL);
+    rc = gpg_error_from_syserror ();
   else
     rc = keydb_search_first (hd);
   if (rc)

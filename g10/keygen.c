@@ -3533,6 +3533,9 @@ quick_generate_keypair (ctrl_t ctrl, const char *uid)
     desc.u.name = uid;
 
     kdbhd = keydb_new ();
+    if (!kdbhd)
+      goto leave;
+
     err = keydb_search (kdbhd, &desc, 1, NULL);
     keydb_release (kdbhd);
     if (gpg_err_code (err) != GPG_ERR_NOT_FOUND)
@@ -4148,12 +4151,18 @@ do_generate_keypair (ctrl_t ctrl, struct para_data_s *para,
     }
   else if (!err) /* Write to the standard keyrings.  */
     {
-      KEYDB_HANDLE pub_hd = keydb_new ();
+      KEYDB_HANDLE pub_hd;
 
-      err = keydb_locate_writable (pub_hd);
-      if (err)
-        log_error (_("no writable public keyring found: %s\n"),
-                   gpg_strerror (err));
+      pub_hd = keydb_new ();
+      if (!pub_hd)
+        err = gpg_error_from_syserror ();
+      else
+        {
+          err = keydb_locate_writable (pub_hd);
+          if (err)
+            log_error (_("no writable public keyring found: %s\n"),
+                       gpg_strerror (err));
+        }
 
       if (!err && opt.verbose)
         {
