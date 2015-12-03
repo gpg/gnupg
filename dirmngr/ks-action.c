@@ -144,6 +144,7 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
 {
   gpg_error_t err = 0;
   int any_server = 0;
+  int any_results = 0;
   uri_item_t uri;
   estream_t infp;
 
@@ -155,7 +156,9 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
      parallel and merge them.  We also need to decide what to do with
      errors - it might not be the best idea to ignore an error from
      one server and silently continue with another server.  For now we
-     stop at the first error. */
+     stop at the first error, unless it is GPG_ERR_NO_DATA, in which
+     case we try the next server.  Unfortunately, 'send_requests'
+     broadly maps all kinds of http errors to GPG_ERR_NO_DATA.  */
   for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
@@ -177,10 +180,18 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
 	      err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
 	    }
 
+          if (err == gpg_error (GPG_ERR_NO_DATA))
+            {
+              /* No record found.  Clear error and try next server.  */
+              err = 0;
+              continue;
+            }
+
           if (!err)
             {
               err = copy_stream (infp, outfp);
               es_fclose (infp);
+              any_results = 1;
               break;
             }
         }
@@ -188,6 +199,8 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
 
   if (!any_server)
     err = gpg_error (GPG_ERR_NO_KEYSERVER);
+  else if (err == 0 && !any_results)
+    err = gpg_error (GPG_ERR_NO_DATA);
   return err;
 }
 
