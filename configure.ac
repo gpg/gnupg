@@ -661,14 +661,14 @@ case "${host}" in
 
     *-*-hpux*)
         if test -z "$GCC" ; then
-            CFLAGS="$CFLAGS -Ae -D_HPUX_SOURCE"
+            CFLAGS="-Ae -D_HPUX_SOURCE $CFLAGS"
         fi
         ;;
     *-dec-osf4*)
         if test -z "$GCC" ; then
             # Suppress all warnings
             # to get rid of the unsigned/signed char mismatch warnings.
-            CFLAGS="$CFLAGS -w"
+            CFLAGS="-w $CFLAGS"
         fi
         ;;
     *-dec-osf5*)
@@ -677,7 +677,7 @@ case "${host}" in
             # get rid of the unsigned/signed char mismatch warnings.
             # Using this may hide other pointer mismatch warnings, but
 	    # it at least lets other warning classes through
-            CFLAGS="$CFLAGS -msg_disable ptrmismatch1"
+            CFLAGS="-msg_disable ptrmismatch1 $CFLAGS"
         fi
         ;;
     m68k-atari-mint)
@@ -1492,6 +1492,9 @@ AC_SUBST(W32SOCKLIBS)
 #
 AC_MSG_NOTICE([checking for cc features])
 if test "$GCC" = yes; then
+    mycflags=
+    mycflags_save=$CFLAGS
+
     # Check whether gcc does not emit a diagnositc for unknow -Wno-*
     # options.  This is the case for gcc >= 4.6
     AC_MSG_CHECKING([if gcc ignores unknown -Wno-* options])
@@ -1505,60 +1508,55 @@ if test "$GCC" = yes; then
     # warning options and the user should have a chance of overriding
     # them.
     if test "$USE_MAINTAINER_MODE" = "yes"; then
-        CFLAGS="$CFLAGS -O3 -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
-        CFLAGS="$CFLAGS -Wformat -Wno-format-y2k -Wformat-security"
+        mycflags="$mycflags -O3 -Wall -Wcast-align -Wshadow -Wstrict-prototypes"
+        mycflags="$mycflags -Wformat -Wno-format-y2k -Wformat-security"
         if test x"$_gcc_silent_wno" = xyes ; then
           _gcc_wopt=yes
         else
           AC_MSG_CHECKING([if gcc supports -Wno-missing-field-initializers])
-          _gcc_cflags_save=$CFLAGS
           CFLAGS="-Wno-missing-field-initializers"
           AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
                             [_gcc_wopt=yes],[_gcc_wopt=no])
           AC_MSG_RESULT($_gcc_wopt)
-          CFLAGS=$_gcc_cflags_save;
         fi
         if test x"$_gcc_wopt" = xyes ; then
-          CFLAGS="$CFLAGS -W -Wno-sign-compare -Wno-missing-field-initializers"
+          mycflags="$mycflags -W -Wno-sign-compare"
+          mycflags="$mycflags -Wno-missing-field-initializers"
         fi
 
         AC_MSG_CHECKING([if gcc supports -Wdeclaration-after-statement])
-        _gcc_cflags_save=$CFLAGS
         CFLAGS="-Wdeclaration-after-statement"
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_wopt=yes,_gcc_wopt=no)
         AC_MSG_RESULT($_gcc_wopt)
-        CFLAGS=$_gcc_cflags_save;
         if test x"$_gcc_wopt" = xyes ; then
-          CFLAGS="$CFLAGS -Wdeclaration-after-statement"
+          mycflags="$mycflags -Wdeclaration-after-statement"
         fi
     else
-        CFLAGS="$CFLAGS -Wall"
+        mycflags="$mycflags -Wall"
     fi
 
     if test x"$_gcc_silent_wno" = xyes ; then
       _gcc_psign=yes
     else
       AC_MSG_CHECKING([if gcc supports -Wno-pointer-sign])
-      _gcc_cflags_save=$CFLAGS
       CFLAGS="-Wno-pointer-sign"
       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
                         [_gcc_psign=yes],[_gcc_psign=no])
       AC_MSG_RESULT($_gcc_psign)
-      CFLAGS=$_gcc_cflags_save;
     fi
     if test x"$_gcc_psign" = xyes ; then
-       CFLAGS="$CFLAGS -Wno-pointer-sign"
+       mycflags="$mycflags -Wno-pointer-sign"
     fi
 
     AC_MSG_CHECKING([if gcc supports -Wpointer-arith])
-    _gcc_cflags_save=$CFLAGS
     CFLAGS="-Wpointer-arith"
     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],_gcc_psign=yes,_gcc_psign=no)
     AC_MSG_RESULT($_gcc_psign)
-    CFLAGS=$_gcc_cflags_save;
     if test x"$_gcc_psign" = xyes ; then
-       CFLAGS="$CFLAGS -Wpointer-arith"
+       mycflags="$mycflags -Wpointer-arith"
     fi
+
+    CFLAGS="$mycflags $mycflags_save"
 fi
 
 
