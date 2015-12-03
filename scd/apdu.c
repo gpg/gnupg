@@ -3215,9 +3215,12 @@ apdu_close_reader (int slot)
   sw = apdu_disconnect (slot);
   if (sw)
     {
+      /*
+       * When the reader/token was removed it might come here.
+       * It should go through to call CLOSE_READER even if we got an error.
+       */
       if (DBG_READER)
-        log_debug ("leave: apdu_close_reader => 0x%x (apdu_disconnect)\n", sw);
-      return sw;
+        log_debug ("apdu_close_reader => 0x%x (apdu_disconnect)\n", sw);
     }
   if (reader_table[slot].close_reader)
     {
