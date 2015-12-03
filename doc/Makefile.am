@@ -59,6 +59,8 @@ gnupg_TEXINFOS = \
 	sysnotes.texi gnupg-card-architecture.fig dirmngr.texi \
 	howtos.texi howto-create-a-server-cert.texi
 
+gnupg.texi : defs.inc
+
 DVIPS = TEXINPUTS="$(srcdir)$(PATH_SEPARATOR)$$TEXINPUTS" dvips
 
 AM_MAKEINFOFLAGS = -I $(srcdir) --css-ref=/share/site.css
