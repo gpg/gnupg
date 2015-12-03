@@ -2190,6 +2190,7 @@ static const char hlp_getinfo[] =
   "version     - Return the version of the program.\n"
   "pid         - Return the process id of the server.\n"
   "tor         - Return OK if running in Tor mode\n"
+  "dnsinfo     - Return info about the DNS resolver\n"
   "socket_name - Return the name of the socket.\n";
 static gpg_error_t
 cmd_getinfo (assuan_context_t ctx, char *line)
@@ -2234,6 +2235,17 @@ cmd_getinfo (assuan_context_t ctx, char *line)
         }
       else
         err = set_error (GPG_ERR_FALSE, "Tor mode is NOT enabled");
+    }
+  else if (!strcmp (line, "dnsinfo"))
+    {
+#if USE_ADNS && HAVE_ADNS_IF_TORMODE
+      assuan_set_okay_line (ctx, "- ADNS with Tor support");
+#elif USE_ADNS
+      assuan_set_okay_line (ctx, "- ADNS w/o Tor support");
+#else
+      assuan_set_okay_line (ctx, "- System resolver w/o Tor support");
+#endif
+      err = 0;
     }
   else
     err = set_error (GPG_ERR_ASS_PARAMETER, "unknown value for WHAT");
