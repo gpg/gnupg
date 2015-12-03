@@ -1968,26 +1968,37 @@ parse_trust_model(const char *model)
 }
 #endif /*NO_TRUST_MODELS*/
 
+
 static int
-parse_tofu_policy (const char *policy)
+parse_tofu_policy (const char *policystr)
 {
 #ifdef USE_TOFU
-  if (ascii_strcasecmp (policy, "auto") == 0)
-    return TOFU_POLICY_AUTO;
-  else if (ascii_strcasecmp (policy, "good") == 0)
-    return TOFU_POLICY_GOOD;
-  else if (ascii_strcasecmp (policy, "unknown") == 0)
-    return TOFU_POLICY_UNKNOWN;
-  else if (ascii_strcasecmp (policy, "bad") == 0)
-    return TOFU_POLICY_BAD;
-  else if (ascii_strcasecmp (policy, "ask") == 0)
-    return TOFU_POLICY_ASK;
-  else
-#endif /*USE_TOFU*/
+  struct { const char *keyword; int policy; } list[] = {
+    { "auto",    TOFU_POLICY_AUTO },
+    { "good",    TOFU_POLICY_GOOD },
+    { "unknown", TOFU_POLICY_UNKNOWN },
+    { "bad",     TOFU_POLICY_BAD },
+    { "ask",     TOFU_POLICY_ASK }
+  };
+  int i;
+
+  if (!ascii_strcasecmp (policystr, "help"))
     {
-      log_error (_("unknown TOFU policy '%s'\n"), policy);
+      log_info (_("available TOFU policies:\n"));
+      for (i=0; i < DIM (list); i++)
+        log_info ("  %s\n", list[i].keyword);
       g10_exit (1);
     }
+
+  for (i=0; i < DIM (list); i++)
+    if (!ascii_strcasecmp (policystr, list[i].keyword))
+      return list[i].policy;
+#endif /*USE_TOFU*/
+
+  log_error (_("unknown TOFU policy '%s'\n"), policystr);
+  if (!opt.quiet)
+    log_info (_("(use \"help\" to list choices)\n"));
+  g10_exit (1);
 }
 
 static int
@@ -2000,10 +2011,17 @@ parse_tofu_db_format (const char *db_format)
     return TOFU_DB_SPLIT;
   else if (ascii_strcasecmp (db_format, "flat") == 0)
     return TOFU_DB_FLAT;
+  else if (ascii_strcasecmp (db_format, "help") == 0)
+    {
+      log_info ("available TOFU DB fomats: auto, split, flat\n");
+      g10_exit (1);
+    }
   else
 #endif /*USE_TOFU*/
     {
       log_error (_("unknown TOFU DB format '%s'\n"), db_format);
+      if (!opt.quiet)
+        log_info (_("(use \"help\" to list choices)\n"));
       g10_exit (1);
     }
 }
@@ -4727,7 +4745,7 @@ main (int argc, char **argv)
 	  KEYDB_HANDLE hd;
 
 	  if (argc < 2)
-	    wrong_args("--tofu-policy POLICY KEYID [KEYID...]");
+	    wrong_args ("--tofu-policy POLICY KEYID [KEYID...]");
 
 	  policy = parse_tofu_policy (argv[0]);
 
