@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnupg 2.1.9\n"
 "Report-Msgid-Bugs-To: translations@gnupg.org\n"
-"PO-Revision-Date: 2015-10-13 11:32+0900\n"
+"PO-Revision-Date: 2015-12-04 18:10+0900\n"
 "Last-Translator: NIIBE Yutaka <gniibe@fsij.org>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -925,7 +925,7 @@ msgid "Signature available"
 msgstr "署名が利用可能です"
 
 msgid "Parsing data succeeded"
-msgstr "データのパーズに成功しました"
+msgstr "データの構文解析に成功しました"
 
 #, c-format
 msgid "bad data hash algorithm: %s"
@@ -1461,10 +1461,9 @@ msgstr "鍵\"%s\"が見つかりません: %s\n"
 msgid "error reading keyblock: %s\n"
 msgstr "鍵ブロックの読み込みエラー: %s\n"
 
-#, fuzzy, c-format
-#| msgid "key \"%s\" not found: %s\n"
+#, c-format
 msgid "key \"%s\" not found\n"
-msgstr "鍵\"%s\"が見つかりません: %s\n"
+msgstr "鍵\"%s\"が見つかりません\n"
 
 msgid "(unless you specify the key by fingerprint)\n"
 msgstr "(フィンガー・プリントで鍵を指定してない限り)\n"
@@ -1658,15 +1657,13 @@ msgstr "フィンガープリントがありません"
 msgid "secret key \"%s\" not found: %s\n"
 msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
 
-#, fuzzy, c-format
-#| msgid "missing argument for option \"%.50s\"\n"
+#, c-format
 msgid "(check argument of option '%s')\n"
-msgstr "オプション\"%.50s\"に引数がありません\n"
+msgstr "(オプション'%s'の引数を確認ください)\n"
 
-#, fuzzy, c-format
-#| msgid "|NAME|use NAME as default secret key"
+#, c-format
 msgid "using \"%s\" as default secret key\n"
-msgstr "|NAME|デフォルトの秘密鍵としてNAMEを用いる"
+msgstr "デフォルトの秘密鍵として\"%s\"を用います\n"
 
 #, c-format
 msgid "Invalid key %s made valid by --allow-non-selfsigned-uid\n"
@@ -1788,7 +1785,7 @@ msgid "run in server mode"
 msgstr "サーバ・モードで実行"
 
 msgid "|VALUE|set the TOFU policy for a key (good, unknown, bad, ask, auto)"
-msgstr ""
+msgstr "|VALUE|TOFUポリシーを鍵に設定する(good, unknown, bad, ask, auto)"
 
 msgid "create ascii armored output"
 msgstr "ASCII形式の外装を作成"
@@ -1977,23 +1974,19 @@ msgstr "鍵の一覧に鍵リングの名前を表示する"
 msgid "show expiration dates during signature listings"
 msgstr "署名の一覧時に有効期限の日付を表示する"
 
-#, fuzzy
-#| msgid "Available keys:\n"
 msgid "available TOFU policies:\n"
-msgstr "利用可能な鍵:\n"
+msgstr "利用可能なTOFUポリシー:\n"
 
-#, fuzzy, c-format
-#| msgid "unknown option '%s'\n"
+#, c-format
 msgid "unknown TOFU policy '%s'\n"
-msgstr "不明のオプション'%s'\n"
+msgstr "不明のTOFUポリシー'%s'\n"
 
 msgid "(use \"help\" to list choices)\n"
-msgstr ""
+msgstr "(選択肢の一覧には\"help\"を使ってください)\n"
 
-#, fuzzy, c-format
-#| msgid "unknown command '%s'\n"
+#, c-format
 msgid "unknown TOFU DB format '%s'\n"
-msgstr "不明のコマンド'%s'\n"
+msgstr "不明のTOFU DBフォーマット'%s'\n"
 
 #, c-format
 msgid "Note: old default options file '%s' ignored\n"
@@ -2004,23 +1997,22 @@ msgid ""
 "Warning: value '%s' for option '%s' should be a long key ID or a "
 "fingerprint\n"
 msgstr ""
+"警告: 値'%s'(オプション'%s'に対する)は長い鍵IDかフィンガープリントであるべきです。\n"
 
-#, fuzzy, c-format
-#| msgid "option \"%.50s\" is ambiguous\n"
+#, c-format
 msgid "key specification '%s' is ambiguous\n"
-msgstr "オプション\"%.50s\"はあいまいです\n"
+msgstr "鍵の指定'%s'はあいまいです\n"
 
 #. TRANSLATORS: The %s prints a key specification which
 #. for example has been given at the command line.  Two
 #. lines with fingerprints are printed after this message.
 #, c-format
 msgid "'%s' matches at least:\n"
-msgstr ""
+msgstr "'%s'は最低、以下にマッチします:\n"
 
-#, fuzzy, c-format
-#| msgid "error creating keyring '%s': %s\n"
+#, c-format
 msgid "error searching the keyring: %s\n"
-msgstr "鍵リング'%s'の作成エラー: %s\n"
+msgstr "鍵リング探索エラー: %s\n"
 
 #, c-format
 msgid "libgcrypt is too old (need %s, have %s)\n"
@@ -2214,15 +2206,13 @@ msgstr "信用データベースの初期化に失敗しました: %s\n"
 msgid "WARNING: recipients (-r) given without using public key encryption\n"
 msgstr "*警告*: 公開鍵暗号を使わずに、受取人 (-r) を指定しています\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid date given\n"
+#, c-format
 msgid "option '%s' given, but no valid default keys given\n"
-msgstr "行 %d: 無効な日付が与えられました\n"
+msgstr "オプション'%s'が与えられましたが、有効なデフォルト鍵が与えられていません\n"
 
-#, fuzzy, c-format
-#| msgid "line %d: invalid date given\n"
+#, c-format
 msgid "option '%s' given, but option '%s' not given\n"
-msgstr "行 %d: 無効な日付が与えられました\n"
+msgstr "オプション'%s'が与えられましたが、オプション'%s'は与えられていません\n"
 
 msgid "--store [filename]"
 msgstr "--store [ファイル名]"
@@ -2316,14 +2306,13 @@ msgstr "外装に失敗しました: %s\n"
 msgid "invalid hash algorithm '%s'\n"
 msgstr "無効なハッシュ・アルゴリズム'%s'です\n"
 
-#, fuzzy, c-format
-#| msgid "error loading certificate '%s': %s\n"
+#, c-format
 msgid "error parsing key specification '%s': %s\n"
-msgstr "証明書'%s'の読み込みエラー: %s\n"
+msgstr "鍵指定'%s'の構文解析エラー: %s\n"
 
 #, c-format
 msgid "'%s' does not appear to be a valid key ID, fingerprint or keygrip\n"
-msgstr ""
+msgstr "'%s'は有効な鍵ID, フィンガープリント、keygripではないようです。\n"
 
 msgid "[filename]"
 msgstr "[ファイル名]"
@@ -2630,7 +2619,7 @@ msgstr "鍵%s: 無効な暗号方式%dの秘密鍵です - スキップします
 #. created again.
 #, c-format
 msgid "To migrate '%s', with each smartcard, run: %s\n"
-msgstr ""
+msgstr "'%s'の移行には、スマードカードそれぞれで、以下を実行してください: %s\n"
 
 #, c-format
 msgid "key %s: no public key - can't apply revocation certificate\n"
@@ -2756,10 +2745,9 @@ msgstr "鍵リング'%s'ができました\n"
 msgid "keyblock resource '%s': %s\n"
 msgstr "keyblock リソース'%s': %s\n"
 
-#, fuzzy, c-format
-#| msgid "error opening '%s': %s\n"
+#, c-format
 msgid "error opening key DB: %s\n"
-msgstr "'%s'を開く際、エラー: %s\n"
+msgstr "鍵DBを開く際のエラー: %s\n"
 
 #, c-format
 msgid "failed to rebuild keyring cache: %s\n"
@@ -2830,7 +2818,7 @@ msgstr "署名を制限するドメインを入力するか、空行を入力し
 
 #, c-format
 msgid "Skipping user ID \"%s\", which is not a text ID.\n"
-msgstr ""
+msgstr "ユーザID\"%s\"をスキップします、テキストのIDではありません。\n"
 
 #, c-format
 msgid "User ID \"%s\" is revoked."
@@ -3108,7 +3096,7 @@ msgid "compact unusable user IDs and remove all signatures from key"
 msgstr "使えないユーザIDをコンパクトにし、すべての署名を鍵から除去"
 
 msgid "Secret key is available.\n"
-msgstr "秘密鍵が使用できます。\n"
+msgstr "秘密鍵が利用できます。\n"
 
 msgid "Need the secret key to do this.\n"
 msgstr "この実行には秘密鍵がいります。\n"
@@ -3129,10 +3117,8 @@ msgstr "鍵は、失効されています。"
 msgid "Really sign all user IDs? (y/N) "
 msgstr "本当に全ユーザIDに署名しますか? (y/N) "
 
-#, fuzzy
-#| msgid "Really sign all user IDs? (y/N) "
 msgid "Really sign all text user IDs? (y/N) "
-msgstr "本当に全ユーザIDに署名しますか? (y/N) "
+msgstr "本当に全てのテキストユーザIDに署名しますか? (y/N) "
 
 msgid "Hint: Select the user IDs to sign\n"
 msgstr "ヒント: まず署名するユーザIDを選択します\n"
@@ -3428,13 +3414,10 @@ msgid ""
 "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgstr "本当にこの鍵を指名失効者に任命しますか? (y/N) "
 
-#, fuzzy
-#| msgid ""
-#| "Are you sure you want to appoint this key as a designated revoker? (y/N) "
 msgid ""
 "Are you sure you want to change the expiration time for multiple subkeys? (y/"
 "N) "
-msgstr "本当にこの鍵を指名失効者に任命しますか? (y/N) "
+msgstr "本当に複数の副鍵の失効期限を変更しますか? (y/N) "
 
 msgid "Changing expiration time for a subkey.\n"
 msgstr "副鍵の有効期限を変更します。\n"
@@ -3483,10 +3466,9 @@ msgstr "%d番のユーザIDはありません\n"
 msgid "No user ID with hash %s\n"
 msgstr "ハッシュ%sのユーザIDはありません\n"
 
-#, fuzzy, c-format
-#| msgid "No subkey with index %d\n"
+#, c-format
 msgid "No subkey with key ID '%s'.\n"
-msgstr "%d番の副鍵はありません\n"
+msgstr "鍵ID'%s'の副鍵はありません\n"
 
 #, c-format
 msgid "No subkey with index %d\n"
@@ -3831,7 +3813,7 @@ msgstr "名前に無効な文字があります\n"
 
 #, c-format
 msgid "The characters '%s' and '%s' may not appear in name\n"
-msgstr ""
+msgstr "キャラクタ'%s'と'%s'は名前に使えません\n"
 
 msgid "Name may not start with a digit\n"
 msgstr "名前を数字で始めてはいけません\n"
@@ -4434,10 +4416,9 @@ msgstr "不明のオプション'%s'\n"
 msgid "ECDSA public key is expected to be in SEC encoding multiple of 8 bits\n"
 msgstr "ECDSAの公開鍵は8ビットの倍数のSECエンコーディングを期待します\n"
 
-#, fuzzy, c-format
-#| msgid "Unknown signature type '%s'\n"
+#, c-format
 msgid "unknown weak digest '%s'\n"
-msgstr "不明の署名タイプ'%s'\n"
+msgstr "不明の弱いダイジェスト'%s'\n"
 
 #, c-format
 msgid "File '%s' exists. "
@@ -4878,10 +4859,8 @@ msgstr "失効者:\n"
 msgid "(This is a sensitive revocation key)\n"
 msgstr "(これは、機密指定の失効鍵です)\n"
 
-#, fuzzy
-#| msgid "Secret key is available.\n"
 msgid "Secret key is not available.\n"
-msgstr "秘密鍵が使用できます。\n"
+msgstr "秘密鍵が利用できません。\n"
 
 msgid "Create a designated revocation certificate for this key? (y/N) "
 msgstr "この鍵に対する指名失効証明書を作成しますか? (y/N) "
@@ -4922,17 +4901,16 @@ msgstr ""
 "入されます。\n"
 "この失効証明書を使う前にはテクスト・エディタでこのコロンを削除してください。"
 
-#, fuzzy, c-format
-#| msgid "secret key \"%s\" not found: %s\n"
+#, c-format
 msgid "secret key \"%s\" not found\n"
-msgstr "秘密鍵\"%s\"が見つかりません: %s\n"
+msgstr "秘密鍵\"%s\"が見つかりません\n"
 
 #. TRANSLATORS: The %s prints a key specification which
 #. for example has been given at the command line.  Several lines
 #. lines with secret key infos are printed after this message.
 #, c-format
 msgid "'%s' matches multiple secret keys:\n"
-msgstr ""
+msgstr "'%s'は以下の複数の秘密鍵にマッチします:\n"
 
 msgid "Create a revocation certificate for this key? (y/N) "
 msgstr "この鍵に対する失効証明書を作成しますか? (y/N) "
@@ -6899,10 +6877,8 @@ msgstr "'%s'を取得する際のエラー: %s\n"
 msgid "error retrieving '%s': http status %u\n"
 msgstr "'%s'の取得エラー: httpステイタス %u\n"
 
-#, fuzzy
-#| msgid "CRL access not possible due to TOR mode\n"
 msgid "CRL access not possible due to Tor mode\n"
-msgstr "CRLアクセスはTORモードのため不可能です\n"
+msgstr "CRLアクセスはTorモードのため不可能です\n"
 
 #, c-format
 msgid "certificate search not possible due to disabled %s\n"
@@ -7090,10 +7066,8 @@ msgstr "|N|一つのクエリでNを越えるのアイテムを返さない"
 msgid "|FILE|use the CA certificates in FILE for HKP over TLS"
 msgstr "|FILE|FILEにあるCA証明書をTLSでのHKPに使う"
 
-#, fuzzy
-#| msgid "route all network traffic via TOR"
 msgid "route all network traffic via Tor"
-msgstr "ネットワーク・トラフィックをすべてTOR経由にする"
+msgstr "ネットワーク・トラフィックをすべてTor経由にする"
 
 msgid ""
 "@\n"
@@ -7385,10 +7359,8 @@ msgstr "応答からの読み込みエラー: %s\n"
 msgid "response from server too large; limit is %d bytes\n"
 msgstr "サーバからの応答がが長すぎます (上限%dバイト)。\n"
 
-#, fuzzy
-#| msgid "OCSP request not possible due to TOR mode\n"
 msgid "OCSP request not possible due to Tor mode\n"
-msgstr "TORモードのためOCSPリクエストが不可能です\n"
+msgstr "TorモードのためOCSPリクエストが不可能です\n"
 
 msgid "OCSP request not possible due to disabled HTTP\n"
 msgstr "HTTPが停止されているためOCSPリクエストが不可能です\n"
@@ -7415,7 +7387,7 @@ msgstr "'%s'へアクセスのエラー: httpステイタス %u\n"
 
 #, c-format
 msgid "error parsing OCSP response for '%s': %s\n"
-msgstr "'%s'に対するOCSP応答解析エラー: %s\n"
+msgstr "'%s'に対するOCSP応答構文解析エラー: %s\n"
 
 #, c-format
 msgid "OCSP responder at '%s' status: %s\n"
@@ -7740,10 +7712,8 @@ msgstr "出力フォーマットを制御するオプション"
 msgid "Options controlling the interactivity and enforcement"
 msgstr "インタラクティビティと強制を制御するオプション"
 
-#, fuzzy
-#| msgid "Options controlling the use of TOR"
 msgid "Options controlling the use of Tor"
-msgstr "TORの使用を制御するオプション"
+msgstr "Torの使用を制御するオプション"
 
 msgid "Configuration for HTTP servers"
 msgstr "HTTPサーバのコンフィグレーション"
@@ -7995,26 +7965,6 @@ msgstr ""
 
 #~ msgid "cleared passphrase cached with ID: %s\n"
 #~ msgstr "保持したパスフレーズをクリアしました ID: %s\n"
-
-#, fuzzy
-#~| msgid "failed to store the key: %s\n"
-#~ msgid "Failed to open the keyring DB.\n"
-#~ msgstr "鍵の保管に失敗しました: %s\n"
-
-#, fuzzy
-#~| msgid "failed to open '%s': %s\n"
-#~ msgid "Failed to parse '%s'.\n"
-#~ msgstr "'%s'が開けません: %s\n"
-
-#, fuzzy
-#~| msgid "invalid value\n"
-#~ msgid "invalid value '%s'\n"
-#~ msgstr "無効な値\n"
-
-#, fuzzy
-#~| msgid "error locking keybox: %s\n"
-#~ msgid "error looking up secret key \"%s\": %s\n"
-#~ msgstr "keyboxのロックのエラー: %s\n"
 
 #~ msgid "Please select at most one subkey.\n"
 #~ msgstr "高々1個の副鍵を選択してください。\n"
