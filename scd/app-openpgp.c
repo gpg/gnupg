@@ -4179,7 +4179,7 @@ do_decipher (app_t app, const char *keyidstr,
 
       if (app->app_local->keyattr[1].ecc.flags)
         {
-          if (indatalen > 32 + 1)
+          if (indatalen > 32 && (indatalen % 2))
             { /*
                * Skip the prefix.  It may be 0x40 (in new format), or MPI
                * head of 0x00 (in old format).
