@@ -4175,14 +4175,25 @@ do_decipher (app_t app, const char *keyidstr,
     }
   else if (app->app_local->keyattr[1].key_type == KEY_TYPE_ECC)
     {
-      if (app->app_local->keyattr[1].ecc.flags
-          && (indatalen%2))
-        { /*
-           * Skip the prefix.  It may be 0x40 (in new format), or MPI
-           * head of 0x00 (in old format).
-           */
-          indata = (const char *)indata + 1;
-          indatalen--;
+      int old_format_len = 0;
+
+      if (app->app_local->keyattr[1].ecc.flags)
+        {
+          if (indatalen > 32 + 1)
+            { /*
+               * Skip the prefix.  It may be 0x40 (in new format), or MPI
+               * head of 0x00 (in old format).
+               */
+              indata = (const char *)indata + 1;
+              indatalen--;
+            }
+          else if (indatalen < 32)
+            { /*
+               * Old format trancated by MPI handling.
+               */
+              old_format_len = indatalen;
+              indatalen = 32;
+            }
         }
 
       fixuplen = 7;
@@ -4198,7 +4209,16 @@ do_decipher (app_t app, const char *keyidstr,
       fixbuf[4] = (char)(indatalen+2);
       fixbuf[5] = '\x86';
       fixbuf[6] = (char)indatalen;
-      memcpy (fixbuf+fixuplen, indata, indatalen);
+      if (old_format_len)
+        {
+          memset (fixbuf+fixuplen, 0, 32 - old_format_len);
+          memcpy (fixbuf+fixuplen + 32 - old_format_len,
+                  indata, old_format_len);
+        }
+      else
+        {
+          memcpy (fixbuf+fixuplen, indata, indatalen);
+        }
       indata = fixbuf;
       indatalen = fixuplen + indatalen;
 
@@ -4230,12 +4250,12 @@ do_decipher (app_t app, const char *keyidstr,
       fixbuf = xtrymalloc (*outdatalen + 1);
       if (!fixbuf)
         {
-          xfree (outdata);
+          xfree (*outdata);
           return gpg_error_from_syserror ();
         }
       fixbuf[0] = 0x40;
       memcpy (fixbuf+1, *outdata, *outdatalen);
-      xfree (outdata);
+      xfree (*outdata);
       *outdata = fixbuf;
       *outdatalen = *outdatalen + 1;
     }
