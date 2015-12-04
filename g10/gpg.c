@@ -2116,7 +2116,12 @@ check_user_ids (strlist_t *sp,
 
   KEYDB_HANDLE hd = NULL;
 
-  if (! s)
+  /* A quick check to avoid allocating a new strlist if we can skip
+     all keys.  Handles also the case of !SP.  See below for details.  */
+  for (t = s; t && (!(t->flags & PK_LIST_CONFIG)
+                    && !(t->flags & PK_LIST_ENCRYPT_TO)); t = t->next)
+    ;
+  if (!t)
     return 0;
 
   for (t = s; t; t = t->next)
@@ -2131,8 +2136,19 @@ check_user_ids (strlist_t *sp,
       /* We also potentially need a ! at the end.  */
       char fingerprint[2 * MAX_FINGERPRINT_LEN + 1 + 1];
 
+      /* If the key has been given on the command line and it has not
+         been given by one of the encrypt-to options, we skip the
+         checks.  The reason is that the actual key selection code
+         does its own checks and provides proper status message to the
+         caller to detect the wrong keys.  */
+      if (!(t->flags & PK_LIST_CONFIG) && !(t->flags & PK_LIST_ENCRYPT_TO))
+        {
+          add_to_strlist (&s2, t->d);
+          s2->flags = t->flags;
+          continue;
+        }
 
-      switch (t->flags >> 2)
+      switch (t->flags >> PK_LIST_SHIFT)
         {
         case oDefaultKey: option = "--default-key"; break;
         case oEncryptTo: option = "--encrypt-to"; break;
@@ -2141,7 +2157,8 @@ check_user_ids (strlist_t *sp,
         case oRecipient: option = "--recipient"; break;
         case oHiddenRecipient: option = "--hidden-recipient"; break;
         case oLocalUser: option = "--local-user"; break;
-        default: log_bug ("Unsupport option: %d\n", t->flags >> 2);
+        default:
+          log_bug ("Unsupport option: %d\n", (t->flags >> PK_LIST_SHIFT));
         }
 
       if (DBG_LOOKUP)
@@ -2338,7 +2355,9 @@ main (int argc, char **argv)
     const char *fname;
     char *username;
     int may_coredump;
-    strlist_t sl, remusr= NULL, locusr=NULL;
+    strlist_t sl;
+    strlist_t remusr = NULL;
+    strlist_t locusr = NULL;
     strlist_t nrings = NULL;
     armor_filter_context_t *afx = NULL;
     int detached_sig = 0;
@@ -2828,7 +2847,7 @@ main (int argc, char **argv)
 #endif /*!NO_TRUST_MODELS*/
 	  case oDefaultKey:
             sl = add_to_strlist (&opt.def_secret_key, pargs.r.ret_str);
-            sl->flags = (pargs.r_opt << 2);
+            sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
             break;
 	  case oDefRecipient:
             if( *pargs.r.ret_str )
@@ -3020,23 +3039,32 @@ main (int argc, char **argv)
 	  case oNoEncryptTo: opt.no_encrypt_to = 1; break;
 	  case oEncryptTo: /* store the recipient in the second list */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = (pargs.r_opt << 2) | 1;
+	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_ENCRYPT_TO);
+            if (configfp)
+              sl->flags |= PK_LIST_CONFIG;
 	    break;
 	  case oHiddenEncryptTo: /* store the recipient in the second list */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = (pargs.r_opt << 2) | 1|2;
+	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT)
+                         | PK_LIST_ENCRYPT_TO|PK_LIST_HIDDEN);
+            if (configfp)
+              sl->flags |= PK_LIST_CONFIG;
 	    break;
           case oEncryptToDefaultKey:
             opt.encrypt_to_default_key = 1;
             break;
 	  case oRecipient: /* store the recipient */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = (pargs.r_opt << 2);
+	    sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
+            if (configfp)
+              sl->flags |= PK_LIST_CONFIG;
             any_explicit_recipient = 1;
 	    break;
 	  case oHiddenRecipient: /* store the recipient with a flag */
 	    sl = add_to_strlist2( &remusr, pargs.r.ret_str, utf8_strings );
-	    sl->flags = (pargs.r_opt << 2) | 2;
+	    sl->flags = ((pargs.r_opt << PK_LIST_SHIFT) | PK_LIST_HIDDEN);
+            if (configfp)
+              sl->flags |= PK_LIST_CONFIG;
             any_explicit_recipient = 1;
 	    break;
 
@@ -3080,7 +3108,9 @@ main (int argc, char **argv)
 	  case oNoAskCertLevel: opt.ask_cert_level = 0; break;
 	  case oLocalUser: /* store the local users */
 	    sl = add_to_strlist2( &locusr, pargs.r.ret_str, utf8_strings );
-            sl->flags = (pargs.r_opt << 2);
+            sl->flags = (pargs.r_opt << PK_LIST_SHIFT);
+            if (configfp)
+              sl->flags |= PK_LIST_CONFIG;
 	    break;
 	  case oCompress:
 	    /* this is the -z command line option */
@@ -4010,7 +4040,8 @@ main (int argc, char **argv)
           if (default_key)
             {
               sl = add_to_strlist2 (&remusr, default_key, utf8_strings);
-              sl->flags = (oEncryptToDefaultKey << 2) | 1;
+              sl->flags = ((oEncryptToDefaultKey << PK_LIST_SHIFT)
+                           | PK_LIST_ENCRYPT_TO);
             }
           else if (have_def_secret_key)
             log_info (_("option '%s' given, but no valid default keys given\n"),

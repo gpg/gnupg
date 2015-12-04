@@ -19,8 +19,8 @@ Noteworthy changes in version 2.1.10 (unreleased)
  * gpg: New option --only-sign-text-ids to exclude photo IDs from key
    signing.
 
- * gpg: Check for ambigious or non-matching key specification of
-   command line options.
+ * gpg: Check for ambigious or non-matching key specification in the
+   config file or given to --encrypt-to.
 
  * gpg: Show the used card reader with --card-status.
 

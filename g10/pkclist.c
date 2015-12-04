@@ -890,8 +890,8 @@ find_and_check_key (ctrl_t ctrl, const char *name, unsigned int use,
    value but not very useful.  Group expansion is done on these names;
    they may be in any of the user Id formats we can handle.  The flags
    bits for each string in the string list are used for:
-     Bit 0: This is an encrypt-to recipient.
-     Bit 1: This is a hidden recipient.
+     Bit 0 (PK_LIST_ENCRYPT_TO): This is an encrypt-to recipient.
+     Bit 1 (PK_LIST_HIDDEN)    : This is a hidden recipient.
 
    USE is the desired use for the key - usually PUBKEY_USAGE_ENC.
 
@@ -921,7 +921,7 @@ build_pk_list (ctrl_t ctrl,
    * list of the encrypt-to ones (we always trust them). */
   for ( rov = remusr; rov; rov = rov->next )
     {
-      if ( !(rov->flags & 1) )
+      if ( !(rov->flags & PK_LIST_ENCRYPT_TO) )
         {
           /* This is a regular recipient; i.e. not an encrypt-to
              one. */
@@ -929,7 +929,7 @@ build_pk_list (ctrl_t ctrl,
 
           /* Hidden recipients are not allowed while in PGP mode,
              issue a warning and switch into GnuPG mode. */
-          if ((rov->flags&2) && (PGP6 || PGP7 || PGP8))
+          if ((rov->flags & PK_LIST_HIDDEN) && (PGP6 || PGP7 || PGP8))
             {
               log_info(_("you may not use %s while in %s mode\n"),
                        "--hidden-recipient",
@@ -973,13 +973,13 @@ build_pk_list (ctrl_t ctrl,
                   r = xmalloc( sizeof *r );
                   r->pk = pk; pk = NULL;
                   r->next = pk_list;
-                  r->flags = (rov->flags&2)?1:0;
+                  r->flags = (rov->flags&PK_LIST_HIDDEN)?1:0;
                   pk_list = r;
 
                   /* Hidden encrypt-to recipients are not allowed while
                      in PGP mode, issue a warning and switch into
                      GnuPG mode. */
-                  if ((r->flags&1) && (PGP6 || PGP7 || PGP8))
+                  if ((r->flags&PK_LIST_ENCRYPT_TO) && (PGP6 || PGP7 || PGP8))
                     {
                       log_info(_("you may not use %s while in %s mode\n"),
                                "--hidden-encrypt-to",
@@ -1196,10 +1196,11 @@ build_pk_list (ctrl_t ctrl,
       any_recipients = 0;
       for (; remusr; remusr = remusr->next )
         {
-          if ( (remusr->flags & 1) )
+          if ( (remusr->flags & PK_LIST_ENCRYPT_TO) )
             continue; /* encrypt-to keys are already handled. */
 
-          rc = find_and_check_key (ctrl, remusr->d, use, !!(remusr->flags&2),
+          rc = find_and_check_key (ctrl, remusr->d, use,
+                                   !!(remusr->flags&PK_LIST_HIDDEN),
                                    &pk_list);
           if (rc)
             goto fail;
