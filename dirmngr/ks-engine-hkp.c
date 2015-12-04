@@ -1083,6 +1083,10 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
       }
       goto leave;
 
+    case 501:
+      err = gpg_error (GPG_ERR_NOT_IMPLEMENTED);
+      goto leave;
+
     default:
       log_error (_("error accessing '%s': http status %u\n"),
                  request, http_get_status_code (http));
