@@ -34,7 +34,7 @@ gpg_error_t ks_hkp_mark_host (ctrl_t ctrl, const char *name, int alive);
 gpg_error_t ks_hkp_print_hosttable (ctrl_t ctrl);
 gpg_error_t ks_hkp_help (ctrl_t ctrl, parsed_uri_t uri);
 gpg_error_t ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
-                           estream_t *r_fp);
+                           estream_t *r_fp, unsigned int *r_http_status);
 gpg_error_t ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri,
                         const char *keyspec, estream_t *r_fp);
 gpg_error_t ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri,

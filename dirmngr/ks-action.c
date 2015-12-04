@@ -156,13 +156,13 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
      parallel and merge them.  We also need to decide what to do with
      errors - it might not be the best idea to ignore an error from
      one server and silently continue with another server.  For now we
-     stop at the first error, unless it is GPG_ERR_NO_DATA, in which
-     case we try the next server.  Unfortunately, 'send_requests'
-     broadly maps all kinds of http errors to GPG_ERR_NO_DATA.  */
+     stop at the first error, unless the server responds with '404 Not
+     Found', in which case we try the next server.  */
   for (uri = keyservers; !err && uri; uri = uri->next)
     {
       int is_http = uri->parsed_uri->is_http;
       int is_ldap = 0;
+      unsigned int http_status;
 #if USE_LDAP
       is_ldap = (strcmp (uri->parsed_uri->scheme, "ldap") == 0
 		 || strcmp (uri->parsed_uri->scheme, "ldaps") == 0
@@ -177,10 +177,12 @@ ks_action_search (ctrl_t ctrl, uri_item_t keyservers,
 	  else
 #endif
 	    {
-	      err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d, &infp);
+	      err = ks_hkp_search (ctrl, uri->parsed_uri, patterns->d,
+                                   &infp, &http_status);
 	    }
 
-          if (err == gpg_error (GPG_ERR_NO_DATA))
+          if (err == gpg_error (GPG_ERR_NO_DATA)
+              && http_status == 404 /* not found */)
             {
               /* No record found.  Clear error and try next server.  */
               err = 0;

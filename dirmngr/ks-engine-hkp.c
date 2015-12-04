@@ -974,12 +974,13 @@ ks_hkp_housekeeping (time_t curtime)
    R_FP.  HOSTPORTSTR is only used for diagnostics.  If HTTPHOST is
    not NULL it will be used as HTTP "Host" header.  If POST_CB is not
    NULL a post request is used and that callback is called to allow
-   writing the post data.  */
+   writing the post data.  If R_HTTP_STATUS is not NULL, the http
+   status code will be stored there.  */
 static gpg_error_t
 send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
               const char *httphost, unsigned int httpflags,
               gpg_error_t (*post_cb)(void *, http_t), void *post_cb_value,
-              estream_t *r_fp)
+              estream_t *r_fp, unsigned int *r_http_status)
 {
   gpg_error_t err;
   http_session_t session = NULL;
@@ -1049,6 +1050,9 @@ send_request (ctrl_t ctrl, const char *request, const char *hostportstr,
          unencrypted connection.  */
       httpflags |= HTTP_FLAG_FORCE_TLS;
     }
+
+  if (r_http_status)
+    *r_http_status = http_get_status_code (http);
 
   switch (http_get_status_code (http))
     {
@@ -1158,10 +1162,12 @@ handle_send_request_error (gpg_error_t err, const char *request,
 
 
 /* Search the keyserver identified by URI for keys matching PATTERN.
-   On success R_FP has an open stream to read the data.  */
+   On success R_FP has an open stream to read the data.  If
+   R_HTTP_STATUS is not NULL, the http status code will be stored
+   there.  */
 gpg_error_t
 ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
-               estream_t *r_fp)
+               estream_t *r_fp, unsigned int *r_http_status)
 {
   gpg_error_t err;
   KEYDB_SEARCH_DESC desc;
@@ -1248,7 +1254,7 @@ ks_hkp_search (ctrl_t ctrl, parsed_uri_t uri, const char *pattern,
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
-                      NULL, NULL, &fp);
+                      NULL, NULL, &fp, r_http_status);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1381,7 +1387,7 @@ ks_hkp_get (ctrl_t ctrl, parsed_uri_t uri, const char *keyspec, estream_t *r_fp)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, httpflags,
-                      NULL, NULL, &fp);
+                      NULL, NULL, &fp, NULL);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
@@ -1489,7 +1495,7 @@ ks_hkp_put (ctrl_t ctrl, parsed_uri_t uri, const void *data, size_t datalen)
 
   /* Send the request.  */
   err = send_request (ctrl, request, hostport, httphost, 0,
-                      put_post_cb, &parm, &fp);
+                      put_post_cb, &parm, &fp, NULL);
   if (handle_send_request_error (err, request, &tries))
     {
       reselect = 1;
