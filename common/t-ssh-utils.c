@@ -262,7 +262,7 @@ main (int argc, char **argv)
   if (argc == 2)
     {
       key = read_key (argv[1]);
-      err = ssh_get_fingerprint_string (key, &string);
+      err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
       if (err)
         {
           fprintf (stderr, "%s:%d: error getting fingerprint: %s\n",
@@ -287,7 +287,7 @@ main (int argc, char **argv)
               exit (1);
             }
 
-          err = ssh_get_fingerprint_string (key, &string);
+          err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &string);
           gcry_sexp_release (key);
           if (err)
             {

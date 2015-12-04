@@ -2760,7 +2760,7 @@ data_sign (ctrl_t ctrl, ssh_key_type_spec_t *spec,
       err = agent_raw_key_from_file (ctrl, ctrl->keygrip, &key);
       if (err)
         goto out;
-      err = ssh_get_fingerprint_string (key, &fpr);
+      err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &fpr);
       if (!err)
         {
           gcry_sexp_t tmpsxp = gcry_sexp_find_token (key, "comment", 0);
@@ -3038,7 +3038,7 @@ ssh_identity_register (ctrl_t ctrl, ssh_key_type_spec_t *spec,
 
   bin2hex (key_grip_raw, 20, key_grip);
 
-  err = ssh_get_fingerprint_string (key, &key_fpr);
+  err = ssh_get_fingerprint_string (key, GCRY_MD_MD5, &key_fpr);
   if (err)
     goto out;
 

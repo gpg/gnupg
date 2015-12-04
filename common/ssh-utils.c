@@ -65,12 +65,13 @@ is_eddsa (gcry_sexp_t keyparms)
 }
 
 
-/* Return the Secure Shell type fingerprint for KEY.  The length of
-   the fingerprint is returned at R_LEN and the fingerprint itself at
-   R_FPR.  In case of a error code is returned and NULL stored at
-   R_FPR.  */
+/* Return the Secure Shell type fingerprint for KEY using digest ALGO.
+   The length of the fingerprint is returned at R_LEN and the
+   fingerprint itself at R_FPR.  In case of a error code is returned
+   and NULL stored at R_FPR.  */
 static gpg_error_t
-get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
+get_fingerprint (gcry_sexp_t key, int algo,
+                 void **r_fpr, size_t *r_len, int as_string)
 {
   gpg_error_t err;
   gcry_sexp_t list = NULL;
@@ -111,7 +112,7 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
       goto leave;
     }
 
-  err = gcry_md_open (&md, GCRY_MD_MD5, 0);
+  err = gcry_md_open (&md, algo, 0);
   if (err)
     goto leave;
 
@@ -229,23 +230,23 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
         }
     }
 
-  *r_fpr = gcry_malloc (as_string? 61:20);
-  if (!*r_fpr)
-    {
-      err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
-      goto leave;
-    }
-
   if (as_string)
     {
-      bin2hexcolon (gcry_md_read (md, GCRY_MD_MD5), 16, *r_fpr);
-      *r_len = 3*16+1;
+      *r_fpr = (algo == GCRY_MD_MD5 ? bin2hexcolon : /* XXX we need base64 */ bin2hex)
+        (gcry_md_read (md, algo), gcry_md_get_algo_dlen (algo), NULL);
+      *r_len = strlen (*r_fpr) + 1;
       strlwr (*r_fpr);
     }
   else
     {
-      memcpy (*r_fpr, gcry_md_read (md, GCRY_MD_MD5), 16);
-      *r_len = 16;
+      *r_len = gcry_md_get_algo_dlen (algo);
+      *r_fpr = xtrymalloc (*r_len);
+      if (!*r_fpr)
+        {
+          err = gpg_err_make (default_errsource, gpg_err_code_from_syserror ());
+          goto leave;
+        }
+      memcpy (*r_fpr, gcry_md_read (md, algo), *r_len);
     }
   err = 0;
 
@@ -257,28 +258,30 @@ get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len, int as_string)
   return err;
 }
 
-/* Return the Secure Shell type fingerprint for KEY.  The length of
-   the fingerprint is returned at R_LEN and the fingerprint itself at
-   R_FPR.  In case of an error an error code is returned and NULL
-   stored at R_FPR.  */
+/* Return the Secure Shell type fingerprint for KEY using digest ALGO.
+   The length of the fingerprint is returned at R_LEN and the
+   fingerprint itself at R_FPR.  In case of an error an error code is
+   returned and NULL stored at R_FPR.  */
 gpg_error_t
-ssh_get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len)
+ssh_get_fingerprint (gcry_sexp_t key, int algo,
+                     void **r_fpr, size_t *r_len)
 {
-  return get_fingerprint (key, r_fpr, r_len, 0);
+  return get_fingerprint (key, algo, r_fpr, r_len, 0);
 }
 
 
-/* Return the Secure Shell type fingerprint for KEY as a string.  The
-   fingerprint is mallcoed and stored at R_FPRSTR.  In case of an
-   error an error code is returned and NULL stored at R_FPRSTR.  */
+/* Return the Secure Shell type fingerprint for KEY using digest ALGO
+   as a string.  The fingerprint is mallcoed and stored at R_FPRSTR.
+   In case of an error an error code is returned and NULL stored at
+   R_FPRSTR.  */
 gpg_error_t
-ssh_get_fingerprint_string (gcry_sexp_t key, char **r_fprstr)
+ssh_get_fingerprint_string (gcry_sexp_t key, int algo, char **r_fprstr)
 {
   gpg_error_t err;
   size_t dummy;
   void *string;
 
-  err = get_fingerprint (key, &string, &dummy, 1);
+  err = get_fingerprint (key, algo, &string, &dummy, 1);
   *r_fprstr = string;
   return err;
 }

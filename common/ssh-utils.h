@@ -31,9 +31,11 @@
 #define GNUPG_COMMON_SSH_UTILS_H
 
 
-gpg_error_t ssh_get_fingerprint (gcry_sexp_t key, void **r_fpr, size_t *r_len);
+gpg_error_t ssh_get_fingerprint (gcry_sexp_t key, int algo,
+				 void **r_fpr, size_t *r_len);
 
-gpg_error_t ssh_get_fingerprint_string (gcry_sexp_t key, char **r_fprstr);
+gpg_error_t ssh_get_fingerprint_string (gcry_sexp_t key, int algo,
+					char **r_fprstr);
 
 
 #endif /*GNUPG_COMMON_SSH_UTILS_H*/

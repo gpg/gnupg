@@ -1201,7 +1201,7 @@ do_one_keyinfo (ctrl_t ctrl, const unsigned char *grip, assuan_context_t ctx,
 
       if (!agent_raw_key_from_file (ctrl, grip, &key))
         {
-          ssh_get_fingerprint_string (key, &fpr);
+          ssh_get_fingerprint_string (key, GCRY_MD_MD5, &fpr);
           gcry_sexp_release (key);
         }
     }
